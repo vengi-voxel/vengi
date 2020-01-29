@@ -39,9 +39,9 @@ struct VoxModel {
 	std::map<std::string, std::string> nodeAttributes;
 };
 
-bool VoxFormat::saveChunk_LAYR(io::FileStream& stream, int layerId, const std::string& name, bool visible) const {
-	const std::string attributeName = "_name";
-	const std::string attributeVisible = "_visible";
+bool VoxFormat::saveChunk_LAYR(io::FileStream& stream, int layerId, const core::String& name, bool visible) const {
+	const core::String attributeName = "_name";
+	const core::String attributeVisible = "_visible";
 	stream.addInt(FourCC('L','A','Y','R'));
 	const int chunkSizeName = sizeof(uint32_t) + attributeName.size();
 	const int chunkSizeNameValue = sizeof(uint32_t) + core::utf8::length(name.c_str());
@@ -64,9 +64,9 @@ bool VoxFormat::saveChunk_LAYR(io::FileStream& stream, int layerId, const std::s
 }
 
 bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, int layerId, const voxel::Region& region) const {
-	const std::string attributeName = "_t";
+	const core::String attributeName = "_t";
 	const glm::ivec3& mins = region.getLowerCorner();
-	const std::string& translationStr = core::string::format("%i %i %i", mins.x, mins.y, mins.z);
+	const core::String& translationStr = core::string::format("%i %i %i", mins.x, mins.y, mins.z);
 	stream.addInt(FourCC('n','T','R','N'));
 	const int chunkFrameTranslationName = sizeof(uint32_t) + attributeName.size();
 	const int chunkFrameTranslationValue = sizeof(uint32_t) + translationStr.size();
@@ -168,8 +168,8 @@ bool VoxFormat::saveAttributes(const std::map<std::string, std::string>& attribu
 	Log::debug("Save %i attributes", (int)attributes.size());
 	stream.addInt((uint32_t)attributes.size());
 	for (const auto& e : attributes) {
-		const std::string& key = e.first;
-		const std::string& value = e.second;
+		const core::String& key = e.first;
+		const core::String& value = e.second;
 		Log::debug("Save attribute %s: %s", key.c_str(), value.c_str());
 		stream.addInt(core::utf8::length(key.c_str()));
 		stream.addString(key, false);
@@ -648,7 +648,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 						(int)layerId, (int)volumes.size(), attributes["_name"].c_str());
 			} else {
 				volumes[layerId].name = attributes["_name"];
-				const std::string& hidden = attributes["_hidden"];
+				const core::String& hidden = attributes["_hidden"];
 				volumes[layerId].visible = hidden.empty() || hidden == "0";
 			}
 		} else if (chunkId == FourCC('n','T','R','N')) {
@@ -700,7 +700,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 				}
 				auto trans = transformNodeAttributes.find("_t");
 				if (trans != transformNodeAttributes.end()) {
-					const std::string& translations = trans->second;
+					const core::String& translations = trans->second;
 					int x, y, z;
 					if (sscanf(translations.c_str(), "%d %d %d", &x, &y, &z) == 3) {
 						for (auto& m : models) {

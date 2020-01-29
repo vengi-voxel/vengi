@@ -131,7 +131,7 @@ public:
 	static void addInt(streamContainer& out, int32_t dword);
 	static void addLong(streamContainer& out, int64_t dword);
 	static void addFloat(streamContainer& out, float value);
-	static void addString(streamContainer& out, const std::string& string);
+	static void addString(streamContainer& out, const core::String& string);
 
 	static bool readBool(streamContainer& in);
 	static uint8_t readByte(streamContainer& in);
@@ -140,7 +140,7 @@ public:
 	static int32_t readInt(streamContainer& in);
 	static int64_t readLong(streamContainer& in);
 	static float readFloat(streamContainer& in);
-	static std::string readString(streamContainer& in);
+	static core::String readString(streamContainer& in);
 
 public:
 	explicit IProtocolMessage(const ProtocolId& id) :
@@ -195,8 +195,8 @@ inline float IProtocolMessage::readFloat(streamContainer& in) {
 	return tmp.f;
 }
 
-inline std::string IProtocolMessage::readString(streamContainer& in) {
-	std::string strbuff;
+inline core::String IProtocolMessage::readString(streamContainer& in) {
+	core::String strbuff;
 	strbuff.reserve(64);
 	for (;;) {
 		const char chr = static_cast<char>(in.front());

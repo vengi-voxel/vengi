@@ -62,7 +62,7 @@ TEST_F(StringUtilTest, testAppendSmall2) {
 }
 
 TEST_F(StringUtilTest, testJoinFunc) {
-	std::string test = "abcd";
+	core::String test = "abcd";
 	EXPECT_EQ("b,c,d,e", core::string::join(test.begin(), test.end(), ",", [] (char c) { return (char)(c + 1); }));
 }
 
@@ -72,12 +72,12 @@ TEST_F(StringUtilTest, testCount) {
 }
 
 TEST_F(StringUtilTest, testJoin) {
-	std::string test = "abcd";
+	core::String test = "abcd";
 	EXPECT_EQ("a,b,c,d", core::string::join(test.begin(), test.end(), ","));
 }
 
 TEST_F(StringUtilTest, testJoinSingleEntry) {
-	std::string test = "a";
+	core::String test = "a";
 	EXPECT_EQ("a", core::string::join(test.begin(), test.end(), ","));
 }
 
@@ -94,12 +94,12 @@ TEST_F(StringUtilTest, testCutAfterFirstMatch) {
 }
 
 TEST_F(StringUtilTest, testCutAfterFirstMatchString) {
-	std::string test("filename.ext");
+	core::String test("filename.ext");
 	EXPECT_EQ("filename", core::string::cutAfterFirstMatch(test, "."));
 }
 
 TEST_F(StringUtilTest, testToLower) {
-	std::string test("FILENAME.EXT");
+	core::String test("FILENAME.EXT");
 	EXPECT_EQ("filename.ext", core::string::toLower(test));
 }
 

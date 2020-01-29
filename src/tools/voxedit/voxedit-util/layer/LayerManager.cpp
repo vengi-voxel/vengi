@@ -148,7 +148,7 @@ void LayerManager::shutdown() {
 	}
 }
 
-bool LayerManager::rename(int layerId, const std::string& name) {
+bool LayerManager::rename(int layerId, const core::String& name) {
 	if (!isValidLayerId(layerId)) {
 		return false;
 	}

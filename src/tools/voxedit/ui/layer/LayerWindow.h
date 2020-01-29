@@ -16,7 +16,7 @@ enum class LayerWindowType {
 };
 
 struct LayerSettings {
-	std::string name;
+	core::String name;
 	glm::ivec3 position;
 	glm::ivec3 size;
 

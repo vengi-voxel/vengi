@@ -15,7 +15,7 @@ class Last: public IFilter {
 protected:
 	Filters _filters;
 public:
-	Last(const std::string& parameters, const Filters& filters) :
+	Last(const core::String& parameters, const Filters& filters) :
 		IFilter("Last", parameters), _filters(filters) {
 	}
 	FILTER_ACTION_FACTORY(Last)

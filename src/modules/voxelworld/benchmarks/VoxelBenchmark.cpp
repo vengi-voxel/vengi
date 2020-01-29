@@ -32,8 +32,8 @@ BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
 	pager.setSeed(0l);
 	voxel::PagedVolume *volumeData = new voxel::PagedVolume(&pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 	const io::FilesystemPtr& filesystem = io::filesystem();
-	const std::string& luaParameters = filesystem->load("worldparams.lua");
-	const std::string& luaBiomes = filesystem->load("biomes.lua");
+	const core::String& luaParameters = filesystem->load("worldparams.lua");
+	const core::String& luaBiomes = filesystem->load("biomes.lua");
 	pager.init(volumeData, luaParameters, luaBiomes);
 	const glm::ivec3 meshSize(16, 128, 16);
 	int x = 0;

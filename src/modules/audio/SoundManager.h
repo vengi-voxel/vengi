@@ -38,12 +38,12 @@ private:
 	core::VarPtr _musicVolume;
 	glm::ivec2 _listenerPosition;
 	_Mix_Music *_music = nullptr;
-	std::string _musicPlaying;
+	core::String _musicPlaying;
 	int _currentChannel = 0;
 	SoundState _state = SoundState::CLOSED;
 	uint32_t _time = 0u;
 
-	Mix_Chunk* getChunk(const std::string& filename);
+	Mix_Chunk* getChunk(const core::String& filename);
 
 	struct Channel {
 		int channel;
@@ -63,14 +63,14 @@ public:
 	void construct();
 	void shutdown();
 
-	bool exists(const std::string& sound) const;
-	int playMusic(const std::string& music, bool loop);
+	bool exists(const core::String& sound) const;
+	int playMusic(const core::String& music, bool loop);
 	void haltMusic(int music);
 	void halt(int sound);
 	void haltAll();
 	void pause();
 	void resume();
-	int play(const std::string& filename, const glm::ivec2& position, bool loop);
+	int play(const core::String& filename, const glm::ivec2& position, bool loop);
 	void update(uint32_t deltaTime);
 	void setListenerPosition(const glm::ivec2& position, const glm::vec2& velocity);
 	int volume(int newVolume);

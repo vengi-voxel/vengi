@@ -12,10 +12,10 @@ namespace ai {
 // TODO: not a real read-write-lock - maybe someday
 class ReadWriteLock {
 private:
-	const std::string _name;
+	const core::String _name;
 	mutable std::atomic_flag _locked = ATOMIC_FLAG_INIT;
 public:
-	ReadWriteLock(const std::string& name) :
+	ReadWriteLock(const core::String& name) :
 			_name(name) {
 	}
 

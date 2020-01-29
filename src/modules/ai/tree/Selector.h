@@ -8,7 +8,7 @@
 namespace ai {
 
 #define SELECTOR_CLASS(NodeName) \
-	NodeName(const std::string& name, const std::string& parameters, const ConditionPtr& condition) : \
+	NodeName(const core::String& name, const core::String& parameters, const ConditionPtr& condition) : \
 		Selector(name, parameters, condition) { \
 		_type = AI_STRINGIFY(NodeName); \
 	} \

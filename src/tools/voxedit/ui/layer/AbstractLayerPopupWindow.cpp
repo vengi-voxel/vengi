@@ -35,7 +35,7 @@ bool AbstractLayerPopupWindow::show() {
 
 	tb::TBWidget *root = target->getParentRoot();
 
-	const std::string& source = io::filesystem()->load("%s", _file);
+	const core::String& source = io::filesystem()->load("%s", _file);
 	if (!tb::g_widgets_reader->loadData(getContentRoot(), source.c_str())) {
 		return false;
 	}

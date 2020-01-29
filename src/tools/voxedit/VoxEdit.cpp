@@ -18,49 +18,49 @@ VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& files
 	_allowRelativeMouseMode = false;
 }
 
-bool VoxEdit::importheightmapFile(const std::string& file) {
+bool VoxEdit::importheightmapFile(const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return false;
 	}
 	return _mainWindow->importHeightmap(file);
 }
 
-bool VoxEdit::importplaneFile(const std::string& file) {
+bool VoxEdit::importplaneFile(const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return false;
 	}
 	return _mainWindow->importAsPlane(file);
 }
 
-bool VoxEdit::importpaletteFile(const std::string& file) {
+bool VoxEdit::importpaletteFile(const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return false;
 	}
 	return _mainWindow->importPalette(file);
 }
 
-bool VoxEdit::saveFile(const std::string& file) {
+bool VoxEdit::saveFile(const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return false;
 	}
 	return _mainWindow->save(file);
 }
 
-bool VoxEdit::screenshotFile(const std::string& file) {
+bool VoxEdit::screenshotFile(const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return false;
 	}
 	return _mainWindow->saveScreenshot(file);
 }
 
-bool VoxEdit::loadFile(const std::string& file) {
+bool VoxEdit::loadFile(const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return false;
 	}
 	return _mainWindow->load(file);
 }
 
-bool VoxEdit::prefabFile(const std::string& file) {
+bool VoxEdit::prefabFile(const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return false;
 	}
@@ -80,7 +80,7 @@ core::AppState VoxEdit::onCleanup() {
 	return state;
 }
 
-void VoxEdit::onDropFile(const std::string& file) {
+void VoxEdit::onDropFile(const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return;
 	}
@@ -104,7 +104,7 @@ core::AppState VoxEdit::onConstruct() {
 
 #define COMMAND_FILE(command, help) \
 	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
-		const std::string file = args.empty() ? "" : args[0]; \
+		const core::String file = args.empty() ? "" : args[0]; \
 		if (!command##File(file)) { \
 			Log::error("Failed to execute '" #command "' for file '%s'", file.c_str()); \
 		} \
@@ -123,7 +123,7 @@ core::AppState VoxEdit::onConstruct() {
 		if (_mainWindow == nullptr) {
 			return;
 		}
-		const std::string file = args.empty() ? "" : args[0];
+		const core::String file = args.empty() ? "" : args[0];
 		_mainWindow->loadAnimationEntity(file);
 	}).setHelp("Load the animation volumes and settings").setArgumentCompleter(core::fileCompleter("", "*.lua"));
 

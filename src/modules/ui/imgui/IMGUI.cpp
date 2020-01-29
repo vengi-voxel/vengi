@@ -10,7 +10,7 @@
 namespace ImGui {
 
 bool InputVarString(const char* label, core::VarPtr& var, ImGuiInputTextFlags flags) {
-	const std::string& buf = var->strVal();
+	const core::String& buf = var->strVal();
 	constexpr int size = 256;
 	char newVal[size];
 	SDL_snprintf(newVal, size, "%s", buf.c_str());

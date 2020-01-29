@@ -106,7 +106,7 @@ public:
 	 * @brief Set an attribute that can be used for debugging
 	 * @see AI::isDebuggingActive()
 	 */
-	virtual void setAttribute(const std::string& key, const std::string& value);
+	virtual void setAttribute(const core::String& key, const core::String& value);
 	/**
 	 * @brief Get the debugger attributes.
 	 */
@@ -145,7 +145,7 @@ inline float ICharacter::getOrientation () const {
 	return _orientation;
 }
 
-inline void ICharacter::setAttribute(const std::string& key, const std::string& value) {
+inline void ICharacter::setAttribute(const core::String& key, const core::String& value) {
 	_attributes[key] = value;
 }
 

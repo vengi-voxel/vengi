@@ -22,7 +22,7 @@ protected:
 	std::vector<float> _weights;
 	float _weightSum;
 public:
-	ProbabilitySelector(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
+	ProbabilitySelector(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
 			Selector(name, parameters, condition), _weightSum(0.0f) {
 		std::vector<std::string> tokens;
 		Str::splitString(parameters, tokens, ",");

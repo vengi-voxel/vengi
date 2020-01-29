@@ -17,7 +17,7 @@ protected:
 public:
 	STEERING_FACTORY(TargetSeek)
 
-	explicit TargetSeek(const std::string& parameters) :
+	explicit TargetSeek(const core::String& parameters) :
 			ISteering() {
 		_target = parse(parameters);
 	}

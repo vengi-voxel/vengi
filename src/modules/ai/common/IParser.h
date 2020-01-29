@@ -10,7 +10,7 @@ namespace ai {
 
 class IParser {
 private:
-	std::string _error;
+	core::String _error;
 
 protected:
 	void setError(const char* msg, ...) __attribute__((format(printf, 2, 3)));
@@ -19,7 +19,7 @@ protected:
 		_error = "";
 	}
 
-	inline std::string getBetween (const std::string& str, const std::string& tokenStart, const std::string& tokenEnd) {
+	inline core::String getBetween (const core::String& str, const core::String& tokenStart, const core::String& tokenEnd) {
 		const std::size_t start = str.find(tokenStart);
 		if (start == std::string::npos) {
 			return "";
@@ -35,12 +35,12 @@ protected:
 		if (endIndex <= 0) {
 			return "";
 		}
-		const std::string& between = str.substr(startIndex, endIndex);
+		const core::String& between = str.substr(startIndex, endIndex);
 		return between;
 	}
 
 public:
-	const std::string& getError() const;
+	const core::String& getError() const;
 };
 
 inline void IParser::setError(const char* msg, ...) {
@@ -53,7 +53,7 @@ inline void IParser::setError(const char* msg, ...) {
 }
 
 
-inline const std::string& IParser::getError() const {
+inline const core::String& IParser::getError() const {
 	return _error;
 }
 

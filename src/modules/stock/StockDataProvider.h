@@ -30,7 +30,7 @@ public:
 	 * @note this can be called multiple times. But beware, if a @c Item with the same
 	 * type already exists, it will just be overwritten-
 	 */
-	bool init(const std::string& luaScript);
+	bool init(const core::String& luaScript);
 
 	void shutdown();
 
@@ -53,7 +53,7 @@ public:
 	/**
 	 * O(n)
 	 */
-	const ItemData* itemData(const std::string& name) const;
+	const ItemData* itemData(const core::String& name) const;
 
 	const ItemDataContainer& items() const;
 
@@ -63,7 +63,7 @@ public:
 	 */
 	bool addContainerData(ContainerData* containerData);
 
-	const ContainerData* containerData(const std::string& name) const;
+	const ContainerData* containerData(const core::String& name) const;
 
 	const ContainerDataMap& containers() const;
 
@@ -75,12 +75,12 @@ public:
 	/**
 	 * @return The last error that occurred in an init() call
 	 */
-	const std::string& error() const;
+	const core::String& error() const;
 
 private:
 	ItemDataContainer _itemData;
 	ContainerDataMap _containerDataMap;
-	std::string _error;
+	core::String _error;
 };
 
 inline const StockDataProvider::ItemDataContainer& StockDataProvider::items() const {
@@ -91,7 +91,7 @@ inline const StockDataProvider::ContainerDataMap& StockDataProvider::containers(
 	return _containerDataMap;
 }
 
-inline const std::string& StockDataProvider::error() const {
+inline const core::String& StockDataProvider::error() const {
 	return _error;
 }
 

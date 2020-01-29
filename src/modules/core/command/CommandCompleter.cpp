@@ -9,10 +9,10 @@
 
 namespace core {
 
-int complete(std::string dir, const std::string& match, std::vector<std::string>& matches, const char* pattern) {
+int complete(core::String dir, const core::String& match, std::vector<std::string>& matches, const char* pattern) {
 	const std::string_view additionalDir = core::string::extractPath(match.c_str());
 	dir += additionalDir;
-	std::string currentMatch;
+	core::String currentMatch;
 	if (dir.empty()) {
 		dir = ".";
 		currentMatch = match;
@@ -21,16 +21,16 @@ int complete(std::string dir, const std::string& match, std::vector<std::string>
 	}
 
 	std::vector<io::Filesystem::DirEntry> entries;
-	const std::string filter = match + pattern;
+	const core::String filter = match + pattern;
 	const std::string_view& filterName = core::string::extractFilenameWithExtension(filter.c_str());
 	const std::string_view& filterPath = core::string::extractPath(filter.c_str());
-	const std::string filterPathStr(filterPath);
+	const core::String filterPathStr(filterPath);
 	const io::FilesystemPtr& fs = io::filesystem();
 	fs->list(dir, entries, currentMatch + "*");
 	int i = 0;
 	for (const io::Filesystem::DirEntry& entry : entries) {
 		if (entry.type == io::Filesystem::DirEntry::Type::dir) {
-			std::string name = filterPathStr.empty() ? entry.name : filterPathStr + entry.name;
+			core::String name = filterPathStr.empty() ? entry.name : filterPathStr + entry.name;
 			name.append("/");
 			matches.push_back(name);
 			++i;

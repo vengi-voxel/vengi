@@ -27,9 +27,9 @@ public:
 		_worldPager = std::make_shared<voxelworld::WorldPager>(volumeCache, chunkPersister);
 		_world = std::make_shared<voxelworld::WorldMgr>(_worldPager);
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
-		const std::string& world = io::filesystem()->load("worldparams.lua");
+		const core::String& world = io::filesystem()->load("worldparams.lua");
 		ASSERT_NE("", world);
-		const std::string& biomes = io::filesystem()->load("biomes.lua");
+		const core::String& biomes = io::filesystem()->load("biomes.lua");
 		ASSERT_NE("", biomes);
 		ASSERT_TRUE(_world->init());
 		ASSERT_TRUE(_worldPager->init(_world->volumeData(), world, biomes));

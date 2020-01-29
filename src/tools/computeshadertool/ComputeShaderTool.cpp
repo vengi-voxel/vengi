@@ -23,7 +23,7 @@ ComputeShaderTool::ComputeShaderTool(const metric::MetricPtr& metric, const io::
 ComputeShaderTool::~ComputeShaderTool() {
 }
 
-bool ComputeShaderTool::parse(const std::string& buffer) {
+bool ComputeShaderTool::parse(const core::String& buffer) {
 	return computeshadertool::parse(buffer, _computeFilename, _kernels, _structs, _constants);
 }
 
@@ -37,11 +37,11 @@ core::AppState ComputeShaderTool::onConstruct() {
 	return Super::onConstruct();
 }
 
-std::pair<std::string, bool> ComputeShaderTool::getSource(const std::string& file) const {
+std::pair<std::string, bool> ComputeShaderTool::getSource(const core::String& file) const {
 	const io::FilesystemPtr& fs = filesystem();
 
 	const std::pair<std::string, bool>& retIncludes = util::handleIncludes(fs->load(file), _includeDirs);
-	std::string src = retIncludes.first;
+	core::String src = retIncludes.first;
 	int level = 0;
 	bool success = retIncludes.second;
 	while (core::string::contains(src, "#include")) {
@@ -58,7 +58,7 @@ std::pair<std::string, bool> ComputeShaderTool::getSource(const std::string& fil
 }
 
 core::AppState ComputeShaderTool::onRunning() {
-	const std::string shaderfile          = getArgVal("--shader");
+	const core::String shaderfile          = getArgVal("--shader");
 	_shaderTemplateFile                   = getArgVal("--shadertemplate");
 	_namespaceSrc                         = getArgVal("--namespace");
 	_shaderDirectory                      = getArgVal("--shaderdir");
@@ -70,7 +70,7 @@ core::AppState ComputeShaderTool::onRunning() {
 	_includeDirs.push_back(".");
 	int index = 0;
 	for (;;) {
-		const std::string& dir = getArgVal("-I", "", &index);
+		const core::String& dir = getArgVal("-I", "", &index);
 		if (dir.empty()) {
 			break;
 		}
@@ -95,27 +95,27 @@ core::AppState ComputeShaderTool::onRunning() {
 	}
 
 	compute::Shader shader;
-	const std::string& computeSrcSource = shader.getSource(computeBuffer.first, false);
+	const core::String& computeSrcSource = shader.getSource(computeBuffer.first, false);
 
 	_name = std::string(core::string::extractFilename(shaderfile.c_str()));
 	if (!parse(computeSrcSource)) {
 		_exitCode = 1;
 		return core::AppState::Cleanup;
 	}
-	const std::string& templateShader = filesystem()->load(_shaderTemplateFile);
+	const core::String& templateShader = filesystem()->load(_shaderTemplateFile);
 	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs, _constants, _postfix, computeBuffer.first)) {
 		_exitCode = 100;
 		return core::AppState::Cleanup;
 	}
 
-	const std::string& computeSource = shader.getSource(computeBuffer.first, true);
+	const core::String& computeSource = shader.getSource(computeBuffer.first, true);
 
 	if (changedDir) {
 		filesystem()->popDir();
 	}
 
 	Log::debug("Writing shader file %s to %s", shaderfile.c_str(), filesystem()->homePath().c_str());
-	std::string finalComputeFilename = _appname + "-" + _computeFilename;
+	core::String finalComputeFilename = _appname + "-" + _computeFilename;
 	filesystem()->write(finalComputeFilename, computeSource);
 
 	return core::AppState::Cleanup;

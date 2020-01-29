@@ -75,7 +75,7 @@ bool copyBufferToImage(compute::Id buffer, compute::Id image, size_t bufferOffse
 	return false;
 }
 
-Id createProgram(const std::string& source) {
+Id createProgram(const core::String& source) {
 	return InvalidId;
 }
 

@@ -48,7 +48,7 @@ static bool validate(Kernel& kernel) {
 	return !error;
 }
 
-static const simplecpp::Token *parseStruct(const std::string& filename, const simplecpp::Token *tok, std::vector<Struct>& structs) {
+static const simplecpp::Token *parseStruct(const core::String& filename, const simplecpp::Token *tok, std::vector<Struct>& structs) {
 	tok = tok->next;
 	if (!tok) {
 		Log::error("%s:%i:%i: error: Failed to parse struct - not enough tokens - expected name",
@@ -70,7 +70,7 @@ static const simplecpp::Token *parseStruct(const std::string& filename, const si
 	}
 	if (tok->str() != "{") {
 		for (; tok; tok = tok->next) {
-			const std::string& token = tok->str();
+			const core::String& token = tok->str();
 			if (token == ";") {
 				structs.push_back(structVar);
 				tok = tok->next;
@@ -89,7 +89,7 @@ static const simplecpp::Token *parseStruct(const std::string& filename, const si
 	bool valid = false;
 	Parameter param;
 	for (tok = tok->next; tok; tok = tok->next) {
-		const std::string& token = tok->str();
+		const core::String& token = tok->str();
 		if (token == "{") {
 			++depth;
 		} else if (token == "}") {
@@ -132,7 +132,7 @@ static const simplecpp::Token *parseStruct(const std::string& filename, const si
 	return tok;
 }
 
-static const simplecpp::Token *parseEnum(const std::string& filename, const simplecpp::Token *tok, std::vector<Struct>& structs) {
+static const simplecpp::Token *parseEnum(const core::String& filename, const simplecpp::Token *tok, std::vector<Struct>& structs) {
 	tok = tok->next;
 	if (!tok) {
 		// anonymous enums don't generate structs
@@ -166,7 +166,7 @@ static const simplecpp::Token *parseEnum(const std::string& filename, const simp
 	}
 	Parameter param;
 	for (tok = tok->next; tok; tok = tok->next) {
-		const std::string& token = tok->str();
+		const core::String& token = tok->str();
 		if (token == "}") {
 			break;
 		}
@@ -194,15 +194,15 @@ static const simplecpp::Token *parseEnum(const std::string& filename, const simp
 	return tok;
 }
 
-static const simplecpp::Token *parseKernel(const std::string& filename, const simplecpp::Token *tok, std::vector<Kernel>& kernels) {
+static const simplecpp::Token *parseKernel(const core::String& filename, const simplecpp::Token *tok, std::vector<Kernel>& kernels) {
 	if (!tok) {
 		return tok;
 	}
 	std::stack<std::string> stack;
-	std::string prev;
+	core::String prev;
 	int inAttribute = 0;
 	for (tok = tok->next; tok; tok = tok->next) {
-		std::string token = tok->str();
+		core::String token = tok->str();
 		if (token == "{") {
 			break;
 		}
@@ -243,7 +243,7 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 	int kernelDimensions = 1;
 	core_assert(tok->str() == "{");
 	for (tok = tok->next; tok; tok = tok->next) {
-		const std::string& token = tok->str();
+		const core::String& token = tok->str();
 		if (token == "}") {
 			break;
 		}
@@ -284,7 +284,7 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 
 	std::vector<std::string> parameterTokens;
 	while (!stack.empty()) {
-		const std::string token = stack.top();
+		const core::String token = stack.top();
 		stack.pop();
 		if (token == ")") {
 			continue;
@@ -308,7 +308,7 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 
 	Parameter parameter;
 	while (!parameterTokens.empty()) {
-		const std::string token = parameterTokens.back();
+		const core::String token = parameterTokens.back();
 		parameterTokens.pop_back();
 		if (token.empty()) {
 			continue;
@@ -329,7 +329,7 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 				Log::error("Syntax error in compute shader at line %i", tok->location.line);
 				return nullptr;
 			}
-			const std::string& flags = util::toString(parameter.flags);
+			const core::String& flags = util::toString(parameter.flags);
 			Log::debug("Parameter (%s for kernel %s) flags: %s", parameter.name.c_str(), kernel.name.c_str(), flags.c_str());
 			kernel.parameters.insert(kernel.parameters.begin(), parameter);
 			parameter = Parameter();
@@ -383,14 +383,14 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 		}
 	}
 	if (!parameter.name.empty()) {
-		const std::string& flags = util::toString(parameter.flags);
+		const core::String& flags = util::toString(parameter.flags);
 		Log::debug("Parameter (%s for kernel %s) flags: %s", parameter.name.c_str(), kernel.name.c_str(), flags.c_str());
 		kernel.parameters.insert(kernel.parameters.begin(), parameter);
 	}
 
 	std::stack<std::string> returnTokens;
 	while (!stack.empty()) {
-		const std::string token = stack.top();
+		const core::String token = stack.top();
 		stack.pop();
 		returnTokens.push(token);
 	}
@@ -401,7 +401,7 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 	}
 
 	while (!returnTokens.empty()) {
-		const std::string token = returnTokens.top();
+		const core::String token = returnTokens.top();
 		returnTokens.pop();
 		if (!kernel.returnValue.type.empty()) {
 			kernel.returnValue.type.append(" ");
@@ -418,7 +418,7 @@ static const simplecpp::Token *parseKernel(const std::string& filename, const si
 	return tok;
 }
 
-bool parse(const std::string& buffer, const std::string& computeFilename, std::vector<Kernel>& kernels,
+bool parse(const core::String& buffer, const core::String& computeFilename, std::vector<Kernel>& kernels,
 		std::vector<Struct>& structs, std::map<std::string, std::string>& constants) {
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
@@ -432,7 +432,7 @@ bool parse(const std::string& buffer, const std::string& computeFilename, std::v
 	simplecpp::Location loc(files);
 	std::stringstream comment;
 	for (const simplecpp::Token *tok = output.cfront(); tok != nullptr; tok = tok->next) {
-		const std::string& token = tok->str();
+		const core::String& token = tok->str();
 		if (tok->comment) {
 			comment << token;
 			continue;
@@ -448,12 +448,12 @@ bool parse(const std::string& buffer, const std::string& computeFilename, std::v
 				return false;
 			}
 			tok = tok->next;
-			const std::string varname = tok->str();
+			const core::String varname = tok->str();
 			if (!tok->next) {
 				return false;
 			}
 			tok = tok->next;
-			const std::string varvalue = tok->str();
+			const core::String varvalue = tok->str();
 			if (!constants.insert(std::make_pair(varname, varvalue)).second) {
 				Log::error("Could not register constant %s with value %s (duplicate)", varname.c_str(), varvalue.c_str());
 				return false;

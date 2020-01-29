@@ -163,7 +163,7 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 	return handleKeyPress(key, modifier);
 }
 
-std::string WindowedApp::getKeyBindingsString(const char *cmd) const {
+core::String WindowedApp::getKeyBindingsString(const char *cmd) const {
 	return _keybindingHandler.getKeyBindingsString(cmd);
 }
 
@@ -419,7 +419,7 @@ bool WindowedApp::setRelativeMouseMode(bool mode) {
 	return mode;
 }
 
-void WindowedApp::fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter) {
+void WindowedApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) {
 	Log::warn("This is not implemented in the base windowed application");
 }
 

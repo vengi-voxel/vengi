@@ -28,7 +28,7 @@ const int SV_BROADCAST_CHRDETAILS = 1 << 0;
 const int SV_BROADCAST_STATE      = 1 << 1;
 }
 
-Server::Server(AIRegistry& aiRegistry, short port, const std::string& hostname) :
+Server::Server(AIRegistry& aiRegistry, short port, const core::String& hostname) :
 		_aiRegistry(aiRegistry), _network(port, hostname), _selectedCharacterId(AI_NOTHING_SELECTED), _time(0L),
 		_selectHandler(new SelectHandler(*this)), _pauseHandler(new PauseHandler(*this)), _resetHandler(new ResetHandler(*this)),
 		_stepHandler(new StepHandler(*this)), _changeHandler(new ChangeHandler(*this)), _addNodeHandler(new AddNodeHandler(*this)),
@@ -117,7 +117,7 @@ void Server::addChildren(const TreeNodePtr& node, AIStateNode& parent, const AIP
 		const TreeNodePtr& childNode = children[i];
 		const int32_t id = childNode->getId();
 		const ConditionPtr& condition = childNode->getCondition();
-		const std::string conditionStr = condition ? condition->getNameWithConditions(ai) : "";
+		const core::String conditionStr = condition ? condition->getNameWithConditions(ai) : "";
 		const int64_t lastRun = childNode->getLastExecMillis(ai);
 		const int64_t delta = lastRun == -1 ? -1 : aiTime - lastRun;
 		AIStateNode child(id, conditionStr, delta, childNode->getLastStatus(ai), currentlyRunning[i]);
@@ -177,7 +177,7 @@ void Server::broadcastCharacterDetails(const Zone* zone) {
 		const TreeNodePtr& node = ai->getBehaviour();
 		const int32_t nodeId = node->getId();
 		const ConditionPtr& condition = node->getCondition();
-		const std::string conditionStr = condition ? condition->getNameWithConditions(ai) : "";
+		const core::String conditionStr = condition ? condition->getNameWithConditions(ai) : "";
 		AIStateNode root(nodeId, conditionStr, _time - node->getLastExecMillis(ai), node->getLastStatus(ai), true);
 		addChildren(node, root, ai);
 
@@ -322,7 +322,7 @@ void Server::resetSelection() {
 	_selectedCharacterId = AI_NOTHING_SELECTED;
 }
 
-bool Server::updateNode(const CharacterId& characterId, int32_t nodeId, const std::string& name, const std::string& type, const std::string& condition) {
+bool Server::updateNode(const CharacterId& characterId, int32_t nodeId, const core::String& name, const core::String& type, const core::String& condition) {
 	Zone* zone = _zone;
 	if (zone == nullptr) {
 		return false;
@@ -368,7 +368,7 @@ bool Server::updateNode(const CharacterId& characterId, int32_t nodeId, const st
 	return true;
 }
 
-bool Server::addNode(const CharacterId& characterId, int32_t parentNodeId, const std::string& name, const std::string& type, const std::string& condition) {
+bool Server::addNode(const CharacterId& characterId, int32_t parentNodeId, const core::String& name, const core::String& type, const core::String& condition) {
 	Zone* zone = _zone;
 	if (zone == nullptr) {
 		return false;
@@ -444,7 +444,7 @@ void Server::removeZone(Zone* zone) {
 	enqueueEvent(event);
 }
 
-void Server::setDebug(const std::string& zoneName) {
+void Server::setDebug(const core::String& zoneName) {
 	Event event;
 	event.type = EV_SETDEBUG;
 	event.strData = zoneName;

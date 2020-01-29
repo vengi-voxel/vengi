@@ -58,17 +58,17 @@ public:
 class FileDialogWindow: public ui::turbobadger::Window {
 private:
 	using Super = ui::turbobadger::Window;
-	std::string _directory;
+	core::String _directory;
 	video::WindowedApp::OpenFileMode _mode;
 	FileDialogItemSource _entityList;
 	tb::TBGenericStringItemSource _filterList;
-	std::function<void(const std::string&)> _callback;
+	std::function<void(const core::String&)> _callback;
 	io::FilesystemPtr _fs;
 	core::VarPtr _lastDirectory;
 public:
-	FileDialogWindow(UIApp* app, const std::function<void(const std::string&)>& callback, const core::VarPtr& lastDirectory);
+	FileDialogWindow(UIApp* app, const std::function<void(const core::String&)>& callback, const core::VarPtr& lastDirectory);
 	~FileDialogWindow();
-	void changeDir(const std::string& dir = "");
+	void changeDir(const core::String& dir = "");
 	void init();
 
 	void setFilter(const char **filter);

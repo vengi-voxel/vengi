@@ -49,7 +49,7 @@ App::~App() {
 	Log::shutdown();
 }
 
-void App::init(const std::string& organisation, const std::string& appname) {
+void App::init(const core::String& organisation, const core::String& appname) {
 	_organisation = organisation;
 	_appname = appname;
 }
@@ -197,7 +197,7 @@ AppState App::onConstruct() {
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
 	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
 	registerArg("--loglevel").setShort("-l").setDescription("Change log level from 1 (trace) to 6 (only critical)");
-	const std::string& logLevelVal = getArgVal("--loglevel");
+	const core::String& logLevelVal = getArgVal("--loglevel");
 	if (!logLevelVal.empty()) {
 		logVar->setVal(logLevelVal);
 	}
@@ -229,12 +229,12 @@ AppState App::onConstruct() {
 			continue;
 		}
 
-		const std::string command = &_argv[i][1];
+		const core::String command = &_argv[i][1];
 		if (command != "set") {
 			continue;
 		}
 		if (i + 2 < _argc) {
-			std::string var = _argv[i + 1];
+			core::String var = _argv[i + 1];
 			const char *value = _argv[i + 2];
 			i += 2;
 			core::Var::get(var, value, CV_FROMCOMMANDLINE);
@@ -243,7 +243,7 @@ AppState App::onConstruct() {
 	}
 
 	core::Var::get(cfg::MetricFlavor, "telegraf");
-	const std::string& host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();
+	const core::String& host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();
 	const int port = core::Var::get(cfg::MetricPort, "8125")->intVal();
 	_metricSender = std::make_shared<metric::UDPMetricSender>(host, port);
 	if (!_metricSender->init()) {
@@ -298,18 +298,18 @@ AppState App::onInit() {
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS);
 	_threadPool.init();
 
-	const std::string& content = _filesystem->load(_appname + ".vars");
+	const core::String& content = _filesystem->load(_appname + ".vars");
 	core::Tokenizer t(content);
 	while (t.hasNext()) {
-		const std::string& name = t.next();
+		const core::String& name = t.next();
 		if (!t.hasNext()) {
 			break;
 		}
-		const std::string& value = t.next();
+		const core::String& value = t.next();
 		if (!t.hasNext()) {
 			break;
 		}
-		const std::string& flags = t.next();
+		const core::String& flags = t.next();
 		uint32_t flagsMaskFromFile = CV_FROMFILE;
 		for (char c : flags) {
 			if (c == 'R') {
@@ -364,7 +364,7 @@ void App::onAfterInit() {
 			continue;
 		}
 
-		const std::string command = &_argv[i][1];
+		const core::String command = &_argv[i][1];
 		if (command == "set") {
 			// already handled
 			continue;
@@ -372,7 +372,7 @@ void App::onAfterInit() {
 		if (Command::getCommand(command) == nullptr) {
 			continue;
 		}
-		std::string args;
+		core::String args;
 		args.reserve(256);
 		for (++i; i < _argc;) {
 			if (_argv[i][0] == '-') {
@@ -385,7 +385,7 @@ void App::onAfterInit() {
 		Log::debug("Execute %s with %i arguments", command.c_str(), (int)args.size());
 		core::executeCommands(command + " " + args);
 	}
-	const std::string& autoexecCommands = filesystem()->load("autoexec.cfg");
+	const core::String& autoexecCommands = filesystem()->load("autoexec.cfg");
 	if (!autoexecCommands.empty()) {
 		Log::debug("execute autoexec.cfg");
 		Command::execute(autoexecCommands);
@@ -393,7 +393,7 @@ void App::onAfterInit() {
 		Log::debug("skip autoexec.cfg");
 	}
 
-	const std::string& autoexecAppCommands = filesystem()->load("%s-autoexec.cfg", _appname.c_str());
+	const core::String& autoexecAppCommands = filesystem()->load("%s-autoexec.cfg", _appname.c_str());
 	if (!autoexecAppCommands.empty()) {
 		Log::debug("execute %s-autoexec.cfg", _appname.c_str());
 		Command::execute(autoexecAppCommands);
@@ -418,7 +418,7 @@ void App::usage() const {
 	};
 	int maxWidthOnlyLong = maxWidthLong + maxWidthShort + 3;
 	for (const Argument& a : _arguments) {
-		const std::string defaultVal = a.defaultValue().empty() ? "" : core::string::format(" (default: %s)", a.defaultValue().c_str());
+		const core::String defaultVal = a.defaultValue().empty() ? "" : core::string::format(" (default: %s)", a.defaultValue().c_str());
 		if (a.shortArg().empty()) {
 			Log::info("%-*s - %s %s", maxWidthOnlyLong,
 				a.longArg().c_str(), a.description().c_str(), defaultVal.c_str());
@@ -440,7 +440,7 @@ void App::usage() const {
 	Log::info("Config variables:");
 	util::visitVarSorted([=] (const core::VarPtr& v) {
 		const uint32_t flags = v->getFlags();
-		std::string flagsStr = "     ";
+		core::String flagsStr = "     ";
 		const char *value = v->strVal().c_str();
 		if ((flags & CV_READONLY) != 0) {
 			flagsStr[0]  = 'R';
@@ -503,7 +503,7 @@ AppState App::onRunning() {
 	return AppState::Cleanup;
 }
 
-bool App::hasArg(const std::string& arg) const {
+bool App::hasArg(const core::String& arg) const {
 	for (int i = 1; i < _argc; ++i) {
 		if (arg == _argv[i]) {
 			return true;
@@ -512,7 +512,7 @@ bool App::hasArg(const std::string& arg) const {
 	return false;
 }
 
-std::string App::getArgVal(const std::string& arg, const std::string& defaultVal, int* argi) {
+core::String App::getArgVal(const core::String& arg, const core::String& defaultVal, int* argi) {
 	int start = argi == nullptr ? 1 : core_max(1, *argi);
 	for (int i = start; i < _argc; ++i) {
 		if (arg != _argv[i]) {
@@ -555,7 +555,7 @@ std::string App::getArgVal(const std::string& arg, const std::string& defaultVal
 	return "";
 }
 
-App::Argument& App::registerArg(const std::string& arg) {
+App::Argument& App::registerArg(const core::String& arg) {
 	App::Argument argument(arg);
 	_arguments.push_back(argument);
 	return _arguments.back();
@@ -575,7 +575,7 @@ AppState App::onCleanup() {
 				return;
 			}
 			const uint32_t flags = var->getFlags();
-			std::string flagsStr;
+			core::String flagsStr;
 			const char *value = var->strVal().c_str();
 			if ((flags & CV_READONLY) == CV_READONLY) {
 				flagsStr.append("R");
@@ -588,7 +588,7 @@ AppState App::onCleanup() {
 			}
 			ss << R"(")" << var->name() << R"(" ")" << value << R"(" ")" << flagsStr << R"(")" << std::endl;
 		}, 0u);
-		const std::string& str = ss.str();
+		const core::String& str = ss.str();
 		_filesystem->write(_appname + ".vars", str);
 	} else {
 		Log::warn("don't save the config variables");
@@ -659,7 +659,7 @@ void App::requestSuspend() {
 	_suspendRequested = true;
 }
 
-const std::string& App::currentWorkingDir() const {
+const core::String& App::currentWorkingDir() const {
 	return _filesystem->basePath();
 }
 

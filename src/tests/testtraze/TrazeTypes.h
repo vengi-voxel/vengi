@@ -14,7 +14,7 @@
 namespace traze {
 
 struct GameInfo {
-	std::string name;
+	core::String name;
 	int activePlayers;
 };
 
@@ -38,7 +38,7 @@ struct Bike {
 };
 
 struct Player {
-	std::string name;
+	core::String name;
 	PlayerId id = 0u;
 	uint32_t frags = 0u;
 	uint32_t owned = 0u;

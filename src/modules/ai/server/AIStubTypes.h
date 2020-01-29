@@ -48,13 +48,13 @@ public:
 class AIStateNodeStatic {
 private:
 	int32_t _id;
-	std::string _name;
-	std::string _type;
-	std::string _parameters;
-	std::string _conditionType;
-	std::string _conditionParameters;
+	core::String _name;
+	core::String _type;
+	core::String _parameters;
+	core::String _conditionType;
+	core::String _conditionParameters;
 public:
-	AIStateNodeStatic(const int32_t id, const std::string& name, const std::string& type, const std::string& parameters, const std::string& conditionType, const std::string& conditionParameters) :
+	AIStateNodeStatic(const int32_t id, const core::String& name, const core::String& type, const core::String& parameters, const core::String& conditionType, const core::String& conditionParameters) :
 			_id(id), _name(name), _type(type), _parameters(parameters), _conditionType(conditionType), _conditionParameters(conditionParameters) {
 	}
 
@@ -66,36 +66,36 @@ public:
 		return _id;
 	}
 
-	inline const std::string& getName() const {
+	inline const core::String& getName() const {
 		return _name;
 	}
 
-	inline const std::string& getType() const {
+	inline const core::String& getType() const {
 		return _type;
 	}
 
 	/**
 	 * @brief Returns the raw parameters for the task node
 	 */
-	inline const std::string& getParameters() const {
+	inline const core::String& getParameters() const {
 		return _parameters;
 	}
 
 	/**
 	 * @brief Returns the raw condition parameters
 	 */
-	inline const std::string& getConditionParameters() const {
+	inline const core::String& getConditionParameters() const {
 		return _conditionParameters;
 	}
 
-	inline std::string getCondition() const {
+	inline core::String getCondition() const {
 		return _conditionType + "(" + _conditionParameters + ")";
 	}
 
 	/**
 	 * @brief Returns the raw condition type string
 	 */
-	inline const std::string& getConditionType() const {
+	inline const core::String& getConditionType() const {
 		return _conditionType;
 	}
 };
@@ -106,14 +106,14 @@ public:
 class AIStateNode {
 private:
 	int32_t _nodeId;
-	std::string _condition;
+	core::String _condition;
 	typedef std::vector<AIStateNode> NodeVector;
 	NodeVector _children;
 	int64_t _lastRun;
 	TreeNodeStatus _status;
 	bool _currentlyRunning;
 public:
-	AIStateNode(int32_t id, const std::string& condition, int64_t lastRun, TreeNodeStatus status, bool currentlyRunning) :
+	AIStateNode(int32_t id, const core::String& condition, int64_t lastRun, TreeNodeStatus status, bool currentlyRunning) :
 			_nodeId(id), _condition(condition), _lastRun(lastRun), _status(status), _currentlyRunning(currentlyRunning) {
 	}
 
@@ -141,7 +141,7 @@ public:
 		return _nodeId;
 	}
 
-	inline const std::string& getCondition() const {
+	inline const core::String& getCondition() const {
 		return _condition;
 	}
 

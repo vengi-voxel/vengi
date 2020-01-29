@@ -76,7 +76,7 @@ public:
 };
 
 TEST_F(TrazeProtocolTest, testParseScores) {
-	const std::string json = R"(
+	const core::String json = R"(
 		{
 			"ingameNick1[id1]": 238,
 			"ingameNick2[id2]": 235

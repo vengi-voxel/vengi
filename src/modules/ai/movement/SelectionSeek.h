@@ -15,7 +15,7 @@ class SelectionSeek: public SelectionSteering {
 public:
 	STEERING_FACTORY(SelectionSeek)
 
-	explicit SelectionSeek(const std::string&) :
+	explicit SelectionSeek(const core::String&) :
 			SelectionSteering() {
 	}
 

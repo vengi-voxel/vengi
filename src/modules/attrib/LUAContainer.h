@@ -13,12 +13,12 @@ class ContainerProvider;
 
 class LUAContainer {
 private:
-	std::string _name;
+	core::String _name;
 	ContainerProvider* _ctx;
 	Values _percentage;
 	Values _absolute;
 public:
-	LUAContainer(const std::string& name, ContainerProvider* ctx) :
+	LUAContainer(const core::String& name, ContainerProvider* ctx) :
 			_name(name), _ctx(ctx) {
 	}
 
@@ -49,7 +49,7 @@ public:
 		_name.clear();
 	}
 
-	inline const std::string& name() const {
+	inline const core::String& name() const {
 		return _name;
 	}
 };

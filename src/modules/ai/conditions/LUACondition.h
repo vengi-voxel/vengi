@@ -19,7 +19,7 @@ protected:
 
 	bool evaluateLUA(const AIPtr& entity) {
 		// get userdata of the condition
-		const std::string name = "__meta_condition_" + _name;
+		const core::String name = "__meta_condition_" + _name;
 		lua_getfield(_s, LUA_REGISTRYINDEX, name.c_str());
 #if AI_LUA_SANTITY > 0
 		if (lua_isnil(_s, -1)) {
@@ -86,13 +86,13 @@ public:
 	class LUAConditionFactory : public IConditionFactory {
 	private:
 		lua_State* _s;
-		std::string _type;
+		core::String _type;
 	public:
-		LUAConditionFactory(lua_State* s, const std::string& typeStr) :
+		LUAConditionFactory(lua_State* s, const core::String& typeStr) :
 				_s(s), _type(typeStr) {
 		}
 
-		inline const std::string& type() const {
+		inline const core::String& type() const {
 			return _type;
 		}
 
@@ -101,7 +101,7 @@ public:
 		}
 	};
 
-	LUACondition(const std::string& name, const std::string& parameters, lua_State* s) :
+	LUACondition(const core::String& name, const core::String& parameters, lua_State* s) :
 			ICondition(name, parameters), _s(s) {
 	}
 

@@ -15,7 +15,7 @@ private:
 public:
 	STEERING_FACTORY(WanderAroundHome)
 
-	explicit WanderAroundHome(const std::string& parameter) :
+	explicit WanderAroundHome(const core::String& parameter) :
 			ai::movement::ISteering() {
 		if (parameter.empty()) {
 			 _maxDistance = 40.0f;

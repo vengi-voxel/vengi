@@ -66,7 +66,7 @@ voxel::Region SceneManager::region() const {
 	return _volumeRenderer.region();
 }
 
-bool SceneManager::loadPalette(const std::string& paletteName) {
+bool SceneManager::loadPalette(const core::String& paletteName) {
 	const io::FilesystemPtr& filesystem = io::filesystem();
 	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName.c_str()));
 	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", paletteName.c_str()));
@@ -77,7 +77,7 @@ bool SceneManager::loadPalette(const std::string& paletteName) {
 	return false;
 }
 
-bool SceneManager::importPalette(const std::string& file) {
+bool SceneManager::importPalette(const core::String& file) {
 	const image::ImagePtr& img = image::loadImage(file, false);
 	if (!img->isLoaded()) {
 		return false;
@@ -86,14 +86,14 @@ bool SceneManager::importPalette(const std::string& file) {
 	if (!voxel::createPalette(img, buf, lengthof(buf))) {
 		return false;
 	}
-	const std::string luaString = "";
+	const core::String luaString = "";
 	if (!voxel::overrideMaterialColors((const uint8_t*)buf, sizeof(buf), luaString)) {
 		Log::warn("Failed to import palette for image %s", file.c_str());
 		return false;
 	}
 	const io::FilesystemPtr& fs = io::filesystem();
-	const std::string paletteName(core::string::extractFilename(file.c_str()));
-	const std::string& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
+	const core::String paletteName(core::string::extractFilename(file.c_str()));
+	const core::String& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
 	const io::FilePtr& pngFile = fs->open(paletteFilename, io::FileMode::Write);
 	if (image::Image::writePng(pngFile->name().c_str(), (const uint8_t*)buf, lengthof(buf), 1, 4)) {
 		fs->write(core::string::format("palette-%s.lua", paletteName.c_str()), luaString);
@@ -104,7 +104,7 @@ bool SceneManager::importPalette(const std::string& file) {
 	return true;
 }
 
-bool SceneManager::importAsPlane(const std::string& file) {
+bool SceneManager::importAsPlane(const core::String& file) {
 	const image::ImagePtr& img = image::loadImage(file, false);
 	if (!img->isLoaded()) {
 		return false;
@@ -121,7 +121,7 @@ bool SceneManager::importAsPlane(const std::string& file) {
 	return true;
 }
 
-bool SceneManager::importHeightmap(const std::string& file) {
+bool SceneManager::importHeightmap(const core::String& file) {
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolume* v = volume(layerId);
 	if (v == nullptr) {
@@ -146,7 +146,7 @@ void SceneManager::autosave() {
 	if (_lastAutoSave + delay > timeProvider->tickSeconds()) {
 		return;
 	}
-	std::string autoSaveFilename;
+	core::String autoSaveFilename;
 	if (_lastFilename.empty()) {
 		autoSaveFilename = "autosave-noname.vox";
 	} else {
@@ -154,9 +154,9 @@ void SceneManager::autosave() {
 			autoSaveFilename = _lastFilename;
 		} else {
 			const io::FilePtr file = io::filesystem()->open(_lastFilename);
-			const std::string& p = file->path();
-			const std::string& f = file->fileName();
-			const std::string& e = file->extension();
+			const core::String& p = file->path();
+			const core::String& f = file->fileName();
+			const core::String& e = file->extension();
 			autoSaveFilename = core::string::format("%s/autosave-%s.%s",
 					p.c_str(), f.c_str(), e.c_str());
 		}
@@ -169,7 +169,7 @@ void SceneManager::autosave() {
 	_lastAutoSave = timeProvider->tickSeconds();
 }
 
-bool SceneManager::saveLayer(int layerId, const std::string& file) {
+bool SceneManager::saveLayer(int layerId, const core::String& file) {
 	voxel::RawVolume* v = _volumeRenderer.volume(layerId);
 	if (v == nullptr) {
 		return true;
@@ -191,7 +191,7 @@ bool SceneManager::saveLayer(int layerId, const std::string& file) {
 	return false;
 }
 
-bool SceneManager::saveLayers(const std::string& dir) {
+bool SceneManager::saveLayers(const core::String& dir) {
 	const int layers = (int)_layerMgr.layers().size();
 	for (int idx = 0; idx < layers; ++idx) {
 		voxel::RawVolume* v = _volumeRenderer.volume(idx);
@@ -204,7 +204,7 @@ bool SceneManager::saveLayers(const std::string& dir) {
 	return true;
 }
 
-bool SceneManager::save(const std::string& file, bool autosave) {
+bool SceneManager::save(const core::String& file, bool autosave) {
 	if (file.empty()) {
 		Log::warn("No filename given for saving");
 		return false;
@@ -215,7 +215,7 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 		return false;
 	}
 	bool saved = false;
-	std::string ext = filePtr->extension();
+	core::String ext = filePtr->extension();
 	if (ext.empty()) {
 		Log::warn("No file extension given for saving, assuming vox");
 		ext = "vox";
@@ -272,7 +272,7 @@ bool SceneManager::save(const std::string& file, bool autosave) {
 	return saved;
 }
 
-bool SceneManager::prefab(const std::string& file) {
+bool SceneManager::prefab(const core::String& file) {
 	if (file.empty()) {
 		return false;
 	}
@@ -291,7 +291,7 @@ bool SceneManager::prefab(const std::string& file) {
 	return true;
 }
 
-bool SceneManager::load(const std::string& file) {
+bool SceneManager::load(const core::String& file) {
 	if (file.empty()) {
 		return false;
 	}
@@ -304,7 +304,7 @@ bool SceneManager::load(const std::string& file) {
 	if (!voxelformat::loadVolumeFormat(filePtr, newVolumes)) {
 		return false;
 	}
-	const std::string& ext = filePtr->extension();
+	const core::String& ext = filePtr->extension();
 	_lastFilename = filePtr->fileName() + "." + ext;
 	if (!setNewVolumes(newVolumes)) {
 		return false;
@@ -580,7 +580,7 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMe
 	return true;
 }
 
-bool SceneManager::newScene(bool force, const std::string& name, const voxel::Region& region) {
+bool SceneManager::newScene(bool force, const core::String& name, const voxel::Region& region) {
 	if (dirty() && !force) {
 		return false;
 	}
@@ -709,21 +709,21 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 				continue;
 			}
 			const voxedit::Layer& l = layers[i];
-			const std::string& value = l.metadataById("type");
+			const core::String& value = l.metadataById("type");
 			if (value.empty()) {
 				Log::debug("No type metadata found on layer %i", (int)i);
 				continue;
 			}
 			const int characterMeshTypeId = core::string::toInt(value);
 			const animation::AnimationSettings& animSettings = animationEntity().animationSettings();
-			const std::string& path = animSettings.paths[characterMeshTypeId];
+			const core::String& path = animSettings.paths[characterMeshTypeId];
 			if (path.empty()) {
 				Log::debug("No path found for layer %i", (int)i);
 				continue;
 			}
 			voxel::Mesh mesh;
 			_volumeRenderer.toMesh(i, &mesh);
-			const std::string& fullPath = animSettings.fullPath(characterMeshTypeId);
+			const core::String& fullPath = animSettings.fullPath(characterMeshTypeId);
 			_animationCache->putMesh(fullPath.c_str(), mesh);
 			Log::debug("Updated mesh on layer %i for path %s", (int)i, fullPath.c_str());
 		}
@@ -802,7 +802,7 @@ void SceneManager::construct() {
 	});
 
 	core::Command::registerCommand("animation_save", [&] (const core::CmdArgs& args) {
-		std::string name = "entity";
+		core::String name = "entity";
 		if (!args.empty()) {
 			name = args[0];
 		}
@@ -810,7 +810,7 @@ void SceneManager::construct() {
 	});
 
 	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
-		std::string dir = ".";
+		core::String dir = ".";
 		if (!args.empty()) {
 			dir = args[0];
 		}
@@ -826,7 +826,7 @@ void SceneManager::construct() {
 			return;
 		}
 		const int layerId = core::string::toInt(args[0]);
-		std::string file = core::string::format("layer%i.vox", layerId);
+		core::String file = core::string::format("layer%i.vox", layerId);
 		if (args.size() == 2) {
 			file = args[1];
 		}
@@ -1528,9 +1528,9 @@ animation::AnimationEntity& SceneManager::animationEntity() {
 bool SceneManager::saveAnimationEntity(const char *name) {
 	_dirty = false;
 	// TODO: race and gender
-	const std::string& chrName = core::string::format("chr/human-male-%s", name);
-	const std::string& luaFilePath = animation::luaFilename(chrName.c_str());
-	const std::string luaDir(core::string::extractPath(luaFilePath));
+	const core::String& chrName = core::string::format("chr/human-male-%s", name);
+	const core::String& luaFilePath = animation::luaFilename(chrName.c_str());
+	const core::String luaDir(core::string::extractPath(luaFilePath));
 	io::filesystem()->createDir(luaDir);
 	const io::FilePtr& luaFile = io::filesystem()->open(luaFilePath, io::FileMode::Write);
 	const animation::AnimationSettings& animSettings = animationEntity().animationSettings();
@@ -1546,9 +1546,9 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 			continue;
 		}
 		const voxedit::Layer& l = layers[i];
-		const std::string& value = l.metadataById("type");
+		const core::String& value = l.metadataById("type");
 		if (value.empty()) {
-			const std::string& unknown = core::string::format("%i-%s-%s.vox", (int)i, l.name.c_str(), name);
+			const core::String& unknown = core::string::format("%i-%s-%s.vox", (int)i, l.name.c_str(), name);
 			Log::warn("No type metadata found on layer %i. Saving to %s", (int)i, unknown.c_str());
 			if (!saveLayer(i, unknown)) {
 				Log::warn("Failed to save unknown layer to %s", unknown.c_str());
@@ -1557,7 +1557,7 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 			continue;
 		}
 		const int characterMeshTypeId = core::string::toInt(value);
-		const std::string& fullPath = animSettings.fullPath(characterMeshTypeId, name);
+		const core::String& fullPath = animSettings.fullPath(characterMeshTypeId, name);
 		if (!saveLayer(i, fullPath)) {
 			Log::warn("Failed to save type %i to %s", characterMeshTypeId, fullPath.c_str());
 			_dirty = true;
@@ -1567,8 +1567,8 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 	return true;
 }
 
-bool SceneManager::loadAnimationEntity(const std::string& luaFile) {
-	const std::string& lua = io::filesystem()->load(luaFile);
+bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
+	const core::String& lua = io::filesystem()->load(luaFile);
 	animation::AnimationSettings settings;
 	if (!animation::loadAnimationSettings(lua, settings, nullptr)) {
 		Log::warn("Failed to initialize the animation settings for %s", luaFile.c_str());

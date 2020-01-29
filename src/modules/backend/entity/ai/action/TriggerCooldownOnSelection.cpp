@@ -8,7 +8,7 @@
 
 namespace backend {
 
-TriggerCooldownOnSelection::TriggerCooldownOnSelection(const std::string& name, const std::string& parameters, const ai::ConditionPtr& condition) :
+TriggerCooldownOnSelection::TriggerCooldownOnSelection(const core::String& name, const core::String& parameters, const ai::ConditionPtr& condition) :
 		Task(name, parameters, condition) {
 	_cooldownId = cooldown::getType(parameters);
 	core_assert_always(_cooldownId != cooldown::Type::NONE);

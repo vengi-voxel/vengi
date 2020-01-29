@@ -27,7 +27,7 @@ static const char *Keywords[] {
 	nullptr
 };
 
-static bool checkFieldname(const std::string& in) {
+static bool checkFieldname(const core::String& in) {
 	const char **token = Keywords;
 	while (*token) {
 		if (in == *token) {
@@ -43,7 +43,7 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 		Log::error("Expected field name");
 		return false;
 	}
-	const std::string& fieldname = tok.next();
+	const core::String& fieldname = tok.next();
 	if (!tok.hasNext()) {
 		Log::error("Expected { after field name %s", fieldname.c_str());
 		return false;
@@ -52,7 +52,7 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 		Log::error("Field %s uses a reserved keyword", fieldname.c_str());
 		return false;
 	}
-	std::string token = tok.next();
+	core::String token = tok.next();
 	if (token != "{") {
 		Log::error("Expected {, found %s", token.c_str());
 		return false;
@@ -69,7 +69,7 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				Log::error("missing type for field %s", fieldname.c_str());
 				return false;
 			}
-			const std::string& type = tok.next();
+			const core::String& type = tok.next();
 			const persistence::FieldType typeMapping = persistence::toFieldType(type);
 			const bool foundType = typeMapping != persistence::FieldType::MAX;
 			if (!foundType) {
@@ -95,7 +95,7 @@ bool parseField(core::Tokenizer& tok, Table& table) {
 				Log::error("missing operator for field %s", fieldname.c_str());
 				return false;
 			}
-			const std::string& opStr = tok.next();
+			const core::String& opStr = tok.next();
 			persistence::Operator op = persistence::Operator::SET;
 			bool foundOperator = false;
 			for (int i = 0; i < (int)persistence::Operator::MAX; ++i) {
@@ -162,7 +162,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 		Log::error("Expected { after constraints");
 		return false;
 	}
-	std::string token = tok.next();
+	core::String token = tok.next();
 	Log::trace("token: '%s'", token.c_str());
 	if (token != "{") {
 		Log::error("Expected {, found %s", token.c_str());
@@ -235,7 +235,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 			}
 			const persistence::ForeignKey fk{token, tok.next()};
 			// there is only one entry
-			const std::string& fieldName = *fieldNames.begin();
+			const core::String& fieldName = *fieldNames.begin();
 			table.foreignKeys.insert(std::make_pair(fieldName, fk));
 		} else if ((typeMapping & std::enum_value(persistence::ConstraintType::AUTOINCREMENT)) != 0) {
 			if (tok.hasNext()) {
@@ -251,7 +251,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 		}
 
 		if (fieldNames.size() == 1) {
-			const std::string& name = *fieldNames.begin();
+			const core::String& name = *fieldNames.begin();
 			auto i = table.constraints.find(name);
 			if (i != table.constraints.end()) {
 				persistence::Constraint& c = i->second;
@@ -275,7 +275,7 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 		Log::error("Expected {");
 		return false;
 	}
-	std::string token = tok.next();
+	core::String token = tok.next();
 	if (token != "{") {
 		Log::error("Expected {, found %s", token.c_str());
 		return false;
@@ -319,7 +319,7 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 
 	for (auto entry : table.constraints) {
 		const persistence::Constraint& c = entry.second;
-		for (const std::string& fieldName: c.fields) {
+		for (const core::String& fieldName: c.fields) {
 			if (table.fields.find(fieldName) == table.fields.end()) {
 				Log::error("constraint referenced field wasn't found: '%s'", fieldName.c_str());
 				return false;

@@ -535,8 +535,8 @@ static int luaAI_characterattributes(lua_State* s) {
 	lua_newtable(s);
 	const int top = lua_gettop(s);
 	for (auto it = attributes.begin(); it != attributes.end(); ++it) {
-		const std::string& key = it->first;
-		const std::string& value = it->second;
+		const core::String& key = it->first;
+		const core::String& value = it->second;
 		lua_pushlstring(s, key.c_str(), key.size());
 		lua_pushlstring(s, value.c_str(), value.size());
 		lua_settable(s, top);

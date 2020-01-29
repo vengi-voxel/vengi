@@ -13,15 +13,15 @@ namespace voxedit {
 using LayerMetadata = std::unordered_map<std::string, std::string>;
 
 struct Layer {
-	std::string name;
+	core::String name;
 	glm::ivec3 pivot { 0 };
 	bool visible = true;
 	bool valid = false;
 	bool locked = false;
 	LayerMetadata metadata;
 
-	const std::string& metadataById(const std::string& id) const {
-		static std::string EMPTY;
+	const core::String& metadataById(const core::String& id) const {
+		static core::String EMPTY;
 		auto i = metadata.find(id);
 		if (i == metadata.end()) {
 			return EMPTY;

@@ -55,8 +55,8 @@ private:
 		const int size = readShort(in);
 		attributes.reserve(size);
 		for (int i = 0; i < size; ++i) {
-			const std::string& key = readString(in);
-			const std::string& value = readString(in);
+			const core::String& key = readString(in);
+			const core::String& value = readString(in);
 			attributes.insert(std::make_pair(key, value));
 		}
 	}

@@ -8,10 +8,10 @@
 
 namespace http {
 
-HttpClient::HttpClient(const std::string &baseUrl) : _baseUrl(baseUrl) {
+HttpClient::HttpClient(const core::String &baseUrl) : _baseUrl(baseUrl) {
 }
 
-bool HttpClient::setBaseUrl(const std::string &baseUrl) {
+bool HttpClient::setBaseUrl(const core::String &baseUrl) {
 	Url u(baseUrl.c_str());
 	_baseUrl = baseUrl;
 	return u.valid();

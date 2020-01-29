@@ -38,7 +38,7 @@ struct Variable {
 		// TODO: atomics
 	};
 	Type type;
-	std::string name;
+	core::String name;
 	int arraySize = 0;
 
 	inline const char* dataType() const {
@@ -135,11 +135,11 @@ struct Layout {
 	BlockLayout blockLayout = BlockLayout::unknown;
 	video::ImageFormat imageFormat = video::ImageFormat::Max;
 
-	std::string typeAlign(const Variable& v) const;
+	core::String typeAlign(const Variable& v) const;
 
 	size_t typeSize(const Variable& v) const;
 
-	std::string typePadding(const Variable& v, int& padding) const;
+	core::String typePadding(const Variable& v, int& padding) const;
 };
 
 struct ImageFormatType {
@@ -154,7 +154,7 @@ struct PrimitiveType {
 };
 
 struct UniformBlock {
-	std::string name;
+	core::String name;
 	std::vector<Variable> members;
 	Layout layout;
 };
@@ -164,8 +164,8 @@ struct InOut {
 };
 
 struct ShaderStruct {
-	std::string name;
-	std::string filename;
+	core::String name;
+	core::String filename;
 	// both
 	std::vector<Variable> uniforms;
 	std::unordered_map<std::string, Layout> layouts;

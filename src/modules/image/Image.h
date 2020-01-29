@@ -15,14 +15,14 @@ namespace image {
  */
 class Image: public io::IOResource {
 private:
-	std::string _name;
+	core::String _name;
 	int _width = -1;
 	int _height = -1;
 	int _depth = -1;
 	uint8_t* _data = nullptr;
 
 public:
-	Image(const std::string& name);
+	Image(const core::String& name);
 	~Image();
 
 	bool load(const io::FilePtr& file);
@@ -34,7 +34,7 @@ public:
 
 	const uint8_t* at(int x, int y) const;
 
-	inline const std::string& name() const {
+	inline const core::String& name() const {
 		return _name;
 	}
 
@@ -58,11 +58,11 @@ public:
 typedef std::shared_ptr<Image> ImagePtr;
 
 // creates an empty image
-inline ImagePtr createEmptyImage(const std::string& name) {
+inline ImagePtr createEmptyImage(const core::String& name) {
 	return std::make_shared<Image>(name);
 }
 
 extern ImagePtr loadImage(const io::FilePtr& file, bool async = true);
-extern ImagePtr loadImage(const std::string& filename, bool async = true);
+extern ImagePtr loadImage(const core::String& filename, bool async = true);
 
 }

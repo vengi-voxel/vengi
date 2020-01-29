@@ -99,7 +99,7 @@ tb::TBWidget *FileDialogItemSource::createItemWidget(int index, tb::TBSelectItem
 	return new FileDialogItemWidget(getItem(index));
 }
 
-FileDialogWindow::FileDialogWindow(UIApp* tool, const std::function<void(const std::string&)>& callback, const core::VarPtr& lastDirectory) :
+FileDialogWindow::FileDialogWindow(UIApp* tool, const std::function<void(const core::String&)>& callback, const core::VarPtr& lastDirectory) :
 		Super(tool), _callback(callback), _lastDirectory(lastDirectory) {
 	_fs = tool->filesystem();
 	loadResourceFile("ui/window/filedialog.tb.txt");
@@ -235,7 +235,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 						input->setText(dirEntry.name.c_str());
 					}
 				} else {
-					const std::string& filename = dirEntry.name;
+					const core::String& filename = dirEntry.name;
 					if (io::Filesystem::isRelativePath(filename)) {
 						_callback(_directory + "/" + filename);
 					} else {
@@ -252,7 +252,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			if (_mode == video::WindowedApp::OpenFileMode::Save) {
 				if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
 					const tb::TBStr& filename = input->getText();
-					const std::string& sfilename = std::string(filename.c_str());
+					const core::String& sfilename = std::string(filename.c_str());
 					if (io::Filesystem::isRelativePath(sfilename)) {
 						_callback(_directory + "/" + sfilename);
 					} else {
@@ -266,7 +266,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 				if (index >= 0 && index < _entityList.getNumItems()) {
 					const FileDialogItem* item = _entityList.getItem(index);
 					const auto& dirEntry = item->entry();
-					const std::string& filename = dirEntry.name;
+					const core::String& filename = dirEntry.name;
 					if (io::Filesystem::isRelativePath(filename)) {
 						_callback(_directory + "/" + filename);
 					} else {
@@ -293,7 +293,7 @@ void FileDialogWindow::init() {
 	}
 }
 
-void FileDialogWindow::changeDir(const std::string& dir) {
+void FileDialogWindow::changeDir(const core::String& dir) {
 	if (!dir.empty()) {
 		if (io::Filesystem::isRelativePath(dir)) {
 			_directory = _fs->absolutePath(_directory + "/" + dir);

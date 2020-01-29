@@ -11,7 +11,7 @@
 namespace backend {
 
 User::User(ENetPeer* peer, EntityId id,
-		const std::string& name,
+		const core::String& name,
 		const MapPtr& map,
 		const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider,

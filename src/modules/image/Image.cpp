@@ -36,7 +36,7 @@ namespace image {
 #undef STB_IMAGE_IMPLEMENTATION
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
 
-Image::Image(const std::string& name) :
+Image::Image(const core::String& name) :
 		io::IOResource(), _name(name) {
 }
 
@@ -65,7 +65,7 @@ ImagePtr loadImage(const io::FilePtr& file, bool async) {
 	return i;
 }
 
-ImagePtr loadImage(const std::string& filename, bool async) {
+ImagePtr loadImage(const core::String& filename, bool async) {
 	const io::FilePtr& file = io::filesystem()->open(filename);
 	return loadImage(file, async);
 }

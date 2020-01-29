@@ -168,9 +168,9 @@ void ServerLoop::construct() {
 			Log::info("Usage: sv_createuser <email> <user> <passwd>");
 			return;
 		}
-		const std::string& email = args[0];
-		const std::string& user = args[1];
-		const std::string& passwd = args[2];
+		const core::String& email = args[0];
+		const core::String& user = args[1];
+		const core::String& passwd = args[2];
 		if (!util::isValidEmail(email)) {
 			Log::error("%s is no valid email address", email.c_str());
 			return;
@@ -250,25 +250,25 @@ bool ServerLoop::init() {
 		return false;
 	}
 
-	const std::string& events = _filesystem->load("events.lua");
+	const core::String& events = _filesystem->load("events.lua");
 	if (!_eventMgr->init(events)) {
 		Log::error("Failed to init event manager");
 		return false;
 	}
 
-	const std::string& cooldowns = _filesystem->load("cooldowns.lua");
+	const core::String& cooldowns = _filesystem->load("cooldowns.lua");
 	if (!_cooldownProvider->init(cooldowns)) {
 		Log::error("Failed to load the cooldown configuration: %s", _cooldownProvider->error().c_str());
 		return false;
 	}
 
-	const std::string& stockLuaString = _filesystem->load("stock.lua");
+	const core::String& stockLuaString = _filesystem->load("stock.lua");
 	if (!_stockDataProvider->init(stockLuaString)) {
 		Log::error("Failed to load the stock configuration: %s", _stockDataProvider->error().c_str());
 		return false;
 	}
 
-	const std::string& attributes = _filesystem->load("attributes.lua");
+	const core::String& attributes = _filesystem->load("attributes.lua");
 	if (!_attribContainerProvider->init(attributes)) {
 		Log::error("Failed to load the attributes: %s", _attribContainerProvider->error().c_str());
 		return false;

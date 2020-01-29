@@ -11,7 +11,7 @@
 namespace stock {
 
 struct ContainerData {
-	std::string name;
+	core::String name;
 	ContainerShape shape;
 	uint32_t flags = 0u;
 	uint8_t id = 0u;

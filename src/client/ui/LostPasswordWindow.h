@@ -25,7 +25,7 @@ public:
 	}
 
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
-		const std::string& email = getStr("email");
+		const core::String& email = getStr("email");
 		if (ev.special_key == tb::TB_KEY_ENTER) {
 			_client->lostPassword(email);
 			close();

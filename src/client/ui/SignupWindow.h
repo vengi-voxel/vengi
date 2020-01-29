@@ -27,9 +27,9 @@ public:
 			return Super::onEvent(ev);
 		}
 		if (ev.target->getID() == TBIDC("signup")) {
-			const std::string& email = getStr("email");
-			const std::string& password = getStr("password");
-			const std::string& passwordVerify = getStr("password_verify");
+			const core::String& email = getStr("email");
+			const core::String& password = getStr("password");
+			const core::String& passwordVerify = getStr("password_verify");
 			if (password != passwordVerify) {
 				popup(tr("error"), tr("passwordsdonotmatch"));
 				return true;

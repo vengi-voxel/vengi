@@ -78,7 +78,7 @@ uint64_t TimeProvider::systemNanos() {
 	return SDL_GetPerformanceCounter();
 }
 
-std::string TimeProvider::toString(unsigned long millis, const char *format) {
+core::String TimeProvider::toString(unsigned long millis, const char *format) {
 	time_t t(millis / 1000UL);
 	tm tm = *gmtime(&t);
 	std::stringstream ss;

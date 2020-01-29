@@ -32,7 +32,7 @@ TEST_F(CommandTest, testExecuteRegistered) {
 }
 
 TEST_F(CommandTest, textExecuteParameter) {
-	std::string parameter = "command not executed at all";
+	core::String parameter = "command not executed at all";
 	Command::registerCommand("test", [&] (const core::CmdArgs&) {
 	});
 	Command::registerCommand("testparameter", [&] (const core::CmdArgs& args) {
@@ -50,7 +50,7 @@ TEST_F(CommandTest, textExecuteParameter) {
 }
 
 TEST_F(CommandTest, textExecuteSemicolonAsParameter) {
-	std::string parameter = "command not executed at all";
+	core::String parameter = "command not executed at all";
 	int testExecuted = 0;
 	Command::registerCommand("test", [&] (const core::CmdArgs&) {
 		++testExecuted;

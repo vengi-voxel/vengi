@@ -17,7 +17,7 @@ WorldContext::WorldContext() :
 	mountainNoiseOctaves(2), mountainNoiseLacunarity(0.3f), mountainNoiseFrequency(0.00075f), mountainNoiseGain(0.5f) {
 }
 
-bool WorldContext::load(const std::string& luaString) {
+bool WorldContext::load(const core::String& luaString) {
 	if (luaString.empty()) {
 		return true;
 	}

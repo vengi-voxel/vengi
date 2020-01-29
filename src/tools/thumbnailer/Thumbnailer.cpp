@@ -48,7 +48,7 @@ core::AppState Thumbnailer::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	const std::string infile = _argv[_argc - 2];
+	const core::String infile = _argv[_argc - 2];
 	_outfile = _argv[_argc - 1];
 
 	Log::debug("infile: %s", infile.c_str());

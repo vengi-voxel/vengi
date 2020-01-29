@@ -72,12 +72,12 @@ void Url::parseHostPart(char **strPtr) {
 			afterUser = p;
 			for (;;) {
 				if (*p == '\0') {
-					const std::string buf(afterUser, p - afterUser);
+					const core::String buf(afterUser, p - afterUser);
 					port = core::string::toInt(buf);
 					*strPtr = p;
 					return;
 				} else if (*p == '/') {
-					const std::string buf(afterUser, p - afterUser);
+					const core::String buf(afterUser, p - afterUser);
 					port = core::string::toInt(buf);
 					break;
 				}

@@ -59,7 +59,7 @@ template<class T>
 inline T clua_getudata(lua_State* s, int n, const char *name) {
 	void* dataVoid = luaL_checkudata(s, n, name);
 	if (dataVoid == nullptr) {
-		std::string error(name);
+		core::String error(name);
 		error.append(" userdata must not be null");
 		luaL_argcheck(s, dataVoid != nullptr, n, error.c_str());
 	}

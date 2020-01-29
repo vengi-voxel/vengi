@@ -24,7 +24,7 @@ static const char *FieldTypeNames[] = {
 };
 static_assert(lengthof(FieldTypeNames) == persistence::MAX_FIELDTYPES, "Invalid field type mapping");
 
-FieldType toFieldType(const std::string& type) {
+FieldType toFieldType(const core::String& type) {
 	for (int i = 0; i < persistence::MAX_FIELDTYPES; ++i) {
 		if (core::string::iequals(type, FieldTypeNames[i])) {
 			return (persistence::FieldType)i;

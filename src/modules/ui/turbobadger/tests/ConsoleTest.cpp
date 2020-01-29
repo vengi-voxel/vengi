@@ -14,9 +14,9 @@ class ConsoleTest: public core::AbstractTest {
 };
 
 TEST_F(ConsoleTest, testAutoCompleteCvar) {
-	const std::string cvar1 = "abcdef_console";
-	const std::string cvar2 = "test";
-	const std::string cvarComplete = cvar1 + cvar2;
+	const core::String cvar1 = "abcdef_console";
+	const core::String cvar2 = "test";
+	const core::String cvarComplete = cvar1 + cvar2;
 	core::Var::get(cvarComplete, "1");
 	Console c;
 	SDL_LogSetOutputFunction(nullptr, nullptr);
@@ -29,9 +29,9 @@ TEST_F(ConsoleTest, testAutoCompleteCvar) {
 }
 
 TEST_F(ConsoleTest, testAutoCompleteCommand) {
-	const std::string cmd1 = "abcdef_console";
-	const std::string cmd2 = "test";
-	const std::string cmdComplete = cmd1 + cmd2;
+	const core::String cmd1 = "abcdef_console";
+	const core::String cmd2 = "test";
+	const core::String cmdComplete = cmd1 + cmd2;
 	core::Command::registerCommand(cmdComplete.c_str(), [] (const core::CmdArgs& args) {});
 	Console c;
 	SDL_LogSetOutputFunction(nullptr, nullptr);

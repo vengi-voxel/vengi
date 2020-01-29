@@ -32,7 +32,7 @@ static inline void createSchemaIdentifier(std::stringstream& stmt, const Model& 
 	stmt << "\"" << table.schema() << "\"";
 }
 
-static inline void createIndexIdentifier(std::stringstream& stmt, const Model& table, const std::string& field) {
+static inline void createIndexIdentifier(std::stringstream& stmt, const Model& table, const core::String& field) {
 	stmt << "\"" << table.tableName() << "_" << field << "\"";
 }
 
@@ -41,7 +41,7 @@ static inline void createTableIdentifier(std::stringstream& stmt, const Model& t
 	stmt << ".\"" << table.tableName() << "\"";
 }
 
-static inline void createSequenceIdentifier(std::stringstream& stmt, const Model& table, const std::string& field) {
+static inline void createSequenceIdentifier(std::stringstream& stmt, const Model& table, const core::String& field) {
 	createSchemaIdentifier(stmt, table);
 	stmt << ".\"" << table.tableName() << "_" << field << "_seq\"";
 }
@@ -73,7 +73,7 @@ static inline bool placeholder(const Model& table, const Field& field, std::stri
 	return true;
 }
 
-static std::string getDbFlags(const std::string& tablename, int numberPrimaryKeys, const Constraints& constraints, const Field& field) {
+static core::String getDbFlags(const core::String& tablename, int numberPrimaryKeys, const Constraints& constraints, const Field& field) {
 	char buf[1024] = { '\0' };
 	bool empty = true;
 	if (field.isNotNull()) {
@@ -121,7 +121,7 @@ static std::string getDbFlags(const std::string& tablename, int numberPrimaryKey
 	return std::string(buf);
 }
 
-static std::string getDbType(const Field& field) {
+static core::String getDbType(const Field& field) {
 	if (field.type == FieldType::PASSWORD
 	 || field.type == FieldType::STRING) {
 		if (field.length > 0) {
@@ -219,7 +219,7 @@ static void createAlterTableAlterColumn(std::stringstream& stmt, bool add, const
 	}
 
 	const char *action = add ? "ADD" : "ALTER";
-	const std::string& base = core::string::format("ALTER TABLE \"%s\".\"%s\" %s COLUMN \"%s\"",
+	const core::String& base = core::string::format("ALTER TABLE \"%s\".\"%s\" %s COLUMN \"%s\"",
 			table.schema(), table.tableName(), action, field.name.c_str());
 	if (!add && adds(schemaColumn, field, ConstraintType::NOTNULL)) {
 		stmt << base << " " << getDbType(field);
@@ -329,7 +329,7 @@ static bool isDifferent(const db::MetainfoModel& schemaColumn, const Field& fiel
 	return false;
 }
 
-std::string createTableExistsStatement(const Model& model, BindParam* params) {
+core::String createTableExistsStatement(const Model& model, BindParam* params) {
 	if (params != nullptr) {
 		const int indexSchema = params->add();
 		params->valueBuffers.emplace_back(model.schema());
@@ -342,7 +342,7 @@ std::string createTableExistsStatement(const Model& model, BindParam* params) {
 	return R"(SELECT EXISTS (SELECT 1 FROM "pg_tables" WHERE "schemaname" = $1 AND "tablename" = $2);)";
 }
 
-std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys) {
+core::String createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys) {
 	std::stringstream stmt;
 
 	// TODO: allow to move into new schema?
@@ -432,7 +432,7 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 			uniqueConstraintName(stmt, table, uniqueKey);
 			stmt << " UNIQUE(";
 			bool firstUniqueKey = true;
-			for (const std::string& fieldName : uniqueKey) {
+			for (const core::String& fieldName : uniqueKey) {
 				if (!firstUniqueKey) {
 					stmt << ", ";
 				}
@@ -448,7 +448,7 @@ std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& colu
 	return stmt.str();
 }
 
-std::string createCreateTableStatement(const Model& model, bool useForeignKeys) {
+core::String createCreateTableStatement(const Model& model, bool useForeignKeys) {
 	std::stringstream stmt;
 
 	stmt << "CREATE SCHEMA IF NOT EXISTS ";
@@ -471,11 +471,11 @@ std::string createCreateTableStatement(const Model& model, bool useForeignKeys) 
 			stmt << ", ";
 		}
 		stmt << "\"" << f.name << "\"";
-		const std::string& dbType = getDbType(f);
+		const core::String& dbType = getDbType(f);
 		if (!dbType.empty()) {
 			stmt << " " << dbType;
 		}
-		const std::string& flags = getDbFlags(model.tableName(), model.primaryKeyFields(), model.constraints(), f);
+		const core::String& flags = getDbFlags(model.tableName(), model.primaryKeyFields(), model.constraints(), f);
 		if (!flags.empty()) {
 			stmt << " " << flags;
 		}
@@ -488,7 +488,7 @@ std::string createCreateTableStatement(const Model& model, bool useForeignKeys) 
 			uniqueConstraintName(stmt, model, uniqueKey);
 			stmt << " UNIQUE(";
 			bool firstUniqueKey = true;
-			for (const std::string& fieldName : uniqueKey) {
+			for (const core::String& fieldName : uniqueKey) {
 				if (!firstUniqueKey) {
 					stmt << ", ";
 				}
@@ -541,11 +541,11 @@ std::string createCreateTableStatement(const Model& model, bool useForeignKeys) 
 	return stmt.str();
 }
 
-std::string createTruncateTableStatement(const Model& model) {
+core::String createTruncateTableStatement(const Model& model) {
 	return core::string::format("TRUNCATE TABLE \"%s\".\"%s\";", model.schema(), model.tableName());
 }
 
-std::string createDropTableStatement(const Model& model) {
+core::String createDropTableStatement(const Model& model) {
 	std::stringstream stmt;
 	stmt << "DROP TABLE IF EXISTS ";
 	createTableIdentifier(stmt, model);
@@ -592,7 +592,7 @@ static void createWhereStatementsForKeys(std::stringstream& stmt, int& index, co
 	}
 }
 
-std::string createUpdateStatement(const Model& model, BindParam* params, int* parameterCount) {
+core::String createUpdateStatement(const Model& model, BindParam* params, int* parameterCount) {
 	std::stringstream stmt;
 	stmt << "UPDATE ";
 	createTableIdentifier(stmt, model);
@@ -630,7 +630,7 @@ std::string createUpdateStatement(const Model& model, BindParam* params, int* pa
 	return stmt.str();
 }
 
-std::string createDeleteStatement(const Model& model, BindParam* params) {
+core::String createDeleteStatement(const Model& model, BindParam* params) {
 	std::stringstream stmt;
 	stmt << "DELETE FROM ";
 	createTableIdentifier(stmt, model);
@@ -639,7 +639,7 @@ std::string createDeleteStatement(const Model& model, BindParam* params) {
 	return stmt.str();
 }
 
-std::string createInsertBaseStatement(const Model& table, bool& primaryKeyIncluded) {
+core::String createInsertBaseStatement(const Model& table, bool& primaryKeyIncluded) {
 	std::stringstream stmt;
 	stmt << "INSERT INTO ";
 	createTableIdentifier(stmt, table);
@@ -664,7 +664,7 @@ std::string createInsertBaseStatement(const Model& table, bool& primaryKeyInclud
 	return stmt.str();
 }
 
-std::string createInsertValuesStatement(const Model& table, BindParam* params, int& insertValueIndex) {
+core::String createInsertValuesStatement(const Model& table, BindParam* params, int& insertValueIndex) {
 	std::stringstream stmt;
 	stmt << "(";
 	int inserted = 0;
@@ -773,7 +773,7 @@ void createUpsertStatement(const Model& table, std::stringstream& stmt, bool pri
 	}
 }
 
-std::string createInsertStatement(const std::vector<const Model*>& tables, BindParam* params, int* parameterCount) {
+core::String createInsertStatement(const std::vector<const Model*>& tables, BindParam* params, int* parameterCount) {
 	const Model& table = *tables.front();
 
 	bool primaryKeyIncluded = false;
@@ -803,13 +803,13 @@ std::string createInsertStatement(const std::vector<const Model*>& tables, BindP
 	return stmt.str();
 }
 
-std::string createInsertStatement(const Model& model, BindParam* params, int* parameterCount) {
+core::String createInsertStatement(const Model& model, BindParam* params, int* parameterCount) {
 	return createInsertStatement({&model}, params, parameterCount);
 }
 
 // https://www.postgresql.org/docs/current/static/functions-formatting.html
 // https://www.postgresql.org/docs/current/static/functions-datetime.html
-std::string createSelect(const Model& model, BindParam* params) {
+core::String createSelect(const Model& model, BindParam* params) {
 	const Fields& fields = model.fields();
 	std::stringstream stmt;
 	stmt << "SELECT ";
@@ -846,20 +846,20 @@ std::string createSelect(const Model& model, BindParam* params) {
  * @param[in,out] parameterCount The amount of already existing where clauses due
  * to primary keys that are not part of the condition
  */
-std::string createWhere(const DBCondition& condition, int &parameterCount) {
+core::String createWhere(const DBCondition& condition, int &parameterCount) {
 	const bool needWhere = parameterCount == 0;
-	const std::string& conditionStr = condition.statement(parameterCount);
+	const core::String& conditionStr = condition.statement(parameterCount);
 	if (conditionStr.empty()) {
 		return conditionStr;
 	}
 	return core::string::format("%s %s", (needWhere ? " WHERE" : " AND"), conditionStr.c_str());
 }
 
-std::string createOrderBy(const OrderBy& orderBy) {
+core::String createOrderBy(const OrderBy& orderBy) {
 	return core::string::format(" ORDER BY \"%s\" %s", orderBy.fieldname, OrderStrings[std::enum_value(orderBy.order)]);
 }
 
-std::string createLimitOffset(const Range& range) {
+core::String createLimitOffset(const Range& range) {
 	if (range.limit <= 0 && range.offset <= 0) {
 		return "";
 	}

@@ -17,11 +17,11 @@ AICharacterStaticMessage::AICharacterStaticMessage(streamContainer& in) :
 	_nodeStaticData.reserve(size);
 	for (std::size_t i = 0; i < size; ++i) {
 		const int32_t id = readInt(in);
-		const std::string& name = readString(in);
-		const std::string& type = readString(in);
-		const std::string& parameters = readString(in);
-		const std::string& conditionType = readString(in);
-		const std::string& conditionParameters = readString(in);
+		const core::String& name = readString(in);
+		const core::String& type = readString(in);
+		const core::String& parameters = readString(in);
+		const core::String& conditionType = readString(in);
+		const core::String& conditionParameters = readString(in);
 		const AIStateNodeStatic staticData(id, name, type, parameters, conditionType, conditionParameters);
 		_nodeStaticData.push_back(staticData);
 	}

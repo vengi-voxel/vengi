@@ -21,11 +21,11 @@ bool replacePlaceholders(std::string_view str, char *buf, size_t bufSize) {
 			if (l != nullptr) {
 				c += 6;
 				const intptr_t len = l - c;
-				const std::string name(c, len);
+				const core::String name(c, len);
 				core_assert((int)len == (int)name.size());
 				const core::VarPtr& var = core::Var::get(name);
 				i += 6 + len;
-				const std::string& value = var->strVal();
+				const core::String& value = var->strVal();
 				const size_t remaining = bufSize - idx - 1;
 				strncpy(&buf[idx], value.c_str(), remaining);
 				idx += (int)value.length();
@@ -48,7 +48,7 @@ bool replacePlaceholders(std::string_view str, char *buf, size_t bufSize) {
 }
 
 // https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#C++
-size_t levensteinDistance(const std::string &source, const std::string &target) {
+size_t levensteinDistance(const core::String &source, const core::String &target) {
 	if (source.size() > target.size()) {
 		return levensteinDistance(target, source);
 	}
@@ -79,8 +79,8 @@ size_t levensteinDistance(const std::string &source, const std::string &target) 
 	return levDist[minSize];
 }
 
-static std::string findPotentialMatch(const std::string& arg) {
-	std::string match;
+static core::String findPotentialMatch(const core::String& arg) {
+	core::String match;
 	size_t leastCost = 1000000u;
 	core::Command::visit([&] (const core::Command& c) {
 		const size_t cost = levensteinDistance(arg, c.name());
@@ -93,13 +93,13 @@ static std::string findPotentialMatch(const std::string& arg) {
 	return match;
 }
 
-int executeCommands(const std::string& _commandLine) {
+int executeCommands(const core::String& _commandLine) {
 	if (_commandLine.empty()) {
 		return 0;
 	}
 	int n = 0;
 	const core::Tokenizer tok(false, _commandLine, ";");
-	for (const std::string& command : tok.tokens()) {
+	for (const core::String& command : tok.tokens()) {
 		if (command.empty()) {
 			continue;
 		}
@@ -114,7 +114,7 @@ int executeCommands(const std::string& _commandLine) {
 			continue;
 		}
 		std::vector<std::string> tokens = tokInner.tokens();
-		const std::string cmd = tokens[0];
+		const core::String cmd = tokens[0];
 		tokens.erase(tokens.begin());
 		if (core::Command::execute(cmd, tokens)) {
 			if (n != -1) {
@@ -125,7 +125,7 @@ int executeCommands(const std::string& _commandLine) {
 		const core::VarPtr& c = core::Var::get(cmd);
 		if (!c) {
 			Log::info("unknown command: %s", cmd.c_str());
-			const std::string& potentialMatch = findPotentialMatch(cmd);
+			const core::String& potentialMatch = findPotentialMatch(cmd);
 			if (!potentialMatch.empty()) {
 				Log::info("did you mean: %s", potentialMatch.c_str());
 			}
@@ -138,7 +138,7 @@ int executeCommands(const std::string& _commandLine) {
 					Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
 				}
 			} else {
-				const std::string& value = core::string::join(tokens.begin(), tokens.end(), " ");
+				const core::String& value = core::string::join(tokens.begin(), tokens.end(), " ");
 				Log::debug("%s = %s", c->name().c_str(), value.c_str());
 				c->setVal(value);
 			}

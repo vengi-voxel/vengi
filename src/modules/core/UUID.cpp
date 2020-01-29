@@ -19,7 +19,7 @@
 
 namespace core {
 
-std::string generateUUID() {
+core::String generateUUID() {
 #ifdef HAVE_UUID_H
 	uuid_t uuid;
 	uuid_generate_random(uuid);
@@ -31,7 +31,7 @@ std::string generateUUID() {
 	UuidCreate(&uuid);
 	char *str;
 	UuidToStringA(&uuid, (RPC_CSTR*)&str);
-	std::string uuidStr = str;
+	core::String uuidStr = str;
 	RpcStringFreeA((RPC_CSTR*)&str);
 	return uuidStr;
 #elif __APPLE__

@@ -29,7 +29,7 @@ TestTraze::TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& f
 	_eventBus->subscribe<traze::ScoreEvent>(*this);
 }
 
-const std::string& TestTraze::playerName(traze::PlayerId playerId) const {
+const core::String& TestTraze::playerName(traze::PlayerId playerId) const {
 	return player(playerId).name;
 }
 
@@ -144,8 +144,8 @@ void TestTraze::onEvent(const traze::BikeEvent& event) {
 
 void TestTraze::onEvent(const traze::TickerEvent& event) {
 	const traze::Ticker& ticker = event.get();
-	const std::string& fraggerName = playerName(ticker.fragger);
-	const std::string& casualtyName = playerName(ticker.casualty);
+	const core::String& fraggerName = playerName(ticker.fragger);
+	const core::String& casualtyName = playerName(ticker.casualty);
 	switch (ticker.type) {
 	case traze::TickerType::Frag:
 		if (ticker.fragger == _protocol.playerId()) {
@@ -342,7 +342,7 @@ void TestTraze::doRender() {
 	const glm::ivec2& dim = frameBufferDimension();
 	_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(dim.x / 3, 0.0f, 0.0f)));
 	int messageOffset = 0;
-	_messageQueue.visitMessages([&] (int64_t /*remainingMillis*/, const std::string& msg) {
+	_messageQueue.visitMessages([&] (int64_t /*remainingMillis*/, const core::String& msg) {
 		_voxelFontRender.text(glm::ivec3(0.0f, (float)messageOffset, 0.0f), core::Color::White, "%s", msg.c_str());
 		messageOffset += _voxelFontRender.lineHeight();
 	});

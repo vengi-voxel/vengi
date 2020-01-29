@@ -254,7 +254,7 @@ static void MD5Final (struct MD5Context *ctx, unsigned char* digest)
 	memset(ctx, 0, sizeof(*ctx)); /* In case it's sensitive */
 }
 
-std::string md5sum(const uint8_t *buf, uint32_t len) {
+core::String md5sum(const uint8_t *buf, uint32_t len) {
 	core_assert_always(len > 0);
 	MD5_CTX md5;
 	MD5Init(&md5);

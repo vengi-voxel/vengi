@@ -15,7 +15,7 @@
 
 namespace voxelworld {
 
-static std::string getWorldName(const voxel::Region& region, unsigned int seed) {
+static core::String getWorldName(const voxel::Region& region, unsigned int seed) {
 	return core::string::format("world_%u_%i_%i_%i.wld", seed, region.getLowerX(), region.getLowerY(), region.getLowerZ());
 }
 
@@ -25,7 +25,7 @@ void FilePersister::erase(const voxel::Region& region, unsigned int seed) {
 	voxel::PagedVolume::ChunkPtr chunk = ctx.getChunk();
 	const io::FilesystemPtr& filesystem = io::filesystem();
 	const voxel::Region& region = ctx.region;
-	const std::string& filename = getWorldName(region, seed);
+	const core::String& filename = getWorldName(region, seed);
 	// TODO: filesystem->remove(filename);
 #endif
 }
@@ -34,7 +34,7 @@ bool FilePersister::load(voxel::PagedVolume::Chunk* chunk, unsigned int seed) {
 	core_trace_scoped(WorldPersisterLoad);
 	const io::FilesystemPtr& filesystem = io::filesystem();
 	const voxel::Region& region = chunk->region();
-	const std::string& filename = getWorldName(region, seed);
+	const core::String& filename = getWorldName(region, seed);
 	const io::FilePtr& f = filesystem->open(filename);
 	if (!f->exists()) {
 		return false;
@@ -53,7 +53,7 @@ bool FilePersister::save(voxel::PagedVolume::Chunk* chunk, unsigned int seed) {
 	if (!saveCompressed(chunk, final)) {
 		return false;
 	}
-	const std::string& filename = getWorldName(chunk->region(), seed);
+	const core::String& filename = getWorldName(chunk->region(), seed);
 	const io::FilesystemPtr& filesystem = io::filesystem();
 
 	if (!filesystem->write(filename, final.getBuffer(), final.getSize())) {

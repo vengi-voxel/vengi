@@ -11,7 +11,7 @@
 
 namespace video {
 
-bool Shader::setAttributeLocation(const std::string& name, int location) {
+bool Shader::setAttributeLocation(const core::String& name, int location) {
 	if (_program == InvalidId) {
 		return false;
 	}
@@ -20,7 +20,7 @@ bool Shader::setAttributeLocation(const std::string& name, int location) {
 	return true;
 }
 
-bool Shader::setUniformBuffer(const std::string& name, const UniformBuffer& buffer) {
+bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buffer) {
 	const Uniform* uniform = getUniform(name);
 	if (uniform == nullptr) {
 		return false;

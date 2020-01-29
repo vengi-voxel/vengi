@@ -268,7 +268,7 @@ bool FileStream::append(const uint8_t *buf, size_t size) {
 	return true;
 }
 
-bool FileStream::addString(const std::string& string, bool terminate) {
+bool FileStream::addString(const core::String& string, bool terminate) {
 	const size_t length = string.length();
 	for (std::size_t i = 0; i < length; i++) {
 		if (!addByte(uint8_t(string[i]))) {

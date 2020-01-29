@@ -33,7 +33,7 @@ protected:
 	using Super = tb::TBWindow;
 	float _percentWidth = 0.0f;
 	float _percentHeight = 0.0f;
-	std::string _filename;
+	core::String _filename;
 
 	tb::TBGenericStringItem* addStringItem(tb::TBGenericStringItemSource& items, const char *text, const char *id = nullptr, bool translate = true);
 
@@ -71,13 +71,13 @@ public:
 		OkCancel = tb::TB_MSG_OK_CANCEL,
 		YesNo = tb::TB_MSG_YES_NO
 	};
-	void popup(const std::string& title, const std::string& str, PopupType type = PopupType::Ok, const char *id = "");
+	void popup(const core::String& title, const core::String& str, PopupType type = PopupType::Ok, const char *id = "");
 
 	Window* getParent() const;
 	UIApp* getApp() const;
 	void requestQuit();
 
-	std::string getStr(const char* nodeId);
+	core::String getStr(const char* nodeId);
 	float getFloat(const char *nodeId);
 	int getInt(const char *nodeId);
 	int getSelectedId(const char *nodeId);
@@ -95,7 +95,7 @@ public:
 	tb::TBWidget* getWidget(const char *name);
 	bool setVisible(const char *name, bool visible);
 	bool setActive(const char *name, bool active);
-	void setStr(const char *nodeId, const std::string& text);
+	void setStr(const char *nodeId, const core::String& text);
 
 	virtual void onDie() override;
 	virtual bool onEvent(const tb::TBWidgetEvent &ev) override;

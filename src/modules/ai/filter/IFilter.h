@@ -40,7 +40,7 @@ namespace ai {
  * @brief Macro to simplify the condition creation. Just give the class name of the condition as parameter.
  */
 #define FILTER_CLASS(FilterName) \
-	explicit FilterName(const std::string& parameters = "") : \
+	explicit FilterName(const core::String& parameters = "") : \
 		::ai::IFilter(#FilterName, parameters) { \
 	} \
 public: \
@@ -61,7 +61,7 @@ public: \
 	}
 
 #define FILTER_ACTION_CLASS(FilterName) \
-	FilterName(const std::string& parameters, const ::ai::Filters& filters) : \
+	FilterName(const core::String& parameters, const ::ai::Filters& filters) : \
 		::ai::IFilter(#FilterName, parameters), _filters(filters) { \
 	} \
 protected: \
@@ -128,8 +128,8 @@ public: \
  */
 class IFilter : public MemObject {
 protected:
-	const std::string _name;
-	const std::string _parameters;
+	const core::String _name;
+	const core::String _parameters;
 
 	/**
 	 * @note The filtered entities are kept even over several ticks. The caller should decide
@@ -141,18 +141,18 @@ protected:
 		return ai->_filteredEntities;
 	}
 public:
-	IFilter (const std::string& name, const std::string& parameters) :
+	IFilter (const core::String& name, const core::String& parameters) :
 			_name(name), _parameters(parameters) {
 	}
 
 	virtual ~IFilter () {
 	}
 
-	inline const std::string& getName() const {
+	inline const core::String& getName() const {
 		return _name;
 	}
 
-	inline const std::string& getParameters() const {
+	inline const core::String& getParameters() const {
 		return _parameters;
 	}
 

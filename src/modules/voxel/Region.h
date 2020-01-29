@@ -205,7 +205,7 @@ public:
 	/// Shrinks this region by the amounts specified.
 	void shrink(const glm::ivec3& v3dAmount);
 
-	std::string toString() const;
+	core::String toString() const;
 
 private:
 	int32_t m_iLowerX;

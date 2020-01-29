@@ -22,7 +22,7 @@ protected:
 	/**
 	 * @brief Load from cache or file and extract the mesh
 	 */
-	bool load(const std::string& filename, size_t meshIndex, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]);
+	bool load(const core::String& filename, size_t meshIndex, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]);
 
 	/**
 	 * @brief Load and cache the voxel meshes that are needed to assmble the model as

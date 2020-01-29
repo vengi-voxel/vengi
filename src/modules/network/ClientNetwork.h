@@ -16,7 +16,7 @@ private:
 public:
 	ClientNetwork(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, const core::EventBusPtr& eventBus);
 
-	ENetPeer* connect(uint16_t port, const std::string& hostname, int maxChannels = 1);
+	ENetPeer* connect(uint16_t port, const core::String& hostname, int maxChannels = 1);
 	void disconnect();
 	bool packetReceived(ENetEvent& event) override;
 

@@ -70,8 +70,8 @@ void Client::onEvent(const network::DisconnectEvent& event) {
 
 void Client::onEvent(const network::NewConnectionEvent& event) {
 	flatbuffers::FlatBufferBuilder fbb;
-	const std::string& email = core::Var::getSafe(cfg::ClientEmail)->strVal();
-	const std::string& password = core::Var::getSafe(cfg::ClientPassword)->strVal();
+	const core::String& email = core::Var::getSafe(cfg::ClientEmail)->strVal();
+	const core::String& password = core::Var::getSafe(cfg::ClientPassword)->strVal();
 	Log::info("Trying to log into the server with %s", email.c_str());
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnect,
 			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(core::pwhash(password, "TODO"))).Union());
@@ -188,7 +188,7 @@ void Client::handleLogin() {
 	const core::VarPtr& autoLoginVar = core::Var::getSafe(cfg::ClientAutoLogin);
 	if (autoLoginVar->boolVal()) {
 		const int port = core::Var::getSafe(cfg::ClientPort)->intVal();
-		const std::string& host = core::Var::getSafe(cfg::ClientHost)->strVal();
+		const core::String& host = core::Var::getSafe(cfg::ClientHost)->strVal();
 		if (!connect(port, host)) {
 			autoLoginVar->setVal(false);
 		}
@@ -321,10 +321,10 @@ void Client::onWindowResize(int windowWidth, int windowHeight) {
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 
-void Client::signup(const std::string& email, const std::string& password) {
+void Client::signup(const core::String& email, const core::String& password) {
 }
 
-void Client::lostPassword(const std::string& email) {
+void Client::lostPassword(const core::String& email) {
 }
 
 void Client::authFailed() {
@@ -370,7 +370,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 			network::CreateUserConnected(fbb).Union());
 }
 
-bool Client::connect(uint16_t port, const std::string& hostname) {
+bool Client::connect(uint16_t port, const core::String& hostname) {
 	if (hostname.empty()) {
 		Log::error("No hostname given");
 		return false;

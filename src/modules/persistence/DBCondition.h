@@ -46,7 +46,7 @@ public:
 			_comp(comp), _field(field), _value(value), _type(type) {
 	}
 
-	DBCondition(const char* field, FieldType type, const std::string& value, Comparator comp = Comparator::Equal);
+	DBCondition(const char* field, FieldType type, const core::String& value, Comparator comp = Comparator::Equal);
 
 	virtual ~DBCondition();
 
@@ -56,7 +56,7 @@ public:
 	 */
 	virtual const char* value(int index) const;
 
-	virtual std::string statement(int& parameterCount) const;
+	virtual core::String statement(int& parameterCount) const;
 };
 
 inline const char* DBCondition::value(int index) const {
@@ -77,7 +77,7 @@ public:
 			Super() {
 	}
 
-	std::string statement(int& parameterCount) const override;
+	core::String statement(int& parameterCount) const override;
 };
 
 /**
@@ -94,7 +94,7 @@ public:
 			Super(), _conditions(conditions), _and(__and) {
 	}
 
-	std::string statement(int& parameterCount) const override;
+	core::String statement(int& parameterCount) const override;
 	const char* value(int index) const override;
 };
 

@@ -18,8 +18,8 @@ struct Constraint {
 	uint32_t types;
 };
 struct ForeignKey {
-	std::string table;
-	std::string field;
+	core::String table;
+	core::String field;
 };
 
 typedef std::unordered_map<std::string, Constraint> Constraints;

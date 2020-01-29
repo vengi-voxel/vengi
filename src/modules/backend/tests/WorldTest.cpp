@@ -47,7 +47,7 @@ public:
 		_aiRegistry->init();
 		_loader = std::make_shared<AILoader>(_aiRegistry);
 		_containerProvider = std::make_shared<attrib::ContainerProvider>();
-		const std::string& attributes = _testApp->filesystem()->load("test-attributes.lua");
+		const core::String& attributes = _testApp->filesystem()->load("test-attributes.lua");
 		ASSERT_TRUE(_containerProvider->init(attributes)) << _containerProvider->error();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();

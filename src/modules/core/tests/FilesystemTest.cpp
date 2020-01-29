@@ -43,7 +43,7 @@ TEST_F(FilesystemTest, testAbsolutePath) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("absolutePathInCurDir"));
-	const std::string& absPath = fs.absolutePath("absolutePathInCurDir");
+	const core::String& absPath = fs.absolutePath("absolutePathInCurDir");
 	EXPECT_NE("", absPath);
 	fs.shutdown();
 }
@@ -99,7 +99,7 @@ TEST_F(FilesystemTest, testWriteExplicitCurDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("./testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
-	const std::string& content = fs.load("./testfile");
+	const core::String& content = fs.load("./testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.shutdown();
 }
@@ -108,7 +108,7 @@ TEST_F(FilesystemTest, testWrite) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
-	const std::string& content = fs.load("testfile");
+	const core::String& content = fs.load("testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.shutdown();
 }
@@ -117,7 +117,7 @@ TEST_F(FilesystemTest, testWriteNewDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("dir123/testfile", "123")) << "Failed to write content to testfile in dir123";
-	const std::string& content = fs.load("dir123/testfile");
+	const core::String& content = fs.load("dir123/testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.removeFile("dir123/testfile");
 	fs.removeDir("dir123");

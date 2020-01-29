@@ -38,7 +38,7 @@ bool ServerNetwork::packetReceived(ENetEvent& event) {
 	return true;
 }
 
-bool ServerNetwork::bind(uint16_t port, const std::string& hostname, int maxPeers, int maxChannels) {
+bool ServerNetwork::bind(uint16_t port, const core::String& hostname, int maxPeers, int maxChannels) {
 	if (_server) {
 		Log::error("There is already a server socket opened");
 		return false;

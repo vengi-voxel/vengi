@@ -246,7 +246,7 @@ void UIApp::enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) 
 	va_end(ap);
 }
 
-void UIApp::fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter) {
+void UIApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) {
 	if (isRelativeMouseMode()) {
 		toggleRelativeMouseMode();
 	}
@@ -332,7 +332,7 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	Super::onMouseButtonRelease(x, y, button);
 }
 
-bool UIApp::onTextInput(const std::string& text) {
+bool UIApp::onTextInput(const core::String& text) {
 	if (_console.onTextInput(text)) {
 		return true;
 	}
@@ -430,7 +430,7 @@ core::AppState UIApp::onInit() {
 	}
 
 	if (_applicationSkin.empty()) {
-		const std::string skin = "ui/skin/" + _appname + "-skin.tb.txt";
+		const core::String skin = "ui/skin/" + _appname + "-skin.tb.txt";
 		if (filesystem()->exists(skin)) {
 			_applicationSkin = skin;
 		}

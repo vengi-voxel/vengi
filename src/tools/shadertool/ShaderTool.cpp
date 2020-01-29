@@ -21,7 +21,7 @@ ShaderTool::ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr&
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 }
 
-bool ShaderTool::parse(const std::string& buffer, bool vertex) {
+bool ShaderTool::parse(const core::String& buffer, bool vertex) {
 	return shadertool::parse(_shaderStruct, _shaderfile, buffer, vertex);
 }
 
@@ -44,8 +44,8 @@ core::AppState ShaderTool::onConstruct() {
 	return Super::onConstruct();
 }
 
-void ShaderTool::validate(const std::string& name) {
-	const std::string& writePath = filesystem()->homePath();
+void ShaderTool::validate(const core::String& name) {
+	const core::String& writePath = filesystem()->homePath();
 	std::vector<std::string> args;
 	args.push_back(writePath + name);
 	Log::debug("Execute glslang validator with the following commandline: %s %s", _glslangValidatorBin.c_str(),
@@ -81,7 +81,7 @@ bool ShaderTool::printInfo() {
 
 	const bool printIncludes = hasArg("--printincludes");
 	if (printIncludes) {
-		for (const std::string& i : _includes) {
+		for (const core::String& i : _includes) {
 			Log::info("%s%s", _shaderpath.c_str(), i.c_str());
 		}
 		return false;
@@ -89,11 +89,11 @@ bool ShaderTool::printInfo() {
 	return true;
 }
 
-std::pair<std::string, bool> ShaderTool::getSource(const std::string& file) const {
+std::pair<std::string, bool> ShaderTool::getSource(const core::String& file) const {
 	const io::FilesystemPtr& fs = filesystem();
 
 	const std::pair<std::string, bool>& retIncludes = util::handleIncludes(fs->load(file), _includeDirs);
-	std::string src = retIncludes.first;
+	core::String src = retIncludes.first;
 	int level = 0;
 	bool success = retIncludes.second;
 	while (core::string::contains(src, "#include")) {
@@ -110,7 +110,7 @@ std::pair<std::string, bool> ShaderTool::getSource(const std::string& file) cons
 }
 
 core::AppState ShaderTool::onRunning() {
-	const std::string& shaderfile         = getArgVal("--shader");
+	const core::String& shaderfile         = getArgVal("--shader");
 	const bool printIncludes              = hasArg("--printincludes");
 	if (!printIncludes) {
 		_glslangValidatorBin              = getArgVal("--glslang");
@@ -127,7 +127,7 @@ core::AppState ShaderTool::onRunning() {
 		_includeDirs.push_back(".");
 		int index = 0;
 		for (;;) {
-			const std::string& dir = getArgVal("-I", "", &index);
+			const core::String& dir = getArgVal("-I", "", &index);
 			if (dir.empty()) {
 				break;
 			}
@@ -155,14 +155,14 @@ core::AppState ShaderTool::onRunning() {
 	_shaderStruct.filename = _shaderfile;
 	_shaderStruct.name = _shaderfile;
 
-	const std::string& writePath = fs->homePath();
+	const core::String& writePath = fs->homePath();
 	Log::debug("Writing shader file %s to %s", _shaderfile.c_str(), writePath.c_str());
 
-	const std::string& templateShaderHeader = fs->load(_headerTemplateFile);
-	const std::string& templateShaderSource = fs->load(_sourceTemplateFile);
-	const std::string& templateUniformBuffer = fs->load(_uniformBufferTemplateFile);
+	const core::String& templateShaderHeader = fs->load(_headerTemplateFile);
+	const core::String& templateShaderSource = fs->load(_sourceTemplateFile);
+	const core::String& templateUniformBuffer = fs->load(_uniformBufferTemplateFile);
 
-	const std::string& computeFilename = _shaderfile + COMPUTE_POSTFIX;
+	const core::String& computeFilename = _shaderfile + COMPUTE_POSTFIX;
 	std::pair<std::string, bool> computeBuffer = getSource(computeFilename);
 	if (!computeBuffer.first.empty()) {
 		if (!computeBuffer.second) {
@@ -170,7 +170,7 @@ core::AppState ShaderTool::onRunning() {
 			_exitCode = 1;
 			return core::AppState::Cleanup;
 		}
-		const std::string& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, false, &_includes);
+		const core::String& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, false, &_includes);
 		if (!parse(computeSrcSource, false)) {
 			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
 			_exitCode = 1;
@@ -189,8 +189,8 @@ core::AppState ShaderTool::onRunning() {
 			return core::AppState::Cleanup;
 		}
 
-		const std::string& computeSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, true);
-		const std::string& finalComputeFilename = _appname + "-" + computeFilename;
+		const core::String& computeSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, true);
+		const core::String& finalComputeFilename = _appname + "-" + computeFilename;
 		fs->write(finalComputeFilename, computeSource);
 
 		Log::debug("Validating shader file %s", _shaderfile.c_str());
@@ -198,7 +198,7 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 
-	const std::string& fragmentFilename = _shaderfile + FRAGMENT_POSTFIX;
+	const core::String& fragmentFilename = _shaderfile + FRAGMENT_POSTFIX;
 	const std::pair<std::string, bool>& fragmentBuffer = getSource(fragmentFilename);
 	if (fragmentBuffer.first.empty() || !fragmentBuffer.second) {
 		Log::error("Could not load %s", fragmentFilename.c_str());
@@ -206,7 +206,7 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 
-	const std::string& vertexFilename = _shaderfile + VERTEX_POSTFIX;
+	const core::String& vertexFilename = _shaderfile + VERTEX_POSTFIX;
 	const std::pair<std::string, bool>& vertexBuffer = getSource(vertexFilename);
 	if (vertexBuffer.first.empty() || !vertexBuffer.second) {
 		Log::error("Could not load %s", vertexFilename.c_str());
@@ -214,11 +214,11 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 
-	const std::string& geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
+	const core::String& geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
 	const std::pair<std::string, bool>& geometryBuffer = getSource(geometryFilename);
 
-	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, false, &_includes);
-	const std::string& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, false, &_includes);
+	const core::String& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, false, &_includes);
+	const core::String& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, false, &_includes);
 
 	if (!parse(fragmentSrcSource, false)) {
 		Log::error("Failed to parse fragment shader %s", _shaderfile.c_str());
@@ -236,7 +236,7 @@ core::AppState ShaderTool::onRunning() {
 			_exitCode = 1;
 			return core::AppState::Cleanup;
 		}
-		const std::string& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer.first, false, &_includes);
+		const core::String& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer.first, false, &_includes);
 		if (!parse(geometrySrcSource, false)) {
 			Log::error("Failed to parse geometry shader %s", _shaderfile.c_str());
 			_exitCode = 1;
@@ -255,17 +255,17 @@ core::AppState ShaderTool::onRunning() {
 		_exitCode = 1;
 		return core::AppState::Cleanup;
 	}
-	const std::string& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, true);
-	const std::string& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, true);
-	const std::string& geometrySource = shader.getSource(video::ShaderType::Geometry, geometryBuffer.first, true);
+	const core::String& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, true);
+	const core::String& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, true);
+	const core::String& geometrySource = shader.getSource(video::ShaderType::Geometry, geometryBuffer.first, true);
 
 	if (changedDir) {
 		fs->popDir();
 	}
 
-	const std::string& finalFragmentFilename = _appname + "-" + fragmentFilename;
-	const std::string& finalVertexFilename = _appname + "-" + vertexFilename;
-	const std::string& finalGeometryFilename = _appname + "-" + geometryFilename;
+	const core::String& finalFragmentFilename = _appname + "-" + fragmentFilename;
+	const core::String& finalVertexFilename = _appname + "-" + vertexFilename;
+	const core::String& finalGeometryFilename = _appname + "-" + geometryFilename;
 	fs->write(finalFragmentFilename, fragmentSource);
 	fs->write(finalVertexFilename, vertexSource);
 	if (!geometrySource.empty()) {

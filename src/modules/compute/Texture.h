@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/String.h"
 #include "core/GLM.h"
 #include "TextureConfig.h"
 #include <memory>
@@ -12,14 +13,14 @@ namespace compute {
 
 class Texture {
 private:
-	std::string _name;
+	core::String _name;
 	Id _handle = InvalidId;
 	Id _sampler = InvalidId;
 	glm::ivec3 _size;
 	TextureConfig _config;
 public:
-	Texture(const TextureConfig& cfg, const glm::ivec2& size, const std::string& name = "");
-	Texture(const TextureConfig& cfg, const glm::ivec3& size, const std::string& name = "");
+	Texture(const TextureConfig& cfg, const glm::ivec2& size, const core::String& name = "");
+	Texture(const TextureConfig& cfg, const glm::ivec3& size, const core::String& name = "");
 	~Texture();
 	void shutdown();
 

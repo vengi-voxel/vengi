@@ -29,7 +29,7 @@
 
 namespace metric {
 
-UDPMetricSender::UDPMetricSender(const std::string& host, int port) :
+UDPMetricSender::UDPMetricSender(const core::String& host, int port) :
 		_host(host), _socket(INVALID_SOCKET), _port(port), _statsd(nullptr) {
 }
 

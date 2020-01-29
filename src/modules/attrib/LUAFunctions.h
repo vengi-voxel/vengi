@@ -21,7 +21,7 @@ static LUAContainer* luaGetContainerContext(lua_State * l, int n) {
 
 static int luaCreateContainer(lua_State * l) {
 	ContainerProvider *ctx = luaGetContext(l);
-	const std::string name = luaL_checkstring(l, 1);
+	const core::String name = luaL_checkstring(l, 1);
 	lua::LUA::newUserdata(l, "Container", new LUAContainer(name, ctx));
 	return 1;
 }
@@ -49,7 +49,7 @@ static int luaContainerAddAbsolute(lua_State * l) {
 	const double value = luaL_checknumber(l, 3);
 	attrib::Type attribType = getType(type);
 	if (attribType == attrib::Type::NONE) {
-		const std::string& error = core::string::format("Unknown type given: %s", type);
+		const core::String& error = core::string::format("Unknown type given: %s", type);
 		lua::LUA::returnError(l, error);
 	}
 	ctx->addAbsolute(attribType, value);
@@ -62,7 +62,7 @@ static int luaContainerAddPercentage(lua_State * l) {
 	const double value = luaL_checknumber(l, 3);
 	attrib::Type attribType = getType(type);
 	if (attribType == attrib::Type::NONE) {
-		const std::string& error = core::string::format("Unknown type given: %s", type);
+		const core::String& error = core::string::format("Unknown type given: %s", type);
 		lua::LUA::returnError(l, error);
 	}
 	ctx->addPercentage(attribType, value);

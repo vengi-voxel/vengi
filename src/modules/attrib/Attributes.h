@@ -76,7 +76,7 @@ protected:
 	core::ReadWriteLock _lock;
 	core::ReadWriteLock _attribLock;
 	Attributes* _parent;
-	std::string _name = "unnamed";
+	core::String _name = "unnamed";
 	std::vector<std::function<void(const DirtyValue&)> > _listeners;
 
 	void calculateMax(Values& absolutes, Values& percentages) const;
@@ -99,12 +99,12 @@ public:
 	 * you can specify names for them.
 	 * @sa name()
 	 */
-	void setName(const std::string& name);
+	void setName(const core::String& name);
 	/**
 	 * @return The name of the attributes system instance.
 	 * @sa setName()
 	 */
-	const std::string& name() const;
+	const core::String& name() const;
 
 	void markAsDirty();
 
@@ -145,7 +145,7 @@ public:
 	/**
 	 * @note Locks the object (container)
 	 */
-	void remove(const std::string& name);
+	void remove(const core::String& name);
 	/**
 	 * @note Locks the object (container)
 	 */
@@ -194,11 +194,11 @@ inline double Attributes::max(Type type) const {
 	return i->second;
 }
 
-inline void Attributes::setName(const std::string& name) {
+inline void Attributes::setName(const core::String& name) {
 	_name = name;
 }
 
-inline const std::string& Attributes::name() const {
+inline const core::String& Attributes::name() const {
 	return _name;
 }
 

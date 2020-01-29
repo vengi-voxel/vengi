@@ -29,20 +29,20 @@ class ComputeShaderTool: public core::CommandlineApp {
 private:
 	using Super = core::CommandlineApp;
 protected:
-	std::string _namespaceSrc;
-	std::string _sourceDirectory;
-	std::string _postfix;
-	std::string _shaderDirectory;
-	std::string _computeFilename;
-	std::string _shaderTemplateFile;
-	std::string _name;
+	core::String _namespaceSrc;
+	core::String _sourceDirectory;
+	core::String _postfix;
+	core::String _shaderDirectory;
+	core::String _computeFilename;
+	core::String _shaderTemplateFile;
+	core::String _name;
 	std::vector<computeshadertool::Kernel> _kernels;
 	std::vector<computeshadertool::Struct> _structs;
 	std::map<std::string, std::string> _constants;
 	std::vector<std::string> _includeDirs;
 
-	std::pair<std::string, bool> getSource(const std::string& file) const;
-	bool parse(const std::string& src);
+	std::pair<std::string, bool> getSource(const core::String& file) const;
+	bool parse(const core::String& src);
 public:
 	ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	~ComputeShaderTool();

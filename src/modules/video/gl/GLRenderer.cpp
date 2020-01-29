@@ -1378,7 +1378,7 @@ void enableDebug(DebugSeverity severity) {
 	Log::info("enable opengl debug messages");
 }
 
-bool compileShader(Id id, ShaderType shaderType, const std::string& source, const std::string& name) {
+bool compileShader(Id id, ShaderType shaderType, const core::String& source, const core::String& name) {
 	if (id == InvalidId) {
 		return false;
 	}
@@ -1401,7 +1401,7 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
 		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog.get());
 		video::checkError();
-		const std::string compileLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
+		const core::String compileLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 
 		const char *strShaderType;
 		switch (shaderType) {
@@ -1455,7 +1455,7 @@ bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode
 	return true;
 }
 
-bool linkComputeShader(Id program, Id comp, const std::string& name) {
+bool linkComputeShader(Id program, Id comp, const core::String& name) {
 	const GLuint lid = (GLuint)program;
 	glAttachShader(lid, comp);
 	glLinkProgram(lid);
@@ -1469,7 +1469,7 @@ bool linkComputeShader(Id program, Id comp, const std::string& name) {
 		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
 		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog.get());
 		video::checkError();
-		const std::string linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
+		const core::String linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 		if (status != GL_TRUE) {
 			Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
 		} else {
@@ -1492,7 +1492,7 @@ bool linkComputeShader(Id program, Id comp, const std::string& name) {
 	}
 	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
 	if (logLength > 0) {
-		std::string message(logLength, '\n');
+		core::String message(logLength, '\n');
 		if (message.size() > 1) {
 			glGetProgramInfoLog(lid, message.size(), nullptr, &message[0]);
 		}
@@ -1538,7 +1538,7 @@ bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
 	return false;
 }
 
-bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) {
+bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name) {
 	const GLuint lid = (GLuint)program;
 	glAttachShader(lid, (GLuint)vert);
 	glAttachShader(lid, (GLuint)frag);
@@ -1557,7 +1557,7 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
 		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog.get());
 		video::checkError();
-		const std::string linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
+		const core::String linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 		if (status != GL_TRUE) {
 			Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
 		} else {
@@ -1584,7 +1584,7 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 	}
 	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
 	if (logLength > 0) {
-		std::string message(logLength, '\n');
+		core::String message(logLength, '\n');
 		if (message.size() > 1) {
 			glGetProgramInfoLog(lid, message.size(), nullptr, &message[0]);
 		}
@@ -1595,13 +1595,13 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 	return true;
 }
 
-int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name) {
+int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name) {
 	int n = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
 	n += _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
 	return n;
 }
 
-int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name) {
+int fetchAttributes(Id program, ShaderAttributes& attributes, const core::String& name) {
 	char varName[MAX_SHADER_VAR_NAME];
 	int numAttributes = 0;
 	const GLuint lid = (GLuint)program;
@@ -1713,7 +1713,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	Log::info("GL_RENDERER: %s", glrenderer);
 	Log::info("GL_VERSION: %s", glversion);
 	if (glvendor != nullptr) {
-		const std::string vendor(glvendor);
+		const core::String vendor(glvendor);
 		for (int i = 0; i < std::enum_value(Vendor::Max); ++i) {
 			const bool match = core::string::icontains(vendor, _priv::VendorStrings[i]);
 			_priv::s.vendor[i] = match;

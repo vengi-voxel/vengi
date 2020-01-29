@@ -31,10 +31,10 @@ namespace core {
 
 class ReadWriteLock {
 private:
-	const std::string _name;
+	const core::String _name;
 	mutable core_trace_mutex(Mutex, _mutex);
 public:
-	ReadWriteLock(const std::string& name) :
+	ReadWriteLock(const core::String& name) :
 			_name(name) {
 	}
 

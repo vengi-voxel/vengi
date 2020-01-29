@@ -14,12 +14,12 @@ namespace eventmgr {
  * @ingroup Events
  */
 struct EventConfigurationData {
-	const std::string eventNameId;
+	const core::String eventNameId;
 	const Type type = Type::NONE;
 	// TODO: spawn data
 	// TODO: poi data (automatic via spawning?)
 
-	EventConfigurationData(const std::string& _eventNameId, Type _type) :
+	EventConfigurationData(const core::String& _eventNameId, Type _type) :
 			eventNameId(_eventNameId), type(_type) {
 	}
 };

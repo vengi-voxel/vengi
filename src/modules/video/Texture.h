@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/String.h"
 #include "TextureConfig.h"
 #include "core/io/IOResource.h"
 
@@ -23,7 +24,7 @@ namespace video {
  */
 class Texture: public io::IOResource {
 private:
-	std::string _name;
+	core::String _name;
 	Id _handle = video::InvalidId;
 	int _width;
 	int _height;
@@ -32,7 +33,7 @@ private:
 	mutable TextureUnit _boundUnit = TextureUnit::Zero;
 
 public:
-	Texture(const TextureConfig& cfg, int width = 1, int height = 1, const std::string& name = "");
+	Texture(const TextureConfig& cfg, int width = 1, int height = 1, const core::String& name = "");
 	~Texture();
 	void shutdown();
 
@@ -110,16 +111,16 @@ public:
 };
 
 /** @brief creates empty texture with placeholder pixel in */
-extern TexturePtr createEmptyTexture(const std::string& name);
+extern TexturePtr createEmptyTexture(const core::String& name);
 
 /** @brief creates white texture with placeholder pixel in */
-extern TexturePtr createWhiteTexture(const std::string& name);
+extern TexturePtr createWhiteTexture(const core::String& name);
 
 extern TexturePtr createTextureFromImage(const image::ImagePtr& image);
 
-extern TexturePtr createTextureFromImage(const std::string& filename);
+extern TexturePtr createTextureFromImage(const core::String& filename);
 
-extern TexturePtr createTexture(const TextureConfig& cfg, int width = 1, int height = 1, const std::string& name = "");
+extern TexturePtr createTexture(const TextureConfig& cfg, int width = 1, int height = 1, const core::String& name = "");
 
 extern bool bindTexture(TextureUnit unit, const Texture& texture);
 

@@ -51,7 +51,7 @@ public:
 	bool init() override;
 	void shutdown() override;
 
-	int containerId(const std::string& name) const;
+	int containerId(const core::String& name) const;
 
 	/**
 	 * @brief Adds a new item to the stock

@@ -29,7 +29,7 @@ static const char* PrimitiveStr[] {
 };
 static_assert(lengthof(PrimitiveStr) == std::enum_value(video::Primitive::Max), "PrimitiveStr doesn't match enum");
 
-static video::Primitive layoutPrimitiveType(const std::string& token) {
+static video::Primitive layoutPrimitiveType(const core::String& token) {
 	for (int i = 0; i < lengthof(PrimitiveStr); ++i) {
 		if (token == PrimitiveStr[i]) {
 			return (video::Primitive)i;
@@ -43,7 +43,7 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 		return false;
 	}
 
-	std::string token = tok.next();
+	core::String token = tok.next();
 	if (token != "(") {
 		Log::warn("Unexpected layout syntax - expected {, got %s", token.c_str());
 		return false;
@@ -166,7 +166,7 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 	return true;
 }
 
-bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std::string& buffer, bool vertex) {
+bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const core::String& buffer, bool vertex) {
 	bool uniformBlock = false;
 
 	simplecpp::DUI dui;
@@ -188,7 +188,7 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 	Layout layout;
 	bool hasLayout = false;
 	while (tok.hasNext()) {
-		const std::string token = tok.next();
+		const core::String token = tok.next();
 		Log::trace("token: %s", token.c_str());
 		std::vector<Variable>* v = nullptr;
 		if (token == "$in") {
@@ -208,11 +208,11 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 			if (!tok.hasNext()) {
 				return false;
 			}
-			const std::string varname = tok.next();
+			const core::String varname = tok.next();
 			if (!tok.hasNext()) {
 				return false;
 			}
-			const std::string varvalue = tok.next();
+			const core::String varvalue = tok.next();
 			if (!shaderStruct.constants.insert(std::make_pair(varname, varvalue)).second) {
 				Log::error("Could not register constant %s with value %s (duplicate)", varname.c_str(), varvalue.c_str());
 				return false;
@@ -255,7 +255,7 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 			Log::error("Failed to parse the shader, could not get type");
 			return false;
 		}
-		std::string type = tok.next();
+		core::String type = tok.next();
 		Log::trace("token: %s", type.c_str());
 		if (!tok.hasNext()) {
 			Log::error("Failed to parse the shader, could not get variable name for type %s", type.c_str());
@@ -269,7 +269,7 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 			}
 			type = tok.next();
 		}
-		std::string name = tok.next();
+		core::String name = tok.next();
 		Log::trace("token: %s", name.c_str());
 		// uniform block
 		if (name == "{") {
@@ -284,7 +284,7 @@ bool parse(ShaderStruct& shaderStruct, const std::string& shaderFile, const std:
 		int arraySize = 0;
 		if (isArray) {
 			tok.next();
-			const std::string& number = tok.next();
+			const core::String& number = tok.next();
 			core_assert_always(tok.next() == "]");
 			core_assert_always(tok.next() == ";");
 			arraySize = core::string::toInt(number);

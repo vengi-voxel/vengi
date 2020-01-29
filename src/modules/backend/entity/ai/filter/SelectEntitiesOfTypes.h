@@ -20,7 +20,7 @@ private:
 public:
 	FILTER_FACTORY(SelectEntitiesOfTypes)
 
-	SelectEntitiesOfTypes(const std::string& parameters);
+	SelectEntitiesOfTypes(const core::String& parameters);
 
 	void filter(const ai::AIPtr& entity) override;
 };

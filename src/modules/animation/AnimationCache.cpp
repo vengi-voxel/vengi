@@ -6,7 +6,7 @@
 
 namespace animation {
 
-bool AnimationCache::load(const std::string& filename, size_t meshIndex, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
+bool AnimationCache::load(const core::String& filename, size_t meshIndex, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
 	voxel::Mesh& mesh = cacheEntry(filename.c_str());
 	if (mesh.getNoOfVertices() > 0) {
 		meshes[meshIndex] = &mesh;
@@ -28,7 +28,7 @@ bool AnimationCache::getMeshes(const AnimationSettings& settings, const voxel::M
 			meshes[i] = nullptr;
 			continue;
 		}
-		const std::string& fullPath = settings.fullPath(i);
+		const core::String& fullPath = settings.fullPath(i);
 		if (!load(fullPath, i, meshes)) {
 			Log::error("Failed to load %s", fullPath.c_str());
 			return false;

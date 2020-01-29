@@ -103,7 +103,7 @@ bool Protocol::subscribe(const GameInfo& game) {
 		return true;
 	}
 	bool subscribed = true;
-	const std::string& privateChannel = core::string::format("player/%s", _clientToken.c_str());
+	const core::String& privateChannel = core::string::format("player/%s", _clientToken.c_str());
 	for (const char* topic : {"grid", "players", "ticker", "scores", privateChannel.c_str()}) {
 		char topicBuf[128];
 		SDL_snprintf(topicBuf, sizeof(topicBuf), "traze/%s/%s", game.name.c_str(), topic);
@@ -125,7 +125,7 @@ bool Protocol::subscribe(const GameInfo& game) {
 	return subscribed;
 }
 
-bool Protocol::send(const std::string& topic, const std::string& json) const {
+bool Protocol::send(const core::String& topic, const core::String& json) const {
 	const int rc = mosquitto_publish(_mosquitto, nullptr, topic.c_str(), json.size(), json.c_str(), 0, true);
 	if (rc != MOSQ_ERR_SUCCESS) {
 		Log::warn("Failed to send to topic '%s' with error %s", topic.c_str(), mosquitto_strerror(rc));
@@ -135,7 +135,7 @@ bool Protocol::send(const std::string& topic, const std::string& json) const {
 	return rc == MOSQ_ERR_SUCCESS;
 }
 
-bool Protocol::join(const std::string& name) {
+bool Protocol::join(const core::String& name) {
 	if (core::string::contains(name, "#")
 	 || core::string::contains(name, "/")
 	 || core::string::contains(name, "+")) {
@@ -184,7 +184,7 @@ bool Protocol::bail() {
 	return false;
 }
 
-void Protocol::parseOwnPlayer(const std::string& json) {
+void Protocol::parseOwnPlayer(const core::String& json) {
 	const core::json j = core::json::parse(json);
 	_playerToken = j["secretUserToken"];
 	_playerId = j["id"].get<int>();
@@ -193,7 +193,7 @@ void Protocol::parseOwnPlayer(const std::string& json) {
 	_eventBus->enqueue(std::make_shared<SpawnEvent>(Spawn{position, true}));
 }
 
-void Protocol::parsePlayers(const std::string& json) {
+void Protocol::parsePlayers(const core::String& json) {
 	const core::json j = core::json::parse(json);
 	std::vector<Player> players;
 	players.reserve(j.size());
@@ -201,7 +201,7 @@ void Protocol::parsePlayers(const std::string& json) {
 	for (const auto& player : j) {
 		Player p;
 		p.name = player["name"];
-		const std::string& hex = player["color"];
+		const core::String& hex = player["color"];
 		const glm::vec4& color = core::Color::fromHex(hex.c_str());
 		const uint8_t index = core::Color::getClosestMatch(color, materialColors);
 		p.colorIndex = index;
@@ -220,10 +220,10 @@ void Protocol::parsePlayers(const std::string& json) {
 	_players = playerMap;
 }
 
-void Protocol::parseTicker(const std::string& json) const {
+void Protocol::parseTicker(const core::String& json) const {
 	const core::json j = core::json::parse(json);
 	Ticker ticker;
-	const std::string& type = j["type"];
+	const core::String& type = j["type"];
 	if (type == "suicide") {
 		ticker.type = TickerType::Suicide;
 	} else if (type == "frag") {
@@ -238,7 +238,7 @@ void Protocol::parseTicker(const std::string& json) const {
 	_eventBus->enqueue(std::make_shared<TickerEvent>(ticker));
 }
 
-void Protocol::parseGames(const std::string& json) const {
+void Protocol::parseGames(const core::String& json) const {
 	const core::json j = core::json::parse(json);
 	const size_t size = j.size();
 	if (size == 0) {
@@ -258,7 +258,7 @@ void Protocol::parseGames(const std::string& json) const {
 	_eventBus->enqueue(std::make_shared<NewGamesEvent>(games));
 }
 
-void Protocol::parseScores(const std::string& json) {
+void Protocol::parseScores(const core::String& json) {
 	const core::json j = core::json::parse(json);
 	using _S = std::pair<int, std::string>;
 	std::vector<_S> entries;
@@ -278,7 +278,7 @@ void Protocol::parseScores(const std::string& json) {
 	_eventBus->enqueue(std::make_shared<ScoreEvent>(scores));
 }
 
-void Protocol::parseGridAndUpdateVolume(const std::string& json) {
+void Protocol::parseGridAndUpdateVolume(const core::String& json) {
 	const core::json j = core::json::parse(json);
 	const int height = j["height"].get<int>();
 	const int width = j["width"].get<int>();
@@ -319,7 +319,7 @@ void Protocol::parseGridAndUpdateVolume(const std::string& json) {
 			int locX = bike["currentLocation"][0].get<int>();
 			int locY = bike["currentLocation"][1].get<int>();
 			b.currentLocation = glm::ivec2(locX, locY);
-			const std::string direction = bike["direction"];
+			const core::String direction = bike["direction"];
 			if (direction == "W") {
 				b.direction = BikeDirection::W;
 			} else if (direction == "E") {
@@ -350,7 +350,7 @@ void Protocol::onMessage(const struct mosquitto_message *msg) {
 		return;
 	}
 	const char *payload = (const char*)msg->payload;
-	const std::string p(payload, msg->payloadlen);
+	const core::String p(payload, msg->payloadlen);
 	Log::debug("MQTT: received message with payload: '%s'", p.c_str());
 	const char *subTopic = core::string::after(msg->topic, '/');
 	if (!strcmp(subTopic, "games")) {

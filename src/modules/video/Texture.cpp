@@ -12,7 +12,7 @@
 
 namespace video {
 
-Texture::Texture(const TextureConfig& cfg, int width, int height, const std::string& name) :
+Texture::Texture(const TextureConfig& cfg, int width, int height, const core::String& name) :
 		io::IOResource(), _name(name), _width(width), _height(height) {
 	_config = cfg;
 }
@@ -98,7 +98,7 @@ TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 	return t;
 }
 
-TexturePtr createEmptyTexture(const std::string& name) {
+TexturePtr createEmptyTexture(const core::String& name) {
 	TextureConfig cfg;
 	cfg.type(TextureType::Texture2D);
 	cfg.format(TextureFormat::RGBA);
@@ -108,7 +108,7 @@ TexturePtr createEmptyTexture(const std::string& name) {
 	return p;
 }
 
-TexturePtr createWhiteTexture(const std::string& name) {
+TexturePtr createWhiteTexture(const core::String& name) {
 	TextureConfig cfg;
 	cfg.type(TextureType::Texture2D);
 	cfg.format(TextureFormat::RGBA);
@@ -118,11 +118,11 @@ TexturePtr createWhiteTexture(const std::string& name) {
 	return p;
 }
 
-TexturePtr createTextureFromImage(const std::string& filename) {
+TexturePtr createTextureFromImage(const core::String& filename) {
 	return createTextureFromImage(image::loadImage(filename, false));
 }
 
-TexturePtr createTexture(const TextureConfig& cfg, int width, int height, const std::string& name) {
+TexturePtr createTexture(const TextureConfig& cfg, int width, int height, const core::String& name) {
 	const TexturePtr& ptr = std::make_shared<Texture>(cfg, width, height, name);
 	if (cfg.type() == TextureType::Texture2D && cfg.layers() > 1) {
 		Log::error("Texture with layers given, but normal 2d texture was defined");

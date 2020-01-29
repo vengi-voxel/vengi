@@ -8,13 +8,13 @@
 
 namespace compute {
 
-Texture::Texture(const TextureConfig& cfg, const glm::ivec2& size, const std::string& name) :
+Texture::Texture(const TextureConfig& cfg, const glm::ivec2& size, const core::String& name) :
 		_name(name), _size(size.x, size.y, 1) {
 	_config = cfg;
 	core_assert_msg(_config.type() == TextureType::Texture1D || _config.type() == TextureType::Texture2D, "Texture2D or Texture1D is needed as type");
 }
 
-Texture::Texture(const TextureConfig& cfg, const glm::ivec3& size, const std::string& name) :
+Texture::Texture(const TextureConfig& cfg, const glm::ivec3& size, const core::String& name) :
 		_name(name), _size(size) {
 	_config = cfg;
 	core_assert_msg(_size.z > 1, "Texture3D must have layers > 1, but %i is given", _size.z);

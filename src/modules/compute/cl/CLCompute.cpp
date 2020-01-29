@@ -189,14 +189,14 @@ bool checkError(cl_int clError, bool triggerAssert) {
 
 } // end _priv namespace
 
-static std::string getPlatformName(cl_platform_id id) {
+static core::String getPlatformName(cl_platform_id id) {
 	size_t size = 0u;
 	cl_int error;
 
 	error = clGetPlatformInfo(id, CL_PLATFORM_NAME, 0, nullptr, &size);
 	_priv::checkError(error);
 
-	std::string result;
+	core::String result;
 	result.resize(size);
 	error = clGetPlatformInfo(id, CL_PLATFORM_NAME, size,
 			const_cast<char*>(result.data()), nullptr);
@@ -205,14 +205,14 @@ static std::string getPlatformName(cl_platform_id id) {
 	return result;
 }
 
-static std::string getDeviceInfo(cl_device_id id, cl_device_info param) {
+static core::String getDeviceInfo(cl_device_id id, cl_device_info param) {
 	size_t size = 0u;
 	cl_int error;
 
 	error = clGetDeviceInfo(id, param, 0, nullptr, &size);
 	_priv::checkError(error);
 
-	std::string result;
+	core::String result;
 	result.resize(size);
 	error = clGetDeviceInfo(id, param, size,
 			const_cast<char*>(result.data()), nullptr);
@@ -607,7 +607,7 @@ bool copyBufferToImage(compute::Id buffer, compute::Id image, size_t bufferOffse
 	return error == CL_SUCCESS;
 }
 
-Id createProgram(const std::string& source) {
+Id createProgram(const core::String& source) {
 	if (_priv::_ctx.context == nullptr) {
 		return InvalidId;
 	}
@@ -874,7 +874,7 @@ bool init() {
 
 	cl_uint platformIndex = 0;
 	for (; platformIndex < _priv::_ctx.platformIdCount; ++platformIndex) {
-		const std::string& platform = getPlatformName(_priv::_ctx.platformIds[platformIndex]);
+		const core::String& platform = getPlatformName(_priv::_ctx.platformIds[platformIndex]);
 		error = clGetDeviceIDs(_priv::_ctx.platformIds[platformIndex], CL_DEVICE_TYPE_ALL, 0,
 				nullptr, &_priv::_ctx.deviceIdCount);
 		if (error != CL_DEVICE_NOT_FOUND) {
@@ -930,10 +930,10 @@ bool init() {
 	}
 #endif
 
-	const std::string& device = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_NAME);
-	const std::string& vendor = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_VENDOR);
-	const std::string& version = getDeviceInfo(_priv::_ctx.deviceId, CL_DRIVER_VERSION);
-	const std::string& devVersion = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_VERSION);
+	const core::String& device = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_NAME);
+	const core::String& vendor = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_VENDOR);
+	const core::String& version = getDeviceInfo(_priv::_ctx.deviceId, CL_DRIVER_VERSION);
+	const core::String& devVersion = getDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_VERSION);
 	Log::info("CL_DEVICE_VENDOR: %s", vendor.c_str());
 	Log::info("CL_DEVICE_NAME: %s", device.c_str());
 	Log::info("CL_DEVICE_VERSION: %s", devVersion.c_str());
@@ -945,7 +945,7 @@ bool init() {
 		std::unique_ptr<char[]> extensions(new char[extensionSize + 1]);
 		error = clGetDeviceInfo(_priv::_ctx.deviceId, CL_DEVICE_EXTENSIONS,	extensionSize, (void*)extensions.get(), &extensionSize);
 		_priv::checkError(error);
-		std::string extensionsStr = extensions.get();
+		core::String extensionsStr = extensions.get();
 
 		Log::info("OpenCL device extensions:");
 		std::vector<std::string> extensionsVec;

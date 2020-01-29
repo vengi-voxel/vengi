@@ -20,22 +20,22 @@ enum class DataType {
 };
 
 struct Parameter {
-	std::string qualifier;
-	std::string type;
-	std::string name;
-	std::string comment;
-	std::string value;
+	core::String qualifier;
+	core::String type;
+	core::String name;
+	core::String comment;
+	core::String value;
 	bool byReference = false;
 	DataType datatype = DataType::None;
 	compute::BufferFlag flags = compute::BufferFlag::ReadWrite;
 };
 
 struct ReturnValue {
-	std::string type;
+	core::String type;
 };
 
 struct Kernel {
-	std::string name;
+	core::String name;
 	std::vector<Parameter> parameters;
 	int workDimension = 1;
 	ReturnValue returnValue;
@@ -43,8 +43,8 @@ struct Kernel {
 
 struct Struct {
 	bool isEnum = false;
-	std::string comment;
-	std::string name;
+	core::String comment;
+	core::String name;
 	std::vector<Parameter> parameters;
 };
 

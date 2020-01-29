@@ -27,7 +27,7 @@ namespace metric {
 
 class UDPMetricSender : public IMetricSender {
 private:
-	const std::string _host;
+	const core::String _host;
 	mutable SOCKET _socket;
 	const uint16_t _port;
 	mutable struct sockaddr_in* _statsd;
@@ -35,7 +35,7 @@ private:
 
 	bool connect() const;
 public:
-	UDPMetricSender(const std::string& host, int port);
+	UDPMetricSender(const core::String& host, int port);
 	bool send(const char* buffer) const override;
 
 	/**

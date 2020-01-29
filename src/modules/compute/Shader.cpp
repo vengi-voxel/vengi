@@ -29,7 +29,7 @@ bool Shader::init() {
 	return _initialized;
 }
 
-std::string Shader::handlePragmas(const std::string& buffer) const {
+core::String Shader::handlePragmas(const core::String& buffer) const {
 	// TODO: check the code for printf statements and activate the pragmas
 	//#pragma OPENCL EXTENSION cl_amd_printf : enable
 	//#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
@@ -61,11 +61,11 @@ void Shader::shutdown() {
 	compute::deleteProgram(_program);
 }
 
-bool Shader::load(const std::string& name, const std::string& buffer) {
+bool Shader::load(const core::String& name, const core::String& buffer) {
 	core_assert(_initialized);
 	_name = name;
 	Log::info("Load compute shader %s", name.c_str());
-	const std::string& source = getSource(buffer);
+	const core::String& source = getSource(buffer);
 	_program = compute::createProgram(source);
 	if (_program == InvalidId) {
 		return false;
@@ -119,34 +119,34 @@ void Shader::deleteKernel(Id& kernel) {
 	compute::deleteKernel(kernel);
 }
 
-bool Shader::loadProgram(const std::string& filename) {
+bool Shader::loadProgram(const core::String& filename) {
 	return loadFromFile(filename + COMPUTE_POSTFIX);
 }
 
-bool Shader::loadFromFile(const std::string& filename) {
-	const std::string& buffer = io::filesystem()->load(filename);
+bool Shader::loadFromFile(const core::String& filename) {
+	const core::String& buffer = io::filesystem()->load(filename);
 	if (buffer.empty()) {
 		return false;
 	}
 	return load(filename, buffer);
 }
 
-std::string Shader::validPreprocessorName(const std::string& name) {
+core::String Shader::validPreprocessorName(const core::String& name) {
 	return core::string::replaceAll(name, "_", "");
 }
 
-std::string Shader::getSource(const std::string& buffer, bool finalize, std::vector<std::string>* includedFiles) const {
+core::String Shader::getSource(const core::String& buffer, bool finalize, std::vector<std::string>* includedFiles) const {
 	if (buffer.empty()) {
 		return "";
 	}
-	std::string src;
+	core::String src;
 
 	util::visitVarSorted([&] (const core::VarPtr& var) {
 		src.append("#define ");
-		const std::string& validName = validPreprocessorName(var->name());
+		const core::String& validName = validPreprocessorName(var->name());
 		src.append(validName);
 		src.append(" ");
-		std::string val;
+		core::String val;
 		if (var->typeIsBool()) {
 			val = var->boolVal() ? "1" : "0";
 		} else {
@@ -186,7 +186,7 @@ std::string Shader::getSource(const std::string& buffer, bool finalize, std::vec
 	src = handlePragmas(src);
 
 	util::visitVarSorted([&] (const core::VarPtr& var) {
-		const std::string& validName = validPreprocessorName(var->name());
+		const core::String& validName = validPreprocessorName(var->name());
 		src = core::string::replaceAll(src, var->name(), validName);
 	}, core::CV_SHADER);
 
@@ -196,7 +196,7 @@ std::string Shader::getSource(const std::string& buffer, bool finalize, std::vec
 	return src;
 }
 
-void Shader::addDefine(const std::string& name, const std::string& value) {
+void Shader::addDefine(const core::String& name, const core::String& value) {
 	core_assert_msg(!_initialized, "Shader is already initialized");
 	_defines[name] = value;
 }

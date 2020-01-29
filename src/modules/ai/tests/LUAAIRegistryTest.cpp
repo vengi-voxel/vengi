@@ -6,7 +6,7 @@
 class LUAAIRegistryTest: public TestSuite {
 protected:
 	ai::LUAAIRegistry _registry;
-	static std::string _luaCode;
+	static core::String _luaCode;
 	const ai::CharacterId _id = 1;
 	ai::ICharacterPtr _chr = std::make_shared<TestEntity>(_id);
 	const ai::ConditionFactoryContext ctxCondition = ai::ConditionFactoryContext("");
@@ -105,7 +105,7 @@ protected:
 	}
 };
 
-std::string LUAAIRegistryTest::_luaCode;
+core::String LUAAIRegistryTest::_luaCode;
 
 TEST_F(LUAAIRegistryTest, testLuaNode1) {
 	testNode("LuaTest", ai::TreeNodeStatus::FINISHED);

@@ -12,7 +12,7 @@ class PaletteSelector: public ui::turbobadger::Window {
 private:
 	using Super = ui::turbobadger::Window;
 	tb::TBGenericStringItemSource _paletteList;
-	std::string _currentSelectedPalette;
+	core::String _currentSelectedPalette;
 public:
 	PaletteSelector(ui::turbobadger::Window* window);
 	~PaletteSelector();

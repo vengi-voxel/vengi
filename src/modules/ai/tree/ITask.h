@@ -11,7 +11,7 @@ namespace ai {
  * @brief Macro for the constructor of a task. Just give the class name as parameter.
  */
 #define TASK_CLASS_CTOR(TaskName) \
-	TaskName(const std::string& name, const std::string& parameters, const ::ai::ConditionPtr& condition) : \
+	TaskName(const core::String& name, const core::String& parameters, const ::ai::ConditionPtr& condition) : \
 			::ai::ITask(name, parameters, condition)
 /**
  * @brief Macro for the destructor of a task. Just give the class name as parameter.
@@ -47,7 +47,7 @@ protected:
 #endif
 	}
 public:
-	ITask(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
+	ITask(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
 			TreeNode(name, parameters, condition) {
 	}
 

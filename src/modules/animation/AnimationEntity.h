@@ -55,7 +55,7 @@ public:
 	 * @note This is basically just a wrapper around initMesh() and initSettings()
 	 * @return @c true if the initialization was successful, @c false otherwise.
 	 */
-	bool init(const AnimationCachePtr& cache, const std::string& luaString) {
+	bool init(const AnimationCachePtr& cache, const core::String& luaString) {
 		if (!initSettings(luaString)) {
 			return false;
 		}
@@ -69,7 +69,7 @@ public:
 	/**
 	 * @note Updating the settings without updating the mesh afterwards is pointless.
 	 */
-	virtual bool initSettings(const std::string& luaString) = 0;
+	virtual bool initSettings(const core::String& luaString) = 0;
 
 	/**
 	 * @brief Update the bone states and the tool vertices from the given inventory

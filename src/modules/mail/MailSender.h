@@ -17,10 +17,10 @@ private:
 	core::VarPtr _from;
 	core::VarPtr _password;
 
-	std::string _proxyHost;
-	std::string _proxyUser;
-	std::string _proxyPassword;
-	std::string _proxyUserPwd;
+	core::String _proxyHost;
+	core::String _proxyUser;
+	core::String _proxyPassword;
+	core::String _proxyUserPwd;
 	uint16_t _proxyPort;
 
 	static size_t readFn(void *ptr, size_t size, size_t nmemb, void *userp);
@@ -29,7 +29,7 @@ public:
 	bool init() override;
 	void shutdown() override;
 
-	bool setProxy(const std::string& host, uint16_t port = 3128, const char *user = nullptr, const char *password = nullptr);
+	bool setProxy(const core::String& host, uint16_t port = 3128, const char *user = nullptr, const char *password = nullptr);
 
 	bool send(const char *recipient, const char *subject, const char *body);
 };

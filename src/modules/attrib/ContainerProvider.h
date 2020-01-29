@@ -29,7 +29,7 @@ public:
 	typedef std::unordered_map<std::string, ContainerPtr> Containers;
 private:
 	Containers _containers;
-	std::string _error;
+	core::String _error;
 public:
 	/**
 	 * @param luaScript The lua script string to load
@@ -38,7 +38,7 @@ public:
 	 * @note this can be called multiple times. But beware, if a @c Container with the same
 	 * name already exists, it will just be overwritten-
 	 */
-	bool init(const std::string& luaScript);
+	bool init(const core::String& luaScript);
 
 	/**
 	 * @brief Removes all known containers from previous init() calls
@@ -51,12 +51,12 @@ public:
 	const Containers& containers() const;
 
 	void addContainer(const ContainerPtr& container);
-	ContainerPtr container(const std::string& name) const;
+	ContainerPtr container(const core::String& name) const;
 
 	/**
 	 * @return The last error that occurred in an init() call
 	 */
-	inline const std::string& error() const {
+	inline const core::String& error() const {
 		return _error;
 	}
 };

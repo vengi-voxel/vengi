@@ -21,8 +21,8 @@ private:
 	Client* _client;
 
 	void doLogin() {
-		const std::string& email = getStr("email");
-		const std::string& password = getStr("password");
+		const core::String& email = getStr("email");
+		const core::String& password = getStr("password");
 
 		core::Var::get(cfg::ClientEmail, email.c_str())->setVal(email);
 		core::Var::get(cfg::ClientPassword, password.c_str())->setVal(password);

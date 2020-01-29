@@ -16,7 +16,7 @@ VolumeCache::~VolumeCache() {
 }
 
 voxel::RawVolume* VolumeCache::loadVolume(const char* fullPath) {
-	const std::string filename = fullPath;
+	const core::String filename = fullPath;
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
 		auto i = _volumes.find(filename);

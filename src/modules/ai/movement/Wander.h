@@ -20,7 +20,7 @@ protected:
 public:
 	STEERING_FACTORY(Wander)
 
-	explicit Wander(const std::string& parameter);
+	explicit Wander(const core::String& parameter);
 
 	MoveVector execute (const AIPtr& ai, float speed) const override;
 };

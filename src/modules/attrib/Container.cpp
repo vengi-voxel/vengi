@@ -6,7 +6,7 @@
 
 namespace attrib {
 
-ContainerBuilder::ContainerBuilder(const std::string& name, int stackLimit) :
+ContainerBuilder::ContainerBuilder(const core::String& name, int stackLimit) :
 		_name(name), _stackLimit(stackLimit) {
 }
 

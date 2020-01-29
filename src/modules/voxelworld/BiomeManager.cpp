@@ -47,7 +47,7 @@ void BiomeManager::shutdown() {
 	}
 }
 
-bool BiomeManager::init(const std::string& luaString) {
+bool BiomeManager::init(const core::String& luaString) {
 	if (!_noise.init()) {
 		return false;
 	}

@@ -9,7 +9,7 @@
 
 namespace voxel {
 
-VoxelVolume::VoxelVolume(voxel::RawVolume* _volume, const std::string& _name, bool _visible) :
+VoxelVolume::VoxelVolume(voxel::RawVolume* _volume, const core::String& _name, bool _visible) :
         volume(_volume), name(_name), visible(_visible) {
     if (volume != nullptr) {
         pivot = volume->region().getCentre();
@@ -17,7 +17,7 @@ VoxelVolume::VoxelVolume(voxel::RawVolume* _volume, const std::string& _name, bo
         pivot = glm::ivec3(0.0f);
     }
 }
-VoxelVolume::VoxelVolume(voxel::RawVolume* _volume, const std::string& _name, bool _visible, const glm::ivec3& _pivot) :
+VoxelVolume::VoxelVolume(voxel::RawVolume* _volume, const core::String& _name, bool _visible, const glm::ivec3& _pivot) :
         volume(_volume), name(_name), visible(_visible), pivot(_pivot) {
 }
 

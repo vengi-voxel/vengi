@@ -9,7 +9,7 @@
 
 namespace attrib {
 
-bool ContainerProvider::init(const std::string& luaScript) {
+bool ContainerProvider::init(const core::String& luaScript) {
 	if (luaScript.empty()) {
 		_error = "empty lua script given";
 		return false;
@@ -59,7 +59,7 @@ void ContainerProvider::addContainer(const ContainerPtr& container) {
 	_containers[container->name()] = container;
 }
 
-ContainerPtr ContainerProvider::container(const std::string& name) const {
+ContainerPtr ContainerProvider::container(const core::String& name) const {
 	auto i = _containers.find(name);
 	if (i == _containers.end()) {
 		return ContainerPtr();

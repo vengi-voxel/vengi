@@ -63,7 +63,7 @@ public:
 	 * @return @c true if initialization was successful, @c false otherwise
 	 * @sa shutdown()
 	 */
-	bool init(voxel::PagedVolume *volumeData, const std::string& worldParamsLua, const std::string& biomesLua);
+	bool init(voxel::PagedVolume *volumeData, const core::String& worldParamsLua, const core::String& biomesLua);
 	/**
 	 * @brief Free resources and persist (if activated) the world data
 	 * @sa init()

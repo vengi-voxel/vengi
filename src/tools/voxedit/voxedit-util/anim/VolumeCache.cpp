@@ -14,7 +14,7 @@
 namespace voxedit {
 namespace anim {
 
-bool VolumeCache::load(const std::string& fullPath, size_t volumeIndex, voxel::VoxelVolumes& volumes) {
+bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::VoxelVolumes& volumes) {
 	Log::info("Loading volume from %s", fullPath.c_str());
 	const io::FilesystemPtr& fs = io::filesystem();
 	const io::FilePtr& file = fs->open(fullPath);

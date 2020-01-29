@@ -19,7 +19,7 @@ private:
 	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _frameBufferTexture;
 	voxedit::ViewportController _controller;
-	std::string _cameraMode;
+	core::String _cameraMode;
 
 	void renderFramebuffer();
 

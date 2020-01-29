@@ -11,7 +11,7 @@
 
 namespace backend {
 
-SelectIncreasePartner::SelectIncreasePartner(const std::string& parameters) :
+SelectIncreasePartner::SelectIncreasePartner(const core::String& parameters) :
 		ai::IFilter("SelectIncreasePartner", parameters) {
 	_cooldownId = cooldown::getType(parameters);
 	core_assert_always(_cooldownId != cooldown::Type::NONE);

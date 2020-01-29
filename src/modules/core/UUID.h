@@ -8,6 +8,6 @@
 
 namespace core {
 
-extern std::string generateUUID();
+extern core::String generateUUID();
 
 }

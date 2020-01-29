@@ -15,10 +15,10 @@ namespace ai {
  */
 class AIChangeMessage: public IProtocolMessage {
 private:
-	const std::string _name;
+	const core::String _name;
 
 public:
-	explicit AIChangeMessage(const std::string& name) :
+	explicit AIChangeMessage(const core::String& name) :
 			IProtocolMessage(PROTO_CHANGE), _name(name) {
 	}
 
@@ -31,7 +31,7 @@ public:
 		addString(out, _name);
 	}
 
-	inline const std::string& getName() const {
+	inline const core::String& getName() const {
 		return _name;
 	}
 };

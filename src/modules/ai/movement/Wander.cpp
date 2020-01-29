@@ -8,7 +8,7 @@
 namespace ai {
 namespace movement {
 
-Wander::Wander(const std::string& parameter) :
+Wander::Wander(const core::String& parameter) :
 		ISteering(), _rotation(parameter.empty() ? ai::toRadians(10.0f) : Str::strToFloat(parameter)) {
 }
 

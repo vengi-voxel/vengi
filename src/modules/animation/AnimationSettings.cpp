@@ -37,7 +37,7 @@ static int luaanim_settingsgetmeshtypes(lua_State * l) {
 	lua_newtable(l);
 	const int top = lua_gettop(l);
 	int i = 0;
-	for (const std::string& type : settings->types()) {
+	for (const core::String& type : settings->types()) {
 		lua_pushinteger(l, ++i);
 		lua_pushstring(l, type.c_str());
 		lua_settable(l, top);
@@ -169,11 +169,11 @@ static constexpr luaL_Reg boneFuncs[] = {
 	{nullptr, nullptr}
 };
 
-std::string luaFilename(const char *character) {
+core::String luaFilename(const char *character) {
 	return core::string::format("%s.lua", character);
 }
 
-bool loadAnimationSettings(const std::string& luaString, AnimationSettings& settings, SkeletonAttribute* skeletonAttr) {
+bool loadAnimationSettings(const core::String& luaString, AnimationSettings& settings, SkeletonAttribute* skeletonAttr) {
 	if (luaString.empty()) {
 		Log::warn("empty animation settings can't get loaded");
 		return false;
@@ -247,9 +247,9 @@ void AnimationSettings::setMeshTypes(const std::vector<std::string>& meshTypes) 
 	_meshTypes = meshTypes;
 }
 
-const std::string& AnimationSettings::meshType(size_t meshTypeIdx) const {
+const core::String& AnimationSettings::meshType(size_t meshTypeIdx) const {
 	if (meshTypeIdx >= (int) MAX_ENTRIES) {
-		static const std::string EMPTY;
+		static const core::String EMPTY;
 		return EMPTY;
 	}
 	return _meshTypes[meshTypeIdx];
@@ -264,9 +264,9 @@ int AnimationSettings::getMeshTypeIdxForName(const char *name) const {
 	return -1;
 }
 
-std::string AnimationSettings::fullPath(int meshTypeIdx, const char *name) const {
+core::String AnimationSettings::fullPath(int meshTypeIdx, const char *name) const {
 	if (meshTypeIdx < 0 || meshTypeIdx >= (int) MAX_ENTRIES) {
-		static const std::string EMPTY;
+		static const core::String EMPTY;
 		return EMPTY;
 	}
 	if (name == nullptr) {
@@ -275,9 +275,9 @@ std::string AnimationSettings::fullPath(int meshTypeIdx, const char *name) const
 	return core::string::format("%s/%s/%s.vox", basePath.c_str(), _meshTypes[meshTypeIdx].c_str(), name);
 }
 
-std::string AnimationSettings::path(int meshTypeIdx, const char *name) const {
+core::String AnimationSettings::path(int meshTypeIdx, const char *name) const {
 	if (meshTypeIdx < 0 || meshTypeIdx >= (int) MAX_ENTRIES) {
-		static const std::string EMPTY;
+		static const core::String EMPTY;
 		return EMPTY;
 	}
 	if (name == nullptr) {

@@ -27,7 +27,7 @@ inline Type getType(const char* name) {
  * @brief Converts a string into the enum value
  * @ingroup Events
  */
-inline Type getType(const std::string& name) {
+inline Type getType(const core::String& name) {
 	return getType(name.c_str());
 }
 

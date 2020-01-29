@@ -64,10 +64,10 @@ private:
 	tb::TBRadioButton* _overrideModifier = nullptr;
 	tb::TBRadioButton* _colorizeModifier = nullptr;
 
-	std::string _voxelizeFile;
-	std::string _loadFile;
+	core::String _voxelizeFile;
+	core::String _loadFile;
 
-	std::string _lastExecutedCommand;
+	core::String _lastExecutedCommand;
 
 	tb::TBGenericStringItemSource _treeItems;
 	tb::TBGenericStringItemSource _fileItems;
@@ -101,19 +101,19 @@ private:
 
 	void updateStatusBar();
 
-	void afterLoad(const std::string& file);
+	void afterLoad(const core::String& file);
 
 	// commands
 	void toggleViewport();
 	void toggleAnimation();
-	bool importHeightmap(const std::string& file);
-	bool importAsPlane(const std::string& file);
-	bool importPalette(const std::string& file);
-	bool save(const std::string& file);
-	bool load(const std::string& file);
-	bool loadAnimationEntity(const std::string& file);
-	bool saveScreenshot(const std::string& file);
-	bool prefab(const std::string& file);
+	bool importHeightmap(const core::String& file);
+	bool importAsPlane(const core::String& file);
+	bool importPalette(const core::String& file);
+	bool save(const core::String& file);
+	bool load(const core::String& file);
+	bool loadAnimationEntity(const core::String& file);
+	bool saveScreenshot(const core::String& file);
+	bool prefab(const core::String& file);
 	bool createNew(bool force);
 public:
 	VoxEditWindow(VoxEdit* tool);

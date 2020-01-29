@@ -31,7 +31,7 @@ void Stock::shutdown() {
 	_items.clear();
 }
 
-int Stock::containerId(const std::string& name) const {
+int Stock::containerId(const core::String& name) const {
 	const ContainerData* data = _stockDataProvider->containerData(name);
 	if (data == nullptr) {
 		Log::warn("Could not resolve container for '%s'", name.c_str());

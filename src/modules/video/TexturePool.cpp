@@ -11,7 +11,7 @@ TexturePool::TexturePool(const io::FilesystemPtr& filesystem) :
 		_filesystem(filesystem) {
 }
 
-video::TexturePtr TexturePool::load(const std::string& name) {
+video::TexturePtr TexturePool::load(const core::String& name) {
 	auto i = _cache.find(name);
 	if (i != _cache.end()) {
 		return i->second;

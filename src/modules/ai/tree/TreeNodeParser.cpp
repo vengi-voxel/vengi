@@ -6,10 +6,10 @@
 
 namespace ai {
 
-void TreeNodeParser::splitTasks(const std::string& string, std::vector<std::string>& tokens) const {
+void TreeNodeParser::splitTasks(const core::String& string, std::vector<std::string>& tokens) const {
 	bool inParameter = false;
 	bool inChildren = false;
-	std::string token;
+	core::String token;
 	for (std::string::const_iterator i = string.begin(); i != string.end(); ++i) {
 		if (*i == '{') {
 			inParameter = true;
@@ -33,9 +33,9 @@ void TreeNodeParser::splitTasks(const std::string& string, std::vector<std::stri
 	tokens.push_back(token);
 }
 
-SteeringPtr TreeNodeParser::getSteering (const std::string& nodeName) {
-	std::string steerType;
-	const std::string& parameters = getBetween(nodeName, "{", "}");
+SteeringPtr TreeNodeParser::getSteering (const core::String& nodeName) {
+	core::String steerType;
+	const core::String& parameters = getBetween(nodeName, "{", "}");
 	std::size_t n = nodeName.find("{");
 	if (n == std::string::npos)
 		n = nodeName.find("(");
@@ -49,10 +49,10 @@ SteeringPtr TreeNodeParser::getSteering (const std::string& nodeName) {
 	return _aiFactory.createSteering(steerType, ctx);
 }
 
-TreeNodePtr TreeNodeParser::getTreeNode(const std::string& name) {
+TreeNodePtr TreeNodeParser::getTreeNode(const core::String& name) {
 	resetError();
-	std::string nodeType;
-	std::string parameters;
+	core::String nodeType;
+	core::String parameters;
 	std::size_t n = _taskString.find("(");
 	if (n == std::string::npos || _taskString.find("{") < n) {
 		parameters = getBetween(_taskString, "{", "}");
@@ -63,7 +63,7 @@ TreeNodePtr TreeNodeParser::getTreeNode(const std::string& name) {
 	} else {
 		nodeType = _taskString;
 	}
-	const std::string& subTrees = getBetween(_taskString, "(", ")");
+	const core::String& subTrees = getBetween(_taskString, "(", ")");
 	if (!subTrees.empty()) {
 		if (nodeType != "Steer") {
 			return TreeNodePtr();
@@ -71,7 +71,7 @@ TreeNodePtr TreeNodeParser::getTreeNode(const std::string& name) {
 		std::vector<std::string> tokens;
 		splitTasks(subTrees, tokens);
 		movement::Steerings steerings;
-		for (const std::string& nodeName : tokens) {
+		for (const core::String& nodeName : tokens) {
 			const SteeringPtr& steering = getSteering(nodeName);
 			if (!steering) {
 				return TreeNodePtr();

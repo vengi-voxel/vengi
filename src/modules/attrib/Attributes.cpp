@@ -130,7 +130,7 @@ void Attributes::remove(const ContainerPtr& container) {
 	remove(container->name());
 }
 
-void Attributes::remove(const std::string& name) {
+void Attributes::remove(const core::String& name) {
 	core::ScopedWriteLock scopedLock(_lock);
 	_containerPtrs.erase(name);
 	const auto& i = _containers.find(name);

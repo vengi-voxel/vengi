@@ -9,11 +9,11 @@
 
 namespace io {
 
-void normalizePath(std::string& str) {
+void normalizePath(core::String& str) {
 	core::string::replaceAllChars(str, '\\', '/');
 }
 
-File::File(const std::string& rawPath, FileMode mode) :
+File::File(const core::String& rawPath, FileMode mode) :
 		IOResource(), _rawPath(rawPath), _mode(mode) {
 	normalizePath(_rawPath);
 	_file = createRWops(mode);
@@ -41,18 +41,18 @@ bool File::exists() const {
 	return false;
 }
 
-const std::string& File::name() const {
+const core::String& File::name() const {
 	return _rawPath;
 }
 
-std::string File::load() {
+core::String File::load() {
 	char *includeBuffer;
 	const int includeLen = read((void **) &includeBuffer);
 	std::unique_ptr<char[]> p(includeBuffer);
 	if (includeBuffer == nullptr || includeLen <= 0) {
 		return "";
 	}
-	const std::string f(includeBuffer, includeLen);
+	const core::String f(includeBuffer, includeLen);
 	return f;
 }
 
@@ -97,15 +97,15 @@ long File::write(const unsigned char *buf, size_t len) const {
 	return (long)len;
 }
 
-std::string File::path() const {
+core::String File::path() const {
 	return std::string(core::string::extractPath(name().c_str()));
 }
 
-std::string File::fileName() const {
+core::String File::fileName() const {
 	return std::string(core::string::extractFilename(name().c_str()));
 }
 
-std::string File::extension() const {
+core::String File::extension() const {
 	const char *ext = SDL_strrchr(name().c_str(), '.');
 	if (ext == nullptr) {
 		return "";

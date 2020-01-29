@@ -19,8 +19,8 @@ class DatabaseTool: public core::CommandlineApp {
 private:
 	using Super = core::CommandlineApp;
 protected:
-	std::string _tableFile;
-	std::string _targetFile;
+	core::String _tableFile;
+	core::String _targetFile;
 
 	typedef std::map<std::string, databasetool::Table> Tables;
 	Tables _tables;
@@ -28,7 +28,7 @@ protected:
 	bool validateForeignKeys(const databasetool::Table& table) const;
 	bool validateOperators(const databasetool::Table& table) const;
 	bool validate() const;
-	bool parse(const std::string& src);
+	bool parse(const core::String& src);
 	bool generateSrc() const;
 public:
 	DatabaseTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

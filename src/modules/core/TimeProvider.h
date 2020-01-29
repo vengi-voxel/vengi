@@ -31,7 +31,7 @@ public:
 		return _tickMillis / uint64_t(1000);
 	}
 
-	static std::string toString(unsigned long millis, const char *format = "%d-%m-%Y %H-%M-%S");
+	static core::String toString(unsigned long millis, const char *format = "%d-%m-%Y %H-%M-%S");
 
 	uint64_t systemMillis() const;
 

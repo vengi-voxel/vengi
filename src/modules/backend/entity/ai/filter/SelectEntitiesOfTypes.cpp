@@ -7,11 +7,11 @@
 
 namespace backend {
 
-SelectEntitiesOfTypes::SelectEntitiesOfTypes(const std::string& parameters) :
+SelectEntitiesOfTypes::SelectEntitiesOfTypes(const core::String& parameters) :
 		ai::IFilter("SelectEntitiesOfTypes", parameters) {
 	std::vector<std::string> types;
 	core::string::splitString(parameters, types, ",");
-	for (const std::string& type : types) {
+	for (const core::String& type : types) {
 		auto entityType = network::getEnum<network::EntityType>(type.c_str(), network::EnumNamesEntityType());
 		core_assert_always(entityType != network::EntityType::NONE);
 		_entityTypes[std::enum_value(entityType)] = true;

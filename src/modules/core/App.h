@@ -51,8 +51,8 @@ protected:
 
 	int _initialLogLevel = SDL_LOG_PRIORITY_INFO;
 
-	std::string _organisation;
-	std::string _appname;
+	core::String _organisation;
+	core::String _appname;
 
 	BindingContext _bindingContext = BindingContext::All;
 
@@ -133,7 +133,7 @@ public:
 	App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~App();
 
-	void init(const std::string& organisation, const std::string& appname);
+	void init(const core::String& organisation, const core::String& appname);
 	int startMainLoop(int argc, char *argv[]);
 
 	/**
@@ -172,22 +172,22 @@ public:
 	 */
 	void remBlocker(AppState blockedState);
 
-	const std::string& appname() const;
+	const core::String& appname() const;
 
 	class Argument {
 	private:
-		std::string _longArg;
-		std::string _shortArg;
-		std::string _description;
-		std::string _defaultValue;
+		core::String _longArg;
+		core::String _shortArg;
+		core::String _description;
+		core::String _defaultValue;
 		bool _mandatory = false;
 
 	public:
-		Argument(const std::string& longArg) :
+		Argument(const core::String& longArg) :
 				_longArg(longArg) {
 		}
 
-		Argument& setShort(const std::string& shortArg) {
+		Argument& setShort(const core::String& shortArg) {
 			_shortArg = shortArg;
 			return *this;
 		}
@@ -197,25 +197,25 @@ public:
 			return *this;
 		}
 
-		Argument& setDescription(const std::string& description) {
+		Argument& setDescription(const core::String& description) {
 			_description = description;
 			return *this;
 		}
 
-		Argument& setDefaultValue(const std::string& defaultValue) {
+		Argument& setDefaultValue(const core::String& defaultValue) {
 			_defaultValue = defaultValue;
 			return *this;
 		}
 
-		inline const std::string& defaultValue() const {
+		inline const core::String& defaultValue() const {
 			return _defaultValue;
 		}
 
-		inline const std::string& description() const {
+		inline const core::String& description() const {
 			return _description;
 		}
 
-		inline const std::string& longArg() const {
+		inline const core::String& longArg() const {
 			return _longArg;
 		}
 
@@ -223,7 +223,7 @@ public:
 			return _mandatory;
 		}
 
-		inline const std::string& shortArg() const {
+		inline const core::String& shortArg() const {
 			return _shortArg;
 		}
 	};
@@ -231,9 +231,9 @@ public:
 	/**
 	 * @note Only valid after
 	 */
-	bool hasArg(const std::string& arg) const;
-	std::string getArgVal(const std::string& arg, const std::string& defaultVal = "", int* argi = nullptr);
-	Argument& registerArg(const std::string& arg);
+	bool hasArg(const core::String& arg) const;
+	core::String getArgVal(const core::String& arg, const core::String& defaultVal = "", int* argi = nullptr);
+	Argument& registerArg(const core::String& arg);
 
 	// handle the app state changes here
 	virtual void onFrame();
@@ -272,7 +272,7 @@ public:
 	 */
 	core::EventBusPtr eventBus() const;
 
-	const std::string& currentWorkingDir() const;
+	const core::String& currentWorkingDir() const;
 
 	/**
 	 * @brief Allows to change the binding context. This can be used to e.g. ignore some commands while hovering
@@ -330,7 +330,7 @@ inline core::EventBusPtr App::eventBus() const {
 	return _eventBus;
 }
 
-inline const std::string& App::appname() const {
+inline const core::String& App::appname() const {
 	return _appname;
 }
 

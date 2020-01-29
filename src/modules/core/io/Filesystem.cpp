@@ -19,7 +19,7 @@ Filesystem::~Filesystem() {
 	shutdown();
 }
 
-bool Filesystem::init(const std::string& organisation, const std::string& appname) {
+bool Filesystem::init(const core::String& organisation, const core::String& appname) {
 	core_assert(_loop == nullptr);
 	_organisation = organisation;
 	_appname = appname;
@@ -60,7 +60,7 @@ bool Filesystem::init(const std::string& organisation, const std::string& appnam
 	return true;
 }
 
-bool Filesystem::removeFile(const std::string& file) const {
+bool Filesystem::removeFile(const core::String& file) const {
 	if (file.empty()) {
 		return false;
 	}
@@ -68,7 +68,7 @@ bool Filesystem::removeFile(const std::string& file) const {
 	return uv_fs_unlink(_loop, &req, file.c_str(), nullptr) == 0;
 }
 
-bool Filesystem::removeDir(const std::string& dir, bool recursive) const {
+bool Filesystem::removeDir(const core::String& dir, bool recursive) const {
 	if (dir.empty()) {
 		return false;
 	}
@@ -81,7 +81,7 @@ bool Filesystem::removeDir(const std::string& dir, bool recursive) const {
 	return false;
 }
 
-bool Filesystem::createDir(const std::string& dir, bool recursive) const {
+bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 	if (dir.empty()) {
 		return false;
 	}
@@ -96,7 +96,7 @@ bool Filesystem::createDir(const std::string& dir, bool recursive) const {
 		return true;
 	}
 
-	std::string s = dir;
+	core::String s = dir;
 	if (s[s.size() - 1] != '/') {
 		// force trailing / so we can handle everything in loop
 		s += '/';
@@ -104,7 +104,7 @@ bool Filesystem::createDir(const std::string& dir, bool recursive) const {
 
 	size_t pre = 0, pos;
 	while ((pos = s.find_first_of('/', pre)) != std::string::npos) {
-		const std::string dirpart = s.substr(0, pos++);
+		const core::String dirpart = s.substr(0, pos++);
 		pre = pos;
 		if (dirpart.empty()) {
 			continue; // if leading / first time is 0 length
@@ -119,14 +119,14 @@ bool Filesystem::createDir(const std::string& dir, bool recursive) const {
 	return true;
 }
 
-bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) {
+bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter) {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount <= 0) {
 		uv_fs_req_cleanup(&req);
 		return false;
 	}
-	std::string dirFilter = filter;
+	core::String dirFilter = filter;
 	auto iter = dirFilter.rfind(".");
 	if (iter != std::string::npos) {
 		dirFilter.erase(iter);
@@ -151,7 +151,7 @@ bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& enti
 			}
 		}
 		uv_fs_t statsReq;
-		const std::string fullPath = directory + "/" + ent.name;
+		const core::String fullPath = directory + "/" + ent.name;
 		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
 			Log::warn("Could not stat file %s", fullPath.c_str());
 		}
@@ -162,7 +162,7 @@ bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& enti
 	return true;
 }
 
-bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& entities) {
+bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& entities) {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount <= 0) {
@@ -183,7 +183,7 @@ bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& enti
 			continue;
 		}
 		uv_fs_t statsReq;
-		const std::string fullPath = directory + "/" + ent.name;
+		const core::String fullPath = directory + "/" + ent.name;
 		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
 			Log::warn("Could not stat file %s", fullPath.c_str());
 		}
@@ -194,9 +194,9 @@ bool Filesystem::_list(const std::string& directory, std::vector<DirEntry>& enti
 	return true;
 }
 
-bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const {
+bool Filesystem::list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter) const {
 	if (isRelativePath(directory)) {
-		for (const std::string& p : _paths) {
+		for (const core::String& p : _paths) {
 			_list(p + directory, entities, filter);
 		}
 	} else {
@@ -205,9 +205,9 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 	return true;
 }
 
-bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entities) const {
+bool Filesystem::list(const core::String& directory, std::vector<DirEntry>& entities) const {
 	if (isRelativePath(directory)) {
-		for (const std::string& p : _paths) {
+		for (const core::String& p : _paths) {
 			_list(p + directory, entities);
 		}
 	} else {
@@ -220,7 +220,7 @@ void Filesystem::update() {
 	uv_run(_loop, UV_RUN_NOWAIT);
 }
 
-bool Filesystem::chdir(const std::string& directory) {
+bool Filesystem::chdir(const core::String& directory) {
 	return uv_chdir(directory.c_str()) == 0;
 }
 
@@ -242,7 +242,7 @@ void Filesystem::shutdown() {
 	_watches.clear();
 }
 
-std::string Filesystem::absolutePath(const std::string& path) {
+core::String Filesystem::absolutePath(const core::String& path) {
 	uv_fs_t req;
 	uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
 	const char *c = (const char *)uv_fs_get_ptr(&req);
@@ -250,13 +250,13 @@ std::string Filesystem::absolutePath(const std::string& path) {
 		uv_fs_req_cleanup(&req);
 		return "";
 	}
-	std::string abspath = c;
+	core::String abspath = c;
 	normalizePath(abspath);
 	uv_fs_req_cleanup(&req);
 	return abspath;
 }
 
-bool Filesystem::isReadableDir(const std::string& name) {
+bool Filesystem::isReadableDir(const core::String& name) {
 	uv_fs_t req;
 	if (uv_fs_access(nullptr, &req, name.c_str(), F_OK, nullptr) != 0) {
 		uv_fs_req_cleanup(&req);
@@ -268,7 +268,7 @@ bool Filesystem::isReadableDir(const std::string& name) {
 	return dir;
 }
 
-bool Filesystem::isRelativePath(const std::string& name) {
+bool Filesystem::isRelativePath(const core::String& name) {
 	const size_t size = name.size();
 #ifdef __WINDOWS__
 	if (size < 3) {
@@ -287,7 +287,7 @@ bool Filesystem::isRelativePath(const std::string& name) {
 #endif
 }
 
-bool Filesystem::registerPath(const std::string& path) {
+bool Filesystem::registerPath(const core::String& path) {
 	if (!core::string::endsWith(path, "/")) {
 		Log::error("Failed to register data path: '%s'.", path.c_str());
 		return false;
@@ -297,7 +297,7 @@ bool Filesystem::registerPath(const std::string& path) {
 	return true;
 }
 
-bool Filesystem::unwatch(const std::string& path) {
+bool Filesystem::unwatch(const core::String& path) {
 	auto i = _watches.find(path);
 	if (i == _watches.end()) {
 		return false;
@@ -332,7 +332,7 @@ static void changeCallback (uv_fs_event_t *handle, const char *filename, int eve
 	uv_fs_event_start(handle, changeCallback, path, 0);
 }
 
-bool Filesystem::watch(const std::string& path, FileWatcher watcher) {
+bool Filesystem::watch(const core::String& path, FileWatcher watcher) {
 	uv_fs_event_t* fsEvent = new uv_fs_event_t;
 	if (uv_fs_event_init(_loop, fsEvent) != 0) {
 		delete fsEvent;
@@ -363,14 +363,14 @@ bool Filesystem::popDir() {
 	if (_dirStack.empty()) {
 		return false;
 	}
-	const std::string& directory = _dirStack.top();
+	const core::String& directory = _dirStack.top();
 	chdir(directory);
 	Log::trace("change current dir to %s", directory.c_str());
 	_dirStack.pop();
 	return true;
 }
 
-bool Filesystem::pushDir(const std::string& directory) {
+bool Filesystem::pushDir(const core::String& directory) {
 	const bool changed = chdir(directory);
 	if (!changed) {
 		return false;
@@ -380,7 +380,7 @@ bool Filesystem::pushDir(const std::string& directory) {
 	return true;
 }
 
-io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
+io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const {
 	if (mode == FileMode::Write && !isRelativePath(filename)) {
 		Log::debug("Use absolute path to write file %s", filename.c_str());
 		return std::make_shared<make_shared_enabler>(filename, mode);
@@ -391,8 +391,8 @@ io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 		Log::debug("loading file %s from current working dir", filename.c_str());
 		return std::make_shared<make_shared_enabler>(filename, mode);
 	}
-	for (const std::string& p : _paths) {
-		const std::string fullpath = p + filename;
+	for (const core::String& p : _paths) {
+		const core::String fullpath = p + filename;
 		io::File fullFile(fullpath, FileMode::Read);
 		if (fullFile.exists()) {
 			fullFile.close();
@@ -404,7 +404,7 @@ io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 	return std::make_shared<make_shared_enabler>(_basePath + filename, mode);
 }
 
-std::string Filesystem::load(const char *filename, ...) {
+core::String Filesystem::load(const char *filename, ...) {
 	va_list ap;
 	constexpr std::size_t bufSize = 1024;
 	char text[bufSize];
@@ -417,35 +417,35 @@ std::string Filesystem::load(const char *filename, ...) {
 	return load(std::string(text));
 }
 
-std::string Filesystem::load(const std::string& filename) const {
+core::String Filesystem::load(const core::String& filename) const {
 	const io::FilePtr& f = open(filename);
 	return f->load();
 }
 
-const std::string Filesystem::writePath(const char* name) const {
+const core::String Filesystem::writePath(const char* name) const {
 	return _homePath + name;
 }
 
-bool Filesystem::write(const std::string& filename, const uint8_t* content, size_t length) {
-	const std::string& fullPath = _homePath + filename;
-	const std::string path(core::string::extractPath(fullPath.c_str()));
+bool Filesystem::write(const core::String& filename, const uint8_t* content, size_t length) {
+	const core::String& fullPath = _homePath + filename;
+	const core::String path(core::string::extractPath(fullPath.c_str()));
 	createDir(path, true);
 	io::File f(fullPath, FileMode::Write);
 	return f.write(content, length) == static_cast<long>(length);
 }
 
-bool Filesystem::write(const std::string& filename, const std::string& string) {
+bool Filesystem::write(const core::String& filename, const core::String& string) {
 	const uint8_t* buf = reinterpret_cast<const uint8_t*>(string.c_str());
 	return write(filename, buf, string.size());
 }
 
-bool Filesystem::syswrite(const std::string& filename, const uint8_t* content, size_t length) const {
+bool Filesystem::syswrite(const core::String& filename, const uint8_t* content, size_t length) const {
 	io::File f(filename, FileMode::Write);
 	createDir(f.path());
 	return f.write(content, length) == static_cast<long>(length);
 }
 
-bool Filesystem::syswrite(const std::string& filename, const std::string& string) const {
+bool Filesystem::syswrite(const core::String& filename, const core::String& string) const {
 	const uint8_t* buf = reinterpret_cast<const uint8_t*>(string.c_str());
 	return syswrite(filename, buf, string.size());
 }

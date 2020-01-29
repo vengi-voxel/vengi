@@ -272,14 +272,14 @@ void NoiseToolWindow::update() {
 	}
 	NoiseData& data = qd.data;
 
-	const std::string& buf = core::string::format("-%f-%i-%f-%i-%f-%i-%f-%f-%f",
+	const core::String& buf = core::string::format("-%f-%i-%f-%i-%f-%i-%f-%f-%f",
 			data.ridgedOffset, (int)data.noiseType, data.separation, (int)data.enableDistance,
 			data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
 
-	const std::string imageBuf = IMAGE_PREFIX + buf;
+	const core::String imageBuf = IMAGE_PREFIX + buf;
 	data.noise = tb::g_image_manager->getImage(imageBuf.c_str(), (uint32_t*)qd.noiseBuffer, _noiseWidth, _noiseHeight);
 
-	const std::string graphBuf = GRAPH_PREFIX + buf;
+	const core::String graphBuf = GRAPH_PREFIX + buf;
 	data.graph = tb::g_image_manager->getImage(graphBuf.c_str(), (uint32_t*)qd.graphBuffer, _noiseWidth, _graphHeight);
 
 	_noiseTool->add(TBIDC(graphBuf.c_str()), data);

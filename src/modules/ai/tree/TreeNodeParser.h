@@ -22,19 +22,19 @@ class IAIFactory;
 class TreeNodeParser: public IParser {
 private:
 	const IAIFactory& _aiFactory;
-	std::string _taskString;
+	core::String _taskString;
 
-	void splitTasks(const std::string& string, std::vector<std::string>& tokens) const;
-	SteeringPtr getSteering(const std::string& nodeName);
+	void splitTasks(const core::String& string, std::vector<std::string>& tokens) const;
+	SteeringPtr getSteering(const core::String& nodeName);
 public:
-	TreeNodeParser(const IAIFactory& aiFactory, const std::string& taskString) :
+	TreeNodeParser(const IAIFactory& aiFactory, const core::String& taskString) :
 			IParser(), _aiFactory(aiFactory) {
 		_taskString = ai::Str::eraseAllSpaces(taskString);
 	}
 
 	virtual ~TreeNodeParser() {}
 
-	TreeNodePtr getTreeNode(const std::string& name = "");
+	TreeNodePtr getTreeNode(const core::String& name = "");
 };
 
 }

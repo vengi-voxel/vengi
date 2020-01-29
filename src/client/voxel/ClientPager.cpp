@@ -10,7 +10,7 @@
 
 namespace client {
 
-bool ClientPager::init(const std::string& baseUrl) {
+bool ClientPager::init(const core::String& baseUrl) {
 	if (baseUrl.empty()) {
 		return true;
 	}

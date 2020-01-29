@@ -25,7 +25,7 @@ using TagMap = core::Map<std::string, std::string, 4, std::hash<std::string>>;
 
 class MetricEvent: public core::IEventBusEvent {
 private:
-	const std::string _key;
+	const core::String _key;
 	const int32_t _value;
 	const MetricEventType _type;
 	TagMap _tags;
@@ -33,7 +33,7 @@ private:
 public:
 	EVENTBUSTYPEID(MetricEvent)
 
-	MetricEvent(const std::string& key, int32_t value, MetricEventType type, const TagMap& tags) :
+	MetricEvent(const core::String& key, int32_t value, MetricEventType type, const TagMap& tags) :
 			_key(key), _value(value), _type(type), _tags(tags) {
 	}
 
@@ -45,7 +45,7 @@ public:
 		return _type;
 	}
 
-	inline const std::string& key() const {
+	inline const core::String& key() const {
 		return _key;
 	}
 
@@ -57,49 +57,49 @@ public:
 /**
  * @brief Add the specified delta to the given key
  */
-static inline MetricEvent count(const std::string& key, int delta, const TagMap& tags = {}) {
+static inline MetricEvent count(const core::String& key, int delta, const TagMap& tags = {}) {
 	return MetricEvent(key, delta, MetricEventType::Count, tags);
 }
 
 /**
  * @brief Records a meter
  */
-static inline MetricEvent meter(const std::string& key, int delta, const TagMap& tags = {}) {
+static inline MetricEvent meter(const core::String& key, int delta, const TagMap& tags = {}) {
 	return MetricEvent(key, delta, MetricEventType::Meter, tags);
 }
 
 /**
  * @brief Records a gauge with the give value for the key
  */
-static inline MetricEvent gauge(const std::string& key, uint32_t value, const TagMap& tags = {}) {
+static inline MetricEvent gauge(const core::String& key, uint32_t value, const TagMap& tags = {}) {
 	return MetricEvent(key, value, MetricEventType::Gauge, tags);
 }
 
 /**
  * @brief Records a timing in millis for a key
  */
-static inline MetricEvent timing(const std::string& key, uint32_t millis, const TagMap& tags = {}) {
+static inline MetricEvent timing(const core::String& key, uint32_t millis, const TagMap& tags = {}) {
 	return MetricEvent(key, millis, MetricEventType::Timing, tags);
 }
 
 /**
  * @brief Records a histogram
  */
-static inline MetricEvent histogram(const std::string& key, uint32_t millis, const TagMap& tags = {}) {
+static inline MetricEvent histogram(const core::String& key, uint32_t millis, const TagMap& tags = {}) {
 	return MetricEvent(key, millis, MetricEventType::Histogram, tags);
 }
 
 /**
  * @brief Increments the key
  */
-static inline MetricEvent increment(const std::string& key, const TagMap& tags = {}) {
+static inline MetricEvent increment(const core::String& key, const TagMap& tags = {}) {
 	return count(key, 1, tags);
 }
 
 /**
  * @brief Decrements the key
  */
-static inline MetricEvent decrement(const std::string& key, const TagMap& tags = {}) {
+static inline MetricEvent decrement(const core::String& key, const TagMap& tags = {}) {
 	return count(key, -1, tags);
 }
 

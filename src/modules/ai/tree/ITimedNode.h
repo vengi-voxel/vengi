@@ -10,7 +10,7 @@ namespace ai {
 
 #define NOTSTARTED -1
 #define TIMERNODE_CLASS(NodeName) \
-	NodeName(const std::string& name, const std::string& parameters, const ConditionPtr& condition) : \
+	NodeName(const core::String& name, const core::String& parameters, const ConditionPtr& condition) : \
 		ITimedNode(name, parameters, condition) { \
 		_type = AI_STRINGIFY(NodeName); \
 	} \
@@ -27,7 +27,7 @@ protected:
 	int64_t _timerMillis;
 	int64_t _millis;
 public:
-	ITimedNode(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
+	ITimedNode(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
 			TreeNode(name, parameters, condition), _timerMillis(NOTSTARTED) {
 		if (!parameters.empty()) {
 			_millis = ::atol(parameters.c_str());

@@ -19,7 +19,7 @@ class IsOnCooldown: public ai::ICondition {
 private:
 	cooldown::Type _cooldownId;
 public:
-	IsOnCooldown(const std::string& parameters) :
+	IsOnCooldown(const core::String& parameters) :
 			ai::ICondition("IsOnCooldown", parameters) {
 		_cooldownId = cooldown::getType(parameters);
 		core_assert_always(_cooldownId != cooldown::Type::NONE);

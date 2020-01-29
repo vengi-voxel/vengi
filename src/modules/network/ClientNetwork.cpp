@@ -39,7 +39,7 @@ bool ClientNetwork::packetReceived(ENetEvent& event) {
 	return true;
 }
 
-ENetPeer* ClientNetwork::connect(uint16_t port, const std::string& hostname, int maxChannels) {
+ENetPeer* ClientNetwork::connect(uint16_t port, const core::String& hostname, int maxChannels) {
 	if (_client) {
 		disconnect();
 	}

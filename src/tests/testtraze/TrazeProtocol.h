@@ -17,9 +17,9 @@ class Protocol {
 private:
 	core::EventBusPtr _eventBus;
 
-	std::string _instanceName;
-	std::string _playerToken;
-	std::string _clientToken;
+	core::String _instanceName;
+	core::String _playerToken;
+	core::String _clientToken;
 	PlayerId _playerId = 0u;
 	struct mosquitto *_mosquitto = nullptr;
 	bool _connected = false;
@@ -36,7 +36,7 @@ private:
 		Unknown = 255
 	};
 	void onMessage(const struct mosquitto_message *msg);
-	bool send(const std::string& topic, const std::string& json) const;
+	bool send(const core::String& topic, const core::String& json) const;
 
 public:
 	Protocol(const core::EventBusPtr& eventBus);
@@ -65,7 +65,7 @@ public:
 	 * }
 	 * @endcode
 	 */
-	void parseScores(const std::string& json);
+	void parseScores(const core::String& json);
 
 	/**
 	 * @brief The player topic is published every 5 seconds.
@@ -88,7 +88,7 @@ public:
 	 * ]
 	 * @endcode
 	 */
-	void parsePlayers(const std::string& json);
+	void parsePlayers(const core::String& json);
 
 	/**
 	 * @code
@@ -100,7 +100,7 @@ public:
 	 *}
 	 * @endcode
 	 */
-	void parseOwnPlayer(const std::string& json);
+	void parseOwnPlayer(const core::String& json);
 
 	/**
 	 * @brief The ticker topic is published whenever a death of a player occurs.
@@ -112,7 +112,7 @@ public:
 	 * }
 	 * @endcode
 	 */
-	void parseTicker(const std::string& json) const;
+	void parseTicker(const core::String& json) const;
 
 	/**
 	 * @code
@@ -124,7 +124,7 @@ public:
 	 * ]
 	 * @endcode
 	 */
-	void parseGames(const std::string& json) const;
+	void parseGames(const core::String& json) const;
 
 	/**
 	 * @brief The grid topic is published on every server tick. (4 times a Second)
@@ -149,7 +149,7 @@ public:
 	 *}
 	 * @endcode
 	 */
-	void parseGridAndUpdateVolume(const std::string& json);
+	void parseGridAndUpdateVolume(const core::String& json);
 
 	/**
 	 * @brief Client Registration
@@ -180,7 +180,7 @@ public:
 	 * @endcode
 	 * Because the ingame nick is part of the topic your nickname may not include #, +, /.
 	 */
-	bool join(const std::string& name);
+	bool join(const core::String& name);
 
 	/**
 	 * @brief Steering your Light Cycle

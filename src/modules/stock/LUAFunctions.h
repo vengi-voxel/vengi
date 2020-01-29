@@ -23,7 +23,7 @@ static int luaCreateContainer(lua_State * l) {
 	udata->name = containerName;
 	udata->id = containerId;
 	if (!stockDataProvider->addContainerData(udata)) {
-		const std::string& error = core::string::format("Could not add container with name: %s", containerName);
+		const core::String& error = core::string::format("Could not add container with name: %s", containerName);
 		return lua::LUA::returnError(l, error);
 	}
 	return 1;
@@ -93,7 +93,7 @@ static int luaCreateItemData(lua_State * l) {
 	const char *name = luaL_optstring(l, 3, nullptr);
 	const ItemType itemType = getItemType(type);
 	if (itemType == ItemType::NONE) {
-		const std::string& error = core::string::format("Unknown type given: %s", type);
+		const core::String& error = core::string::format("Unknown type given: %s", type);
 		return lua::LUA::returnError(l, error);
 	}
 
@@ -185,7 +185,7 @@ static int luaItemDataShapeGC(lua_State * l) {
 
 static int luaItemDataShapeToString(lua_State * l) {
 	const ItemShape& itemShape = *luaGetItemDataShape(l, 1);
-	const std::string& bitsStr = core::string::format("w:%i, h:%i", itemShape.width(), itemShape.height());
+	const core::String& bitsStr = core::string::format("w:%i, h:%i", itemShape.width(), itemShape.height());
 	lua_pushfstring(l, "item shape:\n%s", bitsStr.c_str());
 	return 1;
 }

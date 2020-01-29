@@ -37,7 +37,7 @@ public:
 	void unregisterListener(LayerListener* listener);
 
 	bool duplicate(int layerId);
-	bool rename(int layerId, const std::string& name);
+	bool rename(int layerId, const core::String& name);
 	bool moveUp(int layerId);
 	bool moveDown(int layerId);
 

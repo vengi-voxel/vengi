@@ -15,7 +15,7 @@ Connection::Connection() :
 Connection::~Connection() {
 }
 
-void Connection::setLoginData(const std::string& username, const std::string& password) {
+void Connection::setLoginData(const core::String& username, const core::String& password) {
 	_password = password;
 	_user = username;
 }
@@ -31,11 +31,11 @@ bool Connection::status() const {
 #endif
 }
 
-void Connection::changeDb(const std::string& dbname) {
+void Connection::changeDb(const core::String& dbname) {
 	_dbname = dbname;
 }
 
-void Connection::changeHost(const std::string& host) {
+void Connection::changeHost(const core::String& host) {
 	_host = host;
 }
 
@@ -54,7 +54,7 @@ bool Connection::connect() {
 		return true;
 	}
 #ifdef HAVE_POSTGRES
-	std::string conninfo;
+	core::String conninfo;
 
 	const char *host = nullptr;
 	if (!_host.empty()) {
@@ -76,7 +76,7 @@ bool Connection::connect() {
 		password = _password.c_str();
 	}
 
-	std::string port;
+	core::String port;
 	if (_port > 0) {
 		port = std::to_string(_port);
 	}

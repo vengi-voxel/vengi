@@ -34,7 +34,7 @@ private:
 	};
 	static constexpr size_t _overheadSize = sizeof(Chunk) + sizeof(uint32_t);
 
-	std::string _name;
+	core::String _name;
 	uint32_t _chunkAmount = 0u;
 	uint32_t _byteAmount = 0u;
 	core::ReadWriteLock _rwLock;
@@ -52,7 +52,7 @@ private:
 	void checkIntegrity(Chunk* const chunk) const;
 
 public:
-	MemGuard(const std::string& name);
+	MemGuard(const core::String& name);
 
 	~MemGuard();
 

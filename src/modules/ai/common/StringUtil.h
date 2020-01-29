@@ -12,29 +12,29 @@
 namespace ai {
 namespace Str {
 
-inline std::string toString(const glm::vec3& pos) {
+inline core::String toString(const glm::vec3& pos) {
 	char buf[128];
 	std::snprintf(buf, sizeof(buf), "%f:%f:%f", pos.x, pos.y, pos.z);
 	return buf;
 }
 
-inline bool startsWith(const std::string& string, const std::string& token) {
+inline bool startsWith(const core::String& string, const core::String& token) {
 	return !string.compare(0, token.size(), token);
 }
 
-inline float strToFloat(const std::string& str) {
+inline float strToFloat(const core::String& str) {
 	return static_cast<float>(::atof(str.c_str()));
 }
 
-inline std::string eraseAllSpaces(const std::string& str) {
+inline core::String eraseAllSpaces(const core::String& str) {
 	if (str.empty())
 		return str;
-	std::string tmp = str;
+	core::String tmp = str;
 	tmp.erase(std::remove(tmp.begin(), tmp.end(), ' '), tmp.end());
 	return tmp;
 }
 
-inline void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters = "()") {
+inline void splitString(const core::String& string, std::vector<std::string>& tokens, const core::String& delimiters = "()") {
 	// Skip delimiters at beginning.
 	std::string::size_type lastPos = string.find_first_not_of(delimiters, 0);
 	// Find first "non-delimiter".

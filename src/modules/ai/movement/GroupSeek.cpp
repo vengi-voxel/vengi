@@ -7,7 +7,7 @@
 namespace ai {
 namespace movement {
 
-GroupSeek::GroupSeek(const std::string& parameters) :
+GroupSeek::GroupSeek(const core::String& parameters) :
 		ISteering() {
 	_groupId = ::atoi(parameters.c_str());
 }

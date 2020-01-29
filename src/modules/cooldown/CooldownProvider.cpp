@@ -24,7 +24,7 @@ long CooldownProvider::setDuration(Type type, long duration) {
 	return old;
 }
 
-bool CooldownProvider::init(const std::string& cooldowns) {
+bool CooldownProvider::init(const core::String& cooldowns) {
 	if (cooldowns.empty()) {
 		_error = "";
 		_initialized = true;

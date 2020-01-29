@@ -11,8 +11,8 @@
 
 namespace ai {
 
-static void luaAI_setupmetatable(lua_State* s, const std::string& type, const luaL_Reg *funcs, const std::string& name) {
-	const std::string& metaFull = "__meta_" + name + "_" + type;
+static void luaAI_setupmetatable(lua_State* s, const core::String& type, const luaL_Reg *funcs, const core::String& name) {
+	const core::String& metaFull = "__meta_" + name + "_" + type;
 	// make global
 	lua_setfield(s, LUA_REGISTRYINDEX, metaFull.c_str());
 	// put back onto stack
@@ -121,7 +121,7 @@ static int luaAI_nodetostring(lua_State* s) {
  */
 static int luaAI_createnode(lua_State* s) {
 	LUAAIRegistry* r = luaAI_toregistry(s);
-	const std::string type = luaL_checkstring(s, -1);
+	const core::String type = luaL_checkstring(s, -1);
 	const LUATreeNodeFactoryPtr& factory = std::make_shared<LuaNodeFactory>(s, type);
 	const bool inserted = r->registerNodeFactory(type, *factory);
 	if (!inserted) {
@@ -162,7 +162,7 @@ static int luaAI_conditiontostring(lua_State* s) {
  */
 static int luaAI_createcondition(lua_State* s) {
 	LUAAIRegistry* r = luaAI_toregistry(s);
-	const std::string type = luaL_checkstring(s, -1);
+	const core::String type = luaL_checkstring(s, -1);
 	const LUAConditionFactoryPtr& factory = std::make_shared<LuaConditionFactory>(s, type);
 	const bool inserted = r->registerConditionFactory(type, *factory);
 	if (!inserted) {
@@ -199,7 +199,7 @@ static int luaAI_filtertostring(lua_State* s) {
 
 static int luaAI_createfilter(lua_State* s) {
 	LUAAIRegistry* r = luaAI_toregistry(s);
-	const std::string type = luaL_checkstring(s, -1);
+	const core::String type = luaL_checkstring(s, -1);
 	const LUAFilterFactoryPtr& factory = std::make_shared<LuaFilterFactory>(s, type);
 	const bool inserted = r->registerFilterFactory(type, *factory);
 	if (!inserted) {
@@ -231,7 +231,7 @@ static int luaAI_steeringtostring(lua_State* s) {
 
 static int luaAI_createsteering(lua_State* s) {
 	LUAAIRegistry* r = luaAI_toregistry(s);
-	const std::string type = luaL_checkstring(s, -1);
+	const core::String type = luaL_checkstring(s, -1);
 	const LUASteeringFactoryPtr& factory = std::make_shared<LuaSteeringFactory>(s, type);
 	const bool inserted = r->registerSteeringFactory(type, *factory);
 	if (!inserted) {
@@ -339,22 +339,22 @@ bool LUAAIRegistry::evaluate(const char* luaBuffer, size_t size) {
 	return true;
 }
 
-void LUAAIRegistry::addTreeNodeFactory(const std::string& type, const LUATreeNodeFactoryPtr& factory) {
+void LUAAIRegistry::addTreeNodeFactory(const core::String& type, const LUATreeNodeFactoryPtr& factory) {
 	ScopedWriteLock scopedLock(_lock);
 	_treeNodeFactories.emplace(type, factory);
 }
 
-void LUAAIRegistry::addConditionFactory(const std::string& type, const LUAConditionFactoryPtr& factory) {
+void LUAAIRegistry::addConditionFactory(const core::String& type, const LUAConditionFactoryPtr& factory) {
 	ScopedWriteLock scopedLock(_lock);
 	_conditionFactories.emplace(type, factory);
 }
 
-void LUAAIRegistry::addFilterFactory(const std::string& type, const LUAFilterFactoryPtr& factory) {
+void LUAAIRegistry::addFilterFactory(const core::String& type, const LUAFilterFactoryPtr& factory) {
 	ScopedWriteLock scopedLock(_lock);
 	_filterFactories.emplace(type, factory);
 }
 
-void LUAAIRegistry::addSteeringFactory(const std::string& type, const LUASteeringFactoryPtr& factory) {
+void LUAAIRegistry::addSteeringFactory(const core::String& type, const LUASteeringFactoryPtr& factory) {
 	ScopedWriteLock scopedLock(_lock);
 	_steeringFactories.emplace(type, factory);
 }

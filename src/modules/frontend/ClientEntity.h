@@ -49,7 +49,7 @@ public:
 	const glm::vec3& position() const;
 	void setOrientation(float orientation);
 	float orientation() const;
-	void userinfo(const std::string& key, const std::string& value);
+	void userinfo(const core::String& key, const core::String& value);
 
 	bool operator==(const ClientEntity& other) const;
 

@@ -21,12 +21,12 @@ enum class Operator {
 };
 
 struct Field {
-	std::string name;
+	core::String name;
 	FieldType type = FieldType::STRING;
 	Operator updateOperator = Operator::SET;
 	// bitmask from ConstraintType
 	uint32_t contraintMask = 0u;
-	std::string defaultVal = "";
+	core::String defaultVal = "";
 	int length = 0;
 	intptr_t offset = -1;
 	intptr_t nulloffset = -1;

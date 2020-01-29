@@ -82,10 +82,10 @@ public:
 	void onEvent(const voxelworld::WorldCreatedEvent& event) override;
 	void onEvent(const network::DisconnectEvent& event) override;
 
-	bool connect(uint16_t port, const std::string& hostname);
+	bool connect(uint16_t port, const core::String& hostname);
 	void authFailed();
-	void signup(const std::string& email, const std::string& password);
-	void lostPassword(const std::string& email);
+	void signup(const core::String& email, const core::String& password);
+	void lostPassword(const core::String& email);
 	void disconnect();
 	/** @brief spawns our own player */
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);

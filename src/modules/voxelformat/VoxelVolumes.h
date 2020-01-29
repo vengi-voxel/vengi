@@ -12,10 +12,10 @@
 namespace voxel {
 
 struct VoxelVolume {
-	VoxelVolume(RawVolume* _volume = nullptr, const std::string& _name = "", bool _visible = true);
-	VoxelVolume(RawVolume* _volume, const std::string& _name, bool _visible, const glm::ivec3& _pivot);
+	VoxelVolume(RawVolume* _volume = nullptr, const core::String& _name = "", bool _visible = true);
+	VoxelVolume(RawVolume* _volume, const core::String& _name, bool _visible, const glm::ivec3& _pivot);
 	RawVolume* volume;
-	std::string name;
+	core::String name;
 	bool visible;
 	glm::ivec3 pivot;
 };

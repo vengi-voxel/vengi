@@ -115,7 +115,7 @@ void SoundManager::haltAll() {
 	Mix_HaltChannel(-1);
 }
 
-int SoundManager::playMusic(const std::string& music, bool loop) {
+int SoundManager::playMusic(const core::String& music, bool loop) {
 	if (!isActive()) {
 		return -1;
 	}
@@ -131,7 +131,7 @@ int SoundManager::playMusic(const std::string& music, bool loop) {
 	Mix_FreeMusic(_music);
 	_music = nullptr;
 
-	const std::string& fullPath = core::string::format("music/%s.ogg", music.c_str());
+	const core::String& fullPath = core::string::format("music/%s.ogg", music.c_str());
 	const io::FilePtr& file = _filesystem->open(fullPath);
 	if (!file->exists()) {
 		Log::error(logid, "unable to open music file: %s", fullPath.c_str());
@@ -172,7 +172,7 @@ void SoundManager::haltMusic(int music) {
 	_musicPlaying = "";
 }
 
-int SoundManager::play(const std::string& filename, const glm::ivec2& position, bool loop) {
+int SoundManager::play(const core::String& filename, const glm::ivec2& position, bool loop) {
 	if (!isActive()) {
 		return -1;
 	}
@@ -199,7 +199,7 @@ int SoundManager::play(const std::string& filename, const glm::ivec2& position, 
 	return channel;
 }
 
-Mix_Chunk* SoundManager::getChunk(const std::string& filename) {
+Mix_Chunk* SoundManager::getChunk(const core::String& filename) {
 	if (filename.empty()) {
 		Log::error(logid, "no sound file to get the chunk for was provided");
 		return nullptr;
@@ -209,7 +209,7 @@ Mix_Chunk* SoundManager::getChunk(const std::string& filename) {
 		return i->second;
 	}
 
-	const std::string& fullPath = core::string::format("sound/%s.ogg", filename.c_str());
+	const core::String& fullPath = core::string::format("sound/%s.ogg", filename.c_str());
 	io::FilePtr file = _filesystem->open(fullPath);
 	if (!file->exists()) {
 		Log::error(logid, "unable to open sound file: %s", fullPath.c_str());

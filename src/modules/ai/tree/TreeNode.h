@@ -67,7 +67,7 @@ enum TreeNodeStatus {
  * @brief A node class macro that also defines a factory.
  */
 #define NODE_CLASS(NodeName) \
-	NodeName(const std::string& name, const std::string& parameters, const ::ai::ConditionPtr& condition) : \
+	NodeName(const core::String& name, const core::String& parameters, const ::ai::ConditionPtr& condition) : \
 		::ai::TreeNode(name, parameters, condition) { \
 		_type = AI_STRINGIFY(NodeName); \
 	} \
@@ -97,9 +97,9 @@ protected:
 	 */
 	int _id;
 	TreeNodes _children;
-	std::string _name;
-	std::string _type;
-	std::string _parameters;
+	core::String _name;
+	core::String _type;
+	core::String _parameters;
 	ConditionPtr _condition;
 
 	TreeNodeStatus state(const AIPtr& entity, TreeNodeStatus treeNodeState);
@@ -118,7 +118,7 @@ public:
 	 * the responsibility of the node to parse the values in its constructor
 	 * @param condition The connected ICondition for this node
 	 */
-	TreeNode(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
+	TreeNode(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
 			_id(getNextId()), _name(name), _parameters(parameters), _condition(condition) {
 	}
 
@@ -132,23 +132,23 @@ public:
 	/**
 	 * @brief Each node can have a user defines name that can be retrieved with this method.
 	 */
-	const std::string& getName() const;
+	const core::String& getName() const;
 
 	/**
 	 * @brief Return the raw parameters for this node
 	 */
-	const std::string& getParameters() const;
+	const core::String& getParameters() const;
 
 	/**
 	 * @brief Updates the custom name of this @c TreeNode
 	 *
 	 * @param[in] name The name to set - empty strings are ignored here
 	 */
-	void setName(const std::string& name);
+	void setName(const core::String& name);
 	/**
 	 * @brief The node type - this usually matches the class name of the @c TreeNode
 	 */
-	const std::string& getType() const;
+	const core::String& getType() const;
 	const ConditionPtr& getCondition() const;
 	void setCondition(const ConditionPtr& condition);
 	const TreeNodes& getChildren() const;

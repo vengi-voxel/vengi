@@ -12,18 +12,18 @@ int TreeNode::getId() const {
 	return _id;
 }
 
-void TreeNode::setName(const std::string& name) {
+void TreeNode::setName(const core::String& name) {
 	if (name.empty()) {
 		return;
 	}
 	_name = name;
 }
 
-const std::string& TreeNode::getType() const {
+const core::String& TreeNode::getType() const {
 	return _type;
 }
 
-const std::string& TreeNode::getName() const {
+const core::String& TreeNode::getName() const {
 	return _name;
 }
 
@@ -35,7 +35,7 @@ void TreeNode::setCondition(const ConditionPtr& condition) {
 	_condition = condition;
 }
 
-const std::string& TreeNode::getParameters() const {
+const core::String& TreeNode::getParameters() const {
 	return _parameters;
 }
 

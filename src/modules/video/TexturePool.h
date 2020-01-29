@@ -23,7 +23,7 @@ private:
 public:
 	TexturePool(const io::FilesystemPtr& filesystem);
 
-	video::TexturePtr load(const std::string& name);
+	video::TexturePtr load(const core::String& name);
 
 	bool init() override;
 	void shutdown() override;

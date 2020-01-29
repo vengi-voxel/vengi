@@ -39,7 +39,7 @@
 
 namespace core {
 
-int Process::exec(const std::string& command, const std::vector<std::string>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
+int Process::exec(const core::String& command, const std::vector<std::string>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
 #if defined(__LINUX__) || defined(__MACOSX__)
 	int link[2];
 	if (::pipe(link) < 0) {
@@ -56,7 +56,7 @@ int Process::exec(const std::string& command, const std::vector<std::string>& ar
 		const char* argv[64];
 		int argc = 0;
 		argv[argc++] = command.c_str();
-		for (const std::string& arg : arguments) {
+		for (const core::String& arg : arguments) {
 			argv[argc++] = arg.c_str();
 			if (argc >= 63) {
 				break;
@@ -116,11 +116,11 @@ int Process::exec(const std::string& command, const std::vector<std::string>& ar
 	// success
 	return 0;
 #elif __WINDOWS__
-	std::string cmd = command;
+	core::String cmd = command;
 	if (!arguments.empty()) {
 		cmd.append(" ");
 	}
-	for (const std::string& argument : arguments) {
+	for (const core::String& argument : arguments) {
 		cmd.append(argument);
 		cmd.append(" ");
 	}

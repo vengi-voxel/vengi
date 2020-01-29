@@ -41,7 +41,7 @@ void UserConnectHandler::sendAuthFailed(ENetPeer* peer) {
 	_network->sendMessage(peer, packet);
 }
 
-UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, const std::string& passwd) {
+UserPtr UserConnectHandler::login(ENetPeer* peer, const core::String& email, const core::String& passwd) {
 	db::UserModel model;
 	const db::DBConditionUserModelEmail emailCond(email.c_str());
 	const db::DBConditionUserModelPassword passwordCond(passwd.c_str());
@@ -60,7 +60,7 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, cons
 		Log::debug(logid, "skip connection attempt for client %i - the hosts don't match", (int) model.id());
 		return UserPtr();
 	}
-	static const std::string name = "NONAME";
+	static const core::String name = "NONAME";
 	MapPtr map = _mapProvider->map(model.mapid(), true);
 	Log::info(logid, "user %i connects with host %u on port %i", (int) model.id(), peer->address.host, peer->address.port);
 	const UserPtr& u = std::make_shared<User>(peer, model.id(), model.name(), map, _messageSender, _timeProvider,
@@ -74,13 +74,13 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const std::string& email, cons
 void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 	const auto* message = getMsg<network::UserConnect>(raw);
 
-	const std::string& email = message->email()->str();
+	const core::String& email = message->email()->str();
 	if (!util::isValidEmail(email)) {
 		sendAuthFailed(peer);
 		Log::debug(logid, "Invalid email given: '%s', %c", email.c_str(), email[0]);
 		return;
 	}
-	const std::string& password = message->password()->str();
+	const core::String& password = message->password()->str();
 	if (password.empty()) {
 		Log::debug(logid, "User tries to log into the server without providing a password");
 		sendAuthFailed(peer);

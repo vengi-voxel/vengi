@@ -26,7 +26,7 @@ private:
 public:
 	CONDITION_FACTORY(IsInGroup)
 
-	explicit IsInGroup(const std::string& parameters) :
+	explicit IsInGroup(const core::String& parameters) :
 		ICondition("IsInGroup", parameters) {
 		if (_parameters.empty()) {
 			_groupId = -1;

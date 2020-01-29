@@ -15,16 +15,16 @@ namespace databasetool {
 typedef std::map<std::string, persistence::Field> Fields;
 
 struct Table {
-	std::string name;
-	std::string classname;
-	std::string namespaceSrc = "backend";
-	std::string schema = "public";
+	core::String name;
+	core::String classname;
+	core::String namespaceSrc = "backend";
+	core::String schema = "public";
 	Fields fields;
 	persistence::Constraints constraints;
 	persistence::ForeignKeys foreignKeys;
 	int primaryKeys = 0;
 	persistence::UniqueKeys uniqueKeys;
-	std::string autoIncrementField;
+	core::String autoIncrementField;
 	int autoIncrementStart = 1;
 };
 

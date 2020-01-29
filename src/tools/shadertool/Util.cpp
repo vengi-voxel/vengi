@@ -56,7 +56,7 @@ int getComponents(const Variable::Type type) {
 	return resolveTypes(type).components;
 }
 
-Variable::Type getType(const std::string& type, int line) {
+Variable::Type getType(const core::String& type, int line) {
 	int max = std::enum_value(Variable::MAX);
 	for (int i = 0; i < max; ++i) {
 		if (type == cTypes[i].glsltype) {
@@ -113,9 +113,9 @@ static const ImageFormatType cImageFormat[] = {
 #undef IMAGEFORMATENTRY
 static_assert((int)video::ImageFormat::Max == lengthof(cImageFormat), "mismatch in image formats");
 
-video::ImageFormat getImageFormat(const std::string& glslType, int line) {
+video::ImageFormat getImageFormat(const core::String& glslType, int line) {
 	const int max = std::enum_value(video::ImageFormat::Max);
-	const std::string& upper = core::string::toUpper(glslType);
+	const core::String& upper = core::string::toUpper(glslType);
 	for (int i = 0; i < max; ++i) {
 		if (upper == cImageFormat[i].glsltype) {
 			return cImageFormat[i].type;
@@ -167,7 +167,7 @@ const char* getPrimitiveTypeString(video::Primitive primitive) {
 	return nullptr;
 }
 
-std::string uniformSetterPostfix(const Variable::Type type, int amount) {
+core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 	switch (type) {
 	case Variable::MAX:
 		return "";
@@ -267,8 +267,8 @@ std::string uniformSetterPostfix(const Variable::Type type, int amount) {
 	return "";
 }
 
-std::string convertName(const std::string& in, bool firstUpper) {
-	std::string out;
+core::String convertName(const core::String& in, bool firstUpper) {
+	core::String out;
 	std::vector<std::string> nameParts;
 	core::string::splitString(in, nameParts, "_-");
 	for (core::String& n : nameParts) {
@@ -299,7 +299,7 @@ std::string convertName(const std::string& in, bool firstUpper) {
  * a vec3 needs 12 bytes and it's 16 bytes aligned
  * a vec4 needs 16 bytes and it's 16 bytes aligned
  */
-std::string std140Align(const Variable& v) {
+core::String std140Align(const Variable& v) {
 #if USE_ALIGN_AS > 0
 	// TODO: generate uniform buffer struct - enforce std140 layout
 	// TODO: extract uniform blocks into aligned structs and generate methods to update them
@@ -319,7 +319,7 @@ std::string std140Align(const Variable& v) {
 	return "";
 }
 
-std::string std140Padding(const Variable& v, int& padding) {
+core::String std140Padding(const Variable& v, int& padding) {
 #if USE_ALIGN_AS == 0
 	const Types& cType = cTypes[v.type];
 	if (cType.type == Variable::Type::VEC3
@@ -371,7 +371,7 @@ size_t std140Size(const Variable& v) {
 	return components * bytes;
 }
 
-std::string std430Align(const Variable& v) {
+core::String std430Align(const Variable& v) {
 	// TODO: check this layout
 	return std140Align(v);
 }
@@ -381,7 +381,7 @@ size_t std430Size(const Variable& v) {
 	return std140Size(v);
 }
 
-std::string std430Padding(const Variable& v, int& padding) {
+core::String std430Padding(const Variable& v, int& padding) {
 	// TODO: check this layout
 	return std140Padding(v, padding);
 }

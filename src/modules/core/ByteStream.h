@@ -46,7 +46,7 @@ public:
 	void addInt(int32_t dword);
 	void addLong(int64_t dword);
 	void addFloat(float value);
-	void addString(const std::string& string);
+	void addString(const core::String& string);
 	void addFormat(const char *fmt, ...);
 
 	bool readBool();
@@ -55,7 +55,7 @@ public:
 	int32_t readInt();
 	int64_t readLong();
 	float readFloat();
-	std::string readString();
+	core::String readString();
 	void readFormat(const char *fmt, ...);
 
 	int32_t peekInt() const;
@@ -101,7 +101,7 @@ public:
 		return *this;
 	}
 
-	ByteStream &operator<<(const std::string &x) {
+	ByteStream &operator<<(const core::String &x) {
 		addString(x);
 		return *this;
 	}
@@ -144,7 +144,7 @@ inline void ByteStream::addBool(bool value, bool prepend) {
 	addByte(value, prepend);
 }
 
-inline void ByteStream::addString(const std::string& string) {
+inline void ByteStream::addString(const core::String& string) {
 	const size_t length = string.length();
 	for (std::size_t i = 0; i < length; i++) {
 		addByte(uint8_t(string[i]));

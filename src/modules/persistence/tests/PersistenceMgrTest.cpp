@@ -79,8 +79,8 @@ public:
 		EXPECT_EQ(*out.points(), initial + delta);
 	}
 
-	db::TestModel create(int64_t id = 1, const std::string& prefix = "", const std::string& email = "foo@b.ar",
-			const std::string& name = "foobar", const std::string& password = "secret") const {
+	db::TestModel create(int64_t id = 1, const core::String& prefix = "", const core::String& email = "foo@b.ar",
+			const core::String& name = "foobar", const core::String& password = "secret") const {
 		db::TestModel mdl;
 		mdl.setId(id);
 		mdl.setEmail(prefix + email);

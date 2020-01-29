@@ -23,7 +23,7 @@ TEST_F(MailSenderTest, testSend) {
 	ASSERT_TRUE(sender.init());
 
 	// send to sender
-	const std::string& to = core::Var::get("smtp_from")->strVal();
+	const core::String& to = core::Var::get("smtp_from")->strVal();
 	ASSERT_TRUE(sender.send(to.c_str(), "Test", "This is a test mail\nwith some content."));
 
 	sender.shutdown();

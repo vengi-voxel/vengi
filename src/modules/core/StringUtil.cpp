@@ -37,7 +37,7 @@ bool formatBuf(char *buf, size_t bufSize, const char *msg, ...) {
 	return fit;
 }
 
-std::string format(const char *msg, ...) {
+core::String format(const char *msg, ...) {
 	va_list ap;
 	constexpr std::size_t bufSize = 1024;
 	char text[bufSize];
@@ -72,7 +72,7 @@ char *urlEncode(const char *inBuf) {
 	return outBuf;
 }
 
-void replaceAllChars(std::string& str, char in, char out) {
+void replaceAllChars(core::String& str, char in, char out) {
 	for (std::string::iterator i = str.begin(); i != str.end(); ++i) {
 		if (*i == in) {
 			*i = out;
@@ -80,11 +80,11 @@ void replaceAllChars(std::string& str, char in, char out) {
 	}
 }
 
-std::string replaceAll(const std::string& str, const std::string& searchStr, const char* replaceStr, size_t replaceStrSize) {
+core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize) {
 	if (str.empty()) {
 		return str;
 	}
-	std::string sNew = str;
+	core::String sNew = str;
 	std::string::size_type loc;
 	const std::string::size_type searchLength = searchStr.length();
 	std::string::size_type lastPosition = 0;
@@ -95,7 +95,7 @@ std::string replaceAll(const std::string& str, const std::string& searchStr, con
 	return sNew;
 }
 
-void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters) {
+void splitString(const core::String& string, std::vector<std::string>& tokens, const core::String& delimiters) {
 	// Skip delimiters at beginning.
 	std::string::size_type lastPos = string.find_first_not_of(delimiters, 0);
 	// Find first "non-delimiter".
@@ -111,7 +111,7 @@ void splitString(const std::string& string, std::vector<std::string>& tokens, co
 	}
 }
 
-void splitString(const std::string& string, std::vector<std::string_view>& tokens, const std::string& delimiters) {
+void splitString(const core::String& string, std::vector<std::string_view>& tokens, const core::String& delimiters) {
 	// Skip delimiters at beginning.
 	std::string::size_type lastPos = string.find_first_not_of(delimiters, 0);
 	// Find first "non-delimiter".
@@ -127,13 +127,13 @@ void splitString(const std::string& string, std::vector<std::string_view>& token
 	}
 }
 
-bool isNumber(const std::string &in) {
+bool isNumber(const core::String &in) {
 	char *end = nullptr;
 	double val = strtod(in.c_str(), &end);
 	return end != in.c_str() && *end == '\0' && val != HUGE_VAL;
 }
 
-bool isInteger(const std::string& in) {
+bool isInteger(const core::String& in) {
 	for (size_t i = 0u; i < in.length(); i++) {
 		if (!isdigit(in[i])) {
 			return false;
@@ -142,26 +142,26 @@ bool isInteger(const std::string& in) {
 	return true;
 }
 
-std::string toLower(const std::string& string) {
-	std::string convert = string;
+core::String toLower(const core::String& string) {
+	core::String convert = string;
 	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_tolower);
 	return convert;
 }
 
-std::string toLower(const char* string) {
-	std::string convert(string);
+core::String toLower(const char* string) {
+	core::String convert(string);
 	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_tolower);
 	return convert;
 }
 
-std::string toUpper(const std::string& string) {
-	std::string convert = string;
+core::String toUpper(const core::String& string) {
+	core::String convert = string;
 	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_toupper);
 	return convert;
 }
 
-std::string toUpper(const char* string) {
-	std::string convert(string);
+core::String toUpper(const char* string) {
+	core::String convert(string);
 	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) SDL_toupper);
 	return convert;
 }
@@ -223,7 +223,7 @@ static bool patternMatch(const char *pattern, const char *text) {
 	return *t == '\0';
 }
 
-bool matches(const std::string& pattern, const char* text) {
+bool matches(const core::String& pattern, const char* text) {
 	if (pattern.empty()) {
 		return true;
 	}
@@ -237,15 +237,15 @@ bool matches(const char* pattern, const char* text) {
 	return patternMatch(pattern, text);
 }
 
-std::string concat(std::string_view first, std::string_view second) {
-	std::string target;
+core::String concat(std::string_view first, std::string_view second) {
+	core::String target;
 	target.reserve(first.size() + second.size());
 	target.append(first.data(), first.size());
 	target.append(second.data(), second.size());
 	return target;
 }
 
-static void camelCase(std::string& str, bool upperCamelCase) {
+static void camelCase(core::String& str, bool upperCamelCase) {
 	if (str.empty()) {
 		return;
 	}
@@ -260,8 +260,8 @@ static void camelCase(std::string& str, bool upperCamelCase) {
 	}
 	std::string::size_type pos = str.find_first_of("_", 0);
 	while (std::string::npos != pos) {
-		std::string sub = str.substr(0, pos);
-		std::string second = str.substr(pos + 1, str.length() - (pos + 1));
+		core::String sub = str.substr(0, pos);
+		core::String second = str.substr(pos + 1, str.length() - (pos + 1));
 		if (!second.empty()) {
 			second[0] = SDL_toupper(second[0]);
 			sub.append(second);
@@ -282,23 +282,23 @@ static void camelCase(std::string& str, bool upperCamelCase) {
 	}
 }
 
-std::string lowerCamelCase(const std::string& str) {
-	std::string copy = str;
+core::String lowerCamelCase(const core::String& str) {
+	core::String copy = str;
 	lowerCamelCase(copy);
 	return copy;
 }
 
-std::string upperCamelCase(const std::string& str) {
-	std::string copy = str;
+core::String upperCamelCase(const core::String& str) {
+	core::String copy = str;
 	upperCamelCase(copy);
 	return copy;
 }
 
-void upperCamelCase(std::string& str) {
+void upperCamelCase(core::String& str) {
 	camelCase(str, true);
 }
 
-void lowerCamelCase(std::string& str) {
+void lowerCamelCase(core::String& str) {
 	camelCase(str, false);
 }
 

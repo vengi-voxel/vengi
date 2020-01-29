@@ -178,7 +178,7 @@ void TestOctree::onRenderUI() {
 	typedef struct _VectorGetter {
 		struct AABBInfo {
 			math::AABB<int> aabb;
-			std::string info;
+			core::String info;
 		};
 		std::vector<AABBInfo> _itemVector;
 		_VectorGetter(const std::vector<math::AABB<int> >& itemVector) {

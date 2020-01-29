@@ -11,8 +11,8 @@
 
 namespace core {
 
-const std::string VAR_TRUE("true");
-const std::string VAR_FALSE("false");
+const core::String VAR_TRUE("true");
+const core::String VAR_FALSE("false");
 
 Var::VarMap Var::_vars;
 ReadWriteLock Var::_lock("Var");
@@ -20,7 +20,7 @@ uint8_t Var::_visitFlags = 0u;
 
 MAKE_SHARED_INVIS_CTOR(Var);
 
-VarPtr Var::get(const std::string& name, int value, int32_t flags) {
+VarPtr Var::get(const core::String& name, int value, int32_t flags) {
 	char buf[64];
 	core::string::formatBuf(buf, sizeof(buf), "%i", value);
 	return get(name, buf, flags);
@@ -45,13 +45,13 @@ void Var::setVal(float value) {
 	setVal(core::string::format("%f", value));
 }
 
-VarPtr Var::getSafe(const std::string& name) {
+VarPtr Var::getSafe(const core::String& name) {
 	const VarPtr& var = get(name);
 	core_assert_msg(var, "var %s doesn't exist yet", name.c_str());
 	return var;
 }
 
-std::string Var::str(const std::string& name) {
+core::String Var::str(const core::String& name) {
 	const VarPtr& var = get(name);
 	if (!var) {
 		return "";
@@ -59,7 +59,7 @@ std::string Var::str(const std::string& name) {
 	return var->strVal();
 }
 
-bool Var::boolean(const std::string& name) {
+bool Var::boolean(const core::String& name) {
 	const VarPtr& var = get(name);
 	if (!var) {
 		return false;
@@ -82,7 +82,7 @@ glm::vec3 Var::vec3Val() const {
 	return glm::vec3(x, y, z);
 }
 
-VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const char *help) {
+VarPtr Var::get(const core::String& name, const char* value, int32_t flags, const char *help) {
 	VarMap::iterator i;
 	bool missing;
 	{
@@ -98,7 +98,7 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 		if ((flagsMask & CV_FROMCOMMANDLINE) == 0) {
 			const char* envValue = SDL_getenv(name.c_str());
 			if (envValue == nullptr || envValue[0] == '\0') {
-				const std::string& upper = string::toUpper(name);
+				const core::String& upper = string::toUpper(name);
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
@@ -124,7 +124,7 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 			// environment variables have higher priority than config file values
 			const char* envValue = SDL_getenv(name.c_str());
 			if (envValue == nullptr || envValue[0] == '\0') {
-				const std::string& upper = string::toUpper(name);
+				const core::String& upper = string::toUpper(name);
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
@@ -151,7 +151,7 @@ VarPtr Var::get(const std::string& name, const char* value, int32_t flags, const
 	return v;
 }
 
-Var::Var(const std::string& name, const std::string& value, unsigned int flags, const char *help) :
+Var::Var(const core::String& name, const core::String& value, unsigned int flags, const char *help) :
 		_name(name), _help(help), _flags(flags), _dirty(false) {
 	addValueToHistory(value);
 	core_assert(_currentHistoryPos == 0);
@@ -160,7 +160,7 @@ Var::Var(const std::string& name, const std::string& value, unsigned int flags, 
 Var::~Var() {
 }
 
-void Var::addValueToHistory(const std::string& value) {
+void Var::addValueToHistory(const core::String& value) {
 	Value v;
 	v._value = value;
 	const bool isTrue = v._value == VAR_TRUE;
@@ -182,7 +182,7 @@ bool Var::useHistory(uint32_t historyIndex) {
 	return true;
 }
 
-void Var::setVal(const std::string& value) {
+void Var::setVal(const core::String& value) {
 	if ((_flags & CV_READONLY) != 0u) {
 		Log::error("%s is write protected", _name.c_str());
 		return;

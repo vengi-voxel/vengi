@@ -18,7 +18,7 @@ private:
 public:
 	tb::TBGenericStringItemSource _actionItems;
 
-	LayerItemWidget(const std::string& def, LayerItem *item, LayerItemSource *source) :
+	LayerItemWidget(const core::String& def, LayerItem *item, LayerItemSource *source) :
 			_source(source), _layerId(item->layerId()) {
 		setSkinBg(TBIDC("TBSelectItem"));
 		setLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
@@ -224,7 +224,7 @@ void LayerWidget::onLayerChanged(int layerId) {
 	}
 	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 	const voxedit::Layers& layers = layerMgr.layers();
-	const std::string& finalLayerName = layers[layerId].name;
+	const core::String& finalLayerName = layers[layerId].name;
 	Log::debug("Rename layer %i to %s", layerId, finalLayerName.c_str());
 	_source.getItem(index)->str.set(finalLayerName.c_str());
 	_source.invokeItemChanged(index, _list);
@@ -307,7 +307,7 @@ void LayerWidget::onActiveLayerChanged(int old, int active) {
 void LayerWidget::onLayerAdded(int layerId, const voxedit::Layer& layer, voxel::RawVolume*, const voxel::Region&) {
 	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 	const voxedit::Layers& layers = layerMgr.layers();
-	const std::string& finalLayerName = layers[layerId].name;
+	const core::String& finalLayerName = layers[layerId].name;
 	const bool finalVisibleState = layers[layerId].visible;
 	if (_source.getItemForLayerId(layerId) == nullptr) {
 		_source.addItem(new LayerItem(layerId, finalLayerName.c_str(), finalVisibleState));

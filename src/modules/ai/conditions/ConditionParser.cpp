@@ -7,7 +7,7 @@
 
 namespace ai {
 
-ConditionParser::ConditionParser(const IAIFactory& aiFactory, const std::string& conditionString) :
+ConditionParser::ConditionParser(const IAIFactory& aiFactory, const core::String& conditionString) :
 		IParser(), _aiFactory(aiFactory) {
 	_conditionString = ai::Str::eraseAllSpaces(conditionString);
 }
@@ -15,10 +15,10 @@ ConditionParser::ConditionParser(const IAIFactory& aiFactory, const std::string&
 ConditionParser::~ConditionParser() {
 }
 
-void ConditionParser::splitConditions(const std::string& string, std::vector<std::string>& tokens) const {
+void ConditionParser::splitConditions(const core::String& string, std::vector<std::string>& tokens) const {
 	int inParameter = 0;
 	int inChildren = 0;
-	std::string token;
+	core::String token;
 	for (std::string::const_iterator i = string.begin(); i != string.end(); ++i) {
 		if (*i == '{') {
 			++inParameter;
@@ -42,7 +42,7 @@ void ConditionParser::splitConditions(const std::string& string, std::vector<std
 	tokens.push_back(token);
 }
 
-bool ConditionParser::fillInnerFilters(FilterFactoryContext& ctx, const std::string& filterStr) {
+bool ConditionParser::fillInnerFilters(FilterFactoryContext& ctx, const core::String& filterStr) {
 	std::vector<std::string> conditions;
 	splitConditions(filterStr, conditions);
 	if (conditions.size() > 1) {
@@ -54,14 +54,14 @@ bool ConditionParser::fillInnerFilters(FilterFactoryContext& ctx, const std::str
 		return true;
 	}
 
-	std::string parameters;
+	core::String parameters;
 	std::size_t n = filterStr.find("(");
 	if (n == std::string::npos || filterStr.find("{") < n) {
 		parameters = getBetween(filterStr, "{", "}");
 		n = filterStr.find("{");
 	}
 
-	std::string name;
+	core::String name;
 	if (n != std::string::npos) {
 		name = filterStr.substr(0, n);
 	} else {
@@ -75,7 +75,7 @@ bool ConditionParser::fillInnerFilters(FilterFactoryContext& ctx, const std::str
 			setError("syntax error, missing closing brace");
 			return false;
 		}
-		const std::string& inner = filterStr.substr(n + 1, r - n - 1);
+		const core::String& inner = filterStr.substr(n + 1, r - n - 1);
 		if (!fillInnerFilters(ctxInner, inner)) {
 			return false;
 		}
@@ -89,7 +89,7 @@ bool ConditionParser::fillInnerFilters(FilterFactoryContext& ctx, const std::str
 	return true;
 }
 
-bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, const std::string& conditionStr) {
+bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, const core::String& conditionStr) {
 	std::vector<std::string> conditions;
 	splitConditions(conditionStr, conditions);
 	if (conditions.size() > 1) {
@@ -99,14 +99,14 @@ bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, const st
 			}
 		}
 	} else {
-		std::string parameters;
+		core::String parameters;
 		std::size_t n = conditionStr.find("(");
 		if (n == std::string::npos || conditionStr.find("{") < n) {
 			parameters = getBetween(conditionStr, "{", "}");
 			n = conditionStr.find("{");
 		}
 
-		std::string name;
+		core::String name;
 		if (n != std::string::npos) {
 			name = conditionStr.substr(0, n);
 		} else {
@@ -122,7 +122,7 @@ bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, const st
 					setError("syntax error, missing closing brace");
 					return false;
 				}
-				const std::string& inner = conditionStr.substr(n + 1, r - n - 1);
+				const core::String& inner = conditionStr.substr(n + 1, r - n - 1);
 				if (!fillInnerFilters(ctxInner, inner)) {
 					return false;
 				}
@@ -143,7 +143,7 @@ bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, const st
 					setError("syntax error, missing closing brace");
 					return false;
 				}
-				const std::string& inner = conditionStr.substr(n + 1, r - n - 1);
+				const core::String& inner = conditionStr.substr(n + 1, r - n - 1);
 				if (!fillInnerConditions(ctxInner, inner)) {
 					return false;
 				}
@@ -161,13 +161,13 @@ bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, const st
 
 ConditionPtr ConditionParser::getCondition() {
 	resetError();
-	std::string parameters;
+	core::String parameters;
 	std::size_t n = _conditionString.find("(");
 	if (n == std::string::npos || _conditionString.find("{") < n) {
 		parameters = getBetween(_conditionString, "{", "}");
 		n = _conditionString.find("{");
 	}
-	std::string name;
+	core::String name;
 	if (n != std::string::npos) {
 		name = _conditionString.substr(0, n);
 	} else {
@@ -182,7 +182,7 @@ ConditionPtr ConditionParser::getCondition() {
 			setError("syntax error, missing closing brace");
 			return ConditionPtr();
 		}
-		const std::string& inner = _conditionString.substr(n + 1, r - n - 1);
+		const core::String& inner = _conditionString.substr(n + 1, r - n - 1);
 		if (!fillInnerConditions(ctx, inner)) {
 			return ConditionPtr();
 		}

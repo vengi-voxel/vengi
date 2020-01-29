@@ -21,7 +21,7 @@ protected:
 	BirdSkeletonAttribute _attributes;
 public:
 	bool initMesh(const AnimationCachePtr& cache) override;
-	bool initSettings(const std::string& luaString) override;
+	bool initSettings(const core::String& luaString) override;
 	void update(uint64_t dt, const attrib::ShadowAttributes& attrib) override;
 	const Skeleton& skeleton() const override;
 	BirdSkeletonAttribute& skeletonAttributes() override;

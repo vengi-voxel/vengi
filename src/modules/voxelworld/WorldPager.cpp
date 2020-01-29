@@ -52,7 +52,7 @@ void WorldPager::setNoiseOffset(const glm::vec2& noiseOffset) {
 	_noiseSeedOffset = noiseOffset;
 }
 
-bool WorldPager::init(voxel::PagedVolume *volumeData, const std::string& worldParamsLua, const std::string& biomesLua) {
+bool WorldPager::init(voxel::PagedVolume *volumeData, const core::String& worldParamsLua, const core::String& biomesLua) {
 	if (!_biomeManager.init(biomesLua)) {
 		Log::error("Failed to init biome mgr");
 		return false;

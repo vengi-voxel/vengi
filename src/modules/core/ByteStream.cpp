@@ -98,9 +98,9 @@ void ByteStream::readFormat(const char *fmt, ...) {
 	va_end(ap);
 }
 
-std::string ByteStream::readString() {
+core::String ByteStream::readString() {
 	int size = 0;
-	std::string strbuff;
+	core::String strbuff;
 	strbuff.reserve(64);
 	for (;;) {
 		const char chr = *std::next(begin(), size);

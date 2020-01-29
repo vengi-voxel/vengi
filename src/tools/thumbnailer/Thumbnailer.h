@@ -22,7 +22,7 @@ private:
 	video::FrameBuffer _frameBuffer;
 
 	io::FilePtr _infile;
-	std::string _outfile;
+	core::String _outfile;
 	int _outputSize = 128;
 
 	voxelrender::RawVolumeRenderer _renderer;

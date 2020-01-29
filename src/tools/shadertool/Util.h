@@ -16,14 +16,14 @@ namespace util {
  * @param firstUpper Convert to upper camel case
  * @return The camel case string
  */
-extern std::string convertName(const std::string& in, bool firstUpper);
+extern core::String convertName(const core::String& in, bool firstUpper);
 
-extern std::string uniformSetterPostfix(const Variable::Type type, int amount);
+extern core::String uniformSetterPostfix(const Variable::Type type, int amount);
 
 /**
  * @return @c video::ImageFormat::Max if no mapping was found
  */
-extern video::ImageFormat getImageFormat(const std::string& type, int line);
+extern video::ImageFormat getImageFormat(const core::String& type, int line);
 
 /**
  * @return @c nullptr if no mapping was found
@@ -35,19 +35,19 @@ extern const char* getPrimitiveTypeString(video::Primitive primitive);
 
 extern int getComponents(const Variable::Type type);
 
-extern Variable::Type getType(const std::string& type, int line);
+extern Variable::Type getType(const core::String& type, int line);
 
-extern std::string std140Align(const Variable& v);
+extern core::String std140Align(const Variable& v);
 
-extern std::string std140Padding(const Variable& v, int& padding);
+extern core::String std140Padding(const Variable& v, int& padding);
 
 extern size_t std140Size(const Variable& v);
 
-extern std::string std430Align(const Variable& v);
+extern core::String std430Align(const Variable& v);
 
 extern size_t std430Size(const Variable& v);
 
-extern std::string std430Padding(const Variable& v, int& padding);
+extern core::String std430Padding(const Variable& v, int& padding);
 
 extern const Types& resolveTypes(Variable::Type type);
 

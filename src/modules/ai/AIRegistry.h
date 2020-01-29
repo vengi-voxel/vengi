@@ -64,28 +64,28 @@ public:
 	 * @param[in] factory The factory that will create the real node.
 	 * @return @c true if the unregister action was successful, @c false if not (e.g. it wasn't registered at all)
 	 */
-	bool registerNodeFactory(const std::string& type, const ITreeNodeFactory& factory);
+	bool registerNodeFactory(const core::String& type, const ITreeNodeFactory& factory);
 	/**
 	 * @brief Unregisters a tree node factory of the given @c type. This can also be used to replace a built-in
 	 * type with a user provided type.
 	 *
 	 * @return @c true if the unregister action was successful, @c false if not (e.g. it wasn't registered at all)
 	 */
-	bool unregisterNodeFactory(const std::string& type);
+	bool unregisterNodeFactory(const core::String& type);
 
-	bool registerSteerNodeFactory(const std::string& type, const ISteerNodeFactory& factory);
+	bool registerSteerNodeFactory(const core::String& type, const ISteerNodeFactory& factory);
 	/**
 	 * @brief Unregisters a tree node factory of the given @c type. This can also be used to replace a built-in
 	 * type with a user provided type.
 	 *
 	 * @return @c true if the unregister action was successful, @c false if not (e.g. it wasn't registered at all)
 	 */
-	bool unregisterSteerNodeFactory(const std::string& type);
+	bool unregisterSteerNodeFactory(const core::String& type);
 
-	bool registerSteeringFactory(const std::string& type, const ISteeringFactory& factory);
-	bool unregisterSteeringFactory(const std::string& type);
+	bool registerSteeringFactory(const core::String& type, const ISteeringFactory& factory);
+	bool unregisterSteeringFactory(const core::String& type);
 
-	bool registerFilterFactory(const std::string& type, const IFilterFactory& factory);
+	bool registerFilterFactory(const core::String& type, const IFilterFactory& factory);
 
 	/**
 	 * @brief Unregisters a filter factory of the given @c type. This can also be used to replace a built-in
@@ -93,81 +93,81 @@ public:
 	 *
 	 * @return @c true if the unregister action was successful, @c false if not (e.g. it wasn't registered at all)
 	 */
-	bool unregisterFilterFactory(const std::string& type);
+	bool unregisterFilterFactory(const core::String& type);
 
-	bool registerConditionFactory(const std::string& type, const IConditionFactory& factory);
+	bool registerConditionFactory(const core::String& type, const IConditionFactory& factory);
 	/**
 	 * @brief Unregisters a condition factory of the given @c type. This can also be used to replace a built-in
 	 * type with a user provided type.
 	 *
 	 * @return @c true if the unregister action was successful, @c false if not (e.g. it wasn't registered at all)
 	 */
-	bool unregisterConditionFactory(const std::string& type);
+	bool unregisterConditionFactory(const core::String& type);
 
-	TreeNodePtr createNode(const std::string& type, const TreeNodeFactoryContext& ctx) const override;
-	TreeNodePtr createSteerNode(const std::string& type, const SteerNodeFactoryContext& ctx) const override;
-	FilterPtr createFilter(const std::string& type, const FilterFactoryContext& ctx) const override;
-	ConditionPtr createCondition(const std::string& type, const ConditionFactoryContext& ctx) const override;
-	SteeringPtr createSteering(const std::string& type, const SteeringFactoryContext& ctx) const override;
+	TreeNodePtr createNode(const core::String& type, const TreeNodeFactoryContext& ctx) const override;
+	TreeNodePtr createSteerNode(const core::String& type, const SteerNodeFactoryContext& ctx) const override;
+	FilterPtr createFilter(const core::String& type, const FilterFactoryContext& ctx) const override;
+	ConditionPtr createCondition(const core::String& type, const ConditionFactoryContext& ctx) const override;
+	SteeringPtr createSteering(const core::String& type, const SteeringFactoryContext& ctx) const override;
 };
 
-inline TreeNodePtr AIRegistry::createNode(const std::string& nodeType, const TreeNodeFactoryContext& ctx) const {
+inline TreeNodePtr AIRegistry::createNode(const core::String& nodeType, const TreeNodeFactoryContext& ctx) const {
 	return _treeNodeFactory.create(nodeType, &ctx);
 }
 
-inline TreeNodePtr AIRegistry::createSteerNode(const std::string& nodeType, const SteerNodeFactoryContext& ctx) const {
+inline TreeNodePtr AIRegistry::createSteerNode(const core::String& nodeType, const SteerNodeFactoryContext& ctx) const {
 	return _steerNodeFactory.create(nodeType, &ctx);
 }
 
-inline FilterPtr AIRegistry::createFilter(const std::string& nodeType, const FilterFactoryContext& ctx) const {
+inline FilterPtr AIRegistry::createFilter(const core::String& nodeType, const FilterFactoryContext& ctx) const {
 	return _filterFactory.create(nodeType, &ctx);
 }
 
-inline bool AIRegistry::registerNodeFactory(const std::string& nodeType, const ITreeNodeFactory& factory) {
+inline bool AIRegistry::registerNodeFactory(const core::String& nodeType, const ITreeNodeFactory& factory) {
 	return _treeNodeFactory.registerFactory(nodeType, factory);
 }
 
-inline bool AIRegistry::registerFilterFactory(const std::string& nodeType, const IFilterFactory& factory) {
+inline bool AIRegistry::registerFilterFactory(const core::String& nodeType, const IFilterFactory& factory) {
 	return _filterFactory.registerFactory(nodeType, factory);
 }
 
-inline bool AIRegistry::registerConditionFactory(const std::string& nodeType, const IConditionFactory& factory) {
+inline bool AIRegistry::registerConditionFactory(const core::String& nodeType, const IConditionFactory& factory) {
 	return _conditionFactory.registerFactory(nodeType, factory);
 }
 
-inline bool AIRegistry::unregisterNodeFactory(const std::string& nodeType) {
+inline bool AIRegistry::unregisterNodeFactory(const core::String& nodeType) {
 	return _treeNodeFactory.unregisterFactory(nodeType);
 }
 
-inline bool AIRegistry::registerSteerNodeFactory(const std::string& type, const ISteerNodeFactory& factory) {
+inline bool AIRegistry::registerSteerNodeFactory(const core::String& type, const ISteerNodeFactory& factory) {
 	return _steerNodeFactory.registerFactory(type, factory);
 }
 
-inline bool AIRegistry::unregisterSteerNodeFactory(const std::string& type) {
+inline bool AIRegistry::unregisterSteerNodeFactory(const core::String& type) {
 	return _steerNodeFactory.unregisterFactory(type);
 }
 
-inline bool AIRegistry::registerSteeringFactory(const std::string& type, const ISteeringFactory& factory) {
+inline bool AIRegistry::registerSteeringFactory(const core::String& type, const ISteeringFactory& factory) {
 	return _steeringFactory.registerFactory(type, factory);
 }
 
-inline bool AIRegistry::unregisterSteeringFactory(const std::string& type) {
+inline bool AIRegistry::unregisterSteeringFactory(const core::String& type) {
 	return _steeringFactory.unregisterFactory(type);
 }
 
-inline bool AIRegistry::unregisterFilterFactory(const std::string& nodeType) {
+inline bool AIRegistry::unregisterFilterFactory(const core::String& nodeType) {
 	return _filterFactory.unregisterFactory(nodeType);
 }
 
-inline bool AIRegistry::unregisterConditionFactory(const std::string& nodeType) {
+inline bool AIRegistry::unregisterConditionFactory(const core::String& nodeType) {
 	return _conditionFactory.unregisterFactory(nodeType);
 }
 
-inline ConditionPtr AIRegistry::createCondition(const std::string& nodeType, const ConditionFactoryContext& ctx) const {
+inline ConditionPtr AIRegistry::createCondition(const core::String& nodeType, const ConditionFactoryContext& ctx) const {
 	return _conditionFactory.create(nodeType, &ctx);
 }
 
-inline SteeringPtr AIRegistry::createSteering(const std::string& type, const SteeringFactoryContext& ctx) const {
+inline SteeringPtr AIRegistry::createSteering(const core::String& type, const SteeringFactoryContext& ctx) const {
 	return _steeringFactory.create(type, &ctx);
 }
 

@@ -38,8 +38,8 @@ const uint32_t CV_FROMFILE = 1 << 6;
 const uint32_t CV_FROMCOMMANDLINE = 1 << 7;
 const uint32_t CV_FROMENV = 1 << 8;
 
-extern const std::string VAR_TRUE;
-extern const std::string VAR_FALSE;
+extern const core::String VAR_TRUE;
+extern const core::String VAR_FALSE;
 
 class Var;
 typedef std::shared_ptr<Var> VarPtr;
@@ -66,7 +66,7 @@ protected:
 	core::VarPtr _volume;
 	core::VarPtr _musicVolume;
 
-	const std::string _name;
+	const core::String _name;
 	const char* _help = nullptr;
 	uint32_t _flags;
 	static constexpr int NEEDS_REPLICATE = 1 << 0;
@@ -79,7 +79,7 @@ protected:
 		float _floatValue = 0.0f;
 		int _intValue = 0;
 		long _longValue = 0l;
-		std::string _value;
+		core::String _value;
 	};
 
 	std::vector<Value> _history;
@@ -87,9 +87,9 @@ protected:
 	bool _dirty;
 
 	// invisible - use the static get method
-	Var(const std::string& name, const std::string& value = "", uint32_t flags = 0u, const char *help = nullptr);
+	Var(const core::String& name, const core::String& value = "", uint32_t flags = 0u, const char *help = nullptr);
 
-	void addValueToHistory(const std::string& value);
+	void addValueToHistory(const core::String& value);
 public:
 	~Var();
 
@@ -103,21 +103,21 @@ public:
 	 *
 	 * @note This is using a read/write lock to allow access from different threads.
 	 */
-	static VarPtr get(const std::string& name, const char* value = nullptr, int32_t flags = -1, const char *help = nullptr);
+	static VarPtr get(const core::String& name, const char* value = nullptr, int32_t flags = -1, const char *help = nullptr);
 
-	static inline VarPtr get(const std::string& name, const char* value, const char *help) {
+	static inline VarPtr get(const core::String& name, const char* value, const char *help) {
 		return get(name, value, -1, help);
 	}
 
 	/**
 	 * @note Same as get(), but uses @c core_assert if no var could be found with the given name.
 	 */
-	static VarPtr getSafe(const std::string& name);
+	static VarPtr getSafe(const core::String& name);
 
 	/**
 	 * @return @c empty string if var with given name wasn't found, otherwise the value of the var
 	 */
-	static std::string str(const std::string& name);
+	static core::String str(const core::String& name);
 
 	/**
 	 * The memory is now owned. Make sure it is available for the whole lifetime of this instance.
@@ -129,9 +129,9 @@ public:
 	/**
 	 * @return @c false if var with given name wasn't found, otherwise the bool value of the var
 	 */
-	static bool boolean(const std::string& name);
+	static bool boolean(const core::String& name);
 
-	static VarPtr get(const std::string& name, int value, int32_t flags = -1);
+	static VarPtr get(const core::String& name, int value, int32_t flags = -1);
 
 	static void shutdown();
 
@@ -261,7 +261,7 @@ public:
 	 */
 	bool boolVal() const;
 	glm::vec3 vec3Val() const;
-	void setVal(const std::string& value);
+	void setVal(const core::String& value);
 	inline void setVal(const char* value) {
 		if (!strcmp(_history[_currentHistoryPos]._value.c_str(), value)) {
 			return;
@@ -279,8 +279,8 @@ public:
 	/**
 	 * @return The string value of this var
 	 */
-	const std::string& strVal() const;
-	const std::string& name() const;
+	const core::String& strVal() const;
+	const core::String& name() const;
 	/**
 	 * @return @c true if some @c Var::setVal call changed the initial/default value that was specified on construction
 	 */
@@ -329,11 +329,11 @@ inline bool Var::typeIsBool() const {
 	return _history[_currentHistoryPos]._value == "true" || _history[_currentHistoryPos]._value == "1" || _history[_currentHistoryPos]._value == "false" || _history[_currentHistoryPos]._value == "0";
 }
 
-inline const std::string& Var::strVal() const {
+inline const core::String& Var::strVal() const {
 	return _history[_currentHistoryPos]._value;
 }
 
-inline const std::string& Var::name() const {
+inline const core::String& Var::name() const {
 	return _name;
 }
 

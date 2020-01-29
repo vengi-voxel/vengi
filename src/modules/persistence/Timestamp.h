@@ -28,7 +28,7 @@ public:
 	static Timestamp now();
 	bool isNow() const;
 
-	std::string toString(const char *format = "%d-%m-%Y %H-%M-%S") const;
+	core::String toString(const char *format = "%d-%m-%Y %H-%M-%S") const;
 
 	uint64_t seconds() const;
 	uint64_t millis() const;

@@ -54,7 +54,7 @@ public:
 	/**
 	 * @brief this will initialize the loader once with all the defined behaviours from the given lua string.
 	 */
-	bool init(const std::string& luaString);
+	bool init(const core::String& luaString);
 };
 
 }

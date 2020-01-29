@@ -17,7 +17,7 @@ protected:
 public:
 	STEERING_FACTORY(GroupFlee)
 
-	explicit GroupFlee(const std::string& parameters);
+	explicit GroupFlee(const core::String& parameters);
 
 	inline bool isValid () const {
 		return _groupId != -1;

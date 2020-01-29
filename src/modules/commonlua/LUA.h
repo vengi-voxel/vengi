@@ -18,27 +18,27 @@ extern "C" {
 
 namespace lua {
 
-const std::string META_PREFIX = "META_";
+const core::String META_PREFIX = "META_";
 
 class LUAType {
 private:
 	lua_State* _state;
 public:
-	LUAType(lua_State* state, const std::string& name);
+	LUAType(lua_State* state, const core::String& name);
 
 	// only non-capturing lambdas can be converted to function pointers
 	template<class FUNC>
-	void addFunction(const std::string& name, FUNC&& func) {
+	void addFunction(const core::String& name, FUNC&& func) {
 		lua_pushcfunction(_state, func);
 		lua_setfield(_state, -2, name.c_str());
 	}
 };
 
 struct LUAFunction {
-	const std::string name;
+	const core::String name;
 	lua_CFunction func;
 
-	inline LUAFunction(const std::string &_name, lua_CFunction _func) :
+	inline LUAFunction(const core::String &_name, lua_CFunction _func) :
 			name(_name), func(_func) {
 	}
 };
@@ -47,7 +47,7 @@ using LUAFunctions = std::vector<lua::LUAFunction>;
 class LUA : public core::NonCopyable {
 private:
 	lua_State *_state;
-	std::string _error;
+	core::String _error;
 	bool _destroy;
 	bool _debug;
 
@@ -68,20 +68,20 @@ public:
 	bool resetState();
 
 	template<class T>
-	static T* newGlobalData(lua_State *L, const std::string& prefix, T *userData) {
+	static T* newGlobalData(lua_State *L, const core::String& prefix, T *userData) {
 		lua_pushlightuserdata(L, userData);
 		lua_setglobal(L, prefix.c_str());
 		return userData;
 	}
 
 	template<class T>
-	inline T* newGlobalData(const std::string& prefix, T *userData) const {
+	inline T* newGlobalData(const core::String& prefix, T *userData) const {
 		newGlobalData(_state, prefix, userData);
 		return userData;
 	}
 
 	template<class T>
-	static T* globalData(lua_State *L, const std::string& prefix) {
+	static T* globalData(lua_State *L, const core::String& prefix) {
 		lua_getglobal(L, prefix.c_str());
 		T* data = (T*) lua_touserdata(L, -1);
 		lua_pop(L, 1);
@@ -89,7 +89,7 @@ public:
 	}
 
 	template<class T>
-	inline T* globalData(const std::string& prefix) const {
+	inline T* globalData(const core::String& prefix) const {
 		return globalData<T>(_state, prefix);
 	}
 
@@ -100,18 +100,18 @@ public:
 	}
 
 	template<class T>
-	static T** newUserdata(lua_State *L, const std::string& prefix) {
+	static T** newUserdata(lua_State *L, const core::String& prefix) {
 		T ** udata = (T **) lua_newuserdata(L, sizeof(T *));
-		const std::string name = META_PREFIX + prefix;
+		const core::String name = META_PREFIX + prefix;
 		luaL_getmetatable(L, name.c_str());
 		lua_setmetatable(L, -2);
 		return udata;
 	}
 
 	template<class T>
-	static T* newUserdata(lua_State *L, const std::string& prefix, T* data) {
+	static T* newUserdata(lua_State *L, const core::String& prefix, T* data) {
 		T ** udata = (T **) lua_newuserdata(L, sizeof(T *));
-		const std::string name = META_PREFIX + prefix;
+		const core::String name = META_PREFIX + prefix;
 		luaL_getmetatable(L, name.c_str());
 		lua_setmetatable(L, -2);
 		*udata = data;
@@ -119,24 +119,24 @@ public:
 	}
 
 	template<class T>
-	static T* userData(lua_State *L, int n, const std::string& prefix) {
-		const std::string name = META_PREFIX + prefix;
+	static T* userData(lua_State *L, int n, const core::String& prefix) {
+		const core::String name = META_PREFIX + prefix;
 		return *(T **) luaL_checkudata(L, n, name.c_str());
 	}
 
 	/**
 	 * Aborts the lua execution with the given error message
 	 */
-	static int returnError(lua_State *L, const std::string& error) {
+	static int returnError(lua_State *L, const core::String& error) {
 		Log::error("LUA error: %s", error.c_str());
 		return luaL_error(L, "%s", error.c_str());
 	}
 
 	void pop(int amount = 1);
 
-	void reg(const std::string& prefix, const luaL_Reg* funcs);
+	void reg(const core::String& prefix, const luaL_Reg* funcs);
 
-	void reg(const std::string& prefix, const LUAFunctions& funcs) {
+	void reg(const core::String& prefix, const LUAFunctions& funcs) {
 		std::vector<luaL_Reg> f;
 		f.reserve(funcs.size());
 		for (const auto& func : funcs) {
@@ -146,21 +146,21 @@ public:
 		reg(prefix, &f[0]);
 	}
 
-	LUAType registerType(const std::string& name);
+	LUAType registerType(const core::String& name);
 
-	void setError(const std::string& error);
-	const std::string& error() const;
+	void setError(const core::String& error);
+	const core::String& error() const;
 	/**
 	 * @brief Loads a lua script into the lua state.
 	 */
-	bool load(const std::string &luaString);
+	bool load(const core::String &luaString);
 	/**
 	 * @brief Executes a function from an already loaded lua state
 	 * @param[in] function function to be called
 	 * @param[in] returnValues The amount of values returned by the called lua function. -1 is for multiple return values.
 	 * @note Use clua_get<T>(s, -1) to get the first custom return value.
 	 */
-	bool execute(const std::string &function, int returnValues = 0);
+	bool execute(const core::String &function, int returnValues = 0);
 	/**
 	 * @brief Executes an 'update' function with a delta time parameter in the lua code
 	 */
@@ -168,23 +168,23 @@ public:
 
 	bool valueFloatFromTable(const char* key, float *value);
 
-	int intValue(const std::string& path, int defaultValue = 0);
-	float floatValue(const std::string& path, float defaultValue = 0.0f);
-	std::string string(const std::string& expr, const std::string& defaultValue = "");
+	int intValue(const core::String& path, int defaultValue = 0);
+	float floatValue(const core::String& path, float defaultValue = 0.0f);
+	core::String string(const core::String& expr, const core::String& defaultValue = "");
 
-	static std::string stackDump(lua_State *L);
-	std::string stackDump();
+	static core::String stackDump(lua_State *L);
+	core::String stackDump();
 };
 
 inline lua_State* LUA::state() const {
 	return _state;
 }
 
-inline void LUA::setError(const std::string& error) {
+inline void LUA::setError(const core::String& error) {
 	_error = error;
 }
 
-inline const std::string& LUA::error() const {
+inline const core::String& LUA::error() const {
 	return _error;
 }
 

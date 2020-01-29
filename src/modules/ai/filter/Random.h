@@ -16,7 +16,7 @@ protected:
 	Filters _filters;
 	int _n;
 public:
-	Random(const std::string& parameters, const Filters& filters) :
+	Random(const core::String& parameters, const Filters& filters) :
 		IFilter("Random", parameters), _filters(filters) {
 		_n = std::stoi(parameters);
 	}

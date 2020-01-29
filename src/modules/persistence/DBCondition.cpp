@@ -29,7 +29,7 @@ static_assert(std::enum_value(Comparator::Max) == lengthof(comparatorString), "C
 
 }
 
-DBCondition::DBCondition(const char* field, FieldType type, const std::string& value, Comparator comp) :
+DBCondition::DBCondition(const char* field, FieldType type, const core::String& value, Comparator comp) :
 		_comp(comp), _field(field), _valueCopy(SDL_strdup(value.c_str())), _value(_valueCopy), _type(type) {
 }
 
@@ -40,7 +40,7 @@ DBCondition::~DBCondition() {
 	}
 }
 
-std::string DBCondition::statement(int& parameterCount) const {
+core::String DBCondition::statement(int& parameterCount) const {
 	if (_field == nullptr) {
 		return "";
 	}
@@ -55,15 +55,15 @@ std::string DBCondition::statement(int& parameterCount) const {
 	return core::string::format("\"%s\" %s $%i", _field, c, parameterCount);
 }
 
-std::string DBConditionOne::statement(int& parameterCount) const {
-	static const std::string empty = "";
+core::String DBConditionOne::statement(int& parameterCount) const {
+	static const core::String empty = "";
 	return empty;
 }
 
-std::string DBConditionMultiple::statement(int& parameterCount) const {
+core::String DBConditionMultiple::statement(int& parameterCount) const {
 	const char* o = _and ? " AND " : " OR ";
 	return core::string::join(_conditions.begin(), _conditions.end(), o, [&] (const DBCondition* cond) {
-		const std::string& s = cond->statement(parameterCount);
+		const core::String& s = cond->statement(parameterCount);
 		Log::debug("Statement: '%s', parameterCount: %i", s.c_str(), parameterCount);
 		return s;
 	});

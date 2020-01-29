@@ -17,7 +17,7 @@ namespace anim {
  */
 class VolumeCache : public voxelformat::VolumeCache {
 private:
-	bool load(const std::string& fullPath, size_t volumeIndex, voxel::VoxelVolumes& volumes);
+	bool load(const core::String& fullPath, size_t volumeIndex, voxel::VoxelVolumes& volumes);
 public:
 	bool getVolumes(const animation::AnimationSettings& settings, voxel::VoxelVolumes& volumes) {
 		volumes.resize(animation::AnimationSettings::MAX_ENTRIES);
@@ -26,7 +26,7 @@ public:
 			if (settings.paths[i].empty()) {
 				continue;
 			}
-			const std::string& fullPath = settings.fullPath(i);
+			const core::String& fullPath = settings.fullPath(i);
 			if (!load(fullPath, i, volumes)) {
 				Log::error("Failed to load %s", settings.paths[i].c_str());
 				return false;

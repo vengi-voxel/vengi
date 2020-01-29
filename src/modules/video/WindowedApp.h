@@ -89,7 +89,7 @@ public:
 	int frameBufferWidth() const;
 	int frameBufferHeight() const;
 
-	std::string getKeyBindingsString(const char *cmd) const;
+	core::String getKeyBindingsString(const char *cmd) const;
 
 	enum class OpenFileMode {
 		Save, Open, Directory
@@ -100,18 +100,18 @@ public:
 	 * @param[in] mode @c OpenFileMode
 	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
 	 */
-	virtual void fileDialog(const std::function<void(const std::string&)>& callback, OpenFileMode mode, const std::string& filter = "");
+	virtual void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter = "");
 
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
 	 */
-	void saveDialog(const std::function<void(const std::string)>& callback, const std::string& filter = "");
+	void saveDialog(const std::function<void(const std::string)>& callback, const core::String& filter = "");
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
 	 */
-	void openDialog(const std::function<void(const std::string)>& callback, const std::string& filter = "");
+	void openDialog(const std::function<void(const std::string)>& callback, const core::String& filter = "");
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 */
@@ -150,11 +150,11 @@ inline int WindowedApp::frameBufferHeight() const {
 	return _frameBufferDimension.y;
 }
 
-inline void WindowedApp::saveDialog(const std::function<void(const std::string)>& callback, const std::string& filter) {
+inline void WindowedApp::saveDialog(const std::function<void(const std::string)>& callback, const core::String& filter) {
 	fileDialog(callback, OpenFileMode::Save, filter);
 }
 
-inline void WindowedApp::openDialog(const std::function<void(const std::string)>& callback, const std::string& filter) {
+inline void WindowedApp::openDialog(const std::function<void(const std::string)>& callback, const core::String& filter) {
 	fileDialog(callback, OpenFileMode::Open, filter);
 }
 

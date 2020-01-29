@@ -35,7 +35,7 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 	int index = 0;
 	for (int i = ((int)network::EntityType::BEGIN_CHARACTERS) + 1; i < (int)network::EntityType::MAX_CHARACTERS; ++i) {
 		const char *entityName = network::EnumNameEntityType((network::EntityType)i);
-		std::string lower = core::string::toLower(core::string::format("chr/%s", entityName));
+		core::String lower = core::string::toLower(core::string::format("chr/%s", entityName));
 		core::string::replaceAllChars(lower, '_', '-');
 		validCharacters[index++] = lower;
 	}
@@ -110,10 +110,10 @@ core::AppState TestAnimation::onConstruct() {
 bool TestAnimation::loadAnimationEntity() {
 	const int size = animationEntityTypes().size();
 	_currentAnimationEntityIndex %= size;
-	const std::string& ent = animationEntityTypes()[_currentAnimationEntityIndex];
+	const core::String& ent = animationEntityTypes()[_currentAnimationEntityIndex];
 	Log::info("Load animation entity settings for %s", ent.c_str());
 	const io::FilePtr& file = filesystem()->open(animation::luaFilename(ent.c_str()));
-	const std::string& lua = file->load();
+	const core::String& lua = file->load();
 	if (lua.empty()) {
 		Log::error("Failed to load animation entity settings for %s", ent.c_str());
 		return false;

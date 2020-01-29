@@ -11,12 +11,12 @@
 
 namespace frontend {
 
-static inline std::string getCharacterLua(network::EntityType type) {
-	const std::string& entityTypeStr = network::EnumNameEntityType(type);
-	std::string luaFilename = core::string::toLower(entityTypeStr);
+static inline core::String getCharacterLua(network::EntityType type) {
+	const core::String& entityTypeStr = network::EnumNameEntityType(type);
+	core::String luaFilename = core::string::toLower(entityTypeStr);
 	core::string::replaceAllChars(luaFilename, '_', '-');
-	const std::string& luaPath = animation::luaFilename(luaFilename.c_str());
-	const std::string& lua = io::filesystem()->load("chr/" + luaPath);
+	const core::String& luaPath = animation::luaFilename(luaFilename.c_str());
+	const core::String& lua = io::filesystem()->load("chr/" + luaPath);
 	if (lua.empty() && type != network::EntityType::HUMAN_MALE_KNIGHT) {
 		// provide a fallback
 		Log::warn("Could not load character settings from %s", luaPath.c_str());
@@ -30,7 +30,7 @@ ClientEntity::ClientEntity(const stock::StockDataProviderPtr& provider,
 		network::EntityType type, const glm::vec3& pos, float orientation) :
 		_id(id), _type(type), _position(pos), _orientation(orientation),
 		_stock(provider), _animationCache(animationCache) {
-	const std::string& lua = getCharacterLua(type);
+	const core::String& lua = getCharacterLua(type);
 	if (!_character.init(_animationCache, lua)) {
 		Log::error("Failed to init the character");
 	}
@@ -82,7 +82,7 @@ void ClientEntity::unbindVertexBuffers() {
 	_vbo.unbind();
 }
 
-void ClientEntity::userinfo(const std::string& key, const std::string& value) {
+void ClientEntity::userinfo(const core::String& key, const core::String& value) {
 	_userinfo.put(key, value);
 }
 

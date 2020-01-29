@@ -38,7 +38,7 @@ protected:
 		const float frequency = 0.7f;
 		const float amplitude = 1.0f;
 		noise.seamlessNoise(buffer, width, octaves, persistence, frequency, amplitude);
-		const std::string& target = core::string::format("testseamlessNoise-%i.png", useShader ? 1 : 0);
+		const core::String& target = core::string::format("testseamlessNoise-%i.png", useShader ? 1 : 0);
 		EXPECT_TRUE(image::Image::writePng(target.c_str(), buffer, width, height, components));
 		noise.shutdown();
 	}

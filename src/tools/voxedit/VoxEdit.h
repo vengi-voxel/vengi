@@ -23,16 +23,16 @@ private:
 public:
 	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	bool importheightmapFile(const std::string& file);
-	bool importplaneFile(const std::string& file);
-	bool importpaletteFile(const std::string& file);
-	bool saveFile(const std::string& file);
-	bool loadFile(const std::string& file);
-	bool screenshotFile(const std::string& file);
-	bool prefabFile(const std::string& file);
+	bool importheightmapFile(const core::String& file);
+	bool importplaneFile(const core::String& file);
+	bool importpaletteFile(const core::String& file);
+	bool saveFile(const core::String& file);
+	bool loadFile(const core::String& file);
+	bool screenshotFile(const core::String& file);
+	bool prefabFile(const core::String& file);
 	bool newFile(bool force = false);
 
-	void onDropFile(const std::string& file) override;
+	void onDropFile(const core::String& file) override;
 
 	core::AppState onConstruct() override;
 	core::AppState onInit() override;

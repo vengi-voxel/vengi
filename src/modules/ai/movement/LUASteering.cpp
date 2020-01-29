@@ -12,7 +12,7 @@ namespace movement {
 
 MoveVector LUASteering::executeLUA(const AIPtr& entity, float speed) const {
 	// get userdata of the behaviour tree steering
-	const std::string name = "__meta_steering_" + _type;
+	const core::String name = "__meta_steering_" + _type;
 	lua_getfield(_s, LUA_REGISTRYINDEX, name.c_str());
 #if AI_LUA_SANTITY > 0
 	if (lua_isnil(_s, -1)) {
@@ -82,7 +82,7 @@ MoveVector LUASteering::executeLUA(const AIPtr& entity, float speed) const {
 	return MoveVector(glm::vec3((float)x, (float)y, (float)z), (float)rotation);
 }
 
-LUASteering::LUASteering(lua_State* s, const std::string& type) :
+LUASteering::LUASteering(lua_State* s, const core::String& type) :
 		ISteering(), _s(s) {
 	_type = type;
 }

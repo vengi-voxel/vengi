@@ -29,7 +29,7 @@ protected:
 	network::ServerNetworkPtr _serverNetwork;
 
 	const uint16_t _port;
-	const std::string _host = "127.0.0.1";
+	const core::String _host = "127.0.0.1";
 
 	int _disconnectEvent = 0;
 	int _connectEvent = 0;

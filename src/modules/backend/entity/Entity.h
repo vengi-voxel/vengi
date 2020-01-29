@@ -81,8 +81,8 @@ public:
 			const attrib::ContainerProviderPtr& containerProvider);
 	virtual ~Entity();
 
-	bool addContainer(const std::string& id);
-	bool removeContainer(const std::string& id);
+	bool addContainer(const core::String& id);
+	bool removeContainer(const core::String& id);
 
 	network::Animation animation() const;
 	network::Animation setAnimation(network::Animation animation);

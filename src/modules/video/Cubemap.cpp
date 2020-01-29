@@ -31,7 +31,7 @@ bool Cubemap::init(const char *filename) {
 	image::ImagePtr images[lengthof(postfix)];
 
 	for (int i = 0; i < lengthof(postfix); ++i) {
-		const std::string& sidename = core::string::format("%s_%s.png", _filename.c_str(), postfix[i]);
+		const core::String& sidename = core::string::format("%s_%s.png", _filename.c_str(), postfix[i]);
 		images[i] = image::loadImage(sidename, false);
 		if (!images[i]) {
 			Log::error("Could not load cubemap image %s", sidename.c_str());

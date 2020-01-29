@@ -34,7 +34,7 @@ protected:
 public:
 	void shutdown() override;
 	bool initMesh(const AnimationCachePtr& cache) override;
-	bool initSettings(const std::string& luaString) override;
+	bool initSettings(const core::String& luaString) override;
 	void update(uint64_t dt, const attrib::ShadowAttributes& attrib) override;
 	/**
 	 * @brief Updates the vertices and indices buffer whenever the character switched the active tool

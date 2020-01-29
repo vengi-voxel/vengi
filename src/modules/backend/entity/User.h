@@ -20,8 +20,8 @@ namespace backend {
 class User : public Entity {
 private:
 	using Super = Entity;
-	std::string _name;
-	std::string _email;
+	core::String _name;
+	core::String _email;
 	persistence::DBHandlerPtr _dbHandler;
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
@@ -36,7 +36,7 @@ private:
 public:
 	User(ENetPeer* peer,
 			EntityId id,
-			const std::string& name,
+			const core::String& name,
 			const MapPtr& map,
 			const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider,
@@ -49,10 +49,10 @@ public:
 
 	void setEntityId(EntityId id);
 
-	const std::string& email() const;
-	void setEmail(const std::string& mail);
+	const core::String& email() const;
+	void setEmail(const core::String& mail);
 
-	const std::string& name() const;
+	const core::String& name() const;
 
 	/**
 	 * @brief Called for every connect/reconnect
@@ -134,15 +134,15 @@ inline void User::setEntityId(EntityId id) {
 	_entityId = id;
 }
 
-inline void User::setEmail(const std::string& mail) {
+inline void User::setEmail(const core::String& mail) {
 	_email = mail;
 }
 
-inline const std::string& User::name() const {
+inline const core::String& User::name() const {
 	return _name;
 }
 
-inline const std::string& User::email() const {
+inline const core::String& User::email() const {
 	return _email;
 }
 

@@ -19,10 +19,10 @@ namespace core {
 typedef std::vector<std::string> CmdArgs;
 
 struct ActionButtonCommands {
-	const std::string first;
-	const std::string second;
+	const core::String first;
+	const core::String second;
 
-	inline ActionButtonCommands(std::string&& _first, std::string&& _second) :
+	inline ActionButtonCommands(core::String&& _first, core::String&& _second) :
 			first(_first), second(_second) {
 	}
 
@@ -48,18 +48,18 @@ private:
 	static uint64_t _delayMillis;
 	static std::vector<std::string> _delayedTokens;
 
-	std::string _name;
+	core::String _name;
 	const char* _help;
 	FunctionType _func;
 	BindingContext _bindingContext = BindingContext::All;
-	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
+	typedef std::function<int(const core::String&, std::vector<std::string>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
 	Command() :
 		_name(""), _help(nullptr), _func() {
 	}
 
-	Command(const std::string& name, FunctionType&& func) :
+	Command(const core::String& name, FunctionType&& func) :
 		_name(name), _help(""), _func(std::move(func)) {
 	}
 
@@ -79,8 +79,8 @@ public:
 	 * @note This class is not taking ownership of the button instance. You have to ensure
 	 * that the instance given here is alive as long as the commands are bound.
 	 */
-	static ActionButtonCommands registerActionButton(const std::string& name, ActionButton& button);
-	static bool unregisterActionButton(const std::string& name);
+	static ActionButtonCommands registerActionButton(const core::String& name, ActionButton& button);
+	static bool unregisterActionButton(const core::String& name);
 
 	static void shutdown();
 
@@ -89,14 +89,14 @@ public:
 	 */
 	static int update(uint64_t dt);
 
-	static int execute(const std::string& command);
+	static int execute(const core::String& command);
 
 	static int execute(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
 
-	static bool execute(const std::string& command, const CmdArgs& args);
+	static bool execute(const core::String& command, const CmdArgs& args);
 	static bool isSuitableBindingContext(BindingContext context);
 
-	static Command* getCommand(const std::string& name) {
+	static Command* getCommand(const core::String& name) {
 		auto i = _cmds.find(name);
 		if (i == _cmds.end()) {
 			return nullptr;
@@ -134,10 +134,10 @@ public:
 		}
 	}
 
-	int complete(const std::string& str, std::vector<std::string>& matches) const;
+	int complete(const core::String& str, std::vector<std::string>& matches) const;
 
 	/**
-	 * @param func A functor or lambda that accepts the following parameters: @code const std::string& str, std::vector<std::string>& matches @endcode
+	 * @param func A functor or lambda that accepts the following parameters: @code const core::String& str, std::vector<std::string>& matches @endcode
 	 */
 	template<class Functor>
 	Command& setArgumentCompleter(Functor&& func) {

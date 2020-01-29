@@ -37,10 +37,10 @@ class DBHandler : public core::IComponent {
 private:
 	friend class MassQuery;
 	static constexpr auto logid = Log::logid("DBHandler");
-	State execInternal(const std::string& query) const;
-	State execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const;
-	State execInternalWithCondition(const std::string& query, BindParam& params, int conditionOffset, const DBCondition& condition) const;
-	State execInternalWithParameters(const std::string& query, const BindParam& param) const;
+	State execInternal(const core::String& query) const;
+	State execInternalWithParameters(const core::String& query, Model& model, const BindParam& param) const;
+	State execInternalWithCondition(const core::String& query, BindParam& params, int conditionOffset, const DBCondition& condition) const;
+	State execInternalWithParameters(const core::String& query, const BindParam& param) const;
 
 	mutable ConnectionPool _connectionPool;
 
@@ -50,7 +50,7 @@ private:
 	bool loadMetadata(const Model& model, std::vector<db::MetainfoModel>& schemaModels) const;
 
 	template<class FUNC, class MODEL>
-	bool select(const std::string& query, const BindParam& keyParams, int conditionAmount, MODEL& model, const DBCondition& condition, FUNC&& func) const {
+	bool select(const core::String& query, const BindParam& keyParams, int conditionAmount, MODEL& model, const DBCondition& condition, FUNC&& func) const {
 		Log::debug(logid, "Execute query '%s'", query.c_str());
 		ScopedConnection scoped(_connectionPool, connection());
 		if (!scoped) {
@@ -113,10 +113,10 @@ public:
 	template<class MODEL>
 	bool deleteModel(MODEL&& model, const DBCondition& condition = DBConditionOne()) const {
 		BindParam params(10);
-		const std::string& stmt = createDeleteStatement(model, &params);
+		const core::String& stmt = createDeleteStatement(model, &params);
 		int conditionAmount = params.position;
-		const std::string& where = createWhere(condition, conditionAmount);
-		const std::string& query = stmt + where;
+		const core::String& where = createWhere(condition, conditionAmount);
+		const core::String& query = stmt + where;
 		const int conditionOffset = conditionAmount - params.position;
 		if (conditionOffset > 0) {
 			return execInternalWithCondition(query, params, conditionOffset, condition).result;
@@ -135,10 +135,10 @@ public:
 	template<class FUNC, class MODEL>
 	bool select(MODEL&& model, const DBCondition& condition, FUNC&& func) const {
 		BindParam params(10);
-		const std::string& stmt = createSelect(model, &params);
+		const core::String& stmt = createSelect(model, &params);
 		int conditionAmount = params.position;
-		const std::string& where = createWhere(condition, conditionAmount);
-		const std::string& query = stmt + where;
+		const core::String& where = createWhere(condition, conditionAmount);
+		const core::String& query = stmt + where;
 		return select(query, params, conditionAmount, model, condition, func);
 	}
 
@@ -154,10 +154,10 @@ public:
 	template<class FUNC, class MODEL>
 	bool select(MODEL&& model, const DBCondition& condition, const OrderBy& orderBy, FUNC&& func) const {
 		BindParam params(10);
-		const std::string& stmt = createSelect(model, &params);
+		const core::String& stmt = createSelect(model, &params);
 		int conditionAmount = params.position;
-		const std::string& where = createWhere(condition, conditionAmount);
-		const std::string& query = stmt + where + createOrderBy(orderBy) + createLimitOffset(orderBy.range);
+		const core::String& where = createWhere(condition, conditionAmount);
+		const core::String& query = stmt + where + createOrderBy(orderBy) + createLimitOffset(orderBy.range);
 		return select(query, params, conditionAmount, model, condition, func);
 	}
 
@@ -274,7 +274,7 @@ public:
 	 * @param[in] query The query to execute
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
-	bool exec(const std::string& query) const;
+	bool exec(const core::String& query) const;
 
 	// transactions
 	bool begin();

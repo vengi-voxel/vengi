@@ -36,13 +36,13 @@ private:
 	core::TimeProviderPtr _timeProvider;
 	lua::LUA _lua;
 
-	EventPtr createEvent(const std::string& nameId, EventId id) const;
+	EventPtr createEvent(const core::String& nameId, EventId id) const;
 
 	bool startEvent(const db::EventModelPtr& model);
 public:
 	EventMgr(const EventProviderPtr& eventProvider, const core::TimeProviderPtr& timeProvider);
 
-	bool init(const std::string& luaScript);
+	bool init(const core::String& luaScript);
 	/**
 	 * @brief Call this in your main loop
 	 * Starts all events that are configured to run at the current time of the @c core::TimeProvider

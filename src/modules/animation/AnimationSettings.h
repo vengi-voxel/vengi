@@ -17,7 +17,7 @@ namespace animation {
 struct SkeletonAttributeMeta;
 struct SkeletonAttribute;
 
-extern std::string luaFilename(const char *character);
+extern core::String luaFilename(const char *character);
 
 /**
  * @ingroup Animation
@@ -43,9 +43,9 @@ private:
 public:
 	static constexpr const size_t MAX_ENTRIES {64};
 
-	std::string paths[MAX_ENTRIES];
+	core::String paths[MAX_ENTRIES];
 	BoneIds boneIdsArray[MAX_ENTRIES];
-	std::string basePath;
+	core::String basePath;
 
 	void reset();
 
@@ -68,7 +68,7 @@ public:
 	int8_t mapBoneIdToArrayIndex(BoneId boneId) const;
 
 	const std::vector<std::string>& types() const;
-	const std::string& meshType(size_t meshTypeIdx) const;
+	const core::String& meshType(size_t meshTypeIdx) const;
 	int getMeshTypeIdxForName(const char *name) const;
 	/**
 	 * @brief Configure the available mesh types.
@@ -80,12 +80,12 @@ public:
 	/**
 	 * @brief Assemble the full path to the model that should be used for the given mesh type index.
 	 */
-	std::string fullPath(int meshTypeIdx, const char *name = nullptr) const;
+	core::String fullPath(int meshTypeIdx, const char *name = nullptr) const;
 
 	/**
 	 * @brief Get the default path for the mesh type, but with a new name
 	 */
-	std::string path(int meshTypeIdx, const char *name = nullptr) const;
+	core::String path(int meshTypeIdx, const char *name = nullptr) const;
 	bool setPath(int meshTypeIdx, const char *str);
 
 	Type type() const;
@@ -114,6 +114,6 @@ inline AnimationSettings::Type AnimationSettings::type() const {
  * @param[out] skeletonAttr The base pointer to the skeleton attributes
  * @return @c true on success, @c false on failure
  */
-extern bool loadAnimationSettings(const std::string& luaString, AnimationSettings& settings, SkeletonAttribute* skeletonAttr);
+extern bool loadAnimationSettings(const core::String& luaString, AnimationSettings& settings, SkeletonAttribute* skeletonAttr);
 
 }

@@ -44,23 +44,23 @@ public:
 	/**
 	 * @brief Allocates a new @c TreeNode for the given @c type. The @c type must be registered in the @c AIRegistry for this to work.
 	 */
-	virtual TreeNodePtr createNode(const std::string& type, const TreeNodeFactoryContext& ctx) const = 0;
+	virtual TreeNodePtr createNode(const core::String& type, const TreeNodeFactoryContext& ctx) const = 0;
 	/**
 	 * @brief Allocates a new @c TreeNode for the given @c type. The @c type must be registered in the @c AIRegistry for this to work.
 	 */
-	virtual TreeNodePtr createSteerNode(const std::string& type, const SteerNodeFactoryContext& ctx) const = 0;
+	virtual TreeNodePtr createSteerNode(const core::String& type, const SteerNodeFactoryContext& ctx) const = 0;
 	/**
 	 * @brief Allocates a new @c IFilter for the given @c type. The @c type must be registered in the @c AIRegistry for this to work.
 	 */
-	virtual FilterPtr createFilter(const std::string& type, const FilterFactoryContext& ctx) const = 0;
+	virtual FilterPtr createFilter(const core::String& type, const FilterFactoryContext& ctx) const = 0;
 	/**
 	 * @brief Allocates a new @c ICondition for the given @c type. The @c type must be registered in the @c AIRegistry for this to work.
 	 */
-	virtual ConditionPtr createCondition(const std::string& type, const ConditionFactoryContext& ctx) const = 0;
+	virtual ConditionPtr createCondition(const core::String& type, const ConditionFactoryContext& ctx) const = 0;
 	/**
 	 * @brief Creates a new @c ISteering for the given @c type. The @c type must be registered in the @c AIRegistry for this to work.
 	 */
-	virtual SteeringPtr createSteering(const std::string& type, const SteeringFactoryContext& ctx) const = 0;
+	virtual SteeringPtr createSteering(const core::String& type, const SteeringFactoryContext& ctx) const = 0;
 };
 
 }

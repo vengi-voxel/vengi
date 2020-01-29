@@ -17,25 +17,25 @@ class DBCondition;
 class OrderBy;
 struct Range;
 
-extern std::string createTableExistsStatement(const Model& model, BindParam* params);
-extern std::string createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys);
-extern std::string createCreateTableStatement(const Model& model, bool useForeignKeys);
-extern std::string createTruncateTableStatement(const Model& model);
-extern std::string createDropTableStatement(const Model& model);
-extern std::string createUpdateStatement(const Model& model, BindParam* params = nullptr, int* parameterCount = nullptr);
-extern std::string createDeleteStatement(const Model& model, BindParam* params = nullptr);
-extern std::string createInsertBaseStatement(const Model& table, bool& primaryKeyIncluded);
-extern std::string createInsertValuesStatement(const Model& table, BindParam* params, int& insertValueIndex);
-extern std::string createInsertStatement(const Model& model, BindParam* params = nullptr, int* parameterCount = nullptr);
-extern std::string createInsertStatement(const std::vector<const Model*>& tables, BindParam* params = nullptr, int* parameterCount = nullptr);
+extern core::String createTableExistsStatement(const Model& model, BindParam* params);
+extern core::String createAlterTableStatement(const std::vector<db::MetainfoModel>& columns, const Model& table, bool useForeignKeys);
+extern core::String createCreateTableStatement(const Model& model, bool useForeignKeys);
+extern core::String createTruncateTableStatement(const Model& model);
+extern core::String createDropTableStatement(const Model& model);
+extern core::String createUpdateStatement(const Model& model, BindParam* params = nullptr, int* parameterCount = nullptr);
+extern core::String createDeleteStatement(const Model& model, BindParam* params = nullptr);
+extern core::String createInsertBaseStatement(const Model& table, bool& primaryKeyIncluded);
+extern core::String createInsertValuesStatement(const Model& table, BindParam* params, int& insertValueIndex);
+extern core::String createInsertStatement(const Model& model, BindParam* params = nullptr, int* parameterCount = nullptr);
+extern core::String createInsertStatement(const std::vector<const Model*>& tables, BindParam* params = nullptr, int* parameterCount = nullptr);
 
-extern std::string createSelect(const Model& model, BindParam* params = nullptr);
+extern core::String createSelect(const Model& model, BindParam* params = nullptr);
 extern const char* createTransactionBegin();
 extern const char* createTransactionCommit();
 extern const char* createTransactionRollback();
 
-extern std::string createWhere(const DBCondition& condition, int &parameterCount);
-extern std::string createOrderBy(const OrderBy& orderBy);
-extern std::string createLimitOffset(const Range& range);
+extern core::String createWhere(const DBCondition& condition, int &parameterCount);
+extern core::String createOrderBy(const OrderBy& orderBy);
+extern core::String createLimitOffset(const Range& range);
 
 }

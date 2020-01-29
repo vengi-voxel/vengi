@@ -33,7 +33,7 @@ protected:
 		_error = "";
 	}
 private:
-	std::string _error;		/**< make sure to set this member if your own implementation ran into an error. @sa ITreeLoader::getError */
+	core::String _error;		/**< make sure to set this member if your own implementation ran into an error. @sa ITreeLoader::getError */
 public:
 	explicit ITreeLoader(const IAIFactory& aiFactory) :
 			_aiFactory(aiFactory) {
@@ -74,7 +74,7 @@ public:
 	 * @return @c true if the registration process went fine, @c false otherwise (there is already
 	 * a behaviour tree registered with the same name or the given root node is invalid.
 	 */
-	bool addTree(const std::string& name, const TreeNodePtr& root) {
+	bool addTree(const core::String& name, const TreeNodePtr& root) {
 		if (!root) {
 			return false;
 		}
@@ -95,7 +95,7 @@ public:
 	/**
 	 * @brief Loads on particular behaviour tree.
 	 */
-	TreeNodePtr load(const std::string &name) {
+	TreeNodePtr load(const core::String &name) {
 		ScopedReadLock scopedLock(_lock);
 		TreeMap::const_iterator i = _treeMap.find(name);
 		if (i != _treeMap.end())
@@ -108,7 +108,7 @@ public:
 	/**
 	 * @brief Gives access to the last error state of the @c ITreeLoader
 	 */
-	inline std::string getError() const {
+	inline core::String getError() const {
 		return _error;
 	}
 };

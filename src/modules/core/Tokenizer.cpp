@@ -21,7 +21,7 @@ Tokenizer::Tokenizer(bool skipComments_, const char* s, std::size_t len, const c
 			break;
 		}
 		lastCharIsSep = false;
-		std::string token;
+		core::String token;
 		// TODO: check that " is not sep or split
 quote:
 		if (c == '"') {

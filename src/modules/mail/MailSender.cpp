@@ -11,7 +11,7 @@
 namespace mail {
 
 struct Message {
-	const std::string& payload;
+	const core::String& payload;
 	int position = 0;
 };
 
@@ -36,7 +36,7 @@ size_t MailSender::readFn(void *ptr, size_t size, size_t nmemb, void *userp) {
 	return len;
 }
 
-bool MailSender::setProxy(const std::string& host, uint16_t port, const char *user, const char *password) {
+bool MailSender::setProxy(const core::String& host, uint16_t port, const char *user, const char *password) {
 	_proxyHost = host;
 	_proxyPort = port;
 	if (user != nullptr) {
@@ -67,7 +67,7 @@ bool MailSender::send(const char *recipient, const char *subject,
 	char date[32];
 	strftime(date, sizeof(date), "%a, %d %b %G %T %z", now);
 
-	const std::string& payloadStr = core::string::format(
+	const core::String& payloadStr = core::string::format(
 		"Date: %s\r\n"
 		"To: %s\r\n"
 		"From: %s\r\n"

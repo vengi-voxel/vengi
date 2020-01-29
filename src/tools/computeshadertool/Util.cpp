@@ -11,7 +11,7 @@ namespace util {
 
 static const struct TypeMapping {
 	const char* computeType;
-	const std::string ctype;
+	const core::String ctype;
 } Types[] = {
 	{"char",      "int8_t"},
 	{"uchar",     "uint8_t"},
@@ -31,7 +31,7 @@ static const struct TypeMapping {
 
 static const struct VecMapping {
 	const char* computeType;
-	const std::string ctype;
+	const core::String ctype;
 } Vecs[] = {
 	{"float2",   "glm::vec2"},
 	{"float3",   "glm::vec3"},
@@ -75,11 +75,11 @@ static const struct TypeAlignment {
 	{nullptr,       0}
 };
 
-bool isQualifier(const std::string& token) {
+bool isQualifier(const core::String& token) {
 	return token == "const" || core::string::startsWith(token, "__");
 }
 
-static int arraySizeFromType(const std::string& type) {
+static int arraySizeFromType(const core::String& type) {
 	if (type.empty()) {
 		return 0u;
 	}
@@ -100,7 +100,7 @@ static int arraySizeFromType(const std::string& type) {
 	return 0u;
 }
 
-static CLTypeMapping convert(const std::string& type) {
+static CLTypeMapping convert(const core::String& type) {
 	if (type.empty()) {
 		static const CLTypeMapping mapping = CLTypeMapping();
 		return mapping;
@@ -124,7 +124,7 @@ static CLTypeMapping convert(const std::string& type) {
 	return mapping;
 }
 
-int alignment(const std::string& type) {
+int alignment(const core::String& type) {
 	for (const TypeAlignment* t = Alignments; t->type != nullptr; ++t) {
 		if (type == t->type) {
 			return t->alignment;
@@ -134,7 +134,7 @@ int alignment(const std::string& type) {
 	return 1;
 }
 
-CLTypeMapping vectorType(const std::string& type) {
+CLTypeMapping vectorType(const core::String& type) {
 	if (type.empty()) {
 		static const CLTypeMapping mapping = CLTypeMapping();
 		return mapping;
@@ -150,8 +150,8 @@ CLTypeMapping vectorType(const std::string& type) {
 	return convert(type);
 }
 
-std::string toString(compute::BufferFlag flagMask) {
-	std::string str;
+core::String toString(compute::BufferFlag flagMask) {
+	core::String str;
 
 #define CHECK_MASK(mask) \
 	if ((flagMask & compute::BufferFlag::mask) == compute::BufferFlag::mask) { \
@@ -172,8 +172,8 @@ std::string toString(compute::BufferFlag flagMask) {
 	return str;
 }
 
-std::string convertName(const std::string& in, bool firstUpper) {
-	std::string out;
+core::String convertName(const core::String& in, bool firstUpper) {
+	core::String out;
 	std::vector<std::string> nameParts;
 	core::string::splitString(in, nameParts, "_-");
 	for (core::String& n : nameParts) {

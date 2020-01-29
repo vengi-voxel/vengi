@@ -17,7 +17,7 @@ EventMgr::EventMgr(const EventProviderPtr& eventProvider, const core::TimeProvid
 		_eventProvider(eventProvider), _timeProvider(timeProvider) {
 }
 
-bool EventMgr::init(const std::string& luaScript) {
+bool EventMgr::init(const core::String& luaScript) {
 	if (!_eventProvider->init()) {
 		Log::error("Failed to init event provider");
 		return false;
@@ -105,7 +105,7 @@ void EventMgr::shutdown() {
 	_eventProvider->shutdown();
 }
 
-EventPtr EventMgr::createEvent(const std::string& nameId, EventId id) const {
+EventPtr EventMgr::createEvent(const core::String& nameId, EventId id) const {
 	auto dataIter = _eventData.find(nameId);
 	if (dataIter == _eventData.end()) {
 		Log::warn("Can't start event with event id " PRIEventId ". No configuration found for %s",
@@ -123,7 +123,7 @@ EventPtr EventMgr::createEvent(const std::string& nameId, EventId id) const {
 }
 
 bool EventMgr::startEvent(const db::EventModelPtr& model) {
-	const std::string& nameId = model->nameid();
+	const core::String& nameId = model->nameid();
 	const EventId id = model->id();
 	const EventPtr& event = createEvent(nameId, id);
 	if (!event || !event->start()) {

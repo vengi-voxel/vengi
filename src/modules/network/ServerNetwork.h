@@ -18,7 +18,7 @@ public:
 	ServerNetwork(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry,
 			const core::EventBusPtr& eventBus, const metric::MetricPtr& metric);
 
-	bool bind(uint16_t port, const std::string& hostname = "", int maxPeers = 1024, int maxChannels = 1);
+	bool bind(uint16_t port, const core::String& hostname = "", int maxPeers = 1024, int maxChannels = 1);
 	bool packetReceived(ENetEvent& event) override;
 
 	bool broadcast(ENetPacket* packet, int channel = 0);

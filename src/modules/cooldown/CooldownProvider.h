@@ -22,7 +22,7 @@ class CooldownProvider {
 private:
 	bool _initialized = false;
 	long _durations[std::enum_value<Type>(Type::MAX) + 1];
-	std::string _error;
+	core::String _error;
 public:
 	/**
 	 * @brief Ctor to init all available cooldowns to the DefaultDuration
@@ -49,16 +49,16 @@ public:
 	 * @return @c false in case of an error, @c true if the initialization was successful.
 	 * @sa error()
 	 */
-	bool init(const std::string& cooldowns);
+	bool init(const core::String& cooldowns);
 
 	/**
 	 * @brief Access to the last error that was reported in case the @c init() call failed.
 	 * @sa init()
 	 */
-	const std::string& error() const;
+	const core::String& error() const;
 };
 
-inline const std::string& CooldownProvider::error() const {
+inline const core::String& CooldownProvider::error() const {
 	return _error;
 }
 

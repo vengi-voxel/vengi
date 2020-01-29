@@ -22,8 +22,8 @@
 
 namespace persistence {
 
-extern std::string toLower(const char *in);
-extern std::string toLower(const std::string& in);
+extern core::String toLower(const char *in);
+extern core::String toLower(const core::String& in);
 
 typedef std::vector<Field> Fields;
 using FieldName = const char *;
@@ -166,7 +166,7 @@ public:
 	 * @brief Set the @c Field value to null (if supported)
 	 */
 	void setValue(const Field& f, std::nullptr_t np);
-	void setValue(const Field& f, const std::string& value);
+	void setValue(const Field& f, const core::String& value);
 	void setValue(const Field& f, const Timestamp& value);
 
 	template<class TYPE>
@@ -180,7 +180,7 @@ public:
 	/**
 	 * @return @c Field instance for the given colume name
 	 */
-	const Field& getField(const std::string& name) const;
+	const Field& getField(const core::String& name) const;
 
 	const Field& getField(const char* name) const;
 
@@ -204,7 +204,7 @@ inline const char* Model::schema() const {
 	return _s->_schema;
 }
 
-inline const Field& Model::getField(const std::string& name) const {
+inline const Field& Model::getField(const core::String& name) const {
 	return getField(name.c_str());
 }
 

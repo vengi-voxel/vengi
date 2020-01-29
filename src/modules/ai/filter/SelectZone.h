@@ -16,7 +16,7 @@ class SelectZone: public IFilter {
 public:
 	FILTER_FACTORY(SelectZone)
 
-	explicit SelectZone(const std::string& parameters = "") :
+	explicit SelectZone(const core::String& parameters = "") :
 		IFilter("SelectZone", parameters) {
 	}
 

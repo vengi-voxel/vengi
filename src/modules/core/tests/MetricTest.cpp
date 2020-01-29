@@ -11,7 +11,7 @@ namespace metric {
 
 class BufferSender : public IMetricSender {
 private:
-	mutable std::string _lastBuffer;
+	mutable core::String _lastBuffer;
 public:
 
 	bool send(const char* buffer) const override {
@@ -19,7 +19,7 @@ public:
 		return true;
 	}
 
-	inline const std::string& metricLine() const {
+	inline const core::String& metricLine() const {
 		return _lastBuffer;
 	}
 };
@@ -42,7 +42,7 @@ protected:
 		sender->shutdown();
 	}
 
-	inline std::string count(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
+	inline core::String count(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
 		setFlavor(flavor);
 		Metric m;
 		m.init(PREFIX, sender);
@@ -50,7 +50,7 @@ protected:
 		return sender->metricLine();
 	}
 
-	inline std::string gauge(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
+	inline core::String gauge(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
 		setFlavor(flavor);
 		Metric m;
 		m.init(PREFIX, sender);
@@ -58,7 +58,7 @@ protected:
 		return sender->metricLine();
 	}
 
-	inline std::string timing(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
+	inline core::String timing(const char *id, int value, Flavor flavor, const TagMap& tags = {}) const {
 		setFlavor(flavor);
 		Metric m;
 		m.init(PREFIX, sender);

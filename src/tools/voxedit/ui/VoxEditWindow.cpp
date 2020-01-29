@@ -211,8 +211,8 @@ void VoxEditWindow::updateStatusBar() {
 			status->setText(str);
 		} else if (!_lastExecutedCommand.empty()) {
 			const video::WindowedApp* app = video::WindowedApp::getInstance();
-			std::string statusText;
-			const std::string& keybindingStr = app->getKeyBindingsString(_lastExecutedCommand.c_str());
+			core::String statusText;
+			const core::String& keybindingStr = app->getKeyBindingsString(_lastExecutedCommand.c_str());
 			if (keybindingStr.empty()) {
 				statusText = core::string::format("%s: %s", tr("Command"), _lastExecutedCommand.c_str());
 			} else {
@@ -384,11 +384,11 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (id == TBIDC("scene_settings") && ev.ref_id == TBIDC("ok")) {
 		auto &renderer = sceneMgr().renderer();
 		if (_settings.ambientDirty) {
-			const std::string& c = core::string::format("%f %f %f", _settings.ambientColor.x, _settings.ambientColor.y, _settings.ambientColor.z);
+			const core::String& c = core::string::format("%f %f %f", _settings.ambientColor.x, _settings.ambientColor.y, _settings.ambientColor.z);
 			core::Var::getSafe(cfg::VoxEditAmbientColor)->setVal(c);
 		}
 		if (_settings.diffuseDirty) {
-			const std::string& c = core::string::format("%f %f %f", _settings.diffuseColor.x, _settings.diffuseColor.y, _settings.diffuseColor.z);
+			const core::String& c = core::string::format("%f %f %f", _settings.diffuseColor.x, _settings.diffuseColor.y, _settings.diffuseColor.z);
 			core::Var::getSafe(cfg::VoxEditDiffuseColor)->setVal(c);
 		}
 		if (_settings.sunPositionDirty) {
@@ -710,36 +710,36 @@ void VoxEditWindow::quit() {
 	close();
 }
 
-bool VoxEditWindow::importAsPlane(const std::string& file) {
+bool VoxEditWindow::importAsPlane(const core::String& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string file) { importAsPlane(file); }, "png");
+		getApp()->openDialog([this] (const core::String file) { importAsPlane(file); }, "png");
 		return true;
 	}
 
 	return sceneMgr().importAsPlane(file);
 }
 
-bool VoxEditWindow::importPalette(const std::string& file) {
+bool VoxEditWindow::importPalette(const core::String& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string file) { importPalette(file); }, "png");
+		getApp()->openDialog([this] (const core::String file) { importPalette(file); }, "png");
 		return true;
 	}
 
 	return sceneMgr().importPalette(file);
 }
 
-bool VoxEditWindow::importHeightmap(const std::string& file) {
+bool VoxEditWindow::importHeightmap(const core::String& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string file) { importHeightmap(file); }, "png");
+		getApp()->openDialog([this] (const core::String file) { importHeightmap(file); }, "png");
 		return true;
 	}
 
 	return sceneMgr().importHeightmap(file);
 }
 
-bool VoxEditWindow::save(const std::string& file) {
+bool VoxEditWindow::save(const core::String& file) {
 	if (file.empty()) {
-		getApp()->saveDialog([this] (const std::string uifile) {save(uifile); }, SUPPORTED_VOXEL_FORMATS_SAVE);
+		getApp()->saveDialog([this] (const core::String uifile) {save(uifile); }, SUPPORTED_VOXEL_FORMATS_SAVE);
 		return true;
 	}
 	if (!sceneMgr().save(file)) {
@@ -752,9 +752,9 @@ bool VoxEditWindow::save(const std::string& file) {
 	return true;
 }
 
-bool VoxEditWindow::saveScreenshot(const std::string& file) {
+bool VoxEditWindow::saveScreenshot(const core::String& file) {
 	if (file.empty()) {
-		getApp()->saveDialog([this] (const std::string file) {saveScreenshot(file); }, "png");
+		getApp()->saveDialog([this] (const core::String file) {saveScreenshot(file); }, "png");
 		return true;
 	}
 	if (!_scene->saveImage(file.c_str())) {
@@ -781,23 +781,23 @@ void VoxEditWindow::resetCamera() {
 	}
 }
 
-bool VoxEditWindow::prefab(const std::string& file) {
+bool VoxEditWindow::prefab(const core::String& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string file) { prefab(file); }, SUPPORTED_VOXEL_FORMATS_LOAD);
+		getApp()->openDialog([this] (const core::String file) { prefab(file); }, SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 
 	return sceneMgr().prefab(file);
 }
 
-void VoxEditWindow::afterLoad(const std::string& file) {
+void VoxEditWindow::afterLoad(const core::String& file) {
 	_lastOpenedFile->setVal(file);
 	resetCamera();
 }
 
-bool VoxEditWindow::loadAnimationEntity(const std::string& file) {
+bool VoxEditWindow::loadAnimationEntity(const core::String& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string file) { std::string copy(file); loadAnimationEntity(copy); }, "lua");
+		getApp()->openDialog([this] (const core::String file) { core::String copy(file); loadAnimationEntity(copy); }, "lua");
 		return true;
 	}
 	if (!sceneMgr().loadAnimationEntity(file)) {
@@ -835,9 +835,9 @@ bool VoxEditWindow::loadAnimationEntity(const std::string& file) {
 	return true;
 }
 
-bool VoxEditWindow::load(const std::string& file) {
+bool VoxEditWindow::load(const core::String& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const std::string file) { std::string copy(file); load(copy); }, SUPPORTED_VOXEL_FORMATS_LOAD);
+		getApp()->openDialog([this] (const core::String file) { core::String copy(file); load(copy); }, SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 

@@ -15,7 +15,7 @@ class First: public IFilter {
 protected:
 	Filters _filters;
 public:
-	First(const std::string& parameters, const Filters& filters) :
+	First(const core::String& parameters, const Filters& filters) :
 		IFilter("First", parameters), _filters(filters) {
 	}
 	FILTER_ACTION_FACTORY(First)

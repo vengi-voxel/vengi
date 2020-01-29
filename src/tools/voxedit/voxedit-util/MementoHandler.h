@@ -74,7 +74,7 @@ struct MementoState {
 	MementoType type;
 	MementoData data;
 	int layer;
-	std::string name;
+	core::String name;
 	/**
 	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
 	 * call, we have to make sure that the region of the previous state is re-extracted.
@@ -85,11 +85,11 @@ struct MementoState {
 			type(MementoType::Modification), layer(0) {
 	}
 
-	MementoState(MementoType _type, const MementoData& _data, int _layer, const std::string& _name, const voxel::Region& _region) :
+	MementoState(MementoType _type, const MementoData& _data, int _layer, const core::String& _name, const voxel::Region& _region) :
 			type(_type), data(_data), layer(_layer), name(_name), region(_region) {
 	}
 
-	MementoState(MementoType _type, MementoData&& _data, int _layer, std::string&& _name, voxel::Region&& _region) :
+	MementoState(MementoType _type, MementoData&& _data, int _layer, core::String&& _name, voxel::Region&& _region) :
 			type(_type), data(_data), layer(_layer), name(_name), region(_region) {
 	}
 
@@ -145,9 +145,9 @@ public:
 	 * @param[in] volume The state of the volume
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
-	void markUndo(int layer, const std::string& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification, const voxel::Region& region = voxel::Region::InvalidRegion);
-	void markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume);
-	void markLayerAdded(int layer, const std::string& name, const voxel::RawVolume* volume);
+	void markUndo(int layer, const core::String& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification, const voxel::Region& region = voxel::Region::InvalidRegion);
+	void markLayerDeleted(int layer, const core::String& name, const voxel::RawVolume* volume);
+	void markLayerAdded(int layer, const core::String& name, const voxel::RawVolume* volume);
 
 	/**
 	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for

@@ -35,16 +35,16 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		if (args.empty()) {
 			Log::info(" ");
 		}
-		const std::string& params = core::string::join(args.begin(), args.end(), " ");
+		const core::String& params = core::string::join(args.begin(), args.end(), " ");
 		Log::info("%s", params.c_str());
 	}).setHelp("Print the given arguments to the console (info log level)");
 
-	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
+	auto fileCompleter = [=] (const core::String& str, std::vector<std::string>& matches) -> int {
 		std::vector<io::Filesystem::DirEntry> entries;
 		const io::FilesystemPtr& filesystem = io::filesystem();
 		const io::FilePtr& file = filesystem->open(str);
-		std::string filter;
-		std::string dir = file->path();
+		core::String filter;
+		core::String dir = file->path();
 		if (dir.empty()) {
 			filter = str + "*";
 			dir = ".";
@@ -72,7 +72,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::info("Usage: exec <file>");
 			return;
 		}
-		const std::string& cmds = io::filesystem()->load(args[0]);
+		const core::String& cmds = io::filesystem()->load(args[0]);
 		if (cmds.empty()) {
 			Log::warn("Could not load script - or file was empty.");
 			return;
@@ -167,7 +167,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::info("Usage: log <logid> <trace|debug|info|warn|error|none>");
 			return;
 		}
-		const std::string& id = args[0];
+		const core::String& id = args[0];
 		const Log::Level level = Log::toLogLevel(args[1].c_str());
 		const auto hashVal = Log::logid(id.c_str(), id.length());
 		if (level == Log::Level::None) {
@@ -177,7 +177,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::enable(hashVal, level);
 			Log::info("Set log level for %s to %s (%u)", id.c_str(), args[1].c_str(), hashVal);
 		}
-	}).setHelp("Change the log level on an id base").setArgumentCompleter([] (const std::string& str, std::vector<std::string>& matches) -> int {
+	}).setHelp("Change the log level on an id base").setArgumentCompleter([] (const core::String& str, std::vector<std::string>& matches) -> int {
 		if (str[0] == 't') {
 			matches.push_back("trace");
 			return 1;
@@ -212,7 +212,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 				return;
 			}
 			const uint32_t flags = var->getFlags();
-			std::string flagsStr = "     ";
+			core::String flagsStr = "     ";
 			const char *value = var->strVal().c_str();
 			if ((flags & CV_READONLY) != 0) {
 				flagsStr[0]  = 'R';
@@ -230,8 +230,8 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			if (var->isDirty()) {
 				flagsStr[4]  = 'D';
 			}
-			const std::string& name = core::string::format("%-28s", var->name().c_str());
-			const std::string& valueStr = core::string::format(R"("%s")", value);
+			const core::String& name = core::string::format("%-28s", var->name().c_str());
+			const core::String& valueStr = core::string::format(R"("%s")", value);
 			Log::info("* %s %s = %s (%u)", flagsStr.c_str(), name.c_str(), valueStr.c_str(),
 					var->getHistorySize());
 			const char *help = var->help();

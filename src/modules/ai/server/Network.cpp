@@ -40,7 +40,7 @@
 
 namespace ai {
 
-Network::Network(uint16_t port, const std::string& hostname) :
+Network::Network(uint16_t port, const core::String& hostname) :
 		_port(port), _hostname(hostname), _socketFD(INVALID_SOCKET), _time(0L) {
 	FD_ZERO(&_readFDSet);
 	FD_ZERO(&_writeFDSet);

@@ -45,7 +45,7 @@ public:
 class Network {
 protected:
 	uint16_t _port;
-	std::string _hostname;
+	core::String _hostname;
 	// the socket file descriptor
 	SOCKET _socketFD;
 	fd_set _readFDSet;
@@ -62,7 +62,7 @@ protected:
 
 	bool sendMessage(Client& client);
 public:
-	Network(uint16_t port = 10001, const std::string& hostname = "0.0.0.0");
+	Network(uint16_t port = 10001, const core::String& hostname = "0.0.0.0");
 	virtual ~Network();
 
 	bool start();

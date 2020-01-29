@@ -35,7 +35,7 @@ static const char *convertToTexUnit(int unit) {
  * @brief MSVC doesn't like strings that exceeds a certain length. So we have to split them up here.
  * @sa https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/compiler-error-c2026?view=vs-2019
  */
-static std::string maxStringLength(const std::string& input) {
+static core::String maxStringLength(const core::String& input) {
 #ifdef _MSC_VER
 	if (input.size() > 10000) {
 		Log::debug("Need to split the shader source string");
@@ -45,21 +45,21 @@ static std::string maxStringLength(const std::string& input) {
 	return "R\"(" + input + ")\"";
 }
 
-bool generateSrc(const std::string& templateHeader, const std::string& templateSource, const std::string& templateUniformBuffer, const ShaderStruct& shaderStruct,
-		const io::FilesystemPtr& filesystem, const std::string& namespaceSrc, const std::string& sourceDirectory, const std::string& shaderDirectory, const std::string& postfix,
-		const std::string& vertexBuffer, const std::string& geometryBuffer, const std::string& fragmentBuffer, const std::string& computeBuffer) {
-	std::string srcHeader(templateHeader);
-	std::string srcSource(templateSource);
-	const std::string& name = shaderStruct.name + "Shader";
+bool generateSrc(const core::String& templateHeader, const core::String& templateSource, const core::String& templateUniformBuffer, const ShaderStruct& shaderStruct,
+		const io::FilesystemPtr& filesystem, const core::String& namespaceSrc, const core::String& sourceDirectory, const core::String& shaderDirectory, const core::String& postfix,
+		const core::String& vertexBuffer, const core::String& geometryBuffer, const core::String& fragmentBuffer, const core::String& computeBuffer) {
+	core::String srcHeader(templateHeader);
+	core::String srcSource(templateSource);
+	const core::String& name = shaderStruct.name + "Shader";
 
-	const std::string& filename = util::convertName(name, true);
+	const core::String& filename = util::convertName(name, true);
 	std::stringstream uniforms;
 	std::stringstream uniformArrayInfo;
 	const int uniformSize = int(shaderStruct.uniforms.size());
 	if (uniformSize > 0) {
 		uniforms << "checkUniforms({";
 		for (int i = 0; i < uniformSize; ++i) {
-			const std::string& uniformName = shaderStruct.uniforms[i].name;
+			const core::String& uniformName = shaderStruct.uniforms[i].name;
 			uniforms << "\"";
 			uniforms << uniformName;
 			uniforms << "\"";
@@ -131,7 +131,7 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 	for (int i = 0; i < uniformSize; ++i) {
 		const Variable& v = shaderStruct.uniforms[i];
 		const bool isInteger = v.isSingleInteger();
-		const std::string& uniformName = util::convertName(v.name, true);
+		const core::String& uniformName = util::convertName(v.name, true);
 		std::stringstream mproto;
 		mproto << "set" << uniformName << "(";
 		const Types& cType = util::resolveTypes(v.type);
@@ -256,7 +256,7 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 	}
 	for (int i = 0; i < attributeSize; ++i) {
 		const Variable& v = shaderStruct.attributes[i];
-		const std::string& attributeName = util::convertName(v.name, true);
+		const core::String& attributeName = util::convertName(v.name, true);
 
 		prototypes << "\n\t/**\n";
 		prototypes << "\t * @brief This version takes the c++ data type as a reference\n";
@@ -304,10 +304,10 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 	std::stringstream shutdown;
 	std::stringstream includes;
 	const size_t uniformBlockAmount = shaderStruct.uniformBlocks.size();
-	const std::string uniformBufferClassName = util::convertName(shaderStruct.name + "Data", true);
+	const core::String uniformBufferClassName = util::convertName(shaderStruct.name + "Data", true);
 	for (auto & ubuf : shaderStruct.uniformBlocks) {
-		const std::string& uniformBufferStructName = util::convertName(ubuf.name, true);
-		const std::string& uniformBufferName = util::convertName(ubuf.name, false);
+		const core::String& uniformBufferStructName = util::convertName(ubuf.name, true);
+		const core::String& uniformBufferName = util::convertName(ubuf.name, false);
 		ub << "\n\t/**\n\t * @brief Uniform buffer for " << uniformBufferStructName << "Data\n\t */\n";
 		ub << "\tvideo::UniformBuffer _" << uniformBufferName << ";\n";
 		shutdown << "\t\t_" << uniformBufferName << ".shutdown();\n";
@@ -329,7 +329,7 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		size_t structSize = 0u;
 		int paddingCnt = 0;
 		for (auto& v : ubuf.members) {
-			const std::string& uniformName = util::convertName(v.name, false);
+			const core::String& uniformName = util::convertName(v.name, false);
 			const Types& cType = util::resolveTypes(v.type);
 			ub << "\t\t" << ubuf.layout.typeAlign(v) << cType.ctype << " " << uniformName;
 			const size_t memberSize = ubuf.layout.typeSize(v);
@@ -365,13 +365,13 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 		prototypes << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", buf);\n";
 		prototypes << "\t}\n";
 
-		std::string generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferClassName);
+		core::String generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferClassName);
 		generatedUb = core::string::replaceAll(generatedUb, "$namespace$", namespaceSrc);
 		generatedUb = core::string::replaceAll(generatedUb, "$uniformbuffers$", ub.str());
 		generatedUb = core::string::replaceAll(generatedUb, "$methods$", "");
 		generatedUb = core::string::replaceAll(generatedUb, "$shutdown$", shutdown.str());
 
-		const std::string targetFileUb = sourceDirectory + uniformBufferClassName + ".h";
+		const core::String targetFileUb = sourceDirectory + uniformBufferClassName + ".h";
 
 		includes << "#include \"" << uniformBufferClassName + ".h\"\n";
 
@@ -434,13 +434,13 @@ bool generateSrc(const std::string& templateHeader, const std::string& templateS
 	srcSource = core::string::replaceAll(srcSource, "$geometryshaderbuffer$", maxStringLength(geometryBuffer));
 
 	Log::debug("Generate shader bindings for %s", shaderStruct.name.c_str());
-	const std::string targetHeaderFile = sourceDirectory + filename + ".h" + postfix;
+	const core::String targetHeaderFile = sourceDirectory + filename + ".h" + postfix;
 	if (!filesystem->syswrite(targetHeaderFile, srcHeader)) {
 		Log::error("Failed to write %s", targetHeaderFile.c_str());
 		return false;
 	}
 
-	const std::string targetSourceFile = sourceDirectory + filename + ".cpp" + postfix;
+	const core::String targetSourceFile = sourceDirectory + filename + ".cpp" + postfix;
 	if (!filesystem->syswrite(targetSourceFile, srcSource)) {
 		Log::error("Failed to write %s", targetSourceFile.c_str());
 		return false;

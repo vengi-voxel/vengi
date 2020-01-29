@@ -7,7 +7,7 @@
 namespace ai {
 namespace movement {
 
-GroupFlee::GroupFlee(const std::string& parameters) :
+GroupFlee::GroupFlee(const core::String& parameters) :
 		ISteering() {
 	_groupId = ::atoi(parameters.c_str());
 }

@@ -61,7 +61,7 @@ MapProvider::Maps MapProvider::worldMaps() const {
 }
 
 bool MapProvider::init() {
-	const std::string& lua = _filesystem->load("behaviourtrees.lua");
+	const core::String& lua = _filesystem->load("behaviourtrees.lua");
 	if (!_loader->init(lua)) {
 		Log::error("could not load the behaviourtrees: %s", _loader->getError().c_str());
 		return false;

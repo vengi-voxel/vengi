@@ -177,7 +177,7 @@ MementoState MementoHandler::redo() {
 	return MementoState{s.type, s.data, s.layer, s.name, s.region};
 }
 
-void MementoHandler::markLayerDeleted(int layer, const std::string& name, const voxel::RawVolume* volume) {
+void MementoHandler::markLayerDeleted(int layer, const core::String& name, const voxel::RawVolume* volume) {
 	Log::debug("Mark layer %i as deleted (%s)", layer, name.c_str());
 	// previous state is that we have a volume at the given layer
 	markUndo(layer, name, volume, MementoType::LayerDeleted);
@@ -185,7 +185,7 @@ void MementoHandler::markLayerDeleted(int layer, const std::string& name, const 
 	markUndo(layer, name, nullptr, MementoType::LayerDeleted);
 }
 
-void MementoHandler::markLayerAdded(int layer, const std::string& name, const voxel::RawVolume* volume) {
+void MementoHandler::markLayerAdded(int layer, const core::String& name, const voxel::RawVolume* volume) {
 	Log::debug("Mark layer %i as added (%s)", layer, name.c_str());
 	// previous state is that there is no volume at the given layer
 	markUndo(layer, name, nullptr, MementoType::LayerAdded);
@@ -193,7 +193,7 @@ void MementoHandler::markLayerAdded(int layer, const std::string& name, const vo
 	markUndo(layer, name, volume, MementoType::LayerAdded);
 }
 
-void MementoHandler::markUndo(int layer, const std::string& name, const voxel::RawVolume* volume, MementoType type, const voxel::Region& region) {
+void MementoHandler::markUndo(int layer, const core::String& name, const voxel::RawVolume* volume, MementoType type, const voxel::Region& region) {
 	if (_locked > 0) {
 		Log::debug("Don't add undo state - we are currently in locked mode");
 		return;

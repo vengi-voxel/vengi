@@ -18,7 +18,7 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		Log::error("Failed to load model file %s", filePtr->name().c_str());
 		return false;
 	}
-	const std::string& ext = filePtr->extension();
+	const core::String& ext = filePtr->extension();
 	if (ext == "qbt") {
 		voxel::QBTFormat f;
 		f.loadGroups(filePtr, newVolumes);

@@ -34,7 +34,7 @@ public:
 		return _initialized;
 	}
 
-	bool init(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaString) {
+	bool init(const uint8_t* paletteBuffer, size_t paletteBufferSize, const core::String& luaString) {
 		if (_initialized) {
 			Log::debug("MaterialColors are already initialized");
 			return true;
@@ -210,11 +210,11 @@ static MaterialColor& getInstance() {
 	return color;
 }
 
-bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaBuffer) {
+bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const core::String& luaBuffer) {
 	return getInstance().init(paletteBuffer, paletteBufferSize, luaBuffer);
 }
 
-bool overrideMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const std::string& luaBuffer) {
+bool overrideMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const core::String& luaBuffer) {
 	shutdownMaterialColors();
 	if (!initMaterialColors(paletteBuffer, paletteBufferSize, luaBuffer)) {
 		return initDefaultMaterialColors();
@@ -272,11 +272,11 @@ const char* getDefaultPaletteName() {
 	return "nippon";
 }
 
-std::string extractPaletteName(const std::string& file) {
+core::String extractPaletteName(const core::String& file) {
 	if (!core::string::startsWith(file, "palette-")) {
 		return "";
 	}
-	const std::string& nameWithExtension = file.substr(8);
+	const core::String& nameWithExtension = file.substr(8);
 	const size_t extPos = nameWithExtension.rfind('.');
 	if (extPos != std::string::npos) {
 		return nameWithExtension.substr(0, extPos);

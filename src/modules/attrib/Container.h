@@ -30,7 +30,7 @@ typedef Values::iterator ValuesIter;
  */
 class Container {
 protected:
-	std::string _name;
+	core::String _name;
 	Values _percentage;
 	Values _absolute;
 	int _stackCount;
@@ -38,12 +38,12 @@ protected:
 	size_t _hash;
 
 public:
-	Container(const std::string& name, const Values& percentage, const Values& absolute, int stackCount = 1, int stackLimit = 1) :
+	Container(const core::String& name, const Values& percentage, const Values& absolute, int stackCount = 1, int stackLimit = 1) :
 			_name(name), _percentage(percentage), _absolute(absolute),
 			_stackCount(stackCount), _stackLimit(stackLimit), _hash(std::hash<std::string>{}(_name)) {
 	}
 
-	Container(std::string&& name, Values&& percentage, Values&& absolute, int stackCount = 1, int stackLimit = 1) :
+	Container(core::String&& name, Values&& percentage, Values&& absolute, int stackCount = 1, int stackLimit = 1) :
 			_name(std::move(name)), _percentage(std::move(percentage)), _absolute(std::move(absolute)),
 			_stackCount(stackCount), _stackLimit(stackLimit), _hash(std::hash<std::string>{}(_name)) {
 	}
@@ -51,7 +51,7 @@ public:
 	/**
 	 * @brief Each container must have a unique name set.
 	 */
-	inline const std::string& name() const {
+	inline const core::String& name() const {
 		return _name;
 	}
 
@@ -115,10 +115,10 @@ class ContainerBuilder {
 private:
 	Values _percentage;
 	Values _absolute;
-	const std::string _name;
+	const core::String _name;
 	int _stackLimit;
 public:
-	ContainerBuilder(const std::string& name, int stackLimit = 1);
+	ContainerBuilder(const core::String& name, int stackLimit = 1);
 	ContainerBuilder& addPercentage(Type type, double value);
 	ContainerBuilder& addAbsolute(Type type, double value);
 

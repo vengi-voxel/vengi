@@ -19,7 +19,7 @@ protected:
 
 	TreeNodeStatus runLUA(const AIPtr& entity, int64_t deltaMillis) {
 		// get userdata of the behaviour tree node
-		const std::string name = "__meta_node_" + _type;
+		const core::String name = "__meta_node_" + _type;
 		lua_getfield(_s, LUA_REGISTRYINDEX, name.c_str());
 #if AI_LUA_SANTITY > 0
 		if (lua_isnil(_s, -1)) {
@@ -92,13 +92,13 @@ public:
 	class LUATreeNodeFactory : public ITreeNodeFactory {
 	private:
 		lua_State* _s;
-		std::string _type;
+		core::String _type;
 	public:
-		LUATreeNodeFactory(lua_State* s, const std::string& typeStr) :
+		LUATreeNodeFactory(lua_State* s, const core::String& typeStr) :
 				_s(s), _type(typeStr) {
 		}
 
-		inline const std::string& type() const {
+		inline const core::String& type() const {
 			return _type;
 		}
 
@@ -107,7 +107,7 @@ public:
 		}
 	};
 
-	LUATreeNode(const std::string& name, const std::string& parameters, const ConditionPtr& condition, lua_State* s, const std::string& type) :
+	LUATreeNode(const core::String& name, const core::String& parameters, const ConditionPtr& condition, lua_State* s, const core::String& type) :
 			TreeNode(name, parameters, condition), _s(s) {
 		_type = type;
 	}

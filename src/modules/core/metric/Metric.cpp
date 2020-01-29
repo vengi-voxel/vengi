@@ -18,7 +18,7 @@ Metric::~Metric() {
 
 bool Metric::init(const char *prefix, const IMetricSenderPtr& messageSender) {
 	_prefix = prefix;
-	const std::string& flavor = core::Var::getSafe(cfg::MetricFlavor)->strVal();
+	const core::String& flavor = core::Var::getSafe(cfg::MetricFlavor)->strVal();
 	if (flavor == "telegraf") {
 		_flavor = Flavor::Telegraf;
 		Log::debug("Using metric flavor 'telegraf'");

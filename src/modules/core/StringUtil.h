@@ -20,7 +20,7 @@
 namespace core {
 namespace string {
 
-extern std::string format(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(1);
+extern core::String format(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(1);
 extern bool formatBuf(char *buf, size_t bufSize, SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(3);
 
 inline int toInt(const char* str) {
@@ -31,15 +31,15 @@ inline int64_t toLong(const char* str) {
 	return ::atol(str);
 }
 
-inline int toInt(const std::string& str) {
+inline int toInt(const core::String& str) {
 	return toInt(str.c_str());
 }
 
-inline int64_t toLong(const std::string& str) {
+inline int64_t toLong(const core::String& str) {
 	return toLong(str.c_str());
 }
 
-inline bool toBool(const std::string& str) {
+inline bool toBool(const core::String& str) {
 	return str == "1" || str == "true";
 }
 
@@ -48,11 +48,11 @@ inline char toHex(char code) {
 	return _hex[code & 15];
 }
 
-inline float toFloat(const std::string& str) {
+inline float toFloat(const core::String& str) {
 	return (float)SDL_atof(str.c_str());
 }
 
-inline double toDouble(const std::string& str) {
+inline double toDouble(const core::String& str) {
 	return (double)SDL_atof(str.c_str());
 }
 
@@ -70,23 +70,23 @@ inline double toDouble(const std::string& str) {
  */
 extern char* getBeforeToken(char **buffer, const char *token, size_t bufferSize);
 
-extern void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters = " \t\r\n\f\v");
-extern void splitString(const std::string& string, std::vector<std::string_view>& tokens, const std::string& delimiters = " \t\r\n\f\v");
+extern void splitString(const core::String& string, std::vector<std::string>& tokens, const core::String& delimiters = " \t\r\n\f\v");
+extern void splitString(const core::String& string, std::vector<std::string_view>& tokens, const core::String& delimiters = " \t\r\n\f\v");
 
-extern std::string toLower(const std::string& string);
-extern std::string toLower(const char* string);
+extern core::String toLower(const core::String& string);
+extern core::String toLower(const char* string);
 
 inline char toUpper(char in) { return SDL_toupper((int)in); }
 inline char toLower(char in) { return SDL_tolower((int)in); }
 
-extern std::string toUpper(const std::string& string);
-extern std::string toUpper(const char* string);
+extern core::String toUpper(const core::String& string);
+extern core::String toUpper(const char* string);
 
-inline bool startsWith(const std::string& string, const std::string& token) {
+inline bool startsWith(const core::String& string, const core::String& token) {
 	return !string.compare(0, token.size(), token);
 }
 
-inline bool startsWith(const std::string_view& string, const std::string& token) {
+inline bool startsWith(const std::string_view& string, const core::String& token) {
 	return !string.compare(0, token.size(), token);
 }
 
@@ -94,7 +94,7 @@ inline bool startsWith(const std::string_view& string, const char* token) {
 	return !string.compare(0, strlen(token), token);
 }
 
-inline bool startsWith(const std::string& string, const char* token) {
+inline bool startsWith(const core::String& string, const char* token) {
 	return !string.compare(0, strlen(token), token);
 }
 
@@ -123,7 +123,7 @@ inline int indexOf(const char *a, const char *b) {
 	return (int)(intptr_t)(offset - a);
 }
 
-inline bool endsWith(const std::string& string, const std::string& end) {
+inline bool endsWith(const core::String& string, const core::String& end) {
 	const std::size_t strLength = string.length();
 	const std::size_t endLength = end.length();
 	if (strLength >= endLength) {
@@ -133,29 +133,29 @@ inline bool endsWith(const std::string& string, const std::string& end) {
 	return false;
 }
 
-extern std::string replaceAll(const std::string& str, const std::string& searchStr, const char* replaceStr, size_t replaceStrSize);
+extern core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize);
 
-inline std::string replaceAll(const std::string& str, const std::string& searchStr, const char* replaceStr) {
+inline core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr) {
 	return replaceAll(str, searchStr, replaceStr, strlen(replaceStr));
 }
 
-inline std::string replaceAll(const std::string& str, const std::string& searchStr, const std::string_view& replaceStr) {
+inline core::String replaceAll(const core::String& str, const core::String& searchStr, const std::string_view& replaceStr) {
 	return replaceAll(str, searchStr, replaceStr.data(), replaceStr.size());
 }
 
-extern void replaceAllChars(std::string& str, char in, char out);
+extern void replaceAllChars(core::String& str, char in, char out);
 
-inline std::string replaceAll(const std::string& str, const std::string& searchStr, const std::string& replaceStr) {
+inline core::String replaceAll(const core::String& str, const core::String& searchStr, const core::String& replaceStr) {
 	return replaceAll(str, searchStr, replaceStr.data(), replaceStr.size());
 }
 
-extern bool isNumber(const std::string &in);
-extern bool isInteger(const std::string& in);
+extern bool isNumber(const core::String &in);
+extern bool isInteger(const core::String& in);
 
 /**
  * @brief Cuts everything (including the pattern) from the match
  */
-inline std::string_view cutAfterFirstMatch(const std::string_view str, const std::string& pattern, size_t start = 0) {
+inline std::string_view cutAfterFirstMatch(const std::string_view str, const core::String& pattern, size_t start = 0) {
 	std::string_view::size_type pos = str.find_first_of(pattern, 0);
 	return str.substr(start, pos);
 }
@@ -200,13 +200,13 @@ inline std::string_view extractFilenameWithExtension(std::string_view str) {
 	return str;
 }
 
-inline std::string eraseAllSpaces(const std::string& str) {
-	std::string tmp = str;
+inline core::String eraseAllSpaces(const core::String& str) {
+	core::String tmp = str;
 	tmp.erase(std::remove(tmp.begin(), tmp.end(), ' '), tmp.end());
 	return tmp;
 }
 
-inline bool contains(const std::string& str, const std::string& search) {
+inline bool contains(const core::String& str, const core::String& search) {
 	return str.rfind(search) != std::string::npos;
 }
 
@@ -215,7 +215,7 @@ inline bool contains(const char *haystack, const char *needle) {
 	return pos != nullptr;
 }
 
-inline bool icontains(const std::string& str, const std::string& search) {
+inline bool icontains(const core::String& str, const core::String& search) {
 	return toLower(str).rfind(toLower(search)) != std::string::npos;
 }
 
@@ -239,7 +239,7 @@ inline std::string_view trim(const std::string_view str) {
 	return ltrim(rtrim(str));
 }
 
-inline bool iequals(const std::string& a, const std::string& b) {
+inline bool iequals(const core::String& a, const core::String& b) {
 	const size_t sz = a.size();
 	if (b.size() != sz) {
 		return false;
@@ -253,7 +253,7 @@ inline bool iequals(const std::string& a, const std::string& b) {
 }
 
 template<typename ITER>
-std::string join(const ITER& begin, const ITER& end, const char *delimiter) {
+core::String join(const ITER& begin, const ITER& end, const char *delimiter) {
 	auto i = begin;
 	if (i == end) {
 		return "";
@@ -268,7 +268,7 @@ std::string join(const ITER& begin, const ITER& end, const char *delimiter) {
 }
 
 template<typename ITER, typename FUNC>
-std::string join(const ITER& begin, const ITER& end, const char *delimiter, FUNC&& func) {
+core::String join(const ITER& begin, const ITER& end, const char *delimiter, FUNC&& func) {
 	auto i = begin;
 	if (i == end) {
 		return "";
@@ -288,24 +288,24 @@ std::string join(const ITER& begin, const ITER& end, const char *delimiter, FUNC
  * @param[in] text The text to match against the pattern
  */
 extern bool matches(const char* pattern, const char* text);
-extern bool matches(const std::string& pattern, const char* text);
-inline bool matches(const std::string& pattern, const std::string& text) {
+extern bool matches(const core::String& pattern, const char* text);
+inline bool matches(const core::String& pattern, const core::String& text) {
 	return matches(pattern, text.c_str());
 }
 
 // pass by copy to prevent aliasing
-extern std::string concat(std::string_view first, std::string_view second);
+extern core::String concat(std::string_view first, std::string_view second);
 
 /**
  * @param[in,out] str Converts a string into UpperCamelCase.
  * @note Underscores are removed and the following character is also converted to upper case.
  * Example: @c foo_bar will end as @c FooBar
  */
-extern void upperCamelCase(std::string& str);
-extern std::string upperCamelCase(const std::string& str);
+extern void upperCamelCase(core::String& str);
+extern core::String upperCamelCase(const core::String& str);
 
-extern void lowerCamelCase(std::string& str);
-extern std::string lowerCamelCase(const std::string& str);
+extern void lowerCamelCase(core::String& str);
+extern core::String lowerCamelCase(const core::String& str);
 
 extern char* append(char* buf, size_t bufsize, const char* string);
 

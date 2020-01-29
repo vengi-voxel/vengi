@@ -47,9 +47,9 @@ void debugHook(lua_State *L, lua_Debug *ar) {
 #define checkStack()
 #endif
 
-LUAType::LUAType(lua_State* state, const std::string& name) :
+LUAType::LUAType(lua_State* state, const core::String& name) :
 		_state(state) {
-	const std::string metaTable = META_PREFIX + name;
+	const core::String metaTable = META_PREFIX + name;
 	luaL_newmetatable(_state, metaTable.c_str());
 	lua_pushvalue(_state, -1);
 	lua_setfield(_state, -2, "__index");
@@ -105,8 +105,8 @@ bool LUA::resetState() {
 	return true;
 }
 
-void LUA::reg(const std::string& prefix, const luaL_Reg* funcs) {
-	const std::string metaTableName = META_PREFIX + prefix;
+void LUA::reg(const core::String& prefix, const luaL_Reg* funcs) {
+	const core::String metaTableName = META_PREFIX + prefix;
 	luaL_newmetatable(_state, metaTableName.c_str());
 	luaL_setfuncs(_state, funcs, 0);
 	lua_pushvalue(_state, -1);
@@ -114,11 +114,11 @@ void LUA::reg(const std::string& prefix, const luaL_Reg* funcs) {
 	lua_setglobal(_state, prefix.c_str());
 }
 
-LUAType LUA::registerType(const std::string& name) {
+LUAType LUA::registerType(const core::String& name) {
 	return LUAType(_state, name);
 }
 
-bool LUA::load(const std::string& luaString) {
+bool LUA::load(const core::String& luaString) {
 	if (luaL_loadbufferx(_state, luaString.c_str(), luaString.length(), "", nullptr) || lua_pcall(_state, 0, 0, 0)) {
 		setError(lua_tostring(_state, -1));
 		pop(1);
@@ -142,7 +142,7 @@ bool LUA::valueFloatFromTable(const char* key, float *value) {
 	return true;
 }
 
-bool LUA::execute(const std::string &function, int returnValues) {
+bool LUA::execute(const core::String &function, int returnValues) {
 	lua_getglobal(_state, function.c_str());
 	if (lua_isnil(_state, -1)) {
 		setError("Function " + function + " wasn't found");
@@ -173,7 +173,7 @@ bool LUA::executeUpdate(uint64_t dt) {
 	return true;
 }
 
-std::string LUA::stackDump(lua_State *L) {
+core::String LUA::stackDump(lua_State *L) {
 #ifdef DEBUG
 	StackChecker check(L);
 #endif
@@ -216,15 +216,15 @@ std::string LUA::stackDump(lua_State *L) {
 	return id;
 }
 
-std::string LUA::stackDump() {
+core::String LUA::stackDump() {
 	return stackDump(_state);
 }
 
-std::string LUA::string(const std::string& expr, const std::string& defaultValue) {
+core::String LUA::string(const core::String& expr, const core::String& defaultValue) {
 	checkStack();
 	const char* r = defaultValue.c_str();
 	/* Assign the Lua expression to a Lua global variable. */
-	const std::string buf("evalExpr=" + expr);
+	const core::String buf("evalExpr=" + expr);
 	if (!luaL_dostring(_state, buf.c_str())) {
 		/* Get the value of the global variable */
 		lua_getglobal(_state, "evalExpr");
@@ -239,16 +239,16 @@ std::string LUA::string(const std::string& expr, const std::string& defaultValue
 	return r;
 }
 
-int LUA::intValue(const std::string& path, int defaultValue) {
-	const std::string& str = string(path);
+int LUA::intValue(const core::String& path, int defaultValue) {
+	const core::String& str = string(path);
 	if (str.empty()) {
 		return defaultValue;
 	}
 	return atoi(str.c_str());
 }
 
-float LUA::floatValue(const std::string& path, float defaultValue) {
-	const std::string& str = string(path);
+float LUA::floatValue(const core::String& path, float defaultValue) {
+	const core::String& str = string(path);
 	if (str.empty()) {
 		return defaultValue;
 	}

@@ -29,7 +29,7 @@ private:
 	float _scale = 0.0f;
 
 	bool readData(const io::FilePtr& file, const size_t offset, VoxelVolumes& volumes);
-	bool readHeader(const std::string& header);
+	bool readHeader(const core::String& header);
 public:
 	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;

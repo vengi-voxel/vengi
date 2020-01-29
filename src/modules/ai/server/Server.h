@@ -89,7 +89,7 @@ protected:
 			Client* newClient;
 			bool pauseState;
 		} data;
-		std::string strData = "";
+		core::String strData = "";
 		EventType type;
 	};
 	std::vector<Event> _events;
@@ -110,7 +110,7 @@ protected:
 	void handleEvents(Zone* zone, bool pauseState);
 	void enqueueEvent(const Event& event);
 public:
-	Server(AIRegistry& aiRegistry, short port = 10001, const std::string& hostname = "0.0.0.0");
+	Server(AIRegistry& aiRegistry, short port = 10001, const core::String& hostname = "0.0.0.0");
 	virtual ~Server();
 
 	/**
@@ -131,7 +131,7 @@ public:
 	 * @see @c TreeNodeParser
 	 * @see @c ConditionParser
 	 */
-	bool updateNode(const CharacterId& characterId, int32_t nodeId, const std::string& name, const std::string& type, const std::string& condition);
+	bool updateNode(const CharacterId& characterId, int32_t nodeId, const core::String& name, const core::String& type, const core::String& condition);
 
 	/**
 	 * @brief Add a new node with the given values to the specified @ai{ICharacter} and all the
@@ -146,7 +146,7 @@ public:
 	 * @see @ai{TreeNodeParser}
 	 * @see @ai{ConditionParser}
 	 */
-	bool addNode(const CharacterId& characterId, int32_t parentNodeId, const std::string& name, const std::string& type, const std::string& condition);
+	bool addNode(const CharacterId& characterId, int32_t parentNodeId, const core::String& name, const core::String& type, const core::String& condition);
 
 	/**
 	 * @brief Delete the specified node from the @ai{ICharacter}'s behaviour tree and all the
@@ -180,7 +180,7 @@ public:
 	 *
 	 * @note This locks the server instance
 	 */
-	void setDebug(const std::string& zoneName);
+	void setDebug(const core::String& zoneName);
 
 	/**
 	 * @brief Resets the @ai{AI} states

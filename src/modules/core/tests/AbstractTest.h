@@ -18,35 +18,35 @@
 namespace core {
 
 template<typename T, glm::qualifier P = glm::defaultp>
-inline ::std::string& operator+= (::std::string& in, const glm::tvec1<T, P>& vec) {
+inline ::core::String& operator+= (::core::String& in, const glm::tvec1<T, P>& vec) {
 	in.append(glm::to_string(vec));
 	return in;
 }
 
 template<typename T, glm::qualifier P = glm::defaultp>
-inline ::std::string& operator+= (::std::string& in, const glm::tvec2<T, P>& vec) {
+inline ::core::String& operator+= (::core::String& in, const glm::tvec2<T, P>& vec) {
 	in.append(glm::to_string(vec));
 	return in;
 }
 
 template<typename T, glm::qualifier P = glm::defaultp>
-inline ::std::string& operator+= (::std::string& in, const glm::tvec3<T, P>& vec) {
+inline ::core::String& operator+= (::core::String& in, const glm::tvec3<T, P>& vec) {
 	in.append(glm::to_string(vec));
 	return in;
 }
 
 template<typename T, glm::qualifier P = glm::defaultp>
-inline ::std::string& operator+= (::std::string& in, const glm::tvec4<T, P>& vec) {
+inline ::core::String& operator+= (::core::String& in, const glm::tvec4<T, P>& vec) {
 	in.append(glm::to_string(vec));
 	return in;
 }
 
-inline ::std::string& operator+= (::std::string& in, const glm::mat4& mat) {
+inline ::core::String& operator+= (::core::String& in, const glm::mat4& mat) {
 	in.append(glm::to_string(mat));
 	return in;
 }
 
-inline ::std::string& operator+= (::std::string& in, const glm::mat3& mat) {
+inline ::core::String& operator+= (::core::String& in, const glm::mat3& mat) {
 	in.append(glm::to_string(mat));
 	return in;
 }
@@ -98,11 +98,11 @@ private:
 protected:
 	TestApp *_testApp = nullptr;
 
-	std::string toString(const std::string& filename) const;
+	core::String toString(const core::String& filename) const;
 
 	template<class T>
-	std::string toString(const std::vector<T>& v) const {
-		std::string str;
+	core::String toString(const std::vector<T>& v) const {
+		core::String str;
 		str.reserve(4096);
 		for (auto i = v.begin(); i != v.end();) {
 			str += "'";
@@ -121,7 +121,7 @@ protected:
 		EXPECT_STREQ(value, mapValue);
 	}
 
-	std::string printMap(const core::CharPointerMap& map) const {
+	core::String printMap(const core::CharPointerMap& map) const {
 		std::stringstream ss;
 		ss << "Found map entries are: \"";
 		bool first = true;

@@ -27,9 +27,9 @@ protected:
 	typedef std::map<std::string, std::string> ShaderDefines;
 	ShaderDefines _defines;
 
-	std::string _name;
+	core::String _name;
 
-	std::string handlePragmas(const std::string& buffer) const;
+	core::String handlePragmas(const core::String& buffer) const;
 
 	BufferFlag bufferFlags(const void* bufPtr, size_t size) const;
 
@@ -54,13 +54,13 @@ public:
 	/**
 	 * Some drivers don't support underscores in their defines...
 	 */
-	static std::string validPreprocessorName(const std::string& name);
+	static core::String validPreprocessorName(const core::String& name);
 
 	virtual void shutdown();
 
-	bool loadFromFile(const std::string& filename);
-	bool loadProgram(const std::string& filename);
-	bool load(const std::string& name, const std::string& buffer);
+	bool loadFromFile(const core::String& filename);
+	bool loadProgram(const core::String& filename);
+	bool load(const core::String& name, const core::String& buffer);
 
 	/**
 	 * Use this to allocate memory for buffers that have the right size and alignment for
@@ -80,7 +80,7 @@ public:
 
 	void deleteKernel(Id& kernel);
 
-	std::string getSource(const std::string& buffer, bool finalize = true, std::vector<std::string>* includedFiles = nullptr) const;
+	core::String getSource(const core::String& buffer, bool finalize = true, std::vector<std::string>* includedFiles = nullptr) const;
 
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too
@@ -109,7 +109,7 @@ public:
 	/**
 	 * @brief Adds a new define in the form '#define value' to the shader source code
 	 */
-	void addDefine(const std::string& name, const std::string& value);
+	void addDefine(const core::String& name, const core::String& value);
 };
 
 inline bool Shader::isActive() const {

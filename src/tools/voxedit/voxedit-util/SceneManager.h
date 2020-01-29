@@ -119,7 +119,7 @@ private:
 	bool _renderAxis = true;
 	bool _renderLockAxis = true;
 
-	std::string _lastFilename;
+	core::String _lastFilename;
 	uint64_t _lastAutoSave = 0u;
 
 	int32_t _planeMeshIndex[3] = {-1, -1, -1};
@@ -198,8 +198,8 @@ private:
 
 	void zoom(video::Camera& camera, float level) const;
 
-	bool saveLayers(const std::string& dir);
-	bool saveLayer(int layerId, const std::string& file);
+	bool saveLayers(const core::String& dir);
+	bool saveLayer(int layerId, const core::String& file);
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition);
@@ -247,24 +247,24 @@ public:
 	 * @param[in] file The image file to import as heightmap.
 	 * @note The first component is used as height value. In most cases the R channel.
 	 */
-	bool importHeightmap(const std::string& file);
+	bool importHeightmap(const core::String& file);
 	/**
 	 * @brief Import an image as a plane in a new layer of the scene.
 	 * @note There is a total max dimension of the texture that is supported.
 	 * @param[in] file The image file path to load
 	 */
-	bool importAsPlane(const std::string& file);
+	bool importAsPlane(const core::String& file);
 	/**
 	 * @brief Import a new palette from the given image file
 	 * @note The amount of colors in the image may not exceed 256
 	 * @param[in] file The image file path
 	 */
-	bool importPalette(const std::string& file);
+	bool importPalette(const core::String& file);
 	/**
 	 * @param[in] paletteName The name of the palette
 	 * @note The name is extended to a filename like this @c palette-<paletteName>.[lua.png]
 	 */
-	bool loadPalette(const std::string& paletteName);
+	bool loadPalette(const core::String& paletteName);
 	/**
 	 * @brief Fill the volume with the given noise type
 	 */
@@ -280,13 +280,13 @@ public:
 	 * @param[in] autosave @c true if this is an auto save action, @c false otherwise. This has e.g. an
 	 * influence on the dirty state handling of the scene.
 	 */
-	bool save(const std::string& file, bool autosave = false);
+	bool save(const core::String& file, bool autosave = false);
 	/**
 	 * @brief Loads a volume from the given file
 	 * @param[in] file The file to load. The volume format is determined by the file extension.
 	 */
-	bool load(const std::string& file);
-	bool loadAnimationEntity(const std::string& luaFile);
+	bool load(const core::String& file);
+	bool loadAnimationEntity(const core::String& luaFile);
 	bool saveAnimationEntity(const char *name);
 
 	/**
@@ -302,9 +302,9 @@ public:
 	 * @brief Import an existing model
 	 * @note Placed relative to the reference position in the current scene
 	 */
-	bool prefab(const std::string& file);
+	bool prefab(const core::String& file);
 
-	bool newScene(bool force, const std::string& name, const voxel::Region& region);
+	bool newScene(bool force, const core::String& name, const voxel::Region& region);
 
 	/**
 	 * @return @c true if the scene was modified and not saved yet

@@ -16,7 +16,7 @@ bool needsInitCPP(persistence::FieldType type) {
 	}
 }
 
-std::string getCPPInit(persistence::FieldType type, bool pointer) {
+core::String getCPPInit(persistence::FieldType type, bool pointer) {
 	if (pointer) {
 		return "nullptr";
 	}
@@ -44,7 +44,7 @@ std::string getCPPInit(persistence::FieldType type, bool pointer) {
 	return "";
 }
 
-std::string getCPPType(persistence::FieldType type, bool function, bool pointer) {
+core::String getCPPType(persistence::FieldType type, bool function, bool pointer) {
 	switch (type) {
 	case persistence::FieldType::BOOLEAN:
 		if (pointer) {
@@ -58,7 +58,7 @@ std::string getCPPType(persistence::FieldType type, bool function, bool pointer)
 			return "const char*";
 		}
 		if (function) {
-			return "const std::string&";
+			return "const core::String&";
 		}
 		return "std::string";
 	case persistence::FieldType::TIMESTAMP:

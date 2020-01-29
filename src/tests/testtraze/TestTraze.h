@@ -55,7 +55,7 @@ private:
 
 	void sound(const char *soundId);
 
-	const std::string& playerName(traze::PlayerId playerId) const;
+	const core::String& playerName(traze::PlayerId playerId) const;
 	const traze::Player& player(traze::PlayerId playerId) const;
 public:
 	TestTraze(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

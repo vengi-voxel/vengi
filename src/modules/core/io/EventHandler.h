@@ -32,7 +32,7 @@ private:
 	};
 	std::vector<Event> _events;
 
-	static std::string getControllerButtonName(uint8_t button);
+	static core::String getControllerButtonName(uint8_t button);
 
 public:
 	EventHandler();
@@ -53,8 +53,8 @@ public:
 	void prepareForeground();
 	void background();
 	void foreground();
-	void controllerButtonPress(const std::string& button, uint32_t id);
-	void controllerButtonRelease(const std::string& button, uint32_t id);
+	void controllerButtonPress(const core::String& button, uint32_t id);
+	void controllerButtonRelease(const core::String& button, uint32_t id);
 	/**
 	 * @param[in] axis SDL_GameControllerAxis
 	 * @param[in] value -32768 to 32767
@@ -65,8 +65,8 @@ public:
 	void mouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY);
 	void mouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks);
 	void mouseButtonRelease(int32_t x, int32_t y, uint8_t button);
-	void dropFile(const std::string& file);
-	void textInput(const std::string& text);
+	void dropFile(const core::String& file);
+	void textInput(const core::String& text);
 	void keyRelease(int32_t key, int16_t modifier = 0);
 	void keyPress(int32_t key, int16_t modifier = 0);
 	void fingerPress(int64_t finger, float x, float y);

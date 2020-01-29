@@ -18,7 +18,7 @@ Timestamp::Timestamp() :
 	Timestamp(0L) {
 }
 
-std::string Timestamp::toString(const char *format) const {
+core::String Timestamp::toString(const char *format) const {
 	std::time_t t(_seconds);
 	std::tm tm = *std::gmtime(&t);
 	std::stringstream ss;

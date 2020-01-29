@@ -12,11 +12,11 @@
 
 namespace persistence {
 
-std::string toLower(const char *in) {
+core::String toLower(const char *in) {
 	return core::string::toLower(in);
 }
 
-std::string toLower(const std::string& in) {
+core::String toLower(const core::String& in) {
 	return core::string::toLower(in);
 }
 
@@ -105,7 +105,7 @@ bool Model::fillModelValues(State& state) {
 	return true;
 }
 
-void Model::setValue(const Field& f, const std::string& value) {
+void Model::setValue(const Field& f, const core::String& value) {
 	core_assert(f.offset >= 0);
 	uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
 	std::string* targetValue = (std::string*)target;

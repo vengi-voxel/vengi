@@ -33,7 +33,7 @@ private:
 	flatbuffers::FlatBufferBuilder _authFailed;
 
 	void sendAuthFailed(ENetPeer* peer);
-	UserPtr login(ENetPeer* peer, const std::string& email, const std::string& passwd);
+	UserPtr login(ENetPeer* peer, const core::String& email, const core::String& passwd);
 
 public:
 	UserConnectHandler(

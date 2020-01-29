@@ -22,13 +22,13 @@ public:
 		return _tok != nullptr;
 	}
 
-	inline std::string next() {
-		const std::string& token = _tok->str();
+	inline core::String next() {
+		const core::String& token = _tok->str();
 		_tok = _tok->next;
 		return token;
 	}
 
-	inline std::string prev() {
+	inline core::String prev() {
 		_tok = _tok->previous;
 		return _tok->str();
 	}
@@ -40,7 +40,7 @@ public:
 		return _tok->location.line;
 	}
 
-	inline std::string peekNext() const {
+	inline core::String peekNext() const {
 		if (!_tok) {
 			return "";
 		}

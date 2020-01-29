@@ -13,7 +13,7 @@ namespace video {
  */
 class Cubemap {
 private:
-	std::string _filename;
+	core::String _filename;
 	Id _textureHandle = InvalidId;
 public:
 	~Cubemap();

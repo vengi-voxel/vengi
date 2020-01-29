@@ -13,7 +13,7 @@ extern int _argc;
 
 namespace core {
 
-std::string AbstractTest::toString(const std::string& filename) const {
+core::String AbstractTest::toString(const core::String& filename) const {
 	const io::FilesystemPtr& fs = _testApp->filesystem();
 	const io::FilePtr& file = fs->open(filename);
 	if (!file->exists()) {

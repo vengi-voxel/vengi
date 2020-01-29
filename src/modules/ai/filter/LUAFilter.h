@@ -19,7 +19,7 @@ protected:
 
 	void filterLUA(const AIPtr& entity) {
 		// get userdata of the filter
-		const std::string name = "__meta_filter_" + _name;
+		const core::String name = "__meta_filter_" + _name;
 		lua_getfield(_s, LUA_REGISTRYINDEX, name.c_str());
 #if AI_LUA_SANTITY > 0
 		if (lua_isnil(_s, -1)) {
@@ -76,13 +76,13 @@ public:
 	class LUAFilterFactory : public IFilterFactory {
 	private:
 		lua_State* _s;
-		std::string _type;
+		core::String _type;
 	public:
-		LUAFilterFactory(lua_State* s, const std::string& typeStr) :
+		LUAFilterFactory(lua_State* s, const core::String& typeStr) :
 				_s(s), _type(typeStr) {
 		}
 
-		inline const std::string& type() const {
+		inline const core::String& type() const {
 			return _type;
 		}
 
@@ -91,7 +91,7 @@ public:
 		}
 	};
 
-	LUAFilter(const std::string& name, const std::string& parameters, lua_State* s) :
+	LUAFilter(const core::String& name, const core::String& parameters, lua_State* s) :
 			IFilter(name, parameters), _s(s) {
 	}
 

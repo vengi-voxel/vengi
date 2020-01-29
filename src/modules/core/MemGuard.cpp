@@ -4,7 +4,7 @@
 
 namespace core {
 
-MemGuard::MemGuard(const std::string& name) :
+MemGuard::MemGuard(const core::String& name) :
 		_name(name), _rwLock(name) {
 }
 

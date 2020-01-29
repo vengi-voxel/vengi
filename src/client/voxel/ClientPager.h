@@ -17,7 +17,7 @@ private:
 	unsigned int _seed = 0u;
 	voxelworld::FilePersister _chunkPersister;
 public:
-	bool init(const std::string& baseUrl);
+	bool init(const core::String& baseUrl);
 
 	bool pageIn(voxel::PagedVolume::PagerContext& ctx) override;
 	void pageOut(voxel::PagedVolume::Chunk* chunk) override;

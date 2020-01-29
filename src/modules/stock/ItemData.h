@@ -25,7 +25,7 @@ inline ItemType getItemType(const char* name) {
  * @brief Converts a string into the enum value
  * @ingroup Stock
  */
-inline ItemType getItemType(const std::string& name) {
+inline ItemType getItemType(const core::String& name) {
 	return getItemType(name.c_str());
 }
 
@@ -40,7 +40,7 @@ using ItemId = uint32_t;
  */
 class ItemData {
 protected:
-	std::string _name;
+	core::String _name;
 	ItemId _id;
 	ItemShape _shape;
 	ItemType _type;

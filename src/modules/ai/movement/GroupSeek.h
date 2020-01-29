@@ -17,7 +17,7 @@ protected:
 public:
 	STEERING_FACTORY(GroupSeek)
 
-	explicit GroupSeek(const std::string& parameters);
+	explicit GroupSeek(const core::String& parameters);
 
 	inline bool isValid () const {
 		return _groupId != -1;

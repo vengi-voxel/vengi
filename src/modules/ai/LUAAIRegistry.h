@@ -94,10 +94,10 @@ protected:
 public:
 	LUAAIRegistry();
 
-	void addTreeNodeFactory(const std::string& type, const LUATreeNodeFactoryPtr& factory);
-	void addConditionFactory(const std::string& type, const LUAConditionFactoryPtr& factory);
-	void addFilterFactory(const std::string& type, const LUAFilterFactoryPtr& factory);
-	void addSteeringFactory(const std::string& type, const LUASteeringFactoryPtr& factory);
+	void addTreeNodeFactory(const core::String& type, const LUATreeNodeFactoryPtr& factory);
+	void addConditionFactory(const core::String& type, const LUAConditionFactoryPtr& factory);
+	void addFilterFactory(const core::String& type, const LUAFilterFactoryPtr& factory);
+	void addSteeringFactory(const core::String& type, const LUASteeringFactoryPtr& factory);
 
 	/**
 	 * @brief Access to the lua state.

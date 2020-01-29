@@ -18,7 +18,7 @@ enum class FileMode {
 	Read, Write
 };
 
-extern void normalizePath(std::string& str);
+extern void normalizePath(core::String& str);
 
 /**
  * @brief Wrapper for file based io.
@@ -30,10 +30,10 @@ class File : public IOResource {
 	friend class Filesystem;
 protected:
 	SDL_RWops* _file;
-	std::string _rawPath;
+	core::String _rawPath;
 	FileMode _mode;
 
-	File(const std::string& rawPath, FileMode mode);
+	File(const core::String& rawPath, FileMode mode);
 public:
 	virtual ~File();
 
@@ -64,21 +64,21 @@ public:
 	 * @return The extension of the file - or en ampty string
 	 * if no extension was found
 	 */
-	std::string extension() const;
+	core::String extension() const;
 	/**
 	 * @return The path of the file, without the name - or an
 	 * empty string if no path component was found
 	 */
-	std::string path() const;
+	core::String path() const;
 	/**
 	 * @return Just the base file name component part - without
 	 * path and extension
 	 */
-	std::string fileName() const;
+	core::String fileName() const;
 	/**
 	 * @return The full raw path of the file
 	 */
-	const std::string& name() const;
+	const core::String& name() const;
 
 	SDL_RWops* createRWops(FileMode mode) const;
 	long write(const unsigned char *buf, size_t len) const;
@@ -89,7 +89,7 @@ public:
 	 */
 	int read(void **buffer);
 	int read(void *buffer, int n);
-	std::string load();
+	core::String load();
 };
 
 inline FileMode File::mode() const {

@@ -31,7 +31,7 @@ TEST_F(ResponseParserTest, testGETSimple) {
 	validateMapEntry(response.headers, header::CONTENT_LENGTH, "1337");
 	EXPECT_EQ(71, response.contentLength);
 	EXPECT_FALSE(response.valid()) << "Invalid content size should make this response invalid";
-	const std::string r(response.content, response.contentLength);
+	const core::String r(response.content, response.contentLength);
 	EXPECT_STREQ(r.c_str(), "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n<html>\n</html>\n");
 }
 
@@ -48,7 +48,7 @@ TEST_F(ResponseParserTest, testCopy) {
 	validateMapEntry(response.headers, header::CONTENT_LENGTH, "1337");
 	EXPECT_EQ(71, response.contentLength);
 	EXPECT_FALSE(response.valid()) << "Invalid content size should make this response invalid";
-	const std::string r(response.content, response.contentLength);
+	const core::String r(response.content, response.contentLength);
 	EXPECT_STREQ(r.c_str(), "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n<html>\n</html>\n");
 }
 

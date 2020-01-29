@@ -23,14 +23,14 @@ class IAIFactory;
 class ConditionParser : public IParser {
 private:
 	const IAIFactory& _aiFactory;
-	std::string _conditionString;
+	core::String _conditionString;
 
-	void splitConditions(const std::string& string, std::vector<std::string>& tokens) const;
-	bool fillInnerConditions(ConditionFactoryContext& ctx, const std::string& inner);
-	bool fillInnerFilters(FilterFactoryContext& ctx, const std::string& inner);
+	void splitConditions(const core::String& string, std::vector<std::string>& tokens) const;
+	bool fillInnerConditions(ConditionFactoryContext& ctx, const core::String& inner);
+	bool fillInnerFilters(FilterFactoryContext& ctx, const core::String& inner);
 
 public:
-	ConditionParser(const IAIFactory& aiFactory, const std::string& conditionString);
+	ConditionParser(const IAIFactory& aiFactory, const core::String& conditionString);
 	virtual ~ConditionParser();
 	ConditionPtr getCondition();
 };

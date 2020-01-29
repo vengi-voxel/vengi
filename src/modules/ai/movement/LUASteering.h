@@ -16,7 +16,7 @@ namespace movement {
 class LUASteering : public ISteering {
 protected:
 	mutable lua_State* _s;
-	std::string _type;
+	core::String _type;
 
 	MoveVector executeLUA(const AIPtr& entity, float speed) const;
 
@@ -24,13 +24,13 @@ public:
 	class LUASteeringFactory : public ISteeringFactory {
 	private:
 		lua_State* _s;
-		std::string _type;
+		core::String _type;
 	public:
-		LUASteeringFactory(lua_State* s, const std::string& typeStr) :
+		LUASteeringFactory(lua_State* s, const core::String& typeStr) :
 				_s(s), _type(typeStr) {
 		}
 
-		inline const std::string& type() const {
+		inline const core::String& type() const {
 			return _type;
 		}
 
@@ -39,7 +39,7 @@ public:
 		}
 	};
 
-	LUASteering(lua_State* s, const std::string& type);
+	LUASteering(lua_State* s, const core::String& type);
 
 	~LUASteering() {
 	}

@@ -13,28 +13,28 @@ namespace persistence {
 class Connection {
 private:
 	ConnectionType* _connection;
-	std::string _host;
-	std::string _dbname;
-	std::string _user;
-	std::string _password;
+	core::String _host;
+	core::String _dbname;
+	core::String _user;
+	core::String _password;
 	uint16_t _port;
 	std::unordered_set<std::string> _preparedStatements;
 public:
 	Connection();
 	~Connection();
 
-	bool hasPreparedStatement(const std::string& name) const;
-	void registerPreparedStatement(const std::string& name);
+	bool hasPreparedStatement(const core::String& name) const;
+	void registerPreparedStatement(const core::String& name);
 
 	bool status() const;
 
-	void setLoginData(const std::string& username, const std::string& password);
+	void setLoginData(const core::String& username, const core::String& password);
 
-	void changeHost(const std::string& host);
+	void changeHost(const core::String& host);
 
 	void changePort(uint16_t port);
 
-	void changeDb(const std::string& dbname);
+	void changeDb(const core::String& dbname);
 
 	void disconnect();
 
@@ -48,11 +48,11 @@ inline ConnectionType* Connection::connection() const {
 	return _connection;
 }
 
-inline bool Connection::hasPreparedStatement(const std::string& name) const {
+inline bool Connection::hasPreparedStatement(const core::String& name) const {
 	return _preparedStatements.find(name) != _preparedStatements.end();
 }
 
-inline void Connection::registerPreparedStatement(const std::string& name) {
+inline void Connection::registerPreparedStatement(const core::String& name) {
 	_preparedStatements.insert(name);
 }
 

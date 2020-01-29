@@ -17,7 +17,7 @@ protected:
 public:
 	STEERING_FACTORY(TargetFlee)
 
-	explicit TargetFlee(const std::string& parameters) :
+	explicit TargetFlee(const core::String& parameters) :
 			ISteering() {
 		_target = parse(parameters);
 	}

@@ -35,28 +35,28 @@ public:
 	Tokenizer(const std::string_view string, const char *sep, const char *split = "") : Tokenizer(string.data(), string.length(), sep, split) {}
 	Tokenizer(bool skipComments, const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string, strlen(string), sep, split) {}
 	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string, strlen(string), sep, split) {}
-	Tokenizer(const std::string& string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string.c_str(), string.size(), sep, split) {}
-	Tokenizer(bool skipComments, const std::string& string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string.c_str(), string.size(), sep, split) {}
+	Tokenizer(const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string.c_str(), string.size(), sep, split) {}
+	Tokenizer(bool skipComments, const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string.c_str(), string.size(), sep, split) {}
 
 	inline bool hasNext() const {
 		return _posIndex < _tokens.size();
 	}
 
-	inline std::string peekNext() const {
+	inline core::String peekNext() const {
 		if (!hasNext()) {
 			return "";
 		}
 		return _tokens[_posIndex + 1];
 	}
 
-	inline bool isNext(const std::string& token) const {
+	inline bool isNext(const core::String& token) const {
 		if (!hasNext()) {
 			return false;
 		}
 		return _tokens[_posIndex + 1] == token;
 	}
 
-	inline const std::string& next() {
+	inline const core::String& next() {
 		core_assert(hasNext());
 		return _tokens[_posIndex++];
 	}
@@ -80,7 +80,7 @@ public:
 		return _posIndex;
 	}
 
-	inline const std::string& prev() {
+	inline const core::String& prev() {
 		core_assert(hasPrev());
 		return _tokens[--_posIndex];
 	}

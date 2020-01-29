@@ -13,50 +13,50 @@ namespace ai {
  * @brief Context for ITreeNodeFactory
  */
 struct TreeNodeFactoryContext {
-	std::string name;
-	std::string parameters;
+	core::String name;
+	core::String parameters;
 	ConditionPtr condition;
-	TreeNodeFactoryContext(const std::string& _name, const std::string& _parameters, const ConditionPtr& _condition) :
+	TreeNodeFactoryContext(const core::String& _name, const core::String& _parameters, const ConditionPtr& _condition) :
 			name(_name), parameters(_parameters), condition(_condition) {
 	}
 };
 
 struct SteerNodeFactoryContext {
-	std::string name;
-	std::string parameters;
+	core::String name;
+	core::String parameters;
 	ConditionPtr condition;
 	movement::Steerings steerings;
-	SteerNodeFactoryContext(const std::string& _name, const std::string& _parameters, const ConditionPtr& _condition, const movement::Steerings& _steerings) :
+	SteerNodeFactoryContext(const core::String& _name, const core::String& _parameters, const ConditionPtr& _condition, const movement::Steerings& _steerings) :
 			name(_name), parameters(_parameters), condition(_condition), steerings(_steerings) {
 	}
 };
 
 struct FilterFactoryContext {
 	// Parameters for the filter - can get hand over to the ctor in your factory implementation.
-	std::string parameters;
+	core::String parameters;
 	Filters filters;
-	explicit FilterFactoryContext(const std::string& _parameters) :
+	explicit FilterFactoryContext(const core::String& _parameters) :
 		parameters(_parameters) {
 	}
 };
 
 struct SteeringFactoryContext {
 	// Parameters for the steering class - can get hand over to the ctor in your factory implementation.
-	std::string parameters;
-	explicit SteeringFactoryContext(const std::string& _parameters) :
+	core::String parameters;
+	explicit SteeringFactoryContext(const core::String& _parameters) :
 		parameters(_parameters) {
 	}
 };
 
 struct ConditionFactoryContext {
 	// Parameters for the condition - can get hand over to the ctor in your factory implementation.
-	std::string parameters;
+	core::String parameters;
 	// Some conditions have child conditions
 	Conditions conditions;
 	// The filter condition also has filters
 	Filters filters;
 	bool filter;
-	explicit ConditionFactoryContext(const std::string& _parameters) :
+	explicit ConditionFactoryContext(const core::String& _parameters) :
 		parameters(_parameters), filter(false) {
 	}
 };

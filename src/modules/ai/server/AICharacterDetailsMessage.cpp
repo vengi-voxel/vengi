@@ -8,7 +8,7 @@ namespace ai {
 
 AIStateNode AICharacterDetailsMessage::readNode (streamContainer& in) {
 	const int32_t nodeId = readInt(in);
-	const std::string& condition = readString(in);
+	const core::String& condition = readString(in);
 	const int64_t lastRun = readLong(in);
 	const TreeNodeStatus status = static_cast<TreeNodeStatus>(readByte(in));
 	const bool running = readBool(in);

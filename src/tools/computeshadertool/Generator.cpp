@@ -22,7 +22,7 @@ enum class BodyType {
  * @brief MSVC doesn't like strings that exceeds a certain length. So we have to split them up here.
  * @sa https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/compiler-error-c2026?view=vs-2019
  */
-static std::string maxStringLength(const std::string& input) {
+static core::String maxStringLength(const core::String& input) {
 #ifdef _MSC_VER
 	if (input.size() > 10000) {
 		Log::debug("Need to split the shader source string");
@@ -32,11 +32,11 @@ static std::string maxStringLength(const std::string& input) {
 	return "R\"(" + input + ")\"";
 }
 
-static bool isBuffer(const std::string& str) {
+static bool isBuffer(const core::String& str) {
 	return core::string::contains(str, "*");
 }
 
-static std::string getBufferName(const Kernel& k, const Parameter& p) {
+static core::String getBufferName(const Kernel& k, const Parameter& p) {
 	return core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
 }
 
@@ -130,7 +130,7 @@ static void generateKernelParameterTransfer(const Kernel& k, std::stringstream& 
 			continue;
 		}
 		if (isBuffer(p.type)) {
-			const std::string& bufferName = getBufferName(k, p);
+			const core::String& bufferName = getBufferName(k, p);
 			const util::CLTypeMapping& clType = util::vectorType(p.type);
 			if (BodyType::Native == type) {
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", " << i << ", " << p.name<< ");\n";
@@ -188,7 +188,7 @@ static void generateKernelExecution(const Kernel& k, std::stringstream& kernels,
 			if (!isBuffer(p.type)) {
 				continue;
 			}
-			const std::string& bufferName = getBufferName(k, p);
+			const core::String& bufferName = getBufferName(k, p);
 			kernels << "\t\tcomputevideo::enqueueAcquire(" << bufferName << ");\n";
 		}
 	}
@@ -203,7 +203,7 @@ static void generateKernelExecution(const Kernel& k, std::stringstream& kernels,
 			kernels << ", ";
 		}
 		if (isBuffer(p.type)) {
-			const std::string& bufferName = getBufferName(k, p);
+			const core::String& bufferName = getBufferName(k, p);
 			if (type == BodyType::Vector) {
 				kernels << p.name << ".data(), core::vectorSize(" << p.name << ")";
 			} else if (type == BodyType::Pointer) {
@@ -232,7 +232,7 @@ static void generateKernelResultTransfer(const Kernel& k, std::stringstream& ker
 			continue;
 		}
 		if ((p.flags & (compute::BufferFlag::ReadWrite | compute::BufferFlag::WriteOnly)) != compute::BufferFlag::None) {
-			const std::string& bufferName = getBufferName(k, p);
+			const core::String& bufferName = getBufferName(k, p);
 			if (type == BodyType::Video) {
 				kernels << "\t\tcomputevideo::enqueueRelease(" << bufferName << ");\n";
 			} else if (BodyType::Pointer == type) {
@@ -259,7 +259,7 @@ static void generateKernelMembers(const Kernel& k, std::stringstream& kernelMemb
 		if (!isBuffer(p.type)) {
 			continue;
 		}
-		const std::string& bufferName = getBufferName(k, p);
+		const core::String& bufferName = getBufferName(k, p);
 		kernelMembers << "\t/**\n";
 		kernelMembers << "\t * @brief Buffer for '" << p.name << "'\n";
 		kernelMembers << "\t */\n";
@@ -339,17 +339,17 @@ static void generateKernel(const Kernel& k, std::stringstream& kernels, BodyType
 }
 
 bool generateSrc(const io::FilesystemPtr& filesystem,
-		const std::string& templateShader,
-		const std::string& _name,
-		const std::string& namespaceSrc,
-		const std::string& shaderDirectory,
-		const std::string& sourceDirectory,
+		const core::String& templateShader,
+		const core::String& _name,
+		const core::String& namespaceSrc,
+		const core::String& shaderDirectory,
+		const core::String& sourceDirectory,
 		const std::vector<Kernel>& _kernels,
 		const std::vector<Struct>& _structs,
 		const std::map<std::string, std::string>& _constants,
-		const std::string& postfix,
-		const std::string& shaderBuffer) {
-	const std::string name = _name + "Shader";
+		const core::String& postfix,
+		const core::String& shaderBuffer) {
+	const core::String name = _name + "Shader";
 
 	std::vector<std::string> shaderNameParts;
 	core::string::splitString(name, shaderNameParts, "_-");
@@ -414,7 +414,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	std::stringstream structs;
 	generateStructs(_structs, structs);
 
-	std::string src(templateShader);
+	core::String src(templateShader);
 	src = core::string::replaceAll(src, "$constant", "//");
 	src = core::string::replaceAll(src, "$name$", filename);
 	src = core::string::replaceAll(src, "$namespace$", namespaceSrc);
@@ -425,7 +425,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	src = core::string::replaceAll(src, "$structs$", structs.str());
 	src = core::string::replaceAll(src, "$createkernels$", createKernels.str());
 	src = core::string::replaceAll(src, "$shaderbuffer$", maxStringLength(shaderBuffer));
-	const std::string targetFile = sourceDirectory + filename + ".h" + postfix;
+	const core::String targetFile = sourceDirectory + filename + ".h" + postfix;
 	Log::info("Generate shader bindings for %s at %s", _name.c_str(), targetFile.c_str());
 	if (!filesystem->syswrite(targetFile, src)) {
 		Log::error("Failed to write %s", targetFile.c_str());

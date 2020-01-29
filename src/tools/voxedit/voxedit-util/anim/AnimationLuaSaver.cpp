@@ -21,16 +21,16 @@ bool saveAnimationEntityLua(const animation::AnimationSettings& settings, const 
 	stream.addString("  settings.setBasePath(\"human\", \"male\")\n", false);
 	stream.addString("  settings.setMeshTypes(", false);
 	for (size_t i = 0; i < settings.types().size(); ++i) {
-		const std::string& type = settings.types()[i];
+		const core::String& type = settings.types()[i];
 		stream.addStringFormat(false, "\"%s\"", type.c_str());
 		if (i != settings.types().size() - 1) {
 			stream.addString(", ", false);
 		}
 	}
 	stream.addString("  )\n", false);
-	for (const std::string& t : settings.types()) {
+	for (const core::String& t : settings.types()) {
 		const int meshTypeIdx = settings.getMeshTypeIdxForName(t.c_str());
-		const std::string& path = settings.path(meshTypeIdx, name);
+		const core::String& path = settings.path(meshTypeIdx, name);
 		if (path.empty()) {
 			continue;
 		}

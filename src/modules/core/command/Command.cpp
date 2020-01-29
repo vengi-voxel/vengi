@@ -37,7 +37,7 @@ bool Command::unregisterCommand(const char* name) {
 	return _cmds.erase(name) > 0;
 }
 
-ActionButtonCommands Command::registerActionButton(const std::string& name, ActionButton& button) {
+ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button) {
 	ScopedWriteLock lock(_lock);
 	const Command cPressed("+" + name, [&] (const core::CmdArgs& args) {
 		const int32_t key = core::string::toInt(args[0]);
@@ -54,14 +54,14 @@ ActionButtonCommands Command::registerActionButton(const std::string& name, Acti
 	return ActionButtonCommands("+" + name, "-" + name);
 }
 
-bool Command::unregisterActionButton(const std::string& name) {
+bool Command::unregisterActionButton(const core::String& name) {
 	ScopedWriteLock lock(_lock);
 	int amount = (int)_cmds.erase("-" + name);
 	amount += (int)_cmds.erase("+" + name);
 	return amount == 2;
 }
 
-int Command::complete(const std::string& str, std::vector<std::string>& matches) const {
+int Command::complete(const core::String& str, std::vector<std::string>& matches) const {
 	if (!_completer) {
 		return 0;
 	}
@@ -85,7 +85,7 @@ int Command::update(uint64_t dt) {
 	std::vector<std::string> copy = _delayedTokens;
 	_delayedTokens.clear();
 	int executed = 0;
-	for (const std::string& fullCmd : copy) {
+	for (const core::String& fullCmd : copy) {
 		Log::debug("execute %s", fullCmd.c_str());
 		executed += execute(fullCmd);
 	}
@@ -104,11 +104,11 @@ int Command::execute(const char* msg, ...) {
 	return cmds;
 }
 
-int Command::execute(const std::string& command) {
+int Command::execute(const core::String& command) {
 	int executed = 0;
 	Tokenizer commandLineTokenizer(false, command, ";\n");
 	while (commandLineTokenizer.hasNext()) {
-		const std::string& fullCmd = commandLineTokenizer.next();
+		const core::String& fullCmd = commandLineTokenizer.next();
 		if (fullCmd.empty()) {
 			continue;
 		}
@@ -128,7 +128,7 @@ int Command::execute(const std::string& command) {
 		if (!commandTokenizer.hasNext()) {
 			continue;
 		}
-		const std::string c = commandTokenizer.next();
+		const core::String c = commandTokenizer.next();
 		Log::debug("command: '%s'", c.c_str());
 		std::vector<std::string> args;
 		while (commandTokenizer.hasNext()) {
@@ -149,7 +149,7 @@ bool Command::isSuitableBindingContext(BindingContext context) {
 	return context == core::bindingContext();
 }
 
-bool Command::execute(const std::string& command, const CmdArgs& args) {
+bool Command::execute(const core::String& command, const CmdArgs& args) {
 	if (command == "wait") {
 		if (args.size() == 1) {
 			_delayMillis += core_max(1, core::string::toInt(args[0]));
@@ -176,8 +176,8 @@ bool Command::execute(const std::string& command, const CmdArgs& args) {
 			return false;
 		}
 		if (_delayMillis > 0) {
-			std::string fullCmd = command;
-			for (const std::string& arg : args) {
+			core::String fullCmd = command;
+			for (const core::String& arg : args) {
 				fullCmd.append(" ");
 				fullCmd.append(arg);
 			}
@@ -207,7 +207,7 @@ Command& Command::setHelp(const char* help) {
 }
 
 Command& Command::setBoolCompleter() {
-	return setArgumentCompleter([] (const std::string& str, std::vector<std::string>& matches) -> int {
+	return setArgumentCompleter([] (const core::String& str, std::vector<std::string>& matches) -> int {
 		if (str[0] == 't') {
 			matches.push_back("true");
 			return 1;

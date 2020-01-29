@@ -28,7 +28,7 @@ public:
  * @ingroup AI \
  */ \
 struct TaskName: public Task { \
-	TaskName(const std::string& name, const std::string& parameters, const ai::ConditionPtr& condition) : \
+	TaskName(const core::String& name, const core::String& parameters, const ai::ConditionPtr& condition) : \
 			Task(name, parameters, condition) {} \
 	virtual ~TaskName() {} \
 	NODE_FACTORY(TaskName) \

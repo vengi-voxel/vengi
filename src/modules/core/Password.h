@@ -14,7 +14,7 @@ namespace core {
  * to the server. The password should only be kept on the client side as it might
  * be used for other stuff, too.
  */
-inline std::string pwhash(const std::string& password, const std::string& salt) {
+inline core::String pwhash(const core::String& password, const core::String& salt) {
 	// TODO:
 	return password;
 }

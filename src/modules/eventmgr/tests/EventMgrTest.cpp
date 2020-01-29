@@ -67,7 +67,7 @@ TEST_F(EventMgrTest, testEventMgrInit) {
 	}
 	EventMgr mgr(_eventProvider, _testApp->timeProvider());
 	ASSERT_TRUE(_testApp->filesystem()->exists("test-events.lua"));
-	const std::string& events = _testApp->filesystem()->load("test-events.lua");
+	const core::String& events = _testApp->filesystem()->load("test-events.lua");
 	ASSERT_NE("", events) << "Failed to load test-events.lua";
 	ASSERT_TRUE(mgr.init(events)) << "Could not initialize eventmgr from: " << events;
 	mgr.shutdown();
@@ -166,7 +166,7 @@ TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
 
 	EventMgr mgr(_eventProvider, timeProvider);
 	ASSERT_TRUE(_testApp->filesystem()->exists("test-events.lua"));
-	const std::string& events = _testApp->filesystem()->load("test-events.lua");
+	const core::String& events = _testApp->filesystem()->load("test-events.lua");
 	ASSERT_NE("", events) << "Failed to load test-events.lua";
 	ASSERT_TRUE(mgr.init(events)) << "Could not initialize eventmgr from: " << events;
 	ASSERT_EQ(0, mgr.runningEvents());

@@ -40,7 +40,7 @@ public:
 		_dbHandler.shutdown();
 	}
 
-	db::TestModel m(const std::string& email, const std::string& password) const {
+	db::TestModel m(const core::String& email, const core::String& password) const {
 		db::TestModel mdl;
 		mdl.setName(email);
 		mdl.setEmail(email);
@@ -68,7 +68,7 @@ public:
 		EXPECT_EQ(count, amount);
 	}
 
-	void createModel(const std::string& email, const std::string& password, int64_t& id) {
+	void createModel(const core::String& email, const core::String& password, int64_t& id) {
 		ASSERT_TRUE(_supported);
 		db::TestModel mdl = m(email, password);
 		EXPECT_EQ(0, mdl.id());
@@ -260,7 +260,7 @@ TEST_F(DatabaseModelTest, testMultipleInsert) {
 	});
 	EXPECT_EQ(count, 3);
 	count = 0;
-	std::string email3;
+	core::String email3;
 	EXPECT_TRUE(_dbHandler.select(db::TestModel(), db::DBConditionTestModelEmail("mail3"), [&] (db::TestModel&& model) {
 		++count;
 	}));

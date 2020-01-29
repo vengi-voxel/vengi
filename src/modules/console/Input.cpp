@@ -49,7 +49,7 @@ void Input::onRead(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
 	if (len == 0u || len == buf->len) {
 		return;
 	}
-	const std::string commandLine(buf->base, len);
+	const core::String commandLine(buf->base, len);
 	core::executeCommands(commandLine);
 }
 

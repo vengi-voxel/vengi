@@ -32,7 +32,7 @@ void StockDataProvider::reset() {
 	_error = "";
 }
 
-bool StockDataProvider::init(const std::string& luaScript) {
+bool StockDataProvider::init(const core::String& luaScript) {
 	if (luaScript.empty()) {
 		_error = "empty lua script given";
 		return false;
@@ -122,7 +122,7 @@ const ItemData* StockDataProvider::itemData(ItemId itemId) const {
 	return data;
 }
 
-const ItemData* StockDataProvider::itemData(const std::string& name) const {
+const ItemData* StockDataProvider::itemData(const core::String& name) const {
 	for (const auto& i : _itemData) {
 		if (i->name() == name) {
 			return i;
@@ -149,7 +149,7 @@ bool StockDataProvider::addContainerData(ContainerData* data) {
 	return true;
 }
 
-const ContainerData* StockDataProvider::containerData(const std::string& name) const {
+const ContainerData* StockDataProvider::containerData(const core::String& name) const {
 	auto i = _containerDataMap.find(name);
 	if (i == _containerDataMap.end()) {
 		Log::warn("Failed to get container with name '%s'", name.c_str());

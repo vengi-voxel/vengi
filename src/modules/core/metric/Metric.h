@@ -39,7 +39,7 @@ using TagMap = core::Map<std::string, std::string, 4, std::hash<std::string>>;
  */
 class Metric : public core::NonCopyable {
 private:
-	std::string _prefix;
+	core::String _prefix;
 	Flavor _flavor = Flavor::Telegraf;
 	IMetricSenderPtr _messageSender;
 

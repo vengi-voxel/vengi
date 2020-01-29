@@ -25,16 +25,16 @@ typedef void (*FileWatcher)(const char* file);
  */
 class Filesystem {
 private:
-	std::string _organisation;
-	std::string _appname;
+	core::String _organisation;
+	core::String _appname;
 
 	/**
 	 * This is the directory where the application was run from, which is probably
 	 * the installation directory or the current working directory. In case the
 	 * binary is a symlink, it it resolved.
 	 */
-	std::string _basePath;
-	std::string _homePath;
+	core::String _basePath;
+	core::String _homePath;
 	std::vector<std::string> _paths;
 
 	std::stack<std::string> _dirStack;
@@ -44,16 +44,16 @@ private:
 public:
 	~Filesystem();
 
-	bool init(const std::string& organisation, const std::string& appname);
+	bool init(const core::String& organisation, const core::String& appname);
 	void shutdown();
 
 	void update();
 
-	bool registerPath(const std::string& path);
+	bool registerPath(const core::String& path);
 
-	bool unwatch(const std::string& path);
+	bool unwatch(const core::String& path);
 	bool unwatch(const io::FilePtr& file);
-	bool watch(const std::string& path, FileWatcher watcher);
+	bool watch(const core::String& path, FileWatcher watcher);
 	bool watch(const io::FilePtr& file, FileWatcher watcher);
 
 	/**
@@ -63,21 +63,21 @@ public:
 	 * from, which is probably the installation directory, and may or may not
 	 * be the process's current working directory.
 	 */
-	const std::string& basePath() const;
+	const core::String& basePath() const;
 	/**
 	 * @brief The path where the application can store data
 	 */
-	const std::string& homePath() const;
+	const core::String& homePath() const;
 
 	/**
 	 * @brief Returns a path where the given file can be saved.
 	 */
-	const std::string writePath(const char* name) const;
+	const core::String writePath(const char* name) const;
 
-	bool exists(const std::string& filename) const;
+	bool exists(const core::String& filename) const;
 
 	struct DirEntry {
-		std::string name;
+		core::String name;
 		enum class Type : uint8_t {
 			file,
 			dir,
@@ -87,20 +87,20 @@ public:
 		uint64_t size;
 	};
 
-	bool list(const std::string& directory, std::vector<DirEntry>& entities) const;
-	bool list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter) const;
+	bool list(const core::String& directory, std::vector<DirEntry>& entities) const;
+	bool list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter) const;
 
-	static bool isReadableDir(const std::string& name);
-	static bool isRelativePath(const std::string& name);
+	static bool isReadableDir(const core::String& name);
+	static bool isRelativePath(const core::String& name);
 
-	static std::string absolutePath(const std::string& path);
+	static core::String absolutePath(const core::String& path);
 
 	/**
 	 * @brief Changes the current working directory
 	 * @see popDir()
 	 * @see pushDir()
 	 */
-	static bool chdir(const std::string& directory);
+	static bool chdir(const core::String& directory);
 
 	/**
 	 * @brief changes the current working dir to the last pushed one
@@ -110,48 +110,48 @@ public:
 	/**
 	 * @brief Push a working dir change onto the stack for later returning without knowing the origin
 	 */
-	bool pushDir(const std::string& directory);
+	bool pushDir(const core::String& directory);
 
-	io::FilePtr open(const std::string& filename, FileMode mode = FileMode::Read) const;
+	io::FilePtr open(const core::String& filename, FileMode mode = FileMode::Read) const;
 
-	std::string load(SDL_PRINTF_FORMAT_STRING const char *filename, ...) SDL_PRINTF_VARARG_FUNC(2);
+	core::String load(SDL_PRINTF_FORMAT_STRING const char *filename, ...) SDL_PRINTF_VARARG_FUNC(2);
 
-	std::string load(const std::string& filename) const;
+	core::String load(const core::String& filename) const;
 
-	bool write(const std::string& filename, const uint8_t* content, size_t length);
+	bool write(const core::String& filename, const uint8_t* content, size_t length);
 
-	bool write(const std::string& filename, const std::string& string);
-
-	/**
-	 * @note The difference to the usual write() methods is that the given path is not put into the
-	 * known file system structure of the application. It just uses the given name.
-	 */
-	bool syswrite(const std::string& filename, const uint8_t* content, size_t length) const;
+	bool write(const core::String& filename, const core::String& string);
 
 	/**
 	 * @note The difference to the usual write() methods is that the given path is not put into the
 	 * known file system structure of the application. It just uses the given name.
 	 */
-	bool syswrite(const std::string& filename, const std::string& string) const;
+	bool syswrite(const core::String& filename, const uint8_t* content, size_t length) const;
 
-	bool createDir(const std::string& dir, bool recursive = true) const;
+	/**
+	 * @note The difference to the usual write() methods is that the given path is not put into the
+	 * known file system structure of the application. It just uses the given name.
+	 */
+	bool syswrite(const core::String& filename, const core::String& string) const;
 
-	bool removeDir(const std::string& dir, bool recursive = false) const;
-	bool removeFile(const std::string& file) const;
+	bool createDir(const core::String& dir, bool recursive = true) const;
+
+	bool removeDir(const core::String& dir, bool recursive = false) const;
+	bool removeFile(const core::String& file) const;
 private:
-	static bool _list(const std::string& directory, std::vector<DirEntry>& entities);
-	static bool _list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter);
+	static bool _list(const core::String& directory, std::vector<DirEntry>& entities);
+	static bool _list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter);
 };
 
-inline bool Filesystem::exists(const std::string& filename) const {
+inline bool Filesystem::exists(const core::String& filename) const {
 	return open(filename)->exists();
 }
 
-inline const std::string& Filesystem::basePath() const {
+inline const core::String& Filesystem::basePath() const {
 	return _basePath;
 }
 
-inline const std::string& Filesystem::homePath() const {
+inline const core::String& Filesystem::homePath() const {
 	return _homePath;
 }
 

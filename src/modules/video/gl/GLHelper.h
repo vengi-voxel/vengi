@@ -15,7 +15,7 @@ namespace video {
 namespace _priv {
 
 template<typename GetName, typename GetLocation>
-static int fillUniforms(Id program, ShaderUniforms& uniformMap, const std::string& shaderName, GLenum activeEnum,
+static int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& shaderName, GLenum activeEnum,
 		GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
 	GLint numUniforms = 0;
 	glGetProgramiv(program, activeEnum, &numUniforms);

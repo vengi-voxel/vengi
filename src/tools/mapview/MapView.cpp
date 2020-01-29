@@ -130,12 +130,12 @@ core::AppState MapView::onInit() {
 	const frontend::ClientEntityId entityId = (frontend::ClientEntityId)1;
 	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, entityId, entityType, pos, 0.0f);
 	attrib::ContainerProvider containerProvider;
-	const std::string& attribLua = filesystem()->load("attributes.lua");
+	const core::String& attribLua = filesystem()->load("attributes.lua");
 	if (!containerProvider.init(attribLua)) {
 		Log::error("Failed to init attributes: %s", containerProvider.error().c_str());
 		return core::AppState::InitFailure;
 	}
-	const std::string& entityTypeStr = network::EnumNameEntityType(_entity->type());
+	const core::String& entityTypeStr = network::EnumNameEntityType(_entity->type());
 	const attrib::ContainerPtr& attribContainer = containerProvider.container(entityTypeStr);
 	if (!attribContainer) {
 		Log::error("Failed to load attributes for %s", entityTypeStr.c_str());

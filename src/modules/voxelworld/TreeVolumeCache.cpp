@@ -28,7 +28,7 @@ bool TreeVolumeCache::init() {
 			continue;
 		}
 		std::vector<io::Filesystem::DirEntry> treeFiles;
-		const std::string& treeTypeDir = core::string::format("models/trees/%s/", e.name.c_str());
+		const core::String& treeTypeDir = core::string::format("models/trees/%s/", e.name.c_str());
 		if (!io::filesystem()->list(treeTypeDir, treeFiles, "*.vox")) {
 			Log::warn("Failed to list tree models in %s", treeTypeDir.c_str());
 			continue;

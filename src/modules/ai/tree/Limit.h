@@ -21,7 +21,7 @@ private:
 public:
 	NODE_FACTORY(Limit)
 
-	Limit(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
+	Limit(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
 		TreeNode(name, parameters, condition) {
 		_type = "Limit";
 		if (!parameters.empty()) {

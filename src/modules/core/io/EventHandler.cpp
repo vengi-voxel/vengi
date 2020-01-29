@@ -30,7 +30,7 @@ void EventHandler::removeObserver(IEventObserver* observer) {
 	_events.emplace_back(observer, true);
 }
 
-std::string EventHandler::getControllerButtonName(uint8_t button) {
+core::String EventHandler::getControllerButtonName(uint8_t button) {
 	const char *name = SDL_GameControllerGetStringForButton(static_cast<SDL_GameControllerButton>(button));
 	if (name == nullptr) {
 		return "unknown";
@@ -260,13 +260,13 @@ void EventHandler::controllerMotion(uint8_t axis, int value, uint32_t id) {
 	}
 }
 
-void EventHandler::controllerButtonPress(const std::string& button, uint32_t id) {
+void EventHandler::controllerButtonPress(const core::String& button, uint32_t id) {
 	for (IEventObserver* observer : _observers) {
 		observer->onControllerButtonPress(button, id);
 	}
 }
 
-void EventHandler::controllerButtonRelease(const std::string& button, uint32_t id) {
+void EventHandler::controllerButtonRelease(const core::String& button, uint32_t id) {
 	for (IEventObserver* observer : _observers) {
 		observer->onControllerButtonRelease(button, id);
 	}
@@ -284,13 +284,13 @@ void EventHandler::mouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	}
 }
 
-void EventHandler::dropFile(const std::string& file) {
+void EventHandler::dropFile(const core::String& file) {
 	for (IEventObserver* observer : _observers) {
 		observer->onDropFile(file);
 	}
 }
 
-void EventHandler::textInput(const std::string& text) {
+void EventHandler::textInput(const core::String& text) {
 	for (IEventObserver* observer : _observers) {
 		observer->onTextInput(text);
 	}

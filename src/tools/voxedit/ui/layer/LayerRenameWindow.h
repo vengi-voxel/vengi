@@ -9,7 +9,7 @@
 namespace voxedit {
 
 struct LayerRenameSettings {
-	std::string name;
+	core::String name;
 };
 
 class LayerRenameWindow : public AbstractLayerPopupWindow {

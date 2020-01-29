@@ -27,7 +27,7 @@ typedef std::shared_ptr<AI> AIPtr;
  * @brief Macro to simplify the condition creation. Just give the class name of the condition as parameter.
  */
 #define CONDITION_CLASS(ConditionName) \
-	explicit ConditionName(const std::string& parameters = "") : \
+	explicit ConditionName(const core::String& parameters = "") : \
 		::ai::ICondition(#ConditionName, parameters) { \
 	} \
 public: \
@@ -133,8 +133,8 @@ protected:
 	 * @brief Every node has an id to identify it. It's unique per type.
 	 */
 	int _id;
-	const std::string _name;
-	const std::string _parameters;
+	const core::String _name;
+	const core::String _parameters;
 
 	/**
 	 * @brief Override this method to get a more detailed result in @c getNameWithConditions()
@@ -148,7 +148,7 @@ protected:
 		s << "{" << _parameters << "}";
 	}
 public:
-	ICondition(const std::string& name, const std::string& parameters) :
+	ICondition(const core::String& name, const core::String& parameters) :
 			_id(getNextId()), _name(name), _parameters(parameters) {
 	}
 
@@ -165,19 +165,19 @@ public:
 	/**
 	 * @brief Returns the short name of the condition - without any related conditions or results.
 	 */
-	const std::string& getName() const;
+	const core::String& getName() const;
 
 	/**
 	 * @brief Returns the raw parameters of the condition
 	 */
-	const std::string& getParameters() const;
+	const core::String& getParameters() const;
 
 	/**
 	 * @brief Returns the full condition string with all related conditions and results of the evaluation method
 	 * @param[in,out] entity The entity that is used to evaluate the condition
 	 * @sa getConditionNameWithValue()
 	 */
-	inline std::string getNameWithConditions(const AIPtr& entity) {
+	inline core::String getNameWithConditions(const AIPtr& entity) {
 		std::stringstream s;
 		s << getName();
 		getConditionNameWithValue(s, entity);
@@ -188,11 +188,11 @@ public:
 	}
 };
 
-inline const std::string& ICondition::getName() const {
+inline const core::String& ICondition::getName() const {
 	return _name;
 }
 
-inline const std::string& ICondition::getParameters() const {
+inline const core::String& ICondition::getParameters() const {
 	return _parameters;
 }
 

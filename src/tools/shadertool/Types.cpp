@@ -5,7 +5,7 @@
 #include "Types.h"
 #include "Util.h"
 
-std::string Layout::typeAlign(const Variable& v) const {
+core::String Layout::typeAlign(const Variable& v) const {
 	switch (blockLayout) {
 	default:
 	case BlockLayout::std140:
@@ -25,7 +25,7 @@ size_t Layout::typeSize(const Variable& v) const {
 	}
 }
 
-std::string Layout::typePadding(const Variable& v, int& padding) const {
+core::String Layout::typePadding(const Variable& v, int& padding) const {
 	switch (blockLayout) {
 	default:
 	case BlockLayout::std140:

@@ -68,7 +68,7 @@ public:
 	static const float MinCityHeight;
 
 	void shutdown();
-	bool init(const std::string& luaString);
+	bool init(const core::String& luaString);
 
 	Biome* addBiome(int lower, int upper, float humidity, float temperature, voxel::VoxelType type, bool underGround, int treeDistribution);
 

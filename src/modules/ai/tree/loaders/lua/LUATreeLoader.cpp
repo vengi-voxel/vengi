@@ -67,7 +67,7 @@ public:
 		return _condition;
 	}
 
-	LUANodeWrapper* addChild (const std::string& nodeType, const TreeNodeFactoryContext& ctx) {
+	LUANodeWrapper* addChild (const core::String& nodeType, const TreeNodeFactoryContext& ctx) {
 		TreeNodeParser parser(_aiFactory, nodeType);
 		const TreeNodePtr& child = parser.getTreeNode(ctx.name);
 		if (!child) {
@@ -82,11 +82,11 @@ public:
 
 class LUATreeWrapper {
 private:
-	std::string _name;
+	core::String _name;
 	LUATreeLoader* _ctx;
 	LUANodeWrapper* _root;
 public:
-	LUATreeWrapper(const std::string& name, LUATreeLoader* ctx) :
+	LUATreeWrapper(const core::String& name, LUATreeLoader* ctx) :
 			_name(name), _ctx(ctx), _root(nullptr) {
 	}
 
@@ -103,7 +103,7 @@ public:
 		return false;
 	}
 
-	inline const std::string& getName() const {
+	inline const core::String& getName() const {
 		return _name;
 	}
 
@@ -132,7 +132,7 @@ static LUAConditionWrapper* luaGetConditionContext(lua_State * l, int n) {
 
 static int luaMain_CreateTree(lua_State * l) {
 	LUATreeLoader *ctx = luaGetContext(l);
-	const std::string name = luaL_checkstring(l, 1);
+	const core::String name = luaL_checkstring(l, 1);
 	lua::LUA::newUserdata(l, "Tree", new LUATreeWrapper(name, ctx));
 	return 1;
 }
@@ -177,8 +177,8 @@ static int luaNode_GetName(lua_State * l) {
 
 static int luaTree_CreateRoot(lua_State * l) {
 	LUATreeWrapper *ctx = luaGetTreeContext(l, 1);
-	const std::string id = luaL_checkstring(l, 2);
-	const std::string name = luaL_checkstring(l, 3);
+	const core::String id = luaL_checkstring(l, 2);
+	const core::String name = luaL_checkstring(l, 3);
 
 	TreeNodeParser parser(ctx->getAIFactory(), id);
 	const TreeNodePtr& node = parser.getTreeNode(name);
@@ -196,8 +196,8 @@ static int luaTree_CreateRoot(lua_State * l) {
 
 static int luaNode_AddNode(lua_State * l) {
 	LUANodeWrapper *node = luaGetNodeContext(l, 1);
-	const std::string id = luaL_checkstring(l, 2);
-	const std::string name = luaL_checkstring(l, 3);
+	const core::String id = luaL_checkstring(l, 2);
+	const core::String name = luaL_checkstring(l, 3);
 
 	TreeNodeFactoryContext factoryCtx(name, "", True::get());
 	LUANodeWrapper* udata = lua::LUA::newUserdata(l, "Node", node->addChild(id, factoryCtx));
@@ -210,7 +210,7 @@ static int luaNode_AddNode(lua_State * l) {
 static int luaNode_SetCondition(lua_State * l) {
 	LUATreeLoader *ctx = luaGetContext(l);
 	LUANodeWrapper *node = luaGetNodeContext(l, 1);
-	const std::string conditionExpression = luaL_checkstring(l, 2);
+	const core::String conditionExpression = luaL_checkstring(l, 2);
 
 	ConditionParser parser(ctx->getAIFactory(), conditionExpression);
 	const ConditionPtr& condition = parser.getCondition();
@@ -227,7 +227,7 @@ LUATreeLoader::LUATreeLoader(const IAIFactory& aiFactory) :
 		ITreeLoader(aiFactory) {
 }
 
-bool LUATreeLoader::init(const std::string& luaString) {
+bool LUATreeLoader::init(const core::String& luaString) {
 	shutdown();
 
 	lua::LUA lua;

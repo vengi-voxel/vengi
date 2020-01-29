@@ -27,7 +27,7 @@ PaletteSelector::PaletteSelector(ui::turbobadger::Window* window) :
 		if (file.type != io::Filesystem::DirEntry::Type::file) {
 			continue;
 		}
-		const std::string& name = voxel::extractPaletteName(file.name);
+		const core::String& name = voxel::extractPaletteName(file.name);
 		_paletteList.addItem(new tb::TBGenericStringItem(name.c_str()));
 	}
 

@@ -12,7 +12,7 @@
 
 namespace animation {
 
-bool Bird::initSettings(const std::string& luaString) {
+bool Bird::initSettings(const core::String& luaString) {
 	AnimationSettings settings;
 	BirdSkeletonAttribute attributes;
 	if (loadAnimationSettings(luaString, settings, &attributes)) {

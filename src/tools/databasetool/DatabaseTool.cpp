@@ -23,7 +23,7 @@ bool DatabaseTool::generateSrc() const {
 	std::stringstream header;
 	header << "#pragma once\n\n";
 
-	const std::string dir(core::string::extractPath(_targetFile.c_str()));
+	const core::String dir(core::string::extractPath(_targetFile.c_str()));
 	bool error = false;
 	for (auto i : _tables) {
 		const databasetool::Table& table = i.second;
@@ -33,7 +33,7 @@ bool DatabaseTool::generateSrc() const {
 			continue;
 		}
 		header << "#include \"" << table.classname << ".h\"\n";
-		const std::string filename = dir + table.classname + ".h";
+		const core::String filename = dir + table.classname + ".h";
 		if (!filesystem()->syswrite(filename, src.str())) {
 			error = true;
 			continue;
@@ -118,16 +118,16 @@ bool DatabaseTool::validate() const {
 	return !error;
 }
 
-bool DatabaseTool::parse(const std::string& buffer) {
+bool DatabaseTool::parse(const core::String& buffer) {
 	core::Tokenizer tok(buffer, " \t\n", "(){},;");
 	while (tok.hasNext()) {
-		const std::string& token = tok.next();
+		const core::String& token = tok.next();
 		if (token == "table") {
 			if (!tok.hasNext()) {
 				Log::error("Expected table name");
 				return false;
 			}
-			const std::string& tablename = tok.next();
+			const core::String& tablename = tok.next();
 			databasetool::Table table;
 			table.name = tablename;
 			table.classname = core::string::upperCamelCase(tablename + "Model");
@@ -151,7 +151,7 @@ core::AppState DatabaseTool::onRunning() {
 	_targetFile   = getArgVal("--outfile");
 
 	Log::debug("Preparing table file %s", _tableFile.c_str());
-	const std::string& buf = filesystem()->load(_tableFile);
+	const core::String& buf = filesystem()->load(_tableFile);
 	if (buf.empty()) {
 		Log::error("Could not load %s", _tableFile.c_str());
 		return core::AppState::InitFailure;

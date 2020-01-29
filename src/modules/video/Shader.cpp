@@ -37,7 +37,7 @@ Shader::~Shader() {
 	shutdown();
 }
 
-void Shader::setVertexAttribute(const std::string& name, int size, DataType type, bool normalize, int stride, const void* buffer) const {
+void Shader::setVertexAttribute(const core::String& name, int size, DataType type, bool normalize, int stride, const void* buffer) const {
 	core_assert_msg(type == DataType::Float || type == DataType::Double, "unexpected data type given: %i", std::enum_value(type));
 	const int location = getAttributeLocation(name);
 	if (location == -1) {
@@ -46,7 +46,7 @@ void Shader::setVertexAttribute(const std::string& name, int size, DataType type
 	setVertexAttribute(location, size, type, normalize, stride, buffer);
 }
 
-void Shader::setVertexAttributeInt(const std::string& name, int size, DataType type, int stride, const void* buffer) const {
+void Shader::setVertexAttributeInt(const core::String& name, int size, DataType type, int stride, const void* buffer) const {
 	core_assert_msg(type != DataType::Float && type != DataType::Double, "unexpected data type given: %i", std::enum_value(type));
 	const int location = getAttributeLocation(name);
 	if (location == -1) {
@@ -55,7 +55,7 @@ void Shader::setVertexAttributeInt(const std::string& name, int size, DataType t
 	setVertexAttributeInt(location, size, type, stride, buffer);
 }
 
-void Shader::disableVertexAttribute(const std::string& name) const {
+void Shader::disableVertexAttribute(const core::String& name) const {
 	const int location = getAttributeLocation(name);
 	if (location == -1) {
 		return;
@@ -63,7 +63,7 @@ void Shader::disableVertexAttribute(const std::string& name) const {
 	disableVertexAttribute(location);
 }
 
-int Shader::enableVertexAttributeArray(const std::string& name) const {
+int Shader::enableVertexAttributeArray(const core::String& name) const {
 	int location = getAttributeLocation(name);
 	if (location == -1) {
 		return -1;
@@ -81,7 +81,7 @@ int Shader::getAttributeComponents(int location) const {
 	return -1;
 }
 
-int Shader::getAttributeComponents(const std::string& name) const {
+int Shader::getAttributeComponents(const core::String& name) const {
 	const int loc = getAttributeLocation(name);
 	if (loc == -1) {
 		return -1;
@@ -90,15 +90,15 @@ int Shader::getAttributeComponents(const std::string& name) const {
 	return getAttributeComponents(loc);
 }
 
-bool Shader::hasAttribute(const std::string& name) const {
+bool Shader::hasAttribute(const core::String& name) const {
 	return _attributes.find(name) != _attributes.end();
 }
 
-bool Shader::hasUniform(const std::string& name) const {
+bool Shader::hasUniform(const core::String& name) const {
 	return _uniforms.find(name) != _uniforms.end();
 }
 
-bool Shader::isUniformBlock(const std::string& name) const {
+bool Shader::isUniformBlock(const core::String& name) const {
 	auto i = _uniforms.find(name);
 	if (i == _uniforms.end()) {
 		return false;
@@ -106,7 +106,7 @@ bool Shader::isUniformBlock(const std::string& name) const {
 	return i->second.block;
 }
 
-void Shader::checkAttribute(const std::string& attribute) {
+void Shader::checkAttribute(const core::String& attribute) {
 	if (!hasAttribute(attribute)) {
 		Log::warn("Attribute %s missing for shader %s", attribute.c_str(), _name.c_str());
 	} else {
@@ -114,7 +114,7 @@ void Shader::checkAttribute(const std::string& attribute) {
 	}
 }
 
-void Shader::checkUniform(const std::string& uniform) {
+void Shader::checkUniform(const core::String& uniform) {
 	if (!hasUniform(uniform)) {
 		Log::warn("Uniform %s missing for shader %s", uniform.c_str(), _name.c_str());
 	} else {
@@ -123,18 +123,18 @@ void Shader::checkUniform(const std::string& uniform) {
 }
 
 void Shader::checkAttributes(std::initializer_list<std::string> attributes) {
-	for (const std::string& attribute : attributes) {
+	for (const core::String& attribute : attributes) {
 		checkAttribute(attribute);
 	}
 }
 
 void Shader::checkUniforms(std::initializer_list<std::string> uniforms) {
-	for (const std::string& uniform : uniforms) {
+	for (const core::String& uniform : uniforms) {
 		checkUniform(uniform);
 	}
 }
 
-void Shader::setUniformArraySize(const std::string& name, int size) {
+void Shader::setUniformArraySize(const core::String& name, int size) {
 	_uniformArraySizes[name] = size;
 }
 
@@ -142,7 +142,7 @@ void Shader::setAttributeComponents(int location, int size) {
 	_attributeComponents[location] = size;
 }
 
-int Shader::getUniformArraySize(const std::string& name) const {
+int Shader::getUniformArraySize(const core::String& name) const {
 	ShaderUniformArraySizes::const_iterator i = _uniformArraySizes.find(name);
 	if (i == _uniformArraySizes.end()) {
 		Log::trace("can't find uniform %s in shader %s - unknown array size", name.c_str(), _name.c_str());
@@ -178,12 +178,12 @@ void Shader::markClean() {
 	_dirty = false;
 }
 
-bool Shader::load(const std::string& name, const std::string& buffer, ShaderType shaderType) {
+bool Shader::load(const core::String& name, const core::String& buffer, ShaderType shaderType) {
 	if (buffer.empty()) {
 		return false;
 	}
 	_name = name;
-	const std::string& source = getSource(shaderType, buffer);
+	const core::String& source = getSource(shaderType, buffer);
 
 	Id id = getShader(shaderType);
 	if (id == InvalidId) {
@@ -201,8 +201,8 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 	return true;
 }
 
-bool Shader::loadFromFile(const std::string& filename, ShaderType shaderType) {
-	const std::string& buffer = io::filesystem()->load(filename);
+bool Shader::loadFromFile(const core::String& filename, ShaderType shaderType) {
+	const core::String& buffer = io::filesystem()->load(filename);
 	if (buffer.empty()) {
 		if (shaderType == ShaderType::Vertex || shaderType == ShaderType::Fragment) {
 			Log::error("could not load shader %s", filename.c_str());
@@ -213,7 +213,7 @@ bool Shader::loadFromFile(const std::string& filename, ShaderType shaderType) {
 	return load(filename, buffer, shaderType);
 }
 
-bool Shader::loadProgram(const std::string& filename) {
+bool Shader::loadProgram(const core::String& filename) {
 	const bool vertex = loadFromFile(filename + VERTEX_POSTFIX, ShaderType::Vertex);
 	if (!vertex) {
 		const bool compute = loadFromFile(filename + COMPUTE_POSTFIX, ShaderType::Compute);
@@ -292,12 +292,12 @@ bool Shader::deactivate() const {
 	return _active;
 }
 
-void Shader::addDefine(const std::string& name, const std::string& value) {
+void Shader::addDefine(const core::String& name, const core::String& value) {
 	core_assert_msg(!_initialized, "Shader is already initialized");
 	_defines[name] = value;
 }
 
-int Shader::getAttributeLocation(const std::string& name) const {
+int Shader::getAttributeLocation(const core::String& name) const {
 	const int location = checkAttributeLocation(name);
 	if (location == -1) {
 		Log::debug("can't find attribute %s in shader %s", name.c_str(), _name.c_str());
@@ -305,7 +305,7 @@ int Shader::getAttributeLocation(const std::string& name) const {
 	return location;
 }
 
-int Shader::checkAttributeLocation(const std::string& name) const {
+int Shader::checkAttributeLocation(const core::String& name) const {
 	ShaderAttributes::const_iterator i = _attributes.find(name);
 	if (i == _attributes.end()) {
 		return -1;
@@ -328,7 +328,7 @@ bool Shader::checkUniformCache(int location, const void* value, size_t length) c
 #endif
 }
 
-int Shader::getUniformLocation(const std::string& name) const {
+int Shader::getUniformLocation(const core::String& name) const {
 	const Uniform* uniform = getUniform(name);
 	if (uniform == nullptr) {
 		return -1;
@@ -336,7 +336,7 @@ int Shader::getUniformLocation(const std::string& name) const {
 	return uniform->location;
 }
 
-const Uniform* Shader::getUniform(const std::string& name) const {
+const Uniform* Shader::getUniform(const core::String& name) const {
 	ShaderUniforms::const_iterator i = _uniforms.find(name);
 	if (i == _uniforms.end()) {
 		Log::debug("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
@@ -361,15 +361,15 @@ int Shader::fetchAttributes() {
 /**
  * Some drivers don't support underscores in their defines...
  */
-std::string Shader::validPreprocessorName(const std::string& name) {
+core::String Shader::validPreprocessorName(const core::String& name) {
 	return core::string::replaceAll(name, "_", "");
 }
 
-std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, bool finalize, std::vector<std::string>* includedFiles) const {
+core::String Shader::getSource(ShaderType shaderType, const core::String& buffer, bool finalize, std::vector<std::string>* includedFiles) const {
 	if (buffer.empty()) {
 		return "";
 	}
-	std::string src;
+	core::String src;
 	src.append("#version ");
 	src.append(std::to_string(glslVersion));
 	src.append("\n");
@@ -381,10 +381,10 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 
 	util::visitVarSorted([&] (const core::VarPtr& var) {
 		src.append("#define ");
-		const std::string& validName = validPreprocessorName(var->name());
+		const core::String& validName = validPreprocessorName(var->name());
 		src.append(validName);
 		src.append(" ");
-		std::string val;
+		core::String val;
 		if (var->typeIsBool()) {
 			val = var->boolVal() ? "1" : "0";
 		} else {
@@ -423,7 +423,7 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 
 	util::visitVarSorted([&] (const core::VarPtr& var) {
 		if ((var->getFlags() & core::CV_SHADER) != 0) {
-			const std::string& validName = validPreprocessorName(var->name());
+			const core::String& validName = validPreprocessorName(var->name());
 			src = core::string::replaceAll(src, var->name(), validName);
 		}
 	}, core::CV_SHADER);
@@ -509,7 +509,7 @@ void Shader::setupTransformFeedback(const std::vector<std::string>& varyings, Tr
 	_transformFormat = format;
 }
 
-void Shader::setUniformf(const std::string& name, const glm::vec2& values) const {
+void Shader::setUniformf(const core::String& name, const glm::vec2& values) const {
 	setUniformf(name, values.x, values.y);
 }
 
@@ -517,7 +517,7 @@ void Shader::setUniformf(int location, const glm::vec2& values) const {
 	setUniformf(location, values.x, values.y);
 }
 
-void Shader::setUniformf(const std::string& name, const glm::vec3& values) const {
+void Shader::setUniformf(const core::String& name, const glm::vec3& values) const {
 	setUniformf(name, values.x, values.y, values.z);
 }
 
@@ -525,7 +525,7 @@ void Shader::setUniformf(int location, const glm::vec3& values) const {
 	setUniformf(location, values.x, values.y, values.z);
 }
 
-void Shader::setUniformf(const std::string& name, const glm::vec4& values) const {
+void Shader::setUniformf(const core::String& name, const glm::vec4& values) const {
 	setUniformf(name, values.x, values.y, values.z, values.w);
 }
 

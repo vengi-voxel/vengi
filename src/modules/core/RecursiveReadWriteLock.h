@@ -11,10 +11,10 @@ namespace core {
 
 class RecursiveReadWriteLock {
 private:
-	const std::string _name;
+	const core::String _name;
 	mutable std::recursive_mutex _mutex;
 public:
-	RecursiveReadWriteLock(const std::string& name) :
+	RecursiveReadWriteLock(const core::String& name) :
 			_name(name) {
 	}
 

@@ -13,7 +13,7 @@
 namespace ui {
 namespace turbobadger {
 
-static const std::string EMPTY = "";
+static const core::String EMPTY = "";
 
 Window::Window(UIApp* app) :
 		Super(), _app(app) {
@@ -38,9 +38,9 @@ Window::~Window() {
 tb::TBGenericStringItem* Window::addStringItem(tb::TBGenericStringItemSource& items, const char *text, const char *id, bool translate) {
 	tb::TBGenericStringItem* item;
 	if (id == nullptr) {
-		const std::string& lowerId = core::string::toLower(text);
+		const core::String& lowerId = core::string::toLower(text);
 		item = new tb::TBGenericStringItem(translate ? tr(text) : text, TBIDC(lowerId.c_str()));
-		const std::string& iconId = core::App::getInstance()->appname() + "-" + lowerId;
+		const core::String& iconId = core::App::getInstance()->appname() + "-" + lowerId;
 		item->setSkinImage(TBIDC(iconId.c_str()));
 	} else {
 		item = new tb::TBGenericStringItem(translate ? tr(text) : text, TBIDC(id));
@@ -210,21 +210,21 @@ bool Window::loadResourceFile(const char *filename) {
 		Log::error("%s doesn't exists", filename);
 		return false;
 	}
-	const std::string& data = file->load();
+	const core::String& data = file->load();
 	if (!node.readData(data.c_str(), (int)data.size(), tb::TB_NODE_READ_FLAGS_NONE)) {
 		return false;
 	}
 	return loadResource(node);
 }
 
-void Window::popup(const std::string& title, const std::string& str, PopupType type, const char *id) {
+void Window::popup(const core::String& title, const core::String& str, PopupType type, const char *id) {
 	tb::TBMessageWindow *win = new tb::TBMessageWindow(this, TBIDC(id));
 	tb::TBMessageWindowSettings settings((tb::TB_MSG)std::enum_value(type), tb::TBID(0u));
 	settings.dimmer = true;
 	win->show(title.c_str(), str.c_str(), &settings);
 }
 
-void Window::setStr(const char *nodeId, const std::string& text) {
+void Window::setStr(const char *nodeId, const core::String& text) {
 	tb::TBEditField *widget = getWidgetByType<tb::TBEditField>(nodeId);
 	if (widget == nullptr) {
 		Log::info("could not find an edit field node with the name %s", nodeId);
@@ -255,7 +255,7 @@ bool Window::isToggled(const char *checkBoxNodeId) {
 	return widget->getValue() == 1;
 }
 
-std::string Window::getStr(const char *nodeId) {
+core::String Window::getStr(const char *nodeId) {
 	tb::TBWidget *widget = getWidgetByID(nodeId);
 	if (widget == nullptr) {
 		Log::info("could not find a node with the name %s", nodeId);
@@ -273,7 +273,7 @@ bool Window::loadResourceData(const char *data) {
 	return loadResource(node);
 }
 
-static void printNodeTree(const std::string& filename, tb::TBNode &node) {
+static void printNodeTree(const core::String& filename, tb::TBNode &node) {
 	for (tb::TBNode *child = node.getFirstChild(); child; child = child->getNext()) {
 		Log::trace("File: %s: node found: '%s' = '%s'", filename.c_str(), child->getName(), child->getValue().getString());
 		printNodeTree(filename, *child);

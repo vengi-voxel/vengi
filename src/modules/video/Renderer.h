@@ -285,13 +285,13 @@ extern void drawArrays(Primitive mode, size_t count);
 extern void disableDebug();
 extern bool hasFeature(Feature feature);
 extern void enableDebug(DebugSeverity severity);
-extern bool compileShader(Id id, ShaderType shaderType, const std::string& source, const std::string& name);
-extern bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name);
-extern bool linkComputeShader(Id program, Id comp, const std::string& name);
+extern bool compileShader(Id id, ShaderType shaderType, const core::String& source, const core::String& name);
+extern bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name);
+extern bool linkComputeShader(Id program, Id comp, const core::String& name);
 extern bool bindImage(Id handle, AccessMode mode, ImageFormat format);
 extern bool runShader(Id program, const glm::uvec3& workGroups, bool wait = false);
-extern int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name);
-extern int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name);
+extern int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name);
+extern int fetchAttributes(Id program, ShaderAttributes& attributes, const core::String& name);
 extern void flush();
 extern void finish();
 

@@ -57,16 +57,16 @@ struct MembersStruct {
 		return "_m";
 	}
 
-	static std::string nullFieldName(const persistence::Field& f) {
+	static core::String nullFieldName(const persistence::Field& f) {
 		return "_isNull_" + f.name;
 	}
 
-	static std::string validFieldName(const persistence::Field& f) {
+	static core::String validFieldName(const persistence::Field& f) {
 		return "_isValid_" + f.name;
 	}
 };
 
-static std::string getFieldNameFunction(const persistence::Field& field) {
+static core::String getFieldNameFunction(const persistence::Field& field) {
 	return "f_" + field.name;
 }
 
@@ -152,7 +152,7 @@ static void createMetaStruct(const Table& table, std::stringstream& src) {
 			if ((c.types & std::enum_value(persistence::ConstraintType::PRIMARYKEY)) == 0) {
 				continue;
 			}
-			for (const std::string& pkfield : c.fields) {
+			for (const core::String& pkfield : c.fields) {
 				src << "\t\t\t_primaryKeys.emplace_back(\"" << pkfield << "\");\n";
 			}
 		}
@@ -220,7 +220,7 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 		if (f.type == persistence::FieldType::BLOB) {
 			continue;
 		}
-		const std::string classname = "DBCondition" + core::string::upperCamelCase(table.classname) + core::string::upperCamelCase(f.name);
+		const core::String classname = "DBCondition" + core::string::upperCamelCase(table.classname) + core::string::upperCamelCase(f.name);
 		src << "/**\n";
 		src << " * @brief Condition for '" << table.schema << "." << table.name << "." << f.name << "'.\n";
 		src << " */\n";
@@ -268,7 +268,7 @@ static void createDBConditions(const Table& table, std::stringstream& src) {
 
 		if (isString(f)) {
 			src << "\t" << classname << "(";
-			src << "const std::string&";
+			src << "const core::String&";
 			src << " value, persistence::Comparator comp = persistence::Comparator::Equal) :\n\t\tSuper(";
 			src << table.classname << "::f_" << f.name << "(), persistence::FieldType::";
 			src << persistence::toFieldType(f.type);
@@ -324,10 +324,10 @@ static void createDoxygen(const Table& table, const persistence::Field& f, std::
 static void createGetterAndSetter(const Table& table, std::stringstream& src) {
 	for (auto entry : table.fields) {
 		const persistence::Field& f = entry.second;
-		const std::string& cpptypeGetter = getCPPType(f.type, true, isPointer(f));
-		const std::string& getter = core::string::lowerCamelCase(f.name);
-		const std::string& cpptypeSetter = getCPPType(f.type, true, false);
-		const std::string& setter = core::string::upperCamelCase(f.name);
+		const core::String& cpptypeGetter = getCPPType(f.type, true, isPointer(f));
+		const core::String& getter = core::string::lowerCamelCase(f.name);
+		const core::String& cpptypeSetter = getCPPType(f.type, true, false);
+		const core::String& setter = core::string::upperCamelCase(f.name);
 
 		src << "\t/**\n\t * @brief Access the value for ";
 		src << "'" << table.schema << "." << table.name << "." << f.name << "'";

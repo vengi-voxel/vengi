@@ -45,27 +45,27 @@ Connection* DBHandler::connection() const {
 
 bool DBHandler::update(Model& model, const DBCondition& condition) const {
 	BindParam params(10);
-	const std::string& query = createUpdateStatement(model, &params);
+	const core::String& query = createUpdateStatement(model, &params);
 	int conditionAmount = params.position;
-	const std::string& where = createWhere(condition, conditionAmount);
+	const core::String& where = createWhere(condition, conditionAmount);
 	return execInternalWithParameters(query + where, model, params).result;
 }
 
 bool DBHandler::insert(Model& model) const {
 	BindParam param(10);
-	const std::string& query = createInsertStatement(model, &param);
+	const core::String& query = createInsertStatement(model, &param);
 	return execInternalWithParameters(query, model, param).result;
 }
 
 bool DBHandler::insert(Model&& model) const {
 	BindParam param(10);
-	const std::string& query = createInsertStatement(model, &param);
+	const core::String& query = createInsertStatement(model, &param);
 	return execInternalWithParameters(query, model, param).result;
 }
 
 bool DBHandler::insert(std::vector<const Model*>& models) const {
 	BindParam param(10 * models.size());
-	const std::string& query = createInsertStatement(models, &param);
+	const core::String& query = createInsertStatement(models, &param);
 	return execInternalWithParameters(query, param).result;
 }
 
@@ -108,7 +108,7 @@ bool DBHandler::dropTable(Model&& model) const {
 
 bool DBHandler::tableExists(const Model& model) const {
 	BindParam param(2);
-	const std::string& stmt = createTableExistsStatement(model, &param);
+	const core::String& stmt = createTableExistsStatement(model, &param);
 	const State& s = execInternalWithParameters(stmt, param);
 	core_assert(s.result);
 	core_assert_msg(s.affectedRows == 1, "There should exactly be 1 affected row for this statement, but we got %i", s.affectedRows);
@@ -175,11 +175,11 @@ bool DBHandler::createTable(Model&& model) const {
 	return true;
 }
 
-bool DBHandler::exec(const std::string& query) const {
+bool DBHandler::exec(const core::String& query) const {
 	return execInternal(query).result;
 }
 
-State DBHandler::execInternal(const std::string& query) const {
+State DBHandler::execInternal(const core::String& query) const {
 	ScopedConnection scoped(_connectionPool, connection());
 	if (!scoped) {
 		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
@@ -194,7 +194,7 @@ State DBHandler::execInternal(const std::string& query) const {
 	return s;
 }
 
-State DBHandler::execInternalWithCondition(const std::string& query, BindParam& params, int conditionOffset, const DBCondition& condition) const {
+State DBHandler::execInternalWithCondition(const core::String& query, BindParam& params, int conditionOffset, const DBCondition& condition) const {
 	Log::debug(logid, "Execute query '%s'", query.c_str());
 	ScopedConnection scoped(_connectionPool, connection());
 	if (!scoped) {
@@ -222,7 +222,7 @@ State DBHandler::execInternalWithCondition(const std::string& query, BindParam& 
 	return s;
 }
 
-State DBHandler::execInternalWithParameters(const std::string& query, Model& model, const BindParam& param) const {
+State DBHandler::execInternalWithParameters(const core::String& query, Model& model, const BindParam& param) const {
 	ScopedConnection scoped(_connectionPool, connection());
 	if (!scoped) {
 		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());
@@ -241,7 +241,7 @@ State DBHandler::execInternalWithParameters(const std::string& query, Model& mod
 	return s;
 }
 
-State DBHandler::execInternalWithParameters(const std::string& query, const BindParam& param) const {
+State DBHandler::execInternalWithParameters(const core::String& query, const BindParam& param) const {
 	ScopedConnection scoped(_connectionPool, connection());
 	if (!scoped) {
 		Log::error(logid, "Could not execute query '%s' - could not acquire connection", query.c_str());

@@ -128,8 +128,8 @@ bool Map::init() {
 	}
 
 	const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
-	const std::string& worldParamData = _filesystem->load("worldparams.lua");
-	const std::string& biomesData = _filesystem->load("biomes.lua");
+	const core::String& worldParamData = _filesystem->load("worldparams.lua");
+	const core::String& biomesData = _filesystem->load("biomes.lua");
 	_pager->init(_voxelWorldMgr->volumeData(), worldParamData, biomesData);
 	_pager->setSeed(seed->uintVal());
 	_pager->setNoiseOffset(glm::zero<glm::vec2>());

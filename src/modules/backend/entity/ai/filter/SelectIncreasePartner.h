@@ -24,7 +24,7 @@ public:
 	 * @param[in] parameters The parameters given by the script. Must be
 	 * the cooldown id that is triggered
 	 */
-	SelectIncreasePartner(const std::string& parameters = "");
+	SelectIncreasePartner(const core::String& parameters = "");
 
 	void filter(const ai::AIPtr& entity) override;
 };

@@ -30,7 +30,7 @@ class Map : public std::enable_shared_from_this<Map>, public core::IComponent, p
 private:
 	static constexpr uint32_t FOURCC = FourCC('M', 'A', 'P', '\0');
 	MapId _mapId;
-	std::string _mapIdStr;
+	core::String _mapIdStr;
 	voxelworld::WorldMgr* _voxelWorldMgr = nullptr;
 	voxelworld::WorldPagerPtr _pager;
 
@@ -122,7 +122,7 @@ public:
 	voxelworld::WorldMgr* worldMgr();
 	ai::Zone* zone() const;
 	MapId id() const;
-	const std::string& idStr() const;
+	const core::String& idStr() const;
 
 	int npcCount() const;
 	int userCount() const;
@@ -166,7 +166,7 @@ inline MapId Map::id() const {
 	return _mapId;
 }
 
-inline const std::string& Map::idStr() const {
+inline const core::String& Map::idStr() const {
 	return _mapIdStr;
 }
 

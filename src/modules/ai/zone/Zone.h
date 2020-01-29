@@ -45,7 +45,7 @@ public:
 	typedef AIMap::iterator AIMapIter;
 
 protected:
-	const std::string _name;
+	const core::String _name;
 	AIMap _ais;
 	AIScheduleList _scheduledAdd;
 	AIScheduleList _scheduledRemove;
@@ -77,7 +77,7 @@ protected:
 	bool doDestroyAI(const CharacterId& id);
 
 public:
-	Zone(const std::string& name, int threadCount = (std::min)(1u, std::thread::hardware_concurrency())) :
+	Zone(const core::String& name, int threadCount = (std::min)(1u, std::thread::hardware_concurrency())) :
 			_name(name), _debug(false), _threadPool(threadCount) {
 		_threadPool.init();
 	}
@@ -148,7 +148,7 @@ public:
 	/**
 	 * @brief Every zone has its own name that identifies it
 	 */
-	const std::string& getName() const;
+	const core::String& getName() const;
 
 	/**
 	 * @brief Activate the debugging for this particular server instance
@@ -330,7 +330,7 @@ inline bool Zone::isDebug () const {
 	return _debug;
 }
 
-inline const std::string& Zone::getName() const {
+inline const core::String& Zone::getName() const {
 	return _name;
 }
 

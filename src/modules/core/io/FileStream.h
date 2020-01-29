@@ -45,7 +45,7 @@ public:
 	bool addLong(uint64_t dword);
 	bool addFloat(float value);
 	bool addStringFormat(bool terminate, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(3);
-	bool addString(const std::string& string, bool terminate = true);
+	bool addString(const core::String& string, bool terminate = true);
 	bool addFormat(const char *fmt, ...);
 
 	int seek(int64_t position);
@@ -173,7 +173,7 @@ public:
 		return *this;
 	}
 
-	FileStream &operator<<(const std::string &x) {
+	FileStream &operator<<(const core::String &x) {
 		addString(x);
 		return *this;
 	}

@@ -20,15 +20,15 @@ private:
 public:
 	explicit Url(const char *url);
 	~Url();
-	const std::string url;
-	std::string schema;
-	std::string username;
-	std::string password;
-	std::string hostname;
+	const core::String url;
+	core::String schema;
+	core::String username;
+	core::String password;
+	core::String hostname;
 	uint16_t port = 80;
-	std::string path;
-	std::string query;
-	std::string fragment;
+	core::String path;
+	core::String query;
+	core::String fragment;
 
 	bool valid() const;
 };

@@ -19,8 +19,8 @@ namespace voxel {
 const Region Region::MaxRegion = Region((std::numeric_limits<int32_t>::min)(), (std::numeric_limits<int32_t>::max)());
 const Region Region::InvalidRegion = Region(0, -1);
 
-std::string Region::toString() const {
-	const std::string& regionStr = "region["
+core::String Region::toString() const {
+	const core::String& regionStr = "region["
 		"center(" + glm::to_string(getCentre()) + "), "
 		"mins(" + glm::to_string(getLowerCorner()) + "), "
 		"maxs(" + glm::to_string(getUpperCorner()) + ")"

@@ -13,7 +13,7 @@ namespace voxelworld {
  */
 struct WorldContext {
 	WorldContext();
-	bool load(const std::string& lua);
+	bool load(const core::String& lua);
 
 	int landscapeNoiseOctaves;
 	float landscapeNoiseLacunarity;

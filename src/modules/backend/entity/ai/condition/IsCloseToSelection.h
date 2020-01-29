@@ -17,7 +17,7 @@ protected:
 	int _distance;
 
 public:
-	IsCloseToSelection(const std::string& parameters) :
+	IsCloseToSelection(const core::String& parameters) :
 			ai::ICondition("IsCloseToSelection", parameters) {
 		if (_parameters.empty()) {
 			_distance = 1;

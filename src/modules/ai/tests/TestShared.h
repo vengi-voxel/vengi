@@ -31,7 +31,7 @@ protected:
 	ai::AIRegistry _registry;
 	ai::GroupMgr _groupManager;
 
-	std::string printAggroList(ai::AggroMgr& aggroMgr) const {
+	core::String printAggroList(ai::AggroMgr& aggroMgr) const {
 		const ai::AggroMgr::Entries& e = aggroMgr.getEntries();
 		if (e.empty()) {
 			return "empty";

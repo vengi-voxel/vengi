@@ -62,7 +62,7 @@ void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t 
 	Super::onMouseButtonPress(x, y, button, clicks);
 }
 
-bool IMGUIApp::onTextInput(const std::string& text) {
+bool IMGUIApp::onTextInput(const core::String& text) {
 	if (_console.onTextInput(text)) {
 		return true;
 	}
@@ -185,10 +185,10 @@ core::AppState IMGUIApp::onInit() {
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	const std::string iniFile = _appname + "-imgui.ini";
+	const core::String iniFile = _appname + "-imgui.ini";
 	_writePathIni = _filesystem->writePath(iniFile.c_str());
 	io.IniFilename = _writePathIni.c_str();
-	const std::string logFile = _appname + "-imgui.log";
+	const core::String logFile = _appname + "-imgui.log";
 	_writePathLog = _filesystem->writePath(logFile.c_str());
 	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
@@ -501,7 +501,7 @@ void IMGUIApp::renderTracing() {
 	const int quantileIndex = int(0.95f * (float(_maxMeasureSize + 1)));
 	const float twenthyQuantile = frameMillisQuantile[quantileIndex];
 	avg /= (float)_maxMeasureSize;
-	const std::string& maxStr = core::string::format("min: %.3fms, max: %.3fms, avg: %.3fms, quantile: %.3f", min, max, avg, twenthyQuantile);
+	const core::String& maxStr = core::string::format("min: %.3fms, max: %.3fms, avg: %.3fms, quantile: %.3f", min, max, avg, twenthyQuantile);
 	ImGui::PlotHistogram("Millis", &frameMillis[0], frameMillis.size(), 0, maxStr.c_str(), min, max, ImVec2(700, 100));
 	ImGui::Separator();
 	if (ImGui::CollapsingHeader("Profiler", ImGuiTreeNodeFlags_DefaultOpen)) {
