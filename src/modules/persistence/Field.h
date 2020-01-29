@@ -5,7 +5,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <string>
+#include "core/String.h"
 #include "FieldType.h"
 #include "ConstraintType.h"
 

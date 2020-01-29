@@ -8,7 +8,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include <stdint.h>
 #include <stddef.h>
 

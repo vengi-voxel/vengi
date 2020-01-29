@@ -5,7 +5,7 @@
 
 #include "Math.h"
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include <sstream>
 #include <algorithm>
 

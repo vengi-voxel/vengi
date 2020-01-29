@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include <string>
+#include "core/String.h"
 #include <stdint.h>
 #include <vector>
 #include <SDL_stdinc.h>

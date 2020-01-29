@@ -6,7 +6,7 @@
 
 #include "Types.h"
 #include <unordered_map>
-#include <string>
+#include "core/String.h"
 
 namespace video {
 

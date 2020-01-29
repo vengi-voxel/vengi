@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <functional>
-#include <string>
+#include "core/String.h"
 #include <memory>
 #include "AttributeType.h"
 

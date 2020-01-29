@@ -5,7 +5,7 @@
 #pragma once
 
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include <stdint.h>
 
 union SDL_Event;

@@ -9,7 +9,7 @@
 #include "core/EventBus.h"
 #include "core/collection/Map.h"
 #include <stdint.h>
-#include <string>
+#include "core/String.h"
 
 namespace metric {
 

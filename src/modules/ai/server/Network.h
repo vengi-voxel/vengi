@@ -5,7 +5,7 @@
 
 #include "IProtocolHandler.h"
 #include "common/Thread.h"
-#include <string>
+#include "core/String.h"
 #include <stdint.h>
 #include <list>
 #ifdef WIN32

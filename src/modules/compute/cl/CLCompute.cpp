@@ -13,7 +13,7 @@
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
 #include <glm/gtc/round.hpp>
-#include <string>
+#include "core/String.h"
 #include <unordered_map>
 
 namespace compute {

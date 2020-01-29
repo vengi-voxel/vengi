@@ -7,7 +7,7 @@
 #include "voxelworld/WorldPager.h"
 #include "engine-config.h"
 #include <chrono>
-#include <string>
+#include "core/String.h"
 
 namespace voxelworld {
 

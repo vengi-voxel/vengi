@@ -7,7 +7,7 @@
 #include <map>
 #include <set>
 #include <unordered_map>
-#include <string>
+#include "core/String.h"
 
 namespace databasetool {
 

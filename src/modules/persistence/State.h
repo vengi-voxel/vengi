@@ -7,7 +7,7 @@
 #include "ForwardDecl.h"
 #include "core/NonCopyable.h"
 #include "FieldType.h"
-#include <string>
+#include "core/String.h"
 
 namespace persistence {
 

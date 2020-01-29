@@ -8,7 +8,7 @@
 #include "common/MemoryAllocator.h"
 #include "common/Common.h"
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include <memory>
 #include <algorithm>
 

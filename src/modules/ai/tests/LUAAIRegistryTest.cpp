@@ -1,5 +1,5 @@
 #include "TestShared.h"
-#include <string>
+#include "core/String.h"
 #include <fstream>
 #include <streambuf>
 

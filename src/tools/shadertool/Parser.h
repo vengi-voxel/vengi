@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Types.h"
-#include <string>
+#include "core/String.h"
 
 namespace shadertool {
 

@@ -8,7 +8,7 @@
 #include "AnimationSettings.h"
 #include "core/Assert.h"
 #include "Vertex.h"
-#include <string>
+#include "core/String.h"
 #include <memory>
 
 namespace animation {

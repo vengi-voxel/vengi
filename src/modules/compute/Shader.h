@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Compute.h"
-#include <string>
+#include "core/String.h"
 #include <map>
 
 #ifndef COMPUTE_POSTFIX

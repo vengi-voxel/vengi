@@ -5,7 +5,7 @@
 
 #include <QApplication>
 #include <vector>
-#include <string>
+#include "core/String.h"
 
 class CompressorProxy: public QObject {
 Q_OBJECT

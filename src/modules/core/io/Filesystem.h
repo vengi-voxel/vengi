@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "File.h"
-#include <string>
+#include "core/String.h"
 #include <stack>
 #include <vector>
 #include <uv.h>

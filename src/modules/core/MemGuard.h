@@ -7,7 +7,7 @@
 #include "core/Assert.h"
 #include "core/ReadWriteLock.h"
 #include "core/collection/Array.h"
-#include <string>
+#include "core/String.h"
 #include <stdint.h>
 
 #ifdef _MSC_VER

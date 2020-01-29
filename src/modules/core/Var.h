@@ -8,7 +8,7 @@
 #include "GameConfig.h"
 #include "collection/Map.h"
 #include <memory>
-#include <string>
+#include "core/String.h"
 #include <vector>
 #include <string.h>
 #include <glm/fwd.hpp>

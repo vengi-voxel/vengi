@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Hash.h"
-#include <string>
+#include "core/String.h"
 
 namespace core {
 

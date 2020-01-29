@@ -7,7 +7,7 @@
 #include "core/EventBus.h"
 #include "voxel/RawVolume.h"
 #include <mosquitto.h>
-#include <string>
+#include "core/String.h"
 #include "TrazeTypes.h"
 #include <unordered_map>
 

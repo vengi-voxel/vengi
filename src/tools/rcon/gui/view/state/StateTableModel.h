@@ -5,7 +5,7 @@
 
 #include <QAbstractTableModel>
 #include <QList>
-#include <string>
+#include "core/String.h"
 
 #include "AIDebugger.h"
 

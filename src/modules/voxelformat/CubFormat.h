@@ -7,7 +7,7 @@
 #include "VoxFileFormat.h"
 #include "core/io/FileStream.h"
 #include "core/io/File.h"
-#include <string>
+#include "core/String.h"
 
 namespace voxel {
 

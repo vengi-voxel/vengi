@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxelrender/RawVolumeRenderer.h"
-#include <string>
+#include "core/String.h"
 #include "core/collection/Array.h"
 
 namespace voxedit {

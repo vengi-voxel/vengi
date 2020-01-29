@@ -7,7 +7,7 @@
 #include "core/StringUtil.h"
 #include "video/Types.h"
 #include "Util.h"
-#include <string>
+#include "core/String.h"
 #include <sstream>
 
 namespace shadertool {

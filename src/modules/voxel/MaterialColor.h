@@ -10,7 +10,7 @@
 
 #include <glm/vec4.hpp>
 #include <vector>
-#include <string>
+#include "core/String.h"
 
 namespace math {
 class Random;

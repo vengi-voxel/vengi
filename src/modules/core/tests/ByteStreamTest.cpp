@@ -10,7 +10,7 @@
 #include <math.h>
 #include <SDL_timer.h>
 #include <stdlib.h>
-#include <string>
+#include "core/String.h"
 
 namespace {
 const uint8_t BYTE_ADD = UCHAR_MAX;

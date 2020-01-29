@@ -5,7 +5,7 @@
 
 #include "common/Thread.h"
 #include <memory>
-#include <string>
+#include "core/String.h"
 #include <vector>
 #include <map>
 #include <stdarg.h>

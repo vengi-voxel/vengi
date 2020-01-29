@@ -4,7 +4,7 @@
 #pragma once
 
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include "ICharacter.h"
 #include "common/Math.h"
 #include "tree/TreeNode.h"

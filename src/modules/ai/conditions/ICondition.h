@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <string>
+#include "core/String.h"
 #include <vector>
 #include <sstream>
 #include <memory>

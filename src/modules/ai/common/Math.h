@@ -11,7 +11,7 @@
 #include <glm/geometric.hpp>
 #include <limits.h>
 #include <math.h>
-#include <string>
+#include "core/String.h"
 
 namespace ai {
 

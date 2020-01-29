@@ -6,7 +6,7 @@
 
 #define USE_ALIGN_AS 1
 #include "Types.h"
-#include <string>
+#include "core/String.h"
 
 namespace util {
 

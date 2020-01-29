@@ -8,7 +8,7 @@
 #include "core/io/Filesystem.h"
 #include "Texture.h"
 #include <memory>
-#include <string>
+#include "core/String.h"
 #include <unordered_map>
 
 namespace video {

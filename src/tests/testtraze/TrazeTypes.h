@@ -5,7 +5,7 @@
 #pragma once
 
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include <stdint.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

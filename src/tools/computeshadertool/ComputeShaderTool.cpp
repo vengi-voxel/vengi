@@ -12,7 +12,7 @@
 #include "Util.h"
 #include "util/IncludeUtil.h"
 #include <stack>
-#include <string>
+#include "core/String.h"
 
 ComputeShaderTool::ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

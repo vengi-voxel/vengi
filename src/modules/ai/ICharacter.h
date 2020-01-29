@@ -8,7 +8,7 @@
 #include "common/CharacterId.h"
 #include <atomic>
 #include <memory>
-#include <string>
+#include "core/String.h"
 #include <unordered_map>
 
 namespace ai {

@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include "core/collection/Map.h"
 #include <memory>
-#include <string>
+#include "core/String.h"
 
 namespace core {
 

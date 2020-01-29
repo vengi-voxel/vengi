@@ -5,7 +5,7 @@
 #pragma once
 
 #include "video/Types.h"
-#include <string>
+#include "core/String.h"
 #include <vector>
 #include <map>
 #include <unordered_map>

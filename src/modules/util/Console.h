@@ -7,7 +7,7 @@
 #include <SDL_stdinc.h>
 #include <SDL_log.h>
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include "core/Var.h"
 #include "core/Assert.h"
 #include "core/IComponent.h"

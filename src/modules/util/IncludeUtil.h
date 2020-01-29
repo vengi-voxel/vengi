@@ -3,7 +3,7 @@
  */
 
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include <utility>
 
 namespace util {

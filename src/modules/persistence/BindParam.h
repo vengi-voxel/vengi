@@ -5,7 +5,7 @@
 #pragma once
 
 #include "FieldType.h"
-#include <string>
+#include "core/String.h"
 #include <vector>
 
 namespace persistence {

@@ -7,7 +7,7 @@
 #include "voxelformat/VolumeCache.h"
 #include "core/collection/Map.h"
 #include <glm/fwd.hpp>
-#include <string>
+#include "core/String.h"
 
 namespace voxelworld {
 

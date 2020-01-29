@@ -12,7 +12,7 @@
  */
 #pragma once
 
-#include <string>
+#include "core/String.h"
 #include <string.h>
 #include <vector>
 #include "Types.h"

@@ -12,7 +12,7 @@
 #include "stock/Stock.h"
 #include "core/ArrayLength.h"
 #include <vector>
-#include <string>
+#include "core/String.h"
 
 /**
  * @brief Renders a character animation

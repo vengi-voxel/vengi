@@ -9,7 +9,7 @@
 #include "HttpMethod.h"
 #include "Url.h"
 #include "Network.h"
-#include <string>
+#include "core/String.h"
 
 namespace http {
 

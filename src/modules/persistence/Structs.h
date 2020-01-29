@@ -5,7 +5,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <string>
+#include "core/String.h"
 #include <vector>
 #include <set>
 #include <unordered_map>

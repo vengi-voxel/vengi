@@ -6,7 +6,7 @@
 
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
-#include <string>
+#include "core/String.h"
 #include <stdint.h>
 
 namespace math {

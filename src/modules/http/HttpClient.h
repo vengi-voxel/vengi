@@ -6,7 +6,7 @@
 
 #include "ResponseParser.h"
 #include <SDL_stdinc.h>
-#include <string>
+#include "core/String.h"
 
 namespace http {
 

@@ -7,7 +7,7 @@
 #include "Container.h"
 #include <memory>
 #include <unordered_map>
-#include <string>
+#include "core/String.h"
 
 namespace attrib {
 

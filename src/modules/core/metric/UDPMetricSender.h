@@ -5,7 +5,7 @@
 #pragma once
 
 #include "IMetricSender.h"
-#include <string>
+#include "core/String.h"
 #include <mutex>
 #include <stdint.h>
 #include "core/Trace.h"

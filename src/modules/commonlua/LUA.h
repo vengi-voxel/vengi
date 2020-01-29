@@ -9,7 +9,7 @@ extern "C" {
 #include <lualib.h>
 }
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include <map>
 #include <memory>
 

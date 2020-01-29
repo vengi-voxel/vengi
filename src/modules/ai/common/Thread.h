@@ -4,7 +4,7 @@
 #pragma once
 
 #include <atomic>
-#include <string>
+#include "core/String.h"
 #include <thread>
 
 namespace ai {

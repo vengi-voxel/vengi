@@ -4,7 +4,7 @@
 #pragma once
 
 #include "compute/Types.h"
-#include <string>
+#include "core/String.h"
 
 namespace computeshadertool {
 namespace util {

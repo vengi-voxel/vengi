@@ -14,7 +14,7 @@
 #include "core/NonCopyable.h"
 #include "core/collection/Map.h"
 #include <memory>
-#include <string>
+#include "core/String.h"
 #include <stdint.h>
 
 namespace metric {

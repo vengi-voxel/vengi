@@ -12,7 +12,7 @@
 #include "IMsgProtocolHandler.h"
 #include "core/EventBus.h"
 #include "core/IComponent.h"
-#include <string>
+#include "core/String.h"
 #include <stdint.h>
 #include <list>
 #include <memory>

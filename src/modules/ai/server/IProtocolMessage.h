@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <limits.h>
-#include <string>
+#include "core/String.h"
 #include <deque>
 #define AI_LIL_ENDIAN  1234
 #define AI_BIG_ENDIAN  4321

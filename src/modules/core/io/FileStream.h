@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <string>
+#include "core/String.h"
 #include <stdarg.h>
 #include <SDL_stdinc.h>
 #include <SDL_rwops.h>

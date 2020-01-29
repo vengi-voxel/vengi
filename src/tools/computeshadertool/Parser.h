@@ -6,7 +6,7 @@
 
 #include "Types.h"
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include <map>
 
 namespace computeshadertool {

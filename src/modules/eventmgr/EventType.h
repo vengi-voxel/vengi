@@ -5,7 +5,7 @@
 #pragma once
 
 #include "network/ProtocolEnum.h"
-#include <string>
+#include "core/String.h"
 
 namespace eventmgr {
 

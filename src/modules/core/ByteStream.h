@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <vector>
-#include <string>
+#include "core/String.h"
 #include <stdarg.h>
 #include <SDL_endian.h>
 #include <limits.h>

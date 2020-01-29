@@ -9,7 +9,7 @@
 #include "Animation.h"
 #include "BoneId.h"
 #include "core/collection/Array.h"
-#include <string>
+#include "core/String.h"
 #include <vector>
 
 namespace animation {

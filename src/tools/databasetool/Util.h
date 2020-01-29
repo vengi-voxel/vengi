@@ -6,7 +6,7 @@
 
 #include "Table.h"
 #include "persistence/FieldType.h"
-#include <string>
+#include "core/String.h"
 #include <sstream>
 
 namespace databasetool {

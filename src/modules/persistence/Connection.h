@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ForwardDecl.h"
-#include <string>
+#include "core/String.h"
 #include <unordered_set>
 
 namespace persistence {

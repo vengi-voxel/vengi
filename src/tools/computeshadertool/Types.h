@@ -5,7 +5,7 @@
 #pragma once
 
 #include "compute/Types.h"
-#include <string>
+#include "core/String.h"
 #include <vector>
 
 namespace computeshadertool {

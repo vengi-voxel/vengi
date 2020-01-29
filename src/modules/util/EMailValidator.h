@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include "core/String.h"
 #include <regex>
 
 namespace util {

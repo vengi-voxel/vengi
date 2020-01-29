@@ -6,7 +6,7 @@
 
 #include "core/io/Filesystem.h"
 #include "Types.h"
-#include <string>
+#include "core/String.h"
 #include <vector>
 #include <map>
 
