@@ -7,7 +7,7 @@
 #include "core/Var.h"
 #include "core/Assert.h"
 #include "core/Log.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/GLM.h"
 #include "core/GameConfig.h"
 #include <SDL.h>

@@ -2,7 +2,7 @@
 #include "Util.h"
 #include "Mapping.h"
 #include "Table.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Assert.h"
 
 namespace databasetool {

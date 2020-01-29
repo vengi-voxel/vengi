@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ICondition.h"
-#include "common/String.h"
+#include "common/StringUtil.h"
 #include "group/GroupMgr.h"
 #include "zone/Zone.h"
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace core {
 

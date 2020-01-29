@@ -9,7 +9,7 @@
 #include "IAIFactory.h"
 #include "common/Math.h"
 #include "common/MoveVector.h"
-#include "common/String.h"
+#include "common/StringUtil.h"
 #include "common/MemoryAllocator.h"
 #include "ICharacter.h"
 

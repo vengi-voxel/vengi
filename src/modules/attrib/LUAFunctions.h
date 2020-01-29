@@ -7,7 +7,7 @@
 #include "commonlua/LUA.h"
 #include "ContainerProvider.h"
 #include "LUAContainer.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace attrib {
 

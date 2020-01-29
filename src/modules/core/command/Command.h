@@ -10,7 +10,7 @@
 #include <functional>
 #include <unordered_map>
 #include "core/Common.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/ReadWriteLock.h"
 #include "ActionButton.h"
 

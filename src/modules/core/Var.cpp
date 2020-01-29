@@ -7,7 +7,7 @@
 #include "Common.h"
 #include "GLM.h"
 #include "Assert.h"
-#include "String.h"
+#include "StringUtil.h"
 
 namespace core {
 

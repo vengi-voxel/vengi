@@ -7,7 +7,7 @@
 #include "commonlua/LUA.h"
 #include "stock/StockDataProvider.h"
 #include "stock/Shape.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace stock {
 

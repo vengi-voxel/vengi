@@ -6,7 +6,7 @@
 #include "tree/Selector.h"
 #include <vector>
 #include "AI.h"
-#include "common/String.h"
+#include "common/StringUtil.h"
 #include "common/Random.h"
 
 namespace ai {

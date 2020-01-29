@@ -6,7 +6,7 @@
 
 #include "voxel/Mesh.h"
 #include "core/IComponent.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include <memory>
 #include <unordered_map>
 

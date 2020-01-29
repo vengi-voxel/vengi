@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "String.h"
+#include "StringUtil.h"
 #include <stdarg.h>
 
 namespace ai {

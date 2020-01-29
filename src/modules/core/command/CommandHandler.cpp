@@ -7,7 +7,7 @@
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include <algorithm>
 #include <vector>
 

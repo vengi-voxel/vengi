@@ -8,7 +8,7 @@
 #include "layer/LayerWindow.h"
 #include "settings/SceneSettingsWindow.h"
 #include "core/Common.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/collection/Array.h"
 #include "math/Axis.h"
 

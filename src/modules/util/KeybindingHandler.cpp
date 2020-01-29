@@ -7,7 +7,7 @@
 #include "CustomButtonNames.h"
 #include "core/App.h"
 #include "core/ArrayLength.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/io/Filesystem.h"
 #include <SDL.h>
 

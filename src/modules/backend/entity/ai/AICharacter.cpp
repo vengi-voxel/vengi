@@ -4,7 +4,7 @@
 
 #include "AICharacter.h"
 #include "backend/entity/Npc.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace backend {
 

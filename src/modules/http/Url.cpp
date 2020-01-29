@@ -3,7 +3,7 @@
  */
 
 #include "Url.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Log.h"
 
 namespace http {

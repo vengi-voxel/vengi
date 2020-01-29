@@ -1,5 +1,5 @@
 #include "SelectEntitiesOfTypes.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Common.h"
 #include "backend/entity/Npc.h"
 #include "backend/entity/ai/AICharacter.h"

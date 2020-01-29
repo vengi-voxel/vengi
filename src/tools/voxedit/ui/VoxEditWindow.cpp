@@ -10,7 +10,7 @@
 #include "core/io/Filesystem.h"
 #include "video/WindowedApp.h"
 #include "core/Var.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/command/Command.h"
 #include "editorscene/Viewport.h"
 #include "settings/SceneSettingsWindow.h"

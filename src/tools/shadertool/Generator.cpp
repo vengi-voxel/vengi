@@ -4,7 +4,7 @@
 
 #include "Generator.h"
 #include "core/Log.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "video/Types.h"
 #include "Util.h"
 #include <string>

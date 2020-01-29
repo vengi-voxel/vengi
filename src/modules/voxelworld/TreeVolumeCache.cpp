@@ -5,7 +5,7 @@
 #include "TreeVolumeCache.h"
 #include "core/App.h"
 #include "core/Log.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/io/Filesystem.h"
 #include <glm/vec3.hpp>
 

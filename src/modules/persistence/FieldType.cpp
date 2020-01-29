@@ -3,7 +3,7 @@
  */
 
 #include "core/Common.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/ArrayLength.h"
 #include "FieldType.h"
 

@@ -5,7 +5,7 @@
 #include "Modifier.h"
 #include "math/Axis.h"
 #include "core/Color.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/command/Command.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"

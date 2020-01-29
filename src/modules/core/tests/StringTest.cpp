@@ -3,7 +3,7 @@
  */
 
 #include "AbstractTest.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Common.h"
 
 namespace core {

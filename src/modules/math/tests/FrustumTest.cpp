@@ -5,7 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "math/Frustum.h"
 #include "core/GLM.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace math {
 

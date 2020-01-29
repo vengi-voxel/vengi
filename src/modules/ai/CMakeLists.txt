@@ -17,7 +17,7 @@ set(SRCS
 	common/MoveVector.h
 	common/NonCopyable.h
 	common/Random.h
-	common/String.h
+	common/StringUtil.h
 	common/Thread.h
 	conditions/And.h
 	conditions/ConditionParser.h

@@ -7,7 +7,7 @@
 #include "core/Var.h"
 #include "core/Log.h"
 #include "core/Common.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "engine-config.h"
 #include <SDL.h>
 

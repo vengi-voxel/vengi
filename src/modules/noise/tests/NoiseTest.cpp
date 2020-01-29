@@ -7,7 +7,7 @@
 #include "noise/Noise.h"
 #include "image/Image.h"
 #include "core/GLM.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace noise {
 

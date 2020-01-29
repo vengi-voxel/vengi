@@ -13,7 +13,7 @@
 #include "core/Assert.h"
 #include "core/Var.h"
 #include "core/Singleton.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "ShaderManager.h"
 #include "UniformBuffer.h"
 #include "video/Renderer.h"

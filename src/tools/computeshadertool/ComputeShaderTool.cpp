@@ -4,7 +4,7 @@
 
 #include "ComputeShaderTool.h"
 #include "core/Assert.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/io/Filesystem.h"
 #include "compute/Shader.h"
 #include "Generator.h"

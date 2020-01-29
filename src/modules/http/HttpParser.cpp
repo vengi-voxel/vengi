@@ -3,7 +3,7 @@
  */
 
 #include "HttpParser.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace http {
 

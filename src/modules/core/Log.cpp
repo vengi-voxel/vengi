@@ -4,7 +4,7 @@
 
 #include "Log.h"
 #include "Var.h"
-#include "String.h"
+#include "StringUtil.h"
 #include "engine-config.h"
 #include "App.h"
 #include "Common.h"

@@ -7,7 +7,7 @@
 #include "core/App.h"
 #include "core/io/Filesystem.h"
 #include "animation/AnimationSettings.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace frontend {
 

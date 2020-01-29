@@ -7,7 +7,7 @@
 #include "core/App.h"
 #include "core/Assert.h"
 #include "core/Var.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/io/Filesystem.h"
 #include "util/IncludeUtil.h"
 #include "util/VarUtil.h"

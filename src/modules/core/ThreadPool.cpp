@@ -3,7 +3,7 @@
  */
 
 #include "ThreadPool.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/Concurrency.h"
 

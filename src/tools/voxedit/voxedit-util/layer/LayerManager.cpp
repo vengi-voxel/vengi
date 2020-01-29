@@ -3,7 +3,7 @@
  */
 
 #include "LayerManager.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/command/Command.h"
 #include "voxelutil/VolumeMerger.h"
 

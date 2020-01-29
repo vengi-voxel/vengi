@@ -5,7 +5,7 @@
 #include "ShaderTool.h"
 #include "core/io/Filesystem.h"
 #include "core/Process.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/Assert.h"

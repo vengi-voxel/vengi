@@ -11,7 +11,7 @@
 #include "backend/entity/ai/AIRegistry.h"
 #include "core/io/Filesystem.h"
 #include "core/Log.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Common.h"
 #include "LUAFunctions.h"
 #include <SimpleAI.h>

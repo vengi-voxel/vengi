@@ -5,7 +5,7 @@
 #include "State.h"
 #include "core/Log.h"
 #include "core/Assert.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "Connection.h"
 #include "postgres/PQSymbol.h"
 

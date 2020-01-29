@@ -6,7 +6,7 @@
 #include "CLCompute.h"
 #include "core/Log.h"
 #include "core/App.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Assert.h"
 #include "core/io/Filesystem.h"
 #include <glm/fwd.hpp>

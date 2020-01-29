@@ -10,7 +10,7 @@
 #include "voxel/Mesh.h"
 #include <unordered_map>
 #include "core/UTF8.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include <limits>
 
 struct stbtt_fontinfo;

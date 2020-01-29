@@ -3,7 +3,7 @@
  */
 
 #include "NoiseWindow.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {

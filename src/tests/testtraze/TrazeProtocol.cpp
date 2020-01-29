@@ -8,7 +8,7 @@
 #include "core/UUID.h"
 #include "core/Var.h"
 #include "core/App.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "TrazeTypes.h"
 #include "TrazeEvents.h"
 #include "TrazeProtocol.h"

@@ -5,7 +5,7 @@
 #include "Map.h"
 #include "voxelworld/WorldPager.h"
 #include "voxelworld/WorldMgr.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/EventBus.h"
 #include "core/App.h"
 #include "math/QuadTree.h"

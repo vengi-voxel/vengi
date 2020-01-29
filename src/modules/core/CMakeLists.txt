@@ -49,7 +49,7 @@ set(SRCS
 	ReadWriteLock.h
 	RecursiveReadWriteLock.h
 	Singleton.h
-	String.cpp String.h
+	StringUtil.cpp StringUtil.h
 	ThreadPool.cpp ThreadPool.h
 	TimeProvider.h TimeProvider.cpp
 	Tokenizer.h Tokenizer.cpp

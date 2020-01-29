@@ -5,7 +5,7 @@
 #include "Model.h"
 #include "ConstraintType.h"
 #include "core/Log.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Singleton.h"
 #include "core/Assert.h"
 #include <algorithm>

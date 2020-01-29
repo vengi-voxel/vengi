@@ -13,7 +13,7 @@
 #include "ConnectionPool.h"
 #include "Model.h"
 #include "MassQuery.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/IComponent.h"

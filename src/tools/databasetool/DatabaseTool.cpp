@@ -4,7 +4,7 @@
 
 #include "DatabaseTool.h"
 #include "core/io/Filesystem.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Common.h"
 #include "Util.h"
 #include "Parser.h"

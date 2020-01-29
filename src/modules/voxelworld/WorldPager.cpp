@@ -8,7 +8,7 @@
 #include "voxelutil/Raycast.h"
 #include "noise/Simplex.h"
 #include "core/Common.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/collection/Array.h"
 
 namespace voxelworld {

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "String.h"
+#include "StringUtil.h"
 #include "Common.h"
 #include <ctype.h>
 

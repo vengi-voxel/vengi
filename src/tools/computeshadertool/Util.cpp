@@ -3,7 +3,7 @@
  */
 
 #include "Util.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "compute/Types.h"
 
 namespace computeshadertool {

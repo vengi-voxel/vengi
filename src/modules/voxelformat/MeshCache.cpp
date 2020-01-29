@@ -4,7 +4,7 @@
 
 #include "MeshCache.h"
 #include "core/GLM.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "voxelformat/Loader.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "core/io/Filesystem.h"

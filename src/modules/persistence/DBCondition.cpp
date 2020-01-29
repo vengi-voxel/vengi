@@ -4,7 +4,7 @@
 
 #include "DBCondition.h"
 #include "Model.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/ArrayLength.h"

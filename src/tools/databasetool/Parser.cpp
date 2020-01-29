@@ -4,7 +4,7 @@
 #include "core/Log.h"
 #include "core/Assert.h"
 #include "core/Tokenizer.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace databasetool {
 

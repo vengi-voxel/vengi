@@ -5,7 +5,7 @@
 #pragma once
 
 #include "conditions/ICondition.h"
-#include "common/String.h"
+#include "common/StringUtil.h"
 #include "aggro/AggroMgr.h"
 
 namespace ai {

@@ -4,7 +4,7 @@
 
 #include "AbstractTest.h"
 #include "core/Var.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace core {
 

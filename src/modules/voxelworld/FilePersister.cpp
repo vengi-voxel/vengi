@@ -8,7 +8,7 @@
 #include "core/App.h"
 #include "core/io/Filesystem.h"
 #include "core/Common.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/ByteStream.h"
 #include "core/Zip.h"

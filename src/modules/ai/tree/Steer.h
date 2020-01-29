@@ -4,7 +4,7 @@
 #pragma once
 
 #include "tree/ITask.h"
-#include "common/String.h"
+#include "common/StringUtil.h"
 #include "common/Common.h"
 #include "common/Math.h"
 #include "movement/Steering.h"

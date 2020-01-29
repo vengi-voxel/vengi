@@ -5,7 +5,7 @@
 #include "Parser.h"
 #include "core/Log.h"
 #include "core/Assert.h"
-#include "core/String.h"
+#include "core/StringUtil.h"
 #include "Types.h"
 #include "Util.h"
 #include <simplecpp.h>
