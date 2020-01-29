@@ -99,7 +99,7 @@ set(TEST_SRCS
 	tests/PoolAllocatorTest.cpp
 	tests/ReadWriteLockTest.cpp
 	tests/SetTest.cpp
-	tests/StringTest.cpp
+	tests/StringUtilTest.cpp
 	tests/ThreadPoolTest.cpp
 	tests/TokenizerTest.cpp
 	tests/UUIDTest.cpp
