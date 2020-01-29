@@ -37,7 +37,7 @@ static const char *convertToTexUnit(int unit) {
  */
 static std::string maxStringLength(const std::string& input) {
 #ifdef _MSC_VER
-	if (input.length() > 10000) {
+	if (input.size() > 10000) {
 		Log::debug("Need to split the shader source string");
 		return "R\"(" + core::string::replaceAll(input, "\n", ")\"\nR\"(") + ")\"";
 	}

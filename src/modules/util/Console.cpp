@@ -609,7 +609,7 @@ void Console::render(const math::Rect<int> &rect, long deltaFrame) {
 		return;
 	}
 	const int maxY = _messages.size() * lineH;
-	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), _commandLine.length());
+	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), _commandLine.size());
 	const int startY = core_min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y - 4, maxY);
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);
@@ -617,16 +617,16 @@ void Console::render(const math::Rect<int> &rect, long deltaFrame) {
 		if (y < rect.getMinZ()) {
 			break;
 		}
-		const glm::ivec2& size = stringSize(i->c_str(), i->length());
+		const glm::ivec2& size = stringSize(i->c_str(), i->size());
 		y -= size.y;
-		drawString(_consoleMarginLeft, y, *i, i->length());
+		drawString(_consoleMarginLeft, y, *i, i->size());
 	}
 
-	drawString(_consoleMarginLeft, startY, _consolePrompt, _consolePrompt.length());
-	drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt, startY, _commandLine, _commandLine.length());
+	drawString(_consoleMarginLeft, startY, _consolePrompt, _consolePrompt.size());
+	drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt, startY, _commandLine, _commandLine.size());
 	if (_cursorBlink) {
 		const glm::ivec2& l = stringSize(_commandLine.c_str(), _cursorPos);
-		drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt + l.x, startY, _consoleCursor, _consoleCursor.length());
+		drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt + l.x, startY, _consoleCursor, _consoleCursor.size());
 	}
 
 	afterRender(rect);

@@ -24,7 +24,7 @@ enum class BodyType {
  */
 static std::string maxStringLength(const std::string& input) {
 #ifdef _MSC_VER
-	if (input.length() > 10000) {
+	if (input.size() > 10000) {
 		Log::debug("Need to split the shader source string");
 		return "R\"(" + core::string::replaceAll(input, "\n", ")\"\nR\"(") + ")\"";
 	}
@@ -353,9 +353,9 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 
 	std::vector<std::string> shaderNameParts;
 	core::string::splitString(name, shaderNameParts, "_-");
-	std::string filename = "";
-	for (std::string n : shaderNameParts) {
-		if (n.length() > 1 || shaderNameParts.size() < 2) {
+	core::String filename = "";
+	for (core::String n : shaderNameParts) {
+		if (n.size() > 1 || shaderNameParts.size() < 2) {
 			n[0] = SDL_toupper(n[0]);
 			filename += n;
 		}

@@ -176,8 +176,8 @@ std::string convertName(const std::string& in, bool firstUpper) {
 	std::string out;
 	std::vector<std::string> nameParts;
 	core::string::splitString(in, nameParts, "_-");
-	for (std::string& n : nameParts) {
-		if (n.length() > 1 || nameParts.size() < 2) {
+	for (core::String& n : nameParts) {
+		if (n.size() > 1 || nameParts.size() < 2) {
 			if (!firstUpper) {
 				firstUpper = true;
 			} else {
