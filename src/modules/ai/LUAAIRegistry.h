@@ -132,8 +132,8 @@ public:
 
 	~LUAAIRegistry();
 
-	inline bool evaluate(const std::string& str) {
-		return evaluate(str.c_str(), str.length());
+	inline bool evaluate(const core::String& str) {
+		return evaluate(str.c_str(), str.size());
 	}
 
 	/**
