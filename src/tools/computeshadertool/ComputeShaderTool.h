@@ -38,10 +38,10 @@ protected:
 	core::String _name;
 	std::vector<computeshadertool::Kernel> _kernels;
 	std::vector<computeshadertool::Struct> _structs;
-	std::map<std::string, std::string> _constants;
-	std::vector<std::string> _includeDirs;
+	std::map<core::String, core::String> _constants;
+	std::vector<core::String> _includeDirs;
 
-	std::pair<std::string, bool> getSource(const core::String& file) const;
+	std::pair<core::String, bool> getSource(const core::String& file) const;
 	bool parse(const core::String& src);
 public:
 	ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

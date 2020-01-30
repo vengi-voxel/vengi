@@ -122,13 +122,13 @@ void Shader::checkUniform(const core::String& uniform) {
 	}
 }
 
-void Shader::checkAttributes(std::initializer_list<std::string> attributes) {
+void Shader::checkAttributes(std::initializer_list<core::String> attributes) {
 	for (const core::String& attribute : attributes) {
 		checkAttribute(attribute);
 	}
 }
 
-void Shader::checkUniforms(std::initializer_list<std::string> uniforms) {
+void Shader::checkUniforms(std::initializer_list<core::String> uniforms) {
 	for (const core::String& uniform : uniforms) {
 		checkUniform(uniform);
 	}
@@ -365,7 +365,7 @@ core::String Shader::validPreprocessorName(const core::String& name) {
 	return core::string::replaceAll(name, "_", "");
 }
 
-core::String Shader::getSource(ShaderType shaderType, const core::String& buffer, bool finalize, std::vector<std::string>* includedFiles) const {
+core::String Shader::getSource(ShaderType shaderType, const core::String& buffer, bool finalize, std::vector<core::String>* includedFiles) const {
 	if (buffer.empty()) {
 		return "";
 	}
@@ -406,13 +406,13 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		src.append("#endif\n");
 	}
 
-	std::vector<std::string> includeDirs;
-	includeDirs.push_back(std::string(core::string::extractPath(_name)));
-	const std::pair<std::string, bool>& includesFirst = util::handleIncludes(buffer, includeDirs, includedFiles);
+	std::vector<core::String> includeDirs;
+	includeDirs.push_back(core::String(core::string::extractPath(_name)));
+	const std::pair<core::String, bool>& includesFirst = util::handleIncludes(buffer, includeDirs, includedFiles);
 	src += includesFirst.first;
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<std::string, bool>& includesRecurse = util::handleIncludes(src, includeDirs, includedFiles);
+		const std::pair<core::String, bool>& includesRecurse = util::handleIncludes(src, includeDirs, includedFiles);
 		src += includesRecurse.first;
 		++level;
 		if (level >= 10) {
@@ -504,7 +504,7 @@ bool Shader::transformFeedback() const {
 	return _transformFormat != TransformFeedbackCaptureMode::Max;
 }
 
-void Shader::setupTransformFeedback(const std::vector<std::string>& varyings, TransformFeedbackCaptureMode format) {
+void Shader::setupTransformFeedback(const std::vector<core::String>& varyings, TransformFeedbackCaptureMode format) {
 	_transformVaryings = varyings;
 	_transformFormat = format;
 }

@@ -12,7 +12,7 @@
 
 namespace core {
 
-bool replacePlaceholders(std::string_view str, char *buf, size_t bufSize) {
+bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize) {
 	int idx = 0;
 	for (size_t i = 0u; i < str.size(); ++i) {
 		const char *c = &str[i];
@@ -28,7 +28,7 @@ bool replacePlaceholders(std::string_view str, char *buf, size_t bufSize) {
 				const core::String& value = var->strVal();
 				const size_t remaining = bufSize - idx - 1;
 				strncpy(&buf[idx], value.c_str(), remaining);
-				idx += (int)value.length();
+				idx += (int)value.size();
 				if (idx >= (int)bufSize) {
 					return false;
 				}
@@ -103,7 +103,7 @@ int executeCommands(const core::String& _commandLine) {
 		if (command.empty()) {
 			continue;
 		}
-		const std::string_view trimmed = core::string::trim(command);
+		const core::String& trimmed = core::string::trim(command);
 		if (trimmed.empty()) {
 			continue;
 		}
@@ -113,7 +113,7 @@ int executeCommands(const core::String& _commandLine) {
 		if (tokInner.tokens().empty()) {
 			continue;
 		}
-		std::vector<std::string> tokens = tokInner.tokens();
+		std::vector<core::String> tokens = tokInner.tokens();
 		const core::String cmd = tokens[0];
 		tokens.erase(tokens.begin());
 		if (core::Command::execute(cmd, tokens)) {

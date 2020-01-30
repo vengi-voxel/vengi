@@ -178,7 +178,7 @@ TEST_F(DatabaseModelTest, testSelectByEmail) {
 	const db::DBConditionTestModelEmail condition("testSelectByEmail1@b.c.d");
 	EXPECT_TRUE(_dbHandler.select(db::TestModel(), condition, [&] (db::TestModel&& model) {
 		++count;
-		ASSERT_EQ(std::string(condition.value(0)), model.email());
+		ASSERT_EQ(core::String(condition.value(0)), model.email());
 	}));
 	EXPECT_EQ(count, 1);
 }

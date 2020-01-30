@@ -98,11 +98,11 @@ long File::write(const unsigned char *buf, size_t len) const {
 }
 
 core::String File::path() const {
-	return std::string(core::string::extractPath(name().c_str()));
+	return core::String(core::string::extractPath(name().c_str()));
 }
 
 core::String File::fileName() const {
-	return std::string(core::string::extractFilename(name().c_str()));
+	return core::String(core::string::extractFilename(name().c_str()));
 }
 
 core::String File::extension() const {
@@ -111,7 +111,7 @@ core::String File::extension() const {
 		return "";
 	}
 	++ext;
-	return std::string(ext);
+	return core::String(ext);
 }
 
 long File::length() const {

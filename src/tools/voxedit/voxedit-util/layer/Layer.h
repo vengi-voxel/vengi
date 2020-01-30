@@ -10,7 +10,7 @@
 
 namespace voxedit {
 
-using LayerMetadata = std::unordered_map<std::string, std::string>;
+using LayerMetadata = std::unordered_map<core::String, core::String>;
 
 struct Layer {
 	core::String name;

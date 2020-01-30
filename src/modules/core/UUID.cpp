@@ -25,7 +25,7 @@ core::String generateUUID() {
 	uuid_generate_random(uuid);
 	char buf[37];
 	uuid_unparse(uuid, buf);
-	return std::string(buf);
+	return core::String(buf);
 #elif __WINDOWS__
 	UUID uuid;
 	UuidCreate(&uuid);
@@ -57,7 +57,7 @@ core::String generateUUID() {
 		bytes.byte14,
 		bytes.byte15
 	}};
-	return std::string(std::begin(arr), std::end(arr));
+	return core::String(std::begin(arr), std::end(arr));
 #else
 	return "";
 #endif

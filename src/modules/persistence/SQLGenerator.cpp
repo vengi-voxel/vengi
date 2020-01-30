@@ -118,7 +118,7 @@ static core::String getDbFlags(const core::String& tablename, int numberPrimaryK
 		core::string::append(buf, sizeof(buf), field.name.c_str());
 		core::string::append(buf, sizeof(buf), "_seq'::regclass)");
 	}
-	return std::string(buf);
+	return core::String(buf);
 }
 
 static core::String getDbType(const Field& field) {
@@ -198,7 +198,7 @@ static inline bool removes(const db::MetainfoModel& schemaColumn, const Field& f
 	return isSet(schemaColumn.constraintmask(), value) && !isSet(field.contraintMask, value);
 }
 
-static inline void uniqueConstraintName(std::stringstream& stmt, const Model& table, const std::set<std::string>& uniqueKey) {
+static inline void uniqueConstraintName(std::stringstream& stmt, const Model& table, const std::set<core::String>& uniqueKey) {
 	stmt << table.tableName() << "_" << core::string::join(uniqueKey.begin(), uniqueKey.end(), "_") << "_unique";
 }
 
@@ -350,7 +350,7 @@ core::String createAlterTableStatement(const std::vector<db::MetainfoModel>& col
 	createSchemaIdentifier(stmt, table);
 	stmt << ";";
 
-	std::unordered_map<std::string, const db::MetainfoModel*> map;
+	std::unordered_map<core::String, const db::MetainfoModel*> map;
 	map.reserve(columns.size());
 	for (const auto& c : columns) {
 		map.insert(std::make_pair(c.columnname(), &c));

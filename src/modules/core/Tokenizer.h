@@ -12,7 +12,7 @@ namespace core {
 
 class Tokenizer {
 protected:
-	std::vector<std::string> _tokens;
+	std::vector<core::String> _tokens;
 	std::size_t _posIndex;
 	std::size_t _size;
 	int32_t _len;
@@ -61,7 +61,7 @@ public:
 		return _tokens[_posIndex++];
 	}
 
-	inline const std::vector<std::string>& tokens() const {
+	inline const std::vector<core::String>& tokens() const {
 		return _tokens;
 	}
 

@@ -24,7 +24,7 @@ private:
 	const IAIFactory& _aiFactory;
 	core::String _taskString;
 
-	void splitTasks(const core::String& string, std::vector<std::string>& tokens) const;
+	void splitTasks(const core::String& string, std::vector<core::String>& tokens) const;
 	SteeringPtr getSteering(const core::String& nodeName);
 public:
 	TreeNodeParser(const IAIFactory& aiFactory, const core::String& taskString) :

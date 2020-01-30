@@ -569,7 +569,8 @@ AppState App::onCleanup() {
 
 	if (!_organisation.empty() && !_appname.empty()) {
 		Log::debug("save the config variables");
-		std::stringstream ss;
+		core::String ss;
+		ss.reserve(1024);
 		util::visitVarSorted([&](const core::VarPtr& var) {
 			if ((var->getFlags() & core::CV_NOPERSIST) != 0u) {
 				return;
@@ -586,10 +587,15 @@ AppState App::onCleanup() {
 			if ((flags & CV_SECRET) == CV_SECRET) {
 				flagsStr.append("X");
 			}
-			ss << R"(")" << var->name() << R"(" ")" << value << R"(" ")" << flagsStr << R"(")" << std::endl;
+			ss += "\"";
+			ss += var->name();
+			ss += "\" \"";
+			ss += value;
+			ss += "\" \"";
+			ss += flagsStr;
+			ss += "\"\n";
 		}, 0u);
-		const core::String& str = ss.str();
-		_filesystem->write(_appname + ".vars", str);
+		_filesystem->write(_appname + ".vars", ss);
 	} else {
 		Log::warn("don't save the config variables");
 	}

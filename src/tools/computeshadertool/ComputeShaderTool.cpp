@@ -37,15 +37,15 @@ core::AppState ComputeShaderTool::onConstruct() {
 	return Super::onConstruct();
 }
 
-std::pair<std::string, bool> ComputeShaderTool::getSource(const core::String& file) const {
+std::pair<core::String, bool> ComputeShaderTool::getSource(const core::String& file) const {
 	const io::FilesystemPtr& fs = filesystem();
 
-	const std::pair<std::string, bool>& retIncludes = util::handleIncludes(fs->load(file), _includeDirs);
+	const std::pair<core::String, bool>& retIncludes = util::handleIncludes(fs->load(file), _includeDirs);
 	core::String src = retIncludes.first;
 	int level = 0;
 	bool success = retIncludes.second;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<std::string, bool>& ret = util::handleIncludes(src, _includeDirs);
+		const std::pair<core::String, bool>& ret = util::handleIncludes(src, _includeDirs);
 		src = ret.first;
 		success &= ret.second;
 		++level;
@@ -86,8 +86,8 @@ core::AppState ComputeShaderTool::onRunning() {
 
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
 	_computeFilename = shaderfile + COMPUTE_POSTFIX;
-	const bool changedDir = filesystem()->pushDir(std::string(core::string::extractPath(shaderfile.c_str())));
-	const std::pair<std::string, bool>& computeBuffer = getSource(_computeFilename);
+	const bool changedDir = filesystem()->pushDir(core::String(core::string::extractPath(shaderfile.c_str())));
+	const std::pair<core::String, bool>& computeBuffer = getSource(_computeFilename);
 	if (computeBuffer.first.empty() || !computeBuffer.second) {
 		Log::error("Could not load %s", _computeFilename.c_str());
 		_exitCode = 127;
@@ -97,7 +97,7 @@ core::AppState ComputeShaderTool::onRunning() {
 	compute::Shader shader;
 	const core::String& computeSrcSource = shader.getSource(computeBuffer.first, false);
 
-	_name = std::string(core::string::extractFilename(shaderfile.c_str()));
+	_name = core::String(core::string::extractFilename(shaderfile.c_str()));
 	if (!parse(computeSrcSource)) {
 		_exitCode = 1;
 		return core::AppState::Cleanup;

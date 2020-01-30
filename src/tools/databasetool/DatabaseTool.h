@@ -22,7 +22,7 @@ protected:
 	core::String _tableFile;
 	core::String _targetFile;
 
-	typedef std::map<std::string, databasetool::Table> Tables;
+	typedef std::map<core::String, databasetool::Table> Tables;
 	Tables _tables;
 
 	bool validateForeignKeys(const databasetool::Table& table) const;

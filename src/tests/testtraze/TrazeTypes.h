@@ -24,7 +24,7 @@ enum class BikeDirection {
 
 using PlayerId = uint32_t;
 
-using Score = std::vector<std::string>;
+using Score = std::vector<core::String>;
 
 struct Spawn {
 	glm::ivec2 position;

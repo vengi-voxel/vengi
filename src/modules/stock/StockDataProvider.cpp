@@ -137,7 +137,7 @@ bool StockDataProvider::addContainerData(ContainerData* data) {
 		return false;
 	}
 	auto it = std::find_if(_containerDataMap.begin(), _containerDataMap.end(),
-		[data](const std::pair<std::string, ContainerData*> &t) -> bool {
+		[data](const std::pair<core::String, ContainerData*> &t) -> bool {
 			return t.second->id == data->id;
 		}
 	);

@@ -59,7 +59,7 @@ typedef std::shared_ptr<Var> VarPtr;
  */
 class Var {
 protected:
-	typedef Map<std::string, VarPtr, 64, std::hash<std::string> > VarMap;
+	typedef Map<core::String, VarPtr, 64, std::hash<core::String> > VarMap;
 	static VarMap _vars;
 	static ReadWriteLock _lock;
 
@@ -266,7 +266,7 @@ public:
 		if (!strcmp(_history[_currentHistoryPos]._value.c_str(), value)) {
 			return;
 		}
-		setVal(std::string(value));
+		setVal(core::String(value));
 	}
 	inline void setVal(bool value) {
 		if (boolVal() == value) {

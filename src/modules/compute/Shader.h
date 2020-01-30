@@ -24,7 +24,7 @@ protected:
 	bool _initialized = false;;
 	mutable bool _active = false;
 
-	typedef std::map<std::string, std::string> ShaderDefines;
+	typedef std::map<core::String, core::String> ShaderDefines;
 	ShaderDefines _defines;
 
 	core::String _name;
@@ -80,7 +80,7 @@ public:
 
 	void deleteKernel(Id& kernel);
 
-	core::String getSource(const core::String& buffer, bool finalize = true, std::vector<std::string>* includedFiles = nullptr) const;
+	core::String getSource(const core::String& buffer, bool finalize = true, std::vector<core::String>* includedFiles = nullptr) const;
 
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too

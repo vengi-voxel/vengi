@@ -17,7 +17,7 @@ struct BindParam {
 	std::vector<const char *> values;
 	std::vector<int> lengths;
 	std::vector<int> formats;
-	std::vector<std::string> valueBuffers;
+	std::vector<core::String> valueBuffers;
 	std::vector<FieldType> fieldTypes;
 	/**
 	 * @brief The real amount of added fields

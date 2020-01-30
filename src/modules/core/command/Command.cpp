@@ -10,7 +10,7 @@ namespace core {
 
 Command::CommandMap Command::_cmds;
 ReadWriteLock Command::_lock("Command");
-std::vector<std::string> Command::_delayedTokens;
+std::vector<core::String> Command::_delayedTokens;
 uint64_t Command::_delayMillis = 0;
 
 ActionButtonCommands& ActionButtonCommands::setBindingContext(int context) {
@@ -61,7 +61,7 @@ bool Command::unregisterActionButton(const core::String& name) {
 	return amount == 2;
 }
 
-int Command::complete(const core::String& str, std::vector<std::string>& matches) const {
+int Command::complete(const core::String& str, std::vector<core::String>& matches) const {
 	if (!_completer) {
 		return 0;
 	}
@@ -82,7 +82,7 @@ int Command::update(uint64_t dt) {
 		return 0;
 	}
 	// make a copy - it might get modified inside the execute call
-	std::vector<std::string> copy = _delayedTokens;
+	std::vector<core::String> copy = _delayedTokens;
 	_delayedTokens.clear();
 	int executed = 0;
 	for (const core::String& fullCmd : copy) {
@@ -99,7 +99,7 @@ int Command::execute(const char* msg, ...) {
 	char buf[4096];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	const int cmds = execute(std::string(buf));
+	const int cmds = execute(core::String(buf));
 	va_end(args);
 	return cmds;
 }
@@ -115,7 +115,7 @@ int Command::execute(const core::String& command) {
 		if (fullCmd[0] == '#') {
 			continue;
 		}
-		if (fullCmd.length() >= 2 && fullCmd[0] == '/' && fullCmd[1] == '/') {
+		if (fullCmd.size() >= 2 && fullCmd[0] == '/' && fullCmd[1] == '/') {
 			continue;
 		}
 		if (_delayMillis > 0) {
@@ -130,7 +130,7 @@ int Command::execute(const core::String& command) {
 		}
 		const core::String c = commandTokenizer.next();
 		Log::debug("command: '%s'", c.c_str());
-		std::vector<std::string> args;
+		std::vector<core::String> args;
 		while (commandTokenizer.hasNext()) {
 			args.push_back(commandTokenizer.next());
 			Log::debug("arg: '%s'", args.back().c_str());
@@ -207,7 +207,7 @@ Command& Command::setHelp(const char* help) {
 }
 
 Command& Command::setBoolCompleter() {
-	return setArgumentCompleter([] (const core::String& str, std::vector<std::string>& matches) -> int {
+	return setArgumentCompleter([] (const core::String& str, std::vector<core::String>& matches) -> int {
 		if (str[0] == 't') {
 			matches.push_back("true");
 			return 1;

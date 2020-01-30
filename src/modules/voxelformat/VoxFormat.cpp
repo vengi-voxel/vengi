@@ -35,8 +35,8 @@ namespace voxel {
 struct VoxModel {
 	uint32_t nodeId;
 	uint32_t modelId;
-	std::map<std::string, std::string> attributes;
-	std::map<std::string, std::string> nodeAttributes;
+	std::map<core::String, core::String> attributes;
+	std::map<core::String, core::String> nodeAttributes;
 };
 
 bool VoxFormat::saveChunk_LAYR(io::FileStream& stream, int layerId, const core::String& name, bool visible) const {
@@ -164,7 +164,7 @@ bool VoxFormat::saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* v
 	return true;
 }
 
-bool VoxFormat::saveAttributes(const std::map<std::string, std::string>& attributes, io::FileStream& stream) const {
+bool VoxFormat::saveAttributes(const std::map<core::String, core::String>& attributes, io::FileStream& stream) const {
 	Log::debug("Save %i attributes", (int)attributes.size());
 	stream.addInt((uint32_t)attributes.size());
 	for (const auto& e : attributes) {
@@ -235,7 +235,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	return true;
 }
 
-bool VoxFormat::readAttributes(std::map<std::string, std::string>& attributes, io::FileStream& stream) const {
+bool VoxFormat::readAttributes(std::map<core::String, core::String>& attributes, io::FileStream& stream) const {
 	uint32_t cnt;
 	wrapAttributesRead(stream.readInt(cnt))
 	Log::debug("Reading %i keys in the dict", cnt);
@@ -517,7 +517,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			// Shape Node Chunk
 			uint32_t nodeId;
 			wrap(stream.readInt(nodeId)) // 0 is root?
-			std::map<std::string, std::string> nodeAttributes;
+			std::map<core::String, core::String> nodeAttributes;
 			wrapAttributes(readAttributes(nodeAttributes, stream))
 			uint32_t shapeNodeNumModels;
 			wrap(stream.readInt(shapeNodeNumModels)) // must be 1
@@ -635,7 +635,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			// https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
 			uint32_t layerId;
 			wrap(stream.readInt(layerId))
-			std::map<std::string, std::string> attributes;
+			std::map<core::String, core::String> attributes;
 			wrapAttributes(readAttributes(attributes, stream))
 			uint32_t end;
 			wrap(stream.readInt(end));
@@ -656,7 +656,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 					numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 			uint32_t nodeId;
 			wrap(stream.readInt(nodeId)) // 0 is root?
-			std::map<std::string, std::string> attributes;
+			std::map<core::String, core::String> attributes;
 			// (_name : string)
 			// (_hidden : 0/1)
 			wrapAttributes(readAttributes(attributes, stream))
@@ -670,7 +670,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			wrap(stream.readInt(numFrames))
 			Log::debug("nTRN chunk: childNodeId: %u, layerId: %u, numFrames: %u", childNodeId, layerId, numFrames);
 			for (uint32_t i = 0; i < numFrames; ++i) {
-				std::map<std::string, std::string> transformNodeAttributes;
+				std::map<core::String, core::String> transformNodeAttributes;
 				// (_r : int8) ROTATION
 				// (_t : int32x3) translation
 				//
@@ -720,7 +720,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			Log::warn("nGRP chunk not yet supported");
 			uint32_t nodeId;
 			wrap(stream.readInt(nodeId)) // 0 is root?
-			std::map<std::string, std::string> attributes;
+			std::map<core::String, core::String> attributes;
 			wrapAttributes(readAttributes(attributes, stream))
 			uint32_t numChildren;
 			wrap(stream.readInt(numChildren))
@@ -735,7 +735,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		} else if (chunkId == FourCC('M','A','T','L')) {
 			uint32_t materialId;
 			wrap(stream.readInt(materialId))
-			std::map<std::string, std::string> materialAttributes;
+			std::map<core::String, core::String> materialAttributes;
 			// (_type : str) _diffuse, _metal, _glass, _emit
 			// (_weight : float) range 0 ~ 1
 			// (_rough : float)
@@ -748,7 +748,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			// TODO
 		} else if (chunkId == FourCC('r','O','B','J')) {
 			Log::warn("rOBJ chunk not yet supported");
-			std::map<std::string, std::string> attributes;
+			std::map<core::String, core::String> attributes;
 			wrapAttributes(readAttributes(attributes, stream))
 		} else {
 			uint8_t out[4];

@@ -9,21 +9,21 @@
 
 namespace core {
 
-int complete(core::String dir, const core::String& match, std::vector<std::string>& matches, const char* pattern) {
-	const std::string_view additionalDir = core::string::extractPath(match.c_str());
+int complete(core::String dir, const core::String& match, std::vector<core::String>& matches, const char* pattern) {
+	const core::String additionalDir = core::string::extractPath(match.c_str());
 	dir += additionalDir;
 	core::String currentMatch;
 	if (dir.empty()) {
 		dir = ".";
 		currentMatch = match;
 	} else {
-		currentMatch = match.substr(additionalDir.length());
+		currentMatch = match.substr(additionalDir.size());
 	}
 
 	std::vector<io::Filesystem::DirEntry> entries;
 	const core::String filter = match + pattern;
-	const std::string_view& filterName = core::string::extractFilenameWithExtension(filter.c_str());
-	const std::string_view& filterPath = core::string::extractPath(filter.c_str());
+	const core::String& filterName = core::string::extractFilenameWithExtension(filter.c_str());
+	const core::String& filterPath = core::string::extractPath(filter.c_str());
 	const core::String filterPathStr(filterPath);
 	const io::FilesystemPtr& fs = io::filesystem();
 	fs->list(dir, entries, currentMatch + "*");
@@ -37,7 +37,7 @@ int complete(core::String dir, const core::String& match, std::vector<std::strin
 		}
 	}
 	entries.clear();
-	fs->list(dir, entries, std::string(filterName));
+	fs->list(dir, entries, core::String(filterName));
 	for (const io::Filesystem::DirEntry& entry : entries) {
 		if (entry.type == io::Filesystem::DirEntry::Type::file) {
 			matches.push_back(filterPathStr.empty() ? entry.name : filterPathStr + entry.name);

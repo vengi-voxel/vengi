@@ -169,7 +169,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 		return false;
 	}
 	while (tok.hasNext()) {
-		std::set<std::string> fieldNames;
+		std::set<core::String> fieldNames;
 		token = tok.next();
 		Log::trace("token: '%s'", token.c_str());
 		if (token == "}") {
@@ -258,7 +258,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 				c.types |= typeMapping;
 			} else {
 				Log::trace("fieldnames: %i", (int)fieldNames.size());
-				std::vector<std::string> fieldNamesVec;
+				std::vector<core::String> fieldNamesVec;
 				std::copy(fieldNames.begin(), fieldNames.end(), std::back_inserter(fieldNamesVec));
 				table.constraints.insert(std::make_pair(name, persistence::Constraint{fieldNamesVec, typeMapping}));
 			}

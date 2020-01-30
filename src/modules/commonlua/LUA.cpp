@@ -119,7 +119,7 @@ LUAType LUA::registerType(const core::String& name) {
 }
 
 bool LUA::load(const core::String& luaString) {
-	if (luaL_loadbufferx(_state, luaString.c_str(), luaString.length(), "", nullptr) || lua_pcall(_state, 0, 0, 0)) {
+	if (luaL_loadbufferx(_state, luaString.c_str(), luaString.size(), "", nullptr) || lua_pcall(_state, 0, 0, 0)) {
 		setError(lua_tostring(_state, -1));
 		pop(1);
 		return false;

@@ -278,7 +278,7 @@ core::String extractPaletteName(const core::String& file) {
 	}
 	const core::String& nameWithExtension = file.substr(8);
 	const size_t extPos = nameWithExtension.rfind('.');
-	if (extPos != std::string::npos) {
+	if (extPos != core::String::npos) {
 		return nameWithExtension.substr(0, extPos);
 	}
 	return nameWithExtension;

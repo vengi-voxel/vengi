@@ -57,7 +57,7 @@ bool State::prepare(const char *name, const char* statement, int parameterCount)
 		return false;
 	}
 	if (name != nullptr && name[0] != '\0') {
-		_connection->registerPreparedStatement(std::string(name));
+		_connection->registerPreparedStatement(core::String(name));
 	}
 	return true;
 }

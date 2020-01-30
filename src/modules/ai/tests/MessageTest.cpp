@@ -70,7 +70,7 @@ TEST_F(MessageTest, testAIPauseMessage) {
 }
 
 TEST_F(MessageTest, testAINamesMessage) {
-	std::vector<std::string> names;
+	std::vector<core::String> names;
 	names.push_back("Test");
 	ai::AINamesMessage m(names);
 	ai::AINamesMessage* d = serializeDeserialize(m);
@@ -94,8 +94,8 @@ TEST_F(MessageTest, testAISelectMessage) {
 
 TEST_F(MessageTest, testAIStateMessage) {
 	ai::CharacterAttributes attributes;
-	attributes.insert(std::make_pair<std::string, std::string>("Name", "Test"));
-	attributes.insert(std::make_pair<std::string, std::string>("SomethingElse", "SomeValue"));
+	attributes.insert(std::make_pair<core::String, core::String>("Name", "Test"));
+	attributes.insert(std::make_pair<core::String, core::String>("SomethingElse", "SomeValue"));
 
 	ai::AIStateMessage m;
 	ai::AIStateWorld state(1, ai::ZERO, 1.0f, attributes);

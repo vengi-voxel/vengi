@@ -948,7 +948,7 @@ bool init() {
 		core::String extensionsStr = extensions.get();
 
 		Log::info("OpenCL device extensions:");
-		std::vector<std::string> extensionsVec;
+		std::vector<core::String> extensionsVec;
 		core::string::splitString(extensionsStr, extensionsVec, " ");
 		for (const auto& e : extensionsVec) {
 			Log::info("ext: %s", e.c_str());

@@ -26,7 +26,7 @@ public:
 
 	explicit IsCloseToGroup(const core::String& parameters) :
 		ICondition("IsCloseToGroup", parameters) {
-		std::vector<std::string> tokens;
+		std::vector<core::String> tokens;
 		Str::splitString(_parameters, tokens, ",");
 		if (tokens.size() != 2) {
 			_groupId = -1;

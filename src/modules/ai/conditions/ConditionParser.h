@@ -25,7 +25,7 @@ private:
 	const IAIFactory& _aiFactory;
 	core::String _conditionString;
 
-	void splitConditions(const core::String& string, std::vector<std::string>& tokens) const;
+	void splitConditions(const core::String& string, std::vector<core::String>& tokens) const;
 	bool fillInnerConditions(ConditionFactoryContext& ctx, const core::String& inner);
 	bool fillInnerFilters(FilterFactoryContext& ctx, const core::String& inner);
 

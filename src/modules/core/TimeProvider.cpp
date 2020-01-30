@@ -83,7 +83,8 @@ core::String TimeProvider::toString(unsigned long millis, const char *format) {
 	tm tm = *gmtime(&t);
 	std::stringstream ss;
 	ss << std::put_time(&tm, format);
-	return ss.str();
+	const std::string& tmp = ss.str();
+	return core::String(tmp.c_str());
 }
 
 }

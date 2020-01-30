@@ -42,7 +42,6 @@ TEST_F(StringUtilTest, testUrlEncode) {
 
 TEST_F(StringUtilTest, testStripExtension) {
 	EXPECT_EQ("foo", core::string::stripExtension("foo.bar"));
-	EXPECT_EQ("foo", core::string::eraseAllSpaces("foo"));
 	EXPECT_EQ("foo.bar", core::string::stripExtension("foo.bar.foo"));
 }
 
@@ -86,16 +85,6 @@ TEST_F(StringUtilTest, testExtractFilename) {
 	EXPECT_EQ("file", core::string::extractFilename("file.extension"));
 	EXPECT_EQ("file", core::string::extractFilename("/file.extension"));
 	EXPECT_EQ("file", core::string::extractFilename("file"));
-}
-
-TEST_F(StringUtilTest, testCutAfterFirstMatch) {
-	std::string_view test("filename.ext");
-	EXPECT_EQ("filename", core::string::cutAfterFirstMatch(test, "."));
-}
-
-TEST_F(StringUtilTest, testCutAfterFirstMatchString) {
-	core::String test("filename.ext");
-	EXPECT_EQ("filename", core::string::cutAfterFirstMatch(test, "."));
 }
 
 TEST_F(StringUtilTest, testToLower) {

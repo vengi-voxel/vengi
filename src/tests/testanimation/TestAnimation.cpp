@@ -17,8 +17,8 @@
 
 static bool reloadAnimationEntity = false;
 
-static std::vector<std::string> validCharacters;
-static std::vector<std::string> validBirds { "animal/animal-chicken" };
+static std::vector<core::String> validCharacters;
+static std::vector<core::String> validBirds { "animal/animal-chicken" };
 
 TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem,
@@ -41,7 +41,7 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 	}
 }
 
-const std::vector<std::string>& TestAnimation::animationEntityTypes() const {
+const std::vector<core::String>& TestAnimation::animationEntityTypes() const {
 	if (_entityType == (int)animation::AnimationSettings::Type::Bird) {
 		return validBirds;
 	}

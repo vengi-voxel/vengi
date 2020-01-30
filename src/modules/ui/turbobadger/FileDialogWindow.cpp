@@ -252,7 +252,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			if (_mode == video::WindowedApp::OpenFileMode::Save) {
 				if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
 					const tb::TBStr& filename = input->getText();
-					const core::String& sfilename = std::string(filename.c_str());
+					const core::String& sfilename = core::String(filename.c_str());
 					if (io::Filesystem::isRelativePath(sfilename)) {
 						_callback(_directory + "/" + sfilename);
 					} else {

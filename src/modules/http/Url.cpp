@@ -15,7 +15,7 @@ void Url::parseSchema(char **strPtr) {
 		_valid = false;
 		return;
 	}
-	schema = std::string(str, pos - str);
+	schema = core::String(str, pos - str);
 	++pos;
 	for (int i = 0; i < 2; ++i) {
 		if (*pos++ != '/') {
@@ -50,13 +50,13 @@ void Url::parseHostPart(char **strPtr) {
 		while (*p != '\0' && *p != ':' && *p != '@') {
 			++p;
 		}
-		username = std::string(str, p - str);
+		username = core::String(str, p - str);
 		if (*p == ':') {
 			str = ++p;
 			while (*p != '\0' && *p != '@') {
 				++p;
 			}
-			password = std::string(str, p - str);
+			password = core::String(str, p - str);
 		}
 		if (*p != '\0') {
 			++p;
@@ -67,7 +67,7 @@ void Url::parseHostPart(char **strPtr) {
 	for (;;) {
 		if (*p == ':') {
 			// parse port
-			hostname = std::string(afterUser, p - afterUser);
+			hostname = core::String(afterUser, p - afterUser);
 			++p;
 			afterUser = p;
 			for (;;) {
@@ -85,11 +85,11 @@ void Url::parseHostPart(char **strPtr) {
 			}
 			break;
 		} else if (*p == '\0') {
-			hostname = std::string(afterUser, p - afterUser);
+			hostname = core::String(afterUser, p - afterUser);
 			*strPtr = p;
 			return;
 		} else if (*p == '/') {
-			hostname = std::string(afterUser, p - afterUser);
+			hostname = core::String(afterUser, p - afterUser);
 			break;
 		}
 		++p;
@@ -111,7 +111,7 @@ void Url::parsePath(char **strPtr) {
 		++p;
 	}
 
-	path = std::string(pos, p - pos);
+	path = core::String(pos, p - pos);
 	*strPtr += path.size();
 	path = "/" + path;
 }
@@ -125,7 +125,7 @@ void Url::parseQuery(char **strPtr) {
 	while (*p && *p != '#') {
 		++p;
 	}
-	query = std::string(pos, p - pos);
+	query = core::String(pos, p - pos);
 	*strPtr += query.size();
 }
 
@@ -137,7 +137,7 @@ void Url::parseFragment(char **strPtr) {
 	++pos;
 	char *p = pos;
 	while (*p) p++;
-	fragment = std::string(pos, p - pos);
+	fragment = core::String(pos, p - pos);
 	*strPtr += fragment.size();
 }
 

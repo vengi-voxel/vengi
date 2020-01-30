@@ -21,12 +21,12 @@ protected:
 
 	inline core::String getBetween (const core::String& str, const core::String& tokenStart, const core::String& tokenEnd) {
 		const std::size_t start = str.find(tokenStart);
-		if (start == std::string::npos) {
+		if (start == core::String::npos) {
 			return "";
 		}
 
 		const std::size_t end = str.find(tokenEnd);
-		if (end == std::string::npos) {
+		if (end == core::String::npos) {
 			setError("syntax error - expected %s", tokenEnd.c_str());
 			return "";
 		}

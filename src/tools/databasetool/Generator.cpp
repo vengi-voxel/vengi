@@ -168,7 +168,7 @@ static void createMetaStruct(const Table& table, std::stringstream& src) {
 		src << "\t\t\t_uniqueKeys.reserve(" << table.uniqueKeys.size() << ");\n";
 	}
 	for (const auto& uniqueKey : table.uniqueKeys) {
-		src << "\t\t\t_uniqueKeys.emplace_back(std::set<std::string>{\"";
+		src << "\t\t\t_uniqueKeys.emplace_back(std::set<core::String>{\"";
 		src << core::string::join(uniqueKey.begin(), uniqueKey.end(), "\", \"");
 		src << "\"});\n";
 	}

@@ -23,7 +23,7 @@ static inline AnimationSettings* luaanim_getsettings(lua_State * l) {
 static int luaanim_settingssetmeshtypes(lua_State * l) {
 	AnimationSettings *settings = luaanim_getsettings(l);
 	const int n = lua_gettop(l);
-	std::vector<std::string> types;
+	std::vector<core::String> types;
 	types.reserve(n);
 	for (int i = 1; i <= n; ++i) {
 		types.push_back(luaL_checkstring(l, i));
@@ -243,7 +243,7 @@ bool AnimationSettings::init() {
 	return true;
 }
 
-void AnimationSettings::setMeshTypes(const std::vector<std::string>& meshTypes) {
+void AnimationSettings::setMeshTypes(const std::vector<core::String>& meshTypes) {
 	_meshTypes = meshTypes;
 }
 

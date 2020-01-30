@@ -38,7 +38,7 @@ static int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::Stri
 		if (array != nullptr) {
 			*array = '\0';
 		}
-		uniformMap.insert(std::make_pair(std::string(name), Uniform{location, block}));
+		uniformMap.insert(std::make_pair(core::String(name), Uniform{location, block}));
 		Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 	}
 	return numUniforms;

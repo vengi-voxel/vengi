@@ -15,19 +15,19 @@ namespace ai {
 
 using LuaNodeFactory = LUATreeNode::LUATreeNodeFactory;
 typedef std::shared_ptr<LuaNodeFactory> LUATreeNodeFactoryPtr;
-typedef std::map<std::string, LUATreeNodeFactoryPtr> TreeNodeFactoryMap;
+typedef std::map<core::String, LUATreeNodeFactoryPtr> TreeNodeFactoryMap;
 
 using LuaConditionFactory = LUACondition::LUAConditionFactory;
 typedef std::shared_ptr<LuaConditionFactory> LUAConditionFactoryPtr;
-typedef std::map<std::string, LUAConditionFactoryPtr> ConditionFactoryMap;
+typedef std::map<core::String, LUAConditionFactoryPtr> ConditionFactoryMap;
 
 using LuaFilterFactory = LUAFilter::LUAFilterFactory;
 typedef std::shared_ptr<LuaFilterFactory> LUAFilterFactoryPtr;
-typedef std::map<std::string, LUAFilterFactoryPtr> FilterFactoryMap;
+typedef std::map<core::String, LUAFilterFactoryPtr> FilterFactoryMap;
 
 using LuaSteeringFactory = movement::LUASteering::LUASteeringFactory;
 typedef std::shared_ptr<LuaSteeringFactory> LUASteeringFactoryPtr;
-typedef std::map<std::string, LUASteeringFactoryPtr> SteeringFactoryMap;
+typedef std::map<core::String, LUASteeringFactoryPtr> SteeringFactoryMap;
 
 /**
  * @brief Allows you to register lua @ai{TreeNode}s, @ai{Conditions}, @ai{Filter}s and @ai{ISteering}s.

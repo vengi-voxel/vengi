@@ -135,7 +135,7 @@ core::String Shader::validPreprocessorName(const core::String& name) {
 	return core::string::replaceAll(name, "_", "");
 }
 
-core::String Shader::getSource(const core::String& buffer, bool finalize, std::vector<std::string>* includedFiles) const {
+core::String Shader::getSource(const core::String& buffer, bool finalize, std::vector<core::String>* includedFiles) const {
 	if (buffer.empty()) {
 		return "";
 	}
@@ -168,13 +168,13 @@ core::String Shader::getSource(const core::String& buffer, bool finalize, std::v
 		src.append("#endif\n");
 	}
 
-	std::vector<std::string> includeDirs;
-	includeDirs.push_back(std::string(core::string::extractPath(_name)));
-	const std::pair<std::string, bool>& includeFirst = util::handleIncludes(buffer, includeDirs, includedFiles);
+	std::vector<core::String> includeDirs;
+	includeDirs.push_back(core::String(core::string::extractPath(_name)));
+	const std::pair<core::String, bool>& includeFirst = util::handleIncludes(buffer, includeDirs, includedFiles);
 	src += includeFirst.first;
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<std::string, bool>& includeRecurse = util::handleIncludes(src, includeDirs, includedFiles);
+		const std::pair<core::String, bool>& includeRecurse = util::handleIncludes(src, includeDirs, includedFiles);
 		src += includeRecurse.first;
 		++level;
 		if (level >= 10) {

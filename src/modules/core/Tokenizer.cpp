@@ -61,7 +61,7 @@ quote:
 					++s;
 					--_len;
 				}
-				token.push_back(c);
+				token += c;
 			}
 		}
 		if (lastCharWasQuoteEnd) {
@@ -86,7 +86,7 @@ quote:
 			s += cl;
 			continue;
 		}
-		token.push_back(c);
+		token += c;
 		if (isSeparator(c, split)) {
 			_tokens.push_back(token);
 			const size_t cl = core::utf8::lengthChar(c);
@@ -127,12 +127,12 @@ quote:
 			if (isSeparator(c, split)) {
 				_tokens.push_back(token);
 				token = "";
-				token.push_back(c);
+				token += c;
 				_tokens.push_back(token);
 				token = "";
 				continue;
 			}
-			token.push_back(c);
+			token += c;
 		}
 		_tokens.push_back(token);
 	}

@@ -17,35 +17,35 @@ namespace ai {
  */
 class AIRegistry: public IAIFactory {
 protected:
-	class TreeNodeFactory: public IFactoryRegistry<std::string, TreeNode, TreeNodeFactoryContext> {
+	class TreeNodeFactory: public IFactoryRegistry<core::String, TreeNode, TreeNodeFactoryContext> {
 	public:
 		TreeNodeFactory();
 	};
 
 	TreeNodeFactory _treeNodeFactory;
 
-	class SteerNodeFactory: public IFactoryRegistry<std::string, TreeNode, SteerNodeFactoryContext> {
+	class SteerNodeFactory: public IFactoryRegistry<core::String, TreeNode, SteerNodeFactoryContext> {
 	public:
 		SteerNodeFactory();
 	};
 
 	SteerNodeFactory _steerNodeFactory;
 
-	class SteeringFactory: public IFactoryRegistry<std::string, movement::ISteering, SteeringFactoryContext> {
+	class SteeringFactory: public IFactoryRegistry<core::String, movement::ISteering, SteeringFactoryContext> {
 	public:
 		SteeringFactory();
 	};
 
 	SteeringFactory _steeringFactory;
 
-	class FilterFactory: public IFactoryRegistry<std::string, IFilter, FilterFactoryContext> {
+	class FilterFactory: public IFactoryRegistry<core::String, IFilter, FilterFactoryContext> {
 	public:
 		FilterFactory();
 	};
 
 	FilterFactory _filterFactory;
 
-	class ConditionFactory: public IFactoryRegistry<std::string, ICondition, ConditionFactoryContext> {
+	class ConditionFactory: public IFactoryRegistry<core::String, ICondition, ConditionFactoryContext> {
 	public:
 		ConditionFactory();
 	};

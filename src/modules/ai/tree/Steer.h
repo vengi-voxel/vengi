@@ -32,7 +32,7 @@ public:
 					weightedSteerings.push_back(movement::WeightedData(s, 1.0f));
 				}
 			} else {
-				std::vector<std::string> tokens;
+				std::vector<core::String> tokens;
 				Str::splitString(ctx->parameters, tokens, ",");
 				ai_assert(tokens.size() == ctx->steerings.size(), "weights doesn't match steerings methods count");
 				const int tokenAmount = static_cast<int>(tokens.size());

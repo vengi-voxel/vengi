@@ -47,7 +47,7 @@ core::String format(const char *msg, ...) {
 	text[sizeof(text) - 1] = '\0';
 	va_end(ap);
 
-	return std::string(text);
+	return core::String(text);
 }
 
 char *urlEncode(const char *inBuf) {
@@ -85,41 +85,25 @@ core::String replaceAll(const core::String& str, const core::String& searchStr, 
 		return str;
 	}
 	core::String sNew = str;
-	std::string::size_type loc;
-	const std::string::size_type searchLength = searchStr.length();
-	std::string::size_type lastPosition = 0;
-	while (std::string::npos != (loc = sNew.find(searchStr, lastPosition))) {
+	size_t loc;
+	const size_t searchLength = searchStr.size();
+	size_t lastPosition = 0;
+	while (core::String::npos != (loc = sNew.find(searchStr, lastPosition))) {
 		sNew.replace(loc, searchLength, replaceStr);
 		lastPosition = loc + replaceStrSize;
 	}
 	return sNew;
 }
 
-void splitString(const core::String& string, std::vector<std::string>& tokens, const core::String& delimiters) {
+void splitString(const core::String& string, std::vector<core::String>& tokens, const char* delimiters) {
 	// Skip delimiters at beginning.
-	std::string::size_type lastPos = string.find_first_not_of(delimiters, 0);
+	size_t lastPos = string.find_first_not_of(delimiters, 0);
 	// Find first "non-delimiter".
-	std::string::size_type pos = string.find_first_of(delimiters, lastPos);
+	size_t pos = string.find_first_of(delimiters, lastPos);
 
-	while (std::string::npos != pos || std::string::npos != lastPos) {
+	while (core::String::npos != pos || core::String::npos != lastPos) {
 		// Found a token, add it to the vector.
 		tokens.push_back(string.substr(lastPos, pos - lastPos));
-		// Skip delimiters. Note the "not_of"
-		lastPos = string.find_first_not_of(delimiters, pos);
-		// Find next "non-delimiter"
-		pos = string.find_first_of(delimiters, lastPos);
-	}
-}
-
-void splitString(const core::String& string, std::vector<std::string_view>& tokens, const core::String& delimiters) {
-	// Skip delimiters at beginning.
-	std::string::size_type lastPos = string.find_first_not_of(delimiters, 0);
-	// Find first "non-delimiter".
-	std::string::size_type pos = string.find_first_of(delimiters, lastPos);
-
-	while (std::string::npos != pos || std::string::npos != lastPos) {
-		// Found a token, add it to the vector.
-		tokens.push_back(std::string_view(&string[lastPos], pos - lastPos));
 		// Skip delimiters. Note the "not_of"
 		lastPos = string.find_first_not_of(delimiters, pos);
 		// Find next "non-delimiter"
@@ -134,7 +118,7 @@ bool isNumber(const core::String &in) {
 }
 
 bool isInteger(const core::String& in) {
-	for (size_t i = 0u; i < in.length(); i++) {
+	for (size_t i = 0u; i < in.size(); i++) {
 		if (!isdigit(in[i])) {
 			return false;
 		}
@@ -237,31 +221,23 @@ bool matches(const char* pattern, const char* text) {
 	return patternMatch(pattern, text);
 }
 
-core::String concat(std::string_view first, std::string_view second) {
-	core::String target;
-	target.reserve(first.size() + second.size());
-	target.append(first.data(), first.size());
-	target.append(second.data(), second.size());
-	return target;
-}
-
 static void camelCase(core::String& str, bool upperCamelCase) {
 	if (str.empty()) {
 		return;
 	}
 
 	size_t startIndex = str.find_first_not_of("_", 0);
-	if (startIndex == std::string::npos) {
+	if (startIndex == core::String::npos) {
 		str = "";
 		return;
 	}
 	if (startIndex > 0) {
 		str = str.substr(startIndex);
 	}
-	std::string::size_type pos = str.find_first_of("_", 0);
-	while (std::string::npos != pos) {
+	size_t pos = str.find_first_of("_", 0);
+	while (core::String::npos != pos) {
 		core::String sub = str.substr(0, pos);
-		core::String second = str.substr(pos + 1, str.length() - (pos + 1));
+		core::String second = str.substr(pos + 1, str.size() - (pos + 1));
 		if (!second.empty()) {
 			second[0] = SDL_toupper(second[0]);
 			sub.append(second);

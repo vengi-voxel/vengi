@@ -18,7 +18,7 @@ private:
 	core::String _user;
 	core::String _password;
 	uint16_t _port;
-	std::unordered_set<std::string> _preparedStatements;
+	std::unordered_set<core::String> _preparedStatements;
 public:
 	Connection();
 	~Connection();

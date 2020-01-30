@@ -46,7 +46,7 @@ core::AppState ShaderTool::onConstruct() {
 
 void ShaderTool::validate(const core::String& name) {
 	const core::String& writePath = filesystem()->homePath();
-	std::vector<std::string> args;
+	std::vector<core::String> args;
 	args.push_back(writePath + name);
 	Log::debug("Execute glslang validator with the following commandline: %s %s", _glslangValidatorBin.c_str(),
 			   args[0].c_str());
@@ -89,15 +89,15 @@ bool ShaderTool::printInfo() {
 	return true;
 }
 
-std::pair<std::string, bool> ShaderTool::getSource(const core::String& file) const {
+std::pair<core::String, bool> ShaderTool::getSource(const core::String& file) const {
 	const io::FilesystemPtr& fs = filesystem();
 
-	const std::pair<std::string, bool>& retIncludes = util::handleIncludes(fs->load(file), _includeDirs);
+	const std::pair<core::String, bool>& retIncludes = util::handleIncludes(fs->load(file), _includeDirs);
 	core::String src = retIncludes.first;
 	int level = 0;
 	bool success = retIncludes.second;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<std::string, bool>& ret = util::handleIncludes(src, _includeDirs);
+		const std::pair<core::String, bool>& ret = util::handleIncludes(src, _includeDirs);
 		src = ret.first;
 		success &= ret.second;
 		++level;
@@ -144,10 +144,10 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
-	_shaderfile = std::string(core::string::extractFilename(shaderfile.c_str()));
+	_shaderfile = core::String(core::string::extractFilename(shaderfile.c_str()));
 	Log::debug("Preparing shader file %s", _shaderfile.c_str());
 	const io::FilesystemPtr& fs = filesystem();
-	_shaderpath = std::string(core::string::extractPath(shaderfile.c_str()));
+	_shaderpath = core::String(core::string::extractPath(shaderfile.c_str()));
 	const bool changedDir = fs->pushDir(_shaderpath);
 
 	video::Shader shader;
@@ -163,7 +163,7 @@ core::AppState ShaderTool::onRunning() {
 	const core::String& templateUniformBuffer = fs->load(_uniformBufferTemplateFile);
 
 	const core::String& computeFilename = _shaderfile + COMPUTE_POSTFIX;
-	std::pair<std::string, bool> computeBuffer = getSource(computeFilename);
+	std::pair<core::String, bool> computeBuffer = getSource(computeFilename);
 	if (!computeBuffer.first.empty()) {
 		if (!computeBuffer.second) {
 			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
@@ -199,7 +199,7 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	const core::String& fragmentFilename = _shaderfile + FRAGMENT_POSTFIX;
-	const std::pair<std::string, bool>& fragmentBuffer = getSource(fragmentFilename);
+	const std::pair<core::String, bool>& fragmentBuffer = getSource(fragmentFilename);
 	if (fragmentBuffer.first.empty() || !fragmentBuffer.second) {
 		Log::error("Could not load %s", fragmentFilename.c_str());
 		_exitCode = 127;
@@ -207,7 +207,7 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	const core::String& vertexFilename = _shaderfile + VERTEX_POSTFIX;
-	const std::pair<std::string, bool>& vertexBuffer = getSource(vertexFilename);
+	const std::pair<core::String, bool>& vertexBuffer = getSource(vertexFilename);
 	if (vertexBuffer.first.empty() || !vertexBuffer.second) {
 		Log::error("Could not load %s", vertexFilename.c_str());
 		_exitCode = 127;
@@ -215,7 +215,7 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	const core::String& geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
-	const std::pair<std::string, bool>& geometryBuffer = getSource(geometryFilename);
+	const std::pair<core::String, bool>& geometryBuffer = getSource(geometryFilename);
 
 	const core::String& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, false, &_includes);
 	const core::String& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, false, &_includes);

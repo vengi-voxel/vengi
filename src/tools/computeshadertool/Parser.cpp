@@ -198,7 +198,7 @@ static const simplecpp::Token *parseKernel(const core::String& filename, const s
 	if (!tok) {
 		return tok;
 	}
-	std::stack<std::string> stack;
+	std::stack<core::String> stack;
 	core::String prev;
 	int inAttribute = 0;
 	for (tok = tok->next; tok; tok = tok->next) {
@@ -282,7 +282,7 @@ static const simplecpp::Token *parseKernel(const core::String& filename, const s
 		}
 	}
 
-	std::vector<std::string> parameterTokens;
+	std::vector<core::String> parameterTokens;
 	while (!stack.empty()) {
 		const core::String token = stack.top();
 		stack.pop();
@@ -388,7 +388,7 @@ static const simplecpp::Token *parseKernel(const core::String& filename, const s
 		kernel.parameters.insert(kernel.parameters.begin(), parameter);
 	}
 
-	std::stack<std::string> returnTokens;
+	std::stack<core::String> returnTokens;
 	while (!stack.empty()) {
 		const core::String token = stack.top();
 		stack.pop();
@@ -419,13 +419,13 @@ static const simplecpp::Token *parseKernel(const core::String& filename, const s
 }
 
 bool parse(const core::String& buffer, const core::String& computeFilename, std::vector<Kernel>& kernels,
-		std::vector<Struct>& structs, std::map<std::string, std::string>& constants) {
+		std::vector<Struct>& structs, std::map<core::String, core::String>& constants) {
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
-	std::vector<std::string> files;
+	std::vector<core::String> files;
 	std::stringstream f(buffer);
 	simplecpp::TokenList rawtokens(f, files, computeFilename, &outputList);
-	std::map<std::string, simplecpp::TokenList*> included = simplecpp::load(rawtokens, files, dui, &outputList);
+	std::map<core::String, simplecpp::TokenList*> included = simplecpp::load(rawtokens, files, dui, &outputList);
 	simplecpp::TokenList output(files);
 	simplecpp::preprocess(output, rawtokens, files, included, dui, &outputList);
 

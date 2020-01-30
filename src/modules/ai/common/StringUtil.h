@@ -34,13 +34,13 @@ inline core::String eraseAllSpaces(const core::String& str) {
 	return tmp;
 }
 
-inline void splitString(const core::String& string, std::vector<std::string>& tokens, const core::String& delimiters = "()") {
+inline void splitString(const core::String& string, std::vector<core::String>& tokens, const core::String& delimiters = "()") {
 	// Skip delimiters at beginning.
-	std::string::size_type lastPos = string.find_first_not_of(delimiters, 0);
+	size_t lastPos = string.find_first_not_of(delimiters, 0);
 	// Find first "non-delimiter".
-	std::string::size_type pos = string.find_first_of(delimiters, lastPos);
+	size_t pos = string.find_first_of(delimiters, lastPos);
 
-	while (std::string::npos != pos || std::string::npos != lastPos) {
+	while (core::String::npos != pos || core::String::npos != lastPos) {
 		// Found a token, add it to the vector.
 		tokens.push_back(string.substr(lastPos, pos - lastPos));
 		// Skip delimiters.  Note the "not_of"

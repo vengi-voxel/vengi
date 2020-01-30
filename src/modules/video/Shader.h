@@ -56,16 +56,16 @@ protected:
 	mutable bool _active = false;
 	bool _dirty = true;
 
-	typedef std::map<std::string, std::string> ShaderDefines;
+	typedef std::map<core::String, core::String> ShaderDefines;
 	ShaderDefines _defines;
 
-	typedef std::unordered_map<std::string, int> ShaderUniformArraySizes;
+	typedef std::unordered_map<core::String, int> ShaderUniformArraySizes;
 	ShaderUniformArraySizes _uniformArraySizes;
 
 	ShaderUniforms _uniforms;
 
 	TransformFeedbackCaptureMode _transformFormat = TransformFeedbackCaptureMode::Max;
-	std::vector<std::string> _transformVaryings;
+	std::vector<core::String> _transformVaryings;
 
 	// can be used to validate that every uniform was set. The value type is the location index
 	mutable std::unordered_set<int> _usedUniforms;
@@ -108,7 +108,7 @@ public:
 
 	bool load(const core::String& name, const core::String& buffer, ShaderType shaderType);
 
-	core::String getSource(ShaderType shaderType, const core::String& buffer, bool finalize = true, std::vector<std::string>* includedFiles = nullptr) const;
+	core::String getSource(ShaderType shaderType, const core::String& buffer, bool finalize = true, std::vector<core::String>* includedFiles = nullptr) const;
 
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too
@@ -145,7 +145,7 @@ public:
 	 * @note Must be called before calling @c setup()
 	 * @see setup()
 	 */
-	void setupTransformFeedback(const std::vector<std::string>& transformVaryings, TransformFeedbackCaptureMode mode);
+	void setupTransformFeedback(const std::vector<core::String>& transformVaryings, TransformFeedbackCaptureMode mode);
 
 	void recordUsedUniforms(bool state);
 
@@ -195,8 +195,8 @@ public:
 
 	void checkAttribute(const core::String& attribute);
 	void checkUniform(const core::String& uniform);
-	void checkAttributes(std::initializer_list<std::string> attributes);
-	void checkUniforms(std::initializer_list<std::string> uniforms);
+	void checkAttributes(std::initializer_list<core::String> attributes);
+	void checkUniforms(std::initializer_list<core::String> uniforms);
 
 	/**
 	 * @brief Adds a new define in the form '#define value' to the shader source code

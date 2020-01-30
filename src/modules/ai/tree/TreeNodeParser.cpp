@@ -6,11 +6,11 @@
 
 namespace ai {
 
-void TreeNodeParser::splitTasks(const core::String& string, std::vector<std::string>& tokens) const {
+void TreeNodeParser::splitTasks(const core::String& string, std::vector<core::String>& tokens) const {
 	bool inParameter = false;
 	bool inChildren = false;
 	core::String token;
-	for (std::string::const_iterator i = string.begin(); i != string.end(); ++i) {
+	for (auto i = string.begin(); i != string.end(); ++i) {
 		if (*i == '{') {
 			inParameter = true;
 		} else if (*i == '}') {
@@ -37,9 +37,9 @@ SteeringPtr TreeNodeParser::getSteering (const core::String& nodeName) {
 	core::String steerType;
 	const core::String& parameters = getBetween(nodeName, "{", "}");
 	std::size_t n = nodeName.find("{");
-	if (n == std::string::npos)
+	if (n == core::String::npos)
 		n = nodeName.find("(");
-	if (n != std::string::npos) {
+	if (n != core::String::npos) {
 		steerType = nodeName.substr(0, n);
 	} else {
 		steerType = nodeName;
@@ -54,11 +54,11 @@ TreeNodePtr TreeNodeParser::getTreeNode(const core::String& name) {
 	core::String nodeType;
 	core::String parameters;
 	std::size_t n = _taskString.find("(");
-	if (n == std::string::npos || _taskString.find("{") < n) {
+	if (n == core::String::npos || _taskString.find("{") < n) {
 		parameters = getBetween(_taskString, "{", "}");
 		n = _taskString.find("{");
 	}
-	if (n != std::string::npos) {
+	if (n != core::String::npos) {
 		nodeType = _taskString.substr(0, n);
 	} else {
 		nodeType = _taskString;
@@ -68,7 +68,7 @@ TreeNodePtr TreeNodeParser::getTreeNode(const core::String& name) {
 		if (nodeType != "Steer") {
 			return TreeNodePtr();
 		}
-		std::vector<std::string> tokens;
+		std::vector<core::String> tokens;
 		splitTasks(subTrees, tokens);
 		movement::Steerings steerings;
 		for (const core::String& nodeName : tokens) {

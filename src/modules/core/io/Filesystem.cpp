@@ -103,7 +103,7 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 	}
 
 	size_t pre = 0, pos;
-	while ((pos = s.find_first_of('/', pre)) != std::string::npos) {
+	while ((pos = s.find_first_of('/', pre)) != core::String::npos) {
 		const core::String dirpart = s.substr(0, pos++);
 		pre = pos;
 		if (dirpart.empty()) {
@@ -128,7 +128,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 	}
 	core::String dirFilter = filter;
 	auto iter = dirFilter.rfind(".");
-	if (iter != std::string::npos) {
+	if (iter != core::String::npos) {
 		dirFilter.erase(iter);
 	}
 	Log::debug("Filter %s by %s (dir filter: '%s')", directory.c_str(), filter.c_str(), dirFilter.c_str());
@@ -414,7 +414,7 @@ core::String Filesystem::load(const char *filename, ...) {
 	text[sizeof(text) - 1] = '\0';
 	va_end(ap);
 
-	return load(std::string(text));
+	return load(core::String(text));
 }
 
 core::String Filesystem::load(const core::String& filename) const {

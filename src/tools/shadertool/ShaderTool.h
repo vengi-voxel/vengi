@@ -27,12 +27,12 @@ protected:
 	core::String _uniformBufferTemplateFile;
 	core::String _shaderfile;
 	core::String _shaderpath;
-	std::vector<std::string> _includes;
-	std::vector<std::string> _includeDirs;
+	std::vector<core::String> _includes;
+	std::vector<core::String> _includeDirs;
 
 	bool parse(const core::String& src, bool vertex);
 	void validate(const core::String& name);
-	std::pair<std::string, bool> getSource(const core::String& file) const;
+	std::pair<core::String, bool> getSource(const core::String& file) const;
 	bool printInfo();
 public:
 	ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

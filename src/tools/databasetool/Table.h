@@ -12,7 +12,7 @@
 namespace databasetool {
 
 // TODO: sort for insertion order - keep it stable
-typedef std::map<std::string, persistence::Field> Fields;
+typedef std::map<core::String, persistence::Field> Fields;
 
 struct Table {
 	core::String name;

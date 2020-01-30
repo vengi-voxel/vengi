@@ -35,10 +35,10 @@ private:
 	 */
 	core::String _basePath;
 	core::String _homePath;
-	std::vector<std::string> _paths;
+	std::vector<core::String> _paths;
 
-	std::stack<std::string> _dirStack;
-	std::unordered_map<std::string, uv_fs_event_t*> _watches;
+	std::stack<core::String> _dirStack;
+	std::unordered_map<core::String, uv_fs_event_t*> _watches;
 	uv_loop_t *_loop = nullptr;
 
 public:

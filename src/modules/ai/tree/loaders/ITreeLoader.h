@@ -24,7 +24,7 @@ typedef std::shared_ptr<TreeNode> TreeNodePtr;
 class ITreeLoader {
 protected:
 	const IAIFactory& _aiFactory;
-	typedef std::map<std::string, TreeNodePtr> TreeMap;
+	typedef std::map<core::String, TreeNodePtr> TreeMap;
 	TreeMap _treeMap;
 	ReadWriteLock _lock = {"treeloader"};
 
@@ -57,7 +57,7 @@ public:
 	/**
 	 * @brief Fill the given vector with the loaded behaviour tree names
 	 */
-	void getTrees(std::vector<std::string>& trees) const {
+	void getTrees(std::vector<core::String>& trees) const {
 		ScopedReadLock scopedLock(_lock);
 		trees.reserve(_treeMap.size());
 		for (TreeMap::const_iterator it = _treeMap.begin(); it != _treeMap.end(); ++it) {

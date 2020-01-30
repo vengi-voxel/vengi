@@ -260,7 +260,7 @@ void Protocol::parseGames(const core::String& json) const {
 
 void Protocol::parseScores(const core::String& json) {
 	const core::json j = core::json::parse(json);
-	using _S = std::pair<int, std::string>;
+	using _S = std::pair<int, core::String>;
 	std::vector<_S> entries;
 	for (const auto &score : j.items()) {
 		const int rank = score.value().get<int>();

@@ -118,26 +118,26 @@ TEST(MapTest, testIterateRangeBased) {
 }
 
 TEST(MapTest, testStringSharedPtr) {
-	core::Map<std::string, std::shared_ptr<std::string>, 4, std::hash<std::string>> map;
-	auto foobar = std::make_shared<std::string>("foobar");
+	core::Map<core::String, std::shared_ptr<core::String>, 4, std::hash<core::String>> map;
+	auto foobar = std::make_shared<core::String>("foobar");
 	map.put("foobar", foobar);
-	map.put("barfoo", std::make_shared<std::string>("barfoo"));
-	map.put("foobar", std::make_shared<std::string>("barfoo"));
+	map.put("barfoo", std::make_shared<core::String>("barfoo"));
+	map.put("foobar", std::make_shared<core::String>("barfoo"));
 	for (auto iter = map.begin(); iter != map.end(); ++iter) {
 	}
 	map.clear();
 }
 
 TEST(MapTest, testCopy) {
-	core::Map<std::string, std::shared_ptr<std::string>, 4, std::hash<std::string>> map;
-	map.put("foobar", std::make_shared<std::string>("barfoo"));
+	core::Map<core::String, std::shared_ptr<core::String>, 4, std::hash<core::String>> map;
+	map.put("foobar", std::make_shared<core::String>("barfoo"));
 	auto map2 = map;
 	map2.clear();
 }
 
 TEST(MapTest, testErase) {
-	core::Map<std::string, std::shared_ptr<std::string>, 4, std::hash<std::string>> map;
-	map.put("foobar", std::make_shared<std::string>("barfoo"));
+	core::Map<core::String, std::shared_ptr<core::String>, 4, std::hash<core::String>> map;
+	map.put("foobar", std::make_shared<core::String>("barfoo"));
 	EXPECT_EQ(1u, map.size());
 	auto iter = map.find("foobar");
 	EXPECT_NE(iter, map.end());
@@ -146,9 +146,9 @@ TEST(MapTest, testErase) {
 }
 
 TEST(MapTest, testAssign) {
-	core::Map<std::string, std::shared_ptr<std::string>, 4, std::hash<std::string>> map;
-	map.put("foobar", std::make_shared<std::string>("barfoo"));
-	core::Map<std::string, std::shared_ptr<std::string>, 4, std::hash<std::string>> map2;
+	core::Map<core::String, std::shared_ptr<core::String>, 4, std::hash<core::String>> map;
+	map.put("foobar", std::make_shared<core::String>("barfoo"));
+	core::Map<core::String, std::shared_ptr<core::String>, 4, std::hash<core::String>> map2;
 	map2 = map;
 	EXPECT_EQ(1u, map.size());
 	EXPECT_EQ(1u, map2.size());

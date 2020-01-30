@@ -28,8 +28,8 @@ private:
 	stock::Stock _stock;
 
 	attrib::ShadowAttributes _attrib;
-	std::vector<std::string> _animations;
-	std::vector<std::string> _items;
+	std::vector<core::String> _animations;
+	std::vector<core::String> _items;
 	int _itemIdx = 0;
 	int _animationIdx = 0;
 
@@ -41,7 +41,7 @@ private:
 	void onRenderUI() override;
 	bool addItem(stock::ItemId id);
 
-	const std::vector<std::string>& animationEntityTypes() const;
+	const std::vector<core::String>& animationEntityTypes() const;
 	animation::AnimationEntity* animationEntity();
 public:
 	TestAnimation(const metric::MetricPtr& metric, const stock::StockDataProviderPtr& stockDataProvider,

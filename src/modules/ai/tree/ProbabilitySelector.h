@@ -24,7 +24,7 @@ protected:
 public:
 	ProbabilitySelector(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
 			Selector(name, parameters, condition), _weightSum(0.0f) {
-		std::vector<std::string> tokens;
+		std::vector<core::String> tokens;
 		Str::splitString(parameters, tokens, ",");
 		const int weightAmount = static_cast<int>(tokens.size());
 		for (int i = 0; i < weightAmount; i++) {

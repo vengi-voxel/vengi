@@ -13,7 +13,7 @@ namespace voxelworld {
 
 class TreeVolumeCache {
 private:
-	core::Map<std::string, int, 8, std::hash<std::string>> _treeTypeCount;
+	core::Map<core::String, int, 8, std::hash<core::String>> _treeTypeCount;
 
 	voxelformat::VolumeCachePtr _volumeCache;
 public:

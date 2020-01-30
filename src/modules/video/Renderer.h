@@ -303,7 +303,7 @@ extern bool bindTransforFeebackBuffer(int index, Id bufferId);
 extern bool bindTransformFeedback(Id id);
 extern void deleteTransformFeedback(Id& id);
 extern Id genTransformFeedback();
-extern bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode transformFormat, const std::vector<std::string>& transformVaryings);
+extern bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode transformFormat, const std::vector<core::String>& transformVaryings);
 
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices, void* offset = nullptr) {

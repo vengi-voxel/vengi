@@ -103,7 +103,7 @@ void BindParam::push(const Model& model, const Field& field) {
 	case FieldType::PASSWORD:
 	case FieldType::STRING:
 	case FieldType::TEXT: {
-		valueBuffers.emplace_back(notNull ? model.getValue<std::string>(field) : *model.getValuePointer<std::string>(field));
+		valueBuffers.emplace_back(notNull ? model.getValue<core::String>(field) : *model.getValuePointer<core::String>(field));
 		values[index] = valueBuffers.back().c_str();
 		Log::debug("Parameter %i: '%s'", index + 1, values[index]);
 		break;

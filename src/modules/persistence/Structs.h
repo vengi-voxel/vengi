@@ -13,7 +13,7 @@
 namespace persistence {
 
 struct Constraint {
-	std::vector<std::string> fields;
+	std::vector<core::String> fields;
 	// bitmask from persistence::Model::ConstraintType
 	uint32_t types;
 };
@@ -22,9 +22,9 @@ struct ForeignKey {
 	core::String field;
 };
 
-typedef std::unordered_map<std::string, Constraint> Constraints;
-typedef std::unordered_map<std::string, ForeignKey> ForeignKeys;
-typedef std::vector<std::set<std::string>> UniqueKeys;
-typedef std::vector<std::string> PrimaryKeys;
+typedef std::unordered_map<core::String, Constraint> Constraints;
+typedef std::unordered_map<core::String, ForeignKey> ForeignKeys;
+typedef std::vector<std::set<core::String>> UniqueKeys;
+typedef std::vector<core::String> PrimaryKeys;
 
 }

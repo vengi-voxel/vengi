@@ -322,7 +322,7 @@ MapView* AIDebugger::createMapWidget() {
 	return new MapView(*this);
 }
 
-void AIDebugger::setNames(const std::vector<std::string>& names) {
+void AIDebugger::setNames(const std::vector<core::String>& names) {
 	_names.clear();
 	_names.reserve(names.size());
 	for (const std::string& name : names) {

@@ -113,7 +113,7 @@ bool SceneManager::importAsPlane(const core::String& file) {
 	if (v == nullptr) {
 		return false;
 	}
-	const std::string_view filename = core::string::extractFilename(img->name().c_str());
+	const core::String filename = core::string::extractFilename(img->name().c_str());
 	if (!_layerMgr.addLayer(filename.data(), true, v, glm::zero<glm::ivec3>())) {
 		delete v;
 		return false;

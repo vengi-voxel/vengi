@@ -262,7 +262,7 @@ core::String Window::getStr(const char *nodeId) {
 		return EMPTY;
 	}
 	const tb::TBStr& amplitude = widget->getText();
-	return std::string(amplitude.c_str());
+	return core::String(amplitude.c_str());
 }
 
 bool Window::loadResourceData(const char *data) {

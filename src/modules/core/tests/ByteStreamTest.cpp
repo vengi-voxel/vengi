@@ -178,7 +178,7 @@ TEST(ByteStreamTest, testReadString) {
 	const size_t previous = byteStream.getSize();
 	const core::String readstr = byteStream.readString();
 	ASSERT_EQ(str, readstr);
-	ASSERT_EQ(previous - str.length() - 1, byteStream.getSize());
+	ASSERT_EQ(previous - str.size() - 1, byteStream.getSize());
 }
 
 TEST(ByteStreamTest, testReadStrings) {
@@ -293,10 +293,10 @@ TEST(ByteStreamTest, testRandomReadWrite) {
 			break;
 		}
 		case e_string: {
-			std::string* str = new std::string("hello IT!");
+			core::String* str = new core::String("hello IT!");
 			byteStream.addString(*str);
 			typeValue.pValue = str;
-			size += str->length() + 1; //plus the '\0' char
+			size += str->size() + 1; //plus the '\0' char
 			break;
 		}
 		default:
@@ -343,9 +343,9 @@ TEST(ByteStreamTest, testRandomReadWrite) {
 		}
 		case e_string: {
 			core::String str = byteStream.readString();
-			size -= str.length() + 1; //plus the '\0' char
-			ASSERT_EQ(str, *(std::string* ) value);
-			delete (std::string*) value;
+			size -= str.size() + 1; //plus the '\0' char
+			ASSERT_EQ(str, *(core::String* ) value);
+			delete (core::String*) value;
 			break;
 		}
 		default:

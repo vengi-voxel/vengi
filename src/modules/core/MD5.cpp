@@ -269,7 +269,7 @@ core::String md5sum(const uint8_t *buf, uint32_t len) {
 		b += 2;
 	}
 	strbuf[size * 2] = '\0';
-	return std::string(strbuf);
+	return core::String(strbuf);
 }
 
 }

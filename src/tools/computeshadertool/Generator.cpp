@@ -346,12 +346,12 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		const core::String& sourceDirectory,
 		const std::vector<Kernel>& _kernels,
 		const std::vector<Struct>& _structs,
-		const std::map<std::string, std::string>& _constants,
+		const std::map<core::String, core::String>& _constants,
 		const core::String& postfix,
 		const core::String& shaderBuffer) {
 	const core::String name = _name + "Shader";
 
-	std::vector<std::string> shaderNameParts;
+	std::vector<core::String> shaderNameParts;
 	core::string::splitString(name, shaderNameParts, "_-");
 	core::String filename = "";
 	for (core::String n : shaderNameParts) {

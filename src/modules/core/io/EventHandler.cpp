@@ -44,7 +44,7 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		dropFile(event.drop.file);
 		break;
 	case SDL_TEXTINPUT:
-		textInput(std::string(event.text.text));
+		textInput(core::String(event.text.text));
 		break;
 	case SDL_KEYUP:
 		keyRelease((int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);

@@ -83,7 +83,7 @@ public:
 	void setEntities(const std::vector<AIStateWorld>& entities);
 	void setCharacterDetails(const CharacterId& id, const AIStateAggro& aggro, const AIStateNode& node);
 	void addCharacterStaticData(const AICharacterStaticMessage& msg);
-	void setNames(const std::vector<std::string>& names);
+	void setNames(const std::vector<core::String>& names);
 	const QStringList& getNames() const;
 	/**
 	 * @return The behaviour tree node that is assigned to the selected entity

@@ -14,11 +14,11 @@ namespace ai {
  */
 class AINamesMessage: public IProtocolMessage {
 private:
-	std::vector<std::string> _names;
-	const std::vector<std::string>* _namesPtr;
+	std::vector<core::String> _names;
+	const std::vector<core::String>* _namesPtr;
 
 public:
-	explicit AINamesMessage(const std::vector<std::string>& names) :
+	explicit AINamesMessage(const std::vector<core::String>& names) :
 			IProtocolMessage(PROTO_NAMES), _namesPtr(&names) {
 	}
 
@@ -39,7 +39,7 @@ public:
 		}
 	}
 
-	inline const std::vector<std::string>& getNames() const {
+	inline const std::vector<core::String>& getNames() const {
 		if (_namesPtr)
 			return *_namesPtr;
 		return _names;

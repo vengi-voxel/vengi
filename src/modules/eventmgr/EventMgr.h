@@ -29,7 +29,7 @@ namespace eventmgr {
  */
 class EventMgr {
 private:
-	std::unordered_map<std::string, EventConfigurationDataPtr> _eventData;
+	std::unordered_map<core::String, EventConfigurationDataPtr> _eventData;
 	std::unordered_map<EventId, EventPtr> _events;
 
 	EventProviderPtr _eventProvider;

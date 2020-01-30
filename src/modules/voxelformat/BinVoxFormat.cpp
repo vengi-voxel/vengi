@@ -14,11 +14,11 @@ namespace voxel {
 bool BinVoxFormat::readHeader(const core::String& header) {
 	const char *delimiters = "\n";
 	// Skip delimiters at beginning.
-	std::string::size_type lastPos = header.find_first_not_of(delimiters, 0);
+	size_t lastPos = header.find_first_not_of(delimiters, 0);
 	// Find first "non-delimiter".
-	std::string::size_type pos = header.find_first_of(delimiters, lastPos);
+	size_t pos = header.find_first_of(delimiters, lastPos);
 
-	while (std::string::npos != pos || std::string::npos != lastPos) {
+	while (core::String::npos != pos || core::String::npos != lastPos) {
 		// Found a token, add it to the vector.
 		const core::String& line = header.substr(lastPos, pos - lastPos);
 
@@ -117,7 +117,7 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 bool BinVoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	core::String str = file->load();
 	const size_t dataOffset = str.find("data");
-	if (dataOffset == std::string::npos) {
+	if (dataOffset == core::String::npos) {
 		Log::error("Could not find end of header in %s", file->name().c_str());
 		return false;
 	}

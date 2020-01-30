@@ -16,7 +16,7 @@
 
 namespace core {
 
-typedef std::vector<std::string> CmdArgs;
+typedef std::vector<core::String> CmdArgs;
 
 struct ActionButtonCommands {
 	const core::String first;
@@ -39,20 +39,20 @@ struct ActionButtonCommands {
  */
 class Command {
 private:
-	typedef std::unordered_map<std::string, Command> CommandMap;
+	typedef std::unordered_map<core::String, Command> CommandMap;
 	typedef std::function<void(const CmdArgs&)> FunctionType;
 
 	static CommandMap _cmds;
 	static ReadWriteLock _lock;
 
 	static uint64_t _delayMillis;
-	static std::vector<std::string> _delayedTokens;
+	static std::vector<core::String> _delayedTokens;
 
 	core::String _name;
 	const char* _help;
 	FunctionType _func;
 	BindingContext _bindingContext = BindingContext::All;
-	typedef std::function<int(const core::String&, std::vector<std::string>& matches)> CompleteFunctionType;
+	typedef std::function<int(const core::String&, std::vector<core::String>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
 	Command() :
@@ -134,10 +134,10 @@ public:
 		}
 	}
 
-	int complete(const core::String& str, std::vector<std::string>& matches) const;
+	int complete(const core::String& str, std::vector<core::String>& matches) const;
 
 	/**
-	 * @param func A functor or lambda that accepts the following parameters: @code const core::String& str, std::vector<std::string>& matches @endcode
+	 * @param func A functor or lambda that accepts the following parameters: @code const core::String& str, std::vector<core::String>& matches @endcode
 	 */
 	template<class Functor>
 	Command& setArgumentCompleter(Functor&& func) {

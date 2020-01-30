@@ -62,13 +62,13 @@ bool Model::fillModelValues(State& state) {
 		switch (f.type) {
 		case FieldType::PASSWORD:
 		case FieldType::TEXT:
-			setValue(f, std::string(value, length));
+			setValue(f, core::String(value, length));
 			break;
 		case FieldType::STRING:
 			if (f.isLower()) {
-				setValue(f, core::string::toLower(std::string(value, length)));
+				setValue(f, core::string::toLower(core::String(value, length)));
 			} else {
-				setValue(f, std::string(value, length));
+				setValue(f, core::String(value, length));
 			}
 			break;
 		case FieldType::BOOLEAN:
@@ -108,7 +108,7 @@ bool Model::fillModelValues(State& state) {
 void Model::setValue(const Field& f, const core::String& value) {
 	core_assert(f.offset >= 0);
 	uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
-	std::string* targetValue = (std::string*)target;
+	core::String* targetValue = (core::String*)target;
 	*targetValue = value;
 	setValid(f, true);
 }

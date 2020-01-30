@@ -44,7 +44,7 @@ protected:
 	ItemId _id;
 	ItemShape _shape;
 	ItemType _type;
-	std::unordered_map<std::string, std::string> _labels;
+	std::unordered_map<core::String, core::String> _labels;
 	cooldown::Type _construction = cooldown::Type::NONE;
 	cooldown::Type _usage = cooldown::Type::NONE;
 	cooldown::Type _regenerate = cooldown::Type::NONE;

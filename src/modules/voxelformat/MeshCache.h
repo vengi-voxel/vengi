@@ -17,7 +17,7 @@ namespace voxelformat {
  */
 class MeshCache : public core::IComponent {
 protected:
-	std::unordered_map<std::string, voxel::Mesh*> _meshes;
+	std::unordered_map<core::String, voxel::Mesh*> _meshes;
 
 public:
 	voxel::Mesh& cacheEntry(const char *path);

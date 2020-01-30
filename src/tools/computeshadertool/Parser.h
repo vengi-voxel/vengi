@@ -15,6 +15,6 @@ extern bool parse(const core::String& buffer,
 		const core::String& computeFilename,
 		std::vector<Kernel>& kernels,
 		std::vector<Struct>& structs,
-		std::map<std::string, std::string>& constants);
+		std::map<core::String, core::String>& constants);
 
 }

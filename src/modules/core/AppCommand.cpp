@@ -39,7 +39,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		Log::info("%s", params.c_str());
 	}).setHelp("Print the given arguments to the console (info log level)");
 
-	auto fileCompleter = [=] (const core::String& str, std::vector<std::string>& matches) -> int {
+	auto fileCompleter = [=] (const core::String& str, std::vector<core::String>& matches) -> int {
 		std::vector<io::Filesystem::DirEntry> entries;
 		const io::FilesystemPtr& filesystem = io::filesystem();
 		const io::FilePtr& file = filesystem->open(str);
@@ -169,7 +169,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}
 		const core::String& id = args[0];
 		const Log::Level level = Log::toLogLevel(args[1].c_str());
-		const auto hashVal = Log::logid(id.c_str(), id.length());
+		const auto hashVal = Log::logid(id.c_str(), id.size());
 		if (level == Log::Level::None) {
 			Log::disable(hashVal);
 			Log::info("Disabling logging for %s (%u)", id.c_str(), hashVal);
@@ -177,7 +177,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::enable(hashVal, level);
 			Log::info("Set log level for %s to %s (%u)", id.c_str(), args[1].c_str(), hashVal);
 		}
-	}).setHelp("Change the log level on an id base").setArgumentCompleter([] (const core::String& str, std::vector<std::string>& matches) -> int {
+	}).setHelp("Change the log level on an id base").setArgumentCompleter([] (const core::String& str, std::vector<core::String>& matches) -> int {
 		if (str[0] == 't') {
 			matches.push_back("trace");
 			return 1;

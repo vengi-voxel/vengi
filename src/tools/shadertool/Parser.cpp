@@ -171,10 +171,10 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
-	std::vector<std::string> files;
+	std::vector<core::String> files;
 	std::stringstream f(buffer);
 	simplecpp::TokenList rawtokens(f, files, shaderFile, &outputList);
-	std::map<std::string, simplecpp::TokenList*> included = simplecpp::load(rawtokens, files, dui, &outputList);
+	std::map<core::String, simplecpp::TokenList*> included = simplecpp::load(rawtokens, files, dui, &outputList);
 	simplecpp::TokenList output(files);
 	simplecpp::preprocess(output, rawtokens, files, included, dui, &outputList);
 

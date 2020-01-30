@@ -253,7 +253,7 @@ void UIApp::fileDialog(const std::function<void(const core::String&)>& callback,
 	FileDialogWindow* dialog = new FileDialogWindow(this, callback, _lastDirectory);
 	dialog->setMode(mode);
 	if (!filter.empty()) {
-		std::vector<std::string> tokens;
+		std::vector<core::String> tokens;
 		core::string::splitString(filter, tokens, ";");
 		const char **filters = new const char*[tokens.size() + 1];
 		int n = 0;

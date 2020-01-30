@@ -19,8 +19,8 @@ namespace voxel {
  */
 class VoxFormat : public VoxFileFormat {
 private:
-	bool readAttributes(std::map<std::string, std::string>& attributes, io::FileStream& stream) const;
-	bool saveAttributes(const std::map<std::string, std::string>& attributes, io::FileStream& stream) const;
+	bool readAttributes(std::map<core::String, core::String>& attributes, io::FileStream& stream) const;
+	bool saveAttributes(const std::map<core::String, core::String>& attributes, io::FileStream& stream) const;
 	bool saveChunk_LAYR(io::FileStream& stream, int layerId, const core::String& name, bool visible) const;
 	bool saveChunk_nTRN(io::FileStream& stream, int layerId, const voxel::Region& region) const;
 	bool saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* volume, const voxel::Region& region) const;

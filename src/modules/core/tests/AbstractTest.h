@@ -19,35 +19,41 @@ namespace core {
 
 template<typename T, glm::qualifier P = glm::defaultp>
 inline ::core::String& operator+= (::core::String& in, const glm::tvec1<T, P>& vec) {
-	in.append(glm::to_string(vec));
+	const std::string& tmp = glm::to_string(vec);
+	in.append(tmp.c_str());
 	return in;
 }
 
 template<typename T, glm::qualifier P = glm::defaultp>
 inline ::core::String& operator+= (::core::String& in, const glm::tvec2<T, P>& vec) {
-	in.append(glm::to_string(vec));
+	const std::string& tmp = glm::to_string(vec);
+	in.append(tmp.c_str());
 	return in;
 }
 
 template<typename T, glm::qualifier P = glm::defaultp>
 inline ::core::String& operator+= (::core::String& in, const glm::tvec3<T, P>& vec) {
-	in.append(glm::to_string(vec));
+	const std::string& tmp = glm::to_string(vec);
+	in.append(tmp.c_str());
 	return in;
 }
 
 template<typename T, glm::qualifier P = glm::defaultp>
 inline ::core::String& operator+= (::core::String& in, const glm::tvec4<T, P>& vec) {
-	in.append(glm::to_string(vec));
+	const std::string& tmp = glm::to_string(vec);
+	in.append(tmp.c_str());
 	return in;
 }
 
 inline ::core::String& operator+= (::core::String& in, const glm::mat4& mat) {
-	in.append(glm::to_string(mat));
+	const std::string& tmp = glm::to_string(mat);
+	in.append(tmp.c_str());
 	return in;
 }
 
 inline ::core::String& operator+= (::core::String& in, const glm::mat3& mat) {
-	in.append(glm::to_string(mat));
+	const std::string& tmp = glm::to_string(mat);
+	in.append(tmp.c_str());
 	return in;
 }
 
@@ -133,7 +139,7 @@ protected:
 			first = false;
 		}
 		ss << "\"";
-		return ss.str();
+		return core::String(ss.str().c_str());
 	}
 
 	virtual void onCleanupApp() {

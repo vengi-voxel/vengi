@@ -33,7 +33,7 @@ public:
 	static_assert((int)Type::Max == lengthof(TypeStrings));
 
 private:
-	std::vector<std::string> _meshTypes;
+	std::vector<core::String> _meshTypes;
 	int8_t _boneIndices[std::enum_value(BoneId::Max)];
 	// current position in the bone index mapping array
 	uint8_t _currentBoneIdx = 0u;
@@ -67,7 +67,7 @@ public:
 	 */
 	int8_t mapBoneIdToArrayIndex(BoneId boneId) const;
 
-	const std::vector<std::string>& types() const;
+	const std::vector<core::String>& types() const;
 	const core::String& meshType(size_t meshTypeIdx) const;
 	int getMeshTypeIdxForName(const char *name) const;
 	/**
@@ -75,7 +75,7 @@ public:
 	 *
 	 * @note They must match the bone configuration. See the lua script for mappings.
 	 */
-	void setMeshTypes(const std::vector<std::string>& meshTypes);
+	void setMeshTypes(const std::vector<core::String>& meshTypes);
 
 	/**
 	 * @brief Assemble the full path to the model that should be used for the given mesh type index.
@@ -95,7 +95,7 @@ public:
 	BoneIds& boneIds(int meshTypeIdx);
 };
 
-inline const std::vector<std::string>& AnimationSettings::types() const {
+inline const std::vector<core::String>& AnimationSettings::types() const {
 	return _meshTypes;
 }
 
