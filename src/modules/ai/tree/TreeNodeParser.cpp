@@ -28,7 +28,7 @@ void TreeNodeParser::splitTasks(const core::String& string, std::vector<core::St
 				continue;
 			}
 		}
-		token.push_back(*i);
+		token += *i;
 	}
 	tokens.push_back(token);
 }
