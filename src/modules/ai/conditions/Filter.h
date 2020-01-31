@@ -21,7 +21,7 @@ class Filter: public ICondition {
 protected:
 	Filters _filters;
 
-	void getConditionNameWithValue(std::stringstream& s, const AIPtr& entity) override;
+	void getConditionNameWithValue(core::String& s, const AIPtr& entity) override;
 
 public:
 	CONDITION_FACTORY_NO_IMPL(Filter)

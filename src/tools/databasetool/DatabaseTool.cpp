@@ -20,21 +20,24 @@ DatabaseTool::DatabaseTool(const metric::MetricPtr& metric, const io::Filesystem
 
 bool DatabaseTool::generateSrc() const {
 	Log::debug("Generate database bindings for %s", _targetFile.c_str());
-	std::stringstream header;
-	header << "#pragma once\n\n";
+	core::String header;
+	header.reserve(65535);
+	header += "#pragma once\n\n";
 
-	const core::String dir(core::string::extractPath(_targetFile.c_str()));
+	const core::String& dir = core::string::extractPath(_targetFile);
 	bool error = false;
 	for (auto i : _tables) {
 		const databasetool::Table& table = i.second;
-		std::stringstream src;
+		core::String src;
 		if (!databasetool::generateClassForTable(table, src)) {
 			error = true;
 			continue;
 		}
-		header << "#include \"" << table.classname << ".h\"\n";
+		header += "#include \"";
+		header += table.classname;
+		header += ".h\"\n";
 		const core::String filename = dir + table.classname + ".h";
-		if (!filesystem()->syswrite(filename, src.str())) {
+		if (!filesystem()->syswrite(filename, src)) {
 			error = true;
 			continue;
 		}
@@ -42,7 +45,7 @@ bool DatabaseTool::generateSrc() const {
 	if (error) {
 		return false;
 	}
-	return filesystem()->syswrite(_targetFile, header.str());
+	return filesystem()->syswrite(_targetFile, header);
 }
 
 bool DatabaseTool::validateOperators(const databasetool::Table& table) const {
@@ -119,7 +122,7 @@ bool DatabaseTool::validate() const {
 }
 
 bool DatabaseTool::parse(const core::String& buffer) {
-	core::Tokenizer tok(buffer, " \t\n", "(){},;");
+	core::Tokenizer tok(buffer.c_str(), " \t\n", "(){},;");
 	while (tok.hasNext()) {
 		const core::String& token = tok.next();
 		if (token == "table") {

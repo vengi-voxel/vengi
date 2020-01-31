@@ -10,7 +10,6 @@
 
 #include "core/String.h"
 #include <vector>
-#include <sstream>
 #include <memory>
 
 #include "common/MemoryAllocator.h"
@@ -98,17 +97,17 @@ public: \
 	CONDITION_FACTORY_SINGLETON
 
 #define CONDITION_PRINT_SUBCONDITIONS_GETCONDITIONNAMEWITHVALUE \
-	void getConditionNameWithValue(std::stringstream& s, const ::ai::AIPtr& entity) override { \
+	void getConditionNameWithValue(core::String& s, const ::ai::AIPtr& entity) override { \
 		bool first = true; \
-		s << "("; \
+		s += "("; \
 		for (::ai::ConditionsConstIter i = _conditions.begin(); i != _conditions.end(); ++i) { \
 			if (!first) { \
-				s << ","; \
+				s += ","; \
 			} \
-			s << (*i)->getNameWithConditions(entity); \
+			s += (*i)->getNameWithConditions(entity); \
 			first = false; \
 		} \
-		s << ")"; \
+		s += ")"; \
 	}
 
 class ICondition;
@@ -143,9 +142,11 @@ protected:
 	 * @param[in,out] entity The entity that is used to evaluate a condition
 	 * @sa getNameWithConditions()
 	 */
-	virtual void getConditionNameWithValue(std::stringstream& s, const AIPtr& entity) {
+	virtual void getConditionNameWithValue(core::String& s, const AIPtr& entity) {
 		(void)entity;
-		s << "{" << _parameters << "}";
+		s += "{";
+		s += _parameters;
+		s += "}";
 	}
 public:
 	ICondition(const core::String& name, const core::String& parameters) :
@@ -178,13 +179,13 @@ public:
 	 * @sa getConditionNameWithValue()
 	 */
 	inline core::String getNameWithConditions(const AIPtr& entity) {
-		std::stringstream s;
-		s << getName();
+		core::String s;
+		s += getName();
 		getConditionNameWithValue(s, entity);
-		s << "[";
-		s << (evaluate(entity) ? "1" : "0");
-		s << "]";
-		return s.str();
+		s += "[";
+		s += (evaluate(entity) ? "1" : "0");
+		s += "]";
+		return s;
 	}
 };
 

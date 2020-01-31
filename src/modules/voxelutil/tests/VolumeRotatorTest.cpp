@@ -10,7 +10,7 @@ namespace voxel {
 class VolumeRotatorTest: public core::AbstractTest {
 protected:
 	inline core::String str(const voxel::Region& region) const {
-		return "mins(" + glm::to_string(region.getLowerCorner()) + "), maxs(" + glm::to_string(region.getUpperCorner()) + ")";
+		return region.toString();
 	}
 };
 

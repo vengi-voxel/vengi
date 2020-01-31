@@ -8,34 +8,37 @@
 
 namespace ai {
 
-void Filter::getConditionNameWithValue(std::stringstream& s, const AIPtr& entity) {
+void Filter::getConditionNameWithValue(core::String& s, const AIPtr& entity) {
 	bool first = true;
-	s << "(";
+	s += "(";
 	auto copy = entity->_filteredEntities;
 	for (const FilterPtr& filter : _filters) {
 		if (!first)
-			s << ",";
-		s << filter->getName() << "{" << filter->getParameters() << "}[";
+			s += ",";
+		s += filter->getName();
+		s += "{";
+		s += filter->getParameters();
+		s += "}[";
 		entity->_filteredEntities.clear();
 		filter->filter(entity);
 		bool firstChr = true;
 		int cnt = 0;
 		for (CharacterId id : entity->_filteredEntities) {
 			if (!firstChr)
-				s << ",";
-			s << id;
+				s += ",";
+			s += id;
 			firstChr = false;
 			++cnt;
 			if (cnt > 15) {
-				s << ",...";
+				s += ",...";
 				break;
 			}
 		}
-		s << "]";
+		s += "]";
 		first = false;
 	}
 	entity->_filteredEntities = copy;
-	s << ")";
+	s += ")";
 }
 
 Filter::Filter (const Filters& filters) :

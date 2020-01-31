@@ -147,7 +147,8 @@ bool Protocol::join(const core::String& name) {
 	j["mqttClientName"] = _clientToken;
 	Log::info("Trying to join the game %s with client token %s and name %s",
 			_instanceName.c_str(), _clientToken.c_str(), name.c_str());
-	return send(core::string::format("traze/%s/join", _instanceName.c_str()), j.dump());
+	const std::string& dump = j.dump();
+	return send(core::string::format("traze/%s/join", _instanceName.c_str()), dump.c_str());
 }
 
 bool Protocol::steer(BikeDirection direction) const {

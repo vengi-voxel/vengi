@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Util.h"
 #include "core/StringUtil.h"
 

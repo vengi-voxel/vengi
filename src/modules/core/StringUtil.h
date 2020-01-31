@@ -144,7 +144,7 @@ extern bool isInteger(const core::String& in);
  */
 inline core::String extractPath(const core::String& str) {
 	const size_t pos = str.rfind("/");
-	if (pos == std::string::npos) {
+	if (pos == core::String::npos) {
 		return "";
 	}
 	return str.substr(0, pos + 1) ;
@@ -152,7 +152,7 @@ inline core::String extractPath(const core::String& str) {
 
 inline core::String stripExtension(const core::String& str) {
 	const size_t pos = str.rfind(".");
-	if (pos == std::string::npos) {
+	if (pos == core::String::npos) {
 		return str;
 	}
 	return str.substr(0, pos) ;
@@ -160,11 +160,11 @@ inline core::String stripExtension(const core::String& str) {
 
 inline core::String extractFilename(core::String str) {
 	const size_t pathPos = str.rfind('/');
-	if (pathPos != std::string::npos) {
+	if (pathPos != core::String::npos) {
 		str = str.substr(pathPos + 1);
 	}
 	const size_t extPos = str.rfind('.');
-	if (extPos != std::string::npos) {
+	if (extPos != core::String::npos) {
 		str = str.substr(0, extPos);
 	}
 	return str;
@@ -178,18 +178,12 @@ inline core::String extractFilenameWithExtension(const core::String& str) {
 	return str.substr(pathPos + 1);
 }
 
-inline core::String eraseAllSpaces(const core::String& str) {
-	core::String tmp = str;
-	tmp.erase(std::remove(tmp.begin(), tmp.end(), ' '), tmp.end());
-	return tmp;
-}
-
 inline bool contains(const core::String& str, const core::String& search) {
-	return str.rfind(search) != std::string::npos;
+	return str.rfind(search.c_str()) != core::String::npos;
 }
 
 inline bool contains(const char *haystack, const char *needle) {
-	char *pos = (char*)SDL_strstr(haystack, needle);
+	const char *pos = (const char*)SDL_strstr(haystack, needle);
 	return pos != nullptr;
 }
 

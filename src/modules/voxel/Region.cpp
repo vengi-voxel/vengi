@@ -20,11 +20,20 @@ const Region Region::MaxRegion = Region((std::numeric_limits<int32_t>::min)(), (
 const Region Region::InvalidRegion = Region(0, -1);
 
 core::String Region::toString() const {
-	const core::String& regionStr = "region["
-		"center(" + glm::to_string(getCentre()) + "), "
-		"mins(" + glm::to_string(getLowerCorner()) + "), "
-		"maxs(" + glm::to_string(getUpperCorner()) + ")"
-	"]";
+	core::String regionStr("region[");
+	std::string s;
+	s = glm::to_string(getCentre());
+	regionStr += "center(";
+	regionStr += s.c_str();
+	regionStr += "), ";
+	s = glm::to_string(getLowerCorner());
+	regionStr += "mins(";
+	regionStr += s.c_str();
+	regionStr += "), ";
+	s = glm::to_string(getUpperCorner());
+	regionStr += "maxs(";
+	regionStr += s.c_str();
+	regionStr += ")]";
 	return regionStr;
 }
 

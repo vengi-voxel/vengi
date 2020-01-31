@@ -1492,11 +1492,11 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 	}
 	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
 	if (logLength > 0) {
-		core::String message(logLength, '\n');
-		if (message.size() > 1) {
-			glGetProgramInfoLog(lid, message.size(), nullptr, &message[0]);
+		core::String message;
+		message.reserve(logLength);
+		if (logLength > 1) {
+			glGetProgramInfoLog(lid, logLength, nullptr, &message[0]);
 		}
-		message.resize(core_max(logLength, 1) - 1);
 		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
 	}
 #endif

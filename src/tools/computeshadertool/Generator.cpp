@@ -419,11 +419,11 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	src = core::string::replaceAll(src, "$name$", filename);
 	src = core::string::replaceAll(src, "$namespace$", namespaceSrc);
 	src = core::string::replaceAll(src, "$filename$", shaderDirectory + _name);
-	src = core::string::replaceAll(src, "$kernels$", kernels.str());
-	src = core::string::replaceAll(src, "$members$", kernelMembers.str());
-	src = core::string::replaceAll(src, "$shutdown$", shutdown.str());
-	src = core::string::replaceAll(src, "$structs$", structs.str());
-	src = core::string::replaceAll(src, "$createkernels$", createKernels.str());
+	src = core::string::replaceAll(src, "$kernels$", kernels.str().c_str());
+	src = core::string::replaceAll(src, "$members$", kernelMembers.str().c_str());
+	src = core::string::replaceAll(src, "$shutdown$", shutdown.str().c_str());
+	src = core::string::replaceAll(src, "$structs$", structs.str().c_str());
+	src = core::string::replaceAll(src, "$createkernels$", createKernels.str().c_str());
 	src = core::string::replaceAll(src, "$shaderbuffer$", maxStringLength(shaderBuffer));
 	const core::String targetFile = sourceDirectory + filename + ".h" + postfix;
 	Log::info("Generate shader bindings for %s at %s", _name.c_str(), targetFile.c_str());

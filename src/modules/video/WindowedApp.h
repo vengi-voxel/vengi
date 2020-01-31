@@ -106,16 +106,16 @@ public:
 	 * @brief Wrapper method for @c fileDialog()
 	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
 	 */
-	void saveDialog(const std::function<void(const std::string)>& callback, const core::String& filter = "");
+	void saveDialog(const std::function<void(const core::String)>& callback, const core::String& filter = "");
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
 	 */
-	void openDialog(const std::function<void(const std::string)>& callback, const core::String& filter = "");
+	void openDialog(const std::function<void(const core::String)>& callback, const core::String& filter = "");
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 */
-	void directoryDialog(const std::function<void(const std::string)>& callback);
+	void directoryDialog(const std::function<void(const core::String)>& callback);
 
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
@@ -150,15 +150,15 @@ inline int WindowedApp::frameBufferHeight() const {
 	return _frameBufferDimension.y;
 }
 
-inline void WindowedApp::saveDialog(const std::function<void(const std::string)>& callback, const core::String& filter) {
+inline void WindowedApp::saveDialog(const std::function<void(const core::String)>& callback, const core::String& filter) {
 	fileDialog(callback, OpenFileMode::Save, filter);
 }
 
-inline void WindowedApp::openDialog(const std::function<void(const std::string)>& callback, const core::String& filter) {
+inline void WindowedApp::openDialog(const std::function<void(const core::String)>& callback, const core::String& filter) {
 	fileDialog(callback, OpenFileMode::Open, filter);
 }
 
-inline void WindowedApp::directoryDialog(const std::function<void(const std::string)>& callback) {
+inline void WindowedApp::directoryDialog(const std::function<void(const core::String)>& callback) {
 	fileDialog(callback, OpenFileMode::Directory);
 }
 

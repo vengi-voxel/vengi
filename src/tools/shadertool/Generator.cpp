@@ -367,9 +367,9 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 
 		core::String generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferClassName);
 		generatedUb = core::string::replaceAll(generatedUb, "$namespace$", namespaceSrc);
-		generatedUb = core::string::replaceAll(generatedUb, "$uniformbuffers$", ub.str());
+		generatedUb = core::string::replaceAll(generatedUb, "$uniformbuffers$", ub.str().c_str());
 		generatedUb = core::string::replaceAll(generatedUb, "$methods$", "");
-		generatedUb = core::string::replaceAll(generatedUb, "$shutdown$", shutdown.str());
+		generatedUb = core::string::replaceAll(generatedUb, "$shutdown$", shutdown.str().c_str());
 
 		const core::String targetFileUb = sourceDirectory + uniformBufferClassName + ".h";
 
@@ -404,13 +404,13 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	srcHeader = core::string::replaceAll(srcHeader, "$name$", filename);
 	srcHeader = core::string::replaceAll(srcHeader, "$namespace$", namespaceSrc);
 	srcHeader = core::string::replaceAll(srcHeader, "$filename$", shaderDirectory + shaderStruct.filename);
-	srcHeader = core::string::replaceAll(srcHeader, "$uniformarrayinfo$", uniformArrayInfo.str());
-	srcHeader = core::string::replaceAll(srcHeader, "$uniforms$", uniforms.str());
+	srcHeader = core::string::replaceAll(srcHeader, "$uniformarrayinfo$", uniformArrayInfo.str().c_str());
+	srcHeader = core::string::replaceAll(srcHeader, "$uniforms$", uniforms.str().c_str());
 
-	srcHeader = core::string::replaceAll(srcHeader, "$attributes$", attributes.str());
-	srcHeader = core::string::replaceAll(srcHeader, "$methods$", methods.str());
-	srcHeader = core::string::replaceAll(srcHeader, "$prototypes$", prototypes.str());
-	srcHeader = core::string::replaceAll(srcHeader, "$includes$", includes.str());
+	srcHeader = core::string::replaceAll(srcHeader, "$attributes$", attributes.str().c_str());
+	srcHeader = core::string::replaceAll(srcHeader, "$methods$", methods.str().c_str());
+	srcHeader = core::string::replaceAll(srcHeader, "$prototypes$", prototypes.str().c_str());
+	srcHeader = core::string::replaceAll(srcHeader, "$includes$", includes.str().c_str());
 
 	srcHeader = core::string::replaceAll(srcHeader, "$vertexshaderbuffer$", vertexBuffer);
 	srcHeader = core::string::replaceAll(srcHeader, "$computeshaderbuffer$", computeBuffer);
@@ -420,13 +420,13 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	srcSource = core::string::replaceAll(srcSource, "$name$", filename);
 	srcSource = core::string::replaceAll(srcSource, "$namespace$", namespaceSrc);
 	srcSource = core::string::replaceAll(srcSource, "$filename$", shaderDirectory + shaderStruct.filename);
-	srcSource = core::string::replaceAll(srcSource, "$uniformarrayinfo$", uniformArrayInfo.str());
-	srcSource = core::string::replaceAll(srcSource, "$uniforms$", uniforms.str());
+	srcSource = core::string::replaceAll(srcSource, "$uniformarrayinfo$", uniformArrayInfo.str().c_str());
+	srcSource = core::string::replaceAll(srcSource, "$uniforms$", uniforms.str().c_str());
 
-	srcSource = core::string::replaceAll(srcSource, "$attributes$", attributes.str());
-	srcSource = core::string::replaceAll(srcSource, "$methods$", methods.str());
-	srcSource = core::string::replaceAll(srcSource, "$prototypes$", prototypes.str());
-	srcSource = core::string::replaceAll(srcSource, "$includes$", includes.str());
+	srcSource = core::string::replaceAll(srcSource, "$attributes$", attributes.str().c_str());
+	srcSource = core::string::replaceAll(srcSource, "$methods$", methods.str().c_str());
+	srcSource = core::string::replaceAll(srcSource, "$prototypes$", prototypes.str().c_str());
+	srcSource = core::string::replaceAll(srcSource, "$includes$", includes.str().c_str());
 
 	srcSource = core::string::replaceAll(srcSource, "$vertexshaderbuffer$", maxStringLength(vertexBuffer));
 	srcSource = core::string::replaceAll(srcSource, "$computeshaderbuffer$", maxStringLength(computeBuffer));

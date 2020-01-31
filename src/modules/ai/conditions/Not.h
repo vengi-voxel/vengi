@@ -15,8 +15,10 @@ class Not: public ICondition {
 protected:
 	ConditionPtr _condition;
 
-	void getConditionNameWithValue(std::stringstream& s, const AIPtr& entity) override {
-		s << "(" << _condition->getNameWithConditions(entity) << ")";
+	void getConditionNameWithValue(core::String& s, const AIPtr& entity) override {
+		s += "(";
+		s += _condition->getNameWithConditions(entity);
+		s += ")";
 	}
 
 public:

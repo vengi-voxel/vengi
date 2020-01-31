@@ -23,14 +23,14 @@ public:
 	}
 
 	inline core::String next() {
-		const core::String& token = _tok->str();
+		const core::String token = _tok->str().c_str();
 		_tok = _tok->next;
 		return token;
 	}
 
 	inline core::String prev() {
 		_tok = _tok->previous;
-		return _tok->str();
+		return _tok->str().c_str();
 	}
 
 	inline int line() const {
@@ -44,7 +44,7 @@ public:
 		if (!_tok) {
 			return "";
 		}
-		return _tok->str();
+		return _tok->str().c_str();
 	}
 };
 

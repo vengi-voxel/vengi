@@ -29,11 +29,6 @@ TEST_F(StringUtilTest, testFormat) {
 	EXPECT_EQ("Hello World 10 after int", core::string::format("Hello World %i after int", 10));
 }
 
-TEST_F(StringUtilTest, testEraseAllSpaces) {
-	EXPECT_EQ("", core::string::eraseAllSpaces("   "));
-	EXPECT_EQ(",", core::string::eraseAllSpaces("  ,  "));
-}
-
 TEST_F(StringUtilTest, testUrlEncode) {
 	char *urlEncoded = core::string::urlEncode("foobar=1236/&");
 	EXPECT_STREQ("foobar%3D1236%2F%26", urlEncoded);

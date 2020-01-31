@@ -13,12 +13,12 @@ class AbstractVoxFormatTest: public AbstractVoxelTest {
 protected:
 	static const voxel::Voxel Empty;
 
-	io::FilePtr open(const std::string_view filename, io::FileMode mode = io::FileMode::Read) {
-		const io::FilePtr& file = io::filesystem()->open(std::string(filename), mode);
+	io::FilePtr open(const core::String& filename, io::FileMode mode = io::FileMode::Read) {
+		const io::FilePtr& file = io::filesystem()->open(core::String(filename), mode);
 		return file;
 	}
 
-	voxel::RawVolume* load(const std::string_view filename, voxel::VoxFileFormat& format) {
+	voxel::RawVolume* load(const core::String& filename, voxel::VoxFileFormat& format) {
 		const io::FilePtr& file = open(filename);
 		voxel::RawVolume* v = format.load(file);
 		return v;
