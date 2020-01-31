@@ -197,9 +197,9 @@ static core::String getPlatformName(cl_platform_id id) {
 	_priv::checkError(error);
 
 	core::String result;
-	result.resize(size);
+	result.reserve(size);
 	error = clGetPlatformInfo(id, CL_PLATFORM_NAME, size,
-			const_cast<char*>(result.data()), nullptr);
+			&result[0], nullptr);
 	_priv::checkError(error);
 
 	return result;
@@ -213,9 +213,9 @@ static core::String getDeviceInfo(cl_device_id id, cl_device_info param) {
 	_priv::checkError(error);
 
 	core::String result;
-	result.resize(size);
+	result.reserve(size);
 	error = clGetDeviceInfo(id, param, size,
-			const_cast<char*>(result.data()), nullptr);
+			&result[0], nullptr);
 	_priv::checkError(error);
 
 	return result;
@@ -612,8 +612,8 @@ Id createProgram(const core::String& source) {
 		return InvalidId;
 	}
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateProgramWithSource.html
-	const size_t lengths[] = { source.size () };
-	const char* sources[] = { source.data () };
+	const size_t lengths[] = { source.size() };
+	const char* sources[] = { source.c_str() };
 
 	cl_int error = CL_SUCCESS;
 	cl_program program = clCreateProgramWithSource(_priv::_ctx.context,

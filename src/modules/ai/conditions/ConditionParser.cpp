@@ -37,7 +37,7 @@ void ConditionParser::splitConditions(const core::String& string, std::vector<co
 				continue;
 			}
 		}
-		token.push_back(*i);
+		token += *i;
 	}
 	tokens.push_back(token);
 }
