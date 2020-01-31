@@ -27,10 +27,16 @@ inline float strToFloat(const core::String& str) {
 }
 
 inline core::String eraseAllSpaces(const core::String& str) {
-	if (str.empty())
+	if (str.empty()) {
 		return str;
-	core::String tmp = str;
-	tmp.erase(std::remove(tmp.begin(), tmp.end(), ' '), tmp.end());
+	}
+	core::String tmp;
+	tmp.reserve(str.size() + 1);
+	for (auto c : str) {
+		if (c == ' ')
+			continue;
+		tmp += c;
+	}
 	return tmp;
 }
 
