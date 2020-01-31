@@ -116,7 +116,7 @@ std::string File::extension() const {
 
 long File::length() const {
 	if (!exists()) {
-		return -1;
+		return -1l;
 	}
 
 	const long pos = tell();
