@@ -432,15 +432,15 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 		// TODO: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
 		// https://www.khronos.org/opengl/wiki/GLSL_Optimizations
 		// https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)
-		std::string_view replaceIn = "in";
-		std::string_view replaceOut = "out";
-		std::string_view replaceWriteOnly = "writeonly";
-		std::string_view replaceReadOnly = "readonly";
-		std::string_view replaceRestrict = "restrict";
-		std::string_view replaceTexture1D = "texture1D";
-		std::string_view replaceTexture2D = "texture2D";
-		std::string_view replaceTexture3D = "texture3D";
-		std::string_view replaceShadow2D = "shadow2D";
+		core::String replaceIn = "in";
+		core::String replaceOut = "out";
+		core::String replaceWriteOnly = "writeonly";
+		core::String replaceReadOnly = "readonly";
+		core::String replaceRestrict = "restrict";
+		core::String replaceTexture1D = "texture1D";
+		core::String replaceTexture2D = "texture2D";
+		core::String replaceTexture3D = "texture3D";
+		core::String replaceShadow2D = "shadow2D";
 		if (glslVersion < GLSLVersion::V130) {
 			replaceIn = "attribute";
 			replaceOut = "varying";
