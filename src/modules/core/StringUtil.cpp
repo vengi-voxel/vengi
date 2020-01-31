@@ -73,10 +73,12 @@ char *urlEncode(const char *inBuf) {
 }
 
 void replaceAllChars(core::String& str, char in, char out) {
-	for (std::string::iterator i = str.begin(); i != str.end(); ++i) {
-		if (*i == in) {
-			*i = out;
+	char *p = str.c_str();
+	while (*p != '\0') {
+		if (*p == in) {
+			*p = out;
 		}
+		++p;
 	}
 }
 
