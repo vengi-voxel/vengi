@@ -25,7 +25,7 @@ static const int32_t CUSTOM_SDLK_MOUSE_WHEEL_DOWN   = CUSTOM_SDL_KEYCODE(CUSTOM_
 
 static const struct CustomButtonMapping {
 	int32_t key;
-	std::string name;
+	core::String name;
 } CUSTOMBUTTONMAPPING[] = {
 	{CUSTOM_SDLK_MOUSE_LEFT, "left_mouse"},
 	{CUSTOM_SDLK_MOUSE_MIDDLE, "middle_mouse"},

@@ -10,7 +10,7 @@
 namespace util {
 
 namespace keybindingtest {
-static const std::string CFG = R"(
+static const core::String CFG = R"(
 w +foo
 left_alt+w "somecommand +"
 RIGHT_CTRL+a +bar

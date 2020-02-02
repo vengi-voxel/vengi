@@ -10,11 +10,11 @@ class IncludeUtilTest : public core::AbstractTest {
 };
 
 TEST_F(IncludeUtilTest, testInclude) {
-	std::vector<std::string> includedFiles;
-	std::vector<std::string> includeDirs { "." };
-	const std::string src = io::filesystem()->load("main.h");
+	std::vector<core::String> includedFiles;
+	std::vector<core::String> includeDirs { "." };
+	const core::String src = io::filesystem()->load("main.h");
 	EXPECT_FALSE(src.empty());
-	std::pair<std::string, bool> retIncludes = util::handleIncludes(src, includeDirs, &includedFiles);
+	std::pair<core::String, bool> retIncludes = util::handleIncludes(src, includeDirs, &includedFiles);
 	EXPECT_TRUE(retIncludes.second);
 	EXPECT_EQ(2u, includedFiles.size());
 	EXPECT_EQ("#error \"one\"\n#include \"two.h\"\n\n#error \"two\"\n\n", retIncludes.first);

@@ -8,6 +8,6 @@
 
 namespace util {
 
-extern std::pair<std::string, bool> handleIncludes(const std::string& buffer, const std::vector<std::string>& includeDirs, std::vector<std::string>* includedFiles = nullptr);
+extern std::pair<core::String, bool> handleIncludes(const core::String& buffer, const std::vector<core::String>& includeDirs, std::vector<core::String>* includedFiles = nullptr);
 
 }

@@ -10,10 +10,10 @@
 namespace util {
 
 struct CommandModifierPair {
-	inline CommandModifierPair(const std::string& _command, int16_t _modifier) :
+	inline CommandModifierPair(const core::String& _command, int16_t _modifier) :
 			command(_command), modifier(_modifier) {
 	}
-	std::string command;
+	core::String command;
 	int16_t modifier;
 };
 typedef std::unordered_multimap<int32_t, CommandModifierPair> BindMap;
@@ -26,17 +26,17 @@ private:
 	BindMap _bindings;
 	int _invalidBindings;
 
-	void parseKeyAndCommand(std::string key, const std::string& command);
+	void parseKeyAndCommand(core::String key, const core::String& command);
 public:
 	/**
 	 * @brief Parses a single binding
 	 */
-	KeybindingParser(const std::string& key, const std::string& binding);
+	KeybindingParser(const core::String& key, const core::String& binding);
 
 	/**
 	 * @brief Parses a buffer of bindings. Each binding is separated by a newline.
 	 */
-	KeybindingParser(const std::string& bindings);
+	KeybindingParser(const core::String& bindings);
 
 	/**
 	 * @return The amount of invalid bindings.

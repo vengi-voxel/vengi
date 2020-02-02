@@ -18,11 +18,11 @@
 class MessageQueue : public core::IComponent {
 private:
 	struct MessageEvent {
-		MessageEvent(uint64_t _ttl, const std::string& _msg) :
+		MessageEvent(uint64_t _ttl, const core::String& _msg) :
 				ttl(_ttl), msg(_msg) {
 		}
 		uint64_t ttl;
-		std::string msg;
+		core::String msg;
 	};
 
 	struct MessageEventComparator {

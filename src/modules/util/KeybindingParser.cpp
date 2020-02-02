@@ -9,14 +9,14 @@
 
 namespace util {
 
-void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& command) {
+void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& command) {
 	int modifier = KMOD_NONE;
 	if (key.size() > 1) {
 		if (core::string::contains(key, "+")) {
-			std::vector<std::string> line;
+			std::vector<core::String> line;
 			core::string::splitString(key, line, "+");
-			for (const std::string& token : line) {
-				const std::string& lower = core::string::toLower(token);
+			for (const core::String& token : line) {
+				const core::String& lower = core::string::toLower(token);
 				if (lower == "shift") {
 					modifier |= KMOD_SHIFT;
 				} else if (lower == "left_shift") {
@@ -61,22 +61,22 @@ void KeybindingParser::parseKeyAndCommand(std::string key, const std::string& co
 	_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier)));
 }
 
-KeybindingParser::KeybindingParser(const std::string& key, const std::string& binding) :
+KeybindingParser::KeybindingParser(const core::String& key, const core::String& binding) :
 		core::Tokenizer(""), _invalidBindings(0) {
 	parseKeyAndCommand(key, binding);
 }
 
-KeybindingParser::KeybindingParser(const std::string& bindings) :
+KeybindingParser::KeybindingParser(const core::String& bindings) :
 		core::Tokenizer(bindings), _invalidBindings(0) {
 	for (;;) {
 		if (!hasNext()) {
 			break;
 		}
-		std::string key = next();
+		core::String key = next();
 		if (!hasNext()) {
 			break;
 		}
-		const std::string command = next();
+		const core::String command = next();
 		parseKeyAndCommand(key, command);
 	}
 }

@@ -37,7 +37,7 @@ private:
 	 */
 	bool executeCommands(int32_t key, int16_t modifier, uint64_t now);
 
-	static std::string getKeyName(int32_t key);
+	static core::String getKeyName(int32_t key);
 	static const char* getModifierName(int16_t modifier);
 public:
 	void construct() override;
@@ -47,18 +47,18 @@ public:
 	/**
 	 * @brief Print the binding line for a key/modifier combination
 	 */
-	static std::string toString(int32_t key, int16_t modifier);
+	static core::String toString(int32_t key, int16_t modifier);
 	/**
 	 * @brief Resolve the bindings for a given command string
 	 * @return Empty string if the given command doesn't have a binding, or the value
 	 * of @c toString(key, modifier) if a binding was found.
 	 */
-	std::string getKeyBindingsString(const char *cmd) const;
+	core::String getKeyBindingsString(const char *cmd) const;
 
 	/**
 	 * @brief Loads a keybindings file
 	 */
-	bool load(const std::string& name);
+	bool load(const core::String& name);
 	void setBindings(const BindMap& bindings);
 
 	bool isPressed(int32_t key) const;

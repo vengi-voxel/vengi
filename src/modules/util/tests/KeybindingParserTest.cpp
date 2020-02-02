@@ -9,7 +9,7 @@
 namespace util {
 
 namespace keybindingparser {
-static const std::string CFG = R"(
+static const core::String CFG = R"(
 w +foo
 alt+w "somecommand +"
 left_alt+l "someothercommand +"
@@ -45,7 +45,7 @@ TEST(KeybindingParserTest, testParsing) {
 	bool foo = false;
 	for (auto i = range.first; i != range.second; ++i) {
 		const CommandModifierPair& pair = i->second;
-		const std::string& command = pair.command;
+		const core::String& command = pair.command;
 		const int16_t mod = pair.modifier;
 		if ((mod & KMOD_SHIFT) && (mod & KMOD_ALT) && (mod & KMOD_CTRL)) {
 			EXPECT_EQ("allmodscommand", command);
@@ -90,7 +90,7 @@ TEST(KeybindingParserTest, testParsing) {
 	range = m.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
 		const CommandModifierPair& pair = i->second;
-		const std::string& command = pair.command;
+		const core::String& command = pair.command;
 		const int16_t mod = pair.modifier;
 		EXPECT_EQ("someothercommand +", command);
 		EXPECT_TRUE(mod & KMOD_LALT) << "command " << command << " modifier wasn't parsed properly";
@@ -104,7 +104,7 @@ TEST(KeybindingParserTest, testParsing) {
 	range = m.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
 		const CommandModifierPair& pair = i->second;
-		const std::string& command = pair.command;
+		const core::String& command = pair.command;
 		const int16_t mod = pair.modifier;
 		EXPECT_EQ("altmodcommand", command);
 		EXPECT_EQ(0, mod);

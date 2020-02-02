@@ -65,7 +65,7 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 	const int16_t modifier = modMask & (KMOD_SHIFT | KMOD_CTRL | KMOD_ALT);
 	bool handled = false;
 	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.command;
+		const core::String& command = i->second.command;
 		const int16_t mod = i->second.modifier;
 		if (!isValidForBinding(modifier, mod)) {
 			continue;
@@ -106,8 +106,8 @@ void KeyBindingHandler::construct() {
 	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
 		for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 			const CommandModifierPair& pair = i->second;
-			const std::string& command = pair.command;
-			const std::string& keyBinding = getKeyBindingsString(command.c_str());
+			const core::String& command = pair.command;
+			const core::String& keyBinding = getKeyBindingsString(command.c_str());
 			Log::info("%-25s %s", keyBinding.c_str(), command.c_str());
 		}
 	}).setHelp("Show all known key bindings");
@@ -142,13 +142,16 @@ void KeyBindingHandler::construct() {
 }
 
 void KeyBindingHandler::shutdown() {
-	std::string keybindings;
+	core::String keybindings;
 	for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 		const int32_t key = i->first;
 		const CommandModifierPair& pair = i->second;
 		const int16_t modifier = pair.modifier;
-		const std::string& command = pair.command;
-		keybindings += toString(key, modifier) + " " + command + '\n';
+		const core::String& command = pair.command;
+		keybindings += toString(key, modifier);
+		keybindings += " ";
+		keybindings += command;
+		keybindings += "\n";
 	}
 	Log::trace("%s", keybindings.c_str());
 	io::filesystem()->write("keybindings.cfg", keybindings);
@@ -158,8 +161,8 @@ bool KeyBindingHandler::init() {
 	return true;
 }
 
-bool KeyBindingHandler::load(const std::string& filename) {
-	const std::string& bindings = io::filesystem()->load(filename);
+bool KeyBindingHandler::load(const core::String& filename) {
+	const core::String& bindings = io::filesystem()->load(filename);
 	if (bindings.empty()) {
 		return false;
 	}
@@ -173,8 +176,8 @@ void KeyBindingHandler::setBindings(const BindMap& bindings) {
 	_bindings = bindings;
 }
 
-std::string KeyBindingHandler::toString(int32_t key, int16_t modifier) {
-	const std::string& name = getKeyName(key);
+core::String KeyBindingHandler::toString(int32_t key, int16_t modifier) {
+	const core::String& name = getKeyName(key);
 	if (modifier <= 0) {
 		return name;
 	}
@@ -183,7 +186,7 @@ std::string KeyBindingHandler::toString(int32_t key, int16_t modifier) {
 	return core::string::format("%s+%s", modifierName, name.c_str());
 }
 
-std::string KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
+core::String KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
 	int16_t modifier;
 	int32_t key;
 	if (!resolveKeyBindings(cmd, &modifier, &key)) {
@@ -210,7 +213,7 @@ bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, i
 	return false;
 }
 
-std::string KeyBindingHandler::getKeyName(int32_t key) {
+core::String KeyBindingHandler::getKeyName(int32_t key) {
 	for (int i = 0; i < lengthof(button::CUSTOMBUTTONMAPPING); ++i) {
 		if (button::CUSTOMBUTTONMAPPING[i].key == key) {
 			return button::CUSTOMBUTTONMAPPING[i].name;
@@ -321,7 +324,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, uin
 	}
 	auto range = _bindings.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.command;
+		const core::String& command = i->second.command;
 		if (command[0] == '+') {
 			core::Command::execute("-%s %i %" PRId64, &(command.c_str()[1]), key, now);
 			handled = true;

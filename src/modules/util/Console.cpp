@@ -51,9 +51,9 @@ Console::~Console() {
 	SDL_LogSetOutputFunction(_logFunction, _logUserData);
 }
 
-std::string Console::getColor(ConsoleColor color) {
+core::String Console::getColor(ConsoleColor color) {
 	core_assert(color >= 0 && color <= (int)SDL_arraysize(colors));
-	std::string s;
+	core::String s;
 	s += _colorMark;
 	s += std::to_string((int)color);
 	return s;
@@ -77,7 +77,7 @@ void Console::construct() {
 
 bool Console::init() {
 	const io::FilesystemPtr& fs = io::filesystem();
-	const std::string& content = fs->load("%s", _historyFilename);
+	const core::String& content = fs->load("%s", _historyFilename);
 	core::string::splitString(content, _history, "\n");
 	_historyPos = _history.size();
 	Log::info("Loaded %i history entries", _historyPos);
@@ -86,8 +86,8 @@ bool Console::init() {
 }
 
 void Console::shutdown() {
-	std::string content;
-	for (const std::string& s : _history) {
+	core::String content;
+	for (const core::String& s : _history) {
 		content += s;
 		content += '\n';
 	}
@@ -258,7 +258,7 @@ bool Console::onMouseWheel(int32_t x, int32_t y) {
 	return true;
 }
 
-void Console::insertText(const std::string& text) {
+void Console::insertText(const core::String& text) {
 	if (_overwrite && _cursorPos < int(_commandLine.size())) {
 		cursorDelete();
 	}
@@ -266,7 +266,7 @@ void Console::insertText(const std::string& text) {
 	_cursorPos += text.size();
 }
 
-bool Console::onTextInput(const std::string& text) {
+bool Console::onTextInput(const core::String& text) {
 	if (!_consoleActive) {
 		return false;
 	}
@@ -291,7 +291,7 @@ void Console::cursorRight() {
 
 void Console::cursorWordLeft() {
 	auto prevWordEnd = _commandLine.find_last_of(" ", core_max(0, _cursorPos - 1));
-	if (std::string::npos == prevWordEnd) {
+	if (core::String::npos == prevWordEnd) {
 		_cursorPos = 0;
 		return;
 	}
@@ -300,9 +300,9 @@ void Console::cursorWordLeft() {
 
 void Console::cursorWordRight() {
 	const int spaceOffset = _commandLine[_cursorPos] == ' ' ? 1 : 0;
-	const std::string& partialCommandLine = _commandLine.substr(_cursorPos + spaceOffset);
+	const core::String& partialCommandLine = _commandLine.substr(_cursorPos + spaceOffset);
 	const size_t nextWordEnd = partialCommandLine.find_first_of(" ");
-	if (std::string::npos == nextWordEnd) {
+	if (core::String::npos == nextWordEnd) {
 		_cursorPos = _commandLine.size();
 		return;
 	}
@@ -362,11 +362,11 @@ void Console::scrollPageDown() {
 
 void Console::autoComplete() {
 	// TODO: handle the cursor position properly
-	std::vector<std::string> matches;
-	const std::vector<std::string> allCommands = core::Tokenizer(_commandLine, ";").tokens();
-	const std::string& lastCmd = allCommands.empty() ? "" : allCommands.back();
-	const std::vector<std::string> strings = core::Tokenizer(lastCmd, " ").tokens();
-	std::string baseSearchString = "";
+	std::vector<core::String> matches;
+	const std::vector<core::String> allCommands = core::Tokenizer(_commandLine, ";").tokens();
+	const core::String& lastCmd = allCommands.empty() ? "" : allCommands.back();
+	const std::vector<core::String> strings = core::Tokenizer(lastCmd, " ").tokens();
+	core::String baseSearchString = "";
 	bool parameter = _commandLine[_cursorPos] == ' ' || strings.size() > 1;
 	if (parameter) {
 		const core::Command* cmd = core::Command::getCommand(strings.front());
@@ -411,7 +411,7 @@ void Console::autoComplete() {
 	matches.erase(std::unique(matches.begin(), matches.end()), matches.end());
 
 	if (matches.size() == 1) {
-		if (strings.empty() || strings.size() == 1) {
+		if (strings.size() <= 1) {
 			_commandLine = matches.front() + " ";
 		} else {
 			const int cmdLineSize = _commandLine.size();
@@ -421,14 +421,14 @@ void Console::autoComplete() {
 		}
 	} else {
 		_messages.push_back(_consolePrompt + _commandLine);
-		std::sort(begin(matches), end(matches), [](const std::string& v1, const std::string& v2) {
+		std::sort(begin(matches), end(matches), [](const core::String& v1, const core::String& v2) {
 			return v1 < v2;
 		});
 		int pos = 0;
-		const std::string first = matches.front();
+		const core::String first = matches.front();
 		for (char c : first) {
 			bool allMatch = true;
-			for (const std::string& match : matches) {
+			for (const core::String& match : matches) {
 				if (match[pos] != c) {
 					allMatch = false;
 					break;
@@ -442,16 +442,16 @@ void Console::autoComplete() {
 		if (pos > 0) {
 			replaceLastParameter(matches.front().substr(0, pos));
 		}
-		for (const std::string& match : matches) {
+		for (const core::String& match : matches) {
 			Log::info("%s", match.c_str());
 		}
 	}
 	_cursorPos = _commandLine.size();
 }
 
-void Console::replaceLastParameter(const std::string& param) {
+void Console::replaceLastParameter(const core::String& param) {
 	auto iter = _commandLine.rfind(' ');
-	if (iter == std::string::npos) {
+	if (iter == core::String::npos) {
 		_commandLine = param;
 		return;
 	}
@@ -482,7 +482,7 @@ void Console::cursorDeleteWord() {
 	}
 	const int spaceOffset = _commandLine[_cursorPos - 1] == ' ' ? 1 : 0;
 	const size_t prevWordStart = _commandLine.find_last_of(" ", _cursorPos - spaceOffset - 1);
-	if (std::string::npos == prevWordStart) {
+	if (core::String::npos == prevWordStart) {
 		_commandLine.erase(0, _cursorPos);
 		_cursorPos = 0;
 		return;
@@ -491,8 +491,8 @@ void Console::cursorDeleteWord() {
 	_cursorPos = prevWordStart + 1;
 }
 
-std::string Console::removeAnsiColors(const char* message) {
-	std::string out;
+core::String Console::removeAnsiColors(const char* message) {
+	core::String out;
 	out.reserve(strlen(message));
 	for (const char *c = message; *c != '\0'; ++c) {
 		// https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -503,7 +503,7 @@ std::string Console::removeAnsiColors(const char* message) {
 			}
 			continue;
 		}
-		out.push_back(*c);
+		out += *c;
 	}
 	return out;
 }
@@ -531,9 +531,9 @@ void Console::logConsole(void *userdata, int category, SDL_LogPriority priority,
 }
 
 void Console::addLogLine(int category, SDL_LogPriority priority, const char *message) {
-	const std::string& cleaned = removeAnsiColors(message);
+	const core::String& cleaned = removeAnsiColors(message);
 	const bool hasColor = isColor(cleaned.c_str());
-	const std::string& color = hasColor ? "" : getColor(priorityColors[priority]);
+	const core::String& color = hasColor ? "" : getColor(priorityColors[priority]);
 	_messages.emplace_back(color + cleaned);
 	if (hasColor) {
 		skipColor(&message);
@@ -576,7 +576,7 @@ inline void Console::clearCommandLine() {
 	_commandLine.clear();
 }
 
-void Console::drawString(int x, int y, const std::string& str, int len) {
+void Console::drawString(int x, int y, const core::String& str, int len) {
 	const char *cstr = str.c_str();
 	glm::ivec4 color = colors[WHITE];
 	if (isColor(cstr)) {

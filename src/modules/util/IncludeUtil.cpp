@@ -10,19 +10,21 @@
 
 namespace util {
 
-std::pair<std::string, bool> handleIncludes(const std::string& buffer, const std::vector<std::string>& includeDirs, std::vector<std::string>* includedFiles) {
-	std::string src;
-	const std::string_view include = "#include";
+std::pair<core::String, bool> handleIncludes(const core::String& buffer, const std::vector<core::String>& includeDirs, std::vector<core::String>* includedFiles) {
+	core::String src;
+	const core::String include = "#include";
 	int index = 0;
 	bool success = true;
 	for (std::string::const_iterator i = buffer.begin(); i != buffer.end(); ++i, ++index) {
 		const char *c = &buffer[index];
 		if (*c != '#') {
-			src.append(c, 1);
+			const char buf[] = {*c, '\0'};
+			src.append(buf);
 			continue;
 		}
-		if (::strncmp(include.data(), c, include.length())) {
-			src.append(c, 1);
+		if (::strncmp(include.c_str(), c, include.size())) {
+			const char buf[] = {*c, '\0'};
+			src.append(buf);
 			continue;
 		}
 		for (; i != buffer.end(); ++i, ++index) {
@@ -41,15 +43,15 @@ std::pair<std::string, bool> handleIncludes(const std::string& buffer, const std
 				}
 
 				bool found = false;
-				const std::string includeFile(cStart + 1, (size_t)(cEnd - (cStart + 1)));
-				for (const std::string& dir : includeDirs) {
-					const std::string& fullPath = core::string::concat(dir + "/", includeFile);
+				const core::String includeFile(cStart + 1, (size_t)(cEnd - (cStart + 1)));
+				for (const core::String& dir : includeDirs) {
+					const core::String& fullPath = dir + "/" + includeFile;
 					if (!fs->exists(fullPath)) {
 						continue;
 					}
-					const std::string& includeBuffer = fs->load(fullPath);
+					const core::String& includeBuffer = fs->load(fullPath);
 					if (includeBuffer.empty()) {
-						Log::error("could not load shader include %s from dir %s", includeFile.c_str(), dir.data());
+						Log::error("could not load shader include %s from dir %s", includeFile.c_str(), dir.c_str());
 						success = false;
 					} else {
 						if (includedFiles != nullptr) {
@@ -63,7 +65,7 @@ std::pair<std::string, bool> handleIncludes(const std::string& buffer, const std
 				if (!found) {
 					success = false;
 					Log::error("Failed to resolve include '%s'", includeFile.c_str());
-					for (const std::string& dir : includeDirs) {
+					for (const core::String& dir : includeDirs) {
 						Log::error("Include paths: %s", dir.c_str());
 					}
 				}

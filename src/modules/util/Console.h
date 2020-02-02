@@ -21,11 +21,11 @@ enum ConsoleColor {
 	WHITE, BLACK, GRAY, BLUE, GREEN, YELLOW, RED, MAX_COLORS
 };
 
-extern std::string getColor(ConsoleColor color);
+extern core::String getColor(ConsoleColor color);
 
 class Console : public core::IComponent {
 protected:
-	typedef std::vector<std::string> Messages;
+	typedef std::vector<core::String> Messages;
 	typedef Messages::const_reverse_iterator MessagesIter;
 	Messages _messages;
 
@@ -33,11 +33,11 @@ protected:
 	int _consoleMarginLeftBehindPrompt = 13;
 
 	const char* _historyFilename = "history";
-	std::string _consolePrompt = "> ";
-	std::string _consoleCursor = ".";
+	core::String _consolePrompt = "> ";
+	core::String _consoleCursor = ".";
 	char _colorMark = '^';
 
-	std::string getColor(ConsoleColor color);
+	core::String getColor(ConsoleColor color);
 
 	bool isColor(const char *cstr);
 
@@ -96,7 +96,7 @@ protected:
 	SDL_LogOutputFunction _logFunction = nullptr;
 	void *_logUserData = nullptr;
 	core::VarPtr _autoEnable;
-	std::string _commandLine;
+	core::String _commandLine;
 	// commandline character will get overwritten if this is true
 	bool _overwrite = false;
 	bool _cursorBlink = false;
@@ -106,7 +106,7 @@ protected:
 	int _scrollPos = 0;
 	int _maxLines = 0;
 
-	static std::string removeAnsiColors(const char* message);
+	static core::String removeAnsiColors(const char* message);
 	static void logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message);
 	void addLogLine(int category, SDL_LogPriority priority, const char *message);
 
@@ -116,7 +116,7 @@ protected:
 	void cursorWordLeft();
 	void cursorWordRight();
 
-	void replaceLastParameter(const std::string& param);
+	void replaceLastParameter(const core::String& param);
 
 	// history 'scroll' methods
 	void cursorUp();
@@ -134,8 +134,8 @@ protected:
 	void cursorDeleteWord();
 
 	bool insertClipboard();
-	void insertText(const std::string& text);
-	void drawString(int x, int y, const std::string& str, int len);
+	void insertText(const core::String& text);
+	void drawString(int x, int y, const core::String& str, int len);
 
 	virtual void beforeRender(const math::Rect<int> &rect) {}
 	virtual void afterRender(const math::Rect<int> &rect) {}
@@ -155,21 +155,21 @@ public:
 	void clearCommandLine();
 	void render(const math::Rect<int> &rect, long deltaFrame);
 	bool isActive() const;
-	bool onTextInput(const std::string& text);
+	bool onTextInput(const core::String& text);
 	bool onKeyPress(int32_t key, int16_t modifier);
 	bool onMouseWheel(int32_t x, int32_t y);
 	bool onMouseButtonPress(int32_t x, int32_t y, uint8_t button);
 
 	void autoComplete();
 
-	const std::string& commandLine() const;
+	const core::String& commandLine() const;
 };
 
 inline bool Console::isActive() const {
 	return _consoleActive;
 }
 
-inline const std::string& Console::commandLine() const {
+inline const core::String& Console::commandLine() const {
 	return _commandLine;
 }
 
