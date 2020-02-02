@@ -161,7 +161,7 @@ bool HttpServer::update() {
 
 		constexpr const int BUFFERSIZE = 2048;
 		uint8_t recvBuf[BUFFERSIZE];
-		const network_return len = recv(clientSocket, recvBuf, BUFFERSIZE - 1, 0);
+		const network_return len = recv(clientSocket, (char*)recvBuf, BUFFERSIZE - 1, 0);
 		if (len < 0) {
 			i = closeClient(i);
 			continue;
