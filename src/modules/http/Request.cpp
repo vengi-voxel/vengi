@@ -129,7 +129,7 @@ ResponseParser Request::execute() {
 	uint8_t *recvBuf = (uint8_t*)SDL_malloc(BUFFERSIZE);
 	int32_t receivedLength = 0;
 	size_t totalReceivedLength = 0u;
-	while ((receivedLength = recv(_socketFD, recvBuf, BUFFERSIZE, 0)) > 0) {
+	while ((receivedLength = recv(_socketFD, (char*)recvBuf, BUFFERSIZE, 0)) > 0) {
 		response = (uint8_t*)SDL_realloc(response, totalReceivedLength + receivedLength);
 		memcpy(response + totalReceivedLength, recvBuf, receivedLength);
 		totalReceivedLength += receivedLength;
