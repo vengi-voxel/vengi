@@ -43,7 +43,7 @@ SOFTWARE.
 #include <iosfwd> // istream, ostream
 #include <iterator> // iterator_traits, random_access_iterator_tag
 #include <numeric> // accumulate
-#include "core/String.h" // string, stoi, to_string
+#include <string> // string, stoi, to_string
 #include <utility> // declval, forward, move, pair, swap
 
 // #include <nlohmann/json_fwd.hpp>
@@ -53,7 +53,7 @@ SOFTWARE.
 #include <cstdint> // int64_t, uint64_t
 #include <map> // map
 #include <memory> // allocator
-#include "core/String.h" // string
+#include <string> // string
 #include <vector> // vector
 
 /*!
@@ -540,7 +540,7 @@ struct is_compatible_type
 
 #include <exception> // exception
 #include <stdexcept> // runtime_error
-#include "core/String.h" // to_string
+#include <string> // to_string
 
 namespace nlohmann
 {
@@ -954,7 +954,7 @@ inline bool operator<(const value_t lhs, const value_t rhs) noexcept
 #include <forward_list> // forward_list
 #include <iterator> // inserter, front_inserter, end
 #include <map> // map
-#include "core/String.h" // string
+#include <string> // string
 #include <tuple> // tuple, make_tuple
 #include <type_traits> // is_arithmetic, is_same, is_enum, underlying_type, is_convertible
 #include <unordered_map> // unordered_map
@@ -1362,7 +1362,7 @@ constexpr const auto& from_json = detail::static_const<detail::from_json_fn>::va
 
 
 #include <cstddef> // size_t
-#include "core/String.h" // string, to_string
+#include <string> // string, to_string
 #include <iterator> // input_iterator_tag
 
 // #include <nlohmann/detail/value_t.hpp>
@@ -1844,7 +1844,7 @@ constexpr const auto& to_json = detail::static_const<detail::to_json_fn>::value;
 #include <iterator> // begin, end, iterator_traits, random_access_iterator_tag, distance, next
 #include <memory> // shared_ptr, make_shared, addressof
 #include <numeric> // accumulate
-#include "core/String.h" // string, char_traits
+#include <string> // string, char_traits
 #include <type_traits> // enable_if, is_base_of, is_pointer, is_integral, remove_pointer
 #include <utility> // pair, declval
 
@@ -2219,7 +2219,7 @@ class input_adapter
 #include <cstdlib> // strtof, strtod, strtold, strtoll, strtoull
 #include <cstdio> // snprintf
 #include <initializer_list> // initializer_list
-#include "core/String.h" // char_traits, string
+#include <string> // char_traits, string
 #include <vector> // vector
 
 // #include <nlohmann/detail/macro_scope.hpp>
@@ -3555,7 +3555,7 @@ scan_number_done:
 #include <cmath> // isfinite
 #include <cstdint> // uint8_t
 #include <functional> // function
-#include "core/String.h" // string
+#include <string> // string
 #include <utility> // move
 
 // #include <nlohmann/detail/exceptions.hpp>
@@ -3780,7 +3780,7 @@ struct is_sax_static_asserts
 
 
 #include <cstddef>
-#include "core/String.h"
+#include <string>
 #include <vector>
 
 // #include <nlohmann/detail/input/parser.hpp>
@@ -5863,7 +5863,7 @@ class json_reverse_iterator : public std::reverse_iterator<Base>
 #include <iterator> // back_inserter
 #include <memory> // shared_ptr, make_shared
 #include <ostream> // basic_ostream
-#include "core/String.h" // basic_string
+#include <string> // basic_string
 #include <vector> // vector
 
 namespace nlohmann
@@ -5982,7 +5982,7 @@ class output_adapter
 #include <cstring> // memcpy
 #include <iterator> // back_inserter
 #include <limits> // numeric_limits
-#include "core/String.h" // char_traits, string
+#include <string> // char_traits, string
 #include <utility> // make_pair, move
 
 // #include <nlohmann/detail/input/input_adapters.hpp>
@@ -8640,7 +8640,7 @@ class binary_writer
 #include <cstdint> // uint8_t
 #include <cstdio> // snprintf
 #include <limits> // numeric_limits
-#include "core/String.h" // string
+#include <string> // string
 #include <type_traits> // is_same
 
 // #include <nlohmann/detail/exceptions.hpp>
@@ -10431,7 +10431,7 @@ class json_ref
 
 #include <cassert> // assert
 #include <numeric> // accumulate
-#include "core/String.h" // string
+#include <string> // string
 #include <vector> // vector
 
 // #include <nlohmann/detail/macro_scope.hpp>
