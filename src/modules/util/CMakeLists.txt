@@ -1,6 +1,6 @@
 set(SRCS
 	IProgressMonitor.h
-	EMailValidator.h
+	EMailValidator.h EMailValidator.cpp
 	Console.h Console.cpp
 	KeybindingParser.h KeybindingParser.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
