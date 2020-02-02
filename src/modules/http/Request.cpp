@@ -127,7 +127,7 @@ ResponseParser Request::execute() {
 	uint8_t *response = nullptr;
 	constexpr const int BUFFERSIZE = 1024 * 1024;
 	uint8_t *recvBuf = (uint8_t*)SDL_malloc(BUFFERSIZE);
-	ssize_t receivedLength = 0u;
+	int32_t receivedLength = 0;
 	size_t totalReceivedLength = 0u;
 	while ((receivedLength = recv(_socketFD, recvBuf, BUFFERSIZE, 0)) > 0) {
 		response = (uint8_t*)SDL_realloc(response, totalReceivedLength + receivedLength);
