@@ -44,7 +44,7 @@ protected:
 		}
 		const ai::EntryPtr& highest = aggroMgr.getHighestEntry();
 		s << "highest: " << highest->getCharacterId() << "=" << highest->getAggro();
-		return s.str();
+		return core::String(s.str().c_str());
 	}
 
 	virtual void SetUp() override;
