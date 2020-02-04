@@ -13,7 +13,7 @@
 namespace video {
 
 Texture::Texture(const TextureConfig& cfg, int width, int height, const core::String& name) :
-		io::IOResource(), _name(name), _width(width), _height(height) {
+		_name(name), _width(width), _height(height) {
 	_config = cfg;
 }
 

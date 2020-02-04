@@ -15,7 +15,6 @@
 #include "voxel/MaterialColor.h"
 #include "BiomeLUAFunctions.h"
 #include "commonlua/LUAFunctions.h"
-#include <utility>
 
 namespace voxelworld {
 
@@ -95,7 +94,7 @@ Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temper
 	return biome;
 }
 
-float BiomeManager::getHumidity(int x, int z) const {
+float BiomeManager::getHumidity(int x, int z) {
 	core_trace_scoped(BiomeGetHumidity);
 	const float frequency = 0.001f;
 	const glm::vec2 noisePos(x * frequency, z * frequency);
@@ -103,7 +102,7 @@ float BiomeManager::getHumidity(int x, int z) const {
 	return noise::norm(n);
 }
 
-float BiomeManager::getTemperature(int x, int z) const {
+float BiomeManager::getTemperature(int x, int z) {
 	core_trace_scoped(BiomeGetTemperature);
 	const float frequency = 0.0001f;
 	// TODO: apply y value
@@ -161,7 +160,7 @@ static inline math::Rect<int> rect(const voxel::Region& region) {
 	return math::Rect<int>(region.getLowerX(), region.getLowerZ(), region.getUpperX(), region.getUpperZ());
 }
 
-void BiomeManager::distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const {
+void BiomeManager::distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) {
 	std::vector<glm::vec2> initialSet;
 	voxel::Region shrinked = region;
 	shrinked.shrink(border);

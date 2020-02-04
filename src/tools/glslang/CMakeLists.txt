@@ -1,3 +1,7 @@
+set(CMAKE_CXX_CLANG_TIDY "")
+set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "")
+set(CMAKE_LINK_WHAT_YOU_USE FALSE)
+
 project(glslang)
 if(WIN32)
 	include(ChooseMSVCCRT.cmake)

@@ -16,7 +16,7 @@ bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize) {
 	int idx = 0;
 	for (size_t i = 0u; i < str.size(); ++i) {
 		const char *c = &str.c_str()[i];
-		if (!strncmp(c, "<cvar:", 6)) {
+		if (strncmp(c, "<cvar:", 6) == 0) {
 			const char *l = strchr(c, '>');
 			if (l != nullptr) {
 				c += 6;
@@ -53,7 +53,8 @@ size_t levensteinDistance(const core::String &source, const core::String &target
 		return levensteinDistance(target, source);
 	}
 
-	const size_t minSize = source.size(), maxSize = target.size();
+	const size_t minSize = source.size();
+	const size_t maxSize = target.size();
 	std::vector<size_t> levDist(minSize + 1);
 
 	for (size_t i = 0; i <= minSize; ++i) {
@@ -61,11 +62,11 @@ size_t levensteinDistance(const core::String &source, const core::String &target
 	}
 
 	for (size_t j = 1; j <= maxSize; ++j) {
-		size_t previousDiagonal = levDist[0], previousDiagonalSave;
+		size_t previousDiagonal = levDist[0];
 		++levDist[0];
 
 		for (size_t i = 1; i <= minSize; ++i) {
-			previousDiagonalSave = levDist[i];
+			const size_t previousDiagonalSave = levDist[i];
 			if (source[i - 1] == target[j - 1]) {
 				levDist[i] = previousDiagonal;
 			} else {
@@ -93,12 +94,12 @@ static core::String findPotentialMatch(const core::String& arg) {
 	return match;
 }
 
-int executeCommands(const core::String& _commandLine) {
-	if (_commandLine.empty()) {
+int executeCommands(const core::String& commandLine) {
+	if (commandLine.empty()) {
 		return 0;
 	}
 	int n = 0;
-	const core::Tokenizer tok(false, _commandLine, ";");
+	const core::Tokenizer tok(false, commandLine, ";");
 	for (const core::String& command : tok.tokens()) {
 		if (command.empty()) {
 			continue;

@@ -58,7 +58,7 @@ private:
 	std::vector<Biome*> _biomes;
 	std::vector<Zone*> _zones[int(ZoneType::Max)];
 	const Biome* _defaultBiome = nullptr;
-	void distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution) const;
+	static void distributePointsInRegion(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border, float distribution);
 	noise::Noise _noise;
 
 public:
@@ -103,11 +103,11 @@ public:
 	/**
 	 * @return Humidity noise in the range [0-1]
 	 */
-	float getHumidity(int x, int z) const;
+	static float getHumidity(int x, int z);
 	/**
 	 * @return Temperature noise in the range [0-1]
 	 */
-	float getTemperature(int x, int z) const;
+	static float getTemperature(int x, int z);
 
 	void setDefaultBiome(const Biome* biome);
 

@@ -35,7 +35,12 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 	float fey = glm::abs(e0.y);
 	float fez = glm::abs(e0.z);
 
-	float min, max, p0, p1, p2, rad;
+	float min;
+	float max;
+	float p0;
+	float p1;
+	float p2;
+	float rad;
 
 	p0 = e0.z * v0.y - e0.y * v0.z;
 	p2 = e0.z * v2.y - e0.y * v2.z;
@@ -75,8 +80,9 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 		max = p2;
 	}
 	rad = fey * boxhalfsize.x + fex * boxhalfsize.y;
-	if (min > rad || max < -rad)
+	if (min > rad || max < -rad) {
 		return false;
+	}
 
 	fex = glm::abs(e1.x);
 	fey = glm::abs(e1.y);
@@ -91,8 +97,9 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 		max = p0;
 	}
 	rad = fez * boxhalfsize.y + fey * boxhalfsize.z;
-	if (min > rad || max < -rad)
+	if (min > rad || max < -rad) {
 		return false;
+	}
 
 	p0 = -e1.z * v0.x + e1.x * v0.z;
 	p2 = -e1.z * v2.x + e1.x * v2.z;
@@ -104,8 +111,9 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 		max = p0;
 	}
 	rad = fez * boxhalfsize.x + fex * boxhalfsize.z;
-	if (min > rad || max < -rad)
+	if (min > rad || max < -rad) {
 		return false;
+	}
 
 	p0 = e1.y * v0.x - e1.x * v0.y;
 	p1 = e1.y * v1.x - e1.x * v1.y;
@@ -117,8 +125,9 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 		max = p0;
 	}
 	rad = fey * boxhalfsize.x + fex * boxhalfsize.y;
-	if (min > rad || max < -rad)
+	if (min > rad || max < -rad) {
 		return false;
+	}
 
 	fex = glm::abs(e2.x);
 	fey = glm::abs(e2.y);
@@ -133,8 +142,9 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 		max = p0;
 	}
 	rad = fez * boxhalfsize.y + fey * boxhalfsize.z;
-	if (min > rad || max < -rad)
+	if (min > rad || max < -rad) {
 		return false;
+	}
 
 	p0 = -e2.z * v0.x + e2.x * v0.z;
 	p1 = -e2.z * v1.x + e2.x * v1.z;
@@ -146,8 +156,9 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 		max = p0;
 	}
 	rad = fez * boxhalfsize.x + fex * boxhalfsize.z;
-	if (min > rad || max < -rad)
+	if (min > rad || max < -rad) {
 		return false;
+	}
 
 	p1 = e2.y * v1.x - e2.x * v1.y;
 	p2 = e2.y * v2.x - e2.x * v2.y;
@@ -159,8 +170,9 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 		max = p2;
 	}
 	rad = fey * boxhalfsize.x + fex * boxhalfsize.y;
-	if (min > rad || max < -rad)
+	if (min > rad || max < -rad) {
 		return false;
+	}
 
 	/* Bullet 1: */
 	/*  first test overlap in the {x,y,z}-directions */
@@ -170,41 +182,54 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 
 	/* test in X-direction */
 	min = max = v0.x;
-	if (v1.x < min)
+	if (v1.x < min) {
 		min = v1.x;
-	if (v1.x > max)
+	}
+	if (v1.x > max) {
 		max = v1.x;
-	if (v2.x < min)
+	}
+	if (v2.x < min) {
 		min = v2.x;
-	if (v2.x > max)
+	}
+	if (v2.x > max) {
 		max = v2.x;
-	if (min > boxhalfsize.x || max < -boxhalfsize.x)
+	}
+	if (min > boxhalfsize.x || max < -boxhalfsize.x) {
 		return false;
+	}
 
 	/* test in Y-direction */
 	min = max = v0.y;
-	if (v1.y < min)
+	if (v1.y < min) {
 		min = v1.y;
-	if (v1.y > max)
+	}
+	if (v1.y > max) {
 		max = v1.y;
-	if (v2.y < min)
+	}
+	if (v2.y < min) {
 		min = v2.y;
-	if (v2.y > max)
+	}
+	if (v2.y > max) {
 		max = v2.y;
+	}
 	if (min > boxhalfsize.y || max < -boxhalfsize.y) {
 		return false;
 	}
 
 	/* test in Z-direction */
 	min = max = v0.z;
-	if (v1.z < min)
+	if (v1.z < min) {
 		min = v1.z;
-	if (v1.z > max)
+	}
+	if (v1.z > max) {
 		max = v1.z;
-	if (v2.z < min)
+	}
+	if (v2.z < min) {
 		min = v2.z;
-	if (v2.z > max)
+	}
+	if (v2.z > max) {
 		max = v2.z;
+	}
 	if (min > boxhalfsize.z || max < -boxhalfsize.z) {
 		return false;
 	}
@@ -214,7 +239,8 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 	/*  compute plane equation of triangle: normal*x+d=0 */
 	const glm::vec3& normal = glm::cross(e0, e1);
 
-	glm::vec3 vmin, vmax;
+	glm::vec3 vmin;
+	glm::vec3 vmax;
 	for (int i = 0; i <= 2; i++) {
 		const float v = v0[i];
 		if (normal[i] > 0.0f) {
@@ -225,12 +251,10 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 			vmax[i] = -boxhalfsize[i] - v;
 		}
 	}
-	if (glm::dot(normal, vmin) > 0.0f)
+	if (glm::dot(normal, vmin) > 0.0f) {
 		return false;
-	if (glm::dot(normal, vmax) >= 0.0f)
-		return true;
-
-	return false;
+	}
+	return glm::dot(normal, vmax) >= 0.0f;
 }
 
 }

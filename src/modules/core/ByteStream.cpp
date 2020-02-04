@@ -7,8 +7,7 @@
 
 namespace core {
 
-ByteStream::ByteStream(int size) :
-		_buffer(), _pos(0) {
+ByteStream::ByteStream(int size) {
 	_buffer.reserve(size);
 }
 

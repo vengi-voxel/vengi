@@ -22,7 +22,8 @@ extern void core_stacktrace();
 			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
-			} else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
+			} \
+			if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
 				SDL_TriggerBreakpoint(); \
 			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE) { \
 				core_stacktrace(); \
@@ -51,7 +52,8 @@ extern void core_stacktrace();
 			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
-			} else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
+			} \
+			if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
 				SDL_TriggerBreakpoint(); \
 			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE) { \
 				core_stacktrace(); \

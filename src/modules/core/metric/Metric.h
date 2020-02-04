@@ -52,7 +52,7 @@ private:
 	 * @param[in] split The separator between key/value pairs
 	 * @return @c false if not all tags could get written into the specified target buffer, @c true otherwise
 	 */
-	bool createTags(char *buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split = ",") const;
+	static bool createTags(char *buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split = ",");
 	bool assemble(const char* key, int value, const char* type, const TagMap& tags = {}) const;
 public:
 	~Metric();

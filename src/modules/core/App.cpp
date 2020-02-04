@@ -345,7 +345,7 @@ AppState App::onInit() {
 	});
 
 	for (int i = 0; i < _argc; ++i) {
-		if (!strcmp(_argv[i], "--help") || !strcmp(_argv[i], "-h")) {
+		if (strcmp(_argv[i], "--help") == 0 || strcmp(_argv[i], "-h") == 0) {
 			usage();
 			return AppState::Destroy;
 		}

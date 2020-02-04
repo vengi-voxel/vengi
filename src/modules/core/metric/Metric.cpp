@@ -42,7 +42,7 @@ void Metric::shutdown() {
 	_messageSender = IMetricSenderPtr();
 }
 
-bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split) const {
+bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split) {
 	if (tags.empty()) {
 		return true;
 	}

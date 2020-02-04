@@ -23,7 +23,7 @@ class ByteStream {
 private:
 	typedef std::vector<uint8_t> VectorBuffer;
 	VectorBuffer _buffer;
-	int _pos;
+	int _pos = 0;
 
 	inline int size() const {
 		return (int)(_buffer.size() - _pos);

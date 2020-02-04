@@ -66,14 +66,14 @@ static void MD5Init (struct MD5Context *ctx)
 /* The four core functions - F1 is optimized somewhat */
 
 /* #define F1(x, y, z) (x & y | ~x & z) */
-#define F1(x, y, z) (z ^ (x & (y ^ z)))
-#define F2(x, y, z) F1(z, x, y)
-#define F3(x, y, z) (x ^ y ^ z)
-#define F4(x, y, z) (y ^ (x | ~z))
+#define F1(x, y, z) ((z) ^ ((x) & ((y) ^ (z))))
+#define F2(x, y, z) F1((z), (x), (y))
+#define F3(x, y, z) ((x) ^ (y) ^ (z))
+#define F4(x, y, z) ((y) ^ ((x) | ~(z)))
 
 /* This is the central step in the MD5 algorithm. */
 #define MD5STEP(f, w, x, y, z, data, s) \
-	( w += f(x, y, z) + data,  w = w<<s | w>>(32-s),  w += x )
+	( (w) += f(x, y, z) + data, (w) = (w)<<(s) | w>>(32-(s)), (w) += (x) )
 
 /**
  * @brief The core of the MD5 algorithm, this alters an existing MD5 hash to
@@ -82,7 +82,6 @@ static void MD5Init (struct MD5Context *ctx)
  */
 static void MD5Transform (uint32_t buf[4], uint32_t const in[16])
 {
-
 	uint32_t a = buf[0];
 	uint32_t b = buf[1];
 	uint32_t c = buf[2];
