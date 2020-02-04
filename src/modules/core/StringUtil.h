@@ -7,7 +7,6 @@
 #include "core/String.h"
 #include <string.h>
 #include <stdlib.h>
-#include <sstream>
 #include <limits.h>
 #include <algorithm>
 #include <vector>
@@ -213,13 +212,13 @@ core::String join(const ITER& begin, const ITER& end, const char *delimiter) {
 	if (i == end) {
 		return "";
 	}
-	std::ostringstream ss;
-	ss << *i;
+	core::String ss;
+	ss += *i;
 	for (++i; i != end; ++i) {
-		ss << delimiter;
-		ss << *i;
+		ss += delimiter;
+		ss += *i;
 	}
-	return core::String(ss.str().c_str());
+	return ss;
 }
 
 template<typename ITER, typename FUNC>
@@ -228,13 +227,13 @@ core::String join(const ITER& begin, const ITER& end, const char *delimiter, FUN
 	if (i == end) {
 		return "";
 	}
-	std::ostringstream ss;
-	ss << func(*i);
+	core::String ss;
+	ss += func(*i);
 	for (++i; i != end; ++i) {
-		ss << delimiter;
-		ss << func(*i);
+		ss += delimiter;
+		ss += func(*i);
 	}
-	return core::String(ss.str().c_str());
+	return ss;
 }
 
 /**

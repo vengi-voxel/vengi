@@ -8,6 +8,7 @@
 #include "core/io/Filesystem.h"
 #include "Util.h"
 #include "Types.h"
+#include <sstream>
 
 namespace computeshadertool {
 

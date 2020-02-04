@@ -10,6 +10,7 @@
 #include "Util.h"
 #include <simplecpp.h>
 #include <stack>
+#include <sstream>
 
 namespace computeshadertool {
 

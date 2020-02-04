@@ -15,6 +15,7 @@
 #include "Generator.h"
 #include "Parser.h"
 #include "Util.h"
+#include <sstream>
 
 namespace shadertool {
 
