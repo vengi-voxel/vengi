@@ -26,7 +26,7 @@ TEST_F(HttpClientTest, testSimple) {
 	HttpClient client("http://localhost:8095");
 	ResponseParser response = client.get("/");
 	EXPECT_TRUE(response.valid());
-	const char *length;
+	const char *length = "";
 	EXPECT_TRUE(response.headers.get(http::header::CONTENT_LENGTH, length));
 	EXPECT_STREQ("7", length);
 	const char *type;
