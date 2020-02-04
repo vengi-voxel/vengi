@@ -99,19 +99,15 @@ void ByteStream::readFormat(const char *fmt, ...) {
 }
 
 core::String ByteStream::readString() {
-	int size = 0;
 	core::String strbuff;
 	strbuff.reserve(64);
-	for (;;) {
-		const char chr = *std::next(begin(), size);
-		++size;
-		core_assert(size <= this->size());
+	while (size() > 0) {
+		const int8_t chr = (int8_t)readByte();
 		if (chr == '\0') {
 			break;
 		}
 		strbuff += chr;
 	}
-	_pos += size;
 	return strbuff;
 }
 
