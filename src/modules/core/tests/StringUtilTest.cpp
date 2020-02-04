@@ -136,6 +136,12 @@ TEST_F(StringUtilTest, testReplaceAll) {
 	EXPECT_EQ("222222222333", core::string::replaceAll(str, "1", "22"));
 }
 
+TEST_F(StringUtilTest, testReplaceAllEverything) {
+	const String str(2, 'c');
+	const String strExpected(2, 'd');
+	EXPECT_EQ(strExpected, core::string::replaceAll(str, "c", "d"));
+}
+
 TEST_F(StringUtilTest, testReplaceAllBigString) {
 	const String str(128, 'c');
 	const String strExpected(128, 'd');
