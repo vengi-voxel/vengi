@@ -506,16 +506,6 @@ String operator+(const String &lhs, char rhs) {
 	return tmp;
 }
 
-size_t StringHash::operator()(const String& p) const {
-	size_t result = 0;
-	const size_t prime = 31;
-	const size_t s = p.size();
-	for (size_t i = 0; i < s; ++i) {
-		result = SDL_tolower(p[i]) + (result * prime);
-	}
-	return result;
-}
-
 int String::toInt() const {
 	return SDL_atoi(_data._str);
 }

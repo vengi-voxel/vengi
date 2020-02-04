@@ -3,11 +3,9 @@
  */
 
 #include "Frustum.h"
-#include "core/Common.h"
 #include "core/Trace.h"
 #include "core/Assert.h"
 #include "core/GLM.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 namespace math {
 

@@ -65,6 +65,10 @@ inline ::std::ostream& operator<<(::std::ostream& os, const glm::mat3& mat) {
 	return os << "mat3x3[" << glm::to_string(mat) << "]";
 }
 
+inline std::ostream &operator<<(::std::ostream &os, const core::String &dt) {
+	return os << dt.c_str();
+}
+
 template<typename T, glm::qualifier P = glm::defaultp>
 inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec4<T, P>& vec) {
 	return os << "vec4[" << glm::to_string(vec) << "]";

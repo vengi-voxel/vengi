@@ -8,8 +8,8 @@
 #include "core/ArrayLength.h"
 #include <stddef.h>
 #include <stdint.h>
-#include <iostream>
 #include <SDL_stdinc.h>
+#include <functional>
 
 namespace core {
 
@@ -168,15 +168,6 @@ String operator+(const String &x, const char *y);
 
 bool operator==(const char *x, const String &y);
 bool operator!=(const char *x, const String &y);
-
-inline std::ostream &operator<<(std::ostream &os, const core::String &dt) {
-	os << dt.c_str();
-	return os;
-}
-
-struct StringHash {
-	size_t operator()(const String& p) const;
-};
 
 }
 

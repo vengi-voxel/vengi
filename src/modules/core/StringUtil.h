@@ -131,6 +131,11 @@ inline core::String replaceAll(const core::String& str, const core::String& sear
 extern void replaceAllChars(core::String& str, char in, char out);
 
 inline core::String replaceAll(const core::String& str, const core::String& searchStr, const core::String& replaceStr) {
+	if (searchStr.size() == 1 && replaceStr.size() == 1) {
+		core::String copy = str;
+		replaceAllChars(copy, searchStr[0], replaceStr[0]);
+		return copy;
+	}
 	return replaceAll(str, searchStr, replaceStr.c_str(), replaceStr.size());
 }
 
