@@ -54,8 +54,9 @@ public:
 		++_connectEvent;
 		flatbuffers::FlatBufferBuilder fbb;
 		Log::info("got new connection event");
+		const core::String& pwhash = core::pwhash("somepassword", "TODO");
 		_clientMessageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnect,
-				network::CreateUserConnect(fbb, fbb.CreateString("a@b.c"), fbb.CreateString(core::pwhash("somepassword", "TODO"))).Union());
+				network::CreateUserConnect(fbb, fbb.CreateString("a@b.c"), fbb.CreateString(pwhash.c_str(), pwhash.size())).Union());
 	}
 
 	bool listen() {

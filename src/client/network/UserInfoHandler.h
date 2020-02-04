@@ -12,6 +12,6 @@ CLIENTPROTOHANDLERIMPL(UserInfo) {
 	for (const auto& v : *message->vars()) {
 		auto *name = v->name();
 		auto *value = v->value();
-		entity->userinfo(name->str(), value->str());
+		entity->userinfo(name->c_str(), value->c_str());
 	}
 }

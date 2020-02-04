@@ -136,7 +136,7 @@ void AIDebugger::setCharacterDetails(const CharacterId& id, const AIStateAggro& 
 	const AIStateWorld& state = _entities.value(id);
 	const CharacterAttributes& attributes = state.getAttributes();
 	for (CharacterAttributes::const_iterator i = attributes.begin(); i != attributes.end(); ++i) {
-		_attributes[QString::fromStdString(i->first)] = QString::fromStdString(i->second);
+		_attributes[QString(i->first.c_str())] = QString(i->second.c_str());
 	}
 }
 
@@ -212,11 +212,11 @@ void AIDebugger::reset() {
 }
 
 void AIDebugger::change(const QString& name) {
-	writeMessage(AIChangeMessage(name.toStdString()));
+	writeMessage(AIChangeMessage(name.toStdString().c_str()));
 }
 
 void AIDebugger::updateNode(int32_t nodeId, const QVariant& name, const QVariant& type, const QVariant& condition) {
-	writeMessage(AIUpdateNodeMessage(nodeId, _selectedId, name.toString().c_str(), type.toString().c_str(), condition.toString().c_str()));
+	writeMessage(AIUpdateNodeMessage(nodeId, _selectedId, name.toString().toStdString().c_str(), type.toString().toStdString().c_str(), condition.toString().toStdString().c_str()));
 }
 
 void AIDebugger::deleteNode(int32_t nodeId) {
@@ -224,7 +224,9 @@ void AIDebugger::deleteNode(int32_t nodeId) {
 }
 
 void AIDebugger::addNode(int32_t parentNodeId, const QVariant& name, const QVariant& type, const QVariant& condition) {
-	writeMessage(AIAddNodeMessage(parentNodeId, _selectedId, name.toString().c_str(), type.toString().c_str(), condition.toString().c_str())));
+	writeMessage(AIAddNodeMessage(parentNodeId, _selectedId, name.toString().toStdString().c_str(),
+		type.toString().toStdString().c_str(),
+		condition.toString().toStdString().c_str()));
 }
 
 bool AIDebugger::connectToAIServer(const QString& hostname, short port) {
@@ -325,8 +327,8 @@ MapView* AIDebugger::createMapWidget() {
 void AIDebugger::setNames(const std::vector<core::String>& names) {
 	_names.clear();
 	_names.reserve(names.size());
-	for (const std::string& name : names) {
-		_names << QString::fromStdString(name);
+	for (const core::String& name : names) {
+		_names << QString(name.c_str());
 	}
 }
 

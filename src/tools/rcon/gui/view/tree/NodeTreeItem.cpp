@@ -24,9 +24,9 @@ const QFontMetrics fontMetrics(font);
 NodeTreeItem::NodeTreeItem (QGraphicsItem* parentGraphicsItem, const AIStateNode& node, const AIStateNodeStatic& staticNodeData, NodeTreeItem* parent, int itemHeight, int horizontalSpacing, int verticalSpacing) :
 		QGraphicsItem(parentGraphicsItem), _node(node), _parent(parent), _height(itemHeight), _horizontalSpacing(
 				horizontalSpacing), _verticalSpacing(verticalSpacing) {
-	_condition = QString::fromStdString(_node.getCondition());
-	_name = QString::fromStdString(staticNodeData.getName());
-	_type = QString::fromStdString(staticNodeData.getType());
+	_condition = QString(_node.getCondition().c_str());
+	_name = QString(staticNodeData.getName().c_str());
+	_type = QString(staticNodeData.getType().c_str());
 	_width = core_max(130, core_max(fontMetrics.width(_name), fontMetrics.width(_condition)));
 	_lineHeight = fontMetrics.lineSpacing();
 }

@@ -18,7 +18,7 @@ BehaviourTreeModelItem::BehaviourTreeModelItem(AIStateNode* stateNodePtr, AINode
 			_rows.push_back(new BehaviourTreeModelItem(const_cast<AIStateNode*>(&stateNode), resolver, this));
 		}
 	}
-	const QString type = QString::fromStdString(_staticNodeData.getType()).toLower();
+	const QString type = QString(_staticNodeData.getType().c_str()).toLower();
 	const QString path = ":/images/" + type + ".png";
 	if (QFile::exists(path)) {
 		_icon = QIcon(path);
@@ -74,10 +74,10 @@ QIcon BehaviourTreeModelItem::icon() const {
 
 QString BehaviourTreeModelItem::tooltip(int column) const {
 	if (column == COL_NAME) {
-		return QString::fromStdString(_staticNodeData.getType());
+		return QString(_staticNodeData.getType().c_str());
 	}
 	if (column == COL_CONDITION) {
-		return QString::fromStdString(_staticNodeData.getCondition());
+		return QString(_staticNodeData.getCondition().c_str());
 	}
 	return QString();
 }
@@ -118,17 +118,17 @@ QVariant BehaviourTreeModelItem::data(int column) const {
 		if (!_editedName.isEmpty()) {
 			return _editedName;
 		}
-		return QString::fromStdString(_staticNodeData.getName());
+		return QString(_staticNodeData.getName().c_str());
 	case COL_TYPE:
 		if (!_editedType.isEmpty()) {
 			return _editedType;
 		}
-		return QString::fromStdString(_staticNodeData.getType());
+		return QString(_staticNodeData.getType().c_str());
 	case COL_CONDITION:
 		if (!_editedCondition.isEmpty()) {
 			return _editedCondition;
 		}
-		return QString::fromStdString(_node->getCondition());
+		return QString(_node->getCondition().c_str());
 	case COL_STATE: {
 		const TreeNodeStatus status = _node->getStatus();
 		if (status >= UNKNOWN && status < MAX_TREENODESTATUS) {

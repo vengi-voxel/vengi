@@ -66,7 +66,7 @@ QVariant EntityListModel::data(const QModelIndex &mdlIndex, int role) const {
 			const CharacterAttributes& attributes = state.getAttributes();
 			auto name = attributes.find(attributes::NAME);
 			if (name != attributes.end()) {
-				return QString::fromStdString(name->second).append(" (%1)").arg(state.getId());
+				return QString(name->second.c_str()).append(" (%1)").arg(state.getId());
 			}
 			return state.getId();
 		}

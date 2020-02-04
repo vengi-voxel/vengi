@@ -414,8 +414,10 @@ void ServerLoop::replicateVars() const {
 	static flatbuffers::FlatBufferBuilder fbb;
 	auto fbbVars = fbb.CreateVector<flatbuffers::Offset<network::Var>>(vars.size(),
 		[&] (size_t i) {
-			auto name = fbb.CreateString(vars[i]->name());
-			auto value = fbb.CreateString(vars[i]->strVal());
+			const core::String& sname = vars[i]->name();
+			const core::String& svalue = vars[i]->strVal();
+			auto name = fbb.CreateString(sname.c_str(), sname.size());
+			auto value = fbb.CreateString(svalue.c_str(), svalue.size());
 			return network::CreateVar(fbb, name, value);
 		});
 	_messageSender->broadcastServerMessage(fbb, network::ServerMsgType::VarUpdate,

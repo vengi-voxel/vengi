@@ -114,7 +114,7 @@ bool SceneManager::importAsPlane(const core::String& file) {
 		return false;
 	}
 	const core::String filename = core::string::extractFilename(img->name().c_str());
-	if (!_layerMgr.addLayer(filename.data(), true, v, glm::zero<glm::ivec3>())) {
+	if (!_layerMgr.addLayer(filename.c_str(), true, v, glm::zero<glm::ivec3>())) {
 		delete v;
 		return false;
 	}
@@ -297,7 +297,7 @@ bool SceneManager::load(const core::String& file) {
 	}
 	const io::FilePtr& filePtr = io::filesystem()->open(file);
 	if (!(bool)filePtr) {
-		Log::error("Failed to open model file '%s'", file.data());
+		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
 	}
 	voxel::VoxelVolumes newVolumes;

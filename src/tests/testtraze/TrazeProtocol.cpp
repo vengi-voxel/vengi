@@ -143,8 +143,8 @@ bool Protocol::join(const core::String& name) {
 		return false;
 	}
 	core::json j;
-	j["name"] = name;
-	j["mqttClientName"] = _clientToken;
+	j["name"] = name.c_str();
+	j["mqttClientName"] = _clientToken.c_str();
 	Log::info("Trying to join the game %s with client token %s and name %s",
 			_instanceName.c_str(), _clientToken.c_str(), name.c_str());
 	const std::string& dump = j.dump();
@@ -166,8 +166,9 @@ bool Protocol::steer(BikeDirection direction) const {
 	}
 	core::json j;
 	j["course"] = course;
-	j["playerToken"] = _playerToken;
-	return send(core::string::format("traze/%s/%i/steer", _instanceName.c_str(), _playerId), j.dump());
+	j["playerToken"] = _playerToken.c_str();
+	const std::string& dump = j.dump();
+	return send(core::string::format("traze/%s/%i/steer", _instanceName.c_str(), _playerId), dump.c_str());
 }
 
 bool Protocol::bail() {
@@ -176,8 +177,9 @@ bool Protocol::bail() {
 		return false;
 	}
 	core::json j;
-	j["playerToken"] = _playerToken;
-	if (send(core::string::format("traze/%s/%i/bail", _instanceName.c_str(), _playerId), j.dump())) {
+	j["playerToken"] = _playerToken.c_str();
+	const std::string& dump = j.dump();
+	if (send(core::string::format("traze/%s/%i/bail", _instanceName.c_str(), _playerId), dump.c_str())) {
 		_playerId = 0;
 		_playerToken = "";
 		return true;
@@ -187,7 +189,7 @@ bool Protocol::bail() {
 
 void Protocol::parseOwnPlayer(const core::String& json) {
 	const core::json j = core::json::parse(json);
-	_playerToken = j["secretUserToken"];
+	_playerToken = j["secretUserToken"].get<std::string>().c_str();
 	_playerId = j["id"].get<int>();
 	const glm::ivec2& position = j["position"];
 	Log::info("Player token %s with id %u at pos %i:%i", _playerToken.c_str(), _playerId, position.x, position.y);
@@ -201,8 +203,8 @@ void Protocol::parsePlayers(const core::String& json) {
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	for (const auto& player : j) {
 		Player p;
-		p.name = player["name"];
-		const core::String& hex = player["color"];
+		p.name = player["name"].get<std::string>().c_str();
+		const core::String hex(player["color"].get<std::string>().c_str());
 		const glm::vec4& color = core::Color::fromHex(hex.c_str());
 		const uint8_t index = core::Color::getClosestMatch(color, materialColors);
 		p.colorIndex = index;
@@ -224,7 +226,7 @@ void Protocol::parsePlayers(const core::String& json) {
 void Protocol::parseTicker(const core::String& json) const {
 	const core::json j = core::json::parse(json);
 	Ticker ticker;
-	const core::String& type = j["type"];
+	const core::String& type = j["type"].get<std::string>().c_str();
 	if (type == "suicide") {
 		ticker.type = TickerType::Suicide;
 	} else if (type == "frag") {
@@ -252,7 +254,7 @@ void Protocol::parseGames(const core::String& json) const {
 	for (auto& it : j) {
 		GameInfo g;
 		g.activePlayers = it["activePlayers"];
-		g.name = it["name"];
+		g.name = it["name"].get<std::string>().c_str();
 		games.push_back(g);
 		Log::debug("%s with %i players", g.name.c_str(), g.activePlayers);
 	}
@@ -265,7 +267,7 @@ void Protocol::parseScores(const core::String& json) {
 	std::vector<_S> entries;
 	for (const auto &score : j.items()) {
 		const int rank = score.value().get<int>();
-		entries.emplace_back(_S{rank, score.key()});
+		entries.emplace_back(_S{rank, score.key().c_str()});
 	}
 	if (entries.empty()) {
 		return;
@@ -320,7 +322,7 @@ void Protocol::parseGridAndUpdateVolume(const core::String& json) {
 			int locX = bike["currentLocation"][0].get<int>();
 			int locY = bike["currentLocation"][1].get<int>();
 			b.currentLocation = glm::ivec2(locX, locY);
-			const core::String direction = bike["direction"];
+			const core::String direction = bike["direction"].get<std::string>().c_str();
 			if (direction == "W") {
 				b.direction = BikeDirection::W;
 			} else if (direction == "E") {

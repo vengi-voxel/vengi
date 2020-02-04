@@ -5,6 +5,7 @@
 #include "Connection.h"
 #include "core/Log.h"
 #include "postgres/PQSymbol.h"
+#include "core/StringUtil.h"
 
 namespace persistence {
 

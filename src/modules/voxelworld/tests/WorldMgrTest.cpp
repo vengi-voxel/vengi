@@ -8,6 +8,7 @@
 #include "engine-config.h"
 #include <chrono>
 #include "core/String.h"
+#include "core/StringUtil.h"
 
 namespace voxelworld {
 

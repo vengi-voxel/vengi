@@ -54,8 +54,10 @@ void User::sendVars() const {
 	flatbuffers::FlatBufferBuilder fbb;
 	auto fbbVars = fbb.CreateVector<flatbuffers::Offset<network::Var>>(vars.size(),
 		[&] (size_t i) {
-			auto name = fbb.CreateString(vars[i]->name());
-			auto value = fbb.CreateString(vars[i]->strVal());
+			const core::String& sname = vars[i]->name();
+			const core::String& svalue = vars[i]->strVal();
+			auto name = fbb.CreateString(sname.c_str(), sname.size());
+			auto value = fbb.CreateString(svalue.c_str(), svalue.size());
 			return network::CreateVar(fbb, name, value);
 		});
 	if (!_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::VarUpdate,
@@ -123,8 +125,8 @@ void User::broadcastUserinfo() {
 	auto iter = _userinfo.begin();
 	auto fbbVars = fbb.CreateVector<flatbuffers::Offset<network::Var>>(_userinfo.size(),
 		[&] (size_t i, auto* iter) {
-			auto name = fbb.CreateString((*iter)->key);
-			auto value = fbb.CreateString((*iter)->value);
+			auto name = fbb.CreateString((*iter)->key.c_str(), (*iter)->key.size());
+			auto value = fbb.CreateString((*iter)->value.c_str(), (*iter)->value.size());
 			++(*iter);
 			return network::CreateVar(fbb, name, value);
 		}, &iter);
@@ -134,7 +136,7 @@ void User::broadcastUserinfo() {
 void User::broadcastUserSpawn() const {
 	flatbuffers::FlatBufferBuilder fbb;
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
-	sendToVisible(fbb, network::ServerMsgType::UserSpawn, network::CreateUserSpawn(fbb, id(), fbb.CreateString(_name), &pos).Union(), true);
+	sendToVisible(fbb, network::ServerMsgType::UserSpawn, network::CreateUserSpawn(fbb, id(), fbb.CreateString(_name.c_str(), _name.size()), &pos).Union(), true);
 }
 
 bool User::sendMessage(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type, flatbuffers::Offset<void> msg) const {

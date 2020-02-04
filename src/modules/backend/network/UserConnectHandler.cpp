@@ -74,13 +74,13 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const core::String& email, con
 void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 	const auto* message = getMsg<network::UserConnect>(raw);
 
-	const core::String& email = message->email()->str();
+	const core::String email(message->email()->c_str());
 	if (!util::isValidEmail(email)) {
 		sendAuthFailed(peer);
 		Log::debug(logid, "Invalid email given: '%s', %c", email.c_str(), email[0]);
 		return;
 	}
-	const core::String& password = message->password()->str();
+	const core::String password(message->password()->c_str());
 	if (password.empty()) {
 		Log::debug(logid, "User tries to log into the server without providing a password");
 		sendAuthFailed(peer);

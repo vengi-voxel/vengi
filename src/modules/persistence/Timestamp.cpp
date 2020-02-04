@@ -23,7 +23,7 @@ core::String Timestamp::toString(const char *format) const {
 	std::tm tm = *std::gmtime(&t);
 	std::stringstream ss;
 	ss << std::put_time(&tm, format);
-	return ss.str();
+	return core::String(ss.str().c_str());
 }
 
 Timestamp Timestamp::now() {
