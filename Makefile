@@ -146,20 +146,10 @@ update-simplexnoise:
 	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
 	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 
-update-curl:
-	$(call UPDATE_GIT,curl,https://github.com/curl/curl.git)
-	cp $(UPDATEDIR)/curl.sync/lib/*.[ch]* contrib/libs/libcurl/lib
-	cp $(UPDATEDIR)/curl.sync/lib/CMakeLists.txt contrib/libs/libcurl/lib
-	cp $(UPDATEDIR)/curl.sync/CMakeLists.txt contrib/libs/libcurl
-	cp -r $(UPDATEDIR)/curl.sync/CMake/* contrib/libs/libcurl/CMake
-	cp $(UPDATEDIR)/curl.sync/lib/vauth/*.[ch]* contrib/libs/libcurl/lib/vauth
-	cp $(UPDATEDIR)/curl.sync/lib/vtls/*.[ch]* contrib/libs/libcurl/lib/vtls
-	cp $(UPDATEDIR)/curl.sync/include/curl/*.[ch]* contrib/libs/libcurl/include/curl
-
 # TODO native file dialog support
 # TODO simpleai support
 # TODO lua support
-updatelibs: update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-curl update-glslang
+updatelibs: update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-glslang
 	$(MAKE) -C $(BUILDDIR) update-libs
 
 windows:

@@ -11,7 +11,7 @@ EXEPATH=$PWD/@_EXE_TARGET@/@COMMANDLINE@.app/Contents/MacOS
 # may not be in /opt/local. One per line. These
 # are used with grep, so only a portion of the name
 # is required. eg: libFOX, libz, etc.
-LIBS_TO_BUNDLE=libcurl
+LIBS_TO_BUNDLE=
 
 
 function copydeps {

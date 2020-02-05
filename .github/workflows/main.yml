@@ -9,7 +9,7 @@ jobs:
         - uses: actions/checkout@v1
         - name: macOS
           run: |
-            brew install qt5 mosquitto curl-openssl zlib libuv sdl2 libpq sdl2_mixer
+            brew install qt5 mosquitto zlib libuv sdl2 libpq sdl2_mixer
             mkdir build
             cd build
             cmake ..
@@ -53,7 +53,7 @@ jobs:
           run: |
             set VCPKG_DEFAULT_TRIPLET=x64-windows
             set VCPKG_BUILD_TYPE=release
-            vcpkg install curl[winssl] libpq
+            vcpkg install libpq
             mkdir build
             cd build
             cmake .. -DRCON=OFF
