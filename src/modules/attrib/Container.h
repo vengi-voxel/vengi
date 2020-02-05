@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <functional>
 #include "core/String.h"
+#include "core/collection/StringMap.h"
 #include <memory>
 #include "AttributeType.h"
 

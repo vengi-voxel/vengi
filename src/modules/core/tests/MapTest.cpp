@@ -3,9 +3,8 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/collection/Map.h"
+#include "core/collection/StringMap.h"
 #include <memory>
-#include "core/String.h"
 
 namespace core {
 
@@ -118,7 +117,7 @@ TEST(MapTest, testIterateRangeBased) {
 }
 
 TEST(MapTest, testStringSharedPtr) {
-	core::Map<core::String, std::shared_ptr<core::String>, 4, core::StringHash> map;
+	core::StringMap<std::shared_ptr<core::String>, 4> map;
 	auto foobar = std::make_shared<core::String>("foobar");
 	map.put("foobar", foobar);
 	map.put("barfoo", std::make_shared<core::String>("barfoo"));
@@ -129,14 +128,14 @@ TEST(MapTest, testStringSharedPtr) {
 }
 
 TEST(MapTest, testCopy) {
-	core::Map<core::String, std::shared_ptr<core::String>, 4, core::StringHash> map;
+	core::StringMap<std::shared_ptr<core::String>, 4> map;
 	map.put("foobar", std::make_shared<core::String>("barfoo"));
 	auto map2 = map;
 	map2.clear();
 }
 
 TEST(MapTest, testErase) {
-	core::Map<core::String, std::shared_ptr<core::String>, 4, core::StringHash> map;
+	core::StringMap<std::shared_ptr<core::String>, 4> map;
 	map.put("foobar", std::make_shared<core::String>("barfoo"));
 	EXPECT_EQ(1u, map.size());
 	auto iter = map.find("foobar");
@@ -146,9 +145,9 @@ TEST(MapTest, testErase) {
 }
 
 TEST(MapTest, testAssign) {
-	core::Map<core::String, std::shared_ptr<core::String>, 4, core::StringHash> map;
+	core::StringMap<std::shared_ptr<core::String>, 4> map;
 	map.put("foobar", std::make_shared<core::String>("barfoo"));
-	core::Map<core::String, std::shared_ptr<core::String>, 4, core::StringHash> map2;
+	core::StringMap<std::shared_ptr<core::String>, 4> map2;
 	map2 = map;
 	EXPECT_EQ(1u, map.size());
 	EXPECT_EQ(1u, map2.size());

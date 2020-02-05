@@ -6,7 +6,6 @@
 
 #include "Container.h"
 #include "core/ReadWriteLock.h"
-#include <queue>
 #include <functional>
 
 #undef max

@@ -21,7 +21,7 @@ enum class MetricEventType {
 	Meter
 };
 
-using TagMap = core::Map<core::String, core::String, 4, core::StringHash>;
+using TagMap = core::StringMap<core::String, 4>;
 
 class MetricEvent: public core::IEventBusEvent {
 private:

@@ -22,6 +22,7 @@ set(SRCS
 	collection/List.h
 	collection/Map.h
 	collection/Set.h
+	collection/StringMap.h
 
 	ArrayLength.h
 	Assert.cpp Assert.h

@@ -5,15 +5,14 @@
 #pragma once
 
 #include "voxelformat/VolumeCache.h"
-#include "core/collection/Map.h"
+#include "core/collection/StringMap.h"
 #include <glm/fwd.hpp>
-#include "core/String.h"
 
 namespace voxelworld {
 
 class TreeVolumeCache {
 private:
-	core::Map<core::String, int, 8, core::StringHash> _treeTypeCount;
+	core::StringMap<int> _treeTypeCount;
 
 	voxelformat::VolumeCachePtr _volumeCache;
 public:

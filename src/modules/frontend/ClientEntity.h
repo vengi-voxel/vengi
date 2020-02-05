@@ -14,7 +14,7 @@
 #include "animation/AnimationCache.h"
 #include "AnimationShaders.h"
 #include "stock/Stock.h"
-#include "core/collection/Map.h"
+#include "core/collection/StringMap.h"
 #include <functional>
 #include <vector>
 #include <memory>
@@ -37,7 +37,7 @@ private:
 	video::Buffer _vbo;
 	int32_t _vertices = -1;
 	int32_t _indices = -1;
-	core::Map<core::String, core::String, 8, core::StringHash> _userinfo;
+	core::StringMap<core::String> _userinfo;
 public:
 	ClientEntity(const stock::StockDataProviderPtr& provider, const animation::AnimationCachePtr& animationCache,
 			ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation);
