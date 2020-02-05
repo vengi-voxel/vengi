@@ -10,8 +10,6 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include <unordered_map>
-#include <unordered_set>
 #include <glm/fwd.hpp>
 #include "ShaderTypes.h"
 
@@ -48,7 +46,7 @@ protected:
 	typedef core::Array<Id, (int)ShaderType::Max> ShaderArray;
 	ShaderArray _shader { InvalidId, InvalidId, InvalidId, InvalidId };
 
-	typedef std::unordered_map<int, uint32_t> UniformStateMap;
+	typedef core::Map<int, uint32_t, 8> UniformStateMap;
 	mutable UniformStateMap _uniformStateMap;
 
 	Id _program = InvalidId;
@@ -68,7 +66,7 @@ protected:
 	std::vector<core::String> _transformVaryings;
 
 	// can be used to validate that every uniform was set. The value type is the location index
-	mutable std::unordered_set<int> _usedUniforms;
+	mutable core::Map<int, bool, 4> _usedUniforms;
 	bool _recordUsedUniforms = false;
 	void addUsedUniform(int location) const;
 
@@ -345,7 +343,7 @@ inline bool Shader::isInitialized() const {
 }
 
 inline void Shader::addUsedUniform(int location) const {
-	_usedUniforms.insert(location);
+	_usedUniforms.put(location, true);
 }
 
 inline void Shader::recordUsedUniforms(bool state) {

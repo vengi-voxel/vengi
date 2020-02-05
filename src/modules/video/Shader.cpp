@@ -12,6 +12,7 @@
 #include "Version.h"
 #include "core/Assert.h"
 #include "core/Var.h"
+#include "core/Enum.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
 #include "ShaderManager.h"
