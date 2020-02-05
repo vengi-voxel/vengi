@@ -45,8 +45,8 @@ class UniformBuffer;
  */
 class Shader {
 protected:
-	typedef std::unordered_map<ShaderType, Id, EnumClassHash> ShaderMap;
-	ShaderMap _shader;
+	typedef core::Array<Id, (int)ShaderType::Max> ShaderArray;
+	ShaderArray _shader { InvalidId, InvalidId, InvalidId, InvalidId };
 
 	typedef std::unordered_map<int, uint32_t> UniformStateMap;
 	mutable UniformStateMap _uniformStateMap;

@@ -157,10 +157,9 @@ void Shader::shutdown() {
 	}
 
 	for (auto& shader : _shader) {
-		video::deleteShader(shader.second);
+		video::deleteShader(shader);
 	}
 	_uniformStateMap.clear();
-	_shader.clear();
 	video::deleteProgram(_program);
 	_initialized = false;
 	_active = false;
@@ -192,7 +191,7 @@ bool Shader::load(const core::String& name, const core::String& buffer, ShaderTy
 			Log::error("Failed to generate shader handle for %s\n", name.c_str());
 			return false;
 		}
-		_shader.insert(std::make_pair(shaderType, id));
+		_shader[(int)shaderType] = id;
 	}
 	if (!video::compileShader(id, shaderType, source, _name)) {
 		Log::error("Failed to compile shader for %s\n", name.c_str());
@@ -252,11 +251,7 @@ bool Shader::init() {
 }
 
 Id Shader::getShader(ShaderType shaderType) const {
-	auto shader = _shader.find(shaderType);
-	if (shader == _shader.end()) {
-		return InvalidId;
-	}
-	return shader->second;
+	return _shader[(int)shaderType];
 }
 
 void Shader::update(uint32_t deltaTime) {
