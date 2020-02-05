@@ -303,7 +303,7 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 			if (findIter == v->end()) {
 				v->push_back(Variable{typeEnum, name, arraySize});
 				if (hasLayout) {
-					shaderStruct.layouts[name] = layout;
+					shaderStruct.layouts.put(name, layout);
 					hasLayout = false;
 				}
 			} else if (typeEnum != findIter->type) {

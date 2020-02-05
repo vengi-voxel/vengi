@@ -6,9 +6,9 @@
 
 #include "video/Types.h"
 #include "core/String.h"
+#include "core/collection/StringMap.h"
 #include <vector>
 #include <map>
-#include <unordered_map>
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
@@ -168,7 +168,7 @@ struct ShaderStruct {
 	core::String filename;
 	// both
 	std::vector<Variable> uniforms;
-	std::unordered_map<core::String, Layout, core::StringHash> layouts;
+	core::StringMap<Layout> layouts;
 	std::map<core::String, core::String> constants;
 	std::vector<UniformBlock> uniformBlocks;
 	// vertex only
