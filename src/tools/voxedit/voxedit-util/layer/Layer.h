@@ -5,12 +5,12 @@
 #pragma once
 
 #include "voxelrender/RawVolumeRenderer.h"
-#include "core/String.h"
+#include "core/collection/StringMap.h"
 #include "core/collection/Array.h"
 
 namespace voxedit {
 
-using LayerMetadata = std::unordered_map<core::String, core::String, core::StringHash>;
+using LayerMetadata = core::StringMap<core::String>;
 
 struct Layer {
 	core::String name;

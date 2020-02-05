@@ -382,7 +382,7 @@ bool LayerManager::deleteLayer(int layerId, bool force) {
 void LayerManager::addMetadata(int layerId, const LayerMetadata& metadata) {
 	core_assert_always(layerId >= 0 && layerId < (int)_layers.size());
 	for (const auto& m : metadata) {
-		_layers[layerId].metadata.insert(m);
+		_layers[layerId].metadata.put(m->key, m->value);
 	}
 }
 
