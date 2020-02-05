@@ -215,7 +215,11 @@ void MapView::onRenderUI() {
 	const bool current = isRelativeMouseMode();
 	ImGui::Text("World mouse mode: %s", (current ? "true" : "false"));
 
-	_worldRenderer.setSeconds(_nowSeconds);
+	ImGui::InputFloat("Time scale", &_timeScaleFactor, 0.1f, 1.0f, 1);
+	ImGui::InputFloat("World time", &_worldTime);
+
+	_worldTime += _deltaFrameSeconds * _timeScaleFactor;
+	_worldRenderer.setSeconds(_worldTime);
 
 	ImGui::InputVarFloat("Rotation Speed", _rotationSpeed);
 	ImGui::CheckboxVar("Occlusion Query", cfg::OcclusionQuery);
