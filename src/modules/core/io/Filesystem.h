@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <memory>
 #include "File.h"
 #include "core/String.h"
+#include "core/collection/StringMap.h"
+#include <memory>
 #include <stack>
 #include <vector>
 #include <uv.h>
-#include <unordered_map>
 #include <stdarg.h>
 #include <SDL_stdinc.h>
 
@@ -39,7 +39,7 @@ private:
 	Paths _paths;
 
 	std::stack<core::String> _dirStack;
-	std::unordered_map<core::String, uv_fs_event_t*, core::StringHash> _watches;
+	core::StringMap<uv_fs_event_t*> _watches;
 	uv_loop_t *_loop = nullptr;
 
 public:

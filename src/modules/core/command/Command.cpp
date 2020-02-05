@@ -26,38 +26,42 @@ ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
 }
 
 Command& Command::registerCommand(const char* name, FunctionType&& func) {
+	const core::String cname(name);
+	const Command c(cname, std::forward<FunctionType>(func));
 	ScopedWriteLock lock(_lock);
-	const Command c(name, std::forward<FunctionType>(func));
-	_cmds.insert(std::make_pair(name, c));
-	return _cmds.find(name)->second;
+	_cmds.put(cname, c);
+	return (Command&)_cmds.find(cname)->value;
 }
 
 bool Command::unregisterCommand(const char* name) {
+	const core::String cname(name);
 	ScopedWriteLock lock(_lock);
-	return _cmds.erase(name) > 0;
+	return _cmds.remove(cname);
 }
 
 ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button) {
 	ScopedWriteLock lock(_lock);
 	const Command cPressed("+" + name, [&] (const core::CmdArgs& args) {
-		const int32_t key = core::string::toInt(args[0]);
+		const int32_t key = args[0].toInt();
 		const int64_t millis = core::string::toLong(args[1]);
 		button.handleDown(key, millis);
 	});
-	_cmds.insert(std::make_pair(cPressed.name(), cPressed));
+	_cmds.put(cPressed.name(), cPressed);
 	const Command cReleased("-" + name, [&] (const core::CmdArgs& args) {
-		const int32_t key = core::string::toInt(args[0]);
+		const int32_t key = args[0].toInt();
 		const int64_t millis = core::string::toLong(args[1]);
 		button.handleUp(key, millis);
 	});
-	_cmds.insert(std::make_pair(cReleased.name(), cReleased));
+	_cmds.put(cReleased.name(), cReleased);
 	return ActionButtonCommands("+" + name, "-" + name);
 }
 
 bool Command::unregisterActionButton(const core::String& name) {
 	ScopedWriteLock lock(_lock);
-	int amount = (int)_cmds.erase("-" + name);
-	amount += (int)_cmds.erase("+" + name);
+	const core::String downB("+" + name);
+	const core::String upB("-" + name);
+	int amount = _cmds.remove(downB);
+	amount += _cmds.remove(upB);
 	return amount == 2;
 }
 
@@ -152,7 +156,7 @@ bool Command::isSuitableBindingContext(BindingContext context) {
 bool Command::execute(const core::String& command, const CmdArgs& args) {
 	if (command == "wait") {
 		if (args.size() == 1) {
-			_delayMillis += core_max(1, core::string::toInt(args[0]));
+			_delayMillis += core_max(1, args[0].toInt());
 		} else {
 			++_delayMillis;
 		}

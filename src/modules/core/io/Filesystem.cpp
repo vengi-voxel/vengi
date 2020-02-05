@@ -225,8 +225,8 @@ bool Filesystem::chdir(const core::String& directory) {
 }
 
 void Filesystem::shutdown() {
-	for (auto& e : _watches) {
-		uv_fs_event_stop(e.second);
+	for (const auto& e : _watches) {
+		uv_fs_event_stop((uv_fs_event_t*)e->value);
 	}
 	if (_loop != nullptr) {
 		uv_run(_loop, UV_RUN_NOWAIT);
@@ -236,8 +236,8 @@ void Filesystem::shutdown() {
 		delete _loop;
 		_loop = nullptr;
 	}
-	for (auto& e : _watches) {
-		delete e.second;
+	for (const auto& e : _watches) {
+		delete e->value;
 	}
 	_watches.clear();
 }
@@ -302,8 +302,8 @@ bool Filesystem::unwatch(const core::String& path) {
 	if (i == _watches.end()) {
 		return false;
 	}
-	uv_close((uv_handle_t*)i->second, nullptr);
-	delete i->second;
+	uv_close((uv_handle_t*)i->value, nullptr);
+	delete i->value;
 	_watches.erase(i);
 	return true;
 }
@@ -339,15 +339,15 @@ bool Filesystem::watch(const core::String& path, FileWatcher watcher) {
 		return false;
 	}
 	fsEvent->data = (void*)watcher;
-	auto i = _watches.insert(std::make_pair(path, fsEvent));
-	if (!i.second) {
-		uv_close((uv_handle_t*)fsEvent, nullptr);
-		delete fsEvent;
-		return false;
+	auto old = _watches.find(path);
+	if (old != _watches.end()) {
+		uv_close((uv_handle_t*)old->value, nullptr);
+		delete old->value;
 	}
+	_watches.put(path, fsEvent);
 	const int ret = uv_fs_event_start(fsEvent, changeCallback, path.c_str(), 0);
 	if (ret != 0) {
-		_watches.erase(_watches.find(path));
+		_watches.remove(path);
 		uv_close((uv_handle_t*)fsEvent, nullptr);
 		delete fsEvent;
 		return false;

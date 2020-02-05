@@ -5,14 +5,15 @@
 #pragma once
 
 #include "core/String.h"
-#include <memory>
-#include <utility>
-#include <functional>
-#include <unordered_map>
 #include "core/Common.h"
 #include "core/StringUtil.h"
+#include "core/collection/StringMap.h"
 #include "core/ReadWriteLock.h"
 #include "ActionButton.h"
+#include <memory>
+#include <vector>
+#include <functional>
+#include <algorithm>
 
 namespace core {
 
@@ -39,7 +40,7 @@ struct ActionButtonCommands {
  */
 class Command {
 private:
-	typedef std::unordered_map<core::String, Command, core::StringHash> CommandMap;
+	typedef core::StringMap<Command> CommandMap;
 	typedef std::function<void(const CmdArgs&)> FunctionType;
 
 	static CommandMap _cmds;
@@ -101,7 +102,7 @@ public:
 		if (i == _cmds.end()) {
 			return nullptr;
 		}
-		return &i->second;
+		return (Command*)&i->value;
 	}
 
 	template<class Functor>
@@ -112,7 +113,7 @@ public:
 			commandList = _cmds;
 		}
 		for (auto i = commandList.begin(); i != commandList.end(); ++i) {
-			func(i->second);
+			func(i->value);
 		}
 	}
 
@@ -123,7 +124,7 @@ public:
 			ScopedReadLock lock(_lock);
 			commandList.reserve(_cmds.size());
 			for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
-				commandList.push_back(i->second);
+				commandList.push_back(i->value);
 			}
 		}
 		std::sort(commandList.begin(), commandList.end(), [] (const Command &v1, const Command &v2) {
@@ -174,19 +175,4 @@ inline const char* Command::help() const {
 	return _help;
 }
 
-}
-
-namespace std {
-template<> struct hash<core::Command> {
-	inline size_t operator()(const core::Command &c) const {
-		size_t result = 0;
-		const size_t prime = 31;
-		const char *name = c.name();
-		const size_t s = strlen(name);
-		for (size_t i = 0; i < s; ++i) {
-			result = name[i] + (result * prime);
-		}
-		return result;
-	}
-};
 }
