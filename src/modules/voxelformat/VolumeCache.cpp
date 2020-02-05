@@ -34,7 +34,7 @@ voxel::RawVolume* VolumeCache::loadVolume(const char* fullPath) {
 			delete v.volume;
 		}
 		std::lock_guard<std::mutex> lock(_mutex);
-		_volumes[filename] = nullptr;
+		_volumes.put(filename, nullptr);
 		return nullptr;
 	}
 	voxel::RawVolume* v = volumes.merge();
@@ -42,7 +42,7 @@ voxel::RawVolume* VolumeCache::loadVolume(const char* fullPath) {
 		delete v.volume;
 	}
 	std::lock_guard<std::mutex> lock(_mutex);
-	_volumes[filename] = v;
+	_volumes.put(filename, v);
 	return v;
 }
 
@@ -50,14 +50,14 @@ void VolumeCache::construct() {
 	core::Command::registerCommand("volumecachelist", [&] (const core::CmdArgs& argv) {
 		Log::info("Cache content");
 		std::lock_guard<std::mutex> lock(_mutex);
-		for (auto& e : _volumes) {
-			Log::info(" * %s", e.first.c_str());
+		for (const auto& e : _volumes) {
+			Log::info(" * %s", e->key.c_str());
 		}
 	});
 	core::Command::registerCommand("volumecacheclear", [&] (const core::CmdArgs& argv) {
 		std::lock_guard<std::mutex> lock(_mutex);
-		for (auto & e : _volumes) {
-			delete e.second;
+		for (const auto & e : _volumes) {
+			delete e->value;
 		}
 		_volumes.clear();
 	});
@@ -69,8 +69,8 @@ bool VolumeCache::init() {
 
 void VolumeCache::shutdown() {
 	std::lock_guard<std::mutex> lock(_mutex);
-	for (auto & e : _volumes) {
-		delete e.second;
+	for (const auto & e : _volumes) {
+		delete e->value;
 	}
 	_volumes.clear();
 }

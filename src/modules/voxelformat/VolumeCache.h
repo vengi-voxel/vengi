@@ -6,7 +6,7 @@
 
 #include "core/IComponent.h"
 #include "voxel/RawVolume.h"
-#include <unordered_map>
+#include "core/collection/StringMap.h"
 #include <memory>
 #include <mutex>
 
@@ -14,7 +14,7 @@ namespace voxelformat {
 
 class VolumeCache : public core::IComponent {
 private:
-	std::unordered_map<core::String, voxel::RawVolume*, core::StringHash> _volumes;
+	core::StringMap<voxel::RawVolume*> _volumes;
 	std::mutex _mutex;
 public:
 	~VolumeCache();
