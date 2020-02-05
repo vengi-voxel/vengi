@@ -190,7 +190,7 @@ bool TInputScanner::scanVersion(int& version, EProfile& profile, bool& notFirstT
             if (peek() == '\n' || peek() == '\r') {
                 while (peek() == '\n' || peek() == '\r')
                     get();
-            } else
+            } else {
                 do {
                     c = get();
                 } while (c != EndOfInput && c != '\n' && c != '\r');
@@ -198,6 +198,7 @@ bool TInputScanner::scanVersion(int& version, EProfile& profile, bool& notFirstT
                     get();
                 if (peek() == EndOfInput)
                     return true;
+            }
         }
         lookingInMiddle = true;
 

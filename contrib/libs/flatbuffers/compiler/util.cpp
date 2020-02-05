@@ -32,7 +32,9 @@
 #  include <winbase.h>
 #  undef interface  // This is also important because of reasons
 #else
-#  define _XOPEN_SOURCE 600 // For PATH_MAX from limits.h (SUSv2 extension) 
+#  ifndef _XOPEN_SOURCE
+#    define _XOPEN_SOURCE 600 // For PATH_MAX from limits.h (SUSv2 extension) 
+#  endif
 #  include <limits.h>
 #endif
 // clang-format on
