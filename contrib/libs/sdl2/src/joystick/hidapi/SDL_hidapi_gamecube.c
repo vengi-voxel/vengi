@@ -31,6 +31,7 @@
 #include "SDL_gamecontroller.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_GAMECUBE
@@ -44,7 +45,6 @@ typedef struct {
     Uint8 max_axis[MAX_CONTROLLERS*SDL_CONTROLLER_AXIS_MAX];
     Uint8 rumbleAllowed[MAX_CONTROLLERS];
     Uint8 rumble[1+MAX_CONTROLLERS];
-    Uint32 rumbleExpiration[MAX_CONTROLLERS];
     /* Without this variable, hid_write starts to lag a TON */
     SDL_bool rumbleUpdate;
 } SDL_DriverGameCube_Context;
@@ -285,18 +285,8 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     /* Write rumble packet */
-    for (i = 0; i < MAX_CONTROLLERS; i += 1) {
-        if (ctx->rumbleExpiration[i] || (ctx->rumble[1 + i] && !ctx->rumbleAllowed[i])) {
-            Uint32 now = SDL_GetTicks();
-            if (SDL_TICKS_PASSED(now, ctx->rumbleExpiration[i]) || !ctx->rumbleAllowed[i]) {
-                ctx->rumble[1 + i] = 0;
-                ctx->rumbleExpiration[i] = 0;
-                ctx->rumbleUpdate = SDL_TRUE;
-            }
-        }
-    }
     if (ctx->rumbleUpdate) {
-        hid_write(device->dev, ctx->rumble, sizeof(ctx->rumble));
+        SDL_HIDAPI_SendRumble(device, ctx->rumble, sizeof(ctx->rumble));
         ctx->rumbleUpdate = SDL_FALSE;
     }
 
@@ -321,7 +311,7 @@ HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
 }
 
 static int
-HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint8 i, val;
@@ -338,14 +328,6 @@ HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *jo
                 ctx->rumble[i + 1] = val;
                 ctx->rumbleUpdate = SDL_TRUE;
             }
-            if (val && duration_ms) {
-                ctx->rumbleExpiration[i] = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-                if (!ctx->rumbleExpiration[i]) {
-                    ctx->rumbleExpiration[i] = 1;
-                }
-            } else {
-                ctx->rumbleExpiration[i] = 0;
-            }
             return 0;
         }
     }
@@ -359,18 +341,11 @@ static void
 HIDAPI_DriverGameCube_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
-    Uint8 i;
 
     /* Stop rumble activity */
-    for (i = 0; i < MAX_CONTROLLERS; i += 1) {
-        if (joystick->instance_id == ctx->joysticks[i]) {
-            if (!ctx->wireless[i] && ctx->rumbleAllowed[i] && ctx->rumble[1 + i] != 0) {
-                ctx->rumble[1 + i] = 0;
-                ctx->rumbleExpiration[i] = 0;
-                hid_write(device->dev, ctx->rumble, sizeof(ctx->rumble));
-            }
-            break;
-        }
+    if (ctx->rumbleUpdate) {
+        SDL_HIDAPI_SendRumble(device, ctx->rumble, sizeof(ctx->rumble));
+        ctx->rumbleUpdate = SDL_FALSE;
     }
 }
 

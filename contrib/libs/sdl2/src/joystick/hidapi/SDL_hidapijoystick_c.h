@@ -23,6 +23,10 @@
 #ifndef SDL_JOYSTICK_HIDAPI_H
 #define SDL_JOYSTICK_HIDAPI_H
 
+#include "SDL_atomic.h"
+#include "SDL_mutex.h"
+#include "SDL_joystick.h"
+#include "SDL_gamecontroller.h"
 #include "../../hidapi/hidapi/hidapi.h"
 #include "../usb_ids.h"
 
@@ -45,8 +49,13 @@
 #undef SDL_JOYSTICK_HIDAPI_XBOXONE
 #endif
 
-/* Prevent rumble duration overflow */
-#define SDL_MAX_RUMBLE_DURATION_MS  0x0fffffff
+#if defined(__IPHONEOS__) || defined(__TVOS__) || defined(__ANDROID__)
+/* Very basic Steam Controller support on mobile devices */
+#define SDL_JOYSTICK_HIDAPI_STEAM
+#endif
+
+/* The maximum size of a USB packet for HID devices */
+#define USB_PACKET_LENGTH   64
 
 /* Forward declaration */
 struct _SDL_HIDAPI_DeviceDriver;
@@ -68,7 +77,9 @@ typedef struct _SDL_HIDAPI_Device
 
     struct _SDL_HIDAPI_DeviceDriver *driver;
     void *context;
+    SDL_mutex *dev_lock;
     hid_device *dev;
+    SDL_atomic_t rumble_pending;
     int num_joysticks;
     SDL_JoystickID *joysticks;
 
@@ -89,11 +100,12 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     void (*SetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index);
     SDL_bool (*UpdateDevice)(SDL_HIDAPI_Device *device);
     SDL_bool (*OpenJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
-    int (*RumbleJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+    int (*RumbleJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
     void (*CloseJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     void (*FreeDevice)(SDL_HIDAPI_Device *device);
 
 } SDL_HIDAPI_DeviceDriver;
+
 
 /* HIDAPI device support */
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4;

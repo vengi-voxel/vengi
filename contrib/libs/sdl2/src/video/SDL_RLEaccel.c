@@ -20,6 +20,8 @@
 */
 #include "../SDL_internal.h"
 
+#if SDL_HAVE_RLE
+
 /*
  * RLE encoding for software colorkey and alpha-channel acceleration
  *
@@ -445,7 +447,7 @@ RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
 
 
 /* blit a colorkeyed RLE surface */
-int SDLCALL
+static int SDLCALL
 SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
             SDL_Surface * surf_dst, SDL_Rect * dstrect)
 {
@@ -723,7 +725,7 @@ RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
 }
 
 /* blit a pixel-alpha RLE surface */
-int SDLCALL
+static int SDLCALL
 SDL_RLEAlphaBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
                  SDL_Surface * surf_dst, SDL_Rect * dstrect)
 {
@@ -1583,5 +1585,7 @@ SDL_UnRLESurface(SDL_Surface * surface, int recode)
         surface->map->data = NULL;
     }
 }
+
+#endif /* SDL_HAVE_RLE */
 
 /* vi: set ts=4 sw=4 expandtab: */

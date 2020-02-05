@@ -245,6 +245,17 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR "SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR"
 
 /**
+ * \brief A variable controlling whether X11 should use GLX or EGL by default
+ *
+ * This variable can be set to the following values:
+ * "0" - Use GLX
+ * "1" - Use EGL
+ *
+ * By default SDL will use GLX when both are present.
+ */
+#define SDL_HINT_VIDEO_X11_FORCE_EGL "SDL_VIDEO_X11_FORCE_EGL"
+
+/**
  *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden 
  *
  *  This variable can be set to the following values:
@@ -1228,6 +1239,20 @@ extern "C" {
  *    "ignore"      - Ignore fact chunk entirely (default)
  */
 #define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
+
+/*
+ *  \brief Override for SDL_GetDisplayUsableBounds()
+ *
+ *  If set, this hint will override the expected results for
+ *  SDL_GetDisplayUsableBounds() for display index 0. Generally you don't want
+ *  to do this, but this allows an embedded system to request that some of the
+ *  screen be reserved for other uses when paired with a well-behaved
+ *  application.
+ *
+ *  The contents of this hint must be 4 comma-separated integers, the first
+ *  is the bounds x, then y, width and height, in that order.
+ */
+#define SDL_HINT_DISPLAY_USABLE_BOUNDS "SDL_DISPLAY_USABLE_BOUNDS"
 
 /**
  *  \brief  An enumeration of hint priorities

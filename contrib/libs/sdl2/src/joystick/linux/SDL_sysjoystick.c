@@ -102,6 +102,23 @@ PrefixMatch(const char *a, const char *b)
     return matchlen;
 }
 
+static void
+FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
+{
+    if (inpid->vendor == 0x045e && inpid->product == 0x0b05 && inpid->version == 0x0903) {
+        /* This is a Microsoft Xbox One Elite Series 2 controller */
+        unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
+
+        /* The first version of the firmware duplicated all the inputs */
+        if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
+            test_bit(0x2c0, keybit)) {
+            /* Change the version to 0x0902, so we can map it differently */
+            inpid->version = 0x0902;
+        }
+    }
+}
+
+
 static int
 IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *guid)
 {
@@ -156,6 +173,8 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
         return 0;
     }
 #endif
+
+    FixupDeviceInfoForMapping(fd, &inpid);
 
 #ifdef DEBUG_JOYSTICK
     printf("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d\n", namebuf, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
@@ -708,7 +727,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
                        absinfo.value, absinfo.minimum, absinfo.maximum,
                        absinfo.fuzz, absinfo.flat);
 #endif /* DEBUG_INPUT_EVENTS */
-                joystick->hwdata->hats_indices[joystick->nhats++] = hat_index;
+                joystick->hwdata->hats_indices[hat_index] = joystick->nhats++;
             }
         }
         if (test_bit(REL_X, relbit) || test_bit(REL_Y, relbit)) {
@@ -804,7 +823,7 @@ LINUX_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static int
-LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     struct input_event event;
 
@@ -812,7 +831,7 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
         struct ff_effect *effect = &joystick->hwdata->effect;
 
         effect->type = FF_RUMBLE;
-        effect->replay.length = SDL_min(duration_ms, 32767);
+        effect->replay.length = SDL_MAX_RUMBLE_DURATION_MS;
         effect->u.rumble.strong_magnitude = low_frequency_rumble;
         effect->u.rumble.weak_magnitude = high_frequency_rumble;
     } else if (joystick->hwdata->ff_sine) {
@@ -821,7 +840,7 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
         struct ff_effect *effect = &joystick->hwdata->effect;
 
         effect->type = FF_PERIODIC;
-        effect->replay.length = SDL_min(duration_ms, 32767);
+        effect->replay.length = SDL_MAX_RUMBLE_DURATION_MS;
         effect->u.periodic.waveform = FF_SINE;
         effect->u.periodic.magnitude = magnitude;
     } else {

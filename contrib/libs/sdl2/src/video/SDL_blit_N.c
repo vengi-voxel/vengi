@@ -20,6 +20,8 @@
 */
 #include "../SDL_internal.h"
 
+#if SDL_HAVE_BLIT_N
+
 #include "SDL_video.h"
 #include "SDL_endian.h"
 #include "SDL_cpuinfo.h"
@@ -1450,6 +1452,8 @@ Blit_RGB888_RGB565(SDL_BlitInfo * info)
 }
 
 
+#if SDL_HAVE_BLIT_N_RGB565
+
 /* Special optimized blit for RGB 5-6-5 --> 32-bit RGB surfaces */
 #define RGB565_32(dst, src, map) (map[src[LO]*2] + map[src[HI]*2+1])
 static void
@@ -2067,6 +2071,8 @@ Blit_RGB565_BGRA8888(SDL_BlitInfo * info)
 {
     Blit_RGB565_32(info, RGB565_BGRA8888_LUT);
 }
+
+#endif /* SDL_HAVE_BLIT_N_RGB565 */
 
 static void
 BlitNto1(SDL_BlitInfo * info)
@@ -3244,6 +3250,7 @@ static const struct blit_table normal_blit_2[] = {
     {0x00000F00, 0x000000F0, 0x0000000F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
      BLIT_FEATURE_HAS_ARM_SIMD, Blit_RGB444_RGB888ARMSIMD, NO_ALPHA | COPY_ALPHA},
 #endif
+#if SDL_HAVE_BLIT_N_RGB565
     {0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
      0, Blit_RGB565_ARGB8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
     {0x0000F800, 0x000007E0, 0x0000001F, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
@@ -3252,6 +3259,7 @@ static const struct blit_table normal_blit_2[] = {
      0, Blit_RGB565_RGBA8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
     {0x0000F800, 0x000007E0, 0x0000001F, 4, 0x0000FF00, 0x00FF0000, 0xFF000000,
      0, Blit_RGB565_BGRA8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
+#endif
 
     /* Default for 16-bit RGB source, used if no other blitter matches */
     {0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0}
@@ -3458,5 +3466,7 @@ SDL_CalculateBlitN(SDL_Surface * surface)
 
     return NULL;
 }
+
+#endif /* SDL_HAVE_BLIT_N */
 
 /* vi: set ts=4 sw=4 expandtab: */

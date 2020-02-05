@@ -18,17 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
-#ifndef SDL_RLEaccel_c_h_
-#define SDL_RLEaccel_c_h_
+#ifdef SDL_JOYSTICK_HIDAPI
 
-#include "../SDL_internal.h"
+/* Handle rumble on a separate thread so it doesn't block the application */
+int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size);
+void SDL_HIDAPI_QuitRumble(void);
 
-/* Useful functions and variables from SDL_RLEaccel.c */
-
-extern int SDL_RLESurface(SDL_Surface * surface);
-extern void SDL_UnRLESurface(SDL_Surface * surface, int recode);
-
-#endif /* SDL_RLEaccel_c_h_ */
+#endif /* SDL_JOYSTICK_HIDAPI */
 
 /* vi: set ts=4 sw=4 expandtab: */
