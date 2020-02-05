@@ -7,8 +7,8 @@
 #include "voxel/Mesh.h"
 #include "core/IComponent.h"
 #include "core/StringUtil.h"
+#include "core/collection/StringMap.h"
 #include <memory>
-#include <unordered_map>
 
 namespace voxelformat {
 
@@ -17,7 +17,7 @@ namespace voxelformat {
  */
 class MeshCache : public core::IComponent {
 protected:
-	std::unordered_map<core::String, voxel::Mesh*, core::StringHash> _meshes;
+	core::StringMap<voxel::Mesh*> _meshes;
 
 public:
 	voxel::Mesh& cacheEntry(const char *path);

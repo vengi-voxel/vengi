@@ -17,7 +17,7 @@ voxel::Mesh& MeshCache::cacheEntry(const char *path) {
 	auto i = _meshes.find(path);
 	if (i == _meshes.end()) {
 		voxel::Mesh* mesh = new voxel::Mesh();
-		_meshes.insert(std::make_pair(path, mesh));
+		_meshes.put(path, mesh);
 		Log::debug("New mesh cache entry for path %s", path);
 		return *mesh;
 	}
@@ -36,7 +36,7 @@ bool MeshCache::removeMesh(const char *fullPath) {
 
 bool MeshCache::putMesh(const char* fullPath, const voxel::Mesh& mesh) {
 	removeMesh(fullPath);
-	_meshes.insert(std::make_pair(fullPath, new voxel::Mesh(mesh)));
+	_meshes.put(fullPath, new voxel::Mesh(mesh));
 	return true;
 }
 
@@ -77,8 +77,8 @@ bool MeshCache::init() {
 }
 
 void MeshCache::shutdown() {
-	for (auto & e : _meshes) {
-		delete e.second;
+	for (const auto & e : _meshes) {
+		delete e->value;
 	}
 	_meshes.clear();
 }
