@@ -215,6 +215,8 @@ void MapView::onRenderUI() {
 	const bool current = isRelativeMouseMode();
 	ImGui::Text("World mouse mode: %s", (current ? "true" : "false"));
 
+	_worldRenderer.setSeconds(_nowSeconds);
+
 	ImGui::InputVarFloat("Rotation Speed", _rotationSpeed);
 	ImGui::CheckboxVar("Occlusion Query", cfg::OcclusionQuery);
 	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);

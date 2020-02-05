@@ -407,6 +407,8 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 		_worldShader.setTexture(video::TextureUnit::Zero);
 		_worldShader.setDiffuseColor(_diffuseColor);
 		_worldShader.setAmbientColor(_ambientColor);
+		_worldShader.setNightColor(_nightColor);
+		_worldShader.setTime(_seconds);
 		_worldShader.setFogrange(_fogRange);
 		if (shadowMap) {
 			_worldShader.setViewprojection(camera.viewProjectionMatrix());
@@ -433,8 +435,9 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 		_waterShader.setFogcolor(_clearColor);
 		_waterShader.setDiffuseColor(_diffuseColor);
 		_waterShader.setAmbientColor(_ambientColor);
+		_waterShader.setNightColor(_nightColor);
 		_waterShader.setFogrange(_fogRange);
-		_waterShader.setTime(float(_now));
+		_waterShader.setTime(_seconds);
 		_waterShader.setTexture(video::TextureUnit::Zero);
 		if (shadowMap) {
 			_waterShader.setViewprojection(camera.viewProjectionMatrix());
@@ -474,6 +477,8 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	_chrShader.setCascades(_shadow.cascades());
 	_chrShader.setDistances(_shadow.distances());
 	_chrShader.setLightdir(_shadow.sunDirection());
+	_chrShader.setNightColor(_nightColor);
+	_chrShader.setTime(_seconds);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {

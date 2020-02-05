@@ -5,10 +5,12 @@ uniform mat4 u_viewprojection;
 
 #include "_fog.frag"
 #include "_shadowmap.frag"
+#include "_daynight.frag"
 
 uniform mediump vec3 u_lightdir;
 uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
+uniform float u_time;
 $out vec4 o_color;
 
 void main(void) {
@@ -18,7 +20,8 @@ void main(void) {
 	float ndotl1 = dot(normal, u_lightdir);
 	float ndotl2 = dot(normal, -u_lightdir);
 	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
-	vec3 shadowColor = shadow(u_viewprojection, v_color.rgb, diffuse, u_ambient_color);
+	vec3 ambientColor = dayTimeColor(u_ambient_color, u_time);
+	vec3 shadowColor = shadow(u_viewprojection, v_color.rgb, diffuse, ambientColor);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
 	o_color = fog(v_pos, linearColor, v_color.a);
 }

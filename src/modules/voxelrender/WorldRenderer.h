@@ -113,10 +113,12 @@ protected:
 	float _viewDistance;
 	uint64_t _now = 0ul;
 	uint64_t _deltaFrame = 0ul;
+	float _seconds = 0.0f;
 
 	glm::vec4 _clearColor = core::Color::LightBlue;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
+	glm::vec3 _nightColor = glm::vec3(0.001, 0.001, 0.2);
 	voxelworld::WorldMgrPtr _world;
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapShow;
@@ -160,6 +162,8 @@ public:
 
 	render::Shadow& shadow();
 
+	void setSeconds(float seconds);
+
 	void extractMesh(const glm::ivec3& pos);
 	void extractMeshes(const video::Camera& camera);
 
@@ -186,6 +190,10 @@ public:
 	int renderWorld(const video::Camera& camera, int* vertices = nullptr);
 	int renderEntities(const video::Camera& camera);
 };
+
+inline void WorldRenderer::setSeconds(float seconds) {
+	_seconds = seconds;
+}
 
 inline float WorldRenderer::getViewDistance() const {
 	return _viewDistance;

@@ -124,6 +124,7 @@ void App::onFrame() {
 		const uint64_t now = systemMillis();
 		_deltaFrameMillis = core_max(int64_t(1), int64_t(now) - int64_t(_now));
 		_deltaFrameSeconds = _deltaFrameMillis / 1000.0f;
+		_nowSeconds += _deltaFrameSeconds;
 		_timeProvider->update(now);
 		_now = now;
 

@@ -15,6 +15,7 @@ vec2 calculateShadowTexcoord(vec2 uv) {
 #define CUSTOM_SHADOW_TEXCOORD
 #include "_fog.frag"
 #include "_shadowmap.frag"
+#include "_daynight.frag"
 
 uniform mediump vec3 u_lightdir;
 uniform lowp vec3 u_diffuse_color;
@@ -31,7 +32,8 @@ void main(void) {
 	float ndotl1 = dot(normal, u_lightdir);
 	float ndotl2 = dot(normal, -u_lightdir);
 	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
-	vec3 shadowColor = shadow(u_viewprojection, mix(cubeColor, v_color.rgb, 0.01), diffuse, u_ambient_color);
+	vec3 ambientColor = dayTimeColor(u_ambient_color, u_time);
+	vec3 shadowColor = shadow(u_viewprojection, mix(cubeColor, v_color.rgb, 0.01), diffuse, ambientColor);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
 	o_color = fog(v_pos.xyz, linearColor, v_color.a);
 }

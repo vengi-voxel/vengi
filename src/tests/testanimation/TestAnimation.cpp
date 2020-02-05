@@ -220,6 +220,8 @@ bool TestAnimation::addItem(stock::ItemId id) {
 }
 
 void TestAnimation::doRender() {
+	_renderer.setSeconds(_nowSeconds);
+
 	if (reloadAnimationEntity) {
 		Log::info("Reload animation entity because file was modified");
 		loadAnimationEntity();

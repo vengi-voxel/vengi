@@ -110,6 +110,8 @@ void AnimationRenderer::render(const AnimationEntity& character, const video::Ca
 	_shader.setLightdir(_shadow.sunDirection());
 	_shader.setDiffuseColor(_diffuseColor);
 	_shader.setAmbientColor(_ambientColor);
+	_shader.setNightColor(_nightColor);
+	_shader.setTime(_seconds);
 
 	_shader.setFocuspos(camera.target());
 	_shader.setFogcolor(_clearColor);
