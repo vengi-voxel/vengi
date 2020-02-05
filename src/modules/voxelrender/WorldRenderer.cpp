@@ -202,7 +202,9 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	const bool occlusionQuery = _occlusionQuery->boolVal();
 
 	Tree::Contents contents;
-	_octree.query(camera.frustum(), contents);
+	math::AABB<float> aabb = camera.frustum().aabb();
+	aabb.shift(camera.forward() * -10.0f);
+	_octree.query(aabb, contents);
 	_queryResults = contents.size();
 
 #if 0
