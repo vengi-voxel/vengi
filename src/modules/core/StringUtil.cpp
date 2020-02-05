@@ -86,15 +86,12 @@ core::String replaceAll(const core::String& str, const core::String& searchStr, 
 	if (str.empty()) {
 		return str;
 	}
-	core::String sNew = str;
-	size_t loc;
-	const size_t searchLength = searchStr.size();
-	size_t lastPosition = 0;
-	while (core::String::npos != (loc = sNew.find(searchStr, lastPosition))) {
-		sNew.replace(loc, searchLength, replaceStr);
-		lastPosition = loc + replaceStrSize;
+
+	core::String s = str;
+	for (size_t pos = s.find(searchStr); pos != core::String::npos; pos = s.find(searchStr, pos + replaceStrSize)) {
+		s.replace(pos, searchStr.size(), replaceStr);
 	}
-	return sNew;
+	return s;
 }
 
 void splitString(const core::String& string, std::vector<core::String>& tokens, const char* delimiters) {
