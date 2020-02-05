@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -62,7 +62,7 @@ Sint64 MP3_RWseek(struct mp3file_t *fil, Sint64 offset, int whence) {
 
 static SDL_INLINE SDL_bool is_id3v1(const unsigned char *data, long length) {
     /* http://id3.org/ID3v1 :  3 bytes "TAG" identifier and 125 bytes tag data */
-    if (length < 3 || SDL_memcmp(data,"TAG",3) != 0) {
+    if (length < 128 || SDL_memcmp(data,"TAG",3) != 0) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -274,12 +274,19 @@ static long get_musicmatch_len(struct mp3file_t *m) {
     return len + 256; /* header is present. */
 }
 
-static int probe_id3v1(struct mp3file_t *fil, unsigned char *buf) {
+static int probe_id3v1(struct mp3file_t *fil, unsigned char *buf, int atend) {
     if (fil->length >= 128) {
         MP3_RWseek(fil, -128, RW_SEEK_END);
         if (MP3_RWread(fil, buf, 1, 128) != 128)
             return -1;
         if (is_id3v1(buf, 128)) {
+            if (!atend) { /* possible false positive? */
+                if (is_musicmatch(buf + 128 - 48, 48) ||
+                    is_apetag    (buf + 128 - 32, 32) ||
+                    is_lyrics3tag(buf + 128 - 15, 15)) {
+                    return 0;
+                }
+            }
             fil->length -= 128;
             return 1;
             /* FIXME: handle possible double-ID3v1 tags?? */
@@ -368,7 +375,7 @@ int mp3_skiptags(struct mp3file_t *fil, SDL_bool keep_id3v2)
     if (is_id3v2(buf, readsize)) {
         len = get_id3v2_len(buf, (long)readsize);
         if (len >= fil->length) goto fail;
-        if (! keep_id3v2) {
+        if (!keep_id3v2) {
             fil->start  += len;
             fil->length -= len;
         }
@@ -388,7 +395,7 @@ int mp3_skiptags(struct mp3file_t *fil, SDL_bool keep_id3v2)
         goto fail;
     }
     /* ID3v1 tag is at the end */
-    if ((c_id3 = probe_id3v1(fil, buf)) < 0) {
+    if ((c_id3 = probe_id3v1(fil, buf, !c_mm)) < 0) {
         goto fail;
     }
     /* we do not know the order of ape or lyrics3
