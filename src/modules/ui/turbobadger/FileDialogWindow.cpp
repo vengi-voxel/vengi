@@ -10,6 +10,7 @@ namespace ui {
 namespace turbobadger {
 
 static const char *FILELIST = "files";
+static const char *DIRLIST = "dirs";
 static const char *FILTERLIST = "filter";
 static const char *INPUT = "input";
 
@@ -107,6 +108,13 @@ FileDialogWindow::FileDialogWindow(UIApp* tool, const std::function<void(const c
 		select->setSource(&_entityList);
 		select->getScrollContainer()->setScrollMode(tb::SCROLL_MODE_X_AUTO_Y_AUTO);
 	}
+	if (tb::TBSelectList * select = getWidgetByType<tb::TBSelectList>(DIRLIST)) {
+		select->setSource(&_dirList);
+		const io::Paths& paths = io::filesystem()->paths();
+		for (const auto& p : paths) {
+			_dirList.addItem(new tb::TBGenericStringItem(p.c_str()));
+		}
+	}
 	if (tb::TBSelectDropdown * select = getWidgetByType<tb::TBSelectDropdown>(FILTERLIST)) {
 		select->setSource(&_filterList);
 	}
@@ -123,6 +131,13 @@ FileDialogWindow::~FileDialogWindow() {
 	if (tb::TBSelectDropdown * select = getWidgetByType<tb::TBSelectDropdown>(FILTERLIST)) {
 		select->setSource(nullptr);
 	}
+	if (tb::TBSelectList * select = getWidgetByType<tb::TBSelectList>(DIRLIST)) {
+		select->setSource(nullptr);
+	}
+}
+
+void FileDialogWindow::addShortcut(const core::String& dir) {
+	_dirList.addItem(new tb::TBGenericStringItem(dir.c_str()));
 }
 
 void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode, const char *inputText) {
@@ -179,6 +194,14 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 				select->setFilter(ev.target->getText());
 				return true;
 			}
+		} else if (ev.target->getID() == TBIDC(DIRLIST)) {
+			if (tb::TBGenericStringItem* item = _dirList.getItem(ev.target->getValue())) {
+				changeDir(item->str.c_str());
+				if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
+					input->setText(_directory.c_str());
+				}
+			}
+			return true;
 		} else if (ev.target->getID() == TBIDC(INPUT)) {
 			const tb::TBStr& str = ev.target->getText();
 			if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {

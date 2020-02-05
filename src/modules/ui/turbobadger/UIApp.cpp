@@ -252,6 +252,10 @@ void UIApp::fileDialog(const std::function<void(const core::String&)>& callback,
 	}
 	FileDialogWindow* dialog = new FileDialogWindow(this, callback, _lastDirectory);
 	dialog->setMode(mode);
+	const core::String& lastDir = _lastDirectory->strVal();
+	if (!lastDir.empty()) {
+		dialog->addShortcut(lastDir);
+	}
 	if (!filter.empty()) {
 		std::vector<core::String> tokens;
 		core::string::splitString(filter, tokens, ";");
@@ -264,7 +268,7 @@ void UIApp::fileDialog(const std::function<void(const core::String&)>& callback,
 		dialog->setFilter((const char**)filters);
 		delete[] filters;
 	}
-	dialog->changeDir(_lastDirectory->strVal());
+	dialog->changeDir(lastDir);
 	dialog->init();
 }
 

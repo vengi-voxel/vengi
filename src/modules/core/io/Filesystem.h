@@ -17,6 +17,7 @@
 namespace io {
 
 typedef void (*FileWatcher)(const char* file);
+using Paths = std::vector<core::String>;
 
 /**
  * @brief Hide platform specific details about the io handling for files.
@@ -35,7 +36,7 @@ private:
 	 */
 	core::String _basePath;
 	core::String _homePath;
-	std::vector<core::String> _paths;
+	Paths _paths;
 
 	std::stack<core::String> _dirStack;
 	std::unordered_map<core::String, uv_fs_event_t*> _watches;
@@ -48,6 +49,8 @@ public:
 	void shutdown();
 
 	void update();
+
+	const Paths& paths() const;
 
 	bool registerPath(const core::String& path);
 
@@ -142,6 +145,10 @@ private:
 	static bool _list(const core::String& directory, std::vector<DirEntry>& entities);
 	static bool _list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter);
 };
+
+inline const Paths& Filesystem::paths() const {
+	return _paths;
+}
 
 inline bool Filesystem::exists(const core::String& filename) const {
 	return open(filename)->exists();

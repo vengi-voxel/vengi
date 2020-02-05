@@ -61,6 +61,7 @@ private:
 	core::String _directory;
 	video::WindowedApp::OpenFileMode _mode;
 	FileDialogItemSource _entityList;
+	tb::TBGenericStringItemSource _dirList;
 	tb::TBGenericStringItemSource _filterList;
 	std::function<void(const core::String&)> _callback;
 	io::FilesystemPtr _fs;
@@ -70,6 +71,7 @@ public:
 	~FileDialogWindow();
 	void changeDir(const core::String& dir = "");
 	void init();
+	void addShortcut(const core::String& dir);
 
 	void setFilter(const char **filter);
 	void setMode(video::WindowedApp::OpenFileMode mode, const char *inputText = nullptr);
