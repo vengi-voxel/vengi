@@ -21,12 +21,19 @@ struct EqualCompare {
 	}
 };
 
+struct DefaultHasher {
+	template<typename T>
+	inline size_t operator() (const T& o) const {
+		return (size_t)o;
+	}
+};
+
 }
 
 /**
  * @brief Fixed element amount map
  */
-template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER, typename COMPARE = priv::EqualCompare>
+template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER = priv::DefaultHasher, typename COMPARE = priv::EqualCompare>
 class Map {
 public:
 	struct KeyValue {
