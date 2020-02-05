@@ -14,17 +14,16 @@ TexturePool::TexturePool(const io::FilesystemPtr& filesystem) :
 video::TexturePtr TexturePool::load(const core::String& name) {
 	auto i = _cache.find(name);
 	if (i != _cache.end()) {
-		return i->second;
+		return i->value;
 	}
 	const io::FilePtr& file = _filesystem->open(name);
 	const image::ImagePtr& image = image::loadImage(file);
 	const TexturePtr& texture = createTextureFromImage(image);
-	_cache.insert(std::make_pair(name, texture));
+	_cache.put(name, texture);
 	return texture;
 }
 
 bool TexturePool::init() {
-	_cache.reserve(32);
 	return true;
 }
 

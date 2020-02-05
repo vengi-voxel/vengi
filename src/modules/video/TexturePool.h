@@ -7,9 +7,9 @@
 #include "core/IComponent.h"
 #include "core/io/Filesystem.h"
 #include "Texture.h"
-#include <memory>
 #include "core/String.h"
-#include <unordered_map>
+#include "core/collection/StringMap.h"
+#include <memory>
 
 namespace video {
 
@@ -19,7 +19,7 @@ namespace video {
 class TexturePool : public core::IComponent {
 private:
 	io::FilesystemPtr _filesystem;
-	std::unordered_map<core::String, TexturePtr, core::StringHash> _cache;
+	core::StringMap<TexturePtr> _cache;
 public:
 	TexturePool(const io::FilesystemPtr& filesystem);
 
