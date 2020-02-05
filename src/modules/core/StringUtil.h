@@ -5,16 +5,8 @@
 #pragma once
 
 #include "core/String.h"
-#include <string.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <algorithm>
-#include <string>
 #include <vector>
-#include <ctype.h>
-#include <stdarg.h>
 #include <SDL_stdinc.h>
-#include <math.h>
 
 namespace core {
 namespace string {
@@ -189,10 +181,28 @@ inline bool icontains(const core::String& str, const core::String& search) {
 	return toLower(str).rfind(lower.c_str()) != core::String::npos;
 }
 
-template<class T>
-core::String toString(const T& v) {
-	const std::string& str = std::to_string(v);
-	return core::String(str.c_str());
+inline core::String toString(unsigned int v) {
+	return core::String::format("%u", v);
+}
+
+inline core::String toString(int v) {
+	return core::String::format("%i", v);
+}
+
+inline core::String toString(float v) {
+	return core::String::format("%f", v);
+}
+
+inline core::String toString(double v) {
+	return core::String::format("%f", v);
+}
+
+inline core::String toString(size_t v) {
+	return core::String::format("%i", (int)v);
+}
+
+inline core::String toString(int64_t v) {
+	return core::String::format("%" PRId64, v);
 }
 
 inline core::String trim(const core::String& str) {

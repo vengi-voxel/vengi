@@ -413,7 +413,6 @@ String String::trim() const {
 	return copy;
 }
 
-
 core::String String::format(const char *msg, ...) {
 	va_list ap;
 	constexpr std::size_t bufSize = 1024;
