@@ -407,6 +407,162 @@ void AssertHelper::operator=(const Message& message) const {
                       );  // NOLINT
 }
 
+namespace {
+
+// When TEST_P is found without a matching INSTANTIATE_TEST_SUITE_P
+// to creates test cases for it, a syntetic test case is
+// inserted to report ether an error or a log message.
+//
+// This configuration bit will likely be removed at some point.
+constexpr bool kErrorOnUninstantiatedParameterizedTest = false;
+constexpr bool kErrorOnUninstantiatedTypeParameterizedTest = false;
+
+// A test that fails at a given file/line location with a given message.
+class FailureTest : public Test {
+ public:
+  explicit FailureTest(const CodeLocation& loc, std::string error_message,
+                       bool as_error)
+      : loc_(loc),
+        error_message_(std::move(error_message)),
+        as_error_(as_error) {}
+
+  void TestBody() override {
+    if (as_error_) {
+      AssertHelper(TestPartResult::kNonFatalFailure, loc_.file.c_str(),
+                   loc_.line, "") = Message() << error_message_;
+    } else {
+      std::cout << error_message_ << std::endl;
+    }
+  }
+
+ private:
+  const CodeLocation loc_;
+  const std::string error_message_;
+  const bool as_error_;
+};
+
+
+}  // namespace
+
+std::set<std::string>* GetIgnoredParameterizedTestSuites() {
+  return UnitTest::GetInstance()->impl()->ignored_parameterized_test_suites();
+}
+
+// Add a given test_suit to the list of them allow to go un-instantiated.
+MarkAsIgnored::MarkAsIgnored(const char* test_suite) {
+  GetIgnoredParameterizedTestSuites()->insert(test_suite);
+}
+
+// If this parameterized test suite has no instantiations (and that
+// has not been marked as okay), emit a test case reporting that.
+void InsertSyntheticTestCase(const std::string& name, CodeLocation location,
+                             bool has_test_p) {
+  const auto& ignored = *GetIgnoredParameterizedTestSuites();
+  if (ignored.find(name) != ignored.end()) return;
+
+  const char kMissingInstantiation[] =  //
+      " is defined via TEST_P, but never instantiated. None of the test cases "
+      "will run. Either no INSTANTIATE_TEST_SUITE_P is provided or the only "
+      "ones provided expand to nothing."
+      "\n\n"
+      "Ideally, TEST_P definitions should only ever be included as part of "
+      "binaries that intend to use them. (As opposed to, for example, being "
+      "placed in a library that may be linked in to get other utilities.)";
+
+  const char kMissingTestCase[] =  //
+      " is instantiated via INSTANTIATE_TEST_SUITE_P, but no tests are "
+      "defined via TEST_P . No test cases will run."
+      "\n\n"
+      "Ideally, INSTANTIATE_TEST_SUITE_P should only ever be invoked from "
+      "code that always depend on code that provides TEST_P. Failing to do "
+      "so is often an indication of dead code, e.g. the last TEST_P was "
+      "removed but the rest got left behind.";
+
+  std::string message =
+      "Paramaterized test suite " + name +
+      (has_test_p ? kMissingInstantiation : kMissingTestCase) +
+      "\n\n"
+      "To suppress this error for this test suite, insert the following line "
+      "(in a non-header) in the namespace it is defined in:"
+      "\n\n"
+      "GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(" + name + ");";
+
+  std::string full_name = "UninstantiatedParamaterizedTestSuite<" + name + ">";
+  RegisterTest(  //
+      "GoogleTestVerification", full_name.c_str(),
+      nullptr,  // No type parameter.
+      nullptr,  // No value parameter.
+      location.file.c_str(), location.line, [message, location] {
+        return new FailureTest(location, message,
+                               kErrorOnUninstantiatedParameterizedTest);
+      });
+}
+
+void RegisterTypeParameterizedTestSuite(const char* test_suite_name,
+                                        CodeLocation code_location) {
+  GetUnitTestImpl()->type_parameterized_test_registry().RegisterTestSuite(
+      test_suite_name, code_location);
+}
+
+void RegisterTypeParameterizedTestSuiteInstantiation(const char* case_name) {
+  GetUnitTestImpl()
+      ->type_parameterized_test_registry()
+      .RegisterInstantiation(case_name);
+}
+
+void TypeParameterizedTestSuiteRegistry::RegisterTestSuite(
+    const char* test_suite_name, CodeLocation code_location) {
+  suites_.emplace(std::string(test_suite_name),
+                 TypeParameterizedTestSuiteInfo(code_location));
+}
+
+void TypeParameterizedTestSuiteRegistry::RegisterInstantiation(
+        const char* test_suite_name) {
+  auto it = suites_.find(std::string(test_suite_name));
+  if (it != suites_.end()) {
+    it->second.instantiated = true;
+  } else {
+    GTEST_LOG_(ERROR) << "Unknown type parameterized test suit '"
+                      << test_suite_name << "'";
+  }
+}
+
+void TypeParameterizedTestSuiteRegistry::CheckForInstantiations() {
+  const auto& ignored = *GetIgnoredParameterizedTestSuites();
+  for (const auto& testcase : suites_) {
+    if (testcase.second.instantiated) continue;
+    if (ignored.find(testcase.first) != ignored.end()) continue;
+
+    std::string message =
+        "Type paramaterized test suite " + testcase.first +
+        " is defined via REGISTER_TYPED_TEST_SUITE_P, but never instantiated "
+        "via INSTANTIATE_TYPED_TEST_SUITE_P. None of the test cases will run."
+        "\n\n"
+        "Ideally, TYPED_TEST_P definitions should only ever be included as "
+        "part of binaries that intend to use them. (As opposed to, for "
+        "example, being placed in a library that may be linked in to get other "
+        "utilities.)"
+        "\n\n"
+        "To suppress this error for this test suite, insert the following line "
+        "(in a non-header) in the namespace it is definedin in:"
+        "\n\n"
+        "GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(" +
+        testcase.first + ");";
+
+    std::string full_name =
+        "UninstantiatedTypeParamaterizedTestSuite<" + testcase.first + ">";
+    RegisterTest(  //
+        "GoogleTestVerification", full_name.c_str(),
+        nullptr,  // No type parameter.
+        nullptr,  // No value parameter.
+        testcase.second.code_location.file.c_str(),
+        testcase.second.code_location.line, [message, testcase] {
+          return new FailureTest(testcase.second.code_location, message,
+                                 kErrorOnUninstantiatedTypeParameterizedTest);
+        });
+  }
+}
+
 // A copy of all command line arguments.  Set by InitGoogleTest().
 static ::std::vector<std::string> g_argvs;
 
@@ -2650,6 +2806,7 @@ namespace internal {
 void UnitTestImpl::RegisterParameterizedTests() {
   if (!parameterized_tests_registered_) {
     parameterized_test_registry_.RegisterTests();
+    type_parameterized_test_registry_.CheckForInstantiations();
     parameterized_tests_registered_ = true;
   }
 }
@@ -6170,7 +6327,11 @@ std::string TempDir() {
   else
     return std::string(temp_dir) + "\\";
 #elif GTEST_OS_LINUX_ANDROID
-  return "/sdcard/";
+  const char* temp_dir = internal::posix::GetEnv("TEST_TMPDIR");
+  if (temp_dir == nullptr || temp_dir[0] == '\0')
+    return "/data/local/tmp/";
+  else
+    return temp_dir;
 #else
   return "/tmp/";
 #endif  // GTEST_OS_WINDOWS_MOBILE

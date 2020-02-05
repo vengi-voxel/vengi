@@ -698,6 +698,17 @@ class GTEST_API_ UnitTestImpl {
     return parameterized_test_registry_;
   }
 
+  std::set<std::string>* ignored_parameterized_test_suites() {
+    return &ignored_parameterized_test_suites_;
+  }
+
+  // Returns TypeParameterizedTestSuiteRegistry object used to keep track of
+  // type-parameterized tests and instantiations of them.
+  internal::TypeParameterizedTestSuiteRegistry&
+  type_parameterized_test_registry() {
+    return type_parameterized_test_registry_;
+  }
+
   // Sets the TestSuite object for the test that's currently running.
   void set_current_test_suite(TestSuite* a_current_test_suite) {
     current_test_suite_ = a_current_test_suite;
@@ -874,6 +885,12 @@ class GTEST_API_ UnitTestImpl {
   // ParameterizedTestRegistry object used to register value-parameterized
   // tests.
   internal::ParameterizedTestSuiteRegistry parameterized_test_registry_;
+  internal::TypeParameterizedTestSuiteRegistry
+      type_parameterized_test_registry_;
+
+  // The set holding the name of parameterized
+  // test suites that may go uninstantiated.
+  std::set<std::string> ignored_parameterized_test_suites_;
 
   // Indicates whether RegisterParameterizedTests() has been called already.
   bool parameterized_tests_registered_;
