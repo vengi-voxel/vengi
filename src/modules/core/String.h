@@ -9,7 +9,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <SDL_stdinc.h>
-#include <functional>
 
 namespace core {
 
@@ -172,6 +171,9 @@ bool operator!=(const char *x, const String &y);
 }
 
 namespace std {
+template<class T>
+struct hash;
+
 template<> struct hash<core::String> {
 	inline size_t operator()(const core::String &p) const {
 		size_t result = 0;
