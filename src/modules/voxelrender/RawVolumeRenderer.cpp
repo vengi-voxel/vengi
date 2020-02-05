@@ -19,6 +19,7 @@
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/GameConfig.h"
+#include "core/Log.h"
 #include <unordered_set>
 
 namespace voxelrender {

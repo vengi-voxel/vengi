@@ -7,15 +7,25 @@
 
 #pragma once
 
-#include "Log.h"
-#include <math.h>
-#include <utility>
-#include <limits.h>
-#include <SDL_stdinc.h>
-#include "Enum.h"
+#include <stdint.h>
 
 #define CORE_STRINGIFY_INTERNAL(x) #x
 #define CORE_STRINGIFY(x) CORE_STRINGIFY_INTERNAL(x)
+
+#ifndef __GNUC__
+#define __attribute__(x)
+#endif
+
+#ifdef _MSC_VER
+#include <sal.h>
+#if _MSC_VER >= 1400
+#define CORE_FORMAT_STRING _Printf_format_string_
+#else
+#define CORE_FORMAT_STRING __format_string
+#endif
+#else
+#define CORE_FORMAT_STRING
+#endif
 
 #define CORE_CLASS(name) \
 	friend class name##Test;

@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "core/io/Filesystem.h"
+#include "core/Enum.h"
 #include <algorithm>
 
 namespace io {

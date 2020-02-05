@@ -6,6 +6,7 @@
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "core/Log.h"
 
 namespace voxedit {
 namespace tool {

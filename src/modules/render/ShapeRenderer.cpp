@@ -6,6 +6,7 @@
 #include "core/Vector.h"
 #include "video/Shader.h"
 #include "video/ScopedPolygonMode.h"
+#include "core/Log.h"
 
 namespace render {
 

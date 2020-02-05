@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Common.h"
+#include "core/Enum.h"
 
 enum class ModifierType {
 	None = 0,

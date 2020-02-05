@@ -6,6 +6,8 @@
 #include "core/ByteStream.h"
 #include "core/Zip.h"
 #include "core/Assert.h"
+#include "core/Enum.h"
+#include "core/Log.h"
 
 namespace voxelworld {
 

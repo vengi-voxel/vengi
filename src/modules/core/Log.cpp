@@ -8,6 +8,7 @@
 #include "engine-config.h"
 #include "App.h"
 #include "Common.h"
+#include "Enum.h"
 #include "ArrayLength.h"
 #include "Assert.h"
 #include <string.h>

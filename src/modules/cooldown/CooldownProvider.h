@@ -5,6 +5,7 @@
 
 #include "core/Common.h"
 #include "CooldownType.h"
+#include "core/Enum.h"
 #include <memory>
 
 namespace cooldown {
@@ -60,13 +61,6 @@ public:
 
 inline const core::String& CooldownProvider::error() const {
 	return _error;
-}
-
-inline long CooldownProvider::duration(Type type) const {
-	if (!_initialized) {
-		::Log::warn("Trying to get cooldown duration without CooldownProvider::init() being called");
-	}
-	return _durations[std::enum_value<Type>(type)];
 }
 
 typedef std::shared_ptr<CooldownProvider> CooldownProviderPtr;

@@ -3,10 +3,11 @@
  */
 
 #include "QBFormat.h"
-#include "core/Common.h"
+#include "core/Enum.h"
 #include "core/Zip.h"
 #include "core/Color.h"
 #include "core/Assert.h"
+#include "core/Log.h"
 
 namespace voxel {
 

@@ -7,7 +7,7 @@
 #include "ProtocolHandlerRegistry.h"
 #include "NetworkEvents.h"
 #include "core/Trace.h"
-#include "core/Common.h"
+#include "core/Enum.h"
 #include "core/Log.h"
 
 #include <memory>

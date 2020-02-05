@@ -6,6 +6,7 @@
 #include <SDL_endian.h>
 #include "core/io/File.h"
 #include "core/Assert.h"
+#include "core/Log.h"
 
 namespace io {
 

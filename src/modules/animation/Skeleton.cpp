@@ -5,6 +5,7 @@
 #include "Skeleton.h"
 #include "core/Assert.h"
 #include "animation/BoneUtil.h"
+#include "core/Log.h"
 
 namespace animation {
 

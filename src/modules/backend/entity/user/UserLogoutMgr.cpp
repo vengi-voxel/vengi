@@ -6,6 +6,7 @@
 #include "UserCooldownMgr.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"
+#include "core/Log.h"
 
 namespace backend {
 

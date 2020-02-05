@@ -9,6 +9,7 @@
 #include "core/GLM.h"
 #include "core/Assert.h"
 #include "voxel/MaterialColor.h"
+#include "core/Log.h"
 
 namespace voxel {
 

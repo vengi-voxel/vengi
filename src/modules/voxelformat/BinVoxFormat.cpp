@@ -5,6 +5,7 @@
 #include "BinVoxFormat.h"
 #include "voxel/MaterialColor.h"
 #include "core/StringUtil.h"
+#include "core/Log.h"
 #include <SDL.h>
 #include <string.h>
 #include <memory>

@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "core/Common.h"
 #include "core/Assert.h"
+#include "core/Log.h"
 #include <vector>
 
 namespace video {

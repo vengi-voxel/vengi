@@ -8,6 +8,7 @@
 #include "backend/entity/ai/AICommon.h"
 #include "core/Common.h"
 #include <bitset>
+#include "core/Enum.h"
 
 namespace backend {
 

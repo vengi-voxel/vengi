@@ -6,6 +6,7 @@
 #include "core/Trace.h"
 #include "math/AABB.h"
 #include "math/Plane.h"
+#include "core/Log.h"
 
 namespace render {
 

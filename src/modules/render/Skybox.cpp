@@ -5,6 +5,7 @@
 #include "Skybox.h"
 #include "video/ScopedState.h"
 #include "video/Shader.h"
+#include "core/Log.h"
 
 namespace render {
 

@@ -5,6 +5,8 @@
 #include "BoneId.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
+#include "core/Enum.h"
+#include <SDL_stdinc.h>
 
 namespace animation {
 
@@ -16,7 +18,7 @@ static_assert(lengthof(boneId_strings) == std::enum_value(BoneId::Max), "Invalid
 
 BoneId toBoneId(const char *name) {
 	for (int i = 0; i < lengthof(boneId_strings); ++i) {
-		if (!strcmp(name, boneId_strings[i])) {
+		if (!SDL_strcmp(name, boneId_strings[i])) {
 			return (BoneId)i;
 		}
 	}

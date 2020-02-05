@@ -7,7 +7,7 @@
 #include "core/IComponent.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/Common.h"
+#include "core/Enum.h"
 #include "core/io/Filesystem.h"
 #include <unordered_map>
 #include <glm/vec2.hpp>

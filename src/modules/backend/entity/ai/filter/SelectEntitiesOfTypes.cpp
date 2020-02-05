@@ -4,6 +4,7 @@
 #include "backend/entity/Npc.h"
 #include "backend/entity/ai/AICharacter.h"
 #include "network/ProtocolEnum.h"
+#include "core/Enum.h"
 
 namespace backend {
 

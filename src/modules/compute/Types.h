@@ -5,7 +5,7 @@
 #pragma once
 
 #include "cl/CLTypes.h"
-#include "core/Common.h"
+#include "core/Enum.h"
 
 namespace compute {
 

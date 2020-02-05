@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "core/Common.h"
 #include "core/ArrayLength.h"
 #include "Animation.h"
 #include "BoneId.h"
 #include "core/collection/Array.h"
 #include "core/String.h"
+#include "core/Enum.h"
 #include <vector>
 
 namespace animation {

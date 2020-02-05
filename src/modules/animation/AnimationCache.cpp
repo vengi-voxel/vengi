@@ -3,6 +3,7 @@
  */
 
 #include "AnimationCache.h"
+#include "core/Log.h"
 
 namespace animation {
 

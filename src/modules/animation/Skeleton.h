@@ -6,7 +6,7 @@
 
 #include "Bone.h"
 #include "BoneId.h"
-#include "core/Common.h"
+#include "core/Enum.h"
 #include "SkeletonShader.h"
 
 namespace animation {

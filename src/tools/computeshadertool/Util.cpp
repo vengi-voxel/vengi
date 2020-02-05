@@ -5,6 +5,7 @@
 #include "Util.h"
 #include "core/StringUtil.h"
 #include "compute/Types.h"
+#include "core/Common.h"
 
 namespace computeshadertool {
 namespace util {

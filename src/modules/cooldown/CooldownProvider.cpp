@@ -8,6 +8,7 @@
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/io/Filesystem.h"
+#include "core/Log.h"
 
 namespace cooldown {
 
@@ -61,6 +62,13 @@ bool CooldownProvider::init(const core::String& cooldowns) {
 
 	_initialized = true;
 	return true;
+}
+
+long CooldownProvider::duration(Type type) const {
+	if (!_initialized) {
+		::Log::warn("Trying to get cooldown duration without CooldownProvider::init() being called");
+	}
+	return _durations[std::enum_value<Type>(type)];
 }
 
 }

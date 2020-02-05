@@ -5,6 +5,7 @@
 #include "KeybindingParser.h"
 #include "CustomButtonNames.h"
 #include "core/ArrayLength.h"
+#include "core/Log.h"
 #include <SDL.h>
 
 namespace util {

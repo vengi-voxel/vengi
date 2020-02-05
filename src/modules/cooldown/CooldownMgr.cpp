@@ -5,6 +5,7 @@
 #include "CooldownMgr.h"
 #include "core/Common.h"
 #include "core/Singleton.h"
+#include "core/Log.h"
 
 namespace cooldown {
 

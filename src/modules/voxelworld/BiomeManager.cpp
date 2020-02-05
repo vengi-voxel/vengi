@@ -15,6 +15,7 @@
 #include "voxel/MaterialColor.h"
 #include "BiomeLUAFunctions.h"
 #include "commonlua/LUAFunctions.h"
+#include "core/Enum.h"
 
 namespace voxelworld {
 

@@ -4,26 +4,12 @@
 
 #pragma once
 
+#include "Common.h"
 #include "Hash.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
 #include <SDL_log.h>
-
-#ifndef __GNUC__
-#define __attribute__(x)
-#endif
-
-#ifdef _MSC_VER
-#include <sal.h>
-#if _MSC_VER >= 1400
-#define CORE_FORMAT_STRING _Printf_format_string_
-#else
-#define CORE_FORMAT_STRING __format_string
-#endif
-#else
-#define CORE_FORMAT_STRING
-#endif
 
 class Log {
 public:

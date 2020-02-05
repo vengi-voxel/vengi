@@ -13,6 +13,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/Buffer.h"
 #include "video/Renderer.h"
+#include "core/Log.h"
 
 namespace render {
 

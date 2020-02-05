@@ -5,7 +5,7 @@
 #include "Animation.h"
 #include "core/Common.h"
 #include "core/ArrayLength.h"
-#include <string.h>
+#include "core/Enum.h"
 
 namespace animation {
 

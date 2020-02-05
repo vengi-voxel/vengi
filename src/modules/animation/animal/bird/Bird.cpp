@@ -9,6 +9,7 @@
 #include "core/GLM.h"
 #include "anim/Idle.h"
 #include "anim/Run.h"
+#include "core/Log.h"
 
 namespace animation {
 

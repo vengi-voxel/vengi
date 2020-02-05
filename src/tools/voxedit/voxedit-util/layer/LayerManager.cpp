@@ -6,6 +6,7 @@
 #include "core/StringUtil.h"
 #include "core/command/Command.h"
 #include "voxelutil/VolumeMerger.h"
+#include "core/Log.h"
 
 namespace voxedit {
 
