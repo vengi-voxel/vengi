@@ -283,8 +283,8 @@ bool Shader::deactivate() const {
 	_time = 0;
 	if (_recordUsedUniforms) {
 		for (const auto& e : _uniforms) {
-			if (_usedUniforms.find(e.second.location) == _usedUniforms.end()) {
-				Log::error("Didn't set the uniform %s (shader: %s)", e.first.c_str(), _name.c_str());
+			if (_usedUniforms.find(e->value.location) == _usedUniforms.end()) {
+				Log::error("Didn't set the uniform %s (shader: %s)", e->key.c_str(), _name.c_str());
 			}
 		}
 	}
@@ -306,7 +306,7 @@ int Shader::getAttributeLocation(const core::String& name) const {
 }
 
 int Shader::checkAttributeLocation(const core::String& name) const {
-	ShaderAttributes::const_iterator i = _attributes.find(name);
+	auto i = _attributes.find(name);
 	if (i == _attributes.end()) {
 		return -1;
 	}
@@ -337,11 +337,11 @@ int Shader::getUniformLocation(const core::String& name) const {
 }
 
 const Uniform* Shader::getUniform(const core::String& name) const {
-	ShaderUniforms::const_iterator i = _uniforms.find(name);
+	auto i = _uniforms.find(name);
 	if (i == _uniforms.end()) {
 		Log::debug("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
-		for (auto uniformEntry : _uniforms) {
-			Log::trace("uniform %s", uniformEntry.first.c_str());
+		for (const auto& uniformEntry : _uniforms) {
+			Log::trace("uniform %s", uniformEntry->key.c_str());
 		}
 		return nullptr;
 	}

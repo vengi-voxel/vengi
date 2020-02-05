@@ -1615,7 +1615,7 @@ int fetchAttributes(Id program, ShaderAttributes& attributes, const core::String
 		GLenum type;
 		glGetActiveAttrib(lid, i, MAX_SHADER_VAR_NAME - 1, &length, &size, &type, varName);
 		const int location = glGetAttribLocation(lid, varName);
-		attributes[varName] = location;
+		attributes.put(varName, location);
 		Log::debug("attribute location for %s is %i (shader %s)", varName, location, name.c_str());
 	}
 	return numAttributes;

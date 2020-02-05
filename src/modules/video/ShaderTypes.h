@@ -5,12 +5,12 @@
 #pragma once
 
 #include "Types.h"
-#include <unordered_map>
 #include "core/String.h"
+#include "core/collection/StringMap.h"
 
 namespace video {
 
-typedef std::unordered_map<core::String, Uniform, core::StringHash> ShaderUniforms;
-typedef std::unordered_map<core::String, int, core::StringHash> ShaderAttributes;
+typedef core::StringMap<Uniform> ShaderUniforms;
+typedef core::StringMap<int> ShaderAttributes;
 
 }
