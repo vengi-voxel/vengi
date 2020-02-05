@@ -37,8 +37,85 @@ class SwiftGenerator : public BaseGenerator {
         cur_name_space_(nullptr) {
     namespace_depth = 0;
     static const char *const keywords[] = {
-      "enum", "private", "public", "internal", "fileprivate", "static", "var",
-      "URL",  "struct",  "let",    "class",    "Any",         "nil",    nullptr,
+      "associatedtype",
+      "class",
+      "deinit",
+      "enum",
+      "extension",
+      "fileprivate",
+      "func",
+      "import",
+      "init",
+      "inout",
+      "internal",
+      "let",
+      "open",
+      "operator",
+      "private",
+      "protocol",
+      "public",
+      "rethrows",
+      "static",
+      "struct",
+      "subscript",
+      "typealias",
+      "var",
+      "break",
+      "case",
+      "continue",
+      "default",
+      "defer",
+      "do",
+      "else",
+      "fallthrough",
+      "for",
+      "guard",
+      "if",
+      "in",
+      "repeat",
+      "return",
+      "switch",
+      "where",
+      "while",
+      "Any",
+      "catch",
+      "false",
+      "is",
+      "nil",
+      "super",
+      "self",
+      "Self",
+      "throw",
+      "throws",
+      "true",
+      "try",
+      "associativity",
+      "convenience",
+      "dynamic",
+      "didSet",
+      "final",
+      "get",
+      "infix",
+      "indirect",
+      "lazy",
+      "left",
+      "mutating",
+      "none",
+      "nonmutating",
+      "optional",
+      "override",
+      "postfix",
+      "precedence",
+      "prefix",
+      "Protocol",
+      "required",
+      "right",
+      "set",
+      "Type",
+      "unowned",
+      "weak",
+      "willSet",
+      nullptr,
     };
     for (auto kw = keywords; *kw; kw++) keywords_.insert(*kw);
   }
@@ -160,12 +237,14 @@ class SwiftGenerator : public BaseGenerator {
   }
 
   void GenObjectHeader(const StructDef &struct_def) {
+    GenComment(struct_def.doc_comment);
     code_.SetValue("STRUCTNAME", Name(struct_def));
     code_.SetValue("PROTOCOL",
                    struct_def.fixed ? "Readable" : "FlatBufferObject");
     code_.SetValue("OBJECTTYPE", struct_def.fixed ? "Struct" : "Table");
-    code_ += "public struct {{STRUCTNAME}}: {{PROTOCOL}} {";
-    code_ += "\tprivate var {{ACCESS}}: {{OBJECTTYPE}}";
+    code_ += "public struct {{STRUCTNAME}}: {{PROTOCOL}} {\n";
+    code_ += ValidateFunc();
+    code_ += "\n\tprivate var {{ACCESS}}: {{OBJECTTYPE}}";
     if (struct_def.fixed) {
       code_.SetValue("BYTESIZE", NumToString(struct_def.bytesize));
       code_.SetValue("MINALIGN", NumToString(struct_def.minalign));
@@ -256,10 +335,10 @@ class SwiftGenerator : public BaseGenerator {
                create_func_header.substr(0, create_func_header.size() - 2) +
                "\\";
     code_ += ") -> Offset<UOffset> {";
-    code_ += "\t\tlet start = {{STRUCTNAME}}.start{{STRUCTNAME}}(fbb)";
+    code_ += "\t\tlet __start = {{STRUCTNAME}}.start{{STRUCTNAME}}(fbb)";
     if (should_generate_create)
       code_ += create_func_body.substr(0, create_func_body.size() - 1);
-    code_ += "\t\treturn {{STRUCTNAME}}.end{{STRUCTNAME}}(fbb, start: start)";
+    code_ += "\t\treturn {{STRUCTNAME}}.end{{STRUCTNAME}}(fbb, start: __start)";
     code_ += "\t}";
 
     std::string spacing = "\t\t";
@@ -356,7 +435,7 @@ class SwiftGenerator : public BaseGenerator {
     code_.SetValue("OFFSET", offset);
     code_.SetValue("CONSTANT", field.value.constant);
     std::string const_string = "return o == 0 ? {{CONSTANT}} : ";
-
+    GenComment(field.doc_comment, "\t");
     if (IsScalar(field.value.type.base_type) && !IsEnum(field.value.type) &&
         !IsBool(field.value.type.base_type)) {
       code_ += GenReaderMainBody() + GenOffset() + const_string +
@@ -533,6 +612,7 @@ class SwiftGenerator : public BaseGenerator {
       code_.SetValue("VALUENAME", name);
       code_.SetValue("VALUETYPE", type);
       code_.SetValue("OFFSET", offset);
+      GenComment(field.doc_comment, "\t");
       if (IsScalar(field.value.type.base_type) && !IsEnum(field.value.type)) {
         code_ +=
             GenReaderMainBody() + "return " + GenReader("VALUETYPE") + " }";
@@ -554,9 +634,10 @@ class SwiftGenerator : public BaseGenerator {
 
   void GenEnum(const EnumDef &enum_def) {
     if (enum_def.generated) return;
-    code_.SetValue("ENUM_NAME", GenEnumDecl(enum_def));
+    code_.SetValue("ENUM_NAME", Name(enum_def));
     code_.SetValue("BASE_TYPE", GenTypeBasic(enum_def.underlying_type, false));
-    code_ += "public {{ENUM_NAME}}: {{BASE_TYPE}}, Enum { ";
+    GenComment(enum_def.doc_comment);
+    code_ += "public enum {{ENUM_NAME}}: {{BASE_TYPE}}, Enum { ";
     code_ += "\tpublic typealias T = {{BASE_TYPE}}";
     code_ +=
         "\tpublic static var byteSize: Int { return "
@@ -564,21 +645,28 @@ class SwiftGenerator : public BaseGenerator {
         "}";
     code_ += "\tpublic var value: {{BASE_TYPE}} { return self.rawValue }";
 
-    std::string enum_code = "\tcase ";
-    int keyCount = 0;
     for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
       const auto &ev = **it;
-      auto key = "KEY" + NumToString(keyCount);
-      auto value = "VALUE" + NumToString(keyCount);
       auto name = Name(ev);
       std::transform(name.begin(), name.end(), name.begin(), LowerCase);
-      code_.SetValue(key, name);
-      code_.SetValue(value, enum_def.ToString(ev));
-      enum_code += "{{" + key + "}} = {{" + value + "}}, ";
-      keyCount++;
+      code_.SetValue("KEY", name);
+      code_.SetValue("VALUE", enum_def.ToString(ev));
+      GenComment(ev.doc_comment, "\t");
+      code_ += "\tcase {{KEY}} = {{VALUE}}";
     }
-    code_ += enum_code.substr(0, enum_code.size() - 2);
+    code_ += "\n";
+    AddMinOrMaxEnumValue(enum_def.MaxValue()->name, "max");
+    AddMinOrMaxEnumValue(enum_def.MinValue()->name, "min");
     code_ += "}\n";
+  }
+
+  void AddMinOrMaxEnumValue(const std::string &str, const std::string &type) {
+    auto current_value = str;
+    std::transform(current_value.begin(), current_value.end(),
+                   current_value.begin(), LowerCase);
+    code_.SetValue(type, current_value);
+    code_ += "\tpublic static var " + type + ": {{ENUM_NAME}} { return .{{" +
+             type + "}} }";
   }
 
   void GenLookup(const FieldDef &key_field) {
@@ -626,6 +714,12 @@ class SwiftGenerator : public BaseGenerator {
     code_ += spacing + "}";
     code_ += spacing + "return nil";
     code_ += "\t}";
+  }
+
+  void GenComment(const std::vector<std::string> &dc, const char *prefix = "") {
+    std::string text;
+    ::flatbuffers::GenComment(dc, &text, nullptr, prefix);
+    code_ += text + "\\";
   }
 
   std::string GenOffset() { return "let o = {{ACCESS}}.offset({{OFFSET}}); "; }
@@ -678,6 +772,10 @@ class SwiftGenerator : public BaseGenerator {
     return "{{VALUETYPE}}(rawValue: " + GenReader("BASEVALUE", at) + ") ";
   }
 
+  std::string ValidateFunc() {
+    return "\tstatic func validateVersion() { FlatBuffersVersion_1_11_1() }";
+  }
+
   std::string GenType(const Type &type) const {
     return IsScalar(type.base_type)
                ? GenTypeBasic(type)
@@ -716,10 +814,6 @@ class SwiftGenerator : public BaseGenerator {
       if (type.base_type == BASE_TYPE_BOOL) return "Bool";
     }
     return swift_type[static_cast<int>(type.base_type)];
-  }
-
-  std::string GenEnumDecl(const EnumDef &enum_def) const {
-    return "enum " + Name(enum_def);
   }
 
   std::string EscapeKeyword(const std::string &name) const {
