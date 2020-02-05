@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <algorithm>
+#include <string>
 #include <vector>
 #include <ctype.h>
 #include <stdarg.h>
