@@ -27,7 +27,7 @@ class AnimationSettings;
  */
 class Skeleton {
 private:
-	Bone _bones[std::enum_value(BoneId::Max)];
+	Bone _bones[core::enumVal(BoneId::Max)];
 public:
 	virtual ~Skeleton() {}
 	const Bone& bone(BoneId id) const;

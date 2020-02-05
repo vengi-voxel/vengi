@@ -39,7 +39,7 @@ void BiomeManager::shutdown() {
 		delete biome;
 	}
 	_biomes.clear();
-	for (int i = 0; i < std::enum_value(ZoneType::Max); ++i) {
+	for (int i = 0; i < core::enumVal(ZoneType::Max); ++i) {
 		for (const Zone* zone : _zones[i]) {
 			delete zone;
 		}
@@ -260,11 +260,11 @@ int BiomeManager::getCityDensity(const glm::ivec2& pos) const {
 }
 
 void BiomeManager::addZone(const glm::ivec3& pos, float radius, ZoneType type) {
-	_zones[std::enum_value(type)].push_back(new Zone(pos, radius, type));
+	_zones[core::enumVal(type)].push_back(new Zone(pos, radius, type));
 }
 
 const Zone* BiomeManager::getZone(const glm::ivec3& pos, ZoneType type) const {
-	for (const Zone* z : _zones[std::enum_value(type)]) {
+	for (const Zone* z : _zones[core::enumVal(type)]) {
 		const float distance = glm::distance2(glm::vec3(pos), glm::vec3(z->pos()));
 		if (distance < glm::pow(z->radius(), 2)) {
 			return z;
@@ -275,7 +275,7 @@ const Zone* BiomeManager::getZone(const glm::ivec3& pos, ZoneType type) const {
 
 const Zone* BiomeManager::getZone(const glm::ivec2& pos, ZoneType type) const {
 	const glm::vec3 p(pos.x, 0.0f, pos.y);
-	for (const Zone* z : _zones[std::enum_value(type)]) {
+	for (const Zone* z : _zones[core::enumVal(type)]) {
 		const glm::ivec3& zp = z->pos();
 		const float distance = glm::distance2(p, glm::vec3(zp.x, 0.0f, zp.z));
 		if (distance < glm::pow(z->radius(), 2)) {

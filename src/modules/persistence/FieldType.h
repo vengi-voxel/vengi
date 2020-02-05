@@ -24,7 +24,7 @@ enum class FieldType {
 	BLOB,
 	MAX
 };
-static constexpr int MAX_FIELDTYPES = std::enum_value(FieldType::MAX);
+static constexpr int MAX_FIELDTYPES = core::enumVal(FieldType::MAX);
 
 extern FieldType toFieldType(const core::String& type);
 extern const char* toFieldType(const FieldType type);

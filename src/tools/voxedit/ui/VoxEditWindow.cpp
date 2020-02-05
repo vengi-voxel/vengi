@@ -105,7 +105,7 @@ bool VoxEditWindow::init() {
 
 	if (tb::TBSelectDropdown* dropdown = getWidgetByType<tb::TBSelectDropdown>("animationlist")) {
 		dropdown->setSource(&_animationItems);
-		for (int i = std::enum_value(animation::Animation::MIN); i <= std::enum_value(animation::Animation::MAX); ++i) {
+		for (int i = core::enumVal(animation::Animation::MIN); i <= core::enumVal(animation::Animation::MAX); ++i) {
 			addStringItem(_animationItems, animation::toString((animation::Animation)i));
 		}
 	}

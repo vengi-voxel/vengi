@@ -136,78 +136,78 @@ bool checkFramebufferStatus() {
 }
 
 void setupLimitsAndSpecs() {
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &renderState().limits[std::enum_value(Limit::MaxTextureSize)]);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::MaxTextureSize)]);
 	checkError();
-	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &renderState().limits[std::enum_value(Limit::MaxCubeMapTextureSize)]);
+	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::MaxCubeMapTextureSize)]);
 	checkError();
-	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &renderState().limits[std::enum_value(Limit::MaxViewPortWidth)]);
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &renderState().limits[core::enumVal(Limit::MaxViewPortWidth)]);
 	checkError();
-	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &renderState().limits[std::enum_value(Limit::MaxDrawBuffers)]);
+	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &renderState().limits[core::enumVal(Limit::MaxDrawBuffers)]);
 	checkError();
-	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &renderState().limits[std::enum_value(Limit::MaxVertexAttribs)]);
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &renderState().limits[core::enumVal(Limit::MaxVertexAttribs)]);
 	checkError();
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &renderState().limits[std::enum_value(Limit::MaxCombinedTextureImageUnits)]);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &renderState().limits[core::enumVal(Limit::MaxCombinedTextureImageUnits)]);
 	checkError();
-	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &renderState().limits[std::enum_value(Limit::MaxVertexTextureImageUnits)]);
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &renderState().limits[core::enumVal(Limit::MaxVertexTextureImageUnits)]);
 	checkError();
-	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &renderState().limits[std::enum_value(Limit::MaxElementIndices)]);
+	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &renderState().limits[core::enumVal(Limit::MaxElementIndices)]);
 	checkError();
-	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &renderState().limits[std::enum_value(Limit::MaxElementVertices)]);
+	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
 	checkError();
 	if (_priv::s.glVersion.majorVersion > 3 || (_priv::s.glVersion.majorVersion == 3 && _priv::s.glVersion.minorVersion >= 2)) {
-		glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &renderState().limits[std::enum_value(Limit::MaxFragmentInputComponents)]);
+		glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxFragmentInputComponents)]);
 		checkError();
 	} else {
-		renderState().limits[std::enum_value(Limit::MaxFragmentInputComponents)] = 60;
+		renderState().limits[core::enumVal(Limit::MaxFragmentInputComponents)] = 60;
 	}
 	if (_priv::s.glVersion.majorVersion > 4 || (_priv::s.glVersion.majorVersion == 4 && _priv::s.glVersion.minorVersion >= 3)) {
 #ifdef GL_MAX_COMPUTE_WORK_GROUP_COUNT
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountX)]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountX)]);
 		checkError();
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountY)]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountY)]);
 		checkError();
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupCountZ)]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountZ)]);
 		checkError();
 #endif
 #ifdef GL_MAX_COMPUTE_WORK_GROUP_SIZE
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupSizeX)]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupSizeX)]);
 		checkError();
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupSizeY)]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupSizeY)]);
 		checkError();
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupSizeZ)]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupSizeZ)]);
 		checkError();
 #endif
 #ifdef GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS
-		glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &renderState().limits[std::enum_value(Limit::MaxComputeWorkGroupInvocations)]);
+		glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupInvocations)]);
 		checkError();
 #endif
 	}
 #ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
-	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &renderState().limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
+	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &renderState().limits[core::enumVal(Limit::MaxVertexUniformComponents)]);
 	checkError();
-	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &renderState().limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
+	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &renderState().limits[core::enumVal(Limit::MaxFragmentUniformComponents)]);
 	checkError();
 #else
-	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &renderState().limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
+	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxVertexUniformComponents)]);
 	checkError();
-	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &renderState().limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
+	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxFragmentUniformComponents)]);
 	checkError();
 #endif
 	GLint uniformBufferAlignment;
 	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBufferAlignment);
-	renderState().specs[std::enum_value(Spec::UniformBufferAlignment)] = uniformBufferAlignment;
+	renderState().specs[core::enumVal(Spec::UniformBufferAlignment)] = uniformBufferAlignment;
 	checkError();
 	GLint maxUniformBufferBindings;
 	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformBufferBindings);
-	renderState().specs[std::enum_value(Spec::MaxUniformBufferBindings)] = maxUniformBufferBindings;
+	renderState().specs[core::enumVal(Spec::MaxUniformBufferBindings)] = maxUniformBufferBindings;
 #ifdef GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT
 	GLint shaderStorageBufferOffsetAlignment;
 	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &shaderStorageBufferOffsetAlignment);
-	renderState().specs[std::enum_value(Spec::ShaderStorageBufferOffsetAlignment)] = shaderStorageBufferOffsetAlignment;
+	renderState().specs[core::enumVal(Spec::ShaderStorageBufferOffsetAlignment)] = shaderStorageBufferOffsetAlignment;
 #endif
 
-	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[std::enum_value(Limit::MaxElementVertices)]);
-	Log::info("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[std::enum_value(Limit::MaxElementIndices)]);
+	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
+	Log::info("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[core::enumVal(Limit::MaxElementIndices)]);
 }
 
 void setupFeatures() {
@@ -229,7 +229,7 @@ void setupFeatures() {
 		{"GL_ARB_compute_shader"},
 		{"GL_ARB_transform_feedback2"}
 	};
-	static_assert(std::enum_value(Feature::Max) == (int)SDL_arraysize(extensionArray), "Array sizes don't match for Feature enum");
+	static_assert(core::enumVal(Feature::Max) == (int)SDL_arraysize(extensionArray), "Array sizes don't match for Feature enum");
 
 	int numExts;
 	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
@@ -253,9 +253,9 @@ void setupFeatures() {
 	int mask = 0;
 	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask) != -1) {
 		if ((mask & SDL_GL_CONTEXT_PROFILE_CORE) != 0) {
-			renderState().features[std::enum_value(Feature::TextureCompressionDXT)] = true;
-			renderState().features[std::enum_value(Feature::InstancedArrays)] = true;
-			renderState().features[std::enum_value(Feature::TextureFloat)] = true;
+			renderState().features[core::enumVal(Feature::TextureCompressionDXT)] = true;
+			renderState().features[core::enumVal(Feature::InstancedArrays)] = true;
+			renderState().features[core::enumVal(Feature::TextureFloat)] = true;
 		}
 	}
 
@@ -267,14 +267,14 @@ void setupFeatures() {
 #endif
 
 #ifdef SDL_VIDEO_OPENGL_ES2
-	renderState().features[std::enum_value(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("GL_ARB_texture_half_float");
+	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("GL_ARB_texture_half_float");
 #else
-	renderState().features[std::enum_value(Feature::TextureHalfFloat)] = renderState().features[std::enum_value(Feature::TextureFloat)];
+	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = renderState().features[core::enumVal(Feature::TextureFloat)];
 #endif
 
 #ifdef SDL_VIDEO_OPENGL_ES3
-	renderState().features[std::enum_value(Feature::InstancedArrays)] = true;
-	renderState().features[std::enum_value(Feature::TextureCompressionETC2)] = true;
+	renderState().features[core::enumVal(Feature::InstancedArrays)] = true;
+	renderState().features[core::enumVal(Feature::TextureCompressionETC2)] = true;
 #endif
 }
 

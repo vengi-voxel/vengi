@@ -11,12 +11,12 @@ namespace animation {
 
 const Bone& Skeleton::bone(BoneId id) const {
 	core_assert(id != BoneId::Max);
-	return _bones[std::enum_value(id)];
+	return _bones[core::enumVal(id)];
 }
 
 Bone& Skeleton::bone(BoneId id) {
 	core_assert(id != BoneId::Max);
-	return _bones[std::enum_value(id)];
+	return _bones[core::enumVal(id)];
 }
 
 Bone& Skeleton::torsoBone(float scale) {
@@ -29,7 +29,7 @@ Bone& Skeleton::torsoBone(float scale) {
 
 void Skeleton::lerp(const Skeleton& previous, float dt) {
 	const float factor = glm::min(1.0f, dt);
-	for (int i = 0; i < std::enum_value(BoneId::Max); ++i) {
+	for (int i = 0; i < core::enumVal(BoneId::Max); ++i) {
 		const BoneId id = (BoneId)i;
 		bone(id).lerp(previous.bone(id), factor);
 	}

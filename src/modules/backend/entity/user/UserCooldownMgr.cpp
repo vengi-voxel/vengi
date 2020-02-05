@@ -34,7 +34,7 @@ bool UserCooldownMgr::init() {
 	}
 
 	// initialize the models
-	const int maxDirtyModels = std::enum_value(cooldown::Type::MAX);
+	const int maxDirtyModels = core::enumVal(cooldown::Type::MAX);
 	_dirtyModels.resize(maxDirtyModels + 1);
 	for (int i = 0; i <= maxDirtyModels; ++i) {
 		db::CooldownModel& model = _dirtyModels[i];
@@ -81,9 +81,9 @@ bool UserCooldownMgr::getDirtyModels(Models& models) {
 	for (const auto& e : _cooldowns) {
 		const cooldown::CooldownPtr& c = e.second;
 		const int index = (int)c->type();
-		core_assert_msg(index >= std::enum_value(cooldown::Type::MIN),
+		core_assert_msg(index >= core::enumVal(cooldown::Type::MIN),
 				"invalid index given: %i", index);
-		core_assert_msg(index <= std::enum_value(cooldown::Type::MAX),
+		core_assert_msg(index <= core::enumVal(cooldown::Type::MAX),
 				"invalid index given: %i", index);
 		db::CooldownModel& model = _dirtyModels[index];
 		model.setStarttime(uint64_t(c->startMillis() / 1000l));

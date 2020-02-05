@@ -40,7 +40,7 @@ bool Network::disconnectPeer(ENetPeer *peer, DisconnectReason reason) {
 		return false;
 	}
 	Log::info("trying to disconnect peer: %u", peer->connectID);
-	enet_peer_disconnect(peer, std::enum_value(reason));
+	enet_peer_disconnect(peer, core::enumVal(reason));
 	if (peer->state == ENET_PEER_STATE_DISCONNECTED) {
 		_eventBus->publish(DisconnectEvent(peer, reason));
 	}

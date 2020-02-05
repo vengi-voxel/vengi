@@ -15,7 +15,7 @@ SelectEntitiesOfTypes::SelectEntitiesOfTypes(const core::String& parameters) :
 	for (const core::String& type : types) {
 		auto entityType = network::getEnum<network::EntityType>(type.c_str(), network::EnumNamesEntityType());
 		core_assert_always(entityType != network::EntityType::NONE);
-		_entityTypes[std::enum_value(entityType)] = true;
+		_entityTypes[core::enumVal(entityType)] = true;
 	}
 }
 
@@ -23,7 +23,7 @@ void SelectEntitiesOfTypes::filter(const ai::AIPtr& entity) {
 	ai::FilteredEntities& entities = getFilteredEntities(entity);
 	backend::Npc& chr = getNpc(entity);
 	chr.visitVisible([&] (const backend::EntityPtr& e) {
-		if (!_entityTypes[std::enum_value(e->entityType())]) {
+		if (!_entityTypes[core::enumVal(e->entityType())]) {
 			return;
 		}
 		entities.push_back(e->id());

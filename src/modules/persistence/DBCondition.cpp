@@ -27,7 +27,7 @@ static const char *comparatorString[] = {
 	"IN",
 	"NOT IN"
 };
-static_assert(std::enum_value(Comparator::Max) == lengthof(comparatorString), "Comparator array sizes don't match");
+static_assert(core::enumVal(Comparator::Max) == lengthof(comparatorString), "Comparator array sizes don't match");
 
 }
 
@@ -50,7 +50,7 @@ core::String DBCondition::statement(int& parameterCount) const {
 		return "";
 	}
 	++parameterCount;
-	const char* c = __priv::comparatorString[std::enum_value(_comp)];
+	const char* c = __priv::comparatorString[core::enumVal(_comp)];
 	if (_type == FieldType::PASSWORD) {
 		return core::string::format("\"%s\" %s crypt($%i, \"%s\")", _field, c, parameterCount, _field);
 	}

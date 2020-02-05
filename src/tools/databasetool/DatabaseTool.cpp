@@ -97,8 +97,8 @@ bool DatabaseTool::validateForeignKeys(const databasetool::Table& table) const {
 			continue;
 		}
 
-		if ((ri->second.contraintMask & std::enum_value(persistence::ConstraintType::PRIMARYKEY)) == 0u) {
-			if ((ri->second.contraintMask & std::enum_value(persistence::ConstraintType::NOTNULL)) == 0u) {
+		if ((ri->second.contraintMask & core::enumVal(persistence::ConstraintType::PRIMARYKEY)) == 0u) {
+			if ((ri->second.contraintMask & core::enumVal(persistence::ConstraintType::NOTNULL)) == 0u) {
 				error = true;
 				Log::error("Table '%s': Referenced field '%s' in table '%s' isn't a primary key and can be null",
 						table.name.c_str(), fk.field.c_str(), fk.table.c_str());

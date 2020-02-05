@@ -25,7 +25,7 @@ bool ChunkPersister::saveCompressed(voxel::PagedVolume::Chunk* chunk, core::Byte
 			for (int x = 0; x < width; ++x) {
 				const voxel::Voxel& voxel = chunk->voxel(x, y, z);
 				static_assert(sizeof(voxel::VoxelType) == sizeof(uint8_t), "Voxel type size changed");
-				voxelStream.addByte(std::enum_value(voxel.getMaterial()));
+				voxelStream.addByte(core::enumVal(voxel.getMaterial()));
 				voxelStream.addByte(voxel.getColor());
 			}
 		}

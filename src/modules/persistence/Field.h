@@ -35,31 +35,31 @@ struct Field {
 	intptr_t validoffset = -1;
 
 	inline bool isAutoincrement() const {
-		return (contraintMask & std::enum_value(ConstraintType::AUTOINCREMENT)) != 0u;
+		return (contraintMask & core::enumVal(ConstraintType::AUTOINCREMENT)) != 0u;
 	}
 
 	inline bool isIndex() const {
-		return (contraintMask & std::enum_value(ConstraintType::INDEX)) != 0u;
+		return (contraintMask & core::enumVal(ConstraintType::INDEX)) != 0u;
 	}
 
 	inline bool isNotNull() const {
-		return (contraintMask & std::enum_value(ConstraintType::NOTNULL)) != 0u;
+		return (contraintMask & core::enumVal(ConstraintType::NOTNULL)) != 0u;
 	}
 
 	inline bool isPrimaryKey() const {
-		return (contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0u;
+		return (contraintMask & core::enumVal(ConstraintType::PRIMARYKEY)) != 0u;
 	}
 
 	inline bool isLower() const {
-		return (contraintMask & std::enum_value(ConstraintType::LOWERCASE)) != 0u;
+		return (contraintMask & core::enumVal(ConstraintType::LOWERCASE)) != 0u;
 	}
 
 	inline bool isUnique() const {
-		return (contraintMask & std::enum_value(ConstraintType::UNIQUE)) != 0u;
+		return (contraintMask & core::enumVal(ConstraintType::UNIQUE)) != 0u;
 	}
 
 	inline bool isForeignKey() const {
-		return (contraintMask & std::enum_value(ConstraintType::FOREIGNKEY)) != 0u;
+		return (contraintMask & core::enumVal(ConstraintType::FOREIGNKEY)) != 0u;
 	}
 };
 

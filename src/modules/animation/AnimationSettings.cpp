@@ -229,7 +229,7 @@ bool AnimationSettings::init() {
 				Log::error("Invalid bone mapping found for mesh type %i (bone num: %i)", (int)i, b);
 				return false;
 			}
-			const int idx = std::enum_value(boneId);
+			const int idx = core::enumVal(boneId);
 			if (_boneIndices[idx] != -1) {
 				continue;
 			}
@@ -306,7 +306,7 @@ BoneIds& AnimationSettings::boneIds(int meshTypeIdx) {
 
 bool AnimationSettings::registerBoneId(BoneId boneId) {
 	core_assert(boneId != BoneId::Max);
-	const int boneIdx = std::enum_value(boneId);
+	const int boneIdx = core::enumVal(boneId);
 	if (_boneIndices[boneIdx] != -1) {
 		return false;
 	}
@@ -317,7 +317,7 @@ bool AnimationSettings::registerBoneId(BoneId boneId) {
 
 int8_t AnimationSettings::mapBoneIdToArrayIndex(BoneId boneId) const {
 	core_assert(boneId != BoneId::Max);
-	return _boneIndices[std::enum_value(boneId)];
+	return _boneIndices[core::enumVal(boneId)];
 }
 
 }

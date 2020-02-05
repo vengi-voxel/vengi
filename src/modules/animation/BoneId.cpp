@@ -14,7 +14,7 @@ static const char *boneId_strings[] = { "head", "chest", "belt", "pants",
 		"lefthand", "righthand", "leftfoot", "rightfoot", "tool",
 		"leftshoulder", "rightshoulder", "glider", "torso",
 		"leftwing", "rightwing", "tail", "body" };
-static_assert(lengthof(boneId_strings) == std::enum_value(BoneId::Max), "Invalid bone array dimensions");
+static_assert(lengthof(boneId_strings) == core::enumVal(BoneId::Max), "Invalid bone array dimensions");
 
 BoneId toBoneId(const char *name) {
 	for (int i = 0; i < lengthof(boneId_strings); ++i) {
@@ -26,7 +26,7 @@ BoneId toBoneId(const char *name) {
 }
 
 const char* toBoneId(const BoneId id) {
-	return boneId_strings[std::enum_value(id)];
+	return boneId_strings[core::enumVal(id)];
 }
 
 }

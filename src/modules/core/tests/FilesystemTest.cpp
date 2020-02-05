@@ -14,7 +14,7 @@ class FilesystemTest: public core::AbstractTest {
 
 ::std::ostream& operator<<(::std::ostream& ostream, const std::vector<io::Filesystem::DirEntry>& val) {
 	for (const auto& e : val) {
-		ostream << e.name << " - " << std::enum_value(e.type) << ", ";
+		ostream << e.name << " - " << core::enumVal(e.type) << ", ";
 	}
 	return ostream;
 }

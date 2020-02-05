@@ -20,7 +20,7 @@ static size_t TextureFormatComponents[] {
 	2,
 	1
 };
-static_assert(std::enum_value(TextureFormat::Max) == lengthof(TextureFormatComponents), "Array sizes don't match Max");
+static_assert(core::enumVal(TextureFormat::Max) == lengthof(TextureFormatComponents), "Array sizes don't match Max");
 
 static cl_channel_order TextureFormats[] {
 	CL_RGBA,
@@ -30,7 +30,7 @@ static cl_channel_order TextureFormats[] {
 	CL_RG,
 	CL_R
 };
-static_assert(std::enum_value(TextureFormat::Max) == lengthof(TextureFormats), "Array sizes don't match Max");
+static_assert(core::enumVal(TextureFormat::Max) == lengthof(TextureFormats), "Array sizes don't match Max");
 
 static cl_channel_type TextureDataFormats[] {
 	CL_SNORM_INT8,
@@ -49,7 +49,7 @@ static cl_channel_type TextureDataFormats[] {
 	CL_HALF_FLOAT,
 	CL_FLOAT,
 };
-static_assert(std::enum_value(TextureDataFormat::Max) == lengthof(TextureDataFormats), "Array sizes don't match Max");
+static_assert(core::enumVal(TextureDataFormat::Max) == lengthof(TextureDataFormats), "Array sizes don't match Max");
 
 static size_t TextureDataFormatSizes[] {
 	1,
@@ -68,13 +68,13 @@ static size_t TextureDataFormatSizes[] {
 	2,
 	4
 };
-static_assert(std::enum_value(TextureDataFormat::Max) == lengthof(TextureDataFormatSizes), "Array sizes don't match Max");
+static_assert(core::enumVal(TextureDataFormat::Max) == lengthof(TextureDataFormatSizes), "Array sizes don't match Max");
 
 static cl_filter_mode TextureFilters[] {
 	CL_FILTER_NEAREST,
 	CL_FILTER_LINEAR
 };
-static_assert(std::enum_value(TextureFilter::Max) == lengthof(TextureFilters), "Array sizes don't match Max");
+static_assert(core::enumVal(TextureFilter::Max) == lengthof(TextureFilters), "Array sizes don't match Max");
 
 static cl_addressing_mode TextureWraps[] {
 	CL_ADDRESS_NONE,
@@ -83,7 +83,7 @@ static cl_addressing_mode TextureWraps[] {
 	CL_ADDRESS_REPEAT,
 	CL_ADDRESS_MIRRORED_REPEAT
 };
-static_assert(std::enum_value(TextureWrap::Max) == lengthof(TextureWraps), "Array sizes don't match Max");
+static_assert(core::enumVal(TextureWrap::Max) == lengthof(TextureWraps), "Array sizes don't match Max");
 
 }
 

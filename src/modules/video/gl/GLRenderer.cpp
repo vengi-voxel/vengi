@@ -176,7 +176,7 @@ float lineWidth(float width) {
 		return _priv::s.lineWidth;
 	}
 	const float oldWidth = _priv::s.lineWidth;
-	if (_priv::s.states[std::enum_value(State::LineSmooth)]) {
+	if (_priv::s.states[core::enumVal(State::LineSmooth)]) {
 		glLineWidth((GLfloat)glm::clamp(width, _priv::s.smoothedLineWidth.x, _priv::s.smoothedLineWidth.y));
 		checkError(false);
 	} else {
@@ -335,7 +335,7 @@ void colorMask(bool red, bool green, bool blue, bool alpha) {
 }
 
 bool enable(State state) {
-	const int stateIndex = std::enum_value(state);
+	const int stateIndex = core::enumVal(state);
 	if (_priv::s.states[stateIndex]) {
 		return true;
 	}
@@ -350,7 +350,7 @@ bool enable(State state) {
 }
 
 bool disable(State state) {
-	const int stateIndex = std::enum_value(state);
+	const int stateIndex = core::enumVal(state);
 	if (!_priv::s.states[stateIndex]) {
 		return false;
 	}
@@ -368,7 +368,7 @@ bool cullFace(Face face) {
 	if (_priv::s.cullFace == face) {
 		return false;
 	}
-	const GLenum glFace = _priv::Faces[std::enum_value(face)];
+	const GLenum glFace = _priv::Faces[core::enumVal(face)];
 	glCullFace(glFace);
 	checkError();
 	_priv::s.cullFace = face;
@@ -379,7 +379,7 @@ bool depthFunc(CompareFunc func) {
 	if (_priv::s.depthFunc == func) {
 		return false;
 	}
-	glDepthFunc(_priv::CompareFuncs[std::enum_value(func)]);
+	glDepthFunc(_priv::CompareFuncs[core::enumVal(func)]);
 	checkError();
 	_priv::s.depthFunc = func;
 	return true;
@@ -393,7 +393,7 @@ bool setupStencil(const StencilConfig& config) {
 	bool dirty = false;
 	CompareFunc func = config.func();
 	if (_priv::s.stencilFunc != func || _priv::s.stencilValue != config.value() || _priv::s.stencilMask != config.mask()) {
-		glStencilFunc(_priv::CompareFuncs[std::enum_value(func)], config.value(), config.mask());
+		glStencilFunc(_priv::CompareFuncs[core::enumVal(func)], config.value(), config.mask());
 		checkError();
 		_priv::s.stencilFunc = func;
 		dirty = true;
@@ -402,9 +402,9 @@ bool setupStencil(const StencilConfig& config) {
 	if (_priv::s.stencilOpFail != config.failOp()
 			|| _priv::s.stencilOpZfail != config.zfailOp()
 			|| _priv::s.stencilOpZpass != config.zpassOp()) {
-		const GLenum failop = _priv::StencilOps[std::enum_value(config.failOp())];
-		const GLenum zfailop = _priv::StencilOps[std::enum_value(config.zfailOp())];
-		const GLenum zpassop = _priv::StencilOps[std::enum_value(config.zpassOp())];
+		const GLenum failop = _priv::StencilOps[core::enumVal(config.failOp())];
+		const GLenum zfailop = _priv::StencilOps[core::enumVal(config.zfailOp())];
+		const GLenum zpassop = _priv::StencilOps[core::enumVal(config.zpassOp())];
 		glStencilOp(failop, zfailop, zpassop);
 		checkError();
 		_priv::s.stencilOpFail = config.failOp();
@@ -425,14 +425,14 @@ bool blendEquation(BlendEquation func) {
 		return false;
 	}
 	_priv::s.blendEquation = func;
-	const GLenum convertedFunc = _priv::BlendEquations[std::enum_value(func)];
+	const GLenum convertedFunc = _priv::BlendEquations[core::enumVal(func)];
 	glBlendEquation(convertedFunc);
 	checkError();
 	return true;
 }
 
 void getBlendState(bool& enabled, BlendMode& src, BlendMode& dest, BlendEquation& func) {
-	const int stateIndex = std::enum_value(State::Blend);
+	const int stateIndex = core::enumVal(State::Blend);
 	enabled = _priv::s.states[stateIndex];
 	src = _priv::s.blendSrc;
 	dest = _priv::s.blendDest;
@@ -445,8 +445,8 @@ bool blendFunc(BlendMode src, BlendMode dest) {
 	}
 	_priv::s.blendSrc = src;
 	_priv::s.blendDest = dest;
-	const GLenum glSrc = _priv::BlendModes[std::enum_value(src)];
-	const GLenum glDest = _priv::BlendModes[std::enum_value(dest)];
+	const GLenum glSrc = _priv::BlendModes[core::enumVal(src)];
+	const GLenum glDest = _priv::BlendModes[core::enumVal(dest)];
 	glBlendFunc(glSrc, glDest);
 	checkError();
 	return true;
@@ -459,8 +459,8 @@ PolygonMode polygonMode(Face face, PolygonMode mode) {
 	_priv::s.polygonModeFace = face;
 	const PolygonMode old = _priv::s.polygonMode;
 	_priv::s.polygonMode = mode;
-	const GLenum glMode = _priv::PolygonModes[std::enum_value(mode)];
-	const GLenum glFace = _priv::Faces[std::enum_value(face)];
+	const GLenum glMode = _priv::PolygonModes[core::enumVal(mode)];
+	const GLenum glFace = _priv::Faces[core::enumVal(face)];
 	glPolygonMode(glFace, glMode);
 	checkError();
 	return old;
@@ -481,7 +481,7 @@ bool activateTextureUnit(TextureUnit unit) {
 		return false;
 	}
 	core_assert(TextureUnit::Max != unit);
-	const GLenum glUnit = _priv::TextureUnits[std::enum_value(unit)];
+	const GLenum glUnit = _priv::TextureUnits[core::enumVal(unit)];
 	glActiveTexture(glUnit);
 	checkError();
 	_priv::s.textureUnit = unit;
@@ -492,16 +492,16 @@ Id currentTexture(TextureUnit unit) {
 	if (TextureUnit::Max == unit) {
 		return InvalidId;
 	}
-	return _priv::s.textureHandle[std::enum_value(unit)];
+	return _priv::s.textureHandle[core::enumVal(unit)];
 }
 
 bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	core_assert(TextureUnit::Max != unit);
 	core_assert(TextureType::Max != type);
 	const bool changeUnit = activateTextureUnit(unit);
-	if (changeUnit || _priv::s.textureHandle[std::enum_value(unit)] != handle) {
-		_priv::s.textureHandle[std::enum_value(unit)] = handle;
-		glBindTexture(_priv::TextureTypes[std::enum_value(type)], handle);
+	if (changeUnit || _priv::s.textureHandle[core::enumVal(unit)] != handle) {
+		_priv::s.textureHandle[core::enumVal(unit)] = handle;
+		glBindTexture(_priv::TextureTypes[core::enumVal(type)], handle);
 		checkError();
 		return true;
 	}
@@ -510,11 +510,11 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 
 bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
 	bindTexture(unit, type, handle);
-	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
+	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
 	const int pitch = w * f.bits / 8;
 	*pixels = (uint8_t*)SDL_malloc(h * pitch);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glGetTexImage(_priv::TextureTypes[std::enum_value(type)], 0, f.dataFormat, f.dataType, (void*)*pixels);
+	glGetTexImage(_priv::TextureTypes[core::enumVal(type)], 0, f.dataFormat, f.dataType, (void*)*pixels);
 	if (checkError()) {
 		SDL_free(*pixels);
 		*pixels = nullptr;
@@ -552,12 +552,12 @@ Id boundVertexArray() {
 }
 
 Id boundBuffer(BufferType type) {
-	const int typeIndex = std::enum_value(type);
+	const int typeIndex = core::enumVal(type);
 	return _priv::s.bufferHandle[typeIndex];
 }
 
 void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
-	const int modeIndex = std::enum_value(mode);
+	const int modeIndex = core::enumVal(mode);
 	const GLenum glMode = _priv::AccessModes[modeIndex];
 	if (hasFeature(Feature::DirectStateAccess)) {
 		void* data = glMapNamedBuffer(handle, glMode);
@@ -565,7 +565,7 @@ void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
 		return data;
 	}
 	bindBuffer(type, handle);
-	const int typeIndex = std::enum_value(type);
+	const int typeIndex = core::enumVal(type);
 	const GLenum glType = _priv::BufferTypes[typeIndex];
 	void *data = glMapBuffer(glType, glMode);
 	checkError();
@@ -574,7 +574,7 @@ void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
 }
 
 void unmapBuffer(Id handle, BufferType type) {
-	const int typeIndex = std::enum_value(type);
+	const int typeIndex = core::enumVal(type);
 	const GLenum glType = _priv::BufferTypes[typeIndex];
 	if (hasFeature(Feature::DirectStateAccess)) {
 		glUnmapNamedBuffer(handle);
@@ -586,7 +586,7 @@ void unmapBuffer(Id handle, BufferType type) {
 }
 
 bool bindBuffer(BufferType type, Id handle) {
-	const int typeIndex = std::enum_value(type);
+	const int typeIndex = core::enumVal(type);
 	if (_priv::s.bufferHandle[typeIndex] == handle) {
 		return false;
 	}
@@ -599,7 +599,7 @@ bool bindBuffer(BufferType type, Id handle) {
 }
 
 bool unbindBuffer(BufferType type) {
-	const int typeIndex = std::enum_value(type);
+	const int typeIndex = core::enumVal(type);
 	if (_priv::s.bufferHandle[typeIndex] == InvalidId) {
 		return false;
 	}
@@ -611,7 +611,7 @@ bool unbindBuffer(BufferType type) {
 }
 
 bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
-	const int typeIndex = std::enum_value(type);
+	const int typeIndex = core::enumVal(type);
 	if (_priv::s.bufferHandle[typeIndex] == handle) {
 		return false;
 	}
@@ -702,7 +702,7 @@ Id genShader(ShaderType type) {
 	if (glCreateShader == nullptr) {
 		return InvalidId;
 	}
-	const GLenum glType = _priv::ShaderTypes[std::enum_value(type)];
+	const GLenum glType = _priv::ShaderTypes[core::enumVal(type)];
 	const Id id = (Id)glCreateShader(glType);
 	checkError();
 	return id;
@@ -776,7 +776,7 @@ bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t**
 	if (_priv::s.framebufferHandle == InvalidId) {
 		return false;
 	}
-	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
+	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
 	const int pitch = w * f.bits / 8;
 	*pixels = (uint8_t*)SDL_malloc(h * pitch);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -836,7 +836,7 @@ void configureAttribute(const Attribute& a) {
 	core_assert(_priv::s.programHandle != InvalidId);
 	glEnableVertexAttribArray(a.location);
 	checkError();
-	const GLenum glType = _priv::DataTypes[std::enum_value(a.type)];
+	const GLenum glType = _priv::DataTypes[core::enumVal(a.type)];
 	if (a.typeIsInt) {
 		glVertexAttribIPointer(a.location, a.size, glType, a.stride, GL_OFFSET_CAST(a.offset));
 		checkError();
@@ -908,7 +908,7 @@ bool beginTransformFeedback(Primitive primitive) {
 	if (!hasFeature(Feature::TransformFeedback)) {
 		return false;
 	}
-	const GLenum glMode = _priv::Primitives[std::enum_value(primitive)];
+	const GLenum glMode = _priv::Primitives[core::enumVal(primitive)];
 	if (glMode == GL_POINTS || glMode ==  GL_LINES || glMode == GL_TRIANGLES) {
 		glBeginTransformFeedback(glMode);
 		return true;
@@ -1048,7 +1048,7 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 		return handle;
 	}
 	_priv::s.framebufferHandle = handle;
-	const int typeIndex = std::enum_value(mode);
+	const int typeIndex = core::enumVal(mode);
 	const GLenum glType = _priv::FrameBufferModes[typeIndex];
 	glBindFramebuffer(glType, handle);
 	checkError();
@@ -1057,10 +1057,10 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 
 bool setupRenderBuffer(TextureFormat format, int w, int h, int samples) {
 	if (samples > 1) {
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, (GLsizei)samples, _priv::TextureFormats[std::enum_value(format)], w, h);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, (GLsizei)samples, _priv::TextureFormats[core::enumVal(format)], w, h);
 		checkError();
 	} else {
-		glRenderbufferStorage(GL_RENDERBUFFER, _priv::TextureFormats[std::enum_value(format)], w, h);
+		glRenderbufferStorage(GL_RENDERBUFFER, _priv::TextureFormats[core::enumVal(format)], w, h);
 		checkError();
 	}
 	return true;
@@ -1083,7 +1083,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 		return;
 	}
 	const GLuint lid = (GLuint)handle;
-	const GLenum usage = _priv::BufferModes[std::enum_value(mode)];
+	const GLenum usage = _priv::BufferModes[core::enumVal(mode)];
 	if (hasFeature(Feature::DirectStateAccess)) {
 		glNamedBufferData(lid, (GLsizeiptr)size, data, usage);
 		checkError();
@@ -1093,7 +1093,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 		memcpy(target, data, size);
 		unmapBuffer(handle, type);
 #else
-		const GLenum glType = _priv::BufferTypes[std::enum_value(type)];
+		const GLenum glType = _priv::BufferTypes[core::enumVal(type)];
 		const Id oldBuffer = boundBuffer(type);
 		const bool changed = bindBuffer(type, handle);
 		glBufferData(glType, (GLsizeiptr)size, data, usage);
@@ -1107,7 +1107,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 		}
 #endif
 	}
-	if (_priv::s.vendor[std::enum_value(Vendor::Nouveau)]) {
+	if (_priv::s.vendor[core::enumVal(Vendor::Nouveau)]) {
 		// nouveau needs this if doing the buffer update short before the draw call
 		glFlush(); // TODO: use glFenceSync here glClientWaitSync
 	}
@@ -1115,7 +1115,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 }
 
 size_t bufferSize(BufferType type) {
-	const GLenum glType = _priv::BufferTypes[std::enum_value(type)];
+	const GLenum glType = _priv::BufferTypes[core::enumVal(type)];
 	int size;
 	glGetBufferParameteriv(glType, GL_BUFFER_SIZE, &size);
 	checkError();
@@ -1126,7 +1126,7 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 	if (size == 0) {
 		return;
 	}
-	const int typeIndex = std::enum_value(type);
+	const int typeIndex = core::enumVal(type);
 	if (hasFeature(Feature::DirectStateAccess)) {
 		const GLuint lid = (GLuint)handle;
 		glNamedBufferSubData(lid, (GLintptr)offset, (GLsizeiptr)size, data);
@@ -1155,11 +1155,11 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 
 //TODO: use FrameBufferConfig
 void setupDepthCompareTexture(TextureType type, CompareFunc func, TextureCompareMode mode) {
-	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
-	const GLenum glMode = _priv::TextureCompareModes[std::enum_value(mode)];
+	const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
+	const GLenum glMode = _priv::TextureCompareModes[core::enumVal(mode)];
 	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, glMode);
 	if (mode == TextureCompareMode::RefToTexture) {
-		const GLenum glFunc = _priv::CompareFuncs[std::enum_value(func)];
+		const GLenum glFunc = _priv::CompareFuncs[core::enumVal(func)];
 		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
 	}
 	checkError();
@@ -1176,7 +1176,7 @@ bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTe
 	attachments.reserve(colorTextures.size() + bufferAttachments.size());
 
 	for (auto &bufferAttachment : bufferAttachments) {
-		const GLenum glAttachmentType = _priv::FrameBufferAttachments[std::enum_value(bufferAttachment.first)];
+		const GLenum glAttachmentType = _priv::FrameBufferAttachments[core::enumVal(bufferAttachment.first)];
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, glAttachmentType, GL_RENDERBUFFER, bufferAttachment.second->handle());
 		checkError();
 		if (glAttachmentType >= GL_COLOR_ATTACHMENT0 && glAttachmentType <= GL_COLOR_ATTACHMENT15) {
@@ -1186,7 +1186,7 @@ bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTe
 
 	for (auto &textureAttachment : colorTextures) {
 		const TextureType textureTarget = textureAttachment.second->type();
-		const GLenum glAttachmentType = _priv::FrameBufferAttachments[std::enum_value(textureAttachment.first)];
+		const GLenum glAttachmentType = _priv::FrameBufferAttachments[core::enumVal(textureAttachment.first)];
 		if (textureTarget == TextureType::TextureCube) {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, textureAttachment.second->handle(), 0);
 			checkError();
@@ -1215,7 +1215,7 @@ bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTe
 }
 
 bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
-	const GLenum glAttachment = _priv::FrameBufferAttachments[std::enum_value(attachment)];
+	const GLenum glAttachment = _priv::FrameBufferAttachments[core::enumVal(attachment)];
 
 	if (attachment == FrameBufferAttachment::Depth
 	 || attachment == FrameBufferAttachment::Stencil
@@ -1244,39 +1244,39 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 }
 
 void setupTexture(const TextureConfig& config) {
-	const GLenum glType = _priv::TextureTypes[std::enum_value(config.type())];
+	const GLenum glType = _priv::TextureTypes[core::enumVal(config.type())];
 	if (config.filterMag() != TextureFilter::Max) {
-		const GLenum glFilterMag = _priv::TextureFilters[std::enum_value(config.filterMag())];
+		const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(config.filterMag())];
 		glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, glFilterMag);
 		checkError();
 	}
 	if (config.filterMin() != TextureFilter::Max) {
-		const GLenum glFilterMin = _priv::TextureFilters[std::enum_value(config.filterMin())];
+		const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(config.filterMin())];
 		glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin);
 		checkError();
 	}
 	if (config.type() == TextureType::Texture3D && config.wrapR() != TextureWrap::Max) {
-		const GLenum glWrapR = _priv::TextureWraps[std::enum_value(config.wrapR())];
+		const GLenum glWrapR = _priv::TextureWraps[core::enumVal(config.wrapR())];
 		glTexParameteri(glType, GL_TEXTURE_WRAP_R, glWrapR);
 		checkError();
 	}
 	if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&  config.wrapS() != TextureWrap::Max) {
-		const GLenum glWrapS = _priv::TextureWraps[std::enum_value(config.wrapS())];
+		const GLenum glWrapS = _priv::TextureWraps[core::enumVal(config.wrapS())];
 		glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrapS);
 		checkError();
 	}
 	if (config.wrapT() != TextureWrap::Max) {
-		const GLenum glWrapT = _priv::TextureWraps[std::enum_value(config.wrapT())];
+		const GLenum glWrapT = _priv::TextureWraps[core::enumVal(config.wrapT())];
 		glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrapT);
 		checkError();
 	}
 	if (config.compareMode() != TextureCompareMode::Max) {
-		const GLenum glMode = _priv::TextureCompareModes[std::enum_value(config.compareMode())];
+		const GLenum glMode = _priv::TextureCompareModes[core::enumVal(config.compareMode())];
 		glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, glMode);
 		checkError();
 	}
 	if (config.compareFunc() != CompareFunc::Max) {
-		const GLenum glFunc = _priv::CompareFuncs[std::enum_value(config.compareFunc())];
+		const GLenum glFunc = _priv::CompareFuncs[core::enumVal(config.compareFunc())];
 		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
 		checkError();
 	}
@@ -1296,8 +1296,8 @@ void setupTexture(const TextureConfig& config) {
 }
 
 void uploadTexture(TextureType type, TextureFormat format, int width, int height, const uint8_t* data, int index) {
-	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
-	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
+	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
+	const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
 	core_assert(type != TextureType::Max);
 	if (type == TextureType::Texture1D) {
 		core_assert(height == 1);
@@ -1316,8 +1316,8 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset
 		return;
 	}
 	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
-	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
-	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
 	glDrawElements(glMode, (GLsizei)numIndices, glType, offset);
 	checkError();
 }
@@ -1329,8 +1329,8 @@ void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, siz
 	if (amount <= 0) {
 		return;
 	}
-	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
-	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
 	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	glDrawElementsInstanced(glMode, (GLsizei)numIndices, glType, nullptr, (GLsizei)amount);
 	checkError();
@@ -1340,15 +1340,15 @@ void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, si
 	if (numIndices <= 0) {
 		return;
 	}
-	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
-	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
 	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, glType, GL_OFFSET_CAST(indexSize * baseIndex), (GLint)baseVertex);
 	checkError();
 }
 
 void drawArrays(Primitive mode, size_t count) {
-	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
 	checkError();
 }
@@ -1452,7 +1452,7 @@ bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode
 	glTransformFeedbackVaryings((GLuint) program,
 			(GLsizei) transformFeedbackStarts.size(),
 			transformFeedbackStarts.data(),
-			(GLenum)_priv::TransformFeedbackCaptureModes[std::enum_value(mode)]);
+			(GLenum)_priv::TransformFeedbackCaptureModes[core::enumVal(mode)]);
 	return true;
 }
 
@@ -1509,8 +1509,8 @@ bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 		return false;
 	}
 	core_assert(glBindImageTexture != nullptr);
-	const GLenum glFormat = _priv::ImageFormatTypes[std::enum_value(format)];
-	const GLenum glAccessMode = _priv::AccessModes[std::enum_value(mode)];
+	const GLenum glFormat = _priv::ImageFormatTypes[core::enumVal(format)];
+	const GLenum glAccessMode = _priv::AccessModes[core::enumVal(mode)];
 	const GLuint unit = 0u;
 	const GLint level = 0;
 	const GLboolean layered = GL_FALSE;
@@ -1715,13 +1715,13 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	Log::info("GL_VERSION: %s", glversion);
 	if (glvendor != nullptr) {
 		const core::String vendor(glvendor);
-		for (int i = 0; i < std::enum_value(Vendor::Max); ++i) {
+		for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
 			const bool match = core::string::icontains(vendor, _priv::VendorStrings[i]);
 			_priv::s.vendor[i] = match;
 		}
 	}
 
-	for (int i = 0; i < std::enum_value(Vendor::Max); ++i) {
+	for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
 		if (_priv::s.vendor[i]) {
 			Log::info("Found vendor: %s", _priv::VendorStrings[i]);
 		} else {

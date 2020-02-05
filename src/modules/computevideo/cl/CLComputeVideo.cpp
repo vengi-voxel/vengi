@@ -418,7 +418,7 @@ compute::Id createTexture(compute::BufferFlag flags, video::Texture& texture) {
 		Log::debug("Invalid texture handle");
 		return compute::InvalidId;
 	}
-	compute::Id object = clCreateFromGLTexture(compute::_priv::_ctx.context, clFlags, video::_priv::TextureTypes[std::enum_value(texture.type())],
+	compute::Id object = clCreateFromGLTexture(compute::_priv::_ctx.context, clFlags, video::_priv::TextureTypes[core::enumVal(texture.type())],
 			0, (cl_GLuint)textureId, &error);
 	if (error == CL_SUCCESS) {
 		return object;

@@ -136,7 +136,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 		src += ", persistence::FieldType::";
 		src += persistence::toFieldType(f.type);
 		src += ", persistence::Operator::";
-		src += OperatorNames[std::enum_value(f.updateOperator)];
+		src += OperatorNames[core::enumVal(f.updateOperator)];
 		src += ", ";
 		src += core::string::toString(f.contraintMask);
 		src += ", \"" + f.defaultVal + "\"";
@@ -184,7 +184,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 		src += ");\n";
 		for (auto entry : table.constraints) {
 			const persistence::Constraint& c = entry.second;
-			if ((c.types & std::enum_value(persistence::ConstraintType::PRIMARYKEY)) == 0) {
+			if ((c.types & core::enumVal(persistence::ConstraintType::PRIMARYKEY)) == 0) {
 				continue;
 			}
 			for (const core::String& pkfield : c.fields) {
@@ -196,7 +196,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	}
 	for (auto entry : table.constraints) {
 		const persistence::Constraint& c = entry.second;
-		if ((c.types & std::enum_value(persistence::ConstraintType::AUTOINCREMENT)) == 0) {
+		if ((c.types & core::enumVal(persistence::ConstraintType::AUTOINCREMENT)) == 0) {
 			continue;
 		}
 		src += "\t\t\t_autoIncrementField = \"";

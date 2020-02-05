@@ -221,7 +221,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 			return false;
 		}
 
-		if ((typeMapping & std::enum_value(persistence::ConstraintType::FOREIGNKEY)) != 0) {
+		if ((typeMapping & core::enumVal(persistence::ConstraintType::FOREIGNKEY)) != 0) {
 			if (fieldNames.size() != 1) {
 				Log::error("invalid foreign key constraint for table %s - expected to have exactly one field given",
 						table.name.c_str());
@@ -241,7 +241,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 			// there is only one entry
 			const core::String& fieldName = *fieldNames.begin();
 			table.foreignKeys.insert(std::make_pair(fieldName, fk));
-		} else if ((typeMapping & std::enum_value(persistence::ConstraintType::AUTOINCREMENT)) != 0) {
+		} else if ((typeMapping & core::enumVal(persistence::ConstraintType::AUTOINCREMENT)) != 0) {
 			if (tok.hasNext()) {
 				token = tok.next();
 				const long startCounterLong = core::string::toLong(token);
@@ -267,7 +267,7 @@ bool parseConstraints(core::Tokenizer& tok, Table& table) {
 				table.constraints.insert(std::make_pair(name, persistence::Constraint{fieldNamesVec, typeMapping}));
 			}
 		}
-		if (typeMapping == (uint32_t)std::enum_value(persistence::ConstraintType::UNIQUE)) {
+		if (typeMapping == (uint32_t)core::enumVal(persistence::ConstraintType::UNIQUE)) {
 			table.uniqueKeys.emplace_back(std::move(fieldNames));
 		}
 	}
@@ -331,7 +331,7 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 			Log::debug("transfer constraint to field for faster lookup for %s", fieldName.c_str());
 			table.fields[fieldName].contraintMask |= c.types;
 		}
-		if ((c.types & std::enum_value(persistence::ConstraintType::PRIMARYKEY)) != 0) {
+		if ((c.types & core::enumVal(persistence::ConstraintType::PRIMARYKEY)) != 0) {
 			table.primaryKeys += c.fields.size();
 		}
 	}

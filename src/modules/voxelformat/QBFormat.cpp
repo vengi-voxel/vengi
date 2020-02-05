@@ -291,10 +291,10 @@ bool QBFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
 	wrap(stream.readInt(numMatrices))
 
 	Log::debug("Version: %u", _version);
-	Log::debug("ColorFormat: %u", std::enum_value(_colorFormat));
-	Log::debug("ZAxisOrientation: %u", std::enum_value(_zAxisOrientation));
-	Log::debug("Compressed: %u", std::enum_value(_compressed));
-	Log::debug("VisibilityMaskEncoded: %u", std::enum_value(_visibilityMaskEncoded));
+	Log::debug("ColorFormat: %u", core::enumVal(_colorFormat));
+	Log::debug("ZAxisOrientation: %u", core::enumVal(_zAxisOrientation));
+	Log::debug("Compressed: %u", core::enumVal(_compressed));
+	Log::debug("VisibilityMaskEncoded: %u", core::enumVal(_visibilityMaskEncoded));
 	Log::debug("NumMatrices: %u", numMatrices);
 
 	volumes.reserve(numMatrices);

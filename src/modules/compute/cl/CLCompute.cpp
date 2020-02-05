@@ -378,10 +378,10 @@ Id createTexture(const Texture& texture, const uint8_t* data) {
 	 */
 	cl_image_format fmt;
 	memset(&fmt, 0, sizeof(fmt));
-	fmt.image_channel_order = _priv::TextureFormats[std::enum_value(texture.format())];
-	fmt.image_channel_data_type = _priv::TextureDataFormats[std::enum_value(texture.dataformat())];
-	const size_t channelSize = _priv::TextureDataFormatSizes[std::enum_value(texture.dataformat())];
-	const size_t components = _priv::TextureFormatComponents[std::enum_value(texture.format())];
+	fmt.image_channel_order = _priv::TextureFormats[core::enumVal(texture.format())];
+	fmt.image_channel_data_type = _priv::TextureDataFormats[core::enumVal(texture.dataformat())];
+	const size_t channelSize = _priv::TextureDataFormatSizes[core::enumVal(texture.dataformat())];
+	const size_t components = _priv::TextureFormatComponents[core::enumVal(texture.format())];
 
 	cl_image_desc desc;
 	memset(&desc, 0, sizeof(desc));
@@ -483,9 +483,9 @@ Id createSampler(const TextureConfig& config) {
 	cl_int error = CL_SUCCESS;
 	/* Specifies how out-of-range image coordinates are handled when reading from an image. This can be set to
 	 * CL_ADDRESS_REPEAT, CL_ADDRESS_CLAMP_TO_EDGE, CL_ADDRESS_CLAMP, and CL_ADDRESS_NONE. */
-	const cl_addressing_mode wrapMode = _priv::TextureWraps[std::enum_value(config.wrap())];
+	const cl_addressing_mode wrapMode = _priv::TextureWraps[core::enumVal(config.wrap())];
 	/* Specifies the type of filter that must be applied when reading an image. This can be CL_FILTER_NEAREST or CL_FILTER_LINEAR. */
-	const cl_filter_mode filterMode = _priv::TextureFilters[std::enum_value(config.filter())];
+	const cl_filter_mode filterMode = _priv::TextureFilters[core::enumVal(config.filter())];
 	/* Determines if the image coordinates specified are normalized (if normalized_coords is CL_TRUE) or not (if normalized_coords is CL_FALSE). */
 	const cl_bool normalized = (cl_bool)config.normalizedCoordinates();
 	const Id id = clCreateSampler(_priv::_ctx.context, normalized, wrapMode, filterMode, &error);
@@ -955,12 +955,12 @@ bool init() {
 		}
 
 #if defined (__APPLE__)
-		_priv::_ctx.features[std::enum_value(Feature::VideoSharingEvent)] = extensionSupported(extensions.get(), "cl_APPLE_gl_sharing");
+		_priv::_ctx.features[core::enumVal(Feature::VideoSharingEvent)] = extensionSupported(extensions.get(), "cl_APPLE_gl_sharing");
 #else
-		_priv::_ctx.features[std::enum_value(Feature::VideoSharingEvent)] = extensionSupported(extensions.get(), "cl_khr_gl_event");
+		_priv::_ctx.features[core::enumVal(Feature::VideoSharingEvent)] = extensionSupported(extensions.get(), "cl_khr_gl_event");
 #endif
-		_priv::_ctx.features[std::enum_value(Feature::VideoSharing)] = extensionSupported(extensions.get(), "cl_khr_gl_sharing");
-		_priv::_ctx.features[std::enum_value(Feature::Write3dTextures)] = extensionSupported(extensions.get(), "cl_khr_3d_image_writes");
+		_priv::_ctx.features[core::enumVal(Feature::VideoSharing)] = extensionSupported(extensions.get(), "cl_khr_gl_sharing");
+		_priv::_ctx.features[core::enumVal(Feature::Write3dTextures)] = extensionSupported(extensions.get(), "cl_khr_3d_image_writes");
 	}
 
 	if (_priv::_ctx.useGL && !hasFeature(Feature::VideoSharing)) {

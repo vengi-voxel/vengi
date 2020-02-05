@@ -367,7 +367,7 @@ inline void Shader::setUniform(const core::String& name, TextureUnit value) cons
 }
 
 inline void Shader::setUniform(int location, TextureUnit value) const {
-	setUniformi(location, std::enum_value(value));
+	setUniformi(location, core::enumVal(value));
 }
 
 inline void Shader::setUniformui(const core::String& name, unsigned int value) const {

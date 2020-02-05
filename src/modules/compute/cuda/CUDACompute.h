@@ -16,9 +16,9 @@ namespace compute {
 
 namespace _priv {
 struct Context {
-	bool features[std::enum_value(compute::Feature::Max)] = { };
+	bool features[core::enumVal(compute::Feature::Max)] = { };
 	inline bool supports(compute::Feature feature) const {
-		return features[std::enum_value(feature)];
+		return features[core::enumVal(feature)];
 	}
 };
 

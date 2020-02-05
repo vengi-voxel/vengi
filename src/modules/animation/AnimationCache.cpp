@@ -58,7 +58,7 @@ bool AnimationCache::getModel(const AnimationSettings& settings, const char *ful
 	indices.clear();
 
 	const int8_t boneIdx = settings.mapBoneIdToArrayIndex(boneId);
-	if (boneIdx < 0 || boneIdx >= std::enum_value(BoneId::Max)) {
+	if (boneIdx < 0 || boneIdx >= core::enumVal(BoneId::Max)) {
 		Log::error("Could not get bone id mapping for %s", toBoneId(boneId));
 		return false;
 	}
@@ -101,7 +101,7 @@ bool AnimationCache::getBoneModel(const AnimationSettings& settings, Vertices& v
 		for (uint8_t b = 0u; b < bids.num; ++b) {
 			const BoneId boneId = bids.bones[b];
 			const int8_t boneIdx = settings.mapBoneIdToArrayIndex(boneId);
-			if (boneIdx < 0 || boneIdx >= std::enum_value(BoneId::Max)) {
+			if (boneIdx < 0 || boneIdx >= core::enumVal(BoneId::Max)) {
 				Log::error("Could not get bone id mapping for %s", toBoneId(boneId));
 				return false;
 			}

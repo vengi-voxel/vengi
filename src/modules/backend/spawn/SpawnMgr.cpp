@@ -104,8 +104,8 @@ NpcPtr SpawnMgr::spawn(network::EntityType type, const glm::ivec3* pos) {
 }
 
 int SpawnMgr::spawn(network::EntityType type, int amount, const glm::ivec3* pos) {
-	const bool isAnimal = std::enum_value(type) > std::enum_value(network::EntityType::BEGIN_ANIMAL) && std::enum_value(type) < std::enum_value(network::EntityType::MAX_ANIMAL);
-	const bool isCharacter = std::enum_value(type) > std::enum_value(network::EntityType::BEGIN_CHARACTERS) && std::enum_value(type) < std::enum_value(network::EntityType::MAX_CHARACTERS);
+	const bool isAnimal = core::enumVal(type) > core::enumVal(network::EntityType::BEGIN_ANIMAL) && core::enumVal(type) < core::enumVal(network::EntityType::MAX_ANIMAL);
+	const bool isCharacter = core::enumVal(type) > core::enumVal(network::EntityType::BEGIN_CHARACTERS) && core::enumVal(type) < core::enumVal(network::EntityType::MAX_CHARACTERS);
 	if (!isAnimal && !isCharacter) {
 		Log::error("Currently only animals and characters are supported here");
 		return 0;

@@ -42,7 +42,7 @@ static int luaEventConfigurationDataToString(lua_State * l) {
 
 static int luaEventConfigurationDataGetType(lua_State * l) {
 	const EventConfigurationData *ctx = luaGetEventConfigurationDataContext(l, 1);
-	lua_pushinteger(l, std::enum_value(ctx->type));
+	lua_pushinteger(l, core::enumVal(ctx->type));
 	return 1;
 }
 

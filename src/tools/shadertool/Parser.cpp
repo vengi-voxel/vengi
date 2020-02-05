@@ -29,7 +29,7 @@ static const char* PrimitiveStr[] {
 	"line_strip",
 	"triangle_strip"
 };
-static_assert(lengthof(PrimitiveStr) == std::enum_value(video::Primitive::Max), "PrimitiveStr doesn't match enum");
+static_assert(lengthof(PrimitiveStr) == core::enumVal(video::Primitive::Max), "PrimitiveStr doesn't match enum");
 
 static video::Primitive layoutPrimitiveType(const core::String& token) {
 	for (int i = 0; i < lengthof(PrimitiveStr); ++i) {

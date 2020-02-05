@@ -38,7 +38,7 @@ Shader::~Shader() {
 }
 
 void Shader::setVertexAttribute(const core::String& name, int size, DataType type, bool normalize, int stride, const void* buffer) const {
-	core_assert_msg(type == DataType::Float || type == DataType::Double, "unexpected data type given: %i", std::enum_value(type));
+	core_assert_msg(type == DataType::Float || type == DataType::Double, "unexpected data type given: %i", core::enumVal(type));
 	const int location = getAttributeLocation(name);
 	if (location == -1) {
 		return;
@@ -47,7 +47,7 @@ void Shader::setVertexAttribute(const core::String& name, int size, DataType typ
 }
 
 void Shader::setVertexAttributeInt(const core::String& name, int size, DataType type, int stride, const void* buffer) const {
-	core_assert_msg(type != DataType::Float && type != DataType::Double, "unexpected data type given: %i", std::enum_value(type));
+	core_assert_msg(type != DataType::Float && type != DataType::Double, "unexpected data type given: %i", core::enumVal(type));
 	const int location = getAttributeLocation(name);
 	if (location == -1) {
 		return;

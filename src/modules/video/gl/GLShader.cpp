@@ -247,7 +247,7 @@ void Shader::setVertexAttribute(int location, int size, DataType type, bool norm
 	core_assert_msg(vao > 0, "No vertex array object is bound");
 #endif
 #endif
-	glVertexAttribPointer(location, size, std::enum_value(type), normalize, stride, buffer);
+	glVertexAttribPointer(location, size, core::enumVal(type), normalize, stride, buffer);
 	checkError();
 }
 
@@ -260,7 +260,7 @@ void Shader::setVertexAttributeInt(int location, int size, DataType type, int st
 	core_assert_msg(vao > 0, "No vertex array object is bound");
 #endif
 #endif
-	glVertexAttribIPointer(location, size, std::enum_value(type), stride, buffer);
+	glVertexAttribIPointer(location, size, core::enumVal(type), stride, buffer);
 	checkError();
 }
 

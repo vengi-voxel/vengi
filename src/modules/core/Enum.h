@@ -36,16 +36,16 @@
 		return __x; \
 	}
 
-namespace std {
+namespace core {
 template<typename T>
-constexpr typename underlying_type<T>::type enum_value(const T& val) {
-	return static_cast<typename underlying_type<T>::type>(val);
+constexpr typename std::underlying_type<T>::type enumVal(const T& val) {
+	return static_cast<typename std::underlying_type<T>::type>(val);
 }
 }
 
 struct EnumClassHash {
 template<typename T>
 size_t operator()(T t) const {
-	return static_cast<size_t>(std::enum_value(t));
+	return static_cast<size_t>(core::enumVal(t));
 }
 };

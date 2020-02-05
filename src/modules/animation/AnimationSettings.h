@@ -34,7 +34,7 @@ public:
 
 private:
 	std::vector<core::String> _meshTypes;
-	int8_t _boneIndices[std::enum_value(BoneId::Max)];
+	int8_t _boneIndices[core::enumVal(BoneId::Max)];
 	// current position in the bone index mapping array
 	uint8_t _currentBoneIdx = 0u;
 

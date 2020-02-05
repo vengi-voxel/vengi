@@ -22,7 +22,7 @@ static constexpr int DefaultDuration = 1000;
 class CooldownProvider {
 private:
 	bool _initialized = false;
-	long _durations[std::enum_value<Type>(Type::MAX) + 1];
+	long _durations[core::enumVal<Type>(Type::MAX) + 1];
 	core::String _error;
 public:
 	/**

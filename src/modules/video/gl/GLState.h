@@ -42,7 +42,7 @@ struct GLState {
 	BlendMode blendDest = BlendMode::Zero;
 	BlendEquation blendEquation = BlendEquation::Max;
 	TextureUnit textureUnit = TextureUnit::Zero;
-	Id textureHandle[std::enum_value(TextureUnit::Max)] { InvalidId };
+	Id textureHandle[core::enumVal(TextureUnit::Max)] { InvalidId };
 	Id imageHandle = InvalidId;
 	AccessMode imageAccessMode = AccessMode::Max;
 	ImageFormat imageFormat = ImageFormat::Max;
@@ -70,14 +70,14 @@ struct GLState {
 	int scissorY = 0;
 	int scissorW = 0;
 	int scissorH = 0;
-	std::bitset<std::enum_value(State::Max)> states;
-	Id bufferHandle[std::enum_value(BufferType::Max)] = {};
+	std::bitset<core::enumVal(State::Max)> states;
+	Id bufferHandle[core::enumVal(BufferType::Max)] = {};
 	Id framebufferHandle = InvalidId;
 	Id renderBufferHandle = InvalidId;
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
 	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
 	float lineWidth = 1.0f;
-	std::bitset<std::enum_value(Vendor::Max)> vendor;
+	std::bitset<core::enumVal(Vendor::Max)> vendor;
 };
 
 static GLState s;

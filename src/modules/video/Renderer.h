@@ -110,23 +110,23 @@ constexpr inline DataType mapType<glm::vec4>() {
 }
 
 struct RenderState {
-	int limits[std::enum_value(video::Limit::Max)] = { };
+	int limits[core::enumVal(video::Limit::Max)] = { };
 	inline int limit(video::Limit limit) const {
-		return limits[std::enum_value(limit)];
+		return limits[core::enumVal(limit)];
 	}
 
-	double specs[std::enum_value(video::Spec::Max)] = { };
+	double specs[core::enumVal(video::Spec::Max)] = { };
 	inline int specificationi(video::Spec spec) const {
 		return (int)(specification(spec) + 0.5);
 	}
 
 	inline double specification(video::Spec spec) const {
-		return specs[std::enum_value(spec)];
+		return specs[core::enumVal(spec)];
 	}
 
-	bool features[std::enum_value(video::Feature::Max)] = { };
+	bool features[core::enumVal(video::Feature::Max)] = { };
 	inline bool supports(video::Feature feature) const {
-		return features[std::enum_value(feature)];
+		return features[core::enumVal(feature)];
 	}
 };
 

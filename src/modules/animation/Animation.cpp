@@ -14,10 +14,10 @@ const char* toString(Animation anim) {
 }
 
 static const char *_ToolAnimationTypeString[] = { "none", "swing", "stroke", "tense", "twiddle" };
-static_assert(lengthof(_ToolAnimationTypeString) == std::enum_value(ToolAnimationType::Max), "Invalid tool animation array dimensions");
+static_assert(lengthof(_ToolAnimationTypeString) == core::enumVal(ToolAnimationType::Max), "Invalid tool animation array dimensions");
 
 const char* toString(ToolAnimationType anim) {
-	return _ToolAnimationTypeString[std::enum_value(anim)];
+	return _ToolAnimationTypeString[core::enumVal(anim)];
 }
 
 ToolAnimationType toToolAnimationEnum(const char* anim) {

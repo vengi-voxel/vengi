@@ -67,9 +67,9 @@ core::AppState TestAnimation::onConstruct() {
 		}
 		_animationIdx += offset;
 		while (_animationIdx < 0) {
-			_animationIdx += (std::enum_value(animation::Animation::MAX) + 1);
+			_animationIdx += (core::enumVal(animation::Animation::MAX) + 1);
 		}
-		_animationIdx %= (std::enum_value(animation::Animation::MAX) + 1);
+		_animationIdx %= (core::enumVal(animation::Animation::MAX) + 1);
 		Log::info("current animation idx: %i", _animationIdx);
 		animationEntity()->setAnimation((animation::Animation)_animationIdx);
 	});
@@ -82,7 +82,7 @@ core::AppState TestAnimation::onConstruct() {
 		int& current = _entityType;
 		current += offset;
 		while (current < 0) {
-			current += std::enum_value(animation::AnimationSettings::Type::Max);
+			current += core::enumVal(animation::AnimationSettings::Type::Max);
 		}
 		current %= (int)animation::AnimationSettings::Type::Max;
 		loadAnimationEntity();
@@ -137,7 +137,7 @@ core::AppState TestAnimation::onInit() {
 		return state;
 	}
 
-	for (int i = std::enum_value(animation::Animation::MIN); i <= std::enum_value(animation::Animation::MAX); ++i) {
+	for (int i = core::enumVal(animation::Animation::MIN); i <= core::enumVal(animation::Animation::MAX); ++i) {
 		_animations.push_back(animation::toString((animation::Animation)i));
 	}
 
@@ -189,7 +189,7 @@ core::AppState TestAnimation::onInit() {
 
 	_attrib.setCurrent(attrib::Type::SPEED, 10.0);
 	const animation::Animation currentAnimation = animationEntity()->animation();
-	_animationIdx = std::enum_value(currentAnimation);
+	_animationIdx = core::enumVal(currentAnimation);
 
 	const stock::ItemData* itemData = _stockDataProvider->itemData(_items[0]);
 	if (!addItem(itemData->id())) {

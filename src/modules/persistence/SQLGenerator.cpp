@@ -953,7 +953,7 @@ core::String createWhere(const DBCondition& condition, int &parameterCount) {
 }
 
 core::String createOrderBy(const OrderBy& orderBy) {
-	return core::string::format(" ORDER BY \"%s\" %s", orderBy.fieldname, OrderStrings[std::enum_value(orderBy.order)]);
+	return core::string::format(" ORDER BY \"%s\" %s", orderBy.fieldname, OrderStrings[core::enumVal(orderBy.order)]);
 }
 
 core::String createLimitOffset(const Range& range) {

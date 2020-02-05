@@ -219,7 +219,7 @@ bool Window::loadResourceFile(const char *filename) {
 
 void Window::popup(const core::String& title, const core::String& str, PopupType type, const char *id) {
 	tb::TBMessageWindow *win = new tb::TBMessageWindow(this, TBIDC(id));
-	tb::TBMessageWindowSettings settings((tb::TB_MSG)std::enum_value(type), tb::TBID(0u));
+	tb::TBMessageWindowSettings settings((tb::TB_MSG)core::enumVal(type), tb::TBID(0u));
 	settings.dimmer = true;
 	win->show(title.c_str(), str.c_str(), &settings);
 }

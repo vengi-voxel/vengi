@@ -57,7 +57,7 @@ int getComponents(const Variable::Type type) {
 }
 
 Variable::Type getType(const core::String& type, int line) {
-	int max = std::enum_value(Variable::MAX);
+	int max = core::enumVal(Variable::MAX);
 	for (int i = 0; i < max; ++i) {
 		if (type == cTypes[i].glsltype) {
 			return cTypes[i].type;
@@ -114,7 +114,7 @@ static const ImageFormatType cImageFormat[] = {
 static_assert((int)video::ImageFormat::Max == lengthof(cImageFormat), "mismatch in image formats");
 
 video::ImageFormat getImageFormat(const core::String& glslType, int line) {
-	const int max = std::enum_value(video::ImageFormat::Max);
+	const int max = core::enumVal(video::ImageFormat::Max);
 	const core::String& upper = glslType.toUpper();
 	for (int i = 0; i < max; ++i) {
 		if (upper == cImageFormat[i].glsltype) {
@@ -125,7 +125,7 @@ video::ImageFormat getImageFormat(const core::String& glslType, int line) {
 }
 
 const char* getImageFormatGLType(video::ImageFormat format) {
-	const int max = std::enum_value(video::ImageFormat::Max);
+	const int max = core::enumVal(video::ImageFormat::Max);
 	for (int i = 0; i < max; ++i) {
 		if (format == cImageFormat[i].type) {
 			return cImageFormat[i].ctype;
@@ -135,7 +135,7 @@ const char* getImageFormatGLType(video::ImageFormat format) {
 }
 
 const char* getImageFormatTypeString(video::ImageFormat format) {
-	const int max = std::enum_value(video::ImageFormat::Max);
+	const int max = core::enumVal(video::ImageFormat::Max);
 	for (int i = 0; i < max; ++i) {
 		if (format == cImageFormat[i].type) {
 			return cImageFormat[i].glsltype;
@@ -158,7 +158,7 @@ static const PrimitiveType cPrimitiveType[] = {
 static_assert((int)video::Primitive::Max == lengthof(cPrimitiveType), "mismatch in primitive types");
 
 const char* getPrimitiveTypeString(video::Primitive primitive) {
-	const int max = std::enum_value(video::Primitive::Max);
+	const int max = core::enumVal(video::Primitive::Max);
 	for (int i = 0; i < max; ++i) {
 		if (primitive == cPrimitiveType[i].type) {
 			return cPrimitiveType[i].str;
@@ -387,7 +387,7 @@ core::String std430Padding(const Variable& v, int& padding) {
 }
 
 const Types& resolveTypes(Variable::Type type) {
-	int max = std::enum_value(Variable::MAX);
+	int max = core::enumVal(Variable::MAX);
 	for (int i = 0; i < max; ++i) {
 		if (type == cTypes[i].type) {
 			return cTypes[i];

@@ -332,7 +332,7 @@ void Log::error(uint32_t id, const char* msg, ...) {
 }
 
 bool Log::enable(uint32_t id, Log::Level level) {
-	return _logActive.insert(std::make_pair(id, std::enum_value(level))).second;
+	return _logActive.insert(std::make_pair(id, core::enumVal(level))).second;
 }
 
 bool Log::disable(uint32_t id) {
