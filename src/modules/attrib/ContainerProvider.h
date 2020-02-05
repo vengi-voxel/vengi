@@ -26,7 +26,7 @@ namespace attrib {
  */
 class ContainerProvider {
 public:
-	typedef std::unordered_map<core::String, ContainerPtr> Containers;
+	typedef std::unordered_map<core::String, ContainerPtr, core::StringHash> Containers;
 private:
 	Containers _containers;
 	core::String _error;

@@ -18,7 +18,7 @@ namespace stock {
 class StockDataProvider {
 public:
 	typedef core::Array<const ItemData*, 4096> ItemDataContainer;
-	typedef std::unordered_map<core::String, ContainerData*> ContainerDataMap;
+	typedef std::unordered_map<core::String, ContainerData*, core::StringHash> ContainerDataMap;
 
 	StockDataProvider();
 	~StockDataProvider();

@@ -171,13 +171,7 @@ String operator+(const String &x, const char *y);
 bool operator==(const char *x, const String &y);
 bool operator!=(const char *x, const String &y);
 
-}
-
-namespace std {
-template<class T>
-struct hash;
-
-template<> struct hash<core::String> {
+struct StringHash {
 	inline size_t operator()(const core::String &p) const {
 		size_t result = 0;
 		const size_t prime = 31;

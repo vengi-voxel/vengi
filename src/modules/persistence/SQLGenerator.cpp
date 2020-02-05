@@ -390,7 +390,7 @@ core::String createAlterTableStatement(const std::vector<db::MetainfoModel>& col
 	createSchemaIdentifier(stmt, table);
 	stmt += ";";
 
-	std::unordered_map<core::String, const db::MetainfoModel*> map;
+	std::unordered_map<core::String, const db::MetainfoModel*, core::StringHash> map;
 	map.reserve(columns.size());
 	for (const auto& c : columns) {
 		map.insert(std::make_pair(c.columnname(), &c));

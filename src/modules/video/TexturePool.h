@@ -19,7 +19,7 @@ namespace video {
 class TexturePool : public core::IComponent {
 private:
 	io::FilesystemPtr _filesystem;
-	std::unordered_map<core::String, TexturePtr> _cache;
+	std::unordered_map<core::String, TexturePtr, core::StringHash> _cache;
 public:
 	TexturePool(const io::FilesystemPtr& filesystem);
 

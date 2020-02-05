@@ -168,7 +168,7 @@ struct ShaderStruct {
 	core::String filename;
 	// both
 	std::vector<Variable> uniforms;
-	std::unordered_map<core::String, Layout> layouts;
+	std::unordered_map<core::String, Layout, core::StringHash> layouts;
 	std::map<core::String, core::String> constants;
 	std::vector<UniformBlock> uniformBlocks;
 	// vertex only

@@ -39,7 +39,7 @@ struct ActionButtonCommands {
  */
 class Command {
 private:
-	typedef std::unordered_map<core::String, Command> CommandMap;
+	typedef std::unordered_map<core::String, Command, core::StringHash> CommandMap;
 	typedef std::function<void(const CmdArgs&)> FunctionType;
 
 	static CommandMap _cmds;

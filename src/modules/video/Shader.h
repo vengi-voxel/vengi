@@ -59,7 +59,7 @@ protected:
 	typedef std::map<core::String, core::String> ShaderDefines;
 	ShaderDefines _defines;
 
-	typedef std::unordered_map<core::String, int> ShaderUniformArraySizes;
+	typedef std::unordered_map<core::String, int, core::StringHash> ShaderUniformArraySizes;
 	ShaderUniformArraySizes _uniformArraySizes;
 
 	ShaderUniforms _uniforms;

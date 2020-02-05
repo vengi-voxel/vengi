@@ -59,7 +59,7 @@ typedef std::shared_ptr<Var> VarPtr;
  */
 class Var {
 protected:
-	typedef Map<core::String, VarPtr, 64, std::hash<core::String> > VarMap;
+	typedef Map<core::String, VarPtr, 64, core::StringHash> VarMap;
 	static VarMap _vars;
 	static ReadWriteLock _lock;
 

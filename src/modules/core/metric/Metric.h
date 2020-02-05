@@ -32,7 +32,7 @@ enum class Flavor {
 /**
  * @brief If the configured Flavor supports tags, they are just a key-value pair of strings
  */
-using TagMap = core::Map<core::String, core::String, 4, std::hash<core::String>>;
+using TagMap = core::Map<core::String, core::String, 4, core::StringHash>;
 
 /**
  * @brief The Metric class generates and publishes metrics

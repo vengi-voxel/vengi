@@ -39,7 +39,7 @@ private:
 	Paths _paths;
 
 	std::stack<core::String> _dirStack;
-	std::unordered_map<core::String, uv_fs_event_t*> _watches;
+	std::unordered_map<core::String, uv_fs_event_t*, core::StringHash> _watches;
 	uv_loop_t *_loop = nullptr;
 
 public:

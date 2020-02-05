@@ -31,7 +31,7 @@ class SoundManager: public core::IComponent {
 private:
 	static constexpr auto logid = Log::logid("SoundManager");
 	io::FilesystemPtr _filesystem;
-	typedef std::unordered_map<core::String, Mix_Chunk*> ChunkMap;
+	typedef std::unordered_map<core::String, Mix_Chunk*, core::StringHash> ChunkMap;
 	typedef ChunkMap::iterator ChunkMapIter;
 	ChunkMap _map;
 	core::VarPtr _volume;

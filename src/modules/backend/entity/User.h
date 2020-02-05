@@ -25,7 +25,7 @@ private:
 	persistence::DBHandlerPtr _dbHandler;
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
-	core::Map<core::String, core::String, 8, std::hash<core::String>> _userinfo;
+	core::Map<core::String, core::String, 8, core::StringHash> _userinfo;
 
 	UserStockMgr _stockMgr;
 	UserCooldownMgr _cooldownMgr;

@@ -10,7 +10,7 @@
 
 namespace video {
 
-typedef std::unordered_map<core::String, Uniform> ShaderUniforms;
-typedef std::unordered_map<core::String, int> ShaderAttributes;
+typedef std::unordered_map<core::String, Uniform, core::StringHash> ShaderUniforms;
+typedef std::unordered_map<core::String, int, core::StringHash> ShaderAttributes;
 
 }

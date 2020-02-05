@@ -37,7 +37,7 @@ private:
 	video::Buffer _vbo;
 	int32_t _vertices = -1;
 	int32_t _indices = -1;
-	core::Map<core::String, core::String, 8, std::hash<core::String>> _userinfo;
+	core::Map<core::String, core::String, 8, core::StringHash> _userinfo;
 public:
 	ClientEntity(const stock::StockDataProviderPtr& provider, const animation::AnimationCachePtr& animationCache,
 			ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation);

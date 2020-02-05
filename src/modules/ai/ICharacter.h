@@ -32,7 +32,7 @@ const char* const ORIENTATION = "Orientation";
 /**
  * @brief ICharacter attributes for the remote \ref debugger
  */
-typedef std::unordered_map<core::String, core::String> CharacterAttributes;
+typedef std::unordered_map<core::String, core::String, core::StringHash> CharacterAttributes;
 
 /**
  * @brief Class that should be extended by the @ai{AI} controlled entity class.

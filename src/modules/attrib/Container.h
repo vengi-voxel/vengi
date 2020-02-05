@@ -15,7 +15,7 @@ namespace attrib {
 
 class Container;
 
-typedef std::unordered_map<core::String, Container> Containers;
+typedef std::unordered_map<core::String, Container, core::StringHash> Containers;
 typedef std::unordered_map<Type, double, network::EnumHash<Type> > Values;
 typedef std::unordered_set<Type, network::EnumHash<Type> > TypeSet;
 typedef Values::const_iterator ValuesConstIter;
@@ -40,12 +40,12 @@ protected:
 public:
 	Container(const core::String& name, const Values& percentage, const Values& absolute, int stackCount = 1, int stackLimit = 1) :
 			_name(name), _percentage(percentage), _absolute(absolute),
-			_stackCount(stackCount), _stackLimit(stackLimit), _hash(std::hash<core::String>{}(_name)) {
+			_stackCount(stackCount), _stackLimit(stackLimit), _hash(core::StringHash{}(_name)) {
 	}
 
 	Container(core::String&& name, Values&& percentage, Values&& absolute, int stackCount = 1, int stackLimit = 1) :
 			_name(std::move(name)), _percentage(std::move(percentage)), _absolute(std::move(absolute)),
-			_stackCount(stackCount), _stackLimit(stackLimit), _hash(std::hash<core::String>{}(_name)) {
+			_stackCount(stackCount), _stackLimit(stackLimit), _hash(core::StringHash{}(_name)) {
 	}
 
 	/**
