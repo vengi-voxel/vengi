@@ -59,7 +59,7 @@ protected:
 	typedef std::map<core::String, core::String> ShaderDefines;
 	ShaderDefines _defines;
 
-	typedef std::unordered_map<core::String, int, core::StringHash> ShaderUniformArraySizes;
+	typedef core::StringMap<int> ShaderUniformArraySizes;
 	ShaderUniformArraySizes _uniformArraySizes;
 
 	ShaderUniforms _uniforms;
@@ -74,7 +74,7 @@ protected:
 
 	ShaderAttributes _attributes;
 
-	typedef std::unordered_map<int, int> AttributeComponents;
+	typedef core::Map<int, int, 8> AttributeComponents;
 	AttributeComponents _attributeComponents;
 
 	mutable uint32_t _time = 0u;
