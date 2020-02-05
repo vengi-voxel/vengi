@@ -11,6 +11,11 @@
 
 namespace core {
 
+static inline constexpr size_t align(size_t val, size_t size) {
+	const size_t len = size - 1u;
+	return (size_t)((val + len) & ~len);
+}
+
 void String::checkBufferSize(size_t len) {
 	if (onStack() && len <= _stackBufCapacity) {
 		return;
@@ -23,10 +28,11 @@ void String::checkBufferSize(size_t len) {
 		// string must be moved over because it exceeds the internal buffer
 		_data._str = (char*)SDL_malloc(len);
 		SDL_memcpy(_data._str, _buf, _data._size + 1);
+		_data._capacity = len;
 	} else {
-		_data._str = (char*)SDL_realloc(_data._str, len);
+		_data._capacity = align(len, 32);
+		_data._str = (char*)SDL_realloc(_data._str, _data._capacity);
 	}
-	_data._capacity = len;
 }
 
 void String::copyBuf(const char *str, size_t len) {
