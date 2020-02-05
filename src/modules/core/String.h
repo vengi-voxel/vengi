@@ -49,6 +49,9 @@ public:
 	String substr(size_t index, int len = -1) const;
 	void replace(size_t index, size_t length, const char *str);
 
+	static String lower(const char *string);
+	static String upper(const char *string);
+
 	String toLower() const;
 	String toUpper() const;
 

@@ -187,20 +187,28 @@ String String::substr(size_t index, int len) const {
 	return String(_data._str + index, core_min((size_t)len, _data._size - index));
 }
 
-String String::toLower() const {
-	core::String copy(*this);
-	for (char* i = copy._data._str; i != copy._data._str + copy._data._size; ++i) {
+String String::lower(const char *string) {
+	core::String str(string);
+	for (char* i = str._data._str; i != str._data._str + str._data._size; ++i) {
 		*i = SDL_tolower(*i);
 	}
-	return copy;
+	return str;
+}
+
+String String::upper(const char *string) {
+	core::String str(string);
+	for (char* i = str._data._str; i != str._data._str + str._data._size; ++i) {
+		*i = SDL_toupper(*i);
+	}
+	return str;
+}
+
+String String::toLower() const {
+	return lower(_data._str);
 }
 
 String String::toUpper() const {
-	core::String copy(*this);
-	for (char* i = copy._data._str; i != copy._data._str + copy._data._size; ++i) {
-		*i = SDL_toupper(*i);
-	}
-	return copy;
+	return upper(_data._str);
 }
 
 String &String::operator=(const String &str) {

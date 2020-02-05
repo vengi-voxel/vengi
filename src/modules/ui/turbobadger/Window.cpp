@@ -38,7 +38,7 @@ Window::~Window() {
 tb::TBGenericStringItem* Window::addStringItem(tb::TBGenericStringItemSource& items, const char *text, const char *id, bool translate) {
 	tb::TBGenericStringItem* item;
 	if (id == nullptr) {
-		const core::String& lowerId = core::string::toLower(text);
+		const core::String& lowerId = core::String::lower(text);
 		item = new tb::TBGenericStringItem(translate ? tr(text) : text, TBIDC(lowerId.c_str()));
 		const core::String& iconId = core::App::getInstance()->appname() + "-" + lowerId;
 		item->setSkinImage(TBIDC(iconId.c_str()));

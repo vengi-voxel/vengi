@@ -115,7 +115,7 @@ static_assert((int)video::ImageFormat::Max == lengthof(cImageFormat), "mismatch 
 
 video::ImageFormat getImageFormat(const core::String& glslType, int line) {
 	const int max = std::enum_value(video::ImageFormat::Max);
-	const core::String& upper = core::string::toUpper(glslType);
+	const core::String& upper = glslType.toUpper();
 	for (int i = 0; i < max; ++i) {
 		if (upper == cImageFormat[i].glsltype) {
 			return cImageFormat[i].type;

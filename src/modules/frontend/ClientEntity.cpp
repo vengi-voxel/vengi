@@ -13,7 +13,7 @@ namespace frontend {
 
 static inline core::String getCharacterLua(network::EntityType type) {
 	const core::String& entityTypeStr = network::EnumNameEntityType(type);
-	core::String luaFilename = core::string::toLower(entityTypeStr);
+	core::String luaFilename = entityTypeStr.toLower();
 	core::string::replaceAllChars(luaFilename, '_', '-');
 	const core::String& luaPath = animation::luaFilename(luaFilename.c_str());
 	const core::String& lua = io::filesystem()->load("chr/" + luaPath);

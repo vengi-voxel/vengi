@@ -18,7 +18,7 @@ private:
 	void parseQuery(char **strPtr);
 	void parseFragment(char **strPtr);
 public:
-	explicit Url(const char *url);
+	explicit Url(const core::String& url);
 	~Url();
 	const core::String url;
 	core::String schema;

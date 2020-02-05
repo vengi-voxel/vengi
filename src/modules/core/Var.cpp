@@ -98,7 +98,7 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 		if ((flagsMask & CV_FROMCOMMANDLINE) == 0) {
 			const char* envValue = SDL_getenv(name.c_str());
 			if (envValue == nullptr || envValue[0] == '\0') {
-				const core::String& upper = string::toUpper(name);
+				const core::String& upper = name.toUpper();
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
@@ -124,7 +124,7 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 			// environment variables have higher priority than config file values
 			const char* envValue = SDL_getenv(name.c_str());
 			if (envValue == nullptr || envValue[0] == '\0') {
-				const core::String& upper = string::toUpper(name);
+				const core::String& upper = name.toUpper();
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {

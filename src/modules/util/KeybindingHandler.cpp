@@ -7,7 +7,9 @@
 #include "CustomButtonNames.h"
 #include "core/App.h"
 #include "core/ArrayLength.h"
+#include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/Log.h"
 #include "core/io/Filesystem.h"
 #include <SDL.h>
 
@@ -196,11 +198,11 @@ core::String KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
 }
 
 bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key) const {
-	const char *match = strchr(cmd, ' ');
-	const size_t size = match != nullptr ? (size_t)(intptr_t)(match - cmd) : strlen(cmd);
+	const char *match = SDL_strchr(cmd, ' ');
+	const size_t size = match != nullptr ? (size_t)(intptr_t)(match - cmd) : SDL_strlen(cmd);
 	for (const auto& b : _bindings) {
 		const CommandModifierPair& pair = b.second;
-		if (!strcmp(pair.command.c_str(), cmd) || !strncmp(pair.command.c_str(), cmd, size)) {
+		if (!SDL_strcmp(pair.command.c_str(), cmd) || !SDL_strncmp(pair.command.c_str(), cmd, size)) {
 			if (modifier != nullptr) {
 				*modifier = pair.modifier;
 			}
@@ -219,7 +221,9 @@ core::String KeyBindingHandler::getKeyName(int32_t key) {
 			return button::CUSTOMBUTTONMAPPING[i].name;
 		}
 	}
-	return core::string::toLower(SDL_GetKeyName((SDL_Keycode)key));
+	const char*keyBinding = SDL_GetKeyName((SDL_Keycode)key);
+	const core::String lower(keyBinding);
+	return lower.toLower();
 }
 
 const char* KeyBindingHandler::getModifierName(int16_t modifier) {

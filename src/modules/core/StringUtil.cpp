@@ -52,7 +52,7 @@ core::String format(const char *msg, ...) {
 
 char *urlEncode(const char *inBuf) {
 	const char *inBufPos = inBuf;
-	const size_t maxSize = strlen(inBuf) * 3;
+	const size_t maxSize = SDL_strlen(inBuf) * 3;
 	char *outBuf = (char*)core_malloc(maxSize + 1);
 	char *outBufPos = outBuf;
 	while (inBufPos[0] != '\0') {
@@ -112,35 +112,17 @@ void splitString(const core::String& string, std::vector<core::String>& tokens, 
 
 bool isNumber(const core::String &in) {
 	char *end = nullptr;
-	double val = strtod(in.c_str(), &end);
+	double val = SDL_strtod(in.c_str(), &end);
 	return end != in.c_str() && *end == '\0' && val != HUGE_VAL;
 }
 
 bool isInteger(const core::String& in) {
 	for (size_t i = 0u; i < in.size(); i++) {
-		if (!isdigit(in[i])) {
+		if (!SDL_isdigit(in[i])) {
 			return false;
 		}
 	}
 	return true;
-}
-
-core::String toLower(const core::String& string) {
-	return string.toLower();
-}
-
-core::String toLower(const char* string) {
-	core::String convert(string);
-	return convert.toLower();
-}
-
-core::String toUpper(const core::String& string) {
-	return string.toUpper();
-}
-
-core::String toUpper(const char* string) {
-	core::String convert(string);
-	return convert.toUpper();
 }
 
 static bool patternMatch(const char *pattern, const char *text);
@@ -298,7 +280,7 @@ int count(const char *buf, char chr) {
 	}
 	int count = 0;
 	for (;;) {
-		buf = strchr(buf, chr);
+		buf = SDL_strchr(buf, chr);
 		if (buf == nullptr) {
 			break;
 		}

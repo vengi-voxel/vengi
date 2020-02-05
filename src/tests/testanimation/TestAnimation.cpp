@@ -35,7 +35,7 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 	int index = 0;
 	for (int i = ((int)network::EntityType::BEGIN_CHARACTERS) + 1; i < (int)network::EntityType::MAX_CHARACTERS; ++i) {
 		const char *entityName = network::EnumNameEntityType((network::EntityType)i);
-		core::String lower = core::string::toLower(core::string::format("chr/%s", entityName));
+		core::String lower = core::string::format("chr/%s", entityName).toLower();
 		core::string::replaceAllChars(lower, '_', '-');
 		validCharacters[index++] = lower;
 	}

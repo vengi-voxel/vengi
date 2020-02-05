@@ -63,25 +63,19 @@ extern char* getBeforeToken(char **buffer, const char *token, size_t bufferSize)
 
 extern void splitString(const core::String& string, std::vector<core::String>& tokens, const char* delimiters = " \t\r\n\f\v");
 
-extern core::String toLower(const core::String& string);
-extern core::String toLower(const char* string);
-
 inline char toUpper(char in) { return SDL_toupper((int)in); }
 inline char toLower(char in) { return SDL_tolower((int)in); }
-
-extern core::String toUpper(const core::String& string);
-extern core::String toUpper(const char* string);
 
 inline bool startsWith(const core::String& string, const core::String& token) {
 	return !string.compare(0, token.size(), token);
 }
 
 inline bool startsWith(const core::String& string, const char* token) {
-	return !string.compare(0, strlen(token), token);
+	return !string.compare(0, SDL_strlen(token), token);
 }
 
 inline bool startsWith(const char* string, const char* token) {
-	return !strncmp(string, token, strlen(token));
+	return !SDL_strncmp(string, token, SDL_strlen(token));
 }
 
 /**
@@ -97,14 +91,6 @@ inline const char* after(const char* input, int character) {
 	return s;
 }
 
-/**
- * @return negative value if not found
- */
-inline int indexOf(const char *a, const char *b) {
-	char *offset = SDL_strstr(a, b);
-	return (int)(intptr_t)(offset - a);
-}
-
 inline bool endsWith(const core::String& string, const core::String& end) {
 	const std::size_t strLength = string.size();
 	const std::size_t endLength = end.size();
@@ -118,7 +104,7 @@ inline bool endsWith(const core::String& string, const core::String& end) {
 extern core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize);
 
 inline core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr) {
-	return replaceAll(str, searchStr, replaceStr, strlen(replaceStr));
+	return replaceAll(str, searchStr, replaceStr, SDL_strlen(replaceStr));
 }
 
 extern void replaceAllChars(core::String& str, char in, char out);
@@ -177,8 +163,9 @@ inline core::String extractFilename(core::String str) {
 }
 
 inline bool icontains(const core::String& str, const core::String& search) {
-	const core::String& lower = toLower(search);
-	return toLower(str).rfind(lower.c_str()) != core::String::npos;
+	const core::String& lower = search.toLower();
+	const core::String& lowerStr = str.toLower();
+	return lowerStr.rfind(lower.c_str()) != core::String::npos;
 }
 
 inline core::String toString(unsigned int v) {

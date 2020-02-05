@@ -17,7 +17,7 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 			std::vector<core::String> line;
 			core::string::splitString(key, line, "+");
 			for (const core::String& token : line) {
-				const core::String& lower = core::string::toLower(token);
+				const core::String& lower = token.toLower();
 				if (lower == "shift") {
 					modifier |= KMOD_SHIFT;
 				} else if (lower == "left_shift") {

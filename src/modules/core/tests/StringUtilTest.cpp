@@ -90,11 +90,6 @@ TEST_F(StringUtilTest, testExtractFilenameWithExtension) {
 	EXPECT_EQ("file.extension", core::string::extractFilenameWithExtension("/path/to/file.extension"));
 }
 
-TEST_F(StringUtilTest, testToLower) {
-	core::String test("FILENAME.EXT");
-	EXPECT_EQ("filename.ext", core::string::toLower(test));
-}
-
 TEST_F(StringUtilTest, testUpperCamelCase) {
 	EXPECT_EQ("FooBar", core::string::upperCamelCase("foo_bar"));
 	EXPECT_EQ("FooBar", core::string::upperCamelCase("FooBar"));

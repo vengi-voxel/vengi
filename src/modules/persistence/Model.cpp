@@ -13,11 +13,12 @@
 namespace persistence {
 
 core::String toLower(const char *in) {
-	return core::string::toLower(in);
+	const core::String s(in);
+	return s.toLower();
 }
 
 core::String toLower(const core::String& in) {
-	return core::string::toLower(in);
+	return in.toLower();
 }
 
 Model::Model(const Meta* s) :
@@ -64,13 +65,15 @@ bool Model::fillModelValues(State& state) {
 		case FieldType::TEXT:
 			setValue(f, core::String(value, length));
 			break;
-		case FieldType::STRING:
+		case FieldType::STRING: {
+			const core::String s(value, length);
 			if (f.isLower()) {
-				setValue(f, core::string::toLower(core::String(value, length)));
+				setValue(f, s.toLower());
 			} else {
-				setValue(f, core::String(value, length));
+				setValue(f, s);
 			}
 			break;
+		}
 		case FieldType::BOOLEAN:
 			setValue(f, state.isBool(value));
 			break;

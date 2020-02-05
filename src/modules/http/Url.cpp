@@ -31,7 +31,7 @@ void Url::parseHostPart(char **strPtr) {
 	char* endOfHostPort = SDL_strchr(str, '/');
 	size_t hostPortLength;
 	if (endOfHostPort == nullptr) {
-		hostPortLength = (size_t)strlen(str);
+		hostPortLength = (size_t)SDL_strlen(str);
 	} else {
 		hostPortLength = (size_t)(intptr_t)(endOfHostPort - str);
 		*strPtr += hostPortLength + 1;
@@ -141,9 +141,9 @@ void Url::parseFragment(char **strPtr) {
 	*strPtr += fragment.size();
 }
 
-Url::Url(const char *urlParam) :
-		url(core::string::toLower(urlParam)) {
-	char *strPtr = (char *)urlParam;
+Url::Url(const core::String& urlParam) :
+		url(urlParam.toLower()) {
+	char *strPtr = (char*)url.c_str();
 	parseSchema(&strPtr);
 	if (!_valid) return;
 	parseHostPart(&strPtr);

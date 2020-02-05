@@ -5,7 +5,6 @@
 #include "core/tests/AbstractTest.h"
 #include "animation/AnimationSettings.h"
 #include "animation/chr/CharacterSkeletonAttribute.h"
-#include "core/Enum.h"
 
 namespace animation {
 
