@@ -101,7 +101,7 @@ void CooldownMgr::update() {
 		_queue.pop();
 		_lock.unlockWrite();
 		Log::debug("Cooldown of type %i has just expired at %li",
-				core::enumVal(cooldown->type()), _timeProvider->tickMillis());
+				core::enumVal(cooldown->type()), (unsigned long)_timeProvider->tickMillis());
 		cooldown->expire();
 	}
 }

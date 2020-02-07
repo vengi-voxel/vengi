@@ -184,12 +184,12 @@ inline core::String toString(double v) {
 	return core::String::format("%f", v);
 }
 
-inline core::String toString(size_t v) {
-	return core::String::format("%i", (int)v);
-}
-
 inline core::String toString(int64_t v) {
 	return core::String::format("%" PRId64, v);
+}
+
+inline core::String toString(uint64_t v) {
+	return core::String::format("%" PRIu64, v);
 }
 
 inline core::String trim(const core::String& str) {
