@@ -196,7 +196,7 @@ static void MD5Update (struct MD5Context *ctx, unsigned char const* buf, unsigne
 	/* Process data in 64-byte chunks */
 
 	while (len >= 64) {
-		memcpy(ctx->in, buf, 64);
+		SDL_memcpy(ctx->in, buf, 64);
 		byteReverse(ctx->in, 16);
 		MD5Transform(ctx->buf, (uint32_t*) ctx->in);
 		buf += 64;
