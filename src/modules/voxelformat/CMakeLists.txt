@@ -12,7 +12,7 @@ set(SRCS
 	VoxelVolumes.h VoxelVolumes.cpp
 	Loader.h Loader.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil voxel)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
