@@ -388,7 +388,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	};
 
 	const int paletteSize = lengthof(palette);
-	_palette.reserve(paletteSize);
+	_palette.resize(paletteSize);
 	_paletteSize = paletteSize;
 	// convert to our palette
 	const MaterialColorArray& materialColors = getMaterialColors();
