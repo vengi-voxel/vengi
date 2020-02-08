@@ -9,7 +9,7 @@ jobs:
         - uses: actions/checkout@v1
         - name: macOS
           run: |
-            brew install qt5 mosquitto zlib libuv sdl2 libpq sdl2_mixer
+            brew install qt5 mosquitto libuv sdl2 libpq sdl2_mixer
             mkdir build
             cd build
             cmake ..

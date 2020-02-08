@@ -8,7 +8,6 @@
   * postgresql-server-dev >= 9.5
   * libpq
   * enet
-  * zlib
   * libuv
   * turbobadger
   * gtest
@@ -38,7 +37,7 @@ If you want to run the database server locally, you have to install the postgres
     port install qt5 postgresql95-server
 
 ## Brew
-    brew install qt5 mosquitto zlib libuv sdl2 libpq sdl2_mixer
+    brew install qt5 mosquitto libuv sdl2 libpq sdl2_mixer
 
 ## Windows
-    vcpkg install sdl2 libuv zlib libpq lua glm glslang gtest qt5 mosquitto
+    vcpkg install sdl2 libuv libpq lua glm glslang gtest qt5 mosquitto

@@ -60,7 +60,7 @@ set(SRCS
 	UUID.cpp UUID.h
 	Var.cpp Var.h
 	Vector.h
-	Zip.cpp Zip.h
+	Zip.cpp Zip.h miniz.h miniz.c
 )
 set(LIB core)
 
@@ -74,7 +74,7 @@ else()
 	find_package(UUID)
 endif()
 
-set(LIBS zlib sdl2 glm libuv ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
+set(LIBS sdl2 glm libuv ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
 if (NOT MSVC)
 list(APPEND LIBS backward)
 endif()

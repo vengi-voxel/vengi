@@ -8,7 +8,7 @@ RUN echo 'Acquire::HTTP::Proxy "http://172.17.0.1:3142";' >> /etc/apt/apt.conf.d
 
 RUN apt-get update -q && apt-get install -y cmake g++ pkg-config \
 	opencl-c-headers postgresql-server-dev-11 \
-	libsdl2-dev zlib1g-dev libuv1-dev uuid-dev ocl-icd-libopencl1
+	libsdl2-dev libuv1-dev uuid-dev ocl-icd-libopencl1
 
 COPY contrib /tmp/@ROOT_PROJECT_NAME@/contrib
 COPY tools /tmp/@ROOT_PROJECT_NAME@/tools
@@ -29,7 +29,7 @@ RUN echo 'Acquire::HTTP::Proxy "http://172.17.0.1:3142";' >> /etc/apt/apt.conf.d
  && echo 'Acquire::HTTPS::Proxy "false";' >> /etc/apt/apt.conf.d/01proxy
 
 RUN apt-get update -q && \
-	apt-get install -y libatomic1 zlib1g libuv1 libpq5 libsdl2-2.0.0 \
+	apt-get install -y libatomic1 libuv1 libpq5 libsdl2-2.0.0 \
 	ocl-icd-libopencl1 uuid-runtime && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/*
