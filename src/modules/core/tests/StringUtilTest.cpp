@@ -131,6 +131,13 @@ TEST_F(StringUtilTest, testReplaceAll) {
 	EXPECT_EQ("222222222333", core::string::replaceAll(str, "1", "22"));
 }
 
+TEST_F(StringUtilTest, testToString) {
+	const int32_t intVal = -2147483648;
+	EXPECT_EQ("-2147483648", core::string::toString(intVal));
+	const uint32_t unsignedIntVal = 4294967295;
+	EXPECT_EQ("4294967295", core::string::toString(unsignedIntVal));
+}
+
 TEST_F(StringUtilTest, testReplaceAllEverything) {
 	const String str(2, 'c');
 	const String strExpected(2, 'd');

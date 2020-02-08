@@ -168,27 +168,38 @@ inline bool icontains(const core::String& str, const core::String& search) {
 	return lowerStr.rfind(lower.c_str()) != core::String::npos;
 }
 
-inline core::String toString(unsigned int v) {
+template<class T>
+inline core::String toString(const T& v) {
+	return core::String("No toString implementation");
+}
+
+template<>
+inline core::String toString(const unsigned int& v) {
 	return core::String::format("%u", v);
 }
 
-inline core::String toString(int v) {
+template<>
+inline core::String toString(const int& v) {
 	return core::String::format("%i", v);
 }
 
-inline core::String toString(float v) {
+template<>
+inline core::String toString(const float& v) {
 	return core::String::format("%f", v);
 }
 
-inline core::String toString(double v) {
+template<>
+inline core::String toString(const double& v) {
 	return core::String::format("%f", v);
 }
 
-inline core::String toString(int64_t v) {
+template<>
+inline core::String toString(const int64_t& v) {
 	return core::String::format("%" PRId64, v);
 }
 
-inline core::String toString(uint64_t v) {
+template<>
+inline core::String toString(const uint64_t& v) {
 	return core::String::format("%" PRIu64, v);
 }
 
