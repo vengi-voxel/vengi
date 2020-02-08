@@ -3,6 +3,7 @@
  */
 
 #pragma once
+#include <SDL_main.h>
 
 #define TEST_APP(testClassName) \
 int main(int argc, char *argv[]) { \
