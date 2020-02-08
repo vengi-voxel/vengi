@@ -55,7 +55,7 @@ core::String Console::getColor(ConsoleColor color) {
 	core_assert(color >= 0 && color <= (int)SDL_arraysize(colors));
 	core::String s;
 	s += _colorMark;
-	s += core::string::toString(color);
+	s += core::string::toString((int)color);
 	return s;
 }
 
