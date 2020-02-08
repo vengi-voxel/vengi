@@ -199,8 +199,8 @@ inline core::String toString(const int64_t& v) {
 }
 
 template<>
-inline core::String toString(const uint64_t& v) {
-	return core::String::format("%" PRIu64, v);
+inline core::String toString(const size_t& v) {
+	return core::String::format("%" PRIu64, (uint64_t)v);
 }
 
 inline core::String trim(const core::String& str) {
