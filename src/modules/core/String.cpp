@@ -422,7 +422,7 @@ String String::trim() const {
 	if (pos != copy._data._str) {
 		const size_t delta = pos - copy._data._str;
 		copy._data._size -= delta;
-		memmove(copy._data._str, pos, copy._data._size + 1);
+		SDL_memmove(copy._data._str, pos, copy._data._size + 1);
 	}
 	return copy;
 }
