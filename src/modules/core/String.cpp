@@ -429,7 +429,7 @@ String String::trim() const {
 
 core::String String::format(const char *msg, ...) {
 	va_list ap;
-	constexpr std::size_t bufSize = 1024;
+	constexpr size_t bufSize = 1024;
 	char text[bufSize];
 
 	va_start(ap, msg);

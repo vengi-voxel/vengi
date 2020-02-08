@@ -184,10 +184,10 @@ static void MD5Update (struct MD5Context *ctx, unsigned char const* buf, unsigne
 
 		t = 64 - t;
 		if (len < t) {
-			memcpy(p, buf, len);
+			SDL_memcpy(p, buf, len);
 			return;
 		}
-		memcpy(p, buf, t);
+		SDL_memcpy(p, buf, t);
 		byteReverse(ctx->in, 16);
 		MD5Transform(ctx->buf, (uint32_t*) ctx->in);
 		buf += t;
@@ -205,7 +205,7 @@ static void MD5Update (struct MD5Context *ctx, unsigned char const* buf, unsigne
 
 	/* Handle any remaining bytes of data. */
 
-	memcpy(ctx->in, buf, len);
+	SDL_memcpy(ctx->in, buf, len);
 }
 
 /**
@@ -228,15 +228,15 @@ static void MD5Final (struct MD5Context *ctx, unsigned char* digest)
 	/* Pad out to 56 mod 64 */
 	if (count < 8) {
 		/* Two lots of padding:  Pad the first block to 64 bytes */
-		memset(p, 0, count);
+		SDL_memset(p, 0, count);
 		byteReverse(ctx->in, 16);
 		MD5Transform(ctx->buf, (uint32_t*) ctx->in);
 
 		/* Now fill the next block with 56 bytes */
-		memset(ctx->in, 0, 56);
+		SDL_memset(ctx->in, 0, 56);
 	} else {
 		/* Pad block to 56 bytes */
-		memset(p, 0, count - 8);
+		SDL_memset(p, 0, count - 8);
 	}
 	byteReverse(ctx->in, 14);
 
@@ -248,9 +248,9 @@ static void MD5Final (struct MD5Context *ctx, unsigned char* digest)
 	byteReverse((unsigned char*) ctx->buf, 4);
 
 	if (digest != nullptr) {
-		memcpy(digest, ctx->buf, 16);
+		SDL_memcpy(digest, ctx->buf, 16);
 	}
-	memset(ctx, 0, sizeof(*ctx)); /* In case it's sensitive */
+	SDL_memset(ctx, 0, sizeof(*ctx)); /* In case it's sensitive */
 }
 
 core::String md5sum(const uint8_t *buf, uint32_t len) {

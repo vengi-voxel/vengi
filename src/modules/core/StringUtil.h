@@ -195,12 +195,20 @@ inline core::String toString(const double& v) {
 
 template<>
 inline core::String toString(const int64_t& v) {
+#ifdef _MSC_VER
+	return core::String::format("%lld", (long long)v);
+#else
 	return core::String::format("%" PRId64, v);
+#endif
 }
 
 template<>
 inline core::String toString(const size_t& v) {
+#ifdef _MSC_VER
+	return core::String::format("%lld", (long long)v);
+#else
 	return core::String::format("%" PRIu64, (uint64_t)v);
+#endif
 }
 
 inline core::String trim(const core::String& str) {
@@ -213,7 +221,7 @@ inline bool iequals(const core::String& a, const core::String& b) {
 		return false;
 	}
 	for (size_t i = 0u; i < sz; ++i) {
-		if (tolower(a[i]) != tolower(b[i])) {
+		if (SDL_tolower(a[i]) != SDL_tolower(b[i])) {
 			return false;
 		}
 	}
