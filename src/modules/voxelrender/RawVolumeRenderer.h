@@ -15,6 +15,7 @@
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
+#include <unordered_map>
 
 namespace video {
 class Camera;
