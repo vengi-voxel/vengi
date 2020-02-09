@@ -5,8 +5,7 @@
 #pragma once
 
 #include "Shared_generated.h"
-#include <type_traits>
-#include <functional>
+#include <SDL_stdinc.h>
 
 namespace network {
 
@@ -14,7 +13,7 @@ template<class T>
 inline T getEnum(const char* name, const char * const *names) {
 	int i = 0;
 	while (*names) {
-		if (!strcmp(*names, name)) {
+		if (!SDL_strcmp(*names, name)) {
 			return static_cast<T>(i);
 		}
 		++i;
@@ -26,8 +25,7 @@ inline T getEnum(const char* name, const char * const *names) {
 template<class E>
 struct EnumHash {
 	inline std::size_t operator()(const E& protocolEnum) const {
-		const int value = static_cast<int>(protocolEnum);
-		return std::hash<int>{}(value);
+		return static_cast<size_t>(protocolEnum);
 	}
 };
 

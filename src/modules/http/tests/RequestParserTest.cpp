@@ -17,7 +17,7 @@ TEST_F(RequestParserTest, testSimple) {
 		"User-Agent: curl/7.67.0\r\n"
 		"Accept: */*\r\n"
 		"\r\n");
-	RequestParser request((uint8_t*)buf, strlen(buf));
+	RequestParser request((uint8_t*)buf, SDL_strlen(buf));
 	EXPECT_TRUE(request.valid());
 	EXPECT_STREQ("HTTP/1.1", request.protocolVersion);
 	EXPECT_EQ(HttpMethod::GET, request.method);
@@ -35,7 +35,7 @@ TEST_F(RequestParserTest, testCopy) {
 		"\r\n");
 	RequestParser request(nullptr, 0u);
 	{
-		RequestParser original((uint8_t*)buf, strlen(buf));
+		RequestParser original((uint8_t*)buf, SDL_strlen(buf));
 		request = original;
 	}
 	EXPECT_TRUE(request.valid());
@@ -53,7 +53,7 @@ TEST_F(RequestParserTest, testQuery) {
 		"User-Agent: curl/7.67.0\r\n"
 		"Accept: */*\r\n"
 		"\r\n");
-	RequestParser request((uint8_t*)buf, strlen(buf));
+	RequestParser request((uint8_t*)buf, SDL_strlen(buf));
 	EXPECT_TRUE(request.valid());
 	EXPECT_STREQ("HTTP/1.1", request.protocolVersion);
 	EXPECT_EQ(HttpMethod::GET, request.method);

@@ -16,8 +16,8 @@ bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize) {
 	int idx = 0;
 	for (size_t i = 0u; i < str.size(); ++i) {
 		const char *c = &str.c_str()[i];
-		if (strncmp(c, "<cvar:", 6) == 0) {
-			const char *l = strchr(c, '>');
+		if (SDL_strncmp(c, "<cvar:", 6) == 0) {
+			const char *l = SDL_strchr(c, '>');
 			if (l != nullptr) {
 				c += 6;
 				const intptr_t len = l - c;
@@ -27,7 +27,7 @@ bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize) {
 				i += 6 + len;
 				const core::String& value = var->strVal();
 				const size_t remaining = bufSize - idx - 1;
-				strncpy(&buf[idx], value.c_str(), remaining);
+				SDL_strlcpy(&buf[idx], value.c_str(), remaining);
 				idx += (int)value.size();
 				if (idx >= (int)bufSize) {
 					return false;

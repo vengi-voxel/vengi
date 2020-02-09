@@ -68,7 +68,7 @@ static int luaanim_settingssettype(lua_State * l) {
 	const char *type = luaL_checkstring(l, 1);
 	const int n = lengthof(AnimationSettings::TypeStrings);
 	for (int i = 0; i < n; ++i) {
-		if (!strcmp(type, AnimationSettings::TypeStrings[i])) {
+		if (!SDL_strcmp(type, AnimationSettings::TypeStrings[i])) {
 			settings->setType((AnimationSettings::Type)i);
 			return 0;
 		}

@@ -50,7 +50,7 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 	if (preambleLen >= len) {
 		return false;
 	}
-	strncpy(buffer, preamble, preambleLen);
+	SDL_strlcpy(buffer, preamble, preambleLen);
 	buffer += preambleLen;
 	int remainingLen = (int)(len - preambleLen);
 	bool first = true;
@@ -59,7 +59,7 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 		if (remainingLen <= 0) {
 			return false;
 		}
-		size_t keyValueLen = e->key.size() + strlen(sep) + e->value.size();
+		size_t keyValueLen = e->key.size() + SDL_strlen(sep) + e->value.size();
 		int written;
 		if (first) {
 			written = SDL_snprintf(buffer, remainingLen, "%s%s%s", e->key.c_str(), sep, e->value.c_str());

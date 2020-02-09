@@ -31,7 +31,7 @@ bool BinVoxFormat::readHeader(const core::String& header) {
 			return false;
 		}
 		char buf[128];
-		strncpy(buf, line.c_str(), line.size());
+		SDL_strlcpy(buf, line.c_str(), line.size());
 		buf[line.size()] = '\0';
 
 		if (core::string::startsWith(line, "#binvox")) {

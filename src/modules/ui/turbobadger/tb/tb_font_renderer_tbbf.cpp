@@ -130,7 +130,7 @@ bool TBBFRenderer::load(const char *filename, int size) {
 	// Check for size nodes and get the one closest to the size we want.
 	TBNode *size_node = nullptr;
 	for (TBNode *n = m_node.getFirstChild(); n != nullptr; n = n->getNext()) {
-		if (strcmp(n->getName(), "size") == 0) {
+		if (SDL_strcmp(n->getName(), "size") == 0) {
 			if ((size_node == nullptr) ||
 				Abs(m_size - n->getValue().getInt()) < Abs(m_size - size_node->getValue().getInt())) {
 				size_node = n;
@@ -182,7 +182,7 @@ bool TBBFRenderer::findGlyphs() {
 		return false;
 	}
 
-	int glyph_str_len = strlen(glyph_str);
+	int glyph_str_len = SDL_strlen(glyph_str);
 	int i = 0;
 	int x = 0;
 	while (UCS4 uc = utf8::decode_next(glyph_str, &i, glyph_str_len)) {

@@ -53,7 +53,7 @@ inline double toDouble(const core::String& str) {
  *
  * @code
  * char *buf = "a b";
- * char *a = getBeforeToken(buf, " ", strlen(buf)); // "a"
+ * char *a = getBeforeToken(buf, " ", SDL_strlen(buf)); // "a"
  * char *b = buf;                                   // "b"
  * @endcode
  *

@@ -59,7 +59,7 @@ bool HttpServer::init(int16_t port) {
 		return false;
 	}
 	struct sockaddr_in sin;
-	memset(&sin, 0, sizeof(sin));
+	SDL_memset(&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_port = htons(port);
@@ -116,8 +116,8 @@ bool HttpServer::update() {
 	fd_set readFDsOut;
 	fd_set writeFDsOut;
 
-	memcpy(&readFDsOut, &_readFDSet, sizeof(readFDsOut));
-	memcpy(&writeFDsOut, &_writeFDSet, sizeof(writeFDsOut));
+	SDL_memcpy(&readFDsOut, &_readFDSet, sizeof(readFDsOut));
+	SDL_memcpy(&writeFDsOut, &_writeFDSet, sizeof(writeFDsOut));
 
 	struct timeval tv;
 	tv.tv_sec = 0;
@@ -172,7 +172,7 @@ bool HttpServer::update() {
 		}
 
 		client.request = (uint8_t*)SDL_realloc(client.request, client.requestLength + len);
-		memcpy(client.request + client.requestLength, recvBuf, len);
+		SDL_memcpy(client.request + client.requestLength, recvBuf, len);
 		client.requestLength += len;
 
 		if (client.requestLength == 0) {
@@ -186,7 +186,7 @@ bool HttpServer::update() {
 			continue;
 		}
 
-		if (memcmp(client.request, "GET", 3) != 0 && memcmp(client.request, "POST", 4) != 0) {
+		if (SDL_memcmp(client.request, "GET", 3) != 0 && SDL_memcmp(client.request, "POST", 4) != 0) {
 			FD_CLR(clientSocket, &_readFDSet);
 			FD_CLR(clientSocket, &readFDsOut);
 			assembleError(client, HttpStatus::NotImplemented);
@@ -203,7 +203,7 @@ bool HttpServer::update() {
 		}
 
 		uint8_t *mem = (uint8_t *)SDL_malloc(client.requestLength);
-		memcpy(mem, client.request, client.requestLength);
+		SDL_memcpy(mem, client.request, client.requestLength);
 		const RequestParser request(mem, client.requestLength);
 		if (!request.valid()) {
 			++i;
@@ -241,7 +241,7 @@ void HttpServer::assembleError(Client& client, HttpStatus status) {
 	const char *errorPage = "";
 	_errorPages.get((int)status, errorPage);
 
-	const size_t responseSize = SDL_strlen(errorPage) + strlen(buf);
+	const size_t responseSize = SDL_strlen(errorPage) + SDL_strlen(buf);
 	char *responseBuf = (char*)SDL_malloc(responseSize + 1);
 	SDL_snprintf(responseBuf, responseSize + 1, "%s%s", buf, errorPage);
 	client.setResponse(responseBuf, responseSize);
@@ -271,7 +271,7 @@ void HttpServer::assembleResponse(Client& client, const HttpResponse& response) 
 		return;
 	}
 
-	const size_t responseSize = response.bodySize + strlen(buf);
+	const size_t responseSize = response.bodySize + SDL_strlen(buf);
 	char *responseBuf = (char*)SDL_malloc(responseSize);
 	SDL_memcpy(responseBuf, buf, headerSize);
 	SDL_memcpy(responseBuf + headerSize, response.body, response.bodySize);

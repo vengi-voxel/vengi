@@ -59,7 +59,7 @@ void TBNodeRefTree::invokeChangeListenersInternal(const char *request) {
 // static
 TBNodeRefTree *TBNodeRefTree::getRefTree(const char *name, int nameLen) {
 	for (TBNodeRefTree *rt = s_ref_trees.getFirst(); rt != nullptr; rt = rt->getNext()) {
-		if (strncmp(rt->getName(), name, nameLen) == 0) {
+		if (SDL_strncmp(rt->getName(), name, nameLen) == 0) {
 			return rt;
 		}
 	}
@@ -136,13 +136,13 @@ void TBNodeRefTree::resolveConditions(TBNode *parentNode) {
 	while (node != nullptr) {
 		bool delete_node = false;
 		bool move_children = false;
-		if (strcmp(node->getName(), "@if") == 0) {
+		if (SDL_strcmp(node->getName(), "@if") == 0) {
 			condition_ret = node->getValueFollowRef().getInt() != 0;
 			if (condition_ret) {
 				move_children = true;
 			}
 			delete_node = true;
-		} else if (strcmp(node->getName(), "@else") == 0) {
+		} else if (SDL_strcmp(node->getName(), "@else") == 0) {
 			condition_ret = !condition_ret;
 			if (condition_ret) {
 				move_children = true;

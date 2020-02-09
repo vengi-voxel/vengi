@@ -7,9 +7,7 @@
 #include "core/GLM.h"
 
 #include <SDL.h>
-#include <algorithm>
-#include <math.h>
-#include <limits>
+#include <limits.h>
 
 namespace core {
 
@@ -51,7 +49,7 @@ int Color::getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>&
 	const float weightSaturation = 0.1f;
 	const float weightValue = 0.1f;
 
-	float minDistance = std::numeric_limits<float>::max();
+	float minDistance = FLT_MAX;
 
 	int minIndex = 0;
 
@@ -127,15 +125,15 @@ glm::vec4 Color::fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 }
 
 glm::vec4 Color::fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {
-	if (std::numeric_limits<float>::epsilon() > brightness) {
+	if (0.00001f > brightness) {
 		return glm::vec4(0.f, 0.f, 0.f, alpha);
 	}
-	if (std::numeric_limits<float>::epsilon() > saturation) {
+	if (0.00001f > saturation) {
 		return glm::vec4(brightness, brightness, brightness, alpha);
 	}
 	glm::vec4 color(0.0f, 0.0f, 0.0f, alpha);
-	const float h = (hue - std::floor(hue)) * 6.f;
-	const float f = h - std::floor(h);
+	const float h = (hue - SDL_floor(hue)) * 6.f;
+	const float f = h - SDL_floor(h);
 	const float p = brightness * (1.f - saturation);
 	const float q = brightness * (1.f - saturation * f);
 	const float t = brightness * (1.f - (saturation * (1.f - f)));
@@ -179,12 +177,12 @@ glm::vec4 Color::fromHex(const char* hex) {
 	int32_t g = 0x00;
 	int32_t b = 0x00;
 	int32_t a = 0xff;
-	if (0 == strncmp(hex, "0x", 2) || 0 == strncmp(hex, "0X", 2)) {
+	if (0 == SDL_strncmp(hex, "0x", 2) || 0 == SDL_strncmp(hex, "0X", 2)) {
 		hex += 2;
 	} else if (hex[0] == '#') {
 		hex += 1;
 	}
-	if (sscanf(hex, "%02x%02x%02x%02x", &r, &g, &b, &a) == 3) {
+	if (SDL_sscanf(hex, "%02x%02x%02x%02x", &r, &g, &b, &a) == 3) {
 		a = 0xff;
 	}
 	return fromRGBA(r, g, b, a);
@@ -217,7 +215,7 @@ unsigned int Color::getBGRA(const glm::vec4& color) {
 void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, float& cbrightness) {
 	cbrightness = brightness(color);
 	const float minBrightness = core_min(color.r, core_min(color.g, color.b));
-	if (std::fabs(cbrightness - minBrightness) < std::numeric_limits<float>::epsilon()) {
+	if (SDL_fabs(cbrightness - minBrightness) < 0.00001f) {
 		chue = 0.f;
 		csaturation = 0.f;
 		return;
@@ -225,9 +223,9 @@ void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, floa
 	const float r = (cbrightness - color.r) / (cbrightness - minBrightness);
 	const float g = (cbrightness - color.g) / (cbrightness - minBrightness);
 	const float b = (cbrightness - color.b) / (cbrightness - minBrightness);
-	if (std::fabs(color.r - cbrightness) < std::numeric_limits<float>::epsilon()) {
+	if (SDL_fabs(color.r - cbrightness) < 0.00001f) {
 		chue = b - g;
-	} else if (std::fabs(color.g - cbrightness) < std::numeric_limits<float>::epsilon()) {
+	} else if (SDL_fabs(color.g - cbrightness) < 0.00001f) {
 		chue = 2.f + r - b;
 	} else {
 		chue = 4.f + g - r;
@@ -252,14 +250,14 @@ float Color::intensity(const glm::vec4& color) {
 }
 
 glm::vec4 Color::darker(const glm::vec4& color, float f) {
-	f = std::pow(scaleFactor, f);
+	f = SDL_pow(scaleFactor, f);
 	return glm::vec4(glm::clamp(glm::vec3(color) * f, 0.0f, 1.0f), color.a);
 }
 
 glm::vec4 Color::brighter(const glm::vec4& color, float f) {
 	static float min = 21.f / magnitude;
 	glm::vec3 result = glm::vec3(color);
-	f = std::pow(scaleFactor, f);
+	f = SDL_pow(scaleFactor, f);
 	if (glm::all(glm::epsilonEqual(glm::zero<glm::vec3>(), result, 0.00001f))) {
 		return glm::vec4(min / f, min / f, min / f, color.a);
 	}

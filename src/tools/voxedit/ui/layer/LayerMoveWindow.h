@@ -5,6 +5,7 @@
 #pragma once
 
 #include "AbstractLayerPopupWindow.h"
+#include "core/StringUtil.h"
 
 namespace voxedit {
 
@@ -26,13 +27,13 @@ public:
 	bool onEvent(const tb::TBWidgetEvent &ev) override {
 		if (ev.type == tb::EVENT_TYPE_CHANGED) {
 			if (ev.target->getID() == TBIDC("move.x")) {
-				_settings.move.x = atoi(ev.target->getText().c_str());
+				_settings.move.x = core::string::toInt(ev.target->getText().c_str());
 				return true;
 			} else if (ev.target->getID() == TBIDC("move.y")) {
-				_settings.move.y = atoi(ev.target->getText().c_str());
+				_settings.move.y = core::string::toInt(ev.target->getText().c_str());
 				return true;
 			} else if (ev.target->getID() == TBIDC("move.z")) {
-				_settings.move.z = atoi(ev.target->getText().c_str());
+				_settings.move.z = core::string::toInt(ev.target->getText().c_str());
 				return true;
 			}
 		}

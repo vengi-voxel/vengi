@@ -66,7 +66,7 @@ bool TestVoxelFont::changeFontSize(int delta) {
 
 	const char* str = "Hello world!\nNext Line";
 	const int renderedChars = _voxelFont.render(str, vertices, indices);
-	if ((int)strlen(str) != renderedChars) {
+	if ((int)SDL_strlen(str) != renderedChars) {
 		Log::error("Failed to render string '%s' (chars: %i)", str, renderedChars);
 		return false;
 	}

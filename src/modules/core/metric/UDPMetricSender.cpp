@@ -69,7 +69,7 @@ bool UDPMetricSender::connect() const {
 	_statsd->sin_port = htons(_port);
 
 	struct addrinfo hints;
-	memset(&hints, 0, sizeof(hints));
+	SDL_memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_DGRAM;
 
@@ -82,7 +82,7 @@ bool UDPMetricSender::connect() const {
 	}
 
 	const struct sockaddr_in* host_addr = (const struct sockaddr_in*) results->ai_addr;
-	memcpy(&_statsd->sin_addr, &host_addr->sin_addr, sizeof(_statsd->sin_addr));
+	SDL_memcpy(&_statsd->sin_addr, &host_addr->sin_addr, sizeof(_statsd->sin_addr));
 	freeaddrinfo(results);
 	return true;
 }
@@ -96,7 +96,7 @@ bool UDPMetricSender::send(const char* buffer) const {
 	core_assert(_statsd != nullptr);
 	core_assert(_socket != INVALID_SOCKET);
 	const void* buf = (const void*)buffer;
-	const size_t len = (size_t)strlen(buffer);
+	const size_t len = (size_t)SDL_strlen(buffer);
 	const struct sockaddr *sock = (const struct sockaddr *)_statsd;
 	const socklen_t socksize = (socklen_t)sizeof(*_statsd);
 #ifdef WIN32

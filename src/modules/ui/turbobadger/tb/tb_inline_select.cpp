@@ -4,7 +4,7 @@
 
 #include "tb_inline_select.h"
 #include "core/Assert.h"
-#include <stdlib.h>
+#include "core/StringUtil.h"
 
 namespace tb {
 
@@ -101,7 +101,7 @@ bool TBInlineSelect::onEvent(const TBWidgetEvent &ev) {
 	} else if (ev.type == EVENT_TYPE_CHANGED && ev.target == &m_editfield) {
 		TBStr text;
 		m_editfield.getText(text);
-		setValueInternal(atoi(text), false);
+		setValueInternal(core::string::toInt(text), false);
 	}
 	return false;
 }

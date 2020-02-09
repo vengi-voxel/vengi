@@ -127,7 +127,7 @@ static const char* _getClipboardText(void*) {
 	if (!text) {
 		return nullptr;
 	}
-	const int len = strlen(text);
+	const int len = SDL_strlen(text);
 	if (len == 0) {
 		SDL_free((void*) text);
 		return "";
@@ -139,7 +139,7 @@ static const char* _getClipboardText(void*) {
 		clipboardBuffer.swap(emptyBuffer);
 	}
 	clipboardBuffer.resize(len + 1);
-	strcpy(&clipboardBuffer[0], text);
+	SDL_strlcpy(&clipboardBuffer[0], text, clipboardBuffer.size());
 	SDL_free((void*) text);
 	return (const char*) &clipboardBuffer[0];
 }

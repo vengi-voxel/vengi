@@ -263,7 +263,7 @@ public:
 	glm::vec3 vec3Val() const;
 	void setVal(const core::String& value);
 	inline void setVal(const char* value) {
-		if (!strcmp(_history[_currentHistoryPos]._value.c_str(), value)) {
+		if (!SDL_strcmp(_history[_currentHistoryPos]._value.c_str(), value)) {
 			return;
 		}
 		setVal(core::String(value));

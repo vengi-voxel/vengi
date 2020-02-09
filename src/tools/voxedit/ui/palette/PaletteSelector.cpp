@@ -35,7 +35,7 @@ PaletteSelector::PaletteSelector(ui::turbobadger::Window* window) :
 		select->setSource(&_paletteList);
 		const int n = _paletteList.getNumItems();
 		for (int i = 0; i < n; ++i) {
-			if (!strcmp(_paletteList.getItemString(i), _currentSelectedPalette.c_str())) {
+			if (!SDL_strcmp(_paletteList.getItemString(i), _currentSelectedPalette.c_str())) {
 				select->setValue(i);
 				break;
 			}

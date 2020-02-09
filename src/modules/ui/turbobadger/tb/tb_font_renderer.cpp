@@ -52,11 +52,11 @@ void TBFontEffect::setBlurRadius(int blurRadius) {
 		float *kernel = (float *)m_kernel.getData();
 		float stdDevSq2 = (float)m_blur_radius / 2.F;
 		stdDevSq2 = 2.F * stdDevSq2 * stdDevSq2;
-		float scale = 1.F / sqrtf(3.1415F * stdDevSq2);
+		float scale = 1.F / SDL_sqrtf(3.1415F * stdDevSq2);
 		float sum = 0;
 		for (int k = 0; k < 2 * m_blur_radius + 1; k++) {
 			float x = (float)(k - m_blur_radius);
-			float kval = scale * expf(-(x * x / stdDevSq2));
+			float kval = scale * SDL_expf(-(x * x / stdDevSq2));
 			kernel[k] = kval;
 			sum += kval;
 		}
@@ -241,7 +241,7 @@ bool TBFontFace::renderGlyphs(const char *glyphStr, int glyphStrLen) {
 	}
 
 	if (glyphStrLen == TB_ALL_TO_TERMINATION) {
-		glyphStrLen = strlen(glyphStr);
+		glyphStrLen = SDL_strlen(glyphStr);
 	}
 
 	bool has_all_glyphs = true;

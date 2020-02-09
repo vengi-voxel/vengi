@@ -128,7 +128,7 @@ public:
 			}
 		}
 		std::sort(commandList.begin(), commandList.end(), [] (const Command &v1, const Command &v2) {
-			return strcmp(v1.name(), v2.name()) < 0;
+			return SDL_strcmp(v1.name(), v2.name()) < 0;
 		});
 		for (const auto& command : commandList) {
 			func(command);

@@ -22,7 +22,7 @@ std::pair<core::String, bool> handleIncludes(const core::String& buffer, const s
 			src.append(buf);
 			continue;
 		}
-		if (::strncmp(include.c_str(), c, include.size())) {
+		if (SDL_strncmp(include.c_str(), c, include.size()) != 0) {
 			const char buf[] = {*c, '\0'};
 			src.append(buf);
 			continue;

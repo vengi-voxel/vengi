@@ -356,17 +356,17 @@ void Protocol::onMessage(const struct mosquitto_message *msg) {
 	const core::String p(payload, msg->payloadlen);
 	Log::debug("MQTT: received message with payload: '%s'", p.c_str());
 	const char *subTopic = core::string::after(msg->topic, '/');
-	if (!strcmp(subTopic, "games")) {
+	if (!SDL_strcmp(subTopic, "games")) {
 		parseGames(p);
-	} else if (!strcmp(subTopic, "grid")) {
+	} else if (!SDL_strcmp(subTopic, "grid")) {
 		parseGridAndUpdateVolume(p);
-	} else if (!strcmp(subTopic, "players")) {
+	} else if (!SDL_strcmp(subTopic, "players")) {
 		parsePlayers(p);
-	} else if (!strcmp(subTopic, "ticker")) {
+	} else if (!SDL_strcmp(subTopic, "ticker")) {
 		parseTicker(p);
-	} else if (!strcmp(subTopic, "scores")) {
+	} else if (!SDL_strcmp(subTopic, "scores")) {
 		parseScores(p);
-	} else if (!strcmp(subTopic, _clientToken.c_str())) {
+	} else if (!SDL_strcmp(subTopic, _clientToken.c_str())) {
 		parseOwnPlayer(p);
 	} else {
 		Log::error("Unknown message for topic %s", msg->topic);

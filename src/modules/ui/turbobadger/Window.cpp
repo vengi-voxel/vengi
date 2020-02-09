@@ -9,6 +9,7 @@
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include <SDL_stdinc.h>
 
 namespace ui {
 namespace turbobadger {
@@ -160,41 +161,41 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 		void* fieldPtr = (uint8_t*)basePtr + field.offset;
 		switch (field.type) {
 		case T_INT: {
-			const int value = atoi(string);
+			const int value = core::string::toInt(string);
 			Log::info("Set %i for %s (%s)", value, field.name, string);
 			*(int*)fieldPtr = value;
 			break;
 		}
 		case T_FLOAT: {
-			const float value = atof(string);
+			const float value = core::string::toFloat(string);
 			Log::info("Set %f for %s (%s)", value, field.name, string);
 			*(float*)fieldPtr = value;
 			break;
 		}
 		case T_IVEC2: {
 			char buf[64];
-			strncpy(buf, string, sizeof(buf) - 1);
+			SDL_strlcpy(buf, string, sizeof(buf) - 1);
 			buf[sizeof(buf) - 1] = '\0';
-			char *sep = strchr(buf, ':');
+			char *sep = SDL_strchr(buf, ':');
 			if (sep == nullptr)
 				break;
 			*sep++ = '\0';
 			glm::ivec2* vec = (glm::ivec2*)fieldPtr;
-			vec->x = atoi(string);
-			vec->y = atoi(sep);
+			vec->x = core::string::toInt(string);
+			vec->y = core::string::toInt(sep);
 			break;
 		}
 		case T_VEC2: {
 			char buf[64];
-			strncpy(buf, string, sizeof(buf) - 1);
+			SDL_strlcpy(buf, string, sizeof(buf) - 1);
 			buf[sizeof(buf) - 1] = '\0';
-			char *sep = strchr(buf, ':');
+			char *sep = SDL_strchr(buf, ':');
 			if (sep == nullptr)
 				break;
 			*sep++ = '\0';
 			glm::vec2* vec = (glm::vec2*)fieldPtr;
-			vec->x = atof(string);
-			vec->y = atof(sep);
+			vec->x = core::string::toFloat(string);
+			vec->y = core::string::toFloat(sep);
 			break;
 		}
 		}
@@ -302,14 +303,14 @@ bool Window::loadResource(tb::TBNode &node) {
 	if (tmp && tmp->getValue().getArrayLength() == 2) {
 		tb::TBValueArray *dimensions = tmp->getValue().getArray();
 		const char *sizeW = dimensions->getValue(0)->getString();
-		if (sizeW[strlen(sizeW) - 1] == '%') {
+		if (sizeW[SDL_strlen(sizeW) - 1] == '%') {
 			_percentWidth = atof(sizeW);
 			windowRect.w = _app->frameBufferWidth() * _percentWidth / 100.0f;
 		} else {
 			windowRect.w = dc->getPxFromString(sizeW, windowRect.w);
 		}
 		const char *sizeH = dimensions->getValue(1)->getString();
-		if (sizeH[strlen(sizeH) - 1] == '%') {
+		if (sizeH[SDL_strlen(sizeH) - 1] == '%') {
 			_percentHeight = atof(sizeW);
 			windowRect.h = _app->frameBufferHeight() * _percentHeight / 100.0f;
 		} else {

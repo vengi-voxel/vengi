@@ -493,7 +493,7 @@ void Console::cursorDeleteWord() {
 
 core::String Console::removeAnsiColors(const char* message) {
 	core::String out;
-	out.reserve(strlen(message));
+	out.reserve(SDL_strlen(message));
 	for (const char *c = message; *c != '\0'; ++c) {
 		// https://en.wikipedia.org/wiki/ANSI_escape_code
 		if (*c >= 030 && *c < 037 && *(c + 1) == '[') {

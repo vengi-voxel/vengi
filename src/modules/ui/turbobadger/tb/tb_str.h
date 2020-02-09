@@ -5,7 +5,7 @@
 #pragma once
 
 #include "tb_types.h"
-#include <string.h>
+#include <SDL_stdinc.h>
 
 namespace tb {
 
@@ -27,17 +27,17 @@ public:
 	}
 
 	inline int length() const {
-		return strlen(s);
+		return SDL_strlen(s);
 	}
 	inline bool isEmpty() const {
 		return s[0] == 0;
 	}
 
 	inline int compare(const char *str) const {
-		return strcmp(s, str);
+		return SDL_strcmp(s, str);
 	}
 	inline bool equals(const char *str) const {
-		return strcmp(s, str) == 0;
+		return SDL_strcmp(s, str) == 0;
 	}
 
 	inline char operator[](int n) const {
@@ -79,7 +79,7 @@ public:
 	void remove(int ofs, int len);
 	bool insert(int ofs, const char *ins, int ins_len = TB_ALL_TO_TERMINATION);
 	bool append(const char *ins, int insLen = TB_ALL_TO_TERMINATION) {
-		return insert(strlen(s), ins, insLen);
+		return insert(SDL_strlen(s), ins, insLen);
 	}
 
 	inline operator char *() const {

@@ -24,7 +24,7 @@ void TBDimensionConverter::setDPI(int srcDpi, int dstDpi) {
 
 void TBDimensionConverter::getDstDPIFilename(const char *filename, TBTempBuffer *tempbuf) const {
 	int dot_pos = 0;
-	for (dot_pos = strlen(filename) - 1; dot_pos > 0; dot_pos--) {
+	for (dot_pos = SDL_strlen(filename) - 1; dot_pos > 0; dot_pos--) {
 		if (filename[dot_pos] == '.') {
 			break;
 		}

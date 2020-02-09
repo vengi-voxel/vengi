@@ -300,7 +300,7 @@ bool LUAAIRegistry::init() {
 	const char* script = ""
 		"UNKNOWN, CANNOTEXECUTE, RUNNING, FINISHED, FAILED, EXCEPTION = 0, 1, 2, 3, 4, 5\n";
 
-	if (luaL_loadbufferx(_s, script, strlen(script), "", nullptr) || lua_pcall(_s, 0, 0, 0)) {
+	if (luaL_loadbufferx(_s, script, SDL_strlen(script), "", nullptr) || lua_pcall(_s, 0, 0, 0)) {
 		ai_log_error("%s", lua_tostring(_s, -1));
 		lua_pop(_s, 1);
 		return false;

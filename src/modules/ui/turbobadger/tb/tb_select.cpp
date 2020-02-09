@@ -14,7 +14,7 @@ namespace tb {
 // == Sort callback for sorting items ===================================================
 
 int select_list_sort_cb(TBSelectItemSource *source, const int *a, const int *b) {
-	int value = strcmp(source->getItemString(*a), source->getItemString(*b));
+	const int value = SDL_strcmp(source->getItemString(*a), source->getItemString(*b));
 	return source->getSort() == TB_SORT_DESCENDING ? -value : value;
 }
 

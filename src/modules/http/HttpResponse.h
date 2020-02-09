@@ -26,7 +26,7 @@ struct HttpResponse {
 
 	void setText(const char *body) {
 		this->body = body;
-		contentLength(strlen(body));
+		contentLength(SDL_strlen(body));
 		freeBody = false;
 		if (headers.find(http::header::CONTENT_TYPE) == headers.end()) {
 			headers.put(http::header::CONTENT_TYPE, "text/plain");

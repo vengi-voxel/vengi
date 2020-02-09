@@ -4,7 +4,7 @@
 
 #include "FileDialogWindow.h"
 #include "ui/turbobadger/UIApp.h"
-#include <string.h>
+#include <SDL_stdinc.h>
 
 namespace ui {
 namespace turbobadger {
@@ -17,12 +17,12 @@ static const char *INPUT = "input";
 bool FileDialogItemSource::execFileItemFilter(const char* str, const char* filter) {
 	// filters might be separated by a ,
 	char buf[4096];
-	strncpy(buf, filter, sizeof(buf) - 1);
+	SDL_strlcpy(buf, filter, sizeof(buf) - 1);
 	buf[sizeof(buf) - 1] = '\0';
 
-	char *sep = strstr(buf, ",");
+	char *sep = SDL_strstr(buf, ",");
 	if (sep == nullptr) {
-		if (!strcmp(buf, "*") || !strncmp(buf, "*.", 2)) {
+		if (!SDL_strcmp(buf, "*") || !SDL_strncmp(buf, "*.", 2)) {
 			return core::string::matches(buf, str);
 		}
 		char patternBuf[32];
@@ -39,7 +39,7 @@ bool FileDialogItemSource::execFileItemFilter(const char* str, const char* filte
 			return true;
 		}
 		f = ++sep;
-		sep = strchr(f, ',');
+		sep = SDL_strchr(f, ',');
 		if (sep == nullptr) {
 			break;
 		}
@@ -215,7 +215,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 					} else {
 						for (int i = 0; i < _filterList.getNumItems(); i++) {
 							const char *filter = _filterList.getItemString(i);
-							if (!strcmp(filter, "*")) {
+							if (!SDL_strcmp(filter, "*")) {
 								continue;
 							}
 							if (FileDialogItemSource::execFileItemFilter(str.c_str(), filter)) {

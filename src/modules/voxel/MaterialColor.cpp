@@ -82,7 +82,7 @@ public:
 				const int status = lua_getinfo(l, "Sln", &entry);
 				core_assert_always(status == 1);
 				for (int j = (int)voxel::VoxelType::Air + 1; j < (int)voxel::VoxelType::Max; ++j) {
-					if (strcmp(voxel::VoxelTypeStr[j], entry.name) == 0) {
+					if (SDL_strcmp(voxel::VoxelTypeStr[j], entry.name) == 0) {
 						mc->_colorMapping[(VoxelType)j].push_back(index);
 						break;
 					}

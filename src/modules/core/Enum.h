@@ -8,7 +8,7 @@
 #pragma once
 
 #include <stddef.h>
-#include <utility>
+#include <type_traits>
 
 #define CORE_ENUM_BIT_OPERATIONS(EnumClassName) \
 	inline constexpr EnumClassName operator&(EnumClassName __x, EnumClassName __y) { \

@@ -32,8 +32,8 @@ public:
 	Tokenizer(bool skipComments, const char* s, std::size_t len, const char *sep = " (){};", const char *split = "");
 	Tokenizer(const char* s, std::size_t len, const char *sep = " (){};", const char *split = "") : Tokenizer(true, s, len, sep, split) {}
 
-	Tokenizer(bool skipComments, const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string, strlen(string), sep, split) {}
-	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string, strlen(string), sep, split) {}
+	Tokenizer(bool skipComments, const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string, SDL_strlen(string), sep, split) {}
+	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string, SDL_strlen(string), sep, split) {}
 	Tokenizer(const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string.c_str(), string.size(), sep, split) {}
 	Tokenizer(bool skipComments, const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string.c_str(), string.size(), sep, split) {}
 

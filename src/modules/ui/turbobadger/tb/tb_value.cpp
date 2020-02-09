@@ -4,10 +4,10 @@
 
 #include "tb_value.h"
 #include "core/Assert.h"
+#include "core/StringUtil.h"
 #include "tb_object.h"
 #include "tb_str.h"
-#include <SDL.h>
-#include <stdlib.h>
+#include <SDL_stdinc.h>
 
 namespace tb {
 
@@ -244,9 +244,9 @@ void TBValue::setFromStringAuto(const char *str, SET set) {
 		setNull();
 	} else if (is_number_only(str)) {
 		if (is_number_float(str)) {
-			setFloat((float)atof(str));
+			setFloat(core::string::toFloat(str));
 		} else {
-			setInt(atoi(str));
+			setInt(core::string::toInt(str));
 		}
 	} else if (is_start_of_number(str) && contains_non_trailing_space(str)) {
 		// If the number has nontrailing space, we'll assume a list of numbers (example: "10 -4 3.5")
@@ -283,7 +283,7 @@ void TBValue::setFromStringAuto(const char *str, SET set) {
 
 int TBValue::getInt() const {
 	if (m_packed.type == TYPE_STRING) {
-		return atoi(val_str);
+		return core::string::toInt(val_str);
 	}
 	if (m_packed.type == TYPE_FLOAT) {
 		return (int)val_float;
@@ -293,7 +293,7 @@ int TBValue::getInt() const {
 
 float TBValue::getFloat() const {
 	if (m_packed.type == TYPE_STRING) {
-		return (float)atof(val_str);
+		return core::string::toFloat(val_str);
 	}
 	if (m_packed.type == TYPE_INT) {
 		return (float)val_int;

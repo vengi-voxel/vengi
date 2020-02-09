@@ -5,7 +5,6 @@
 #include <SDL.h>
 #include <SDL_platform.h>
 #include <stdio.h>
-#include <string.h>
 
 #if defined(__LINUX__) || defined(__ANDROID__)
 #include <dirent.h>
@@ -170,15 +169,15 @@ static void* loadICDLinux() {
 		case DT_UNKNOWN:
 		case DT_REG:
 		case DT_LNK: {
-			const char *ext = strrchr(entry->d_name, '.');
+			const char *ext = SDL_strrchr(entry->d_name, '.');
 			if (ext == NULL) {
 				continue;
 			}
-			if (strcmp(ext, ".icd")) {
+			if (SDL_strcmp(ext, ".icd")) {
 				continue;
 			}
 			char buf[512];
-			snprintf(buf, sizeof(buf), "%s%s", vendorPath, entry->d_name);
+			SDL_snprintf(buf, sizeof(buf), "%s%s", vendorPath, entry->d_name);
 			buf[511] = '\0';
 
 			FILE *icd = fopen(buf, "r");

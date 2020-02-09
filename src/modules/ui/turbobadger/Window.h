@@ -40,7 +40,7 @@ protected:
 public:
 	static inline const char *getTranslation(const char *input) {
 		const char *str = tb::g_tb_lng->getString(tb::TBID(input));
-		if (!strncmp(str, "<TRANSLATE", 10)) {
+		if (!SDL_strncmp(str, "<TRANSLATE", 10)) {
 			return input;
 		}
 		return str;

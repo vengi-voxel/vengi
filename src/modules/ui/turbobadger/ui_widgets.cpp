@@ -32,7 +32,7 @@ void ColorWidget::setColor(const char *name) {
 	if (!name) {
 		return;
 	}
-	_color.setFromString(name, strlen(name));
+	_color.setFromString(name, SDL_strlen(name));
 	setValue((uint32_t)_color);
 }
 
@@ -67,7 +67,7 @@ void NodeConnectorWidget::onPaint(const PaintProps &paintProps) {
 
 void NodeConnectorWidget::onInflate(const tb::INFLATE_INFO &info) {
 	if (const char *color = info.node->getValueString("color", nullptr)) {
-		_color.setFromString(color, strlen(color));
+		_color.setFromString(color, SDL_strlen(color));
 	}
 	Super::onInflate(info);
 }

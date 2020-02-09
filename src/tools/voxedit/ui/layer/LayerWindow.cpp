@@ -5,6 +5,7 @@
 #include "LayerWindow.h"
 #include "core/Assert.h"
 #include "core/App.h"
+#include "core/StringUtil.h"
 #include "core/io/Filesystem.h"
 #include "tb_message_window.h"
 #include "tb_editfield.h"
@@ -66,24 +67,24 @@ void LayerWindow::checkSize() {
 bool LayerWindow::onEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CHANGED) {
 		if (ev.target->getID() == TBIDC("pos.x")) {
-			_layerSettings.position.x = atoi(ev.target->getText().c_str());
+			_layerSettings.position.x = core::string::toInt(ev.target->getText().c_str());
 			return true;
 		} else if (ev.target->getID() == TBIDC("pos.y")) {
-			_layerSettings.position.y = atoi(ev.target->getText().c_str());
+			_layerSettings.position.y = core::string::toInt(ev.target->getText().c_str());
 			return true;
 		} else if (ev.target->getID() == TBIDC("pos.z")) {
-			_layerSettings.position.z = atoi(ev.target->getText().c_str());
+			_layerSettings.position.z = core::string::toInt(ev.target->getText().c_str());
 			return true;
 		} else if (ev.target->getID() == TBIDC("size.x")) {
-			_layerSettings.size.x = atoi(ev.target->getText().c_str());
+			_layerSettings.size.x = core::string::toInt(ev.target->getText().c_str());
 			checkSize();
 			return true;
 		} else if (ev.target->getID() == TBIDC("size.y")) {
-			_layerSettings.size.y = atoi(ev.target->getText().c_str());
+			_layerSettings.size.y = core::string::toInt(ev.target->getText().c_str());
 			checkSize();
 			return true;
 		} else if (ev.target->getID() == TBIDC("size.z")) {
-			_layerSettings.size.z = atoi(ev.target->getText().c_str());
+			_layerSettings.size.z = core::string::toInt(ev.target->getText().c_str());
 			checkSize();
 			return true;
 		} else if (ev.target->getID() == TBIDC("name")) {

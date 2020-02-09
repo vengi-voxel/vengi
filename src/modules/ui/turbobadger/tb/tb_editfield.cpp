@@ -586,7 +586,7 @@ int32_t TBTextFragmentContentWidget::getHeight(const TBBlock *block, TBFontFace 
 }
 
 int32_t TBTextFragmentContentWidget::getBaseline(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment) {
-	int height = getHeight(block, font, fragment);
+	const int height = getHeight(block, font, fragment);
 	return (height + block->calculateBaseline(font)) / 2;
 }
 
@@ -597,7 +597,7 @@ int TBEditFieldContentFactory::getContent(const char *text) {
 }
 
 TBTextFragmentContent *TBEditFieldContentFactory::createFragmentContent(const char *text, int textLen) {
-	if (strncmp(text, "<widget ", Min(textLen, 8)) == 0) {
+	if (SDL_strncmp(text, "<widget ", Min(textLen, 8)) == 0) {
 		// Create a wrapper for the generated widget.
 		// Its size will adapt to the content.
 		if (TBWidget *widget = new TBWidget()) {

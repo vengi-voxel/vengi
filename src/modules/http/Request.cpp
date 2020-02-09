@@ -52,7 +52,7 @@ ResponseParser Request::execute() {
 	}
 
 	struct addrinfo hints;
-	memset(&hints, 0, sizeof(hints));
+	SDL_memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
@@ -64,10 +64,10 @@ ResponseParser Request::execute() {
 	}
 	const struct sockaddr_in* host_addr = (const struct sockaddr_in*) results->ai_addr;
 	struct sockaddr_in sin;
-	memset(&sin, 0, sizeof(sin));
+	SDL_memset(&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(_url.port);
-	memcpy(&sin.sin_addr, &host_addr->sin_addr, sizeof(sin.sin_addr));
+	SDL_memcpy(&sin.sin_addr, &host_addr->sin_addr, sizeof(sin.sin_addr));
 	freeaddrinfo(results);
 	if (connect(_socketFD, (const struct sockaddr *)&sin, sizeof(sin)) == -1) {
 		Log::error("Failed to connect to %s:%i", _url.hostname.c_str(), _url.port);
@@ -115,8 +115,8 @@ ResponseParser Request::execute() {
 	}
 
 	size_t sent = 0u;
-	while (sent < strlen(message)) {
-		const int ret = send(_socketFD, message + sent, strlen(message) - sent, 0);
+	while (sent < SDL_strlen(message)) {
+		const int ret = send(_socketFD, message + sent, SDL_strlen(message) - sent, 0);
 		if (ret < 0) {
 			Log::error("Failed to perform http request to %s", _url.url.c_str());
 			return failed();
@@ -131,7 +131,7 @@ ResponseParser Request::execute() {
 	size_t totalReceivedLength = 0u;
 	while ((receivedLength = recv(_socketFD, (char*)recvBuf, BUFFERSIZE, 0)) > 0) {
 		response = (uint8_t*)SDL_realloc(response, totalReceivedLength + receivedLength);
-		memcpy(response + totalReceivedLength, recvBuf, receivedLength);
+		SDL_memcpy(response + totalReceivedLength, recvBuf, receivedLength);
 		totalReceivedLength += receivedLength;
 		Log::trace("received data: %i", (int)receivedLength);
 	}

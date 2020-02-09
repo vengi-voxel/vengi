@@ -49,7 +49,7 @@ bool ClientPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 			Log::error("No content type set in response");
 			return false;
 		}
-		if (strcmp(contentType, "application/chunk")) {
+		if (SDL_strcmp(contentType, "application/chunk")) {
 			Log::error("Unexpected content type: %s", contentType);
 			return false;
 		}

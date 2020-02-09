@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/ArrayLength.h"
 #include "core/Enum.h"
+#include <SDL_stdinc.h>
 
 namespace animation {
 
@@ -25,7 +26,7 @@ ToolAnimationType toToolAnimationEnum(const char* anim) {
 		return ToolAnimationType::None;
 	}
 	for (int i = 0; i < lengthof(_ToolAnimationTypeString); ++i) {
-		if (!strcmp(anim, _ToolAnimationTypeString[i])) {
+		if (!SDL_strcmp(anim, _ToolAnimationTypeString[i])) {
 			return (ToolAnimationType)i;
 		}
 	}

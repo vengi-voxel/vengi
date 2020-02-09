@@ -23,16 +23,20 @@ int TBTextFragmentContentFactory::getContent(const char *text) {
 }
 
 TBTextFragmentContent *TBTextFragmentContentFactory::createFragmentContent(const char *text, int textLen) {
-	if (strncmp(text, "<hr>", textLen) == 0) {
+	if (SDL_strncmp(text, "<hr>", textLen) == 0) {
 		return new TBTextFragmentContentHR(100, 2);
-	} else if (strncmp(text, "<u>", textLen) == 0) {
+	}
+	if (SDL_strncmp(text, "<u>", textLen) == 0) {
 		return new TBTextFragmentContentUnderline();
-	} else if (strncmp(text, "<color ", Min(textLen, 7)) == 0) {
+	}
+	if (SDL_strncmp(text, "<color ", Min(textLen, 7)) == 0) {
 		TBColor color;
 		color.setFromString(text + 7, textLen - 8);
 		return new TBTextFragmentContentTextColor(color);
-	} else if (strncmp(text, "</", Min(textLen, 2)) == 0)
+	}
+	if (SDL_strncmp(text, "</", Min(textLen, 2)) == 0) {
 		return new TBTextFragmentContentStylePop();
+	}
 	return nullptr;
 }
 

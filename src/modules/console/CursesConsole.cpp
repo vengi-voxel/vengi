@@ -81,7 +81,7 @@ int CursesConsole::lineHeight() {
 }
 
 glm::ivec2 CursesConsole::stringSize(const char* s, int length) {
-	return glm::ivec2(core_min(length, (int)strlen(s)), lineHeight());
+	return glm::ivec2(core_min(length, (int)SDL_strlen(s)), lineHeight());
 }
 
 void CursesConsole::afterRender(const math::Rect<int> &rect) {

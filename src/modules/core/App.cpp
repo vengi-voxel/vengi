@@ -346,7 +346,7 @@ AppState App::onInit() {
 	});
 
 	for (int i = 0; i < _argc; ++i) {
-		if (strcmp(_argv[i], "--help") == 0 || strcmp(_argv[i], "-h") == 0) {
+		if (SDL_strcmp(_argv[i], "--help") == 0 || SDL_strcmp(_argv[i], "-h") == 0) {
 			usage();
 			return AppState::Destroy;
 		}
@@ -434,7 +434,7 @@ void App::usage() const {
 		maxWidth = core_max(maxWidth, (int)v->name().size());
 	});
 	core::Command::visitSorted([&] (const core::Command& c) {
-		maxWidth = core_max(maxWidth, (int)strlen(c.name()));
+		maxWidth = core_max(maxWidth, (int)SDL_strlen(c.name()));
 	});
 
 	Log::info("---");

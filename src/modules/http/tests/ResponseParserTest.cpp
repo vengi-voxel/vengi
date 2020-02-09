@@ -23,7 +23,7 @@ const char *ResponseBuf =
 	"</html>\n";
 
 TEST_F(ResponseParserTest, testGETSimple) {
-	ResponseParser response((uint8_t*)SDL_strdup(ResponseBuf), strlen(ResponseBuf));
+	ResponseParser response((uint8_t*)SDL_strdup(ResponseBuf), SDL_strlen(ResponseBuf));
 	ASSERT_EQ(http::HttpStatus::Ok, response.status) << response.statusText;
 	EXPECT_GE(response.headers.size(), 3u);
 	validateMapEntry(response.headers, header::SERVER, "SimpleHTTP/0.6 Python/2.7.17");
@@ -38,7 +38,7 @@ TEST_F(ResponseParserTest, testGETSimple) {
 TEST_F(ResponseParserTest, testCopy) {
 	ResponseParser response(nullptr, 0u);
 	{
-		ResponseParser original((uint8_t*)SDL_strdup(ResponseBuf), strlen(ResponseBuf));
+		ResponseParser original((uint8_t*)SDL_strdup(ResponseBuf), SDL_strlen(ResponseBuf));
 		response = original;
 	}
 	ASSERT_EQ(http::HttpStatus::Ok, response.status) << response.statusText;
@@ -60,7 +60,7 @@ TEST_F(ResponseParserTest, testGETChunk) {
 		"Connection: close\r\n"
 		"\r\n"
 		"\a\a\a\a\a\a\a\a";
-	ResponseParser response((uint8_t*)SDL_strdup(ResponseBufChunk), strlen(ResponseBufChunk));
+	ResponseParser response((uint8_t*)SDL_strdup(ResponseBufChunk), SDL_strlen(ResponseBufChunk));
 	ASSERT_EQ(http::HttpStatus::Ok, response.status) << response.statusText;
 	EXPECT_GE(response.headers.size(), 4u);
 	validateMapEntry(response.headers, header::SERVER, "server");

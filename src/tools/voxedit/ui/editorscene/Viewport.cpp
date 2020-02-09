@@ -155,11 +155,11 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 
 	voxedit::ViewportController::SceneCameraMode mode = voxedit::ViewportController::SceneCameraMode::Free;
 	const char *cameraMode = info.node->getValueString("camera", "free");
-	if (!strcmp(cameraMode, "top")) {
+	if (!SDL_strcmp(cameraMode, "top")) {
 		mode = voxedit::ViewportController::SceneCameraMode::Top;
-	} else if (!strcmp(cameraMode, "front")) {
+	} else if (!SDL_strcmp(cameraMode, "front")) {
 		mode = voxedit::ViewportController::SceneCameraMode::Front;
-	} else if (!strcmp(cameraMode, "left")) {
+	} else if (!SDL_strcmp(cameraMode, "left")) {
 		mode = voxedit::ViewportController::SceneCameraMode::Left;
 	}
 	_cameraMode = cameraMode;
@@ -167,7 +167,7 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 
 	voxedit::ViewportController::RenderMode renderMode = voxedit::ViewportController::RenderMode::Editor;
 	const char *renderModeStr = info.node->getValueString("mode", "editor");
-	if (!strcmp(renderModeStr, "animation")) {
+	if (!SDL_strcmp(renderModeStr, "animation")) {
 		renderMode = voxedit::ViewportController::RenderMode::Animation;
 	}
 	_controller.setRenderMode(renderMode);

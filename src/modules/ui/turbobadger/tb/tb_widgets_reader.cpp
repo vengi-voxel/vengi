@@ -65,19 +65,19 @@ void TBWidget::onInflate(const INFLATE_INFO &info) {
 	}
 	if (const char *gravity = info.node->getValueString("gravity", nullptr)) {
 		WIDGET_GRAVITY g = WIDGET_GRAVITY_NONE;
-		if (strstr(gravity, "left") != nullptr) {
+		if (SDL_strstr(gravity, "left") != nullptr) {
 			g |= WIDGET_GRAVITY_LEFT;
 		}
-		if (strstr(gravity, "top") != nullptr) {
+		if (SDL_strstr(gravity, "top") != nullptr) {
 			g |= WIDGET_GRAVITY_TOP;
 		}
-		if (strstr(gravity, "right") != nullptr) {
+		if (SDL_strstr(gravity, "right") != nullptr) {
 			g |= WIDGET_GRAVITY_RIGHT;
 		}
-		if (strstr(gravity, "bottom") != nullptr) {
+		if (SDL_strstr(gravity, "bottom") != nullptr) {
 			g |= WIDGET_GRAVITY_BOTTOM;
 		}
-		if (strstr(gravity, "all") != nullptr) {
+		if (SDL_strstr(gravity, "all") != nullptr) {
 			g |= WIDGET_GRAVITY_ALL;
 		}
 		if ((g & WIDGET_GRAVITY_LEFT_RIGHT) == 0U) {
@@ -89,16 +89,16 @@ void TBWidget::onInflate(const INFLATE_INFO &info) {
 		setGravity(g);
 	}
 	if (const char *visibility = info.node->getValueString("visibility", nullptr)) {
-		if (strcmp(visibility, "visible") == 0) {
+		if (SDL_strcmp(visibility, "visible") == 0) {
 			setVisibility(WIDGET_VISIBILITY_VISIBLE);
-		} else if (strcmp(visibility, "invisible") == 0) {
+		} else if (SDL_strcmp(visibility, "invisible") == 0) {
 			setVisibility(WIDGET_VISIBILITY_INVISIBLE);
-		} else if (strcmp(visibility, "gone") == 0) {
+		} else if (SDL_strcmp(visibility, "gone") == 0) {
 			setVisibility(WIDGET_VISIBILITY_GONE);
 		}
 	}
 	if (const char *state = info.node->getValueString("state", nullptr)) {
-		if (strstr(state, "disabled") != nullptr) {
+		if (SDL_strstr(state, "disabled") != nullptr) {
 			setState(WIDGET_STATE_DISABLED, true);
 		}
 	}
@@ -245,11 +245,11 @@ void TBEditField::onInflate(const INFLATE_INFO &info) {
 		setPlaceholderText(text);
 	}
 	if (const char *text_align = info.node->getValueString("text-align", nullptr)) {
-		if (strcmp(text_align, "left") == 0) {
+		if (SDL_strcmp(text_align, "left") == 0) {
 			setTextAlign(TB_TEXT_ALIGN_LEFT);
-		} else if (strcmp(text_align, "center") == 0) {
+		} else if (SDL_strcmp(text_align, "center") == 0) {
 			setTextAlign(TB_TEXT_ALIGN_CENTER);
-		} else if (strcmp(text_align, "right") == 0) {
+		} else if (SDL_strcmp(text_align, "right") == 0) {
 			setTextAlign(TB_TEXT_ALIGN_RIGHT);
 		}
 	}
@@ -286,11 +286,11 @@ void TBLayout::onInflate(const INFLATE_INFO &info) {
 	setGravity(WIDGET_GRAVITY_ALL);
 	if (const char *size = info.node->getValueString("size", nullptr)) {
 		LAYOUT_SIZE ls = LAYOUT_SIZE_PREFERRED;
-		if (strstr(size, "available") != nullptr) {
+		if (SDL_strstr(size, "available") != nullptr) {
 			ls = LAYOUT_SIZE_AVAILABLE;
-		} else if (strstr(size, "gravity") != nullptr) {
+		} else if (SDL_strstr(size, "gravity") != nullptr) {
 			ls = LAYOUT_SIZE_GRAVITY;
-		} else if (strstr(size, "preferred") != nullptr) {
+		} else if (SDL_strstr(size, "preferred") != nullptr) {
 		} else {
 			Log::debug("TBLayout: Unknown size '%s'", size);
 		}
@@ -298,13 +298,13 @@ void TBLayout::onInflate(const INFLATE_INFO &info) {
 	}
 	if (const char *pos = info.node->getValueString("position", nullptr)) {
 		LAYOUT_POSITION lp = LAYOUT_POSITION_CENTER;
-		if ((strstr(pos, "left") != nullptr) || (strstr(pos, "top") != nullptr)) {
+		if ((SDL_strstr(pos, "left") != nullptr) || (SDL_strstr(pos, "top") != nullptr)) {
 			lp = LAYOUT_POSITION_LEFT_TOP;
-		} else if ((strstr(pos, "right") != nullptr) || (strstr(pos, "bottom") != nullptr)) {
+		} else if ((SDL_strstr(pos, "right") != nullptr) || (SDL_strstr(pos, "bottom") != nullptr)) {
 			lp = LAYOUT_POSITION_RIGHT_BOTTOM;
-		} else if (strstr(pos, "gravity") != nullptr) {
+		} else if (SDL_strstr(pos, "gravity") != nullptr) {
 			lp = LAYOUT_POSITION_GRAVITY;
-		} else if (strcmp(pos, "center") == 0) {
+		} else if (SDL_strcmp(pos, "center") == 0) {
 		} else {
 			Log::debug("TBLayout: Unknown position '%s'", pos);
 		}
@@ -312,9 +312,9 @@ void TBLayout::onInflate(const INFLATE_INFO &info) {
 	}
 	if (const char *pos = info.node->getValueString("overflow", nullptr)) {
 		LAYOUT_OVERFLOW lo = LAYOUT_OVERFLOW_CLIP;
-		if (strstr(pos, "scroll") != nullptr) {
+		if (SDL_strstr(pos, "scroll") != nullptr) {
 			lo = LAYOUT_OVERFLOW_SCROLL;
-		} else if (strstr(pos, "clip") != nullptr) {
+		} else if (SDL_strstr(pos, "clip") != nullptr) {
 		} else {
 			Log::debug("TBLayout: Unknown overflow '%s'", pos);
 		}
@@ -322,11 +322,11 @@ void TBLayout::onInflate(const INFLATE_INFO &info) {
 	}
 	if (const char *dist = info.node->getValueString("distribution", nullptr)) {
 		LAYOUT_DISTRIBUTION ld = LAYOUT_DISTRIBUTION_PREFERRED;
-		if (strstr(dist, "available") != nullptr) {
+		if (SDL_strstr(dist, "available") != nullptr) {
 			ld = LAYOUT_DISTRIBUTION_AVAILABLE;
-		} else if (strstr(dist, "gravity") != nullptr) {
+		} else if (SDL_strstr(dist, "gravity") != nullptr) {
 			ld = LAYOUT_DISTRIBUTION_GRAVITY;
-		} else if (strstr(dist, "preferred") != nullptr) {
+		} else if (SDL_strstr(dist, "preferred") != nullptr) {
 		} else {
 			Log::debug("TBLayout: Unknown distribution '%s'", dist);
 		}
@@ -334,9 +334,9 @@ void TBLayout::onInflate(const INFLATE_INFO &info) {
 	}
 	if (const char *dist = info.node->getValueString("distribution-position", nullptr)) {
 		LAYOUT_DISTRIBUTION_POSITION ld = LAYOUT_DISTRIBUTION_POSITION_CENTER;
-		if ((strstr(dist, "left") != nullptr) || (strstr(dist, "top") != nullptr)) {
+		if ((SDL_strstr(dist, "left") != nullptr) || (SDL_strstr(dist, "top") != nullptr)) {
 			ld = LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP;
-		} else if ((strstr(dist, "right") != nullptr) || (strstr(dist, "bottom") != nullptr)) {
+		} else if ((SDL_strstr(dist, "right") != nullptr) || (SDL_strstr(dist, "bottom") != nullptr)) {
 			ld = LAYOUT_DISTRIBUTION_POSITION_RIGHT_BOTTOM;
 		}
 		setLayoutDistributionPosition(ld);
@@ -351,15 +351,15 @@ void TBScrollContainer::onInflate(const INFLATE_INFO &info) {
 	setAdaptContentSize(info.node->getValueInt("adapt-content", static_cast<int>(getAdaptContentSize())) != 0);
 	setAdaptToContentSize(info.node->getValueInt("adapt-to-content", static_cast<int>(getAdaptToContentSize())) != 0);
 	if (const char *mode = info.node->getValueString("scroll-mode", nullptr)) {
-		if (strcmp(mode, "xy") == 0) {
+		if (SDL_strcmp(mode, "xy") == 0) {
 			setScrollMode(SCROLL_MODE_X_Y);
-		} else if (strcmp(mode, "y") == 0) {
+		} else if (SDL_strcmp(mode, "y") == 0) {
 			setScrollMode(SCROLL_MODE_Y);
-		} else if (strcmp(mode, "y-auto") == 0) {
+		} else if (SDL_strcmp(mode, "y-auto") == 0) {
 			setScrollMode(SCROLL_MODE_Y_AUTO);
-		} else if (strcmp(mode, "auto") == 0) {
+		} else if (SDL_strcmp(mode, "auto") == 0) {
 			setScrollMode(SCROLL_MODE_X_AUTO_Y_AUTO);
-		} else if (strcmp(mode, "off") == 0) {
+		} else if (SDL_strcmp(mode, "off") == 0) {
 			setScrollMode(SCROLL_MODE_OFF);
 		} else {
 			Log::debug("TBScrollContainer: Unknown scroll-mode '%s'", mode);
@@ -374,13 +374,13 @@ void TBTabContainer::onInflate(const INFLATE_INFO &info) {
 	TBWidget::onInflate(info);
 
 	if (const char *align = info.node->getValueString("align", nullptr)) {
-		if (strcmp(align, "left") == 0) {
+		if (SDL_strcmp(align, "left") == 0) {
 			setAlignment(TB_ALIGN_LEFT);
-		} else if (strcmp(align, "top") == 0) {
+		} else if (SDL_strcmp(align, "top") == 0) {
 			setAlignment(TB_ALIGN_TOP);
-		} else if (strcmp(align, "right") == 0) {
+		} else if (SDL_strcmp(align, "right") == 0) {
 			setAlignment(TB_ALIGN_RIGHT);
-		} else if (strcmp(align, "bottom") == 0) {
+		} else if (SDL_strcmp(align, "bottom") == 0) {
 			setAlignment(TB_ALIGN_BOTTOM);
 		} else {
 			Log::debug("TBTabContainer: Unknown align '%s'", align);
@@ -439,7 +439,7 @@ void readItems(TBNode *node, TBGenericStringItemSource *targetSource) {
 	// items to the target item source.
 	if (TBNode *items = node->getNode("items")) {
 		for (TBNode *n = items->getFirstChild(); n != nullptr; n = n->getNext()) {
-			if (strcmp(n->getName(), "item") != 0) {
+			if (SDL_strcmp(n->getName(), "item") != 0) {
 				continue;
 			}
 			const char *item_str = n->getValueString("text", "");
@@ -494,11 +494,11 @@ TB_WIDGET_FACTORY(TBTextField, TBValue::TYPE_STRING, WIDGET_Z_TOP) {
 }
 void TBTextField::onInflate(const INFLATE_INFO &info) {
 	if (const char *text_align = info.node->getValueString("text-align", nullptr)) {
-		if (strcmp(text_align, "left") == 0) {
+		if (SDL_strcmp(text_align, "left") == 0) {
 			setTextAlign(TB_TEXT_ALIGN_LEFT);
-		} else if (strcmp(text_align, "center") == 0) {
+		} else if (SDL_strcmp(text_align, "center") == 0) {
 			setTextAlign(TB_TEXT_ALIGN_CENTER);
-		} else if (strcmp(text_align, "right") == 0) {
+		} else if (SDL_strcmp(text_align, "right") == 0) {
 			setTextAlign(TB_TEXT_ALIGN_RIGHT);
 		}
 	}
@@ -625,7 +625,7 @@ bool TBWidgetsReader::createWidget(TBWidget *target, TBNode *node) {
 	// Find a widget creator from the node name
 	TBWidgetFactory *wc = nullptr;
 	for (wc = factories.getFirst(); wc != nullptr; wc = wc->getNext()) {
-		if (strcmp(node->getName(), wc->name) == 0) {
+		if (SDL_strcmp(node->getName(), wc->name) == 0) {
 			break;
 		}
 	}

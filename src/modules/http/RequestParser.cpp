@@ -60,9 +60,9 @@ RequestParser::RequestParser(uint8_t* requestBuffer, size_t requestBufferSize)
 		return;
 	}
 
-	if (!strcmp(methodStr, "GET")) {
+	if (!SDL_strcmp(methodStr, "GET")) {
 		method = HttpMethod::GET;
-	} else if (!strcmp(methodStr, "POST")) {
+	} else if (!SDL_strcmp(methodStr, "POST")) {
 		method = HttpMethod::POST;
 	} else {
 		method = HttpMethod::NOT_SUPPORTED;

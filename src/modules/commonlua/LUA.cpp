@@ -5,6 +5,7 @@
 #include "LUA.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 
 namespace lua {
 
@@ -243,7 +244,7 @@ int LUA::intValue(const core::String& path, int defaultValue) {
 	if (str.empty()) {
 		return defaultValue;
 	}
-	return atoi(str.c_str());
+	return core::string::toInt(str);
 }
 
 float LUA::floatValue(const core::String& path, float defaultValue) {
@@ -251,7 +252,7 @@ float LUA::floatValue(const core::String& path, float defaultValue) {
 	if (str.empty()) {
 		return defaultValue;
 	}
-	return static_cast<float>(atof(str.c_str()));
+	return core::string::toFloat(str);
 }
 
 void LUA::pop(int amount) {
