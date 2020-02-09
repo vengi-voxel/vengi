@@ -92,6 +92,11 @@ TEST_F(StringTest, testCompare) {
 	EXPECT_EQ(0, first.compare(second));
 	EXPECT_EQ(-1, first.compare(third));
 	EXPECT_EQ(1, first.compare(fourth));
+
+	const String str("string");
+	const String str2("str");
+	EXPECT_NE(0, str.compare(str2));
+	EXPECT_NE(0, str2.compare(str));
 }
 
 TEST_F(StringTest, testOperatorAppend) {

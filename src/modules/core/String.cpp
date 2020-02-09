@@ -128,11 +128,23 @@ int String::compare(size_t index, size_t len, const String& str) const {
 	return SDL_strncmp(_data._str + index, str.c_str(), core_min(len, str.size()));
 }
 
-bool String::equals(const char *str, size_t len) const {
-	if (_data._size != len) {
+int String::compare(const String& str) const {
+	return SDL_strcmp(_data._str, str.c_str());
+}
+
+int String::compare(const char *str) const {
+	return SDL_strcmp(_data._str, str);
+}
+
+bool String::equals(const char *str) const {
+	const size_t strLen = SDL_strlen(str);
+	if (_data._size != strLen) {
 		return false;
 	}
-	return compare(str, len) == 0;
+	if (SDL_memcmp(_data._str, str, strLen) != 0) {
+		return false;
+	}
+	return true;
 }
 
 void String::replaceAllChars(char in, char out) {
@@ -449,35 +461,35 @@ String &String::operator+=(char c) {
 }
 
 bool String::operator==(const String &rhs) const {
-	return equals(rhs.c_str(), rhs.size());
+	return equals(rhs.c_str());
 }
 
 bool String::operator==(const char *rhs) const {
-	return equals(rhs, SDL_strlen(rhs));
+	return equals(rhs);
 }
 
 bool String::operator!=(const String &rhs) const {
-	return !equals(rhs.c_str(), rhs.size());
+	return !equals(rhs.c_str());
 }
 
 bool String::operator !=(const char *rhs) const {
-	return !equals(rhs, SDL_strlen(rhs));
+	return !equals(rhs);
 }
 
 bool String::operator<(const String &rhs) const {
-	return compare(rhs.c_str(), rhs.size()) < 0;
+	return compare(rhs) < 0;
 }
 
 bool String::operator<=(const String &rhs) const {
-	return compare(rhs.c_str(), rhs.size()) <= 0;
+	return compare(rhs) <= 0;
 }
 
 bool String::operator>(const String &rhs) const {
-	return compare(rhs.c_str(), rhs.size()) > 0;
+	return compare(rhs) > 0;
 }
 
 bool String::operator>=(const String &rhs) const {
-	return compare(rhs.c_str(), rhs.size()) >= 0;
+	return compare(rhs) >= 0;
 }
 
 bool operator==(const char* lhs, const String &rhs) {

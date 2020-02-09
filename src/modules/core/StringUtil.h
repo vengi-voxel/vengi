@@ -67,11 +67,18 @@ inline char toUpper(char in) { return SDL_toupper((int)in); }
 inline char toLower(char in) { return SDL_tolower((int)in); }
 
 inline bool startsWith(const core::String& string, const core::String& token) {
+	if (string.size() < token.size()) {
+		return false;
+	}
 	return !string.compare(0, token.size(), token);
 }
 
 inline bool startsWith(const core::String& string, const char* token) {
-	return !string.compare(0, SDL_strlen(token), token);
+	const size_t tokensize = SDL_strlen(token);
+	if (string.size() < tokensize) {
+		return false;
+	}
+	return !string.compare(0, tokensize, token);
 }
 
 inline bool startsWith(const char* string, const char* token) {

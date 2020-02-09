@@ -60,9 +60,9 @@ public:
 	size_t size() const;
 	int compare(const String& str) const;
 	int compare(const char *str, size_t len) const;
+	int compare(const char *str) const;
 	int compare(size_t index, size_t len, const String& str) const;
-	bool equals(const char *str, size_t len) const;
-	bool iequals(const char *str, size_t len) const;
+	bool equals(const char *str) const;
 	bool empty() const;
 	void clear();
 	void insert(size_t index, const char *str);
@@ -158,10 +158,6 @@ inline const char *String::begin() const {
 
 inline const char *String::end() const {
 	return begin() + size();
-}
-
-inline int String::compare(const String& str) const {
-	return compare(str.c_str(), str.size());
 }
 
 String operator+(const String &x, const String &y);
