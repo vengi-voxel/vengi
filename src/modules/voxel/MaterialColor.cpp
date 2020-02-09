@@ -3,7 +3,6 @@
  */
 
 #include "MaterialColor.h"
-#include "core/Singleton.h"
 #include "core/App.h"
 #include "core/Enum.h"
 #include "math/Random.h"
@@ -12,19 +11,18 @@
 #include "core/io/Filesystem.h"
 #include "core/StringUtil.h"
 #include "core/Assert.h"
+#include "core/collection/Map.h"
+#include "core/collection/Array.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
-#include <unordered_map>
-#include <unordered_set>
-#include <algorithm>
-#include <numeric>
+#include <vector>
 
 namespace voxel {
 
 class MaterialColor {
 private:
 	MaterialColorArray _materialColors;
-	std::unordered_map<VoxelType, MaterialColorIndices, EnumClassHash> _colorMapping;
+	core::Map<VoxelType, MaterialColorIndices, 8, EnumClassHash> _colorMapping;
 	bool _initialized = false;
 	bool _dirty = false;
 public:
@@ -59,20 +57,25 @@ public:
 			return false;
 		}
 
-		MaterialColorIndices& generic = _colorMapping[voxel::VoxelType::Generic];
+		_colorMapping.put(voxel::VoxelType::Generic, MaterialColorIndices());
+		MaterialColorIndices& generic = (MaterialColorIndices&)_colorMapping.find(voxel::VoxelType::Generic)->value;
 		generic.resize(colors - 1);
 		// 0 is VoxelType::Air - don't add it
-		std::iota(std::begin(generic), std::end(generic), 1);
+		for (int i = 0; i < colors - 1; ++i) {
+			generic[i] = i + 1;
+		}
 
 		if (luaString.empty()) {
 			Log::warn("No materials defined in lua script");
 			return true;
 		}
 
-		std::vector<luaL_Reg> funcs;
+		constexpr size_t funcSize = 2u + ((size_t)(voxel::VoxelType::Max) - ((size_t)voxel::VoxelType::Air + 1u));
+		core::Array<luaL_Reg, funcSize> funcs;
 		static_assert((int)voxel::VoxelType::Air == 0, "Air must be 0");
-		for (int i = (int)voxel::VoxelType::Air + 1; i < (int)voxel::VoxelType::Max; ++i) {
-			funcs.push_back(luaL_Reg{ voxel::VoxelTypeStr[i], [] (lua_State* l) -> int {
+		size_t aindex = 0u;
+		for (int i = (int)voxel::VoxelType::Air + 1; i < (int)voxel::VoxelType::Max; ++i, ++aindex) {
+			funcs[aindex] = luaL_Reg{ voxel::VoxelTypeStr[i], [] (lua_State* l) -> int {
 				MaterialColor* mc = lua::LUA::globalData<MaterialColor>(l, "MaterialColor");
 				const int index = luaL_checknumber(l, -1);
 				// this is hacky - but we resolve the lua function name here to reverse lookup
@@ -83,12 +86,19 @@ public:
 				core_assert_always(status == 1);
 				for (int j = (int)voxel::VoxelType::Air + 1; j < (int)voxel::VoxelType::Max; ++j) {
 					if (SDL_strcmp(voxel::VoxelTypeStr[j], entry.name) == 0) {
-						mc->_colorMapping[(VoxelType)j].push_back(index);
+						auto i = mc->_colorMapping.find((VoxelType)j);
+						if (i == mc->_colorMapping.end()) {
+							MaterialColorIndices indices;
+							indices.push_back(index);
+							mc->_colorMapping.put((VoxelType)j, indices);
+						} else {
+							((MaterialColorIndices&)i->value).push_back(index);
+						}
 						break;
 					}
 				}
 				return 0;
-			}});
+			}};
 		}
 
 		luaL_Reg getmaterial = { "material", [] (lua_State* l) -> int {
@@ -107,10 +117,10 @@ public:
 
 		lua::LUA lua;
 		clua_vecregister<glm::vec4>(lua.state());
-		funcs.push_back(getmaterial);
-		funcs.push_back({ nullptr, nullptr });
+		funcs[aindex++] = getmaterial;
+		funcs[aindex++] = { nullptr, nullptr };
 		lua.newGlobalData<MaterialColor>("MaterialColor", this);
-		lua.reg("MAT", &funcs.front());
+		lua.reg("MAT", funcs.begin());
 		if (!lua.load(luaString)) {
 			Log::error("Could not load lua script. Failed with error: %s",
 					lua.error().c_str());
@@ -123,8 +133,8 @@ public:
 		}
 
 		for (int j = (int)voxel::VoxelType::Air + 1; j < (int)voxel::VoxelType::Max; ++j) {
-			const auto& e = _colorMapping[(voxel::VoxelType)j];
-			if (e.empty()) {
+			const auto& i = _colorMapping.find((voxel::VoxelType)j);
+			if (i == _colorMapping.end() || i->value.empty()) {
 				Log::error("No colors are defined for VoxelType: %s", voxel::VoxelTypeStr[j]);
 				return false;
 			}
@@ -324,22 +334,24 @@ bool createPalette(const image::ImagePtr& image, uint32_t *colorsBuffer, int col
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	Log::debug("Create palette for image: %s", image->name().c_str());
-	std::unordered_set<uint32_t> colorset;
+	core::Map<uint32_t, bool, 64> colorset;
 	uint16_t paletteIndex = 0;
 	uint32_t empty = core::Color::getRGBA(core::Color::White);
-	colorset.insert(empty);
+	colorset.put(empty, true);
 	colorsBuffer[paletteIndex++] = empty;
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const uint8_t* data = image->at(x, y);
 			const uint32_t rgba = core::Color::getRGBA(core::Color::alpha(core::Color::fromRGBA(*(uint32_t*)data), 1.0f));
-			if (colorset.insert(rgba).second) {
-				if (paletteIndex >= colors) {
-					Log::warn("palette indices exceeded");
-					return false;
-				}
-				colorsBuffer[paletteIndex++] = rgba;
+			if (colorset.find(rgba) != colorset.end()) {
+				continue;
 			}
+			colorset.put(rgba, true);
+			if (paletteIndex >= colors) {
+				Log::warn("palette indices exceeded");
+				return false;
+			}
+			colorsBuffer[paletteIndex++] = rgba;
 		}
 	}
 	for (int i = paletteIndex; i < colors; ++i) {
