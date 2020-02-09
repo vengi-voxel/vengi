@@ -45,7 +45,6 @@ macro(gtest_suite_begin name)
 		else()
 			target_link_libraries(${name} gtest)
 		endif()
-
 	endif()
 endmacro()
 
