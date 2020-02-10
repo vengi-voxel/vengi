@@ -6,7 +6,7 @@
 #include "tree/Selector.h"
 #include <vector>
 #include "AI.h"
-#include "common/StringUtil.h"
+#include "core/StringUtil.h"
 #include "common/Random.h"
 
 namespace ai {
@@ -25,10 +25,10 @@ public:
 	ProbabilitySelector(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
 			Selector(name, parameters, condition), _weightSum(0.0f) {
 		std::vector<core::String> tokens;
-		Str::splitString(parameters, tokens, ",");
+		core::string::splitString(parameters, tokens, ",");
 		const int weightAmount = static_cast<int>(tokens.size());
 		for (int i = 0; i < weightAmount; i++) {
-			const float weight = Str::strToFloat(tokens[i]);
+			const float weight = core::string::toFloat(tokens[i]);
 			_weightSum += weight;
 			_weights[i] = weight;
 		}

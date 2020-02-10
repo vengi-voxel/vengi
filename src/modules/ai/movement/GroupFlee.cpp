@@ -9,7 +9,7 @@ namespace movement {
 
 GroupFlee::GroupFlee(const core::String& parameters) :
 		ISteering() {
-	_groupId = ::atoi(parameters.c_str());
+	_groupId = parameters.toInt();
 }
 
 MoveVector GroupFlee::execute (const AIPtr& ai, float speed) const {

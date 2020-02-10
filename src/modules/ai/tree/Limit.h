@@ -25,7 +25,7 @@ public:
 		TreeNode(name, parameters, condition) {
 		_type = "Limit";
 		if (!parameters.empty()) {
-			_amount = ::atoi(parameters.c_str());
+			_amount = parameters.toInt();
 		} else {
 			_amount = 1;
 		}

@@ -9,7 +9,7 @@ namespace movement {
 
 GroupSeek::GroupSeek(const core::String& parameters) :
 		ISteering() {
-	_groupId = ::atoi(parameters.c_str());
+	_groupId = parameters.toInt();
 }
 
 MoveVector GroupSeek::execute (const AIPtr& ai, float speed) const {

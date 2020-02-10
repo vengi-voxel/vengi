@@ -162,7 +162,7 @@ bool TBInlineSelectDouble::onEvent(const TBWidgetEvent &ev) {
 	} else if (ev.type == EVENT_TYPE_CHANGED && ev.target == &m_editfield) {
 		TBStr text;
 		m_editfield.getText(text);
-		setValueInternal(atof(text), false);
+		setValueInternal(SDL_atof(text.c_str()), false);
 	}
 	return false;
 }

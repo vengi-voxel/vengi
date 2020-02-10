@@ -304,14 +304,14 @@ bool Window::loadResource(tb::TBNode &node) {
 		tb::TBValueArray *dimensions = tmp->getValue().getArray();
 		const char *sizeW = dimensions->getValue(0)->getString();
 		if (sizeW[SDL_strlen(sizeW) - 1] == '%') {
-			_percentWidth = atof(sizeW);
+			_percentWidth = SDL_atof(sizeW);
 			windowRect.w = _app->frameBufferWidth() * _percentWidth / 100.0f;
 		} else {
 			windowRect.w = dc->getPxFromString(sizeW, windowRect.w);
 		}
 		const char *sizeH = dimensions->getValue(1)->getString();
 		if (sizeH[SDL_strlen(sizeH) - 1] == '%') {
-			_percentHeight = atof(sizeW);
+			_percentHeight = SDL_atof(sizeW);
 			windowRect.h = _app->frameBufferHeight() * _percentHeight / 100.0f;
 		} else {
 			windowRect.h = dc->getPxFromString(sizeH, windowRect.h);

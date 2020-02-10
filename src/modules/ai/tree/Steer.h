@@ -4,7 +4,7 @@
 #pragma once
 
 #include "tree/ITask.h"
-#include "common/StringUtil.h"
+#include "core/StringUtil.h"
 #include "common/Common.h"
 #include "common/Math.h"
 #include "movement/Steering.h"
@@ -33,11 +33,11 @@ public:
 				}
 			} else {
 				std::vector<core::String> tokens;
-				Str::splitString(ctx->parameters, tokens, ",");
+				core::string::splitString(ctx->parameters, tokens, ",");
 				ai_assert(tokens.size() == ctx->steerings.size(), "weights doesn't match steerings methods count");
 				const int tokenAmount = static_cast<int>(tokens.size());
 				for (int i = 0; i < tokenAmount; ++i) {
-					weightedSteerings.push_back(movement::WeightedData(ctx->steerings[i], Str::strToFloat(tokens[i])));
+					weightedSteerings.push_back(movement::WeightedData(ctx->steerings[i], core::string::toFloat(tokens[i])));
 				}
 			}
 			const movement::WeightedSteering w(weightedSteerings);

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ICondition.h"
-#include "common/StringUtil.h"
+#include "core/StringUtil.h"
 #include "group/GroupMgr.h"
 #include "zone/Zone.h"
 
@@ -27,7 +27,7 @@ public:
 	explicit IsCloseToGroup(const core::String& parameters) :
 		ICondition("IsCloseToGroup", parameters) {
 		std::vector<core::String> tokens;
-		Str::splitString(_parameters, tokens, ",");
+		core::string::splitString(_parameters, tokens, ",");
 		if (tokens.size() != 2) {
 			_groupId = -1;
 			_distance = -1.0f;

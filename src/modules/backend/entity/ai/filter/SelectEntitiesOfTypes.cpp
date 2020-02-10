@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "SelectEntitiesOfTypes.h"
 #include "core/StringUtil.h"
 #include "core/Common.h"
