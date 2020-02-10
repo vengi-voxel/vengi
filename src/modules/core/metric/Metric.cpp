@@ -50,7 +50,7 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 	if (preambleLen >= len) {
 		return false;
 	}
-	SDL_strlcpy(buffer, preamble, preambleLen);
+	SDL_strlcpy(buffer, preamble, len);
 	buffer += preambleLen;
 	int remainingLen = (int)(len - preambleLen);
 	bool first = true;

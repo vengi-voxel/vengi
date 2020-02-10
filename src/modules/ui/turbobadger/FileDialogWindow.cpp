@@ -17,7 +17,7 @@ static const char *INPUT = "input";
 bool FileDialogItemSource::execFileItemFilter(const char* str, const char* filter) {
 	// filters might be separated by a ,
 	char buf[4096];
-	SDL_strlcpy(buf, filter, sizeof(buf) - 1);
+	SDL_strlcpy(buf, filter, sizeof(buf));
 	buf[sizeof(buf) - 1] = '\0';
 
 	char *sep = SDL_strstr(buf, ",");

@@ -9,6 +9,7 @@
 #include "core/CommandlineApp.h"
 #include "core/collection/Map.h"
 #include "core/EventBus.h"
+#include "core/String.h"
 #include "core/io/Filesystem.h"
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL

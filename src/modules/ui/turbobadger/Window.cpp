@@ -174,11 +174,12 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 		}
 		case T_IVEC2: {
 			char buf[64];
-			SDL_strlcpy(buf, string, sizeof(buf) - 1);
+			SDL_strlcpy(buf, string, sizeof(buf));
 			buf[sizeof(buf) - 1] = '\0';
 			char *sep = SDL_strchr(buf, ':');
-			if (sep == nullptr)
+			if (sep == nullptr) {
 				break;
+			}
 			*sep++ = '\0';
 			glm::ivec2* vec = (glm::ivec2*)fieldPtr;
 			vec->x = core::string::toInt(string);
@@ -187,11 +188,12 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 		}
 		case T_VEC2: {
 			char buf[64];
-			SDL_strlcpy(buf, string, sizeof(buf) - 1);
+			SDL_strlcpy(buf, string, sizeof(buf));
 			buf[sizeof(buf) - 1] = '\0';
 			char *sep = SDL_strchr(buf, ':');
-			if (sep == nullptr)
+			if (sep == nullptr) {
 				break;
+			}
 			*sep++ = '\0';
 			glm::vec2* vec = (glm::vec2*)fieldPtr;
 			vec->x = core::string::toFloat(string);

@@ -6,7 +6,7 @@
 #include "tb_renderer.h"
 #include "tb_skin.h"
 #include "tb_system.h"
-#include <math.h>
+#include <SDL_stdinc.h>
 
 namespace tb {
 

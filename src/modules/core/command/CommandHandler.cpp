@@ -26,7 +26,7 @@ bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize) {
 				const core::VarPtr& var = core::Var::get(name);
 				i += 6 + len;
 				const core::String& value = var->strVal();
-				const size_t remaining = bufSize - idx - 1;
+				const size_t remaining = bufSize - idx;
 				SDL_strlcpy(&buf[idx], value.c_str(), remaining);
 				idx += (int)value.size();
 				if (idx >= (int)bufSize) {
