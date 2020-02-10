@@ -6,6 +6,7 @@
 #include "animation/BoneUtil.h"
 #include "animation/AnimationSettings.h"
 #include "core/Log.h"
+#include "core/GLM.h"
 
 namespace animation {
 
