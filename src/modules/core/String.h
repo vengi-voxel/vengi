@@ -46,7 +46,7 @@ public:
 	void reserve(size_t bytes);
 	void replaceAllChars(char in, char out);
 	String trim() const;
-	String substr(size_t index, int len = -1) const;
+	String substr(size_t index, size_t len = npos) const;
 	void replace(size_t index, size_t length, const char *str);
 
 	static String lower(const char *string);

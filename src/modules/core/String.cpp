@@ -198,11 +198,11 @@ bool String::contains(const char *str, size_t len) const {
 	return pos != nullptr;
 }
 
-String String::substr(size_t index, int len) const {
+String String::substr(size_t index, size_t len) const {
 	if (core_unlikely(index >= size())) {
 		return String();
 	}
-	return String(_data._str + index, core_min((size_t)len, _data._size - index));
+	return String(_data._str + index, core_min(len, _data._size - index));
 }
 
 String String::lower(const char *string) {
