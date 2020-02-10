@@ -29,7 +29,7 @@ jobs:
         - name: Linux
           run: |
             sudo apt-get update
-            sudo apt-get install libglm-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-10 libpq-dev libenet-dev libgtk-3-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers wayland-protocols pkg-config uuid-dev
+            sudo apt-get install libglm-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-10 libpq-dev libenet-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers wayland-protocols pkg-config uuid-dev
             mkdir build
             cd build
             cmake ..
