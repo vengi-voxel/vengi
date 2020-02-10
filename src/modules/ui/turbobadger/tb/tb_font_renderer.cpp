@@ -7,6 +7,12 @@
 #include "tb_skin.h"
 #include "tb_system.h"
 #include <SDL_stdinc.h>
+#include <SDL_version.h>
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+#else
+#include <math.h>
+#define SDL_expf expf
+#endif
 
 namespace tb {
 
@@ -35,8 +41,6 @@ static void blurGlyph(const unsigned char *src, int srcw, int srch, int srcStrid
 		}
 	}
 }
-
-// ================================================================================================
 
 void TBFontEffect::setBlurRadius(int blurRadius) {
 	core_assert(blurRadius >= 0);
