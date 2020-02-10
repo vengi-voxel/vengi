@@ -161,6 +161,10 @@ function(engine_add_executable)
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_INSTALL ${INSTALL_DATA})
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_FILES "${_EXE_FILES}")
 
+	if (MSVC)
+		set_target_properties(${_EXE_TARGET} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+	endif()
+
 	foreach (luasrc ${_EXE_LUA_SRCS})
 		get_filename_component(luasrcdir ${luasrc} DIRECTORY)
 		if (INSTALL_DATA)
