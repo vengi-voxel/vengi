@@ -19,11 +19,9 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/packing.hpp>
 #include <glm/gtc/random.hpp>
-#include <glm/gtc/noise.hpp>
 #include <glm/gtc/epsilon.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>

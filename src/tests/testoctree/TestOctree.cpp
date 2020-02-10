@@ -8,6 +8,8 @@
 #include "video/ScopedLineWidth.h"
 #include "core/collection/Array.h"
 #include <SDL.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 TestOctree::TestOctree(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

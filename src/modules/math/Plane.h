@@ -5,7 +5,6 @@
 #pragma once
 
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <glm/fwd.hpp>
 
 namespace math {
@@ -44,10 +43,6 @@ public:
 	float distanceToPlane(const glm::vec3& point) const;
 };
 
-inline Plane::Plane(const glm::vec4& data) {
-	set(data);
-}
-
 inline Plane::Plane(const glm::vec3& norm, float dist) {
 	set(norm, dist);
 }
@@ -58,11 +53,6 @@ inline Plane::Plane(const glm::vec3& norm, const glm::vec3& point) {
 
 inline Plane::Plane(const glm::vec3& point1, const glm::vec3& point2, const glm::vec3& point3) {
 	set(point1, point2, point3);
-}
-
-inline void Plane::set(const glm::vec4& data) {
-	_norm = glm::vec3(data);
-	_dist = data.w;
 }
 
 inline void Plane::set(const glm::vec3& norm, float dist) {

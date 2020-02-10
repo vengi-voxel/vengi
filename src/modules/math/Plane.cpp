@@ -10,6 +10,15 @@ namespace math {
 Plane::Plane()  {
 }
 
+Plane::Plane(const glm::vec4& data) {
+	set(data);
+}
+
+void Plane::set(const glm::vec4& data) {
+	_norm = glm::vec3(data);
+	_dist = data.w;
+}
+
 void Plane::normalize() {
 	const float length = glm::length(norm());
 	if (length > 0.0f) {

@@ -5,10 +5,12 @@
 #pragma once
 
 #include "Plane.h"
-#include "AABB.h"
 #include <stdint.h>
 
 namespace math {
+
+template<class T>
+class AABB;
 
 enum class FrustumPlanes {
 	Right,
@@ -40,12 +42,7 @@ public:
 		}
 	}
 
-	template<class T>
-	Frustum(const math::AABB<T>& aabb) {
-		const glm::vec3 mins(aabb.mins());
-		const glm::vec3 maxs(aabb.maxs());
-		update(glm::mat4(1.0f), mins, maxs);
-	}
+	Frustum(const glm::vec3& mins, const glm::vec3& maxs);
 
 	void update(const glm::mat4& mat, const glm::vec3& mins, const glm::vec3& maxs);
 
@@ -69,7 +66,7 @@ public:
 
 	void update(const glm::mat4& view, const glm::mat4& projection);
 
-	math::AABB<float> aabb() const;
+	AABB<float> aabb() const;
 
 	void corners(glm::vec3 out[FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
 

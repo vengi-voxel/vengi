@@ -25,7 +25,7 @@ namespace voxelrender {
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxelworld::WorldMgrPtr& world) :
-		_octree(math::AABB<int>(), 30), _world(world) {
+		_octree(math::AABB<float>(), 30), _world(world) {
 	setViewDistance(240.0f);
 }
 
@@ -114,7 +114,7 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 		maxs = (glm::max)(maxs, v.position);
 	}
 
-	chunkBuffer._aabb = math::AABB<int>(mins, maxs);
+	chunkBuffer._aabb = {mins, maxs};
 }
 
 void WorldRenderer::handleMeshQueue() {
@@ -247,7 +247,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 #endif
 				continue;
 			}
-			const math::AABB<int>& aabb = chunkBuffer->aabb();
+			const auto& aabb = chunkBuffer->aabb();
 			if (aabb.containsPoint(camera.position())) {
 				continue;
 			}

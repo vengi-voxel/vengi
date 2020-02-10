@@ -5,12 +5,17 @@
 #pragma once
 
 #include "core/GLM.h"
-#include "math/AABB.h"
 #include "math/Frustum.h"
 #include "Types.h"
-#include "Ray.h"
+
+namespace math {
+template<typename TYPE>
+class AABB;
+}
 
 namespace video {
+
+class Ray;
 
 enum class CameraType {
 	FirstPerson,
@@ -421,10 +426,6 @@ inline const math::Frustum& Camera::frustum() const {
 
 inline bool Camera::isVisible(const glm::vec3& position) const {
 	return frustum().isVisible(position);
-}
-
-inline bool Camera::isVisible(const math::AABB<float>& aabb) const {
-	return isVisible(aabb.getLowerCorner(), aabb.getUpperCorner());
 }
 
 inline bool Camera::isVisible(const glm::vec3& mins, const glm::vec3& maxs) const {

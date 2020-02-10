@@ -6,6 +6,8 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/Singleton.h"
+#include "math/AABB.h"
+#include "Ray.h"
 
 namespace video {
 
@@ -447,6 +449,10 @@ void Camera::setFarPlane(float farPlane) {
 
 	_dirty |= DIRTY_PERSPECTIVE;
 	_farPlane = farPlane;
+}
+
+bool Camera::isVisible(const math::AABB<float>& aabb) const {
+	return isVisible(aabb.getLowerCorner(), aabb.getUpperCorner());
 }
 
 }

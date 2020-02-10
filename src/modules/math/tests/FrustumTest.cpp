@@ -6,6 +6,7 @@
 #include "math/Frustum.h"
 #include "core/GLM.h"
 #include "core/StringUtil.h"
+#include "math/AABB.h"
 
 namespace math {
 
@@ -139,8 +140,7 @@ TEST_F(FrustumTest, testStaticFrustumCheck) {
 TEST_F(FrustumTest, testOrthoFrustum) {
 	const glm::ivec3 mins(-64, -32, -32);
 	const glm::ivec3 maxs(64, 32, 96);
-	const math::AABB<int> aabb(mins, maxs);
-	math::Frustum frustum(aabb);
+	math::Frustum frustum(mins, maxs);
 	EXPECT_EQ(frustum.aabb(), math::AABB<float>(mins, maxs));
 	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-64, -32, 64), glm::ivec3(-32, 0, 96)));
 	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-64, 0, 64), glm::ivec3(-32, 32, 96)));

@@ -11,6 +11,7 @@
 #include <glm/trigonometric.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
+#include <glm/gtc/noise.hpp>
 #include <limits>
 #include "Simplex.h"
 

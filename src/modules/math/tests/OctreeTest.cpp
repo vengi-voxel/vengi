@@ -39,7 +39,7 @@ public:
 		n = 0;
 		const math::AABB<int> aabb(mins, maxs);
 		Octree<oc::Item> octree(aabb);
-		math::Frustum frustum(aabb);
+		math::Frustum frustum(mins, maxs);
 		const math::AABB<float>& frustumAABB = frustum.aabb();
 		EXPECT_TRUE(glm::all(glm::epsilonEqual(mins, frustumAABB.mins(), 0.1f)))
 			<< glm::to_string(mins) << ", "
@@ -76,7 +76,7 @@ public:
 	void testAABB(const glm::vec3& mins, const glm::vec3& maxs, const glm::ivec3& expectedMins, const glm::ivec3& expectedMaxs, int size) {
 		EXPECT_TRUE(glm::isPowerOfTwo(size));
 		const math::AABB<int> aabb(mins, maxs);
-		math::Frustum frustum(aabb);
+		math::Frustum frustum(mins, maxs);
 		const math::AABB<float>& frustumAABB = frustum.aabb();
 		EXPECT_TRUE(glm::all(glm::epsilonEqual(mins, frustumAABB.mins(), 0.1f)))
 			<< glm::to_string(mins) << ", "
@@ -189,7 +189,7 @@ TEST_F(OctreeTest, testOctreeVisitOrthoFrustum) {
 	const int slices = 8;
 	const math::AABB<int> aabb(mins, maxs);
 	Octree<oc::Item> octree(aabb);
-	math::Frustum frustum(aabb);
+	math::Frustum frustum(mins, maxs);
 	const math::AABB<float>& frustumAABB = frustum.aabb();
 	ASSERT_EQ(mins, frustumAABB.mins())
 		<< glm::to_string(mins) << ", "

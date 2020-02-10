@@ -19,6 +19,8 @@
 #include "attrib/Attributes.h"
 #include "attrib/ContainerProvider.h"
 #include <SDL.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,

@@ -8,6 +8,7 @@
 #include "math/Frustum.h"
 #include "math/AABB.h"
 #include "video/Camera.h"
+#include "video/Ray.h"
 
 namespace video {
 

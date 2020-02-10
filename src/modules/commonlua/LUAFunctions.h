@@ -6,6 +6,7 @@
 #include "LUA.h"
 #include "core/Log.h"
 #include "core/GLM.h"
+#include <glm/gtx/string_cast.hpp>
 #include <vector>
 
 template<class T>

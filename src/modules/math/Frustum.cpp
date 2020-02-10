@@ -6,6 +6,7 @@
 #include "core/Trace.h"
 #include "core/Assert.h"
 #include "core/GLM.h"
+#include "math/AABB.h"
 
 namespace math {
 
@@ -15,6 +16,10 @@ static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
 	glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
 	glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
 };
+
+Frustum::Frustum(const glm::vec3& mins, const glm::vec3& maxs) {
+	update(glm::mat4(1.0f), mins, maxs);
+}
 
 void Frustum::update(const glm::mat4& mat, const glm::vec3& mins, const glm::vec3& maxs) {
 	update(mat, glm::ortho(mins.x, maxs.x, mins.y, maxs.y, -mins.z, -maxs.z));

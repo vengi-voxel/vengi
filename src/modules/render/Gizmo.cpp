@@ -4,6 +4,7 @@
 
 #include "Gizmo.h"
 #include "core/GLM.h"
+#include "video/Ray.h"
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>
 
