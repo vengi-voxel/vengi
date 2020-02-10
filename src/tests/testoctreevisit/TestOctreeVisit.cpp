@@ -9,6 +9,7 @@
 #include "math/AABB.h"
 #include "video/ScopedLineWidth.h"
 #include "core/collection/Array.h"
+#include <glm/gtc/type_ptr.hpp>
 
 TestOctreeVisit::TestOctreeVisit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

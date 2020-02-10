@@ -8,6 +8,7 @@
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "ui/imgui/IMGUI.h"
+#include <glm/gtc/type_ptr.hpp>
 
 TestShapeBuilder::TestShapeBuilder(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider), _color(core::Color::DarkGreen) {

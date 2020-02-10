@@ -20,6 +20,7 @@
 #include "video/Renderer.h"
 #include "util/IncludeUtil.h"
 #include "util/VarUtil.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace video {
 

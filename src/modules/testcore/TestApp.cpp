@@ -10,6 +10,7 @@
 #include "core/GameConfig.h"
 #include "core/Var.h"
 #include <SDL.h>
+#include <glm/gtc/type_ptr.hpp>
 
 TestApp::TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

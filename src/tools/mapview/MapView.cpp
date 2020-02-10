@@ -21,6 +21,7 @@
 #include <SDL.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,

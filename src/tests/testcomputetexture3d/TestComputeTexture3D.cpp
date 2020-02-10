@@ -10,6 +10,7 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelgenerator/NoiseGenerator.h"
 #include "video/ScopedViewPort.h"
+#include <glm/gtc/type_ptr.hpp>
 
 TestComputeTexture3D::TestComputeTexture3D(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider), _renderShader(compute::RenderShader::getInstance()) {
