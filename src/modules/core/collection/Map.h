@@ -167,7 +167,7 @@ public:
 	}
 
 	iterator find(const KEYTYPE& key) const {
-		unsigned long hashValue = _hasher(key);
+		const size_t hashValue = (size_t)_hasher(key);
 		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
 		while (entry != nullptr) {
 			if (COMPARE()(entry->key, key)) {
@@ -179,7 +179,7 @@ public:
 	}
 
 	void put(const KEYTYPE& key, const VALUETYPE& value) {
-		unsigned long hashValue = _hasher(key);
+		const size_t hashValue = (size_t)_hasher(key);
 		KeyValue *prev = nullptr;
 		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
 
@@ -232,7 +232,7 @@ public:
 	}
 
 	bool remove(const KEYTYPE& key) {
-		unsigned long hashValue = _hasher(key);
+		const size_t hashValue = (size_t)_hasher(key);
 		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
 		KeyValue *prev = nullptr;
 
