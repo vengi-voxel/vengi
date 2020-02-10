@@ -4,6 +4,7 @@
 #pragma once
 
 #include "StringUtil.h"
+#include <SDL_stdinc.h>
 #include <stdarg.h>
 
 namespace ai {
@@ -47,7 +48,7 @@ inline void IParser::setError(const char* msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	char buf[1024];
-	std::vsnprintf(buf, sizeof(buf), msg, args);
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	va_end(args);
 	_error = buf;
 }
