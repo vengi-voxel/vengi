@@ -154,7 +154,7 @@ public:
 	}
 
 	bool get(const KEYTYPE& key, VALUETYPE& value) const {
-		unsigned long hashValue = _hasher(key);
+		const size_t hashValue = (size_t)_hasher(key);
 		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
 		while (entry != nullptr) {
 			if (COMPARE()(entry->key, key)) {
