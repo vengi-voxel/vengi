@@ -11,6 +11,8 @@
 #include "math/Axis.h"
 #include "voxelutil/Raycast.h"
 #include "core/GLM.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 
 namespace voxelgenerator {
 namespace shape {

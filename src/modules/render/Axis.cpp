@@ -5,6 +5,8 @@
 #include "Axis.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedState.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>
 
 namespace render {
 

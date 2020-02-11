@@ -4,6 +4,10 @@
 
 #include "Bone.h"
 #include "core/GLM.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/functions.hpp>
 
 namespace animation {
 

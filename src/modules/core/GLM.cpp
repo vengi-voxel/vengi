@@ -4,6 +4,8 @@
 
 #include "GLM.h"
 #include <glm/gtc/matrix_access.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 
 namespace glm {
 

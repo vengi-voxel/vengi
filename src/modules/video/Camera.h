@@ -7,6 +7,8 @@
 #include "core/GLM.h"
 #include "math/Frustum.h"
 #include "Types.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 
 namespace math {
 template<typename TYPE>

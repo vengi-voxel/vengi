@@ -21,6 +21,9 @@
 #include "video/ScopedState.h"
 #include "video/Types.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>
+
 namespace voxelrender {
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo

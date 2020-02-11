@@ -28,6 +28,8 @@
 #include "core/Log.h"
 #include "math/Random.h"
 #include "core/GLM.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 
 namespace noise {
 

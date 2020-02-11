@@ -17,11 +17,6 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/norm.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/functions.hpp>
-
 template<int N, typename T>
 struct VecLessThan {
 	inline bool operator()(const glm::vec<N, T>& lhs, const glm::vec<N, T>& rhs) const {

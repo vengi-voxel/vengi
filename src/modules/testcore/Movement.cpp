@@ -5,6 +5,9 @@
 #include "Movement.h"
 #include "core/command/Command.h"
 #include "core/GLM.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
+#include <glm/gtx/functions.hpp>
 
 namespace testcore {
 

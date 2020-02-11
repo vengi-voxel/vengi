@@ -7,6 +7,8 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/RawVolumeWrapper.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>
 
 namespace {
 const int PlayFieldVolume = 0;

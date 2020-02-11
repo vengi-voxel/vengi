@@ -16,6 +16,8 @@
 #include "BiomeLUAFunctions.h"
 #include "commonlua/LUAFunctions.h"
 #include "core/Enum.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 
 namespace voxelworld {
 
