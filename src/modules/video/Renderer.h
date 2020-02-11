@@ -16,9 +16,7 @@
 #include <glm/vec2.hpp>
 #include <type_traits>
 #include <vector>
-#include "TextureConfig.h"
-#include "FrameBufferConfig.h"
-#include "StencilConfig.h"
+#include <map>
 #include "RenderBuffer.h"
 
 struct SDL_Window;
@@ -27,6 +25,9 @@ namespace video {
 
 class Texture;
 typedef std::shared_ptr<Texture> TexturePtr;
+
+class TextureConfig;
+class StencilConfig;
 
 namespace _priv {
 

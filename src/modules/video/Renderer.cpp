@@ -6,6 +6,8 @@
 #include "core/Log.h"
 #include "core/Assert.h"
 #include <SDL_video.h>
+#include "TextureConfig.h"
+#include "StencilConfig.h"
 
 namespace video {
 

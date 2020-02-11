@@ -12,6 +12,8 @@
 #include "GLHelper.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
+#include "video/TextureConfig.h"
+#include "video/StencilConfig.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/ArrayLength.h"

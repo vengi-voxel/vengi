@@ -14,6 +14,7 @@
 #include "video/Renderer.h"
 #include "video/Shader.h"
 #include "video/ScopedViewPort.h"
+#include "video/TextureConfig.h"
 #include "IMGUI.h"
 #include <SDL.h>
 #include <SDL_syswm.h>
