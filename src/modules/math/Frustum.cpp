@@ -8,6 +8,7 @@
 #include "core/GLM.h"
 #include "math/AABB.h"
 #include <glm/gtc/matrix_access.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace math {
 

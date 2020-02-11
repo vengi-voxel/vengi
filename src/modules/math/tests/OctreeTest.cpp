@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "math/OctreeCache.h"
+#include <glm/gtc/round.hpp>
 
 namespace math {
 
