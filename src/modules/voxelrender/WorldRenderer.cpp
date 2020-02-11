@@ -483,6 +483,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	_chrShader.setLightdir(_shadow.sunDirection());
 	_chrShader.setNightColor(_nightColor);
 	_chrShader.setTime(_seconds);
+	_chrShader.setMaterialblock(_materialBlock);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
