@@ -5,10 +5,8 @@
 #pragma once
 
 #include <functional>
-#include <limits>
 #include <math.h>
 
-#include <glm/gtc/integer.hpp>
 #include <glm/glm.hpp>
 
 #include <glm/gtc/constants.hpp>
