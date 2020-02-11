@@ -7,6 +7,7 @@
 #include "core/Assert.h"
 #include "core/GLM.h"
 #include "math/AABB.h"
+#include <glm/gtc/matrix_access.hpp>
 
 namespace math {
 

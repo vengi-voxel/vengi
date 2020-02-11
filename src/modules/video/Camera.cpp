@@ -8,11 +8,16 @@
 #include "core/Singleton.h"
 #include "math/AABB.h"
 #include "Ray.h"
+#include <glm/gtc/matrix_access.hpp>
 
 namespace video {
 
 Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _pos(glm::vec3(0.0f)), _omega(0.0f) {
+}
+
+glm::vec3 Camera::direction() const {
+	return glm::vec3(glm::column(inverseViewMatrix(), 2));
 }
 
 void Camera::setOmega(const glm::vec3& omega) {

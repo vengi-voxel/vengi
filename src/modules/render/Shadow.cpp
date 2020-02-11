@@ -14,6 +14,7 @@
 #include "video/Buffer.h"
 #include "video/Renderer.h"
 #include "core/Log.h"
+#include <glm/gtc/matrix_access.hpp>
 
 namespace render {
 

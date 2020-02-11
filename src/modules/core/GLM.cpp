@@ -1,4 +1,9 @@
+/**
+ * @file
+ */
+
 #include "GLM.h"
+#include <glm/gtc/matrix_access.hpp>
 
 namespace glm {
 
@@ -256,10 +261,11 @@ bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsi
 	}
 	return glm::dot(normal, vmax) >= 0.0f;
 }
+
 float intersectLines(const glm::vec3& p1,
 		const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& p4,
-		glm::vec3& pa, glm::vec3& pb, float *pmua = nullptr,
-		float *pmub = nullptr) {
+		glm::vec3& pa, glm::vec3& pb, float *pmua,
+		float *pmub) {
 	const glm::vec3 p13 = p1 - p3;
 	const glm::vec3 p43 = p4 - p3;
 	const vec3 eps(glm::epsilon<float>());

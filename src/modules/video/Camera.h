@@ -454,10 +454,6 @@ inline void Camera::setAspectRatio(float aspect) {
 	_frameBufferAspectRatio = aspect;
 }
 
-inline glm::vec3 Camera::direction() const {
-	return glm::vec3(glm::column(inverseViewMatrix(), 2));
-}
-
 inline const glm::vec3& Camera::position() const {
 	return _pos;
 }
