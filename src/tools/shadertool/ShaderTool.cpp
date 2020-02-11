@@ -29,6 +29,7 @@ core::AppState ShaderTool::onConstruct() {
 	registerArg("--glslang").setShort("-g").setDescription("Path to glslangvalidator binary").setMandatory();
 	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").setMandatory();
 	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file").setMandatory();
+	registerArg("--constantstemplate").setShort("-t").setDescription("The shader constants template file");
 	registerArg("--buffertemplate").setShort("-b").setDescription("The uniform buffer template file").setMandatory();
 	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("shader");
 	registerArg("--shaderdir").setShort("-d").setDescription("Directory to load the shader from").setDefaultValue("shaders/");
@@ -118,6 +119,7 @@ core::AppState ShaderTool::onRunning() {
 		_sourceTemplateFile               = getArgVal("--sourcetemplate");
 		_uniformBufferTemplateFile        = getArgVal("--buffertemplate");
 		_namespaceSrc                     = getArgVal("--namespace");
+		_constantsTemplateFile            = getArgVal("--constantstemplate");
 		_shaderDirectory                  = getArgVal("--shaderdir");
 		_sourceDirectory                  = getArgVal("--sourcedir",
 				_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
@@ -161,6 +163,7 @@ core::AppState ShaderTool::onRunning() {
 	const core::String& templateShaderHeader = fs->load(_headerTemplateFile);
 	const core::String& templateShaderSource = fs->load(_sourceTemplateFile);
 	const core::String& templateUniformBuffer = fs->load(_uniformBufferTemplateFile);
+	const core::String& templateConstantsBuffer = _constantsTemplateFile.empty() ? "" : fs->load(_constantsTemplateFile);
 
 	const core::String& computeFilename = _shaderfile + COMPUTE_POSTFIX;
 	std::pair<core::String, bool> computeBuffer = getSource(computeFilename);
@@ -181,7 +184,7 @@ core::AppState ShaderTool::onRunning() {
 			return core::AppState::Cleanup;
 		}
 
-		if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateUniformBuffer, _shaderStruct,
+		if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateConstantsBuffer, templateUniformBuffer, _shaderStruct,
 				filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix,
 				"", "", "", computeBuffer.first)) {
 			Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
@@ -248,8 +251,8 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateUniformBuffer, _shaderStruct,
-			filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix,
+	if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateConstantsBuffer, templateUniformBuffer,
+			_shaderStruct, filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix,
 			vertexBuffer.first, geometryBuffer.first, fragmentBuffer.first, computeBuffer.first)) {
 		Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 		_exitCode = 1;

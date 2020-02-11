@@ -34,7 +34,7 @@ protected:
 	 * @note Make sure to initialize the bones states of the skeleton before calling this
 	 */
 	bool updateAABB() {
-		glm::mat4 bones[shader::SkeletonShader::getMaxBones()] {};
+		glm::mat4 bones[shader::SkeletonShaderConstants::getMaxBones()] {};
 		skeleton().update(_settings, bones);
 		_aabb.setLowerCorner(glm::zero<glm::vec3>());
 		_aabb.setUpperCorner(glm::zero<glm::vec3>());

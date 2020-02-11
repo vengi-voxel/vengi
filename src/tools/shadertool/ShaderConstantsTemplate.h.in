@@ -1,0 +1,17 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+namespace $namespace$ {
+
+/**
+ * @ingroup Video
+ * @brief Shader constants for $filename$
+ */
+struct $name$Constants {
+$prototypes$
+};
+
+};

@@ -19,7 +19,7 @@ bool AnimationRenderer::init() {
 		return false;
 	}
 	render::ShadowParameters shadowParams;
-	shadowParams.maxDepthBuffers = _shader.getUniformArraySize(shader::SkeletonShader::getMaxDepthBufferUniformName());
+	shadowParams.maxDepthBuffers = _shader.getUniformArraySize(shader::SkeletonShaderConstants::getMaxDepthBufferUniformName());
 	if (!_shadow.init(shadowParams)) {
 		Log::error("Failed to init shadow object");
 		return false;
@@ -75,7 +75,7 @@ void AnimationRenderer::render(const AnimationEntity& character, const video::Ca
 	if (numIndices == 0u) {
 		return;
 	}
-	glm::mat4 bones[shader::SkeletonShader::getMaxBones()];
+	glm::mat4 bones[shader::SkeletonShaderConstants::getMaxBones()];
 	const AnimationSettings& settings = character.animationSettings();
 	const Skeleton& skeleton = character.skeleton();
 	skeleton.update(settings, bones);

@@ -20,6 +20,7 @@
 #include "core/Var.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "VoxelShaderConstants.h"
 #include <unordered_set>
 
 namespace voxelrender {
@@ -94,7 +95,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	render::ShadowParameters shadowParams;
-	shadowParams.maxDepthBuffers = _voxelShader.getUniformArraySize(shader::VoxelShader::getMaxDepthBufferUniformName());
+	shadowParams.maxDepthBuffers = _voxelShader.getUniformArraySize(shader::VoxelShaderConstants::getMaxDepthBufferUniformName());
 	if (!_shadow.init(shadowParams)) {
 		return false;
 	}

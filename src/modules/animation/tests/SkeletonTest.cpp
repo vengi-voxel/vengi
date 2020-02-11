@@ -16,7 +16,7 @@ protected:
 		AnimationSettings settings;
 		const core::String& lua = io::filesystem()->load("%s", file);
 		ASSERT_TRUE(loadAnimationSettings(lua, settings, nullptr));
-		glm::mat4 bones[shader::SkeletonShader::getMaxBones()];
+		glm::mat4 bones[shader::SkeletonShaderConstants::getMaxBones()];
 		skel.update(settings, bones);
 		EXPECT_NE(-1, settings.mapBoneIdToArrayIndex(BoneId::Head));
 		EXPECT_NE(-1, settings.mapBoneIdToArrayIndex(BoneId::Chest));

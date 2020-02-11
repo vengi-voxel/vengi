@@ -5,6 +5,7 @@
 #include "Tool.h"
 #include "animation/Animation.h"
 #include "animation/BoneUtil.h"
+#include "core/Assert.h"
 
 namespace animation {
 namespace chr {

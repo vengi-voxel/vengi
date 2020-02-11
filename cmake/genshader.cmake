@@ -4,11 +4,13 @@ macro(generate_shaders TARGET)
 	set(GEN_DIR ${GENERATE_DIR}/shaders/${TARGET}/)
 	set(_template_header ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.h.in)
 	set(_template_cpp ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.cpp.in)
+	set(_template_constants_header ${ROOT_DIR}/src/tools/shadertool/ShaderConstantsTemplate.h.in)
 	set(_template_ub ${ROOT_DIR}/src/tools/shadertool/UniformBufferTemplate.h.in)
 	file(MAKE_DIRECTORY ${GEN_DIR})
 	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
 	set(_headers)
 	set(_sources)
+	set(_constantsheaders)
 	add_custom_target(UpdateShaders${TARGET})
 	file(WRITE ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake "configure_file(\${SRC} \${DST} @ONLY)")
 	if (NOT DEFINED video_SOURCE_DIR)
@@ -47,25 +49,26 @@ macro(generate_shaders TARGET)
 			convert_to_camel_case(${_file} _f)
 			set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
 			set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
+			set(_shaderconstantheaderpath "${GEN_DIR}${_f}ShaderConstants.h")
 			# TODO We have to add the shader/ dirs of all dependencies to the include path
 			if (CMAKE_CROSS_COMPILING)
 				message(STATUS "Looking for native tool in ${NATIVE_BUILD_DIR}")
 				find_program(SHADERTOOL_EXECUTABLE NAMES vengi-shadertool PATHS ${NATIVE_BUILD_DIR}/shadertool)
 				find_program(GLSLANGVALIDATOR_EXECUTABLE NAMES glslangValidator PATHS ${NATIVE_BUILD_DIR})
 				add_custom_command(
-					OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in
+					OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in ${_shaderconstantheaderpath}.in
 					IMPLICIT_DEPENDS C ${_shaders}
 					COMMENT "Validate ${_file}"
-					COMMAND ${SHADERTOOL_EXECUTABLE} --glslang ${GLSLANGVALIDATOR_EXECUTABLE} -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
-					DEPENDS ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub}
+					COMMAND ${SHADERTOOL_EXECUTABLE} --glslang ${GLSLANGVALIDATOR_EXECUTABLE} -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --constantstemplate  ${_template_constants_header} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+					DEPENDS ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 				)
 			else()
 				add_custom_command(
-					OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in
+					OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in ${_shaderconstantheaderpath}.in
 					IMPLICIT_DEPENDS C ${_shaders}
 					COMMENT "Validate ${_file}"
-					COMMAND shadertool --glslang $<TARGET_FILE:glslangValidator> -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
-					DEPENDS shadertool ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub}
+					COMMAND shadertool --glslang $<TARGET_FILE:glslangValidator> -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --constantstemplate  ${_template_constants_header} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+					DEPENDS shadertool ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 				)
 			endif()
 			list(APPEND _headers ${_shaderheaderpath})
@@ -80,6 +83,12 @@ macro(generate_shaders TARGET)
 				COMMAND ${CMAKE_COMMAND} -D SRC=${_shadersourcepath}.in -D DST=${_shadersourcepath} -P ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake
 				DEPENDS ${_shadersourcepath}.in
 			)
+			add_custom_command(
+				OUTPUT ${_shaderconstantheaderpath}
+				COMMAND ${CMAKE_COMMAND} -D SRC=${_shaderconstantheaderpath}.in -D DST=${_shaderconstantheaderpath} -P ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake
+				DEPENDS ${_shaderconstantheaderpath}.in
+			)
+			list(APPEND _constantsheaders ${_shaderconstantheaderpath})
 		else()
 			message(FATAL_ERROR "Could not find any shader files for ${_file} and target '${TARGET}'")
 		endif()
@@ -93,12 +102,12 @@ macro(generate_shaders TARGET)
 		file(APPEND ${_shadersheader}.in "#include \"${header}\"\n")
 	endforeach()
 	add_custom_target(GenerateShaderBindings${TARGET}
-		DEPENDS ${_headers}
+		DEPENDS ${_headers} ${_constantsheaders}
 		COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
 	)
-	engine_mark_as_generated(${_headers} ${_sources} ${_shadersheader})
+	engine_mark_as_generated(${_headers} ${_shaderconstantheaderpath} ${_sources} ${_shadersheader})
 	generate_unity_sources(SOURCES TARGET ${TARGET} SRCS ${_sources} UNITY_SRC "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_shaders_unity.cpp")
-	target_sources(${TARGET} PRIVATE ${_headers} ${_shadersheader})
+	target_sources(${TARGET} PRIVATE ${_headers} ${_constantsheaders} ${_shadersheader})
 
 	add_custom_target(GenerateShaderHeader${TARGET} ${CMAKE_COMMAND} -D SRC=${_shadersheader}.in -D DST=${_shadersheader} -P ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake)
 	add_dependencies(${TARGET} GenerateShaderHeader${TARGET} UpdateShaders${TARGET})

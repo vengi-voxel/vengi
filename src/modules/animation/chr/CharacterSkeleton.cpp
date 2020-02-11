@@ -68,7 +68,7 @@ Bone& CharacterSkeleton::headBone(const CharacterSkeletonAttribute& skeletonAttr
 	return head;
 }
 
-void CharacterSkeleton::update(const AnimationSettings& settings, glm::mat4 (&bones)[shader::SkeletonShader::getMaxBones()]) const {
+void CharacterSkeleton::update(const AnimationSettings& settings, glm::mat4 (&bones)[shader::SkeletonShaderConstants::getMaxBones()]) const {
 	const glm::mat4& chestMat = bone(BoneId::Chest).matrix();
 	const glm::mat4& torsoMat = bone(BoneId::Torso).matrix();
 	const glm::mat4& headMat  = bone(BoneId::Head).matrix();

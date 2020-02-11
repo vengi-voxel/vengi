@@ -28,7 +28,7 @@ Bone& BirdSkeleton::headBone(const BirdSkeletonAttribute& skeletonAttr) {
 	return head;
 }
 
-void BirdSkeleton::update(const AnimationSettings& settings, glm::mat4 (&bones)[shader::SkeletonShader::getMaxBones()]) const {
+void BirdSkeleton::update(const AnimationSettings& settings, glm::mat4 (&bones)[shader::SkeletonShaderConstants::getMaxBones()]) const {
 	const glm::mat4& torsoMat = bone(BoneId::Torso).matrix();
 	const glm::mat4& bodyMat = torsoMat * bone(BoneId::Body).matrix();
 

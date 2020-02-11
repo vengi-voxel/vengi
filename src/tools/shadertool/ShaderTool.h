@@ -25,6 +25,7 @@ protected:
 	core::String _sourceTemplateFile;
 	core::String _glslangValidatorBin;
 	core::String _uniformBufferTemplateFile;
+	core::String _constantsTemplateFile;
 	core::String _shaderfile;
 	core::String _shaderpath;
 	std::vector<core::String> _includes;

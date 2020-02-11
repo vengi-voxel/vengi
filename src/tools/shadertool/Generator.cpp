@@ -45,13 +45,15 @@ static core::String maxStringLength(const core::String& input) {
 	return "R\"(" + input + ")\"";
 }
 
-bool generateSrc(const core::String& templateHeader, const core::String& templateSource, const core::String& templateUniformBuffer, const ShaderStruct& shaderStruct,
+bool generateSrc(const core::String& templateHeader, const core::String& templateSource, const core::String& templateConstantsHeader,
+		const core::String& templateUniformBuffer, const ShaderStruct& shaderStruct,
 		const io::FilesystemPtr& filesystem, const core::String& namespaceSrc, const core::String& sourceDirectory, const core::String& shaderDirectory, const core::String& postfix,
 		const core::String& vertexBuffer, const core::String& geometryBuffer, const core::String& fragmentBuffer, const core::String& computeBuffer) {
 	core::String srcHeader(templateHeader);
 	core::String srcSource(templateSource);
-	const core::String& name = shaderStruct.name + "Shader";
+	core::String srcConstantsHeader(templateConstantsHeader);
 
+	const core::String& name = shaderStruct.name + "Shader";
 	const core::String& filename = util::convertName(name, true);
 	core::String uniforms;
 	core::String uniformArrayInfo;
@@ -569,40 +571,50 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		}
 	}
 
+	core::String constants;
+	constants.reserve(4096);
 	for (const auto& e : shaderStruct.constants) {
-		prototypes += "\t/**\n";
-		prototypes += "\t * @brief Exported from shader code by @code $constant ";
-		prototypes += e.first;
-		prototypes += " ";
-		prototypes += e.second;
-		prototypes += " @endcode\n";
-		prototypes += "\t */\n";
+		constants += "\t/**\n";
+		constants += "\t * @brief Exported from shader code by @code $constant ";
+		constants += e.first;
+		constants += " ";
+		constants += e.second;
+		constants += " @endcode\n";
+		constants += "\t */\n";
 		if (core::string::isInteger(e.second)) {
-			prototypes += "\tinline static constexpr int get";
-			prototypes += util::convertName(e.first, true);
-			prototypes += "() {\n";
-			prototypes += "\t\treturn ";
-			prototypes += e.second;
-			prototypes += ";\n";
-			prototypes += "\t}\n";
+			constants += "\tinline static constexpr int get";
+			constants += util::convertName(e.first, true);
+			constants += "() {\n";
+			constants += "\t\treturn ";
+			constants += e.second;
+			constants += ";\n";
+			constants += "\t}\n";
 		} else if (core::string::isNumber(e.second)) {
-			prototypes += "\tinline static constexpr double get";
-			prototypes += util::convertName(e.first, true);
-			prototypes += "() {\n";
-			prototypes += "\t\treturn ";
-			prototypes += e.second;
-			prototypes += ";\n";
-			prototypes += "\t}\n";
+			constants += "\tinline static constexpr double get";
+			constants += util::convertName(e.first, true);
+			constants += "() {\n";
+			constants += "\t\treturn ";
+			constants += e.second;
+			constants += ";\n";
+			constants += "\t}\n";
 		} else {
-			prototypes += "\tinline static constexpr const char* get";
-			prototypes += util::convertName(e.first, true);
-			prototypes += "() {\n";
-			prototypes += "\t\treturn \"";
-			prototypes += e.second;
-			prototypes += "\";\n";
-			prototypes += "\t}\n";
+			constants += "\tinline static constexpr const char* get";
+			constants += util::convertName(e.first, true);
+			constants += "() {\n";
+			constants += "\t\treturn \"";
+			constants += e.second;
+			constants += "\";\n";
+			constants += "\t}\n";
 		}
 	}
+
+	if (shaderStruct.constants.empty()) {
+		constants += "#error \"Shader does not define any constants\"\n";
+	}
+
+	srcConstantsHeader = core::string::replaceAll(srcConstantsHeader, "$name$", filename);
+	srcConstantsHeader = core::string::replaceAll(srcConstantsHeader, "$namespace$", namespaceSrc);
+	srcConstantsHeader = core::string::replaceAll(srcConstantsHeader, "$prototypes$", constants);
 
 	srcHeader = core::string::replaceAll(srcHeader, "$name$", filename);
 	srcHeader = core::string::replaceAll(srcHeader, "$namespace$", namespaceSrc);
@@ -648,6 +660,13 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		Log::error("Failed to write %s", targetSourceFile.c_str());
 		return false;
 	}
+
+	const core::String targetConstantHeaderFile = sourceDirectory + filename + "Constants.h" + postfix;
+	if (!filesystem->syswrite(targetConstantHeaderFile, srcConstantsHeader)) {
+		Log::error("Failed to write %s", targetConstantHeaderFile.c_str());
+		return false;
+	}
+
 	return true;
 }
 
