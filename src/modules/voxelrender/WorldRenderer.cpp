@@ -480,8 +480,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	_chrShader.setDiffuseColor(_diffuseColor);
 	_chrShader.setAmbientColor(_ambientColor);
 	_chrShader.setFogcolor(_clearColor);
-	_chrShader.setCascades(_shadow.cascades());
-	_chrShader.setDistances(_shadow.distances());
 	_chrShader.setLightdir(_shadow.sunDirection());
 	_chrShader.setNightColor(_nightColor);
 	_chrShader.setTime(_seconds);
@@ -491,7 +489,8 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		_chrShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_chrShader.setViewprojection(camera.viewProjectionMatrix());
 		_chrShader.setShadowmap(video::TextureUnit::One);
-		_shadow.bind(video::TextureUnit::One);
+		_chrShader.setCascades(_shadow.cascades());
+		_chrShader.setDistances(_shadow.distances());
 	}
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
