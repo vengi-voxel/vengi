@@ -5,6 +5,9 @@
 #pragma once
 
 #include "core/GLM.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "Bone.h"
 
 namespace animation {

@@ -16,6 +16,8 @@
 #include "core/Var.h"
 #include "core/collection/Array.h"
 #include <unordered_map>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 
 namespace video {
 class Camera;

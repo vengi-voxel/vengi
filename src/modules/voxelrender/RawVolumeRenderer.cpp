@@ -22,6 +22,8 @@
 #include "core/Log.h"
 #include "VoxelShaderConstants.h"
 #include <unordered_set>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 
 namespace voxelrender {
 

@@ -7,6 +7,8 @@
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "core/Assert.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/euler_angles.hpp>
 
 namespace voxel {
 
