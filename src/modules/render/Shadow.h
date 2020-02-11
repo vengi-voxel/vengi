@@ -4,12 +4,13 @@
 
 #pragma once
 
-#include "core/GLM.h"
-#include <vector>
-#include <functional>
 #include "RenderShaders.h"
 #include "video/FrameBuffer.h"
 #include "video/Buffer.h"
+#include <vector>
+#include <functional>
+#include "core/GLM.h"
+#include <glm/glm.hpp>
 
 namespace video {
 class Camera;

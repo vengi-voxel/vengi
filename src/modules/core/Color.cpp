@@ -5,6 +5,7 @@
 #include "Color.h"
 #include "core/Common.h"
 #include "core/GLM.h"
+#include <glm/glm.hpp>
 
 #include <SDL.h>
 #include <limits.h>

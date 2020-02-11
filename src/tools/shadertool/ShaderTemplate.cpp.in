@@ -6,6 +6,7 @@
 #include <vector>
 #include "video/Shader.h"
 #include "core/GLM.h"
+#include <glm/glm.hpp>
 #include "video/Types.h"
 #include "video/UniformBuffer.h"
 #include "core/Singleton.h"

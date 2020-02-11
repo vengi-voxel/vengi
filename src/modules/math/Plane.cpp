@@ -4,6 +4,7 @@
 
 #include "Plane.h"
 #include "core/GLM.h"
+#include <glm/glm.hpp>
 
 namespace math {
 

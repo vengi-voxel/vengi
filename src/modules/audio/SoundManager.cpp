@@ -12,7 +12,7 @@
 #include "core/GameConfig.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include "core/GLM.h"
+#include <glm/glm.hpp>
 
 namespace audio {
 
