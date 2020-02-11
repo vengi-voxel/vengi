@@ -8,6 +8,7 @@
 #include <SDL_video.h>
 #include "TextureConfig.h"
 #include "StencilConfig.h"
+#include "image/Image.h"
 
 namespace video {
 

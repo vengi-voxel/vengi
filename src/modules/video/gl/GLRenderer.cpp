@@ -14,6 +14,7 @@
 #include "video/Texture.h"
 #include "video/TextureConfig.h"
 #include "video/StencilConfig.h"
+#include "image/Image.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/ArrayLength.h"

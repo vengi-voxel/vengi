@@ -14,6 +14,7 @@
 #include "animation/animal/bird/Bird.h"
 #include "stock/ContainerData.h"
 #include "core/collection/Array.h"
+#include "core/io/File.h"
 
 static bool reloadAnimationEntity = false;
 

@@ -9,7 +9,6 @@
 #pragma once
 
 #include "ShaderTypes.h"
-#include "image/Image.h"
 #include <glm/fwd.hpp>
 #include <glm/vec4.hpp>
 #include <glm/vec3.hpp>
@@ -17,9 +16,15 @@
 #include <type_traits>
 #include <vector>
 #include <map>
+#include <memory>
 #include "RenderBuffer.h"
 
 struct SDL_Window;
+
+namespace image {
+class Image;
+typedef std::shared_ptr<Image> ImagePtr;
+}
 
 namespace video {
 
