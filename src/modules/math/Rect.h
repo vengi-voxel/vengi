@@ -7,6 +7,7 @@
 #include <limits>
 #include <glm/vec2.hpp>
 #include <glm/common.hpp>
+#include <functional>
 
 namespace math {
 

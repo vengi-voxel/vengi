@@ -4,9 +4,6 @@
 
 #pragma once
 
-#include <functional>
-#include <math.h>
-
 #include <glm/glm.hpp>
 
 #include <glm/gtc/constants.hpp>

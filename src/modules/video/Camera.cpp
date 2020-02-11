@@ -9,6 +9,7 @@
 #include "math/AABB.h"
 #include "Ray.h"
 #include <glm/gtc/matrix_access.hpp>
+#include <algorithm>
 
 namespace video {
 
