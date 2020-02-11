@@ -10,11 +10,68 @@
 #include "Ray.h"
 #include <glm/gtc/matrix_access.hpp>
 #include <algorithm>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 
 namespace video {
 
 Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _pos(glm::vec3(0.0f)), _omega(0.0f) {
+}
+
+float Camera::pitch() const {
+	return glm::pitch(_quat);
+}
+
+float Camera::roll() const {
+	return glm::roll(_quat);
+}
+
+float Camera::yaw() const {
+	return glm::yaw(_quat);
+}
+
+void Camera::yaw(float radians) {
+	rotate(radians, glm::up);
+}
+
+void Camera::turn(float radians) {
+	if (fabs(radians) < 0.00001f) {
+		return;
+	}
+	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up);
+	rotate(quat);
+}
+
+void Camera::rotate(float radians, const glm::vec3& axis) {
+	if (fabs(radians) < 0.00001f) {
+		return;
+	}
+	const glm::quat& quat = glm::angleAxis(radians, axis);
+	rotate(quat);
+}
+
+glm::vec3 Camera::forward() const {
+	return glm::conjugate(_quat) * glm::forward;
+}
+
+glm::vec3 Camera::right() const {
+	return glm::conjugate(_quat) * glm::right;
+}
+
+glm::vec3 Camera::up() const {
+	return glm::conjugate(_quat) * glm::up;
+}
+
+void Camera::setPosition(const glm::vec3& pos) {
+	if (glm::all(glm::epsilonEqual(_pos, pos, 0.0001f))) {
+		return;
+	}
+	_dirty |= DIRTY_POSITON;
+	_pos = pos;
+	if (_rotationType == CameraRotationType::Target) {
+		lookAt(_target);
+	}
 }
 
 glm::vec3 Camera::direction() const {

@@ -7,8 +7,7 @@
 #include "core/GLM.h"
 #include "math/Frustum.h"
 #include "Types.h"
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/norm.hpp>
+#include <glm/ext/quaternion_float.hpp>
 
 namespace math {
 template<typename TYPE>
@@ -323,40 +322,8 @@ inline void Camera::setPolygonMode(PolygonMode polygonMode) {
 	_polygonMode = polygonMode;
 }
 
-inline float Camera::pitch() const {
-	return glm::pitch(_quat);
-}
-
-inline float Camera::roll() const {
-	return glm::roll(_quat);
-}
-
-inline float Camera::yaw() const {
-	return glm::yaw(_quat);
-}
-
-inline void Camera::yaw(float radians) {
-	rotate(radians, glm::up);
-}
-
 inline void Camera::roll(float radians) {
 	rotate(radians, glm::backward);
-}
-
-inline void Camera::turn(float radians) {
-	if (fabs(radians) < 0.00001f) {
-		return;
-	}
-	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up);
-	rotate(quat);
-}
-
-inline void Camera::rotate(float radians, const glm::vec3& axis) {
-	if (fabs(radians) < 0.00001f) {
-		return;
-	}
-	const glm::quat& quat = glm::angleAxis(radians, axis);
-	rotate(quat);
 }
 
 inline bool Camera::lookAt(const glm::vec3& position) {
@@ -377,29 +344,6 @@ inline const glm::mat4& Camera::orientation() const {
 
 inline const glm::quat& Camera::quaternion() const {
 	return _quat;
-}
-
-inline glm::vec3 Camera::forward() const {
-	return glm::conjugate(_quat) * glm::forward;
-}
-
-inline glm::vec3 Camera::right() const {
-	return glm::conjugate(_quat) * glm::right;
-}
-
-inline glm::vec3 Camera::up() const {
-	return glm::conjugate(_quat) * glm::up;
-}
-
-inline void Camera::setPosition(const glm::vec3& pos) {
-	if (glm::all(glm::epsilonEqual(_pos, pos, 0.0001f))) {
-		return;
-	}
-	_dirty |= DIRTY_POSITON;
-	_pos = pos;
-	if (_rotationType == CameraRotationType::Target) {
-		lookAt(_target);
-	}
 }
 
 inline const glm::mat4& Camera::inverseViewMatrix() const {
