@@ -28,7 +28,7 @@ namespace voxelrender {
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxelworld::WorldMgrPtr& world) :
-		_octree(math::AABB<float>(), 30), _world(world) {
+		_octree({}, 30), _world(world) {
 	setViewDistance(240.0f);
 }
 
@@ -208,7 +208,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	Tree::Contents contents;
 	math::AABB<float> aabb = camera.frustum().aabb();
 	aabb.shift(camera.forward() * -10.0f);
-	_octree.query(aabb, contents);
+	_octree.query(math::AABB<int>(aabb.mins(), aabb.maxs()), contents);
 	_queryResults = contents.size();
 
 #if 0
