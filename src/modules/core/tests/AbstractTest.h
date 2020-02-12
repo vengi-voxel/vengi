@@ -97,7 +97,7 @@ private:
 		AbstractTest* _test = nullptr;
 	public:
 		TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
-		~TestApp();
+		virtual ~TestApp();
 
 		core::AppState onInit() override;
 		core::AppState onCleanup() override;

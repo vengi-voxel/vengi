@@ -38,7 +38,7 @@ protected:
 	}
 
 	void TearDown() override {
-		Super::SetUp();
+		Super::TearDown();
 		sender->shutdown();
 	}
 
