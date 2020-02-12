@@ -7,6 +7,7 @@
 #include "core/String.h"
 #include "core/GLM.h"
 #include "TextureConfig.h"
+#include <glm/vec3.hpp>
 #include <memory>
 
 namespace compute {

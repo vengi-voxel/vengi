@@ -8,6 +8,7 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/epsilon.hpp>
 
 namespace math {
 

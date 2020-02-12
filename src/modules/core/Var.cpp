@@ -9,6 +9,7 @@
 #include "Assert.h"
 #include "StringUtil.h"
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/epsilon.hpp>
 
 namespace core {
 

@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "Compute.h"
 #include "core/Assert.h"
+#include <glm/vec2.hpp>
 
 namespace compute {
 

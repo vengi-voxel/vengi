@@ -6,15 +6,6 @@
 
 #include <glm/fwd.hpp>
 
-#include <glm/gtc/epsilon.hpp>
-
-template<int N, typename T>
-struct VecLessThan {
-	inline bool operator()(const glm::vec<N, T>& lhs, const glm::vec<N, T>& rhs) const {
-		return glm::all(glm::lessThan(lhs, rhs));
-	}
-};
-
 namespace glm {
 extern const glm::vec3 forward;
 extern const glm::vec3 backward;

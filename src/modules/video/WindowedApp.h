@@ -13,6 +13,7 @@
 #include "video/Types.h"
 #include "video/Version.h"
 #include <functional>
+#include <glm/vec2.hpp>
 
 struct SDL_Window;
 

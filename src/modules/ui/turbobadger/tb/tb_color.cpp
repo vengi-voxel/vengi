@@ -4,8 +4,18 @@
 
 #include "tb_color.h"
 #include <stdio.h>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 namespace tb {
+
+TBColor TBColor::fromVec4(const glm::vec4& c) {
+	return TBColor((int)(c.r * 255.0f), (int)(c.g * 255.0f), (int)(c.b * 255.0f), (int)(c.a * 255.0f));
+}
+
+TBColor TBColor::fromVec3(const glm::vec3& c) {
+	return TBColor((int)(c.r * 255.0f), (int)(c.g * 255.0f), (int)(c.b * 255.0f));
+}
 
 void TBColor::setFromString(const char *str, int len) {
 	int r;

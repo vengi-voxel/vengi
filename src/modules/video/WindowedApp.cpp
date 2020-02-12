@@ -20,6 +20,7 @@
 #include "util/KeybindingHandler.h"
 #include "util/KeybindingParser.h"
 #include "util/CustomButtonNames.h"
+#include <glm/common.hpp>
 
 namespace video {
 

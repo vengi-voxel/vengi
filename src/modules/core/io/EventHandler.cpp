@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "core/Assert.h"
+#include <glm/common.hpp>
 #include <SDL.h>
 
 namespace io {
