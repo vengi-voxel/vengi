@@ -34,7 +34,7 @@ private:
 	void copyBuf(const char *buf, size_t len);
 	void checkBufferSize(size_t len);
 public:
-	static constexpr const size_t npos = 0xffffffff;
+	static constexpr const size_t npos = ~0u;
 	String();
 	String(size_t len, char chr);
 	String(const char *str);

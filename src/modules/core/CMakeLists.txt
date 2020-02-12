@@ -19,6 +19,7 @@ set(SRCS
 	collection/Array.h
 	collection/ConcurrentQueue.h
 	collection/ConcurrentSet.h
+	collection/DynamicArray.h
 	collection/List.h
 	collection/Map.h
 	collection/Set.h
@@ -83,6 +84,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
 set(TEST_SRCS
 	tests/AbstractTest.cpp
+	tests/ArrayTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ColorTest.cpp
 	tests/CommandTest.cpp
@@ -90,6 +92,7 @@ set(TEST_SRCS
 	tests/CommandHandlerTest.cpp
 	tests/ConcurrentQueueTest.cpp
 	tests/CoreTest.cpp
+	tests/DynamicArrayTest.cpp
 	tests/EventBusTest.cpp
 	tests/FilesystemTest.cpp
 	tests/FileStreamTest.cpp
