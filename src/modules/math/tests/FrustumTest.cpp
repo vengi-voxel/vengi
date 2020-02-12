@@ -7,6 +7,7 @@
 #include "core/GLM.h"
 #include "core/StringUtil.h"
 #include "math/AABB.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace math {
 
