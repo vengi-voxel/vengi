@@ -8,6 +8,7 @@
 #include "core/Assert.h"
 #include "math/Frustum.h"
 #include "core/Color.h"
+#include "core/GLM.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 

@@ -4,10 +4,12 @@
 
 #pragma once
 
-#include "core/GLM.h"
 #include "math/Frustum.h"
 #include "Types.h"
-#include <glm/ext/quaternion_float.hpp>
+#include <glm/fwd.hpp>
+#include <glm/vec2.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace math {
 template<typename TYPE>
@@ -53,8 +55,6 @@ protected:
 	constexpr static uint32_t DIRTY_PERSPECTIVE = 1 << 4;
 
 	constexpr static uint32_t DIRTY_ALL = ~0u;
-
-	constexpr static float MAX_PITCH = glm::half_pi<float>() - 0.1f;
 
 	inline bool isDirty(uint32_t flag) const {
 		return (_dirty & flag) != 0u;
@@ -320,14 +320,6 @@ inline PolygonMode Camera::polygonMode() const {
 
 inline void Camera::setPolygonMode(PolygonMode polygonMode) {
 	_polygonMode = polygonMode;
-}
-
-inline void Camera::roll(float radians) {
-	rotate(radians, glm::backward);
-}
-
-inline bool Camera::lookAt(const glm::vec3& position) {
-	return lookAt(position, glm::up);
 }
 
 inline float Camera::nearPlane() const {

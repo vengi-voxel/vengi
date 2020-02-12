@@ -7,6 +7,7 @@
 #include "math/AABB.h"
 #include "math/Plane.h"
 #include "core/Log.h"
+#include "core/GLM.h"
 
 namespace render {
 

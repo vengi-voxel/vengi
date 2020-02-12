@@ -7,6 +7,7 @@
 #include "core/Assert.h"
 #include "core/Singleton.h"
 #include "math/AABB.h"
+#include "core/GLM.h"
 #include "Ray.h"
 #include <glm/gtc/matrix_access.hpp>
 #include <algorithm>
@@ -33,6 +34,14 @@ float Camera::yaw() const {
 
 void Camera::yaw(float radians) {
 	rotate(radians, glm::up);
+}
+
+void Camera::roll(float radians) {
+	rotate(radians, glm::backward);
+}
+
+bool Camera::lookAt(const glm::vec3& position) {
+	return lookAt(position, glm::up);
 }
 
 void Camera::turn(float radians) {
@@ -169,12 +178,13 @@ float Camera::horizontalYaw() const {
 void Camera::pitch(float radians) {
 	if (_type == CameraType::FirstPerson) {
 		const float dotResult = glm::dot(direction(), glm::down);
-		float curpitch = glm::acos(dotResult) - glm::half_pi<float>();
-		if (curpitch > MAX_PITCH) {
-			curpitch = MAX_PITCH;
+		float curPitch = glm::acos(dotResult) - glm::half_pi<float>();
+		const float maxPitch = glm::half_pi<float>() - 0.1f;
+		if (curPitch > maxPitch) {
+			curPitch = maxPitch;
 		}
-		if (glm::abs(curpitch + radians) > MAX_PITCH) {
-			radians = copysign(MAX_PITCH, curpitch) - curpitch;
+		if (glm::abs(curPitch + radians) > maxPitch) {
+			radians = copysign(maxPitch, curPitch) - curPitch;
 		}
 	}
 	if (radians != 0) {
