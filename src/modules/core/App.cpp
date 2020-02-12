@@ -561,9 +561,9 @@ core::String App::getArgVal(const core::String& arg, const core::String& default
 }
 
 App::Argument& App::registerArg(const core::String& arg) {
-	App::Argument argument(arg);
-	_arguments.push_back(argument);
-	return _arguments.back();
+	const App::Argument argument(arg);
+	_arguments.insert(argument);
+	return *_arguments.back();
 }
 
 AppState App::onCleanup() {

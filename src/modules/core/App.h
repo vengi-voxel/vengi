@@ -8,9 +8,9 @@
 #include "Trace.h"
 #include "BindingContext.h"
 #include "String.h"
+#include "collection/List.h"
 #include <stack>
 #include <atomic>
-#include <vector>
 #include <memory>
 
 #define ORGANISATION "vengi"
@@ -307,7 +307,7 @@ public:
 	static App* getInstance();
 
 private:
-	std::vector<Argument> _arguments;
+	core::List<Argument> _arguments;
 };
 
 inline uint64_t App::lifetimeInSeconds() const {
