@@ -14,8 +14,6 @@ extern const glm::vec3 left;
 extern const glm::vec3 up;
 extern const glm::vec3 down;
 
-bool intersectBoxTriangle(const glm::vec3& boxcenter, const glm::vec3& boxhalfsize, const glm::vec3& triv0, const glm::vec3& triv1, const glm::vec3& triv2);
-
 /**
  * Calculate the line segment PaPb that is the shortest route between
  * two lines P1P2 and P3P4. Calculate also the values of @c mua and @c mub where
@@ -29,10 +27,6 @@ float intersectLines(const glm::vec3& p1,
 		float *pmub = nullptr);
 
 vec3 transform(const mat4& mat, const vec3& v);
-
-glm::vec3 transform(const mat3& mat, const glm::vec3& v);
-
-glm::vec3 transform(const mat3x4& mat, const glm::vec3& v);
 
 vec3 rotate(const mat4& mat, const vec3& v);
 
