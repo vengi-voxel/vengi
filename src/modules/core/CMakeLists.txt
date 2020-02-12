@@ -22,6 +22,7 @@ set(SRCS
 	collection/List.h
 	collection/Map.h
 	collection/Set.h
+	collection/Stack.h
 	collection/StringMap.h
 
 	ArrayLength.h
@@ -101,6 +102,7 @@ set(TEST_SRCS
 	tests/PoolAllocatorTest.cpp
 	tests/ReadWriteLockTest.cpp
 	tests/SetTest.cpp
+	tests/StackTest.cpp
 	tests/StringTest.cpp
 	tests/StringUtilTest.cpp
 	tests/ThreadPoolTest.cpp

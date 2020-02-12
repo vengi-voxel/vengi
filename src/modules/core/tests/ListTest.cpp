@@ -75,7 +75,7 @@ TEST(ListTest, testIterateRangeBased) {
 	EXPECT_EQ(16u, list.size());
 	int cnt = 0;
 	for (auto iter : list) {
-		EXPECT_EQ(cnt, iter->value.a);
+		EXPECT_EQ(cnt, iter.a);
 		++cnt;
 	}
 	EXPECT_EQ(16, cnt);

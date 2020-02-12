@@ -64,8 +64,16 @@ public:
 		iterator(const Node* node) : _node(node) {
 		}
 
-		inline const Node* operator*() const {
-			return _node;
+		inline const TYPE& operator*() const {
+			return _node->value;
+		}
+
+		inline const TYPE& operator()() const {
+			return _node->value;
+		}
+
+		inline TYPE& operator()() {
+			return _node->value;
 		}
 
 		iterator& operator++() {
@@ -129,6 +137,20 @@ public:
 			_last = node;
 		}
 		return true;
+	}
+
+	const TYPE* back() const {
+		if (_last == nullptr) {
+			return nullptr;
+		}
+		return &_last->value;
+	}
+
+	TYPE* back() {
+		if (_last == nullptr) {
+			return nullptr;
+		}
+		return &_last->value;
 	}
 
 	/**
