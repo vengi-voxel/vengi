@@ -2,10 +2,10 @@
  * @file
  */
 #include "TestTexture.h"
-#include "core/Color.h"
+#include "testcore/TestAppMain.h"
 #include "video/Camera.h"
 #include "video/ScopedViewPort.h"
-#include "core/io/Filesystem.h"
+#include "core/Color.h"
 
 TestTexture::TestTexture(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

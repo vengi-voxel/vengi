@@ -7,8 +7,9 @@
 #include "Var.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "Common.h"
+#include "metric/Metric.h"
 #include "metric/UDPMetricSender.h"
 #include "Log.h"
 #include "Tokenizer.h"
@@ -677,6 +678,10 @@ BindingContext App::setBindingContext(BindingContext newContext) {
 	std::swap(_bindingContext, newContext);
 	Log::debug("Set the input context to %i (from %i)", (int)_bindingContext, (int)newContext);
 	return newContext;
+}
+
+uint64_t App::systemMillis() const {
+	return _timeProvider->systemMillis();
 }
 
 }

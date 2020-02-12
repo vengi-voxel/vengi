@@ -9,6 +9,7 @@
 #include <chrono>
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/io/Filesystem.h"
 
 namespace voxelworld {
 

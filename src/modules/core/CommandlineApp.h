@@ -5,6 +5,9 @@
 #pragma once
 
 #include "core/App.h"
+#include "core/TimeProvider.h"
+#include "core/EventBus.h"
+#include "core/metric/Metric.h"
 
 namespace core {
 

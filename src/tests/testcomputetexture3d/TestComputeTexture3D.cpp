@@ -2,7 +2,7 @@
  * @file
  */
 #include "TestComputeTexture3D.h"
-#include "core/io/Filesystem.h"
+#include "testcore/TestAppMain.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"

@@ -3,8 +3,7 @@
  */
 #include "TestVoxelFont.h"
 #include "voxel/MaterialColor.h"
-#include "core/io/Filesystem.h"
-#include "ui/imgui/IMGUI.h"
+#include "testcore/TestAppMain.h"
 #include <SDL.h>
 
 TestVoxelFont::TestVoxelFont(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

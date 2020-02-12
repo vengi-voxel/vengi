@@ -6,6 +6,7 @@
 #include "animation/chr/CharacterSkeleton.h"
 #include "animation/AnimationSettings.h"
 #include "animation/BoneId.h"
+#include "core/io/Filesystem.h"
 
 namespace animation {
 

@@ -2,13 +2,13 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "AbstractHttpParserTest.h"
 #include "http/Http.h"
 #include "http/HttpServer.h"
 
 namespace http {
 
-class ResponseParserTest : public core::AbstractTest {
+class ResponseParserTest : public AbstractHttpParserTest {
 };
 
 const char *ResponseBuf =

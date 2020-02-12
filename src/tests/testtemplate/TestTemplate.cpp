@@ -2,7 +2,7 @@
  * @file
  */
 #include "TestTemplate.h"
-#include "core/io/Filesystem.h"
+#include "testcore/TestAppMain.h"
 
 TestTemplate::TestTemplate(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

@@ -3,10 +3,7 @@
  */
 
 #include "TestHttpServer.h"
-#include "core/io/Filesystem.h"
-#include "core/metric/Metric.h"
-#include "core/EventBus.h"
-#include "core/TimeProvider.h"
+#include "testcore/TestAppMain.h"
 #include "core/Var.h"
 
 TestHttpServer::TestHttpServer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

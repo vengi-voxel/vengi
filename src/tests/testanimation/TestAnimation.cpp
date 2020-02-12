@@ -4,16 +4,16 @@
 
 #include "TestAnimation.h"
 #include "ui/imgui/IMGUI.h"
-#include "core/io/Filesystem.h"
 #include "voxel/MaterialColor.h"
-#include "core/command/Command.h"
-#include "core/ArrayLength.h"
 #include "Shared_generated.h"
 #include "animation/Animation.h"
 #include "animation/chr/Character.h"
 #include "animation/animal/bird/Bird.h"
 #include "stock/ContainerData.h"
+#include "core/command/Command.h"
+#include "core/ArrayLength.h"
 #include "core/collection/Array.h"
+#include "testcore/TestAppMain.h"
 
 static bool reloadAnimationEntity = false;
 

@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "core/command/CommandCompleter.h"
+#include "core/io/Filesystem.h"
 
 namespace core {
 

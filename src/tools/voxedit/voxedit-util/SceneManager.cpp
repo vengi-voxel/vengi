@@ -46,7 +46,7 @@
 #include "tool/Resize.h"
 #include "tool/ImageUtils.h"
 #include "anim/AnimationLuaSaver.h"
-
+#include "core/TimeProvider.h"
 #include "attrib/ShadowAttributes.h"
 
 #include <limits>

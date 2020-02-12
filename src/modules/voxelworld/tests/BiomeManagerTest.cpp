@@ -4,6 +4,7 @@
 
 #include "AbstractVoxelTest.h"
 #include "voxelworld/BiomeManager.h"
+#include "core/io/Filesystem.h"
 
 namespace voxelworld {
 

@@ -6,6 +6,7 @@
 #include "core/Assert.h"
 #include "core/StringUtil.h"
 #include "core/io/Filesystem.h"
+#include "core/TimeProvider.h"
 #include "compute/Shader.h"
 #include "Generator.h"
 #include "Parser.h"

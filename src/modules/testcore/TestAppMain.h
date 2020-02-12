@@ -4,6 +4,10 @@
 
 #pragma once
 #include <SDL_main.h>
+#include "core/io/Filesystem.h"
+#include "core/metric/Metric.h"
+#include "core/EventBus.h"
+#include "core/TimeProvider.h"
 
 #define TEST_APP(testClassName) \
 int main(int argc, char *argv[]) { \

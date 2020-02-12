@@ -16,6 +16,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeCache.h"
 #include "persistence/tests/Mocks.h"
+#include "core/io/Filesystem.h"
 
 namespace backend {
 

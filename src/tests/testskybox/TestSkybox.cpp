@@ -3,7 +3,7 @@
  */
 
 #include "TestSkybox.h"
-#include "core/io/Filesystem.h"
+#include "testcore/TestAppMain.h"
 
 TestSkybox::TestSkybox(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
@@ -49,3 +49,4 @@ void TestSkybox::doRender() {
 }
 
 TEST_APP(TestSkybox)
+#include "core/io/Filesystem.h"

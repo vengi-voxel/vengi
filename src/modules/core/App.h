@@ -5,12 +5,10 @@
 #pragma once
 
 #include "Common.h"
-#include "metric/Metric.h"
 #include "Trace.h"
-#include "EventBus.h"
-#include "TimeProvider.h"
 #include "ThreadPool.h"
 #include "BindingContext.h"
+#include "String.h"
 #include <stack>
 #include <atomic>
 
@@ -21,11 +19,24 @@ class Filesystem;
 typedef std::shared_ptr<Filesystem> FilesystemPtr;
 }
 
+namespace metric {
+class Metric;
+using MetricPtr = std::shared_ptr<Metric>;
+class IMetricSender;
+using IMetricSenderPtr = std::shared_ptr<IMetricSender>;
+
+}
+
 namespace core {
 
 class Var;
 typedef std::shared_ptr<Var> VarPtr;
 
+class EventBus;
+typedef std::shared_ptr<EventBus> EventBusPtr;
+
+class TimeProvider;
+typedef std::shared_ptr<TimeProvider> TimeProviderPtr;
 
 enum class AppState : uint8_t {
 	Construct,
@@ -305,10 +316,6 @@ inline float App::lifetimeInSecondsf() const {
 
 inline uint64_t App::deltaFrame() const {
 	return _deltaFrameMillis;
-}
-
-inline uint64_t App::systemMillis() const {
-	return _timeProvider->systemMillis();
 }
 
 inline io::FilesystemPtr App::filesystem() const {

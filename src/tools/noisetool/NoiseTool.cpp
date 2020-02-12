@@ -3,9 +3,12 @@
  */
 
 #include "NoiseTool.h"
-#include "core/io/Filesystem.h"
 #include "ui/NoiseToolWindow.h"
 #include "ui/noisedata/NoiseDataItemWidget.h"
+#include "core/io/Filesystem.h"
+#include "core/metric/Metric.h"
+#include "core/EventBus.h"
+#include "core/TimeProvider.h"
 
 NoiseTool::NoiseTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

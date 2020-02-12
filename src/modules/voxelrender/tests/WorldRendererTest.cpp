@@ -6,6 +6,7 @@
 #include "voxelrender/WorldRenderer.h"
 #include "voxelworld/WorldMgr.h"
 #include "voxelworld/WorldPager.h"
+#include "core/io/Filesystem.h"
 
 namespace voxelrender {
 

@@ -2,11 +2,11 @@
  * @file
  */
 #include "TestOctree.h"
-#include "core/io/Filesystem.h"
 #include "ui/imgui/IMGUI.h"
 #include "core/Color.h"
 #include "video/ScopedLineWidth.h"
 #include "core/collection/Array.h"
+#include "testcore/TestAppMain.h"
 #include <SDL.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>

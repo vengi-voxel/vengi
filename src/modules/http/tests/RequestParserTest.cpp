@@ -2,12 +2,12 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "AbstractHttpParserTest.h"
 #include "http/RequestParser.h"
 
 namespace http {
 
-class RequestParserTest : public core::AbstractTest {
+class RequestParserTest : public AbstractHttpParserTest {
 };
 
 TEST_F(RequestParserTest, testSimple) {

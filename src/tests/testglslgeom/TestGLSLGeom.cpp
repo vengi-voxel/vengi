@@ -2,7 +2,7 @@
  * @file
  */
 #include "TestGLSLGeom.h"
-#include "core/io/Filesystem.h"
+#include "testcore/TestAppMain.h"
 #include "core/Color.h"
 #include "video/Camera.h"
 

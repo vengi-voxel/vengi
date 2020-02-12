@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "core/Tokenizer.h"
+#include "core/io/Filesystem.h"
 
 namespace core {
 

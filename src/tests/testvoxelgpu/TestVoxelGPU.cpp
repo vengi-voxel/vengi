@@ -2,13 +2,13 @@
  * @file
  */
 #include "TestVoxelGPU.h"
-#include "core/io/Filesystem.h"
 #include "compute/Compute.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelgenerator/NoiseGenerator.h"
+#include "testcore/TestAppMain.h"
 
 TestVoxelGPU::TestVoxelGPU(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider), _mesher(compute::MesherShader::getInstance()) {

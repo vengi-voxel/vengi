@@ -3,7 +3,7 @@
  */
 
 #include "TestBiomes.h"
-#include "core/io/Filesystem.h"
+#include "testcore/TestAppMain.h"
 #include "video/ScopedViewPort.h"
 #include "video/Texture.h"
 

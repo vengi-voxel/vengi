@@ -2,8 +2,8 @@
  * @file
  */
 #include "TestTraze.h"
-#include "core/io/Filesystem.h"
 #include "core/command/Command.h"
+#include "testcore/TestAppMain.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/RawVolumeWrapper.h"

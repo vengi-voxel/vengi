@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "cooldown/CooldownProvider.h"
+#include "core/io/Filesystem.h"
 
 namespace cooldown {
 

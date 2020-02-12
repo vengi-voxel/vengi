@@ -27,6 +27,8 @@
 #include "network/UserInfoHandler.h"
 #include "network/VarUpdateHandler.h"
 #include "voxel/MaterialColor.h"
+#include "core/metric/Metric.h"
+#include "core/TimeProvider.h"
 #include <SDL.h>
 
 Client::Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,

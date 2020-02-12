@@ -1,5 +1,10 @@
+/**
+ * @file
+ */
+
 #include "TestShared.h"
 #include "core/String.h"
+#include "core/io/Filesystem.h"
 #include <fstream>
 #include <streambuf>
 

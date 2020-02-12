@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "util/IncludeUtil.h"
+#include "core/io/Filesystem.h"
 #include <SDL_platform.h>
 
 class IncludeUtilTest : public core::AbstractTest {

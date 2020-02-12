@@ -3,7 +3,7 @@
  */
 #include "TestGPUMC.h"
 
-#include "core/io/Filesystem.h"
+#include "testcore/TestAppMain.h"
 #include "compute/Compute.h"
 #include "voxel/MaterialColor.h"
 #include "computevideo/ComputeVideo.h"

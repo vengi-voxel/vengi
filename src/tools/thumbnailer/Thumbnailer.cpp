@@ -3,9 +3,12 @@
  */
 
 #include "Thumbnailer.h"
-#include "core/io/Filesystem.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
+#include "core/io/Filesystem.h"
+#include "core/metric/Metric.h"
+#include "core/EventBus.h"
+#include "core/TimeProvider.h"
 #include "video/Renderer.h"
 #include "voxel/MaterialColor.h"
 #include "video/Camera.h"

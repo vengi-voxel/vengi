@@ -7,6 +7,9 @@
 #include "core/Var.h"
 #include "core/command/Command.h"
 #include "core/metric/Metric.h"
+#include "core/EventBus.h"
+#include "core/TimeProvider.h"
+#include "core/io/Filesystem.h"
 
 extern char **_argv;
 extern int _argc;
