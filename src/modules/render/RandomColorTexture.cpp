@@ -3,6 +3,8 @@
  */
 #include "RandomColorTexture.h"
 #include "core/App.h"
+#include "core/ThreadPool.h"
+#include "core/Log.h"
 
 namespace render {
 

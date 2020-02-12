@@ -6,11 +6,12 @@
 
 #include "Common.h"
 #include "Trace.h"
-#include "ThreadPool.h"
 #include "BindingContext.h"
 #include "String.h"
 #include <stack>
 #include <atomic>
+#include <vector>
+#include <memory>
 
 #define ORGANISATION "vengi"
 
@@ -28,6 +29,9 @@ using IMetricSenderPtr = std::shared_ptr<IMetricSender>;
 }
 
 namespace core {
+
+class ThreadPool;
+typedef std::shared_ptr<ThreadPool> ThreadPoolPtr;
 
 class Var;
 typedef std::shared_ptr<Var> VarPtr;
@@ -60,7 +64,7 @@ protected:
 	int _argc = 0;
 	char **_argv = nullptr;
 
-	int _initialLogLevel = SDL_LOG_PRIORITY_INFO;
+	int _initialLogLevel = 0;
 
 	core::String _organisation;
 	core::String _appname;
@@ -117,7 +121,7 @@ protected:
 
 	io::FilesystemPtr _filesystem;
 	core::EventBusPtr _eventBus;
-	core::ThreadPool _threadPool;
+	core::ThreadPoolPtr _threadPool;
 	core::TimeProviderPtr _timeProvider;
 	core::VarPtr _logLevelVar;
 	core::VarPtr _syslogVar;
@@ -328,10 +332,6 @@ inline core::TimeProviderPtr App::timeProvider() const {
 
 inline metric::MetricPtr App::metric() const {
 	return _metric;
-}
-
-inline core::ThreadPool& App::threadPool() {
-	return _threadPool;
 }
 
 inline core::EventBusPtr App::eventBus() const {

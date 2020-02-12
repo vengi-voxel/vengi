@@ -9,6 +9,7 @@
 #include "ui/turbobadger/UIApp.h"
 #include "core/Color.h"
 #include "core/TimeProvider.h"
+#include "core/ThreadPool.h"
 #include "math/Rect.h"
 #include "NoiseDataNodeWindow.h"
 #include "noise/PoissonDiskDistribution.h"

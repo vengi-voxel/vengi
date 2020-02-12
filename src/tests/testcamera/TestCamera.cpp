@@ -4,6 +4,7 @@
 
 #include "TestCamera.h"
 #include "testcore/TestAppMain.h"
+#include "core/Log.h"
 #include <SDL.h>
 
 TestCamera::TestCamera(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

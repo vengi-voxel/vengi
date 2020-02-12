@@ -12,6 +12,7 @@
 #include "core/Trace.h"
 #include "core/ByteStream.h"
 #include "core/Zip.h"
+#include "core/Log.h"
 
 namespace voxelworld {
 

@@ -6,6 +6,7 @@
 #include "testcore/TestAppMain.h"
 #include "video/ScopedViewPort.h"
 #include "video/Texture.h"
+#include "core/ThreadPool.h"
 
 TestBiomes::TestBiomes(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -56,7 +57,7 @@ core::AppState TestBiomes::onInit() {
 	cfg2d.type(video::TextureType::Texture2D).format(video::TextureFormat::RGBA);
 	_texture = video::createTexture(cfg2d, _biomesTextureSize.x, _biomesTextureSize.y);
 
-	_threadPool.enqueue([this] () {
+	threadPool().enqueue([this] () {
 		for (;;) {
 			Event* event;
 			if (!this->_workQueue.waitAndPop(event)) {

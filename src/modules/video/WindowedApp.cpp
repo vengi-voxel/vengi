@@ -12,6 +12,7 @@
 #include "gl/GLVersion.h"
 #include "Shader.h"
 #include "core/ArrayLength.h"
+#include "core/Log.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
 #include "core/Singleton.h"

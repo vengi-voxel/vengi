@@ -11,6 +11,7 @@
 #include "core/UTF8.h"
 #include "core/Common.h"
 #include "core/ArrayLength.h"
+#include "core/Log.h"
 #include "math/Rect.h"
 #include "video/Renderer.h"
 #include "video/Shader.h"

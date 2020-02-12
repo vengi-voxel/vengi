@@ -9,6 +9,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"
+#include "core/Log.h"
 #include <SDL.h>
 #include <glm/gtc/type_ptr.hpp>
 #define GLM_ENABLE_EXPERIMENTAL

@@ -5,6 +5,7 @@
 #include "App.h"
 #include "AppCommand.h"
 #include "Var.h"
+#include "ThreadPool.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "io/Filesystem.h"
@@ -35,9 +36,10 @@ App* App::getInstance() {
 }
 
 App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
-		_filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core"),
+		_filesystem(filesystem), _eventBus(eventBus), _threadPool(std::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
 		_timeProvider(timeProvider), _metric(metric) {
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_VERBOSE);
+	_initialLogLevel = SDL_LOG_PRIORITY_INFO;
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)_initialLogLevel);
 	_now = systemMillis();
 	_timeProvider->update(_now);
 	_staticInstance = this;
@@ -48,6 +50,7 @@ App::~App() {
 	_metricSender->shutdown();
 	_metric->shutdown();
 	Log::shutdown();
+	_threadPool = core::ThreadPoolPtr();
 }
 
 void App::init(const core::String& organisation, const core::String& appname) {
@@ -298,7 +301,7 @@ void App::onBeforeInit() {
 
 AppState App::onInit() {
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS);
-	_threadPool.init();
+	_threadPool->init();
 
 	const core::String& content = _filesystem->load(_appname + ".vars");
 	core::Tokenizer t(content);
@@ -615,7 +618,7 @@ AppState App::onCleanup() {
 	SDL_ResetAssertionReport();
 
 	_filesystem->shutdown();
-	_threadPool.shutdown();
+	_threadPool->shutdown();
 
 	core_trace_shutdown();
 
@@ -684,4 +687,7 @@ uint64_t App::systemMillis() const {
 	return _timeProvider->systemMillis();
 }
 
+core::ThreadPool& App::threadPool() {
+	return *_threadPool.get();
+}
 }

@@ -4,6 +4,7 @@
 
 #include "CursesConsole.h"
 #include "core/App.h"
+#include "core/Log.h"
 #include <SDL_stdinc.h>
 
 #include "engine-config.h"

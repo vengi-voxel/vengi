@@ -6,6 +6,7 @@
 
 #include "core/App.h"
 #include "core/Common.h"
+#include "core/Log.h"
 #include "core/Hash.h"
 #include "core/GLM.h"
 #include "core/io/Filesystem.h"

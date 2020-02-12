@@ -8,6 +8,7 @@
 #include "core/io/Filesystem.h"
 #include "core/App.h"
 #include "core/command/Command.h"
+#include "core/Log.h"
 
 namespace voxelformat {
 

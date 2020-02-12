@@ -9,6 +9,7 @@
 #include "voxelformat/VoxFileFormat.h"
 #include "core/io/Filesystem.h"
 #include "core/App.h"
+#include "core/Log.h"
 #include "voxel/CubicSurfaceExtractor.h"
 
 namespace voxelformat {

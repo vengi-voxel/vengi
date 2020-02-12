@@ -1,8 +1,13 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "video/Camera.h"
+#include "core/Log.h"
 
 class FrustumEntity {
 private:

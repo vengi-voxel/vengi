@@ -12,6 +12,7 @@
 #include "util/KeybindingHandler.h"
 #include "video/Types.h"
 #include "video/Version.h"
+#include <functional>
 
 struct SDL_Window;
 

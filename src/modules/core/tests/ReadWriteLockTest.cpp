@@ -4,6 +4,7 @@
 
 #include "AbstractTest.h"
 #include "core/ReadWriteLock.h"
+#include <future>
 
 namespace core {
 
