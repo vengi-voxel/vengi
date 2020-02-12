@@ -6,6 +6,7 @@
 #include "animation/SkeletonAttribute.h"
 #include "core/io/FileStream.h"
 #include "core/GLM.h"
+#include <glm/gtc/constants.hpp>
 
 namespace voxedit {
 

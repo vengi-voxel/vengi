@@ -6,7 +6,6 @@
 
 #include <glm/fwd.hpp>
 
-#include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 
 template<int N, typename T>

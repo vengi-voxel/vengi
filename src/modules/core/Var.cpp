@@ -8,6 +8,7 @@
 #include "GLM.h"
 #include "Assert.h"
 #include "StringUtil.h"
+#include <glm/gtc/constants.hpp>
 
 namespace core {
 

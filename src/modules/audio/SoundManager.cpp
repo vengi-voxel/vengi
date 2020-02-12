@@ -13,6 +13,7 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 namespace audio {
 

@@ -7,6 +7,7 @@
 #include "math/Random.h"
 #include "core/Var.h"
 #include "core/GLM.h"
+#include <glm/gtc/constants.hpp>
 
 namespace poi {
 

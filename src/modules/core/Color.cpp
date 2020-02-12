@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/GLM.h"
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <SDL.h>
 #include <limits.h>
