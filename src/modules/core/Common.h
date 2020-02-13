@@ -120,3 +120,24 @@ struct Binary<0> { static const uint64_t value = uint64_t(0); };
 # define ENABLE_WARNING(gcc_option,clang_option,msvc_unused) DIAG_PRAGMA(GCC,warning DIAG_JOINSTR(-W,gcc_option))
 #endif
 #endif
+
+namespace core {
+
+template<class T>
+struct remove_reference { typedef T type; };
+template<class T>
+struct remove_reference<T &> { typedef T type; };
+template<class T>
+struct remove_reference<T &&> { typedef T type; };
+
+template<class T>
+constexpr typename remove_reference<T>::type &&move(T &&t) {
+	return ((typename remove_reference<T>::type &&) t);
+}
+
+template<typename T>
+constexpr T &&forward(typename remove_reference<T>::type &&t) {
+	return static_cast<T &&>(t);
+}
+
+}

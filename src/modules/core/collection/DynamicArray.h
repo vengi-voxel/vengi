@@ -4,10 +4,10 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include "core/Assert.h"
 #include <SDL_stdinc.h>
 #include <new>
-#include <utility>
 
 namespace core {
 
@@ -30,7 +30,7 @@ private:
 		_capacity = align(newSize);
 		TYPE* newBuffer = (TYPE*)SDL_malloc(_capacity * sizeof(TYPE));
 		for (size_t i = 0u; i < _size; ++i) {
-			new ((void*)&newBuffer[i]) TYPE(std::move(_buffer[i]));
+			new ((void*)&newBuffer[i]) TYPE(core::move(_buffer[i]));
 			_buffer[i].~TYPE();
 		}
 		SDL_free(_buffer);
