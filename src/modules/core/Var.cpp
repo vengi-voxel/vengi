@@ -202,7 +202,7 @@ void Var::setVal(const core::String& value) {
 			_visitFlags |= NEEDS_BROADCAST;
 		}
 		if (_history.size() > 16) {
-			std::vector<Value>(_history.begin() + 8, _history.end()).swap(_history);
+			_history.erase(0, 8);
 			_currentHistoryPos = (uint32_t)_history.size() - 1;
 		}
 	}

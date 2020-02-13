@@ -6,10 +6,10 @@
 
 #include "ReadWriteLock.h"
 #include "GameConfig.h"
-#include "collection/Map.h"
 #include <memory>
 #include "core/String.h"
-#include <vector>
+#include "core/collection/Map.h"
+#include "core/collection/DynamicArray.h"
 #include <string.h>
 #include <glm/fwd.hpp>
 
@@ -82,7 +82,7 @@ protected:
 		core::String _value;
 	};
 
-	std::vector<Value> _history;
+	core::DynamicArray<Value> _history;
 	uint32_t _currentHistoryPos = 0;
 	bool _dirty;
 
@@ -209,18 +209,6 @@ public:
 		return false;
 	}
 
-	template<class Functor>
-	void visitHistory(Functor&& func) {
-		std::vector<Value> history;
-		{
-			ScopedReadLock lock(_lock);
-			history = _history;
-		}
-		for (auto i = history.rbegin(); i != history.rend(); ++i) {
-			func(*i);
-		}
-	}
-
 	void clearHistory();
 	uint32_t getHistorySize() const;
 	uint32_t getHistoryIndex() const;
@@ -302,7 +290,7 @@ inline void Var::clearHistory() {
 	if (_history.size() == 1u) {
 		return;
 	}
-	_history.erase(_history.begin(), _history.end() - 1);
+	_history.release();
 }
 
 inline float Var::floatVal() const {

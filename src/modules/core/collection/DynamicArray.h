@@ -105,13 +105,21 @@ public:
 			return *_ptr;
 		}
 
+		inline TYPE& operator*() {
+			return *_ptr;
+		}
+
 		iterator& operator++() {
 			++_ptr;
 			return *this;
 		}
 
-		inline const TYPE& operator->() const {
-			return *_ptr;
+		inline const TYPE* operator->() const {
+			return _ptr;
+		}
+
+		inline TYPE* operator->() {
+			return _ptr;
 		}
 
 		inline bool operator!=(const iterator& rhs) const {
@@ -188,6 +196,32 @@ public:
 		_buffer = nullptr;
 	}
 
+	void erase(size_t index, size_t n) {
+		if (n == 0) {
+			return;
+		}
+		if (index >= _size) {
+			return;
+		}
+		const size_t delta = core_min(_size - index, n);
+		const size_t srcIdxStart = index + delta;
+		const size_t tgtIdxStart = index;
+		size_t newSize = _size;
+		if (srcIdxStart < _size) {
+			size_t s = srcIdxStart;
+			size_t t = tgtIdxStart;
+			for (; s < _size; ++s, ++t) {
+				_buffer[t].~TYPE();
+				new ((void*)&_buffer[t]) TYPE(_buffer[s]);
+			}
+		}
+		newSize -= delta;
+		for (size_t i = newSize; i < _size; ++i) {
+			_buffer[i].~TYPE();
+		}
+		_size = newSize;
+	}
+
 	inline size_t size() const {
 		return _size;
 	}
@@ -196,11 +230,11 @@ public:
 		return _capacity;
 	}
 
-	inline iterator begin() {
+	inline iterator begin() const {
 		return iterator(_buffer);
 	}
 
-	inline iterator end() {
+	inline iterator end() const {
 		return iterator(_buffer + _size);
 	}
 
