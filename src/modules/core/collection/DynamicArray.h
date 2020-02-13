@@ -7,6 +7,7 @@
 #include "core/Assert.h"
 #include <SDL_stdinc.h>
 #include <new>
+#include <utility>
 
 namespace core {
 
