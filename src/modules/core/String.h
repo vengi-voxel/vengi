@@ -143,12 +143,12 @@ inline bool String::empty() const {
 }
 
 inline const char& String::operator[](size_t idx) const {
-	core_assert(_data._str && idx < _data._size);
+	core_assert(_data._str && idx <= _data._size);
 	return _data._str[idx];
 }
 
 inline char& String::operator[](size_t idx) {
-	core_assert(_data._str && idx < _data._size);
+	core_assert(_data._str && idx <= _data._size);
 	return _data._str[idx];
 }
 
