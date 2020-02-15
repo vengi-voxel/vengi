@@ -494,7 +494,7 @@ void Console::cursorDeleteWord() {
 
 core::String Console::removeAnsiColors(const char* message) {
 	core::String out;
-	out.reserve(SDL_strlen(message));
+	out.reserve(SDL_strlen(message) + 1);
 	for (const char *c = message; *c != '\0'; ++c) {
 		// https://en.wikipedia.org/wiki/ANSI_escape_code
 		if (*c >= 030 && *c < 037 && *(c + 1) == '[') {
@@ -534,10 +534,12 @@ void Console::logConsole(void *userdata, int category, SDL_LogPriority priority,
 void Console::addLogLine(int category, SDL_LogPriority priority, const char *message) {
 	const core::String& cleaned = removeAnsiColors(message);
 	const bool hasColor = isColor(cleaned.c_str());
-	const core::String& color = hasColor ? "" : getColor(priorityColors[priority]);
-	_messages.emplace_back(color + cleaned);
 	if (hasColor) {
+		_messages.emplace_back(cleaned);
 		skipColor(&message);
+	} else {
+		const core::String& color = getColor(priorityColors[priority]);
+		_messages.emplace_back(color + cleaned);
 	}
 	if (_useOriginalLogFunction) {
 		_logFunction(_logUserData, category, priority, message);
