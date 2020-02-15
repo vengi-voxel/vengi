@@ -181,7 +181,7 @@ static void createCreateSequence(core::String& stmt, const Model& table, const F
 	stmt += "CREATE SEQUENCE IF NOT EXISTS ";
 	createSequenceIdentifier(stmt, table, field.name);
 	stmt += " START ";
-	stmt += table.autoIncrementStart();
+	stmt += core::string::toString(table.autoIncrementStart());
 	stmt += ";";
 }
 
