@@ -181,8 +181,6 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_voxelFont.init("font.ttf", 14, 1, voxel::VoxelFont::MergeQuads, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ");
-
 	handleLogin();
 
 	return state;
@@ -270,7 +268,6 @@ core::AppState Client::onCleanup() {
 
 	Log::info("shutting down the client components");
 	_stockDataProvider->shutdown();
-	_voxelFont.shutdown();
 	Log::info("shutting down the character cache");
 	_animationCache->shutdown();
 	Log::info("shutting down the world renderer");

@@ -9,7 +9,6 @@
 #include "frontend/PlayerMovement.h"
 #include "voxelrender/WorldRenderer.h"
 #include "voxelrender/PlayerCamera.h"
-#include "voxelfont/VoxelFont.h"
 #include "core/Var.h"
 #include "core/Common.h"
 #include "voxelworld/WorldEvents.h"
@@ -42,7 +41,6 @@ protected:
 	core::VarPtr _chunkUrl;
 	core::VarPtr _seed;
 	frontend::ClientEntityPtr _player;
-	voxel::VoxelFont _voxelFont;
 	ui::turbobadger::WaitingMessage _waiting;
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
