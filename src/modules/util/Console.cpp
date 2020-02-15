@@ -584,6 +584,7 @@ void Console::drawString(int x, int y, const core::String& str, int len) {
 	glm::ivec4 color = colors[WHITE];
 	if (isColor(cstr)) {
 		skipColor(&cstr);
+		len -= 2;
 		const int colorIndex = str[1] - '0';
 		if (colorIndex >= 0 && colorIndex < (int)SDL_arraysize(colors)) {
 			color = colors[colorIndex];
