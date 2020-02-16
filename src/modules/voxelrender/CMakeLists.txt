@@ -4,6 +4,7 @@ set(SRCS
 	PlayerCamera.cpp PlayerCamera.h
 	ShaderAttribute.h
 	VoxelFontRenderer.h VoxelFontRenderer.cpp
+	WorldMeshExtractor.h WorldMeshExtractor.cpp
 	WorldRenderer.h WorldRenderer.cpp
 )
 set(SRCS_SHADERS

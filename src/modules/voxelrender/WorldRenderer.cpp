@@ -22,10 +22,6 @@
 #include "video/Types.h"
 #include "core/Concurrency.h"
 
-#include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/IsQuadNeeded.h"
-#include "voxel/Constants.h"
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -33,7 +29,7 @@ namespace voxelrender {
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer() :
-		_octree({}, 30), _threadPool(core::halfcpus(), "WorldRenderer") {
+		_octree({}, 30) {
 	setViewDistance(240.0f);
 }
 
@@ -44,10 +40,7 @@ void WorldRenderer::reset() {
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		chunkBuffer.inuse = false;
 	}
-	_extracted.clear();
-	_positionsExtracted.clear();
-	_pendingExtraction.clear();
-	_volume->flushAll();
+	_meshExtractor.reset();
 	_octree.clear();
 	_activeChunkBuffers = 0;
 	_entities.clear();
@@ -62,14 +55,7 @@ void WorldRenderer::shutdown() {
 	_chrShader.shutdown();
 	_materialBlock.shutdown();
 	reset();
-	_cancelThreads = true;
-	_pendingExtraction.clear();
-	_pendingExtraction.abortWait();
-	_extracted.clear();
-	_extracted.abortWait();
-	_threadPool.shutdown();
-	_positionsExtracted.clear();
-	_extracted.clear();
+	_meshExtractor.shutdown();
 	_colorTexture.shutdown();
 	_opaqueBuffer.shutdown();
 	_waterBuffer.shutdown();
@@ -138,7 +124,7 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 
 void WorldRenderer::handleMeshQueue() {
 	ChunkMeshes meshes(0, 0, 0, 0);
-	if (!pop(meshes)) {
+	if (!_meshExtractor.pop(meshes)) {
 		return;
 	}
 	// Now add the mesh to the list of meshes to render.
@@ -538,70 +524,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	return drawCallsEntities;
 }
 
-void WorldRenderer::updateExtractionOrder(const glm::ivec3& sortPos) {
-	const glm::ivec3& d = glm::abs(_pendingExtractionSortPosition - sortPos);
-	const int allowedDelta = 3 * _meshSize->intVal();
-	if (d.x < allowedDelta && d.z < allowedDelta) {
-		return;
-	}
-	_pendingExtractionSortPosition = sortPos;
-	_pendingExtraction.setComparator(CloseToPoint(sortPos));
-}
-
-bool WorldRenderer::allowReExtraction(const glm::ivec3& pos) {
-	const glm::ivec3& gridPos = meshPos(pos);
-	return _positionsExtracted.erase(gridPos) != 0;
-}
-
-// Extract the surface for the specified region of the volume.
-// The surface extractor outputs the mesh in an efficient compressed format which
-// is not directly suitable for rendering.
-bool WorldRenderer::scheduleMeshExtraction(const glm::ivec3& p) {
-	if (_cancelThreads) {
-		return false;
-	}
-	const glm::ivec3& pos = meshPos(p);
-	auto i = _positionsExtracted.insert(pos);
-	if (!i.second) {
-		return false;
-	}
-	Log::trace("mesh extraction for %i:%i:%i (%i:%i:%i)",
-			p.x, p.y, p.z, pos.x, pos.y, pos.z);
-	_pendingExtraction.push(pos);
-	return true;
-}
-
-void WorldRenderer::extractMesh(const glm::ivec3& pos) {
-	scheduleMeshExtraction(pos);
-}
-
-void WorldRenderer::extractScheduledMesh() {
-	while (!_cancelThreads) {
-		decltype(_pendingExtraction)::Key pos;
-		if (!_pendingExtraction.waitAndPop(pos)) {
-			break;
-		}
-		core_trace_scoped(MeshExtraction);
-		const glm::ivec3& size = meshSize();
-		const glm::ivec3 mins(pos);
-		const glm::ivec3 maxs(pos.x + size.x - 1, pos.y + size.y - 2, pos.z + size.z - 1);
-		const voxel::Region region(mins, maxs);
-		// these numbers are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
-		// they also heavily depend on the size of the mesh region we extract
-		const int opaqueFactor = 16;
-		const int opaqueVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
-		const int waterVertices = region.getWidthInVoxels() * region.getDepthInVoxels();
-		ChunkMeshes data(opaqueVertices, opaqueVertices, waterVertices, waterVertices);
-		voxel::extractAllCubicMesh(_volume, region,
-				&data.opaqueMesh, &data.waterMesh,
-				voxel::IsQuadNeeded(), voxel::IsWaterQuadNeeded(),
-				voxel::MAX_WATER_HEIGHT);
-		if (!data.waterMesh.isEmpty() || !data.opaqueMesh.isEmpty()) {
-			_extracted.push(std::move(data));
-		}
-	}
-}
-
 void WorldRenderer::extractMeshes(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererExtractMeshes);
 
@@ -618,14 +540,16 @@ void WorldRenderer::extractMeshes(const video::Camera& camera) {
 	maxs.z += farplane;
 
 	_octree.visit(mins, maxs, [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
-		return !scheduleMeshExtraction(mins);
-	}, glm::vec3(meshSize()));
+		return !_meshExtractor.scheduleMeshExtraction(mins);
+	}, glm::vec3(_meshExtractor.meshSize()));
+}
+
+void WorldRenderer::extractMesh(const glm::ivec3& pos) {
+	_meshExtractor.scheduleMeshExtraction(pos);
 }
 
 void WorldRenderer::stats(Stats& stats) const {
-	stats.extracted = _positionsExtracted.size();
-	stats.pending = _pendingExtraction.size();
-	stats.meshes = _extracted.size();
+	_meshExtractor.stats(stats.extracted, stats.pending, stats.meshes);
 	stats.active = _activeChunkBuffers;
 	stats.visible = _visibleChunks;
 	stats.occluded = _occludedChunks;
@@ -717,7 +641,6 @@ bool WorldRenderer::initWaterBuffer() {
 }
 
 bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position, const glm::ivec2& dimension) {
-	_volume = volume;
 	core_trace_scoped(WorldRendererOnInit);
 	_colorTexture.init();
 
@@ -790,13 +713,9 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		return false;
 	}
 
-	_threadPool.init();
-	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
-	for (size_t i = 0u; i < _threadPool.size(); ++i) {
-		_threadPool.enqueue([this] () {extractScheduledMesh();});
-	}
+	_meshExtractor.init(volume);
 
-	const glm::vec3 cullingThreshold(meshSize());
+	const glm::vec3 cullingThreshold(_meshExtractor.meshSize());
 	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 40;
 	_maxAllowedDistance = glm::pow(_viewDistance + maxCullingThreshold, 2);
 
@@ -833,11 +752,6 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	return true;
 }
 
-glm::ivec3 WorldRenderer::meshSize() const {
-	const int s = _meshSize->intVal();
-	return glm::ivec3(s, voxel::MAX_MESH_CHUNK_HEIGHT, s);
-}
-
 void WorldRenderer::initFrameBuffer(const glm::ivec2& dimensions) {
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
@@ -861,7 +775,7 @@ void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 	_focusPos = camera.target();
 	_focusPos.y = 0.0f;//TODO: _world->findFloor(_focusPos.x, _focusPos.z, voxel::isFloor);
 
-	updateExtractionOrder(_focusPos);
+	_meshExtractor.updateExtractionOrder(_focusPos);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	_shadow.update(camera, shadowMap);
@@ -874,7 +788,7 @@ void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 		if (distance < _maxAllowedDistance) {
 			continue;
 		}
-		core_assert_always(allowReExtraction(chunkBuffer.translation()));
+		core_assert_always(_meshExtractor.allowReExtraction(chunkBuffer.translation()));
 		chunkBuffer.inuse = false;
 		--_activeChunkBuffers;
 		_octree.remove(&chunkBuffer);
