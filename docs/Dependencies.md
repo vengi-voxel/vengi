@@ -1,5 +1,6 @@
 # Dependencies
 * cmake
+* ninja-build
 * postgre
 * development headers/libs for
   * glm
@@ -14,6 +15,7 @@
   * opencl
   * libuuid
   * qt (for the rcon tool)
+  * mosquitto (optional)
 
 Some of these dependencies might not be available as packages in your toolchain - most
 of them are also bundled with the application. But local installed headers always have
