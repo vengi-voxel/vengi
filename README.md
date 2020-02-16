@@ -29,5 +29,5 @@ Join our [discord Server](https://discord.gg/AgjCPXy) and help developing the ga
 * [GameDesign](docs/GameDesign.md)
 
 # Running the tests
-The tests need a postgres database named `engine` and a user named `engine` with the password.... `engine` (you can modify them via cvars). If no OpenGL or OpenCL context is available, the related tests are skipped.
+The tests need a postgres database named `enginetest` and a user named `engine` with the password.... `engine` (you can modify them via cvars). If no OpenGL or OpenCL context is available, the related tests are skipped.
 You can use the docker-compose files to set up your environment.
