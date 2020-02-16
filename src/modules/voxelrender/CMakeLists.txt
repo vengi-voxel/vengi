@@ -27,7 +27,6 @@ generate_shaders(${LIB} world water world_instanced voxel postprocess)
 gtest_suite_sources(tests
 	tests/VoxelFrontendShaderTest.cpp
 	tests/MaterialTest.cpp
-	tests/WorldRendererTest.cpp
 )
 gtest_suite_files(tests shared/worldparams.lua shared/biomes.lua)
 gtest_suite_deps(tests ${LIB} voxelrender image)

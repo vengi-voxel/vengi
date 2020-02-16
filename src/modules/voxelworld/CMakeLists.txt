@@ -24,7 +24,6 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelfo
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
-	tests/WorldMgrTest.cpp
 	tests/FilePersisterTest.cpp
 	tests/BiomeManagerTest.cpp
 )

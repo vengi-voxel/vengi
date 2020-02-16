@@ -29,12 +29,12 @@
 MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
 		const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
-		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,
+		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& worldMgr,
 		const voxelworld::WorldPagerPtr& worldPager,
 		const voxelformat::VolumeCachePtr& volumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider),
-		_animationCache(animationCache), _worldRenderer(world), _worldMgr(world), _worldPager(worldPager),
-		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _camera(world, _worldRenderer) {
+		_animationCache(animationCache), _worldMgr(worldMgr), _worldPager(worldPager),
+		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _camera(worldMgr, _worldRenderer) {
 	init(ORGANISATION, "mapview");
 }
 
@@ -121,7 +121,7 @@ core::AppState MapView::onInit() {
 	_worldMgr->setSeed(1);
 	_worldPager->setSeed(1);
 
-	if (!_worldRenderer.init(glm::ivec2(0), _frameBufferDimension)) {
+	if (!_worldRenderer.init(_worldMgr->volumeData(), glm::ivec2(0), _frameBufferDimension)) {
 		Log::error("Failed to init world renderer");
 		return core::AppState::InitFailure;
 	}

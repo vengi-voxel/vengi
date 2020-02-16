@@ -40,7 +40,7 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider), _animationCache(animationCache),
 		_network(network), _worldMgr(world), _clientPager(worldPager), _messageSender(messageSender),
-		_worldRenderer(world), _waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
+		_waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
 		_camera(world, _worldRenderer) {
 	init(ORGANISATION, "client");
 }
@@ -176,7 +176,7 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_worldRenderer.init(glm::ivec2(0), frameBufferDimension())) {
+	if (!_worldRenderer.init(_worldMgr->volumeData(), glm::ivec2(0), frameBufferDimension())) {
 		Log::error("Failed to initialize world renderer");
 		return core::AppState::InitFailure;
 	}
