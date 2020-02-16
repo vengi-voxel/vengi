@@ -9,7 +9,7 @@
 #include "Vertex.h"
 #include "SkeletonAttribute.h"
 #include "AnimationSettings.h"
-#include "animation/AnimationCache.h"
+#include "AnimationCache.h"
 #include "attrib/ShadowAttributes.h"
 #include "math/AABB.h"
 #include "core/Enum.h"
