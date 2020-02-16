@@ -801,7 +801,7 @@ void SceneManager::construct() {
 		}
 		_animationIdx %= (core::enumVal(animation::Animation::MAX) + 1);
 		Log::info("current animation idx: %i", _animationIdx);
-		animationEntity().setAnimation((animation::Animation)_animationIdx);
+		animationEntity().setAnimation((animation::Animation)_animationIdx, true);
 	});
 
 	core::Command::registerCommand("animation_save", [&] (const core::CmdArgs& args) {

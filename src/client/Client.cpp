@@ -362,7 +362,7 @@ void Client::disconnect() {
 void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos, animation::Animation animation) {
 	Log::info("Entity %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
 	const frontend::ClientEntityPtr& entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
-	entity->setAnimation(animation);
+	entity->setAnimation(animation, true);
 	_worldRenderer.addEntity(entity);
 }
 

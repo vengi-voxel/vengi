@@ -22,5 +22,5 @@ CLIENTPROTOHANDLERIMPL(EntityUpdate) {
 	const float orientation = message->rotation();
 	entity->setPosition(pos);
 	entity->setOrientation(orientation);
-	entity->setAnimation(animation);
+	entity->setAnimation(animation, true);
 }

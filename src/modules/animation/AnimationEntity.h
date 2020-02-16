@@ -37,7 +37,7 @@ protected:
 
 public:
 	virtual ~AnimationEntity() {}
-	void setAnimation(Animation animation);
+	void setAnimation(Animation animation, bool reset);
 	Animation animation() const;
 
 	/**
@@ -80,7 +80,7 @@ public:
 
 	/**
 	 * @brief Update the bone states and the tool vertices from the given inventory
-	 * @param[in] dt The delta time since the last call
+	 * @param[in] dt The delta time since the last call in millis
 	 * @param[in] attrib @c attrib::ShadowAttributes to get the character values
 	 * from
 	 */

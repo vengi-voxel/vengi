@@ -482,7 +482,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		sceneMgr().modifier().setShapeType((voxedit::ShapeType)widget->getValue());
 		return true;
 	} else if (ev.isAny(TBIDC("animationlist"))) {
-		sceneMgr().animationEntity().setAnimation((animation::Animation)widget->getValue());
+		sceneMgr().animationEntity().setAnimation((animation::Animation)widget->getValue(), true);
 		return true;
 	} else if (id == TBIDC("optionvoxelsize")) {
 		sceneMgr().setGridResolution(widget->getValue());

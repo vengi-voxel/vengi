@@ -20,7 +20,7 @@ bool PlayerAction::init() {
 }
 
 void PlayerAction::update(const ClientEntityPtr& entity) {
-	entity->setAnimation(animation());
+	entity->setAnimation(animation(), true);
 }
 
 void PlayerAction::construct() {

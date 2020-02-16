@@ -56,7 +56,7 @@ public:
 	uint32_t bindVertexBuffers(const shader::SkeletonShader& chrShader);
 	void unbindVertexBuffers();
 
-	void setAnimation(animation::Animation animation);
+	void setAnimation(animation::Animation animation, bool reset);
 
 	network::EntityType type() const;
 	ClientEntityId id() const;
@@ -67,8 +67,8 @@ public:
 	animation::Character& character();
 };
 
-inline void ClientEntity::setAnimation(animation::Animation animation) {
-	character().setAnimation(animation);
+inline void ClientEntity::setAnimation(animation::Animation animation, bool reset) {
+	character().setAnimation(animation, reset);
 }
 
 inline stock::Stock& ClientEntity::stock() {

@@ -71,7 +71,7 @@ core::AppState TestAnimation::onConstruct() {
 		}
 		_animationIdx %= (core::enumVal(animation::Animation::MAX) + 1);
 		Log::info("current animation idx: %i", _animationIdx);
-		animationEntity()->setAnimation((animation::Animation)_animationIdx);
+		animationEntity()->setAnimation((animation::Animation)_animationIdx, true);
 	});
 
 	core::Command::registerCommand("animation_cycleenttype", [this] (const core::CmdArgs& argv) {
@@ -239,7 +239,7 @@ void TestAnimation::onRenderUI() {
 		loadAnimationEntity();
 	}
 	if (ImGui::ComboStl("Animation", &_animationIdx, _animations)) {
-		animationEntity()->setAnimation((animation::Animation)_animationIdx);
+		animationEntity()->setAnimation((animation::Animation)_animationIdx, true);
 	}
 	if (animationEntity()->animationSettings().type() == animation::AnimationSettings::Type::Character) {
 		if (ImGui::ComboStl("Item/Tool", &_itemIdx, _items)) {
