@@ -13,8 +13,11 @@
 #include "attrib/ShadowAttributes.h"
 #include "math/AABB.h"
 #include "core/Enum.h"
+#include "core/collection/Array.h"
 
 namespace animation {
+
+using AnimationTimes = core::Array<float, core::enumVal(Animation::MAX) + 1>;
 
 /**
  * Base class for animated entities that holds the vertices and indices
@@ -23,7 +26,7 @@ namespace animation {
  */
 class AnimationEntity {
 protected:
-	Animation _anim = Animation::IDLE;
+	AnimationTimes _animationTimes;
 	AnimationSettings _settings;
 	Vertices _vertices;
 	Indices _indices;
@@ -36,9 +39,12 @@ protected:
 	bool updateAABB();
 
 public:
-	virtual ~AnimationEntity() {}
+	AnimationEntity();
+	virtual ~AnimationEntity();
 	void setAnimation(Animation animation, bool reset);
-	Animation animation() const;
+	void addAnimation(Animation animation, float durationSeconds);
+	void removeAnimation(Animation animation);
+	const AnimationTimes& animations() const;
 
 	/**
 	 * @brief Initializes the character settings with the given lua script.

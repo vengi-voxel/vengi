@@ -8,19 +8,15 @@
 
 namespace frontend {
 
-network::Animation PlayerAction::animation() const {
-	if (_triggerAction.pressed()) {
-		return network::Animation::TOOL;
-	}
-	return network::Animation::IDLE;
-}
-
 bool PlayerAction::init() {
 	return true;
 }
 
 void PlayerAction::update(const ClientEntityPtr& entity) {
-	entity->setAnimation(animation(), true);
+	// TODO: if not gliding or diving
+	if (_triggerAction.pressed()) {
+		entity->addAnimation(network::Animation::TOOL, 0.1f);
+	}
 }
 
 void PlayerAction::construct() {

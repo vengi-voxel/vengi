@@ -3,6 +3,7 @@
  */
 
 #include "AnimationEntity.h"
+#include <float.h>
 
 namespace animation {
 
@@ -16,6 +17,10 @@ bool AnimationEntity::updateAABB() {
 		_aabb.accumulate(p.x, p.y, p.z);
 	}
 	return _aabb.isValid();
+}
+
+AnimationEntity::AnimationEntity() {
+	_animationTimes.fill(0.0f);
 }
 
 AnimationEntity::~AnimationEntity() {
@@ -35,12 +40,23 @@ const math::AABB<float>& AnimationEntity::aabb() const {
 	return _aabb;
 }
 
-Animation AnimationEntity::animation() const {
-	return _anim;
+const AnimationTimes& AnimationEntity::animations() const {
+	return _animationTimes;
 }
 
-void AnimationEntity::setAnimation(Animation animation) {
-	_anim = animation;
+void AnimationEntity::addAnimation(Animation animation, float durationSeconds) {
+	_animationTimes[core::enumVal(animation)] = _globalTimeSeconds + durationSeconds;
+}
+
+void AnimationEntity::removeAnimation(Animation animation) {
+	_animationTimes[core::enumVal(animation)] = 0.0f;
+}
+
+void AnimationEntity::setAnimation(Animation animation, bool reset) {
+	if (reset) {
+		_animationTimes.fill(0.0f);
+	}
+	_animationTimes[core::enumVal(animation)] = FLT_MAX;
 }
 
 const Vertices& AnimationEntity::vertices() const {

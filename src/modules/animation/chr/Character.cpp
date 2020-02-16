@@ -127,28 +127,36 @@ void Character::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 
 	const float velocity = (float)attrib.current(attrib::Type::SPEED);
 
-	switch (_anim) {
-	case Animation::IDLE:
-		chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
-		break;
-	case Animation::JUMP:
-		chr::jump::update(_globalTimeSeconds, _skeleton, _attributes);
-		break;
-	case Animation::RUN:
-		chr::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
-		break;
-	case Animation::GLIDE:
-		chr::glide::update(_globalTimeSeconds, _skeleton, _attributes);
-		break;
-	case Animation::TOOL:
-		if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
-			chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
-		} else {
-			chr::tool::update(_globalTimeSeconds, _toolAnim, _skeleton, _attributes);
+	// TODO: lerp the animations
+	for (int i = 0; i <= core::enumVal(Animation::MAX); ++i) {
+		const float aTime = _animationTimes[i];
+		if (aTime < _globalTimeSeconds) {
+			continue;
 		}
-		break;
-	default:
-		break;
+		const Animation anim = (Animation)i;
+		switch (anim) {
+		case Animation::IDLE:
+			chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
+			break;
+		case Animation::JUMP:
+			chr::jump::update(_globalTimeSeconds, _skeleton, _attributes);
+			break;
+		case Animation::RUN:
+			chr::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
+			break;
+		case Animation::GLIDE:
+			chr::glide::update(_globalTimeSeconds, _skeleton, _attributes);
+			break;
+		case Animation::TOOL:
+			if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
+				chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
+			} else {
+				chr::tool::update(_globalTimeSeconds, _toolAnim, _skeleton, _attributes);
+			}
+			break;
+		default:
+			break;
+		}
 	}
 
 	if (_globalTimeSeconds > 0.0f) {

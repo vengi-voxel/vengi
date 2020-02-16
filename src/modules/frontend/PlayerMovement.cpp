@@ -65,7 +65,8 @@ void PlayerMovement::update(float deltaFrameSeconds, float orientation, ClientEn
 
 	entity->setOrientation(orientation);
 	entity->setPosition(newPos);
-	entity->setAnimation(animation(), true);
+	const animation::Animation anim = animation();
+	entity->addAnimation(anim, 0.1f);
 }
 
 }

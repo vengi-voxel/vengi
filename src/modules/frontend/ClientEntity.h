@@ -57,6 +57,7 @@ public:
 	void unbindVertexBuffers();
 
 	void setAnimation(animation::Animation animation, bool reset);
+	void addAnimation(animation::Animation animation, float durationSeconds);
 
 	network::EntityType type() const;
 	ClientEntityId id() const;
@@ -69,6 +70,10 @@ public:
 
 inline void ClientEntity::setAnimation(animation::Animation animation, bool reset) {
 	character().setAnimation(animation, reset);
+}
+
+inline void ClientEntity::addAnimation(animation::Animation animation, float durationSeconds) {
+	character().addAnimation(animation, durationSeconds);
 }
 
 inline stock::Stock& ClientEntity::stock() {

@@ -42,15 +42,23 @@ void Bird::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 	const BirdSkeleton old = _skeleton;
 	const float velocity = (float)attrib.current(attrib::Type::SPEED);
 
-	switch (_anim) {
-	case Animation::IDLE:
-		animal::bird::idle::update(_globalTimeSeconds, _skeleton, _attributes);
-		break;
-	case Animation::RUN:
-		animal::bird::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
-		break;
-	default:
-		break;
+	// TODO: lerp the animations
+	for (int i = 0; i <= core::enumVal(Animation::MAX); ++i) {
+		const float aTime = _animationTimes[i];
+		if (aTime < _globalTimeSeconds) {
+			continue;
+		}
+		const Animation anim = (Animation)i;
+		switch (anim) {
+		case Animation::IDLE:
+			animal::bird::idle::update(_globalTimeSeconds, _skeleton, _attributes);
+			break;
+		case Animation::RUN:
+			animal::bird::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
+			break;
+		default:
+			break;
+		}
 	}
 
 	if (_globalTimeSeconds > 0.0f) {

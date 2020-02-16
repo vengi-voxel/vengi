@@ -22,5 +22,6 @@ CLIENTPROTOHANDLERIMPL(EntityUpdate) {
 	const float orientation = message->rotation();
 	entity->setPosition(pos);
 	entity->setOrientation(orientation);
+	// TODO: get all animations from server - the full array
 	entity->setAnimation(animation, true);
 }

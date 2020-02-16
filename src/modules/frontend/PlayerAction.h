@@ -21,9 +21,6 @@ typedef std::shared_ptr<ClientEntity> ClientEntityPtr;
 class PlayerAction : public core::IComponent {
 private:
 	core::ActionButton _triggerAction;
-
-	network::Animation animation() const;
-
 public:
 	bool init() override;
 	void update(const ClientEntityPtr& entity);
