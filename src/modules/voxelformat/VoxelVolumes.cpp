@@ -4,7 +4,6 @@
 
 #include "VoxelVolumes.h"
 #include "voxelutil/VolumeMerger.h"
-#include <utility>
 #include <vector>
 
 namespace voxel {
