@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "voxel/Mesh.h"
 #include "core/ThreadPool.h"
 #include "core/Var.h"
