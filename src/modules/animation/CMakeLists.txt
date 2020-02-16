@@ -19,7 +19,7 @@ set(SRCS
 	AnimationCache.cpp AnimationCache.h
 	AnimationSettings.cpp AnimationSettings.h
 	AnimationRenderer.cpp AnimationRenderer.h
-	AnimationEntity.h
+	AnimationEntity.cpp AnimationEntity.h
 	Bone.cpp Bone.h
 	BoneId.cpp BoneId.h
 	BoneUtil.h

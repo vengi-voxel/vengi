@@ -33,17 +33,7 @@ protected:
 	/**
 	 * @note Make sure to initialize the bones states of the skeleton before calling this
 	 */
-	bool updateAABB() {
-		glm::mat4 bones[shader::SkeletonShaderConstants::getMaxBones()] {};
-		skeleton().update(_settings, bones);
-		_aabb.setLowerCorner(glm::zero<glm::vec3>());
-		_aabb.setUpperCorner(glm::zero<glm::vec3>());
-		for (const auto& v : _vertices) {
-			const glm::vec4& p = bones[v.boneId] * glm::vec4(v.pos, 1.0f);
-			_aabb.accumulate(p.x, p.y, p.z);
-		}
-		return _aabb.isValid();
-	}
+	bool updateAABB();
 
 public:
 	virtual ~AnimationEntity() {}
@@ -55,29 +45,14 @@ public:
 	 * @note This is basically just a wrapper around initMesh() and initSettings()
 	 * @return @c true if the initialization was successful, @c false otherwise.
 	 */
-	bool init(const AnimationCachePtr& cache, const core::String& luaString) {
-		if (!initSettings(luaString)) {
-			return false;
-		}
-		if (!initMesh(cache)) {
-			return false;
-		}
-		return updateAABB();
-	}
-	virtual void shutdown() {}
-	virtual bool initMesh(const AnimationCachePtr& cache) = 0;
-	/**
-	 * @note Updating the settings without updating the mesh afterwards is pointless.
-	 */
-	virtual bool initSettings(const core::String& luaString) = 0;
+	bool init(const AnimationCachePtr& cache, const core::String& luaString);
 
-	/**
-	 * @brief Update the bone states and the tool vertices from the given inventory
-	 * @param[in] dt The delta time since the last call
-	 * @param[in] attrib @c attrib::ShadowAttributes to get the character values
-	 * from
-	 */
-	virtual void update(uint64_t dt, const attrib::ShadowAttributes& attrib) = 0;
+	virtual void shutdown() {}
+
+	const math::AABB<float>& aabb() const;
+
+	AnimationSettings& animationSettings();
+	const AnimationSettings& animationSettings() const;
 
 	/**
 	 * @brief The 'static' vertices of the character mesh where you have to apply
@@ -97,38 +72,19 @@ public:
 	virtual const Skeleton& skeleton() const = 0;
 	virtual SkeletonAttribute& skeletonAttributes() = 0;
 
-	const math::AABB<float>& aabb() const;
+	virtual bool initMesh(const AnimationCachePtr& cache) = 0;
+	/**
+	 * @note Updating the settings without updating the mesh afterwards is pointless.
+	 */
+	virtual bool initSettings(const core::String& luaString) = 0;
 
-	AnimationSettings& animationSettings();
-	const AnimationSettings& animationSettings() const;
+	/**
+	 * @brief Update the bone states and the tool vertices from the given inventory
+	 * @param[in] dt The delta time since the last call
+	 * @param[in] attrib @c attrib::ShadowAttributes to get the character values
+	 * from
+	 */
+	virtual void update(uint64_t dt, const attrib::ShadowAttributes& attrib) = 0;
 };
-
-inline const math::AABB<float>& AnimationEntity::aabb() const {
-	return _aabb;
-}
-
-inline Animation AnimationEntity::animation() const {
-	return _anim;
-}
-
-inline void AnimationEntity::setAnimation(Animation animation) {
-	_anim = animation;
-}
-
-inline const Vertices& AnimationEntity::vertices() const {
-	return _vertices;
-}
-
-inline const Indices& AnimationEntity::indices() const {
-	return _indices;
-}
-
-inline AnimationSettings& AnimationEntity::animationSettings() {
-	return _settings;
-}
-
-inline const AnimationSettings& AnimationEntity::animationSettings() const {
-	return _settings;
-}
 
 }
