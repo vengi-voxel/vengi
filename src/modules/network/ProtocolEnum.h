@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Enum.h"
 #include "Shared_generated.h"
 #include <SDL_stdinc.h>
 
@@ -20,6 +21,11 @@ inline T getEnum(const char* name, const char * const *names) {
 		++names;
 	}
 	return T::NONE;
+}
+
+template<typename ENUM>
+inline const char *toString(ENUM val, const char * const *strArray) {
+	return strArray[core::enumVal(val)];
 }
 
 template<class E>

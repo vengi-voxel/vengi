@@ -6,12 +6,14 @@
 #include "core/collection/Set.h"
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
+#include "core/Log.h"
 #include "math/Rect.h"
 #include "core/Common.h"
 #include "math/Frustum.h"
 #include "backend/world/Map.h"
 #include "poi/PoiProvider.h"
 #include "network/ServerMessageSender.h"
+#include "network/ProtocolEnum.h"
 #include "attrib/ContainerProvider.h"
 
 namespace backend {
@@ -74,9 +76,16 @@ void Entity::sendToVisible(flatbuffers::FlatBufferBuilder& fbb, network::ServerM
 		peers.push_back(peer);
 	}
 	if (peers.empty()) {
+		Log::debug("don't send message of type '%s' - no peers found", network::toString(type, network::EnumNamesServerMsgType()));
 		return;
 	}
-	_messageSender->sendServerMessage(&peers[0], peers.size(), fbb, type, data, flags);
+	if (!_messageSender->sendServerMessage(&peers[0], peers.size(), fbb, type, data, flags)) {
+		Log::debug("Could not send message of type '%s' to all desired peers",
+				network::toString(type, network::EnumNamesServerMsgType()));
+		return;
+	}
+	Log::debug("Sent message of type '%s' to all desired peers",
+			network::toString(type, network::EnumNamesServerMsgType()));
 }
 
 void Entity::init() {
