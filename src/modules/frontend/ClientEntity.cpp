@@ -8,6 +8,8 @@
 #include "core/io/Filesystem.h"
 #include "animation/AnimationSettings.h"
 #include "core/StringUtil.h"
+#include "animation/AnimationCache.h"
+#include "AnimationShaders.h"
 
 namespace frontend {
 

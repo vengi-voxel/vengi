@@ -48,10 +48,10 @@ ItemPtr Stock::add(const ItemPtr& item) {
 	}
 	auto i = find(item->id());
 	if (i == _items.end()) {
-		_items.insert(std::make_pair(item->id(), item));
+		_items.put(item->id(), item);
 		return item;
 	}
-	ItemPtr alreadyExisting = i->second;
+	ItemPtr alreadyExisting = i->value;
 	alreadyExisting->changeAmount(item->amount());
 	return alreadyExisting;
 }
@@ -73,7 +73,7 @@ int Stock::remove(const ItemPtr& item) {
 int Stock::count(const ItemType& itemType) const {
 	int n = 0;
 	for (const auto& entry : _items) {
-		const ItemPtr& i = entry.second;
+		const ItemPtr& i = entry->value;
 		if (i->type() == itemType) {
 			n += i->amount();
 		}

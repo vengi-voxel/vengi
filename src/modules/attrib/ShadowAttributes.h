@@ -30,11 +30,11 @@ public:
 	}
 
 	inline void setMax(Type type, double value) {
-		_max[type] = value;
+		_max.put(type, value);
 	}
 
 	double setCurrent(Type type, double value) {
-		_current[type] = value;
+		_current.put(type, value);
 		return value;
 	}
 
@@ -43,7 +43,7 @@ public:
 		if (i == _current.end()) {
 			return 0.0;
 		}
-		return i->second;
+		return i->value;
 	}
 
 	double max(Type type) const {
@@ -51,7 +51,7 @@ public:
 		if (i == _max.end()) {
 			return 0.0;
 		}
-		return i->second;
+		return i->value;
 	}
 };
 

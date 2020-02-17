@@ -113,12 +113,6 @@ std::vector<int> SetMassTest::v4;
 std::unordered_set<int> SetMassTest::set1;
 std::unordered_set<int> SetMassTest::set2;
 
-TEST_F(SetMassTest, DISABLED_testVectorIntersectionSorted) {
-	std::vector<int> out;
-	core::vectorIntersection(v1, v2, out);
-	EXPECT_EQ(n - offset, (int)out.size());
-}
-
 TEST_F(SetMassTest, DISABLED_testVisibleActionsPerformance) {
 	const auto& inBoth = core::setIntersection(set1, set2);
 	EXPECT_EQ(n - offset, (int)inBoth.size());

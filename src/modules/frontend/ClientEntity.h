@@ -4,20 +4,24 @@
 
 #pragma once
 
-#include "ServerMessages_generated.h"
 #include "Shared_generated.h"
 #include "ClientEntityId.h"
 #include "attrib/ShadowAttributes.h"
 #include "video/Buffer.h"
 #include "animation/Animation.h"
 #include "animation/chr/Character.h"
-#include "animation/AnimationCache.h"
-#include "AnimationShaders.h"
 #include "stock/Stock.h"
 #include "core/collection/StringMap.h"
-#include <functional>
-#include <vector>
 #include <memory>
+
+namespace shader {
+class SkeletonShader;
+}
+
+namespace animation {
+class AnimationCache;
+using AnimationCachePtr = std::shared_ptr<AnimationCache>;
+}
 
 namespace frontend {
 

@@ -11,12 +11,12 @@ ContainerBuilder::ContainerBuilder(const core::String& name, int stackLimit) :
 }
 
 ContainerBuilder& ContainerBuilder::addPercentage(Type type, double value) {
-	_percentage[type] = value;
+	_percentage.put(type, value);
 	return *this;
 }
 
 ContainerBuilder& ContainerBuilder::addAbsolute(Type type, double value) {
-	_absolute[type] = value;
+	_absolute.put(type, value);
 	return *this;
 }
 

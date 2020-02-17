@@ -5,8 +5,6 @@
 #pragma once
 
 #include <unordered_map>
-#include <unordered_set>
-#include <functional>
 #include "core/String.h"
 #include "core/collection/StringMap.h"
 #include <memory>
@@ -16,10 +14,9 @@ namespace attrib {
 
 class Container;
 
-typedef std::unordered_map<core::String, Container, core::StringHash> Containers;
-typedef std::unordered_map<Type, double, network::EnumHash<Type> > Values;
-typedef std::unordered_set<Type, network::EnumHash<Type> > TypeSet;
-typedef Values::const_iterator ValuesConstIter;
+typedef core::StringMap<Container> Containers;
+typedef core::Map<Type, double, 8, network::EnumHash<Type> > Values;
+typedef Values::iterator ValuesConstIter;
 typedef Values::iterator ValuesIter;
 
 /**

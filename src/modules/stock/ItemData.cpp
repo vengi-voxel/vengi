@@ -15,7 +15,7 @@ void ItemData::setName(const char *name) {
 }
 
 void ItemData::addLabel(const char *key, const char *value) {
-	_labels.insert(std::make_pair(key, value));
+	_labels.put(key, value);
 }
 
 const char *ItemData::label(const char *key) const {

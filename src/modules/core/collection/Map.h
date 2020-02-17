@@ -95,7 +95,7 @@ public:
 	private:
 		const Map* _map;
 		size_t _bucket;
-		const KeyValue* _ptr;
+		KeyValue* _ptr;
 	public:
 		constexpr iterator() :
 			_map(nullptr), _bucket(0), _ptr(nullptr) {
@@ -105,7 +105,7 @@ public:
 				_map(map), _bucket(bucket), _ptr(ptr) {
 		}
 
-		inline const KeyValue* operator*() const {
+		inline KeyValue* operator*() const {
 			return _ptr;
 		}
 
@@ -116,7 +116,7 @@ public:
 			}
 			size_t bucket = _bucket;
 			for (++bucket; bucket < BUCKETSIZE; ++bucket) {
-				const KeyValue* ptr = _map->_buckets[bucket];
+				KeyValue* ptr = _map->_buckets[bucket];
 				if (ptr != nullptr) {
 					_ptr = ptr;
 					_bucket = bucket;
@@ -128,7 +128,7 @@ public:
 			return *this;
 		}
 
-		inline const KeyValue* operator->() const {
+		inline KeyValue* operator->() const {
 			return _ptr;
 		}
 

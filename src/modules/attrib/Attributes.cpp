@@ -4,10 +4,38 @@
 
 #include "Attributes.h"
 #include "core/Common.h"
-#include "core/collection/Set.h"
 #include <unordered_set>
 
 namespace attrib {
+
+typedef std::unordered_set<Type, network::EnumHash<Type> > TypeSet;
+
+TypeSet mapFindChangedValues(const Values& in1, const Values& in2) {
+	TypeSet result;
+	for (const auto& e : in1) {
+		const Type& key = e->key;
+		const auto& i = in2.find(key);
+		if (i == in2.end()) {
+			result.insert(key);
+			continue;
+		}
+		const double oldValue = i->value;
+		const double newValue = e->value;
+		if (SDL_fabs(newValue - oldValue) > (double)0.000001) {
+			result.insert(key);
+		}
+	}
+	for (const auto& e : in2) {
+		const Type& key = e->key;
+		auto i = in1.find(key);
+		if (i == in2.end()) {
+			result.insert(key);
+			continue;
+		}
+	}
+
+	return result;
+}
 
 Attributes::Attributes(Attributes* parent) :
 		_dirty(false), _lock("Attributes"), _attribLock("Attributes2"), _parent(parent) {
@@ -30,15 +58,24 @@ bool Attributes::update(long dt) {
 	calculateMax(max, percentages);
 
 	for (const auto& p : percentages) {
-		max[p.first] *= 1.0 + (p.second * 0.01);
+		double value;
+		if (!max.get(p->key, value)) {
+			continue;
+		}
+		value *= 1.0 + (p->value * 0.01);
+		max.put(p->key, value);
 	}
 
 	core::ScopedReadLock scopedLock(_attribLock);
 	if (!_listeners.empty()) {
-		const TypeSet& diff = core::mapFindChangedValues(_max, max);
+		const TypeSet& diff = mapFindChangedValues(_max, max);
 		for (const auto& listener : _listeners) {
 			for (const Type& e : diff) {
-				listener(DirtyValue{e, false, max[e]});
+				double value;
+				if (!max.get(e, value)) {
+					continue;
+				}
+				listener(DirtyValue{e, false, value});
 			}
 		}
 	}
@@ -46,11 +83,11 @@ bool Attributes::update(long dt) {
 
 	// cap your currents to the max allowed value
 	for (ValuesIter i = _current.begin(); i != _current.end(); ++i) {
-		ValuesIter mi = _max.find(i->first);
+		ValuesIter mi = _max.find(i->key);
 		if (mi == _max.end()) {
 			continue;
 		}
-		i->second = core_min(mi->second, i->second);
+		i->value = core_min(mi->value, i->value);
 	}
 	return true;
 }
@@ -66,39 +103,38 @@ void Attributes::calculateMax(Values& absolutes, Values& percentages) const {
 		containers = _containers;
 	}
 	for (const auto& e : containers) {
-		const Container& c = e.second;
+		const Container& c = e->value;
 		const double stackCount = c.stackCount();
 		const Values& abs = c.absolute();
 		for (ValuesConstIter i = abs.begin(); i != abs.end(); ++i) {
-			absolutes[i->first] += i->second * stackCount;
+			auto v = absolutes.find(i->key);
+			if (v == absolutes.end()) {
+				absolutes.put(i->key, i->value * stackCount);
+			} else {
+				v->value += i->value * stackCount;
+			}
 		}
 		const Values& rel = c.percentage();
 		for (ValuesConstIter i = rel.begin(); i != rel.end(); ++i) {
-			percentages[i->first] += i->second * stackCount;
+			auto v = percentages.find(i->key);
+			if (v == percentages.end()) {
+				percentages.put(i->key, i->value * stackCount);
+			} else {
+				v->value += i->value * stackCount;
+			}
 		}
 	}
 }
 
 void Attributes::add(const Container& container) {
 	core::ScopedWriteLock scopedLock(_lock);
-	const auto& i = _containers.insert(std::make_pair(container.name(), container));
-	if (i.second) {
+	auto i = _containers.find(container.name());
+	if (i == _containers.end()) {
+		_containers.put(container.name(), container);
 		_dirty = true;
 		return;
 	}
-	if (i.first->second.increaseStackCount()) {
-		_dirty = true;
-	}
-}
-
-void Attributes::add(Container&& container) {
-	core::ScopedWriteLock scopedLock(_lock);
-	const auto& i = _containers.insert(std::make_pair(container.name(), container));
-	if (i.second) {
-		_dirty = true;
-		return;
-	}
-	if (i.first->second.increaseStackCount()) {
+	if (i->value.increaseStackCount()) {
 		_dirty = true;
 	}
 }
@@ -107,16 +143,7 @@ void Attributes::add(const ContainerPtr& container) {
 	if (!container) {
 		return;
 	}
-	core::ScopedWriteLock scopedLock(_lock);
-	_containerPtrs.insert(std::make_pair(container->name(), container));
-	const auto& i = _containers.insert(std::make_pair(container->name(), *container.get()));
-	if (i.second) {
-		_dirty = true;
-		return;
-	}
-	if (i.first->second.increaseStackCount()) {
-		_dirty = true;
-	}
+	add(*container);
 }
 
 void Attributes::remove(const Container& container) {
@@ -132,33 +159,29 @@ void Attributes::remove(const ContainerPtr& container) {
 
 void Attributes::remove(const core::String& name) {
 	core::ScopedWriteLock scopedLock(_lock);
-	_containerPtrs.erase(name);
-	const auto& i = _containers.find(name);
+	auto i = _containers.find(name);
 	if (i == _containers.end()) {
 		return;
 	}
-	if (i->second.decreaseStackCount()) {
-		_dirty = true;
+	_dirty = true;
+	if (i->value.decreaseStackCount()) {
 		return;
 	}
-	const auto& erased = _containers.erase(i);
-	if (erased != _containers.end()) {
-		_dirty = true;
-	}
+	_containers.erase(i);
 }
 
 double Attributes::setCurrent(Type type, double value) {
 	core::ScopedWriteLock scopedLock(_attribLock);
 	auto i = _max.find(type);
 	if (i == _max.end()) {
-		_current[type] = value;
+		_current.put(type, value);
 		for (const auto& listener : _listeners) {
 			listener(DirtyValue{type, true, value});
 		}
 		return value;
 	}
 	const double max = core_min(i->second, value);
-	_current[type] = max;
+	_current.put(type, max);
 	for (const auto& listener : _listeners) {
 		listener(DirtyValue{type, true, max});
 	}

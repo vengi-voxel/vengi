@@ -6,6 +6,7 @@
 
 #include "Shape.h"
 #include "ItemData.h"
+#include <vector>
 
 namespace stock {
 

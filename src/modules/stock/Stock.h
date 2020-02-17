@@ -7,8 +7,7 @@
 #include "Item.h"
 #include "Inventory.h"
 #include "core/IComponent.h"
-#include <vector>
-#include <unordered_map>
+#include "core/collection/Map.h"
 #include <memory>
 
 namespace stock {
@@ -30,7 +29,7 @@ typedef std::shared_ptr<StockDataProvider> StockDataProviderPtr;
 class Stock : public core::IComponent {
 private:
 	/** All the items this instance can deal with */
-	std::unordered_map<ItemId, ItemPtr> _items;
+	core::Map<ItemId, ItemPtr, 8> _items;
 	/** The inventory has pointers to all the items distributed over all the Container instances in the Inventory. */
 	Inventory _inventory;
 	StockDataProviderPtr _stockDataProvider;

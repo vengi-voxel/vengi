@@ -71,7 +71,7 @@ protected:
 	Values _max;
 	Containers _containers;
 	// keep them here for ref counting
-	std::unordered_map<core::String, ContainerPtr, core::StringHash> _containerPtrs;
+	core::StringMap<ContainerPtr> _containerPtrs;
 	core::ReadWriteLock _lock;
 	core::ReadWriteLock _attribLock;
 	Attributes* _parent;
@@ -129,10 +129,6 @@ public:
 	 * @note Locks the object (container)
 	 */
 	void add(const Container& container);
-	/**
-	 * @note Locks the object (container)
-	 */
-	void add(Container&& container);
 	/**
 	 * @note Locks the object (container)
 	 */
