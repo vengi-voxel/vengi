@@ -8,7 +8,7 @@
 
 namespace core {
 
-TEST(MapTest, testPutGet) {
+TEST(HashMapTest, testPutGet) {
 	core::Map<int64_t, int64_t, 4, std::hash<int64_t>> map;
 	map.put(1, 1);
 	map.put(1, 2);
@@ -32,7 +32,7 @@ TEST(MapTest, testPutGet) {
 	EXPECT_EQ(1111, value);
 }
 
-TEST(MapTest, testCollision) {
+TEST(HashMapTest, testCollision) {
 	core::Map<int64_t, int64_t, 4, std::hash<int64_t>> map;
 	for (int64_t i = 0; i < 128; ++i) {
 		map.put(i, i);
@@ -44,7 +44,7 @@ TEST(MapTest, testCollision) {
 	}
 }
 
-TEST(MapTest, testClear) {
+TEST(HashMapTest, testClear) {
 	core::Map<int64_t, int64_t, 4, std::hash<int64_t>> map;
 	for (int64_t i = 0; i < 16; ++i) {
 		map.put(i, i);
@@ -56,7 +56,7 @@ TEST(MapTest, testClear) {
 	EXPECT_TRUE(map.empty());
 }
 
-TEST(MapTest, testFind) {
+TEST(HashMapTest, testFind) {
 	core::Map<int64_t, int64_t, 256, std::hash<int64_t>> map;
 	for (int64_t i = 0; i < 1024; i += 2) {
 		map.put(i, i);
@@ -69,7 +69,7 @@ TEST(MapTest, testFind) {
 	EXPECT_EQ(map.end(), iter);
 }
 
-TEST(MapTest, testIterator) {
+TEST(HashMapTest, testIterator) {
 	core::Map<int64_t, int64_t, 4, std::hash<int64_t>> map;
 	EXPECT_EQ(map.begin(), map.end());
 	EXPECT_EQ(map.end(), map.find(42));
@@ -78,7 +78,7 @@ TEST(MapTest, testIterator) {
 	EXPECT_EQ(++map.begin(), map.end());
 }
 
-TEST(MapTest, testIterate) {
+TEST(HashMapTest, testIterate) {
 	// leave empty buckets
 	core::Map<int64_t, int64_t, 64, std::hash<int64_t>> map;
 	for (int64_t i = 0; i < 32; i += 2) {
@@ -102,7 +102,7 @@ TEST(MapTest, testIterate) {
 	EXPECT_EQ(1024, cnt);
 }
 
-TEST(MapTest, testIterateRangeBased) {
+TEST(HashMapTest, testIterateRangeBased) {
 	core::Map<int64_t, int64_t, 64, std::hash<int64_t>> map;
 	for (int64_t i = 0; i < 32; i += 2) {
 		map.put(i, i);
@@ -116,7 +116,7 @@ TEST(MapTest, testIterateRangeBased) {
 	EXPECT_EQ(16, cnt);
 }
 
-TEST(MapTest, testStringSharedPtr) {
+TEST(HashMapTest, testStringSharedPtr) {
 	core::StringMap<std::shared_ptr<core::String>, 4> map;
 	auto foobar = std::make_shared<core::String>("foobar");
 	map.put("foobar", foobar);
@@ -127,14 +127,14 @@ TEST(MapTest, testStringSharedPtr) {
 	map.clear();
 }
 
-TEST(MapTest, testCopy) {
+TEST(HashMapTest, testCopy) {
 	core::StringMap<std::shared_ptr<core::String>, 4> map;
 	map.put("foobar", std::make_shared<core::String>("barfoo"));
 	auto map2 = map;
 	map2.clear();
 }
 
-TEST(MapTest, testErase) {
+TEST(HashMapTest, testErase) {
 	core::StringMap<std::shared_ptr<core::String>, 4> map;
 	map.put("foobar", std::make_shared<core::String>("barfoo"));
 	EXPECT_EQ(1u, map.size());
@@ -144,7 +144,7 @@ TEST(MapTest, testErase) {
 	EXPECT_EQ(0u, map.size());
 }
 
-TEST(MapTest, testAssign) {
+TEST(HashMapTest, testAssign) {
 	core::StringMap<std::shared_ptr<core::String>, 4> map;
 	map.put("foobar", std::make_shared<core::String>("barfoo"));
 	core::StringMap<std::shared_ptr<core::String>, 4> map2;
