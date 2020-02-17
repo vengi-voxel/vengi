@@ -48,6 +48,10 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 Client::~Client() {
 }
 
+void Client::sendTriggerAction() {
+	_messageSender->sendClientMessage(_actionFbb, network::ClientMsgType::TriggerAction, CreateTriggerAction(_actionFbb).Union());
+}
+
 void Client::sendMovement() {
 	const network::MoveDirection moveMask = _movement.moveMask();
 
@@ -91,6 +95,7 @@ core::AppState Client::onConstruct() {
 
 	_volumeCache->construct();
 	_movement.construct();
+	_action.construct();
 	_camera.construct();
 
 	core::Var::get(cfg::ClientPort, SERVER_PORT);
@@ -140,6 +145,11 @@ core::AppState Client::onInit() {
 
 	if (!_movement.init()) {
 		Log::error("Failed to initialize movement controller");
+		return core::AppState::InitFailure;
+	}
+
+	if (!_action.init()) {
+		Log::error("Failed to initialize action controller");
 		return core::AppState::InitFailure;
 	}
 
@@ -220,6 +230,7 @@ void Client::beforeUI() {
 		_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _player, [&] (const glm::vec3& pos, float maxWalkHeight) {
 			return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 		});
+		_action.update(_player);
 		_camera.update(_player->position(), _deltaFrameMillis, _now);
 		_worldRenderer.extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameMillis);
@@ -280,6 +291,7 @@ core::AppState Client::onCleanup() {
 	_network->shutdown();
 	_waiting.shutdown();
 	_movement.shutdown();
+	_action.shutdown();
 	_camera.shutdown();
 	Log::info("shutting down the volume cache");
 	_volumeCache->shutdown();
@@ -294,11 +306,13 @@ bool Client::onKeyPress(int32_t key, int16_t modifier) {
 		return true;
 	}
 
+#if 0
 	if (key == SDLK_ESCAPE) {
 		if (_network->isConnecting() || _network->isConnected()) {
 			disconnect();
 		}
 	}
+#endif
 
 	return false;
 }
@@ -312,6 +326,7 @@ core::AppState Client::onRunning() {
 		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 	sendMovement();
+	sendTriggerAction();
 	if (state == core::AppState::Running) {
 		_network->update();
 	}

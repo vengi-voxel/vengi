@@ -23,7 +23,7 @@
 #include "backend/network/UserConnectHandler.h"
 #include "backend/network/UserConnectedHandler.h"
 #include "backend/network/UserDisconnectHandler.h"
-#include "backend/network/AttackHandler.h"
+#include "backend/network/TriggerActionHandler.h"
 #include "backend/network/VarUpdateHandler.h"
 #include "backend/network/MoveHandler.h"
 #include "persistence/PersistenceMgr.h"
@@ -285,7 +285,7 @@ bool ServerLoop::init() {
 			_timeProvider, _attribContainerProvider, _cooldownProvider, _stockDataProvider);
 	regHandler(network::ClientMsgType::UserConnected, UserConnectedHandler);
 	regHandler(network::ClientMsgType::UserDisconnect, UserDisconnectHandler);
-	regHandler(network::ClientMsgType::Attack, AttackHandler);
+	regHandler(network::ClientMsgType::TriggerAction, TriggerActionHandler);
 	regHandler(network::ClientMsgType::Move, MoveHandler);
 	regHandler(network::ClientMsgType::VarUpdate, VarUpdateHandler);
 

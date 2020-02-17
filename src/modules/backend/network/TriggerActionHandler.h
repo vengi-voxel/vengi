@@ -9,9 +9,9 @@
 
 namespace backend {
 
-USERPROTOHANDLERIMPL(Attack) {
+USERPROTOHANDLERIMPL(TriggerAction) {
 	user->logoutMgr().updateLastActionTime();
-	user->attack(message->targetId());
+	//user->attack(message->targetId());
 }
 
 }

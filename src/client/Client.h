@@ -7,6 +7,7 @@
 #include "ServerMessages_generated.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/PlayerMovement.h"
+#include "frontend/PlayerAction.h"
 #include "voxelrender/WorldRenderer.h"
 #include "voxelrender/PlayerCamera.h"
 #include "core/Var.h"
@@ -35,6 +36,8 @@ protected:
 	voxelrender::WorldRenderer _worldRenderer;
 	flatbuffers::FlatBufferBuilder _moveFbb;
 	frontend::PlayerMovement _movement;
+	flatbuffers::FlatBufferBuilder _actionFbb;
+	frontend::PlayerAction _action;
 	network::MoveDirection _lastMoveMask = network::MoveDirection::NONE;
 	glm::vec2 _lastMoveAngles {0.0f};
 	core::VarPtr _rotationSpeed;
@@ -50,6 +53,7 @@ protected:
 
 	void sendVars() const;
 	void sendMovement();
+	void sendTriggerAction();
 
 	void handleLogin();
 	int renderMap(video::Shader& shader, const voxelworld::WorldMgrPtr& world, const glm::mat4& view, float aspect);

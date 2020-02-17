@@ -13,12 +13,12 @@ set(SRCS
 	world/MapProvider.cpp world/MapProvider.h
 	world/World.cpp world/World.h
 
+	network/IUserProtocolHandler.h
+	network/MoveHandler.h
+	network/TriggerActionHandler.h
 	network/UserConnectHandler.cpp network/UserConnectHandler.h
 	network/UserConnectedHandler.h
 	network/UserDisconnectHandler.h
-	network/AttackHandler.h
-	network/MoveHandler.h
-	network/IUserProtocolHandler.h
 	network/VarUpdateHandler.h
 
 	metric/MetricMgr.cpp metric/MetricMgr.h
