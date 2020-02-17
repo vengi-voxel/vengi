@@ -19,6 +19,8 @@ class ConnectTest:
 		public core::AbstractTest,
 		public core::IEventBusHandler<network::NewConnectionEvent>,
 		public core::IEventBusHandler<network::DisconnectEvent> {
+private:
+	using Super = core::AbstractTest;
 protected:
 	core::EventBusPtr _clientEventBus;
 	core::EventBusPtr _serverEventBus;
@@ -28,21 +30,23 @@ protected:
 
 	network::ServerNetworkPtr _serverNetwork;
 
-	const uint16_t _port;
+	uint16_t _port;
 	const core::String _host = "127.0.0.1";
 
 	int _disconnectEvent = 0;
 	int _connectEvent = 0;
 	int _userConnectHandlerCalled = 0;
 public:
-	ConnectTest() :
-			_clientEventBus(std::make_shared<core::EventBus>()),
-			_serverEventBus(std::make_shared<core::EventBus>()),
-			_protocolHandlerRegistry(std::make_shared<network::ProtocolHandlerRegistry>()),
-			_clientNetwork(std::make_shared<network::ClientNetwork>(_protocolHandlerRegistry, _clientEventBus)),
-			_clientMessageSender(std::make_shared<network::ClientMessageSender>(_clientNetwork)),
-			_serverNetwork(std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _serverEventBus, _testApp->metric())),
-			_port((uint16_t)((uint32_t)(intptr_t)this) + 1025) {
+	void SetUp() override {
+		_clientEventBus = std::make_shared<core::EventBus>();
+		_serverEventBus = std::make_shared<core::EventBus>();
+		_protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+		_clientNetwork = std::make_shared<network::ClientNetwork>(_protocolHandlerRegistry, _clientEventBus);
+		_clientMessageSender = std::make_shared<network::ClientMessageSender>(_clientNetwork);
+		const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
+		_serverNetwork = std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _serverEventBus, metric);
+		_port = (uint16_t)((uint32_t)(intptr_t)this) + 1025;
+		Super::SetUp();
 	}
 
 	void onEvent(const network::DisconnectEvent& event) override {

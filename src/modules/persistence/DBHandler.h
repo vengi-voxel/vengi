@@ -44,7 +44,7 @@ private:
 
 	mutable ConnectionPool _connectionPool;
 
-	Connection* connection() const;
+	virtual Connection* connection() const;
 
 	bool insertMetadata(const Model& model) const;
 	bool loadMetadata(const Model& model, std::vector<db::MetainfoModel>& schemaModels) const;
@@ -260,21 +260,21 @@ public:
 	 * @param[in] model The model that identifies the table that should be created
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
-	bool createTable(Model&& model) const;
+	virtual bool createTable(Model&& model) const;
 
 	/**
 	 * @brief Create a table for the given @c persistence::Model - or if this table already exists, it checks
 	 * whether the given model meta data matches the existing table and perform update statements if the differ
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
-	bool createOrUpdateTable(Model&& model) const;
+	virtual bool createOrUpdateTable(Model&& model) const;
 
 	/**
 	 * @brief Executes a single query
 	 * @param[in] query The query to execute
 	 * @return @c true if the statement was executed successfully, @c false otherwise.
 	 */
-	bool exec(const core::String& query) const;
+	virtual bool exec(const core::String& query) const;
 
 	// transactions
 	bool begin();
