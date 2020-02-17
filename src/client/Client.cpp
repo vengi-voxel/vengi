@@ -64,7 +64,7 @@ void Client::sendMovement() {
 	if (_lastMoveMask != moveMask || !glm::all(glm::epsilonEqual(moveAngles, _lastMoveAngles, 0.0001f))) {
 		_lastMoveMask = moveMask;
 		_lastMoveAngles = moveAngles;
-		_messageSender->sendClientMessage(_moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, moveMask, moveAngles.x, moveAngles.y).Union());
+		_messageSender->sendClientMessage(_moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, moveMask, moveAngles.x, moveAngles.y).Union(), 0u);
 	}
 }
 

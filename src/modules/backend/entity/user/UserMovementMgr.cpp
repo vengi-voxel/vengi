@@ -34,7 +34,7 @@ void UserMovementMgr::update(long dt) {
 		const network::Vec3 netPos { newPos.x, newPos.y, newPos.z };
 		_user->sendToVisible(_entityUpdateFBB,
 				network::ServerMsgType::EntityUpdate,
-				network::CreateEntityUpdate(_entityUpdateFBB, _user->id(), &netPos, orientation, _movement.animation()).Union(), true);
+				network::CreateEntityUpdate(_entityUpdateFBB, _user->id(), &netPos, orientation, _movement.animation()).Union(), true, 0u);
 		_sendUpdate = false;
 	}
 
