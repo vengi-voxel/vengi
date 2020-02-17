@@ -305,7 +305,7 @@ bool ServerLoop::init() {
 		core_trace_scoped(WorldTimer);
 		const ServerLoop* loop = (const ServerLoop*)handle->data;
 		loop->_world->update(handle->repeat);
-	}, 1000);
+	}, 100);
 
 	_persistenceMgrTimer = new uv_timer_t;
 	uv_timer_init(_loop, _persistenceMgrTimer);
