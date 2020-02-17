@@ -8,6 +8,7 @@
 #include "RenderShaders.h"
 #include "voxelrender/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
+#include "frontend/PlayerAction.h"
 #include "render/Axis.h"
 #include "frontend/PlayerMovement.h"
 #include "voxelrender/PlayerCamera.h"
@@ -35,6 +36,7 @@ protected:
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;
 	frontend::PlayerMovement _movement;
+	frontend::PlayerAction _action;
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelrender::PlayerCamera _camera;
