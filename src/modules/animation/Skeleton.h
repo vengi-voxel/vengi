@@ -7,6 +7,7 @@
 #include "Bone.h"
 #include "BoneId.h"
 #include "core/Enum.h"
+#include "core/collection/Array.h"
 #include "SkeletonShaderConstants.h"
 
 namespace animation {
@@ -27,8 +28,9 @@ class AnimationSettings;
  */
 class Skeleton {
 private:
-	Bone _bones[core::enumVal(BoneId::Max)];
+	core::Array<Bone, core::enumVal(BoneId::Max)> _bones;
 public:
+	Skeleton();
 	virtual ~Skeleton() {}
 	const Bone& bone(BoneId id) const;
 	Bone& bone(BoneId id);

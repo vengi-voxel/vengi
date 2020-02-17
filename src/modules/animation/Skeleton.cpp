@@ -9,6 +9,10 @@
 
 namespace animation {
 
+Skeleton::Skeleton() {
+	_bones.fill(Bone());
+}
+
 const Bone& Skeleton::bone(BoneId id) const {
 	core_assert(id != BoneId::Max);
 	return _bones[core::enumVal(id)];
