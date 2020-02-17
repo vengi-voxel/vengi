@@ -61,6 +61,7 @@ void PlayerMovement::update(float deltaFrameSeconds, float orientation, ClientEn
 	} else {
 		_move &= ~network::MoveDirection::JUMP;
 	}
+	// TODO: https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html
 	const glm::vec3& newPos = Super::update(deltaFrameSeconds, orientation, (float)speed, currentPos, heightResolver);
 
 	entity->setOrientation(orientation);
