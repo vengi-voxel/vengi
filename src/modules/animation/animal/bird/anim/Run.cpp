@@ -32,7 +32,7 @@ void update(float animTime, float velocity, BirdSkeleton &skeleton, const BirdSk
 	const float footAngle = cosine * 1.5f;
 	const float footMoveY = cosineDouble * 0.5f;
 	Bone &rightfoot = skeleton.footBone(BoneId::RightFoot, skeletonAttr);
-	rightfoot.translation = glm::vec3(skeletonAttr.footRight, footMoveY, 0.0f);
+	rightfoot.translation = glm::vec3(skeletonAttr.footRight, skeletonAttr.footHeight - footMoveY, 0.0f);
 	rightfoot.orientation = rotateX(footAngle);
 
 	Bone &leftfoot = skeleton.bone(BoneId::LeftFoot);
@@ -44,7 +44,7 @@ void update(float animTime, float velocity, BirdSkeleton &skeleton, const BirdSk
 
 	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
 	torso.translation = glm::vec3(0.0f, 0.0f, sine * 0.04f);
-	torso.orientation = rotateX(cosine * -0.1f);
+	torso.orientation = rotateX(cosine * -0.01f);
 }
 }
 }

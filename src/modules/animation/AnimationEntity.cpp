@@ -33,6 +33,7 @@ bool AnimationEntity::init(const AnimationCachePtr& cache, const core::String& l
 	if (!initMesh(cache)) {
 		return false;
 	}
+	setAnimation(animation::Animation::IDLE, false);
 	return updateAABB();
 }
 

@@ -28,7 +28,7 @@ void update(float animTime, BirdSkeleton &skeleton, const BirdSkeletonAttribute 
 	skeleton.bone(BoneId::RightWing) = translate(skeletonAttr.wingRight, skeletonAttr.wingY, 0.0f);
 	skeleton.bone(BoneId::LeftWing) = mirrorX(skeleton.bone(BoneId::RightWing));
 
-	skeleton.bone(BoneId::RightFoot) = translate(skeletonAttr.footRight, skeletonAttr.footY, 0.0f);
+	skeleton.bone(BoneId::RightFoot) = translate(skeletonAttr.footRight, skeletonAttr.footHeight, 0.0f);
 	skeleton.bone(BoneId::LeftFoot) = mirrorX(skeleton.bone(BoneId::RightFoot));
 
 	skeleton.torsoBone(skeletonAttr.scaler);
