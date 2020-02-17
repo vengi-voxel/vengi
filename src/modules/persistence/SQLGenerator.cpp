@@ -963,11 +963,11 @@ core::String createLimitOffset(const Range& range) {
 	core::String ss;
 	if (range.limit > 0) {
 		ss += " LIMIT ";
-		ss += range.limit;
+		ss += core::string::toString(range.limit);
 	}
 	if (range.offset > 0) {
 		ss += " OFFSET ";
-		ss += range.offset;
+		ss += core::string::toString(range.offset);
 	}
 	return ss;
 }
