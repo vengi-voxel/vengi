@@ -28,9 +28,9 @@ public:
 
 class AtomicInt {
 private:
-	SDL_atomic_t _value { 0 };
+	SDL_atomic_t _value;
 public:
-	AtomicInt(int value);
+	AtomicInt(int value = 0);
 
 	operator int() const;
 

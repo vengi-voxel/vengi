@@ -4,16 +4,14 @@
 
 #include "AbstractTest.h"
 #include "core/ThreadPool.h"
+#include "core/Atomic.h"
 
 namespace core {
 
 class ThreadPoolTest: public AbstractTest {
 public:
-	std::atomic_int _count;
-	bool _executed;
-	ThreadPoolTest() :
-		_count(0), _executed(false) {
-	}
+	core::AtomicInt _count;
+	bool _executed = false;
 
 	void SetUp() override {
 		AbstractTest::SetUp();
@@ -38,7 +36,7 @@ TEST_F(ThreadPoolTest, testMultiplePush) {
 	pool.init();
 	for (int i = 0; i < x; ++i) {
 		pool.enqueue([this] () {
-			_count++;
+			++_count;
 		});
 	}
 	pool.shutdown(true);
