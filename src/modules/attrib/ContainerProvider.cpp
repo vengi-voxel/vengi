@@ -56,7 +56,7 @@ void ContainerProvider::addContainer(const ContainerPtr& container) {
 	if (_containers.find(container->name()) != _containers.end()) {
 		Log::warn("overriding already existing container for %s", container->name().c_str());
 	}
-	_containers[container->name()] = container;
+	_containers.put(container->name(), container);
 }
 
 ContainerPtr ContainerProvider::container(const core::String& name) const {
@@ -65,7 +65,7 @@ ContainerPtr ContainerProvider::container(const core::String& name) const {
 		return ContainerPtr();
 	}
 
-	return i->second;
+	return i->value;
 }
 
 }

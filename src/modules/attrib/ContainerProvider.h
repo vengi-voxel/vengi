@@ -6,8 +6,8 @@
 
 #include "Container.h"
 #include <memory>
-#include <unordered_map>
 #include "core/String.h"
+#include "core/collection/StringMap.h"
 
 namespace attrib {
 
@@ -26,7 +26,7 @@ namespace attrib {
  */
 class ContainerProvider {
 public:
-	typedef std::unordered_map<core::String, ContainerPtr, core::StringHash> Containers;
+	typedef core::StringMap<ContainerPtr> Containers;
 private:
 	Containers _containers;
 	core::String _error;

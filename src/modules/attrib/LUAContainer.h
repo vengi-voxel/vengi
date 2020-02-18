@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <memory>
+#include "ContainerValues.h"
 #include "core/String.h"
 
 namespace attrib {
@@ -18,32 +18,17 @@ private:
 	Values _percentage;
 	Values _absolute;
 public:
-	LUAContainer(const core::String& name, ContainerProvider* ctx) :
-			_name(name), _ctx(ctx) {
-	}
+	LUAContainer(const core::String& name, ContainerProvider* ctx);
 
-	void addPercentage(Type type, double value) {
-		_percentage.put(type, value);
-	}
+	void addPercentage(Type type, double value);
 
-	void addAbsolute(Type type, double value) {
-		_absolute.put(type, value);
-	}
+	void addAbsolute(Type type, double value);
 
-	inline bool registered() const {
-		return _name.empty();
-	}
+	bool registered() const;
 
-	void createContainer() {
-		_ctx->addContainer(std::make_shared<Container>(_name, _percentage, _absolute));
-		_percentage.clear();
-		_absolute.clear();
-		_name.clear();
-	}
+	void createContainer();
 
-	inline const core::String& name() const {
-		return _name;
-	}
+	const core::String& name() const;
 };
 
 }

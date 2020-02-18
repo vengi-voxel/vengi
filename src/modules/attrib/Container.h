@@ -4,20 +4,17 @@
 
 #pragma once
 
-#include <unordered_map>
 #include "core/String.h"
+#include "core/collection/Map.h"
 #include "core/collection/StringMap.h"
 #include <memory>
 #include "AttributeType.h"
+#include "ContainerValues.h"
 
 namespace attrib {
 
 class Container;
-
 typedef core::StringMap<Container> Containers;
-typedef core::Map<Type, double, 8, network::EnumHash<Type> > Values;
-typedef Values::iterator ValuesConstIter;
-typedef Values::iterator ValuesIter;
 
 /**
  * @brief A container provides percentage and absolute values for the @c Attributes instances. Containers
@@ -36,78 +33,43 @@ protected:
 	size_t _hash;
 
 public:
-	Container(const core::String& name, const Values& percentage, const Values& absolute, int stackCount = 1, int stackLimit = 1) :
-			_name(name), _percentage(percentage), _absolute(absolute),
-			_stackCount(stackCount), _stackLimit(stackLimit), _hash(core::StringHash{}(_name)) {
-	}
+	Container(const core::String& name, const Values& percentage, const Values& absolute, int stackCount = 1, int stackLimit = 1);
 
-	Container(core::String&& name, Values&& percentage, Values&& absolute, int stackCount = 1, int stackLimit = 1) :
-			_name(std::move(name)), _percentage(std::move(percentage)), _absolute(std::move(absolute)),
-			_stackCount(stackCount), _stackLimit(stackLimit), _hash(core::StringHash{}(_name)) {
-	}
+	Container(core::String&& name, Values&& percentage, Values&& absolute, int stackCount = 1, int stackLimit = 1);
 
 	/**
 	 * @brief Each container must have a unique name set.
 	 */
-	inline const core::String& name() const {
-		return _name;
-	}
+	const core::String& name() const;
 
 	/**
 	 * @return The percentage values that this container provides
 	 * @sa absolute()
 	 */
-	inline const Values& percentage() const {
-		return _percentage;
-	}
+	const Values& percentage() const;
 
 	/**
 	 * @return The absolute values that this container provides
 	 * @sa percentage()
 	 */
-	inline const Values& absolute() const {
-		return _absolute;
-	}
+	const Values& absolute() const;
 
-	inline bool operator==(const Container& rhs) const {
-		return rhs._name == _name;
-	}
+	bool operator==(const Container& rhs) const;
 
-	inline int stackCount() const {
-		return _stackCount;
-	}
+	int stackCount() const;
 
-	inline void setStackCount(int stackCount) {
-		_stackCount = stackCount;
-	}
+	void setStackCount(int stackCount);
 
-	inline bool increaseStackCount() {
-		if (_stackCount < _stackLimit) {
-			++_stackCount;
-			return true;
-		}
-		return false;
-	}
+	bool increaseStackCount();
 
-	inline bool decreaseStackCount() {
-		if (_stackCount > 0) {
-			--_stackCount;
-			return true;
-		}
-		return false;
-	}
+	bool decreaseStackCount();
 
-	inline int stackLimit() const {
-		return _stackLimit;
-	}
+	int stackLimit() const;
 
-	inline bool operator==(const Container& other) {
-		if (_hash != other._hash) {
-			return false;
-		}
-		return _name == other._name;
-	}
+	bool operator==(const Container& other);
 };
+
+typedef std::shared_ptr<Container> ContainerPtr;
 
 class ContainerBuilder {
 private:
@@ -122,8 +84,6 @@ public:
 
 	Container create() const;
 };
-
-typedef std::shared_ptr<Container> ContainerPtr;
 
 inline Container ContainerBuilder::create() const {
 	return Container(_name, _percentage, _absolute, 1, _stackLimit);

@@ -3,6 +3,8 @@ set(SRCS
 	AttributeType.h
 	Container.h Container.cpp
 	ContainerProvider.h ContainerProvider.cpp
+	ContainerValues.h
+	LUAContainer.h LUAContainer.cpp
 )
 set(LIB attrib)
 # the network module will assemble the header with the attribute types
