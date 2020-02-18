@@ -332,7 +332,7 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 			table.fields[fieldName].contraintMask |= c.types;
 		}
 		if ((c.types & core::enumVal(persistence::ConstraintType::PRIMARYKEY)) != 0) {
-			table.primaryKeys += c.fields.size();
+			table.primaryKeys += (int)c.fields.size();
 		}
 	}
 
