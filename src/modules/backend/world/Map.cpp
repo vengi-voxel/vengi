@@ -80,6 +80,7 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 }
 
 void Map::update(long dt) {
+	Log::trace("tick map %i", (int)_mapId);
 	_spawnMgr->update(dt);
 	_zone->update(dt);
 	_attackMgr.update(dt);
