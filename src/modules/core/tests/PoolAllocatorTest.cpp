@@ -45,7 +45,7 @@ int PoolAllocatorTest::calledParamCtor = 0;
 TEST_F(PoolAllocatorTest, testInit) {
 	IntAllocator a;
 	ASSERT_TRUE(a.init(size)) << "Failed to init the pool allocator";
-	EXPECT_EQ(size, a.max());
+	EXPECT_EQ(size, (a.max)());
 	EXPECT_EQ(0, a.allocated());
 	a.shutdown();
 }
