@@ -5,60 +5,26 @@
 #pragma once
 
 #include "core/String.h"
-#include <mutex>
-#include "Trace.h"
-#define CORE_SHARED_MUTEX 0
-#define CORE_RECURSIVE_MUTEX 0
 
-#if CORE_SHARED_MUTEX
-#include <shared_mutex>
-#if __cplusplus > 201402L
-using Mutex = std::shared_mutex;
-#else
-using Mutex = std::shared_timed_mutex;
-#endif
-#else // CORE_SHARED_MUTEX
-#if CORE_RECURSIVE_MUTEX
-using Mutex = std::recursive_mutex;
-#else // CORE_RECURSIVE_MUTEX
-using Mutex = std::mutex;
-#endif // CORE_RECURSIVE_MUTEX
-#endif // CORE_SHARED_MUTEX
+struct SDL_mutex;
 
 namespace core {
 
 class ReadWriteLock {
 private:
 	const core::String _name;
-	mutable core_trace_mutex(Mutex, _mutex);
+	mutable SDL_mutex* _mutex;
 public:
-	ReadWriteLock(const core::String& name) :
-			_name(name) {
-	}
+	ReadWriteLock(const core::String& name);
+	~ReadWriteLock();
 
-	inline void lockRead() const {
-#if CORE_SHARED_MUTEX
-		_mutex.lock_shared();
-#else
-		_mutex.lock();
-#endif
-	}
+	void lockRead() const;
 
-	inline void unlockRead() const {
-#if CORE_SHARED_MUTEX
-		_mutex.unlock_shared();
-#else
-		_mutex.unlock();
-#endif
-	}
+	void unlockRead() const;
 
-	inline void lockWrite() {
-		_mutex.lock();
-	}
+	void lockWrite();
 
-	inline void unlockWrite() {
-		_mutex.unlock();
-	}
+	void unlockWrite();
 };
 
 class ScopedReadLock {

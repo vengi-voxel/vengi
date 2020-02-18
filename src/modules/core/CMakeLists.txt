@@ -49,7 +49,7 @@ set(SRCS
 	NonCopyable.h
 	Password.h
 	Process.cpp Process.h
-	ReadWriteLock.h
+	ReadWriteLock.cpp ReadWriteLock.h
 	RecursiveReadWriteLock.h
 	Singleton.h
 	String.cpp String.h
