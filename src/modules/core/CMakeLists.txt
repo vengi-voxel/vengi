@@ -28,6 +28,7 @@ set(SRCS
 
 	ArrayLength.h
 	Assert.cpp Assert.h
+	Atomic.cpp Atomic.h
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h
 	BindingContext.cpp BindingContext.h

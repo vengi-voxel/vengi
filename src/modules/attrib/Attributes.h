@@ -6,8 +6,8 @@
 
 #include "Container.h"
 #include "core/ReadWriteLock.h"
+#include "core/Atomic.h"
 #include <functional>
-#include <atomic>
 #include <vector>
 
 #undef max
@@ -68,7 +68,7 @@ namespace attrib {
  */
 class Attributes {
 protected:
-	std::atomic_bool _dirty;
+	core::AtomicBool _dirty { false };
 	Values _current;
 	Values _max;
 	Containers _containers;

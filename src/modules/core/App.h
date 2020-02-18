@@ -9,8 +9,8 @@
 #include "BindingContext.h"
 #include "String.h"
 #include "collection/List.h"
+#include "Atomic.h"
 #include <stack>
-#include <atomic>
 #include <memory>
 
 #define ORGANISATION "vengi"
@@ -128,7 +128,7 @@ protected:
 	metric::IMetricSenderPtr _metricSender;
 	metric::MetricPtr _metric;
 	// if you modify the tracing during the frame, we throw away the current frame information
-	std::atomic_bool _traceBlockUntilNextFrame { false };
+	core::AtomicBool _traceBlockUntilNextFrame { false };
 	struct TraceData {
 		const char *threadName;
 		const char *name;
