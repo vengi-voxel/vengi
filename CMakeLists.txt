@@ -108,7 +108,12 @@ if (NOT CMAKE_TOOLCHAIN_FILE)
 	endif()
 else()
 	if (MSVC)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201 /wd4244 /wd4245")
+		# 4456: declaration of 'q' hides previous local declaration
+		# 4244: possible loss of data (e.g. float/double)
+		# 4201: nonstandard extension used
+		# 4245: signed/unsigned mismatch
+		# 4100: unreferenced formal parameter
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4245 /wd4201 /wd4100 /wd4456 /wd4267")
 	endif()
 endif()
 
