@@ -7,6 +7,8 @@
 #include "Container.h"
 #include "core/ReadWriteLock.h"
 #include <functional>
+#include <atomic>
+#include <vector>
 
 #undef max
 

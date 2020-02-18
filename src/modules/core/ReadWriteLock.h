@@ -24,8 +24,6 @@ using Mutex = std::recursive_mutex;
 using Mutex = std::mutex;
 #endif // CORE_RECURSIVE_MUTEX
 #endif // CORE_SHARED_MUTEX
-#include <atomic>
-#include <chrono>
 
 namespace core {
 
