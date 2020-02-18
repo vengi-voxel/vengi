@@ -9,6 +9,7 @@
 #include "core/Var.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "voxel/PagedVolume.h"
+#include "core/Atomic.h"
 
 #include <unordered_set>
 #include <glm/vec3.hpp>
@@ -58,7 +59,7 @@ private:
 	// fast lookup for positions that are already extracted
 	PositionSet _positionsExtracted;
 	core::VarPtr _meshSize;
-	std::atomic_bool _cancelThreads { false };
+	core::AtomicBool_cancelThreads { false };
 	voxel::PagedVolume *_volume = nullptr;
 	void extractScheduledMesh();
 

@@ -5,10 +5,10 @@
 #pragma once
 
 #include <stdint.h>
+#include "core/Atomic.h"
 #include <vector>
 #include <condition_variable>
 #include <mutex>
-#include <atomic>
 #include <functional>
 #include <algorithm>
 #include "core/Trace.h"
@@ -22,7 +22,7 @@ private:
 	Collection _data;
 	mutable core_trace_mutex(std::mutex, _mutex);
 	std::condition_variable_any _conditionVariable;
-	std::atomic_bool _abort { false };
+	core::AtomicBool _abort { false };
 	Comparator _comparator;
 public:
 	using Key = Data;

@@ -9,6 +9,7 @@
 #include "core/Trace.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/IComponent.h"
+#include "core/Atomic.h"
 
 namespace persistence {
 
@@ -21,7 +22,7 @@ class ConnectionPool : public core::IComponent {
 protected:
 	int _min = -1;
 	int _max = -1;
-	std::atomic_int _connectionAmount { 0 };
+	core::AtomicInt _connectionAmount { 0 };
 	core::VarPtr _dbName;
 	core::VarPtr _dbHost;
 	core::VarPtr _dbUser;

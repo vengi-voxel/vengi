@@ -34,4 +34,42 @@ bool AtomicBool::operator==(const AtomicBool& rhs) const {
 	return (bool)(*this) == (bool)rhs;
 }
 
+AtomicInt::AtomicInt(int value) {
+	SDL_AtomicSet(&_value, value);
+}
+
+AtomicInt::operator int() const {
+	return SDL_AtomicGet(const_cast<SDL_atomic_t*>(&_value));
+}
+
+int AtomicInt::exchange(int rhs) {
+	return SDL_AtomicSet(&_value, rhs);
+}
+
+void AtomicInt::operator=(int rhs) {
+	SDL_AtomicSet(&_value, rhs);
+}
+
+void AtomicInt::operator=(const AtomicInt& rhs) {
+	SDL_AtomicSet(&_value, SDL_AtomicGet(const_cast<SDL_atomic_t*>(&rhs._value)));
+}
+
+bool AtomicInt::operator==(int rhs) const {
+	return (int)(*this) == rhs;
+}
+
+bool AtomicInt::operator==(const AtomicInt& rhs) const {
+	return (int)(*this) == (int)rhs;
+}
+
+AtomicInt& AtomicInt::operator--() {
+	SDL_AtomicAdd(&_value, -1);
+	return *this;
+}
+
+AtomicInt& AtomicInt::operator++() {
+	SDL_AtomicAdd(&_value, 1);
+	return *this;
+}
+
 }
