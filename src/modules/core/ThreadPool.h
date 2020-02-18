@@ -33,9 +33,9 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <atomic>
 #include <future>
 #include <functional>
+#include "Atomic.h"
 #include "Trace.h"
 #include "Log.h"
 
@@ -68,8 +68,8 @@ private:
 	// synchronization
 	core_trace_mutex(std::mutex, _queueMutex);
 	std::condition_variable_any _queueCondition;
-	std::atomic_bool _stop { false };
-	std::atomic_bool _force { false };
+	core::AtomicBool _stop { false };
+	core::AtomicBool _force { false };
 };
 
 // add new work item to the pool

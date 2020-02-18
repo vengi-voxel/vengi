@@ -83,7 +83,7 @@ void Server::onDisconnect(Client* /*client*/) {
 	}
 
 	zone->setDebug(false);
-	if (_zone.compare_exchange_strong(zone, nullptr)) {
+	if (_zone.compare_exchange(zone, nullptr) != nullptr) {
 		// restore the zone state if no player is left for debugging
 		const bool pauseState = _pause;
 		if (pauseState) {
@@ -280,7 +280,7 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 			break;
 		}
 		case EV_ZONEREMOVE: {
-			_zone.compare_exchange_strong(event.data.zone, nullptr);
+			_zone.compare_exchange(event.data.zone, nullptr);
 			if (_zones.erase(event.data.zone) != 1) {
 				return;
 			}
@@ -305,7 +305,7 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 				if (!debug) {
 					continue;
 				}
-				if (_zone.compare_exchange_strong(nullzone, z)) {
+				if (_zone.compare_exchange(nullzone, z)) {
 					z->setDebug(debug);
 				}
 			}

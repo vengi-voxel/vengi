@@ -59,7 +59,7 @@ private:
 	// fast lookup for positions that are already extracted
 	PositionSet _positionsExtracted;
 	core::VarPtr _meshSize;
-	core::AtomicBool_cancelThreads { false };
+	core::AtomicBool _cancelThreads { false };
 	voxel::PagedVolume *_volume = nullptr;
 	void extractScheduledMesh();
 

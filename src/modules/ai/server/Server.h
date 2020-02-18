@@ -60,9 +60,9 @@ protected:
 	DeleteNodeHandler *_deleteNodeHandler;
 	UpdateNodeHandler *_updateNodeHandler;
 	NopHandler _nopHandler;
-	std::atomic_bool _pause;
+	core::AtomicBool _pause;
 	// the current active debugging zone
-	std::atomic<Zone*> _zone;
+	core::AtomicPtr<Zone> _zone;
 	ReadWriteLock _lock = {"server"};
 	std::vector<core::String> _names;
 	uint32_t _broadcastMask = 0u;
