@@ -9,6 +9,11 @@
 
 namespace core {
 
+/**
+ * @brief Fixed size stack implementation - does not allocate
+ *
+ * @ingroup Collections
+ */
 template <class TYPE, size_t SIZE>
 class Stack {
 private:

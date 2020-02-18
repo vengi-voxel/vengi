@@ -10,6 +10,8 @@ namespace core {
 /**
  * @brief Non allocating buffer class holds a maximum of given entries and allows an endless insert
  * by overrinding previous elements in the buffer
+ *
+ * @ingroup Collections
  */
 template <typename TYPE, size_t SIZE = 64u>
 class RingBuffer {

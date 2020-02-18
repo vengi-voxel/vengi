@@ -9,6 +9,13 @@
 
 namespace core {
 
+/**
+ * @brief Linked list with a max size given as constructor parameter.
+ *
+ * @note The allocations are performed with the @c PoolAllocator
+ *
+ * @ingroup Collections
+ */
 template<class TYPE>
 class List {
 private:

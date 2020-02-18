@@ -8,6 +8,10 @@
 
 namespace core {
 
+/**
+ * @brief Fixed size array - does not allocate
+ * @ingroup Collections
+ */
 template<class TYPE, size_t SIZE>
 struct Array {
 	TYPE _items[SIZE];

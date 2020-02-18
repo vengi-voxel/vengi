@@ -11,6 +11,16 @@
 
 namespace core {
 
+/**
+ * @brief Dynamically growing continuous storage buffer
+ *
+ * @note This array does not have an upper size limit. Each time the capacity is reached, it will
+ * allocate new slots given by the @c INCREASE template parameter.
+ *
+ * @note Use a fixed size array to prevent memory allocations - where possible
+ * @sa Array
+ * @ingroup Collections
+ */
 template<class TYPE, size_t INCREASE = 32u>
 class DynamicArray {
 private:
@@ -144,7 +154,7 @@ public:
 	template<typename... _Args>
 	void emplace_back(_Args&&... args) {
 		checkBufferSize(_size + 1u);
-		new ((void *)&_buffer[_size++]) TYPE(std::forward<_Args>(args)...);
+		new ((void *)&_buffer[_size++]) TYPE(core::forward<_Args>(args)...);
 	}
 
 	void push_back(const TYPE& val) {

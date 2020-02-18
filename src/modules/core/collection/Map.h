@@ -31,7 +31,11 @@ struct DefaultHasher {
 }
 
 /**
- * @brief Fixed element amount map
+ * @brief Hash map with a max size given as constructor parameter.
+ *
+ * @note The allocations are performed with the @c PoolAllocator
+ *
+ * @ingroup Collections
  */
 template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER = priv::DefaultHasher, typename COMPARE = priv::EqualCompare>
 class Map {
