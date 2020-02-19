@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "voxel/Mesh.h"
 #include "voxel/PagedVolume.h"
 #include "voxelutil/Raycast.h"
 #include "voxelformat/VolumeCache.h"

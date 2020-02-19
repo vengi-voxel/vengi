@@ -6,9 +6,6 @@
 
 #include "Region.h"
 #include "VoxelVertex.h"
-#include <algorithm>
-#include <stdlib.h>
-#include <memory>
 #include <vector>
 
 namespace voxel {
