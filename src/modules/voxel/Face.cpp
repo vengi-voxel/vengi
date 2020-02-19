@@ -7,6 +7,7 @@
 #include "core/Log.h"
 
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <glm/common.hpp>
 
 namespace voxel {

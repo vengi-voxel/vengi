@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <glm/fwd.hpp>
 
 namespace voxel {
 
