@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <glm/fwd.hpp>
 #include "core/String.h"
 #include <stdint.h>
 
@@ -38,7 +38,7 @@ public:
 	/// Constructor
 	constexpr Region();
 	/// Constructor
-	constexpr Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner);
+	Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner);
 	/// Constructor
 	constexpr Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ);
 	constexpr Region(int mins, int maxs);
@@ -291,39 +291,6 @@ inline int32_t Region::getUpperZ() const {
 }
 
 /**
- * @return The position of the lower corner.
- */
-inline glm::ivec3 Region::getCentre() const {
-	return glm::ivec3(getCentreX(), getCentreY(), getCentreZ());
-}
-
-inline glm::vec3 Region::getCentref() const {
-	return glm::vec3(getCentreXf(), getCentreYf(), getCentreZf());
-}
-
-/**
- * @return The position of the lower corner.
- */
-inline glm::ivec3 Region::getLowerCorner() const {
-	return glm::ivec3(m_iLowerX, m_iLowerY, m_iLowerZ);
-}
-
-/**
- * @return The position of the upper corner.
- */
-inline glm::ivec3 Region::getUpperCorner() const {
-	return glm::ivec3(m_iUpperX, m_iUpperY, m_iUpperZ);
-}
-
-inline glm::vec3 Region::getLowerCornerf() const {
-	return glm::vec3(m_iLowerX, m_iLowerY, m_iLowerZ);
-}
-
-inline glm::vec3 Region::getUpperCornerf() const {
-	return glm::vec3(m_iUpperX, m_iUpperY, m_iUpperZ);
-}
-
-/**
  * @return The width of the region measured in voxels.
  * @sa getWidthInCells()
  */
@@ -348,14 +315,6 @@ inline int32_t Region::getDepthInVoxels() const {
 }
 
 /**
- * @return The dimensions of the region measured in voxels.
- * @sa getDimensionsInCells()
- */
-inline glm::ivec3 Region::getDimensionsInVoxels() const {
-	return getDimensionsInCells() + glm::ivec3(1, 1, 1);
-}
-
-/**
  * @return The width of the region measured in cells.
  * @sa getWidthInVoxels()
  */
@@ -377,14 +336,6 @@ inline int32_t Region::getHeightInCells() const {
  */
 inline int32_t Region::getDepthInCells() const {
 	return m_iUpperZ - m_iLowerZ;
-}
-
-/**
- * @return The dimensions of the region measured in cells.
- * @sa getDimensionsInVoxels()
- */
-inline glm::ivec3 Region::getDimensionsInCells() const {
-	return glm::ivec3(getWidthInCells(), getHeightInCells(), getDepthInCells());
 }
 
 /**
@@ -429,37 +380,6 @@ inline void Region::setUpperZ(int32_t iZ) {
 	m_iUpperZ = iZ;
 }
 
-/**
- * @param v3dLowerCorner The new position of the lower corner.
- */
-inline void Region::setLowerCorner(const glm::ivec3& v3dLowerCorner) {
-	m_iLowerX = v3dLowerCorner.x;
-	m_iLowerY = v3dLowerCorner.y;
-	m_iLowerZ = v3dLowerCorner.z;
-}
-
-/**
- * @param v3dUpperCorner The new position of the upper corner.
- */
-inline void Region::setUpperCorner(const glm::ivec3& v3dUpperCorner) {
-	m_iUpperX = v3dUpperCorner.x;
-	m_iUpperY = v3dUpperCorner.y;
-	m_iUpperZ = v3dUpperCorner.z;
-}
-
-/**
- * @param v3dPos The position to accumulate.
- */
-inline void Region::accumulate(const glm::ivec3& v3dPos) {
-	accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
-}
-
-inline Region Region::accumulateCopy(const glm::ivec3& v3dPos) const {
-	Region r(*this);
-	r.accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
-	return r;
-}
-
 inline constexpr Region::Region(int mins, int maxs) :
 		Region(mins, mins, mins, maxs, maxs, maxs) {
 }
@@ -469,15 +389,6 @@ inline constexpr Region::Region(int mins, int maxs) :
  */
 inline constexpr Region::Region() :
 		Region(0, 0, 0, 0, 0, 0) {
-}
-
-/**
- * Constructs a Region and sets the lower and upper corners to the specified values.
- * @param v3dLowerCorner The desired lower corner of the Region.
- * @param v3dUpperCorner The desired upper corner of the Region.
- */
-inline constexpr Region::Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner) :
-		Region(v3dLowerCorner.x, v3dLowerCorner.y, v3dLowerCorner.z, v3dUpperCorner.x, v3dUpperCorner.y, v3dUpperCorner.z) {
 }
 
 /**
@@ -514,17 +425,6 @@ inline bool Region::operator!=(const Region& rhs) const {
 	return !(*this == rhs);
 }
 
-inline Region& Region::operator+=(const glm::ivec3& v3dAmount) {
-	shift(v3dAmount);
-	return *this;
-}
-
-inline Region operator+(const Region& region, const glm::ivec3& v3dAmount) {
-	Region copy(region);
-	copy.shift(v3dAmount);
-	return copy;
-}
-
 /**
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in all directions. Also, the test is inclusive such
@@ -543,17 +443,6 @@ inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) 
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in all directions. Also, the test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
- * @param pos The position to test.
- * @param boundary The desired boundary value.
- */
-inline bool Region::containsPoint(const glm::vec3& pos, float boundary) const {
-	return containsPoint(pos.x, pos.y, pos.z, boundary);
-}
-
-/**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in all directions. Also, the test is inclusive such
- * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param iX The 'x' position of the point to test.
  * @param iY The 'y' position of the point to test.
  * @param iZ The 'z' position of the point to test.
@@ -562,17 +451,6 @@ inline bool Region::containsPoint(const glm::vec3& pos, float boundary) const {
 inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t boundary) const {
 	return (iX <= m_iUpperX - boundary) && (iY <= m_iUpperY - boundary) && (iZ <= m_iUpperZ - boundary) && (iX >= m_iLowerX + boundary) && (iY >= m_iLowerY + boundary)
 			&& (iZ >= m_iLowerZ + boundary);
-}
-
-/**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in all directions. Also, the test is inclusive such
- * that positions lying exactly on the edge of the Region are considered to be inside it.
- * @param pos The position to test.
- * @param boundary The desired boundary value.
- */
-inline bool Region::containsPoint(const glm::ivec3& pos, uint8_t boundary) const {
-	return containsPoint(pos.x, pos.y, pos.z, boundary);
 }
 
 /**
@@ -668,14 +546,6 @@ inline void Region::shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) 
 }
 
 /**
- * @param v3dAmount The amount to move the Region by.
- */
-inline void Region::shift(const glm::ivec3& v3dAmount) {
-	shiftLowerCorner(v3dAmount);
-	shiftUpperCorner(v3dAmount);
-}
-
-/**
  * @param x The amount to move the lower corner by in 'x'.
  * @param y The amount to move the lower corner by in 'y'.
  * @param z The amount to move the lower corner by in 'z'.
@@ -687,13 +557,6 @@ inline void Region::shiftLowerCorner(int32_t x, int32_t y, int32_t z) {
 }
 
 /**
- * @param v3dAmount The amount to move the lower corner by.
- */
-inline void Region::shiftLowerCorner(const glm::ivec3& v3dAmount) {
-	shiftLowerCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
-}
-
-/**
  * @param x The amount to move the upper corner by in 'x'.
  * @param y The amount to move the upper corner by in 'y'.
  * @param z The amount to move the upper corner by in 'z'.
@@ -702,13 +565,6 @@ inline void Region::shiftUpperCorner(int32_t x, int32_t y, int32_t z) {
 	m_iUpperX += x;
 	m_iUpperY += y;
 	m_iUpperZ += z;
-}
-
-/**
- * @param v3dAmount The amount to move the upper corner by.
- */
-inline void Region::shiftUpperCorner(const glm::ivec3& v3dAmount) {
-	shiftUpperCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
 /**
@@ -741,15 +597,6 @@ inline void Region::shrink(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ)
 	m_iUpperX -= iAmountX;
 	m_iUpperY -= iAmountY;
 	m_iUpperZ -= iAmountZ;
-}
-
-/**
- * The amount can be specified seperatly for each direction. Negative shrinkage
- * is possible but you should prefer the grow() function for clarity.
- * @param v3dAmount The amount to shrink by (one component for each direction).
- */
-inline void Region::shrink(const glm::ivec3& v3dAmount) {
-	shrink(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
 /**
