@@ -7,7 +7,6 @@
 #include "Voxel.h"
 #include "Region.h"
 #include "core/NonCopyable.h"
-#include <memory>
 #include <glm/vec3.hpp>
 
 namespace voxel {
