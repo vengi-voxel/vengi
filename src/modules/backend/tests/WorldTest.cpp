@@ -31,7 +31,7 @@ public:
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	AIRegistryPtr _aiRegistry;
 	MapProviderPtr _mapProvider;
-	std::shared_ptr<persistence::PersistenceMgrMock> _persistenceMgr;
+	persistence::PersistenceMgrPtr _persistenceMgr;
 	voxelformat::VolumeCachePtr _volumeCache;
 	http::HttpServerPtr _httpServer;
 
@@ -51,17 +51,11 @@ public:
 		const core::String& attributes = _testApp->filesystem()->load("test-attributes.lua");
 		ASSERT_TRUE(_containerProvider->init(attributes)) << _containerProvider->error();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
-		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
+		_persistenceMgr = persistence::createPersistenceMgrMock();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		_httpServer = std::make_shared<http::HttpServer>(_testApp->metric());
-		std::shared_ptr<persistence::DBHandlerMock> dbHandler = std::make_shared<persistence::DBHandlerMock>();
-		EXPECT_CALL(*dbHandler, connection()).WillRepeatedly(testing::ReturnNull());
-		EXPECT_CALL(*dbHandler, exec(testing::_)).WillRepeatedly(testing::Return(true));
-		EXPECT_CALL(*dbHandler, createTable(testing::_)).WillRepeatedly(testing::Return(true));
-		EXPECT_CALL(*dbHandler, createOrUpdateTable(testing::_)).WillRepeatedly(testing::Return(true));
+		persistence::DBHandlerPtr dbHandler = persistence::createDbHandlerMock();
 		core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
-		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
-		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(_persistenceMgr.get());
 		_mapProvider = std::make_shared<MapProvider>(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(),
 				_entityStorage, _messageSender, _loader, _containerProvider, _cooldownProvider,

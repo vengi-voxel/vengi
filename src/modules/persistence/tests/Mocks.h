@@ -33,12 +33,19 @@ public:
 };
 
 inline std::shared_ptr<DBHandlerMock> createDbHandlerMock() {
-	auto _dbHandler = std::make_shared<persistence::DBHandlerMock>();
-	EXPECT_CALL(*_dbHandler, connection()).WillRepeatedly(testing::ReturnNull());
-	EXPECT_CALL(*_dbHandler, exec(testing::_)).WillRepeatedly(testing::Return(true));
-	EXPECT_CALL(*_dbHandler, createTable(testing::_)).WillRepeatedly(testing::Return(true));
-	EXPECT_CALL(*_dbHandler, createOrUpdateTable(testing::_)).WillRepeatedly(testing::Return(true));
-	return _dbHandler;
+	auto dbHandler = std::make_shared<persistence::DBHandlerMock>();
+	EXPECT_CALL(*dbHandler, connection()).WillRepeatedly(testing::ReturnNull());
+	EXPECT_CALL(*dbHandler, exec(testing::_)).WillRepeatedly(testing::Return(true));
+	EXPECT_CALL(*dbHandler, createTable(testing::_)).WillRepeatedly(testing::Return(true));
+	EXPECT_CALL(*dbHandler, createOrUpdateTable(testing::_)).WillRepeatedly(testing::Return(true));
+	return dbHandler;
+}
+
+inline std::shared_ptr<persistence::PersistenceMgrMock> createPersistenceMgrMock() {
+	auto persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
+	EXPECT_CALL(*persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
+	EXPECT_CALL(*persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
+	return persistenceMgr;
 }
 
 }

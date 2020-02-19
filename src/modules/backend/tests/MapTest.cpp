@@ -28,8 +28,8 @@ public:
 	attrib::ContainerProviderPtr _containerProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
-	std::shared_ptr<persistence::PersistenceMgrMock> _persistenceMgr;
-	std::shared_ptr<persistence::DBHandlerMock> _dbHandler;
+	persistence::PersistenceMgrPtr _persistenceMgr;
+	persistence::DBHandlerPtr _dbHandler;
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -46,10 +46,8 @@ public:
 		_containerProvider = std::make_shared<attrib::ContainerProvider>();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
-		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
+		_persistenceMgr = persistence::createPersistenceMgrMock();
 		_dbHandler = persistence::createDbHandlerMock();
-		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
-		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(_persistenceMgr.get());
 	}
 };

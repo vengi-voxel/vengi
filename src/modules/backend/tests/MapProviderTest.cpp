@@ -29,11 +29,11 @@ public:
 	AILoaderPtr _loader;
 	attrib::ContainerProviderPtr _containerProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
-	std::shared_ptr<persistence::PersistenceMgrMock> _persistenceMgr;
+	persistence::PersistenceMgrPtr _persistenceMgr;
 	voxelformat::VolumeCachePtr _volumeCache;
 	http::HttpServerPtr _httpServer;
 	core::Factory<DBChunkPersister> _chunkPersisterFactory;
-	std::shared_ptr<persistence::DBHandlerMock> _dbHandler;
+	persistence::DBHandlerPtr _dbHandler;
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -49,12 +49,10 @@ public:
 		_loader = std::make_shared<AILoader>(registry);
 		_containerProvider = std::make_shared<attrib::ContainerProvider>();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
-		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
+		_persistenceMgr = persistence::createPersistenceMgrMock();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		_httpServer = std::make_shared<http::HttpServer>(_testApp->metric());
 		_dbHandler = persistence::createDbHandlerMock();
-		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
-		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(_persistenceMgr.get());
 	}
 };

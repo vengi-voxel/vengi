@@ -66,7 +66,7 @@ protected:
 	core::EventBusPtr eventBus;
 	io::FilesystemPtr filesystem;
 	core::TimeProviderPtr timeProvider;
-	std::shared_ptr<persistence::PersistenceMgrMock> persistenceMgr;
+	persistence::PersistenceMgrPtr persistenceMgr;
 	MapProviderPtr mapProvider;
 	MapPtr map;
 
@@ -92,9 +92,7 @@ protected:
 		voxelformat::VolumeCachePtr volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>(_testApp->metric());
 		timeProvider = _testApp->timeProvider();
-		persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
-		EXPECT_CALL(*persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
-		EXPECT_CALL(*persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
+		persistenceMgr = persistence::createPersistenceMgrMock();
 		testing::Mock::AllowLeak(persistenceMgr.get());
 		persistence::DBHandlerPtr dbHandler = persistence::createDbHandlerMock();
 		core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
