@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <glm/common.hpp>
 #include <glm/vec3.hpp>
 #include "core/String.h"
 #include <stdint.h>

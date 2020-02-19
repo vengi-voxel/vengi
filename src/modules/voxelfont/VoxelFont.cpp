@@ -25,6 +25,7 @@
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
+#include <glm/common.hpp>
 
 namespace voxel {
 

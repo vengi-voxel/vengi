@@ -6,6 +6,7 @@
 #include <limits>
 #include "core/GLM.h"
 #include "core/Log.h"
+#include <glm/common.hpp>
 
 namespace voxel {
 
