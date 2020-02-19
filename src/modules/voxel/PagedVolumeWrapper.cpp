@@ -3,9 +3,8 @@
  */
 
 #include "PagedVolumeWrapper.h"
-
-#include <utility>
 #include "core/Common.h"
+#include "core/Assert.h"
 #include "Morton.h"
 
 namespace voxel {
@@ -44,7 +43,7 @@ void PagedVolumeWrapper::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_
 }
 
 PagedVolumeWrapper::PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::ChunkPtr chunk, const Region& region) :
-		_pagedVolume(voxelStorage), _chunk(std::move(chunk)), _region(region) {
+		_pagedVolume(voxelStorage), _chunk(core::move(chunk)), _region(region) {
 	if (_chunk != nullptr) {
 		_validRegion = _chunk->region();
 	}

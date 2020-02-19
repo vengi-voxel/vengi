@@ -37,9 +37,9 @@ bool PagedVolume::Chunk::setData(const Voxel* voxels, size_t sizeInBytes) {
 	if (sizeInBytes != dataSizeInBytes()) {
 		return false;
 	}
-	core::RecursiveScopedWriteLock writeLock(_rwLock);
+	core::RecursiveScopedWriteLock writeLock(_chunkLock);
 	_dataModified = true;
-	memcpy((uint8_t*)_data, (const uint8_t*)voxels, sizeInBytes);
+	core_memcpy((uint8_t*)_data, (const uint8_t*)voxels, sizeInBytes);
 	return true;
 }
 
@@ -64,7 +64,7 @@ const Voxel& PagedVolume::Chunk::voxel(uint32_t uXPos, uint32_t uYPos, uint32_t 
 	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
-	core::RecursiveScopedReadLock readLock(_rwLock);
+	core::RecursiveScopedReadLock readLock(_chunkLock);
 	return _data[index];
 }
 
@@ -81,7 +81,7 @@ void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos
 	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
-	core::RecursiveScopedWriteLock writeLock(_rwLock);
+	core::RecursiveScopedWriteLock writeLock(_chunkLock);
 	_data[index] = tValue;
 	_dataModified = true;
 }
@@ -99,7 +99,7 @@ void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uYPos, uint32_t uZPo
 	core_assert_msg(uZPos < _sideLength, "Supplied z position is outside of the chunk");
 	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
-	core::RecursiveScopedWriteLock writeLock(_rwLock);
+	core::RecursiveScopedWriteLock writeLock(_chunkLock);
 	for (int y = uYPos; y < amount; ++y) {
 		const uint32_t index = morton256_x[uXPos] | morton256_y[y] | morton256_z[uZPos];
 		_data[index] = tValues[y];

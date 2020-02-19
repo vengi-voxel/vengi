@@ -85,7 +85,7 @@ public:
 		// Note: Do we really need to store this position here as well as in the block maps?
 		glm::ivec3 _chunkSpacePosition;
 
-		core::RecursiveReadWriteLock _rwLock{"chunk"};
+		core::RecursiveReadWriteLock _chunkLock{"chunk"};
 	};
 	typedef std::shared_ptr<Chunk> ChunkPtr;
 
@@ -360,7 +360,7 @@ private:
 
 	Region _region;
 
-	mutable core::RecursiveReadWriteLock _rwLock{"pagedvolume"};
+	mutable core::RecursiveReadWriteLock _volumeLock{"pagedvolume"};
 };
 
 inline const Voxel& PagedVolume::Sampler::voxel() const {
