@@ -147,9 +147,6 @@ public:
 	/// Sets the voxel at the position given by a 3D vector
 	bool setVoxel(const glm::ivec3& pos, const Voxel& voxel);
 
-	/// Calculates approximatly how many bytes of memory the volume is currently using.
-	uint32_t calculateSizeInBytes();
-
 	void clear();
 
 	inline const uint8_t* data() const {

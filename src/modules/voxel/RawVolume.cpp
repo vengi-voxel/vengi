@@ -152,13 +152,6 @@ void RawVolume::clear() {
 	_boundsValid = false;
 }
 
-/**
- * @note: This function needs reviewing for accuracy...
- */
-uint32_t RawVolume::calculateSizeInBytes() {
-	return width() * height() * depth() * sizeof(Voxel);
-}
-
 RawVolume::Sampler::Sampler(const RawVolume* volume) :
 		_volume(const_cast<RawVolume*>(volume)) {
 }
