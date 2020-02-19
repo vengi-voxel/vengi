@@ -10,9 +10,9 @@
 #include "core/Assert.h"
 #include "core/RecursiveReadWriteLock.h"
 #include "core/collection/Array.h"
+#include "core/collection/Map.h"
 #include <memory>
 #include <atomic>
-#include <unordered_map>
 #include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
@@ -348,7 +348,7 @@ private:
 
 	uint32_t _chunkCountLimit = 0u;
 
-	typedef std::unordered_map<glm::ivec3, ChunkPtr> ChunkMap;
+	typedef core::Map<glm::ivec3, ChunkPtr, 64, std::hash<glm::ivec3>> ChunkMap;
 	mutable ChunkMap _chunks;
 
 	// The size of the chunks

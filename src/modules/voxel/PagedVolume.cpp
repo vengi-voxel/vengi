@@ -247,10 +247,11 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 
 	{
 		core::RecursiveScopedWriteLock volumeWriteLock(_rwLock);
-		auto i = _chunks.insert(std::make_pair(pos, chunk));
-		if (!i.second) {
-			return i.first->second;
+		auto i = _chunks.find(pos);
+		if (i != _chunks.end()) {
+			return i->value;
 		}
+		_chunks.put(pos, chunk);
 		deleteOldestChunkIfNeeded();
 	}
 
