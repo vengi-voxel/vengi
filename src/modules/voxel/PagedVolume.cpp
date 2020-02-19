@@ -79,23 +79,6 @@ PagedVolume::ChunkPtr PagedVolume::chunk(const glm::ivec3& pos) const {
 	return chunk(chunkX, chunkY, chunkZ);
 }
 
-bool PagedVolume::hasChunk(int32_t x, int32_t y, int32_t z) const {
-	const int32_t chunkX = x >> _chunkSideLengthPower;
-	const int32_t chunkY = y >> _chunkSideLengthPower;
-	const int32_t chunkZ = z >> _chunkSideLengthPower;
-	core::RecursiveScopedReadLock readLock(_volumeLock);
-	if (chunkX == _lastAccessedChunkX && chunkY == _lastAccessedChunkY && chunkZ == _lastAccessedChunkZ && _lastAccessedChunk) {
-		return true;
-	}
-	const glm::ivec3 chunkPos(chunkX, chunkY, chunkZ);
-	auto i = _chunks.find(chunkPos);
-	return i != _chunks.end();
-}
-
-bool PagedVolume::hasChunk(const glm::ivec3& pos) const {
-	return hasChunk(pos.x, pos.y, pos.z);
-}
-
 /**
  * This version of the function is provided so that the wrap mode does not need
  * to be specified as a template parameter, as it may be confusing to some users.
