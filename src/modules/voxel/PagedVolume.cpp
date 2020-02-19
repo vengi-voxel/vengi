@@ -168,7 +168,8 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx,
  * Removes all voxels from memory by removing all chunks. The application has the chance to persist the data via @c Pager::pageOut
  */
 void PagedVolume::flushAll() {
-	core::RecursiveScopedWriteLock writeLock(_volumeLock);
+	// must not be recursive at this point
+	core::ScopedWriteLock writeLock(_volumeLock);
 	// Clear this pointer as all chunks are about to be removed.
 	_lastAccessedChunk = ChunkPtr();
 
@@ -231,7 +232,7 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 	chunk->_chunkLastAccessed = ++_timestamper; // Important, as we may soon delete the oldest chunk
 
 	{
-		core::RecursiveScopedWriteLock volumeWriteLock(_volumeLock);
+		core::ScopedWriteLock volumeWriteLock(_volumeLock);
 		auto i = _chunks.find(pos);
 		if (i != _chunks.end()) {
 			return i->value;
@@ -248,7 +249,7 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 
 	// Page the data in
 	// We'll use this later to decide if data needs to be paged out again.
-	core::RecursiveScopedWriteLock chunkWriteLock(chunk->_chunkLock);
+	core::ScopedWriteLock chunkWriteLock(chunk->_chunkLock);
 	chunk->_dataModified = _pager->pageIn(pctx);
 	// TODO: if this is empty, we can optimize the mesh extractor a lot
 	Log::debug("finished creating new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
@@ -259,7 +260,7 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 PagedVolume::ChunkPtr PagedVolume::chunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
 	ChunkPtr chunk;
 	{
-		core::RecursiveScopedReadLock readLock(_volumeLock);
+		core::ScopedReadLock readLock(_volumeLock);
 		if (chunkX == _lastAccessedChunkX && chunkY == _lastAccessedChunkY && chunkZ == _lastAccessedChunkZ && _lastAccessedChunk) {
 			return _lastAccessedChunk;
 		}
@@ -271,24 +272,13 @@ PagedVolume::ChunkPtr PagedVolume::chunk(int32_t chunkX, int32_t chunkY, int32_t
 		chunk = createNewChunk(chunkX, chunkY, chunkZ);
 	}
 
-	core::RecursiveScopedWriteLock writeLock(_volumeLock);
+	core::ScopedWriteLock writeLock(_volumeLock);
 	_lastAccessedChunk = chunk;
 	_lastAccessedChunkX = chunkX;
 	_lastAccessedChunkY = chunkY;
 	_lastAccessedChunkZ = chunkZ;
 
 	return chunk;
-}
-
-/**
- * Calculate the memory usage of the volume.
- */
-uint32_t PagedVolume::calculateSizeInBytes() const {
-	core::RecursiveScopedReadLock readLock(_volumeLock);
-	const std::size_t uChunkCount = _chunks.size();
-	// Note: We disregard the size of the other class members as they are likely to be very small compared to the size of the
-	// allocated voxel data. This also keeps the reported size as a power of two, which makes other memory calculations easier.
-	return PagedVolume::Chunk::calculateSizeInBytes(_chunkSideLength) * uChunkCount;
 }
 
 }

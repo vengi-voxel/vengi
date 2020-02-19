@@ -40,12 +40,11 @@ core::AppState TestVoxelGPU::onInit() {
 	voxel::RawVolumeWrapper wrapper(_volume.get());
 	voxelgenerator::noise::generate(wrapper, 4, 2.0, 0.01, 0.5, voxelgenerator::noise::NoiseType::ridgedMF, random);
 
-	voxel::RawVolume::BufferedSampler sampler(*_volume.get());
 	compute::TextureConfig cfg3d;
 	cfg3d.type(compute::TextureType::Texture3D).format(compute::TextureFormat::RG).dataformat(compute::TextureDataFormat::UNSIGNED_INT8);
 	static_assert(sizeof(voxel::Voxel) == 2, "Texture type must be changed if the voxel size is not 16 bits anymore");
 	_volumeTexture = std::make_shared<compute::Texture>(cfg3d, _workSize, "volume");
-	if (!_volumeTexture->upload(sampler.data())) {
+	if (!_volumeTexture->upload(_volume->data())) {
 		Log::error("Failed to upload volume data");
 	}
 

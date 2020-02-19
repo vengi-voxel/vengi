@@ -8,7 +8,7 @@
 #include "Region.h"
 #include "core/NonCopyable.h"
 #include "core/Assert.h"
-#include "core/RecursiveReadWriteLock.h"
+#include "core/ReadWriteLock.h"
 #include "core/collection/Array.h"
 #include "core/collection/Map.h"
 #include <memory>
@@ -69,7 +69,6 @@ public:
 		// This is updated by the PagedVolume and used to discard the least recently used chunks.
 		uint32_t _chunkLastAccessed = 0u;
 
-		uint32_t calculateSizeInBytes() const;
 		static uint32_t calculateSizeInBytes(uint32_t uSideLength);
 
 		Voxel* _data = nullptr;
@@ -85,7 +84,7 @@ public:
 		// Note: Do we really need to store this position here as well as in the block maps?
 		glm::ivec3 _chunkSpacePosition;
 
-		core::RecursiveReadWriteLock _chunkLock{"chunk"};
+		core::ReadWriteLock _chunkLock{"chunk"};
 	};
 	typedef std::shared_ptr<Chunk> ChunkPtr;
 
@@ -195,93 +194,6 @@ public:
 		uint16_t _chunkSideLengthMinusOne;
 	};
 
-	/**
-	 * The buffered sampler will extract the given region into a local buffer
-	 * and operates on that one - and not on the volume data. This means that
-	 * there is no thread locking involved while operating on the data.
-	 */
-	class BufferedSampler {
-	public:
-		BufferedSampler(const PagedVolume* volume, const Region& region);
-		BufferedSampler(const PagedVolume& volume, const Region& region);
-		~BufferedSampler();
-
-		const Voxel& voxel() const;
-
-		bool setPosition(const glm::ivec3& v3dNewPos);
-		bool setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
-		bool setVoxel(const Voxel& tValue);
-		glm::ivec3 position() const;
-
-		void movePositiveX();
-		void movePositiveY();
-		void movePositiveZ();
-
-		void moveNegativeX();
-		void moveNegativeY();
-		void moveNegativeZ();
-
-		const Voxel& peekVoxel1nx1ny1nz() const;
-		const Voxel& peekVoxel1nx1ny0pz() const;
-		const Voxel& peekVoxel1nx1ny1pz() const;
-		const Voxel& peekVoxel1nx0py1nz() const;
-		const Voxel& peekVoxel1nx0py0pz() const;
-		const Voxel& peekVoxel1nx0py1pz() const;
-		const Voxel& peekVoxel1nx1py1nz() const;
-		const Voxel& peekVoxel1nx1py0pz() const;
-		const Voxel& peekVoxel1nx1py1pz() const;
-
-		const Voxel& peekVoxel0px1ny1nz() const;
-		const Voxel& peekVoxel0px1ny0pz() const;
-		const Voxel& peekVoxel0px1ny1pz() const;
-		const Voxel& peekVoxel0px0py1nz() const;
-		const Voxel& peekVoxel0px0py0pz() const;
-		const Voxel& peekVoxel0px0py1pz() const;
-		const Voxel& peekVoxel0px1py1nz() const;
-		const Voxel& peekVoxel0px1py0pz() const;
-		const Voxel& peekVoxel0px1py1pz() const;
-
-		const Voxel& peekVoxel1px1ny1nz() const;
-		const Voxel& peekVoxel1px1ny0pz() const;
-		const Voxel& peekVoxel1px1ny1pz() const;
-		const Voxel& peekVoxel1px0py1nz() const;
-		const Voxel& peekVoxel1px0py0pz() const;
-		const Voxel& peekVoxel1px0py1pz() const;
-		const Voxel& peekVoxel1px1py1nz() const;
-		const Voxel& peekVoxel1px1py0pz() const;
-		const Voxel& peekVoxel1px1py1pz() const;
-
-		inline const uint8_t* data() const {
-			return (const uint8_t*)_buffer.data();
-		}
-
-	protected:
-		uint16_t index(int x, int y, int z) const;
-
-		std::vector<Voxel> _buffer;
-
-		//The current position in the volume
-		int32_t _xPosInVolume = 0u;
-		int32_t _yPosInVolume = 0u;
-		int32_t _zPosInVolume = 0u;
-
-		//Other current position information
-		Voxel* _currentVoxel = nullptr;
-
-		uint16_t _xPosInBuffer = 0u;
-		uint16_t _yPosInBuffer = 0u;
-		uint16_t _zPosInBuffer = 0u;
-
-		uint16_t _regionWidth;
-		uint16_t _regionHeight;
-		uint16_t _regionDepth;
-		uint16_t _zOffset;
-
-		int32_t _minsX;
-		int32_t _minsY;
-		int32_t _minsZ;
-	};
-
 public:
 	/// Constructor for creating a fixed size volume.
 	PagedVolume(Pager* pager, uint32_t targetMemoryUsageInBytes = 256 * 1024 * 1024, uint16_t chunkSideLength = 32);
@@ -306,8 +218,6 @@ public:
 	/// Removes all voxels from memory
 	void flushAll();
 
-	/// Calculates approximately how many bytes of memory the volume is currently using.
-	uint32_t calculateSizeInBytes() const;
 	ChunkPtr chunk(const glm::ivec3& pos) const;
 
 	glm::ivec3 chunkPos(int x, int y, int z) const;
@@ -358,7 +268,7 @@ private:
 
 	Region _region;
 
-	mutable core::RecursiveReadWriteLock _volumeLock{"pagedvolume"};
+	mutable core::ReadWriteLock _volumeLock{"pagedvolume"};
 };
 
 inline const Voxel& PagedVolume::Sampler::voxel() const {
@@ -608,153 +518,6 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
 #undef POS_Y_DELTA
 #undef NEG_Z_DELTA
 #undef POS_Z_DELTA
-
-inline const Voxel& PagedVolume::BufferedSampler::voxel() const {
-	return *_currentVoxel;
-}
-
-inline bool PagedVolume::BufferedSampler::setPosition(const glm::ivec3& v3dNewPos) {
-	return setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
-}
-
-inline uint16_t PagedVolume::BufferedSampler::index(int x, int y, int z) const {
-	core_assert_msg(x >= 0 && x < _regionWidth, "x: %i is out of bounds (0, %i)", x, _regionWidth);
-	core_assert_msg(y >= 0 && y < _regionHeight, "y: %i is out of bounds (0, %i)", y, _regionHeight);
-	core_assert_msg(z >= 0 && z < _regionDepth, "z: %i is out of bounds (0, %i)", z, _regionDepth);
-	return z * _zOffset + y * _regionWidth + x;
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx1ny1nz() const {
-	return _buffer[index(_xPosInBuffer - 1, _yPosInBuffer - 1, _zPosInBuffer - 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx1ny0pz() const {
-	return _buffer[index(_xPosInBuffer - 1, _yPosInBuffer - 1, _zPosInBuffer)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx1ny1pz() const {
-	return _buffer[index(_xPosInBuffer - 1, _yPosInBuffer - 1, _zPosInBuffer + 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx0py1nz() const {
-	return _buffer[index(_xPosInBuffer - 1, _yPosInBuffer, _zPosInBuffer - 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx0py0pz() const {
-	return _buffer[index(_xPosInBuffer - 1, _yPosInBuffer, _zPosInBuffer)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx0py1pz() const {
-	return _buffer[index(_xPosInBuffer - 1, _yPosInBuffer, _zPosInBuffer + 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx1py1nz() const {
-	return _buffer[index(_xPosInBuffer - 1, _yPosInBuffer + 1, _zPosInBuffer - 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx1py0pz() const {
-	return _buffer[index(_xPosInBuffer - 1, _yPosInBuffer + 1, _zPosInBuffer)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx1py1pz() const {
-	return _buffer[index(_xPosInBuffer - 1, _yPosInBuffer + 1, _zPosInBuffer + 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel0px1ny1nz() const {
-	return _buffer[index(_xPosInBuffer, _yPosInBuffer - 1, _zPosInBuffer - 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel0px1ny0pz() const {
-	return _buffer[index(_xPosInBuffer, _yPosInBuffer - 1, _zPosInBuffer)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel0px1ny1pz() const {
-	return _buffer[index(_xPosInBuffer, _yPosInBuffer - 1, _zPosInBuffer + 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel0px0py1nz() const {
-	return _buffer[index(_xPosInBuffer, _yPosInBuffer, _zPosInBuffer - 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel0px0py0pz() const {
-	return *_currentVoxel;
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel0px0py1pz() const {
-	return _buffer[index(_xPosInBuffer, _yPosInBuffer, _zPosInBuffer + 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel0px1py1nz() const {
-	return _buffer[index(_xPosInBuffer, _yPosInBuffer + 1, _zPosInBuffer - 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel0px1py0pz() const {
-	return _buffer[index(_xPosInBuffer, _yPosInBuffer + 1, _zPosInBuffer)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel0px1py1pz() const {
-	return _buffer[index(_xPosInBuffer, _yPosInBuffer + 1, _zPosInBuffer + 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1px1ny1nz() const {
-	return _buffer[index(_xPosInBuffer + 1, _yPosInBuffer - 1, _zPosInBuffer - 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1px1ny0pz() const {
-	return _buffer[index(_xPosInBuffer + 1, _yPosInBuffer - 1, _zPosInBuffer)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1px1ny1pz() const {
-	return _buffer[index(_xPosInBuffer + 1, _yPosInBuffer - 1, _zPosInBuffer + 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1px0py1nz() const {
-	return _buffer[index(_xPosInBuffer + 1, _yPosInBuffer, _zPosInBuffer - 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1px0py0pz() const {
-	return _buffer[index(_xPosInBuffer + 1, _yPosInBuffer, _zPosInBuffer)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1px0py1pz() const {
-	return _buffer[index(_xPosInBuffer + 1, _yPosInBuffer, _zPosInBuffer + 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1px1py1nz() const {
-	return _buffer[index(_xPosInBuffer + 1, _yPosInBuffer + 1, _zPosInBuffer - 1)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1px1py0pz() const {
-	return _buffer[index(_xPosInBuffer + 1, _yPosInBuffer + 1, _zPosInBuffer)];
-}
-
-inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1px1py1pz() const {
-	return _buffer[index(_xPosInBuffer + 1, _yPosInBuffer + 1, _zPosInBuffer + 1)];
-}
-
-inline void PagedVolume::BufferedSampler::movePositiveX() {
-	setPosition(_xPosInVolume + 1, _yPosInVolume, _zPosInVolume);
-}
-
-inline void PagedVolume::BufferedSampler::movePositiveY() {
-	setPosition(_xPosInVolume, _yPosInVolume + 1, _zPosInVolume);
-}
-
-inline void PagedVolume::BufferedSampler::movePositiveZ() {
-	setPosition(_xPosInVolume, _yPosInVolume, _zPosInVolume + 1);
-}
-
-inline void PagedVolume::BufferedSampler::moveNegativeX() {
-	setPosition(_xPosInVolume - 1, _yPosInVolume, _zPosInVolume);
-}
-
-inline void PagedVolume::BufferedSampler::moveNegativeY() {
-	setPosition(_xPosInVolume, _yPosInVolume - 1, _zPosInVolume);
-}
-
-inline void PagedVolume::BufferedSampler::moveNegativeZ() {
-	setPosition(_xPosInVolume, _yPosInVolume, _zPosInVolume - 1);
-}
 
 inline bool PagedVolume::Chunk::containsPoint(const glm::ivec3& pos) const {
 	 return region().containsPoint(pos);

@@ -9,7 +9,6 @@ set(SRCS
 	Morton.h
 	PagedVolume.h PagedVolume.cpp
 	PagedVolumeSampler.cpp PagedVolumeChunk.cpp
-	PagedVolumeBufferedSampler.cpp
 	PagedVolumeWrapper.h PagedVolumeWrapper.cpp
 	RawVolume.h RawVolume.cpp
 	RawVolumeWrapper.h
@@ -44,7 +43,6 @@ set(TEST_SRCS
 	tests/PolyVoxTest.cpp
 	tests/RegionTest.cpp
 	tests/AmbientOcclusionTest.cpp
-	tests/PagedVolumeBufferedSamplerTest.cpp
 	tests/RawVolumeWrapperTest.cpp
 )
 

@@ -18,8 +18,6 @@
 #include "core/Trace.h"
 #include "Face.h"
 
-#define BUFFERED_SAMPLER 0
-
 namespace voxel {
 
 /**
@@ -232,11 +230,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	vecQuads[NegativeZ].resize(zSize);
 	vecQuads[PositiveZ].resize(zSize);
 
-#if BUFFERED_SAMPLER == 1
-	typename VolumeType::BufferedSampler volumeSampler(volData, region);
-#else
 	typename VolumeType::Sampler volumeSampler(volData);
-#endif
 
 	{
 	core_trace_scoped(QuadGeneration);
@@ -498,11 +492,7 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 	QuadListVector vecQuadsWater;
 	vecQuadsWater.resize(ySize);
 
-#if BUFFERED_SAMPLER == 1
-	typename VolumeType::BufferedSampler volumeSampler(volData, region);
-#else
 	typename VolumeType::Sampler volumeSampler(volData);
-#endif
 
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;

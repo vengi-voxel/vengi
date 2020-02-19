@@ -85,15 +85,6 @@ public:
 		uint8_t _currentPositionInvalid = 0u;
 	};
 
-	class BufferedSampler : public Sampler {
-	public:
-		BufferedSampler(const RawVolume& volume, const Region& region = Region()) : Sampler(volume) {}
-		BufferedSampler(const RawVolume* volume, const Region& region = Region()) : Sampler(volume) {}
-		inline const uint8_t* data() const {
-			return _volume->data();
-		}
-	};
-
 	RawVolume(const Voxel* data, const voxel::Region& region);
 	RawVolume(Voxel* data, const voxel::Region& region);
 

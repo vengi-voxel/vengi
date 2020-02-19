@@ -51,7 +51,6 @@ set(SRCS
 	Password.h
 	Process.cpp Process.h
 	ReadWriteLock.cpp ReadWriteLock.h
-	RecursiveReadWriteLock.h
 	Singleton.h
 	String.cpp String.h
 	StringUtil.cpp StringUtil.h
