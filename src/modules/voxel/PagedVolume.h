@@ -12,7 +12,6 @@
 #include "core/collection/Array.h"
 #include <memory>
 #include <atomic>
-#include <list>
 #include <unordered_map>
 #include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -89,13 +88,6 @@ public:
 		core::RecursiveReadWriteLock _rwLock{"chunk"};
 	};
 	typedef std::shared_ptr<Chunk> ChunkPtr;
-
-	struct IChunkListener {
-		virtual ~IChunkListener() {}
-		virtual void onCreate(const ChunkPtr& ptr) {};
-
-		virtual void onRemove(const ChunkPtr& ptr) {};
-	};
 
 	struct PagerContext {
 		Region region;
@@ -301,9 +293,6 @@ public:
 	/// Gets a voxel at the position given by a 3D vector
 	const Voxel& voxel(const glm::ivec3& v3dPos) const;
 
-	void addChunkListener(IChunkListener* listener);
-	void removeChunkListener(IChunkListener* listener);
-
 	const Region& region() const;
 
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
@@ -339,8 +328,6 @@ protected:
 
 	/// Assignment operator
 	PagedVolume& operator=(const PagedVolume& rhs);
-
-	std::list<IChunkListener*> _listener;
 
 private:
 	ChunkPtr chunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
@@ -788,22 +775,6 @@ inline Region PagedVolume::Chunk::region() const {
 
 inline const Region& PagedVolume::region() const {
 	return _region;
-}
-
-inline void PagedVolume::addChunkListener(IChunkListener* listener) {
-	core::RecursiveScopedWriteLock writeLock(_listenerLock);
-	_listener.push_back(listener);
-}
-
-inline void PagedVolume::removeChunkListener(IChunkListener* listener) {
-	core::RecursiveScopedWriteLock writeLock(_listenerLock);
-	for (auto i = _listener.begin(); i != _listener.end();) {
-		if (listener == *i) {
-			i = _listener.erase(i);
-		} else {
-			++i;
-		}
-	}
 }
 
 }

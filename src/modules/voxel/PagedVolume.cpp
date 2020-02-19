@@ -234,10 +234,6 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
 	}
 	if (foundOldestChunk) {
 		ChunkMap::iterator i = _chunks.find(oldestChunkPos);
-		core::RecursiveScopedReadLock readLock(_listenerLock);
-		for (IChunkListener* l : _listener) {
-			l->onRemove(i->second);
-		}
 		_chunks.erase(i);
 	}
 }
@@ -287,10 +283,6 @@ PagedVolume::ChunkPtr PagedVolume::chunk(int32_t chunkX, int32_t chunkY, int32_t
 	// If we still haven't found the chunk then it's time to create a new one and page it in from disk.
 	if (!chunk) {
 		chunk = createNewChunk(chunkX, chunkY, chunkZ);
-		core::RecursiveScopedReadLock readLock(_listenerLock);
-		for (IChunkListener* l : _listener) {
-			l->onCreate(chunk);
-		}
 	}
 
 	core::RecursiveScopedWriteLock writeLock(_rwLock);
