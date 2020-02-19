@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "Region.h"
 #include "VoxelVertex.h"
 #include <vector>
 
