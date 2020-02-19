@@ -361,7 +361,6 @@ private:
 	Region _region;
 
 	mutable core::RecursiveReadWriteLock _rwLock{"pagedvolume"};
-	mutable core::RecursiveReadWriteLock _listenerLock{"listener"};
 };
 
 inline const Voxel& PagedVolume::Sampler::voxel() const {
