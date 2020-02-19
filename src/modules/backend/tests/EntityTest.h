@@ -96,11 +96,7 @@ protected:
 		EXPECT_CALL(*persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(persistenceMgr.get());
-		std::shared_ptr<persistence::DBHandlerMock> dbHandler = std::make_shared<persistence::DBHandlerMock>();
-		EXPECT_CALL(*dbHandler, connection()).WillRepeatedly(testing::ReturnNull());
-		EXPECT_CALL(*dbHandler, exec(testing::_)).WillRepeatedly(testing::Return(true));
-		EXPECT_CALL(*dbHandler, createTable(testing::_)).WillRepeatedly(testing::Return(true));
-		EXPECT_CALL(*dbHandler, createOrUpdateTable(testing::_)).WillRepeatedly(testing::Return(true));
+		persistence::DBHandlerPtr dbHandler = persistence::createDbHandlerMock();
 		core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
 		mapProvider = std::make_shared<MapProvider>(filesystem, eventBus, timeProvider,
 				entityStorage, messageSender, loader, containerProvider, cooldownProvider,

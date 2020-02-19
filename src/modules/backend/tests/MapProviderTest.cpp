@@ -33,7 +33,7 @@ public:
 	voxelformat::VolumeCachePtr _volumeCache;
 	http::HttpServerPtr _httpServer;
 	core::Factory<DBChunkPersister> _chunkPersisterFactory;
-	persistence::DBHandlerPtr _dbHandler;
+	std::shared_ptr<persistence::DBHandlerMock> _dbHandler;
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
@@ -52,7 +52,7 @@ public:
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		_httpServer = std::make_shared<http::HttpServer>(_testApp->metric());
-		_dbHandler = std::make_shared<persistence::DBHandlerMock>();
+		_dbHandler = persistence::createDbHandlerMock();
 		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		testing::Mock::AllowLeak(_persistenceMgr.get());

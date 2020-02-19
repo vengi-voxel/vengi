@@ -31,4 +31,14 @@ public:
 	MOCK_METHOD2(registerSavable, bool(uint32_t, ISavable *));
 	MOCK_METHOD2(unregisterSavable, bool(uint32_t, ISavable *));
 };
+
+inline std::shared_ptr<DBHandlerMock> createDbHandlerMock() {
+	auto _dbHandler = std::make_shared<persistence::DBHandlerMock>();
+	EXPECT_CALL(*_dbHandler, connection()).WillRepeatedly(testing::ReturnNull());
+	EXPECT_CALL(*_dbHandler, exec(testing::_)).WillRepeatedly(testing::Return(true));
+	EXPECT_CALL(*_dbHandler, createTable(testing::_)).WillRepeatedly(testing::Return(true));
+	EXPECT_CALL(*_dbHandler, createOrUpdateTable(testing::_)).WillRepeatedly(testing::Return(true));
+	return _dbHandler;
+}
+
 }

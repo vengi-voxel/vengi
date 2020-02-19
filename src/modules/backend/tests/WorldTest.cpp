@@ -54,7 +54,11 @@ public:
 		_persistenceMgr = std::make_shared<persistence::PersistenceMgrMock>();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		_httpServer = std::make_shared<http::HttpServer>(_testApp->metric());
-		persistence::DBHandlerPtr dbHandler = std::make_shared<persistence::DBHandlerMock>();
+		std::shared_ptr<persistence::DBHandlerMock> dbHandler = std::make_shared<persistence::DBHandlerMock>();
+		EXPECT_CALL(*dbHandler, connection()).WillRepeatedly(testing::ReturnNull());
+		EXPECT_CALL(*dbHandler, exec(testing::_)).WillRepeatedly(testing::Return(true));
+		EXPECT_CALL(*dbHandler, createTable(testing::_)).WillRepeatedly(testing::Return(true));
+		EXPECT_CALL(*dbHandler, createOrUpdateTable(testing::_)).WillRepeatedly(testing::Return(true));
 		core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
 		EXPECT_CALL(*_persistenceMgr, registerSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
 		EXPECT_CALL(*_persistenceMgr, unregisterSavable(testing::_, testing::_)).WillRepeatedly(testing::Return(true));
