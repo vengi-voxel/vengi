@@ -6,8 +6,8 @@
 
 #include "voxel/RawVolume.h"
 #include "core/io/File.h"
+#include "core/Common.h"
 #include <vector>
-#include <utility>
 
 namespace voxel {
 
@@ -26,7 +26,7 @@ struct VoxelVolumes {
 	~VoxelVolumes() ;
 
 	inline void push_back(VoxelVolume&& v) {
-		volumes.emplace_back(std::forward<VoxelVolume>(v));
+		volumes.emplace_back(core::forward<VoxelVolume>(v));
 	}
 
 	inline void resize(size_t size) {
