@@ -300,7 +300,7 @@ PagedVolume::ChunkPtr PagedVolume::chunk(int32_t chunkX, int32_t chunkY, int32_t
 /**
  * Calculate the memory usage of the volume.
  */
-uint32_t PagedVolume::calculateSizeInBytes() {
+uint32_t PagedVolume::calculateSizeInBytes() const {
 	core::RecursiveScopedReadLock readLock(_volumeLock);
 	const std::size_t uChunkCount = _chunks.size();
 	// Note: We disregard the size of the other class members as they are likely to be very small compared to the size of the

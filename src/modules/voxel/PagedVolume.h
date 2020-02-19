@@ -307,7 +307,7 @@ public:
 	void flushAll();
 
 	/// Calculates approximately how many bytes of memory the volume is currently using.
-	uint32_t calculateSizeInBytes();
+	uint32_t calculateSizeInBytes() const;
 	ChunkPtr chunk(const glm::ivec3& pos) const;
 	bool hasChunk(const glm::ivec3& pos) const;
 	bool hasChunk(int32_t x, int32_t y, int32_t z) const;
