@@ -61,17 +61,24 @@ public:
 	}
 
 	class iterator {
+	friend class List;
 	private:
-		const Node* _node;
+		Node* _node;
+		Node* _prev;
 	public:
 		constexpr iterator() :
-			_node(nullptr) {
+			_node(nullptr), _prev(nullptr) {
 		}
 
-		iterator(const Node* node) : _node(node) {
+		iterator(Node* node, Node* prev) :
+			_node(node), _prev(prev) {
 		}
 
 		inline const TYPE& operator*() const {
+			return _node->value;
+		}
+
+		inline TYPE& operator*() {
 			return _node->value;
 		}
 
@@ -85,9 +92,11 @@ public:
 
 		iterator& operator++() {
 			if (_node->next != nullptr) {
+				_prev = _node;
 				_node = _node->next;
 				return *this;
 			}
+			_prev = _node;
 			_node = nullptr;
 			return *this;
 		}
@@ -114,7 +123,7 @@ public:
 	}
 
 	iterator begin() const {
-		return iterator(_first);
+		return iterator(_first, nullptr);
 	}
 
 	constexpr iterator end() const {
@@ -161,7 +170,7 @@ public:
 	}
 
 	/**
-	 * @brief Only removed one element from the list. If there are more elements with the same value
+	 * @brief Only remove one element from the list. If there are more elements with the same value
 	 * make sure to call this until false is returned.
 	 */
 	bool remove(const TYPE& value) {
@@ -192,6 +201,26 @@ public:
 			entry = entry->next;
 		}
 		return false;
+	}
+
+	iterator erase(iterator iter) {
+		if (iter == end()) {
+			return iter;
+		}
+		Node* node = iter._node;
+		Node* next = node->next;
+		Node* prev = iter._prev;
+		if (node == _first) {
+			_first = next;
+		}
+		if (node == _last) {
+			_last = prev;
+		}
+		if (prev != nullptr) {
+			prev->next = next;
+		}
+		_allocator.free(node);
+		return iterator(next, prev);
 	}
 };
 

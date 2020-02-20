@@ -12,10 +12,10 @@
 #include "HttpHeader.h"
 #include "HttpQuery.h"
 #include "core/collection/Map.h"
+#include "core/collection/List.h"
 #include "core/metric/Metric.h"
 #include <stdint.h>
 #include <functional>
-#include <list>
 #include <memory>
 
 namespace http {
@@ -50,9 +50,9 @@ private:
 		bool finished() const;
 	};
 
-	using ClientSockets = std::list<Client>;
+	using ClientSockets = core::List<Client>;
 	using ClientSocketsIter = ClientSockets::iterator;
-	ClientSockets _clientSockets;
+	ClientSockets _clientSockets { 1024 };
 
 	ClientSocketsIter closeClient (ClientSocketsIter& i);
 

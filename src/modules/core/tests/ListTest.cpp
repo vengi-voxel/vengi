@@ -80,4 +80,21 @@ TEST(ListTest, testIterateRangeBased) {
 	}
 	EXPECT_EQ(16, cnt);
 }
+
+TEST(ListTest, testErase) {
+	core::List<Type> list;
+	for (int i = 0; i < 16; ++i) {
+		EXPECT_TRUE(list.insert({i, i}));
+	}
+	auto iter = list.begin();
+	for (int i = 0; i < 4; ++i) {
+		EXPECT_EQ(i, iter->value.a);
+		++iter;
+	}
+	EXPECT_EQ(4, iter->value.a);
+	auto newIter = list.erase(iter);
+	EXPECT_EQ(15u, list.size());
+	EXPECT_EQ(5, newIter->value.a);
+}
+
 }

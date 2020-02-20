@@ -132,7 +132,7 @@ bool HttpServer::update() {
 			FD_SET(clientSocket, &_readFDSet);
 			Client c;
 			c.socket = clientSocket;
-			_clientSockets.push_back(c);
+			_clientSockets.insert(c);
 			networkNonBlocking(clientSocket);
 		}
 	}
