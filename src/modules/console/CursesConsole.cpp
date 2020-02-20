@@ -74,6 +74,7 @@ void CursesConsole::update(uint32_t deltaTime) {
 void CursesConsole::drawString(int x, int y, const glm::ivec4& color, const char* str, int len) {
 #ifdef CURSES_HAVE_NCURSES_H
 	mvaddnstr(y, x, str, len);
+	clrtoeol();
 #endif
 }
 
