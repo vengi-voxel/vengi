@@ -15,7 +15,6 @@
 #include "MassQuery.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
-#include "core/Common.h"
 #include "core/IComponent.h"
 #include "ScopedConnection.h"
 #include "BindParam.h"
@@ -23,6 +22,7 @@
 #include "DBCondition.h"
 #include "OrderBy.h"
 #include <memory>
+#include <vector>
 
 namespace persistence {
 
@@ -79,9 +79,9 @@ private:
 			Log::error(logid, "Failed to execute query '%s'", query.c_str());
 		}
 		for (int i = 0; i < s.affectedRows; ++i) {
-			typename std::remove_reference<MODEL>::type selectedModel;
+			typename core::remove_reference<MODEL>::type selectedModel;
 			selectedModel.fillModelValues(s);
-			func(std::move(selectedModel));
+			func(core::move(selectedModel));
 		}
 		return s.result;
 	}
@@ -184,7 +184,7 @@ public:
 	template<class MODEL>
 	bool select(MODEL& model, const DBCondition& condition) const {
 		return select(model, condition, [&model] (MODEL&& selectedModel) {
-			model = std::move(selectedModel);
+			model = core::move(selectedModel);
 		});
 	}
 

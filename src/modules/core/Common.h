@@ -145,4 +145,9 @@ constexpr T &&forward(typename remove_reference<T>::type &&t) {
 	return static_cast<T &&>(t);
 }
 
+template<typename T>
+struct remove_const {
+	typedef T type;
+};
+
 }

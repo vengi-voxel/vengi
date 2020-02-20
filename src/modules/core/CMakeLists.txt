@@ -51,6 +51,7 @@ set(SRCS
 	Password.h
 	Process.cpp Process.h
 	ReadWriteLock.cpp ReadWriteLock.h
+	SharedPtr.h
 	Singleton.h
 	String.cpp String.h
 	StringUtil.cpp StringUtil.h
@@ -105,6 +106,7 @@ set(TEST_SRCS
 	tests/PoolAllocatorTest.cpp
 	tests/ReadWriteLockTest.cpp
 	tests/SetTest.cpp
+	tests/SharedPtrTest.cpp
 	tests/StackTest.cpp
 	tests/StringTest.cpp
 	tests/StringUtilTest.cpp
