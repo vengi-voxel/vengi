@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <vector>
 #include "core/String.h"
-#include <stdarg.h>
 #include <SDL_endian.h>
 #include <limits.h>
 #include "Common.h"

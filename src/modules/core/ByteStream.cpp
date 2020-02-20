@@ -4,6 +4,7 @@
 
 #include "ByteStream.h"
 #include <SDL_stdinc.h>
+#include <stdarg.h>
 
 namespace core {
 
