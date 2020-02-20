@@ -22,7 +22,7 @@ private:
 	core::VarPtr _consoleBackground;
 	core::VarPtr _consoleFontSize;
 
-	void drawString(int x, int y, const glm::ivec4& color, const char* str, int len) override;
+	void drawString(int x, int y, const glm::ivec4& color, int, const char* str, int len) override;
 	int lineHeight() override;
 	glm::ivec2 stringSize(const char* s, int length) override;
 	void beforeRender(const math::Rect<int> &rect) override;

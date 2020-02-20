@@ -582,15 +582,16 @@ inline void Console::clearCommandLine() {
 void Console::drawString(int x, int y, const core::String& str, int len) {
 	const char *cstr = str.c_str();
 	glm::ivec4 color = colors[WHITE];
+	int colorIndex = -1;
 	if (isColor(cstr)) {
 		skipColor(&cstr);
 		len -= 2;
-		const int colorIndex = str[1] - '0';
+		colorIndex = str[1] - '0';
 		if (colorIndex >= 0 && colorIndex < (int)SDL_arraysize(colors)) {
 			color = colors[colorIndex];
 		}
 	}
-	drawString(x, y, color, cstr, len);
+	drawString(x, y, color, colorIndex, cstr, len);
 }
 
 void Console::render(const math::Rect<int> &rect, long deltaFrame) {

@@ -141,7 +141,7 @@ protected:
 	virtual void afterRender(const math::Rect<int> &rect) {}
 	virtual int lineHeight() = 0;
 	virtual glm::ivec2 stringSize(const char *c, int length) = 0;
-	virtual void drawString(int x, int y, const glm::ivec4& color, const char* str, int len) = 0;
+	virtual void drawString(int x, int y, const glm::ivec4& color, int colorIndex, const char* str, int len) = 0;
 
 public:
 	Console();

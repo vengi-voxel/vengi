@@ -10,7 +10,7 @@ Console::Console() :
 		Super() {
 }
 
-void Console::drawString(int x, int y, const glm::ivec4& color, const char* str, int len) {
+void Console::drawString(int x, int y, const glm::ivec4& color, int, const char* str, int len) {
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
 	drawList->AddText(ImVec2(x, y), IM_COL32(color.r, color.g, color.b, color.a), str);
 }

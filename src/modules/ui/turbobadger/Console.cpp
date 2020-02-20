@@ -41,7 +41,7 @@ bool Console::toggle() {
 	return active;
 }
 
-void Console::drawString(int x, int y, const glm::ivec4& color, const char* str, int len) {
+void Console::drawString(int x, int y, const glm::ivec4& color, int, const char* str, int len) {
 	_font->drawString(x, y, tb::TBColor{color.r, color.g, color.b}, str, len);
 }
 

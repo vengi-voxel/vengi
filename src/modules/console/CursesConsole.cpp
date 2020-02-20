@@ -71,10 +71,16 @@ void CursesConsole::update(uint32_t deltaTime) {
 #endif
 }
 
-void CursesConsole::drawString(int x, int y, const glm::ivec4& color, const char* str, int len) {
+void CursesConsole::drawString(int x, int y, const glm::ivec4& color, int colorIndex, const char* str, int len) {
 #ifdef CURSES_HAVE_NCURSES_H
+	if (colorIndex >= 0) {
+		attron(COLOR_PAIR(colorIndex + 1));
+	}
 	mvaddnstr(y, x, str, len);
 	clrtoeol();
+	if (colorIndex >= 0) {
+		attroff(COLOR_PAIR(colorIndex + 1));
+	}
 #endif
 }
 
@@ -112,13 +118,13 @@ bool CursesConsole::init() {
 	if (has_colors()) {
 		start_color();
 		use_default_colors();
-		init_pair(1, COLOR_RED, -1);
-		init_pair(2, COLOR_GREEN, -1);
-		init_pair(3, COLOR_YELLOW, -1);
-		init_pair(4, COLOR_BLUE, -1);
-		init_pair(5, COLOR_CYAN, -1);
-		init_pair(6, COLOR_MAGENTA, -1);
-		init_pair(7, -1, -1);
+		init_pair(util::WHITE + 1, COLOR_WHITE, -1);
+		init_pair(util::BLACK + 1, COLOR_BLACK, -1);
+		init_pair(util::GRAY + 1, COLOR_BLACK, -1);
+		init_pair(util::BLUE, COLOR_BLUE, -1);
+		init_pair(util::GREEN, COLOR_GREEN, -1);
+		init_pair(util::YELLOW, COLOR_YELLOW, -1);
+		init_pair(util::RED, COLOR_RED, -1);
 	}
 #endif
 	return true;
@@ -130,7 +136,11 @@ void CursesConsole::shutdown() {
 	refresh();
 	endwin();
 	for (const auto& e : _messages) {
-		Log::info("%s", e.c_str());
+		const char *str = e.c_str();
+		if (isColor(str)) {
+			skipColor(&str);
+		}
+		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s", str);
 	}
 #endif
 	Super::shutdown();
