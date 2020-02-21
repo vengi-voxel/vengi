@@ -24,10 +24,23 @@ TEST_F(PtrTest, testAllocate) {
 	EXPECT_EQ(2, value->b);
 }
 
-TEST_F(PtrTest, testAssign) {
+TEST_F(PtrTest, testRelease) {
 	auto p = SharedPtr<SharedPtrFoo>::create(1, 2);
 	auto p2 = p;
 	p.release();
+	SharedPtrFoo* value = p2.get();
+	EXPECT_EQ(nullptr, p.get());
+	ASSERT_NE(nullptr, value);
+	EXPECT_EQ(1, value->a);
+	EXPECT_EQ(2, value->b);
+}
+
+TEST_F(PtrTest, testMakeShared) {
+	auto p = make_shared<SharedPtrFoo>(1, 2);
+	SharedPtrFoo* value = p.get();
+	ASSERT_NE(nullptr, value);
+	EXPECT_EQ(1, value->a);
+	EXPECT_EQ(2, value->b);
 }
 
 }

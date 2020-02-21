@@ -7,14 +7,20 @@
 #include "core/Atomic.h"
 #include "core/Assert.h"
 #include "core/Common.h"
+#include <stdint.h>
 #include <SDL_stdinc.h>
 #include <new>
+#include <type_traits>
 
 namespace core {
 
 template<class T>
 class SharedPtr {
 private:
+	struct __enableIfHelper {
+		int b;
+	};
+
 	T *_ptr;
 	core::AtomicInt *_refCnt;
 
@@ -42,11 +48,27 @@ public:
 	constexpr SharedPtr() : _ptr(nullptr), _refCnt(nullptr) {
 	}
 
-	SharedPtr(const SharedPtr &obj) : _ptr(obj._ptr), _refCnt(obj._refCnt) {
+	constexpr SharedPtr(std::nullptr_t) : _ptr(nullptr), _refCnt(nullptr) {
+	}
+
+	SharedPtr(const SharedPtr &obj) : _ptr(obj.get()), _refCnt(obj.refCnt()) {
 		increase();
 	}
 
-	SharedPtr(SharedPtr &&obj) : _ptr(obj._ptr), _refCnt(obj._refCnt) {
+	SharedPtr(SharedPtr &&obj) : _ptr(obj.get()), _refCnt(obj.refCnt()) {
+		obj._ptr = nullptr;
+		obj._refCnt = nullptr;
+	}
+
+	template <class U>
+	SharedPtr(const SharedPtr<U> &obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper()) :
+			_ptr(obj.get()), _refCnt(obj.refCnt()) {
+		increase();
+	}
+
+	template <class U>
+	SharedPtr(SharedPtr<U> &&obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper()) :
+			_ptr(obj.get()), _refCnt(obj.refCnt()) {
 		obj._ptr = nullptr;
 		obj._refCnt = nullptr;
 	}
@@ -80,6 +102,10 @@ public:
 		release();
 	}
 
+	core::AtomicInt* refCnt() const {
+		return _refCnt;
+	}
+
 	void release() {
 		decrease();
 		if (count() == 0) {
@@ -91,6 +117,8 @@ public:
 			}
 			core_free((void*)_ptr);
 		}
+		_ptr = nullptr;
+		_refCnt = nullptr;
 	}
 
 	T *get() const {
@@ -103,6 +131,10 @@ public:
 
 	void operator=(std::nullptr_t) {
 		release();
+	}
+
+	operator bool() const {
+		return *this != nullptr;
 	}
 
 	bool operator==(const SharedPtr &rhs) const {
