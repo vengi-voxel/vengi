@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "core/collection/StringMap.h"
-#include <memory>
+#include "core/SharedPtr.h"
 
 namespace core {
 
@@ -117,26 +117,26 @@ TEST(HashMapTest, testIterateRangeBased) {
 }
 
 TEST(HashMapTest, testStringSharedPtr) {
-	core::StringMap<std::shared_ptr<core::String>, 4> map;
-	auto foobar = std::make_shared<core::String>("foobar");
+	core::StringMap<core::SharedPtr<core::String>, 4> map;
+	auto foobar = core::SharedPtr<core::String>::create("foobar");
 	map.put("foobar", foobar);
-	map.put("barfoo", std::make_shared<core::String>("barfoo"));
-	map.put("foobar", std::make_shared<core::String>("barfoo"));
+	map.put("barfoo", core::SharedPtr<core::String>::create("barfoo"));
+	map.put("foobar", core::SharedPtr<core::String>::create("barfoo"));
 	for (auto iter = map.begin(); iter != map.end(); ++iter) {
 	}
 	map.clear();
 }
 
 TEST(HashMapTest, testCopy) {
-	core::StringMap<std::shared_ptr<core::String>, 4> map;
-	map.put("foobar", std::make_shared<core::String>("barfoo"));
+	core::StringMap<core::SharedPtr<core::String>, 4> map;
+	map.put("foobar", core::SharedPtr<core::String>::create("barfoo"));
 	auto map2 = map;
 	map2.clear();
 }
 
 TEST(HashMapTest, testErase) {
-	core::StringMap<std::shared_ptr<core::String>, 4> map;
-	map.put("foobar", std::make_shared<core::String>("barfoo"));
+	core::StringMap<core::SharedPtr<core::String>, 4> map;
+	map.put("foobar", core::SharedPtr<core::String>::create("barfoo"));
 	EXPECT_EQ(1u, map.size());
 	auto iter = map.find("foobar");
 	EXPECT_NE(iter, map.end());
@@ -145,9 +145,9 @@ TEST(HashMapTest, testErase) {
 }
 
 TEST(HashMapTest, testAssign) {
-	core::StringMap<std::shared_ptr<core::String>, 4> map;
-	map.put("foobar", std::make_shared<core::String>("barfoo"));
-	core::StringMap<std::shared_ptr<core::String>, 4> map2;
+	core::StringMap<core::SharedPtr<core::String>, 4> map;
+	map.put("foobar", core::SharedPtr<core::String>::create("barfoo"));
+	core::StringMap<core::SharedPtr<core::String>, 4> map2;
 	map2 = map;
 	EXPECT_EQ(1u, map.size());
 	EXPECT_EQ(1u, map2.size());
