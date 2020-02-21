@@ -3,6 +3,7 @@
  */
 
 #include "Plane.h"
+#include "core/ArrayLength.h"
 
 namespace render {
 
@@ -27,10 +28,13 @@ bool Plane::init() {
 }
 
 void Plane::clear() {
-	for (int32_t id : _planeMeshes) {
-		_shapeRenderer.deleteMesh(id);
+	for (int32_t i = 0; i < lengthof(_planeMeshes); ++i) {
+		if (!_planeMeshes[i]) {
+			continue;
+		}
+		_shapeRenderer.deleteMesh(i);
+		_planeMeshes[i] = false;
 	}
-	_planeMeshes.clear();
 }
 
 bool Plane::plane(const glm::vec3& position, int tesselation, const glm::vec4& color) {
@@ -38,7 +42,9 @@ bool Plane::plane(const glm::vec3& position, int tesselation, const glm::vec4& c
 	_shapeBuilder.setPosition(position);
 	_shapeBuilder.plane(tesselation);
 	const int32_t id = _shapeRenderer.create(_shapeBuilder);
-	_planeMeshes.push_back(id);
+	if (id >= 0 && id < lengthof(_planeMeshes)) {
+		_planeMeshes[id] = true;
+	}
 	return id >= 0;
 }
 
@@ -47,7 +53,9 @@ bool Plane::plane(const glm::vec3& position, const math::Plane& plane, const glm
 	_shapeBuilder.setPosition(position);
 	_shapeBuilder.plane(plane, false);
 	const int32_t id = _shapeRenderer.create(_shapeBuilder);
-	_planeMeshes.push_back(id);
+	if (id >= 0 && id < lengthof(_planeMeshes)) {
+		_planeMeshes[id] = true;
+	}
 	return id >= 0;
 }
 

@@ -10,7 +10,6 @@
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"
 #include "core/IComponent.h"
-#include <vector>
 
 namespace render {
 
@@ -24,7 +23,7 @@ class Plane : public core::IComponent {
 private:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
-	std::vector<int32_t> _planeMeshes;
+	bool _planeMeshes[render::ShapeRenderer::MAX_MESHES] { false };
 public:
 	void render(const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
 
