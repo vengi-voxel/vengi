@@ -40,7 +40,7 @@ public:
 	/// The Pager class is responsible for the loading and unloading of Chunks, and can be subclassed by the user.
 	class Pager;
 
-	class Chunk : public std::enable_shared_from_this<Chunk> {
+	class Chunk {
 		friend class PagedVolume;
 		friend class PagedVolumeWrapper;
 
