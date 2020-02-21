@@ -138,4 +138,9 @@ public:
 	}
 };
 
+template<class T, typename ... Args>
+static SharedPtr<T> make_shared(Args&&... args) {
+	return SharedPtr<T>::create(core::forward<Args>(args)...);
+}
+
 }
