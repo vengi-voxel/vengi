@@ -9,10 +9,10 @@
 #include "core/NonCopyable.h"
 #include "core/Assert.h"
 #include "core/ReadWriteLock.h"
+#include "core/Atomic.h"
 #include "core/collection/Array.h"
 #include "core/collection/Map.h"
 #include <memory>
-#include <atomic>
 #include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
@@ -252,7 +252,7 @@ private:
 	mutable int32_t _lastAccessedChunkZ = 0;
 	mutable ChunkPtr _lastAccessedChunk = nullptr;
 
-	mutable std::atomic_uint _timestamper { 0u };
+	mutable core::AtomicInt _timestamper { 0 };
 
 	uint32_t _chunkCountLimit = 0u;
 
