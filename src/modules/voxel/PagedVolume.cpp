@@ -16,16 +16,16 @@ namespace voxel {
  * This constructor creates a volume with a fixed size which is specified as a parameter. By default this constructor will not enable paging
  * but you can override this if desired. If you do wish to enable
  * paging then you are required to provide the call back function (see the other PagedVolume constructor).
- * @param pPager Called by PolyVox to load and unload data on demand.
- * @param uTargetMemoryUsageInBytes The upper limit to how much memory this PagedVolume should aim to use.
- * @param uChunkSideLength The size of the chunks making up the volume. Small chunks will compress/decompress faster, but there will also be
+ * @param pager Called by PolyVox to load and unload data on demand.
+ * @param targetMemoryUsageInBytes The upper limit to how much memory this PagedVolume should aim to use.
+ * @param chunkSideLength The size of the chunks making up the volume. Small chunks will compress/decompress faster, but there will also be
  * more of them meaning voxel access could be slower.
  */
-PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint16_t uChunkSideLength) :
-		_chunkSideLength(uChunkSideLength), _pager(pPager), _region(0, 0, 0, -1, -1, -1) {
+PagedVolume::PagedVolume(Pager* pager, uint32_t targetMemoryUsageInBytes, uint16_t chunkSideLength) :
+		_chunkSideLength(chunkSideLength), _pager(pager), _region(0, 0, 0, -1, -1, -1) {
 	// Validation of parameters
-	core_assert_msg(pPager, "You must provide a valid pager when constructing a PagedVolume");
-	core_assert_msg(uTargetMemoryUsageInBytes >= 1 * 1024 * 1024, "Target memory usage is too small to be practical");
+	core_assert_msg(_pager, "You must provide a valid pager when constructing a PagedVolume");
+	core_assert_msg(targetMemoryUsageInBytes >= 1 * 1024 * 1024, "Target memory usage is too small to be practical");
 	core_assert_msg(_chunkSideLength != 0, "Chunk side length cannot be zero.");
 	core_assert_msg(_chunkSideLength <= 256, "Chunk size is too large to be practical.");
 	core_assert_msg(glm::isPowerOfTwo(_chunkSideLength), "Chunk side length must be a power of two.");
@@ -36,20 +36,20 @@ PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint
 	_chunkMask = _chunkSideLength - 1;
 
 	// Calculate the number of chunks based on the memory limit and the size of each chunk.
-	uint32_t uChunkSizeInBytes = PagedVolume::Chunk::calculateSizeInBytes(_chunkSideLength);
-	_chunkCountLimit = uTargetMemoryUsageInBytes / uChunkSizeInBytes;
+	uint32_t chunkSizeInBytes = PagedVolume::Chunk::calculateSizeInBytes(_chunkSideLength);
+	_chunkCountLimit = targetMemoryUsageInBytes / chunkSizeInBytes;
 
 	// Enforce sensible limits on the number of chunks.
-	const uint32_t uMinPracticalNoOfChunks = 32; // Enough to make sure a chunks and it's neighbours can be loaded, with a few to spare.
-	if (_chunkCountLimit < uMinPracticalNoOfChunks) {
+	const uint32_t minPracticalNoOfChunks = 32; // Enough to make sure a chunks and it's neighbours can be loaded, with a few to spare.
+	if (_chunkCountLimit < minPracticalNoOfChunks) {
 		Log::warn("Requested memory usage limit of %uMb is too low and cannot be adhered to. Chunk limit is at %i, Chunk size: %uKb",
-				uTargetMemoryUsageInBytes / (1024 * 1024), _chunkCountLimit, uChunkSizeInBytes / 1024);
+				targetMemoryUsageInBytes / (1024 * 1024), _chunkCountLimit, chunkSizeInBytes / 1024);
 	}
-	_chunkCountLimit = core_max(_chunkCountLimit, uMinPracticalNoOfChunks);
+	_chunkCountLimit = core_max(_chunkCountLimit, minPracticalNoOfChunks);
 
 	// Inform the user about the chosen memory configuration.
-	Log::debug("Memory usage limit for volume now set to %uMb (%u chunks of %uKb each).",
-			(_chunkCountLimit * uChunkSizeInBytes) / (1024 * 1024), _chunkCountLimit, uChunkSizeInBytes / 1024);
+	Log::info("Memory usage limit for volume now set to %uMb (%u chunks of %uKb each).",
+			(_chunkCountLimit * chunkSizeInBytes) / (1024 * 1024), _chunkCountLimit, chunkSizeInBytes / 1024);
 }
 
 /**
