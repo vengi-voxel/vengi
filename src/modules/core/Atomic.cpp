@@ -72,4 +72,12 @@ AtomicInt& AtomicInt::operator++() {
 	return *this;
 }
 
+int AtomicInt::decrement(int value) {
+	return SDL_AtomicAdd(&_value, -value);
+}
+
+int AtomicInt::increment(int value) {
+	return SDL_AtomicAdd(&_value, value);
+}
+
 }

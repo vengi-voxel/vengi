@@ -40,6 +40,9 @@ public:
 	void operator=(int rhs);
 	void operator=(const AtomicInt& rhs);
 
+	int decrement(int value = 1);
+	int increment(int value = 1);
+
 	AtomicInt& operator--();
 	AtomicInt& operator++();
 
