@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include <memory>
+#include <new>
 
 namespace ai {
 
