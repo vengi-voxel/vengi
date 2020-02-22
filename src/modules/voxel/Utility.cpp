@@ -5,7 +5,7 @@
 #include "Utility.h"
 #include "core/Assert.h"
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/ext/scalar_integer.hpp>
+#include <glm/gtc/round.hpp>
 
 namespace voxel {
 
