@@ -4,8 +4,9 @@
 #pragma once
 
 #include "common/NonCopyable.h"
+#include "core/String.h"
+#include "core/collection/StringMap.h"
 #include <memory>
-#include <map>
 
 namespace ai {
 
@@ -16,26 +17,26 @@ public:
 	virtual std::shared_ptr<TYPE> create (const CTX* ctx) const = 0;
 };
 
-template<class KEY, class TYPE, class CTX>
+template<class TYPE, class CTX>
 class IFactoryRegistry: public NonCopyable {
 protected:
-	typedef std::map<const KEY, const IFactory<TYPE, CTX>*> FactoryMap;
-	typedef typename FactoryMap::const_iterator FactoryMapConstIter;
+	typedef core::StringMap<const IFactory<TYPE, CTX>*> FactoryMap;
+	typedef typename FactoryMap::iterator FactoryMapConstIter;
 	typedef typename FactoryMap::iterator FactoryMapIter;
 	FactoryMap _factories;
 public:
-	bool registerFactory (const KEY& type, const IFactory<TYPE, CTX>& factory)
+	bool registerFactory (const core::String& type, const IFactory<TYPE, CTX>& factory)
 	{
 		FactoryMapConstIter i = _factories.find(type);
 		if (i != _factories.end()) {
 			return false;
 		}
 
-		_factories[type] = &factory;
+		_factories.put(type, &factory);
 		return true;
 	}
 
-	bool unregisterFactory (const KEY& type)
+	bool unregisterFactory (const core::String& type)
 	{
 		FactoryMapIter i = _factories.find(type);
 		if (i == _factories.end()) {
@@ -46,7 +47,7 @@ public:
 		return true;
 	}
 
-	std::shared_ptr<TYPE> create (const KEY& type, const CTX* ctx = nullptr) const
+	std::shared_ptr<TYPE> create (const core::String& type, const CTX* ctx = nullptr) const
 	{
 		FactoryMapConstIter i = _factories.find(type);
 		if (i == _factories.end()) {
