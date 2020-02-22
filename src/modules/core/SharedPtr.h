@@ -35,14 +35,14 @@ private:
 		if (_refCnt == nullptr) {
 			return;
 		}
-		++(*_refCnt);
+		_refCnt->increment(1);
 	}
 
-	void decrease() {
+	int decrease() {
 		if (_refCnt == nullptr) {
-			return;
+			return -1;
 		}
-		--(*_refCnt);
+		return _refCnt->decrement(1) - 1;
 	}
 public:
 	constexpr SharedPtr() : _ptr(nullptr), _refCnt(nullptr) {
@@ -107,8 +107,7 @@ public:
 	}
 
 	void release() {
-		decrease();
-		if (count() == 0) {
+		if (decrease() == 0) {
 			if (_ptr != nullptr) {
 				_ptr->~T();
 			}
