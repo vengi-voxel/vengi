@@ -158,6 +158,7 @@ private:
 	bool setNewVolumes(const voxel::VoxelVolumes& volumes);
 	void autosave();
 	void setReferencePosition(const glm::ivec3& pos);
+	void updateGridRenderer(const voxel::Region& region);
 
 	void animate(uint64_t time);
 	/**
@@ -207,7 +208,6 @@ private:
 	bool randomSimilarColor(uint8_t oldIndex, uint8_t density, uint8_t colorCount);
 	void mirror(math::Axis axis);
 public:
-	SceneManager();
 	~SceneManager();
 
 	void construct() override;

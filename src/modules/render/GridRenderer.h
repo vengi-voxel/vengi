@@ -7,7 +7,7 @@
 #include "video/Camera.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
-#include "voxel/Region.h"
+#include "math/AABB.h"
 #include "core/IComponent.h"
 
 namespace render {
@@ -43,7 +43,7 @@ public:
 	/**
 	 * @param region The region to do the plane culling with
 	 */
-	void render(const video::Camera& camera, const voxel::Region& region);
+	void render(const video::Camera& camera, const math::AABB<float>& aabb);
 
 	bool renderAABB() const;
 	void setRenderAABB(bool renderAABB);
@@ -55,7 +55,7 @@ public:
 	 * @brief Update the internal render buffers for the new region.
 	 * @param region The region to render the grid for
 	 */
-	void update(const voxel::Region& region);
+	void update(const math::AABB<float>& region);
 	void clear();
 
 	/**

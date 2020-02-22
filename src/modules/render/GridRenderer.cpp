@@ -37,13 +37,7 @@ int GridRenderer::gridResolution() const {
 	return _resolution;
 }
 
-static inline math::AABB<int> aabb(const voxel::Region& region) {
-	return math::AABB<int>(region.getLowerCorner(), region.getUpperCorner() + 1);
-}
-
-void GridRenderer::update(const voxel::Region& region) {
-	const math::AABB<int>& intaabb = aabb(region);
-	const math::AABB<float> aabb(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
+void GridRenderer::update(const math::AABB<float>& aabb) {
 	_shapeBuilder.clear();
 	_shapeBuilder.aabb(aabb, false);
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
@@ -80,17 +74,17 @@ void GridRenderer::clear() {
 	 _dirty = false;
 }
 
-void GridRenderer::render(const video::Camera& camera, const voxel::Region& region) {
+void GridRenderer::render(const video::Camera& camera, const math::AABB<float>& aabb) {
 	core_trace_scoped(GridRendererRender);
 
 	if (_dirty) {
-		update(region);
+		update(aabb);
 	}
 
 	_shapeRenderer.hide(_aabbMeshIndex, !_renderAABB);
 	if (_renderGrid) {
-		const glm::vec3 center(region.getCentre());
-		const glm::vec3& halfWidth = glm::vec3(region.getDimensionsInCells()) / 2.0f;
+		const glm::vec3 center = (aabb.getLowerCorner() + aabb.getUpperCorner() / 2.0f);
+		const glm::vec3& halfWidth = glm::vec3(aabb.getWidth()) / 2.0f;
 		const math::Plane planeLeft  (glm::left,     center + glm::vec3(-halfWidth.x, 0.0f, 0.0f));
 		const math::Plane planeRight (glm::right,    center + glm::vec3( halfWidth.x, 0.0f, 0.0f));
 		const math::Plane planeBottom(glm::down,     center + glm::vec3(0.0f, -halfWidth.y, 0.0f));

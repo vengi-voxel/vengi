@@ -189,12 +189,10 @@ core::AppState TestAnimation::onInit() {
 
 	_attrib.setCurrent(attrib::Type::SPEED, 10.0);
 	const animation::AnimationTimes& animations = animationEntity()->animations();
-	animation::Animation currentAnimation = animation::Animation::IDLE;
 	for (int i = 0; i <= core::enumVal(animation::Animation::MAX); ++i) {
 		if (animations[i] < _nowSeconds) {
 			continue;
 		}
-		currentAnimation = (animation::Animation)i;
 		_animationIdx = i;
 		break;
 	}

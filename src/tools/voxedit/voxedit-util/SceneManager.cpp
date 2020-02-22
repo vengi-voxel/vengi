@@ -57,10 +57,6 @@
 
 namespace voxedit {
 
-SceneManager::SceneManager() :
-		_gridRenderer() {
-}
-
 SceneManager::~SceneManager() {
 	shutdown();
 }
@@ -562,6 +558,15 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	return true;
 }
 
+static inline math::AABB<float> aabb(const voxel::Region& region) {
+	const math::AABB<int> intaabb(region.getLowerCorner(), region.getUpperCorner() + 1);
+	return math::AABB<float>(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
+}
+
+void SceneManager::updateGridRenderer(const voxel::Region& region) {
+	_gridRenderer.update(aabb(region));
+}
+
 bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {
 	if (idx < 0 || idx >= _layerMgr.maxLayers()) {
 		return false;
@@ -570,7 +575,7 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMe
 	delete _volumeRenderer.setVolume(idx, volume, deleteMesh);
 
 	if (volume != nullptr) {
-		_gridRenderer.update(region);
+		updateGridRenderer(region);
 	} else {
 		_gridRenderer.clear();
 	}
@@ -653,7 +658,7 @@ void SceneManager::shift(int layerId, const glm::ivec3& m) {
 	_referencePos += m;
 	_modifier.translate(m);
 	_volumeRenderer.translate(layerId, m);
-	_gridRenderer.update(model->region());
+	updateGridRenderer(model->region());
 	const voxel::Region& newRegion = model->region();
 	oldRegion.accumulate(newRegion);
 	modified(layerId, oldRegion);
@@ -745,7 +750,8 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderUI) {
-		_gridRenderer.render(camera, modelVolume()->region());
+		const voxel::Region& region = modelVolume()->region();
+		_gridRenderer.render(camera, aabb(region));
 	}
 	if (renderScene) {
 		_volumeRenderer.render(camera, _renderShadow);
@@ -1899,7 +1905,7 @@ void SceneManager::onActiveLayerChanged(int old, int active) {
 	const voxel::RawVolume* volume = _volumeRenderer.volume(active);
 	core_assert_always(volume != nullptr);
 	const voxel::Region& region = volume->region();
-	_gridRenderer.update(region);
+	updateGridRenderer(region);
 	if (!region.containsPoint(referencePosition())) {
 		setReferencePosition(region.getCentre());
 	}
