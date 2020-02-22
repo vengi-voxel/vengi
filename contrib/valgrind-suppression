@@ -1,0 +1,322 @@
+{
+   fglrx_dri.so
+   Memcheck:Cond
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   fun:__driCreateNewScreen_20050727
+   obj:/usr/lib/libGL.so.1.2
+   fun:glXChooseVisual
+   obj:/usr/lib/libSDL-1.2.so.0.11.1
+}
+{
+   fglrx_dri.so
+   Memcheck:Param
+   ioctl(generic)
+   obj:/lib/ld-2.8.90.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   fun:__driCreateNewScreen_20050727
+   obj:/usr/lib/libGL.so.1.2
+   fun:glXChooseVisual
+}
+{
+   fglrx_dri.so
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   fun:__driCreateNewScreen_20050727
+   obj:/usr/lib/libGL.so.1.2
+   fun:glXChooseVisual
+   obj:/usr/lib/libgdkglext-x11-1.0.so.0.0.0
+   fun:_ZL18glwidget_enable_glP10_GtkWidgetS0_Pv
+   fun:g_cclosure_marshal_VOID__OBJECT
+   fun:g_closure_invoke
+}
+{
+   nvidia_gl
+   Memcheck:Cond
+   obj:/usr/lib/libGLcore.so.185.18.36
+   obj:/usr/lib/libGLcore.so.185.18.36
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   nvidia_gl2
+   Memcheck:Cond
+   obj:/usr/lib/libGLcore.so.185.18.36
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   nvidia_gl3
+   Memcheck:Cond
+   obj:/usr/lib/libGLcore.so.185.18.36
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/libGLcore.so.185.18.36
+   obj:*
+}
+{
+   nvidia_gl4
+   Memcheck:Cond
+   obj:/usr/lib/libGLcore.so.185.18.36
+}
+{
+   nvidia_gl5
+   Memcheck:Cond
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   nvidia_gl6
+   Memcheck:Cond
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.280.13
+   obj:*
+}
+{
+   nvidia_gl7
+   Memcheck:Cond
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   nvidia_gl8
+   Memcheck:Cond
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.280.13
+   obj:*
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.280.13
+}
+{
+   gettext
+   Memcheck:Cond
+   fun:__GI___strcasecmp_l
+   fun:__gconv_open
+   fun:_nl_find_msg
+   fun:__dcigettext
+   fun:_ZL15UI_RegisterFontPK8uiFont_s
+   fun:_Z12UI_InitFontsv
+   fun:_ZL14CL_NewLanguagev
+   fun:_Z19CL_LanguageTryToSetPKc
+   fun:_Z15CL_LanguageInitv
+   fun:_Z12CL_InitAfterv
+   fun:_Z12Qcommon_InitiPPc
+   fun:main
+}
+{
+   png-zlib
+   Memcheck:Cond
+   fun:inflateReset2
+   fun:inflateInit2_
+   fun:png_create_read_struct_2
+   fun:png_create_read_struct
+   fun:_ZL11Img_LoadPNGPKc
+   fun:_Z13Img_LoadImagePKc
+   fun:_Z11R_FindImagePKc11imagetype_t
+   fun:_Z12R_InitImagesv
+   fun:_Z6R_Initv
+   fun:_Z8VID_Initv
+   fun:_Z7CL_Initv
+   fun:_Z12Qcommon_InitiPPc
+}
+{
+   fglrx_param
+   Memcheck:Param
+   ioctl(generic)
+   fun:ioctl
+   obj:/usr/lib/dri/fglrx_dri.so
+}
+{
+   fglrx_cond
+   Memcheck:Cond
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+   obj:/usr/lib/dri/fglrx_dri.so
+}
+{
+   fglrx_invalid_read8
+   Memcheck:Addr8
+   obj:/usr/lib/dri/fglrx_dri.so
+}
+{
+   fglrx_invalid_read4
+   Memcheck:Addr4
+   obj:/usr/lib/dri/fglrx_dri.so
+}
+{
+   uninitialized_jump
+   Memcheck:Param
+   ioctl(generic)
+   fun:ioctl
+   obj:*
+}
+{
+   unititialized_jump_fglrx_cond
+   Memcheck:Cond
+   obj:/usr/lib/dri/fglrx_dri.so
+}
+{
+   nv_uninit
+   Memcheck:Cond
+   obj:/usr/lib/nvidia-current/libGLcore.so.195.36.15
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   nv_gi_strlen
+   Memcheck:Cond
+   fun:__GI_strlen
+   obj:/usr/lib/nvidia-current/libGLcore.so.195.36.15
+   obj:*
+}
+{
+   nv_strcpy
+   Memcheck:Cond
+   fun:strcpy
+   obj:/usr/lib/nvidia-current/libGLcore.so.195.36.15
+   obj:*
+}
+{
+   inteldri
+   Memcheck:Addr2
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:*
+}
+{
+   inteldri0
+   Memcheck:Addr4
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:*
+}
+{
+   inteldri1
+   Memcheck:Addr8
+   obj:/usr/lib/x86_64-linux-gnu/dri/iy965_dri.so
+   obj:*
+}
+{
+   inteldrimemmove
+   Memcheck:Addr8
+   fun:memmove
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:*
+}
+{
+   inteldrimemmove4
+   Memcheck:Addr4
+   fun:memmove
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:*
+}
+{
+   inteldrimemmove2
+   Memcheck:Addr2
+   fun:memmove
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:*
+}
+{
+   foobar
+   Memcheck:Addr8
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   inteldri2
+   Memcheck:Addr8
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0.0.0
+   fun:glXCreateContext
+   obj:/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.10.0
+}
+{
+   inteldri3
+   Memcheck:Addr8
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/dri/i965_dri.so
+   obj:/usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0.0.0
+   fun:glXCreateContext
+   obj:/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.10.0
+   obj:/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.10.0
+   obj:/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.10.0
+}
+{
+   intelfoo
+   Memcheck:Addr8
+   fun:bcmp
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:*
+   fun:*
+   fun:*
+}
