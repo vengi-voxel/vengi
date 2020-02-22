@@ -117,7 +117,7 @@ std::string FlatCompiler::GetUsageString(const char *program_name) const {
     "                         T::c_str(), T::length() and T::empty() must be supported.\n"
     "                         The custom type also needs to be constructible from std::string\n"
     "                         (see the --cpp-str-flex-ctor option to change this behavior).\n"
-    "  --cpp-str-flex-ctor     Don't construct custom string types by passing std::string\n"
+    "  --cpp-str-flex-ctor    Don't construct custom string types by passing std::string\n"
     "                         from Flatbuffers, but (char* + length).\n"
     "  --cpp-std CPP_STD      Generate a C++ code using features of selected C++ standard.\n"
     "                         Supported CPP_STD values:\n"
@@ -325,7 +325,7 @@ int FlatCompiler::Compile(int argc, const char **argv) {
       } else if (arg == "--bfbs-builtins") {
         opts.binary_schema_builtins = true;
       } else if (arg == "--bfbs-gen-embed") {
-        opts.binary_schema_gen_embed= true;
+        opts.binary_schema_gen_embed = true;
       } else if (arg == "--no-fb-import") {
         opts.skip_flatbuffers_import = true;
       } else if (arg == "--no-ts-reexport") {
@@ -348,9 +348,11 @@ int FlatCompiler::Compile(int argc, const char **argv) {
         opts.set_empty_vectors_to_null = false;
       } else if (arg == "--java-primitive-has-method") {
         opts.java_primitive_has_method = true;
+      } else if (arg == "--cs-gen-json-serializer") {
+        opts.cs_gen_json_serializer = true;
       } else if (arg == "--flexbuffers") {
         opts.use_flexbuffers = true;
-      } else if(arg == "--cpp-std") {
+      } else if (arg == "--cpp-std") {
         if (++argi >= argc) Error("missing C++ standard specification" + arg, true);
         opts.cpp_std = argv[argi];
       } else {
