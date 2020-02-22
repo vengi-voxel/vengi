@@ -172,6 +172,9 @@ void PagedVolume::flushAll() {
 	core::ScopedWriteLock writeLock(_volumeLock);
 	// Clear this pointer as all chunks are about to be removed.
 	_lastAccessedChunk = ChunkPtr();
+	_lastAccessedChunkX = 0;
+	_lastAccessedChunkY = 0;
+	_lastAccessedChunkZ = 0;
 
 	// Erase all the most recently used chunks.
 	_chunks.clear();
@@ -187,7 +190,7 @@ PagedVolume::ChunkPtr PagedVolume::existingChunk(int32_t chunkX, int32_t chunkY,
 	const glm::ivec3 pos(chunkX, chunkY, chunkZ);
 	auto i = _chunks.find(pos);
 	if (i == _chunks.end()) {
-		return nullptr;
+		return ChunkPtr();
 	}
 	const PagedVolume::ChunkPtr& chunk = i->second;
 	chunk->_chunkLastAccessed = ++_timestamper;
