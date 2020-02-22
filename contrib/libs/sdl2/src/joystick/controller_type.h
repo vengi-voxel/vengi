@@ -172,6 +172,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0291 ), k_eControllerType_XBox360Controller, "Xbox 360 Wireless Controller" },	// Xbox 360 Wireless Receiver (XBOX)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a0 ), k_eControllerType_XBox360Controller, NULL },	// Microsoft X-Box 360 Big Button IR
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a1 ), k_eControllerType_XBox360Controller, NULL },	// Microsoft X-Box 360 pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a9 ), k_eControllerType_XBox360Controller, "Xbox 360 Wireless Controller" },	// Xbox 360 Wireless Receiver (third party knockoff)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0719 ), k_eControllerType_XBox360Controller, "Xbox 360 Wireless Controller" },	// Xbox 360 Wireless Receiver
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc21d ), k_eControllerType_XBox360Controller, NULL },	// Logitech Gamepad F310
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc21e ), k_eControllerType_XBox360Controller, NULL },	// Logitech Gamepad F510
@@ -230,7 +231,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1430, 0x4748 ), k_eControllerType_XBox360Controller, NULL },	// RedOctane Guitar Hero X-plorer
 	{ MAKE_CONTROLLER_ID( 0x1430, 0xf801 ), k_eControllerType_XBox360Controller, NULL },	// RedOctane Controller
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0601 ), k_eControllerType_XBox360Controller, NULL },	// BigBen Interactive XBOX 360 Controller
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x0037 ), k_eControllerType_XBox360Controller, NULL },	// Razer Sabertooth
+//	{ MAKE_CONTROLLER_ID( 0x1532, 0x0037 ), k_eControllerType_XBox360Controller, NULL },	// Razer Sabertooth
 	{ MAKE_CONTROLLER_ID( 0x15e4, 0x3f00 ), k_eControllerType_XBox360Controller, NULL },	// Power A Mini Pro Elite
 	{ MAKE_CONTROLLER_ID( 0x15e4, 0x3f0a ), k_eControllerType_XBox360Controller, NULL },	// Xbox Airflo wired controller
 	{ MAKE_CONTROLLER_ID( 0x15e4, 0x3f10 ), k_eControllerType_XBox360Controller, NULL },	// Batarang Xbox 360 controller
@@ -463,7 +464,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2f24,	0x11 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x2f24,	0x53 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x2f24,	0xb7 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x45e,	0x2a9 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x46d,	0x0 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x46d,	0x1004 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x46d,	0x1008 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller

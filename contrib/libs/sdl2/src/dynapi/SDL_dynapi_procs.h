@@ -48,7 +48,7 @@ SDL_DYNAPI_PROC(int,SDL_snprintf,(SDL_OUT_Z_CAP(b) char *a, size_t b, SDL_PRINTF
 #undef SDL_CreateThread
 #endif
 
-#if defined(__WIN32__) && !defined(HAVE_LIBC)
+#if defined(__WIN32__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
 #elif defined(__OS2__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
@@ -803,4 +803,7 @@ SDL_DYNAPI_PROC(void,SDL_OnApplicationWillEnterForeground,(void),(),)
 SDL_DYNAPI_PROC(void,SDL_OnApplicationDidBecomeActive,(void),(),)
 #ifdef __IPHONEOS__
 SDL_DYNAPI_PROC(void,SDL_OnApplicationDidChangeStatusBarOrientation,(void),(),)
+#endif
+#ifdef __ANDROID__
+SDL_DYNAPI_PROC(int,SDL_GetAndroidSDKVersion,(void),(),return)
 #endif

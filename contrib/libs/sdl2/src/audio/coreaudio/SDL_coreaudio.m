@@ -326,12 +326,18 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
         /* Set category to ambient by default so that other music continues playing. */
         NSString *category = AVAudioSessionCategoryAmbient;
+        NSString *mode = AVAudioSessionModeDefault;
+        NSUInteger options = 0;
         NSError *err = nil;
 
         if (open_playback_devices && open_capture_devices) {
             category = AVAudioSessionCategoryPlayAndRecord;
+#if !TARGET_OS_TV
+            options = AVAudioSessionCategoryOptionDefaultToSpeaker;
+#endif
         } else if (open_capture_devices) {
             category = AVAudioSessionCategoryRecord;
         } else {
@@ -348,10 +354,18 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
             }
         }
 
-        if (![session setCategory:category error:&err]) {
-            NSString *desc = err.description;
-            SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
-            return NO;
+        if ([session respondsToSelector:@selector(setCategory:mode:options:error:)]) {
+            if (![session setCategory:category mode:mode options:options error:&err]) {
+                NSString *desc = err.description;
+                SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
+                return NO;
+            }
+        } else {
+            if (![session setCategory:category error:&err]) {
+                NSString *desc = err.description;
+                SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
+                return NO;
+            }
         }
 
         if (open && (open_playback_devices + open_capture_devices) == 1) {
@@ -566,6 +580,12 @@ COREAUDIO_CloseDevice(_THIS)
     AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
 #endif
 
+    if (iscapture) {
+        open_capture_devices--;
+    } else {
+        open_playback_devices--;
+    }
+
 #if !MACOSX_COREAUDIO
     update_audio_session(this, SDL_FALSE);
 #endif
@@ -591,12 +611,6 @@ COREAUDIO_CloseDevice(_THIS)
     SDL_free(this->hidden->thread_error);
     SDL_free(this->hidden->buffer);
     SDL_free(this->hidden);
-
-    if (iscapture) {
-        open_capture_devices--;
-    } else {
-        open_playback_devices--;
-    }
 }
 
 #if MACOSX_COREAUDIO
