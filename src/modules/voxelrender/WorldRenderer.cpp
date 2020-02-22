@@ -29,7 +29,10 @@ namespace voxelrender {
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer() :
-		_octree({}, 30) {
+		_octree({}, 30), _visibleEntities(1024),
+		_shadowMapShader(shader::ShadowmapShader::getInstance()),
+		_skeletonShadowMapShader(shader::SkeletonshadowmapShader::getInstance()),
+		_shadowMapInstancedShader(shader::ShadowmapInstancedShader::getInstance()) {
 	setViewDistance(240.0f);
 }
 
@@ -61,6 +64,9 @@ void WorldRenderer::shutdown() {
 	_waterBuffer.shutdown();
 	_shadow.shutdown();
 	_skybox.shutdown();
+	_shadowMapShader.shutdown();
+	_skeletonShadowMapShader.shutdown();
+	_shadowMapInstancedShader.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_shapeRendererOcclusionQuery.shutdown();
@@ -333,6 +339,21 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		return 0;
 	}
 
+	_visibleEntities.clear();
+	for (const auto& e : _entities) {
+		const frontend::ClientEntityPtr& ent = e.second;
+		ent->update(_deltaFrame);
+		// note, that the aabb does not include the orientation - that should be kept in mind here.
+		// a particular rotation could lead to an entity getting culled even though it should still
+		// be visible.
+		math::AABB<float> aabb = ent->character().aabb();
+		aabb.shift(ent->position());
+		if (!camera.isVisible(aabb)) {
+			continue;
+		}
+		_visibleEntities.insert(ent.get());
+	}
+
 	_frameBuffer.bind(true);
 	const int drawCallsWorld = renderToFrameBuffer(camera);
 	_frameBuffer.unbind();
@@ -386,14 +407,30 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
 		core_trace_scoped(WorldRendererRenderShadow);
-		_shadow.render([&] (int i, shader::ShadowmapShader& shader) {
-			shader.setModel(glm::mat4(1.0f));
-			renderOpaqueBuffers();
-			++drawCallsWorld;
-			return true;
-		}, [&] (int i, shader::ShadowmapInstancedShader& shader) {
+#if 1
+		_skeletonShadowMapShader.activate();
+		_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
+			_skeletonShadowMapShader.setLightviewprojection(lightViewProjection);
+			for (const auto& ent : _visibleEntities) {
+				_skeletonShadowMapShader.setBones(ent->bones()._items);
+				_skeletonShadowMapShader.setModel(ent->modelMatrix());
+				const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
+				video::drawElements<animation::IndexType>(video::Primitive::Triangles, numIndices);
+				ent->unbindVertexBuffers();
+			}
 			return true;
 		});
+		_skeletonShadowMapShader.deactivate();
+#endif
+
+		_shadowMapShader.activate();
+		_shadowMapShader.setModel(glm::mat4(1.0f));
+		_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
+			_shadowMapShader.setLightviewprojection(lightViewProjection);
+			renderOpaqueBuffers();
+			return true;
+		}, false);
+		_shadowMapShader.deactivate();
 	}
 	_colorTexture.bind(video::TextureUnit::Zero);
 
@@ -495,27 +532,9 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		_chrShader.setCascades(_shadow.cascades());
 		_chrShader.setDistances(_shadow.distances());
 	}
-	for (const auto& e : _entities) {
-		const frontend::ClientEntityPtr& ent = e.second;
-		ent->update(_deltaFrame);
-		// note, that the aabb does not include the orientation - that should be kept in mind here.
-		// a particular rotation could lead to an entity getting culled even though it should still
-		// be visible.
-		math::AABB<float> aabb = ent->character().aabb();
-		aabb.shift(ent->position());
-		if (!camera.isVisible(aabb)) {
-			continue;
-		}
-		const glm::mat4& translate = glm::translate(ent->position());
-		// as our models are looking along the positive z-axis, we have to rotate by 180 degree here
-		const glm::mat4& model = glm::rotate(translate, glm::pi<float>() + ent->orientation(), glm::up);
-		_chrShader.setModel(model);
-		glm::mat4 bones[shader::SkeletonShaderConstants::getMaxBones()];
-		const animation::Character& chr = ent->character();
-		const animation::AnimationSettings& settings = chr.animationSettings();
-		const animation::Skeleton& skeleton = chr.skeleton();
-		skeleton.update(settings, bones);
-		core_assert_always(_chrShader.setBones(bones));
+	for (frontend::ClientEntity* ent : _visibleEntities) {
+		_chrShader.setModel(ent->modelMatrix());
+		core_assert_always(_chrShader.setBones(ent->bones()._items));
 		const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
 		++drawCallsEntities;
 		video::drawElements<animation::IndexType>(video::Primitive::Triangles, numIndices);
@@ -683,7 +702,18 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		Log::error("Failed to initialize the sky");
 		return false;
 	}
-
+	if (!_shadowMapShader.setup()) {
+		Log::error("Failed to init shadowmap shader");
+		return false;
+	}
+	if (!_shadowMapInstancedShader.setup()) {
+		Log::error("Failed to init shadowmap instanced shader");
+		return false;
+	}
+	if (!_skeletonShadowMapShader.setup()) {
+		Log::error("Failed to init skeleton shadowmap shader");
+		return false;
+	}
 	const int shaderMaterialColorsArraySize = lengthof(shader::WorldData::MaterialblockData::materialcolor);
 	const int materialColorsArraySize = (int)voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {

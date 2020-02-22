@@ -123,7 +123,7 @@ set(LUA_SRCS
 	animal/shared.lua
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES core attrib stock voxelformat network render commonlua)
-generate_shaders(${LIB} skeleton)
+generate_shaders(${LIB} skeleton skeletonshadowmap)
 
 set(TEST_SRCS
 	tests/CharacterSettingsTest.cpp

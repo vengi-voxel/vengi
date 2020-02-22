@@ -44,7 +44,10 @@ protected:
 	video::Buffer _vertexBuffer[MAX_VOLUMES];
 	shader::VoxelData _materialBlock;
 	shader::VoxelShader& _voxelShader;
+	shader::ShadowmapShader& _shadowMapShader;
+	shader::ShadowmapInstancedShader& _shadowMapInstancedShader;
 	render::Shadow _shadow;
+
 	core::VarPtr _meshSize;
 	core::VarPtr _shadowVar;
 

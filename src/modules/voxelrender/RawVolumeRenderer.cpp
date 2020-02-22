@@ -44,7 +44,9 @@ struct CustomIsQuadNeeded {
 }
 
 RawVolumeRenderer::RawVolumeRenderer() :
-		_voxelShader(shader::VoxelShader::getInstance()) {
+		_voxelShader(shader::VoxelShader::getInstance()),
+		_shadowMapShader(shader::ShadowmapShader::getInstance()),
+		_shadowMapInstancedShader(shader::ShadowmapInstancedShader::getInstance()) {
 }
 
 void RawVolumeRenderer::construct() {
@@ -56,7 +58,14 @@ bool RawVolumeRenderer::init() {
 		Log::error("Failed to initialize the world shader");
 		return false;
 	}
-
+	if (!_shadowMapShader.setup()) {
+		Log::error("Failed to init shadowmap shader");
+		return false;
+	}
+	if (!_shadowMapInstancedShader.setup()) {
+		Log::error("Failed to init shadowmap instanced shader");
+		return false;
+	}
 	_shadowVar = core::Var::getSafe(cfg::ClientShadowMap);
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
@@ -385,7 +394,9 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	if (_shadowVar->boolVal()) {
 		_shadow.update(camera, true);
 		if (shadow) {
-			_shadow.render([this] (int i, shader::ShadowmapShader& shader) {
+			video::ScopedShader scoped(_shadowMapShader);
+			_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
+				_shadowMapShader.setLightviewprojection(lightViewProjection);
 				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 					if (_hidden[idx]) {
 						continue;
@@ -395,17 +406,17 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 						continue;
 					}
 					video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
-					shader.setModel(_model[idx]);
+					_shadowMapShader.setModel(_model[idx]);
 					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 					video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 				}
 				return true;
-			}, [] (int, shader::ShadowmapInstancedShader&) { return true; });
+			});
 		} else {
-			_shadow.render([] (int i, shader::ShadowmapShader& shader) {
+			_shadow.render([] (int i, const glm::mat4& lightViewProjection) {
 				video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 				return true;
-			}, [] (int, shader::ShadowmapInstancedShader&) { return true; });
+			});
 		}
 	}
 
@@ -500,6 +511,8 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& ce
 
 std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_voxelShader.shutdown();
+	_shadowMapShader.shutdown();
+	_shadowMapInstancedShader.shutdown();
 	_materialBlock.shutdown();
 	for (auto& iter : _meshes) {
 		for (auto& mesh : iter.second) {

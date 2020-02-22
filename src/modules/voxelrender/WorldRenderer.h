@@ -12,6 +12,7 @@
 #include "core/ThreadPool.h"
 #include "core/Var.h"
 #include "core/collection/ConcurrentQueue.h"
+#include "core/collection/List.h"
 #include "frontend/ClientEntity.h"
 #include "math/Octree.h"
 #include "render/RandomColorTexture.h"
@@ -92,6 +93,7 @@ protected:
 
 	typedef std::unordered_map<frontend::ClientEntityId, frontend::ClientEntityPtr> Entities;
 	Entities _entities;
+	core::List<frontend::ClientEntity*> _visibleEntities;
 
 	glm::vec3 _focusPos = glm::zero<glm::vec3>();
 	render::Shadow _shadow;
@@ -135,6 +137,9 @@ protected:
 	shader::WorldInstancedShader _worldInstancedShader;
 	shader::WaterShader _waterShader;
 	shader::SkeletonShader _chrShader;
+	shader::ShadowmapShader& _shadowMapShader;
+	shader::SkeletonshadowmapShader& _skeletonShadowMapShader;
+	shader::ShadowmapInstancedShader& _shadowMapInstancedShader;
 
 	void handleMeshQueue();
 	void updateAABB(ChunkBuffer &chunkBuffer) const;

@@ -21,9 +21,7 @@
 namespace render {
 
 Shadow::Shadow() :
-		_shadowMapShader(shader::ShadowmapShader::getInstance()),
-		_shadowMapRenderShader(shader::ShadowmapRenderShader::getInstance()),
-		_shadowMapInstancedShader(shader::ShadowmapInstancedShader::getInstance()) {
+		_shadowMapRenderShader(shader::ShadowmapRenderShader::getInstance()) {
 }
 
 Shadow::~Shadow() {
@@ -36,16 +34,8 @@ bool Shadow::init(const ShadowParameters& parameters) {
 	const float length = 50.0f;
 	const glm::vec3 sunPos(length, length, -length);
 	setPosition(sunPos);
-	if (!_shadowMapShader.setup()) {
-		Log::error("Failed to init shadowmap shader");
-		return false;
-	}
 	if (!_shadowMapRenderShader.setup()) {
 		Log::error("Failed to init shadowmap debug shader");
-		return false;
-	}
-	if (!_shadowMapInstancedShader.setup()) {
-		Log::error("Failed to init shadowmap instanced debug shader");
 		return false;
 	}
 
@@ -65,10 +55,8 @@ bool Shadow::init(const ShadowParameters& parameters) {
 
 void Shadow::shutdown() {
 	_shadowMapDebugBuffer.shutdown();
-	_shadowMapRenderShader.shutdown();
 	_depthBuffer.shutdown();
-	_shadowMapShader.shutdown();
-	_shadowMapInstancedShader.shutdown();
+	_shadowMapRenderShader.shutdown();
 	_parameters = ShadowParameters();
 }
 
@@ -122,7 +110,7 @@ bool Shadow::bind(video::TextureUnit unit) {
 	return state;
 }
 
-void Shadow::render(funcRender renderCallback, funcRenderInstance renderInstancedCallback) {
+void Shadow::render(funcRender renderCallback, bool clearDepthBuffer) {
 	const bool oldBlend = video::disable(video::State::Blend);
 	// put shadow acne into the dark
 	const bool cullFaceChanged = video::cullFace(video::Face::Front);
@@ -131,20 +119,9 @@ void Shadow::render(funcRender renderCallback, funcRenderInstance renderInstance
 
 	_depthBuffer.bind(false);
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
-		_depthBuffer.bindTextureAttachment(video::FrameBufferAttachment::Depth, i, true);
-		{
-			video::ScopedShader scoped(_shadowMapShader);
-			_shadowMapShader.setLightviewprojection(_cascades[i]);
-			if (!renderCallback(i, _shadowMapShader)) {
-				break;
-			}
-		}
-		{
-			video::ScopedShader scoped(_shadowMapInstancedShader);
-			_shadowMapInstancedShader.setLightviewprojection(_cascades[i]);
-			if (!renderInstancedCallback(i, _shadowMapInstancedShader)) {
-				break;
-			}
+		_depthBuffer.bindTextureAttachment(video::FrameBufferAttachment::Depth, i, clearDepthBuffer);
+		if (!renderCallback(i, _cascades[i])) {
+			break;
 		}
 	}
 	_depthBuffer.unbind();
@@ -163,8 +140,6 @@ void Shadow::renderShadowMap(const video::Camera& camera) {
 
 	// activate shader
 	video::ScopedShader scopedShader(_shadowMapRenderShader);
-	_shadowMapRenderShader.recordUsedUniforms(true);
-	_shadowMapRenderShader.clearUsedUniforms();
 	_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
 	_shadowMapRenderShader.setFar(camera.farPlane());
 	_shadowMapRenderShader.setNear(camera.nearPlane());

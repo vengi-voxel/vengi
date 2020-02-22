@@ -49,9 +49,7 @@ private:
 	std::vector<float> _distances;
 	video::Buffer _shadowMapDebugBuffer;
 	video::FrameBuffer _depthBuffer;
-	shader::ShadowmapShader& _shadowMapShader;
 	shader::ShadowmapRenderShader& _shadowMapRenderShader;
-	shader::ShadowmapInstancedShader& _shadowMapInstancedShader;
 	ShadowParameters _parameters;
 	float _shadowRangeZ = 0.0f;
 
@@ -64,8 +62,7 @@ public:
 	bool init(const ShadowParameters& parameters);
 	void shutdown();
 
-	typedef std::function<bool(int, shader::ShadowmapShader&)> funcRender;
-	typedef std::function<bool(int, shader::ShadowmapInstancedShader&)> funcRenderInstance;
+	typedef std::function<bool(int, const glm::mat4& viewProjection)> funcRender;
 
 	void update(const video::Camera& camera, bool active);
 
@@ -73,7 +70,7 @@ public:
 
 	void renderShadowMap(const video::Camera& camera);
 
-	void render(funcRender renderCallback, funcRenderInstance renderInstancedCallback);
+	void render(funcRender renderCallback, bool clearDepthBuffer = true);
 
 	void setPosition(const glm::vec3& eye, const glm::vec3& center = glm::vec3(0.0f), const glm::vec3& up = glm::up);
 	void setLightViewMatrix(const glm::mat4& lightView);

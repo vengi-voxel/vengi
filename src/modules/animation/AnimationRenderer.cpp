@@ -13,9 +13,18 @@
 
 namespace animation {
 
+AnimationRenderer::AnimationRenderer() :
+		_shader(shader::SkeletonShader::getInstance()),
+		_shadowMapShader(shader::SkeletonshadowmapShader::getInstance()) {
+}
+
 bool AnimationRenderer::init() {
 	if (!_shader.setup()) {
 		Log::error("Failed to setup character shader");
+		return false;
+	}
+	if (!_shadowMapShader.setup()) {
+		Log::error("Failed to init shadowmap shader");
 		return false;
 	}
 	render::ShadowParameters shadowParams;
@@ -60,6 +69,7 @@ bool AnimationRenderer::init() {
 void AnimationRenderer::shutdown() {
 	_shaderData.shutdown();
 	_shader.shutdown();
+	_shadowMapShader.shutdown();
 	_vbo.shutdown();
 	_shadow.shutdown();
 	_vertices = -1;
@@ -85,18 +95,23 @@ void AnimationRenderer::render(const AnimationEntity& character, const video::Ca
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
-	video::ScopedShader scopedShader(_shader);
-	video::ScopedBuffer scopedBuffer(_vbo);
+	_shadow.update(camera, true);
 
-	bool shadowMap = true;
-	core_assert_always(_shader.setBones(bones));
-	_shadow.update(camera, shadowMap);
-
-	_shadow.render([numIndices] (int index, shader::ShadowmapShader& shader) {
+	_shadowMapShader.activate();
+	_vbo.bind();
+	core_assert_always(_shadowMapShader.setBones(bones));
+	_shadowMapShader.setModel(glm::mat4(1.0f));
+	_shadow.render([&] (int index, const glm::mat4& lightViewProjection) {
+		_shadowMapShader.setLightviewprojection(lightViewProjection);
 		video::drawElements<IndexType>(video::Primitive::Triangles, numIndices);
 		return true;
-	}, [] (int, shader::ShadowmapInstancedShader&) {return true;});
+	});
+	_vbo.unbind();
+	_shadowMapShader.deactivate();
 
+	video::ScopedShader scopedShader(_shader);
+	_vbo.bind();
+	core_assert_always(_shader.setBones(bones));
 	video::clearColor(_clearColor);
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 
@@ -123,6 +138,7 @@ void AnimationRenderer::render(const AnimationEntity& character, const video::Ca
 	_shader.setDistances(_shadow.distances());
 
 	video::drawElements<IndexType>(video::Primitive::Triangles, numIndices);
+	_vbo.unbind();
 }
 
 }

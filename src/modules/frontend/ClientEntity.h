@@ -11,7 +11,9 @@
 #include "animation/Animation.h"
 #include "animation/chr/Character.h"
 #include "stock/Stock.h"
+#include "core/collection/Array.h"
 #include "core/collection/StringMap.h"
+#include "SkeletonShaderConstants.h"
 #include <memory>
 
 namespace shader {
@@ -30,9 +32,11 @@ namespace frontend {
  */
 class ClientEntity {
 private:
+	core::Array<glm::mat4, shader::SkeletonShaderConstants::getMaxBones()> _bones;
 	ClientEntityId _id;
 	network::EntityType _type;
 	glm::vec3 _position {0};
+	glm::mat4 _model { 1.0f };
 	float _orientation;
 	animation::Character _character;
 	attrib::ShadowAttributes _attrib;
@@ -55,6 +59,9 @@ public:
 	float orientation() const;
 	void userinfo(const core::String& key, const core::String& value);
 
+	const glm::mat4& modelMatrix() const;
+	const core::Array<glm::mat4, shader::SkeletonShaderConstants::getMaxBones()> bones() const;
+
 	bool operator==(const ClientEntity& other) const;
 
 	uint32_t bindVertexBuffers(const shader::SkeletonShader& chrShader);
@@ -71,6 +78,14 @@ public:
 	attrib::ShadowAttributes& attrib();
 	animation::Character& character();
 };
+
+inline const core::Array<glm::mat4, shader::SkeletonShaderConstants::getMaxBones()> ClientEntity::bones() const {
+	return _bones;
+}
+
+inline const glm::mat4& ClientEntity::modelMatrix() const {
+	return _model;
+}
 
 inline void ClientEntity::setAnimation(animation::Animation animation, bool reset) {
 	character().setAnimation(animation, reset);

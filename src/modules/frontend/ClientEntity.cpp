@@ -10,6 +10,9 @@
 #include "core/StringUtil.h"
 #include "animation/AnimationCache.h"
 #include "AnimationShaders.h"
+#include "core/GLM.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>
 
 namespace frontend {
 
@@ -55,6 +58,10 @@ void ClientEntity::update(uint64_t dt) {
 	_attrib.update(dt);
 	_character.updateTool(_animationCache, _stock);
 	_character.update(dt, _attrib);
+	const glm::mat4& translate = glm::translate(position());
+	// as our models are looking along the positive z-axis, we have to rotate by 180 degree here
+	_model = glm::rotate(translate, glm::pi<float>() + orientation(), glm::up);
+	_character.skeleton().update(_character.animationSettings(), _bones._items);
 }
 
 uint32_t ClientEntity::bindVertexBuffers(const shader::SkeletonShader& chrShader) {

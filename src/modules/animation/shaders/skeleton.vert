@@ -1,7 +1,7 @@
 // attributes from the VAOs
 $in vec3 a_pos;
-$in uint a_color_index;
 $in uint a_bone_id;
+$in uint a_color_index;
 $in uint a_ambient_occlusion;
 
 uniform mat4 u_model;

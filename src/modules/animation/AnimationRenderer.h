@@ -20,7 +20,8 @@ namespace animation {
  */
 class AnimationRenderer : public core::IComponent {
 private:
-	shader::SkeletonShader _shader;
+	shader::SkeletonShader& _shader;
+	shader::SkeletonshadowmapShader& _shadowMapShader;
 	shader::SkeletonData _shaderData;
 	render::Shadow _shadow;
 	video::Buffer _vbo;
@@ -35,6 +36,7 @@ private:
 	int32_t _vertices = -1;
 	int32_t _indices = -1;
 public:
+	AnimationRenderer();
 	bool init() override;
 	void shutdown() override;
 
