@@ -8,7 +8,7 @@
 #include "core/Log.h"
 #include "core/Common.h"
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/ext/scalar_integer.hpp>
+#include <glm/gtc/round.hpp>
 
 namespace voxel {
 
