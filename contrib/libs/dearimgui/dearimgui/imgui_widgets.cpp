@@ -1,4 +1,4 @@
-// dear imgui, v1.75 WIP
+// dear imgui, v1.76 WIP
 // (widgets code)
 
 /*
@@ -33,6 +33,8 @@ Index of this file:
 #endif
 
 #include "imgui.h"
+#ifndef IMGUI_DISABLE
+
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
@@ -3271,8 +3273,8 @@ static bool STB_TEXTEDIT_INSERTCHARS(STB_TEXTEDIT_STRING* obj, int pos, const Im
 #define STB_TEXTEDIT_IMPLEMENTATION
 #include "imstb_textedit.h"
 
-// stb_textedit internally allows for a single undo record to do addition and deletion, but somehow, calling 
-// the stb_textedit_paste() function creates two separate records, so we perform it manually. (FIXME: Report to nothings/stb?) 
+// stb_textedit internally allows for a single undo record to do addition and deletion, but somehow, calling
+// the stb_textedit_paste() function creates two separate records, so we perform it manually. (FIXME: Report to nothings/stb?)
 static void stb_textedit_replace(STB_TEXTEDIT_STRING* str, STB_TexteditState* state, const STB_TEXTEDIT_CHARTYPE* text, int text_len)
 {
     stb_text_makeundo_replace(str, state, 0, str->CurLenW, text_len);
@@ -3857,7 +3859,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
         }
 
         // When using 'ImGuiInputTextFlags_EnterReturnsTrue' as a special case we reapply the live buffer back to the input buffer before clearing ActiveId, even though strictly speaking it wasn't modified on this frame.
-        // If we didn't do that, code like InputInt() with ImGuiInputTextFlags_EnterReturnsTrue would fail. 
+        // If we didn't do that, code like InputInt() with ImGuiInputTextFlags_EnterReturnsTrue would fail.
         // This also allows the user to use InputText() with ImGuiInputTextFlags_EnterReturnsTrue without maintaining any user-side storage (please note that if you use this property along ImGuiInputTextFlags_CallbackResize you can end up with your temporary string object unnecessarily allocating once a frame, either store your string data, either if you don't then don't use ImGuiInputTextFlags_CallbackResize).
         bool apply_edit_back_to_user_buffer = !cancel_edit || (enter_pressed && (flags & ImGuiInputTextFlags_EnterReturnsTrue) != 0);
         if (apply_edit_back_to_user_buffer)
@@ -4954,8 +4956,12 @@ bool ImGui::ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFl
     float grid_step = ImMin(size.x, size.y) / 2.99f;
     float rounding = ImMin(g.Style.FrameRounding, grid_step * 0.5f);
     ImRect bb_inner = bb;
-    float off = -0.75f; // The border (using Col_FrameBg) tends to look off when color is near-opaque and rounding is enabled. This offset seemed like a good middle ground to reduce those artifacts.
-    bb_inner.Expand(off);
+    float off = 0.0f;
+    if ((flags & ImGuiColorEditFlags_NoBorder) == 0)
+    {
+        off = -0.75f; // The border (using Col_FrameBg) tends to look off when color is near-opaque and rounding is enabled. This offset seemed like a good middle ground to reduce those artifacts.
+        bb_inner.Expand(off);
+    }
     if ((flags & ImGuiColorEditFlags_AlphaPreviewHalf) && col_rgb.w < 1.0f)
     {
         float mid_x = IM_ROUND((bb_inner.Min.x + bb_inner.Max.x) * 0.5f);
@@ -4972,10 +4978,13 @@ bool ImGui::ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFl
             window->DrawList->AddRectFilled(bb_inner.Min, bb_inner.Max, GetColorU32(col_source), rounding, ImDrawCornerFlags_All);
     }
     RenderNavHighlight(bb, id);
-    if (g.Style.FrameBorderSize > 0.0f)
-        RenderFrameBorder(bb.Min, bb.Max, rounding);
-    else
-        window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg), rounding); // Color button are often in need of some sort of border
+    if ((flags & ImGuiColorEditFlags_NoBorder) == 0)
+    {
+        if (g.Style.FrameBorderSize > 0.0f)
+            RenderFrameBorder(bb.Min, bb.Max, rounding);
+        else
+            window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg), rounding); // Color button are often in need of some sort of border
+    }
 
     // Drag and Drop Source
     // NB: The ActiveId test is merely an optional micro-optimization, BeginDragDropSource() does the same test.
@@ -6335,6 +6344,10 @@ bool ImGui::BeginMenu(const char* label, bool enabled)
         if (window->Flags & (ImGuiWindowFlags_Popup|ImGuiWindowFlags_ChildMenu))
             flags |= ImGuiWindowFlags_ChildWindow;
         menu_is_open = BeginPopupEx(id, flags); // menu_is_open can be 'false' when the popup is completely clipped (e.g. zero size display)
+    }
+    else
+    {
+        g.NextWindowData.ClearFlags(); // We behave like Begin() and need to consume those values
     }
 
     return menu_is_open;
@@ -7704,3 +7717,5 @@ void ImGui::Columns(int columns_count, const char* id, bool border)
 }
 
 //-------------------------------------------------------------------------
+
+#endif // #ifndef IMGUI_DISABLE

@@ -1,4 +1,4 @@
-// dear imgui, v1.75 WIP
+// dear imgui, v1.76 WIP
 // (main code and documentation)
 
 // Help:
@@ -791,6 +791,8 @@ CODE
 #endif
 
 #include "imgui.h"
+#ifndef IMGUI_DISABLE
+
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
@@ -3252,6 +3254,9 @@ void ImGui::StartMouseMovingWindow(ImGuiWindow* window)
 
 // Handle mouse moving window
 // Note: moving window with the navigation keys (Square + d-pad / CTRL+TAB + Arrows) are processed in NavUpdateWindowing()
+// FIXME: We don't have strong guarantee that g.MovingWindow stay synched with g.ActiveId == g.MovingWindow->MoveId.
+// This is currently enforced by the fact that BeginDragDropSource() is setting all g.ActiveIdUsingXXXX flags to inhibit navigation inputs,
+// but if we should more thoroughly test cases where g.ActiveId or g.MovingWindow gets changed and not the other.
 void ImGui::UpdateMouseMovingWindowNewFrame()
 {
     ImGuiContext& g = *GImGui;
@@ -4157,7 +4162,7 @@ void ImGui::Render()
     g.FrameCountRendered = g.FrameCount;
     g.IO.MetricsRenderWindows = 0;
     g.DrawDataBuilder.Clear();
-    
+
     // Add background ImDrawList
     if (!g.BackgroundDrawList.VtxBuffer.empty())
         AddDrawListToDrawData(&g.DrawDataBuilder.Layers[0], &g.BackgroundDrawList);
@@ -5839,19 +5844,15 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         window->DC.ParentLayoutType = parent_window ? parent_window->DC.LayoutType : ImGuiLayoutType_Vertical;
         window->DC.FocusCounterRegular = window->DC.FocusCounterTabStop = -1;
 
-        window->DC.ItemFlags = parent_window ? parent_window->DC.ItemFlags : ImGuiItemFlags_Default_;
         window->DC.ItemWidth = window->ItemWidthDefault;
         window->DC.TextWrapPos = -1.0f; // disabled
         window->DC.ItemFlagsStack.resize(0);
         window->DC.ItemWidthStack.resize(0);
         window->DC.TextWrapPosStack.resize(0);
         window->DC.GroupStack.resize(0);
-
-        if ((flags & ImGuiWindowFlags_ChildWindow) && (window->DC.ItemFlags != parent_window->DC.ItemFlags))
-        {
-            window->DC.ItemFlags = parent_window->DC.ItemFlags;
+        window->DC.ItemFlags = parent_window ? parent_window->DC.ItemFlags : ImGuiItemFlags_Default_;
+        if (parent_window)
             window->DC.ItemFlagsStack.push_back(window->DC.ItemFlags);
-        }
 
         if (window->AutoFitFramesX > 0)
             window->AutoFitFramesX--;
@@ -8997,6 +8998,11 @@ bool ImGui::BeginDragDropSource(ImGuiDragDropFlags flags)
             return false;
         source_parent_id = window->IDStack.back();
         source_drag_active = IsMouseDragging(mouse_button);
+
+        // Disable navigation and key inputs while dragging
+        g.ActiveIdUsingNavDirMask = ~(ImU32)0;
+        g.ActiveIdUsingNavInputMask = ~(ImU32)0;
+        g.ActiveIdUsingKeyInputMask = ~(ImU64)0;
     }
     else
     {
@@ -10282,3 +10288,5 @@ void ImGui::ShowMetricsWindow(bool*) { }
 #endif
 
 //-----------------------------------------------------------------------------
+
+#endif // #ifndef IMGUI_DISABLE
