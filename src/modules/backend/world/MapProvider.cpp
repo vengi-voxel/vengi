@@ -9,6 +9,7 @@
 #include "core/Assert.h"
 #include "backend/entity/ai/AILoader.h"
 #include "http/HttpServer.h"
+#include "attrib/ContainerProvider.h"
 #include "voxel/PagedVolume.h"
 #include "voxelworld/WorldMgr.h"
 #include <glm/vec3.hpp>

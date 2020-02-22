@@ -4,7 +4,7 @@
 
 #include "LUAContainer.h"
 #include "ContainerProvider.h"
-#include <memory>
+#include "core/SharedPtr.h"
 
 namespace attrib {
 
@@ -25,7 +25,7 @@ bool LUAContainer::registered() const {
 }
 
 void LUAContainer::createContainer() {
-	_ctx->addContainer(std::make_shared<Container>(_name, _percentage, _absolute));
+	_ctx->addContainer(core::make_shared<Container>(_name, _percentage, _absolute));
 	_percentage.clear();
 	_absolute.clear();
 	_name.clear();

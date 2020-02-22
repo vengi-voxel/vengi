@@ -5,9 +5,9 @@
 #pragma once
 
 #include "Container.h"
-#include <memory>
 #include "core/String.h"
 #include "core/collection/StringMap.h"
+#include "core/SharedPtr.h"
 
 namespace attrib {
 
@@ -61,7 +61,7 @@ public:
 	}
 };
 
-typedef std::shared_ptr<ContainerProvider> ContainerProviderPtr;
+typedef core::SharedPtr<ContainerProvider> ContainerProviderPtr;
 
 inline void ContainerProvider::reset() {
 	_error = "";

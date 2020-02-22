@@ -126,24 +126,29 @@ void Attributes::calculateMax(Values& absolutes, Values& percentages) const {
 	}
 }
 
-void Attributes::add(const Container& container) {
+bool Attributes::add(const Container& container) {
 	core::ScopedWriteLock scopedLock(_lock);
 	auto i = _containers.find(container.name());
 	if (i == _containers.end()) {
 		_containers.put(container.name(), container);
 		_dirty = true;
-		return;
+		return true;
 	}
 	if (i->value.increaseStackCount()) {
 		_dirty = true;
 	}
+	return false;
 }
 
-void Attributes::add(const ContainerPtr& container) {
+bool Attributes::add(const ContainerPtr& container) {
 	if (!container) {
-		return;
+		return false;
 	}
-	add(*container);
+	if (add(*container.get())) {
+		_containerPtrs.put(container->name(), container);
+		return true;
+	}
+	return false;
 }
 
 void Attributes::remove(const Container& container) {
@@ -155,6 +160,7 @@ void Attributes::remove(const ContainerPtr& container) {
 		return;
 	}
 	remove(container->name());
+	_containerPtrs.remove(container->name());
 }
 
 void Attributes::remove(const core::String& name) {

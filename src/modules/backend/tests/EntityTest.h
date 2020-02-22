@@ -84,7 +84,7 @@ protected:
 		registry = std::make_shared<AIRegistry>();
 		registry->init();
 		loader = std::make_shared<AILoader>(registry);
-		containerProvider = std::make_shared<attrib::ContainerProvider>();
+		containerProvider = core::make_shared<attrib::ContainerProvider>();
 		ASSERT_TRUE(containerProvider->init(CONTAINER));
 		cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		filesystem = _testApp->filesystem();

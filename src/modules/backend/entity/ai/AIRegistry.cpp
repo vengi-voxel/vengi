@@ -22,6 +22,8 @@
 
 #include "movement/WanderAroundHome.h"
 
+#include "attrib/ContainerProvider.h"
+
 namespace backend {
 
 void AIRegistry::init() {

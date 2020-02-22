@@ -43,7 +43,7 @@ public:
 		const AIRegistryPtr& registry = std::make_shared<AIRegistry>();
 		registry->init();
 		_loader = std::make_shared<AILoader>(registry);
-		_containerProvider = std::make_shared<attrib::ContainerProvider>();
+		_containerProvider = core::make_shared<attrib::ContainerProvider>();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		_persistenceMgr = persistence::createPersistenceMgrMock();

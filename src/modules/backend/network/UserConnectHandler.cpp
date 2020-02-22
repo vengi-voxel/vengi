@@ -13,6 +13,7 @@
 #include "backend/entity/EntityStorage.h"
 #include "backend/world/MapProvider.h"
 #include "backend/world/Map.h"
+#include "attrib/ContainerProvider.h"
 
 namespace backend {
 

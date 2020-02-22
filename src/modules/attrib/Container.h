@@ -5,9 +5,9 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/SharedPtr.h"
 #include "core/collection/Map.h"
 #include "core/collection/StringMap.h"
-#include <memory>
 #include "AttributeType.h"
 #include "ContainerValues.h"
 
@@ -69,7 +69,7 @@ public:
 	bool operator==(const Container& other);
 };
 
-typedef std::shared_ptr<Container> ContainerPtr;
+typedef core::SharedPtr<Container> ContainerPtr;
 
 class ContainerBuilder {
 private:

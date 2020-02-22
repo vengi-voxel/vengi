@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const backend::AIRegistryPtr& registry = std::make_shared<backend::AIRegistry>();
-	const attrib::ContainerProviderPtr& containerProvider = std::make_shared<attrib::ContainerProvider>();
+	const attrib::ContainerProviderPtr& containerProvider = core::make_shared<attrib::ContainerProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();

@@ -50,7 +50,7 @@ namespace attrib {
 class Attributes;
 
 class ContainerProvider;
-typedef std::shared_ptr<ContainerProvider> ContainerProviderPtr;
+typedef core::SharedPtr<ContainerProvider> ContainerProviderPtr;
 
 }
 

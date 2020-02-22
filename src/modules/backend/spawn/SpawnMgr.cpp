@@ -12,6 +12,7 @@
 #include "poi/PoiProvider.h"
 #include "backend/entity/Npc.h"
 #include "backend/world/Map.h"
+#include "attrib/ContainerProvider.h"
 
 namespace backend {
 

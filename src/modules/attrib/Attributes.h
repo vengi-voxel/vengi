@@ -130,11 +130,11 @@ public:
 	/**
 	 * @note Locks the object (container)
 	 */
-	void add(const Container& container);
+	bool add(const Container& container);
 	/**
 	 * @note Locks the object (container)
 	 */
-	void add(const ContainerPtr& container);
+	bool add(const ContainerPtr& container);
 	/**
 	 * @note Locks the object (container)
 	 */

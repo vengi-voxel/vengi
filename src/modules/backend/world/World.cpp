@@ -14,6 +14,7 @@
 #include "core/StringUtil.h"
 #include "core/Common.h"
 #include "LUAFunctions.h"
+#include "attrib/ContainerProvider.h"
 #include <SimpleAI.h>
 
 namespace backend {

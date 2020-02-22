@@ -18,6 +18,7 @@
 #include "backend/eventbus/Event.h"
 #include "backend/spawn/SpawnMgr.h"
 #include "persistence/PersistenceMgr.h"
+#include "attrib/ContainerProvider.h"
 
 namespace backend {
 
