@@ -29,6 +29,7 @@
 #include "voxel/MaterialColor.h"
 #include "core/metric/Metric.h"
 #include "core/TimeProvider.h"
+#include "core/SharedPtr.h"
 #include <SDL.h>
 
 Client::Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
@@ -414,7 +415,7 @@ int main(int argc, char *argv[]) {
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 	const network::ClientNetworkPtr& network = std::make_shared<network::ClientNetwork>(protocolHandlerRegistry, eventBus);
 	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
-	const client::ClientPagerPtr& pager = std::make_shared<client::ClientPager>();
+	const client::ClientPagerPtr& pager = core::make_shared<client::ClientPager>();
 	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(pager);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();

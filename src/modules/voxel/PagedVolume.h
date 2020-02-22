@@ -12,7 +12,7 @@
 #include "core/Atomic.h"
 #include "core/collection/Array.h"
 #include "core/collection/Map.h"
-#include <memory>
+#include "core/SharedPtr.h"
 #include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
@@ -86,7 +86,7 @@ public:
 
 		core::ReadWriteLock _chunkLock{"chunk"};
 	};
-	typedef std::shared_ptr<Chunk> ChunkPtr;
+	typedef core::SharedPtr<Chunk> ChunkPtr;
 
 	struct PagerContext {
 		Region region;
@@ -115,7 +115,7 @@ public:
 		virtual void pageOut(Chunk* chunk) = 0;
 	};
 
-	typedef std::shared_ptr<Pager> PagerPtr;
+	typedef core::SharedPtr<Pager> PagerPtr;
 
 	class Sampler {
 	public:

@@ -348,7 +348,7 @@ int main(int argc, char *argv[]) {
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 	const voxelworld::ChunkPersisterPtr& chunkPersister = std::make_shared<voxelworld::ChunkPersister>();
-	const voxelworld::WorldPagerPtr& worldPager = std::make_shared<voxelworld::WorldPager>(volumeCache, chunkPersister);
+	const voxelworld::WorldPagerPtr& worldPager = core::make_shared<voxelworld::WorldPager>(volumeCache, chunkPersister);
 	const voxelworld::WorldMgrPtr& worldMgr = std::make_shared<voxelworld::WorldMgr>(worldPager);
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();

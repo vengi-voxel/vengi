@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "entity/EntityId.h"
+#include "core/SharedPtr.h"
 
 namespace voxelworld {
 
@@ -9,7 +10,7 @@ class WorldMgr;
 typedef std::shared_ptr<WorldMgr> WorldMgrPtr;
 
 class WorldPager;
-typedef std::shared_ptr<WorldPager> WorldPagerPtr;
+typedef core::SharedPtr<WorldPager> WorldPagerPtr;
 
 }
 

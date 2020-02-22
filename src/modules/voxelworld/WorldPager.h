@@ -11,7 +11,7 @@
 #include "core/Log.h"
 #include "noise/Noise.h"
 #include "BiomeManager.h"
-#include <memory>
+#include "core/SharedPtr.h"
 #include "ChunkPersister.h"
 #include "TreeVolumeCache.h"
 #include "voxelutil/RawVolumeRotateWrapper.h"
@@ -92,6 +92,6 @@ inline const ChunkPersisterPtr& WorldPager::chunkPersister() const {
 	return _chunkPersister;
 }
 
-typedef std::shared_ptr<WorldPager> WorldPagerPtr;
+typedef core::SharedPtr<WorldPager> WorldPagerPtr;
 
 }

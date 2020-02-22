@@ -121,7 +121,7 @@ bool Map::init() {
 		return false;
 	}
 
-	_pager = std::make_shared<voxelworld::WorldPager>(_volumeCache, _chunkPersister);
+	_pager = core::make_shared<voxelworld::WorldPager>(_volumeCache, _chunkPersister);
 	_voxelWorldMgr = new voxelworld::WorldMgr(_pager);
 	if (!_voxelWorldMgr->init()) {
 		Log::error("Failed to init map with id %i", _mapId);

@@ -228,7 +228,7 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 	// The chunk was not found so we will create a new one.
 	glm::ivec3 pos(chunkX, chunkY, chunkZ);
 	Log::debug("create new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
-	ChunkPtr chunk = std::make_shared<Chunk>(pos, _chunkSideLength, _pager);
+	ChunkPtr chunk = core::make_shared<Chunk>(pos, _chunkSideLength, _pager);
 	chunk->_chunkLastAccessed = ++_timestamper; // Important, as we may soon delete the oldest chunk
 
 	{
