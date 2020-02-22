@@ -125,6 +125,7 @@ TEST(HashMapTest, testStringSharedPtr) {
 	for (auto iter = map.begin(); iter != map.end(); ++iter) {
 	}
 	map.clear();
+	foobar = core::SharedPtr<core::String>();
 }
 
 TEST(HashMapTest, testCopy) {

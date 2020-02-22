@@ -84,6 +84,7 @@ public:
 	}
 
 	SharedPtr &operator=(const SharedPtr &obj) {
+		release();
 		_ptr = obj._ptr;
 		_refCnt = obj._refCnt;
 		increase();
@@ -91,6 +92,7 @@ public:
 	}
 
 	SharedPtr &operator=(SharedPtr &&obj) {
+		release();
 		_ptr = obj._ptr;
 		_refCnt = obj._refCnt;
 		obj._ptr = nullptr;
