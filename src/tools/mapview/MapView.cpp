@@ -79,6 +79,10 @@ core::AppState MapView::onInit() {
 
 	video::enableDebug(video::DebugSeverity::High);
 
+	if (!_depthBufferRenderer.init()) {
+		Log::warn("Failed to init depth buffer renderer");
+	}
+
 	if (!_axis.init()) {
 		Log::error("Failed to init axis");
 		return core::AppState::InitFailure;
@@ -218,6 +222,7 @@ void MapView::onRenderUI() {
 		const float yaw = camera.horizontalYaw();
 		voxelrender::WorldRenderer::Stats stats;
 		_worldRenderer.stats(stats);
+		ImGui::Text("Fps: %i", fps());
 		ImGui::Text("Drawcalls: %i (verts: %i)", _drawCallsWorld, _vertices);
 		ImGui::Text("Target Pos: %.2f:%.2f:%.2f ", targetpos.x, targetpos.y, targetpos.z);
 		ImGui::Text("Pos: %.2f:%.2f:%.2f, Distance:%.2f", pos.x, pos.y, pos.z, distance);
@@ -281,7 +286,6 @@ void MapView::onRenderUI() {
 	}
 
 	if (ImGui::CollapsingHeader("Shadow")) {
-		ImGui::CheckboxVar("Shadowmap render", cfg::ClientShadowMapShow);
 		ImGui::CheckboxVar("Shadowmap cascades", cfg::ClientDebugShadowMapCascade);
 		ImGui::CheckboxVar("Shadowmap debug", cfg::ClientDebugShadow);
 
@@ -289,6 +293,9 @@ void MapView::onRenderUI() {
 		ImGui::InputFloat("Shadow bias", &sp.shadowBias);
 		ImGui::InputFloat("Shadow bias slope", &sp.shadowBiasSlope);
 		ImGui::InputFloat("Shadow slice weight", &sp.sliceWeight);
+
+		const video::Camera& camera = _camera.camera();
+		_depthBufferRenderer.renderShadowMap(camera, _worldRenderer.shadow().depthBuffer(), 1);
 	}
 
 	ImGui::Checkbox("Line mode rendering", &_lineModeRendering);
@@ -320,6 +327,7 @@ core::AppState MapView::onCleanup() {
 	_animationCache->shutdown();
 	_volumeCache->shutdown();
 	_worldRenderer.shutdown();
+	_depthBufferRenderer.shutdown();
 	_axis.shutdown();
 	_movement.shutdown();
 	_action.shutdown();

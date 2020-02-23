@@ -20,10 +20,6 @@
 
 namespace render {
 
-Shadow::Shadow() :
-		_shadowMapRenderShader(shader::ShadowmapRenderShader::getInstance()) {
-}
-
 Shadow::~Shadow() {
 	core_assert_msg(_parameters.maxDepthBuffers == -1, "Shadow::shutdown() wasn't called");
 }
@@ -34,10 +30,6 @@ bool Shadow::init(const ShadowParameters& parameters) {
 	const float length = 50.0f;
 	const glm::vec3 sunPos(length, length, -length);
 	setPosition(sunPos);
-	if (!_shadowMapRenderShader.setup()) {
-		Log::error("Failed to init shadowmap debug shader");
-		return false;
-	}
 
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
 	const video::FrameBufferConfig& cfg = video::defaultDepthBufferConfig(smSize, _parameters.maxDepthBuffers);
@@ -46,17 +38,11 @@ bool Shadow::init(const ShadowParameters& parameters) {
 		return false;
 	}
 
-	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
-	_shadowMapDebugBuffer.addAttribute(_shadowMapRenderShader.getPosAttribute(fullscreenQuadIndices.x, &glm::vec3::x));
-	_shadowMapDebugBuffer.addAttribute(_shadowMapRenderShader.getTexcoordAttribute(fullscreenQuadIndices.y, &glm::vec2::x));
-
 	return true;
 }
 
 void Shadow::shutdown() {
-	_shadowMapDebugBuffer.shutdown();
 	_depthBuffer.shutdown();
-	_shadowMapRenderShader.shutdown();
 	_parameters = ShadowParameters();
 }
 
@@ -131,38 +117,6 @@ void Shadow::render(funcRender renderCallback, bool clearDepthBuffer) {
 	if (oldBlend) {
 		video::enable(video::State::Blend);
 	}
-}
-
-void Shadow::renderShadowMap(const video::Camera& camera) {
-	core_trace_scoped(RenderShadowMap);
-	const int frameBufferWidth = camera.frameBufferWidth();
-	const int frameBufferHeight = camera.frameBufferHeight();
-
-	// activate shader
-	video::ScopedShader scopedShader(_shadowMapRenderShader);
-	_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
-	_shadowMapRenderShader.setFar(camera.farPlane());
-	_shadowMapRenderShader.setNear(camera.nearPlane());
-
-	// bind buffers
-	video::ScopedBuffer scopedBuf(_shadowMapDebugBuffer);
-
-	// configure shadow map texture
-	const video::TexturePtr& depthTex = _depthBuffer.texture(video::FrameBufferAttachment::Depth);
-	video::bindTexture(video::TextureUnit::Zero, depthTex);
-	video::setupDepthCompareTexture(depthTex->type(), video::CompareFunc::Less, video::TextureCompareMode::None);
-
-	// render shadow maps
-	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
-		const int halfWidth = (int) (frameBufferWidth / 4.0f);
-		const int halfHeight = (int) (frameBufferHeight / 4.0f);
-		video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
-		_shadowMapRenderShader.setCascade(i);
-		video::drawArrays(video::Primitive::Triangles, _shadowMapDebugBuffer.elements(0));
-	}
-
-	// restore texture
-	video::setupDepthCompareTexture(depthTex->type(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
 }
 
 const glm::ivec2& Shadow::dimension() const {

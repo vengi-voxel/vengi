@@ -19,6 +19,7 @@
 #include "voxelworld/WorldPager.h"
 #include "stock/Stock.h"
 #include "stock/StockDataProvider.h"
+#include "testcore/DepthBufferRenderer.h"
 
 /**
  * @brief This is the map viewer
@@ -40,6 +41,7 @@ protected:
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelrender::PlayerCamera _camera;
+	testcore::DepthBufferRenderer _depthBufferRenderer;
 
 	bool _lineModeRendering = false;
 	bool _freelook = false;

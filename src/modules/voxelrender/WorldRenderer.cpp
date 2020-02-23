@@ -377,12 +377,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		video::drawArrays(video::Primitive::Triangles, elements);
 	}
 
-	// debug rendering
-	const bool shadowMap = _shadowMap->boolVal();
-	if (shadowMap && _shadowMapShow->boolVal()) {
-		_shadow.renderShadowMap(camera);
-	}
-
 	if (_renderAABBs->boolVal()) {
 		_shapeRenderer.createOrUpdate(_aabbMeshes, _shapeBuilder);
 		_shapeRenderer.render(_aabbMeshes, camera);
@@ -403,6 +397,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
+	//video::enable(video::State::ClipDistance);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
@@ -453,6 +448,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 		_worldShader.setNightColor(_nightColor);
 		_worldShader.setTime(_seconds);
 		_worldShader.setFogrange(_fogRange);
+		_worldShader.setClipplane(glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
 		if (shadowMap) {
 			_worldShader.setViewprojection(camera.viewProjectionMatrix());
 			_worldShader.setShadowmap(video::TextureUnit::One);
@@ -497,6 +493,8 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	_skybox.render(camera);
 	video::bindVertexArray(video::InvalidId);
 	_colorTexture.unbind();
+
+	video::disable(video::State::ClipDistance);
 
 	return drawCallsWorld;
 }
@@ -577,7 +575,6 @@ void WorldRenderer::stats(Stats& stats) const {
 
 void WorldRenderer::construct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
-	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
 	_renderAABBs = core::Var::get(cfg::RenderAABB, "false");
 	_occlusionThreshold = core::Var::get(cfg::OcclusionThreshold, "20");
 	_occlusionQuery = core::Var::get(cfg::OcclusionQuery, "false");

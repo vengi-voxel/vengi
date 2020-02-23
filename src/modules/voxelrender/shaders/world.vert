@@ -13,6 +13,7 @@ $in vec3 a_offset;
 int materialoffset = MATERIALOFFSET;
 
 uniform mat4 u_model;
+uniform vec4 u_clipplane;
 uniform mat4 u_viewprojection;
 uniform sampler2D u_texture;
 #define MATERIALCOLORS 256
@@ -32,12 +33,13 @@ void main(void) {
 	uint a_ao = a_info[0];
 	uint a_colorindex = a_info[1];
 	uint a_material = a_info[2];
-#ifdef INSTANCED
-	vec4 pos = vec4(a_offset, 0.0) + u_model * vec4(a_pos, 1.0);
-#else // INSTANCED
 	vec4 pos = u_model * vec4(a_pos, 1.0);
+#ifdef INSTANCED
+	pos += vec4(a_offset, 0.0);
 #endif // INSTANCED
 	v_pos = pos.xyz;
+
+	gl_ClipDistance[0] = dot(pos, u_clipplane);
 
 	int materialColorIndex = int(a_colorindex) + materialoffset;
 	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;

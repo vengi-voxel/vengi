@@ -365,6 +365,7 @@ core::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMapSize, "1024");
+	core::Var::get(cfg::ClientShadowBias, "0.005", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
 	core::Var::get(cfg::ClientWindowDisplay, 0);

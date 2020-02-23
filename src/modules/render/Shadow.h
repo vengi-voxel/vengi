@@ -47,18 +47,13 @@ private:
 	glm::mat4 _lightView;
 	std::vector<glm::mat4> _cascades;
 	std::vector<float> _distances;
-	video::Buffer _shadowMapDebugBuffer;
 	video::FrameBuffer _depthBuffer;
-	shader::ShadowmapRenderShader& _shadowMapRenderShader;
 	ShadowParameters _parameters;
 	float _shadowRangeZ = 0.0f;
 
 public:
-	Shadow();
 	~Shadow();
-	/**
-	 * @param[in] maxDepthBuffers the amount of cascades
-	 */
+
 	bool init(const ShadowParameters& parameters);
 	void shutdown();
 
@@ -68,12 +63,12 @@ public:
 
 	bool bind(video::TextureUnit unit);
 
-	void renderShadowMap(const video::Camera& camera);
-
 	void render(funcRender renderCallback, bool clearDepthBuffer = true);
 
 	void setPosition(const glm::vec3& eye, const glm::vec3& center = glm::vec3(0.0f), const glm::vec3& up = glm::up);
 	void setLightViewMatrix(const glm::mat4& lightView);
+
+	video::FrameBuffer& depthBuffer();
 
 	ShadowParameters& parameters();
 
@@ -83,6 +78,10 @@ public:
 	const glm::ivec2& dimension() const;
 	glm::vec3 sunPosition() const;
 };
+
+inline video::FrameBuffer& Shadow::depthBuffer() {
+	return _depthBuffer;
+}
 
 inline const std::vector<glm::mat4>& Shadow::cascades() const {
 	return _cascades;

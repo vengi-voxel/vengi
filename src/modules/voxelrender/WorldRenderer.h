@@ -129,7 +129,6 @@ protected:
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	glm::vec3 _nightColor = glm::vec3(0.001, 0.001, 0.2);
 	core::VarPtr _shadowMap;
-	core::VarPtr _shadowMapShow;
 
 	// this ub is currently shared between the world, world instanced and water shader
 	shader::WorldData _materialBlock;

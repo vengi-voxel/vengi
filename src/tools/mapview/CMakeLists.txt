@@ -15,4 +15,4 @@ set(LUA_ATTRIBUTES
 set(LUA_SRCS ${LUA_ATTRIBUTES})
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES imgui voxelrender attrib)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES imgui voxelrender attrib testcore)

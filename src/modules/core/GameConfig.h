@@ -22,6 +22,7 @@ constexpr const char *ClientFullscreen = "cl_fullscreen";
 constexpr const char *ClientMultiSampleSamples = "cl_multisamplesamples";
 constexpr const char *ClientMultiSampleBuffers = "cl_multisamplebuffers";
 constexpr const char *ClientShadowMapSize = "cl_shadowmapsize";
+constexpr const char *ClientShadowBias = "cl_shadowbias";
 constexpr const char *ClientOpenGLVersion = "cl_openglversion";
 constexpr const char *ClientRenderUI = "cl_renderui";
 constexpr const char *ClientWindowWidth = "cl_width";
@@ -38,7 +39,6 @@ constexpr const char *ClientFog = "cl_fog";
 constexpr const char *ClientCameraMaxTargetDistance = "cl_cameramaxtargetdistance";
 constexpr const char *ClientCameraZoomSpeed = "cl_camzoomspeed";
 
-constexpr const char *ClientShadowMapShow = "cl_debug_shadowmapshow";
 constexpr const char *ClientDebugShadowMapCascade = "cl_debug_cascade";
 constexpr const char *ClientDebugShadow = "cl_debug_shadow";
 

@@ -6,6 +6,12 @@ vec2 calculateShadowTexcoord(in vec2 uv) {
 }
 #endif
 
+#ifdef cl_shadowbias
+const float c_bias = cl_shadowbias;
+#else
+const float c_bias = 0.005;
+#endif
+
 uniform sampler2DArrayShadow u_shadowmap;
 $in vec3 v_lightspacepos;
 $in float v_viewz;
