@@ -407,7 +407,6 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
 		core_trace_scoped(WorldRendererRenderShadow);
-#if 1
 		_skeletonShadowMapShader.activate();
 		_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
 			_skeletonShadowMapShader.setLightviewprojection(lightViewProjection);
@@ -421,7 +420,6 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 			return true;
 		});
 		_skeletonShadowMapShader.deactivate();
-#endif
 
 		_shadowMapShader.activate();
 		_shadowMapShader.setModel(glm::mat4(1.0f));
@@ -735,9 +733,6 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	}
 
 	render::ShadowParameters sp;
-	sp.shadowBias = -0.1f;
-	sp.shadowBiasSlope = 0.1f;
-	sp.sliceWeight = -4.0;
 	sp.maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShaderConstants::getMaxDepthBufferUniformName());
 	if (!_shadow.init(sp)) {
 		return false;
