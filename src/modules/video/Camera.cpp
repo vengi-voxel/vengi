@@ -359,8 +359,8 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 	sliceBuf[0] = near;
 	sliceBuf[numSlices - 1] = far;
 
-	for (uint8_t farIdx = 2, nearIdx = 1; farIdx < numSlices; farIdx += 2, nearIdx += 2) {
-		const float si = float(int8_t(nearIdx)) / splitsf;
+	for (uint8_t nearIdx = 2, farIdx = 1; nearIdx < numSlices; farIdx += 2, nearIdx += 2) {
+		const float si = float(int8_t(farIdx)) / splitsf;
 		const float nearp = sliceWeight * (near * glm::pow(ratio, si)) + sliceWeightInv * (near + dist * si);
 		sliceBuf[nearIdx] = nearp;
 		sliceBuf[farIdx] = nearp * 1.005f;
