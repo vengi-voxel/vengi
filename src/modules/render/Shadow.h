@@ -34,7 +34,7 @@ struct ShadowParameters {
 	/** influences the units used to calculate depth values */
 	float shadowBias = 0.09f;
 	/** Used to slice the camera frustum */
-	float sliceWeight = 0.05f;
+	float sliceWeight = -0.3f;
 };
 
 /**
