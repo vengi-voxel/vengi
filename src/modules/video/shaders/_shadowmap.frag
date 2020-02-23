@@ -21,11 +21,10 @@ uniform mat4 u_cascades[4];
 float sampleShadowPCF(in int cascade, in vec2 uv, in float compare) {
 	float result = 0.0;
 	const int r = 2;
-	float bias = 0.005;
 	for (int x = -r; x <= r; x++) {
 		for (int y = -r; y <= r; y++) {
 			vec2 off = vec2(x, y) / u_depthsize;
-			result += texture(u_shadowmap, vec4(uv + off, cascade, compare - bias));
+			result += texture(u_shadowmap, vec4(uv + off, cascade, compare));
 		}
 	}
 	const float size = 2.0 * float(r) + 1.0;
