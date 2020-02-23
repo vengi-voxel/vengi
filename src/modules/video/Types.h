@@ -153,6 +153,7 @@ enum class State {
 	MultiSample,
 	LineSmooth,
 	DebugOutput,
+	ClipDistance,
 
 	Max
 };
