@@ -244,6 +244,16 @@ void MapView::onRenderUI() {
 	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
 	ImGui::CheckboxVar("Render AABB", cfg::RenderAABB);
 
+	if (ImGui::CollapsingHeader("Rendering")) {
+		static bool renderColorMap = false;
+		ImGui::Checkbox("Colormap render", &renderColorMap);
+		if (renderColorMap) {
+			static glm::ivec2 colorMapSize(256, 256);
+			ImGui::InputVec2("size", colorMapSize);
+			ImGui::Image(_worldRenderer.colorTexture().handle(), colorMapSize);
+		}
+	}
+
 	if (ImGui::CollapsingHeader("Mesh extraction")) {
 		ImGui::Checkbox("Single position", &_singlePosExtraction);
 		if (ImGui::Button("Use current position")) {
