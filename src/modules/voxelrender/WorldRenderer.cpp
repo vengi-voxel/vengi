@@ -84,7 +84,7 @@ bool WorldRenderer::addEntity(const frontend::ClientEntityPtr& entity) {
 	if (i != _entities.end()) {
 		return false;
 	}
-	_entities[entity->id()] = entity;
+	_entities.put(entity->id(), entity);
 	return true;
 }
 
@@ -233,7 +233,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	_visibleEntities.clear();
 	for (const auto& e : _entities) {
-		const frontend::ClientEntityPtr& ent = e.second;
+		const frontend::ClientEntityPtr& ent = e->value;
 		ent->update(_deltaFrame);
 		// note, that the aabb does not include the orientation - that should be kept in mind here.
 		// a particular rotation could lead to an entity getting culled even though it should still
@@ -682,7 +682,7 @@ void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 	}
 
 	for (const auto& e : _entities) {
-		e.second->update(dt);
+		e->value->update(dt);
 	}
 }
 

@@ -13,6 +13,7 @@
 #include "core/Var.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/List.h"
+#include "core/collection/Map.h"
 #include "frontend/ClientEntity.h"
 #include "math/Octree.h"
 #include "render/RandomColorTexture.h"
@@ -27,8 +28,6 @@
 #include "video/Texture.h"
 #include "video/UniformBuffer.h"
 #include "voxel/PagedVolume.h"
-
-#include <unordered_map>
 
 namespace voxelrender {
 
@@ -82,7 +81,7 @@ protected:
 	int32_t _waterVbo = -1;
 	int _maxAllowedDistance = -1;
 
-	typedef std::unordered_map<frontend::ClientEntityId, frontend::ClientEntityPtr> Entities;
+	typedef core::Map<frontend::ClientEntityId, frontend::ClientEntityPtr, 128> Entities;
 	Entities _entities;
 	core::List<frontend::ClientEntity*> _visibleEntities;
 
