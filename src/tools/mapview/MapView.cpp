@@ -244,7 +244,7 @@ void MapView::onRenderUI() {
 	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
 	ImGui::CheckboxVar("Render AABB", cfg::RenderAABB);
 
-	if (ImGui::CollapsingHeader("Debug")) {
+	if (ImGui::CollapsingHeader("Mesh extraction")) {
 		ImGui::Checkbox("Single position", &_singlePosExtraction);
 		if (ImGui::Button("Use current position")) {
 			_singleExtractionPoint = _camera.camera().target();
@@ -286,16 +286,21 @@ void MapView::onRenderUI() {
 	}
 
 	if (ImGui::CollapsingHeader("Shadow")) {
+		render::ShadowParameters& sp = _worldRenderer.shadow().parameters();
+		static bool renderShadowMap = false;
+		ImGui::Checkbox("Shadowmap render", &renderShadowMap);
+		if (renderShadowMap) {
+			const video::Camera& camera = _camera.camera();
+			for (int i = 0; i < sp.maxDepthBuffers; ++i) {
+				_depthBufferRenderer.renderShadowMap(camera, _worldRenderer.shadow().depthBuffer(), i);
+			}
+		}
 		ImGui::CheckboxVar("Shadowmap cascades", cfg::ClientDebugShadowMapCascade);
 		ImGui::CheckboxVar("Shadowmap debug", cfg::ClientDebugShadow);
 
-		render::ShadowParameters& sp = _worldRenderer.shadow().parameters();
 		ImGui::InputFloat("Shadow bias", &sp.shadowBias);
 		ImGui::InputFloat("Shadow bias slope", &sp.shadowBiasSlope);
 		ImGui::InputFloat("Shadow slice weight", &sp.sliceWeight);
-
-		const video::Camera& camera = _camera.camera();
-		_depthBufferRenderer.renderShadowMap(camera, _worldRenderer.shadow().depthBuffer(), 1);
 	}
 
 	ImGui::Checkbox("Line mode rendering", &_lineModeRendering);
