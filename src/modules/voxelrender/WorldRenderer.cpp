@@ -246,9 +246,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_visibleEntities.insert(ent.get());
 	}
 
-	_frameBuffer.bind(true);
 	const int drawCallsWorld = renderToFrameBuffer(camera);
-	_frameBuffer.unbind();
 
 	{
 		video::ScopedState depthTest(video::State::DepthTest, false);
@@ -313,6 +311,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 		_shadowMapShader.deactivate();
 	}
 	_colorTexture.bind(video::TextureUnit::Zero);
+	_frameBuffer.bind(true);
 
 	video::clearColor(_clearColor);
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
@@ -382,6 +381,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	_colorTexture.unbind();
 
 	video::disable(video::State::ClipDistance);
+	_frameBuffer.unbind();
 
 	return drawCallsWorld;
 }
