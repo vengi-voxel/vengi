@@ -413,7 +413,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 				ent->unbindVertexBuffers();
 			}
 			return true;
-		});
+		}, true);
 		_skeletonShadowMapShader.deactivate();
 
 		_shadowMapShader.activate();
