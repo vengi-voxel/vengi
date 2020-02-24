@@ -243,6 +243,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_waterShader.setAmbientColor(_ambientColor);
 	_waterShader.setNightColor(_nightColor);
 	_waterShader.setFogrange(_fogRange);
+	_waterShader.setClipplane(clipPlane);
 	_waterShader.setTime(_seconds);
 	_waterShader.setTexture(video::TextureUnit::Zero);
 	if (shadowMap) {
