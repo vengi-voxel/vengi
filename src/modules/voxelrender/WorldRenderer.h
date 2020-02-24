@@ -171,6 +171,8 @@ public:
 	void shutdown();
 
 	render::Shadow &shadow();
+	video::FrameBuffer &frameBuffer();
+	render::RandomColorTexture &colorTexture();
 
 	void setSeconds(float seconds);
 
@@ -216,6 +218,14 @@ inline void WorldRenderer::setViewDistance(float viewDistance) {
 
 inline render::Shadow &WorldRenderer::shadow() {
 	return _shadow;
+}
+
+inline video::FrameBuffer &WorldRenderer::frameBuffer() {
+	return _frameBuffer;
+}
+
+inline render::RandomColorTexture &WorldRenderer::colorTexture() {
+	return _colorTexture;
 }
 
 }
