@@ -75,7 +75,7 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 	video::ScopedTexture scopedTex(fboTexture, video::TextureUnit::Zero);
 	video::ScopedBuffer scopedBuf(_postProcessBuf);
 	const int currentEyeHeight = (int)camera.eye().y;
-	if (currentEyeHeight < voxel::MAX_WATER_HEIGHT) {
+	if (currentEyeHeight <= voxel::MAX_WATER_HEIGHT) {
 		static const voxel::Voxel waterVoxel = voxel::createColorVoxel(voxel::VoxelType::Water, 0);
 		const glm::vec4& waterColor = voxel::getMaterialColor(waterVoxel);
 		_postProcessShader.setColor(waterColor);
