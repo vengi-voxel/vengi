@@ -3,7 +3,6 @@
  */
 
 #include "WorldRenderer.h"
-#include "ShaderAttribute.h"
 #include "WorldShaderConstants.h"
 
 #include "core/Color.h"
@@ -11,6 +10,7 @@
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
 #include "core/Var.h"
+#include "core/Trace.h"
 #include "core/GLM.h"
 #include "voxel/Constants.h"
 #include "voxel/MaterialColor.h"
@@ -27,8 +27,7 @@ namespace voxelrender {
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer() :
 		_shadowMapShader(shader::ShadowmapShader::getInstance()),
-		_skeletonShadowMapShader(shader::SkeletonshadowmapShader::getInstance()),
-		_shadowMapInstancedShader(shader::ShadowmapInstancedShader::getInstance()) {
+		_skeletonShadowMapShader(shader::SkeletonshadowmapShader::getInstance()) {
 	setViewDistance(240.0f);
 }
 
@@ -42,45 +41,21 @@ void WorldRenderer::reset() {
 
 void WorldRenderer::shutdown() {
 	_worldShader.shutdown();
-	_worldInstancedShader.shutdown();
 	_waterShader.shutdown();
 	_chrShader.shutdown();
 	_materialBlock.shutdown();
 	reset();
 	_worldChunkMgr.shutdown();
 	_colorTexture.shutdown();
-	_opaqueBuffer.shutdown();
-	_waterBuffer.shutdown();
+	_worldBuffers.shutdown();
 	_shadow.shutdown();
 	_skybox.shutdown();
 	_shadowMapShader.shutdown();
 	_skeletonShadowMapShader.shutdown();
-	_shadowMapInstancedShader.shutdown();
 	shutdownFrameBuffers();
 	_postProcessBuf.shutdown();
 	_postProcessBufId = -1;
 	_postProcessShader.shutdown();
-}
-
-bool WorldRenderer::renderOpaqueBuffers() {
-	const uint32_t numIndices = _opaqueBuffer.elements(_opaqueIbo, 1, sizeof(voxel::IndexType));
-	if (numIndices == 0u) {
-		return false;
-	}
-	video::ScopedBuffer scopedBuf(_opaqueBuffer);
-	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
-	return true;
-}
-
-bool WorldRenderer::renderWaterBuffers() {
-	const uint32_t numIndices = _waterBuffer.elements(_waterIbo, 1, sizeof(voxel::IndexType));
-	if (numIndices == 0u) {
-		return false;
-	}
-	video::ScopedState cullFace(video::State::CullFace, false);
-	video::ScopedBuffer scopedBuf(_waterBuffer);
-	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
-	return true;
 }
 
 int WorldRenderer::renderWorld(const video::Camera& camera) {
@@ -154,18 +129,18 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 	_shadowMapShader.setModel(glm::mat4(1.0f));
 	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
 		_shadowMapShader.setLightviewprojection(lightViewProjection);
-		renderOpaqueBuffers();
+		_worldBuffers.renderOpaqueBuffers();
 		return true;
 	}, false);
 	_shadowMapShader.deactivate();
-	return 0; // TODO:
+	return (int)_entityMgr.visibleEntities().size() + 1;
 }
 
 int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
-	core_assert_always(_opaqueBuffer.update(_opaqueVbo, _worldChunkMgr._opaqueVertices));
-	core_assert_always(_opaqueBuffer.update(_opaqueIbo, _worldChunkMgr._opaqueIndices));
-	core_assert_always(_waterBuffer.update(_waterVbo, _worldChunkMgr._waterVertices));
-	core_assert_always(_waterBuffer.update(_waterIbo, _worldChunkMgr._waterIndices));
+	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueVbo, _worldChunkMgr._opaqueVertices));
+	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueIbo, _worldChunkMgr._opaqueIndices));
+	core_assert_always(_worldBuffers._waterBuffer.update(_worldBuffers._waterVbo, _worldChunkMgr._waterVertices));
+	core_assert_always(_worldBuffers._waterBuffer.update(_worldBuffers._waterIbo, _worldChunkMgr._waterIndices));
 
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
@@ -220,7 +195,7 @@ int WorldRenderer::renderTerrain(const video::Camera& camera, const glm::vec4& c
 		_worldShader.setCascades(_shadow.cascades());
 		_worldShader.setDistances(_shadow.distances());
 	}
-	if (renderOpaqueBuffers()) {
+	if (_worldBuffers.renderOpaqueBuffers()) {
 		++drawCallsWorld;
 	}
 	return drawCallsWorld;
@@ -253,7 +228,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 		_waterShader.setCascades(_shadow.cascades());
 		_waterShader.setDistances(_shadow.distances());
 	}
-	if (renderWaterBuffers()) {
+	if (_worldBuffers.renderWaterBuffers()) {
 		++drawCallsWorld;
 	}
 	_skybox.unbind(video::TextureUnit::Two);
@@ -312,89 +287,12 @@ void WorldRenderer::construct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 }
 
-bool WorldRenderer::initOpaqueBuffer() {
-	_opaqueVbo = _opaqueBuffer.create();
-	if (_opaqueVbo == -1) {
-		Log::error("Failed to create vertex buffer");
-		return false;
-	}
-	_opaqueBuffer.setMode(_opaqueVbo, video::BufferMode::Stream);
-	_opaqueIbo = _opaqueBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
-	if (_opaqueIbo == -1) {
-		Log::error("Failed to create index buffer");
-		return false;
-	}
-	_opaqueBuffer.setMode(_opaqueIbo, video::BufferMode::Stream);
-
-	const int locationPos = _worldShader.getLocationPos();
-	const video::Attribute& posAttrib = getPositionVertexAttribute(_opaqueVbo, locationPos, _worldShader.getAttributeComponents(locationPos));
-	if (!_opaqueBuffer.addAttribute(posAttrib)) {
-		Log::error("Failed to add position attribute");
-		return false;
-	}
-
-	const int locationInfo = _worldShader.getLocationInfo();
-	const video::Attribute& infoAttrib = getInfoVertexAttribute(_opaqueVbo, locationInfo, _worldShader.getAttributeComponents(locationInfo));
-	if (!_opaqueBuffer.addAttribute(infoAttrib)) {
-		Log::error("Failed to add info attribute");
-		return false;
-	}
-
-	return true;
-}
-
-bool WorldRenderer::initWaterBuffer() {
-	_waterVbo = _waterBuffer.create();
-	if (_waterVbo == -1) {
-		Log::error("Failed to create water vertex buffer");
-		return false;
-	}
-	_waterBuffer.setMode(_waterVbo, video::BufferMode::Stream);
-	_waterIbo = _waterBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
-	if (_waterIbo == -1) {
-		Log::error("Failed to create water index buffer");
-		return false;
-	}
-	_waterBuffer.setMode(_waterIbo, video::BufferMode::Stream);
-
-	video::ScopedBuffer scoped(_waterBuffer);
-	const int locationPos = _waterShader.getLocationPos();
-	if (locationPos == -1) {
-		Log::error("Failed to get pos location in water shader");
-		return false;
-	}
-	_waterShader.enableVertexAttributeArray(locationPos);
-	const video::Attribute& posAttrib = getPositionVertexAttribute(_waterVbo, locationPos, _waterShader.getAttributeComponents(locationPos));
-	if (!_waterBuffer.addAttribute(posAttrib)) {
-		Log::error("Failed to add water position attribute");
-		return false;
-	}
-
-	const int locationInfo = _waterShader.getLocationInfo();
-	if (locationInfo == -1) {
-		Log::error("Failed to get info location in water shader");
-		return false;
-	}
-	_waterShader.enableVertexAttributeArray(locationInfo);
-	const video::Attribute& infoAttrib = getInfoVertexAttribute(_waterVbo, locationInfo, _waterShader.getAttributeComponents(locationInfo));
-	if (!_waterBuffer.addAttribute(infoAttrib)) {
-		Log::error("Failed to add water info attribute");
-		return false;
-	}
-
-	return true;
-}
-
 bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	_colorTexture.init();
 
 	if (!_worldShader.setup()) {
 		Log::error("Failed to setup the post world shader");
-		return false;
-	}
-	if (!_worldInstancedShader.setup()) {
-		Log::error("Failed to setup the post instancing shader");
 		return false;
 	}
 	if (!_waterShader.setup()) {
@@ -417,10 +315,6 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		Log::error("Failed to init shadowmap shader");
 		return false;
 	}
-	if (!_shadowMapInstancedShader.setup()) {
-		Log::error("Failed to init shadowmap instanced shader");
-		return false;
-	}
 	if (!_skeletonShadowMapShader.setup()) {
 		Log::error("Failed to init skeleton shadowmap shader");
 		return false;
@@ -437,11 +331,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
-	if (!initOpaqueBuffer()) {
-		return false;
-	}
-
-	if (!initWaterBuffer()) {
+	if (!_worldBuffers.init(_worldShader, _waterShader)) {
 		return false;
 	}
 

@@ -7,6 +7,7 @@
 #include "AnimationShaders.h"
 #include "VoxelrenderShaders.h"
 #include "WorldChunkMgr.h"
+#include "WorldBuffers.h"
 #include "EntityMgr.h"
 #include "core/Color.h"
 #include "core/GLM.h"
@@ -15,11 +16,8 @@
 #include "render/RandomColorTexture.h"
 #include "render/Shadow.h"
 #include "render/Skybox.h"
-#include "video/Buffer.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
-#include "video/Shader.h"
-#include "video/Texture.h"
 #include "video/UniformBuffer.h"
 #include "voxel/PagedVolume.h"
 
@@ -31,19 +29,11 @@ namespace voxelrender {
 class WorldRenderer {
 protected:
 	WorldChunkMgr _worldChunkMgr;
-
-	video::Buffer _opaqueBuffer;
-	int32_t _opaqueIbo = -1;
-	int32_t _opaqueVbo = -1;
-	video::Buffer _waterBuffer;
-	int32_t _waterIbo = -1;
-	int32_t _waterVbo = -1;
-
+	WorldBuffers _worldBuffers;
 	EntityMgr _entityMgr;
 
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
-
 	render::Skybox _skybox;
 
 	video::FrameBuffer _frameBuffer;
@@ -68,19 +58,11 @@ protected:
 	shader::WorldData _materialBlock;
 	// dedicated shaders
 	shader::WorldShader _worldShader;
-	shader::WorldInstancedShader _worldInstancedShader;
 	shader::WaterShader _waterShader;
 	shader::SkeletonShader _chrShader;
 	// shared shaders
 	shader::ShadowmapShader& _shadowMapShader;
 	shader::SkeletonshadowmapShader& _skeletonShadowMapShader;
-	shader::ShadowmapInstancedShader& _shadowMapInstancedShader;
-
-	bool renderOpaqueBuffers();
-	bool renderWaterBuffers();
-
-	bool initOpaqueBuffer();
-	bool initWaterBuffer();
 
 	void initFrameBuffers(const glm::ivec2 &dimensions);
 	void shutdownFrameBuffers();
