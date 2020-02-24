@@ -3,8 +3,8 @@
  */
 
 #include "AbstractTest.h"
-#include "core/ThreadPool.h"
-#include "core/Atomic.h"
+#include "core/concurrent/ThreadPool.h"
+#include "core/concurrent/Atomic.h"
 
 namespace core {
 

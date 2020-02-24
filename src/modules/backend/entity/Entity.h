@@ -6,7 +6,7 @@
 
 #include "core/GLM.h"
 #include "math/Rect.h"
-#include "core/ReadWriteLock.h"
+#include "core/concurrent/ReadWriteLock.h"
 #include "attrib/Attributes.h"
 #include "poi/Type.h"
 #include "backend/ForwardDecl.h"

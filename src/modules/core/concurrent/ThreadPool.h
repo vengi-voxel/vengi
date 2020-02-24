@@ -35,9 +35,9 @@
 #include <condition_variable>
 #include <future>
 #include <functional>
-#include "Atomic.h"
-#include "Trace.h"
-#include "Log.h"
+#include "core/concurrent/Atomic.h"
+#include "core/Trace.h"
+#include "core/Log.h"
 
 namespace core {
 

@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "core/ReadWriteLock.h"
+#include "core/concurrent/ReadWriteLock.h"
 #include "Cooldown.h"
 #include "core/IComponent.h"
 #include "core/TimeProvider.h"
-#include "core/ReadWriteLock.h"
 #include "CooldownProvider.h"
 
 #include <memory>

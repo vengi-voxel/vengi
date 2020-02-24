@@ -5,7 +5,7 @@
 #include "App.h"
 #include "AppCommand.h"
 #include "Var.h"
-#include "ThreadPool.h"
+#include "core/concurrent/ThreadPool.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "io/Filesystem.h"
@@ -14,7 +14,7 @@
 #include "metric/UDPMetricSender.h"
 #include "Log.h"
 #include "Tokenizer.h"
-#include "Concurrency.h"
+#include "core/concurrent/Concurrency.h"
 #include "util/VarUtil.h"
 #include <SDL.h>
 #include "engine-config.h"

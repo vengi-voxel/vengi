@@ -5,7 +5,7 @@
 #include "Image.h"
 #include "core/Log.h"
 #include "core/App.h"
-#include "core/ThreadPool.h"
+#include "core/concurrent/ThreadPool.h"
 #include "core/Assert.h"
 #include "core/io/Filesystem.h"
 

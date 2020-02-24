@@ -26,18 +26,20 @@ set(SRCS
 	collection/Stack.h
 	collection/StringMap.h
 
+	concurrent/Atomic.cpp concurrent/Atomic.h
+	concurrent/Concurrency.h concurrent/Concurrency.cpp
 	concurrent/Lock.cpp concurrent/Lock.h
+	concurrent/ReadWriteLock.cpp concurrent/ReadWriteLock.h
+	concurrent/ThreadPool.cpp concurrent/ThreadPool.h
 
 	ArrayLength.h
 	Assert.cpp Assert.h
-	Atomic.cpp Atomic.h
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h
 	BindingContext.cpp BindingContext.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
 	Common.h Common.cpp
-	Concurrency.h Concurrency.cpp
 	CommandlineApp.h CommandlineApp.cpp
 	Enum.h
 	EventBus.cpp EventBus.h
@@ -52,12 +54,10 @@ set(SRCS
 	NonCopyable.h
 	Password.h
 	Process.cpp Process.h
-	ReadWriteLock.cpp ReadWriteLock.h
 	SharedPtr.h
 	Singleton.h
 	String.cpp String.h
 	StringUtil.cpp StringUtil.h
-	ThreadPool.cpp ThreadPool.h
 	TimeProvider.h TimeProvider.cpp
 	Tokenizer.h Tokenizer.cpp
 	Trace.cpp Trace.h

@@ -5,11 +5,11 @@
 #pragma once
 
 #include "voxel/Mesh.h"
-#include "core/ThreadPool.h"
+#include "core/concurrent/ThreadPool.h"
 #include "core/Var.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "voxel/PagedVolume.h"
-#include "core/Atomic.h"
+#include "core/concurrent/Atomic.h"
 
 #include <unordered_set>
 #include <glm/vec3.hpp>

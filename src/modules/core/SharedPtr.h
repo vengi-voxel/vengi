@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Atomic.h"
+#include "core/concurrent/Atomic.h"
 #include "core/Assert.h"
 #include "core/Common.h"
 #include <stdint.h>

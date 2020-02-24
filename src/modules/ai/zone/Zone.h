@@ -16,7 +16,7 @@
 #include "ICharacter.h"
 #include "group/GroupMgr.h"
 #include "common/Thread.h"
-#include "core/ThreadPool.h"
+#include "core/concurrent/ThreadPool.h"
 #include "common/CharacterId.h"
 #include <unordered_map>
 #include <vector>

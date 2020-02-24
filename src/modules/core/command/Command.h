@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "core/collection/StringMap.h"
-#include "core/ReadWriteLock.h"
+#include "core/concurrent/ReadWriteLock.h"
 #include "ActionButton.h"
 #include <memory>
 #include <vector>

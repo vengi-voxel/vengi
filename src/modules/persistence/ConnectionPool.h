@@ -9,7 +9,7 @@
 #include "core/Trace.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/IComponent.h"
-#include "core/Atomic.h"
+#include "core/concurrent/Atomic.h"
 
 namespace persistence {
 

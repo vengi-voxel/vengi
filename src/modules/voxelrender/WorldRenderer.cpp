@@ -18,7 +18,7 @@
 #include "video/Renderer.h"
 #include "video/ScopedState.h"
 #include "video/Types.h"
-#include "core/Concurrency.h"
+#include "core/concurrent/Concurrency.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>

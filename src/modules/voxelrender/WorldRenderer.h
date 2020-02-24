@@ -9,7 +9,7 @@
 #include "WorldMeshExtractor.h"
 #include "core/Color.h"
 #include "core/GLM.h"
-#include "core/ThreadPool.h"
+#include "core/concurrent/ThreadPool.h"
 #include "core/Var.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/List.h"

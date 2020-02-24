@@ -10,7 +10,7 @@
 #include "core/Trace.h"
 #include "core/io/File.h"
 #include "math/Random.h"
-#include "core/Concurrency.h"
+#include "core/concurrent/Concurrency.h"
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxel/Voxel.h"
 

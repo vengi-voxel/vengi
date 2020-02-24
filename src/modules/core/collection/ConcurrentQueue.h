@@ -5,7 +5,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "core/Atomic.h"
+#include "core/concurrent/Atomic.h"
 #include <vector>
 #include <condition_variable>
 #include <mutex>

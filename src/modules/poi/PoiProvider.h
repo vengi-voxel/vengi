@@ -5,7 +5,7 @@
 #pragma once
 
 #include "backend/ForwardDecl.h"
-#include "core/ReadWriteLock.h"
+#include "core/concurrent/ReadWriteLock.h"
 #include "math/Random.h"
 #include "Type.h"
 #include <glm/fwd.hpp>

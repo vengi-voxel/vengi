@@ -5,7 +5,7 @@
 #include "ThreadPool.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
-#include "core/Concurrency.h"
+#include "core/concurrent/Concurrency.h"
 
 namespace core {
 

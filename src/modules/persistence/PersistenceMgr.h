@@ -10,7 +10,7 @@
 #include "ISavable.h"
 #include "DBHandler.h"
 #include "core/IComponent.h"
-#include "core/ReadWriteLock.h"
+#include "core/concurrent/ReadWriteLock.h"
 
 namespace persistence {
 

@@ -5,7 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "http/HttpClient.h"
 #include "http/HttpServer.h"
-#include "core/ThreadPool.h"
+#include "core/concurrent/ThreadPool.h"
 
 namespace http {
 

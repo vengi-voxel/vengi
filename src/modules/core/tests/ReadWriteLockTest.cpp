@@ -3,7 +3,7 @@
  */
 
 #include "AbstractTest.h"
-#include "core/ReadWriteLock.h"
+#include "core/concurrent/ReadWriteLock.h"
 #include <future>
 
 namespace core {

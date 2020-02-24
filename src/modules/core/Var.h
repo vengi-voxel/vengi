@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ReadWriteLock.h"
+#include "core/concurrent/ReadWriteLock.h"
 #include "GameConfig.h"
 #include <memory>
 #include "core/String.h"

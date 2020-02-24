@@ -5,8 +5,8 @@
 #pragma once
 
 #include "Container.h"
-#include "core/ReadWriteLock.h"
-#include "core/Atomic.h"
+#include "core/concurrent/ReadWriteLock.h"
+#include "core/concurrent/Atomic.h"
 #include <functional>
 #include <vector>
 

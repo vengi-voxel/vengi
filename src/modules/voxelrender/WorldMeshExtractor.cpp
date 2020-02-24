@@ -3,7 +3,7 @@
  */
 
 #include "WorldMeshExtractor.h"
-#include "core/Concurrency.h"
+#include "core/concurrent/Concurrency.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/Constants.h"

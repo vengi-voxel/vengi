@@ -9,7 +9,7 @@
 #include "BindingContext.h"
 #include "String.h"
 #include "collection/List.h"
-#include "Atomic.h"
+#include "core/concurrent/Atomic.h"
 #include <stack>
 #include <memory>
 

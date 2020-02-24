@@ -6,7 +6,7 @@
 #include "testcore/TestAppMain.h"
 #include "video/ScopedViewPort.h"
 #include "video/Texture.h"
-#include "core/ThreadPool.h"
+#include "core/concurrent/ThreadPool.h"
 
 TestBiomes::TestBiomes(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
