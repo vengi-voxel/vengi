@@ -27,6 +27,13 @@ bool RandomColorTexture::init() {
 	return true;
 }
 
+video::Id RandomColorTexture::handle() const {
+	if (!_colorTexture) {
+		return video::InvalidId;
+	}
+	return _colorTexture->handle();
+}
+
 void RandomColorTexture::bind(video::TextureUnit unit) {
 	if (!_noiseFuture.empty()) {
 		NoiseFuture& future = _noiseFuture.back();

@@ -40,6 +40,8 @@ public:
 	bool init() override;
 	void shutdown() override;
 
+	video::Id handle() const;
+
 	void bind(video::TextureUnit unit = video::TextureUnit::Zero);
 	void unbind();
 };
