@@ -66,10 +66,12 @@ protected:
 
 	// this ub is currently shared between the world, world instanced and water shader
 	shader::WorldData _materialBlock;
+	// dedicated shaders
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _worldInstancedShader;
 	shader::WaterShader _waterShader;
 	shader::SkeletonShader _chrShader;
+	// shared shaders
 	shader::ShadowmapShader& _shadowMapShader;
 	shader::SkeletonshadowmapShader& _skeletonShadowMapShader;
 	shader::ShadowmapInstancedShader& _shadowMapInstancedShader;
