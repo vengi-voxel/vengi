@@ -47,7 +47,6 @@ protected:
 	bool _freelook = false;
 	bool _updateWorld = true;
 	int _drawCallsWorld = 0;
-	int _vertices = 0;
 	float _timeScaleFactor = 480.0f;
 	float _worldTime = 0.0f;
 

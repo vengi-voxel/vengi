@@ -85,13 +85,15 @@ protected:
 	Entities _entities;
 	core::List<frontend::ClientEntity*> _visibleEntities;
 
-	glm::vec3 _focusPos = glm::zero<glm::vec3>();
+	glm::vec3 _focusPos { 0.0f };
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
 
 	render::Skybox _skybox;
 
 	video::FrameBuffer _frameBuffer;
+	video::FrameBuffer _reflectionBuffer;
+	video::FrameBuffer _refractionBuffer;
 	shader::PostprocessShader _postProcessShader;
 	video::Buffer _postProcessBuf;
 	int32_t _postProcessBufId = -1;
@@ -120,23 +122,29 @@ protected:
 
 	void handleMeshQueue();
 	void updateAABB(ChunkBuffer &chunkBuffer) const;
+	void updateVisibleEntities(const video::Camera& camera);
 
 	int getDistanceSquare(const glm::ivec3 &pos, const glm::ivec3 &pos2) const;
 
 	void cull(const video::Camera &camera);
 	bool renderOpaqueBuffers();
 	bool renderWaterBuffers();
-	int renderAll(const video::Camera& camera, const glm::vec4& clipPlane);
 	ChunkBuffer *findFreeChunkBuffer();
 
 	bool initOpaqueBuffer();
 	bool initWaterBuffer();
 
-	void initFrameBuffer(const glm::ivec2 &dimensions);
-	void shutdownFrameBuffer();
+	void initFrameBuffers(const glm::ivec2 &dimensions);
+	void shutdownFrameBuffers();
 
+	int renderPostProcessEffects(const video::Camera& camera);
+	int renderToShadowMap(const video::Camera& camera);
+	int renderClippingPlanes(const video::Camera& camera);
+	int renderTerrain(const video::Camera& camera, const glm::vec4& clipPlane);
+	int renderWater(const video::Camera& camera, const glm::vec4& clipPlane);
+	int renderAll(const video::Camera& camera, const glm::vec4& clipPlane);
 	int renderToFrameBuffer(const video::Camera &camera);
-
+	int renderEntities(const video::Camera &camera);
 public:
 	WorldRenderer();
 	~WorldRenderer();
@@ -150,6 +158,8 @@ public:
 
 	render::Shadow &shadow();
 	video::FrameBuffer &frameBuffer();
+	video::FrameBuffer &reflectionBuffer();
+	video::FrameBuffer &refractionBuffer();
 	render::RandomColorTexture &colorTexture();
 
 	void setSeconds(float seconds);
@@ -174,8 +184,7 @@ public:
 	float getViewDistance() const;
 	void setViewDistance(float viewDistance);
 
-	int renderWorld(const video::Camera &camera, int *vertices = nullptr);
-	int renderEntities(const video::Camera &camera);
+	int renderWorld(const video::Camera &camera);
 };
 
 inline void WorldRenderer::setSeconds(float seconds) {
@@ -197,6 +206,14 @@ inline render::Shadow &WorldRenderer::shadow() {
 
 inline video::FrameBuffer &WorldRenderer::frameBuffer() {
 	return _frameBuffer;
+}
+
+inline video::FrameBuffer &WorldRenderer::reflectionBuffer() {
+	return _reflectionBuffer;
+}
+
+inline video::FrameBuffer &WorldRenderer::refractionBuffer() {
+	return _refractionBuffer;
 }
 
 inline render::RandomColorTexture &WorldRenderer::colorTexture() {

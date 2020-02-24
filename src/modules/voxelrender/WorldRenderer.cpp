@@ -64,7 +64,7 @@ void WorldRenderer::shutdown() {
 	_shadowMapShader.shutdown();
 	_skeletonShadowMapShader.shutdown();
 	_shadowMapInstancedShader.shutdown();
-	shutdownFrameBuffer();
+	shutdownFrameBuffers();
 	_postProcessBuf.shutdown();
 	_postProcessBufId = -1;
 	_postProcessShader.shutdown();
@@ -219,18 +219,25 @@ bool WorldRenderer::renderWaterBuffers() {
 	return true;
 }
 
-int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
+int WorldRenderer::renderWorld(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererRenderWorld);
 	handleMeshQueue();
 
 	cull(camera);
-	if (vertices != nullptr) {
-		*vertices = _opaqueVertices.size() + _waterVertices.size();
-	}
+
 	if (_opaqueIndices.empty() && _waterIndices.empty()) {
 		return 0;
 	}
 
+	updateVisibleEntities(camera);
+
+	int drawCallsWorld = 0;
+	drawCallsWorld += renderToFrameBuffer(camera);
+	drawCallsWorld += renderPostProcessEffects(camera);
+	return drawCallsWorld;
+}
+
+void WorldRenderer::updateVisibleEntities(const video::Camera& camera) {
 	_visibleEntities.clear();
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e->value;
@@ -245,29 +252,74 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		}
 		_visibleEntities.insert(ent.get());
 	}
+}
 
-	const int drawCallsWorld = renderToFrameBuffer(camera);
-
-	{
-		video::ScopedState depthTest(video::State::DepthTest, false);
-		const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
-		video::ScopedShader scoped(_postProcessShader);
-		video::ScopedTexture scopedTex(fboTexture, video::TextureUnit::Zero);
-		video::ScopedBuffer scopedBuf(_postProcessBuf);
-		const int currentEyeHeight = (int)camera.eye().y;
-		if (currentEyeHeight < voxel::MAX_WATER_HEIGHT) {
-			static const voxel::Voxel waterVoxel = voxel::createColorVoxel(voxel::VoxelType::Water, 0);
-			const glm::vec4& waterColor = voxel::getMaterialColor(waterVoxel);
-			_postProcessShader.setColor(waterColor);
-		} else {
-			_postProcessShader.setColor(glm::one<glm::vec4>());
-		}
-		_postProcessShader.setTexture(video::TextureUnit::Zero);
-		const int elements = _postProcessBuf.elements(_postProcessBufId, _postProcessShader.getComponentsPos());
-		video::drawArrays(video::Primitive::Triangles, elements);
+int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
+	video::ScopedState depthTest(video::State::DepthTest, false);
+	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+	video::ScopedShader scoped(_postProcessShader);
+	video::ScopedTexture scopedTex(fboTexture, video::TextureUnit::Zero);
+	video::ScopedBuffer scopedBuf(_postProcessBuf);
+	const int currentEyeHeight = (int)camera.eye().y;
+	if (currentEyeHeight < voxel::MAX_WATER_HEIGHT) {
+		static const voxel::Voxel waterVoxel = voxel::createColorVoxel(voxel::VoxelType::Water, 0);
+		const glm::vec4& waterColor = voxel::getMaterialColor(waterVoxel);
+		_postProcessShader.setColor(waterColor);
+	} else {
+		_postProcessShader.setColor(glm::one<glm::vec4>());
 	}
+	_postProcessShader.setTexture(video::TextureUnit::Zero);
+	const int elements = _postProcessBuf.elements(_postProcessBufId, _postProcessShader.getComponentsPos());
+	video::drawArrays(video::Primitive::Triangles, elements);
+	return 1;
+}
+
+int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
+	int drawCallsWorld = 0;
+	video::ScopedState scopedClipDistance(video::State::ClipDistance, true);
+	constexpr glm::vec4 waterClipPlane(glm::up, (float)-voxel::MAX_WATER_HEIGHT);
+
+	// render above water
+	_reflectionBuffer.bind(true);
+	drawCallsWorld += renderAll(camera, +waterClipPlane);
+	_reflectionBuffer.unbind();
+
+	// render below water
+	_refractionBuffer.bind(true);
+	drawCallsWorld += renderAll(camera, -waterClipPlane);
+	_refractionBuffer.unbind();
 
 	return drawCallsWorld;
+}
+
+int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
+	if (!_shadowMap->boolVal()) {
+		return 0;
+	}
+	core_trace_scoped(WorldRendererRenderShadow);
+	_skeletonShadowMapShader.activate();
+	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
+		_skeletonShadowMapShader.setLightviewprojection(lightViewProjection);
+		for (const auto& ent : _visibleEntities) {
+			_skeletonShadowMapShader.setBones(ent->bones()._items);
+			_skeletonShadowMapShader.setModel(ent->modelMatrix());
+			const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
+			video::drawElements<animation::IndexType>(video::Primitive::Triangles, numIndices);
+			ent->unbindVertexBuffers();
+		}
+		return true;
+	}, true);
+	_skeletonShadowMapShader.deactivate();
+
+	_shadowMapShader.activate();
+	_shadowMapShader.setModel(glm::mat4(1.0f));
+	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
+		_shadowMapShader.setLightviewprojection(lightViewProjection);
+		renderOpaqueBuffers();
+		return true;
+	}, false);
+	_shadowMapShader.deactivate();
+	return 0; // TODO:
 }
 
 int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
@@ -276,55 +328,21 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	core_assert_always(_waterBuffer.update(_waterVbo, _waterVertices));
 	core_assert_always(_waterBuffer.update(_waterIbo, _waterIndices));
 
-	int drawCallsWorld = 0;
-
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
-	const bool shadowMap = _shadowMap->boolVal();
-	if (shadowMap) {
-		core_trace_scoped(WorldRendererRenderShadow);
-		_skeletonShadowMapShader.activate();
-		_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
-			_skeletonShadowMapShader.setLightviewprojection(lightViewProjection);
-			for (const auto& ent : _visibleEntities) {
-				_skeletonShadowMapShader.setBones(ent->bones()._items);
-				_skeletonShadowMapShader.setModel(ent->modelMatrix());
-				const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
-				video::drawElements<animation::IndexType>(video::Primitive::Triangles, numIndices);
-				ent->unbindVertexBuffers();
-			}
-			return true;
-		}, true);
-		_skeletonShadowMapShader.deactivate();
+	int drawCallsWorld = 0;
+	drawCallsWorld += renderToShadowMap(camera);
 
-		_shadowMapShader.activate();
-		_shadowMapShader.setModel(glm::mat4(1.0f));
-		_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
-			_shadowMapShader.setLightviewprojection(lightViewProjection);
-			renderOpaqueBuffers();
-			return true;
-		}, false);
-		_shadowMapShader.deactivate();
-	}
+	_shadow.bind(video::TextureUnit::One);
 	_colorTexture.bind(video::TextureUnit::Zero);
-	_frameBuffer.bind(true);
 	video::clearColor(_clearColor);
 
-	if (shadowMap) {
-		_shadow.bind(video::TextureUnit::One);
-	}
+	drawCallsWorld += renderClippingPlanes(camera);
 
-	video::enable(video::State::ClipDistance);
-	constexpr glm::vec4 waterClipPlane(glm::up, (float)-voxel::MAX_WATER_HEIGHT);
-	// render above water
-	drawCallsWorld += renderAll(camera, +waterClipPlane);
-	// render below water
-	drawCallsWorld += renderAll(camera, -waterClipPlane);
-	video::disable(video::State::ClipDistance);
-
+	_frameBuffer.bind(true);
 	// due to driver bugs the clip plane might still be taken into account - set to very high y value
 	constexpr glm::vec4 ignoreClipPlane(glm::up, 100000.0f);
 	drawCallsWorld += renderAll(camera, ignoreClipPlane);
@@ -338,65 +356,74 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderAll(const video::Camera& camera, const glm::vec4& clipPlane) {
+int WorldRenderer::renderTerrain(const video::Camera& camera, const glm::vec4& clipPlane) {
 	const bool shadowMap = _shadowMap->boolVal();
 	int drawCallsWorld = 0;
-	{
-		core_trace_scoped(WorldRendererRenderOpaque);
-		video::ScopedShader scoped(_worldShader);
-		_worldShader.setModel(glm::mat4(1.0f));
-		_worldShader.setMaterialblock(_materialBlock);
-		_worldShader.setFocuspos(_focusPos);
-		_worldShader.setLightdir(_shadow.sunDirection());
-		_worldShader.setFogcolor(_clearColor);
-		_worldShader.setTexture(video::TextureUnit::Zero);
-		_worldShader.setDiffuseColor(_diffuseColor);
-		_worldShader.setAmbientColor(_ambientColor);
-		_worldShader.setNightColor(_nightColor);
-		_worldShader.setTime(_seconds);
-		_worldShader.setFogrange(_fogRange);
-		_worldShader.setClipplane(clipPlane);
-		if (shadowMap) {
-			_worldShader.setViewprojection(camera.viewProjectionMatrix());
-			_worldShader.setShadowmap(video::TextureUnit::One);
-			_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
-			_worldShader.setCascades(_shadow.cascades());
-			_worldShader.setDistances(_shadow.distances());
-		}
-		if (renderOpaqueBuffers()) {
-			++drawCallsWorld;
-		}
+	core_trace_scoped(WorldRendererRenderOpaque);
+	video::ScopedShader scoped(_worldShader);
+	_worldShader.setModel(glm::mat4(1.0f));
+	_worldShader.setMaterialblock(_materialBlock);
+	_worldShader.setFocuspos(_focusPos);
+	_worldShader.setLightdir(_shadow.sunDirection());
+	_worldShader.setFogcolor(_clearColor);
+	_worldShader.setTexture(video::TextureUnit::Zero);
+	_worldShader.setDiffuseColor(_diffuseColor);
+	_worldShader.setAmbientColor(_ambientColor);
+	_worldShader.setNightColor(_nightColor);
+	_worldShader.setTime(_seconds);
+	_worldShader.setFogrange(_fogRange);
+	_worldShader.setClipplane(clipPlane);
+	if (shadowMap) {
+		_worldShader.setViewprojection(camera.viewProjectionMatrix());
+		_worldShader.setShadowmap(video::TextureUnit::One);
+		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
+		_worldShader.setCascades(_shadow.cascades());
+		_worldShader.setDistances(_shadow.distances());
 	}
+	if (renderOpaqueBuffers()) {
+		++drawCallsWorld;
+	}
+	return drawCallsWorld;
+}
+
+int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& clipPlane) {
+	int drawCallsWorld = 0;
+	const bool shadowMap = _shadowMap->boolVal();
+	_skybox.bind(video::TextureUnit::Two);
+	core_trace_scoped(WorldRendererRenderWater);
+	video::ScopedShader scoped(_waterShader);
+	_waterShader.setModel(glm::mat4(1.0f));
+	_waterShader.setFocuspos(_focusPos);
+	_waterShader.setCubemap(video::TextureUnit::Two);
+	_waterShader.setCamerapos(camera.position());
+	_waterShader.setLightdir(_shadow.sunDirection());
+	_waterShader.setMaterialblock(_materialBlock);
+	_waterShader.setFogcolor(_clearColor);
+	_waterShader.setDiffuseColor(_diffuseColor);
+	_waterShader.setAmbientColor(_ambientColor);
+	_waterShader.setNightColor(_nightColor);
+	_waterShader.setFogrange(_fogRange);
+	_waterShader.setTime(_seconds);
+	_waterShader.setTexture(video::TextureUnit::Zero);
+	if (shadowMap) {
+		_waterShader.setViewprojection(camera.viewProjectionMatrix());
+		_waterShader.setShadowmap(video::TextureUnit::One);
+		_waterShader.setDepthsize(glm::vec2(_shadow.dimension()));
+		_waterShader.setCascades(_shadow.cascades());
+		_waterShader.setDistances(_shadow.distances());
+	}
+	if (renderWaterBuffers()) {
+		++drawCallsWorld;
+	}
+	_skybox.unbind(video::TextureUnit::Two);
+	return drawCallsWorld;
+}
+
+int WorldRenderer::renderAll(const video::Camera& camera, const glm::vec4& clipPlane) {
+	int drawCallsWorld = 0;
+	drawCallsWorld += renderTerrain(camera, clipPlane);
 	drawCallsWorld += renderEntities(camera);
-	{
-		_skybox.bind(video::TextureUnit::Two);
-		core_trace_scoped(WorldRendererRenderWater);
-		video::ScopedShader scoped(_waterShader);
-		_waterShader.setModel(glm::mat4(1.0f));
-		_waterShader.setFocuspos(_focusPos);
-		_waterShader.setCubemap(video::TextureUnit::Two);
-		_waterShader.setCamerapos(camera.position());
-		_waterShader.setLightdir(_shadow.sunDirection());
-		_waterShader.setMaterialblock(_materialBlock);
-		_waterShader.setFogcolor(_clearColor);
-		_waterShader.setDiffuseColor(_diffuseColor);
-		_waterShader.setAmbientColor(_ambientColor);
-		_waterShader.setNightColor(_nightColor);
-		_waterShader.setFogrange(_fogRange);
-		_waterShader.setTime(_seconds);
-		_waterShader.setTexture(video::TextureUnit::Zero);
-		if (shadowMap) {
-			_waterShader.setViewprojection(camera.viewProjectionMatrix());
-			_waterShader.setShadowmap(video::TextureUnit::One);
-			_waterShader.setDepthsize(glm::vec2(_shadow.dimension()));
-			_waterShader.setCascades(_shadow.cascades());
-			_waterShader.setDistances(_shadow.distances());
-		}
-		if (renderWaterBuffers()) {
-			++drawCallsWorld;
-		}
-		_skybox.unbind(video::TextureUnit::Two);
-	}
+	drawCallsWorld += renderWater(camera, clipPlane);
 	return drawCallsWorld;
 }
 
@@ -619,7 +646,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 40;
 	_maxAllowedDistance = glm::pow(_viewDistance + maxCullingThreshold, 2);
 
-	initFrameBuffer(dimension);
+	initFrameBuffers(dimension);
 	_postProcessBufId = _postProcessBuf.createFullscreenTextureBufferYFlipped();
 	if (_postProcessBufId == -1) {
 		return false;
@@ -652,7 +679,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	return true;
 }
 
-void WorldRenderer::initFrameBuffer(const glm::ivec2& dimensions) {
+void WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
 	textureCfg.format(video::TextureFormat::RGBA);
@@ -661,10 +688,16 @@ void WorldRenderer::initFrameBuffer(const glm::ivec2& dimensions) {
 	cfg.dimension(frameBufferSize).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
 	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	_frameBuffer.init(cfg);
+
+	cfg.depthBuffer(false);
+	_refractionBuffer.init(cfg);
+	_reflectionBuffer.init(cfg);
 }
 
-void WorldRenderer::shutdownFrameBuffer() {
+void WorldRenderer::shutdownFrameBuffers() {
 	_frameBuffer.shutdown();
+	_refractionBuffer.shutdown();
+	_reflectionBuffer.shutdown();
 }
 
 void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {

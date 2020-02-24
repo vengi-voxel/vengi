@@ -206,7 +206,7 @@ void MapView::beforeUI() {
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
 	}
-	_drawCallsWorld = _worldRenderer.renderWorld(camera, &_vertices);
+	_drawCallsWorld = _worldRenderer.renderWorld(camera);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 	}
@@ -223,7 +223,7 @@ void MapView::onRenderUI() {
 		voxelrender::WorldRenderer::Stats stats;
 		_worldRenderer.stats(stats);
 		ImGui::Text("Fps: %i", fps());
-		ImGui::Text("Drawcalls: %i (verts: %i)", _drawCallsWorld, _vertices);
+		ImGui::Text("Drawcalls: %i", _drawCallsWorld);
 		ImGui::Text("Target Pos: %.2f:%.2f:%.2f ", targetpos.x, targetpos.y, targetpos.z);
 		ImGui::Text("Pos: %.2f:%.2f:%.2f, Distance:%.2f", pos.x, pos.y, pos.z, distance);
 		ImGui::Text("Yaw: %.2f Pitch: %.2f Roll: %.2f", yaw, pitch, camera.roll());
@@ -249,14 +249,14 @@ void MapView::onRenderUI() {
 			ImGui::InputVec2("size", colorMapSize);
 			ImGui::Image(_worldRenderer.colorTexture().handle(), colorMapSize);
 		}
-		static bool renderFrameBuffer = false;
-		ImGui::Checkbox("Framebuffer render", &renderFrameBuffer);
-		if (renderFrameBuffer) {
-			static glm::ivec2 frameBufferSize(256, 256);
-			ImGui::InputVec2("size", frameBufferSize);
-			const video::TexturePtr& fbTexture = _worldRenderer.frameBuffer().texture(video::FrameBufferAttachment::Color0);
-			ImGui::Image(fbTexture->handle(), frameBufferSize);
-		}
+		static glm::ivec2 frameBufferSize(256, 256);
+		ImGui::InputVec2("size", frameBufferSize);
+		ImGui::Text("Framebuffer");
+		ImGui::Image(_worldRenderer.frameBuffer().texture()->handle(), frameBufferSize);
+		ImGui::Text("Reflection");
+		ImGui::Image(_worldRenderer.reflectionBuffer().texture()->handle(), frameBufferSize);
+		ImGui::Text("Refraction");
+		ImGui::Image(_worldRenderer.refractionBuffer().texture()->handle(), frameBufferSize);
 	}
 
 	if (ImGui::CollapsingHeader("Mesh extraction")) {
