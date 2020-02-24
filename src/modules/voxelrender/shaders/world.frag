@@ -19,11 +19,8 @@ float random (in vec2 st) {
 }
 
 float checker(vec3 pos, float repeats) {
-	float cx = floor(repeats * pos.x);
-	float cy = floor(repeats * pos.y);
-	float cz = floor(repeats * pos.z);
-	float result = mod(cx + cy + cz, 2.0);
-	return sign(result);
+	vec3 c = floor(repeats * pos);
+	return mod(c.x + c.y + c.z, 2.0);
 }
 
 void main(void) {
@@ -34,12 +31,10 @@ void main(void) {
 	float ndotl2 = dot(normal, -u_lightdir);
 	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
 	vec3 ambientColor = dayTimeColor(u_ambient_color, u_time);
-	vec3 voxelColor = v_color.rgb;
-	ivec2 xz = ivec2(v_pos.x * 0.5, v_pos.z * 0.5);
-	float checkerBoardIntensity = random(vec2(xz.x, xz.y));
+	float checkerBoardIntensity = random(floor(v_pos.xz * 0.5));
 	float variance = 0.05 * checkerBoardIntensity;
 	float checkerBoardFactor = mix(0.95 + variance, 1.0 - variance, checker(v_pos, 0.5));
-	voxelColor *= checkerBoardFactor;
+	vec3 voxelColor = clamp(v_color.rgb * checkerBoardFactor, vec3(0.0), vec3(1.0));
 	vec3 shadowColor = shadow(u_viewprojection, voxelColor, diffuse, ambientColor);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
 	o_color = fog(v_pos, linearColor, v_color.a);
