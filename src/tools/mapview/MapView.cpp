@@ -244,13 +244,21 @@ void MapView::onRenderUI() {
 	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
 	ImGui::CheckboxVar("Render AABB", cfg::RenderAABB);
 
-	if (ImGui::CollapsingHeader("Rendering")) {
+	if (ImGui::CollapsingHeader("Textures/Buffers")) {
 		static bool renderColorMap = false;
 		ImGui::Checkbox("Colormap render", &renderColorMap);
 		if (renderColorMap) {
 			static glm::ivec2 colorMapSize(256, 256);
 			ImGui::InputVec2("size", colorMapSize);
 			ImGui::Image(_worldRenderer.colorTexture().handle(), colorMapSize);
+		}
+		static bool renderFrameBuffer = false;
+		ImGui::Checkbox("Framebuffer render", &renderFrameBuffer);
+		if (renderFrameBuffer) {
+			static glm::ivec2 frameBufferSize(256, 256);
+			ImGui::InputVec2("size", frameBufferSize);
+			const video::TexturePtr& fbTexture = _worldRenderer.frameBuffer().texture(video::FrameBufferAttachment::Color0);
+			ImGui::Image(fbTexture->handle(), frameBufferSize);
 		}
 	}
 

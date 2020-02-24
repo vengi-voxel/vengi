@@ -27,7 +27,6 @@ public:
 	void shutdown();
 
 	Id handle() const;
-
 };
 
 inline Id RenderBuffer::handle() const {
