@@ -282,7 +282,6 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
-	//video::enable(video::State::ClipDistance);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
@@ -312,14 +311,36 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	}
 	_colorTexture.bind(video::TextureUnit::Zero);
 	_frameBuffer.bind(true);
-
 	video::clearColor(_clearColor);
-	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 
 	if (shadowMap) {
 		_shadow.bind(video::TextureUnit::One);
 	}
 
+	video::enable(video::State::ClipDistance);
+	constexpr glm::vec4 waterClipPlane(glm::up, (float)-voxel::MAX_WATER_HEIGHT);
+	// render above water
+	drawCallsWorld += renderAll(camera, +waterClipPlane);
+	// render below water
+	drawCallsWorld += renderAll(camera, -waterClipPlane);
+	video::disable(video::State::ClipDistance);
+
+	// due to driver bugs the clip plane might still be taken into account - set to very high y value
+	constexpr glm::vec4 ignoreClipPlane(glm::up, 100000.0f);
+	drawCallsWorld += renderAll(camera, ignoreClipPlane);
+
+	_skybox.render(camera);
+	video::bindVertexArray(video::InvalidId);
+	_colorTexture.unbind();
+
+	_frameBuffer.unbind();
+
+	return drawCallsWorld;
+}
+
+int WorldRenderer::renderAll(const video::Camera& camera, const glm::vec4& clipPlane) {
+	const bool shadowMap = _shadowMap->boolVal();
+	int drawCallsWorld = 0;
 	{
 		core_trace_scoped(WorldRendererRenderOpaque);
 		video::ScopedShader scoped(_worldShader);
@@ -334,7 +355,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 		_worldShader.setNightColor(_nightColor);
 		_worldShader.setTime(_seconds);
 		_worldShader.setFogrange(_fogRange);
-		_worldShader.setClipplane(glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
+		_worldShader.setClipplane(clipPlane);
 		if (shadowMap) {
 			_worldShader.setViewprojection(camera.viewProjectionMatrix());
 			_worldShader.setShadowmap(video::TextureUnit::One);
@@ -374,15 +395,8 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 		if (renderWaterBuffers()) {
 			++drawCallsWorld;
 		}
+		_skybox.unbind(video::TextureUnit::Two);
 	}
-
-	_skybox.render(camera);
-	video::bindVertexArray(video::InvalidId);
-	_colorTexture.unbind();
-
-	video::disable(video::State::ClipDistance);
-	_frameBuffer.unbind();
-
 	return drawCallsWorld;
 }
 

@@ -126,6 +126,7 @@ protected:
 	void cull(const video::Camera &camera);
 	bool renderOpaqueBuffers();
 	bool renderWaterBuffers();
+	int renderAll(const video::Camera& camera, const glm::vec4& clipPlane);
 	ChunkBuffer *findFreeChunkBuffer();
 
 	bool initOpaqueBuffer();
