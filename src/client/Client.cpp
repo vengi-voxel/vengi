@@ -49,6 +49,17 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 Client::~Client() {
 }
 
+frontend::ClientEntityPtr Client::getEntity(frontend::ClientEntityId id) const {
+	return _worldRenderer.entityMgr().getEntity(id);
+}
+
+frontend::ClientEntityId Client::id() const {
+	if (!_player) {
+		return -1;
+	}
+	return _player->id();
+}
+
 void Client::sendTriggerAction() {
 	_messageSender->sendClientMessage(_actionFbb, network::ClientMsgType::TriggerAction, CreateTriggerAction(_actionFbb).Union());
 }
@@ -233,7 +244,7 @@ void Client::beforeUI() {
 		});
 		_action.update(_player);
 		_camera.update(_player->position(), _deltaFrameMillis, _now);
-		_worldRenderer.extractMeshes(camera);
+		_worldRenderer.chunkMgr().extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameMillis);
 		_worldRenderer.renderWorld(camera);
 	}
@@ -364,11 +375,11 @@ void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, 
 	Log::info("Entity %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
 	const frontend::ClientEntityPtr& entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
 	entity->setAnimation(animation, true);
-	_worldRenderer.addEntity(entity);
+	_worldRenderer.entityMgr().addEntity(entity);
 }
 
 void Client::entityRemove(frontend::ClientEntityId id) {
-	_worldRenderer.removeEntity(id);
+	_worldRenderer.entityMgr().removeEntity(id);
 }
 
 void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation) {
@@ -381,8 +392,8 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 
 	const network::EntityType type = network::EntityType::PLAYER;
 	_player = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
-	_worldRenderer.addEntity(_player);
-	_worldRenderer.extractMeshes(_camera.camera());
+	_worldRenderer.entityMgr().addEntity(_player);
+	_worldRenderer.chunkMgr().extractMeshes(_camera.camera());
 
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnected,

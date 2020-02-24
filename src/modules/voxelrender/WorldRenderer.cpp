@@ -9,7 +9,7 @@
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/ArrayLength.h"
-#include "core/App.h"
+#include "core/Assert.h"
 #include "core/Var.h"
 #include "core/GLM.h"
 #include "voxel/Constants.h"
@@ -18,7 +18,6 @@
 #include "video/Renderer.h"
 #include "video/ScopedState.h"
 #include "video/Types.h"
-#include "core/concurrent/Concurrency.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
@@ -27,7 +26,6 @@ namespace voxelrender {
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer() :
-		_octree({}, 30), _visibleEntities(1024),
 		_shadowMapShader(shader::ShadowmapShader::getInstance()),
 		_skeletonShadowMapShader(shader::SkeletonshadowmapShader::getInstance()),
 		_shadowMapInstancedShader(shader::ShadowmapInstancedShader::getInstance()) {
@@ -38,14 +36,8 @@ WorldRenderer::~WorldRenderer() {
 }
 
 void WorldRenderer::reset() {
-	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
-		chunkBuffer.inuse = false;
-	}
-	_meshExtractor.reset();
-	_octree.clear();
-	_activeChunkBuffers = 0;
-	_entities.clear();
-	_now = 0ul;
+	_worldChunkMgr.reset();
+	_entityMgr.reset();
 }
 
 void WorldRenderer::shutdown() {
@@ -55,7 +47,7 @@ void WorldRenderer::shutdown() {
 	_chrShader.shutdown();
 	_materialBlock.shutdown();
 	reset();
-	_meshExtractor.shutdown();
+	_worldChunkMgr.shutdown();
 	_colorTexture.shutdown();
 	_opaqueBuffer.shutdown();
 	_waterBuffer.shutdown();
@@ -68,134 +60,6 @@ void WorldRenderer::shutdown() {
 	_postProcessBuf.shutdown();
 	_postProcessBufId = -1;
 	_postProcessShader.shutdown();
-}
-
-frontend::ClientEntityPtr WorldRenderer::getEntity(frontend::ClientEntityId id) const {
-	auto i = _entities.find(id);
-	if (i == _entities.end()) {
-		Log::warn("Could not get entity with id %li", id);
-		return frontend::ClientEntityPtr();
-	}
-	return i->second;
-}
-
-bool WorldRenderer::addEntity(const frontend::ClientEntityPtr& entity) {
-	auto i = _entities.find(entity->id());
-	if (i != _entities.end()) {
-		return false;
-	}
-	_entities.put(entity->id(), entity);
-	return true;
-}
-
-bool WorldRenderer::removeEntity(frontend::ClientEntityId id) {
-	auto i = _entities.find(id);
-	if (i == _entities.end()) {
-		return false;
-	}
-	_entities.erase(i);
-	return true;
-}
-
-// TODO: move into mesh extraction thread
-void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
-	core_trace_scoped(UpdateAABB);
-	glm::ivec3 mins((std::numeric_limits<int>::max)());
-	glm::ivec3 maxs((std::numeric_limits<int>::min)());
-
-	const ChunkMeshes& meshes = chunkBuffer.meshes;
-	for (auto& v : meshes.opaqueMesh.getVertexVector()) {
-		mins = (glm::min)(mins, v.position);
-		maxs = (glm::max)(maxs, v.position);
-	}
-	for (auto& v : meshes.waterMesh.getVertexVector()) {
-		mins = (glm::min)(mins, v.position);
-		maxs = (glm::max)(maxs, v.position);
-	}
-
-	chunkBuffer._aabb = {mins, maxs};
-}
-
-void WorldRenderer::handleMeshQueue() {
-	ChunkMeshes meshes(0, 0, 0, 0);
-	if (!_meshExtractor.pop(meshes)) {
-		return;
-	}
-	// Now add the mesh to the list of meshes to render.
-	core_trace_scoped(WorldRendererHandleMeshQueue);
-
-	ChunkBuffer* freeChunkBuffer = nullptr;
-	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
-		if (freeChunkBuffer == nullptr && !chunkBuffer.inuse) {
-			freeChunkBuffer = &chunkBuffer;
-		}
-		// check whether we update an existing one
-		if (chunkBuffer.translation() == meshes.translation()) {
-			freeChunkBuffer = &chunkBuffer;
-			break;
-		}
-	}
-
-	if (freeChunkBuffer == nullptr) {
-		Log::warn("Could not find free chunk buffer slot");
-		return;
-	}
-
-	freeChunkBuffer->meshes = std::move(meshes);
-	updateAABB(*freeChunkBuffer);
-	if (!_octree.insert(freeChunkBuffer)) {
-		Log::warn("Failed to insert into octree");
-	}
-	if (!freeChunkBuffer->inuse) {
-		freeChunkBuffer->inuse = true;
-		++_activeChunkBuffers;
-	}
-}
-
-WorldRenderer::ChunkBuffer* WorldRenderer::findFreeChunkBuffer() {
-	for (int i = 0; i < lengthof(_chunkBuffers); ++i) {
-		if (!_chunkBuffers[i].inuse) {
-			return &_chunkBuffers[i];
-		}
-	}
-	return nullptr;
-}
-
-static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, std::vector<voxel::VoxelVertex>& verts, std::vector<voxel::IndexType>& idxs) {
-	const std::vector<voxel::IndexType>& indices = mesh.getIndexVector();
-	const size_t start = idxs.size();
-	idxs.insert(idxs.end(), indices.begin(), indices.end());
-	const size_t end = idxs.size();
-	for (size_t i = start; i < end; ++i) {
-		idxs[i] += indexOffset;
-	}
-	const std::vector<voxel::VoxelVertex>& vertices = mesh.getVertexVector();
-	verts.insert(verts.end(), vertices.begin(), vertices.end());
-	return vertices.size();
-}
-
-void WorldRenderer::cull(const video::Camera& camera) {
-	core_trace_scoped(WorldRendererCull);
-	_opaqueIndices.clear();
-	_opaqueVertices.clear();
-	_waterIndices.clear();
-	_waterVertices.clear();
-	size_t opaqueIndexOffset = 0;
-	size_t waterIndexOffset = 0;
-
-	Tree::Contents contents;
-	math::AABB<float> aabb = camera.frustum().aabb();
-	aabb.shift(camera.forward() * -10.0f);
-	_octree.query(math::AABB<int>(aabb.mins(), aabb.maxs()), contents);
-
-	for (ChunkBuffer* chunkBuffer : contents) {
-		core_trace_scoped(WorldRendererCullChunk);
-		const ChunkMeshes& meshes = chunkBuffer->meshes;
-		opaqueIndexOffset += transform(opaqueIndexOffset, meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
-		waterIndexOffset += transform(waterIndexOffset, meshes.waterMesh, _waterVertices, _waterIndices);
-	}
-
-	video::colorMask(true, true, true, true);
 }
 
 bool WorldRenderer::renderOpaqueBuffers() {
@@ -221,37 +85,12 @@ bool WorldRenderer::renderWaterBuffers() {
 
 int WorldRenderer::renderWorld(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererRenderWorld);
-	handleMeshQueue();
-
-	cull(camera);
-
-	if (_opaqueIndices.empty() && _waterIndices.empty()) {
-		return 0;
-	}
-
-	updateVisibleEntities(camera);
-
+	_worldChunkMgr.handleMeshQueue();
+	_worldChunkMgr.cull(camera);
 	int drawCallsWorld = 0;
 	drawCallsWorld += renderToFrameBuffer(camera);
 	drawCallsWorld += renderPostProcessEffects(camera);
 	return drawCallsWorld;
-}
-
-void WorldRenderer::updateVisibleEntities(const video::Camera& camera) {
-	_visibleEntities.clear();
-	for (const auto& e : _entities) {
-		const frontend::ClientEntityPtr& ent = e->value;
-		ent->update(_deltaFrame);
-		// note, that the aabb does not include the orientation - that should be kept in mind here.
-		// a particular rotation could lead to an entity getting culled even though it should still
-		// be visible.
-		math::AABB<float> aabb = ent->character().aabb();
-		aabb.shift(ent->position());
-		if (!camera.isVisible(aabb)) {
-			continue;
-		}
-		_visibleEntities.insert(ent.get());
-	}
 }
 
 int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
@@ -300,7 +139,7 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 	_skeletonShadowMapShader.activate();
 	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
 		_skeletonShadowMapShader.setLightviewprojection(lightViewProjection);
-		for (const auto& ent : _visibleEntities) {
+		for (const auto& ent : _entityMgr.visibleEntities()) {
 			_skeletonShadowMapShader.setBones(ent->bones()._items);
 			_skeletonShadowMapShader.setModel(ent->modelMatrix());
 			const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
@@ -323,15 +162,16 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 }
 
 int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
-	core_assert_always(_opaqueBuffer.update(_opaqueVbo, _opaqueVertices));
-	core_assert_always(_opaqueBuffer.update(_opaqueIbo, _opaqueIndices));
-	core_assert_always(_waterBuffer.update(_waterVbo, _waterVertices));
-	core_assert_always(_waterBuffer.update(_waterIbo, _waterIndices));
+	core_assert_always(_opaqueBuffer.update(_opaqueVbo, _worldChunkMgr._opaqueVertices));
+	core_assert_always(_opaqueBuffer.update(_opaqueIbo, _worldChunkMgr._opaqueIndices));
+	core_assert_always(_waterBuffer.update(_waterVbo, _worldChunkMgr._waterVertices));
+	core_assert_always(_waterBuffer.update(_waterIbo, _worldChunkMgr._waterIndices));
 
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
+	video::colorMask(true, true, true, true);
 
 	int drawCallsWorld = 0;
 	drawCallsWorld += renderToShadowMap(camera);
@@ -428,7 +268,7 @@ int WorldRenderer::renderAll(const video::Camera& camera, const glm::vec4& clipP
 }
 
 int WorldRenderer::renderEntities(const video::Camera& camera) {
-	if (_entities.empty()) {
+	if (_entityMgr.visibleEntities().empty()) {
 		return 0;
 	}
 	core_trace_gl_scoped(WorldRendererRenderEntities);
@@ -456,7 +296,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		_chrShader.setCascades(_shadow.cascades());
 		_chrShader.setDistances(_shadow.distances());
 	}
-	for (frontend::ClientEntity* ent : _visibleEntities) {
+	for (frontend::ClientEntity* ent : _entityMgr.visibleEntities()) {
 		_chrShader.setModel(ent->modelMatrix());
 		core_assert_always(_chrShader.setBones(ent->bones()._items));
 		const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
@@ -465,36 +305,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		ent->unbindVertexBuffers();
 	}
 	return drawCallsEntities;
-}
-
-void WorldRenderer::extractMeshes(const video::Camera& camera) {
-	core_trace_scoped(WorldRendererExtractMeshes);
-
-	const float farplane = camera.farPlane();
-
-	glm::vec3 mins = camera.position();
-	mins.x -= farplane;
-	mins.y = 0;
-	mins.z -= farplane;
-
-	glm::vec3 maxs = camera.position();
-	maxs.x += farplane;
-	maxs.y = voxel::MAX_HEIGHT;
-	maxs.z += farplane;
-
-	_octree.visit(mins, maxs, [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
-		return !_meshExtractor.scheduleMeshExtraction(mins);
-	}, glm::vec3(_meshExtractor.meshSize()));
-}
-
-void WorldRenderer::extractMesh(const glm::ivec3& pos) {
-	_meshExtractor.scheduleMeshExtraction(pos);
-}
-
-void WorldRenderer::stats(Stats& stats) const {
-	_meshExtractor.stats(stats.extracted, stats.pending, stats.meshes);
-	stats.active = _activeChunkBuffers;
-	stats.octreeSize = _octree.count();
 }
 
 void WorldRenderer::construct() {
@@ -640,11 +450,8 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		return false;
 	}
 
-	_meshExtractor.init(volume);
-
-	const glm::vec3 cullingThreshold(_meshExtractor.meshSize());
-	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 40;
-	_maxAllowedDistance = glm::pow(_viewDistance + maxCullingThreshold, 2);
+	_worldChunkMgr.init(volume);
+	_worldChunkMgr.updateViewDistance(_viewDistance);
 
 	initFrameBuffers(dimension);
 	_postProcessBufId = _postProcessBuf.createFullscreenTextureBufferYFlipped();
@@ -702,41 +509,14 @@ void WorldRenderer::shutdownFrameBuffers() {
 
 void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 	core_trace_scoped(WorldRendererOnRunning);
-	_now += dt;
-	_deltaFrame = dt;
-
 	_focusPos = camera.target();
 	_focusPos.y = 0.0f;//TODO: _world->findFloor(_focusPos.x, _focusPos.z, voxel::isFloor);
 
-	_meshExtractor.updateExtractionOrder(_focusPos);
+	_shadow.update(camera, _shadowMap->boolVal());
 
-	const bool shadowMap = _shadowMap->boolVal();
-	_shadow.update(camera, shadowMap);
-
-	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
-		if (!chunkBuffer.inuse) {
-			continue;
-		}
-		const int distance = getDistanceSquare(chunkBuffer.translation(), _focusPos);
-		if (distance < _maxAllowedDistance) {
-			continue;
-		}
-		core_assert_always(_meshExtractor.allowReExtraction(chunkBuffer.translation()));
-		chunkBuffer.inuse = false;
-		--_activeChunkBuffers;
-		_octree.remove(&chunkBuffer);
-		Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
-	}
-
-	for (const auto& e : _entities) {
-		e->value->update(dt);
-	}
-}
-
-int WorldRenderer::getDistanceSquare(const glm::ivec3& pos, const glm::ivec3& pos2) const {
-	const glm::ivec3 dist = pos - pos2;
-	const int distance = dist.x * dist.x + dist.z * dist.z;
-	return distance;
+	_worldChunkMgr.update(_focusPos);
+	_entityMgr.update(dt);
+	_entityMgr.updateVisibleEntities(dt, camera);
 }
 
 }

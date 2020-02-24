@@ -162,7 +162,7 @@ core::AppState MapView::onInit() {
 	attributes.update(0l);
 	const float speed = attributes.max(attrib::Type::SPEED);
 	_entity->attrib().setCurrent(attrib::Type::SPEED, speed);
-	if (!_worldRenderer.addEntity(_entity)) {
+	if (!_worldRenderer.entityMgr().addEntity(_entity)) {
 		Log::error("Failed to create entity");
 		return core::AppState::InitFailure;
 	}
@@ -199,7 +199,7 @@ void MapView::beforeUI() {
 
 	if (_updateWorld) {
 		if (!_singlePosExtraction) {
-			_worldRenderer.extractMeshes(camera);
+			_worldRenderer.chunkMgr().extractMeshes(camera);
 		}
 		_worldRenderer.update(camera, _deltaFrameMillis);
 	}
@@ -220,15 +220,11 @@ void MapView::onRenderUI() {
 		const float distance = camera.targetDistance();
 		const float pitch = camera.pitch();
 		const float yaw = camera.horizontalYaw();
-		voxelrender::WorldRenderer::Stats stats;
-		_worldRenderer.stats(stats);
 		ImGui::Text("Fps: %i", fps());
 		ImGui::Text("Drawcalls: %i", _drawCallsWorld);
 		ImGui::Text("Target Pos: %.2f:%.2f:%.2f ", targetpos.x, targetpos.y, targetpos.z);
 		ImGui::Text("Pos: %.2f:%.2f:%.2f, Distance:%.2f", pos.x, pos.y, pos.z, distance);
 		ImGui::Text("Yaw: %.2f Pitch: %.2f Roll: %.2f", yaw, pitch, camera.roll());
-		ImGui::Text("Pending: %i, meshes: %i, extracted: %i, uploaded: %i, octreesize: %i",
-				stats.pending, stats.meshes, stats.extracted, stats.active, stats.octreeSize);
 	}
 	const bool current = isRelativeMouseMode();
 	ImGui::Text("World mouse mode: %s", (current ? "true" : "false"));
@@ -269,12 +265,12 @@ void MapView::onRenderUI() {
 		ImGui::InputInt3("Extract position", glm::value_ptr(_singleExtractionPoint), 0);
 		if (ImGui::Button("Reset")) {
 			_worldRenderer.reset();
-			_worldRenderer.addEntity(_entity);
+			_worldRenderer.entityMgr().addEntity(_entity);
 		}
 		if (ImGui::Button("Extract")) {
 			const glm::vec3 entPos(_singleExtractionPoint.x, voxel::MAX_TERRAIN_HEIGHT, _singleExtractionPoint.z);
 			_entity->setPosition(entPos);
-			_worldRenderer.extractMesh(_singleExtractionPoint);
+			_worldRenderer.chunkMgr().extractMesh(_singleExtractionPoint);
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Extract around position")) {
@@ -284,7 +280,7 @@ void MapView::onRenderUI() {
 				glm::ivec3 meshPos = _singleExtractionPoint;
 				meshPos.x += o.x() * ms.x;
 				meshPos.z += o.z() * ms.z;
-				_worldRenderer.extractMesh(meshPos);
+				_worldRenderer.chunkMgr().extractMesh(meshPos);
 				o.next();
 			}
 		}

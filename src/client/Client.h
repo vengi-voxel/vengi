@@ -97,15 +97,4 @@ public:
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
 };
 
-inline frontend::ClientEntityPtr Client::getEntity(frontend::ClientEntityId id) const {
-	return _worldRenderer.getEntity(id);
-}
-
-inline frontend::ClientEntityId Client::id() const {
-	if (!_player) {
-		return -1;
-	}
-	return _player->id();
-}
-
 typedef std::shared_ptr<Client> ClientPtr;

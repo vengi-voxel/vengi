@@ -1,9 +1,11 @@
 set(LIB voxelrender)
 set(SRCS
+	EntityMgr.cpp EntityMgr.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	PlayerCamera.cpp PlayerCamera.h
 	ShaderAttribute.h
 	VoxelFontRenderer.h VoxelFontRenderer.cpp
+	WorldChunkMgr.h WorldChunkMgr.cpp
 	WorldMeshExtractor.h WorldMeshExtractor.cpp
 	WorldRenderer.h WorldRenderer.cpp
 )

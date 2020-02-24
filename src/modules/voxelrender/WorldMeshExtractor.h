@@ -103,8 +103,6 @@ public:
 
 	bool init(voxel::PagedVolume *volume);
 	void shutdown();
-
-	void stats(int& extracted, int& pending, int& meshes) const;
 };
 
 }

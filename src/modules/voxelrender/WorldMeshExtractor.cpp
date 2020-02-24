@@ -122,10 +122,4 @@ void WorldMeshExtractor::extractScheduledMesh() {
 	}
 }
 
-void WorldMeshExtractor::stats(int& extracted, int& pending, int& meshes) const {
-	extracted = _positionsExtracted.size();
-	pending = _pendingExtraction.size();
-	meshes = _extracted.size();
-}
-
 }
