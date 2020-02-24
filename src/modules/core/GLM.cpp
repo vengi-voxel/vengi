@@ -9,13 +9,6 @@
 
 namespace glm {
 
-const vec3 forward  = vec3( 0.0f,  0.0f, -1.0f);
-const vec3 backward = vec3( 0.0f,  0.0f,  1.0f);
-const vec3 right    = vec3( 1.0f,  0.0f,  0.0f);
-const vec3 left     = vec3(-1.0f,  0.0f,  0.0f);
-const vec3 up       = vec3( 0.0f,  1.0f,  0.0f);
-const vec3 down     = vec3( 0.0f, -1.0f,  0.0f);
-
 float intersectLines(const glm::vec3& p1,
 		const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& p4,
 		glm::vec3& pa, glm::vec3& pb, float *pmua,

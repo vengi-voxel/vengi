@@ -5,14 +5,16 @@
 #pragma once
 
 #include <glm/fwd.hpp>
+#include <glm/vec3.hpp>
 
 namespace glm {
-extern const glm::vec3 forward;
-extern const glm::vec3 backward;
-extern const glm::vec3 right;
-extern const glm::vec3 left;
-extern const glm::vec3 up;
-extern const glm::vec3 down;
+
+constexpr vec3 forward  = vec3( 0.0f,  0.0f, -1.0f);
+constexpr vec3 backward = vec3( 0.0f,  0.0f,  1.0f);
+constexpr vec3 right    = vec3( 1.0f,  0.0f,  0.0f);
+constexpr vec3 left     = vec3(-1.0f,  0.0f,  0.0f);
+constexpr vec3 up       = vec3( 0.0f,  1.0f,  0.0f);
+constexpr vec3 down     = vec3( 0.0f, -1.0f,  0.0f);
 
 /**
  * Calculate the line segment PaPb that is the shortest route between
