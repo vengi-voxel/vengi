@@ -227,8 +227,8 @@ void MapView::onRenderUI() {
 		ImGui::Text("Target Pos: %.2f:%.2f:%.2f ", targetpos.x, targetpos.y, targetpos.z);
 		ImGui::Text("Pos: %.2f:%.2f:%.2f, Distance:%.2f", pos.x, pos.y, pos.z, distance);
 		ImGui::Text("Yaw: %.2f Pitch: %.2f Roll: %.2f", yaw, pitch, camera.roll());
-		ImGui::Text("Pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
-				stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);
+		ImGui::Text("Pending: %i, meshes: %i, extracted: %i, uploaded: %i, octreesize: %i",
+				stats.pending, stats.meshes, stats.extracted, stats.active, stats.octreeSize);
 	}
 	const bool current = isRelativeMouseMode();
 	ImGui::Text("World mouse mode: %s", (current ? "true" : "false"));
@@ -240,9 +240,6 @@ void MapView::onRenderUI() {
 	_worldRenderer.setSeconds(_worldTime);
 
 	ImGui::InputVarFloat("Rotation Speed", _rotationSpeed);
-	ImGui::CheckboxVar("Occlusion Query", cfg::OcclusionQuery);
-	ImGui::CheckboxVar("Render Occlusion Queries", cfg::RenderOccluded);
-	ImGui::CheckboxVar("Render AABB", cfg::RenderAABB);
 
 	if (ImGui::CollapsingHeader("Textures/Buffers")) {
 		static bool renderColorMap = false;

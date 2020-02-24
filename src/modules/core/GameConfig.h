@@ -43,10 +43,6 @@ constexpr const char *ClientDebugShadowMapCascade = "cl_debug_cascade";
 constexpr const char *ClientDebugShadow = "cl_debug_shadow";
 
 constexpr const char *RenderOutline = "r_renderoutline";
-constexpr const char *RenderAABB = "r_renderaabb";
-constexpr const char *OcclusionThreshold = "r_occlusionthreshold";
-constexpr const char *OcclusionQuery = "r_occlusionquery";
-constexpr const char *RenderOccluded = "r_renderoccluded";
 
 constexpr const char *ServerUserTimeout = "sv_usertimeout";
 // the server side seed that is used to create the world

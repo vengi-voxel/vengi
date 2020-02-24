@@ -47,7 +47,6 @@ void WorldRenderer::reset() {
 	_octree.clear();
 	_activeChunkBuffers = 0;
 	_entities.clear();
-	_queryResults = 0;
 	_now = 0ul;
 }
 
@@ -67,19 +66,10 @@ void WorldRenderer::shutdown() {
 	_shadowMapShader.shutdown();
 	_skeletonShadowMapShader.shutdown();
 	_shadowMapInstancedShader.shutdown();
-	_shapeRenderer.shutdown();
-	_shapeBuilder.shutdown();
-	_shapeRendererOcclusionQuery.shutdown();
-	_shapeBuilderOcclusionQuery.shutdown();
 	shutdownFrameBuffer();
 	_postProcessBuf.shutdown();
 	_postProcessBufId = -1;
 	_postProcessShader.shutdown();
-
-	for (int i = 0; i < MAX_CHUNKBUFFERS; ++i) {
-		ChunkBuffer& buf = _chunkBuffers[i];
-		video::deleteOcclusionQuery(buf.occlusionQueryId);
-	}
 }
 
 frontend::ClientEntityPtr WorldRenderer::getEntity(frontend::ClientEntityId id) const {
@@ -152,9 +142,6 @@ void WorldRenderer::handleMeshQueue() {
 		Log::warn("Could not find free chunk buffer slot");
 		return;
 	}
-	if (freeChunkBuffer->occlusionQueryId == video::InvalidId) {
-		freeChunkBuffer->occlusionQueryId = video::genOcclusionQuery();
-	}
 
 	freeChunkBuffer->meshes = std::move(meshes);
 	updateAABB(*freeChunkBuffer);
@@ -189,17 +176,6 @@ static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, std:
 	return vertices.size();
 }
 
-bool WorldRenderer::occluded(ChunkBuffer * chunkBuffer) const {
-	const video::Id queryId = chunkBuffer->occlusionQueryId;
-	const int samples = video::getOcclusionQueryResult(queryId);
-	if (samples == -1) {
-		return chunkBuffer->occludedLastFrame;
-	}
-	chunkBuffer->occludedLastFrame = samples < _occlusionThreshold->intVal();
-	chunkBuffer->pendingResult = false;
-	return chunkBuffer->occludedLastFrame;
-}
-
 void WorldRenderer::cull(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererCull);
 	_opaqueIndices.clear();
@@ -208,93 +184,14 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	_waterVertices.clear();
 	size_t opaqueIndexOffset = 0;
 	size_t waterIndexOffset = 0;
-	_visibleChunks = 0;
-	_occludedChunks = 0;
-
-	const bool occlusionQuery = _occlusionQuery->boolVal();
 
 	Tree::Contents contents;
 	math::AABB<float> aabb = camera.frustum().aabb();
 	aabb.shift(camera.forward() * -10.0f);
 	_octree.query(math::AABB<int>(aabb.mins(), aabb.maxs()), contents);
-	_queryResults = contents.size();
 
-#if 0
-	class VisibleSorter {
-	private:
-		const glm::vec3 _pos;
-	public:
-		VisibleSorter(const glm::vec3& pos) :
-				_pos(pos) {
-		}
-
-		inline float dist(const glm::vec3& pos) const {
-			return glm::distance2(_pos, pos);
-		}
-
-		inline bool operator()(const ChunkBuffer* lhs, const ChunkBuffer* rhs) const {
-			const float lhsDist = dist(lhs->translation());
-			const float rhsDist = dist(rhs->translation());
-			return lhsDist < rhsDist;
-		}
-	};
-	std::sort(contents.begin(), contents.end(), VisibleSorter(camera.position()));
-#endif
-
-	if (occlusionQuery) {
-		core_trace_scoped(WorldRendererOcclusionQuery);
-		// disable writing to the color buffer
-		// We just want to check whether they would be rendered, not actually render them
-		video::colorMask(false, false, false, false);
-
-		for (ChunkBuffer* chunkBuffer : contents) {
-			if (chunkBuffer->pendingResult) {
-#if 0
-				const math::AABB<int>& aabb = chunkBuffer->aabb();
-				const glm::vec3& center = glm::vec3(aabb.getCenter());
-				const glm::mat4& translate = glm::translate(center);
-				const glm::mat4& model = glm::scale(translate, glm::vec3(aabb.getWidth()));
-				_shapeRendererOcclusionQuery.render(_aabbMeshesOcclusionQuery, camera, model);
-#endif
-				continue;
-			}
-			const auto& aabb = chunkBuffer->aabb();
-			if (aabb.containsPoint(camera.position())) {
-				continue;
-			}
-			const video::Id queryId = chunkBuffer->occlusionQueryId;
-			const glm::vec3& center = glm::vec3(aabb.getCenter());
-			const glm::mat4& translate = glm::translate(center);
-			const glm::mat4& model = glm::scale(translate, glm::vec3(aabb.getWidth()));
-			core_assert(queryId != video::InvalidId);
-			core_assert_always(video::beginOcclusionQuery(queryId));
-			_shapeRendererOcclusionQuery.render(_aabbMeshesOcclusionQuery, camera, model);
-			core_assert_always(video::endOcclusionQuery(queryId));
-			chunkBuffer->pendingResult = true;
-		}
-		video::flush();
-	}
-
-	const bool renderOccluded = _renderOccluded->boolVal();
-	const bool renderAABB = _renderAABBs->boolVal();
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Green);
 	for (ChunkBuffer* chunkBuffer : contents) {
 		core_trace_scoped(WorldRendererCullChunk);
-		if (occlusionQuery && occluded(chunkBuffer)) {
-			 ++_occludedChunks;
-			 if (!renderOccluded) {
-				 continue;
-			 }
-		} else if (renderOccluded) {
-			++_visibleChunks;
-			continue;
-		} else {
-			++_visibleChunks;
-		}
-		if (renderAABB) {
-			_shapeBuilder.aabb(chunkBuffer->aabb());
-		}
 		const ChunkMeshes& meshes = chunkBuffer->meshes;
 		opaqueIndexOffset += transform(opaqueIndexOffset, meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
 		waterIndexOffset += transform(waterIndexOffset, meshes.waterMesh, _waterVertices, _waterIndices);
@@ -331,9 +228,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	cull(camera);
 	if (vertices != nullptr) {
 		*vertices = _opaqueVertices.size() + _waterVertices.size();
-	}
-	if (_visibleChunks == 0) {
-		return 0;
 	}
 	if (_opaqueIndices.empty() && _waterIndices.empty()) {
 		return 0;
@@ -375,11 +269,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_postProcessShader.setTexture(video::TextureUnit::Zero);
 		const int elements = _postProcessBuf.elements(_postProcessBufId, _postProcessShader.getComponentsPos());
 		video::drawArrays(video::Primitive::Triangles, elements);
-	}
-
-	if (_renderAABBs->boolVal()) {
-		_shapeRenderer.createOrUpdate(_aabbMeshes, _shapeBuilder);
-		_shapeRenderer.render(_aabbMeshes, camera);
 	}
 
 	return drawCallsWorld;
@@ -566,19 +455,11 @@ void WorldRenderer::extractMesh(const glm::ivec3& pos) {
 void WorldRenderer::stats(Stats& stats) const {
 	_meshExtractor.stats(stats.extracted, stats.pending, stats.meshes);
 	stats.active = _activeChunkBuffers;
-	stats.visible = _visibleChunks;
-	stats.occluded = _occludedChunks;
 	stats.octreeSize = _octree.count();
-	stats.octreeActive = _queryResults;
-	core_assert(_visibleChunks == _queryResults - _occludedChunks);
 }
 
 void WorldRenderer::construct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
-	_renderAABBs = core::Var::get(cfg::RenderAABB, "false");
-	_occlusionThreshold = core::Var::get(cfg::OcclusionThreshold, "20");
-	_occlusionQuery = core::Var::get(cfg::OcclusionQuery, "false");
-	_renderOccluded = core::Var::get(cfg::RenderOccluded, "false");
 }
 
 bool WorldRenderer::initOpaqueBuffer() {
@@ -657,21 +538,6 @@ bool WorldRenderer::initWaterBuffer() {
 bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	_colorTexture.init();
-
-	if (!_shapeRenderer.init()) {
-		Log::error("Failed to init the shape renderer");
-		return false;
-	}
-
-	if (!_shapeRendererOcclusionQuery.init()) {
-		Log::error("Failed to init the shape renderer");
-		return false;
-	}
-
-	_shapeBuilderOcclusionQuery.setPosition(glm::vec3(0.0f));
-	_shapeBuilderOcclusionQuery.setColor(core::Color::Red);
-	_shapeBuilderOcclusionQuery.cube(glm::vec3(-0.5f), glm::vec3(0.5f));
-	_aabbMeshesOcclusionQuery = _shapeRendererOcclusionQuery.create(_shapeBuilderOcclusionQuery);
 
 	if (!_worldShader.setup()) {
 		Log::error("Failed to setup the post world shader");
@@ -814,7 +680,6 @@ void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 		chunkBuffer.inuse = false;
 		--_activeChunkBuffers;
 		_octree.remove(&chunkBuffer);
-		video::deleteOcclusionQuery(chunkBuffer.occlusionQueryId);
 		Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
 	}
 

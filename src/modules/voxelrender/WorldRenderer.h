@@ -40,16 +40,10 @@ class WorldRenderer {
 
 protected:
 	struct ChunkBuffer {
-		~ChunkBuffer() {
-			core_assert(occlusionQueryId == video::InvalidId);
-		}
 		bool inuse = false;
 		math::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
 		ChunkMeshes meshes{0, 0, 0, 0};
 		std::vector<glm::vec3> instancedPositions;
-		video::Id occlusionQueryId = video::InvalidId;
-		bool occludedLastFrame = false;
-		bool pendingResult = false;
 
 		/**
 		 * This is the world position. Not the render positions. There is no scale
@@ -73,9 +67,6 @@ protected:
 	static constexpr int MAX_CHUNKBUFFERS = 4096;
 	ChunkBuffer _chunkBuffers[MAX_CHUNKBUFFERS];
 	int _activeChunkBuffers = 0;
-	int _visibleChunks = 0;
-	int _occludedChunks = 0;
-	int _queryResults = 0;
 
 	WorldMeshExtractor _meshExtractor;
 
@@ -106,18 +97,6 @@ protected:
 	video::Buffer _postProcessBuf;
 	int32_t _postProcessBufId = -1;
 
-	video::ShapeBuilder _shapeBuilder;
-	render::ShapeRenderer _shapeRenderer;
-	int32_t _aabbMeshes = -1;
-	core::VarPtr _renderAABBs;
-	core::VarPtr _occlusionThreshold;
-	core::VarPtr _occlusionQuery;
-	core::VarPtr _renderOccluded;
-
-	video::ShapeBuilder _shapeBuilderOcclusionQuery;
-	render::ShapeRenderer _shapeRendererOcclusionQuery;
-	int32_t _aabbMeshesOcclusionQuery = -1;
-
 	float _fogRange;
 	float _viewDistance;
 	uint64_t _now = 0ul;
@@ -146,7 +125,6 @@ protected:
 	int getDistanceSquare(const glm::ivec3 &pos, const glm::ivec3 &pos2) const;
 
 	void cull(const video::Camera &camera);
-	bool occluded(ChunkBuffer *chunkBuffer) const;
 	bool renderOpaqueBuffers();
 	bool renderWaterBuffers();
 	ChunkBuffer *findFreeChunkBuffer();
@@ -188,10 +166,7 @@ public:
 		int extracted = 0;
 		int pending = 0;
 		int active = 0;
-		int visible = 0;
-		int occluded = 0;
 		int octreeSize = 0;
-		int octreeActive = 0;
 	};
 
 	void stats(Stats &stats) const;
