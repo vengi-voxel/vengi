@@ -24,4 +24,7 @@ struct VoxelVertex {
 };
 static_assert(sizeof(VoxelVertex) == 16, "Unexpected size of the vertex struct");
 
+// TODO: maybe reduce to uint16_t and use glDrawElementsBaseVertex
+typedef uint32_t IndexType;
+
 }
