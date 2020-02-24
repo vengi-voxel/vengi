@@ -26,6 +26,8 @@ set(SRCS
 	collection/Stack.h
 	collection/StringMap.h
 
+	concurrent/Lock.cpp concurrent/Lock.h
+
 	ArrayLength.h
 	Assert.cpp Assert.h
 	Atomic.cpp Atomic.h
