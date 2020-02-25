@@ -102,7 +102,7 @@ void Shadow::render(funcRender renderCallback, bool clearDepthBuffer) {
 	const bool cullFaceChanged = video::cullFace(video::Face::Front);
 	const glm::vec2 offset(_parameters.shadowBiasSlope, (_parameters.shadowBias / _shadowRangeZ) * (1 << 24));
 	const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
-
+	video::colorMask(false, false, false, false);
 	_depthBuffer.bind(false);
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
 		_depthBuffer.bindTextureAttachment(video::FrameBufferAttachment::Depth, i, clearDepthBuffer);
@@ -111,6 +111,7 @@ void Shadow::render(funcRender renderCallback, bool clearDepthBuffer) {
 		}
 	}
 	_depthBuffer.unbind();
+	video::colorMask(true, true, true, true);
 	if (cullFaceChanged) {
 		video::cullFace(video::Face::Back);
 	}
