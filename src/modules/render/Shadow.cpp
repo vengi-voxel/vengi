@@ -99,6 +99,7 @@ bool Shadow::bind(video::TextureUnit unit) {
 void Shadow::render(funcRender renderCallback, bool clearDepthBuffer) {
 	const bool oldBlend = video::disable(video::State::Blend);
 	// put shadow acne into the dark
+	video::enable(video::State::CullFace);
 	const bool cullFaceChanged = video::cullFace(video::Face::Front);
 	const glm::vec2 offset(_parameters.shadowBiasSlope, (_parameters.shadowBias / _shadowRangeZ) * (1 << 24));
 	const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
