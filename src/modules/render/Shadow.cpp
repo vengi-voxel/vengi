@@ -100,9 +100,7 @@ void Shadow::render(funcRender renderCallback, bool clearDepthBuffer) {
 	const bool oldBlend = video::disable(video::State::Blend);
 	// put shadow acne into the dark
 	video::enable(video::State::CullFace);
-	const bool cullFaceChanged = video::cullFace(video::Face::Front);
-	const glm::vec2 offset(_parameters.shadowBiasSlope, (_parameters.shadowBias / _shadowRangeZ) * (1 << 24));
-	const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
+	video::cullFace(video::Face::Front);
 	video::colorMask(false, false, false, false);
 	_depthBuffer.bind(false);
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
@@ -113,9 +111,7 @@ void Shadow::render(funcRender renderCallback, bool clearDepthBuffer) {
 	}
 	_depthBuffer.unbind();
 	video::colorMask(true, true, true, true);
-	if (cullFaceChanged) {
-		video::cullFace(video::Face::Back);
-	}
+	video::cullFace(video::Face::Back);
 	if (oldBlend) {
 		video::enable(video::State::Blend);
 	}
