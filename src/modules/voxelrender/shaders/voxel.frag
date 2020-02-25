@@ -34,7 +34,8 @@ void main(void) {
 		float ndotl1 = dot(normal, u_lightdir);
 		float ndotl2 = dot(normal, -u_lightdir);
 		vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
-		vec3 shadowColor = shadow(u_viewprojection, v_color.rgb, diffuse, u_ambient_color);
+		float bias = max(0.05 * (1.0 - ndotl1), 0.005);
+		vec3 shadowColor = shadow(bias, u_viewprojection, v_color.rgb, diffuse, u_ambient_color);
 		o_color = vec4(shadowColor * v_ambientocclusion, v_color.a);
 	}
 }

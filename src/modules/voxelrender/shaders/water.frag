@@ -33,7 +33,8 @@ void main(void) {
 	float ndotl2 = dot(normal, -u_lightdir);
 	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
 	vec3 ambientColor = dayTimeColor(u_ambient_color, u_time);
-	vec3 shadowColor = shadow(u_viewprojection, mix(cubeColor, v_color.rgb, 0.01), diffuse, ambientColor);
+	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
+	vec3 shadowColor = shadow(bias, u_viewprojection, mix(cubeColor, v_color.rgb, 0.01), diffuse, ambientColor);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
 	o_color = fog(v_pos.xyz, linearColor, v_color.a);
 }

@@ -18,7 +18,7 @@ uniform mat4 u_cascades[4];
  * perform percentage-closer shadow map lookup
  * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
  */
-float sampleShadowPCF(in int cascade, in vec2 uv, in float compare) {
+float sampleShadowPCF(in float bias, in int cascade, in vec2 uv, in float compare) {
 	float result = 0.0;
 	const int r = 2;
 	for (int x = -r; x <= r; x++) {
@@ -32,14 +32,14 @@ float sampleShadowPCF(in int cascade, in vec2 uv, in float compare) {
 	return result / elements;
 }
 
-float calculateShadow(in int cascade, in mat4 viewprojection) {
+float calculateShadow(in float bias, in int cascade, in mat4 viewprojection) {
 	vec4 lightp = u_cascades[cascade] * vec4(v_lightspacepos, 1.0);
 	/* we manually have to do the perspective divide as there is no
 	 * version of textureProj that can take a sampler2DArrayShadow
 	 * Also bring the ndc into the range [0-1] because the depth map
 	 * is in that range */
 	vec3 lightpt = (lightp.xyz / lightp.w) * 0.5 + 0.5;
-	return sampleShadowPCF(cascade, calculateShadowTexcoord(lightpt.xy), lightpt.z);
+	return sampleShadowPCF(bias, cascade, calculateShadowTexcoord(lightpt.xy), lightpt.z);
 }
 
 int calculateCascade() {
@@ -47,9 +47,9 @@ int calculateCascade() {
 	return cascade;
 }
 
-vec3 shadow(in mat4 viewprojection, vec3 color, in vec3 diffuse, in vec3 ambient) {
+vec3 shadow(in float bias, in mat4 viewprojection, vec3 color, in vec3 diffuse, in vec3 ambient) {
 	int cascade = calculateCascade();
-	float shadow = calculateShadow(cascade, viewprojection);
+	float shadow = calculateShadow(bias, cascade, viewprojection);
 #if cl_debug_cascade
 	if (cascade == 0) {
 		color.r = 0.0;
@@ -82,7 +82,7 @@ vec3 shadow(in mat4 viewprojection, vec3 color, in vec3 diffuse, in vec3 ambient
 
 #else // cl_shadowmap == 1
 
-vec3 shadow(in mat4 viewprojection, in vec3 color, in vec3 diffuse, in vec3 ambient) {
+vec3 shadow(in float bias, in mat4 viewprojection, in vec3 color, in vec3 diffuse, in vec3 ambient) {
 	return clamp(color * (ambient + diffuse), 0.0f, 1.0f);
 }
 
