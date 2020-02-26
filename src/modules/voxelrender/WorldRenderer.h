@@ -35,6 +35,7 @@ protected:
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
 	video::TexturePtr _distortionTexture;
+	video::TexturePtr _normalTexture;
 	render::Skybox _skybox;
 
 	video::FrameBuffer _frameBuffer;

@@ -47,6 +47,9 @@ void WorldRenderer::shutdown() {
 	reset();
 	_worldChunkMgr.shutdown();
 	_colorTexture.shutdown();
+	if (_normalTexture) {
+		_normalTexture->shutdown();
+	}
 	_worldBuffers.shutdown();
 	_shadow.shutdown();
 	_skybox.shutdown();
@@ -245,6 +248,8 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_waterShader.setRefraction(video::TextureUnit::Four);
 	_distortionTexture->bind(video::TextureUnit::Five);
 	_waterShader.setDistortion(video::TextureUnit::Five);
+	_normalTexture->bind(video::TextureUnit::Six);
+	_waterShader.setNormalmap(video::TextureUnit::Six);
 	if (shadowMap) {
 		_waterShader.setViewprojection(camera.viewProjectionMatrix());
 		_waterShader.setShadowmap(video::TextureUnit::One);
@@ -256,6 +261,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 		++drawCallsWorld;
 	}
 	_skybox.unbind(video::TextureUnit::Two);
+	_normalTexture->unbind();
 	_distortionTexture->unbind();
 	_refractionBuffer.texture()->unbind();
 	_reflectionBuffer.texture()->unbind();
@@ -321,6 +327,12 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	_distortionTexture = video::createTextureFromImage("water-distortion.png");
 	if (!_distortionTexture || !_distortionTexture->isLoaded()) {
 		Log::error("Failed to load distortion texture");
+		return false;
+	}
+
+	_normalTexture = video::createTextureFromImage("water-normal.png");
+	if (!_normalTexture || !_normalTexture->isLoaded()) {
+		Log::error("Failed to load normalmap texture");
 		return false;
 	}
 
