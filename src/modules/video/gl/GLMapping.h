@@ -248,7 +248,11 @@ static const GLenum TextureUnits[] {
 	GL_TEXTURE3,
 	GL_TEXTURE4,
 	GL_TEXTURE5,
-	GL_TEXTURE6
+	GL_TEXTURE6,
+	GL_TEXTURE7,
+	GL_TEXTURE8,
+	GL_TEXTURE9,
+	GL_TEXTURE10
 };
 static_assert(core::enumVal(TextureUnit::Max) == lengthof(TextureUnits), "Array sizes don't match Max");
 

@@ -251,6 +251,10 @@ enum class TextureUnit {
 	Three,
 	Four,
 	Five,
+	Six,
+	Seven,
+	Eight,
+	Nine,
 
 	// don't interfere with any other bound texture when we are uploading
 	Upload,
