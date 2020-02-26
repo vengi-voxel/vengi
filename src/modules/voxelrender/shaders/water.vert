@@ -5,6 +5,8 @@ uniform mat4 u_model;
 uniform mat4 u_viewprojection;
 
 $out vec3 v_pos;
+$out vec4 v_clipspace;
+$out vec2 v_uv;
 
 #include "_fog.vert"
 #include "_shadowmap.vert"
@@ -19,6 +21,9 @@ void main(void) {
 	v_lightspacepos = v_pos;
 	v_viewz = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap
+	v_clipspace = u_viewprojection * pos;
+	// convert the water plane positions into texcoords for the distortion texture
+	v_uv = vec2(a_pos.x / 2.0 + 0.5, a_pos.y / 2.0 + 0.5) * tiling;
 
-	gl_Position = u_viewprojection * vec4(v_pos, 1.0);
+	gl_Position = v_clipspace;
 }

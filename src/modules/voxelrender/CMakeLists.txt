@@ -24,6 +24,7 @@ set(FILES
 	sky/sky_lf.png
 	sky/sky_rt.png
 	sky/sky_up.png
+	shared/water-distortion.png
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxelfont voxelworld)
 generate_shaders(${LIB} world water world_instanced voxel postprocess)

@@ -89,7 +89,17 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 }
 
 video::Camera WorldRenderer::reflectionCamera(const video::Camera& camera) const {
-	return camera;
+	video::Camera reflectionCamera = camera;
+	const float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
+	glm::vec3 position = camera.position();
+	const float distance = 2.0f * (position.y - waterHeight);
+	// TODO: positions lower than 0 only see earth from below
+	// as our mesh extractor adds a bottom plane to the mesh
+	position.y = glm::max(waterHeight, position.y - distance);
+	reflectionCamera.setPosition(position);
+	reflectionCamera.setPitch(-camera.pitch());
+	reflectionCamera.update(0ul);
+	return reflectionCamera;
 }
 
 int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
@@ -229,6 +239,12 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_waterShader.setTime(_seconds);
 	_skybox.bind(video::TextureUnit::Two);
 	_waterShader.setCubemap(video::TextureUnit::Two);
+	_reflectionBuffer.texture()->bind(video::TextureUnit::Three);
+	_waterShader.setReflection(video::TextureUnit::Three);
+	_refractionBuffer.texture()->bind(video::TextureUnit::Four);
+	_waterShader.setRefraction(video::TextureUnit::Four);
+	_distortionTexture->bind(video::TextureUnit::Five);
+	_waterShader.setDistortion(video::TextureUnit::Five);
 	if (shadowMap) {
 		_waterShader.setViewprojection(camera.viewProjectionMatrix());
 		_waterShader.setShadowmap(video::TextureUnit::One);
@@ -240,6 +256,9 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 		++drawCallsWorld;
 	}
 	_skybox.unbind(video::TextureUnit::Two);
+	_distortionTexture->unbind();
+	_refractionBuffer.texture()->unbind();
+	_reflectionBuffer.texture()->unbind();
 	return drawCallsWorld;
 }
 
@@ -298,6 +317,12 @@ void WorldRenderer::construct() {
 bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	_colorTexture.init();
+
+	_distortionTexture = video::createTextureFromImage("water-distortion.png");
+	if (!_distortionTexture || !_distortionTexture->isLoaded()) {
+		Log::error("Failed to load distortion texture");
+		return false;
+	}
 
 	if (!_worldShader.setup()) {
 		Log::error("Failed to setup the post world shader");
