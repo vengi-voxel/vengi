@@ -1,6 +1,4 @@
 $in vec3 v_pos;
-$in vec4 v_color;
-$in float v_ambientocclusion;
 uniform mat4 u_viewprojection;
 uniform float u_time;
 uniform samplerCube u_cubemap;
@@ -34,7 +32,6 @@ void main(void) {
 	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
 	vec3 ambientColor = dayTimeColor(u_ambient_color, u_time);
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
-	vec3 shadowColor = shadow(bias, u_viewprojection, mix(cubeColor, v_color.rgb, 0.01), diffuse, ambientColor);
-	vec3 linearColor = shadowColor * v_ambientocclusion;
-	o_color = fog(v_pos.xyz, linearColor, v_color.a);
+	vec3 shadowColor = shadow(bias, u_viewprojection, mix(cubeColor, vec3(0.0, 0.2, 0.5), 0.01), diffuse, ambientColor);
+	o_color = fog(v_pos.xyz, shadowColor, 0.6);
 }

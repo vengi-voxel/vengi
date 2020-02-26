@@ -17,7 +17,7 @@ protected:
 	struct ChunkBuffer {
 		bool inuse = false;
 		math::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
-		ChunkMeshes meshes{0, 0, 0, 0};
+		ChunkMeshes meshes{0, 0};
 		std::vector<glm::vec3> instancedPositions;
 
 		/**
@@ -25,7 +25,7 @@ protected:
 		 * applied here.
 		 */
 		inline const glm::ivec3 &translation() const {
-			return meshes.opaqueMesh.getOffset();
+			return meshes.mesh.getOffset();
 		}
 
 		/**
@@ -54,8 +54,6 @@ public:
 
 	std::vector<voxel::VoxelVertex> _opaqueVertices;
 	std::vector<voxel::IndexType> _opaqueIndices;
-	std::vector<voxel::VoxelVertex> _waterVertices;
-	std::vector<voxel::IndexType> _waterIndices;
 
 	void extractMesh(const glm::ivec3 &pos);
 	void extractMeshes(const video::Camera &camera);

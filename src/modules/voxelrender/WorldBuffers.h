@@ -18,7 +18,6 @@ public:
 	int32_t _opaqueIbo = -1;
 	int32_t _opaqueVbo = -1;
 	video::Buffer _waterBuffer;
-	int32_t _waterIbo = -1;
 	int32_t _waterVbo = -1;
 
 	bool renderOpaqueBuffers();

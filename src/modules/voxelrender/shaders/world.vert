@@ -45,12 +45,7 @@ void main(void) {
 	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;
 	vec3 colornoise = texture(u_texture, abs(pos.xz) / 256.0 / 10.0).rgb;
 	float alpha = u_materialcolor[a_colorindex].a;
-	// TODO: use $constant to check this magic number with the code
-	if (a_material == 1u) {
-		alpha = 0.6;
-	}
 	v_color = clamp(vec4(materialColor * colornoise * 1.8, alpha), 0.0, 1.0);
-
 	v_ambientocclusion = aovalues[a_ao];
 
 #if cl_shadowmap == 1

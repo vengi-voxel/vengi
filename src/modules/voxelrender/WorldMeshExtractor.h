@@ -20,16 +20,15 @@ namespace voxelrender {
 
 struct ChunkMeshes {
 	static constexpr bool MAY_GET_RESIZED = true;
-	ChunkMeshes(int opaqueVertices, int opaqueIndices, int waterVertices, int waterIndices) :
-			opaqueMesh(opaqueVertices, opaqueIndices, MAY_GET_RESIZED), waterMesh(waterVertices, waterIndices, MAY_GET_RESIZED) {
+	ChunkMeshes(int vertices, int indices) :
+			mesh(vertices, indices, MAY_GET_RESIZED) {
 	}
 
 	inline const glm::ivec3& translation() const {
-		return opaqueMesh.getOffset();
+		return mesh.getOffset();
 	}
 
-	voxel::Mesh opaqueMesh;
-	voxel::Mesh waterMesh;
+	voxel::Mesh mesh;
 
 	inline bool operator<(const ChunkMeshes& rhs) const {
 		return glm::all(glm::lessThan(translation(), rhs.translation()));

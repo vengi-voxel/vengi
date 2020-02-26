@@ -109,14 +109,10 @@ void WorldMeshExtractor::extractScheduledMesh() {
 		// these numbers are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
 		const int opaqueFactor = 16;
-		const int opaqueVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
-		const int waterVertices = region.getWidthInVoxels() * region.getDepthInVoxels();
-		ChunkMeshes data(opaqueVertices, opaqueVertices, waterVertices, waterVertices);
-		voxel::extractAllCubicMesh(_volume, region,
-				&data.opaqueMesh, &data.waterMesh,
-				voxel::IsQuadNeeded(), voxel::IsWaterQuadNeeded(),
-				voxel::MAX_WATER_HEIGHT);
-		if (!data.waterMesh.isEmpty() || !data.opaqueMesh.isEmpty()) {
+		const int vertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
+		ChunkMeshes data(vertices, vertices);
+		voxel::extractCubicMesh(_volume, region, &data.mesh, voxel::IsQuadNeeded());
+		if (!data.mesh.isEmpty()) {
 			_extracted.push(std::move(data));
 		}
 	}

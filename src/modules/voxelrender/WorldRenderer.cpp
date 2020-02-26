@@ -88,19 +88,30 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 	return 1;
 }
 
+video::Camera WorldRenderer::reflectionCamera(const video::Camera& camera) const {
+	return camera;
+}
+
 int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 	int drawCallsWorld = 0;
 	video::ScopedState scopedClipDistance(video::State::ClipDistance, true);
-	constexpr glm::vec4 waterClipPlane(glm::up, (float)-voxel::MAX_WATER_HEIGHT);
+	const float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
+	constexpr glm::vec4 waterClipPlane(glm::down, waterHeight);
 
 	// render above water
 	_reflectionBuffer.bind(true);
-	drawCallsWorld += renderAll(camera, +waterClipPlane);
+	const glm::vec3& position = camera.position();
+	if (position.y > waterHeight) {
+		const video::Camera& reflCamera = reflectionCamera(camera);
+		drawCallsWorld += renderTerrain(reflCamera, -waterClipPlane);
+		drawCallsWorld += renderEntities(reflCamera);
+	}
 	_reflectionBuffer.unbind();
 
 	// render below water
 	_refractionBuffer.bind(true);
-	drawCallsWorld += renderAll(camera, -waterClipPlane);
+	drawCallsWorld += renderTerrain(camera, waterClipPlane);
+	drawCallsWorld += renderEntities(camera);
 	_refractionBuffer.unbind();
 
 	return drawCallsWorld;
@@ -139,8 +150,6 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueVbo, _worldChunkMgr._opaqueVertices));
 	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueIbo, _worldChunkMgr._opaqueIndices));
-	core_assert_always(_worldBuffers._waterBuffer.update(_worldBuffers._waterVbo, _worldChunkMgr._waterVertices));
-	core_assert_always(_worldBuffers._waterBuffer.update(_worldBuffers._waterIbo, _worldChunkMgr._waterIndices));
 
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
@@ -207,20 +216,19 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_skybox.bind(video::TextureUnit::Two);
 	core_trace_scoped(WorldRendererRenderWater);
 	video::ScopedShader scoped(_waterShader);
-	_waterShader.setModel(glm::mat4(1.0f));
+	constexpr glm::vec3 translate(0.0f, ((float)voxel::MAX_WATER_HEIGHT) - 0.05f, 0.0f);
+	const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), translate), glm::vec3(1000.0f));
+	_waterShader.setModel(model);
 	_waterShader.setFocuspos(_focusPos);
 	_waterShader.setCubemap(video::TextureUnit::Two);
 	_waterShader.setCamerapos(camera.position());
 	_waterShader.setLightdir(_shadow.sunDirection());
-	_waterShader.setMaterialblock(_materialBlock);
 	_waterShader.setFogcolor(_clearColor);
 	_waterShader.setDiffuseColor(_diffuseColor);
 	_waterShader.setAmbientColor(_ambientColor);
 	_waterShader.setNightColor(_nightColor);
 	_waterShader.setFogrange(_fogRange);
-	_waterShader.setClipplane(clipPlane);
 	_waterShader.setTime(_seconds);
-	_waterShader.setTexture(video::TextureUnit::Zero);
 	if (shadowMap) {
 		_waterShader.setViewprojection(camera.viewProjectionMatrix());
 		_waterShader.setShadowmap(video::TextureUnit::One);

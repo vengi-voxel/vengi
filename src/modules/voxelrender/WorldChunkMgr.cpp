@@ -41,11 +41,7 @@ void WorldChunkMgr::updateAABB(ChunkBuffer& chunkBuffer) const {
 	glm::ivec3 maxs((std::numeric_limits<int>::min)());
 
 	const ChunkMeshes& meshes = chunkBuffer.meshes;
-	for (auto& v : meshes.opaqueMesh.getVertexVector()) {
-		mins = (glm::min)(mins, v.position);
-		maxs = (glm::max)(maxs, v.position);
-	}
-	for (auto& v : meshes.waterMesh.getVertexVector()) {
+	for (auto& v : meshes.mesh.getVertexVector()) {
 		mins = (glm::min)(mins, v.position);
 		maxs = (glm::max)(maxs, v.position);
 	}
@@ -54,7 +50,7 @@ void WorldChunkMgr::updateAABB(ChunkBuffer& chunkBuffer) const {
 }
 
 void WorldChunkMgr::handleMeshQueue() {
-	ChunkMeshes meshes(0, 0, 0, 0);
+	ChunkMeshes meshes(0, 0);
 	if (!_meshExtractor.pop(meshes)) {
 		return;
 	}
@@ -115,10 +111,7 @@ void WorldChunkMgr::cull(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererCull);
 	_opaqueIndices.clear();
 	_opaqueVertices.clear();
-	_waterIndices.clear();
-	_waterVertices.clear();
 	size_t opaqueIndexOffset = 0;
-	size_t waterIndexOffset = 0;
 
 	Tree::Contents contents;
 	math::AABB<float> aabb = camera.frustum().aabb();
@@ -128,8 +121,7 @@ void WorldChunkMgr::cull(const video::Camera& camera) {
 	for (ChunkBuffer* chunkBuffer : contents) {
 		core_trace_scoped(WorldRendererCullChunk);
 		const ChunkMeshes& meshes = chunkBuffer->meshes;
-		opaqueIndexOffset += transform(opaqueIndexOffset, meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
-		waterIndexOffset += transform(waterIndexOffset, meshes.waterMesh, _waterVertices, _waterIndices);
+		opaqueIndexOffset += transform(opaqueIndexOffset, meshes.mesh, _opaqueVertices, _opaqueIndices);
 	}
 }
 

@@ -24,13 +24,9 @@ bool WorldBuffers::renderOpaqueBuffers() {
 }
 
 bool WorldBuffers::renderWaterBuffers() {
-	const uint32_t numIndices = _waterBuffer.elements(_waterIbo, 1, sizeof(voxel::IndexType));
-	if (numIndices == 0u) {
-		return false;
-	}
-	video::ScopedState cullFace(video::State::CullFace, false);
 	video::ScopedBuffer scopedBuf(_waterBuffer);
-	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
+	const int elements = _waterBuffer.elements(_waterVbo, 2);
+	video::drawArrays(video::Primitive::Triangles, elements);
 	return true;
 }
 
@@ -64,32 +60,33 @@ bool WorldBuffers::initOpaqueBuffer(shader::WorldShader& worldShader) {
 }
 
 bool WorldBuffers::initWaterBuffer(shader::WaterShader& waterShader) {
-	_waterVbo = _waterBuffer.create();
+	alignas(16) static constexpr glm::vec2 vecs[] = {
+		{ -1.0f, -1.0f},
+		{ -1.0f,  1.0f},
+		{  1.0f, -1.0f},
+		{  1.0f, -1.0f},
+		{ -1.0f,  1.0f},
+		{  1.0f,  1.0f},
+
+		{ -1.0f, -1.0f},
+		{  1.0f, -1.0f},
+		{ -1.0f,  1.0f},
+		{  1.0f, -1.0f},
+		{  1.0f,  1.0f},
+		{ -1.0f,  1.0f}
+	};
+	_waterVbo = _waterBuffer.create(vecs, sizeof(vecs));
 	if (_waterVbo == -1) {
 		Log::error("Failed to create water vertex buffer");
 		return false;
 	}
-	_waterBuffer.setMode(_waterVbo, video::BufferMode::Stream);
-	_waterIbo = _waterBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
-	if (_waterIbo == -1) {
-		Log::error("Failed to create water index buffer");
-		return false;
-	}
-	_waterBuffer.setMode(_waterIbo, video::BufferMode::Stream);
 
 	video::ScopedBuffer scoped(_waterBuffer);
 	const int locationPos = waterShader.getLocationPos();
 	waterShader.enableVertexAttributeArray(locationPos);
-	const video::Attribute& posAttrib = getPositionVertexAttribute(_waterVbo, locationPos, waterShader.getAttributeComponents(locationPos));
+	const video::Attribute& posAttrib = waterShader.getPosAttribute(_waterVbo, &glm::vec2::x);
 	if (!_waterBuffer.addAttribute(posAttrib)) {
 		Log::warn("Failed to add water position attribute");
-	}
-
-	const int locationInfo = waterShader.getLocationInfo();
-	waterShader.enableVertexAttributeArray(locationInfo);
-	const video::Attribute& infoAttrib = getInfoVertexAttribute(_waterVbo, locationInfo, waterShader.getAttributeComponents(locationInfo));
-	if (!_waterBuffer.addAttribute(infoAttrib)) {
-		Log::warn("Failed to add water info attribute");
 	}
 
 	return true;
