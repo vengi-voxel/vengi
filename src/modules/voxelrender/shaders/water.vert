@@ -1,9 +1,11 @@
 // attributes from the VAOs
 $in vec2 a_pos;
 
+uniform vec3 u_camerapos;
 uniform mat4 u_model;
 uniform mat4 u_viewprojection;
 
+$out vec3 v_camdist;
 $out vec3 v_pos;
 $out vec4 v_clipspace;
 $out vec2 v_uv;
@@ -24,6 +26,7 @@ void main(void) {
 	v_clipspace = u_viewprojection * pos;
 	// convert the water plane positions into texcoords for the distortion texture
 	v_uv = vec2(a_pos.x / 2.0 + 0.5, a_pos.y / 2.0 + 0.5) * tiling;
+	v_camdist = u_camerapos - v_pos;
 
 	gl_Position = v_clipspace;
 }

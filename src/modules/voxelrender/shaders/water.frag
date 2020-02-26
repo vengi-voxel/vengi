@@ -1,6 +1,7 @@
 $in vec3 v_pos;
 $in vec4 v_clipspace;
 $in vec2 v_uv;
+$in vec3 v_camdist;
 
 uniform mat4 u_viewprojection;
 uniform float u_time;
@@ -8,7 +9,6 @@ uniform samplerCube u_cubemap;
 uniform sampler2D u_reflection;
 uniform sampler2D u_refraction;
 uniform sampler2D u_distortion;
-uniform vec3 u_camerapos;
 
 vec2 calculateShadowTexcoord(vec2 uv) {
 	float offset = cos(u_time / 1000.0) * 0.000125;
@@ -33,7 +33,7 @@ void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
 	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
-	vec3 I = normalize(vec3(v_pos) - u_camerapos);
+	vec3 I = normalize(v_camdist);
 	vec3 R = reflect(I, normal);
 	vec3 cubeColor = texture(u_cubemap, R).rgb;
 	float ndotl1 = dot(normal, u_lightdir);
@@ -56,9 +56,11 @@ void main(void) {
 	reflectTexcoords.x = clamp(reflectTexcoords.x, 0.001, 0.999);
 	reflectTexcoords.y = clamp(reflectTexcoords.y, -0.999, -0.001);
 	vec4 reflectColor = texture(u_reflection, reflectTexcoords);
+	float refractiveFactor = dot(I, vec3(0.0, 1.0, 0.0));
+	refractiveFactor = pow(refractiveFactor, 10.0);
 
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
 	vec3 shadowColor = shadow(bias, u_viewprojection, mix(cubeColor, vec3(0.0, 0.2, 0.5), 0.01), diffuse, ambientColor);
-	vec4 waterColor = mix(reflectColor, refractColor, 0.5);
+	vec4 waterColor = mix(reflectColor, refractColor, refractiveFactor);
 	o_color = fog(v_pos.xyz, mix(shadowColor, waterColor.xyz, 0.5), 0.5);
 }
