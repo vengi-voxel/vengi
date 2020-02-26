@@ -389,9 +389,8 @@ void WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
 	textureCfg.format(video::TextureFormat::RGBA);
-	glm::vec2 frameBufferSize(dimensions.x, dimensions.y);
 	video::FrameBufferConfig cfg;
-	cfg.dimension(frameBufferSize).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
+	cfg.dimension(dimensions).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
 	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	_frameBuffer.init(cfg);
 
