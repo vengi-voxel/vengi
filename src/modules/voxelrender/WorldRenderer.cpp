@@ -201,21 +201,13 @@ int WorldRenderer::renderTerrain(const video::Camera& camera, const glm::vec4& c
 	int drawCallsWorld = 0;
 	core_trace_scoped(WorldRendererRenderOpaque);
 	video::ScopedShader scoped(_worldShader);
-	_worldShader.setModel(glm::mat4(1.0f));
-	_worldShader.setMaterialblock(_materialBlock);
 	_worldShader.setFocuspos(_focusPos);
 	_worldShader.setLightdir(_shadow.sunDirection());
-	_worldShader.setFogcolor(_clearColor);
-	_worldShader.setTexture(video::TextureUnit::Zero);
-	_worldShader.setDiffuseColor(_diffuseColor);
-	_worldShader.setAmbientColor(_ambientColor);
-	_worldShader.setNightColor(_nightColor);
 	_worldShader.setTime(_seconds);
 	_worldShader.setFogrange(_fogRange);
 	_worldShader.setClipplane(clipPlane);
 	if (shadowMap) {
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
-		_worldShader.setShadowmap(video::TextureUnit::One);
 		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_worldShader.setCascades(_shadow.cascades());
 		_worldShader.setDistances(_shadow.distances());
@@ -231,28 +223,16 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	const bool shadowMap = _shadowMap->boolVal();
 	core_trace_scoped(WorldRendererRenderWater);
 	video::ScopedShader scoped(_waterShader);
-	constexpr glm::vec3 translate(0.0f, ((float)voxel::MAX_WATER_HEIGHT) - 0.05f, 0.0f);
-	const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), translate), glm::vec3(1000.0f));
-	_waterShader.setModel(model);
 	_waterShader.setFocuspos(_focusPos);
 	_waterShader.setCamerapos(camera.position());
 	_waterShader.setLightdir(_shadow.sunDirection());
-	_waterShader.setFogcolor(_clearColor);
-	_waterShader.setDiffuseColor(_diffuseColor);
-	_waterShader.setAmbientColor(_ambientColor);
-	_waterShader.setNightColor(_nightColor);
 	_waterShader.setFogrange(_fogRange);
 	_waterShader.setTime(_seconds);
 	_skybox.bind(video::TextureUnit::Two);
-	_waterShader.setCubemap(video::TextureUnit::Two);
 	_reflectionBuffer.texture()->bind(video::TextureUnit::Three);
-	_waterShader.setReflection(video::TextureUnit::Three);
 	_refractionBuffer.texture()->bind(video::TextureUnit::Four);
-	_waterShader.setRefraction(video::TextureUnit::Four);
 	_distortionTexture->bind(video::TextureUnit::Five);
-	_waterShader.setDistortion(video::TextureUnit::Five);
 	_normalTexture->bind(video::TextureUnit::Six);
-	_waterShader.setNormalmap(video::TextureUnit::Six);
 	if (shadowMap) {
 		_waterShader.setViewprojection(camera.viewProjectionMatrix());
 		_waterShader.setShadowmap(video::TextureUnit::One);
@@ -292,19 +272,13 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	video::ScopedShader scoped(_chrShader);
 	_chrShader.setFogrange(_fogRange);
 	_chrShader.setFocuspos(_focusPos);
-	_chrShader.setDiffuseColor(_diffuseColor);
-	_chrShader.setAmbientColor(_ambientColor);
-	_chrShader.setFogcolor(_clearColor);
 	_chrShader.setLightdir(_shadow.sunDirection());
-	_chrShader.setNightColor(_nightColor);
 	_chrShader.setTime(_seconds);
-	_chrShader.setMaterialblock(_materialBlock);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
 		_chrShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_chrShader.setViewprojection(camera.viewProjectionMatrix());
-		_chrShader.setShadowmap(video::TextureUnit::One);
 		_chrShader.setCascades(_shadow.cascades());
 		_chrShader.setDistances(_shadow.distances());
 	}
@@ -421,6 +395,42 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	_postProcessBufId = _postProcessBuf.create(vecs, sizeof(vecs));
 	_postProcessBuf.addAttribute(_postProcessShader.getPosAttribute(_postProcessBufId, &VertexFormat::pos));
 	_postProcessBuf.addAttribute(_postProcessShader.getTexcoordAttribute(_postProcessBufId, &VertexFormat::tex));
+
+	{
+		video::ScopedShader scoped(_waterShader);
+		constexpr glm::vec3 translate(0.0f, ((float)voxel::MAX_WATER_HEIGHT) - 0.05f, 0.0f);
+		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), translate), glm::vec3(1000.0f));
+		_waterShader.setModel(model);
+		_waterShader.setCubemap(video::TextureUnit::Two);
+		_waterShader.setReflection(video::TextureUnit::Three);
+		_waterShader.setRefraction(video::TextureUnit::Four);
+		_waterShader.setDistortion(video::TextureUnit::Five);
+		_waterShader.setNormalmap(video::TextureUnit::Six);
+		_waterShader.setFogcolor(_clearColor);
+		_waterShader.setDiffuseColor(_diffuseColor);
+		_waterShader.setAmbientColor(_ambientColor);
+		_waterShader.setNightColor(_nightColor);
+	}
+	{
+		video::ScopedShader scoped(_chrShader);
+		_chrShader.setDiffuseColor(_diffuseColor);
+		_chrShader.setAmbientColor(_ambientColor);
+		_chrShader.setFogcolor(_clearColor);
+		_chrShader.setNightColor(_nightColor);
+		_chrShader.setMaterialblock(_materialBlock);
+		_chrShader.setShadowmap(video::TextureUnit::One);
+	}
+	{
+		video::ScopedShader scoped(_worldShader);
+		_worldShader.setFogcolor(_clearColor);
+		_worldShader.setMaterialblock(_materialBlock);
+		_worldShader.setModel(glm::mat4(1.0f));
+		_worldShader.setTexture(video::TextureUnit::Zero);
+		_worldShader.setDiffuseColor(_diffuseColor);
+		_worldShader.setAmbientColor(_ambientColor);
+		_worldShader.setNightColor(_nightColor);
+		_worldShader.setShadowmap(video::TextureUnit::One);
+	}
 
 	return true;
 }

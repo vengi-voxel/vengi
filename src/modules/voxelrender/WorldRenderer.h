@@ -50,10 +50,10 @@ protected:
 	float _seconds = 0.0f;
 	glm::vec3 _focusPos { 0.0f };
 
-	glm::vec4 _clearColor = core::Color::LightBlue;
-	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
-	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
-	glm::vec3 _nightColor = glm::vec3(0.001, 0.001, 0.2);
+	const glm::vec4 _clearColor = core::Color::LightBlue;
+	const glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
+	const glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
+	const glm::vec3 _nightColor = glm::vec3(0.001, 0.001, 0.2);
 	core::VarPtr _shadowMap;
 
 	// this ub is currently shared between the world, world instanced and water shader
