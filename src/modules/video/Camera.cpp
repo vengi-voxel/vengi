@@ -33,11 +33,11 @@ float Camera::yaw() const {
 	return glm::yaw(_quat);
 }
 
-void Camera::yaw(float radians) {
+void Camera::setYaw(float radians) {
 	rotate(radians, glm::up);
 }
 
-void Camera::roll(float radians) {
+void Camera::setRoll(float radians) {
 	rotate(radians, glm::backward);
 }
 
@@ -154,13 +154,13 @@ void Camera::rotate(const glm::vec3& radians) {
 	switch(_type) {
 	case CameraType::FirstPerson: {
 		turn(radians.y);
-		pitch(radians.x);
+		setPitch(radians.x);
 		break;
 	}
 	case CameraType::Free:
-		yaw(radians.y);
-		pitch(radians.x);
-		roll(radians.z);
+		setYaw(radians.y);
+		setPitch(radians.x);
+		setRoll(radians.z);
 		break;
 	}
 }
@@ -176,7 +176,7 @@ float Camera::horizontalYaw() const {
 	return yaw;
 }
 
-void Camera::pitch(float radians) {
+void Camera::setPitch(float radians) {
 	if (_type == CameraType::FirstPerson) {
 		const float dotResult = glm::dot(direction(), glm::down);
 		float curPitch = glm::acos(dotResult) - glm::half_pi<float>();

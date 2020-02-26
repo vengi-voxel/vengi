@@ -178,17 +178,17 @@ public:
 	 */
 	float yaw() const;
 	float horizontalYaw() const;
-	void yaw(float radians);
+	void setYaw(float radians);
 	/**
 	 * @brief Rotation around the z-axis
 	 */
 	float roll() const;
-	void roll(float radians);
+	void setRoll(float radians);
 	/**
 	 * @brief Rotation around the x-axis
 	 */
 	float pitch() const;
-	void pitch(float radians);
+	void setPitch(float radians);
 
 	/**
 	 * @brief Rotation around the y-axis relative to world up

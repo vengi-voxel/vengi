@@ -66,7 +66,7 @@ bool ViewportController::move(bool rotate, int x, int y) {
 		const float s = _rotationSpeed->floatVal();
 		if (_camMode == SceneCameraMode::Free) {
 			_camera.turn(yaw * s);
-			_camera.pitch(pitch * s);
+			_camera.setPitch(pitch * s);
 		}
 		_mouseX = x;
 		_mouseY = y;
