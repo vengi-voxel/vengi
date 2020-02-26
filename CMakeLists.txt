@@ -46,7 +46,7 @@ include(CPack)
 
 option(UNITTESTS "Builds with tests" ON)
 option(VISUALTESTS "Builds with visual tests" ON)
-option(DISABLE_UNITY "Disable the fast unity build" OFF)
+option(DISABLE_UNITY "Disable the fast unity build" ON)
 option(TOOLS "Builds with tools" ON)
 option(RCON "Builds with rcon tool - also needs TOOLS to be active" ON)
 option(SERVER "Builds with server" ON)
