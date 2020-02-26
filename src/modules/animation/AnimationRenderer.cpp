@@ -128,6 +128,9 @@ void AnimationRenderer::render(const AnimationEntity& character, const video::Ca
 	_shader.setNightColor(_nightColor);
 	_shader.setTime(_seconds);
 
+	// clip plane is disabled here
+	_shader.setClipplane(glm::vec4(glm::down, 1000.0f));
+
 	_shader.setFocuspos(camera.target());
 	_shader.setFogcolor(_clearColor);
 	_shader.setFogrange(_fogRange);

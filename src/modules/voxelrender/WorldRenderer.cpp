@@ -120,14 +120,14 @@ int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 	if (position.y > waterHeight) {
 		const video::Camera& reflCamera = reflectionCamera(camera);
 		drawCallsWorld += renderTerrain(reflCamera, -waterClipPlane);
-		drawCallsWorld += renderEntities(reflCamera);
+		drawCallsWorld += renderEntities(reflCamera, -waterClipPlane);
 	}
 	_reflectionBuffer.unbind();
 
 	// render below water
 	_refractionBuffer.bind(true);
 	drawCallsWorld += renderTerrain(camera, waterClipPlane);
-	drawCallsWorld += renderEntities(camera);
+	drawCallsWorld += renderEntities(camera, waterClipPlane);
 	_refractionBuffer.unbind();
 
 	return drawCallsWorld;
@@ -254,12 +254,12 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 int WorldRenderer::renderAll(const video::Camera& camera, const glm::vec4& clipPlane) {
 	int drawCallsWorld = 0;
 	drawCallsWorld += renderTerrain(camera, clipPlane);
-	drawCallsWorld += renderEntities(camera);
+	drawCallsWorld += renderEntities(camera, clipPlane);
 	drawCallsWorld += renderWater(camera, clipPlane);
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderEntities(const video::Camera& camera) {
+int WorldRenderer::renderEntities(const video::Camera& camera, const glm::vec4& clipPlane) {
 	if (_entityMgr.visibleEntities().empty()) {
 		return 0;
 	}
@@ -274,6 +274,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	_chrShader.setFocuspos(_focusPos);
 	_chrShader.setLightdir(_shadow.sunDirection());
 	_chrShader.setTime(_seconds);
+	_chrShader.setClipplane(clipPlane);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {

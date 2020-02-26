@@ -35,7 +35,7 @@ void main(void) {
 	vec2 ndc = (v_clipspace.xy / v_clipspace.w) / 2.0 + 0.5;
 
 	float moveFactor = fract(u_time / 20000.0);
-	vec2 distortedTexCoords = $texture2D(u_distortion, vec2(v_uv.x + moveFactor, v_uv.y)).rg*0.1;
+	vec2 distortedTexCoords = $texture2D(u_distortion, vec2(v_uv.x + moveFactor, v_uv.y)).rg * 0.1;
 	distortedTexCoords = v_uv + vec2(distortedTexCoords.x, distortedTexCoords.y + moveFactor);
 
 	// b component of the normal map is upward (so our y)
@@ -74,5 +74,6 @@ void main(void) {
 	vec3 shadowColor = shadow(bias, u_viewprojection, mix(cubeColor, vec3(0.0, 0.2, 0.5), 0.01), diffuse, ambientColor);
 	vec4 waterColor = mix(reflectColor, refractColor, refractiveFactor);
 	o_color = fog(v_pos.xyz, mix(shadowColor, waterColor.xyz, 0.5), 0.5);
+	// add a blue tint and the specular highlights
 	o_color = mix(o_color, vec4(0.0, 0.3, 0.5, 1.0), 0.2) + vec4(lightColor, 0.0);
 }
