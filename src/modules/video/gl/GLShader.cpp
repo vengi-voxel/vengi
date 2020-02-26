@@ -265,7 +265,10 @@ void Shader::setVertexAttributeInt(int location, int size, DataType type, int st
 	checkError();
 }
 
-void Shader::enableVertexAttributeArray(int location) const {
+bool Shader::enableVertexAttributeArray(int location) const {
+	if (location < 0) {
+		return false;
+	}
 #ifdef DEBUG
 #if SDL_ASSERT_LEVEL > 0
 	GLint vao = -1;
@@ -273,9 +276,9 @@ void Shader::enableVertexAttributeArray(int location) const {
 	core_assert_msg(vao > 0, "No vertex array object is bound");
 #endif
 #endif
-	core_assert(location != -1);
 	glEnableVertexAttribArray(location);
 	checkError();
+	return true;
 }
 
 void Shader::disableVertexAttribute(int location) const {

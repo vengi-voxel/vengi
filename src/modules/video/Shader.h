@@ -330,7 +330,7 @@ public:
 	void setVertexAttribute(int location, int size, DataType type, bool normalize, int stride, const void* buffer) const;
 	void setVertexAttributeInt(int location, int size, DataType type, int stride, const void* buffer) const;
 	void disableVertexAttribute(int location) const;
-	void enableVertexAttributeArray(int location) const;
+	bool enableVertexAttributeArray(int location) const;
 	bool setDivisor(int location, uint32_t divisor) const;
 };
 
