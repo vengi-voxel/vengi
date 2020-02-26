@@ -41,7 +41,7 @@ void main(void) {
 	// b component of the normal map is upward (so our y)
 	// r and g are mapped onto x and z and converted to allow negative values
 	vec4 normalMapColor = $texture2D(u_normalmap, distortedTexCoords);
-	vec3 normal = vec3(normalMapColor.r * 2.0 - 1.0, normalMapColor.b, normalMapColor.g * 2.0 - 1.0);
+	vec3 normal = vec3(normalMapColor.r * 2.0 - 1.0, normalMapColor.b * 3.0, normalMapColor.g * 2.0 - 1.0);
 	normal = normalize(normal);
 
 	vec3 I = normalize(v_camdist);
@@ -67,7 +67,7 @@ void main(void) {
 	reflectTexcoords.x = clamp(reflectTexcoords.x, 0.001, 0.999);
 	reflectTexcoords.y = clamp(reflectTexcoords.y, -0.999, -0.001);
 	vec4 reflectColor = $texture2D(u_reflection, reflectTexcoords);
-	float refractiveFactor = dot(I, vec3(0.0, 1.0, 0.0));
+	float refractiveFactor = dot(I, normal);
 	refractiveFactor = pow(refractiveFactor, 10.0);
 
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
