@@ -27,8 +27,8 @@ uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
 $out vec4 o_color;
 
-const float c_wavestrength = 0.02;
-const float c_reflectivity = 0.6;
+const float c_wavestrength = 0.04;
+const float c_reflectivity = 0.5;
 const float c_shinedamper = 20.0;
 
 void main(void) {

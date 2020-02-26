@@ -13,7 +13,7 @@ $out vec2 v_uv;
 #include "_fog.vert"
 #include "_shadowmap.vert"
 
-const float tiling = 6.0;
+const float tiling = 4.0;
 
 void main(void) {
 	vec4 pos = u_model * vec4(a_pos.x, 0.0, a_pos.y, 1.0);
