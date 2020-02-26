@@ -51,15 +51,13 @@ bool WorldBuffers::initOpaqueBuffer(shader::WorldShader& worldShader) {
 	const int locationPos = worldShader.getLocationPos();
 	const video::Attribute& posAttrib = getPositionVertexAttribute(_opaqueVbo, locationPos, worldShader.getAttributeComponents(locationPos));
 	if (!_opaqueBuffer.addAttribute(posAttrib)) {
-		Log::error("Failed to add position attribute");
-		return false;
+		Log::warn("Failed to add position attribute");
 	}
 
 	const int locationInfo = worldShader.getLocationInfo();
 	const video::Attribute& infoAttrib = getInfoVertexAttribute(_opaqueVbo, locationInfo, worldShader.getAttributeComponents(locationInfo));
 	if (!_opaqueBuffer.addAttribute(infoAttrib)) {
-		Log::error("Failed to add info attribute");
-		return false;
+		Log::warn("Failed to add info attribute");
 	}
 
 	return true;
@@ -81,27 +79,17 @@ bool WorldBuffers::initWaterBuffer(shader::WaterShader& waterShader) {
 
 	video::ScopedBuffer scoped(_waterBuffer);
 	const int locationPos = waterShader.getLocationPos();
-	if (locationPos == -1) {
-		Log::error("Failed to get pos location in water shader");
-		return false;
-	}
 	waterShader.enableVertexAttributeArray(locationPos);
 	const video::Attribute& posAttrib = getPositionVertexAttribute(_waterVbo, locationPos, waterShader.getAttributeComponents(locationPos));
 	if (!_waterBuffer.addAttribute(posAttrib)) {
-		Log::error("Failed to add water position attribute");
-		return false;
+		Log::warn("Failed to add water position attribute");
 	}
 
 	const int locationInfo = waterShader.getLocationInfo();
-	if (locationInfo == -1) {
-		Log::error("Failed to get info location in water shader");
-		return false;
-	}
 	waterShader.enableVertexAttributeArray(locationInfo);
 	const video::Attribute& infoAttrib = getInfoVertexAttribute(_waterVbo, locationInfo, waterShader.getAttributeComponents(locationInfo));
 	if (!_waterBuffer.addAttribute(infoAttrib)) {
-		Log::error("Failed to add water info attribute");
-		return false;
+		Log::warn("Failed to add water info attribute");
 	}
 
 	return true;
