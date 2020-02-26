@@ -47,6 +47,9 @@ void WorldRenderer::shutdown() {
 	reset();
 	_worldChunkMgr.shutdown();
 	_colorTexture.shutdown();
+	if (_distortionTexture) {
+		_distortionTexture->shutdown();
+	}
 	if (_normalTexture) {
 		_normalTexture->shutdown();
 	}
