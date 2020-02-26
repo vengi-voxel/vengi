@@ -111,7 +111,7 @@ video::Camera WorldRenderer::reflectionCamera(const video::Camera& camera) const
 int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 	int drawCallsWorld = 0;
 	video::ScopedState scopedClipDistance(video::State::ClipDistance, true);
-	const float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
+	constexpr float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
 	constexpr glm::vec4 waterClipPlane(glm::down, waterHeight);
 
 	// render above water
