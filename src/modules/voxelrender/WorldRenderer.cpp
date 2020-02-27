@@ -228,11 +228,14 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_waterShader.setLightdir(_shadow.sunDirection());
 	_waterShader.setFogrange(_fogRange);
 	_waterShader.setTime(_seconds);
+	_waterShader.setFar(camera.farPlane());
+	_waterShader.setNear(camera.nearPlane());
 	_skybox.bind(video::TextureUnit::Two);
 	_reflectionBuffer.texture()->bind(video::TextureUnit::Three);
 	_refractionBuffer.texture()->bind(video::TextureUnit::Four);
 	_distortionTexture->bind(video::TextureUnit::Five);
 	_normalTexture->bind(video::TextureUnit::Six);
+	_refractionBuffer.texture(video::FrameBufferAttachment::Depth)->bind(video::TextureUnit::Seven);
 	_waterShader.setViewprojection(camera.viewProjectionMatrix());
 	if (shadowMap) {
 		_waterShader.setDepthsize(glm::vec2(_shadow.dimension()));
@@ -246,6 +249,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_normalTexture->unbind();
 	_distortionTexture->unbind();
 	_refractionBuffer.texture()->unbind();
+	_refractionBuffer.texture(video::FrameBufferAttachment::Depth)->unbind();
 	_reflectionBuffer.texture()->unbind();
 	return drawCallsWorld;
 }
@@ -407,6 +411,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		_waterShader.setRefraction(video::TextureUnit::Four);
 		_waterShader.setDistortion(video::TextureUnit::Five);
 		_waterShader.setNormalmap(video::TextureUnit::Six);
+		_waterShader.setDepthmap(video::TextureUnit::Seven);
 		_waterShader.setFogcolor(_clearColor);
 		_waterShader.setDiffuseColor(_diffuseColor);
 		_waterShader.setAmbientColor(_ambientColor);
@@ -448,7 +453,7 @@ void WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
 	textureCfg = video::TextureConfig();
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig refractionCfg;
-	refractionCfg.dimension(glm::ivec2(1280, 720)).depthBuffer(true).depthBufferFormat(video::TextureFormat::D32F);
+	refractionCfg.dimension(glm::ivec2(1280, 720)).depthTexture(true).depthTextureFormat(video::TextureFormat::D32F);
 	refractionCfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	_refractionBuffer.init(refractionCfg);
 

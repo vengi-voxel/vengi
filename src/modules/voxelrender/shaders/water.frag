@@ -5,11 +5,14 @@ $in vec3 v_camdist;
 
 uniform mat4 u_viewprojection;
 uniform float u_time;
+uniform float u_near;
+uniform float u_far;
 uniform samplerCube u_cubemap;
 uniform sampler2D u_reflection;
 uniform sampler2D u_refraction;
 uniform sampler2D u_distortion;
 uniform sampler2D u_normalmap;
+uniform sampler2D u_depthmap;
 
 vec2 calculateShadowTexcoord(vec2 uv) {
 	float offset = cos(u_time / 1000.0) * 0.000125;
@@ -31,8 +34,16 @@ const float c_wavestrength = 0.04;
 const float c_reflectivity = 0.5;
 const float c_shinedamper = 20.0;
 
+float depthToDistance(float depth) {
+	return 2.0 * u_near * u_far / (u_far + u_near - (2.0 * depth - 1.0) * (u_far - u_near));
+}
+
 void main(void) {
 	vec2 ndc = (v_clipspace.xy / v_clipspace.w) / 2.0 + 0.5;
+
+	float floorDistance = depthToDistance($texture2D(u_depthmap, ndc).r);
+	float waterDistance = depthToDistance(gl_FragCoord.z);
+	float depthWater = floorDistance - waterDistance;
 
 	float moveFactor = fract(u_time / 20000.0);
 	vec2 distortedTexCoords = $texture2D(u_distortion, vec2(v_uv.x + moveFactor, v_uv.y)).rg * 0.1;
@@ -76,4 +87,5 @@ void main(void) {
 	o_color = fog(v_pos.xyz, mix(shadowColor, waterColor.xyz, 0.5), 0.5);
 	// add a blue tint and the specular highlights
 	o_color = mix(o_color, vec4(0.0, 0.3, 0.5, 1.0), 0.2) + vec4(lightColor, 0.0);
+	//o_color = vec4(depthWater / 50.0, depthWater / 50.0, depthWater / 50.0, 1.0);
 }
