@@ -119,15 +119,17 @@ int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 	const glm::vec3& position = camera.position();
 	if (position.y > waterHeight) {
 		const video::Camera& reflCamera = reflectionCamera(camera);
-		drawCallsWorld += renderTerrain(reflCamera.viewProjectionMatrix(), -waterClipPlane);
-		drawCallsWorld += renderEntities(reflCamera.viewProjectionMatrix(), -waterClipPlane);
+		const glm::mat4& vpmatRefl = reflCamera.viewProjectionMatrix();
+		drawCallsWorld += renderTerrain(vpmatRefl, -waterClipPlane);
+		drawCallsWorld += renderEntities(vpmatRefl, -waterClipPlane);
 	}
 	_reflectionBuffer.unbind();
 
 	// render below water
+	const glm::mat4& vpmat = camera.viewProjectionMatrix();
 	_refractionBuffer.bind(true);
-	drawCallsWorld += renderTerrain(camera.viewProjectionMatrix(), waterClipPlane);
-	drawCallsWorld += renderEntities(camera.viewProjectionMatrix(), waterClipPlane);
+	drawCallsWorld += renderTerrain(vpmat, waterClipPlane);
+	drawCallsWorld += renderEntities(vpmat, waterClipPlane);
 	_refractionBuffer.unbind();
 
 	return drawCallsWorld;
@@ -256,8 +258,9 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 
 int WorldRenderer::renderAll(const video::Camera& camera, const glm::vec4& clipPlane) {
 	int drawCallsWorld = 0;
-	drawCallsWorld += renderTerrain(camera.viewProjectionMatrix(), clipPlane);
-	drawCallsWorld += renderEntities(camera.viewProjectionMatrix(), clipPlane);
+	const glm::mat4& vpmat = camera.viewProjectionMatrix();
+	drawCallsWorld += renderTerrain(vpmat, clipPlane);
+	drawCallsWorld += renderEntities(vpmat, clipPlane);
 	drawCallsWorld += renderWater(camera, clipPlane);
 	return drawCallsWorld;
 }
