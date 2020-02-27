@@ -25,7 +25,7 @@ extern void core_stacktrace();
 			} \
 			if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
 				SDL_TriggerBreakpoint(); \
-			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE) { \
+			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE && sdl_assert_state != SDL_ASSERTION_IGNORE) { \
 				core_stacktrace(); \
 			} \
 			break; /* not retrying. */ \
@@ -55,7 +55,7 @@ extern void core_stacktrace();
 			} \
 			if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
 				SDL_TriggerBreakpoint(); \
-			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE) { \
+			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE && sdl_assert_state != SDL_ASSERTION_IGNORE) { \
 				core_stacktrace(); \
 			} \
 			break; /* not retrying. */ \
