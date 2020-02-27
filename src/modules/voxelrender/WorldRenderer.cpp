@@ -119,15 +119,15 @@ int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 	const glm::vec3& position = camera.position();
 	if (position.y > waterHeight) {
 		const video::Camera& reflCamera = reflectionCamera(camera);
-		drawCallsWorld += renderTerrain(reflCamera, -waterClipPlane);
-		drawCallsWorld += renderEntities(reflCamera, -waterClipPlane);
+		drawCallsWorld += renderTerrain(reflCamera.viewProjectionMatrix(), -waterClipPlane);
+		drawCallsWorld += renderEntities(reflCamera.viewProjectionMatrix(), -waterClipPlane);
 	}
 	_reflectionBuffer.unbind();
 
 	// render below water
 	_refractionBuffer.bind(true);
-	drawCallsWorld += renderTerrain(camera, waterClipPlane);
-	drawCallsWorld += renderEntities(camera, waterClipPlane);
+	drawCallsWorld += renderTerrain(camera.viewProjectionMatrix(), waterClipPlane);
+	drawCallsWorld += renderEntities(camera.viewProjectionMatrix(), waterClipPlane);
 	_refractionBuffer.unbind();
 
 	return drawCallsWorld;
@@ -196,7 +196,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderTerrain(const video::Camera& camera, const glm::vec4& clipPlane) {
+int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane) {
 	const bool shadowMap = _shadowMap->boolVal();
 	int drawCallsWorld = 0;
 	core_trace_scoped(WorldRendererRenderOpaque);
@@ -206,7 +206,7 @@ int WorldRenderer::renderTerrain(const video::Camera& camera, const glm::vec4& c
 	_worldShader.setTime(_seconds);
 	_worldShader.setFogrange(_fogRange);
 	_worldShader.setClipplane(clipPlane);
-	_worldShader.setViewprojection(camera.viewProjectionMatrix());
+	_worldShader.setViewprojection(viewProjectionMatrix);
 	if (shadowMap) {
 		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_worldShader.setCascades(_shadow.cascades());
@@ -256,13 +256,13 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 
 int WorldRenderer::renderAll(const video::Camera& camera, const glm::vec4& clipPlane) {
 	int drawCallsWorld = 0;
-	drawCallsWorld += renderTerrain(camera, clipPlane);
-	drawCallsWorld += renderEntities(camera, clipPlane);
+	drawCallsWorld += renderTerrain(camera.viewProjectionMatrix(), clipPlane);
+	drawCallsWorld += renderEntities(camera.viewProjectionMatrix(), clipPlane);
 	drawCallsWorld += renderWater(camera, clipPlane);
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderEntities(const video::Camera& camera, const glm::vec4& clipPlane) {
+int WorldRenderer::renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane) {
 	if (_entityMgr.visibleEntities().empty()) {
 		return 0;
 	}
@@ -278,11 +278,11 @@ int WorldRenderer::renderEntities(const video::Camera& camera, const glm::vec4& 
 	_chrShader.setLightdir(_shadow.sunDirection());
 	_chrShader.setTime(_seconds);
 	_chrShader.setClipplane(clipPlane);
+	_chrShader.setViewprojection(viewProjectionMatrix);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
 		_chrShader.setDepthsize(glm::vec2(_shadow.dimension()));
-		_chrShader.setViewprojection(camera.viewProjectionMatrix());
 		_chrShader.setCascades(_shadow.cascades());
 		_chrShader.setDistances(_shadow.distances());
 	}

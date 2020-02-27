@@ -72,11 +72,11 @@ protected:
 	int renderPostProcessEffects(const video::Camera& camera);
 	int renderToShadowMap(const video::Camera& camera);
 	int renderClippingPlanes(const video::Camera& camera);
-	int renderTerrain(const video::Camera& camera, const glm::vec4& clipPlane);
+	int renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 	int renderWater(const video::Camera& camera, const glm::vec4& clipPlane);
 	int renderAll(const video::Camera& camera, const glm::vec4& clipPlane);
 	int renderToFrameBuffer(const video::Camera &camera);
-	int renderEntities(const video::Camera &camera, const glm::vec4& clipPlane);
+	int renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 public:
 	WorldRenderer();
 	~WorldRenderer();
