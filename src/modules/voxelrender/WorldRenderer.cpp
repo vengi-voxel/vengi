@@ -206,8 +206,8 @@ int WorldRenderer::renderTerrain(const video::Camera& camera, const glm::vec4& c
 	_worldShader.setTime(_seconds);
 	_worldShader.setFogrange(_fogRange);
 	_worldShader.setClipplane(clipPlane);
+	_worldShader.setViewprojection(camera.viewProjectionMatrix());
 	if (shadowMap) {
-		_worldShader.setViewprojection(camera.viewProjectionMatrix());
 		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_worldShader.setCascades(_shadow.cascades());
 		_worldShader.setDistances(_shadow.distances());
@@ -233,9 +233,8 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_refractionBuffer.texture()->bind(video::TextureUnit::Four);
 	_distortionTexture->bind(video::TextureUnit::Five);
 	_normalTexture->bind(video::TextureUnit::Six);
+	_waterShader.setViewprojection(camera.viewProjectionMatrix());
 	if (shadowMap) {
-		_waterShader.setViewprojection(camera.viewProjectionMatrix());
-		_waterShader.setShadowmap(video::TextureUnit::One);
 		_waterShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_waterShader.setCascades(_shadow.cascades());
 		_waterShader.setDistances(_shadow.distances());
@@ -402,6 +401,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		constexpr glm::vec3 translate(0.0f, ((float)voxel::MAX_WATER_HEIGHT) - 0.05f, 0.0f);
 		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), translate), glm::vec3(1000.0f));
 		_waterShader.setModel(model);
+		_waterShader.setShadowmap(video::TextureUnit::One);
 		_waterShader.setCubemap(video::TextureUnit::Two);
 		_waterShader.setReflection(video::TextureUnit::Three);
 		_waterShader.setRefraction(video::TextureUnit::Four);
