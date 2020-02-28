@@ -94,7 +94,7 @@ public:
 	video::FrameBuffer &refractionBuffer();
 	render::RandomColorTexture &colorTexture();
 
-	video::Camera reflectionCamera(const video::Camera& camera) const;
+	glm::mat4 reflectionMatrix(const video::Camera& camera) const;
 
 	EntityMgr &entityMgr();
 	const EntityMgr &entityMgr() const;

@@ -94,7 +94,7 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 	return 1;
 }
 
-video::Camera WorldRenderer::reflectionCamera(const video::Camera& camera) const {
+glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera) const {
 	video::Camera reflectionCamera = camera;
 	const float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
 	glm::vec3 position = camera.position();
@@ -105,7 +105,7 @@ video::Camera WorldRenderer::reflectionCamera(const video::Camera& camera) const
 	reflectionCamera.setPosition(position);
 	reflectionCamera.setPitch(-camera.pitch());
 	reflectionCamera.update(0ul);
-	return reflectionCamera;
+	return reflectionCamera.viewProjectionMatrix();
 }
 
 int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
@@ -118,8 +118,7 @@ int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 	_reflectionBuffer.bind(true);
 	const glm::vec3& position = camera.position();
 	if (position.y > waterHeight) {
-		const video::Camera& reflCamera = reflectionCamera(camera);
-		const glm::mat4& vpmatRefl = reflCamera.viewProjectionMatrix();
+		const glm::mat4& vpmatRefl = reflectionMatrix(camera);
 		drawCallsWorld += renderTerrain(vpmatRefl, -waterClipPlane);
 		drawCallsWorld += renderEntities(vpmatRefl, -waterClipPlane);
 	}
