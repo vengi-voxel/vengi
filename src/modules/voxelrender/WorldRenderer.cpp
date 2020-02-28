@@ -95,17 +95,15 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 }
 
 glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera) const {
-	video::Camera reflectionCamera = camera;
 	const float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
 	glm::vec3 position = camera.position();
 	const float distance = 2.0f * (position.y - waterHeight);
 	// TODO: positions lower than 0 only see earth from below
 	// as our mesh extractor adds a bottom plane to the mesh
 	position.y = glm::max(waterHeight, position.y - distance);
-	reflectionCamera.setPosition(position);
-	reflectionCamera.setPitch(-camera.pitch());
-	reflectionCamera.update(0ul);
-	return reflectionCamera.viewProjectionMatrix();
+	glm::quat orientation(glm::vec3(-camera.pitch(), camera.yaw(), camera.roll()));
+	glm::mat4 viewMatrix = glm::translate(glm::mat4_cast(orientation), -position);
+	return camera.projectionMatrix() * viewMatrix;
 }
 
 int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
