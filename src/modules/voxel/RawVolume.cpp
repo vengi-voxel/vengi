@@ -5,6 +5,7 @@
 #include "RawVolume.h"
 #include "core/Assert.h"
 #include <glm/common.hpp>
+#include <algorithm>
 
 namespace voxel {
 
