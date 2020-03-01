@@ -301,40 +301,11 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			prototypes += "\n\tbool set";
 			prototypes += uniformName;
 			prototypes += "(";
-			prototypes += "const std::vector<";
-			prototypes += cType.ctype;
-			prototypes += ">& var) const;\n";
-
-			prototypes += "\n\tbool set";
-			prototypes += uniformName;
-			prototypes += "(";
 			prototypes += "const core::Array<";
 			prototypes += cType.ctype;
 			prototypes += ", ";
 			prototypes += core::string::toString(v.arraySize);
 			prototypes += ">& var) const;\n\n";
-
-			methods += "\nbool ";
-			methods += filename;
-			methods += "::set";
-			methods += uniformName;
-			methods += "(";
-			methods += "const std::vector<";
-			methods += cType.ctype;
-			methods += ">& var) const {\n";
-			methods += "\tconst int location = getUniformLocation(\"";
-			methods += v.name;
-			methods += "\");\n\tif (location == -1) {\n";
-			methods += "\t\treturn false;\n";
-			methods += "\t}\n";
-			methods += "\tcore_assert((int)var.size() == ";
-			methods += core::string::toString(v.arraySize);
-			methods += ");\n";
-			methods += "\tsetUniform";
-			methods += util::uniformSetterPostfix(v.type, v.arraySize);
-			methods += "(location, &var.front(), var.size());\n";
-			methods += "\treturn true;\n";
-			methods += "}\n";
 
 			methods += "\nbool ";
 			methods += filename;
@@ -360,36 +331,9 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			prototypes += "\n\tbool set";
 			prototypes += uniformName;
 			prototypes += "(";
-			prototypes += "const std::vector<float>& var) const;\n";
-
-			prototypes += "\n\tbool set";
-			prototypes += uniformName;
-			prototypes += "(";
 			prototypes += "const core::Array<float, ";
 			prototypes += core::string::toString(cType.components);
 			prototypes += ">& var) const;\n\n";
-
-			methods += "\nbool ";
-			methods += filename;
-			methods += "::set";
-			methods += uniformName;
-			methods += "(";
-			methods += "const std::vector<float>& var) const {\n";
-			methods += "\tconst int location = getUniformLocation(\"";
-			methods += v.name;
-			methods += "\");\n\tif (location == -1) {\n";
-			methods += "\t\treturn false;\n";
-			methods += "\t}\n";
-			methods += "\tcore_assert(int(var.size()) % ";
-			methods += core::string::toString(cType.components);
-			methods += " == 0);\n";
-			methods += "\tsetUniformfv(location, &var.front(), ";
-			methods += core::string::toString(cType.components);
-			methods += ", ";
-			methods += core::string::toString(cType.components);
-			methods += ");\n";
-			methods += "\treturn true;\n";
-			methods += "}\n";
 
 			methods += "\nbool ";
 			methods += filename;
@@ -445,7 +389,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		prototypes += "();\n";
 		prototypes += "\t\tattribute";
 		prototypes += attributeName;
-		prototypes += ".offset = reinterpret_cast<std::size_t>(&(((CLASS*)nullptr)->*member));\n";
+		prototypes += ".offset = reinterpret_cast<size_t>(&(((CLASS*)nullptr)->*member));\n";
 		prototypes += "\t\tattribute";
 		prototypes += attributeName;
 		prototypes += ".stride = sizeof(CLASS);\n";

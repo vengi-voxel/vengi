@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <vector>
 #include "video/Shader.h"
 #include "video/Types.h"
 #include "video/UniformBuffer.h"
