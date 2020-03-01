@@ -364,7 +364,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	}
 
 	render::ShadowParameters sp;
-	sp.maxDepthBuffers = _worldShader.getUniformArraySize(shader::WorldShaderConstants::getMaxDepthBufferUniformName());
+	sp.maxDepthBuffers = shader::WorldShaderConstants::getMaxDepthBuffers();
 	if (!_shadow.init(sp)) {
 		return false;
 	}

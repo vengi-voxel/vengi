@@ -28,7 +28,7 @@ bool AnimationRenderer::init() {
 		return false;
 	}
 	render::ShadowParameters shadowParams;
-	shadowParams.maxDepthBuffers = _shader.getUniformArraySize(shader::SkeletonShaderConstants::getMaxDepthBufferUniformName());
+	shadowParams.maxDepthBuffers = shader::SkeletonShaderConstants::getMaxDepthBuffers();
 	if (!_shadow.init(shadowParams)) {
 		Log::error("Failed to init shadow object");
 		return false;

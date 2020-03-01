@@ -104,7 +104,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	render::ShadowParameters shadowParams;
-	shadowParams.maxDepthBuffers = _voxelShader.getUniformArraySize(shader::VoxelShaderConstants::getMaxDepthBufferUniformName());
+	shadowParams.maxDepthBuffers = shader::VoxelShaderConstants::getMaxDepthBuffers();
 	if (!_shadow.init(shadowParams)) {
 		return false;
 	}
