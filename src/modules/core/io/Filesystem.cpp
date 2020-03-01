@@ -10,7 +10,7 @@
 #include "core/StringUtil.h"
 #include "engine-config.h"
 #include <SDL.h>
-#ifndef WINDOWS
+#ifndef __WINDOWS__
 #include <unistd.h>
 #endif
 
