@@ -69,8 +69,15 @@ protected:
 	void initFrameBuffers(const glm::ivec2 &dimensions);
 	void shutdownFrameBuffers();
 
+	/**
+	 * @brief Calculate the reflection matrix for a upwards pointing water plane normal
+	 * @sa Goldman 1990
+	 */
 	glm::mat4 reflectionMatrix(const video::Camera& camera, const glm::vec4& waterPlane) const;
 
+	/**
+	 * @brief Render the whole scene to a framebuffer to apply post processing effects afterwards
+	 */
 	int renderToFrameBuffer(const video::Camera &camera);
 	int renderToShadowMap(const video::Camera& camera);
 
@@ -79,7 +86,13 @@ protected:
 	int renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 	int renderWater(const video::Camera& camera, const glm::vec4& clipPlane);
 
+	/**
+	 * @brief 2-pass render of the reflection and the refraction buffers
+	 */
 	int renderClippingPlanes(const video::Camera& camera);
+	/**
+	 * @sa shader::PostprocessShader
+	 */
 	int renderPostProcessEffects(const video::Camera& camera);
 public:
 	WorldRenderer();

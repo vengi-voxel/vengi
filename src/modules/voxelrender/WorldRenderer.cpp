@@ -95,7 +95,7 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 }
 
 glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera, const glm::vec4& waterPlane) const {
-	const glm::mat4 reflection = glm::mat4(
+	constexpr glm::mat4 reflection = glm::mat4(
 			1.0, 0.0, 0.0, 0.0,
 			0.0, -1.0, 0.0, 0.0,
 			0.0, 0.0, 1.0, 0.0,
