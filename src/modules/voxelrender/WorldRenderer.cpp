@@ -101,21 +101,19 @@ glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera, const glm
 			0.0, 0.0, 1.0, 0.0,
 			0.0, 0.0, 0.0, 1.0);
 	// TODO: increase the field-of-view for the reflection camera a little bit to reduce artifacts on the
-	// edges of the water a little bit - e.g. Apply a 0.05 factor to the current FOV
+	// edges of the water a little bit - e.g. Apply a 1.05 factor to the current FOV
 	return camera.projectionMatrix() * reflection * camera.viewMatrix();
 }
 
 int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
-	int drawCallsWorld = 0;
-	video::ScopedState scopedClipDistance(video::State::ClipDistance, true);
 	constexpr float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
 	// apply a small bias to improve reflections of objects on the water when the
 	// reflections are distorted.
-
 	constexpr glm::vec4 waterAbovePlane(glm::up, -(waterHeight + 2.0f));
 	constexpr glm::vec4 waterBelowPlane(glm::down, waterHeight);
 
-	// TODO: apply the clipping plane to the frustum culling
+	int drawCallsWorld = 0;
+	video::ScopedState scopedClipDistance(video::State::ClipDistance, true);
 
 	// render above water
 	_reflectionBuffer.bind(true);
@@ -139,6 +137,8 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 		return 0;
 	}
 	core_trace_scoped(WorldRendererRenderShadow);
+
+	// render the entities
 	_skeletonShadowMapShader.activate();
 	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
 		_skeletonShadowMapShader.setLightviewprojection(lightViewProjection);
@@ -153,6 +153,7 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 	}, true);
 	_skeletonShadowMapShader.deactivate();
 
+	// render the terrain
 	_shadowMapShader.activate();
 	_shadowMapShader.setModel(glm::mat4(1.0f));
 	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
@@ -173,32 +174,31 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 	video::colorMask(true, true, true, true);
+	video::clearColor(_clearColor);
 
 	int drawCallsWorld = 0;
 	drawCallsWorld += renderToShadowMap(camera);
 
 	_shadow.bind(video::TextureUnit::One);
 	_colorTexture.bind(video::TextureUnit::Zero);
-	video::clearColor(_clearColor);
 
 	drawCallsWorld += renderClippingPlanes(camera);
 
 	_frameBuffer.bind(true);
-	// due to driver bugs the clip plane might still be taken into account - set to very high y value
-	constexpr glm::vec4 ignoreClipPlane(glm::up, 100000.0f);
+	// due to driver bugs the clip plane might still be taken into account
+	constexpr glm::vec4 ignoreClipPlane(glm::up, 0.0f);
 	drawCallsWorld += renderAll(camera, ignoreClipPlane);
 
 	_skybox.render(camera);
+
 	video::bindVertexArray(video::InvalidId);
 	_colorTexture.unbind();
-
 	_frameBuffer.unbind();
 
 	return drawCallsWorld;
 }
 
 int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane) {
-	const bool shadowMap = _shadowMap->boolVal();
 	int drawCallsWorld = 0;
 	core_trace_scoped(WorldRendererRenderOpaque);
 	video::ScopedShader scoped(_worldShader);
@@ -208,7 +208,7 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 	_worldShader.setFogrange(_fogRange);
 	_worldShader.setClipplane(clipPlane);
 	_worldShader.setViewprojection(viewProjectionMatrix);
-	if (shadowMap) {
+	if (_shadowMap->boolVal()) {
 		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_worldShader.setCascades(_shadow.cascades());
 		_worldShader.setDistances(_shadow.distances());
@@ -221,7 +221,6 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 
 int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& clipPlane) {
 	int drawCallsWorld = 0;
-	const bool shadowMap = _shadowMap->boolVal();
 	core_trace_scoped(WorldRendererRenderWater);
 	video::ScopedShader scoped(_waterShader);
 	_waterShader.setFocuspos(_focusPos);
@@ -238,7 +237,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_normalTexture->bind(video::TextureUnit::Six);
 	_refractionBuffer.texture(video::FrameBufferAttachment::Depth)->bind(video::TextureUnit::Seven);
 	_waterShader.setViewprojection(camera.viewProjectionMatrix());
-	if (shadowMap) {
+	if (_shadowMap->boolVal()) {
 		_waterShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_waterShader.setCascades(_shadow.cascades());
 		_waterShader.setDistances(_shadow.distances());
@@ -289,6 +288,7 @@ int WorldRenderer::renderEntities(const glm::mat4& viewProjectionMatrix, const g
 		_chrShader.setDistances(_shadow.distances());
 	}
 	for (frontend::ClientEntity* ent : _entityMgr.visibleEntities()) {
+		// TODO: apply the clipping plane to the entity frustum culling
 		_chrShader.setModel(ent->modelMatrix());
 		core_assert_always(_chrShader.setBones(ent->bones()._items));
 		const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
