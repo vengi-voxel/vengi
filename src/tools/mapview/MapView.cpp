@@ -144,7 +144,7 @@ core::AppState MapView::onInit() {
 
 	const network::EntityType entityType = network::EntityType::HUMAN_MALE_WORKER; // network::EntityType::HUMAN_FEMALE_WORKER
 	const frontend::ClientEntityId entityId = (frontend::ClientEntityId)1;
-	_entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, entityId, entityType, pos, 0.0f);
+	_entity = core::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, entityId, entityType, pos, 0.0f);
 	attrib::ContainerProvider containerProvider;
 	const core::String& attribLua = filesystem()->load("attributes.lua");
 	if (!containerProvider.init(attribLua)) {

@@ -6,12 +6,13 @@
 
 #include "core/command/ActionButton.h"
 #include "core/IComponent.h"
+#include "core/SharedPtr.h"
 #include "Shared_generated.h"
 
 namespace frontend {
 
 class ClientEntity;
-typedef std::shared_ptr<ClientEntity> ClientEntityPtr;
+typedef core::SharedPtr<ClientEntity> ClientEntityPtr;
 
 /**
  * @brief Trigger action component that does the input listening

@@ -373,7 +373,7 @@ void Client::disconnect() {
 
 void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos, animation::Animation animation) {
 	Log::info("Entity %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
-	const frontend::ClientEntityPtr& entity = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
+	const frontend::ClientEntityPtr& entity = core::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
 	entity->setAnimation(animation, true);
 	_worldRenderer.entityMgr().addEntity(entity);
 }
@@ -387,7 +387,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	_camera.setTarget(pos);
 
 	const network::EntityType type = network::EntityType::PLAYER;
-	_player = std::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
+	_player = core::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
 	_worldRenderer.entityMgr().addEntity(_player);
 	_worldRenderer.chunkMgr().extractMeshes(_camera.camera());
 

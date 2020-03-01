@@ -14,6 +14,7 @@
 #include "core/collection/Array.h"
 #include "core/collection/StringMap.h"
 #include "SkeletonShaderConstants.h"
+#include "core/SharedPtr.h"
 #include <memory>
 
 namespace shader {
@@ -135,7 +136,7 @@ inline bool ClientEntity::operator==(const ClientEntity& other) const {
 	return _id == other._id;
 }
 
-typedef std::shared_ptr<ClientEntity> ClientEntityPtr;
+typedef core::SharedPtr<ClientEntity> ClientEntityPtr;
 
 }
 
