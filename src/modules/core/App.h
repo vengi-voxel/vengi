@@ -10,8 +10,9 @@
 #include "String.h"
 #include "collection/List.h"
 #include "core/concurrent/Atomic.h"
-#include <stack>
+#include "core/SharedPtr.h"
 #include <memory>
+#include <stack>
 
 #define ORGANISATION "vengi"
 
@@ -34,7 +35,7 @@ class ThreadPool;
 typedef std::shared_ptr<ThreadPool> ThreadPoolPtr;
 
 class Var;
-typedef std::shared_ptr<Var> VarPtr;
+typedef core::SharedPtr<Var> VarPtr;
 
 class EventBus;
 typedef std::shared_ptr<EventBus> EventBusPtr;

@@ -6,7 +6,7 @@
 
 #include "core/concurrent/ReadWriteLock.h"
 #include "GameConfig.h"
-#include <memory>
+#include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/Map.h"
 #include "core/collection/DynamicArray.h"
@@ -42,7 +42,7 @@ extern const core::String VAR_TRUE;
 extern const core::String VAR_FALSE;
 
 class Var;
-typedef std::shared_ptr<Var> VarPtr;
+typedef core::SharedPtr<Var> VarPtr;
 
 /**
  * @brief A var can be changed and queried at runtime
@@ -59,6 +59,7 @@ typedef std::shared_ptr<Var> VarPtr;
  */
 class Var {
 protected:
+	friend class SharedPtr<Var>;
 	typedef Map<core::String, VarPtr, 64, core::StringHash> VarMap;
 	static VarMap _vars;
 	static ReadWriteLock _lock;
@@ -86,10 +87,10 @@ protected:
 	uint32_t _currentHistoryPos = 0;
 	bool _dirty;
 
+	void addValueToHistory(const core::String& value);
+
 	// invisible - use the static get method
 	Var(const core::String& name, const core::String& value = "", uint32_t flags = 0u, const char *help = nullptr);
-
-	void addValueToHistory(const core::String& value);
 public:
 	~Var();
 

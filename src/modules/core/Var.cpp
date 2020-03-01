@@ -20,8 +20,6 @@ Var::VarMap Var::_vars;
 ReadWriteLock Var::_lock("Var");
 uint8_t Var::_visitFlags = 0u;
 
-MAKE_SHARED_INVIS_CTOR(Var);
-
 VarPtr Var::get(const core::String& name, int value, int32_t flags) {
 	char buf[64];
 	core::string::formatBuf(buf, sizeof(buf), "%i", value);
@@ -114,7 +112,7 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 			return VarPtr();
 		}
 
-		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flagsMask, help);
+		const VarPtr& p = core::make_shared<Var>(name, value, flagsMask, help);
 		ScopedWriteLock lock(_lock);
 		_vars.put(name, p);
 		return p;

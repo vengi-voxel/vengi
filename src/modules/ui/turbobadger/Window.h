@@ -7,11 +7,11 @@
 #include "TurboBadger.h"
 #include "core/io/IEventObserver.h"
 #include <stdint.h>
-#include <memory>
+#include "core/SharedPtr.h"
 
 namespace core {
 class Var;
-typedef std::shared_ptr<Var> VarPtr;
+typedef core::SharedPtr<Var> VarPtr;
 }
 
 namespace ui {
