@@ -25,13 +25,13 @@ Shadow::~Shadow() {
 }
 
 bool Shadow::init(const ShadowParameters& parameters) {
+	if (parameters.maxDepthBuffers < 1) {
+		return false;
+	}
+	if (parameters.maxDepthBuffers > shader::ConstantsShaderConstants::getMaxDepthBuffers()) {
+		return false;
+	}
 	_parameters = parameters;
-	if (_parameters.maxDepthBuffers < 1) {
-		return false;
-	}
-	if (_parameters.maxDepthBuffers > shader::ConstantsShaderConstants::getMaxDepthBuffers()) {
-		return false;
-	}
 	const float length = 50.0f;
 	const glm::vec3 sunPos(length, length, -length);
 	setPosition(sunPos);
