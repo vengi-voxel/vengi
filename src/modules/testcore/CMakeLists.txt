@@ -5,6 +5,6 @@ set(SRCS
 	TestAppMain.h
 )
 set(FILES
-	testcore/keybindings.cfg
+	testcore/test-keybindings.cfg
 )
 engine_add_module(TARGET testcore FILES ${FILES} SRCS ${SRCS} DEPENDENCIES imgui render)
