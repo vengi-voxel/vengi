@@ -64,7 +64,7 @@ void Shadow::update(const video::Camera& camera, bool active) {
 		return;
 	}
 
-	float planes[_parameters.maxDepthBuffers * 2];
+	float planes[shader::ConstantsShaderConstants::getMaxDepthBuffers() * 2];
 	camera.sliceFrustum(planes, _parameters.maxDepthBuffers * 2, _parameters.maxDepthBuffers, _parameters.sliceWeight);
 	const glm::mat4& inverseView = camera.inverseViewMatrix();
 
