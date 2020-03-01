@@ -10,6 +10,7 @@
 #include <map>
 #include <stdarg.h>
 #include <stdio.h>
+#include <SDL_stdinc.h>
 
 namespace ai {
 
@@ -103,7 +104,7 @@ public:
 		return TreeNodePtr();
 	}
 
-	void setError(const char* msg, ...) __attribute__((format(printf, 2, 3)));
+	void setError(SDL_PRINTF_FORMAT_STRING const char* msg, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 	/**
 	 * @brief Gives access to the last error state of the @c ITreeLoader

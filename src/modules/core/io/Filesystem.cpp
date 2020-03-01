@@ -10,6 +10,9 @@
 #include "core/StringUtil.h"
 #include "engine-config.h"
 #include <SDL.h>
+#ifndef WINDOWS
+#include <unistd.h>
+#endif
 
 namespace io {
 
