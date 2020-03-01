@@ -18,10 +18,11 @@ set(SRCS_SHADERS
 	shaders/shadowmap.vert shaders/shadowmap.frag
 	shaders/skybox.vert shaders/skybox.frag
 	shaders/texture.vert shaders/texture.frag
+	shaders/constants.vert shaders/constants.frag
 )
 set(LIB render)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES video noise)
-generate_shaders(${LIB} shadowmap shadowmap_instanced shadowmap_render color color_instanced texture edge skybox)
+generate_shaders(${LIB} shadowmap shadowmap_instanced shadowmap_render color color_instanced texture edge skybox constants)
 
 gtest_suite_sources(tests
 	tests/RenderShaderTest.cpp

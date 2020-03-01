@@ -10,6 +10,7 @@
 #include "video/UniformBuffer.h"
 #include "core/Singleton.h"
 #include "core/Assert.h"
+#include "core/collection/Array.h"
 
 $includes$
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "RenderShaders.h"
 #include "AnimationShaders.h"
 #include "VoxelrenderShaders.h"
 #include "WorldChunkMgr.h"

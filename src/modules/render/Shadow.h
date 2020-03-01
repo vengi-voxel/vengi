@@ -4,12 +4,13 @@
 
 #pragma once
 
-#include "RenderShaders.h"
+#include "ConstantsShaderConstants.h"
 #include "video/FrameBuffer.h"
 #include "video/Buffer.h"
 #include <vector>
 #include <functional>
 #include "core/GLM.h"
+#include "core/collection/Array.h"
 #include <glm/glm.hpp>
 
 namespace video {
@@ -42,11 +43,14 @@ struct ShadowParameters {
  * @sa ShadowParameters
  */
 class Shadow {
+public:
+	using Cascades = core::Array<glm::mat4, shader::ConstantsShaderConstants::getMaxDepthBuffers()>;
+	using Distances = core::Array<float, shader::ConstantsShaderConstants::getMaxDepthBuffers()>;
 private:
 	glm::vec3 _sunDirection;
 	glm::mat4 _lightView;
-	std::vector<glm::mat4> _cascades;
-	std::vector<float> _distances;
+	Cascades _cascades;
+	Distances _distances;
 	video::FrameBuffer _depthBuffer;
 	ShadowParameters _parameters;
 	float _shadowRangeZ = 0.0f;
@@ -72,8 +76,8 @@ public:
 
 	ShadowParameters& parameters();
 
-	const std::vector<glm::mat4>& cascades() const;
-	const std::vector<float>& distances() const;
+	const Cascades& cascades() const;
+	const Distances& distances() const;
 	const glm::vec3& sunDirection() const;
 	const glm::ivec2& dimension() const;
 	glm::vec3 sunPosition() const;
@@ -83,11 +87,11 @@ inline video::FrameBuffer& Shadow::depthBuffer() {
 	return _depthBuffer;
 }
 
-inline const std::vector<glm::mat4>& Shadow::cascades() const {
+inline const Shadow::Cascades& Shadow::cascades() const {
 	return _cascades;
 }
 
-inline const std::vector<float>& Shadow::distances() const {
+inline const Shadow::Distances& Shadow::distances() const {
 	return _distances;
 }
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "RenderShaders.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "video/Buffer.h"

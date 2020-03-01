@@ -26,7 +26,12 @@ Shadow::~Shadow() {
 
 bool Shadow::init(const ShadowParameters& parameters) {
 	_parameters = parameters;
-	core_assert(_parameters.maxDepthBuffers >= 1);
+	if (_parameters.maxDepthBuffers < 1) {
+		return false;
+	}
+	if (_parameters.maxDepthBuffers > shader::ConstantsShaderConstants::getMaxDepthBuffers()) {
+		return false;
+	}
 	const float length = 50.0f;
 	const glm::vec3 sunPos(length, length, -length);
 	setPosition(sunPos);
@@ -49,8 +54,6 @@ void Shadow::shutdown() {
 void Shadow::update(const video::Camera& camera, bool active) {
 	core_trace_scoped(ShadowCalculate);
 	_shadowRangeZ = camera.farPlane() * 3.0f;
-	_cascades.resize(_parameters.maxDepthBuffers);
-	_distances.resize(_parameters.maxDepthBuffers);
 	const glm::ivec2& dim = dimension();
 
 	if (!active) {
