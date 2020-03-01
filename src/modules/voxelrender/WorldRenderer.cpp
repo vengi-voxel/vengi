@@ -97,9 +97,11 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera, const glm::vec4& waterPlane) const {
 	const glm::mat4 reflection = glm::mat4(
 			1.0, 0.0, 0.0, 0.0,
-			0.0, -1.0, 0.0, waterPlane.w,
+			0.0, -1.0, 0.0, 0.0,
 			0.0, 0.0, 1.0, 0.0,
 			0.0, 0.0, 0.0, 1.0);
+	// TODO: increase the field-of-view for the reflection camera a little bit to reduce artifacts on the
+	// edges of the water a little bit - e.g. Apply a 0.05 factor to the current FOV
 	return camera.projectionMatrix() * reflection * camera.viewMatrix();
 }
 
