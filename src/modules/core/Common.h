@@ -66,8 +66,8 @@
 #define core_likely(expr) CORE_EXPECT((expr) != 0, 1)
 #define core_unlikely(expr) CORE_EXPECT((expr) != 0, 0)
 
-#define core_min(x, y) (x < y ? x : y)
-#define core_max(x, y) (x > y ? x : y)
+#define core_min(x, y) ((x) < (y) ? (x) : (y))
+#define core_max(x, y) ((x) > (y) ? (x) : (y))
 
 #define MAKE_SHARED_INVIS_CTOR(classname) \
 	struct make_shared_enabler: public classname { \
