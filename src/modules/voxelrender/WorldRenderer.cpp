@@ -109,23 +109,26 @@ int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 	int drawCallsWorld = 0;
 	video::ScopedState scopedClipDistance(video::State::ClipDistance, true);
 	constexpr float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
-	constexpr glm::vec4 waterPlane(glm::up, -waterHeight);
+	// apply a small bias to improve reflections of objects on the water when the
+	// reflections are distorted.
+
+	constexpr glm::vec4 waterAbovePlane(glm::up, -(waterHeight + 2.0f));
+	constexpr glm::vec4 waterBelowPlane(glm::down, waterHeight);
+
+	// TODO: apply the clipping plane to the frustum culling
 
 	// render above water
 	_reflectionBuffer.bind(true);
-	const glm::vec3& position = camera.position();
-	if (position.y > waterHeight) {
-		const glm::mat4& vpmatRefl = reflectionMatrix(camera, waterPlane);
-		drawCallsWorld += renderTerrain(vpmatRefl, waterPlane);
-		drawCallsWorld += renderEntities(vpmatRefl, waterPlane);
-	}
+	const glm::mat4& vpmatRefl = reflectionMatrix(camera, waterAbovePlane);
+	drawCallsWorld += renderTerrain(vpmatRefl, waterAbovePlane);
+	drawCallsWorld += renderEntities(vpmatRefl, waterAbovePlane);
 	_reflectionBuffer.unbind();
 
 	// render below water
 	const glm::mat4& vpmat = camera.viewProjectionMatrix();
 	_refractionBuffer.bind(true);
-	drawCallsWorld += renderTerrain(vpmat, -waterPlane);
-	drawCallsWorld += renderEntities(vpmat, -waterPlane);
+	drawCallsWorld += renderTerrain(vpmat, waterBelowPlane);
+	drawCallsWorld += renderEntities(vpmat, waterBelowPlane);
 	_refractionBuffer.unbind();
 
 	return drawCallsWorld;

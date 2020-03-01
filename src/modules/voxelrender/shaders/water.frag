@@ -45,8 +45,8 @@ void main(void) {
 	float waterDistance = depthToDistance(gl_FragCoord.z);
 	float depthWater = floorDistance - waterDistance;
 
-	float moveFactor = fract(u_time / 20000.0);
-	vec2 distortedTexCoords = $texture2D(u_distortion, vec2(v_uv.x + moveFactor, v_uv.y)).rg * 0.1;
+	float moveFactor = fract(u_time / 40000.0);
+	vec2 distortedTexCoords = $texture2D(u_distortion, 10.0 * vec2(v_uv.x + moveFactor, v_uv.y)).rg * 0.01;
 	distortedTexCoords = v_uv + vec2(distortedTexCoords.x, distortedTexCoords.y + moveFactor);
 
 	// b component of the normal map is upward (so our y)
