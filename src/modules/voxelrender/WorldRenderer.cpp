@@ -94,39 +94,36 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 	return 1;
 }
 
-glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera) const {
-	const float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
-	glm::vec3 position = camera.position();
-	const float distance = 2.0f * (position.y - waterHeight);
-	// TODO: positions lower than 0 only see earth from below
-	// as our mesh extractor adds a bottom plane to the mesh
-	position.y = glm::max(waterHeight, position.y - distance);
-	glm::quat orientation(glm::vec3(-camera.pitch(), camera.yaw(), camera.roll()));
-	glm::mat4 viewMatrix = glm::translate(glm::mat4_cast(orientation), -position);
-	return camera.projectionMatrix() * viewMatrix;
+glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera, const glm::vec4& waterPlane) const {
+	const glm::mat4 reflection = glm::mat4(
+			1.0, 0.0, 0.0, 0.0,
+			0.0, -1.0, 0.0, waterPlane.w,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0);
+	return camera.projectionMatrix() * reflection * camera.viewMatrix();
 }
 
 int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 	int drawCallsWorld = 0;
 	video::ScopedState scopedClipDistance(video::State::ClipDistance, true);
 	constexpr float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
-	constexpr glm::vec4 waterClipPlane(glm::down, waterHeight);
+	constexpr glm::vec4 waterPlane(glm::up, -waterHeight);
 
 	// render above water
 	_reflectionBuffer.bind(true);
 	const glm::vec3& position = camera.position();
 	if (position.y > waterHeight) {
-		const glm::mat4& vpmatRefl = reflectionMatrix(camera);
-		drawCallsWorld += renderTerrain(vpmatRefl, -waterClipPlane);
-		drawCallsWorld += renderEntities(vpmatRefl, -waterClipPlane);
+		const glm::mat4& vpmatRefl = reflectionMatrix(camera, waterPlane);
+		drawCallsWorld += renderTerrain(vpmatRefl, waterPlane);
+		drawCallsWorld += renderEntities(vpmatRefl, waterPlane);
 	}
 	_reflectionBuffer.unbind();
 
 	// render below water
 	const glm::mat4& vpmat = camera.viewProjectionMatrix();
 	_refractionBuffer.bind(true);
-	drawCallsWorld += renderTerrain(vpmat, waterClipPlane);
-	drawCallsWorld += renderEntities(vpmat, waterClipPlane);
+	drawCallsWorld += renderTerrain(vpmat, -waterPlane);
+	drawCallsWorld += renderEntities(vpmat, -waterPlane);
 	_refractionBuffer.unbind();
 
 	return drawCallsWorld;

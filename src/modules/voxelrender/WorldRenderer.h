@@ -69,14 +69,18 @@ protected:
 	void initFrameBuffers(const glm::ivec2 &dimensions);
 	void shutdownFrameBuffers();
 
-	int renderPostProcessEffects(const video::Camera& camera);
-	int renderToShadowMap(const video::Camera& camera);
-	int renderClippingPlanes(const video::Camera& camera);
-	int renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
-	int renderWater(const video::Camera& camera, const glm::vec4& clipPlane);
-	int renderAll(const video::Camera& camera, const glm::vec4& clipPlane);
+	glm::mat4 reflectionMatrix(const video::Camera& camera, const glm::vec4& waterPlane) const;
+
 	int renderToFrameBuffer(const video::Camera &camera);
+	int renderToShadowMap(const video::Camera& camera);
+
+	int renderAll(const video::Camera& camera, const glm::vec4& clipPlane);
+	int renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 	int renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
+	int renderWater(const video::Camera& camera, const glm::vec4& clipPlane);
+
+	int renderClippingPlanes(const video::Camera& camera);
+	int renderPostProcessEffects(const video::Camera& camera);
 public:
 	WorldRenderer();
 	~WorldRenderer();
@@ -93,8 +97,6 @@ public:
 	video::FrameBuffer &reflectionBuffer();
 	video::FrameBuffer &refractionBuffer();
 	render::RandomColorTexture &colorTexture();
-
-	glm::mat4 reflectionMatrix(const video::Camera& camera) const;
 
 	EntityMgr &entityMgr();
 	const EntityMgr &entityMgr() const;
