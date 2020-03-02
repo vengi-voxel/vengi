@@ -10,6 +10,7 @@
 #include "core/Singleton.h"
 #include "core/Assert.h"
 #include "core/collection/Array.h"
+#include "core/SharedPtr.h"
 
 $includes$
 
@@ -47,6 +48,6 @@ public:
 $prototypes$
 };
 
-typedef std::shared_ptr<$name$> $name$Ptr;
+typedef core::SharedPtr<$name$> $name$Ptr;
 
 };

@@ -14,21 +14,21 @@
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 #include <type_traits>
-#include <memory>
 #include "RenderBuffer.h"
+#include "core/SharedPtr.h"
 #include "core/collection/List.h"
 
 struct SDL_Window;
 
 namespace image {
 class Image;
-typedef std::shared_ptr<Image> ImagePtr;
+typedef core::SharedPtr<Image> ImagePtr;
 }
 
 namespace video {
 
 class Texture;
-typedef std::shared_ptr<Texture> TexturePtr;
+typedef core::SharedPtr<Texture> TexturePtr;
 
 class TextureConfig;
 class StencilConfig;
@@ -37,7 +37,7 @@ namespace _priv {
 
 template<typename DATATYPE>
 struct to_type {
-	typedef typename std::remove_reference<typename std::remove_pointer<DATATYPE>::type>::type type;
+	typedef typename core::remove_reference<typename std::remove_pointer<DATATYPE>::type>::type type;
 };
 
 }

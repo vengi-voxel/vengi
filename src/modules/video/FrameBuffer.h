@@ -5,14 +5,12 @@
 #pragma once
 
 #include "FrameBufferConfig.h"
+#include "Texture.h"
 #include "core/SharedPtr.h"
-#include <memory>
 
 namespace video {
 
-class Texture;
 class RenderBuffer;
-typedef std::shared_ptr<Texture> TexturePtr;
 typedef core::SharedPtr<RenderBuffer> RenderBufferPtr;
 
 /**

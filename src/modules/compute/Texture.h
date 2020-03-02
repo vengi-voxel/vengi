@@ -7,8 +7,8 @@
 #include "core/String.h"
 #include "core/GLM.h"
 #include "TextureConfig.h"
+#include "core/SharedPtr.h"
 #include <glm/vec3.hpp>
-#include <memory>
 
 namespace compute {
 
@@ -74,6 +74,6 @@ inline Id Texture::sampler() const {
 	return _sampler;
 }
 
-typedef std::shared_ptr<Texture> TexturePtr;
+typedef core::SharedPtr<Texture> TexturePtr;
 
 }

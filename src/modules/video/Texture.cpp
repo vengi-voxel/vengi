@@ -93,7 +93,7 @@ TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 	} else {
 		cfg.format(TextureFormat::RGB);
 	}
-	const TexturePtr& t = std::make_shared<Texture>(cfg, image->width(), image->height(), image->name());
+	const TexturePtr& t = core::make_shared<Texture>(cfg, image->width(), image->height(), image->name());
 	t->upload(image->data());
 	return t;
 }
@@ -102,7 +102,7 @@ TexturePtr createEmptyTexture(const core::String& name) {
 	TextureConfig cfg;
 	cfg.type(TextureType::Texture2D);
 	cfg.format(TextureFormat::RGBA);
-	const TexturePtr& p = std::make_shared<Texture>(cfg, 1, 1, name);
+	const TexturePtr& p = core::make_shared<Texture>(cfg, 1, 1, name);
 	const uint32_t empty = 0x00000000;
 	p->upload((const uint8_t*)&empty);
 	return p;
@@ -112,7 +112,7 @@ TexturePtr createWhiteTexture(const core::String& name) {
 	TextureConfig cfg;
 	cfg.type(TextureType::Texture2D);
 	cfg.format(TextureFormat::RGBA);
-	const TexturePtr& p = std::make_shared<Texture>(cfg, 1, 1, name);
+	const TexturePtr& p = core::make_shared<Texture>(cfg, 1, 1, name);
 	const uint32_t empty = 0xFFFFFFFF;
 	p->upload((const uint8_t*)&empty);
 	return p;
@@ -123,7 +123,7 @@ TexturePtr createTextureFromImage(const core::String& filename) {
 }
 
 TexturePtr createTexture(const TextureConfig& cfg, int width, int height, const core::String& name) {
-	const TexturePtr& ptr = std::make_shared<Texture>(cfg, width, height, name);
+	const TexturePtr& ptr = core::make_shared<Texture>(cfg, width, height, name);
 	if (cfg.type() == TextureType::Texture2D && cfg.layers() > 1) {
 		Log::error("Texture with layers given, but normal 2d texture was defined");
 		return TexturePtr();

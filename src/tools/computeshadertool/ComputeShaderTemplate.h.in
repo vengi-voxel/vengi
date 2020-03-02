@@ -6,6 +6,7 @@
 
 #include "compute/Shader.h"
 #include "core/Singleton.h"
+#include "core/SharedPtr.h"
 #include "core/Assert.h"
 #include "core/Vector.h"
 #ifdef COMPUTEVIDEO
@@ -76,6 +77,6 @@ $shutdown$
 $kernels$
 };
 
-typedef std::shared_ptr<$name$> $name$Ptr;
+typedef core::SharedPtr<$name$> $name$Ptr;
 
 };

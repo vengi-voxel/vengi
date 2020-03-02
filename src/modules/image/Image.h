@@ -6,7 +6,7 @@
 
 #include "core/io/IOResource.h"
 #include "core/io/File.h"
-#include <memory>
+#include "core/SharedPtr.h"
 
 namespace image {
 
@@ -55,11 +55,11 @@ public:
 	}
 };
 
-typedef std::shared_ptr<Image> ImagePtr;
+typedef core::SharedPtr<Image> ImagePtr;
 
 // creates an empty image
 inline ImagePtr createEmptyImage(const core::String& name) {
-	return std::make_shared<Image>(name);
+	return core::make_shared<Image>(name);
 }
 
 extern ImagePtr loadImage(const io::FilePtr& file, bool async = true);

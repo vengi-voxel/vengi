@@ -7,13 +7,12 @@
 #include "core/String.h"
 #include "TextureConfig.h"
 #include "core/io/IOResource.h"
-
-#include <memory>
+#include "core/SharedPtr.h"
 
 namespace image {
 
 class Image;
-typedef std::shared_ptr<Image> ImagePtr;
+typedef core::SharedPtr<Image> ImagePtr;
 
 }
 
@@ -94,7 +93,7 @@ inline Id Texture::handle() const {
 	return _handle;
 }
 
-typedef std::shared_ptr<Texture> TexturePtr;
+typedef core::SharedPtr<Texture> TexturePtr;
 
 class ScopedTexture {
 private:

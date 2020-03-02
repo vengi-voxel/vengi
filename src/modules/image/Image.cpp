@@ -8,6 +8,7 @@
 #include "core/concurrent/ThreadPool.h"
 #include "core/Assert.h"
 #include "core/io/Filesystem.h"
+#include <memory>
 
 #define STBI_ASSERT core_assert
 #define STBI_MALLOC core_malloc
