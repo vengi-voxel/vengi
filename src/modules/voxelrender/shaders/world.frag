@@ -36,7 +36,7 @@ void main(void) {
 	float checkerBoardFactor = mix(0.95 + variance, 1.0 - variance, checker(v_pos, 0.5));
 	vec3 voxelColor = clamp(v_color.rgb * checkerBoardFactor, vec3(0.0), vec3(1.0));
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
-	vec3 shadowColor = shadow(bias, u_viewprojection, voxelColor, diffuse, ambientColor);
+	vec3 shadowColor = shadow(vec4(v_lightspacepos, 1.0), bias, voxelColor, diffuse, ambientColor);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
 	o_color = fog(v_pos, linearColor, v_color.a);
 }

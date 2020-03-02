@@ -14,13 +14,6 @@ uniform sampler2D u_distortion;
 uniform sampler2D u_normalmap;
 uniform sampler2D u_depthmap;
 
-vec2 calculateShadowTexcoord(vec2 uv) {
-	float offset = cos(u_time / 1000.0) * 0.000125;
-	vec2 coord = vec2(uv.x + offset, uv.y + offset);
-	return coord;
-}
-
-#define CUSTOM_SHADOW_TEXCOORD
 #include "_fog.frag"
 #include "_shadowmap.frag"
 #include "_daynight.frag"
@@ -82,7 +75,8 @@ void main(void) {
 	refractiveFactor = pow(refractiveFactor, 10.0);
 
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
-	vec3 shadowColor = shadow(bias, u_viewprojection, mix(cubeColor, vec3(0.0, 0.2, 0.5), 0.01), diffuse, ambientColor);
+	vec4 lightspacepos = vec4(v_lightspacepos.x + totalDistortion.x, v_lightspacepos.y, v_lightspacepos.z + totalDistortion.y, 1.0);
+	vec3 shadowColor = shadow(lightspacepos, bias, mix(cubeColor, vec3(0.0, 0.2, 0.5), 0.01), diffuse, ambientColor);
 	vec4 waterColor = mix(reflectColor, refractColor, refractiveFactor);
 	o_color = fog(v_pos.xyz, mix(shadowColor, waterColor.xyz, 0.5), 0.5);
 	// add a blue tint and the specular highlights

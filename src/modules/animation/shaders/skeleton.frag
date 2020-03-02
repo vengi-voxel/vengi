@@ -22,7 +22,7 @@ void main(void) {
 	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
 	vec3 ambientColor = dayTimeColor(u_ambient_color, u_time);
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
-	vec3 shadowColor = shadow(bias, u_viewprojection, v_color.rgb, diffuse, ambientColor);
+	vec3 shadowColor = shadow(vec4(v_lightspacepos, 1.0), bias, v_color.rgb, diffuse, ambientColor);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
 	o_color = fog(v_pos.xyz, linearColor, v_color.a);
 }

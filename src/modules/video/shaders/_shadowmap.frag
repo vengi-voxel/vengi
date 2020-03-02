@@ -1,11 +1,5 @@
 #if cl_shadowmap == 1
 
-#ifndef CUSTOM_SHADOW_TEXCOORD
-vec2 calculateShadowTexcoord(in vec2 uv) {
-	return uv;
-}
-#endif
-
 uniform sampler2DArrayShadow u_shadowmap;
 $in vec3 v_lightspacepos;
 $in float v_viewz;
@@ -32,24 +26,19 @@ float sampleShadowPCF(in float bias, in int cascade, in vec2 uv, in float compar
 	return result / elements;
 }
 
-float calculateShadow(in float bias, in int cascade, in mat4 viewprojection) {
-	vec4 lightp = u_cascades[cascade] * vec4(v_lightspacepos, 1.0);
+vec3 calculateShadowUVZ(in vec4 lightspacepos, in int cascade) {
+	vec4 lightp = u_cascades[cascade] * lightspacepos;
 	/* we manually have to do the perspective divide as there is no
 	 * version of textureProj that can take a sampler2DArrayShadow
 	 * Also bring the ndc into the range [0-1] because the depth map
 	 * is in that range */
-	vec3 lightpt = (lightp.xyz / lightp.w) * 0.5 + 0.5;
-	return sampleShadowPCF(bias, cascade, calculateShadowTexcoord(lightpt.xy), lightpt.z);
+	return (lightp.xyz / lightp.w) * 0.5 + 0.5;
 }
 
-int calculateCascade() {
+vec3 shadow(in vec4 lightspacepos, in float bias, vec3 color, in vec3 diffuse, in vec3 ambient) {
 	int cascade = int(dot(vec4(greaterThan(vec4(v_viewz), u_distances)), vec4(1)));
-	return cascade;
-}
-
-vec3 shadow(in float bias, in mat4 viewprojection, vec3 color, in vec3 diffuse, in vec3 ambient) {
-	int cascade = calculateCascade();
-	float shadow = calculateShadow(bias, cascade, viewprojection);
+	vec3 uv = calculateShadowUVZ(lightspacepos, cascade);
+	float shadow = sampleShadowPCF(bias, cascade, uv.xy, uv.z);
 #if cl_debug_cascade
 	if (cascade == 0) {
 		color.r = 0.0;
@@ -82,7 +71,7 @@ vec3 shadow(in float bias, in mat4 viewprojection, vec3 color, in vec3 diffuse, 
 
 #else // cl_shadowmap == 1
 
-vec3 shadow(in float bias, in mat4 viewprojection, in vec3 color, in vec3 diffuse, in vec3 ambient) {
+vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
 	return clamp(color * (ambient + diffuse), 0.0f, 1.0f);
 }
 
