@@ -1,3 +1,27 @@
+function(read_shader_includes shaderpath include_dirs includes_list_out)
+	file(READ "${shaderpath}" contents)
+	string(REGEX REPLACE ";" "\\\\;" contents "${contents}")
+	string(REGEX REPLACE "\r" "" contents "${contents}")
+	string(REGEX REPLACE "\n" ";" contents "${contents}")
+	set(_local_list "${${includes_list_out}}")
+	foreach (line ${contents})
+		string(FIND "${line}" "#include" out)
+		if("${out}" EQUAL 0)
+			string(SUBSTRING ${line} 8 -1 include_file)
+			string(REPLACE " " "" include_file ${include_file})
+			string(REPLACE "\"" "" include_file ${include_file})
+			foreach (dir ${include_dirs})
+				if (EXISTS "${dir}/${include_file}")
+					list(APPEND _local_list "${dir}/${include_file}")
+					break()
+				endif()
+			endforeach()
+		endif()
+	endforeach()
+	list(REMOVE_DUPLICATES _local_list)
+	set(${includes_list_out} ${_local_list} PARENT_SCOPE)
+endfunction()
+
 macro(generate_shaders TARGET)
 	set(files ${ARGV})
 	list(REMOVE_AT files 0)
@@ -44,6 +68,10 @@ macro(generate_shaders TARGET)
 			list(APPEND _shaders ${_dir}/${_file}.comp)
 		endif()
 		if (_shaders)
+			set(_shadersdeps)
+			foreach (s ${_shaders})
+				read_shader_includes(${s} "${SHADERTOOL_INCLUDE_DIRS}" _shadersdeps)
+			endforeach()
 			convert_to_camel_case(${_file} _f)
 			set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
 			set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
@@ -58,7 +86,7 @@ macro(generate_shaders TARGET)
 					IMPLICIT_DEPENDS C ${_shaders}
 					COMMENT "Validate ${_file}"
 					COMMAND ${SHADERTOOL_EXECUTABLE} --glslang ${GLSLANGVALIDATOR_EXECUTABLE} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --constantstemplate  ${_template_constants_header} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
-					DEPENDS ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
+					DEPENDS ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 				)
 			else()
 				add_custom_command(
@@ -66,7 +94,7 @@ macro(generate_shaders TARGET)
 					IMPLICIT_DEPENDS C ${_shaders}
 					COMMENT "Validate ${_file}"
 					COMMAND shadertool --glslang $<TARGET_FILE:glslangValidator> ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --constantstemplate  ${_template_constants_header} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
-					DEPENDS shadertool ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
+					DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 				)
 			endif()
 			list(APPEND _headers ${_shaderheaderpath})
