@@ -12,6 +12,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelgenerator/NoiseGenerator.h"
+#include <memory>
 
 #define GL_INTEROP 0
 
@@ -109,24 +110,24 @@ core::AppState TestGPUMC::onInit() {
 		compute::TextureConfig cfg;
 		cfg.dataformat(compute::TextureDataFormat::UNSIGNED_INT8).format(compute::TextureFormat::RGBA).type(compute::TextureType::Texture3D);
 
-		_images.push_back(std::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
+		_images.push_back(core::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
 		Log::info("Texture %i size is at %i", int(_images.size()), bufferSize);
 		bufferSize /= 2;
 
-		_images.push_back(std::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
+		_images.push_back(core::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
 		Log::info("Texture %i size is at %i", int(_images.size()), bufferSize);
 		bufferSize /= 2;
 
 		cfg.dataformat(compute::TextureDataFormat::UNSIGNED_INT16).format(compute::TextureFormat::R);
-		_images.push_back(std::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
+		_images.push_back(core::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
 		Log::info("Texture %i size is at %i", int(_images.size()), bufferSize);
 		bufferSize /= 2;
 
-		_images.push_back(std::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
+		_images.push_back(core::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
 		Log::info("Texture %i size is at %i", int(_images.size()), bufferSize);
 		bufferSize /= 2;
 
-		_images.push_back(std::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
+		_images.push_back(core::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
 		Log::info("Texture %i size is at %i", int(_images.size()), bufferSize);
 		bufferSize /= 2;
 
@@ -138,7 +139,7 @@ core::AppState TestGPUMC::onInit() {
 				Log::info("Ensure that the texture size is not 1x1x1");
 				bufferSize = 2;
 			}
-			_images.push_back(std::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
+			_images.push_back(core::make_shared<compute::Texture>(cfg, glm::ivec3(bufferSize)));
 			Log::info("Texture %i size is at %i", int(_images.size()), bufferSize);
 			bufferSize /= 2;
 		}
@@ -175,7 +176,7 @@ core::AppState TestGPUMC::onInit() {
 		textureCfg.dataformat(compute::TextureDataFormat::UNSIGNED_INT8);
 		textureCfg.type(compute::TextureType::Texture3D);
 		textureCfg.format(compute::TextureFormat::R);
-		cubeIndexesImage = std::make_shared<compute::Texture>(textureCfg, glm::ivec3(REGION_SIZE)); // TODO: this is CL_MEM_READ_ONLY,
+		cubeIndexesImage = core::make_shared<compute::Texture>(textureCfg, glm::ivec3(REGION_SIZE)); // TODO: this is CL_MEM_READ_ONLY,
 		if (!cubeIndexesImage->upload(nullptr)) {
 			Log::error("Failed to upload the cube indexes data");
 			return core::AppState::InitFailure;
@@ -184,7 +185,7 @@ core::AppState TestGPUMC::onInit() {
 
 	compute::TextureConfig inputCfg;
 	inputCfg.dataformat(compute::TextureDataFormat::UNSIGNED_INT8).format(compute::TextureFormat::R).type(compute::TextureType::Texture3D);
-	_rawData = std::make_shared<compute::Texture>(inputCfg, glm::ivec3(REGION_SIZE));
+	_rawData = core::make_shared<compute::Texture>(inputCfg, glm::ivec3(REGION_SIZE));
 	if (!_rawData->upload(_volume->data())) {
 		Log::error("Failed to upload the volume data");
 		return core::AppState::InitFailure;
@@ -233,21 +234,21 @@ core::AppState TestGPUMC::onCleanup() {
 int TestGPUMC::calculateTotalSum() {
 	int sum[8] = {0};
 	if (_writingTo3DTextures) {
-		_computeShader.classifyCubes(*_images[0], *_rawData, isolevel, glm::ivec3(REGION_SIZE));
+		_computeShader.classifyCubes(*_images[0].get(), *_rawData.get(), isolevel, glm::ivec3(REGION_SIZE));
 		// Run base to first level
 		int previous = REGION_SIZE / 2;
 		const int maxBuffers = log2((float) REGION_SIZE) - 1;
 		for (int i = 0; i < maxBuffers; i++) {
 			Log::info("Texture %i and %i (%i maxBuffers, %i images) construct histogram pyramid %i", i, i + 1, maxBuffers, (int)_images.size(), previous);
-			_computeShader.constructHPLevel(*_images[i], *_images[i + 1], glm::ivec3(previous));
+			_computeShader.constructHPLevel(*_images[i].get(), *_images[i + 1].get(), glm::ivec3(previous));
 			previous /= 2;
 		}
-		if (!compute::readTexture(*_images[_images.size() - 1], sum, glm::ivec3(0), glm::ivec3(2), true)) {
+		if (!compute::readTexture(*_images[_images.size() - 1].get(), sum, glm::ivec3(0), glm::ivec3(2), true)) {
 			Log::warn("Couldn't read sum from texture.");
 			return -1;
 		}
 	} else {
-		_computeShaderBuffer.classifyCubes(buffers[0], cubeIndexesBuffer, *_rawData, isolevel, glm::ivec3(REGION_SIZE));
+		_computeShaderBuffer.classifyCubes(buffers[0], cubeIndexesBuffer, *_rawData.get(), isolevel, glm::ivec3(REGION_SIZE));
 		glm::ivec3 offset(0);
 		glm::ivec3 region(REGION_SIZE);
 		Log::info("Copy the buffer back into the image");
@@ -304,13 +305,13 @@ void TestGPUMC::extractSurfaces() {
 	int globalWorkSize = _totalSum + 64 - (_totalSum - 64 * (_totalSum / 64));
 
 	if (_writingTo3DTextures) {
-		_computeShader.traverseHP(*_images[0], *_images[1], *_images[2], *_images[3], *_images[4], *_images[5],
+		_computeShader.traverseHP(*_images[0].get(), *_images[1].get(), *_images[2].get(), *_images[3].get(), *_images[4].get(), *_images[5].get(),
 				_vbo, isolevel, _totalSum, glm::ivec3(globalWorkSize));
 		return;
 	}
 
-	compute::Texture& raw = *_rawData;
-	compute::Texture& indices = *cubeIndexesImage;
+	compute::Texture& raw = *_rawData.get();
+	compute::Texture& indices = *cubeIndexesImage.get();
 	_computeShaderBuffer.traverseHP(raw, indices, buffers[0], buffers[1], buffers[2], buffers[3], buffers[4], buffers[5],
 			_vboComputeBufferId, isolevel, _totalSum, glm::ivec3(globalWorkSize));
 }

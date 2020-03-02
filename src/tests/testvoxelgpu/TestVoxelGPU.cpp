@@ -9,6 +9,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelgenerator/NoiseGenerator.h"
 #include "testcore/TestAppMain.h"
+#include <memory>
 
 TestVoxelGPU::TestVoxelGPU(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider), _mesher(compute::MesherShader::getInstance()) {
@@ -43,7 +44,7 @@ core::AppState TestVoxelGPU::onInit() {
 	compute::TextureConfig cfg3d;
 	cfg3d.type(compute::TextureType::Texture3D).format(compute::TextureFormat::RG).dataformat(compute::TextureDataFormat::UNSIGNED_INT8);
 	static_assert(sizeof(voxel::Voxel) == 2, "Texture type must be changed if the voxel size is not 16 bits anymore");
-	_volumeTexture = std::make_shared<compute::Texture>(cfg3d, _workSize, "volume");
+	_volumeTexture = core::make_shared<compute::Texture>(cfg3d, _workSize, "volume");
 	if (!_volumeTexture->upload(_volume->data())) {
 		Log::error("Failed to upload volume data");
 	}
@@ -65,7 +66,7 @@ core::AppState TestVoxelGPU::onCleanup() {
 }
 
 core::AppState TestVoxelGPU::onRunning() {
-	if (!_mesher.extractCubicMesh(*_volumeTexture, _output, _workSize.x, _workSize.y, _workSize.z, _workSize)) {
+	if (!_mesher.extractCubicMesh(*_volumeTexture.get(), _output, _workSize.x, _workSize.y, _workSize.z, _workSize)) {
 		Log::error("Failed to execute the compute kernel");
 		return core::AppState::Cleanup;
 	}

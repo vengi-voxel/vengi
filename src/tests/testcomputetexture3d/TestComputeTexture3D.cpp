@@ -76,7 +76,7 @@ void TestComputeTexture3D::initVolume() {
 	// the voxel size is two bytes, one byte is for the type the other one is the palette color index
 	cfg3d.type(compute::TextureType::Texture3D).format(compute::TextureFormat::RG).dataformat(compute::TextureDataFormat::UNSIGNED_INT8);
 	static_assert(sizeof(voxel::Voxel) == 2, "Texture type must be changed if the voxel size is not 16 bits anymore");
-	_texture3DCompute = std::make_shared<compute::Texture>(cfg3d, glm::ivec3(width, height, _depth), "volume");
+	_texture3DCompute = core::make_shared<compute::Texture>(cfg3d, glm::ivec3(width, height, _depth), "volume");
 	if (!_texture3DCompute->upload(_volume->data())) {
 		Log::error("Failed to upload volume data");
 	}
@@ -105,7 +105,7 @@ core::AppState TestComputeTexture3D::onCleanup() {
 
 core::AppState TestComputeTexture3D::onRunning() {
 	const float step = 0.01f;
-	const bool success = _renderShader.render(*_texture3DCompute, _output, _texture3DCompute->width(), _texture3DCompute->height(), _slice, _workSize);
+	const bool success = _renderShader.render(*_texture3DCompute.get(), _output, _texture3DCompute->width(), _texture3DCompute->height(), _slice, _workSize);
 	if (!success) {
 		Log::error("Failed to execute compute shader");
 	}
