@@ -172,6 +172,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
+	video::cullFace(video::Face::Back);
 	video::enable(video::State::DepthMask);
 	video::colorMask(true, true, true, true);
 	video::clearColor(_clearColor);
@@ -272,7 +273,6 @@ int WorldRenderer::renderEntities(const glm::mat4& viewProjectionMatrix, const g
 	int drawCallsEntities = 0;
 
 	video::enable(video::State::DepthTest);
-	video::enable(video::State::DepthMask);
 	video::ScopedShader scoped(_chrShader);
 	_chrShader.setFogrange(_fogRange);
 	_chrShader.setFocuspos(_focusPos);

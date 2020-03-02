@@ -19,13 +19,15 @@ FrameBuffer::~FrameBuffer() {
 bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 	const glm::ivec2& dim = cfg.dimension();
 	for (const auto& a : cfg.textureAttachments()) {
-		_colorAttachments[a.first] = video::createTexture(a.second, dim.x, dim.y);
-		if (a.first == FrameBufferAttachment::Depth) {
+		const FrameBufferAttachment key = a->key;
+		const TextureConfig& textureConfig = a->value;
+		_colorAttachments[key] = video::createTexture(textureConfig, dim.x, dim.y);
+		if (key == FrameBufferAttachment::Depth) {
 			_clearFlag |= ClearFlag::Depth;
-		} else if (a.first == FrameBufferAttachment::DepthStencil) {
+		} else if (key == FrameBufferAttachment::DepthStencil) {
 			_clearFlag |= ClearFlag::Depth;
 			_clearFlag |= ClearFlag::Stencil;
-		} else if (a.first == FrameBufferAttachment::Stencil) {
+		} else if (key == FrameBufferAttachment::Stencil) {
 			_clearFlag |= ClearFlag::Stencil;
 		} else {
 			_clearFlag |= ClearFlag::Color;

@@ -9,8 +9,8 @@
 namespace video {
 
 FrameBufferConfig& FrameBufferConfig::addTextureAttachment(const TextureConfig& cfg, video::FrameBufferAttachment attachment) {
-	core_assert_msg(_colorTextures.count(attachment) == 0, "There is already a binding for the given attachment type");
-	_colorTextures[attachment] = cfg;
+	core_assert_msg(_colorTextures.find(attachment) == _colorTextures.end(), "There is already a binding for the given attachment type");
+	_colorTextures.put(attachment, cfg);
 	return *this;
 }
 

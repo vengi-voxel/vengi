@@ -8,7 +8,7 @@
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include "TextureConfig.h"
-#include <map>
+#include "core/collection/Map.h"
 
 namespace video {
 
@@ -20,9 +20,11 @@ namespace video {
  * @ingroup Video
  */
 class FrameBufferConfig {
+public:
+	using ColorTextureMap = core::Map<FrameBufferAttachment, TextureConfig, 4, EnumClassHash>;
 private:
 	glm::ivec2 _dimension;
-	std::map<FrameBufferAttachment, TextureConfig> _colorTextures;
+	ColorTextureMap _colorTextures;
 	TextureFormat _colorTextureFormat = TextureFormat::RGBA;
 	TextureFormat _depthTextureFormat = TextureFormat::D24S8;
 	TextureFormat _depthBufferFormat = TextureFormat::D24S8;
@@ -43,7 +45,7 @@ public:
 	TextureFormat colorTextureFormat() const;
 
 	FrameBufferConfig& addTextureAttachment(const TextureConfig& cfg, video::FrameBufferAttachment attachment = video::FrameBufferAttachment::Color0);
-	const std::map<FrameBufferAttachment, TextureConfig>& textureAttachments() const;
+	const ColorTextureMap& textureAttachments() const;
 
 	/**
 	 * @brief Enable or disable the depth texture binding
@@ -100,7 +102,7 @@ inline TextureFormat FrameBufferConfig::depthBufferFormat() const {
 	return _depthBufferFormat;
 }
 
-inline const std::map<FrameBufferAttachment, TextureConfig>& FrameBufferConfig::textureAttachments() const {
+inline const FrameBufferConfig::ColorTextureMap& FrameBufferConfig::textureAttachments() const {
 	return _colorTextures;
 }
 
