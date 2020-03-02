@@ -17,12 +17,11 @@ macro(generate_shaders TARGET)
 		message(FATAL_ERROR "video project not found")
 	endif()
 	set(SHADERTOOL_INCLUDE_DIRS)
-	list(APPEND SHADERTOOL_INCLUDE_DIRS "${video_SOURCE_DIR}/shaders")
-	get_property(DEPENDENCIES GLOBAL PROPERTY ${TARGET}_DEPENDENCIES)
+	set(_dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+	list(APPEND SHADERTOOL_INCLUDE_DIRS "${_dir}")
+	set(DEPENDENCIES)
+	engine_resolve_dependencies(${TARGET} DEPENDENCIES)
 	foreach (D ${DEPENDENCIES})
-		if (NOT DEFINED ${D}_SOURCE_DIR)
-			continue()
-		endif()
 		if (EXISTS ${${D}_SOURCE_DIR}/shaders)
 			list(APPEND SHADERTOOL_INCLUDE_DIRS "${${D}_SOURCE_DIR}/shaders")
 		endif()
@@ -35,7 +34,6 @@ macro(generate_shaders TARGET)
 	endforeach()
 	foreach (_file ${files})
 		set(_shaders)
-		set(_dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 		if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
 			list(APPEND _shaders ${_dir}/${_file}.frag ${_dir}/${_file}.vert)
 			if (EXISTS ${_dir}/${_file}.geom)
@@ -59,7 +57,7 @@ macro(generate_shaders TARGET)
 					OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in ${_shaderconstantheaderpath}.in
 					IMPLICIT_DEPENDS C ${_shaders}
 					COMMENT "Validate ${_file}"
-					COMMAND ${SHADERTOOL_EXECUTABLE} --glslang ${GLSLANGVALIDATOR_EXECUTABLE} -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --constantstemplate  ${_template_constants_header} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+					COMMAND ${SHADERTOOL_EXECUTABLE} --glslang ${GLSLANGVALIDATOR_EXECUTABLE} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --constantstemplate  ${_template_constants_header} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
 					DEPENDS ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 				)
 			else()
@@ -67,7 +65,7 @@ macro(generate_shaders TARGET)
 					OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in ${_shaderconstantheaderpath}.in
 					IMPLICIT_DEPENDS C ${_shaders}
 					COMMENT "Validate ${_file}"
-					COMMAND shadertool --glslang $<TARGET_FILE:glslangValidator> -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --constantstemplate  ${_template_constants_header} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+					COMMAND shadertool --glslang $<TARGET_FILE:glslangValidator> ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --constantstemplate  ${_template_constants_header} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
 					DEPENDS shadertool ${_shaders} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 				)
 			endif()
