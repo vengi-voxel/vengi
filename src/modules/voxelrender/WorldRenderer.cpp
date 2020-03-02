@@ -94,15 +94,28 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 	return 1;
 }
 
-glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera, const glm::vec4& waterPlane) const {
-	const glm::mat4 reflection = glm::mat4(
+glm::mat4 WorldRenderer::waterModelMatrix() const {
+	constexpr glm::vec3 translate(0.0f, ((float)voxel::MAX_WATER_HEIGHT) - 0.05f, 0.0f);
+	const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), translate), glm::vec3(1000.0f));
+	return model;
+}
+
+// http://www.bcnine.com/articles/water/water.md.html
+glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera) const {
+	constexpr float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
+	constexpr glm::mat4 reflection(
+			1.0, 0.0, 0.0, 0.0,
+			0.0, -1.0, 0.0, 0.0, //2.0f * waterHeight,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0);
+	constexpr glm::mat4 flip(
 			1.0, 0.0, 0.0, 0.0,
 			0.0, -1.0, 0.0, 0.0,
 			0.0, 0.0, 1.0, 0.0,
 			0.0, 0.0, 0.0, 1.0);
 	// TODO: increase the field-of-view for the reflection camera a little bit to reduce artifacts on the
 	// edges of the water a little bit - e.g. Apply a 1.05 factor to the current FOV
-	return camera.projectionMatrix() * reflection * camera.viewMatrix();
+	return camera.projectionMatrix() * glm::inverse(reflection * camera.inverseViewMatrix() * flip);
 }
 
 int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
@@ -117,7 +130,7 @@ int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 
 	// render above water
 	_reflectionBuffer.bind(true);
-	const glm::mat4& vpmatRefl = reflectionMatrix(camera, waterAbovePlane);
+	const glm::mat4& vpmatRefl = reflectionMatrix(camera);
 	drawCallsWorld += renderTerrain(vpmatRefl, waterAbovePlane);
 	drawCallsWorld += renderEntities(vpmatRefl, waterAbovePlane);
 	_reflectionBuffer.unbind();
@@ -404,9 +417,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 
 	{
 		video::ScopedShader scoped(_waterShader);
-		constexpr glm::vec3 translate(0.0f, ((float)voxel::MAX_WATER_HEIGHT) - 0.05f, 0.0f);
-		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), translate), glm::vec3(1000.0f));
-		_waterShader.setModel(model);
+		_waterShader.setModel(waterModelMatrix());
 		_waterShader.setShadowmap(video::TextureUnit::One);
 		_waterShader.setCubemap(video::TextureUnit::Two);
 		_waterShader.setReflection(video::TextureUnit::Three);
@@ -453,7 +464,6 @@ void WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
 	_frameBuffer.init(cfg);
 
 	textureCfg = video::TextureConfig();
-	textureCfg.wrap(video::TextureWrap::Repeat);
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig refractionCfg;
 	refractionCfg.dimension(dimensions / 2).depthTexture(true).depthTextureFormat(video::TextureFormat::D32F);
@@ -461,7 +471,6 @@ void WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
 	_refractionBuffer.init(refractionCfg);
 
 	textureCfg = video::TextureConfig();
-	textureCfg.wrap(video::TextureWrap::Repeat);
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig reflectionCfg;
 	reflectionCfg.dimension(dimensions).depthBuffer(true).depthBufferFormat(video::TextureFormat::D32F);
