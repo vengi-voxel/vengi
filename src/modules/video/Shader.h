@@ -9,8 +9,6 @@
 #include "core/collection/StringMap.h"
 #include <stdint.h>
 #include <string.h>
-#include <memory>
-#include <vector>
 #include <glm/fwd.hpp>
 #include "ShaderTypes.h"
 
@@ -528,7 +526,5 @@ public:
 	~ScopedShader();};
 
 #define shaderSetUniformIf(shader, func, var, ...) if (shader.hasUniform(var)) { shader.func(var, __VA_ARGS__); }
-
-typedef std::shared_ptr<Shader> ShaderPtr;
 
 }
