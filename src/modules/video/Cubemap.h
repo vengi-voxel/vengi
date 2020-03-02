@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "Renderer.h"
+#include "core/String.h"
+#include "Types.h"
 
 namespace video {
 

@@ -28,7 +28,6 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <SDL.h>
-#include <map>
 #include <algorithm>
 
 namespace video {
@@ -1174,27 +1173,34 @@ const glm::vec4& framebufferUV() {
 	return uv;
 }
 
-bool setupFramebuffer(const std::map<FrameBufferAttachment, TexturePtr>& colorTextures, const std::map<FrameBufferAttachment, RenderBufferPtr>& bufferAttachments) {
+bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
+					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
 	std::vector<GLenum> attachments;
-	attachments.reserve(colorTextures.size() + bufferAttachments.size());
+	attachments.reserve(core::enumVal(FrameBufferAttachment::Max));
 
-	for (auto &bufferAttachment : bufferAttachments) {
-		const GLenum glAttachmentType = _priv::FrameBufferAttachments[core::enumVal(bufferAttachment.first)];
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, glAttachmentType, GL_RENDERBUFFER, bufferAttachment.second->handle());
+	for (int i = 0; i < core::enumVal(FrameBufferAttachment::Max); ++i) {
+		if (!bufferAttachments[i]) {
+			continue;
+		}
+		const GLenum glAttachmentType = _priv::FrameBufferAttachments[i];
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, glAttachmentType, GL_RENDERBUFFER, bufferAttachments[i]->handle());
 		checkError();
 		if (glAttachmentType >= GL_COLOR_ATTACHMENT0 && glAttachmentType <= GL_COLOR_ATTACHMENT15) {
 			attachments.push_back(glAttachmentType);
 		}
 	}
 
-	for (auto &textureAttachment : colorTextures) {
-		const TextureType textureTarget = textureAttachment.second->type();
-		const GLenum glAttachmentType = _priv::FrameBufferAttachments[core::enumVal(textureAttachment.first)];
+	for (int i = 0; i < core::enumVal(FrameBufferAttachment::Max); ++i) {
+		if (!colorTextures[i]) {
+			continue;
+		}
+		const TextureType textureTarget = colorTextures[i]->type();
+		const GLenum glAttachmentType = _priv::FrameBufferAttachments[i];
 		if (textureTarget == TextureType::TextureCube) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, textureAttachment.second->handle(), 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, colorTextures[i]->handle(), 0);
 			checkError();
 		} else {
-			glFramebufferTexture(GL_FRAMEBUFFER, glAttachmentType, textureAttachment.second->handle(), 0);
+			glFramebufferTexture(GL_FRAMEBUFFER, glAttachmentType, colorTextures[i]->handle(), 0);
 			checkError();
 		}
 		if (glAttachmentType >= GL_COLOR_ATTACHMENT0 && glAttachmentType <= GL_COLOR_ATTACHMENT15) {

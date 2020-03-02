@@ -5,7 +5,6 @@
 #pragma once
 
 #include "FrameBufferConfig.h"
-#include <map>
 #include <memory>
 
 namespace video {
@@ -27,12 +26,18 @@ private:
 	ClearFlag _clearFlag = ClearFlag::None;
 	Id _fbo = video::InvalidId;
 	Id _oldFramebuffer = video::InvalidId;
-	std::map<FrameBufferAttachment, TexturePtr> _colorAttachments;
-	std::map<FrameBufferAttachment, RenderBufferPtr> _bufferAttachments;
+	TexturePtr _colorAttachments[core::enumVal(FrameBufferAttachment::Max)];
+	RenderBufferPtr _bufferAttachments[core::enumVal(FrameBufferAttachment::Max)];
 
 	glm::ivec2 _dimension;
 
 	int32_t _viewport[4] = {0, 0, 0, 0};
+
+	void addColorAttachment(FrameBufferAttachment attachment, const TexturePtr& texture);
+	bool hasColorAttachment(FrameBufferAttachment attachment);
+
+	void addBufferAttachment(FrameBufferAttachment attachment, const RenderBufferPtr& renderBuffer);
+	bool hasBufferAttachment(FrameBufferAttachment attachment);
 
 	bool prepareAttachments(const FrameBufferConfig& cfg);
 public:

@@ -16,12 +16,27 @@ FrameBuffer::~FrameBuffer() {
 	shutdown();
 }
 
+void FrameBuffer::addColorAttachment(FrameBufferAttachment attachment, const TexturePtr& texture) {
+	_colorAttachments[core::enumVal(attachment)] = texture;
+}
+
+bool FrameBuffer::hasColorAttachment(FrameBufferAttachment attachment) {
+	return (bool)_colorAttachments[core::enumVal(attachment)];
+}
+
+void FrameBuffer::addBufferAttachment(FrameBufferAttachment attachment, const RenderBufferPtr& renderBuffer) {
+	_bufferAttachments[core::enumVal(attachment)] = renderBuffer;
+}
+
+bool FrameBuffer::hasBufferAttachment(FrameBufferAttachment attachment) {
+	return (bool)_bufferAttachments[core::enumVal(attachment)];
+}
 bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 	const glm::ivec2& dim = cfg.dimension();
 	for (const auto& a : cfg.textureAttachments()) {
 		const FrameBufferAttachment key = a->key;
 		const TextureConfig& textureConfig = a->value;
-		_colorAttachments[key] = video::createTexture(textureConfig, dim.x, dim.y);
+		addColorAttachment(key, video::createTexture(textureConfig, dim.x, dim.y));
 		if (key == FrameBufferAttachment::Depth) {
 			_clearFlag |= ClearFlag::Depth;
 		} else if (key == FrameBufferAttachment::DepthStencil) {
@@ -33,33 +48,33 @@ bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 			_clearFlag |= ClearFlag::Color;
 		}
 	}
-	if (cfg.useColorTexture() && !_colorAttachments.count(FrameBufferAttachment::Color0) && !_bufferAttachments.count(FrameBufferAttachment::Color0)) {
+	if (cfg.useColorTexture() && !hasColorAttachment(FrameBufferAttachment::Color0) && !hasBufferAttachment(FrameBufferAttachment::Color0)) {
 		TextureConfig textureCfg;
 		textureCfg.format(cfg.colorTextureFormat());
-		_colorAttachments[FrameBufferAttachment::Color0] = video::createTexture(textureCfg, dim.x, dim.y);
+		_colorAttachments[core::enumVal(FrameBufferAttachment::Color0)] = video::createTexture(textureCfg, dim.x, dim.y);
 		_clearFlag |= ClearFlag::Color;
 	}
 
-	const bool depthStencil = _colorAttachments.count(FrameBufferAttachment::Depth)
-					&& _bufferAttachments.count(FrameBufferAttachment::Depth)
-					&& _colorAttachments.count(FrameBufferAttachment::DepthStencil)
-					&& _bufferAttachments.count(FrameBufferAttachment::DepthStencil);
+	const bool depthStencil = hasColorAttachment(FrameBufferAttachment::Depth)
+					&& hasBufferAttachment(FrameBufferAttachment::Depth)
+					&& hasColorAttachment(FrameBufferAttachment::DepthStencil)
+					&& hasBufferAttachment(FrameBufferAttachment::DepthStencil);
 	if (cfg.useDepthTexture() && !depthStencil) {
 		TextureConfig textureCfg;
 		textureCfg.format(cfg.depthTextureFormat());
-		_colorAttachments[FrameBufferAttachment::Depth] = video::createTexture(textureCfg, dim.x, dim.y);
+		addColorAttachment(FrameBufferAttachment::Depth, video::createTexture(textureCfg, dim.x, dim.y));
 		_clearFlag |= ClearFlag::Depth;
 	} else if (cfg.useDepthBuffer() && !depthStencil) {
 		if (cfg.useStencilBuffer()) {
-			_bufferAttachments[FrameBufferAttachment::DepthStencil] = video::createRenderBuffer(cfg.depthBufferFormat(), dim.x, dim.y);
+			addBufferAttachment(FrameBufferAttachment::DepthStencil, video::createRenderBuffer(cfg.depthBufferFormat(), dim.x, dim.y));
 			_clearFlag |= ClearFlag::Depth;
 			_clearFlag |= ClearFlag::Stencil;
 		} else {
-			_bufferAttachments[FrameBufferAttachment::Depth] = video::createRenderBuffer(cfg.depthBufferFormat(), dim.x, dim.y);
+			addBufferAttachment(FrameBufferAttachment::Depth, video::createRenderBuffer(cfg.depthBufferFormat(), dim.x, dim.y));
 			_clearFlag |= ClearFlag::Depth;
 		}
 	} else if (cfg.useStencilBuffer()) {
-		_bufferAttachments[FrameBufferAttachment::Stencil] = video::createRenderBuffer(TextureFormat::S8, dim.x, dim.y);
+		addBufferAttachment(FrameBufferAttachment::Stencil, video::createRenderBuffer(TextureFormat::S8, dim.x, dim.y));
 		_clearFlag |= ClearFlag::Stencil;
 	}
 
@@ -85,22 +100,19 @@ glm::vec4 FrameBuffer::uv() const {
 void FrameBuffer::shutdown() {
 	video::deleteFramebuffer(_fbo);
 	for (auto& e : _colorAttachments) {
-		e.second->shutdown();
+		e->shutdown();
 	}
-	_colorAttachments.clear();
 	for (auto& e : _bufferAttachments) {
-		e.second->shutdown();
+		e->shutdown();
 	}
-	_bufferAttachments.clear();
 }
 
 TexturePtr FrameBuffer::texture(FrameBufferAttachment attachment) const {
-	auto i = _colorAttachments.find(attachment);
-	if (i == _colorAttachments.end()) {
+	auto tex = _colorAttachments[core::enumVal(attachment)];
+	if (!tex) {
 		core_assert_msg(false, "Could not find framebuffer texture for %i", (int)attachment);
-		return TexturePtr();
 	}
-	return i->second;
+	return tex;
 }
 
 void FrameBuffer::bind(bool clear) {
@@ -113,16 +125,16 @@ void FrameBuffer::bind(bool clear) {
 }
 
 bool FrameBuffer::bindTextureAttachment(FrameBufferAttachment attachment, int layerIndex, bool clear) {
-	auto i = _colorAttachments.find(attachment);
-	if (i == _colorAttachments.end()) {
+	auto tex = _colorAttachments[core::enumVal(attachment)];
+	if (!tex) {
 		Log::warn("Could not find texture attachment for attachment %i", (int)attachment);
 		return false;
 	}
-	if (layerIndex < 0 || layerIndex >= i->second->layers()) {
-		Log::warn("Given layer index (%i) is out of bounds: %i", layerIndex, (int)i->second->layers());
+	if (layerIndex < 0 || layerIndex >= tex->layers()) {
+		Log::warn("Given layer index (%i) is out of bounds: %i", layerIndex, (int)tex->layers());
 		return false;
 	}
-	return video::bindFrameBufferAttachment(i->second->handle(), attachment, layerIndex, clear);
+	return video::bindFrameBufferAttachment(tex->handle(), attachment, layerIndex, clear);
 }
 
 void FrameBuffer::unbind() {

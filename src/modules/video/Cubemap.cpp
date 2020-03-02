@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
+#include "Renderer.h"
 
 namespace video {
 
