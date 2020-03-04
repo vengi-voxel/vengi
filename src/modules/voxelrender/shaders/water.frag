@@ -31,8 +31,14 @@ float depthToDistance(float depth) {
 	return 2.0 * u_near * u_far / (u_far + u_near - (2.0 * depth - 1.0) * (u_far - u_near));
 }
 
+vec2 clipSpaceToTexCoords(vec4 clipSpace){
+	vec2 ndc = (clipSpace.xy / clipSpace.w);
+	vec2 texCoords = ndc / 2.0 + 0.5;
+	return clamp(texCoords, 0.002, 0.998);
+}
+
 void main(void) {
-	vec2 ndc = (v_clipspace.xy / v_clipspace.w) / 2.0 + 0.5;
+	vec2 ndc = clipSpaceToTexCoords(v_clipspace);
 
 	float floorDistance = depthToDistance($texture2D(u_depthmap, ndc).r);
 	float waterDistance = depthToDistance(gl_FragCoord.z);
@@ -66,10 +72,8 @@ void main(void) {
 	refractTexcoords = clamp(refractTexcoords, 0.001, 0.999);
 	vec4 refractColor = $texture2D(u_refraction, refractTexcoords);
 
-	vec2 reflectTexcoords = vec2(ndc.x, -ndc.y);
+	vec2 reflectTexcoords = vec2(ndc.x, 1.0 - ndc.y);
 	reflectTexcoords += totalDistortion;
-	reflectTexcoords.x = clamp(reflectTexcoords.x, 0.001, 0.999);
-	reflectTexcoords.y = clamp(reflectTexcoords.y, -0.999, -0.001);
 	vec4 reflectColor = $texture2D(u_reflection, reflectTexcoords);
 	float refractiveFactor = dot(I, normal);
 	refractiveFactor = pow(refractiveFactor, 10.0);
