@@ -456,7 +456,7 @@ void WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
 	textureCfg.wrap(video::TextureWrap::Repeat);
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig refractionCfg;
-	refractionCfg.dimension(glm::ivec2(1280, 720)).depthTexture(true).depthTextureFormat(video::TextureFormat::D32F);
+	refractionCfg.dimension(dimensions / 2).depthTexture(true).depthTextureFormat(video::TextureFormat::D32F);
 	refractionCfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	_refractionBuffer.init(refractionCfg);
 
@@ -464,7 +464,7 @@ void WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
 	textureCfg.wrap(video::TextureWrap::Repeat);
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig reflectionCfg;
-	reflectionCfg.dimension(glm::ivec2(320, 180)).depthBuffer(true).depthBufferFormat(video::TextureFormat::D32F);
+	reflectionCfg.dimension(dimensions).depthBuffer(true).depthBufferFormat(video::TextureFormat::D32F);
 	reflectionCfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	_reflectionBuffer.init(reflectionCfg);
 }
