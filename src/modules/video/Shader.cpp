@@ -502,7 +502,7 @@ bool Shader::transformFeedback() const {
 	return _transformFormat != TransformFeedbackCaptureMode::Max;
 }
 
-void Shader::setupTransformFeedback(const std::vector<core::String>& varyings, TransformFeedbackCaptureMode format) {
+void Shader::setupTransformFeedback(const core::List<core::String>& varyings, TransformFeedbackCaptureMode format) {
 	_transformVaryings = varyings;
 	_transformFormat = format;
 }

@@ -8,6 +8,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include <SDL.h>
+#include <vector>
 
 namespace video {
 

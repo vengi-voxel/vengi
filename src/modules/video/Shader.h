@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/collection/List.h"
 #include <stdint.h>
 #include <string.h>
 #include <memory>
@@ -63,7 +64,7 @@ protected:
 	ShaderUniforms _uniforms;
 
 	TransformFeedbackCaptureMode _transformFormat = TransformFeedbackCaptureMode::Max;
-	std::vector<core::String> _transformVaryings;
+	core::List<core::String> _transformVaryings;
 
 	// can be used to validate that every uniform was set. The value type is the location index
 	mutable core::Map<int, bool, 4> _usedUniforms;
@@ -143,7 +144,7 @@ public:
 	 * @note Must be called before calling @c setup()
 	 * @see setup()
 	 */
-	void setupTransformFeedback(const std::vector<core::String>& transformVaryings, TransformFeedbackCaptureMode mode);
+	void setupTransformFeedback(const core::List<core::String>& transformVaryings, TransformFeedbackCaptureMode mode);
 
 	void recordUsedUniforms(bool state);
 

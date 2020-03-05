@@ -1446,7 +1446,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 	return true;
 }
 
-bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode, const std::vector<core::String>& varyings) {
+bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode, const core::List<core::String>& varyings) {
 	if (!hasFeature(Feature::TransformFeedback)) {
 		return false;
 	}

@@ -14,9 +14,9 @@
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 #include <type_traits>
-#include <vector>
 #include <memory>
 #include "RenderBuffer.h"
+#include "core/collection/List.h"
 
 struct SDL_Window;
 
@@ -309,7 +309,7 @@ extern bool bindTransforFeebackBuffer(int index, Id bufferId);
 extern bool bindTransformFeedback(Id id);
 extern void deleteTransformFeedback(Id& id);
 extern Id genTransformFeedback();
-extern bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode transformFormat, const std::vector<core::String>& transformVaryings);
+extern bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode transformFormat, const core::List<core::String>& transformVaryings);
 
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices, void* offset = nullptr) {
