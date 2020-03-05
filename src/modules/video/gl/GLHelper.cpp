@@ -8,7 +8,6 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include <SDL.h>
-#include <vector>
 
 namespace video {
 
@@ -212,7 +211,7 @@ void setupLimitsAndSpecs() {
 }
 
 void setupFeatures() {
-	const std::vector<const char *> extensionArray[] = {
+	const core::List<const char *> extensionArray[] = {
 		{"GL_ARB_texture_compression_s3tc", "GL_ARB_compressed_texture_s3tc", "GL_ARB_texture_compression_dxt1"},
 		{"GL_ARB_texture_compression_pvrtc", "GL_ARB_compressed_texture_pvrtc"},
 		{},
@@ -241,7 +240,7 @@ void setupFeatures() {
 	}
 
 	for (size_t i = 0; i < SDL_arraysize(extensionArray); ++i) {
-		const std::vector<const char *>& extStrVector = extensionArray[i];
+		const core::List<const char *>& extStrVector = extensionArray[i];
 		for (const char *extStr : extStrVector) {
 			renderState().features[i] = SDL_GL_ExtensionSupported(extStr);
 			if (renderState().features[i]) {
