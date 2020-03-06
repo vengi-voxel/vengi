@@ -10,7 +10,6 @@
 #include "video/Camera.h"
 #include "shared/SharedMovement.h"
 
-
 namespace frontend {
 
 /**
