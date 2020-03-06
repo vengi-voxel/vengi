@@ -7,7 +7,8 @@
 #include "core/Trace.h"
 #include "Biome.h"
 #include "noise/Noise.h"
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
+#include <glm/vec3.hpp>
 #include <memory>
 #include <vector>
 

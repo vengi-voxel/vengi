@@ -44,26 +44,6 @@ inline float randomBinomial (float max = 1.0f) {
 }
 
 template<typename I>
-inline I randomElement(I begin, I end) {
-	const int n = static_cast<int>(std::distance(begin, end));
-	std::uniform_int_distribution<> dis(0, n - 1);
-	std::advance(begin, dis(randomEngine()));
-	return begin;
-}
-
-/**
- * @brief Helper function to cut the input vector down to @c n random elements.
- */
-template<typename T>
-inline void randomElements(std::vector<T>& vec, int n) {
-	if (n >= (int)vec.size()) {
-		return;
-	}
-	std::shuffle(vec.begin(), vec.end(), randomEngine());
-	vec.resize(n);
-}
-
-template<typename I>
 inline void shuffle(I begin, I end) {
 	std::shuffle(begin, end, randomEngine());
 }

@@ -11,10 +11,9 @@
 #include "voxelutil/Raycast.h"
 #include "voxelformat/VolumeCache.h"
 #include "voxel/Constants.h"
-#include <memory>
-
 #include "core/GLM.h"
 #include "math/Random.h"
+#include <memory>
 
 namespace voxelworld {
 
