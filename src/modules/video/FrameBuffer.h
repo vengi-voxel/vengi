@@ -5,6 +5,7 @@
 #pragma once
 
 #include "FrameBufferConfig.h"
+#include "core/SharedPtr.h"
 #include <memory>
 
 namespace video {
@@ -12,7 +13,7 @@ namespace video {
 class Texture;
 class RenderBuffer;
 typedef std::shared_ptr<Texture> TexturePtr;
-typedef std::shared_ptr<RenderBuffer> RenderBufferPtr;
+typedef core::SharedPtr<RenderBuffer> RenderBufferPtr;
 
 /**
  * @brief A frame buffer is a collection of buffers that can be used as the destination for rendering.

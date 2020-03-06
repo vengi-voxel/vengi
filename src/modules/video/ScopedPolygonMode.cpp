@@ -5,6 +5,7 @@
 #include "ScopedPolygonMode.h"
 #include "core/Common.h"
 #include "Renderer.h"
+#include <glm/vec2.hpp>
 
 namespace video {
 

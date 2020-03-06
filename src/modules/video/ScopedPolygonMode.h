@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Types.h"
-#include <glm/vec2.hpp>
+#include <glm/fwd.hpp>
 
 namespace video {
 

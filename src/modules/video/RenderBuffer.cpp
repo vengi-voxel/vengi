@@ -31,7 +31,7 @@ void RenderBuffer::shutdown() {
 }
 
 RenderBufferPtr createRenderBuffer(TextureFormat format, int w, int h, int samples) {
-	const RenderBufferPtr& ptr = std::make_shared<RenderBuffer>(format, w, h, samples);
+	const RenderBufferPtr& ptr = core::make_shared<RenderBuffer>(format, w, h, samples);
 	if (!ptr->init()) {
 		Log::warn("Could not init renderbuffer");
 		return RenderBufferPtr();

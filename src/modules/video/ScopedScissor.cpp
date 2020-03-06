@@ -4,6 +4,7 @@
 
 #include "ScopedScissor.h"
 #include "Renderer.h"
+#include <glm/vec2.hpp>
 
 namespace video {
 

@@ -5,12 +5,12 @@
 #pragma once
 
 #include "Types.h"
-#include <memory>
+#include "core/SharedPtr.h"
 
 namespace video {
 
 class RenderBuffer;
-typedef std::shared_ptr<RenderBuffer> RenderBufferPtr;
+typedef core::SharedPtr<RenderBuffer> RenderBufferPtr;
 
 class RenderBuffer {
 private:
