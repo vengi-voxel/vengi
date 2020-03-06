@@ -417,11 +417,11 @@ void clua_vecregister(lua_State* s) {
 	Log::debug("Register %s lua functions", clua_meta<RAWTYPE>::name());
 	clua_registerfuncs(s, funcs, clua_meta<RAWTYPE>::name());
 
-	const std::vector<luaL_Reg> globalFuncs = {
+	const luaL_Reg globalFuncs[] = {
 		{"new", clua_vecnew<RAWTYPE>::vecnew},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, &globalFuncs.front(), clua_meta<RAWTYPE>::name(), clua_name<RAWTYPE>::name());
+	clua_registerfuncsglobal(s, globalFuncs, clua_meta<RAWTYPE>::name(), clua_name<RAWTYPE>::name());
 }
 
 extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);

@@ -65,12 +65,12 @@ int biomelua_addcity(lua_State* s) {
 }
 
 void biomelua_biomeregister(lua_State* s) {
-	std::vector<luaL_Reg> funcs = {
+	const luaL_Reg funcs[] = {
 		{"__tostring", biomelua_biometostring},
 		{"addTree", biomelua_addtree},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(s, &funcs.front(), clua_meta<Biome>::name());
+	clua_registerfuncs(s, funcs, clua_meta<Biome>::name());
 	clua_vecregister<glm::ivec2>(s);
 	clua_vecregister<glm::ivec3>(s);
 }
