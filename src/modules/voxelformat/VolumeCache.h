@@ -8,14 +8,14 @@
 #include "voxel/RawVolume.h"
 #include "core/collection/StringMap.h"
 #include <memory>
-#include <mutex>
+#include "core/concurrent/Lock.h"
 
 namespace voxelformat {
 
 class VolumeCache : public core::IComponent {
 private:
 	core::StringMap<voxel::RawVolume*> _volumes;
-	std::mutex _mutex;
+	core::Lock _mutex;
 public:
 	~VolumeCache();
 	/**

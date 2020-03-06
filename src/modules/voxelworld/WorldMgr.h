@@ -13,9 +13,6 @@
 #include "voxel/Constants.h"
 #include <memory>
 
-#include "core/collection/ConcurrentQueue.h"
-#include "core/concurrent/ThreadPool.h"
-#include "core/Var.h"
 #include "core/GLM.h"
 #include "math/Random.h"
 

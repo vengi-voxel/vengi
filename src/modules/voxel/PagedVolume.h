@@ -13,7 +13,6 @@
 #include "core/collection/Array.h"
 #include "core/collection/Map.h"
 #include "core/SharedPtr.h"
-#include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
