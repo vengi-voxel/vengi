@@ -12,14 +12,12 @@
 #include "voxelformat/VolumeCache.h"
 #include "voxel/Constants.h"
 #include <memory>
-#include <atomic>
 
 #include "core/collection/ConcurrentQueue.h"
 #include "core/concurrent/ThreadPool.h"
 #include "core/Var.h"
 #include "core/GLM.h"
 #include "math/Random.h"
-#include <unordered_set>
 
 namespace voxelworld {
 
