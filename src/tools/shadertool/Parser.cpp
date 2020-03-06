@@ -192,7 +192,7 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 	while (tok.hasNext()) {
 		const core::String token = tok.next();
 		Log::trace("token: %s", token.c_str());
-		std::vector<Variable>* v = nullptr;
+		core::List<Variable>* v = nullptr;
 		if (token == "$in") {
 			if (vertex) {
 				v = &shaderStruct.attributes;
@@ -215,10 +215,11 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 				return false;
 			}
 			const core::String varvalue = tok.next();
-			if (!shaderStruct.constants.insert(std::make_pair(varname, varvalue)).second) {
+			if (shaderStruct.constants.find(varname) != shaderStruct.constants.end()) {
 				Log::error("Could not register constant %s with value %s (duplicate)", varname.c_str(), varvalue.c_str());
 				return false;
 			}
+			shaderStruct.constants.put(varname, varvalue);
 		} else if (token == "layout") {
 			// there can be multiple layouts per definition since GL 4.2 (or ARB_shading_language_420pack)
 			// that's why we only reset the layout after we finished parsing the variable and/or the
@@ -242,7 +243,7 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 				uniformBlock = false;
 				hasLayout = false;
 				Log::trace("End of uniform block: %s", block.name.c_str());
-				shaderStruct.uniformBlocks.push_back(block);
+				shaderStruct.uniformBlocks.insert(block);
 				core_assert_always(tok.next() == ";");
 			} else {
 				tok.prev();
@@ -297,20 +298,27 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 		}
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
 		if (uniformBlock) {
-			block.members.push_back(Variable{typeEnum, name, arraySize});
+			block.members.insert(Variable{typeEnum, name, arraySize});
 		} else {
-			auto findIter = std::find_if(v->begin(), v->end(), [&] (const Variable& var) {return var.name == name;});
-			if (findIter == v->end()) {
-				v->push_back(Variable{typeEnum, name, arraySize});
+			bool found = false;
+			for (auto i = v->begin(); i != v->end(); ++i) {
+				if (i->value.name == name) {
+					found = true;
+					if (typeEnum != i->value.type) {
+						// TODO: check layout differences
+						Log::error("Found duplicate variable %s (%s versus %s)",
+							name.c_str(), util::resolveTypes(i->value.type).ctype, util::resolveTypes(typeEnum).ctype);
+						return false;
+					}
+					break;
+				}
+			}
+			if (!found) {
+				v->insert(Variable{typeEnum, name, arraySize});
 				if (hasLayout) {
 					shaderStruct.layouts.put(name, layout);
 					hasLayout = false;
 				}
-			} else if (typeEnum != findIter->type) {
-				// TODO: check layout differences
-				Log::error("Found duplicate variable %s (%s versus %s)",
-					name.c_str(), util::resolveTypes(findIter->type).ctype, util::resolveTypes(typeEnum).ctype);
-				return false;
 			}
 		}
 	}

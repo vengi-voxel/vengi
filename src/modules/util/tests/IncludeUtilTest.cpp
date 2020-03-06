@@ -11,8 +11,8 @@ class IncludeUtilTest : public core::AbstractTest {
 };
 
 TEST_F(IncludeUtilTest, testInclude) {
-	std::vector<core::String> includedFiles;
-	std::vector<core::String> includeDirs { "." };
+	core::List<core::String> includedFiles;
+	core::List<core::String> includeDirs { "." };
 	const core::String src = io::filesystem()->load("main.h");
 	EXPECT_FALSE(src.empty());
 	std::pair<core::String, bool> retIncludes = util::handleIncludes(src, includeDirs, &includedFiles);

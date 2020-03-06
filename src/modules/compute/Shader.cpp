@@ -135,7 +135,7 @@ core::String Shader::validPreprocessorName(const core::String& name) {
 	return core::string::replaceAll(name, "_", "");
 }
 
-core::String Shader::getSource(const core::String& buffer, bool finalize, std::vector<core::String>* includedFiles) const {
+core::String Shader::getSource(const core::String& buffer, bool finalize, core::List<core::String>* includedFiles) const {
 	if (buffer.empty()) {
 		return "";
 	}
@@ -158,18 +158,18 @@ core::String Shader::getSource(const core::String& buffer, bool finalize, std::v
 
 	for (auto i = _defines.begin(); i != _defines.end(); ++i) {
 		src.append("#ifndef ");
-		src.append(i->first);
+		src.append(i->key);
 		src.append("\n");
 		src.append("#define ");
-		src.append(i->first);
+		src.append(i->key);
 		src.append(" ");
-		src.append(i->second);
+		src.append(i->value);
 		src.append("\n");
 		src.append("#endif\n");
 	}
 
-	std::vector<core::String> includeDirs;
-	includeDirs.push_back(core::String(core::string::extractPath(_name)));
+	core::List<core::String> includeDirs;
+	includeDirs.insert(core::String(core::string::extractPath(_name)));
 	const std::pair<core::String, bool>& includeFirst = util::handleIncludes(buffer, includeDirs, includedFiles);
 	src += includeFirst.first;
 	int level = 0;
@@ -198,7 +198,7 @@ core::String Shader::getSource(const core::String& buffer, bool finalize, std::v
 
 void Shader::addDefine(const core::String& name, const core::String& value) {
 	core_assert_msg(!_initialized, "Shader is already initialized");
-	_defines[name] = value;
+	_defines.put(name, value);
 }
 
 }

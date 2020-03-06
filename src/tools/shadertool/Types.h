@@ -7,8 +7,7 @@
 #include "video/Types.h"
 #include "core/String.h"
 #include "core/collection/StringMap.h"
-#include <vector>
-#include <map>
+#include "core/collection/List.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
@@ -155,7 +154,7 @@ struct PrimitiveType {
 
 struct UniformBlock {
 	core::String name;
-	std::vector<Variable> members;
+	core::List<Variable> members;
 	Layout layout;
 };
 
@@ -167,16 +166,16 @@ struct ShaderStruct {
 	core::String name;
 	core::String filename;
 	// both
-	std::vector<Variable> uniforms;
+	core::List<Variable> uniforms;
 	core::StringMap<Layout> layouts;
-	std::map<core::String, core::String> constants;
-	std::vector<UniformBlock> uniformBlocks;
+	core::StringMap<core::String> constants;
+	core::List<UniformBlock> uniformBlocks;
 	// vertex only
-	std::vector<Variable> attributes;
+	core::List<Variable> attributes;
 	// vertex only
-	std::vector<Variable> varyings;
+	core::List<Variable> varyings;
 	// fragment only
-	std::vector<Variable> outs;
+	core::List<Variable> outs;
 	InOut in;
 	InOut out;
 };

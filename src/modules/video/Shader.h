@@ -6,11 +6,11 @@
 
 #include "core/String.h"
 #include "core/collection/List.h"
+#include "core/collection/StringMap.h"
 #include <stdint.h>
 #include <string.h>
 #include <memory>
 #include <vector>
-#include <map>
 #include <glm/fwd.hpp>
 #include "ShaderTypes.h"
 
@@ -55,7 +55,7 @@ protected:
 	mutable bool _active = false;
 	bool _dirty = true;
 
-	typedef std::map<core::String, core::String> ShaderDefines;
+	typedef core::StringMap<core::String> ShaderDefines;
 	ShaderDefines _defines;
 
 	typedef core::StringMap<int> ShaderUniformArraySizes;
@@ -107,7 +107,7 @@ public:
 
 	bool load(const core::String& name, const core::String& buffer, ShaderType shaderType);
 
-	core::String getSource(ShaderType shaderType, const core::String& buffer, bool finalize = true, std::vector<core::String>* includedFiles = nullptr) const;
+	core::String getSource(ShaderType shaderType, const core::String& buffer, bool finalize = true, core::List<core::String>* includedFiles = nullptr) const;
 
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too

@@ -5,7 +5,8 @@
 
 #include "Compute.h"
 #include "core/String.h"
-#include <map>
+#include "core/collection/StringMap.h"
+#include "core/collection/List.h"
 
 #ifndef COMPUTE_POSTFIX
 #define COMPUTE_POSTFIX ".cl"
@@ -24,7 +25,7 @@ protected:
 	bool _initialized = false;;
 	mutable bool _active = false;
 
-	typedef std::map<core::String, core::String> ShaderDefines;
+	typedef core::StringMap<core::String> ShaderDefines;
 	ShaderDefines _defines;
 
 	core::String _name;
@@ -80,7 +81,7 @@ public:
 
 	void deleteKernel(Id& kernel);
 
-	core::String getSource(const core::String& buffer, bool finalize = true, std::vector<core::String>* includedFiles = nullptr) const;
+	core::String getSource(const core::String& buffer, bool finalize = true, core::List<core::String>* includedFiles = nullptr) const;
 
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too

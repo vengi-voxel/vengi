@@ -5,16 +5,16 @@
 #pragma once
 
 #include "Types.h"
-#include <vector>
 #include "core/String.h"
-#include <map>
+#include "core/collection/StringMap.h"
+#include "core/collection/List.h"
 
 namespace computeshadertool {
 
 extern bool parse(const core::String& buffer,
 		const core::String& computeFilename,
-		std::vector<Kernel>& kernels,
-		std::vector<Struct>& structs,
-		std::map<core::String, core::String>& constants);
+		core::List<Kernel>& kernels,
+		core::List<Struct>& structs,
+		core::StringMap<core::String>& constants);
 
 }

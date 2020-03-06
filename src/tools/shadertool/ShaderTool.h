@@ -6,6 +6,7 @@
 
 #include "core/CommandlineApp.h"
 #include "Types.h"
+#include "core/collection/List.h"
 
 /**
  * @brief This tool validates the GLSL shaders and generates c++ code for them.
@@ -28,8 +29,8 @@ protected:
 	core::String _constantsTemplateFile;
 	core::String _shaderfile;
 	core::String _shaderpath;
-	std::vector<core::String> _includes;
-	std::vector<core::String> _includeDirs;
+	core::List<core::String> _includes;
+	core::List<core::String> _includeDirs;
 
 	bool parse(const core::String& src, bool vertex);
 	void validate(const core::String& name);

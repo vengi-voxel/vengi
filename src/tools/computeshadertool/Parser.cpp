@@ -49,7 +49,7 @@ static bool validate(Kernel& kernel) {
 	return !error;
 }
 
-static const simplecpp::Token *parseStruct(const core::String& filename, const simplecpp::Token *tok, std::vector<Struct>& structs) {
+static const simplecpp::Token *parseStruct(const core::String& filename, const simplecpp::Token *tok, core::List<Struct>& structs) {
 	tok = tok->next;
 	if (!tok) {
 		Log::error("%s:%i:%i: error: Failed to parse struct - not enough tokens - expected name",
@@ -73,7 +73,7 @@ static const simplecpp::Token *parseStruct(const core::String& filename, const s
 		for (; tok; tok = tok->next) {
 			const core::String& token = tok->str().c_str();
 			if (token == ";") {
-				structs.push_back(structVar);
+				structs.insert(structVar);
 				tok = tok->next;
 				break;
 			} else {
@@ -128,12 +128,12 @@ static const simplecpp::Token *parseStruct(const core::String& filename, const s
 		}
 	}
 	if (valid) {
-		structs.push_back(structVar);
+		structs.insert(structVar);
 	}
 	return tok;
 }
 
-static const simplecpp::Token *parseEnum(const core::String& filename, const simplecpp::Token *tok, std::vector<Struct>& structs) {
+static const simplecpp::Token *parseEnum(const core::String& filename, const simplecpp::Token *tok, core::List<Struct>& structs) {
 	tok = tok->next;
 	if (!tok) {
 		// anonymous enums don't generate structs
@@ -188,14 +188,14 @@ static const simplecpp::Token *parseEnum(const core::String& filename, const sim
 		structVar.parameters.push_back(param);
 		param = Parameter();
 	}
-	structs.push_back(structVar);
+	structs.insert(structVar);
 	if (tok) {
 		tok = tok->next;
 	}
 	return tok;
 }
 
-static const simplecpp::Token *parseKernel(const core::String& filename, const simplecpp::Token *tok, std::vector<Kernel>& kernels) {
+static const simplecpp::Token *parseKernel(const core::String& filename, const simplecpp::Token *tok, core::List<Kernel>& kernels) {
 	if (!tok) {
 		return tok;
 	}
@@ -414,13 +414,13 @@ static const simplecpp::Token *parseKernel(const core::String& filename, const s
 		return tok;
 	}
 
-	kernels.push_back(kernel);
+	kernels.insert(kernel);
 
 	return tok;
 }
 
-bool parse(const core::String& buffer, const core::String& computeFilename, std::vector<Kernel>& kernels,
-		std::vector<Struct>& structs, std::map<core::String, core::String>& constants) {
+bool parse(const core::String& buffer, const core::String& computeFilename, core::List<Kernel>& kernels,
+		core::List<Struct>& structs, core::StringMap<core::String>& constants) {
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
 	std::vector<std::string> files;
@@ -453,10 +453,11 @@ bool parse(const core::String& buffer, const core::String& computeFilename, std:
 			}
 			tok = tok->next;
 			const core::String varvalue = tok->str().c_str();
-			if (!constants.insert(std::make_pair(varname, varvalue)).second) {
+			if (constants.find(varname) != constants.end()) {
 				Log::error("Could not register constant %s with value %s (duplicate)", varname.c_str(), varvalue.c_str());
 				return false;
 			}
+			constants.put(varname, varvalue);
 		}
 		if (tok == nullptr) {
 			break;

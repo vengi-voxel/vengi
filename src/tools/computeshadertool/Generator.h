@@ -7,8 +7,8 @@
 #include "core/io/Filesystem.h"
 #include "Types.h"
 #include "core/String.h"
-#include <vector>
-#include <map>
+#include "core/collection/StringMap.h"
+#include "core/collection/List.h"
 
 namespace computeshadertool {
 
@@ -18,9 +18,9 @@ extern bool generateSrc(const io::FilesystemPtr& filesystem,
 		const core::String& shaderDirectory,
 		const core::String& sourceDirectory,
 		const core::String& templateShader,
-		const std::vector<Kernel>& kernels,
-		const std::vector<Struct>& structs,
-		const std::map<core::String, core::String>& constants,
+		const core::List<Kernel>& kernels,
+		const core::List<Struct>& structs,
+		const core::StringMap<core::String>& constants,
 		const core::String& postfix,
 		const core::String& shaderBuffer);
 

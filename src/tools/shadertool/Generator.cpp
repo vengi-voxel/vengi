@@ -60,22 +60,23 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	const int uniformSize = int(shaderStruct.uniforms.size());
 	if (uniformSize > 0) {
 		uniforms += "checkUniforms({";
-		for (int i = 0; i < uniformSize; ++i) {
-			const core::String& uniformName = shaderStruct.uniforms[i].name;
+		int i = 0;
+		for (const Variable& uniform : shaderStruct.uniforms) {
 			uniforms += "\"";
-			uniforms += uniformName;
+			uniforms += uniform.name;
 			uniforms += "\"";
 			if (i < uniformSize - 1) {
 				uniforms += ", ";
 			}
+			++i;
 		}
 		uniforms += "});";
 
-		for (int i = 0; i < uniformSize; ++i) {
+		for (const Variable& uniform : shaderStruct.uniforms) {
 			uniformArrayInfo += "\t\tsetUniformArraySize(\"";
-			uniformArrayInfo += shaderStruct.uniforms[i].name;
+			uniformArrayInfo += uniform.name;
 			uniformArrayInfo += "\", ";
-			uniformArrayInfo += core::string::toString(shaderStruct.uniforms[i].arraySize);
+			uniformArrayInfo += core::string::toString(uniform.arraySize);
 			uniformArrayInfo += ");\n";
 		}
 	} else {
@@ -86,19 +87,19 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	const int attributeSize = int(shaderStruct.attributes.size());
 	if (attributeSize > 0) {
 		attributes += "checkAttributes({";
-		for (int i = 0; i < attributeSize; ++i) {
-			const Variable& v = shaderStruct.attributes[i];
+		int i = 0;
+		for (const Variable& v : shaderStruct.attributes) {
 			attributes += "\"";
 			attributes += v.name;
 			attributes += "\"";
 			if (i < attributeSize - 1) {
 				attributes += ", ";
 			}
+			++i;
 		}
 		attributes += "});\n";
 
-		for (int i = 0; i < attributeSize; ++i) {
-			const Variable& v = shaderStruct.attributes[i];
+		for (const Variable& v : shaderStruct.attributes) {
 			attributes += "\t\tconst int ";
 			attributes += v.name;
 			attributes += "Location = getAttributeLocation(\"";
@@ -154,8 +155,8 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		methods += ";\n";
 		methods += "}\n";
 	}
-	for (int i = 0; i < uniformSize; ++i) {
-		const Variable& v = shaderStruct.uniforms[i];
+	int n = 0;
+	for (const Variable& v : shaderStruct.uniforms) {
 		const bool isInteger = v.isSingleInteger();
 		const core::String& uniformName = util::convertName(v.name, true);
 		core::String mproto;
@@ -356,12 +357,13 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			methods += "\treturn true;\n";
 			methods += "}\n";
 		}
-		if (i < uniformSize- - 2) {
+		if (n < uniformSize - 2) {
 			methods += "\n";
 		}
+		++n;
 	}
-	for (int i = 0; i < attributeSize; ++i) {
-		const Variable& v = shaderStruct.attributes[i];
+	int i = 0;
+	for (const Variable& v : shaderStruct.attributes) {
 		const core::String& attributeName = util::convertName(v.name, true);
 
 		prototypes += "\n\t/**\n";
@@ -445,6 +447,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		if (i < attributeSize - 1) {
 			methods += "\n";
 		}
+		++i;
 	}
 
 	if (!shaderStruct.uniformBlocks.empty()) {
@@ -580,33 +583,33 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	for (const auto& e : shaderStruct.constants) {
 		constants += "\t/**\n";
 		constants += "\t * @brief Exported from shader code by @code $constant ";
-		constants += e.first;
+		constants += e->key;
 		constants += " ";
-		constants += e.second;
+		constants += e->value;
 		constants += " @endcode\n";
 		constants += "\t */\n";
-		if (core::string::isInteger(e.second)) {
+		if (core::string::isInteger(e->value)) {
 			constants += "\tinline static constexpr int get";
-			constants += util::convertName(e.first, true);
+			constants += util::convertName(e->key, true);
 			constants += "() {\n";
 			constants += "\t\treturn ";
-			constants += e.second;
+			constants += e->value;
 			constants += ";\n";
 			constants += "\t}\n";
-		} else if (core::string::isNumber(e.second)) {
+		} else if (core::string::isNumber(e->value)) {
 			constants += "\tinline static constexpr double get";
-			constants += util::convertName(e.first, true);
+			constants += util::convertName(e->key, true);
 			constants += "() {\n";
 			constants += "\t\treturn ";
-			constants += e.second;
+			constants += e->value;
 			constants += ";\n";
 			constants += "\t}\n";
 		} else {
 			constants += "\tinline static constexpr const char* get";
-			constants += util::convertName(e.first, true);
+			constants += util::convertName(e->key, true);
 			constants += "() {\n";
 			constants += "\t\treturn \"";
-			constants += e.second;
+			constants += e->value;
 			constants += "\";\n";
 			constants += "\t}\n";
 		}

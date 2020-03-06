@@ -362,7 +362,7 @@ static void generateKernelMembers(const Kernel& k, core::String& kernelMembers, 
 	kernelMembers += " = compute::InvalidId;\n";
 }
 
-static void generateStructs(const std::vector<Struct>& _structs, core::String& structs) {
+static void generateStructs(const core::List<Struct>& _structs, core::String& structs) {
 	bool firstStruct = true;
 	for (const Struct& s : _structs) {
 		if (!firstStruct) {
@@ -448,9 +448,9 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		const core::String& namespaceSrc,
 		const core::String& shaderDirectory,
 		const core::String& sourceDirectory,
-		const std::vector<Kernel>& _kernels,
-		const std::vector<Struct>& _structs,
-		const std::map<core::String, core::String>& _constants,
+		const core::List<Kernel>& _kernels,
+		const core::List<Struct>& _structs,
+		const core::StringMap<core::String>& _constants,
 		const core::String& postfix,
 		const core::String& shaderBuffer) {
 	const core::String name = _name + "Shader";
@@ -505,33 +505,33 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	for (const auto& e : _constants) {
 		kernels += "\t/**\n";
 		kernels += "\t * @brief Exported from shader code by @code $constant ";
-		kernels += e.first;
+		kernels += e->key;
 		kernels += " ";
-		kernels += e.second;
+		kernels += e->value;
 		kernels += " @endcode\n";
 		kernels += "\t */\n";
-		if (core::string::isInteger(e.second)) {
+		if (core::string::isInteger(e->value)) {
 			kernels += "\tinline static constexpr int get";
-			kernels += util::convertName(e.first, true);
+			kernels += util::convertName(e->key, true);
 			kernels += "() {\n";
 			kernels += "\t\treturn ";
-			kernels += e.second;
+			kernels += e->value;
 			kernels += ";\n";
 			kernels += "\t}\n";
-		} else if (core::string::isNumber(e.second)) {
+		} else if (core::string::isNumber(e->value)) {
 			kernels += "\tinline static constexpr double get";
-			kernels += util::convertName(e.first, true);
+			kernels += util::convertName(e->key, true);
 			kernels += "() {\n";
 			kernels += "\t\treturn ";
-			kernels += e.second;
+			kernels += e->value;
 			kernels += ";\n";
 			kernels += "\t}\n";
 		} else {
 			kernels += "\tinline static constexpr const char* get";
-			kernels += util::convertName(e.first, true);
+			kernels += util::convertName(e->key, true);
 			kernels += "() {\n";
 			kernels += "\t\treturn \"";
-			kernels += e.second;
+			kernels += e->value;
 			kernels += "\";\n";
 			kernels += "\t}\n";
 		}

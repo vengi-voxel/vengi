@@ -5,9 +5,10 @@
 #pragma once
 
 #include "core/CommandlineApp.h"
+#include "core/collection/StringMap.h"
+#include "core/collection/List.h"
 #include "Types.h"
 #include <simplecpp.h>
-#include <vector>
 
 /**
  * @brief This tool validates the compute shaders and generates c++ code for them.
@@ -36,10 +37,10 @@ protected:
 	core::String _computeFilename;
 	core::String _shaderTemplateFile;
 	core::String _name;
-	std::vector<computeshadertool::Kernel> _kernels;
-	std::vector<computeshadertool::Struct> _structs;
-	std::map<core::String, core::String> _constants;
-	std::vector<core::String> _includeDirs;
+	core::List<computeshadertool::Kernel> _kernels;
+	core::List<computeshadertool::Struct> _structs;
+	core::StringMap<core::String> _constants;
+	core::List<core::String> _includeDirs;
 
 	std::pair<core::String, bool> getSource(const core::String& file) const;
 	bool parse(const core::String& src);

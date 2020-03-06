@@ -10,7 +10,7 @@
 
 namespace util {
 
-std::pair<core::String, bool> handleIncludes(const core::String& buffer, const std::vector<core::String>& includeDirs, std::vector<core::String>* includedFiles) {
+std::pair<core::String, bool> handleIncludes(const core::String& buffer, const core::List<core::String>& includeDirs, core::List<core::String>* includedFiles) {
 	core::String src;
 	const core::String include = "#include";
 	int index = 0;
@@ -55,7 +55,7 @@ std::pair<core::String, bool> handleIncludes(const core::String& buffer, const s
 						success = false;
 					} else {
 						if (includedFiles != nullptr) {
-							includedFiles->push_back(fullPath);
+							includedFiles->insert(fullPath);
 						}
 						src.append(includeBuffer);
 						found = true;

@@ -68,14 +68,14 @@ core::AppState ComputeShaderTool::onRunning() {
 	_postfix                              = getArgVal("--postfix", "");
 
 	// handle include dirs
-	_includeDirs.push_back(".");
+	_includeDirs.insert(".");
 	int index = 0;
 	for (;;) {
 		const core::String& dir = getArgVal("-I", "", &index);
 		if (dir.empty()) {
 			break;
 		}
-		_includeDirs.push_back(dir);
+		_includeDirs.insert(dir);
 	}
 
 	if (!core::string::endsWith(_shaderDirectory, "/")) {
