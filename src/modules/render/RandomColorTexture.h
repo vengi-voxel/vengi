@@ -23,7 +23,7 @@ private:
 
 	struct NoiseGenerationTask {
 		NoiseGenerationTask() : buffer(nullptr), width(0), height(0), depth(0) {
-		};
+		}
 		NoiseGenerationTask(uint8_t *_buffer, int _width, int _height, int _depth) :
 				buffer(_buffer), width(_width), height(_height), depth(_depth) {
 		}
