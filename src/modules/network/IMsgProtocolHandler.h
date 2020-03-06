@@ -14,6 +14,10 @@ class IMsgProtocolHandler: public IProtocolHandler {
 private:
 	bool _needsAttachment;
 public:
+	/**
+	 * @param[in] needsAttachment If this is true, the peer must have set the
+	 * attachment set already.
+	 */
 	IMsgProtocolHandler(bool needsAttachment = false) :
 			_needsAttachment(needsAttachment) {
 	}

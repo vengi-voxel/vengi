@@ -9,6 +9,7 @@
 #include "noise/Noise.h"
 #include <glm/glm.hpp>
 #include <memory>
+#include <vector>
 
 namespace math {
 class Random;
