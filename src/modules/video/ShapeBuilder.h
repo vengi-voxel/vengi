@@ -7,6 +7,7 @@
 #include "math/AABB.h"
 #include "math/Plane.h"
 #include "video/Types.h"
+#include <glm/mat3x3.hpp>
 #include <stdint.h>
 #include <vector>
 

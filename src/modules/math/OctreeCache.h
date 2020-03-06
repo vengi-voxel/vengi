@@ -7,6 +7,32 @@
 #include "Octree.h"
 #include <unordered_map>
 
+namespace std
+{
+template<typename TYPE>
+struct hash<math::AABB<TYPE> > {
+	static inline void hash_combine(size_t &seed, size_t hash) {
+		hash += 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hash;
+	}
+
+	inline size_t operator()(const math::AABB<TYPE>& v) const {
+		size_t seed = 0;
+		hash<TYPE> hasher;
+		const glm::tvec3<TYPE>& mins = v.mins();
+		const glm::tvec3<TYPE>& maxs = v.maxs();
+		hash_combine(seed, hasher(mins.x));
+		hash_combine(seed, hasher(mins.y));
+		hash_combine(seed, hasher(mins.z));
+		hash_combine(seed, hasher(maxs.x));
+		hash_combine(seed, hasher(maxs.y));
+		hash_combine(seed, hasher(maxs.z));
+		return seed;
+	}
+};
+
+}
+
 namespace math {
 
 #define CACHE 1
