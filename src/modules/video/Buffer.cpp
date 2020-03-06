@@ -7,11 +7,11 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/Log.h"
-#include <vector>
 
 namespace video {
 
-Buffer::Buffer(const void* data, size_t size, BufferType target) {
+Buffer::Buffer(const void* data, size_t size, BufferType target) :
+		_attributes(32) {
 	create(data, size, target);
 }
 
@@ -106,7 +106,10 @@ bool Buffer::addAttribute(const Attribute& attribute) {
 		Log::error("The max vertex attributes are exceeded");
 		return false;
 	}
-	_attributes.push_back(attribute);
+	if (!_attributes.insert(attribute)) {
+		Log::error("Failed to add attribute");
+		return false;
+	}
 	_dirtyAttributes = true;
 	return true;
 }
@@ -125,9 +128,7 @@ bool Buffer::bind() const {
 		video::bindVertexArray(_vao);
 	}
 
-	const int size = _attributes.size();
-	for (int i = 0; i < size; i++) {
-		const Attribute& a = _attributes[i];
+	for (const Attribute& a : _attributes) {
 		if (_targets[a.bufferIndex] != BufferType::ArrayBuffer) {
 			continue;
 		}

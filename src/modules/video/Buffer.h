@@ -7,6 +7,7 @@
 #include "Types.h"
 #include <glm/vec2.hpp>
 #include <vector>
+#include "core/collection/List.h"
 
 #define VIDEO_BUFFER_HASH_COMPARE 0
 
@@ -28,7 +29,7 @@ private:
 	BufferMode _modes[MAX_HANDLES] = {BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static};
 	uint32_t _handleIdx = 0u;
 
-	std::vector<Attribute> _attributes;
+	core::List<Attribute> _attributes;
 	mutable Id _vao = InvalidId;
 	mutable bool _dirtyAttributes = true;
 
