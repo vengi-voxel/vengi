@@ -515,6 +515,10 @@ inline void Shader::setUniformMatrixv(const core::String& name, const glm::mat3*
 	setUniformMatrixv(location, matrixes, amount, transpose);
 }
 
+/**
+ * @brief Activates the given given and disables it again (if it wasn't active before)
+ * if the scope is left
+ */
 class ScopedShader {
 private:
 	const Shader& _shader;
@@ -522,8 +526,8 @@ private:
 	bool _alreadyActive;
 public:
 	ScopedShader(const Shader& shader);
-
-	~ScopedShader();};
+	~ScopedShader();
+};
 
 #define shaderSetUniformIf(shader, func, var, ...) if (shader.hasUniform(var)) { shader.func(var, __VA_ARGS__); }
 
