@@ -7,11 +7,12 @@
 #include "ConstantsShaderConstants.h"
 #include "video/FrameBuffer.h"
 #include "video/Buffer.h"
-#include <vector>
 #include <functional>
 #include "core/GLM.h"
 #include "core/collection/Array.h"
-#include <glm/glm.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 
 namespace video {
 class Camera;
