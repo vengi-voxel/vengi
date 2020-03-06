@@ -11,6 +11,7 @@
 #include "RenderShaders.h"
 #include <limits>
 #include <SDL_stdinc.h>
+#include <vector>
 
 namespace voxelrender {
 

@@ -12,6 +12,7 @@
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
+#include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
