@@ -8,7 +8,6 @@
 #include "video/FrameBuffer.h"
 #include "video/Buffer.h"
 #include <functional>
-#include "core/GLM.h"
 #include "core/collection/Array.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -70,7 +69,7 @@ public:
 
 	void render(funcRender renderCallback, bool clearDepthBuffer = true);
 
-	void setPosition(const glm::vec3& eye, const glm::vec3& center = glm::vec3(0.0f), const glm::vec3& up = glm::up);
+	void setPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up);
 	void setLightViewMatrix(const glm::mat4& lightView);
 
 	video::FrameBuffer& depthBuffer();

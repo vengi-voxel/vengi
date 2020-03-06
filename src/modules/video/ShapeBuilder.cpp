@@ -696,18 +696,6 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 	}
 }
 
-size_t ShapeBuilder::iterate(std::function<void(const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal)> func) const {
-	const size_t size = _vertices.size();
-	for (size_t i = 0; i < size; ++i) {
-		const glm::vec3& pos = _vertices[i];
-		const glm::vec2& uv = _texcoords.empty() ? glm::zero<glm::vec2>() : _texcoords[i];
-		const glm::vec4& color = _colors[i];
-		const glm::vec3& normal = _normals[i];
-		func(pos, uv, color, normal);
-	}
-	return size;
-}
-
 void ShapeBuilder::shutdown() {
 	clear();
 }

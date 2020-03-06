@@ -9,7 +9,6 @@
 #include "video/Types.h"
 #include <stdint.h>
 #include <vector>
-#include <functional>
 
 namespace video {
 
@@ -154,7 +153,19 @@ public:
 	const Vertices& getVertices() const;
 	const Vertices& getNormals() const;
 	void convertVertices(std::vector<glm::vec4>& out) const;
-	size_t iterate(std::function<void(const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal)> func) const;
+
+	template<class FUNC>
+	size_t iterate(FUNC&& func) const {
+		const size_t size = _vertices.size();
+		for (size_t i = 0; i < size; ++i) {
+			const glm::vec3& pos = _vertices[i];
+			const glm::vec2& uv = _texcoords.empty() ? glm::vec2(0.0f) : _texcoords[i];
+			const glm::vec4& color = _colors[i];
+			const glm::vec3& normal = _normals[i];
+			func(pos, uv, color, normal);
+		}
+		return size;
+	}
 	const Indices& getIndices() const;
 	const Colors& getColors() const;
 	const Texcoords& getTexcoords() const;

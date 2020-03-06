@@ -34,7 +34,7 @@ bool Shadow::init(const ShadowParameters& parameters) {
 	_parameters = parameters;
 	const float length = 50.0f;
 	const glm::vec3 sunPos(length, length, -length);
-	setPosition(sunPos);
+	setPosition(sunPos, glm::vec3(0.0f), glm::up);
 
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
 	const video::FrameBufferConfig& cfg = video::defaultDepthBufferConfig(smSize, _parameters.maxDepthBuffers);
