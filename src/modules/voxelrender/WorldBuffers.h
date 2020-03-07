@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "video/Buffer.h"
 #include "WorldShader.h"
 #include "WaterShader.h"
