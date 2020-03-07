@@ -138,6 +138,7 @@ ResponseParser Request::execute() {
 	SDL_free(recvBuf);
 	if (receivedLength < 0) {
 		Log::error("Failed to read http response from %s", _url.url.c_str());
+		SDL_free(response);
 		return failed();
 	}
 
