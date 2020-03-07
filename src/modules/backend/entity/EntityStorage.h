@@ -43,9 +43,9 @@ public:
 	bool removeNpc(EntityId id);
 	NpcPtr npc(EntityId id);
 
-	void visit(std::function<void(const EntityPtr&)> visitor);
-	void visitNpcs(std::function<void(const NpcPtr&)> visitor);
-	void visitUsers(std::function<void(const UserPtr&)> visitor);
+	void visit(const std::function<void(const EntityPtr&)>& visitor);
+	void visitNpcs(const std::function<void(const NpcPtr&)>& visitor);
+	void visitUsers(const std::function<void(const UserPtr&)>& visitor);
 };
 
 typedef std::shared_ptr<EntityStorage> EntityStoragePtr;

@@ -20,7 +20,7 @@ EntityStorage::~EntityStorage() {
 	core_assert(_users.empty());
 }
 
-void EntityStorage::visit(std::function<void(const EntityPtr&)> visitor) {
+void EntityStorage::visit(const std::function<void(const EntityPtr&)>& visitor) {
 	for (auto& e : _users) {
 		visitor(e.second);
 	}
@@ -29,13 +29,13 @@ void EntityStorage::visit(std::function<void(const EntityPtr&)> visitor) {
 	}
 }
 
-void EntityStorage::visitNpcs(std::function<void(const NpcPtr&)> visitor) {
+void EntityStorage::visitNpcs(const std::function<void(const NpcPtr&)>& visitor) {
 	for (auto& e : _npcs) {
 		visitor(e.second);
 	}
 }
 
-void EntityStorage::visitUsers(std::function<void(const UserPtr&)> visitor) {
+void EntityStorage::visitUsers(const std::function<void(const UserPtr&)>& visitor) {
 	for (auto& e : _users) {
 		visitor(e.second);
 	}
