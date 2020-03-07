@@ -99,7 +99,7 @@ void Modifier::updateSelectionBuffers() {
 	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);
 }
 
-bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
+bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
 	const bool select = (_modifierType & ModifierType::Delete) == ModifierType::None;
 	if (select) {
 		_selection = voxel::Region{mins, maxs};
@@ -110,7 +110,7 @@ bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::Raw
 	return true;
 }
 
-bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
+bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;
 	if (_selection.isValid()) {
@@ -210,7 +210,7 @@ glm::ivec3 Modifier::aabbDim() const {
 	return glm::abs(maxs + size - mins);
 }
 
-bool Modifier::aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback) {
+bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
 	if (!_aabbMode) {
 		Log::debug("Not in aabb mode - can't perform action");
 		return false;

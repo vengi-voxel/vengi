@@ -65,8 +65,8 @@ private:
 	void updateMirrorPlane();
 	void renderAABBMode(const video::Camera& camera);
 	void updateSelectionBuffers();
-	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, std::function<void(const voxel::Region& region, ModifierType type)> callback);
-	bool select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback);
+	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
+	bool select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
 public:
 	Modifier();
 
@@ -106,7 +106,7 @@ public:
 	 * @param[out,in] volume The volume to modify
 	 * @param callback Called for every region that was modified for the current active modifier.
 	 */
-	bool aabbAction(voxel::RawVolume* volume, std::function<void(const voxel::Region& region, ModifierType type)> callback);
+	bool aabbAction(voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
 	void aabbStop();
 	void aabbStep();
 
