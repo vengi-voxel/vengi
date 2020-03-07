@@ -88,7 +88,7 @@ void NoiseToolWindow::updateForNoiseType(NoiseType type) {
 	setActive("frequency", true);
 }
 
-float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
+float NoiseToolWindow::getNoise(int x, int y, const NoiseData& data) {
 	const NoiseType noiseType = data.noiseType;
 	const glm::vec2 position(data.offset + x * data.frequency, data.offset + y * data.frequency);
 	switch (noiseType) {

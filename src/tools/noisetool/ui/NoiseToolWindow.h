@@ -46,7 +46,7 @@ private:
 	/**
 	 * @return the noise in the range [-1.0 - 1.0]
 	 */
-	float getNoise(int x, int y, NoiseData _data);
+	float getNoise(int x, int y, const NoiseData& _data);
 	int index(int x, int y) const;
 	void generateImage();
 	void updateForNoiseType(NoiseType type);
