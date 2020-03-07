@@ -28,7 +28,7 @@ private:
 
 public:
 	bool init() override;
-	void update(float deltaFrameSeconds, float orientation, ClientEntityPtr& entity, shared::WalkableFloorResolver heightResolver);
+	void update(float deltaFrameSeconds, float orientation, ClientEntityPtr& entity, const shared::WalkableFloorResolver& heightResolver);
 	void construct() override;
 	void shutdown() override;
 };

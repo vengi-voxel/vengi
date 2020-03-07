@@ -32,7 +32,7 @@ void PlayerMovement::shutdown() {
 	_moveBackward.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
 }
 
-void PlayerMovement::update(float deltaFrameSeconds, float orientation, ClientEntityPtr& entity, shared::WalkableFloorResolver heightResolver) {
+void PlayerMovement::update(float deltaFrameSeconds, float orientation, ClientEntityPtr& entity, const shared::WalkableFloorResolver& heightResolver) {
 	const attrib::ShadowAttributes& attribs = entity->attrib();
 	const double speed = attribs.current(attrib::Type::SPEED);
 	const glm::vec3& currentPos = entity->position();
