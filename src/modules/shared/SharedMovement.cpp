@@ -34,7 +34,7 @@ glm::vec3 SharedMovement::calculateDelta(const glm::quat& rot, float speed) {
 	return delta;
 }
 
-glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, std::function<int(const glm::vec3& pos, float maxWalkableHeight)> heightResolver) {
+glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const std::function<int(const glm::vec3& pos, float maxWalkableHeight)>& heightResolver) {
 	glm::vec3 newPos = currentPos;
 	if (deltaFrameSeconds > glm::epsilon<float>()) {
 		const glm::quat& rot = glm::angleAxis(orientation, glm::up);

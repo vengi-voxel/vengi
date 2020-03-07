@@ -25,7 +25,7 @@ protected:
 
 	glm::vec3 calculateDelta(const glm::quat& rot, float speed);
 public:
-	glm::vec3 update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, WalkableFloorResolver heightResolver);
+	glm::vec3 update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const WalkableFloorResolver& heightResolver);
 
 	void setMoveMask(network::MoveDirection moveMask);
 	network::MoveDirection moveMask() const;
