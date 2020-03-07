@@ -7,7 +7,7 @@ find_host_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy clang-tidy-3.8 clang-ti
 if (CLANG_TIDY_EXECUTABLE)
 	set(CMAKE_CXX_CLANG_TIDY
 		${CLANG_TIDY_EXECUTABLE};
-		-fix;
+		-fix-errors;
 )
 endif()
 endif()
