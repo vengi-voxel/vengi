@@ -189,32 +189,6 @@ else()
 	message(STATUS "ccache not found")
 endif()
 
-if (USE_LINK_WHAT_YOU_USE)
-	set(CMAKE_LINK_WHAT_YOU_USE ON)
-endif()
-
-if (USE_CLANG_TIDY)
-	find_host_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy clang-tidy-3.8)
-	if (CLANG_TIDY_EXECUTABLE)
-		set(CLANG_TIDY_OPTS ${CLANG_TIDY_EXECUTABLE})
-		set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY_OPTS}")
-		set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_OPTS}")
-	endif()
-endif()
-
-if (USE_CPPCHECK)
-find_host_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
-list(APPEND CMAKE_CXX_CPPCHECK
-	"--enable=all"
-	"--inconclusive"
-	"--force"
-	"--inline-suppr"
-	"--suppressions-list=${SCRIPTS_CMAKE_DIR}/CppCheckSuppressions.txt"
-)
-else()
-set(CMAKE_CXX_CPPCHECK "")
-endif()
-
 find_host_program(GDB_EXECUTABLE NAMES ${GDB_BINARY} gdb)
 find_host_program(LLDB_EXECUTABLE NAMES ${LLDB_BINARY} lldb)
 find_host_program(GIT_EXECUTABLE NAMES ${GIT_BINARY} git)
