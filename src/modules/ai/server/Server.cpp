@@ -229,9 +229,11 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 				ai->getBehaviour()->execute(ai, queuedStepMillis);
 				ai->setPause(true);
 			};
-			zone->executeParallel(func);
-			broadcastState(zone);
-			broadcastCharacterDetails(zone);
+			if (zone != nullptr) {
+				zone->executeParallel(func);
+				broadcastState(zone);
+				broadcastCharacterDetails(zone);
+			}
 			break;
 		}
 		case EV_RESET: {
