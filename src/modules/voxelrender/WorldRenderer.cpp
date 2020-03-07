@@ -105,9 +105,9 @@ glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera) const {
 	constexpr float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
 	constexpr glm::mat4 reflection(
 			1.0, 0.0, 0.0, 0.0,
-			0.0, -1.0, 0.0, 0.0, //2.0f * waterHeight,
+			0.0, -1.0, 0.0, 0.0,
 			0.0, 0.0, 1.0, 0.0,
-			0.0, 0.0, 0.0, 1.0);
+			0.0, 2.0 * waterHeight, 0.0, 1.0);
 	constexpr glm::mat4 flip(
 			1.0, 0.0, 0.0, 0.0,
 			0.0, -1.0, 0.0, 0.0,
