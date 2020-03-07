@@ -28,7 +28,7 @@ bool EventProvider::init() {
 
 	return _dbHandler->select(db::EventModel(), persistence::DBConditionOne(), [this] (db::EventModel&& model) {
 		const db::EventModelPtr& modelPtr = std::make_shared<db::EventModel>(std::forward<db::EventModel>(model));
-		_eventData.insert(std::make_pair((EventId)model.id(), std::move(modelPtr)));
+		_eventData.insert(std::make_pair((EventId)model.id(), modelPtr));
 	});
 }
 

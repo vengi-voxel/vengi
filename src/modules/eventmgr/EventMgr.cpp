@@ -134,7 +134,7 @@ bool EventMgr::startEvent(const db::EventModelPtr& model) {
 	Log::debug("Event start time %lu, end time: %lu",
 			(unsigned long)model->startdate().millis(),
 			(unsigned long)model->enddate().millis());
-	_events.insert(std::make_pair(id, std::move(event)));
+	_events.insert(std::make_pair(id, event));
 	return true;
 }
 
