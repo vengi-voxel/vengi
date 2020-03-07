@@ -1111,7 +1111,7 @@ void SceneManager::construct() {
 		const int green = core::string::toInt(args[1]);
 		const int blue = core::string::toInt(args[2]);
 		glm::vec4 color(red / 255.0f, green / 255.0, blue / 255.0, 1.0f);
-		voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
+		const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		_modifier.setCursorVoxel(voxel);
