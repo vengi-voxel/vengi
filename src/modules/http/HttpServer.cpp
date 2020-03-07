@@ -41,7 +41,7 @@ HttpServer::Routes* HttpServer::getRoutes(HttpMethod method) {
 	}
 }
 
-void HttpServer::registerRoute(HttpMethod method, const char *path, RouteCallback callback) {
+void HttpServer::registerRoute(HttpMethod method, const char *path, const RouteCallback& callback) {
 	Routes* routes = getRoutes(method);
 	Log::info("Register callback for %s", path);
 	routes->put(path, callback);

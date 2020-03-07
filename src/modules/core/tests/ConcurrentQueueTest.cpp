@@ -89,7 +89,7 @@ TEST_F(ConcurrentQueueTest, testSort) {
 		queue.push(1);
 		queue.push(3);
 		queue.push(2);
-		int val;
+		int val = 0;
 		ASSERT_TRUE(queue.pop(val));
 		EXPECT_EQ(3, val);
 	}
@@ -98,7 +98,7 @@ TEST_F(ConcurrentQueueTest, testSort) {
 		queue.push(1);
 		queue.push(3);
 		queue.push(2);
-		int val;
+		int val = 0;
 		ASSERT_TRUE(queue.pop(val));
 		EXPECT_EQ(1, val);
 	}

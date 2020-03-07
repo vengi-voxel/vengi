@@ -47,7 +47,7 @@ Filter::Filter (const Filters& filters) :
 
 bool Filter::evaluate(const AIPtr& entity) {
 	entity->_filteredEntities.clear();
-	for (const FilterPtr filter : _filters) {
+	for (const FilterPtr& filter : _filters) {
 		filter->filter(entity);
 	}
 	return !entity->_filteredEntities.empty();

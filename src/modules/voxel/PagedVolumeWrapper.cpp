@@ -42,7 +42,7 @@ void PagedVolumeWrapper::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_
 	_currentVoxel = _currentChunk->_data + voxelIndexInChunk;
 }
 
-PagedVolumeWrapper::PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::ChunkPtr chunk, const Region& region) :
+PagedVolumeWrapper::PagedVolumeWrapper(PagedVolume* voxelStorage, const PagedVolume::ChunkPtr& chunk, const Region& region) :
 		_pagedVolume(voxelStorage), _chunk(core::move(chunk)), _region(region) {
 	if (_chunk != nullptr) {
 		_validRegion = _chunk->region();

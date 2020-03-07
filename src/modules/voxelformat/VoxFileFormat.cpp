@@ -30,7 +30,7 @@ glm::vec4 VoxFileFormat::findClosestMatch(const glm::vec4& color) const {
 }
 
 uint8_t VoxFileFormat::findClosestIndex(const glm::vec4& color) const {
-	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	//materialColors.erase(materialColors.begin());
 	return core::Color::getClosestMatch(color, materialColors);
 }

@@ -12,7 +12,7 @@ Container::Container(const core::String& name, const Values& percentage, const V
 }
 
 Container::Container(core::String&& name, Values&& percentage, Values&& absolute, int stackCount, int stackLimit) :
-		_name(std::move(name)), _percentage(std::move(percentage)), _absolute(std::move(absolute)),
+		_name(std::move(name)), _percentage(percentage), _absolute(absolute),
 		_stackCount(stackCount), _stackLimit(stackLimit), _hash(core::StringHash{}(_name)) {
 }
 

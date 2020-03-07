@@ -80,7 +80,7 @@ public:
 	bool update();
 	void shutdown();
 
-	void registerRoute(HttpMethod method, const char *path, RouteCallback callback);
+	void registerRoute(HttpMethod method, const char *path, const RouteCallback& callback);
 	bool unregisterRoute(HttpMethod method, const char *path);
 };
 

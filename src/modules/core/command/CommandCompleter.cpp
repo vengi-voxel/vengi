@@ -24,13 +24,12 @@ int complete(core::String dir, const core::String& match, std::vector<core::Stri
 	const core::String filter = match + pattern;
 	const core::String& filterName = core::string::extractFilenameWithExtension(filter.c_str());
 	const core::String& filterPath = core::string::extractPath(filter.c_str());
-	const core::String filterPathStr(filterPath);
 	const io::FilesystemPtr& fs = io::filesystem();
 	fs->list(dir, entries, currentMatch + "*");
 	int i = 0;
 	for (const io::Filesystem::DirEntry& entry : entries) {
 		if (entry.type == io::Filesystem::DirEntry::Type::dir) {
-			core::String name = filterPathStr.empty() ? entry.name : filterPathStr + entry.name;
+			core::String name = filterPath.empty() ? entry.name : filterPath + entry.name;
 			name.append("/");
 			matches.push_back(name);
 			++i;
@@ -40,7 +39,7 @@ int complete(core::String dir, const core::String& match, std::vector<core::Stri
 	fs->list(dir, entries, core::String(filterName));
 	for (const io::Filesystem::DirEntry& entry : entries) {
 		if (entry.type == io::Filesystem::DirEntry::Type::file) {
-			matches.push_back(filterPathStr.empty() ? entry.name : filterPathStr + entry.name);
+			matches.push_back(filterPath.empty() ? entry.name : filterPath + entry.name);
 			++i;
 		}
 	}

@@ -29,7 +29,7 @@ public:
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos) override;
 	};
 
-	PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::ChunkPtr chunk, const Region& region);
+	PagedVolumeWrapper(PagedVolume* voxelStorage, const PagedVolume::ChunkPtr& chunk, const Region& region);
 	virtual ~PagedVolumeWrapper() {}
 
 	operator PagedVolume& () const;

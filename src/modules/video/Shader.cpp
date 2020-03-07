@@ -37,7 +37,7 @@ Shader::Shader() {
 }
 
 Shader::~Shader() {
-	shutdown();
+	Shader::shutdown();
 }
 
 void Shader::setVertexAttribute(const core::String& name, int size, DataType type, bool normalize, int stride, const void* buffer) const {
