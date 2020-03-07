@@ -75,7 +75,7 @@ public:
 	/**
 	 * @brief Returns a path where the given file can be saved.
 	 */
-	const core::String writePath(const char* name) const;
+	core::String writePath(const char* name) const;
 
 	bool exists(const core::String& filename) const;
 

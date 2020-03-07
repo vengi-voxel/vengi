@@ -425,7 +425,7 @@ core::String Filesystem::load(const core::String& filename) const {
 	return f->load();
 }
 
-const core::String Filesystem::writePath(const char* name) const {
+core::String Filesystem::writePath(const char* name) const {
 	return _homePath + name;
 }
 
