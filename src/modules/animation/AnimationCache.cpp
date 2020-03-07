@@ -22,7 +22,7 @@ bool AnimationCache::load(const core::String& filename, size_t meshIndex, const 
 }
 
 bool AnimationCache::getMeshes(const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES],
-		std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])> loadAdditional) {
+		const std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])>& loadAdditional) {
 	int cnt = 0;
 	for (size_t i = 0; i < AnimationSettings::MAX_ENTRIES; ++i) {
 		if (settings.paths[i].empty()) {
