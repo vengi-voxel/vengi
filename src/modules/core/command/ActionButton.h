@@ -25,7 +25,7 @@ struct ActionButton {
 	/**
 	 * A list of all keys that triggered this action button
 	 */
-	int32_t pressedKeys[ACTION_BUTTON_KEY_AMOUNT];
+	int32_t pressedKeys[ACTION_BUTTON_KEY_AMOUNT]{};
 	/**
 	 * The timestamp at which the action button was initially triggered
 	 */
@@ -45,7 +45,7 @@ struct ActionButton {
 	 */
 	bool pressed() const;
 
-	bool execute(uint64_t now, uint64_t delayBetweenExecutions, std::function<void()> executionCallback);
+	bool execute(uint64_t now, uint64_t delayBetweenExecutions, const std::function<void()>& executionCallback);
 
 	/**
 	 * @return @c true if the action button was initially triggered

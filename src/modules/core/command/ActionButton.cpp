@@ -7,12 +7,12 @@
 namespace core {
 
 ActionButton::ActionButton() {
-	for (int i = 0; i < ACTION_BUTTON_KEY_AMOUNT; ++i) {
-		pressedKeys[i] = ACTION_BUTTON_NO_KEY;
+	for (int & pressedKey : pressedKeys) {
+		pressedKey = ACTION_BUTTON_NO_KEY;
 	}
 }
 
-bool ActionButton::execute(uint64_t now, uint64_t delayBetweenExecutions, std::function<void()> executionCallback) {
+bool ActionButton::execute(uint64_t now, uint64_t delayBetweenExecutions, const std::function<void()>& executionCallback) {
 	if (now - lastPressed < delayBetweenExecutions) {
 		return false;
 	}
@@ -22,17 +22,17 @@ bool ActionButton::execute(uint64_t now, uint64_t delayBetweenExecutions, std::f
 }
 
 bool ActionButton::handleDown(int32_t key, uint64_t millis) {
-	for (int i = 0; i < ACTION_BUTTON_KEY_AMOUNT; ++i) {
-		if (key == pressedKeys[i]) {
+	for (int pressedKey : pressedKeys) {
+		if (key == pressedKey) {
 			return false;
 		}
 	}
 	const bool alreadyDown = pressed();
-	for (int i = 0; i < ACTION_BUTTON_KEY_AMOUNT; ++i) {
-		if (pressedKeys[i] != ACTION_BUTTON_NO_KEY) {
+	for (int & pressedKey : pressedKeys) {
+		if (pressedKey != ACTION_BUTTON_NO_KEY) {
 			continue;
 		}
-		pressedKeys[i] = key;
+		pressedKey = key;
 		if (!alreadyDown) {
 			pressedMillis = millis;
 		}
@@ -43,16 +43,16 @@ bool ActionButton::handleDown(int32_t key, uint64_t millis) {
 
 bool ActionButton::handleUp(int32_t key, uint64_t releasedMillis) {
 	if (key == ACTION_BUTTON_ALL_KEYS) {
-		for (int i = 0; i < ACTION_BUTTON_KEY_AMOUNT; ++i) {
-			pressedKeys[i] = ACTION_BUTTON_NO_KEY;
+		for (int & pressedKey : pressedKeys) {
+			pressedKey = ACTION_BUTTON_NO_KEY;
 		}
 		return true;
 	}
-	for (int i = 0; i < ACTION_BUTTON_KEY_AMOUNT; ++i) {
-		if (pressedKeys[i] != key) {
+	for (int & pressedKey : pressedKeys) {
+		if (pressedKey != key) {
 			continue;
 		}
-		pressedKeys[i] = ACTION_BUTTON_NO_KEY;
+		pressedKey = ACTION_BUTTON_NO_KEY;
 		if (!pressed()) {
 			durationMillis = (uint32_t)(releasedMillis - pressedMillis);
 			return true;
