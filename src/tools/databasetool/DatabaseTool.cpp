@@ -26,7 +26,7 @@ bool DatabaseTool::generateSrc() const {
 
 	const core::String& dir = core::string::extractPath(_targetFile);
 	bool error = false;
-	for (auto i : _tables) {
+	for (const auto& i : _tables) {
 		const databasetool::Table& table = i.second;
 		core::String src;
 		if (!databasetool::generateClassForTable(table, src)) {

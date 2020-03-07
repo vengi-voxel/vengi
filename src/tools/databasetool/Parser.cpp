@@ -321,7 +321,7 @@ bool parseTable(core::Tokenizer& tok, Table& table) {
 		}
 	}
 
-	for (auto entry : table.constraints) {
+	for (const auto& entry : table.constraints) {
 		const persistence::Constraint& c = entry.second;
 		for (const core::String& fieldName: c.fields) {
 			if (table.fields.find(fieldName) == table.fields.end()) {

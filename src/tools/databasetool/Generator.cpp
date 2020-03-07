@@ -78,7 +78,7 @@ static void createMembersStruct(const Table& table, core::String& src) {
 	src += "\tstruct ";
 	src += MembersStruct::structName();
 	src += " {\n";
-	for (auto entry : table.fields) {
+	for (const auto& entry : table.fields) {
 		const persistence::Field& f = entry.second;
 		src += "\t\t/**\n";
 		src += "\t\t * @brief Member for table column '" + entry.second.name + "'\n";
@@ -92,7 +92,7 @@ static void createMembersStruct(const Table& table, core::String& src) {
 		src += ";\n";
 		// TODO: padding for short and boolean
 	}
-	for (auto entry : table.fields) {
+	for (const auto& entry : table.fields) {
 		// TODO: use bitfield
 		const persistence::Field& f = entry.second;
 		if (isPointer(f)) {
@@ -129,7 +129,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	src += "\t\t\t_fields.reserve(";
 	src += core::string::toString(table.fields.size());
 	src += ");\n";
-	for (auto entry : table.fields) {
+	for (const auto& entry : table.fields) {
 		const persistence::Field& f = entry.second;
 		src += "\t\t\t_fields.emplace_back(persistence::Field{";
 		src += "\"" + f.name + "\"";
@@ -182,7 +182,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 		src += "\t\t\t_primaryKeys.reserve(";
 		src += core::string::toString(table.primaryKeys);
 		src += ");\n";
-		for (auto entry : table.constraints) {
+		for (const auto& entry : table.constraints) {
 			const persistence::Constraint& c = entry.second;
 			if ((c.types & core::enumVal(persistence::ConstraintType::PRIMARYKEY)) == 0) {
 				continue;
@@ -194,7 +194,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 			}
 		}
 	}
-	for (auto entry : table.constraints) {
+	for (const auto& entry : table.constraints) {
 		const persistence::Constraint& c = entry.second;
 		if ((c.types & core::enumVal(persistence::ConstraintType::AUTOINCREMENT)) == 0) {
 			continue;
@@ -276,7 +276,7 @@ void createConstructor(const Table& table, core::String& src) {
 }
 
 static void createDBConditions(const Table& table, core::String& src) {
-	for (auto entry : table.fields) {
+	for (const auto& entry : table.fields) {
 		const persistence::Field& f = entry.second;
 		if (f.type == persistence::FieldType::BLOB) {
 			continue;
@@ -384,7 +384,7 @@ static void createDoxygen(const Table& table, const persistence::Field& f, core:
 }
 
 static void createGetterAndSetter(const Table& table, core::String& src) {
-	for (auto entry : table.fields) {
+	for (const auto& entry : table.fields) {
 		const persistence::Field& f = entry.second;
 		const core::String& cpptypeGetter = getCPPType(f.type, true, isPointer(f));
 		const core::String& getter = core::string::lowerCamelCase(f.name);
@@ -451,7 +451,7 @@ static void createGetterAndSetter(const Table& table, core::String& src) {
 }
 
 void createFieldNames(const Table& table, core::String& src) {
-	for (auto entry : table.fields) {
+	for (const auto& entry : table.fields) {
 		const persistence::Field& f = entry.second;
 		src += "\t/**\n";
 		src += "\t * @brief The column name for '" + f.name + "'\n";
