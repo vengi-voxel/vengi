@@ -73,7 +73,7 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 }
 
 long File::write(const unsigned char *buf, size_t len) const {
-	if (!_file) {
+	if (_file == nullptr) {
 		Log::debug("Invalid file handle - can write buffer of length %i (path: %s)",
 				(int)len, _rawPath.c_str());
 		return -1;
