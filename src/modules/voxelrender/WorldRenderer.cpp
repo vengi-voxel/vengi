@@ -95,7 +95,7 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 }
 
 glm::mat4 WorldRenderer::waterModelMatrix() const {
-	constexpr glm::vec3 translate(0.0f, ((float)voxel::MAX_WATER_HEIGHT) - 0.05f, 0.0f);
+	constexpr glm::vec3 translate(0.0f, ((float)voxel::MAX_WATER_HEIGHT) - 0.1f, 0.0f);
 	const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), translate), glm::vec3(1000.0f));
 	return model;
 }
@@ -122,7 +122,7 @@ int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
 	constexpr float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
 	// apply a small bias to improve reflections of objects on the water when the
 	// reflections are distorted.
-	constexpr glm::vec4 waterAbovePlane(glm::up, -(waterHeight + 2.0f));
+	constexpr glm::vec4 waterAbovePlane(glm::up, -waterHeight);
 	constexpr glm::vec4 waterBelowPlane(glm::down, waterHeight);
 
 	int drawCallsWorld = 0;
