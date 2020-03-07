@@ -804,7 +804,7 @@ void createUpsertStatement(const Model& table, core::String& stmt, bool primaryK
 		// https://www.postgresql.org/docs/current/static/sql-insert.html
 		return;
 	}
-	const UniqueKeys uniqueKeys = table.uniqueKeys();
+	const UniqueKeys& uniqueKeys = table.uniqueKeys();
 	for (const auto& set : uniqueKeys) {
 		for (const persistence::Field& f : table.fields()) {
 			if (!table.isValid(f)) {
