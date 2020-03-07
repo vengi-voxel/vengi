@@ -99,7 +99,7 @@ bool Shadow::bind(video::TextureUnit unit) {
 	return state;
 }
 
-void Shadow::render(funcRender renderCallback, bool clearDepthBuffer) {
+void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
 	const bool oldBlend = video::disable(video::State::Blend);
 	// put shadow acne into the dark
 	video::enable(video::State::CullFace);

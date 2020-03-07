@@ -82,7 +82,7 @@ public:
 	/**
 	 * @brief Tries to execute the action button
 	 */
-	bool execute(uint64_t time, std::function<glm::ivec3(const glm::ivec3, GizmoMode)> function);
+	bool execute(uint64_t time, const std::function<glm::ivec3(const glm::ivec3, GizmoMode)>& function);
 };
 
 inline bool Gizmo::isModelSpace() const {

@@ -67,7 +67,7 @@ public:
 
 	bool bind(video::TextureUnit unit);
 
-	void render(funcRender renderCallback, bool clearDepthBuffer = true);
+	void render(const funcRender& renderCallback, bool clearDepthBuffer = true);
 
 	void setPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up);
 	void setLightViewMatrix(const glm::mat4& lightView);

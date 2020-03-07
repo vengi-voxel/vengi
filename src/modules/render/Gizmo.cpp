@@ -108,7 +108,7 @@ bool Gizmo::handleUp(int32_t key, uint64_t releasedMillis) {
 	return ret;
 }
 
-bool Gizmo::execute(uint64_t time, std::function<glm::ivec3(const glm::ivec3, GizmoMode)> callback) {
+bool Gizmo::execute(uint64_t time, const std::function<glm::ivec3(const glm::ivec3, GizmoMode)>& callback) {
 	if (!pressed()) {
 		return false;
 	}
