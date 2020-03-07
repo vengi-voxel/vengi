@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,modernizer*,-clang-analyzer-alpha*,performance-*,readability-*'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,performance-*,portability-*'
 CheckOptions:
   - key:   readability-identifier-naming.MethodCase
     value: camelBack

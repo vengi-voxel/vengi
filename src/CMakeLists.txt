@@ -8,7 +8,7 @@ if (CLANG_TIDY_EXECUTABLE)
 	set(CMAKE_CXX_CLANG_TIDY
 		${CLANG_TIDY_EXECUTABLE};
 		-fix;
-		-checks=-checks=performance-*,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-type-union-access,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-narrowing-conversions,bugprone-*,-bugprone-narrowing-conversions,-bugprone-exception-escape,portability-*,clang-analyzer-*,readability-*,-readability-uppercase-literal-suffix,-readability-isolate-declaration,-readability-braces-around-statements,-readability-magic-numbers,modernize-*,-modernize-use-trailing-return-type,misc-*;)
+)
 endif()
 endif()
 
