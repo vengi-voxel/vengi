@@ -301,7 +301,7 @@ void LayerManager::lockLayer(int layerId, bool lock) {
 	}
 }
 
-void LayerManager::foreachGroupLayer(std::function<void(int)> f) {
+void LayerManager::foreachGroupLayer(const std::function<void(int)>& f) {
 	int layerId = activeLayer();
 	if (layer(layerId).locked) {
 		layerId = nextLockedLayer(-1);

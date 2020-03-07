@@ -53,7 +53,7 @@ public:
 	/**
 	 * @brief Loops over the group of the current active layer
 	 */
-	void foreachGroupLayer(std::function<void(int)> func);
+	void foreachGroupLayer(const std::function<void(int)>& func);
 
 	bool isLocked(int layerId) const;
 	bool isVisible(int layerId) const;
