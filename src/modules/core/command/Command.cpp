@@ -213,15 +213,15 @@ Command& Command::setHelp(const char* help) {
 Command& Command::setBoolCompleter() {
 	return setArgumentCompleter([] (const core::String& str, std::vector<core::String>& matches) -> int {
 		if (str[0] == 't') {
-			matches.push_back("true");
+			matches.emplace_back("true");
 			return 1;
 		}
 		if (str[0] == 'f') {
-			matches.push_back("false");
+			matches.emplace_back("false");
 			return 1;
 		}
-		matches.push_back("true");
-		matches.push_back("false");
+		matches.emplace_back("true");
+		matches.emplace_back("false");
 		return 2;
 	});
 }
