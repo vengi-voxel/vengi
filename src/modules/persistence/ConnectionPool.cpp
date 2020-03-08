@@ -14,7 +14,7 @@ ConnectionPool::ConnectionPool() {
 }
 
 ConnectionPool::~ConnectionPool() {
-	shutdown();
+	core_assert_msg(_connectionAmount <= 0, "ConnectionPool was not properly shut down");
 }
 
 bool ConnectionPool::init() {
