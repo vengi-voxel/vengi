@@ -12,9 +12,11 @@ namespace backend {
 /**
  * @ingroup AI
  */
-class AIRegistry: public ai::AIRegistry {
+class AIRegistry: public ai::LUAAIRegistry {
+private:
+	using Super = ai::LUAAIRegistry;
 public:
-	void init();
+	bool init() override;
 };
 
 typedef std::shared_ptr<AIRegistry> AIRegistryPtr;

@@ -65,6 +65,7 @@ generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl BackendModels.h
 
 set(TEST_FILES
 	tests/behaviourtrees.lua
+	tests/behaviourtreenodes.lua
 	tests/test-attributes.lua
 )
 set(TEST_SRCS

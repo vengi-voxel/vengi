@@ -24,9 +24,23 @@
 
 #include "attrib/ContainerProvider.h"
 
+#include "core/io/Filesystem.h"
+#include "core/App.h"
+
 namespace backend {
 
-void AIRegistry::init() {
+bool AIRegistry::init() {
+	if (!Super::init()) {
+		Log::error("Failed to initialize the lua behaviour tree registry");
+		return false;
+	}
+
+	const core::String& script = io::filesystem()->load("behaviourtreenodes.lua");
+	if (!evaluate(script)) {
+		Log::error("Failed to load behaviour tree nodes");
+		return false;
+	}
+
 	registerNodeFactory("GoHome", GoHome::getFactory());
 	registerNodeFactory("AttackOnSelection", AttackOnSelection::getFactory());
 	registerNodeFactory("SetPointOfInterest", SetPointOfInterest::getFactory());
@@ -44,6 +58,7 @@ void AIRegistry::init() {
 	registerFilterFactory("SelectEntitiesOfTypes", SelectEntitiesOfTypes::getFactory());
 
 	registerSteeringFactory("WanderAroundHome", WanderAroundHome::getFactory());
+	return true;
 }
 
 }

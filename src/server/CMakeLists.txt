@@ -16,6 +16,7 @@ set(LUA_BEHAVIOURTREES
 	ai/undead-male-zombie.lua
 	ai/shared.lua
 	behaviourtrees.lua
+	behaviourtreenodes.lua
 )
 set(LUA_ATTRIBUTES
 	attrib/animal-rabbit.lua

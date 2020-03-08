@@ -123,12 +123,12 @@ public:
 	/**
 	 * @see shutdown()
 	 */
-	bool init();
+	virtual bool init();
 
 	/**
 	 * @see init()
 	 */
-	void shutdown();
+	virtual void shutdown();
 
 	~LUAAIRegistry();
 

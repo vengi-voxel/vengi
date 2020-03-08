@@ -82,7 +82,7 @@ protected:
 		network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
 		messageSender = std::make_shared<network::ServerMessageSender>(network, _testApp->metric());
 		registry = std::make_shared<AIRegistry>();
-		registry->init();
+		ASSERT_TRUE(registry->init());
 		loader = std::make_shared<AILoader>(registry);
 		containerProvider = core::make_shared<attrib::ContainerProvider>();
 		ASSERT_TRUE(containerProvider->init(CONTAINER));
@@ -95,6 +95,7 @@ protected:
 		persistenceMgr = persistence::createPersistenceMgrMock();
 		testing::Mock::AllowLeak(persistenceMgr.get());
 		persistence::DBHandlerPtr dbHandler = persistence::createDbHandlerMock();
+		// TODO: don't use the DBChunkPersister - but a mock
 		core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
 		mapProvider = std::make_shared<MapProvider>(filesystem, eventBus, timeProvider,
 				entityStorage, messageSender, loader, containerProvider, cooldownProvider,

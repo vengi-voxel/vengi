@@ -86,7 +86,10 @@ void World::construct() {
 }
 
 bool World::init() {
-	_registry->init();
+	if (!_registry->init()) {
+		Log::error("Failed to init the ai registry");
+		return false;
+	}
 
 	if (!_mapProvider->init()) {
 		Log::error("Failed to init the map provider");
