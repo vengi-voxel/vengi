@@ -100,9 +100,15 @@ glm::vec4 FrameBuffer::uv() const {
 void FrameBuffer::shutdown() {
 	video::deleteFramebuffer(_fbo);
 	for (auto& e : _colorAttachments) {
+		if (!e) {
+			continue;
+		}
 		e->shutdown();
 	}
 	for (auto& e : _bufferAttachments) {
+		if (!e) {
+			continue;
+		}
 		e->shutdown();
 	}
 }
