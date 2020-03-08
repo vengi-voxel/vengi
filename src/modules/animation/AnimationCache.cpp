@@ -78,7 +78,7 @@ bool AnimationCache::getModel(const AnimationSettings& settings, const char *ful
 }
 
 bool AnimationCache::getBoneModel(const AnimationSettings& settings, Vertices& vertices, Indices& indices,
-		std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])> loadAdditional) {
+		const std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])>& loadAdditional) {
 	const voxel::Mesh* meshes[AnimationSettings::MAX_ENTRIES] {};
 	getMeshes(settings, meshes, loadAdditional);
 

@@ -41,7 +41,7 @@ public:
 	 * @brief Map the bone indices to the vertices of the mesh and fill the vertex indices
 	 */
 	bool getBoneModel(const AnimationSettings& settings, Vertices& vertices, Indices& indices,
-			std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])> loadAdditional = {});
+			const std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])>& loadAdditional = {});
 };
 
 using AnimationCachePtr = std::shared_ptr<AnimationCache>;
