@@ -25,7 +25,7 @@ CooldownPtr CooldownMgr::createCooldown(Type type, long startMillis) const {
 	return std::make_shared<Cooldown>(type, duration, _timeProvider, startMillis, expireMillis);
 }
 
-CooldownTriggerState CooldownMgr::triggerCooldown(Type type, CooldownCallback callback) {
+CooldownTriggerState CooldownMgr::triggerCooldown(Type type, const CooldownCallback& callback) {
 	core::ScopedWriteLock lock(_lock);
 	CooldownPtr cooldown = _cooldowns[type];
 	if (!cooldown) {

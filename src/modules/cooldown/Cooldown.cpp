@@ -13,7 +13,7 @@ Cooldown::Cooldown(Type type, unsigned long durationMillis,
 				expireMillis), _timeProvider(timeProvider) {
 }
 
-void Cooldown::start(CooldownCallback callback) {
+void Cooldown::start(const CooldownCallback& callback) {
 	_startMillis = _timeProvider->tickMillis();
 	_expireMillis = _startMillis + _durationMillis;
 	_callback = callback;

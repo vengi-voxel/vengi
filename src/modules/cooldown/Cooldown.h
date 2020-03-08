@@ -62,7 +62,7 @@ public:
 	/**
 	 * @brief Start a cooldown
 	 */
-	void start(CooldownCallback callback);
+	void start(const CooldownCallback& callback);
 
 	/**
 	 * @brief Start a cooldown

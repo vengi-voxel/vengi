@@ -38,7 +38,7 @@ public:
 	bool init() override;
 	void shutdown() override;
 
-	cooldown::CooldownTriggerState triggerCooldown(cooldown::Type type, cooldown::CooldownCallback callback = cooldown::CooldownCallback()) override;
+	cooldown::CooldownTriggerState triggerCooldown(cooldown::Type type, const cooldown::CooldownCallback& callback = cooldown::CooldownCallback()) override;
 	void sendCooldown(cooldown::Type type, bool started) const;
 
 	bool getDirtyModels(Models& models) override;

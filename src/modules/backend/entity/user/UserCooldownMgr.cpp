@@ -50,7 +50,7 @@ void UserCooldownMgr::shutdown() {
 	_persistenceMgr->unregisterSavable(FOURCC, this);
 }
 
-cooldown::CooldownTriggerState UserCooldownMgr::triggerCooldown(cooldown::Type type, cooldown::CooldownCallback callback) {
+cooldown::CooldownTriggerState UserCooldownMgr::triggerCooldown(cooldown::Type type, const cooldown::CooldownCallback& callback) {
 	return Super::triggerCooldown(type, [this, type, callback] (cooldown::CallbackType callbackType) {
 		if (callback) {
 			callback(callbackType);
