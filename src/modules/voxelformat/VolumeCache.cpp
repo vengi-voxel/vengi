@@ -13,7 +13,7 @@
 namespace voxelformat {
 
 VolumeCache::~VolumeCache() {
-	shutdown();
+	core_assert_msg(_volumes.empty(), "VolumeCache wasn't shut down properly");
 }
 
 voxel::RawVolume* VolumeCache::loadVolume(const char* fullPath) {
