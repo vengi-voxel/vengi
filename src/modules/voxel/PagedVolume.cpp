@@ -209,7 +209,7 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
 	if (chunkCount < _chunkCountLimit) {
 		return;
 	}
-	glm::ivec3 oldestChunkPos;
+	glm::ivec3 oldestChunkPos(0);
 	bool foundOldestChunk = false;
 	uint32_t oldestChunkTimestamp = (std::numeric_limits<uint32_t>::max)();
 	for (ChunkMap::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
