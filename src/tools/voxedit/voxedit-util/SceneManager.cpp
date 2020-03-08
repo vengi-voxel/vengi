@@ -58,7 +58,7 @@
 namespace voxedit {
 
 SceneManager::~SceneManager() {
-	shutdown();
+	core_assert_msg(_initialized == 0, "SceneManager was not properly shut down");
 }
 
 voxel::Region SceneManager::region() const {
