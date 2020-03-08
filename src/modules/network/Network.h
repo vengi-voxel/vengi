@@ -14,7 +14,6 @@
 #include "core/IComponent.h"
 #include "core/String.h"
 #include <stdint.h>
-#include <list>
 #include <memory>
 
 namespace network {
