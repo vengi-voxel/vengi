@@ -117,7 +117,6 @@ core::AppState Client::onConstruct() {
 	core::Var::get(cfg::ClientPassword, "");
 	_chunkUrl = core::Var::get(cfg::ServerChunkBaseUrl, "");
 	_seed = core::Var::get(cfg::ServerSeed, "");
-	core::Var::get(cfg::HTTPBaseURL, BASE_URL);
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	_worldRenderer.construct();

@@ -4,9 +4,13 @@ metadata:
   name: @PROJECT_NAME@
 spec:
   ports:
-  - name: tcp
+  - name: udp
     port: @SERVER_PORT@
-    protocol: TCP
+    protocol: UDP
     targetPort: @SERVER_PORT@
+  - name: http
+    port: @HTTP_SERVER_PORT@
+    protocol: TCP
+    targetPort: @HTTP_SERVER_PORT@
   selector:
     app: @PROJECT_NAME@

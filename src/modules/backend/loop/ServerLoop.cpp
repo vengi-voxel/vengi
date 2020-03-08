@@ -222,6 +222,11 @@ bool ServerLoop::init() {
 		response->setText("Server info");
 	});
 
+	_httpServer->registerRoute(http::HttpMethod::GET, "/health", [] (const http::RequestParser& request, http::HttpResponse* response) {
+		response->headers.put(http::header::CONTENT_TYPE, "application/json");
+		response->setText("{status: up}");
+	});
+
 	if (!_metricMgr->init()) {
 		Log::warn("Failed to init metric sender");
 	}

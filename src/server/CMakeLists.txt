@@ -45,13 +45,13 @@ set(FILES
 	server/server-autoexec.cfg
 )
 set(MANIFESTS
-	deployment/deployment.yaml.in
 	deployment/postgres-config.yaml.in
 	deployment/postgres-deployment.yaml.in
 	deployment/postgres-service.yaml.in
 	deployment/postgres-storage.yaml.in
-	deployment/secrets.yaml.in
-	deployment/service.yaml.in
+	deployment/postgres-secrets.yaml.in
+	deployment/server-deployment.yaml.in
+	deployment/server-service.yaml.in
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS})

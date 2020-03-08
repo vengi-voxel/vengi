@@ -1,0 +1,32 @@
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: @PROJECT_NAME@-cert
+spec:
+  secretName: @PROJECT_NAME@-secret
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+  commonName: @HTTP_SERVER_HOST@
+  organization:
+  - @SERVER_DOMAIN@
+  dnsNames:
+  - @HTTP_SERVER_HOST@
+---
+apiVersion: "networking.k8s.io/v1beta1"
+kind: "Ingress"
+metadata:
+  annotations: {}
+  name: "@PROJECT_NAME@"
+spec:
+  rules:
+  - host: @HTTP_SERVER_HOST@
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: "@PROJECT_NAME@"
+          servicePort: "http"
+  tls:
+    - secretName: "@PROJECT_NAME@-secret"

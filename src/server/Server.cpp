@@ -50,8 +50,8 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::ServerPort, SERVER_PORT);
 	core::Var::get(cfg::ServerHost, "0.0.0.0");
 	core::Var::get(cfg::ServerMaxClients, "1024");
-	core::Var::get(cfg::ServerHttpPort, "8080", core::CV_REPLICATE);
-	core::Var::get(cfg::ServerChunkBaseUrl, "http://localhost:8080/chunk", core::CV_REPLICATE);
+	core::Var::get(cfg::ServerHttpPort, HTTP_SERVER_PORT, core::CV_REPLICATE);
+	core::Var::get(cfg::ServerChunkBaseUrl, "http://" HTTP_SERVER_HOST ":" HTTP_SERVER_PORT "/chunk", core::CV_REPLICATE);
 	core::Var::get(cfg::ServerSeed, "1", core::CV_REPLICATE);
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::DatabaseMinConnections, "2");

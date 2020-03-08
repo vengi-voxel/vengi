@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: @PROJECT_NAME@
@@ -15,9 +15,6 @@ spec:
       containers:
       - name: @PROJECT_NAME@
         image: @DOCKER_IMAGE_NAME_TAG@
-        ports:
-        - name: service-port
-          containerPort: @SERVER_PORT@
         env:
         - name: DB_PW
           valueFrom:
@@ -26,20 +23,26 @@ spec:
               key: POSTGRES_PASSWORD
         - name: DB_HOST
           value: postgres
+        - name: SV_PORT
+          value: "@SERVER_PORT@"
+        - name: SV_HTTPPORT
+          value: "@HTTP_SERVER_PORT@"
         livenessProbe:
           failureThreshold: 3
-          exec:
-            command:
-            - /opt/@ROOT_PROJECT_NAME@/vengi-@PROJECT_NAME@-healthcheck
+          httpGet:
+            path: /health
+            port: @HTTP_SERVER_PORT@
+            scheme: HTTP
           initialDelaySeconds: 30
           periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 5
         readinessProbe:
           failureThreshold: 3
-          exec:
-            command:
-            - /opt/@ROOT_PROJECT_NAME@/vengi-@PROJECT_NAME@-healthcheck
+          httpGet:
+            path: /health
+            port: @HTTP_SERVER_PORT@
+            scheme: HTTP
           initialDelaySeconds: 30
           periodSeconds: 30
           successThreshold: 1
@@ -49,5 +52,5 @@ spec:
             memory: 256Mi
             cpu: 1000m
           limits:
-            memory: 4096Mi
+            memory: 8192Mi
             cpu: 10000m
