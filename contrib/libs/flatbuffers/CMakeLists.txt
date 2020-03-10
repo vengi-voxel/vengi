@@ -21,6 +21,8 @@ set(COMPILER_SRCS
 	compiler/src/compiler/go_generator.h
 	compiler/src/compiler/java_generator.cc
 	compiler/src/compiler/java_generator.h
+	compiler/src/compiler/swift_generator.cc
+	compiler/src/compiler/swift_generator.h
 	compiler/src/compiler/python_generator.cc
 	compiler/src/compiler/python_generator.h
 	compiler/code_generators.cpp

@@ -32,9 +32,10 @@
 #  include <winbase.h>
 #  undef interface  // This is also important because of reasons
 #else
-#  ifndef _XOPEN_SOURCE
-#    define _XOPEN_SOURCE 600 // For PATH_MAX from limits.h (SUSv2 extension) 
+#  ifdef _XOPEN_SOURCE
+#  undef _XOPEN_SOURCE
 #  endif
+#  define _XOPEN_SOURCE 600 // For PATH_MAX from limits.h (SUSv2 extension) 
 #  include <limits.h>
 #endif
 // clang-format on
@@ -275,6 +276,5 @@ void SetupDefaultCRTReportMode() {
 
   // clang-format on
 }
-
 
 }  // namespace flatbuffers
