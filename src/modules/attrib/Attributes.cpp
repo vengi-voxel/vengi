@@ -188,29 +188,33 @@ double Attributes::setCurrent(Type type, double value) {
 	core::ScopedWriteLock scopedLock(_attribLock);
 	auto i = _max.find(type);
 	if (i == _max.end()) {
+		const DirtyValue v{type, true, value};
 		_current.put(type, value);
 		for (const auto& listener : _listeners) {
-			listener(DirtyValue{type, true, value});
+			listener(v);
 		}
 		return value;
 	}
 	const double max = core_min(i->second, value);
 	_current.put(type, max);
+	const DirtyValue v{type, true, max};
 	for (const auto& listener : _listeners) {
-		listener(DirtyValue{type, true, max});
+		listener(v);
 	}
 	return max;
 }
 
 void Attributes::markAsDirty() {
 	for (ValuesIter i = _current.begin(); i != _current.end(); ++i) {
+		const DirtyValue v{i->first, true, i->second};
 		for (const auto& listener : _listeners) {
-			listener(DirtyValue{i->first, true, i->second});
+			listener(v);
 		}
 	}
 	for (ValuesIter i = _max.begin(); i != _max.end(); ++i) {
+		const DirtyValue v{i->first, false, i->second};
 		for (const auto& listener : _listeners) {
-			listener(DirtyValue{i->first, false, i->second});
+			listener(v);
 		}
 	}
 }
