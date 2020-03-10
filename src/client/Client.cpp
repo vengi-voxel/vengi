@@ -132,8 +132,9 @@ core::AppState Client::onConstruct() {
 		const attrib::ShadowAttributes& attrib = _player->attrib();
 		for (int i = (int)attrib::Type::MIN + 1; i < (int)attrib::Type::MAX; ++i) {
 			const attrib::Type type = (attrib::Type)i;
-			const double val = attrib.current(type);
-			Log::info("%s: %f", network::toString(type, ::network::EnumNamesAttribType()), val);
+			const double curVal = attrib.current(type);
+			const double maxVal = attrib.max(type);
+			Log::info("%s: %f/%f", network::toString(type, ::network::EnumNamesAttribType()), curVal, maxVal);
 		}
 	}).setHelp("Print all player attributes");
 
