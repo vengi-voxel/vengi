@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/String.h"
 #include "HttpStatus.h"
 #include "HttpHeader.h"
 #include "HttpMimeType.h"
@@ -29,6 +30,15 @@ struct HttpResponse {
 		this->body = body;
 		contentLength(SDL_strlen(body));
 		freeBody = false;
+		if (headers.find(http::header::CONTENT_TYPE) == headers.end()) {
+			headers.put(http::header::CONTENT_TYPE, http::mimetype::TEXT_PLAIN);
+		}
+	}
+
+	void setText(const core::String& body) {
+		this->body = SDL_strdup(body.c_str());
+		contentLength(body.size());
+		freeBody = true;
 		if (headers.find(http::header::CONTENT_TYPE) == headers.end()) {
 			headers.put(http::header::CONTENT_TYPE, http::mimetype::TEXT_PLAIN);
 		}
