@@ -146,6 +146,7 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
     SDL_JoystickID existing_instance = SDL_GetJoystickIDForPlayerIndex(player_index);
     SDL_JoystickDriver *driver;
     int device_index;
+    int existing_player_index;
 
     if (player_index < 0) {
         return SDL_FALSE;
@@ -160,6 +161,15 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
         SDL_joystick_players = new_players;
         SDL_memset(&SDL_joystick_players[SDL_joystick_player_count], 0xFF, (player_index - SDL_joystick_player_count + 1) * sizeof(SDL_joystick_players[0]));
         SDL_joystick_player_count = player_index + 1;
+    } else if (SDL_joystick_players[player_index] == instance_id) {
+        /* Joystick is already assigned the requested player index */
+        return SDL_TRUE;
+    }
+
+    /* Clear the old player index */
+    existing_player_index = SDL_GetPlayerIndexForJoystickID(instance_id);
+    if (existing_player_index >= 0) {
+        SDL_joystick_players[existing_player_index] = -1;
     }
 
     SDL_joystick_players[player_index] = instance_id;

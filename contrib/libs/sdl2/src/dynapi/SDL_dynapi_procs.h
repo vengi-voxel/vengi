@@ -744,7 +744,7 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_HasColorKey,(SDL_Surface *a),(a),return)
 #undef SDL_CreateThreadWithStackSize
 #endif
 
-#if defined(__WIN32__) && !defined(HAVE_LIBC)
+#if defined(__WIN32__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
 #elif defined(__OS2__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
@@ -807,3 +807,5 @@ SDL_DYNAPI_PROC(void,SDL_OnApplicationDidChangeStatusBarOrientation,(void),(),)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(int,SDL_GetAndroidSDKVersion,(void),(),return)
 #endif
+SDL_DYNAPI_PROC(int,SDL_isupper,(int a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_islower,(int a),(a),return)

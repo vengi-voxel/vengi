@@ -876,7 +876,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     button = [nswindow standardWindowButton:NSWindowMiniaturizeButton];
     if (button) {
         int iterations = 0;
-        while (![button isEnabled]) {
+        while (![button isEnabled] && (iterations < 100)) {
             SDL_Delay(10);
             SDL_PumpEvents();
             iterations++;
@@ -1740,8 +1740,6 @@ Cocoa_MinimizeWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     NSWindow *nswindow = data->nswindow;
-
-printf("Cocoa_MinimizeWindow begin %u\n", (unsigned int) SDL_GetTicks());
     if ([data->listener isInFullscreenSpaceTransition]) {
         [data->listener addPendingWindowOperation:PENDING_OPERATION_MINIMIZE];
     } else {
@@ -2032,6 +2030,11 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
     SDL_bool succeeded = SDL_FALSE;
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
+    if (data->inWindowFullscreenTransition) {
+        return SDL_FALSE;
+    }
+
+    data->inWindowFullscreenTransition = SDL_TRUE;
     if ([data->listener setFullscreenSpace:(state ? YES : NO)]) {
         const int maxattempts = 3;
         int attempt = 0;
@@ -2058,6 +2061,7 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
         /* Return TRUE to prevent non-space fullscreen logic from running */
         succeeded = SDL_TRUE;
     }
+    data->inWindowFullscreenTransition = SDL_FALSE;
 
     return succeeded;
 }}
