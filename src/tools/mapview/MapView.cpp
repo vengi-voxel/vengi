@@ -195,7 +195,8 @@ void MapView::beforeUI() {
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
 	_action.update(_now, _entity);
-	_camera.update(_entity->position(), _deltaFrameMillis, _now);
+	const double speed = _entity->attrib().current(attrib::Type::SPEED);
+	_camera.update(_entity->position(), _deltaFrameSeconds, _now, (float)speed);
 
 	if (_updateWorld) {
 		if (!_singlePosExtraction) {

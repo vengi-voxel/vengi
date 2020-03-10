@@ -245,7 +245,8 @@ void Client::beforeUI() {
 			return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 		});
 		_action.update(_now, _player);
-		_camera.update(_player->position(), _deltaFrameMillis, _now);
+		const double speed = _player->attrib().current(attrib::Type::SPEED);
+		_camera.update(_player->position(), _deltaFrameSeconds, _now, (float)speed);
 		_worldRenderer.chunkMgr().extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameMillis);
 		_worldRenderer.renderWorld(camera);

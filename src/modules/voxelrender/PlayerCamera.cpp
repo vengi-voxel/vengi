@@ -48,7 +48,7 @@ void PlayerCamera::rotate(float pitch, float turn, float speed) {
 	}
 }
 
-void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame, uint64_t now) {
+void PlayerCamera::update(const glm::vec3& entityPosition, float deltaFrameSeconds, uint64_t now, float speed) {
 	if (_zoomIn.pressed()) {
 		_zoomIn.execute(now, 20ul, [&] () {
 			zoom(1.0f);
@@ -61,8 +61,9 @@ void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame, u
 
 	// TODO: fix this magic number with the real character eye height.
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
+	const glm::vec3& currentPos = _camera.position();
 	const glm::vec3 targetpos = entityPosition + eye;
-	_camera.setTarget(targetpos);
+	_camera.setTarget(glm::mix(currentPos, targetpos, deltaFrameSeconds * speed));
 
 	if (_pendingSpeed > 0.0f) {
 		// TODO: optimize this
@@ -79,6 +80,8 @@ void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame, u
 
 	const glm::vec3& direction = _camera.direction();
 	glm::vec3 hit(0.5f);
+	// TODO: we should not adopt the camera target distance but use th depth buffer to make those pixels transparent that
+	// are blocking the sight
 	if (_worldMgr->raycast(targetpos, direction, _targetDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
 			voxel::Voxel voxel = sampler.voxel();
 			if (!voxel::isEnterable(voxel.getMaterial())) {
@@ -94,6 +97,7 @@ void PlayerCamera::update(const glm::vec3& entityPosition, int64_t deltaFrame, u
 	}
 
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
+	const uint64_t deltaFrame = (uint64_t)(deltaFrameSeconds * 1000.0f);
 	_camera.update(deltaFrame);
 }
 
