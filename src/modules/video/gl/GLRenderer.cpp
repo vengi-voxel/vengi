@@ -1362,6 +1362,12 @@ void drawArrays(Primitive mode, size_t count) {
 	checkError();
 }
 
+void drawInstancedArrays(Primitive mode, size_t count, size_t amount) {
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	glDrawArraysInstanced(glMode, (GLint)0, (GLsizei)count, (GLsizei)amount);
+	checkError();
+}
+
 void enableDebug(DebugSeverity severity) {
 	if (!hasFeature(Feature::DebugOutput)) {
 		Log::warn("No debug feature support was detected");

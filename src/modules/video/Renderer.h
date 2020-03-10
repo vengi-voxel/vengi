@@ -288,6 +288,7 @@ extern void drawElements(Primitive mode, size_t numIndices, DataType type, void*
 extern void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount);
 extern void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex);
 extern void drawArrays(Primitive mode, size_t count);
+extern void drawInstancedArrays(Primitive mode, size_t count, size_t amount);
 extern void disableDebug();
 extern bool hasFeature(Feature feature);
 extern void enableDebug(DebugSeverity severity);
