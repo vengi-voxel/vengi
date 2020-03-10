@@ -16,7 +16,7 @@ ENetPacket* ServerMessageSender::createServerPacket(FlatBufferBuilder& fbb, Serv
 	ENetPacket* packet = enet_packet_create(fbb.GetBufferPointer(), fbb.GetSize(), flags);
 	const char *msgType = EnumNameServerMsgType(type);
 	Log::trace(logid, "Create server package: %s - size %u", msgType, fbb.GetSize());
-	const metric::TagMap& tags  {{"direction", "in"}, {"type", msgType}};
+	const metric::TagMap& tags {{"direction", "out"}, {"type", msgType}};
 	_metric->count("network_packet_count", 1, tags);
 	_metric->count("network_packet_size", (int)fbb.GetSize(), tags);
 	return packet;
@@ -32,16 +32,20 @@ bool ServerMessageSender::sendServerMessage(ENetPeer* peer, FlatBufferBuilder& f
 }
 
 bool ServerMessageSender::sendServerMessage(ENetPeer** peers, int numPeers, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags) {
-	Log::debug(logid, "Send %s", EnumNameServerMsgType(type));
+	const char *msgType = network::EnumNameServerMsgType(type);
+	Log::debug(logid, "Send %s to %i peers", msgType, numPeers);
 	core_assert(numPeers > 0);
 	int sent = 0;
 	auto packet = createServerPacket(fbb, type, data, flags);
+	const metric::TagMap& tags {{"direction", "out"}, {"type", msgType}};
 	{
 		// TODO: lock
 		for (int i = 0; i < numPeers; ++i) {
 			if (!_network->sendMessage(peers[i], packet)) {
-				Log::warn(logid, "Could not send message of type %s to peer %i", network::EnumNameServerMsgType(type), i);
+				_metric->count("network_not_sent", 1, tags);
+				Log::trace(logid, "Could not send message of type %s to peer %i", msgType, i);
 			} else {
+				_metric->count("network_sent", 1, tags);
 				++sent;
 			}
 		}
@@ -51,11 +55,14 @@ bool ServerMessageSender::sendServerMessage(ENetPeer** peers, int numPeers, Flat
 }
 
 bool ServerMessageSender::broadcastServerMessage(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, int channel, uint32_t flags) {
-	Log::debug(logid, "Broadcast %s on channel %i", EnumNameServerMsgType(type), channel);
+	const char *msgType = network::EnumNameServerMsgType(type);
+	Log::debug(logid, "Broadcast %s on channel %i", msgType, channel);
 	bool success = false;
 	{
 		// TODO: lock
 		success = _network->broadcast(createServerPacket(fbb, type, data, flags), channel);
+		const metric::TagMap& tags {{"direction", "broadcast"}, {"type", msgType}};
+		_metric->count("network_sent", 1, tags);
 	}
 	fbb.Clear();
 	return success;
