@@ -20,6 +20,8 @@ UserAttribMgr::UserAttribMgr(EntityId userId,
 }
 
 void UserAttribMgr::onAttribChange(const attrib::DirtyValue& v) {
+	// only handle the current values here - the max values are handled by the
+	// assigned containers and don't have to be persisted.
 	if (!v.current) {
 		return;
 	}

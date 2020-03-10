@@ -20,7 +20,7 @@ struct DirtyValue {
 	double value;
 
 	inline bool operator==(const DirtyValue& rhs) const {
-		return type == rhs.type;
+		return type == rhs.type && current == rhs.current;
 	}
 };
 
