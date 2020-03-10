@@ -4,7 +4,7 @@
 # About
 Voxel engine for mmorpg game and tools.
 
-Includes behaviour tree based ai, a remote ai debugger, a voxel editor and a lot more.
+Includes [behaviour tree](src/server/lua/ai/README.md) based ai, a remote ai debugger, a voxel editor and a lot more.
 
 The scripting is lua based.
 
