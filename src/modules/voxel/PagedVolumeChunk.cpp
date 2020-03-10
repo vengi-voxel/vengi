@@ -107,6 +107,14 @@ void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uYPos, uint32_t uZPo
 	_dataModified = true;
 }
 
+glm::ivec3 PagedVolume::Chunk::chunkPos() const {
+	const glm::ivec3& lc = region().getLowerCorner();
+	const int32_t _x = lc.x >> _sideLengthPower;
+	const int32_t _y = lc.y >> _sideLengthPower;
+	const int32_t _z = lc.z >> _sideLengthPower;
+	return glm::ivec3(_x, _y, _z);
+}
+
 void PagedVolume::Chunk::setVoxel(const glm::i16vec3& v3dPos, const Voxel& tValue) {
 	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }

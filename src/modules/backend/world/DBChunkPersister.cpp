@@ -63,10 +63,10 @@ bool DBChunkPersister::load(voxel::PagedVolume::Chunk* chunk, unsigned int seed)
 bool DBChunkPersister::save(voxel::PagedVolume::Chunk* chunk, unsigned int seed) {
 	db::ChunkModel model;
 	model.setMapid(_mapId);
-	const voxel::Region& region = chunk->region();
-	model.setX(region.getLowerX());
-	model.setY(region.getLowerY());
-	model.setZ(region.getLowerZ());
+	const glm::ivec3& chunkPos = chunk->chunkPos();
+	model.setX(chunkPos.x);
+	model.setY(chunkPos.y);
+	model.setZ(chunkPos.z);
 	model.setSeed(seed);
 
 	core::ByteStream out;

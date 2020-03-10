@@ -91,7 +91,7 @@ bool MapProvider::init() {
 		const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
 		persistence::Blob blob = persister->load(chunkPos.x, chunkPos.y, chunkPos.z, mapid, seed->uintVal());
 		if (blob.length <= 0) {
-			(void)volume->voxel(chunkPos.x, chunkPos.y, chunkPos.z);
+			(void)volume->voxel(x, y, z);
 			blob = persister->load(chunkPos.x, chunkPos.y, chunkPos.z, mapid, seed->uintVal());
 			if (blob.length <= 0) {
 				response->status = http::HttpStatus::NotFound;

@@ -64,6 +64,8 @@ public:
 		void setVoxels(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, const Voxel* tValues, int amount);
 		void setVoxel(const glm::i16vec3& v3dPos, const Voxel& tValue);
 
+		glm::ivec3 chunkPos() const;
+
 	private:
 		// This is updated by the PagedVolume and used to discard the least recently used chunks.
 		uint32_t _chunkLastAccessed = 0u;
