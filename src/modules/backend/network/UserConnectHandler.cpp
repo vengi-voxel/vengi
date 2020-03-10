@@ -46,7 +46,8 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const core::String& email, con
 	db::UserModel model;
 	const db::DBConditionUserModelEmail emailCond(email.c_str());
 	const db::DBConditionUserModelPassword passwordCond(passwd.c_str());
-	if (!_dbHandler->select(model, persistence::DBConditionMultiple(true, {&emailCond, &passwordCond}))) {
+	_dbHandler->select(model, persistence::DBConditionMultiple(true, {&emailCond, &passwordCond}));
+	if (model.id() == (int64_t)0) {
 		Log::warn(logid, "Could not get user id for email: %s", email.c_str());
 		return UserPtr();
 	}
