@@ -51,8 +51,12 @@ MapPtr MapProvider::map(MapId id, bool forceValidMap) const {
 		const bool empty = i == _maps.end();
 		core_assert(!empty);
 		if (!empty) {
+			Log::warn("Could not find map for id %i", (int)id);
 			return i->second;
 		}
+		Log::error("Could not find any valid map");
+	} else {
+		Log::debug("Could not find map for id %i", (int)id);
 	}
 	return MapPtr();
 }
