@@ -95,7 +95,8 @@ bool MapProvider::init() {
 			blob = persister->load(chunkPos.x, chunkPos.y, chunkPos.z, mapid, seed->uintVal());
 			if (blob.length <= 0) {
 				response->status = http::HttpStatus::NotFound;
-				response->setText("Chunk not found");
+				response->setText(core::string::format("Chunk not found at %i:%i:%i on map %i with seed %u",
+						chunkPos.x, chunkPos.y, chunkPos.z, mapid, seed->uintVal()));
 				return;
 			}
 		}
