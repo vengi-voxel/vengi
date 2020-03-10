@@ -53,7 +53,8 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const core::String& email, con
 	}
 	const UserPtr& user = _entityStorage->user(model.id());
 	if (user) {
-		if (user->peer()->address.host == peer->address.host) {
+		ENetPeer* oldPeer = user->peer();
+		if (oldPeer == nullptr || oldPeer->address.host == peer->address.host) {
 			Log::debug(logid, "user %i reconnects with host %u on port %i", (int) model.id(), peer->address.host, peer->address.port);
 			user->setPeer(peer);
 			user->onReconnect();
