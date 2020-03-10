@@ -87,7 +87,7 @@ bool MapProvider::init() {
 		const DBChunkPersisterPtr& persister = m->chunkPersister();
 		voxelworld::WorldMgr* worldMgr = m->worldMgr();
 		voxel::PagedVolume* volume = worldMgr->volumeData();
-		const glm::ivec3 chunkPos = volume->chunkPos(x, y, z);
+		const glm::ivec3& chunkPos = volume->chunkPos(x, y, z);
 		const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
 		persistence::Blob blob = persister->load(chunkPos.x, chunkPos.y, chunkPos.z, mapid, seed->uintVal());
 		if (blob.length <= 0) {
