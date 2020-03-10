@@ -54,6 +54,8 @@ constexpr const char *ServerHttpPort = "sv_httpport";
 // the download urls for the chunks
 constexpr const char *ServerChunkBaseUrl = "sv_httpchunkurl";
 
+constexpr const char *ConsoleCurses = "con_curses";
+
 constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";
 constexpr const char *CoreSysLog = "core_syslog";

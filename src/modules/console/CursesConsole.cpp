@@ -5,6 +5,7 @@
 #include "CursesConsole.h"
 #include "core/App.h"
 #include "core/Log.h"
+#include "core/GameConfig.h"
 #include <SDL_stdinc.h>
 
 #include "engine-config.h"
@@ -18,9 +19,6 @@ namespace console {
 
 CursesConsole::CursesConsole() :
 		Super() {
-#ifdef CURSES_HAVE_NCURSES_H
-	_useOriginalLogFunction = false;
-#endif
 	_consoleMarginLeft = 1;
 	_consoleMarginLeftBehindPrompt = 1;
 	_consoleActive = true;
@@ -28,7 +26,19 @@ CursesConsole::CursesConsole() :
 
 void CursesConsole::update(uint32_t deltaTime) {
 	Super::update(deltaTime);
+	if (_cursesVar->isDirty()) {
+		_enableCurses = _cursesVar->boolVal();
+		if (_enableCurses && !_cursesActive) {
+			initCurses();
+		} else if (!_enableCurses && _cursesActive) {
+			shutdownCurses();
+		}
+		_cursesVar->markClean();
+	}
 #ifdef CURSES_HAVE_NCURSES_H
+	if (!_cursesActive) {
+		return;
+	}
 	int key = getch();
 	while (key != ERR) {
 		if (key == KEY_ENTER || key == '\n') {
@@ -73,6 +83,10 @@ void CursesConsole::update(uint32_t deltaTime) {
 
 void CursesConsole::drawString(int x, int y, const glm::ivec4& color, int colorIndex, const char* str, int len) {
 #ifdef CURSES_HAVE_NCURSES_H
+	if (!_cursesActive) {
+		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s\n", str);
+		return;
+	}
 	if (colorIndex >= 0) {
 		attron(COLOR_PAIR(colorIndex + 1));
 	}
@@ -81,6 +95,8 @@ void CursesConsole::drawString(int x, int y, const glm::ivec4& color, int colorI
 	if (colorIndex >= 0) {
 		attroff(COLOR_PAIR(colorIndex + 1));
 	}
+#else
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s\n", str);
 #endif
 }
 
@@ -94,6 +110,9 @@ glm::ivec2 CursesConsole::stringSize(const char* s, int length) {
 
 void CursesConsole::afterRender(const math::Rect<int> &rect) {
 #ifdef CURSES_HAVE_NCURSES_H
+	if (!_cursesActive) {
+		return;
+	}
 	clrtoeol();
 	refresh();
 #endif
@@ -102,8 +121,14 @@ void CursesConsole::afterRender(const math::Rect<int> &rect) {
 void CursesConsole::beforeRender(const math::Rect<int> &) {
 }
 
-bool CursesConsole::init() {
+void CursesConsole::initCurses() {
 #ifdef CURSES_HAVE_NCURSES_H
+	if (!_enableCurses) {
+		return;
+	}
+	core_assert(_cursesActive == false);
+	_cursesActive = true;
+	_useOriginalLogFunction = false;
 	// Start curses mode
 	initscr();
 	// We get F1, F2 etc..
@@ -127,12 +152,21 @@ bool CursesConsole::init() {
 		init_pair(util::RED, COLOR_RED, -1);
 	}
 #endif
+}
+
+bool CursesConsole::init() {
+	_cursesVar = core::Var::get(cfg::ConsoleCurses, "false");
+	_enableCurses = _cursesVar->boolVal();
+	initCurses();
 	return true;
 }
 
-void CursesConsole::shutdown() {
-	SDL_LogSetOutputFunction(_logFunction, _logUserData);
+void CursesConsole::shutdownCurses() {
 #ifdef CURSES_HAVE_NCURSES_H
+	if (!_cursesActive) {
+		return;
+	}
+	_useOriginalLogFunction = true;
 	refresh();
 	endwin();
 	for (const auto& e : _messages) {
@@ -142,7 +176,13 @@ void CursesConsole::shutdown() {
 		}
 		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s", str);
 	}
+	_cursesActive = false;
 #endif
+}
+
+void CursesConsole::shutdown() {
+	SDL_LogSetOutputFunction(_logFunction, _logUserData);
+	shutdownCurses();
 	Super::shutdown();
 }
 
