@@ -276,7 +276,7 @@ void HttpServer::assembleResponse(Client& client, const HttpResponse& response) 
 	SDL_memcpy(responseBuf, buf, headerSize);
 	SDL_memcpy(responseBuf + headerSize, response.body, response.bodySize);
 	client.setResponse(responseBuf, responseSize);
-	Log::info("Response buffer of size %i", (int)responseSize);
+	Log::trace("Response buffer of size %i", (int)responseSize);
 	metric(response.status);
 	FD_SET(client.socket, &_writeFDSet);
 }
