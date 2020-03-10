@@ -3300,7 +3300,7 @@ public:
 
     char name[256];
 
-    memset(&sym, sizeof(sym), 0);
+    memset(&sym, 0, sizeof(sym));
     sym.sym.SizeOfStruct = sizeof(SYMBOL_INFO);
     sym.sym.MaxNameLen = max_sym_len;
 
