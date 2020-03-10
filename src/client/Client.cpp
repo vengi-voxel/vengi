@@ -338,9 +338,9 @@ core::AppState Client::onRunning() {
 		const float pitch = _mouseRelativePos.y;
 		const float turn = _mouseRelativePos.x;
 		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
+		sendMovement();
+		sendTriggerAction();
 	}
-	sendMovement();
-	sendTriggerAction();
 	if (state == core::AppState::Running) {
 		_network->update();
 	}
