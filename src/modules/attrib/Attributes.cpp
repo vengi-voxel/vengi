@@ -88,7 +88,14 @@ bool Attributes::update(long dt) {
 		if (mi == _max.end()) {
 			continue;
 		}
+		double old = i->value;
 		i->value = core_min(mi->value, i->value);
+		if (SDL_fabs(old - i->value) > (double)0.000001) {
+			const DirtyValue v{i->key, true, i->value};
+			for (const auto& listener : _listeners) {
+				listener(v);
+			}
+		}
 	}
 	return true;
 }
