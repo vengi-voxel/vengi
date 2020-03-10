@@ -213,8 +213,9 @@ void ServerLoop::construct() {
 		Log::info("Attributes:");
 		for (int i = (int)attrib::Type::MIN + 1; i < (int)attrib::Type::MAX; ++i) {
 			const attrib::Type type = (attrib::Type)i;
-			const double val = user->current(type);
-			Log::info("  %s: %f", network::toString(type, ::network::EnumNamesAttribType()), val);
+			const double curVal = user->current(type);
+			const double maxVal = user->max(type);
+			Log::info("  %s: %f/%f", network::toString(type, ::network::EnumNamesAttribType()), curVal, maxVal);
 		}
 	}).setHelp("Print all user details like attributes");
 
