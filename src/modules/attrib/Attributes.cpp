@@ -69,13 +69,14 @@ bool Attributes::update(long dt) {
 	core::ScopedReadLock scopedLock(_attribLock);
 	if (!_listeners.empty()) {
 		const TypeSet& diff = mapFindChangedValues(_max, max);
-		for (const auto& listener : _listeners) {
-			for (const Type& e : diff) {
-				double value;
-				if (!max.get(e, value)) {
-					continue;
-				}
-				listener(DirtyValue{e, false, value});
+		for (const Type& e : diff) {
+			double value;
+			if (!max.get(e, value)) {
+				continue;
+			}
+			const DirtyValue v{e, false, value};
+			for (const auto& listener : _listeners) {
+				listener(v);
 			}
 		}
 	}
