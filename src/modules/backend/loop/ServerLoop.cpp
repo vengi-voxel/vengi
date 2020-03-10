@@ -194,6 +194,30 @@ void ServerLoop::construct() {
 		}
 	}).setHelp("Create a new user with a given email, name and password");
 
+	core::Command::registerCommand("sv_userdetails", [this] (const core::CmdArgs &args) {
+		if (args.size() < 1) {
+			Log::info("Usage: sv_userdetails <userid>");
+			return;
+		}
+		const EntityId id = core::string::toInt(args[0]);
+		UserPtr user = _entityStorage->user(id);
+		if (!user) {
+			Log::warn("Could not find user for the given id");
+			return;
+		}
+		Log::info("General:");
+		Log::info("  name: %s", user->name().c_str());
+		Log::info("  email: %s", user->email().c_str());
+		Log::info("  map: %i", (int)user->map()->id());
+		Log::info("  pos: %i:%i", (int)user->pos().x, (int)user->pos().z);
+		Log::info("Attributes:");
+		for (int i = (int)attrib::Type::MIN + 1; i < (int)attrib::Type::MAX; ++i) {
+			const attrib::Type type = (attrib::Type)i;
+			const double val = user->current(type);
+			Log::info("  %s: %f", network::toString(type, ::network::EnumNamesAttribType()), val);
+		}
+	}).setHelp("Print all user details like attributes");
+
 	_world->construct();
 	_volumeCache->construct();
 }
