@@ -48,7 +48,7 @@ MapPtr MapProvider::map(MapId id, bool forceValidMap) const {
 	}
 	if (forceValidMap) {
 		i = _maps.begin();
-		const bool empty = i != _maps.end();
+		const bool empty = i == _maps.end();
 		core_assert(!empty);
 		if (!empty) {
 			return i->second;
@@ -112,6 +112,7 @@ bool MapProvider::init() {
 		return false;
 	}
 	_maps.insert(std::make_pair(mapId, map));
+	Log::info("Map provider initialized with %i maps", (int)_maps.size());
 	return true;
 }
 
