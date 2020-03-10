@@ -15,9 +15,11 @@ endif()
 if (USE_CPPCHECK)
 find_host_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
 list(APPEND CMAKE_CXX_CPPCHECK
-	"--enable=all"
+	"--enable=warning,performance,portability"
 	"--inconclusive"
 	"--force"
+	"--quiet"
+	"--std=c++11"
 	"--inline-suppr"
 	"--suppressions-list=${SCRIPTS_CMAKE_DIR}/CppCheckSuppressions.txt"
 )
