@@ -165,7 +165,7 @@ inline bool contains(const core::String& str, const core::String& search) {
 	return contains(str.c_str(), search.c_str());
 }
 
-inline core::String extractFilename(core::String str) {
+inline core::String extractFilename(const core::String& str) {
 	return stripExtension(extractFilenameWithExtension(str));
 }
 

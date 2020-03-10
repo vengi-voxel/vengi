@@ -132,7 +132,7 @@ int Command::execute(const core::String& command) {
 		if (!commandTokenizer.hasNext()) {
 			continue;
 		}
-		const core::String c = commandTokenizer.next();
+		const core::String& c = commandTokenizer.next();
 		Log::debug("command: '%s'", c.c_str());
 		std::vector<core::String> args;
 		while (commandTokenizer.hasNext()) {
