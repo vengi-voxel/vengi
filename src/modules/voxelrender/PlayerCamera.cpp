@@ -63,6 +63,7 @@ void PlayerCamera::update(const glm::vec3& entityPosition, float deltaFrameSecon
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
 	const glm::vec3& currentPos = _camera.position();
 	const glm::vec3 targetpos = entityPosition + eye;
+	// TODO: first time... do a time warp...
 	_camera.setTarget(glm::mix(currentPos, targetpos, deltaFrameSeconds * speed));
 
 	if (_pendingSpeed > 0.0f) {
