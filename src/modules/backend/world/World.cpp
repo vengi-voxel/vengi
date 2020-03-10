@@ -29,7 +29,7 @@ World::World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,
 }
 
 World::~World() {
-	shutdown();
+	core_assert_msg(_maps.empty(), "World was not properly shut down");
 }
 
 void World::update(long dt) {
