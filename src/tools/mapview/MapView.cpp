@@ -194,7 +194,7 @@ void MapView::beforeUI() {
 	_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _entity, [&] (const glm::vec3& pos, float maxWalkHeight) {
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
-	_action.update(_entity);
+	_action.update(_now, _entity);
 	_camera.update(_entity->position(), _deltaFrameMillis, _now);
 
 	if (_updateWorld) {

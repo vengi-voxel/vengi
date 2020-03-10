@@ -61,6 +61,9 @@ frontend::ClientEntityId Client::id() const {
 }
 
 void Client::sendTriggerAction() {
+	if (!_action.popTriggerAction()) {
+		return;
+	}
 	_messageSender->sendClientMessage(_actionFbb, network::ClientMsgType::TriggerAction, CreateTriggerAction(_actionFbb).Union());
 }
 
@@ -241,7 +244,7 @@ void Client::beforeUI() {
 		_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _player, [&] (const glm::vec3& pos, float maxWalkHeight) {
 			return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 		});
-		_action.update(_player);
+		_action.update(_now, _player);
 		_camera.update(_player->position(), _deltaFrameMillis, _now);
 		_worldRenderer.chunkMgr().extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameMillis);

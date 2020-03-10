@@ -12,10 +12,13 @@ bool PlayerAction::init() {
 	return true;
 }
 
-void PlayerAction::update(const ClientEntityPtr& entity) {
+void PlayerAction::update(uint64_t now, const ClientEntityPtr& entity) {
 	// TODO: if not gliding or diving
 	if (_triggerAction.pressed()) {
-		entity->addAnimation(network::Animation::TOOL, 0.1f);
+		_triggerAction.execute(now, 100ul, [&entity, this] () {
+			entity->addAnimation(network::Animation::TOOL, 0.1f);
+			++_triggerActionCounter;
+		});
 	}
 }
 
