@@ -16,8 +16,8 @@ namespace backend {
 template<class MSGTYPE>
 class IUserProtocolHandler: public network::IMsgProtocolHandler<MSGTYPE, User> {
 public:
-	IUserProtocolHandler() :
-		network::IMsgProtocolHandler<MSGTYPE, User>(true) {
+	IUserProtocolHandler(const char *msgType) :
+		network::IMsgProtocolHandler<MSGTYPE, User>(true, msgType) {
 	}
 
 	virtual ~IUserProtocolHandler() {
@@ -28,7 +28,7 @@ public:
 
 #define USERPROTOHANDLER(msgType) \
 struct msgType##Handler: public IUserProtocolHandler<msgType> { \
-	msgType##Handler() : IUserProtocolHandler<msgType>() {} \
+	msgType##Handler() : IUserProtocolHandler<msgType>(#msgType) {} \
 	void execute(User* attachment, const msgType* message) override; \
 }
 
