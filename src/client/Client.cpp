@@ -124,6 +124,19 @@ core::AppState Client::onConstruct() {
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	_worldRenderer.construct();
 
+	core::Command::registerCommand("cl_attrib", [this] (const core::CmdArgs &args) {
+		if (!_player) {
+			Log::info("You must be logged into a gameserver");
+			return;
+		}
+		const attrib::ShadowAttributes& attrib = _player->attrib();
+		for (int i = (int)attrib::Type::MIN + 1; i < (int)attrib::Type::MAX; ++i) {
+			const attrib::Type type = (attrib::Type)i;
+			const double val = attrib.current(type);
+			Log::info("%s: %f", network::toString(type, ::network::EnumNamesAttribType()), val);
+		}
+	}).setHelp("Print all player attributes");
+
 	return state;
 }
 
