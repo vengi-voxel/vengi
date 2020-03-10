@@ -388,6 +388,8 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
 	_camera.setTarget(pos);
 
+	// TODO: get map id from server
+	_clientPager->setMapId(1);
 	const network::EntityType type = network::EntityType::PLAYER;
 	_player = core::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
 	_worldRenderer.entityMgr().addEntity(_player);

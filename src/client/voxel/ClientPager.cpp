@@ -28,6 +28,11 @@ void ClientPager::setSeed(unsigned int seed) {
 	Log::info("set seed: %u", _seed);
 }
 
+void ClientPager::setMapId(int mapId) {
+	_mapId = mapId;
+	Log::info("set mapid: %u", _mapId);
+}
+
 bool ClientPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 	if (pctx.region.getLowerY() < 0) {
 		return false;
@@ -36,8 +41,7 @@ bool ClientPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 		const int x = pctx.region.getLowerX();
 		const int y = pctx.region.getLowerY();
 		const int z = pctx.region.getLowerZ();
-		const int mapid = 1; // FIXME
-		const http::ResponseParser& response = _httpClient.get("?x=%i&y=%i&z=%i&mapid=%i", x, y, z, mapid);
+		const http::ResponseParser& response = _httpClient.get("?x=%i&y=%i&z=%i&mapid=%i", x, y, z, _mapId);
 		if (response.status != http::HttpStatus::Ok) {
 			Log::error("Failed to download the chunk for position %i:%i:%i and seed %u", x, y, z, _seed);
 			return false;
