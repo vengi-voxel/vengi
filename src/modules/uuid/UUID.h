@@ -6,7 +6,7 @@
 
 #include "core/String.h"
 
-namespace core {
+namespace uuid {
 
 extern core::String generateUUID();
 

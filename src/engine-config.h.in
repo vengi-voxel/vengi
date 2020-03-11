@@ -19,7 +19,6 @@
 
 #cmakedefine HAVE_SYSLOG_H 1
 #cmakedefine HAVE_EXECINFO_H 1
-#cmakedefine HAVE_CLOCKGETTIME 1
 #cmakedefine HAVE_SYS_RESOURCE_H 1
 #cmakedefine HAVE_POSTGRES 1
 #cmakedefine HAVE_UUID_H 1

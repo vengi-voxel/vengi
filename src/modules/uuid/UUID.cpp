@@ -17,7 +17,7 @@
 #warning "No uuid implementation found"
 #endif
 
-namespace core {
+namespace uuid {
 
 core::String generateUUID() {
 #ifdef HAVE_UUID_H

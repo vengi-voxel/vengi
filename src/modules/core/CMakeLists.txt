@@ -62,7 +62,6 @@ set(SRCS
 	Tokenizer.h Tokenizer.cpp
 	Trace.cpp Trace.h
 	UTF8.cpp UTF8.h
-	UUID.cpp UUID.h
 	Var.cpp Var.h
 	Vector.h
 	Zip.cpp Zip.h miniz.h miniz.c
@@ -70,16 +69,11 @@ set(SRCS
 set(LIB core)
 
 if (WINDOWS)
-	set(UUID_LIBRARIES rpcrt4)
 	# All this windows.h insanities ... giving up on this module
 	set_property(GLOBAL PROPERTY ${LIB}_NOUNITY TRUE)
-elseif (APPLE)
-	set(UUID_LIBRARIES "-framework CoreFoundation")
-else()
-	find_package(UUID)
 endif()
 
-set(LIBS sdl2 glm libuv ${CMAKE_DL_LIBS} ${UUID_LIBRARIES})
+set(LIBS sdl2 glm libuv ${CMAKE_DL_LIBS})
 if (NOT MSVC)
 list(APPEND LIBS backward)
 endif()
@@ -114,7 +108,6 @@ set(TEST_SRCS
 	tests/StringUtilTest.cpp
 	tests/ThreadPoolTest.cpp
 	tests/TokenizerTest.cpp
-	tests/UUIDTest.cpp
 	tests/VarTest.cpp
 	tests/ZipTest.cpp
 )

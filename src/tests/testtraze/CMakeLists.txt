@@ -20,7 +20,7 @@ if (MOSQUITTO_FOUND)
 		testtraze/sound/you_win.ogg
 	)
 	engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED NOINSTALL)
-	engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES testcore voxelrender voxelfont util audio ${MOSQUITTO_LIBRARIES})
+	engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES testcore uuid voxelrender voxelfont util audio ${MOSQUITTO_LIBRARIES})
 	target_include_directories(${PROJECT_NAME} PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
 
 	gtest_suite_begin(tests-${PROJECT_NAME} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
@@ -29,7 +29,7 @@ if (MOSQUITTO_FOUND)
 		TrazeProtocol.cpp
 		../../modules/core/tests/AbstractTest.cpp
 	)
-	gtest_suite_deps(tests-${PROJECT_NAME} core voxel ${MOSQUITTO_LIBRARIES})
+	gtest_suite_deps(tests-${PROJECT_NAME} core uuid voxel ${MOSQUITTO_LIBRARIES})
 	if (UNITTESTS)
 		target_include_directories(tests-${PROJECT_NAME} PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
 	endif()

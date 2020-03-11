@@ -5,7 +5,7 @@
 #include "JSON.h"
 #include "core/Log.h"
 #include "core/Color.h"
-#include "core/UUID.h"
+#include "uuid/UUID.h"
 #include "core/Var.h"
 #include "core/App.h"
 #include "core/StringUtil.h"
@@ -31,7 +31,7 @@ bool Protocol::init() {
 		return false;
 	}
 
-	_clientToken = core::generateUUID(); // + "_" + core::App::getInstance()->appname();
+	_clientToken = uuid::generateUUID(); // + "_" + core::App::getInstance()->appname();
 	Log::debug("Client token: %s", _clientToken.c_str());
 
 	_mosquitto = mosquitto_new(_clientToken.c_str(), true, this);
