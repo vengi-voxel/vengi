@@ -29,10 +29,10 @@ public:
 	bool addEntity(const frontend::ClientEntityPtr &entity);
 	bool removeEntity(frontend::ClientEntityId id);
 
-	core::List<frontend::ClientEntity*> visibleEntities() const;
+	const core::List<frontend::ClientEntity*>& visibleEntities() const;
 };
 
-inline core::List<frontend::ClientEntity*> EntityMgr::visibleEntities() const {
+inline const core::List<frontend::ClientEntity*>& EntityMgr::visibleEntities() const {
 	return _visibleEntities;
 }
 

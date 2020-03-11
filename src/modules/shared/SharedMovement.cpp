@@ -3,6 +3,7 @@
  */
 
 #include "SharedMovement.h"
+#include "core/Log.h"
 #include "voxel/Constants.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>

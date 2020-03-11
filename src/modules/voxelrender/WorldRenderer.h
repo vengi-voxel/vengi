@@ -14,6 +14,7 @@
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/collection/List.h"
+#include "frontend/ClientEntityRenderer.h"
 #include "render/RandomColorTexture.h"
 #include "render/Shadow.h"
 #include "render/Skybox.h"
@@ -38,6 +39,7 @@ protected:
 	video::TexturePtr _distortionTexture;
 	video::TexturePtr _normalTexture;
 	render::Skybox _skybox;
+	frontend::ClientEntityRenderer _entityRenderer;
 
 	video::FrameBuffer _frameBuffer;
 	video::FrameBuffer _reflectionBuffer;
@@ -51,10 +53,6 @@ protected:
 	float _seconds = 0.0f;
 	glm::vec3 _focusPos { 0.0f };
 
-	const glm::vec4 _clearColor = core::Color::LightBlue;
-	const glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
-	const glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
-	const glm::vec3 _nightColor = glm::vec3(0.001, 0.001, 0.2);
 	core::VarPtr _shadowMap;
 
 	// this ub is currently shared between the world, world instanced and water shader
@@ -62,10 +60,8 @@ protected:
 	// dedicated shaders
 	shader::WorldShader _worldShader;
 	shader::WaterShader _waterShader;
-	shader::SkeletonShader _chrShader;
 	// shared shaders
 	shader::ShadowmapShader& _shadowMapShader;
-	shader::SkeletonshadowmapShader& _skeletonShadowMapShader;
 
 	void initFrameBuffers(const glm::ivec2 &dimensions);
 	void shutdownFrameBuffers();
@@ -86,6 +82,7 @@ protected:
 	int renderAll(const video::Camera& camera, const glm::vec4& clipPlane);
 	int renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 	int renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
+	int renderEntityDetails(const video::Camera& camera);
 	int renderWater(const video::Camera& camera, const glm::vec4& clipPlane);
 
 	/**
@@ -149,6 +146,7 @@ inline float WorldRenderer::getViewDistance() const {
 inline void WorldRenderer::setViewDistance(float viewDistance) {
 	_viewDistance = viewDistance;
 	_fogRange = _viewDistance * 0.80f;
+	_entityRenderer.setViewDistance(_viewDistance, _fogRange);
 }
 
 inline render::Shadow &WorldRenderer::shadow() {

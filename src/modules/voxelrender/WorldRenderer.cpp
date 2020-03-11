@@ -15,6 +15,8 @@
 #include "voxel/Constants.h"
 #include "voxel/MaterialColor.h"
 
+#include "frontend/Colors.h"
+
 #include "video/Renderer.h"
 #include "video/ScopedState.h"
 #include "video/Types.h"
@@ -26,8 +28,7 @@ namespace voxelrender {
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer() :
-		_shadowMapShader(shader::ShadowmapShader::getInstance()),
-		_skeletonShadowMapShader(shader::SkeletonshadowmapShader::getInstance()) {
+		_shadowMapShader(shader::ShadowmapShader::getInstance()) {
 	setViewDistance(240.0f);
 }
 
@@ -42,8 +43,8 @@ void WorldRenderer::reset() {
 void WorldRenderer::shutdown() {
 	_worldShader.shutdown();
 	_waterShader.shutdown();
-	_chrShader.shutdown();
 	_materialBlock.shutdown();
+	_entityRenderer.shutdown();
 	reset();
 	_worldChunkMgr.shutdown();
 	_colorTexture.shutdown();
@@ -57,7 +58,6 @@ void WorldRenderer::shutdown() {
 	_shadow.shutdown();
 	_skybox.shutdown();
 	_shadowMapShader.shutdown();
-	_skeletonShadowMapShader.shutdown();
 	shutdownFrameBuffers();
 	_postProcessBuf.shutdown();
 	_postProcessBufId = -1;
@@ -152,19 +152,7 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererRenderShadow);
 
 	// render the entities
-	_skeletonShadowMapShader.activate();
-	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
-		_skeletonShadowMapShader.setLightviewprojection(lightViewProjection);
-		for (const auto& ent : _entityMgr.visibleEntities()) {
-			_skeletonShadowMapShader.setBones(ent->bones()._items);
-			_skeletonShadowMapShader.setModel(ent->modelMatrix());
-			const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
-			video::drawElements<animation::IndexType>(video::Primitive::Triangles, numIndices);
-			ent->unbindVertexBuffers();
-		}
-		return true;
-	}, true);
-	_skeletonShadowMapShader.deactivate();
+	_entityRenderer.renderShadows(_entityMgr.visibleEntities(), _shadow);
 
 	// render the terrain
 	_shadowMapShader.activate();
@@ -188,7 +176,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	video::cullFace(video::Face::Back);
 	video::enable(video::State::DepthMask);
 	video::colorMask(true, true, true, true);
-	video::clearColor(_clearColor);
+	video::clearColor(frontend::clearColor);
 
 	int drawCallsWorld = 0;
 	drawCallsWorld += renderToShadowMap(camera);
@@ -273,47 +261,22 @@ int WorldRenderer::renderAll(const video::Camera& camera, const glm::vec4& clipP
 	const glm::mat4& vpmat = camera.viewProjectionMatrix();
 	drawCallsWorld += renderTerrain(vpmat, clipPlane);
 	drawCallsWorld += renderEntities(vpmat, clipPlane);
+	drawCallsWorld += renderEntityDetails(camera);
 	drawCallsWorld += renderWater(camera, clipPlane);
 	return drawCallsWorld;
 }
 
 int WorldRenderer::renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane) {
-	if (_entityMgr.visibleEntities().empty()) {
-		return 0;
-	}
-	core_trace_gl_scoped(WorldRendererRenderEntities);
+	return _entityRenderer.renderEntities(_entityMgr.visibleEntities(), viewProjectionMatrix, clipPlane, _shadow);
+}
 
-	int drawCallsEntities = 0;
-
-	video::enable(video::State::DepthTest);
-	video::ScopedShader scoped(_chrShader);
-	_chrShader.setFogrange(_fogRange);
-	_chrShader.setFocuspos(_focusPos);
-	_chrShader.setLightdir(_shadow.sunDirection());
-	_chrShader.setTime(_seconds);
-	_chrShader.setClipplane(clipPlane);
-	_chrShader.setViewprojection(viewProjectionMatrix);
-
-	const bool shadowMap = _shadowMap->boolVal();
-	if (shadowMap) {
-		_chrShader.setDepthsize(glm::vec2(_shadow.dimension()));
-		_chrShader.setCascades(_shadow.cascades());
-		_chrShader.setDistances(_shadow.distances());
-	}
-	for (frontend::ClientEntity* ent : _entityMgr.visibleEntities()) {
-		// TODO: apply the clipping plane to the entity frustum culling
-		_chrShader.setModel(ent->modelMatrix());
-		core_assert_always(_chrShader.setBones(ent->bones()._items));
-		const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
-		++drawCallsEntities;
-		video::drawElements<animation::IndexType>(video::Primitive::Triangles, numIndices);
-		ent->unbindVertexBuffers();
-	}
-	return drawCallsEntities;
+int WorldRenderer::renderEntityDetails(const video::Camera& camera) {
+	return _entityRenderer.renderEntityDetails(_entityMgr.visibleEntities(), camera);
 }
 
 void WorldRenderer::construct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
+	_entityRenderer.construct();
 }
 
 bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position, const glm::ivec2& dimension) {
@@ -332,16 +295,17 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		return false;
 	}
 
+	if (!_entityRenderer.init()) {
+		Log::error("Failed to initialize the entity renderer");
+		return false;
+	}
+
 	if (!_worldShader.setup()) {
 		Log::error("Failed to setup the post world shader");
 		return false;
 	}
 	if (!_waterShader.setup()) {
 		Log::error("Failed to setup the post water shader");
-		return false;
-	}
-	if (!_chrShader.setup()) {
-		Log::error("Failed to setup the post skeleton shader");
 		return false;
 	}
 	if (!_postProcessShader.setup()) {
@@ -354,10 +318,6 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	}
 	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to init shadowmap shader");
-		return false;
-	}
-	if (!_skeletonShadowMapShader.setup()) {
-		Log::error("Failed to init skeleton shadowmap shader");
 		return false;
 	}
 	const int shaderMaterialColorsArraySize = lengthof(shader::WorldData::MaterialblockData::materialcolor);
@@ -425,29 +385,20 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		_waterShader.setDistortion(video::TextureUnit::Five);
 		_waterShader.setNormalmap(video::TextureUnit::Six);
 		_waterShader.setDepthmap(video::TextureUnit::Seven);
-		_waterShader.setFogcolor(_clearColor);
-		_waterShader.setDiffuseColor(_diffuseColor);
-		_waterShader.setAmbientColor(_ambientColor);
-		_waterShader.setNightColor(_nightColor);
-	}
-	{
-		video::ScopedShader scoped(_chrShader);
-		_chrShader.setDiffuseColor(_diffuseColor);
-		_chrShader.setAmbientColor(_ambientColor);
-		_chrShader.setFogcolor(_clearColor);
-		_chrShader.setNightColor(_nightColor);
-		_chrShader.setMaterialblock(_materialBlock);
-		_chrShader.setShadowmap(video::TextureUnit::One);
+		_waterShader.setFogcolor(frontend::clearColor);
+		_waterShader.setDiffuseColor(frontend::diffuseColor);
+		_waterShader.setAmbientColor(frontend::ambientColor);
+		_waterShader.setNightColor(frontend::nightColor);
 	}
 	{
 		video::ScopedShader scoped(_worldShader);
-		_worldShader.setFogcolor(_clearColor);
+		_worldShader.setFogcolor(frontend::clearColor);
 		_worldShader.setMaterialblock(_materialBlock);
 		_worldShader.setModel(glm::mat4(1.0f));
 		_worldShader.setTexture(video::TextureUnit::Zero);
-		_worldShader.setDiffuseColor(_diffuseColor);
-		_worldShader.setAmbientColor(_ambientColor);
-		_worldShader.setNightColor(_nightColor);
+		_worldShader.setDiffuseColor(frontend::diffuseColor);
+		_worldShader.setAmbientColor(frontend::ambientColor);
+		_worldShader.setNightColor(frontend::nightColor);
 		_worldShader.setShadowmap(video::TextureUnit::One);
 	}
 
@@ -490,6 +441,7 @@ void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 	_focusPos.y = 0.0f;//TODO: _world->findFloor(_focusPos.x, _focusPos.z, voxel::isFloor);
 
 	_shadow.update(camera, _shadowMap->boolVal());
+	_entityRenderer.update(_focusPos, _seconds);
 
 	_worldChunkMgr.update(_focusPos);
 	_entityMgr.update(dt);
