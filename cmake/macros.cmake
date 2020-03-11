@@ -242,7 +242,7 @@ endfunction()
 function(engine_add_module)
 	set(_OPTIONS_ARGS)
 	set(_ONE_VALUE_ARGS TARGET)
-	set(_MULTI_VALUE_ARGS SRCS FILES LUA_SRCS DEPENDENCIES)
+	set(_MULTI_VALUE_ARGS SRCS FILES LUA_SRCS DEPENDENCIES PRIVATE_DEPENDENCIES)
 
 	cmake_parse_arguments(_LIB "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
 
@@ -255,7 +255,10 @@ function(engine_add_module)
 
 	set_target_properties(${_LIB_TARGET} PROPERTIES FOLDER ${_LIB_TARGET})
 	if (_LIB_DEPENDENCIES)
-		target_link_libraries(${_LIB_TARGET} ${_LIB_DEPENDENCIES})
+		target_link_libraries(${_LIB_TARGET} PUBLIC ${_LIB_DEPENDENCIES})
+	endif()
+	if (_LIB_PRIVATE_DEPENDENCIES)
+		target_link_libraries(${_LIB_TARGET} PRIVATE ${_LIB_PRIVATE_DEPENDENCIES})
 	endif()
 
 	set_property(GLOBAL PROPERTY ${_LIB_TARGET}_FILES ${_LIB_FILES})
