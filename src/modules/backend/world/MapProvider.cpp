@@ -9,6 +9,7 @@
 #include "core/Assert.h"
 #include "backend/entity/ai/AILoader.h"
 #include "http/HttpServer.h"
+#include "http/HttpMimeType.h"
 #include "attrib/ContainerProvider.h"
 #include "voxel/PagedVolume.h"
 #include "voxelworld/WorldMgr.h"
@@ -102,7 +103,7 @@ bool MapProvider::init() {
 		::memcpy((void*)response->body, blob.data, blob.length);
 		response->freeBody = true;
 		response->contentLength(blob.length);
-		response->headers.put(http::header::CONTENT_TYPE, "application/chunk");
+		response->headers.put(http::header::CONTENT_TYPE, http::mimetype::APPLICATION_CHUNK);
 		blob.release();
 	});
 

@@ -248,7 +248,7 @@ bool ServerLoop::init() {
 	});
 
 	_httpServer->registerRoute(http::HttpMethod::GET, "/health", [] (const http::RequestParser& request, http::HttpResponse* response) {
-		response->headers.put(http::header::CONTENT_TYPE, "application/json");
+		response->headers.put(http::header::CONTENT_TYPE, http::mimetype::APPLICATION_JSON);
 		response->setText("{status: up}");
 	});
 

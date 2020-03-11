@@ -6,6 +6,7 @@
 
 #include "HttpStatus.h"
 #include "HttpHeader.h"
+#include "HttpMimeType.h"
 #include <SDL_stdinc.h>
 
 namespace http {
@@ -29,7 +30,7 @@ struct HttpResponse {
 		contentLength(SDL_strlen(body));
 		freeBody = false;
 		if (headers.find(http::header::CONTENT_TYPE) == headers.end()) {
-			headers.put(http::header::CONTENT_TYPE, "text/plain");
+			headers.put(http::header::CONTENT_TYPE, http::mimetype::TEXT_PLAIN);
 		}
 	}
 };

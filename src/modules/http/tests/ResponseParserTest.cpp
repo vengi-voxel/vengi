@@ -64,7 +64,7 @@ TEST_F(ResponseParserTest, testGETChunk) {
 	ASSERT_EQ(http::HttpStatus::Ok, response.status) << response.statusText;
 	EXPECT_GE(response.headers.size(), 4u);
 	validateMapEntry(response.headers, header::SERVER, "server");
-	validateMapEntry(response.headers, header::CONTENT_TYPE, "application/chunk");
+	validateMapEntry(response.headers, header::CONTENT_TYPE, http::mimetype::APPLICATION_CHUNK);
 	validateMapEntry(response.headers, header::CONTENT_LENGTH, "8");
 	EXPECT_EQ(8, response.contentLength);
 	EXPECT_TRUE(response.valid()) << "Invalid content size should make this response invalid";

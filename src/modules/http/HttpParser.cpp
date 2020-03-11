@@ -125,4 +125,22 @@ bool HttpParser::parseHeaders(char **bufPos) {
 	return true;
 }
 
+const char *HttpParser::headerValue(const char *name) const {
+	const char *val = nullptr;
+	headers.get(name, val);
+	return val;
+}
+
+bool HttpParser::isHeaderValue(const char *name, const char *value) const {
+	const char *val = nullptr;
+	if (!headers.get(name, val)) {
+		if (value == nullptr) {
+			return val == nullptr;
+		}
+		return false;
+	}
+
+	return !SDL_strncmp(value, val, SDL_strlen(value));
+}
+
 }

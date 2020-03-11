@@ -3,6 +3,7 @@ set(SRCS
 	HttpClient.h HttpClient.cpp
 	HttpHeader.h HttpHeader.cpp
 	HttpMethod.h
+	HttpMimeType.h
 	HttpParser.h HttpParser.cpp
 	HttpQuery.h
 	HttpResponse.h

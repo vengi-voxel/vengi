@@ -79,6 +79,9 @@ public:
 	HttpParser(const HttpParser& other);
 	~HttpParser();
 
+	const char *headerValue(const char *name) const;
+	bool isHeaderValue(const char *name, const char *value) const;
+
 	HttpParser& operator=(HttpParser&& other);
 	HttpParser& operator=(const HttpParser& other);
 };

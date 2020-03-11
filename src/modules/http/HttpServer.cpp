@@ -338,7 +338,7 @@ bool HttpServer::route(const RequestParser& request, HttpResponse& response) {
 		Log::debug("No route found for '%s'", request.path);
 		return false;
 	}
-	response.headers.put(header::CONTENT_TYPE, "text/plain");
+	response.headers.put(header::CONTENT_TYPE, http::mimetype::TEXT_PLAIN);
 	response.headers.put(header::CONNECTION, "close");
 	response.headers.put(header::SERVER, core::App::getInstance()->appname().c_str());
 	// TODO urldecode of request data

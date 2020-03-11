@@ -6,6 +6,7 @@
 #include "core/App.h"
 #include "core/io/Filesystem.h"
 #include "http/ResponseParser.h"
+#include "http/HttpMimeType.h"
 #include "voxel/Region.h"
 
 namespace client {
@@ -43,7 +44,11 @@ bool ClientPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 		const int z = pctx.region.getLowerZ();
 		const http::ResponseParser& response = _httpClient.get("?x=%i&y=%i&z=%i&mapid=%i", x, y, z, _mapId);
 		if (response.status != http::HttpStatus::Ok) {
-			Log::error("Failed to download the chunk for position %i:%i:%i and seed %u", x, y, z, _seed);
+			Log::error("Failed to download the chunk for position %i:%i:%i and seed %u on map %i", x, y, z, _seed, _mapId);
+			if (response.isHeaderValue(http::header::CONTENT_TYPE, http::mimetype::TEXT_PLAIN)) {
+				const core::String s(response.content, response.contentLength);
+				Log::error("%s", s.c_str());
+			}
 			return false;
 		}
 		const size_t length = response.contentLength;
