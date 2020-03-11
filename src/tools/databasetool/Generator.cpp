@@ -291,11 +291,12 @@ static void createDBConditions(const Table& table, core::String& src) {
 		src += "\tusing Super = persistence::DBCondition;\n";
 		src += "public:\n";
 		src += "\t/**\n\t * @brief Condition for " + f.name + "\n";
-		src += "\t * @param[in] value";
 		if (f.type == persistence::FieldType::TIMESTAMP) {
+			src += "\t * @param[in] value";
 			src += " UTC timestamp in seconds";
 		} else if (isString(f)) {
 			if (f.isLower()) {
+				src += "\t * @param[in] value";
 				src += " The given value is converted to lowercase before the comparison takes place";
 			}
 		}

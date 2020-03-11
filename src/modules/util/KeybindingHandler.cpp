@@ -58,7 +58,7 @@ bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
 /**
  * @param bindings Map of bindings
  * @param key The key that was pressed
- * @param modifier The modifier mask
+ * @param modMask The modifier mask
  * @return @c true if the key+modifier combination lead to a command execution via
  * key bindings, @c false otherwise
  */

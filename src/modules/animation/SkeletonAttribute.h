@@ -36,7 +36,7 @@ enum class SkeletonAttributeType : int32_t {
  */
 struct SkeletonAttribute {
 	/**
-	 * @param[in] type The type of the skeleton
+	 * @param[in] _type The type of the skeleton
 	 * @param[in] metaArray Null terminated (@sa SKELETONATTRIBUTE_END) array of SkeletonAttributeMeta entries
 	 */
 	SkeletonAttribute(SkeletonAttributeType _type, const SkeletonAttributeMeta *metaArray) :

@@ -109,7 +109,6 @@ inline AnimationSettings::Type AnimationSettings::type() const {
 
 /**
  * @brief Load the given lua string and fill the AnimationSettings values as well as the skeleton attributes identified by the via base pointer and the meta data iterator
- * @param[in] luaString
  * @param[out] settings the AnimationSettings to fill
  * @param[out] skeletonAttr The base pointer to the skeleton attributes
  * @return @c true on success, @c false on failure

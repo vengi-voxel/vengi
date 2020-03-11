@@ -75,7 +75,7 @@ public:
 	 * @brief Registers two commands prefixed with @c + and @c - (for pressed and released)
 	 * for commands that are bound to keys.
 	 * @param[in] name The name of the command. It will automatically be prefixed with
-	 * a @c + and @c
+	 * a @c + and @c -
 	 * @param[in,out] button The @c ActionButton instance.
 	 * @note This class is not taking ownership of the button instance. You have to ensure
 	 * that the instance given here is alive as long as the commands are bound.

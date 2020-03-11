@@ -2,6 +2,11 @@
 # If you don't include the module with files before its dependent modules, then the
 # files will not get copied
 
+check_cxx_compiler_flag("-Wdocumentation" COMPILER_SUPPORTS_WDOCUMENTATION)
+if (COMPILER_SUPPORTS_WDOCUMENTATION)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdocumentation")
+endif()
+
 add_subdirectory(core)
 add_subdirectory(uuid)
 add_subdirectory(console)

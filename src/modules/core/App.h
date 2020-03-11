@@ -108,7 +108,7 @@ protected:
 	uint64_t _nextFrameMillis = 0ul;
 	/**
 	 * @brief There is no fps limit per default, but you set one on a per-app basis
-	 * @param[in] framesPerSecondsCap The frames to cap the application loop at
+	 * The frames to cap the application loop at
 	 */
 	core::VarPtr _framesPerSecondsCap;
 
