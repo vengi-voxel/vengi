@@ -13,6 +13,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_EXTENSIONS off)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT HAVE_LTO OUTPUT error)
+if (HAVE_LTO)
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+	message(STATUS "IPO / LTO enabled")
+else()
+	message(STATUS "IPO / LTO not supported: <${error}>")
+endif()
+
 if (NOT MSVC)
 
 find_program(DESKTOP_FILE_VALIDATE_EXECUTABLE desktop-file-validate)
