@@ -76,7 +76,7 @@ void main(void) {
 	reflectTexcoords += totalDistortion;
 	vec4 reflectColor = $texture2D(u_reflection, reflectTexcoords);
 	float refractiveFactor = dot(I, normal);
-	refractiveFactor = pow(refractiveFactor, 10.0);
+	refractiveFactor = clamp(pow(refractiveFactor, 10.0), 0.0, 1.0);
 
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
 	vec4 lightspacepos = vec4(v_lightspacepos.x + totalDistortion.x, v_lightspacepos.y, v_lightspacepos.z + totalDistortion.y, 1.0);
