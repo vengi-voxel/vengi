@@ -92,8 +92,8 @@ static LuaSteeringFactory* luaAI_tosteeringfactory(lua_State * s, int n) {
 
 /***
  * Empty (default) execute() function that just throws an error.
- * @param ai The ai to execute the tree node on
- * @param deltaMillis Milliseconds since last execution
+ * @par ai The ai to execute the tree node on
+ * @par deltaMillis Milliseconds since last execution
  * @return throws error because execute() function wasn't overridden
  */
 static int luaAI_nodeemptyexecute(lua_State* s) {
@@ -142,7 +142,7 @@ static int luaAI_createnode(lua_State* s) {
 
 /***
  * Empty (default) evaluate() function that just throws an error.
- * @param ai The ai to execute the condition node on
+ * @par ai The ai to execute the condition node on
  * @return throws error because evaluate() function wasn't overridden
  */
 static int luaAI_conditionemptyevaluate(lua_State* s) {
@@ -157,7 +157,7 @@ static int luaAI_conditiontostring(lua_State* s) {
 }
 
 /***
- * @param type The string that identifies the name that is used to register the condition under
+ * @par type The string that identifies the name that is used to register the condition under
  * @return userdata with a metatable for conditions
  */
 static int luaAI_createcondition(lua_State* s) {
@@ -183,7 +183,7 @@ static int luaAI_createcondition(lua_State* s) {
 
 /***
  * Empty (default) filter() function that just throws an error.
- * @param ai The ai to execute the filter for
+ * @par ai The ai to execute the filter for
  * @return throws error because filter() function wasn't overridden
  */
 static int luaAI_filteremptyfilter(lua_State* s) {

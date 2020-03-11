@@ -136,7 +136,7 @@ protected:
 	 * @note The filtered entities are kept even over several ticks. The caller should decide
 	 * whether he still needs an old/previous filtered selection
 	 *
-	 * @see @code SelectEmpty to do the clear from within the behaviour tree
+	 * @see selection @c SelectEmpty to do the clear from within the behaviour tree
 	 */
 	inline FilteredEntities& getFilteredEntities(const AIPtr& ai) {
 		return ai->_filteredEntities;
