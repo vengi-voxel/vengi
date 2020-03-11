@@ -31,14 +31,13 @@ public:
 
 	void clear();
 
+	bool init() override;
+
 	/**
 	 * @param[in] position The offset that should be applied to the center of the plane
 	 * @param[in] tesselation The amount of splits on the plane that should be made
-	 * @param[in] scale The vertices are in the normalized coordinate space between -0.5 and 0.5 - we have to scale them up to the size we need
 	 * @param[in] color The color of the plane.
 	 */
-	bool init() override;
-
 	bool plane(const glm::vec3& position, int tesselation = 0, const glm::vec4& color = core::Color::White);
 
 	bool plane(const glm::vec3& position, const math::Plane& plane, const glm::vec4& color = core::Color::White);

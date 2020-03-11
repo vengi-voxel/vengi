@@ -41,7 +41,7 @@ public:
 	int gridResolution() const;
 
 	/**
-	 * @param region The region to do the plane culling with
+	 * @param aabb The region to do the plane culling with
 	 */
 	void render(const video::Camera& camera, const math::AABB<float>& aabb);
 

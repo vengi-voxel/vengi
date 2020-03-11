@@ -4,7 +4,7 @@
 
 check_cxx_compiler_flag("-Wdocumentation" COMPILER_SUPPORTS_WDOCUMENTATION)
 if (COMPILER_SUPPORTS_WDOCUMENTATION)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdocumentation")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdocumentation -Wno-documentation-unknown-command")
 endif()
 
 add_subdirectory(core)

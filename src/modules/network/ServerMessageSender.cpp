@@ -13,7 +13,7 @@ namespace network {
 ENetPacket* ServerMessageSender::createServerPacket(ServerMsgType type, const void * data, size_t dataLength, uint32_t flags) {
 	ENetPacket* packet = enet_packet_create(data, dataLength, flags);
 	const char *msgType = EnumNameServerMsgType(type);
-	Log::trace(logid, "Create server package: %s - size %u", msgType, dataLength);
+	Log::trace(logid, "Create server package: %s - size %u", msgType, (unsigned int)dataLength);
 	const metric::TagMap& tags {{"direction", "out"}, {"type", msgType}};
 	_metric->count("network_packet_count", 1, tags);
 	_metric->count("network_packet_size", (int)dataLength, tags);

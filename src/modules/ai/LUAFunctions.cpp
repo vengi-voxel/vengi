@@ -124,7 +124,7 @@ static int luaAI_pushvec(lua_State* s, const glm::vec3& v) {
 
 /***
  * Get the position of the group (average)
- * @tparam integer groupId
+ * @par integer groupId
  * @treturn vec The average position of the group
  * @function groupMgr:position
  */
@@ -136,8 +136,8 @@ static int luaAI_groupmgrposition(lua_State* s) {
 
 /***
  * Add an entity from the group
- * @tparam integer groupId
- * @tparam ai ai
+ * @par integer groupId
+ * @par ai ai
  * @treturn boolean Boolean to indicate whether the add was successful
  * @function groupMgr:add
  */
@@ -152,8 +152,8 @@ static int luaAI_groupmgradd(lua_State* s) {
 
 /***
  * Remove an entity from the group
- * @tparam integer groupId
- * @tparam ai ai
+ * @par integer groupId
+ * @par ai ai
  * @treturn boolean Boolean to indicate whether the removal was successful
  * @function groupMgr:remove
  */
@@ -168,8 +168,8 @@ static int luaAI_groupmgrremove(lua_State* s) {
 
 /***
  * Checks whether a give ai is the group leader of a particular group
- * @tparam integer groupId
- * @tparam ai ai
+ * @par integer groupId
+ * @par ai ai
  * @treturn boolean Boolean to indicate whether the given AI is the group leader of the given group
  * @function groupMgr:isLeader
  */
@@ -184,8 +184,8 @@ static int luaAI_groupmgrisleader(lua_State* s) {
 
 /***
  * Checks whether a give ai is part of the given group
- * @tparam integer groupId
- * @tparam ai ai
+ * @par integer groupId
+ * @par ai ai
  * @treturn boolean Boolean to indicate whether the given AI is part of the given group
  * @function groupMgr:isInGroup
  */
@@ -200,7 +200,7 @@ static int luaAI_groupmgrisingroup(lua_State* s) {
 
 /***
  * Checks whether a give ai is part of any group
- * @tparam ai ai
+ * @par ai ai
  * @treturn boolean Boolean to indicate whether the given AI is part of any group
  * @function groupMgr:isInAnyGroup
  */
@@ -214,7 +214,7 @@ static int luaAI_groupmgrisinanygroup(lua_State* s) {
 
 /***
  * Get the group size
- * @tparam integer groupId
+ * @par integer groupId
  * @treturn integer Size of the group (members)
  * @function groupMgr:size
  */
@@ -227,7 +227,7 @@ static int luaAI_groupmgrsize(lua_State* s) {
 
 /***
  * Get the group leader ai of a given group
- * @tparam integer groupId
+ * @par integer groupId
  * @treturn ai AI of the group leader, or nil, if there is no such group
  * @function groupMgr:leader
  */
@@ -251,7 +251,7 @@ static int luaAI_groupmgrtostring(lua_State* s) {
 
 /***
  * Execute a function for all entities of the zone
- * @tparam function The function to execute
+ * @par function The function to execute
  * @function zone:execute
  */
 static int luaAI_zoneexecute(lua_State* s) {
@@ -300,7 +300,7 @@ static int luaAI_zonename(lua_State* s) {
 
 /***
  * Get the ai instance for some character id in the zone
- * @tparam integer id The character id to get the AI for
+ * @par integer id The character id to get the AI for
  * @treturn ai AI instance for some character id in the zone, or nil if no such character
  * was found in the zone
  * @function zone:ai
@@ -367,8 +367,8 @@ static int luaAI_aggromgrentries(lua_State* s) {
 
 /***
  * Set the reduction type to a ratio-per-second style
- * @tparam number reduceRatioSecond
- * @tparam number minAggro
+ * @par number reduceRatioSecond
+ * @par number minAggro
  * @function aggroMgr:reduceByRatio
  */
 static int luaAI_aggromgrsetreducebyratio(lua_State* s) {
@@ -381,7 +381,7 @@ static int luaAI_aggromgrsetreducebyratio(lua_State* s) {
 
 /***
  * Set the reduction type to a value-by-second style
- * @tparam number reduceValueSecond
+ * @par number reduceValueSecond
  * @function aggroMgr:reduceByValue
  */
 static int luaAI_aggromgrsetreducebyvalue(lua_State* s) {
@@ -403,8 +403,8 @@ static int luaAI_aggromgrresetreducevalue(lua_State* s) {
 
 /***
  * Apply aggro on some other character
- * @tparam integer id The character id to get aggro on
- * @tparam number amount The amount of aggro to apply
+ * @par integer id The character id to get aggro on
+ * @par number amount The amount of aggro to apply
  * @treturn number The amount of aggro you have on the given entity
  * @function aggroMgr:addAggro
  */
@@ -445,7 +445,7 @@ static int luaAI_characterposition(lua_State* s) {
 
 /***
  * Set the position of the character
- * @tparam vec position
+ * @par vec position
  * @function character:setPosition
  */
 static int luaAI_charactersetposition(lua_State* s) {
@@ -479,7 +479,7 @@ static int luaAI_characterorientation(lua_State* s) {
 
 /***
  * Set the speed for a character
- * @tparam number speed
+ * @par number speed
  * @function character:setSpeed
  */
 static int luaAI_charactersetspeed(lua_State* s) {
@@ -491,7 +491,7 @@ static int luaAI_charactersetspeed(lua_State* s) {
 
 /***
  * Set the orientation for a character
- * @tparam number orientation
+ * @par number orientation
  * @function character:setOrientation
  */
 static int luaAI_charactersetorientation(lua_State* s) {
@@ -546,8 +546,8 @@ static int luaAI_characterattributes(lua_State* s) {
 
 /***
  * Set a debugger attribute to the character
- * @tparam string key The key of the attribute
- * @tparam string value The value of the attribute
+ * @par string key The key of the attribute
+ * @par string value The value of the attribute
  * @function character:setAttribute
  */
 static int luaAI_charactersetattribute(lua_State* s) {
@@ -682,8 +682,8 @@ static int luaAI_aitostring(lua_State* s) {
 
 /***
  * Vector addition
- * @tparam vec a
- * @tparam vec b
+ * @par vec a
+ * @par vec b
  * @treturn vec the sum of a + b
  * @function vec:__add
  */
@@ -696,8 +696,8 @@ static int luaAI_vecadd(lua_State* s) {
 
 /***
  * Vector dot product also as vec:__mul
- * @tparam vec a
- * @tparam vec b
+ * @par vec a
+ * @par vec b
  * @treturn number The dot product of a and b
  * @function vec:dot
  */
@@ -711,8 +711,8 @@ static int luaAI_vecdot(lua_State* s) {
 
 /***
  * Vector div function
- * @tparam vec a
- * @tparam vec b
+ * @par vec a
+ * @par vec b
  * @treturn vec a / b
  * @function vec:__div
  */
@@ -741,8 +741,8 @@ static int luaAI_veceq(lua_State* s) {
 
 /***
  * Vector subtraction
- * @tparam vec a
- * @tparam vec b
+ * @par vec a
+ * @par vec b
  * @treturn vec the result of a - b
  * @function vec:__sub
  */
@@ -756,7 +756,7 @@ static int luaAI_vecsub(lua_State* s) {
 
 /***
  * Negates a given vector
- * @tparam vec a
+ * @par vec a
  * @treturn vec The result of -a
  * @function vec:__unm
  */

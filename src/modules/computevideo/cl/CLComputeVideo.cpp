@@ -80,10 +80,10 @@ void shutdown() {
  *
  * @p Parameters
  *
- * @param context A valid OpenCL context created from an OpenGL context.
- * @param flags A bit-field that is used to specify usage information. Refer to the table for clCreateBuffer for a description of flags. Only CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY and CL_MEM_READ_WRITE values specified in the table at clCreateBuffer can be used.
- * @param bufobj The name of a GL buffer object. The data store of the GL buffer object must have have been previously created by calling OpenGL function glBufferData, although its contents need not be initialized. The size of the data store will be used to determine the size of the CL buffer object.
- * @param errcode_ret Returns an appropriate error code as described below. If errcode_ret is NULL, no error code is returned.
+ * @li context A valid OpenCL context created from an OpenGL context.
+ * @li flags A bit-field that is used to specify usage information. Refer to the table for clCreateBuffer for a description of flags. Only CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY and CL_MEM_READ_WRITE values specified in the table at clCreateBuffer can be used.
+ * @li bufobj The name of a GL buffer object. The data store of the GL buffer object must have have been previously created by calling OpenGL function glBufferData, although its contents need not be initialized. The size of the data store will be used to determine the size of the CL buffer object.
+ * @li errcode_ret Returns an appropriate error code as described below. If errcode_ret is NULL, no error code is returned.
  *
  * @p Description
  *
@@ -247,12 +247,12 @@ compute::Id createBuffer(compute::BufferFlag flags, video::Buffer& buffer, int i
  *
  * @p Parameters
  *
- * @param context A valid OpenCL context created from an OpenGL context.
+ * @li context A valid OpenCL context created from an OpenGL context.
  *
- * @param flags A bit-field that is used to specify usage information. Refer to the table for clCreateBuffer for a description of flags. Only the values @c CL_MEM_READ_ONLY,
+ * @li flags A bit-field that is used to specify usage information. Refer to the table for clCreateBuffer for a description of flags. Only the values @c CL_MEM_READ_ONLY,
  * @c CL_MEM_WRITE_ONLY and @c CL_MEM_READ_WRITE can be used.
  *
- * @param texture_target This value must be one of @c GL_TEXTURE_1D, @c GL_TEXTURE_1D_ARRAY, @c GL_TEXTURE_BUFFER, @c GL_TEXTURE_2D, @c GL_TEXTURE_2D_ARRAY,
+ * @li texture_target This value must be one of @c GL_TEXTURE_1D, @c GL_TEXTURE_1D_ARRAY, @c GL_TEXTURE_BUFFER, @c GL_TEXTURE_2D, @c GL_TEXTURE_2D_ARRAY,
  * @c GL_TEXTURE_3D, @c GL_TEXTURE_CUBE_MAP_POSITIVE_X, @c GL_TEXTURE_CUBE_MAP_POSITIVE_Y, @c GL_TEXTURE_CUBE_MAP_POSITIVE_Z, @c GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
  * @c GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, @c GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, or @c GL_TEXTURE_RECTANGLE. (@c GL_TEXTURE_RECTANGLE requires OpenGL 3.1. Alternatively,
  * @c GL_TEXTURE_RECTANGLE_ARB may be specified if the OpenGL extension @c GL_ARB_texture_rectangle is supported.) texture_target is used only to define the image type
@@ -261,15 +261,15 @@ compute::Id createBuffer(compute::BufferFlag flags, video::Buffer& buffer, int i
  * If texture_target is @c GL_TEXTURE_2D_MULTISAMPLE, @c clCreateFromGLTexture creates an OpenCL 2D multi-sample image object from an OpenGL 2D multi-sample texture
  * If texture_target is @c GL_TEXTURE_2D_MULTISAMPLE_ARRAY, @c clCreateFromGLTexture creates an OpenCL 2D multi-sample array image object from an OpenGL 2D multi-sample texture.
  *
- * @param miplevel The mipmap level to be used. If texture_target is @c GL_TEXTURE_BUFFER, miplevel must be 0. Implementations may return @c CL_INVALID_OPERATION for miplevel
+ * @li miplevel The mipmap level to be used. If texture_target is @c GL_TEXTURE_BUFFER, miplevel must be 0. Implementations may return @c CL_INVALID_OPERATION for miplevel
  * values > 0
  *
- * @param texture The name of a GL 1D, 2D, 3D, 1D array, 2D array, cubemap, rectangle or buffer texture object. The texture object must be a complete texture as per
+ * @li texture The name of a GL 1D, 2D, 3D, 1D array, 2D array, cubemap, rectangle or buffer texture object. The texture object must be a complete texture as per
  * OpenGL rules on texture completeness. The texture format and dimensions defined by OpenGL for the specified miplevel of the texture will be used to create the OpenCL
  * image memory object. Only GL texture objects with an internal format that maps to appropriate image channel order and data type specified in tables 5.5 and
  * 5.6 (see cl_image_format) may be used to create the OpenCL image memory object.
  *
- * @param errcode_ret Returns an appropriate error code as described below. If errcode_ret is NULL, no error code is returned.
+ * @li errcode_ret Returns an appropriate error code as described below. If errcode_ret is NULL, no error code is returned.
  *
  * @p Notes
  *
@@ -429,11 +429,11 @@ compute::Id createTexture(compute::BufferFlag flags, video::Texture& texture) {
 
 /**
  * Acquire OpenCL memory objects that have been created from OpenGL objects.
- * command_queue: A valid command-queue. All devices used to create the OpenCL context associated with command_queue must support acquiring shared CL/GL objects. This constraint is enforced at context creation time.
- * num_objects: The number of memory objects to be acquired in mem_objects.
- * mem_objects A pointer to a list of CL memory objects that correspond to GL objects.
- * event_wait_list , num_events_in_wait_list: Specifies events that need to complete before this particular command can be executed. If event_wait_list is NULL, then this particular command does not wait on any event to complete. If event_wait_list is NULL, num_events_in_wait_list must be 0. If event_wait_list is not NULL, the list of events pointed to by event_wait_list must be valid and num_events_in_wait_list must be greater than 0. The events specified in event_wait_list act as synchronization points.
- * event: Returns an event object that identifies this command and can be used to query or queue a wait for the command to complete. event can be NULL in which case it will not be possible for the application to query the status of this command or queue a wait for this command to complete.
+ * @li command_queue: A valid command-queue. All devices used to create the OpenCL context associated with command_queue must support acquiring shared CL/GL objects. This constraint is enforced at context creation time.
+ * @li num_objects: The number of memory objects to be acquired in mem_objects.
+ * @li mem_objects A pointer to a list of CL memory objects that correspond to GL objects.
+ * @li event_wait_list , num_events_in_wait_list: Specifies events that need to complete before this particular command can be executed. If event_wait_list is NULL, then this particular command does not wait on any event to complete. If event_wait_list is NULL, num_events_in_wait_list must be 0. If event_wait_list is not NULL, the list of events pointed to by event_wait_list must be valid and num_events_in_wait_list must be greater than 0. The events specified in event_wait_list act as synchronization points.
+ * @li event: Returns an event object that identifies this command and can be used to query or queue a wait for the command to complete. event can be NULL in which case it will not be possible for the application to query the status of this command or queue a wait for this command to complete.
  *
  * Description
  * These objects need to be acquired before they can be used by any OpenCL commands queued to a command-queue. The OpenGL objects are acquired by the OpenCL context associated with command_queue and can therefore be used by all command-queues associated with the OpenCL context.
@@ -460,11 +460,11 @@ bool enqueueAcquire(compute::Id id) {
 
 /**
  * Release OpenCL memory objects that have been created from OpenGL objects.
- * command_queue: A valid command-queue. All devices used to create the OpenCL context associated with command_queue must support acquiring shared CL/GL objects. This constraint is enforced at context creation time.
- * num_objects: The number of memory objects to be released in mem_objects.
- * mem_objects: A pointer to a list of CL memory objects that correspond to GL objects.
- * event_wait_list , num_events_in_wait_list: These parameters specify events that need to complete before this particular command can be executed. If event_wait_list is NULL, then this particular command does not wait on any event to complete. If event_wait_list is NULL, num_events_in_wait_list must be 0. If event_wait_list is not NULL, the list of events pointed to by event_wait_list must be valid and num_events_in_wait_list must be greater than 0. The events specified in event_wait_list act as synchronization points.
- * event: Returns an event object that identifies this particular read / write command and can be used to query or queue a wait for the command to complete. event can be NULL in which case it will not be possible for the application to query the status of this command or queue a wait for this command to complete.
+ * @li command_queue: A valid command-queue. All devices used to create the OpenCL context associated with command_queue must support acquiring shared CL/GL objects. This constraint is enforced at context creation time.
+ * @li num_objects: The number of memory objects to be released in mem_objects.
+ * @li mem_objects: A pointer to a list of CL memory objects that correspond to GL objects.
+ * @li event_wait_list , num_events_in_wait_list: These parameters specify events that need to complete before this particular command can be executed. If event_wait_list is NULL, then this particular command does not wait on any event to complete. If event_wait_list is NULL, num_events_in_wait_list must be 0. If event_wait_list is not NULL, the list of events pointed to by event_wait_list must be valid and num_events_in_wait_list must be greater than 0. The events specified in event_wait_list act as synchronization points.
+ * @li event: Returns an event object that identifies this particular read / write command and can be used to query or queue a wait for the command to complete. event can be NULL in which case it will not be possible for the application to query the status of this command or queue a wait for this command to complete.
  *
  * Description
  * These objects need to be released before they can be used by OpenGL. The OpenGL objects are released by the OpenCL context associated with command_queue.

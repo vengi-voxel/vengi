@@ -179,10 +179,10 @@ public:
 
 	/** Create a new fragment from the given data.
 		@param id The id that should be used to identify the fragment.
-		@param dedicated_map if true, it will get a dedicated map.
-		@param data_w the width of the data.
-		@param data_h the height of the data.
-		@param data_stride the number of pixels in a row of the input data.
+		@param dedicatedMap if true, it will get a dedicated map.
+		@param dataW the width of the data.
+		@param dataH the height of the data.
+		@param dataStride the number of pixels in a row of the input data.
 		@param data pointer to the data in BGRA32 format. */
 	TBBitmapFragment *createNewFragment(const TBID &id, bool dedicatedMap, int dataW, int dataH, int dataStride,
 										uint32_t *data);

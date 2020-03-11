@@ -50,7 +50,7 @@ public:
 	/** Should return then length of the text that represents content
 		that can be created by this factory, or 0 there's no match with any content.
 
-		F.ex if we can create contet for "<u>" it should return 3 if that is the beginning of
+		F.ex if we can create content for @c &lt;u&gt; it should return 3 if that is the beginning of
 		text. That length will be consumed from the text output for the created content. */
 	virtual int getContent(const char *text);
 
@@ -203,8 +203,8 @@ public:
 	void merge();
 
 	/** Layout the block. To be called when the text has changed or the layout width has changed.
-		@param update_fragments Should be true if the text has been changed (will recreate elements).
-		@param propagate_height If true, all following blocks will be moved if the height changed. */
+		@param updateFragments Should be true if the text has been changed (will recreate elements).
+		@param propagateHeight If true, all following blocks will be moved if the height changed. */
 	void layout(bool updateFragments, bool propagateHeight);
 
 	/** Update the size of this block. If propagate_height is true, all following blocks will be
