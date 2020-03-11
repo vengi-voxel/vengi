@@ -11,5 +11,5 @@ set(SRCS
 	ServerNetwork.h ServerNetwork.cpp
 )
 set(LIB network)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core libenet flatbuffers)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core flatbuffers PRIVATE_DEPENDENCIES libenet)
 generate_protocol(${LIB} Shared.fbs ClientMessages.fbs ServerMessages.fbs)

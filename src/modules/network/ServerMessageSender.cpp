@@ -10,16 +10,20 @@
 
 namespace network {
 
+ENetPacket* ServerMessageSender::createServerPacket(ServerMsgType type, const void * data, size_t dataLength, uint32_t flags) {
+	ENetPacket* packet = enet_packet_create(data, dataLength, flags);
+	const char *msgType = EnumNameServerMsgType(type);
+	Log::trace(logid, "Create server package: %s - size %u", msgType, dataLength);
+	const metric::TagMap& tags {{"direction", "out"}, {"type", msgType}};
+	_metric->count("network_packet_count", 1, tags);
+	_metric->count("network_packet_size", (int)dataLength, tags);
+	return packet;
+}
+
 ENetPacket* ServerMessageSender::createServerPacket(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags) {
 	auto msg = CreateServerMessage(fbb, type, data);
 	FinishServerMessageBuffer(fbb, msg);
-	ENetPacket* packet = enet_packet_create(fbb.GetBufferPointer(), fbb.GetSize(), flags);
-	const char *msgType = EnumNameServerMsgType(type);
-	Log::trace(logid, "Create server package: %s - size %u", msgType, fbb.GetSize());
-	const metric::TagMap& tags {{"direction", "out"}, {"type", msgType}};
-	_metric->count("network_packet_count", 1, tags);
-	_metric->count("network_packet_size", (int)fbb.GetSize(), tags);
-	return packet;
+	return createServerPacket(type, fbb.GetBufferPointer(), fbb.GetSize(), flags);
 }
 
 ServerMessageSender::ServerMessageSender(const ServerNetworkPtr& network, const metric::MetricPtr& metric) :

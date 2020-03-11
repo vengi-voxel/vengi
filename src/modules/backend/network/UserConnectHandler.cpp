@@ -38,7 +38,7 @@ UserConnectHandler::UserConnectHandler(
 }
 
 void UserConnectHandler::sendAuthFailed(ENetPeer* peer) {
-	ENetPacket* packet = enet_packet_create(_authFailed.GetBufferPointer(), _authFailed.GetSize(), ENET_PACKET_FLAG_RELIABLE);
+	ENetPacket* packet = _messageSender->createServerPacket(network::ServerMsgType::AuthFailed, _authFailed.GetBufferPointer(), _authFailed.GetSize(), ENET_PACKET_FLAG_RELIABLE);
 	_network->sendMessage(peer, packet);
 }
 

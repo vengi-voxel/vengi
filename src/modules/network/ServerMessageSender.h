@@ -23,9 +23,9 @@ private:
 	ServerNetworkPtr _network;
 	metric::MetricPtr _metric;
 
-	ENetPacket* createServerPacket(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags);
-
 public:
+	ENetPacket* createServerPacket(ServerMsgType type, const void * data, size_t dataLength, uint32_t flags);
+	ENetPacket* createServerPacket(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags);
 	ServerMessageSender(const ServerNetworkPtr& network, const metric::MetricPtr& metric);
 
 	bool sendServerMessage(ENetPeer* peer, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);
