@@ -1,6 +1,4 @@
-if (USE_LINK_WHAT_YOU_USE)
-	set(CMAKE_LINK_WHAT_YOU_USE ON)
-endif()
+set(CMAKE_LINK_WHAT_YOU_USE ON)
 
 if (USE_CLANG_TIDY)
 find_host_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy clang-tidy-3.8 clang-tidy-8 clang-tidy-9 clang-tidy-10 clang-tidy-11)
