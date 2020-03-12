@@ -23,9 +23,10 @@ uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
 $out vec4 o_color;
 
-const float c_wavestrength = 0.04;
+const float c_wavestrength = 0.01;
 const float c_reflectivity = 0.5;
 const float c_shinedamper = 20.0;
+const float c_wavesizefactor = 10.0;
 
 float depthToDistance(float depth) {
 	return 2.0 * u_near * u_far / (u_far + u_near - (2.0 * depth - 1.0) * (u_far - u_near));
@@ -45,7 +46,7 @@ void main(void) {
 	float depthWater = floorDistance - waterDistance;
 
 	float moveFactor = fract(u_time / 40000.0);
-	vec2 distortedTexCoords = $texture2D(u_distortion, 10.0 * vec2(v_uv.x + moveFactor, v_uv.y)).rg * 0.01;
+	vec2 distortedTexCoords = $texture2D(u_distortion, c_wavesizefactor * vec2(v_uv.x + moveFactor, v_uv.y)).rg * 0.01;
 	distortedTexCoords = v_uv + vec2(distortedTexCoords.x, distortedTexCoords.y + moveFactor) * clamp(depthWater, 0.0, 1.0) ;
 
 	// b component of the normal map is upward (so our y)
@@ -76,7 +77,7 @@ void main(void) {
 	reflectTexcoords += totalDistortion;
 	vec4 reflectColor = $texture2D(u_reflection, reflectTexcoords);
 	float refractiveFactor = dot(I, normal);
-	refractiveFactor = clamp(pow(refractiveFactor, 10.0), 0.0, 1.0);
+	refractiveFactor = clamp(pow(refractiveFactor, 4.0), 0.0, 1.0);
 
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
 	vec4 lightspacepos = vec4(v_lightspacepos.x + totalDistortion.x, v_lightspacepos.y, v_lightspacepos.z + totalDistortion.y, 1.0);
