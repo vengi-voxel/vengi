@@ -24,6 +24,10 @@ else()
 	set(RELEASE True)
 endif()
 
+if (${CMAKE_BUILD_TYPE} MATCHES "Release")
+set(CMAKE_LINK_WHAT_YOU_USE ON)
+endif()
+
 include(CheckIPOSupported)
 check_ipo_supported(RESULT HAVE_LTO OUTPUT error)
 if (HAVE_LTO)
