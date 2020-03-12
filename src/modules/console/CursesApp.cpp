@@ -21,6 +21,9 @@ core::AppState CursesApp::onConstruct() {
 
 core::AppState CursesApp::onInit() {
 	const core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 	if (!_console.init()) {
 		return core::AppState::InitFailure;
 	}
