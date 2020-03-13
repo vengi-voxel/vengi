@@ -11,6 +11,7 @@
 #include "anim/Jump.h"
 #include "anim/Run.h"
 #include "anim/Glide.h"
+#include "anim/Swim.h"
 #include "anim/Tool.h"
 
 namespace animation {
@@ -143,6 +144,9 @@ void Character::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 			break;
 		case Animation::RUN:
 			chr::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
+			break;
+		case Animation::SWIM:
+			chr::swim::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
 			break;
 		case Animation::GLIDE:
 			chr::glide::update(_globalTimeSeconds, _skeleton, _attributes);

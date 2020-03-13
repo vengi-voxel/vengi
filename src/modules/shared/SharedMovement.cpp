@@ -11,8 +11,11 @@
 namespace shared {
 
 glm::vec3 SharedMovement::calculateDelta(const glm::quat& rot, float speed) {
-	if (_gliding || _jumping) {
+	if (_gliding || _jumping || _swimming) {
 		glm::vec3 delta(0.0f);
+		if (_swimming) {
+			speed *= 0.2f;
+		}
 		if (forward()) {
 			delta += rot * (glm::forward * speed);
 		} else if (backward()) {
@@ -33,6 +36,19 @@ glm::vec3 SharedMovement::calculateDelta(const glm::quat& rot, float speed) {
 		delta += rot * (glm::backward * speed);
 	}
 	return delta;
+}
+
+float SharedMovement::gravity() const {
+	if (_gliding) {
+		return 0.5f;
+	}
+	if (_swimming) {
+		if (forward() || backward()) {
+			return -2.0f;
+		}
+		return 2.0f;
+	}
+	return 20.0f;
 }
 
 glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const std::function<int(const glm::vec3& pos, float maxWalkableHeight)>& heightResolver) {
@@ -69,8 +85,7 @@ glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, flo
 			_delay = inputDelaySeconds;
 		}
 	}
-	const float gravity = _gliding ? 0.5f : 20.0f;
-	_fallingVelocity -= gravity * deltaFrameSeconds;
+	_fallingVelocity -= gravity() * deltaFrameSeconds;
 	newPos.y += _fallingVelocity * deltaFrameSeconds;
 	if (newPos.y <= _groundHeight) {
 		newPos.y = _groundHeight;
@@ -79,10 +94,27 @@ glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, flo
 		_gliding = false;
 		_delay = 0.0f;
 	}
+
+	if (newPos.y < voxel::MAX_WATER_HEIGHT) {
+		_fallingVelocity = 0.0f;
+		_jumping = false;
+		_gliding = false;
+		_delay = 0.0f;
+		_swimming = true;
+		_fallingVelocity = -2.0f;
+	} else {
+		_swimming = false;
+	}
 	return newPos;
 }
 
 network::Animation SharedMovement::animation() const {
+	if (_swimming) {
+		if (backward() || forward()) {
+			return network::Animation::SWIM;
+		}
+		return network::Animation::IDLE;
+	}
 	if (_gliding) {
 		return network::Animation::GLIDE;
 	}

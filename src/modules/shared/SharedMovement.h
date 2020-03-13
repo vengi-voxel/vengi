@@ -18,10 +18,13 @@ protected:
 	network::MoveDirection _move = network::MoveDirection::NONE;
 	bool _gliding = false;
 	bool _jumping = false;
+	bool _swimming = false;
 
 	float _fallingVelocity = 0.0f;
 	int _groundHeight = 0;
 	float _delay = 0.0f;
+
+	float gravity() const;
 
 	glm::vec3 calculateDelta(const glm::quat& rot, float speed);
 public:

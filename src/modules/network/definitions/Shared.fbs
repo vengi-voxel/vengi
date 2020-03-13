@@ -95,7 +95,8 @@ enum Animation: ubyte {
 	JUMP,
 	RUN,
 	GLIDE,
-	TOOL
+	TOOL,
+	SWIM
 }
 
 table Var {
