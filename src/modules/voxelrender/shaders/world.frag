@@ -18,24 +18,34 @@ float random (in vec2 st) {
 	return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
 }
 
-float checker(vec3 pos, float repeats) {
-	vec3 c = floor(repeats * pos);
-	return mod(c.x + c.y + c.z, 2.0);
+float checker(in vec2 pos) {
+	vec2 c = floor(pos);
+	float variance = 0.05 * random(c);
+	float checker = mod(c.x + c.y, 2.0);
+	return mix(0.95 + variance, 1.0 - variance, checker);
+}
+
+vec3 baseColor(in vec3 normal) {
+	float checkerBoardFactor = 1.0;
+	if (abs(normal.y) >= 0.999) {
+		checkerBoardFactor = checker(v_pos.xz);
+	} else if (abs(normal.x) >= 0.999) {
+		checkerBoardFactor = checker(v_pos.yz);
+	} else if (abs(normal.z) >= 0.999) {
+		checkerBoardFactor = checker(v_pos.xy);
+	}
+	return v_color.rgb * checkerBoardFactor;
 }
 
 void main(void) {
 	vec3 fdx = dFdx(v_pos);
 	vec3 fdy = dFdy(v_pos);
 	vec3 normal = normalize(cross(fdx, fdy));
-	float ndotl1 = dot(normal, u_lightdir);
-	float ndotl2 = dot(normal, -u_lightdir);
-	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
+	float ndotl = abs(dot(normal, u_lightdir));
+	vec3 diffuse = u_diffuse_color * ndotl;
 	vec3 ambientColor = dayTimeColor(u_ambient_color, u_time);
-	float checkerBoardIntensity = random(floor(v_pos.xz * 0.5));
-	float variance = 0.05 * checkerBoardIntensity;
-	float checkerBoardFactor = mix(0.95 + variance, 1.0 - variance, checker(v_pos, 0.5));
-	vec3 voxelColor = clamp(v_color.rgb * checkerBoardFactor, vec3(0.0), vec3(1.0));
-	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
+	vec3 voxelColor = baseColor(normal);
+	float bias = max(0.05 * (1.0 - ndotl), 0.005);
 	vec3 shadowColor = shadow(vec4(v_lightspacepos, 1.0), bias, voxelColor, diffuse, ambientColor);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
 	o_color = fog(v_pos, linearColor, v_color.a);
