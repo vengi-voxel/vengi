@@ -36,7 +36,7 @@ endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util)
 if (APPLE)
-	target_link_libraries(${LIB} "-framework OpenCL")
+	target_link_libraries(${LIB} PRIVATE "-framework OpenCL")
 endif()
 if (OpenCL_INCLUDE_DIRS)
 	target_include_directories(${LIB} PRIVATE ${OpenCL_INCLUDE_DIRS})
