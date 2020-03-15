@@ -29,6 +29,7 @@ set(SRCS
 )
 set(SRCS_SHADERS
 	shaders/skeleton.vert shaders/skeleton.frag
+	shaders/skeletondepthmap.vert shaders/skeletondepthmap.frag
 	shaders/skeletonshadowmap.vert shaders/skeletonshadowmap.frag
 )
 set(FILES
@@ -125,7 +126,7 @@ set(LUA_SRCS
 	animal/shared.lua
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES core attrib stock voxelformat network render commonlua)
-generate_shaders(${LIB} skeleton skeletonshadowmap)
+generate_shaders(${LIB} skeleton skeletonshadowmap skeletondepthmap)
 
 set(TEST_SRCS
 	tests/CharacterSettingsTest.cpp
