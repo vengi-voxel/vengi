@@ -342,8 +342,8 @@ core::AppState MapView::onRunning() {
 core::AppState MapView::onCleanup() {
 	_stockDataProvider->shutdown();
 	_animationCache->shutdown();
-	_volumeCache->shutdown();
 	_worldRenderer.shutdown();
+	_volumeCache->shutdown();
 	_depthBufferRenderer.shutdown();
 	_axis.shutdown();
 	_movement.shutdown();
