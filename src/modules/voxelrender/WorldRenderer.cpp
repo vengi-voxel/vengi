@@ -440,7 +440,7 @@ bool WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
 	textureCfg = video::TextureConfig();
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig reflectionCfg;
-	reflectionCfg.dimension(dimensions).depthBuffer(true).depthBufferFormat(video::TextureFormat::D32F);
+	reflectionCfg.dimension(dimensions);
 	reflectionCfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	if (!_reflectionBuffer.init(reflectionCfg)) {
 		Log::error("Failed to initialize the reflection frame buffer");
