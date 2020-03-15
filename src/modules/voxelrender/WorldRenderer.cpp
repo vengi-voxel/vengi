@@ -167,32 +167,37 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 }
 
 int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
+	// update the vertex buffers
 	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueVbo, _worldChunkMgr._opaqueVertices));
 	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueIbo, _worldChunkMgr._opaqueIndices));
 
+	// ensure we are in the expected states
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
 	video::cullFace(video::Face::Back);
 	video::enable(video::State::DepthMask);
-	video::colorMask(true, true, true, true);
 	video::clearColor(frontend::clearColor);
 
 	int drawCallsWorld = 0;
-	drawCallsWorld += renderToShadowMap(camera);
 
+	// render depth buffers
+	video::colorMask(false, false, false, false);
+	drawCallsWorld += renderToShadowMap(camera);
+	video::colorMask(true, true, true, true);
+
+	// bind texture units
 	_shadow.bind(video::TextureUnit::One);
 	_colorTexture.bind(video::TextureUnit::Zero);
 
+	// render reflection and refraction buffers
 	drawCallsWorld += renderClippingPlanes(camera);
 
+	// render everything into the framebuffer
 	_frameBuffer.bind(true);
-	// due to driver bugs the clip plane might still be taken into account
-	constexpr glm::vec4 ignoreClipPlane(glm::up, 0.0f);
-	drawCallsWorld += renderAll(camera, ignoreClipPlane);
+	drawCallsWorld += renderAll(camera);
 
-	_skybox.render(camera);
-
+	// cleanup
 	video::bindVertexArray(video::InvalidId);
 	_colorTexture.unbind();
 	_frameBuffer.unbind();
@@ -256,13 +261,16 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderAll(const video::Camera& camera, const glm::vec4& clipPlane) {
+int WorldRenderer::renderAll(const video::Camera& camera) {
 	int drawCallsWorld = 0;
+	// due to driver bugs the clip plane might still be taken into account
+	constexpr glm::vec4 ignoreClipPlane(glm::up, 0.0f);
 	const glm::mat4& vpmat = camera.viewProjectionMatrix();
-	drawCallsWorld += renderTerrain(vpmat, clipPlane);
-	drawCallsWorld += renderEntities(vpmat, clipPlane);
+	drawCallsWorld += renderTerrain(vpmat, ignoreClipPlane);
+	drawCallsWorld += renderEntities(vpmat, ignoreClipPlane);
 	drawCallsWorld += renderEntityDetails(camera);
-	drawCallsWorld += renderWater(camera, clipPlane);
+	drawCallsWorld += renderWater(camera, ignoreClipPlane);
+	_skybox.render(camera);
 	return drawCallsWorld;
 }
 
@@ -345,7 +353,9 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	_worldChunkMgr.init(volume);
 	_worldChunkMgr.updateViewDistance(_viewDistance);
 
-	initFrameBuffers(dimension);
+	if (!initFrameBuffers(dimension)) {
+		return false;
+	}
 	_postProcessBufId = _postProcessBuf.createFullscreenTextureBufferYFlipped();
 	if (_postProcessBufId == -1) {
 		return false;
@@ -405,28 +415,39 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	return true;
 }
 
-void WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
+bool WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig cfg;
 	cfg.dimension(dimensions).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
 	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
-	_frameBuffer.init(cfg);
+	if (!_frameBuffer.init(cfg)) {
+		Log::error("Failed to initialize the default frame buffer");
+		return false;
+	}
 
 	textureCfg = video::TextureConfig();
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig refractionCfg;
 	refractionCfg.dimension(dimensions / 2).depthTexture(true).depthTextureFormat(video::TextureFormat::D32F);
 	refractionCfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
-	_refractionBuffer.init(refractionCfg);
+	if (!_refractionBuffer.init(refractionCfg)) {
+		Log::error("Failed to initialize the refraction frame buffer");
+		return false;
+	}
 
 	textureCfg = video::TextureConfig();
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig reflectionCfg;
 	reflectionCfg.dimension(dimensions).depthBuffer(true).depthBufferFormat(video::TextureFormat::D32F);
 	reflectionCfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
-	_reflectionBuffer.init(reflectionCfg);
+	if (!_reflectionBuffer.init(reflectionCfg)) {
+		Log::error("Failed to initialize the reflection frame buffer");
+		return false;
+	}
+
+	return true;
 }
 
 void WorldRenderer::shutdownFrameBuffers() {

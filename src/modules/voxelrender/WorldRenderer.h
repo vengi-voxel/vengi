@@ -63,7 +63,7 @@ protected:
 	// shared shaders
 	shader::ShadowmapShader& _shadowMapShader;
 
-	void initFrameBuffers(const glm::ivec2 &dimensions);
+	bool initFrameBuffers(const glm::ivec2 &dimensions);
 	void shutdownFrameBuffers();
 
 	glm::mat4 waterModelMatrix() const;
@@ -79,7 +79,7 @@ protected:
 	int renderToFrameBuffer(const video::Camera &camera);
 	int renderToShadowMap(const video::Camera& camera);
 
-	int renderAll(const video::Camera& camera, const glm::vec4& clipPlane);
+	int renderAll(const video::Camera& camera);
 	int renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 	int renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 	int renderEntityDetails(const video::Camera& camera);
