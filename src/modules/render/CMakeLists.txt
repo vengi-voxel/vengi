@@ -15,6 +15,7 @@ set(SHADERS
 	color
 	color_instanced
 	constants
+	depthbuffer_render
 	edge
 	shadowmap
 	shadowmap_instanced
