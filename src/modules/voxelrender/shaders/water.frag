@@ -29,7 +29,8 @@ const float c_shinedamper = 20.0;
 const float c_wavesizefactor = 10.0;
 
 float depthToDistance(float depth) {
-	return 2.0 * u_near * u_far / (u_far + u_near - (2.0 * depth - 1.0) * (u_far - u_near));
+	float ndcz = depth * 2.0 - 1.0;
+	return (2.0 * u_near * u_far) / (u_far + u_near - ndcz * (u_far - u_near));
 }
 
 vec2 clipSpaceToTexCoords(vec4 clipSpace){
