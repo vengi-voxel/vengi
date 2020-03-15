@@ -10,19 +10,25 @@ set(SRCS
 	Skybox.h Skybox.cpp
 	TextureRenderer.cpp TextureRenderer.h
 )
-set(SRCS_SHADERS
-	shaders/color_instanced.vert shaders/color_instanced.frag
-	shaders/color.vert shaders/color.frag
-	shaders/shadowmap_instanced.vert shaders/shadowmap_instanced.frag
-	shaders/shadowmap_render.vert shaders/shadowmap_render.frag
-	shaders/shadowmap.vert shaders/shadowmap.frag
-	shaders/skybox.vert shaders/skybox.frag
-	shaders/texture.vert shaders/texture.frag
-	shaders/constants.vert shaders/constants.frag
+set(SHADERS
+	skybox
+	color
+	color_instanced
+	constants
+	edge
+	shadowmap
+	shadowmap_instanced
+	shadowmap_render
+	texture
 )
+set(SRCS_SHADERS)
+foreach (SHADER ${SHADERS})
+	list(APPEND SRCS_SHADERS "shaders/${SHADER}.vert")
+	list(APPEND SRCS_SHADERS "shaders/${SHADER}.frag")
+endforeach()
 set(LIB render)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES video noise)
-generate_shaders(${LIB} shadowmap shadowmap_instanced shadowmap_render color color_instanced texture edge skybox constants)
+generate_shaders(${LIB} ${SHADERS})
 
 gtest_suite_sources(tests
 	tests/RenderShaderTest.cpp
