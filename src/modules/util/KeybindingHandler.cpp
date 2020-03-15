@@ -170,7 +170,14 @@ bool KeyBindingHandler::load(const core::String& filename) {
 	}
 	Log::info("Load key bindings from %s", filename.c_str());
 	const KeybindingParser p(bindings);
-	_bindings.insert(p.getBindings().begin(), p.getBindings().end());
+	for (const auto& entry : p.getBindings()) {
+		auto i = _bindings.find(entry.first);
+		// don't add the same binding more than once
+		if (i != _bindings.end() && i->second.command == entry.second.command && i->second.modifier == entry.second.modifier) {
+			continue;
+		}
+		_bindings.insert(std::make_pair(entry.first, entry.second));
+	}
 	return true;
 }
 
