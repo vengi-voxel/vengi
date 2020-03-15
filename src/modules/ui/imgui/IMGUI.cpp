@@ -10,7 +10,7 @@
 
 namespace ImGui {
 
-bool InputVarString(const char* label, core::VarPtr& var, ImGuiInputTextFlags flags) {
+bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFlags flags) {
 	const core::String& buf = var->strVal();
 	constexpr int size = 256;
 	char newVal[size];
@@ -23,7 +23,7 @@ bool InputVarString(const char* label, core::VarPtr& var, ImGuiInputTextFlags fl
 	return false;
 }
 
-bool InputVarFloat(const char* label, core::VarPtr& var, float step, float step_fast, int decimal_precision, ImGuiInputTextFlags extra_flags) {
+bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float step_fast, int decimal_precision, ImGuiInputTextFlags extra_flags) {
 	float v = var->floatVal();
 	if (InputFloat(label, &v, step, step_fast, decimal_precision, extra_flags)) {
 		var->setVal(v);
@@ -48,7 +48,7 @@ bool InputVec3(const char* label, glm::ivec3& vec, ImGuiInputTextFlags flags) {
 	return InputInt3(label, glm::value_ptr(vec), flags);
 }
 
-bool InputVarInt(const char* label, core::VarPtr& var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
+bool InputVarInt(const char* label, const core::VarPtr& var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
 	int v = var->intVal();
 	if (InputInt(label, &v, step, step_fast, extra_flags)) {
 		var->setVal(v);
@@ -57,7 +57,7 @@ bool InputVarInt(const char* label, core::VarPtr& var, int step, int step_fast, 
 	return false;
 }
 
-bool CheckboxVar(const char* label, core::VarPtr& var) {
+bool CheckboxVar(const char* label, const core::VarPtr& var) {
 	bool val = var->boolVal();
 	if (Checkbox(label, &val)) {
 		var->setVal(val);
