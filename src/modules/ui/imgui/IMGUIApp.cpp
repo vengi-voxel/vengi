@@ -75,7 +75,10 @@ bool IMGUIApp::onTextInput(const core::String& text) {
 }
 
 bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
-	if (_console.onKeyPress(key, modifier) && _console.isActive()) {
+	if (_console.onKeyPress(key, modifier)) {
+		return true;
+	}
+	if (Super::onKeyPress(key, modifier)) {
 		return true;
 	}
 	ImGuiIO& io = ImGui::GetIO();
@@ -87,11 +90,14 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
 	io.KeyCtrl  = (modifiers & KMOD_CTRL) != 0;
 	io.KeyAlt   = (modifiers & KMOD_ALT) != 0;
 	io.KeySuper = (modifiers & KMOD_GUI) != 0;
-	return Super::onKeyPress(key, modifier);
+	return true;
 }
 
 bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	if (_console.isActive()) {
+		return true;
+	}
+	if (Super::onKeyRelease(key, modifier)) {
 		return true;
 	}
 	ImGuiIO& io = ImGui::GetIO();
@@ -102,7 +108,7 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	io.KeyCtrl  = (modifier & KMOD_CTRL) != 0;
 	io.KeyAlt   = (modifier & KMOD_ALT) != 0;
 	io.KeySuper = (modifier & KMOD_GUI) != 0;
-	return Super::onKeyRelease(key, modifier);
+	return true;
 }
 
 void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
