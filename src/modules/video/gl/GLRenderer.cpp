@@ -332,6 +332,7 @@ bool scissor(int x, int y, int w, int h) {
 }
 
 void colorMask(bool red, bool green, bool blue, bool alpha) {
+	// TODO: reduce state changes here by putting the real gl call to the draw calls - only cache the desired state here.
 	glColorMask((GLboolean)red, (GLboolean)green, (GLboolean)blue, (GLboolean)alpha);
 	checkError();
 }
