@@ -303,8 +303,14 @@ void MapView::onRenderUI() {
 		ImGui::Checkbox("Shadowmap render", &renderShadowMap);
 		if (renderShadowMap) {
 			const video::Camera& camera = _camera.camera();
+			static glm::ivec2 frameBufferSize(256, 256);
+			ImGui::InputVec2("size", frameBufferSize);
+			int index = (int)video::FrameBufferAttachment::Color0;
 			for (int i = 0; i < sp.maxDepthBuffers; ++i) {
-				_depthBufferRenderer.renderShadowMap(camera, _worldRenderer.shadow().depthBuffer(), i);
+				const video::FrameBufferAttachment attachment = (video::FrameBufferAttachment)(index + i);
+				_depthBufferRenderer.renderShadowMapToTexture(camera, _worldRenderer.shadow().depthBuffer(), i, attachment);
+				ImGui::Text("Cascade %i", i + 1);
+				ImGui::Image(_depthBufferRenderer.renderToTextureFbo().texture(attachment)->handle(), frameBufferSize);
 			}
 		}
 		ImGui::CheckboxVar("Shadowmap cascades", cfg::ClientDebugShadowMapCascade);
