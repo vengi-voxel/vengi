@@ -1,5 +1,5 @@
 set(SRCS
-	UUID.cpp UUID.h
+	UUIDUtil.cpp UUIDUtil.h
 )
 set(LIB uuid)
 

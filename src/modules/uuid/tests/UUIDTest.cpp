@@ -3,7 +3,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "uuid/UUID.h"
+#include "uuid/UUIDUtil.h"
 
 namespace uuid {
 

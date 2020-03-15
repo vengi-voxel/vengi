@@ -5,7 +5,7 @@
 #include "JSON.h"
 #include "core/Log.h"
 #include "core/Color.h"
-#include "uuid/UUID.h"
+#include "uuid/UUIDUtil.h"
 #include "core/Var.h"
 #include "core/App.h"
 #include "core/StringUtil.h"

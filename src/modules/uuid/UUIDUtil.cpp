@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "UUID.h"
+#include "UUIDUtil.h"
 
 #include "engine-config.h"
 #include <SDL_platform.h>
