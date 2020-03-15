@@ -185,9 +185,8 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	int drawCallsWorld = 0;
 
 	// render depth buffers
-	video::colorMask(false, false, false, false);
+	drawCallsWorld += renderEntitiesToDepthMap(camera);
 	drawCallsWorld += renderToShadowMap(camera);
-	video::colorMask(true, true, true, true);
 
 	// bind texture units
 	_shadow.bind(video::TextureUnit::One);
@@ -218,6 +217,7 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 	_worldShader.setFogrange(_fogRange);
 	_worldShader.setClipplane(clipPlane);
 	_worldShader.setViewprojection(viewProjectionMatrix);
+	_entityRenderer.bindEntitiesDepthBuffer(video::TextureUnit::Two);
 	if (_shadowMap->boolVal()) {
 		_worldShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_worldShader.setCascades(_shadow.cascades());
@@ -276,6 +276,10 @@ int WorldRenderer::renderAll(const video::Camera& camera) {
 	drawCallsWorld += renderWater(camera, ignoreClipPlane);
 	_skybox.render(camera);
 	return drawCallsWorld;
+}
+
+int WorldRenderer::renderEntitiesToDepthMap(const video::Camera& camera) {
+	return _entityRenderer.renderEntitiesToDepthMap(_entityMgr.visibleEntities(), camera.viewProjectionMatrix());
 }
 
 int WorldRenderer::renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane) {
@@ -414,6 +418,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		_worldShader.setAmbientColor(frontend::ambientColor);
 		_worldShader.setNightColor(frontend::nightColor);
 		_worldShader.setShadowmap(video::TextureUnit::One);
+		_worldShader.setEntitiesdepthmap(video::TextureUnit::Two);
 	}
 
 	return true;

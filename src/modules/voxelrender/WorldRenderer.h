@@ -79,6 +79,8 @@ protected:
 	int renderToFrameBuffer(const video::Camera &camera);
 	int renderToShadowMap(const video::Camera& camera);
 
+	int renderEntitiesToDepthMap(const video::Camera& camera);
+
 	int renderAll(const video::Camera& camera);
 	int renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 	int renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
@@ -108,6 +110,7 @@ public:
 	video::FrameBuffer &frameBuffer();
 	video::FrameBuffer &reflectionBuffer();
 	video::FrameBuffer &refractionBuffer();
+	video::FrameBuffer &entitiesBuffer();
 	render::RandomColorTexture &colorTexture();
 
 	EntityMgr &entityMgr();
@@ -163,6 +166,10 @@ inline video::FrameBuffer &WorldRenderer::reflectionBuffer() {
 
 inline video::FrameBuffer &WorldRenderer::refractionBuffer() {
 	return _refractionBuffer;
+}
+
+inline video::FrameBuffer &WorldRenderer::entitiesBuffer() {
+	return _entityRenderer.entitiesBuffer();
 }
 
 inline render::RandomColorTexture &WorldRenderer::colorTexture() {

@@ -254,6 +254,10 @@ void MapView::onRenderUI() {
 		ImGui::Image(_worldRenderer.reflectionBuffer().texture()->handle(), frameBufferSize);
 		ImGui::Text("Refraction");
 		ImGui::Image(_worldRenderer.refractionBuffer().texture()->handle(), frameBufferSize);
+		const video::Camera& camera = _camera.camera();
+		const video::FrameBufferAttachment attachment = video::FrameBufferAttachment::Color0;
+		_depthBufferRenderer.renderDepthBufferToTexture(camera, _worldRenderer.entitiesBuffer(), attachment);
+		ImGui::Image(_depthBufferRenderer.renderToTextureFbo().texture(attachment)->handle(), frameBufferSize);
 	}
 
 	if (ImGui::CollapsingHeader("Mesh extraction")) {
@@ -305,7 +309,7 @@ void MapView::onRenderUI() {
 			const video::Camera& camera = _camera.camera();
 			static glm::ivec2 frameBufferSize(256, 256);
 			ImGui::InputVec2("size", frameBufferSize);
-			int index = (int)video::FrameBufferAttachment::Color0;
+			int index = (int)video::FrameBufferAttachment::Color1;
 			for (int i = 0; i < sp.maxDepthBuffers; ++i) {
 				const video::FrameBufferAttachment attachment = (video::FrameBufferAttachment)(index + i);
 				_depthBufferRenderer.renderShadowMapToTexture(camera, _worldRenderer.shadow().depthBuffer(), i, attachment);

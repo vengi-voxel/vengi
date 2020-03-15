@@ -1,7 +1,9 @@
 $in vec3 v_pos;
 $in vec4 v_color;
+$in vec4 v_clipspace;
 $in float v_ambientocclusion;
 uniform mat4 u_viewprojection;
+uniform sampler2D u_entitiesdepthmap;
 
 #include "_fog.frag"
 #include "_shadowmap.frag"
@@ -37,7 +39,31 @@ vec3 baseColor(in vec3 normal) {
 	return v_color.rgb * checkerBoardFactor;
 }
 
+vec2 clipSpaceToTexCoords(vec4 clipSpace){
+	vec2 ndc = (clipSpace.xy / clipSpace.w);
+	vec2 texCoords = ndc / 2.0 + 0.5;
+	return clamp(texCoords, 0.0, 1.0);
+}
+
+/**
+ * @brief If the player is behind some objects - we will make those fragments that
+ * are between the camera eye and the player transparent
+ */
+float resolveAlpha() {
+	vec2 ndc = clipSpaceToTexCoords(v_clipspace);
+	float depth = gl_FragCoord.z;
+	float characterDepth = $texture2D(u_entitiesdepthmap, ndc).r;
+	if (depth > characterDepth) {
+		return 0.3;
+	}
+	return v_color.a;
+}
+
 void main(void) {
+	float alpha = resolveAlpha();
+	if (alpha <= 0.01) {
+		discard;
+	}
 	vec3 fdx = dFdx(v_pos);
 	vec3 fdy = dFdy(v_pos);
 	vec3 normal = normalize(cross(fdx, fdy));
@@ -48,5 +74,5 @@ void main(void) {
 	float bias = max(0.05 * (1.0 - ndotl), 0.005);
 	vec3 shadowColor = shadow(vec4(v_lightspacepos, 1.0), bias, voxelColor, diffuse, ambientColor);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
-	o_color = fog(v_pos, linearColor, v_color.a);
+	o_color = fog(v_pos, linearColor, alpha);
 }

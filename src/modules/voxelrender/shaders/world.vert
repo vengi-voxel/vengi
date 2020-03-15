@@ -23,6 +23,7 @@ layout(std140) uniform u_materialblock {
 
 $out vec3 v_pos;
 $out vec4 v_color;
+$out vec4 v_clipspace;
 $out float v_ambientocclusion;
 
 #include "_fog.vert"
@@ -38,6 +39,7 @@ void main(void) {
 	pos += vec4(a_offset, 0.0);
 #endif // INSTANCED
 	v_pos = pos.xyz;
+	v_clipspace = u_viewprojection * pos;
 
 	gl_ClipDistance[0] = dot(pos, u_clipplane);
 

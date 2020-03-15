@@ -79,24 +79,7 @@ void PlayerCamera::update(const glm::vec3& entityPosition, float deltaFrameSecon
 		}
 	}
 
-	const glm::vec3& direction = _camera.direction();
-	glm::vec3 hit(0.5f);
-	// TODO: we should not adopt the camera target distance but use th depth buffer to make those pixels transparent that
-	// are blocking the sight
-	if (_worldMgr->raycast(targetpos, direction, _targetDistance, [&] (const voxel::PagedVolume::Sampler& sampler) {
-			voxel::Voxel voxel = sampler.voxel();
-			if (!voxel::isEnterable(voxel.getMaterial())) {
-				// store position and abort raycast
-				hit += sampler.position();
-				return false;
-			}
-			return true;
-		})) {
-		_camera.setTargetDistance(core_max(0.1f, glm::distance(targetpos, hit) - 0.5f));
-	} else {
-		_camera.setTargetDistance(_targetDistance);
-	}
-
+	_camera.setTargetDistance(_targetDistance);
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	const uint64_t deltaFrame = (uint64_t)(deltaFrameSeconds * 1000.0f);
 	_camera.update(deltaFrame);
