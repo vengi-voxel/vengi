@@ -56,7 +56,10 @@ core::AppState TestApp::onConstruct() {
 }
 
 core::AppState TestApp::onInit() {
-	_keybindingHandler.load("test-keybindings.cfg");
+	// apps may provide their own keybindings
+	if (_appname != "test") {
+		_keybindingHandler.load("test-keybindings.cfg");
+	}
 	const core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
