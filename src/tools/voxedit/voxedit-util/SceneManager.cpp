@@ -1371,7 +1371,8 @@ bool SceneManager::init() {
 		return false;
 	}
 	_animationRenderer.setClearColor(core::Color::Clear);
-	_animationCache = std::make_shared<animation::AnimationCache>();
+	const auto& meshCache = std::make_shared<voxelformat::MeshCache>();
+	_animationCache = std::make_shared<animation::AnimationCache>(meshCache);
 	if (!_animationCache->init()) {
 		Log::error("Failed to initialize the character mesh cache");
 		return false;

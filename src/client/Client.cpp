@@ -38,11 +38,12 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		const client::ClientPagerPtr& worldPager,
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
-		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache) :
+		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache,
+		const voxelformat::MeshCachePtr& meshCache) :
 		Super(metric, filesystem, eventBus, timeProvider), _animationCache(animationCache),
 		_network(network), _worldMgr(world), _clientPager(worldPager), _messageSender(messageSender),
 		_waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
-		_camera(world, _worldRenderer) {
+		_meshCache(meshCache), _camera(world, _worldRenderer) {
 	init(ORGANISATION, "client");
 }
 
@@ -112,6 +113,7 @@ core::AppState Client::onConstruct() {
 	_movement.construct();
 	_action.construct();
 	_camera.construct();
+	_meshCache->construct();
 
 	core::Var::get(cfg::ClientPort, SERVER_PORT);
 	core::Var::get(cfg::ClientHost, SERVER_HOST);
@@ -165,6 +167,11 @@ core::AppState Client::onInit() {
 	}
 
 	video::enableDebug(video::DebugSeverity::Medium);
+
+	if (!_meshCache->init()) {
+		Log::error("Failed to initialize mesh cache");
+		return core::AppState::InitFailure;
+	}
 
 	if (!_network->init()) {
 		Log::error("Failed to initialize network layer");
@@ -322,9 +329,9 @@ core::AppState Client::onCleanup() {
 	_movement.shutdown();
 	_action.shutdown();
 	_camera.shutdown();
+	_meshCache->shutdown();
 	Log::info("shutting down the volume cache");
 	_volumeCache->shutdown();
-
 	Log::info("everything was shut down");
 
 	return state;
@@ -433,7 +440,8 @@ bool Client::connect(uint16_t port, const core::String& hostname) {
 }
 
 int main(int argc, char *argv[]) {
-	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>();
+	const voxelformat::MeshCachePtr& meshCache = std::make_shared<voxelformat::MeshCache>();
+	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>(meshCache);
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
@@ -445,6 +453,7 @@ int main(int argc, char *argv[]) {
 	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(pager);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	Client app(metric, animationCache, stockDataProvider, network, world, pager, messageSender, eventBus, timeProvider, filesystem, volumeCache);
+	Client app(metric, animationCache, stockDataProvider, network, world, pager, messageSender,
+			eventBus, timeProvider, filesystem, volumeCache, meshCache);
 	return app.startMainLoop(argc, argv);
 }

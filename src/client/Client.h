@@ -10,6 +10,7 @@
 #include "frontend/PlayerAction.h"
 #include "voxelrender/WorldRenderer.h"
 #include "voxelrender/PlayerCamera.h"
+#include "voxelformat/MeshCache.h"
 #include "core/Var.h"
 #include "core/Common.h"
 #include "voxelworld/WorldEvents.h"
@@ -47,6 +48,7 @@ protected:
 	ui::turbobadger::WaitingMessage _waiting;
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
+	voxelformat::MeshCachePtr _meshCache;
 	voxelrender::PlayerCamera _camera;
 
 	frontend::ClientEntityId id() const;
@@ -63,7 +65,8 @@ public:
 			const network::ClientNetworkPtr& network, const voxelworld::WorldMgrPtr& world,
 			const client::ClientPagerPtr& worldPager,
 			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
-			const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache);
+			const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache,
+			const voxelformat::MeshCachePtr& meshCache);
 	~Client();
 
 	core::AppState onConstruct() override;

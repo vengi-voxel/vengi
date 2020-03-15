@@ -10,16 +10,21 @@
 #include "core/io/Filesystem.h"
 #include "core/App.h"
 #include "core/Log.h"
+#include "core/Assert.h"
 #include "voxel/CubicSurfaceExtractor.h"
 
 namespace voxelformat {
 
-voxel::Mesh& MeshCache::cacheEntry(const char *path) {
-	auto i = _meshes.find(path);
+MeshCache::~MeshCache() {
+	core_assert_msg(_initCalls == 0, "MeshCache wasn't shut down properly: %i", _initCalls);
+}
+
+voxel::Mesh& MeshCache::cacheEntry(const char *fullPath) {
+	auto i = _meshes.find(fullPath);
 	if (i == _meshes.end()) {
 		voxel::Mesh* mesh = new voxel::Mesh();
-		_meshes.put(path, mesh);
-		Log::debug("New mesh cache entry for path %s", path);
+		_meshes.put(fullPath, mesh);
+		Log::debug("New mesh cache entry for path %s", fullPath);
 		return *mesh;
 	}
 	return *i->second;
@@ -35,14 +40,19 @@ bool MeshCache::removeMesh(const char *fullPath) {
 	return false;
 }
 
-bool MeshCache::putMesh(const char* fullPath, const voxel::Mesh& mesh) {
-	removeMesh(fullPath);
-	_meshes.put(fullPath, new voxel::Mesh(mesh));
-	return true;
+const voxel::Mesh* MeshCache::getMesh(const char *fullPath) {
+	voxel::Mesh &cachedMesh = cacheEntry(fullPath);
+	if (cachedMesh.getNoOfVertices() > 0) {
+		return &cachedMesh;
+	}
+	if (loadMesh(fullPath, cachedMesh)) {
+		return &cachedMesh;
+	}
+	return nullptr;
 }
 
 bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
-	Log::info("Loading volume from %s", fullPath);
+	Log::debug("Loading volume from %s", fullPath);
 	const io::FilesystemPtr& fs = io::filesystem();
 	const io::FilePtr& file = fs->open(fullPath);
 	voxel::VoxelVolumes volumes;
@@ -74,10 +84,15 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 }
 
 bool MeshCache::init() {
+	++_initCalls;
 	return true;
 }
 
 void MeshCache::shutdown() {
+	--_initCalls;
+	if (_initCalls > 0) {
+		return;
+	}
 	for (const auto & e : _meshes) {
 		delete e->value;
 	}

@@ -38,18 +38,12 @@ bool Character::loadGlider(const AnimationCachePtr& cache, const AnimationSettin
 	}
 	// TODO: model via inventory
 	const char *fullPath = "models/glider.vox";
-	voxel::Mesh& mesh = cache->cacheEntry(fullPath);
-	if (mesh.getNoOfVertices() > 0) {
-		meshes[idx] = &mesh;
-		return true;
+	meshes[idx] = cache->getMesh(fullPath);
+	if (meshes[idx] == nullptr) {
+		Log::error("Failed to load glider");
+		return false;
 	}
-	if (cache->loadMesh(fullPath, mesh)) {
-		meshes[idx] = &mesh;
-		return true;
-	}
-	meshes[idx] = nullptr;
-	Log::error("Failed to load glider");
-	return false;
+	return true;
 }
 
 bool Character::initMesh(const AnimationCachePtr& cache) {

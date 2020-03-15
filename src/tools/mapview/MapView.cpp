@@ -31,10 +31,12 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCach
 		const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& worldMgr,
 		const voxelworld::WorldPagerPtr& worldPager,
-		const voxelformat::VolumeCachePtr& volumeCache) :
+		const voxelformat::VolumeCachePtr& volumeCache,
+		const voxelformat::MeshCachePtr& meshCache) :
 		Super(metric, filesystem, eventBus, timeProvider),
 		_animationCache(animationCache), _worldMgr(worldMgr), _worldPager(worldPager),
-		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _camera(worldMgr, _worldRenderer) {
+		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _meshCache(meshCache),
+		_camera(worldMgr, _worldRenderer) {
 	init(ORGANISATION, "mapview");
 }
 
@@ -49,6 +51,7 @@ core::AppState MapView::onConstruct() {
 	_movement.construct();
 	_action.construct();
 	_camera.construct();
+	_meshCache->construct();
 
 	core::Command::registerCommand("bird", [&] (const core::CmdArgs& args) {
 		glm::vec3 pos = _entity->position();
@@ -78,6 +81,11 @@ core::AppState MapView::onInit() {
 	}
 
 	video::enableDebug(video::DebugSeverity::High);
+
+	if (!_meshCache->init()) {
+		Log::error("Failed to initialize mesh cache");
+		return core::AppState::InitFailure;
+	}
 
 	if (!_depthBufferRenderer.init()) {
 		Log::warn("Failed to init depth buffer renderer");
@@ -363,6 +371,7 @@ core::AppState MapView::onCleanup() {
 	const core::AppState state = Super::onCleanup();
 	_worldPager->shutdown();
 	_worldMgr->shutdown();
+	_meshCache->shutdown();
 	return state;
 }
 
@@ -379,7 +388,8 @@ bool MapView::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 int main(int argc, char *argv[]) {
-	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>();
+	const voxelformat::MeshCachePtr& meshCache = std::make_shared<voxelformat::MeshCache>();
+	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>(meshCache);
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 	const voxelworld::ChunkPersisterPtr& chunkPersister = std::make_shared<voxelworld::ChunkPersister>();
@@ -389,6 +399,7 @@ int main(int argc, char *argv[]) {
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	MapView app(metric, animationCache, stockDataProvider, filesystem, eventBus, timeProvider, worldMgr, worldPager, volumeCache);
+	MapView app(metric, animationCache, stockDataProvider, filesystem, eventBus, timeProvider,
+			worldMgr, worldPager, volumeCache, meshCache);
 	return app.startMainLoop(argc, argv);
 }

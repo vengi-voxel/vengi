@@ -13,16 +13,18 @@
 namespace voxelformat {
 
 /**
- * @brief Cache voxel::Mesh instances by their name
+ * @brief Cache @c voxel::Mesh instances by their name
  */
 class MeshCache : public core::IComponent {
 protected:
 	core::StringMap<voxel::Mesh*> _meshes;
+	int _initCalls = 0;
 
-public:
-	voxel::Mesh& cacheEntry(const char *path);
+	voxel::Mesh& cacheEntry(const char *fullPath);
 	bool loadMesh(const char* fullPath, voxel::Mesh& mesh);
-	bool putMesh(const char* fullPath, const voxel::Mesh& mesh);
+public:
+	~MeshCache();
+	const voxel::Mesh* getMesh(const char *fullPath);
 	bool removeMesh(const char *fullPath);
 	bool init() override;
 	void shutdown() override;

@@ -12,6 +12,7 @@
 #include "render/Axis.h"
 #include "frontend/PlayerMovement.h"
 #include "voxelrender/PlayerCamera.h"
+#include "voxelformat/MeshCache.h"
 #include "video/Camera.h"
 #include "animation/AnimationCache.h"
 #include "video/Buffer.h"
@@ -40,6 +41,7 @@ protected:
 	frontend::PlayerAction _action;
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
+	voxelformat::MeshCachePtr _meshCache;
 	voxelrender::PlayerCamera _camera;
 	testcore::DepthBufferRenderer _depthBufferRenderer;
 
@@ -68,7 +70,8 @@ public:
 			const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 			const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,
 			const voxelworld::WorldPagerPtr& worldPager,
-			const voxelformat::VolumeCachePtr& volumeCache);
+			const voxelformat::VolumeCachePtr& volumeCache,
+			const voxelformat::MeshCachePtr& meshCache);
 	~MapView();
 
 	core::AppState onConstruct() override;

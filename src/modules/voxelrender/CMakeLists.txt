@@ -1,5 +1,6 @@
 set(LIB voxelrender)
 set(SRCS
+	CachedMeshRenderer.cpp CachedMeshRenderer.h
 	EntityMgr.cpp EntityMgr.h
 	MeshRenderer.cpp MeshRenderer.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h

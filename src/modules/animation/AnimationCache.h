@@ -17,7 +17,7 @@ namespace animation {
  * @brief Cache @c voxel::Mesh instances for @c AnimationEntity
  * @ingroup Animation
  */
-class AnimationCache : public voxelformat::MeshCache {
+class AnimationCache : public core::IComponent {
 protected:
 	/**
 	 * @brief Load from cache or file and extract the mesh
@@ -31,7 +31,17 @@ protected:
 	bool getMeshes(const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES],
 			const std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])>& loadAdditional = {});
 
+	voxelformat::MeshCachePtr _meshCache;
+
 public:
+	AnimationCache(const voxelformat::MeshCachePtr& meshCache);
+
+	const voxel::Mesh* getMesh(const char *fullPath);
+	bool removeMesh(const char *fullPath);
+	bool putMesh(const char* fullPath, const voxel::Mesh& mesh);
+	bool init() override;
+	void shutdown() override;
+
 	/**
 	 * @brief Map a single bone to the given vertices and fill the vertex indices
 	 */

@@ -99,15 +99,14 @@ bool MeshRenderer::isEmpty() const {
 	return numIndices == 0u;
 }
 
-void MeshRenderer::renderAll(const video::Camera &camera) {
-	core_trace_scoped(MeshRendererRender);
-	if (isEmpty()) {
-		return;
-	}
+void MeshRenderer::prepareState() {
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::ScopedState scopedCullFace(video::State::CullFace);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
+}
+
+void MeshRenderer::renderShadows(const video::Camera& camera) {
 	_shadow.update(camera, true);
 	_shadowMapShader.activate();
 	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
@@ -124,14 +123,49 @@ void MeshRenderer::renderAll(const video::Camera &camera) {
 		return true;
 	});
 	_shadowMapShader.deactivate();
+}
 
-	video::ScopedShader scoped(_voxelShader);
+void MeshRenderer::prepareShader(const video::Camera& camera) {
 	_voxelShader.setViewprojection(camera.viewProjectionMatrix());
 	_voxelShader.setDepthsize(glm::vec2(_shadow.dimension()));
 	_voxelShader.setCascades(_shadow.cascades());
 	_voxelShader.setDistances(_shadow.distances());
 	_voxelShader.setLightdir(_shadow.sunDirection());
 	_shadow.bind(video::TextureUnit::One);
+}
+
+void MeshRenderer::render(int idx, const video::Camera& camera) {
+	core_trace_scoped(MeshRendererRender);
+	if (idx < 0 || idx >= (int)_meshes.size()) {
+		Log::trace("Invalid index given in MeshRenderer::setMesh(): %i", idx);
+		return;
+	}
+	MeshInternal& mesh = _meshes[idx];
+	const uint32_t nIndices = mesh.numIndices();
+	if (nIndices == 0) {
+		return;
+	}
+	prepareState();
+	renderShadows(camera);
+
+	video::ScopedShader scoped(_voxelShader);
+	prepareShader(camera);
+	_voxelShader.setModel(mesh.model);
+
+	video::ScopedBuffer scopedBuf(mesh.buffer);
+	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
+}
+
+void MeshRenderer::renderAll(const video::Camera &camera) {
+	core_trace_scoped(MeshRendererRender);
+	if (isEmpty()) {
+		return;
+	}
+	prepareState();
+	renderShadows(camera);
+
+	video::ScopedShader scoped(_voxelShader);
+	prepareShader(camera);
 
 	for (const auto& mesh : _meshes) {
 		const uint32_t nIndices = mesh.numIndices();
@@ -140,7 +174,6 @@ void MeshRenderer::renderAll(const video::Camera &camera) {
 		}
 		video::ScopedBuffer scopedBuf(mesh.buffer);
 		_voxelShader.setModel(mesh.model);
-		static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 	}
 }
@@ -166,7 +199,16 @@ bool MeshRenderer::update(int idx, const voxel::VoxelVertex* vertices, size_t nu
 	return true;
 }
 
-bool MeshRenderer::setMesh(int idx, voxel::Mesh *mesh, const glm::mat4 &model) {
+int MeshRenderer::addMesh(const voxel::Mesh* mesh, const glm::mat4& model) {
+	const int currentIndex = _meshIndex % maxMeshes();
+	if (!setMesh(currentIndex, mesh, model)) {
+		return -1;
+	}
+	++_meshIndex;
+	return currentIndex;
+}
+
+bool MeshRenderer::setMesh(int idx, const voxel::Mesh *mesh, const glm::mat4 &model) {
 	if (idx < 0 || idx >= (int)_meshes.size()) {
 		Log::trace("Invalid index given in MeshRenderer::setMesh(): %i", idx);
 		return false;
@@ -175,11 +217,25 @@ bool MeshRenderer::setMesh(int idx, voxel::Mesh *mesh, const glm::mat4 &model) {
 	MeshInternal& entry = _meshes[idx];
 	entry.mesh = mesh;
 	entry.model = model;
-	const voxel::VoxelVertex* vertices = entry.mesh->getRawVertexData();
-	const size_t numVertices = entry.mesh->getNoOfVertices();
-	const voxel::IndexType* indices = entry.mesh->getRawIndexData();
-	const size_t numIndices = entry.mesh->getNoOfIndices();
-	return update(idx, vertices, numVertices, indices, numIndices);
+
+	if (entry.mesh != nullptr) {
+		const voxel::VoxelVertex* vertices = entry.mesh->getRawVertexData();
+		const size_t numVertices = entry.mesh->getNoOfVertices();
+		const voxel::IndexType* indices = entry.mesh->getRawIndexData();
+		const size_t numIndices = entry.mesh->getNoOfIndices();
+		return update(idx, vertices, numVertices, indices, numIndices);
+	}
+	return update(idx, nullptr, 0, nullptr, 0);
+}
+
+bool MeshRenderer::setModelMatrix(int idx, const glm::mat4& model) {
+	if (idx < 0 || idx >= (int)_meshes.size()) {
+		Log::trace("Invalid index given in MeshRenderer::setMesh(): %i", idx);
+		return false;
+	}
+	MeshInternal& entry = _meshes[idx];
+	entry.model = model;
+	return true;
 }
 
 }

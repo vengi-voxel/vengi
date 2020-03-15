@@ -14,6 +14,7 @@
 #include "core/ArrayLength.h"
 #include "core/collection/Array.h"
 #include "testcore/TestAppMain.h"
+#include "voxelformat/MeshCache.h"
 
 static bool reloadAnimationEntity = false;
 
@@ -268,11 +269,12 @@ core::AppState TestAnimation::onCleanup() {
 }
 
 int main(int argc, char *argv[]) {
+	const voxelformat::MeshCachePtr& meshCache = std::make_shared<voxelformat::MeshCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>();
+	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>(meshCache);
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
 	TestAnimation app(metric, stockDataProvider, filesystem, eventBus, timeProvider, animationCache);
 	return app.startMainLoop(argc, argv);

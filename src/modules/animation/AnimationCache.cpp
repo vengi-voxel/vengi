@@ -7,18 +7,34 @@
 
 namespace animation {
 
+AnimationCache::AnimationCache(const voxelformat::MeshCachePtr& meshCache) :
+		_meshCache(meshCache) {
+}
+
+bool AnimationCache::init() {
+	return _meshCache->init();
+}
+
+void AnimationCache::shutdown() {
+	_meshCache->shutdown();
+}
+
+const voxel::Mesh* AnimationCache::getMesh(const char *fullPath) {
+	return _meshCache->getMesh(fullPath);
+}
+
+bool AnimationCache::removeMesh(const char *fullPath) {
+	return _meshCache->removeMesh(fullPath);
+}
+
+bool AnimationCache::putMesh(const char* fullPath, const voxel::Mesh& mesh) {
+	removeMesh(fullPath);
+	return getMesh(fullPath) != nullptr;
+}
+
 bool AnimationCache::load(const core::String& filename, size_t meshIndex, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES]) {
-	voxel::Mesh& mesh = cacheEntry(filename.c_str());
-	if (mesh.getNoOfVertices() > 0) {
-		meshes[meshIndex] = &mesh;
-		return true;
-	}
-	if (loadMesh(filename.c_str(), mesh)) {
-		meshes[meshIndex] = &mesh;
-		return true;
-	}
-	meshes[meshIndex] = nullptr;
-	return false;
+	meshes[meshIndex] = getMesh(filename.c_str());
+	return meshes[meshIndex] != nullptr;
 }
 
 bool AnimationCache::getMeshes(const AnimationSettings& settings, const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES],
@@ -47,11 +63,9 @@ bool AnimationCache::getMeshes(const AnimationSettings& settings, const voxel::M
 }
 
 bool AnimationCache::getModel(const AnimationSettings& settings, const char *fullPath, BoneId boneId, Vertices& vertices, Indices& indices) {
-	voxel::Mesh& mesh = cacheEntry(fullPath);
-	if (mesh.getNoOfVertices() <= 0) {
-		if (!loadMesh(fullPath, mesh)) {
-			return false;
-		}
+	const voxel::Mesh* mesh = getMesh(fullPath);
+	if (mesh == nullptr) {
+		return false;
 	}
 
 	vertices.clear();
@@ -62,14 +76,14 @@ bool AnimationCache::getModel(const AnimationSettings& settings, const char *ful
 		Log::error("Could not get bone id mapping for %s", toBoneId(boneId));
 		return false;
 	}
-	vertices.reserve(mesh.getNoOfVertices());
-	for (const voxel::VoxelVertex& v : mesh.getVertexVector()) {
+	vertices.reserve(mesh->getNoOfVertices());
+	for (const voxel::VoxelVertex& v : mesh->getVertexVector()) {
 		vertices.emplace_back(Vertex{v.position, v.colorIndex, (uint8_t)boneIdx, v.ambientOcclusion});
 	}
 	//vertices.resize(mesh.getNoOfVertices());
 
-	indices.reserve(mesh.getNoOfIndices());
-	for (voxel::IndexType idx : mesh.getIndexVector()) {
+	indices.reserve(mesh->getNoOfIndices());
+	for (voxel::IndexType idx : mesh->getIndexVector()) {
 		indices.push_back((IndexType)idx);
 	}
 	//indices.resize(mesh.getNoOfIndices());
