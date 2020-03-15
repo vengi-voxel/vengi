@@ -27,7 +27,7 @@ TestAnimation::TestAnimation(const metric::MetricPtr& metric, const stock::Stock
 		Super(metric, filesystem, eventBus, timeProvider), _animationCache(
 				animationCache), _stockDataProvider(stockDataProvider), _stock(stockDataProvider) {
 	init(ORGANISATION, "testanimation");
-	setCameraMotion(true);
+	setCameraMotion(false);
 	setRenderAxis(true);
 
 	const int32_t cnt = (int)network::EntityType::MAX_CHARACTERS - ((int)network::EntityType::BEGIN_CHARACTERS + 1);
