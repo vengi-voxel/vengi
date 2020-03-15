@@ -21,7 +21,7 @@ uniform sampler2D u_depthmap;
 uniform mediump vec3 u_lightdir;
 uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
-$out vec4 o_color;
+layout(location = 0) $out vec4 o_color;
 
 const float c_wavestrength = 0.01;
 const float c_reflectivity = 0.5;

@@ -11,7 +11,7 @@ uniform mediump vec3 u_lightdir;
 uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
 uniform float u_time;
-$out vec4 o_color;
+layout(location = 0) $out vec4 o_color;
 
 // https://thebookofshaders.com
 float random (in vec2 st) {

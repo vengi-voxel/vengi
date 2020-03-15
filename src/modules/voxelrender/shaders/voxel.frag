@@ -8,7 +8,7 @@ uniform mat4 u_viewprojection;
 uniform mediump vec3 u_lightdir;
 uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
-$out vec4 o_color;
+layout(location = 0) $out vec4 o_color;
 
 void main(void) {
 #if r_renderoutline == 1
