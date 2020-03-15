@@ -16,6 +16,9 @@ TreeVolumeCache::TreeVolumeCache(const voxelformat::VolumeCachePtr& volumeCache)
 }
 
 bool TreeVolumeCache::init() {
+	if (!_treeTypeCount.empty()) {
+		return true;
+	}
 	Log::debug("Initialize the tree volume cache");
 	std::vector<io::Filesystem::DirEntry> entities;
 	if (!io::filesystem()->list("models/trees/", entities, "*")) {
