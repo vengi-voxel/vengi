@@ -13,6 +13,7 @@
 #include "core/ArrayLength.h"
 #include "voxel/MaterialColor.h"
 #include "video/Camera.h"
+#include "video/ScopedState.h"
 #include "render/Shadow.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -21,7 +22,8 @@
 namespace frontend {
 
 ClientEntityRenderer::ClientEntityRenderer() :
-		_skeletonShadowMapShader(shader::SkeletonshadowmapShader::getInstance()) {
+		_skeletonShadowMapShader(shader::SkeletonshadowmapShader::getInstance()),
+		_skeletondepthmapShader(shader::SkeletondepthmapShader::getInstance()) {
 }
 
 void ClientEntityRenderer::construct() {
@@ -37,6 +39,10 @@ bool ClientEntityRenderer::init() {
 		Log::error("Failed to init skeleton shadowmap shader");
 		return false;
 	}
+	if (!_skeletondepthmapShader.setup()) {
+		Log::error("Failed to init skeleton depthmap shader");
+		return false;
+	}
 	const int shaderMaterialColorsArraySize = lengthof(shader::SkeletonData::MaterialblockData::materialcolor);
 	const int materialColorsArraySize = (int)voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
@@ -48,6 +54,20 @@ bool ClientEntityRenderer::init() {
 	shader::SkeletonData::MaterialblockData materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
+
+	video::TextureConfig textureCfg;
+	textureCfg.format(video::TextureFormat::D32F);
+	textureCfg.compareFunc(video::CompareFunc::Less).compareMode(video::TextureCompareMode::RefToTexture);
+	textureCfg.borderColor(glm::vec4(1.0f));
+	textureCfg.wrap(video::TextureWrap::ClampToBorder);
+
+	video::FrameBufferConfig entitesDepthCfg;
+	entitesDepthCfg.dimension(glm::ivec2(1024, 1024)).colorTexture(false);
+	entitesDepthCfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Depth);
+	if (!_entitiesDepthBuffer.init(entitesDepthCfg)) {
+		Log::error("Failed to initialize the entity depth buffer");
+		return false;
+	}
 
 	{
 		video::ScopedShader scoped(_chrShader);
@@ -65,6 +85,8 @@ bool ClientEntityRenderer::init() {
 void ClientEntityRenderer::shutdown() {
 	_chrShader.shutdown();
 	_skeletonShadowMapShader.shutdown();
+	_skeletondepthmapShader.shutdown();
+	_entitiesDepthBuffer.shutdown();
 }
 
 void ClientEntityRenderer::update(const glm::vec3& focusPos, float seconds) {
@@ -110,6 +132,31 @@ int ClientEntityRenderer::renderEntityDetails(const core::List<ClientEntity*>& e
 	}
 #endif
 	return drawCallsEntities;
+}
+
+void ClientEntityRenderer::bindEntitiesDepthBuffer(video::TextureUnit texunit) {
+	video::bindTexture(texunit, _entitiesDepthBuffer, video::FrameBufferAttachment::Depth);
+}
+
+int ClientEntityRenderer::renderEntitiesToDepthMap(const core::List<ClientEntity*>& entities, const glm::mat4& viewProjectionMatrix) {
+	constexpr glm::vec4 ignoreClipPlane(glm::up, 0.0f);
+	_entitiesDepthBuffer.bind(true);
+	video::colorMask(false, false, false, false);
+
+	video::ScopedState blend(video::State::Blend, false);
+	video::ScopedShader scoped(_skeletondepthmapShader);
+	_skeletondepthmapShader.setViewprojection(viewProjectionMatrix);
+	for (const auto& ent : entities) {
+		_skeletondepthmapShader.setBones(ent->bones()._items);
+		_skeletondepthmapShader.setModel(ent->modelMatrix());
+		const uint32_t numIndices = ent->bindVertexBuffers(_chrShader);
+		video::drawElements<animation::IndexType>(video::Primitive::Triangles, numIndices);
+		ent->unbindVertexBuffers();
+	}
+
+	video::colorMask(true, true, true, true);
+	_entitiesDepthBuffer.unbind();
+	return 0;
 }
 
 int ClientEntityRenderer::renderEntities(const core::List<ClientEntity*>& entities, const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane, const render::Shadow& shadow) {
