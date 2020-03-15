@@ -29,6 +29,7 @@ set(SRCS
 )
 set(SRCS_SHADERS
 	shaders/skeleton.vert shaders/skeleton.frag
+	shaders/skeletonshadowmap.vert shaders/skeletonshadowmap.frag
 )
 set(FILES
 	voxel/models/characters/human/female/head/worker.vox
