@@ -420,42 +420,40 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		}
 	}
 
-	{
-		video::ScopedShader scoped(_voxelShader);
-		if (_voxelShader.isDirty()) {
-			_voxelShader.setMaterialblock(_materialBlock);
-			_voxelShader.setModel(glm::mat4(1.0f));
-			if (_shadowVar->boolVal()) {
-				_voxelShader.setShadowmap(video::TextureUnit::One);
-			}
-			_voxelShader.setDiffuseColor(_diffuseColor);
-			_voxelShader.setAmbientColor(_ambientColor);
-			_voxelShader.markClean();
-		}
-		_voxelShader.setViewprojection(camera.viewProjectionMatrix());
+	video::ScopedShader scoped(_voxelShader);
+	if (_voxelShader.isDirty()) {
+		_voxelShader.setMaterialblock(_materialBlock);
+		_voxelShader.setModel(glm::mat4(1.0f));
 		if (_shadowVar->boolVal()) {
-			_voxelShader.setDepthsize(glm::vec2(_shadow.dimension()));
-			_voxelShader.setCascades(_shadow.cascades());
-			_voxelShader.setDistances(_shadow.distances());
-			_voxelShader.setLightdir(_shadow.sunDirection());
-			_shadow.bind(video::TextureUnit::One);
+			_voxelShader.setShadowmap(video::TextureUnit::One);
 		}
+		_voxelShader.setDiffuseColor(_diffuseColor);
+		_voxelShader.setAmbientColor(_ambientColor);
+		_voxelShader.markClean();
+	}
+	_voxelShader.setViewprojection(camera.viewProjectionMatrix());
+	if (_shadowVar->boolVal()) {
+		_voxelShader.setDepthsize(glm::vec2(_shadow.dimension()));
+		_voxelShader.setCascades(_shadow.cascades());
+		_voxelShader.setDistances(_shadow.distances());
+		_voxelShader.setLightdir(_shadow.sunDirection());
+		_shadow.bind(video::TextureUnit::One);
+	}
 
-		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-			if (_hidden[idx]) {
-				continue;
-			}
-			const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
-			if (nIndices == 0) {
-				continue;
-			}
-			const glm::vec2 offset(-0.25f * idx, -0.5f * idx);
-			video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
-			video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
-			_voxelShader.setModel(_model[idx]);
-			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		if (_hidden[idx]) {
+			continue;
 		}
+		const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
+		if (nIndices == 0) {
+			continue;
+		}
+		const glm::vec2 offset(-0.25f * idx, -0.5f * idx);
+		video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
+		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
+		_voxelShader.setModel(_model[idx]);
+		static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 	}
 }
 

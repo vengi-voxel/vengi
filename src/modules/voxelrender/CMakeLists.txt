@@ -1,6 +1,7 @@
 set(LIB voxelrender)
 set(SRCS
 	EntityMgr.cpp EntityMgr.h
+	MeshRenderer.cpp MeshRenderer.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	PlayerCamera.cpp PlayerCamera.h
 	ShaderAttribute.h

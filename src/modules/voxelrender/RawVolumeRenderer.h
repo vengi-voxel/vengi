@@ -16,6 +16,7 @@
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
+#include "frontend/Colors.h"
 #include <unordered_map>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
@@ -38,6 +39,8 @@ protected:
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	glm::mat4 _model[MAX_VOLUMES] {};
 	core::Array<bool, MAX_VOLUMES> _hidden {{ false }};
+	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1};
+	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1};
 	typedef core::Array<voxel::Mesh*, MAX_VOLUMES> Meshes;
 	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
 	MeshesMap _meshes;
@@ -52,11 +55,8 @@ protected:
 	core::VarPtr _meshSize;
 	core::VarPtr _shadowVar;
 
-	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1};
-	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1};
-
-	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
-	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
+	glm::vec3 _diffuseColor = frontend::diffuseColor;
+	glm::vec3 _ambientColor = frontend::ambientColor;
 
 	void extract(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
 
