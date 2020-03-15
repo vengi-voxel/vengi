@@ -95,6 +95,8 @@ core::AppState TestApp::onInit() {
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
+	core::Command::execute("bindlist");
+
 	return state;
 }
 
