@@ -360,12 +360,16 @@ core::AppState IMGUIApp::onRunning() {
 
 void IMGUIApp::onAfterFrame() {
 	Super::onAfterFrame();
-	for (auto& entry : _traceMeasuresLastFrame) {
-		delete entry.second;
+	if (_traceMeasuresPause) {
+		return;
 	}
 	++_currentFrameCounter;
+	const int index = _currentFrameCounter % _maxMeasureSize;
 	std::lock_guard lock(_traceMutex);
-	_traceMeasuresLastFrame = _traceMeasures;
+	for (auto& entry : _traceMeasuresLastFrame[index]) {
+		delete entry.second;
+	}
+	_traceMeasuresLastFrame[index] = _traceMeasures;
 	_traceMeasures.clear();
 }
 
@@ -416,6 +420,9 @@ void IMGUIApp::TraceRoot::end(uint64_t nanos) {
 
 void IMGUIApp::traceBeginFrame(const char *threadName) {
 	//Super::traceBeginFrame(threadName);
+	if (_traceMeasuresPause) {
+		return;
+	}
 	const std::thread::id id = std::this_thread::get_id();
 	const uint64_t nanos = core::TimeProvider::systemNanos();
 	TraceRoot* traceRoot = new TraceRoot(nanos, threadName);
@@ -428,6 +435,9 @@ void IMGUIApp::traceBeginFrame(const char *threadName) {
 
 void IMGUIApp::traceBegin(const char *threadName, const char* name) {
 	//Super::traceBegin(threadName, name);
+	if (_traceMeasuresPause) {
+		return;
+	}
 	const std::thread::id id = std::this_thread::get_id();
 	const uint64_t nanos = core::TimeProvider::systemNanos();
 	std::lock_guard<std::mutex> lock(_traceMutex);
@@ -442,6 +452,9 @@ void IMGUIApp::traceBegin(const char *threadName, const char* name) {
 
 void IMGUIApp::traceEnd(const char *threadName) {
 	//Super::traceEnd(threadName);
+	if (_traceMeasuresPause) {
+		return;
+	}
 	const std::thread::id id = std::this_thread::get_id();
 	const uint64_t nanos = core::TimeProvider::systemNanos();
 	std::lock_guard<std::mutex> lock(_traceMutex);
@@ -456,6 +469,9 @@ void IMGUIApp::traceEnd(const char *threadName) {
 
 void IMGUIApp::traceEndFrame(const char *threadName) {
 	//Super::traceEndFrame(threadName);
+	if (_traceMeasuresPause) {
+		return;
+	}
 	const std::thread::id id = std::this_thread::get_id();
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	auto measureIter = _traceMeasures.find(id);
@@ -516,7 +532,14 @@ void IMGUIApp::renderTracing() {
 	if (ImGui::CollapsingHeader("Profiler", ImGuiTreeNodeFlags_DefaultOpen)) {
 		static bool expandAll = false;
 		ImGui::Checkbox("Expand all", &expandAll);
-		for (auto i = _traceMeasuresLastFrame.begin(); i != _traceMeasuresLastFrame.end(); ++i) {
+		ImGui::Checkbox("Pause recording", &_traceMeasuresPause);
+		if (_traceMeasuresPause) {
+			ImGui::SameLine();
+			ImGui::InputInt("Frame index", &_currentFrameCounter, 1, 10);
+			_currentFrameCounter = glm::max(0, _currentFrameCounter);
+		}
+		const int index = _currentFrameCounter % _maxMeasureSize;
+		for (auto i = _traceMeasuresLastFrame[index].begin(); i != _traceMeasuresLastFrame[index].end(); ++i) {
 			if (ImGui::TreeNodeEx("Thread", ImGuiTreeNodeFlags_DefaultOpen)) {
 				const TraceRoot* frameData = i->second;
 				int depth = 0;

@@ -70,7 +70,8 @@ protected:
 	using Measures = std::map<std::thread::id, TraceRoot*>;
 	int _currentFrameCounter = 0;
 	Measures _traceMeasures;
-	Measures _traceMeasuresLastFrame;
+	Measures _traceMeasuresLastFrame[_maxMeasureSize];
+	bool _traceMeasuresPause = false;
 	using FramesMillis = core::Array<uint64_t, _maxMeasureSize>;
 	FramesMillis _frameMillis {{0ul}};
 	core::String _writePathIni;
