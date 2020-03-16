@@ -75,6 +75,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera) {
 }
 
 int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
+	core_trace_gl_scoped(WorldRendererRenderPostProcess);
 	video::ScopedState depthTest(video::State::DepthTest, false);
 	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	video::ScopedShader scoped(_postProcessShader);
@@ -119,6 +120,7 @@ glm::mat4 WorldRenderer::reflectionMatrix(const video::Camera& camera) const {
 }
 
 int WorldRenderer::renderClippingPlanes(const video::Camera& camera) {
+	core_trace_scoped(WorldRendererRenderClippingPlane);
 	constexpr float waterHeight = (float)voxel::MAX_WATER_HEIGHT;
 	// apply a small bias to improve reflections of objects on the water when the
 	// reflections are distorted.
@@ -167,6 +169,7 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 }
 
 int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
+	core_trace_scoped(WorldRendererRenderToFrameBuffer);
 	// update the vertex buffers
 	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueVbo, _worldChunkMgr._opaqueVertices));
 	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueIbo, _worldChunkMgr._opaqueIndices));
@@ -207,7 +210,7 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 
 int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane) {
 	int drawCallsWorld = 0;
-	core_trace_scoped(WorldRendererRenderOpaque);
+	core_trace_gl_scoped(WorldRendererRenderOpaque);
 	video::ScopedShader scoped(_worldShader);
 	_worldShader.setFocuspos(_focusPos);
 	_worldShader.setLightdir(_shadow.sunDirection());
@@ -228,7 +231,7 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 
 int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& clipPlane) {
 	int drawCallsWorld = 0;
-	core_trace_scoped(WorldRendererRenderWater);
+	core_trace_gl_scoped(WorldRendererRenderWater);
 	video::ScopedShader scoped(_waterShader);
 	_waterShader.setFocuspos(_focusPos);
 	_waterShader.setCamerapos(camera.position());
@@ -262,6 +265,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 }
 
 int WorldRenderer::renderAll(const video::Camera& camera) {
+	core_trace_scoped(WorldRendererAll);
 	int drawCallsWorld = 0;
 	// due to driver bugs the clip plane might still be taken into account
 	constexpr glm::vec4 ignoreClipPlane(glm::up, 0.0f);

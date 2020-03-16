@@ -8,12 +8,14 @@
 #include "video/Types.h"
 #include "voxel/VoxelVertex.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 #include "video/Renderer.h"
 #include "ShaderAttribute.h"
 
 namespace voxelrender {
 
 bool WorldBuffers::renderOpaqueBuffers() {
+	core_trace_gl_scoped(WorldBuffersRenderOpaqueBuffers);
 	const uint32_t numIndices = _opaqueBuffer.elements(_opaqueIbo, 1, sizeof(voxel::IndexType));
 	if (numIndices == 0u) {
 		return false;
@@ -24,6 +26,7 @@ bool WorldBuffers::renderOpaqueBuffers() {
 }
 
 bool WorldBuffers::renderWaterBuffers() {
+	core_trace_gl_scoped(WorldBuffersRenderWaterBuffers);
 	video::ScopedBuffer scopedBuf(_waterBuffer);
 	const int elements = _waterBuffer.elements(_waterVbo, 2);
 	video::drawArrays(video::Primitive::Triangles, elements);

@@ -15,6 +15,7 @@
 #include "video/Camera.h"
 #include "video/ScopedState.h"
 #include "render/Shadow.h"
+#include "core/Trace.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
@@ -95,6 +96,7 @@ void ClientEntityRenderer::update(const glm::vec3& focusPos, float seconds) {
 }
 
 void ClientEntityRenderer::renderShadows(const core::List<ClientEntity*>& entities, render::Shadow& shadow) {
+	core_trace_scoped(RenderEntityShadows);
 	_skeletonShadowMapShader.activate();
 	shadow.render([this, entities] (int i, const glm::mat4& lightViewProjection) {
 		_skeletonShadowMapShader.setLightviewprojection(lightViewProjection);
@@ -114,6 +116,7 @@ int ClientEntityRenderer::renderEntityDetails(const core::List<ClientEntity*>& e
 	if (entities.empty()) {
 		return 0;
 	}
+	core_trace_gl_scoped(RenderEntityDetails);
 	alignas(16) static const struct {
 		glm::vec3 start;
 		glm::vec3 end;
@@ -139,6 +142,7 @@ void ClientEntityRenderer::bindEntitiesDepthBuffer(video::TextureUnit texunit) {
 }
 
 int ClientEntityRenderer::renderEntitiesToDepthMap(const core::List<ClientEntity*>& entities, const glm::mat4& viewProjectionMatrix) {
+	core_trace_gl_scoped(RenderEntitiesToDepthMap);
 	_entitiesDepthBuffer.bind(true);
 	video::colorMask(false, false, false, false);
 
