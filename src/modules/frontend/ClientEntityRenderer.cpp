@@ -139,7 +139,6 @@ void ClientEntityRenderer::bindEntitiesDepthBuffer(video::TextureUnit texunit) {
 }
 
 int ClientEntityRenderer::renderEntitiesToDepthMap(const core::List<ClientEntity*>& entities, const glm::mat4& viewProjectionMatrix) {
-	constexpr glm::vec4 ignoreClipPlane(glm::up, 0.0f);
 	_entitiesDepthBuffer.bind(true);
 	video::colorMask(false, false, false, false);
 
