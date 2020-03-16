@@ -45,6 +45,10 @@ public:
 				key(_key), value(_value), next(nullptr), first(key), second(value) {
 		}
 
+		inline KeyValue(const KEYTYPE& _key, VALUETYPE&& _value) :
+				key(_key), value(_value), next(nullptr), first(key), second(value) {
+		}
+
 		inline KeyValue(KeyValue &&other) :
 				key(std::move(other.key)), value(std::move(other.value)), next(
 						nullptr), first(key), second(value) {
@@ -180,6 +184,29 @@ public:
 			entry = entry->next;
 		}
 		return end();
+	}
+
+	void emplace(const KEYTYPE& key, VALUETYPE&& value) {
+		const size_t hashValue = (size_t)_hasher(key);
+		KeyValue *prev = nullptr;
+		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
+
+		while (entry != nullptr && !COMPARE()(entry->key, key)) {
+			prev = entry;
+			entry = entry->next;
+		}
+
+		if (entry == nullptr) {
+			entry = _allocator.alloc(key, value);
+			core_assert_msg(entry != nullptr, "Failed to allocate for hash: %i", (int)hashValue);
+			if (prev == nullptr) {
+				_buckets[hashValue % BUCKETSIZE] = entry;
+			} else {
+				prev->next = entry;
+			}
+		} else {
+			entry->value = std::forward(value);
+		}
 	}
 
 	void put(const KEYTYPE& key, const VALUETYPE& value) {
