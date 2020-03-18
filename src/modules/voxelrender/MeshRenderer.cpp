@@ -100,10 +100,10 @@ bool MeshRenderer::isEmpty() const {
 }
 
 void MeshRenderer::prepareState() {
-	video::ScopedState scopedDepth(video::State::DepthTest);
+	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
-	video::ScopedState scopedCullFace(video::State::CullFace);
-	video::ScopedState scopedDepthMask(video::State::DepthMask);
+	video::enable(video::State::CullFace);
+	video::enable(video::State::DepthMask);
 }
 
 void MeshRenderer::renderShadows(const video::Camera& camera) {
