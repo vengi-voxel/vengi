@@ -9,12 +9,12 @@
 #include "VoxelrenderShaders.h"
 #include "WorldChunkMgr.h"
 #include "WorldBuffers.h"
-#include "EntityMgr.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/collection/List.h"
 #include "frontend/ClientEntityRenderer.h"
+#include "frontend/EntityMgr.h"
 #include "render/RandomColorTexture.h"
 #include "render/Shadow.h"
 #include "render/Skybox.h"
@@ -32,7 +32,7 @@ class WorldRenderer {
 protected:
 	WorldChunkMgr _worldChunkMgr;
 	WorldBuffers _worldBuffers;
-	EntityMgr _entityMgr;
+	frontend::EntityMgr _entityMgr;
 
 	render::Shadow _shadow;
 	render::RandomColorTexture _colorTexture;
@@ -113,8 +113,8 @@ public:
 	video::FrameBuffer &entitiesBuffer();
 	render::RandomColorTexture &colorTexture();
 
-	EntityMgr &entityMgr();
-	const EntityMgr &entityMgr() const;
+	frontend::EntityMgr &entityMgr();
+	const frontend::EntityMgr &entityMgr() const;
 
 	WorldChunkMgr &chunkMgr();
 
@@ -130,11 +130,11 @@ inline WorldChunkMgr &WorldRenderer::chunkMgr() {
 	return _worldChunkMgr;
 }
 
-inline EntityMgr &WorldRenderer::entityMgr() {
+inline frontend::EntityMgr &WorldRenderer::entityMgr() {
 	return _entityMgr;
 }
 
-inline const EntityMgr &WorldRenderer::entityMgr() const {
+inline const frontend::EntityMgr &WorldRenderer::entityMgr() const {
 	return _entityMgr;
 }
 

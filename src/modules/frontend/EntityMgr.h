@@ -9,7 +9,7 @@
 #include "frontend/ClientEntity.h"
 #include "video/Camera.h"
 
-namespace voxelrender {
+namespace frontend {
 
 class EntityMgr {
 private:

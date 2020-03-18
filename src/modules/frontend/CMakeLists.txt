@@ -3,6 +3,7 @@ set(SRCS
 	ClientEntityId.h
 	ClientEntityRenderer.h ClientEntityRenderer.cpp
 	Colors.h
+	EntityMgr.cpp EntityMgr.h
 	PlayerAction.h PlayerAction.cpp
 	PlayerMovement.h PlayerMovement.cpp
 )

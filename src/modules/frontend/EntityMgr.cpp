@@ -4,7 +4,7 @@
 
 #include "EntityMgr.h"
 
-namespace voxelrender {
+namespace frontend {
 
 EntityMgr::EntityMgr() :
 		_visibleEntities(1024) {
