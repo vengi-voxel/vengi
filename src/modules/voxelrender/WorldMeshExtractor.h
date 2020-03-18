@@ -47,7 +47,8 @@ private:
 		CloseToPoint(const glm::ivec3& refPoint) : _refPoint(refPoint) {
 		}
 		inline int distanceToSortPos(const glm::ivec3 &pos) const {
-			return glm::abs(pos.x - _refPoint.x) + glm::abs(pos.y - _refPoint.y) + glm::abs(pos.z - _refPoint.z);
+			const glm::ivec3& d = _refPoint - pos;
+			return d.x * d.x + d.z * d.z;
 		}
 		inline bool operator()(const glm::ivec3& lhs, const glm::ivec3& rhs) const {
 			return distanceToSortPos(lhs) > distanceToSortPos(rhs);
