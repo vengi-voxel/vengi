@@ -28,6 +28,7 @@ set(SRCS
 
 	concurrent/Atomic.cpp concurrent/Atomic.h
 	concurrent/Concurrency.h concurrent/Concurrency.cpp
+	concurrent/ConditionVariable.h concurrent/ConditionVariable.cpp
 	concurrent/Lock.cpp concurrent/Lock.h
 	concurrent/ReadWriteLock.cpp concurrent/ReadWriteLock.h
 	concurrent/ThreadPool.cpp concurrent/ThreadPool.h

@@ -15,6 +15,10 @@ Lock::~Lock() {
 	SDL_DestroyMutex(_mutex);
 }
 
+SDL_mutex* Lock::handle() {
+	return _mutex;
+}
+
 void Lock::lock() const {
 	SDL_LockMutex(_mutex);
 }

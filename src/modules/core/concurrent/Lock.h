@@ -17,6 +17,8 @@ public:
 
 	void lock() const;
 	void unlock() const;
+
+	SDL_mutex* handle();
 };
 
 class ScopedLock {

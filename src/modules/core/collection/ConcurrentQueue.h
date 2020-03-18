@@ -4,24 +4,31 @@
 
 #pragma once
 
-#include <stdint.h>
 #include "core/concurrent/Atomic.h"
-#include <vector>
-#include <condition_variable>
-#include <mutex>
-#include <functional>
-#include <algorithm>
+#include "core/concurrent/Lock.h"
+#include "core/concurrent/ConditionVariable.h"
 #include "core/Trace.h"
+#include "core/Common.h"
+#include <stdint.h>
+#include <vector>
+#include <algorithm>
 
 namespace core {
 
-template<class Data, class Comparator = std::less<Data>>
+template<class T>
+struct Less {
+	constexpr bool operator()(const T &lhs, const T &rhs) const {
+		return lhs < rhs;
+	}
+};
+
+template<class Data, class Comparator = Less<Data>>
 class ConcurrentQueue {
 private:
 	using Collection = std::vector<Data>;
 	Collection _data;
-	mutable core_trace_mutex(std::mutex, _mutex);
-	std::condition_variable_any _conditionVariable;
+	mutable core_trace_mutex(core::Lock, _mutex);
+	core::ConditionVariable _conditionVariable;
 	core::AtomicBool _abort { false };
 	Comparator _comparator;
 public:
@@ -38,14 +45,14 @@ public:
 	}
 
 	void setComparator(Comparator comparator) {
-		std::unique_lock lock(_mutex);
+		core::ScopedLock lock(_mutex);
 		_comparator = comparator;
 		std::make_heap(const_cast<Data*>(&_data.front()), const_cast<Data*>(&_data.front()) + _data.size(), _comparator);
 	}
 
 	void abortWait() {
 		_abort = true;
-		_conditionVariable.notify_all();
+		_conditionVariable.signalAll();
 	}
 
 	void reset() {
@@ -53,74 +60,66 @@ public:
 	}
 
 	void clear() {
-		std::unique_lock lock(_mutex);
+		core::ScopedLock lock(_mutex);
 		_data = Collection();
 	}
 
 	void sort() {
-		std::unique_lock lock(_mutex);
+		core::ScopedLock lock(_mutex);
 		std::make_heap(const_cast<Data*>(&_data.front()), const_cast<Data*>(&_data.front()) + _data.size(), _comparator);
 	}
 
 	void push(Data const& data) {
-		{
-			std::unique_lock lock(_mutex);
-			_data.push_back(data);
-			std::push_heap(_data.begin(), _data.end(), _comparator);
-		}
-		_conditionVariable.notify_one();
+		core::ScopedLock lock(_mutex);
+		_data.push_back(data);
+		std::push_heap(_data.begin(), _data.end(), _comparator);
+		_conditionVariable.signalOne();
 	}
 
 	void push(Data&& data) {
-		{
-			std::unique_lock lock(_mutex);
-			_data.push_back(std::move(data));
-			std::push_heap(_data.begin(), _data.end(), _comparator);
-		}
-		_conditionVariable.notify_one();
+		core::ScopedLock lock(_mutex);
+		_data.push_back(core::move(data));
+		std::push_heap(_data.begin(), _data.end(), _comparator);
+		_conditionVariable.signalOne();
 	}
 
 	template<typename ... _Args>
 	void emplace(_Args&&... __args) {
-		{
-			std::unique_lock lock(_mutex);
-			_data.emplace_back(std::forward<_Args>(__args)...);
-			std::push_heap(_data.begin(), _data.end(), _comparator);
-		}
-		_conditionVariable.notify_one();
+		core::ScopedLock lock(_mutex);
+		_data.emplace_back(core::forward<_Args>(__args)...);
+		std::push_heap(_data.begin(), _data.end(), _comparator);
+		_conditionVariable.signalOne();
 	}
 
 	inline bool empty() const {
-		std::unique_lock lock(_mutex);
+		core::ScopedLock lock(_mutex);
 		return _data.empty();
 	}
 
 	inline uint32_t size() const {
-		std::unique_lock lock(_mutex);
+		core::ScopedLock lock(_mutex);
 		return (uint32_t)_data.size();
 	}
 
 	bool pop(Data& poppedValue) {
-		std::unique_lock lock(_mutex);
+		core::ScopedLock lock(_mutex);
 		if (_data.empty()) {
 			return false;
 		}
 
-		poppedValue = std::move(_data.front());
+		poppedValue = core::move(_data.front());
 		std::pop_heap(_data.begin(), _data.end(), _comparator);
 		_data.pop_back();
 		return true;
 	}
 
 	bool waitAndPop(Data& poppedValue) {
-		std::unique_lock lock(_mutex);
-		_conditionVariable.wait(lock, [this] {
-			return _abort || !_data.empty();
-		});
+		core::ScopedLock lock(_mutex);
+		_conditionVariable.wait(_mutex);
 		if (_abort) {
 			return false;
 		}
-		poppedValue = std::move(_data.front());
+		poppedValue = core::move(_data.front());
 		std::pop_heap(_data.begin(), _data.end(), _comparator);
 		_data.pop_back();
 		return true;
