@@ -1,0 +1,48 @@
+project(testnuklear)
+set(SRCS
+	TestNuklear.h TestNuklear.cpp
+)
+set(FILES
+	testnuklear/images/image8.png
+	testnuklear/images/image3.png
+	testnuklear/images/image5.png
+	testnuklear/images/image6.png
+	testnuklear/images/image9.png
+	testnuklear/images/image7.png
+	testnuklear/images/image4.png
+	testnuklear/images/image1.png
+	testnuklear/images/image2.png
+	testnuklear/icon/pen.png
+	testnuklear/icon/volume.png
+	testnuklear/icon/home.png
+	testnuklear/icon/prev.png
+	testnuklear/icon/tools.png
+	testnuklear/icon/next.png
+	testnuklear/icon/stop.png
+	testnuklear/icon/music.png
+	testnuklear/icon/copy.png
+	testnuklear/icon/play.png
+	testnuklear/icon/unchecked.png
+	testnuklear/icon/export.png
+	testnuklear/icon/plane.png
+	testnuklear/icon/pause.png
+	testnuklear/icon/computer.png
+	testnuklear/icon/wifi.png
+	testnuklear/icon/font.png
+	testnuklear/icon/checked.png
+	testnuklear/icon/img.png
+	testnuklear/icon/directory.png
+	testnuklear/icon/settings.png
+	testnuklear/icon/text.png
+	testnuklear/icon/cloud.png
+	testnuklear/icon/rocket.png
+	testnuklear/icon/edit.png
+	testnuklear/icon/default.png
+	testnuklear/icon/delete.png
+	testnuklear/icon/movie.png
+	testnuklear/icon/desktop.png
+	testnuklear/icon/phone.png
+	testnuklear/extra_font/Roboto-Regular.ttf
+)
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED NOINSTALL)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES nuklear)
