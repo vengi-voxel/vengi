@@ -318,7 +318,7 @@ bool scissor(int x, int y, int w, int h) {
 	 */
 	GLint bottom;
 	if (_priv::s.clipOriginLowerLeft) {
-		bottom = _priv::s.windowHeight - (_priv::s.scissorY + _priv::s.scissorH);
+		bottom = _priv::s.viewportH - (_priv::s.scissorY + _priv::s.scissorH);
 	} else {
 		bottom = _priv::s.scissorY;
 	}
