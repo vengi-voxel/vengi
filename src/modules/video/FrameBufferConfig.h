@@ -37,13 +37,31 @@ public:
 	const glm::ivec2& dimension() const;
 
 	/**
-	 * @brief Enable or disable the color texture binding
+	 * @brief Configure a default color attachment if no other was given
+	 * @note Use the configured @c TextureFormat to set up the color texture attachment
+	 * @sa colorTextureFormat()
 	 */
 	FrameBufferConfig& colorTexture(bool colorTexture);
+	/**
+	 * @brief Configure the default color texture attachment
+	 * @sa colorTexture()
+	 */
 	FrameBufferConfig& colorTextureFormat(TextureFormat format);
+	/**
+	 * @return Returns the state of the default color texture
+	 * @note If you configure custom color textures, this setting is ignored.
+	 * @sa colorTexture()
+	 */
 	bool useColorTexture() const;
+	/**
+	 * @sa colorTextureFormat()
+	 */
 	TextureFormat colorTextureFormat() const;
 
+	/**
+	 * @brief Manually configure texture attachments
+	 * @note If you add color texture attachements here, the @c colorTexture() state is ignored
+	 */
 	FrameBufferConfig& addTextureAttachment(const TextureConfig& cfg, video::FrameBufferAttachment attachment = video::FrameBufferAttachment::Color0);
 	const ColorTextureMap& textureAttachments() const;
 
