@@ -4,6 +4,27 @@
 
 #include "LUAFunctions.h"
 #include "core/Log.h"
+#include "core/command/CommandHandler.h"
+#include "core/Var.h"
+
+void clua_assert(lua_State* s, bool pass, const char *msg) {
+	if (pass) {
+		return;
+	}
+	lua_Debug ar;
+	ar.name = nullptr;
+	if (lua_getstack(s, 0, &ar)) {
+		lua_getinfo(s, "n", &ar);
+	}
+	if (ar.name == nullptr) {
+		ar.name = "?";
+	}
+	luaL_error(s, msg, ar.name);
+}
+
+void clua_assert_argc(lua_State* s, bool pass) {
+	clua_assert(s, pass, "wrong number of arguments to '%s'");
+}
 
 int clua_assignmetatable(lua_State* s, const char *name) {
 	luaL_getmetatable(s, name);
@@ -49,4 +70,113 @@ int clua_checkboolean(lua_State *s, int index) {
 	}
 	luaL_checktype(s, index, LUA_TBOOLEAN);
 	return lua_toboolean(s, index);
+}
+
+int clua_cmdexecute(lua_State *s) {
+	const char *cmds = luaL_checkstring(s, 1);
+	core::executeCommands(cmds);
+	return 0;
+}
+
+void clua_cmdregister(lua_State* s) {
+	const luaL_Reg funcs[] = {
+		{"execute", clua_cmdexecute},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, funcs, "_metacmd", "cmd");
+}
+
+int clua_vargetstr(lua_State *s) {
+	const char *var = luaL_checkstring(s, 1);
+	const core::VarPtr& v = core::Var::get(var, nullptr);
+	if (!v) {
+		return luaL_error(s, "Invalid variable %s", var);
+	}
+	lua_pushstring(s, v->strVal().c_str());
+	return 1;
+}
+
+int clua_vargetint(lua_State *s) {
+	const char *var = luaL_checkstring(s, 1);
+	const core::VarPtr& v = core::Var::get(var, nullptr);
+	if (!v) {
+		return luaL_error(s, "Invalid variable %s", var);
+	}
+	lua_pushinteger(s, v->intVal());
+	return 1;
+}
+
+int clua_vargetbool(lua_State *s) {
+	const char *var = luaL_checkstring(s, 1);
+	const core::VarPtr& v = core::Var::get(var, nullptr);
+	if (!v) {
+		return luaL_error(s, "Invalid variable %s", var);
+	}
+	lua_pushboolean(s, v->boolVal());
+	return 1;
+}
+
+int clua_vargetfloat(lua_State *s) {
+	const char *var = luaL_checkstring(s, 1);
+	const core::VarPtr& v = core::Var::get(var, nullptr);
+	if (!v) {
+		return luaL_error(s, "Invalid variable %s", var);
+	}
+	lua_pushnumber(s, v->floatVal());
+	return 1;
+}
+
+int clua_varsetstr(lua_State *s) {
+	const char *var = luaL_checkstring(s, 1);
+	const core::VarPtr& v = core::Var::get(var, nullptr);
+	if (!v) {
+		return luaL_error(s, "Invalid variable %s", var);
+	}
+	v->setVal(luaL_checkstring(s, 2));
+	return 0;
+}
+
+int clua_varsetbool(lua_State *s) {
+	const char *var = luaL_checkstring(s, 1);
+	const core::VarPtr& v = core::Var::get(var, nullptr);
+	if (!v) {
+		return luaL_error(s, "Invalid variable %s", var);
+	}
+	v->setVal(clua_checkboolean(s, 2));
+	return 0;
+}
+
+int clua_varsetint(lua_State *s) {
+	const char *var = luaL_checkstring(s, 1);
+	const core::VarPtr& v = core::Var::get(var, nullptr);
+	if (!v) {
+		return luaL_error(s, "Invalid variable %s", var);
+	}
+	v->setVal((int)luaL_checkinteger(s, 2));
+	return 0;
+}
+
+int clua_varsetfloat(lua_State *s) {
+	const char *var = luaL_checkstring(s, 1);
+	const core::VarPtr& v = core::Var::get(var, nullptr);
+	if (!v) {
+		return luaL_error(s, "Invalid variable %s", var);
+	}
+	v->setVal((float)luaL_checknumber(s, 2));
+	return 0;
+}
+
+void clua_varregister(lua_State* s) {
+	const luaL_Reg funcs[] = {
+		{"str", clua_vargetstr},
+		{"bool", clua_vargetbool},
+		{"int", clua_vargetint},
+		{"float", clua_vargetfloat},
+		{"setstr", clua_varsetstr},
+		{"setbool", clua_varsetbool},
+		{"setint", clua_varsetint},
+		{"setfloat", clua_varsetfloat},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, funcs, "_metavar", "var");
 }

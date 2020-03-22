@@ -10,6 +10,9 @@
 #include <glm/gtx/string_cast.hpp>
 #include <vector>
 
+extern void clua_assert(lua_State* s, bool pass, const char *msg);
+extern void clua_assert_argc(lua_State* s, bool pass);
+
 template<class T>
 struct clua_meta {};
 
@@ -429,3 +432,6 @@ extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);
 extern int clua_typerror(lua_State *L, int narg, const char *tname);
 
 extern int clua_checkboolean(lua_State *s, int index);
+
+extern void clua_cmdregister(lua_State* s);
+extern void clua_varregister(lua_State* s);
