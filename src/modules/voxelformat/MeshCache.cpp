@@ -89,6 +89,9 @@ bool MeshCache::init() {
 }
 
 void MeshCache::shutdown() {
+	if (_initCalls == 0) {
+		return;
+	}
 	--_initCalls;
 	if (_initCalls > 0) {
 		return;
