@@ -189,6 +189,10 @@ float lineWidth(float width) {
 	return oldWidth;
 }
 
+const glm::vec4& currentClearColor() {
+	return _priv::s.clearColor;
+}
+
 bool clearColor(const glm::vec4& clearColor) {
 	if (_priv::s.clearColor == clearColor) {
 		return false;

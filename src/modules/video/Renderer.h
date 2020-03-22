@@ -170,6 +170,7 @@ extern bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, int 
  */
 extern float lineWidth(float width);
 extern bool clearColor(const glm::vec4& clearColor);
+extern const glm::vec4& currentClearColor();
 extern void clear(ClearFlag flag);
 extern bool viewport(int x, int y, int w, int h);
 extern void getScissor(int& x, int& y, int& w, int& h);

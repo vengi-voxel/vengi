@@ -31,6 +31,7 @@ void FrameBuffer::addBufferAttachment(FrameBufferAttachment attachment, const Re
 bool FrameBuffer::hasBufferAttachment(FrameBufferAttachment attachment) {
 	return (bool)_bufferAttachments[core::enumVal(attachment)];
 }
+
 bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 	const glm::ivec2& dim = cfg.dimension();
 	for (const auto& a : cfg.textureAttachments()) {
