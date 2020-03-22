@@ -1,5 +1,5 @@
 
-function printtable(t)
+local function printtable(t)
 	a = {}
 	for n in pairs(t) do
 		table.insert(a, n)

@@ -1,4 +1,4 @@
-function range(a, b, step)
+local function range(a, b, step)
 	if not b then
 		b = a
 		a = 1

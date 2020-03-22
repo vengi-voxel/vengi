@@ -12,14 +12,14 @@ local MAX_WATER_HEIGHT = 10
 -- Flower, Bloom, Mushroom, Rock, Sand, Cloud, Dirt, Roof, Wall
 -- @underGround Only used when not a surface
 --
-function addBiome(lower, upper, humidity, temperature, voxelType, underGround, treeDistribution)
+local function addBiome(lower, upper, humidity, temperature, voxelType, underGround, treeDistribution)
   return biomeMgr.addBiome(lower, upper, humidity, temperature, voxelType, underGround, treeDistribution)
 end
 
 ---
 -- The lower the value the higher the amount of trees in that biome.
 --
-function treeDistance(humidity, temperature)
+local function treeDistance(humidity, temperature)
   local dist = 30
   if temperature > 0.7 or humidity < 0.2 then
     dist = 55
@@ -34,17 +34,17 @@ end
 -- @tree Valid values are defined by the assets available in the data dir. The type defines the directory
 -- to load the tree volumes from
 --
-function addTree(biome, tree)
+local function addTree(biome, tree)
   biome:addTree(tree)
 end
 
-function addSand(lower, upper, humidity, temperature, underGround)
+local function addSand(lower, upper, humidity, temperature, underGround)
   local sand = addBiome(lower, upper, humidity, temperature, "Sand", underGround, treeDistance(humidity, temperature))
   addTree(sand, "palm")
   return sand
 end
 
-function addGrass(lower, upper, humidity, temperature, underGround)
+local function addGrass(lower, upper, humidity, temperature, underGround)
   local grass = addBiome(lower, upper, humidity, temperature, "Grass", underGround, treeDistance(humidity, temperature))
   addTree(grass, "pine")
   addTree(grass, "fir")
