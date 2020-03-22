@@ -73,24 +73,25 @@ void Mesh::removeUnusedVertices() {
 	std::vector<bool> isVertexUsed(_vecVertices.size());
 	std::fill(isVertexUsed.begin(), isVertexUsed.end(), false);
 
-	for (uint32_t triCt = 0; triCt < _vecIndices.size(); triCt++) {
-		int v = _vecIndices[triCt];
+	for (size_t triCt = 0u; triCt < _vecIndices.size(); ++triCt) {
+		IndexType v = _vecIndices[triCt];
 		isVertexUsed[v] = true;
 	}
 
 	int noOfUsedVertices = 0;
-	std::vector<uint32_t> newPos(_vecVertices.size());
-	for (size_t vertCt = 0; vertCt < _vecVertices.size(); vertCt++) {
-		if (isVertexUsed[vertCt]) {
-			_vecVertices[noOfUsedVertices] = _vecVertices[vertCt];
-			newPos[vertCt] = noOfUsedVertices;
-			noOfUsedVertices++;
+	std::vector<IndexType> newPos(_vecVertices.size());
+	for (size_t vertCt = 0u; vertCt < _vecVertices.size(); ++vertCt) {
+		if (core_unlikely(!isVertexUsed[vertCt])) {
+			continue;
 		}
+		_vecVertices[noOfUsedVertices] = _vecVertices[vertCt];
+		newPos[vertCt] = noOfUsedVertices;
+		++noOfUsedVertices;
 	}
 
 	_vecVertices.resize(noOfUsedVertices);
 
-	for (size_t triCt = 0; triCt < _vecIndices.size(); triCt++) {
+	for (size_t triCt = 0u; triCt < _vecIndices.size(); ++triCt) {
 		_vecIndices[triCt] = newPos[_vecIndices[triCt]];
 	}
 	_vecIndices.resize(_vecIndices.size());

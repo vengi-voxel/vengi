@@ -41,15 +41,18 @@ static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 		q1.vertices[0] = q2.vertices[0];
 		q1.vertices[3] = q2.vertices[3];
 		return true;
-	} else if (q1.vertices[3] == q2.vertices[0] && q1.vertices[2] == q2.vertices[1]) {
+	}
+	if (q1.vertices[3] == q2.vertices[0] && q1.vertices[2] == q2.vertices[1]) {
 		q1.vertices[3] = q2.vertices[3];
 		q1.vertices[2] = q2.vertices[2];
 		return true;
-	} else if (q1.vertices[1] == q2.vertices[0] && q1.vertices[2] == q2.vertices[3]) {
+	}
+	if (q1.vertices[1] == q2.vertices[0] && q1.vertices[2] == q2.vertices[3]) {
 		q1.vertices[1] = q2.vertices[1];
 		q1.vertices[2] = q2.vertices[2];
 		return true;
-	} else if (q1.vertices[0] == q2.vertices[3] && q1.vertices[1] == q2.vertices[2]) {
+	}
+	if (q1.vertices[0] == q2.vertices[3] && q1.vertices[1] == q2.vertices[2]) {
 		q1.vertices[0] = q2.vertices[0];
 		q1.vertices[1] = q2.vertices[1];
 		return true;

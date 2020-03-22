@@ -38,7 +38,7 @@ const uint32_t MaxVerticesPerPosition = 8;
  */
 
 struct Quad {
-	Quad(IndexType v0, IndexType v1, IndexType v2, IndexType v3) {
+	inline Quad(IndexType v0, IndexType v1, IndexType v2, IndexType v3) {
 		vertices[0] = v0;
 		vertices[1] = v1;
 		vertices[2] = v2;
@@ -64,7 +64,7 @@ public:
 	Array(uint32_t width, uint32_t height, uint32_t depth) :
 			_width(width), _height(height), _depth(depth) {
 		_elements = (VertexData*)core_malloc(width * height * depth * sizeof(VertexData));
-		core_memset(_elements, 0, width * height * depth * sizeof(VertexData));
+		clear();
 	}
 
 	~Array() {
@@ -432,7 +432,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 					volumeSampler.movePositiveZ();
 				}
 
-				if (x != upper.x) {
+				if (core_likely(x != upper.x)) {
 					volumeSampler.movePositiveX();
 				}
 			}
