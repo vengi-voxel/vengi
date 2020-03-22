@@ -7,13 +7,13 @@
 
 namespace render {
 
-bool TextureRenderer::init(const glm::vec2& size) {
+bool TextureRenderer::init(const glm::vec2& size, bool yFlipped) {
 	if (!_textureShader.setup()) {
 		Log::error("Failed to init the texture shader");
 		return false;
 	}
 
-	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createTexturedQuad(glm::vec2(0.0f), size);
+	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createTexturedQuad(glm::vec2(0.0f), size, yFlipped);
 	_texturedFullscreenQuad.addAttribute(_textureShader.getPosAttribute(fullscreenQuadIndices.x, &glm::vec2::x));
 	_texturedFullscreenQuad.addAttribute(_textureShader.getTexcoordAttribute(fullscreenQuadIndices.y, &glm::vec2::x));
 	_texturedFullscreenQuad.addAttribute(_textureShader.getColorAttribute(_texturedFullscreenQuad.createWhiteColorForQuad(), &glm::vec2::x));

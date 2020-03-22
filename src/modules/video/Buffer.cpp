@@ -352,7 +352,7 @@ int32_t Buffer::createWhiteColorForQuad() {
 	return create(color, sizeof(color));
 }
 
-glm::ivec2 Buffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension) {
+glm::ivec2 Buffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension, bool yFlipped) {
 	// counter clock wise winding
 	//
 	// -1/1    1/1
@@ -373,7 +373,11 @@ glm::ivec2 Buffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& di
 	};
 	glm::ivec2 indices;
 	indices.x = create(vecs, sizeof(vecs));
-	indices.y = createFullscreenTextureBuffer();
+	if (yFlipped) {
+		indices.y = createFullscreenTextureBufferYFlipped();
+	} else {
+		indices.y = createFullscreenTextureBuffer();
+	}
 	return indices;
 }
 

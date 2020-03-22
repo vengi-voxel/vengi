@@ -25,14 +25,14 @@ public:
 	 * @param[in] size The size for the texture quad
 	 * @sa shutdown()
 	 */
-	bool init(const glm::vec2& size);
+	bool init(const glm::vec2& size, bool yFlipped = false);
 	/**
 	 * @sa init()
 	 */
 	void shutdown();
 
 	/**
-	 * @brief Perform the rendering with the shader::TextureShader
+	 * @brief Perform the rendering with the shader::TextureShader (of the whole texture)
 	 * @note The given texture unit must have the texture bound already
 	 * @param[in] projection The projection matrix to hand over to the texture shader
 	 * @param[in] model The model matrix to hand over to the texture shader
