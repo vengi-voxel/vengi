@@ -48,20 +48,6 @@ inline T clamp(T a, T low, T high) {
 static const glm::vec3 ZERO(0.0f);
 static const glm::vec3 VEC3_INFINITE(std::numeric_limits<float>::infinity());
 
-inline glm::vec3 parse(const core::String& in) {
-	float x = 0.0f;
-	float y = 0.0f;
-	float z = 0.0f;
-
-#ifdef _MSC_VER
-	if (::sscanf_s(in.c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
-#else
-	if (::sscanf(in.c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
-#endif
-		return VEC3_INFINITE;
-	}
-
-	return glm::vec3(x, y, z);
-}
+extern glm::vec3 parse(const core::String& in);
 
 }

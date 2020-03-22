@@ -12,7 +12,7 @@ set(SRCS
 	common/IFactoryRegistry.h
 	common/IParser.h
 	common/Log.h
-	common/Math.h
+	common/Math.h common/Math.cpp
 	common/MemoryAllocator.h
 	common/MoveVector.h
 	common/NonCopyable.h
