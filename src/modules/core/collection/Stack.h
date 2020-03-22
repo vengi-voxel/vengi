@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Assert.h"
+#include "core/Common.h"
 #include <stdint.h>
 
 namespace core {
@@ -36,6 +37,12 @@ public:
 	void push(const TYPE &x) {
 		core_assert(_size < SIZE);
 		_stack[_size++] = x;
+	}
+
+	template<typename... _Args>
+	void emplace(_Args&&... args) {
+		core_assert(_size < SIZE);
+		_stack[_size++] = TYPE(core::forward<_Args>(args)...);
 	}
 
 	const TYPE &top() const {
