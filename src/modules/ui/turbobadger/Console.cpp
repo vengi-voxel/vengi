@@ -46,6 +46,7 @@ void Console::drawString(int x, int y, const glm::ivec4& color, int, const char*
 }
 
 void Console::beforeRender(const math::Rect<int> &rect) {
+	_consoleFontSize->setVal(_fontSize);
 	if (_consoleFontSize->isDirty()) {
 		_font = getMonoSpaceFont(_consoleFontSize->intVal());
 		_consoleFontSize->markClean();

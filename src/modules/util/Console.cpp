@@ -140,6 +140,10 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 			cursorWordLeft();
 		} else if (key == SDLK_RIGHT) {
 			cursorWordRight();
+		} else if (key == SDLK_PLUS) {
+			++_fontSize;
+		} else if (key == SDLK_MINUS) {
+			--_fontSize;
 		}
 		return true;
 	}

@@ -105,6 +105,7 @@ protected:
 	int _cursorPos = 0;
 	int _scrollPos = 0;
 	int _maxLines = 0;
+	int _fontSize = 14;
 
 	static core::String removeAnsiColors(const char* message);
 	static void logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message);
