@@ -94,8 +94,8 @@ protected:
 	 * and the start of the last frame
 	 */
 	uint64_t _deltaFrameMillis = 0ul;
-	float _deltaFrameSeconds = 0.0f;
-	float _nowSeconds = 0.0f;
+	double _deltaFrameSeconds = 0.0f;
+	double _nowSeconds = 0.0f;
 	/**
 	 * @brief The absolute milliseconds when the application was started.
 	 * Can be used to calculate the uptime.
