@@ -115,7 +115,9 @@ public:
 
 	bool waitAndPop(Data& poppedValue) {
 		core::ScopedLock lock(_mutex);
-		_conditionVariable.wait(_mutex);
+		if (_data.empty()) {
+			_conditionVariable.wait(_mutex);
+		}
 		if (_abort) {
 			return false;
 		}
