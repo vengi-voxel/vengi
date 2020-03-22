@@ -215,6 +215,7 @@ core::AppState WindowedApp::onInit() {
 	SDL_DisplayMode displayMode;
 	const int numDisplays = core_max(0, SDL_GetNumVideoDisplays());
 	const int displayIndex = glm::clamp(core::Var::getSafe(cfg::ClientWindowDisplay)->intVal(), 0, numDisplays);
+	Log::info("Try to use display %i", displayIndex);
 	SDL_GetDesktopDisplayMode(displayIndex, &displayMode);
 
 	for (int i = 0; i < numDisplays; ++i) {
@@ -225,16 +226,7 @@ core::AppState WindowedApp::onInit() {
 		float ddpi = -1.0f;
 		float hdpi = -1.0f;
 		float vdpi = -1.0f;
-		if (SDL_GetDisplayDPI(i, &ddpi, &hdpi, &vdpi) == 0) {
-#ifdef _APPLE_
-			const float baseDpi = 72.0f;
-#else
-			const float baseDpi = 96.0f;
-#endif
-			_dpiFactor = ddpi / baseDpi;
-			_dpiHorizontalFactor = hdpi / baseDpi;
-			_dpiVerticalFactor = vdpi / baseDpi;
-		}
+		SDL_GetDisplayDPI(i, &ddpi, &hdpi, &vdpi);
 		Log::info("Display %i: %i:%i x %i:%i (dpi: %f, h: %f, v: %f)", i, dr.x, dr.y, dr.w, dr.h, ddpi, hdpi, vdpi);
 	}
 
@@ -262,14 +254,26 @@ core::AppState WindowedApp::onInit() {
 	} else {
 		flags |= SDL_WINDOW_HIDDEN;
 	}
+	SDL_Rect displayBounds;
+	SDL_GetDisplayBounds(displayIndex, &displayBounds);
 	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHghDPI);
 	if (highDPI->boolVal()) {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 		Log::info("Enable high dpi support");
+		float ddpi = -1.0f;
+		float hdpi = -1.0f;
+		float vdpi = -1.0f;
+		if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0) {
+#ifdef _APPLE_
+			const float baseDpi = 72.0f;
+#else
+			const float baseDpi = 96.0f;
+#endif
+			_dpiFactor = ddpi / baseDpi;
+			_dpiHorizontalFactor = hdpi / baseDpi;
+			_dpiVerticalFactor = vdpi / baseDpi;
+		}
 	} else {
-		_dpiFactor = 1.0f;
-		_dpiHorizontalFactor = 1.0f;
-		_dpiVerticalFactor = 1.0f;
 		Log::info("Disable high dpi support");
 	}
 	if (fullscreen) {
@@ -281,8 +285,6 @@ core::AppState WindowedApp::onInit() {
 		Log::info("available driver: %s", SDL_GetVideoDriver(i));
 	}
 
-	SDL_Rect displayBounds;
-	SDL_GetDisplayBounds(displayIndex, &displayBounds);
 	Log::info("driver: %s", SDL_GetCurrentVideoDriver());
 	Log::info("found %i displays (use %i at %i:%i)", numDisplays, displayIndex, displayBounds.x, displayBounds.y);
 	if (fullscreen && numDisplays > 1) {
@@ -306,6 +308,10 @@ core::AppState WindowedApp::onInit() {
 	}
 
 #undef InternalCreateWindow
+
+	if (displayIndex != SDL_GetWindowDisplayIndex(_window)) {
+		Log::error("Failed to create window at display %i", displayIndex);
+	}
 
 	_rendererContext = video::createContext(_window);
 
