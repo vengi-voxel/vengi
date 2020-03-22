@@ -23,9 +23,7 @@ core::AppState TestComputeTexture3D::onInit() {
 		return state;
 	}
 
-	_camera.setMode(video::CameraMode::Orthogonal);
-	_camera.setNearPlane(-1.0f);
-	_camera.setFarPlane(1.0f);
+	_camera = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
 
 	if (!compute::init()) {
 		Log::error("Failed to initialize the compute context");

@@ -17,9 +17,7 @@ core::AppState TestTexture::onInit() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
-	_camera.setMode(video::CameraMode::Orthogonal);
-	_camera.setNearPlane(-1.0f);
-	_camera.setFarPlane(1.0f);
+	_camera = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
 
 	if (!_renderer.init(frameBufferDimension())) {
 		Log::error("Failed to init the texture renderer");

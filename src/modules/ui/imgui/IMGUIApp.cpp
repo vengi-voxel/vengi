@@ -183,10 +183,7 @@ core::AppState IMGUIApp::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_camera.setNearPlane(-1.0f);
-	_camera.setFarPlane(1.0f);
-	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
-	_camera.update(0L);
+	_camera = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
 
 	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &ImDrawVert::r, true));
 	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, &ImDrawVert::u));

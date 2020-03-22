@@ -102,10 +102,7 @@ bool UIRendererGL::init(const glm::ivec2& pixelDimensions, const glm::ivec2& scr
 		return false;
 	}
 
-	_camera.setNearPlane(-1.0f);
-	_camera.setFarPlane(1.0f);
-	_camera.init(glm::ivec2(0), pixelDimensions, screenDimensions);
-	_camera.update(0L);
+	_camera = video::uiCamera(glm::ivec2(0), pixelDimensions, screenDimensions);
 
 	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &Vertex::r, true));
 	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, &Vertex::u));
