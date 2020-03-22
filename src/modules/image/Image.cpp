@@ -23,12 +23,11 @@
 #define STBIW_REALLOC core_realloc
 #define STBIW_FREE core_free
 
-namespace image {
-
 #if __GNUC__
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough" // stb_image.h
 #endif
 
+#define STBI_NO_STDIO
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -37,6 +36,8 @@ namespace image {
 
 #undef STB_IMAGE_IMPLEMENTATION
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
+
+namespace image {
 
 Image::Image(const core::String& name) :
 		io::IOResource(), _name(name) {
