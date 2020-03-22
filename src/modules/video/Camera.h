@@ -412,4 +412,13 @@ inline float Camera::targetDistance() const {
 	return _distance;
 }
 
+inline Camera uiCamera(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
+	Camera camera(CameraType::FirstPerson, video::CameraMode::Orthogonal);
+	camera.init(position, frameBufferSize, windowSize);
+	camera.setNearPlane(-1.0f);
+	camera.setFarPlane(1.0f);
+	camera.update();
+	return camera;
+}
+
 }
