@@ -5,9 +5,15 @@
 #include "StringUtil.h"
 #include "Common.h"
 #include <ctype.h>
+#include <math.h>
+#include <stdlib.h>
 
 namespace core {
 namespace string {
+
+int64_t toLong(const char* str) {
+	return ::atol(str);
+}
 
 char* getBeforeToken(char **buffer, const char *token, size_t bufferSize) {
 	char *begin = *buffer;

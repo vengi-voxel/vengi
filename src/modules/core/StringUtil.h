@@ -7,6 +7,7 @@
 #include "core/String.h"
 #include <vector>
 #include <SDL_stdinc.h>
+#include <inttypes.h>
 
 namespace core {
 namespace string {
@@ -18,14 +19,11 @@ inline int toInt(const char* str) {
 	return SDL_atoi(str);
 }
 
-inline int64_t toLong(const char* str) {
-	return ::atol(str);
-}
-
 inline int toInt(const core::String& str) {
 	return toInt(str.c_str());
 }
 
+extern int64_t toLong(const char* str);
 inline int64_t toLong(const core::String& str) {
 	return toLong(str.c_str());
 }
