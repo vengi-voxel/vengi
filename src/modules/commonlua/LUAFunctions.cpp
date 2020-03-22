@@ -72,7 +72,7 @@ int clua_checkboolean(lua_State *s, int index) {
 	return lua_toboolean(s, index);
 }
 
-int clua_cmdexecute(lua_State *s) {
+static int clua_cmdexecute(lua_State *s) {
 	const char *cmds = luaL_checkstring(s, 1);
 	core::executeCommands(cmds);
 	return 0;
@@ -86,7 +86,7 @@ void clua_cmdregister(lua_State* s) {
 	clua_registerfuncsglobal(s, funcs, "_metacmd", "cmd");
 }
 
-int clua_vargetstr(lua_State *s) {
+static int clua_vargetstr(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
@@ -96,7 +96,7 @@ int clua_vargetstr(lua_State *s) {
 	return 1;
 }
 
-int clua_vargetint(lua_State *s) {
+static int clua_vargetint(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
@@ -106,7 +106,7 @@ int clua_vargetint(lua_State *s) {
 	return 1;
 }
 
-int clua_vargetbool(lua_State *s) {
+static int clua_vargetbool(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
@@ -116,7 +116,7 @@ int clua_vargetbool(lua_State *s) {
 	return 1;
 }
 
-int clua_vargetfloat(lua_State *s) {
+static int clua_vargetfloat(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
@@ -126,7 +126,7 @@ int clua_vargetfloat(lua_State *s) {
 	return 1;
 }
 
-int clua_varsetstr(lua_State *s) {
+static int clua_varsetstr(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
@@ -136,7 +136,7 @@ int clua_varsetstr(lua_State *s) {
 	return 0;
 }
 
-int clua_varsetbool(lua_State *s) {
+static int clua_varsetbool(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
@@ -146,7 +146,7 @@ int clua_varsetbool(lua_State *s) {
 	return 0;
 }
 
-int clua_varsetint(lua_State *s) {
+static int clua_varsetint(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
@@ -156,7 +156,7 @@ int clua_varsetint(lua_State *s) {
 	return 0;
 }
 
-int clua_varsetfloat(lua_State *s) {
+static int clua_varsetfloat(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
@@ -179,4 +179,41 @@ void clua_varregister(lua_State* s) {
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, funcs, "_metavar", "var");
+}
+
+static int clua_loginfo(lua_State *s) {
+	Log::info("%s", luaL_checkstring(s, 1));
+	return 0;
+}
+
+static int clua_logerror(lua_State *s) {
+	Log::error("%s", luaL_checkstring(s, 1));
+	return 0;
+}
+
+static int clua_logwarn(lua_State *s) {
+	Log::warn("%s", luaL_checkstring(s, 1));
+	return 0;
+}
+
+static int clua_logdebug(lua_State *s) {
+	Log::debug("%s", luaL_checkstring(s, 1));
+	return 0;
+}
+
+static int clua_logtrace(lua_State *s) {
+	Log::trace("%s", luaL_checkstring(s, 1));
+	return 0;
+}
+
+void clua_logregister(lua_State* s) {
+	const luaL_Reg funcs[] = {
+		{"info", clua_loginfo},
+		{"error", clua_logerror},
+		{"warn", clua_logwarn},
+		{"debug", clua_logdebug},
+		{"trace", clua_logtrace},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, funcs, "_metalog", "log");
 }

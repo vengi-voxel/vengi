@@ -435,3 +435,4 @@ extern int clua_checkboolean(lua_State *s, int index);
 
 extern void clua_cmdregister(lua_State* s);
 extern void clua_varregister(lua_State* s);
+extern void clua_logregister(lua_State* s);
