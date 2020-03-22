@@ -31,6 +31,7 @@
 #include "core/TimeProvider.h"
 #include "core/SharedPtr.h"
 #include <SDL.h>
+#include <engine-config.h>
 
 Client::Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
 		const stock::StockDataProviderPtr& stockDataProvider,
