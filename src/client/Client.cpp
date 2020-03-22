@@ -6,12 +6,9 @@
 #include "ServerMessages_generated.h"
 #include "Client.h"
 #include "voxel/ClientPager.h"
-#include "ui/LoginWindow.h"
-#include "ui/DisconnectWindow.h"
-#include "ui/AuthFailedWindow.h"
-#include "ui/HudWindow.h"
-#include "ui/turbobadger/FontUtil.h"
-#include "ui/turbobadger/Window.h"
+#include "video/TextureAtlasRenderer.h"
+#include "voxelformat/MeshCache.h"
+#include "voxelrender/CachedMeshRenderer.h"
 #include "core/command/Command.h"
 #include "core/GLM.h"
 #include "core/io/Filesystem.h"
@@ -30,6 +27,7 @@
 #include "core/metric/Metric.h"
 #include "core/TimeProvider.h"
 #include "core/SharedPtr.h"
+#include "commonlua/LUAFunctions.h"
 #include <SDL.h>
 #include <engine-config.h>
 
@@ -40,10 +38,13 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		const network::ClientMessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 		const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache,
-		const voxelformat::MeshCachePtr& meshCache) :
-		Super(metric, filesystem, eventBus, timeProvider), _animationCache(animationCache),
+		const voxelformat::MeshCachePtr& meshCache,
+		const video::TexturePoolPtr& texturePool,
+		const voxelrender::CachedMeshRendererPtr& meshRenderer,
+		const video::TextureAtlasRendererPtr& textureAtlasRenderer) :
+		Super(metric, filesystem, eventBus, timeProvider, texturePool, meshRenderer, textureAtlasRenderer), _animationCache(animationCache),
 		_network(network), _worldMgr(world), _clientPager(worldPager), _messageSender(messageSender),
-		_waiting(this), _stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
+		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
 		_meshCache(meshCache), _camera(world, _worldRenderer) {
 	init(ORGANISATION, "client");
 }
@@ -87,8 +88,8 @@ void Client::sendMovement() {
 
 void Client::onEvent(const network::DisconnectEvent& event) {
 	_network->destroy();
-	ui::turbobadger::Window* main = new frontend::LoginWindow(this);
-	new frontend::DisconnectWindow(main);
+	pushWindow("login");
+	pushWindow("disconnect_info");
 }
 
 void Client::onEvent(const network::NewConnectionEvent& event) {
@@ -104,7 +105,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 
 void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
 	Log::info("world created");
-	new frontend::HudWindow(this, frameBufferDimension());
+	pushWindow("hud");
 }
 
 core::AppState Client::onConstruct() {
@@ -119,6 +120,7 @@ core::AppState Client::onConstruct() {
 	core::Var::get(cfg::ClientPort, SERVER_PORT);
 	core::Var::get(cfg::ClientHost, SERVER_HOST);
 	core::Var::get(cfg::ClientAutoLogin, "false");
+	core::Var::get(cfg::ClientEmail, "");
 	core::Var::get(cfg::ClientName, "noname", core::CV_BROADCAST);
 	core::Var::get(cfg::ClientPassword, "");
 	_chunkUrl = core::Var::get(cfg::ServerChunkBaseUrl, "");
@@ -195,7 +197,6 @@ core::AppState Client::onInit() {
 	}
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
-	_waiting.init();
 
 	if (!_animationCache->init()) {
 		Log::error("Failed to initialize character cache");
@@ -227,23 +228,65 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	handleLogin();
+	rootWindow("main");
 
 	return state;
 }
 
+static inline Client* clientlua_ctx(lua_State* s) {
+	Client* client = lua::LUA::globalData<Client>(s, "clientpointer");
+	core_assert(client != nullptr);
+	return client;
+}
+
+static int clientlua_disconnect(lua_State* s) {
+	Client* client = clientlua_ctx(s);
+	client->disconnect();
+	return 0;
+}
+
+static int clientlua_connect(lua_State* s) {
+	Client* client = clientlua_ctx(s);
+
+	clua_assert_argc(s, lua_gettop(s) == 2);
+	const int port = luaL_checkinteger(s, 1);
+	const char* host = luaL_checkstring(s, 2);
+	if (client->connect(port, host)) {
+		lua_pushboolean(s, 1);
+	} else {
+		lua_pushboolean(s, 0);
+	}
+	return 1;
+}
+
+void Client::configureLUA(lua::LUA& lua) {
+	Super::configureLUA(lua);
+	_lua.newGlobalData<Client>("clientpointer", this);
+	const luaL_Reg funcs[] = {
+		{"connect", clientlua_connect},
+		{"disconnect", clientlua_disconnect},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(lua.state(), funcs, "_metaclient", "client");
+}
+
+void Client::initUIConfig(struct nk_convert_config& config) {
+	Super::initUIConfig(config);
+}
+
+void Client::initUISkin() {
+	Super::initUISkin();
+}
+
 void Client::handleLogin() {
 	const core::VarPtr& autoLoginVar = core::Var::getSafe(cfg::ClientAutoLogin);
-	if (autoLoginVar->boolVal()) {
-		const int port = core::Var::getSafe(cfg::ClientPort)->intVal();
-		const core::String& host = core::Var::getSafe(cfg::ClientHost)->strVal();
-		if (!connect(port, host)) {
-			autoLoginVar->setVal(false);
-		}
-	}
-
 	if (!autoLoginVar->boolVal()) {
-		new frontend::LoginWindow(this);
+		return;
+	}
+	const int port = core::Var::getSafe(cfg::ClientPort)->intVal();
+	const core::String& host = core::Var::getSafe(cfg::ClientHost)->strVal();
+	if (!connect(port, host)) {
+		autoLoginVar->setVal(false);
 	}
 }
 
@@ -298,13 +341,6 @@ void Client::sendVars() const {
 			network::CreateVarUpdate(fbb, fbbVars).Union());
 }
 
-void Client::afterRootWidget() {
-	if (_network->isConnecting()) {
-		_waiting.render();
-	}
-	Super::afterRootWidget();
-}
-
 core::AppState Client::onCleanup() {
 	Log::info("shutting down the client");
 	eventBus()->unsubscribe<network::NewConnectionEvent>(*this);
@@ -326,7 +362,6 @@ core::AppState Client::onCleanup() {
 	_player = frontend::ClientEntityPtr();
 	Log::info("shutting down the network");
 	_network->shutdown();
-	_waiting.shutdown();
 	_movement.shutdown();
 	_action.shutdown();
 	_camera.shutdown();
@@ -343,19 +378,10 @@ bool Client::onKeyPress(int32_t key, int16_t modifier) {
 		return true;
 	}
 
-#if 0
-	if (key == SDLK_ESCAPE) {
-		if (_network->isConnecting() || _network->isConnected()) {
-			disconnect();
-		}
-	}
-#endif
-
 	return false;
 }
 
 core::AppState Client::onRunning() {
-	_waiting.update(_deltaFrameMillis);
 	const core::AppState state = Super::onRunning();
 	if (_network->isConnected()) {
 		const float pitch = _mouseRelativePos.y;
@@ -376,20 +402,16 @@ void Client::onWindowResize(int windowWidth, int windowHeight) {
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 
-void Client::signup(const core::String& email, const core::String& password) {
-}
-
-void Client::lostPassword(const core::String& email) {
-}
-
 void Client::authFailed() {
 	core::Var::getSafe(cfg::ClientAutoLogin)->setVal(false);
-	// TODO: stack (push/pop in UIApp) window support
-	ui::turbobadger::Window* main = new frontend::LoginWindow(this);
-	new frontend::AuthFailedWindow(main);
+	pushWindow("auth_failed");
 }
 
 void Client::disconnect() {
+	if (!_network->isConnecting() && !_network->isConnected()) {
+		return;
+	}
+
 	_player = frontend::ClientEntityPtr();
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserDisconnect, network::CreateUserDisconnect(fbb).Union());
@@ -436,12 +458,13 @@ bool Client::connect(uint16_t port, const core::String& hostname) {
 
 	peer->data = this;
 	Log::info("Connecting to server %s:%i", hostname.c_str(), port);
-	_waiting.setTextId("stateconnecting");
 	return true;
 }
 
 int main(int argc, char *argv[]) {
 	const voxelformat::MeshCachePtr& meshCache = std::make_shared<voxelformat::MeshCache>();
+	const voxelrender::CachedMeshRendererPtr& meshRenderer = core::make_shared<voxelrender::CachedMeshRenderer>(meshCache);
+	const video::TextureAtlasRendererPtr& textureAtlasRenderer = core::make_shared<video::TextureAtlasRenderer>();
 	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>(meshCache);
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
@@ -454,7 +477,8 @@ int main(int argc, char *argv[]) {
 	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(pager);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
+	const video::TexturePoolPtr& texturePool = std::make_shared<video::TexturePool>(filesystem);
 	Client app(metric, animationCache, stockDataProvider, network, world, pager, messageSender,
-			eventBus, timeProvider, filesystem, volumeCache, meshCache);
+			eventBus, timeProvider, filesystem, volumeCache, meshCache, texturePool, meshRenderer, textureAtlasRenderer);
 	return app.startMainLoop(argc, argv);
 }

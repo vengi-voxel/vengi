@@ -13,34 +13,28 @@ set(SRCS
 	network/EntityUpdateHandler.h
 	network/EntityRemoveHandler.h
 	network/VarUpdateHandler.h
-
-	ui/LoginWindow.h
-	ui/SignupWindow.h
-	ui/HudWindow.h
-	ui/AuthFailedWindow.h
-	ui/DisconnectWindow.h
-	ui/LostPasswordWindow.h
 )
 
-set(UI_WINDOWS
-	client/ui/window/client-authfailed.tb.txt
-	client/ui/window/client-disconnect.tb.txt
-	client/ui/window/client-hud.tb.txt
-	client/ui/window/client-login.tb.txt
-	client/ui/window/client-lostpassword.tb.txt
-	client/ui/window/client-signup.tb.txt
+set(LUA_SRCS
+	ui/shared.lua
+	ui/style.lua
+	ui/window/auth_failed.lua
+	ui/window/disconnect.lua
+	ui/window/hud.lua
+	ui/window/login.lua
+	ui/window/main.lua
+	ui/window/options.lua
+	ui/window/popup.lua
+	ui/${PROJECT_NAME}.lua
 )
 
 set(FILES
-	${UI_WINDOWS}
-	client/ui/lang/en.tb.txt
 	client/client-keybindings.cfg
 
 	shared/font.ttf
 	shared/biomes.lua
 	shared/worldparams.lua
 )
-engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger animation voxelrender util stock http)
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} WINDOWED)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES nuklear animation voxelrender util stock http)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-check_ui_turbobadger(${PROJECT_NAME} ${UI_WINDOWS})

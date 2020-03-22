@@ -18,17 +18,16 @@
 #include "network/ClientNetwork.h"
 #include "network/ClientMessageSender.h"
 #include "network/NetworkEvents.h"
-#include "ui/turbobadger/UIApp.h"
-#include "ui/turbobadger/WaitingMessage.h"
+#include "ui/nuklear/LUAUIApp.h"
 #include "animation/AnimationCache.h"
 #include "video/Camera.h"
 #include "stock/StockDataProvider.h"
 #include "voxel/ClientPager.h"
 
-class Client: public ui::turbobadger::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
+class Client: public ui::nuklear::LUAUIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxelworld::WorldCreatedEvent> {
 protected:
-	using Super = ui::turbobadger::UIApp;
+	using Super = ui::nuklear::LUAUIApp;
 	animation::AnimationCachePtr _animationCache;
 	network::ClientNetworkPtr _network;
 	voxelworld::WorldMgrPtr _worldMgr;
@@ -45,7 +44,6 @@ protected:
 	core::VarPtr _chunkUrl;
 	core::VarPtr _seed;
 	frontend::ClientEntityPtr _player;
-	ui::turbobadger::WaitingMessage _waiting;
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelformat::MeshCachePtr _meshCache;
@@ -57,6 +55,11 @@ protected:
 	void sendMovement();
 	void sendTriggerAction();
 
+	void beforeUI() override;
+	void configureLUA(lua::LUA& lua) override;
+	void initUIConfig(struct nk_convert_config& config) override;
+	void initUISkin() override;
+
 	void handleLogin();
 	int renderMap(video::Shader& shader, const voxelworld::WorldMgrPtr& world, const glm::mat4& view, float aspect);
 public:
@@ -66,15 +69,16 @@ public:
 			const client::ClientPagerPtr& worldPager,
 			const network::ClientMessageSenderPtr& messageSender, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 			const io::FilesystemPtr& filesystem, const voxelformat::VolumeCachePtr& volumeCache,
-			const voxelformat::MeshCachePtr& meshCache);
+			const voxelformat::MeshCachePtr& meshCache,
+			const video::TexturePoolPtr& texturePool,
+			const voxelrender::CachedMeshRendererPtr& meshRenderer,
+			const video::TextureAtlasRendererPtr& textureAtlasRenderer);
 	~Client();
 
 	core::AppState onConstruct() override;
 	core::AppState onInit() override;
 	core::AppState onRunning() override;
 	core::AppState onCleanup() override;
-	void beforeUI() override;
-	void afterRootWidget() override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize(int windowWidth, int windowHeight) override;
 
@@ -89,8 +93,6 @@ public:
 
 	bool connect(uint16_t port, const core::String& hostname);
 	void authFailed();
-	void signup(const core::String& email, const core::String& password);
-	void lostPassword(const core::String& email);
 	void disconnect();
 	/** @brief spawns our own player */
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
