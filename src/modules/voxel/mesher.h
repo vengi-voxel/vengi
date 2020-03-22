@@ -26,14 +26,12 @@ SOFTWARE.
 
 #pragma once
 
+#include "Voxel.h"
 #include <glm/glm.hpp>
 #include <stdint.h>
 #include <vector>
 
-using Voxel = uint8_t;
 using Voxels = std::vector<Voxel>;
-using Light = uint8_t;
-using Lights = std::vector<Light>;
 using Vertex = uint32_t;
 using Vertices = std::vector<Vertex>;
 
@@ -94,16 +92,14 @@ static inline const bool compare_ao(Voxels &voxels, int axis, int forward, int r
 	return true;
 }
 
-static inline const bool compare_forward(Voxels &voxels, Lights &light_map, int axis, int forward, int right, int bit_pos, int light_dir) {
+static inline const bool compare_forward(Voxels &voxels, int axis, int forward, int right, int bit_pos) {
 	return voxels.at(get_axis_i(axis, right, forward, bit_pos)) == voxels.at(get_axis_i(axis, right, forward + 1, bit_pos)) &&
-		   light_map.at(get_axis_i(axis, right, forward, bit_pos + light_dir)) == light_map.at(get_axis_i(axis, right, forward + 1, bit_pos + light_dir)) &&
-		   compare_ao(voxels, axis, forward, right, bit_pos + light_dir, 1, 0);
+		   compare_ao(voxels, axis, forward, right, bit_po, 1, 0);
 }
 
-static inline const bool compare_right(Voxels &voxels, Lights &light_map, int axis, int forward, int right, int bit_pos, int light_dir) {
+static inline const bool compare_right(Voxels &voxels, int axis, int forward, int right, int bit_pos) {
 	return voxels.at(get_axis_i(axis, right, forward, bit_pos)) == voxels.at(get_axis_i(axis, right + 1, forward, bit_pos)) &&
-		   light_map.at(get_axis_i(axis, right, forward, bit_pos + light_dir)) == light_map.at(get_axis_i(axis, right + 1, forward, bit_pos + light_dir)) &&
-		   compare_ao(voxels, axis, forward, right, bit_pos + light_dir, 0, 1);
+		   compare_ao(voxels, axis, forward, right, bit_pos, 0, 1);
 }
 
 static inline const void insert_quad(Vertices *vertices, Vertex v1, Vertex v2, Vertex v3, Vertex v4, bool flipped) {
@@ -114,33 +110,9 @@ static inline const void insert_quad(Vertices *vertices, Vertex v1, Vertex v2, V
 	}
 }
 
-static inline constexpr Vertex get_vertex(uint32_t x, uint32_t y, uint32_t z, Voxel type, Light light, uint32_t norm, uint32_t ao) {
-	return (ao << 30) | (norm << 27) | (light << 23) | (type << 18) | ((z - 1) << 12) | ((y - 1) << 6) | (x - 1);
+static inline constexpr Vertex get_vertex(uint32_t x, uint32_t y, uint32_t z, Voxel type, uint32_t norm, uint32_t ao) {
+	return (ao << 30) | (norm << 27) | (type << 23) | ((z - 1) << 12) | ((y - 1) << 6) | (x - 1);
 }
-
-/**
- * @brief Example for calculating lightmap
- *
- * @code
- * void calculate_light(const Voxels &voxels, Lights &light_map) {
- * 	for (int y = CS_P; y--;) {
- * 		for (int zx = 0; zx < CS_P2; ++zx) {
- * 			const int i = (y * CS_P2) + zx;
- * 			if (y == CS_P - 1) {
- * 				light_map.at(i) = 15;
- * 				continue;
- * 			}
- * 			const auto light_above = light_map.at(i + CS_P2);
- * 			if (voxels.at(i) == 0 && light_above > 0) {
- * 				light_map.at(i) = light_above;
- * 			} else {
- * 				light_map.at(i) = 4;
- * 			}
- * 		}
- * 	}
- * }
- * @endcode
- */
 
 /**
  * @return array index for putting voxels into the right index
@@ -150,27 +122,23 @@ constexpr int get_yzx_index(int x, int y, int z) {
 }
 
 /**
- * Fast voxel meshing algorithm - creates 'greedy' meshes with support for voxel types, baked light & Ambient Occlusion.
- * UVs can easily be added but the vertex structure would have to be changed from a single integer.
+ * Fast voxel meshing algorithm - creates 'greedy' meshes with support for voxel types, ambient occlusion.
  *
  * @param[in] voxels 64^3 (includes neighboring voxels) (values 0-31 usable)
- * @param[in] light_map 64^3 (includes neighboring voxels) (values 0-15 usable)
  * @note The input data includes duplicate edge data from neighboring chunks which is used for visibility
  * culling and AO. Input data is ordered in YXZ and is 64^3 which results in a 62^3 mesh.
  *
  * Vertex data is packed into one unsigned integer:
  * @li x, y, z: 6 bit each (0-63)
- * @li Type: 5 bit (0-31)
- * @li Light: 4 bit (0-15)
+ * @li Type: 9 bit (0-511)
  * @li Normal: 3 bit (0-5)
  * @li AO: 2 bit
  *
  * Meshes can be offset to world space using a per-draw uniform or by packing xyz in @c gl_BaseInstance
  * if rendering with @c glMultiDrawArraysIndirect.
  */
-void mesh(const Voxels &voxels, const Lights &light_map, Vertices* vertices) {
+void mesh(const Voxels &voxels, Vertices* vertices) {
 	core_assert(voxels.size() == CS_P3);
-	core_assert(light_map.size() == CS_P3);
 	uint64_t axis_cols[CS_P2 * 3] = {0};
 	uint64_t col_face_masks[CS_P2 * 6];
 
@@ -203,7 +171,6 @@ void mesh(const Voxels &voxels, const Lights &light_map, Vertices* vertices) {
 	// Step 3: Greedy meshing
 	for (int face = 0; face < 6; ++face) {
 		const int axis = face / 2;
-		const int light_dir = face % 2 == 0 ? 1 : -1;
 		const int mesh_up_step = face % 2 == 0 ? 1 : 0;
 
 		int merged_forward[CS_P2] = {0};
@@ -226,7 +193,7 @@ void mesh(const Voxels &voxels, const Lights &light_map, Vertices* vertices) {
 						continue;
 					}
 
-					if (compare_forward(voxels, light_map, axis, forward, right, bit_pos, light_dir)) {
+					if (compare_forward(voxels, axis, forward, right, bit_pos)) {
 						++merged_forward[(right * CS_P) + bit_pos];
 					} else {
 						bits_merging_forward &= ~(1ULL << bit_pos);
@@ -245,7 +212,7 @@ void mesh(const Voxels &voxels, const Lights &light_map, Vertices* vertices) {
 
 					if ((bits_merging_right & (1ULL << bit_pos)) != 0 &&
 							merged_forward[(right * CS_P) + bit_pos] == merged_forward[(right + 1) * CS_P + bit_pos] &&
-							compare_right(voxels, light_map, axis, forward, right, bit_pos, light_dir)) {
+							compare_right(voxels, axis, forward, right, bit_pos)) {
 						bits_walking_right |= 1ULL << bit_pos;
 						++merged_right[bit_pos];
 						merged_forward[(right * CS_P) + bit_pos] = 0;
@@ -260,9 +227,8 @@ void mesh(const Voxels &voxels, const Lights &light_map, Vertices* vertices) {
 					const uint8_t mesh_up = bit_pos + mesh_up_step;
 
 					const Voxel type = voxels[get_axis_i(axis, right, forward, bit_pos)];
-					const Light light = light_map[get_axis_i(axis, right, forward, bit_pos + light_dir)];
 
-					const int c = bit_pos + light_dir;
+					const int c = bit_pos;
 					const uint8_t ao_F = solid_check(voxels[get_axis_i(axis, right, forward - 1, c)]) ? 1 : 0;
 					const uint8_t ao_B = solid_check(voxels[get_axis_i(axis, right, forward + 1, c)]) ? 1 : 0;
 					const uint8_t ao_L = solid_check(voxels[get_axis_i(axis, right - 1, forward, c)]) ? 1 : 0;
@@ -283,35 +249,35 @@ void mesh(const Voxels &voxels, const Lights &light_map, Vertices* vertices) {
 
 					Vertex v1, v2, v3, v4;
 					if (face == 0) {
-						v1 = get_vertex(mesh_left, mesh_up, mesh_front, type, light, face, ao_LF);
-						v2 = get_vertex(mesh_left, mesh_up, mesh_back, type, light, face, ao_LB);
-						v3 = get_vertex(mesh_right, mesh_up, mesh_back, type, light, face, ao_RB);
-						v4 = get_vertex(mesh_right, mesh_up, mesh_front, type, light, face, ao_RF);
+						v1 = get_vertex(mesh_left, mesh_up, mesh_front, type, face, ao_LF);
+						v2 = get_vertex(mesh_left, mesh_up, mesh_back, type, face, ao_LB);
+						v3 = get_vertex(mesh_right, mesh_up, mesh_back, type, face, ao_RB);
+						v4 = get_vertex(mesh_right, mesh_up, mesh_front, type, face, ao_RF);
 					} else if (face == 1) {
-						v1 = get_vertex(mesh_left, mesh_up, mesh_back, type, light, face, ao_LB);
-						v2 = get_vertex(mesh_left, mesh_up, mesh_front, type, light, face, ao_LF);
-						v3 = get_vertex(mesh_right, mesh_up, mesh_front, type, light, face, ao_RF);
-						v4 = get_vertex(mesh_right, mesh_up, mesh_back, type, light, face, ao_RB);
+						v1 = get_vertex(mesh_left, mesh_up, mesh_back, type, face, ao_LB);
+						v2 = get_vertex(mesh_left, mesh_up, mesh_front, type, face, ao_LF);
+						v3 = get_vertex(mesh_right, mesh_up, mesh_front, type, face, ao_RF);
+						v4 = get_vertex(mesh_right, mesh_up, mesh_back, type, face, ao_RB);
 					} else if (face == 2) {
-						v1 = get_vertex(mesh_up, mesh_front, mesh_left, type, light, face, ao_LF);
-						v2 = get_vertex(mesh_up, mesh_back, mesh_left, type, light, face, ao_LB);
-						v3 = get_vertex(mesh_up, mesh_back, mesh_right, type, light, face, ao_RB);
-						v4 = get_vertex(mesh_up, mesh_front, mesh_right, type, light, face, ao_RF);
+						v1 = get_vertex(mesh_up, mesh_front, mesh_left, type, face, ao_LF);
+						v2 = get_vertex(mesh_up, mesh_back, mesh_left, type, face, ao_LB);
+						v3 = get_vertex(mesh_up, mesh_back, mesh_right, type, face, ao_RB);
+						v4 = get_vertex(mesh_up, mesh_front, mesh_right, type, face, ao_RF);
 					} else if (face == 3) {
-						v1 = get_vertex(mesh_up, mesh_back, mesh_left, type, light, face, ao_LB);
-						v2 = get_vertex(mesh_up, mesh_front, mesh_left, type, light, face, ao_LF);
-						v3 = get_vertex(mesh_up, mesh_front, mesh_right, type, light, face, ao_RF);
-						v4 = get_vertex(mesh_up, mesh_back, mesh_right, type, light, face, ao_RB);
+						v1 = get_vertex(mesh_up, mesh_back, mesh_left, type, face, ao_LB);
+						v2 = get_vertex(mesh_up, mesh_front, mesh_left, type, face, ao_LF);
+						v3 = get_vertex(mesh_up, mesh_front, mesh_right, type, face, ao_RF);
+						v4 = get_vertex(mesh_up, mesh_back, mesh_right, type, face, ao_RB);
 					} else if (face == 4) {
-						v1 = get_vertex(mesh_front, mesh_left, mesh_up, type, light, face, ao_LF);
-						v2 = get_vertex(mesh_back, mesh_left, mesh_up, type, light, face, ao_LB);
-						v3 = get_vertex(mesh_back, mesh_right, mesh_up, type, light, face, ao_RB);
-						v4 = get_vertex(mesh_front, mesh_right, mesh_up, type, light, face, ao_RF);
+						v1 = get_vertex(mesh_front, mesh_left, mesh_up, type, face, ao_LF);
+						v2 = get_vertex(mesh_back, mesh_left, mesh_up, type, face, ao_LB);
+						v3 = get_vertex(mesh_back, mesh_right, mesh_up, type, face, ao_RB);
+						v4 = get_vertex(mesh_front, mesh_right, mesh_up, type, face, ao_RF);
 					} else if (face == 5) {
-						v1 = get_vertex(mesh_back, mesh_left, mesh_up, type, light, face, ao_LB);
-						v2 = get_vertex(mesh_front, mesh_left, mesh_up, type, light, face, ao_LF);
-						v3 = get_vertex(mesh_front, mesh_right, mesh_up, type, light, face, ao_RF);
-						v4 = get_vertex(mesh_back, mesh_right, mesh_up, type, light, face, ao_RB);
+						v1 = get_vertex(mesh_back, mesh_left, mesh_up, type, face, ao_LB);
+						v2 = get_vertex(mesh_front, mesh_left, mesh_up, type, face, ao_LF);
+						v3 = get_vertex(mesh_front, mesh_right, mesh_up, type, face, ao_RF);
+						v4 = get_vertex(mesh_back, mesh_right, mesh_up, type, face, ao_RB);
 					}
 
 					insert_quad(vertices, v1, v2, v3, v4, ao_LB + ao_RF > ao_RB + ao_LF);
