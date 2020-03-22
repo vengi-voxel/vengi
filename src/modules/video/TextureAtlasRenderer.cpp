@@ -33,8 +33,20 @@ TextureAtlasData TextureAtlasRenderer::beginRender(int id, int w, int h) {
 	// update the viewport to the target rect of the texture
 	video::viewport(pos.x, pos.y, w, h);
 	video::clear(video::ClearFlag::Color);
+
 	const video::TexturePtr& texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
-	return TextureAtlasData{pos.x, pos.y, w, h, texture->width(), texture->height(), texture->handle()};
+	const int texWidth = texture->width();
+	const int texHeight = texture->height();
+	const int _sx = pos.x;
+	const int _sy = pos.y;
+	const int _tx = pos.x + w;
+	const int _ty = pos.y + h;
+	const float sx = (float)_sx / (float)texWidth;
+	const float sy = (float)_sy / (float)texHeight;
+	const float tx = (float)_tx / (float)texWidth;
+	const float ty = (float)_ty / (float)texHeight;
+
+	return TextureAtlasData{sx, sy, tx, ty, texture->width(), texture->height(), texture->handle()};
 }
 
 void TextureAtlasRenderer::endRender() {

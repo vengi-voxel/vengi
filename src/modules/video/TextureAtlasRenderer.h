@@ -9,11 +9,11 @@
 namespace video {
 
 struct TextureAtlasData {
-	// the region pixel coordinates
-	int x;
-	int y;
-	int w;
-	int h;
+	// the region in ndc coordinates
+	float sx;
+	float sy;
+	float tx;
+	float ty;
 
 	// the framebuffer texture size
 	int texWidth;

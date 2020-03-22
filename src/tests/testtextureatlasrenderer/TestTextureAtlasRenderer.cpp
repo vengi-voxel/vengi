@@ -95,16 +95,12 @@ void TestTextureAtlasRenderer::doRender() {
 	// update uv coordinates in the vertex buffer
 	// this should only be needed once in the test - but theoretically the atlas renderer
 	// could assign a different location in the framebuffer texture for the given id.
-	const float x = (float)data.x / (float)data.texWidth;
-	const float y = (float)data.y / (float)data.texHeight;
-	const float w = (float)data.w / (float)data.texWidth;
-	const float h = (float)data.h / (float)data.texHeight;
-	_vertices[0].uv = glm::vec2(x, y);			// left bottom
-	_vertices[1].uv = glm::vec2(x + w, y);		// right bottom
-	_vertices[2].uv = glm::vec2(x + w, y + h);	// right top
-	_vertices[3].uv = glm::vec2(x, y);			// left bottom
-	_vertices[4].uv = glm::vec2(x + w, y + h);	// right top
-	_vertices[5].uv = glm::vec2(x, y + h);		// left top
+	_vertices[0].uv = glm::vec2(data.sx, data.sy);	// left bottom
+	_vertices[1].uv = glm::vec2(data.tx, data.sy);	// right bottom
+	_vertices[2].uv = glm::vec2(data.tx, data.ty);	// right top
+	_vertices[3].uv = glm::vec2(data.sx, data.sy);	// left bottom
+	_vertices[4].uv = glm::vec2(data.tx, data.ty);	// right top
+	_vertices[5].uv = glm::vec2(data.sx, data.ty);	// left top
 	core_assert_always(_vbo.update(_bufIdx, _vertices, sizeof(_vertices)));
 
 	// render texture to screen
