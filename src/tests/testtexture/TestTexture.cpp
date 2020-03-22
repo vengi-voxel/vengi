@@ -17,7 +17,7 @@ core::AppState TestTexture::onInit() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
-	_camera = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
+	setUICamera();
 
 	if (!_renderer.init(frameBufferDimension())) {
 		Log::error("Failed to init the texture renderer");
@@ -38,7 +38,7 @@ core::AppState TestTexture::onInit() {
 void TestTexture::doRender() {
 	video::ScopedViewPort viewPort(0, 0, frameBufferDimension().x, frameBufferDimension().y);
 	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
-	_renderer.render(_camera.projectionMatrix());
+	_renderer.render(camera().projectionMatrix());
 }
 
 core::AppState TestTexture::onCleanup() {

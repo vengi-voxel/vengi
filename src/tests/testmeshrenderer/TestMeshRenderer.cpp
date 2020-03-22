@@ -44,7 +44,7 @@ core::AppState TestMeshRenderer::onCleanup() {
 }
 
 void TestMeshRenderer::doRender() {
-	_meshRenderer.render(_modelIndex, _camera);
+	_meshRenderer.render(_modelIndex, camera());
 }
 
 TEST_APP(TestMeshRenderer)

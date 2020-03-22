@@ -56,8 +56,8 @@ void TestGLSLGeom::doRender() {
 	video::ScopedShader scopedShd(_testShader);
 	_testShader.setSides(_sides);
 	_testShader.setRadius(_radius);
-	_testShader.setView(_camera.viewMatrix());
-	_testShader.setProjection(_camera.projectionMatrix());
+	_testShader.setView(camera().viewMatrix());
+	_testShader.setProjection(camera().projectionMatrix());
 	video::ScopedBuffer scopedBuf(_buffer);
 	const int elements = _buffer.elements(0, _testShader.getComponentsPos());
 	video::drawArrays(_testShader.getPrimitiveTypeIn(), elements);

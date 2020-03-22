@@ -14,11 +14,11 @@
 class TestApp: public ui::imgui::IMGUIApp {
 private:
 	using Super = ui::imgui::IMGUIApp;
+	video::Camera _testAppCamera;
 protected:
 	bool _cameraMotion = false;
 	bool _renderPlane = false;
 	bool _renderAxis = true;
-	video::Camera _camera;
 	render::Axis _axis;
 	render::Plane _plane;
 	glm::vec4 _planeColor = core::Color::White;
@@ -27,6 +27,10 @@ protected:
 	float _cameraSpeed = 10.0f;
 
 	virtual void doRender() = 0;
+
+	inline void setUICamera() {
+		_testAppCamera = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
+	}
 
 	inline void setCameraSpeed(float cameraSpeed) {
 		_cameraSpeed = cameraSpeed;
@@ -62,5 +66,5 @@ public:
 };
 
 inline video::Camera& TestApp::camera() {
-	return _camera;
+	return _testAppCamera;
 }

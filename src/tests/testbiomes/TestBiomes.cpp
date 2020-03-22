@@ -112,7 +112,7 @@ core::AppState TestBiomes::onCleanup() {
 void TestBiomes::doRender() {
 	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
 	video::ScopedViewPort viewPort(0, 0, frameBufferDimension().x, frameBufferDimension().y);
-	_renderer.render(_camera.projectionMatrix());
+	_renderer.render(camera().projectionMatrix());
 }
 
 void TestBiomes::onRenderUI() {

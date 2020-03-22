@@ -23,7 +23,7 @@ core::AppState TestComputeTexture3D::onInit() {
 		return state;
 	}
 
-	_camera = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
+	camera() = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
 
 	if (!compute::init()) {
 		Log::error("Failed to initialize the compute context");
@@ -152,7 +152,7 @@ void TestComputeTexture3D::doRender() {
 
 	video::ScopedTexture texture(_texture2D, video::TextureUnit::Zero);
 	video::ScopedViewPort viewPort(0, 0, frameBufferDimension().x, frameBufferDimension().y);
-	_renderer.render(_camera.projectionMatrix());
+	_renderer.render(camera().projectionMatrix());
 }
 
 TEST_APP(TestComputeTexture3D)

@@ -23,8 +23,8 @@ core::AppState TestSkybox::onInit() {
 		return state;
 	}
 
-	_camera.setPosition(glm::backward);
-	_camera.lookAt(glm::forward);
+	camera().setPosition(glm::backward);
+	camera().lookAt(glm::forward);
 	if (!_skybox.init(_skyboxVar->strVal().c_str())) {
 		Log::error("Failed to initialize the skybox");
 		return core::AppState::InitFailure;
@@ -45,7 +45,7 @@ void TestSkybox::doRender() {
 		_skybox.init(_skyboxVar->strVal().c_str());
 		_skyboxVar->markClean();
 	}
-	_skybox.render(_camera);
+	_skybox.render(camera());
 }
 
 TEST_APP(TestSkybox)

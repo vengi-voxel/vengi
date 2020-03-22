@@ -73,18 +73,18 @@ core::AppState TestCamera::onInit() {
 }
 
 void TestCamera::resetCameraPosition() {
-	_camera.setPosition(glm::vec3(0.0f, 100.0f, 250.0f));
-	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	_camera.lookAt(glm::vec3(0.0f));
+	camera().setPosition(glm::vec3(0.0f, 100.0f, 250.0f));
+	camera().setAngles(0.0f, 0.0f, 0.0f);
+	camera().lookAt(glm::vec3(0.0f));
 }
 
 void TestCamera::doRender() {
 	video::Camera& c = _renderCamera[_targetCamera];
 	c.update(_deltaFrameMillis);
-	_frustums[_targetCamera].render(_camera, c);
+	_frustums[_targetCamera].render(camera(), c);
 	for (FrustumEntity& e : _entities) {
 		e.cull(c);
-		e.render(_camera);
+		e.render(camera());
 	}
 }
 
@@ -129,7 +129,7 @@ core::AppState TestCamera::onRunning() {
 	if (mods & KMOD_SHIFT) {
 		c.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	}
-	_camera.setTarget(c.position());
+	camera().setTarget(c.position());
 	return state;
 }
 

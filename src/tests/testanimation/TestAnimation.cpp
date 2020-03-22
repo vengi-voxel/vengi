@@ -142,8 +142,8 @@ core::AppState TestAnimation::onInit() {
 		_animations.push_back(animation::toString((animation::Animation)i));
 	}
 
-	_camera.setPosition(glm::vec3(10.0f, 5.0f, 10.0f));
-	_camera.lookAt(glm::zero<glm::vec3>());
+	camera().setPosition(glm::vec3(10.0f, 5.0f, 10.0f));
+	camera().lookAt(glm::zero<glm::vec3>());
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the default material colors");
@@ -238,7 +238,7 @@ void TestAnimation::doRender() {
 		((animation::Character*)animationEntity())->updateTool(_animationCache, _stock);
 	}
 	animationEntity()->update(_deltaFrameMillis, _attrib);
-	_renderer.render(*animationEntity(), _camera);
+	_renderer.render(*animationEntity(), camera());
 }
 
 void TestAnimation::onRenderUI() {

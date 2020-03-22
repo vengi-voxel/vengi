@@ -25,11 +25,11 @@ namespace imgui {
 class IMGUIApp: public video::WindowedApp {
 private:
 	using Super = video::WindowedApp;
+	video::Camera _camera;
 protected:
 	core::VarPtr _renderUI;
 	video::Id _texture = video::InvalidId;
 	shader::TextureShader _shader;
-	video::Camera _camera;
 	video::Buffer _vbo;
 	Console _console;
 	int32_t _bufferIndex = -1;

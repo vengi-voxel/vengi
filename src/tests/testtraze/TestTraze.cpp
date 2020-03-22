@@ -105,7 +105,7 @@ core::AppState TestTraze::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_camera.setPosition(glm::vec3(0.0f, 50.0f, 84.0f));
+	camera().setPosition(glm::vec3(0.0f, 50.0f, 84.0f));
 	_logLevelVar->setVal(core::string::toString(SDL_LOG_PRIORITY_INFO));
 	Log::init();
 
@@ -338,7 +338,7 @@ void TestTraze::onRenderUI() {
 
 void TestTraze::doRender() {
 	if (_renderBoard) {
-		_rawVolumeRenderer.render(_camera);
+		_rawVolumeRenderer.render(camera());
 	}
 
 	const glm::ivec2& dim = frameBufferDimension();

@@ -36,7 +36,7 @@ core::AppState TestVoxelFont::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	_camera.setFarPlane(4000.0f);
+	camera().setFarPlane(4000.0f);
 
 	return state;
 }
@@ -144,7 +144,7 @@ void TestVoxelFont::onRenderUI() {
 }
 
 void TestVoxelFont::doRender() {
-	_rawVolumeRenderer.render(_camera);
+	_rawVolumeRenderer.render(camera());
 }
 
 TEST_APP(TestVoxelFont)

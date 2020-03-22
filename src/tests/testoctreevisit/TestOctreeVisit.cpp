@@ -25,7 +25,7 @@ core::AppState TestOctreeVisit::onInit() {
 		return state;
 	}
 
-	_camera.setFarPlane(5000.0f);
+	camera().setFarPlane(5000.0f);
 
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to init the shape renderer");
@@ -108,9 +108,9 @@ void TestOctreeVisit::onRenderUI() {
 }
 
 void TestOctreeVisit::doRender() {
-	_shapeRenderer.render(_itemMesh, _camera);
-	_shapeRenderer.render(_aabbMesh, _camera);
-	_shapeRenderer.render(_frustumMesh, _camera);
+	_shapeRenderer.render(_itemMesh, camera());
+	_shapeRenderer.render(_aabbMesh, camera());
+	_shapeRenderer.render(_frustumMesh, camera());
 }
 
 core::AppState TestOctreeVisit::onCleanup() {

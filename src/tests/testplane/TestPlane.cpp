@@ -26,7 +26,7 @@ core::AppState TestPlane::onInit() {
 }
 
 void TestPlane::doRender() {
-	_shapeRenderer.renderAll(_camera);
+	_shapeRenderer.renderAll(camera());
 }
 
 core::AppState TestPlane::onCleanup() {

@@ -70,8 +70,8 @@ core::AppState TestOctree::onInit() {
 	_queryMaxs = center + 150;
 
 	_octree.setListener(&_listener);
-	_camera.setFarPlane(4000.0f);
-	_camera.setPosition(glm::vec3(0.0f, 1250.0f, 2500.0f));
+	camera().setFarPlane(4000.0f);
+	camera().setPosition(glm::vec3(0.0f, 1250.0f, 2500.0f));
 
 	insert();
 
@@ -218,13 +218,13 @@ void TestOctree::onRenderUI() {
 
 void TestOctree::doRender() {
 	if (_renderAABBs) {
-		_shapeRenderer.render(_aabbMeshes, _camera);
+		_shapeRenderer.render(_aabbMeshes, camera());
 	}
 	if (_renderItems) {
-		_shapeRenderer.render(_itemMeshes, _camera);
+		_shapeRenderer.render(_itemMeshes, camera());
 	}
 	video::ScopedLineWidth lineWidth(2.0f);
-	_shapeRenderer.render(_queryMeshes, _camera);
+	_shapeRenderer.render(_queryMeshes, camera());
 }
 
 core::AppState TestOctree::onCleanup() {

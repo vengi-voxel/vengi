@@ -47,7 +47,7 @@ core::AppState TestShapeBuilder::onInit() {
 void TestShapeBuilder::doRender() {
 	for (int i = 0; i < _meshCount; ++i) {
 		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(_position[i])), _scale[i]);
-		_shapeRenderer.render(_meshes[i], _camera, model);
+		_shapeRenderer.render(_meshes[i], camera(), model);
 	}
 }
 
