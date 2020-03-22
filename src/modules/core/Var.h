@@ -110,6 +110,10 @@ public:
 		return get(name, value, -1, help);
 	}
 
+	static inline VarPtr get(const core::String& name, const String& value, int32_t flags = -1, const char *help = nullptr) {
+		return get(name, value.c_str(), flags, help);
+	}
+
 	/**
 	 * @note Same as get(), but uses @c core_assert if no var could be found with the given name.
 	 */
