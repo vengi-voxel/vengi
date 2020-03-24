@@ -86,6 +86,12 @@ bool MeshRenderer::init() {
 void MeshRenderer::shutdown() {
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
+	_shadow.shutdown();
+	for (auto& mesh : _meshes) {
+		mesh.buffer.shutdown();
+		mesh.vbo = mesh.ibo = -1;
+		mesh.model = glm::mat4(1.0f);
+	}
 }
 
 bool MeshRenderer::isEmpty() const {
