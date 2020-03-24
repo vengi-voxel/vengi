@@ -11,10 +11,14 @@ CachedMeshRenderer::CachedMeshRenderer(const voxelformat::MeshCachePtr& meshCach
 }
 
 bool CachedMeshRenderer::init() {
+	if (!_meshCache->init()) {
+		return false;
+	}
 	return _meshRenderer.init();
 }
 
 void CachedMeshRenderer::shutdown() {
+	_meshCache->shutdown();
 	_meshRenderer.shutdown();
 }
 

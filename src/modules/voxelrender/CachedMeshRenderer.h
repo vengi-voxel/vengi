@@ -6,6 +6,7 @@
 #include "voxelrender/MeshRenderer.h"
 #include "core/IComponent.h"
 #include <glm/mat4x4.hpp>
+#include "core/SharedPtr.h"
 
 namespace voxelrender {
 
@@ -35,5 +36,7 @@ public:
 	void renderAll(const video::Camera& camera);
 	void render(int idx, const video::Camera& camera);
 };
+
+using CachedMeshRendererPtr = core::SharedPtr<CachedMeshRenderer>;
 
 }
