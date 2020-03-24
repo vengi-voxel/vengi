@@ -198,7 +198,7 @@ bool MeshRenderer::update(int idx, const voxel::VoxelVertex* vertices, size_t nu
 		Log::error("Failed to update the vertex buffer");
 		return false;
 	}
-	if (!entry.buffer.update(entry.vbo, indices, numIndices * sizeof(voxel::IndexType))) {
+	if (!entry.buffer.update(entry.ibo, indices, numIndices * sizeof(voxel::IndexType))) {
 		Log::error("Failed to update the index buffer");
 		return false;
 	}
