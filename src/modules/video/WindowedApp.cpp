@@ -376,6 +376,7 @@ core::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientWindowDisplay, 0);
 	core::Var::get(cfg::ClientOpenGLVersion, "3.3", core::CV_READONLY);
 	core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 #ifdef DEBUG
 	const char *defaultSyncValue = "false";
 #else
