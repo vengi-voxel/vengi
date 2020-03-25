@@ -99,10 +99,10 @@ public:
 
 	static String format(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(1);
 
-	void append(int);
-	void append(float);
-	void append(const char *str);
-	void append(const String &str);
+	String& append(int);
+	String& append(float);
+	String& append(const char *str);
+	String& append(const String &str);
 
 	String &operator=(const char *str);
 	String &operator=(const String &str);

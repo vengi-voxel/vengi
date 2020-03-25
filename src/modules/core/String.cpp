@@ -292,24 +292,28 @@ String &String::operator+=(const String &str) {
 	return operator+=(str.c_str());
 }
 
-void String::append(int c) {
+String& String::append(int c) {
 	char text[16];
 	SDL_snprintf(text, sizeof(text), "%i", c);
 	append(text);
+	return *this;
 }
 
-void String::append(float c) {
+String& String::append(float c) {
 	char text[16];
 	SDL_snprintf(text, sizeof(text), "%f", c);
 	append(text);
+	return *this;
 }
 
-void String::append(const char *str) {
+String& String::append(const char *str) {
 	operator+=(str);
+	return *this;
 }
 
-void String::append(const String &str) {
+String& String::append(const String &str) {
 	operator+=(str.c_str());
+	return *this;
 }
 
 void String::replace(size_t index, size_t length, const char *str) {
