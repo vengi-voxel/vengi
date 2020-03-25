@@ -42,8 +42,7 @@ BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
 		x += meshSize.x;
 		voxel::Region region(mins, mins + meshSize);
 		voxel::Mesh mesh(0, 0, true);
-		voxel::Mesh waterMesh(0, 0, true);
-		voxel::extractAllCubicMesh(volumeData, region, &mesh, &waterMesh, voxel::IsQuadNeeded(), voxel::IsWaterQuadNeeded(), voxel::MAX_WATER_HEIGHT);
+		voxel::extractCubicMesh(volumeData, region, &mesh, voxel::IsQuadNeeded());
 	}
 	delete volumeData;
 }
