@@ -10,13 +10,17 @@
 
 namespace util {
 
-std::pair<core::String, bool> handleIncludes(const core::String& buffer, const core::List<core::String>& includeDirs, core::List<core::String>* includedFiles) {
+std::pair<core::String, bool> handleIncludes(const core::String& filename, const core::String& buffer, const core::List<core::String>& includeDirs, core::List<core::String>* includedFiles) {
 	core::String src;
 	const core::String include = "#include";
 	int index = 0;
+	int line = 1;
 	bool success = true;
 	for (auto i = buffer.begin(); i != buffer.end(); ++i, ++index) {
 		const char *c = &buffer[index];
+		if (*c == '\n' || (*c == '\r' && *(c + 1) != '\n')) {
+			++line;
+		}
 		if (*c != '#') {
 			const char buf[] = {*c, '\0'};
 			src.append(buf);
@@ -57,11 +61,13 @@ std::pair<core::String, bool> handleIncludes(const core::String& buffer, const c
 						if (includedFiles != nullptr) {
 							includedFiles->insert(fullPath);
 						}
+						//src.append("#line 1 ").append(fullPath).append("\n");
 						src.append(includeBuffer);
 						found = true;
 					}
 					break;
 				}
+				//src.append("#line ").append(line).append(" ").append(filename).append("\n");
 				if (!found) {
 					success = false;
 					Log::error("Failed to resolve include '%s'", includeFile.c_str());

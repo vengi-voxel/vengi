@@ -170,11 +170,11 @@ core::String Shader::getSource(const core::String& buffer, bool finalize, core::
 
 	core::List<core::String> includeDirs;
 	includeDirs.insert(core::String(core::string::extractPath(_name)));
-	const std::pair<core::String, bool>& includeFirst = util::handleIncludes(buffer, includeDirs, includedFiles);
+	const std::pair<core::String, bool>& includeFirst = util::handleIncludes(_name, buffer, includeDirs, includedFiles);
 	src += includeFirst.first;
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<core::String, bool>& includeRecurse = util::handleIncludes(src, includeDirs, includedFiles);
+		const std::pair<core::String, bool>& includeRecurse = util::handleIncludes(_name, src, includeDirs, includedFiles);
 		src += includeRecurse.first;
 		++level;
 		if (level >= 10) {

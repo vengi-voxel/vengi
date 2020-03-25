@@ -406,11 +406,11 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 
 	core::List<core::String> includeDirs;
 	includeDirs.insert(core::String(core::string::extractPath(_name)));
-	const std::pair<core::String, bool>& includesFirst = util::handleIncludes(buffer, includeDirs, includedFiles);
+	const std::pair<core::String, bool>& includesFirst = util::handleIncludes(_name, buffer, includeDirs, includedFiles);
 	src += includesFirst.first;
 	int level = 0;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<core::String, bool>& includesRecurse = util::handleIncludes(src, includeDirs, includedFiles);
+		const std::pair<core::String, bool>& includesRecurse = util::handleIncludes(_name, src, includeDirs, includedFiles);
 		src += includesRecurse.first;
 		++level;
 		if (level >= 10) {

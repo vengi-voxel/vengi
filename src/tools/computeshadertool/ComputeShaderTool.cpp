@@ -41,12 +41,12 @@ core::AppState ComputeShaderTool::onConstruct() {
 std::pair<core::String, bool> ComputeShaderTool::getSource(const core::String& file) const {
 	const io::FilesystemPtr& fs = filesystem();
 
-	const std::pair<core::String, bool>& retIncludes = util::handleIncludes(fs->load(file), _includeDirs);
+	const std::pair<core::String, bool>& retIncludes = util::handleIncludes(file, fs->load(file), _includeDirs);
 	core::String src = retIncludes.first;
 	int level = 0;
 	bool success = retIncludes.second;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<core::String, bool>& ret = util::handleIncludes(src, _includeDirs);
+		const std::pair<core::String, bool>& ret = util::handleIncludes(file, src, _includeDirs);
 		src = ret.first;
 		success &= ret.second;
 		++level;
