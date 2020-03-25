@@ -216,7 +216,10 @@ core::AppState WindowedApp::onInit() {
 	const int numDisplays = core_max(0, SDL_GetNumVideoDisplays());
 	const int displayIndex = glm::clamp(core::Var::getSafe(cfg::ClientWindowDisplay)->intVal(), 0, numDisplays);
 	Log::info("Try to use display %i", displayIndex);
-	SDL_GetDesktopDisplayMode(displayIndex, &displayMode);
+	if (SDL_GetDesktopDisplayMode(displayIndex, &displayMode) == -1) {
+		Log::error("%s", SDL_GetError());
+		return core::AppState::InitFailure;
+	}
 
 	for (int i = 0; i < numDisplays; ++i) {
 		SDL_Rect dr;
@@ -272,9 +275,16 @@ core::AppState WindowedApp::onInit() {
 			_dpiFactor = ddpi / baseDpi;
 			_dpiHorizontalFactor = hdpi / baseDpi;
 			_dpiVerticalFactor = vdpi / baseDpi;
+		} else {
+			_dpiFactor = 1.0f;
+			_dpiHorizontalFactor = 1.0f;
+			_dpiVerticalFactor = 1.0f;
 		}
 	} else {
 		Log::info("Disable high dpi support");
+		_dpiFactor = 1.0f;
+		_dpiHorizontalFactor = 1.0f;
+		_dpiVerticalFactor = 1.0f;
 	}
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
