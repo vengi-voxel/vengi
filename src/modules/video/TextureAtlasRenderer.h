@@ -9,11 +9,15 @@
 namespace video {
 
 struct TextureAtlasData {
-	// the uv coordinates
+	// the region pixel coordinates
 	int x;
 	int y;
 	int w;
 	int h;
+
+	// the framebuffer texture size
+	int texWidth;
+	int texHeight;
 
 	video::Id handle;
 };
