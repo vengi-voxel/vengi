@@ -32,7 +32,7 @@ protected:
 	core::List<core::String> _includes;
 	core::List<core::String> _includeDirs;
 
-	bool parse(const core::String& src, bool vertex);
+	bool parse(const core::String& filename, const core::String& src, bool vertex);
 	void validate(const core::String& name);
 	std::pair<core::String, bool> getSource(const core::String& file) const;
 	bool printInfo();

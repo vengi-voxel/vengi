@@ -21,8 +21,8 @@ ShaderTool::ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr&
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 }
 
-bool ShaderTool::parse(const core::String& buffer, bool vertex) {
-	return shadertool::parse(_shaderStruct, _shaderfile, buffer, vertex);
+bool ShaderTool::parse(const core::String& filename, const core::String& buffer, bool vertex) {
+	return shadertool::parse(io::filesystem()->absolutePath(filename), _shaderStruct, _shaderfile, buffer, vertex);
 }
 
 core::AppState ShaderTool::onConstruct() {
@@ -40,6 +40,7 @@ core::AppState ShaderTool::onConstruct() {
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
 	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
+	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
 	return Super::onConstruct();
@@ -174,7 +175,7 @@ core::AppState ShaderTool::onRunning() {
 			return core::AppState::Cleanup;
 		}
 		const core::String& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, false, &_includes);
-		if (!parse(computeSrcSource, false)) {
+		if (!parse(computeFilename, computeSrcSource, false)) {
 			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
 			_exitCode = 1;
 			return core::AppState::Cleanup;
@@ -223,12 +224,12 @@ core::AppState ShaderTool::onRunning() {
 	const core::String& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, false, &_includes);
 	const core::String& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, false, &_includes);
 
-	if (!parse(fragmentSrcSource, false)) {
+	if (!parse(fragmentFilename, fragmentSrcSource, false)) {
 		Log::error("Failed to parse fragment shader %s", _shaderfile.c_str());
 		_exitCode = 1;
 		return core::AppState::Cleanup;
 	}
-	if (!parse(vertexSrcSource, true)) {
+	if (!parse(vertexFilename, vertexSrcSource, true)) {
 		Log::error("Failed to parse vertex shader %s", _shaderfile.c_str());
 		_exitCode = 1;
 		return core::AppState::Cleanup;
@@ -240,7 +241,7 @@ core::AppState ShaderTool::onRunning() {
 			return core::AppState::Cleanup;
 		}
 		const core::String& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer.first, false, &_includes);
-		if (!parse(geometrySrcSource, false)) {
+		if (!parse(geometryFilename, geometrySrcSource, false)) {
 			Log::error("Failed to parse geometry shader %s", _shaderfile.c_str());
 			_exitCode = 1;
 			return core::AppState::Cleanup;

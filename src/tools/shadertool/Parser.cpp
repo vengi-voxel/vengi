@@ -47,7 +47,7 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 
 	core::String token = tok.next();
 	if (token != "(") {
-		Log::warn("Unexpected layout syntax - expected {, got %s", token.c_str());
+		Log::warn("Warning in %s:%i:%i. Unexpected layout syntax - expected {, got %s", tok.file(), tok.line(), tok.col(), token.c_str());
 		return false;
 	}
 	do {
@@ -159,7 +159,7 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 				if (primitiveType != video::Primitive::Max) {
 					layout.primitiveType = primitiveType;
 				} else {
-					Log::warn("Unknown token given for layout: %s (line %i)", token.c_str(), tok.line());
+					Log::warn("Warning in %s:%i:%i. Unknown token given for layout: %s", tok.file(), tok.line(), tok.col(), token.c_str());
 				}
 			}
 		}
@@ -168,17 +168,51 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 	return true;
 }
 
-bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const core::String& buffer, bool vertex) {
+bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core::String& shaderFile, const core::String& buffer, bool vertex) {
 	bool uniformBlock = false;
 
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
 	std::vector<std::string> files;
 	std::stringstream f(buffer.c_str());
-	simplecpp::TokenList rawtokens(f, files, shaderFile.c_str(), &outputList);
+	simplecpp::TokenList rawtokens(f, files, filename.c_str(), &outputList);
 	std::map<std::string, simplecpp::TokenList*> included = simplecpp::load(rawtokens, files, dui, &outputList);
+
 	simplecpp::TokenList output(files);
-	simplecpp::preprocess(output, rawtokens, files, included, dui, &outputList);
+	std::list<simplecpp::MacroUsage> macroUsage;
+	simplecpp::preprocess(output, rawtokens, files, included, dui, &outputList, &macroUsage);
+
+	TokenIterator rawtok;
+	rawtok.init(&rawtokens);
+	bool preprocessorError = false;
+	while (rawtok.hasNext()) {
+		core::String token = rawtok.next();
+		if (rawtok.op() != '#') {
+			continue;
+		}
+		if (!rawtok.hasNext()) {
+			Log::error("Error in %s:%i:%i. Found preprocessor directive, but no further token",
+					rawtok.file(), rawtok.line(), rawtok.col());
+			preprocessorError = true;
+		}
+		token = rawtok.next();
+		if (token == "ifdef" || token == "ifndef" || token == "define" || token == "if") {
+			if (!rawtok.hasNext()) {
+				Log::error("Error in %s:%i:%i. Found preprocessor directive, but no further token",
+						rawtok.file(), rawtok.line(), rawtok.col());
+				preprocessorError = true;
+			}
+			const core::String& preprocessor = rawtok.next();
+			if (core::string::contains(preprocessor.c_str(), "_")) {
+				Log::warn("Warning in %s:%i:%i. Found preprocessor token with _ - some drivers doesn't support this: %s",
+						rawtok.file(), rawtok.line(), rawtok.col(), preprocessor.c_str());
+				Log::warn("If this is a shader cvar define, just remove the _");
+			}
+		}
+	}
+	if (preprocessorError) {
+		return false;
+	}
 
 	simplecpp::Location loc(files);
 	std::stringstream comment;
@@ -216,10 +250,11 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 			}
 			const core::String varvalue = tok.next();
 			if (shaderStruct.constants.find(varname) != shaderStruct.constants.end()) {
-				Log::error("Could not register constant %s with value %s (duplicate)", varname.c_str(), varvalue.c_str());
-				return false;
+				Log::warn("Warning in %s:%i:%i. Could not register constant %s with value %s (duplicate)", tok.file(), tok.line(), tok.col(),
+						varname.c_str(), varvalue.c_str());
+			} else {
+				shaderStruct.constants.put(varname, varvalue);
 			}
-			shaderStruct.constants.put(varname, varvalue);
 		} else if (token == "layout") {
 			// there can be multiple layouts per definition since GL 4.2 (or ARB_shading_language_420pack)
 			// that's why we only reset the layout after we finished parsing the variable and/or the
@@ -228,7 +263,7 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 			layout = Layout();
 			hasLayout = true;
 			if (!parseLayout(tok, layout)) {
-				Log::warn("Could not parse layout");
+				Log::warn("Warning in %s:%i:%i. Could not parse layout", tok.file(), tok.line(), tok.col());
 			}
 		} else if (token == "buffer") {
 			Log::warn("SSBO not supported");
@@ -255,19 +290,19 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 		}
 
 		if (!tok.hasNext()) {
-			Log::error("Failed to parse the shader, could not get type");
+			Log::error("Error in %s:%i:%i. Failed to parse the shader, could not get type", tok.file(), tok.line(), tok.col());
 			return false;
 		}
 		core::String type = tok.next();
 		Log::trace("token: %s", type.c_str());
 		if (!tok.hasNext()) {
-			Log::error("Failed to parse the shader, could not get variable name for type %s", type.c_str());
+			Log::error("Error in %s:%i:%i. Failed to parse the shader, could not get variable name for type %s", tok.file(), tok.line(), tok.col(), type.c_str());
 			return false;
 		}
 		while (type == "highp" || type == "mediump" || type == "lowp" || type == "precision") {
 			Log::trace("token: %s", type.c_str());
 			if (!tok.hasNext()) {
-				Log::error("Failed to parse the shader, could not get type");
+				Log::error("Error in %s:%i:%i. Failed to parse the shader, could not get type", tok.file(), tok.line(), tok.col());
 				return false;
 			}
 			type = tok.next();
@@ -293,7 +328,7 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 			arraySize = core::string::toInt(number);
 			if (arraySize == 0) {
 				arraySize = -1;
-				Log::warn("Could not determine array size for %s (%s)", name.c_str(), number.c_str());
+				Log::warn("Warning in %s:%i:%i. Could not determine array size for %s (%s)", tok.file(), tok.line(), tok.col(), name.c_str(), number.c_str());
 			}
 		}
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
@@ -306,7 +341,7 @@ bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const cor
 					found = true;
 					if (typeEnum != i->value.type) {
 						// TODO: check layout differences
-						Log::error("Found duplicate variable %s (%s versus %s)",
+						Log::error("Error in %s:%i:%i. Found duplicate variable %s (%s versus %s)", tok.file(), tok.line(), tok.col(),
 							name.c_str(), util::resolveTypes(i->value.type).ctype, util::resolveTypes(typeEnum).ctype);
 						return false;
 					}

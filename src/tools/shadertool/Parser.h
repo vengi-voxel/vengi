@@ -9,6 +9,6 @@
 
 namespace shadertool {
 
-extern bool parse(ShaderStruct& shaderStruct, const core::String& shaderFile, const core::String& buffer, bool vertex);
+extern bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core::String& shaderFile, const core::String& buffer, bool vertex);
 
 }
