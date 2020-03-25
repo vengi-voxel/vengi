@@ -32,6 +32,7 @@ TextureAtlasData TextureAtlasRenderer::beginRender(int id, int w, int h) {
 	const glm::ivec2& pos = resolvePos(id, w, h);
 	// update the viewport to the target rect of the texture
 	video::viewport(pos.x, pos.y, w, h);
+	video::clear(video::ClearFlag::Color);
 	const video::TexturePtr& texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	return TextureAtlasData{pos.x, pos.y, w, h, texture->width(), texture->height(), texture->handle()};
 }
