@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "voxelformat/MeshCache.h"
 #include "voxelrender/MeshRenderer.h"
 #include "core/IComponent.h"

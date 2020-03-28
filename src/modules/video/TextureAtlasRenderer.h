@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/IComponent.h"
 #include "video/FrameBuffer.h"
 #include "core/SharedPtr.h"
