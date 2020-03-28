@@ -262,6 +262,7 @@ public:
 	uint64_t deltaFrame() const;
 	uint64_t lifetimeInSeconds() const;
 	float lifetimeInSecondsf() const;
+	double nowSeconds() const;
 
 	AppState state() const;
 
@@ -313,6 +314,10 @@ private:
 
 inline uint64_t App::lifetimeInSeconds() const {
 	return (_now - _initMillis) / uint64_t(1000);
+}
+
+inline double App::nowSeconds() const {
+	return _nowSeconds;
 }
 
 inline float App::lifetimeInSecondsf() const {
