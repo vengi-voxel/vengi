@@ -7,6 +7,8 @@
 #include "voxelformat/MeshCache.h"
 #include "video/Renderer.h"
 #include <glm/gtc/matrix_transform.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>
 
 TestTextureAtlasRenderer::TestTextureAtlasRenderer(const metric::MetricPtr& metric,
 		const io::FilesystemPtr& filesystem,
@@ -74,7 +76,19 @@ core::AppState TestTextureAtlasRenderer::onInit() {
 		_vertices[i].color = 0xFFFFFFFFU;
 	}
 
+	updateModelMatrix();
+
+	video::clearColor(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
+
 	return state;
+}
+
+void TestTextureAtlasRenderer::updateModelMatrix() {
+	constexpr glm::mat4 translate(1.0f);
+	constexpr double tau = glm::two_pi<double>();
+	const double orientation = glm::mod(_omegaY * _nowSeconds, tau);
+	const glm::mat4 rot = glm::rotate(translate, (float)orientation, glm::up);
+	_modelMatrix = glm::scale(rot, glm::vec3(_scale));
 }
 
 core::AppState TestTextureAtlasRenderer::onCleanup() {
@@ -86,9 +100,22 @@ core::AppState TestTextureAtlasRenderer::onCleanup() {
 	return state;
 }
 
+void TestTextureAtlasRenderer::onRenderUI() {
+	Super::onRenderUI();
+	ImGui::InputFloat("Scale", &_scale, 0.01f, 0.1f);
+	ImGui::InputFloat("omega", &_omegaY, 0.1f, 1.0f);
+	constexpr double tau = glm::two_pi<double>();
+	const double orientation = glm::mod(_omegaY * _nowSeconds, tau);
+	ImGui::Text("orientation: %f", orientation);
+	ImGui::Text("seconds: %.2f", _nowSeconds);
+}
+
 void TestTextureAtlasRenderer::doRender() {
+	updateModelMatrix();
+
 	// render to texture
 	const video::TextureAtlasData& data = _atlasRenderer.beginRender(0, camera().frameBufferWidth(), camera().frameBufferHeight());
+	_meshRenderer.setModelMatrix(_modelIndex, _modelMatrix);
 	_meshRenderer.render(_modelIndex, camera());
 	_atlasRenderer.endRender();
 

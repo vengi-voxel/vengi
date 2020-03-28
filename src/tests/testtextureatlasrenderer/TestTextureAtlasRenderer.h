@@ -46,8 +46,12 @@ private:
 	video::TextureAtlasRenderer _atlasRenderer;
 	shader::TextureShader _textureShader;
 	video::Buffer _vbo;
+	glm::mat4 _modelMatrix;
+	float _scale = 5.0f;
 	int _modelIndex = -1;
+	float _omegaY = 0.0f;
 
+	void updateModelMatrix();
 	void doRender() override;
 public:
 	TestTextureAtlasRenderer(const metric::MetricPtr& metric,
@@ -55,6 +59,7 @@ public:
 		const core::EventBusPtr& eventBus,
 		const core::TimeProviderPtr& timeProvider);
 
+	virtual void onRenderUI() override;
 	virtual core::AppState onInit() override;
 	virtual core::AppState onCleanup() override;
 };
