@@ -8,12 +8,11 @@
 namespace video {
 
 bool TextureAtlasRenderer::init() {
-	video::TextureConfig textureCfg;
-	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig cfg;
 	glm::ivec2 dimensions(4096, 4096);
 	cfg.dimension(dimensions);
-	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
+	cfg.colorTexture(true).colorTextureFormat(video::TextureFormat::RGB);
+	cfg.depthBuffer(true).depthTextureFormat(video::TextureFormat::D24);
 	return _frameBuffer.init(cfg);
 }
 
@@ -32,7 +31,7 @@ TextureAtlasData TextureAtlasRenderer::beginRender(int id, int w, int h) {
 	const glm::ivec2& pos = resolvePos(id, w, h);
 	// update the viewport to the target rect of the texture
 	video::viewport(pos.x, pos.y, w, h);
-	video::clear(video::ClearFlag::Color);
+	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 
 	const video::TexturePtr& texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	const int texWidth = texture->width();
