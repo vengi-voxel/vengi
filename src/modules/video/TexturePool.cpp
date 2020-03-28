@@ -17,7 +17,7 @@ video::TexturePtr TexturePool::load(const core::String& name) {
 		return i->value;
 	}
 	const io::FilePtr& file = _filesystem->open(name);
-	const image::ImagePtr& image = image::loadImage(file);
+	const image::ImagePtr& image = image::loadImage(file, false);
 	const TexturePtr& texture = createTextureFromImage(image);
 	_cache.put(name, texture);
 	return texture;

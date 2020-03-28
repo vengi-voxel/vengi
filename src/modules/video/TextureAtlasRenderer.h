@@ -11,7 +11,7 @@
 namespace video {
 
 struct TextureAtlasData {
-	// the region in ndc coordinates
+	// the region [0-1]
 	float sx;
 	float sy;
 	float tx;
