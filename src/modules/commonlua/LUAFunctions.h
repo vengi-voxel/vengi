@@ -72,6 +72,12 @@ inline T clua_getudata(lua_State* s, int n, const char *name) {
 }
 
 template<class T>
+bool clua_istype(lua_State *s, int n) {
+	using RAWTYPE = typename std::remove_pointer<T>::type;
+	return luaL_testudata(s, n, clua_meta<RAWTYPE>::name()) != nullptr;
+}
+
+template<class T>
 int clua_push(lua_State* s, const T& v) {
 	using RAWTYPE = typename std::remove_pointer<T>::type;
 	return clua_pushudata<T>(s, v, clua_meta<RAWTYPE>::name());
