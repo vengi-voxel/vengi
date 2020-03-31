@@ -35,6 +35,7 @@
 #define USB_VENDOR_VALVE        0x28de
 
 #define USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER           0x0337
+#define USB_PRODUCT_NINTENDO_SWITCH_PRO                 0x2009
 #define USB_PRODUCT_RAZER_PANTHERA                      0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                  0x1008
 #define USB_PRODUCT_SONY_DS4                            0x05c4
@@ -43,6 +44,7 @@
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1             0x02e3
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2             0x0b00
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH   0x0b05
+#define USB_PRODUCT_XBOX_ONE_S                          0x02ea
 #define USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH           0x02e0
 #define USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH           0x02fd
 

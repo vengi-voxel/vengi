@@ -972,7 +972,7 @@ HIDAPI_DriverSteam_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return HIDAPI_JoystickConnected(device, NULL);
+    return HIDAPI_JoystickConnected(device, NULL, SDL_FALSE);
 }
 
 static int
@@ -1130,7 +1130,7 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
         if (r <= 0) {
             /* Failed to read from controller */
-            HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+            HIDAPI_JoystickDisconnected(device, device->joysticks[0], SDL_FALSE);
             return SDL_FALSE;
         }
     }
@@ -1166,7 +1166,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam =
     HIDAPI_DriverSteam_OpenJoystick,
     HIDAPI_DriverSteam_RumbleJoystick,
     HIDAPI_DriverSteam_CloseJoystick,
-    HIDAPI_DriverSteam_FreeDevice
+    HIDAPI_DriverSteam_FreeDevice,
+	NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_STEAM */

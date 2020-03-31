@@ -28,6 +28,7 @@
 #include "SDL_render.h"
 #include "SDL_sysrender.h"
 #include "software/SDL_render_sw_c.h"
+#include "../video/SDL_pixels_c.h"
 
 #if defined(__ANDROID__)
 #  include "../core/android/SDL_android.h"
@@ -1165,12 +1166,10 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
 
     /* If Palette contains alpha values, promotes to alpha format */
     if (fmt->palette) {
-        for (i = 0; i < fmt->palette->ncolors; i++) {
-            Uint8 alpha_value = fmt->palette->colors[i].a;
-            if (alpha_value != 0 && alpha_value != SDL_ALPHA_OPAQUE) {
-                needAlpha = SDL_TRUE;
-                break;
-            }
+        SDL_bool is_opaque, has_alpha_channel;
+        SDL_DetectPalette(fmt->palette, &is_opaque, &has_alpha_channel);
+        if (!is_opaque) {
+            needAlpha = SDL_TRUE;
         }
     }
 

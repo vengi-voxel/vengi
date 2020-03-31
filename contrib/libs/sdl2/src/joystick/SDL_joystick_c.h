@@ -52,11 +52,10 @@ extern int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id);
 /* Function to extract information from an SDL joystick GUID */
 extern void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version);
 
-/* Function to get a custom name for a controller manufacturer, if it's available */
-extern const char *SDL_GetCustomJoystickManufacturer(const char *manufacturer);
-
-/* Function to get a custom name for a controller, if it's available */
-extern const char *SDL_GetCustomJoystickName(Uint16 vendor, Uint16 product);
+/* Function to standardize the name for a controller
+   This should be freed with SDL_free() when no longer needed
+ */
+extern char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name);
 
 /* Function to return the type of a controller */
 extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name);
@@ -73,6 +72,12 @@ extern SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid);
 
 /* Function to return whether a joystick guid comes from the HIDAPI driver */
 extern SDL_bool SDL_IsJoystickHIDAPI(SDL_JoystickGUID guid);
+
+/* Function to return whether a joystick guid comes from the RAWINPUT driver */
+extern SDL_bool SDL_IsJoystickRAWINPUT(SDL_JoystickGUID guid);
+
+/* Function to return whether a joystick guid comes from the Virtual driver */
+extern SDL_bool SDL_IsJoystickVirtual(SDL_JoystickGUID guid);
 
 /* Function to return whether a joystick should be ignored */
 extern SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid);

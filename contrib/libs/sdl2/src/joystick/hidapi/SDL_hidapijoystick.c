@@ -37,6 +37,7 @@
 
 #if defined(__WIN32__)
 #include "../../core/windows/SDL_windows.h"
+#include "../windows/SDL_rawinputjoystick_c.h"
 #endif
 
 #if defined(__MACOSX__)
@@ -419,11 +420,20 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
         return NULL;
     }
 
-    if (device->usage_page && device->usage_page != USAGE_PAGE_GENERIC_DESKTOP) {
+#ifdef SDL_JOYSTICK_RAWINPUT
+    if (RAWINPUT_IsDevicePresent(device->vendor_id, device->product_id, device->version)) {
+        /* The RAWINPUT driver is taking care of this device */
         return NULL;
     }
-    if (device->usage && device->usage != USAGE_JOYSTICK && device->usage != USAGE_GAMEPAD && device->usage != USAGE_MULTIAXISCONTROLLER) {
-        return NULL;
+#endif
+
+	if (device->vendor_id != USB_VENDOR_VALVE) {
+        if (device->usage_page && device->usage_page != USAGE_PAGE_GENERIC_DESKTOP) {
+            return NULL;
+        }
+        if (device->usage && device->usage != USAGE_JOYSTICK && device->usage != USAGE_GAMEPAD && device->usage != USAGE_MULTIAXISCONTROLLER) {
+            return NULL;
+        }
     }
 
     type = SDL_GetJoystickGameControllerType(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol);
@@ -502,7 +512,7 @@ HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
 
     /* Disconnect any joysticks */
     while (device->num_joysticks) {
-        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0], SDL_FALSE);
     }
 
     device->driver->FreeDevice(device);
@@ -575,6 +585,11 @@ HIDAPI_JoystickInit(void)
         return -1;
     }
 
+#ifdef __WINDOWS__
+    /* On Windows, turns out HIDAPI for Xbox controllers doesn't allow background input, so off by default */
+    SDL_SetHintWithPriority(SDL_HINT_JOYSTICK_HIDAPI_XBOX, "0", SDL_HINT_DEFAULT);
+#endif
+
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
         SDL_AddHintCallback(driver->hint, SDL_HIDAPIDriverHintChanged, NULL);
@@ -591,7 +606,7 @@ HIDAPI_JoystickInit(void)
 }
 
 SDL_bool
-HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID)
+HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID, SDL_bool is_external)
 {
     SDL_JoystickID joystickID;
     SDL_JoystickID *joysticks = (SDL_JoystickID *)SDL_realloc(device->joysticks, (device->num_joysticks + 1)*sizeof(*device->joysticks));
@@ -602,7 +617,9 @@ HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID)
     joystickID = SDL_GetNextJoystickInstanceID();
     device->joysticks = joysticks;
     device->joysticks[device->num_joysticks++] = joystickID;
-    ++SDL_HIDAPI_numjoysticks;
+    if (!is_external) {
+        ++SDL_HIDAPI_numjoysticks;
+    }
 
     SDL_PrivateJoystickAdded(joystickID);
 
@@ -613,20 +630,22 @@ HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID)
 }
 
 void
-HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
+HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID, SDL_bool is_external)
 {
     int i;
 
     for (i = 0; i < device->num_joysticks; ++i) {
         if (device->joysticks[i] == joystickID) {
             SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joystickID);
-            if (joystick) {
+            if (joystick && !is_external) {
                 HIDAPI_JoystickClose(joystick);
             }
 
             SDL_memmove(&device->joysticks[i], &device->joysticks[i+1], device->num_joysticks - i - 1);
             --device->num_joysticks;
-            --SDL_HIDAPI_numjoysticks;
+            if (!is_external) {
+                --SDL_HIDAPI_numjoysticks;
+            }
             if (device->num_joysticks == 0) {
                 SDL_free(device->joysticks);
                 device->joysticks = NULL;
@@ -698,59 +717,45 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     device->dev_lock = SDL_CreateMutex();
 
     /* Need the device name before getting the driver to know whether to ignore this device */
-    if (!device->name) {
-        const char *name = SDL_GetCustomJoystickName(device->vendor_id, device->product_id);
-        if (name) {
-            device->name = SDL_strdup(name);
-        }
-    }
-    if (!device->name && info->manufacturer_string && info->product_string) {
-        const char *manufacturer_remapped;
-        char *manufacturer_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-        char *product_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-        if (!manufacturer_string && !product_string) {
-            if (sizeof(wchar_t) == sizeof(Uint16)) {
-                manufacturer_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-                product_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-            } else if (sizeof(wchar_t) == sizeof(Uint32)) {
-                manufacturer_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-                product_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-            }
-        }
+    {
+        char *manufacturer_string = NULL;
+        char *product_string = NULL;
 
-        manufacturer_remapped = SDL_GetCustomJoystickManufacturer(manufacturer_string);
-        if (manufacturer_remapped != manufacturer_string) {
-            SDL_free(manufacturer_string);
-            manufacturer_string = SDL_strdup(manufacturer_remapped);
-        }
-
-        if (manufacturer_string && product_string) {
-            size_t name_size = (SDL_strlen(manufacturer_string) + 1 + SDL_strlen(product_string) + 1);
-            device->name = (char *)SDL_malloc(name_size);
-            if (device->name) {
-                if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
-                    SDL_strlcpy(device->name, product_string, name_size);
-                } else {
-                    SDL_snprintf(device->name, name_size, "%s %s", manufacturer_string, product_string);
+        if (info->manufacturer_string) {
+            manufacturer_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
+            if (!manufacturer_string) {
+                if (sizeof(wchar_t) == sizeof(Uint16)) {
+                    manufacturer_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
+                } else if (sizeof(wchar_t) == sizeof(Uint32)) {
+                    manufacturer_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
                 }
             }
         }
+        if (info->product_string) {
+            product_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
+            if (!product_string) {
+                if (sizeof(wchar_t) == sizeof(Uint16)) {
+                    product_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
+                } else if (sizeof(wchar_t) == sizeof(Uint32)) {
+                    product_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
+                }
+            }
+        }
+
+        device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
+
         if (manufacturer_string) {
             SDL_free(manufacturer_string);
         }
         if (product_string) {
             SDL_free(product_string);
         }
-    }
-    if (!device->name) {
-        size_t name_size = (6 + 1 + 6 + 1);
-        device->name = (char *)SDL_malloc(name_size);
+
         if (!device->name) {
             SDL_free(device->path);
             SDL_free(device);
             return;
         }
-        SDL_snprintf(device->name, name_size, "0x%.4x/0x%.4x", info->vendor_id, info->product_id);
     }
 
     /* Add it to the list */
@@ -896,6 +901,7 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, cons
 static void
 HIDAPI_JoystickDetect(void)
 {
+    int i;
     if (SDL_AtomicTryLock(&SDL_HIDAPI_spinlock)) {
         HIDAPI_UpdateDiscovery();
         if (SDL_HIDAPI_discovery.m_bHaveDevicesChanged) {
@@ -904,6 +910,12 @@ HIDAPI_JoystickDetect(void)
             SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_FALSE;
         }
         SDL_AtomicUnlock(&SDL_HIDAPI_spinlock);
+    }
+    for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
+        SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
+        if (driver->enabled && driver->PostUpdate) {
+            driver->PostUpdate();
+        }
     }
 }
 

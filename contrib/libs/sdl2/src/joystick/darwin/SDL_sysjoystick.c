@@ -127,10 +127,27 @@ FreeDevice(recDevice *removeDevice)
     recDevice *pDeviceNext = NULL;
     if (removeDevice) {
         if (removeDevice->deviceRef) {
-            IOHIDDeviceUnscheduleFromRunLoop(removeDevice->deviceRef, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+            if (removeDevice->runLoopAttached) {
+                /* Calling IOHIDDeviceUnscheduleFromRunLoop without a prior,
+                 * paired call to IOHIDDeviceScheduleWithRunLoop can lead
+                 * to crashes in MacOS 10.14.x and earlier.  This doesn't
+                 * appear to be a problem in MacOS 10.15.x, but we'll
+                 * do it anyways.  (Part-of fix for Bug 5034)
+                 */
+                IOHIDDeviceUnscheduleFromRunLoop(removeDevice->deviceRef, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+            }
             CFRelease(removeDevice->deviceRef);
             removeDevice->deviceRef = NULL;
         }
+
+        /* clear out any reference to removeDevice from an associated,
+         * live instance of SDL_Joystick  (Part-of fix for Bug 5034)
+         */
+        SDL_LockJoysticks();
+        if (removeDevice->joystick) {
+            removeDevice->joystick->hwdata = NULL;
+        }
+        SDL_UnlockJoysticks();
 
         /* save next device prior to disposing of this device */
         pDeviceNext = removeDevice->pNext;
@@ -398,20 +415,19 @@ AddHIDElement(const void *value, void *parameter)
     }
 }
 
+
 static SDL_bool
 GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 {
     Sint32 vendor = 0;
     Sint32 product = 0;
     Sint32 version = 0;
-    const char *name;
-    const char *manufacturer_remapped;
+    char *name;
     char manufacturer_string[256];
     char product_string[256];
     CFTypeRef refCF = NULL;
     CFArrayRef array = NULL;
     Uint16 *guid16 = (Uint16 *)pDevice->guid.data;
-    int i;
 
     /* get usage page and usage */
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDPrimaryUsagePageKey));
@@ -460,36 +476,18 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     }
 
     /* get device name */
-    name = SDL_GetCustomJoystickName(vendor, product);
+    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
+    if ((!refCF) || (!CFStringGetCString(refCF, manufacturer_string, sizeof(manufacturer_string), kCFStringEncodingUTF8))) {
+        manufacturer_string[0] = '\0';
+    }
+    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
+    if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
+        product_string[0] = '\0';
+    }
+    name = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
     if (name) {
         SDL_strlcpy(pDevice->product, name, sizeof(pDevice->product));
-    } else {
-        refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
-        if ((!refCF) || (!CFStringGetCString(refCF, manufacturer_string, sizeof(manufacturer_string), kCFStringEncodingUTF8))) {
-            manufacturer_string[0] = '\0';
-        }
-        refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
-        if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
-            SDL_strlcpy(product_string, "Unidentified joystick", sizeof(product_string));
-        }
-        for (i = (int)SDL_strlen(manufacturer_string) - 1; i > 0; --i) {
-            if (SDL_isspace(manufacturer_string[i])) {
-                manufacturer_string[i] = '\0';
-            } else {
-                break;
-            }
-        }
-
-        manufacturer_remapped = SDL_GetCustomJoystickManufacturer(manufacturer_string);
-        if (manufacturer_remapped != manufacturer_string) {
-            SDL_strlcpy(manufacturer_string, manufacturer_remapped, sizeof(manufacturer_string));
-        }
-
-        if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
-            SDL_strlcpy(pDevice->product, product_string, sizeof(pDevice->product));
-        } else {
-            SDL_snprintf(pDevice->product, sizeof(pDevice->product), "%s %s", manufacturer_string, product_string);
-        }
+        SDL_free(name);
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
@@ -572,6 +570,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     /* Get notified when this device is disconnected. */
     IOHIDDeviceRegisterRemovalCallback(ioHIDDeviceObject, JoystickDeviceWasRemovedCallback, device);
     IOHIDDeviceScheduleWithRunLoop(ioHIDDeviceObject, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+    device->runLoopAttached = SDL_TRUE;
 
     /* Allocate an instance ID for this device */
     device->instance_id = SDL_GetNextJoystickInstanceID();
@@ -780,6 +779,7 @@ DARWIN_JoystickOpen(SDL_Joystick * joystick, int device_index)
 
     joystick->instance_id = device->instance_id;
     joystick->hwdata = device;
+    device->joystick = joystick;
     joystick->name = device->product;
 
     joystick->naxes = device->axes;
@@ -890,6 +890,10 @@ DARWIN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
 
     /* Scale and average the two rumble strengths */
     Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
+    
+    if (!device) {
+        return SDL_SetError("Rumble failed, device disconnected");
+    }
 
     if (!device->ffservice) {
         return SDL_Unsupported();
@@ -1027,6 +1031,10 @@ DARWIN_JoystickUpdate(SDL_Joystick * joystick)
 static void
 DARWIN_JoystickClose(SDL_Joystick * joystick)
 {
+    recDevice *device = joystick->hwdata;
+    if (device) {
+        device->joystick = NULL;
+    }
 }
 
 static void
