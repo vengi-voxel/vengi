@@ -1044,7 +1044,7 @@ bool ImGui::Checkbox(const char* label, bool* v)
     else if (*v)
     {
         const float pad = ImMax(1.0f, IM_FLOOR(square_sz / 6.0f));
-        RenderCheckMark(check_bb.Min + ImVec2(pad, pad), check_col, square_sz - pad*2.0f);
+        RenderCheckMark(window->DrawList, check_bb.Min + ImVec2(pad, pad), check_col, square_sz - pad*2.0f);
     }
 
     if (g.LogEnabled)
@@ -4493,52 +4493,6 @@ bool ImGui::ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags fl
     return true;
 }
 
-static inline ImU32 ImAlphaBlendColor(ImU32 col_a, ImU32 col_b)
-{
-    float t = ((col_b >> IM_COL32_A_SHIFT) & 0xFF) / 255.f;
-    int r = ImLerp((int)(col_a >> IM_COL32_R_SHIFT) & 0xFF, (int)(col_b >> IM_COL32_R_SHIFT) & 0xFF, t);
-    int g = ImLerp((int)(col_a >> IM_COL32_G_SHIFT) & 0xFF, (int)(col_b >> IM_COL32_G_SHIFT) & 0xFF, t);
-    int b = ImLerp((int)(col_a >> IM_COL32_B_SHIFT) & 0xFF, (int)(col_b >> IM_COL32_B_SHIFT) & 0xFF, t);
-    return IM_COL32(r, g, b, 0xFF);
-}
-
-// Helper for ColorPicker4()
-// NB: This is rather brittle and will show artifact when rounding this enabled if rounded corners overlap multiple cells. Caller currently responsible for avoiding that.
-// I spent a non reasonable amount of time trying to getting this right for ColorButton with rounding+anti-aliasing+ImGuiColorEditFlags_HalfAlphaPreview flag + various grid sizes and offsets, and eventually gave up... probably more reasonable to disable rounding alltogether.
-void ImGui::RenderColorRectWithAlphaCheckerboard(ImVec2 p_min, ImVec2 p_max, ImU32 col, float grid_step, ImVec2 grid_off, float rounding, int rounding_corners_flags)
-{
-    ImGuiWindow* window = GetCurrentWindow();
-    if (((col & IM_COL32_A_MASK) >> IM_COL32_A_SHIFT) < 0xFF)
-    {
-        ImU32 col_bg1 = GetColorU32(ImAlphaBlendColor(IM_COL32(204,204,204,255), col));
-        ImU32 col_bg2 = GetColorU32(ImAlphaBlendColor(IM_COL32(128,128,128,255), col));
-        window->DrawList->AddRectFilled(p_min, p_max, col_bg1, rounding, rounding_corners_flags);
-
-        int yi = 0;
-        for (float y = p_min.y + grid_off.y; y < p_max.y; y += grid_step, yi++)
-        {
-            float y1 = ImClamp(y, p_min.y, p_max.y), y2 = ImMin(y + grid_step, p_max.y);
-            if (y2 <= y1)
-                continue;
-            for (float x = p_min.x + grid_off.x + (yi & 1) * grid_step; x < p_max.x; x += grid_step * 2.0f)
-            {
-                float x1 = ImClamp(x, p_min.x, p_max.x), x2 = ImMin(x + grid_step, p_max.x);
-                if (x2 <= x1)
-                    continue;
-                int rounding_corners_flags_cell = 0;
-                if (y1 <= p_min.y) { if (x1 <= p_min.x) rounding_corners_flags_cell |= ImDrawCornerFlags_TopLeft; if (x2 >= p_max.x) rounding_corners_flags_cell |= ImDrawCornerFlags_TopRight; }
-                if (y2 >= p_max.y) { if (x1 <= p_min.x) rounding_corners_flags_cell |= ImDrawCornerFlags_BotLeft; if (x2 >= p_max.x) rounding_corners_flags_cell |= ImDrawCornerFlags_BotRight; }
-                rounding_corners_flags_cell &= rounding_corners_flags;
-                window->DrawList->AddRectFilled(ImVec2(x1,y1), ImVec2(x2,y2), col_bg2, rounding_corners_flags_cell ? rounding : 0.0f, rounding_corners_flags_cell);
-            }
-        }
-    }
-    else
-    {
-        window->DrawList->AddRectFilled(p_min, p_max, col, rounding, rounding_corners_flags);
-    }
-}
-
 // Helper for ColorPicker4()
 static void RenderArrowsForVerticalBar(ImDrawList* draw_list, ImVec2 pos, ImVec2 half_sz, float bar_w, float alpha)
 {
@@ -4909,7 +4863,7 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
     {
         float alpha = ImSaturate(col[3]);
         ImRect bar1_bb(bar1_pos_x, picker_pos.y, bar1_pos_x + bars_width, picker_pos.y + sv_picker_size);
-        RenderColorRectWithAlphaCheckerboard(bar1_bb.Min, bar1_bb.Max, 0, bar1_bb.GetWidth() / 2.0f, ImVec2(0.0f, 0.0f));
+        RenderColorRectWithAlphaCheckerboard(draw_list, bar1_bb.Min, bar1_bb.Max, 0, bar1_bb.GetWidth() / 2.0f, ImVec2(0.0f, 0.0f));
         draw_list->AddRectFilledMultiColor(bar1_bb.Min, bar1_bb.Max, user_col32_striped_of_alpha, user_col32_striped_of_alpha, user_col32_striped_of_alpha & ~IM_COL32_A_MASK, user_col32_striped_of_alpha & ~IM_COL32_A_MASK);
         float bar1_line_y = IM_ROUND(picker_pos.y + (1.0f - alpha) * sv_picker_size);
         RenderFrameBorder(bar1_bb.Min, bar1_bb.Max, 0.0f);
@@ -4973,7 +4927,7 @@ bool ImGui::ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFl
     if ((flags & ImGuiColorEditFlags_AlphaPreviewHalf) && col_rgb.w < 1.0f)
     {
         float mid_x = IM_ROUND((bb_inner.Min.x + bb_inner.Max.x) * 0.5f);
-        RenderColorRectWithAlphaCheckerboard(ImVec2(bb_inner.Min.x + grid_step, bb_inner.Min.y), bb_inner.Max, GetColorU32(col_rgb), grid_step, ImVec2(-grid_step + off, off), rounding, ImDrawCornerFlags_TopRight| ImDrawCornerFlags_BotRight);
+        RenderColorRectWithAlphaCheckerboard(window->DrawList, ImVec2(bb_inner.Min.x + grid_step, bb_inner.Min.y), bb_inner.Max, GetColorU32(col_rgb), grid_step, ImVec2(-grid_step + off, off), rounding, ImDrawCornerFlags_TopRight| ImDrawCornerFlags_BotRight);
         window->DrawList->AddRectFilled(bb_inner.Min, ImVec2(mid_x, bb_inner.Max.y), GetColorU32(col_rgb_without_alpha), rounding, ImDrawCornerFlags_TopLeft|ImDrawCornerFlags_BotLeft);
     }
     else
@@ -4981,7 +4935,7 @@ bool ImGui::ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFl
         // Because GetColorU32() multiplies by the global style Alpha and we don't want to display a checkerboard if the source code had no alpha
         ImVec4 col_source = (flags & ImGuiColorEditFlags_AlphaPreview) ? col_rgb : col_rgb_without_alpha;
         if (col_source.w < 1.0f)
-            RenderColorRectWithAlphaCheckerboard(bb_inner.Min, bb_inner.Max, GetColorU32(col_source), grid_step, ImVec2(off, off), rounding);
+            RenderColorRectWithAlphaCheckerboard(window->DrawList, bb_inner.Min, bb_inner.Max, GetColorU32(col_source), grid_step, ImVec2(off, off), rounding);
         else
             window->DrawList->AddRectFilled(bb_inner.Min, bb_inner.Max, GetColorU32(col_source), rounding, ImDrawCornerFlags_All);
     }
@@ -5604,6 +5558,8 @@ bool ImGui::CollapsingHeader(const char* label, bool* p_open, ImGuiTreeNodeFlags
 
 // Tip: pass a non-visible label (e.g. "##dummy") then you can use the space to draw other text or image.
 // But you need to make sure the ID is unique, e.g. enclose calls in PushID/PopID or use ##unique_id.
+// With this scheme, ImGuiSelectableFlags_SpanAllColumns and ImGuiSelectableFlags_AllowItemOverlap are also frequently used flags.
+// FIXME: Selectable() with (size.x == 0.0f) and (SelectableTextAlign.x > 0.0f) followed by SameLine() is currently not supported.
 bool ImGui::Selectable(const char* label, bool selected, ImGuiSelectableFlags flags, const ImVec2& size_arg)
 {
     ImGuiWindow* window = GetCurrentWindow();
@@ -5616,44 +5572,48 @@ bool ImGui::Selectable(const char* label, bool selected, ImGuiSelectableFlags fl
     if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.CurrentColumns) // FIXME-OPT: Avoid if vertically clipped.
         PushColumnsBackground();
 
+    // Submit label or explicit size to ItemSize(), whereas ItemAdd() will submit a larger/spanning rectangle.
     ImGuiID id = window->GetID(label);
     ImVec2 label_size = CalcTextSize(label, NULL, true);
     ImVec2 size(size_arg.x != 0.0f ? size_arg.x : label_size.x, size_arg.y != 0.0f ? size_arg.y : label_size.y);
     ImVec2 pos = window->DC.CursorPos;
     pos.y += window->DC.CurrLineTextBaseOffset;
-    ImRect bb_inner(pos, pos + size);
     ItemSize(size, 0.0f);
 
-    // Fill horizontal space.
-    ImVec2 window_padding = window->WindowPadding;
-    float max_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? GetWindowContentRegionMax().x : GetContentRegionMax().x;
-    float w_draw = ImMax(label_size.x, window->Pos.x + max_x - window_padding.x - pos.x);
-    ImVec2 size_draw((size_arg.x != 0 && !(flags & ImGuiSelectableFlags_DrawFillAvailWidth)) ? size_arg.x : w_draw, size_arg.y != 0.0f ? size_arg.y : size.y);
-    ImRect bb(pos, pos + size_draw);
-    if (size_arg.x == 0.0f || (flags & ImGuiSelectableFlags_DrawFillAvailWidth))
-        bb.Max.x += window_padding.x;
+    // Fill horizontal space
+    const float min_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? window->ContentRegionRect.Min.x : pos.x;
+    const float max_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? window->ContentRegionRect.Max.x : GetContentRegionMaxAbs().x;
+    if (size_arg.x == 0.0f || (flags & ImGuiSelectableFlags_SpanAvailWidth))
+        size.x = ImMax(label_size.x, max_x - min_x);
 
-    // Selectables are tightly packed together so we extend the box to cover spacing between selectable.
+    // Text stays at the submission position, but bounding box may be extended on both sides
+    const ImVec2 text_min = pos;
+    const ImVec2 text_max(min_x + size.x, pos.y + size.y);
+
+    // Selectables are meant to be tightly packed together with no click-gap, so we extend their box to cover spacing between selectable.
+    ImRect bb_enlarged(min_x, pos.y, text_max.x, text_max.y);
     const float spacing_x = style.ItemSpacing.x;
     const float spacing_y = style.ItemSpacing.y;
     const float spacing_L = IM_FLOOR(spacing_x * 0.50f);
     const float spacing_U = IM_FLOOR(spacing_y * 0.50f);
-    bb.Min.x -= spacing_L;
-    bb.Min.y -= spacing_U;
-    bb.Max.x += (spacing_x - spacing_L);
-    bb.Max.y += (spacing_y - spacing_U);
+    bb_enlarged.Min.x -= spacing_L;
+    bb_enlarged.Min.y -= spacing_U;
+    bb_enlarged.Max.x += (spacing_x - spacing_L);
+    bb_enlarged.Max.y += (spacing_y - spacing_U);
+    //if (g.IO.KeyCtrl) { GetForegroundDrawList()->AddRect(bb_align.Min, bb_align.Max, IM_COL32(255, 0, 0, 255)); }
+    //if (g.IO.KeyCtrl) { GetForegroundDrawList()->AddRect(bb_enlarged.Min, bb_enlarged.Max, IM_COL32(0, 255, 0, 255)); }
 
     bool item_add;
     if (flags & ImGuiSelectableFlags_Disabled)
     {
         ImGuiItemFlags backup_item_flags = window->DC.ItemFlags;
         window->DC.ItemFlags |= ImGuiItemFlags_Disabled | ImGuiItemFlags_NoNavDefaultFocus;
-        item_add = ItemAdd(bb, id);
+        item_add = ItemAdd(bb_enlarged, id);
         window->DC.ItemFlags = backup_item_flags;
     }
     else
     {
-        item_add = ItemAdd(bb, id);
+        item_add = ItemAdd(bb_enlarged, id);
     }
     if (!item_add)
     {
@@ -5676,7 +5636,7 @@ bool ImGui::Selectable(const char* label, bool selected, ImGuiSelectableFlags fl
 
     const bool was_selected = selected;
     bool hovered, held;
-    bool pressed = ButtonBehavior(bb, id, &hovered, &held, button_flags);
+    bool pressed = ButtonBehavior(bb_enlarged, id, &hovered, &held, button_flags);
 
     // Update NavId when clicking or when Hovering (this doesn't happen on most widgets), so navigation can be resumed with gamepad/keyboard
     if (pressed || (hovered && (flags & ImGuiSelectableFlags_SetNavIdOnHover)))
@@ -5703,18 +5663,15 @@ bool ImGui::Selectable(const char* label, bool selected, ImGuiSelectableFlags fl
     if (hovered || selected)
     {
         const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
-        RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
-        RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+        RenderFrame(bb_enlarged.Min, bb_enlarged.Max, col, false, 0.0f);
+        RenderNavHighlight(bb_enlarged, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
     }
 
     if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.CurrentColumns)
-    {
         PopColumnsBackground();
-        bb.Max.x -= (GetContentRegionMax().x - max_x);
-    }
 
     if (flags & ImGuiSelectableFlags_Disabled) PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]);
-    RenderTextClipped(bb_inner.Min, bb_inner.Max, label, NULL, &label_size, style.SelectableTextAlign, &bb);
+    RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb_enlarged);
     if (flags & ImGuiSelectableFlags_Disabled) PopStyleColor();
 
     // Automatically close popups
@@ -6274,10 +6231,12 @@ bool ImGui::BeginMenu(const char* label, bool enabled)
     else
     {
         // Menu inside a menu
+        // (In a typical menu window where all items are BeginMenu() or MenuItem() calls, extra_w will always be 0.0f.
+        //  Only when they are other items sticking out we're going to add spacing, yet only register minimum width into the layout system.
         popup_pos = ImVec2(pos.x, pos.y - style.WindowPadding.y);
-        float w = window->DC.MenuColumns.DeclColumns(label_size.x, 0.0f, IM_FLOOR(g.FontSize * 1.20f)); // Feedback to next frame
-        float extra_w = ImMax(0.0f, GetContentRegionAvail().x - w);
-        pressed = Selectable(label, menu_is_open, ImGuiSelectableFlags_NoHoldingActiveID | ImGuiSelectableFlags_SelectOnClick | ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_DrawFillAvailWidth | (!enabled ? ImGuiSelectableFlags_Disabled : 0), ImVec2(w, 0.0f));
+        float min_w = window->DC.MenuColumns.DeclColumns(label_size.x, 0.0f, IM_FLOOR(g.FontSize * 1.20f)); // Feedback to next frame
+        float extra_w = ImMax(0.0f, GetContentRegionAvail().x - min_w);
+        pressed = Selectable(label, menu_is_open, ImGuiSelectableFlags_NoHoldingActiveID | ImGuiSelectableFlags_SelectOnClick | ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_SpanAvailWidth | (!enabled ? ImGuiSelectableFlags_Disabled : 0), ImVec2(min_w, 0.0f));
         ImU32 text_col = GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled);
         RenderArrow(window->DrawList, pos + ImVec2(window->DC.MenuColumns.Pos[2] + extra_w + g.FontSize * 0.30f, 0.0f), text_col, ImGuiDir_Right);
     }
@@ -6422,18 +6381,21 @@ bool ImGui::MenuItem(const char* label, const char* shortcut, bool selected, boo
     }
     else
     {
-        ImVec2 shortcut_size = shortcut ? CalcTextSize(shortcut, NULL) : ImVec2(0.0f, 0.0f);
-        float w = window->DC.MenuColumns.DeclColumns(label_size.x, shortcut_size.x, IM_FLOOR(g.FontSize * 1.20f)); // Feedback for next frame
-        float extra_w = ImMax(0.0f, GetContentRegionAvail().x - w);
-        pressed = Selectable(label, false, flags | ImGuiSelectableFlags_DrawFillAvailWidth, ImVec2(w, 0.0f));
-        if (shortcut_size.x > 0.0f)
+        // Menu item inside a vertical menu
+        // (In a typical menu window where all items are BeginMenu() or MenuItem() calls, extra_w will always be 0.0f.
+        //  Only when they are other items sticking out we're going to add spacing, yet only register minimum width into the layout system.
+        float shortcut_w = shortcut ? CalcTextSize(shortcut, NULL).x : 0.0f;
+        float min_w = window->DC.MenuColumns.DeclColumns(label_size.x, shortcut_w, IM_FLOOR(g.FontSize * 1.20f)); // Feedback for next frame
+        float extra_w = ImMax(0.0f, GetContentRegionAvail().x - min_w);
+        pressed = Selectable(label, false, flags | ImGuiSelectableFlags_SpanAvailWidth, ImVec2(min_w, 0.0f));
+        if (shortcut_w > 0.0f)
         {
             PushStyleColor(ImGuiCol_Text, g.Style.Colors[ImGuiCol_TextDisabled]);
             RenderText(pos + ImVec2(window->DC.MenuColumns.Pos[1] + extra_w, 0.0f), shortcut, NULL, false);
             PopStyleColor();
         }
         if (selected)
-            RenderCheckMark(pos + ImVec2(window->DC.MenuColumns.Pos[2] + extra_w + g.FontSize * 0.40f, g.FontSize * 0.134f * 0.5f), GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled), g.FontSize  * 0.866f);
+            RenderCheckMark(window->DrawList, pos + ImVec2(window->DC.MenuColumns.Pos[2] + extra_w + g.FontSize * 0.40f, g.FontSize * 0.134f * 0.5f), GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled), g.FontSize  * 0.866f);
     }
 
     IMGUI_TEST_ENGINE_ITEM_INFO(window->DC.LastItemId, label, window->DC.ItemFlags | ImGuiItemStatusFlags_Checkable | (selected ? ImGuiItemStatusFlags_Checked : 0));

@@ -73,7 +73,7 @@ Index of this file:
 // Forward declarations
 //-----------------------------------------------------------------------------
 
-struct ImBoolVector;                // Store 1-bit per value
+struct ImBitVector;                 // Store 1-bit per value
 struct ImRect;                      // An axis-aligned rectangle (2 points)
 struct ImDrawDataBuilder;           // Helper to build a ImDrawData instance
 struct ImDrawListSharedData;        // Data shared between all ImDrawList instances
@@ -204,7 +204,8 @@ extern IMGUI_API ImGuiContext* GImGui;  // Current implicit context pointer
 // - Helpers: ImVec2/ImVec4 operators
 // - Helpers: Maths
 // - Helpers: Geometry
-// - Helper: ImBoolVector
+// - Helpers: Bit arrays
+// - Helper: ImBitVector
 // - Helper: ImPool<>
 // - Helper: ImChunkStream<>
 //-----------------------------------------------------------------------------
@@ -216,6 +217,9 @@ IMGUI_API ImU32         ImHashStr(const char* data, size_t data_size = 0, ImU32 
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 static inline ImU32     ImHash(const void* data, int size, ImU32 seed = 0) { return size ? ImHashData(data, (size_t)size, seed) : ImHashStr((const char*)data, 0, seed); } // [moved to ImHashStr/ImHashData in 1.68]
 #endif
+
+// Helpers: Color Blending
+IMGUI_API ImU32         ImAlphaBlendColors(ImU32 col_a, ImU32 col_b);
 
 // Helpers: Bit manipulation
 static inline bool      ImIsPowerOfTwo(int v)           { return v != 0 && (v & (v - 1)) == 0; }
@@ -261,10 +265,12 @@ static inline ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)            
 static inline ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs)            { return ImVec2(lhs.x-rhs.x, lhs.y-rhs.y); }
 static inline ImVec2 operator*(const ImVec2& lhs, const ImVec2& rhs)            { return ImVec2(lhs.x*rhs.x, lhs.y*rhs.y); }
 static inline ImVec2 operator/(const ImVec2& lhs, const ImVec2& rhs)            { return ImVec2(lhs.x/rhs.x, lhs.y/rhs.y); }
-static inline ImVec2& operator+=(ImVec2& lhs, const ImVec2& rhs)                { lhs.x += rhs.x; lhs.y += rhs.y; return lhs; }
-static inline ImVec2& operator-=(ImVec2& lhs, const ImVec2& rhs)                { lhs.x -= rhs.x; lhs.y -= rhs.y; return lhs; }
 static inline ImVec2& operator*=(ImVec2& lhs, const float rhs)                  { lhs.x *= rhs; lhs.y *= rhs; return lhs; }
 static inline ImVec2& operator/=(ImVec2& lhs, const float rhs)                  { lhs.x /= rhs; lhs.y /= rhs; return lhs; }
+static inline ImVec2& operator+=(ImVec2& lhs, const ImVec2& rhs)                { lhs.x += rhs.x; lhs.y += rhs.y; return lhs; }
+static inline ImVec2& operator-=(ImVec2& lhs, const ImVec2& rhs)                { lhs.x -= rhs.x; lhs.y -= rhs.y; return lhs; }
+static inline ImVec2& operator*=(ImVec2& lhs, const ImVec2& rhs)                { lhs.x *= rhs.x; lhs.y *= rhs.y; return lhs; }
+static inline ImVec2& operator/=(ImVec2& lhs, const ImVec2& rhs)                { lhs.x /= rhs.x; lhs.y /= rhs.y; return lhs; }
 static inline ImVec4 operator+(const ImVec4& lhs, const ImVec4& rhs)            { return ImVec4(lhs.x+rhs.x, lhs.y+rhs.y, lhs.z+rhs.z, lhs.w+rhs.w); }
 static inline ImVec4 operator-(const ImVec4& lhs, const ImVec4& rhs)            { return ImVec4(lhs.x-rhs.x, lhs.y-rhs.y, lhs.z-rhs.z, lhs.w-rhs.w); }
 static inline ImVec4 operator*(const ImVec4& lhs, const ImVec4& rhs)            { return ImVec4(lhs.x*rhs.x, lhs.y*rhs.y, lhs.z*rhs.z, lhs.w*rhs.w); }
@@ -348,16 +354,32 @@ IMGUI_API void       ImTriangleBarycentricCoords(const ImVec2& a, const ImVec2& 
 inline float         ImTriangleArea(const ImVec2& a, const ImVec2& b, const ImVec2& c) { return ImFabs((a.x * (b.y - c.y)) + (b.x * (c.y - a.y)) + (c.x * (a.y - b.y))) * 0.5f; }
 IMGUI_API ImGuiDir   ImGetDirQuadrantFromDelta(float dx, float dy);
 
-// Helper: ImBoolVector
-// Store 1-bit per value. Note that Resize() currently clears the whole vector.
-struct IMGUI_API ImBoolVector
+// Helpers: Bit arrays
+inline bool          ImBitArrayTestBit(const ImU32* arr, int n)         { ImU32 mask = (ImU32)1 << (n & 31); return (arr[n >> 5] & mask) != 0; }
+inline void          ImBitArrayClearBit(ImU32* arr, int n)              { ImU32 mask = (ImU32)1 << (n & 31); arr[n >> 5] &= ~mask; }
+inline void          ImBitArraySetBit(ImU32* arr, int n)                { ImU32 mask = (ImU32)1 << (n & 31); arr[n >> 5] |= mask; }
+inline void          ImBitArraySetBitRange(ImU32* arr, int n, int n2)
 {
-    ImVector<int>   Storage;
-    ImBoolVector()  { }
-    void            Resize(int sz)          { Storage.resize((sz + 31) >> 5); memset(Storage.Data, 0, (size_t)Storage.Size * sizeof(Storage.Data[0])); }
-    void            Clear()                 { Storage.clear(); }
-    bool            GetBit(int n) const     { int off = (n >> 5); int mask = 1 << (n & 31); return (Storage[off] & mask) != 0; }
-    void            SetBit(int n, bool v)   { int off = (n >> 5); int mask = 1 << (n & 31); if (v) Storage[off] |= mask; else Storage[off] &= ~mask; }
+    while (n <= n2)
+    {
+        int a_mod = (n & 31);
+        int b_mod = ((n2 >= n + 31) ? 31 : (n2 & 31)) + 1;
+        ImU32 mask = (ImU32)(((ImU64)1 << b_mod) - 1) & ~(ImU32)(((ImU64)1 << a_mod) - 1);
+        arr[n >> 5] |= mask;
+        n = (n + 32) & ~31;
+    }
+}
+
+// Helper: ImBitVector
+// Store 1-bit per value.
+struct IMGUI_API ImBitVector
+{
+    ImVector<ImU32> Storage;
+    void            Create(int sz)              { Storage.resize((sz + 31) >> 5); memset(Storage.Data, 0, (size_t)Storage.Size * sizeof(Storage.Data[0])); }
+    void            Clear()                     { Storage.clear(); }
+    bool            TestBit(int n) const        { IM_ASSERT(n < (Storage.Size << 5)); return ImBitArrayTestBit(Storage.Data, n); }
+    void            SetBit(int n)               { IM_ASSERT(n < (Storage.Size << 5)); ImBitArraySetBit(Storage.Data, n); }
+    void            ClearBit(int n)             { IM_ASSERT(n < (Storage.Size << 5)); ImBitArrayClearBit(Storage.Data, n); }
 };
 
 // Helper: ImPool<>
@@ -472,7 +494,7 @@ enum ImGuiSelectableFlagsPrivate_
     ImGuiSelectableFlags_NoHoldingActiveID  = 1 << 20,
     ImGuiSelectableFlags_SelectOnClick      = 1 << 21,  // Override button behavior to react on Click (default is Click+Release)
     ImGuiSelectableFlags_SelectOnRelease    = 1 << 22,  // Override button behavior to react on Release (default is Click+Release)
-    ImGuiSelectableFlags_DrawFillAvailWidth = 1 << 23,  // FIXME: We may be able to remove this (added in 6251d379 for menus)
+    ImGuiSelectableFlags_SpanAvailWidth     = 1 << 23,  // Span all avail width even if we declared less for layout purpose. FIXME: We may be able to remove this (added in 6251d379, 2bcafc86 for menus)
     ImGuiSelectableFlags_DrawHoveredWhenHeld= 1 << 24,  // Always show active when held, even is not hovered. This concept could probably be renamed/formalized somehow.
     ImGuiSelectableFlags_SetNavIdOnHover    = 1 << 25
 };
@@ -1128,7 +1150,8 @@ struct ImGuiContext
 
     // Drag and Drop
     bool                    DragDropActive;
-    bool                    DragDropWithinSourceOrTarget;       // Set when within a BeginDragDropXXX/EndDragDropXXX block.
+    bool                    DragDropWithinSource;               // Set when within a BeginDragDropXXX/EndDragDropXXX block for a drag source.
+    bool                    DragDropWithinTarget;               // Set when within a BeginDragDropXXX/EndDragDropXXX block for a drag target.
     ImGuiDragDropFlags      DragDropSourceFlags;
     int                     DragDropSourceFrameCount;
     int                     DragDropMouseButton;
@@ -1284,7 +1307,7 @@ struct ImGuiContext
         ForegroundDrawList._OwnerName = "##Foreground"; // Give it a name for debugging
         MouseCursor = ImGuiMouseCursor_Arrow;
 
-        DragDropActive = DragDropWithinSourceOrTarget = false;
+        DragDropActive = DragDropWithinSource = DragDropWithinTarget = false;
         DragDropSourceFlags = ImGuiDragDropFlags_None;
         DragDropSourceFrameCount = -1;
         DragDropMouseButton = -1;
@@ -1792,8 +1815,7 @@ namespace ImGui
     IMGUI_API void          RenderTextEllipsis(ImDrawList* draw_list, const ImVec2& pos_min, const ImVec2& pos_max, float clip_max_x, float ellipsis_max_x, const char* text, const char* text_end, const ImVec2* text_size_if_known);
     IMGUI_API void          RenderFrame(ImVec2 p_min, ImVec2 p_max, ImU32 fill_col, bool border = true, float rounding = 0.0f);
     IMGUI_API void          RenderFrameBorder(ImVec2 p_min, ImVec2 p_max, float rounding = 0.0f);
-    IMGUI_API void          RenderColorRectWithAlphaCheckerboard(ImVec2 p_min, ImVec2 p_max, ImU32 fill_col, float grid_step, ImVec2 grid_off, float rounding = 0.0f, int rounding_corners_flags = ~0);
-    IMGUI_API void          RenderCheckMark(ImVec2 pos, ImU32 col, float sz);
+    IMGUI_API void          RenderColorRectWithAlphaCheckerboard(ImDrawList* draw_list, ImVec2 p_min, ImVec2 p_max, ImU32 fill_col, float grid_step, ImVec2 grid_off, float rounding = 0.0f, int rounding_corners_flags = ~0);
     IMGUI_API void          RenderNavHighlight(const ImRect& bb, ImGuiID id, ImGuiNavHighlightFlags flags = ImGuiNavHighlightFlags_TypeDefault); // Navigation highlight
     IMGUI_API const char*   FindRenderedTextEnd(const char* text, const char* text_end = NULL); // Find the optional ## from which we stop displaying text.
     IMGUI_API void          LogRenderedText(const ImVec2* ref_pos, const char* text, const char* text_end = NULL);
@@ -1801,6 +1823,7 @@ namespace ImGui
     // Render helpers (those functions don't access any ImGui state!)
     IMGUI_API void          RenderArrow(ImDrawList* draw_list, ImVec2 pos, ImU32 col, ImGuiDir dir, float scale = 1.0f);
     IMGUI_API void          RenderBullet(ImDrawList* draw_list, ImVec2 pos, ImU32 col);
+    IMGUI_API void          RenderCheckMark(ImDrawList* draw_list, ImVec2 pos, ImU32 col, float sz);
     IMGUI_API void          RenderMouseCursor(ImDrawList* draw_list, ImVec2 pos, float scale, ImGuiMouseCursor mouse_cursor, ImU32 col_fill, ImU32 col_border, ImU32 col_shadow);
     IMGUI_API void          RenderArrowPointingAt(ImDrawList* draw_list, ImVec2 pos, ImVec2 half_sz, ImGuiDir direction, ImU32 col);
     IMGUI_API void          RenderRectFilledRangeH(ImDrawList* draw_list, const ImRect& rect, ImU32 col, float x_start_norm, float x_end_norm, float rounding);
