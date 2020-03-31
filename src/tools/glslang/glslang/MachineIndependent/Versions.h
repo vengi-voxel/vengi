@@ -3,6 +3,7 @@
 // Copyright (C) 2012-2013 LunarG, Inc.
 // Copyright (C) 2017 ARM Limited.
 // Copyright (C) 2015-2018 Google, Inc.
+// Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
 //
@@ -38,6 +39,8 @@
 #ifndef _VERSIONS_INCLUDED_
 #define _VERSIONS_INCLUDED_
 
+#define LAST_ELEMENT_MARKER(x) x
+
 //
 // Help manage multiple profiles, versions, extensions etc.
 //
@@ -54,7 +57,8 @@ typedef enum {
     ENoProfile            = (1 << 0), // only for desktop, before profiles showed up
     ECoreProfile          = (1 << 1),
     ECompatibilityProfile = (1 << 2),
-    EEsProfile            = (1 << 3)
+    EEsProfile            = (1 << 3),
+    LAST_ELEMENT_MARKER(EProfileCount),
 } EProfile;
 
 namespace glslang {
@@ -182,6 +186,9 @@ const char* const E_GL_EXT_buffer_reference2                = "GL_EXT_buffer_ref
 const char* const E_GL_EXT_buffer_reference_uvec2           = "GL_EXT_buffer_reference_uvec2";
 const char* const E_GL_EXT_demote_to_helper_invocation      = "GL_EXT_demote_to_helper_invocation";
 const char* const E_GL_EXT_shader_realtime_clock            = "GL_EXT_shader_realtime_clock";
+const char* const E_GL_EXT_debug_printf                     = "GL_EXT_debug_printf";
+const char* const E_GL_EXT_ray_tracing                      = "GL_EXT_ray_tracing";
+const char* const E_GL_EXT_ray_query                        = "GL_EXT_ray_query";
 
 // Arrays of extensions for the above viewportEXTs duplications
 

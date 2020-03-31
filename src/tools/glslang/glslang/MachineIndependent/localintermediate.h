@@ -162,7 +162,10 @@ struct TXfbBuffer {
 #endif
 
 // Track a set of strings describing how the module was processed.
-// Using the form:
+// This includes command line options, transforms, etc., ideally inclusive enough
+// to reproduce the steps used to transform the input source to the output.
+// E.g., see SPIR-V OpModuleProcessed.
+// Each "process" or "transform" uses is expressed in the form:
 //   process arg0 arg1 arg2 ...
 //   process arg0 arg1 arg2 ...
 // where everything is textual, and there can be zero or more arguments
@@ -249,7 +252,7 @@ public:
         blendEquations(0), xfbMode(false), multiStream(false),
         layoutOverrideCoverage(false),
         geoPassthroughEXT(false),
-        numShaderRecordNVBlocks(0),
+        numShaderRecordBlocks(0),
         computeDerivativeMode(LayoutDerivativeNone),
         primitives(TQualifier::layoutNotSet),
         numTaskNVBlocks(0),
@@ -503,7 +506,7 @@ public:
     bool getAutoMapBindings() const { return false; }
     bool getAutoMapLocations() const { return false; }
     int getNumPushConstants() const { return 0; }
-    void addShaderRecordNVCount() { }
+    void addShaderRecordCount() { }
     void addTaskNVCount() { }
     void setUseVulkanMemoryModel() { }
     bool usingVulkanMemoryModel() const { return false; }
@@ -620,7 +623,7 @@ public:
 
     void setTextureSamplerTransformMode(EShTextureSamplerTransformMode mode) { textureSamplerTransformMode = mode; }
     int getNumPushConstants() const { return numPushConstants; }
-    void addShaderRecordNVCount() { ++numShaderRecordNVBlocks; }
+    void addShaderRecordCount() { ++numShaderRecordBlocks; }
     void addTaskNVCount() { ++numTaskNVBlocks; }
 
     bool setInvocations(int i)
@@ -945,7 +948,7 @@ protected:
     bool multiStream;
     bool layoutOverrideCoverage;
     bool geoPassthroughEXT;
-    int numShaderRecordNVBlocks;
+    int numShaderRecordBlocks;
     ComputeDerivativeMode computeDerivativeMode;
     int primitives;
     int numTaskNVBlocks;

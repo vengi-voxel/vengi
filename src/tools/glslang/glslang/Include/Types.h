@@ -3,6 +3,7 @@
 // Copyright (C) 2012-2016 LunarG, Inc.
 // Copyright (C) 2015-2016 Google, Inc.
 // Copyright (C) 2017 ARM Limited.
+// Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
 //
@@ -532,6 +533,7 @@ public:
         queuefamilycoherent = false;
         workgroupcoherent = false;
         subgroupcoherent  = false;
+        shadercallcoherent = false;
         nonprivate = false;
         volatil      = false;
         restrict     = false;
@@ -553,6 +555,7 @@ public:
     // having a constant_id is not sufficient: expressions have no id, but are still specConstant
     bool specConstant : 1;
     bool nonUniform   : 1;
+    bool explicitOffset   : 1;
 
 #ifdef GLSLANG_WEB
     bool isWriteOnly() const { return false; }
@@ -590,6 +593,7 @@ public:
     bool queuefamilycoherent : 1;
     bool workgroupcoherent : 1;
     bool subgroupcoherent  : 1;
+    bool shadercallcoherent : 1;
     bool nonprivate   : 1;
     bool isWriteOnly() const { return writeonly; }
     bool isReadOnly() const { return readonly; }
@@ -599,11 +603,11 @@ public:
     bool isSample() const { return sample; }
     bool isMemory() const
     {
-        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly || nonprivate;
+        return shadercallcoherent || subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly || nonprivate;
     }
     bool isMemoryQualifierImageAndSSBOOnly() const
     {
-        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly;
+        return shadercallcoherent || subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly;
     }
     bool bufferReferenceNeedsVulkanMemoryModel() const
     {
@@ -773,7 +777,7 @@ public:
         layoutViewportRelative = false;
         // -2048 as the default value indicating layoutSecondaryViewportRelative is not set
         layoutSecondaryViewportRelativeOffset = -2048;
-        layoutShaderRecordNV = false;
+        layoutShaderRecord = false;
         layoutBufferReferenceAlign = layoutBufferReferenceAlignEnd;
         layoutFormat = ElfNone;
 #endif
@@ -812,7 +816,7 @@ public:
                hasAnyLocation() ||
                hasStream() ||
                hasFormat() ||
-               isShaderRecordNV() ||
+               isShaderRecord() ||
                isPushConstant() ||
                hasBufferReference();
     }
@@ -871,7 +875,7 @@ public:
     bool layoutPassthrough;
     bool layoutViewportRelative;
     int layoutSecondaryViewportRelativeOffset;
-    bool layoutShaderRecordNV;
+    bool layoutShaderRecord;
 #endif
 
     bool hasUniformLayout() const
@@ -942,7 +946,7 @@ public:
     bool hasAttachment() const { return false; }
     TLayoutFormat getFormat() const { return ElfNone; }
     bool isPushConstant() const { return false; }
-    bool isShaderRecordNV() const { return false; }
+    bool isShaderRecord() const { return false; }
     bool hasBufferReference() const { return false; }
     bool hasBufferReferenceAlign() const { return false; }
     bool isNonUniform() const { return false; }
@@ -993,7 +997,7 @@ public:
     }
     TLayoutFormat getFormat() const { return layoutFormat; }
     bool isPushConstant() const { return layoutPushConstant; }
-    bool isShaderRecordNV() const { return layoutShaderRecordNV; }
+    bool isShaderRecord() const { return layoutShaderRecord; }
     bool hasBufferReference() const { return layoutBufferReference; }
     bool hasBufferReferenceAlign() const
     {
@@ -1670,7 +1674,7 @@ public:
     }
     virtual bool isOpaque() const { return basicType == EbtSampler
 #ifndef GLSLANG_WEB
-         || basicType == EbtAtomicUint || basicType == EbtAccStructNV
+         || basicType == EbtAtomicUint || basicType == EbtAccStruct || basicType == EbtRayQuery
 #endif
         ; }
     virtual bool isBuiltIn() const { return getQualifier().builtIn != EbvNone; }
@@ -1946,7 +1950,8 @@ public:
         case EbtAtomicUint:        return "atomic_uint";
         case EbtStruct:            return "structure";
         case EbtBlock:             return "block";
-        case EbtAccStructNV:       return "accelerationStructureNV";
+        case EbtAccStruct:         return "accelerationStructureNV";
+        case EbtRayQuery:          return "rayQueryEXT";
         case EbtReference:         return "reference";
 #endif
         default:                   return "unknown type";
@@ -2056,7 +2061,7 @@ public:
                     appendStr(" layoutSecondaryViewportRelativeOffset=");
                     appendInt(qualifier.layoutSecondaryViewportRelativeOffset);
                 }
-                if (qualifier.layoutShaderRecordNV)
+                if (qualifier.layoutShaderRecord)
                     appendStr(" shaderRecordNV");
 
                 appendStr(")");
@@ -2099,6 +2104,8 @@ public:
             appendStr(" workgroupcoherent");
         if (qualifier.subgroupcoherent)
             appendStr(" subgroupcoherent");
+        if (qualifier.shadercallcoherent)
+            appendStr(" shadercallcoherent");
         if (qualifier.nonprivate)
             appendStr(" nonprivate");
         if (qualifier.volatil)
