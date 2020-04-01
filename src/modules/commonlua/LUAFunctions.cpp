@@ -5,7 +5,10 @@
 #include "LUAFunctions.h"
 #include "core/Log.h"
 #include "core/command/CommandHandler.h"
+#include "core/String.h"
 #include "core/Var.h"
+#include "core/App.h"
+#include "core/io/Filesystem.h"
 
 void clua_assert(lua_State* s, bool pass, const char *msg) {
 	if (pass) {
@@ -216,4 +219,15 @@ void clua_logregister(lua_State* s) {
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, funcs, "_metalog", "log");
+}
+
+int clua_ioloader(lua_State *s) {
+	core::String name = luaL_checkstring(s, 1);
+	name.replaceAllChars('.', '/');
+	name.append(".lua");
+	const core::String& content = io::filesystem()->load(name);
+	if (luaL_loadbuffer(s, content.c_str(), content.size(), name.c_str())) {
+		lua_pop(s, 1);
+	}
+	return 1;
 }

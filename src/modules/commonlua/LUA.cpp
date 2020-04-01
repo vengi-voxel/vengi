@@ -6,6 +6,7 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "LUAFunctions.h"
 
 namespace lua {
 
@@ -72,6 +73,10 @@ void LUA::openState() {
 	_state = luaL_newstate();
 
 	luaL_openlibs(_state);
+
+	lua_register(_state, "ioloader", clua_ioloader);
+	const char* str = "table.insert(package.searchers, 2, ioloader) \n";
+	luaL_dostring(_state, str);
 
 	// Register panic callback function
 	lua_atpanic(_state, panicCB);

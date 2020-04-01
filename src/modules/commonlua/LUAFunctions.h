@@ -47,6 +47,8 @@ template<> struct clua_name<glm::vec4> { static char const *name() {return "vec4
 
 extern int clua_assignmetatable(lua_State* s, const char *name);
 
+extern int clua_ioloader(lua_State *s);
+
 template<class T>
 T* clua_newuserdata(lua_State* s, const T& data) {
 	T* udata = (T*) lua_newuserdata(s, sizeof(T));
