@@ -29,6 +29,7 @@ public:
 	virtual ~CursesConsole() {}
 
 	bool init() override;
+	void construct() override;
 	void update(uint32_t deltaTime);
 	void shutdown() override;
 };

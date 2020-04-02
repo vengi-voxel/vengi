@@ -154,8 +154,12 @@ void CursesConsole::initCurses() {
 #endif
 }
 
+void CursesConsole::construct() {
+	Super::construct();
+	_cursesVar = core::Var::get(cfg::ConsoleCurses, "false", "Use curses for the console");
+}
+
 bool CursesConsole::init() {
-	_cursesVar = core::Var::get(cfg::ConsoleCurses, "false");
 	_enableCurses = _cursesVar->boolVal();
 	initCurses();
 	return true;
