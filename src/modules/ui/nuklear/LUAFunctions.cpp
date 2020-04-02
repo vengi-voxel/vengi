@@ -1870,8 +1870,9 @@ static int uilua_style_push_float(lua_State* s, float *field) {
 static int uilua_style_push_font(lua_State* s, const struct nk_user_font **field) {
 	struct nk_context* ctx = uilua_ctx(s);
 	LUAUIApp* app = uilua_app(s);
-	clua_assert_argc(s, lua_gettop(s) == 1);
-	int success = nk_style_push_font(ctx, &app->font(luaL_checkinteger(s, 1))->handle);
+	clua_assert(s, lua_isinteger(s, -1), "%s: font field must be an integer for the font size");
+	const int fontSize = luaL_checkinteger(s, -1);
+	int success = nk_style_push_font(ctx, &app->font(fontSize)->handle);
 	if (success) {
 		lua_pushstring(s, "font");
 		size_t stack_size = lua_objlen(s, 1);
