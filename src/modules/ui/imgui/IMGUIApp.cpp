@@ -533,7 +533,7 @@ void IMGUIApp::renderTracing() {
 		if (_traceMeasuresPause) {
 			ImGui::SameLine();
 			ImGui::InputInt("Frame index", &_currentFrameCounter, 1, 10);
-			_currentFrameCounter = glm::max(0, _currentFrameCounter);
+			_currentFrameCounter = core_max(0, _currentFrameCounter);
 		}
 		const int index = _currentFrameCounter % _maxMeasureSize;
 		for (auto i = _traceMeasuresLastFrame[index].begin(); i != _traceMeasuresLastFrame[index].end(); ++i) {

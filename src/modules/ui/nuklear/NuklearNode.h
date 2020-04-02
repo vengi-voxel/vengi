@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "Nuklear.h"
 #include <stdint.h>
 #include "video/Camera.h"

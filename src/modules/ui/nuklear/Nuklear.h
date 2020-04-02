@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Assert.h"
 #include "core/Common.h"
 #include <SDL_stdinc.h>
