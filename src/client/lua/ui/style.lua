@@ -1,7 +1,6 @@
 local module = {}
 
 module.rowHeight = 40
-module.fontSize = 20
 module.colors = {
 	['text'] = '#aaaaaa',
 	['window'] = '#2d2d2d',
@@ -36,10 +35,10 @@ module.colors = {
 --[[
 ]]
 function module.init()
-	ui.styleSetFont(module.fontSize)
 	ui.styleLoadColors(module.colors)
 
 	module.push({
+		font = 20,
 		button = {
 			["normal"] = "#668080",
 			["active"] = "#99cccc",
@@ -48,6 +47,23 @@ function module.init()
 			["text normal"] = "#000000",
 			["text hover"] = "#000000",
 			["text active"] = "#000000"
+		},
+		checkbox = {
+			["normal"] = "#889933",
+			["active"] = "#889933",
+			["hover"] = "#889933"
+		},
+		window = {
+			["header"] = {
+				--[[
+				["normal"] = "#646464",
+				["active"] = "#889933",
+				["hover"] = "#889933",
+				--]]
+				["label normal"] = "#668080",
+				["label active"] = "#668080",
+				["label hover"] = "#668080"
+			}
 		}
 	})
 end
@@ -61,7 +77,6 @@ end
 --[[
 ]]
 function module.setFontSize(size)
-	module.fontSize = size
 	ui.styleSetFont(module.fontSize)
 end
 
