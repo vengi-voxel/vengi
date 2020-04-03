@@ -255,6 +255,7 @@ bool ServerLoop::init() {
 	if (!_metricMgr->init()) {
 		Log::warn("Failed to init metric sender");
 	}
+	Log::info("Init database layer");
 	if (!_dbHandler->init()) {
 		Log::error("Failed to init the dbhandler");
 		return false;
@@ -275,35 +276,41 @@ bool ServerLoop::init() {
 		Log::error("Failed to create cooldown table");
 		return false;
 	}
+	Log::info("Init volume cache");
 	if (!_volumeCache->init()) {
 		Log::error("Failed to init volume cache");
 		return false;
 	}
 
+	Log::info("Init events");
 	const core::String& events = _filesystem->load("events.lua");
 	if (!_eventMgr->init(events)) {
 		Log::error("Failed to init event manager");
 		return false;
 	}
 
+	Log::info("Init cooldowns");
 	const core::String& cooldowns = _filesystem->load("cooldowns.lua");
 	if (!_cooldownProvider->init(cooldowns)) {
 		Log::error("Failed to load the cooldown configuration: %s", _cooldownProvider->error().c_str());
 		return false;
 	}
 
+	Log::info("Init stock");
 	const core::String& stockLuaString = _filesystem->load("stock.lua");
 	if (!_stockDataProvider->init(stockLuaString)) {
 		Log::error("Failed to load the stock configuration: %s", _stockDataProvider->error().c_str());
 		return false;
 	}
 
+	Log::info("Init attributes");
 	const core::String& attributes = _filesystem->load("attributes.lua");
 	if (!_attribContainerProvider->init(attributes)) {
 		Log::error("Failed to load the attributes: %s", _attribContainerProvider->error().c_str());
 		return false;
 	}
 
+	Log::info("Init persistence layer");
 	if (!_persistenceMgr->init()) {
 		Log::error("Failed to init the persistence manager");
 		return false;
@@ -319,16 +326,19 @@ bool ServerLoop::init() {
 	regHandler(network::ClientMsgType::Move, MoveHandler);
 	regHandler(network::ClientMsgType::VarUpdate, VarUpdateHandler);
 
+	Log::info("Init material");
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
 		return false;
 	}
 
+	Log::info("Init world");
 	if (!_world->init()) {
 		Log::error("Failed to init the world");
 		return false;
 	}
 
+	Log::info("Init timers");
 	_worldTimer = new uv_timer_t;
 	uv_timer_init(_loop, _worldTimer);
 	addTimer(_worldTimer, [] (uv_timer_t* handle) {
@@ -364,6 +374,7 @@ bool ServerLoop::init() {
 	uv_signal_start(_signal, signalCallback, SIGINT);
 
 	// init the network last...
+	Log::info("Init network");
 	if (!_network->init()) {
 		Log::error("Failed to init the network");
 		return false;
