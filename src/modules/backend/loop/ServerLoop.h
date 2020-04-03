@@ -6,7 +6,6 @@
 
 #include "core/EventBus.h"
 #include "core/Trace.h"
-#include "console/Input.h"
 #include "core/EventBus.h"
 #include "core/IComponent.h"
 #include "network/ServerNetwork.h"

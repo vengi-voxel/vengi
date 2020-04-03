@@ -22,6 +22,12 @@ CursesConsole::CursesConsole() :
 	_consoleMarginLeft = 1;
 	_consoleMarginLeftBehindPrompt = 1;
 	_consoleActive = true;
+	uv_loop_init(&_loop);
+}
+
+CursesConsole::~CursesConsole() {
+	uv_run(&_loop, UV_RUN_NOWAIT);
+	core_assert_always(uv_loop_close(&_loop) == 0);
 }
 
 void CursesConsole::update(uint32_t deltaTime) {
@@ -35,8 +41,10 @@ void CursesConsole::update(uint32_t deltaTime) {
 		}
 		_cursesVar->markClean();
 	}
+	Log::info("update console");
 #ifdef CURSES_HAVE_NCURSES_H
 	if (!_cursesActive) {
+		uv_run(&_loop, UV_RUN_NOWAIT);
 		return;
 	}
 	int key = getch();
@@ -78,6 +86,8 @@ void CursesConsole::update(uint32_t deltaTime) {
 	}
 	const math::Rect<int> rect(0, 0, COLS - 1, LINES - 1);
 	render(rect, (long)deltaTime);
+#else
+	uv_run(&_loop, UV_RUN_NOWAIT);
 #endif
 }
 
@@ -161,6 +171,7 @@ void CursesConsole::construct() {
 
 bool CursesConsole::init() {
 	_enableCurses = _cursesVar->boolVal();
+	_input.init(&_loop);
 	initCurses();
 	return true;
 }
@@ -187,6 +198,7 @@ void CursesConsole::shutdownCurses() {
 void CursesConsole::shutdown() {
 	SDL_LogSetOutputFunction(_logFunction, _logUserData);
 	shutdownCurses();
+	_input.shutdown();
 	Super::shutdown();
 }
 

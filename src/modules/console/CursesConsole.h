@@ -5,7 +5,9 @@
 #pragma once
 
 #include "util/Console.h"
+#include "console/Input.h"
 #include "core/Var.h"
+#include <uv.h>
 
 namespace console {
 
@@ -13,8 +15,10 @@ class CursesConsole : public util::Console {
 private:
 	using Super = util::Console;
 	core::VarPtr _cursesVar;
+	console::Input _input;
 	bool _enableCurses = false;
 	bool _cursesActive = false;
+	uv_loop_t _loop;
 protected:
 	void initCurses();
 	void shutdownCurses();
@@ -26,7 +30,7 @@ protected:
 	void beforeRender(const math::Rect<int> &rect) override;
 public:
 	CursesConsole();
-	virtual ~CursesConsole() {}
+	virtual ~CursesConsole();
 
 	bool init() override;
 	void construct() override;
