@@ -11,6 +11,7 @@
 #include "collection/List.h"
 #include "core/concurrent/Atomic.h"
 #include "core/SharedPtr.h"
+#include <SDL_main.h>
 #include <memory>
 #include <stack>
 
