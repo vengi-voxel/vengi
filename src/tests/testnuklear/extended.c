@@ -71,7 +71,7 @@ ui_piemenu(struct nk_context *ctx, struct nk_vec2 pos, float radius,
         nk_fill_circle(out, bounds, nk_rgb(50,50,50));
         {
             /* circle buttons */
-            float step = (2 * 3.141592654f) / (float)(MAX(1,item_count));
+            float step = (2 * 3.141592654f) / (float)(NK_MAX(1,item_count));
             float a_min = 0; float a_max = step;
 
             struct nk_vec2 center = nk_vec2(bounds.x + bounds.w / 2.0f, bounds.y + bounds.h / 2.0f);

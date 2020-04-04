@@ -702,7 +702,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 				if (trans != transformNodeAttributes.end()) {
 					const core::String& translations = trans->second;
 					int x, y, z;
-					if (sscanf(translations.c_str(), "%d %d %d", &x, &y, &z) == 3) {
+					if (SDL_sscanf(translations.c_str(), "%d %d %d", &x, &y, &z) == 3) {
 						for (auto& m : models) {
 							if (m.nodeId == nodeId) {
 								volumes[m.modelId].volume->translate(glm::ivec3(x, y, z));

@@ -1661,7 +1661,7 @@ void endFrame(SDL_Window* window) {
 void setup() {
 	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
 	int glMinor = 0, glMajor = 0;
-	if (std::sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
+	if (SDL_sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
 		const GLVersion& version = GL4_3;
 		glMajor = version.majorVersion;
 		glMinor = version.minorVersion;
