@@ -125,7 +125,7 @@ end
 	Adds a generic back button that should always look the same
 ]]
 function module.back()
-	ui.layoutRow('dynamic', 20, 1)
+	ui.layoutRow('dynamic', 30, 1)
 	module.row(1)
 	style.push({
 		button = {

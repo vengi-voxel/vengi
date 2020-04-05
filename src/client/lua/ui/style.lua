@@ -1,6 +1,6 @@
 local module = {}
 
-module.rowHeight = 40
+module.rowHeight = 50
 module.colors = {
 	['text'] = '#aaaaaa',
 	['window'] = '#2d2d2d',
