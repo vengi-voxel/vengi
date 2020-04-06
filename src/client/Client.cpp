@@ -117,16 +117,16 @@ core::AppState Client::onConstruct() {
 	_camera.construct();
 	_meshCache->construct();
 
-	core::Var::get(cfg::ClientPort, SERVER_PORT);
-	core::Var::get(cfg::ClientHost, SERVER_HOST);
-	core::Var::get(cfg::ClientAutoLogin, "false");
+	core::Var::get(cfg::ClientPort, SERVER_PORT, "Server port");
+	core::Var::get(cfg::ClientHost, SERVER_HOST, "Server hostname or ip");
 	core::Var::get(cfg::ClientEmail, "");
 	core::Var::get(cfg::ClientName, "noname", core::CV_BROADCAST);
 	core::Var::get(cfg::ClientPassword, "");
 	_chunkUrl = core::Var::get(cfg::ServerChunkBaseUrl, "");
 	_seed = core::Var::get(cfg::ServerSeed, "");
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
-	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
+	core::VarPtr meshSize = core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
+	meshSize->setVal(glm::clamp(meshSize->intVal(), 16, 128));
 	_worldRenderer.construct();
 
 	core::Command::registerCommand("cl_attrib", [this] (const core::CmdArgs &args) {
@@ -278,18 +278,6 @@ void Client::initUISkin() {
 	Super::initUISkin();
 }
 
-void Client::handleLogin() {
-	const core::VarPtr& autoLoginVar = core::Var::getSafe(cfg::ClientAutoLogin);
-	if (!autoLoginVar->boolVal()) {
-		return;
-	}
-	const int port = core::Var::getSafe(cfg::ClientPort)->intVal();
-	const core::String& host = core::Var::getSafe(cfg::ClientHost)->strVal();
-	if (!connect(port, host)) {
-		autoLoginVar->setVal(false);
-	}
-}
-
 void Client::beforeUI() {
 	Super::beforeUI();
 
@@ -403,7 +391,6 @@ void Client::onWindowResize(int windowWidth, int windowHeight) {
 }
 
 void Client::authFailed() {
-	core::Var::getSafe(cfg::ClientAutoLogin)->setVal(false);
 	pushWindow("auth_failed");
 }
 

@@ -6,7 +6,6 @@ function login()
 		gui.varStr('Password', 'cl_password')
 		gui.varStr('Host', 'cl_host')
 		gui.varStr('Port', 'cl_port')
-		gui.varCheckbox('Autologin', 'cl_autologin')
 		gui.row(1)
 		gui.button('Login', function()
 			if client.connect(var.int('cl_port'), var.str('cl_host')) then

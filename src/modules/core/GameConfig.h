@@ -10,7 +10,6 @@ constexpr const char *ClientMouseRotationSpeed = "cl_cammouserotspeed";
 constexpr const char *ClientMouseSpeed = "cl_cammousespeed";
 constexpr const char *ClientEmail = "cl_email";
 constexpr const char *ClientPassword = "cl_password";
-constexpr const char *ClientAutoLogin = "cl_autologin";
 // name of the player that is visible by other players
 constexpr const char *ClientName = "cl_name";
 constexpr const char *ClientVSync = "cl_vsync";

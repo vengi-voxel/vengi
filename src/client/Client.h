@@ -60,7 +60,6 @@ protected:
 	void initUIConfig(struct nk_convert_config& config) override;
 	void initUISkin() override;
 
-	void handleLogin();
 	int renderMap(video::Shader& shader, const voxelworld::WorldMgrPtr& world, const glm::mat4& view, float aspect);
 public:
 	Client(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,
