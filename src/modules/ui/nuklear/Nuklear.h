@@ -17,8 +17,6 @@
 #define NK_ASSERT core_assert
 #define STBTT_malloc(x,u)  core_malloc(x)
 #define STBTT_free(x,u)    core_free(x)
-#define NK_MEMSET core_memset
-#define NK_MEMCPY core_memcpy
 #define NK_SQRT
 
 /**
