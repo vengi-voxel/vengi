@@ -25,6 +25,7 @@ set(LUA_SRCS
 	ui/window/main.lua
 	ui/window/options.lua
 	ui/window/popup.lua
+	ui/window/style.lua
 	ui/${PROJECT_NAME}.lua
 )
 

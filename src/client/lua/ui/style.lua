@@ -31,41 +31,51 @@ module.colors = {
 	['scrollbar cursor active'] = '#969696',
 	['tab header'] = '#282828'
 }
+module.style = {
+	font = 20,
+	button = {
+		["normal"] = "#668080",
+		["active"] = "#99cccc",
+		["hover"] = "#99cccc",
+		["border color"] = "#809090",
+		["text normal"] = "#000000",
+		["text hover"] = "#000000",
+		["text active"] = "#000000"
+	},
+	checkbox = {
+		["normal"] = "#889933",
+		["active"] = "#2d2d2d",
+		["hover"] = "#2d2d2d",
+		["text background"] = "#ff0000",
+		["cursor normal"] = "#2d2d2d",
+		["cursor normal"] = "#2d2d2d",
+	},
+	window = {
+		["header"] = {
+			--[[
+			["normal"] = "#646464",
+			["active"] = "#889933",
+			["hover"] = "#889933",
+			--]]
+			["label normal"] = "#668080",
+			["label active"] = "#668080",
+			["label hover"] = "#668080"
+		}
+	}
+}
 
 --[[
 ]]
 function module.init()
 	ui.styleLoadColors(module.colors)
+	module.push(module.style)
+end
 
-	module.push({
-		font = 20,
-		button = {
-			["normal"] = "#668080",
-			["active"] = "#99cccc",
-			["hover"] = "#99cccc",
-			["border color"] = "#809090",
-			["text normal"] = "#000000",
-			["text hover"] = "#000000",
-			["text active"] = "#000000"
-		},
-		checkbox = {
-			["normal"] = "#889933",
-			["active"] = "#889933",
-			["hover"] = "#889933"
-		},
-		window = {
-			["header"] = {
-				--[[
-				["normal"] = "#646464",
-				["active"] = "#889933",
-				["hover"] = "#889933",
-				--]]
-				["label normal"] = "#668080",
-				["label active"] = "#668080",
-				["label hover"] = "#668080"
-			}
-		}
-	})
+--[[
+]]
+function module.shutdown()
+	-- pop the style of the stack
+	module.pop()
 end
 
 --[[
