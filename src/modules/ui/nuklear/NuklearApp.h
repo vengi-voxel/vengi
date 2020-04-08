@@ -126,12 +126,18 @@ public:
 	 */
 	struct nk_font* font(int size);
 
+	struct nkc_context& context();
+
 	virtual void onWindowResize(int windowWidth, int windowHeight) override;
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
 	virtual core::AppState onRunning() override;
 	virtual core::AppState onCleanup() override;
 };
+
+inline struct nkc_context& NuklearApp::context() {
+	return _cctx;
+}
 
 }
 }

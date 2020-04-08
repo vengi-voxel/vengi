@@ -5,7 +5,6 @@
 #pragma once
 
 #include "util/Console.h"
-#include "Nuklear.h"
 
 namespace ui {
 namespace nuklear {
@@ -18,7 +17,7 @@ class NuklearApp;
 class Console : public util::Console {
 private:
 	using Super = util::Console;
-	struct nk_context* _ctx = nullptr;
+	NuklearApp* _app = nullptr;
 
 	void drawString(int x, int y, const glm::ivec4& color, int colorIndex, const char* str, int len) override;
 	int lineHeight() override;
@@ -27,7 +26,7 @@ private:
 	void beforeRender(const math::Rect<int> &rect) override;
 
 public:
-	Console(struct nk_context* ctx);
+	Console(NuklearApp* app);
 };
 
 }

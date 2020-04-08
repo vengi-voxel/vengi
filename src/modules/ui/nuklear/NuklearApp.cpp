@@ -30,7 +30,7 @@ NuklearApp::NuklearApp(const metric::MetricPtr& metric,
 		const video::TexturePoolPtr& texturePool,
 		const voxelrender::CachedMeshRendererPtr& meshRenderer,
 		const video::TextureAtlasRendererPtr& textureAtlasRenderer) :
-		Super(metric, filesystem, eventBus, timeProvider), _console(&_ctx),
+		Super(metric, filesystem, eventBus, timeProvider), _console(this),
 	_camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal),
 	_texturePool(texturePool), _meshRenderer(meshRenderer), _textureAtlasRenderer(textureAtlasRenderer) {
 	_cctx.ctx = &_ctx;
@@ -432,12 +432,14 @@ core::AppState NuklearApp::onRunning() {
 	nk_input_motion(&_ctx, _mousePos.x, _mousePos.y);
 	nk_input_end(&_ctx);
 
-	if (!onRenderUI()) {
-		if (_ctx.current) {
-			nk_end(&_ctx);
+	if (!_console.isActive()) {
+		if (!onRenderUI()) {
+			if (_ctx.current) {
+				nk_end(&_ctx);
+			}
+			nk_clear(&_ctx);
+			return state;
 		}
-		nk_clear(&_ctx);
-		return state;
 	}
 
 	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
