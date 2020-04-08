@@ -121,7 +121,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 	if (modifier & KMOD_CTRL) {
 		if (key == SDLK_TAB) {
 			toggle();
-		} else if (key == SDLK_a) {
+		} else if (key == SDLK_a || key == SDLK_b) {
 			_cursorPos = 0;
 		} else if (key == SDLK_e) {
 			_cursorPos = _commandLine.size();
@@ -140,9 +140,9 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 			cursorWordLeft();
 		} else if (key == SDLK_RIGHT) {
 			cursorWordRight();
-		} else if (key == SDLK_PLUS) {
+		} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
 			++_fontSize;
-		} else if (key == SDLK_MINUS) {
+		} else if (key == SDLK_MINUS || key == SDLK_KP_MINUS) {
 			--_fontSize;
 		}
 		return true;
@@ -164,50 +164,50 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 	switch (key) {
 	case SDLK_ESCAPE:
 		toggle();
-		break;
+		return true;
 	case SDLK_HOME:
 		_cursorPos = 0;
-		break;
+		return true;
 	case SDLK_END:
 		_cursorPos = _commandLine.size();
-		break;
+		return true;
 	case SDLK_RETURN:
 	case SDLK_KP_ENTER:
 		executeCommandLine();
-		break;
+		return true;
 	case SDLK_BACKSPACE:
 		cursorDelete();
-		break;
+		return true;
 	case SDLK_DELETE:
 		cursorDelete(false);
-		break;
+		return true;
 	case SDLK_INSERT:
 		_overwrite ^= true;
-		break;
+		return true;
 	case SDLK_LEFT:
 		cursorLeft();
-		break;
+		return true;
 	case SDLK_RIGHT:
 		cursorRight();
-		break;
+		return true;
 	case SDLK_UP:
 		cursorUp();
-		break;
+		return true;
 	case SDLK_DOWN:
 		cursorDown();
-		break;
+		return true;
 	case SDLK_PAGEUP:
 		scrollPageUp();
-		break;
+		return true;
 	case SDLK_PAGEDOWN:
 		scrollPageDown();
-		break;
+		return true;
 	case SDLK_TAB:
 		autoComplete();
-		break;
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 void Console::executeCommandLine() {
@@ -264,6 +264,10 @@ bool Console::onMouseWheel(int32_t x, int32_t y) {
 }
 
 void Console::insertText(const core::String& text) {
+	const SDL_Keymod state = SDL_GetModState();
+	if (state & (KMOD_CTRL | KMOD_ALT)) {
+		return;
+	}
 	if (_overwrite && _cursorPos < int(_commandLine.size())) {
 		cursorDelete();
 	}
