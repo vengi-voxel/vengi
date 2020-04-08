@@ -472,7 +472,7 @@ core::AppState NuklearApp::onRunning() {
 	nk_buffer_init_fixed(&vbuf, vertices, (nk_size) MAX_VERTEX_MEMORY);
 	nk_buffer_init_fixed(&ebuf, elements, (nk_size) MAX_ELEMENT_MEMORY);
 
-	const bool convertRes = nk_convert(&_ctx, &_cmds, &vbuf, &ebuf, &_config) == NK_CONVERT_SUCCESS;
+	const nk_flags convertRes = nk_convert(&_ctx, &_cmds, &vbuf, &ebuf, &_config);
 
 	Log::trace("vertices buffer size: %i", (int)vbuf.size);
 	Log::trace("index buffer size: %i", (int)ebuf.size);
@@ -480,7 +480,7 @@ core::AppState NuklearApp::onRunning() {
 	_vbo.unmapData(_vertexBufferIndex);
 	_vbo.unmapData(_elementBufferIndex);
 
-	if (convertRes) {
+	if (convertRes == NK_CONVERT_SUCCESS) {
 		const nk_draw_index *offset = nullptr;
 		const struct nk_draw_command *cmd;
 		nk_draw_foreach(cmd, &_ctx, &_cmds) {
@@ -493,7 +493,18 @@ core::AppState NuklearApp::onRunning() {
 			offset += cmd->elem_count;
 		}
 	} else {
-		Log::warn("Could not convert draw command to vbo data");
+		 if (convertRes & NK_CONVERT_INVALID_PARAM) {
+			Log::warn("An invalid argument was passed in the function call");
+		}
+		if (convertRes & NK_CONVERT_COMMAND_BUFFER_FULL) {
+			Log::warn("The provided buffer for storing draw commands is full or failed to allocate more memory");
+		}
+		if (convertRes & NK_CONVERT_VERTEX_BUFFER_FULL) {
+			Log::warn("The provided buffer for storing vertices is full or failed to allocate more memory");
+		}
+		if (convertRes & NK_CONVERT_ELEMENT_BUFFER_FULL) {
+			Log::warn("The provided buffer for storing indicies is full or failed to allocate more memory");
+		}
 	}
 
 	_vbo.unbind();
