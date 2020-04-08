@@ -386,17 +386,16 @@ core::AppState NuklearApp::onRunning() {
 	mod_input_key(NK_KEY_TEXT_SELECT_ALL, ctrl, SDL_SCANCODE_A);
 #undef mod_input_key
 
-	if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE) {
-		int x;
-		int y;
-		const uint32_t mouseState = SDL_GetMouseState(&x, &y);
-		nk_input_motion(&_ctx, x, y);
-		nk_input_scroll(&_ctx, _scrollDelta);
-		nk_input_button(&_ctx, NK_BUTTON_LEFT, x, y, (int)(mouseState & SDL_BUTTON_LMASK));
-		nk_input_button(&_ctx, NK_BUTTON_MIDDLE, x, y, (int)(mouseState & SDL_BUTTON_MMASK));
-		nk_input_button(&_ctx, NK_BUTTON_RIGHT, x, y, (int)(mouseState & SDL_BUTTON_RMASK));
-	}
+	int x;
+	int y;
+	const uint32_t mouseState = SDL_GetMouseState(&x, &y);
+	nk_input_motion(&_ctx, x, y);
+	nk_input_scroll(&_ctx, _scrollDelta);
+	nk_input_button(&_ctx, NK_BUTTON_LEFT, x, y, (int)(mouseState & SDL_BUTTON_LMASK));
+	nk_input_button(&_ctx, NK_BUTTON_MIDDLE, x, y, (int)(mouseState & SDL_BUTTON_MMASK));
+	nk_input_button(&_ctx, NK_BUTTON_RIGHT, x, y, (int)(mouseState & SDL_BUTTON_RMASK));
 	_scrollDelta.x = _scrollDelta.y = 0.0f;
+
 	nk_input_end(&_ctx);
 
 	if (!_console.isActive()) {
