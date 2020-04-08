@@ -71,7 +71,7 @@ bool NuklearApp::onTextInput(const core::String& text) {
 	if (_console.onTextInput(text)) {
 		return true;
 	}
-	_textInput = text;
+	_textInput.append(text);
 	return true;
 }
 
@@ -102,7 +102,7 @@ static void nk_sdl_clipbard_copy(nk_handle usr, const char *text, int len) {
 		return;
 	}
 	char* str = new char[len + 1];
-	memcpy(str, text, (size_t) len);
+	core_memcpy(str, text, (size_t) len);
 	str[len] = '\0';
 	SDL_SetClipboardText(str);
 	delete[] str;
