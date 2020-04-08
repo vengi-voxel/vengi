@@ -48,121 +48,30 @@ bool NuklearApp::onMouseWheel(int32_t x, int32_t y) {
 	if (Super::onMouseWheel(x, y)) {
 		return true;
 	}
-	nk_input_scroll(&_ctx, nk_vec2((float) x, (float) y));
+	_scrollDelta.x += x;
+	_scrollDelta.y += y;
 	return true;
-}
-
-void NuklearApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	if (_ctx.input.mouse.grabbed) {
-		const int x = (int) _ctx.input.mouse.prev.x;
-		const int y = (int) _ctx.input.mouse.prev.y;
-		nk_input_motion(&_ctx, x + relX, y + relY);
-	} else {
-		nk_input_motion(&_ctx, x, y);
-	}
 }
 
 void NuklearApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	if (_console.onMouseButtonPress(x, y, button)) {
 		return;
 	}
-	if (button == SDL_BUTTON_LEFT) {
-		if (clicks > 1) {
-			nk_input_button(&_ctx, NK_BUTTON_DOUBLE, x, y, true);
-		}
-		nk_input_button(&_ctx, NK_BUTTON_LEFT, x, y, true);
-	} else if (button == SDL_BUTTON_MIDDLE) {
-		nk_input_button(&_ctx, NK_BUTTON_MIDDLE, x, y, true);
-	} else if (button == SDL_BUTTON_RIGHT) {
-		nk_input_button(&_ctx, NK_BUTTON_RIGHT, x, y, true);
-	}
+	Super::onMouseButtonPress(x, y, button, clicks);
 }
 
 void NuklearApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	if (_console.isActive()) {
 		return;
 	}
-	if (button == SDL_BUTTON_LEFT) {
-		nk_input_button(&_ctx, NK_BUTTON_LEFT, x, y, false);
-	} else if (button == SDL_BUTTON_MIDDLE) {
-		nk_input_button(&_ctx, NK_BUTTON_MIDDLE, x, y, false);
-	} else if (button == SDL_BUTTON_RIGHT) {
-		nk_input_button(&_ctx, NK_BUTTON_RIGHT, x, y, false);
-	}
+	Super::onMouseButtonRelease(x, y, button);
 }
 
 bool NuklearApp::onTextInput(const core::String& text) {
 	if (_console.onTextInput(text)) {
 		return true;
 	}
-	const char *c = text.c_str();
-	for (;;) {
-		const int key = core::utf8::next(&c);
-		if (key == -1) {
-			return true;
-		}
-		nk_glyph glyph;
-		memcpy(glyph, &key, NK_UTF_SIZE);
-		nk_input_glyph(&_ctx, glyph);
-	}
-	return true;
-}
-
-bool NuklearApp::onKeyEvent(int32_t sym, int16_t modifier, bool down) {
-	bool ctrl = (modifier & KMOD_CTRL) != 0;
-	if (sym == SDLK_RSHIFT || sym == SDLK_LSHIFT) {
-		nk_input_key(&_ctx, NK_KEY_SHIFT, down);
-	} else if (sym == SDLK_DELETE) {
-		nk_input_key(&_ctx, NK_KEY_DEL, down);
-	} else if (sym == SDLK_RETURN) {
-		nk_input_key(&_ctx, NK_KEY_ENTER, down);
-	} else if (sym == SDLK_TAB) {
-		nk_input_key(&_ctx, NK_KEY_TAB, down);
-	} else if (sym == SDLK_BACKSPACE) {
-		nk_input_key(&_ctx, NK_KEY_BACKSPACE, down);
-	} else if (sym == SDLK_HOME) {
-		nk_input_key(&_ctx, NK_KEY_TEXT_START, down);
-		nk_input_key(&_ctx, NK_KEY_SCROLL_START, down);
-	} else if (sym == SDLK_END) {
-		nk_input_key(&_ctx, NK_KEY_TEXT_END, down);
-		nk_input_key(&_ctx, NK_KEY_SCROLL_END, down);
-	} else if (sym == SDLK_PAGEDOWN) {
-		nk_input_key(&_ctx, NK_KEY_SCROLL_DOWN, down);
-	} else if (sym == SDLK_PAGEUP) {
-		nk_input_key(&_ctx, NK_KEY_SCROLL_UP, down);
-	} else if (sym == SDLK_z) {
-		nk_input_key(&_ctx, NK_KEY_TEXT_UNDO, down && ctrl);
-	} else if (sym == SDLK_r) {
-		nk_input_key(&_ctx, NK_KEY_TEXT_REDO, down && ctrl);
-	} else if (sym == SDLK_c) {
-		nk_input_key(&_ctx, NK_KEY_COPY, down && ctrl);
-	} else if (sym == SDLK_v) {
-		nk_input_key(&_ctx, NK_KEY_PASTE, down && ctrl);
-	} else if (sym == SDLK_x) {
-		nk_input_key(&_ctx, NK_KEY_CUT, down && ctrl);
-	} else if (sym == SDLK_b) {
-		nk_input_key(&_ctx, NK_KEY_TEXT_LINE_START, down && ctrl);
-	} else if (sym == SDLK_e) {
-		nk_input_key(&_ctx, NK_KEY_TEXT_LINE_END, down && ctrl);
-	} else if (sym == SDLK_UP) {
-		nk_input_key(&_ctx, NK_KEY_UP, down);
-	} else if (sym == SDLK_DOWN) {
-		nk_input_key(&_ctx, NK_KEY_DOWN, down);
-	} else if (sym == SDLK_LEFT) {
-		if (ctrl) {
-			nk_input_key(&_ctx, NK_KEY_TEXT_WORD_LEFT, down);
-		} else {
-			nk_input_key(&_ctx, NK_KEY_LEFT, down);
-		}
-	} else if (sym == SDLK_RIGHT) {
-		if (ctrl) {
-			nk_input_key(&_ctx, NK_KEY_TEXT_WORD_RIGHT, down);
-		} else {
-			nk_input_key(&_ctx, NK_KEY_RIGHT, down);
-		}
-	} else {
-		return false;
-	}
+	_textInput = text;
 	return true;
 }
 
@@ -170,21 +79,14 @@ bool NuklearApp::onKeyPress(int32_t key, int16_t modifier) {
 	if (_console.onKeyPress(key, modifier)) {
 		return true;
 	}
-	if (Super::onKeyPress(key, modifier)) {
-		return true;
-	}
-
-	return onKeyEvent(key, modifier, true);
+	return Super::onKeyPress(key, modifier);
 }
 
 bool NuklearApp::onKeyRelease(int32_t key, int16_t modifier) {
 	if (_console.isActive()) {
 		return true;
 	}
-	if (Super::onKeyRelease(key, modifier)) {
-		return true;
-	}
-	return onKeyEvent(key, modifier, false);
+	return Super::onKeyRelease(key, modifier);
 }
 
 static void nk_sdl_clipbard_paste(nk_handle usr, struct nk_text_edit *edit) {
@@ -423,13 +325,78 @@ struct nk_font* NuklearApp::font(int size) {
 }
 
 core::AppState NuklearApp::onRunning() {
+	core::AppState state = Super::onRunning();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 	_console.update(_deltaFrameMillis);
 
 	beforeUI();
 
 	nk_input_begin(&_ctx);
-	core::AppState state = Super::onRunning();
-	nk_input_motion(&_ctx, _mousePos.x, _mousePos.y);
+	const char *c = _textInput.c_str();
+	for (;;) {
+		const int key = core::utf8::next(&c);
+		if (key == -1) {
+			break;
+		}
+		nk_glyph glyph;
+		SDL_memcpy(glyph, &key, sizeof(glyph));
+		nk_input_glyph(&_ctx, glyph);
+	}
+	_textInput.clear();
+
+	const uint8_t* keys = SDL_GetKeyboardState(nullptr);
+
+	nk_input_key(&_ctx, NK_KEY_DEL, keys[SDL_SCANCODE_DELETE]);
+	nk_input_key(&_ctx, NK_KEY_ENTER, keys[SDL_SCANCODE_RETURN] || keys[SDL_SCANCODE_KP_ENTER]);
+	nk_input_key(&_ctx, NK_KEY_TAB, keys[SDL_SCANCODE_TAB]);
+	nk_input_key(&_ctx, NK_KEY_BACKSPACE, keys[SDL_SCANCODE_BACKSPACE]);
+	nk_input_key(&_ctx, NK_KEY_UP, keys[SDL_SCANCODE_UP]);
+	nk_input_key(&_ctx, NK_KEY_DOWN, keys[SDL_SCANCODE_DOWN]);
+	nk_input_key(&_ctx, NK_KEY_LEFT, keys[SDL_SCANCODE_LEFT]);
+	nk_input_key(&_ctx, NK_KEY_RIGHT, keys[SDL_SCANCODE_RIGHT]);
+	nk_input_key(&_ctx, NK_KEY_TEXT_START, keys[SDL_SCANCODE_HOME]);
+	nk_input_key(&_ctx, NK_KEY_TEXT_END, keys[SDL_SCANCODE_END]);
+	nk_input_key(&_ctx, NK_KEY_SCROLL_START, keys[SDL_SCANCODE_HOME]);
+	nk_input_key(&_ctx, NK_KEY_SCROLL_END, keys[SDL_SCANCODE_END]);
+	nk_input_key(&_ctx, NK_KEY_SCROLL_UP, keys[SDL_SCANCODE_PAGEUP]);
+	nk_input_key(&_ctx, NK_KEY_SCROLL_DOWN, keys[SDL_SCANCODE_PAGEDOWN]);
+	nk_input_key(&_ctx, NK_KEY_TEXT_INSERT_MODE, keys[SDL_SCANCODE_INSERT]);
+	nk_input_key(&_ctx, NK_KEY_TEXT_REPLACE_MODE, !keys[SDL_SCANCODE_INSERT]);
+
+	const uint32_t modState = SDL_GetModState();
+	const bool shift = (modState & KMOD_SHIFT) != 0u;
+	const bool ctrl = (modState & KMOD_CTRL) != 0u;
+	nk_input_key(&_ctx, NK_KEY_SHIFT, (int)shift);
+	nk_input_key(&_ctx, NK_KEY_CTRL, (int)ctrl);
+
+#define mod_input_key(nkkey, mod, sdlscancode) \
+	nk_input_key(&_ctx, (nkkey), (mod) ? keys[(sdlscancode)] : 0)
+
+	mod_input_key(NK_KEY_COPY, ctrl, SDL_SCANCODE_C);
+	mod_input_key(NK_KEY_PASTE, ctrl, SDL_SCANCODE_V);
+	mod_input_key(NK_KEY_CUT, ctrl, SDL_SCANCODE_X);
+	mod_input_key(NK_KEY_TEXT_UNDO, ctrl, SDL_SCANCODE_Z);
+	mod_input_key(NK_KEY_TEXT_REDO, ctrl, SDL_SCANCODE_Y);
+	mod_input_key(NK_KEY_TEXT_WORD_LEFT, ctrl, SDL_SCANCODE_LEFT);
+	mod_input_key(NK_KEY_TEXT_WORD_RIGHT, ctrl, SDL_SCANCODE_RIGHT);
+	mod_input_key(NK_KEY_TEXT_LINE_START, ctrl, SDL_SCANCODE_B);
+	mod_input_key(NK_KEY_TEXT_LINE_END, ctrl, SDL_SCANCODE_E);
+	mod_input_key(NK_KEY_TEXT_SELECT_ALL, ctrl, SDL_SCANCODE_A);
+#undef mod_input_key
+
+	if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE) {
+		int x;
+		int y;
+		const uint32_t mouseState = SDL_GetMouseState(&x, &y);
+		nk_input_motion(&_ctx, x, y);
+		nk_input_scroll(&_ctx, _scrollDelta);
+		nk_input_button(&_ctx, NK_BUTTON_LEFT, x, y, (int)(mouseState & SDL_BUTTON_LMASK));
+		nk_input_button(&_ctx, NK_BUTTON_MIDDLE, x, y, (int)(mouseState & SDL_BUTTON_MMASK));
+		nk_input_button(&_ctx, NK_BUTTON_RIGHT, x, y, (int)(mouseState & SDL_BUTTON_RMASK));
+	}
+	_scrollDelta.x = _scrollDelta.y = 0.0f;
 	nk_input_end(&_ctx);
 
 	if (!_console.isActive()) {

@@ -14,6 +14,7 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_STANDARD_VARARGS
 #define NK_INCLUDE_DEFAULT_FONT
+#define NK_KEYSTATE_BASED_INPUT
 #define NK_ASSERT core_assert
 #define STBTT_malloc(x,u)  core_malloc(x)
 #define STBTT_free(x,u)    core_free(x)

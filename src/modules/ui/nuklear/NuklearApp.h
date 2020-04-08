@@ -60,7 +60,8 @@ protected:
 	struct nk_font *_fonts[FONT_MAX];
 
 	Console _console;
-
+	core::String _textInput;
+	struct nk_vec2 _scrollDelta { 0.0f, 0.0f };
 	shader::TextureShader _shader;
 	video::Camera _camera;
 	video::Buffer _vbo;
@@ -77,13 +78,10 @@ protected:
 	struct nk_font *loadFontFile(const char *filename, int fontSize);
 	struct nk_image loadImageFile(const char *filename);
 
-	bool onKeyEvent(int32_t sym, int16_t modifier, bool down);
-
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual bool onTextInput(const core::String& text) override;
 	virtual bool onMouseWheel(int32_t x, int32_t y) override;
-	virtual void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 
