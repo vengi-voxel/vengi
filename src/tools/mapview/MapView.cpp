@@ -192,6 +192,8 @@ core::AppState MapView::onInit() {
 		return core::AppState::InitFailure;
 	}
 
+	core::setBindingContext(core::BindingContext::World);
+
 	return state;
 }
 

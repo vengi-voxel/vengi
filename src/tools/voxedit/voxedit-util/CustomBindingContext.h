@@ -9,8 +9,8 @@
 namespace voxedit {
 
 enum BindingContext {
-	UI = core::BindingContext::FirstCustom + 0,
-	Scene = core::BindingContext::FirstCustom + 1,
+	UI = core::BindingContext::UserInterface,
+	Scene = core::BindingContext::World,
 };
 
 }

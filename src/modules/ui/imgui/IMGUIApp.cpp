@@ -313,6 +313,12 @@ core::AppState IMGUIApp::onRunning() {
 		onRenderUI();
 	}
 
+	if (ImGui::IsAnyWindowHovered()) {
+		core::setBindingContext(core::BindingContext::UserInterface);
+	} else {
+		core::setBindingContext(core::BindingContext::World);
+	}
+
 	const int index = _currentFrameCounter % _maxMeasureSize;
 	_frameMillis[index] = _deltaFrameMillis;
 

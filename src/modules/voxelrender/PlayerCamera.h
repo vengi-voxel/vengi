@@ -8,6 +8,7 @@
 #include "voxelworld/WorldMgr.h"
 #include "WorldRenderer.h"
 #include "core/command/ActionButton.h"
+#include "core/BindingContext.h"
 
 namespace voxelrender {
 
@@ -32,12 +33,13 @@ private:
 	float _pendingPitch = 0.0f;
 	float _pendingTurn = 0.0f;
 	float _pendingSpeed = -1.0f;
+	const int _keyBindingContext;
 
 	void zoom(float level);
 
 public:
-	PlayerCamera(const voxelworld::WorldMgrPtr &world, voxelrender::WorldRenderer &worldRenderer) :
-			_worldMgr(world), _worldRenderer(worldRenderer) {
+	PlayerCamera(const voxelworld::WorldMgrPtr &world, voxelrender::WorldRenderer &worldRenderer, int keyBindingContext = core::BindingContext::World) :
+			_worldMgr(world), _worldRenderer(worldRenderer), _keyBindingContext(keyBindingContext) {
 	}
 
 	void setTarget(const glm::vec3& position);

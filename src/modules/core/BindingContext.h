@@ -14,6 +14,8 @@ namespace core {
  */
 enum BindingContext {
 	All,
+	UserInterface,
+	World,
 	FirstCustom
 };
 
