@@ -85,3 +85,10 @@ void nkc_text(struct nkc_context* ctx, const char *string, nk_flags alignment, c
 
 }
 }
+
+const struct nk_color* nkc_get_default_color_style(int* n) {
+	if (n != nullptr) {
+		*n = NK_COLOR_COUNT;
+	}
+	return nk_default_color_style;
+}

@@ -32,3 +32,5 @@ void nkc_text(struct nkc_context* ctx, const char *string, nk_flags alignment, c
 
 }
 }
+
+extern const struct nk_color* nkc_get_default_color_style(int* n);

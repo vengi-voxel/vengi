@@ -149,7 +149,7 @@ grid_demo(struct nk_context *ctx, struct media *media)
 
     int i;
     nk_style_set_font(ctx, &media->font_20->handle);
-    if (nk_begin(ctx, "Grid Demo", nk_rect(600, 350, 275, 250),
+    if (nk_begin(ctx, "Grid Demo", nk_rect(980, 10, 275, 250),
         NK_WINDOW_TITLE|NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|
         NK_WINDOW_NO_SCROLLBAR))
     {
@@ -216,7 +216,7 @@ button_demo(struct nk_context *ctx, struct media *media)
     static int toggle2 = 1;
 
     nk_style_set_font(ctx, &media->font_20->handle);
-    nk_begin(ctx, "Button Demo", nk_rect(50,50,255,610),
+    nk_begin(ctx, "Button Demo", nk_rect(10,10,255,610),
         NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE);
 
     /*------------------------------------------------
@@ -333,7 +333,7 @@ basic_demo(struct nk_context *ctx, struct media *media)
 
     int i = 0;
     nk_style_set_font(ctx, &media->font_20->handle);
-    nk_begin(ctx, "Basic Demo", nk_rect(320, 50, 275, 610),
+    nk_begin(ctx, "Basic Demo", nk_rect(280, 10, 275, 610),
         NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE);
 
     /*------------------------------------------------

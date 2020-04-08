@@ -14,6 +14,9 @@
 #include "extended.c"
 #include "node_editor.c"
 #include "style.c"
+#include "style_configurator.c"
+
+static struct nk_color color_table[NK_COLOR_COUNT];
 
 TestNuklear::TestNuklear(const metric::MetricPtr& metric,
 		const io::FilesystemPtr& filesystem,
@@ -36,6 +39,8 @@ void TestNuklear::initUIFonts() {
 
 core::AppState TestNuklear::onInit() {
 	const core::AppState state = Super::onInit();
+
+	SDL_memcpy(color_table, nkc_get_default_color_style(nullptr), sizeof(color_table));
 
 	_media.unchecked = loadImageFile("icon/unchecked.png");
 	_media.checked = loadImageFile("icon/checked.png");
@@ -72,10 +77,23 @@ core::AppState TestNuklear::onInit() {
 bool TestNuklear::onRenderUI() {
 	overview(&_ctx);
 	node_editor(&_ctx);
-	set_style(&_ctx, THEME_BLUE);
+	static int mode = 0;
+	static const char *options[] = {"THEME_BLACK", "THEME_WHITE", "THEME_RED", "THEME_BLUE", "THEME_DARK", "style configurator"};
+	const struct nk_rect rect = nk_recti(980, 270, 275, 150);
+	if (nk_begin_titled(&_ctx, "style_options", "Style options", rect, 0)) {
+		nk_layout_row_dynamic(&_ctx, 25, 1);
+		mode = nk_combo(&_ctx, options, SDL_arraysize(options), mode, 10, nk_vec2(100, 100));
+	}
+	nk_end(&_ctx);
+	if (mode >= 0 && mode <= THEME_DARK) {
+		set_style(&_ctx, (theme)mode);
+	} else {
+		style_configurator(&_ctx, color_table);
+	}
 	basic_demo(&_ctx, &_media);
 	button_demo(&_ctx, &_media);
 	grid_demo(&_ctx, &_media);
+
 	return true;
 }
 
