@@ -36,3 +36,19 @@ You can find some old and most likely outdated videos in my [youtube channel](ht
 # Running the tests
 The tests need a postgres database named `enginetest` and a user named `engine` with the password.... `engine` (you can modify them via cvars). If no OpenGL or OpenCL context is available, the related tests are skipped.
 You can use the docker-compose files to set up your environment.
+
+# Images
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/dwarf-in-editor.jpeg)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/dwarf.jpeg)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/gliding-2020-02-23.png)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/reflective_water_surface.png)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/traze.png)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-custom-shader.png)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-quad-view.png)
