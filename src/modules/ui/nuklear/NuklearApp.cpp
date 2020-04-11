@@ -478,6 +478,9 @@ core::AppState NuklearApp::onRunning() {
 	_vbo.unbind();
 
 	nk_clear(&_ctx);
+	nk_buffer_clear(&_cmds);
+	nk_buffer_free(&vbuf);
+	nk_buffer_free(&ebuf);
 	return state;
 }
 
