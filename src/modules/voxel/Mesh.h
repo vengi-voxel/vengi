@@ -6,6 +6,7 @@
 
 #include "VoxelVertex.h"
 #include <vector>
+#include <glm/vector_relational.hpp>
 
 namespace voxel {
 
@@ -58,6 +59,9 @@ public:
 	bool isEmpty() const;
 	void removeUnusedVertices();
 
+	inline bool operator<(const Mesh& rhs) const {
+		return glm::all(glm::lessThan(getOffset(), rhs.getOffset()));
+	}
 private:
 	alignas(16) std::vector<IndexType> _vecIndices;
 	alignas(16) std::vector<VoxelVertex> _vecVertices;

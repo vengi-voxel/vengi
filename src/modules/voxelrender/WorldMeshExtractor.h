@@ -18,29 +18,12 @@
 
 namespace voxelrender {
 
-struct ChunkMeshes {
-	static constexpr bool MAY_GET_RESIZED = true;
-	ChunkMeshes(int vertices, int indices) :
-			mesh(vertices, indices, MAY_GET_RESIZED) {
-	}
-
-	inline const glm::ivec3& translation() const {
-		return mesh.getOffset();
-	}
-
-	voxel::Mesh mesh;
-
-	inline bool operator<(const ChunkMeshes& rhs) const {
-		return glm::all(glm::lessThan(translation(), rhs.translation()));
-	}
-};
-
 typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
 
 class WorldMeshExtractor {
 private:
 	core::ThreadPool _threadPool;
-	core::ConcurrentQueue<ChunkMeshes> _extracted;
+	core::ConcurrentQueue<voxel::Mesh> _extracted;
 	glm::ivec3 _pendingExtractionSortPosition { 0, 0, 0 };
 	struct CloseToPoint {
 		glm::ivec3 _refPoint;
@@ -70,7 +53,7 @@ public:
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us
 	 * @return @c false if this isn't the case, @c true if the given reference was filled with valid data.
 	 */
-	bool pop(ChunkMeshes& item);
+	bool pop(voxel::Mesh& item);
 
 	/**
 	 * @brief If you don't need an extracted mesh anymore, make sure to allow the reextraction at a later time.

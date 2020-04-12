@@ -45,7 +45,7 @@ void WorldMeshExtractor::reset() {
 	_pendingExtraction.clear();
 }
 
-bool WorldMeshExtractor::pop(ChunkMeshes& item) {
+bool WorldMeshExtractor::pop(voxel::Mesh& item) {
 	return _extracted.pop(item);
 }
 
@@ -110,10 +110,10 @@ void WorldMeshExtractor::extractScheduledMesh() {
 		// they also heavily depend on the size of the mesh region we extract
 		const int factor = 16;
 		const int vertices = region.getWidthInVoxels() * region.getDepthInVoxels() * factor;
-		ChunkMeshes data(vertices, vertices);
-		voxel::extractCubicMesh(_volume, region, &data.mesh, voxel::IsQuadNeeded());
-		if (!data.mesh.isEmpty()) {
-			_extracted.push(std::move(data));
+		voxel::Mesh mesh(vertices, vertices);
+		voxel::extractCubicMesh(_volume, region, &mesh, voxel::IsQuadNeeded());
+		if (!mesh.isEmpty()) {
+			_extracted.push(std::move(mesh));
 		}
 	}
 }

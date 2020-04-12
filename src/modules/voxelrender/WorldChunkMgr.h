@@ -17,14 +17,14 @@ protected:
 	struct ChunkBuffer {
 		bool inuse = false;
 		math::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
-		ChunkMeshes meshes{0, 0};
+		voxel::Mesh mesh;
 
 		/**
 		 * This is the world position. Not the render positions. There is no scale
 		 * applied here.
 		 */
 		inline const glm::ivec3 &translation() const {
-			return meshes.mesh.getOffset();
+			return mesh.getOffset();
 		}
 
 		/**

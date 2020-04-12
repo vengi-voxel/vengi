@@ -40,8 +40,7 @@ void WorldChunkMgr::updateAABB(ChunkBuffer& chunkBuffer) const {
 	glm::ivec3 mins((std::numeric_limits<int>::max)());
 	glm::ivec3 maxs((std::numeric_limits<int>::min)());
 
-	const ChunkMeshes& meshes = chunkBuffer.meshes;
-	for (auto& v : meshes.mesh.getVertexVector()) {
+	for (auto& v : chunkBuffer.mesh.getVertexVector()) {
 		mins = (glm::min)(mins, v.position);
 		maxs = (glm::max)(maxs, v.position);
 	}
@@ -50,8 +49,8 @@ void WorldChunkMgr::updateAABB(ChunkBuffer& chunkBuffer) const {
 }
 
 void WorldChunkMgr::handleMeshQueue() {
-	ChunkMeshes meshes(0, 0);
-	if (!_meshExtractor.pop(meshes)) {
+	voxel::Mesh mesh;
+	if (!_meshExtractor.pop(mesh)) {
 		return;
 	}
 	// Now add the mesh to the list of meshes to render.
@@ -63,7 +62,7 @@ void WorldChunkMgr::handleMeshQueue() {
 			freeChunkBuffer = &chunkBuffer;
 		}
 		// check whether we update an existing one
-		if (chunkBuffer.translation() == meshes.translation()) {
+		if (chunkBuffer.translation() == mesh.getOffset()) {
 			freeChunkBuffer = &chunkBuffer;
 			break;
 		}
@@ -74,7 +73,7 @@ void WorldChunkMgr::handleMeshQueue() {
 		return;
 	}
 
-	freeChunkBuffer->meshes = std::move(meshes);
+	freeChunkBuffer->mesh = std::move(mesh);
 	updateAABB(*freeChunkBuffer);
 	if (!_octree.insert(freeChunkBuffer)) {
 		Log::warn("Failed to insert into octree");
@@ -120,8 +119,7 @@ void WorldChunkMgr::cull(const video::Camera& camera) {
 
 	for (ChunkBuffer* chunkBuffer : contents) {
 		core_trace_scoped(WorldRendererCullChunk);
-		const ChunkMeshes& meshes = chunkBuffer->meshes;
-		indexOffset += transform(indexOffset, meshes.mesh, _vertices, _indices);
+		indexOffset += transform(indexOffset, chunkBuffer->mesh, _vertices, _indices);
 	}
 }
 
