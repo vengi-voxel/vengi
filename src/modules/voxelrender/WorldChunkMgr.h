@@ -18,7 +18,6 @@ protected:
 		bool inuse = false;
 		math::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
 		ChunkMeshes meshes{0, 0};
-		std::vector<glm::vec3> instancedPositions;
 
 		/**
 		 * This is the world position. Not the render positions. There is no scale
@@ -52,8 +51,8 @@ protected:
 public:
 	WorldChunkMgr();
 
-	std::vector<voxel::VoxelVertex> _opaqueVertices;
-	std::vector<voxel::IndexType> _opaqueIndices;
+	std::vector<voxel::VoxelVertex> _vertices;
+	std::vector<voxel::IndexType> _indices;
 
 	void extractMesh(const glm::ivec3 &pos);
 	void extractMeshes(const video::Camera &camera);

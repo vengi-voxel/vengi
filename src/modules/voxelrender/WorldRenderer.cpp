@@ -171,8 +171,8 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererRenderToFrameBuffer);
 	// update the vertex buffers
-	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueVbo, _worldChunkMgr._opaqueVertices));
-	core_assert_always(_worldBuffers._opaqueBuffer.update(_worldBuffers._opaqueIbo, _worldChunkMgr._opaqueIndices));
+	core_assert_always(_worldBuffers._buffer.update(_worldBuffers._vbo, _worldChunkMgr._vertices));
+	core_assert_always(_worldBuffers._buffer.update(_worldBuffers._ibo, _worldChunkMgr._indices));
 
 	// ensure we are in the expected states
 	video::enable(video::State::DepthTest);

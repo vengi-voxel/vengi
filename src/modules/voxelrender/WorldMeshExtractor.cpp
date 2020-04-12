@@ -108,8 +108,8 @@ void WorldMeshExtractor::extractScheduledMesh() {
 		const voxel::Region region(mins, maxs);
 		// these numbers are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
-		const int opaqueFactor = 16;
-		const int vertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
+		const int factor = 16;
+		const int vertices = region.getWidthInVoxels() * region.getDepthInVoxels() * factor;
 		ChunkMeshes data(vertices, vertices);
 		voxel::extractCubicMesh(_volume, region, &data.mesh, voxel::IsQuadNeeded());
 		if (!data.mesh.isEmpty()) {

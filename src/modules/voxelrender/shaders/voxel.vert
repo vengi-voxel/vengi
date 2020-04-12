@@ -20,7 +20,7 @@ void main(void) {
 	v_pos = u_model * vec4(a_pos, 1.0);
 
 	int materialColorIndex = int(a_colorindex);
-	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;
+	vec3 materialColor = u_materialcolor[materialColorIndex].rgb;
 	v_color = vec4(materialColor, 1.0);
 
 	v_ambientocclusion = aovalues[a_ao];

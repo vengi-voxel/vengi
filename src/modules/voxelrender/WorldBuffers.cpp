@@ -16,11 +16,11 @@ namespace voxelrender {
 
 bool WorldBuffers::renderOpaqueBuffers() {
 	core_trace_gl_scoped(WorldBuffersRenderOpaqueBuffers);
-	const uint32_t numIndices = _opaqueBuffer.elements(_opaqueIbo, 1, sizeof(voxel::IndexType));
+	const uint32_t numIndices = _buffer.elements(_ibo, 1, sizeof(voxel::IndexType));
 	if (numIndices == 0u) {
 		return false;
 	}
-	video::ScopedBuffer scopedBuf(_opaqueBuffer);
+	video::ScopedBuffer scopedBuf(_buffer);
 	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
 	return true;
 }
@@ -34,28 +34,28 @@ bool WorldBuffers::renderWaterBuffers() {
 }
 
 bool WorldBuffers::initOpaqueBuffer(shader::WorldShader& worldShader) {
-	_opaqueVbo = _opaqueBuffer.create();
-	if (_opaqueVbo == -1) {
+	_vbo = _buffer.create();
+	if (_vbo == -1) {
 		Log::error("Failed to create vertex buffer");
 		return false;
 	}
-	_opaqueBuffer.setMode(_opaqueVbo, video::BufferMode::Stream);
-	_opaqueIbo = _opaqueBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
-	if (_opaqueIbo == -1) {
+	_buffer.setMode(_vbo, video::BufferMode::Stream);
+	_ibo = _buffer.create(nullptr, 0, video::BufferType::IndexBuffer);
+	if (_ibo == -1) {
 		Log::error("Failed to create index buffer");
 		return false;
 	}
-	_opaqueBuffer.setMode(_opaqueIbo, video::BufferMode::Stream);
+	_buffer.setMode(_ibo, video::BufferMode::Stream);
 
 	const int locationPos = worldShader.getLocationPos();
-	const video::Attribute& posAttrib = getPositionVertexAttribute(_opaqueVbo, locationPos, worldShader.getAttributeComponents(locationPos));
-	if (!_opaqueBuffer.addAttribute(posAttrib)) {
+	const video::Attribute& posAttrib = getPositionVertexAttribute(_vbo, locationPos, worldShader.getAttributeComponents(locationPos));
+	if (!_buffer.addAttribute(posAttrib)) {
 		Log::warn("Failed to add position attribute");
 	}
 
 	const int locationInfo = worldShader.getLocationInfo();
-	const video::Attribute& infoAttrib = getInfoVertexAttribute(_opaqueVbo, locationInfo, worldShader.getAttributeComponents(locationInfo));
-	if (!_opaqueBuffer.addAttribute(infoAttrib)) {
+	const video::Attribute& infoAttrib = getInfoVertexAttribute(_vbo, locationInfo, worldShader.getAttributeComponents(locationInfo));
+	if (!_buffer.addAttribute(infoAttrib)) {
 		Log::warn("Failed to add info attribute");
 	}
 
@@ -100,7 +100,7 @@ bool WorldBuffers::init(shader::WorldShader& worldShader, shader::WaterShader& w
 }
 
 void WorldBuffers::shutdown() {
-	_opaqueBuffer.shutdown();
+	_buffer.shutdown();
 	_waterBuffer.shutdown();
 }
 

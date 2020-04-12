@@ -109,9 +109,9 @@ static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, std:
 
 void WorldChunkMgr::cull(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererCull);
-	_opaqueIndices.clear();
-	_opaqueVertices.clear();
-	size_t opaqueIndexOffset = 0;
+	_indices.clear();
+	_vertices.clear();
+	size_t indexOffset = 0;
 
 	Tree::Contents contents;
 	math::AABB<float> aabb = camera.frustum().aabb();
@@ -121,7 +121,7 @@ void WorldChunkMgr::cull(const video::Camera& camera) {
 	for (ChunkBuffer* chunkBuffer : contents) {
 		core_trace_scoped(WorldRendererCullChunk);
 		const ChunkMeshes& meshes = chunkBuffer->meshes;
-		opaqueIndexOffset += transform(opaqueIndexOffset, meshes.mesh, _opaqueVertices, _opaqueIndices);
+		indexOffset += transform(indexOffset, meshes.mesh, _vertices, _indices);
 	}
 }
 

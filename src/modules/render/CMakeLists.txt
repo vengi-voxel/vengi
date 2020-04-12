@@ -18,7 +18,6 @@ set(SHADERS
 	depthbuffer_render
 	edge
 	shadowmap
-	shadowmap_instanced
 	shadowmap_render
 	texture
 )

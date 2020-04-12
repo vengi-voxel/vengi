@@ -45,8 +45,7 @@ struct CustomIsQuadNeeded {
 
 RawVolumeRenderer::RawVolumeRenderer() :
 		_voxelShader(shader::VoxelShader::getInstance()),
-		_shadowMapShader(shader::ShadowmapShader::getInstance()),
-		_shadowMapInstancedShader(shader::ShadowmapInstancedShader::getInstance()) {
+		_shadowMapShader(shader::ShadowmapShader::getInstance()) {
 }
 
 void RawVolumeRenderer::construct() {
@@ -60,10 +59,6 @@ bool RawVolumeRenderer::init() {
 	}
 	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to init shadowmap shader");
-		return false;
-	}
-	if (!_shadowMapInstancedShader.setup()) {
-		Log::error("Failed to init shadowmap instanced shader");
 		return false;
 	}
 	_shadowVar = core::Var::getSafe(cfg::ClientShadowMap);
@@ -510,7 +505,6 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& ce
 std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
-	_shadowMapInstancedShader.shutdown();
 	_materialBlock.shutdown();
 	for (auto& iter : _meshes) {
 		for (auto& mesh : iter.second) {

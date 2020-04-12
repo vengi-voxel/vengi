@@ -15,7 +15,6 @@ set(SRCS_SHADERS
 	shaders/_checker.frag
 	shaders/_material.vert
 	shaders/water.vert shaders/water.frag
-	shaders/world_instanced.vert shaders/world_instanced.frag
 	shaders/world.vert shaders/world.frag
 	shaders/voxel.vert shaders/voxel.frag
 	shaders/postprocess.vert shaders/postprocess.frag
@@ -31,7 +30,7 @@ set(FILES
 	shared/water-normal.png
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend render voxelfont voxelworld)
-generate_shaders(${LIB} world water world_instanced voxel postprocess)
+generate_shaders(${LIB} world water voxel postprocess)
 
 gtest_suite_sources(tests
 	tests/VoxelFrontendShaderTest.cpp
