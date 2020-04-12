@@ -99,6 +99,11 @@ bool WorldBuffers::init(shader::WorldShader& worldShader, shader::WaterShader& w
 	return initWaterBuffer(waterShader) && initOpaqueBuffer(worldShader);
 }
 
+void WorldBuffers::update(const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices) {
+	_buffer.update(_vbo, vertices);
+	_buffer.update(_ibo, indices);
+}
+
 void WorldBuffers::shutdown() {
 	_buffer.shutdown();
 	_waterBuffer.shutdown();
