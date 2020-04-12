@@ -348,42 +348,43 @@ core::AppState NuklearApp::onRunning() {
 
 	const uint8_t* keys = SDL_GetKeyboardState(nullptr);
 
-	nk_input_key(&_ctx, NK_KEY_DEL, keys[SDL_SCANCODE_DELETE]);
-	nk_input_key(&_ctx, NK_KEY_ENTER, keys[SDL_SCANCODE_RETURN] || keys[SDL_SCANCODE_KP_ENTER]);
-	nk_input_key(&_ctx, NK_KEY_TAB, keys[SDL_SCANCODE_TAB]);
-	nk_input_key(&_ctx, NK_KEY_BACKSPACE, keys[SDL_SCANCODE_BACKSPACE]);
-	nk_input_key(&_ctx, NK_KEY_UP, keys[SDL_SCANCODE_UP]);
-	nk_input_key(&_ctx, NK_KEY_DOWN, keys[SDL_SCANCODE_DOWN]);
-	nk_input_key(&_ctx, NK_KEY_LEFT, keys[SDL_SCANCODE_LEFT]);
-	nk_input_key(&_ctx, NK_KEY_RIGHT, keys[SDL_SCANCODE_RIGHT]);
-	nk_input_key(&_ctx, NK_KEY_TEXT_START, keys[SDL_SCANCODE_HOME]);
-	nk_input_key(&_ctx, NK_KEY_TEXT_END, keys[SDL_SCANCODE_END]);
-	nk_input_key(&_ctx, NK_KEY_SCROLL_START, keys[SDL_SCANCODE_HOME]);
-	nk_input_key(&_ctx, NK_KEY_SCROLL_END, keys[SDL_SCANCODE_END]);
-	nk_input_key(&_ctx, NK_KEY_SCROLL_UP, keys[SDL_SCANCODE_PAGEUP]);
-	nk_input_key(&_ctx, NK_KEY_SCROLL_DOWN, keys[SDL_SCANCODE_PAGEDOWN]);
-	nk_input_key(&_ctx, NK_KEY_TEXT_INSERT_MODE, keys[SDL_SCANCODE_INSERT]);
-	nk_input_key(&_ctx, NK_KEY_TEXT_REPLACE_MODE, !keys[SDL_SCANCODE_INSERT]);
+#define mod_input_key(nkkey, mod, sdlscancode) \
+	nk_input_key(&_ctx, (nkkey), (mod) ? keys[(sdlscancode)] : 0)
 
 	const uint32_t modState = SDL_GetModState();
 	const bool shift = (modState & KMOD_SHIFT) != 0u;
 	const bool ctrl = (modState & KMOD_CTRL) != 0u;
+
 	nk_input_key(&_ctx, NK_KEY_SHIFT, (int)shift);
 	nk_input_key(&_ctx, NK_KEY_CTRL, (int)ctrl);
-
-#define mod_input_key(nkkey, mod, sdlscancode) \
-	nk_input_key(&_ctx, (nkkey), (mod) ? keys[(sdlscancode)] : 0)
-
+	nk_input_key(&_ctx, NK_KEY_DEL, keys[SDL_SCANCODE_DELETE]);
+	nk_input_key(&_ctx, NK_KEY_ENTER, keys[SDL_SCANCODE_RETURN] || keys[SDL_SCANCODE_KP_ENTER]);
+	nk_input_key(&_ctx, NK_KEY_TAB, keys[SDL_SCANCODE_TAB]);
+	nk_input_key(&_ctx, NK_KEY_BACKSPACE, keys[SDL_SCANCODE_BACKSPACE]);
 	mod_input_key(NK_KEY_COPY, ctrl, SDL_SCANCODE_C);
-	mod_input_key(NK_KEY_PASTE, ctrl, SDL_SCANCODE_V);
 	mod_input_key(NK_KEY_CUT, ctrl, SDL_SCANCODE_X);
-	mod_input_key(NK_KEY_TEXT_UNDO, ctrl, SDL_SCANCODE_Z);
-	mod_input_key(NK_KEY_TEXT_REDO, ctrl, SDL_SCANCODE_Y);
-	mod_input_key(NK_KEY_TEXT_WORD_LEFT, ctrl, SDL_SCANCODE_LEFT);
-	mod_input_key(NK_KEY_TEXT_WORD_RIGHT, ctrl, SDL_SCANCODE_RIGHT);
+	mod_input_key(NK_KEY_PASTE, ctrl, SDL_SCANCODE_V);
+	nk_input_key(&_ctx, NK_KEY_UP, keys[SDL_SCANCODE_UP]);
+	nk_input_key(&_ctx, NK_KEY_DOWN, keys[SDL_SCANCODE_DOWN]);
+	nk_input_key(&_ctx, NK_KEY_LEFT, keys[SDL_SCANCODE_LEFT]);
+	nk_input_key(&_ctx, NK_KEY_RIGHT, keys[SDL_SCANCODE_RIGHT]);
+	nk_input_key(&_ctx, NK_KEY_TEXT_INSERT_MODE, keys[SDL_SCANCODE_INSERT]);
+	nk_input_key(&_ctx, NK_KEY_TEXT_REPLACE_MODE, !keys[SDL_SCANCODE_INSERT]);
+	nk_input_key(&_ctx, NK_KEY_TEXT_RESET_MODE, 0);
 	mod_input_key(NK_KEY_TEXT_LINE_START, ctrl, SDL_SCANCODE_B);
 	mod_input_key(NK_KEY_TEXT_LINE_END, ctrl, SDL_SCANCODE_E);
+	nk_input_key(&_ctx, NK_KEY_TEXT_START, keys[SDL_SCANCODE_HOME]);
+	nk_input_key(&_ctx, NK_KEY_TEXT_END, keys[SDL_SCANCODE_END]);
+	mod_input_key(NK_KEY_TEXT_UNDO, ctrl, SDL_SCANCODE_Z);
+	mod_input_key(NK_KEY_TEXT_REDO, ctrl, SDL_SCANCODE_Y);
 	mod_input_key(NK_KEY_TEXT_SELECT_ALL, ctrl, SDL_SCANCODE_A);
+	mod_input_key(NK_KEY_TEXT_WORD_LEFT, ctrl, SDL_SCANCODE_LEFT);
+	mod_input_key(NK_KEY_TEXT_WORD_RIGHT, ctrl, SDL_SCANCODE_RIGHT);
+	nk_input_key(&_ctx, NK_KEY_SCROLL_START, keys[SDL_SCANCODE_HOME]);
+	nk_input_key(&_ctx, NK_KEY_SCROLL_END, keys[SDL_SCANCODE_END]);
+	nk_input_key(&_ctx, NK_KEY_SCROLL_DOWN, keys[SDL_SCANCODE_PAGEDOWN]);
+	nk_input_key(&_ctx, NK_KEY_SCROLL_UP, keys[SDL_SCANCODE_PAGEUP]);
+
 #undef mod_input_key
 
 	int x;
@@ -394,6 +395,7 @@ core::AppState NuklearApp::onRunning() {
 	nk_input_button(&_ctx, NK_BUTTON_LEFT, x, y, (int)(mouseState & SDL_BUTTON_LMASK));
 	nk_input_button(&_ctx, NK_BUTTON_MIDDLE, x, y, (int)(mouseState & SDL_BUTTON_MMASK));
 	nk_input_button(&_ctx, NK_BUTTON_RIGHT, x, y, (int)(mouseState & SDL_BUTTON_RMASK));
+	nk_input_button(&_ctx, NK_BUTTON_DOUBLE, x, y, 0);
 	_scrollDelta.x = _scrollDelta.y = 0.0f;
 
 	nk_input_end(&_ctx);
