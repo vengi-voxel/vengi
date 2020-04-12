@@ -39,16 +39,6 @@ You can use the docker-compose files to set up your environment.
 
 # Images
 
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/dwarf-in-editor.jpeg)
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/dwarf.jpeg)
-
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/gliding-2020-02-23.png)
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/reflective_water_surface.png)
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/traze.png)
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-custom-shader.png)
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-quad-view.png)

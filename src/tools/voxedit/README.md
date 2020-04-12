@@ -7,6 +7,13 @@ Voxel editor for large scenes.
 This editor was written to have a linux voxel editor with animation support for
 my own engine and evolved into something that others might find useful, too.
 
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/dwarf-in-editor.jpeg)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-custom-shader.png)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-quad-view.png)
+
+
 ## Features
 
 * Large scene support

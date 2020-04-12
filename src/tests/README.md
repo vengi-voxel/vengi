@@ -14,7 +14,9 @@ make __directoryname__-run
 
 # testanimation
 
-Test the voxel animation module with a default character and items of the stock module
+Test the voxel animation module with a default character and items of the stock module.
+
+See [README.md](testanimation/README.md) for more details.
 
 # testimgui
 

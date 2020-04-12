@@ -10,6 +10,8 @@ This application can be used to spectate games and to play games. You can select
 select one and decide at any time to join the game by hitting the button in the debug menu. Once you press the first WASD-key
 to move your bike, you are joined.
 
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/traze.png)
+
 ## TODO
 
 * add scoreboard menu
