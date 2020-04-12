@@ -16,16 +16,13 @@ uniform mat4 u_model;
 uniform vec4 u_clipplane;
 uniform mat4 u_viewprojection;
 uniform sampler2D u_texture;
-#define MATERIALCOLORS 256
-layout(std140) uniform u_materialblock {
-	vec4 u_materialcolor[MATERIALCOLORS];
-};
 
 $out vec3 v_pos;
 $out vec4 v_color;
 $out vec4 v_clipspace;
 $out float v_ambientocclusion;
 
+#include "_material.vert"
 #include "_fog.vert"
 #include "_shadowmap.vert"
 #include "_ambientocclusion.vert"

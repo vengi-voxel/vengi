@@ -4,15 +4,12 @@ $in uvec3 a_info;
 
 uniform mat4 u_model;
 uniform mat4 u_viewprojection;
-#define MATERIALCOLORS 256
-layout(std140) uniform u_materialblock {
-	vec4 u_materialcolor[MATERIALCOLORS];
-};
 
 $out vec4 v_pos;
 $out vec4 v_color;
 $out float v_ambientocclusion;
 
+#include "_material.vert"
 #include "_shadowmap.vert"
 #include "_ambientocclusion.vert"
 

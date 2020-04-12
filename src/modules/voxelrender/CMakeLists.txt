@@ -13,6 +13,7 @@ set(SRCS
 )
 set(SRCS_SHADERS
 	shaders/_checker.frag
+	shaders/_material.vert
 	shaders/water.vert shaders/water.frag
 	shaders/world_instanced.vert shaders/world_instanced.frag
 	shaders/world.vert shaders/world.frag
