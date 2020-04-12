@@ -10,7 +10,7 @@ float checker(in vec2 pos) {
 	return mix(0.95 + variance, 1.0 - variance, checker);
 }
 
-vec3 baseColor(in vec3 normal, in vec3 pos, in vec3 color) {
+vec3 checkerBoardColor(in vec3 normal, in vec3 pos, in vec3 color) {
 	float checkerBoardFactor = 1.0;
 	if (abs(normal.y) >= 0.999) {
 		checkerBoardFactor = checker(pos.xz);

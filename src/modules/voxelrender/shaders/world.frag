@@ -47,7 +47,7 @@ void main(void) {
 	float ndotl = abs(dot(normal, u_lightdir));
 	vec3 diffuse = u_diffuse_color * ndotl;
 	vec3 ambientColor = dayTimeColor(u_ambient_color, u_time);
-	vec3 voxelColor = baseColor(normal, v_pos, v_color.rgb);
+	vec3 voxelColor = checkerBoardColor(normal, v_pos, v_color.rgb);
 	float bias = max(0.05 * (1.0 - ndotl), 0.005);
 	vec3 shadowColor = shadow(vec4(v_lightspacepos, 1.0), bias, voxelColor, diffuse, ambientColor);
 	vec3 linearColor = shadowColor * v_ambientocclusion;
