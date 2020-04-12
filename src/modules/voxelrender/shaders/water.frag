@@ -17,6 +17,7 @@ uniform sampler2D u_depthmap;
 #include "_fog.frag"
 #include "_shadowmap.frag"
 #include "_daynight.frag"
+#include "_checker.frag"
 
 uniform mediump vec3 u_lightdir;
 uniform lowp vec3 u_diffuse_color;
@@ -86,6 +87,8 @@ void main(void) {
 	vec4 waterColor = mix(reflectColor, refractColor, refractiveFactor);
 	o_color = fog(v_pos.xyz, mix(shadowColor, waterColor.xyz, 0.5), 0.5);
 	// add a blue tint and the specular highlights
-	o_color = mix(o_color, vec4(0.0, 0.3, 0.5, 1.0), 0.2) + vec4(lightColor, 0.0);
+	const vec3 tint = vec3(0.0, 0.3, 0.5);
+	vec3 waterColorTint = tint * checker(v_pos.xz);
+	o_color = mix(o_color, vec4(waterColorTint, 1.0), 0.2) + vec4(lightColor, 0.0);
 	o_color.a = clamp(depthWater / 5.0, 0.0, 1.0);
 }
