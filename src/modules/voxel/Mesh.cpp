@@ -10,6 +10,73 @@
 
 namespace voxel {
 
+Mesh::Mesh(int vertices, int indices, bool mayGetResized) : _mayGetResized(mayGetResized) {
+	if (vertices > 0) {
+		_vecVertices.reserve(vertices);
+	}
+	if (indices > 0) {
+		_vecIndices.reserve(indices);
+	}
+}
+
+const std::vector<IndexType>& Mesh::getIndexVector() const {
+	return _vecIndices;
+}
+
+const std::vector<VoxelVertex>& Mesh::getVertexVector() const {
+	return _vecVertices;
+}
+
+std::vector<IndexType>& Mesh::getIndexVector() {
+	return _vecIndices;
+}
+
+std::vector<VoxelVertex>& Mesh::getVertexVector() {
+	return _vecVertices;
+}
+
+size_t Mesh::getNoOfVertices() const {
+	return _vecVertices.size();
+}
+
+const VoxelVertex& Mesh::getVertex(IndexType index) const {
+	return _vecVertices[index];
+}
+
+const VoxelVertex* Mesh::getRawVertexData() const {
+	return _vecVertices.data();
+}
+
+size_t Mesh::getNoOfIndices() const {
+	return _vecIndices.size();
+}
+
+IndexType Mesh::getIndex(IndexType index) const {
+	return _vecIndices[index];
+}
+
+const IndexType* Mesh::getRawIndexData() const {
+	return _vecIndices.data();
+}
+
+const glm::ivec3& Mesh::getOffset() const {
+	return _offset;
+}
+
+void Mesh::setOffset(const glm::ivec3& offset) {
+	_offset = offset;
+}
+
+void Mesh::clear() {
+	_vecVertices.clear();
+	_vecIndices.clear();
+	_offset = glm::ivec3(0);
+}
+
+bool Mesh::isEmpty() const {
+	return getNoOfVertices() == 0 || getNoOfIndices() == 0;
+}
+
 void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType index2) {
 	//Make sure the specified indices correspond to valid vertices.
 	core_assert_msg(index0 < _vecVertices.size(), "Index points at an invalid vertex.");
