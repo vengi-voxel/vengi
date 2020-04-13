@@ -1,3 +1,5 @@
+set(CMAKE_LINK_WHAT_YOU_USE OFF)
+
 add_subdirectory(testanimation)
 add_subdirectory(testtexture)
 add_subdirectory(testplane)
