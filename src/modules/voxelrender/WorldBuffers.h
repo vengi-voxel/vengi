@@ -7,8 +7,7 @@
 #include "video/Buffer.h"
 #include "WorldShader.h"
 #include "WaterShader.h"
-#include "voxel/VoxelVertex.h"
-#include <vector>
+#include "voxel/Mesh.h"
 
 namespace voxelrender {
 
@@ -26,7 +25,7 @@ public:
 	bool renderOpaqueBuffers();
 	bool renderWaterBuffers();
 
-	void update(const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices);
+	void update(const voxel::VertexArray& vertices, const voxel::IndexArray& indices);
 
 	bool init(shader::WorldShader& worldShader, shader::WaterShader& waterShader);
 	void shutdown();

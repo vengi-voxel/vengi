@@ -51,8 +51,8 @@ protected:
 public:
 	WorldChunkMgr();
 
-	std::vector<voxel::VoxelVertex> _vertices;
-	std::vector<voxel::IndexType> _indices;
+	voxel::VertexArray _vertices;
+	voxel::IndexArray _indices;
 
 	void extractMesh(const glm::ivec3 &pos);
 	void extractMeshes(const video::Camera &camera);

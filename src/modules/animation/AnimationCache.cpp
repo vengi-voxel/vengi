@@ -119,12 +119,12 @@ bool AnimationCache::getBoneModel(const AnimationSettings& settings, Vertices& v
 				Log::error("Could not get bone id mapping for %s", toBoneId(boneId));
 				return false;
 			}
-			const std::vector<voxel::VoxelVertex>& meshVertices = mesh->getVertexVector();
+			const voxel::VertexArray& meshVertices = mesh->getVertexVector();
 			for (const voxel::VoxelVertex& v : meshVertices) {
 				vertices.emplace_back(Vertex{v.position, v.colorIndex, (uint8_t)boneIdx, v.ambientOcclusion});
 			}
 
-			const std::vector<voxel::IndexType>& meshIndices = mesh->getIndexVector();
+			const voxel::IndexArray& meshIndices = mesh->getIndexVector();
 			if (bids.mirrored[b]) {
 				// if a model is mirrored, this is usually acchieved with negative scaling values
 				// thus we have to reverse the winding order here to make the face culling work again

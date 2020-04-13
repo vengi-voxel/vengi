@@ -195,8 +195,8 @@ int VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vect
 	});
 }
 
-int VoxelFont::render(const char* string, std::vector<voxel::VoxelVertex>& vertices, std::vector<uint32_t>& indices) {
-	return render(string, vertices, indices, [] (const voxel::VoxelVertex& vertex, std::vector<voxel::VoxelVertex>& vertices, int x, int y) {
+int VoxelFont::render(const char* string, voxel::VertexArray& vertices, std::vector<uint32_t>& indices) {
+	return render(string, vertices, indices, [] (const voxel::VoxelVertex& vertex, voxel::VertexArray& vertices, int x, int y) {
 		voxel::VoxelVertex copy = vertex;
 		copy.position.x += x;
 		copy.position.y += y;

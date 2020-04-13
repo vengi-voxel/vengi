@@ -19,19 +19,19 @@ Mesh::Mesh(int vertices, int indices, bool mayGetResized) : _mayGetResized(mayGe
 	}
 }
 
-const std::vector<IndexType>& Mesh::getIndexVector() const {
+const IndexArray& Mesh::getIndexVector() const {
 	return _vecIndices;
 }
 
-const std::vector<VoxelVertex>& Mesh::getVertexVector() const {
+const VertexArray& Mesh::getVertexVector() const {
 	return _vecVertices;
 }
 
-std::vector<IndexType>& Mesh::getIndexVector() {
+IndexArray& Mesh::getIndexVector() {
 	return _vecIndices;
 }
 
-std::vector<VoxelVertex>& Mesh::getVertexVector() {
+VertexArray& Mesh::getVertexVector() {
 	return _vecVertices;
 }
 
@@ -137,17 +137,19 @@ bool Mesh::addMesh(const Mesh& mesh) {
 }
 
 void Mesh::removeUnusedVertices() {
-	std::vector<bool> isVertexUsed(_vecVertices.size());
+	const size_t vertices = _vecVertices.size();
+	const size_t indices = _vecIndices.size();
+	std::vector<bool> isVertexUsed(vertices);
 	std::fill(isVertexUsed.begin(), isVertexUsed.end(), false);
 
-	for (size_t triCt = 0u; triCt < _vecIndices.size(); ++triCt) {
+	for (size_t triCt = 0u; triCt < indices; ++triCt) {
 		IndexType v = _vecIndices[triCt];
 		isVertexUsed[v] = true;
 	}
 
 	int noOfUsedVertices = 0;
-	std::vector<IndexType> newPos(_vecVertices.size());
-	for (size_t vertCt = 0u; vertCt < _vecVertices.size(); ++vertCt) {
+	IndexArray newPos(vertices);
+	for (size_t vertCt = 0u; vertCt < vertices; ++vertCt) {
 		if (core_unlikely(!isVertexUsed[vertCt])) {
 			continue;
 		}
@@ -158,10 +160,10 @@ void Mesh::removeUnusedVertices() {
 
 	_vecVertices.resize(noOfUsedVertices);
 
-	for (size_t triCt = 0u; triCt < _vecIndices.size(); ++triCt) {
+	for (size_t triCt = 0u; triCt < indices; ++triCt) {
 		_vecIndices[triCt] = newPos[_vecIndices[triCt]];
 	}
-	_vecIndices.resize(_vecIndices.size());
+	_vecIndices.resize(indices);
 }
 
 }

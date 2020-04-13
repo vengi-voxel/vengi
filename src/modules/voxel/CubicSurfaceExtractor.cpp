@@ -13,7 +13,7 @@ SDL_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2)
 
 static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 	core_trace_scoped(MergeQuads);
-	const std::vector<VoxelVertex>& vv = meshCurrent->getVertexVector();
+	const VertexArray& vv = meshCurrent->getVertexVector();
 	const VoxelVertex& v11 = vv[q1.vertices[0]];
 	const VoxelVertex& v21 = vv[q2.vertices[0]];
 	if (!isSameVertex(v11, v21)) {

@@ -93,15 +93,15 @@ WorldChunkMgr::ChunkBuffer* WorldChunkMgr::findFreeChunkBuffer() {
 	return nullptr;
 }
 
-static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, std::vector<voxel::VoxelVertex>& verts, std::vector<voxel::IndexType>& idxs) {
-	const std::vector<voxel::IndexType>& indices = mesh.getIndexVector();
+static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, voxel::VertexArray& verts, voxel::IndexArray& idxs) {
+	const voxel::IndexArray& indices = mesh.getIndexVector();
 	const size_t start = idxs.size();
 	idxs.insert(idxs.end(), indices.begin(), indices.end());
 	const size_t end = idxs.size();
 	for (size_t i = start; i < end; ++i) {
 		idxs[i] += indexOffset;
 	}
-	const std::vector<voxel::VoxelVertex>& vertices = mesh.getVertexVector();
+	const voxel::VertexArray& vertices = mesh.getVertexVector();
 	verts.insert(verts.end(), vertices.begin(), vertices.end());
 	return vertices.size();
 }

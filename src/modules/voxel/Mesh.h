@@ -10,6 +10,9 @@
 
 namespace voxel {
 
+using VertexArray = std::vector<voxel::VoxelVertex>;
+using IndexArray = std::vector<voxel::IndexType>;
+
 /**
  * @brief A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
  *
@@ -44,10 +47,10 @@ public:
 	IndexType getIndex(IndexType index) const;
 	const IndexType* getRawIndexData() const;
 
-	const std::vector<IndexType>& getIndexVector() const;
-	const std::vector<VoxelVertex>& getVertexVector() const;
-	std::vector<IndexType>& getIndexVector();
-	std::vector<VoxelVertex>& getVertexVector();
+	const IndexArray& getIndexVector() const;
+	const VertexArray& getVertexVector() const;
+	IndexArray& getIndexVector();
+	VertexArray& getVertexVector();
 
 	const glm::ivec3& getOffset() const;
 	void setOffset(const glm::ivec3& offset);
@@ -63,8 +66,8 @@ public:
 		return glm::all(glm::lessThan(getOffset(), rhs.getOffset()));
 	}
 private:
-	alignas(16) std::vector<IndexType> _vecIndices;
-	alignas(16) std::vector<VoxelVertex> _vecVertices;
+	alignas(16) IndexArray _vecIndices;
+	alignas(16) VertexArray _vecVertices;
 	glm::ivec3 _offset { 0, 0, 0 };
 	bool _mayGetResized;
 };

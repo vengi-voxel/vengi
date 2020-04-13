@@ -125,7 +125,7 @@ public:
 	}
 
 	int render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices);
-	int render(const char* string, std::vector<voxel::VoxelVertex>& vertices, std::vector<uint32_t>& indices);
+	int render(const char* string, voxel::VertexArray& vertices, std::vector<uint32_t>& indices);
 };
 
 }

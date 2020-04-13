@@ -118,8 +118,8 @@ bool RawVolumeRenderer::update(int idx) {
 		return false;
 	}
 	core_trace_scoped(RawVolumeRendererUpdate);
-	std::vector<voxel::VoxelVertex> vertices;
-	std::vector<voxel::IndexType> indices;
+	voxel::VertexArray vertices;
+	voxel::IndexArray indices;
 
 	voxel::IndexType offset = (voxel::IndexType)0;
 	for (auto& i : _meshes) {
@@ -128,8 +128,8 @@ bool RawVolumeRenderer::update(int idx) {
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
 			continue;
 		}
-		const std::vector<voxel::VoxelVertex>& vertexVector = mesh->getVertexVector();
-		const std::vector<voxel::IndexType>& indexVector = mesh->getIndexVector();
+		const voxel::VertexArray& vertexVector = mesh->getVertexVector();
+		const voxel::IndexArray& indexVector = mesh->getIndexVector();
 		std::copy(vertexVector.begin(), vertexVector.end(), std::back_inserter(vertices));
 
 		for (const auto& iv : indexVector) {
@@ -142,7 +142,7 @@ bool RawVolumeRenderer::update(int idx) {
 	return update(idx, vertices, indices);
 }
 
-bool RawVolumeRenderer::update(int idx, const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices) {
+bool RawVolumeRenderer::update(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}

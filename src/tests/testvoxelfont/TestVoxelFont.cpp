@@ -60,8 +60,8 @@ bool TestVoxelFont::changeFontSize(int delta) {
 		return false;
 	}
 
-	std::vector<voxel::VoxelVertex> vertices;
-	std::vector<voxel::IndexType> indices;
+	voxel::VertexArray vertices;
+	voxel::IndexArray indices;
 
 	const char* str = "Hello world!\nNext Line";
 	const int renderedChars = _voxelFont.render(str, vertices, indices);
