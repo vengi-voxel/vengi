@@ -14,9 +14,6 @@ using IndexArray = std::vector<voxel::IndexType>;
 
 /**
  * @brief A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
- *
- * @note You are only able to store vertex ranges from 0 to 255 here, due to the limited data type of the position in
- * the Vertex class.
  */
 class Mesh {
 public:
