@@ -168,33 +168,8 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx,
  * Removes all voxels from memory by removing all chunks. The application has the chance to persist the data via @c Pager::pageOut
  */
 void PagedVolume::flushAll() {
-	// must not be recursive at this point
 	core::ScopedWriteLock writeLock(_volumeLock);
-	// Clear this pointer as all chunks are about to be removed.
-	_lastAccessedChunk = ChunkPtr();
-	_lastAccessedChunkX = 0;
-	_lastAccessedChunkY = 0;
-	_lastAccessedChunkZ = 0;
-
-	// Erase all the most recently used chunks.
 	_chunks.clear();
-}
-
-/**
- * Starting at the position indicated by the hash, and then search through the whole array looking for a chunk with the correct
- * position. In most cases we expect to find it in the first place we look. Note that this algorithm is slow in the case that
- * the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
- * from an external source which is likely to be slow anyway.
- */
-PagedVolume::ChunkPtr PagedVolume::existingChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
-	const glm::ivec3 pos(chunkX, chunkY, chunkZ);
-	auto i = _chunks.find(pos);
-	if (i == _chunks.end()) {
-		return ChunkPtr();
-	}
-	const PagedVolume::ChunkPtr& chunk = i->second;
-	chunk->_chunkLastAccessed = ++_timestamper;
-	return chunk;
 }
 
 /**
@@ -205,25 +180,18 @@ PagedVolume::ChunkPtr PagedVolume::existingChunk(int32_t chunkX, int32_t chunkY,
  * the data in is probably more expensive.
  */
 void PagedVolume::deleteOldestChunkIfNeeded() const {
-	const std::size_t chunkCount = _chunks.size();
-	if (chunkCount < _chunkCountLimit) {
-		return;
-	}
-	glm::ivec3 oldestChunkPos(0);
-	bool foundOldestChunk = false;
-	uint32_t oldestChunkTimestamp = (std::numeric_limits<uint32_t>::max)();
+	ChunkMap::iterator oldestChunk = _chunks.end();
+	uint32_t oldestChunkTimestamp = _timestamper;
 	for (ChunkMap::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
-		const glm::ivec3& pos = i->first;
 		const ChunkPtr& chunk = i->second;
 		if (chunk->_chunkLastAccessed < oldestChunkTimestamp) {
 			oldestChunkTimestamp = chunk->_chunkLastAccessed;
-			foundOldestChunk = true;
-			oldestChunkPos = pos;
+			oldestChunk = i;
 		}
 	}
-	if (foundOldestChunk) {
-		ChunkMap::iterator i = _chunks.find(oldestChunkPos);
-		_chunks.erase(i);
+	if (oldestChunk != _chunks.end()) {
+		Log::info("delete oldest chunk - reached %u", _chunkCountLimit);
+		_chunks.erase(oldestChunk);
 	}
 }
 
@@ -233,16 +201,6 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 	Log::debug("create new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
 	ChunkPtr chunk = core::make_shared<Chunk>(pos, _chunkSideLength, _pager);
 	chunk->_chunkLastAccessed = ++_timestamper; // Important, as we may soon delete the oldest chunk
-
-	{
-		core::ScopedWriteLock volumeWriteLock(_volumeLock);
-		auto i = _chunks.find(pos);
-		if (i != _chunks.end()) {
-			return i->value;
-		}
-		_chunks.put(pos, chunk);
-		deleteOldestChunkIfNeeded();
-	}
 
 	// Pass the chunk to the Pager to give it a chance to initialise it with any data
 	// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
@@ -254,35 +212,27 @@ PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY
 
 	// Page the data in
 	// We'll use this later to decide if data needs to be paged out again.
-	core::ScopedWriteLock chunkWriteLock(chunk->_chunkLock);
 	chunk->_dataModified = _pager->pageIn(pctx);
-	// TODO: if this is empty, we can optimize the mesh extractor a lot
 	Log::debug("finished creating new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
 
 	return chunk;
 }
 
 PagedVolume::ChunkPtr PagedVolume::chunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
-	ChunkPtr chunk;
-	{
-		core::ScopedReadLock readLock(_volumeLock);
-		if (chunkX == _lastAccessedChunkX && chunkY == _lastAccessedChunkY && chunkZ == _lastAccessedChunkZ && _lastAccessedChunk) {
-			return _lastAccessedChunk;
+	core::ScopedWriteLock chunkWriteLock(_volumeLock);
+	const glm::ivec3 pos(chunkX, chunkY, chunkZ);
+	auto i = _chunks.find(pos);
+	if (i == _chunks.end()) {
+		const ChunkPtr& chunk = createNewChunk(chunkX, chunkY, chunkZ);
+		_chunks.put(pos, chunk);
+		const std::size_t chunkCount = _chunks.size();
+		if (chunkCount >= _chunkCountLimit) {
+			deleteOldestChunkIfNeeded();
 		}
-		chunk = existingChunk(chunkX, chunkY, chunkZ);
+		return chunk;
 	}
-
-	// If we still haven't found the chunk then it's time to create a new one and page it in from disk.
-	if (!chunk) {
-		chunk = createNewChunk(chunkX, chunkY, chunkZ);
-	}
-
-	core::ScopedWriteLock writeLock(_volumeLock);
-	_lastAccessedChunk = chunk;
-	_lastAccessedChunkX = chunkX;
-	_lastAccessedChunkY = chunkY;
-	_lastAccessedChunkZ = chunkZ;
-
+	const ChunkPtr& chunk = i->second;
+	chunk->_chunkLastAccessed = ++_timestamper;
 	return chunk;
 }
 

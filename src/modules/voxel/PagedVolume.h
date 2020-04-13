@@ -81,8 +81,6 @@ public:
 
 		// Note: Do we really need to store this position here as well as in the block maps?
 		glm::ivec3 _chunkSpacePosition;
-
-		core::ReadWriteLock _chunkLock{"chunk"};
 	};
 	typedef core::SharedPtr<Chunk> ChunkPtr;
 
@@ -237,20 +235,10 @@ protected:
 
 private:
 	ChunkPtr chunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
-	ChunkPtr existingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	ChunkPtr createNewChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	void deleteOldestChunkIfNeeded() const;
 
-	// Storing these properties individually has proved to be faster than keeping
-	// them in a glm::ivec3 as it avoids constructions and comparison overheads.
-	// They are also at the start of the class in the hope that they will be pulled
-	// into cache - I've got no idea if this actually makes a difference.
-	mutable int32_t _lastAccessedChunkX = 0;
-	mutable int32_t _lastAccessedChunkY = 0;
-	mutable int32_t _lastAccessedChunkZ = 0;
-	mutable ChunkPtr _lastAccessedChunk = nullptr;
-
-	mutable core::AtomicInt _timestamper { 0 };
+	mutable int32_t _timestamper = 0;
 
 	uint32_t _chunkCountLimit = 0u;
 
