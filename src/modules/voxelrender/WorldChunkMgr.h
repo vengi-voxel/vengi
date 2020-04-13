@@ -44,7 +44,6 @@ protected:
 
 	WorldMeshExtractor _meshExtractor;
 
-	void updateAABB(ChunkBuffer& chunkBuffer) const;
 	int getDistanceSquare(const glm::ivec3 &pos, const glm::ivec3 &pos2) const;
 
 public:

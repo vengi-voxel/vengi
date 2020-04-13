@@ -8,6 +8,7 @@
 #include "core/Trace.h"
 #include "core/Assert.h"
 #include <glm/vector_relational.hpp>
+#include <glm/common.hpp>
 
 namespace voxel {
 
@@ -122,13 +123,19 @@ void Mesh::removeUnusedVertices() {
 		isVertexUsed[v] = true;
 	}
 
+	_mins = glm::ivec3((std::numeric_limits<int>::max)());
+	_maxs = glm::ivec3((std::numeric_limits<int>::min)());
+
 	int noOfUsedVertices = 0;
 	IndexArray newPos(vertices);
 	for (size_t vertCt = 0u; vertCt < vertices; ++vertCt) {
-		if (core_unlikely(!isVertexUsed[vertCt])) {
+		if (!isVertexUsed[vertCt]) {
 			continue;
 		}
-		_vecVertices[noOfUsedVertices] = _vecVertices[vertCt];
+		const VoxelVertex& v = _vecVertices[vertCt];
+		_vecVertices[noOfUsedVertices] = v;
+		_mins = (glm::min)(_mins, v.position);
+		_maxs = (glm::max)(_maxs, v.position);
 		newPos[vertCt] = noOfUsedVertices;
 		++noOfUsedVertices;
 	}

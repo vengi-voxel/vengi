@@ -48,12 +48,25 @@ public:
 	bool isEmpty() const;
 	void removeUnusedVertices();
 
+	const glm::ivec3& mins() const;
+	const glm::ivec3& maxs() const;
+
 	bool operator<(const Mesh& rhs) const;
 private:
 	alignas(16) IndexArray _vecIndices;
 	alignas(16) VertexArray _vecVertices;
-	glm::ivec3 _offset { 0, 0, 0 };
+	glm::ivec3 _offset { 0 };
+	glm::ivec3 _mins { 0 };
+	glm::ivec3 _maxs { 0 };
 	bool _mayGetResized;
 };
+
+inline const glm::ivec3& Mesh::mins() const {
+	return _mins;
+}
+
+inline const glm::ivec3& Mesh::maxs() const {
+	return _maxs;
+}
 
 }

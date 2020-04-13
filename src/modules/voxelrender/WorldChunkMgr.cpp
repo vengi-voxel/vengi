@@ -34,20 +34,6 @@ void WorldChunkMgr::reset() {
 	_activeChunkBuffers = 0;
 }
 
-// TODO: move into mesh extraction thread
-void WorldChunkMgr::updateAABB(ChunkBuffer& chunkBuffer) const {
-	core_trace_scoped(UpdateAABB);
-	glm::ivec3 mins((std::numeric_limits<int>::max)());
-	glm::ivec3 maxs((std::numeric_limits<int>::min)());
-
-	for (auto& v : chunkBuffer.mesh.getVertexVector()) {
-		mins = (glm::min)(mins, v.position);
-		maxs = (glm::max)(maxs, v.position);
-	}
-
-	chunkBuffer._aabb = {mins, maxs};
-}
-
 void WorldChunkMgr::handleMeshQueue() {
 	voxel::Mesh mesh;
 	if (!_meshExtractor.pop(mesh)) {
@@ -74,7 +60,7 @@ void WorldChunkMgr::handleMeshQueue() {
 	}
 
 	freeChunkBuffer->mesh = std::move(mesh);
-	updateAABB(*freeChunkBuffer);
+	freeChunkBuffer->_aabb = {freeChunkBuffer->mesh.mins(), freeChunkBuffer->mesh.maxs()};
 	if (!_octree.insert(freeChunkBuffer)) {
 		Log::warn("Failed to insert into octree");
 	}
