@@ -136,6 +136,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 	}
 	Log::debug("Filter %s by %s (dir filter: '%s')", directory.c_str(), filter.c_str(), dirFilter.c_str());
 	uv_dirent_t ent;
+	core_memset(&ent, 0, sizeof(ent));
 	while (uv_fs_scandir_next(&req, &ent) == 0) {
 		DirEntry::Type type = DirEntry::Type::unknown;
 		if (ent.type == UV_DIRENT_DIR) {

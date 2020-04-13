@@ -521,17 +521,19 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
 #undef POS_Z_DELTA
 
 inline bool PagedVolume::Chunk::containsPoint(const glm::ivec3& pos) const {
-	 return region().containsPoint(pos);
+	const Region r = region();
+	return r.containsPoint(pos);
 }
 
 inline bool PagedVolume::Chunk::containsPoint(int32_t x, int32_t y, int32_t z) const {
-	 return region().containsPoint(x, y, z);
+	const Region r = region();
+	return r.containsPoint(x, y, z);
 }
 
 inline Region PagedVolume::Chunk::region() const {
-	 const glm::ivec3 mins = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
-	 const glm::ivec3 maxs = mins + glm::ivec3(_sideLength - 1);
-	 return Region(mins, maxs);
+	const glm::ivec3& mins = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
+	const glm::ivec3& maxs = mins + glm::ivec3(_sideLength - 1);
+	return Region(mins, maxs);
 }
 
 inline const Region& PagedVolume::region() const {
