@@ -20,7 +20,7 @@ distclean:
 
 %:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DDISABLE_UNITY=True -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
-	$(Q)cmake --build $(BUILDDIR) --target  $@
+	$(Q)cmake --build $(BUILDDIR) --target $@
 
 cppcheck:
 	$(Q)$(MAKE) BUILDDIR=$(BUILDDIR)/$@
