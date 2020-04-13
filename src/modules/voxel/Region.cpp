@@ -9,7 +9,6 @@
 #include "math/AABB.h"
 #include "math/Rect.h"
 #include "math/Random.h"
-#include <glm/vec3.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <stdint.h>
@@ -62,9 +61,9 @@ int Region::voxels() const {
 }
 
 glm::ivec3 Region::getRandomPosition(math::Random& random) const {
-	const int x = random.random(_lowerX, _upperX);
-	const int y = random.random(_lowerY, _upperY);
-	const int z = random.random(_lowerZ, _upperZ);
+	const int x = random.random(_mins.x, _maxs.x);
+	const int y = random.random(_mins.y, _maxs.y);
+	const int z = random.random(_mins.z, _maxs.z);
 	return glm::ivec3(x, y, z);
 }
 
@@ -74,12 +73,12 @@ glm::ivec3 Region::getRandomPosition(math::Random& random) const {
  * @param iZ The 'z' component of the position to accumulate.
  */
 void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
-	_lowerX = core_min(_lowerX, iX);
-	_lowerY = core_min(_lowerY, iY);
-	_lowerZ = core_min(_lowerZ, iZ);
-	_upperX = core_max(_upperX, iX);
-	_upperY = core_max(_upperY, iY);
-	_upperZ = core_max(_upperZ, iZ);
+	_mins.x = core_min(_mins.x, iX);
+	_mins.y = core_min(_mins.y, iY);
+	_mins.z = core_min(_mins.z, iZ);
+	_maxs.x = core_max(_maxs.x, iX);
+	_maxs.y = core_max(_maxs.y, iY);
+	_maxs.z = core_max(_maxs.z, iZ);
 }
 
 Region Region::accumulateCopy(const Region& reg) const {
@@ -89,12 +88,12 @@ Region Region::accumulateCopy(const Region& reg) const {
 	}
 
 	Region r(*this);
-	r._lowerX = core_min(r._lowerX, reg.getLowerX());
-	r._lowerY = core_min(r._lowerY, reg.getLowerY());
-	r._lowerZ = core_min(r._lowerZ, reg.getLowerZ());
-	r._upperX = core_max(r._upperX, reg.getUpperX());
-	r._upperY = core_max(r._upperY, reg.getUpperY());
-	r._upperZ = core_max(r._upperZ, reg.getUpperZ());
+	r._mins.x = core_min(r._mins.x, reg.getLowerX());
+	r._mins.y = core_min(r._mins.y, reg.getLowerY());
+	r._mins.z = core_min(r._mins.z, reg.getLowerZ());
+	r._maxs.x = core_max(r._maxs.x, reg.getUpperX());
+	r._maxs.y = core_max(r._maxs.y, reg.getUpperY());
+	r._maxs.z = core_max(r._maxs.z, reg.getUpperZ());
 	return r;
 }
 
@@ -111,12 +110,12 @@ void Region::accumulate(const Region& reg) {
 		core_assert_msg(false, "You cannot accumulate an invalid region.");
 	}
 
-	_lowerX = core_min(_lowerX, reg.getLowerX());
-	_lowerY = core_min(_lowerY, reg.getLowerY());
-	_lowerZ = core_min(_lowerZ, reg.getLowerZ());
-	_upperX = core_max(_upperX, reg.getUpperX());
-	_upperY = core_max(_upperY, reg.getUpperY());
-	_upperZ = core_max(_upperZ, reg.getUpperZ());
+	_mins.x = core_min(_mins.x, reg.getLowerX());
+	_mins.y = core_min(_mins.y, reg.getLowerY());
+	_mins.z = core_min(_mins.z, reg.getLowerZ());
+	_maxs.x = core_max(_maxs.x, reg.getUpperX());
+	_maxs.y = core_max(_maxs.y, reg.getUpperY());
+	_maxs.z = core_max(_maxs.z, reg.getUpperZ());
 }
 
 /**
@@ -125,12 +124,12 @@ void Region::accumulate(const Region& reg) {
  * @param other The Region to crop to.
  */
 void Region::cropTo(const Region& other) {
-	_lowerX = core_max(_lowerX, other._lowerX);
-	_lowerY = core_max(_lowerY, other._lowerY);
-	_lowerZ = core_max(_lowerZ, other._lowerZ);
-	_upperX = core_min(_upperX, other._upperX);
-	_upperY = core_min(_upperY, other._upperY);
-	_upperZ = core_min(_upperZ, other._upperZ);
+	_mins.x = core_max(_mins.x, other._mins.x);
+	_mins.y = core_max(_mins.y, other._mins.y);
+	_mins.z = core_max(_mins.z, other._mins.z);
+	_maxs.x = core_min(_maxs.x, other._maxs.x);
+	_maxs.y = core_min(_maxs.y, other._maxs.y);
+	_maxs.z = core_min(_maxs.z, other._maxs.z);
 }
 
 /**
@@ -139,13 +138,13 @@ void Region::cropTo(const Region& other) {
  * @param iAmount The amount to grow by.
  */
 void Region::grow(int32_t iAmount) {
-	_lowerX -= iAmount;
-	_lowerY -= iAmount;
-	_lowerZ -= iAmount;
+	_mins.x -= iAmount;
+	_mins.y -= iAmount;
+	_mins.z -= iAmount;
 
-	_upperX += iAmount;
-	_upperY += iAmount;
-	_upperZ += iAmount;
+	_maxs.x += iAmount;
+	_maxs.y += iAmount;
+	_maxs.z += iAmount;
 }
 
 /**
@@ -156,13 +155,13 @@ void Region::grow(int32_t iAmount) {
  * @param iAmountZ The amount to grow by in 'z'.
  */
 void Region::grow(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
-	_lowerX -= iAmountX;
-	_lowerY -= iAmountY;
-	_lowerZ -= iAmountZ;
+	_mins.x -= iAmountX;
+	_mins.y -= iAmountY;
+	_mins.z -= iAmountZ;
 
-	_upperX += iAmountX;
-	_upperY += iAmountY;
-	_upperZ += iAmountZ;
+	_maxs.x += iAmountX;
+	_maxs.y += iAmountY;
+	_maxs.z += iAmountZ;
 }
 
 /**
@@ -189,22 +188,22 @@ glm::vec3 Region::getCentref() const {
  * @return The position of the lower corner.
  */
 glm::ivec3 Region::getLowerCorner() const {
-	return glm::ivec3(_lowerX, _lowerY, _lowerZ);
+	return glm::ivec3(_mins.x, _mins.y, _mins.z);
 }
 
 /**
  * @return The position of the upper corner.
  */
 glm::ivec3 Region::getUpperCorner() const {
-	return glm::ivec3(_upperX, _upperY, _upperZ);
+	return glm::ivec3(_maxs.x, _maxs.y, _maxs.z);
 }
 
 glm::vec3 Region::getLowerCornerf() const {
-	return glm::vec3(_lowerX, _lowerY, _lowerZ);
+	return glm::vec3(_mins.x, _mins.y, _mins.z);
 }
 
 glm::vec3 Region::getUpperCornerf() const {
-	return glm::vec3(_upperX, _upperY, _upperZ);
+	return glm::vec3(_maxs.x, _maxs.y, _maxs.z);
 }
 
 /**
@@ -227,18 +226,18 @@ glm::ivec3 Region::getDimensionsInCells() const {
  * @param v3dLowerCorner The new position of the lower corner.
  */
 void Region::setLowerCorner(const glm::ivec3& v3dLowerCorner) {
-	_lowerX = v3dLowerCorner.x;
-	_lowerY = v3dLowerCorner.y;
-	_lowerZ = v3dLowerCorner.z;
+	_mins.x = v3dLowerCorner.x;
+	_mins.y = v3dLowerCorner.y;
+	_mins.z = v3dLowerCorner.z;
 }
 
 /**
  * @param v3dUpperCorner The new position of the upper corner.
  */
 void Region::setUpperCorner(const glm::ivec3& v3dUpperCorner) {
-	_upperX = v3dUpperCorner.x;
-	_upperY = v3dUpperCorner.y;
-	_upperZ = v3dUpperCorner.z;
+	_maxs.x = v3dUpperCorner.x;
+	_maxs.y = v3dUpperCorner.y;
+	_maxs.z = v3dUpperCorner.z;
 }
 
 /**

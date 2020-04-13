@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <glm/vec3.hpp>
 #include <glm/fwd.hpp>
 #include "core/String.h"
 #include <stdint.h>
@@ -38,9 +39,9 @@ public:
 	/// Constructor
 	constexpr Region();
 	/// Constructor
-	Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner);
+	Region(const glm::ivec3& mins, const glm::ivec3& maxs);
 	/// Constructor
-	constexpr Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ);
+	constexpr Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz);
 	constexpr Region(int mins, int maxs);
 
 	/// A Region with the lower corner set as low as possible and the upper corner set as high as possible.
@@ -112,17 +113,17 @@ public:
 	glm::ivec3 getDimensionsInCells() const;
 
 	/// Sets the 'x' position of the lower corner.
-	void setLowerX(int32_t iX);
+	void setLowerX(int32_t x);
 	/// Sets the 'y' position of the lower corner.
-	void setLowerY(int32_t iY);
+	void setLowerY(int32_t y0f128);
 	/// Sets the 'z' position of the lower corner.
-	void setLowerZ(int32_t iZ);
+	void setLowerZ(int32_t z);
 	/// Sets the 'x' position of the upper corner.
-	void setUpperX(int32_t iX);
+	void setUpperX(int32_t x);
 	/// Sets the 'y' position of the upper corner.
-	void setUpperY(int32_t iY);
+	void setUpperY(int32_t y);
 	/// Sets the 'z' position of the upper corner.
-	void setUpperZ(int32_t iZ);
+	void setUpperZ(int32_t z);
 
 	glm::ivec3 moveInto(int32_t x, int32_t y, int32_t z) const;
 
@@ -169,9 +170,9 @@ public:
 	void cropTo(const Region& other);
 
 	/// Grows this region by the amount specified.
-	void grow(int32_t iAmount);
+	void grow(int32_t amount);
 	/// Grows this region by the amounts specified.
-	void grow(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
+	void grow(int32_t amountX, int32_t amountY, int32_t amountZ);
 	/// Grows this region by the amounts specified.
 	void grow(const glm::ivec3& v3dAmount);
 
@@ -185,7 +186,7 @@ public:
 	int voxels() const;
 
 	/// Moves the Region by the amount specified.
-	void shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
+	void shift(int32_t amountX, int32_t amountY, int32_t amountZ);
 	/// Moves the Region by the amount specified.
 	void shift(const glm::ivec3& v3dAmount);
 	/// Moves the lower corner of the Region by the amount specified.
@@ -198,96 +199,92 @@ public:
 	void shiftUpperCorner(const glm::ivec3& v3dAmount);
 
 	/// Shrinks this region by the amount specified.
-	void shrink(int32_t iAmount);
+	void shrink(int32_t amount);
 	/// Shrinks this region by the amounts specified.
-	void shrink(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
+	void shrink(int32_t amountX, int32_t amountY, int32_t amountZ);
 	/// Shrinks this region by the amounts specified.
 	void shrink(const glm::ivec3& v3dAmount);
 
 	core::String toString() const;
 
 private:
-	int32_t _lowerX;
-	int32_t _lowerY;
-	int32_t _lowerZ;
-	int32_t _upperX;
-	int32_t _upperY;
-	int32_t _upperZ;
+	glm::ivec3 _mins;
+	glm::ivec3 _maxs;
 };
 
 /**
  * @return The 'x' position of the centre.
  */
 inline int32_t Region::getCentreX() const {
-	return (_lowerX + _upperX) / 2;
+	return (_mins.x + _maxs.x) / 2;
 }
 
 /**
  * @return The 'y' position of the centre.
  */
 inline int32_t Region::getCentreY() const {
-	return (_lowerY + _upperY) / 2;
+	return (_mins.y + _maxs.y) / 2;
 }
 
 /**
  * @return The 'z' position of the centre.
  */
 inline int32_t Region::getCentreZ() const {
-	return (_lowerZ + _upperZ) / 2;
+	return (_mins.z + _maxs.z) / 2;
 }
 
 inline float Region::getCentreXf() const {
-	return float(_lowerX + _upperX) / 2.0f;
+	return float(_mins.x + _maxs.x) / 2.0f;
 }
 
 inline float Region::getCentreYf() const {
-	return float(_lowerY + _upperY) / 2.0f;
+	return float(_mins.y + _maxs.y) / 2.0f;
 }
 
 inline float Region::getCentreZf() const {
-	return float(_lowerZ + _upperZ) / 2.0f;
+	return float(_mins.z + _maxs.z) / 2.0f;
 }
 
 /**
  * @return The 'x' position of the lower corner.
  */
 inline int32_t Region::getLowerX() const {
-	return _lowerX;
+	return _mins.x;
 }
 
 /**
  * @return The 'y' position of the lower corner.
  */
 inline int32_t Region::getLowerY() const {
-	return _lowerY;
+	return _mins.y;
 }
 
 /**
  * @return The 'z' position of the lower corner.
  */
 inline int32_t Region::getLowerZ() const {
-	return _lowerZ;
+	return _mins.z;
 }
 
 /**
  * @return The 'x' position of the upper corner.
  */
 inline int32_t Region::getUpperX() const {
-	return _upperX;
+	return _maxs.x;
 }
 
 /**
  * @return The 'y' position of the upper corner.
  */
 inline int32_t Region::getUpperY() const {
-	return _upperY;
+	return _maxs.y;
 }
 
 /**
  * @return The 'z' position of the upper corner.
  */
 inline int32_t Region::getUpperZ() const {
-	return _upperZ;
+	return _maxs.z;
 }
 
 /**
@@ -319,7 +316,7 @@ inline int32_t Region::getDepthInVoxels() const {
  * @sa getWidthInVoxels()
  */
 inline int32_t Region::getWidthInCells() const {
-	return _upperX - _lowerX;
+	return _maxs.x - _mins.x;
 }
 
 /**
@@ -327,7 +324,7 @@ inline int32_t Region::getWidthInCells() const {
  * @sa getHeightInVoxels()
  */
 inline int32_t Region::getHeightInCells() const {
-	return _upperY - _lowerY;
+	return _maxs.y - _mins.y;
 }
 
 /**
@@ -335,49 +332,49 @@ inline int32_t Region::getHeightInCells() const {
  * @sa getDepthInVoxels()
  */
 inline int32_t Region::getDepthInCells() const {
-	return _upperZ - _lowerZ;
+	return _maxs.z - _mins.z;
 }
 
 /**
- * @param iX The new 'x' position of the lower corner.
+ * @param x The new 'x' position of the lower corner.
  */
-inline void Region::setLowerX(int32_t iX) {
-	_lowerX = iX;
+inline void Region::setLowerX(int32_t x) {
+	_mins.x = x;
 }
 
 /**
- * @param iY The new 'y' position of the lower corner.
+ * @param y The new 'y' position of the lower corner.
  */
-inline void Region::setLowerY(int32_t iY) {
-	_lowerY = iY;
+inline void Region::setLowerY(int32_t y) {
+	_mins.y = y;
 }
 
 /**
  * @param iZ The new 'z' position of the lower corner.
  */
 inline void Region::setLowerZ(int32_t iZ) {
-	_lowerZ = iZ;
+	_mins.z = iZ;
 }
 
 /**
  * @param iX The new 'x' position of the upper corner.
  */
 inline void Region::setUpperX(int32_t iX) {
-	_upperX = iX;
+	_maxs.x = iX;
 }
 
 /**
  * @param iY The new 'y' position of the upper corner.
  */
 inline void Region::setUpperY(int32_t iY) {
-	_upperY = iY;
+	_maxs.y = iY;
 }
 
 /**
  * @param iZ The new 'z' position of the upper corner.
  */
 inline void Region::setUpperZ(int32_t iZ) {
-	_upperZ = iZ;
+	_maxs.z = iZ;
 }
 
 inline constexpr Region::Region(int mins, int maxs) :
@@ -400,8 +397,8 @@ inline constexpr Region::Region() :
  * @param iUpperY The desired upper 'y' extent of the Region.
  * @param iUpperZ The desired upper 'z' extent of the Region.
  */
-inline constexpr Region::Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ) :
-		_lowerX(iLowerX), _lowerY(iLowerY), _lowerZ(iLowerZ), _upperX(iUpperX), _upperY(iUpperY), _upperZ(iUpperZ) {
+inline constexpr Region::Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz) :
+		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz) {
 }
 
 /**
@@ -411,8 +408,8 @@ inline constexpr Region::Region(int32_t iLowerX, int32_t iLowerY, int32_t iLower
  * @sa operator!=
  */
 inline bool Region::operator==(const Region& rhs) const {
-	return ((_lowerX == rhs._lowerX) && (_lowerY == rhs._lowerY) && (_lowerZ == rhs._lowerZ) && (_upperX == rhs._upperX) && (_upperY == rhs._upperY)
-			&& (_upperZ == rhs._upperZ));
+	return ((_mins.x == rhs._mins.x) && (_mins.y == rhs._mins.y) && (_mins.z == rhs._mins.z) && (_maxs.x == rhs._maxs.x) && (_maxs.y == rhs._maxs.y)
+			&& (_maxs.z == rhs._maxs.z));
 }
 
 /**
@@ -435,8 +432,8 @@ inline bool Region::operator!=(const Region& rhs) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) const {
-	return (fX <= _upperX - boundary) && (fY <= _upperY - boundary) && (fZ <= _upperZ - boundary) && (fX >= _lowerX + boundary) && (fY >= _lowerY + boundary)
-			&& (fZ >= _lowerZ + boundary);
+	return (fX <= _maxs.x - boundary) && (fY <= _maxs.y - boundary) && (fZ <= _maxs.z - boundary) && (fX >= _mins.x + boundary) && (fY >= _mins.y + boundary)
+			&& (fZ >= _mins.z + boundary);
 }
 
 /**
@@ -449,8 +446,8 @@ inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) 
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t boundary) const {
-	return (iX <= _upperX - boundary) && (iY <= _upperY - boundary) && (iZ <= _upperZ - boundary) && (iX >= _lowerX + boundary) && (iY >= _lowerY + boundary)
-			&& (iZ >= _lowerZ + boundary);
+	return (iX <= _maxs.x - boundary) && (iY <= _maxs.y - boundary) && (iZ <= _maxs.z - boundary) && (iX >= _mins.x + boundary) && (iY >= _mins.y + boundary)
+			&& (iZ >= _mins.z + boundary);
 }
 
 /**
@@ -461,7 +458,7 @@ inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t bo
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInX(float pos, float boundary) const {
-	return (pos <= _upperX - boundary) && (pos >= _lowerX + boundary);
+	return (pos <= _maxs.x - boundary) && (pos >= _mins.x + boundary);
 }
 
 /**
@@ -472,7 +469,7 @@ inline bool Region::containsPointInX(float pos, float boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInX(int32_t pos, uint8_t boundary) const {
-	return (pos <= _upperX - boundary) && (pos >= _lowerX + boundary);
+	return (pos <= _maxs.x - boundary) && (pos >= _mins.x + boundary);
 }
 
 /**
@@ -483,7 +480,7 @@ inline bool Region::containsPointInX(int32_t pos, uint8_t boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInY(float pos, float boundary) const {
-	return (pos <= _upperY - boundary) && (pos >= _lowerY + boundary);
+	return (pos <= _maxs.y - boundary) && (pos >= _mins.y + boundary);
 }
 
 /**
@@ -494,7 +491,7 @@ inline bool Region::containsPointInY(float pos, float boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInY(int32_t pos, uint8_t boundary) const {
-	return (pos <= _upperY - boundary) && (pos >= _lowerY + boundary);
+	return (pos <= _maxs.y - boundary) && (pos >= _mins.y + boundary);
 }
 
 /**
@@ -505,7 +502,7 @@ inline bool Region::containsPointInY(int32_t pos, uint8_t boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInZ(float pos, float boundary) const {
-	return (pos <= _upperZ - boundary) && (pos >= _lowerZ + boundary);
+	return (pos <= _maxs.z - boundary) && (pos >= _mins.z + boundary);
 }
 
 /**
@@ -516,7 +513,7 @@ inline bool Region::containsPointInZ(float pos, float boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInZ(int32_t pos, uint8_t boundary) const {
-	return (pos <= _upperZ - boundary) && (pos >= _lowerZ + boundary);
+	return (pos <= _maxs.z - boundary) && (pos >= _mins.z + boundary);
 }
 
 /**
@@ -527,22 +524,22 @@ inline bool Region::containsPointInZ(int32_t pos, uint8_t boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsRegion(const Region& reg, uint8_t boundary) const {
-	return (reg._upperX <= _upperX - boundary) && (reg._upperY <= _upperY - boundary) && (reg._upperZ <= _upperZ - boundary) && (reg._lowerX >= _lowerX + boundary)
-			&& (reg._lowerY >= _lowerY + boundary) && (reg._lowerZ >= _lowerZ + boundary);
+	return (reg._maxs.x <= _maxs.x - boundary) && (reg._maxs.y <= _maxs.y - boundary) && (reg._maxs.z <= _maxs.z - boundary) && (reg._mins.x >= _mins.x + boundary)
+			&& (reg._mins.y >= _mins.y + boundary) && (reg._mins.z >= _mins.z + boundary);
 }
 
 inline bool Region::isValid() const {
-	return _upperX >= _lowerX && _upperY >= _lowerY && _upperZ >= _lowerZ;
+	return _maxs.x >= _mins.x && _maxs.y >= _mins.y && _maxs.z >= _mins.z;
 }
 
 /**
- * @param iAmountX The amount to move the Region by in 'x'.
- * @param iAmountY The amount to move the Region by in 'y'.
- * @param iAmountZ The amount to move the Region by in 'z'.
+ * @param amountX The amount to move the Region by in 'x'.
+ * @param amountY The amount to move the Region by in 'y'.
+ * @param amountZ The amount to move the Region by in 'z'.
  */
-inline void Region::shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
-	shiftLowerCorner(iAmountX, iAmountY, iAmountZ);
-	shiftUpperCorner(iAmountX, iAmountY, iAmountZ);
+inline void Region::shift(int32_t amountX, int32_t amountY, int32_t amountZ) {
+	shiftLowerCorner(amountX, amountY, amountZ);
+	shiftUpperCorner(amountX, amountY, amountZ);
 }
 
 /**
@@ -551,9 +548,9 @@ inline void Region::shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) 
  * @param z The amount to move the lower corner by in 'z'.
  */
 inline void Region::shiftLowerCorner(int32_t x, int32_t y, int32_t z) {
-	_lowerX += x;
-	_lowerY += y;
-	_lowerZ += z;
+	_mins.x += x;
+	_mins.y += y;
+	_mins.z += z;
 }
 
 /**
@@ -562,41 +559,41 @@ inline void Region::shiftLowerCorner(int32_t x, int32_t y, int32_t z) {
  * @param z The amount to move the upper corner by in 'z'.
  */
 inline void Region::shiftUpperCorner(int32_t x, int32_t y, int32_t z) {
-	_upperX += x;
-	_upperY += y;
-	_upperZ += z;
+	_maxs.x += x;
+	_maxs.y += y;
+	_maxs.z += z;
 }
 
 /**
  * The same amount of shrinkage is applied in all directions. Negative shrinkage
  * is possible but you should prefer the grow() function for clarity.
- * @param iAmount The amount to shrink by.
+ * @param amount The amount to shrink by.
  */
-inline void Region::shrink(int32_t iAmount) {
-	_lowerX += iAmount;
-	_lowerY += iAmount;
-	_lowerZ += iAmount;
+inline void Region::shrink(int32_t amount) {
+	_mins.x += amount;
+	_mins.y += amount;
+	_mins.z += amount;
 
-	_upperX -= iAmount;
-	_upperY -= iAmount;
-	_upperZ -= iAmount;
+	_maxs.x -= amount;
+	_maxs.y -= amount;
+	_maxs.z -= amount;
 }
 
 /**
  * The amount can be specified seperatly for each direction. Negative shrinkage
  * is possible but you should prefer the grow() function for clarity.
- * @param iAmountX The amount to shrink by in 'x'.
- * @param iAmountY The amount to shrink by in 'y'.
- * @param iAmountZ The amount to shrink by in 'z'.
+ * @param amountX The amount to shrink by in 'x'.
+ * @param amountY The amount to shrink by in 'y'.
+ * @param amountZ The amount to shrink by in 'z'.
  */
-inline void Region::shrink(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
-	_lowerX += iAmountX;
-	_lowerY += iAmountY;
-	_lowerZ += iAmountZ;
+inline void Region::shrink(int32_t amountX, int32_t amountY, int32_t amountZ) {
+	_mins.x += amountX;
+	_mins.y += amountY;
+	_mins.z += amountZ;
 
-	_upperX -= iAmountX;
-	_upperY -= iAmountY;
-	_upperZ -= iAmountZ;
+	_maxs.x -= amountX;
+	_maxs.y -= amountY;
+	_maxs.z -= amountZ;
 }
 
 /**
