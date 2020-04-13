@@ -15,10 +15,9 @@ namespace voxelworld {
 
 bool ChunkPersister::saveCompressed(voxel::PagedVolume::Chunk* chunk, core::ByteStream& outStream) const {
 	core::ByteStream voxelStream;
-	const voxel::Region& region = chunk->region();
-	const int width = region.getWidthInVoxels();
-	const int height = region.getHeightInVoxels();
-	const int depth = region.getDepthInVoxels();
+	const int width = chunk->sideLength();
+	const int height = chunk->sideLength();
+	const int depth = chunk->sideLength();
 
 	for (int z = 0; z < depth; ++z) {
 		for (int y = 0; y < height; ++y) {
@@ -81,9 +80,9 @@ bool ChunkPersister::loadCompressed(voxel::PagedVolume::Chunk* chunk, const uint
 	core::ByteStream voxelBuf(len);
 	voxelBuf.append(targetBuf, len);
 
-	const int width = chunk->region().getWidthInVoxels();
-	const int height = chunk->region().getHeightInVoxels();
-	const int depth = chunk->region().getDepthInVoxels();
+	const int width = chunk->sideLength();
+	const int height = chunk->sideLength();
+	const int depth = chunk->sideLength();
 
 	for (int z = 0; z < depth; ++z) {
 		for (int y = 0; y < height; ++y) {

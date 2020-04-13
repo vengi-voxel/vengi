@@ -45,7 +45,10 @@ void PagedVolumeWrapper::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_
 PagedVolumeWrapper::PagedVolumeWrapper(PagedVolume* voxelStorage, const PagedVolume::ChunkPtr& chunk, const Region& region) :
 		_pagedVolume(voxelStorage), _chunk(core::move(chunk)), _region(region) {
 	if (_chunk != nullptr) {
-		_validRegion = _chunk->region();
+		const int32_t sideLength = (int32_t)voxelStorage->chunkSideLength();
+		const glm::ivec3& mins = chunk->chunkPos() * sideLength;
+		const glm::ivec3& maxs = mins + glm::ivec3(sideLength - 1);
+		_validRegion = Region(mins, maxs);
 	}
 }
 

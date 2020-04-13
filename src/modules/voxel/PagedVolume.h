@@ -54,7 +54,6 @@ public:
 
 		bool containsPoint(const glm::ivec3& pos) const;
 		bool containsPoint(int32_t x, int32_t y, int32_t z) const;
-		Region region() const;
 
 		const Voxel& voxel(uint32_t x, uint32_t y, uint32_t z) const;
 		const Voxel& voxel(const glm::i16vec3& pos) const;
@@ -64,7 +63,8 @@ public:
 		void setVoxels(uint32_t x, uint32_t y, uint32_t z, const Voxel* values, int amount);
 		void setVoxel(const glm::i16vec3& pos, const Voxel& value);
 
-		glm::ivec3 chunkPos() const;
+		const glm::ivec3& chunkPos() const;
+		int16_t sideLength() const;
 
 	private:
 		// This is updated by the PagedVolume and used to discard the least recently used chunks.
@@ -521,19 +521,14 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
 #undef POS_Z_DELTA
 
 inline bool PagedVolume::Chunk::containsPoint(const glm::ivec3& pos) const {
-	const Region r = region();
-	return r.containsPoint(pos);
+	return containsPoint(pos.x, pos.y, pos.z);
 }
 
 inline bool PagedVolume::Chunk::containsPoint(int32_t x, int32_t y, int32_t z) const {
-	const Region r = region();
-	return r.containsPoint(x, y, z);
-}
-
-inline Region PagedVolume::Chunk::region() const {
 	const glm::ivec3& mins = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
 	const glm::ivec3& maxs = mins + glm::ivec3(_sideLength - 1);
-	return Region(mins, maxs);
+	const Region r(mins, maxs);
+	return r.containsPoint(x, y, z);
 }
 
 inline const Region& PagedVolume::region() const {

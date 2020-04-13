@@ -51,8 +51,8 @@ persistence::Blob DBChunkPersister::load(int x, int y, int z, MapId mapId, unsig
 }
 
 bool DBChunkPersister::load(voxel::PagedVolume::Chunk* chunk, unsigned int seed) {
-	const voxel::Region& region = chunk->region();
-	persistence::Blob blob = load(region.getLowerX(), region.getLowerY(), region.getLowerZ(), _mapId, seed);
+	const glm::ivec3& region = chunk->chunkPos();
+	persistence::Blob blob = load(region.x, region.y, region.z, _mapId, seed);
 	if (blob.length > 0 && !loadCompressed(chunk, blob.data, blob.length)) {
 		Log::warn("Failed to uncompress the model");
 	}
