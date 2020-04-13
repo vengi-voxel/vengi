@@ -39,6 +39,14 @@ bool setThreadName(const char *name) {
 		}
 		return err == 0;
 	}
+#elif defined(__MACOSX__)
+	const int err = pthread_setname_np(name);
+	if (err == ERANGE) {
+		Log::error("Thread name is too long - max 15 chars, got %s", name);
+	} else if (err != 0) {
+		Log::error("Can't set thread name: %i", err);
+	}
+	return err == 0;
 #elif defined(__WINDOWS__)
 	typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
 	static pfnSetThreadDescription pSetThreadDescription = nullptr;
