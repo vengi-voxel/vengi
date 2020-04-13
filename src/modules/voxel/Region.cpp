@@ -52,7 +52,9 @@ glm::ivec3 Region::moveInto(int32_t x, int32_t y, int32_t z) const {
 }
 
 void logRegion(const char *ctx, const voxel::Region& region) {
-	Log::debug("%s: %s", ctx, region.toString().c_str());
+	const glm::ivec3& mins = region.getLowerCorner();
+	const glm::ivec3& maxs = region.getUpperCorner();
+	Log::debug("%s: region[mins(%i,%i,%i), maxs(%i,%i,%i)]", ctx, mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 }
 
 int Region::voxels() const {
