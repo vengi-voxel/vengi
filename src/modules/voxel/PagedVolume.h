@@ -44,7 +44,7 @@ public:
 		friend class PagedVolumeWrapper;
 
 	public:
-		Chunk(const glm::ivec3& v3dPosition, uint16_t uSideLength, Pager* pPager = nullptr);
+		Chunk(const glm::ivec3& pos, uint16_t sideLength, Pager* pager = nullptr);
 		~Chunk();
 
 		bool setData(const Voxel* voxels, size_t sizeInBytes);
@@ -56,13 +56,13 @@ public:
 		bool containsPoint(int32_t x, int32_t y, int32_t z) const;
 		Region region() const;
 
-		const Voxel& voxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos) const;
-		const Voxel& voxel(const glm::i16vec3& v3dPos) const;
+		const Voxel& voxel(uint32_t x, uint32_t y, uint32_t z) const;
+		const Voxel& voxel(const glm::i16vec3& pos) const;
 
-		void setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, const Voxel& tValue);
-		void setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* tValues, int amount);
-		void setVoxels(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, const Voxel* tValues, int amount);
-		void setVoxel(const glm::i16vec3& v3dPos, const Voxel& tValue);
+		void setVoxel(uint32_t x, uint32_t y, uint32_t z, const Voxel& value);
+		void setVoxels(uint32_t x, uint32_t z, const Voxel* values, int amount);
+		void setVoxels(uint32_t x, uint32_t y, uint32_t z, const Voxel* values, int amount);
+		void setVoxel(const glm::i16vec3& pos, const Voxel& value);
 
 		glm::ivec3 chunkPos() const;
 
@@ -70,7 +70,7 @@ public:
 		// This is updated by the PagedVolume and used to discard the least recently used chunks.
 		uint32_t _chunkLastAccessed = 0u;
 
-		static uint32_t calculateSizeInBytes(uint32_t uSideLength);
+		static uint32_t calculateSizeInBytes(uint32_t sideLength);
 
 		Voxel* _data = nullptr;
 		uint16_t _sideLength = 0u;
@@ -202,19 +202,19 @@ public:
 	~PagedVolume();
 
 	/// Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
-	const Voxel& voxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const;
+	const Voxel& voxel(int32_t x, int32_t y, int32_t z) const;
 	/// Gets a voxel at the position given by a 3D vector
 	const Voxel& voxel(const glm::ivec3& v3dPos) const;
 
 	const Region& region() const;
 
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
-	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue);
+	void setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& tValue);
 	/// Sets the voxel at the position given by a 3D vector
 	void setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue);
 	/// Sets the voxel at the position given by <tt>x,z</tt> coordinates
-	void setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount);
-	void setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx, int nz, const Voxel* tArray, int amount);
+	void setVoxels(int32_t x, int32_t z, const Voxel* tArray, int amount);
+	void setVoxels(int32_t x, int32_t y, int32_t z, int nx, int nz, const Voxel* tArray, int amount);
 
 	/// Removes all voxels from memory
 	void flushAll();
