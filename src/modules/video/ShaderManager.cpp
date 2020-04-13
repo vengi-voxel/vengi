@@ -25,18 +25,7 @@ void ShaderManager::unregisterShader(Shader* shader) {
 
 void ShaderManager::update() {
 	core_trace_scoped(ShaderManagerUpdate);
-	bool refreshShaders = core::Var::check([&] (const core::VarPtr& var) {
-		if (!var->isDirty()) {
-			return false;
-		}
-		if ((var->getFlags() & core::CV_SHADER) == 0) {
-			return false;
-		}
-		var->markClean();
-		return true;
-	});
-
-	if (!refreshShaders) {
+	if (!core::Var::hasDirtyShaderVars()) {
 		return;
 	}
 

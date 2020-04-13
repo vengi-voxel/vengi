@@ -72,6 +72,7 @@ protected:
 	uint32_t _flags;
 	static constexpr int NEEDS_REPLICATE = 1 << 0;
 	static constexpr int NEEDS_BROADCAST = 1 << 1;
+	static constexpr int NEEDS_SHADERUPDATE = 1 << 2;
 	uint8_t _updateFlags = 0u;
 
 	static uint8_t _visitFlags;
@@ -199,19 +200,13 @@ public:
 		});
 	}
 
-	template<class Functor>
-	static bool check(Functor&& func) {
-		Var::VarMap varList;
-		{
-			ScopedReadLock lock(_lock);
-			varList = _vars;
-		}
-		for (auto i = varList.begin(); i != varList.end(); ++i) {
-			if (func(i->second)) {
-				return true;
-			}
-		}
-		return false;
+	/**
+	 * @brief Reset the flag after calling it
+	 */
+	static bool hasDirtyShaderVars() {
+		const bool dirty = _visitFlags & NEEDS_SHADERUPDATE;
+		_visitFlags &= ~NEEDS_SHADERUPDATE;
+		return dirty;
 	}
 
 	void clearHistory();
