@@ -14,8 +14,8 @@
 
 namespace voxelrender {
 
-bool WorldBuffers::renderOpaqueBuffers() {
-	core_trace_gl_scoped(WorldBuffersRenderOpaqueBuffers);
+bool WorldBuffers::renderTerrain() {
+	core_trace_gl_scoped(WorldBuffersRenderTerrain);
 	const uint32_t numIndices = _buffer.elements(_ibo, 1, sizeof(voxel::IndexType));
 	if (numIndices == 0u) {
 		return false;
@@ -25,15 +25,15 @@ bool WorldBuffers::renderOpaqueBuffers() {
 	return true;
 }
 
-bool WorldBuffers::renderWaterBuffers() {
-	core_trace_gl_scoped(WorldBuffersRenderWaterBuffers);
+bool WorldBuffers::renderWater() {
+	core_trace_gl_scoped(WorldBuffersRenderWater);
 	video::ScopedBuffer scopedBuf(_waterBuffer);
 	const int elements = _waterBuffer.elements(_waterVbo, 2);
 	video::drawArrays(video::Primitive::Triangles, elements);
 	return true;
 }
 
-bool WorldBuffers::initOpaqueBuffer(shader::WorldShader& worldShader) {
+bool WorldBuffers::initTerrainBuffer(shader::WorldShader& worldShader) {
 	_vbo = _buffer.create();
 	if (_vbo == -1) {
 		Log::error("Failed to create vertex buffer");
@@ -96,10 +96,11 @@ bool WorldBuffers::initWaterBuffer(shader::WaterShader& waterShader) {
 }
 
 bool WorldBuffers::init(shader::WorldShader& worldShader, shader::WaterShader& waterShader) {
-	return initWaterBuffer(waterShader) && initOpaqueBuffer(worldShader);
+	return initWaterBuffer(waterShader) && initTerrainBuffer(worldShader);
 }
 
 void WorldBuffers::update(const voxel::VertexArray& vertices, const voxel::IndexArray& indices) {
+	core_trace_gl_scoped(WorldBuffersUpdate);
 	_buffer.update(_vbo, vertices);
 	_buffer.update(_ibo, indices);
 }

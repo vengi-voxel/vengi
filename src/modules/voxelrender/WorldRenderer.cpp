@@ -161,7 +161,7 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 	_shadowMapShader.setModel(glm::mat4(1.0f));
 	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
 		_shadowMapShader.setLightviewprojection(lightViewProjection);
-		_worldBuffers.renderOpaqueBuffers();
+		_worldBuffers.renderTerrain();
 		return true;
 	}, false);
 	_shadowMapShader.deactivate();
@@ -222,7 +222,7 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 		_worldShader.setCascades(_shadow.cascades());
 		_worldShader.setDistances(_shadow.distances());
 	}
-	if (_worldBuffers.renderOpaqueBuffers()) {
+	if (_worldBuffers.renderTerrain()) {
 		++drawCallsWorld;
 	}
 	return drawCallsWorld;
@@ -251,7 +251,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 		_waterShader.setCascades(_shadow.cascades());
 		_waterShader.setDistances(_shadow.distances());
 	}
-	if (_worldBuffers.renderWaterBuffers()) {
+	if (_worldBuffers.renderWater()) {
 		++drawCallsWorld;
 	}
 	_skybox.unbind(video::TextureUnit::Two);

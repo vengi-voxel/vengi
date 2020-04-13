@@ -13,7 +13,7 @@ namespace voxelrender {
 
 class WorldBuffers {
 private:
-	bool initOpaqueBuffer(shader::WorldShader& worldShader);
+	bool initTerrainBuffer(shader::WorldShader& worldShader);
 	bool initWaterBuffer(shader::WaterShader& waterShader);
 
 	video::Buffer _buffer;
@@ -22,8 +22,8 @@ private:
 	video::Buffer _waterBuffer;
 	int32_t _waterVbo = -1;
 public:
-	bool renderOpaqueBuffers();
-	bool renderWaterBuffers();
+	bool renderTerrain();
+	bool renderWater();
 
 	void update(const voxel::VertexArray& vertices, const voxel::IndexArray& indices);
 
