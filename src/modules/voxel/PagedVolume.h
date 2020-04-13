@@ -52,9 +52,6 @@ public:
 		uint32_t dataSizeInBytes() const;
 		uint32_t voxels() const;
 
-		bool containsPoint(const glm::ivec3& pos) const;
-		bool containsPoint(int32_t x, int32_t y, int32_t z) const;
-
 		const Voxel& voxel(uint32_t x, uint32_t y, uint32_t z) const;
 		const Voxel& voxel(const glm::i16vec3& pos) const;
 
@@ -519,17 +516,6 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
 #undef POS_Y_DELTA
 #undef NEG_Z_DELTA
 #undef POS_Z_DELTA
-
-inline bool PagedVolume::Chunk::containsPoint(const glm::ivec3& pos) const {
-	return containsPoint(pos.x, pos.y, pos.z);
-}
-
-inline bool PagedVolume::Chunk::containsPoint(int32_t x, int32_t y, int32_t z) const {
-	const glm::ivec3& mins = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
-	const glm::ivec3& maxs = mins + glm::ivec3(_sideLength - 1);
-	const Region r(mins, maxs);
-	return r.containsPoint(x, y, z);
-}
 
 inline const Region& PagedVolume::region() const {
 	return _region;
