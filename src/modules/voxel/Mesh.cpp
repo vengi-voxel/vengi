@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "core/Assert.h"
+#include <glm/vector_relational.hpp>
 
 namespace voxel {
 
@@ -110,32 +111,6 @@ size_t Mesh::size() {
 	return classSize + contentSize;
 }
 
-bool Mesh::addMesh(const Mesh& mesh) {
-	if (mesh.getOffset() != getOffset()) {
-		return false;
-	}
-	const IndexType* indices = mesh.getRawIndexData();
-	const VoxelVertex* vertices = mesh.getRawVertexData();
-	const size_t nIndices = mesh.getNoOfIndices();
-	const size_t nVertices = mesh.getNoOfVertices();
-
-	const size_t vSize = _vecVertices.size();
-	const size_t iSize = _vecIndices.size();
-
-	_vecVertices.reserve(vSize + nVertices);
-	_vecIndices.reserve(iSize + nIndices);
-
-	for (size_t i = 0; i < nVertices; ++i) {
-		_vecVertices.push_back(vertices[i]);
-	}
-	for (size_t i = 0; i < nIndices; ++i) {
-		// offset by the already added vertices
-		_vecIndices.push_back(indices[i] + vSize);
-	}
-
-	return true;
-}
-
 void Mesh::removeUnusedVertices() {
 	const size_t vertices = _vecVertices.size();
 	const size_t indices = _vecIndices.size();
@@ -164,6 +139,10 @@ void Mesh::removeUnusedVertices() {
 		_vecIndices[triCt] = newPos[_vecIndices[triCt]];
 	}
 	_vecIndices.resize(indices);
+}
+
+bool Mesh::operator<(const Mesh& rhs) const {
+	return glm::all(glm::lessThan(getOffset(), rhs.getOffset()));
 }
 
 }

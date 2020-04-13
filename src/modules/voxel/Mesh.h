@@ -6,7 +6,6 @@
 
 #include "VoxelVertex.h"
 #include <vector>
-#include <glm/vector_relational.hpp>
 
 namespace voxel {
 
@@ -28,16 +27,6 @@ public:
 	 * @brief Calculate the memory amount this mesh is using
 	 */
 	size_t size();
-
-	/**
-	 * @brief Transforms another mesh into this mesh class. The indices are offset.
-	 * @return @c true if the given mesh is compatible to this mesh instance, @c false
-	 * otherwise.
-	 * @note Incompatible mesh means that the offsets don't match. This is needed due to the limited range of vertices
-	 * due to the Vertex class position data type. Therefore we can merge meshes, but only if the offset is the same
-	 * (as we can't exceed the 0-255 range).
-	 */
-	bool addMesh(const Mesh& mesh);
 
 	size_t getNoOfVertices() const;
 	const VoxelVertex& getVertex(IndexType index) const;
@@ -62,9 +51,7 @@ public:
 	bool isEmpty() const;
 	void removeUnusedVertices();
 
-	inline bool operator<(const Mesh& rhs) const {
-		return glm::all(glm::lessThan(getOffset(), rhs.getOffset()));
-	}
+	bool operator<(const Mesh& rhs) const;
 private:
 	alignas(16) IndexArray _vecIndices;
 	alignas(16) VertexArray _vecVertices;
