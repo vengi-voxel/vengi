@@ -206,6 +206,10 @@ core::AppState NuklearApp::onInit() {
 
 	int w, h;
 	const void *image = nk_font_atlas_bake(&_atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+	if (image == nullptr) {
+		Log::error("Failed to bake font atlas");
+		return core::AppState::InitFailure;
+	}
 	_fontTexture->upload(w, h, (const uint8_t*) image);
 	nk_font_atlas_end(&_atlas, nk_handle_id((int)_fontTexture->handle()), &_null);
 	nk_style_load_all_cursors(&_ctx, _atlas.cursors);
