@@ -1,6 +1,6 @@
 WindowInfo
 	title File dialog
-	size 550 500
+	size 800 500
 
 TBLayout: distribution: gravity, axis: x, size: available
 	TBLayout: distribution: gravity, axis: y
