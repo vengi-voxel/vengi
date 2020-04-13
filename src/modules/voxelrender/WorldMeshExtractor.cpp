@@ -11,7 +11,7 @@
 namespace voxelrender {
 
 WorldMeshExtractor::WorldMeshExtractor() :
-		_threadPool(core::halfcpus(), "MeshExtract") {
+		_threadPool(1, "MeshExtract") {
 }
 
 bool WorldMeshExtractor::init(voxel::PagedVolume *volume) {

@@ -66,7 +66,7 @@ core::AppState MapView::onConstruct() {
 		_lineModeRendering = args[0] == "true";
 	}).setHelp("Toggle line rendering mode");
 
-	_meshSize = core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
+	_meshSize = core::Var::get(cfg::VoxelMeshSize, "32", core::CV_READONLY);
 
 	_volumeCache->construct();
 	_worldRenderer.construct();

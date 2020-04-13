@@ -125,7 +125,7 @@ core::AppState Client::onConstruct() {
 	_chunkUrl = core::Var::get(cfg::ServerChunkBaseUrl, "");
 	_seed = core::Var::get(cfg::ServerSeed, "");
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
-	core::VarPtr meshSize = core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
+	core::VarPtr meshSize = core::Var::get(cfg::VoxelMeshSize, "32", core::CV_READONLY);
 	meshSize->setVal(glm::clamp(meshSize->intVal(), 16, 128));
 	_worldRenderer.construct();
 
