@@ -33,7 +33,7 @@ public:
 	int addLayer(const char *name, bool visible = true, const voxel::Region& region = voxel::Region(0, 0)) {
 		voxel::RawVolume * v = new voxel::RawVolume(region);
 		_volumes.push_back(v);
-		return _mgr.addLayer(name, visible, v, region.getCentre());
+		return _mgr.addLayer(name, visible, v, region.getCenter());
 	}
 
 	int addLayers(int n) {

@@ -157,7 +157,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	RawVolume* volume = new RawVolume(region);
 
 	if (!foundPivot) {
-		ipivot = region.getCentre();
+		ipivot = region.getCenter();
 	}
 
 	int idx = 0;

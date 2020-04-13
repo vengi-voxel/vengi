@@ -11,7 +11,7 @@ namespace voxel {
 VoxelVolume::VoxelVolume(voxel::RawVolume *_volume, const core::String &_name, bool _visible)
 	: volume(_volume), name(_name), visible(_visible) {
 	if (volume != nullptr) {
-		pivot = volume->region().getCentre();
+		pivot = volume->region().getCenter();
 	} else {
 		pivot = glm::ivec3(0.0f);
 	}

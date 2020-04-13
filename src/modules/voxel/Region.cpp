@@ -22,7 +22,7 @@ const Region Region::InvalidRegion = Region(0, -1);
 core::String Region::toString() const {
 	core::String regionStr("region[");
 	std::string s;
-	s = glm::to_string(getCentre());
+	s = glm::to_string(getCenter());
 	regionStr += "center(";
 	regionStr += s.c_str();
 	regionStr += "), ";
@@ -176,12 +176,12 @@ void Region::grow(const glm::ivec3& v3dAmount) {
 /**
  * @return The position of the lower corner.
  */
-glm::ivec3 Region::getCentre() const {
-	return glm::ivec3(getCentreX(), getCentreY(), getCentreZ());
+glm::ivec3 Region::getCenter() const {
+	return glm::ivec3(getCenterX(), getCenterY(), getCenterZ());
 }
 
-glm::vec3 Region::getCentref() const {
-	return glm::vec3(getCentreXf(), getCentreYf(), getCentreZf());
+glm::vec3 Region::getCenterf() const {
+	return glm::vec3(getCenterXf(), getCenterYf(), getCenterZf());
 }
 
 /**

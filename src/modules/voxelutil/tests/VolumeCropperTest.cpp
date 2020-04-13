@@ -25,26 +25,26 @@ TEST_F(VolumeCropperTest, testCropSmall) {
 TEST_F(VolumeCropperTest, testCropBigger) {
 	voxel::Region region = voxel::Region(0, 100);
 	voxel::RawVolume smallVolume(region);
-	smallVolume.setVoxel(region.getCentre(), createVoxel(voxel::VoxelType::Grass, 0));
+	smallVolume.setVoxel(region.getCenter(), createVoxel(voxel::VoxelType::Grass, 0));
 	voxel::RawVolume *croppedVolume = voxel::cropVolume(&smallVolume);
 	ASSERT_NE(nullptr, croppedVolume) << "Expected to get the cropped raw volume";
 	const voxel::Region& croppedRegion = croppedVolume->region();
-	EXPECT_EQ(croppedRegion.getUpperCorner(), region.getCentre()) << croppedRegion.toString();
-	EXPECT_EQ(croppedRegion.getLowerCorner(), region.getCentre()) << croppedRegion.toString();
-	EXPECT_EQ(croppedVolume->voxel(region.getCentre()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
+	EXPECT_EQ(croppedRegion.getUpperCorner(), region.getCenter()) << croppedRegion.toString();
+	EXPECT_EQ(croppedRegion.getLowerCorner(), region.getCenter()) << croppedRegion.toString();
+	EXPECT_EQ(croppedVolume->voxel(region.getCenter()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
 	delete croppedVolume;
 }
 
 TEST_F(VolumeCropperTest, testCropBiggerMultiple) {
 	voxel::Region region = voxel::Region(0, 100);
 	voxel::RawVolume smallVolume(region);
-	smallVolume.setVoxel(region.getCentre(), createVoxel(voxel::VoxelType::Grass, 0));
+	smallVolume.setVoxel(region.getCenter(), createVoxel(voxel::VoxelType::Grass, 0));
 	smallVolume.setVoxel(region.getUpperCorner(), createVoxel(voxel::VoxelType::Grass, 0));
 	voxel::RawVolume *croppedVolume = voxel::cropVolume(&smallVolume);
 	ASSERT_NE(nullptr, croppedVolume) << "Expected to get the cropped raw volume";
 	const voxel::Region& croppedRegion = croppedVolume->region();
 	EXPECT_EQ(croppedRegion.getUpperCorner(), region.getUpperCorner()) << croppedRegion.toString();
-	EXPECT_EQ(croppedRegion.getLowerCorner(), region.getCentre()) << croppedRegion.toString();
+	EXPECT_EQ(croppedRegion.getLowerCorner(), region.getCenter()) << croppedRegion.toString();
 	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getLowerCorner()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
 	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getUpperCorner()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
 	delete croppedVolume;

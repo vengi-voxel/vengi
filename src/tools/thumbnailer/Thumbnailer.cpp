@@ -106,7 +106,7 @@ core::AppState Thumbnailer::onRunning() {
 	camera.setMode(video::CameraMode::Perspective);
 	camera.setAngles(0.0f, 0.0f, 0.0f);
 	const voxel::Region& region = _renderer.region();
-	const glm::ivec3& center = region.getCentre();
+	const glm::ivec3& center = region.getCenter();
 	camera.setTarget(center);
 	const glm::vec3 dim(region.getDimensionsInVoxels());
 	const float distance = glm::length(dim);

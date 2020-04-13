@@ -511,7 +511,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 				delete volumes[volumeIdx].volume;
 			}
 			volumes[volumeIdx].volume = volume;
-			volumes[volumeIdx].pivot = volume->region().getCentre();
+			volumes[volumeIdx].pivot = volume->region().getCenter();
 			++volumeIdx;
 		} else if (chunkId == FourCC('n','S','H','P')) {
 			// Shape Node Chunk

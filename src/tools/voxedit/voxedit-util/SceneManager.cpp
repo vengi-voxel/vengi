@@ -583,7 +583,7 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMe
 	_dirty = false;
 	_result = voxel::PickResult();
 	setCursorPosition(cursorPosition(), true);
-	setReferencePosition(region.getCentre());
+	setReferencePosition(region.getCenter());
 	resetLastTrace();
 	return true;
 }
@@ -599,7 +599,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	core_assert_always(_layerMgr.validLayers() == 0);
 	core_assert_always(_layerMgr.addLayer(name.c_str(), true, new voxel::RawVolume(region)) != -1);
 	core_assert_always(_layerMgr.validLayers() == 1);
-	setReferencePosition(region.getCentre());
+	setReferencePosition(region.getCenter());
 	_layerMgr.findNewActiveLayer();
 	resetSceneState();
 	return true;
@@ -619,7 +619,7 @@ void SceneManager::rotate(int layerId, const glm::ivec3& angle, bool increaseSiz
 	} else if (axisRotation && angle == glm::ivec3(0, 0, 90)) {
 		newVolume = voxel::rotateAxis(model, math::Axis::Z);
 	} else {
-		const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getCentref();
+		const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getCenterf();
 		newVolume = voxel::rotateVolume(model, angle, voxel::Voxel(), pivot, increaseSize);
 	}
 	voxel::Region r = newVolume->region();
@@ -972,7 +972,7 @@ void SceneManager::construct() {
 				return;
 			}
 			const voxel::Region& region = v->region();
-			const glm::ivec3& center = region.getCentre();
+			const glm::ivec3& center = region.getCenter();
 			const glm::ivec3& delta = refPos - center;
 			shift(layerId, delta);
 		});
@@ -985,7 +985,7 @@ void SceneManager::construct() {
 				return;
 			}
 			const voxel::Region& region = v->region();
-			const glm::ivec3& delta = -region.getCentre();
+			const glm::ivec3& delta = -region.getCenter();
 			shift(layerId, delta);
 		});
 		setReferencePosition(glm::zero<glm::ivec3>());
@@ -1908,10 +1908,10 @@ void SceneManager::onActiveLayerChanged(int old, int active) {
 	const voxel::Region& region = volume->region();
 	updateGridRenderer(region);
 	if (!region.containsPoint(referencePosition())) {
-		setReferencePosition(region.getCentre());
+		setReferencePosition(region.getCenter());
 	}
 	if (!region.containsPoint(cursorPosition())) {
-		setCursorPosition(volume->region().getCentre());
+		setCursorPosition(volume->region().getCenter());
 	}
 	setGizmoPosition();
 	resetLastTrace();

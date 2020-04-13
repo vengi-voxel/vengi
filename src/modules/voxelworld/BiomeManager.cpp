@@ -173,14 +173,14 @@ void BiomeManager::distributePointsInRegion(const voxel::Region& region, std::ve
 }
 
 const std::vector<const char*>& BiomeManager::getTreeTypes(const voxel::Region& region) const {
-	const glm::ivec3& pos = region.getCentre();
+	const glm::ivec3& pos = region.getCenter();
 	const Biome* biome = getBiome(pos);
 	return biome->treeTypes();
 }
 
 void BiomeManager::getTreePositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
 	core_trace_scoped(BiomeGetTreePositions);
-	const glm::ivec3& pos = region.getCentre();
+	const glm::ivec3& pos = region.getCenter();
 	if (!hasTrees(pos)) {
 		return;
 	}
@@ -191,7 +191,7 @@ void BiomeManager::getTreePositions(const voxel::Region& region, std::vector<glm
 
 void BiomeManager::getPlantPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
 	core_trace_scoped(BiomeGetPlantPositions);
-	const glm::ivec3& pos = region.getCentre();
+	const glm::ivec3& pos = region.getCenter();
 	if (!hasPlants(pos)) {
 		return;
 	}
@@ -201,7 +201,7 @@ void BiomeManager::getPlantPositions(const voxel::Region& region, std::vector<gl
 
 void BiomeManager::getCloudPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, math::Random& random, int border) const {
 	core_trace_scoped(BiomeGetCloudPositions);
-	glm::ivec3 pos = region.getCentre();
+	glm::ivec3 pos = region.getCenter();
 	pos.y = region.getUpperY();
 	if (!hasClouds(pos)) {
 		return;

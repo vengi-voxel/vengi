@@ -48,9 +48,9 @@ TEST_F(VolumeMergerTest, testOffsets) {
 	voxel::Region regionSmall = voxel::Region(0, 3);
 	voxel::RawVolume smallVolume(regionSmall);
 	voxel::RawVolume bigVolume(regionBig);
-	ASSERT_TRUE(bigVolume.setVoxel(regionBig.getCentre(), createVoxel(voxel::VoxelType::Grass, 0)));
+	ASSERT_TRUE(bigVolume.setVoxel(regionBig.getCenter(), createVoxel(voxel::VoxelType::Grass, 0)));
 	ASSERT_TRUE(bigVolume.setVoxel(regionBig.getUpperCorner(), createVoxel(voxel::VoxelType::Grass, 0)));
-	const voxel::Region srcRegion(regionBig.getCentre(), regionBig.getUpperCorner());
+	const voxel::Region srcRegion(regionBig.getCenter(), regionBig.getUpperCorner());
 	const voxel::Region& destRegion = smallVolume.region();
 	ASSERT_EQ(2, voxel::mergeVolumes(&smallVolume, &bigVolume, destRegion, srcRegion)) << smallVolume << ", " << bigVolume;
 	ASSERT_EQ(smallVolume.voxel(regionSmall.getLowerCorner()), createVoxel(voxel::VoxelType::Grass, 0)) << smallVolume << ", " << bigVolume;

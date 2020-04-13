@@ -347,7 +347,7 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 			if (region.isValid()) {
 				voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 				voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
-				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCentre());
+				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCenter());
 				layerMgr.setActiveLayer(layerId);
 			} else {
 				_layerSettings.reset();

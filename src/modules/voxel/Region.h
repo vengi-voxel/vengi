@@ -57,17 +57,17 @@ public:
 	Region& operator+=(const glm::ivec3& v3dAmount);
 
 	/// Gets the 'x' position of the centre.
-	int32_t getCentreX() const;
+	int32_t getCenterX() const;
 	/// Gets the 'y' position of the centre.
-	int32_t getCentreY() const;
+	int32_t getCenterY() const;
 	/// Gets the 'z' position of the centre.
-	int32_t getCentreZ() const;
+	int32_t getCenterZ() const;
 	/// Gets the 'x' position of the centre.
-	float getCentreXf() const;
+	float getCenterXf() const;
 	/// Gets the 'y' position of the centre.
-	float getCentreYf() const;
+	float getCenterYf() const;
 	/// Gets the 'z' position of the centre.
-	float getCentreZf() const;
+	float getCenterZf() const;
 	/// Gets the 'x' position of the lower corner.
 	int32_t getLowerX() const;
 	/// Gets the 'y' position of the lower corner.
@@ -82,8 +82,8 @@ public:
 	int32_t getUpperZ() const;
 
 	/// Gets the centre of the region
-	glm::ivec3 getCentre() const;
-	glm::vec3 getCentref() const;
+	glm::ivec3 getCenter() const;
+	glm::vec3 getCenterf() const;
 	/// Gets the position of the lower corner.
 	glm::ivec3 getLowerCorner() const;
 	/// Gets the position of the upper corner.
@@ -215,33 +215,33 @@ private:
 /**
  * @return The 'x' position of the centre.
  */
-inline int32_t Region::getCentreX() const {
+inline int32_t Region::getCenterX() const {
 	return (_mins.x + _maxs.x) / 2;
 }
 
 /**
  * @return The 'y' position of the centre.
  */
-inline int32_t Region::getCentreY() const {
+inline int32_t Region::getCenterY() const {
 	return (_mins.y + _maxs.y) / 2;
 }
 
 /**
  * @return The 'z' position of the centre.
  */
-inline int32_t Region::getCentreZ() const {
+inline int32_t Region::getCenterZ() const {
 	return (_mins.z + _maxs.z) / 2;
 }
 
-inline float Region::getCentreXf() const {
+inline float Region::getCenterXf() const {
 	return float(_mins.x + _maxs.x) / 2.0f;
 }
 
-inline float Region::getCentreYf() const {
+inline float Region::getCenterYf() const {
 	return float(_mins.y + _maxs.y) / 2.0f;
 }
 
-inline float Region::getCentreZf() const {
+inline float Region::getCenterZf() const {
 	return float(_mins.z + _maxs.z) / 2.0f;
 }
 

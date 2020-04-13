@@ -257,7 +257,7 @@ void TestTraze::onEvent(const traze::NewGridEvent& event) {
 		delete v;
 		dirtyRegion = wrapper.dirtyRegion();
 	}
-	const glm::mat4& translate = glm::translate(-volume->region().getCentre());
+	const glm::mat4& translate = glm::translate(-volume->region().getCenter());
 	const glm::mat4& rotateY = glm::rotate(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	const glm::mat4& rotateX = glm::rotate(glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	const glm::mat4 model = rotateX * rotateY * translate;

@@ -34,7 +34,7 @@ protected:
 	};
 
 	virtual bool pageIn(const voxel::Region& region, const voxel::PagedVolume::ChunkPtr& chunk) {
-		const glm::vec3 center(region.getCentre());
+		const glm::vec3 center(region.getCenter());
 		for (int z = 0; z < region.getDepthInVoxels(); ++z) {
 			for (int y = 0; y < region.getHeightInVoxels(); ++y) {
 				for (int x = 0; x < region.getWidthInVoxels(); ++x) {
@@ -69,7 +69,7 @@ public:
 		core::AbstractTest::SetUp();
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		_random.setSeed(_seed);
-		_ctx = voxel::PagedVolumeWrapper(&_volData, _volData.chunk(_region.getCentre()), _region);
+		_ctx = voxel::PagedVolumeWrapper(&_volData, _volData.chunk(_region.getCenter()), _region);
 	}
 };
 
