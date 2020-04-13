@@ -44,7 +44,7 @@ public:
 		friend class PagedVolumeWrapper;
 
 	public:
-		Chunk(const glm::ivec3& pos, uint16_t sideLength, Pager* pager = nullptr);
+		Chunk(const glm::ivec3& pos, uint16_t sideLength, Pager* pager);
 		~Chunk();
 
 		bool setData(const Voxel* voxels, size_t sizeInBytes);
