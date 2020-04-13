@@ -5,6 +5,7 @@
 #pragma once
 
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <glm/fwd.hpp>
 #include "core/String.h"
 #include <stdint.h>
@@ -54,7 +55,7 @@ public:
 	bool operator!=(const Region& rhs) const;
 
 	/// Moves the Region by the amount specified.
-	Region& operator+=(const glm::ivec3& v3dAmount);
+	Region& operator+=(const glm::ivec3& amount);
 
 	/// Gets the 'x' position of the centre.
 	int32_t getCenterX() const;
@@ -62,12 +63,6 @@ public:
 	int32_t getCenterY() const;
 	/// Gets the 'z' position of the centre.
 	int32_t getCenterZ() const;
-	/// Gets the 'x' position of the centre.
-	float getCenterXf() const;
-	/// Gets the 'y' position of the centre.
-	float getCenterYf() const;
-	/// Gets the 'z' position of the centre.
-	float getCenterZf() const;
 	/// Gets the 'x' position of the lower corner.
 	int32_t getLowerX() const;
 	/// Gets the 'y' position of the lower corner.
@@ -82,12 +77,12 @@ public:
 	int32_t getUpperZ() const;
 
 	/// Gets the centre of the region
-	glm::ivec3 getCenter() const;
+	const glm::ivec3& getCenter() const;
 	glm::vec3 getCenterf() const;
 	/// Gets the position of the lower corner.
-	glm::ivec3 getLowerCorner() const;
+	const glm::ivec3& getLowerCorner() const;
 	/// Gets the position of the upper corner.
-	glm::ivec3 getUpperCorner() const;
+	const glm::ivec3& getUpperCorner() const;
 
 	glm::vec3 getLowerCornerf() const;
 	glm::vec3 getUpperCornerf() const;
@@ -101,7 +96,7 @@ public:
 	/// Gets the depth of the region measured in voxels.
 	int32_t getDepthInVoxels() const;
 	/// Gets the dimensions of the region measured in voxels.
-	glm::ivec3 getDimensionsInVoxels() const;
+	const glm::ivec3& getDimensionsInVoxels() const;
 
 	/// Gets the width of the region measured in cells.
 	int32_t getWidthInCells() const;
@@ -110,7 +105,7 @@ public:
 	/// Gets the depth of the region measured in cells.
 	int32_t getDepthInCells() const;
 	/// Gets the dimensions of the region measured in cells.
-	glm::ivec3 getDimensionsInCells() const;
+	const glm::ivec3& getDimensionsInCells() const;
 
 	/// Sets the 'x' position of the lower corner.
 	void setLowerX(int32_t x);
@@ -128,9 +123,9 @@ public:
 	glm::ivec3 moveInto(int32_t x, int32_t y, int32_t z) const;
 
 	/// Sets the position of the lower corner.
-	void setLowerCorner(const glm::ivec3& v3dLowerCorner);
+	void setLowerCorner(const glm::ivec3& mins);
 	/// Sets the position of the upper corner.
-	void setUpperCorner(const glm::ivec3& v3dUpperCorner);
+	void setUpperCorner(const glm::ivec3& maxs);
 
 	/// Tests whether the given point is contained in this Region.
 	bool containsPoint(float fX, float fY, float fZ, float boundary = 0.0f) const;
@@ -160,11 +155,9 @@ public:
 	void accumulate(int32_t iX, int32_t iY, int32_t iZ);
 	/// Enlarges the Region so that it contains the specified position.
 	void accumulate(const glm::ivec3& v3dPos);
-	Region accumulateCopy(const glm::ivec3& v3dPos) const;
 
 	/// Enlarges the Region so that it contains the specified Region.
 	void accumulate(const Region& reg);
-	Region accumulateCopy(const Region& reg) const;
 
 	/// Crops the extents of this Region according to another Region.
 	void cropTo(const Region& other);
@@ -184,6 +177,7 @@ public:
 	 * @return The amount of possible voxels in this region.
 	 */
 	int voxels() const;
+	int stride() const;
 
 	/// Moves the Region by the amount specified.
 	void shift(int32_t amountX, int32_t amountY, int32_t amountZ);
@@ -208,41 +202,35 @@ public:
 	core::String toString() const;
 
 private:
-	glm::ivec3 _mins;
-	glm::ivec3 _maxs;
+	void update();
+
+	alignas(16) glm::ivec3 _mins;
+	alignas(16) glm::ivec3 _maxs;
+	alignas(16) glm::ivec3 _width;
+	alignas(16) glm::ivec3 _voxels;
+	alignas(16) glm::ivec3 _center;
+	int _stride;
 };
 
 /**
  * @return The 'x' position of the centre.
  */
 inline int32_t Region::getCenterX() const {
-	return (_mins.x + _maxs.x) / 2;
+	return _center.x;
 }
 
 /**
  * @return The 'y' position of the centre.
  */
 inline int32_t Region::getCenterY() const {
-	return (_mins.y + _maxs.y) / 2;
+	return _center.y;
 }
 
 /**
  * @return The 'z' position of the centre.
  */
 inline int32_t Region::getCenterZ() const {
-	return (_mins.z + _maxs.z) / 2;
-}
-
-inline float Region::getCenterXf() const {
-	return float(_mins.x + _maxs.x) / 2.0f;
-}
-
-inline float Region::getCenterYf() const {
-	return float(_mins.y + _maxs.y) / 2.0f;
-}
-
-inline float Region::getCenterZf() const {
-	return float(_mins.z + _maxs.z) / 2.0f;
+	return _center.z;
 }
 
 /**
@@ -292,7 +280,7 @@ inline int32_t Region::getUpperZ() const {
  * @sa getWidthInCells()
  */
 inline int32_t Region::getWidthInVoxels() const {
-	return getWidthInCells() + 1;
+	return _voxels.x;
 }
 
 /**
@@ -300,7 +288,7 @@ inline int32_t Region::getWidthInVoxels() const {
  * @sa getHeightInCells()
  */
 inline int32_t Region::getHeightInVoxels() const {
-	return getHeightInCells() + 1;
+	return _voxels.y;
 }
 
 /**
@@ -308,7 +296,7 @@ inline int32_t Region::getHeightInVoxels() const {
  * @sa getDepthInCells()
  */
 inline int32_t Region::getDepthInVoxels() const {
-	return getDepthInCells() + 1;
+	return _voxels.z;
 }
 
 /**
@@ -316,7 +304,7 @@ inline int32_t Region::getDepthInVoxels() const {
  * @sa getWidthInVoxels()
  */
 inline int32_t Region::getWidthInCells() const {
-	return _maxs.x - _mins.x;
+	return _width.x;
 }
 
 /**
@@ -324,7 +312,7 @@ inline int32_t Region::getWidthInCells() const {
  * @sa getHeightInVoxels()
  */
 inline int32_t Region::getHeightInCells() const {
-	return _maxs.y - _mins.y;
+	return _width.y;
 }
 
 /**
@@ -332,7 +320,11 @@ inline int32_t Region::getHeightInCells() const {
  * @sa getDepthInVoxels()
  */
 inline int32_t Region::getDepthInCells() const {
-	return _maxs.z - _mins.z;
+	return _width.z;
+}
+
+inline int Region::stride() const {
+	return _stride;
 }
 
 /**
@@ -340,6 +332,7 @@ inline int32_t Region::getDepthInCells() const {
  */
 inline void Region::setLowerX(int32_t x) {
 	_mins.x = x;
+	update();
 }
 
 /**
@@ -347,6 +340,7 @@ inline void Region::setLowerX(int32_t x) {
  */
 inline void Region::setLowerY(int32_t y) {
 	_mins.y = y;
+	update();
 }
 
 /**
@@ -354,6 +348,7 @@ inline void Region::setLowerY(int32_t y) {
  */
 inline void Region::setLowerZ(int32_t iZ) {
 	_mins.z = iZ;
+	update();
 }
 
 /**
@@ -361,6 +356,7 @@ inline void Region::setLowerZ(int32_t iZ) {
  */
 inline void Region::setUpperX(int32_t iX) {
 	_maxs.x = iX;
+	update();
 }
 
 /**
@@ -368,6 +364,7 @@ inline void Region::setUpperX(int32_t iX) {
  */
 inline void Region::setUpperY(int32_t iY) {
 	_maxs.y = iY;
+	update();
 }
 
 /**
@@ -375,6 +372,7 @@ inline void Region::setUpperY(int32_t iY) {
  */
 inline void Region::setUpperZ(int32_t iZ) {
 	_maxs.z = iZ;
+	update();
 }
 
 inline constexpr Region::Region(int mins, int maxs) :
@@ -390,15 +388,15 @@ inline constexpr Region::Region() :
 
 /**
  * Constructs a Region and sets the extents to the specified values.
- * @param iLowerX The desired lower 'x' extent of the Region.
- * @param iLowerY The desired lower 'y' extent of the Region.
- * @param iLowerZ The desired lower 'z' extent of the Region.
- * @param iUpperX The desired upper 'x' extent of the Region.
- * @param iUpperY The desired upper 'y' extent of the Region.
- * @param iUpperZ The desired upper 'z' extent of the Region.
+ * @param minsx The desired lower 'x' extent of the Region.
+ * @param minsy The desired lower 'y' extent of the Region.
+ * @param minsz The desired lower 'z' extent of the Region.
+ * @param maxsx The desired upper 'x' extent of the Region.
+ * @param maxsy The desired upper 'y' extent of the Region.
+ * @param maxsz The desired upper 'z' extent of the Region.
  */
 inline constexpr Region::Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz) :
-		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz) {
+		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz), _width(_maxs - _mins), _voxels(_width + 1), _center((_mins + _maxs) / 2), _stride(_voxels.x * _voxels.y) {
 }
 
 /**
@@ -551,6 +549,7 @@ inline void Region::shiftLowerCorner(int32_t x, int32_t y, int32_t z) {
 	_mins.x += x;
 	_mins.y += y;
 	_mins.z += z;
+	update();
 }
 
 /**
@@ -562,6 +561,7 @@ inline void Region::shiftUpperCorner(int32_t x, int32_t y, int32_t z) {
 	_maxs.x += x;
 	_maxs.y += y;
 	_maxs.z += z;
+	update();
 }
 
 /**
@@ -577,6 +577,7 @@ inline void Region::shrink(int32_t amount) {
 	_maxs.x -= amount;
 	_maxs.y -= amount;
 	_maxs.z -= amount;
+	update();
 }
 
 /**
@@ -594,6 +595,7 @@ inline void Region::shrink(int32_t amountX, int32_t amountY, int32_t amountZ) {
 	_maxs.x -= amountX;
 	_maxs.y -= amountY;
 	_maxs.z -= amountZ;
+	update();
 }
 
 /**

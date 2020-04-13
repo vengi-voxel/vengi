@@ -263,7 +263,7 @@ inline bool RawVolume::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
 inline const Voxel& RawVolume::Sampler::peekVoxel1nx1ny1nz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel - 1 - region.getWidthInVoxels() - region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel - 1 - region.getWidthInVoxels() - region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y - 1, this->_posInVolume.z - 1);
 }
@@ -279,7 +279,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1nx1ny0pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1nx1ny1pz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel - 1 - region.getWidthInVoxels() + region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel - 1 - region.getWidthInVoxels() + region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y - 1, this->_posInVolume.z + 1);
 }
@@ -287,7 +287,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1nx1ny1pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1nx0py1nz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel - 1 - region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel - 1 - region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y, this->_posInVolume.z - 1);
 }
@@ -303,7 +303,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1nx0py0pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1nx0py1pz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel - 1 + region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel - 1 + region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y, this->_posInVolume.z + 1);
 }
@@ -311,7 +311,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1nx0py1pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1nx1py1nz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel - 1 + region.getWidthInVoxels() - region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel - 1 + region.getWidthInVoxels() - region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y + 1, this->_posInVolume.z - 1);
 }
@@ -327,7 +327,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1nx1py0pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1nx1py1pz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel - 1 + region.getWidthInVoxels() + region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel - 1 + region.getWidthInVoxels() + region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
 }
@@ -335,7 +335,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1nx1py1pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel0px1ny1nz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel - region.getWidthInVoxels() - region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel - region.getWidthInVoxels() - region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y - 1, this->_posInVolume.z - 1);
 }
@@ -351,7 +351,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel0px1ny0pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel0px1ny1pz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel - region.getWidthInVoxels() + region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel - region.getWidthInVoxels() + region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y - 1, this->_posInVolume.z + 1);
 }
@@ -359,7 +359,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel0px1ny1pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel0px0py1nz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel - region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel - region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z - 1);
 }
@@ -374,7 +374,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel0px0py0pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel0px0py1pz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_POS_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel + region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel + region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z + 1);
 }
@@ -382,7 +382,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel0px0py1pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel0px1py1nz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel + region.getWidthInVoxels() - region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel + region.getWidthInVoxels() - region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y + 1, this->_posInVolume.z - 1);
 }
@@ -398,7 +398,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel0px1py0pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel0px1py1pz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel + region.getWidthInVoxels() + region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel + region.getWidthInVoxels() + region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
 }
@@ -406,7 +406,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel0px1py1pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1px1ny1nz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel + 1 - region.getWidthInVoxels() - region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel + 1 - region.getWidthInVoxels() - region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y - 1, this->_posInVolume.z - 1);
 }
@@ -422,7 +422,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1px1ny0pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1px1ny1pz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel + 1 - region.getWidthInVoxels() + region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel + 1 - region.getWidthInVoxels() + region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y - 1, this->_posInVolume.z + 1);
 }
@@ -430,7 +430,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1px1ny1pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1px0py1nz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel + 1 - region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel + 1 - region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y, this->_posInVolume.z - 1);
 }
@@ -446,7 +446,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1px0py0pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1px0py1pz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel + 1 + region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel + 1 + region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y, this->_posInVolume.z + 1);
 }
@@ -454,7 +454,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1px0py1pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1px1py1nz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel + 1 + region.getWidthInVoxels() - region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel + 1 + region.getWidthInVoxels() - region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y + 1, this->_posInVolume.z - 1);
 }
@@ -470,7 +470,7 @@ inline const Voxel& RawVolume::Sampler::peekVoxel1px1py0pz() const {
 inline const Voxel& RawVolume::Sampler::peekVoxel1px1py1pz() const {
 	const Region& region = this->_volume->region();
 	if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-		return *(_currentVoxel + 1 + region.getWidthInVoxels() + region.getWidthInVoxels() * region.getHeightInVoxels());
+		return *(_currentVoxel + 1 + region.getWidthInVoxels() + region.stride());
 	}
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
 }

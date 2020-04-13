@@ -19,6 +19,13 @@ namespace voxel {
 const Region Region::MaxRegion = Region((std::numeric_limits<int32_t>::min)(), (std::numeric_limits<int32_t>::max)());
 const Region Region::InvalidRegion = Region(0, -1);
 
+void Region::update() {
+	_center = (_mins + _maxs) / 2;
+	_width = _maxs - _mins;
+	_voxels = _width + glm::ivec3(1);
+	_stride = _voxels.x * _voxels.y;
+}
+
 core::String Region::toString() const {
 	core::String regionStr("region[");
 	std::string s;
@@ -79,22 +86,7 @@ void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
 	_maxs.x = core_max(_maxs.x, iX);
 	_maxs.y = core_max(_maxs.y, iY);
 	_maxs.z = core_max(_maxs.z, iZ);
-}
-
-Region Region::accumulateCopy(const Region& reg) const {
-	if (!reg.isValid()) {
-		// The result of accumulating an invalid region is not defined.
-		core_assert_msg(false, "You cannot accumulate an invalid region.");
-	}
-
-	Region r(*this);
-	r._mins.x = core_min(r._mins.x, reg.getLowerX());
-	r._mins.y = core_min(r._mins.y, reg.getLowerY());
-	r._mins.z = core_min(r._mins.z, reg.getLowerZ());
-	r._maxs.x = core_max(r._maxs.x, reg.getUpperX());
-	r._maxs.y = core_max(r._maxs.y, reg.getUpperY());
-	r._maxs.z = core_max(r._maxs.z, reg.getUpperZ());
-	return r;
+	update();
 }
 
 /**
@@ -110,12 +102,9 @@ void Region::accumulate(const Region& reg) {
 		core_assert_msg(false, "You cannot accumulate an invalid region.");
 	}
 
-	_mins.x = core_min(_mins.x, reg.getLowerX());
-	_mins.y = core_min(_mins.y, reg.getLowerY());
-	_mins.z = core_min(_mins.z, reg.getLowerZ());
-	_maxs.x = core_max(_maxs.x, reg.getUpperX());
-	_maxs.y = core_max(_maxs.y, reg.getUpperY());
-	_maxs.z = core_max(_maxs.z, reg.getUpperZ());
+	_mins = (glm::min)(_mins, reg.getLowerCorner());
+	_maxs = (glm::max)(_maxs, reg.getUpperCorner());
+	update();
 }
 
 /**
@@ -124,151 +113,140 @@ void Region::accumulate(const Region& reg) {
  * @param other The Region to crop to.
  */
 void Region::cropTo(const Region& other) {
-	_mins.x = core_max(_mins.x, other._mins.x);
-	_mins.y = core_max(_mins.y, other._mins.y);
-	_mins.z = core_max(_mins.z, other._mins.z);
-	_maxs.x = core_min(_maxs.x, other._maxs.x);
-	_maxs.y = core_min(_maxs.y, other._maxs.y);
-	_maxs.z = core_min(_maxs.z, other._maxs.z);
+	_mins = (glm::max)(_mins, other._mins);
+	_maxs = (glm::min)(_maxs, other._maxs);
+	update();
 }
 
 /**
  * The same amount of growth is applied in all directions. Negative growth
  * is possible but you should prefer the shrink() function for clarity.
- * @param iAmount The amount to grow by.
+ * @param amount The amount to grow by.
  */
-void Region::grow(int32_t iAmount) {
-	_mins.x -= iAmount;
-	_mins.y -= iAmount;
-	_mins.z -= iAmount;
-
-	_maxs.x += iAmount;
-	_maxs.y += iAmount;
-	_maxs.z += iAmount;
+void Region::grow(int32_t amount) {
+	_mins -= amount;
+	_maxs += amount;
+	update();
 }
 
 /**
  * The amount can be specified separately for each direction. Negative growth
  * is possible but you should prefer the shrink() function for clarity.
- * @param iAmountX The amount to grow by in 'x'.
- * @param iAmountY The amount to grow by in 'y'.
- * @param iAmountZ The amount to grow by in 'z'.
+ * @param x The amount to grow by in 'x'.
+ * @param y The amount to grow by in 'y'.
+ * @param z The amount to grow by in 'z'.
  */
-void Region::grow(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
-	_mins.x -= iAmountX;
-	_mins.y -= iAmountY;
-	_mins.z -= iAmountZ;
+void Region::grow(int32_t x, int32_t y, int32_t z) {
+	_mins.x -= x;
+	_mins.y -= y;
+	_mins.z -= z;
 
-	_maxs.x += iAmountX;
-	_maxs.y += iAmountY;
-	_maxs.z += iAmountZ;
+	_maxs.x += x;
+	_maxs.y += y;
+	_maxs.z += z;
+	update();
 }
 
 /**
  * The amount can be specified separately for each direction. Negative growth
  * is possible but you should prefer the shrink() function for clarity.
- * @param v3dAmount The amount to grow by (one component for each direction).
+ * @param amount The amount to grow by (one component for each direction).
  */
-void Region::grow(const glm::ivec3& v3dAmount) {
-	grow(v3dAmount.x, v3dAmount.y, v3dAmount.z);
+void Region::grow(const glm::ivec3& amount) {
+	_mins -= amount;
+	_maxs += amount;
+	update();
 }
 
 /**
  * @return The position of the lower corner.
  */
-glm::ivec3 Region::getCenter() const {
-	return glm::ivec3(getCenterX(), getCenterY(), getCenterZ());
+const glm::ivec3& Region::getCenter() const {
+	return _center;
 }
 
 glm::vec3 Region::getCenterf() const {
-	return glm::vec3(getCenterXf(), getCenterYf(), getCenterZf());
+	return glm::vec3(_center);
 }
 
 /**
  * @return The position of the lower corner.
  */
-glm::ivec3 Region::getLowerCorner() const {
-	return glm::ivec3(_mins.x, _mins.y, _mins.z);
+const glm::ivec3& Region::getLowerCorner() const {
+	return _mins;
 }
 
 /**
  * @return The position of the upper corner.
  */
-glm::ivec3 Region::getUpperCorner() const {
-	return glm::ivec3(_maxs.x, _maxs.y, _maxs.z);
+const glm::ivec3& Region::getUpperCorner() const {
+	return _maxs;
 }
 
 glm::vec3 Region::getLowerCornerf() const {
-	return glm::vec3(_mins.x, _mins.y, _mins.z);
+	return glm::vec3(_mins);
 }
 
 glm::vec3 Region::getUpperCornerf() const {
-	return glm::vec3(_maxs.x, _maxs.y, _maxs.z);
+	return glm::vec3(_maxs);
 }
 
 /**
  * @return The dimensions of the region measured in voxels.
  * @sa getDimensionsInCells()
  */
-glm::ivec3 Region::getDimensionsInVoxels() const {
-	return getDimensionsInCells() + glm::ivec3(1, 1, 1);
+const glm::ivec3& Region::getDimensionsInVoxels() const {
+	return _voxels;
 }
 
 /**
  * @return The dimensions of the region measured in cells.
  * @sa getDimensionsInVoxels()
  */
-glm::ivec3 Region::getDimensionsInCells() const {
-	return glm::ivec3(getWidthInCells(), getHeightInCells(), getDepthInCells());
+const glm::ivec3& Region::getDimensionsInCells() const {
+	return _width;
 }
 
 /**
- * @param v3dLowerCorner The new position of the lower corner.
+ * @param mins The new position of the lower corner.
  */
-void Region::setLowerCorner(const glm::ivec3& v3dLowerCorner) {
-	_mins.x = v3dLowerCorner.x;
-	_mins.y = v3dLowerCorner.y;
-	_mins.z = v3dLowerCorner.z;
+void Region::setLowerCorner(const glm::ivec3& mins) {
+	_mins = mins;
+	update();
 }
 
 /**
- * @param v3dUpperCorner The new position of the upper corner.
+ * @param maxs The new position of the upper corner.
  */
-void Region::setUpperCorner(const glm::ivec3& v3dUpperCorner) {
-	_maxs.x = v3dUpperCorner.x;
-	_maxs.y = v3dUpperCorner.y;
-	_maxs.z = v3dUpperCorner.z;
+void Region::setUpperCorner(const glm::ivec3& maxs) {
+	_maxs = maxs;
+	update();
 }
 
 /**
- * @param v3dPos The position to accumulate.
+ * @param pos The position to accumulate.
  */
-void Region::accumulate(const glm::ivec3& v3dPos) {
-	accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
+void Region::accumulate(const glm::ivec3& pos) {
+	accumulate(pos.x, pos.y, pos.z);
 }
 
-Region Region::accumulateCopy(const glm::ivec3& v3dPos) const {
-	Region r(*this);
-	r.accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
-	return r;
-}
 /**
  * Constructs a Region and sets the lower and upper corners to the specified values.
- * @param v3dLowerCorner The desired lower corner of the Region.
- * @param v3dUpperCorner The desired upper corner of the Region.
+ * @param mins The desired lower corner of the Region.
+ * @param maxs The desired upper corner of the Region.
  */
-Region::Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner) :
-		Region(v3dLowerCorner.x, v3dLowerCorner.y, v3dLowerCorner.z, v3dUpperCorner.x, v3dUpperCorner.y, v3dUpperCorner.z) {
+Region::Region(const glm::ivec3& mins, const glm::ivec3& maxs) :
+		Region(mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z) {
 }
 
-Region& Region::operator+=(const glm::ivec3& v3dAmount) {
-	shift(v3dAmount);
+Region& Region::operator+=(const glm::ivec3& amount) {
+	shift(amount);
 	return *this;
 }
 
-Region operator+(const Region& region, const glm::ivec3& v3dAmount) {
+Region operator+(const Region& region, const glm::ivec3& amount) {
 	Region copy(region);
-	copy.shift(v3dAmount);
+	copy.shift(amount);
 	return copy;
 }
 
