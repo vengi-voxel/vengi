@@ -207,87 +207,87 @@ public:
 	core::String toString() const;
 
 private:
-	int32_t m_iLowerX;
-	int32_t m_iLowerY;
-	int32_t m_iLowerZ;
-	int32_t m_iUpperX;
-	int32_t m_iUpperY;
-	int32_t m_iUpperZ;
+	int32_t _lowerX;
+	int32_t _lowerY;
+	int32_t _lowerZ;
+	int32_t _upperX;
+	int32_t _upperY;
+	int32_t _upperZ;
 };
 
 /**
  * @return The 'x' position of the centre.
  */
 inline int32_t Region::getCentreX() const {
-	return (m_iLowerX + m_iUpperX) / 2;
+	return (_lowerX + _upperX) / 2;
 }
 
 /**
  * @return The 'y' position of the centre.
  */
 inline int32_t Region::getCentreY() const {
-	return (m_iLowerY + m_iUpperY) / 2;
+	return (_lowerY + _upperY) / 2;
 }
 
 /**
  * @return The 'z' position of the centre.
  */
 inline int32_t Region::getCentreZ() const {
-	return (m_iLowerZ + m_iUpperZ) / 2;
+	return (_lowerZ + _upperZ) / 2;
 }
 
 inline float Region::getCentreXf() const {
-	return float(m_iLowerX + m_iUpperX) / 2.0f;
+	return float(_lowerX + _upperX) / 2.0f;
 }
 
 inline float Region::getCentreYf() const {
-	return float(m_iLowerY + m_iUpperY) / 2.0f;
+	return float(_lowerY + _upperY) / 2.0f;
 }
 
 inline float Region::getCentreZf() const {
-	return float(m_iLowerZ + m_iUpperZ) / 2.0f;
+	return float(_lowerZ + _upperZ) / 2.0f;
 }
 
 /**
  * @return The 'x' position of the lower corner.
  */
 inline int32_t Region::getLowerX() const {
-	return m_iLowerX;
+	return _lowerX;
 }
 
 /**
  * @return The 'y' position of the lower corner.
  */
 inline int32_t Region::getLowerY() const {
-	return m_iLowerY;
+	return _lowerY;
 }
 
 /**
  * @return The 'z' position of the lower corner.
  */
 inline int32_t Region::getLowerZ() const {
-	return m_iLowerZ;
+	return _lowerZ;
 }
 
 /**
  * @return The 'x' position of the upper corner.
  */
 inline int32_t Region::getUpperX() const {
-	return m_iUpperX;
+	return _upperX;
 }
 
 /**
  * @return The 'y' position of the upper corner.
  */
 inline int32_t Region::getUpperY() const {
-	return m_iUpperY;
+	return _upperY;
 }
 
 /**
  * @return The 'z' position of the upper corner.
  */
 inline int32_t Region::getUpperZ() const {
-	return m_iUpperZ;
+	return _upperZ;
 }
 
 /**
@@ -319,7 +319,7 @@ inline int32_t Region::getDepthInVoxels() const {
  * @sa getWidthInVoxels()
  */
 inline int32_t Region::getWidthInCells() const {
-	return m_iUpperX - m_iLowerX;
+	return _upperX - _lowerX;
 }
 
 /**
@@ -327,7 +327,7 @@ inline int32_t Region::getWidthInCells() const {
  * @sa getHeightInVoxels()
  */
 inline int32_t Region::getHeightInCells() const {
-	return m_iUpperY - m_iLowerY;
+	return _upperY - _lowerY;
 }
 
 /**
@@ -335,49 +335,49 @@ inline int32_t Region::getHeightInCells() const {
  * @sa getDepthInVoxels()
  */
 inline int32_t Region::getDepthInCells() const {
-	return m_iUpperZ - m_iLowerZ;
+	return _upperZ - _lowerZ;
 }
 
 /**
  * @param iX The new 'x' position of the lower corner.
  */
 inline void Region::setLowerX(int32_t iX) {
-	m_iLowerX = iX;
+	_lowerX = iX;
 }
 
 /**
  * @param iY The new 'y' position of the lower corner.
  */
 inline void Region::setLowerY(int32_t iY) {
-	m_iLowerY = iY;
+	_lowerY = iY;
 }
 
 /**
  * @param iZ The new 'z' position of the lower corner.
  */
 inline void Region::setLowerZ(int32_t iZ) {
-	m_iLowerZ = iZ;
+	_lowerZ = iZ;
 }
 
 /**
  * @param iX The new 'x' position of the upper corner.
  */
 inline void Region::setUpperX(int32_t iX) {
-	m_iUpperX = iX;
+	_upperX = iX;
 }
 
 /**
  * @param iY The new 'y' position of the upper corner.
  */
 inline void Region::setUpperY(int32_t iY) {
-	m_iUpperY = iY;
+	_upperY = iY;
 }
 
 /**
  * @param iZ The new 'z' position of the upper corner.
  */
 inline void Region::setUpperZ(int32_t iZ) {
-	m_iUpperZ = iZ;
+	_upperZ = iZ;
 }
 
 inline constexpr Region::Region(int mins, int maxs) :
@@ -401,7 +401,7 @@ inline constexpr Region::Region() :
  * @param iUpperZ The desired upper 'z' extent of the Region.
  */
 inline constexpr Region::Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ) :
-		m_iLowerX(iLowerX), m_iLowerY(iLowerY), m_iLowerZ(iLowerZ), m_iUpperX(iUpperX), m_iUpperY(iUpperY), m_iUpperZ(iUpperZ) {
+		_lowerX(iLowerX), _lowerY(iLowerY), _lowerZ(iLowerZ), _upperX(iUpperX), _upperY(iUpperY), _upperZ(iUpperZ) {
 }
 
 /**
@@ -411,8 +411,8 @@ inline constexpr Region::Region(int32_t iLowerX, int32_t iLowerY, int32_t iLower
  * @sa operator!=
  */
 inline bool Region::operator==(const Region& rhs) const {
-	return ((m_iLowerX == rhs.m_iLowerX) && (m_iLowerY == rhs.m_iLowerY) && (m_iLowerZ == rhs.m_iLowerZ) && (m_iUpperX == rhs.m_iUpperX) && (m_iUpperY == rhs.m_iUpperY)
-			&& (m_iUpperZ == rhs.m_iUpperZ));
+	return ((_lowerX == rhs._lowerX) && (_lowerY == rhs._lowerY) && (_lowerZ == rhs._lowerZ) && (_upperX == rhs._upperX) && (_upperY == rhs._upperY)
+			&& (_upperZ == rhs._upperZ));
 }
 
 /**
@@ -435,8 +435,8 @@ inline bool Region::operator!=(const Region& rhs) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) const {
-	return (fX <= m_iUpperX - boundary) && (fY <= m_iUpperY - boundary) && (fZ <= m_iUpperZ - boundary) && (fX >= m_iLowerX + boundary) && (fY >= m_iLowerY + boundary)
-			&& (fZ >= m_iLowerZ + boundary);
+	return (fX <= _upperX - boundary) && (fY <= _upperY - boundary) && (fZ <= _upperZ - boundary) && (fX >= _lowerX + boundary) && (fY >= _lowerY + boundary)
+			&& (fZ >= _lowerZ + boundary);
 }
 
 /**
@@ -449,8 +449,8 @@ inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) 
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t boundary) const {
-	return (iX <= m_iUpperX - boundary) && (iY <= m_iUpperY - boundary) && (iZ <= m_iUpperZ - boundary) && (iX >= m_iLowerX + boundary) && (iY >= m_iLowerY + boundary)
-			&& (iZ >= m_iLowerZ + boundary);
+	return (iX <= _upperX - boundary) && (iY <= _upperY - boundary) && (iZ <= _upperZ - boundary) && (iX >= _lowerX + boundary) && (iY >= _lowerY + boundary)
+			&& (iZ >= _lowerZ + boundary);
 }
 
 /**
@@ -461,7 +461,7 @@ inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t bo
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInX(float pos, float boundary) const {
-	return (pos <= m_iUpperX - boundary) && (pos >= m_iLowerX + boundary);
+	return (pos <= _upperX - boundary) && (pos >= _lowerX + boundary);
 }
 
 /**
@@ -472,7 +472,7 @@ inline bool Region::containsPointInX(float pos, float boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInX(int32_t pos, uint8_t boundary) const {
-	return (pos <= m_iUpperX - boundary) && (pos >= m_iLowerX + boundary);
+	return (pos <= _upperX - boundary) && (pos >= _lowerX + boundary);
 }
 
 /**
@@ -483,7 +483,7 @@ inline bool Region::containsPointInX(int32_t pos, uint8_t boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInY(float pos, float boundary) const {
-	return (pos <= m_iUpperY - boundary) && (pos >= m_iLowerY + boundary);
+	return (pos <= _upperY - boundary) && (pos >= _lowerY + boundary);
 }
 
 /**
@@ -494,7 +494,7 @@ inline bool Region::containsPointInY(float pos, float boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInY(int32_t pos, uint8_t boundary) const {
-	return (pos <= m_iUpperY - boundary) && (pos >= m_iLowerY + boundary);
+	return (pos <= _upperY - boundary) && (pos >= _lowerY + boundary);
 }
 
 /**
@@ -505,7 +505,7 @@ inline bool Region::containsPointInY(int32_t pos, uint8_t boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInZ(float pos, float boundary) const {
-	return (pos <= m_iUpperZ - boundary) && (pos >= m_iLowerZ + boundary);
+	return (pos <= _upperZ - boundary) && (pos >= _lowerZ + boundary);
 }
 
 /**
@@ -516,7 +516,7 @@ inline bool Region::containsPointInZ(float pos, float boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInZ(int32_t pos, uint8_t boundary) const {
-	return (pos <= m_iUpperZ - boundary) && (pos >= m_iLowerZ + boundary);
+	return (pos <= _upperZ - boundary) && (pos >= _lowerZ + boundary);
 }
 
 /**
@@ -527,12 +527,12 @@ inline bool Region::containsPointInZ(int32_t pos, uint8_t boundary) const {
  * @param boundary The desired boundary value.
  */
 inline bool Region::containsRegion(const Region& reg, uint8_t boundary) const {
-	return (reg.m_iUpperX <= m_iUpperX - boundary) && (reg.m_iUpperY <= m_iUpperY - boundary) && (reg.m_iUpperZ <= m_iUpperZ - boundary) && (reg.m_iLowerX >= m_iLowerX + boundary)
-			&& (reg.m_iLowerY >= m_iLowerY + boundary) && (reg.m_iLowerZ >= m_iLowerZ + boundary);
+	return (reg._upperX <= _upperX - boundary) && (reg._upperY <= _upperY - boundary) && (reg._upperZ <= _upperZ - boundary) && (reg._lowerX >= _lowerX + boundary)
+			&& (reg._lowerY >= _lowerY + boundary) && (reg._lowerZ >= _lowerZ + boundary);
 }
 
 inline bool Region::isValid() const {
-	return m_iUpperX >= m_iLowerX && m_iUpperY >= m_iLowerY && m_iUpperZ >= m_iLowerZ;
+	return _upperX >= _lowerX && _upperY >= _lowerY && _upperZ >= _lowerZ;
 }
 
 /**
@@ -551,9 +551,9 @@ inline void Region::shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) 
  * @param z The amount to move the lower corner by in 'z'.
  */
 inline void Region::shiftLowerCorner(int32_t x, int32_t y, int32_t z) {
-	m_iLowerX += x;
-	m_iLowerY += y;
-	m_iLowerZ += z;
+	_lowerX += x;
+	_lowerY += y;
+	_lowerZ += z;
 }
 
 /**
@@ -562,9 +562,9 @@ inline void Region::shiftLowerCorner(int32_t x, int32_t y, int32_t z) {
  * @param z The amount to move the upper corner by in 'z'.
  */
 inline void Region::shiftUpperCorner(int32_t x, int32_t y, int32_t z) {
-	m_iUpperX += x;
-	m_iUpperY += y;
-	m_iUpperZ += z;
+	_upperX += x;
+	_upperY += y;
+	_upperZ += z;
 }
 
 /**
@@ -573,13 +573,13 @@ inline void Region::shiftUpperCorner(int32_t x, int32_t y, int32_t z) {
  * @param iAmount The amount to shrink by.
  */
 inline void Region::shrink(int32_t iAmount) {
-	m_iLowerX += iAmount;
-	m_iLowerY += iAmount;
-	m_iLowerZ += iAmount;
+	_lowerX += iAmount;
+	_lowerY += iAmount;
+	_lowerZ += iAmount;
 
-	m_iUpperX -= iAmount;
-	m_iUpperY -= iAmount;
-	m_iUpperZ -= iAmount;
+	_upperX -= iAmount;
+	_upperY -= iAmount;
+	_upperZ -= iAmount;
 }
 
 /**
@@ -590,13 +590,13 @@ inline void Region::shrink(int32_t iAmount) {
  * @param iAmountZ The amount to shrink by in 'z'.
  */
 inline void Region::shrink(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
-	m_iLowerX += iAmountX;
-	m_iLowerY += iAmountY;
-	m_iLowerZ += iAmountZ;
+	_lowerX += iAmountX;
+	_lowerY += iAmountY;
+	_lowerZ += iAmountZ;
 
-	m_iUpperX -= iAmountX;
-	m_iUpperY -= iAmountY;
-	m_iUpperZ -= iAmountZ;
+	_upperX -= iAmountX;
+	_upperY -= iAmountY;
+	_upperZ -= iAmountZ;
 }
 
 /**
