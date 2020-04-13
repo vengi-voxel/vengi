@@ -5,7 +5,6 @@
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
-#include <utility>
 
 /**
  * @addtogroup UI
@@ -55,7 +54,7 @@ struct ImDrawVert { \
 template<class T, class ... Args>
 T* imguiAlloc(Args&&... args) {
 	T* instance = (T*) ImGui::MemAlloc(sizeof(T));
-	IM_PLACEMENT_NEW(instance) T(std::forward<Args>(args)...);
+	IM_PLACEMENT_NEW(instance) T(core::forward<Args>(args)...);
 	return instance;
 }
 
