@@ -84,15 +84,6 @@ void WorldChunkMgr::handleMeshQueue() {
 	}
 }
 
-WorldChunkMgr::ChunkBuffer* WorldChunkMgr::findFreeChunkBuffer() {
-	for (int i = 0; i < lengthof(_chunkBuffers); ++i) {
-		if (!_chunkBuffers[i].inuse) {
-			return &_chunkBuffers[i];
-		}
-	}
-	return nullptr;
-}
-
 static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, voxel::VertexArray& verts, voxel::IndexArray& idxs) {
 	const voxel::IndexArray& indices = mesh.getIndexVector();
 	const size_t start = idxs.size();

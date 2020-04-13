@@ -8,7 +8,6 @@
 #include "WorldMeshExtractor.h"
 #include "video/Camera.h"
 #include "voxel/VoxelVertex.h"
-#include <vector>
 
 namespace voxelrender {
 
@@ -57,7 +56,6 @@ public:
 	void extractMesh(const glm::ivec3 &pos);
 	void extractMeshes(const video::Camera &camera);
 
-	ChunkBuffer *findFreeChunkBuffer();
 	void cull(const video::Camera &camera);
 	void handleMeshQueue();
 
