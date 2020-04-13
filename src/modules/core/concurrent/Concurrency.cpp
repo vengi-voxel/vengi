@@ -4,6 +4,8 @@
 
 #include "Concurrency.h"
 #include "core/Common.h"
+#include "core/Log.h"
+#include <SDL_platform.h>
 #include <thread>
 
 #if defined(__LINUX__)
@@ -23,13 +25,19 @@
 
 namespace core {
 
-void setThreadName(const char *name) {
+bool setThreadName(const char *name) {
 #if defined(__LINUX__)
 	int (*ppthread_setname_np)(pthread_t, const char*) = nullptr;
 	void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
 	ppthread_setname_np = (int(*)(pthread_t, const char*)) fn;
 	if (ppthread_setname_np != nullptr) {
-		ppthread_setname_np(pthread_self(), name);
+		const int err = ppthread_setname_np(pthread_self(), name);
+		if (err == ERANGE) {
+			Log::error("Thread name is too long - max 15 chars, got %s", name);
+		} else if (err != 0) {
+			Log::error("Can't set thread name: %i", err);
+		}
+		return err == 0;
 	}
 #elif defined(__WINDOWS__)
 	typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
@@ -47,8 +55,10 @@ void setThreadName(const char *name) {
 		wchar_t wname[512];
 		mbstowcs(wname, name, 512);
 		pSetThreadDescription(GetCurrentThread(), wname);
+		return true;
 	}
 #endif
+	return false;
 }
 
 void setThreadPriority(ThreadPriority prio) {

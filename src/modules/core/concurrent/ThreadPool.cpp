@@ -22,8 +22,10 @@ void ThreadPool::init() {
 	_workers.reserve(_threads);
 	for (size_t i = 0; i < _threads; ++i) {
 		_workers.emplace_back([this, i] {
-			const core::String n = core::string::format("%s-%i-%i", this->_name, (int)i, (int)getThreadId());
-			setThreadName(n.c_str());
+			const core::String n = core::string::format("%s-%i", this->_name, (int)i);
+			if (!setThreadName(n.c_str())) {
+				Log::error("Failed to set thread name for pool thread %i", (int)i);
+			}
 			core_trace_thread(n.c_str());
 			for (;;) {
 				std::function<void()> task;
