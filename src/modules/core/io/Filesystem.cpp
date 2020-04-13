@@ -174,7 +174,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 		return false;
 	}
 	uv_dirent_t ent;
-	while (uv_fs_scandir_next(&req, &ent) != UV_EOF) {
+	while (uv_fs_scandir_next(&req, &ent) == 0) {
 		DirEntry::Type type = DirEntry::Type::unknown;
 		if (ent.type == UV_DIRENT_DIR) {
 			type = DirEntry::Type::dir;
