@@ -58,6 +58,7 @@ constexpr const char *ConsoleCurses = "con_curses";
 constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";
 constexpr const char *CoreSysLog = "core_syslog";
+constexpr const char *CorePath = "core_path";
 
 // The size of the chunk that is extracted with each step
 constexpr const char *VoxelMeshSize = "voxel_meshsize";
