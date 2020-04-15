@@ -43,10 +43,13 @@ core::AppState Thumbnailer::onConstruct() {
 core::AppState Thumbnailer::onInit() {
 	const core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
+		Log::error("Failed to init application");
 		return state;
 	}
 
 	if (_argc < 2) {
+		_logLevelVar->setVal(SDL_LOG_PRIORITY_INFO);
+		Log::init();
 		usage();
 		return core::AppState::InitFailure;
 	}
@@ -70,10 +73,12 @@ core::AppState Thumbnailer::onInit() {
 
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(_infile, volumes)) {
+		Log::error("Failed to load given input file");
 		return core::AppState::InitFailure;
 	}
 
 	if (!_renderer.init()) {
+		Log::error("Failed to initialize the renderer");
 		return core::AppState::InitFailure;
 	}
 
