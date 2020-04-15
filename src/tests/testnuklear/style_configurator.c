@@ -166,7 +166,7 @@ style_button(struct nk_context* ctx, struct nk_style_button* out_style, struct n
 		NK_TEXT_ALIGN_BOTTOM|NK_TEXT_ALIGN_RIGHT
 	};
 
-	int cur_align;
+	int cur_align = 0;
 	for (int i = 0; i < (int)NK_LEN(aligns); ++i) {
 		if (button.text_alignment == aligns[i]) {
 			cur_align = i;
