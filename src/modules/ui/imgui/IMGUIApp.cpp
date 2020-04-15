@@ -489,10 +489,11 @@ void IMGUIApp::traceEndFrame(const char *threadName) {
 
 void IMGUIApp::addSubTrees(const TraceData* data, bool expandAll, int &depth) const {
 	const ImGuiTreeNodeFlags flags = (expandAll || depth <= 5) ? ImGuiTreeNodeFlags_DefaultOpen : 0;
-	if (ImGui::TreeNodeEx(data->name, flags, "%s (%" PRIu64 "ns)", data->name, data->delta)) {
+	const double millis = (double)data->delta / (SDL_GetPerformanceFrequency() / 1000.0);
+	if (ImGui::TreeNodeEx(data->name, flags, "%s (%f)", data->name, millis)) {
 		const ImU32 colBase = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
-		ImVec2 pos = ImGui::GetCursorScreenPos();
-		const ImVec2 posEnd = {pos.x + core_max(1.0f, (float)(data->delta / 10000UL)), pos.y + 8};
+		const ImVec2 pos = ImGui::GetCursorScreenPos();
+		const ImVec2 posEnd = {pos.x + core_max(1.0f, (float)millis * 10.0f), pos.y + 8.0f};
 		const ImRect size(pos, posEnd);
 		ImGui::ItemSize(size, 0.0f);
 		ImGui::ItemAdd(size, 0, nullptr);
@@ -514,12 +515,12 @@ void IMGUIApp::renderTracing() {
 		return;
 	}
 	core::Array<float, _maxMeasureSize> frameMillis;
-	static float max = 0.0f;
-	static float min = 0.0f;
+	float max = 0.0f;
+	float min = 0.0f;
 	float avg = 0.0f;
 	for (int i = 0; i < _maxMeasureSize; ++i) {
 		const int index = (_currentFrameCounter + i) % _maxMeasureSize;
-		frameMillis[i] = (float)_frameMillis[index] / 1000.0f;
+		frameMillis[i] = _frameMillis[index];
 		min = core_min(min, frameMillis[i]);
 		max = core_max(max, frameMillis[i]);
 		avg += frameMillis[i];
