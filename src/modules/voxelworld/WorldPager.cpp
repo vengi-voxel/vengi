@@ -102,7 +102,7 @@ void WorldPager::createWorld(voxel::PagedVolumeWrapper& volume) const {
 		for (int x = lowerX; x < lowerX + width; x += size) {
 			const int ni = fillVoxels(x, minsY, z, voxels);
 			volume.setVoxels(x, minsY, z, size, size, voxels, ni);
-			memset(voxels, 0, ni * sizeof(voxel::Voxel));
+			core_memset(voxels, 0, ni * sizeof(voxel::Voxel));
 		}
 	}
 }
