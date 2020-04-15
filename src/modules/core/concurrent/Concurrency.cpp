@@ -8,7 +8,7 @@
 #include <SDL_platform.h>
 #include <thread>
 
-#if defined(__LINUX__)
+#if defined(__LINUX__) || defined(__MACOSX__) || defined(__IPHONEOS__)
 #include <dlfcn.h>
 #ifndef RTLD_DEFAULT
 #define RTLD_DEFAULT nullptr
@@ -40,13 +40,18 @@ bool setThreadName(const char *name) {
 		return err == 0;
 	}
 #elif defined(__MACOSX__)
-	const int err = pthread_setname_np(name);
-	if (err == ERANGE) {
-		Log::error("Thread name is too long - max 15 chars, got %s", name);
-	} else if (err != 0) {
-		Log::error("Can't set thread name: %i", err);
+	int (*ppthread_setname_np)(const char*) = nullptr;
+	void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
+	ppthread_setname_np = (int(*)(const char*)) fn;
+	if (ppthread_setname_np != nullptr) {
+		const int err = pthread_setname_np(name);
+		if (err == ERANGE) {
+			Log::error("Thread name is too long - max 15 chars, got %s", name);
+		} else if (err != 0) {
+			Log::error("Can't set thread name: %i", err);
+		}
+		return err == 0;
 	}
-	return err == 0;
 #elif defined(__WINDOWS__)
 	typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
 	static pfnSetThreadDescription pSetThreadDescription = nullptr;
@@ -91,6 +96,27 @@ void setThreadPriority(ThreadPriority prio) {
 		value = THREAD_PRIORITY_NORMAL;
 	}
 	SetThreadPriority(GetCurrentThread(), value);
+#else
+	struct sched_param sched;
+	int policy;
+	pthread_t thread = pthread_self();
+
+	if (pthread_getschedparam(thread, &policy, &sched) != 0) {
+		Log::error("pthread_getschedparam() failed");
+		return;
+	}
+	if (prio == ThreadPriority::Low) {
+		sched.sched_priority = sched_get_priority_min(policy);
+	} else if (prio == ThreadPriority::High) {
+		sched.sched_priority = sched_get_priority_max(policy);
+	} else {
+		int min_priority = sched_get_priority_min(policy);
+		int max_priority = sched_get_priority_max(policy);
+		sched.sched_priority = (min_priority + (max_priority - min_priority) / 2);
+	}
+	if (pthread_setschedparam(thread, policy, &sched) != 0) {
+		Log::error("pthread_setschedparam() failed");
+	}
 #endif
 }
 
