@@ -142,8 +142,6 @@ IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, c
 
 		if (entry.index == 0) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
-			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
-			// see raycastWithEndpoints for this offset, too
 			VoxelVertex vertex;
 			vertex.position = glm::ivec3(uX, uY, uZ) + offset;
 			vertex.colorIndex = materialIn.getColor();
