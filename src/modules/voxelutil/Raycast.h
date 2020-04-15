@@ -7,6 +7,7 @@
 #include "core/Trace.h"
 #include "voxel/PagedVolume.h"
 #include "voxel/RawVolume.h"
+#include "core/Common.h"
 
 namespace voxel {
 namespace RaycastResults {
@@ -128,9 +129,9 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 	const int dj = ((y1 < y2) ? 1 : ((y1 > y2) ? -1 : 0));
 	const int dk = ((z1 < z2) ? 1 : ((z1 > z2) ? -1 : 0));
 
-	const float deltatx = 1.0f / std::abs(x2 - x1);
-	const float deltaty = 1.0f / std::abs(y2 - y1);
-	const float deltatz = 1.0f / std::abs(z2 - z1);
+	const float deltatx = 1.0f / glm::abs(x2 - x1);
+	const float deltaty = 1.0f / glm::abs(y2 - y1);
+	const float deltatz = 1.0f / glm::abs(z2 - z1);
 
 	const float minx = floorf(x1), maxx = minx + 1.0f;
 	float tx = ((x1 > x2) ? (x1 - minx) : (maxx - x1)) * deltatx;
@@ -226,7 +227,7 @@ inline RaycastResult raycastWithEndpointsVolume(const RawVolume* volData, const 
 template<typename Callback, class Volume>
 RaycastResult raycastWithDirection(const Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback&& callback) {
 	const glm::vec3 v3dEnd = v3dStart + v3dDirectionAndLength;
-	return raycastWithEndpoints<Callback, Volume>(volData, v3dStart, v3dEnd, std::forward<Callback>(callback));
+	return raycastWithEndpoints<Callback, Volume>(volData, v3dStart, v3dEnd, core::forward<Callback>(callback));
 }
 
 }
