@@ -52,7 +52,7 @@ bool EventMgr::init(const core::String& luaScript) {
 
 void EventMgr::update(long dt) {
 	core_trace_scoped(EventMgrUpdate);
-	const auto currentMillis = _timeProvider->tickMillis();
+	const auto currentMillis = _timeProvider->tickNow();
 	const EventProvider::EventData& eventData = _eventProvider->eventData();
 	for (const auto& entry : eventData) {
 		const db::EventModelPtr& data = entry.second;

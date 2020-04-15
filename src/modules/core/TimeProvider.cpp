@@ -11,12 +11,22 @@
 
 namespace core {
 
-TimeProvider::TimeProvider() :
-		_tickMillis(uint64_t(0)) {
+void TimeProvider::updateTickTime() {
+	setTickTime(SDL_GetPerformanceCounter());
 }
 
-uint64_t TimeProvider::systemMillis() const {
-	return systemNanos() / 1000000;
+void TimeProvider::setTickTime(uint64_t tickTime) {
+	_highResTime = tickTime;
+	_tickSeconds = _highResTime / (double)SDL_GetPerformanceFrequency();
+	_tickMillis = _highResTime / (double)(SDL_GetPerformanceFrequency() / (uint64_t)1000);
+}
+
+uint64_t TimeProvider::tickNow() const {
+	return _highResTime / (SDL_GetPerformanceFrequency() / (uint64_t)1000);
+}
+
+uint64_t TimeProvider::systemMillis() {
+	return SDL_GetPerformanceCounter() / (SDL_GetPerformanceFrequency() / (uint64_t)1000);
 }
 
 uint64_t TimeProvider::systemNanos() {

@@ -64,7 +64,7 @@ void UserCooldownMgr::sendCooldown(cooldown::Type type, bool started) const {
 	flatbuffers::Offset<void> msg;
 	if (started) {
 		const uint64_t duration = _cooldownProvider->duration(type);
-		const uint64_t now = _timeProvider->tickMillis();
+		const uint64_t now = _timeProvider->tickNow();
 		msg = network::CreateStartCooldown(_cooldownFBB, type, now, duration).Union();
 		msgtype = network::ServerMsgType::StartCooldown;
 	} else {

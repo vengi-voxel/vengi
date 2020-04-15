@@ -268,11 +268,6 @@ public:
 	AppState state() const;
 
 	/**
-	 * @return the millis since the epoch
-	 */
-	uint64_t systemMillis() const;
-
-	/**
 	 * @brief Access to the FileSystem
 	 */
 	io::FilesystemPtr filesystem() const;

@@ -17,7 +17,7 @@ PoiProvider::PoiProvider(const core::TimeProviderPtr& timeProvider) :
 
 void PoiProvider::update(long /*dt*/) {
 	constexpr uint64_t seconds = 60L * 1000L;
-	const uint64_t currentMillis = _timeProvider->tickMillis();
+	const uint64_t currentMillis = _timeProvider->tickNow();
 	core::ScopedWriteLock scoped(_lock);
 	// even if this is timed out - if we only have one, keep it.
 	while (_pois.size() > 1) {
@@ -31,7 +31,7 @@ void PoiProvider::update(long /*dt*/) {
 
 void PoiProvider::add(const glm::vec3& pos, Type type) {
 	core::ScopedWriteLock scoped(_lock);
-	_pois.emplace_back(Poi{pos, type, _timeProvider->tickMillis()});
+	_pois.emplace_back(Poi{pos, type, _timeProvider->tickNow()});
 }
 
 size_t PoiProvider::count() const {

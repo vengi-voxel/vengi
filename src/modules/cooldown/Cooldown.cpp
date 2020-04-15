@@ -14,7 +14,7 @@ Cooldown::Cooldown(Type type, unsigned long durationMillis,
 }
 
 void Cooldown::start(const CooldownCallback& callback) {
-	_startMillis = _timeProvider->tickMillis();
+	_startMillis = _timeProvider->tickNow();
 	_expireMillis = _startMillis + _durationMillis;
 	_callback = callback;
 	if (_callback) {
@@ -51,7 +51,7 @@ bool Cooldown::started() const {
 }
 
 bool Cooldown::running() const {
-	return _expireMillis > 0ul && _timeProvider->tickMillis() < _expireMillis;
+	return _expireMillis > 0ul && _timeProvider->tickNow() < _expireMillis;
 }
 
 unsigned long Cooldown::duration() const {

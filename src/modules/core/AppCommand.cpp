@@ -124,13 +124,8 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}
 	}).setHelp("Show the value of a variable");
 
-	core::Command::registerCommand("timenanos", [&] (const core::CmdArgs& args) {
-		const uint64_t nanos = timeProvider->systemNanos();
-		Log::info("%" PRId64, nanos);
-	}).setHelp("Print current nanoseconds to console");
-
 	core::Command::registerCommand("timemillis", [&] (const core::CmdArgs& args) {
-		const uint64_t millis = timeProvider->systemMillis();
+		const uint64_t millis = timeProvider->tickNow();
 		Log::info("%" PRId64, millis);
 	}).setHelp("Print current milliseconds to console");
 

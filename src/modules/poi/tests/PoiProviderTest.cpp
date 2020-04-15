@@ -31,7 +31,7 @@ TEST_F(PoiProviderTest, testExpire) {
 	_poiProvider->add(glm::vec3(2.0));
 	_poiProvider->add(glm::vec3(3.0));
 	EXPECT_EQ(3u, _poiProvider->count());
-	_timeProvider->update(60 * 1000UL);
+	_timeProvider->setTickTime(60 * 1000UL);
 	_poiProvider->update(0UL);
 	EXPECT_EQ(1u, _poiProvider->count()) << "We should have at least one poi left";
 }
@@ -39,7 +39,7 @@ TEST_F(PoiProviderTest, testExpire) {
 TEST_F(PoiProviderTest, testExpireWithProperPos) {
 	const int max = 3;
 	for (int i = 0; i < max; ++i) {
-		_timeProvider->update(i * 60 * 1000UL);
+		_timeProvider->setTickTime(i * 60 * 1000UL);
 		_poiProvider->add(glm::vec3(static_cast<float>(i)));
 	}
 	EXPECT_EQ(3u, _poiProvider->count());
@@ -48,7 +48,7 @@ TEST_F(PoiProviderTest, testExpireWithProperPos) {
 	const poi::PoiResult& result = _poiProvider->query();
 	EXPECT_TRUE(result.valid);
 	EXPECT_EQ(glm::vec3(static_cast<float>(max - 1)),  result.pos);
-	_timeProvider->update(max * 60 * 1000UL);
+	_timeProvider->setTickTime(max * 60 * 1000UL);
 	_poiProvider->update(0UL);
 	EXPECT_EQ(1u, _poiProvider->count()) << "We should have at least one poi left";
 }
@@ -71,7 +71,7 @@ TEST_F(PoiProviderTest, testNoExpire) {
 	_poiProvider->add(glm::vec3(2.0));
 	_poiProvider->add(glm::vec3(3.0));
 	EXPECT_EQ(3u, _poiProvider->count());
-	_timeProvider->update(30 * 1000UL);
+	_timeProvider->setTickTime(30 * 1000UL);
 	_poiProvider->update(0UL);
 	EXPECT_EQ(3u, _poiProvider->count()) << "We should still have all three left";
 }

@@ -136,7 +136,7 @@ TEST_F(EventMgrTest, testEventModelTimestamps) {
 		return;
 	}
 	const core::TimeProviderPtr& timeProvider = _testApp->timeProvider();
-	const auto now = timeProvider->tickMillis();
+	const auto now = timeProvider->tickNow();
 	const int secondsRuntime = 50;
 	const uint64_t nowSeconds = now / 1000UL;
 
@@ -154,8 +154,8 @@ TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
 	}
 	const core::TimeProviderPtr& timeProvider = _testApp->timeProvider();
 	// current tick time: 1000ms
-	timeProvider->update(1000UL);
-	const auto now = timeProvider->tickMillis();
+	timeProvider->setTickTime(1000UL);
+	const auto now = timeProvider->tickNow();
 	// event start tick time: 2s
 	const uint64_t eventStartSeconds = now / 1000UL + 1;
 	// event stop tick time: 52s
@@ -174,17 +174,17 @@ TEST_F(EventMgrTest, testEventMgrUpdateStartStop) {
 
 	// current tick time is 1s, event starts at 2s
 	mgr.update(0L);
-	ASSERT_EQ(0, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickMillis()) << " should be no running event " << model.startdate().toString();
+	ASSERT_EQ(0, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickNow()) << " should be no running event " << model.startdate().toString();
 
 	// current tick time: 2000ms
-	timeProvider->update(eventStartSeconds * 1000UL);
+	timeProvider->setTickTime(eventStartSeconds * 1000UL);
 	mgr.update(0L);
-	ASSERT_EQ(1, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickMillis()) << " should be a running event " << model.startdate().toString();
+	ASSERT_EQ(1, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickNow()) << " should be a running event " << model.startdate().toString();
 
 	// current tick time: 52000ms
-	timeProvider->update(eventStopTime * 1000UL);
+	timeProvider->setTickTime(eventStopTime * 1000UL);
 	mgr.update(0L);
-	ASSERT_EQ(0, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickMillis()) << " should be no running event " << model.enddate().toString();
+	ASSERT_EQ(0, mgr.runningEvents()) << "At " << timeProvider->toString(timeProvider->tickNow()) << " should be no running event " << model.enddate().toString();
 
 	mgr.shutdown();
 }

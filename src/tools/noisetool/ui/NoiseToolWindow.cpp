@@ -224,7 +224,7 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 		const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
 		QueueData qd;
 		qd.data = data;;
-		qd.data.millis = _noiseTool->timeProvider()->systemMillis();
+		qd.data.millis = core::TimeProvider::systemMillis();
 		qd.noiseBuffer = new uint8_t[noiseBufferSize];
 		qd.graphBuffer = new uint8_t[graphBufferSize];
 
@@ -262,7 +262,7 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 			}
 		}
 
-		qd.data.endmillis = _noiseTool->timeProvider()->systemMillis();
+		qd.data.endmillis = core::TimeProvider::systemMillis();;
 		this->_queue.push(qd);
 	});
 }

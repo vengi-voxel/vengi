@@ -40,7 +40,7 @@ TEST_F(CooldownMgrTest, testCancelCooldown) {
 }
 
 TEST_F(CooldownMgrTest, testExpireCooldown) {
-	_timeProvider->update(0ul);
+	_timeProvider->setTickTime(0ul);
 	ASSERT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
 	ASSERT_EQ(_mgr.defaultDuration(Type::LOGOUT), _mgr.cooldown(Type::LOGOUT)->durationMillis());
 	ASSERT_EQ(_mgr.defaultDuration(Type::LOGOUT), _mgr.cooldown(Type::LOGOUT)->duration());
@@ -51,7 +51,7 @@ TEST_F(CooldownMgrTest, testExpireCooldown) {
 	ASSERT_TRUE(_mgr.cooldown(Type::LOGOUT)->started()) << "Cooldown is not started";
 	ASSERT_TRUE(_mgr.cooldown(Type::LOGOUT)->running()) << "Cooldown is not running";
 	ASSERT_TRUE(_mgr.isCooldown(Type::LOGOUT));
-	_timeProvider->update(_mgr.defaultDuration(Type::LOGOUT));
+	_timeProvider->setTickTime(_mgr.defaultDuration(Type::LOGOUT));
 	ASSERT_FALSE(_mgr.isCooldown(Type::LOGOUT));
 	_mgr.update();
 	ASSERT_FALSE(_mgr.cooldown(Type::LOGOUT)->running()) << "Cooldown is still running";
@@ -60,7 +60,7 @@ TEST_F(CooldownMgrTest, testExpireCooldown) {
 }
 
 TEST_F(CooldownMgrTest, testMultipleCooldown) {
-	_timeProvider->update(0ul);
+	_timeProvider->setTickTime(0ul);
 	ASSERT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
 	ASSERT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::INCREASE)) << "Increase cooldown couldn't get triggered";
 	ASSERT_TRUE(_mgr.isCooldown(Type::LOGOUT));
@@ -73,12 +73,12 @@ TEST_F(CooldownMgrTest, testMultipleCooldown) {
 	const unsigned long increaseDuration = _mgr.defaultDuration(Type::INCREASE);
 
 	if (logoutDuration > increaseDuration) {
-		_timeProvider->update(increaseDuration);
+		_timeProvider->setTickTime(increaseDuration);
 		_mgr.update();
 		ASSERT_TRUE(_mgr.isCooldown(Type::LOGOUT));
 		ASSERT_FALSE(_mgr.isCooldown(Type::INCREASE));
 	} else {
-		_timeProvider->update(logoutDuration);
+		_timeProvider->setTickTime(logoutDuration);
 		_mgr.update();
 		ASSERT_TRUE(_mgr.isCooldown(Type::INCREASE));
 		ASSERT_FALSE(_mgr.isCooldown(Type::LOGOUT));

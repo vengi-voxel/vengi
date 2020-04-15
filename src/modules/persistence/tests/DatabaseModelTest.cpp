@@ -310,7 +310,7 @@ TEST_F(DatabaseModelTest, testTimestamp) {
 	u.setEmail("testTimestamp@now.de");
 	u.setName("testtimestampname");
 	u.setPassword("testtimestamppassword");
-	const auto now = _testApp->timeProvider()->tickMillis();
+	const auto now = _testApp->timeProvider()->tickNow();
 	u.setRegistrationdate(now / 1000UL);
 	ASSERT_TRUE(_dbHandler.insert(u));
 

@@ -24,7 +24,6 @@
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
-#include <chrono>
 
 namespace core {
 
@@ -41,8 +40,8 @@ App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, c
 		_timeProvider(timeProvider), _metric(metric) {
 	_initialLogLevel = SDL_LOG_PRIORITY_INFO;
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)_initialLogLevel);
-	_now = systemMillis();
-	_timeProvider->update(_now);
+	_timeProvider->updateTickTime();
+	_now = _timeProvider->tickNow();
 	_staticInstance = this;
 }
 
@@ -121,15 +120,15 @@ void App::onFrame() {
 		}
 	}
 
+	_timeProvider->updateTickTime();
 	if (AppState::Blocked == _curState) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
-		_deltaFrameMillis = 1;
-		_deltaFrameSeconds = _deltaFrameMillis / 1000.0f;
+		SDL_Delay(1);
+		_deltaFrameMillis = 1.0;
+		_deltaFrameSeconds = _deltaFrameMillis / 1000.0;
 	} else {
-		const uint64_t now = systemMillis();
+		const double now = _timeProvider->tickMillis();
 		_deltaFrameMillis = core_max(int64_t(1), int64_t(now) - int64_t(_now));
 		_deltaFrameSeconds = _deltaFrameMillis / 1000.0f;
-		_timeProvider->update(now);
 		_now = now;
 		_nowSeconds = _now / 1000.0;
 
@@ -144,7 +143,7 @@ void App::onFrame() {
 			onBeforeInit();
 			_nextState = onInit();
 			onAfterInit();
-			_nextFrameMillis = systemMillis();
+			_nextFrameMillis = now;
 			break;
 		}
 		case AppState::InitFailure: {
@@ -154,28 +153,24 @@ void App::onFrame() {
 			break;
 		}
 		case AppState::Running: {
+			core_trace_scoped(AppOnRunning);
 			{
-				core_trace_scoped(AppOnRunning);
-				{
-					core_trace_scoped(AppOnBeforeRunning);
-					onBeforeRunning();
-				}
-				const AppState state = onRunning();
-				if (_nextState != AppState::Cleanup && _nextState != AppState::Destroy) {
-					_nextState = state;
-				}
-				if (AppState::Running == _nextState) {
-					core_trace_scoped(AppOnAfterRunning);
-					onAfterRunning();
-				}
-				const double framesPerSecondsCap = _framesPerSecondsCap->floatVal();
-				if (framesPerSecondsCap >= 1.0) {
-					const uint64_t delay = _nextFrameMillis - now;
-					_nextFrameMillis = now + uint64_t((1000.0 / framesPerSecondsCap) + 0.00001);
-					if (delay > 0u) {
-						std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-					}
-				}
+				core_trace_scoped(AppOnBeforeRunning);
+				onBeforeRunning();
+			}
+			const AppState state = onRunning();
+			if (_nextState != AppState::Cleanup && _nextState != AppState::Destroy) {
+				_nextState = state;
+			}
+			if (AppState::Running == _nextState) {
+				core_trace_scoped(AppOnAfterRunning);
+				onAfterRunning();
+			}
+			const double framesPerSecondsCap = _framesPerSecondsCap->floatVal();
+			if (framesPerSecondsCap >= 1.0 && _nextFrameMillis > now) {
+				const uint64_t delay = _nextFrameMillis - now;
+				_nextFrameMillis = now + uint64_t((1000.0 / framesPerSecondsCap) + 0.00001);
+				SDL_Delay(delay);
 			}
 			break;
 		}
@@ -682,10 +677,6 @@ BindingContext App::setBindingContext(BindingContext newContext) {
 	std::swap(_bindingContext, newContext);
 	Log::debug("Set the input context to %i (from %i)", (int)_bindingContext, (int)newContext);
 	return newContext;
-}
-
-uint64_t App::systemMillis() const {
-	return _timeProvider->systemMillis();
 }
 
 core::ThreadPool& App::threadPool() {
