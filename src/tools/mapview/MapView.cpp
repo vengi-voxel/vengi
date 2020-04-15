@@ -209,6 +209,7 @@ void MapView::beforeUI() {
 	_camera.update(_entity->position(), _deltaFrameSeconds, _now, (float)speed);
 
 	if (_updateWorld) {
+		core_trace_scoped(UpdateWorld);
 		if (!_singlePosExtraction) {
 			_worldRenderer.chunkMgr().extractMeshes(camera);
 		}

@@ -4,6 +4,7 @@
 
 #include "PlayerAction.h"
 #include "core/command/Command.h"
+#include "core/Trace.h"
 #include "frontend/ClientEntity.h"
 
 namespace frontend {
@@ -13,6 +14,7 @@ bool PlayerAction::init() {
 }
 
 void PlayerAction::update(uint64_t now, const ClientEntityPtr& entity) {
+	core_trace_scoped(UpdatePlayerAction);
 	// TODO: if not gliding or diving
 	if (_triggerAction.pressed()) {
 		_triggerAction.execute(now, 100ul, [&entity, this] () {

@@ -5,6 +5,7 @@
 #include "PlayerCamera.h"
 #include "voxel/PagedVolume.h"
 #include "core/command/Command.h"
+#include "core/Trace.h"
 
 namespace voxelrender {
 
@@ -49,6 +50,7 @@ void PlayerCamera::rotate(float pitch, float turn, float speed) {
 }
 
 void PlayerCamera::update(const glm::vec3& entityPosition, float deltaFrameSeconds, uint64_t now, float speed) {
+	core_trace_scoped(UpdatePlayerCamera);
 	if (_zoomIn.pressed()) {
 		_zoomIn.execute(now, 20ul, [&] () {
 			zoom(1.0f);

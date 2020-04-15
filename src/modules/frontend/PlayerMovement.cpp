@@ -4,6 +4,7 @@
 
 #include "PlayerMovement.h"
 #include "core/command/Command.h"
+#include "core/Trace.h"
 
 namespace frontend {
 
@@ -33,6 +34,7 @@ void PlayerMovement::shutdown() {
 }
 
 void PlayerMovement::update(float deltaFrameSeconds, float orientation, ClientEntityPtr& entity, const shared::WalkableFloorResolver& heightResolver) {
+	core_trace_scoped(UpdateMovement);
 	const attrib::ShadowAttributes& attribs = entity->attrib();
 	const double speed = attribs.current(attrib::Type::SPEED);
 	const glm::vec3& currentPos = entity->position();
