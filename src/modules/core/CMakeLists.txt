@@ -40,7 +40,7 @@ set(SRCS
 	BindingContext.cpp BindingContext.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
-	Common.h Common.cpp
+	Common.h
 	CommandlineApp.h CommandlineApp.cpp
 	Enum.h
 	EventBus.cpp EventBus.h
