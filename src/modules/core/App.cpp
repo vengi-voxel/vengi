@@ -80,7 +80,7 @@ void App::traceBeginFrame(const char *threadName) {
 }
 
 void App::traceBegin(const char *threadName, const char* name) {
-	_traceData.emplace(TraceData{threadName, name, core::TimeProvider::systemNanos()});
+	_traceData.emplace(TraceData{threadName, name, core::TimeProvider::highResTime()});
 }
 
 void App::traceEnd(const char *threadName) {

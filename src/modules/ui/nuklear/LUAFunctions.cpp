@@ -1130,10 +1130,10 @@ int uilua_slider(lua_State *s) {
 int uilua_progress(lua_State *s) {
 	struct nk_context* ctx = uilua_ctx(s);
 	const int argc = lua_gettop(s);
-	clua_assert_argc(s, argc >= 2 || argc <= 3);
+	clua_assert_argc(s, argc == 2 || argc == 3);
 	nk_size max = (nk_size)luaL_checknumber(s, 2);
 	int modifiable = 0;
-	if (argc >= 3 && !lua_isnil(s, 3)) {
+	if (argc == 3 && !lua_isnil(s, 3)) {
 		modifiable = clua_checkboolean(s, 3);
 	}
 	if (lua_isnumber(s, 1)) {
