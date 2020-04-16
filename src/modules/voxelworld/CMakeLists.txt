@@ -17,6 +17,7 @@ set(FILES
 	voxel/models/trees/deciduous/1.vox
 	voxel/models/trees/deciduous/2.vox
 	voxel/models/trees/deciduous/3.vox
+	voxel/models/trees/deciduous/4.vox
 	voxel/models/trees/fir/1.vox
 	voxel/models/trees/palm/1.vox
 	voxel/models/trees/pine/1.vox
