@@ -80,10 +80,6 @@ int WorldMgr::findWalkableFloor(const glm::vec3& position, float maxDistanceY) c
 	return y;
 }
 
-int WorldMgr::chunkSize() const {
-	return _volumeData->chunkSideLength();
-}
-
 voxel::VoxelType WorldMgr::material(int x, int y, int z) const {
 	const voxel::Voxel& voxel = _volumeData->voxel(x, y, z);
 	return voxel.getMaterial();

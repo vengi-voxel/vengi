@@ -76,8 +76,6 @@ public:
 
 	voxel::PagedVolume *volumeData();
 
-	int chunkSize() const;
-
 private:
 	friend class WorldMgrTest;
 
@@ -99,7 +97,7 @@ inline voxel::PagedVolume *WorldMgr::volumeData() {
 }
 
 inline glm::ivec3 WorldMgr::chunkPos(const glm::ivec3& pos) const {
-	const float size = chunkSize();
+	const float size = _volumeData->chunkSideLength();
 	const int x = glm::floor(pos.x / size);
 	const int y = glm::floor(pos.y / size);
 	const int z = glm::floor(pos.z / size);
