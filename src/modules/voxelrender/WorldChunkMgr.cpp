@@ -13,7 +13,7 @@ WorldChunkMgr::WorldChunkMgr() : _octree({}, 30) {
 
 void WorldChunkMgr::updateViewDistance(float viewDistance) {
 	const glm::vec3 cullingThreshold(_meshExtractor.meshSize());
-	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 40;
+	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 4;
 	_maxAllowedDistance = glm::pow(viewDistance + maxCullingThreshold, 2);
 }
 
