@@ -92,7 +92,7 @@ void App::traceEnd(const char *threadName) {
 	}
 	TraceData traceData = _traceData.top();
 	_traceData.pop();
-	const uint64_t dt = core::TimeProvider::systemNanos() - traceData.nanos;
+	const uint64_t dt = core::TimeProvider::highResTime() - traceData.nanos;
 	const uint64_t dtMillis = dt / 1000000lu;
 	_metric->gauge(traceData.name, (uint32_t)dtMillis, {{"thread", traceData.threadName}});
 }

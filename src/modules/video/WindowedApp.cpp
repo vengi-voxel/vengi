@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/io/Filesystem.h"
 #include "core/Singleton.h"
+#include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "Renderer.h"
 #include "gl/GLVersion.h"
@@ -15,7 +16,6 @@
 #include "core/Log.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
-#include "core/Singleton.h"
 #include "ShaderManager.h"
 #include "util/KeybindingHandler.h"
 #include "util/KeybindingParser.h"
@@ -104,14 +104,9 @@ core::AppState WindowedApp::onRunning() {
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 	core::Singleton<ShaderManager>::getInstance().update();
 
-	++_frameCounter;
-
-	double time = _now;
-	if (time > _frameCounterResetTime + 1000) {
-		_fps = (int) round((_frameCounter / (time - _frameCounterResetTime)) * 1000);
-		_frameCounterResetTime = time;
-		_frameCounter = 0;
-	}
+	const uint64_t end = core::TimeProvider::highResTime();
+	const double frameDelta = (end - _timeProvider->highResTickTime()) / (double)core::TimeProvider::highResTimeResolution() * 1000.0;
+	_fps = 1.0 / frameDelta;
 
 	return core::AppState::Running;
 }

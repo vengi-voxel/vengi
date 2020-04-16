@@ -427,7 +427,7 @@ void IMGUIApp::traceBeginFrame(const char *threadName) {
 		return;
 	}
 	const std::thread::id id = std::this_thread::get_id();
-	const uint64_t nanos = core::TimeProvider::systemNanos();
+	const uint64_t nanos = core::TimeProvider::highResTime();
 	TraceRoot* traceRoot = new TraceRoot(nanos, threadName);
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	auto i = _traceMeasures.insert(std::make_pair(id, traceRoot));
@@ -442,7 +442,7 @@ void IMGUIApp::traceBegin(const char *threadName, const char* name) {
 		return;
 	}
 	const std::thread::id id = std::this_thread::get_id();
-	const uint64_t nanos = core::TimeProvider::systemNanos();
+	const uint64_t nanos = core::TimeProvider::highResTime();
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	auto measureIter = _traceMeasures.find(id);
 	// might happen if this was activated after the traceBeginFrame was already fired.
@@ -459,7 +459,7 @@ void IMGUIApp::traceEnd(const char *threadName) {
 		return;
 	}
 	const std::thread::id id = std::this_thread::get_id();
-	const uint64_t nanos = core::TimeProvider::systemNanos();
+	const uint64_t nanos = core::TimeProvider::highResTime();
 	std::lock_guard<std::mutex> lock(_traceMutex);
 	auto measureIter = _traceMeasures.find(id);
 	// might happen if this was activated after the traceBeginFrame was already fired.
@@ -483,13 +483,13 @@ void IMGUIApp::traceEndFrame(const char *threadName) {
 		return;
 	}
 	TraceRoot* frame = measureIter->second;
-	const uint64_t nanos = core::TimeProvider::systemNanos();
+	const uint64_t nanos = core::TimeProvider::highResTime();
 	frame->end(nanos);
 }
 
 void IMGUIApp::addSubTrees(const TraceData* data, bool expandAll, int &depth) const {
 	const ImGuiTreeNodeFlags flags = (expandAll || depth <= 5) ? ImGuiTreeNodeFlags_DefaultOpen : 0;
-	const double millis = (double)data->delta / (SDL_GetPerformanceFrequency() / 1000.0);
+	const double millis = (double)data->delta / (core::TimeProvider::highResTimeResolution() / 1000.0);
 	if (ImGui::TreeNodeEx(data->name, flags, "%s (%f)", data->name, millis)) {
 		const ImU32 colBase = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
 		const ImVec2 pos = ImGui::GetCursorScreenPos();

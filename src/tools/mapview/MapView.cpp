@@ -232,7 +232,7 @@ void MapView::onRenderUI() {
 		const float distance = camera.targetDistance();
 		const float pitch = camera.pitch();
 		const float yaw = camera.horizontalYaw();
-		ImGui::Text("Fps: %i", fps());
+		ImGui::Text("Fps: %f", fps());
 		ImGui::Text("Drawcalls: %i", _drawCallsWorld);
 		ImGui::Text("Target Pos: %.2f:%.2f:%.2f ", targetpos.x, targetpos.y, targetpos.z);
 		ImGui::Text("Pos: %.2f:%.2f:%.2f, Distance:%.2f", pos.x, pos.y, pos.z, distance);

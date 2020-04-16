@@ -40,7 +40,18 @@ public:
 	static core::String toString(unsigned long millis, const char *format = "%d-%m-%Y %H-%M-%S");
 
 	static uint64_t systemMillis();
-	static uint64_t systemNanos();
+	static uint64_t highResTime();
+	static uint64_t highResTimeResolution();
+
+	/**
+	 * @brief The raw high res tick time in whatever resolution the platform provides it. This is a cached value
+	 * that is stored at the beginning of the frame
+	 * @sa highResTime()
+	 * @sa highResTimeResolution()
+	 */
+	uint64_t highResTickTime() const {
+		return _highResTime;
+	}
 
 	void updateTickTime();
 	void setTickTime(uint64_t tickTime);

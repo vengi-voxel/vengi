@@ -34,12 +34,10 @@ protected:
 	glm::ivec2 _frameBufferDimension;
 	glm::ivec2 _windowDimension;
 	float _aspect = 1.0f;
-	int _fps = 0;
-	uint32_t _frameCounter = 0;
+	double _fps = 0.0;
 	float _dpiFactor = 1.0f;
 	float _dpiHorizontalFactor = 1.0f;
 	float _dpiVerticalFactor = 1.0f;
-	double _frameCounterResetTime = 0.0;
 	bool _allowRelativeMouseMode = true;
 	bool _showWindow = true;
 
@@ -130,7 +128,7 @@ public:
 	virtual core::AppState onInit() override;
 	virtual core::AppState onCleanup() override;
 
-	static int fps() {
+	static double fps() {
 		return getInstance()->_fps;
 	}
 	static WindowedApp* getInstance();

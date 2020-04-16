@@ -21,6 +21,10 @@ void TimeProvider::setTickTime(uint64_t tickTime) {
 	_tickMillis = _highResTime / (double)(SDL_GetPerformanceFrequency() / (uint64_t)1000);
 }
 
+uint64_t TimeProvider::highResTimeResolution() {
+	return SDL_GetPerformanceFrequency();
+}
+
 uint64_t TimeProvider::tickNow() const {
 	return _highResTime / (SDL_GetPerformanceFrequency() / (uint64_t)1000);
 }
@@ -29,7 +33,7 @@ uint64_t TimeProvider::systemMillis() {
 	return SDL_GetPerformanceCounter() / (SDL_GetPerformanceFrequency() / (uint64_t)1000);
 }
 
-uint64_t TimeProvider::systemNanos() {
+uint64_t TimeProvider::highResTime() {
 	return SDL_GetPerformanceCounter();
 }
 

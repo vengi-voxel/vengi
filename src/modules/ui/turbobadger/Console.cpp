@@ -57,7 +57,7 @@ void Console::beforeRender(const math::Rect<int> &rect) {
 	const tb::TBColor consoleBgColor(c, c, c, a);
 	tb::g_tb_skin->paintRectFill(r, consoleBgColor);
 	char buf[64];
-	SDL_snprintf(buf, sizeof(buf), "FPS: %d", UIApp::fps());
+	SDL_snprintf(buf, sizeof(buf), "FPS: %f", UIApp::fps());
 	const int length = _font->getStringWidth(buf);
 	_font->drawString(rect.getMaxX() - length, 0, tb::TBColor{255, 255, 255}, buf);
 }
