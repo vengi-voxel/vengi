@@ -39,29 +39,28 @@ public:
 
 	template<typename VoxelTypeChecker>
 	int findFloor(int x, int z, VoxelTypeChecker&& check) const {
-		const glm::vec3 start(x, voxel::MAX_HEIGHT, z);
-		const float distance = (float)voxel::MAX_HEIGHT;
-		int y = voxel::NO_FLOOR_FOUND;
-		raycast(start, glm::down, distance, [&] (const voxel::PagedVolume::Sampler& sampler) {
-			if (check(sampler.voxel().getMaterial())) {
-				y = sampler.position().y;
-				return false;
+		voxel::PagedVolume::Sampler sampler(_volumeData);
+		sampler.setPosition(glm::ivec3(x, voxel::MAX_HEIGHT, z));
+		for (int i = 0; i < voxel::MAX_HEIGHT; ++i) {
+			if (!sampler.currentPositionValid()) {
+				break;
 			}
-			return true;
-		});
-		return y;
+			if (check(sampler.voxel().getMaterial())) {
+				return sampler.position().y;
+			}
+			sampler.movePositiveY();
+		}
+		return voxel::NO_FLOOR_FOUND;
 	}
 
 	/**
 	 * @return The y component for the given x and z coordinates that is walkable - or @c NO_FLOOR_FOUND.
 	 */
-	int findWalkableFloor(const glm::vec3& position, float maxDistanceY = (float)voxel::MAX_HEIGHT) const;
+	int findWalkableFloor(const glm::ivec3& position, int maxDistanceY = voxel::MAX_HEIGHT) const;
 
 	bool init(uint32_t volumeMemoryMegaBytes = 512, uint16_t chunkSideLength = 256);
 	void shutdown();
 	void reset();
-
-	voxel::VoxelType material(int x, int y, int z) const;
 
 	/**
 	 * @brief Returns a random position inside the boundaries of the world (on the surface)

@@ -55,34 +55,41 @@ void WorldMgr::shutdown() {
 	_volumeData = nullptr;
 }
 
-int WorldMgr::findWalkableFloor(const glm::vec3& position, float maxDistanceY) const {
-	const voxel::VoxelType type = material(position.x, position.y, position.z);
-	int y = voxel::NO_FLOOR_FOUND;
-	if (voxel::isEnterable(type)) {
-		raycast(position, glm::down, (glm::min)(maxDistanceY, position.y), [&] (const voxel::PagedVolume::Sampler& sampler) {
-			voxel::VoxelType mat = sampler.voxel().getMaterial();
-			if (!voxel::isEnterable(mat)) {
-				y = sampler.position().y + 1;
-				return false;
-			}
-			return true;
-		});
-	} else {
-		raycast(position, glm::up, (glm::min)(maxDistanceY, (float)voxel::MAX_HEIGHT - position.y), [&] (const voxel::PagedVolume::Sampler& sampler) {
-			voxel::VoxelType mat = sampler.voxel().getMaterial();
-			if (voxel::isEnterable(mat)) {
-				y = sampler.position().y;
-				return false;
-			}
-			return true;
-		});
+int WorldMgr::findWalkableFloor(const glm::ivec3& position, int maxDistanceY) const {
+	voxel::PagedVolume::Sampler sampler(_volumeData);
+	sampler.setPosition(position);
+	if (!sampler.currentPositionValid()) {
+		return voxel::NO_FLOOR_FOUND;
 	}
-	return y;
-}
 
-voxel::VoxelType WorldMgr::material(int x, int y, int z) const {
-	const voxel::Voxel& voxel = _volumeData->voxel(x, y, z);
-	return voxel.getMaterial();
+	const voxel::VoxelType type = sampler.voxel().getMaterial();
+	if (voxel::isEnterable(type)) {
+		const int maxDistance = (glm::min)(maxDistanceY, position.y);
+		for (int i = 0; i < maxDistance; ++i) {
+			sampler.moveNegativeY();
+			if (!sampler.currentPositionValid()) {
+				break;
+			}
+			const voxel::VoxelType mat = sampler.voxel().getMaterial();
+			if (!voxel::isEnterable(mat)) {
+				return sampler.position().y + 1;
+			}
+		}
+		return voxel::NO_FLOOR_FOUND;
+	}
+
+	const int maxDistance = (glm::min)(maxDistanceY, voxel::MAX_HEIGHT - position.y);
+	for (int i = 0; i < maxDistance; ++i) {
+		sampler.movePositiveY();
+		if (!sampler.currentPositionValid()) {
+			break;
+		}
+		const voxel::VoxelType mat = sampler.voxel().getMaterial();
+		if (voxel::isEnterable(mat)) {
+			return sampler.position().y;
+		}
+	}
+	return voxel::NO_FLOOR_FOUND;
 }
 
 }

@@ -294,7 +294,7 @@ void Client::beforeUI() {
 	}
 	if (_player) {
 		const video::Camera& camera = _camera.camera();
-		_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _player, [&] (const glm::vec3& pos, float maxWalkHeight) {
+		_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _player, [&] (const glm::ivec3& pos, int maxWalkHeight) {
 			return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 		});
 		_action.update(_now, _player);

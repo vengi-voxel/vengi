@@ -11,7 +11,7 @@
 
 namespace shared {
 
-using WalkableFloorResolver = std::function<int(const glm::vec3& pos, float maxWalkableHeight)>;
+using WalkableFloorResolver = std::function<int(const glm::ivec3& pos, int maxWalkableHeight)>;
 
 class SharedMovement {
 protected:

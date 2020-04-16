@@ -51,15 +51,15 @@ float SharedMovement::gravity() const {
 	return 20.0f;
 }
 
-glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const std::function<int(const glm::vec3& pos, float maxWalkableHeight)>& heightResolver) {
+glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const WalkableFloorResolver& heightResolver) {
 	glm::vec3 newPos = currentPos;
 	if (deltaFrameSeconds > glm::epsilon<float>()) {
 		const glm::quat& rot = glm::angleAxis(orientation, glm::up);
 		speed *= deltaFrameSeconds;
 		newPos += calculateDelta(rot, speed);
 	}
-	const float maxWalkableHeight = 3.0f;
-	_groundHeight = heightResolver(newPos, maxWalkableHeight);
+	const int maxWalkableHeight = 3;
+	_groundHeight = heightResolver(glm::ivec3(glm::floor(newPos)), maxWalkableHeight);
 	if (_groundHeight < voxel::MIN_HEIGHT) {
 		_groundHeight = voxel::MIN_HEIGHT;
 	}

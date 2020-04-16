@@ -146,7 +146,7 @@ core::AppState MapView::onInit() {
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 
-	const int groundPosY = _worldMgr->findWalkableFloor(glm::zero<glm::vec3>());
+	const int groundPosY = _worldMgr->findWalkableFloor(glm::zero<glm::ivec3>());
 	const glm::vec3 pos(0.0f, (float)groundPosY, 0.0f);
 	Log::info("Spawn entity at %s", glm::to_string(pos).c_str());
 
@@ -201,7 +201,7 @@ void MapView::beforeUI() {
 	Super::beforeUI();
 
 	const video::Camera& camera = _camera.camera();
-	_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _entity, [&] (const glm::vec3& pos, float maxWalkHeight) {
+	_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _entity, [&] (const glm::ivec3& pos, int maxWalkHeight) {
 		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
 	});
 	_action.update(_now, _entity);

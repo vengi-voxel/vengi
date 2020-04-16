@@ -24,7 +24,7 @@ void UserMovementMgr::update(long dt) {
 	const MapPtr& map = _user->map();
 	const glm::vec3 oldPos = _user->pos();
 	const network::Animation oldAnimation = _user->animation();
-	const glm::vec3& newPos = _movement.update(deltaSeconds, orientation, speed, oldPos, [&] (const glm::vec3& pos, float maxWalkHeight) {
+	const glm::vec3& newPos = _movement.update(deltaSeconds, orientation, speed, oldPos, [&] (const glm::ivec3& pos, int maxWalkHeight) {
 		return map->findFloor(pos, maxWalkHeight);
 	});
 	_user->setPos(newPos);
