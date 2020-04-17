@@ -9,6 +9,6 @@
 #include "./ext/vector_double2.hpp"
 #include "./ext/vector_double2_precision.hpp"
 #include "./ext/vector_int2.hpp"
-#include "./ext/vector_int2_precision.hpp"
+#include "./ext/vector_int2_sized.hpp"
 #include "./ext/vector_uint2.hpp"
-#include "./ext/vector_uint2_precision.hpp"
+#include "./ext/vector_uint2_sized.hpp"

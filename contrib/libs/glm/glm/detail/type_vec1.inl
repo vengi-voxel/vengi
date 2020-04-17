@@ -485,35 +485,35 @@ namespace glm
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<1, T, Q> operator<<(T scalar, vec<1, T, Q> const& v)
 	{
 		return vec<1, T, Q>(
-			scalar << v.x);
+			static_cast<T>(scalar << v.x));
 	}
 
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<1, T, Q> operator<<(vec<1, T, Q> const& v1, vec<1, T, Q> const& v2)
 	{
 		return vec<1, T, Q>(
-			v1.x << v2.x);
+			static_cast<T>(v1.x << v2.x));
 	}
 
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<1, T, Q> operator>>(vec<1, T, Q> const& v, T scalar)
 	{
 		return vec<1, T, Q>(
-			v.x >> scalar);
+			static_cast<T>(v.x >> scalar));
 	}
 
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<1, T, Q> operator>>(T scalar, vec<1, T, Q> const& v)
 	{
 		return vec<1, T, Q>(
-			scalar >> v.x);
+			static_cast<T>(scalar >> v.x));
 	}
 
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<1, T, Q> operator>>(vec<1, T, Q> const& v1, vec<1, T, Q> const& v2)
 	{
 		return vec<1, T, Q>(
-			v1.x >> v2.x);
+			static_cast<T>(v1.x >> v2.x));
 	}
 
 	template<typename T, qualifier Q>

@@ -1,4 +1,4 @@
-/// @ref vector_packing
+/// @ref ext_vector_packing
 /// @file glm/ext/vector_packing.hpp
 ///
 /// @see core (dependence)
@@ -8,7 +8,7 @@
 ///
 /// Include <glm/ext/vector_packing.hpp> to use the features of this extension.
 ///
-/// This extension provides a set of function to convert vertors to packed
+/// This extension provides a set of function to convert vectors to packed
 /// formats.
 
 #pragma once

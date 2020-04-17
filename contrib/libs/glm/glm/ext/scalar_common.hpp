@@ -28,24 +28,32 @@ namespace glm
 	/// Returns the minimum component-wise values of 3 inputs
 	///
 	/// @tparam T A floating-point scalar type.
+	///
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T min(T a, T b, T c);
 
 	/// Returns the minimum component-wise values of 4 inputs
 	///
 	/// @tparam T A floating-point scalar type.
+	///
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T min(T a, T b, T c, T d);
 
 	/// Returns the maximum component-wise values of 3 inputs
 	///
 	/// @tparam T A floating-point scalar type.
+	///
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T max(T a, T b, T c);
 
 	/// Returns the maximum component-wise values of 4 inputs
 	///
 	/// @tparam T A floating-point scalar type.
+	///
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T max(T a, T b, T c, T d);
 
@@ -54,6 +62,7 @@ namespace glm
 	/// @tparam T A floating-point scalar type.
 	///
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmin">std::fmin documentation</a>
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T fmin(T a, T b);
 
@@ -62,6 +71,7 @@ namespace glm
 	/// @tparam T A floating-point scalar type.
 	///
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmin">std::fmin documentation</a>
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T fmin(T a, T b, T c);
 
@@ -70,6 +80,7 @@ namespace glm
 	/// @tparam T A floating-point scalar type.
 	///
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmin">std::fmin documentation</a>
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T fmin(T a, T b, T c, T d);
 
@@ -78,6 +89,7 @@ namespace glm
 	/// @tparam T A floating-point scalar type.
 	///
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmax">std::fmax documentation</a>
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T fmax(T a, T b);
 
@@ -86,6 +98,7 @@ namespace glm
 	/// @tparam T A floating-point scalar type.
 	///
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmax">std::fmax documentation</a>
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T fmax(T a, T b, T C);
 
@@ -94,8 +107,49 @@ namespace glm
 	/// @tparam T A floating-point scalar type.
 	///
 	/// @see <a href="http://en.cppreference.com/w/cpp/numeric/math/fmax">std::fmax documentation</a>
+	/// @see ext_scalar_common
 	template<typename T>
 	GLM_FUNC_DECL T fmax(T a, T b, T C, T D);
+
+	/// Returns min(max(x, minVal), maxVal) for each component in x. If one of the two arguments is NaN, the value of the other argument is returned.
+	///
+	/// @tparam genType Floating-point scalar types.
+	///
+	/// @see ext_scalar_common
+	template<typename genType>
+	GLM_FUNC_DECL genType fclamp(genType x, genType minVal, genType maxVal);
+
+	/// Simulate GL_CLAMP OpenGL wrap mode
+	///
+	/// @tparam genType Floating-point scalar types.
+	///
+	/// @see ext_scalar_common extension.
+	template<typename genType>
+	GLM_FUNC_DECL genType clamp(genType const& Texcoord);
+
+	/// Simulate GL_REPEAT OpenGL wrap mode
+	///
+	/// @tparam genType Floating-point scalar types.
+	///
+	/// @see ext_scalar_common extension.
+	template<typename genType>
+	GLM_FUNC_DECL genType repeat(genType const& Texcoord);
+
+	/// Simulate GL_MIRRORED_REPEAT OpenGL wrap mode
+	///
+	/// @tparam genType Floating-point scalar types.
+	///
+	/// @see ext_scalar_common extension.
+	template<typename genType>
+	GLM_FUNC_DECL genType mirrorClamp(genType const& Texcoord);
+
+	/// Simulate GL_MIRROR_REPEAT OpenGL wrap mode
+	///
+	/// @tparam genType Floating-point scalar types.
+	///
+	/// @see ext_scalar_common extension.
+	template<typename genType>
+	GLM_FUNC_DECL genType mirrorRepeat(genType const& Texcoord);
 
 	/// @}
 }//namespace glm

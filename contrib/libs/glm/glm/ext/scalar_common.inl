@@ -112,4 +112,41 @@ namespace glm
 			return max(a, b, c);
 		return max(a, b, c, d);
 	}
+
+	// fclamp
+	template<typename genType>
+	GLM_FUNC_QUALIFIER genType fclamp(genType x, genType minVal, genType maxVal)
+	{
+		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'fclamp' only accept floating-point or integer inputs");
+		return fmin(fmax(x, minVal), maxVal);
+	}
+
+	template<typename genType>
+	GLM_FUNC_QUALIFIER genType clamp(genType const& Texcoord)
+	{
+		return glm::clamp(Texcoord, static_cast<genType>(0), static_cast<genType>(1));
+	}
+
+	template<typename genType>
+	GLM_FUNC_QUALIFIER genType repeat(genType const& Texcoord)
+	{
+		return glm::fract(Texcoord);
+	}
+
+	template<typename genType>
+	GLM_FUNC_QUALIFIER genType mirrorClamp(genType const& Texcoord)
+	{
+		return glm::fract(glm::abs(Texcoord));
+	}
+
+	template<typename genType>
+	GLM_FUNC_QUALIFIER genType mirrorRepeat(genType const& Texcoord)
+	{
+		genType const Abs = glm::abs(Texcoord);
+		genType const Clamp = glm::mod(glm::floor(Abs), static_cast<genType>(2));
+		genType const Floor = glm::floor(Abs);
+		genType const Rest = Abs - Floor;
+		genType const Mirror = Clamp + Rest;
+		return mix(Rest, static_cast<genType>(1) - Rest, Mirror >= static_cast<genType>(1));
+	}
 }//namespace glm

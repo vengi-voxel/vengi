@@ -25,40 +25,24 @@ namespace glm
 	/// @addtogroup ext_vector_uint1_sized
 	/// @{
 
-	/// Low precision 8 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint8, lowp>			lowp_u8vec1;
-	/// Medium precision 8 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint8, mediump>		mediump_u8vec1;
-	/// High precision 8 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint8, highp>		highp_u8vec1;
 	/// 8 bit unsigned integer vector of 1 component type.
+	///
+	/// @see ext_vector_uint1_sized
 	typedef vec<1, uint8, defaultp>		u8vec1;
 
-	/// Low precision 16 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint16, lowp>		lowp_u16vec1;
-	/// Medium precision 16 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint16, mediump>		mediump_u16vec1;
-	/// High precision 16 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint16, highp>		highp_u16vec1;
 	/// 16 bit unsigned integer vector of 1 component type.
+	///
+	/// @see ext_vector_uint1_sized
 	typedef vec<1, uint16, defaultp>	u16vec1;
 
-	/// Low precision 32 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint32, lowp>		lowp_u32vec1;
-	/// Medium precision 32 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint32, mediump>		mediump_u32vec1;
-	/// High precision 32 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint32, highp>		highp_u32vec1;
 	/// 32 bit unsigned integer vector of 1 component type.
+	///
+	/// @see ext_vector_uint1_sized
 	typedef vec<1, uint32, defaultp>	u32vec1;
 
-	/// Low precision 64 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint64, lowp>		lowp_u64vec1;
-	/// Medium precision 64 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint64, mediump>		mediump_u64vec1;
-	/// High precision 64 bit unsigned integer vector of 1 component type.
-	typedef vec<1, uint64, highp>		highp_u64vec1;
 	/// 64 bit unsigned integer vector of 1 component type.
+	///
+	/// @see ext_vector_uint1_sized
 	typedef vec<1, uint64, defaultp>	u64vec1;
 
 	/// @}

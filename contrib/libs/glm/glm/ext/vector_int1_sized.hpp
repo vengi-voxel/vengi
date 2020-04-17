@@ -25,40 +25,24 @@ namespace glm
 	/// @addtogroup ext_vector_int1_sized
 	/// @{
 
-	/// Low precision 8 bit signed integer vector of 1 component type.
-	typedef vec<1, int8, lowp>		lowp_i8vec1;
-	/// Medium precision 8 bit signed integer vector of 1 component type.
-	typedef vec<1, int8, mediump>	mediump_i8vec1;
-	/// High precision 8 bit signed integer vector of 1 component type.
-	typedef vec<1, int8, highp>		highp_i8vec1;
 	/// 8 bit signed integer vector of 1 component type.
+	///
+	/// @see ext_vector_int1_sized
 	typedef vec<1, int8, defaultp>	i8vec1;
 
-	/// Low precision 16 bit signed integer vector of 1 component type.
-	typedef vec<1, int16, lowp>		lowp_i16vec1;
-	/// Medium precision 16 bit signed integer vector of 1 component type.
-	typedef vec<1, int16, mediump>	mediump_i16vec1;
-	/// High precision 16 bit signed integer vector of 1 component type.
-	typedef vec<1, int16, highp>	highp_i16vec1;
 	/// 16 bit signed integer vector of 1 component type.
+	///
+	/// @see ext_vector_int1_sized
 	typedef vec<1, int16, defaultp>	i16vec1;
 
-	/// Low precision 32 bit signed integer vector of 1 component type.
-	typedef vec<1, int32, lowp>		lowp_i32vec1;
-	/// Medium precision 32 bit signed integer vector of 1 component type.
-	typedef vec<1, int32, mediump>	mediump_i32vec1;
-	/// High precision 32 bit signed integer vector of 1 component type.
-	typedef vec<1, int32, highp>	highp_i32vec1;
 	/// 32 bit signed integer vector of 1 component type.
+	///
+	/// @see ext_vector_int1_sized
 	typedef vec<1, int32, defaultp>	i32vec1;
 
-	/// Low precision 64 bit signed integer vector of 1 component type.
-	typedef vec<1, int64, lowp>		lowp_i64vec1;
-	/// Medium precision 64 bit signed integer vector of 1 component type.
-	typedef vec<1, int64, mediump>	mediump_i64vec1;
-	/// High precision 64 bit signed integer vector of 1 component type.
-	typedef vec<1, int64, highp>	highp_i64vec1;
 	/// 64 bit signed integer vector of 1 component type.
+	///
+	/// @see ext_vector_int1_sized
 	typedef vec<1, int64, defaultp>	i64vec1;
 
 	/// @}

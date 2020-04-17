@@ -138,6 +138,66 @@ namespace glm
 	template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_DECL vec<L, T, Q> fmax(vec<L, T, Q> const& a, vec<L, T, Q> const& b, vec<L, T, Q> const& c, vec<L, T, Q> const& d);
 
+	/// Returns min(max(x, minVal), maxVal) for each component in x. If one of the two arguments is NaN, the value of the other argument is returned.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam Q Value from qualifier enum
+	///
+	/// @see ext_vector_common
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, T, Q> fclamp(vec<L, T, Q> const& x, T minVal, T maxVal);
+
+	/// Returns min(max(x, minVal), maxVal) for each component in x. If one of the two arguments is NaN, the value of the other argument is returned.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam Q Value from qualifier enum
+	///
+	/// @see ext_vector_common
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, T, Q> fclamp(vec<L, T, Q> const& x, vec<L, T, Q> const& minVal, vec<L, T, Q> const& maxVal);
+
+	/// Simulate GL_CLAMP OpenGL wrap mode
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam Q Value from qualifier enum
+	///
+	/// @see ext_vector_common extension.
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, T, Q> clamp(vec<L, T, Q> const& Texcoord);
+
+	/// Simulate GL_REPEAT OpenGL wrap mode
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam Q Value from qualifier enum
+	///
+	/// @see ext_vector_common extension.
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, T, Q> repeat(vec<L, T, Q> const& Texcoord);
+
+	/// Simulate GL_MIRRORED_REPEAT OpenGL wrap mode
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam Q Value from qualifier enum
+	///
+	/// @see ext_vector_common extension.
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, T, Q> mirrorClamp(vec<L, T, Q> const& Texcoord);
+
+	/// Simulate GL_MIRROR_REPEAT OpenGL wrap mode
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam Q Value from qualifier enum
+	///
+	/// @see ext_vector_common extension.
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_DECL vec<L, T, Q> mirrorRepeat(vec<L, T, Q> const& Texcoord);
+
 	/// @}
 }//namespace glm
 
