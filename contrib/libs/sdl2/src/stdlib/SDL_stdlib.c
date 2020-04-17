@@ -261,6 +261,30 @@ SDL_floorf(float x)
 }
 
 double
+SDL_trunc(double x)
+{
+#if defined(HAVE_TRUNC)
+    return trunc(x);
+#else
+    if (x >= 0.0f) {
+        return SDL_floor(x);
+    } else {
+        return SDL_ceil(x);
+    }
+#endif
+}
+
+float
+SDL_truncf(float x)
+{
+#if defined(HAVE_TRUNCF)
+    return truncf(x);
+#else
+    return (float)SDL_trunc((double)x);
+#endif
+}
+
+double
 SDL_fmod(double x, double y)
 {
 #if defined(HAVE_FMOD)

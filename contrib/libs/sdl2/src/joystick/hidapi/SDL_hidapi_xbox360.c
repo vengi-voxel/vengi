@@ -23,7 +23,6 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_events.h"
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
@@ -218,7 +217,7 @@ HIDAPI_DriverXbox360_UpdateXInput()
         xinput_state_dirty = SDL_FALSE;
         for (user_index = 0; user_index < SDL_arraysize(xinput_state); ++user_index) {
             if (xinput_state[user_index].connected) {
-                if (!XINPUTGETSTATE(user_index, &xinput_state[user_index].state) == ERROR_SUCCESS) {
+                if (XINPUTGETSTATE(user_index, &xinput_state[user_index].state) != ERROR_SUCCESS) {
                     xinput_state[user_index].connected = SDL_FALSE;
                 }
             }

@@ -281,6 +281,8 @@ struct SDL_VideoDevice
      */
     SDL_MetalView (*Metal_CreateView) (_THIS, SDL_Window * window);
     void (*Metal_DestroyView) (_THIS, SDL_MetalView view);
+    void *(*Metal_GetLayer) (_THIS, SDL_MetalView view);
+    void (*Metal_GetDrawableSize) (_THIS, SDL_Window * window, int *w, int *h);
 
     /* * * */
     /*
@@ -372,6 +374,11 @@ struct SDL_VideoDevice
     SDL_GLContext current_glctx;
     SDL_TLSID current_glwin_tls;
     SDL_TLSID current_glctx_tls;
+
+    /* Flag that stores whether it's allowed to call SDL_GL_MakeCurrent()
+     * with a NULL window, but a non-NULL context. (Not allowed in most cases,
+     * except on EGL under some circumstances.) */
+    SDL_bool gl_allow_no_surface;
 
     /* * * */
     /* Data used by the Vulkan drivers */

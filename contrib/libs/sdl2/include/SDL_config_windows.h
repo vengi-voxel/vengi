@@ -195,14 +195,15 @@ typedef unsigned int uintptr_t;
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_DINPUT 1
-#define SDL_JOYSTICK_XINPUT 1
 #define SDL_JOYSTICK_HIDAPI 1
-#define SDL_JOYSTICK_RAWINPUT 1
+#define SDL_JOYSTICK_RAWINPUT   1
+#define SDL_JOYSTICK_VIRTUAL    1
+#define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT   1
 #define SDL_HAPTIC_XINPUT   1
 
-/* Enable the dummy sensor driver */
-#define SDL_SENSOR_DUMMY  1
+/* Enable the sensor driver */
+#define SDL_SENSOR_WINDOWS  1
 
 /* Enable various shared object loading systems */
 #define SDL_LOADSO_WINDOWS  1
