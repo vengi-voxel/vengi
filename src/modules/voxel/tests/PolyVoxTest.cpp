@@ -47,6 +47,22 @@ TEST_F(PolyVoxTest, testSamplerPeek) {
 	ASSERT_EQ(VoxelType::Leaf, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
+TEST_F(PolyVoxTest, testChunkPos) {
+	const int length = _volData.chunkSideLength();
+	EXPECT_EQ(64, length);
+	const int half = length / 2;
+	EXPECT_EQ(_volData.chunkPos(half, half, half), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(_volData.chunkPos(half - 1, half - 1, half - 1), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(_volData.chunkPos(length - 1, length - 1, length - 1), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(_volData.chunkPos(0, 0, 0), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(_volData.chunkPos(1, 1, 1), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(_volData.chunkPos(-1, -1, -1), glm::ivec3(-1, -1, -1));
+	EXPECT_EQ(_volData.chunkPos(-(length + 1), -(length + 1), -(length + 1)), glm::ivec3(-2, -2, -2));
+	EXPECT_EQ(_volData.chunkPos(-length, -length, -length), glm::ivec3(-1, -1, -1));
+	EXPECT_EQ(_volData.chunkPos(-(length - 1), -(length - 1), -(length - 1)), glm::ivec3(-1, -1, -1));
+	EXPECT_EQ(_volData.chunkPos(length, length, length), glm::ivec3(1, 1, 1));
+}
+
 TEST_F(PolyVoxTest, testSamplerPeekWithMovingX) {
 	PagedVolume::Sampler sampler(&_volData);
 	sampler.setPosition(0, 1, 1);
