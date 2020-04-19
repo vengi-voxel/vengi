@@ -13,6 +13,8 @@ set(SRCS
 	network/EntityUpdateHandler.h
 	network/EntityRemoveHandler.h
 	network/VarUpdateHandler.h
+	network/StartCooldownHandler.h
+	network/StopCooldownHandler.h
 )
 
 set(LUA_SRCS

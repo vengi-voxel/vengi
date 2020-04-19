@@ -23,6 +23,8 @@
 #include "network/UserSpawnHandler.h"
 #include "network/UserInfoHandler.h"
 #include "network/VarUpdateHandler.h"
+#include "network/StartCooldownHandler.h"
+#include "network/StopCooldownHandler.h"
 #include "voxel/MaterialColor.h"
 #include "core/metric/Metric.h"
 #include "core/TimeProvider.h"
@@ -161,6 +163,8 @@ core::AppState Client::onInit() {
 	regHandler(network::ServerMsgType::EntityUpdate, EntityUpdateHandler);
 	regHandler(network::ServerMsgType::UserSpawn, UserSpawnHandler);
 	regHandler(network::ServerMsgType::AuthFailed, AuthFailedHandler);
+	regHandler(network::ServerMsgType::StartCooldown, StartCooldownHandler);
+	regHandler(network::ServerMsgType::StopCooldown, StopCooldownHandler);
 	regHandler(network::ServerMsgType::VarUpdate, VarUpdateHandler);
 	regHandler(network::ServerMsgType::UserInfo, UserInfoHandler);
 
