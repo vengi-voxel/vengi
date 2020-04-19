@@ -80,7 +80,6 @@ public:
 	core::AppState onInit() override;
 	core::AppState onRunning() override;
 	core::AppState onCleanup() override;
-	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize(int windowWidth, int windowHeight) override;
 
 	client::CooldownHandler& cooldownHandler();

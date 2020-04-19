@@ -365,14 +365,6 @@ core::AppState Client::onCleanup() {
 	return state;
 }
 
-bool Client::onKeyPress(int32_t key, int16_t modifier) {
-	if (Super::onKeyPress(key, modifier)) {
-		return true;
-	}
-
-	return false;
-}
-
 core::AppState Client::onRunning() {
 	const core::AppState state = Super::onRunning();
 	if (_network->isConnected()) {
