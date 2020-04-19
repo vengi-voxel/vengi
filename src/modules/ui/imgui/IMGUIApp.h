@@ -9,10 +9,8 @@
 #include "video/Buffer.h"
 #include "RenderShaders.h"
 #include "Console.h"
-#include <atomic>
 #include <map>
 #include <stack>
-#include <mutex>
 #include "core/collection/Array.h"
 
 namespace ui {
@@ -37,7 +35,7 @@ protected:
 	int8_t _mouseWheel = 0;
 	bool _mousePressed[3] = {false};
 	bool _renderTracing = false;
-	std::mutex _traceMutex;
+	core::Lock _traceMutex;
 	static constexpr int _maxMeasureSize = 200;
 	struct TraceData {
 		TraceData(uint64_t _value, const char *_name);

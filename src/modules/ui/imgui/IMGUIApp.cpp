@@ -368,7 +368,7 @@ void IMGUIApp::onAfterFrame() {
 	}
 	++_currentFrameCounter;
 	const int index = _currentFrameCounter % _maxMeasureSize;
-	std::lock_guard lock(_traceMutex);
+	core::ScopedLock lock(_traceMutex);
 	for (auto& entry : _traceMeasuresLastFrame[index]) {
 		delete entry.second;
 	}
@@ -429,7 +429,7 @@ void IMGUIApp::traceBeginFrame(const char *threadName) {
 	const std::thread::id id = std::this_thread::get_id();
 	const uint64_t nanos = core::TimeProvider::highResTime();
 	TraceRoot* traceRoot = new TraceRoot(nanos, threadName);
-	std::lock_guard<std::mutex> lock(_traceMutex);
+	core::ScopedLock lock(_traceMutex);
 	auto i = _traceMeasures.insert(std::make_pair(id, traceRoot));
 	if (!i.second) {
 		delete i.first->second;
@@ -443,7 +443,7 @@ void IMGUIApp::traceBegin(const char *threadName, const char* name) {
 	}
 	const std::thread::id id = std::this_thread::get_id();
 	const uint64_t nanos = core::TimeProvider::highResTime();
-	std::lock_guard<std::mutex> lock(_traceMutex);
+	core::ScopedLock lock(_traceMutex);
 	auto measureIter = _traceMeasures.find(id);
 	// might happen if this was activated after the traceBeginFrame was already fired.
 	if (measureIter == _traceMeasures.end()) {
@@ -460,7 +460,7 @@ void IMGUIApp::traceEnd(const char *threadName) {
 	}
 	const std::thread::id id = std::this_thread::get_id();
 	const uint64_t nanos = core::TimeProvider::highResTime();
-	std::lock_guard<std::mutex> lock(_traceMutex);
+	core::ScopedLock lock(_traceMutex);
 	auto measureIter = _traceMeasures.find(id);
 	// might happen if this was activated after the traceBeginFrame was already fired.
 	if (measureIter == _traceMeasures.end()) {
@@ -476,7 +476,7 @@ void IMGUIApp::traceEndFrame(const char *threadName) {
 		return;
 	}
 	const std::thread::id id = std::this_thread::get_id();
-	std::lock_guard<std::mutex> lock(_traceMutex);
+	core::ScopedLock lock(_traceMutex);
 	auto measureIter = _traceMeasures.find(id);
 	// might happen if this was activated after the traceBeginFrame was already fired.
 	if (measureIter == _traceMeasures.end()) {
