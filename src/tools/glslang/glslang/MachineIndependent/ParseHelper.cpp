@@ -2013,18 +2013,20 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         if (arg > 0) {
 
 #ifndef GLSLANG_WEB
-            bool f16ShadowCompare = (*argp)[1]->getAsTyped()->getBasicType() == EbtFloat16 && arg0->getType().getSampler().shadow;
+            bool f16ShadowCompare = (*argp)[1]->getAsTyped()->getBasicType() == EbtFloat16 &&
+                                    arg0->getType().getSampler().shadow;
             if (f16ShadowCompare)
                 ++arg;
 #endif
-            if (! (*argp)[arg]->getAsConstantUnion())
+            if (! (*argp)[arg]->getAsTyped()->getQualifier().isConstant())
                 error(loc, "argument must be compile-time constant", "texel offset", "");
-            else {
+            else if ((*argp)[arg]->getAsConstantUnion()) {
                 const TType& type = (*argp)[arg]->getAsTyped()->getType();
                 for (int c = 0; c < type.getVectorSize(); ++c) {
                     int offset = (*argp)[arg]->getAsConstantUnion()->getConstArray()[c].getIConst();
                     if (offset > resources.maxProgramTexelOffset || offset < resources.minProgramTexelOffset)
-                        error(loc, "value is out of range:", "texel offset", "[gl_MinProgramTexelOffset, gl_MaxProgramTexelOffset]");
+                        error(loc, "value is out of range:", "texel offset",
+                              "[gl_MinProgramTexelOffset, gl_MaxProgramTexelOffset]");
                 }
             }
         }
@@ -3152,7 +3154,7 @@ bool TParseContext::constructorTextureSamplerError(const TSourceLoc& loc, const 
     if (function[0].type->getBasicType() != EbtSampler ||
         ! function[0].type->getSampler().isTexture() ||
         function[0].type->isArray()) {
-        error(loc, "sampler-constructor first argument must be a scalar textureXXX type", token, "");
+        error(loc, "sampler-constructor first argument must be a scalar *texture* type", token, "");
         return true;
     }
     // simulate the first argument's impact on the result type, so it can be compared with the encapsulated operator!=()
@@ -3160,7 +3162,8 @@ bool TParseContext::constructorTextureSamplerError(const TSourceLoc& loc, const 
     texture.setCombined(false);
     texture.shadow = false;
     if (texture != function[0].type->getSampler()) {
-        error(loc, "sampler-constructor first argument must match type and dimensionality of constructor type", token, "");
+        error(loc, "sampler-constructor first argument must be a *texture* type"
+                   " matching the dimensionality and sampled type of the constructor", token, "");
         return true;
     }
 
@@ -3170,7 +3173,7 @@ bool TParseContext::constructorTextureSamplerError(const TSourceLoc& loc, const 
     if (  function[1].type->getBasicType() != EbtSampler ||
         ! function[1].type->getSampler().isPureSampler() ||
           function[1].type->isArray()) {
-        error(loc, "sampler-constructor second argument must be a scalar type 'sampler'", token, "");
+        error(loc, "sampler-constructor second argument must be a scalar sampler or samplerShadow", token, "");
         return true;
     }
 

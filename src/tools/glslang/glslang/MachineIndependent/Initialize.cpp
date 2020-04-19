@@ -1262,7 +1262,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 #endif
 
     if ((profile == EEsProfile && version >= 300) ||
-        (profile != EEsProfile && version >= 330)) {
+        (profile != EEsProfile && version >= 150)) { // GL_ARB_shader_bit_encoding
         commonBuiltins.append(
             "int   floatBitsToInt(highp float value);"
             "ivec2 floatBitsToInt(highp vec2  value);"
@@ -5457,6 +5457,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "const uint gl_RayFlagsCullOpaqueEXT = 64U;"
             "const uint gl_RayFlagsCullNoOpaqueNV = 128U;"
             "const uint gl_RayFlagsCullNoOpaqueEXT = 128U;"
+            "const uint gl_RayFlagsSkipTrianglesEXT = 256U;"
+            "const uint gl_RayFlagsSkipAABBEXT = 512U;"
             "const uint gl_HitKindFrontFacingTriangleEXT = 254U;"
             "const uint gl_HitKindBackFacingTriangleEXT = 255U;"
             "\n";
@@ -7572,6 +7574,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("rayQueryGetIntersectionWorldToObjectEXT",                          1, &E_GL_EXT_ray_query);
             symbolTable.setFunctionExtensions("rayQueryGetWorldRayOriginEXT",                                     1, &E_GL_EXT_ray_query);
             symbolTable.setFunctionExtensions("rayQueryGetWorldRayDirectionEXT",                                  1, &E_GL_EXT_ray_query);
+            symbolTable.setVariableExtensions("gl_RayFlagsSkipAABBEXT",                         1, &E_GL_EXT_ray_flags_primitive_culling);
+            symbolTable.setVariableExtensions("gl_RayFlagsSkipTrianglesEXT",                    1, &E_GL_EXT_ray_flags_primitive_culling);
         }
 
         if ((profile != EEsProfile && version >= 130) ||
@@ -7810,6 +7814,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("imageAtomicXor",      1, &E_GL_OES_shader_image_atomic);
             symbolTable.setFunctionExtensions("imageAtomicExchange", 1, &E_GL_OES_shader_image_atomic);
             symbolTable.setFunctionExtensions("imageAtomicCompSwap", 1, &E_GL_OES_shader_image_atomic);
+        }
+
+        if (profile != EEsProfile && version < 330 ) {
+            symbolTable.setFunctionExtensions("floatBitsToInt", 1, &E_GL_ARB_shader_bit_encoding);
+            symbolTable.setFunctionExtensions("floatBitsToUint", 1, &E_GL_ARB_shader_bit_encoding);
+            symbolTable.setFunctionExtensions("intBitsToFloat", 1, &E_GL_ARB_shader_bit_encoding);
+            symbolTable.setFunctionExtensions("uintBitsToFloat", 1, &E_GL_ARB_shader_bit_encoding);
         }
 
         symbolTable.setVariableExtensions("gl_DeviceIndex",  1, &E_GL_EXT_device_group);
