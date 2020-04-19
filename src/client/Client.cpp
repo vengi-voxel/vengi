@@ -29,6 +29,7 @@
 #include "core/metric/Metric.h"
 #include "core/TimeProvider.h"
 #include "core/SharedPtr.h"
+#include "commonlua/LUA.h"
 #include "ClientLUA.h"
 #include <SDL.h>
 #include <engine-config.h>
@@ -240,12 +241,7 @@ core::AppState Client::onInit() {
 void Client::configureLUA(lua::LUA& lua) {
 	Super::configureLUA(lua);
 	_lua.newGlobalData<Client>("clientpointer", this);
-	const luaL_Reg funcs[] = {
-		{"connect", clientlua_connect},
-		{"disconnect", clientlua_disconnect},
-		{nullptr, nullptr}
-	};
-	clua_registerfuncsglobal(lua.state(), funcs, "_metaclient", "client");
+	clientlua_init(lua.state());
 }
 
 void Client::initUIConfig(struct nk_convert_config& config) {
