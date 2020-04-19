@@ -32,6 +32,7 @@ Command& Command::registerCommand(const char* name, FunctionType&& func) {
 	const Command c(cname, std::forward<FunctionType>(func));
 	ScopedWriteLock lock(_lock);
 	_cmds.put(cname, c);
+	updateSortedList();
 	return (Command&)_cmds.find(cname)->value;
 }
 
@@ -107,13 +108,13 @@ int Command::update(uint64_t dt) {
 
 void Command::updateSortedList() {
 	core_assert((int)_cmds.size() < lengthof(_sortedCommandList));
-	int idx = 0;
+	_sortedCommandListSize = 0u;
 	for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
-		_sortedCommandList[idx] = &i->value;
+		_sortedCommandList[_sortedCommandListSize++] = &i->value;
 	}
-	_sortedCommandListSize = _cmds.size();
+	Log::info("sorting %i entries", (int)_sortedCommandListSize);
 	SDL_qsort(_sortedCommandList, _sortedCommandListSize, sizeof(Command*), [] (const void *v1, const void *v2) {
-		return SDL_strcmp(((const Command*)v1)->name(), ((const Command*)v2)->name());
+		return SDL_strcmp((*(const Command**)v1)->name(), (*(const Command**)v2)->name());
 	});
 }
 
