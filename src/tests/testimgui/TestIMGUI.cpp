@@ -23,10 +23,6 @@ void TestIMGUI::onRenderUI() {
 	if (ImGui::Button("Metrics Window")) {
 		_showMetricsWindow ^= true;
 	}
-	bool temp = _renderTracing;
-	if (ImGui::Checkbox("Toggle profiler", &temp)) {
-		_renderTracing = toggleTrace();
-	}
 	if (ImGui::Button("Quit")) {
 		requestQuit();
 	}

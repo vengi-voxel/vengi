@@ -137,10 +137,6 @@ void TestComputeTexture3D::onRenderUI() {
 		_depth = glm::clamp(_depth, 2, 64);
 		initVolume();
 	}
-	bool temp = _renderTracing;
-	if (ImGui::Checkbox("Toggle profiler", &temp)) {
-		_renderTracing = toggleTrace();
-	}
 	ImGui::Separator();
 	if (ImGui::Button("Quit")) {
 		requestQuit();

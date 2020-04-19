@@ -338,11 +338,6 @@ void MapView::onRenderUI() {
 
 	ImGui::Checkbox("Line mode rendering", &_lineModeRendering);
 	ImGui::Checkbox("Update World", &_updateWorld);
-
-	bool temp = _renderTracing;
-	if (ImGui::Checkbox("Toggle profiler", &temp)) {
-		_renderTracing = toggleTrace();
-	}
 }
 
 core::AppState MapView::onRunning() {

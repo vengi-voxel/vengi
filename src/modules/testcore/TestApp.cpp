@@ -136,10 +136,6 @@ core::AppState TestApp::onRunning() {
 
 void TestApp::onRenderUI() {
 	ImGui::BulletText("ESC: toggle camera free look");
-	bool temp = _renderTracing;
-	if (ImGui::Checkbox("Toggle profiler", &temp)) {
-		_renderTracing = toggleTrace();
-	}
 	ImGui::Checkbox("Render axis", &_renderAxis);
 	ImGui::Checkbox("Render plane", &_renderPlane);
 	ImGui::Checkbox("Camera motion", &_cameraMotion);
