@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "core/io/Filesystem.h"
 #include <glm/vec3.hpp>
+#include <glm/common.hpp>
 
 namespace voxelworld {
 
@@ -54,7 +55,7 @@ voxel::RawVolume* TreeVolumeCache::loadTree(const glm::ivec3& treePos, const cha
 	if (treeCount <= 0) {
 		return nullptr;
 	}
-	const int treeIndex = 1 + ((treePos.x + treePos.z) % treeCount);
+	const int treeIndex = 1 + (glm::abs(treePos.x + treePos.z) % treeCount);
 	char filename[64];
 	if (!core::string::formatBuf(filename, sizeof(filename), "models/trees/%s/%i.vox", treeType, treeIndex)) {
 		Log::error("Failed to assemble tree path");
