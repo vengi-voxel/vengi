@@ -31,43 +31,42 @@ public:
 };
 
 TEST_F(CooldownMgrTest, testTriggerCooldown) {
-	ASSERT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
+	EXPECT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
 }
 
 TEST_F(CooldownMgrTest, testCancelCooldown) {
-	ASSERT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
-	ASSERT_TRUE(_mgr.cancelCooldown(Type::LOGOUT)) << "Failed to cancel the logout cooldown";
+	EXPECT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
+	EXPECT_TRUE(_mgr.cancelCooldown(Type::LOGOUT)) << "Failed to cancel the logout cooldown";
 }
 
 TEST_F(CooldownMgrTest, testExpireCooldown) {
 	_timeProvider->setTickTime(0ul);
-	ASSERT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
-	ASSERT_EQ(_mgr.defaultDuration(Type::LOGOUT), _mgr.cooldown(Type::LOGOUT)->durationMillis());
-	ASSERT_EQ(_mgr.defaultDuration(Type::LOGOUT), _mgr.cooldown(Type::LOGOUT)->duration());
-	ASSERT_TRUE(_mgr.cooldown(Type::LOGOUT)->started()) << "Cooldown is not started";
-	ASSERT_TRUE(_mgr.cooldown(Type::LOGOUT)->running()) << "Cooldown is not running";
-	ASSERT_TRUE(_mgr.isCooldown(Type::LOGOUT));
+	EXPECT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
+	EXPECT_EQ(_mgr.defaultDuration(Type::LOGOUT), _mgr.cooldown(Type::LOGOUT)->durationMillis());
+	EXPECT_EQ(_mgr.defaultDuration(Type::LOGOUT), _mgr.cooldown(Type::LOGOUT)->duration());
+	EXPECT_TRUE(_mgr.cooldown(Type::LOGOUT)->started()) << "Cooldown is not started";
+	EXPECT_TRUE(_mgr.cooldown(Type::LOGOUT)->running()) << "Cooldown is not running";
+	EXPECT_TRUE(_mgr.isCooldown(Type::LOGOUT));
 	_mgr.update();
-	ASSERT_TRUE(_mgr.cooldown(Type::LOGOUT)->started()) << "Cooldown is not started";
-	ASSERT_TRUE(_mgr.cooldown(Type::LOGOUT)->running()) << "Cooldown is not running";
-	ASSERT_TRUE(_mgr.isCooldown(Type::LOGOUT));
+	EXPECT_TRUE(_mgr.cooldown(Type::LOGOUT)->started()) << "Cooldown is not started";
+	EXPECT_TRUE(_mgr.cooldown(Type::LOGOUT)->running()) << "Cooldown is not running";
+	EXPECT_TRUE(_mgr.isCooldown(Type::LOGOUT));
 	_timeProvider->setTickTime(_mgr.defaultDuration(Type::LOGOUT));
-	ASSERT_FALSE(_mgr.isCooldown(Type::LOGOUT));
 	_mgr.update();
-	ASSERT_FALSE(_mgr.cooldown(Type::LOGOUT)->running()) << "Cooldown is still running";
-	ASSERT_FALSE(_mgr.isCooldown(Type::LOGOUT));
-	ASSERT_TRUE(_mgr.resetCooldown(Type::LOGOUT)) << "Failed to reset the logout cooldown";
+	EXPECT_FALSE(_mgr.cooldown(Type::LOGOUT)->running()) << "Cooldown is still running";
+	EXPECT_FALSE(_mgr.isCooldown(Type::LOGOUT));
+	EXPECT_TRUE(_mgr.resetCooldown(Type::LOGOUT)) << "Failed to reset the logout cooldown";
 }
 
 TEST_F(CooldownMgrTest, testMultipleCooldown) {
 	_timeProvider->setTickTime(0ul);
-	ASSERT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
-	ASSERT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::INCREASE)) << "Increase cooldown couldn't get triggered";
-	ASSERT_TRUE(_mgr.isCooldown(Type::LOGOUT));
-	ASSERT_TRUE(_mgr.isCooldown(Type::INCREASE));
+	EXPECT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
+	EXPECT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::INCREASE)) << "Increase cooldown couldn't get triggered";
+	EXPECT_TRUE(_mgr.isCooldown(Type::LOGOUT));
+	EXPECT_TRUE(_mgr.isCooldown(Type::INCREASE));
 	_mgr.update();
-	ASSERT_TRUE(_mgr.isCooldown(Type::LOGOUT));
-	ASSERT_TRUE(_mgr.isCooldown(Type::INCREASE));
+	EXPECT_TRUE(_mgr.isCooldown(Type::LOGOUT));
+	EXPECT_TRUE(_mgr.isCooldown(Type::INCREASE));
 
 	const unsigned long logoutDuration = _mgr.defaultDuration(Type::LOGOUT);
 	const unsigned long increaseDuration = _mgr.defaultDuration(Type::INCREASE);
@@ -75,19 +74,19 @@ TEST_F(CooldownMgrTest, testMultipleCooldown) {
 	if (logoutDuration > increaseDuration) {
 		_timeProvider->setTickTime(increaseDuration);
 		_mgr.update();
-		ASSERT_TRUE(_mgr.isCooldown(Type::LOGOUT));
-		ASSERT_FALSE(_mgr.isCooldown(Type::INCREASE));
+		EXPECT_TRUE(_mgr.isCooldown(Type::LOGOUT));
+		EXPECT_FALSE(_mgr.isCooldown(Type::INCREASE));
 	} else {
 		_timeProvider->setTickTime(logoutDuration);
 		_mgr.update();
-		ASSERT_TRUE(_mgr.isCooldown(Type::INCREASE));
-		ASSERT_FALSE(_mgr.isCooldown(Type::LOGOUT));
+		EXPECT_TRUE(_mgr.isCooldown(Type::INCREASE));
+		EXPECT_FALSE(_mgr.isCooldown(Type::LOGOUT));
 	}
 }
 
 TEST_F(CooldownMgrTest, testTriggerCooldownTwice) {
-	ASSERT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
-	ASSERT_EQ(CooldownTriggerState::ALREADY_RUNNING, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown was triggered twice";
+	EXPECT_EQ(CooldownTriggerState::SUCCESS, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown couldn't get triggered";
+	EXPECT_EQ(CooldownTriggerState::ALREADY_RUNNING, _mgr.triggerCooldown(Type::LOGOUT)) << "Logout cooldown was triggered twice";
 }
 
 }

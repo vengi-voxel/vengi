@@ -24,10 +24,10 @@ bool UserCooldownMgr::init() {
 		const int32_t id = model.cooldownid();
 		const cooldown::Type type = (cooldown::Type)id;
 		const uint64_t millis = model.starttime().millis();
-		const cooldown::CooldownPtr& cooldown = createCooldown(type, millis);
-		_cooldowns[type] = cooldown;
-		if (cooldown->running()) {
-			_queue.push(cooldown);
+		const cooldown::CooldownPtr& c = createCooldown(type, millis);
+		_cooldowns.put(type, c);
+		if (c->running()) {
+			_queue.push(c);
 		}
 	})) {
 		Log::warn("Could not load cooldowns for user " PRIEntId, _user->id());
@@ -79,7 +79,7 @@ bool UserCooldownMgr::getDirtyModels(Models& models) {
 	core::ScopedReadLock lock(_lock);
 	models.reserve(models.size() + _cooldowns.size());
 	for (const auto& e : _cooldowns) {
-		const cooldown::CooldownPtr& c = e.second;
+		const cooldown::CooldownPtr& c = e->value;
 		const int index = (int)c->type();
 		core_assert_msg(index >= core::enumVal(cooldown::Type::MIN),
 				"invalid index given: %i", index);

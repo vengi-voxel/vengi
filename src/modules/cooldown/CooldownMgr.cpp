@@ -27,18 +27,19 @@ CooldownPtr CooldownMgr::createCooldown(Type type, long startMillis) const {
 
 CooldownTriggerState CooldownMgr::triggerCooldown(Type type, const CooldownCallback& callback) {
 	core::ScopedWriteLock lock(_lock);
-	CooldownPtr cooldown = _cooldowns[type];
-	if (!cooldown) {
-		cooldown = createCooldown(type);
-		_cooldowns[type] = cooldown;
-	} else if (cooldown->running()) {
+	CooldownPtr c = cooldown(type);
+	if (!c) {
+		c = createCooldown(type);
+		_cooldowns.put(type, c);
+	}
+	if (c->running()) {
 		Log::trace("Failed to trigger the cooldown of type %i: already running", core::enumVal(type));
 		return CooldownTriggerState::ALREADY_RUNNING;
 	}
-	cooldown->start(callback);
-	_queue.push(cooldown);
+	c->start(callback);
+	_queue.push(c);
 	Log::debug("Triggered the cooldown of type %i (expires in %lims, started at %li)",
-			core::enumVal(type), cooldown->duration(), cooldown->startMillis());
+			core::enumVal(type), c->duration(), c->startMillis());
 	return CooldownTriggerState::SUCCESS;
 }
 

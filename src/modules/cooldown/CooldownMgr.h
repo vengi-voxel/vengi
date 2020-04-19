@@ -9,11 +9,10 @@
 #include "core/IComponent.h"
 #include "core/TimeProvider.h"
 #include "CooldownProvider.h"
+#include "core/collection/Map.h"
 
 #include <memory>
-#include <unordered_map>
 #include <queue>
-#include <functional>
 #include <vector>
 
 namespace cooldown {
@@ -30,7 +29,7 @@ protected:
 
 	struct CooldownComparatorLess {
 		inline bool operator()(const CooldownPtr& x, const CooldownPtr& y) const {
-			return std::less<Cooldown>()(*x.get(), *y.get());
+			return *x.get() < *y.get();
 		}
 	};
 
@@ -41,7 +40,7 @@ protected:
 	 */
 	CooldownQueue _queue;
 
-	typedef std::unordered_map<Type, CooldownPtr, network::EnumHash<Type> > Cooldowns;
+	typedef core::Map<Type, CooldownPtr, 8, network::EnumHash<Type> > Cooldowns;
 	/**
 	 * @brief This is a pool of @c Cooldown instances.
 	 */
