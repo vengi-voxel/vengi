@@ -48,8 +48,26 @@ core::AppState LUAUIApp::onInit() {
 	});
 
 	core::Command::registerCommand("ui_push", [this] (const core::CmdArgs& args) {
-		for (const auto& a : args) {
-			pushWindow(a);
+		if (args.empty()) {
+			Log::info("Usage: ui_push <windowid> <parameter>");
+			return;
+		}
+		const core::String& window = args[0];
+		if (args.size() == 2) {
+			pushWindow(window, args[1]);
+		} else {
+			if (args.size() > 2) {
+				Log::info("Ignoring parameters");
+			}
+			pushWindow(window);
+		}
+	});
+
+	core::Command::registerCommand("ui_stack", [this] (const core::CmdArgs& args) {
+		const size_t size = _windowStack.size();
+		Log::info("Current window stack");
+		for (size_t i = 0; i < size; ++i) {
+			Log::info(" %i: %s ['%s']", (int)i, _windowStack[i].id.c_str(), _windowStack[i].parameter.c_str());
 		}
 	});
 
