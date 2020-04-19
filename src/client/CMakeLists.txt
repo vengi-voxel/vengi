@@ -1,6 +1,7 @@
 project(client)
 set(SRCS
 	Client.h Client.cpp
+	ClientLUA.h
 
 	voxel/ClientPager.h
 	voxel/ClientPager.cpp
