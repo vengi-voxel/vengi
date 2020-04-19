@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <SDL_stdinc.h>
 #include <stdint.h>
 
 #define CORE_STRINGIFY_INTERNAL(x) #x
