@@ -341,11 +341,12 @@ static int uilua_bounds(lua_State *s, int n, struct nk_rect& rect) {
 	} else {
 		noPositionGiven = !lua_isnumber(s, n + 2);
 	}
+	int x, y, w, h;
+	video::getViewport(x, y, w, h);
+
 	if (noPositionGiven) {
 		rect.w = luaL_checknumber(s, n + 0);
 		rect.h = luaL_checknumber(s, n + 1);
-		int x, y, w, h;
-		video::getViewport(x, y, w, h);
 		if (rect.w <= 0) {
 			rect.w = w;
 		}
@@ -356,10 +357,17 @@ static int uilua_bounds(lua_State *s, int n, struct nk_rect& rect) {
 		rect.y = h / 2 - rect.h / 2;
 		return 2;
 	}
+
 	rect.x = luaL_checknumber(s, n + 0);
 	rect.y = luaL_checknumber(s, n + 1);
 	rect.w = luaL_checknumber(s, n + 2);
 	rect.h = luaL_checknumber(s, n + 3);
+	if (rect.w <= 0) {
+		rect.w = w;
+	}
+	if (rect.h <= 0) {
+		rect.h = h;
+	}
 	return 4;
 }
 

@@ -21,8 +21,30 @@ end
 
 --[[
 ]]
+function module.windowTitle(title, x, y, width, height, closure, ...)
+	if ui.windowBegin(title, title, x, y, width, height, table.unpack({...})) then
+		closure()
+	else
+		module.pop()
+	end
+	ui.windowEnd()
+end
+
+--[[
+]]
 function module.window(id, width, height, closure, ...)
 	if ui.windowBegin(id, width, height, table.unpack({...})) then
+		closure()
+	else
+		module.pop()
+	end
+	ui.windowEnd()
+end
+
+--[[
+]]
+function module.window(id, x, y, width, height, closure, ...)
+	if ui.windowBegin(id, x, y, width, height, table.unpack({...})) then
 		closure()
 	else
 		module.pop()
