@@ -23,6 +23,7 @@
 #include "video/Camera.h"
 #include "stock/StockDataProvider.h"
 #include "voxel/ClientPager.h"
+#include "cooldown/CooldownHandler.h"
 
 class Client: public ui::nuklear::LUAUIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxelworld::WorldCreatedEvent> {
@@ -38,6 +39,7 @@ protected:
 	frontend::PlayerMovement _movement;
 	flatbuffers::FlatBufferBuilder _actionFbb;
 	frontend::PlayerAction _action;
+	client::CooldownHandler _cooldownHandler;
 	network::MoveDirection _lastMoveMask = network::MoveDirection::NONE;
 	glm::vec2 _lastMoveAngles {0.0f};
 	core::VarPtr _rotationSpeed;
@@ -81,6 +83,8 @@ public:
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize(int windowWidth, int windowHeight) override;
 
+	client::CooldownHandler& cooldownHandler();
+
 	/**
 	 * @brief We send the user connect message to the server and we get the seed and a user spawn message back.
 	 *
@@ -100,5 +104,9 @@ public:
 	void entityRemove(frontend::ClientEntityId id);
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
 };
+
+inline client::CooldownHandler& Client::cooldownHandler() {
+	return _cooldownHandler;
+}
 
 typedef std::shared_ptr<Client> ClientPtr;

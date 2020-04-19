@@ -5,6 +5,8 @@ set(SRCS
 	voxel/ClientPager.h
 	voxel/ClientPager.cpp
 
+	cooldown/CooldownHandler.h
+
 	network/AttribUpdateHandler.h
 	network/AuthFailedHandler.h
 	network/EntitySpawnHandler.h

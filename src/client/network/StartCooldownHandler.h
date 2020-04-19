@@ -8,6 +8,5 @@
 
 CLIENTPROTOHANDLERIMPL(StartCooldown) {
 	network::CooldownType id = message->id();
-	const char *name = network::toString(id, EnumNamesCooldownType());
-	Log::info("Starting cooldown: %s", name);
+	client->cooldownHandler().startCooldown(id, message->startUTCMillis(), message->durationMillis());
 }
