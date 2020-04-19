@@ -141,6 +141,10 @@ update-glslang:
 	rm -rf src/tools/glslang/StandAlone
 	cp -r $(UPDATEDIR)/glslang.sync/StandAlone src/tools/glslang/
 
+update-simplecpp:
+	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
+	cp $(UPDATEDIR)/simplecpp.sync/simplecpp.* contrib/libs/simplecpp
+
 update-nuklear:
 	$(call UPDATE_GIT,nuklear,https://github.com/Immediate-Mode-UI/Nuklear)
 	cp $(UPDATEDIR)/nuklear.sync/nuklear.h src/modules/ui/nuklear/private
@@ -151,10 +155,9 @@ update-simplexnoise:
 	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
 	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 
-# TODO native file dialog support
 # TODO simpleai support
 # TODO lua support
-updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-glslang
+updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-glslang update-simplecpp
 	$(MAKE) -C $(BUILDDIR) update-libs
 
 windows:
