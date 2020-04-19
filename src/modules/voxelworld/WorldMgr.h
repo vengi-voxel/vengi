@@ -48,7 +48,7 @@ public:
 			if (check(sampler.voxel().getMaterial())) {
 				return sampler.position().y;
 			}
-			sampler.movePositiveY();
+			sampler.moveNegativeY();
 		}
 		return voxel::NO_FLOOR_FOUND;
 	}
