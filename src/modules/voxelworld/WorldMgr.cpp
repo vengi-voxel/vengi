@@ -31,7 +31,7 @@ glm::ivec3 WorldMgr::randomPos() const {
 	int highestZ = 100;
 	const int x = _random.random(lowestX, highestX);
 	const int z = _random.random(lowestZ, highestZ);
-	const int y = findFloor(x, z, voxel::isFloor);
+	const int y = findWalkableFloor(glm::ivec3(x, voxel::MAX_HEIGHT / 2, z));
 	return glm::ivec3(x, y, z);
 }
 
