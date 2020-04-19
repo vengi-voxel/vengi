@@ -7,5 +7,7 @@
 #include "IClientProtocolHandler.h"
 
 CLIENTPROTOHANDLERIMPL(StopCooldown) {
-	Log::info("Stopping cooldown");
+	network::CooldownType id = message->id();
+	const char *name = network::toString(id, EnumNamesCooldownType());
+	Log::info("Stopping cooldown: %s", name);
 }
