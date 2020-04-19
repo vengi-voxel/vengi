@@ -346,6 +346,12 @@ static int uilua_bounds(lua_State *s, int n, struct nk_rect& rect) {
 		rect.h = luaL_checknumber(s, n + 1);
 		int x, y, w, h;
 		video::getViewport(x, y, w, h);
+		if (rect.w <= 0) {
+			rect.w = w;
+		}
+		if (rect.h <= 0) {
+			rect.h = h;
+		}
 		rect.x = w / 2 - rect.w / 2;
 		rect.y = h / 2 - rect.h / 2;
 		return 2;
