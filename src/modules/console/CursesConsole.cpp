@@ -41,7 +41,6 @@ void CursesConsole::update(uint32_t deltaTime) {
 		}
 		_cursesVar->markClean();
 	}
-	Log::info("update console");
 #ifdef CURSES_HAVE_NCURSES_H
 	if (!_cursesActive) {
 		uv_run(&_loop, UV_RUN_NOWAIT);
