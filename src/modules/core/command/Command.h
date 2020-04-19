@@ -45,6 +45,8 @@ private:
 
 	static CommandMap _cmds;
 	static ReadWriteLock _lock;
+	static size_t _sortedCommandListSize;
+	static Command* _sortedCommandList[4096];
 
 	static uint64_t _delayMillis;
 	static std::vector<core::String> _delayedTokens;
@@ -63,6 +65,8 @@ private:
 	Command(const core::String& name, FunctionType&& func) :
 		_name(name), _help(""), _func(std::move(func)) {
 	}
+
+	static void updateSortedList();
 
 public:
 	static Command& registerCommand(const char* name, std::function<void(void)>& func) {
@@ -119,19 +123,15 @@ public:
 
 	template<class Functor>
 	static void visitSorted(Functor&& func) {
-		std::vector<Command> commandList;
+		Command* sortedCommandList[4096];
+		size_t sortedCommandListSize;
 		{
 			ScopedReadLock lock(_lock);
-			commandList.reserve(_cmds.size());
-			for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
-				commandList.push_back(i->value);
-			}
+			sortedCommandListSize = _sortedCommandListSize;
+			core_memcpy(sortedCommandList, _sortedCommandList, sortedCommandListSize * sizeof(Command*));
 		}
-		std::sort(commandList.begin(), commandList.end(), [] (const Command &v1, const Command &v2) {
-			return SDL_strcmp(v1.name(), v2.name()) < 0;
-		});
-		for (const auto& command : commandList) {
-			func(command);
+		for (size_t i = 0; i < _sortedCommandListSize; ++i) {
+			func(*_sortedCommandList[i]);
 		}
 	}
 

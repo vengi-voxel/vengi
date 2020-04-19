@@ -12,6 +12,8 @@ Command::CommandMap Command::_cmds;
 ReadWriteLock Command::_lock("Command");
 std::vector<core::String> Command::_delayedTokens;
 uint64_t Command::_delayMillis = 0;
+size_t  Command::_sortedCommandListSize = 0u;
+Command* Command::_sortedCommandList[4096] {};
 
 ActionButtonCommands& ActionButtonCommands::setBindingContext(int context) {
 	Command::getCommand(first)->setBindingContext(context);
@@ -36,7 +38,11 @@ Command& Command::registerCommand(const char* name, FunctionType&& func) {
 bool Command::unregisterCommand(const char* name) {
 	const core::String cname(name);
 	ScopedWriteLock lock(_lock);
-	return _cmds.remove(cname);
+	const bool removed = _cmds.remove(cname);
+	if (removed) {
+		updateSortedList();
+	}
+	return removed;
 }
 
 ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button) {
@@ -53,6 +59,7 @@ ActionButtonCommands Command::registerActionButton(const core::String& name, Act
 		button.handleUp(key, millis);
 	});
 	_cmds.put(cReleased.name(), cReleased);
+	updateSortedList();
 	return ActionButtonCommands("+" + name, "-" + name);
 }
 
@@ -62,6 +69,7 @@ bool Command::unregisterActionButton(const core::String& name) {
 	const core::String upB("-" + name);
 	int amount = _cmds.remove(downB);
 	amount += _cmds.remove(upB);
+	updateSortedList();
 	return amount == 2;
 }
 
@@ -95,6 +103,18 @@ int Command::update(uint64_t dt) {
 	}
 
 	return executed;
+}
+
+void Command::updateSortedList() {
+	core_assert((int)_cmds.size() < lengthof(_sortedCommandList));
+	int idx = 0;
+	for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
+		_sortedCommandList[idx] = &i->value;
+	}
+	_sortedCommandListSize = _cmds.size();
+	SDL_qsort(_sortedCommandList, _sortedCommandListSize, sizeof(Command*), [] (const void *v1, const void *v2) {
+		return SDL_strcmp(((const Command*)v1)->name(), ((const Command*)v2)->name());
+	});
 }
 
 int Command::execute(const char* msg, ...) {

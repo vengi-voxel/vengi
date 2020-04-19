@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include <stdint.h>
 
 struct SDL_cond;
