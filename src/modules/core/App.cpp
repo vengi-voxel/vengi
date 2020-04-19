@@ -433,7 +433,7 @@ void App::usage() const {
 	core::Var::visit([&] (const core::VarPtr& v) {
 		maxWidth = core_max(maxWidth, (int)v->name().size());
 	});
-	core::Command::visitSorted([&] (const core::Command& c) {
+	core::Command::visit([&] (const core::Command& c) {
 		maxWidth = core_max(maxWidth, (int)SDL_strlen(c.name()));
 	});
 

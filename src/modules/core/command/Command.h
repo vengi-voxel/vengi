@@ -111,25 +111,15 @@ public:
 
 	template<class Functor>
 	static void visit(Functor&& func) {
-		CommandMap commandList;
-		{
-			ScopedReadLock lock(_lock);
-			commandList = _cmds;
-		}
-		for (auto i = commandList.begin(); i != commandList.end(); ++i) {
+		ScopedReadLock lock(_lock);
+		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
 			func(i->value);
 		}
 	}
 
 	template<class Functor>
 	static void visitSorted(Functor&& func) {
-		Command* sortedCommandList[4096];
-		size_t sortedCommandListSize;
-		{
-			ScopedReadLock lock(_lock);
-			sortedCommandListSize = _sortedCommandListSize;
-			core_memcpy(sortedCommandList, _sortedCommandList, sortedCommandListSize * sizeof(Command*));
-		}
+		ScopedReadLock lock(_lock);
 		for (size_t i = 0; i < _sortedCommandListSize; ++i) {
 			func(*_sortedCommandList[i]);
 		}

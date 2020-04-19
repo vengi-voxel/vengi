@@ -143,12 +143,8 @@ public:
 
 	template<class Functor>
 	static void visit(Functor&& func) {
-		Var::VarMap varList;
-		{
-			ScopedReadLock lock(_lock);
-			varList = _vars;
-		}
-		for (auto i = varList.begin(); i != varList.end(); ++i) {
+		ScopedReadLock lock(_lock);
+		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
 			func(i->second);
 		}
 	}
