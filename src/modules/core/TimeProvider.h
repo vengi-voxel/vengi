@@ -54,7 +54,7 @@ public:
 	}
 
 	void updateTickTime();
-	void setTickTime(uint64_t tickTime);
+	void setTickTime(uint64_t tickMillis);
 };
 
 typedef std::shared_ptr<TimeProvider> TimeProviderPtr;

@@ -12,11 +12,13 @@
 namespace core {
 
 void TimeProvider::updateTickTime() {
-	setTickTime(SDL_GetPerformanceCounter());
+	_highResTime = SDL_GetPerformanceCounter();
+	_tickSeconds = _highResTime / (double)SDL_GetPerformanceFrequency();
+	_tickMillis = _highResTime / (double)(SDL_GetPerformanceFrequency() / (uint64_t)1000);
 }
 
-void TimeProvider::setTickTime(uint64_t tickTime) {
-	_highResTime = tickTime;
+void TimeProvider::setTickTime(uint64_t tickMillis) {
+	_highResTime = tickMillis * (SDL_GetPerformanceFrequency() / (uint64_t)1000);
 	_tickSeconds = _highResTime / (double)SDL_GetPerformanceFrequency();
 	_tickMillis = _highResTime / (double)(SDL_GetPerformanceFrequency() / (uint64_t)1000);
 }
