@@ -114,6 +114,7 @@ void WorldChunkMgr::cull(const video::Camera& camera) {
 
 	Tree::Contents contents;
 	math::AABB<float> aabb = camera.frustum().aabb();
+	// don't cull objects that might throw a shadow
 	aabb.shift(camera.forward() * -10.0f);
 	_octree.query(math::AABB<int>(aabb.mins(), aabb.maxs()), contents);
 
