@@ -6,10 +6,11 @@ set(SRCS
 	PlayerCamera.cpp PlayerCamera.h
 	ShaderAttribute.h
 	VoxelFontRenderer.h VoxelFontRenderer.cpp
-	WorldBuffers.h WorldBuffers.cpp
-	WorldChunkMgr.h WorldChunkMgr.cpp
-	WorldMeshExtractor.h WorldMeshExtractor.cpp
 	WorldRenderer.h WorldRenderer.cpp
+
+	worldrenderer/WorldBuffers.h worldrenderer/WorldBuffers.cpp
+	worldrenderer/WorldChunkMgr.h worldrenderer/WorldChunkMgr.cpp
+	worldrenderer/WorldMeshExtractor.h worldrenderer/WorldMeshExtractor.cpp
 )
 set(SRCS_SHADERS
 	shaders/_checker.frag

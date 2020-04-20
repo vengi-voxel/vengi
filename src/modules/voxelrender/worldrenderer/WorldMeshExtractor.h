@@ -26,12 +26,12 @@ private:
 	core::ConcurrentQueue<voxel::Mesh> _extracted;
 	glm::ivec3 _pendingExtractionSortPosition { 0, 0, 0 };
 	struct CloseToPoint {
-		glm::ivec3 _refPoint;
-		CloseToPoint(const glm::ivec3& refPoint) : _refPoint(refPoint) {
+		glm::ivec2 _refPoint;
+		CloseToPoint(const glm::ivec3& refPoint) : _refPoint(refPoint.x, refPoint.z) {
 		}
 		inline int distanceToSortPos(const glm::ivec3 &pos) const {
-			const glm::ivec3& d = _refPoint - pos;
-			return d.x * d.x + d.z * d.z;
+			const glm::ivec2 d(_refPoint.x - pos.x, _refPoint.y - pos.z);
+			return d.x * d.x + d.y * d.y;
 		}
 		inline bool operator()(const glm::ivec3& lhs, const glm::ivec3& rhs) const {
 			return distanceToSortPos(lhs) > distanceToSortPos(rhs);

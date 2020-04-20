@@ -10,7 +10,7 @@
 #include "core/Log.h"
 #include "video/Trace.h"
 #include "video/Renderer.h"
-#include "ShaderAttribute.h"
+#include "voxelrender/ShaderAttribute.h"
 
 namespace voxelrender {
 
