@@ -25,6 +25,7 @@ set(SRCS
 	collection/Set.h
 	collection/Stack.h
 	collection/StringMap.h
+	collection/Vector.h
 
 	concurrent/Atomic.cpp concurrent/Atomic.h
 	concurrent/Concurrency.h concurrent/Concurrency.cpp
@@ -121,6 +122,7 @@ set(TEST_SRCS
 	tests/ThreadPoolTest.cpp
 	tests/TokenizerTest.cpp
 	tests/VarTest.cpp
+	tests/VectorTest.cpp
 	tests/ZipTest.cpp
 )
 set(TEST_FILES
