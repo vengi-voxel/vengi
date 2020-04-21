@@ -16,7 +16,6 @@
 #include "video/StencilConfig.h"
 #include "image/Image.h"
 #include "core/Common.h"
-#include "core/Trace.h"
 #include "core/Log.h"
 #include "core/ArrayLength.h"
 #include "core/Var.h"
@@ -90,12 +89,14 @@ bool checkError(bool triggerAssert) {
 
 //TODO: use FrameBufferConfig
 void readBuffer(GBufferTextureType textureType) {
+	video_trace_scoped(ReadBuffer);
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
 	checkError();
 }
 
 //TODO: use FrameBufferConfig
 bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texCount, Id depthTexture) {
+	video_trace_scoped(SetupGBuffer);
 	const Id prev = bindFramebuffer(fbo);
 
 	TextureConfig cfg;
@@ -122,6 +123,7 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 }
 
 bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
+	video_trace_scoped(SetupCubemap);
 	bindTexture(TextureUnit::Upload, TextureType::TextureCube, handle);
 	checkError();
 
@@ -169,6 +171,7 @@ bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
 }
 
 float lineWidth(float width) {
+	video_trace_scoped(LineWidth);
 	if (_priv::s.smoothedLineWidth.x < 0.0f) {
 		GLdouble buf[2];
 		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
@@ -209,6 +212,7 @@ bool clearColor(const glm::vec4& clearColor) {
 }
 
 void clear(ClearFlag flag) {
+	video_trace_scoped(Clear);
 	GLbitfield glValue = 0;
 	if ((flag & ClearFlag::Color) == ClearFlag::Color) {
 		glValue |= GL_COLOR_BUFFER_BIT;
@@ -402,6 +406,7 @@ CompareFunc getDepthFunc() {
 }
 
 bool setupStencil(const StencilConfig& config) {
+	video_trace_scoped(SetupStencil);
 	bool dirty = false;
 	CompareFunc func = config.func();
 	if (_priv::s.stencilFunc != func || _priv::s.stencilValue != config.value() || _priv::s.stencilMask != config.mask()) {
@@ -521,6 +526,7 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 }
 
 bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
+	video_trace_scoped(ReadTexture);
 	bindTexture(unit, type, handle);
 	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
 	const int pitch = w * f.bits / 8;
@@ -569,6 +575,7 @@ Id boundBuffer(BufferType type) {
 }
 
 void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
+	video_trace_scoped(MapBuffer);
 	const int modeIndex = core::enumVal(mode);
 	const GLenum glMode = _priv::AccessModes[modeIndex];
 	if (hasFeature(Feature::DirectStateAccess)) {
@@ -586,6 +593,7 @@ void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
 }
 
 void unmapBuffer(Id handle, BufferType type) {
+	video_trace_scoped(UnmapBuffer);
 	const int typeIndex = core::enumVal(type);
 	const GLenum glType = _priv::BufferTypes[typeIndex];
 	if (hasFeature(Feature::DirectStateAccess)) {
@@ -598,6 +606,7 @@ void unmapBuffer(Id handle, BufferType type) {
 }
 
 bool bindBuffer(BufferType type, Id handle) {
+	video_trace_scoped(BindBuffer);
 	const int typeIndex = core::enumVal(type);
 	if (_priv::s.bufferHandle[typeIndex] == handle) {
 		return false;
@@ -623,6 +632,7 @@ bool unbindBuffer(BufferType type) {
 }
 
 bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
+	video_trace_scoped(BindBufferBase);
 	const int typeIndex = core::enumVal(type);
 	if (_priv::s.bufferHandle[typeIndex] == handle) {
 		return false;
@@ -671,6 +681,7 @@ void deleteSync(IdPtr& id) {
 }
 
 bool waitForSync(IdPtr id, uint64_t timeout) {
+	video_trace_scoped(WaitForSync);
 	if (id == InvalidIdPtr) {
 		return false;
 	}
@@ -784,6 +795,7 @@ void deleteTextures(uint8_t amount, Id* ids) {
 }
 
 bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t** pixels) {
+	video_trace_scoped(ReadFrameBuffer);
 	core_assert(_priv::s.framebufferHandle != InvalidId);
 	if (_priv::s.framebufferHandle == InvalidId) {
 		return false;
@@ -845,6 +857,7 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 }
 
 void configureAttribute(const Attribute& a) {
+	video_trace_scoped(ConfigureVertexAttribute);
 	core_assert(_priv::s.programHandle != InvalidId);
 	glEnableVertexAttribArray(a.location);
 	checkError();
@@ -1002,11 +1015,13 @@ bool endOcclusionQuery(Id id) {
 }
 
 void flush() {
+	video_trace_scoped(Flush);
 	glFlush();
 	checkError();
 }
 
 void finish() {
+	video_trace_scoped(Finish);
 	glFinish();
 	checkError();
 }
@@ -1068,6 +1083,7 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 }
 
 bool setupRenderBuffer(TextureFormat format, int w, int h, int samples) {
+	video_trace_scoped(SetupRenderBuffer);
 	if (samples > 1) {
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, (GLsizei)samples, _priv::TextureFormats[core::enumVal(format)], w, h);
 		checkError();
@@ -1091,6 +1107,7 @@ Id bindRenderbuffer(Id handle) {
 }
 
 void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, size_t size) {
+	video_trace_scoped(BufferData);
 	if (size <= 0) {
 		return;
 	}
@@ -1135,6 +1152,7 @@ size_t bufferSize(BufferType type) {
 }
 
 void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data, size_t size) {
+	video_trace_scoped(BufferSubData);
 	if (size == 0) {
 		return;
 	}
@@ -1167,6 +1185,7 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 
 //TODO: use FrameBufferConfig
 void setupDepthCompareTexture(TextureType type, CompareFunc func, TextureCompareMode mode) {
+	video_trace_scoped(SetupDepthCompareTexture);
 	const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
 	const GLenum glMode = _priv::TextureCompareModes[core::enumVal(mode)];
 	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, glMode);
@@ -1185,6 +1204,7 @@ const glm::vec4& framebufferUV() {
 
 bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
 					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
+	video_trace_scoped(SetupFramebuffer);
 	std::vector<GLenum> attachments;
 	attachments.reserve(core::enumVal(FrameBufferAttachment::Max));
 
@@ -1234,6 +1254,7 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 }
 
 bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
+	video_trace_scoped(BindFrameBufferAttachment);
 	const GLenum glAttachment = _priv::FrameBufferAttachments[core::enumVal(attachment)];
 
 	if (attachment == FrameBufferAttachment::Depth
@@ -1263,6 +1284,7 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 }
 
 void setupTexture(const TextureConfig& config) {
+	video_trace_scoped(SetupTexture);
 	const GLenum glType = _priv::TextureTypes[core::enumVal(config.type())];
 	if (config.filterMag() != TextureFilter::Max) {
 		const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(config.filterMag())];
@@ -1315,6 +1337,7 @@ void setupTexture(const TextureConfig& config) {
 }
 
 void uploadTexture(TextureType type, TextureFormat format, int width, int height, const uint8_t* data, int index) {
+	video_trace_scoped(UploadTexture);
 	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
 	const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
 	core_assert(type != TextureType::Max);
@@ -1331,6 +1354,7 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 }
 
 void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset) {
+	video_trace_scoped(DrawElements);
 	if (numIndices <= 0) {
 		return;
 	}
@@ -1342,6 +1366,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset
 }
 
 void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount) {
+	video_trace_scoped(DrawElementsInstanced);
 	if (numIndices <= 0) {
 		return;
 	}
@@ -1356,6 +1381,7 @@ void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, siz
 }
 
 void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex) {
+	video_trace_scoped(DrawElementsBaseVertex);
 	if (numIndices <= 0) {
 		return;
 	}
@@ -1367,12 +1393,14 @@ void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, si
 }
 
 void drawArrays(Primitive mode, size_t count) {
+	video_trace_scoped(DrawArrays);
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
 	checkError();
 }
 
 void drawInstancedArrays(Primitive mode, size_t count, size_t amount) {
+	video_trace_scoped(DrawInstancedArrays);
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	glDrawArraysInstanced(glMode, (GLint)0, (GLsizei)count, (GLsizei)amount);
 	checkError();
@@ -1405,6 +1433,7 @@ void enableDebug(DebugSeverity severity) {
 }
 
 bool compileShader(Id id, ShaderType shaderType, const core::String& source, const core::String& name) {
+	video_trace_scoped(CompileShader);
 	if (id == InvalidId) {
 		return false;
 	}
@@ -1463,6 +1492,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 }
 
 bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode, const core::List<core::String>& varyings) {
+	video_trace_scoped(BindTransformFeedbackVaryings);
 	if (!hasFeature(Feature::TransformFeedback)) {
 		return false;
 	}
@@ -1482,6 +1512,7 @@ bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode
 }
 
 bool linkComputeShader(Id program, Id comp, const core::String& name) {
+	video_trace_scoped(LinkComputeShader);
 	const GLuint lid = (GLuint)program;
 	glAttachShader(lid, comp);
 	glLinkProgram(lid);
@@ -1545,6 +1576,7 @@ bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 }
 
 bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
+	video_trace_scoped(RunShader);
 	if (workGroups.x <= 0 || workGroups.y <= 0 || workGroups.z <= 0) {
 		return false;
 	}
@@ -1565,6 +1597,7 @@ bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
 }
 
 bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name) {
+	video_trace_scoped(LinkShader);
 	const GLuint lid = (GLuint)program;
 	glAttachShader(lid, (GLuint)vert);
 	glAttachShader(lid, (GLuint)frag);
@@ -1622,12 +1655,14 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 }
 
 int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name) {
+	video_trace_scoped(FetchUniforms);
 	int n = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
 	n += _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
 	return n;
 }
 
 int fetchAttributes(Id program, ShaderAttributes& attributes, const core::String& name) {
+	video_trace_scoped(FetchAttributes);
 	char varName[MAX_SHADER_VAR_NAME];
 	int numAttributes = 0;
 	const GLuint lid = (GLuint)program;
