@@ -37,22 +37,6 @@ public:
 		return result == voxel::RaycastResults::Interupted;
 	}
 
-	template<typename VoxelTypeChecker>
-	int findFloor(int x, int z, VoxelTypeChecker&& check) const {
-		voxel::PagedVolume::Sampler sampler(_volumeData);
-		sampler.setPosition(glm::ivec3(x, voxel::MAX_HEIGHT, z));
-		for (int i = 0; i < voxel::MAX_HEIGHT; ++i) {
-			if (!sampler.currentPositionValid()) {
-				break;
-			}
-			if (check(sampler.voxel().getMaterial())) {
-				return sampler.position().y;
-			}
-			sampler.moveNegativeY();
-		}
-		return voxel::NO_FLOOR_FOUND;
-	}
-
 	/**
 	 * @return The y component for the given x and z coordinates that is walkable - or @c NO_FLOOR_FOUND.
 	 */
