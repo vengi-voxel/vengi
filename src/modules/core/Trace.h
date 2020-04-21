@@ -53,7 +53,7 @@ extern void traceThread(const char* name);
 #define core_trace_mutex(type, name) TracyLockable(type, name)
 
 #define core_trace_begin_frame(name)
-#define core_trace_end_frame(name) FrameMarkNamed(name)
+#define core_trace_end_frame(name) FrameMark
 #define core_trace_begin(name)
 #define core_trace_end()
 #define core_trace_scoped(name) ZoneNamedN(__tracy_scoped_##name, #name, true)
