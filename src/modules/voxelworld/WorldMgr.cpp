@@ -56,24 +56,28 @@ void WorldMgr::shutdown() {
 }
 
 int WorldMgr::findWalkableFloor(const glm::ivec3& position, int maxDistanceY) const {
-	core_trace_scoped(FindWalkableFloor);
 	voxel::PagedVolume::Sampler sampler(_volumeData);
-	sampler.setPosition(position);
-	if (!sampler.currentPositionValid()) {
+	return findWalkableFloor(&sampler, position, maxDistanceY);
+}
+
+int WorldMgr::findWalkableFloor(voxel::PagedVolume::Sampler *sampler, const glm::ivec3& position, int maxDistanceY) const {
+	core_trace_scoped(FindWalkableFloor);
+	sampler->setPosition(position);
+	if (!sampler->currentPositionValid()) {
 		return voxel::NO_FLOOR_FOUND;
 	}
 
-	const voxel::VoxelType type = sampler.voxel().getMaterial();
+	const voxel::VoxelType type = sampler->voxel().getMaterial();
 	if (voxel::isEnterable(type)) {
 		const int maxDistance = (glm::min)(maxDistanceY, position.y);
 		for (int i = 0; i < maxDistance; ++i) {
-			sampler.moveNegativeY();
-			if (!sampler.currentPositionValid()) {
+			sampler->moveNegativeY();
+			if (!sampler->currentPositionValid()) {
 				break;
 			}
-			const voxel::VoxelType mat = sampler.voxel().getMaterial();
+			const voxel::VoxelType mat = sampler->voxel().getMaterial();
 			if (!voxel::isEnterable(mat)) {
-				return sampler.position().y + 1;
+				return sampler->position().y + 1;
 			}
 		}
 		return voxel::NO_FLOOR_FOUND;
@@ -81,13 +85,13 @@ int WorldMgr::findWalkableFloor(const glm::ivec3& position, int maxDistanceY) co
 
 	const int maxDistance = (glm::min)(maxDistanceY, voxel::MAX_HEIGHT - position.y);
 	for (int i = 0; i < maxDistance; ++i) {
-		sampler.movePositiveY();
-		if (!sampler.currentPositionValid()) {
+		sampler->movePositiveY();
+		if (!sampler->currentPositionValid()) {
 			break;
 		}
-		const voxel::VoxelType mat = sampler.voxel().getMaterial();
+		const voxel::VoxelType mat = sampler->voxel().getMaterial();
 		if (voxel::isEnterable(mat)) {
-			return sampler.position().y;
+			return sampler->position().y;
 		}
 	}
 	return voxel::NO_FLOOR_FOUND;
