@@ -13,6 +13,7 @@
 #include "frontend/PlayerMovement.h"
 #include "voxelrender/PlayerCamera.h"
 #include "voxelformat/MeshCache.h"
+#include "voxelworld/CachedFloorResolver.h"
 #include "video/Camera.h"
 #include "animation/AnimationCache.h"
 #include "video/Buffer.h"
@@ -44,6 +45,7 @@ protected:
 	voxelformat::MeshCachePtr _meshCache;
 	voxelrender::PlayerCamera _camera;
 	testcore::DepthBufferRenderer _depthBufferRenderer;
+	voxelworld::CachedFloorResolver _floorResolver;
 
 	bool _lineModeRendering = false;
 	bool _freelook = false;

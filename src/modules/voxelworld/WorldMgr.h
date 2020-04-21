@@ -58,6 +58,7 @@ public:
 
 	bool created() const;
 
+	voxel::PagedVolume::Sampler sampler();
 	voxel::PagedVolume *volumeData();
 
 private:

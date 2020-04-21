@@ -193,7 +193,7 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
 		}
 	}
 	if (oldestChunk != _chunks.end()) {
-		Log::info("delete oldest chunk - reached %u", _chunkCountLimit);
+		Log::debug("delete oldest chunk - reached %u", _chunkCountLimit);
 		_chunks.erase(oldestChunk);
 	}
 }

@@ -45,6 +45,11 @@ void WorldMgr::setSeed(unsigned int seed) {
 	_random.setSeed(seed);
 }
 
+voxel::PagedVolume::Sampler WorldMgr::sampler() {
+	core_assert(_volumeData != nullptr);
+	return voxel::PagedVolume::Sampler(_volumeData);
+}
+
 bool WorldMgr::init(uint32_t volumeMemoryMegaBytes, uint16_t chunkSideLength) {
 	_volumeData = new voxel::PagedVolume(_pager.get(), volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 	return true;

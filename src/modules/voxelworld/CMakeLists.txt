@@ -3,13 +3,14 @@ set(SRCS
 	BiomeLUAFunctions.h BiomeLUAFunctions.cpp
 	Biome.h Biome.cpp
 	BiomeManager.h BiomeManager.cpp
-	WorldMgr.cpp WorldMgr.h
+	CachedFloorResolver.h CachedFloorResolver.cpp
 	ChunkPersister.h ChunkPersister.cpp
 	FilePersister.h FilePersister.cpp
 	TreeVolumeCache.h TreeVolumeCache.cpp
-	WorldPager.h WorldPager.cpp
-	WorldEvents.h
 	WorldContext.h WorldContext.cpp
+	WorldEvents.h
+	WorldMgr.cpp WorldMgr.h
+	WorldPager.h WorldPager.cpp
 )
 
 set(FILES

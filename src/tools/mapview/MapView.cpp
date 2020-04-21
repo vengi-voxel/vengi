@@ -131,6 +131,11 @@ core::AppState MapView::onInit() {
 		return core::AppState::InitFailure;
 	}
 
+	if (!_floorResolver.init(_worldMgr)) {
+		Log::error("Failed to init world mgr");
+		return core::AppState::InitFailure;
+	}
+
 	if (!_worldPager->init(_worldMgr->volumeData(), filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
 		Log::error("Failed to init world pager");
 		return core::AppState::InitFailure;
@@ -202,7 +207,7 @@ void MapView::beforeUI() {
 
 	const video::Camera& camera = _camera.camera();
 	_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _entity, [&] (const glm::ivec3& pos, int maxWalkHeight) {
-		return _worldMgr->findWalkableFloor(pos, maxWalkHeight);
+		return _floorResolver.findWalkableFloor(pos, maxWalkHeight);
 	});
 	_action.update(_now, _entity);
 	const double speed = _entity->attrib().current(attrib::Type::SPEED);
@@ -369,6 +374,7 @@ core::AppState MapView::onCleanup() {
 	const core::AppState state = Super::onCleanup();
 	_worldPager->shutdown();
 	_worldMgr->shutdown();
+	_floorResolver.shutdown();
 	_meshCache->shutdown();
 	return state;
 }

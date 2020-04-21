@@ -15,6 +15,7 @@
 #include "core/Common.h"
 #include "voxelworld/WorldEvents.h"
 #include "voxelworld/WorldPager.h"
+#include "voxelworld/CachedFloorResolver.h"
 #include "network/ClientNetwork.h"
 #include "network/ClientMessageSender.h"
 #include "network/NetworkEvents.h"
@@ -32,6 +33,7 @@ protected:
 	animation::AnimationCachePtr _animationCache;
 	network::ClientNetworkPtr _network;
 	voxelworld::WorldMgrPtr _worldMgr;
+	voxelworld::CachedFloorResolver _floorResolver;
 	client::ClientPagerPtr _clientPager;
 	network::ClientMessageSenderPtr _messageSender;
 	voxelrender::WorldRenderer _worldRenderer;
