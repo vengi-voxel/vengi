@@ -308,25 +308,22 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 
 				// X [B] RIGHT
 				if (isQuadNeeded(voxelLeftMaterial, voxelCurrentMaterial, PositiveX)) {
-					const VoxelType _voxelRightBefore      = voxelBeforeMaterial;
 					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel0px0py1pz().getMaterial();
-
 					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel0px1py0pz().getMaterial();
-					const VoxelType _voxelAboveRightBefore = voxelAboveBefore.getMaterial();
 					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel0px1py1pz().getMaterial();
-
-					const VoxelType _voxelBelowRight       = voxelBelowMaterial;
-					const VoxelType _voxelBelowRightBefore = voxelBelowBefore.getMaterial();
 					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel0px1ny1pz().getMaterial();
 
+					const VoxelType _voxelAboveRightBefore = voxelAboveBefore.getMaterial();
+					const VoxelType _voxelBelowRightBefore = voxelBelowBefore.getMaterial();
+
 					const IndexType v_0_2 = addVertex(reuseVertices, regX, regY,     regZ,     voxelLeft, previousSliceVertices, result,
-							_voxelBelowRight, _voxelRightBefore, _voxelBelowRightBefore, offset);
+							voxelBelowMaterial, voxelBeforeMaterial, _voxelBelowRightBefore, offset);
 					const IndexType v_1_3 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelLeft, currentSliceVertices,  result,
-							_voxelBelowRight, _voxelRightBehind, _voxelBelowRightBehind, offset);
+							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, offset);
 					const IndexType v_2_7 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelLeft, currentSliceVertices,  result,
 							_voxelAboveRight, _voxelRightBehind, _voxelAboveRightBehind, offset);
 					const IndexType v_3_6 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelLeft, previousSliceVertices, result,
-							_voxelAboveRight, _voxelRightBefore, _voxelAboveRightBefore, offset);
+							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, offset);
 					vecQuads[PositiveX][regX].emplace_back(v_0_2, v_3_6, v_2_7, v_1_3);
 				}
 
@@ -341,6 +338,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 					const VoxelType voxelBelowRightBeforeMaterial = voxelBelowRightBefore.getMaterial();
 					const VoxelType voxelBelowBehindMaterial      = voxelBelowBehind.getMaterial();
 					const VoxelType voxelBelowRightBehindMaterial = voxelBelowRightBehind.getMaterial();
+
 					const IndexType v_0_1 = addVertex(reuseVertices, regX,     regY, regZ,     voxelCurrent, previousSliceVertices, result,
 							voxelBelowBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, offset);
 					const IndexType v_1_2 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelCurrent, previousSliceVertices, result,
@@ -356,9 +354,10 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 				if (isQuadNeeded(voxelBelowMaterial, voxelCurrentMaterial, PositiveY)) {
 					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px0py0pz().getMaterial();
 					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px0py1pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px0py1pz().getMaterial();
+
 					const VoxelType _voxelAboveRightBefore = voxelRightBefore.getMaterial();
 					const VoxelType _voxelAboveLeftBehind  = voxelLeftBehind.getMaterial();
-					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px0py1pz().getMaterial();
 
 					const IndexType v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     voxelBelow, previousSliceVertices, result,
 							voxelBeforeMaterial, voxelLeftMaterial, voxelLeftBeforeMaterial, offset);
