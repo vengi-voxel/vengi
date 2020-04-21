@@ -49,12 +49,8 @@ void WindowedApp::onAfterRunning() {
 	video::endFrame(_window);
 }
 
-void WindowedApp::onFrame() {
-	video_trace_scoped(Frame);
-	Super::onFrame();
-}
-
 core::AppState WindowedApp::onRunning() {
+	video_trace_scoped(Frame);
 	core_trace_scoped(WindowedAppOnRunning);
 	if (_keybindingHandler.isPressed(util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP)) {
 		handleKeyRelease(util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP, 0);
