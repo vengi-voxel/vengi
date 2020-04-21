@@ -92,7 +92,6 @@ void WorldPager::createWorld(voxel::PagedVolumeWrapper& volume) const {
 	const int minsY = region.getLowerY();
 	const int lowerZ = region.getLowerZ();
 	core_assert(region.getLowerY() >= 0);
-	voxel::Voxel voxels[voxel::MAX_TERRAIN_HEIGHT];
 
 	// TODO: store voxel data in local buffer and transfer in one step into the volume to reduce locking
 	const int size = 2;
@@ -100,9 +99,9 @@ void WorldPager::createWorld(voxel::PagedVolumeWrapper& volume) const {
 	core_assert(width % size == 0);
 	for (int z = lowerZ; z < lowerZ + depth; z += size) {
 		for (int x = lowerX; x < lowerX + width; x += size) {
+			voxel::Voxel voxels[voxel::MAX_TERRAIN_HEIGHT];
 			const int ni = fillVoxels(x, minsY, z, voxels);
 			volume.setVoxels(x, minsY, z, size, size, voxels, ni);
-			core_memset(voxels, 0, ni * sizeof(voxel::Voxel));
 		}
 	}
 }
