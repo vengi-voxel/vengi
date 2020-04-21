@@ -178,7 +178,7 @@ public:
 
 		//Other current position information
 		Voxel* _currentVoxel = nullptr;
-		ChunkPtr _currentChunk	;
+		ChunkPtr _currentChunk;
 
 		uint16_t _xPosInChunk = 0u;
 		uint16_t _yPosInChunk = 0u;
