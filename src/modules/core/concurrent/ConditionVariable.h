@@ -14,7 +14,7 @@ class Lock;
 
 class ConditionVariable {
 private:
-	mutable SDL_cond* _conditionVariable;
+	SDL_cond* _conditionVariable;
 public:
 	ConditionVariable();
 	~ConditionVariable();
