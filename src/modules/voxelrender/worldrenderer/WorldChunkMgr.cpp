@@ -96,7 +96,7 @@ void WorldChunkMgr::update(const video::Camera &camera, const glm::vec3& focusPo
 		if (!chunkBuffer.inuse) {
 			continue;
 		}
-		const int distance = getDistanceSquare(chunkBuffer.translation(), focusPos);
+		const int distance = distance2(chunkBuffer.translation(), focusPos);
 		if (distance < _maxAllowedDistance) {
 			continue;
 		}
@@ -118,7 +118,7 @@ void WorldChunkMgr::cull(const video::Camera& camera) {
 
 	Tree::Contents contents;
 	math::AABB<float> aabb = camera.frustum().aabb();
-	// don't cull objects that might throw a shadow
+	// don't cull objects that might cast shadows
 	aabb.shift(camera.forward() * -10.0f);
 	_octree.query(math::AABB<int>(aabb.mins(), aabb.maxs()), contents);
 
@@ -128,9 +128,10 @@ void WorldChunkMgr::cull(const video::Camera& camera) {
 	}
 }
 
-int WorldChunkMgr::getDistanceSquare(const glm::ivec3& pos, const glm::ivec3& pos2) const {
-	const glm::ivec3 dist = pos - pos2;
-	const int distance = dist.x * dist.x + dist.z * dist.z;
+int WorldChunkMgr::distance2(const glm::ivec3& pos, const glm::ivec3& pos2) const {
+	// we are only taking the x and z axis into account here
+	const glm::ivec2 dist(pos.x - pos2.x, pos.z - pos2.z);
+	const int distance = dist.x * dist.x + dist.y * dist.y;
 	return distance;
 }
 

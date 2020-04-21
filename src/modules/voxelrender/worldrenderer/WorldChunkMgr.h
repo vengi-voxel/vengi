@@ -44,7 +44,7 @@ protected:
 
 	WorldMeshExtractor _meshExtractor;
 
-	int getDistanceSquare(const glm::ivec3 &pos, const glm::ivec3 &pos2) const;
+	int distance2(const glm::ivec3 &pos, const glm::ivec3 &pos2) const;
 
 	voxel::VertexArray _vertices;
 	voxel::IndexArray _indices;
