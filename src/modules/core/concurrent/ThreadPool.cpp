@@ -51,12 +51,12 @@ void ThreadPool::init() {
 					this->_tasks.pop();
 				}
 
-				core_trace_begin_frame();
+				core_trace_begin_frame(n.c_str());
 				core_trace_scoped(ThreadPoolWorker);
 				Log::debug(logid, "Execute task in %i", (int)getThreadId());
 				task();
 				Log::debug(logid, "End of task in %i", (int)getThreadId());
-				core_trace_end_frame();
+				core_trace_end_frame(n.c_str());
 			}
 		});
 	}

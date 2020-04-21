@@ -108,7 +108,7 @@ void App::traceEndFrame(const char *threadName) {
 }
 
 void App::onFrame() {
-	core_trace_begin_frame();
+	core_trace_begin_frame("Main");
 	if (_nextState != AppState::InvalidAppState && _nextState != _curState) {
 		if (_blockers[(int)_nextState]) {
 			if (AppState::Blocked != _curState) {
@@ -189,8 +189,8 @@ void App::onFrame() {
 			break;
 		}
 	}
-	core_trace_end_frame();
 	onAfterFrame();
+	core_trace_end_frame("Main");
 }
 
 AppState App::onConstruct() {

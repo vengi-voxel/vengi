@@ -52,11 +52,10 @@ extern void traceThread(const char* name);
 #define core_trace_thread(name) tracy::SetThreadName(name)
 #define core_trace_mutex(type, name) TracyLockable(type, name)
 
-#define core_trace_begin_frame() FrameMarkNamed("Main")
-#define core_trace_end_frame() FrameMark
+#define core_trace_begin_frame(name)
+#define core_trace_end_frame(name) FrameMarkNamed(name)
 #define core_trace_begin(name)
 #define core_trace_end()
-// TODO: TracyGpuZone(#name)
 #define core_trace_scoped(name) ZoneNamedN(__tracy_scoped_##name, #name, true)
 #else
 #define core_trace_set(x) core::traceSet(x)
@@ -66,8 +65,8 @@ extern void traceThread(const char* name);
 #define core_trace_thread(name) core::traceThread(name)
 #define core_trace_mutex(type, name) type name
 
-#define core_trace_begin_frame() core::traceBeginFrame()
-#define core_trace_end_frame() core::traceEndFrame()
+#define core_trace_begin_frame(name) core::traceBeginFrame()
+#define core_trace_end_frame(name) core::traceEndFrame()
 #define core_trace_begin(name) core::traceBegin(#name)
 #define core_trace_end() core::traceEnd()
 #define core_trace_scoped(name) core::TraceScoped __trace__##name(#name)
