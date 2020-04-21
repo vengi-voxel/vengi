@@ -211,7 +211,7 @@ void MapView::beforeUI() {
 	if (_updateWorld) {
 		core_trace_scoped(UpdateWorld);
 		if (!_singlePosExtraction) {
-			_worldRenderer.chunkMgr().extractMeshes(camera);
+			_worldRenderer.extractMeshes(camera);
 		}
 		_worldRenderer.update(camera, _deltaFrameMillis);
 	}
@@ -286,7 +286,7 @@ void MapView::onRenderUI() {
 		if (ImGui::Button("Extract")) {
 			const glm::vec3 entPos(_singleExtractionPoint.x, voxel::MAX_TERRAIN_HEIGHT, _singleExtractionPoint.z);
 			_entity->setPosition(entPos);
-			_worldRenderer.chunkMgr().extractMesh(_singleExtractionPoint);
+			_worldRenderer.extractMesh(_singleExtractionPoint);
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Extract around position")) {
@@ -296,7 +296,7 @@ void MapView::onRenderUI() {
 				glm::ivec3 meshPos = _singleExtractionPoint;
 				meshPos.x += o.x() * ms.x;
 				meshPos.z += o.z() * ms.z;
-				_worldRenderer.chunkMgr().extractMesh(meshPos);
+				_worldRenderer.extractMesh(meshPos);
 				o.next();
 			}
 		}

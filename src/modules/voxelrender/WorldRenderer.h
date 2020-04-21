@@ -116,19 +116,16 @@ public:
 	frontend::EntityMgr &entityMgr();
 	const frontend::EntityMgr &entityMgr() const;
 
-	WorldChunkMgr &chunkMgr();
-
 	void setSeconds(float seconds);
+
+	void extractMesh(const glm::ivec3 &pos);
+	void extractMeshes(const video::Camera &camera);
 
 	float getViewDistance() const;
 	void setViewDistance(float viewDistance);
 
 	int renderWorld(const video::Camera &camera);
 };
-
-inline WorldChunkMgr &WorldRenderer::chunkMgr() {
-	return _worldChunkMgr;
-}
 
 inline frontend::EntityMgr &WorldRenderer::entityMgr() {
 	return _entityMgr;

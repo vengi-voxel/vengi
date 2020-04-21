@@ -274,7 +274,7 @@ void Client::beforeUI() {
 		_action.update(_now, _player);
 		const double speed = _player->attrib().current(attrib::Type::SPEED);
 		_camera.update(_player->position(), _deltaFrameSeconds, _now, (float)speed);
-		_worldRenderer.chunkMgr().extractMeshes(camera);
+		_worldRenderer.extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameMillis);
 		_worldRenderer.renderWorld(camera);
 	}
@@ -391,7 +391,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	const network::EntityType type = network::EntityType::PLAYER;
 	_player = core::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, id, type, pos, orientation);
 	_worldRenderer.entityMgr().addEntity(_player);
-	_worldRenderer.chunkMgr().extractMeshes(_camera.camera());
+	_worldRenderer.extractMeshes(_camera.camera());
 
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnected,

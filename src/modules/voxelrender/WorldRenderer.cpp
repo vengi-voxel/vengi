@@ -474,4 +474,12 @@ void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 	_entityMgr.updateVisibleEntities(dt, camera);
 }
 
+void WorldRenderer::extractMesh(const glm::ivec3 &pos) {
+	_worldChunkMgr.extractMesh(pos);
+}
+
+void WorldRenderer::extractMeshes(const video::Camera &camera) {
+	_worldChunkMgr.extractMeshes(camera);
+}
+
 }

@@ -18,7 +18,11 @@ void WorldChunkMgr::updateViewDistance(float viewDistance) {
 }
 
 bool WorldChunkMgr::init(voxel::PagedVolume* volume) {
-	return _meshExtractor.init(volume);
+	if (!_meshExtractor.init(volume)) {
+		Log::error("Failed to initialize the mesh extractor");
+		return false;
+	}
+	return true;
 }
 
 void WorldChunkMgr::shutdown() {
