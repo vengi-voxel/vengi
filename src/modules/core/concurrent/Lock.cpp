@@ -27,4 +27,8 @@ void Lock::unlock() const {
 	SDL_UnlockMutex(_mutex);
 }
 
+bool Lock::try_lock() const {
+	return SDL_TryLockMutex(_mutex) == 0;
+}
+
 }

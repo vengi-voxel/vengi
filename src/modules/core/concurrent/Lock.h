@@ -17,6 +17,7 @@ public:
 
 	void lock() const;
 	void unlock() const;
+	bool try_lock() const;
 
 	SDL_mutex* handle();
 };
