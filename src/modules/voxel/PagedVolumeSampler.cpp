@@ -46,13 +46,19 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 	const int32_t yChunk = _yPosInVolume >> _volume->_chunkSideLengthPower;
 	const int32_t zChunk = _zPosInVolume >> _volume->_chunkSideLengthPower;
 
+	if (_currentVoxel == nullptr || _lastXChunk != xChunk || _lastYChunk != yChunk || _lastZChunk != zChunk) {
+		_currentChunk = _volume->chunk(xChunk, yChunk, zChunk);
+	}
+
+	_lastXChunk = xChunk;
+	_lastYChunk = yChunk;
+	_lastZChunk = zChunk;
+
 	_xPosInChunk = static_cast<uint16_t>(_xPosInVolume - (xChunk << _volume->_chunkSideLengthPower));
 	_yPosInChunk = static_cast<uint16_t>(_yPosInVolume - (yChunk << _volume->_chunkSideLengthPower));
 	_zPosInChunk = static_cast<uint16_t>(_zPosInVolume - (zChunk << _volume->_chunkSideLengthPower));
 
 	const uint32_t voxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
-
-	_currentChunk = _volume->chunk(xChunk, yChunk, zChunk);
 	_currentVoxel = _currentChunk->_data + voxelIndexInChunk;
 }
 

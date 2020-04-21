@@ -184,6 +184,10 @@ public:
 		uint16_t _yPosInChunk = 0u;
 		uint16_t _zPosInChunk = 0u;
 
+		int32_t _lastXChunk = 0;
+		int32_t _lastYChunk = 0;
+		int32_t _lastZChunk = 0;
+
 		// This should ideally be const, but that prevent automatic generation of an assignment operator (https://goo.gl/Sn7KpZ).
 		// We could provide one manually, but it's currently unused so there is no real test for if it works. I'm putting
 		// together a new release at the moment so I'd rathern not make 'risky' changes.
