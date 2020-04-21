@@ -22,7 +22,6 @@ typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
 
 class WorldMeshExtractor {
 private:
-	core::ThreadPool _threadPool;
 	core::ConcurrentQueue<voxel::Mesh> _extracted;
 	glm::ivec3 _pendingExtractionSortPosition { 0, 0, 0 };
 	struct CloseToPoint {
@@ -42,12 +41,12 @@ private:
 	// fast lookup for positions that are already extracted
 	PositionSet _positionsExtracted;
 	core::VarPtr _meshSize;
-	core::AtomicBool _cancelThreads { false };
 	voxel::PagedVolume *_volume = nullptr;
-	void extractScheduledMesh();
 
 public:
 	WorldMeshExtractor();
+
+	void extractScheduledMesh();
 
 	/**
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us

@@ -8,7 +8,8 @@
 
 namespace voxelrender {
 
-WorldChunkMgr::WorldChunkMgr() : _octree({}, 30) {
+WorldChunkMgr::WorldChunkMgr(core::ThreadPool& threadPool) :
+		_octree({}, 30), _threadPool(threadPool) {
 }
 
 void WorldChunkMgr::updateViewDistance(float viewDistance) {
@@ -108,24 +109,46 @@ void WorldChunkMgr::update(const video::Camera &camera, const glm::vec3& focusPo
 	}
 }
 
+void WorldChunkMgr::extractScheduledMesh() {
+	_meshExtractor.extractScheduledMesh();
+}
+
 // TODO: put into background task with two states - computing and
 // next - then the indices and vertices are just swapped
 void WorldChunkMgr::cull(const video::Camera& camera) {
+	if (_cullResult.valid()) {
+		if (_cullResult.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready) {
+			BufferIndices indices = _cullResult.get();
+			_nextBuffer = indices.next;
+			_currentBuffer = indices.current;
+			_cullResult = std::future<BufferIndices>();
+		} else {
+			// already culling - but not yet ready
+			return;
+		}
+	}
 	core_trace_scoped(WorldRendererCull);
-	_indices.clear();
-	_vertices.clear();
-	size_t indexOffset = 0;
 
-	Tree::Contents contents;
 	math::AABB<float> aabb = camera.frustum().aabb();
 	// don't cull objects that might cast shadows
 	aabb.shift(camera.forward() * -10.0f);
-	_octree.query(math::AABB<int>(aabb.mins(), aabb.maxs()), contents);
 
-	for (ChunkBuffer* chunkBuffer : contents) {
-		core_trace_scoped(WorldRendererCullChunk);
-		indexOffset += transform(indexOffset, chunkBuffer->mesh, _vertices, _indices);
-	}
+	voxel::IndexArray& indices = _indices[_nextBuffer];
+	voxel::VertexArray& vertices = _vertices[_nextBuffer];
+	_cullResult = _threadPool.enqueue([aabb, &indices, &vertices, this] () {
+		indices.clear();
+		vertices.clear();
+		size_t indexOffset = 0;
+		Tree::Contents contents;
+		_octree.query(math::AABB<int>(aabb.mins(), aabb.maxs()), contents);
+
+		for (ChunkBuffer* chunkBuffer : contents) {
+			core_trace_scoped(WorldRendererCullChunk);
+			indexOffset += transform(indexOffset, chunkBuffer->mesh, vertices, indices);
+		}
+
+		return BufferIndices{_nextBuffer, (_nextBuffer + 1) % BufferCount};
+	});
 }
 
 int WorldChunkMgr::distance2(const glm::ivec3& pos, const glm::ivec3& pos2) const {

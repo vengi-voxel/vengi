@@ -28,7 +28,7 @@ namespace voxelrender {
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer() :
-		_shadowMapShader(shader::ShadowmapShader::getInstance()) {
+		_threadPool(2, "WorldRenderer"), _worldChunkMgr(_threadPool), _shadowMapShader(shader::ShadowmapShader::getInstance()) {
 	setViewDistance(240.0f);
 }
 
@@ -41,6 +41,7 @@ void WorldRenderer::reset() {
 }
 
 void WorldRenderer::shutdown() {
+	_cancelThreads = true;
 	_worldShader.shutdown();
 	_waterShader.shutdown();
 	_materialBlock.shutdown();
@@ -62,6 +63,7 @@ void WorldRenderer::shutdown() {
 	_postProcessBuf.shutdown();
 	_postProcessBufId = -1;
 	_postProcessShader.shutdown();
+	_threadPool.shutdown();
 }
 
 int WorldRenderer::renderWorld(const video::Camera& camera) {
@@ -321,6 +323,8 @@ void WorldRenderer::construct() {
 
 bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
+	_threadPool.init();
+
 	_colorTexture.init();
 
 	_distortionTexture = video::createTextureFromImage("water-distortion.png");
@@ -384,6 +388,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 
 	_worldChunkMgr.init(volume);
 	_worldChunkMgr.updateViewDistance(_viewDistance);
+	_threadPool.enqueue([this] () {while (!_cancelThreads) { _worldChunkMgr.extractScheduledMesh(); } });
 
 	if (!initFrameBuffers(dimension)) {
 		return false;
@@ -475,10 +480,16 @@ void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
 }
 
 void WorldRenderer::extractMesh(const glm::ivec3 &pos) {
+	if (_cancelThreads) {
+		return;
+	}
 	_worldChunkMgr.extractMesh(pos);
 }
 
 void WorldRenderer::extractMeshes(const video::Camera &camera) {
+	if (_cancelThreads) {
+		return;
+	}
 	_worldChunkMgr.extractMeshes(camera);
 }
 

@@ -30,6 +30,9 @@ namespace voxelrender {
  */
 class WorldRenderer {
 protected:
+	core::ThreadPool _threadPool;
+	core::AtomicBool _cancelThreads { false };
+
 	WorldChunkMgr _worldChunkMgr;
 	WorldBuffers _worldBuffers;
 	frontend::EntityMgr _entityMgr;

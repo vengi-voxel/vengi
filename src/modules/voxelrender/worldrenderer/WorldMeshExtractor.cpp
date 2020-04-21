@@ -10,27 +10,20 @@
 
 namespace voxelrender {
 
-WorldMeshExtractor::WorldMeshExtractor() :
-		_threadPool(1, "MeshExtract") {
+WorldMeshExtractor::WorldMeshExtractor() {
 }
 
 bool WorldMeshExtractor::init(voxel::PagedVolume *volume) {
 	_volume = volume;
-	_threadPool.init();
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
-	for (size_t i = 0u; i < _threadPool.size(); ++i) {
-		_threadPool.enqueue([this] () {extractScheduledMesh();});
-	}
 	return true;
 }
 
 void WorldMeshExtractor::shutdown() {
-	_cancelThreads = true;
 	_pendingExtraction.clear();
 	_pendingExtraction.abortWait();
 	_extracted.clear();
 	_extracted.abortWait();
-	_threadPool.shutdown();
 	_positionsExtracted.clear();
 	_extracted.clear();
 	_volume = nullptr;
@@ -81,9 +74,6 @@ bool WorldMeshExtractor::allowReExtraction(const glm::ivec3& pos) {
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
 bool WorldMeshExtractor::scheduleMeshExtraction(const glm::ivec3& p) {
-	if (_cancelThreads) {
-		return false;
-	}
 	const glm::ivec3& pos = meshPos(p);
 	auto i = _positionsExtracted.insert(pos);
 	if (!i.second) {
@@ -96,25 +86,23 @@ bool WorldMeshExtractor::scheduleMeshExtraction(const glm::ivec3& p) {
 }
 
 void WorldMeshExtractor::extractScheduledMesh() {
-	while (!_cancelThreads) {
-		decltype(_pendingExtraction)::Key pos;
-		if (!_pendingExtraction.waitAndPop(pos)) {
-			break;
-		}
-		core_trace_scoped(MeshExtraction);
-		const glm::ivec3& size = meshSize();
-		const glm::ivec3 mins(pos);
-		const glm::ivec3 maxs(pos.x + size.x - 1, pos.y + size.y - 2, pos.z + size.z - 1);
-		const voxel::Region region(mins, maxs);
-		// these numbers are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
-		// they also heavily depend on the size of the mesh region we extract
-		const int factor = 64;
-		const int vertices = region.getWidthInVoxels() * region.getDepthInVoxels() * factor;
-		voxel::Mesh mesh(vertices, vertices);
-		voxel::extractCubicMesh(_volume, region, &mesh, voxel::IsQuadNeeded());
-		if (!mesh.isEmpty()) {
-			_extracted.push(std::move(mesh));
-		}
+	decltype(_pendingExtraction)::Key pos;
+	if (!_pendingExtraction.waitAndPop(pos)) {
+		return;
+	}
+	core_trace_scoped(MeshExtraction);
+	const glm::ivec3& size = meshSize();
+	const glm::ivec3 mins(pos);
+	const glm::ivec3 maxs(pos.x + size.x - 1, pos.y + size.y - 2, pos.z + size.z - 1);
+	const voxel::Region region(mins, maxs);
+	// these numbers are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
+	// they also heavily depend on the size of the mesh region we extract
+	const int factor = 64;
+	const int vertices = region.getWidthInVoxels() * region.getDepthInVoxels() * factor;
+	voxel::Mesh mesh(vertices, vertices);
+	voxel::extractCubicMesh(_volume, region, &mesh, voxel::IsQuadNeeded());
+	if (!mesh.isEmpty()) {
+		_extracted.push(std::move(mesh));
 	}
 }
 

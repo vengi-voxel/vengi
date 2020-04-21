@@ -47,6 +47,7 @@ static int findFloor(const Volume& volume, int x, int z) {
 	glm::ivec3 start(x, voxel::MAX_TERRAIN_HEIGHT - 1, z);
 	glm::ivec3 end(x, voxel::MAX_WATER_HEIGHT, z);
 	int y = voxel::NO_FLOOR_FOUND;
+	// TODO: Just go down - a lot faster than a raycast
 	voxel::raycastWithEndpoints(&volume, start, end, [&y] (const typename Volume::Sampler& sampler) {
 		const voxel::Voxel& voxel = sampler.voxel();
 		const voxel::VoxelType material = voxel.getMaterial();
