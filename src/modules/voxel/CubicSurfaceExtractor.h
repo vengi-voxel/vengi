@@ -236,14 +236,11 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	core_trace_scoped(QuadGeneration);
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;
-
-		for (int32_t y = offset.y; y <= upper.y; ++y) {
-			const uint32_t regY = y - offset.y;
-
-			volumeSampler.setPosition(offset.x, y, z);
-
-			for (int32_t x = offset.x; x <= upper.x; ++x) {
-				const uint32_t regX = x - offset.x;
+		for (int32_t x = offset.x; x <= upper.x; ++x) {
+			const uint32_t regX = x - offset.x;
+			volumeSampler.setPosition(x, offset.y, z);
+			for (int32_t y = offset.y; y <= upper.y; ++y) {
+				const uint32_t regY = y - offset.y;
 
 				/**
 				 *
@@ -432,8 +429,8 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 					volumeSampler.movePositiveZ();
 				}
 
-				if (core_likely(x != upper.x)) {
-					volumeSampler.movePositiveX();
+				if (core_likely(y != upper.y)) {
+					volumeSampler.movePositiveY();
 				}
 			}
 		}
