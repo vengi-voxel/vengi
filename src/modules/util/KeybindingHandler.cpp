@@ -151,9 +151,9 @@ void KeyBindingHandler::shutdown() {
 		const int16_t modifier = pair.modifier;
 		const core::String& command = pair.command;
 		keybindings += toString(key, modifier);
-		keybindings += " ";
+		keybindings += " \"";
 		keybindings += command;
-		keybindings += "\n";
+		keybindings += "\"\n";
 	}
 	Log::trace("%s", keybindings.c_str());
 	io::filesystem()->write("keybindings.cfg", keybindings);
