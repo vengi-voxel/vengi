@@ -226,7 +226,14 @@ extern void deleteBuffer(Id& id);
 extern void genVertexArrays(uint8_t amount, Id* ids);
 extern Id genVertexArray();
 extern IdPtr genSync();
-extern bool waitForSync(IdPtr id, uint64_t timeout);
+/**
+ * @param[in] timeout timeout in ns
+ * @return Return @c true if the render commands reached the given sync point, @c false if the sync point
+ * wasn't reached yet and one has to wait some more time.
+ * @see genSync()
+ * @see deleteSync()
+ */
+extern bool waitForSync(IdPtr id, uint64_t timeout = 0ul);
 extern void deleteSync(IdPtr& id);
 extern void deleteShader(Id& id);
 extern Id genShader(ShaderType type);

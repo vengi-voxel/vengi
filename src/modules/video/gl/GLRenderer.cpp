@@ -685,25 +685,15 @@ bool waitForSync(IdPtr id, uint64_t timeout) {
 	if (id == InvalidIdPtr) {
 		return false;
 	}
-	if (timeout == 0) {
-		return false;
-	}
 	static_assert(sizeof(IdPtr) >= sizeof(GLsync), "Unexpected sizes");
 #if SANITY_CHECKS_GL
 	if (!glIsSync((GLsync)id)) {
 		return false;
 	}
 #endif
-	// nano seconds
 	const GLenum val = glClientWaitSync((GLsync)id, GL_SYNC_FLUSH_COMMANDS_BIT, (GLuint64)timeout);
 	checkError();
-	if (val == GL_ALREADY_SIGNALED || val == GL_CONDITION_SATISFIED) {
-		return true;
-	}
-	if (val == GL_TIMEOUT_EXPIRED) {
-		return false;
-	}
-	return false;
+	return val != GL_TIMEOUT_EXPIRED;
 }
 
 void genVertexArrays(uint8_t amount, Id* ids) {
