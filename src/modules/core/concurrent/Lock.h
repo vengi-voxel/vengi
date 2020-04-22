@@ -22,11 +22,12 @@ public:
 	SDL_mutex* handle();
 };
 
+template<class LOCK>
 class ScopedLock {
 private:
-	const Lock& _lock;
+	LOCK& _lock;
 public:
-	inline ScopedLock(const Lock& lock) : _lock(lock) {
+	inline ScopedLock(const LOCK& lock) : _lock(const_cast<LOCK&>(lock)) {
 		_lock.lock();
 	}
 	inline ~ScopedLock() {
