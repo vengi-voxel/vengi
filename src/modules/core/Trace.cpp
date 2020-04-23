@@ -67,7 +67,9 @@ Trace::~Trace() {
 #ifdef USE_EMTRACE
 	emscripten_trace_close();
 #endif
+#ifdef TRACY_ENABLE
 	SDL_SetMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func);
+#endif
 }
 
 TraceScoped::TraceScoped(const char* name, const char *msg) {
