@@ -36,7 +36,9 @@ private:
 	const int _keyBindingContext;
 
 	void zoom(float level);
-
+	void toggleCameraType();
+	void setCameraFirstPerson();
+	void setCameraTarget();
 public:
 	PlayerCamera(const voxelworld::WorldMgrPtr &world, voxelrender::WorldRenderer &worldRenderer, int keyBindingContext = core::BindingContext::World) :
 			_worldMgr(world), _worldRenderer(worldRenderer), _keyBindingContext(keyBindingContext) {
