@@ -30,7 +30,7 @@ private:
 	typedef GroupMembersSet::iterator GroupMembersSetIter;
 	typedef GroupMembersSet::const_iterator GroupMembersSetConstIter;
 
-	ReadWriteLock _groupLock = {"groupmgr-group"};
+	core_trace_mutex(core::Lock, _groupLock);
 	struct Group {
 		AIPtr leader;
 		GroupMembersSet members;
@@ -43,7 +43,7 @@ private:
 	typedef Groups::iterator GroupsIter;
 
 	GroupMembersSet _empty;
-	ReadWriteLock _lock = {"groupmgr"};
+	core_trace_mutex(core::Lock, _lock);
 	Groups _groups;
 	GroupMembers _groupMembers;
 
@@ -118,7 +118,7 @@ public:
 	 */
 	template<typename Func>
 	void visit(GroupId id, Func& func) const {
-		ScopedReadLock scopedLock(_lock);
+		core::ScopedLock scopedLock(_lock);
 		const GroupsConstIter& i = _groups.find(id);
 		if (i == _groups.end()) {
 			return;

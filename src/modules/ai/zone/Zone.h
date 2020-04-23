@@ -17,6 +17,8 @@
 #include "group/GroupMgr.h"
 #include "common/Thread.h"
 #include "core/concurrent/ThreadPool.h"
+#include "core/concurrent/Lock.h"
+#include "core/Trace.h"
 #include "common/CharacterId.h"
 #include <unordered_map>
 #include <vector>
@@ -51,8 +53,8 @@ protected:
 	AIScheduleList _scheduledRemove;
 	CharacterIdList _scheduledDestroy;
 	bool _debug;
-	ReadWriteLock _lock {"zone"};
-	ReadWriteLock _scheduleLock {"zone-schedulelock"};
+	mutable core_trace_mutex(core::Lock, _lock);
+	core_trace_mutex(core::Lock, _scheduleLock);
 	ai::GroupMgr _groupManager;
 	mutable core::ThreadPool _threadPool;
 
@@ -77,7 +79,7 @@ protected:
 	bool doDestroyAI(const CharacterId& id);
 
 public:
-	Zone(const core::String& name, int threadCount = (std::min)(1u, std::thread::hardware_concurrency())) :
+	Zone(const core::String& name, int threadCount = 1) :
 			_name(name), _debug(false), _threadPool(threadCount) {
 		_threadPool.init();
 	}
@@ -110,7 +112,7 @@ public:
 		if (ais.empty()) {
 			return false;
 		}
-		ScopedWriteLock scopedLock(_scheduleLock);
+		core::ScopedLock scopedLock(_scheduleLock);
 		_scheduledAdd.insert(_scheduledAdd.end(), ais.begin(), ais.end());
 		return true;
 	}
@@ -131,7 +133,7 @@ public:
 		if (ais.empty()) {
 			return false;
 		}
-		ScopedWriteLock scopedLock(_scheduleLock);
+		core::ScopedLock scopedLock(_scheduleLock);
 		_scheduledRemove.insert(_scheduledRemove.end(), ais.begin(), ais.end());
 		return true;
 	}
@@ -250,10 +252,11 @@ public:
 	 */
 	template<typename Func>
 	void executeParallel(Func& func) {
+		core_trace_scoped(ZoneExecuteParallel);
 		std::vector<std::future<void> > results;
-		_lock.lockRead();
+		_lock.lock();
 		AIMap copy(_ais);
-		_lock.unlockRead();
+		_lock.unlock();
 		for (auto i = copy.begin(); i != copy.end(); ++i) {
 			const AIPtr& ai = i->second;
 			results.emplace_back(executeAsync(ai, func));
@@ -272,10 +275,11 @@ public:
 	 */
 	template<typename Func>
 	void executeParallel(const Func& func) const {
+		core_trace_scoped(ZoneExecuteParallel);
 		std::vector<std::future<void> > results;
-		_lock.lockRead();
+		_lock.lock();
 		AIMap copy(_ais);
-		_lock.unlockRead();
+		_lock.unlock();
 		for (auto i = copy.begin(); i != copy.end(); ++i) {
 			const AIPtr& ai = i->second;
 			results.emplace_back(executeAsync(ai, func));
@@ -293,9 +297,10 @@ public:
 	 */
 	template<typename Func>
 	void execute(const Func& func) const {
-		_lock.lockRead();
+		core_trace_scoped(ZoneExecute);
+		_lock.lock();
 		AIMap copy(_ais);
-		_lock.unlockRead();
+		_lock.unlock();
 		for (auto i = copy.begin(); i != copy.end(); ++i) {
 			const AIPtr& ai = i->second;
 			func(ai);
@@ -310,9 +315,10 @@ public:
 	 */
 	template<typename Func>
 	void execute(Func& func) {
-		_lock.lockRead();
+		core_trace_scoped(ZoneExecute);
+		_lock.lock();
 		AIMap copy(_ais);
-		_lock.unlockRead();
+		_lock.unlock();
 		for (auto i = copy.begin(); i != copy.end(); ++i) {
 			const AIPtr& ai = i->second;
 			func(ai);

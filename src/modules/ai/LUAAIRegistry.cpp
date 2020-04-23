@@ -313,7 +313,7 @@ bool LUAAIRegistry::init() {
 
 void LUAAIRegistry::shutdown() {
 	{
-		ScopedWriteLock scopedLock(_lock);
+		core::ScopedLock scopedLock(_lock);
 		_treeNodeFactories.clear();
 		_conditionFactories.clear();
 		_filterFactories.clear();
@@ -343,22 +343,22 @@ bool LUAAIRegistry::evaluate(const char* luaBuffer, size_t size) {
 }
 
 void LUAAIRegistry::addTreeNodeFactory(const core::String& type, const LUATreeNodeFactoryPtr& factory) {
-	ScopedWriteLock scopedLock(_lock);
+	core::ScopedLock scopedLock(_lock);
 	_treeNodeFactories.emplace(type, factory);
 }
 
 void LUAAIRegistry::addConditionFactory(const core::String& type, const LUAConditionFactoryPtr& factory) {
-	ScopedWriteLock scopedLock(_lock);
+	core::ScopedLock scopedLock(_lock);
 	_conditionFactories.emplace(type, factory);
 }
 
 void LUAAIRegistry::addFilterFactory(const core::String& type, const LUAFilterFactoryPtr& factory) {
-	ScopedWriteLock scopedLock(_lock);
+	core::ScopedLock scopedLock(_lock);
 	_filterFactories.emplace(type, factory);
 }
 
 void LUAAIRegistry::addSteeringFactory(const core::String& type, const LUASteeringFactoryPtr& factory) {
-	ScopedWriteLock scopedLock(_lock);
+	core::ScopedLock scopedLock(_lock);
 	_steeringFactories.emplace(type, factory);
 }
 

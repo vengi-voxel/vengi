@@ -27,10 +27,10 @@ protected:
 	const IAIFactory& _aiFactory;
 	typedef std::map<core::String, TreeNodePtr> TreeMap;
 	TreeMap _treeMap;
-	ReadWriteLock _lock = {"treeloader"};
+	core_trace_mutex(core::Lock, _lock);
 
 	inline void resetError() {
-		ScopedWriteLock scopedLock(_lock);
+		core::ScopedLock scopedLock(_lock);
 		_error = "";
 	}
 private:
@@ -46,7 +46,7 @@ public:
 	}
 
 	void shutdown() {
-		ScopedWriteLock scopedLock(_lock);
+		core::ScopedLock scopedLock(_lock);
 		_error = "";
 		_treeMap.clear();
 	}
@@ -59,7 +59,7 @@ public:
 	 * @brief Fill the given vector with the loaded behaviour tree names
 	 */
 	void getTrees(std::vector<core::String>& trees) const {
-		ScopedReadLock scopedLock(_lock);
+		core::ScopedLock scopedLock(_lock);
 		trees.reserve(_treeMap.size());
 		for (TreeMap::const_iterator it = _treeMap.begin(); it != _treeMap.end(); ++it) {
 			trees.push_back(it->first);
@@ -79,17 +79,12 @@ public:
 		if (!root) {
 			return false;
 		}
-		{
-			ScopedReadLock scopedLock(_lock);
-			TreeMap::const_iterator i = _treeMap.find(name);
-			if (i != _treeMap.end()) {
-				return false;
-			}
+		core::ScopedLock scopedLock(_lock);
+		TreeMap::const_iterator i = _treeMap.find(name);
+		if (i != _treeMap.end()) {
+			return false;
 		}
-		{
-			ScopedWriteLock scopedLock(_lock);
-			_treeMap.insert(std::make_pair(name, root));
-		}
+		_treeMap.insert(std::make_pair(name, root));
 		return true;
 	}
 
@@ -97,7 +92,7 @@ public:
 	 * @brief Loads on particular behaviour tree.
 	 */
 	TreeNodePtr load(const core::String &name) {
-		ScopedReadLock scopedLock(_lock);
+		core::ScopedLock scopedLock(_lock);
 		TreeMap::const_iterator i = _treeMap.find(name);
 		if (i != _treeMap.end())
 			return i->second;
@@ -120,7 +115,7 @@ inline void ITreeLoader::setError(const char* msg, ...) {
 	char buf[1024];
 	std::vsnprintf(buf, sizeof(buf), msg, args);
 	va_end(args);
-	ScopedWriteLock scopedLock(_lock);
+	core::ScopedLock scopedLock(_lock);
 	_error = buf;
 }
 

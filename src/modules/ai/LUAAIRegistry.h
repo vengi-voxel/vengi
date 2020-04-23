@@ -6,6 +6,7 @@
 
 #include "AIRegistry.h"
 #include "common/Thread.h"
+#include "core/concurrent/Lock.h"
 #include "tree/LUATreeNode.h"
 #include "conditions/LUACondition.h"
 #include "filter/LUAFilter.h"
@@ -86,7 +87,7 @@ class LUAAIRegistry : public AIRegistry {
 protected:
 	lua_State* _s = nullptr;
 
-	ReadWriteLock _lock{"luaregistry"};
+	core_trace_mutex(core::Lock, _lock);
 	TreeNodeFactoryMap _treeNodeFactories;
 	ConditionFactoryMap _conditionFactories;
 	FilterFactoryMap _filterFactories;

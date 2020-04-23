@@ -104,9 +104,9 @@ private: \
 FILTER_CLASS(FilterName) \
 public: \
 	static ::ai::FilterPtr& get() { \
-		AI_THREAD_LOCAL FilterName* c = nullptr; \
+		thread_local FilterName* c = nullptr; \
 		if (c == nullptr) { c = new FilterName; } \
-		AI_THREAD_LOCAL ::ai::FilterPtr _instance(c); \
+		thread_local ::ai::FilterPtr _instance(c); \
 		return _instance; \
 	} \
 	FILTER_FACTORY_SINGLETON

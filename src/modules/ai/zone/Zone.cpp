@@ -8,7 +8,7 @@
 namespace ai {
 
 AIPtr Zone::getAI(CharacterId id) const {
-	ScopedReadLock scopedLock(_lock);
+	core::ScopedLock scopedLock(_lock);
 	auto i = _ais.find(id);
 	if (i == _ais.end()) {
 		return AIPtr();
@@ -18,7 +18,7 @@ AIPtr Zone::getAI(CharacterId id) const {
 }
 
 std::size_t Zone::size() const {
-	ScopedReadLock scopedLock(_lock);
+	core::ScopedLock scopedLock(_lock);
 	return _ais.size();
 }
 
@@ -63,13 +63,13 @@ bool Zone::addAI(const AIPtr& ai) {
 	if (!ai) {
 		return false;
 	}
-	ScopedWriteLock scopedLock(_scheduleLock);
+	core::ScopedLock scopedLock(_scheduleLock);
 	_scheduledAdd.push_back(ai);
 	return true;
 }
 
 bool Zone::destroyAI(const CharacterId& id) {
-	ScopedWriteLock scopedLock(_scheduleLock);
+	core::ScopedLock scopedLock(_scheduleLock);
 	_scheduledDestroy.push_back(id);
 	return true;
 }
@@ -78,7 +78,7 @@ bool Zone::removeAI(const AIPtr& ai) {
 	if (!ai) {
 		return false;
 	}
-	ScopedWriteLock scopedLock(_scheduleLock);
+	core::ScopedLock scopedLock(_scheduleLock);
 	_scheduledRemove.push_back(ai);
 	return true;
 }
@@ -90,12 +90,12 @@ void Zone::update(int64_t dt) {
 		AIScheduleList scheduledAdd;
 		CharacterIdList scheduledDestroy;
 		{
-			ScopedWriteLock scopedLock(_scheduleLock);
+			core::ScopedLock scopedLock(_scheduleLock);
 			scheduledAdd.swap(_scheduledAdd);
 			scheduledRemove.swap(_scheduledRemove);
 			scheduledDestroy.swap(_scheduledDestroy);
 		}
-		ScopedWriteLock scopedLock(_lock);
+		core::ScopedLock scopedLock(_lock);
 		for (const AIPtr& ai : scheduledAdd) {
 			doAddAI(ai);
 		}

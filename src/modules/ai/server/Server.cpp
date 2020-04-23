@@ -60,7 +60,7 @@ Server::~Server() {
 }
 
 void Server::enqueueEvent(const Event& event) {
-	ScopedWriteLock scopedLock(_lock);
+	core::ScopedLock scopedLock(_lock);
 	_events.push_back(event);
 }
 
@@ -128,6 +128,7 @@ void Server::addChildren(const TreeNodePtr& node, AIStateNode& parent, const AIP
 }
 
 void Server::broadcastState(const Zone* zone) {
+	core_trace_scoped(AIServerBroadcastState);
 	_broadcastMask |= SV_BROADCAST_STATE;
 	AIStateMessage msg;
 	auto func = [&] (const AIPtr& ai) {
@@ -165,6 +166,7 @@ void Server::broadcastStaticCharacterDetails(const Zone* zone) {
 }
 
 void Server::broadcastCharacterDetails(const Zone* zone) {
+	core_trace_scoped(AIServerBroadcastCharacterDetails);
 	_broadcastMask |= SV_BROADCAST_CHRDETAILS;
 	const CharacterId id = _selectedCharacterId;
 	if (id == AI_NOTHING_SELECTED) {
@@ -201,7 +203,7 @@ void Server::broadcastCharacterDetails(const Zone* zone) {
 void Server::handleEvents(Zone* zone, bool pauseState) {
 	std::vector<Event> events;
 	{
-		ScopedReadLock scopedLock(_lock);
+		core::ScopedLock scopedLock(_lock);
 		events = std::move(_events);
 		_events.clear();
 	}

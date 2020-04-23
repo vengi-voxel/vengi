@@ -21,7 +21,7 @@
 namespace ai {
 
 inline std::default_random_engine& randomEngine() {
-	AI_THREAD_LOCAL std::default_random_engine engine;
+	thread_local std::default_random_engine engine;
 	return engine;
 }
 

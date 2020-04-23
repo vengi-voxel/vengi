@@ -264,7 +264,7 @@ bool LUATreeLoader::init(const core::String& luaString) {
 
 	bool empty;
 	{
-		ScopedReadLock scopedLock(_lock);
+		core::ScopedLock scopedLock(_lock);
 		empty = _treeMap.empty();
 	}
 	if (empty) {

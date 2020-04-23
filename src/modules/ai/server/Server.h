@@ -63,7 +63,7 @@ protected:
 	core::AtomicBool _pause;
 	// the current active debugging zone
 	core::AtomicPtr<Zone> _zone;
-	ReadWriteLock _lock = {"server"};
+	core_trace_mutex(core::Lock, _lock);
 	std::vector<core::String> _names;
 	uint32_t _broadcastMask = 0u;
 
