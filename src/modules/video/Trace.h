@@ -37,7 +37,6 @@ extern void traceGLFrameEnd();
 #define video_trace_begin_dynamic(name) video::traceGLBegin(#name)
 #define video_trace_end() video::traceGLEnd()
 #define video_trace_scoped(name) video::TraceGLScoped __trace__##name(#name)
-#define video_trace_frame_end()
 #endif
 
 }
