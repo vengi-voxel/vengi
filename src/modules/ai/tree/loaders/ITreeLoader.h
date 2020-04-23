@@ -113,7 +113,7 @@ inline void ITreeLoader::setError(const char* msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	char buf[1024];
-	std::vsnprintf(buf, sizeof(buf), msg, args);
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	va_end(args);
 	core::ScopedLock scopedLock(_lock);
 	_error = buf;
