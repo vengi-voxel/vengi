@@ -8,6 +8,8 @@
 #include "common/Common.h"
 #include "common/Assert.h"
 #include "AI.h"
+#include "core/Trace.h"
+#include "commonlua/Trace.h"
 
 namespace ai {
 
@@ -281,6 +283,7 @@ bool LUAAIRegistry::init() {
 		return true;
 	}
 	_s = luaL_newstate();
+	lua::clua_registertrace(_s);
 
 	lua_atpanic(_s, [] (lua_State* L) {
 		ai_log_error("Lua panic. Error message: %s", (lua_isnil(L, -1) ? "" : lua_tostring(L, -1)));

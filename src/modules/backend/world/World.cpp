@@ -13,6 +13,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 #include "LUAFunctions.h"
 #include "attrib/ContainerProvider.h"
 #include <SimpleAI.h>
@@ -33,6 +34,7 @@ World::~World() {
 }
 
 void World::update(long dt) {
+	core_trace_scoped(WorldUpdate);
 	for (auto& e : _maps) {
 		const MapPtr& map = e.second;
 		map->update(dt);

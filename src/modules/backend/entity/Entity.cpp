@@ -140,6 +140,7 @@ bool Entity::removeContainer(const core::String& id) {
 }
 
 void Entity::broadcastAttribUpdate() {
+	core_trace_scoped(BroadcastAttribUpdate);
 	// TODO: send current and max values to the clients
 	// TODO: collect which of them are dirty, and maintain a list of
 	// those that are for the owning client only or which of them must be broadcasted
@@ -168,6 +169,7 @@ bool Entity::update(long dt) {
 }
 
 void Entity::updateVisible(const EntitySet& set) {
+	core_trace_scoped(UpdateVisible);
 	_visibleLock.lockWrite();
 	const auto& stillVisible = core::setIntersection(set, _visible);
 	const EntitySet& remove = core::setDifference(stillVisible, _visible);

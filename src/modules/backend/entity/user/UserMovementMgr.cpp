@@ -5,6 +5,7 @@
 #include "UserMovementMgr.h"
 #include "backend/entity/User.h"
 #include "backend/world/Map.h"
+#include "core/Trace.h"
 
 namespace backend {
 
@@ -18,6 +19,7 @@ void UserMovementMgr::changeMovement(network::MoveDirection bitmask, float pitch
 }
 
 void UserMovementMgr::update(long dt) {
+	core_trace_scoped(UserMovementMgrUpdate);
 	const float speed = _user->current(attrib::Type::SPEED);
 	const float deltaSeconds = static_cast<float>(dt) / 1000.0f;
 	const float orientation = _user->orientation();

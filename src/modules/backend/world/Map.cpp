@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "core/EventBus.h"
 #include "core/App.h"
+#include "core/Trace.h"
 #include "math/QuadTree.h"
 #include "core/io/Filesystem.h"
 #include "backend/entity/Npc.h"
@@ -60,6 +61,7 @@ bool Map::getDirtyModels(Models& models) {
 }
 
 bool Map::updateEntity(const EntityPtr& entity, long dt) {
+	core_trace_scoped(EntityUpdate);
 	if (!entity->update(dt)) {
 		return false;
 	}
@@ -81,6 +83,7 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 }
 
 void Map::update(long dt) {
+	core_trace_scoped(MapUpdate);
 	Log::trace("tick map %i", (int)_mapId);
 	_spawnMgr->update(dt);
 	_zone->update(dt);

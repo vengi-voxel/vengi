@@ -445,6 +445,7 @@ void ServerLoop::update(long dt) {
 }
 
 void ServerLoop::replicateVars() const {
+	core_trace_scoped(ReplicateVars);
 	std::vector<core::VarPtr> vars;
 	core::Var::visitDirtyReplicate([&vars] (const core::VarPtr& var) {
 		vars.push_back(var);
@@ -467,6 +468,7 @@ void ServerLoop::replicateVars() const {
 
 // TODO: doesn't belong here
 void ServerLoop::onEvent(const network::DisconnectEvent& event) {
+	core_trace_scoped(OnDisconnectEvent);
 	ENetPeer* peer = event.peer();
 	Log::info("disconnect peer: %u", peer->connectID);
 	User* user = reinterpret_cast<User*>(peer->data);

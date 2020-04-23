@@ -74,6 +74,7 @@ bool MapProvider::init() {
 	}
 
 	_httpServer->registerRoute(http::HttpMethod::GET, "/chunk", [&] (const http::RequestParser& request, http::HttpResponse* response) {
+		core_trace_scoped(ChunkDownload);
 		HTTP_QUERY_GET_INT(x);
 		HTTP_QUERY_GET_INT(y);
 		HTTP_QUERY_GET_INT(z);

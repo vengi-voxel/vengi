@@ -5,6 +5,7 @@
 #include "AICharacter.h"
 #include "backend/entity/Npc.h"
 #include "core/StringUtil.h"
+#include "core/Trace.h"
 
 namespace backend {
 
@@ -29,6 +30,7 @@ void AICharacter::setOrientation(float orientation) {
 }
 
 void AICharacter::update(int64_t dt, bool debuggingActive) {
+	core_trace_scoped(AICharacterUpdate);
 	_npc.moveToGround();
 
 	// TODO: attrib for passive aggro

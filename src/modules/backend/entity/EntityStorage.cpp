@@ -4,6 +4,7 @@
 
 #include "EntityStorage.h"
 #include "core/EventBus.h"
+#include "core/Trace.h"
 #include "User.h"
 #include "Npc.h"
 #include "backend/eventbus/Event.h"
@@ -21,6 +22,7 @@ EntityStorage::~EntityStorage() {
 }
 
 void EntityStorage::visit(const std::function<void(const EntityPtr&)>& visitor) {
+	core_trace_scoped(EntityStorageVisit);
 	for (auto& e : _users) {
 		visitor(e.second);
 	}
@@ -30,12 +32,14 @@ void EntityStorage::visit(const std::function<void(const EntityPtr&)>& visitor) 
 }
 
 void EntityStorage::visitNpcs(const std::function<void(const NpcPtr&)>& visitor) {
+	core_trace_scoped(EntityStorageVisitNpcs);
 	for (auto& e : _npcs) {
 		visitor(e.second);
 	}
 }
 
 void EntityStorage::visitUsers(const std::function<void(const UserPtr&)>& visitor) {
+	core_trace_scoped(EntityStorageVisitUsers);
 	for (auto& e : _users) {
 		visitor(e.second);
 	}

@@ -4,6 +4,7 @@
 
 #include "Attributes.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 #include <unordered_set>
 
 namespace attrib {
@@ -42,6 +43,7 @@ Attributes::Attributes(Attributes* parent) :
 }
 
 bool Attributes::update(long dt) {
+	core_trace_scoped(AttributesUpdates);
 	bool updated = false;
 	if (_parent != nullptr) {
 		updated = _parent->update(dt);

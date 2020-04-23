@@ -20,6 +20,7 @@
 
 #include "conditions/ConditionParser.h"
 #include "tree/TreeNodeParser.h"
+#include "core/Trace.h"
 
 namespace ai {
 
@@ -486,6 +487,7 @@ void Server::step(int64_t stepMillis) {
 }
 
 void Server::update(int64_t deltaTime) {
+	core_trace_scoped(AIServerUpdate);
 	_time += deltaTime;
 	const int clients = _network.getConnectedClients();
 	Zone* zone = _zone;

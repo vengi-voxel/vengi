@@ -50,6 +50,7 @@ int EventBus::unsubscribe(ClassTypeId index, void* handler, const IEventBusTopic
 }
 
 int EventBus::update(int limit) {
+	core_trace_scoped(EventBusUpdate);
 	int i = 0;
 	IEventBusEventPtr event;
 	while (_queue.pop(event)) {

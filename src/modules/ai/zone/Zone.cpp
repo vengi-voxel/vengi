@@ -3,6 +3,7 @@
  */
 
 #include "Zone.h"
+#include "core/Trace.h"
 
 namespace ai {
 
@@ -83,6 +84,7 @@ bool Zone::removeAI(const AIPtr& ai) {
 }
 
 void Zone::update(int64_t dt) {
+	core_trace_scoped(ZoneUpdate);
 	{
 		AIScheduleList scheduledRemove;
 		AIScheduleList scheduledAdd;

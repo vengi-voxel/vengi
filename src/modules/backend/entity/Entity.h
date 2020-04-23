@@ -12,6 +12,7 @@
 #include "backend/ForwardDecl.h"
 #include "ServerMessages_generated.h"
 #include "network/IProtocolHandler.h"
+#include "core/Trace.h"
 
 #include <unordered_set>
 #include <memory>
@@ -132,6 +133,7 @@ public:
 	 */
 	template<typename Func>
 	void visitVisible(Func&& func) {
+		core_trace_scoped(VisitVisibleUpdate);
 		core::ScopedReadLock lock(_visibleLock);
 		for (const EntityPtr& e : _visible) {
 			func(e);

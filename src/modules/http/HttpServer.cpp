@@ -113,6 +113,7 @@ HttpServer::ClientSocketsIter HttpServer::closeClient(ClientSocketsIter& iter) {
 }
 
 bool HttpServer::update() {
+	core_trace_scoped(HttpServerUpdate);
 	fd_set readFDsOut;
 	fd_set writeFDsOut;
 

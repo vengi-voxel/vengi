@@ -5,6 +5,7 @@
 #include "SpawnMgr.h"
 #include "core/Common.h"
 #include "core/Singleton.h"
+#include "core/Trace.h"
 #include "core/io/Filesystem.h"
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AICharacter.h"
@@ -127,6 +128,7 @@ int SpawnMgr::spawn(network::EntityType type, int amount, const glm::ivec3* pos)
 }
 
 void SpawnMgr::update(long dt) {
+	core_trace_scoped(SpawnMgrUpdate);
 	_time += dt;
 	if (_time >= spawnTime) {
 		_time -= spawnTime;

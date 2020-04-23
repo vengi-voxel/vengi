@@ -72,6 +72,7 @@ bool Npc::die() {
 }
 
 bool Npc::update(long dt) {
+	core_trace_scoped(NpcUpdate);
 	if (!Super::update(dt)) {
 		return false;
 	}
