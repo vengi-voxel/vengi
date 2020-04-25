@@ -4,7 +4,9 @@
 
 #include "WorldChunkMgr.h"
 #include "core/Trace.h"
+#include "video/Trace.h"
 #include "voxel/Constants.h"
+#include "voxelrender/ShaderAttribute.h"
 
 namespace voxelrender {
 
@@ -18,7 +20,8 @@ void WorldChunkMgr::updateViewDistance(float viewDistance) {
 	_maxAllowedDistance = glm::pow(viewDistance + maxCullingThreshold, 2);
 }
 
-bool WorldChunkMgr::init(voxel::PagedVolume* volume) {
+bool WorldChunkMgr::init(shader::WorldShader* worldShader, voxel::PagedVolume* volume) {
+	_worldShader = worldShader;
 	if (!_meshExtractor.init(volume)) {
 		Log::error("Failed to initialize the mesh extractor");
 		return false;
@@ -34,9 +37,59 @@ void WorldChunkMgr::reset() {
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		chunkBuffer.inuse = false;
 	}
+	_visibleBuffers.size = 0;
 	_meshExtractor.reset();
 	_octree.clear();
-	_activeChunkBuffers = 0;
+}
+
+bool WorldChunkMgr::initTerrainBuffer(ChunkBuffer* chunk) {
+	chunk->_vbo = chunk->_buffer.create();
+	if (chunk->_vbo == -1) {
+		Log::error("Failed to create vertex buffer");
+		return false;
+	}
+	chunk->_ibo = chunk->_buffer.create(nullptr, 0, video::BufferType::IndexBuffer);
+	if (chunk->_ibo == -1) {
+		Log::error("Failed to create index buffer");
+		return false;
+	}
+
+	const int locationPos = _worldShader->getLocationPos();
+	const video::Attribute& posAttrib = getPositionVertexAttribute(chunk->_vbo, locationPos, _worldShader->getAttributeComponents(locationPos));
+	if (!chunk->_buffer.addAttribute(posAttrib)) {
+		Log::warn("Failed to add position attribute");
+	}
+
+	const int locationInfo = _worldShader->getLocationInfo();
+	const video::Attribute& infoAttrib = getInfoVertexAttribute(chunk->_vbo, locationInfo, _worldShader->getAttributeComponents(locationInfo));
+	if (!chunk->_buffer.addAttribute(infoAttrib)) {
+		Log::warn("Failed to add info attribute");
+	}
+
+	chunk->_buffer.update(chunk->_vbo, chunk->mesh.getVertexVector());
+	chunk->_buffer.update(chunk->_ibo, chunk->mesh.getIndexVector());
+
+	return true;
+}
+
+int WorldChunkMgr::renderTerrain() {
+	video_trace_scoped(WorldChunkMgrRenderTerrain);
+	int drawCalls = 0;
+
+	for (int i = 0; i < _visibleBuffers.size; ++i) {
+		ChunkBuffer& chunkBuffer = *_visibleBuffers.visible[i];
+		core_assert(chunkBuffer.inuse);
+		const video::Buffer& buffer = chunkBuffer._buffer;
+		const int ibo = chunkBuffer._ibo;
+		const uint32_t numIndices = buffer.elements(ibo, 1, sizeof(voxel::IndexType));
+		if (numIndices == 0u) {
+			return false;
+		}
+		video::ScopedBuffer scopedBuf(buffer);
+		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
+		++drawCalls;
+	}
+	return drawCalls;
 }
 
 void WorldChunkMgr::handleMeshQueue() {
@@ -71,42 +124,31 @@ void WorldChunkMgr::handleMeshQueue() {
 	}
 	if (!freeChunkBuffer->inuse) {
 		freeChunkBuffer->inuse = true;
-		++_activeChunkBuffers;
 	}
-}
-
-static inline size_t transform(size_t indexOffset, const voxel::Mesh& mesh, voxel::VertexArray& verts, voxel::IndexArray& idxs) {
-	const voxel::IndexArray& indices = mesh.getIndexVector();
-	const size_t start = idxs.size();
-	idxs.insert(idxs.end(), indices.begin(), indices.end());
-	const size_t end = idxs.size();
-	for (size_t i = start; i < end; ++i) {
-		idxs[i] += indexOffset;
-	}
-	const voxel::VertexArray& vertices = mesh.getVertexVector();
-	verts.insert(verts.end(), vertices.begin(), vertices.end());
-	return vertices.size();
 }
 
 void WorldChunkMgr::update(const video::Camera &camera, const glm::vec3& focusPos) {
 	handleMeshQueue();
-	cull(camera);
 
 	_meshExtractor.updateExtractionOrder(focusPos);
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
 			continue;
 		}
+		if (chunkBuffer._ibo == -1) {
+			initTerrainBuffer(&chunkBuffer);
+		}
 		const int distance = distance2(chunkBuffer.translation(), focusPos);
 		if (distance < _maxAllowedDistance) {
 			continue;
 		}
 		core_assert_always(_meshExtractor.allowReExtraction(chunkBuffer.translation()));
-		chunkBuffer.inuse = false;
-		--_activeChunkBuffers;
+		chunkBuffer.reset();
 		_octree.remove(&chunkBuffer);
 		Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
 	}
+
+	cull(camera);
 }
 
 void WorldChunkMgr::extractScheduledMesh() {
@@ -116,39 +158,20 @@ void WorldChunkMgr::extractScheduledMesh() {
 // TODO: put into background task with two states - computing and
 // next - then the indices and vertices are just swapped
 void WorldChunkMgr::cull(const video::Camera& camera) {
-	if (_cullResult.valid()) {
-		if (_cullResult.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready) {
-			BufferIndices indices = _cullResult.get();
-			_nextBuffer = indices.next;
-			_currentBuffer = indices.current;
-			_cullResult = std::future<BufferIndices>();
-		} else {
-			// already culling - but not yet ready
-			return;
-		}
-	}
 	core_trace_scoped(WorldRendererCull);
 
 	math::AABB<float> aabb = camera.frustum().aabb();
 	// don't cull objects that might cast shadows
 	aabb.shift(camera.forward() * -10.0f);
 
-	voxel::IndexArray& indices = _indices[_nextBuffer];
-	voxel::VertexArray& vertices = _vertices[_nextBuffer];
-	_cullResult = _threadPool.enqueue([aabb, &indices, &vertices, this] () {
-		indices.clear();
-		vertices.clear();
-		size_t indexOffset = 0;
-		Tree::Contents contents;
-		_octree.query(math::AABB<int>(aabb.mins(), aabb.maxs()), contents);
+	size_t index = 0;
+	Tree::Contents contents;
+	_octree.query(math::AABB<int>(aabb.mins(), aabb.maxs()), contents);
 
-		for (ChunkBuffer* chunkBuffer : contents) {
-			core_trace_scoped(WorldRendererCullChunk);
-			indexOffset += transform(indexOffset, chunkBuffer->mesh, vertices, indices);
-		}
-
-		return BufferIndices{_nextBuffer, (_nextBuffer + 1) % BufferCount};
-	});
+	for (ChunkBuffer* chunkBuffer : contents) {
+		_visibleBuffers.visible[index++] = chunkBuffer;
+	}
+	_visibleBuffers.size = index;
 }
 
 int WorldChunkMgr::distance2(const glm::ivec3& pos, const glm::ivec3& pos2) const {

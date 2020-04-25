@@ -26,7 +26,6 @@
 
 namespace voxelrender {
 
-// TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer() :
 		_threadPool(2, "WorldRenderer"), _worldChunkMgr(_threadPool), _shadowMapShader(shader::ShadowmapShader::getInstance()) {
 	setViewDistance(240.0f);
@@ -161,7 +160,7 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 	_shadowMapShader.setModel(glm::mat4(1.0f));
 	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
 		_shadowMapShader.setLightviewprojection(lightViewProjection);
-		_worldBuffers.renderTerrain();
+		_worldChunkMgr.renderTerrain();
 		return true;
 	}, false);
 	_shadowMapShader.deactivate();
@@ -170,8 +169,6 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 
 int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	core_trace_scoped(WorldRendererRenderToFrameBuffer);
-	// update the vertex buffers
-	_worldBuffers.update(_worldChunkMgr.vertices(), _worldChunkMgr.indices());
 
 	// ensure we are in the expected states
 	video::enable(video::State::DepthTest);
@@ -234,9 +231,7 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 		_worldShader.setCascades(_shadow.cascades());
 		_worldShader.setDistances(_shadow.distances());
 	}
-	if (_worldBuffers.renderTerrain()) {
-		++drawCallsWorld;
-	}
+	drawCallsWorld += _worldChunkMgr.renderTerrain();
 	return drawCallsWorld;
 }
 
@@ -376,7 +371,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
-	if (!_worldBuffers.init(_worldShader, _waterShader)) {
+	if (!_worldBuffers.init(_waterShader)) {
 		return false;
 	}
 
@@ -386,7 +381,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		return false;
 	}
 
-	_worldChunkMgr.init(volume);
+	_worldChunkMgr.init(&_worldShader, volume);
 	_worldChunkMgr.updateViewDistance(_viewDistance);
 	_threadPool.enqueue([this] () {while (!_cancelThreads) { _worldChunkMgr.extractScheduledMesh(); } });
 
