@@ -65,6 +65,7 @@ protected:
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize(int windowWidth, int windowHeight) override;
 	void beforeUI() override;
+	glm::vec3 spawnPos() const;
 
 public:
 	MapView(const metric::MetricPtr& metric, const animation::AnimationCachePtr& animationCache,

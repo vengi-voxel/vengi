@@ -151,8 +151,7 @@ core::AppState MapView::onInit() {
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 
-	const int groundPosY = _worldMgr->findWalkableFloor(glm::zero<glm::ivec3>());
-	const glm::vec3 pos(0.0f, (float)groundPosY, 0.0f);
+	const glm::vec3& pos = spawnPos();
 	Log::info("Spawn entity at %s", glm::to_string(pos).c_str());
 
 	const network::EntityType entityType = network::EntityType::HUMAN_MALE_WORKER; // network::EntityType::HUMAN_FEMALE_WORKER
@@ -200,6 +199,20 @@ core::AppState MapView::onInit() {
 	core::setBindingContext(core::BindingContext::World);
 
 	return state;
+}
+
+glm::vec3 MapView::spawnPos() const {
+	const int radius = 30;
+	for (int x = -radius; x < radius; ++x) {
+		for (int z = -radius; z < radius; ++z) {
+			const int groundPosY = _worldMgr->findWalkableFloor(glm::ivec3(x, voxel::MAX_HEIGHT / 2, z));
+			if (groundPosY <= voxel::MAX_WATER_HEIGHT) {
+				continue;
+			}
+			return glm::vec3(x, (float)groundPosY, z);
+		}
+	}
+	return glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
 void MapView::beforeUI() {
