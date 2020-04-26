@@ -31,7 +31,7 @@ private:
 	shader::SkeletonShader _chrShader;
 	shader::SkeletonData _materialBlock;
 	shader::SkeletonshadowmapShader& _skeletonShadowMapShader;
-	shader::SkeletondepthmapShader _skeletondepthmapShader;
+	shader::SkeletondepthmapShader& _skeletondepthmapShader;
 
 	video::FrameBuffer _entitiesDepthBuffer;
 
