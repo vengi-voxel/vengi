@@ -545,6 +545,7 @@ bool useProgram(Id handle) {
 	if (_priv::s.programHandle == handle) {
 		return false;
 	}
+	core_assert(handle == InvalidId || glIsProgram(handle));
 	glUseProgram(handle);
 	checkError();
 	_priv::s.programHandle = handle;
