@@ -71,15 +71,6 @@ bool MeshRenderer::init() {
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
-	{
-		video::ScopedShader scoped(_voxelShader);
-		_voxelShader.setMaterialblock(_materialBlock);
-		_voxelShader.setModel(glm::mat4(1.0f));
-		_voxelShader.setShadowmap(video::TextureUnit::One);
-		_voxelShader.setDiffuseColor(frontend::diffuseColor);
-		_voxelShader.setAmbientColor(frontend::ambientColor);
-	}
-
 	return true;
 }
 
@@ -132,6 +123,14 @@ void MeshRenderer::renderShadows(const video::Camera& camera) {
 }
 
 void MeshRenderer::prepareShader(const video::Camera& camera) {
+	if (_voxelShader.isDirty()) {
+		_voxelShader.setMaterialblock(_materialBlock);
+		_voxelShader.setModel(glm::mat4(1.0f));
+		_voxelShader.setShadowmap(video::TextureUnit::One);
+		_voxelShader.setDiffuseColor(frontend::diffuseColor);
+		_voxelShader.setAmbientColor(frontend::ambientColor);
+		_voxelShader.markClean();
+	}
 	_voxelShader.setViewprojection(camera.viewProjectionMatrix());
 	_voxelShader.setDepthsize(glm::vec2(_shadow.dimension()));
 	_voxelShader.setCascades(_shadow.cascades());

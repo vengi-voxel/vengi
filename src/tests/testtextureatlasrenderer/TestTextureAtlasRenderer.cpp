@@ -58,12 +58,6 @@ core::AppState TestTextureAtlasRenderer::onInit() {
 		Log::error("Failed to load model");
 		return core::AppState::InitFailure;
 	}
-	{
-		video::ScopedShader scoped(_textureShader);
-		_textureShader.setModel(glm::mat4(1.0f));
-		_textureShader.setTexture(video::TextureUnit::Zero);
-		_textureShader.setViewprojection(glm::ortho(0.0f, (float)wd.x, (float)wd.y, 0.0f, -1.0f, 1.0f));
-	}
 
 	const glm::vec2 vecs[lengthof(_vertices)] = {
 		// left bottom, right bottom, right top
@@ -132,6 +126,13 @@ void TestTextureAtlasRenderer::doRender() {
 
 	// render texture to screen
 	video::ScopedShader scoped(_textureShader);
+	if (_textureShader.isDirty()) {
+		const glm::ivec2& wd = windowDimension();
+		_textureShader.setModel(glm::mat4(1.0f));
+		_textureShader.setTexture(video::TextureUnit::Zero);
+		_textureShader.setViewprojection(glm::ortho(0.0f, (float)wd.x, (float)wd.y, 0.0f, -1.0f, 1.0f));
+		_textureShader.markClean();
+	}
 	video::ScopedBuffer scopedBuf(_vbo);
 	video::bindTexture(video::TextureUnit::Zero, video::TextureType::Texture2D, data.handle);
 	video::drawArrays(video::Primitive::Triangles, lengthof(_vertices));

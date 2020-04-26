@@ -31,15 +31,6 @@ bool DepthBufferRenderer::init() {
 		return false;
 	}
 
-	{
-		video::ScopedShader scopedShader(_depthBufferRenderShader);
-		_depthBufferRenderShader.setDepthbuffer(video::TextureUnit::Zero);
-	}
-	{
-		video::ScopedShader scopedShader(_shadowMapRenderShader);
-		_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
-	}
-
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
 	textureCfg.format(video::TextureFormat::RGBA);
@@ -92,6 +83,10 @@ void DepthBufferRenderer::renderDepthBuffer(const video::Camera& camera, const v
 	core_trace_scoped(RenderDepthBuffer);
 
 	video::ScopedShader scopedShader(_depthBufferRenderShader);
+	if (_depthBufferRenderShader.isDirty()) {
+		_depthBufferRenderShader.setDepthbuffer(video::TextureUnit::Zero);
+		_depthBufferRenderShader.markClean();
+	}
 	_depthBufferRenderShader.setFar(camera.farPlane());
 	_depthBufferRenderShader.setNear(camera.nearPlane());
 
@@ -102,6 +97,10 @@ void DepthBufferRenderer::renderShadowMap(const video::Camera& camera, const vid
 	core_trace_scoped(RenderShadowMap);
 
 	video::ScopedShader scopedShader(_shadowMapRenderShader);
+	if (_shadowMapRenderShader.isDirty()) {
+		_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
+		_shadowMapRenderShader.markClean();
+	}
 	_shadowMapRenderShader.setFar(camera.farPlane());
 	_shadowMapRenderShader.setNear(camera.nearPlane());
 	_shadowMapRenderShader.setCascade(cascade);
@@ -115,6 +114,10 @@ void DepthBufferRenderer::renderShadowMapToTexture(const video::Camera& camera, 
 	_renderToTexture.bindTextureAttachment(attachment, 0, false);
 
 	video::ScopedShader scopedShader(_shadowMapRenderShader);
+	if (_shadowMapRenderShader.isDirty()) {
+		_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
+		_shadowMapRenderShader.markClean();
+	}
 	_shadowMapRenderShader.setFar(camera.farPlane());
 	_shadowMapRenderShader.setNear(camera.nearPlane());
 	_shadowMapRenderShader.setCascade(cascade);
@@ -132,6 +135,10 @@ void DepthBufferRenderer::renderDepthBufferToTexture(const video::Camera& camera
 	_renderToTexture.bindTextureAttachment(attachment, 0, false);
 
 	video::ScopedShader scopedShader(_depthBufferRenderShader);
+	if (_depthBufferRenderShader.isDirty()) {
+		_depthBufferRenderShader.setDepthbuffer(video::TextureUnit::Zero);
+		_depthBufferRenderShader.markClean();
+	}
 	_depthBufferRenderShader.setFar(camera.farPlane());
 	_depthBufferRenderShader.setNear(camera.nearPlane());
 

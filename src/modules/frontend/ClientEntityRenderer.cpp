@@ -70,16 +70,6 @@ bool ClientEntityRenderer::init() {
 		return false;
 	}
 
-	{
-		video::ScopedShader scoped(_chrShader);
-		_chrShader.setDiffuseColor(diffuseColor);
-		_chrShader.setAmbientColor(ambientColor);
-		_chrShader.setFogcolor(clearColor);
-		_chrShader.setNightColor(nightColor);
-		_chrShader.setMaterialblock(_materialBlock);
-		_chrShader.setShadowmap(video::TextureUnit::One);
-	}
-
 	return true;
 }
 
@@ -172,6 +162,16 @@ int ClientEntityRenderer::renderEntities(const core::List<ClientEntity*>& entiti
 
 	video::enable(video::State::DepthTest);
 	video::ScopedShader scoped(_chrShader);
+
+	if (_chrShader.isDirty()) {
+		_chrShader.setDiffuseColor(diffuseColor);
+		_chrShader.setAmbientColor(ambientColor);
+		_chrShader.setFogcolor(clearColor);
+		_chrShader.setNightColor(nightColor);
+		_chrShader.setMaterialblock(_materialBlock);
+		_chrShader.setShadowmap(video::TextureUnit::One);
+		_chrShader.markClean();
+	}
 	_chrShader.setFogrange(_fogRange);
 	_chrShader.setFocuspos(_focusPos);
 	_chrShader.setLightdir(shadow.sunDirection());
