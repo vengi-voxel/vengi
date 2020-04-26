@@ -6,6 +6,7 @@
 
 #include "core/String.h"
 #include "core/collection/List.h"
+#include "core/NonCopyable.h"
 #include "core/collection/StringMap.h"
 #include <stdint.h>
 #include <string.h>
@@ -40,7 +41,7 @@ class UniformBuffer;
  * from vertex and fragment shaders
  * @ingroup Video
  */
-class Shader {
+class Shader : public core::NonCopyable {
 protected:
 	typedef core::Array<Id, (int)ShaderType::Max> ShaderArray;
 	ShaderArray _shader { InvalidId, InvalidId, InvalidId, InvalidId };
