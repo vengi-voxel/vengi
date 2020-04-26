@@ -8,6 +8,9 @@
 #include "voxel/Constants.h"
 #include "voxelrender/ShaderAttribute.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>
+
 namespace voxelrender {
 
 WorldChunkMgr::WorldChunkMgr(core::ThreadPool& threadPool) :
@@ -72,7 +75,7 @@ bool WorldChunkMgr::initTerrainBuffer(ChunkBuffer* chunk) {
 	return true;
 }
 
-int WorldChunkMgr::renderTerrain() {
+int WorldChunkMgr::renderTerrain(float nowSeconds) {
 	video_trace_scoped(WorldChunkMgrRenderTerrain);
 	int drawCalls = 0;
 
@@ -86,13 +89,19 @@ int WorldChunkMgr::renderTerrain() {
 			return false;
 		}
 		video::ScopedBuffer scopedBuf(buffer);
+		if (_worldShader->isActive()) {
+			const float delta = glm::clamp((nowSeconds - chunkBuffer.birthSeconds) / 3.0f, 0.0f, 1.0f);
+			const glm::vec3 size = glm::mix(glm::vec3(1.0f, 0.4f, 1.0f), glm::vec3(1.0f), delta);
+			const glm::mat4& model = glm::scale(size);
+			_worldShader->setModel(model);
+		}
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
 		++drawCalls;
 	}
 	return drawCalls;
 }
 
-void WorldChunkMgr::handleMeshQueue() {
+void WorldChunkMgr::handleMeshQueue(float nowSeconds) {
 	voxel::Mesh mesh;
 	if (!_meshExtractor.pop(mesh)) {
 		return;
@@ -122,13 +131,12 @@ void WorldChunkMgr::handleMeshQueue() {
 	if (!_octree.insert(freeChunkBuffer)) {
 		Log::warn("Failed to insert into octree");
 	}
-	if (!freeChunkBuffer->inuse) {
-		freeChunkBuffer->inuse = true;
-	}
+	freeChunkBuffer->inuse = true;
+	freeChunkBuffer->birthSeconds = nowSeconds;
 }
 
-void WorldChunkMgr::update(const video::Camera &camera, const glm::vec3& focusPos) {
-	handleMeshQueue();
+void WorldChunkMgr::update(float nowSeconds, const video::Camera &camera, const glm::vec3& focusPos) {
+	handleMeshQueue(nowSeconds);
 
 	_meshExtractor.updateExtractionOrder(focusPos);
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {

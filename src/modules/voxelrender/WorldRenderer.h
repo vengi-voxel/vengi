@@ -54,6 +54,7 @@ protected:
 	float _fogRange = 0.0f;
 	float _viewDistance = 0.0f;
 	float _seconds = 0.0f;
+	float _nowSeconds = 0.0f;
 	glm::vec3 _focusPos { 0.0f };
 
 	core::VarPtr _shadowMap;
@@ -106,7 +107,7 @@ public:
 
 	void construct();
 	bool init(voxel::PagedVolume *volume, const glm::ivec2 &position, const glm::ivec2 &dimension);
-	void update(const video::Camera &camera, uint64_t dt);
+	void update(const video::Camera &camera, uint64_t dt, float nowSeconds);
 	void shutdown();
 
 	render::Shadow &shadow();

@@ -280,7 +280,7 @@ void Client::beforeUI() {
 		const double speed = _player->attrib().current(attrib::Type::SPEED);
 		_camera.update(_player->position(), _deltaFrameSeconds, _now, (float)speed);
 		_worldRenderer.extractMeshes(camera);
-		_worldRenderer.update(camera, _deltaFrameMillis);
+		_worldRenderer.update(camera, _deltaFrameMillis, _nowSeconds);
 		_worldRenderer.renderWorld(camera);
 	}
 

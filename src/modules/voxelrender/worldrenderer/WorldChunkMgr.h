@@ -18,6 +18,7 @@ class WorldChunkMgr {
 protected:
 	struct ChunkBuffer {
 		bool inuse = false;
+		float birthSeconds = 0.0f;
 		math::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
 		voxel::Mesh mesh;
 
@@ -64,7 +65,6 @@ protected:
 		int size = 0;
 		ChunkBuffer* visible[MAX_CHUNKBUFFERS];
 	};
-	std::future<VisibleBuffers> _cullResult;
 	VisibleBuffers _visibleBuffers;
 
 	shader::WorldShader* _worldShader;
@@ -75,18 +75,18 @@ protected:
 	int distance2(const glm::ivec3 &pos, const glm::ivec3 &pos2) const;
 
 	void cull(const video::Camera &camera);
-	void handleMeshQueue();
+	void handleMeshQueue(float nowSeconds);
 	bool initTerrainBuffer(ChunkBuffer* chunk);
 public:
 	WorldChunkMgr(core::ThreadPool& threadPool);
 
-	int renderTerrain();
+	int renderTerrain(float nowSeconds);
 
 	void extractMesh(const glm::ivec3 &pos);
 	void extractMeshes(const video::Camera &camera);
 	void extractScheduledMesh();
 
-	void update(const video::Camera &camera, const glm::vec3& focusPos);
+	void update(float nowSeconds, const video::Camera &camera, const glm::vec3& focusPos);
 
 	void updateViewDistance(float viewDistance);
 	bool init(shader::WorldShader* worldShader, voxel::PagedVolume* volume);

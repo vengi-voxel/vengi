@@ -218,7 +218,7 @@ void MapView::beforeUI() {
 		if (!_singlePosExtraction) {
 			_worldRenderer.extractMeshes(camera);
 		}
-		_worldRenderer.update(camera, _deltaFrameMillis);
+		_worldRenderer.update(camera, _deltaFrameMillis, _nowSeconds);
 	}
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);

@@ -160,7 +160,7 @@ int WorldRenderer::renderToShadowMap(const video::Camera& camera) {
 	_shadowMapShader.setModel(glm::mat4(1.0f));
 	_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
 		_shadowMapShader.setLightviewprojection(lightViewProjection);
-		_worldChunkMgr.renderTerrain();
+		_worldChunkMgr.renderTerrain(_nowSeconds);
 		return true;
 	}, false);
 	_shadowMapShader.deactivate();
@@ -231,7 +231,7 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 		_worldShader.setCascades(_shadow.cascades());
 		_worldShader.setDistances(_shadow.distances());
 	}
-	drawCallsWorld += _worldChunkMgr.renderTerrain();
+	drawCallsWorld += _worldChunkMgr.renderTerrain(_nowSeconds);
 	return drawCallsWorld;
 }
 
@@ -461,15 +461,16 @@ void WorldRenderer::shutdownFrameBuffers() {
 	_reflectionBuffer.shutdown();
 }
 
-void WorldRenderer::update(const video::Camera& camera, uint64_t dt) {
+void WorldRenderer::update(const video::Camera& camera, uint64_t dt, float nowSeconds) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_focusPos = camera.target();
+	_nowSeconds = nowSeconds;
 	_focusPos.y = 0.0f;//TODO: _world->findFloor(_focusPos.x, _focusPos.z, voxel::isFloor);
 
 	_shadow.update(camera, _shadowMap->boolVal());
 	_entityRenderer.update(_focusPos, _seconds);
 
-	_worldChunkMgr.update(camera, _focusPos);
+	_worldChunkMgr.update(nowSeconds, camera, _focusPos);
 	_entityMgr.update(dt);
 	_entityMgr.updateVisibleEntities(dt, camera);
 }
