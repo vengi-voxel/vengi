@@ -2,6 +2,6 @@ require "attrib.shared"
 
 function registerHumanFemaleWorker()
 	local chr = attrib.createContainer("HUMAN_FEMALE_WORKER")
-	chr:absolute("SPEED", 20.0)
+	characterDefault(chr)
 	chr:register()
 end

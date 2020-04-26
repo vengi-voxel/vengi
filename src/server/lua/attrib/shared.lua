@@ -1,5 +1,5 @@
 function animalDefault(container)
-  container:absolute("SPEED", 15.0)
+  container:absolute("SPEED", 10.0)
   container:absolute("HEALTH", 100.0)
   container:absolute("ATTACKRANGE", 0.0)
   container:absolute("STRENGTH", 5.0)
@@ -8,7 +8,7 @@ function animalDefault(container)
 end
 
 function characterDefault(container)
-  container:absolute("SPEED", 20.0)
+  container:absolute("SPEED", 14.0)
   container:absolute("HEALTH", 100.0)
   container:absolute("ATTACKRANGE", 0.0)
   container:absolute("STRENGTH", 5.0)

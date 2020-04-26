@@ -11,37 +11,45 @@
 
 namespace shared {
 
-glm::vec3 SharedMovement::calculateDelta(const glm::quat& rot, float speed) {
-	if (_gliding || _jumping || _swimming) {
+glm::vec3 SharedMovement::calculateDelta(const glm::quat& rot) {
+	if (_jumping || _swimming) {
 		glm::vec3 delta(0.0f);
 		if (_swimming) {
-			speed *= 0.2f;
+			_speed *= 0.2f;
 		}
 		if (forward()) {
-			delta += rot * (glm::forward * speed);
+			delta += rot * (glm::forward * _speed);
 		} else if (backward()) {
 			// you can only reduce speed - but not walk backward
-			delta += rot * (glm::forward * speed / 10.0f);
+			delta += rot * (glm::forward * _speed / 10.0f);
 		}
+		return delta;
+	} else if (_gliding) {
+		// TODO: apply a speed debuff via attributes
+		glm::vec3 delta(0.0f);
+		if (!forward()) {
+			_speed *= 0.2f;
+		}
+		delta += rot * (glm::forward * _speed);
 		return delta;
 	}
 	glm::vec3 delta(0.0f);
 	if (left()) {
-		delta += rot * (glm::left * speed);
+		delta += rot * (glm::left * _speed);
 	} else if (right()) {
-		delta += rot * (glm::right * speed);
+		delta += rot * (glm::right * _speed);
 	}
 	if (forward()) {
-		delta += rot * (glm::forward * speed);
+		delta += rot * (glm::forward * _speed);
 	} else if (backward()) {
-		delta += rot * (glm::backward * speed);
+		delta += rot * (glm::backward * _speed);
 	}
 	return delta;
 }
 
 float SharedMovement::gravity() const {
 	if (_gliding) {
-		return 0.5f;
+		return 0.1f;
 	}
 	if (_swimming) {
 		if (forward() || backward()) {
@@ -54,11 +62,12 @@ float SharedMovement::gravity() const {
 
 glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const WalkableFloorResolver& heightResolver) {
 	core_trace_scoped(UpdateSharedMovement);
+	_speed = speed;
 	glm::vec3 newPos = currentPos;
 	if (deltaFrameSeconds > glm::epsilon<float>()) {
 		const glm::quat& rot = glm::angleAxis(orientation, glm::up);
-		speed *= deltaFrameSeconds;
-		newPos += calculateDelta(rot, speed);
+		_speed *= deltaFrameSeconds;
+		newPos += calculateDelta(rot);
 	}
 	const int maxWalkableHeight = 3;
 	_groundHeight = heightResolver(glm::ivec3(glm::floor(newPos)), maxWalkableHeight);
@@ -87,7 +96,11 @@ glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, flo
 			_delay = inputDelaySeconds;
 		}
 	}
-	_fallingVelocity -= gravity() * deltaFrameSeconds;
+	if (_gliding) {
+		_fallingVelocity = -gravity();
+	} else {
+		_fallingVelocity -= gravity() * deltaFrameSeconds;
+	}
 	newPos.y += _fallingVelocity * deltaFrameSeconds;
 	if (newPos.y <= _groundHeight) {
 		newPos.y = _groundHeight;

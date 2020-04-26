@@ -55,7 +55,7 @@ core::AppState MapView::onConstruct() {
 
 	core::Command::registerCommand("bird", [&] (const core::CmdArgs& args) {
 		glm::vec3 pos = _entity->position();
-		pos.y += 100.0f;
+		pos.y = core_min(voxel::MAX_HEIGHT, pos.y + 100.0f);
 		_entity->setPosition(pos);
 	});
 

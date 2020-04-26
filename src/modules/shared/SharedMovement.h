@@ -23,10 +23,11 @@ protected:
 	float _fallingVelocity = 0.0f;
 	int _groundHeight = 0;
 	float _delay = 0.0f;
+	float _speed = 0.0f;
 
 	float gravity() const;
 
-	glm::vec3 calculateDelta(const glm::quat& rot, float speed);
+	glm::vec3 calculateDelta(const glm::quat& rot);
 public:
 	glm::vec3 update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const WalkableFloorResolver& heightResolver);
 
@@ -40,6 +41,8 @@ public:
 	bool jump() const;
 	bool gliding() const;
 
+	float speed() const;
+
 	bool moving() const;
 	network::Animation animation() const;
 
@@ -52,6 +55,10 @@ inline void SharedMovement::setMoveMask(network::MoveDirection moveMask) {
 
 inline network::MoveDirection SharedMovement::moveMask() const {
 	return _move;
+}
+
+inline float SharedMovement::speed() const {
+	return _speed;
 }
 
 inline bool SharedMovement::moving() const {
