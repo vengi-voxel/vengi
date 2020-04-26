@@ -16,9 +16,9 @@ glm::mat4 Bone::matrix() const {
 }
 
 void Bone::lerp(const Bone& previous, float dt) {
-	translation += (translation - previous.translation) * dt;
+	translation = glm::mix(previous.translation, translation, dt);
 	orientation = glm::normalize(glm::slerp(previous.orientation, orientation, dt));
-	scale += (scale - previous.scale) * dt;
+	scale = glm::mix(previous.scale, scale, dt);
 }
 
 }
