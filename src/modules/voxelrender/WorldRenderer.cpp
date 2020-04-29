@@ -28,7 +28,7 @@ namespace voxelrender {
 
 WorldRenderer::WorldRenderer() :
 		_threadPool(2, "WorldRenderer"), _worldChunkMgr(_threadPool), _shadowMapShader(shader::ShadowmapShader::getInstance()) {
-	setViewDistance(240.0f);
+	setViewDistance(350.0f);
 }
 
 WorldRenderer::~WorldRenderer() {
