@@ -93,7 +93,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractEmpty)(benchm
 BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtractGreedy)(benchmark::State &state) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(state.range(0), meshSize, state.range(0)));
 	BenchmarkPager pager;
-	voxel::PagedVolume volume(&pager);
+	voxel::PagedVolume volume(&pager, 512 * 1024 * 1024, 256);
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
@@ -104,7 +104,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtractGreedy)(ben
 BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtract)(benchmark::State &state) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(state.range(0), meshSize, state.range(0)));
 	BenchmarkPager pager;
-	voxel::PagedVolume volume(&pager);
+	voxel::PagedVolume volume(&pager, 512 * 1024 * 1024, 256);
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
@@ -115,7 +115,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtract)(benchmark
 BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtractGreedyEmpty)(benchmark::State &state) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(state.range(0), meshSize, state.range(0)));
 	BenchmarkPager pager;
-	voxel::PagedVolume volume(&pager);
+	voxel::PagedVolume volume(&pager, 512 * 1024 * 1024, 256);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
 		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), true, true);
@@ -125,7 +125,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtractGreedyEmpty
 BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtractEmpty)(benchmark::State &state) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(state.range(0), meshSize, state.range(0)));
 	BenchmarkPager pager;
-	voxel::PagedVolume volume(&pager);
+	voxel::PagedVolume volume(&pager, 512 * 1024 * 1024, 256);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
 		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), false, false);

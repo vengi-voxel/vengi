@@ -38,11 +38,7 @@ const uint32_t MaxVerticesPerPosition = 8;
  */
 
 struct Quad {
-	inline Quad(IndexType v0, IndexType v1, IndexType v2, IndexType v3) {
-		vertices[0] = v0;
-		vertices[1] = v1;
-		vertices[2] = v2;
-		vertices[3] = v3;
+	inline Quad(IndexType v0, IndexType v1, IndexType v2, IndexType v3) : vertices{v0, v1, v2, v3} {
 	}
 
 	IndexType vertices[4];
@@ -52,7 +48,9 @@ struct VertexData {
 	int32_t index;
 	Voxel voxel;
 	uint8_t ambientOcclusion;
+	int8_t padding;
 };
+static_assert(sizeof(VertexData) == 8, "Unexpected size of VertexData");
 
 class Array : public core::NonCopyable {
 private:
