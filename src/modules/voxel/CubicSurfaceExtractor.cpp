@@ -129,7 +129,7 @@ void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads) {
 	}
 }
 
-IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
+IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t z, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset) {
 	core_trace_scoped(AddVertex);
 	const uint8_t ambientOcclusion = vertexAmbientOcclusion(
@@ -138,12 +138,12 @@ IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, c
 		!isAir(corner) && !isWater(corner));
 
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ++ct) {
-		VertexData& entry = existingVertices(uX, uY, ct);
+		VertexData& entry = existingVertices(x, y, ct);
 
 		if (entry.index == 0) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
 			VoxelVertex vertex;
-			vertex.position = glm::ivec3(uX, uY, uZ) + offset;
+			vertex.position = glm::ivec3(x, y, z) + offset;
 			vertex.colorIndex = materialIn.getColor();
 			vertex.material = materialIn.getMaterial();
 			vertex.ambientOcclusion = ambientOcclusion;
