@@ -129,6 +129,8 @@ public:
 		bool setVoxel(const Voxel& tValue);
 		glm::ivec3 position() const;
 
+		const Voxel& voxelAt(int x, int y, int z) const;
+
 		void movePositiveX();
 		void movePositiveY();
 		void movePositiveZ();
@@ -178,10 +180,11 @@ public:
 		//Other current position information
 		Voxel* _currentVoxel = nullptr;
 		ChunkPtr _currentChunk;
+		mutable ChunkPtr _cachedChunk;
 
-		uint16_t _xPosInChunk = 0u;
-		uint16_t _yPosInChunk = 0u;
-		uint16_t _zPosInChunk = 0u;
+		uint32_t _xPosInChunk = 0u;
+		uint32_t _yPosInChunk = 0u;
+		uint32_t _zPosInChunk = 0u;
 
 		int32_t _lastXChunk = 0;
 		int32_t _lastYChunk = 0;
@@ -312,91 +315,91 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1ny1nz() const {
 	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + NEG_X_DELTA + NEG_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
+	return this->voxelAt(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1ny0pz() const {
 	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk)) {
 		return *(_currentVoxel + NEG_X_DELTA + NEG_Y_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume);
+	return this->voxelAt(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1ny1pz() const {
 	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + NEG_X_DELTA + NEG_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
+	return this->voxelAt(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx0py1nz() const {
 	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + NEG_X_DELTA + NEG_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume - 1);
+	return this->voxelAt(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx0py0pz() const {
 	if (CAN_GO_NEG_X(this->_xPosInChunk)) {
 		return *(_currentVoxel + NEG_X_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume);
+	return this->voxelAt(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx0py1pz() const {
 	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + NEG_X_DELTA + POS_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume + 1);
+	return this->voxelAt(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1py1nz() const {
 	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + NEG_X_DELTA + POS_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
+	return this->voxelAt(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1py0pz() const {
 	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk)) {
 		return *(_currentVoxel + NEG_X_DELTA + POS_Y_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume);
+	return this->voxelAt(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1py1pz() const {
 	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + NEG_X_DELTA + POS_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
+	return this->voxelAt(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1ny1nz() const {
 	if (CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + NEG_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
+	return this->voxelAt(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1ny0pz() const {
 	if (CAN_GO_NEG_Y(this->_yPosInChunk)) {
 		return *(_currentVoxel + NEG_Y_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume);
+	return this->voxelAt(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1ny1pz() const {
 	if (CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + NEG_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
+	return this->voxelAt(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px0py1nz() const {
 	if (CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + NEG_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume - 1);
+	return this->voxelAt(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px0py0pz() const {
@@ -407,91 +410,91 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel0px0py1pz() const {
 	if (CAN_GO_POS_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + POS_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume + 1);
+	return this->voxelAt(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1py1nz() const {
 	if (CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + POS_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
+	return this->voxelAt(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1py0pz() const {
 	if (CAN_GO_POS_Y(this->_yPosInChunk)) {
 		return *(_currentVoxel + POS_Y_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume);
+	return this->voxelAt(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1py1pz() const {
 	if (CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + POS_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
+	return this->voxelAt(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1ny1nz() const {
 	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + POS_X_DELTA + NEG_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
+	return this->voxelAt(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1ny0pz() const {
 	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk)) {
 		return *(_currentVoxel + POS_X_DELTA + NEG_Y_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume);
+	return this->voxelAt(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1ny1pz() const {
 	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + POS_X_DELTA + NEG_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
+	return this->voxelAt(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px0py1nz() const {
 	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + POS_X_DELTA + NEG_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume - 1);
+	return this->voxelAt(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px0py0pz() const {
 	if (CAN_GO_POS_X(this->_xPosInChunk)) {
 		return *(_currentVoxel + POS_X_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume);
+	return this->voxelAt(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px0py1pz() const {
 	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + POS_X_DELTA + POS_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume + 1);
+	return this->voxelAt(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1nz() const {
 	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + POS_X_DELTA + POS_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
+	return this->voxelAt(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py0pz() const {
 	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk)) {
 		return *(_currentVoxel + POS_X_DELTA + POS_Y_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume);
+	return this->voxelAt(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
 	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
 		return *(_currentVoxel + POS_X_DELTA + POS_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->_volume->voxel(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
+	return this->voxelAt(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
 }
 
 #undef CAN_GO_NEG_X

@@ -87,9 +87,9 @@ PagedVolume::ChunkPtr PagedVolume::chunk(const glm::ivec3& pos) const {
  * @return The voxel value
  */
 const Voxel& PagedVolume::voxel(const glm::ivec3& v3dPos) const {
-	const uint16_t xOffset = static_cast<uint16_t>(v3dPos.x & _chunkMask);
-	const uint16_t yOffset = static_cast<uint16_t>(v3dPos.y & _chunkMask);
-	const uint16_t zOffset = static_cast<uint16_t>(v3dPos.z & _chunkMask);
+	const uint32_t xOffset = static_cast<uint32_t>(v3dPos.x & _chunkMask);
+	const uint32_t yOffset = static_cast<uint32_t>(v3dPos.y & _chunkMask);
+	const uint32_t zOffset = static_cast<uint32_t>(v3dPos.z & _chunkMask);
 	return chunk(v3dPos)->voxel(xOffset, yOffset, zOffset);
 }
 
@@ -108,10 +108,9 @@ void PagedVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Vo
 	const int32_t chunkY = uYPos >> _chunkSideLengthPower;
 	const int32_t chunkZ = uZPos >> _chunkSideLengthPower;
 
-	const uint16_t xOffset = static_cast<uint16_t>(uXPos - (chunkX << _chunkSideLengthPower));
-	const uint16_t yOffset = static_cast<uint16_t>(uYPos - (chunkY << _chunkSideLengthPower));
-	const uint16_t zOffset = static_cast<uint16_t>(uZPos - (chunkZ << _chunkSideLengthPower));
-
+	const uint32_t xOffset = static_cast<uint32_t>(uXPos & _chunkMask);
+	const uint32_t yOffset = static_cast<uint32_t>(uYPos & _chunkMask);
+	const uint32_t zOffset = static_cast<uint32_t>(uZPos & _chunkMask);
 	chunk(chunkX, chunkY, chunkZ)->setVoxel(xOffset, yOffset, zOffset, tValue);
 }
 

@@ -33,6 +33,23 @@ PagedVolume::Sampler::Sampler(const PagedVolume& volume) :
 PagedVolume::Sampler::~Sampler() {
 }
 
+const Voxel& PagedVolume::Sampler::voxelAt(int x, int y, int z) const {
+	const int32_t xChunk = x >> _volume->_chunkSideLengthPower;
+	const int32_t yChunk = y >> _volume->_chunkSideLengthPower;
+	const int32_t zChunk = z >> _volume->_chunkSideLengthPower;
+	const uint32_t xOffset = static_cast<uint32_t>(x & _volume->_chunkMask);
+	const uint32_t yOffset = static_cast<uint32_t>(y & _volume->_chunkMask);
+	const uint32_t zOffset = static_cast<uint32_t>(z & _volume->_chunkMask);
+	if (_cachedChunk) {
+		const glm::ivec3& chunkPos = _cachedChunk->chunkPos();
+		if (chunkPos.x == xChunk && chunkPos.y == yChunk && chunkPos.z == zChunk) {
+			return _cachedChunk->voxel(xOffset, yOffset, zOffset);
+		}
+	}
+	_cachedChunk = _volume->chunk(xChunk, yChunk, zChunk);
+	return _cachedChunk->voxel(xOffset, yOffset, zOffset);
+}
+
 void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	core_trace_scoped(SetSamplerPosition);
 	_xPosInVolume = xPos;
@@ -45,16 +62,26 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 	const int32_t zChunk = _zPosInVolume >> _volume->_chunkSideLengthPower;
 
 	if (_currentVoxel == nullptr || _lastXChunk != xChunk || _lastYChunk != yChunk || _lastZChunk != zChunk) {
-		_currentChunk = _volume->chunk(xChunk, yChunk, zChunk);
+		if (_cachedChunk) {
+			const glm::ivec3& chunkPos = _cachedChunk->chunkPos();
+			if (chunkPos.x == xChunk && chunkPos.y == yChunk && chunkPos.z == zChunk) {
+				std::swap(_cachedChunk, _currentChunk);
+			} else {
+				_cachedChunk = _currentChunk;
+				_currentChunk = _volume->chunk(xChunk, yChunk, zChunk);
+			}
+		} else {
+			_cachedChunk = _currentChunk;
+			_currentChunk = _volume->chunk(xChunk, yChunk, zChunk);
+		}
+		_lastXChunk = xChunk;
+		_lastYChunk = yChunk;
+		_lastZChunk = zChunk;
 	}
 
-	_lastXChunk = xChunk;
-	_lastYChunk = yChunk;
-	_lastZChunk = zChunk;
-
-	_xPosInChunk = static_cast<uint16_t>(_xPosInVolume - (xChunk << _volume->_chunkSideLengthPower));
-	_yPosInChunk = static_cast<uint16_t>(_yPosInVolume - (yChunk << _volume->_chunkSideLengthPower));
-	_zPosInChunk = static_cast<uint16_t>(_zPosInVolume - (zChunk << _volume->_chunkSideLengthPower));
+	_xPosInChunk = static_cast<uint32_t>(_xPosInVolume & _volume->_chunkMask);
+	_yPosInChunk = static_cast<uint32_t>(_yPosInVolume & _volume->_chunkMask);
+	_zPosInChunk = static_cast<uint32_t>(_zPosInVolume & _volume->_chunkMask);
 
 	const uint32_t voxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
 	_currentVoxel = _currentChunk->_data + voxelIndexInChunk;
