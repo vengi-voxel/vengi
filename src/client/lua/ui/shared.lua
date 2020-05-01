@@ -21,7 +21,7 @@ end
 
 --[[
 ]]
-function module.windowTitle(title, x, y, width, height, closure, ...)
+function module.windowTitlePos(title, x, y, width, height, closure, ...)
 	if ui.windowBegin(title, title, x, y, width, height, table.unpack({...})) then
 		closure()
 	else
