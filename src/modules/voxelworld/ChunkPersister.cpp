@@ -12,37 +12,19 @@
 
 namespace voxelworld {
 
-#define WORLD_FILE_VERSION 1
+#define WORLD_FILE_VERSION 2
 
 bool ChunkPersister::saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, core::ByteStream& outStream) const {
-	core::ByteStream voxelStream(chunk->dataSizeInBytes());
-	{
-		core_trace_scoped(ChunkPersisterPrepareBuffer);
-		const int width = chunk->sideLength();
-		const int height = chunk->sideLength();
-		const int depth = chunk->sideLength();
-
-		for (int z = 0; z < depth; ++z) {
-			for (int y = 0; y < height; ++y) {
-				for (int x = 0; x < width; ++x) {
-					const voxel::Voxel& voxel = chunk->voxel(x, y, z);
-					static_assert(sizeof(voxel::VoxelType) == sizeof(uint8_t), "Voxel type size changed");
-					voxelStream.addByte(core::enumVal(voxel.getMaterial()));
-					voxelStream.addByte(voxel.getColor());
-				}
-			}
-		}
-	}
 	// save the stuff
-	const uint8_t* voxelBuf = voxelStream.getBuffer();
-	const int voxelSize = voxelStream.getSize();
+	const voxel::Voxel* voxelBuf = chunk->data();
+	const int voxelSize = chunk->dataSizeInBytes();
 	uint32_t neededVoxelBufLen = core::zip::compressBound(voxelSize);
 	uint8_t* compressedVoxelBuf = new uint8_t[neededVoxelBufLen];
 	std::unique_ptr<uint8_t[]> smartBuf(compressedVoxelBuf);
 	size_t finalBufferSize;
 	{
 		core_trace_scoped(ChunkPersisterCompress);
-		const bool success = core::zip::compress(voxelBuf, voxelSize, compressedVoxelBuf, neededVoxelBufLen, &finalBufferSize);
+		const bool success = core::zip::compress((const uint8_t*)voxelBuf, voxelSize, compressedVoxelBuf, neededVoxelBufLen, &finalBufferSize);
 		if (!success) {
 			Log::error("Failed to compress the voxel data");
 			return false;
@@ -50,7 +32,8 @@ bool ChunkPersister::saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, c
 	}
 	{
 		core_trace_scoped(ChunkPersisterSaveCompressed);
-		outStream.addFormat("ib", voxelSize, WORLD_FILE_VERSION);
+		outStream.addInt(voxelSize);
+		outStream.addByte(WORLD_FILE_VERSION);
 		outStream.append(compressedVoxelBuf, finalBufferSize);
 	}
 	return true;
@@ -58,56 +41,33 @@ bool ChunkPersister::saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, c
 
 bool ChunkPersister::loadCompressed(const voxel::PagedVolume::ChunkPtr& chunk, const uint8_t *fileBuf, size_t fileLen) const {
 	core_trace_scoped(ChunkPersisterLoadCompressed);
-	if (!fileBuf || fileLen <= 0) {
+	const size_t headerSize = sizeof(int32_t) + sizeof(uint8_t);
+	if (!fileBuf || fileLen <= headerSize) {
 		return false;
 	}
-	core::ByteStream bs(fileLen);
-	bs.append(fileBuf, fileLen);
-	int len;
-	int version;
-	bs.readFormat("ib", &len, &version);
+	core::ByteStream bs(headerSize);
+	bs.append(fileBuf, headerSize);
+	const int len = bs.readInt();
+	const int version = bs.readByte();
 
 	if (version != WORLD_FILE_VERSION) {
-		Log::error("chunk has a wrong version number %i (expected %i)",
+		Log::warn("chunk has a wrong version number %i (expected %i)",
 				version, WORLD_FILE_VERSION);
 		return false;
 	}
-	const int sizeLimit = 1024;
-	if (len > 1000l * 1000l * sizeLimit) {
-		Log::error("extracted memory would be more than %i MB",
-				sizeLimit);
+	const int sizeLimit = chunk->dataSizeInBytes();
+	if (len != sizeLimit) {
+		Log::error("extracted memory would not fit the target chunk (%i bytes vs %i chunk size)", len, sizeLimit);
 		return false;
 	}
+	const uint8_t* buf = fileBuf + headerSize;
+	const size_t remaining = fileLen - headerSize;
 
-	uint8_t *targetBuf = new uint8_t[len];
-	std::unique_ptr<uint8_t[]> smartTargetBuf(targetBuf);
-
-	if (!core::zip::uncompress(bs.getBuffer(), bs.getSize(), targetBuf, len)) {
+	// TODO: doesn't work on big endian
+	uint8_t *targetBuf = (uint8_t*)chunk->data();
+	if (!core::zip::uncompress(buf, remaining, targetBuf, sizeLimit)) {
 		Log::error("Failed to uncompress the world data with len %i", len);
 		return false;
-	}
-
-	core::ByteStream voxelBuf(len);
-	voxelBuf.append(targetBuf, len);
-
-	const int width = chunk->sideLength();
-	const int height = chunk->sideLength();
-	const int depth = chunk->sideLength();
-
-	for (int z = 0; z < depth; ++z) {
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; ++x) {
-				core_assert_msg(voxelBuf.getSize() >= 1,
-						"Failed to load from buffer (x: %i, y: %i, z: %i)",
-						x, y, z);
-				static_assert(sizeof(voxel::VoxelType) == sizeof(uint8_t), "Voxel type size changed");
-				const voxel::VoxelType material =
-						(voxel::VoxelType) voxelBuf.readByte();
-				const uint8_t colorIndex = voxelBuf.readByte();
-				const voxel::Voxel &voxel = createVoxel(material, colorIndex);
-				chunk->setVoxel(x, y, z, voxel);
-			}
-		}
 	}
 	return true;
 }

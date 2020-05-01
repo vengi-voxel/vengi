@@ -56,9 +56,11 @@ bool DBChunkPersister::load(const voxel::PagedVolume::ChunkPtr& chunk, unsigned 
 	persistence::Blob blob = load(region.x, region.y, region.z, _mapId, seed);
 	if (blob.length > 0 && !loadCompressed(chunk, blob.data, blob.length)) {
 		Log::warn("Failed to uncompress the model");
+		blob.release();
+		return false;
 	}
 	blob.release();
-	return false;
+	return true;
 }
 
 // TODO: this must be done async
