@@ -31,7 +31,7 @@ void FilePersister::erase(const voxel::Region& region, unsigned int seed) {
 #endif
 }
 
-bool FilePersister::load(voxel::PagedVolume::Chunk* chunk, unsigned int seed) {
+bool FilePersister::load(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int seed) {
 	core_trace_scoped(WorldPersisterLoad);
 	const io::FilesystemPtr& filesystem = io::filesystem();
 	const core::String& filename = getWorldName(chunk->chunkPos(), seed);
@@ -47,7 +47,7 @@ bool FilePersister::load(voxel::PagedVolume::Chunk* chunk, unsigned int seed) {
 	return success;
 }
 
-bool FilePersister::save(voxel::PagedVolume::Chunk* chunk, unsigned int seed) {
+bool FilePersister::save(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int seed) {
 	core_trace_scoped(WorldPersisterLoad);
 	core::ByteStream final;
 	if (!saveCompressed(chunk, final)) {

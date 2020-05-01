@@ -16,8 +16,8 @@ class FilePersister : public ChunkPersister {
 public:
 	virtual ~FilePersister() {}
 
-	bool load(voxel::PagedVolume::Chunk* chunk, unsigned int seed) override;
-	bool save(voxel::PagedVolume::Chunk* chunk, unsigned int seed) override;
+	bool load(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int seed) override;
+	bool save(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int seed) override;
 	void erase(const voxel::Region& region, unsigned int seed) override;
 };
 

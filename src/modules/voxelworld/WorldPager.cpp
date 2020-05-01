@@ -26,7 +26,7 @@ bool WorldPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
-	if (_chunkPersister->load(pctx.chunk.get(), _seed)) {
+	if (_chunkPersister->load(pctx.chunk, _seed)) {
 		return false;
 	}
 	voxel::PagedVolumeWrapper wrapper(_volumeData, pctx.chunk, pctx.region);
@@ -35,7 +35,7 @@ bool WorldPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 	math::Random random(_seed);
 	createWorld(wrapper);
 	placeTrees(pctx);
-	_chunkPersister->save(pctx.chunk.get(), _seed);
+	_chunkPersister->save(pctx.chunk, _seed);
 	//}
 	return true;
 }

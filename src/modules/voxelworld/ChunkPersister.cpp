@@ -7,14 +7,16 @@
 #include "core/Zip.h"
 #include "core/Assert.h"
 #include "core/Enum.h"
+#include "core/Trace.h"
 #include "core/Log.h"
 
 namespace voxelworld {
 
 #define WORLD_FILE_VERSION 1
 
-bool ChunkPersister::saveCompressed(voxel::PagedVolume::Chunk* chunk, core::ByteStream& outStream) const {
-	core::ByteStream voxelStream;
+bool ChunkPersister::saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, core::ByteStream& outStream) const {
+	core_trace_scoped(ChunkPersisterSaveCompressed);
+	core::ByteStream voxelStream(chunk->dataSizeInBytes());
 	const int width = chunk->sideLength();
 	const int height = chunk->sideLength();
 	const int depth = chunk->sideLength();
@@ -47,7 +49,8 @@ bool ChunkPersister::saveCompressed(voxel::PagedVolume::Chunk* chunk, core::Byte
 	return true;
 }
 
-bool ChunkPersister::loadCompressed(voxel::PagedVolume::Chunk* chunk, const uint8_t *fileBuf, size_t fileLen) const {
+bool ChunkPersister::loadCompressed(const voxel::PagedVolume::ChunkPtr& chunk, const uint8_t *fileBuf, size_t fileLen) const {
+	core_trace_scoped(ChunkPersisterLoadCompressed);
 	if (!fileBuf || fileLen <= 0) {
 		return false;
 	}

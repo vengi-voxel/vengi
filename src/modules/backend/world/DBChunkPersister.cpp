@@ -50,7 +50,7 @@ persistence::Blob DBChunkPersister::load(int x, int y, int z, MapId mapId, unsig
 	return model.data();
 }
 
-bool DBChunkPersister::load(voxel::PagedVolume::Chunk* chunk, unsigned int seed) {
+bool DBChunkPersister::load(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int seed) {
 	core_trace_scoped(DBChunkPersisterLoad);
 	const glm::ivec3& region = chunk->chunkPos();
 	persistence::Blob blob = load(region.x, region.y, region.z, _mapId, seed);
@@ -61,16 +61,9 @@ bool DBChunkPersister::load(voxel::PagedVolume::Chunk* chunk, unsigned int seed)
 	return false;
 }
 
-bool DBChunkPersister::save(voxel::PagedVolume::Chunk* chunk, unsigned int seed) {
+// TODO: this must be done async
+bool DBChunkPersister::save(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int seed) {
 	core_trace_scoped(DBChunkPersisterSave);
-	db::ChunkModel model;
-	model.setMapid(_mapId);
-	const glm::ivec3& chunkPos = chunk->chunkPos();
-	model.setX(chunkPos.x);
-	model.setY(chunkPos.y);
-	model.setZ(chunkPos.z);
-	model.setSeed(seed);
-
 	core::ByteStream out;
 	if (!saveCompressed(chunk, out)) {
 		return false;
@@ -80,6 +73,13 @@ bool DBChunkPersister::save(voxel::PagedVolume::Chunk* chunk, unsigned int seed)
 	data.data = (uint8_t*)out.getBuffer();
 	data.length = out.getSize();
 	Log::info("Store compressed chunk with size %i", (int)data.length);
+	db::ChunkModel model;
+	model.setMapid(_mapId);
+	const glm::ivec3& chunkPos = chunk->chunkPos();
+	model.setX(chunkPos.x);
+	model.setY(chunkPos.y);
+	model.setZ(chunkPos.z);
+	model.setSeed(seed);
 	model.setData(data);
 	return _dbHandler->insert(model);
 }

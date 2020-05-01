@@ -38,7 +38,7 @@ bool ClientPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
-	if (!_chunkPersister.load(pctx.chunk.get(), _seed)) {
+	if (!_chunkPersister.load(pctx.chunk, _seed)) {
 		const int x = pctx.region.getLowerX();
 		const int y = pctx.region.getLowerY();
 		const int z = pctx.region.getLowerZ();
@@ -65,18 +65,18 @@ bool ClientPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 					contentType, x, y, z, _seed, _mapId);
 			return false;
 		}
-		if (!_chunkPersister.loadCompressed(pctx.chunk.get(), (const uint8_t*)data, length)) {
+		if (!_chunkPersister.loadCompressed(pctx.chunk, (const uint8_t*)data, length)) {
 			Log::error("Failed to uncompress the chunk for position %i:%i:%i and seed %u on map %i",
 					x, y, z, _seed, _mapId);
 			return false;
 		}
-		if (!_chunkPersister.save(pctx.chunk.get(), _seed)) {
+		if (!_chunkPersister.save(pctx.chunk, _seed)) {
 			Log::error("Failed to save the downloaded chunk for position %i:%i:%i and seed %u on map %i",
 					x, y, z, _seed, _mapId);
 			return false;
 		}
 	}
-	if (!_chunkPersister.load(pctx.chunk.get(), _seed)) {
+	if (!_chunkPersister.load(pctx.chunk, _seed)) {
 		const int x = pctx.region.getLowerX();
 		const int y = pctx.region.getLowerY();
 		const int z = pctx.region.getLowerZ();
