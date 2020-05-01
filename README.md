@@ -37,6 +37,9 @@ You can find some old and most likely outdated videos in my [youtube channel](ht
 The tests need a postgres database named `enginetest` and a user named `engine` with the password.... `engine` (you can modify them via cvars). If no OpenGL or OpenCL context is available, the related tests are skipped.
 You can use the docker-compose files to set up your environment.
 
+# Profiling
+In order to compile with profiling support. You should clone with submodules. This will also get the [tracy](https://github.com/wolfpld/tracy) code.
+
 # Images
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/gliding-2020-02-23.png)
