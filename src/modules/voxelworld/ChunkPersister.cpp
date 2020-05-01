@@ -15,37 +15,44 @@ namespace voxelworld {
 #define WORLD_FILE_VERSION 1
 
 bool ChunkPersister::saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, core::ByteStream& outStream) const {
-	core_trace_scoped(ChunkPersisterSaveCompressed);
 	core::ByteStream voxelStream(chunk->dataSizeInBytes());
-	const int width = chunk->sideLength();
-	const int height = chunk->sideLength();
-	const int depth = chunk->sideLength();
+	{
+		core_trace_scoped(ChunkPersisterPrepareBuffer);
+		const int width = chunk->sideLength();
+		const int height = chunk->sideLength();
+		const int depth = chunk->sideLength();
 
-	for (int z = 0; z < depth; ++z) {
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; ++x) {
-				const voxel::Voxel& voxel = chunk->voxel(x, y, z);
-				static_assert(sizeof(voxel::VoxelType) == sizeof(uint8_t), "Voxel type size changed");
-				voxelStream.addByte(core::enumVal(voxel.getMaterial()));
-				voxelStream.addByte(voxel.getColor());
+		for (int z = 0; z < depth; ++z) {
+			for (int y = 0; y < height; ++y) {
+				for (int x = 0; x < width; ++x) {
+					const voxel::Voxel& voxel = chunk->voxel(x, y, z);
+					static_assert(sizeof(voxel::VoxelType) == sizeof(uint8_t), "Voxel type size changed");
+					voxelStream.addByte(core::enumVal(voxel.getMaterial()));
+					voxelStream.addByte(voxel.getColor());
+				}
 			}
 		}
 	}
-
 	// save the stuff
 	const uint8_t* voxelBuf = voxelStream.getBuffer();
 	const int voxelSize = voxelStream.getSize();
 	uint32_t neededVoxelBufLen = core::zip::compressBound(voxelSize);
 	uint8_t* compressedVoxelBuf = new uint8_t[neededVoxelBufLen];
-	size_t finalBufferSize;
-	const bool success = core::zip::compress(voxelBuf, voxelSize, compressedVoxelBuf, neededVoxelBufLen, &finalBufferSize);
 	std::unique_ptr<uint8_t[]> smartBuf(compressedVoxelBuf);
-	if (!success) {
-		Log::error("Failed to compress the voxel data");
-		return false;
+	size_t finalBufferSize;
+	{
+		core_trace_scoped(ChunkPersisterCompress);
+		const bool success = core::zip::compress(voxelBuf, voxelSize, compressedVoxelBuf, neededVoxelBufLen, &finalBufferSize);
+		if (!success) {
+			Log::error("Failed to compress the voxel data");
+			return false;
+		}
 	}
-	outStream.addFormat("ib", voxelSize, WORLD_FILE_VERSION);
-	outStream.append(compressedVoxelBuf, finalBufferSize);
+	{
+		core_trace_scoped(ChunkPersisterSaveCompressed);
+		outStream.addFormat("ib", voxelSize, WORLD_FILE_VERSION);
+		outStream.append(compressedVoxelBuf, finalBufferSize);
+	}
 	return true;
 }
 
