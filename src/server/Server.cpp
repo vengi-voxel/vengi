@@ -51,11 +51,22 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::ServerHost, "0.0.0.0");
 	core::Var::get(cfg::ServerMaxClients, "1024");
 	core::Var::get(cfg::ServerHttpPort, HTTP_SERVER_PORT, core::CV_REPLICATE);
-	core::Var::get(cfg::ServerChunkBaseUrl, "http://" HTTP_SERVER_HOST ":" HTTP_SERVER_PORT "/chunk", core::CV_REPLICATE);
 	core::Var::get(cfg::ServerSeed, "1", core::CV_REPLICATE);
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::DatabaseMinConnections, "2");
 	core::Var::get(cfg::DatabaseMaxConnections, "100");
+
+	const core::VarPtr& chunkUrl = core::Var::get(cfg::ServerChunkBaseUrl, "", core::CV_REPLICATE);
+	if (chunkUrl->strVal().empty()) {
+		char hostname[256];
+		size_t size = sizeof(hostname);
+		if (uv_os_gethostname(hostname, &size) == 0) {
+			const core::String& url = core::string::format("http://%s:" HTTP_SERVER_PORT "/chunk", hostname);
+			chunkUrl->setVal(url);
+		} else {
+			chunkUrl->setVal("http://localhost:" HTTP_SERVER_PORT "/chunk");
+		}
+	}
 
 	_serverLoop->construct();
 

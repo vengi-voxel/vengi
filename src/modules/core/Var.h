@@ -121,7 +121,7 @@ public:
 	static VarPtr getSafe(const core::String& name);
 
 	/**
-	 * @return @c empty string if var with given name wasn't found, otherwise the value of the var
+	 * @return empty string if var with given name wasn't found, otherwise the value of the var
 	 */
 	static core::String str(const core::String& name);
 

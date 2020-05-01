@@ -8,11 +8,11 @@ spec:
   issuerRef:
     name: ca-issuer
     kind: ClusterIssuer
-  commonName: @HTTP_SERVER_HOST@
+  commonName: server.domain.todo
   organization:
-  - @SERVER_DOMAIN@
+  - domain.todo
   dnsNames:
-  - @HTTP_SERVER_HOST@
+  - server.domain.todo
 ---
 apiVersion: "networking.k8s.io/v1beta1"
 kind: "Ingress"
@@ -21,7 +21,7 @@ metadata:
   name: "@PROJECT_NAME@"
 spec:
   rules:
-  - host: @HTTP_SERVER_HOST@
+  - host: server.domain.todo
     http:
       paths:
       - path: /
