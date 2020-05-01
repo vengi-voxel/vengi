@@ -13,6 +13,22 @@ command called `sv_createuser`.
 
 To get a list of available commands, you can use cmdlist in the server terminal.
 
+## Chunk download
+
+The chunks are persisted in the database and can be made available via cdn or any other http
+server. The gameserver has a built-in http server, too. If you want to use it, you have to set
+the `sv_httpchunkurl` to your gameserver hostname like this:
+
+```
+./vengi-server -set sv_httpchunkurl http://myhostname:8080/chunk
+```
+
+... or export the environment variable SV_HTTPCHUNKURL or add it to your config file (see
+setup documentation for more details).
+
+This cvar is one of those that is automatically replicated to the client. Whenever you change it,
+all clients will be notified about it and use the new url.
+
 TODO: document server architecture
 
 ## Docker
