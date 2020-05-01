@@ -43,7 +43,7 @@ public:
 	int findWalkableFloor(const glm::ivec3& position, int maxDistanceY = voxel::MAX_HEIGHT) const;
 	int findWalkableFloor(voxel::PagedVolume::Sampler *sampler, const glm::ivec3& position, int maxDistanceY) const;
 
-	bool init(uint32_t volumeMemoryMegaBytes = 512, uint16_t chunkSideLength = 256);
+	bool init(uint32_t volumeMemoryMegaBytes = 1024, uint16_t chunkSideLength = 256);
 	void shutdown();
 	void reset();
 
