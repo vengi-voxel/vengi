@@ -52,14 +52,11 @@ const Voxel& PagedVolume::Sampler::voxelAt(int x, int y, int z) const {
 
 void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	core_trace_scoped(SetSamplerPosition);
-	_xPosInVolume = xPos;
-	_yPosInVolume = yPos;
-	_zPosInVolume = zPos;
 
 	// Then we update the voxel pointer
-	const int32_t xChunk = _xPosInVolume >> _volume->_chunkSideLengthPower;
-	const int32_t yChunk = _yPosInVolume >> _volume->_chunkSideLengthPower;
-	const int32_t zChunk = _zPosInVolume >> _volume->_chunkSideLengthPower;
+	const int32_t xChunk = xPos >> _volume->_chunkSideLengthPower;
+	const int32_t yChunk = yPos >> _volume->_chunkSideLengthPower;
+	const int32_t zChunk = zPos >> _volume->_chunkSideLengthPower;
 
 	if (_currentVoxel == nullptr || _lastXChunk != xChunk || _lastYChunk != yChunk || _lastZChunk != zChunk) {
 		if (_cachedChunk) {
@@ -79,21 +76,26 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 		_lastZChunk = zChunk;
 	}
 
-	_xPosInChunk = static_cast<uint32_t>(_xPosInVolume & _volume->_chunkMask);
-	_yPosInChunk = static_cast<uint32_t>(_yPosInVolume & _volume->_chunkMask);
-	_zPosInChunk = static_cast<uint32_t>(_zPosInVolume & _volume->_chunkMask);
+	_xPosInVolume = xPos;
+	_yPosInVolume = yPos;
+	_zPosInVolume = zPos;
+
+	_xPosInChunk = static_cast<uint32_t>(xPos & _volume->_chunkMask);
+	_yPosInChunk = static_cast<uint32_t>(yPos & _volume->_chunkMask);
+	_zPosInChunk = static_cast<uint32_t>(zPos & _volume->_chunkMask);
 
 	const uint32_t voxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
 	_currentVoxel = _currentChunk->_data + voxelIndexInChunk;
 }
 
-bool PagedVolume::Sampler::setVoxel(const Voxel& tValue) {
+bool PagedVolume::Sampler::setVoxel(const Voxel& voxel) {
 	if (_currentVoxel == nullptr) {
 		return false;
 	}
 	//Need to think what effect this has on any existing iterators.
 	//core_assert_msg(false, "This function cannot be used on PagedVolume samplers.");
-	*_currentVoxel = tValue;
+	//TODO: the region is not updated properly - but we might not need this for paged volumes.
+	*_currentVoxel = voxel;
 	return true;
 }
 

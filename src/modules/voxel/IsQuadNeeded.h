@@ -1,5 +1,10 @@
+/**
+ * @file
+ */
+
 #pragma once
 
+#include "Face.h"
 #include "Voxel.h"
 
 namespace voxel {

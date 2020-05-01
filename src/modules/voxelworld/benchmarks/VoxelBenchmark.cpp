@@ -1,10 +1,12 @@
+/**
+ * @file
+ */
+
 #include "core/benchmark/AbstractBenchmark.h"
 #include "voxelworld/WorldPager.h"
 #include "voxel/PagedVolume.h"
-#include "voxel/CubicSurfaceExtractor.h"
 #include "voxelworld/BiomeManager.h"
 #include "voxel/Constants.h"
-#include "voxel/IsQuadNeeded.h"
 #include "voxelformat/VolumeCache.h"
 
 class PagedVolumeBenchmark: public core::AbstractBenchmark {
@@ -26,27 +28,21 @@ public:
 };
 
 BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
-	const uint16_t chunkSideLength = state.range(0);
-	const uint32_t volumeMemoryMegaBytes = chunkSideLength * 2;
 	voxelworld::WorldPager pager(_volumeCache, std::make_shared<voxelworld::ChunkPersister>());
 	pager.setSeed(0l);
-	voxel::PagedVolume *volumeData = new voxel::PagedVolume(&pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
+	int chunkSize = 256;
+	voxel::PagedVolume volumeData(&pager, 1024 * 1024 * 1024, chunkSize);
 	const io::FilesystemPtr& filesystem = io::filesystem();
 	const core::String& luaParameters = filesystem->load("worldparams.lua");
 	const core::String& luaBiomes = filesystem->load("biomes.lua");
-	pager.init(volumeData, luaParameters, luaBiomes);
-	const glm::ivec3 meshSize(16, 128, 16);
-	int x = 0;
+	pager.init(&volumeData, luaParameters, luaBiomes);
+	int i = 0;
 	while (state.KeepRunning()) {
-		glm::ivec3 mins(x, 0, 0);
-		x += meshSize.x;
-		voxel::Region region(mins, mins + meshSize);
-		voxel::Mesh mesh(0, 0, true);
-		voxel::extractCubicMesh(volumeData, region, &mesh, voxel::IsQuadNeeded());
+		volumeData.voxel(chunkSize * i, 0, 0);
+		++i;
 	}
-	delete volumeData;
 }
 
-BENCHMARK_REGISTER_F(PagedVolumeBenchmark, pageIn)->RangeMultiplier(2)->Range(8, 256);
+BENCHMARK_REGISTER_F(PagedVolumeBenchmark, pageIn);
 
 BENCHMARK_MAIN();

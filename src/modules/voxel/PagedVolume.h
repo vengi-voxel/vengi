@@ -124,13 +124,35 @@ public:
 			return true;
 		}
 
+		/**
+		 * @brief Changes the position and (if needed) the current main chunk
+		 * @note This might be an expensive method and should be avoided
+		 */
 		void setPosition(const glm::ivec3& v3dNewPos);
+		/**
+		 * @brief Changes the position and (if needed) the current main chunk
+		 * @note This might be an expensive method and should be avoided
+		 */
 		virtual void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
-		bool setVoxel(const Voxel& tValue);
+		/**
+		 * @brief Set the given voxel to the current position in the sampler
+		 */
+		bool setVoxel(const Voxel& voxel);
 		glm::ivec3 position() const;
 
+		/**
+		 * @brief This method caches the last accessed chunk that isn't the current main chunk
+		 * that was set by @c setPosition()
+		 * This is often useful for cases like mesh extraction where you check a border value of
+		 * an adjacent chunk.
+		 * @note Used by the peek methods
+		 */
 		const Voxel& voxelAt(int x, int y, int z) const;
 
+		/**
+		 * @brief Tries to advance the position within the chunk - if that doesn't work, we are changing
+		 * the main chunk by calling @c setPosition()
+		 */
 		void movePositiveX();
 		void movePositiveY();
 		void movePositiveZ();
@@ -190,34 +212,30 @@ public:
 		int32_t _lastYChunk = 0;
 		int32_t _lastZChunk = 0;
 
-		// This should ideally be const, but that prevent automatic generation of an assignment operator (https://goo.gl/Sn7KpZ).
-		// We could provide one manually, but it's currently unused so there is no real test for if it works. I'm putting
-		// together a new release at the moment so I'd rathern not make 'risky' changes.
 		const uint16_t _chunkSideLengthMinusOne;
 	};
 
 public:
-	/// Constructor for creating a fixed size volume.
+	/** @brief Constructor for creating a fixed size volume. */
 	PagedVolume(Pager* pager, uint32_t targetMemoryUsageInBytes = 256 * 1024 * 1024, uint16_t chunkSideLength = 32);
-	/// Destructor
 	~PagedVolume();
 
-	/// Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
+	/** @brief Gets a voxel at the position given by <tt>x,y,z</tt> coordinates */
 	const Voxel& voxel(int32_t x, int32_t y, int32_t z) const;
-	/// Gets a voxel at the position given by a 3D vector
+	/** @brief Gets a voxel at the position given by a 3D vector */
 	const Voxel& voxel(const glm::ivec3& v3dPos) const;
 
 	const Region& region() const;
 
-	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
+	/** @brief Sets the voxel at the position given by <tt>x,y,z</tt> coordinates */
 	void setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& tValue);
-	/// Sets the voxel at the position given by a 3D vector
+	/** @brief Sets the voxel at the position given by a 3D vector */
 	void setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue);
-	/// Sets the voxel at the position given by <tt>x,z</tt> coordinates
+	/** @brief Sets the voxel at the position given by <tt>x,z</tt> coordinates */
 	void setVoxels(int32_t x, int32_t z, const Voxel* tArray, int amount);
 	void setVoxels(int32_t x, int32_t y, int32_t z, int nx, int nz, const Voxel* tArray, int amount);
 
-	/// Removes all voxels from memory
+	/** @brief Removes all voxels from memory */
 	void flushAll();
 
 	ChunkPtr chunk(const glm::ivec3& pos) const;
