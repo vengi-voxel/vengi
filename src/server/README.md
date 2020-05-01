@@ -1,5 +1,14 @@
 # Server
 
+## Architecture
+
+TODO: document server architecture, world, map, ai-zone, chunk management, user handling
+
+## Network
+
+TODO: document network stuff like cvar replication, protocol (flatbuffer) stuff, login, logout
+and so on
+
 ## General
 
 **Hint**: In order to start the server you will need to setup the postgres database. See
@@ -16,11 +25,11 @@ To get a list of available commands, you can use cmdlist in the server terminal.
 ## Chunk download
 
 The chunks are persisted in the database and can be made available via cdn or any other http
-server. The gameserver has a built-in http server, too. If you want to use it, you have to set
-the `sv_httpchunkurl` to your gameserver hostname like this:
+server. The gameserver has a built-in http server, too. If you want to use any other http server,
+you have to set it via `sv_httpchunkurl` like this:
 
 ```
-./vengi-server -set sv_httpchunkurl http://myhostname:8080/chunk
+./vengi-server -set sv_httpchunkurl http://myhostname:8080/mychunkurl
 ```
 
 ... or export the environment variable SV_HTTPCHUNKURL or add it to your config file (see
@@ -29,7 +38,11 @@ setup documentation for more details).
 This cvar is one of those that is automatically replicated to the client. Whenever you change it,
 all clients will be notified about it and use the new url.
 
-TODO: document server architecture
+The http endpoint reads several GET paramters:
+* `x`, `y`, `z`: The chunk coordinates
+* `mapid`
+You will find these values in the `chunk` database table. A custom chunk endpoint just would have to
+send the database blob with a content type of `application/chunk`.
 
 ## Docker
 
