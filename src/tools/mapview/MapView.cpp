@@ -172,7 +172,7 @@ bool MapView::changeEntityType(const glm::vec3& pos, const network::EntityType e
 		Log::error("Failed to init attributes: %s", containerProvider.error().c_str());
 		return false;
 	}
-	const attrib::ContainerPtr& attribContainer = containerProvider.container("entity");
+	const attrib::ContainerPtr& attribContainer = containerProvider.container("GENERIC");
 	if (!attribContainer) {
 		Log::error("Failed to load attributes for attribute 'entity'");
 		return false;
