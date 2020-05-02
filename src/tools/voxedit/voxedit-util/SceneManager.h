@@ -166,6 +166,7 @@ private:
 	 */
 	void moveCursor(int x, int y, int z);
 
+	void colorToNewLayer(const voxel::Voxel voxelColor);
 	void thicken(int amount);
 	void crop();
 	void resize(const glm::ivec3& size);

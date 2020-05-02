@@ -377,6 +377,22 @@ void SceneManager::thicken(int amount) {
 	});
 }
 
+void SceneManager::colorToNewLayer(const voxel::Voxel voxelColor) {
+	voxel::RawVolume* newVolume = new voxel::RawVolume(region());
+	_layerMgr.foreachGroupLayer([&] (int layerId) {
+		voxel::RawVolumeWrapper wrapper(volume(layerId));
+		voxel::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
+			if (voxel.getColor() == voxelColor.getColor()) {
+				newVolume->setVoxel(x, y, z, voxel);
+				wrapper.setVoxel(x, y, z, voxel::Voxel());
+			}
+		});
+		modified(layerId, wrapper.dirtyRegion());
+	});
+	const core::String& name = core::string::format("color: %i", (int)voxelColor.getColor());
+	_layerMgr.addLayer(name.c_str(), true, newVolume);
+}
+
 void SceneManager::crop() {
 	const int layerId = _layerMgr.activeLayer();
 	if (_volumeRenderer.empty(layerId)) {
@@ -896,6 +912,18 @@ void SceneManager::construct() {
 	core::Command::registerCommand("crop", [&] (const core::CmdArgs& args) {
 		crop();
 	}).setHelp("Crop the volume");
+
+	core::Command::registerCommand("colortolayer", [&] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc < 1) {
+			const voxel::Voxel voxel = _modifier.cursorVoxel();
+			colorToNewLayer(voxel);
+		} else {
+			const uint8_t index = core::string::toInt(args[0]);
+			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+			colorToNewLayer(voxel);
+		}
+	}).setHelp("Move the voxels of the current selected palette index or the given index into a new layer");
 
 	core::Command::registerCommand("abortaction", [&] (const core::CmdArgs& args) {
 		_modifier.aabbStop();
