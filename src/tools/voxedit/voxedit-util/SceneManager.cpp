@@ -897,6 +897,10 @@ void SceneManager::construct() {
 		crop();
 	}).setHelp("Crop the volume");
 
+	core::Command::registerCommand("abortaction", [&] (const core::CmdArgs& args) {
+		_modifier.aabbStop();
+	}).setHelp("Aborts the current modifier action");
+
 	core::Command::registerCommand("thicken", [&] (const core::CmdArgs& args) {
 		thicken(1);
 	}).setHelp("Thicken existing voxels");
