@@ -61,6 +61,9 @@ protected:
 	 * @brief Used for debugging a single position mesh extraction in the world
 	 */
 	bool _singlePosExtraction = false;
+	network::EntityType _entityType = network::EntityType::HUMAN_MALE_WORKER;
+
+	bool changeEntityType(const glm::vec3& pos, const network::EntityType entityType);
 
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize(int windowWidth, int windowHeight) override;

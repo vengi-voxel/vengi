@@ -1,7 +1,5 @@
-require "attrib.human-male-worker"
-require "attrib.human-female-worker"
-
 function init()
-	registerMaleWorker()
-	registerFemaleWorker()
+	local chr = attrib.createContainer("entity")
+	chr:absolute("SPEED", 14.0)
+	chr:register()
 end

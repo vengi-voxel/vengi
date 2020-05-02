@@ -154,51 +154,57 @@ core::AppState MapView::onInit() {
 	const glm::vec3& pos = spawnPos();
 	Log::info("Spawn entity at %s", glm::to_string(pos).c_str());
 
-	const network::EntityType entityType = network::EntityType::HUMAN_MALE_WORKER; // network::EntityType::HUMAN_FEMALE_WORKER
-	const frontend::ClientEntityId entityId = (frontend::ClientEntityId)1;
-	_entity = core::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, entityId, entityType, pos, 0.0f);
-	attrib::ContainerProvider containerProvider;
-	const core::String& attribLua = filesystem()->load("attributes.lua");
-	if (!containerProvider.init(attribLua)) {
-		Log::error("Failed to init attributes: %s", containerProvider.error().c_str());
-		return core::AppState::InitFailure;
-	}
-	const core::String& entityTypeStr = network::EnumNameEntityType(_entity->type());
-	const attrib::ContainerPtr& attribContainer = containerProvider.container(entityTypeStr);
-	if (!attribContainer) {
-		Log::error("Failed to load attributes for %s", entityTypeStr.c_str());
-		return core::AppState::InitFailure;
-	}
-	attrib::Attributes attributes;
-	attributes.add(attribContainer);
-	attributes.update(0l);
-	const float speed = attributes.max(attrib::Type::SPEED);
-	_entity->attrib().setCurrent(attrib::Type::SPEED, speed);
-	if (!_worldRenderer.entityMgr().addEntity(_entity)) {
-		Log::error("Failed to create entity");
-		return core::AppState::InitFailure;
-	}
-	stock::Stock& stock = _entity->stock();
-	stock::Inventory& inv = stock.inventory();
-	const stock::ContainerData* containerData = _stockDataProvider->containerData("tool");
-	if (containerData == nullptr) {
-		Log::error("Could not get container for items");
-		return core::AppState::InitFailure;
-	}
-	const stock::ItemData* itemData = _stockDataProvider->itemData(1);
-	if (itemData == nullptr) {
-		Log::error("Failed to get item with id 1");
-		return core::AppState::InitFailure;
-	}
-	const stock::ItemPtr& item = _stockDataProvider->createItem(itemData->id());
-	if (!inv.add(containerData->id, item, 0, 0)) {
-		Log::error("Failed to add item to inventory");
+	if (!changeEntityType(pos, _entityType)) {
 		return core::AppState::InitFailure;
 	}
 
 	core::setBindingContext(core::BindingContext::World);
 
 	return state;
+}
+
+bool MapView::changeEntityType(const glm::vec3& pos, const network::EntityType entityType) {
+	const frontend::ClientEntityId entityId = (frontend::ClientEntityId)1;
+	_entity = core::make_shared<frontend::ClientEntity>(_stockDataProvider, _animationCache, entityId, entityType, pos, 0.0f);
+	attrib::ContainerProvider containerProvider;
+	const core::String& attribLua = filesystem()->load("attributes.lua");
+	if (!containerProvider.init(attribLua)) {
+		Log::error("Failed to init attributes: %s", containerProvider.error().c_str());
+		return false;
+	}
+	const attrib::ContainerPtr& attribContainer = containerProvider.container("entity");
+	if (!attribContainer) {
+		Log::error("Failed to load attributes for attribute 'entity'");
+		return false;
+	}
+	attrib::Attributes attributes;
+	attributes.add(attribContainer);
+	attributes.update(0l);
+	const float speed = attributes.max(attrib::Type::SPEED);
+	_entity->attrib().setCurrent(attrib::Type::SPEED, speed);
+	_worldRenderer.entityMgr().removeEntity(_entity->id());
+	if (!_worldRenderer.entityMgr().addEntity(_entity)) {
+		Log::error("Failed to create entity");
+		return false;
+	}
+	stock::Stock& stock = _entity->stock();
+	stock::Inventory& inv = stock.inventory();
+	const stock::ContainerData* containerData = _stockDataProvider->containerData("tool");
+	if (containerData == nullptr) {
+		Log::error("Could not get container for items");
+		return false;
+	}
+	const stock::ItemData* itemData = _stockDataProvider->itemData(1);
+	if (itemData == nullptr) {
+		Log::error("Failed to get item with id 1");
+		return false;
+	}
+	const stock::ItemPtr& item = _stockDataProvider->createItem(itemData->id());
+	if (!inv.add(containerData->id, item, 0, 0)) {
+		Log::error("Failed to add item to inventory");
+		return false;
+	}
+	return true;
 }
 
 glm::vec3 MapView::spawnPos() const {
@@ -266,6 +272,28 @@ void MapView::onRenderUI() {
 	_worldRenderer.setSeconds(_worldTime);
 
 	ImGui::InputVarFloat("Rotation Speed", _rotationSpeed);
+
+	if (ImGui::BeginCombo("Entity", network::EnumNameEntityType(_entityType), ImGuiComboFlags_None)) {
+		for (int i = ((int)network::EntityType::BEGIN_ANIMAL) + 1; i < (int)network::EntityType::MAX_CHARACTERS; ++i) {
+			if (i >= (int)network::EntityType::MAX_ANIMAL && i <= (int)network::EntityType::BEGIN_CHARACTERS) {
+				continue;
+			}
+			const network::EntityType type = (network::EntityType)i;
+			bool selected = type == _entityType;
+			if (ImGui::Selectable(network::EnumNameEntityType(type), selected)) {
+				if (!changeEntityType(_entity->position(), type)) {
+					changeEntityType(_entity->position(), _entityType);
+				} else {
+					_entityType = type;
+					selected = true;
+				}
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
 
 	if (ImGui::CollapsingHeader("Textures/Buffers")) {
 		static bool renderColorMap = false;
