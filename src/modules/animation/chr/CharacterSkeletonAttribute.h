@@ -43,6 +43,9 @@ struct CharacterSkeletonAttribute : public SkeletonAttribute {
 	float pantsHeight = 3.0f;
 	float beltHeight = 2.0f;
 	float chestHeight = 5.0f;
+	float gliderOffset = 5.0f;
+	float glidingForward = 2.0f;
+	float glidingUpwards = 2.0f;
 	float headHeight = 9.0f;
 	float footRight = -3.2f;
 
@@ -64,7 +67,7 @@ struct CharacterSkeletonAttribute : public SkeletonAttribute {
 		beltY = pantsY + pantsHeight;
 		chestY = beltY + beltHeight;
 		headY = chestY + chestHeight;
-		gliderY = headY + headHeight;
+		gliderY = headY + headHeight + gliderOffset;
 		// TODO: perform sanity checks
 		return true;
 	}

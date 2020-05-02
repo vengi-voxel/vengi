@@ -41,6 +41,9 @@ function defaultSkeletonAttributes()
     beltHeight = 2.0,
     chestHeight = 5.0,
     headHeight = 9.0,
+    gliderOffset = 5.0,
+    glidingForward = 2.0,
+    glidingUpwards = 2.0,
     footRight = -3.2
   }
   return attributes

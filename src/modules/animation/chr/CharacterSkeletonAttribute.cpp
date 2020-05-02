@@ -37,6 +37,9 @@ static const SkeletonAttributeMeta ChrSkeletonAttributeMetaArray[] = {
 	SKELETONATTRIBUTECHR(pantsHeight),
 	SKELETONATTRIBUTECHR(beltHeight),
 	SKELETONATTRIBUTECHR(chestHeight),
+	SKELETONATTRIBUTECHR(gliderOffset),
+	SKELETONATTRIBUTECHR(glidingForward),
+	SKELETONATTRIBUTECHR(glidingUpwards),
 	SKELETONATTRIBUTECHR(headHeight),
 	SKELETONATTRIBUTECHR(footRight),
 	SKELETONATTRIBUTE_END
