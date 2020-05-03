@@ -14,6 +14,14 @@
 #define __attribute__(x)
 #endif
 
+#if defined(_MSC_VER)
+#define CORE_FORCE_INLINE __forceinline
+#elif ( (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__) )
+#define CORE_FORCE_INLINE __attribute__((always_inline)) static __inline__
+#else
+#define CORE_FORCE_INLINE static inline
+#endif
+
 #ifdef _MSC_VER
 #include <sal.h>
 #if _MSC_VER >= 1400

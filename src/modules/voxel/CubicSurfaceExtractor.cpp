@@ -3,11 +3,11 @@
  */
 
 #include "CubicSurfaceExtractor.h"
-#include <SDL.h>
+#include "core/Common.h"
 
 namespace voxel {
 
-SDL_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
+CORE_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
 	return v1.colorIndex == v2.colorIndex && v1.ambientOcclusion == v2.ambientOcclusion;
 }
 
