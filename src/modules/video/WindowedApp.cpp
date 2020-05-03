@@ -236,6 +236,12 @@ core::AppState WindowedApp::onInit() {
 
 	video::setup();
 
+#ifdef SDL_HINT_AUDIO_DEVICE_APP_NAME
+	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME, _appname.c_str());
+#endif
+#ifdef SDL_HINT_AUDIO_DEVICE_STREAM_NAME
+	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, _appname.c_str());
+#endif
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	//SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");

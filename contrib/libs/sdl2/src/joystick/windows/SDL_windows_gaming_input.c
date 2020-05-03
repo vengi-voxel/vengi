@@ -25,6 +25,7 @@
 #include "SDL_endian.h"
 #include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 
 #include "../../core/windows/SDL_windows.h"
 #define COBJMACROS
@@ -85,6 +86,7 @@ static const IID IID_IRacingWheelStatics2 = { 0xE666BCAA, 0xEDFD, 0x4323, { 0xA9
 static const IID IID_IRacingWheel = { 0xF546656F, 0xE106, 0x4C82, { 0xA9, 0x0F, 0x55, 0x40, 0x12, 0x90, 0x4B, 0x85 } };
 
 extern SDL_bool SDL_XINPUT_Enabled(void);
+extern SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version);
 
 static SDL_bool
 SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
@@ -173,15 +175,10 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         Uint16 *guid16 = (Uint16 *)guid.data;
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController2 *controller2 = NULL;
         __x_ABI_CWindows_CGaming_CInput_CIGameController *gamecontroller = NULL;
+        SDL_bool ignore_joystick = SDL_FALSE;
 
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareVendorId(controller, &vendor);
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareProductId(controller, &product);
-
-        if (SDL_IsXInputDevice(vendor, product)) {
-            /* This will be handled by the XInput driver */
-            __x_ABI_CWindows_CGaming_CInput_CIRawGameController_Release(controller);
-            return S_OK;
-        }
 
         hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IRawGameController2, (void **)&controller2);
         if (SUCCEEDED(hr)) {
@@ -206,7 +203,8 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_Release(controller2);
         }
 
-        if (SUCCEEDED(__x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IGameController, (void **)&gamecontroller))) {
+        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IGameController, (void **)&gamecontroller);
+        if (SUCCEEDED(hr)) {
             __x_ABI_CWindows_CGaming_CInput_CIArcadeStick *arcade_stick = NULL;
             __x_ABI_CWindows_CGaming_CInput_CIFlightStick *flight_stick = NULL;
             __x_ABI_CWindows_CGaming_CInput_CIGamepad *gamepad = NULL;
@@ -242,7 +240,25 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         guid.data[14] = 'w';
         guid.data[15] = (Uint8)type;
 
-        if (SDL_ShouldIgnoreJoystick(name, guid)) {
+#ifdef SDL_JOYSTICK_HIDAPI
+        if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
+            ignore_joystick = SDL_TRUE;
+        }
+#endif
+
+        if (!ignore_joystick && SDL_DINPUT_JoystickPresent(vendor, product, version)) {
+            ignore_joystick = SDL_TRUE;
+        }
+
+        if (!ignore_joystick && SDL_IsXInputDevice(vendor, product)) {
+            ignore_joystick = SDL_TRUE;
+        }
+
+        if (!ignore_joystick && SDL_ShouldIgnoreJoystick(name, guid)) {
+            ignore_joystick = SDL_TRUE;
+        }
+
+        if (ignore_joystick) {
             SDL_free(name);
         } else {
             /* New device, add it */
@@ -501,7 +517,7 @@ WGI_JoystickOpen(SDL_Joystick * joystick, int device_index)
         __x_ABI_CWindows_CDevices_CPower_CIBatteryReport *report;
 
         hr = __x_ABI_CWindows_CGaming_CInput_CIGameControllerBatteryInfo_TryGetBatteryReport(hwdata->battery, &report);
-        if (SUCCEEDED(hr)) {
+        if (SUCCEEDED(hr) && report) {
             int full_capacity = 0, curr_capacity = 0;
             __FIReference_1_int *full_capacityP, *curr_capacityP;
 
