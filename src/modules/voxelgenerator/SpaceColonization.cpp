@@ -33,14 +33,14 @@ SpaceColonization::SpaceColonization(const glm::ivec3& position, int branchLengt
 		_minDistance2(minDistance * minDistance), _maxDistance2(maxDistance * maxDistance),
 		_branchLength(branchLength), _branchSize(branchSize), _random(seed) {
 	_root = new Branch(nullptr, _position, glm::up, _branchSize);
-	_branches.insert(std::make_pair(_root->_position, _root));
+	_branches.put(_root->_position, _root);
 
 	fillAttractionPoints();
 }
 
 SpaceColonization::~SpaceColonization() {
-	for (auto &e : _branches) {
-		delete e.second;
+	for (auto e : _branches) {
+		delete e->value;
 	}
 	_root = nullptr;
 	_branches.clear();
@@ -137,8 +137,8 @@ bool SpaceColonization::step() {
 
 	// Generate the new branches
 	std::vector<Branch*> newBranches;
-	for (auto& e : _branches) {
-		Branch* branch = e.second;
+	for (auto e : _branches) {
+		Branch* branch = e->value;
 		// if at least one attraction point is affecting the branch
 		if (branch->_attractionPointInfluence <= 0) {
 			continue;
@@ -173,7 +173,7 @@ bool SpaceColonization::step() {
 			delete branch;
 			continue;
 		}
-		_branches.insert(std::make_pair(branch->_position, branch));
+		_branches.put(branch->_position, branch);
 		branchAdded = true;
 	}
 	newBranches.clear();

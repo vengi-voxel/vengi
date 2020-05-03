@@ -24,7 +24,7 @@ void Tree::generateBranches(Branches& branches, const glm::vec3& direction, floa
 	const glm::vec3 d1 = direction + random1;
 	const glm::vec3& branchPos1 = _position + d1 * branchLength;
 	Branch* current = new Branch(_root, branchPos1, d1, branchSize);
-	branches.insert(std::make_pair(current->_position, current));
+	branches.put(current->_position, current);
 
 	// grow until the max distance between root and branch is reached
 	const float size2 = maxSize * maxSize;
@@ -33,7 +33,7 @@ void Tree::generateBranches(Branches& branches, const glm::vec3& direction, floa
 		const glm::vec3 d2 = direction + random2;
 		const glm::vec3& branchPos2 = current->_position + d2 * branchLength;
 		Branch *branch = new Branch(current, branchPos2, d2, branchSize);
-		branches.insert(std::make_pair(branch->_position, branch));
+		branches.put(branch->_position, branch);
 		current = branch;
 		branchSize *= _trunkSizeFactor;
 		branchLength *= _branchSizeFactor;

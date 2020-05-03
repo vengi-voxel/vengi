@@ -7,13 +7,12 @@
 #include "Voxel.h"
 #include "Region.h"
 #include "core/NonCopyable.h"
+#include "core/GLM.h"
 #include "core/Assert.h"
 #include "core/concurrent/ReadWriteLock.h"
 #include "core/concurrent/Atomic.h"
 #include "core/collection/Map.h"
 #include "core/SharedPtr.h"
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
 
 namespace voxel {
 
@@ -266,7 +265,7 @@ private:
 
 	uint32_t _chunkCountLimit = 0u;
 
-	typedef core::Map<glm::ivec3, ChunkPtr, 64, std::hash<glm::ivec3>> ChunkMap;
+	typedef core::Map<glm::ivec3, ChunkPtr, 64, glm::hash<glm::ivec3>> ChunkMap;
 	mutable ChunkMap _chunks;
 
 	// The size of the chunks

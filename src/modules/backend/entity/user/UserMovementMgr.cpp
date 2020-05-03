@@ -6,6 +6,8 @@
 #include "backend/entity/User.h"
 #include "backend/world/Map.h"
 #include "core/Trace.h"
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/epsilon.hpp>
 
 namespace backend {
 

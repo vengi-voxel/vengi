@@ -8,6 +8,7 @@
 #include "voxel/PagedVolume.h"
 #include "voxel/RawVolume.h"
 #include "core/Common.h"
+#include <glm/common.hpp>
 
 namespace voxel {
 namespace RaycastResults {

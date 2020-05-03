@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "core/Common.h"
+#include "core/Hash.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
@@ -37,5 +39,36 @@ vec3 project(const mat4& m, const vec3& p);
 glm::mat3x4 invert(const glm::mat3x4& o);
 
 mat3x4 operator*(const mat3x4& lhs, const mat3x4 &o);
+
+CORE_FORCE_INLINE constexpr void hash_combine(uint32_t &seed, uint32_t hash) {
+	hash += 0x9e3779b9 + (seed << 6) + (seed >> 2);
+	seed ^= hash;
+}
+
+template<typename T>
+struct hash {};
+
+template<typename T, glm::qualifier Q>
+struct hash<glm::vec<3, T, Q>> {
+constexpr uint32_t operator()(const glm::vec<3, T, Q>& v) const {
+	uint32_t seed = 0u;
+	hash_combine(seed, core::hash((const void*)&v.x, (int)sizeof(v.x)));
+	hash_combine(seed, core::hash((const void*)&v.y, (int)sizeof(v.y)));
+	hash_combine(seed, core::hash((const void*)&v.z, (int)sizeof(v.z)));
+	return seed;
+}
+};
+
+template<typename T, glm::qualifier Q>
+struct hash<glm::vec<4, T, Q>> {
+constexpr uint32_t operator()(const glm::vec<4, T, Q>& v) const {
+	uint32_t seed = 0u;
+	hash_combine(seed, core::hash((const void*)&v.x, (int)sizeof(v.x)));
+	hash_combine(seed, core::hash((const void*)&v.y, (int)sizeof(v.y)));
+	hash_combine(seed, core::hash((const void*)&v.z, (int)sizeof(v.z)));
+	hash_combine(seed, core::hash((const void*)&v.w, (int)sizeof(v.w)));
+	return seed;
+}
+};
 
 }

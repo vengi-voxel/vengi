@@ -8,7 +8,7 @@
 #include "ShapeGenerator.h"
 #include "core/Log.h"
 #include "core/GLM.h"
-
+#include "core/collection/Map.h"
 #include <unordered_map>
 
 namespace voxelgenerator {
@@ -60,7 +60,7 @@ protected:
 	Branch *_root;
 	using AttractionPoints = std::vector<AttractionPoint>;
 	AttractionPoints _attractionPoints;
-	using Branches = std::unordered_map<glm::vec3, Branch*>;
+	using Branches = core::Map<glm::vec3, Branch*, 64, glm::hash<glm::vec3>>;
 	Branches _branches;
 	math::Random _random;
 
@@ -144,7 +144,7 @@ public:
 	void generate(Volume& volume, const voxel::Voxel& voxel) const {
 		Log::debug("Generate for %i attraction points and %i branches", (int)_attractionPoints.size(), (int)_branches.size());
 		for (const auto& e : _branches) {
-			Branch* b = e.second;
+			Branch* b = e->value;
 			if (b->_parent == nullptr) {
 				continue;
 			}

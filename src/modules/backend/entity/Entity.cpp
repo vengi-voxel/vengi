@@ -15,6 +15,7 @@
 #include "network/ServerMessageSender.h"
 #include "network/ProtocolEnum.h"
 #include "attrib/ContainerProvider.h"
+#include <glm/trigonometric.hpp>
 
 namespace backend {
 
