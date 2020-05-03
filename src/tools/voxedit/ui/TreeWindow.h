@@ -12,7 +12,7 @@ namespace voxedit {
 class TreeWindow : public ui::turbobadger::Window {
 private:
 	using Super = ui::turbobadger::Window;
-	voxelgenerator::TreeContext _ctx;
+	static voxelgenerator::TreeContext _ctx;
 
 	tb::TBInlineSelect* _trunkHeight;
 	tb::TBInlineSelect* _trunkWidth;

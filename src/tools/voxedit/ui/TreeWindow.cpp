@@ -7,6 +7,8 @@
 
 namespace voxedit {
 
+voxelgenerator::TreeContext TreeWindow::_ctx;
+
 TreeWindow::TreeWindow(ui::turbobadger::Window* window, voxelgenerator::TreeType type) :
 		Super(window) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-tree.tb.txt"));
@@ -42,6 +44,12 @@ TreeWindow::TreeWindow(ui::turbobadger::Window* window, voxelgenerator::TreeType
 		close();
 		return;
 	}
+
+	_trunkHeight->setValue(_ctx.trunkHeight);
+	_trunkWidth->setValue(_ctx.trunkWidth);
+	_leavesHeight->setValue(_ctx.leavesHeight);
+	_leavesWidth->setValue(_ctx.leavesWidth);
+	_leavesDepth->setValue(_ctx.leavesDepth);
 
 	_ctx.type = type;
 }
