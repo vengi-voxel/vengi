@@ -3,8 +3,6 @@
  */
 
 #include "VoxEditWindow.h"
-#include "NoiseWindow.h"
-#include "TreeWindow.h"
 #include "palette/PaletteWidget.h"
 #include "palette/PaletteSelector.h"
 #include "core/io/Filesystem.h"
@@ -60,12 +58,13 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addStringItem(_fileItems, "Heightmap", "importheightmap");
 	addStringItem(_fileItems, "Image as Plane", "importplane");
 	addStringItem(_fileItems, "Quit", "quit");
-
-	addStringItem(_structureItems, "Trees")->sub_source = &_treeItems;
 }
 
 VoxEditWindow::~VoxEditWindow() {
 	if (tb::TBSelectDropdown* dropdown = getWidgetByType<tb::TBSelectDropdown>("animationlist")) {
+		dropdown->setSource(nullptr);
+	}
+	if (tb::TBSelectDropdown* dropdown = getWidgetByType<tb::TBSelectDropdown>("treetype")) {
 		dropdown->setSource(nullptr);
 	}
 }
@@ -162,6 +161,79 @@ bool VoxEditWindow::init() {
 		Log::error("Could not load all required widgets");
 		return false;
 	}
+
+	_octaves     = getWidgetByType<tb::TBInlineSelect>("noise_octaves");
+	_frequency   = getWidgetByType<tb::TBInlineSelectDouble>("noise_frequency");
+	_lacunarity  = getWidgetByType<tb::TBInlineSelectDouble>("noise_lacunarity");
+	_gain        = getWidgetByType<tb::TBInlineSelectDouble>("noise_gain");
+
+	if (_octaves == nullptr || _frequency == nullptr || _lacunarity == nullptr || _gain == nullptr) {
+		Log::error("Not all needed widgets were found");
+		return false;
+	}
+
+	_trunkHeight     = getWidgetByType<tb::TBInlineSelect>("trunkheight");
+	_trunkWidth      = getWidgetByType<tb::TBInlineSelect>("trunkwidth");
+	_leavesHeight    = getWidgetByType<tb::TBInlineSelect>("leavesheight");
+	_leavesWidth     = getWidgetByType<tb::TBInlineSelect>("leaveswidth");
+	_leavesDepth     = getWidgetByType<tb::TBInlineSelect>("leavesdepth");
+	_treeType        = getWidgetByType<tb::TBSelectDropdown>("treetype");
+	_branchSize      = getWidgetByType<tb::TBInlineSelect>("branchsize");
+	_branchFactor    = getWidgetByType<tb::TBInlineSelectDouble>("branchfactor");
+	_branches        = getWidgetByType<tb::TBInlineSelect>("branches");
+	_controlOffset   = getWidgetByType<tb::TBInlineSelect>("controloffset");
+
+	if (_branchSize == nullptr) {
+		Log::error("branchsize widget not found");
+		return false;
+	}
+	if (_branchFactor == nullptr) {
+		Log::error("branchfactor widget not found");
+		return false;
+	}
+	if (_branches == nullptr) {
+		Log::error("branches widget not found");
+		return false;
+	}
+	if (_controlOffset == nullptr) {
+		Log::error("controloffset widget not found");
+		return false;
+	}
+	if (_treeType == nullptr) {
+		Log::error("treetype widget not found");
+		return false;
+	}
+	if (_trunkHeight == nullptr) {
+		Log::error("trunkheight widget not found");
+		return false;
+	}
+	if (_trunkWidth == nullptr) {
+		Log::error("trunkwidth widget not found");
+		return false;
+	}
+	if (_leavesWidth == nullptr) {
+		Log::error("leaveswidth widget not found");
+		return false;
+	}
+	if (_leavesHeight == nullptr) {
+		Log::error("leavesheight widget not found");
+		return false;
+	}
+	if (_leavesDepth == nullptr) {
+		Log::error("leavesdepth widget not found");
+		return false;
+	}
+
+	_trunkHeight->setValue(_treeGeneratorContext.trunkHeight);
+	_trunkWidth->setValue(_treeGeneratorContext.trunkWidth);
+	_leavesHeight->setValue(_treeGeneratorContext.leavesHeight);
+	_leavesWidth->setValue(_treeGeneratorContext.leavesWidth);
+	_leavesDepth->setValue(_treeGeneratorContext.leavesDepth);
+	_branchSize->setValue(_treeGeneratorContext.palm.branchSize);
+	_branchFactor->setValueDouble(_treeGeneratorContext.palm.branchFactor);
+	_branches->setValue(_treeGeneratorContext.palm.branches);
+	_controlOffset->setValue(_treeGeneratorContext.palm.controlOffset);
+	_treeType->setSource(&_treeItems);
 
 	SceneManager& mgr = sceneMgr();
 	render::GridRenderer& gridRenderer = mgr.gridRenderer();
@@ -305,11 +377,7 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-	if (ev.isAny(TBIDC("menu_structure"))) {
-		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("structure_popup"))) {
-			menu->show(&_structureItems, tb::TBPopupAlignment());
-		}
-	} else if (ev.isAny(TBIDC("menu_tree"))) {
+	if (ev.isAny(TBIDC("menu_tree"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_popup"))) {
 			menu->show(&_treeItems, tb::TBPopupAlignment());
 		}
@@ -317,8 +385,6 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("menu_file_window"))) {
 			menu->show(&_fileItems, tb::TBPopupAlignment());
 		}
-	} else if (ev.isAny(TBIDC("dialog_noise"))) {
-		new NoiseWindow(this);
 	} else if (ev.isAny(TBIDC("optionshowgrid"))) {
 		sceneMgr().gridRenderer().setRenderGrid(ev.target->getValue() == 1);
 	} else if (ev.isAny(TBIDC("shiftvolumes"))) {
@@ -376,11 +442,13 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		if (!settings->show()) {
 			delete settings;
 		}
+		return true;
 	} else if (id == TBIDC("loadpalette")) {
 		tb::TBPoint rootPos(ev.target_x, ev.target_y);
 		ev.target->convertToRoot(rootPos.x, rootPos.y);
 		PaletteSelector* selector = new PaletteSelector(this);
 		selector->setPosition(rootPos);
+		return true;
 	} else if (id == TBIDC("scene_settings") && ev.ref_id == TBIDC("ok")) {
 		auto &renderer = sceneMgr().renderer();
 		if (_settings.ambientDirty) {
@@ -397,6 +465,29 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		if (_settings.sunDirectionDirty) {
 			// TODO: sun direction
 		}
+		return true;
+	} else if (id == TBIDC("treegenerate")) {
+		_treeGeneratorContext.trunkHeight = _trunkHeight->getValue();
+		_treeGeneratorContext.trunkWidth = _trunkWidth->getValue();
+		_treeGeneratorContext.leavesWidth = _leavesWidth->getValue();
+		_treeGeneratorContext.leavesHeight = _leavesHeight->getValue();
+		_treeGeneratorContext.leavesDepth = _leavesDepth->getValue();
+		_treeGeneratorContext.type = treeTypes[_treeType->getValue()].type;
+		_treeGeneratorContext.pos = sceneMgr().referencePosition();
+		_treeGeneratorContext.seed = _treeGeneratorContext.pos.x;
+		_treeGeneratorContext.palm.branchSize = _branchSize->getValue();
+		_treeGeneratorContext.palm.branchFactor = _branchFactor->getValueDouble();
+		_treeGeneratorContext.palm.branches = _branches->getValue();
+		_treeGeneratorContext.palm.controlOffset = _controlOffset->getValue();
+
+		sceneMgr().createTree(_treeGeneratorContext);
+		return true;
+	} else if (id == TBIDC("noisegenerate")) {
+		const int octaves = _octaves->getValue();
+		const float frequency = _frequency->getValueDouble();
+		const float lacunarity = _lacunarity->getValueDouble();
+		const float gain = _gain->getValueDouble();
+		sceneMgr().noise(octaves, lacunarity, frequency, gain, voxelgenerator::noise::NoiseType::ridgedMF);
 		return true;
 	}
 	if (id == TBIDC("unsaved_changes_new")) {
@@ -426,13 +517,6 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 
 	if (handleEvent(ev)) {
 		return true;
-	}
-
-	for (int i = 0; i < lengthof(treeTypes); ++i) {
-		if (ev.isAny(treeTypes[i].tbid)) {
-			new TreeWindow(this, treeTypes[i].type);
-			return true;
-		}
 	}
 
 	return false;

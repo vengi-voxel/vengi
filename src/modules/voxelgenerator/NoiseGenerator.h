@@ -5,7 +5,7 @@
 #pragma once
 
 #include "math/Random.h"
-#include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxelgenerator {
 namespace noise {
@@ -16,7 +16,7 @@ enum class NoiseType {
 	Max
 };
 
-extern int generate(voxel::RawVolume& volume, int octaves, float lacunarity, float frequency, float gain, NoiseType type, math::Random& random);
+extern int generate(voxel::RawVolumeWrapper& volume, int octaves, float lacunarity, float frequency, float gain, NoiseType type, math::Random& random);
 
 }
 }

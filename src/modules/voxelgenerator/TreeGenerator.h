@@ -14,8 +14,6 @@
 #include "math/AABB.h"
 #include "core/Log.h"
 
-#include <unordered_map>
-
 namespace voxelgenerator {
 namespace tree {
 
@@ -40,27 +38,45 @@ public:
 
 /**
  * @brief Looks for a suitable height level for placing a tree
- * @return @c -1 if no suitable floor for placing a tree was found
+ * @return @c voxel::NO_FLOOR_FOUND if no suitable floor for placing a tree was found
  */
 template<class Volume>
 static int findFloor(const Volume& volume, int x, int z) {
-	glm::ivec3 start(x, voxel::MAX_TERRAIN_HEIGHT - 1, z);
-	glm::ivec3 end(x, voxel::MAX_WATER_HEIGHT, z);
-	int y = voxel::NO_FLOOR_FOUND;
-	// TODO: Just go down - a lot faster than a raycast
-	voxel::raycastWithEndpoints(&volume, start, end, [&y] (const typename Volume::Sampler& sampler) {
-		const voxel::Voxel& voxel = sampler.voxel();
-		const voxel::VoxelType material = voxel.getMaterial();
-		if (isLeaves(material)) {
-			return false;
+	glm::ivec3 position(x, voxel::MAX_TERRAIN_HEIGHT, z);
+	typename Volume::Sampler sampler(&volume);
+	core_trace_scoped(FindWalkableFloor);
+	sampler.setPosition(position);
+	if (!sampler.currentPositionValid()) {
+		return voxel::NO_FLOOR_FOUND;
+	}
+
+	const voxel::VoxelType type = sampler.voxel().getMaterial();
+	const int maxDistance = voxel::MAX_HEIGHT - position.y;
+	if (voxel::isEnterable(type)) {
+		for (int i = 0; i < maxDistance; ++i) {
+			sampler.moveNegativeY();
+			if (!sampler.currentPositionValid()) {
+				break;
+			}
+			const voxel::VoxelType mat = sampler.voxel().getMaterial();
+			if (!voxel::isEnterable(mat)) {
+				return sampler.position().y + 1;
+			}
 		}
-		if (!isRock(material) && (isFloor(material) || isWood(material))) {
-			y = sampler.position().y + 1;
-			return false;
+		return voxel::NO_FLOOR_FOUND;
+	}
+
+	for (int i = 0; i < maxDistance; ++i) {
+		sampler.movePositiveY();
+		if (!sampler.currentPositionValid()) {
+			break;
 		}
-		return true;
-	});
-	return y;
+		const voxel::VoxelType mat = sampler.voxel().getMaterial();
+		if (voxel::isEnterable(mat)) {
+			return sampler.position().y;
+		}
+	}
+	return voxel::NO_FLOOR_FOUND;
 }
 
 /**
@@ -152,45 +168,48 @@ static void createTrunk(Volume& volume, const voxelgenerator::TreeContext& ctx, 
  * @return The end of the trunk to start the leaves from
  */
 template<class Volume>
-static glm::ivec3 createBezierTrunk(Volume& volume, const voxelgenerator::TreeContext& ctx, const voxel::Voxel& voxel, float trunkSize = 4.0f, float trunkFactor = 0.95f) {
+static glm::ivec3 createBezierTrunk(Volume& volume, const voxelgenerator::TreeContext& ctx, const voxel::Voxel& voxel) {
 	const glm::ivec3& trunkTop = ctx.trunkTopV();
 	const int shiftX = ctx.trunkWidth;
 	const int shiftZ = ctx.trunkWidth;
 	glm::ivec3 end = trunkTop;
 	end.x = trunkTop.x + shiftX;
 	end.z = trunkTop.z + shiftZ;
+	float trunkFactor = 0.95f;
+	float trunkSize = ctx.trunkWidth;
 	const glm::ivec3 control(ctx.pos.x, ctx.pos.y + 10, ctx.pos.z);
 	shape::createBezierFunc(volume, ctx.pos, end, control, voxel,
 		[&] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& voxel) {
 			shape::createLine(volume, pos, last, voxel, core_max(1, (int)glm::ceil(trunkSize)));
 			trunkSize *= trunkFactor;
 		},
-	ctx.trunkHeight);
+		ctx.trunkHeight);
 	end.y -= 1;
 	return end;
 }
 
 template<class Volume>
-void createTreePalm(Volume& volume, const voxelgenerator::TreeContext& ctx, math::Random& random, float branchSize = 5.0f, float branchFactor = 0.95f, int branches = 6) {
+void createTreePalm(Volume& volume, const voxelgenerator::TreeContext& ctx, math::Random& random) {
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	const glm::ivec3& start = createBezierTrunk(volume, ctx, trunkVoxel);
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, random);
-	const float stepWidth = glm::radians(360.0f / (float)branches);
-	float angle = random.randomf(0.0f, glm::two_pi<float>());
+	const float stepWidth = glm::radians(360.0f / (float)ctx.palm.branches);
 	const float w = ctx.leavesWidth;
-	for (int b = 0; b < branches; ++b) {
+	float angle = random.randomf(0.0f, glm::two_pi<float>());
+	for (int b = 0; b < ctx.palm.branches; ++b) {
+		float branchSize = ctx.palm.branchSize;
 		const float x = glm::cos(angle);
 		const float z = glm::sin(angle);
-		const int randomLength = random.random(ctx.leavesHeight - 3, ctx.leavesHeight);
-		const glm::ivec3 control(start.x - x * (w / 2.0f), start.y + 10, start.z - z * (w / 2.0f));
+		const int randomLength = random.random(ctx.leavesHeight, ctx.leavesHeight + 3);
+		const glm::ivec3 control(start.x - x * (w / 2.0f), start.y + ctx.palm.controlOffset, start.z - z * (w / 2.0f));
 		const glm::ivec3 end(start.x - x * w, start.y - randomLength, start.z - z * w);
 		shape::createBezierFunc(volume, start, end, control, leavesVoxel,
 			[&] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& voxel) {
 				// TODO: this should be some kind of polygon - not a line - we want a flat leaf
 				shape::createLine(volume, pos, last, voxel, core_max(1, (int)glm::ceil(branchSize)));
-				branchSize *= branchFactor;
+				branchSize *= ctx.palm.branchFactor;
 			},
-		ctx.leavesHeight / 4);
+			ctx.leavesHeight / 4);
 		angle += stepWidth;
 	}
 }
@@ -369,14 +388,13 @@ void createTreeCubeSideCubes(Volume& volume, const voxelgenerator::TreeContext& 
 
 template<class Volume>
 void createSpaceColonizationTree(Volume& volume, const voxelgenerator::TreeContext& ctx, math::Random& random) {
-	const int seed = ctx.pos.x;
 	Tree tree(ctx.pos, ctx.trunkHeight, ctx.trunkHeight, ctx.leavesWidth, ctx.leavesHeight,
-			ctx.leavesDepth, ctx.trunkWidth, seed);
+			ctx.leavesDepth, ctx.trunkWidth, ctx.seed);
 	tree.grow();
 	const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, random);
 	tree.generate(volume, woodRandomVoxel);
 	const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
-	const int leafSize = 12;
+	const int leafSize = core_max(core_max(ctx.leavesWidth, ctx.leavesHeight), ctx.leavesDepth);
 	SpaceColonization::RandomSize rndSize(random, leafSize);
 	tree.generateLeaves(volume, leavesRandomVoxel, rndSize);
 }

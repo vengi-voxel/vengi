@@ -11,6 +11,7 @@
 #include "core/StringUtil.h"
 #include "core/collection/Array.h"
 #include "math/Axis.h"
+#include "voxelgenerator/TreeContext.h"
 
 class Viewport;
 class VoxEdit;
@@ -64,6 +65,23 @@ private:
 	tb::TBRadioButton* _overrideModifier = nullptr;
 	tb::TBRadioButton* _colorizeModifier = nullptr;
 
+	tb::TBInlineSelect* _octaves;
+	tb::TBInlineSelectDouble* _frequency;
+	tb::TBInlineSelectDouble* _lacunarity;
+	tb::TBInlineSelectDouble* _gain;
+
+	tb::TBInlineSelect *_trunkHeight;
+	tb::TBInlineSelect *_trunkWidth;
+	tb::TBInlineSelect *_leavesWidth;
+	tb::TBInlineSelect *_leavesHeight;
+	tb::TBInlineSelect *_leavesDepth;
+	tb::TBSelectDropdown *_treeType;
+	tb::TBInlineSelect *_branchSize;
+	tb::TBInlineSelectDouble *_branchFactor;
+	tb::TBInlineSelect *_branches;
+	tb::TBInlineSelect *_controlOffset;
+	voxelgenerator::TreeContext _treeGeneratorContext;
+
 	core::String _voxelizeFile;
 	core::String _loadFile;
 
@@ -71,7 +89,6 @@ private:
 
 	tb::TBGenericStringItemSource _treeItems;
 	tb::TBGenericStringItemSource _fileItems;
-	tb::TBGenericStringItemSource _structureItems;
 	tb::TBGenericStringItemSource _animationItems;
 
 	tb::TBInlineSelect *_voxelSize = nullptr;

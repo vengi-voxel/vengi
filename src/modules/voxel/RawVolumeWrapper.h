@@ -21,14 +21,31 @@ public:
 	class Sampler : public RawVolume::Sampler {
 	private:
 		using Super = RawVolume::Sampler;
+		RawVolumeWrapper* _volume = nullptr;
 	public:
 		Sampler(const RawVolumeWrapper* volume) : Super(volume->volume()) {}
 
 		Sampler(const RawVolumeWrapper& volume) : Super(volume.volume()) {};
 
-		Sampler(RawVolumeWrapper* volume) : Super(volume->volume()) {}
+		Sampler(RawVolumeWrapper* volume) : Super(volume->volume()), _volume(volume) {}
 
-		Sampler(RawVolumeWrapper& volume) : Super(volume.volume()) {};
+		Sampler(RawVolumeWrapper& volume) : Super(volume.volume()), _volume(&volume) {};
+
+		bool setVoxel(const Voxel& voxel) override {
+			if (Super::setVoxel(voxel)) {
+				core_assert(_volume);
+				if (!_volume) {
+					return true;
+				}
+				if (_volume->_dirtyRegion.isValid()) {
+					_volume->_dirtyRegion.accumulate(position());
+				} else {
+					_volume->_dirtyRegion = Region(position(), position());
+				}
+				return true;
+			}
+			return false;
+		}
 	};
 
 	RawVolumeWrapper(voxel::RawVolume* volume) :

@@ -22,7 +22,7 @@ static inline float getNoise(const glm::ivec2& pos, int octaves, float lacunarit
 	}
 }
 
-int generate(voxel::RawVolume& volume, int octaves, float lacunarity, float frequency, float gain, NoiseType type, math::Random& random) {
+int generate(voxel::RawVolumeWrapper& volume, int octaves, float lacunarity, float frequency, float gain, NoiseType type, math::Random& random) {
 	int amount = 0;
 	const voxel::Region& region = volume.region();
 	const int width = region.getWidthInVoxels();

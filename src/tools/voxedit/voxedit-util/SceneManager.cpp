@@ -1682,7 +1682,7 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 bool SceneManager::extractVolume() {
 	const size_t n = _extractRegions.size();
 	if (n > 0) {
-		Log::debug("Extract the meshes for %i regions", (int)n);
+		Log::info("Extract the meshes for %i regions", (int)n);
 		// extract n regions max per frame
 		const size_t MaxPerFrame = 4;
 		const size_t x = core_min(MaxPerFrame, n);
@@ -1714,15 +1714,21 @@ void SceneManager::noise(int octaves, float lacunarity, float frequency, float g
 	math::Random random;
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	voxelgenerator::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
+	if (voxelgenerator::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random) <= 0) {
+		Log::warn("Could not generate noise");
+		return;
+	}
+	// if the same noise is generated again - the wrapper doesn't override anything, but the voxels are still somehow placed.
+	if (!wrapper.dirtyRegion().isValid()) {
+		return;
+	}
 	modified(layerId, wrapper.dirtyRegion());
 }
 
-void SceneManager::createTree(voxelgenerator::TreeContext ctx) {
-	math::Random random;
+void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
+	math::Random random(ctx.seed);
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
-	ctx.pos = referencePosition();
 	voxelgenerator::tree::createTree(wrapper, ctx, random);
 	modified(layerId, wrapper.dirtyRegion());
 }

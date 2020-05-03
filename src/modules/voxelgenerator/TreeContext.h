@@ -15,11 +15,22 @@ namespace voxelgenerator {
  */
 struct TreeContext {
 	TreeType type = TreeType::Dome;
+	unsigned int seed = 0;
 	int trunkHeight = 24;	/**< The height of the trunk - it's basically also the height of the tree */
 	int trunkWidth = 2;
 	int leavesWidth = 8;	/**< the leave shape width */
 	int leavesHeight = 16;	/**< the leave shape height - counting downward from the trunk top */
 	int leavesDepth = 8;	/**< the leave shape depth */
+	struct Palm {
+		int branchSize = 5;
+		/** @brief Defines how fast the branches get smaller */
+		float branchFactor = 0.95f;
+		int branches = 6;
+		/**@brief The control offset for the bezier curve of the palm leave */
+		int controlOffset = 10;
+	};
+	Palm palm;
+
 	glm::ivec3 pos;			/**< the position of the trunk bottom center */
 
 	inline int treeBottom() const {

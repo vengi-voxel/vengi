@@ -31,7 +31,7 @@ public:
 
 		bool setPosition(const glm::ivec3& pos);
 		bool setPosition(int32_t x, int32_t y, int32_t z);
-		bool setVoxel(const Voxel& voxel);
+		virtual bool setVoxel(const Voxel& voxel);
 		const glm::ivec3& position() const;
 
 		void movePositiveX();

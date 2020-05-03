@@ -53,11 +53,6 @@ TBLayout: distribution: gravity, axis: y
 
 						TBLayout: gravity: left right
 							TBWidget
-
-						TBButton: gravity: left, @include: definitions>menubutton, text: Structure, id: menu_structure
-							TBSkinImage: skin: voxedit-structure
-						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: dialog_noise
-							TBSkinImage: skin: voxedit-noise
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: no-padding-container
 					TBSection: value: 1, text: "Palette"
@@ -150,6 +145,64 @@ TBLayout: distribution: gravity, axis: y
 									@include cameramode
 									@include camerarottype
 									@include shaderselection
+
+				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: no-padding-container
+
+					TBSection: value: 0, text: " "
+						TBLayout: position: left top, axis: y, distribution: gravity
+							TBTextField: gravity: left right, skin: Header, text: Trees
+							TBLayout: position: left top, axis: y, id: treelayout, distribution: gravity
+								TBSelectDropdown: gravity: left right, id: treetype
+
+								TBTextField: text: Trunk height, gravity: left right
+								TBInlineSelect: id: trunkheight, min: 0, max: 100
+
+								TBTextField: text: Trunk width, gravity: left right
+								TBInlineSelect: id: trunkwidth, min: 0, max: 100
+
+								TBTextField: text: Leaves height, gravity: left right
+								TBInlineSelect: id: leavesheight, min: 0, max: 100
+
+								TBTextField: text: Leaves width, gravity: left right
+								TBInlineSelect: id: leaveswidth, min: 0, max: 100
+
+								TBTextField: text: Leaves depth, gravity: left right
+								TBInlineSelect: id: leavesdepth, min: 0, max: 100
+
+								TBTextField: text: Branch size, gravity: left right
+								TBInlineSelect: id: branchsize, min: 0, max: 100
+
+								TBTextField: text: Branch factor, gravity: left right
+								TBInlineSelectDouble: id: branchfactor, min: 0, max: 100
+
+								TBTextField: text: Branches, gravity: left right
+								TBInlineSelect: id: branches, min: 0, max: 100
+
+								TBTextField: text: Control point offset, gravity: left right
+								TBInlineSelect: id: controloffset, min: 0, max: 100
+
+								TBButton: text: Generate, id: treegenerate, gravity: left right
+
+							TBTextField: gravity: left right, skin: Header, text: Noise
+							TBLayout: axis: y, id: noiselayout, distribution: gravity
+								TBTextField: text: Octaves, gravity: left right
+								TBInlineSelect: id: noise_octaves, value: 4, gravity: left right
+
+								TBTextField: text: Frequency, gravity: left right
+								TBInlineSelectDouble: id: noise_frequency, value: 0.01, gravity: left right
+
+								TBTextField: text: Offset, gravity: left right
+								TBInlineSelectDouble: id: noise_offset, value: 1.0, gravity: left right
+
+								TBTextField: text: Gain, gravity: left right
+								TBInlineSelectDouble: id: noise_gain, value: 0.5, gravity: left right
+
+								TBTextField: text: Lacunarity, gravity: left right
+								TBInlineSelectDouble: id: noise_lacunarity, value: 2.0, gravity: left right
+
+								TBButton: text: Generate, id: noisegenerate, gravity: left right
+
+					TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: no-padding-container
 

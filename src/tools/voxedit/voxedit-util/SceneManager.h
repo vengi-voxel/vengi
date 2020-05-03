@@ -274,7 +274,7 @@ public:
 	/**
 	 * @brief Create a new procgen tree
 	 */
-	void createTree(voxelgenerator::TreeContext ctx);
+	void createTree(const voxelgenerator::TreeContext& ctx);
 
 	/**
 	 * @brief Save the volume data to the given file

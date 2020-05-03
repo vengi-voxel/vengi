@@ -16,8 +16,6 @@ set(SRCS
 	ui/layer/LayerRenameWindow.h
 
 	ui/VoxEditWindow.h ui/VoxEditWindow.cpp
-	ui/TreeWindow.h ui/TreeWindow.cpp
-	ui/NoiseWindow.h ui/NoiseWindow.cpp
 
 	VoxEdit.h VoxEdit.cpp
 )
@@ -27,10 +25,8 @@ set(UI_WINDOWS
 	voxedit/ui/window/voxedit-layer-move.tb.txt
 	voxedit/ui/window/voxedit-layer.tb.txt
 	voxedit/ui/window/voxedit-main.tb.txt
-	voxedit/ui/window/voxedit-noise.tb.txt
 	voxedit/ui/window/voxedit-palette-selector.tb.txt
 	voxedit/ui/window/voxedit-scene-settings.tb.txt
-	voxedit/ui/window/voxedit-tree.tb.txt
 )
 
 set(IMAGES
