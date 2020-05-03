@@ -8,11 +8,8 @@
 #include "core/concurrent/ReadWriteLock.h"
 #include "core/collection/Array.h"
 #include "core/String.h"
+#include "core/Common.h"
 #include <stdint.h>
-
-#ifdef _MSC_VER
-#define __attribute__(x)
-#endif
 
 namespace core {
 

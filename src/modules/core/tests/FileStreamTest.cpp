@@ -5,6 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "core/io/FileStream.h"
 #include "core/io/Filesystem.h"
+#include "core/FourCC.h"
 
 namespace io {
 

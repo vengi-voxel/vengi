@@ -29,6 +29,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <SDL.h>
 #include <algorithm>
+#include <vector>
 #include "video/Trace.h"
 #ifdef TRACY_ENABLE
 #include "core/tracy/TracyOpenGL.hpp"
@@ -102,7 +103,7 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 	TextureConfig cfg;
 	// we are going to write vec3 into the out vars in the shaders
 	cfg.format(TextureFormat::RGB32F).filter(TextureFilter::Nearest);
-	for (std::size_t i = 0; i < texCount; ++i) {
+	for (size_t i = 0; i < texCount; ++i) {
 		bindTexture(TextureUnit::Upload, cfg.type(), textures[i]);
 		setupTexture(cfg);
 		static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
@@ -1444,11 +1445,11 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 	video::checkError();
 
 	if (infoLogLength > 0) {
-		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
-		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog.get());
+		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
 		video::checkError();
-		const core::String compileLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
-
+		const core::String compileLog(strInfoLog, static_cast<size_t>(infoLogLength));
+		delete[] strInfoLog;
 		const char *strShaderType;
 		switch (shaderType) {
 		case ShaderType::Vertex:
@@ -1514,15 +1515,16 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
 
 	if (infoLogLength > 0) {
-		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
-		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog.get());
+		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
 		video::checkError();
-		const core::String linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
+		const core::String linkLog(strInfoLog, static_cast<size_t>(infoLogLength));
 		if (status != GL_TRUE) {
 			Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
 		} else {
 			Log::info("%s: %s", name.c_str(), linkLog.c_str());
 		}
+		delete[] strInfoLog;
 	}
 	glDetachShader(lid, comp);
 	checkError();
@@ -1604,15 +1606,16 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
 
 	if (infoLogLength > 0) {
-		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
-		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog.get());
+		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
 		video::checkError();
-		const core::String linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
+		const core::String linkLog(strInfoLog, static_cast<size_t>(infoLogLength));
 		if (status != GL_TRUE) {
 			Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
 		} else {
 			Log::info("%s: %s", name.c_str(), linkLog.c_str());
 		}
+		delete[] strInfoLog;
 	}
 	glDetachShader(lid, (GLuint)vert);
 	glDetachShader(lid, (GLuint)frag);

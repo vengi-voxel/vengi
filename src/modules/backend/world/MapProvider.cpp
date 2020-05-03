@@ -6,6 +6,7 @@
 #include "Map.h"
 #include "core/io/Filesystem.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 #include "core/Assert.h"
 #include "backend/entity/ai/AILoader.h"
 #include "http/HttpServer.h"

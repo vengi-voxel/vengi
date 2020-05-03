@@ -11,13 +11,13 @@
 #include <SDL_stdinc.h>
 #include <SDL_rwops.h>
 #include "core/Common.h"
+#include "core/SharedPtr.h"
 #include <limits.h>
-#include <memory>
 
 namespace io {
 
 class File;
-typedef std::shared_ptr<File> FilePtr;
+typedef core::SharedPtr<File> FilePtr;
 
 /**
  * @brief Little endian file stream

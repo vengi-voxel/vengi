@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "Common.h"
 #include <SDL_assert.h>
-#include <SDL_stdinc.h>
 
 extern void core_stacktrace();
 
@@ -40,23 +40,22 @@ extern void core_stacktrace();
 #if SDL_ASSERT_LEVEL <= 0
 #define core_assert_msg(condition, format, ...) SDL_disabled_assert(condition)
 #else
+
+extern SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data, char *buf, int bufSize,
+										const char *function, const char *file, int line, CORE_FORMAT_STRING const char *format, ...)
+										CORE_PRINTF_VARARG_FUNC(7);
+
 #define core_assert_msg(conditionCheck, format, ...) \
 	do { \
 		while (!(conditionCheck)) { \
 			static char __assertBuf[1024]; \
-			SDL_snprintf(__assertBuf, sizeof(__assertBuf) - 1, format, ##__VA_ARGS__); \
 			static struct SDL_AssertData sdl_assert_data = { \
 				0, 0, nullptr, 0, 0, 0, 0 \
 			}; \
-			sdl_assert_data.condition = __assertBuf; /* also let it work for following calls */ \
-			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
+			const SDL_AssertState sdl_assert_state = core_assert_impl_message(sdl_assert_data, __assertBuf, \
+					sizeof(__assertBuf), SDL_FUNCTION, SDL_FILE, SDL_LINE, format, ##__VA_ARGS__); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
-			} \
-			if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
-				SDL_TriggerBreakpoint(); \
-			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE && sdl_assert_state != SDL_ASSERTION_IGNORE) { \
-				core_stacktrace(); \
 			} \
 			break; /* not retrying. */ \
 		} \

@@ -4,6 +4,7 @@
 
 #include "VoxFormat.h"
 #include "core/Common.h"
+#include "core/FourCC.h"
 #include "core/Color.h"
 #include "core/ArrayLength.h"
 #include "core/Assert.h"

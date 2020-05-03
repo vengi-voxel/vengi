@@ -57,7 +57,7 @@ protected:
 
 	using Tree = math::Octree<ChunkBuffer *>;
 	Tree _octree;
-	static constexpr int MAX_CHUNKBUFFERS = 512;
+	static constexpr int MAX_CHUNKBUFFERS = 2048;
 	ChunkBuffer _chunkBuffers[MAX_CHUNKBUFFERS];
 	int _maxAllowedDistance = -1;
 

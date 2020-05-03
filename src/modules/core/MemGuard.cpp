@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #include "MemGuard.h"
 #include "Common.h"
-#include <SDL.h>
+#include "core/StandardLib.h"
 
 namespace core {
 
@@ -10,7 +14,7 @@ MemGuard::MemGuard(const core::String& name) :
 
 MemGuard::~MemGuard() {
 	for (Chunk* chunk : _chunkBuckets) {
-		free(pointer_cast(chunk));
+		this->free(pointer_cast(chunk));
 	}
 
 	core_assert(_chunkAmount == 0);
@@ -79,14 +83,14 @@ void* MemGuard::realloc(void* ptr, size_t size) {
 		return ptr;
 	}
 
-	void* newPtr = alloc(size, false);
+	void* newPtr = this->alloc(size, false);
 	core_memcpy(newPtr, ptr, core_min(chunk->_size, size));
 	if (chunk->_size < size) {
 		const size_t delta = size - chunk->_size;
 		core_memset((uint8_t*) newPtr + chunk->_size, 0, delta);
 	}
 
-	free(ptr);
+	this->free(ptr);
 
 	checkIntegrity(chunk_cast(newPtr));
 

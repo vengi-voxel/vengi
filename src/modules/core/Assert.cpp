@@ -3,6 +3,7 @@
  */
 
 #include "Assert.h"
+#include <SDL_stdinc.h>
 
 #ifndef __WINDOWS__
 #define HAVE_BACKWARD
@@ -23,4 +24,23 @@ void core_stacktrace() {
 		printf("#%i %s %s [%p]\n", int(__stacktrace_i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr);
 	}
 #endif
+}
+
+SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data, char *buf, int bufSize,
+										 const char *function, const char *file, int line, const char *format, ...) {
+	va_list args;
+	va_start(args, format);
+	SDL_vsnprintf(buf, bufSize - 1, format, args);
+	va_end(args);
+	sdl_assert_data.condition = buf; /* also let it work for following calls */
+	const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, function, file, line);
+	if (sdl_assert_state == SDL_ASSERTION_RETRY) {
+		return sdl_assert_state;
+	}
+	if (sdl_assert_state == SDL_ASSERTION_BREAK) {
+		SDL_TriggerBreakpoint();
+	} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE && sdl_assert_state != SDL_ASSERTION_IGNORE) {
+		core_stacktrace();
+	}
+	return sdl_assert_state;
 }

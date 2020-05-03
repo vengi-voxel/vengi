@@ -3,6 +3,7 @@
  */
 
 #include "Common.h"
+#include "StandardLib.h"
 #include <new>
 
 void *operator new(std::size_t count) {

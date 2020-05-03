@@ -4,6 +4,7 @@
 
 #include "QBTFormat.h"
 #include "core/Common.h"
+#include "core/FourCC.h"
 #include "core/Zip.h"
 #include "core/Color.h"
 #include "core/GLM.h"

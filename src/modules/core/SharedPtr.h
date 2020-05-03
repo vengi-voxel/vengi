@@ -7,9 +7,9 @@
 #include "core/concurrent/Atomic.h"
 #include "core/Assert.h"
 #include "core/Common.h"
-#include <stdint.h>
-#include <SDL_stdinc.h>
+#include "core/StandardLib.h"
 #include <new>
+#include <stddef.h>
 #include <type_traits>
 
 namespace core {

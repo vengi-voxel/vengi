@@ -17,8 +17,6 @@
 
 namespace io {
 
-MAKE_SHARED_INVIS_CTOR(File);
-
 Filesystem::~Filesystem() {
 	shutdown();
 }
@@ -393,13 +391,13 @@ bool Filesystem::pushDir(const core::String& directory) {
 io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const {
 	if (mode == FileMode::Write && !isRelativePath(filename)) {
 		Log::debug("Use absolute path to write file %s", filename.c_str());
-		return std::make_shared<make_shared_enabler>(filename, mode);
+		return core::make_shared<io::File>(filename, mode);
 	}
 	io::File f(filename, FileMode::Read);
 	if (f.exists()) {
 		f.close();
 		Log::debug("loading file %s from current working dir", filename.c_str());
-		return std::make_shared<make_shared_enabler>(filename, mode);
+		return core::make_shared<io::File>(filename, mode);
 	}
 	for (const core::String& p : _paths) {
 		const core::String fullpath = p + filename;
@@ -407,11 +405,11 @@ io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const 
 		if (fullFile.exists()) {
 			fullFile.close();
 			Log::debug("loading file %s from %s", filename.c_str(), p.c_str());
-			return std::make_shared<make_shared_enabler>(fullpath, mode);
+			return core::make_shared<io::File>(fullpath, mode);
 		}
 	}
 	Log::debug("Use %s from %s", filename.c_str(), _basePath.c_str());
-	return std::make_shared<make_shared_enabler>(_basePath + filename, mode);
+	return core::make_shared<io::File>(_basePath + filename, mode);
 }
 
 core::String Filesystem::load(const char *filename, ...) {

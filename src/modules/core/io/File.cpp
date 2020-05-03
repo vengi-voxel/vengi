@@ -48,11 +48,11 @@ const core::String& File::name() const {
 core::String File::load() {
 	char *includeBuffer;
 	const int includeLen = read((void **) &includeBuffer);
-	std::unique_ptr<char[]> p(includeBuffer);
 	if (includeBuffer == nullptr || includeLen <= 0) {
 		return "";
 	}
 	const core::String f(includeBuffer, includeLen);
+	delete[] includeBuffer;
 	return f;
 }
 

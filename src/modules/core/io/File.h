@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/String.h"
-#include <memory>
+#include "core/SharedPtr.h"
 #include "IOResource.h"
 
 struct SDL_RWops;
@@ -28,6 +28,7 @@ extern void normalizePath(core::String& str);
 class File : public IOResource {
 	friend class FileStream;
 	friend class Filesystem;
+	friend class core::SharedPtr<io::File>;
 protected:
 	SDL_RWops* _file;
 	core::String _rawPath;
@@ -96,6 +97,6 @@ inline FileMode File::mode() const {
 	return _mode;
 }
 
-typedef std::shared_ptr<File> FilePtr;
+typedef core::SharedPtr<File> FilePtr;
 
 }

@@ -4,12 +4,23 @@
 
 #include "String.h"
 #include "Common.h"
+#include "StandardLib.h"
 #include "engine-config.h"
 #include "core/ArrayLength.h"
 #include <string.h>
 #include <inttypes.h>
 
 namespace core {
+
+size_t StringHash::operator()(const core::String &p) const {
+	size_t result = 0;
+	const size_t prime = 31;
+	const size_t s = p.size();
+	for (size_t i = 0; i < s; ++i) {
+		result = SDL_tolower(p[i]) + (result * prime);
+	}
+	return result;
+}
 
 static inline constexpr size_t align(size_t val, size_t size) {
 	const size_t len = size - 1u;

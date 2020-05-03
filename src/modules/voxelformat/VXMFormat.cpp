@@ -4,6 +4,7 @@
 
 #include "VXMFormat.h"
 #include "core/Common.h"
+#include "core/FourCC.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "voxel/MaterialColor.h"

@@ -9,6 +9,7 @@
 #include "math/Frustum.h"
 #include "core/Color.h"
 #include "core/GLM.h"
+#include "core/ArrayLength.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -144,11 +145,11 @@ void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float st
 		glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, -1.0f, -1.0f),
 		glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3( 1.0f, -1.0f, -1.0f)
 	};
-	reserve(SDL_arraysize(vecs));
+	reserve(lengthof(vecs));
 	const glm::vec3& width = aabb.getWidth();
 	const glm::vec3& halfWidth = width / 2.0f;
 	const glm::vec3& center = aabb.getCenter();
-	for (size_t i = 0; i < SDL_arraysize(vecs); ++i) {
+	for (size_t i = 0; i < lengthof(vecs); ++i) {
 		addVertex(vecs[i] * halfWidth + center);
 	}
 
@@ -211,11 +212,11 @@ void ShapeBuilder::aabb(const glm::vec3& mins, const glm::vec3& maxs) {
 		glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, -1.0f, -1.0f),
 		glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3( 1.0f, -1.0f, -1.0f)
 	};
-	reserve(SDL_arraysize(vecs));
+	reserve(lengthof(vecs));
 	const glm::vec3& width = maxs - mins;
 	const glm::vec3& halfWidth = width / 2.0f;
 	const glm::vec3& center = maxs - halfWidth;
-	for (size_t i = 0; i < SDL_arraysize(vecs); ++i) {
+	for (size_t i = 0; i < lengthof(vecs); ++i) {
 		addVertex(vecs[i] * halfWidth + center);
 	}
 
@@ -297,10 +298,10 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 		glm::vec4( planeScale, -planeScale, 0.0f, 1.0f)
 	};
 
-	reserve(SDL_arraysize(corners) + 2);
+	reserve(lengthof(corners) + 2);
 
 	setColor(core::Color::Green);
-	for (uint32_t i = 0; i < SDL_arraysize(corners); ++i) {
+	for (uint32_t i = 0; i < lengthof(corners); ++i) {
 		const glm::vec4& v = result * corners[i];
 		addVertex(glm::vec3(v), planeNormal);
 	}
@@ -550,11 +551,11 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 			const float far = planes[splitStep * 2 + 1];
 			camera.splitFrustum(near, far, out);
 
-			for (size_t i = 0; i < SDL_arraysize(out); ++i) {
+			for (size_t i = 0; i < lengthof(out); ++i) {
 				addVertex(out[i]);
 			}
 
-			for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
+			for (size_t i = 0; i < lengthof(indices); ++i) {
 				addIndex(indexOffset + indices[i]);
 			}
 			indexOffset += math::FRUSTUM_VERTICES_MAX;
@@ -562,11 +563,11 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	} else {
 		reserve(math::FRUSTUM_VERTICES_MAX + targetLineVertices);
 
-		for (size_t i = 0; i < SDL_arraysize(out); ++i) {
+		for (size_t i = 0; i < lengthof(out); ++i) {
 			addVertex(out[i]);
 		}
 
-		for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
+		for (size_t i = 0; i < lengthof(indices); ++i) {
 			addIndex(startIndex + indices[i]);
 		}
 	}

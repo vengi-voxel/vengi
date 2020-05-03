@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Assert.h"
+#include <stddef.h> // size_t
 
 namespace core {
 

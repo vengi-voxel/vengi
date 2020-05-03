@@ -5,6 +5,7 @@
 #include "AbstractTest.h"
 #include "core/StringUtil.h"
 #include "core/Common.h"
+#include "core/StandardLib.h"
 
 namespace core {
 

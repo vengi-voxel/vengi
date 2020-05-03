@@ -9,6 +9,7 @@
 #include "attrib/Attributes.h"
 #include "core/IComponent.h"
 #include "core/Common.h"
+#include "core/FourCC.h"
 #include "persistence/ISavable.h"
 #include "core/collection/ConcurrentSet.h"
 #include "AttribModel.h"

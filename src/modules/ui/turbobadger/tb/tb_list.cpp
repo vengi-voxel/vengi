@@ -4,6 +4,7 @@
 
 #include "tb_list.h"
 #include "core/Assert.h"
+#include "core/StandardLib.h"
 #include "tb_core.h"
 
 namespace tb {
@@ -54,7 +55,7 @@ void *TBListBackend::remove(int index) {
 }
 
 void TBListBackend::removeAll() {
-	SDL_free(m_data);
+	core_free(m_data);
 	m_data = nullptr;
 }
 
@@ -85,7 +86,7 @@ bool TBListBackend::reserve(int newCapacity) {
 	core_assert(newCapacity > 0);
 	if (newCapacity > getCapacity()) {
 		int num = getNumItems();
-		if (char *new_data = (char *)SDL_realloc(m_data, sizeof(TBLIST_DATA) + sizeof(void *) * (newCapacity))) {
+		if (char *new_data = (char *)core_realloc(m_data, sizeof(TBLIST_DATA) + sizeof(void *) * (newCapacity))) {
 			m_data = (TBLIST_DATA *)new_data;
 			m_data->num = num;
 			m_data->capacity = newCapacity;

@@ -7,6 +7,7 @@
 #include "cooldown/CooldownMgr.h"
 #include "persistence/ForwardDecl.h"
 #include "persistence/ISavable.h"
+#include "core/FourCC.h"
 #include "backend/entity/EntityId.h"
 #include "CooldownModel.h"
 #include <vector>

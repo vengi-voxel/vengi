@@ -6,6 +6,9 @@
 #include "LUA.h"
 #include "core/Log.h"
 #include "core/GLM.h"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <vector>

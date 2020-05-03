@@ -7,8 +7,8 @@
 #include "core/Assert.h"
 #include "core/ArrayLength.h"
 #include <stddef.h>
-#include <stdint.h>
-#include <SDL_stdinc.h>
+#include "Common.h"
+
 
 namespace core {
 
@@ -97,7 +97,7 @@ public:
 
 	void erase(size_t index, size_t length = 1u);
 
-	static String format(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(1);
+	static String format(CORE_FORMAT_STRING const char *msg, ...) __attribute__((format(printf, 1, 2)));
 
 	String& append(int);
 	String& append(float);
@@ -168,15 +168,7 @@ bool operator==(const char *x, const String &y);
 bool operator!=(const char *x, const String &y);
 
 struct StringHash {
-	inline size_t operator()(const core::String &p) const {
-		size_t result = 0;
-		const size_t prime = 31;
-		const size_t s = p.size();
-		for (size_t i = 0; i < s; ++i) {
-			result = SDL_tolower(p[i]) + (result * prime);
-		}
-		return result;
-	}
+	size_t operator()(const core::String &p) const;
 };
 
 }

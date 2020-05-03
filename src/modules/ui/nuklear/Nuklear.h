@@ -6,7 +6,7 @@
 
 #include "core/Assert.h"
 #include "core/Common.h"
-#include <SDL_stdinc.h>
+#include "core/StandardLib.h"
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO

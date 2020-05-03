@@ -7,9 +7,6 @@
 
 #pragma once
 
-#include <SDL_stdinc.h>
-#include <stdint.h>
-
 #define CORE_STRINGIFY_INTERNAL(x) #x
 #define CORE_STRINGIFY(x) CORE_STRINGIFY_INTERNAL(x)
 
@@ -28,37 +25,6 @@
 #define CORE_FORMAT_STRING
 #endif
 
-#define CORE_CLASS(name) \
-	friend class name##Test;
-
-#ifndef core_malloc
-#define core_malloc SDL_malloc
-#endif
-
-#ifndef core_realloc
-#define core_realloc SDL_realloc
-#endif
-
-#ifndef core_free
-#define core_free SDL_free
-#endif
-
-#ifndef core_memset
-#define core_memset SDL_memset
-#endif
-
-#ifndef core_memcpy
-#define core_memcpy SDL_memcpy
-#endif
-
-#ifndef core_zero
-#define core_zero SDL_zero
-#endif
-
-#ifndef core_zerop
-#define core_zerop SDL_zerop
-#endif
-
 #if (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 800)) || defined(__clang__) || (defined(__GNUC__) && (__GNUC__ >= 3))
 #define CORE_EXPECT(expr, value) (__builtin_expect((expr), (value)))
 #else
@@ -69,33 +35,6 @@
 
 #define core_min(x, y) ((x) < (y) ? (x) : (y))
 #define core_max(x, y) ((x) > (y) ? (x) : (y))
-
-#define MAKE_SHARED_INVIS_CTOR(classname) \
-	struct make_shared_enabler: public classname { \
-		template<typename ... Args> \
-		make_shared_enabler(Args&&... args) : \
-				classname(std::forward<Args>(args)...) { \
-		} \
-	}
-
-inline constexpr uint32_t FourCC(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-	return ((uint32_t) ((uint32_t(d) << 24) | (uint32_t(c) << 16) | (uint32_t(b) << 8) | uint32_t(a)));
-}
-
-inline void FourCCRev(uint8_t out[4], uint32_t in) {
-	out[3] = (uint8_t)((in >> 24) & 0xff);
-	out[2] = (uint8_t)((in >> 16) & 0xff);
-	out[1] = (uint8_t)((in >> 8) & 0xff);
-	out[0] = (uint8_t)((in >> 0) & 0xff);
-}
-
-// recursive macro helpers to represent binary masks
-template<uint64_t N>
-struct Binary { static const uint64_t value = Binary<N / 10>::value << 1 | (N % 10); };
-template<uint64_t N>
-const uint64_t Binary<N>::value;
-template<>
-struct Binary<0> { static const uint64_t value = uint64_t(0); };
 
 #define DIAG_STR(s) #s
 #define DIAG_JOINSTR(x,y) DIAG_STR(x ## y)

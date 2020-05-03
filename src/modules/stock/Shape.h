@@ -6,6 +6,7 @@
 
 #include "core/Assert.h"
 #include <limits.h>
+#include <stdint.h>
 
 namespace stock {
 

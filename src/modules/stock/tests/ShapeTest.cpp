@@ -6,6 +6,14 @@
 #include "stock/Shape.h"
 #include "core/Common.h"
 
+// recursive macro helpers to represent binary masks
+template<uint64_t N>
+struct Binary { static const uint64_t value = Binary<N / 10>::value << 1 | (N % 10); };
+template<uint64_t N>
+const uint64_t Binary<N>::value;
+template<>
+struct Binary<0> { static const uint64_t value = uint64_t(0); };
+
 namespace stock {
 
 class ShapeTest: public AbstractStockTest {

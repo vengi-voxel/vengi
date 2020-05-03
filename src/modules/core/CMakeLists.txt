@@ -45,6 +45,7 @@ set(SRCS
 	CommandlineApp.h CommandlineApp.cpp
 	Enum.h
 	EventBus.cpp EventBus.h
+	FourCC.h
 	GameConfig.h
 	GLM.cpp GLM.h
 	Hash.h
@@ -58,6 +59,7 @@ set(SRCS
 	Process.cpp Process.h
 	SharedPtr.h
 	Singleton.h
+	StandardLib.h
 	String.cpp String.h
 	StringUtil.cpp StringUtil.h
 	TimeProvider.h TimeProvider.cpp

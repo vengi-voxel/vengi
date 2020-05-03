@@ -6,6 +6,7 @@
 #include "core/App.h"
 #include "core/io/Filesystem.h"
 #include "core/Common.h"
+#include "core/StandardLib.h"
 
 #ifdef __clang__
 #pragma clang diagnostic push

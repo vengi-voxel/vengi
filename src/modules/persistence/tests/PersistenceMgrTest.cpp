@@ -5,6 +5,7 @@
 #include "AbstractDatabaseTest.h"
 #include "persistence/PersistenceMgr.h"
 #include "TestModels.h"
+#include "core/FourCC.h"
 
 namespace persistence {
 

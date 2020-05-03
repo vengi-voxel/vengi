@@ -8,7 +8,7 @@
 #include "core/concurrent/ThreadPool.h"
 #include "core/Assert.h"
 #include "core/io/Filesystem.h"
-#include <memory>
+#include "core/StandardLib.h"
 
 #define STBI_ASSERT core_assert
 #define STBI_MALLOC core_malloc
@@ -52,8 +52,9 @@ Image::~Image() {
 bool Image::load(const io::FilePtr& file) {
 	uint8_t* buffer;
 	const int length = file->read((void**) &buffer);
-	std::unique_ptr<uint8_t[]> p(buffer);
-	return load(buffer, length);
+	const bool status = load(buffer, length);
+	delete[] buffer;
+	return status;
 }
 
 ImagePtr loadImage(const io::FilePtr& file, bool async) {
