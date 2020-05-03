@@ -92,8 +92,8 @@ void VoxelFontRenderer::text(const glm::ivec3& pos, const glm::vec4& color, cons
 
 void VoxelFontRenderer::swapBuffers() {
 	// TODO: the vertices should only be uploaded once for the whole glyph set. only the ibo should be dynamic and re-uploaded
-	_vertexBuffer.update(_vertexBufferId, _data.vertices);
-	_vertexBuffer.update(_vertexBufferIndexId, _indices);
+	_vertexBuffer.update(_vertexBufferId, &_data.vertices.front(), _data.vertices.size() * sizeof(voxel::VertexArray::value_type));
+	_vertexBuffer.update(_vertexBufferIndexId, &_indices.front(), _indices.size() * sizeof(voxel::IndexArray::value_type));
 
 	_indices.clear();
 	_data.vertices.clear();

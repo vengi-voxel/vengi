@@ -99,14 +99,15 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
 		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
 	});
-	_vertexIndex[meshIndex] = _vbo[meshIndex].create(vertices);
+	_vertexIndex[meshIndex] = _vbo[meshIndex].create(&vertices.front(), vertices.size() * sizeof(Vertex));
 	if (_vertexIndex[meshIndex] == -1) {
 		Log::error("Could not create vbo for vertices");
 		return -1;
 	}
 
 	const video::ShapeBuilder::Indices& indices = shapeBuilder.getIndices();
-	_indexIndex[meshIndex] = _vbo[meshIndex].create(indices, video::BufferType::IndexBuffer);
+	_indexIndex[meshIndex] = _vbo[meshIndex].create(&indices.front(), indices.size() * sizeof(video::ShapeBuilder::Indices::value_type),
+			video::BufferType::IndexBuffer);
 	if (_indexIndex[meshIndex] == -1) {
 		_vertexIndex[meshIndex] = -1;
 		_vbo[meshIndex].shutdown();
@@ -157,9 +158,9 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
 	});
 	video::Buffer& vbo = _vbo[meshIndex];
-	core_assert_always(vbo.update(_vertexIndex[meshIndex], vertices));
+	core_assert_always(vbo.update(_vertexIndex[meshIndex], &vertices.front(), vertices.size() * sizeof(Vertex)));
 	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
-	vbo.update(_indexIndex[meshIndex], indices);
+	vbo.update(_indexIndex[meshIndex], &indices.front(), indices.size() * sizeof(video::ShapeBuilder::Indices::value_type));
 	const video::ShapeBuilder::Texcoords& uvs = shapeBuilder.getTexcoords();
 	_texcoords[meshIndex] = !uvs.empty();
 	_primitives[meshIndex] = shapeBuilder.primitive();

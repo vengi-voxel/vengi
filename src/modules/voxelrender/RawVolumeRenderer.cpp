@@ -154,11 +154,11 @@ bool RawVolumeRenderer::update(int idx, const voxel::VertexArray& vertices, cons
 		return true;
 	}
 
-	if (!_vertexBuffer[idx].update(_vertexBufferIndex[idx], vertices)) {
+	if (!_vertexBuffer[idx].update(_vertexBufferIndex[idx], &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type))) {
 		Log::error("Failed to update the vertex buffer");
 		return false;
 	}
-	if (!_vertexBuffer[idx].update(_indexBufferIndex[idx], indices)) {
+	if (!_vertexBuffer[idx].update(_indexBufferIndex[idx], &indices.front(), indices.size() * sizeof(voxel::IndexArray::value_type))) {
 		Log::error("Failed to update the index buffer");
 		return false;
 	}

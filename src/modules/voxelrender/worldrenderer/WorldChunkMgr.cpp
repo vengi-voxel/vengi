@@ -69,8 +69,10 @@ bool WorldChunkMgr::initTerrainBuffer(ChunkBuffer* chunk) {
 		Log::warn("Failed to add info attribute");
 	}
 
-	chunk->_buffer.update(chunk->_vbo, chunk->mesh.getVertexVector());
-	chunk->_buffer.update(chunk->_ibo, chunk->mesh.getIndexVector());
+	const voxel::VertexArray& vertices = chunk->mesh.getVertexVector();
+	const voxel::IndexArray& indices = chunk->mesh.getIndexVector();
+	chunk->_buffer.update(chunk->_vbo, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type));
+	chunk->_buffer.update(chunk->_ibo, &indices.front(), indices.size() * sizeof(voxel::IndexArray::value_type));
 
 	return true;
 }

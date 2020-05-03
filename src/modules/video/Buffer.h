@@ -6,7 +6,6 @@
 
 #include "Types.h"
 #include <glm/vec2.hpp>
-#include <vector>
 #include "core/collection/List.h"
 
 #define VIDEO_BUFFER_HASH_COMPARE 0
@@ -55,15 +54,6 @@ public:
 
 	bool addAttribute(const Attribute& attribute);
 
-	template<class T>
-	inline bool update(int32_t idx, const std::vector<T>& data) {
-		const T* dataPtr = nullptr;
-		if (!data.empty()) {
-			dataPtr = &data.front();
-		}
-		return update(idx, dataPtr, data.size() * sizeof(T));
-	}
-
 	/**
 	 * @return The size on the gpu
 	 * @note The buffer behind the given index must be bound
@@ -80,14 +70,6 @@ public:
 	void unmapData(int32_t idx) const;
 
 	bool update(int32_t idx, const void* data, size_t size);
-
-	/**
-	 * @return -1 on error - otherwise the index [0,n) of the created buffer (not the Id)
-	 */
-	template<class T>
-	inline int32_t create(const std::vector<T>& data, BufferType target = BufferType::ArrayBuffer) {
-		return create(&data.front(), data.size() * sizeof(T), target);
-	}
 
 	/**
 	 * @return -1 on error - otherwise the index [0,n) of the created buffer (not the Id)

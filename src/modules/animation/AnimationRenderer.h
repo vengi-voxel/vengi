@@ -8,9 +8,12 @@
 #include "core/IComponent.h"
 #include "AnimationShaders.h"
 #include "video/Buffer.h"
-#include "video/Camera.h"
 #include "render/Shadow.h"
 #include "core/Color.h"
+
+namespace video {
+class Camera;
+}
 
 namespace animation {
 

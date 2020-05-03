@@ -4,6 +4,7 @@
 
 #include "AnimationRenderer.h"
 #include "core/Log.h"
+#include "core/Assert.h"
 #include "core/GLM.h"
 #include "core/ArrayLength.h"
 #include "voxel/MaterialColor.h"
@@ -11,6 +12,7 @@
 #include "video/Renderer.h"
 #include "video/Shader.h"
 #include "RenderShaders.h"
+#include "video/Camera.h"
 
 namespace animation {
 
@@ -44,7 +46,7 @@ bool AnimationRenderer::init() {
 	}
 
 	shader::SkeletonData::MaterialblockData materialBlock;
-	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	if (!_shaderData.create(materialBlock)) {
 		Log::error("Failed to create material buffer");
 		return false;
@@ -80,8 +82,8 @@ void AnimationRenderer::shutdown() {
 void AnimationRenderer::render(const AnimationEntity& character, const video::Camera& camera) {
 	const Indices& i = character.indices();
 	const Vertices& v = character.vertices();
-	core_assert_always(_vbo.update(_indices, i));
-	core_assert_always(_vbo.update(_vertices, v));
+	core_assert_always(_vbo.update(_indices, &i.front(), i.size() * sizeof(IndexType)));
+	core_assert_always(_vbo.update(_vertices, &v.front(), v.size() * sizeof(Vertex)));
 	const uint32_t numIndices = _vbo.elements(_indices, 1, sizeof(IndexType));
 	if (numIndices == 0u) {
 		return;

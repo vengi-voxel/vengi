@@ -11,6 +11,7 @@
 #include "animation/AnimationCache.h"
 #include "AnimationShaders.h"
 #include "core/GLM.h"
+#include "core/Assert.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -80,8 +81,8 @@ uint32_t ClientEntity::bindVertexBuffers(const shader::SkeletonShader& chrShader
 
 	const animation::Indices& i = _character.indices();
 	const animation::Vertices& v = _character.vertices();
-	core_assert_always(_vbo.update(_indices, i));
-	core_assert_always(_vbo.update(_vertices, v));
+	core_assert_always(_vbo.update(_indices, &i.front(), i.size() * sizeof(animation::IndexType)));
+	core_assert_always(_vbo.update(_vertices, &v.front(), v.size() * sizeof(animation::Vertex)));
 
 	_vbo.bind();
 	return _vbo.elements(_indices, 1, sizeof(animation::IndexType));
