@@ -5,6 +5,7 @@
 #include "Gizmo.h"
 #include "core/GLM.h"
 #include "video/Ray.h"
+#include "video/Camera.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>

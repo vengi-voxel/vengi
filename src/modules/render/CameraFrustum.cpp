@@ -5,6 +5,7 @@
 #include "CameraFrustum.h"
 #include "video/Renderer.h"
 #include "math/AABB.h"
+#include "video/Camera.h"
 
 namespace render {
 

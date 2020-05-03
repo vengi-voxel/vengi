@@ -6,13 +6,16 @@
 
 #include "video/ShapeBuilder.h"
 #include "video/Buffer.h"
-#include "video/Camera.h"
 #include "video/Types.h"
 #include "video/Shader.h"
 #include "core/IComponent.h"
 #include "ColorShader.h"
 #include "ColorInstancedShader.h"
 #include "TextureShader.h"
+
+namespace video {
+class Video;
+}
 
 namespace render {
 

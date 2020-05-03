@@ -8,6 +8,10 @@
 #include "core/command/ActionButton.h"
 #include "Axis.h"
 
+namespace video {
+class Video;
+}
+
 namespace render {
 
 enum class GizmoMode {
@@ -35,7 +39,7 @@ public:
 private:
 	render::Axis _axis;
 	GizmoMode _mode = GizmoMode::None;
-	glm::vec3 _pos = glm::zero<glm::vec3>();
+	glm::vec3 _pos { 0.0f };
 	bool _modelSpace = true;
 
 public:

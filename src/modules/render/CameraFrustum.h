@@ -7,8 +7,11 @@
 #include "render/ShapeRenderer.h"
 #include "core/Common.h"
 #include "core/Color.h"
-#include "video/Camera.h"
 #include "video/ShapeBuilder.h"
+
+namespace video {
+class Video;
+}
 
 namespace render {
 

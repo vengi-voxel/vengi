@@ -11,6 +11,10 @@
 #include "render/ShapeRenderer.h"
 #include "core/IComponent.h"
 
+namespace video {
+class Video;
+}
+
 namespace render {
 
 /**

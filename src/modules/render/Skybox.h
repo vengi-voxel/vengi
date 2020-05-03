@@ -9,6 +9,10 @@
 #include "video/Camera.h"
 #include "SkyboxShader.h"
 
+namespace video {
+class Video;
+}
+
 namespace render {
 
 class Skybox {

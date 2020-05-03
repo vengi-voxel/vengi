@@ -4,11 +4,14 @@
 
 #pragma once
 
-#include "video/Camera.h"
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"
 #include "core/IComponent.h"
 #include "math/Axis.h"
+
+namespace video {
+class Camera;
+}
 
 namespace render {
 
@@ -24,8 +27,8 @@ private:
 	render::ShapeRenderer _shapeRenderer;
 	int32_t _meshIndex = -1;
 	float _lineWidth = 4.0f;
-	glm::vec3 _pos = glm::zero<glm::vec3>();
-	glm::vec3 _size = glm::one<glm::vec3>();
+	glm::vec3 _pos { 0.0f };
+	glm::vec3 _size { 1.0f };
 	const bool _flipZ;
 
 public:

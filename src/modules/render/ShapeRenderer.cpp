@@ -7,6 +7,7 @@
 #include "video/Shader.h"
 #include "video/ScopedPolygonMode.h"
 #include "core/Log.h"
+#include "video/Camera.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace render {

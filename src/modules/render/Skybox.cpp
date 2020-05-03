@@ -6,6 +6,7 @@
 #include "video/ScopedState.h"
 #include "video/Shader.h"
 #include "core/Log.h"
+#include "video/Camera.h"
 
 namespace render {
 

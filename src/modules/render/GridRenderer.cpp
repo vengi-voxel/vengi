@@ -8,6 +8,7 @@
 #include "math/Plane.h"
 #include "core/Log.h"
 #include "core/GLM.h"
+#include "video/Camera.h"
 
 namespace render {
 

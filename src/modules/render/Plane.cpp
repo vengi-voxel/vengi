@@ -4,6 +4,7 @@
 
 #include "Plane.h"
 #include "core/ArrayLength.h"
+#include "video/Camera.h"
 
 namespace render {
 
