@@ -24,6 +24,13 @@
 #else
 #define CORE_FORMAT_STRING
 #endif
+#if defined(__GNUC__)
+#define CORE_PRINTF_VARARG_FUNC(fmtargnumber) __attribute__((format(__printf__, fmtargnumber, fmtargnumber + 1)))
+#define CORE_SCANF_VARARG_FUNC(fmtargnumber) __attribute__((format(__scanf__, fmtargnumber, fmtargnumber + 1)))
+#else
+#define CORE_PRINTF_VARARG_FUNC(fmtargnumber)
+#define CORE_SCANF_VARARG_FUNC(fmtargnumber)
+#endif
 
 #if (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 800)) || defined(__clang__) || (defined(__GNUC__) && (__GNUC__ >= 3))
 #define CORE_EXPECT(expr, value) (__builtin_expect((expr), (value)))

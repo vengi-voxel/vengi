@@ -7,8 +7,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "core/String.h"
-#include <stdarg.h>
-#include <SDL_stdinc.h>
 #include <SDL_rwops.h>
 #include "core/Common.h"
 #include "core/SharedPtr.h"
@@ -44,7 +42,7 @@ public:
 	bool addInt(uint32_t dword);
 	bool addLong(uint64_t dword);
 	bool addFloat(float value);
-	bool addStringFormat(bool terminate, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(3);
+	bool addStringFormat(bool terminate, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(3);
 	bool addString(const core::String& string, bool terminate = true);
 	bool addFormat(const char *fmt, ...);
 

@@ -7,6 +7,7 @@
 #include "File.h"
 #include "core/String.h"
 #include "core/collection/StringMap.h"
+#include "core/Common.h"
 #include <memory>
 #include <stack>
 #include <vector>
@@ -117,7 +118,7 @@ public:
 
 	io::FilePtr open(const core::String& filename, FileMode mode = FileMode::Read) const;
 
-	core::String load(SDL_PRINTF_FORMAT_STRING const char *filename, ...) SDL_PRINTF_VARARG_FUNC(2);
+	core::String load(CORE_FORMAT_STRING const char *filename, ...) CORE_PRINTF_VARARG_FUNC(2);
 
 	core::String load(const core::String& filename) const;
 

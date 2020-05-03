@@ -7,6 +7,7 @@
 #include "core/io/File.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include <stdarg.h>
 
 namespace io {
 

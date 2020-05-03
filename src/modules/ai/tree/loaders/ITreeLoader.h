@@ -6,11 +6,12 @@
 #include "common/Thread.h"
 #include <memory>
 #include "core/String.h"
+#include "core/Common.h"
+#include "core/StandardLib.h"
 #include <vector>
 #include <map>
 #include <stdarg.h>
 #include <stdio.h>
-#include <SDL_stdinc.h>
 
 namespace ai {
 
@@ -99,7 +100,7 @@ public:
 		return TreeNodePtr();
 	}
 
-	void setError(SDL_PRINTF_FORMAT_STRING const char* msg, ...) SDL_PRINTF_VARARG_FUNC(2);
+	void setError(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 
 	/**
 	 * @brief Gives access to the last error state of the @c ITreeLoader

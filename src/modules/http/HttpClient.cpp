@@ -5,6 +5,7 @@
 #include "HttpClient.h"
 #include "Request.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 
 namespace http {
 

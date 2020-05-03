@@ -13,8 +13,8 @@
 namespace core {
 namespace string {
 
-extern core::String format(CORE_FORMAT_STRING const char *msg, ...) __attribute__((format(printf, 1, 2)));
-extern bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) __attribute__((format(printf, 3, 4)));
+extern core::String format(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+extern bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(3);
 
 inline int toInt(const char* str) {
 	return SDL_atoi(str);

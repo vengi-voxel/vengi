@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ResponseParser.h"
-#include <SDL_stdinc.h>
+#include "core/Common.h"
 #include "core/String.h"
 
 namespace http {
@@ -22,7 +22,7 @@ public:
 	 */
 	bool setBaseUrl(const core::String &baseUrl);
 
-	ResponseParser get(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(2);
+	ResponseParser get(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 };
 
 }

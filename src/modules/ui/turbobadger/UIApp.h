@@ -38,8 +38,8 @@ protected:
 	virtual void onWidgetFocusChanged(tb::TBWidget *widget, bool focused) override;
 
 	bool invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, bool down);
-	void showStr(int x, int y, const glm::vec4& color, CORE_FORMAT_STRING const char *fmt, ...) __attribute__((format(printf, 5, 6)));
-	void enqueueShowStr(int x, const glm::vec4& color, CORE_FORMAT_STRING const char *fmt, ...) __attribute__((format(printf, 4, 5)));
+	void showStr(int x, int y, const glm::vec4& color, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(5);
+	void enqueueShowStr(int x, const glm::vec4& color, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(4);
 
 	tb::MODIFIER_KEYS getModifierKeys() const;
 public:

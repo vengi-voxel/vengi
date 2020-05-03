@@ -156,7 +156,7 @@ public:
 		return m_style_edit.align;
 	}
 
-	void setTextFormatted(CORE_FORMAT_STRING const char *format, ...) __attribute__((format(printf, 2, 3)));
+	void setTextFormatted(CORE_FORMAT_STRING const char *format, ...) CORE_PRINTF_VARARG_FUNC(2);
 
 	virtual bool setText(const char *text) override {
 		return setText(text, TB_CARET_POS_BEGINNING);

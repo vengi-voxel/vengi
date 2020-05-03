@@ -97,7 +97,7 @@ public:
 
 	void erase(size_t index, size_t length = 1u);
 
-	static String format(CORE_FORMAT_STRING const char *msg, ...) __attribute__((format(printf, 1, 2)));
+	static String format(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 
 	String& append(int);
 	String& append(float);

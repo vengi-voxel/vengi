@@ -6,9 +6,10 @@
 
 #include "core/IComponent.h"
 #include "core/String.h"
+#include "core/Common.h"
+#include "core/StandardLib.h"
 #include <stdint.h>
 #include <vector>
-#include <SDL_stdinc.h>
 
 /**
  * @brief Class that implements messages with lifetime. The messages are removed once they got old enough.
@@ -58,7 +59,7 @@ public:
 	/**
 	 * @brief Adds a message to the message queue
 	 */
-	void message(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(2);
+	void message(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 
 	/**
 	 * @brief Iterates over all active messages and call the given functor with the remaining millis and the string of the message

@@ -5,12 +5,13 @@
 #pragma once
 
 #include "core/IComponent.h"
+#include "core/Common.h"
+#include "core/StandardLib.h"
 #include "video/Camera.h"
 #include "video/Buffer.h"
 #include "voxelfont/VoxelFont.h"
 #include "RenderShaders.h"
 #include <limits>
-#include <SDL_stdinc.h>
 #include <vector>
 
 namespace voxelrender {
@@ -54,7 +55,7 @@ public:
 	 * @brief Add the indices and vertices data to the local buffers to render the given string
 	 * @note Before rendering the buffers, you have to call @c swapBuffers()
 	 */
-	void text(const glm::ivec3& pos, const glm::vec4& color, SDL_PRINTF_FORMAT_STRING const char *string, ...) SDL_PRINTF_VARARG_FUNC(4);
+	void text(const glm::ivec3& pos, const glm::vec4& color, CORE_FORMAT_STRING const char *string, ...) CORE_PRINTF_VARARG_FUNC(4);
 
 	/**
 	 * @brief Update the gpu buffers and reset local vertex and index buffers for the next usage

@@ -417,7 +417,7 @@ public:
 		setRect(rect);
 	}
 
-	void execute(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
+	void execute(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 
 	/** Invalidate should be called if the widget need to be repainted,
 		to make sure the renderer repaints it and its children next frame. */

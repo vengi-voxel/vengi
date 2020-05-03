@@ -27,11 +27,11 @@ public:
 
 	static void init();
 	static void shutdown();
-	static void trace(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
-	static void debug(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
-	static void info(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
-	static void warn(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
-	static void error(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
+	static void trace(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+	static void debug(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+	static void info(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+	static void warn(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+	static void error(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 
 	static bool enable(uint32_t id, Level level);
 	static bool disable(uint32_t id);
@@ -48,9 +48,9 @@ public:
 		return (uint32_t)core::hash(name, size);
 	}
 
-	static void trace(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
-	static void debug(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
-	static void info(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
-	static void warn(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
-	static void error(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 2, 3)));
+	static void trace(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
+	static void debug(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
+	static void info(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
+	static void warn(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
+	static void error(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 };

@@ -3,6 +3,7 @@
  */
 #pragma once
 
+#include "core/Common.h"
 #include "StringUtil.h"
 #include <SDL_stdinc.h>
 #include <stdarg.h>
@@ -14,7 +15,7 @@ private:
 	core::String _error;
 
 protected:
-	void setError(SDL_PRINTF_FORMAT_STRING const char* msg, ...) SDL_PRINTF_VARARG_FUNC(2);
+	void setError(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 
 	inline void resetError() {
 		_error = "";
