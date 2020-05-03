@@ -11,8 +11,6 @@
 #include "Ray.h"
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <algorithm>
-#include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
@@ -430,10 +428,7 @@ glm::vec4 Camera::sphereBoundingBox() const {
 			mins.x + (maxs.x - mins.x) / 2.0f,
 			mins.y + (maxs.x - mins.y) / 2.0f,
 			mins.z + (maxs.z - mins.z) / 2.0f);
-	const float sphereRadius = (std::max)({
-			(maxs.x - mins.x) / 2.0f,
-			(maxs.y - mins.y) / 2.0f,
-			(maxs.z - mins.z) / 2.0f});
+	const float sphereRadius = core_max(core_max((maxs.x - mins.x) / 2.0f, (maxs.y - mins.y) / 2.0f), (maxs.z - mins.z) / 2.0f);
 
 	return glm::vec4(sphereCenter, sphereRadius);
 }
