@@ -63,10 +63,12 @@ bool TreeWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			_ctx.leavesHeight = _leavesHeight->getValue();
 			_ctx.leavesDepth = _leavesDepth->getValue();
 			sceneMgr().createTree(_ctx);
-			close();
 			return true;
 		} else if (ev.target->getID() == TBIDC("cancel")) {
 			close();
+			return true;
+		} else if (ev.target->getID() == TBIDC("undo")) {
+			sceneMgr().mementoHandler().undo();
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {

@@ -30,4 +30,5 @@ TBLayout: distribution: gravity, axis: y
 				TBSeparator: gravity: left right, skin: separator
 
 				TBButton: text: Ok, id: ok, autofocus: 1, gravity: left right, size: gravity
-				TBButton: text: Cancel, id: cancel, gravity: left right, size: gravity
+				TBButton: text: Undo, id: undo, gravity: left right, size: gravity
+				TBButton: text: Close, id: close, gravity: left right, size: gravity
