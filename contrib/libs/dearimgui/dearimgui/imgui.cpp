@@ -372,6 +372,7 @@ CODE
  When you are not sure about a old symbol or function name, try using the Search/Find function of your IDE to look for comments or references in all imgui files.
  You can read releases logs https://github.com/ocornut/imgui/releases for more details.
 
+ - 2020/04/23 (1.77) - Removed unnecessary ID (first arg) of ImFontAtlas::AddCustomRectRegular().
  - 2020/01/22 (1.75) - ImDrawList::AddCircle()/AddCircleFilled() functions don't accept negative radius any more.
  - 2019/12/17 (1.75) - [undid this change in 1.76] made Columns() limited to 64 columns by asserting above that limit. While the current code technically supports it, future code may not so we're putting the restriction ahead.
  - 2019/12/13 (1.75) - [imgui_internal.h] changed ImRect() default constructor initializes all fields to 0.0f instead of (FLT_MAX,FLT_MAX,-FLT_MAX,-FLT_MAX). If you used ImRect::Add() to create bounding boxes by adding multiple points into it, you may need to fix your initial value.
@@ -899,7 +900,7 @@ static const float NAV_WINDOWING_LIST_APPEAR_DELAY          = 0.15f;    // Time 
 // Window resizing from edges (when io.ConfigWindowsResizeFromEdges = true and ImGuiBackendFlags_HasMouseCursors is set in io.BackendFlags by back-end)
 static const float WINDOWS_RESIZE_FROM_EDGES_HALF_THICKNESS = 4.0f;     // Extend outside and inside windows. Affect FindHoveredWindow().
 static const float WINDOWS_RESIZE_FROM_EDGES_FEEDBACK_TIMER = 0.04f;    // Reduce visual noise by only highlighting the border after a certain time.
-static const float WINDOWS_MOUSE_WHEEL_SCROLL_LOCK_TIMER    = 2.00f;    // Lock scrolled window (so it doesn't pick child windows that are scrolling through) for a certaint time, unless mouse moved.
+static const float WINDOWS_MOUSE_WHEEL_SCROLL_LOCK_TIMER    = 2.00f;    // Lock scrolled window (so it doesn't pick child windows that are scrolling through) for a certain time, unless mouse moved.
 
 //-------------------------------------------------------------------------
 // [SECTION] FORWARD DECLARATIONS
@@ -2889,6 +2890,10 @@ ImGuiID ImGuiWindow::GetID(const char* str, const char* str_end)
     ImGuiID seed = IDStack.back();
     ImGuiID id = ImHashStr(str, str_end ? (str_end - str) : 0, seed);
     ImGui::KeepAliveID(id);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+    ImGuiContext& g = *GImGui;
+    IMGUI_TEST_ENGINE_ID_INFO2(id, ImGuiDataType_String, str, str_end);
+#endif
     return id;
 }
 
@@ -2897,6 +2902,10 @@ ImGuiID ImGuiWindow::GetID(const void* ptr)
     ImGuiID seed = IDStack.back();
     ImGuiID id = ImHashData(&ptr, sizeof(void*), seed);
     ImGui::KeepAliveID(id);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+    ImGuiContext& g = *GImGui;
+    IMGUI_TEST_ENGINE_ID_INFO(id, ImGuiDataType_Pointer, ptr);
+#endif
     return id;
 }
 
@@ -2905,25 +2914,44 @@ ImGuiID ImGuiWindow::GetID(int n)
     ImGuiID seed = IDStack.back();
     ImGuiID id = ImHashData(&n, sizeof(n), seed);
     ImGui::KeepAliveID(id);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+    ImGuiContext& g = *GImGui;
+    IMGUI_TEST_ENGINE_ID_INFO(id, ImGuiDataType_S32, (intptr_t)n);
+#endif
     return id;
 }
 
 ImGuiID ImGuiWindow::GetIDNoKeepAlive(const char* str, const char* str_end)
 {
     ImGuiID seed = IDStack.back();
-    return ImHashStr(str, str_end ? (str_end - str) : 0, seed);
+    ImGuiID id = ImHashStr(str, str_end ? (str_end - str) : 0, seed);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+    ImGuiContext& g = *GImGui;
+    IMGUI_TEST_ENGINE_ID_INFO2(id, ImGuiDataType_String, str, str_end);
+#endif
+    return id;
 }
 
 ImGuiID ImGuiWindow::GetIDNoKeepAlive(const void* ptr)
 {
     ImGuiID seed = IDStack.back();
-    return ImHashData(&ptr, sizeof(void*), seed);
+    ImGuiID id = ImHashData(&ptr, sizeof(void*), seed);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+    ImGuiContext& g = *GImGui;
+    IMGUI_TEST_ENGINE_ID_INFO(id, ImGuiDataType_Pointer, ptr);
+#endif
+    return id;
 }
 
 ImGuiID ImGuiWindow::GetIDNoKeepAlive(int n)
 {
     ImGuiID seed = IDStack.back();
-    return ImHashData(&n, sizeof(n), seed);
+    ImGuiID id = ImHashData(&n, sizeof(n), seed);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+    ImGuiContext& g = *GImGui;
+    IMGUI_TEST_ENGINE_ID_INFO(id, ImGuiDataType_S32, (intptr_t)n);
+#endif
+    return id;
 }
 
 // This is only used in rare/specific situations to manufacture an ID out of nowhere.
@@ -4188,7 +4216,7 @@ void ImGui::EndFrame()
     }
 
     // Drag and Drop: Fallback for source tooltip. This is not ideal but better than nothing.
-    if (g.DragDropActive && g.DragDropSourceFrameCount < g.FrameCount)
+    if (g.DragDropActive && g.DragDropSourceFrameCount < g.FrameCount && !(g.DragDropSourceFlags & ImGuiDragDropFlags_SourceNoPreviewTooltip))
     {
         g.DragDropWithinSource = true;
         SetTooltip("...");
@@ -4203,7 +4231,7 @@ void ImGui::EndFrame()
     UpdateMouseMovingWindowEndFrame();
 
     // Sort the window list so that all child windows are after their parent
-    // We cannot do that on FocusWindow() because childs may not exist yet
+    // We cannot do that on FocusWindow() because children may not exist yet
     g.WindowsTempSortBuffer.resize(0);
     g.WindowsTempSortBuffer.reserve(g.Windows.Size);
     for (int i = 0; i != g.Windows.Size; i++)
@@ -4303,7 +4331,7 @@ ImVec2 ImGui::CalcTextSize(const char* text, const char* text_end, bool hide_tex
 }
 
 // Find window given position, search front-to-back
-// FIXME: Note that we have an inconsequential lag here: OuterRectClipped is updated in Begin(), so windows moved programatically
+// FIXME: Note that we have an inconsequential lag here: OuterRectClipped is updated in Begin(), so windows moved programmatically
 // with SetWindowPos() and not SetNextWindowPos() will have that rectangle lagging by a frame at the time FindHoveredWindow() is
 // called, aka before the next Begin(). Moving window isn't affected.
 static void FindHoveredWindow()
@@ -6332,7 +6360,7 @@ bool ImGui::IsWindowFocused(ImGuiFocusedFlags flags)
 }
 
 // Can we focus this window with CTRL+TAB (or PadMenu + PadFocusPrev/PadFocusNext)
-// Note that NoNavFocus makes the window not reachable with CTRL+TAB but it can still be focused with mouse or programmaticaly.
+// Note that NoNavFocus makes the window not reachable with CTRL+TAB but it can still be focused with mouse or programmatically.
 // If you want a window to never be focused, you may use the e.g. NoInputs flag.
 bool ImGui::IsWindowNavFocusable(ImGuiWindow* window)
 {
@@ -6597,7 +6625,6 @@ void ImGui::PushFocusScope(ImGuiID id)
     ImGuiWindow* window = g.CurrentWindow;
     window->IDStack.push_back(window->DC.NavFocusScopeIdCurrent);
     window->DC.NavFocusScopeIdCurrent = id;
-    IMGUI_TEST_ENGINE_PUSH_ID(id, ImGuiDataType_ID, NULL);
 }
 
 void ImGui::PopFocusScope()
@@ -6653,7 +6680,6 @@ void ImGui::PushID(const char* str_id)
     ImGuiWindow* window = g.CurrentWindow;
     ImGuiID id = window->GetIDNoKeepAlive(str_id);
     window->IDStack.push_back(id);
-    IMGUI_TEST_ENGINE_PUSH_ID(id, ImGuiDataType_String, str_id);
 }
 
 void ImGui::PushID(const char* str_id_begin, const char* str_id_end)
@@ -6662,7 +6688,6 @@ void ImGui::PushID(const char* str_id_begin, const char* str_id_end)
     ImGuiWindow* window = g.CurrentWindow;
     ImGuiID id = window->GetIDNoKeepAlive(str_id_begin, str_id_end);
     window->IDStack.push_back(id);
-    IMGUI_TEST_ENGINE_PUSH_ID2(id, ImGuiDataType_String, str_id_begin, str_id_end);
 }
 
 void ImGui::PushID(const void* ptr_id)
@@ -6671,7 +6696,6 @@ void ImGui::PushID(const void* ptr_id)
     ImGuiWindow* window = g.CurrentWindow;
     ImGuiID id = window->GetIDNoKeepAlive(ptr_id);
     window->IDStack.push_back(id);
-    IMGUI_TEST_ENGINE_PUSH_ID(id, ImGuiDataType_Pointer, ptr_id);
 }
 
 void ImGui::PushID(int int_id)
@@ -6680,7 +6704,6 @@ void ImGui::PushID(int int_id)
     ImGuiWindow* window = g.CurrentWindow;
     ImGuiID id = window->GetIDNoKeepAlive(int_id);
     window->IDStack.push_back(id);
-    IMGUI_TEST_ENGINE_PUSH_ID(id, ImGuiDataType_S32, (intptr_t)int_id);
 }
 
 // Push a given id value ignoring the ID stack as a seed.
@@ -6689,7 +6712,6 @@ void ImGui::PushOverrideID(ImGuiID id)
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
     window->IDStack.push_back(id);
-    IMGUI_TEST_ENGINE_PUSH_ID(id, ImGuiDataType_ID, NULL);
 }
 
 void ImGui::PopID()
@@ -6792,7 +6814,7 @@ static void ImGui::ErrorCheckEndFrameSanityChecks()
 {
     ImGuiContext& g = *GImGui;
 
-    // Verify that io.KeyXXX fields haven't been tampered with. Key mods shoudl not be modified between NewFrame() and EndFrame()
+    // Verify that io.KeyXXX fields haven't been tampered with. Key mods should not be modified between NewFrame() and EndFrame()
     const ImGuiKeyModFlags expected_key_mod_flags = GetMergedKeyModFlags();
     IM_ASSERT(g.IO.KeyMods == expected_key_mod_flags && "Mismatching io.KeyCtrl/io.KeyShift/io.KeyAlt/io.KeySuper vs io.KeyMods");
     IM_UNUSED(expected_key_mod_flags);
@@ -7789,7 +7811,7 @@ void ImGui::EndPopup()
     // Make all menus and popups wrap around for now, may need to expose that policy.
     NavMoveRequestTryWrapping(window, ImGuiNavMoveFlags_LoopY);
 
-    // Child-popups don't need to be layed out
+    // Child-popups don't need to be laid out
     IM_ASSERT(g.WithinEndChild == false);
     if (window->Flags & ImGuiWindowFlags_ChildWindow)
         g.WithinEndChild = true;
