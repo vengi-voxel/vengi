@@ -37,7 +37,7 @@ public:
 		}
 	}
 	List(int maxSize = 256) {
-		_allocator.init(256);
+		_allocator.init(maxSize);
 	}
 	List(const List& other) {
 		_allocator.init((other._allocator.max)());
