@@ -276,9 +276,9 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 	const int dj = ((y1 < y2) ? 1 : ((y1 > y2) ? -1 : 0));
 	const int dk = ((z1 < z2) ? 1 : ((z1 > z2) ? -1 : 0));
 
-	const float deltatx = 1.0f / std::abs(x2 - x1);
-	const float deltaty = 1.0f / std::abs(y2 - y1);
-	const float deltatz = 1.0f / std::abs(z2 - z1);
+	const float deltatx = 1.0f / glm::abs(x2 - x1);
+	const float deltaty = 1.0f / glm::abs(y2 - y1);
+	const float deltatz = 1.0f / glm::abs(z2 - z1);
 
 	const float minx = glm::floor(x1), maxx = minx + 1.0f;
 	float tx = ((x1 > x2) ? (x1 - minx) : (maxx - x1)) * deltatx;
