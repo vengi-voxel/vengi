@@ -4,8 +4,9 @@
 
 #include "RawVolume.h"
 #include "core/Assert.h"
+#include "core/StandardLib.h"
 #include <glm/common.hpp>
-#include <algorithm>
+#include <limits>
 
 namespace voxel {
 
@@ -22,11 +23,12 @@ RawVolume::RawVolume(const Region& regValid) :
 RawVolume::RawVolume(const RawVolume* copy) :
 		_region(copy->region()) {
 	setBorderValue(copy->borderValue());
-	_data = new Voxel[width() * height() * depth()];
+	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	_data = (Voxel*)core_malloc(size);
 	_mins = copy->_mins;
 	_maxs = copy->_maxs;
 	_boundsValid = copy->_boundsValid;
-	std::copy(copy->_data, copy->_data + (copy->width() * copy->height() * copy->depth()), _data);
+	core_memcpy((void*)_data, (void*)copy->_data, size);
 }
 
 RawVolume::RawVolume(RawVolume&& move) {
@@ -40,7 +42,8 @@ RawVolume::RawVolume(RawVolume&& move) {
 
 RawVolume::RawVolume(const Voxel* data, const voxel::Region& region) {
 	initialise(region);
-	std::copy(data, data + (width() * height() * depth()), _data);
+	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	core_memcpy((void*)_data, (void*)data, size);
 }
 
 RawVolume::RawVolume(Voxel* data, const voxel::Region& region) :
@@ -53,13 +56,14 @@ RawVolume::RawVolume(Voxel* data, const voxel::Region& region) :
 }
 
 RawVolume::~RawVolume() {
-	delete[] _data;
+	core_free(_data);
 	_data = nullptr;
 }
 
 Voxel* RawVolume::copyVoxels() const {
-	Voxel* rawCopy = new Voxel[width() * height() * depth()];
-	std::copy(_data, _data + (width() * height() * depth()), rawCopy);
+	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	Voxel* rawCopy = (Voxel*)core_malloc(size);
+	core_memcpy((void*)rawCopy, (void*)_data, size);
 	return rawCopy;
 }
 
@@ -140,14 +144,16 @@ void RawVolume::initialise(const Region& regValidRegion) {
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
 	//Create the data
-	_data = new Voxel[width() * height() * depth()];
+	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	_data = (Voxel*)core_malloc(size);
 
 	// Clear to zeros
 	clear();
 }
 
 void RawVolume::clear() {
-	std::fill(_data, _data + width() * height() * depth(), Voxel());
+	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	core_memset(_data, 0, size);
 	_mins = glm::ivec3((std::numeric_limits<int>::max)());
 	_maxs = glm::ivec3((std::numeric_limits<int>::min)());
 	_boundsValid = false;
