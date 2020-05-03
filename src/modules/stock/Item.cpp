@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Item.h"
 
 namespace stock {
