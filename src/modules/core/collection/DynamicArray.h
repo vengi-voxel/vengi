@@ -6,7 +6,7 @@
 
 #include "core/Common.h"
 #include "core/Assert.h"
-#include <SDL_stdinc.h>
+#include "core/StandardLib.h"
 #include <new>
 
 namespace core {
@@ -38,12 +38,12 @@ private:
 			return;
 		}
 		_capacity = align(newSize);
-		TYPE* newBuffer = (TYPE*)SDL_malloc(_capacity * sizeof(TYPE));
+		TYPE* newBuffer = (TYPE*)core_malloc(_capacity * sizeof(TYPE));
 		for (size_t i = 0u; i < _size; ++i) {
 			new ((void*)&newBuffer[i]) TYPE(core::move(_buffer[i]));
 			_buffer[i].~TYPE();
 		}
-		SDL_free(_buffer);
+		core_free(_buffer);
 		_buffer = newBuffer;
 	}
 public:
@@ -210,7 +210,7 @@ public:
 		for (size_t i = 0u; i < _size; ++i) {
 			_buffer[i].~TYPE();
 		}
-		SDL_free(_buffer);
+		core_free(_buffer);
 		_capacity = 0u;
 		_size = 0u;
 		_buffer = nullptr;

@@ -5,10 +5,11 @@
 #pragma once
 
 #include "Assert.h"
+#include "Common.h"
+#include "StandardLib.h"
 #include <stdint.h>
 #include <type_traits>
 #include <new>
-#include <SDL_stdinc.h>
 #ifdef _WIN32
 #undef max
 #endif
@@ -40,7 +41,7 @@ private:
 
 	template<class ... Args>
 	void callConstructor(std::true_type, T *ptr, Args&& ...args) {
-		new (ptr)Type(std::forward<Args>(args) ... );
+		new (ptr)Type(core::forward<Args>(args) ... );
 	}
 
 	void callDestructor(std::false_type, T *ptr) {
@@ -72,7 +73,7 @@ public:
 		}
 
 		_maxPoolSize = poolSize;
-		_poolBuf = (Type*)SDL_malloc(sizeof(T) * _maxPoolSize);
+		_poolBuf = (Type*)core_malloc(sizeof(T) * _maxPoolSize);
 		for (SizeType i = (SizeType)0; i < _maxPoolSize - 1; ++i) {
 			// init the next free slot address (for fast lookup)
 			*(Type**) &_poolBuf[i] = &_poolBuf[i + 1];
@@ -89,7 +90,7 @@ public:
 
 	void shutdown() {
 		core_assert_msg(_currentAllocatedItems == 0, "There are still %i items left", _currentAllocatedItems);
-		SDL_free(_poolBuf);
+		core_free(_poolBuf);
 		_poolBuf = nullptr;
 		_nextFreeSlot = nullptr;
 		_maxPoolSize = (SizeType)0;

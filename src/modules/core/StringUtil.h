@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include "core/String.h"
 #include <vector>
 #include <SDL_stdinc.h>
@@ -12,8 +13,8 @@
 namespace core {
 namespace string {
 
-extern core::String format(SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(1);
-extern bool formatBuf(char *buf, size_t bufSize, SDL_PRINTF_FORMAT_STRING const char *msg, ...) SDL_PRINTF_VARARG_FUNC(3);
+extern core::String format(CORE_FORMAT_STRING const char *msg, ...) __attribute__((format(printf, 1, 2)));
+extern bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) __attribute__((format(printf, 3, 4)));
 
 inline int toInt(const char* str) {
 	return SDL_atoi(str);
