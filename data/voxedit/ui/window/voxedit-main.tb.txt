@@ -125,27 +125,27 @@ TBLayout: distribution: gravity, axis: y
 					TBLayout: distribution: gravity, id: editorcontainer
 						TBLayout: distribution: gravity, axis: y
 							TBLayout: distribution: gravity, axis: x
-								Viewport: id: editorscene, gravity: left right top bottom, skin: no-padding-container, camera: free
+								Viewport: id: editorscene, gravity: left right top bottom, skin: no-padding-container, camera: free, want-focus-on-hover: 1
 									@include cameramode
 									@include camerarottype
 									@include shaderselection
-								Viewport: id: editorscenetop, gravity: left right top bottom, skin: no-padding-container, camera: top, visibility: gone
+								Viewport: id: editorscenetop, gravity: left right top bottom, skin: no-padding-container, camera: top, visibility: gone, want-focus-on-hover: 1
 									@include cameramode
 									@include camerarottype
 									@include shaderselection
 								TBLayout: distribution: gravity, skin: no-padding-container, id: animationwidget, gravity: left right top bottom, visibility: gone, axis: y
 									TBSelectDropdown: text: Animations, gravity: right top, skin: no-padding-container, @include: definitions>menubutton, id: animationlist
-									Viewport: id: animationscene, gravity: left right top bottom, skin: no-padding-container, camera: free, mode: animation
+									Viewport: id: animationscene, gravity: left right top bottom, skin: no-padding-container, camera: free, mode: animation, want-focus-on-hover: 1
 										@include cameramode
 										@include camerarottype
 									TBLayout: distribution: gravity, skin: no-padding-container, id: animationsettings, gravity: left right top bottom, axis: y
 										lp: height: 400
 							TBLayout: distribution: gravity, axis: x
-								Viewport: id: editorsceneleft, gravity: left right top bottom, skin: no-padding-container, camera: left, visibility: gone
+								Viewport: id: editorsceneleft, gravity: left right top bottom, skin: no-padding-container, camera: left, visibility: gone, want-focus-on-hover: 1
 									@include cameramode
 									@include camerarottype
 									@include shaderselection
-								Viewport: id: editorscenefront, gravity: left right top bottom, skin: no-padding-container, camera: front, visibility: gone
+								Viewport: id: editorscenefront, gravity: left right top bottom, skin: no-padding-container, camera: front, visibility: gone, want-focus-on-hover: 1
 									@include cameramode
 									@include camerarottype
 									@include shaderselection
