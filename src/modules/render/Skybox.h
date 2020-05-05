@@ -21,6 +21,11 @@ private:
 	shader::SkyboxShader _shader;
 	int32_t _skyboxIndex = -1;
 public:
+	/**
+	 * @brief Loads 6 textures that belongs to the sky.
+	 * The naming schema must be "<filename>-cm-<side>" (where side is
+	 * replaced with front, back, top, bottom, left and right)
+	 */
 	bool init(const char *filename);
 	void shutdown();
 
