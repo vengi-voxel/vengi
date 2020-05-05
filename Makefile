@@ -4,6 +4,7 @@ BUILDTYPE      ?= Debug
 BUILDDIR       ?= ./build/$(BUILDTYPE)
 INSTALL_DIR    ?= $(BUILDDIR)/$(shell uname)
 GENERATOR      := Ninja
+CMAKE          ?= cmake
 
 default:
 	$(Q)$(MAKE) all
@@ -17,12 +18,15 @@ clean:
 distclean:
 	$(Q)git clean -fdx
 
+windows:
+	$(Q)$(MAKE) CMAKE=x86_64-w64-mingw32.static-cmake BUILDDIR=$(BUILDDIR)-windows TARGET_OS=windows all
+
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
 
 %:
-	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DDISABLE_UNITY=True -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
-	$(Q)cmake --build $(BUILDDIR) --target $@
+	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H. -B$(BUILDDIR) -DDISABLE_UNITY=True -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
+	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
@@ -158,7 +162,3 @@ update-simplexnoise:
 # TODO lua support
 updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-glslang update-simplecpp
 	$(MAKE) -C $(BUILDDIR) update-libs
-
-windows:
-	$(Q)if [ ! -f $(BUILDDIR)-windows/CMakeCache.txt ]; then i686-w64-mingw32.static-cmake -H. -B$(BUILDDIR)-windows -DCURL_CA_PATH=none -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR); fi
-	$(Q)$(MAKE) --no-print-directory -C $(BUILDDIR)-windows install
