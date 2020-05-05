@@ -10,6 +10,9 @@ namespace tb {
 
 int TBTextFragmentContentFactory::getContent(const char *text) {
 	if (text[0] == '<') {
+		if (text[1] == '<') {
+			return 0;
+		}
 		int i = 0;
 		while (text[i] != '>' && text[i] > 31) {
 			i++;
