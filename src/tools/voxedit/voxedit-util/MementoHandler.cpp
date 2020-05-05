@@ -9,6 +9,7 @@
 #include "voxel/Region.h"
 #include "core/command/Command.h"
 #include "core/Assert.h"
+#include "core/StandardLib.h"
 #include "core/Log.h"
 #include "core/Zip.h"
 
@@ -22,8 +23,8 @@ MementoData::MementoData(const uint8_t* buf, size_t bufSize,
 		_compressedSize(bufSize), _region(_region) {
 	if (buf != nullptr) {
 		core_assert(_compressedSize > 0);
-		_buffer = new uint8_t[_compressedSize];
-		memcpy(_buffer, buf, _compressedSize);
+		_buffer = (uint8_t*)core_malloc(_compressedSize);
+		core_memcpy(_buffer, buf, _compressedSize);
 	} else {
 		core_assert(_compressedSize == 0);
 	}
@@ -37,7 +38,7 @@ MementoData::MementoData(MementoData&& o) :
 
 MementoData::~MementoData() {
 	if (_buffer != nullptr) {
-		delete[] _buffer;
+		core_free(_buffer);
 		_buffer = nullptr;
 	}
 }
@@ -47,8 +48,8 @@ MementoData::MementoData(const MementoData& o) :
 		_region(o._region) {
 	if (o._buffer != nullptr) {
 		core_assert(_compressedSize > 0);
-		_buffer = new uint8_t[_compressedSize];
-		memcpy(_buffer, o._buffer, _compressedSize);
+		_buffer = (uint8_t*)core_malloc(_compressedSize);
+		core_memcpy(_buffer, o._buffer, _compressedSize);
 	} else {
 		core_assert(_compressedSize == 0);
 	}
@@ -58,7 +59,7 @@ MementoData& MementoData::operator=(MementoData &&o) {
 	if (this != &o) {
 		_compressedSize = std::exchange(o._compressedSize, 0);
 		if (_buffer) {
-			delete[] _buffer;
+			core_free(_buffer);
 		}
 		_buffer = std::exchange(o._buffer, nullptr);
 		_region = o._region;
@@ -72,14 +73,14 @@ MementoData MementoData::fromVolume(const voxel::RawVolume* volume) {
 	}
 	const size_t uncompressedBufferSize = volume->region().voxels() * sizeof(voxel::Voxel);
 	const uint32_t compressedBufferSize = core::zip::compressBound(uncompressedBufferSize);
-	uint8_t *compressedBuf = new uint8_t[compressedBufferSize];
+	uint8_t* compressedBuf = (uint8_t*)core_malloc(compressedBufferSize);
 	size_t finalBufSize = 0u;
 	if (!core::zip::compress(volume->data(), uncompressedBufferSize, compressedBuf, compressedBufferSize, &finalBufSize)) {
-		delete[] compressedBuf;
+		core_free(compressedBuf);
 		return MementoData();
 	}
 	const MementoData data(compressedBuf, finalBufSize, volume->region());
-	delete[] compressedBuf;
+	core_free(compressedBuf);
 
 	Log::debug("Memento state. Volume: %i, compressed: %i",
 			(int)uncompressedBufferSize, (int)data._compressedSize);
@@ -91,7 +92,7 @@ voxel::RawVolume* MementoData::toVolume(const MementoData& mementoData) {
 		return nullptr;
 	}
 	const size_t uncompressedBufferSize = mementoData._region.voxels() * sizeof(voxel::Voxel);
-	uint8_t *uncompressedBuf = new uint8_t[uncompressedBufferSize];
+	uint8_t *uncompressedBuf = (uint8_t*)core_malloc(uncompressedBufferSize);
 	if (!core::zip::uncompress(mementoData._buffer, mementoData._compressedSize, uncompressedBuf, uncompressedBufferSize)) {
 		return nullptr;
 	}
