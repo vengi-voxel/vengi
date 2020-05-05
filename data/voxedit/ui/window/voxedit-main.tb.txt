@@ -245,7 +245,7 @@ TBLayout: distribution: gravity, axis: y
 						TBLayout: position: left top, axis: y
 							TBButton: @include: definitions>menubutton, text: Crop, id: crop, command: "crop"
 								TBSkinImage: skin: voxedit-crop
-							TBButton: @include: definitions>menubutton, text: Extend, id: extend, command: "resize"
+							TBButton: @include: definitions>menubutton, text: Extend, id: extend, command: "resize", auto-repeat: 1
 								TBSkinImage: skin: voxedit-extend
 							TBButton: @include: definitions>menubutton, text: Random color, id: randomsimilarcolor, command: "randomsimilarcolor -1"
 								TBSkinImage: skin: voxedit-colors
