@@ -396,6 +396,7 @@ core::AppState UIApp::onConstruct() {
 
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 	_lastDirectory = core::Var::get("cl_ui_lastdirectory", io::filesystem()->homePath().c_str());
+	_uiFontSize = core::Var::get("ui_fontsize", "14");
 
 	_console.construct();
 
@@ -454,7 +455,7 @@ core::AppState UIApp::onInit() {
 	}
 
 	initFonts();
-	tb::TBFontFace *font = getFont(14, true);
+	tb::TBFontFace *font = getFont(_uiFontSize->intVal(), true);
 	if (font == nullptr) {
 		Log::error(_logId, "could not create the font face");
 		return core::AppState::InitFailure;
