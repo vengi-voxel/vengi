@@ -408,6 +408,7 @@ void SceneManager::crop() {
 }
 
 void SceneManager::resize(const glm::ivec3& size) {
+	const glm::ivec3 refPos = referencePosition();
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
 		voxel::RawVolume* newVolume = voxedit::tool::resize(volume(layerId), size);
 		if (newVolume == nullptr) {
@@ -421,6 +422,9 @@ void SceneManager::resize(const glm::ivec3& size) {
 			modified(layerId, newVolume->region());
 		}
 	});
+	if (region().containsPoint(refPos)) {
+		setReferencePosition(refPos);
+	}
 }
 
 voxel::RawVolume* SceneManager::volume(int idx) {
