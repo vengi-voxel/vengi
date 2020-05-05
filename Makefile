@@ -19,13 +19,14 @@ distclean:
 	$(Q)git clean -fdx
 
 windows:
-	$(Q)$(MAKE) CMAKE=x86_64-w64-mingw32.static-cmake BUILDDIR=$(BUILDDIR)-windows TARGET_OS=windows all
+	$(Q)dockcross $(CMAKE) -H. -Bbuild -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR)
+	$(Q)dockcross $(CMAKE) --build build --target all
 
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
 
 %:
-	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H. -B$(BUILDDIR) -DDISABLE_UNITY=True -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
+	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H$(CURDIR) -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 
 define UPDATE_GIT
