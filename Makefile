@@ -18,6 +18,9 @@ clean:
 distclean:
 	$(Q)git clean -fdx
 
+release-%:
+	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
+
 %:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DDISABLE_UNITY=True -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
 	$(Q)cmake --build $(BUILDDIR) --target $@
