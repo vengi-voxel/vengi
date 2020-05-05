@@ -12,7 +12,7 @@
 #include <glm/vec3.hpp>
 #include <vector>
 #include "voxel/Voxel.h"
-#include "voxel/RandomVoxel.h"
+#include "voxel/MaterialColor.h"
 #include "core/Tokenizer.h"
 #include <glm/gtc/random.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -38,6 +38,12 @@ extern bool parseRules(const core::String& rulesStr, std::vector<Rule>& rules);
 template<class Volume>
 void generate(Volume& volume, const glm::ivec3& position, const core::String &axiom, const std::vector<Rule> &rules, float angle, float length, float width,
 				 float widthIncrement, int iterations, math::Random& random, float leafRadius = 8.0f) {
+	const voxel::Voxel trunkVoxel = voxel::createRandomColorVoxel(voxel::VoxelType::Wood);
+	const voxel::Voxel leafVoxel = voxel::createRandomColorVoxel(voxel::VoxelType::Leaf);
+	const float leafDistance = glm::round(2.0f * leafRadius);
+	// apply a factor to close potential holes
+	const int leavesVoxelCnt = glm::pow(leafDistance, 3) * 2.0f;
+
 	angle = glm::radians(angle);
 	core::String sentence = axiom;
 	for (int i = 0; i < iterations; i++) {
@@ -71,7 +77,6 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 		switch (c) {
 		case 'F': {
 			// Draw line forwards
-			const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 			for (int j = 0; j < length; j++) {
 				float r = step.width / 2.0f;
 				for (float x = -r; x < r; x++) {
@@ -97,10 +102,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 
 		case 'L': {
 			// Leaf
-			const float leafDistance = glm::round(2.0f * leafRadius);
-			const int cnt = glm::pow(leafDistance, 3);
-			const voxel::RandomVoxel leafVoxel(voxel::VoxelType::Leaf, random, cnt);
-			for (int i = 0; i < cnt; i++) {
+			for (int i = 0; i < leavesVoxelCnt; i++) {
 				const glm::vec3& r = glm::ballRand(leafRadius);
 				const glm::ivec3 p = position + glm::ivec3(glm::round(step.pos + r));
 				volume.setVoxel(p, leafVoxel);
@@ -113,39 +115,39 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 			step.rotation = glm::rotateZ(step.rotation, angle);
 			break;
 
-			// Rotate left
 		case '-':
+			// Rotate left
 			step.rotation = glm::rotateZ(step.rotation, -angle);
 			break;
 
-			// Rotate forward
 		case '>':
+			// Rotate forward
 			step.rotation = glm::rotateX(step.rotation, angle);
 			break;
 
-			// Rotate back
 		case '<':
+			// Rotate back
 			step.rotation = glm::rotateX(step.rotation, -angle);
 			break;
 
-			// Increment width
 		case '#':
+			// Increment width
 			step.width += widthIncrement;
 			break;
 
-			// Decrement width
 		case '!':
+			// Decrement width
 			step.width -= widthIncrement;
 			step.width = glm::max(1.1f, step.width);
 			break;
 
-			// Push
 		case '[':
+			// Push
 			stack.push(TurtleStep(step));
 			break;
 
-			// Pop
 		case ']':
+			// Pop
 			step = TurtleStep(stack.top());
 			stack.pop();
 			break;

@@ -165,8 +165,22 @@ TBLayout: distribution: gravity, axis: y
 						TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y, position: right, gravity: top bottom, skin: no-padding-container, id: lsystemsection, visibility: gone
+					lp: min-width: 350
+
 					TBTextField: gravity: left right, skin: Header, text: L-System
 					TBLayout: position: left top, axis: y, distribution: gravity
+						TBEditField: multiline: 1, styling: 1, gravity: all, readonly: 1, skin: TBTextField
+							text: "<color #f44>F</color>: Draw line forwards with current step width\n" \
+								  "<color #f44>b</color>: Move backward without drawing\n" \
+								  "<color #f44>L</color>: Draw leaves\n" \
+								  "<color #f44>+</color>: Rotate right\n" \
+								  "<color #f44>-</color>: Rotate left\n" \
+								  "<color #f44>></color>: Rotate forward\n" \
+								  "<color #f44><</color>: Rotate backward\n" \
+								  "<color #f44>#</color>: Increment width\n" \
+								  "<color #f44>[</color>: Push\n" \
+								  "<color #f44>]</color>: Pop\n"
+
 						TBTextField: text: Axiom, gravity: left right
 						TBEditField: id: lsystem_axiom, placeholder: Axiom, text: "F", gravity: left right
 
@@ -177,27 +191,31 @@ TBLayout: distribution: gravity, axis: y
 									"  F+[!+F-F-FL]-[!-F+F+FL]>[!F<F<FL]<[!<F>F>FL]\n" \
 									"}\n"
 
-						TBTextField: text: Angle, gravity: left right
-						TBInlineSelectDouble: id: lsystem_angle, value: 22.5, gravity: left right
+						TBLayout: position: left top, axis: x, distribution: gravity
+							TBTextField: text: Angle, gravity: left right
+							TBInlineSelectDouble: id: lsystem_angle, value: 22.5, position: right
 
-						TBTextField: text: Length, gravity: left right
-						TBInlineSelectDouble: id: lsystem_length, value: 12.0, gravity: left right
+						TBLayout: position: left top, axis: x, distribution: gravity
+							TBTextField: text: Length, gravity: left right
+							TBInlineSelectDouble: id: lsystem_length, value: 12.0, position: right
 
-						TBTextField: text: Width, gravity: left right
-						TBInlineSelectDouble: id: lsystem_width, value: 4.0, gravity: left right
+						TBLayout: position: left top, axis: x, distribution: gravity
+							TBTextField: text: Width, gravity: left right
+							TBInlineSelectDouble: id: lsystem_width, value: 4.0, position: right
 
-						TBTextField: text: WidthIncrement, gravity: left right
-						TBInlineSelectDouble: id: lsystem_widthincrement, value: 1.5, gravity: left right
+						TBLayout: position: left top, axis: x, distribution: gravity
+							TBTextField: text: WidthIncrement, gravity: left right
+							TBInlineSelectDouble: id: lsystem_widthincrement, value: 1.5, position: right
 
-						TBTextField: text: Leaves radius, gravity: left right
-						TBInlineSelectDouble: id: lsystem_leavesradius, value: 8.0, gravity: left right
+						TBLayout: position: left top, axis: x, distribution: gravity
+							TBTextField: text: Leaves radius, gravity: left right
+							TBInlineSelectDouble: id: lsystem_leavesradius, value: 8.0, position: right
 
-						TBTextField: text: Iterations, gravity: left right
-						TBInlineSelect: id: lsystem_iterations, value: 2, gravity: left right
+						TBLayout: position: left top, axis: x, distribution: gravity
+							TBTextField: text: Iterations, gravity: left right
+							TBInlineSelect: id: lsystem_iterations, value: 2, position: right
 
 						TBButton: text: Generate, id: lsystemgenerate, gravity: left right
-
-						TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y, position: right, gravity: top bottom, skin: no-padding-container, id: noisesection, visibility: gone
 					TBTextField: gravity: left right, skin: Header, text: Noise
