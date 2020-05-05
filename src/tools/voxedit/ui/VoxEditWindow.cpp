@@ -172,67 +172,68 @@ bool VoxEditWindow::init() {
 		return false;
 	}
 
-	_trunkHeight     = getWidgetByType<tb::TBInlineSelect>("trunkheight");
-	_trunkWidth      = getWidgetByType<tb::TBInlineSelect>("trunkwidth");
-	_leavesHeight    = getWidgetByType<tb::TBInlineSelect>("leavesheight");
-	_leavesWidth     = getWidgetByType<tb::TBInlineSelect>("leaveswidth");
-	_leavesDepth     = getWidgetByType<tb::TBInlineSelect>("leavesdepth");
 	_treeType        = getWidgetByType<tb::TBSelectDropdown>("treetype");
-	_branchSize      = getWidgetByType<tb::TBInlineSelect>("branchsize");
-	_branchFactor    = getWidgetByType<tb::TBInlineSelectDouble>("branchfactor");
-	_branches        = getWidgetByType<tb::TBInlineSelect>("branches");
-	_controlOffset   = getWidgetByType<tb::TBInlineSelect>("controloffset");
-
-	if (_branchSize == nullptr) {
-		Log::error("branchsize widget not found");
-		return false;
-	}
-	if (_branchFactor == nullptr) {
-		Log::error("branchfactor widget not found");
-		return false;
-	}
-	if (_branches == nullptr) {
-		Log::error("branches widget not found");
-		return false;
-	}
-	if (_controlOffset == nullptr) {
-		Log::error("controloffset widget not found");
-		return false;
-	}
 	if (_treeType == nullptr) {
 		Log::error("treetype widget not found");
 		return false;
 	}
-	if (_trunkHeight == nullptr) {
-		Log::error("trunkheight widget not found");
-		return false;
-	}
-	if (_trunkWidth == nullptr) {
-		Log::error("trunkwidth widget not found");
-		return false;
-	}
-	if (_leavesWidth == nullptr) {
-		Log::error("leaveswidth widget not found");
-		return false;
-	}
-	if (_leavesHeight == nullptr) {
-		Log::error("leavesheight widget not found");
-		return false;
-	}
-	if (_leavesDepth == nullptr) {
-		Log::error("leavesdepth widget not found");
-		return false;
+#define TREECONFIG(configType, variableName, parameterType, treeType, widget) \
+	TreeWidget{offsetof(configType, variableName), parameterType, treeType, widget}
+#define TREECONFIGINT(configType, variableName, treeType, text) TREECONFIG(configType, variableName, TreeParameterWidgetType::Int, treeType, createTreeParmeterWidget(TreeParameterWidgetType::Int, treeParameterLayout, "treeconfig-" #variableName, text))
+#define TREECONFIGFLOAT(configType, variableName, treeType, text) TREECONFIG(configType, variableName, TreeParameterWidgetType::Float, treeType, createTreeParmeterWidget(TreeParameterWidgetType::Float, treeParameterLayout, "treeconfig-" #variableName, text))
+
+	tb::TBLayout* treeParameterLayout = getWidgetByIDAndType<tb::TBLayout>("treeparameterlayout");
+	if (treeParameterLayout != nullptr) {
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeConfig, seed, voxelgenerator::TreeType::Max, "Seed"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeConfig, trunkWidthBottomOffset, voxelgenerator::TreeType::Max, "Bottom offset"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeConfig, trunkStrength, voxelgenerator::TreeType::Max, "Trunk strength"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeConfig, trunkHeight, voxelgenerator::TreeType::Max, "Trunk height"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeConfig, leavesWidth, voxelgenerator::TreeType::Max, "Leaves width"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeConfig, leavesHeight, voxelgenerator::TreeType::Max, "Leaves height"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeConfig, leavesDepth, voxelgenerator::TreeType::Max, "Leaves depth"));
+
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeBranchEllipsis, branchLength, voxelgenerator::TreeType::BranchesEllipsis, "Branch length"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeBranchEllipsis, branchHeight, voxelgenerator::TreeType::BranchesEllipsis, "Branch height"));
+
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePalm, branchSize, voxelgenerator::TreeType::Palm, "Branch size"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePalm, trunkWidth, voxelgenerator::TreeType::Palm, "Trunk width"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePalm, trunkDepth, voxelgenerator::TreeType::Palm, "Trunk depth"));
+		_treeWidgets.insert(TREECONFIGFLOAT(voxelgenerator::TreePalm, branchFactor, voxelgenerator::TreeType::Palm, "Branch reduction"));
+		_treeWidgets.insert(TREECONFIGFLOAT(voxelgenerator::TreePalm, trunkFactor, voxelgenerator::TreeType::Palm, "Trunk reduction"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePalm, branches, voxelgenerator::TreeType::Palm, "Leaves"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePalm, branchControlOffset, voxelgenerator::TreeType::Palm, "Bezier leaf"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePalm, trunkControlOffset, voxelgenerator::TreeType::Palm, "Bezier trunk"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePalm, randomLeavesHeightOffset, voxelgenerator::TreeType::Palm, "Leaves h-offset"));
+
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeFir, branches, voxelgenerator::TreeType::Fir, "Branches"));
+		_treeWidgets.insert(TREECONFIGFLOAT(voxelgenerator::TreeFir, w, voxelgenerator::TreeType::Fir, "W"));
+		_treeWidgets.insert(TREECONFIGFLOAT(voxelgenerator::TreeFir, branchPositionFactor, voxelgenerator::TreeType::Fir, "Branch position factor"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeFir, amount, voxelgenerator::TreeType::Fir, "Amount"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeFir, branchStrength, voxelgenerator::TreeType::Fir, "Branch strength"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeFir, branchDownwardOffset, voxelgenerator::TreeType::Fir, "Branch downward offset"));
+
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePine, startWidth, voxelgenerator::TreeType::Pine, "Start width"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePine, startDepth, voxelgenerator::TreeType::Pine, "Start depth"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePine, singleLeafHeight, voxelgenerator::TreeType::Pine, "Leaf height"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePine, singleStepDelta, voxelgenerator::TreeType::Pine, "Step delta"));
+
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeDome, branches, voxelgenerator::TreeType::Dome, "Branches"));
+
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeDomeHanging, branches, voxelgenerator::TreeType::DomeHangingLeaves, "Branches"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeDomeHanging, hangingLeavesLengthMin, voxelgenerator::TreeType::DomeHangingLeaves, "Leaves min length"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeDomeHanging, hangingLeavesLengthMax, voxelgenerator::TreeType::DomeHangingLeaves, "Leaves max length"));
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeDomeHanging, hangingLeavesThickness, voxelgenerator::TreeType::DomeHangingLeaves, "Leaves thickness"));
+
+		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeSpaceColonization, branchSize, voxelgenerator::TreeType::SpaceColonization, "Branch size"));
+		_treeWidgets.insert(TREECONFIGFLOAT(voxelgenerator::TreeSpaceColonization, trunkFactor, voxelgenerator::TreeType::SpaceColonization, "Trunk reduction"));
+	} else {
+		Log::warn("Could not find treeparameterlayout widget");
 	}
 
-	_trunkHeight->setValue(_treeGeneratorContext.trunkHeight);
-	_trunkWidth->setValue(_treeGeneratorContext.trunkWidth);
-	_leavesHeight->setValue(_treeGeneratorContext.leavesHeight);
-	_leavesWidth->setValue(_treeGeneratorContext.leavesWidth);
-	_leavesDepth->setValue(_treeGeneratorContext.leavesDepth);
-	_branchSize->setValue(_treeGeneratorContext.palm.branchSize);
-	_branchFactor->setValueDouble(_treeGeneratorContext.palm.branchFactor);
-	_branches->setValue(_treeGeneratorContext.palm.branches);
-	_controlOffset->setValue(_treeGeneratorContext.palm.controlOffset);
+#undef TREECONFIGFLOAT
+#undef TREECONFIGINT
+#undef TREECONFIG
+
 	_treeType->setSource(&_treeItems);
 
 	SceneManager& mgr = sceneMgr();
@@ -261,6 +262,49 @@ bool VoxEditWindow::init() {
 	_scene->setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
 
 	return true;
+}
+
+tb::TBWidget* VoxEditWindow::createTreeParmeterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name) {
+	tb::TBWidget *value = nullptr;
+	if (type == TreeParameterWidgetType::Int) {
+		value = new tb::TBInlineSelect();
+	}
+
+	if (type == TreeParameterWidgetType::Float) {
+		value = new tb::TBInlineSelectDouble();
+	}
+
+	tb::TBTextField *text = new tb::TBTextField();
+	text->setText(name);
+
+	tb::TBLayout* innerLayout = new tb::TBLayout();
+	innerLayout->setID(TBIDC(id));
+	innerLayout->addChild(text);
+	innerLayout->setAxis(tb::AXIS_Y);
+	if (value != nullptr) {
+		innerLayout->addChild(value);
+	}
+
+	parent->addChild(innerLayout);
+	return value;
+}
+
+void VoxEditWindow::switchTreeType(voxelgenerator::TreeType treeType) {
+	_treeGeneratorContext = voxelgenerator::TreeContext();
+	for (TreeWidget& widget : _treeWidgets) {
+		if (widget.treeType != voxelgenerator::TreeType::Max && widget.treeType != treeType) {
+			widget.widget->getParent()->setVisibility(tb::WIDGET_VISIBILITY_GONE);
+			continue;
+		}
+		widget.widget->getParent()->setVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
+		if (widget.type == TreeParameterWidgetType::Int) {
+			const int value = *(const int*)((const uint8_t*)&_treeGeneratorContext + widget.ctxOffset);
+			widget.widget->setValue(value);
+		} else if (widget.type == TreeParameterWidgetType::Float) {
+			const float value = *(const float*)((const uint8_t*)&_treeGeneratorContext + widget.ctxOffset);
+			widget.widget->setValueDouble(value);
+		}
+	}
 }
 
 void VoxEditWindow::updateStatusBar() {
@@ -467,19 +511,20 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		}
 		return true;
 	} else if (id == TBIDC("treegenerate")) {
-		_treeGeneratorContext.trunkHeight = _trunkHeight->getValue();
-		_treeGeneratorContext.trunkWidth = _trunkWidth->getValue();
-		_treeGeneratorContext.leavesWidth = _leavesWidth->getValue();
-		_treeGeneratorContext.leavesHeight = _leavesHeight->getValue();
-		_treeGeneratorContext.leavesDepth = _leavesDepth->getValue();
-		_treeGeneratorContext.type = treeTypes[_treeType->getValue()].type;
-		_treeGeneratorContext.pos = sceneMgr().referencePosition();
-		_treeGeneratorContext.seed = _treeGeneratorContext.pos.x;
-		_treeGeneratorContext.palm.branchSize = _branchSize->getValue();
-		_treeGeneratorContext.palm.branchFactor = _branchFactor->getValueDouble();
-		_treeGeneratorContext.palm.branches = _branches->getValue();
-		_treeGeneratorContext.palm.controlOffset = _controlOffset->getValue();
-
+		_treeGeneratorContext.cfg.type = treeTypes[_treeType->getValue()].type;
+		_treeGeneratorContext.cfg.pos = sceneMgr().referencePosition();
+		uint8_t *basePtr = (uint8_t*)&_treeGeneratorContext;
+		for (const TreeWidget& w : _treeWidgets) {
+			if (w.treeType != _treeGeneratorContext.cfg.type) {
+				continue;
+			}
+			uint8_t *targetPtr = basePtr + w.ctxOffset;
+			if (w.type == TreeParameterWidgetType::Int) {
+				*(int*)targetPtr = w.widget->getValue();
+			} else if (w.type == TreeParameterWidgetType::Float) {
+				*(float*)targetPtr = w.widget->getValueDouble();
+			}
+		}
 		sceneMgr().createTree(_treeGeneratorContext);
 		return true;
 	} else if (id == TBIDC("noisegenerate")) {
@@ -547,6 +592,13 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 				mode = video::PolygonMode::WireFrame;
 			}
 			viewport->camera().setPolygonMode(mode);
+			return true;
+		}
+		return false;
+	} else if (id == TBIDC("treetype")) {
+		if (tb::TBSelectDropdown *dropdown = widget->safeCastTo<tb::TBSelectDropdown>()) {
+			const int value = widget->getValue();
+			switchTreeType(treeTypes[value].type);
 			return true;
 		}
 		return false;

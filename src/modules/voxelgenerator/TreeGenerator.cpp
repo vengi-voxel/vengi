@@ -8,15 +8,16 @@ namespace voxelgenerator {
 namespace tree {
 
 Tree::Tree(const glm::ivec3& position, int trunkHeight, int branchLength,
-	int crownWidth, int crownHeight, int crownDepth, float branchSize, int seed) :
+	int crownWidth, int crownHeight, int crownDepth, float branchSize, int seed, float trunkSizeFactor) :
 			SpaceColonization(glm::ivec3(position.x, position.y + trunkHeight, position.z),
 					branchLength, crownWidth, crownHeight, crownDepth, branchSize, seed),
-			_trunkHeight(trunkHeight) {
+			_trunkHeight(trunkHeight), _trunkSizeFactor(trunkSizeFactor) {
 	_root->_position.y -= trunkHeight;
 	_position.y -= trunkHeight;
 	generateBranches(_branches, glm::up, _trunkHeight, _branchLength);
 }
 
+// TODO: use the PoolAllocator here
 void Tree::generateBranches(Branches& branches, const glm::vec3& direction, float maxSize, float branchLength) const {
 	float branchSize = _branchSize;
 	const float deviation = 0.5f;

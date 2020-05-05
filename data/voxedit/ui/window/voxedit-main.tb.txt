@@ -151,35 +151,10 @@ TBLayout: distribution: gravity, axis: y
 					TBSection: value: 0, text: " "
 						TBLayout: position: left top, axis: y, distribution: gravity
 							TBTextField: gravity: left right, skin: Header, text: Trees
-							TBLayout: position: left top, axis: y, id: treelayout, distribution: gravity
+							TBLayout: position: left top, axis: y, distribution: gravity
 								TBSelectDropdown: gravity: left right, id: treetype
 
-								TBTextField: text: Trunk height, gravity: left right
-								TBInlineSelect: id: trunkheight, min: 0, max: 100
-
-								TBTextField: text: Trunk width, gravity: left right
-								TBInlineSelect: id: trunkwidth, min: 0, max: 100
-
-								TBTextField: text: Leaves height, gravity: left right
-								TBInlineSelect: id: leavesheight, min: 0, max: 100
-
-								TBTextField: text: Leaves width, gravity: left right
-								TBInlineSelect: id: leaveswidth, min: 0, max: 100
-
-								TBTextField: text: Leaves depth, gravity: left right
-								TBInlineSelect: id: leavesdepth, min: 0, max: 100
-
-								TBTextField: text: Branch size, gravity: left right
-								TBInlineSelect: id: branchsize, min: 0, max: 100
-
-								TBTextField: text: Branch factor, gravity: left right
-								TBInlineSelectDouble: id: branchfactor, min: 0, max: 100
-
-								TBTextField: text: Branches, gravity: left right
-								TBInlineSelect: id: branches, min: 0, max: 100
-
-								TBTextField: text: Control point offset, gravity: left right
-								TBInlineSelect: id: controloffset, min: 0, max: 100
+								TBLayout: position: left top, axis: y, id: treeparameterlayout, distribution: gravity
 
 								TBButton: text: Generate, id: treegenerate, gravity: left right
 

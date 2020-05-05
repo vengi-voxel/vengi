@@ -1726,7 +1726,7 @@ void SceneManager::noise(int octaves, float lacunarity, float frequency, float g
 }
 
 void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
-	math::Random random(ctx.seed);
+	math::Random random(ctx.cfg.seed);
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxelgenerator::tree::createTree(wrapper, ctx, random);

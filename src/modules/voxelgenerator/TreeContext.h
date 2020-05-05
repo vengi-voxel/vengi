@@ -11,67 +11,99 @@
 namespace voxelgenerator {
 
 /**
+ * @brief Base struct for all trees
+ */
+struct TreeConfig {
+	unsigned int seed = 0;
+	TreeType type = TreeType::Dome;
+	glm::ivec3 pos { 0 };				/**< the position of the trunk bottom center */
+
+	int trunkWidthBottomOffset = 2;
+	int trunkStrength = 2;
+	int trunkHeight = 24;				/**< The height of the trunk - it's basically also the height of the tree */
+
+	int leavesWidth = 8;				/**< the leave shape width */
+	int leavesHeight = 16;				/**< the leave shape height - counting downward from the trunk top */
+	int leavesDepth = 8;				/**< the leave shape depth */
+};
+
+struct TreeEllipsis : TreeConfig {
+};
+
+struct TreeBranchEllipsis : TreeConfig {
+	int branchLength = 5;
+	int branchHeight = 2;
+};
+
+struct TreeCone : TreeConfig {
+};
+
+struct TreePalm : TreeConfig {
+	int branchSize = 5;
+	int trunkWidth = 6;
+	int trunkDepth = 3;
+	float branchFactor = 0.95f;			/**< Defines how fast the branches get smaller */
+	float trunkFactor = 0.8f;
+	int branches = 6;					/**< How many branches/leaves */
+	int branchControlOffset = 10;		/**< The control offset for the bezier curve of the palm leave */
+	int trunkControlOffset = 10;		/**< The control offset for the bezier curve of the palm trunk */
+	int randomLeavesHeightOffset = 3;
+};
+
+struct TreeFir : TreeConfig {
+	int branches = 12;
+	float w = 1.3f;
+	int amount = 3;
+	int stepHeight = 10;
+	int branchStrength = 1;
+	int branchDownwardOffset = 4;
+	float branchPositionFactor = 1.8;
+};
+
+struct TreePine : TreeConfig {
+	int startWidth = 2;
+	int startDepth = 2;
+	int singleLeafHeight = 2;
+	int singleStepDelta = 1;
+};
+
+struct TreeDome : TreeConfig {
+	int branches = 6;
+};
+
+struct TreeDomeHanging : TreeDome {
+	int hangingLeavesLengthMin = 4;
+	int hangingLeavesLengthMax = 8;
+	int hangingLeavesThickness = 1;
+};
+
+struct TreeCube : TreeConfig {
+};
+
+struct TreeSpaceColonization : TreeConfig {
+	int branchSize = 5;
+	float trunkFactor = 0.8f;
+};
+
+/**
  * @brief Context to create a tree.
  */
 struct TreeContext {
-	TreeType type = TreeType::Dome;
-	unsigned int seed = 0;
-	int trunkHeight = 24;	/**< The height of the trunk - it's basically also the height of the tree */
-	int trunkWidth = 2;
-	int leavesWidth = 8;	/**< the leave shape width */
-	int leavesHeight = 16;	/**< the leave shape height - counting downward from the trunk top */
-	int leavesDepth = 8;	/**< the leave shape depth */
-	struct Palm {
-		int branchSize = 5;
-		/** @brief Defines how fast the branches get smaller */
-		float branchFactor = 0.95f;
-		int branches = 6;
-		/**@brief The control offset for the bezier curve of the palm leave */
-		int controlOffset = 10;
+	union {
+		TreeConfig cfg;
+		TreeEllipsis ellipsis;
+		TreeBranchEllipsis branchellipsis;
+		TreePalm palm;
+		TreeCone cone;
+		TreeFir fir;
+		TreePine pine;
+		TreeDome dome;
+		TreeDomeHanging domehanging;
+		TreeCube cube;
+		TreeSpaceColonization spacecolonization;
 	};
-	Palm palm;
 
-	glm::ivec3 pos;			/**< the position of the trunk bottom center */
-
-	inline int treeBottom() const {
-		return pos.y;
-	}
-
-	inline int treeTop() const {
-		return treeBottom() + trunkHeight;
-	}
-
-	inline int leavesBottom() const {
-		return leavesTop() - leavesHeight;
-	}
-
-	inline int leavesTop() const {
-		return treeTop();
-	}
-
-	inline glm::ivec3 leavesTopV() const {
-		return glm::ivec3(pos.x, leavesTop(), pos.z);
-	}
-
-	inline glm::ivec3 trunkTopV() const {
-		return glm::ivec3(pos.x, treeTop(), pos.z);
-	}
-
-	inline int leavesCenter() const {
-		return leavesTop() - leavesHeight / 2;
-	}
-
-	inline int trunkCenter() const {
-		return treeBottom() + trunkHeight / 2;
-	}
-
-	inline glm::ivec3 leavesCenterV() const {
-		return glm::ivec3(pos.x, leavesCenter(), pos.z);
-	}
-
-	inline glm::ivec3 trunkCenterV() const {
-		return glm::ivec3(pos.x, trunkCenter(), pos.z);
-	}
+	TreeContext() {}
 };
 
 }

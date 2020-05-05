@@ -10,6 +10,7 @@
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "core/collection/Array.h"
+#include "core/collection/List.h"
 #include "math/Axis.h"
 #include "voxelgenerator/TreeContext.h"
 
@@ -70,17 +71,21 @@ private:
 	tb::TBInlineSelectDouble* _lacunarity;
 	tb::TBInlineSelectDouble* _gain;
 
-	tb::TBInlineSelect *_trunkHeight;
-	tb::TBInlineSelect *_trunkWidth;
-	tb::TBInlineSelect *_leavesWidth;
-	tb::TBInlineSelect *_leavesHeight;
-	tb::TBInlineSelect *_leavesDepth;
+	// tree related
+	enum TreeParameterWidgetType {
+		Int, Float
+	};
+	struct TreeWidget {
+		size_t ctxOffset = 0u; // offset in voxelgenerator::TreeContext
+		TreeParameterWidgetType type = TreeParameterWidgetType::Int;
+		voxelgenerator::TreeType treeType = voxelgenerator::TreeType::Max;
+		tb::TBWidget* widget = nullptr;
+	};
+	core::List<TreeWidget> _treeWidgets;
 	tb::TBSelectDropdown *_treeType;
-	tb::TBInlineSelect *_branchSize;
-	tb::TBInlineSelectDouble *_branchFactor;
-	tb::TBInlineSelect *_branches;
-	tb::TBInlineSelect *_controlOffset;
 	voxelgenerator::TreeContext _treeGeneratorContext;
+	void switchTreeType(voxelgenerator::TreeType treeType);
+	tb::TBWidget* createTreeParmeterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name);
 
 	core::String _voxelizeFile;
 	core::String _loadFile;
