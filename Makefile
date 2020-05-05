@@ -5,9 +5,8 @@ BUILDDIR       ?= ./build/$(BUILDTYPE)
 INSTALL_DIR    ?= $(BUILDDIR)/$(shell uname)
 GENERATOR      := Ninja
 
-all:
-	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DDISABLE_UNITY=True -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
-	$(Q)cmake --build $(BUILDDIR) --target $@
+default:
+	$(Q)$(MAKE) all
 
 release:
 	$(Q)$(MAKE) BUILDTYPE=Release
@@ -24,9 +23,6 @@ release-%:
 %:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then cmake -H. -B$(BUILDDIR) -DDISABLE_UNITY=True -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
 	$(Q)cmake --build $(BUILDDIR) --target $@
-
-cppcheck:
-	$(Q)$(MAKE) BUILDDIR=$(BUILDDIR)/$@
 
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
