@@ -614,6 +614,20 @@ public:
 		return m_packed.is_focusable;
 	}
 
+	void setWantCaptureOnHover(bool want_capture_on_hover) {
+		m_packed.want_capture_on_hover = want_capture_on_hover;
+	}
+	bool getWantCaptureOnHover() const {
+		return m_packed.want_capture_on_hover;
+	}
+
+	void setWantFocusOnHover(bool want_focus_on_hover) {
+		m_packed.want_focus_on_hover = want_focus_on_hover;
+	}
+	bool getWantFocusOnHover() const {
+		return m_packed.want_focus_on_hover;
+	}
+
 	/** Set if this widget should emulate a click when it's focused and pressing enter or space. */
 	void setClickByKey(bool clickByKey) {
 		m_packed.click_by_key = clickByKey;
@@ -1191,6 +1205,8 @@ private:
 		struct {
 			uint16_t is_group_root : 1;
 			uint16_t is_focusable : 1;
+			uint16_t want_capture_on_hover : 1;
+			uint16_t want_focus_on_hover : 1;
 			uint16_t click_by_key : 1;
 			uint16_t has_key_pressed_state : 1;
 			uint16_t ignore_input : 1;

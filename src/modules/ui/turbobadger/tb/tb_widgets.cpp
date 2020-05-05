@@ -1704,6 +1704,14 @@ void TBWidget::setHoveredWidget(TBWidget *widget, bool touch) {
 
 	TBWidget::hovered_widget = widget;
 
+	if (widget->getWantCaptureOnHover()) {
+		setCapturedWidget(widget);
+	}
+
+	if (widget->getWantFocusOnHover()) {
+		widget->setFocus(WIDGET_FOCUS_REASON_POINTER);
+	}
+
 	if (TBWidget::hovered_widget != nullptr) {
 		TBWidget::hovered_widget->invalidate();
 		TBWidget::hovered_widget->invalidateSkinStates();

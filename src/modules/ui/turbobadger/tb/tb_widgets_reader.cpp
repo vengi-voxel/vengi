@@ -41,6 +41,10 @@ void TBWidget::onInflate(const INFLATE_INFO &info) {
 
 	setWantLongClick(info.node->getValueInt("want-long-click", static_cast<int>(getWantLongClick())) != 0);
 
+	setWantCaptureOnHover(info.node->getValueInt("want-capture-on-hover", static_cast<int>(getWantCaptureOnHover())) != 0);
+
+	setWantFocusOnHover(info.node->getValueInt("want-focus-on-hover", static_cast<int>(getWantFocusOnHover())) != 0);
+
 	setIgnoreInput(info.node->getValueInt("ignore-input", static_cast<int>(getIgnoreInput())) != 0);
 
 	setOpacity(info.node->getValueFloat("opacity", getOpacity()));
