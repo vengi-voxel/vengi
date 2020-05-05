@@ -66,6 +66,16 @@ private:
 	tb::TBRadioButton* _overrideModifier = nullptr;
 	tb::TBRadioButton* _colorizeModifier = nullptr;
 
+	// lsystem related
+	tb::TBEditField *_lsystemAxiom = nullptr;
+	tb::TBEditField *_lsystemRules = nullptr;
+	tb::TBInlineSelectDouble *_lsystemAngle = nullptr;
+	tb::TBInlineSelectDouble *_lsystemLength = nullptr;
+	tb::TBInlineSelectDouble *_lsystemWidth = nullptr;
+	tb::TBInlineSelectDouble *_lsystemWidthIncrement = nullptr;
+	tb::TBInlineSelect *_lsystemIterations = nullptr;
+	tb::TBWidget *_lsystemSection = nullptr;
+
 	// noise related
 	tb::TBInlineSelect* _octaves;
 	tb::TBInlineSelectDouble* _frequency;

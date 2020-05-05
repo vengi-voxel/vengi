@@ -1725,6 +1725,15 @@ void SceneManager::noise(int octaves, float lacunarity, float frequency, float g
 	modified(layerId, wrapper.dirtyRegion());
 }
 
+void SceneManager::lsystem(const core::String &axiom, const std::vector<voxelgenerator::lsystem::Rule> &rules, float angle, float length,
+		float width, float widthIncrement, int iterations) {
+	math::Random random;
+	const int layerId = _layerMgr.activeLayer();
+	voxel::RawVolumeWrapper wrapper(volume(layerId));
+	voxelgenerator::lsystem::generate(wrapper, referencePosition(), axiom, rules, angle, length, width, widthIncrement, iterations, random);
+	modified(layerId, wrapper.dirtyRegion());
+}
+
 void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 	math::Random random(ctx.cfg.seed);
 	const int layerId = _layerMgr.activeLayer();

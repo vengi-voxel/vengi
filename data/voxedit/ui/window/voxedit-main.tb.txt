@@ -53,6 +53,7 @@ TBLayout: distribution: gravity, axis: y
 						TBButton: gravity: left, @include: definitions>menubutton, text: Trees, id: show_tree_panel
 							TBSkinImage: skin: voxedit-tree
 						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: show_noise_panel
+						TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: show_lsystem_panel
 
 						TBLayout: gravity: left right
 							TBWidget
@@ -160,6 +161,38 @@ TBLayout: distribution: gravity, axis: y
 							TBCheckBox: id: treeautogen, value: 0
 
 						TBButton: text: Generate, id: treegenerate, gravity: left right
+
+						TBWidget: gravity: top bottom
+
+				TBLayout: distribution: gravity, axis: y, position: right, gravity: top bottom, skin: no-padding-container, id: lsystemsection, visibility: gone
+					TBTextField: gravity: left right, skin: Header, text: L-System
+					TBLayout: position: left top, axis: y, distribution: gravity
+						TBTextField: text: Axiom, gravity: left right
+						TBEditField: id: lsystem_axiom, placeholder: Axiom, text: "F", gravity: left right
+
+						TBTextField: text: Rules, gravity: left right
+						TBEditField: multiline: 1, id: lsystem_rules, gravity: all
+							text: "{\n" \
+									"  F\n" \
+									"  F+[!+F-F-FL]-[!-F+F+FL]>[!F<F<FL]<[!<F>F>FL]\n" \
+									"}\n"
+
+						TBTextField: text: Angle, gravity: left right
+						TBInlineSelectDouble: id: lsystem_angle, value: 22.5, gravity: left right
+
+						TBTextField: text: Length, gravity: left right
+						TBInlineSelectDouble: id: lsystem_length, value: 12.0, gravity: left right
+
+						TBTextField: text: Width, gravity: left right
+						TBInlineSelectDouble: id: lsystem_width, value: 4.0, gravity: left right
+
+						TBTextField: text: WidthIncrement, gravity: left right
+						TBInlineSelectDouble: id: lsystem_widthincrement, value: 1.5, gravity: left right
+
+						TBTextField: text: Iterations, gravity: left right
+						TBInlineSelect: id: lsystem_iterations, value: 2, gravity: left right
+
+						TBButton: text: Generate, id: lsystemgenerate, gravity: left right
 
 						TBWidget: gravity: top bottom
 

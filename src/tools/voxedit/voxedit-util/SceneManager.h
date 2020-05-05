@@ -7,6 +7,7 @@
 #include "voxelutil/Picking.h"
 #include "voxel/RawVolume.h"
 #include "voxelgenerator/TreeContext.h"
+#include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/NoiseGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
@@ -275,6 +276,9 @@ public:
 	 * @brief Create a new procgen tree
 	 */
 	void createTree(const voxelgenerator::TreeContext& ctx);
+
+	void lsystem(const core::String &axiom, const std::vector<voxelgenerator::lsystem::Rule> &rules, float angle,
+			float length, float width, float widthIncrement, int iterations);
 
 	/**
 	 * @brief Save the volume data to the given file

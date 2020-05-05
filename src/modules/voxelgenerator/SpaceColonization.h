@@ -9,7 +9,6 @@
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "core/collection/Map.h"
-#include <unordered_map>
 
 namespace voxelgenerator {
 namespace tree {

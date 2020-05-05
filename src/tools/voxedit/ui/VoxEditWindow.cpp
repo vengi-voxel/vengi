@@ -15,6 +15,7 @@
 #include "layer/LayerWidget.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#
 #include "../VoxEdit.h"
 #include <set>
 
@@ -173,7 +174,22 @@ bool VoxEditWindow::init() {
 		return false;
 	}
 
-	_treeType        = getWidgetByType<tb::TBSelectDropdown>("treetype");
+	_lsystemAxiom = getWidgetByType<tb::TBEditField>("lsystem_axiom");
+	_lsystemRules = getWidgetByType<tb::TBEditField>("lsystem_rules");
+	_lsystemAngle = getWidgetByType<tb::TBInlineSelectDouble>("lsystem_angle");
+	_lsystemLength = getWidgetByType<tb::TBInlineSelectDouble>("lsystem_length");
+	_lsystemWidth = getWidgetByType<tb::TBInlineSelectDouble>("lsystem_width");
+	_lsystemWidthIncrement = getWidgetByType<tb::TBInlineSelectDouble>("lsystem_widthincrement");
+	_lsystemIterations = getWidgetByType<tb::TBInlineSelect>("lsystem_iterations");
+	_lsystemSection = getWidgetByID("lsystemsection");
+
+	if (_lsystemAxiom == nullptr || _lsystemRules == nullptr || _lsystemAngle == nullptr || _lsystemLength == nullptr ||
+		_lsystemWidth == nullptr || _lsystemWidthIncrement == nullptr || _lsystemIterations == nullptr || _lsystemSection == nullptr) {
+		Log::error("Not all needed lsystem widgets were found");
+		return false;
+	}
+
+	_treeType = getWidgetByType<tb::TBSelectDropdown>("treetype");
 	if (_treeType == nullptr) {
 		Log::error("treetype widget not found");
 		return false;
@@ -181,6 +197,13 @@ bool VoxEditWindow::init() {
 
 	_treeAutoGenerateOnChange = getWidgetByType<tb::TBCheckBox>("treeautogen");
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
 #define TREECONFIG(configType, variableName, parameterType, treeType, widget) TreeWidget{offsetof(configType, variableName), parameterType, treeType, widget}
 #define TREECONFIGINT(configType, variableName, treeType, text) TREECONFIG(configType, variableName, TreeParameterWidgetType::Int, treeType, createTreeParmeterWidget(TreeParameterWidgetType::Int, treeParameterLayout, "treeconfig-" #variableName, text))
 #define TREECONFIGFLOAT(configType, variableName, treeType, text) TREECONFIG(configType, variableName, TreeParameterWidgetType::Float, treeType, createTreeParmeterWidget(TreeParameterWidgetType::Float, treeParameterLayout, "treeconfig-" #variableName, text))
@@ -237,6 +260,11 @@ bool VoxEditWindow::init() {
 #undef TREECONFIGFLOAT
 #undef TREECONFIGINT
 #undef TREECONFIG
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 	_treeType->setSource(&_treeItems);
 
@@ -521,6 +549,14 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 
+	if (id == TBIDC("show_lsystem_panel") && _noiseSection != nullptr) {
+		if (_lsystemSection->getVisibility() == tb::WIDGET_VISIBILITY_GONE) {
+			_lsystemSection->setVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
+		} else {
+			_lsystemSection->setVisibility(tb::WIDGET_VISIBILITY_GONE);
+		}
+	}
+
 	if (id == TBIDC("scene_settings_open")) {
 		auto &renderer = sceneMgr().renderer();
 		auto &shadow = renderer.shadow();
@@ -572,6 +608,18 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			}
 		}
 		sceneMgr().createTree(_treeGeneratorContext);
+		return true;
+	} else if (id == TBIDC("lsystemgenerate")) {
+		const tb::TBStr& axiom = _lsystemAxiom->getText();
+		const tb::TBStr& rulesStr = _lsystemRules->getText();
+		std::vector<voxelgenerator::lsystem::Rule> rules;
+		voxelgenerator::lsystem::parseRules(rulesStr.c_str(), rules);
+		const float angle = _lsystemAngle->getValueDouble();
+		const float length = _lsystemLength->getValueDouble();
+		const float width = _lsystemWidth->getValueDouble();
+		const float widthIncrement = _lsystemWidthIncrement->getValueDouble();
+		const int iterations = _lsystemIterations->getValue();
+		sceneMgr().lsystem(axiom.c_str(), rules, angle, length, width, widthIncrement, iterations);
 		return true;
 	} else if (id == TBIDC("noisegenerate")) {
 		const int octaves = _octaves->getValue();
