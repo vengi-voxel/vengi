@@ -625,7 +625,10 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		const tb::TBStr& axiom = _lsystemAxiom->getText();
 		const tb::TBStr& rulesStr = _lsystemRules->getText();
 		std::vector<voxelgenerator::lsystem::Rule> rules;
-		voxelgenerator::lsystem::parseRules(rulesStr.c_str(), rules);
+		if (!voxelgenerator::lsystem::parseRules(rulesStr.c_str(), rules)) {
+			Log::error("Failed to parse the lsystem rules");
+			return true;
+		}
 		const float angle = _lsystemAngle->getValueDouble();
 		const float length = _lsystemLength->getValueDouble();
 		const float width = _lsystemWidth->getValueDouble();
