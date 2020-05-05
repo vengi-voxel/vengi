@@ -587,6 +587,11 @@ void TBCaret::setGlobalOfs(int32_t gofs, bool allowSnap, bool snapForward) {
 // == TBTextProps =======================================================================
 
 void TBTextProps::reset(const TBFontDescription &fontDesc, const TBColor &textColor) {
+	core_assert(next_index == 0);
+	while (list.getNumItems() > 0) {
+		delete list.get(0);
+		list.remove(0);
+	}
 	next_index = 0;
 	base.font_desc = fontDesc;
 	base.text_color = textColor;
@@ -597,7 +602,11 @@ void TBTextProps::reset(const TBFontDescription &fontDesc, const TBColor &textCo
 TBTextProps::Data *TBTextProps::push() {
 	if (next_index >= list.getNumItems()) {
 		Data *data = new Data;
-		if ((data == nullptr) || !list.add(data)) {
+		if (data == nullptr) {
+			return nullptr;
+		}
+		if (!list.add(data)) {
+			delete data;
 			return nullptr;
 		}
 	}
@@ -609,7 +618,7 @@ TBTextProps::Data *TBTextProps::push() {
 
 void TBTextProps::pop() {
 	if (next_index == 0) {
-		return; // Unballanced or we previosly got OOM.
+		return; // Unballanced or we previously got OOM.
 	}
 	next_index--;
 	data = next_index > 0 ? list.get(next_index - 1) : &base;

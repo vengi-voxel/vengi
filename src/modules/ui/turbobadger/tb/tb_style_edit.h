@@ -157,6 +157,12 @@ public:
 	};
 	TBTextProps() {
 	}
+	~TBTextProps() {
+		while (list.getNumItems() > 0) {
+			delete list.get(0);
+			list.remove(0);
+		}
+	}
 
 	void reset(const TBFontDescription &fontDesc, const TBColor &textColor);
 	Data *push();
