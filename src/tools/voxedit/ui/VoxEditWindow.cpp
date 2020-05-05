@@ -180,11 +180,13 @@ bool VoxEditWindow::init() {
 	_lsystemLength = getWidgetByType<tb::TBInlineSelectDouble>("lsystem_length");
 	_lsystemWidth = getWidgetByType<tb::TBInlineSelectDouble>("lsystem_width");
 	_lsystemWidthIncrement = getWidgetByType<tb::TBInlineSelectDouble>("lsystem_widthincrement");
+	_lsystemLeavesRadius = getWidgetByType<tb::TBInlineSelectDouble>("lsystem_leavesradius");
 	_lsystemIterations = getWidgetByType<tb::TBInlineSelect>("lsystem_iterations");
 	_lsystemSection = getWidgetByID("lsystemsection");
 
 	if (_lsystemAxiom == nullptr || _lsystemRules == nullptr || _lsystemAngle == nullptr || _lsystemLength == nullptr ||
-		_lsystemWidth == nullptr || _lsystemWidthIncrement == nullptr || _lsystemIterations == nullptr || _lsystemSection == nullptr) {
+		_lsystemWidth == nullptr || _lsystemWidthIncrement == nullptr || _lsystemIterations == nullptr || _lsystemSection == nullptr ||
+		_lsystemLeavesRadius == nullptr) {
 		Log::error("Not all needed lsystem widgets were found");
 		return false;
 	}
@@ -325,25 +327,35 @@ void VoxEditWindow::switchTreeType(voxelgenerator::TreeType treeType) {
 	switch (treeType) {
 		case voxelgenerator::TreeType::Dome:
 			_treeGeneratorContext.dome = voxelgenerator::TreeDome();
+			break;
 		case voxelgenerator::TreeType::DomeHangingLeaves:
 			_treeGeneratorContext.domehanging = voxelgenerator::TreeDomeHanging();
+			break;
 		case voxelgenerator::TreeType::Cone:
 			_treeGeneratorContext.cone = voxelgenerator::TreeCone();
+			break;
 		case voxelgenerator::TreeType::Ellipsis:
 			_treeGeneratorContext.ellipsis = voxelgenerator::TreeEllipsis();
+			break;
 		case voxelgenerator::TreeType::BranchesEllipsis:
 			_treeGeneratorContext.branchellipsis = voxelgenerator::TreeBranchEllipsis();
+			break;
 		case voxelgenerator::TreeType::Cube:
 		case voxelgenerator::TreeType::CubeSideCubes:
 			_treeGeneratorContext.cube = voxelgenerator::TreeCube();
+			break;
 		case voxelgenerator::TreeType::Pine:
 			_treeGeneratorContext.pine = voxelgenerator::TreePine();
+			break;
 		case voxelgenerator::TreeType::Fir:
 			_treeGeneratorContext.fir = voxelgenerator::TreeFir();
+			break;
 		case voxelgenerator::TreeType::Palm:
 			_treeGeneratorContext.palm = voxelgenerator::TreePalm();
+			break;
 		case voxelgenerator::TreeType::SpaceColonization:
 			_treeGeneratorContext.spacecolonization = voxelgenerator::TreeSpaceColonization();
+			break;
 		case voxelgenerator::TreeType::Max:
 		default:
 			break;
@@ -619,7 +631,8 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		const float width = _lsystemWidth->getValueDouble();
 		const float widthIncrement = _lsystemWidthIncrement->getValueDouble();
 		const int iterations = _lsystemIterations->getValue();
-		sceneMgr().lsystem(axiom.c_str(), rules, angle, length, width, widthIncrement, iterations);
+		const float leavesRadius = _lsystemLeavesRadius->getValueDouble();
+		sceneMgr().lsystem(axiom.c_str(), rules, angle, length, width, widthIncrement, iterations, leavesRadius);
 		return true;
 	} else if (id == TBIDC("noisegenerate")) {
 		const int octaves = _octaves->getValue();
@@ -691,7 +704,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		return false;
 	} else if (id == TBIDC("treetype")) {
 		if (tb::TBSelectDropdown *dropdown = widget->safeCastTo<tb::TBSelectDropdown>()) {
-			const int value = widget->getValue();
+			const int value = dropdown->getValue();
 			switchTreeType(treeTypes[value].type);
 			return true;
 		}

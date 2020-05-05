@@ -189,6 +189,9 @@ TBLayout: distribution: gravity, axis: y
 						TBTextField: text: WidthIncrement, gravity: left right
 						TBInlineSelectDouble: id: lsystem_widthincrement, value: 1.5, gravity: left right
 
+						TBTextField: text: Leaves radius, gravity: left right
+						TBInlineSelectDouble: id: lsystem_leavesradius, value: 8.0, gravity: left right
+
 						TBTextField: text: Iterations, gravity: left right
 						TBInlineSelect: id: lsystem_iterations, value: 2, gravity: left right
 

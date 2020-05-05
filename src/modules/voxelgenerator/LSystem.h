@@ -37,7 +37,7 @@ extern bool parseRules(const core::String& rulesStr, std::vector<Rule>& rules);
 
 template<class Volume>
 void generate(Volume& volume, const glm::ivec3& position, const core::String &axiom, const std::vector<Rule> &rules, float angle, float length, float width,
-				 float widthIncrement, int iterations, math::Random& random) {
+				 float widthIncrement, int iterations, math::Random& random, float leafRadius = 8.0f) {
 	angle = glm::radians(angle);
 	core::String sentence = axiom;
 	for (int i = 0; i < iterations; i++) {
@@ -66,8 +66,8 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 	TurtleStep step;
 	step.width = width;
 
-	for (size_t i = 0; i < sentence.size(); ++i) {
-		char c = sentence[i];
+	for (size_t i = 0u; i < sentence.size(); ++i) {
+		const char c = sentence[i];
 		switch (c) {
 		case 'F': {
 			// Draw line forwards
@@ -77,7 +77,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 				for (float x = -r; x < r; x++) {
 					for (float y = -r; y < r; y++) {
 						for (float z = -r; z < r; z++) {
-							const glm::ivec3& dest = glm::ivec3(glm::round(step.pos)) + glm::ivec3(x, y, z);
+							const glm::ivec3 dest(glm::round(step.pos + glm::vec3(x, y, z)));
 							volume.setVoxel(position + dest, trunkVoxel);
 						}
 					}
@@ -97,10 +97,13 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 
 		case 'L': {
 			// Leaf
-			const voxel::RandomVoxel leafVoxel(voxel::VoxelType::Leaf, random);
-			for (int i = 0; i < 1000; i++) {
-				auto r = glm::ballRand(8.0f);
-				volume.setVoxel(position + glm::ivec3(glm::round(step.pos + r)), leafVoxel);
+			const float leafDistance = glm::round(2.0f * leafRadius);
+			const int cnt = glm::pow(leafDistance, 3);
+			const voxel::RandomVoxel leafVoxel(voxel::VoxelType::Leaf, random, cnt);
+			for (int i = 0; i < cnt; i++) {
+				const glm::vec3& r = glm::ballRand(leafRadius);
+				const glm::ivec3 p = position + glm::ivec3(glm::round(step.pos + r));
+				volume.setVoxel(p, leafVoxel);
 			}
 			break;
 		}

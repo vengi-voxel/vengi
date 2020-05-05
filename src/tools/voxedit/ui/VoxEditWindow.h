@@ -74,6 +74,7 @@ private:
 	tb::TBInlineSelectDouble *_lsystemWidth = nullptr;
 	tb::TBInlineSelectDouble *_lsystemWidthIncrement = nullptr;
 	tb::TBInlineSelect *_lsystemIterations = nullptr;
+	tb::TBInlineSelectDouble *_lsystemLeavesRadius = nullptr;
 	tb::TBWidget *_lsystemSection = nullptr;
 
 	// noise related
