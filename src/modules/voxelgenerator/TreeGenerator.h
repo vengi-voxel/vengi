@@ -135,32 +135,9 @@ void createTreeBranchEllipsis(Volume& volume, const voxelgenerator::TreeBranchEl
  */
 template<class Volume>
 static void createTrunk(Volume& volume, const voxelgenerator::TreeConfig& ctx, const voxel::Voxel& voxel) {
-	const int top = ctx.pos.y + ctx.trunkHeight;
-	int trunkWidthBottomOffset = ctx.trunkWidthBottomOffset;
-	for (int y = ctx.pos.y; y < top; ++y) {
-		const int trunkStrength = core_max(0, trunkWidthBottomOffset);
-		--trunkWidthBottomOffset;
-		const int startX = ctx.pos.x - ctx.trunkStrength / 2 - trunkStrength;
-		const int endX = startX + ctx.trunkStrength + trunkStrength * 2;
-		for (int x = startX; x < endX; ++x) {
-			const int startZ = ctx.pos.z - ctx.trunkStrength / 2 - trunkStrength;
-			const int endZ = startZ + ctx.trunkStrength + trunkStrength * 2;
-			for (int z = startZ; z < endZ; ++z) {
-				glm::ivec3 finalPos(x, y, z);
-				if (y == ctx.pos.y) {
-					finalPos.y = findFloor(volume, x, z);
-					if (finalPos.y == voxel::NO_FLOOR_FOUND) {
-						continue;
-					}
-					for (int i = finalPos.y + 1; i <= y; ++i) {
-						volume.setVoxel(finalPos.x, i, finalPos.z, voxel);
-					}
-				}
-
-				volume.setVoxel(finalPos, voxel);
-			}
-		}
-	}
+	glm::ivec3 end = ctx.pos;
+	end.y += ctx.trunkHeight;
+	shape::createLine(volume, ctx.pos, end, voxel, ctx.trunkStrength);
 }
 
 /**

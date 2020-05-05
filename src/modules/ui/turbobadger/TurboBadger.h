@@ -26,6 +26,7 @@
 #include <renderers/tb_renderer_batcher.h>
 #include <animation/tb_widget_animation.h>
 #include <tb_widgets_reader.h>
+#include <tb_toggle_container.h>
 #include <tb_widgets_listener.h>
 #include <tb_menu_window.h>
 #include <tb_node_tree.h>

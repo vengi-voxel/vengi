@@ -50,6 +50,9 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-redo
 						TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings_open
 							TBSkinImage: skin: voxedit-options
+						TBButton: gravity: left, @include: definitions>menubutton, text: Trees, id: show_tree_panel
+							TBSkinImage: skin: voxedit-tree
+						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: show_noise_panel
 
 						TBLayout: gravity: left right
 							TBWidget
@@ -146,38 +149,41 @@ TBLayout: distribution: gravity, axis: y
 									@include camerarottype
 									@include shaderselection
 
-				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: no-padding-container
+				TBLayout: distribution: gravity, axis: y, position: right, gravity: top bottom, skin: no-padding-container, id: treesection, visibility: gone
+					TBTextField: gravity: left right, skin: Header, text: Trees
+					TBLayout: position: left top, axis: y, distribution: gravity
+						TBSelectDropdown: gravity: left right, id: treetype
 
-					TBSection: value: 0, text: " "
-						TBLayout: position: left top, axis: y, distribution: gravity
-							TBTextField: gravity: left right, skin: Header, text: Trees
-							TBLayout: position: left top, axis: y, distribution: gravity
-								TBSelectDropdown: gravity: left right, id: treetype
+						TBLayout: position: left top, axis: y, id: treeparameterlayout, distribution: gravity
 
-								TBLayout: position: left top, axis: y, id: treeparameterlayout, distribution: gravity
+						TBClickLabel: text: Auto generate
+							TBCheckBox: id: treeautogen, value: 0
 
-								TBButton: text: Generate, id: treegenerate, gravity: left right
+						TBButton: text: Generate, id: treegenerate, gravity: left right
 
-							TBTextField: gravity: left right, skin: Header, text: Noise
-							TBLayout: axis: y, id: noiselayout, distribution: gravity
-								TBTextField: text: Octaves, gravity: left right
-								TBInlineSelect: id: noise_octaves, value: 4, gravity: left right
+						TBWidget: gravity: top bottom
 
-								TBTextField: text: Frequency, gravity: left right
-								TBInlineSelectDouble: id: noise_frequency, value: 0.01, gravity: left right
+				TBLayout: distribution: gravity, axis: y, position: right, gravity: top bottom, skin: no-padding-container, id: noisesection, visibility: gone
+					TBTextField: gravity: left right, skin: Header, text: Noise
+					TBLayout: position: left top, axis: y, distribution: gravity
+						TBTextField: text: Octaves, gravity: left right
+						TBInlineSelect: id: noise_octaves, value: 4, gravity: left right
 
-								TBTextField: text: Offset, gravity: left right
-								TBInlineSelectDouble: id: noise_offset, value: 1.0, gravity: left right
+						TBTextField: text: Frequency, gravity: left right
+						TBInlineSelectDouble: id: noise_frequency, value: 0.01, gravity: left right
 
-								TBTextField: text: Gain, gravity: left right
-								TBInlineSelectDouble: id: noise_gain, value: 0.5, gravity: left right
+						TBTextField: text: Offset, gravity: left right
+						TBInlineSelectDouble: id: noise_offset, value: 1.0, gravity: left right
 
-								TBTextField: text: Lacunarity, gravity: left right
-								TBInlineSelectDouble: id: noise_lacunarity, value: 2.0, gravity: left right
+						TBTextField: text: Gain, gravity: left right
+						TBInlineSelectDouble: id: noise_gain, value: 0.5, gravity: left right
 
-								TBButton: text: Generate, id: noisegenerate, gravity: left right
+						TBTextField: text: Lacunarity, gravity: left right
+						TBInlineSelectDouble: id: noise_lacunarity, value: 2.0, gravity: left right
 
-					TBWidget: gravity: top bottom
+						TBButton: text: Generate, id: noisegenerate, gravity: left right
+
+						TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: no-padding-container
 

@@ -18,9 +18,8 @@ struct TreeConfig {
 	TreeType type = TreeType::Dome;
 	glm::ivec3 pos { 0 };				/**< the position of the trunk bottom center */
 
-	int trunkWidthBottomOffset = 2;
 	int trunkStrength = 2;
-	int trunkHeight = 24;				/**< The height of the trunk - it's basically also the height of the tree */
+	int trunkHeight = 10;				/**< The height of the trunk - it's basically also the height of the tree */
 
 	int leavesWidth = 8;				/**< the leave shape width */
 	int leavesHeight = 16;				/**< the leave shape height - counting downward from the trunk top */

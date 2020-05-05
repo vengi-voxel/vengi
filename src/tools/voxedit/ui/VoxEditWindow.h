@@ -66,10 +66,12 @@ private:
 	tb::TBRadioButton* _overrideModifier = nullptr;
 	tb::TBRadioButton* _colorizeModifier = nullptr;
 
+	// noise related
 	tb::TBInlineSelect* _octaves;
 	tb::TBInlineSelectDouble* _frequency;
 	tb::TBInlineSelectDouble* _lacunarity;
 	tb::TBInlineSelectDouble* _gain;
+	tb::TBWidget *_noiseSection = nullptr;
 
 	// tree related
 	enum TreeParameterWidgetType {
@@ -82,7 +84,9 @@ private:
 		tb::TBWidget* widget = nullptr;
 	};
 	core::List<TreeWidget> _treeWidgets;
-	tb::TBSelectDropdown *_treeType;
+	tb::TBSelectDropdown *_treeType = nullptr;
+	tb::TBCheckBox *_treeAutoGenerateOnChange = nullptr;
+	tb::TBWidget *_treeSection = nullptr;
 	voxelgenerator::TreeContext _treeGeneratorContext;
 	void switchTreeType(voxelgenerator::TreeType treeType);
 	tb::TBWidget* createTreeParmeterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name);
