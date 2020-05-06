@@ -63,6 +63,15 @@ extern SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data,
 #endif
 #endif
 
+#ifdef _MSC_VER
+#define core_assert_2byte_aligned(data)
+#define core_assert_4byte_aligned(data)
+#define core_assert_8byte_aligned(data)
+#define core_assert_16byte_aligned(data)
+#define core_assert_32byte_aligned(data)
+#define core_assert_64byte_aligned(data)
+#define core_assert_128byte_aligned(data)
+#else
 #define core_assert_2byte_aligned(data) core_assert_msg((((uintptr_t )(data)) & 1) == 0, "Data is not aligned properly");
 #define core_assert_4byte_aligned(data) core_assert_msg((((uintptr_t )(data)) & 3) == 0, "Data is not aligned properly");
 #define core_assert_8byte_aligned(data) core_assert_msg((((uintptr_t )(data)) & 7) == 0, "Data is not aligned properly");
@@ -70,3 +79,4 @@ extern SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data,
 #define core_assert_32byte_aligned(data) core_assert_msg((((uintptr_t )(data)) & 31) == 0, "Data is not aligned properly");
 #define core_assert_64byte_aligned(data) core_assert_msg((((uintptr_t )(data)) & 63) == 0, "Data is not aligned properly");
 #define core_assert_128byte_aligned(data) core_assert_msg((((uintptr_t )(data)) & 127) == 0, "Data is not aligned properly");
+#endif
