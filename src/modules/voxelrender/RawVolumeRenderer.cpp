@@ -23,6 +23,7 @@
 #include "core/StandardLib.h"
 #include "VoxelShaderConstants.h"
 #include <unordered_set>
+#include <algorithm>
 
 namespace voxelrender {
 

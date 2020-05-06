@@ -13,6 +13,7 @@
 #include "core/NonCopyable.h"
 #include "Region.h"
 #include <vector>
+#include <algorithm>
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <list>
