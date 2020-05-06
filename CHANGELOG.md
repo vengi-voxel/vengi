@@ -1,6 +1,9 @@
 A more detailed changelog can be found at: https://github.com/mgerhardy/engine/commits/
 
-#### 0.0.2 (XXXX-XX-XX)
+#### 0.0.3 (XXXX-XX-XX)
+
+
+#### 0.0.2 (2020-05-06)
 
  VoxEdit:
    - Static linked VC++ Runtime
@@ -8,6 +11,7 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
    - Updated tree and noise windows
    - Implemented `thicken` console command
    - Escape abort modifier action
+   - Added L-System panel
 
  General:
    - Fixed binvox header parsing
