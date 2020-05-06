@@ -26,6 +26,7 @@ struct TurtleStep {
 	glm::vec3 pos { 0.0f };
 	glm::vec3 rotation = glm::up;
 	float width;
+	voxel::Voxel voxel;
 };
 
 struct Rule {
@@ -37,9 +38,7 @@ extern bool parseRules(const core::String& rulesStr, std::vector<Rule>& rules);
 
 template<class Volume>
 void generate(Volume& volume, const glm::ivec3& position, const core::String &axiom, const std::vector<Rule> &rules, float angle, float length, float width,
-				 float widthIncrement, int iterations, math::Random& random, float leafRadius = 8.0f) {
-	const voxel::Voxel trunkVoxel = voxel::createRandomColorVoxel(voxel::VoxelType::Wood);
-	const voxel::Voxel leafVoxel = voxel::createRandomColorVoxel(voxel::VoxelType::Leaf);
+				 float widthIncrement, uint8_t iterations, math::Random& random, float leafRadius = 8.0f) {
 	const float leafDistance = glm::round(2.0f * leafRadius);
 	// apply a factor to close potential holes
 	const int leavesVoxelCnt = glm::pow(leafDistance, 3) * 2.0f;
@@ -71,6 +70,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 
 	TurtleStep step;
 	step.width = width;
+	step.voxel = voxel::createRandomColorVoxel(voxel::VoxelType::Wood);
 
 	for (size_t i = 0u; i < sentence.size(); ++i) {
 		const char c = sentence[i];
@@ -83,7 +83,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 					for (float y = -r; y < r; y++) {
 						for (float z = -r; z < r; z++) {
 							const glm::ivec3 dest(glm::round(step.pos + glm::vec3(x, y, z)));
-							volume.setVoxel(position + dest, trunkVoxel);
+							volume.setVoxel(position + dest, step.voxel);
 						}
 					}
 				}
@@ -91,7 +91,24 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 			}
 			break;
 		}
-
+		case '(': {
+			// Set voxel type
+			++i;
+			int begin = i;
+			size_t length = 0u;
+			while (sentence[i] >= '0' && sentence[i] <= '9') {
+				++length;
+				++i;
+			}
+			core::String voxelString(sentence.c_str() + begin, length);
+			const int colorIndex = core::string::toInt(voxelString);
+			if (colorIndex == 0) {
+				step.voxel = voxel::Voxel();
+			} else if (colorIndex > 0 && colorIndex < 256) {
+				step.voxel = voxel::createVoxel(voxel::VoxelType::Generic, colorIndex);
+			}
+			break;
+		}
 		case 'b': {
 			// Move backwards (no drawing)
 			for (int j = 0; j < length; j++) {
@@ -105,7 +122,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 			for (int i = 0; i < leavesVoxelCnt; i++) {
 				const glm::vec3& r = glm::ballRand(leafRadius);
 				const glm::ivec3 p = position + glm::ivec3(glm::round(step.pos + r));
-				volume.setVoxel(p, leafVoxel);
+				volume.setVoxel(p, step.voxel);
 			}
 			break;
 		}
@@ -143,12 +160,12 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 
 		case '[':
 			// Push
-			stack.push(TurtleStep(step));
+			stack.push(step);
 			break;
 
 		case ']':
 			// Pop
-			step = TurtleStep(stack.top());
+			step = stack.top();
 			stack.pop();
 			break;
 		}

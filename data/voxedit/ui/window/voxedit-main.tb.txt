@@ -179,7 +179,9 @@ TBLayout: distribution: gravity, axis: y
 								  "<color #f44><</color>: Rotate backward\n" \
 								  "<color #f44>#</color>: Increment width\n" \
 								  "<color #f44>[</color>: Push\n" \
-								  "<color #f44>]</color>: Pop\n"
+								  "<color #f44>]</color>: Pop\n" \
+								  "<color #f44>(</color>colorindex<color #f44>)</color>: Set voxel type to palette index\n" \
+								  "\n"
 
 						TBTextField: text: Axiom, gravity: left right
 						TBEditField: id: lsystem_axiom, placeholder: Axiom, text: "F", gravity: left right
@@ -188,7 +190,7 @@ TBLayout: distribution: gravity, axis: y
 						TBEditField: multiline: 1, id: lsystem_rules, gravity: all
 							text: "{\n" \
 									"  F\n" \
-									"  F+[!+F-F-FL]-[!-F+F+FL]>[!F<F<FL]<[!<F>F>FL]\n" \
+									"  (67)F+[!+F-F-F(37)L]-[!-F+F+F(142)L]>[!F<F<F(128)L]<[!<F>F>F(123)L]\n" \
 									"}\n"
 
 						TBLayout: position: left top, axis: x, distribution: gravity
