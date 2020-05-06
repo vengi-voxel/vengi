@@ -546,7 +546,9 @@ core::AppState UIApp::onCleanup() {
 	tb::tb_core_shutdown();
 
 	Log::debug("shutdown ui widgets");
-	_root->die();
+	if (_root != nullptr) {
+		_root->die();
+	}
 	_root = nullptr;
 
 	_console.shutdown();
