@@ -9,6 +9,7 @@
 #include "core/GameConfig.h"
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
+#include "core/StandardLib.h"
 #include "core/Var.h"
 #include "video/Trace.h"
 #include "core/GLM.h"
@@ -368,7 +369,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	}
 
 	shader::WorldData::MaterialblockData materialBlock;
-	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
 	if (!_worldBuffers.init(_waterShader)) {

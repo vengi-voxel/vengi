@@ -20,6 +20,7 @@
 #include "core/Var.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 #include "VoxelShaderConstants.h"
 #include <unordered_set>
 
@@ -105,7 +106,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	shader::VoxelData::MaterialblockData materialBlock;
-	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
@@ -362,7 +363,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 
 	if (voxel::materialColorChanged()) {
 		shader::VoxelData::MaterialblockData materialBlock;
-		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+		core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 		_materialBlock.update(materialBlock);
 		// TODO: updating the global state is crap - what about others - use an event
 		voxel::materialColorMarkClean();

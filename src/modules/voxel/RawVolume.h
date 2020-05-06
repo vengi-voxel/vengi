@@ -23,7 +23,7 @@ public:
 	public:
 		Sampler(const RawVolume& volume);
 		Sampler(const RawVolume* volume);
-		~Sampler();
+		virtual ~Sampler();
 
 		const Voxel& voxel() const;
 

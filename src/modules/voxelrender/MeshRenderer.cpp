@@ -4,6 +4,7 @@
 
 #include "MeshRenderer.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 #include "ShaderAttribute.h"
 #include "voxel/MaterialColor.h"
 #include "VoxelShaderConstants.h"
@@ -68,7 +69,7 @@ bool MeshRenderer::init() {
 	}
 
 	shader::VoxelData::MaterialblockData materialBlock;
-	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
 	return true;

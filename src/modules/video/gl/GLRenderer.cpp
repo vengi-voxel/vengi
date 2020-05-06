@@ -21,6 +21,7 @@
 #include "core/Var.h"
 #include "core/Assert.h"
 #include "core/StringUtil.h"
+#include "core/StandardLib.h"
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -1111,7 +1112,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 	} else {
 #if DIRECT_STATE_ACCESS
 		void *target = mapBuffer(handle, type, AccessMode::Write);
-		memcpy(target, data, size);
+		core_memcpy(target, data, size);
 		unmapBuffer(handle, type);
 #else
 		const GLenum glType = _priv::BufferTypes[core::enumVal(type)];
@@ -1169,7 +1170,7 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 		}
 #else
 		void *target = mapBufferRange(...);
-		memcpy(target, data, size);
+		core_memcpy(target, data, size);
 		unmapBuffer(type);
 #endif
 	}

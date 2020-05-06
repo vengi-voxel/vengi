@@ -103,7 +103,7 @@ bool MapProvider::init() {
 			}
 		}
 		response->body = (char*)core_malloc(blob.length);
-		::memcpy((void*)response->body, blob.data, blob.length);
+		core_memcpy((void*)response->body, blob.data, blob.length);
 		response->freeBody = true;
 		response->contentLength(blob.length);
 		response->headers.put(http::header::CONTENT_TYPE, http::mimetype::APPLICATION_CHUNK);

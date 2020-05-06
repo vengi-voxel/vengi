@@ -4,6 +4,7 @@
 
 #include "Network.h"
 #include "core/Common.h"
+#include "core/StandardLib.h"
 #include "IProtocolMessage.h"
 #include "IProtocolHandler.h"
 #include "ProtocolHandlerRegistry.h"
@@ -163,8 +164,8 @@ void Network::update(int64_t deltaTime) {
 	fd_set readFDsOut;
 	fd_set writeFDsOut;
 
-	memcpy(&readFDsOut, &_readFDSet, sizeof(readFDsOut));
-	memcpy(&writeFDsOut, &_writeFDSet, sizeof(writeFDsOut));
+	core_memcpy(&readFDsOut, &_readFDSet, sizeof(readFDsOut));
+	core_memcpy(&writeFDsOut, &_writeFDSet, sizeof(writeFDsOut));
 
 	struct timeval tv;
 	tv.tv_sec = 0;

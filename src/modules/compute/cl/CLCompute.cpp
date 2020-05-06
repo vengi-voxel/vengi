@@ -8,6 +8,7 @@
 #include "core/App.h"
 #include "core/StringUtil.h"
 #include "core/Assert.h"
+#include "core/StandardLib.h"
 #include "core/io/Filesystem.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
@@ -285,7 +286,7 @@ Id createBuffer(BufferFlag flags, size_t size, void* data) {
 			clReleaseMemObject(bufferObject);
 			return InvalidId;
 		}
-		memcpy(target, data, size);
+		core_memcpy(target, data, size);
 		cl_event event;
 		error = clEnqueueUnmapMemObject(_priv::_ctx.commandQueue, bufferObject, target, 0, nullptr, &event);
 		_priv::checkError(error);

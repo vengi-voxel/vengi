@@ -16,6 +16,7 @@
 #include "video/ScopedState.h"
 #include "render/Shadow.h"
 #include "core/Trace.h"
+#include "core/StandardLib.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
@@ -53,7 +54,7 @@ bool ClientEntityRenderer::init() {
 	}
 
 	shader::SkeletonData::MaterialblockData materialBlock;
-	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
 	video::TextureConfig textureCfg;
