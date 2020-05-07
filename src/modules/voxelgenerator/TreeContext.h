@@ -27,9 +27,14 @@ struct TreeConfig {
 };
 
 struct TreeEllipsis : TreeConfig {
+	TreeEllipsis() {
+		leavesWidth = 10;
+		leavesHeight = 10;
+		leavesDepth = 10;
+	}
 };
 
-struct TreeBranchEllipsis : TreeConfig {
+struct TreeBranchEllipsis : TreeEllipsis {
 	int branchLength = 5;
 	int branchHeight = 2;
 };
@@ -101,6 +106,11 @@ struct TreeDomeHanging : TreeDome {
 };
 
 struct TreeCube : TreeConfig {
+	TreeCube() {
+		leavesWidth = 10;
+		leavesHeight = 10;
+		leavesDepth = 10;
+	}
 };
 
 struct TreeSpaceColonization : TreeConfig {

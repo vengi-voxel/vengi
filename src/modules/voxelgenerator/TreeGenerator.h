@@ -96,7 +96,7 @@ void createTreeBranchEllipsis(Volume& volume, const voxelgenerator::TreeBranchEl
 	int branches[] = {1, 2, 3, 4};
 	const int n = random.random(1, 4);
 	for (int i = n; i < n + 4; ++i) {
-		const int thickness = core_max(2, ctx.trunkStrength / 2);
+		const int thickness = core_max(1, ctx.trunkStrength / 2);
 		const int branchHeight = ctx.branchHeight;
 		const int branchLength = ctx.branchLength;
 
@@ -337,7 +337,7 @@ void createTreeCubeSideCubes(Volume& volume, const voxelgenerator::TreeCube& ctx
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
 
-	const glm::ivec3& leafesPos = glm::ivec3(ctx.pos.x, ctx.pos.y + ctx.trunkHeight - ctx.leavesHeight / 2, ctx.pos.z);
+	const glm::ivec3& leafesPos = glm::ivec3(ctx.pos.x, ctx.pos.y + ctx.trunkHeight + ctx.leavesHeight / 2, ctx.pos.z);
 	shape::createCube(volume, leafesPos, ctx.leavesWidth, ctx.leavesHeight, ctx.leavesDepth, leavesVoxel);
 	// TODO: use CreatePlane
 	shape::createCube(volume, leafesPos, ctx.leavesWidth + 2, ctx.leavesHeight - 2, ctx.leavesDepth - 2, leavesVoxel);
