@@ -42,11 +42,18 @@ struct TreeCone : TreeConfig {
 };
 
 struct TreePalm : TreeConfig {
-	int branchSize = 5;
+	TreePalm() {
+		trunkStrength = 4;
+		trunkHeight = 30;
+		leavesWidth = 16;
+		leavesHeight = 6;
+		leavesDepth = 2;
+	}
+	int branchSize = 4;
 	int trunkWidth = 6;
 	int trunkDepth = 3;
 	float branchFactor = 0.95f;			/**< Defines how fast the branches get smaller */
-	float trunkFactor = 0.8f;
+	float trunkFactor = 0.95f;
 	int branches = 6;					/**< How many branches/leaves */
 	int branchControlOffset = 10;		/**< The control offset for the bezier curve of the palm leave */
 	int trunkControlOffset = 10;		/**< The control offset for the bezier curve of the palm trunk */
