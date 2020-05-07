@@ -416,6 +416,9 @@ void App::onAfterInit() {
 }
 
 void App::usage() const {
+	const core::VarPtr& logLevel = core::Var::get(cfg::CoreLogLevel, "");
+	logLevel->setVal((int)Log::Level::Info);
+	Log::init();
 	Log::info("Usage: %s [--help] [-set configvar value] [-commandname]", _appname.c_str());
 
 	int maxWidthLong = 0;
