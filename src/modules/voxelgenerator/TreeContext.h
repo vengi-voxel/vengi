@@ -35,6 +35,10 @@ struct TreeBranchEllipsis : TreeConfig {
 };
 
 struct TreeCone : TreeConfig {
+	TreeCone() {
+		leavesDepth = 14;
+		leavesWidth = 14;
+	}
 };
 
 struct TreePalm : TreeConfig {
@@ -76,10 +80,14 @@ struct TreePine : TreeConfig {
 };
 
 struct TreeDome : TreeConfig {
-	int branches = 6;
+	TreeDome() {
+		leavesDepth = 14;
+		leavesWidth = 14;
+	}
 };
 
 struct TreeDomeHanging : TreeDome {
+	int branches = 6;
 	int hangingLeavesLengthMin = 4;
 	int hangingLeavesLengthMax = 8;
 	int hangingLeavesThickness = 1;

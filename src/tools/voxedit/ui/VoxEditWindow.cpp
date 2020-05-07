@@ -244,8 +244,6 @@ bool VoxEditWindow::init() {
 		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePine, singleLeafHeight, voxelgenerator::TreeType::Pine, "Leaf height"));
 		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreePine, singleStepDelta, voxelgenerator::TreeType::Pine, "Step delta"));
 
-		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeDome, branches, voxelgenerator::TreeType::Dome, "Branches"));
-
 		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeDomeHanging, branches, voxelgenerator::TreeType::DomeHangingLeaves, "Branches"));
 		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeDomeHanging, hangingLeavesLengthMin, voxelgenerator::TreeType::DomeHangingLeaves, "Leaves min length"));
 		_treeWidgets.insert(TREECONFIGINT(voxelgenerator::TreeDomeHanging, hangingLeavesLengthMax, voxelgenerator::TreeType::DomeHangingLeaves, "Leaves max length"));
