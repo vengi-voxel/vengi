@@ -59,13 +59,28 @@ std::pair<core::String, bool> ComputeShaderTool::getSource(const core::String& f
 }
 
 core::AppState ComputeShaderTool::onRunning() {
-	const core::String shaderfile          = getArgVal("--shader");
-	_shaderTemplateFile                   = getArgVal("--shadertemplate");
-	_namespaceSrc                         = getArgVal("--namespace");
-	_shaderDirectory                      = getArgVal("--shaderdir");
-	_sourceDirectory                      = getArgVal("--sourcedir",
-			_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
-	_postfix                              = getArgVal("--postfix", "");
+	const core::String shaderfile = getArgVal("--shader");
+	if (shaderfile.empty()) {
+		_exitCode = 1;
+		return core::AppState::Cleanup;
+	}
+	_shaderTemplateFile = getArgVal("--shadertemplate");
+	if (_shaderTemplateFile.empty()) {
+		_exitCode = 1;
+		return core::AppState::Cleanup;
+	}
+	_namespaceSrc = getArgVal("--namespace");
+	if (_namespaceSrc.empty()) {
+		_exitCode = 1;
+		return core::AppState::Cleanup;
+	}
+	_shaderDirectory = getArgVal("--shaderdir");
+	if (_shaderDirectory.empty()) {
+		_exitCode = 1;
+		return core::AppState::Cleanup;
+	}
+	_sourceDirectory = getArgVal("--sourcedir", _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
+	_postfix = getArgVal("--postfix", "");
 
 	// handle include dirs
 	_includeDirs.insert(".");
