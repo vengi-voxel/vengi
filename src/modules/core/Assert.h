@@ -19,14 +19,15 @@ extern void core_stacktrace();
 			static struct SDL_AssertData sdl_assert_data = { \
 				0, 0, #condition, 0, 0, 0, 0 \
 			}; \
+			if (sdl_assert_data.always_ignore == 0) { \
+				core_stacktrace(); \
+			} \
 			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
 			} \
 			if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
 				SDL_TriggerBreakpoint(); \
-			} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE && sdl_assert_state != SDL_ASSERTION_IGNORE) { \
-				core_stacktrace(); \
 			} \
 			break; /* not retrying. */ \
 		} \
@@ -48,10 +49,13 @@ extern SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data,
 #define core_assert_msg(conditionCheck, format, ...) \
 	do { \
 		while (!(conditionCheck)) { \
-			static char __assertBuf[1024]; \
 			static struct SDL_AssertData sdl_assert_data = { \
 				0, 0, nullptr, 0, 0, 0, 0 \
 			}; \
+			if (sdl_assert_data.always_ignore == 0) { \
+				core_stacktrace(); \
+			} \
+			static char __assertBuf[1024]; \
 			const SDL_AssertState sdl_assert_state = core_assert_impl_message(sdl_assert_data, __assertBuf, \
 					sizeof(__assertBuf), SDL_FUNCTION, SDL_FILE, SDL_LINE, format, ##__VA_ARGS__); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
