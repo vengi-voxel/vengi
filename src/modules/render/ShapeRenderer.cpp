@@ -96,17 +96,25 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 
 	alignas(32) std::vector<Vertex> vertices;
 	vertices.reserve(shapeBuilder.getVertices().size());
+	const void* verticesData = nullptr;
+	if (!vertices.empty()) {
+		verticesData = &vertices.front();
+	}
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
 		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
 	});
-	_vertexIndex[meshIndex] = _vbo[meshIndex].create(&vertices.front(), vertices.size() * sizeof(Vertex));
+	_vertexIndex[meshIndex] = _vbo[meshIndex].create(verticesData, vertices.size() * sizeof(Vertex));
 	if (_vertexIndex[meshIndex] == -1) {
 		Log::error("Could not create vbo for vertices");
 		return -1;
 	}
 
 	const video::ShapeBuilder::Indices& indices = shapeBuilder.getIndices();
-	_indexIndex[meshIndex] = _vbo[meshIndex].create(&indices.front(), indices.size() * sizeof(video::ShapeBuilder::Indices::value_type),
+	const void* indicesData = nullptr;
+	if (!indices.empty()) {
+		indicesData = &indices.front();
+	}
+	_indexIndex[meshIndex] = _vbo[meshIndex].create(indicesData, indices.size() * sizeof(video::ShapeBuilder::Indices::value_type),
 			video::BufferType::IndexBuffer);
 	if (_indexIndex[meshIndex] == -1) {
 		_vertexIndex[meshIndex] = -1;

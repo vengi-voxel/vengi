@@ -82,6 +82,11 @@ void AnimationRenderer::shutdown() {
 void AnimationRenderer::render(const AnimationEntity& character, const video::Camera& camera) {
 	const Indices& i = character.indices();
 	const Vertices& v = character.vertices();
+	if (i.empty() || v.empty()) {
+		core_assert_always(_vbo.update(_indices, nullptr, 0));
+		core_assert_always(_vbo.update(_vertices, nullptr, 0));
+		return;
+	}
 	core_assert_always(_vbo.update(_indices, &i.front(), i.size() * sizeof(IndexType)));
 	core_assert_always(_vbo.update(_vertices, &v.front(), v.size() * sizeof(Vertex)));
 	const uint32_t numIndices = _vbo.elements(_indices, 1, sizeof(IndexType));

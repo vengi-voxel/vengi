@@ -41,11 +41,17 @@ protected:
 
 	template<class T>
 	void* ptr(const std::vector<T>& data) const {
+		if (data.empty()) {
+			return nullptr;
+		}
 		return const_cast<T*>(&data.front());
 	}
 
 	template<class T>
 	void* ptr(std::vector<T>& data) const {
+		if (data.empty()) {
+			return nullptr;
+		}
 		return &data.front();
 	}
 

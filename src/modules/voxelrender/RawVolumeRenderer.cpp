@@ -150,7 +150,7 @@ bool RawVolumeRenderer::update(int idx, const voxel::VertexArray& vertices, cons
 	}
 	core_trace_scoped(RawVolumeRendererUpdate);
 
-	if (indices.empty()) {
+	if (indices.empty() || vertices.empty()) {
 		_vertexBuffer[idx].update(_vertexBufferIndex[idx], nullptr, 0);
 		_vertexBuffer[idx].update(_indexBufferIndex[idx], nullptr, 0);
 		return true;

@@ -71,8 +71,13 @@ bool WorldChunkMgr::initTerrainBuffer(ChunkBuffer* chunk) {
 
 	const voxel::VertexArray& vertices = chunk->mesh.getVertexVector();
 	const voxel::IndexArray& indices = chunk->mesh.getIndexVector();
-	chunk->_buffer.update(chunk->_vbo, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type));
-	chunk->_buffer.update(chunk->_ibo, &indices.front(), indices.size() * sizeof(voxel::IndexArray::value_type));
+	if (vertices.empty() || indices.empty()) {
+		chunk->_buffer.update(chunk->_vbo, nullptr, 0);
+		chunk->_buffer.update(chunk->_ibo, nullptr, 0);
+	} else {
+		chunk->_buffer.update(chunk->_vbo, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type));
+		chunk->_buffer.update(chunk->_ibo, &indices.front(), indices.size() * sizeof(voxel::IndexArray::value_type));
+	}
 
 	return true;
 }
