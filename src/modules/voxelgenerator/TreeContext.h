@@ -65,6 +65,9 @@ struct TreeFir : TreeConfig {
 struct TreePine : TreeConfig {
 	TreePine() {
 		trunkHeight = 30;
+		leavesHeight = 20;
+		leavesDepth = 14;
+		leavesWidth = 14;
 	}
 	int startWidth = 2;
 	int startDepth = 2;
