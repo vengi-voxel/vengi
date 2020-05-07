@@ -50,6 +50,9 @@ struct TreePalm : TreeConfig {
 };
 
 struct TreeFir : TreeConfig {
+	TreeFir() {
+		trunkHeight = 30;
+	}
 	int branches = 12;
 	float w = 1.3f;
 	int amount = 3;
@@ -60,6 +63,9 @@ struct TreeFir : TreeConfig {
 };
 
 struct TreePine : TreeConfig {
+	TreePine() {
+		trunkHeight = 30;
+	}
 	int startWidth = 2;
 	int startDepth = 2;
 	int singleLeafHeight = 2;

@@ -609,7 +609,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		_treeGeneratorContext.cfg.pos = sceneMgr().referencePosition();
 		uint8_t *basePtr = (uint8_t*)&_treeGeneratorContext;
 		for (const TreeWidget& w : _treeWidgets) {
-			if (w.treeType != _treeGeneratorContext.cfg.type) {
+			if (w.treeType != voxelgenerator::TreeType::Max && w.treeType != _treeGeneratorContext.cfg.type) {
 				continue;
 			}
 			uint8_t *targetPtr = basePtr + w.ctxOffset;
