@@ -75,7 +75,7 @@ struct TreeFir : TreeConfig {
 	int stepHeight = 10;
 	int branchStrength = 1;
 	int branchDownwardOffset = 4;
-	float branchPositionFactor = 1.8;
+	float branchPositionFactor = 1.8f;
 };
 
 struct TreePine : TreeConfig {

@@ -39,7 +39,7 @@ core::AppState TestVoxelGPU::onInit() {
 	_volume = std::make_shared<voxel::RawVolume>(region);
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(_volume.get());
-	voxelgenerator::noise::generate(wrapper, 4, 2.0, 0.01, 0.5, voxelgenerator::noise::NoiseType::ridgedMF, random);
+	voxelgenerator::noise::generate(wrapper, 4, 2.0f, 0.01f, 0.5f, voxelgenerator::noise::NoiseType::ridgedMF, random);
 
 	compute::TextureConfig cfg3d;
 	cfg3d.type(compute::TextureType::Texture3D).format(compute::TextureFormat::RG).dataformat(compute::TextureDataFormat::UNSIGNED_INT8);
