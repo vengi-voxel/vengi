@@ -96,13 +96,13 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 
 	alignas(32) std::vector<Vertex> vertices;
 	vertices.reserve(shapeBuilder.getVertices().size());
+	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
+		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
+	});
 	const void* verticesData = nullptr;
 	if (!vertices.empty()) {
 		verticesData = &vertices.front();
 	}
-	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
-		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
-	});
 	_vertexIndex[meshIndex] = _vbo[meshIndex].create(verticesData, vertices.size() * sizeof(Vertex));
 	if (_vertexIndex[meshIndex] == -1) {
 		Log::error("Could not create vbo for vertices");
@@ -165,17 +165,29 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
 		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
 	});
+	const void* verticesData = nullptr;
+	if (!vertices.empty()) {
+		verticesData = &vertices.front();
+	}
 	video::Buffer& vbo = _vbo[meshIndex];
-	core_assert_always(vbo.update(_vertexIndex[meshIndex], &vertices.front(), vertices.size() * sizeof(Vertex)));
+	core_assert_always(vbo.update(_vertexIndex[meshIndex], verticesData, vertices.size() * sizeof(Vertex)));
 	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
-	vbo.update(_indexIndex[meshIndex], &indices.front(), indices.size() * sizeof(video::ShapeBuilder::Indices::value_type));
+	const void* indicesData = nullptr;
+	if (!indices.empty()) {
+		indicesData = &indices.front();
+	}
+	vbo.update(_indexIndex[meshIndex], indicesData, indices.size() * sizeof(video::ShapeBuilder::Indices::value_type));
 	const video::ShapeBuilder::Texcoords& uvs = shapeBuilder.getTexcoords();
 	_texcoords[meshIndex] = !uvs.empty();
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
 bool ShapeRenderer::updatePositions(uint32_t meshIndex, const std::vector<glm::vec3>& positions) {
-	return updatePositions(meshIndex, glm::value_ptr(positions.front()), core::vectorSize(positions));
+	const float* posBuf = nullptr;
+	if (!positions.empty()) {
+		posBuf = glm::value_ptr(positions.front());
+	}
+	return updatePositions(meshIndex, posBuf, core::vectorSize(positions));
 }
 
 bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, size_t posBufLength) {
