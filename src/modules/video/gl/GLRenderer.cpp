@@ -47,6 +47,31 @@ static RenderState s;
 #define SANITY_CHECKS_GL 0
 #define DIRECT_STATE_ACCESS 0
 
+static void validate(Id handle) {
+#ifdef DEBUG
+	const GLuint lid = (GLuint)handle;
+	glValidateProgram(lid);
+	video::checkError();
+	GLint success = 0;
+	glGetProgramiv(lid, GL_VALIDATE_STATUS, &success);
+	video::checkError();
+	GLint logLength = 0;
+	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
+	video::checkError();
+	if (logLength > 1) {
+		core::String message;
+		message.reserve(logLength);
+		glGetProgramInfoLog(lid, logLength, nullptr, &message[0]);
+		video::checkError();
+		if (success == GL_FALSE) {
+			Log::error("Validation output%s", message.c_str());
+		} else {
+			Log::warn("Validation output%s", message.c_str());
+		}
+	}
+#endif
+}
+
 bool checkError(bool triggerAssert) {
 #ifdef DEBUG
 	if (glGetError == nullptr) {
@@ -709,8 +734,9 @@ void deleteShader(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	core_assert(glIsShader((GLuint)id));
+	core_assert_msg(glIsShader((GLuint)id), "%u is no valid shader object", (unsigned int)id);
 	glDeleteShader((GLuint)id);
+	Log::debug("delete %u shader object", (unsigned int)id);
 	checkError();
 	id = InvalidId;
 }
@@ -721,6 +747,7 @@ Id genShader(ShaderType type) {
 	}
 	const GLenum glType = _priv::ShaderTypes[core::enumVal(type)];
 	const Id id = (Id)glCreateShader(glType);
+	Log::debug("create %u shader object", (unsigned int)id);
 	checkError();
 	return id;
 }
@@ -729,6 +756,7 @@ void deleteProgram(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
+	core_assert_msg(glIsProgram((GLuint)id), "%u is no valid program object", (unsigned int)id);
 	glDeleteProgram((GLuint)id);
 	checkError();
 	id = InvalidId;
@@ -1355,6 +1383,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset
 	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
+	video::validate(_priv::s.programHandle);
 	glDrawElements(glMode, (GLsizei)numIndices, glType, offset);
 	checkError();
 }
@@ -1370,6 +1399,7 @@ void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, siz
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
 	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	video::validate(_priv::s.programHandle);
 	glDrawElementsInstanced(glMode, (GLsizei)numIndices, glType, nullptr, (GLsizei)amount);
 	checkError();
 }
@@ -1382,6 +1412,7 @@ void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, si
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
 	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	video::validate(_priv::s.programHandle);
 	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, glType, GL_OFFSET_CAST(indexSize * baseIndex), (GLint)baseVertex);
 	checkError();
 }
@@ -1389,6 +1420,7 @@ void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, si
 void drawArrays(Primitive mode, size_t count) {
 	video_trace_scoped(DrawArrays);
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	video::validate(_priv::s.programHandle);
 	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
 	checkError();
 }
@@ -1396,6 +1428,7 @@ void drawArrays(Primitive mode, size_t count) {
 void drawInstancedArrays(Primitive mode, size_t count, size_t amount) {
 	video_trace_scoped(DrawInstancedArrays);
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	video::validate(_priv::s.programHandle);
 	glDrawArraysInstanced(glMode, (GLint)0, (GLsizei)count, (GLsizei)amount);
 	checkError();
 }
@@ -1538,27 +1571,6 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 		return false;
 	}
 
-#ifdef DEBUG
-	glValidateProgram(lid);
-	video::checkError();
-	GLint success = 0, logLength = 0;
-	glGetProgramiv(lid, GL_VALIDATE_STATUS, &success);
-	video::checkError();
-	if (success == GL_FALSE) {
-		Log::error("Failed to validate: %s", name.c_str());
-	}
-	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
-	video::checkError();
-	if (logLength > 0) {
-		core::String message;
-		message.reserve(logLength);
-		if (logLength > 1) {
-			glGetProgramInfoLog(lid, logLength, nullptr, &message[0]);
-			video::checkError();
-		}
-		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
-	}
-#endif
 	return true;
 }
 
@@ -1592,6 +1604,8 @@ bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
 	if (!checkLimit(workGroups.z, Limit::MaxComputeWorkGroupCountZ)) {
 		return false;
 	}
+
+	video::validate(program);
 	glDispatchCompute((GLuint)workGroups.x, (GLuint)workGroups.y, (GLuint)workGroups.z);
 	video::checkError();
 	if (wait && glMemoryBarrier != nullptr) {
@@ -1647,27 +1661,6 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 		return false;
 	}
 
-#if 0
-	glValidateProgram(lid);
-	video::checkError();
-	GLint success = 0, logLength = 0;
-	glGetProgramiv(lid, GL_VALIDATE_STATUS, &success);
-	video::checkError();
-	if (success == GL_FALSE) {
-		Log::error("Failed to validate: %s", name.c_str());
-	}
-	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
-	video::checkError();
-	if (logLength > 0) {
-		core::String message(logLength, '\n');
-		if (message.size() > 1) {
-			glGetProgramInfoLog(lid, message.size(), nullptr, &message[0]);
-		video::checkError();
-		}
-		message.resize(core_max(logLength, 1) - 1);
-		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
-	}
-#endif
 	return true;
 }
 
