@@ -78,9 +78,8 @@ bool VoxEdit::newFile(bool force) {
 }
 
 core::AppState VoxEdit::onCleanup() {
-	const core::AppState state = Super::onCleanup();
 	_sceneMgr.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 void VoxEdit::onDropFile(const core::String& file) {

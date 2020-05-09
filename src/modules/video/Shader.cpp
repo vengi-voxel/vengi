@@ -197,6 +197,7 @@ bool Shader::load(const core::String& name, const core::String& buffer, ShaderTy
 		_shader[(int)shaderType] = id;
 	}
 	if (!video::compileShader(id, shaderType, source, _name)) {
+		_shader[(int)shaderType] = InvalidId;
 		Log::error("Failed to compile shader for %s\n", name.c_str());
 		return false;
 	}
