@@ -709,6 +709,7 @@ void deleteShader(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
+	core_assert(glIsShader((GLuint)id));
 	glDeleteShader((GLuint)id);
 	checkError();
 	id = InvalidId;
@@ -1594,22 +1595,27 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 	video_trace_scoped(LinkShader);
 	const GLuint lid = (GLuint)program;
 	glAttachShader(lid, (GLuint)vert);
+	checkError();
 	glAttachShader(lid, (GLuint)frag);
+	checkError();
 	if (geom != InvalidId) {
 		glAttachShader(lid, (GLuint)geom);
+		checkError();
 	}
 
 	glLinkProgram(lid);
-	GLint status;
+	checkError();
+	GLint status = 0;
 	glGetProgramiv(lid, GL_LINK_STATUS, &status);
 	checkError();
-	GLint infoLogLength;
+	GLint infoLogLength = 0;
 	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
+	checkError();
 
 	if (infoLogLength > 0) {
 		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
 		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
-		video::checkError();
+		checkError();
 		const core::String linkLog(strInfoLog, static_cast<size_t>(infoLogLength));
 		if (status != GL_TRUE) {
 			Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
