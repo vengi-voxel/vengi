@@ -38,9 +38,8 @@ core::AppState TestMeshRenderer::onInit() {
 }
 
 core::AppState TestMeshRenderer::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_meshRenderer.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 void TestMeshRenderer::doRender() {

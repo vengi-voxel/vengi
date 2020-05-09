@@ -45,9 +45,8 @@ AbstractBenchmark::BenchmarkApp::BenchmarkApp(const metric::MetricPtr& metric, c
 }
 
 AppState AbstractBenchmark::BenchmarkApp::onCleanup() {
-	AppState state = Super::onCleanup();
 	_benchmark->onCleanupApp();
-	return state;
+	return Super::onCleanup();
 }
 
 AppState AbstractBenchmark::BenchmarkApp::onInit() {

@@ -30,10 +30,9 @@ void TestPlane::doRender() {
 }
 
 core::AppState TestPlane::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_shapeBuilder.shutdown();
 	_shapeRenderer.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 TEST_APP(TestPlane)

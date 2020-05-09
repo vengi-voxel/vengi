@@ -58,11 +58,10 @@ core::AppState TestVoxelGPU::onInit() {
 }
 
 core::AppState TestVoxelGPU::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_mesher.shutdown();
 	_volumeTexture->shutdown();
 	_volume = std::shared_ptr<voxel::RawVolume>();
-	return state;
+	return Super::onCleanup();
 }
 
 core::AppState TestVoxelGPU::onRunning() {

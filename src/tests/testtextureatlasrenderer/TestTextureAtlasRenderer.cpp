@@ -86,12 +86,11 @@ void TestTextureAtlasRenderer::updateModelMatrix() {
 }
 
 core::AppState TestTextureAtlasRenderer::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_meshRenderer.shutdown();
 	_atlasRenderer.shutdown();
 	_textureShader.shutdown();
 	_vbo.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 void TestTextureAtlasRenderer::onRenderUI() {

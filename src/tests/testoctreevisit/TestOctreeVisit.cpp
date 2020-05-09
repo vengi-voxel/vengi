@@ -114,9 +114,8 @@ void TestOctreeVisit::doRender() {
 }
 
 core::AppState TestOctreeVisit::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_shapeRenderer.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 TEST_APP(TestOctreeVisit)

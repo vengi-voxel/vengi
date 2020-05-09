@@ -156,8 +156,6 @@ core::AppState Thumbnailer::onRunning() {
 }
 
 core::AppState Thumbnailer::onCleanup() {
-	core::AppState state = Super::onCleanup();
-
 	const std::vector<voxel::RawVolume*>& old = _renderer.shutdown();
 	for (auto* v : old) {
 		delete v;
@@ -165,7 +163,7 @@ core::AppState Thumbnailer::onCleanup() {
 
 	_frameBuffer.shutdown();
 
-	return state;
+	return Super::onCleanup();
 }
 
 int main(int argc, char *argv[]) {

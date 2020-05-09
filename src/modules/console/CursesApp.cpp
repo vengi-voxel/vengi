@@ -31,9 +31,8 @@ core::AppState CursesApp::onInit() {
 }
 
 core::AppState CursesApp::onCleanup() {
-	const core::AppState state = Super::onCleanup();
 	_console.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 core::AppState CursesApp::onRunning() {

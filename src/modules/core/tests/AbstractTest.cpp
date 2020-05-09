@@ -56,9 +56,8 @@ AbstractTest::TestApp::TestApp(const metric::MetricPtr& metric, const io::Filesy
 }
 
 AppState AbstractTest::TestApp::onCleanup() {
-	AppState state = Super::onCleanup();
 	_test->onCleanupApp();
-	return state;
+	return Super::onCleanup();
 }
 
 AppState AbstractTest::TestApp::onInit() {

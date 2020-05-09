@@ -93,9 +93,8 @@ core::AppState Server::onInit() {
 }
 
 core::AppState Server::onCleanup() {
-	const core::AppState state = Super::onCleanup();
 	_serverLoop->shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 core::AppState Server::onRunning() {

@@ -19,8 +19,8 @@ core::AppState TestTemplate::onInit() {
 }
 
 core::AppState TestTemplate::onCleanup() {
-	core::AppState state = Super::onCleanup();
-	return state;
+	// your cleanup here
+	return Super::onCleanup();
 }
 
 void TestTemplate::doRender() {

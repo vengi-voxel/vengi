@@ -206,7 +206,6 @@ core::AppState TestGPUMC::onInit() {
 }
 
 core::AppState TestGPUMC::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	if (_rawData) {
 		_rawData->shutdown();
 	}
@@ -228,7 +227,7 @@ core::AppState TestGPUMC::onCleanup() {
 	compute::deleteBuffer(cubeIndexesBuffer);
 	computevideo::shutdown();
 	compute::shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 int TestGPUMC::calculateTotalSum() {

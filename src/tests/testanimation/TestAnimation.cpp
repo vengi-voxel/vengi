@@ -260,12 +260,11 @@ void TestAnimation::onRenderUI() {
 }
 
 core::AppState TestAnimation::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_stock.shutdown();
 	_animationCache->shutdown();
 	_stockDataProvider->shutdown();
 	_renderer.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 int main(int argc, char *argv[]) {

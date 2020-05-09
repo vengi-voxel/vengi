@@ -88,7 +88,6 @@ void TestComputeTexture3D::initVolume() {
 }
 
 core::AppState TestComputeTexture3D::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	if (_texture3DCompute) {
 		_texture3DCompute->shutdown();
 	}
@@ -98,7 +97,7 @@ core::AppState TestComputeTexture3D::onCleanup() {
 	_renderShader.shutdown();
 	_renderer.shutdown();
 	_volume = std::shared_ptr<voxel::RawVolume>();
-	return state;
+	return Super::onCleanup();
 }
 
 core::AppState TestComputeTexture3D::onRunning() {

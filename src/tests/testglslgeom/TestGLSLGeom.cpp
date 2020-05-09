@@ -40,10 +40,9 @@ core::AppState TestGLSLGeom::onInit() {
 }
 
 core::AppState TestGLSLGeom::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_testShader.shutdown();
 	_buffer.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 void TestGLSLGeom::onRenderUI() {

@@ -134,7 +134,6 @@ core::AppState TestCamera::onRunning() {
 }
 
 core::AppState TestCamera::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	for (int i = 0; i < CAMERAS; ++i) {
 		_frustums[i].shutdown();
 	}
@@ -144,7 +143,7 @@ core::AppState TestCamera::onCleanup() {
 		_entities[i].shutdown();
 	}
 
-	return state;
+	return Super::onCleanup();
 }
 
 bool TestCamera::onMouseWheel(int32_t x, int32_t y) {

@@ -183,9 +183,8 @@ void TestShapeBuilder::onRenderUI() {
 }
 
 core::AppState TestShapeBuilder::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_shapeRenderer.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 TEST_APP(TestShapeBuilder)

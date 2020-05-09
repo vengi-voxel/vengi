@@ -46,13 +46,12 @@ core::AppState TestGLSLComp::onInit() {
 }
 
 core::AppState TestGLSLComp::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_testShader.shutdown();
 	_renderer.shutdown();
 	if (_texture) {
 		_texture->shutdown();
 	}
-	return state;
+	return Super::onCleanup();
 }
 
 void TestGLSLComp::doRender() {

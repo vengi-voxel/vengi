@@ -298,7 +298,6 @@ core::AppState TestTraze::onRunning() {
 }
 
 core::AppState TestTraze::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_voxelFontRender.shutdown();
 	_soundMgr.shutdown();
 	const std::vector<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
@@ -307,7 +306,7 @@ core::AppState TestTraze::onCleanup() {
 	}
 	_protocol.shutdown();
 	_messageQueue.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 void TestTraze::onRenderUI() {

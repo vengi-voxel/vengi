@@ -323,7 +323,6 @@ core::AppState Client::onCleanup() {
 	_animationCache->shutdown();
 	Log::info("shutting down the world renderer");
 	_worldRenderer.shutdown();
-	core::AppState state = Super::onCleanup();
 	Log::info("shutting down the world");
 	_worldMgr->shutdown();
 	_floorResolver.shutdown();
@@ -338,7 +337,7 @@ core::AppState Client::onCleanup() {
 	_volumeCache->shutdown();
 	Log::info("everything was shut down");
 
-	return state;
+	return Super::onCleanup();
 }
 
 core::AppState Client::onRunning() {

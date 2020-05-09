@@ -97,7 +97,6 @@ core::AppState TestBiomes::onRunning() {
 }
 
 core::AppState TestBiomes::onCleanup() {
-	core::AppState state = Super::onCleanup();
 	_biomeMgr.shutdown();
 	_workQueue.abortWait();
 	// TODO: clear mem: while () {}
@@ -106,7 +105,7 @@ core::AppState TestBiomes::onCleanup() {
 		_texture->shutdown();
 	}
 	_renderer.shutdown();
-	return state;
+	return Super::onCleanup();
 }
 
 void TestBiomes::doRender() {
