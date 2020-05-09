@@ -47,6 +47,9 @@ public:
 	void setComparator(Comparator comparator) {
 		core::ScopedLock lock(_mutex);
 		_comparator = comparator;
+		if (_data.empty()) {
+			return;
+		}
 		std::make_heap(const_cast<Data*>(&_data.front()), const_cast<Data*>(&_data.front()) + _data.size(), _comparator);
 	}
 
@@ -66,6 +69,9 @@ public:
 
 	void sort() {
 		core::ScopedLock lock(_mutex);
+		if (_data.empty()) {
+			return;
+		}
 		std::make_heap(const_cast<Data*>(&_data.front()), const_cast<Data*>(&_data.front()) + _data.size(), _comparator);
 	}
 

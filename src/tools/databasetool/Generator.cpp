@@ -200,7 +200,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 			continue;
 		}
 		src += "\t\t\t_autoIncrementField = \"";
-		src +=c.fields.front();
+		src += c.fields.front();
 		src += "\";\n";
 	}
 	if (!table.uniqueKeys.empty()) {
