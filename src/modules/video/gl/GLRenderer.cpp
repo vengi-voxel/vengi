@@ -1439,7 +1439,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 	glCompileShader(lid);
 	video::checkError();
 
-	GLint status;
+	GLint status = 0;
 	glGetShaderiv(lid, GL_COMPILE_STATUS, &status);
 	video::checkError();
 	GLint infoLogLength = 0;
@@ -1502,6 +1502,7 @@ bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode
 			(GLsizei) transformFeedbackStarts.size(),
 			transformFeedbackStarts.data(),
 			(GLenum)_priv::TransformFeedbackCaptureModes[core::enumVal(mode)]);
+	video::checkError();
 	return true;
 }
 
@@ -1509,12 +1510,14 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 	video_trace_scoped(LinkComputeShader);
 	const GLuint lid = (GLuint)program;
 	glAttachShader(lid, comp);
+	video::checkError();
 	glLinkProgram(lid);
-	GLint status;
+	GLint status = 0;
 	glGetProgramiv(lid, GL_LINK_STATUS, &status);
-	checkError();
-	GLint infoLogLength;
+	video::checkError();
+	GLint infoLogLength = 0;
 	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
+	video::checkError();
 
 	if (infoLogLength > 0) {
 		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
@@ -1529,7 +1532,7 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 		delete[] strInfoLog;
 	}
 	glDetachShader(lid, comp);
-	checkError();
+	video::checkError();
 	if (status != GL_TRUE) {
 		deleteProgram(program);
 		return false;
@@ -1537,17 +1540,21 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 
 #ifdef DEBUG
 	glValidateProgram(lid);
-	GLint success, logLength;
+	video::checkError();
+	GLint success = 0, logLength = 0;
 	glGetProgramiv(lid, GL_VALIDATE_STATUS, &success);
+	video::checkError();
 	if (success == GL_FALSE) {
 		Log::error("Failed to validate: %s", name.c_str());
 	}
 	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
+	video::checkError();
 	if (logLength > 0) {
 		core::String message;
 		message.reserve(logLength);
 		if (logLength > 1) {
 			glGetProgramInfoLog(lid, logLength, nullptr, &message[0]);
+			video::checkError();
 		}
 		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
 	}
@@ -1567,6 +1574,7 @@ bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 	const GLboolean layered = GL_FALSE;
 	const GLint layer = 0;
 	glBindImageTexture(unit, (GLuint)textureHandle, level, layered, layer, glAccessMode, glFormat);
+	video::checkError();
 	return true;
 }
 
@@ -1585,8 +1593,10 @@ bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
 		return false;
 	}
 	glDispatchCompute((GLuint)workGroups.x, (GLuint)workGroups.y, (GLuint)workGroups.z);
+	video::checkError();
 	if (wait && glMemoryBarrier != nullptr) {
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+		video::checkError();
 	}
 	return false;
 }
@@ -1625,11 +1635,13 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 		delete[] strInfoLog;
 	}
 	glDetachShader(lid, (GLuint)vert);
+	video::checkError();
 	glDetachShader(lid, (GLuint)frag);
+	video::checkError();
 	if (geom != InvalidId) {
 		glDetachShader(lid, (GLuint)geom);
+		video::checkError();
 	}
-	checkError();
 	if (status != GL_TRUE) {
 		deleteProgram(program);
 		return false;
@@ -1637,16 +1649,20 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 
 #if 0
 	glValidateProgram(lid);
-	GLint success, logLength;
+	video::checkError();
+	GLint success = 0, logLength = 0;
 	glGetProgramiv(lid, GL_VALIDATE_STATUS, &success);
+	video::checkError();
 	if (success == GL_FALSE) {
 		Log::error("Failed to validate: %s", name.c_str());
 	}
 	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &logLength);
+	video::checkError();
 	if (logLength > 0) {
 		core::String message(logLength, '\n');
 		if (message.size() > 1) {
 			glGetProgramInfoLog(lid, message.size(), nullptr, &message[0]);
+		video::checkError();
 		}
 		message.resize(core_max(logLength, 1) - 1);
 		Log::info("Validation output: %s\n%s", name.c_str(), message.c_str());
@@ -1675,6 +1691,7 @@ int fetchAttributes(Id program, ShaderAttributes& attributes, const core::String
 		GLint size;
 		GLenum type;
 		glGetActiveAttrib(lid, i, MAX_SHADER_VAR_NAME - 1, &length, &size, &type, varName);
+		video::checkError();
 		const int location = glGetAttribLocation(lid, varName);
 		attributes.put(varName, location);
 		Log::debug("attribute location for %s is %i (shader %s)", varName, location, name.c_str());
