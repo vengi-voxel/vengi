@@ -55,14 +55,14 @@ core::AppState TestComputeTexture3D::onInit() {
 void TestComputeTexture3D::initVolume() {
 	int width = _workSize.x;
 	int height = _workSize.y;
-	_output.resize(_workSize.x * _workSize.y * 4);
+	_output.resize(_workSize.x * (size_t)_workSize.y * 4);
 	_output.shrink_to_fit();
 
 	voxel::Region region(0, 0, 0, width - 1, height - 1, _depth - 1);
 	_volume = std::make_shared<voxel::RawVolume>(region);
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(_volume.get());
-	voxelgenerator::noise::generate(wrapper, 4, 2.0, 0.01, 0.5, voxelgenerator::noise::NoiseType::ridgedMF, random);
+	voxelgenerator::noise::generate(wrapper, 4, 2.0f, 0.01f, 0.5f, voxelgenerator::noise::NoiseType::ridgedMF, random);
 	const int amount = voxel::visitVolume(*_volume.get(), [] (int x, int y, int z, const voxel::Voxel& voxel) {
 	});
 	Log::info("%i voxels", amount);
