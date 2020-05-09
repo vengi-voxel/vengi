@@ -1475,11 +1475,14 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 	GLint status = 0;
 	glGetShaderiv(lid, GL_COMPILE_STATUS, &status);
 	video::checkError();
+	if (status == GL_TRUE) {
+		return true;
+	}
 	GLint infoLogLength = 0;
 	glGetShaderiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
 	video::checkError();
 
-	if (infoLogLength > 0) {
+	if (infoLogLength > 1) {
 		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
 		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
 		video::checkError();
@@ -1511,11 +1514,8 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 			Log::info("%s: %s", name.c_str(), compileLog.c_str());
 		}
 	}
-	if (status != GL_TRUE) {
-		deleteShader(id);
-		return false;
-	}
-	return true;
+	deleteShader(id);
+	return false;
 }
 
 bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode, const core::List<core::String>& varyings) {
@@ -1548,21 +1548,23 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 	GLint status = 0;
 	glGetProgramiv(lid, GL_LINK_STATUS, &status);
 	video::checkError();
-	GLint infoLogLength = 0;
-	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
-	video::checkError();
-
-	if (infoLogLength > 0) {
-		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
-		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
+	if (status == GL_FALSE) {
+		GLint infoLogLength = 0;
+		glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
 		video::checkError();
-		const core::String linkLog(strInfoLog, static_cast<size_t>(infoLogLength));
-		if (status != GL_TRUE) {
-			Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
-		} else {
-			Log::info("%s: %s", name.c_str(), linkLog.c_str());
+
+		if (infoLogLength > 1) {
+			GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+			glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
+			video::checkError();
+			const core::String linkLog(strInfoLog, static_cast<size_t>(infoLogLength));
+			if (status != GL_TRUE) {
+				Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
+			} else {
+				Log::info("%s: %s", name.c_str(), linkLog.c_str());
+			}
+			delete[] strInfoLog;
 		}
-		delete[] strInfoLog;
 	}
 	glDetachShader(lid, comp);
 	video::checkError();
@@ -1632,21 +1634,23 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 	GLint status = 0;
 	glGetProgramiv(lid, GL_LINK_STATUS, &status);
 	checkError();
-	GLint infoLogLength = 0;
-	glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
-	checkError();
-
-	if (infoLogLength > 0) {
-		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
-		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
+	if (status == GL_FALSE) {
+		GLint infoLogLength = 0;
+		glGetProgramiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
 		checkError();
-		const core::String linkLog(strInfoLog, static_cast<size_t>(infoLogLength));
-		if (status != GL_TRUE) {
-			Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
-		} else {
-			Log::info("%s: %s", name.c_str(), linkLog.c_str());
+
+		if (infoLogLength > 1) {
+			GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+			glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
+			checkError();
+			const core::String linkLog(strInfoLog, static_cast<size_t>(infoLogLength));
+			if (status != GL_TRUE) {
+				Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
+			} else {
+				Log::info("%s: %s", name.c_str(), linkLog.c_str());
+			}
+			delete[] strInfoLog;
 		}
-		delete[] strInfoLog;
 	}
 	glDetachShader(lid, (GLuint)vert);
 	video::checkError();
