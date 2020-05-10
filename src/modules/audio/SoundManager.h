@@ -37,7 +37,6 @@ private:
 	glm::vec3 _listenerPosition;
 	_Mix_Music *_music = nullptr;
 	core::String _musicPlaying;
-	int _currentChannel = 0;
 	SoundState _state = SoundState::CLOSED;
 	uint32_t _time = 0u;
 
