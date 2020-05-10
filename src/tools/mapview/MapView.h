@@ -10,6 +10,7 @@
 #include "frontend/ClientEntity.h"
 #include "frontend/PlayerAction.h"
 #include "render/Axis.h"
+#include "audio/SoundManager.h"
 #include "frontend/PlayerMovement.h"
 #include "voxelrender/PlayerCamera.h"
 #include "voxelformat/MeshCache.h"
@@ -46,6 +47,7 @@ protected:
 	voxelrender::PlayerCamera _camera;
 	testcore::DepthBufferRenderer _depthBufferRenderer;
 	voxelworld::CachedFloorResolver _floorResolver;
+	audio::SoundManager _soundManager;
 
 	bool _lineModeRendering = false;
 	bool _freelook = false;

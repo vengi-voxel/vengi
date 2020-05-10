@@ -36,7 +36,7 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCach
 		Super(metric, filesystem, eventBus, timeProvider),
 		_animationCache(animationCache), _worldMgr(worldMgr), _worldPager(worldPager),
 		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _meshCache(meshCache),
-		_camera(worldMgr, _worldRenderer) {
+		_camera(worldMgr, _worldRenderer), _soundManager(filesystem) {
 	init(ORGANISATION, "mapview");
 }
 
@@ -68,6 +68,7 @@ core::AppState MapView::onConstruct() {
 
 	_meshSize = core::Var::get(cfg::VoxelMeshSize, "32", core::CV_READONLY);
 
+	_soundManager.construct();
 	_volumeCache->construct();
 	_worldRenderer.construct();
 
@@ -116,6 +117,10 @@ core::AppState MapView::onInit() {
 		return core::AppState::InitFailure;
 	}
 
+	if (!_soundManager.init()) {
+		Log::warn("Failed to initialize the sound manager");
+	}
+
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
 		return core::AppState::InitFailure;
@@ -159,6 +164,8 @@ core::AppState MapView::onInit() {
 	}
 
 	core::setBindingContext(core::BindingContext::World);
+
+	_soundManager.playMusic("ambience", true);
 
 	return state;
 }
@@ -402,6 +409,7 @@ core::AppState MapView::onRunning() {
 }
 
 core::AppState MapView::onCleanup() {
+	_soundManager.shutdown();
 	_stockDataProvider->shutdown();
 	_animationCache->shutdown();
 	_worldRenderer.shutdown();

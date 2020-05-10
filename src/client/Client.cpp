@@ -48,7 +48,7 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		Super(metric, filesystem, eventBus, timeProvider, texturePool, meshRenderer, textureAtlasRenderer), _animationCache(animationCache),
 		_network(network), _worldMgr(world), _clientPager(worldPager), _messageSender(messageSender),
 		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
-		_meshCache(meshCache), _camera(world, _worldRenderer) {
+		_meshCache(meshCache), _camera(world, _worldRenderer), _soundManager(filesystem) {
 	init(ORGANISATION, "client");
 }
 
@@ -114,6 +114,7 @@ void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
 core::AppState Client::onConstruct() {
 	core::AppState state = Super::onConstruct();
 
+	_soundManager.construct();
 	_volumeCache->construct();
 	_movement.construct();
 	_action.construct();
@@ -206,6 +207,10 @@ core::AppState Client::onInit() {
 	if (!_animationCache->init()) {
 		Log::error("Failed to initialize character cache");
 		return core::AppState::InitFailure;
+	}
+
+	if (!_soundManager.init()) {
+		Log::warn("Failed to initialize the sound manager");
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
@@ -317,6 +322,7 @@ core::AppState Client::onCleanup() {
 	Log::info("disconnect");
 	disconnect();
 
+	_soundManager.shutdown();
 	Log::info("shutting down the client components");
 	_stockDataProvider->shutdown();
 	Log::info("shutting down the character cache");

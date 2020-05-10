@@ -13,6 +13,7 @@
 #include "voxelformat/MeshCache.h"
 #include "core/Var.h"
 #include "core/Common.h"
+#include "audio/SoundManager.h"
 #include "voxelworld/WorldEvents.h"
 #include "voxelworld/WorldPager.h"
 #include "voxelworld/CachedFloorResolver.h"
@@ -52,6 +53,7 @@ protected:
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelformat::MeshCachePtr _meshCache;
 	voxelrender::PlayerCamera _camera;
+	audio::SoundManager _soundManager;
 
 	frontend::ClientEntityId id() const;
 

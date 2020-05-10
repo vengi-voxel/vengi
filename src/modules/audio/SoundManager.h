@@ -64,7 +64,7 @@ public:
 	void shutdown();
 
 	bool exists(const core::String& sound) const;
-	int playMusic(const core::String& music, bool loop);
+	int playMusic(const core::String& music, bool loop = true);
 	void haltMusic(int music);
 	void halt(int sound);
 	void haltAll();
