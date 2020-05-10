@@ -53,7 +53,7 @@ int VoxelFont::stringWidth(const char *str, int len) const {
 	int width = 0;
 	int i = 0;
 	const char **s = &str;
-	while (str[i] && i < len) {
+	while (i < len && str[i] != '\0') {
 		int c = core::utf8::next(s);
 		if (c == -1) {
 			break;

@@ -250,7 +250,7 @@ bool TBFontFace::renderGlyphs(const char *glyphStr, int glyphStrLen) {
 
 	bool has_all_glyphs = true;
 	int i = 0;
-	while ((glyphStr[i] != 0) && i < glyphStrLen) {
+	while (i < glyphStrLen && glyphStr[i] != '\0') {
 		UCS4 cp = utf8::decode_next(glyphStr, &i, glyphStrLen);
 		if (getGlyph(cp, true) == nullptr) {
 			has_all_glyphs = false;
@@ -343,7 +343,7 @@ void TBFontFace::drawString(int x, int y, const TBColor &color, const char *str,
 	}
 
 	int i = 0;
-	while ((str[i] != 0) && i < len) {
+	while (i < len && str[i] != '\0') {
 		UCS4 cp = utf8::decode_next(str, &i, len);
 		if (cp == 0xFFFF) {
 			continue;
@@ -375,7 +375,7 @@ void TBFontFace::drawString(int x, int y, const TBColor &color, const char *str,
 int TBFontFace::getStringWidth(const char *str, int len) {
 	int width = 0;
 	int i = 0;
-	while ((str[i] != 0) && i < len) {
+	while (i < len && str[i] != '\0') {
 		UCS4 cp = utf8::decode_next(str, &i, len);
 		if (cp == 0xFFFF) {
 			continue;
