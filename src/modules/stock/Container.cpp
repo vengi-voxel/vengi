@@ -105,7 +105,7 @@ ItemPtr Container::get(uint8_t x, uint8_t y) const {
 	}
 	for (const ContainerItem& item : _items) {
 		const ItemShape& shape = item.item->shape();
-		if (shape.isInShape(x - item.x, y - y)) {
+		if (shape.isInShape(x - item.x, y - item.y)) {
 			return item.item;
 		}
 	}
