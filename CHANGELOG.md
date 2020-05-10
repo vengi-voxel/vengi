@@ -2,6 +2,10 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
 
 #### 0.0.3 (XXXX-XX-XX)
 
+ General:
+   - Print stacktraces on asserts
+   - Improved tree generation (mainly used in voxedit)
+   - Fixed a few asserts in debug mode for the microsoft stl
 
 #### 0.0.2 (2020-05-06)
 
