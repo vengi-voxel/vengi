@@ -2,6 +2,15 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
 
 #### 0.0.3 (XXXX-XX-XX)
 
+ Assets:
+   - Added music tracks
+   - Updated and added some new voxel models
+
+ VoxEdit:
+   - Made some commands available to the ui
+   - Tweak `thicken` command
+   - Updated default tree generation ui values
+
  General:
    - Print stacktraces on asserts
    - Improved tree generation (mainly used in voxedit)
