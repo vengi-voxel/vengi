@@ -3,6 +3,8 @@
  */
 
 #include "core/GLM.h"
+#include "voxel/Voxel.h"
+#include "voxelutil/FloorTraceResult.h"
 #include "Shared_generated.h"
 #include <stdint.h>
 #include <glm/fwd.hpp>
@@ -11,7 +13,7 @@
 
 namespace shared {
 
-using WalkableFloorResolver = std::function<int(const glm::ivec3& pos, int maxWalkableHeight)>;
+using WalkableFloorResolver = std::function<voxelutil::FloorTraceResult(const glm::ivec3& pos, int maxWalkableHeight)>;
 
 class SharedMovement {
 protected:
@@ -21,7 +23,7 @@ protected:
 	bool _swimming = false;
 
 	float _fallingVelocity = 0.0f;
-	int _groundHeight = 0;
+	voxelutil::FloorTraceResult _floor;
 	float _delay = 0.0f;
 	float _speed = 0.0f;
 
@@ -46,6 +48,7 @@ public:
 	bool moving() const;
 	network::Animation animation() const;
 
+	voxel::Voxel groundVoxel() const;
 	int groundHeight() const;
 };
 
@@ -90,7 +93,11 @@ inline bool SharedMovement::gliding() const {
 }
 
 inline int SharedMovement::groundHeight() const {
-	return _groundHeight;
+	return _floor.heightLevel;
+}
+
+inline voxel::Voxel SharedMovement::groundVoxel() const {
+	return _floor.voxel;
 }
 
 }

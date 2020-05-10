@@ -10,6 +10,7 @@
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "ai/common/CharacterId.h"
+#include "voxelutil/FloorTraceResult.h"
 #include "core/IComponent.h"
 #include "backend/attack/AttackMgr.h"
 #include "persistence/ISavable.h"
@@ -128,7 +129,7 @@ public:
 	int npcCount() const;
 	int userCount() const;
 
-	int findFloor(const glm::ivec3& pos, int maxDistanceY = voxel::MAX_HEIGHT) const;
+	voxelutil::FloorTraceResult findFloor(const glm::ivec3& pos, int maxDistanceY = voxel::MAX_HEIGHT) const;
 	glm::ivec3 randomPos() const;
 
 	const DBChunkPersisterPtr& chunkPersister();

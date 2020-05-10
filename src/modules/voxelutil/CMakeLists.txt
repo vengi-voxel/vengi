@@ -2,6 +2,8 @@ set(LIB voxelutil)
 set(SRCS
 	AStarPathfinder.h
 	AStarPathfinderImpl.h
+	FloorTrace.h FloorTrace.cpp
+	FloorTraceResult.h
 	Raycast.h
 	Picking.h
 	VolumeMerger.h VolumeMerger.cpp

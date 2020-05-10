@@ -218,11 +218,11 @@ glm::vec3 MapView::spawnPos() const {
 	const int radius = 30;
 	for (int x = -radius; x < radius; ++x) {
 		for (int z = -radius; z < radius; ++z) {
-			const int groundPosY = _worldMgr->findWalkableFloor(glm::ivec3(x, voxel::MAX_HEIGHT / 2, z));
-			if (groundPosY <= voxel::MAX_WATER_HEIGHT) {
+			const voxelutil::FloorTraceResult& trace = _worldMgr->findWalkableFloor(glm::ivec3(x, voxel::MAX_HEIGHT / 2, z));
+			if (trace.heightLevel <= voxel::MAX_WATER_HEIGHT) {
 				continue;
 			}
-			return glm::vec3(x, (float)groundPosY, z);
+			return glm::vec3(x, (float)trace.heightLevel, z);
 		}
 	}
 	return glm::vec3(0.0f, 1.0f, 0.0f);

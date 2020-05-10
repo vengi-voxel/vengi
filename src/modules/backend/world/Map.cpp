@@ -243,7 +243,7 @@ NpcPtr Map::npc(EntityId id) {
 	return i->second;
 }
 
-int Map::findFloor(const glm::ivec3& pos, int maxDistanceY) const {
+voxelutil::FloorTraceResult Map::findFloor(const glm::ivec3& pos, int maxDistanceY) const {
 	return _voxelWorldMgr->findWalkableFloor(pos, maxDistanceY);
 }
 

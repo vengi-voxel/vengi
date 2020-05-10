@@ -99,7 +99,12 @@ bool Npc::route(const glm::ivec3& target) {
 
 void Npc::moveToGround() {
 	glm::vec3 pos = _aiChr->getPosition();
-	pos.y = _map->findFloor(pos);
+	const voxelutil::FloorTraceResult& trace = _map->findFloor(pos);
+	if (!trace.isValid()) {
+		Log::error("Could not find a valid floor position for the npc");
+		return;
+	}
+	pos.y = (float)trace.heightLevel;
 	_aiChr->setPosition(pos);
 }
 

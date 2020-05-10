@@ -70,9 +70,9 @@ glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, flo
 		newPos += calculateDelta(rot);
 	}
 	const int maxWalkableHeight = 3;
-	_groundHeight = heightResolver(glm::ivec3(glm::floor(newPos)), maxWalkableHeight);
-	if (_groundHeight < voxel::MIN_HEIGHT) {
-		_groundHeight = voxel::MIN_HEIGHT;
+	_floor = heightResolver(glm::ivec3(glm::floor(newPos)), maxWalkableHeight);
+	if (_floor.heightLevel < voxel::MIN_HEIGHT) {
+		_floor.heightLevel = voxel::MIN_HEIGHT;
 	}
 	_delay -= deltaFrameSeconds;
 	const float inputDelaySeconds = 0.5f;
@@ -102,8 +102,8 @@ glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, flo
 		_fallingVelocity -= gravity() * deltaFrameSeconds;
 	}
 	newPos.y += _fallingVelocity * deltaFrameSeconds;
-	if (newPos.y <= _groundHeight) {
-		newPos.y = _groundHeight;
+	if (newPos.y <= _floor.heightLevel) {
+		newPos.y = _floor.heightLevel;
 		_fallingVelocity = 0.0f;
 		_jumping = false;
 		_gliding = false;

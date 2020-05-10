@@ -11,6 +11,7 @@
 #include "core/io/File.h"
 #include "math/Random.h"
 #include "core/concurrent/Concurrency.h"
+#include "voxelutil/FloorTrace.h"
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxel/Voxel.h"
 
@@ -31,8 +32,8 @@ glm::ivec3 WorldMgr::randomPos() const {
 	int highestZ = 100;
 	const int x = _random.random(lowestX, highestX);
 	const int z = _random.random(lowestZ, highestZ);
-	const int y = findWalkableFloor(glm::ivec3(x, voxel::MAX_HEIGHT / 2, z));
-	return glm::ivec3(x, y, z);
+	const voxelutil::FloorTraceResult& trace = findWalkableFloor(glm::ivec3(x, voxel::MAX_HEIGHT / 2, z));
+	return glm::ivec3(x, trace.heightLevel, z);
 }
 
 void WorldMgr::reset() {
@@ -60,46 +61,9 @@ void WorldMgr::shutdown() {
 	_volumeData = nullptr;
 }
 
-int WorldMgr::findWalkableFloor(const glm::ivec3& position, int maxDistanceY) const {
+voxelutil::FloorTraceResult WorldMgr::findWalkableFloor(const glm::ivec3& position, int maxDistanceY) const {
 	voxel::PagedVolume::Sampler sampler(_volumeData);
-	return findWalkableFloor(&sampler, position, maxDistanceY);
-}
-
-int WorldMgr::findWalkableFloor(voxel::PagedVolume::Sampler *sampler, const glm::ivec3& position, int maxDistanceY) const {
-	core_trace_scoped(FindWalkableFloor);
-	sampler->setPosition(position);
-	if (!sampler->currentPositionValid()) {
-		return voxel::NO_FLOOR_FOUND;
-	}
-
-	const voxel::VoxelType type = sampler->voxel().getMaterial();
-	if (voxel::isEnterable(type)) {
-		const int maxDistance = (glm::min)(maxDistanceY, position.y);
-		for (int i = 0; i < maxDistance; ++i) {
-			sampler->moveNegativeY();
-			if (!sampler->currentPositionValid()) {
-				break;
-			}
-			const voxel::VoxelType mat = sampler->voxel().getMaterial();
-			if (!voxel::isEnterable(mat)) {
-				return sampler->position().y + 1;
-			}
-		}
-		return voxel::NO_FLOOR_FOUND;
-	}
-
-	const int maxDistance = (glm::min)(maxDistanceY, voxel::MAX_HEIGHT - position.y);
-	for (int i = 0; i < maxDistance; ++i) {
-		sampler->movePositiveY();
-		if (!sampler->currentPositionValid()) {
-			break;
-		}
-		const voxel::VoxelType mat = sampler->voxel().getMaterial();
-		if (voxel::isEnterable(mat)) {
-			return sampler->position().y;
-		}
-	}
-	return voxel::NO_FLOOR_FOUND;
+	return voxelutil::findWalkableFloor(&sampler, position, maxDistanceY);
 }
 
 }

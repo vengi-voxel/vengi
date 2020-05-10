@@ -9,6 +9,7 @@
 
 #include "voxel/PagedVolume.h"
 #include "voxelutil/Raycast.h"
+#include "voxelutil/FloorTraceResult.h"
 #include "voxelformat/VolumeCache.h"
 #include "voxel/Constants.h"
 #include "core/GLM.h"
@@ -40,8 +41,7 @@ public:
 	/**
 	 * @return The y component for the given x and z coordinates that is walkable - or @c NO_FLOOR_FOUND.
 	 */
-	int findWalkableFloor(const glm::ivec3& position, int maxDistanceY = voxel::MAX_HEIGHT) const;
-	int findWalkableFloor(voxel::PagedVolume::Sampler *sampler, const glm::ivec3& position, int maxDistanceY) const;
+	voxelutil::FloorTraceResult findWalkableFloor(const glm::ivec3& position, int maxDistanceY = voxel::MAX_HEIGHT) const;
 
 	bool init(uint32_t volumeMemoryMegaBytes = 1024, uint16_t chunkSideLength = 256);
 	void shutdown();
