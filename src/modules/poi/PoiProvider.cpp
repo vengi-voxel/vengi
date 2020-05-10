@@ -11,18 +11,27 @@
 
 namespace poi {
 
+static const uint64_t PoiSeconds[] = {
+	0,
+	1800,
+	120,
+	60,
+	1800
+};
+static_assert(lengthof(PoiSeconds) == (int)Type::MAX + 1);
+
 PoiProvider::PoiProvider(const core::TimeProviderPtr& timeProvider) :
 		_timeProvider(timeProvider), _lock("PoiProvider") {
 }
 
 void PoiProvider::update(long /*dt*/) {
-	constexpr uint64_t seconds = 60L * 1000L;
 	const uint64_t currentMillis = _timeProvider->tickNow();
 	core::ScopedWriteLock scoped(_lock);
 	// even if this is timed out - if we only have one, keep it.
 	while (_pois.size() > 1) {
 		Poi& poi = _pois.front();
-		if (poi.time + seconds > currentMillis) {
+		const uint64_t runtime = (uint64_t)PoiSeconds[(int)poi.type] * (uint64_t)1000;
+		if (poi.time + runtime > currentMillis) {
 			break;
 		}
 		_pois.pop_front();
