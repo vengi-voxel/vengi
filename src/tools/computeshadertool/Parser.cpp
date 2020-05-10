@@ -50,24 +50,24 @@ static bool validate(Kernel& kernel) {
 }
 
 static const simplecpp::Token *parseStruct(const core::String& filename, const simplecpp::Token *tok, core::List<Struct>& structs) {
-	tok = tok->next;
-	if (!tok) {
+	if (!tok->next) {
 		Log::error("%s:%i:%i: error: Failed to parse struct - not enough tokens - expected name",
 				tok->location.file().c_str(), tok->location.line, tok->location.col);
-		return tok;
+		return nullptr;
 	}
+	tok = tok->next;
 	Struct structVar;
 	structVar.name = tok->str().c_str();
 	if (!tok->next) {
 		Log::error("%s:%i:%i: error: Failed to parse struct - not enough tokens",
 				tok->location.file().c_str(), tok->location.line, tok->location.col);
-		return tok;
+		return nullptr;
 	}
 	tok = tok->next;
 	if (!tok->next) {
 		Log::error("%s:%i:%i: error: Failed to parse struct - not enough tokens",
 				tok->location.file().c_str(), tok->location.line, tok->location.col);
-		return tok;
+		return nullptr;
 	}
 	if (tok->str() != "{") {
 		for (; tok; tok = tok->next) {
@@ -79,7 +79,7 @@ static const simplecpp::Token *parseStruct(const core::String& filename, const s
 			} else {
 				Log::error("%s:%i:%i: error: Failed to parse struct - invalid token: %s",
 						tok->location.file().c_str(), tok->location.line, tok->location.col, token.c_str());
-				return tok;
+				return nullptr;
 			}
 		}
 	}
