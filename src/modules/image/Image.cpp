@@ -98,7 +98,7 @@ bool Image::load(const uint8_t* buffer, int length) {
 
 void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 	uint32_t *srcPtr = reinterpret_cast<uint32_t *>(pixels);
-	uint32_t *dstPtr = srcPtr + intptr_t((h - 1) * w);
+	uint32_t *dstPtr = srcPtr + (((intptr_t)h - (intptr_t)1) * (intptr_t)w);
 	for (int y = 0; y < h / 2; ++y) {
 		for (int x = 0; x < w; ++x) {
 			const uint32_t d = dstPtr[x];
