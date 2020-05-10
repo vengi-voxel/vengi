@@ -37,7 +37,7 @@ core::AppState CursesApp::onCleanup() {
 
 core::AppState CursesApp::onRunning() {
 	const core::AppState state = Super::onRunning();
-	_console.update(_deltaFrameMillis);
+	_console.update(_deltaFrameSeconds);
 	return state;
 }
 

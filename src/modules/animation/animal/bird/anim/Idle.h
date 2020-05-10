@@ -10,7 +10,7 @@ namespace animation {
 namespace animal {
 namespace bird {
 namespace idle {
-extern void update(float animTime, BirdSkeleton& skeleton, const BirdSkeletonAttribute& skeletonAttr);
+extern void update(double animTime, BirdSkeleton& skeleton, const BirdSkeletonAttribute& skeletonAttr);
 }
 }
 }

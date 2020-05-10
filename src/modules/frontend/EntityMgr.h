@@ -20,10 +20,9 @@ private:
 public:
 	EntityMgr();
 
-	void updateVisibleEntities(uint64_t deltaFrame, const video::Camera& camera);
+	void update(double deltaFrameSeconds, const video::Camera& camera);
 
 	void reset();
-	void update(uint64_t dt);
 
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
 	bool addEntity(const frontend::ClientEntityPtr &entity);

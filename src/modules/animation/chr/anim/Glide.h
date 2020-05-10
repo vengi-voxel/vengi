@@ -9,7 +9,7 @@
 namespace animation {
 namespace chr {
 namespace glide {
-extern void update(float animTime, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute& skeletonAttr);
+extern void update(double animTime, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute& skeletonAttr);
 }
 }
 }

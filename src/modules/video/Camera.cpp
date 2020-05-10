@@ -266,10 +266,9 @@ void Camera::updateTarget() {
 	_dirty |= DIRTY_POSITON;
 }
 
-void Camera::update(uint64_t deltaFrame) {
-	if (deltaFrame > 0) {
-		const float dt = deltaFrame / 1000.0f;
-		rotate(_omega * dt);
+void Camera::update(double deltaFrameSeconds) {
+	if (deltaFrameSeconds > 0.0) {
+		rotate(_omega * (float)deltaFrameSeconds);
 	}
 	updateTarget();
 	updateOrientation();
@@ -278,7 +277,7 @@ void Camera::update(uint64_t deltaFrame) {
 	updateFrustumPlanes();
 	updateFrustumVertices();
 	_viewProjectionMatrix = projectionMatrix() * viewMatrix();
-	_dirty = 0;
+	_dirty = 0u;
 }
 
 void Camera::updateOrientation() {

@@ -99,7 +99,7 @@ core::AppState Server::onCleanup() {
 
 core::AppState Server::onRunning() {
 	Super::onRunning();
-	_serverLoop->update(_deltaFrameMillis);
+	_serverLoop->update();
 	return core::AppState::Running;
 }
 

@@ -17,7 +17,7 @@
 
 namespace animation {
 
-using AnimationTimes = core::Array<float, core::enumVal(Animation::MAX) + 1>;
+using AnimationTimes = core::Array<double, core::enumVal(Animation::MAX) + 1>;
 
 /**
  * Base class for animated entities that holds the vertices and indices
@@ -30,7 +30,7 @@ protected:
 	AnimationSettings _settings;
 	Vertices _vertices;
 	Indices _indices;
-	float _globalTimeSeconds = 0.0f;
+	double _globalTimeSeconds = 0.0;
 	math::AABB<float> _aabb { -0.5f, 0.0f, -0.5f, 0.5f, 1.0f, 0.5f };
 
 	/**
@@ -42,7 +42,7 @@ public:
 	AnimationEntity();
 	virtual ~AnimationEntity();
 	void setAnimation(Animation animation, bool reset);
-	void addAnimation(Animation animation, float durationSeconds);
+	void addAnimation(Animation animation, double durationSeconds);
 	void removeAnimation(Animation animation);
 	const AnimationTimes& animations() const;
 
@@ -86,11 +86,11 @@ public:
 
 	/**
 	 * @brief Update the bone states and the tool vertices from the given inventory
-	 * @param[in] dt The delta time since the last call in millis
+	 * @param[in] deltaSeconds The delta time since the last call in seconds
 	 * @param[in] attrib @c attrib::ShadowAttributes to get the character values
 	 * from
 	 */
-	virtual void update(uint64_t dt, const attrib::ShadowAttributes& attrib) = 0;
+	virtual void update(double deltaSeconds, const attrib::ShadowAttributes& attrib) = 0;
 };
 
 }

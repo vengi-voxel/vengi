@@ -35,7 +35,7 @@ private:
 	/**
 	 * @brief Tries to identify commands with several modifier masks.
 	 */
-	bool executeCommands(int32_t key, int16_t modifier, uint64_t now);
+	bool executeCommands(int32_t key, int16_t modifier, double nowSeconds);
 
 	static core::String getKeyName(int32_t key);
 	static const char* getModifierName(int16_t modifier);
@@ -66,7 +66,7 @@ public:
 	/**
 	 * @brief Executes a key up/down commands for a given key/modifier combination
 	 */
-	bool execute(int32_t key, int16_t modifier, bool pressed, uint64_t now);
+	bool execute(int32_t key, int16_t modifier, bool pressed, double nowSeconds);
 };
 
 inline bool KeyBindingHandler::isPressed(int32_t key) const {

@@ -11,7 +11,7 @@ namespace animation {
 namespace chr {
 namespace tool {
 
-static inline void head(float animTime, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static inline void head(double animTime, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float movement = glm::sin(animTime * 12.0f);
 	const float headMovement = movement * 0.1f;
 	Bone &head = skeleton.headBone(skeletonAttr);
@@ -19,7 +19,7 @@ static inline void head(float animTime, CharacterSkeleton& skeleton, const Chara
 	head.orientation = rotateXYZ(headMovement, headMovement, headMovement);
 }
 
-static void swing(float animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void swing(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float betweenOneAndTwoFast = 1.0f - glm::cos(animTime * 14.0f);
 	Bone &righthand = skeleton.handBone(BoneId::RightHand, skeletonAttr);
 	righthand.translation = glm::vec3(skeletonAttr.handRight + betweenOneAndTwoFast, 0.0f, skeletonAttr.handForward + 2.0f + betweenOneAndTwoFast * 2.0f);
@@ -47,13 +47,13 @@ static void swing(float animTime, CharacterSkeleton &skeleton, const CharacterSk
 	torso.orientation = rotateXYZ(torsoRotationX, torsoRotationY, torsoRotationZ);
 }
 
-static void tense(float animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void tense(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 }
 
-static void twiddle(float animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void twiddle(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 }
 
-static void stroke(float animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void stroke(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float betweenOneAndTwoFast = 1.0f - glm::cos(animTime * 14.0f);
 	Bone &righthand = skeleton.handBone(BoneId::RightHand, skeletonAttr);
 	righthand.translation = glm::vec3(skeletonAttr.handRight + betweenOneAndTwoFast, 0.0f, skeletonAttr.handForward + 2.0f + betweenOneAndTwoFast * 2.0f);
@@ -81,7 +81,7 @@ static void stroke(float animTime, CharacterSkeleton &skeleton, const CharacterS
 	torso.orientation = rotateXYZ(torsoRotationX, torsoRotationY, torsoRotationZ);
 }
 
-void update(float animTime, ToolAnimationType animation, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+void update(double animTime, ToolAnimationType animation, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	core_assert(animation != ToolAnimationType::None && animation != ToolAnimationType::Max);
 
 	head(animTime, skeleton, skeletonAttr);

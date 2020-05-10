@@ -57,7 +57,7 @@ public:
 
 	void onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
 
-	void update(long deltaFrame);
+	void update(double deltaFrameSeconds);
 
 	bool move(bool rotate, int x, int y);
 

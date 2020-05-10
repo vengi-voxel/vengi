@@ -52,7 +52,7 @@ public:
 			ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation);
 	~ClientEntity();
 
-	void update(uint64_t dt);
+	void update(double deltaFrameSeconds);
 
 	void setPosition(const glm::vec3& position);
 	const glm::vec3& position() const;
@@ -69,7 +69,7 @@ public:
 	void unbindVertexBuffers();
 
 	void setAnimation(animation::Animation animation, bool reset);
-	void addAnimation(animation::Animation animation, float durationSeconds);
+	void addAnimation(animation::Animation animation, double durationSeconds);
 
 	network::EntityType type() const;
 	ClientEntityId id() const;
@@ -92,7 +92,7 @@ inline void ClientEntity::setAnimation(animation::Animation animation, bool rese
 	character().setAnimation(animation, reset);
 }
 
-inline void ClientEntity::addAnimation(animation::Animation animation, float durationSeconds) {
+inline void ClientEntity::addAnimation(animation::Animation animation, double durationSeconds) {
 	character().addAnimation(animation, durationSeconds);
 }
 

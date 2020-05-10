@@ -10,7 +10,7 @@ namespace animation {
 namespace animal {
 namespace bird {
 namespace run {
-extern void update(float animTime, float velocity, BirdSkeleton& skeleton, const BirdSkeletonAttribute& skeletonAttr);
+extern void update(double animTime, double velocity, BirdSkeleton& skeleton, const BirdSkeletonAttribute& skeletonAttr);
 }
 }
 }

@@ -93,7 +93,7 @@ void Gizmo::update(const video::Camera& camera, const glm::ivec2& pixelPos) {
 	}
 }
 
-bool Gizmo::handleDown(int32_t key, uint64_t pressedMillis) {
+bool Gizmo::handleDown(int32_t key, double pressedMillis) {
 	const bool initialDown = core::ActionButton::handleDown(key, pressedMillis);
 	if (initialDown) {
 		_buttonMode = _mode;
@@ -102,24 +102,24 @@ bool Gizmo::handleDown(int32_t key, uint64_t pressedMillis) {
 	return initialDown;
 }
 
-bool Gizmo::handleUp(int32_t key, uint64_t releasedMillis) {
+bool Gizmo::handleUp(int32_t key, double releasedMillis) {
 	const bool ret = core::ActionButton::handleUp(key, releasedMillis);
 	_buttonMode = GizmoMode::None;
-	_buttonLastPosition = glm::zero<glm::ivec3>();
+	_buttonLastPosition = glm::ivec3(0);
 	return ret;
 }
 
-bool Gizmo::execute(uint64_t time, const std::function<glm::ivec3(const glm::ivec3, GizmoMode)>& callback) {
+bool Gizmo::execute(double nowSeconds, const std::function<glm::ivec3(const glm::ivec3, GizmoMode)>& callback) {
 	if (!pressed()) {
 		return false;
 	}
 	if (_buttonMode == GizmoMode::None) {
 		return false;
 	}
-	if (time - _buttonLastAction < 500ul) {
+	if (nowSeconds - _buttonLastAction < 0.5) {
 		return false;
 	}
-	_buttonLastAction = time;
+	_buttonLastAction = nowSeconds;
 	_buttonLastPosition = callback(_buttonLastPosition, _buttonMode);
 	return true;
 }

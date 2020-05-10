@@ -563,7 +563,7 @@ bool Console::toggle() {
 	return _consoleActive;
 }
 
-void Console::update(uint64_t dt) {
+void Console::update(double /*deltaFrameSeconds*/) {
 	core_assert(_mainThread == std::this_thread::get_id());
 	LogLine msg;
 	bool toggleConsole = false;
@@ -606,10 +606,10 @@ void Console::drawString(int x, int y, const core::String& str, int len) {
 	drawString(x, y, color, colorIndex, cstr, len);
 }
 
-void Console::render(const math::Rect<int> &rect, long deltaFrame) {
-	_frame += deltaFrame;
-	if (_frame > 250) {
-		_frame -= 250;
+void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
+	_frame += deltaFrameSeconds;
+	if (_frame > 0.25) {
+		_frame = 0.0;
 		_cursorBlink ^= true;
 	}
 

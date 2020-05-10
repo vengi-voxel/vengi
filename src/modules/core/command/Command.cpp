@@ -11,7 +11,7 @@ namespace core {
 Command::CommandMap Command::_cmds;
 ReadWriteLock Command::_lock("Command");
 std::vector<core::String> Command::_delayedTokens;
-uint64_t Command::_delayMillis = 0;
+double Command::_delaySeconds = 0.0;
 size_t  Command::_sortedCommandListSize = 0u;
 Command* Command::_sortedCommandList[4096] {};
 
@@ -81,17 +81,17 @@ int Command::complete(const core::String& str, std::vector<core::String>& matche
 	return _completer(str, matches);
 }
 
-int Command::update(uint64_t dt) {
-	if (_delayMillis == 0) {
+int Command::update(double deltaFrameSeconds) {
+	if (_delaySeconds <= 0.0) {
 		return 0;
 	}
-	Log::trace("Waiting %i millis", (int)_delayMillis);
-	if (dt > _delayMillis) {
-		_delayMillis = 0;
+	Log::trace("Waiting %f seconds", _delaySeconds);
+	if (deltaFrameSeconds > _delaySeconds) {
+		_delaySeconds = 0.0;
 	} else {
-		_delayMillis -= dt;
+		_delaySeconds -= deltaFrameSeconds;
 	}
-	if (_delayMillis > 0) {
+	if (_delaySeconds > 0.0) {
 		return 0;
 	}
 	// make a copy - it might get modified inside the execute call
@@ -142,7 +142,7 @@ int Command::execute(const core::String& command) {
 		if (fullCmd.size() >= 2 && fullCmd[0] == '/' && fullCmd[1] == '/') {
 			continue;
 		}
-		if (_delayMillis > 0) {
+		if (_delaySeconds > 0.0) {
 			Log::debug("add command %s to delayed buffer", fullCmd.c_str());
 			_delayedTokens.push_back(fullCmd);
 			continue;
@@ -176,9 +176,9 @@ bool Command::isSuitableBindingContext(BindingContext context) {
 bool Command::execute(const core::String& command, const CmdArgs& args) {
 	if (command == "wait") {
 		if (args.size() == 1) {
-			_delayMillis += core_max(1, args[0].toInt());
+			_delaySeconds += 1000.0 * core_max(1, args[0].toInt());
 		} else {
-			++_delayMillis;
+			_delaySeconds += 1000.0;
 		}
 		return true;
 	}
@@ -199,7 +199,7 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 					(int) core::bindingContext());
 			return false;
 		}
-		if (_delayMillis > 0) {
+		if (_delaySeconds > 0.0) {
 			core::String fullCmd = command;
 			for (const core::String& arg : args) {
 				fullCmd.append(" ");

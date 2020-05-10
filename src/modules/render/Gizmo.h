@@ -28,12 +28,12 @@ enum class GizmoMode {
 class Gizmo : public core::IComponent, public core::ActionButton {
 	// action button related stuff
 private:
-	uint64_t _buttonLastAction = 0;
+	double _buttonLastAction = 0.0;
 	GizmoMode _buttonMode = GizmoMode::None;
 	glm::ivec3 _buttonLastPosition { 0 };
 public:
-	bool handleDown(int32_t key, uint64_t pressedMillis) override;
-	bool handleUp(int32_t key, uint64_t releasedMillis) override;
+	bool handleDown(int32_t key, double pressedMillis) override;
+	bool handleUp(int32_t key, double releasedMillis) override;
 
 	// gizmo states
 private:
@@ -86,7 +86,7 @@ public:
 	/**
 	 * @brief Tries to execute the action button
 	 */
-	bool execute(uint64_t time, const std::function<glm::ivec3(const glm::ivec3, GizmoMode)>& function);
+	bool execute(double nowSeconds, const std::function<glm::ivec3(const glm::ivec3, GizmoMode)>& function);
 };
 
 inline bool Gizmo::isModelSpace() const {

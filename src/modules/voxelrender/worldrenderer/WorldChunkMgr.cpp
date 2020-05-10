@@ -13,6 +13,10 @@
 
 namespace voxelrender {
 
+namespace {
+constexpr double ScaleDuration = 1.5;
+}
+
 WorldChunkMgr::WorldChunkMgr(core::ThreadPool& threadPool) :
 		_octree({}, 30), _threadPool(threadPool) {
 }
@@ -82,7 +86,7 @@ bool WorldChunkMgr::initTerrainBuffer(ChunkBuffer* chunk) {
 	return true;
 }
 
-int WorldChunkMgr::renderTerrain(float nowSeconds) {
+int WorldChunkMgr::renderTerrain() {
 	video_trace_scoped(WorldChunkMgrRenderTerrain);
 	int drawCalls = 0;
 
@@ -97,8 +101,8 @@ int WorldChunkMgr::renderTerrain(float nowSeconds) {
 		}
 		video::ScopedBuffer scopedBuf(buffer);
 		if (_worldShader->isActive()) {
-			const float delta = glm::clamp((nowSeconds - chunkBuffer.birthSeconds) / 3.0f, 0.0f, 1.0f);
-			const glm::vec3 size = glm::mix(glm::vec3(1.0f, 0.4f, 1.0f), glm::vec3(1.0f), delta);
+			const double delta = glm::clamp(core_max(0.0, chunkBuffer.scaleSeconds) / ScaleDuration, 0.0, 1.0);
+			const glm::vec3 &size = glm::mix(glm::vec3(1.0f), glm::vec3(1.0f, 0.4f, 1.0f), (float)delta);
 			const glm::mat4& model = glm::scale(size);
 			_worldShader->setModel(model);
 		}
@@ -108,7 +112,7 @@ int WorldChunkMgr::renderTerrain(float nowSeconds) {
 	return drawCalls;
 }
 
-void WorldChunkMgr::handleMeshQueue(float nowSeconds) {
+void WorldChunkMgr::handleMeshQueue() {
 	voxel::Mesh mesh;
 	if (!_meshExtractor.pop(mesh)) {
 		return;
@@ -139,17 +143,18 @@ void WorldChunkMgr::handleMeshQueue(float nowSeconds) {
 		Log::warn("Failed to insert into octree");
 	}
 	freeChunkBuffer->inuse = true;
-	freeChunkBuffer->birthSeconds = nowSeconds;
+	freeChunkBuffer->scaleSeconds = ScaleDuration;
 }
 
-void WorldChunkMgr::update(float nowSeconds, const video::Camera &camera, const glm::vec3& focusPos) {
-	handleMeshQueue(nowSeconds);
+void WorldChunkMgr::update(double deltaFrameSeconds, const video::Camera &camera, const glm::vec3& focusPos) {
+	handleMeshQueue();
 
 	_meshExtractor.updateExtractionOrder(focusPos);
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
 			continue;
 		}
+		chunkBuffer.scaleSeconds -= deltaFrameSeconds;
 		if (chunkBuffer._ibo == -1) {
 			initTerrainBuffer(&chunkBuffer);
 		}

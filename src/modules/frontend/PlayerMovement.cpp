@@ -33,7 +33,7 @@ void PlayerMovement::shutdown() {
 	_moveBackward.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
 }
 
-void PlayerMovement::update(float deltaFrameSeconds, float orientation, ClientEntityPtr& entity, const shared::WalkableFloorResolver& heightResolver) {
+void PlayerMovement::update(double deltaFrameSeconds, float orientation, ClientEntityPtr& entity, const shared::WalkableFloorResolver& heightResolver) {
 	core_trace_scoped(UpdateMovement);
 	const attrib::ShadowAttributes& attribs = entity->attrib();
 	const double speed = attribs.current(attrib::Type::SPEED);
@@ -64,12 +64,12 @@ void PlayerMovement::update(float deltaFrameSeconds, float orientation, ClientEn
 		_move &= ~network::MoveDirection::JUMP;
 	}
 	// TODO: https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html
-	const glm::vec3& newPos = Super::update(deltaFrameSeconds, orientation, (float)speed, currentPos, heightResolver);
+	const glm::vec3& newPos = Super::update(deltaFrameSeconds, orientation, speed, currentPos, heightResolver);
 
 	entity->setOrientation(orientation);
 	entity->setPosition(newPos);
 	const animation::Animation anim = animation();
-	entity->addAnimation(anim, 0.1f);
+	entity->addAnimation(anim, 0.1);
 }
 
 }

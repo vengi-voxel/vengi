@@ -30,8 +30,8 @@ CursesConsole::~CursesConsole() {
 	core_assert_always(uv_loop_close(&_loop) == 0);
 }
 
-void CursesConsole::update(uint32_t deltaTime) {
-	Super::update(deltaTime);
+void CursesConsole::update(double deltaFrameSeconds) {
+	Super::update(deltaFrameSeconds);
 	if (_cursesVar->isDirty()) {
 		_enableCurses = _cursesVar->boolVal();
 		if (_enableCurses && !_cursesActive) {
@@ -84,7 +84,7 @@ void CursesConsole::update(uint32_t deltaTime) {
 		key = getch();
 	}
 	const math::Rect<int> rect(0, 0, COLS - 1, LINES - 1);
-	render(rect, (long)deltaTime);
+	render(rect, deltaFrameSeconds);
 #else
 	uv_run(&_loop, UV_RUN_NOWAIT);
 #endif

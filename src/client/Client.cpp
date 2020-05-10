@@ -281,11 +281,11 @@ void Client::beforeUI() {
 		_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _player, [&] (const glm::ivec3& pos, int maxWalkHeight) {
 			return _floorResolver.findWalkableFloor(pos, maxWalkHeight);
 		});
-		_action.update(_now, _player);
+		_action.update(_nowSeconds, _player);
 		const double speed = _player->attrib().current(attrib::Type::SPEED);
-		_camera.update(_player->position(), _deltaFrameSeconds, _now, (float)speed);
+		_camera.update(_player->position(), _nowSeconds, speed);
 		_worldRenderer.extractMeshes(camera);
-		_worldRenderer.update(camera, _deltaFrameMillis, _nowSeconds);
+		_worldRenderer.update(camera, _deltaFrameSeconds);
 		_worldRenderer.renderWorld(camera);
 	}
 
@@ -357,7 +357,7 @@ core::AppState Client::onRunning() {
 	}
 	if (state == core::AppState::Running) {
 		_network->update();
-		_soundManager.update(_deltaFrameMillis);
+		_soundManager.update();
 	}
 
 	return state;

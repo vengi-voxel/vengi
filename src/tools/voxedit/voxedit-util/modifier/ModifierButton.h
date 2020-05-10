@@ -30,8 +30,8 @@ public:
 	ModifierButton(ModifierType newType = ModifierType::None);
 
 	void execute();
-	bool handleDown(int32_t key, uint64_t pressedMillis) override;
-	bool handleUp(int32_t key, uint64_t releasedMillis) override;
+	bool handleDown(int32_t key, double pressedMillis) override;
+	bool handleUp(int32_t key, double releasedMillis) override;
 };
 
 }

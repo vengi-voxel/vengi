@@ -22,7 +22,7 @@ protected:
 public:
 	bool initMesh(const AnimationCachePtr& cache) override;
 	bool initSettings(const core::String& luaString) override;
-	void update(uint64_t dt, const attrib::ShadowAttributes& attrib) override;
+	void update(double deltaSeconds, const attrib::ShadowAttributes& attrib) override;
 	const Skeleton& skeleton() const override;
 	BirdSkeletonAttribute& skeletonAttributes() override;
 	const BirdSkeletonAttribute& skeletonAttributes() const;

@@ -76,22 +76,6 @@ void ServerLoop::signalCallback(uv_signal_t* handle, int signum) {
 }
 
 void ServerLoop::onIdle(uv_idle_t* handle) {
-	core_trace_scoped(IdleTimer);
-	ServerLoop* loop = (ServerLoop*)handle->data;
-	const metric::MetricPtr& metric = loop->_metricMgr->metric();
-
-	const core::App* app = core::App::getInstance();
-	const int deltaFrame = app->deltaFrame();
-	constexpr int delta = 10;
-	if (std::abs(deltaFrame - loop->_lastDeltaFrame) > delta) {
-		metric->timing("frame.delta", app->deltaFrame());
-		loop->_lastDeltaFrame = deltaFrame;
-	}
-	const uint64_t lifetimeSeconds = app->lifetimeInSeconds();
-	if (lifetimeSeconds != loop->_lifetimeSeconds) {
-		metric->gauge("uptime", lifetimeSeconds);
-		loop->_lifetimeSeconds = lifetimeSeconds;
-	}
 }
 
 void ServerLoop::construct() {
@@ -429,7 +413,7 @@ void ServerLoop::shutdown() {
 	}
 }
 
-void ServerLoop::update(long dt) {
+void ServerLoop::update() {
 	core_trace_scoped(ServerLoop);
 	// not everything is ticked in here directly, a lot is handled by libuv timers
 	uv_run(_loop, UV_RUN_NOWAIT);

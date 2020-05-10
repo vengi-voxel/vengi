@@ -14,17 +14,11 @@ void EntityMgr::reset() {
 	_entities.clear();
 }
 
-void EntityMgr::update(uint64_t dt) {
-	for (const auto& e : _entities) {
-		e->value->update(dt);
-	}
-}
-
-void EntityMgr::updateVisibleEntities(uint64_t deltaFrame, const video::Camera& camera) {
+void EntityMgr::update(double deltaFrameSeconds, const video::Camera& camera) {
 	_visibleEntities.clear();
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e->value;
-		ent->update(deltaFrame);
+		ent->update(deltaFrameSeconds);
 		// note, that the aabb does not include the orientation - that should be kept in mind here.
 		// a particular rotation could lead to an entity getting culled even though it should still
 		// be visible.

@@ -237,7 +237,7 @@ void TestAnimation::doRender() {
 	if (animationEntity()->animationSettings().type() == animation::AnimationSettings::Type::Character) {
 		((animation::Character*)animationEntity())->updateTool(_animationCache, _stock);
 	}
-	animationEntity()->update(_deltaFrameMillis, _attrib);
+	animationEntity()->update(_deltaFrameSeconds, _attrib);
 	_renderer.render(*animationEntity(), camera());
 }
 

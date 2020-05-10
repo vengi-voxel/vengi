@@ -29,7 +29,7 @@ private:
 	render::Shadow _shadow;
 	video::Buffer _vbo;
 
-	float _seconds = 0.0f;
+	double _seconds = 0.0;
 	float _fogRange = 300.0f;
 	glm::vec4 _clearColor = core::Color::LightBlue;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
@@ -47,7 +47,7 @@ public:
 	void setDiffuseColor(const glm::vec3& c) { _diffuseColor = c; }
 	void setAmbientColor(const glm::vec3& c) { _ambientColor = c; }
 
-	void setSeconds(float seconds);
+	void setSeconds(double seconds);
 
 	/**
 	 * @brief Render the given character instance
@@ -57,7 +57,7 @@ public:
 	void render(const AnimationEntity& character, const video::Camera& camera);
 };
 
-inline void AnimationRenderer::setSeconds(float seconds) {
+inline void AnimationRenderer::setSeconds(double seconds) {
 	_seconds = seconds;
 }
 

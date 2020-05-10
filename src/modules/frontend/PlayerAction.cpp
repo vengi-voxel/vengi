@@ -13,12 +13,12 @@ bool PlayerAction::init() {
 	return true;
 }
 
-void PlayerAction::update(uint64_t now, const ClientEntityPtr& entity) {
+void PlayerAction::update(double nowSeconds, const ClientEntityPtr& entity) {
 	core_trace_scoped(UpdatePlayerAction);
 	// TODO: if not gliding or diving
 	if (_triggerAction.pressed()) {
-		_triggerAction.execute(now, 100ul, [&entity, this] () {
-			entity->addAnimation(network::Animation::TOOL, 0.1f);
+		_triggerAction.execute(nowSeconds, 0.1, [&entity, this] () {
+			entity->addAnimation(network::Animation::TOOL, 0.1);
 			++_triggerActionCounter;
 		});
 	}
@@ -30,7 +30,7 @@ void PlayerAction::construct() {
 
 void PlayerAction::shutdown() {
 	core::Command::unregisterActionButton("triggeraction");
-	_triggerAction.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_triggerAction.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0.0);
 }
 
 }

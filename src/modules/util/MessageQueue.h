@@ -19,23 +19,23 @@
 class MessageQueue : public core::IComponent {
 private:
 	struct MessageEvent {
-		MessageEvent(uint64_t _ttl, const core::String& _msg) :
-				ttl(_ttl), msg(_msg) {
+		MessageEvent(double _ttlSeconds, const core::String& _msg) :
+				ttlSeconds(_ttlSeconds), msg(_msg) {
 		}
-		uint64_t ttl;
+		double ttlSeconds;
 		core::String msg;
 	};
 
 	struct MessageEventComparator {
 		inline bool operator()(const MessageEvent& x, const MessageEvent& y) const {
-			return x.ttl > y.ttl;
+			return x.ttlSeconds > y.ttlSeconds;
 		}
 	};
 
 	typedef std::vector<MessageEvent> MessageEventQueue;
 	MessageEventQueue _messageEventQueue;
 	MessageEventComparator _messageEventQueueComp;
-	uint64_t _time = 0u;
+	double _timeSeconds = 0.0;
 public:
 	/**
 	 * @brief Registers a console command to add messages from scripts or console
@@ -49,7 +49,7 @@ public:
 	/**
 	 * @brief The update method will remove outdated messages.
 	 */
-	void update(uint64_t dt);
+	void update(double deltaFrameSeconds);
 	/**
 	 * @brief Perform a cleanup of the component.
 	 * @sa @c init()
@@ -69,7 +69,7 @@ public:
 	template<class FUNC>
 	inline void visitMessages(FUNC&& func) const {
 		for (const auto& m : _messageEventQueue) {
-			func(m.ttl - _time, m.msg);
+			func(m.ttlSeconds - _timeSeconds, m.msg);
 		}
 	}
 };

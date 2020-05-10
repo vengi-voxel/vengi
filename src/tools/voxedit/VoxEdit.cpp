@@ -213,7 +213,7 @@ core::AppState VoxEdit::onRunning() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
-	voxedit::sceneMgr().update(_now);
+	voxedit::sceneMgr().update(_nowSeconds);
 	_mainWindow->update();
 	const bool isSceneHovered = _mainWindow->isSceneHovered();
 	if (isSceneHovered) {

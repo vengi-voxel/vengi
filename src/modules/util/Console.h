@@ -151,10 +151,10 @@ public:
 	virtual bool init() override;
 	virtual void shutdown() override;
 	virtual bool toggle();
-	void update(uint64_t dt);
+	virtual void update(double deltaFrameSeconds);
 	void clear();
 	void clearCommandLine();
-	void render(const math::Rect<int> &rect, long deltaFrame);
+	void render(const math::Rect<int> &rect, double deltaFrameSeconds);
 	bool isActive() const;
 	bool onTextInput(const core::String& text);
 	bool onKeyPress(int32_t key, int16_t modifier);

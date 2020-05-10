@@ -36,15 +36,13 @@ bool Bird::initMesh(const AnimationCachePtr& cache) {
 	return true;
 }
 
-void Bird::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
-	const float animTimeSeconds = float(dt) / 1000.0f;
-
+void Bird::update(double deltaSeconds, const attrib::ShadowAttributes& attrib) {
 	const BirdSkeleton old = _skeleton;
-	const float velocity = (float)attrib.current(attrib::Type::SPEED);
+	const double velocity = attrib.current(attrib::Type::SPEED);
 
 	// TODO: lerp the animations
 	for (int i = 0; i <= core::enumVal(Animation::MAX); ++i) {
-		const float aTime = _animationTimes[i];
+		const double aTime = _animationTimes[i];
 		if (aTime < _globalTimeSeconds) {
 			continue;
 		}
@@ -61,12 +59,11 @@ void Bird::update(uint64_t dt, const attrib::ShadowAttributes& attrib) {
 		}
 	}
 
-	if (_globalTimeSeconds > 0.0f) {
-		const float ticksPerSecond = 15.0f;
-		_skeleton.lerp(old, glm::min(1.0f, animTimeSeconds * ticksPerSecond));
+	if (_globalTimeSeconds > 0.0) {
+		_skeleton.lerp(old, deltaSeconds);
 	}
 
-	_globalTimeSeconds += animTimeSeconds;
+	_globalTimeSeconds += deltaSeconds;
 }
 
 }

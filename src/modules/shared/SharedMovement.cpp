@@ -5,93 +5,94 @@
 #include "SharedMovement.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include "core/Assert.h"
 #include "voxel/Constants.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
 namespace shared {
 
-glm::vec3 SharedMovement::calculateDelta(const glm::quat& rot) {
+glm::vec3 SharedMovement::calculateDelta(const glm::quat& rot) const {
+	float speed = _speed;
 	if (_jumping || _swimming) {
 		glm::vec3 delta(0.0f);
 		if (_swimming) {
-			_speed *= 0.2f;
+			speed *= 0.2f;
 		}
 		if (forward()) {
-			delta += rot * (glm::forward * _speed);
+			delta += rot * (glm::forward * speed);
 		} else if (backward()) {
 			// you can only reduce speed - but not walk backward
-			delta += rot * (glm::forward * _speed / 10.0f);
+			delta += rot * (glm::forward * speed / 10.0f);
 		}
 		return delta;
 	} else if (_gliding) {
 		// TODO: apply a speed debuff via attributes
 		glm::vec3 delta(0.0f);
 		if (!forward()) {
-			_speed *= 0.2f;
+			speed *= 0.2f;
 		}
-		delta += rot * (glm::forward * _speed);
+		delta += rot * (glm::forward * speed);
 		return delta;
 	}
 	glm::vec3 delta(0.0f);
 	if (left()) {
-		delta += rot * (glm::left * _speed);
+		delta += rot * (glm::left * speed);
 	} else if (right()) {
-		delta += rot * (glm::right * _speed);
+		delta += rot * (glm::right * speed);
 	}
 	if (forward()) {
-		delta += rot * (glm::forward * _speed);
+		delta += rot * (glm::forward * speed);
 	} else if (backward()) {
-		delta += rot * (glm::backward * _speed);
+		delta += rot * (glm::backward * speed);
 	}
 	return delta;
 }
 
-float SharedMovement::gravity() const {
+double SharedMovement::gravity() const {
 	if (_gliding) {
-		return 0.1f;
+		return 0.1;
 	}
 	if (_swimming) {
 		if (forward() || backward()) {
-			return -2.0f;
+			return -2.0;
 		}
-		return 2.0f;
+		return 2.0;
 	}
-	return 20.0f;
+	return 20.0;
 }
 
-glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const WalkableFloorResolver& heightResolver) {
+glm::vec3 SharedMovement::update(double deltaFrameSeconds, float orientation, double speed, const glm::vec3& currentPos, const WalkableFloorResolver& heightResolver) {
 	core_trace_scoped(UpdateSharedMovement);
+	core_assert_msg(deltaFrameSeconds > 0.0, "Expected to get deltaFrameSeconds > 0 - but got %f", deltaFrameSeconds);
+	core_assert_msg(speed > 0.0f, "Expected to get speed > 0, but got %f", _speed);
 	_speed = speed;
-	glm::vec3 newPos = currentPos;
-	if (deltaFrameSeconds > glm::epsilon<float>()) {
-		const glm::quat& rot = glm::angleAxis(orientation, glm::up);
-		_speed *= deltaFrameSeconds;
-		newPos += calculateDelta(rot);
-	}
+	const glm::quat& rot = glm::angleAxis(orientation, glm::up);
+	glm::vec3 newPos = glm::mix(currentPos, currentPos + calculateDelta(rot), deltaFrameSeconds);
+
 	const int maxWalkableHeight = 3;
 	_floor = heightResolver(glm::ivec3(glm::floor(newPos)), maxWalkableHeight);
 	if (_floor.heightLevel < voxel::MIN_HEIGHT) {
 		_floor.heightLevel = voxel::MIN_HEIGHT;
 	}
 	_delay -= deltaFrameSeconds;
-	const float inputDelaySeconds = 0.5f;
+	const double inputDelaySeconds = 0.5;
 	if (jump()) {
 		if (_gliding) {
-			if (_delay <= 0.0f) {
+			if (_delay <= 0.0) {
 				_gliding = false;
 				_jumping = true;
 				_delay = inputDelaySeconds;
 			}
 		} else if (_jumping) {
-			if (_delay <= 0.0f) {
+			if (_delay <= 0.0) {
 				_jumping = false;
 				_gliding = true;
-				_fallingVelocity = 0.0f;
+				_fallingVelocity = 0.0;
 				_delay = inputDelaySeconds;
 			}
 		} else {
-			_fallingVelocity = 10.0f;
+			_fallingVelocity = 10.0;
 			_jumping = true;
 			_delay = inputDelaySeconds;
 		}
@@ -104,19 +105,19 @@ glm::vec3 SharedMovement::update(float deltaFrameSeconds, float orientation, flo
 	newPos.y += _fallingVelocity * deltaFrameSeconds;
 	if (newPos.y <= _floor.heightLevel) {
 		newPos.y = _floor.heightLevel;
-		_fallingVelocity = 0.0f;
+		_fallingVelocity = 0.0;
 		_jumping = false;
 		_gliding = false;
-		_delay = 0.0f;
+		_delay = 0.0;
 	}
 
 	if (newPos.y < voxel::MAX_WATER_HEIGHT) {
-		_fallingVelocity = 0.0f;
+		_fallingVelocity = 0.0;
 		_jumping = false;
 		_gliding = false;
-		_delay = 0.0f;
+		_delay = 0.0;
 		_swimming = true;
-		_fallingVelocity = -2.0f;
+		_fallingVelocity = -2.0;
 	} else {
 		_swimming = false;
 	}

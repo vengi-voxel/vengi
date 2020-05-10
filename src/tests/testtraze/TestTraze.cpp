@@ -193,14 +193,14 @@ void TestTraze::onEvent(const traze::SpawnEvent& event) {
 	Log::debug("Spawn at position %i:%i", spawn.position.x, spawn.position.y);
 	if (spawn.own) {
 		_spawnPosition = spawn.position;
-		_spawnTime = _now;
+		_spawnTime = _nowSeconds;
 		sound("join");
 	}
 }
 
 void TestTraze::onEvent(const traze::NewGridEvent& event) {
 	voxel::RawVolume* v = event.get();
-	if (_spawnTime > 0 && _now - _spawnTime < 4000) {
+	if (_spawnTime > 0.0 && _nowSeconds - _spawnTime < 4.0) {
 		const voxel::Voxel voxel = voxel::createRandomColorVoxel(voxel::VoxelType::Generic);
 		v->setVoxel(glm::ivec3(_spawnPosition.y, 0, _spawnPosition.x), voxel);
 		v->setVoxel(glm::ivec3(_spawnPosition.y, 1, _spawnPosition.x), voxel);
@@ -283,18 +283,18 @@ core::AppState TestTraze::onRunning() {
 	}
 	core::AppState state = Super::onRunning();
 	if (!_protocol.connected()) {
-		const uint64_t current = lifetimeInSeconds();
-		if (_nextConnectTime < current) {
-			const uint64_t delaySeconds = 3;
-			_nextConnectTime += delaySeconds;
+		if (_nextConnectTime <= 0.0) {
+			_nextConnectTime = 3.0;
 			_protocol.connect();
+		} else {
+			_nextConnectTime -= deltaFrameSeconds();
 		}
 	} else if (_currentGameIndex != -1) {
 		_protocol.subscribe(_games[_currentGameIndex]);
 	}
-	_messageQueue.update(_deltaFrameMillis);
+	_messageQueue.update(_deltaFrameSeconds);
 	_soundMgr.setListenerPosition(camera().position());
-	_soundMgr.update(_deltaFrameMillis);
+	_soundMgr.update();
 	return state;
 }
 
@@ -357,8 +357,7 @@ void TestTraze::doRender() {
 		_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(dim.x / 2 - w / 2, dim.y / 2 - _voxelFontRender.lineHeight() / 2, 0.0f)));
 		const glm::ivec3 pos(0, 0, 0);
 		_voxelFontRender.text(pos, core::Color::Red, "%s", connecting);
-		const int offset = int((_now - _initMillis) / 75);
-		_voxelFontRender.text(glm::ivec3(pos.x + (offset % w), pos.y + _voxelFontRender.lineHeight(), pos.z), core::Color::Red, ".");
+		_voxelFontRender.text(glm::ivec3(pos.x, pos.y + _voxelFontRender.lineHeight(), pos.z), core::Color::Red, ".");
 	} else if (_renderPlayerNames) {
 		_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(20.0f, 20.0f, 0.0f)));
 		int yOffset = 0;

@@ -413,7 +413,7 @@ void UIApp::onWidgetFocusChanged(tb::TBWidget *widget, bool focused) {
 
 void UIApp::afterRootWidget() {
 	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-	_console.render(rect, _deltaFrameMillis);
+	_console.render(rect, _deltaFrameSeconds);
 }
 
 core::AppState UIApp::onInit() {
@@ -485,7 +485,7 @@ tb::TBWidget* UIApp::getWidgetAt(int x, int y, bool includeChildren) {
 
 core::AppState UIApp::onRunning() {
 	core::AppState state = Super::onRunning();
-	_console.update(_deltaFrameMillis);
+	_console.update(_deltaFrameSeconds);
 
 	_lastShowTextY = 5;
 

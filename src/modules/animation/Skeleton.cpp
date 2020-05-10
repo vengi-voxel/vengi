@@ -31,11 +31,10 @@ Bone& Skeleton::torsoBone(float scale) {
 	return torso;
 }
 
-void Skeleton::lerp(const Skeleton& previous, float dt) {
-	const float factor = glm::min(1.0f, dt);
+void Skeleton::lerp(const Skeleton& previous, double deltaFrameSeconds) {
 	for (int i = 0; i < core::enumVal(BoneId::Max); ++i) {
 		const BoneId id = (BoneId)i;
-		bone(id).lerp(previous.bone(id), factor);
+		bone(id).lerp(previous.bone(id), deltaFrameSeconds);
 	}
 }
 

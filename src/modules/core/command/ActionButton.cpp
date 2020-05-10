@@ -12,16 +12,16 @@ ActionButton::ActionButton() {
 	}
 }
 
-bool ActionButton::execute(uint64_t now, uint64_t delayBetweenExecutions, const std::function<void()>& executionCallback) {
-	if (now - lastPressed < delayBetweenExecutions) {
+bool ActionButton::execute(double nowSeconds, double delayBetweenExecutions, const std::function<void()>& executionCallback) {
+	if (nowSeconds - lastPressed < delayBetweenExecutions) {
 		return false;
 	}
 	executionCallback();
-	lastPressed = now;
+	lastPressed = nowSeconds;
 	return true;
 }
 
-bool ActionButton::handleDown(int32_t key, uint64_t millis) {
+bool ActionButton::handleDown(int32_t key, double pressedSeconds) {
 	for (int pressedKey : pressedKeys) {
 		if (key == pressedKey) {
 			return false;
@@ -34,14 +34,14 @@ bool ActionButton::handleDown(int32_t key, uint64_t millis) {
 		}
 		pressedKey = key;
 		if (!alreadyDown) {
-			pressedMillis = millis;
+			this->pressedSeconds = pressedSeconds;
 		}
 		return true;
 	}
 	return false;
 }
 
-bool ActionButton::handleUp(int32_t key, uint64_t releasedMillis) {
+bool ActionButton::handleUp(int32_t key, double releasedSeconds) {
 	if (key == ACTION_BUTTON_ALL_KEYS) {
 		for (int & pressedKey : pressedKeys) {
 			pressedKey = ACTION_BUTTON_NO_KEY;
@@ -54,7 +54,7 @@ bool ActionButton::handleUp(int32_t key, uint64_t releasedMillis) {
 		}
 		pressedKey = ACTION_BUTTON_NO_KEY;
 		if (!pressed()) {
-			durationMillis = (uint32_t)(releasedMillis - pressedMillis);
+			durationSeconds = releasedSeconds - pressedSeconds;
 			return true;
 		}
 		break;

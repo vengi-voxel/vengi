@@ -25,7 +25,7 @@ protected:
 	Values _current;
 	Values _max;
 public:
-	bool update(long /*dt*/) {
+	bool update(double /*deltaFrameSeconds*/) {
 		return true;
 	}
 

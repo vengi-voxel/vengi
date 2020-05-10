@@ -234,9 +234,7 @@ Mix_Chunk* SoundManager::getChunk(const core::String& filename) {
 	return sound;
 }
 
-void SoundManager::update(uint32_t deltaTime) {
-	_time += deltaTime;
-
+void SoundManager::update() {
 	if (_volume->isDirty()) {
 		_volume->markClean();
 		volume(_volume->intVal());

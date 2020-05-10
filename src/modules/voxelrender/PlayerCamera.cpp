@@ -47,9 +47,9 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 	_camera.setFieldOfView(_fieldOfView);
 	_camera.setTargetDistance(_targetDistance);
 	_camera.setPosition(_cameraPosition);
-	_camera.setTarget(glm::zero<glm::vec3>());
+	_camera.setTarget(glm::vec3(0.0f));
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	_camera.update(0l);
+	_camera.update();
 
 	return true;
 }
@@ -72,24 +72,22 @@ void PlayerCamera::rotate(float pitch, float turn, float speed) {
 	}
 }
 
-void PlayerCamera::update(const glm::vec3& entityPosition, float deltaFrameSeconds, uint64_t now, float speed) {
+void PlayerCamera::update(const glm::vec3& entityPosition, double nowSeconds, double speed) {
 	core_trace_scoped(UpdatePlayerCamera);
 	if (_zoomIn.pressed()) {
-		_zoomIn.execute(now, 20ul, [&] () {
+		_zoomIn.execute(nowSeconds, 0.02, [&] () {
 			zoom(1.0f);
 		});
 	} else if (_zoomOut.pressed()) {
-		_zoomOut.execute(now, 20ul, [&] () {
+		_zoomOut.execute(nowSeconds, 0.02, [&] () {
 			zoom(-1.0f);
 		});
 	}
 
 	// TODO: fix this magic number with the real character eye height.
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
-	const glm::vec3& currentPos = _camera.target();
 	const glm::vec3 targetpos = entityPosition + eye;
-	// TODO: first time... do a time warp...
-	_camera.setTarget(glm::mix(currentPos, targetpos, deltaFrameSeconds * speed));
+	_camera.setTarget(targetpos);
 
 	if (_pendingSpeed > 0.0f) {
 		// TODO: optimize this
@@ -106,8 +104,7 @@ void PlayerCamera::update(const glm::vec3& entityPosition, float deltaFrameSecon
 
 	_camera.setTargetDistance(_targetDistance);
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
-	const uint64_t deltaFrame = (uint64_t)(deltaFrameSeconds * 1000.0f);
-	_camera.update(deltaFrame);
+	_camera.update();
 }
 
 }

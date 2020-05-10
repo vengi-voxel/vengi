@@ -129,9 +129,9 @@ private:
 	int _lastRaytraceY = -1;
 
 	// layer animation speed
-	int _animationSpeed = 0;
+	double _animationSpeed = 0.0;
 	int _currentAnimationLayer = 0;
-	uint64_t _nextFrameSwitch = 0;
+	double _nextFrameSwitch = 0.0;
 
 	int _initialized = 0;
 	int _size = 128;
@@ -161,7 +161,7 @@ private:
 	void setReferencePosition(const glm::ivec3& pos);
 	void updateGridRenderer(const voxel::Region& region);
 
-	void animate(uint64_t time);
+	void animate(double nowSeconds);
 	/**
 	 * @brief Move the cursor relative by the given steps in each direction
 	 */
@@ -215,7 +215,7 @@ public:
 
 	void construct() override;
 	bool init() override;
-	void update(uint64_t time);
+	void update(double nowSeconds);
 	void shutdown() override;
 
 	/**

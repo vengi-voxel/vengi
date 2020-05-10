@@ -192,8 +192,8 @@ void Viewport::onProcess() {
 	}
 	core_trace_scoped(EditorSceneOnProcess);
 
-	const long deltaFrame = core::App::getInstance()->deltaFrame();
-	_controller.update(deltaFrame);
+	const double deltaFrameSeconds = core::App::getInstance()->deltaFrameSeconds();
+	_controller.update(deltaFrameSeconds);
 
 	if (tb::TBWidget::hovered_widget == this) {
 		voxedit::sceneMgr().trace();

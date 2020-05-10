@@ -41,7 +41,7 @@ private:
 	bool _renderPlayerNames = true;
 
 	glm::ivec2 _spawnPosition { 0 };
-	uint64_t _spawnTime = 0u;
+	double _spawnTime = 0.0;
 
 	int _maxLength = 200;
 	video::Camera _textCamera;
@@ -49,7 +49,7 @@ private:
 	std::vector<traze::GameInfo> _games;
 	std::vector<traze::Player> _players;
 	int8_t _currentGameIndex = -1;
-	uint64_t _nextConnectTime = 0;
+	double _nextConnectTime = 0.0;
 
 	void doRender() override;
 

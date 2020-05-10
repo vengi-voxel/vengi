@@ -23,7 +23,7 @@ void Movement::construct() {
 }
 
 void Movement::shutdown() {
-	_deltaMillis = 0ul;
+	_deltaSeconds = 0.0;
 	core::Command::unregisterActionButton("move_forward");
 	core::Command::unregisterActionButton("move_backward");
 	core::Command::unregisterActionButton("move_left");
@@ -34,34 +34,34 @@ void Movement::shutdown() {
 	_moveBackward.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
 }
 
-void Movement::update(uint64_t deltaMillis) {
-	_deltaMillis += deltaMillis;
+void Movement::update(double deltaFrameSeconds) {
+	_deltaSeconds += deltaFrameSeconds;
 }
 
-glm::vec3 Movement::calculateDelta(const glm::quat& rot, float speed) {
+glm::vec3 Movement::calculateDelta(const glm::quat& rot, double speed) {
 	glm::vec3 delta(0.0f);
 	if (left()) {
-		delta += rot * (glm::left * speed);
+		delta += rot * (glm::left * (float)speed);
 	} else if (right()) {
-		delta += rot * (glm::right * speed);
+		delta += rot * (glm::right * (float)speed);
 	}
 	if (forward()) {
-		delta += rot * (glm::forward * speed);
+		delta += rot * (glm::forward * (float)speed);
 	} else if (backward()) {
-		delta += rot * (glm::backward * speed);
+		delta += rot * (glm::backward * (float)speed);
 	}
 	return delta;
 }
 
-glm::vec3 Movement::moveDelta(float speed, float orientation) {
-	if (_deltaMillis <= 0ul) {
+glm::vec3 Movement::moveDelta(double speed, float orientation) {
+	if (_deltaSeconds <= 0.0) {
 		return glm::zero<glm::vec3>();
 	}
 
 	const glm::quat& rot = glm::angleAxis(orientation, glm::up);
-	speed *= static_cast<float>(_deltaMillis) / 1000.0f;
+	speed *= _deltaSeconds;
 	const glm::vec3& delta = calculateDelta(rot, speed);
-	_deltaMillis = 0ul;
+	_deltaSeconds = 0.0;
 	return delta;
 }
 

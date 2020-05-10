@@ -69,12 +69,12 @@ protected:
 	}
 
 	void execute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true) {
-		EXPECT_TRUE(_handler.execute(key, modifier, pressed, 0ul))
+		EXPECT_TRUE(_handler.execute(key, modifier, pressed, 0.0))
 				<< "Command for key '" << KeyBindingHandler::toString(key, modifier) << "' should be executed";
 	}
 
 	void notExecute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true) {
-		EXPECT_FALSE(_handler.execute(key, modifier, pressed, 0ul))
+		EXPECT_FALSE(_handler.execute(key, modifier, pressed, 0.0))
 				<< "Command for key '" << KeyBindingHandler::toString(key, modifier) << "' should not be executed";
 	}
 

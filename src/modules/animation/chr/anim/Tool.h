@@ -10,7 +10,7 @@
 namespace animation {
 namespace chr {
 namespace tool {
-extern void update(float animTime, ToolAnimationType animation, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute& skeletonAttr);
+extern void update(double animTime, ToolAnimationType animation, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute& skeletonAttr);
 }
 }
 }

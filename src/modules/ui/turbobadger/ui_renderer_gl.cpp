@@ -85,7 +85,7 @@ void UIRendererGL::shutdown() {
 
 void UIRendererGL::onWindowResize(const glm::ivec2& pixelDimensions, const glm::ivec2& screenDimensions) {
 	_camera.init(glm::ivec2(0), pixelDimensions, screenDimensions);
-	_camera.update(0L);
+	_camera.update();
 	video::ScopedShader scoped(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());
 }

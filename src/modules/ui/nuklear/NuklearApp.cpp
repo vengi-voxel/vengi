@@ -333,7 +333,7 @@ core::AppState NuklearApp::onRunning() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
-	_console.update(_deltaFrameMillis);
+	_console.update(_deltaFrameSeconds);
 
 	beforeUI();
 
@@ -415,7 +415,7 @@ core::AppState NuklearApp::onRunning() {
 	}
 
 	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-	_console.render(rect, _deltaFrameMillis);
+	_console.render(rect, _deltaFrameSeconds);
 
 	video::ScopedShader scopedShader(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());

@@ -33,9 +33,9 @@ struct Bone {
 	/**
 	 * @brief Perform linear interpolation between the given previous @c Bone instance and the current instance
 	 * in relation to the time passed factor
-	 * @param[in] dt The time that passed since the last update was called. Given in the range @c [0.0f-1.0f]
+	 * @param[in] deltaTimeSeconds The time that passed since the last update was called.
 	 */
-	void lerp(const Bone& previous, float dt);
+	void lerp(const Bone& previous, double deltaTimeSeconds);
 };
 
 }

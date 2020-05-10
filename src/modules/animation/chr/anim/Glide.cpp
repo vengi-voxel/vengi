@@ -9,7 +9,7 @@
 namespace animation {
 namespace chr {
 namespace glide {
-void update(float animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float sine = glm::sin(animTime * 3.0f) * 0.1f;
 	const float cosine = glm::cos(animTime * 3.0f);
 	const float movement = glm::sin(animTime) * skeletonAttr.idleTimeFactor;

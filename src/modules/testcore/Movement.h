@@ -24,15 +24,15 @@ protected:
 	core::ActionButton _moveBackward;
 	core::ActionButton _moveForward;
 
-	uint64_t _deltaMillis = 0ul;
+	double _deltaSeconds = 0.0;
 
-	glm::vec3 calculateDelta(const glm::quat& rot, float speed);
+	glm::vec3 calculateDelta(const glm::quat& rot, double speed);
 
 public:
 	virtual ~Movement() {}
 	void construct() override;
 	bool init() override;
-	void update(uint64_t deltaMillis);
+	void update(double deltaFrameSeconds);
 	void shutdown() override;
 
 	bool left() const;
@@ -45,7 +45,7 @@ public:
 	/**
 	 * @note update() must have been called with proper delta milliseconds.
 	 */
-	glm::vec3 moveDelta(float speed, float orientation = 0.0f);
+	glm::vec3 moveDelta(double speed, float orientation = 0.0f);
 };
 
 inline bool Movement::moving() const {

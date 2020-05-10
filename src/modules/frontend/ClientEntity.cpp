@@ -55,10 +55,10 @@ ClientEntity::~ClientEntity() {
 	_indices = -1;
 }
 
-void ClientEntity::update(uint64_t dt) {
-	_attrib.update(dt);
+void ClientEntity::update(double deltaFrameSeconds) {
+	_attrib.update(deltaFrameSeconds);
 	_character.updateTool(_animationCache, _stock);
-	_character.update(dt, _attrib);
+	_character.update(deltaFrameSeconds, _attrib);
 	const glm::mat4& translate = glm::translate(position());
 	// as our models are looking along the positive z-axis, we have to rotate by 180 degree here
 	_model = glm::rotate(translate, glm::pi<float>() + orientation(), glm::up);

@@ -118,7 +118,7 @@ void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
 	io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
-	_camera.update(0L);
+	_camera.update();
 	video::ScopedShader scoped(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());
 	_shader.setModel(glm::mat4(1.0f));
@@ -261,7 +261,7 @@ core::AppState IMGUIApp::onRunning() {
 		return state;
 	}
 
-	_console.update(_deltaFrameMillis);
+	_console.update(_deltaFrameSeconds);
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.MousePos = ImVec2(_mousePos.x, _mousePos.y);
@@ -319,7 +319,7 @@ core::AppState IMGUIApp::onRunning() {
 	}
 
 	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-	_console.render(rect, _deltaFrameMillis);
+	_console.render(rect, _deltaFrameSeconds);
 	ImGui::EndFrame();
 	ImGui::Render();
 

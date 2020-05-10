@@ -134,7 +134,7 @@ void AnimationRenderer::render(const AnimationEntity& character, const video::Ca
 	_shader.setDiffuseColor(_diffuseColor);
 	_shader.setAmbientColor(_ambientColor);
 	_shader.setNightColor(_nightColor);
-	_shader.setTime(_seconds);
+	_shader.setTime((float)_seconds);
 
 	// clip plane is disabled here
 	_shader.setClipplane(glm::vec4(glm::down, 1000.0f));

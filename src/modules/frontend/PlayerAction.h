@@ -25,7 +25,7 @@ private:
 	int _triggerActionCounter = 0;
 public:
 	bool init() override;
-	void update(uint64_t now, const ClientEntityPtr& entity);
+	void update(double nowSeconds, const ClientEntityPtr& entity);
 	void construct() override;
 	void shutdown() override;
 	/**

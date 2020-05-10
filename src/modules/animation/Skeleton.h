@@ -44,7 +44,7 @@ public:
 	/**
 	 * @brief Linear interpolate from one skeletal animation state to a new one.
 	 */
-	void lerp(const Skeleton& previous, float dt);
+	void lerp(const Skeleton& previous, double deltaFrameSeconds);
 };
 
 }

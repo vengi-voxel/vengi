@@ -53,8 +53,8 @@ protected:
 
 	float _fogRange = 0.0f;
 	float _viewDistance = 0.0f;
-	float _seconds = 0.0f;
-	float _nowSeconds = 0.0f;
+	double _seconds = 0.0;
+	double _deltaFrameSeconds = 0.0;
 	glm::vec3 _focusPos { 0.0f };
 
 	core::VarPtr _shadowMap;
@@ -107,7 +107,7 @@ public:
 
 	void construct();
 	bool init(voxel::PagedVolume *volume, const glm::ivec2 &position, const glm::ivec2 &dimension);
-	void update(const video::Camera &camera, uint64_t dt, float nowSeconds);
+	void update(const video::Camera &camera, double deltaFrameSeconds);
 	void shutdown();
 
 	render::Shadow &shadow();
@@ -120,7 +120,7 @@ public:
 	frontend::EntityMgr &entityMgr();
 	const frontend::EntityMgr &entityMgr() const;
 
-	void setSeconds(float seconds);
+	void setSeconds(double seconds);
 
 	void extractMesh(const glm::ivec3 &pos);
 	void extractMeshes(const video::Camera &camera);
@@ -139,7 +139,7 @@ inline const frontend::EntityMgr &WorldRenderer::entityMgr() const {
 	return _entityMgr;
 }
 
-inline void WorldRenderer::setSeconds(float seconds) {
+inline void WorldRenderer::setSeconds(double seconds) {
 	_seconds = seconds;
 }
 

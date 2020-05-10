@@ -13,7 +13,7 @@ ModifierButton::ModifierButton(ModifierType newType) :
 		_newType(newType) {
 }
 
-bool ModifierButton::handleDown(int32_t key, uint64_t pressedMillis) {
+bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 	const bool initialDown = Super::handleDown(key, pressedMillis);
 	if (_secondAction) {
 		execute();
@@ -31,7 +31,7 @@ bool ModifierButton::handleDown(int32_t key, uint64_t pressedMillis) {
 	return initialDown;
 }
 
-bool ModifierButton::handleUp(int32_t key, uint64_t releasedMillis) {
+bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 	const bool allUp = Super::handleUp(key, releasedMillis);
 	if (_secondAction) {
 		_secondAction = false;

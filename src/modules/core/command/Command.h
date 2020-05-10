@@ -48,7 +48,7 @@ private:
 	static size_t _sortedCommandListSize;
 	static Command* _sortedCommandList[4096];
 
-	static uint64_t _delayMillis;
+	static double _delaySeconds;
 	static std::vector<core::String> _delayedTokens;
 
 	core::String _name;
@@ -92,7 +92,7 @@ public:
 	/**
 	 * @brief Executes delayed (by wait command e.g.) commands that are still in the command buffer
 	 */
-	static int update(uint64_t dt);
+	static int update(double deltaFrameSeconds);
 
 	static int execute(const core::String& command);
 

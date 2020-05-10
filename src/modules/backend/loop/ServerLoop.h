@@ -72,7 +72,7 @@ public:
 	void construct() override;
 	bool init() override;
 	void shutdown() override;
-	void update(long dt);
+	void update();
 
 	void onEvent(const network::DisconnectEvent& event) override;
 };

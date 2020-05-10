@@ -9,7 +9,7 @@
 namespace animation {
 namespace chr {
 namespace run {
-void update(float animTime, float velocity, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+void update(double animTime, double velocity, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float timeFactor = skeletonAttr.runTimeFactor;
 	const float sine = glm::sin(animTime * timeFactor);
 	const float cosine = glm::cos(animTime * timeFactor);
@@ -17,7 +17,7 @@ void update(float animTime, float velocity, CharacterSkeleton &skeleton, const C
 	const float movement = sine * 0.35f;
 	const glm::vec2 headLook(glm::cos(animTime) * 0.05f + glm::radians(10.0f), sine * 0.1f);
 
-	velocity = glm::clamp(velocity / 10.0f, 0.1f, 2.5f);
+	velocity = glm::clamp((float)(velocity / 10.0), 0.1f, 2.5f);
 
 	Bone &head = skeleton.headBone(skeletonAttr);
 	head.translation = glm::vec3(0.0f, skeletonAttr.neckHeight + skeletonAttr.headY + cosine * 1.3f, -1.0f + skeletonAttr.neckForward);

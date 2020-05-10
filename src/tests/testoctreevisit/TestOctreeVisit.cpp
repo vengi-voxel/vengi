@@ -66,7 +66,7 @@ core::AppState TestOctreeVisit::onRunning() {
 		return state;
 	}
 
-	_octreeCamera.update(_deltaFrameMillis);
+	_octreeCamera.update(_deltaFrameSeconds);
 
 	const int minSize = 64;
 	_positions.clear();

@@ -121,11 +121,11 @@ bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
 bool WindowedApp::handleKeyRelease(int32_t key, int16_t /*modifier*/) {
 	// don't use modifier here - this is the modifier that was released. But
 	// we need the currently pressed modifier mask
-	return _keybindingHandler.execute(key, SDL_GetModState(), false, _now);
+	return _keybindingHandler.execute(key, SDL_GetModState(), false, nowSeconds());
 }
 
 bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
-	return _keybindingHandler.execute(key, modifier, true, _now);
+	return _keybindingHandler.execute(key, modifier, true, nowSeconds());
 }
 
 bool WindowedApp::onMouseWheel(int32_t x, int32_t y) {

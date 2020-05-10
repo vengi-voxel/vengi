@@ -34,8 +34,8 @@ void ViewportController::resetCamera(const voxel::Region& region) {
 	}
 }
 
-void ViewportController::update(long deltaFrame) {
-	_camera.update(deltaFrame);
+void ViewportController::update(double deltaFrameSeconds) {
+	_camera.update(deltaFrameSeconds);
 }
 
 void ViewportController::init(ViewportController::SceneCameraMode mode) {

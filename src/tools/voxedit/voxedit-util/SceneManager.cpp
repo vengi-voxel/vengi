@@ -740,7 +740,7 @@ bool SceneManager::setGridResolution(int resolution) {
 
 void SceneManager::renderAnimation(const video::Camera& camera) {
 	attrib::ShadowAttributes attrib;
-	const long deltaFrame = core::App::getInstance()->deltaFrame();
+	const double deltaFrameSeconds = core::App::getInstance()->deltaFrameSeconds();
 	if (_animationUpdate) {
 		const voxedit::Layers& layers = _layerMgr.layers();
 		const size_t layerAmount = layers.size();
@@ -778,7 +778,7 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 		_animationUpdate = false;
 		_animationLayerDirtyState = -1;
 	}
-	animationEntity().update(deltaFrame, attrib);
+	animationEntity().update(deltaFrameSeconds, attrib);
 	_animationRenderer.render(animationEntity(), camera);
 }
 
@@ -1141,17 +1141,17 @@ void SceneManager::construct() {
 
 	core::Command::registerCommand("animate", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
-			Log::info("Usage: animate <framedelay> <0|1>");
+			Log::info("Usage: animate <framedelaymillis> <0|1>");
 			Log::info("framedelay of 0 will stop the animation, too");
 			return;
 		}
 		if (args.size() == 2) {
 			if (!core::string::toBool(args[1])) {
-				_animationSpeed = 0;
+				_animationSpeed = 0.0;
 				return;
 			}
 		}
-		_animationSpeed = core::string::toInt(args[0]);
+		_animationSpeed = core::string::toDouble(args[0]) / 1000.0;
 	}).setHelp("Animate all visible layers with the given delay in millis between the frames");
 
 	core::Command::registerCommand("setcolor", [&] (const core::CmdArgs& args) {
@@ -1462,12 +1462,12 @@ bool SceneManager::init() {
 	return true;
 }
 
-void SceneManager::animate(uint64_t time) {
-	if (_animationSpeed <= 0) {
+void SceneManager::animate(double nowSeconds) {
+	if (_animationSpeed <= 0.0) {
 		return;
 	}
-	if (_nextFrameSwitch <= time) {
-		_nextFrameSwitch = time + _animationSpeed;
+	if (_nextFrameSwitch <= nowSeconds) {
+		_nextFrameSwitch = nowSeconds + _animationSpeed;
 		const int layers = (int)_layerMgr.layers().size();
 		const int roundTrip = layers + _currentAnimationLayer;
 		for (int idx = _currentAnimationLayer + 1; idx < roundTrip; ++idx) {
@@ -1493,24 +1493,24 @@ void SceneManager::zoom(video::Camera& camera, float level) const {
 	}
 }
 
-void SceneManager::update(uint64_t time) {
+void SceneManager::update(double nowSeconds) {
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;
 		}
-		_move[i].execute(time, 125ul, [&] () {
+		_move[i].execute(nowSeconds, 0.125, [&] () {
 			const Direction& dir = DIRECTIONS[i];
 			moveCursor(dir.x, dir.y, dir.z);
 		});
 	}
 	if (_zoomIn.pressed()) {
-		_zoomIn.execute(time, 20ul, [&] () {
+		_zoomIn.execute(nowSeconds, 0.02, [&] () {
 			if (_camera != nullptr) {
 				zoom(*_camera, 1.0f);
 			}
 		});
 	} else if (_zoomOut.pressed()) {
-		_zoomOut.execute(time, 20ul, [&] () {
+		_zoomOut.execute(nowSeconds, 0.02, [&] () {
 			if (_camera != nullptr) {
 				zoom(*_camera, -1.0f);
 			}
@@ -1532,7 +1532,7 @@ void SceneManager::update(uint64_t time) {
 
 		if (_renderAxis) {
 			_gizmo.update(*_camera, _mouseCursor);
-			_gizmo.execute(time, [&] (const glm::ivec3& lastPos, render::GizmoMode mode) {
+			_gizmo.execute(nowSeconds, [&] (const glm::ivec3& lastPos, render::GizmoMode mode) {
 				const video::Ray& ray = _camera->screenRay(_mouseCursor);
 				const glm::ivec3 rayPosFarPlane(ray.origin + ray.direction * 100.0f);
 				if (lastPos == glm::zero<glm::ivec3>()) {
@@ -1553,7 +1553,7 @@ void SceneManager::update(uint64_t time) {
 		_volumeRenderer.setDiffuseColor(_diffuseColor->vec3Val());
 		_diffuseColor->markClean();
 	}
-	animate(time);
+	animate(nowSeconds);
 	autosave();
 	extractVolume();
 }

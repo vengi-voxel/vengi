@@ -235,16 +235,16 @@ void MapView::beforeUI() {
 	_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _entity, [&] (const glm::ivec3& pos, int maxWalkHeight) {
 		return _floorResolver.findWalkableFloor(pos, maxWalkHeight);
 	});
-	_action.update(_now, _entity);
+	_action.update(nowSeconds(), _entity);
 	const double speed = _entity->attrib().current(attrib::Type::SPEED);
-	_camera.update(_entity->position(), _deltaFrameSeconds, _now, (float)speed);
+	_camera.update(_entity->position(), _nowSeconds, speed);
 
 	if (_updateWorld) {
 		core_trace_scoped(UpdateWorld);
 		if (!_singlePosExtraction) {
 			_worldRenderer.extractMeshes(camera);
 		}
-		_worldRenderer.update(camera, _deltaFrameMillis, _nowSeconds);
+		_worldRenderer.update(camera, _deltaFrameSeconds);
 	}
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
@@ -272,8 +272,8 @@ void MapView::onRenderUI() {
 	const bool current = isRelativeMouseMode();
 	ImGui::Text("World mouse mode: %s", (current ? "true" : "false"));
 
-	ImGui::InputFloat("Time scale", &_timeScaleFactor, 0.1f, 1.0f, 1);
-	ImGui::InputFloat("World time", &_worldTime);
+	ImGui::InputDouble("Time scale", &_timeScaleFactor, 0.1, 1.0);
+	ImGui::InputDouble("World time", &_worldTime);
 
 	_worldTime += _deltaFrameSeconds * _timeScaleFactor;
 	_worldRenderer.setSeconds(_worldTime);
@@ -404,13 +404,13 @@ core::AppState MapView::onRunning() {
 		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 
-	if (_movement.moving()) {
+	if (_movement.walking()) {
 		const voxel::VoxelType material = _movement.groundVoxel().getMaterial();
 		static int _footStepChannel = -1;
 		_footStepChannel = _soundManager.play(_footStepChannel, "footstep_sand", _entity->position(), false);
 	}
 	_soundManager.setListenerPosition(_camera.camera().position());
-	_soundManager.update(_deltaFrameMillis);
+	_soundManager.update();
 	_axis.render(_camera.camera());
 	return state;
 }

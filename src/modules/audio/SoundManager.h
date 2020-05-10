@@ -38,7 +38,6 @@ private:
 	_Mix_Music *_music = nullptr;
 	core::String _musicPlaying;
 	SoundState _state = SoundState::CLOSED;
-	uint32_t _time = 0u;
 
 	Mix_Chunk* getChunk(const core::String& filename);
 
@@ -72,7 +71,7 @@ public:
 	 * @return Returns @c -1 on error, the channel otherwise.
 	 */
 	int play(int channel, const core::String& filename, const glm::vec3& position, bool loop);
-	void update(uint32_t deltaTime);
+	void update();
 	void setListenerPosition(const glm::vec3& position, const glm::vec3& velocity = glm::vec3(0.0f));
 	int volume(int newVolume);
 	int musicVolume(int newVolume);

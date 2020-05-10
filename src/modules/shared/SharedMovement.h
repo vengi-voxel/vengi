@@ -22,16 +22,16 @@ protected:
 	bool _jumping = false;
 	bool _swimming = false;
 
-	float _fallingVelocity = 0.0f;
+	double _fallingVelocity = 0.0;
 	voxelutil::FloorTraceResult _floor;
-	float _delay = 0.0f;
-	float _speed = 0.0f;
+	double _delay = 0.0;
+	double _speed = 0.0;
 
-	float gravity() const;
+	double gravity() const;
 
-	glm::vec3 calculateDelta(const glm::quat& rot);
+	glm::vec3 calculateDelta(const glm::quat& rot) const;
 public:
-	glm::vec3 update(float deltaFrameSeconds, float orientation, float speed, const glm::vec3& currentPos, const WalkableFloorResolver& heightResolver);
+	glm::vec3 update(double deltaFrameSeconds, float orientation, double speed, const glm::vec3& currentPos, const WalkableFloorResolver& heightResolver);
 
 	void setMoveMask(network::MoveDirection moveMask);
 	network::MoveDirection moveMask() const;
@@ -42,8 +42,7 @@ public:
 	bool backward() const;
 	bool jump() const;
 	bool gliding() const;
-
-	float speed() const;
+	bool walking() const;
 
 	bool moving() const;
 	network::Animation animation() const;
@@ -60,12 +59,15 @@ inline network::MoveDirection SharedMovement::moveMask() const {
 	return _move;
 }
 
-inline float SharedMovement::speed() const {
-	return _speed;
-}
-
 inline bool SharedMovement::moving() const {
 	return left() || right() || forward() || backward();
+}
+
+inline bool SharedMovement::walking() const {
+	if (!moving()) {
+		return false;
+	}
+	return !_swimming && !_gliding && !_jumping;
 }
 
 inline bool SharedMovement::left() const {

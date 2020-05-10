@@ -9,7 +9,7 @@
 namespace animation {
 namespace chr {
 namespace run {
-extern void update(float animTime, float velocity, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute& skeletonAttr);
+extern void update(double animTime, double velocity, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute& skeletonAttr);
 }
 }
 }

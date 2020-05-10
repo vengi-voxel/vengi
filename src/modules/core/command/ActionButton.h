@@ -29,13 +29,13 @@ struct ActionButton {
 	/**
 	 * The timestamp at which the action button was initially triggered
 	 */
-	uint64_t pressedMillis = 0ul;
+	double pressedSeconds = 0.0;
 	/**
 	 * After all triggering keys were released, the duration is calculated
 	 */
-	uint32_t durationMillis = 0;
+	double durationSeconds = 0.0;
 
-	uint64_t lastPressed = 0ul;
+	double lastPressed = 0.0;
 
 	ActionButton();
 	virtual ~ActionButton() {}
@@ -45,17 +45,17 @@ struct ActionButton {
 	 */
 	bool pressed() const;
 
-	bool execute(uint64_t now, uint64_t delayBetweenExecutions, const std::function<void()>& executionCallback);
+	bool execute(double nowSeconds, double delayBetweenExecutions, const std::function<void()>& executionCallback);
 
 	/**
 	 * @return @c true if the action button was initially triggered
 	 */
-	virtual bool handleDown(int32_t key, uint64_t pressedMillis);
+	virtual bool handleDown(int32_t key, double pressedSeconds);
 	/**
 	 * @param[in] key If @c -1 is given here, everything is released
 	 * @return @c true if the action button was completely released
 	 */
-	virtual bool handleUp(int32_t key, uint64_t releasedMillis);
+	virtual bool handleUp(int32_t key, double releasedSeconds);
 };
 
 inline bool ActionButton::pressed() const {

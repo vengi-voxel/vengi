@@ -48,7 +48,6 @@ App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, c
 	_initialLogLevel = SDL_LOG_PRIORITY_INFO;
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)_initialLogLevel);
 	_timeProvider->updateTickTime();
-	_now = _timeProvider->tickNow();
 	_staticInstance = this;
 }
 
@@ -130,14 +129,11 @@ void App::onFrame() {
 	_timeProvider->updateTickTime();
 	if (AppState::Blocked == _curState) {
 		SDL_Delay(1);
-		_deltaFrameMillis = 1.0;
-		_deltaFrameSeconds = _deltaFrameMillis / 1000.0;
+		_deltaFrameSeconds = 0.001;
 	} else {
-		const double now = _timeProvider->tickMillis();
-		_deltaFrameMillis = core_max(int64_t(1), int64_t(now) - int64_t(_now));
-		_deltaFrameSeconds = _deltaFrameMillis / 1000.0f;
-		_now = now;
-		_nowSeconds = _now / 1000.0;
+		const double now = _timeProvider->tickSeconds();
+		_deltaFrameSeconds = now - _nowSeconds;
+		_nowSeconds = now;
 
 		switch (_curState) {
 		case AppState::Construct: {
@@ -299,7 +295,6 @@ bool App::toggleTrace() {
 }
 
 void App::onBeforeInit() {
-	_initMillis = _now;
 }
 
 AppState App::onInit() {
@@ -507,7 +502,7 @@ AppState App::onRunning() {
 		_syslogVar->markClean();
 	}
 
-	core::Command::update(_deltaFrameMillis);
+	core::Command::update(_deltaFrameSeconds);
 
 	_filesystem->update();
 

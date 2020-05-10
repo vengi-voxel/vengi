@@ -110,10 +110,10 @@ void TestApp::beforeUI() {
 		}
 	}
 
-	_movement.update(_deltaFrameMillis);
+	_movement.update(_deltaFrameSeconds);
 	const glm::vec3& moveDelta = _movement.moveDelta(_cameraSpeed, 0.0f);
 	camera().move(moveDelta);
-	camera().update(_deltaFrameMillis);
+	camera().update(_deltaFrameSeconds);
 
 	if (_renderPlane) {
 		_plane.render(camera(), glm::scale(glm::vec3(100.0f)));

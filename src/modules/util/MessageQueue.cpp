@@ -6,7 +6,7 @@
 #include "core/command/Command.h"
 
 namespace {
-const uint64_t MessageDelay = 2000;
+const double MessageDelay = 2.0;
 }
 
 void MessageQueue::message(const char *msg, ...) {
@@ -19,7 +19,7 @@ void MessageQueue::message(const char *msg, ...) {
 	buf[sizeof(buf) - 1] = '\0';
 	va_end(ap);
 
-	_messageEventQueue.emplace_back(_time + MessageDelay, buf);
+	_messageEventQueue.emplace_back(_timeSeconds + MessageDelay, buf);
 	std::push_heap(_messageEventQueue.begin(), _messageEventQueue.end(), _messageEventQueueComp);
 }
 
@@ -41,16 +41,16 @@ void MessageQueue::shutdown() {
 	core::Command::unregisterCommand("addmessage");
 }
 
-void MessageQueue::update(uint64_t dt) {
-	_time += dt;
+void MessageQueue::update(double deltaFrameSeconds) {
+	_timeSeconds += deltaFrameSeconds;
 	if (_messageEventQueue.empty()) {
 		return;
 	}
 	// update queue and remove outdated messages
 	for (;;) {
 		const auto& msg = _messageEventQueue.front();
-		const int64_t remainingMillis = msg.ttl - _time;
-		if (remainingMillis > 0) {
+		const double remainingMillis = msg.ttlSeconds - _timeSeconds;
+		if (remainingMillis > 0.0) {
 			break;
 		}
 		std::pop_heap(_messageEventQueue.begin(), _messageEventQueue.end(), _messageEventQueueComp);

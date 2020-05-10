@@ -87,21 +87,11 @@ protected:
 	 */
 	bool _coredump = false;
 	/**
-	 * @brief A cached value of the @c core::TimeProvider tick milliseconds.
-	 */
-	uint64_t _now;
-	/**
-	 * @brief The millisecond delta of the start of the current frame
+	 * @brief The seconds delta of the start of the current frame
 	 * and the start of the last frame
 	 */
-	uint64_t _deltaFrameMillis = 0ul;
 	double _deltaFrameSeconds = 0.0f;
 	double _nowSeconds = 0.0f;
-	/**
-	 * @brief The absolute milliseconds when the application was started.
-	 * Can be used to calculate the uptime.
-	 */
-	uint64_t _initMillis = 0ul;
 	/**
 	 * @brief The absolute milliseconds when the next frame should be run
 	 * @note Only handled if the max frames cap is set
@@ -260,9 +250,7 @@ public:
 	void requestQuit();
 	void requestSuspend();
 
-	uint64_t deltaFrame() const;
-	uint64_t lifetimeInSeconds() const;
-	float lifetimeInSecondsf() const;
+	double deltaFrameSeconds() const;
 	double nowSeconds() const;
 
 	AppState state() const;
@@ -308,20 +296,12 @@ private:
 	core::List<Argument> _arguments;
 };
 
-inline uint64_t App::lifetimeInSeconds() const {
-	return (_now - _initMillis) / uint64_t(1000);
-}
-
 inline double App::nowSeconds() const {
 	return _nowSeconds;
 }
 
-inline float App::lifetimeInSecondsf() const {
-	return float(_now - _initMillis) / 1000.0f;
-}
-
-inline uint64_t App::deltaFrame() const {
-	return _deltaFrameMillis;
+inline double App::deltaFrameSeconds() const {
+	return _deltaFrameSeconds;
 }
 
 inline io::FilesystemPtr App::filesystem() const {

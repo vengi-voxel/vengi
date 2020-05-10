@@ -9,11 +9,11 @@
 namespace animation {
 namespace chr {
 namespace jump {
-void update(float animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float sine = glm::sin(animTime * skeletonAttr.jumpTimeFactor);
 	const float sineSlow = glm::sin(animTime * skeletonAttr.jumpTimeFactor / 2.0f);
-	const float sineStop = glm::sin((glm::min)(animTime * 5.0f, glm::half_pi<float>()));
-	const float sineStopAlt = glm::sin((glm::min)(animTime * 4.5f, glm::half_pi<float>()));
+	const float sineStop = glm::sin((glm::min)((float)(animTime * 5.0), glm::half_pi<float>()));
+	const float sineStopAlt = glm::sin((glm::min)((float)(animTime * 4.5), glm::half_pi<float>()));
 	const float handWaveStop = sineStopAlt * 0.6f;
 
 	Bone &head = skeleton.headBone(skeletonAttr);
