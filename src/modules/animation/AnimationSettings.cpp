@@ -103,7 +103,7 @@ static int luaanim_boneidsadd(lua_State* s) {
 	if (id == BoneId::Max) {
 		return luaL_error(s, "Failed to resolve bone: '%s'", boneName);
 	}
-	if (boneIds->num > lengthof(boneIds->bones)) {
+	if (boneIds->num >= lengthof(boneIds->bones)) {
 		lua_pushboolean(s, 0);
 		return 1;
 	}
