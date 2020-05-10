@@ -70,7 +70,7 @@ core::AppState TestTraze::onConstruct() {
 }
 
 void TestTraze::sound(const char *soundId) {
-	if (!_soundMgr.play(soundId, glm::ivec2(0), false)) {
+	if (_soundMgr.play(-1, soundId, glm::ivec3(0), false) < 0) {
 		Log::warn("Failed to play sound %s", soundId);
 	}
 }
@@ -293,6 +293,7 @@ core::AppState TestTraze::onRunning() {
 		_protocol.subscribe(_games[_currentGameIndex]);
 	}
 	_messageQueue.update(_deltaFrameMillis);
+	_soundMgr.setListenerPosition(camera().position());
 	_soundMgr.update(_deltaFrameMillis);
 	return state;
 }

@@ -79,8 +79,8 @@ bool SoundManager::init() {
 }
 
 void SoundManager::construct() {
-	_volume = core::Var::get(cfg::AudioSoundVolume, MIX_MAX_VOLUME);
-	_musicVolume = core::Var::get(cfg::AudioMusicVolume, MIX_MAX_VOLUME / 2);
+	_volume = core::Var::get(cfg::AudioSoundVolume, MIX_MAX_VOLUME / 4);
+	_musicVolume = core::Var::get(cfg::AudioMusicVolume, MIX_MAX_VOLUME / 4);
 }
 
 void SoundManager::shutdown() {
@@ -88,7 +88,7 @@ void SoundManager::shutdown() {
 	Mix_FreeMusic(_music);
 	_music = nullptr;
 	Mix_AllocateChannels(0);
-	for (ChunkMapIter i = _map.begin(); i != _map.end(); ++i) {
+	for (auto i : _map) {
 		Mix_FreeChunk(i->second);
 	}
 	_state = SoundState::CLOSED;
@@ -101,7 +101,7 @@ void SoundManager::shutdown() {
 void SoundManager::channelFinished(int channel) {
 	core_assert(channel >= 0);
 	core_assert(channel < MAX_CHANNELS);
-	memset(&_channels[channel], 0, sizeof(_channels[channel]));
+	core_memset(&_channels[channel], 0, sizeof(_channels[channel]));
 }
 
 void SoundManager::halt(int sound) {
@@ -173,7 +173,7 @@ void SoundManager::haltMusic(int music) {
 	_musicPlaying = "";
 }
 
-int SoundManager::play(const core::String& filename, const glm::ivec2& position, bool loop) {
+int SoundManager::play(int channel, const core::String& filename, const glm::vec3& position, bool loop) {
 	if (!isActive()) {
 		return -1;
 	}
@@ -185,13 +185,17 @@ int SoundManager::play(const core::String& filename, const glm::ivec2& position,
 	if (!sound) {
 		return -1;
 	}
+	if (channel < -1 || channel >= MAX_CHANNELS) {
+		return -1;
+	}
 
-	_currentChannel = (_currentChannel + 1) % MAX_CHANNELS;
-	const int channel = Mix_PlayChannel(_currentChannel, sound, loop ? -1 : 0);
+	if (channel != -1 && Mix_Playing(channel)) {
+		return -1;
+	}
+	channel = Mix_PlayChannel(channel, sound, loop ? -1 : 0);
 	if (channel <= -1) {
 		Log::error(logid, "unable to play sound file: %s", Mix_GetError());
 	} else {
-		core_assert(channel >= 0);
 		core_assert(channel < MAX_CHANNELS);
 		_channels[channel].channel = channel;
 		_channels[channel].chunk = sound;
@@ -205,7 +209,7 @@ Mix_Chunk* SoundManager::getChunk(const core::String& filename) {
 		Log::error(logid, "no sound file to get the chunk for was provided");
 		return nullptr;
 	}
-	ChunkMapIter i = _map.find(filename);
+	auto i = _map.find(filename);
 	if (i != _map.end()) {
 		return i->second;
 	}
@@ -222,7 +226,7 @@ Mix_Chunk* SoundManager::getChunk(const core::String& filename) {
 		return nullptr;
 	}
 	Mix_Chunk *sound = Mix_LoadWAV_RW(rwops, 1);
-	_map[filename] = sound;
+	_map.put(filename, sound);
 	if (sound == nullptr) {
 		Log::error(logid, "unable to load sound file %s: %s", filename.c_str(), Mix_GetError());
 	}
@@ -246,21 +250,20 @@ void SoundManager::update(uint32_t deltaTime) {
 	if (!isActive()) {
 		return;
 	}
-	const double scale = 60.0;
+	const double scale = 5.0;
 	for (int i = 0; i < MAX_CHANNELS; ++i) {
 		Channel &channel = _channels[i];
-		if (channel.pos == glm::zero<glm::ivec2>()) {
+		if (channel.chunk == nullptr) {
 			continue;
 		}
-		const double xDiff = (_listenerPosition.x - channel.pos.x) * scale;
-		const double yDiff = (_listenerPosition.y - channel.pos.y) * scale;
-		const int dist = std::sqrt(xDiff * xDiff + yDiff * yDiff);
+		const float dist = glm::distance(_listenerPosition, channel.pos);
 		const double angleInDegrees = getAngleBetweenPoints(_listenerPosition, channel.pos);
-		Mix_SetPosition(channel.channel, static_cast<int16_t>(angleInDegrees), core_min(dist, 255));
+		const int volume = core_max(0, MIX_MAX_VOLUME - (int)(dist * scale));
+		Mix_SetPosition(channel.channel, static_cast<int16_t>(angleInDegrees), volume);
 	}
 }
 
-void SoundManager::setListenerPosition(const glm::ivec2& position, const glm::vec2& velocity) {
+void SoundManager::setListenerPosition(const glm::vec3& position, const glm::vec3& velocity) {
 	_listenerPosition = position;
 }
 

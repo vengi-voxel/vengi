@@ -404,6 +404,12 @@ core::AppState MapView::onRunning() {
 		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 
+	if (_movement.moving()) {
+		const voxel::VoxelType material = _movement.groundVoxel().getMaterial();
+		static int _footStepChannel = -1;
+		_footStepChannel = _soundManager.play(_footStepChannel, "footstep_sand", _entity->position(), false);
+	}
+	_soundManager.setListenerPosition(_camera.camera().position());
 	_soundManager.update(_deltaFrameMillis);
 	_axis.render(_camera.camera());
 	return state;

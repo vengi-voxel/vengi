@@ -9,8 +9,8 @@
 #include "core/Var.h"
 #include "core/Enum.h"
 #include "core/io/Filesystem.h"
-#include <unordered_map>
-#include <glm/vec2.hpp>
+#include "core/collection/Map.h"
+#include <glm/vec3.hpp>
 
 struct Mix_Chunk;
 struct _Mix_Music;
@@ -31,12 +31,10 @@ class SoundManager: public core::IComponent {
 private:
 	static constexpr auto logid = Log::logid("SoundManager");
 	io::FilesystemPtr _filesystem;
-	typedef std::unordered_map<core::String, Mix_Chunk*, core::StringHash> ChunkMap;
-	typedef ChunkMap::iterator ChunkMapIter;
-	ChunkMap _map;
+	core::StringMap<Mix_Chunk*> _map;
 	core::VarPtr _volume;
 	core::VarPtr _musicVolume;
-	glm::ivec2 _listenerPosition;
+	glm::vec3 _listenerPosition;
 	_Mix_Music *_music = nullptr;
 	core::String _musicPlaying;
 	int _currentChannel = 0;
@@ -48,7 +46,7 @@ private:
 	struct Channel {
 		int channel;
 		Mix_Chunk *chunk;
-		glm::ivec2 pos;
+		glm::vec3 pos;
 	};
 
 	static Channel _channels[MAX_CHANNELS];
@@ -63,16 +61,20 @@ public:
 	void construct();
 	void shutdown();
 
-	bool exists(const core::String& sound) const;
 	int playMusic(const core::String& music, bool loop = true);
 	void haltMusic(int music);
 	void halt(int sound);
 	void haltAll();
 	void pause();
 	void resume();
-	int play(const core::String& filename, const glm::ivec2& position, bool loop);
+	/**
+	 * @param[in] channel If this is @c -1, the first free channel will be chosen
+	 * @param[in] filename The name of the sound file - relative to @c sound/ and without extension
+	 * @return Returns @c -1 on error, the channel otherwise.
+	 */
+	int play(int channel, const core::String& filename, const glm::vec3& position, bool loop);
 	void update(uint32_t deltaTime);
-	void setListenerPosition(const glm::ivec2& position, const glm::vec2& velocity);
+	void setListenerPosition(const glm::vec3& position, const glm::vec3& velocity = glm::vec3(0.0f));
 	int volume(int newVolume);
 	int musicVolume(int newVolume);
 };
