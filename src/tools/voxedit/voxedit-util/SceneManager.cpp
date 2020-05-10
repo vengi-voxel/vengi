@@ -361,7 +361,7 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 }
 
 void SceneManager::thicken(int amount) {
-	const glm::ivec3 dimensions(amount * 2 + 1);
+	const glm::ivec3 dimensions(amount + 1);
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
 		voxel::RawVolume* v = volume(layerId);
 		if (v == nullptr) {
@@ -370,7 +370,7 @@ void SceneManager::thicken(int amount) {
 		voxel::RawVolume* thinkened = new voxel::RawVolume(v->region());
 		voxel::RawVolumeWrapper wrapper(thinkened);
 		voxel::visitVolume(*v, [&] (int32_t x, int32_t y, int32_t z, voxel::Voxel voxel) {
-			voxelgenerator::shape::createCubeNoCenter(wrapper, glm::ivec3(x - amount, y - amount, z - amount), dimensions, voxel);
+			voxelgenerator::shape::createCube(wrapper, glm::ivec3(x, y, z), dimensions, voxel);
 		});
 		setNewVolume(layerId, thinkened, true);
 		modified(layerId, wrapper.dirtyRegion());
@@ -934,7 +934,12 @@ void SceneManager::construct() {
 	}).setHelp("Aborts the current modifier action");
 
 	core::Command::registerCommand("thicken", [&] (const core::CmdArgs& args) {
-		thicken(1);
+		const int argc = args.size();
+		int value = 1;
+		if (argc >= 1) {
+			value = core::string::toInt(args[0]);
+		}
+		thicken(value);
 	}).setHelp("Thicken existing voxels");
 
 	core::Command::registerCommand("setvoxelresolution", [&] (const core::CmdArgs& args) {
