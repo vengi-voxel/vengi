@@ -80,7 +80,7 @@ bool SoundManager::init() {
 
 void SoundManager::construct() {
 	_volume = core::Var::get(cfg::AudioSoundVolume, MIX_MAX_VOLUME);
-	_musicVolume = core::Var::get(cfg::AudioMusicVolume, MIX_MAX_VOLUME);
+	_musicVolume = core::Var::get(cfg::AudioMusicVolume, MIX_MAX_VOLUME / 2);
 }
 
 void SoundManager::shutdown() {

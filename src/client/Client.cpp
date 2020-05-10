@@ -357,6 +357,7 @@ core::AppState Client::onRunning() {
 	}
 	if (state == core::AppState::Running) {
 		_network->update();
+		_soundManager.update(_deltaFrameMillis);
 	}
 
 	return state;

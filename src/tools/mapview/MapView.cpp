@@ -404,6 +404,7 @@ core::AppState MapView::onRunning() {
 		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 
+	_soundManager.update(_deltaFrameMillis);
 	_axis.render(_camera.camera());
 	return state;
 }
