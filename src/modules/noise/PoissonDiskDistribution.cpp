@@ -45,9 +45,9 @@ public:
 	bool add(const glm::vec2 &position) {
 		const uint32_t px = (uint32_t)position.x;
 		const uint32_t py = (uint32_t)position.y;
-		const int x = (px - _offset.x) >> _k;
-		const int y = (py - _offset.y) >> _k;
-		const int j = x + _numCells.x * y;
+		const int64_t x = (px - _offset.x) >> _k;
+		const int64_t y = (py - _offset.y) >> _k;
+		const int64_t j = x + _numCells.x * y;
 
 		if (j >= 0 && j < (int)_grid.size()) {
 			_grid[j].push_back(position);
