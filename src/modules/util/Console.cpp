@@ -240,12 +240,13 @@ bool Console::insertClipboard() {
 		return false;
 	}
 
-	const char *str = SDL_GetClipboardText();
+	char *str = SDL_GetClipboardText();
 	if (str == nullptr) {
 		return false;
 	}
 
 	insertText(str);
+	SDL_free(str);
 	return true;
 }
 
@@ -264,6 +265,9 @@ bool Console::onMouseWheel(int32_t x, int32_t y) {
 }
 
 void Console::insertText(const core::String& text) {
+	if (text.empty()) {
+		return;
+	}
 	const SDL_Keymod state = SDL_GetModState();
 	if (state & (KMOD_CTRL | KMOD_ALT)) {
 		return;
