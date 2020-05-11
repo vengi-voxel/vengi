@@ -173,7 +173,7 @@ void SoundManager::haltMusic(int music) {
 	_musicPlaying = "";
 }
 
-int SoundManager::play(int channel, const core::String& filename, const glm::vec3& position, bool loop) {
+int SoundManager::_play(int channel, const core::String& filename, const glm::vec3& position, bool loop, int millis) {
 	if (!isActive()) {
 		return -1;
 	}
@@ -192,7 +192,7 @@ int SoundManager::play(int channel, const core::String& filename, const glm::vec
 	if (channel != -1 && Mix_Playing(channel)) {
 		return -1;
 	}
-	channel = Mix_PlayChannel(channel, sound, loop ? -1 : 0);
+	channel = Mix_PlayChannelTimed(channel, sound, loop ? -1 : 0, millis);
 	if (channel <= -1) {
 		Log::error(logid, "unable to play sound file at channel %i: %s", channel, Mix_GetError());
 	} else {
@@ -202,6 +202,14 @@ int SoundManager::play(int channel, const core::String& filename, const glm::vec
 		_channels[channel].pos = position;
 	}
 	return channel;
+}
+
+int SoundManager::playTimed(int channel, const core::String& filename, const glm::vec3& position, double seconds) {
+	return _play(channel, filename, position, false, (int)(seconds * 1000.0));
+}
+
+int SoundManager::play(int channel, const core::String& filename, const glm::vec3& position, bool loop) {
+	return _play(channel, filename, position, loop, -1);
 }
 
 Mix_Chunk* SoundManager::getChunk(const core::String& filename) {

@@ -52,6 +52,8 @@ private:
 
 	inline bool isActive() const;
 
+	int _play(int channel, const core::String& filename, const glm::vec3& position, bool loop, int millis);
+
 public:
 	SoundManager(const io::FilesystemPtr& filesystem);
 
@@ -71,6 +73,7 @@ public:
 	 * @return Returns @c -1 on error, the channel otherwise.
 	 */
 	int play(int channel, const core::String& filename, const glm::vec3& position, bool loop);
+	int playTimed(int channel, const core::String& filename, const glm::vec3& position, double seconds);
 	void update();
 	void setListenerPosition(const glm::vec3& position, const glm::vec3& velocity = glm::vec3(0.0f));
 	int volume(int newVolume);
