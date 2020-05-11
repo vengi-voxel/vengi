@@ -194,7 +194,7 @@ int SoundManager::play(int channel, const core::String& filename, const glm::vec
 	}
 	channel = Mix_PlayChannel(channel, sound, loop ? -1 : 0);
 	if (channel <= -1) {
-		Log::error(logid, "unable to play sound file: %s", Mix_GetError());
+		Log::error(logid, "unable to play sound file at channel %i: %s", channel, Mix_GetError());
 	} else {
 		core_assert(channel < MAX_CHANNELS);
 		_channels[channel].channel = channel;
