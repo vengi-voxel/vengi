@@ -228,24 +228,20 @@ void WorldPager::placeTrees(voxel::PagedVolume::PagerContext& pagerCtx) {
 	core_assert(pagerCtx.region.getLowerY() == 0);
 	core_assert(pagerCtx.region.getUpperY() == voxel::MAX_HEIGHT);
 	voxel::PagedVolumeWrapper chunkWrapper(_volumeData, pagerCtx.chunk, pagerCtx.region);
-	std::vector<const char*> treeTypes;
 
 	const size_t regionsSize = lengthof(regions);
 
 	for (size_t i = 0; i < regionsSize; ++i) {
 		const voxel::Region& region = regions[i];
-		treeTypes = _biomeManager.getTreeTypes(region);
+		const std::vector<const char*>& treeTypes = _biomeManager.getTreeTypes(region);
 		if (treeTypes.empty()) {
 			Log::debug("No tree types given for region %s", region.toString().c_str());
 			return;
 		}
 		std::vector<glm::vec2> positions;
-		{
-			math::Random random(_seed);
-			random.shuffle(treeTypes.begin(), treeTypes.end());
-			_biomeManager.getTreePositions(region, positions, random, 0);
-		}
-		int treeTypeIndex = 0;
+		math::Random random(_seed);
+		_biomeManager.getTreePositions(region, positions, random, 0);
+		int treeTypeIndex = random.random(0, treeTypes.size() - 1);
 		const int treeTypeSize = (int)treeTypes.size();
 		const math::Axis axes[] = {math::Axis::None, math::Axis::Y, math::Axis::Y, math::Axis::None, math::Axis::Y};
 		constexpr size_t axesSize = lengthof(axes);
