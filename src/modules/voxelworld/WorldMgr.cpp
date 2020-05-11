@@ -61,9 +61,9 @@ void WorldMgr::shutdown() {
 	_volumeData = nullptr;
 }
 
-voxelutil::FloorTraceResult WorldMgr::findWalkableFloor(const glm::ivec3& position, int maxDistanceY) const {
+voxelutil::FloorTraceResult WorldMgr::findWalkableFloor(const glm::ivec3& position, int maxDistanceUpwards) const {
 	voxel::PagedVolume::Sampler sampler(_volumeData);
-	return voxelutil::findWalkableFloor(&sampler, position, maxDistanceY);
+	return voxelutil::findWalkableFloor(&sampler, position, maxDistanceUpwards);
 }
 
 }

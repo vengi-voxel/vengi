@@ -39,9 +39,10 @@ public:
 	}
 
 	/**
+	 * @sa voxelutil::FloorTraceResult
 	 * @return The y component for the given x and z coordinates that is walkable - or @c NO_FLOOR_FOUND.
 	 */
-	voxelutil::FloorTraceResult findWalkableFloor(const glm::ivec3& position, int maxDistanceY = voxel::MAX_HEIGHT) const;
+	voxelutil::FloorTraceResult findWalkableFloor(const glm::ivec3& position, int maxDistanceUpwards = voxel::MAX_HEIGHT) const;
 
 	bool init(uint32_t volumeMemoryMegaBytes = 1024, uint16_t chunkSideLength = 256);
 	void shutdown();
