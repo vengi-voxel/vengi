@@ -237,6 +237,8 @@ Mix_Chunk* SoundManager::getChunk(const core::String& filename) {
 	_map.put(filename, sound);
 	if (sound == nullptr) {
 		Log::error(logid, "unable to load sound file %s: %s", filename.c_str(), Mix_GetError());
+	} else {
+		Log::info(logid, "Load sound file: %s", file->name().c_str());
 	}
 
 	return sound;
