@@ -95,37 +95,37 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 	float delta = (std::numeric_limits<float>::max)();
 	FaceNames face = FaceNames::NoOfFaces;
 
-	float current = fabs(x - mins.x);
+	float current = glm::abs(x - mins.x);
 	if (delta > current) {
 		delta = current;
 		face = FaceNames::NegativeX;
 	}
 
-	current = fabs(x - maxs.x);
+	current = glm::abs(x - maxs.x);
 	if (delta > current) {
 		delta = current;
 		face = FaceNames::PositiveX;
 	}
 
-	current = fabs(y - mins.y);
+	current = glm::abs(y - mins.y);
 	if (delta > current) {
 		delta = current;
 		face = FaceNames::NegativeY;
 	}
 
-	current = fabs(y - maxs.y);
+	current = glm::abs(y - maxs.y);
 	if (delta > current) {
 		delta = current;
 		face = FaceNames::PositiveY;
 	}
 
-	current = fabs(z - mins.z);
+	current = glm::abs(z - mins.z);
 	if (delta > current) {
 		delta = current;
 		face = FaceNames::NegativeZ;
 	}
 
-	current = fabs(z - maxs.z);
+	current = glm::abs(z - maxs.z);
 	if (delta > current) {
 		face = FaceNames::PositiveZ;
 	}
