@@ -176,7 +176,7 @@ bool RawVolume::Sampler::setVoxel(const Voxel& voxel) {
 	}
 	*_currentVoxel = voxel;
 	_volume->_mins = (glm::min)(_volume->_mins, _posInVolume);
-	_volume->_mins = (glm::max)(_volume->_maxs, _posInVolume);
+	_volume->_maxs = (glm::max)(_volume->_maxs, _posInVolume);
 	_volume->_boundsValid = true;
 	return true;
 }
