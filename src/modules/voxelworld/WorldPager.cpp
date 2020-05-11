@@ -174,7 +174,6 @@ int WorldPager::fillVoxels(int x, int minsY, int z, voxel::Voxel* voxels) const 
 	voxels[0] = dirt;
 	glm::ivec3 pos(x, 0, z);
 	for (int y = ni - 1; y >= minsY + 1; --y) {
-		// TODO: this looks like the same calculation as in terrainHeight
 		const float density = getDensity(x, y, z, n);
 		if (density > _worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
