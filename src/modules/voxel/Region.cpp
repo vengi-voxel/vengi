@@ -16,12 +16,11 @@
 
 namespace voxel {
 
-const Region Region::MaxRegion = Region((std::numeric_limits<int32_t>::min)(), (std::numeric_limits<int32_t>::max)());
 const Region Region::InvalidRegion = Region(0, -1);
 
 void Region::update() {
-	_center = (_mins + _maxs) / 2;
 	_width = _maxs - _mins;
+	_center = _mins + _width / 2;
 	_voxels = _width + glm::ivec3(1);
 	_stride = _voxels.x * _voxels.y;
 }

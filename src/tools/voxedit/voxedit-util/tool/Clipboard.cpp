@@ -87,8 +87,8 @@ void paste(voxel::RawVolume* out, const voxel::RawVolume* in, const glm::ivec3& 
 	const glm::ivec3& srcMaxs = sourceReg.getUpperCorner();
 	const glm::ivec3& destMins = destReg.getLowerCorner();
 
-	glm::ivec3 modifiedMins((std::numeric_limits<int>::max)());
-	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
+	glm::ivec3 modifiedMins((std::numeric_limits<int>::max)() / 2);
+	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)() / 2);
 
 	for (int32_t x = srcMins.x, destX = destMins.x; x <= srcMaxs.x; ++x, ++destX) {
 		for (int32_t y = sourceReg.getLowerY(), destY = destMins.y; y <= sourceReg.getUpperY(); ++y, ++destY) {

@@ -154,8 +154,8 @@ void RawVolume::initialise(const Region& regValidRegion) {
 void RawVolume::clear() {
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	core_memset(_data, 0, size);
-	_mins = glm::ivec3((std::numeric_limits<int>::max)());
-	_maxs = glm::ivec3((std::numeric_limits<int>::min)());
+	_mins = glm::ivec3((std::numeric_limits<int>::max)() / 2);
+	_maxs = glm::ivec3((std::numeric_limits<int>::min)() / 2);
 	_boundsValid = false;
 }
 

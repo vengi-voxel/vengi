@@ -1295,8 +1295,8 @@ void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, st
 		if (v == nullptr) {
 			return;
 		}
-		glm::ivec3 modifiedMins((std::numeric_limits<int>::max)());
-		glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)());
+		glm::ivec3 modifiedMins((std::numeric_limits<int>::max)() / 2);
+		glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)() / 2);
 		const int cnt = voxel::visitVolume(*v, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel&) {
 			if (!v->setVoxel(x, y, z, voxel())) {
 				return;

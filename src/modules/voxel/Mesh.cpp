@@ -123,8 +123,8 @@ void Mesh::removeUnusedVertices() {
 		isVertexUsed[v] = true;
 	}
 
-	_mins = glm::ivec3((std::numeric_limits<int>::max)());
-	_maxs = glm::ivec3((std::numeric_limits<int>::min)());
+	_mins = glm::ivec3((std::numeric_limits<int>::max)() / 2);
+	_maxs = glm::ivec3((std::numeric_limits<int>::min)() / 2);
 
 	int noOfUsedVertices = 0;
 	IndexArray newPos(vertices);

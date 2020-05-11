@@ -45,8 +45,6 @@ public:
 	constexpr Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz);
 	constexpr Region(int mins, int maxs);
 
-	/// A Region with the lower corner set as low as possible and the upper corner set as high as possible.
-	static const Region MaxRegion;
 	static const Region InvalidRegion;
 
 	/// Equality Operator.
@@ -396,7 +394,7 @@ inline constexpr Region::Region() :
  * @param maxsz The desired upper 'z' extent of the Region.
  */
 inline constexpr Region::Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz) :
-		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz), _width(_maxs - _mins), _voxels(_width + 1), _center((_mins + _maxs) / 2), _stride(_voxels.x * _voxels.y) {
+		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz), _width(_maxs - _mins), _voxels(_width + 1), _center(_mins + _width / 2), _stride(_voxels.x * _voxels.y) {
 }
 
 /**
