@@ -83,12 +83,8 @@ void Viewport::onResized(int oldw, int oldh) {
 	const glm::ivec2 windowSize(int(frameBufferSize.x / scaleFactor + 0.5f), int(frameBufferSize.y / scaleFactor + 0.5f));
 	_controller.onResize(frameBufferSize, windowSize);
 	_frameBuffer.shutdown();
-	video::TextureConfig textureCfg;
-	textureCfg.wrap(video::TextureWrap::ClampToEdge);
-	textureCfg.format(video::TextureFormat::RGBA);
 	video::FrameBufferConfig cfg;
-	cfg.dimension(frameBufferSize).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
-	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
+	cfg.dimension(frameBufferSize).depthBuffer(true).colorTexture(true);
 	_frameBuffer.init(cfg);
 	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	_frameBufferTexture.init(frameBufferSize.x, frameBufferSize.y, fboTexture->handle());
