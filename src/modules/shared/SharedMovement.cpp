@@ -72,6 +72,9 @@ glm::vec3 SharedMovement::update(double deltaFrameSeconds, float orientation, do
 
 	const int maxWalkableHeight = 3;
 	_floor = heightResolver(glm::ivec3(glm::floor(newPos)), maxWalkableHeight);
+	if (!_floor.isValid()) {
+		return currentPos;
+	}
 	if (_floor.heightLevel < voxel::MIN_HEIGHT) {
 		_floor.heightLevel = voxel::MIN_HEIGHT;
 	}
