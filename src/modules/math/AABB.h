@@ -422,7 +422,7 @@ inline AABB<TYPE>::AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE max
 
 template<typename TYPE>
 inline AABB<TYPE>::AABB() :
-		_mins((std::numeric_limits<TYPE>::min)()), _maxs((std::numeric_limits<TYPE>::max)()) {
+		_mins((std::numeric_limits<TYPE>::lowest)() / 2), _maxs((std::numeric_limits<TYPE>::max)() / 2) {
 }
 
 /**
