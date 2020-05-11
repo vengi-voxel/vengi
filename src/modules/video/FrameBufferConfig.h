@@ -26,8 +26,8 @@ private:
 	glm::ivec2 _dimension;
 	ColorTextureMap _colorTextures;
 	TextureFormat _colorTextureFormat = TextureFormat::RGBA;
-	TextureFormat _depthTextureFormat = TextureFormat::D24S8;
-	TextureFormat _depthBufferFormat = TextureFormat::D24S8;
+	TextureFormat _depthTextureFormat = TextureFormat::D24;
+	TextureFormat _depthBufferFormat = TextureFormat::D24;
 	bool _colorTexture = false;
 	bool _depthTexture = false;
 	bool _depthBuffer = false;
