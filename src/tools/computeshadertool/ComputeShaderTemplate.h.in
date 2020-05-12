@@ -79,4 +79,4 @@ $kernels$
 
 typedef core::SharedPtr<$name$> $name$Ptr;
 
-};
+}
