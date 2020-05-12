@@ -1,0 +1,46 @@
+Source: vengi
+Section: graphics
+Priority: optional
+Maintainer: Martin Gerhardy <martin.gerhardy@gmail.com>
+Build-Depends: cmake, debhelper (>=11~)
+Standards-Version: 4.1.4
+Homepage: https://github.com/mgerhardy/engine
+
+Package: vengi-voxedit
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Voxel editor
+ Load voxel formats for several volumes.
+ Supported formats for loading are:
+  Magicvoxel vox
+  Qubicle qbt and qb
+  Sandbox VoxEdit vxm
+  binvox
+  CubeWorld cub
+ Supported formats for saving are:
+  vox, qbt, qb, cub
+
+Package: vengi-thumbnailer
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Thumbnailer for voxel models
+ Supported formats are:
+  Magicvoxel vox
+  Qubicle qbt and qb
+  Sandbox VoxEdit vxm
+  binvox
+  CubeWorld cub
+
+Package: vengi-server
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Voxel engine gameserver
+
+Package: vengi-client
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Voxel engine client

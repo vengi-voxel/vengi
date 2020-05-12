@@ -1,0 +1,94 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	CMAKEFLAGS += -j$(NUMJOBS)
+endif
+
+MAINVER := $(shell dpkg-parsechangelog | sed -ne 's/^Version: *\([^~-]*\).*/\1/p' )
+TMPDIR = /tmp/
+ORIGDIR = vengi_$(MAINVER).orig
+ORIGTGZ = vengi_$(MAINVER).orig.tar.gz
+DEBTGZ  = vengi_$(MAINVER).debian.tar.gz
+
+../$(ORIGTGZ):
+	git archive HEAD | tar -x -C $(TMPDIR)/$(ORIGDIR)
+	-rm -rf $(TMPDIR)/$(ORIGDIR)/debian
+	cd $(TMPDIR) ; tar -zcf $(ORIGTGZ) $(ORIGDIR) ; cd $(CURDIR)
+	rm -rf $(TMPDIR)/$(ORIGDIR)
+	mv $(TMPDIR)/$(ORIGTGZ) $(CURDIR)/..
+
+get-orig-source: ../$(ORIGTGZ)
+
+voxedit thumbnailer server client mapview:
+	dh_testdir
+	cmake -H. -Bdebian/build -DCMAKE_BUILD_TYPE=Release -DSANITIZE_FLAGS= -DPKGDATADIR=/usr/share/vengi-$@/
+	cmake --build debian/build --target $@ $(CMAKEFLAGS)
+	cmake --install debian/build --component $@ --prefix debian/install/$@
+
+build-arch: voxedit thumbnailer server client mapview
+
+build-indep:
+
+install:
+
+install-arch: build-arch
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	dh_install
+
+install-indep: build-indep
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	dh_install
+
+binary-indep: DH_OPTIONS=-i
+binary-indep: install-indep
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installmime
+	dh_link
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary-arch: DH_OPTIONS=-a
+binary-arch: install-arch
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installexamples
+	dh_installmenu
+	dh_installmime
+	dh_installman
+	dh_link
+	dh_strip -a
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+build: build-arch build-indep
+binary: binary-indep binary-arch
+.PHONY: build build-arch build-indep clean binary-indep binary-arch binary install

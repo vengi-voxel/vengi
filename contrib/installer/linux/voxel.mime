@@ -7,27 +7,27 @@
 -->
 
 <mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
-  <mime-type type="voxel/cubeworld">
+  <mime-type type="application/cubeworld">
     <comment>Voxel model CubeWorld</comment>
     <glob pattern="*.cub"/>
   </mime-type>
-  <mime-type type="voxel/binvox">
+  <mime-type type="application/binvox">
     <comment>Voxel model binvox</comment>
     <glob pattern="*.binvox"/>
   </mime-type>
-  <mime-type type="voxel/magicavoxel">
+  <mime-type type="application/magicavoxel">
     <comment>Voxel model MagicaVoxel</comment>
     <glob pattern="*.vox"/>
   </mime-type>
-  <mime-type type="voxel/qubicle-binary">
+  <mime-type type="application/qubicle-binary">
     <comment>Voxel model Qubicle binary</comment>
     <glob pattern="*.qb"/>
   </mime-type>
-  <mime-type type="voxel/qubicle-tree">
+  <mime-type type="application/qubicle-tree">
     <comment>Voxel model Qubicle tree</comment>
     <glob pattern="*.qbt"/>
   </mime-type>
-  <mime-type type="voxel/sandbox-voxedit">
+  <mime-type type="application/sandbox-voxedit">
     <comment>Voxel model Sandbox VoxEdit</comment>
     <glob pattern="*.vxm"/>
   </mime-type>

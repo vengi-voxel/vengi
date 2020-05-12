@@ -19,6 +19,9 @@ clean:
 distclean:
 	$(Q)git clean -fdx
 
+deb:
+	$(Q)debuild -b -ui -uc -us
+
 windows:
 	$(Q)dockcross $(CMAKE) -H. -Bbuild -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR)
 	$(Q)dockcross $(CMAKE) --build build --target all
