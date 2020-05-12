@@ -15,6 +15,12 @@ function options()
 			gui.varCheckbox('V-Sync', 'cl_vsync')
 			gui.varSlider('Gamma', 'cl_gamma', 0.1, 4.0, 0.1)
 		end, 'border', 'title', 'scrollbar', 'scroll_auto_hide')
+
+		gui.group('Sound', function()
+			gui.varSlider('Sound', 'snd_volume', 0, 255, 1)
+			gui.varSlider('Music', 'snd_musicvolume', 0, 255, 1)
+		end, 'border', 'title', 'scrollbar', 'scroll_auto_hide')
+
 		gui.back()
 	end, 'title')
 end

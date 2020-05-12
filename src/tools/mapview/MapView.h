@@ -47,7 +47,7 @@ protected:
 	voxelrender::PlayerCamera _camera;
 	testcore::DepthBufferRenderer _depthBufferRenderer;
 	voxelworld::CachedFloorResolver _floorResolver;
-	audio::SoundManager _soundManager;
+	audio::SoundManagerPtr _soundManager;
 
 	bool _lineModeRendering = false;
 	bool _freelook = false;
@@ -79,7 +79,8 @@ public:
 			const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& world,
 			const voxelworld::WorldPagerPtr& worldPager,
 			const voxelformat::VolumeCachePtr& volumeCache,
-			const voxelformat::MeshCachePtr& meshCache);
+			const voxelformat::MeshCachePtr& meshCache,
+			const audio::SoundManagerPtr& soundManager);
 	~MapView();
 
 	core::AppState onConstruct() override;

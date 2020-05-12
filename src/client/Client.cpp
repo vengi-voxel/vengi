@@ -25,6 +25,7 @@
 #include "network/VarUpdateHandler.h"
 #include "network/StartCooldownHandler.h"
 #include "network/StopCooldownHandler.h"
+#include "audio/SoundManager.h"
 #include "voxel/MaterialColor.h"
 #include "core/metric/Metric.h"
 #include "core/TimeProvider.h"
@@ -44,11 +45,12 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		const voxelformat::MeshCachePtr& meshCache,
 		const video::TexturePoolPtr& texturePool,
 		const voxelrender::CachedMeshRendererPtr& meshRenderer,
-		const video::TextureAtlasRendererPtr& textureAtlasRenderer) :
+		const video::TextureAtlasRendererPtr& textureAtlasRenderer,
+		const audio::SoundManagerPtr& soundManager) :
 		Super(metric, filesystem, eventBus, timeProvider, texturePool, meshRenderer, textureAtlasRenderer), _animationCache(animationCache),
-		_network(network), _worldMgr(world), _clientPager(worldPager), _messageSender(messageSender),
+		_network(network), _worldMgr(world), _clientPager(worldPager), _messageSender(messageSender), _movement(soundManager),
 		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
-		_meshCache(meshCache), _camera(world, _worldRenderer), _soundManager(filesystem) {
+		_meshCache(meshCache), _camera(world, _worldRenderer), _soundManager(soundManager) {
 	init(ORGANISATION, "client");
 }
 
@@ -114,7 +116,7 @@ void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
 core::AppState Client::onConstruct() {
 	core::AppState state = Super::onConstruct();
 
-	_soundManager.construct();
+	_soundManager->construct();
 	_volumeCache->construct();
 	_movement.construct();
 	_action.construct();
@@ -209,7 +211,7 @@ core::AppState Client::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_soundManager.init()) {
+	if (!_soundManager->init()) {
 		Log::warn("Failed to initialize the sound manager");
 	}
 
@@ -322,7 +324,7 @@ core::AppState Client::onCleanup() {
 	Log::info("disconnect");
 	disconnect();
 
-	_soundManager.shutdown();
+	_soundManager->shutdown();
 	Log::info("shutting down the client components");
 	_stockDataProvider->shutdown();
 	Log::info("shutting down the character cache");
@@ -357,7 +359,7 @@ core::AppState Client::onRunning() {
 	}
 	if (state == core::AppState::Running) {
 		_network->update();
-		_soundManager.update();
+		_soundManager->update();
 	}
 
 	return state;
@@ -443,7 +445,9 @@ int main(int argc, char *argv[]) {
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
 	const video::TexturePoolPtr& texturePool = std::make_shared<video::TexturePool>(filesystem);
+	const audio::SoundManagerPtr& soundMgr = core::make_shared<audio::SoundManager>(filesystem);
 	Client app(metric, animationCache, stockDataProvider, network, world, pager, messageSender,
-			eventBus, timeProvider, filesystem, volumeCache, meshCache, texturePool, meshRenderer, textureAtlasRenderer);
+			eventBus, timeProvider, filesystem, volumeCache, meshCache, texturePool, meshRenderer, textureAtlasRenderer,
+			soundMgr);
 	return app.startMainLoop(argc, argv);
 }

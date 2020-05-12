@@ -9,6 +9,7 @@
 #include "frontend/ClientEntity.h"
 #include "video/Camera.h"
 #include "shared/SharedMovement.h"
+#include "audio/SoundManager.h"
 
 namespace frontend {
 
@@ -26,7 +27,13 @@ private:
 	core::ActionButton _moveForward;
 	core::ActionButton _jumpButton;
 
+	int _footstepSoundChannel = -1;
+	int _ambienceSoundChannel = -1;
+
+	audio::SoundManagerPtr _soundManager;
+
 public:
+	PlayerMovement(const audio::SoundManagerPtr& soundManager);
 	bool init() override;
 	void update(double deltaFrameSeconds, float orientation, ClientEntityPtr& entity, const shared::WalkableFloorResolver& heightResolver);
 	void construct() override;

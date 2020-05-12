@@ -21,6 +21,7 @@
 #include "voxelgenerator/Spiral.h"
 #include "attrib/Attributes.h"
 #include "attrib/ContainerProvider.h"
+#include "audio/SoundManager.h"
 #include <SDL.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
@@ -32,11 +33,12 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCach
 		const core::TimeProviderPtr& timeProvider, const voxelworld::WorldMgrPtr& worldMgr,
 		const voxelworld::WorldPagerPtr& worldPager,
 		const voxelformat::VolumeCachePtr& volumeCache,
-		const voxelformat::MeshCachePtr& meshCache) :
+		const voxelformat::MeshCachePtr& meshCache,
+		const audio::SoundManagerPtr& soundManager) :
 		Super(metric, filesystem, eventBus, timeProvider),
-		_animationCache(animationCache), _worldMgr(worldMgr), _worldPager(worldPager),
+		_animationCache(animationCache), _worldMgr(worldMgr), _worldPager(worldPager), _movement(soundManager),
 		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _meshCache(meshCache),
-		_camera(worldMgr, _worldRenderer), _soundManager(filesystem) {
+		_camera(worldMgr, _worldRenderer), _soundManager(soundManager) {
 	init(ORGANISATION, "mapview");
 }
 
@@ -68,7 +70,7 @@ core::AppState MapView::onConstruct() {
 
 	_meshSize = core::Var::get(cfg::VoxelMeshSize, "32", core::CV_READONLY);
 
-	_soundManager.construct();
+	_soundManager->construct();
 	_volumeCache->construct();
 	_worldRenderer.construct();
 
@@ -117,7 +119,7 @@ core::AppState MapView::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!_soundManager.init()) {
+	if (!_soundManager->init()) {
 		Log::warn("Failed to initialize the sound manager");
 	}
 
@@ -165,7 +167,7 @@ core::AppState MapView::onInit() {
 
 	core::setBindingContext(core::BindingContext::World);
 
-	_soundManager.playMusic("ambience", true);
+	_soundManager->playMusic("ambience", true);
 
 	return state;
 }
@@ -404,19 +406,14 @@ core::AppState MapView::onRunning() {
 		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 
-	if (_movement.walking()) {
-		const voxel::VoxelType material = _movement.groundVoxel().getMaterial();
-		static int _footStepChannel = -1;
-		_footStepChannel = _soundManager.play(_footStepChannel, "footstep_sand", _entity->position(), false);
-	}
-	_soundManager.setListenerPosition(_camera.camera().position());
-	_soundManager.update();
+	_soundManager->setListenerPosition(_camera.camera().position());
+	_soundManager->update();
 	_axis.render(_camera.camera());
 	return state;
 }
 
 core::AppState MapView::onCleanup() {
-	_soundManager.shutdown();
+	_soundManager->shutdown();
 	_stockDataProvider->shutdown();
 	_animationCache->shutdown();
 	_worldRenderer.shutdown();
@@ -459,7 +456,8 @@ int main(int argc, char *argv[]) {
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
+	const audio::SoundManagerPtr& soundMgr = core::make_shared<audio::SoundManager>(filesystem);
 	MapView app(metric, animationCache, stockDataProvider, filesystem, eventBus, timeProvider,
-			worldMgr, worldPager, volumeCache, meshCache);
+			worldMgr, worldPager, volumeCache, meshCache, soundMgr);
 	return app.startMainLoop(argc, argv);
 }

@@ -7,7 +7,6 @@ set(FILES
 	shared/biomes.lua
 	mapview/mapview-keybindings.cfg
 	shared/music/ambience.ogg
-	shared/sound/footstep_sand.ogg
 )
 set(LUA_ATTRIBUTES
 	attributes.lua

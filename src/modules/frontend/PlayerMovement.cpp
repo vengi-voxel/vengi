@@ -8,6 +8,31 @@
 
 namespace frontend {
 
+static const char* FootStepSoundStr[] = {
+	nullptr,
+	"water_move",
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic",
+	nullptr,
+	"footstep_generic",
+	"footstep_generic",
+	"footstep_generic"
+};
+static_assert(lengthof(FootStepSoundStr) == (int)voxel::VoxelType::Max, "footstep sound array size doesn't match the available voxel types");
+
+
+PlayerMovement::PlayerMovement(const audio::SoundManagerPtr &soundManager) : _soundManager(soundManager) {
+}
+
 void PlayerMovement::construct() {
 	core::Command::registerActionButton("jump", _jumpButton);
 	core::Command::registerActionButton("move_forward", _moveForward);
@@ -63,8 +88,33 @@ void PlayerMovement::update(double deltaFrameSeconds, float orientation, ClientE
 	} else {
 		_move &= ~network::MoveDirection::JUMP;
 	}
+	const bool prevWaterState = _inWater;
 	// TODO: https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html
 	const glm::vec3& newPos = Super::update(deltaFrameSeconds, orientation, speed, currentPos, heightResolver);
+
+	const glm::vec3 windPos(newPos.x, voxel::MAX_HEIGHT, newPos.z);
+	const int ambienceSoundChannel = _soundManager->play(_ambienceSoundChannel, "ambience_wind", windPos, true);
+	if (ambienceSoundChannel != -1) {
+		_ambienceSoundChannel = ambienceSoundChannel;
+		_soundManager->volume(ambienceSoundChannel, 32);
+	}
+
+	int footstepChannel = _footstepSoundChannel;
+	if (_inWater && !prevWaterState) {
+		footstepChannel = _soundManager->play(footstepChannel, "water_enter", newPos, false);
+	} else if (!_inWater && prevWaterState) {
+		footstepChannel = _soundManager->play(footstepChannel, "water_leave", newPos, false);
+	} else if (walking()) {
+		const voxel::VoxelType material = groundVoxel().getMaterial();
+		const char *sound = FootStepSoundStr[(int)material];
+		if (sound != nullptr) {
+			footstepChannel = _soundManager->play(footstepChannel, sound, newPos, false);
+		}
+	}
+
+	if (footstepChannel != -1) {
+		_footstepSoundChannel = footstepChannel;
+	}
 
 	entity->setOrientation(orientation);
 	entity->setPosition(newPos);
