@@ -115,14 +115,21 @@ glm::vec3 SharedMovement::update(double deltaFrameSeconds, float orientation, do
 	}
 
 	if (newPos.y < voxel::MAX_WATER_HEIGHT) {
-		_fallingVelocity = 0.0;
-		_jumping = false;
-		_gliding = false;
-		_delay = 0.0;
-		_swimming = true;
-		_fallingVelocity = -2.0;
+		if (voxel::MAX_WATER_HEIGHT - _floor.heightLevel > 2) {
+			_fallingVelocity = 0.0;
+			_jumping = false;
+			_gliding = false;
+			_delay = 0.0;
+			_swimming = true;
+			_inWater = true;
+			_fallingVelocity = -2.0;
+		} else {
+			_swimming = false;
+			_inWater = true;
+		}
 	} else {
 		_swimming = false;
+		_inWater = false;
 	}
 	return newPos;
 }

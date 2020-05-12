@@ -21,6 +21,7 @@ protected:
 	bool _gliding = false;
 	bool _jumping = false;
 	bool _swimming = false;
+	bool _inWater = false;
 
 	double _fallingVelocity = 0.0;
 	voxelutil::FloorTraceResult _floor;
