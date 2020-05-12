@@ -24,7 +24,7 @@ private:
 	struct mosquitto *_mosquitto = nullptr;
 	bool _connected = false;
 	bool _subscribed = false;
-	std::unordered_map<uint32_t, Player> _players;;
+	std::unordered_map<uint32_t, Player> _players;
 
 	enum ConnectState : uint8_t {
 		Success = 0,

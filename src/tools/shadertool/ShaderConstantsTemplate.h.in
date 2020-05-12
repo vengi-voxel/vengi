@@ -14,4 +14,4 @@ struct $name$Constants {
 $prototypes$
 };
 
-};
+}

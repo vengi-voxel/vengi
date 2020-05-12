@@ -50,4 +50,4 @@ $prototypes$
 
 typedef core::SharedPtr<$name$> $name$Ptr;
 
-};
+}

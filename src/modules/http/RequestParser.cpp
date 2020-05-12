@@ -91,7 +91,7 @@ RequestParser::RequestParser(uint8_t* requestBuffer, size_t requestBufferSize)
 			}
 
 			char *key = core::string::getBeforeToken(&paramValue, "=", remainingBufSize(paramValue));
-			char *value = paramValue;;
+			char *value = paramValue;
 			if (key == nullptr) {
 				key = paramValue;
 				static const char *EMPTY = "";

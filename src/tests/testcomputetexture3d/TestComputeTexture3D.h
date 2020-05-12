@@ -20,7 +20,7 @@ private:
 	compute::TexturePtr _texture3DCompute;
 	compute::RenderShader& _renderShader;
 	glm::ivec2 _workSize { 64, 64 };
-	int _depth = 8;;
+	int _depth = 8;
 	float _slice = 0.0f;
 	std::vector<uint8_t> _output;
 	std::shared_ptr<voxel::RawVolume> _volume;

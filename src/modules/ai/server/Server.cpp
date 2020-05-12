@@ -395,7 +395,7 @@ bool Server::addNode(const CharacterId& characterId, int32_t parentNodeId, const
 	TreeNodeParser treeNodeParser(_aiRegistry, type);
 	TreeNodePtr newNode = treeNodeParser.getTreeNode(name);
 	if (!newNode) {
-		ai_log_error("Failed to parse the node '%s'", type.c_str());;
+		ai_log_error("Failed to parse the node '%s'", type.c_str());
 		return false;
 	}
 	newNode->setCondition(conditionPtr);

@@ -254,7 +254,7 @@ AppState App::onConstruct() {
 	_metricSender = std::make_shared<metric::UDPMetricSender>(host, port);
 	if (!_metricSender->init()) {
 		Log::warn("Failed to init metric sender");
-		return AppState::Destroy;;
+		return AppState::Destroy;
 	}
 	if (!_metric->init(_appname.c_str(), _metricSender)) {
 		Log::warn("Failed to init metrics");

@@ -145,7 +145,7 @@ static void createTrunk(Volume& volume, const voxelgenerator::TreeConfig& ctx, c
  */
 template<class Volume>
 static glm::ivec3 createBezierTrunk(Volume& volume, const voxelgenerator::TreePalm& ctx, const voxel::Voxel& voxel) {
-	const glm::ivec3& trunkTop = glm::ivec3(ctx.pos.x, ctx.pos.y + ctx.trunkHeight, ctx.pos.z);;
+	const glm::ivec3& trunkTop = glm::ivec3(ctx.pos.x, ctx.pos.y + ctx.trunkHeight, ctx.pos.z);
 	const int shiftX = ctx.trunkWidth;
 	const int shiftZ = ctx.trunkDepth;
 	glm::ivec3 end = trunkTop;
