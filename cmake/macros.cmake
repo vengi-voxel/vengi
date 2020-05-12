@@ -281,6 +281,7 @@ function(engine_install_deps TARGET)
 
 	set(DEPS ${ARGV})
 	list(APPEND DEPS ${TARGET})
+	set(INSTALL_DATA_DIR "${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME}-${TARGET}")
 
 	foreach (DEP ${DEPS})
 		get_property(FILES GLOBAL PROPERTY ${DEP}_FILES)
