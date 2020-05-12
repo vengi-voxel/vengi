@@ -22,7 +22,7 @@ class Shader {
 protected:
 	Id _program = InvalidId;
 
-	bool _initialized = false;;
+	bool _initialized = false;
 	mutable bool _active = false;
 
 	typedef core::StringMap<core::String> ShaderDefines;
