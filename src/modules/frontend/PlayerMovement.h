@@ -14,7 +14,7 @@
 namespace frontend {
 
 /**
- * @brief Movement component that does the input listening
+ * @brief Movement component that does the input listening, animation changes and sounds
  *
  * @see core::ActionButton
  */
