@@ -2,12 +2,13 @@ Q              ?= @
 UPDATEDIR      := /tmp
 BUILDTYPE      ?= Debug
 BUILDDIR       ?= ./build/$(BUILDTYPE)
-INSTALL_DIR    ?= $(BUILDDIR)/$(shell uname)
+INSTALL_DIR    ?= $(BUILDDIR)
 GENERATOR      := Ninja
 CMAKE          ?= cmake
 
-default:
-	$(Q)$(MAKE) all
+all:
+	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H$(CURDIR) -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
+	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 
 release:
 	$(Q)$(MAKE) BUILDTYPE=Release
@@ -28,6 +29,7 @@ release-%:
 %:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H$(CURDIR) -B$(BUILDDIR) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -G$(GENERATOR); fi
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
+	$(Q)$(CMAKE) --install $(BUILDDIR) --component $@ --prefix $(INSTALL_DIR)/install-$@
 
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
