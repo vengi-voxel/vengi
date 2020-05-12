@@ -93,10 +93,10 @@ protected:
 	double _deltaFrameSeconds = 0.0f;
 	double _nowSeconds = 0.0f;
 	/**
-	 * @brief The absolute milliseconds when the next frame should be run
+	 * @brief The absolute seconds when the next frame should be run
 	 * @note Only handled if the max frames cap is set
 	 */
-	uint64_t _nextFrameMillis = 0ul;
+	double _nextFrameSeconds = 0ul;
 	/**
 	 * @brief There is no fps limit per default, but you set one on a per-app basis
 	 * The frames to cap the application loop at

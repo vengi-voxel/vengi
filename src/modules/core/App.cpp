@@ -146,7 +146,7 @@ void App::onFrame() {
 			onBeforeInit();
 			_nextState = onInit();
 			onAfterInit();
-			_nextFrameMillis = now;
+			_nextFrameSeconds = now;
 			break;
 		}
 		case AppState::InitFailure: {
@@ -170,10 +170,12 @@ void App::onFrame() {
 				onAfterRunning();
 			}
 			const double framesPerSecondsCap = _framesPerSecondsCap->floatVal();
-			if (framesPerSecondsCap >= 1.0 && _nextFrameMillis > now) {
-				const uint64_t delay = _nextFrameMillis - now;
-				_nextFrameMillis = now + uint64_t((1000.0 / framesPerSecondsCap) + 0.00001);
-				SDL_Delay(delay);
+			if (framesPerSecondsCap >= 1.0 && _nextFrameSeconds > now) {
+				const double delay = _nextFrameSeconds - now;
+				_nextFrameSeconds = now + 1.0 / framesPerSecondsCap;
+				if (delay > 0.0) {
+					SDL_Delay(delay);
+				}
 			}
 			break;
 		}
