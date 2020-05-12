@@ -17,8 +17,7 @@ glm::mat4 Bone::matrix() const {
 }
 
 void Bone::lerp(const Bone& previous, double deltaFrameSeconds) {
-	const float factor = (float)(deltaFrameSeconds * 16.0);
-	core_assert(deltaFrameSeconds >= 0.0 && deltaFrameSeconds < 1.0);
+	const float factor = glm::clamp((float)(deltaFrameSeconds * 16.0), 0.0f, 1.0f);
 	translation = glm::mix(previous.translation, translation, factor);
 	orientation = glm::normalize(glm::slerp(previous.orientation, orientation, factor));
 	scale = glm::mix(previous.scale, scale, factor);
