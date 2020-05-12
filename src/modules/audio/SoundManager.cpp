@@ -19,13 +19,6 @@ namespace audio {
 
 SoundManager::Channel SoundManager::_channels[MAX_CHANNELS];
 
-static inline double getAngleBetweenPoints(const glm::ivec2& pos1, const glm::ivec2& pos2) {
-	const double dX = (double)(pos2.x - pos1.x);
-	const double dY = (double)(pos2.y - pos1.y);
-	const double angleInDegrees = glm::degrees(::atan2(dY, dX));
-	return angleInDegrees;
-}
-
 SoundManager::SoundManager(const io::FilesystemPtr& filesystem) :
 		_filesystem(filesystem) {
 }
@@ -104,12 +97,12 @@ void SoundManager::channelFinished(int channel) {
 	core_memset(&_channels[channel], 0, sizeof(_channels[channel]));
 }
 
-void SoundManager::halt(int sound) {
-	if (sound <= -1) {
+void SoundManager::halt(int channel) {
+	if (channel <= -1) {
 		return;
 	}
 
-	Mix_HaltChannel(sound);
+	Mix_HaltChannel(channel);
 }
 
 void SoundManager::haltAll() {
@@ -190,6 +183,10 @@ int SoundManager::_play(int channel, const core::String& filename, const glm::ve
 	}
 
 	if (channel != -1 && Mix_Playing(channel)) {
+		core_assert(channel >= 0 && channel < MAX_CHANNELS);
+		if (_channels[channel].chunk == sound) {
+			_channels[channel].pos = position;
+		}
 		return -1;
 	}
 	channel = Mix_PlayChannelTimed(channel, sound, loop ? -1 : 0, millis);
@@ -222,15 +219,22 @@ Mix_Chunk* SoundManager::getChunk(const core::String& filename) {
 		return i->second;
 	}
 
-	const core::String& fullPath = core::string::format("sound/%s.ogg", filename.c_str());
-	io::FilePtr file = _filesystem->open(fullPath);
+	io::FilePtr file;
+	const char *supportedFormats[] = {"wav", "ogg"};
+	for (int i = 0; i < lengthof(supportedFormats); ++i) {
+		core::String fullPath = core::string::format("sound/%s.%s", filename.c_str(), supportedFormats[i]);
+		file = _filesystem->open(fullPath);
+		if (!file->exists()) {
+			continue;
+		}
+	}
 	if (!file->exists()) {
-		Log::error(logid, "unable to open sound file: %s", fullPath.c_str());
+		Log::error(logid, "unable to open sound file: %s", filename.c_str());
 		return nullptr;
 	}
 	SDL_RWops* rwops = file->createRWops(io::FileMode::Read);
 	if (rwops == nullptr) {
-		Log::error(logid, "unable to load sound file: %s", fullPath.c_str());
+		Log::error(logid, "unable to load sound file: %s", filename.c_str());
 		return nullptr;
 	}
 	Mix_Chunk *sound = Mix_LoadWAV_RW(rwops, 1);
@@ -258,16 +262,13 @@ void SoundManager::update() {
 	if (!isActive()) {
 		return;
 	}
-	const double scale = 5.0;
 	for (int i = 0; i < MAX_CHANNELS; ++i) {
 		Channel &channel = _channels[i];
 		if (channel.chunk == nullptr) {
 			continue;
 		}
 		const float dist = glm::distance(_listenerPosition, channel.pos);
-		const double angleInDegrees = getAngleBetweenPoints(_listenerPosition, channel.pos);
-		const int volume = core_max(0, MIX_MAX_VOLUME - (int)(dist * scale));
-		Mix_SetPosition(channel.channel, static_cast<int16_t>(angleInDegrees), volume);
+		Mix_SetDistance(channel.channel, (int)dist);
 	}
 }
 
@@ -307,8 +308,12 @@ bool SoundManager::isActive() const {
 	return true;
 }
 
+int SoundManager::volume(int channel, int newVolume) {
+	return Mix_Volume(channel, newVolume);
+}
+
 int SoundManager::volume(int newVolume) {
-	return Mix_Volume(-1, newVolume);
+	return volume(-1, newVolume);
 }
 
 int SoundManager::musicVolume(int newVolume) {

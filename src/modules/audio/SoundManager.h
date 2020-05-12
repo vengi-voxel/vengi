@@ -10,6 +10,7 @@
 #include "core/Enum.h"
 #include "core/io/Filesystem.h"
 #include "core/collection/Map.h"
+#include "core/SharedPtr.h"
 #include <glm/vec3.hpp>
 
 struct Mix_Chunk;
@@ -63,7 +64,7 @@ public:
 
 	int playMusic(const core::String& music, bool loop = true);
 	void haltMusic(int music);
-	void halt(int sound);
+	void halt(int channel);
 	void haltAll();
 	void pause();
 	void resume();
@@ -76,8 +77,11 @@ public:
 	int playTimed(int channel, const core::String& filename, const glm::vec3& position, double seconds);
 	void update();
 	void setListenerPosition(const glm::vec3& position, const glm::vec3& velocity = glm::vec3(0.0f));
+	int volume(int channel, int newVolume);
 	int volume(int newVolume);
 	int musicVolume(int newVolume);
 };
+
+using SoundManagerPtr = core::SharedPtr<SoundManager>;
 
 }
