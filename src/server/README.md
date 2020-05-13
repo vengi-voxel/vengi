@@ -28,7 +28,7 @@ The chunks are persisted in the database and can be made available via cdn or an
 server. The gameserver has a built-in http server, too. If you want to use any other http server,
 you have to set it via `sv_httpchunkurl` like this:
 
-```
+```bash
 ./vengi-server -set sv_httpchunkurl http://myhostname:8080/mychunkurl
 ```
 
@@ -39,6 +39,7 @@ This cvar is one of those that is automatically replicated to the client. Whenev
 all clients will be notified about it and use the new url.
 
 The http endpoint reads several GET paramters:
+
 * `x`, `y`, `z`: The chunk coordinates
 * `mapid`
 You will find these values in the `chunk` database table. A custom chunk endpoint just would have to
@@ -46,11 +47,11 @@ send the database blob with a content type of `application/chunk`.
 
 ## Docker
 
-The docker image is using apt-cacher-ng (https://github.com/sameersbn/docker-apt-cacher-ng)
+The docker image is using apt-cacher-ng (<https://github.com/sameersbn/docker-apt-cacher-ng>)
 
 Make sure to have this running on your docker host
 
-```
+```bash
 docker run --name apt-cacher-ng --init -d --restart=always \
   --publish 3142:3142 \
   --volume /srv/docker/apt-cacher-ng:/var/cache/apt-cacher-ng \
