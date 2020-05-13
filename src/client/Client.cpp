@@ -50,7 +50,7 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		Super(metric, filesystem, eventBus, timeProvider, texturePool, meshRenderer, textureAtlasRenderer), _animationCache(animationCache),
 		_network(network), _worldMgr(world), _clientPager(worldPager), _messageSender(messageSender), _movement(soundManager),
 		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
-		_meshCache(meshCache), _camera(world, _worldRenderer), _soundManager(soundManager) {
+		_meshCache(meshCache), _camera(_worldRenderer), _soundManager(soundManager) {
 	init(ORGANISATION, "client");
 }
 

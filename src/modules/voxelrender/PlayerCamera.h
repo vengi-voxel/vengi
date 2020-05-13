@@ -5,7 +5,6 @@
 #pragma once
 
 #include "video/Camera.h"
-#include "voxelworld/WorldMgr.h"
 #include "WorldRenderer.h"
 #include "core/command/ActionButton.h"
 #include "core/BindingContext.h"
@@ -18,7 +17,6 @@ namespace voxelrender {
 class PlayerCamera {
 private:
 	video::Camera _camera;
-	voxelworld::WorldMgrPtr _worldMgr;
 	WorldRenderer& _worldRenderer;
 
 	core::VarPtr _maxTargetDistance;
@@ -40,8 +38,8 @@ private:
 	void setCameraFirstPerson();
 	void setCameraTarget();
 public:
-	PlayerCamera(const voxelworld::WorldMgrPtr &world, voxelrender::WorldRenderer &worldRenderer, int keyBindingContext = core::BindingContext::World) :
-			_worldMgr(world), _worldRenderer(worldRenderer), _keyBindingContext(keyBindingContext) {
+	PlayerCamera(voxelrender::WorldRenderer &worldRenderer, int keyBindingContext = core::BindingContext::World) :
+			_worldRenderer(worldRenderer), _keyBindingContext(keyBindingContext) {
 	}
 
 	void setTarget(const glm::vec3& position);

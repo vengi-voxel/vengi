@@ -38,7 +38,7 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCach
 		Super(metric, filesystem, eventBus, timeProvider),
 		_animationCache(animationCache), _worldMgr(worldMgr), _worldPager(worldPager), _movement(soundManager),
 		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _meshCache(meshCache),
-		_camera(worldMgr, _worldRenderer), _soundManager(soundManager) {
+		_camera(_worldRenderer), _soundManager(soundManager) {
 	init(ORGANISATION, "mapview");
 }
 
