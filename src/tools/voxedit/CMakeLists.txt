@@ -80,58 +80,6 @@ set(FILES
 	voxedit/ui/widget/voxedit-layer.tb.txt
 	voxedit/ui/lang/en.tb.txt
 
-	voxedit/models/armchair.vox
-	voxedit/models/bowl_bone.vox
-	voxedit/models/brick_wall.vox
-	voxedit/models/carter.vox
-	voxedit/models/cart_full.vox
-	voxedit/models/cart.vox
-	voxedit/models/cat_01.vox
-	voxedit/models/cat_02.vox
-	voxedit/models/cat_03.vox
-	voxedit/models/chimney.vox
-	voxedit/models/christmas_scene.vox
-	voxedit/models/christmas_tree.vox
-	voxedit/models/couch.vox
-	voxedit/models/dog_house.vox
-	voxedit/models/dog_scene.vox
-	voxedit/models/dog.vox
-	voxedit/models/door.vox
-	voxedit/models/gifts.vox
-	voxedit/models/horse.vox
-	voxedit/models/lantern.vox
-	voxedit/models/mailbox.vox
-	voxedit/models/man.vox
-	voxedit/models/odyssey_scene.vox
-	voxedit/models/paperboy.vox
-	voxedit/models/README.md
-	voxedit/models/santa.vox
-	voxedit/models/snowman.vox
-	voxedit/models/spaceship_interior.vox
-	voxedit/models/spacesuit.vox
-	voxedit/models/street_scene.vox
-	voxedit/models/street.vox
-	voxedit/models/treehouse.vox
-	voxedit/models/woman.vox
-	voxedit/models/chr_knight.qb
-	voxedit/models/chr_knight.qbt
-
-	voxedit/images/01.png
-	voxedit/images/02.png
-	voxedit/images/03.png
-	voxedit/images/04.png
-	voxedit/images/05.png
-	voxedit/images/06.png
-	voxedit/images/07.png
-	voxedit/images/r01.png
-	voxedit/images/r02.png
-	voxedit/images/r03.png
-	voxedit/images/r04.png
-	voxedit/images/r05.png
-	voxedit/images/r06.png
-	voxedit/images/r07.png
-	voxedit/images/avatar.png
-
 	voxedit/voxedit-keybindings.cfg
 
 	voxedit/scripts/test-import-plane.cfg
