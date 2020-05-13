@@ -8,7 +8,7 @@ set(SRCS
 	LUAFunctions.h
 )
 set(LIB eventmgr)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core commonlua network persistence)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua network persistence)
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl EventMgrModels.h)
 
 gtest_suite_sources(tests

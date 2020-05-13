@@ -26,5 +26,5 @@ set(FILES
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger frontend util)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES turbobadger frontend)
 check_ui_turbobadger(${PROJECT_NAME} ${UI_WINDOWS})

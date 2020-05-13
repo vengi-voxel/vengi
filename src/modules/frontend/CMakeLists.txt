@@ -17,4 +17,4 @@ set(FILES
 )
 
 set(LIB frontend)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES attrib stock animation shared audio)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES attrib animation shared audio)

@@ -13,7 +13,7 @@ set(SRCS
 )
 engine_add_build_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} NOINSTALL)
 if(NOT CMAKE_CROSSCOMPILING)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES util compute simplecpp)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES compute simplecpp)
 
 set(TEST_SRCS
 	${SHARED_SRCS}

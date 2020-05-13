@@ -125,7 +125,7 @@ set(LUA_SRCS
 	animal/bird-bones.lua
 	animal/shared.lua
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES core attrib stock voxelformat network render commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES stock voxelformat render)
 generate_shaders(${LIB} skeleton skeletonshadowmap skeletondepthmap)
 
 set(TEST_SRCS

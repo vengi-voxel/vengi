@@ -5,7 +5,7 @@ set(SRCS
 )
 set(LIB console)
 
-set(LIBS core util)
+set(LIBS util)
 
 if (CURSES_FOUND)
 	list(APPEND LIBS ${CURSES_LIBRARIES})

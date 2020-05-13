@@ -85,7 +85,7 @@ if (WINDOWS)
 	set_property(GLOBAL PROPERTY ${LIB}_NOUNITY TRUE)
 endif()
 
-set(LIBS sdl2 glm libuv ${CMAKE_DL_LIBS})
+set(LIBS sdl2 glm libuv)
 if (NOT MSVC)
 list(APPEND LIBS backward)
 endif()

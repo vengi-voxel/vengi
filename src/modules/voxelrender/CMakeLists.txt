@@ -10,7 +10,7 @@ set(SRCS_SHADERS
 	shaders/_material.vert
 	shaders/voxel.vert shaders/voxel.frag
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render voxelfont voxelformat voxelutil)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render voxelfont voxelformat)
 generate_shaders(${LIB} voxel)
 
 gtest_suite_sources(tests

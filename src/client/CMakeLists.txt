@@ -42,5 +42,5 @@ set(FILES
 	shared/worldparams.lua
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES nuklear animation voxelworldrender voxelworld util stock http audio)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES nuklear voxelworldrender voxelworld http)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
