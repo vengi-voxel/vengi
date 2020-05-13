@@ -15,6 +15,14 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
    - Print stacktraces on asserts
    - Improved tree generation (mainly used in voxedit)
    - Fixed a few asserts in debug mode for the microsoft stl
+   - Added debian package support
+   - Fixed a few undefined behaviour issues and integer overflows that could lead to problems
+   - Reorganized some modules to speed up compilation and linking times
+   - Improved audio support
+   - Fixed timing issues
+
+ Client:
+   - Added footstep and ambience sounds
 
 #### 0.0.2 (2020-05-06)
 
