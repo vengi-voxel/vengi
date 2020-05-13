@@ -230,6 +230,7 @@ function(engine_add_build_executable)
 		set_property(TARGET ${_EXE_TARGET} PROPERTY IMPORTED_LOCATION ${NATIVE_BINARY})
 	else()
 		engine_add_executable("${ARGN};NATIVE")
+		set_property(TARGET ${_EXE_TARGET}  PROPERTY INTERPROCEDURAL_OPTIMIZATION False)
 	endif()
 endfunction()
 
