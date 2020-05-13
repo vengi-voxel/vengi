@@ -1,2 +1,6 @@
 /build
 /install
+/.debhelper
+/files
+/*.substvars
+/vengi-*/*
