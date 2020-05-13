@@ -230,7 +230,9 @@ core::String KeyBindingHandler::getKeyName(int32_t key) {
 	}
 	const char*keyBinding = SDL_GetKeyName((SDL_Keycode)key);
 	const core::String lower(keyBinding);
-	return lower.toLower();
+	core::String l = lower.toLower();
+	core::string::replaceAllChars(l, ' ', '_');
+	return l;
 }
 
 const char* KeyBindingHandler::getModifierName(int16_t modifier) {
