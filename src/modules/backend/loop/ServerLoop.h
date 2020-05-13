@@ -49,10 +49,6 @@ private:
 	uv_idle_t *_idleTimer = nullptr;
 	uv_signal_t *_signal = nullptr;
 
-	int _lastEventSkip = 0;
-	int _lastDeltaFrame = 0;
-	uint64_t _lifetimeSeconds = 0u;
-
 	void replicateVars() const;
 	static void onIdle(uv_idle_t* handle);
 	static void signalCallback(uv_signal_t* handle, int signum);

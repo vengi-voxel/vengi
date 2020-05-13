@@ -419,11 +419,7 @@ void ServerLoop::update() {
 	uv_run(_loop, UV_RUN_NOWAIT);
 	_network->update();
 	_httpServer->update();
-	const int eventSkip = _eventBus->update(200);
-	if (eventSkip != _lastEventSkip) {
-		_metricMgr->metric()->gauge("events.skip", eventSkip);
-		_lastEventSkip = eventSkip;
-	}
+	_eventBus->update(200);
 
 	replicateVars();
 }
