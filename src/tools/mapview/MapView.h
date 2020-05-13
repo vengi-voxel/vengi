@@ -6,13 +6,13 @@
 
 #include "ui/imgui/IMGUIApp.h"
 #include "RenderShaders.h"
-#include "voxelrender/WorldRenderer.h"
+#include "voxelworldrender/WorldRenderer.h"
+#include "voxelworldrender/PlayerCamera.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/PlayerAction.h"
 #include "render/Axis.h"
 #include "audio/SoundManager.h"
 #include "frontend/PlayerMovement.h"
-#include "voxelrender/PlayerCamera.h"
 #include "voxelformat/MeshCache.h"
 #include "voxelworld/CachedFloorResolver.h"
 #include "video/Camera.h"
@@ -33,7 +33,7 @@ class MapView: public ui::imgui::IMGUIApp {
 protected:
 	using Super = ui::imgui::IMGUIApp;
 	animation::AnimationCachePtr _animationCache;
-	voxelrender::WorldRenderer _worldRenderer;
+	voxelworldrender::WorldRenderer _worldRenderer;
 	voxelworld::WorldMgrPtr _worldMgr;
 	voxelworld::WorldPagerPtr _worldPager;
 	render::Axis _axis;
@@ -44,7 +44,7 @@ protected:
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelformat::MeshCachePtr _meshCache;
-	voxelrender::PlayerCamera _camera;
+	voxelworldrender::PlayerCamera _camera;
 	testcore::DepthBufferRenderer _depthBufferRenderer;
 	voxelworld::CachedFloorResolver _floorResolver;
 	audio::SoundManagerPtr _soundManager;

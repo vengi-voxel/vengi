@@ -16,7 +16,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
 

@@ -9,7 +9,7 @@
 #include "core/command/ActionButton.h"
 #include "core/BindingContext.h"
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 /**
  * @brief The player camera clips against the world while moving.
@@ -38,7 +38,7 @@ private:
 	void setCameraFirstPerson();
 	void setCameraTarget();
 public:
-	PlayerCamera(voxelrender::WorldRenderer &worldRenderer, int keyBindingContext = core::BindingContext::World) :
+	PlayerCamera(WorldRenderer &worldRenderer, int keyBindingContext = core::BindingContext::World) :
 			_worldRenderer(worldRenderer), _keyBindingContext(keyBindingContext) {
 	}
 

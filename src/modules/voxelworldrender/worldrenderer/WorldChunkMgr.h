@@ -12,7 +12,7 @@
 #include "video/Buffer.h"
 #include <future>
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 class WorldChunkMgr {
 protected:

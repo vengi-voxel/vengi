@@ -8,7 +8,7 @@
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/Constants.h"
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 WorldMeshExtractor::WorldMeshExtractor() {
 }

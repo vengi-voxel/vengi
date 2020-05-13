@@ -8,7 +8,7 @@
 #include "WaterShader.h"
 #include "voxel/Mesh.h"
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 class WorldBuffers {
 private:

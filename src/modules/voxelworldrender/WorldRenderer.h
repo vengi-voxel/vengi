@@ -6,7 +6,7 @@
 
 #include "RenderShaders.h"
 #include "AnimationShaders.h"
-#include "VoxelrenderShaders.h"
+#include "VoxelworldrenderShaders.h"
 #include "worldrenderer/WorldChunkMgr.h"
 #include "worldrenderer/WorldBuffers.h"
 #include "core/Color.h"
@@ -23,7 +23,7 @@
 #include "video/UniformBuffer.h"
 #include "voxel/PagedVolume.h"
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 /**
  * @brief Class that performs the rendering and extraction of the needed chunks.

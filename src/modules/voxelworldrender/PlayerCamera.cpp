@@ -7,7 +7,7 @@
 #include "core/command/Command.h"
 #include "core/Trace.h"
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 void PlayerCamera::construct() {
 	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "28.0");

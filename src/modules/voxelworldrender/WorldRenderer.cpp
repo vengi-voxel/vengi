@@ -25,7 +25,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 WorldRenderer::WorldRenderer() :
 		_threadPool(1, "WorldRenderer"), _worldChunkMgr(_threadPool), _shadowMapShader(shader::ShadowmapShader::getInstance()) {

@@ -3,9 +3,9 @@
  */
 
 #include "video/tests/AbstractGLTest.h"
-#include "VoxelrenderShaders.h"
+#include "VoxelworldrenderShaders.h"
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 class VoxelFrontendShaderTest : public video::AbstractGLTest {
 };

@@ -8,8 +8,8 @@
 #include "frontend/ClientEntity.h"
 #include "frontend/PlayerMovement.h"
 #include "frontend/PlayerAction.h"
-#include "voxelrender/WorldRenderer.h"
-#include "voxelrender/PlayerCamera.h"
+#include "voxelworldrender/WorldRenderer.h"
+#include "voxelworldrender/PlayerCamera.h"
 #include "voxelformat/MeshCache.h"
 #include "core/Var.h"
 #include "core/Common.h"
@@ -37,7 +37,7 @@ protected:
 	voxelworld::CachedFloorResolver _floorResolver;
 	client::ClientPagerPtr _clientPager;
 	network::ClientMessageSenderPtr _messageSender;
-	voxelrender::WorldRenderer _worldRenderer;
+	voxelworldrender::WorldRenderer _worldRenderer;
 	flatbuffers::FlatBufferBuilder _moveFbb;
 	frontend::PlayerMovement _movement;
 	flatbuffers::FlatBufferBuilder _actionFbb;
@@ -52,7 +52,7 @@ protected:
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelformat::MeshCachePtr _meshCache;
-	voxelrender::PlayerCamera _camera;
+	voxelworldrender::PlayerCamera _camera;
 	audio::SoundManagerPtr _soundManager;
 
 	frontend::ClientEntityId id() const;

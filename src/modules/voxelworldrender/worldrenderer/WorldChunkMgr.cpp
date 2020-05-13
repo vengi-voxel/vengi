@@ -11,7 +11,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 namespace {
 constexpr double ScaleDuration = 1.5;
@@ -62,13 +62,13 @@ bool WorldChunkMgr::initTerrainBuffer(ChunkBuffer* chunk) {
 	}
 
 	const int locationPos = _worldShader->getLocationPos();
-	const video::Attribute& posAttrib = getPositionVertexAttribute(chunk->_vbo, locationPos, _worldShader->getAttributeComponents(locationPos));
+	const video::Attribute& posAttrib = voxelrender::getPositionVertexAttribute(chunk->_vbo, locationPos, _worldShader->getAttributeComponents(locationPos));
 	if (!chunk->_buffer.addAttribute(posAttrib)) {
 		Log::warn("Failed to add position attribute");
 	}
 
 	const int locationInfo = _worldShader->getLocationInfo();
-	const video::Attribute& infoAttrib = getInfoVertexAttribute(chunk->_vbo, locationInfo, _worldShader->getAttributeComponents(locationInfo));
+	const video::Attribute& infoAttrib = voxelrender::getInfoVertexAttribute(chunk->_vbo, locationInfo, _worldShader->getAttributeComponents(locationInfo));
 	if (!chunk->_buffer.addAttribute(infoAttrib)) {
 		Log::warn("Failed to add info attribute");
 	}

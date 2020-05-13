@@ -11,7 +11,7 @@
 #include "video/Trace.h"
 #include "video/Renderer.h"
 
-namespace voxelrender {
+namespace voxelworldrender {
 
 bool WorldBuffers::renderWater() {
 	video_trace_scoped(WorldBuffersRenderWater);
