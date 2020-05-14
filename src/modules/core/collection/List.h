@@ -30,6 +30,8 @@ private:
 	Node *_first = nullptr;
 	Node *_last = nullptr;
 public:
+	using value_type = TYPE;
+
 	List(std::initializer_list<TYPE> other, int maxSize = 256) {
 		_allocator.init(maxSize);
 		for (auto i = other.begin(); i != other.end(); ++i) {

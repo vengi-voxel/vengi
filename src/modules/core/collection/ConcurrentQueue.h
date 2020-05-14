@@ -32,6 +32,7 @@ private:
 	core::AtomicBool _abort { false };
 	Comparator _comparator;
 public:
+	using value_type = Data;
 	using Key = Data;
 
 	ConcurrentQueue() :

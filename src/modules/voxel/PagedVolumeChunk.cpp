@@ -4,7 +4,7 @@
 
 #include "PagedVolume.h"
 #include "Morton.h"
-#include "Utility.h"
+#include "math/Functions.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
 
@@ -17,7 +17,7 @@ PagedVolume::Chunk::Chunk(const glm::ivec3& pos, uint16_t sideLength, Pager* pag
 
 	// Compute the side length
 	_sideLength = sideLength;
-	_sideLengthPower = logBase2(sideLength);
+	_sideLengthPower = math::logBase2(sideLength);
 
 	// Allocate the data
 	const uint32_t uNoOfVoxels = _sideLength * _sideLength * _sideLength;

@@ -14,7 +14,6 @@ set(SRCS
 	RawVolumeWrapper.h
 	RawVolumeMoveWrapper.h
 	Region.h Region.cpp
-	Utility.h Utility.cpp
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
 )

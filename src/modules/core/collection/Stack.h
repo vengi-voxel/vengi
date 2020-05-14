@@ -22,6 +22,8 @@ private:
 	TYPE _stack[SIZE];
 
 public:
+	using value_type = TYPE;
+
 	inline size_t size() const {
 		return _size;
 	}

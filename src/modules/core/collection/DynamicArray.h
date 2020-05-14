@@ -47,6 +47,8 @@ private:
 		_buffer = newBuffer;
 	}
 public:
+	using value_type = TYPE;
+
 	DynamicArray() {
 	}
 

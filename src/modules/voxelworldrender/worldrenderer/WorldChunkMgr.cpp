@@ -5,6 +5,7 @@
 #include "WorldChunkMgr.h"
 #include "core/Trace.h"
 #include "video/Trace.h"
+#include "video/BufferUtil.h"
 #include "voxel/Constants.h"
 #include "voxelrender/ShaderAttribute.h"
 
@@ -79,8 +80,11 @@ bool WorldChunkMgr::initTerrainBuffer(ChunkBuffer* chunk) {
 		chunk->_buffer.update(chunk->_vbo, nullptr, 0);
 		chunk->_buffer.update(chunk->_ibo, nullptr, 0);
 	} else {
+		const size_t maxSize = indices.size() * sizeof(voxel::IndexArray::value_type);
+		core::DynamicArray<uint8_t> compressedIndices(maxSize);
+		video::indexCompress(&indices.front(), maxSize, chunk->_indexSize, compressedIndices.data(), compressedIndices.size());
 		chunk->_buffer.update(chunk->_vbo, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type));
-		chunk->_buffer.update(chunk->_ibo, &indices.front(), indices.size() * sizeof(voxel::IndexArray::value_type));
+		chunk->_buffer.update(chunk->_ibo, &compressedIndices.front(), compressedIndices.size() * chunk->_indexSize);
 	}
 
 	return true;
@@ -106,7 +110,7 @@ int WorldChunkMgr::renderTerrain() {
 			const glm::mat4& model = glm::scale(size);
 			_worldShader->setModel(model);
 		}
-		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
+		video::drawElements(video::Primitive::Triangles, numIndices, chunkBuffer._indexSize);
 		++drawCalls;
 	}
 	return drawCalls;

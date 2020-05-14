@@ -21,6 +21,8 @@ protected:
 	size_t _back = SIZE - 1;
 	TYPE _buffer[SIZE];
 public:
+	using value_type = TYPE;
+
 	class iterator {
 	private:
 		RingBuffer* _ringBuffer;

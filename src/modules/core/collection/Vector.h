@@ -6,6 +6,7 @@
 
 #include "core/Common.h"
 #include "core/Assert.h"
+#include <string.h>
 
 namespace core {
 
@@ -19,6 +20,8 @@ protected:
 	TYPE _items[SIZE];
 	size_t _size = 0;
 public:
+	using value_type = TYPE;
+
 	inline size_t size() const {
 		return _size;
 	}

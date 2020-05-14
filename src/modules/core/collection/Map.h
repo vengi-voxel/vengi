@@ -40,6 +40,9 @@ struct DefaultHasher {
 template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER = priv::DefaultHasher, typename COMPARE = priv::EqualCompare>
 class Map {
 public:
+	using value_type = VALUETYPE;
+	using key_type = KEYTYPE;
+
 	struct KeyValue {
 		inline KeyValue(const KEYTYPE& _key, const VALUETYPE& _value) :
 				key(_key), value(_value), next(nullptr), first(key), second(value) {

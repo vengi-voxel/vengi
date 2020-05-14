@@ -12,6 +12,17 @@
 
 namespace video {
 
+DataType mapIndexTypeBySize(size_t size) {
+	if (size == 4u) {
+		return DataType::UnsignedInt;
+	}
+	if (size == 2u) {
+		return DataType::UnsignedShort;
+	}
+	core_assert(size == 1u);
+	return DataType::UnsignedByte;
+}
+
 void deleteRenderbuffer(Id& id) {
 	if (id == InvalidId) {
 		return;

@@ -22,6 +22,7 @@ private:
 	mutable core::Lock _mutex;
 	core::ConditionVariable _conditionVariable;
 public:
+	using value_type = Data;
 	void swap(underlying_type& target) {
 		core::ScopedLock lock(_mutex);
 		std::swap(_data, target);

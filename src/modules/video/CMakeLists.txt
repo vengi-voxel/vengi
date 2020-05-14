@@ -6,6 +6,7 @@ set(SRCS
 	gl/GLShader.cpp
 	gl/GLHelper.cpp gl/GLHelper.h
 	Buffer.cpp Buffer.h
+	BufferUtil.cpp BufferUtil.h
 	Camera.cpp Camera.h
 	Cubemap.cpp Cubemap.h
 	DriverHints.cpp
@@ -69,6 +70,7 @@ endif()
 set(TEST_SRCS
 	tests/AbstractGLTest.h
 	tests/ShaderTest.cpp
+	tests/BufferUtilTest.cpp
 	tests/CameraTest.cpp
 	tests/RendererTest.cpp
 )

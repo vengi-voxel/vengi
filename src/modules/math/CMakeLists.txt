@@ -3,6 +3,7 @@ set(SRCS
 	Axis.h
 	Bezier.h
 	Frustum.cpp Frustum.h
+	Functions.cpp Functions.h
 	Octree.h Octree.cpp
 	OctreeCache.h
 	Plane.h Plane.cpp

@@ -42,6 +42,8 @@ struct to_type {
 
 }
 
+extern DataType mapIndexTypeBySize(size_t size);
+
 /**
  * @brief Maps data types to GL enums
  */
@@ -323,6 +325,10 @@ extern bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMo
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices, void* offset = nullptr) {
 	drawElements(mode, numIndices, mapType<IndexType>(), offset);
+}
+
+inline void drawElements(Primitive mode, size_t numIndices, size_t indexSize, void* offset = nullptr) {
+	drawElements(mode, numIndices, mapIndexTypeBySize(indexSize), offset);
 }
 
 template<class IndexType>

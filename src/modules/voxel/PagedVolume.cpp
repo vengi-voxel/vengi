@@ -4,10 +4,10 @@
 
 #include "PagedVolume.h"
 #include "Morton.h"
-#include "Utility.h"
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/Trace.h"
+#include "math/Functions.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/round.hpp>
 
@@ -32,7 +32,7 @@ PagedVolume::PagedVolume(Pager* pager, uint32_t targetMemoryUsageInBytes, uint16
 	core_assert_msg(glm::isPowerOfTwo(_chunkSideLength), "Chunk side length must be a power of two.");
 
 	// Used to perform multiplications and divisions by bit shifting.
-	_chunkSideLengthPower = logBase2(_chunkSideLength);
+	_chunkSideLengthPower = math::logBase2(_chunkSideLength);
 	// Use to perform modulo by bit operations
 	_chunkMask = _chunkSideLength - 1;
 

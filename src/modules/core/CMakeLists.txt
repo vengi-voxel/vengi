@@ -20,6 +20,7 @@ set(SRCS
 	collection/ConcurrentQueue.h
 	collection/ConcurrentSet.h
 	collection/DynamicArray.h
+	collection/Functions.h
 	collection/List.h
 	collection/Map.h
 	collection/Set.h
