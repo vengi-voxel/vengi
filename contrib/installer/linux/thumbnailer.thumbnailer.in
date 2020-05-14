@@ -1,4 +1,4 @@
 [Thumbnailer Entry]
 TryExec=@CMAKE_PROJECT_NAME@-@NAME@
 Exec=@CMAKE_PROJECT_NAME@-@NAME@ -s %s %i %o
-MimeType=application/cubeworld;application/binvox;application/magicavoxel;application/qubicle-binary;application/qubicle-tree;application/sandbox-voxedit
+MimeType=application/x-cubeworld;application/x-binvox;application/x-magicavoxel;application/x-qubicle-binary;application/x-qubicle-tree;application/x-sandbox-voxedit

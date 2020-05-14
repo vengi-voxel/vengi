@@ -56,6 +56,7 @@ binary-indep: install-indep
 	dh_installchangelogs
 	dh_installdocs
 	dh_installmime
+	dh_installsystemd
 	dh_link
 	dh_compress
 	dh_fixperms
@@ -75,7 +76,7 @@ binary-arch: install-arch
 	dh_installmime
 	dh_installman
 	dh_link
-	dh_strip -a
+	dh_strip -a --no-automatic-dbgsym
 	dh_compress
 	dh_fixperms
 	dh_installdeb

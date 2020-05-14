@@ -5,11 +5,19 @@ Maintainer: Martin Gerhardy <martin.gerhardy@gmail.com>
 Build-Depends: cmake, debhelper (>=11~)
 Standards-Version: 4.1.4
 Homepage: https://github.com/mgerhardy/engine
+Vcs-Git: https://github.com/mgerhardy/engine
+Vcs-browser: https://github.com/mgerhardy/engine
+
+Package: vengi-shared
+Architecture: any
+Multi-Arch: foreign
+Description: Shared stuff like mimetypes
 
 Package: vengi-voxedit
 Architecture: any
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
+Recommends: vengi-thumbnailer
 Description: Voxel editor
  Load voxel formats for several volumes.
  Supported formats for loading are:
@@ -24,7 +32,8 @@ Description: Voxel editor
 Package: vengi-thumbnailer
 Architecture: any
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Recommends: vengi-voxedit
+Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Thumbnailer for voxel models
  Supported formats are:
   Magicvoxel vox

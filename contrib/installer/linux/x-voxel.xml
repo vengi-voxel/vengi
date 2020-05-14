@@ -1,33 +1,26 @@
-<?xml version="1.0"?>
-
-<!--
- https://developer.gnome.org/integration-guide/stable/mime.html.en
-
- update-mime-database /usr/share/mime
--->
-
-<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
-  <mime-type type="application/cubeworld">
+<?xml version="1.0" encoding="utf-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-cubeworld">
     <comment>Voxel model CubeWorld</comment>
     <glob pattern="*.cub"/>
   </mime-type>
-  <mime-type type="application/binvox">
+  <mime-type type="application/x-binvox">
     <comment>Voxel model binvox</comment>
     <glob pattern="*.binvox"/>
   </mime-type>
-  <mime-type type="application/magicavoxel">
+  <mime-type type="application/x-magicavoxel">
     <comment>Voxel model MagicaVoxel</comment>
     <glob pattern="*.vox"/>
   </mime-type>
-  <mime-type type="application/qubicle-binary">
+  <mime-type type="application/x-qubicle-binary">
     <comment>Voxel model Qubicle binary</comment>
     <glob pattern="*.qb"/>
   </mime-type>
-  <mime-type type="application/qubicle-tree">
+  <mime-type type="application/x-qubicle-tree">
     <comment>Voxel model Qubicle tree</comment>
     <glob pattern="*.qbt"/>
   </mime-type>
-  <mime-type type="application/sandbox-voxedit">
+  <mime-type type="application/x-sandbox-voxedit">
     <comment>Voxel model Sandbox VoxEdit</comment>
     <glob pattern="*.vxm"/>
   </mime-type>
