@@ -23,6 +23,9 @@
 #include "video/UniformBuffer.h"
 #include "voxel/PagedVolume.h"
 
+/**
+ * World rendering
+ */
 namespace voxelworldrender {
 
 /**

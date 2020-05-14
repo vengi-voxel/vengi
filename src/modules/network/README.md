@@ -1,4 +1,6 @@
-# General
+# Network layer
+
+## General
 
 The network layer is based on udp (enet) and shared between client and server.
 
@@ -8,12 +10,12 @@ See the `generate_protocol` cmake macro on how to integrate them.
 Values that should be shared between client and server - for example our cooldown ids - are
 part of the protocol to always have them in sync with each other.
 
-# Connection
+## Connection
 
 * [client] connects
 * [connection established]
-* [client] send `UserConnect` message
+* [client] sends `UserConnect` message
 * [server] `UserConnectHandler`
-* [server] perform auth
-* [auth failed] => [server] send `AuthFailed` message
-* [auth successful] => [server] send Seed [server] broadcast to visible `UserSpawn`
+* [server] performs auth
+* [auth failed] => [server] sends `AuthFailed` message
+* [auth successful] => [server] sends Seed [server] broadcasts to visible `UserSpawn`

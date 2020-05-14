@@ -1,8 +1,8 @@
 # ShaderTool
 
-This tool parses GLSL shader files (mainly *.vert, *.frag) and generates C++ source files for them.
+This tool parses GLSL shader files (mainly `*.vert`, `*.frag`) and generates C++ source files for them.
 
-# Description
+## Description
 
 The generator uses `ShaderTemplate.h.in` and `UniformBufferTemplate.h.in` as a base to generat the C++ source files.
 

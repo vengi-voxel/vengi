@@ -74,17 +74,17 @@ glm::ivec3 Region::getRandomPosition(math::Random& random) const {
 }
 
 /**
- * @param iX The 'x' component of the position to accumulate.
- * @param iY The 'y' component of the position to accumulate.
- * @param iZ The 'z' component of the position to accumulate.
+ * @param x The 'x' component of the position to accumulate.
+ * @param y The 'y' component of the position to accumulate.
+ * @param z The 'z' component of the position to accumulate.
  */
-void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
-	_mins.x = core_min(_mins.x, iX);
-	_mins.y = core_min(_mins.y, iY);
-	_mins.z = core_min(_mins.z, iZ);
-	_maxs.x = core_max(_maxs.x, iX);
-	_maxs.y = core_max(_maxs.y, iY);
-	_maxs.z = core_max(_maxs.z, iZ);
+void Region::accumulate(int32_t x, int32_t y, int32_t z) {
+	_mins.x = core_min(_mins.x, x);
+	_mins.y = core_min(_mins.y, y);
+	_mins.z = core_min(_mins.z, z);
+	_maxs.x = core_max(_maxs.x, x);
+	_maxs.y = core_max(_maxs.y, y);
+	_maxs.z = core_max(_maxs.z, z);
 	update();
 }
 
@@ -272,34 +272,34 @@ bool Region::containsPoint(const glm::ivec3& pos, uint8_t boundary) const {
 }
 
 /**
- * @param v3dAmount The amount to move the Region by.
+ * @param amount The amount to move the Region by.
  */
-void Region::shift(const glm::ivec3& v3dAmount) {
-	shiftLowerCorner(v3dAmount);
-	shiftUpperCorner(v3dAmount);
+void Region::shift(const glm::ivec3& amount) {
+	shiftLowerCorner(amount);
+	shiftUpperCorner(amount);
 }
 
 /**
- * @param v3dAmount The amount to move the lower corner by.
+ * @param amount The amount to move the lower corner by.
  */
-void Region::shiftLowerCorner(const glm::ivec3& v3dAmount) {
-	shiftLowerCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
+void Region::shiftLowerCorner(const glm::ivec3& amount) {
+	shiftLowerCorner(amount.x, amount.y, amount.z);
 }
 
 /**
- * @param v3dAmount The amount to move the upper corner by.
+ * @param amount The amount to move the upper corner by.
  */
-void Region::shiftUpperCorner(const glm::ivec3& v3dAmount) {
-	shiftUpperCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
+void Region::shiftUpperCorner(const glm::ivec3& amount) {
+	shiftUpperCorner(amount.x, amount.y, amount.z);
 }
 
 /**
  * The amount can be specified seperatly for each direction. Negative shrinkage
  * is possible but you should prefer the grow() function for clarity.
- * @param v3dAmount The amount to shrink by (one component for each direction).
+ * @param amount The amount to shrink by (one component for each direction).
  */
-void Region::shrink(const glm::ivec3& v3dAmount) {
-	shrink(v3dAmount.x, v3dAmount.y, v3dAmount.z);
+void Region::shrink(const glm::ivec3& amount) {
+	shrink(amount.x, amount.y, amount.z);
 }
 
 }

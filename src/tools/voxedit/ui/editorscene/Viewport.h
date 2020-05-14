@@ -11,7 +11,8 @@
 #include "RenderShaders.h"
 
 /**
- * @brief Scene management like input, ui and rendering.
+ * @brief Voxel editor scene management like input, ui and rendering.
+ * @see voxedit::ViewportController
  */
 class Viewport: public ui::turbobadger::Widget {
 private:

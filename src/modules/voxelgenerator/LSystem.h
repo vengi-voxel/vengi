@@ -19,7 +19,13 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <stack>
 
+/**
+ * Voxel generators
+ */
 namespace voxelgenerator {
+/**
+ * L-System
+ */
 namespace lsystem {
 
 struct TurtleStep {
@@ -36,6 +42,9 @@ struct Rule {
 
 extern bool parseRules(const core::String& rulesStr, std::vector<Rule>& rules);
 
+/**
+ * @brief Generate voxels according to the given L-System rules
+ */
 template<class Volume>
 void generate(Volume& volume, const glm::ivec3& position, const core::String &axiom, const std::vector<Rule> &rules, float angle, float length, float width,
 				 float widthIncrement, uint8_t iterations, math::Random& random, float leafRadius = 8.0f) {

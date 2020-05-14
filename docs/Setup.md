@@ -1,4 +1,5 @@
-# Setup
+# Setup {#setup}
+
 ## PostgreSQL
 
 first sudo as postgres default superuser 'postgres' on bash

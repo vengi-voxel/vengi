@@ -1,4 +1,4 @@
-# General
+# Game Design {#gamedesign}
 
 This is about an mmorpg in a fantasy like world.
 
@@ -15,5 +15,5 @@ The entities in the island simulation have a profession where you can decide wha
 There is a value that indicates whether it's still reasonable to continue with that particular profession. If
 the entity - for some reason - can't continue with the current job, that value decreases and the entity will try
 to pick another free job.
-Before quitting the job, the entity will report this as an impediment in the corresponding townhall as a quest
-- asking for help.
+Before quitting the job, the entity will report this as an impediment in the corresponding townhall as a
+quest - asking for help.

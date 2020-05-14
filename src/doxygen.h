@@ -2,5 +2,13 @@
  * @file
  * @mainpage VoxelEngine documentation
  *
- * - [GitLab page](http://gitlab.com/mgerhardy/engine/)
+ * @ref about
+ *
+ * @ref dependencies
+ *
+ * @ref building
+ *
+ * @ref configuration
+ *
+ * @ref setup
  */

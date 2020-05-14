@@ -12,6 +12,9 @@
 #include "core/IComponent.h"
 #include "core/concurrent/ReadWriteLock.h"
 
+/**
+ * Persistence layer
+ */
 namespace persistence {
 
 /**

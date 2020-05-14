@@ -15,6 +15,9 @@
 #include "core/Log.h"
 
 namespace voxelgenerator {
+/**
+ * Tree generators
+ */
 namespace tree {
 
 /**

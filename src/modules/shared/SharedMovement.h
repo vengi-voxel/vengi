@@ -11,6 +11,9 @@
 #include <glm/vec3.hpp>
 #include <functional>
 
+/**
+ * Shared between client and server
+ */
 namespace shared {
 
 using WalkableFloorResolver = std::function<voxelutil::FloorTraceResult(const glm::ivec3& pos, int maxWalkableHeight)>;

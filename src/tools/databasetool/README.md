@@ -1,6 +1,6 @@
 # Databasetool
 
-## Table descriptions for the databasetool.
+## Table descriptions for the databasetool
 
 The databasetool binary will generate model files for the
 table definitions given in `*.tbl` files. You can specify the fields,
@@ -11,7 +11,7 @@ To add a new `*.tbl` file to a module and automatically generate code
 for that table definition, you have to add the following after your
 cmake `add_library(${LIB} ${SRCS})` call:
 
-```
+```cmake
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl ExampleModels.h)
 ```
 
@@ -55,16 +55,17 @@ table <TABLENAME> {
 ```
 
 ## Valid field types
-* password
-* string
-* text
-* int
-* long
-* timestamp
-* boolean
-* short
-* byte
-* blob
+
+* `password`
+* `string`
+* `text`
+* `int`
+* `long`
+* `timestamp`
+* `boolean`
+* `short`
+* `byte`
+* `blob`
 
 ## Operator
 
@@ -78,10 +79,12 @@ the operator specified. The default operator is `set`. See a full list
 of valid operators below.
 
 ## Valid operators
-* set
-* add
-* subtract
+
+* `set`
+* `add`
+* `subtract`
 
 ## Other notable features
+
 * Timestamps are handled in UTC.
 * When using `ìnt` or `short` as a field type, there is also a setter configured that accepts enums.

@@ -45,8 +45,8 @@ public:
 
 	bool canUseShader() const;
 	/**
-	 * @return @c true if the value was set, @c false otherwise. This might happen if you e.g. try to activate noise shaders,
-	 * but your system doesn't support them.
+	 * @return Return whether the request to use the noise shaders could get fulfilled. It might fail if you e.g. try
+	 * to activate noise shaders, but your system doesn't support them.
 	 */
 	bool useShader(bool enableShader);
 

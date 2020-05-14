@@ -16,70 +16,65 @@ class Random;
 
 namespace voxel {
 
-/** Represents a part of a Volume.
+/**
+ * Represents a part of a Volume.
  *
- *  Many operations in PolyVox are constrained to only part of a volume. For example, when running the surface extractors
- *  it is unlikely that you will want to run it on the whole volume at once, as this will give a very large mesh which may
- *  be too much to render. Instead you will probably want to run a surface extractor a number of times on different parts
- *  of the volume, there by giving a number of meshes which can be culled and rendered separately.
+ * Many operations in PolyVox are constrained to only part of a volume. For example, when running the surface extractors
+ * it is unlikely that you will want to run it on the whole volume at once, as this will give a very large mesh which may
+ * be too much to render. Instead you will probably want to run a surface extractor a number of times on different parts
+ * of the volume, there by giving a number of meshes which can be culled and rendered separately.
  *
- *  The Region class is used to define these parts (regions) of the volume. Essentially it consists of an upper and lower
- *  bound which specify the range of voxels positions considered to be part of the region. Note that these bounds are
- *  <em>inclusive</em>.
+ * The Region class is used to define these parts (regions) of the volume. Essentially it consists of an upper and lower
+ * bound which specify the range of voxels positions considered to be part of the region. Note that these bounds are
+ * <em>inclusive</em>.
  *
- *  As well as the expected set of getters and setters, this class also provide utility functions for increasing and decreasing
- *  the size of the Region, shifting the Region in 3D space, testing whether it contains a given position, enlarging it so that
- *  it does contain a given position, cropping it to another Region, and various other utility functions.
+ * As well as the expected set of getters and setters, this class also provide utility functions for increasing and decreasing
+ * the size of the Region, shifting the Region in 3D space, testing whether it contains a given position, enlarging it so that
+ * it does contain a given position, cropping it to another Region, and various other utility functions.
  *
- *  @note The dimensions of a region can be measured either in voxels or in cells. See the manual for more information
- *  about these definitions.
- *
+ * @note The dimensions of a region can be measured either in voxels or in cells. See the manual for more information
+ * about these definitions.
  */
 class Region {
 public:
-	/// Constructor
 	constexpr Region();
-	/// Constructor
 	Region(const glm::ivec3& mins, const glm::ivec3& maxs);
-	/// Constructor
 	constexpr Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz);
 	constexpr Region(int mins, int maxs);
 
 	static const Region InvalidRegion;
 
-	/// Equality Operator.
 	bool operator==(const Region& rhs) const;
-	/// Inequality Operator.
 	bool operator!=(const Region& rhs) const;
 
-	/// Moves the Region by the amount specified.
+	/** Moves the Region by the amount specified. */
 	Region& operator+=(const glm::ivec3& amount);
 
-	/// Gets the 'x' position of the centre.
+	/** Gets the 'x' position of the centre. */
 	int32_t getCenterX() const;
-	/// Gets the 'y' position of the centre.
+	/** Gets the 'y' position of the centre. */
 	int32_t getCenterY() const;
-	/// Gets the 'z' position of the centre.
+	/** Gets the 'z' position of the centre. */
 	int32_t getCenterZ() const;
-	/// Gets the 'x' position of the lower corner.
+	/** Gets the 'x' position of the lower corner. */
 	int32_t getLowerX() const;
-	/// Gets the 'y' position of the lower corner.
+	/** Gets the 'y' position of the lower corner. */
 	int32_t getLowerY() const;
-	/// Gets the 'z' position of the lower corner.
+	/** Gets the 'z' position of the lower corner. */
 	int32_t getLowerZ() const;
-	/// Gets the 'x' position of the upper corner.
+	/** Gets the 'x' position of the upper corner. */
 	int32_t getUpperX() const;
-	/// Gets the 'y' position of the upper corner.
+	/** Gets the 'y' position of the upper corner. */
 	int32_t getUpperY() const;
-	/// Gets the 'z' position of the upper corner.
+	/** Gets the 'z' position of the upper corner. */
 	int32_t getUpperZ() const;
 
-	/// Gets the centre of the region
+	/** Gets the centre of the region */
 	const glm::ivec3& getCenter() const;
 	glm::vec3 getCenterf() const;
-	/// Gets the position of the lower corner.
+	/** Gets the position of the lower corner. */
 	const glm::ivec3& getLowerCorner() const;
-	/// Gets the position of the upper corner.
+	/** Gets the position of the upper corner. */
 	const glm::ivec3& getUpperCorner() const;
 
 	glm::vec3 getLowerCornerf() const;
@@ -87,88 +82,88 @@ public:
 
 	glm::ivec3 getRandomPosition(math::Random& random) const;
 
-	/// Gets the width of the region measured in voxels.
+	/** Gets the width of the region measured in voxels. */
 	int32_t getWidthInVoxels() const;
-	/// Gets the height of the region measured in voxels.
+	/** Gets the height of the region measured in voxels. */
 	int32_t getHeightInVoxels() const;
-	/// Gets the depth of the region measured in voxels.
+	/** Gets the depth of the region measured in voxels. */
 	int32_t getDepthInVoxels() const;
-	/// Gets the dimensions of the region measured in voxels.
+	/** Gets the dimensions of the region measured in voxels. */
 	const glm::ivec3& getDimensionsInVoxels() const;
 
-	/// Gets the width of the region measured in cells.
+	/** Gets the width of the region measured in cells. */
 	int32_t getWidthInCells() const;
-	/// Gets the height of the region measured in cells.
+	/** Gets the height of the region measured in cells. */
 	int32_t getHeightInCells() const;
-	/// Gets the depth of the region measured in cells.
+	/** Gets the depth of the region measured in cells. */
 	int32_t getDepthInCells() const;
-	/// Gets the dimensions of the region measured in cells.
+	/** Gets the dimensions of the region measured in cells. */
 	const glm::ivec3& getDimensionsInCells() const;
 
-	/// Sets the 'x' position of the lower corner.
+	/** Sets the 'x' position of the lower corner. */
 	void setLowerX(int32_t x);
-	/// Sets the 'y' position of the lower corner.
+	/** Sets the 'y' position of the lower corner. */
 	void setLowerY(int32_t y0f128);
-	/// Sets the 'z' position of the lower corner.
+	/** Sets the 'z' position of the lower corner. */
 	void setLowerZ(int32_t z);
-	/// Sets the 'x' position of the upper corner.
+	/** Sets the 'x' position of the upper corner. */
 	void setUpperX(int32_t x);
-	/// Sets the 'y' position of the upper corner.
+	/** Sets the 'y' position of the upper corner. */
 	void setUpperY(int32_t y);
-	/// Sets the 'z' position of the upper corner.
+	/** Sets the 'z' position of the upper corner. */
 	void setUpperZ(int32_t z);
 
 	glm::ivec3 moveInto(int32_t x, int32_t y, int32_t z) const;
 
-	/// Sets the position of the lower corner.
+	/** Sets the position of the lower corner. */
 	void setLowerCorner(const glm::ivec3& mins);
-	/// Sets the position of the upper corner.
+	/** Sets the position of the upper corner. */
 	void setUpperCorner(const glm::ivec3& maxs);
 
-	/// Tests whether the given point is contained in this Region.
+	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(float fX, float fY, float fZ, float boundary = 0.0f) const;
-	/// Tests whether the given point is contained in this Region.
+	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(const glm::vec3& pos, float boundary = 0.0f) const;
-	/// Tests whether the given point is contained in this Region.
+	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t boundary = 0) const;
-	/// Tests whether the given point is contained in this Region.
+	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(const glm::ivec3& pos, uint8_t boundary = 0) const;
-	/// Tests whether the given position is contained in the 'x' range of this Region.
+	/** Tests whether the given position is contained in the 'x' range of this Region. */
 	bool containsPointInX(float pos, float boundary = 0.0f) const;
-	/// Tests whether the given position is contained in the 'x' range of this Region.
+	/** Tests whether the given position is contained in the 'x' range of this Region. */
 	bool containsPointInX(int32_t pos, uint8_t boundary = 0) const;
-	/// Tests whether the given position is contained in the 'y' range of this Region.
+	/** Tests whether the given position is contained in the 'y' range of this Region. */
 	bool containsPointInY(float pos, float boundary = 0.0f) const;
-	/// Tests whether the given position is contained in the 'y' range of this Region.
+	/** Tests whether the given position is contained in the 'y' range of this Region. */
 	bool containsPointInY(int32_t pos, uint8_t boundary = 0) const;
-	/// Tests whether the given position is contained in the 'z' range of this Region.
+	/** Tests whether the given position is contained in the 'z' range of this Region. */
 	bool containsPointInZ(float pos, float boundary = 0.0f) const;
-	/// Tests whether the given position is contained in the 'z' range of this Region.
+	/** Tests whether the given position is contained in the 'z' range of this Region. */
 	bool containsPointInZ(int32_t pos, uint8_t boundary = 0) const;
 
-	/// Tests whether the given Region is contained in this Region.
+	/** Tests whether the given Region is contained in this Region. */
 	bool containsRegion(const Region& reg, uint8_t boundary = 0) const;
 
-	/// Enlarges the Region so that it contains the specified position.
+	/** Enlarges the Region so that it contains the specified position. */
 	void accumulate(int32_t iX, int32_t iY, int32_t iZ);
-	/// Enlarges the Region so that it contains the specified position.
+	/** Enlarges the Region so that it contains the specified position. */
 	void accumulate(const glm::ivec3& v3dPos);
 
-	/// Enlarges the Region so that it contains the specified Region.
+	/** Enlarges the Region so that it contains the specified Region. */
 	void accumulate(const Region& reg);
 
-	/// Crops the extents of this Region according to another Region.
+	/** Crops the extents of this Region according to another Region. */
 	void cropTo(const Region& other);
 
-	/// Grows this region by the amount specified.
+	/** Grows this region by the amount specified. */
 	void grow(int32_t amount);
-	/// Grows this region by the amounts specified.
+	/** Grows this region by the amounts specified. */
 	void grow(int32_t amountX, int32_t amountY, int32_t amountZ);
-	/// Grows this region by the amounts specified.
+	/** Grows this region by the amounts specified. */
 	void grow(const glm::ivec3& v3dAmount);
 
-	/// Tests whether all components of the upper corner are at least
-	/// as great as the corresponding components of the lower corner.
+	/** Tests whether all components of the upper corner are at least
+	 * as great as the corresponding components of the lower corner. */
 	bool isValid() const;
 
 	/**
@@ -177,24 +172,24 @@ public:
 	int voxels() const;
 	int stride() const;
 
-	/// Moves the Region by the amount specified.
+	/** Moves the Region by the amount specified. */
 	void shift(int32_t amountX, int32_t amountY, int32_t amountZ);
-	/// Moves the Region by the amount specified.
+	/** Moves the Region by the amount specified. */
 	void shift(const glm::ivec3& v3dAmount);
-	/// Moves the lower corner of the Region by the amount specified.
+	/** Moves the lower corner of the Region by the amount specified. */
 	void shiftLowerCorner(int32_t x, int32_t y, int32_t z);
-	/// Moves the lower corner of the Region by the amount specified.
+	/** Moves the lower corner of the Region by the amount specified. */
 	void shiftLowerCorner(const glm::ivec3& v3dAmount);
-	/// Moves the upper corner of the Region by the amount specified.
+	/** Moves the upper corner of the Region by the amount specified. */
 	void shiftUpperCorner(int32_t x, int32_t y, int32_t z);
-	/// Moves the upper corner of the Region by the amount specified.
+	/** Moves the upper corner of the Region by the amount specified. */
 	void shiftUpperCorner(const glm::ivec3& v3dAmount);
 
-	/// Shrinks this region by the amount specified.
+	/** Shrinks this region by the amount specified. */
 	void shrink(int32_t amount);
-	/// Shrinks this region by the amounts specified.
+	/** Shrinks this region by the amounts specified. */
 	void shrink(int32_t amountX, int32_t amountY, int32_t amountZ);
-	/// Shrinks this region by the amounts specified.
+	/** Shrinks this region by the amounts specified. */
 	void shrink(const glm::ivec3& v3dAmount);
 
 	core::String toString() const;
@@ -342,34 +337,34 @@ inline void Region::setLowerY(int32_t y) {
 }
 
 /**
- * @param iZ The new 'z' position of the lower corner.
+ * @param z The new 'z' position of the lower corner.
  */
-inline void Region::setLowerZ(int32_t iZ) {
-	_mins.z = iZ;
+inline void Region::setLowerZ(int32_t z) {
+	_mins.z = z;
 	update();
 }
 
 /**
- * @param iX The new 'x' position of the upper corner.
+ * @param x The new 'x' position of the upper corner.
  */
-inline void Region::setUpperX(int32_t iX) {
-	_maxs.x = iX;
+inline void Region::setUpperX(int32_t x) {
+	_maxs.x = x;
 	update();
 }
 
 /**
- * @param iY The new 'y' position of the upper corner.
+ * @param y The new 'y' position of the upper corner.
  */
-inline void Region::setUpperY(int32_t iY) {
-	_maxs.y = iY;
+inline void Region::setUpperY(int32_t y) {
+	_maxs.y = y;
 	update();
 }
 
 /**
- * @param iZ The new 'z' position of the upper corner.
+ * @param z The new 'z' position of the upper corner.
  */
-inline void Region::setUpperZ(int32_t iZ) {
-	_maxs.z = iZ;
+inline void Region::setUpperZ(int32_t z) {
+	_maxs.z = z;
 	update();
 }
 

@@ -8,6 +8,9 @@
 #include "voxel/RawVolumeWrapper.h"
 
 namespace voxelgenerator {
+/**
+ * Noise
+ */
 namespace noise {
 
 enum class NoiseType {

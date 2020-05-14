@@ -1,6 +1,6 @@
 /**
  * @file
- * @defgroup Voxel
+ * @defgroup VoxelWorld
  * @{
  * @}
  */
@@ -16,11 +16,14 @@
 #include "math/Random.h"
 #include <memory>
 
+/**
+ * World creation, persisting and streaming
+ */
 namespace voxelworld {
 
 /**
  * @brief The WorldMgr class is responsible to maintaining the voxel volumes and handle the needed mesh extraction
- * @ingroup Voxel
+ * @ingroup VoxelWorld
  */
 class WorldMgr {
 public:

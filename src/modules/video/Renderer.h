@@ -177,7 +177,7 @@ extern void getScissor(int& x, int& y, int& w, int& h);
 extern void getViewport(int& x, int& y, int& w, int& h);
 /**
  * @brief Given in screen coordinates
- * @note viewport() must have seen called before
+ * @note viewport() must have been called before
  */
 extern bool scissor(int x, int y, int w, int h);
 /**

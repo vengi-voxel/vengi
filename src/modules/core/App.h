@@ -30,6 +30,9 @@ using IMetricSenderPtr = std::shared_ptr<IMetricSender>;
 
 }
 
+/**
+ * Foundation classes
+ */
 namespace core {
 
 class ThreadPool;
@@ -58,7 +61,7 @@ enum class AppState : uint8_t {
 };
 
 /**
- * @brief The app class controls the main loop of every application.
+ * @brief The app class controls the main loop and life-cycle of every application.
  */
 class App : public core::TraceCallback {
 protected:

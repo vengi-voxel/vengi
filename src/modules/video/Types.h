@@ -8,6 +8,9 @@
 #include <stdint.h>
 #include "gl/GLTypes.h"
 
+/**
+ * Rendering
+ */
 namespace video {
 
 enum class TextureType {

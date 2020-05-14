@@ -2,11 +2,11 @@
  * @file
  * @defgroup Filter
  * @{
- * In combination with the `Filter` condition `IFilter` provides a quite flexible way to provide
+ * In combination with the @ai{Filter} condition @ai{IFilter} provides a quite flexible way to provide
  * generic behaviour tree tasks. You can just create one @ai{ITask} implementation that deals with
  * e.g. attacking. The target is just picked from the selection. If you encapsulate this with a
  * condition like (lua):
- * @code
+ * @code{.lua}
  * someNode:addNode("AttackTarget", "attack"):setCondition("Filter(SelectGroupLeader{1})")
  * @endcode
  * You would only attack the group leader of group 1 if it was found. You can provide your own
@@ -16,12 +16,12 @@
  * There are some filters that accept subfilters - like _Union_, _Intersection_, _Last_, _First_,
  * _Difference_, _Complement_ and _Random_. _Last_, _First_ and _Random_ accept one sub filter as
  * parameter, _Union_ and _Intersection_ accept at least two sub filters.
- * @code
+ * @code{.lua}
  * someNode:addNode("AttackTarget", "attack"):setCondition("Filter(First(SelectZone))")
  * @endcode
  *
  * _Random_ also accepts a parameter for how many items should be randomly preserved:
- * @code
+ * @code{.lua}
  * someNode:addNode("AttackTarget", "attack"):setCondition("Filter(Random{1}(SelectZone))")
  * @endcode
  */
@@ -112,16 +112,16 @@ public: \
 	FILTER_FACTORY_SINGLETON
 
 /**
- * @brief This class is used by the @c Filter condition in order to select entities for a @c TreeNode.
+ * @brief This class is used by the @ai{Filter} condition in order to select entities for a  @ai{TreeNode}.
  *
- * To modify the selection, the implementing classes should call @c getFilteredEntities to access
- * the storage to persist the filtering for the @c TreeNode.
+ * To modify the selection, the implementing classes should call  @ai{getFilteredEntities()} to access
+ * the storage to persist the filtering for the  @ai{TreeNode}.
  *
- * In combination with the @code Filter condition @code IFilter provides a quite flexible way to provide
- * generic behaviour tree tasks. You can e.g. just create one @code ITask implementation that deals with
+ * In combination with the  @ai{Filter} condition  @ai{IFilter} provides a quite flexible way to provide
+ * generic behaviour tree tasks. You can e.g. just create one  @ai{ITask} implementation that deals with
  * e.g. attacking. The target is just picked from the selection. If you encapsulate this with a condition
  * like (lua):
- * @code
+ * @code{.lua}
  * someNode:addNode("AttackTarget", "attack"):setCondition("Filter(SelectGroupLeader{1})")
  * @endcode
  * You would only attack the group leader of group 1 if it was found. You can provide your own filters like:
@@ -136,7 +136,7 @@ protected:
 	 * @note The filtered entities are kept even over several ticks. The caller should decide
 	 * whether he still needs an old/previous filtered selection
 	 *
-	 * @see selection @c SelectEmpty to do the clear from within the behaviour tree
+	 * @see selection @ai{SelectEmpty} to do the clear from within the behaviour tree
 	 */
 	inline FilteredEntities& getFilteredEntities(const AIPtr& ai) {
 		return ai->_filteredEntities;

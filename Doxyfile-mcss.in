@@ -1,0 +1,13 @@
+@INCLUDE                = Doxyfile
+GENERATE_HTML           = NO
+GENERATE_XML            = YES
+XML_PROGRAMLISTING      = NO
+
+M_LINKS_NAVBAR1 = \
+	"about dependencies building configuration setup" \
+	"pages" \
+	"modules" \
+	"namespaces"
+
+M_LINKS_NAVBAR2 = \
+	"annotated"

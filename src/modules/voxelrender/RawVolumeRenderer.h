@@ -25,6 +25,9 @@ namespace video {
 class Camera;
 }
 
+/**
+ * Basic voxel rendering
+ */
 namespace voxelrender {
 
 /**

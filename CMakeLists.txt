@@ -209,6 +209,7 @@ message(STATUS "Generate config.h in ${CMAKE_CURRENT_BINARY_DIR}")
 
 find_package(Doxygen)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-mcss.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-mcss @ONLY)
 if (DOXYGEN_FOUND)
 	add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

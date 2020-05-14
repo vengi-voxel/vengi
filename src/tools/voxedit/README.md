@@ -13,7 +13,6 @@ my own engine and evolved into something that others might find useful, too.
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-quad-view.png)
 
-
 ## Features
 
 * Large scene support
@@ -59,27 +58,27 @@ my own engine and evolved into something that others might find useful, too.
 ## Planned
 
 * SceneSettings dialog
-  - Change sun angles
+  * Change sun angles
 * Voxel to transparency with a HSV threshold
 * Selections
-  - Multiple AABBs should be possible
-  - Deselect of single voxels
-  - Delete, move, rotate, modify only in active selection
+  * Multiple AABBs should be possible
+  * Deselect of single voxels
+  * Delete, move, rotate, modify only in active selection
 * Copy/paste
-  - Paste into selection of a different size? Accept with enter after moving?
+  * Paste into selection of a different size? Accept with enter after moving?
 * Color selection via keyboard only
-  - Shortcut for enter-color-in-the-next second and index of the colormap?
-  - Relative movement from current color
+  * Shortcut for enter-color-in-the-next second and index of the colormap?
+  * Relative movement from current color
 * Improve Windows and MacOSX support
 * Extend palette widget to show the used colors
 * Add color dialog for ambient and diffuse color
 * Extrude
 * Improve vox extension import
 * Rigging support
-  - Gizmo for rotate, scale and move
-  - Scene graph
-  - File format (maybe vox with extension?)
-  - UI for key frames (timeline)
+  * Gizmo for rotate, scale and move
+  * Scene graph
+  * File format (maybe vox with extension?)
+  * UI for key frames (timeline)
 * Physics
 * Particle emitter
 

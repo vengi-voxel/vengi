@@ -80,64 +80,9 @@
  *   * @movement{TargetSeek}
  *   * @movement{Wander}
  *
- * @section compilation Compile the lib:
- *
- * * autotools based compilation
- *   * `./autogen.sh`
- *   * `./configure`
- *   * `make`
- *   * `make install`
- * * cmake based compilation (enable tests, remote debugger and so on via options)
- *   * `cmake CMakeLists.txt`
- *   * `make`
- * * Compile the remote debugger
- *   * qmake
- *     * `cd src/debug`
- *     * `qmake`
- *     * `make`
- *   * cmake based compilation
- *     * `cmake CMakeLists.txt -DSIMPLEAI_DEBUGGER=ON`
- *     * `make`
- *
- * @section run Running it:
- *
- * SimpleAI comes with a small tool that is located in src/run. You can
- * execute your own trees with:
- *
- * - `./simpleai-run -file src/run/behaviours.lua`
- *
- * After you ran it, you can connect with the remote @ref debugger and inspect the live
- * state of every spawned @ai{AI} entity.
- *
- * @section using Using it:
- * * Make sure your character extends @ai{ICharacter} or includes it as component.
- * * Implement your behaviour tree loader by extending the class @ai{ITreeloader}.
- * * Extend the @debug{AIDebugger} to deliver your own @debug{MapView} that renders the map of
- *   your application.
- * * Add your own condition, filter and task factories to the @ai{AIRegistry} or via @ai{LUAAIRegistry}.
- * * Assign attributes to your characters that should be shown in the
- *   debuggers live view.
- *
- * As the name states, it should be easy to use and to integrate into your application. You
- * have the ability to create new customized actions, override existing ones with your
- * own implementations and so on.
- *
- * To integrate the @ai{AI} into your application, your entity class should implement or include
- * the @ai{ICharacter} interface. You only have to call the @ai{ICharacter::update()} method
- * to get the @ai{AI} and the character updated. You can view the included `simpleai-run` tool
- * for getting an idea on how to do this.
- *
- * Once this step is done, you can go on with creating new actions for your application. All you
- * have to do for this is to extend @ai{ITask}. The entity instance given to the
- * @ai{ITask::doAction()} method contains the @ai{ICharacter} that you bound to your
- * application entity.
- *
- * After implementing these actions, all you have to do in order to use them with e.g. the
- * existing @ai{LUATreeLoader} is to add them to the registry. Just call
+ * After implementing actions add them to the registry. Just call
  * @ai{AIRegistry::registerNodeFactory()} on your @ai{AIRegistry} instance and you are ready
- * to write @ai{LUA} scripts with it. Again, as a reference, just check out the example code.
- * You can also create nodes, conditions, filter and steering methods via LUA directly. See
- * @ai{LUAAIRegistry} for more information about this.
+ * to write @ai{LUA} scripts with it.
  *
  * Note the usage of a few macros that makes your life easier:
  * * @ai{TASK_CLASS}
@@ -189,26 +134,6 @@
  *
  * Examples on how to customize the debugger
  * * [some classes](https://github.com/mgerhardy/simpleai/blob/master/contrib/exampledebugger) that provide a custom map view and map item rendering with custom data from attributes.
- *
- * @section legal Legal
- *
- * Copyright (C) 2015-2017 Martin Gerhardy <martin.gerhardy@gmail.com>
- *
- * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
  */
 
 /**

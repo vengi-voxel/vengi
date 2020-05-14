@@ -1,5 +1,7 @@
 /**
  * @file
+ * @defgroup Voxel
+ * @{
  */
 
 #pragma once
@@ -7,6 +9,9 @@
 #include <stdint.h>
 #include "core/ArrayLength.h"
 
+/**
+ * Voxel manipulation, meshing and storage
+ */
 namespace voxel {
 
 /**
@@ -177,3 +182,7 @@ inline bool isFloor(VoxelType material) {
 }
 
 }
+
+/**
+ * @}
+ */
