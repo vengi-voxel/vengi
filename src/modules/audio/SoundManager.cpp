@@ -224,16 +224,18 @@ Mix_Chunk* SoundManager::getChunk(const core::String& filename) {
 	for (int i = 0; i < lengthof(supportedFormats); ++i) {
 		core::String fullPath = core::string::format("sound/%s.%s", filename.c_str(), supportedFormats[i]);
 		file = _filesystem->open(fullPath);
-		if (!file->exists()) {
-			continue;
+		if (file->exists()) {
+			break;
 		}
 	}
 	if (!file->exists()) {
+		_map.put(filename, nullptr);
 		Log::error(logid, "unable to open sound file: %s", filename.c_str());
 		return nullptr;
 	}
 	SDL_RWops* rwops = file->createRWops(io::FileMode::Read);
 	if (rwops == nullptr) {
+		_map.put(filename, nullptr);
 		Log::error(logid, "unable to load sound file: %s", filename.c_str());
 		return nullptr;
 	}
