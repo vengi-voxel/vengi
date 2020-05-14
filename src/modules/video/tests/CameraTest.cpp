@@ -24,7 +24,7 @@ protected:
 		camera.init(glm::ivec2(0), dimension, dimension);
 		camera.setPosition(position);
 		camera.lookAt(lookAt, lookAlong);
-		camera.update(0l);
+		camera.update(0.0);
 		return camera;
 	}
 };
@@ -74,14 +74,14 @@ TEST_F(CameraTest, testMotion) {
 	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));
 	camera.lookAt(glm::vec3(0.0), glm::forward);
 	camera.rotate(glm::vec3(0.0f, 10.0f, 0.0f));
-	camera.update(0l);
+	camera.update(0.0);
 }
 
 TEST_F(CameraTest, testParallelLookAt) {
 	Camera camera;
 	camera.setPosition(glm::vec3(0.0, 10.0, 0.0));
 	camera.lookAt(glm::vec3(0.0), glm::up);
-	camera.update(0l);
+	camera.update(0.0);
 	const glm::vec4 invecs[6] = {
 		// left bottom, right bottom, right top
 		glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f,  1.0f, 0.0f, 1.0f),
@@ -109,7 +109,7 @@ TEST_F(CameraTest, testCameraFrustumCullingPerspective) {
 	camera.setMode(CameraMode::Perspective);
 	camera.setPosition(glm::vec3(0.1, 1.0, 0.1));
 	camera.lookAt(glm::vec3(0.0), glm::forward);
-	camera.update(0l);
+	camera.update(0.0);
 	const math::Frustum& frustum = camera.frustum();
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
@@ -122,7 +122,7 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	camera.setMode(CameraMode::Orthogonal);
 	camera.setPosition(glm::vec3(0.1, 1.0, 0.1));
 	camera.lookAt(glm::vec3(0.0), glm::forward);
-	camera.update(0l);
+	camera.update(0.0);
 	const math::Frustum& frustum = camera.frustum();
 	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
 			glm::to_string(camera.aabb().getLowerCorner()).c_str(),

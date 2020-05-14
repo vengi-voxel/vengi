@@ -243,7 +243,7 @@ public:
 	 */
 	glm::vec3 screenToWorld(const glm::vec3& screenPos) const;
 
-	void update(double deltaFrameSeconds = 0.0);
+	void update(double deltaFrameSeconds);
 
 	/**
 	 * @brief Split the current frustum by @c bufSize steps
@@ -416,7 +416,7 @@ inline Camera uiCamera(const glm::ivec2& position, const glm::ivec2& frameBuffer
 	camera.init(position, frameBufferSize, windowSize);
 	camera.setNearPlane(-1.0f);
 	camera.setFarPlane(1.0f);
-	camera.update();
+	camera.update(0.0);
 	return camera;
 }
 

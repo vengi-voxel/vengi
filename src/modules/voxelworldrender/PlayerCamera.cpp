@@ -31,13 +31,13 @@ void PlayerCamera::toggleCameraType() {
 void PlayerCamera::setCameraFirstPerson() {
 	_camera.setRotationType(video::CameraRotationType::Eye);
 	_camera.setType(video::CameraType::FirstPerson);
-	_camera.update();
+	_camera.update(0.0);
 }
 
 void PlayerCamera::setCameraTarget() {
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setType(video::CameraType::Free);
-	_camera.update();
+	_camera.update(0.0);
 }
 
 bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
@@ -49,7 +49,7 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 	_camera.setPosition(_cameraPosition);
 	_camera.setTarget(glm::vec3(0.0f));
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	_camera.update();
+	_camera.update(0.0);
 
 	return true;
 }
@@ -104,7 +104,7 @@ void PlayerCamera::update(const glm::vec3& entityPosition, double nowSeconds, do
 
 	_camera.setTargetDistance(_targetDistance);
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
-	_camera.update();
+	_camera.update(0.0);
 }
 
 }

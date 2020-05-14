@@ -118,7 +118,7 @@ void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
 	io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
-	_camera.update();
+	_camera.update(0.0);
 	video::ScopedShader scoped(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());
 	_shader.setModel(glm::mat4(1.0f));
