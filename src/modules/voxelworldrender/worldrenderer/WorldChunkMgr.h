@@ -21,7 +21,6 @@ protected:
 		double scaleSeconds = 0.0;
 		math::AABB<int> _aabb = {glm::ivec3(0), glm::ivec3(0)};
 		voxel::Mesh mesh;
-		size_t _indexSize = sizeof(voxel::IndexType);
 
 		video::Buffer _buffer;
 		int32_t _vbo = -1;

@@ -1,6 +1,7 @@
 set(SRCS
 	IProgressMonitor.h
 	EMailValidator.h EMailValidator.cpp
+	BufferUtil.cpp BufferUtil.h
 	Console.h Console.cpp
 	KeybindingParser.h KeybindingParser.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
@@ -14,6 +15,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math)
 set(TEST_SRCS
 	tests/KeybindingParserTest.cpp
 	tests/KeybindingHandlerTest.cpp
+	tests/BufferUtilTest.cpp
 	tests/EMailValidatorTest.cpp
 	tests/IncludeUtilTest.cpp
 )

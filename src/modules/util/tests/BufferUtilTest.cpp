@@ -3,9 +3,9 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "video/BufferUtil.h"
+#include "util/BufferUtil.h"
 
-namespace video {
+namespace util {
 
 class BufferUtilTest : public core::AbstractTest {
 };

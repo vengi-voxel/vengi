@@ -21,7 +21,7 @@ set(FILES
 	shared/palette-nippon.lua
 	shared/palette-nippon.png
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES math image commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES util image commonlua)
 set(MARCH native)
 #set(MARCH generic)
 # http://christian-seiler.de/projekte/fpmath/

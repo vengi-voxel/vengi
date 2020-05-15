@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "core/Assert.h"
+#include "util/BufferUtil.h"
 #include <glm/vector_relational.hpp>
 #include <glm/common.hpp>
 
@@ -19,6 +20,72 @@ Mesh::Mesh(int vertices, int indices, bool mayGetResized) : _mayGetResized(mayGe
 	if (indices > 0) {
 		_vecIndices.reserve(indices);
 	}
+}
+
+Mesh::Mesh(Mesh&& other) {
+	_vecIndices = std::move(other._vecIndices);
+	_vecVertices = std::move(other._vecVertices);
+	_compressedIndices = other._compressedIndices;
+	other._compressedIndices = nullptr;
+	_compressedIndexSize = other._compressedIndexSize;
+	other._compressedIndexSize = 0u;
+	_offset = std::move(other._offset);
+	_mins = std::move(other._mins);
+	_maxs = std::move(other._maxs);
+	_mayGetResized = other._mayGetResized;
+}
+
+Mesh::Mesh(const Mesh& other) {
+	_vecIndices = other._vecIndices;
+	_vecVertices = other._vecVertices;
+	_compressedIndexSize = other._compressedIndexSize;
+	if (other._compressedIndices != nullptr) {
+		_compressedIndices = (uint8_t*)core_malloc(_vecIndices.size() * _compressedIndexSize);
+		core_memcpy(_compressedIndices, other._compressedIndices, _vecIndices.size() * _compressedIndexSize);
+	} else {
+		_compressedIndices = nullptr;
+	}
+	_offset = other._offset;
+	_mins = other._mins;
+	_maxs = other._maxs;
+	_mayGetResized = other._mayGetResized;
+}
+
+Mesh& Mesh::operator=(const Mesh& other) {
+	_vecIndices = other._vecIndices;
+	_vecVertices = other._vecVertices;
+	_compressedIndexSize = other._compressedIndexSize;
+	core_free(_compressedIndices);
+	if (other._compressedIndices != nullptr) {
+		_compressedIndices = (uint8_t*)core_malloc(_vecIndices.size() * _compressedIndexSize);
+		core_memcpy(_compressedIndices, other._compressedIndices, _vecIndices.size() * _compressedIndexSize);
+	} else {
+		_compressedIndices = nullptr;
+	}
+	_offset = other._offset;
+	_mins = other._mins;
+	_maxs = other._maxs;
+	_mayGetResized = other._mayGetResized;
+	return *this;
+}
+
+Mesh& Mesh::operator=(Mesh&& other) {
+	_vecIndices = std::move(other._vecIndices);
+	_vecVertices = std::move(other._vecVertices);
+	core_free(_compressedIndices);
+	_compressedIndices = other._compressedIndices;
+	other._compressedIndices = nullptr;
+	_compressedIndexSize = other._compressedIndexSize;
+	other._compressedIndexSize = 4u;
+	_offset = std::move(other._offset);
+	_mins = std::move(other._mins);
+	_maxs = std::move(other._maxs);
+	_mayGetResized = other._mayGetResized;
+	return *this;
+}
+
+Mesh::~Mesh() {
+	core_free(_compressedIndices);
 }
 
 const IndexArray& Mesh::getIndexVector() const {
@@ -146,6 +213,13 @@ void Mesh::removeUnusedVertices() {
 		_vecIndices[triCt] = newPos[_vecIndices[triCt]];
 	}
 	_vecIndices.resize(indices);
+}
+
+void Mesh::compressIndices() {
+	const size_t maxSize = _vecIndices.size() * sizeof(voxel::IndexArray::value_type);
+	core_free(_compressedIndices);
+	_compressedIndices = (uint8_t*)core_malloc(maxSize);
+	util::indexCompress(&_vecIndices.front(), maxSize, _compressedIndexSize, _compressedIndices, maxSize);
 }
 
 bool Mesh::operator<(const Mesh& rhs) const {

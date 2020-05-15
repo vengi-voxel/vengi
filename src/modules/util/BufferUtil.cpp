@@ -8,7 +8,7 @@
 #include "core/StandardLib.h"
 #include "math/Functions.h"
 
-namespace video {
+namespace util {
 
 static uint32_t maxIndexValue(const uint8_t *in, size_t inSize, size_t inIndexSize) {
 	uint32_t v = 0u;

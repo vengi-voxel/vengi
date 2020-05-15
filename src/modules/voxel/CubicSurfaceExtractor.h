@@ -426,6 +426,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	}
 
 	result->removeUnusedVertices();
+	result->compressIndices();
 }
 
 }

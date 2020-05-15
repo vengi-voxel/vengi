@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdint.h>
 
-namespace video {
+namespace util {
 
 /**
  * @brief Compresses the given indices to a smaller index type

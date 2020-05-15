@@ -19,6 +19,12 @@ class Mesh {
 public:
 	Mesh(int vertices, int indices, bool mayGetResized = false);
 	Mesh() : Mesh(128, 128, true) {}
+	Mesh(Mesh&& other);
+	Mesh(const Mesh& other);
+	~Mesh();
+
+	Mesh& operator=(const Mesh& other);
+	Mesh& operator=(Mesh&& other);
 
 	/**
 	 * @brief Calculate the memory amount this mesh is using
@@ -47,19 +53,33 @@ public:
 	void clear();
 	bool isEmpty() const;
 	void removeUnusedVertices();
+	void compressIndices();
 
 	const glm::ivec3& mins() const;
 	const glm::ivec3& maxs() const;
+
+	const uint8_t* compressedIndices() const;
+	size_t compressedIndexSize() const;
 
 	bool operator<(const Mesh& rhs) const;
 private:
 	alignas(16) IndexArray _vecIndices;
 	alignas(16) VertexArray _vecVertices;
+	uint8_t *_compressedIndices = nullptr;
+	size_t _compressedIndexSize = 0u;
 	glm::ivec3 _offset { 0 };
 	glm::ivec3 _mins { 0 };
 	glm::ivec3 _maxs { 0 };
 	bool _mayGetResized;
 };
+
+inline const uint8_t* Mesh::compressedIndices() const {
+	return _compressedIndices;
+}
+
+inline size_t Mesh::compressedIndexSize() const {
+	return _compressedIndexSize;
+}
 
 inline const glm::ivec3& Mesh::mins() const {
 	return _mins;
