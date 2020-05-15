@@ -239,7 +239,7 @@ void MapView::beforeUI() {
 	});
 	_action.update(nowSeconds(), _entity);
 	const double speed = _entity->attrib().current(attrib::Type::SPEED);
-	_camera.update(_entity->position(), _nowSeconds, speed);
+	_camera.update(_entity->position(), _nowSeconds, _deltaFrameSeconds, speed);
 
 	if (_updateWorld) {
 		core_trace_scoped(UpdateWorld);

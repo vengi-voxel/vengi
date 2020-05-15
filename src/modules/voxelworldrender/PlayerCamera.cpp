@@ -72,7 +72,7 @@ void PlayerCamera::rotate(float pitch, float turn, float speed) {
 	}
 }
 
-void PlayerCamera::update(const glm::vec3& entityPosition, double nowSeconds, double speed) {
+void PlayerCamera::update(const glm::vec3& entityPosition, double nowSeconds, double deltaFrameSeconds, double speed) {
 	core_trace_scoped(UpdatePlayerCamera);
 	if (_zoomIn.pressed()) {
 		_zoomIn.execute(nowSeconds, 0.02, [&] () {
@@ -104,7 +104,7 @@ void PlayerCamera::update(const glm::vec3& entityPosition, double nowSeconds, do
 
 	_camera.setTargetDistance(_targetDistance);
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
-	_camera.update(0.0);
+	_camera.update(deltaFrameSeconds);
 }
 
 }

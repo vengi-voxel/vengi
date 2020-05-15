@@ -48,7 +48,7 @@ public:
 	void construct();
 	bool init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
 	void shutdown();
-	void update(const glm::vec3& entityPosition, double nowSeconds, double speed);
+	void update(const glm::vec3& entityPosition, double nowSeconds, double deltaFrameSeconds, double speed);
 
 	void setFieldOfView(float fieldOfView);
 	void rotate(float pitch, float turn, float speed);
