@@ -86,7 +86,7 @@ void PlayerCamera::update(const glm::vec3& entityPosition, double nowSeconds, do
 
 	// TODO: fix this magic number with the real character eye height.
 	static const glm::vec3 eye(0.0f, 1.8f, 0.0f);
-	const glm::vec3 targetpos = entityPosition + eye;
+	const glm::vec3 targetpos = glm::mix(_camera.target(), entityPosition + eye, deltaFrameSeconds * 10.0);
 	_camera.setTarget(targetpos);
 
 	if (_pendingSpeed > 0.0f) {
