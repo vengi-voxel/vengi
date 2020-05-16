@@ -101,10 +101,10 @@ struct TCall {
     TCall(const TString& pCaller, const TString& pCallee) : caller(pCaller), callee(pCallee) { }
     TString caller;
     TString callee;
-    bool visited;
-    bool currentPath;
-    bool errorGiven;
-    int calleeBodyPosition;
+    bool visited = false;
+    bool currentPath = false;
+    bool errorGiven = false;
+    int calleeBodyPosition = 0;
 };
 
 // A generic 1-D range.
