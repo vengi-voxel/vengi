@@ -189,9 +189,10 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	_shadow.bind(video::TextureUnit::One);
 	_colorTexture.bind(video::TextureUnit::Zero);
 
-	// render reflection and refraction buffers
-	drawCallsWorld += renderClippingPlanes(camera);
-
+	if (_water->boolVal()) {
+		// render reflection and refraction buffers
+		drawCallsWorld += renderClippingPlanes(camera);
+	}
 	// render everything into the framebuffer
 	_frameBuffer.bind(true);
 	drawCallsWorld += renderAll(camera);
@@ -263,11 +264,13 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_waterShader.setFar(camera.farPlane());
 	_waterShader.setNear(camera.nearPlane());
 	_skybox.bind(video::TextureUnit::Two);
-	_reflectionBuffer.texture()->bind(video::TextureUnit::Three);
-	_refractionBuffer.texture()->bind(video::TextureUnit::Four);
 	_distortionTexture->bind(video::TextureUnit::Five);
 	_normalTexture->bind(video::TextureUnit::Six);
-	_refractionBuffer.texture(video::FrameBufferAttachment::Depth)->bind(video::TextureUnit::Seven);
+	if (_water->boolVal()) {
+		_reflectionBuffer.texture()->bind(video::TextureUnit::Three);
+		_refractionBuffer.texture()->bind(video::TextureUnit::Four);
+		_refractionBuffer.texture(video::FrameBufferAttachment::Depth)->bind(video::TextureUnit::Seven);
+	}
 	_waterShader.setViewprojection(camera.viewProjectionMatrix());
 	if (_shadowMap->boolVal()) {
 		_waterShader.setDepthsize(glm::vec2(_shadow.dimension()));
@@ -314,6 +317,7 @@ int WorldRenderer::renderEntityDetails(const video::Camera& camera) {
 
 void WorldRenderer::construct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
+	_water = core::Var::getSafe(cfg::ClientWater);
 	_entityRenderer.construct();
 }
 

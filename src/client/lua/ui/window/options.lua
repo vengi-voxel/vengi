@@ -8,6 +8,7 @@ function options()
 		gui.group('Graphic', function()
 			gui.varCheckbox('Fog', 'cl_fog')
 			gui.varCheckbox('Shadow', 'cl_shadowmap')
+			gui.varCheckbox('Water effects', 'cl_water')
 			-- TODO: combobox with valid resolutions
 			gui.varStr('Width', 'cl_width')
 			gui.varStr('Height', 'cl_height')

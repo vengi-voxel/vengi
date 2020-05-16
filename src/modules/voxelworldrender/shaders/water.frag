@@ -8,11 +8,13 @@ uniform float u_time;
 uniform float u_near;
 uniform float u_far;
 uniform samplerCube u_cubemap;
-uniform sampler2D u_reflection;
-uniform sampler2D u_refraction;
 uniform sampler2D u_distortion;
 uniform sampler2D u_normalmap;
+#if cl_water
+uniform sampler2D u_reflection;
+uniform sampler2D u_refraction;
 uniform sampler2D u_depthmap;
+#endif
 
 #include "_fog.frag"
 #include "_shadowmap.frag"
@@ -41,15 +43,17 @@ vec2 clipSpaceToTexCoords(vec4 clipSpace){
 }
 
 void main(void) {
-	vec2 ndc = clipSpaceToTexCoords(v_clipspace);
+	float moveFactor = fract(u_time / 40000.0);
+	vec2 distortedTexCoords = $texture2D(u_distortion, c_wavesizefactor * vec2(v_uv.x + moveFactor, v_uv.y)).rg * 0.01;
+	distortedTexCoords = v_uv + vec2(distortedTexCoords.x, distortedTexCoords.y + moveFactor);
 
+#if cl_water
+	vec2 ndc = clipSpaceToTexCoords(v_clipspace);
 	float floorDistance = depthToDistance($texture2D(u_depthmap, ndc).r);
 	float waterDistance = depthToDistance(gl_FragCoord.z);
 	float depthWater = floorDistance - waterDistance;
-
-	float moveFactor = fract(u_time / 40000.0);
-	vec2 distortedTexCoords = $texture2D(u_distortion, c_wavesizefactor * vec2(v_uv.x + moveFactor, v_uv.y)).rg * 0.01;
-	distortedTexCoords = v_uv + vec2(distortedTexCoords.x, distortedTexCoords.y + moveFactor) * clamp(depthWater, 0.0, 1.0) ;
+	distortedTexCoords *= clamp(depthWater, 0.0, 1.0) ;
+#endif
 
 	// b component of the normal map is upward (so our y)
 	// r and g are mapped onto x and z and converted to allow negative values
@@ -70,6 +74,7 @@ void main(void) {
 
 	vec2 totalDistortion = ($texture2D(u_distortion, distortedTexCoords).rg * 2.0 - 1.0) * c_wavestrength;
 
+#if cl_water
 	vec2 refractTexcoords = ndc;
 	refractTexcoords += totalDistortion;
 	refractTexcoords = clamp(refractTexcoords, 0.001, 0.999);
@@ -80,15 +85,22 @@ void main(void) {
 	vec4 reflectColor = $texture2D(u_reflection, reflectTexcoords);
 	float refractiveFactor = dot(I, normal);
 	refractiveFactor = clamp(pow(refractiveFactor, 4.0), 0.0, 1.0);
+	vec4 waterColor = mix(reflectColor, refractColor, refractiveFactor);
+#else
+	vec4 waterColor = vec4(0.0, 0.0, 0.0, 1.0);
+#endif
 
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
 	vec4 lightspacepos = vec4(v_lightspacepos.x + totalDistortion.x, v_lightspacepos.y, v_lightspacepos.z + totalDistortion.y, 1.0);
 	vec3 shadowColor = shadow(lightspacepos, bias, mix(cubeColor, vec3(0.0, 0.2, 0.5), 0.01), diffuse, ambientColor);
-	vec4 waterColor = mix(reflectColor, refractColor, refractiveFactor);
 	o_color = fog(v_pos.xyz, mix(shadowColor, waterColor.xyz, 0.5), 0.5);
 	// add a blue tint and the specular highlights
 	const vec3 tint = vec3(0.0, 0.3, 0.5);
 	vec3 waterColorTint = tint * checker(v_pos.xz);
 	o_color = mix(o_color, vec4(waterColorTint, 1.0), 0.2) + vec4(lightColor, 0.0);
+#if cl_water
 	o_color.a = clamp(depthWater / 5.0, 0.0, 1.0);
+#else
+	o_color.a = 0.6;
+#endif
 }
