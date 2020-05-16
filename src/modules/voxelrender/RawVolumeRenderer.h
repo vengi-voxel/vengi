@@ -55,7 +55,7 @@ protected:
 	render::Shadow _shadow;
 
 	core::VarPtr _meshSize;
-	core::VarPtr _shadowVar;
+	core::VarPtr _shadowMap;
 
 	glm::vec3 _diffuseColor = frontend::diffuseColor;
 	glm::vec3 _ambientColor = frontend::ambientColor;

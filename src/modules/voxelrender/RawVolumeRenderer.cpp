@@ -63,7 +63,7 @@ bool RawVolumeRenderer::init() {
 		Log::error("Failed to init shadowmap shader");
 		return false;
 	}
-	_shadowVar = core::Var::getSafe(cfg::ClientShadowMap);
+	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		_model[idx] = glm::mat4(1.0f);
@@ -388,7 +388,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::ScopedState scopedCullFace(video::State::CullFace);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
-	if (_shadowVar->boolVal()) {
+	if (_shadowMap->boolVal()) {
 		_shadow.update(camera, true);
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
@@ -421,7 +421,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	if (_voxelShader.isDirty()) {
 		_voxelShader.setMaterialblock(_materialBlock);
 		_voxelShader.setModel(glm::mat4(1.0f));
-		if (_shadowVar->boolVal()) {
+		if (_shadowMap->boolVal()) {
 			_voxelShader.setShadowmap(video::TextureUnit::One);
 		}
 		_voxelShader.setDiffuseColor(_diffuseColor);
@@ -429,7 +429,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		_voxelShader.markClean();
 	}
 	_voxelShader.setViewprojection(camera.viewProjectionMatrix());
-	if (_shadowVar->boolVal()) {
+	if (_shadowMap->boolVal()) {
 		_voxelShader.setDepthsize(glm::vec2(_shadow.dimension()));
 		_voxelShader.setCascades(_shadow.cascades());
 		_voxelShader.setDistances(_shadow.distances());
