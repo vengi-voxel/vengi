@@ -1,7 +1,7 @@
 local gui = require "ui.shared"
 local style = require "ui.style"
 
-local graphicHeight = (8 + style.rowHeight) * 8
+local graphicHeight = (8 + style.rowHeight) * 9
 function options()
 	gui.windowTitle('GAME SETTINGS', 600, 800, function ()
 		ui.layoutRow('dynamic', graphicHeight, 1)
