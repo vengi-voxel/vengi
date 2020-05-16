@@ -216,7 +216,7 @@ void Mesh::removeUnusedVertices() {
 }
 
 void Mesh::compressIndices() {
-	const size_t maxSize = _vecIndices.size() * sizeof(voxel::IndexArray::value_type);
+	const size_t maxSize = _vecIndices.size() * sizeof(voxel::IndexType);
 	core_free(_compressedIndices);
 	_compressedIndices = (uint8_t*)core_malloc(maxSize);
 	util::indexCompress(&_vecIndices.front(), maxSize, _compressedIndexSize, _compressedIndices, maxSize);
