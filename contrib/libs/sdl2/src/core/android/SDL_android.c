@@ -44,6 +44,8 @@
 #include "../../haptic/android/SDL_syshaptic_c.h"
 
 #include <android/log.h>
+#include <android/configuration.h>
+#include <android/asset_manager_jni.h>
 #include <sys/system_properties.h>
 #include <pthread.h>
 #include <sys/types.h>
@@ -125,6 +127,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
         JNIEnv *env, jclass cls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeLocaleChanged)(
+        JNIEnv *env, jclass cls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
         JNIEnv *env, jclass cls);
 
@@ -178,6 +183,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativeAccel",              "(FFF)V", SDL_JAVA_INTERFACE(onNativeAccel) },
     { "onNativeClipboardChanged",   "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
     { "nativeLowMemory",            "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
+    { "onNativeLocaleChanged",      "()V", SDL_JAVA_INTERFACE(onNativeLocaleChanged) },
     { "nativeSendQuit",             "()V", SDL_JAVA_INTERFACE(nativeSendQuit) },
     { "nativeQuit",                 "()V", SDL_JAVA_INTERFACE(nativeQuit) },
     { "nativePause",                "()V", SDL_JAVA_INTERFACE(nativePause) },
@@ -353,6 +359,12 @@ static SDL_bool bHasEnvironmentVariables;
 
 static SDL_atomic_t bPermissionRequestPending;
 static SDL_bool bPermissionRequestResult;
+
+/* Android AssetManager */
+static void Internal_Android_Create_AssetManager(void);
+static void Internal_Android_Destroy_AssetManager(void);
+static AAssetManager *asset_manager = NULL;
+static jobject javaAssetManagerRef = 0;
 
 /*******************************************************************************
                  Functions called by JNI
@@ -1134,6 +1146,15 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
 
+/* Locale
+ * requires android:configChanges="layoutDirection|locale" in AndroidManifest.xml */
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeLocaleChanged)(
+                                    JNIEnv *env, jclass cls)
+{
+    SDL_SendAppEvent(SDL_LOCALECHANGED);
+}
+
+
 /* Send Quit event to "SDLThread" thread */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
                                     JNIEnv *env, jclass cls)
@@ -1174,6 +1195,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
         SDL_DestroySemaphore(Android_ResumeSem);
         Android_ResumeSem = NULL;
     }
+
+    Internal_Android_Destroy_AssetManager();
 
     str = SDL_GetError();
     if (str && str[0]) {
@@ -1795,6 +1818,53 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
     }
 
     return SDL_FALSE;
+}
+
+static void Internal_Android_Create_AssetManager() {
+
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+    JNIEnv *env = Android_JNI_GetEnv();
+    jmethodID mid;
+    jobject context;
+    jobject javaAssetManager;
+
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return;
+    }
+
+    /* context = SDLActivity.getContext(); */
+    context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+
+    /* javaAssetManager = context.getAssets(); */
+    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
+            "getAssets", "()Landroid/content/res/AssetManager;");
+    javaAssetManager = (*env)->CallObjectMethod(env, context, mid);
+
+    /**
+     * Given a Dalvik AssetManager object, obtain the corresponding native AAssetManager
+     * object.  Note that the caller is responsible for obtaining and holding a VM reference
+     * to the jobject to prevent its being garbage collected while the native object is
+     * in use.
+     */
+    javaAssetManagerRef = (*env)->NewGlobalRef(env, javaAssetManager);
+    asset_manager = AAssetManager_fromJava(env, javaAssetManagerRef);
+
+    if (asset_manager == NULL) {
+        (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
+        Android_JNI_ExceptionOccurred(SDL_TRUE);
+    }
+
+    LocalReferenceHolder_Cleanup(&refs);
+}
+
+static void Internal_Android_Destroy_AssetManager() {
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    if (asset_manager) {
+        (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
+        asset_manager = NULL;
+    }
 }
 
 static int Internal_Android_JNI_FileOpen(SDL_RWops *ctx)
@@ -2794,6 +2864,64 @@ SDL_bool Android_JNI_RequestPermission(const char *permission)
 		SDL_Delay(10);
 	}
 	return bPermissionRequestResult;
+}
+
+int Android_JNI_GetLocale(char *buf, size_t buflen)
+{
+    AConfiguration *cfg;
+
+    SDL_assert(buflen > 6);
+
+    /* Need to re-create the asset manager if locale has changed (SDL_LOCALECHANGED) */
+    Internal_Android_Destroy_AssetManager();
+
+    if (asset_manager == NULL) {
+        Internal_Android_Create_AssetManager();
+    }
+
+    if (asset_manager == NULL) {
+        return -1;
+    }
+
+    cfg = AConfiguration_new();
+    if (cfg == NULL) {
+        return -1;
+    }
+
+    {
+        char language[2] = {};
+        char country[2] = {};
+        size_t id = 0;
+
+        AConfiguration_fromAssetManager(cfg, asset_manager);
+        AConfiguration_getLanguage(cfg, language);
+        AConfiguration_getCountry(cfg, country);
+
+        /* copy language (not null terminated) */
+        if (language[0]) {
+            buf[id++] = language[0];
+            if (language[1]) {
+                buf[id++] = language[1];
+            }
+        }
+
+        buf[id++] = '_';
+
+        /* copy country (not null terminated) */
+        if (country[0]) {
+            buf[id++] = country[0];
+            if (country[1]) {
+                buf[id++] = country[1];
+            }
+        }
+        
+        buf[id++] = '\0';
+        SDL_assert(id <= buflen);
+    }
+
+    AConfiguration_delete(cfg);
+
+    return 0;
 }
 
 #endif /* __ANDROID__ */
