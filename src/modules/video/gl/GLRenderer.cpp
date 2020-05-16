@@ -759,6 +759,9 @@ void deleteProgram(Id& id) {
 	core_assert_msg(glIsProgram((GLuint)id), "%u is no valid program object", (unsigned int)id);
 	glDeleteProgram((GLuint)id);
 	checkError();
+	if (_priv::s.programHandle == id) {
+		_priv::s.programHandle = InvalidId;
+	}
 	id = InvalidId;
 }
 
