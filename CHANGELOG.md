@@ -10,6 +10,10 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
    - Made some commands available to the ui
    - Tweak `thicken` command
    - Updated default tree generation ui values
+   - Save layers to all supported formats
+   - Fixed tree generation issue for some tree types
+   - Changed default reference position to be at the center bottom
+   - Reduced max supported volume size
 
  General:
    - Print stacktraces on asserts
@@ -20,6 +24,12 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
    - Reorganized some modules to speed up compilation and linking times
    - Improved audio support
    - Fixed timing issues
+   - Fixed invalid GL states after deleting objects
+
+ VoxConvert:
+   - Added a new tool to convert different voxel volumes between supported formats
+     Currently supported are cub (CubeWorld), vox (MagicaVoxel), vmx (VoxEdit Sandbox), binvox
+     and qb/qbt (Qubicle)
 
  Client:
    - Added footstep and ambience sounds
