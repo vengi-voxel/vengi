@@ -4,6 +4,7 @@
 
 #include "VoxFileFormat.h"
 #include "voxel/MaterialColor.h"
+#include "Loader.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Color.h"
@@ -45,9 +46,7 @@ RawVolume* VoxFileFormat::load(const io::FilePtr& file) {
 		return nullptr;
 	}
 	RawVolume* mergedVolume = merge(volumes);
-	for (auto& v : volumes) {
-		delete v.volume;
-	}
+	voxelformat::clearVolumes(volumes);
 	return mergedVolume;
 }
 
