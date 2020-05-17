@@ -17,6 +17,8 @@ Join our [discord Server](https://discord.gg/AgjCPXy) and help developing the ga
 
 You can find some old and most likely outdated videos in my [youtube channel](https://www.youtube.com/channel/UCbnJUW0d4tYvdmsJ-R6iUpA) or the media channel of the discord server.
 
+Download latest windows binaries at [github action artifacts](https://github.com/mgerhardy/engine/actions).
+
 ## Tools
 
 * [The voxel editor](src/tools/voxedit/README.md)
