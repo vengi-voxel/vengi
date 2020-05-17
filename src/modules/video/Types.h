@@ -331,7 +331,6 @@ enum class TextureFormat {
 
 enum class Spec {
 	UniformBufferAlignment,
-	MaxUniformBufferBindings,
 	ShaderStorageBufferOffsetAlignment,
 
 	Max
@@ -359,6 +358,8 @@ enum class Limit {
 	MaxComputeWorkGroupCountY,
 	MaxComputeWorkGroupCountZ,
 	MaxComputeWorkGroupInvocations,
+	MaxUniformBufferSize,
+	MaxUniformBufferBindings,
 
 	Max
 };

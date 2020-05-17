@@ -16,6 +16,7 @@
 #include "video/StencilConfig.h"
 #include "image/Image.h"
 #include "core/Common.h"
+#include "core/Assert.h"
 #include "core/Log.h"
 #include "core/ArrayLength.h"
 #include "core/Var.h"
@@ -1157,6 +1158,8 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 	if (size <= 0) {
 		return;
 	}
+	core_assert_msg(type != BufferType::UniformBuffer || limit(Limit::MaxUniformBufferSize) <= 0 || (int)size <= limit(Limit::MaxUniformBufferSize),
+			"Given size %i exceeds the max allowed of %i", (int)size, limit(Limit::MaxUniformBufferSize));
 	const GLuint lid = (GLuint)handle;
 	const GLenum usage = _priv::BufferModes[core::enumVal(mode)];
 	if (hasFeature(Feature::DirectStateAccess)) {

@@ -197,9 +197,13 @@ void setupLimitsAndSpecs() {
 	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBufferAlignment);
 	renderState().specs[core::enumVal(Spec::UniformBufferAlignment)] = uniformBufferAlignment;
 	checkError();
+	GLint maxUniformBufferSize;
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBufferSize);
+	renderState().limits[core::enumVal(Limit::MaxUniformBufferSize)] = maxUniformBufferSize;
+	checkError();
 	GLint maxUniformBufferBindings;
 	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformBufferBindings);
-	renderState().specs[core::enumVal(Spec::MaxUniformBufferBindings)] = maxUniformBufferBindings;
+	renderState().limits[core::enumVal(Limit::MaxUniformBufferBindings)] = maxUniformBufferBindings;
 #ifdef GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT
 	GLint shaderStorageBufferOffsetAlignment;
 	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &shaderStorageBufferOffsetAlignment);
