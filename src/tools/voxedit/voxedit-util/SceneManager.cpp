@@ -204,21 +204,6 @@ bool SceneManager::saveLayers(const core::String& dir) {
 }
 
 bool SceneManager::save(const core::String& file, bool autosave) {
-	if (file.empty()) {
-		Log::warn("No filename given for saving");
-		return false;
-	}
-	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
-	if (!filePtr->validHandle()) {
-		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
-		return false;
-	}
-	bool saved = false;
-	core::String ext = filePtr->extension();
-	if (ext.empty()) {
-		Log::warn("No file extension given for saving, assuming vox");
-		ext = "vox";
-	}
 	voxel::VoxelVolumes volumes;
 	const int layers = (int)_layerMgr.layers().size();
 	Log::debug("Trying to save %i layers", layers);
@@ -241,19 +226,23 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		return false;
 	}
 
-	if (ext == "qbt") {
-		voxel::QBTFormat f;
-		saved = f.saveGroups(volumes, filePtr);
-	} else if (ext == "vox") {
-		voxel::VoxFormat f;
-		saved = f.saveGroups(volumes, filePtr);
-	} else if (ext == "qb") {
-		voxel::QBFormat f;
-		saved = f.saveGroups(volumes, filePtr);
-	} else if (ext == "cub") {
-		voxel::CubFormat f;
-		saved = f.saveGroups(volumes, filePtr);
-	} else {
+	if (file.empty()) {
+		Log::warn("No filename given for saving");
+		return false;
+	}
+	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
+	if (!filePtr->validHandle()) {
+		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
+		return false;
+	}
+	core::String ext = filePtr->extension();
+	if (ext.empty()) {
+		Log::warn("No file extension given for saving, assuming vox");
+		ext = "vox";
+	}
+
+	bool saved = voxelformat::saveVolumeFormat(filePtr, volumes);
+	if (!saved) {
 		Log::warn("Failed to save file with unknown type: %s - saving as vox instead", ext.c_str());
 		voxel::VoxFormat f;
 		saved = f.saveGroups(volumes, filePtr);

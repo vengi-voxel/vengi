@@ -50,4 +50,32 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 	return true;
 }
 
+bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
+	if (volumes.empty()) {
+		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
+		return false;
+	}
+
+	const core::String& ext = filePtr->extension();
+	if (ext == "qbt") {
+		voxel::QBTFormat f;
+		return f.saveGroups(volumes, filePtr);
+	} else if (ext == "vox") {
+		voxel::VoxFormat f;
+		return f.saveGroups(volumes, filePtr);
+	} else if (ext == "qb") {
+		voxel::QBFormat f;
+		return f.saveGroups(volumes, filePtr);
+	} else if (ext == "cub") {
+		voxel::CubFormat f;
+		return f.saveGroups(volumes, filePtr);
+	} else {
+		Log::warn("Failed to save file with unknown type: %s - saving as vox instead", ext.c_str());
+		voxel::VoxFormat f;
+		return f.saveGroups(volumes, filePtr);
+	}
+	Log::info("Save model file %s with %i layers", filePtr->name().c_str(), (int)volumes.size());
+	return false;
+}
+
 }
