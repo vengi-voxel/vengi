@@ -29,7 +29,7 @@ voxedit thumbnailer voxconvert server client mapview:
 	cmake --build debian/build --target $@ $(CMAKEFLAGS)
 	cmake --install debian/build --component $@ --prefix debian/install/$@
 
-build-arch: voxedit thumbnailer server client mapview
+build-arch: voxedit voxconvert thumbnailer server client mapview
 
 build-indep:
 
