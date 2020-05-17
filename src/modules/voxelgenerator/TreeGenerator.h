@@ -299,13 +299,13 @@ void createTreeDomeHangingLeaves(Volume& volume, const voxelgenerator::TreeDomeH
 	const float stepWidth = glm::radians(360.0f / (float)ctx.branches);
 	float angle = random.randomf(0.0f, glm::two_pi<float>());
 	// leaves falling down
-	const int y = ctx.pos.y + ctx.trunkHeight - ctx.leavesHeight + 1;
+	const int y = ctx.pos.y + ctx.trunkHeight + 1;
 	for (int b = 0; b < ctx.branches; ++b) {
 		const float x = glm::cos(angle);
 		const float z = glm::sin(angle);
 		const int randomLength = random.random(ctx.hangingLeavesLengthMin, ctx.hangingLeavesLengthMax);
 
-		const glm::ivec3 start(ctx.pos.x - x * (ctx.leavesWidth - 1) / 2, y, ctx.pos.z - z * (ctx.leavesDepth - 1) / 2);
+		const glm::ivec3 start(glm::round((float)ctx.pos.x - x * (ctx.leavesWidth - 1.0f) / 2.0f), y, glm::round((float)ctx.pos.z - z * (ctx.leavesDepth - 1.0f) / 2.0f));
 		const glm::ivec3 end(start.x, start.y - randomLength, start.z);
 		shape::createLine(volume, start, end, leavesVoxel, ctx.hangingLeavesThickness);
 
