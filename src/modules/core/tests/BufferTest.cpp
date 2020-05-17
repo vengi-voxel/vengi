@@ -8,8 +8,8 @@
 
 namespace core {
 
-template<size_t SIZE>
-::std::ostream& operator<<(::std::ostream& ostream, const Buffer<uint8_t, SIZE>& v) {
+template<class TYPE, size_t SIZE>
+::std::ostream& operator<<(::std::ostream& ostream, const Buffer<TYPE, SIZE>& v) {
 	int idx = 0;
 	for (auto i = v.begin(); i != v.end();) {
 		ostream << "'";
@@ -27,6 +27,14 @@ TEST(BufferTest, testPushBack) {
 	Buffer<uint8_t> array;
 	array.push_back(0);
 	EXPECT_EQ(1u, array.size()) << array;
+	EXPECT_EQ(32u, array.capacity()) << array;
+}
+
+TEST(BufferTest, testPushBackInt) {
+	Buffer<uint32_t> array;
+	array.push_back(1337);
+	EXPECT_EQ(1u, array.size()) << array;
+	EXPECT_EQ(1337u, array[0]) << array;
 	EXPECT_EQ(32u, array.capacity()) << array;
 }
 

@@ -141,7 +141,7 @@ public:
 
 	void push_back(const TYPE& val) {
 		checkBufferSize(_size + 1u);
-		_buffer[_size++] = val;
+		((TYPE*)_buffer)[_size++] = val;
 	}
 
 	void pop() {
@@ -150,31 +150,31 @@ public:
 	}
 
 	TYPE* data() {
-		return _buffer;
+		return (TYPE*)_buffer;
 	}
 
 	const TYPE* data() const {
-		return _buffer;
+		return (const TYPE*)_buffer;
 	}
 
 	TYPE& front() {
 		core_assert(_size > 0u);
-		return _buffer[0];
+		return ((TYPE*)_buffer)[0];
 	}
 
 	const TYPE& front() const {
 		core_assert(_size > 0u);
-		return _buffer[0];
+		return ((const TYPE*)_buffer)[0];
 	}
 
 	TYPE& back() {
 		core_assert(_size > 0u);
-		return _buffer[_size - 1u];
+		return ((TYPE*)_buffer)[_size - 1u];
 	}
 
 	const TYPE& back() const {
 		core_assert(_size > 0u);
-		return _buffer[_size - 1u];
+		return ((const TYPE*)_buffer)[_size - 1u];
 	}
 
 	void reserve(size_t size) {
@@ -207,7 +207,7 @@ public:
 			size_t s = srcIdxStart;
 			size_t t = tgtIdxStart;
 			for (; s < _size; ++s, ++t) {
-				_buffer[t] =_buffer[s];
+				((TYPE*)_buffer)[t] = ((const TYPE*)_buffer)[s];
 			}
 		}
 		newSize -= delta;
@@ -232,12 +232,12 @@ public:
 
 	inline const TYPE& operator[](size_t idx) const {
 		core_assert(idx < _size);
-		return _buffer[idx];
+		return ((const TYPE*)_buffer)[idx];
 	}
 
 	inline TYPE& operator[](size_t idx) {
 		core_assert(idx < _size);
-		return _buffer[idx];
+		return ((TYPE*)_buffer)[idx];
 	}
 };
 
