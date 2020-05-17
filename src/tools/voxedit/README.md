@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Voxel editor for large scenes.
+Voxel editor.
 
 This editor was written to have a linux voxel editor with animation support for
 my own engine and evolved into something that others might find useful, too.

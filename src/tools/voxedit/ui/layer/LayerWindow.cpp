@@ -56,11 +56,12 @@ void LayerWindow::onShow() {
 
 void LayerWindow::checkSize() {
 	if (tb::TBWidget* f = getWidgetByID("note")) {
-		if (_layerSettings.size.x < 256 && _layerSettings.size.y < 256 && _layerSettings.size.z < 256) {
+		if (_layerSettings.size.x <= MaxVolumeSize && _layerSettings.size.y <= MaxVolumeSize && _layerSettings.size.z <= MaxVolumeSize) {
 			f->setText("");
 			return;
 		}
-		f->setText(tr("Volume size can't get saved to e.g. vox file format. Max value is 255 for the size."));
+		static_assert(MaxVolumeSize == 128, "Expected the max volume size to be 128");
+		f->setText(tr("Volume size can't get saved to e.g. vox file format. Max value is 128 for the size."));
 	}
 }
 
