@@ -56,9 +56,9 @@ jobs:
             cd build
             cmake .. -DRCON=OFF -DCMAKE_BUILD_TYPE=Release
             cmake --build .
-            cmake --install . --component voxedit --prefix voxedit
-            cmake --install . --component mapview --prefix mapview
-            cmake --install . --component voxconvert --prefix voxconvert
+            cmake --install . --component voxedit --prefix voxedit-install
+            cmake --install . --component mapview --prefix mapview-install
+            cmake --install . --component voxconvert --prefix voxconvert-install
             ctest -V -C Debug -R tests-animation
             ctest -V -C Debug -R tests-computeshadertool
             ctest -V -C Debug -R tests-math
@@ -69,14 +69,14 @@ jobs:
           uses: actions/upload-artifact@v2
           with:
             name: voxedit
-            path: build/voxedit/
+            path: build/voxedit-install/
         - name: Upload the mapview artifacts
           uses: actions/upload-artifact@v2
           with:
             name: mapview
-            path: build/mapview/
+            path: build/mapview-install/
         - name: Upload the voxconvert artifacts
           uses: actions/upload-artifact@v2
           with:
             name: voxconvert
-            path: build/voxconvert/
+            path: build/voxconvert-install/
