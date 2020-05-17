@@ -28,7 +28,7 @@ private:
 	TexturePtr _colorAttachments[core::enumVal(FrameBufferAttachment::Max)];
 	RenderBufferPtr _bufferAttachments[core::enumVal(FrameBufferAttachment::Max)];
 
-	glm::ivec2 _dimension;
+	glm::ivec2 _dimension { 0 };
 
 	int32_t _viewport[4] = {0, 0, 0, 0};
 

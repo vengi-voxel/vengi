@@ -99,19 +99,26 @@ glm::vec4 FrameBuffer::uv() const {
 }
 
 void FrameBuffer::shutdown() {
+	for (int i = 0; i < lengthof(_colorAttachments); ++i) {
+		if (_colorAttachments[i]) {
+			_colorAttachments[i]->shutdown();
+			_colorAttachments[i] = TexturePtr();
+		}
+	}
+	for (int i = 0; i < lengthof(_bufferAttachments); ++i) {
+		if (_bufferAttachments[i]) {
+			_bufferAttachments[i]->shutdown();
+			_bufferAttachments[i] = RenderBufferPtr();
+		}
+	}
+
 	video::deleteFramebuffer(_fbo);
-	for (auto& e : _colorAttachments) {
-		if (!e) {
-			continue;
-		}
-		e->shutdown();
+	_clearFlag = ClearFlag::None;
+	_oldFramebuffer = InvalidId;
+	for (int i = 0; i < lengthof(_viewport); ++i) {
+		_viewport[i] = 0;
 	}
-	for (auto& e : _bufferAttachments) {
-		if (!e) {
-			continue;
-		}
-		e->shutdown();
-	}
+	_dimension = glm::ivec2(0);
 }
 
 TexturePtr FrameBuffer::texture(FrameBufferAttachment attachment) const {
