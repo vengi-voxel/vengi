@@ -25,6 +25,7 @@ bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::
 		return false;
 	}
 	if ((int)localVolumes.size() != 1) {
+		voxelformat::clearVolumes(localVolumes);
 		Log::error("More than one volume/layer found in %s", file->name().c_str());
 		return false;
 	}
