@@ -608,7 +608,9 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMe
 	_dirty = false;
 	_result = voxel::PickResult();
 	setCursorPosition(cursorPosition(), true);
-	setReferencePosition(region.getCenter());
+	glm::ivec3 center = region.getCenter();
+	center.y = region.getLowerY();
+	setReferencePosition(center);
 	resetLastTrace();
 	return true;
 }
@@ -624,7 +626,9 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	core_assert_always(_layerMgr.validLayers() == 0);
 	core_assert_always(_layerMgr.addLayer(name.c_str(), true, new voxel::RawVolume(region)) != -1);
 	core_assert_always(_layerMgr.validLayers() == 1);
-	setReferencePosition(region.getCenter());
+	glm::ivec3 center = region.getCenter();
+	center.y = region.getLowerY();
+	setReferencePosition(center);
 	_layerMgr.findNewActiveLayer();
 	resetSceneState();
 	return true;
@@ -1973,7 +1977,9 @@ void SceneManager::onActiveLayerChanged(int old, int active) {
 	const voxel::Region& region = volume->region();
 	updateGridRenderer(region);
 	if (!region.containsPoint(referencePosition())) {
-		setReferencePosition(region.getCenter());
+		glm::ivec3 center = region.getCenter();
+		center.y = region.getLowerY();
+		setReferencePosition(center);
 	}
 	if (!region.containsPoint(cursorPosition())) {
 		setCursorPosition(volume->region().getCenter());
