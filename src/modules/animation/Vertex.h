@@ -12,7 +12,7 @@ namespace animation {
 /**
  * @ingroup Animation
  */
-struct Vertex {
+struct alignas(16) Vertex {
 	glm::vec3 pos;
 	uint8_t colorIndex;
 	uint8_t boneId;
