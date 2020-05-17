@@ -17,6 +17,7 @@ set(SRCS
 	io/IOResource.h
 
 	collection/Array.h
+	collection/Buffer.h
 	collection/ConcurrentQueue.h
 	collection/ConcurrentSet.h
 	collection/DynamicArray.h
@@ -99,6 +100,7 @@ set(TEST_SRCS
 	tests/AbstractTest.cpp
 	tests/AppTest.cpp
 	tests/ArrayTest.cpp
+	tests/BufferTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ColorTest.cpp
 	tests/CommandTest.cpp

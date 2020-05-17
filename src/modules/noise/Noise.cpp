@@ -7,6 +7,7 @@
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#include "core/collection/Buffer.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/trigonometric.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -57,7 +58,7 @@ int32_t Noise::intValueNoise(const glm::ivec3& pos, int32_t seed) const {
 	constexpr int32_t ygen = 31337;
 	constexpr int32_t zgen = 6971;
 	constexpr int32_t fixedseed = 1013;
-	int32_t n = (xgen * pos.x + ygen * pos.y + zgen * pos.z + fixedseed * seed) & std::numeric_limits<int32_t>::max();
+	int32_t n = (xgen * pos.x + ygen * pos.y + zgen * pos.z + fixedseed * seed) & (std::numeric_limits<int32_t>::max)();
 	n = (n >> 13) ^ n;
 	return (n * (n * n * 60493 + 19990303) + 1376312589) & (std::numeric_limits<int32_t>::max)();
 }
@@ -165,12 +166,11 @@ void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persiste
 		_shader.seamlessNoise(buffer, size * size * components, size, components, octaves, persistence, amplitude, workSize);
 		return;
 	}
-	std::vector<uint8_t> bufferChannel;
-	bufferChannel.reserve(size * size);
+	core::Buffer<uint8_t> bufferChannel(size * size);
 	const float pi2 = glm::two_pi<float>();
 	const float d = 1.0f / size;
 	for (int channel = 0; channel < components; ++channel) {
-		// seamless noise: http://www.gamedev.net/blog/33/entry-2138456-seamless-noise/
+		// seamless noise: https://www.gamedev.net/blog/33/entry-2138456-seamless-noise/
 		float s = 0.0f;
 		for (int x = 0; x < size; x++, s += d) {
 			const float s_pi2 = s * pi2;
