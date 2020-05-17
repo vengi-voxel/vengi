@@ -83,6 +83,7 @@ void Viewport::onResized(int oldw, int oldh) {
 	const glm::ivec2 windowSize(int(frameBufferSize.x / scaleFactor + 0.5f), int(frameBufferSize.y / scaleFactor + 0.5f));
 	_controller.onResize(frameBufferSize, windowSize);
 	_frameBuffer.shutdown();
+	_frameBufferTexture.shutdown();
 	video::FrameBufferConfig cfg;
 	cfg.dimension(frameBufferSize).depthBuffer(true).colorTexture(true);
 	_frameBuffer.init(cfg);

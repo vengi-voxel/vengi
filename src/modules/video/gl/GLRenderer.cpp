@@ -687,6 +687,13 @@ void deleteBuffers(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
 	}
+	for (uint8_t i = 0u; i < amount; ++i) {
+		for (int j = 0; j < lengthof(_priv::s.bufferHandle); ++j) {
+			if (_priv::s.bufferHandle[j] == ids[i]) {
+				_priv::s.bufferHandle[j] = InvalidId;
+			}
+		}
+	}
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	glDeleteBuffers((GLsizei)amount, (GLuint*)ids);
 	checkError();
@@ -815,6 +822,12 @@ void deleteTextures(uint8_t amount, Id* ids) {
 	glDeleteTextures((GLsizei)amount, (GLuint*)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
+		for (int j = 0; j < lengthof(_priv::s.textureHandle); ++j) {
+			if (_priv::s.textureHandle[j] == ids[i]) {
+				// the texture might still be bound...
+				_priv::s.textureHandle[j] = InvalidId;
+			}
+		}
 		ids[i] = InvalidId;
 	}
 }
@@ -852,13 +865,16 @@ void deleteFramebuffers(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
 	}
+	for (int i = 0; i < amount; ++i) {
+		if (ids[i] == _priv::s.framebufferHandle) {
+			bindFramebuffer(InvalidId);
+		}
+		ids[i] = InvalidId;
+	}
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	glDeleteFramebuffers((GLsizei)amount, (const GLuint*)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
-		if (ids[i] == _priv::s.framebufferHandle) {
-			_priv::s.framebufferHandle = InvalidId;
-		}
 		ids[i] = InvalidId;
 	}
 }
@@ -872,6 +888,11 @@ void genRenderbuffers(uint8_t amount, Id* ids) {
 void deleteRenderbuffers(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
+	}
+	for (uint8_t i = 0u; i < amount; ++i) {
+		if (_priv::s.renderBufferHandle == ids[i]) {
+			bindRenderbuffer(InvalidId);
+		}
 	}
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	glDeleteRenderbuffers((GLsizei)amount, (GLuint*)ids);
