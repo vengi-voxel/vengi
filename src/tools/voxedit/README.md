@@ -15,10 +15,8 @@ my own engine and evolved into something that others might find useful, too.
 
 ## Features
 
-* Large scene support
 * Load vox, qbt, qb, vxm, binvox, cub
 * Save to vox, qbt, qb, cub
-* Exporting to a lot of formats (dae, obj, fbx, gltf, ...)
 * Auto-saving
 * Console to script your modeling (CTRL+TAB cmdlist)
 * Key bindings via cfg file
