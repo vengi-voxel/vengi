@@ -23,7 +23,7 @@ DEBTGZ  = vengi_$(MAINVER).debian.tar.gz
 
 get-orig-source: ../$(ORIGTGZ)
 
-voxedit thumbnailer server client mapview:
+voxedit thumbnailer voxconvert server client mapview:
 	dh_testdir
 	cmake -H. -Bdebian/build -DCMAKE_BUILD_TYPE=Release -DSANITIZE_FLAGS= -DPKGDATADIR=/usr/share/vengi-$@/
 	cmake --build debian/build --target $@ $(CMAKEFLAGS)

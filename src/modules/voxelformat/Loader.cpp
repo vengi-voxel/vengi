@@ -78,4 +78,10 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 	return false;
 }
 
+void clearVolumes(voxel::VoxelVolumes& volumes) {
+	for (auto& v : volumes) {
+		delete v.volume;
+	}
+}
+
 }

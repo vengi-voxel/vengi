@@ -42,6 +42,19 @@ Description: Thumbnailer for voxel models
   binvox
   CubeWorld cub
 
+Package: vengi-convert
+Architecture: any
+Multi-Arch: foreign
+Recommends: vengi-voxedit vengi-thumbnailer
+Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
+Description: Converter for voxel models
+ Supported formats are:
+  Magicvoxel vox
+  Qubicle qbt and qb
+  Sandbox VoxEdit vxm
+  binvox
+  CubeWorld cub
+
 Package: vengi-server
 Architecture: any
 Multi-Arch: foreign

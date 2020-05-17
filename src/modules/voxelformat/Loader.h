@@ -11,5 +11,6 @@ namespace voxelformat {
 
 extern bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes);
 extern bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes);
+extern void clearVolumes(voxel::VoxelVolumes& volumes);
 
 }

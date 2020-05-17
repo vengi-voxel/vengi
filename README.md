@@ -29,6 +29,7 @@ Download latest windows binaries at [github action artifacts](https://github.com
 * [Shader tool](src/tools/shadertool/README.md)
 * [Compute Shader tool](src/tools/computeshadertool/README.md)
 * [Visual test applications](src/tests/README.md)
+* [Volume convert tool](src/tools/voxconvert/README.md)
 
 ## General
 

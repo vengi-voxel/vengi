@@ -58,6 +58,7 @@ jobs:
             cmake --build .
             cmake --install . --component voxedit --prefix voxedit
             cmake --install . --component mapview --prefix mapview
+            cmake --install . --component voxconvert --prefix voxconvert
             ctest -V -C Debug -R tests-animation
             ctest -V -C Debug -R tests-computeshadertool
             ctest -V -C Debug -R tests-math
@@ -68,9 +69,14 @@ jobs:
           uses: actions/upload-artifact@v2
           with:
             name: voxedit
-            path: build/voxedit
+            path: build/voxedit/
         - name: Upload the mapview artifacts
           uses: actions/upload-artifact@v2
           with:
             name: mapview
-            path: build/mapview
+            path: build/mapview/
+        - name: Upload the voxconvert artifacts
+          uses: actions/upload-artifact@v2
+          with:
+            name: voxconvert
+            path: build/voxconvert/

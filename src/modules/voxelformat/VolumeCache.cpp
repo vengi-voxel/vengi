@@ -31,17 +31,14 @@ voxel::RawVolume* VolumeCache::loadVolume(const char* fullPath) {
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(file, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());
-		for (auto& v : volumes) {
-			delete v.volume;
-		}
+		voxelformat::clearVolumes(volumes);
 		core::ScopedLock lock(_mutex);
 		_volumes.put(filename, nullptr);
 		return nullptr;
 	}
 	voxel::RawVolume* v = volumes.merge();
-	for (auto& v : volumes) {
-		delete v.volume;
-	}
+	voxelformat::clearVolumes(volumes);
+
 	core::ScopedLock lock(_mutex);
 	_volumes.put(filename, v);
 	return v;

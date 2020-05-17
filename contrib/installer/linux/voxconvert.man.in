@@ -1,0 +1,31 @@
+.\" This man page was written by Martin Gerhardy in May 2020. It is provided
+.\" under the GNU General Public License 3 or (at your option) any later version.
+.TH @COMMANDLINE@ 14 "May 2020" "@COMMANDLINE@" "games"
+.SH NAME
+@COMMANDLINE@ \- convert voxel volume formats
+
+.SH SYNOPSIS
+.PP
+\fB@NAME@\fR [\fIoption\fR] infile outfile
+.SH DESCRIPTION
+\fB@COMMANDLINE@\fP is a command line application that can convert several voxel
+volume formats into others. Supported formats are e.g. cub (CubeWorld), qb/qbt
+(Qubicle), vox (MagicaVoxel), vmx (VoxEdit Sandbox), binvox and maybe others.
+.SH OPTIONS
+.TP
+\fB\--trace|--debug\fR
+Enable debug logging
+
+.TP
+\fB\--trace|--debug\fR
+Enable debug logging
+
+.TP
+\fB\--help\fR
+Print usage information
+
+.SH HOMEPAGE
+https://github.com/mgerhardy/engine
+
+.SH COPYRIGHT
+Copyright \[co] 2015\-2020 by Martin Gerhardy.
