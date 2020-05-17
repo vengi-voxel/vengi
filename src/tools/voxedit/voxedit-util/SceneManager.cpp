@@ -173,16 +173,15 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 	if (v == nullptr) {
 		return true;
 	}
-	const Layer& layer = _layerMgr.layer(layerId);
-	voxel::VoxelVolumes volumes;
-	volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
-	voxel::VoxFormat f;
 	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
 	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
 	}
-	if (f.saveGroups(volumes, filePtr)) {
+	const Layer& layer = _layerMgr.layer(layerId);
+	voxel::VoxelVolumes volumes;
+	volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
+	if (voxelformat::saveVolumeFormat(filePtr, volumes)) {
 		Log::info("Saved layer %i to %s", layerId, filePtr->name().c_str());
 		return true;
 	}
