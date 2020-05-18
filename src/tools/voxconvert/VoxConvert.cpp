@@ -20,6 +20,12 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
 }
 
+core::AppState VoxConvert::onConstruct() {
+	const core::AppState state = Super::onConstruct();
+	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
+	return state;
+}
+
 core::AppState VoxConvert::onInit() {
 	const core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
@@ -62,6 +68,12 @@ core::AppState VoxConvert::onInit() {
 		voxelformat::clearVolumes(volumes);
 		Log::error("Given output file '%s' already exists", outfile.c_str());
 		return core::AppState::InitFailure;
+	}
+
+	if (hasArg("--merge")) {
+		voxel::RawVolume* merged = volumes.merge();
+		voxelformat::clearVolumes(volumes);
+		volumes.push_back(voxel::VoxelVolume(merged));
 	}
 
 	if (!voxelformat::saveVolumeFormat(outputFile, volumes)) {

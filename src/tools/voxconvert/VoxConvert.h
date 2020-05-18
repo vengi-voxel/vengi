@@ -17,5 +17,6 @@ private:
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
+	core::AppState onConstruct() override;
 	core::AppState onInit() override;
 };

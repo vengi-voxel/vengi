@@ -417,6 +417,7 @@ void App::usage() const {
 	logLevel->setVal((int)Log::Level::Info);
 	Log::init();
 	Log::info("Usage: %s [--help] [-set configvar value] [-commandname]", _appname.c_str());
+	Log::info("------------");
 
 	int maxWidthLong = 0;
 	int maxWidthShort = 0;
@@ -444,7 +445,7 @@ void App::usage() const {
 		maxWidth = core_max(maxWidth, (int)SDL_strlen(c.name()));
 	});
 
-	Log::info("---");
+	Log::info("------------");
 	Log::info("Config variables:");
 	util::visitVarSorted([=] (const core::VarPtr& v) {
 		const uint32_t flags = v->getFlags();
@@ -478,12 +479,12 @@ void App::usage() const {
 	Log::info("   %-*s Dirty     the config variable is dirty, means that the initial value was changed", maxWidth, "D");
 	Log::info("   %-*s Secret    the value of the config variable won't be shown in the logs", maxWidth, "X");
 
-	Log::info("---");
+	Log::info("------------");
 	Log::info("Commands:");
 	core::Command::visitSorted([=] (const core::Command& c) {
 		Log::info("   %-*s %s", maxWidth, c.name(), c.help());
 	});
-	Log::info("---");
+	Log::info("------------");
 	Log::info("Config variables can either be set via autoexec.cfg, %s.vars, environment or commandline parameter.", _appname.c_str());
 	Log::info("Environment variables must be exported in upper case.");
 	Log::info("Examples:");

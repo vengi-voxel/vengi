@@ -82,6 +82,7 @@ void clearVolumes(voxel::VoxelVolumes& volumes) {
 	for (auto& v : volumes) {
 		delete v.volume;
 	}
+	volumes.volumes.clear();
 }
 
 }
