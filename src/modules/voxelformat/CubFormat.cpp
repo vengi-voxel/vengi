@@ -33,7 +33,12 @@ bool CubFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		return false;
 	}
 
-	RawVolume *volume = new RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
+	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
+	if (!region.isValid()) {
+		Log::error("Invalid region: %i:%i:%i", width, height, depth);
+		return false;
+	}
+	RawVolume *volume = new RawVolume(region);
 	volumes.push_back(VoxelVolume{volume, file->fileName(), true});
 
 	// TODO: support loading own palette
@@ -52,7 +57,7 @@ bool CubFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 					continue;
 				}
 				const glm::vec4& color = core::Color::fromRGBA(r, g, b, 255);
-				int index = core::Color::getClosestMatch(color, materialColors);
+				const int index = core::Color::getClosestMatch(color, materialColors);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				// we have to flip depth with height for our own coordinate system
 				volume->setVoxel(w, h, d, voxel);
