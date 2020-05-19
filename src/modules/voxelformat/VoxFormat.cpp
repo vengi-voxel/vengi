@@ -15,6 +15,8 @@
 
 namespace voxel {
 
+static constexpr int MaxRegionSize = 256;
+
 #define wrap(read) \
 	if (read != 0) { \
 		Log::error("Could not load vox file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
@@ -196,8 +198,8 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	int layerId = 0;
 	for (auto& v : volumes) {
 		const voxel::Region& region = v.volume->region();
-		if (region.getDepthInVoxels() >= 256 || region.getHeightInVoxels() >= 256
-			|| region.getWidthInVoxels() >= 256) {
+		if (region.getDepthInVoxels() >= MaxRegionSize || region.getHeightInVoxels() >= MaxRegionSize
+			|| region.getWidthInVoxels() >= MaxRegionSize) {
 			Log::warn("a region exceeds the max allowed vox file boundaries - layer %i is not saved", layerId);
 			continue;
 		}
@@ -453,6 +455,15 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			glm::ivec3 maxsregion((int32_t)(x) - 1, (int32_t)(y) - 1, (int32_t)(z) - 1);
 			Log::debug("Found size chunk: (%u:%u:%u)", x, y, z);
 			Region region(glm::ivec3(0), maxsregion);
+			if (!region.isValid()) {
+				Log::error("Found invalid region in vox file: %i:%i:%i", x, y, z);
+				return false;
+			}
+			if (region.getWidthInVoxels() >= MaxRegionSize || region.getHeightInVoxels() >= MaxRegionSize ||
+				region.getDepthInVoxels() >= MaxRegionSize) {
+				Log::error("Found invalid region in vox file: %i:%i:%i", x, y, z);
+				return false;
+			}
 			regions.push_back(region);
 		}
 		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
