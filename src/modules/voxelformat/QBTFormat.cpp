@@ -268,7 +268,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
-	if (glm::any(glm::greaterThan(size, glm::uvec3(2048)))) {
+	if (glm::any(glm::greaterThan(size, glm::uvec3(MaxRegionSize)))) {
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
@@ -343,6 +343,10 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 bool QBTFormat::loadModel(io::FileStream& stream, VoxelVolumes& volumes) {
 	uint32_t childCount;
 	wrap(stream.readInt(childCount));
+	if (childCount > 2048u) {
+		Log::error("Max child count exceeded: %i", (int)childCount);
+		return false;
+	}
 	Log::debug("Found %u children", childCount);
 	for (uint32_t i = 0; i < childCount; i++) {
 		if (!loadNode(stream, volumes)) {

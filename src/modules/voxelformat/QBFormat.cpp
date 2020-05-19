@@ -217,6 +217,11 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 		return false;
 	}
 
+	if (size.x > MaxRegionSize || size.y > MaxRegionSize || size.z > MaxRegionSize) {
+		Log::error("Volume exceeds the max allowed size: %i:%i:%i", size.x, size.y, size.z);
+		return false;
+	}
+
 	glm::ivec3 offset(0);
 	wrap(stream.readInt((uint32_t&)offset.x));
 	wrap(stream.readInt((uint32_t&)offset.y));
@@ -231,6 +236,13 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 	if (!region.isValid()) {
 		return false;
 	}
+
+	if (region.getDepthInVoxels() >= MaxRegionSize || region.getHeightInVoxels() >= MaxRegionSize
+		|| region.getWidthInVoxels() >= MaxRegionSize) {
+		Log::error("Region exceeds the max allowed boundaries");
+		return false;
+	}
+
 	voxel::RawVolume* v = new voxel::RawVolume(region);
 	volumes.push_back(VoxelVolume(v, name, true));
 	if (_compressed == Compression::None) {
@@ -266,6 +278,10 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 				Log::debug("%u voxels of the same type", count);
 			}
 
+			if (count > 32768) {
+				Log::error("Max RLE count exceeded: %i", (int)count);
+				return false;
+			}
 			const voxel::Voxel& voxel = getVoxel(stream);
 			for (uint32_t j = 0; j < count; ++j) {
 				const int x = (index + j) % size.x;

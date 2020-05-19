@@ -123,7 +123,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	wrap(stream.readInt(size.y));
 	wrap(stream.readInt(size.z));
 
-	if (glm::any(glm::greaterThan(size, glm::uvec3(2048)))) {
+	if (glm::any(glm::greaterThan(size, glm::uvec3(MaxRegionSize)))) {
 		Log::warn("Size of volume exceeds the max allowed value");
 		return false;
 	}

@@ -11,6 +11,8 @@
 
 namespace voxel {
 
+static constexpr int MaxRegionSize = 256;
+
 struct VoxelVolume {
 	VoxelVolume(RawVolume* _volume = nullptr, const core::String& _name = "", bool _visible = true);
 	VoxelVolume(RawVolume* _volume, const core::String& _name, bool _visible, const glm::ivec3& _pivot);

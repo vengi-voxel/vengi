@@ -34,13 +34,25 @@ bool BinVoxFormat::readHeader(const core::String& header) {
 		SDL_strlcpy(buf, line.c_str(), sizeof(buf));
 
 		if (core::string::startsWith(line, "#binvox")) {
-			SDL_sscanf(buf, "#binvox %u", &_version);
+			if (SDL_sscanf(buf, "#binvox %u", &_version) != 1) {
+				Log::error("Failed to parse binvox version");
+				return false;
+			}
 		} else if (core::string::startsWith(buf, "dim ")) {
-			SDL_sscanf(buf, "dim %u %u %u", &_w, &_h, &_d);
+			if (SDL_sscanf(buf, "dim %u %u %u", &_w, &_h, &_d) != 3) {
+				Log::error("Failed to parse binvox dimensions");
+				return false;
+			}
 		} else if (core::string::startsWith(buf, "translate ")) {
-			SDL_sscanf(buf, "translate %f %f %f", &_tx, &_ty, &_tz);
+			if (SDL_sscanf(buf, "translate %f %f %f", &_tx, &_ty, &_tz) != 3) {
+				Log::error("Failed to parse binvox translation");
+				return false;
+			}
 		} else if (core::string::startsWith(buf, "scale ")) {
-			SDL_sscanf(buf, "scale %f", &_scale);
+			if (SDL_sscanf(buf, "scale %f", &_scale) != 1) {
+				Log::error("Failed to parse binvox scale");
+				return false;
+			}
 		}
 
 		// Skip delimiters. Note the "not_of"
@@ -52,6 +64,14 @@ bool BinVoxFormat::readHeader(const core::String& header) {
 		Log::error("Failed to parse the header data");
 		return false;
 	}
+	if (_w >= MaxRegionSize || _h >= MaxRegionSize || _d >= MaxRegionSize) {
+		Log::error("Max region size exceeded: %u:%u:%u", _w, _h, _d);
+		return false;
+	}
+	if (_w == 0 || _h == 0 || _d == 0) {
+		Log::error("Region size invalid: %u:%u:%u", _w, _h, _d);
+		return false;
+	}
 	_size = _w * _h * _d;
 	return true;
 }
@@ -61,7 +81,7 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 	const int fileSize = file->read((void**) &buf);
 	std::unique_ptr<uint8_t[]> pFile(buf);
 
-	RawVolume *volume = new RawVolume(voxel::Region(0, 0, 0, _d - 1, _h - 1, _w - 1));
+	RawVolume *volume = new RawVolume(voxel::Region(_tz, _ty, _tx, _tz + _d - 1, _ty + _h - 1, _tx + _w - 1));
 	volumes.push_back(VoxelVolume{volume, file->fileName(), true});
 
 	const int dataSize = fileSize - offset;
@@ -100,9 +120,9 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 
 	const voxel::Voxel &voxel = voxel::createRandomColorVoxel(voxel::VoxelType::Generic);
 	int idx = 0;
-	for (uint32_t x = 0u; x < _d; ++x) {
-		for (uint32_t y = 0u; y < _w; ++y) {
-			for (uint32_t z = 0u; z < _h; ++z) {
+	for (uint32_t x = _tz; x < _tz + _d; ++x) {
+		for (uint32_t y = _tx; y < _tx + _w; ++y) {
+			for (uint32_t z = _ty; z < _ty + _h; ++z) {
 				if (voxelBuf[idx] == 1) {
 					volume->setVoxel(z, y, x, voxel);
 				}

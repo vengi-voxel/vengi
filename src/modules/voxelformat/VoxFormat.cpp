@@ -15,8 +15,6 @@
 
 namespace voxel {
 
-static constexpr int MaxRegionSize = 256;
-
 #define wrap(read) \
 	if (read != 0) { \
 		Log::error("Could not load vox file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
