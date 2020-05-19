@@ -54,6 +54,7 @@ core::AppState VoxConvert::onInit() {
 	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::Read);
 	if (!inputFile->exists()) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
+		_exitCode = 127;
 		return core::AppState::InitFailure;
 	}
 
