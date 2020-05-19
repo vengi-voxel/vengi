@@ -92,19 +92,21 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 	int index = 0;
 	int n = 0;
 	if ((dataSize % 2) != 0) {
-		Log::warn("Expected data segment size %i", dataSize);
+		Log::error("Unexpected data segment size: %i", dataSize);
+		return false;
 	}
 	for (int i = offset; i < fileSize; i += 2) {
 		const uint8_t value = buf[i + 0];
 		if (value > 1) {
 			Log::error("Invalid value at offset %i (currently at index: %i)", i, index);
+			return false;
 		}
 		const uint8_t count = buf[i + 1];
 		n += count;
 		const int endIndex = index + count;
 		if (endIndex > bufSize) {
 			Log::error("The end index %i is bigger than the data size %i", endIndex, dataSize);
-			break;
+			return false;
 		}
 		if (value != 0) {
 			for (int v = index; v < endIndex; ++v) {
@@ -141,6 +143,10 @@ bool BinVoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		Log::error("Could not find end of header in %s", file->name().c_str());
 		return false;
 	}
+	if (dataOffset > 128) {
+		Log::error("Max allowed header size exceeded: %i", (int)dataOffset);
+		return false;
+	}
 	const core::String& header = str.substr(0, dataOffset);
 	if (!readHeader(header)) {
 		Log::error("Could not read header of %s", file->name().c_str());
@@ -153,7 +159,22 @@ bool BinVoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 }
 
 bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
+#if 0
+	io::FileStream stream(file.get());
+	RawVolume* mergedVolume = merge(volumes);
+	const voxel::Region& region = mergedVolume->region();
+
+	stream.addString("#binvox 1\n", false);
+	stream.addString("dim %u %u %u\n", false);
+	stream.addString("translate %f %f %f\n", false);
+	stream.addString("scale %f\n", false);
+	stream.addString("data\n", false);
+
+	delete mergedVolume;
+	return true;
+#else
 	return false;
+#endif
 }
 
 }
