@@ -73,6 +73,10 @@ core::AppState VoxConvert::onInit() {
 
 	if (hasArg("--merge")) {
 		voxel::RawVolume* merged = volumes.merge();
+		if (merged == nullptr) {
+			Log::error("Failed to merge volumes");
+			return core::AppState::InitFailure;
+		}
 		voxelformat::clearVolumes(volumes);
 		volumes.push_back(voxel::VoxelVolume(merged));
 	}
