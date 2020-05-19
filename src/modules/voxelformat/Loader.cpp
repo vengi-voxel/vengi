@@ -21,22 +21,34 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 	const core::String& ext = filePtr->extension();
 	if (ext == "qbt") {
 		voxel::QBTFormat f;
-		f.loadGroups(filePtr, newVolumes);
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
 	} else if (ext == "vox") {
 		voxel::VoxFormat f;
-		f.loadGroups(filePtr, newVolumes);
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
 	} else if (ext == "qb") {
 		voxel::QBFormat f;
-		f.loadGroups(filePtr, newVolumes);
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
 	} else if (ext == "cub") {
 		voxel::CubFormat f;
-		f.loadGroups(filePtr, newVolumes);
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
 	} else if (ext == "vxm") {
 		voxel::VXMFormat f;
-		f.loadGroups(filePtr, newVolumes);
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
 	} else if (ext == "binvox") {
 		voxel::BinVoxFormat f;
-		f.loadGroups(filePtr, newVolumes);
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
 	} else {
 		Log::error("Failed to load model file %s - unsupported file format for extension '%s'",
 				filePtr->name().c_str(), ext.c_str());

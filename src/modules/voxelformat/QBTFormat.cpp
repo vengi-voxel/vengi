@@ -294,6 +294,10 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 		return false;
 	}
 	const voxel::Region region(position, position + glm::ivec3(size) - 1);
+	if (!region.isValid()) {
+		Log::error("Invalid region");
+		return false;
+	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	uint32_t byteCounter = 0u;
 	for (uint32_t x = 0; x < size.x; x++) {

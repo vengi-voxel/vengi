@@ -158,12 +158,16 @@ bool QBFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) 
 	return true;
 }
 
-void QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel) {
+bool QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel) {
 	const int32_t fx = offset.x + x;
 	const int32_t fy = offset.y + y;
 	const int32_t fz = offset.z + z;
 	Log::debug("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)_zAxisOrientation);
+	if (volume->region().containsPoint(glm::ivec3(fx, fy, fz))) {
+		return false;
+	}
 	volume->setVoxel(fx, fy, fz, voxel);
+	return true;
 }
 
 voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
@@ -251,7 +255,9 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
 					const voxel::Voxel& voxel = getVoxel(stream);
-					setVoxel(v, x, y, z, offset, voxel);
+					if (!setVoxel(v, x, y, z, offset, voxel)) {
+						return false;
+					}
 				}
 			}
 		}
@@ -286,7 +292,9 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 			for (uint32_t j = 0; j < count; ++j) {
 				const int x = (index + j) % size.x;
 				const int y = (index + j) / size.x;
-				setVoxel(v, x, y, z, offset, voxel);
+				if (!setVoxel(v, x, y, z, offset, voxel)) {
+					return false;
+				}
 			}
 			index += count;
 		}

@@ -195,6 +195,9 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 
 	int layerId = 0;
 	for (auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
 		const voxel::Region& region = v.volume->region();
 		if (region.getDepthInVoxels() >= MaxRegionSize || region.getHeightInVoxels() >= MaxRegionSize
 			|| region.getWidthInVoxels() >= MaxRegionSize) {
