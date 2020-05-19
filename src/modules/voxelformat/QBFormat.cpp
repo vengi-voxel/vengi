@@ -151,6 +151,9 @@ bool QBFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) 
 	wrapSave(stream.addInt((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.addInt((int)volumes.size()))
 	for (const auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
 		if (!saveMatrix(stream, v)) {
 			return false;
 		}

@@ -155,6 +155,9 @@ bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		}
 	}
 	for (auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
 		if (!saveMatrix(stream, v, colorMap)) {
 			return false;
 		}
