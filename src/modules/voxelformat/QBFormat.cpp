@@ -50,11 +50,19 @@ const int NEXT_SLICE_FLAG = 6;
 #define setBit(val, index) val &= (1 << (index))
 
 bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) const {
+	if (volume.volume == nullptr) {
+		Log::error("Invalid volume given");
+		return false;
+	}
 	const int nameLength = volume.name.size();
 	wrapSave(stream.addByte(nameLength));
 	wrapSave(stream.addString(volume.name, false));
 
 	const voxel::Region& region = volume.volume->region();
+	if (!region.isValid()) {
+		Log::error("Invalid region");
+		return false;
+	}
 	const glm::ivec3 size = region.getDimensionsInVoxels();
 	wrapSave(stream.addInt(size.x));
 	wrapSave(stream.addInt(size.y));

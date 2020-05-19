@@ -241,6 +241,10 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 bool VoxFormat::readAttributes(std::map<core::String, core::String>& attributes, io::FileStream& stream) const {
 	uint32_t cnt;
 	wrapAttributesRead(stream.readInt(cnt))
+	if (cnt > 2048) {
+		Log::error("Trying to read more than the allowed number of attributes: %u", cnt);
+		return false;
+	}
 	Log::debug("Reading %i keys in the dict", cnt);
 	for (uint32_t i = 0; i < cnt; ++i) {
 		char key[1024];
@@ -465,6 +469,10 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 				return false;
 			}
 			regions.push_back(region);
+			if (regions.size() > 256) {
+				Log::error("Found more than 256 layers: %i", (int)regions.size());
+				return false;
+			}
 		}
 		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
 		wrap(stream.seek(nextChunkPos));
@@ -717,6 +725,14 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 					if (SDL_sscanf(translations.c_str(), "%d %d %d", &x, &y, &z) == 3) {
 						for (auto& m : models) {
 							if (m.nodeId == nodeId) {
+								if (m.modelId >= volumes.size()) {
+									Log::error("Invalid modelid found: %u", m.modelId);
+									return false;
+								}
+								if (volumes[m.modelId].volume == nullptr) {
+									Log::error("No volume for model id: %u", m.modelId);
+									return false;
+								}
 								volumes[m.modelId].volume->translate(glm::ivec3(x, y, z));
 								break;
 							}
