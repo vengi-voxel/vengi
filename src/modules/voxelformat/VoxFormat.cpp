@@ -739,7 +739,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 						}
 						Log::debug("nTRN chunk not yet completely supported: translation %i:%i:%i", x, y, z);
 					} else {
-						Log::error("Failed to parse translation %s", translations.c_str());
+						Log::error("Failed to parse translation");
 					}
 				}
 			}
@@ -781,8 +781,8 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		} else {
 			uint8_t out[4];
 			FourCCRev(out, chunkId);
-			Log::warn("Unknown chunk in vox (%c %c %c %c) file: %u with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)",
-					out[0], out[1], out[2], out[3], chunkId, numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
+			Log::warn("Unknown chunk in vox (%i %i %i %i) file: %u with %u bytes and %u child bytes (currentPos: %i, nextPos: %i)",
+					(int)out[0], (int)out[1], (int)out[2], (int)out[3], chunkId, numBytesChunk, numBytesChildrenChunks, (int)currentChunkPos, (int)nextChunkPos);
 		}
 		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
 		wrap(stream.seek(nextChunkPos));
