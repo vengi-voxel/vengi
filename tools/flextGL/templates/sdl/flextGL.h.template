@@ -1,9 +1,15 @@
-@require(passthru, functions, enums, options, version, extensions)
-/* WARNING: This file was automatically generated */
-/* Do not edit. */
-
+@require(passthru, functions, enums, options, version, extensions, args)
 #ifndef __gl_h_
 #define __gl_h_
+/*
+    This file was generated using https://github.com/mosra/flextgl:
+
+        path/to/flextGLgen.py @args
+
+    Do not edit directly, modify the template or profile and regenerate.
+*/
+
+#include <KHR/khrplatform.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,47 +35,54 @@ extern "C" {
 #define GLAPI extern
 #endif
 
-/* -------------------------------- DATA TYPES ------------------------------- */
+/* ------------------------------- DATA TYPES ------------------------------ */
 
 @passthru
 
-/* ----------------------------------- ENUMS --------------------------------- */
+/* ---------------------------------- ENUMS -------------------------------- */
 
 @enums
 
-/* --------------------------- FUNCTION PROTOTYPES --------------------------- */
+/* -------------------------- FUNCTION PROTOTYPES -------------------------- */
 
 @for cat,funcs in functions:
-
+@if funcs:
 /* GL_@cat */
 
-    @for f in funcs:
+    @if cat in ['VERSION_1_0_DEPRECATED', 'VERSION_1_1_DEPRECATED']:
+        @for f in funcs:
+GLAPI @f.returntype APIENTRY gl@f.name (@f.param_list_string());
+        @end
+    @else:
+        @for f in funcs:
 typedef @f.returntype (APIENTRY PFNGL@f.name.upper()_PROC (@f.param_list_string()));
-    @end
+        @end
 
-    @for f in funcs:
+        @for f in funcs:
 GLAPI PFNGL@f.name.upper()_PROC* glpf@f.name;
-    @end
+        @end
 
-    @for f in funcs:
+        @for f in funcs:
 #define gl@f.name glpf@f.name
+        @end
     @end
 
 @end
-
-/* --------------------------- CATEGORY DEFINES ------------------------------ */
+@end
+/* -------------------------- CATEGORY DEFINES ----------------------------- */
 
 @for cat,funcs in functions:
 #define GL_@cat
 @end
 
-/* ---------------------- Flags for optional extensions ---------------------- */
-
+@if extensions:
+/* --------------------- FLAGS FOR OPTIONAL EXTENSIONS --------------------- */
 
 @for extension,required in extensions:
 extern int FLEXT_@extension;
 @end
 
+@end
 int flextInit(void);
 
 #define FLEXT_MAJOR_VERSION @version.major!s
@@ -84,4 +97,4 @@ int flextInit(void);
 }
 #endif
 
-#endif /* _gl_h_ */
+#endif

@@ -1,7 +1,7 @@
 flextGL
 =======
 
-[![Build Status](https://travis-ci.com/mosra/flextgl.svg?branch=master)](https://travis-ci.com/mosra/flextgl)
+[![Build Status](https://travis-ci.org/mosra/flextgl.svg?branch=master)](https://travis-ci.org/mosra/flextgl)
 [![Coverage Status](https://codecov.io/gh/mosra/flextgl/branch/master/graph/badge.svg)](https://codecov.io/gh/mosra/flextgl)
 
 flextGL is an OpenGL and Vulkan header and loader generator.
@@ -15,7 +15,7 @@ It is a bit different than other comparable systems:
 -   For Vulkan, it's possible to adapt the templates to generate separate
     instance-specific and device-specific loader for faster runtime
     performance, or switch from globally visible symbols to local ones
-    ([blog post with details](http://blog.magnum.graphics/hacking/simple-efficient-vulkan-loading-with-flextgl/))
+    ([blog post with details](https://blog.magnum.graphics/hacking/simple-efficient-vulkan-loading-with-flextgl/))
 -   Only requested extensions are loaded
 -   Flexible python template system for source generation
 -   Source templates easy to adapt to project requirements
@@ -28,6 +28,11 @@ You will need the following dependencies:
 
 ### What's new?
 
+-   **October 2019:** Breaking change -- the GL `<KHR/khrplatform.h>` include
+    is now required to be specified by the template instead of being added
+    implicitly from the `gl.xml` definition. This is done in order to allow
+    more flexibility and is consistent with how `vk_platform.h` is handled.
+    See commit bef1e12c98562fa87b698751a75d9da84e11c98d for details.
 -   **May 2018:** Vulkan support, 100% test coverage,
     [@mosra](https://github.com/mosra) took over the maintainership from
     [@ginkgo](https://github.com/ginkgo)
@@ -147,7 +152,7 @@ Generated API for Vulkan
 
 For simplicity, the default template generates all function pointers globally
 and loads them as instance-specific. See
-[this blog post](http://blog.magnum.graphics/hacking/simple-efficient-vulkan-loading-with-flextgl/)
+[this blog post](https://blog.magnum.graphics/hacking/simple-efficient-vulkan-loading-with-flextgl/)
 for other options. Apart from Vulkan APIs, two functions are defined:
 
 -   `void flextVkInit()`
@@ -173,21 +178,11 @@ At the moment, there are three template sets available:
     > This loads the extensions using a framework-agnostic method with WGL
     > AGL or GLX. This is probably a sensible default for most people.
 
--   `glfw`
+-   `glfw3`, `glfw3-es`
 
-    > This uses GLFW 2's functions for loading and testing for OpenGL
-    > extensions. It will obviously only work with GLFW, but is well tested and
-    > the generated source code is very easy to understand.
-
--   `glfw3`
-
-    > This works like the `glfw` template, but uses GLFW 3 instead. In this
-    > template, a pointer to the GLFWwindow has to be passed as a parameter of
-    > `flextInit()`.
-
--   `glfw3-es`
-
-    > Used for generating OpenGL ES loading code.
+    > These use GLFW 3 functions for loading and testing for OpenGL extensions
+    > either for desktop OpenGL or OpenGL ES. In these templates, the
+    > `flextInit()` function takes a pointer to `GLFWwindow`.
 
 -   `lite`
 

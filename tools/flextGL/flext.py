@@ -37,6 +37,7 @@ gl_spec_url = 'http://www.opengl.org/registry/api/gl.xml'
 # tags were also named differently). I hope this will not be changing much in
 # the future, as that would break loading of older versions.
 vk_spec_url = 'https://raw.githubusercontent.com/KhronosGroup/Vulkan-Docs/{}/xml/vk.xml'
+vk_spec_url10 = 'https://raw.githubusercontent.com/KhronosGroup/Vulkan-Docs/{}-core/src/spec/vk.xml'
 
 ################################################################################
 # Spec file download
@@ -250,7 +251,7 @@ def xml_parse_type_name_pair(node):
     if ptype == None: ptype = node.find('type')
     return (name, type, ptype.text.strip() if ptype != None else None)
 
-def extract_enums(feature, enum_extensions, extension_number = None):
+def extract_enums(feature, enum_extensions, *, extension_number=None, enum_extends_blacklist=set()):
     subsetEnums = []
 
     for enum in feature.findall('enum'):
@@ -258,6 +259,10 @@ def extract_enums(feature, enum_extensions, extension_number = None):
 
         if 'extends' in enum.attrib:
             extends = enum.attrib['extends']
+
+            # See the comment about VK_KHR_sampler_ycbcr_conversion in
+            # parse_xml_extensions()
+            if extends in enum_extends_blacklist: continue
 
             # VkSamplerAddressMode from VK_KHR_sampler_mirror_clamp_to_edge
             # has an explicit value. The sanest way, yet they say "this
@@ -380,6 +385,8 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
             name = type.attrib['name']
             enumdef = root.find("./enums[@name='{}']".format(name))
             if enumdef: # Some Vulkan enums are empty (bitsets)
+                written_enum_values = set()
+
                 for enum in enumdef.findall('enum'):
                     if 'bitpos' in enum.attrib:
                         values += ['    {} = 1 << {}'.format(enum.attrib['name'], enum.attrib['bitpos'])]
@@ -387,8 +394,9 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
                         values += ['    {} = {}'.format(enum.attrib['name'], enum.attrib['alias'])]
                     else:
                         values += ['    {} = {}'.format(enum.attrib['name'], enum.attrib['value'])]
-                if name in enum_extensions:
+                    written_enum_values.add(enum.attrib['name'])
 
+                if name in enum_extensions:
                     # Extension enum values might be promoted to core in later
                     # versions, create a map with their values to avoid having
                     # aliases to nonexistent values
@@ -400,7 +408,25 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
                     # Value is either a concrete value, an existing alias or
                     # an extracted value from a promoted alias above
                     for extension, value in enum_extensions[name]:
-                        values += ['    {} = {}'.format(extension, extensions[value] if value in extensions else value)]
+                        # If the enum value is a (negative) number, write that
+                        if not value[0].isalpha():
+                            value_to_write = value
+                        # If it's an alias to a promoted extension and the
+                        # original value haven't been written yet, write the
+                        # core name. If the original value is already written,
+                        # it's better to show the alias explicitly for
+                        # documentation purposes instead of showing the same
+                        # value twice without any apparent reason
+                        elif value in extensions and not value in written_enum_values:
+                            value_to_write = extensions[value]
+                        # Otherwise, if it's an alias and the target wasn't
+                        # written yet, it's a problem
+                        else:
+                            assert value in written_enum_values, "Alias target for %s not found: %s" % (extension, value)
+                            value_to_write = value
+
+                        values += ['    {} = {}'.format(extension, value_to_write)]
+                        written_enum_values.add(extension)
 
                 definition = '\ntypedef enum {{\n{}\n}} {};'.format(',\n'.join(values), name)
 
@@ -546,15 +572,60 @@ def parse_xml_features(root, version):
 def parse_xml_extensions(root, extensions, enum_extensions, version):
     subsets = []
 
-    for name, _ in extensions:
+    # Extensions might have dependencies, resolve them to avoid dangling
+    # aliases
+    extension_set = set()
+    def resolve_extension_dependencies(name):
+        # Added as a dependency already, don't add it twice
+        if name in extension_set: return []
+        extension_set.add(name)
         extension = root.find("./extensions/extension[@name='{}{}']".format(version.prefix, name))
-        if (extension==None):
-            print ('%s is not an extension' % name)
-            continue
+        if extension is None:
+            print('%s is not an extension' % name)
+            return []
+        required = []
+        # Extensions can require other extensions
+        if 'requires' in extension.attrib:
+            for i in extension.attrib['requires'].split(','):
+                required += resolve_extension_dependencies(i[len(version.prefix):])
+        # ... and have interactions with other extensions. If that's the case,
+        # add the interacted-with extension isn't already in the set, add it
+        # (and all its dependencies) there so it's early enough
+        for interaction in extension.findall('require[@extension]'):
+            interaction_suffix = interaction.attrib['extension'][len(version.prefix):]
+            if not interaction_suffix in extension_set and interaction_suffix in [e[0] for e in extensions]:
+                required += resolve_extension_dependencies(interaction_suffix)
+
+        # Add the original last so the dependencies it needs are before
+        required += [name]
+        return required
+    extensions_with_dependencies = []
+    for name, _ in extensions:
+        extensions_with_dependencies += resolve_extension_dependencies(name)
+
+    # Ensure there are no accidental duplicates
+    assert len(extensions_with_dependencies) == len(set(extensions_with_dependencies))
+
+    for name in extensions_with_dependencies:
+        extension = root.find("./extensions/extension[@name='{}{}']".format(version.prefix, name))
 
         subsetTypes = []
         subsetEnums = []
         subsetCommands = []
+
+        # At least in Vulkan 1.1.124, VK_KHR_sampler_ycbcr_conversion (which is
+        # promoted to 1.1) lists an extension to VkDebugReportObjectTypeEXT
+        # in a general <require> and then again (properly) in
+        # <require extension="VK_EXT_debug_report">. If VK_EXT_debug_report is
+        # not requested, that causes an assert. To circumvent that, add all
+        # type extensions which aren't requested to a blacklist to ignore
+        # later.
+        enum_extends_blacklist = set()
+        for require in extension.findall('./require[@extension]'):
+            # The extended extension is requested, no blaclisting
+            if require.attrib['extension'] in extension_set: continue
+            for enum in require.findall('enum'):
+                enum_extends_blacklist.add(enum.attrib['extends'])
 
         for require in extension.findall('./require'):
             # Given set of names is restricted to some API or profile subset
@@ -563,12 +634,17 @@ def parse_xml_extensions(root, extensions, enum_extensions, version):
                 if require.attrib['api'] != version.api: continue
                 if 'profile' in require.attrib and require.attrib['profile'] != version.profile: continue
 
+            # Vulkan extensions can have interactions with other extensions.
+            # Add those only if the other extensions is present as well.
+            if 'extension' in require.attrib and require.attrib['extension'] not in extension_set:
+                continue
+
             subsetTypes += extract_names(require, 'type')
             subsetCommands += extract_names(require, 'command')
 
             # The 'number' attribute is available only in vk.xml, extract_enums()
             # asserts that it's available if needed
-            enums_to_add, enum_extensions = extract_enums(require, enum_extensions, extension.attrib.get('number'))
+            enums_to_add, enum_extensions = extract_enums(require, enum_extensions, extension_number=extension.attrib.get('number'), enum_extends_blacklist=enum_extends_blacklist)
             subsetEnums += enums_to_add
 
         subsets.append(APISubset(name, subsetTypes, subsetEnums, subsetCommands))
@@ -579,8 +655,9 @@ def generate_passthru(dependencies, types):
     written_types = set()
 
     def write_type(type, written_types, passthru):
-        # We're handling vk_platform ourselves; VK_API_VERSION is deprecated
-        if not type.definition or type.name in ['vk_platform', 'VK_API_VERSION']:
+        # We're handling vk_platform ( khrplatform ourselves; VK_API_VERSION is
+        # deprecated
+        if not type.definition or type.name in ['vk_platform', 'khrplatform', 'VK_API_VERSION']:
             return passthru
 
         # Ensure all dependencies are written already. Using a simple linear
@@ -731,7 +808,7 @@ def parse_xml(file, version, extensions, funcslist, funcsblacklist):
 # Source generation
 ################################################################################
 
-def generate_source(options, version, enums, functions_by_category, passthru, extensions, types, raw_enums):
+def generate_source(argsstring, options, version, enums, functions_by_category, passthru, extensions, types, raw_enums):
     template_pattern = re.compile("(.*).template")
 
     # Sort by categories and sort the functions inside the categories
@@ -747,7 +824,8 @@ def generate_source(options, version, enums, functions_by_category, passthru, ex
                           'version'   : version,
                           'extensions': extensions,
                           'types': types,
-                          'raw_enums': raw_enums}
+                          'raw_enums': raw_enums,
+                          'args': argsstring}
     if not os.path.isdir(options.template_dir):
         print ('%s is not a directory' % options.template_dir)
         exit(1)

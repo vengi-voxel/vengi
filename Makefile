@@ -170,6 +170,16 @@ update-simplexnoise:
 	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
 	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 
+update-flextgl:
+	$(call UPDATE_GIT,flextgl,https://github.com/mosra/flextgl.git)
+	cp $(UPDATEDIR)/flextgl.sync/*.py tools/flextGL
+	cp $(UPDATEDIR)/flextgl.sync/README.md tools/flextGL
+	cp $(UPDATEDIR)/flextgl.sync/COPYING tools/flextGL
+	rm -rf tools/flextGL/templates/sdl
+	rm -rf tools/flextGL/templates/vulkan
+	cp -r $(UPDATEDIR)/flextgl.sync/templates/sdl tools/flextGL/templates
+	cp -r $(UPDATEDIR)/flextgl.sync/templates/vulkan tools/flextGL/templates
+
 # TODO simpleai support
 # TODO lua support
 updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-glslang update-simplecpp
