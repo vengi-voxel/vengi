@@ -154,12 +154,8 @@ void setupLimitsAndSpecs() {
 	checkError();
 	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
 	checkError();
-	if (_priv::s.glVersion.isAtLeast(3, 2)) {
-		glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxFragmentInputComponents)]);
-		checkError();
-	} else {
-		renderState().limits[core::enumVal(Limit::MaxFragmentInputComponents)] = 60;
-	}
+	glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxFragmentInputComponents)]);
+	checkError();
 	if (hasFeature(Feature::ComputeShaders)) {
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountX)]);
 		checkError();
