@@ -326,6 +326,8 @@ enum class TextureFormat {
 	D32F,
 	S8,
 
+	RG16U,
+
 	Max
 };
 

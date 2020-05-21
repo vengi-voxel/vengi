@@ -27,7 +27,8 @@ static const struct Formats {
 	{32, GL_DEPTH32F_STENCIL8, GL_DEPTH32F_STENCIL8, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
 	{32, GL_DEPTH_COMPONENT24, GL_DEPTH24_STENCIL8, GL_UNSIGNED_INT_24_8},
 	{32, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT},
-	{0, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8}
+	{0, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8},
+	{16, GL_RG16UI, GL_RG, GL_UNSIGNED_BYTE}
 };
 static_assert(core::enumVal(TextureFormat::Max) == lengthof(textureFormats), "Array sizes don't match Max");
 
@@ -41,7 +42,9 @@ static const GLenum TextureFormats[] {
 	GL_DEPTH32F_STENCIL8,
 	GL_DEPTH_COMPONENT24,
 	GL_DEPTH_COMPONENT32F,
-	GL_STENCIL_INDEX8
+	GL_STENCIL_INDEX8,
+
+	GL_RG16UI
 };
 static_assert(core::enumVal(TextureFormat::Max) == lengthof(TextureFormats), "Array sizes don't match Max");
 
