@@ -5,6 +5,9 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
  General:
    - Added support for writing binvox files
 
+ VoxEdit:
+   - Added `scale` console command
+
 #### 0.0.3 (2020-05-17)
 
  Assets:

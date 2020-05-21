@@ -381,6 +381,20 @@ void SceneManager::colorToNewLayer(const voxel::Voxel voxelColor) {
 	_layerMgr.addLayer(name.c_str(), true, newVolume);
 }
 
+void SceneManager::scale(int layerId, float ratio) {
+	voxel::RawVolume* srcVolume = volume(layerId);
+	if (srcVolume == nullptr) {
+		return;
+	}
+	const voxel::Region& srcRegion = srcVolume->region();
+	const glm::ivec3 targetDimensionsHalf = glm::round(glm::vec3(srcRegion.getDimensionsInVoxels()) / ratio / 2.0f);
+	const voxel::Region destRegion(srcRegion.getCenter() - targetDimensionsHalf, srcRegion.getCenter() + targetDimensionsHalf);
+	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
+	rescaleVolume(*srcVolume, *destVolume);
+	setNewVolume(layerId, destVolume, true);
+	modified(layerId, destVolume->region());
+}
+
 void SceneManager::crop() {
 	const int layerId = _layerMgr.activeLayer();
 	if (_volumeRenderer.empty(layerId)) {
@@ -908,6 +922,22 @@ void SceneManager::construct() {
 	core::Command::registerCommand("crop", [&] (const core::CmdArgs& args) {
 		crop();
 	}).setHelp("Crop the volume");
+
+	core::Command::registerCommand("scale", [&] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		float ratio = 0.5f;
+		int layerId = _layerMgr.activeLayer();
+		if (argc == 1) {
+			ratio = core::string::toFloat(args[0]);
+		} else if (argc == 2) {
+			layerId = core::string::toInt(args[0]);
+			ratio = core::string::toFloat(args[1]);
+		} else {
+			Log::info("Scale layer %i by factor %f", layerId, ratio);
+			Log::info("Usage: scale (<layerId>) ratio=0.5");
+		}
+		scale(layerId, ratio);
+	}).setHelp("Scale the volume");
 
 	core::Command::registerCommand("colortolayer", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
