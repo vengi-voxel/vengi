@@ -108,6 +108,8 @@ public:
 
 	core::String getSource(ShaderType shaderType, const core::String& buffer, bool finalize = true, core::List<core::String>* includedFiles = nullptr) const;
 
+	Id handle() const;
+
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too
 	 */
@@ -514,6 +516,10 @@ inline void Shader::setUniformMatrixv(const core::String& name, const glm::mat4*
 inline void Shader::setUniformMatrixv(const core::String& name, const glm::mat3* matrixes, int amount, bool transpose) const {
 	const int location = getUniformLocation(name);
 	setUniformMatrixv(location, matrixes, amount, transpose);
+}
+
+inline Id Shader::handle() const {
+	return _program;
 }
 
 /**
