@@ -13,6 +13,9 @@
 
 namespace voxelformat {
 
+const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub";
+const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub";
+
 bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) {
 	if (!filePtr->exists()) {
 		Log::error("Failed to load model file %s", filePtr->name().c_str());

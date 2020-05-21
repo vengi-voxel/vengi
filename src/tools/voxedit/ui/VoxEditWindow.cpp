@@ -15,14 +15,12 @@
 #include "layer/LayerWidget.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#
+#include "voxelformat/Loader.h"
+
 #include "../VoxEdit.h"
 #include <set>
 
 namespace voxedit {
-
-static const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub";
-static const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,cub";
 
 static const struct {
 	const char *name;
@@ -1003,7 +1001,7 @@ bool VoxEditWindow::importHeightmap(const core::String& file) {
 
 bool VoxEditWindow::save(const core::String& file) {
 	if (file.empty()) {
-		getApp()->saveDialog([this] (const core::String uifile) {save(uifile); }, SUPPORTED_VOXEL_FORMATS_SAVE);
+		getApp()->saveDialog([this] (const core::String uifile) {save(uifile); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
 		return true;
 	}
 	if (!sceneMgr().save(file)) {
@@ -1047,7 +1045,7 @@ void VoxEditWindow::resetCamera() {
 
 bool VoxEditWindow::prefab(const core::String& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const core::String file) { prefab(file); }, SUPPORTED_VOXEL_FORMATS_LOAD);
+		getApp()->openDialog([this] (const core::String file) { prefab(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 
@@ -1101,7 +1099,7 @@ bool VoxEditWindow::loadAnimationEntity(const core::String& file) {
 
 bool VoxEditWindow::load(const core::String& file) {
 	if (file.empty()) {
-		getApp()->openDialog([this] (const core::String file) { core::String copy(file); load(copy); }, SUPPORTED_VOXEL_FORMATS_LOAD);
+		getApp()->openDialog([this] (const core::String file) { core::String copy(file); load(copy); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 
