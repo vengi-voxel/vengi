@@ -207,7 +207,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		return true;
 	}
 
-	return false;
+	return true;
 }
 
 void Console::executeCommandLine() {
