@@ -81,6 +81,9 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 	} else if (ext == "cub") {
 		voxel::CubFormat f;
 		return f.saveGroups(volumes, filePtr);
+	} else if (ext == "binvox") {
+		voxel::BinVoxFormat f;
+		return f.saveGroups(volumes, filePtr);
 	} else {
 		Log::warn("Failed to save file with unknown type: %s - saving as vox instead", ext.c_str());
 		voxel::VoxFormat f;

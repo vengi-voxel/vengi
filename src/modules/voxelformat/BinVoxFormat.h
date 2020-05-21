@@ -23,9 +23,9 @@ private:
 	uint32_t _h = 0u;
 	uint32_t _d = 0u;
 	uint32_t _size = 0u;
-	float _tx = 0.0f;
-	float _ty = 0.0f;
-	float _tz = 0.0f;
+	int _tx = 0;
+	int _ty = 0;
+	int _tz = 0;
 	float _scale = 0.0f;
 
 	bool readData(const io::FilePtr& file, const size_t offset, VoxelVolumes& volumes);

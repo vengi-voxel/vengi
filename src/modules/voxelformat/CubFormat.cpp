@@ -93,7 +93,7 @@ bool CubFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	for (uint32_t y = 0u; y < height; ++y) {
 		for (uint32_t z = 0u; z < depth; ++z) {
 			for (uint32_t x = 0u; x < width; ++x) {
-				sampler.setPosition(lower.x + x, lower.y + y, lower.z + z);
+				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
 				const voxel::Voxel& voxel = sampler.voxel();
 				if (voxel.getMaterial() == VoxelType::Air) {
 					stream.addByte(0);
