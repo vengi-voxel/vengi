@@ -198,11 +198,12 @@ void setupLimitsAndSpecs() {
 	GLint maxUniformBufferBindings;
 	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformBufferBindings);
 	renderState().limits[core::enumVal(Limit::MaxUniformBufferBindings)] = maxUniformBufferBindings;
-#ifdef GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT
-	GLint shaderStorageBufferOffsetAlignment;
-	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &shaderStorageBufferOffsetAlignment);
-	renderState().specs[core::enumVal(Spec::ShaderStorageBufferOffsetAlignment)] = shaderStorageBufferOffsetAlignment;
-#endif
+
+	if (hasFeature(Feature::ShaderStorageBufferObject)) {
+		GLint shaderStorageBufferOffsetAlignment;
+		glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &shaderStorageBufferOffsetAlignment);
+		renderState().specs[core::enumVal(Spec::ShaderStorageBufferOffsetAlignment)] = shaderStorageBufferOffsetAlignment;
+	}
 
 	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
 	Log::info("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[core::enumVal(Limit::MaxElementIndices)]);
@@ -225,7 +226,8 @@ void setupFeatures() {
 		{"GL_ARB_buffer_storage"},
 		{"GL_ARB_multi_draw_indirect"},
 		{"GL_ARB_compute_shader"},
-		{"GL_ARB_transform_feedback2"}
+		{"GL_ARB_transform_feedback2"},
+		{"GL_ARB_shader_storage_buffer_object"}
 	};
 	static_assert(core::enumVal(Feature::Max) == (int)SDL_arraysize(extensionArray), "Array sizes don't match for Feature enum");
 

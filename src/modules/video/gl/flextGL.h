@@ -30,65 +30,26 @@ extern "C" {
 
 /* -------------------------------- DATA TYPES ------------------------------- */
 
-#include <stddef.h>
-#ifndef GLEXT_64_TYPES_DEFINED
-/* This code block is duplicated in glxext.h, so must be protected */
-#define GLEXT_64_TYPES_DEFINED
-/* Define int32_t, int64_t, and uint64_t types for UST/MSC */
-/* (as used in the GL_EXT_timer_query extension). */
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-#include <inttypes.h>
-#elif defined(__sun__) || defined(__digital__)
-#include <inttypes.h>
-#if defined(__STDC__)
-#if defined(__arch64__) || defined(_LP64)
-typedef long int int64_t;
-typedef unsigned long int uint64_t;
-#else
-typedef long long int int64_t;
-typedef unsigned long long int uint64_t;
-#endif /* __arch64__ */
-#endif /* __STDC__ */
-#elif defined( __VMS ) || defined(__sgi)
-#include <inttypes.h>
-#elif defined(__SCO__) || defined(__USLC__)
-#include <stdint.h>
-#elif defined(__UNIXOS2__) || defined(__SOL64__)
-typedef long int int32_t;
-typedef long long int int64_t;
-typedef unsigned long long int uint64_t;
-#elif defined(_WIN32) && defined(__GNUC__)
-#include <stdint.h>
-#elif defined(_WIN32)
-typedef __int32 int32_t;
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-#else
-/* Fallback if nothing above works */
-#include <inttypes.h>
-#endif
-#endif
+#include <KHR/khrplatform.h>
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
 typedef unsigned int GLbitfield;
 typedef void GLvoid;
-typedef signed char GLbyte;
-typedef short GLshort;
+typedef khronos_int8_t GLbyte;
+typedef khronos_uint8_t GLubyte;
+typedef khronos_int16_t GLshort;
+typedef khronos_uint16_t GLushort;
 typedef int GLint;
-typedef unsigned char GLubyte;
-typedef unsigned short GLushort;
 typedef unsigned int GLuint;
 typedef int GLsizei;
-typedef float GLfloat;
-typedef float GLclampf;
+typedef khronos_float_t GLfloat;
 typedef double GLdouble;
-typedef double GLclampd;
 typedef char GLchar;
-typedef unsigned short GLhalf;
-typedef ptrdiff_t GLintptr;
-typedef ptrdiff_t GLsizeiptr;
-typedef int64_t GLint64;
-typedef uint64_t GLuint64;
+typedef khronos_uint16_t GLhalf;
+typedef khronos_intptr_t GLintptr;
+typedef khronos_ssize_t GLsizeiptr;
+typedef khronos_int64_t GLint64;
+typedef khronos_uint64_t GLuint64;
 typedef struct __GLsync *GLsync;
 typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 
@@ -1105,6 +1066,26 @@ typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_TRANSFORM_FEEDBACK_BUFFER_ACTIVE 0x8E24
 #define GL_TRANSFORM_FEEDBACK_BINDING 0x8E25
 
+/* GL_ARB_shader_storage_buffer_object */
+
+#define GL_SHADER_STORAGE_BUFFER 0x90D2
+#define GL_SHADER_STORAGE_BUFFER_BINDING 0x90D3
+#define GL_SHADER_STORAGE_BUFFER_START 0x90D4
+#define GL_SHADER_STORAGE_BUFFER_SIZE 0x90D5
+#define GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS 0x90D6
+#define GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS 0x90D7
+#define GL_MAX_TESS_CONTROL_SHADER_STORAGE_BLOCKS 0x90D8
+#define GL_MAX_TESS_EVALUATION_SHADER_STORAGE_BLOCKS 0x90D9
+#define GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS 0x90DA
+#define GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS 0x90DB
+#define GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS 0x90DC
+#define GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS 0x90DD
+#define GL_MAX_SHADER_STORAGE_BLOCK_SIZE 0x90DE
+#define GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT 0x90DF
+#define GL_SHADER_STORAGE_BARRIER_BIT 0x00002000
+#define GL_MAX_COMBINED_SHADER_OUTPUT_RESOURCES 0x8F39
+#define GL_MAX_COMBINED_IMAGE_UNITS_AND_FRAGMENT_OUTPUTS 0x8F39
+
 /* --------------------------- FUNCTION PROTOTYPES --------------------------- */
 
 
@@ -1487,6 +1468,15 @@ GLAPI PFNGLMEMORYBARRIER_PROC* glpfMemoryBarrier;
 
 #define glBindImageTexture glpfBindImageTexture
 #define glMemoryBarrier glpfMemoryBarrier
+
+
+/* GL_ARB_shader_storage_buffer_object */
+
+typedef void (APIENTRY PFNGLSHADERSTORAGEBLOCKBINDING_PROC (GLuint program, GLuint storageBlockIndex, GLuint storageBlockBinding));
+
+GLAPI PFNGLSHADERSTORAGEBLOCKBINDING_PROC* glpfShaderStorageBlockBinding;
+
+#define glShaderStorageBlockBinding glpfShaderStorageBlockBinding
 
 
 /* GL_ARB_transform_feedback2 */
@@ -2480,7 +2470,7 @@ typedef void (APIENTRY PFNGLGETBUFFERPARAMETERI64V_PROC (GLenum target, GLenum p
 typedef void (APIENTRY PFNGLGETINTEGER64I_V_PROC (GLenum target, GLuint index, GLint64 * data));
 typedef void (APIENTRY PFNGLGETINTEGER64V_PROC (GLenum pname, GLint64 * data));
 typedef void (APIENTRY PFNGLGETMULTISAMPLEFV_PROC (GLenum pname, GLuint index, GLfloat * val));
-typedef void (APIENTRY PFNGLGETSYNCIV_PROC (GLsync sync, GLenum pname, GLsizei bufSize, GLsizei * length, GLint * values));
+typedef void (APIENTRY PFNGLGETSYNCIV_PROC (GLsync sync, GLenum pname, GLsizei count, GLsizei * length, GLint * values));
 typedef GLboolean (APIENTRY PFNGLISSYNC_PROC (GLsync sync));
 typedef void (APIENTRY PFNGLMULTIDRAWELEMENTSBASEVERTEX_PROC (GLenum mode, const GLsizei * count, GLenum type, const void *const* indices, GLsizei drawcount, const GLint * basevertex));
 typedef void (APIENTRY PFNGLPROVOKINGVERTEX_PROC (GLenum mode));
@@ -2630,6 +2620,7 @@ GLAPI PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv;
 #define GL_ARB_instanced_arrays
 #define GL_ARB_multi_draw_indirect
 #define GL_ARB_shader_image_load_store
+#define GL_ARB_shader_storage_buffer_object
 #define GL_ARB_transform_feedback2
 #define GL_VERSION_1_0
 #define GL_VERSION_1_1
@@ -2656,6 +2647,7 @@ extern int FLEXT_ARB_instanced_arrays;
 extern int FLEXT_ARB_compute_shader;
 extern int FLEXT_ARB_shader_image_load_store;
 extern int FLEXT_ARB_transform_feedback2;
+extern int FLEXT_ARB_shader_storage_buffer_object;
 
 int flextInit(void);
 

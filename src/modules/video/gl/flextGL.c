@@ -71,6 +71,10 @@ int flextInit(void)
         FLEXT_ARB_transform_feedback2 = GL_TRUE;
     }
 
+    if (SDL_GL_ExtensionSupported("GL_ARB_shader_storage_buffer_object")) {
+        FLEXT_ARB_shader_storage_buffer_object = GL_TRUE;
+    }
+
 
     return 0;
 }
@@ -213,6 +217,10 @@ void flextLoadOpenGLFunctions(void)
 
     glpfBindImageTexture = (PFNGLBINDIMAGETEXTURE_PROC*)SDL_GL_GetProcAddress("glBindImageTexture");
     glpfMemoryBarrier = (PFNGLMEMORYBARRIER_PROC*)SDL_GL_GetProcAddress("glMemoryBarrier");
+
+    /* GL_ARB_shader_storage_buffer_object */
+
+    glpfShaderStorageBlockBinding = (PFNGLSHADERSTORAGEBLOCKBINDING_PROC*)SDL_GL_GetProcAddress("glShaderStorageBlockBinding");
 
     /* GL_ARB_transform_feedback2 */
 
@@ -616,6 +624,7 @@ int FLEXT_ARB_instanced_arrays = GL_FALSE;
 int FLEXT_ARB_compute_shader = GL_FALSE;
 int FLEXT_ARB_shader_image_load_store = GL_FALSE;
 int FLEXT_ARB_transform_feedback2 = GL_FALSE;
+int FLEXT_ARB_shader_storage_buffer_object = GL_FALSE;
 
 /* ---------------------- Function pointer definitions --------------------- */
 
@@ -753,6 +762,10 @@ PFNGLMULTIDRAWELEMENTSINDIRECT_PROC* glpfMultiDrawElementsIndirect = NULL;
 
 PFNGLBINDIMAGETEXTURE_PROC* glpfBindImageTexture = NULL;
 PFNGLMEMORYBARRIER_PROC* glpfMemoryBarrier = NULL;
+
+/* GL_ARB_shader_storage_buffer_object */
+
+PFNGLSHADERSTORAGEBLOCKBINDING_PROC* glpfShaderStorageBlockBinding = NULL;
 
 /* GL_ARB_transform_feedback2 */
 
