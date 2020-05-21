@@ -17,6 +17,10 @@ struct GLVersion {
 	inline bool operator==(const GLVersion& rhs) const {
 		return majorVersion == rhs.majorVersion && minorVersion == rhs.minorVersion;
 	}
+
+	inline bool isAtLeast(int major, int minor) {
+		return major > majorVersion || (major == majorVersion && minor >= minorVersion);
+	}
 };
 
 struct GLSLVersion {

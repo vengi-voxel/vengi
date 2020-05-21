@@ -1812,8 +1812,8 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		return false;
 	}
 
-	_priv::setupLimitsAndSpecs();
 	_priv::setupFeatures();
+	_priv::setupLimitsAndSpecs();
 
 	const char *glvendor = (const char*)glGetString(GL_VENDOR);
 	const char* glrenderer = (const char*)glGetString(GL_RENDERER);
