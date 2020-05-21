@@ -160,27 +160,21 @@ void setupLimitsAndSpecs() {
 	} else {
 		renderState().limits[core::enumVal(Limit::MaxFragmentInputComponents)] = 60;
 	}
-	if (_priv::s.glVersion.majorVersion > 4 || (_priv::s.glVersion.majorVersion == 4 && _priv::s.glVersion.minorVersion >= 3)) {
-#ifdef GL_MAX_COMPUTE_WORK_GROUP_COUNT
+	if (hasFeature(Feature::ComputeShaders)) {
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountX)]);
 		checkError();
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountY)]);
 		checkError();
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountZ)]);
 		checkError();
-#endif
-#ifdef GL_MAX_COMPUTE_WORK_GROUP_SIZE
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupSizeX)]);
 		checkError();
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupSizeY)]);
 		checkError();
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupSizeZ)]);
 		checkError();
-#endif
-#ifdef GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS
 		glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupInvocations)]);
 		checkError();
-#endif
 	}
 #ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &renderState().limits[core::enumVal(Limit::MaxVertexUniformComponents)]);
