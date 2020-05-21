@@ -386,13 +386,13 @@ void SceneManager::scale(int layerId) {
 	if (srcVolume == nullptr) {
 		return;
 	}
-	const voxel::Region& srcRegion = srcVolume->region();
+	const voxel::Region srcRegion = srcVolume->region();
 	const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
 	rescaleVolume(*srcVolume, *destVolume);
 	setNewVolume(layerId, destVolume, true);
-	modified(layerId, srcVolume->region());
+	modified(layerId, srcRegion);
 }
 
 void SceneManager::crop() {
