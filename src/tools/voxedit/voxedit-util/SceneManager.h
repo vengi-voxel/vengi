@@ -170,7 +170,7 @@ private:
 	void colorToNewLayer(const voxel::Voxel voxelColor);
 	void thicken(int amount);
 	void crop();
-	void scale(int layerId, float ratio);
+	void scale(int layerId);
 	void resize(const glm::ivec3& size);
 	int size() const;
 
