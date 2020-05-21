@@ -194,11 +194,17 @@ void setupLimitsAndSpecs() {
 	GLint maxUniformBufferBindings;
 	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformBufferBindings);
 	renderState().limits[core::enumVal(Limit::MaxUniformBufferBindings)] = maxUniformBufferBindings;
+	checkError();
 
 	if (hasFeature(Feature::ShaderStorageBufferObject)) {
 		GLint shaderStorageBufferOffsetAlignment;
 		glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &shaderStorageBufferOffsetAlignment);
 		renderState().specs[core::enumVal(Spec::ShaderStorageBufferOffsetAlignment)] = shaderStorageBufferOffsetAlignment;
+		checkError();
+		GLint maxShaderStorageBlockSize;
+		glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxShaderStorageBlockSize);
+		renderState().limits[core::enumVal(Limit::MaxShaderStorageBufferSize)] = maxShaderStorageBlockSize;
+		checkError();
 	}
 
 	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[core::enumVal(Limit::MaxElementVertices)]);

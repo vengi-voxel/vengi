@@ -175,6 +175,7 @@ enum class BufferType {
 	UniformBuffer,
 	TransformBuffer,
 	PixelBuffer,
+	ShaderStorageBuffer,
 
 	Max
 };
@@ -362,6 +363,7 @@ enum class Limit {
 	MaxComputeWorkGroupInvocations,
 	MaxUniformBufferSize,
 	MaxUniformBufferBindings,
+	MaxShaderStorageBufferSize,
 
 	Max
 };
