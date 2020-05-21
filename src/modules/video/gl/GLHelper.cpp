@@ -225,7 +225,7 @@ void setupFeatures() {
 		{"GL_ARB_instanced_arrays"},
 		{"GL_ARB_debug_output"},
 		// the primary difference between ARB and EXT is that ARB requires the use of
-		// glCreate”Resource” rather than working from glGen”Resource” object handles.
+		// glCreateResource rather than working from glGenResource object handles.
 		// https://www.opengl.org/registry/specs/ARB/direct_state_access.txt
 		{"GL_ARB_direct_state_access"},
 		{"GL_ARB_buffer_storage"},
