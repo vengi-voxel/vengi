@@ -13,6 +13,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/Loader.h"
 #include "voxelformat/VoxFileFormat.h"
+#include "voxelutil/VolumeRescaler.h"
 
 VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -23,6 +24,7 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 core::AppState VoxConvert::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
+	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	return state;
 }
 
@@ -71,7 +73,7 @@ core::AppState VoxConvert::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (hasArg("--merge")) {
+	if (hasArg("--merge") || hasArg("-m")) {
 		voxel::RawVolume* merged = volumes.merge();
 		if (merged == nullptr) {
 			Log::error("Failed to merge volumes");
@@ -79,6 +81,18 @@ core::AppState VoxConvert::onInit() {
 		}
 		voxelformat::clearVolumes(volumes);
 		volumes.push_back(voxel::VoxelVolume(merged));
+	}
+
+	if (hasArg("--scale") || hasArg("-s")) {
+		for (auto& v : volumes) {
+			const voxel::Region srcRegion = v.volume->region();
+			const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+			const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
+			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
+			rescaleVolume(*v.volume, *destVolume);
+			delete v.volume;
+			v.volume = destVolume;
+		}
 	}
 
 	if (!voxelformat::saveVolumeFormat(outputFile, volumes)) {
