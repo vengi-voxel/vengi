@@ -13,8 +13,8 @@ namespace voxel {
  * @brief Represents a vertex in a mesh and includes position and ambient occlusion
  * as well as color and material information.
  */
-struct alignas(16) VoxelVertex {
-	glm::ivec3 position;
+struct VoxelVertex {
+	glm::i16vec3 position;
 	/** 0 is the darkest, 3 is no occlusion at all */
 	uint8_t ambientOcclusion;
 	uint8_t colorIndex;
@@ -22,7 +22,7 @@ struct alignas(16) VoxelVertex {
 	VoxelType material;
 	uint8_t padding;
 };
-static_assert(sizeof(VoxelVertex) == 16, "Unexpected size of the vertex struct");
+static_assert(sizeof(VoxelVertex) == 10, "Unexpected size of the vertex struct");
 
 // TODO: maybe reduce to uint16_t and use glDrawElementsBaseVertex
 typedef uint32_t IndexType;
