@@ -30,8 +30,6 @@ Mesh::Mesh(Mesh&& other) {
 	_compressedIndexSize = other._compressedIndexSize;
 	other._compressedIndexSize = 0u;
 	_offset = std::move(other._offset);
-	_mins = std::move(other._mins);
-	_maxs = std::move(other._maxs);
 	_mayGetResized = other._mayGetResized;
 }
 
@@ -46,8 +44,6 @@ Mesh::Mesh(const Mesh& other) {
 		_compressedIndices = nullptr;
 	}
 	_offset = other._offset;
-	_mins = other._mins;
-	_maxs = other._maxs;
 	_mayGetResized = other._mayGetResized;
 }
 
@@ -63,8 +59,6 @@ Mesh& Mesh::operator=(const Mesh& other) {
 		_compressedIndices = nullptr;
 	}
 	_offset = other._offset;
-	_mins = other._mins;
-	_maxs = other._maxs;
 	_mayGetResized = other._mayGetResized;
 	return *this;
 }
@@ -78,8 +72,6 @@ Mesh& Mesh::operator=(Mesh&& other) {
 	_compressedIndexSize = other._compressedIndexSize;
 	other._compressedIndexSize = 4u;
 	_offset = std::move(other._offset);
-	_mins = std::move(other._mins);
-	_maxs = std::move(other._maxs);
 	_mayGetResized = other._mayGetResized;
 	return *this;
 }
@@ -190,9 +182,6 @@ void Mesh::removeUnusedVertices() {
 		isVertexUsed[v] = true;
 	}
 
-	_mins = glm::ivec3((std::numeric_limits<int>::max)() / 2);
-	_maxs = glm::ivec3((std::numeric_limits<int>::min)() / 2);
-
 	int noOfUsedVertices = 0;
 	IndexArray newPos(vertices);
 	for (size_t vertCt = 0u; vertCt < vertices; ++vertCt) {
@@ -201,8 +190,6 @@ void Mesh::removeUnusedVertices() {
 		}
 		const VoxelVertex& v = _vecVertices[vertCt];
 		_vecVertices[noOfUsedVertices] = v;
-		_mins = (glm::min)(_mins, v.position);
-		_maxs = (glm::max)(_maxs, v.position);
 		newPos[vertCt] = noOfUsedVertices;
 		++noOfUsedVertices;
 	}

@@ -55,9 +55,6 @@ public:
 	void removeUnusedVertices();
 	void compressIndices();
 
-	const glm::ivec3& mins() const;
-	const glm::ivec3& maxs() const;
-
 	const uint8_t* compressedIndices() const;
 	size_t compressedIndexSize() const;
 
@@ -68,8 +65,6 @@ private:
 	uint8_t *_compressedIndices = nullptr;
 	size_t _compressedIndexSize = 0u;
 	glm::ivec3 _offset { 0 };
-	glm::ivec3 _mins { 0 };
-	glm::ivec3 _maxs { 0 };
 	bool _mayGetResized;
 };
 
@@ -79,14 +74,6 @@ inline const uint8_t* Mesh::compressedIndices() const {
 
 inline size_t Mesh::compressedIndexSize() const {
 	return _compressedIndexSize;
-}
-
-inline const glm::ivec3& Mesh::mins() const {
-	return _mins;
-}
-
-inline const glm::ivec3& Mesh::maxs() const {
-	return _maxs;
 }
 
 }
