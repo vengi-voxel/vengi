@@ -9,8 +9,6 @@
     Do not edit directly, modify the template or profile and regenerate.
 */
 
-#include <KHR/khrplatform.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,6 +34,8 @@ extern "C" {
 #endif
 
 /* ------------------------------- DATA TYPES ------------------------------ */
+
+#include <KHR/khrplatform.h>
 
 @passthru
 
