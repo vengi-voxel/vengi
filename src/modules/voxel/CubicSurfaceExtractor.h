@@ -200,7 +200,7 @@ extern void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads)
  *    3. The user could provide a custom mesh class, e.g a thin wrapper around an openGL VBO to allow direct writing into this structure.
  */
 template<typename VolumeType, typename IsQuadNeeded>
-void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, IsQuadNeeded isQuadNeeded, bool mergeQuads = true, bool reuseVertices = true) {
+void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, IsQuadNeeded isQuadNeeded, const glm::ivec3& translate, bool mergeQuads = true, bool reuseVertices = true) {
 	core_trace_scoped(ExtractCubicMesh);
 
 	result->clear();
@@ -296,13 +296,13 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 				// X [A] LEFT
 				if (isQuadNeeded(voxelCurrentMaterial, voxelLeftMaterial, NegativeX)) {
 					const IndexType v_0_1 = addVertex(reuseVertices, regX, regY,     regZ,     voxelCurrent, previousSliceVertices, result,
-							voxelLeftBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, offset);
+							voxelLeftBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, translate);
 					const IndexType v_1_4 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelCurrent, currentSliceVertices,  result,
-							voxelBelowLeftMaterial, voxelLeftBehindMaterial, voxelBelowLeftBehindMaterial, offset);
+							voxelBelowLeftMaterial, voxelLeftBehindMaterial, voxelBelowLeftBehindMaterial, translate);
 					const IndexType v_2_8 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelCurrent, currentSliceVertices,  result,
-							voxelLeftBehindMaterial, voxelAboveLeftMaterial, voxelAboveLeftBehindMaterial, offset);
+							voxelLeftBehindMaterial, voxelAboveLeftMaterial, voxelAboveLeftBehindMaterial, translate);
 					const IndexType v_3_5 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelCurrent, previousSliceVertices, result,
-							voxelAboveLeftMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, offset);
+							voxelAboveLeftMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, translate);
 					vecQuads[NegativeX][regX].emplace_back(v_0_1, v_1_4, v_2_8, v_3_5);
 				}
 
@@ -317,13 +317,13 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 					const VoxelType _voxelBelowRightBefore = voxelBelowBefore.getMaterial();
 
 					const IndexType v_0_2 = addVertex(reuseVertices, regX, regY,     regZ,     voxelLeft, previousSliceVertices, result,
-							voxelBelowMaterial, voxelBeforeMaterial, _voxelBelowRightBefore, offset);
+							voxelBelowMaterial, voxelBeforeMaterial, _voxelBelowRightBefore, translate);
 					const IndexType v_1_3 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelLeft, currentSliceVertices,  result,
-							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, offset);
+							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, translate);
 					const IndexType v_2_7 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelLeft, currentSliceVertices,  result,
-							_voxelAboveRight, _voxelRightBehind, _voxelAboveRightBehind, offset);
+							_voxelAboveRight, _voxelRightBehind, _voxelAboveRightBehind, translate);
 					const IndexType v_3_6 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelLeft, previousSliceVertices, result,
-							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, offset);
+							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, translate);
 					vecQuads[PositiveX][regX].emplace_back(v_0_2, v_3_6, v_2_7, v_1_3);
 				}
 
@@ -340,13 +340,13 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 					const VoxelType voxelBelowRightBehindMaterial = voxelBelowRightBehind.getMaterial();
 
 					const IndexType v_0_1 = addVertex(reuseVertices, regX,     regY, regZ,     voxelCurrent, previousSliceVertices, result,
-							voxelBelowBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, offset);
+							voxelBelowBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, translate);
 					const IndexType v_1_2 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelCurrent, previousSliceVertices, result,
-							voxelBelowRightMaterial, voxelBelowBeforeMaterial, voxelBelowRightBeforeMaterial, offset);
+							voxelBelowRightMaterial, voxelBelowBeforeMaterial, voxelBelowRightBeforeMaterial, translate);
 					const IndexType v_2_3 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelCurrent, currentSliceVertices,  result,
-							voxelBelowBehindMaterial, voxelBelowRightMaterial, voxelBelowRightBehindMaterial, offset);
+							voxelBelowBehindMaterial, voxelBelowRightMaterial, voxelBelowRightBehindMaterial, translate);
 					const IndexType v_3_4 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelCurrent, currentSliceVertices,  result,
-							voxelBelowLeftMaterial, voxelBelowBehindMaterial, voxelBelowLeftBehindMaterial, offset);
+							voxelBelowLeftMaterial, voxelBelowBehindMaterial, voxelBelowLeftBehindMaterial, translate);
 					vecQuads[NegativeY][regY].emplace_back(v_0_1, v_1_2, v_2_3, v_3_4);
 				}
 
@@ -360,13 +360,13 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 					const VoxelType _voxelAboveLeftBehind  = voxelLeftBehind.getMaterial();
 
 					const IndexType v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     voxelBelow, previousSliceVertices, result,
-							voxelBeforeMaterial, voxelLeftMaterial, voxelLeftBeforeMaterial, offset);
+							voxelBeforeMaterial, voxelLeftMaterial, voxelLeftBeforeMaterial, translate);
 					const IndexType v_1_6 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelBelow, previousSliceVertices, result,
-							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, offset);
+							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, translate);
 					const IndexType v_2_7 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelBelow, currentSliceVertices,  result,
-							_voxelAboveBehind, _voxelAboveRight, _voxelAboveRightBehind, offset);
+							_voxelAboveBehind, _voxelAboveRight, _voxelAboveRightBehind, translate);
 					const IndexType v_3_8 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelBelow, currentSliceVertices,  result,
-							voxelLeftMaterial, _voxelAboveBehind, _voxelAboveLeftBehind, offset);
+							voxelLeftMaterial, _voxelAboveBehind, _voxelAboveLeftBehind, translate);
 					vecQuads[PositiveY][regY].emplace_back(v_0_5, v_3_8, v_2_7, v_1_6);
 				}
 
@@ -379,13 +379,13 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 					const VoxelType voxelBelowRightBeforeMaterial = voxelBelowRightBefore.getMaterial();
 
 					const IndexType v_0_1 = addVertex(reuseVertices, regX,     regY,     regZ, voxelCurrent, previousSliceVertices, result,
-							voxelBelowBeforeMaterial, voxelLeftBeforeMaterial, voxelBelowLeftBeforeMaterial, offset); //1
+							voxelBelowBeforeMaterial, voxelLeftBeforeMaterial, voxelBelowLeftBeforeMaterial, translate); //1
 					const IndexType v_1_5 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelCurrent, previousSliceVertices, result,
-							voxelAboveBeforeMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, offset); //5
+							voxelAboveBeforeMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, translate); //5
 					const IndexType v_2_6 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelCurrent, previousSliceVertices, result,
-							voxelAboveBeforeMaterial, voxelRightBeforeMaterial, voxelAboveRightBeforeMaterial, offset); //6
+							voxelAboveBeforeMaterial, voxelRightBeforeMaterial, voxelAboveRightBeforeMaterial, translate); //6
 					const IndexType v_3_2 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelCurrent, previousSliceVertices, result,
-							voxelBelowBeforeMaterial, voxelRightBeforeMaterial, voxelBelowRightBeforeMaterial, offset); //2
+							voxelBelowBeforeMaterial, voxelRightBeforeMaterial, voxelBelowRightBeforeMaterial, translate); //2
 					vecQuads[NegativeZ][regZ].emplace_back(v_0_1, v_1_5, v_2_6, v_3_2);
 				}
 
@@ -397,13 +397,13 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny0pz().getMaterial();
 
 					const IndexType v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, voxelBefore, previousSliceVertices, result,
-							voxelBelowMaterial, voxelLeftMaterial, voxelBelowLeftMaterial, offset); //4
+							voxelBelowMaterial, voxelLeftMaterial, voxelBelowLeftMaterial, translate); //4
 					const IndexType v_1_8 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelBefore, previousSliceVertices, result,
-							_voxelAboveBehind, voxelLeftMaterial, voxelAboveLeftMaterial, offset); //8
+							_voxelAboveBehind, voxelLeftMaterial, voxelAboveLeftMaterial, translate); //8
 					const IndexType v_2_7 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelBefore, previousSliceVertices, result,
-							_voxelAboveBehind, _voxelRightBehind, _voxelAboveRightBehind, offset); //7
+							_voxelAboveBehind, _voxelRightBehind, _voxelAboveRightBehind, translate); //7
 					const IndexType v_3_3 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelBefore, previousSliceVertices, result,
-							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, offset); //3
+							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, translate); //3
 					vecQuads[PositiveZ][regZ].emplace_back(v_0_4, v_3_3, v_2_7, v_1_8);
 				}
 

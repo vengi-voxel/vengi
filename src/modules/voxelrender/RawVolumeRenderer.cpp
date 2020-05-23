@@ -342,7 +342,7 @@ bool RawVolumeRenderer::extract(int idx, const voxel::Region& region, bool updat
 void RawVolumeRenderer::extract(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const {
 	voxel::Region reg = region;
 	reg.shiftUpperCorner(1, 1, 1);
-	voxel::extractCubicMesh(volume, reg, mesh, raw::CustomIsQuadNeeded());
+	voxel::extractCubicMesh(volume, reg, mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());
 }
 
 bool RawVolumeRenderer::hiddenState(int idx) const {

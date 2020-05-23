@@ -41,7 +41,7 @@ TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 	_volData.setVoxel(2, 0, 2, createVoxel(VoxelType::Grass, 0));
 
 	Mesh mesh(1000, 1000);
-	extractCubicMesh(&_volData, _ctx.region(), &mesh, IsQuadNeeded());
+	extractCubicMesh(&_volData, _ctx.region(), &mesh, IsQuadNeeded(), _ctx.region().getLowerCorner());
 	const VoxelVertex* vertices = mesh.getRawVertexData();
 	const int amount = mesh.getNoOfVertices();
 	// TODO: this was the amount before ao

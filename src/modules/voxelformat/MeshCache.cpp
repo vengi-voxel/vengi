@@ -72,7 +72,7 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 	region.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(volume, region, &mesh, [] (const voxel::VoxelType& back, const voxel::VoxelType& front, voxel::FaceNames face) {
 		return isBlocked(back) && !isBlocked(front);
-	});
+	}, region.getLowerCorner());
 	delete volume;
 
 	Log::info("Generated mesh for %s", fullPath);

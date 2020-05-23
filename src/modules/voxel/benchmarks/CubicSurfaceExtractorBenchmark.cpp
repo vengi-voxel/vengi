@@ -55,7 +55,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractGreedy)(bench
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), true, true);
+		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), true, true);
 	}
 }
 
@@ -66,7 +66,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtract)(benchmark::
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), false, false);
+		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), false, false);
 	}
 }
 
@@ -76,7 +76,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractGreedyEmpty)(
 	voxel::RawVolume volume(volumeRegion);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), true, true);
+		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), true, true);
 	}
 }
 
@@ -86,7 +86,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractEmpty)(benchm
 	voxel::RawVolume volume(volumeRegion);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), false, false);
+		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), false, false);
 	}
 }
 
@@ -97,7 +97,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtractGreedy)(ben
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), true, true);
+		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), true, true);
 	}
 }
 
@@ -108,7 +108,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtract)(benchmark
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), false, false);
+		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), false, false);
 	}
 }
 
@@ -118,7 +118,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtractGreedyEmpty
 	voxel::PagedVolume volume(&pager, 1024 * 1024 * 1024, 256);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), true, true);
+		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), true, true);
 	}
 }
 
@@ -128,7 +128,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, PagedVolumeExtractEmpty)(benc
 	voxel::PagedVolume volume(&pager, 1024 * 1024 * 1024, 256);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), false, false);
+		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), false, false);
 	}
 }
 

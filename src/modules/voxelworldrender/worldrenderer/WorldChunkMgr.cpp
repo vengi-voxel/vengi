@@ -138,7 +138,10 @@ void WorldChunkMgr::handleMeshQueue() {
 	}
 
 	freeChunkBuffer->mesh = std::move(mesh);
-	freeChunkBuffer->_aabb = {freeChunkBuffer->mesh.mins(), freeChunkBuffer->mesh.maxs()};
+	const glm::ivec3& size = _meshExtractor.meshSize();
+	const glm::ivec3& mins = freeChunkBuffer->mesh.getOffset();
+	const glm::ivec3 maxs(mins.x + size.x, mins.y + size.y, mins.z + size.z);
+	freeChunkBuffer->_aabb = {mins, maxs};
 	if (!_octree.insert(freeChunkBuffer)) {
 		Log::warn("Failed to insert into octree");
 	}

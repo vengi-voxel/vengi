@@ -100,7 +100,7 @@ void WorldMeshExtractor::extractScheduledMesh() {
 	const int factor = 64;
 	const int vertices = region.getWidthInVoxels() * region.getDepthInVoxels() * factor;
 	voxel::Mesh mesh(vertices, vertices);
-	voxel::extractCubicMesh(_volume, region, &mesh, voxel::IsQuadNeeded());
+	voxel::extractCubicMesh(_volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner());
 	if (!mesh.isEmpty()) {
 		_extracted.push(std::move(mesh));
 	}
