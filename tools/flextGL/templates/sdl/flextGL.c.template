@@ -1,86 +1,90 @@
-@require(passthru, functions, enums, options, version, extensions, args)
-/*
-    This file was generated using https://github.com/mosra/flextgl:
-
-        path/to/flextGLgen.py @args
-
-    Do not edit directly, modify the template or profile and regenerate.
-*/
+@require(passthru, functions, enums, options, version, extensions)
+/* WARNING: This file was automatically generated */
+/* Do not edit. */
 
 #include "flextGL.h"
-
 #include <SDL.h>
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void flextLoadOpenGLFunctions(void) {
-    @for category,funcs in functions:
-    @if funcs:
-    @if category not in ['VERSION_1_0_DEPRECATED', 'VERSION_1_1_DEPRECATED']:
-    /* GL_@category */
-    @for f in funcs:
-    glpf@f.name = (PFNGL@f.name.upper()_PROC*)SDL_GL_GetProcAddress("gl@f.name");
-    @end
 
-    @end
-    @end
-    @end
-}
+void flextLoadOpenGLFunctions(void);
 
-int flextInit(void) {
+/**
+ * \return -1 on error, 0 on success
+ * \sa SDL_GetError
+ */
+int flextInit(void)
+{
+    @if version.int_value() >= 32 and not version.profile == 'core':
+    GLint profile;
+    @end
     int major;
     int minor;
+
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
 
     flextLoadOpenGLFunctions();
 
-    /* Check for minimal version and profile */
+    /* --- Check for minimal version and profile --- */
 
-    if(major * 10 + minor < @version.int_value()!s) {
+    if (major * 10 + minor < @version.int_value()!s) {
         return SDL_SetError("OpenGL context hasn't the expected version @version.major!s.@version.minor!s.");
     }
-    @if version.int_value() >= 32 and not version.profile == 'core':
 
-    GLint profile;
+    @if version.int_value() >= 32 and not version.profile == 'core':
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile);
-    if((profile & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) == 0) {
+
+    if ((profile & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) == 0) {
         return SDL_SetError("This application requires a compatibility profile");
     }
     @end
 
-    @if extensions:
     /* --- Check for extensions --- */
 
     @for extension,required in extensions:
     @if required:
-    if(!SDL_GL_ExtensionSupported("GL_@extension")) {
+    if (!SDL_GL_ExtensionSupported("GL_@extension")) {
         return SDL_SetError("OpenGL extension @extension not supported.");
     }
     @else:
-    if(SDL_GL_ExtensionSupported("GL_@extension")) {
+    if (SDL_GL_ExtensionSupported("GL_@extension")) {
         FLEXT_@extension = GL_TRUE;
     }
     @end
-    @end
 
     @end
+
     return 0;
 }
 
-@if extensions:
-/* Extension flag definitions */
+void flextLoadOpenGLFunctions(void)
+{
+    /* --- Function pointer loading --- */
+
+    @for category,funcs in functions:
+    /* GL_@category */
+
+    @for f in funcs:
+    glpf@f.name = (PFNGL@f.name.upper()_PROC*)SDL_GL_GetProcAddress("gl@f.name");
+    @end
+
+    @end
+}
+
+/* ----------------------- Extension flag definitions ---------------------- */
 @for extension,required in extensions:
 int FLEXT_@extension = GL_FALSE;
 @end
 
-@end
-/* Function pointer definitions */
+/* ---------------------- Function pointer definitions --------------------- */
 
 @for category,funcs in functions:
-@if len(funcs) > 0 and category not in ['VERSION_1_0_DEPRECATED', 'VERSION_1_1_DEPRECATED' ]:
+@if len(funcs) > 0:
 /* GL_@category */
 
 @for f in funcs:
@@ -89,6 +93,7 @@ PFNGL@f.name.upper()_PROC* glpf@f.name = NULL;
 
 @end
 @end
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,12 +1,8 @@
+/* WARNING: This file was automatically generated */
+/* Do not edit. */
+
 #ifndef __gl_h_
 #define __gl_h_
-/*
-    This file was generated using https://github.com/mosra/flextgl:
-
-        path/to/flextGLgen.py -T sdl -D /home/mgerhardy/dev/engine/src/modules/video/gl profiles/gl33.txt
-
-    Do not edit directly, modify the template or profile and regenerate.
-*/
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,32 +28,71 @@ extern "C" {
 #define GLAPI extern
 #endif
 
-/* ------------------------------- DATA TYPES ------------------------------ */
+/* -------------------------------- DATA TYPES ------------------------------- */
 
-#include <KHR/khrplatform.h>
+#include <stddef.h>
+#ifndef GLEXT_64_TYPES_DEFINED
+/* This code block is duplicated in glxext.h, so must be protected */
+#define GLEXT_64_TYPES_DEFINED
+/* Define int32_t, int64_t, and uint64_t types for UST/MSC */
+/* (as used in the GL_EXT_timer_query extension). */
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#include <inttypes.h>
+#elif defined(__sun__) || defined(__digital__)
+#include <inttypes.h>
+#if defined(__STDC__)
+#if defined(__arch64__) || defined(_LP64)
+typedef long int int64_t;
+typedef unsigned long int uint64_t;
+#else
+typedef long long int int64_t;
+typedef unsigned long long int uint64_t;
+#endif /* __arch64__ */
+#endif /* __STDC__ */
+#elif defined( __VMS ) || defined(__sgi)
+#include <inttypes.h>
+#elif defined(__SCO__) || defined(__USLC__)
+#include <stdint.h>
+#elif defined(__UNIXOS2__) || defined(__SOL64__)
+typedef long int int32_t;
+typedef long long int int64_t;
+typedef unsigned long long int uint64_t;
+#elif defined(_WIN32) && defined(__GNUC__)
+#include <stdint.h>
+#elif defined(_WIN32)
+typedef __int32 int32_t;
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+#else
+/* Fallback if nothing above works */
+#include <inttypes.h>
+#endif
+#endif
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
 typedef unsigned int GLbitfield;
 typedef void GLvoid;
-typedef khronos_int8_t GLbyte;
-typedef khronos_uint8_t GLubyte;
-typedef khronos_int16_t GLshort;
-typedef khronos_uint16_t GLushort;
+typedef signed char GLbyte;
+typedef short GLshort;
 typedef int GLint;
+typedef unsigned char GLubyte;
+typedef unsigned short GLushort;
 typedef unsigned int GLuint;
 typedef int GLsizei;
-typedef khronos_float_t GLfloat;
+typedef float GLfloat;
+typedef float GLclampf;
 typedef double GLdouble;
+typedef double GLclampd;
 typedef char GLchar;
-typedef khronos_uint16_t GLhalf;
-typedef khronos_intptr_t GLintptr;
-typedef khronos_ssize_t GLsizeiptr;
-typedef khronos_int64_t GLint64;
-typedef khronos_uint64_t GLuint64;
+typedef unsigned short GLhalf;
+typedef ptrdiff_t GLintptr;
+typedef ptrdiff_t GLsizeiptr;
+typedef int64_t GLint64;
+typedef uint64_t GLuint64;
 typedef struct __GLsync *GLsync;
 typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 
-/* ---------------------------------- ENUMS -------------------------------- */
+/* ----------------------------------- ENUMS --------------------------------- */
 
 /* GL_VERSION_1_0 */
 
@@ -1090,7 +1125,8 @@ typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_MAX_COMBINED_SHADER_OUTPUT_RESOURCES 0x8F39
 #define GL_MAX_COMBINED_IMAGE_UNITS_AND_FRAGMENT_OUTPUTS 0x8F39
 
-/* -------------------------- FUNCTION PROTOTYPES -------------------------- */
+/* --------------------------- FUNCTION PROTOTYPES --------------------------- */
+
 
 /* GL_ARB_buffer_storage */
 
@@ -1099,6 +1135,7 @@ typedef void (APIENTRY PFNGLBUFFERSTORAGE_PROC (GLenum target, GLsizeiptr size, 
 GLAPI PFNGLBUFFERSTORAGE_PROC* glpfBufferStorage;
 
 #define glBufferStorage glpfBufferStorage
+
 
 /* GL_ARB_compute_shader */
 
@@ -1110,6 +1147,7 @@ GLAPI PFNGLDISPATCHCOMPUTEINDIRECT_PROC* glpfDispatchComputeIndirect;
 
 #define glDispatchCompute glpfDispatchCompute
 #define glDispatchComputeIndirect glpfDispatchComputeIndirect
+
 
 /* GL_ARB_debug_output */
 
@@ -1127,6 +1165,7 @@ GLAPI PFNGLGETDEBUGMESSAGELOGARB_PROC* glpfGetDebugMessageLogARB;
 #define glDebugMessageControlARB glpfDebugMessageControlARB
 #define glDebugMessageInsertARB glpfDebugMessageInsertARB
 #define glGetDebugMessageLogARB glpfGetDebugMessageLogARB
+
 
 /* GL_ARB_direct_state_access */
 
@@ -1424,6 +1463,7 @@ GLAPI PFNGLVERTEXARRAYVERTEXBUFFERS_PROC* glpfVertexArrayVertexBuffers;
 #define glVertexArrayVertexBuffer glpfVertexArrayVertexBuffer
 #define glVertexArrayVertexBuffers glpfVertexArrayVertexBuffers
 
+
 /* GL_ARB_draw_indirect */
 
 typedef void (APIENTRY PFNGLDRAWARRAYSINDIRECT_PROC (GLenum mode, const void * indirect));
@@ -1435,6 +1475,7 @@ GLAPI PFNGLDRAWELEMENTSINDIRECT_PROC* glpfDrawElementsIndirect;
 #define glDrawArraysIndirect glpfDrawArraysIndirect
 #define glDrawElementsIndirect glpfDrawElementsIndirect
 
+
 /* GL_ARB_instanced_arrays */
 
 typedef void (APIENTRY PFNGLVERTEXATTRIBDIVISORARB_PROC (GLuint index, GLuint divisor));
@@ -1442,6 +1483,7 @@ typedef void (APIENTRY PFNGLVERTEXATTRIBDIVISORARB_PROC (GLuint index, GLuint di
 GLAPI PFNGLVERTEXATTRIBDIVISORARB_PROC* glpfVertexAttribDivisorARB;
 
 #define glVertexAttribDivisorARB glpfVertexAttribDivisorARB
+
 
 /* GL_ARB_multi_draw_indirect */
 
@@ -1454,6 +1496,7 @@ GLAPI PFNGLMULTIDRAWELEMENTSINDIRECT_PROC* glpfMultiDrawElementsIndirect;
 #define glMultiDrawArraysIndirect glpfMultiDrawArraysIndirect
 #define glMultiDrawElementsIndirect glpfMultiDrawElementsIndirect
 
+
 /* GL_ARB_shader_image_load_store */
 
 typedef void (APIENTRY PFNGLBINDIMAGETEXTURE_PROC (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format));
@@ -1465,6 +1508,7 @@ GLAPI PFNGLMEMORYBARRIER_PROC* glpfMemoryBarrier;
 #define glBindImageTexture glpfBindImageTexture
 #define glMemoryBarrier glpfMemoryBarrier
 
+
 /* GL_ARB_shader_storage_buffer_object */
 
 typedef void (APIENTRY PFNGLSHADERSTORAGEBLOCKBINDING_PROC (GLuint program, GLuint storageBlockIndex, GLuint storageBlockBinding));
@@ -1472,6 +1516,7 @@ typedef void (APIENTRY PFNGLSHADERSTORAGEBLOCKBINDING_PROC (GLuint program, GLui
 GLAPI PFNGLSHADERSTORAGEBLOCKBINDING_PROC* glpfShaderStorageBlockBinding;
 
 #define glShaderStorageBlockBinding glpfShaderStorageBlockBinding
+
 
 /* GL_ARB_transform_feedback2 */
 
@@ -1498,6 +1543,7 @@ GLAPI PFNGLRESUMETRANSFORMFEEDBACK_PROC* glpfResumeTransformFeedback;
 #define glIsTransformFeedback glpfIsTransformFeedback
 #define glPauseTransformFeedback glpfPauseTransformFeedback
 #define glResumeTransformFeedback glpfResumeTransformFeedback
+
 
 /* GL_VERSION_1_0 */
 
@@ -1648,6 +1694,7 @@ GLAPI PFNGLVIEWPORT_PROC* glpfViewport;
 #define glTexParameteriv glpfTexParameteriv
 #define glViewport glpfViewport
 
+
 /* GL_VERSION_1_1 */
 
 typedef void (APIENTRY PFNGLBINDTEXTURE_PROC (GLenum target, GLuint texture));
@@ -1692,6 +1739,7 @@ GLAPI PFNGLTEXSUBIMAGE2D_PROC* glpfTexSubImage2D;
 #define glTexSubImage1D glpfTexSubImage1D
 #define glTexSubImage2D glpfTexSubImage2D
 
+
 /* GL_VERSION_1_2 */
 
 typedef void (APIENTRY PFNGLCOPYTEXSUBIMAGE3D_PROC (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height));
@@ -1708,6 +1756,7 @@ GLAPI PFNGLTEXSUBIMAGE3D_PROC* glpfTexSubImage3D;
 #define glDrawRangeElements glpfDrawRangeElements
 #define glTexImage3D glpfTexImage3D
 #define glTexSubImage3D glpfTexSubImage3D
+
 
 /* GL_VERSION_1_3 */
 
@@ -1741,6 +1790,7 @@ GLAPI PFNGLSAMPLECOVERAGE_PROC* glpfSampleCoverage;
 #define glGetCompressedTexImage glpfGetCompressedTexImage
 #define glSampleCoverage glpfSampleCoverage
 
+
 /* GL_VERSION_1_4 */
 
 typedef void (APIENTRY PFNGLBLENDCOLOR_PROC (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha));
@@ -1772,6 +1822,7 @@ GLAPI PFNGLPOINTPARAMETERIV_PROC* glpfPointParameteriv;
 #define glPointParameterfv glpfPointParameterfv
 #define glPointParameteri glpfPointParameteri
 #define glPointParameteriv glpfPointParameteriv
+
 
 /* GL_VERSION_1_5 */
 
@@ -1834,6 +1885,7 @@ GLAPI PFNGLUNMAPBUFFER_PROC* glpfUnmapBuffer;
 #define glIsQuery glpfIsQuery
 #define glMapBuffer glpfMapBuffer
 #define glUnmapBuffer glpfUnmapBuffer
+
 
 /* GL_VERSION_2_0 */
 
@@ -2119,6 +2171,7 @@ GLAPI PFNGLVERTEXATTRIBPOINTER_PROC* glpfVertexAttribPointer;
 #define glVertexAttrib4usv glpfVertexAttrib4usv
 #define glVertexAttribPointer glpfVertexAttribPointer
 
+
 /* GL_VERSION_2_1 */
 
 typedef void (APIENTRY PFNGLUNIFORMMATRIX2X3FV_PROC (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value));
@@ -2141,6 +2194,7 @@ GLAPI PFNGLUNIFORMMATRIX4X3FV_PROC* glpfUniformMatrix4x3fv;
 #define glUniformMatrix3x4fv glpfUniformMatrix3x4fv
 #define glUniformMatrix4x2fv glpfUniformMatrix4x2fv
 #define glUniformMatrix4x3fv glpfUniformMatrix4x3fv
+
 
 /* GL_VERSION_3_0 */
 
@@ -2399,6 +2453,7 @@ GLAPI PFNGLVERTEXATTRIBIPOINTER_PROC* glpfVertexAttribIPointer;
 #define glVertexAttribI4usv glpfVertexAttribI4usv
 #define glVertexAttribIPointer glpfVertexAttribIPointer
 
+
 /* GL_VERSION_3_1 */
 
 typedef void (APIENTRY PFNGLCOPYBUFFERSUBDATA_PROC (GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size));
@@ -2439,6 +2494,7 @@ GLAPI PFNGLUNIFORMBLOCKBINDING_PROC* glpfUniformBlockBinding;
 #define glPrimitiveRestartIndex glpfPrimitiveRestartIndex
 #define glTexBuffer glpfTexBuffer
 #define glUniformBlockBinding glpfUniformBlockBinding
+
 
 /* GL_VERSION_3_2 */
 
@@ -2501,6 +2557,7 @@ GLAPI PFNGLWAITSYNC_PROC* glpfWaitSync;
 #define glTexImage2DMultisample glpfTexImage2DMultisample
 #define glTexImage3DMultisample glpfTexImage3DMultisample
 #define glWaitSync glpfWaitSync
+
 
 /* GL_VERSION_3_3 */
 
@@ -2591,7 +2648,8 @@ GLAPI PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv;
 #define glVertexAttribP4ui glpfVertexAttribP4ui
 #define glVertexAttribP4uiv glpfVertexAttribP4uiv
 
-/* -------------------------- CATEGORY DEFINES ----------------------------- */
+
+/* --------------------------- CATEGORY DEFINES ------------------------------ */
 
 #define GL_ARB_buffer_storage
 #define GL_ARB_compute_shader
@@ -2616,7 +2674,8 @@ GLAPI PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv;
 #define GL_VERSION_3_2
 #define GL_VERSION_3_3
 
-/* --------------------- FLAGS FOR OPTIONAL EXTENSIONS --------------------- */
+/* ---------------------- Flags for optional extensions ---------------------- */
+
 
 extern int FLEXT_ARB_debug_output;
 extern int FLEXT_ARB_direct_state_access;
@@ -2639,4 +2698,4 @@ int flextInit(void);
 }
 #endif
 
-#endif
+#endif /* _gl_h_ */
