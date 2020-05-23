@@ -166,7 +166,12 @@ bool QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32
 	const int32_t fy = offset.y + y;
 	const int32_t fz = offset.z + z;
 	Log::debug("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)_zAxisOrientation);
-	if (volume->region().containsPoint(glm::ivec3(fx, fy, fz))) {
+	const voxel::Region& region = volume->region();
+	if (!region.containsPoint(glm::ivec3(fx, fy, fz))) {
+		const glm::ivec3& mins = region.getLowerCorner();
+		const glm::ivec3& maxs = region.getUpperCorner();
+		Log::error("Could not set voxel at %i:%i:%i - outside the region [%i:%i:%i][%i:%i:%i]",
+				fx, fy, fz, mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		return false;
 	}
 	volume->setVoxel(fx, fy, fz, voxel);
