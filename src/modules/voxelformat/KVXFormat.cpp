@@ -4,6 +4,7 @@
 
 #include "KVXFormat.h"
 #include "voxel/MaterialColor.h"
+#include "core/io/FileStream.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/Color.h"
@@ -87,7 +88,6 @@ bool KVXFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	_paletteSize = 256;
 	stream.seek(stream.size() - 3 * _paletteSize);
 	_palette.resize(_paletteSize);
-	const MaterialColorArray& materialColors = getMaterialColors();
 
 	/**
 	 * The last 768 bytes of the KVX file is a standard 256-color VGA palette.
@@ -105,8 +105,7 @@ bool KVXFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		const uint8_t nb = glm::clamp((uint32_t)glm::round((b * 255) / 63.0f), 0u, 255u);
 
 		const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255);
-		const int index = core::Color::getClosestMatch(color, materialColors);
-		_palette[i] = index;
+		_palette[i] = findClosestIndex(color);
 	}
 	stream.seek(currentPos);
 

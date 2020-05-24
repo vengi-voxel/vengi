@@ -2,6 +2,7 @@ set(LIB voxelformat)
 set(SRCS
 	BinVoxFormat.h BinVoxFormat.cpp
 	KVXFormat.h KVXFormat.cpp
+	KV6Format.h KV6Format.cpp
 	VoxFileFormat.h VoxFileFormat.cpp
 	VoxFormat.h VoxFormat.cpp
 	QBTFormat.h QBTFormat.cpp
@@ -23,6 +24,7 @@ set(TEST_SRCS
 	tests/QBFormatTest.cpp
 	tests/CubFormatTest.cpp
 	tests/KVXFormatTest.cpp
+	tests/KV6FormatTest.cpp
 	tests/VXMFormatTest.cpp
 )
 set(TEST_FILES
@@ -30,6 +32,7 @@ set(TEST_FILES
 	tests/qubicle.qbt
 	tests/test.binvox
 	tests/test.kvx
+	tests/test.kv6
 	tests/magicavoxel.vox
 	tests/test.vxm
 	tests/cw.cub

@@ -10,6 +10,9 @@
   </mime-type>
   <mime-type type="application/x-magicavoxel">
     <comment>Voxel model MagicaVoxel</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="VOX "/>
+    </magic>
     <glob pattern="*.vox"/>
   </mime-type>
   <mime-type type="application/x-qubicle-binary">
@@ -18,6 +21,9 @@
   </mime-type>
   <mime-type type="application/x-qubicle-tree">
     <comment>Voxel model Qubicle tree</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="QB 2"/>
+    </magic>
     <glob pattern="*.qbt"/>
   </mime-type>
   <mime-type type="application/x-sandbox-voxedit">
@@ -27,5 +33,12 @@
   <mime-type type="application/x-build-engine">
     <comment>Voxel model used by the Build engine</comment>
     <glob pattern="*.kvx"/>
+  </mime-type>
+  <mime-type type="application/x-slab6">
+    <comment>Voxel model used by the SLAB6 editor</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="Kvxl"/>
+    </magic>
+    <glob pattern="*.kv6"/>
   </mime-type>
 </mime-info>
