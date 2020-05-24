@@ -35,7 +35,7 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 
     /* !!! FIXME: do we not have GetUserPreferredUILanguages on WinPhone or UWP? */
 # if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_SNAME, wbuffer, SDL_arraylen(wbuffer));
+    ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_SNAME, wbuffer, SDL_arraysize(wbuffer));
 # else
     ret = GetSystemDefaultLocaleName(wbuffer, SDL_arraysize(wbuffer));
 # endif
@@ -45,7 +45,7 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         /* Need to convert LPWSTR to LPSTR, that is wide char to char. */
         int i;
 
-        if (ret >= (buflen - 1) ) {
+        if ( ((size_t) ret) >= (buflen - 1) ) {
             ret = (int) (buflen - 1);
         }
         for (i = 0; i < ret; i++) {

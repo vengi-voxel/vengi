@@ -37,7 +37,6 @@ static HMODULE kernel32 = 0;
 static void
 SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
 {
-    const char **retval = NULL;
     char lang[16];
     char country[16];
 
@@ -78,7 +77,7 @@ SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
     if (!pGetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numlangs, wbuf, &wbuflen)) {
         SDL_SYS_GetPreferredLocales_winxp(buf, buflen);  /* oh well, try the fallback. */
     } else {
-        const ULONG endidx = SDL_min(buflen, wbuflen - 1);
+        const ULONG endidx = (ULONG) SDL_min(buflen, wbuflen - 1);
         ULONG str_start = 0;
         ULONG i;
         for (i = 0; i < endidx; i++) {
