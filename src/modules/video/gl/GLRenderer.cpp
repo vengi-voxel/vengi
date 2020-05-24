@@ -1729,9 +1729,7 @@ void destroyContext(RendererContext& context) {
 
 RendererContext createContext(SDL_Window* window) {
 	core_assert(window != nullptr);
-	RendererContext ctx = SDL_GL_CreateContext(window);
-	core_assert(ctx != nullptr);
-	return ctx;
+	return (RendererContext)SDL_GL_CreateContext(window);
 }
 
 void startFrame(SDL_Window* window, RendererContext& context) {

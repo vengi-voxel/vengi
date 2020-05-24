@@ -328,6 +328,10 @@ core::AppState WindowedApp::onInit() {
 	}
 
 	_rendererContext = video::createContext(_window);
+	if (_rendererContext == nullptr) {
+		sdlCheckError();
+		return core::AppState::InitFailure;
+	}
 
 	SDL_DisableScreenSaver();
 
