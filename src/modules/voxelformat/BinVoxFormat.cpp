@@ -152,14 +152,16 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 		return false;
 	}
 
+	const int lowerIdx = get_index(region.getLowerX(), region.getLowerY(), region.getLowerZ(),
+			region.getWidthInVoxels(), region.getHeightInVoxels());
 	RawVolume *volume = new RawVolume(region);
 	volumes.push_back(VoxelVolume{volume, file->fileName(), true});
 	for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-				const int idx = get_index(x, y, z, region.getWidthInVoxels(), region.getHeightInVoxels());
+				const int idx = get_index(x, y, z, region.getWidthInVoxels(), region.getHeightInVoxels()) - lowerIdx;
 				if (voxelBuf[idx] != 0u) {
-					volume->setVoxel(x, z, y, voxel::createVoxel(voxel::VoxelType::Generic, voxelBuf[idx]));
+					volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, voxelBuf[idx]));
 				}
 			}
 		}
