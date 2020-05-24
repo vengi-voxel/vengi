@@ -22,6 +22,7 @@ jobs:
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
             ctest -V -C Debug -R tests-testtraze
+            ctest -V -C Debug -R tests-voxelformat
     linux:
         runs-on: ubuntu-latest
         steps:
@@ -43,6 +44,7 @@ jobs:
             ctest -V -C Debug -R tests-shadertool
             ctest -V -C Debug -R tests-testtraze
             ctest -V -C Debug -R tests-voxedit-util
+            ctest -V -C Debug -R tests-voxelformat
     windows:
         runs-on: windows-latest
         steps:
@@ -65,6 +67,7 @@ jobs:
             ctest -V -C Debug -R tests-util
             ctest -V -C Debug -R tests-stock
             ctest -V -C Debug -R tests-shadertool
+            ctest -V -C Debug -R tests-voxelformat
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v2
           with:
