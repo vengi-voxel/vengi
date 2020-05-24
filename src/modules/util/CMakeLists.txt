@@ -13,11 +13,12 @@ set(LIB util)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math)
 
 set(TEST_SRCS
-	tests/KeybindingParserTest.cpp
-	tests/KeybindingHandlerTest.cpp
 	tests/BufferUtilTest.cpp
+	tests/ConsoleTest.cpp
 	tests/EMailValidatorTest.cpp
 	tests/IncludeUtilTest.cpp
+	tests/KeybindingParserTest.cpp
+	tests/KeybindingHandlerTest.cpp
 )
 set(TEST_FILES
 	testutil/main.h

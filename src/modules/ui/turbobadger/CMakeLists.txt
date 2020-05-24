@@ -221,9 +221,3 @@ endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES render)
 target_include_directories(${LIB} PUBLIC tb)
-
-gtest_suite_sources(tests
-	tests/ConsoleTest.cpp
-	tests/UITest.h
-)
-gtest_suite_deps(tests ${LIB})
