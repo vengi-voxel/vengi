@@ -112,6 +112,7 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 	}
 
 	size_t pre = 0, pos;
+	bool lastResult = false;
 	while ((pos = s.find_first_of('/', pre)) != core::String::npos) {
 		const core::String& dirpart = s.substr(0, pos++);
 		pre = pos;
@@ -122,11 +123,13 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 		uv_fs_t req;
 		const int retVal = uv_fs_mkdir(nullptr, &req, dirc, 0740, nullptr);
 		if (retVal != 0 && req.result != UV_EEXIST) {
-			Log::error("Failed to create dir '%s': %s", dirc, uv_strerror(retVal));
-			return false;
+			Log::debug("Failed to create dir '%s': %s", dirc, uv_strerror(retVal));
+			lastResult = false;
+			continue;
 		}
+		lastResult = true;
 	}
-	return true;
+	return lastResult;
 }
 
 bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter) {
