@@ -99,6 +99,7 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 		// rwx+o, r+g
 		const int retVal = uv_fs_mkdir(nullptr, &req, dir.c_str(), 0740, nullptr);
 		if (retVal != 0 && req.result != UV_EEXIST) {
+			Log::error("%s", uv_strerror(retVal));
 			return false;
 		}
 		return true;
@@ -121,6 +122,7 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 		uv_fs_t req;
 		const int retVal = uv_fs_mkdir(nullptr, &req, dirc, 0740, nullptr);
 		if (retVal != 0 && req.result != UV_EEXIST) {
+			Log::error("%s", uv_strerror(retVal));
 			return false;
 		}
 	}
