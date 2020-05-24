@@ -21,6 +21,15 @@ Enable debug logging
 Enable debug logging
 
 .TP
+\fB\--merge|-m\fR
+Merge all layers into one. Some destination formats only support one layer - for
+those formats this is an explicit parameter.
+
+.TP
+\fB\--scale|-s\fR
+Save the target volume with a down-sampled version of the input volume.
+
+.TP
 \fB\--help\fR
 Print usage information
 
