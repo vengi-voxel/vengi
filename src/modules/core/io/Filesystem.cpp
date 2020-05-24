@@ -46,6 +46,7 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 		normalizePath(_homePath);
 		SDL_free(prefPath);
 		if (!createDir(_homePath, true)) {
+			Log::error("Could not create home dir at: %s", _homePath.c_str());
 			return false;
 		}
 	}
