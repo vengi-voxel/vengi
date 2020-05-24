@@ -10,7 +10,8 @@
 .SH DESCRIPTION
 \fB@COMMANDLINE@\fP is a command line application that can convert several voxel
 volume formats into others. Supported formats are e.g. cub (CubeWorld), qb/qbt
-(Qubicle), vox (MagicaVoxel), vmx (VoxEdit Sandbox), binvox and maybe others.
+(Qubicle), vox (MagicaVoxel), vmx (VoxEdit Sandbox), kvx (Build engine), binvox
+and maybe others.
 .SH OPTIONS
 .TP
 \fB\--trace|--debug\fR

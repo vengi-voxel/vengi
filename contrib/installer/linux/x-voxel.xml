@@ -24,4 +24,8 @@
     <comment>Voxel model Sandbox VoxEdit</comment>
     <glob pattern="*.vxm"/>
   </mime-type>
+  <mime-type type="application/x-build-engine">
+    <comment>Voxel model used by the Build engine</comment>
+    <glob pattern="*.kvx"/>
+  </mime-type>
 </mime-info>
