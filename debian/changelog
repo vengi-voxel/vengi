@@ -1,3 +1,14 @@
+vengi (0.0.4.0-1) UNRELEASED; urgency=low
+
+  * General:
+  * Added support for writing binvox files
+  * Added support for reading kvx (Build-Engine) and kv6 (SLAB6) voxel volumes
+
+  * VoxEdit:
+  * Added `scale` console command
+
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 24 May 2020 22:13:09 +0200
+
 vengi (0.0.3.0-1) unstable; urgency=low
 
   * Assets:

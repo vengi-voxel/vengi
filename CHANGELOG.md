@@ -4,6 +4,7 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
 
  General:
    - Added support for writing binvox files
+   - Added support for reading kvx (Build-Engine) and kv6 (SLAB6) voxel volumes
 
  VoxEdit:
    - Added `scale` console command
