@@ -10,7 +10,7 @@
 
 namespace voxel {
 /**
- * @brief Voxel sprite format used by the Build engine
+ * @brief Voxel sprite format used by the SLAB6 editor, voxlap and Ace of Spades
  */
 class KV6Format : public VoxFileFormat {
 public:
