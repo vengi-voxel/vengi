@@ -46,12 +46,13 @@ const core::String& File::name() const {
 }
 
 core::String File::load() {
-	char *includeBuffer;
+	char *includeBuffer = nullptr;
 	const int includeLen = read((void **) &includeBuffer);
 	if (includeBuffer == nullptr || includeLen <= 0) {
+		delete[] includeBuffer;
 		return "";
 	}
-	const core::String f(includeBuffer, includeLen);
+	core::String f(includeBuffer, includeLen);
 	delete[] includeBuffer;
 	return f;
 }
