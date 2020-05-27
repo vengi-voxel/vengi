@@ -327,7 +327,11 @@ static const simplecpp::Token *parseKernel(const core::String& filename, const s
 		// the next token will be a new parameter
 		if (token == ",") {
 			if (parameter.name.empty()) {
-				Log::error("Syntax error in compute shader at line %i", tok->location.line);
+				if (tok != nullptr) {
+					Log::error("Syntax error in compute shader at line %i", tok->location.line);
+				} else {
+					Log::error("Syntax error in compute shader at unknown line");
+				}
 				return nullptr;
 			}
 			const core::String& flags = util::toString(parameter.flags);
