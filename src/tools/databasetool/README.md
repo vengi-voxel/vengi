@@ -27,9 +27,9 @@ If no classname is specified, the table name will be used with `Model` as postfi
 Table `user` will be generated as `UserModel` class, if no other `classname` was
 specified
 
-All models will be put into a `db` namespace.
+All models will be put into a `db` namespace - even if you specify your own namespace. For more details, see the parameter description below.
 
-```
+```c
 table <TABLENAME> {
   classname <STRING> (overrides the automatically determined name)
   namespace <STRING> (c++ namespace where the class is put into)
@@ -54,7 +54,62 @@ table <TABLENAME> {
 }
 ```
 
-## Valid field types
+## table
+
+A definition starts with `table <TABLENAME>`. The body is enclosed by `{` and `}`.
+
+### classname
+
+This can be used to override the auto generated class name. The auto generated class name is generated from the table name converted to UpperCamelCase. This converts a table name like `my_table` to `MyTable` or `mytable` to `Mytable`.
+
+### namespace
+
+You specify a namespace in your table definition that is called `mynamespace`. The table is called `MyTable`. The resulting c++ class will live in `mynamespace::db::MyTable`. If you omit the namespace setting in your table definition, the class will live in `db::MyTable`.
+
+### schema
+
+Specifies the schema name that should be used for the table.
+
+### field
+
+A field describes a table column, the name, the type and so on. This block is enclosed by `{` and `}`.
+
+#### default
+
+The default value for the field.
+
+#### length
+
+Specifies the optional length of the field.
+
+#### notnull
+
+If this is specified, the field may not be null.
+
+#### operator
+
+The operator is taken into account when you execute an insert or
+update statement and hit a unique key violation.
+
+This can e.g. be used to increase or decrease points for particular keys.
+The first time you normally perform an insert - and the following times
+you will hit a key violation and thus perform the insert or update with
+the operator specified. The default operator is `set`. See a full list
+of valid operators below.
+
+##### Valid operators
+
+* `set`
+* `add`
+* `subtract`
+
+#### lowercase
+
+Convert a string value to lowercase before entering it into the database. This may not be set for `password` types of course.
+
+#### type
+
+Valid field types
 
 * `password`
 * `string`
@@ -67,24 +122,13 @@ table <TABLENAME> {
 * `byte`
 * `blob`
 
-## Operator
+### constraints
 
-The operator is taken into account when you execute an insert or
-update statement and hit a unique key violation.
+Here you can specify foreign key constraints, auto increment values and so on. This block is enclosed by `{` and `}`.
 
-This can e.g. be used to increase or decrease points for particular keys.
-The first time you normally perform an insert - and the following times
-you will hit a key violation and thus perform the insert or update with
-the operator specified. The default operator is `set`. See a full list
-of valid operators below.
-
-## Valid operators
-
-* `set`
-* `add`
-* `subtract`
+See the example above for a list of supported constraints.
 
 ## Other notable features
 
 * Timestamps are handled in UTC.
-* When using `ìnt` or `short` as a field type, there is also a setter configured that accepts enums.
+* When using `int` or `short` as a field type, there is also a setter configured that accepts enums.
