@@ -1,6 +1,17 @@
 # ShaderTool
 
-This tool parses GLSL shader files (mainly `*.vert`, `*.frag`) and generates C++ source files for them.
+This tool parses GLSL shader files (mainly `*.vert`, `*.frag`, `*.geom` and `*.comp`) and generates C++ source files for them.
+
+The cmake macros expect the shader source below the module in a `shaders/` directory.
+
+```cmake
+set(SHADERS first second)
+generate_shaders(mymodulename ${SHADERS})
+```
+
+The shaders given in this example would be located at `src/modules/mymodulename/shaders/first.*`. The tool automatically detects the type of programs that should be connected in the final shader.
+
+The code is generated into the build directory in `generated/shaders`.
 
 ## Description
 
