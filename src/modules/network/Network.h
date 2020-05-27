@@ -28,6 +28,8 @@ enum class DisconnectReason {
  * @brief Network implementation based on enet and flatbuffers
  */
 class Network : public core::IComponent {
+private:
+	bool _initialized = false;
 protected:
 	ProtocolHandlerRegistryPtr _protocolHandlerRegistry;
 	core::EventBusPtr _eventBus;

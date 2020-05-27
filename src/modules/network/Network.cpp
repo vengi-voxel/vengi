@@ -19,18 +19,20 @@ Network::Network(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, cons
 }
 
 Network::~Network() {
-	shutdown();
+	core_assert(_initialized == false);
 }
 
 void Network::shutdown() {
 	enet_deinitialize();
 	_protocolHandlerRegistry->shutdown();
+	_initialized = false;
 }
 
 bool Network::init() {
 	if (enet_initialize() != 0) {
 		return false;
 	}
+	_initialized = true;
 	enet_time_set(0);
 	return true;
 }
