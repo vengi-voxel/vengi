@@ -9,13 +9,6 @@
 
 namespace persistence {
 
-Connection::Connection() :
-		_connection(nullptr), _port(0) {
-}
-
-Connection::~Connection() {
-}
-
 void Connection::setLoginData(const core::String& username, const core::String& password) {
 	_password = password;
 	_user = username;
@@ -87,7 +80,8 @@ bool Connection::connect() {
 	// TODO: do I have to free the result?
 #endif
 	PQinitSSL(1);
-	_connection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), nullptr, dbname, user, password);
+	const char *options = nullptr;
+	_connection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), options, dbname, user, password);
 	Log::debug("Database connection %p", _connection);
 #else
 	_connection = nullptr;

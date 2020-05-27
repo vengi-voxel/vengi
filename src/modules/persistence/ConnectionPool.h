@@ -25,6 +25,7 @@ protected:
 	core::AtomicInt _connectionAmount { 0 };
 	core::VarPtr _dbName;
 	core::VarPtr _dbHost;
+	core::VarPtr _dbPort;
 	core::VarPtr _dbUser;
 	core::VarPtr _dbPw;
 	core::VarPtr _minConnections;

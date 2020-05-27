@@ -44,6 +44,7 @@ core::AppState Server::onConstruct() {
 
 	core::Var::get(cfg::DatabaseName, "vengi");
 	core::Var::get(cfg::DatabaseHost, "localhost");
+	core::Var::get(cfg::DatabasePort, "5432");
 	core::Var::get(cfg::DatabaseUser, "vengi");
 	core::Var::get(cfg::DatabasePassword, DB_PW, core::CV_SECRET);
 	core::Var::get(cfg::ServerUserTimeout, "60000");

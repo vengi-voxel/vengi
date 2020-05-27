@@ -51,7 +51,7 @@ public:
 	static const uint8_t MergeQuads        = 1 << 0;
 	static const uint8_t OriginUpperLeft   = 1 << 1;
 
-	bool init(const char* font, int fontSize, int thickness, uint8_t optionMask, const char* glyphs);
+	bool init(const char* font, uint8_t fontSize, int thickness, uint8_t optionMask, const char* glyphs);
 	void shutdown();
 
 	int stringWidth(const char *str, int length = (std::numeric_limits<int>::max)()) const;

@@ -65,7 +65,7 @@ int VoxelFont::stringWidth(const char *str, int len) const {
 	return width;
 }
 
-bool VoxelFont::init(const char* filename, int size, int thickness, uint8_t optionMask, const char* glyphs) {
+bool VoxelFont::init(const char* filename, uint8_t size, int thickness, uint8_t optionMask, const char* glyphs) {
 	_optionMask = optionMask;
 	core_assert_msg(size < 255, "size %i exceeds max vertices position due to limited data type in Vertex class", size);
 	core_assert_msg(size > 0, "size must be > 0, but is %i", size);

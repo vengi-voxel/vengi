@@ -31,10 +31,15 @@ bool ConnectionPool::init() {
 
 	_dbName = core::Var::getSafe(cfg::DatabaseName);
 	_dbHost = core::Var::getSafe(cfg::DatabaseHost);
+	_dbPort = core::Var::getSafe(cfg::DatabasePort);
 	_dbUser = core::Var::getSafe(cfg::DatabaseUser);
 	_dbPw = core::Var::getSafe(cfg::DatabasePassword);
 
-	Log::debug("Connect to %s@%s to database %s", _dbUser->strVal().c_str(), _dbHost->strVal().c_str(), _dbName->strVal().c_str());
+	Log::debug("Connect to %s@%s:%s to database %s",
+			_dbUser->strVal().c_str(),
+			_dbHost->strVal().c_str(),
+			_dbPort->strVal().c_str(),
+			_dbName->strVal().c_str());
 
 	for (int i = _connectionAmount; i < _min; ++i) {
 		if (addConnection() == nullptr) {
@@ -49,7 +54,11 @@ bool ConnectionPool::init() {
 	if (_connectionAmount > 0) {
 		return true;
 	}
-	Log::error("Failed to connect to %s@%s to database %s", _dbUser->strVal().c_str(), _dbHost->strVal().c_str(), _dbName->strVal().c_str());
+	Log::error("Failed to connect to %s@%s:%s to database %s",
+			_dbUser->strVal().c_str(),
+			_dbHost->strVal().c_str(),
+			_dbPort->strVal().c_str(),
+			_dbName->strVal().c_str());
 	return false;
 }
 
@@ -76,6 +85,7 @@ Connection* ConnectionPool::addConnection() {
 
 	c->changeDb(_dbName->strVal());
 	c->changeHost(_dbHost->strVal());
+	c->changePort(_dbPort->intVal());
 	c->setLoginData(_dbUser->strVal(), _dbPw->strVal());
 	if (!c->connect()) {
 		delete c;

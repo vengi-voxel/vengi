@@ -12,17 +12,14 @@ namespace persistence {
 
 class Connection {
 private:
-	ConnectionType* _connection;
+	ConnectionType* _connection = nullptr;
 	core::String _host;
 	core::String _dbname;
 	core::String _user;
 	core::String _password;
-	uint16_t _port;
+	uint16_t _port = 0u;
 	std::unordered_set<core::String, core::StringHash> _preparedStatements;
 public:
-	Connection();
-	~Connection();
-
 	bool hasPreparedStatement(const core::String& name) const;
 	void registerPreparedStatement(const core::String& name);
 

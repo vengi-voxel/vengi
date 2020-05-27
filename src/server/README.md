@@ -17,6 +17,13 @@ the setup documentation for more details.
 After starting the server, you will get entities spawned in the world. You can use e.g. the
 ai remote debugger (`src/tools/rcon`) to inspect the state or use the client to connect.
 
+To specify the database that should be used use the config bars **db_name**, **db_host**, **db_pw** and **db_user**.
+For example:
+
+```bash
+./vengi-server -set db_host 192.168.0.1 -set db_post 5432 -db_name vengi -db_pw engine
+```
+
 For the client connect you need a user in the database. You can create users with a server
 command called `sv_createuser`.
 
@@ -32,7 +39,7 @@ you have to set it via `sv_httpchunkurl` like this:
 ./vengi-server -set sv_httpchunkurl http://myhostname:8080/mychunkurl
 ```
 
-... or export the environment variable SV_HTTPCHUNKURL or add it to your config file (see
+... or export the environment variable `SV_HTTPCHUNKURL` or add it to your config file (see
 setup documentation for more details).
 
 This cvar is one of those that is automatically replicated to the client. Whenever you change it,

@@ -66,6 +66,7 @@ constexpr const char *VoxelMeshSize = "voxel_meshsize";
 
 constexpr const char *DatabaseName = "db_name";
 constexpr const char *DatabaseHost = "db_host";
+constexpr const char *DatabasePort = "db_port";
 constexpr const char *DatabasePassword = "db_pw";
 constexpr const char *DatabaseUser = "db_user";
 constexpr const char *DatabaseMinConnections = "db_minconnections";
