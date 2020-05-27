@@ -80,7 +80,7 @@ bool Connection::connect() {
 	// TODO: do I have to free the result?
 #endif
 	PQinitSSL(1);
-	const char *options = nullptr;
+	const char *options = "connect_timeout=10";
 	_connection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), options, dbname, user, password);
 	Log::debug("Database connection %p", _connection);
 #else
