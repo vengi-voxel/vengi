@@ -29,7 +29,7 @@ Mesh::Mesh(Mesh&& other) {
 	other._compressedIndices = nullptr;
 	_compressedIndexSize = other._compressedIndexSize;
 	other._compressedIndexSize = 0u;
-	_offset = std::move(other._offset);
+	_offset = other._offset;
 	_mayGetResized = other._mayGetResized;
 }
 
@@ -71,7 +71,7 @@ Mesh& Mesh::operator=(Mesh&& other) {
 	other._compressedIndices = nullptr;
 	_compressedIndexSize = other._compressedIndexSize;
 	other._compressedIndexSize = 4u;
-	_offset = std::move(other._offset);
+	_offset = other._offset;
 	_mayGetResized = other._mayGetResized;
 	return *this;
 }
