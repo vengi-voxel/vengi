@@ -146,9 +146,13 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 		}
 		index = endIndex;
 	}
+
+	delete[] buf;
+
 	if (n != bufSize) {
 		Log::error("Unexpected voxel amount: %i, expected: %i (w: %u, h: %u, d: %u), fileSize %i, offset %i",
 				dataSize, bufSize, _w, _h, _d, fileSize, (int)offset);
+		delete[] voxelBuf;
 		return false;
 	}
 
@@ -166,7 +170,6 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 			}
 		}
 	}
-	delete[] buf;
 	delete[] voxelBuf;
 	return true;
 }
