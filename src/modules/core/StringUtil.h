@@ -180,6 +180,16 @@ inline core::String toString(const T& v) {
 }
 
 template<>
+inline core::String toString(const unsigned short& v) {
+	return core::String::format("%u", v);
+}
+
+template<>
+inline core::String toString(const short& v) {
+	return core::String::format("%i", v);
+}
+
+template<>
 inline core::String toString(const unsigned int& v) {
 	return core::String::format("%u", v);
 }
