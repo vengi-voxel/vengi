@@ -93,13 +93,21 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 		return false;
 	}
 
-	wrapSaveFree(stream.addString("DATATREE", false));
 	wrapSaveFree(stream.addInt(0)); // node type matrix
-	const int datasize = 14 * sizeof(uint32_t) + realBufSize;
-	wrapSaveFree(stream.addInt(datasize));
 	const int nameLength = volume.name.size();
+	const int nameSize = sizeof(uint32_t) + nameLength;
+	const int positionSize = 3 * sizeof(uint32_t);
+	const int localScaleSize = 3 * sizeof(uint32_t);
+	const int pivotSize = 3 * sizeof(float);
+	const int sizeSize = 3 * sizeof(uint32_t);
+	const int compressedDataSize = sizeof(uint32_t) + realBufSize;
+	const int datasize = nameSize + positionSize + localScaleSize + pivotSize + sizeSize + compressedDataSize;
+	wrapSaveFree(stream.addInt(datasize));
+
+	const size_t chunkStartPos = stream.pos();
 	wrapSaveFree(stream.addInt(nameLength));
 	wrapSaveFree(stream.addString(volume.name, false));
+	Log::debug("Save matrix with name %s", volume.name.c_str());
 
 	wrapSaveFree(stream.addInt(mins.x));
 	wrapSaveFree(stream.addInt(mins.y));
@@ -122,11 +130,12 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 	Log::debug("save %i compressed bytes", (int)realBufSize);
 	wrapSaveFree(stream.addInt(realBufSize));
 	wrapSaveFree(stream.append(compressedBuf, realBufSize));
+	const size_t chunkEndPos = stream.pos();
 
 	delete[] compressedBuf;
 	delete[] zlibBuffer;
 
-	return true;
+	return (size_t)datasize == chunkEndPos - chunkStartPos;
 }
 
 bool QBTFormat::saveColorMap(io::FileStream& stream) const {
@@ -137,6 +146,13 @@ bool QBTFormat::saveColorMap(io::FileStream& stream) const {
 		const uint32_t rgba = core::Color::getRGBA(c);
 		wrapSave(stream.addInt(rgba));
 	}
+	return true;
+}
+
+bool QBTFormat::saveModel(io::FileStream& stream, int childCount) const {
+	wrapSave(stream.addInt(1)); // node type model
+	wrapSave(stream.addInt(sizeof(uint32_t)));
+	wrapSave(stream.addInt(childCount));
 	return true;
 }
 
@@ -155,14 +171,32 @@ bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		}
 	}
 	bool success = true;
+	int layers = 0;
+	if (!stream.addString("DATATREE", false)) {
+		return false;
+	}
+	int children = 0;
+	for (auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		++children;
+	}
+	if (children == 0) {
+		return false;
+	}
+	saveModel(stream, children);
 	for (auto& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}
 		if (!saveMatrix(stream, v, colorMap)) {
 			success = false;
+		} else {
+			++layers;
 		}
 	}
+	Log::debug("Saved %i layers", layers);
 	return success;
 }
 
@@ -197,6 +231,7 @@ bool QBTFormat::loadCompound(io::FileStream& stream, VoxelVolumes& volumes) {
 	}
 	uint32_t childCount;
 	wrap(stream.readInt(childCount));
+	Log::debug("Load %u children", childCount);
 	for (uint32_t i = 0; i < childCount; ++i) {
 		if (MergeCompounds) {
 			// if you don't need the datatree you can skip child nodes
@@ -239,6 +274,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 	uint32_t nameLength;
 	wrap(stream.readInt(nameLength));
 	if ((size_t)nameLength >= sizeof(name)) {
+		Log::error("Name buffer not big enough");
 		return false;
 	}
 	wrapBool(stream.readString(nameLength, name));
@@ -297,9 +333,11 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 		delete [] voxelDataDecompressed;
 		return false;
 	}
+	delete [] voxelData;
 	const voxel::Region region(position, position + glm::ivec3(size) - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region");
+		delete [] voxelDataDecompressed;
 		return false;
 	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
@@ -335,7 +373,6 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 			}
 		}
 	}
-	delete [] voxelData;
 	delete [] voxelDataDecompressed;
 	volumes.push_back(VoxelVolume(volume, name, true, glm::ivec3(pivot)));
 	return true;
@@ -376,6 +413,7 @@ bool QBTFormat::loadNode(io::FileStream& stream, VoxelVolumes& volumes) {
 	case 0: {
 		Log::debug("Found matrix");
 		if (!loadMatrix(stream, volumes)) {
+			Log::error("Failed to load matrix");
 			return false;
 		}
 		Log::debug("Matrix of size %u loaded", dataSize);
@@ -384,6 +422,7 @@ bool QBTFormat::loadNode(io::FileStream& stream, VoxelVolumes& volumes) {
 	case 1:
 		Log::debug("Found model");
 		if (!loadModel(stream, volumes)) {
+			Log::error("Failed to load model");
 			return false;
 		}
 		Log::debug("Model of size %u loaded", dataSize);
@@ -391,6 +430,7 @@ bool QBTFormat::loadNode(io::FileStream& stream, VoxelVolumes& volumes) {
 	case 2:
 		Log::debug("Found compound");
 		if (!loadCompound(stream, volumes)) {
+			Log::error("Failed to load compound");
 			return false;
 		}
 		Log::debug("Compound of size %u loaded", dataSize);
@@ -404,7 +444,7 @@ bool QBTFormat::loadNode(io::FileStream& stream, VoxelVolumes& volumes) {
 	const int after = stream.remaining();
 	const int delta = before - after;
 	if (delta != (int)dataSize) {
-		Log::error("Unexpected chunk size for type id %i, read %i, expected: %i",
+		Log::debug("Unexpected chunk size for type id %i, read %i, expected: %i",
 				nodeTypeID, delta, (int)dataSize);
 	}
 	return true;
@@ -487,6 +527,7 @@ bool QBTFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
 			 * Colors ColorCount * 4 bytes, rgba
 			 */
 			if (!loadColorMap(stream)) {
+				Log::error("Failed to load color map");
 				return false;
 			}
 			if (_paletteSize == 0) {
@@ -501,10 +542,11 @@ bool QBTFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
 			 * RootNode, can currently either be Model, Compound or Matrix
 			 */
 			if (!loadNode(stream, volumes)) {
+				Log::error("Failed to load node");
 				return false;
 			}
 		} else {
-			Log::debug("Unknown section found: %c%c%c%c%c%c%c%c",
+			Log::error("Unknown section found: %c%c%c%c%c%c%c%c",
 					buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
 			return false;
 		}

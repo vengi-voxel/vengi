@@ -4,6 +4,7 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/QBTFormat.h"
+#include "voxelformat/Loader.h"
 
 namespace voxel {
 
@@ -43,12 +44,33 @@ TEST_F(QBTFormatTest, testSaveSingleVoxel) {
 	EXPECT_EQ(original, *loaded);
 }
 
+TEST_F(QBTFormatTest, testSaveMultipleLayers) {
+	QBTFormat f;
+	Region region(glm::ivec3(0), glm::ivec3(0));
+	RawVolume layer1(region);
+	RawVolume layer2(region);
+	RawVolume layer3(region);
+	RawVolume layer4(region);
+	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
+	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
+	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
+	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
+	VoxelVolumes volumes;
+	volumes.volumes = {VoxelVolume(&layer1), VoxelVolume(&layer2), VoxelVolume(&layer3), VoxelVolume(&layer4)};
+	EXPECT_TRUE(f.saveGroups(volumes, open("qubicle-multiplelayersavetest.qbt", io::FileMode::Write)));
+	f = QBTFormat();
+	VoxelVolumes volumesLoad;
+	EXPECT_TRUE(f.loadGroups(open("qubicle-multiplelayersavetest.qbt"), volumesLoad));
+	EXPECT_EQ(volumesLoad.size(), volumes.size());
+	voxelformat::clearVolumes(volumesLoad);
+}
+
 TEST_F(QBTFormatTest, testSave) {
 	QBTFormat f;
 	std::unique_ptr<RawVolume> original(load("qubicle.qbt", f));
 	ASSERT_NE(nullptr, original);
-	ASSERT_TRUE(f.save(original.get(), open("qubicle-savetest.qbt", io::FileMode::Write)));
-	ASSERT_TRUE(open("qubicle-savetest.qbt")->length() > 200);
+	EXPECT_TRUE(f.save(original.get(), open("qubicle-savetest.qbt", io::FileMode::Write)));
+	EXPECT_TRUE(open("qubicle-savetest.qbt")->length() > 200);
 	f = QBTFormat();
 	std::unique_ptr<RawVolume> loaded(f.load(open("qubicle-savetest.qbt")));
 	ASSERT_NE(nullptr, loaded);

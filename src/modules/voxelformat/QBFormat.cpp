@@ -89,7 +89,7 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) con
 				glm::ivec4 newColor;
 				if (voxel == Empty) {
 					newColor = EmptyColor;
-					Log::debug("Save empty voxel: x %i, y %i, z %i", x, y, z);
+					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {
 					const glm::vec4& voxelColor = getColor(voxel);
 					const uint8_t red = voxelColor.r * 255.0f;
@@ -97,7 +97,7 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) con
 					const uint8_t blue = voxelColor.b * 255.0f;
 					const uint8_t alpha = voxelColor.a * 255.0f;
 					newColor = glm::ivec4(red, green, blue, alpha);
-					Log::debug("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
+					Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
 							x, y, z, (int)voxel.getColor(), (int)red, (int)green, (int)blue, (int)alpha);
 				}
 
@@ -165,7 +165,7 @@ bool QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32
 	const int32_t fx = offset.x + x;
 	const int32_t fy = offset.y + y;
 	const int32_t fz = offset.z + z;
-	Log::debug("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)_zAxisOrientation);
+	Log::trace("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)_zAxisOrientation);
 	const voxel::Region& region = volume->region();
 	if (!region.containsPoint(glm::ivec3(fx, fy, fz))) {
 		const glm::ivec3& mins = region.getLowerCorner();
@@ -187,7 +187,7 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	wrapColor(stream.readByte(green))
 	wrapColor(stream.readByte(blue))
 	wrapColor(stream.readByte(alpha))
-	Log::debug("Red: %i, Green: %i, Blue: %i, Alpha: %i", (int)red, (int)green, (int)blue, (int)alpha);
+	Log::trace("Red: %i, Green: %i, Blue: %i, Alpha: %i", (int)red, (int)green, (int)blue, (int)alpha);
 	if (alpha == 0) {
 		return voxel::Voxel();
 	}
@@ -289,7 +289,7 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 			if (data == RLE_FLAG) {
 				stream.skip(sizeof(data));
 				wrap(stream.readInt(count))
-				Log::debug("%u voxels of the same type", count);
+				Log::trace("%u voxels of the same type", count);
 			}
 
 			if (count > 32768) {

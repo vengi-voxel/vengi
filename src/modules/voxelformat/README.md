@@ -77,7 +77,7 @@ The binary data consists of pairs of bytes. The first byte of each pair is the v
 
 ## Qubicle (qb, qbt)
 
-Format spec: <https://getqubicle.com/learn/article.php?id=34>
+Format spec: <https://getqubicle.com/learn/category.php?id=34>
 
 ## MagicaVoxel (vox)
 
