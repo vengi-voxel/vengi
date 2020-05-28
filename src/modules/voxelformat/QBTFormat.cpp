@@ -154,15 +154,16 @@ bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 			return false;
 		}
 	}
+	bool success = true;
 	for (auto& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}
 		if (!saveMatrix(stream, v, colorMap)) {
-			return false;
+			success = false;
 		}
 	}
-	return true;
+	return success;
 }
 
 bool QBTFormat::skipNode(io::FileStream& stream) {
