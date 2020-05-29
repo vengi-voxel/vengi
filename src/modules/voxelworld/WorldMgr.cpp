@@ -62,6 +62,7 @@ void WorldMgr::shutdown() {
 }
 
 voxelutil::FloorTraceResult WorldMgr::findWalkableFloor(const glm::ivec3& position, int maxDistanceUpwards) const {
+	core_assert_msg(_volumeData != nullptr, "WorldMgr is not initialized");
 	voxel::PagedVolume::Sampler sampler(_volumeData);
 	return voxelutil::findWalkableFloor(&sampler, position, maxDistanceUpwards);
 }
