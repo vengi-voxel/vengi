@@ -15,7 +15,6 @@
 #include "backend/entity/User.h"
 #include "ai/zone/Zone.h"
 #include "core/metric/MetricEvent.h"
-#include "poi/PoiProvider.h"
 #include "backend/eventbus/Event.h"
 #include "backend/spawn/SpawnMgr.h"
 #include "persistence/PersistenceMgr.h"
@@ -166,8 +165,8 @@ void Map::shutdown() {
 	_persistenceMgr->unregisterSavable(FOURCC, this);
 }
 
-glm::vec3 Map::findStartPosition(const EntityPtr& entity) const {
-	const poi::PoiResult& result = _poiProvider->query(poi::Type::GENERIC);
+glm::vec3 Map::findStartPosition(const EntityPtr& entity, poi::Type type) const {
+	const poi::PoiResult& result = _poiProvider->query(type);
 	if (result.valid) {
 		return result.pos;
 	}

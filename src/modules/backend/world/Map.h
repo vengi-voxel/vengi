@@ -15,6 +15,7 @@
 #include "backend/attack/AttackMgr.h"
 #include "persistence/ISavable.h"
 #include "persistence/ForwardDecl.h"
+#include "poi/PoiProvider.h"
 #include "voxel/Constants.h"
 #include "DBChunkPersister.h"
 #include "MapId.h"
@@ -69,7 +70,7 @@ private:
 	 */
 	bool updateEntity(const EntityPtr& entity, long dt);
 
-	glm::vec3 findStartPosition(const EntityPtr& entity) const;
+	glm::vec3 findStartPosition(const EntityPtr& entity, poi::Type type = poi::Type::GENERIC) const;
 
 public:
 	Map(MapId mapId,
