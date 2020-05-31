@@ -8,7 +8,6 @@
 #include "AnimationShaders.h"
 #include "VoxelworldrenderShaders.h"
 #include "worldrenderer/WorldChunkMgr.h"
-#include "worldrenderer/WorldBuffers.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/Var.h"
@@ -37,7 +36,8 @@ protected:
 	core::AtomicBool _cancelThreads { false };
 
 	WorldChunkMgr _worldChunkMgr;
-	WorldBuffers _worldBuffers;
+	video::Buffer _waterBuffer;
+	int32_t _waterVbo = -1;
 	frontend::EntityMgr _entityMgr;
 
 	render::Shadow _shadow;

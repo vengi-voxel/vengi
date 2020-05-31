@@ -3,7 +3,6 @@ set(SRCS
 	WorldRenderer.h WorldRenderer.cpp
 	PlayerCamera.cpp PlayerCamera.h
 
-	worldrenderer/WorldBuffers.h worldrenderer/WorldBuffers.cpp
 	worldrenderer/WorldChunkMgr.h worldrenderer/WorldChunkMgr.cpp
 	worldrenderer/WorldMeshExtractor.h worldrenderer/WorldMeshExtractor.cpp
 )

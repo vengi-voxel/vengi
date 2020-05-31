@@ -27,6 +27,22 @@
 
 namespace voxelworldrender {
 
+alignas(16) static constexpr glm::vec2 waterPlaneVecs[] = {
+	{ -1.0f, -1.0f},
+	{ -1.0f,  1.0f},
+	{  1.0f, -1.0f},
+	{  1.0f, -1.0f},
+	{ -1.0f,  1.0f},
+	{  1.0f,  1.0f},
+
+	{ -1.0f, -1.0f},
+	{  1.0f, -1.0f},
+	{ -1.0f,  1.0f},
+	{  1.0f, -1.0f},
+	{  1.0f,  1.0f},
+	{ -1.0f,  1.0f}
+};
+
 WorldRenderer::WorldRenderer() :
 		_threadPool(1, "WorldRenderer"), _worldChunkMgr(_threadPool), _shadowMapShader(shader::ShadowmapShader::getInstance()) {
 	setViewDistance(800.0f);
@@ -55,7 +71,7 @@ void WorldRenderer::shutdown() {
 	if (_normalTexture) {
 		_normalTexture->shutdown();
 	}
-	_worldBuffers.shutdown();
+	_waterBuffer.shutdown();
 	_shadow.shutdown();
 	_skybox.shutdown();
 	_shadowMapShader.shutdown();
@@ -238,7 +254,6 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 }
 
 int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& clipPlane) {
-	int drawCallsWorld = 0;
 	video_trace_scoped(WorldRendererRenderWater);
 	video::ScopedShader scoped(_waterShader);
 	if (_waterShader.isDirty()) {
@@ -277,16 +292,18 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 		_waterShader.setCascades(_shadow.cascades());
 		_waterShader.setDistances(_shadow.distances());
 	}
-	if (_worldBuffers.renderWater()) {
-		++drawCallsWorld;
-	}
+
+	video::ScopedBuffer scopedBuf(_waterBuffer);
+	const int elements = _waterBuffer.elements(_waterVbo, core::remove_reference<decltype(waterPlaneVecs[0])>::type::length());
+	video::drawArrays(video::Primitive::Triangles, elements);
+
 	_skybox.unbind(video::TextureUnit::Two);
 	_normalTexture->unbind();
 	_distortionTexture->unbind();
 	_refractionBuffer.texture()->unbind();
 	_refractionBuffer.texture(video::FrameBufferAttachment::Depth)->unbind();
 	_reflectionBuffer.texture()->unbind();
-	return drawCallsWorld;
+	return 1;
 }
 
 int WorldRenderer::renderAll(const video::Camera& camera) {
@@ -376,8 +393,18 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
 
-	if (!_worldBuffers.init(_waterShader)) {
+	_waterVbo = _waterBuffer.create(waterPlaneVecs, sizeof(waterPlaneVecs));
+	if (_waterVbo == -1) {
+		Log::error("Failed to create water vertex buffer");
 		return false;
+	}
+
+	video::ScopedBuffer scoped(_waterBuffer);
+	const int locationPos = _waterShader.getLocationPos();
+	_waterShader.enableVertexAttributeArray(locationPos);
+	const video::Attribute& posAttrib = _waterShader.getPosAttribute(_waterVbo, &glm::vec2::x);
+	if (!_waterBuffer.addAttribute(posAttrib)) {
+		Log::warn("Failed to add water position attribute");
 	}
 
 	render::ShadowParameters sp;
