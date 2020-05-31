@@ -115,7 +115,7 @@ void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowWidth, windowHeight);
 	ImGuiIO& io = ImGui::GetIO();
 	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
-	io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
+	//io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.update(0.0);
@@ -197,7 +197,7 @@ core::AppState IMGUIApp::onInit() {
 	_writePathLog = _filesystem->writePath(logFile.c_str());
 	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
-	io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
+	//io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
 	ImFontConfig fontCfg;
 	fontCfg.SizePixels = 13.0f * _dpiFactor;
 	io.Fonts->AddFontDefault(&fontCfg);
