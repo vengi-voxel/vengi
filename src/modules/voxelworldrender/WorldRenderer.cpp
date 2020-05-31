@@ -399,13 +399,14 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		return false;
 	}
 
-	video::ScopedBuffer scoped(_waterBuffer);
+	_waterBuffer.bind();
 	const int locationPos = _waterShader.getLocationPos();
 	_waterShader.enableVertexAttributeArray(locationPos);
 	const video::Attribute& posAttrib = _waterShader.getPosAttribute(_waterVbo, &glm::vec2::x);
 	if (!_waterBuffer.addAttribute(posAttrib)) {
 		Log::warn("Failed to add water position attribute");
 	}
+	_waterBuffer.unbind();
 
 	render::ShadowParameters sp;
 	sp.maxDepthBuffers = shader::WorldShaderConstants::getMaxDepthBuffers();

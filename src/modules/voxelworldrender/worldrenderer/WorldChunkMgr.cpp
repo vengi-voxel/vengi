@@ -49,69 +49,6 @@ void WorldChunkMgr::reset() {
 	_octree.clear();
 }
 
-bool WorldChunkMgr::initTerrainBuffer(ChunkBuffer* chunk) {
-	chunk->_vbo = chunk->_buffer.create();
-	if (chunk->_vbo == -1) {
-		Log::error("Failed to create vertex buffer");
-		return false;
-	}
-	chunk->_ibo = chunk->_buffer.create(nullptr, 0, video::BufferType::IndexBuffer);
-	if (chunk->_ibo == -1) {
-		Log::error("Failed to create index buffer");
-		return false;
-	}
-
-	const int locationPos = _worldShader->getLocationPos();
-	const video::Attribute& posAttrib = voxelrender::getPositionVertexAttribute(chunk->_vbo, locationPos, _worldShader->getAttributeComponents(locationPos));
-	if (!chunk->_buffer.addAttribute(posAttrib)) {
-		Log::warn("Failed to add position attribute");
-	}
-
-	const int locationInfo = _worldShader->getLocationInfo();
-	const video::Attribute& infoAttrib = voxelrender::getInfoVertexAttribute(chunk->_vbo, locationInfo, _worldShader->getAttributeComponents(locationInfo));
-	if (!chunk->_buffer.addAttribute(infoAttrib)) {
-		Log::warn("Failed to add info attribute");
-	}
-
-	const voxel::VertexArray& vertices = chunk->mesh.getVertexVector();
-	if (vertices.empty()) {
-		chunk->_buffer.update(chunk->_vbo, nullptr, 0);
-		chunk->_buffer.update(chunk->_ibo, nullptr, 0);
-	} else {
-		const uint8_t* indices = chunk->mesh.compressedIndices();
-		chunk->_buffer.update(chunk->_vbo, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type));
-		chunk->_buffer.update(chunk->_ibo, indices, chunk->mesh.getNoOfIndices() * chunk->mesh.compressedIndexSize());
-	}
-
-	return true;
-}
-
-int WorldChunkMgr::renderTerrain() {
-	video_trace_scoped(WorldChunkMgrRenderTerrain);
-	int drawCalls = 0;
-
-	for (int i = 0; i < _visibleBuffers.size; ++i) {
-		ChunkBuffer& chunkBuffer = *_visibleBuffers.visible[i];
-		core_assert(chunkBuffer.inuse);
-		const video::Buffer& buffer = chunkBuffer._buffer;
-		const int ibo = chunkBuffer._ibo;
-		const uint32_t numIndices = buffer.elements(ibo, 1, chunkBuffer.mesh.compressedIndexSize());
-		if (numIndices == 0u) {
-			return false;
-		}
-		video::ScopedBuffer scopedBuf(buffer);
-		if (_worldShader->isActive()) {
-			const double delta = glm::clamp(core_max(0.0, chunkBuffer.scaleSeconds) / ScaleDuration, 0.0, 1.0);
-			const glm::vec3 &size = glm::mix(glm::vec3(1.0f), glm::vec3(1.0f, 0.4f, 1.0f), (float)delta);
-			const glm::mat4& model = glm::scale(size);
-			_worldShader->setModel(model);
-		}
-		video::drawElements(video::Primitive::Triangles, numIndices, chunkBuffer.mesh.compressedIndexSize());
-		++drawCalls;
-	}
-	return drawCalls;
-}
-
 void WorldChunkMgr::handleMeshQueue() {
 	voxel::Mesh mesh;
 	if (!_meshExtractor.pop(mesh)) {
@@ -137,9 +74,44 @@ void WorldChunkMgr::handleMeshQueue() {
 		return;
 	}
 
-	freeChunkBuffer->mesh = std::move(mesh);
+	video::Buffer& buffer = freeChunkBuffer->_buffer;
+	freeChunkBuffer->_vbo = buffer.create();
+	if (freeChunkBuffer->_vbo == -1) {
+		Log::error("Failed to create vertex buffer");
+		return;
+	}
+	const int locationPos = _worldShader->getLocationPos();
+	const video::Attribute& posAttrib = voxelrender::getPositionVertexAttribute(freeChunkBuffer->_vbo, locationPos, _worldShader->getAttributeComponents(locationPos));
+	if (!buffer.addAttribute(posAttrib)) {
+		Log::error("Failed to add position attribute");
+		return;
+	}
+	const int locationInfo = _worldShader->getLocationInfo();
+	const video::Attribute& infoAttrib = voxelrender::getInfoVertexAttribute(freeChunkBuffer->_vbo, locationInfo, _worldShader->getAttributeComponents(locationInfo));
+	if (!buffer.addAttribute(infoAttrib)) {
+		Log::error("Failed to add info attribute");
+		return;
+	}
+	freeChunkBuffer->_ibo = buffer.create(nullptr, 0, video::BufferType::IndexBuffer);
+	if (freeChunkBuffer->_ibo == -1) {
+		Log::error("Failed to create index buffer");
+		return;
+	}
+	freeChunkBuffer->_offset = mesh.getOffset();
+	freeChunkBuffer->_compressedIndexSize = mesh.compressedIndexSize();
+
+	const voxel::VertexArray& vertices = mesh.getVertexVector();
+	if (vertices.empty()) {
+		buffer.update(freeChunkBuffer->_vbo, nullptr, 0);
+		buffer.update(freeChunkBuffer->_ibo, nullptr, 0);
+	} else {
+		const uint8_t* indices = mesh.compressedIndices();
+		buffer.update(freeChunkBuffer->_vbo, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type));
+		buffer.update(freeChunkBuffer->_ibo, indices, mesh.getNoOfIndices() * freeChunkBuffer->_compressedIndexSize);
+	}
+
 	const glm::ivec3& size = _meshExtractor.meshSize();
-	const glm::ivec3& mins = freeChunkBuffer->mesh.getOffset();
+	const glm::ivec3& mins = mesh.getOffset();
 	const glm::ivec3 maxs(mins.x + size.x, mins.y + size.y, mins.z + size.z);
 	freeChunkBuffer->_aabb = {mins, maxs};
 	if (!_octree.insert(freeChunkBuffer)) {
@@ -158,9 +130,6 @@ void WorldChunkMgr::update(double deltaFrameSeconds, const video::Camera &camera
 			continue;
 		}
 		chunkBuffer.scaleSeconds -= deltaFrameSeconds;
-		if (chunkBuffer._ibo == -1) {
-			initTerrainBuffer(&chunkBuffer);
-		}
 		const int distance = distance2(chunkBuffer.translation(), focusPos);
 		if (distance < _maxAllowedDistance) {
 			continue;
@@ -226,6 +195,32 @@ void WorldChunkMgr::extractMeshes(const video::Camera& camera) {
 
 void WorldChunkMgr::extractMesh(const glm::ivec3& pos) {
 	_meshExtractor.scheduleMeshExtraction(pos);
+}
+
+int WorldChunkMgr::renderTerrain() {
+	video_trace_scoped(WorldChunkMgrRenderTerrain);
+	int drawCalls = 0;
+
+	for (int i = 0; i < _visibleBuffers.size; ++i) {
+		ChunkBuffer& chunkBuffer = *_visibleBuffers.visible[i];
+		core_assert(chunkBuffer.inuse);
+		const video::Buffer& buffer = chunkBuffer._buffer;
+		const int ibo = chunkBuffer._ibo;
+		const uint32_t numIndices = buffer.elements(ibo, 1, chunkBuffer._compressedIndexSize);
+		if (numIndices == 0u) {
+			return false;
+		}
+		video::ScopedBuffer scopedBuf(buffer);
+		if (_worldShader->isActive()) {
+			const double delta = glm::clamp(core_max(0.0, chunkBuffer.scaleSeconds) / ScaleDuration, 0.0, 1.0);
+			const glm::vec3 &size = glm::mix(glm::vec3(1.0f), glm::vec3(1.0f, 0.4f, 1.0f), (float)delta);
+			const glm::mat4& model = glm::scale(size);
+			_worldShader->setModel(model);
+		}
+		video::drawElements(video::Primitive::Triangles, numIndices, chunkBuffer._compressedIndexSize);
+		++drawCalls;
+	}
+	return drawCalls;
 }
 
 }

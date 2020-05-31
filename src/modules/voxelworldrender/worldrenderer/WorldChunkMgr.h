@@ -9,6 +9,7 @@
 #include "video/Camera.h"
 #include "voxel/VoxelVertex.h"
 #include "WorldShader.h"
+#include "voxel/Mesh.h"
 #include "video/Buffer.h"
 #include <future>
 
@@ -20,7 +21,8 @@ protected:
 		bool inuse = false;
 		double scaleSeconds = 0.0;
 		math::AABB<int> _aabb = {glm::ivec3(0), glm::ivec3(0)};
-		voxel::Mesh mesh;
+		glm::ivec3 _offset { 0 };
+		size_t _compressedIndexSize = 0;
 
 		video::Buffer _buffer;
 		int32_t _vbo = -1;
@@ -42,7 +44,7 @@ protected:
 		 * applied here.
 		 */
 		inline const glm::ivec3 &translation() const {
-			return mesh.getOffset();
+			return _offset;
 		}
 
 		/**
@@ -76,7 +78,6 @@ protected:
 
 	void cull(const video::Camera &camera);
 	void handleMeshQueue();
-	bool initTerrainBuffer(ChunkBuffer* chunk);
 public:
 	WorldChunkMgr(core::ThreadPool& threadPool);
 
