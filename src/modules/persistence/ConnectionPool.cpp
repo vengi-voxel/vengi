@@ -35,7 +35,7 @@ bool ConnectionPool::init() {
 	_dbUser = core::Var::getSafe(cfg::DatabaseUser);
 	_dbPw = core::Var::getSafe(cfg::DatabasePassword);
 
-	Log::debug("Connect to %s@%s:%s to database %s",
+	Log::info("Connect to %s@%s:%s to database %s",
 			_dbUser->strVal().c_str(),
 			_dbHost->strVal().c_str(),
 			_dbPort->strVal().c_str(),

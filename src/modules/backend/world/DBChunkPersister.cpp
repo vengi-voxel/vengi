@@ -54,7 +54,12 @@ bool DBChunkPersister::load(const voxel::PagedVolume::ChunkPtr& chunk, unsigned 
 	core_trace_scoped(DBChunkPersisterLoad);
 	const glm::ivec3& region = chunk->chunkPos();
 	persistence::Blob blob = load(region.x, region.y, region.z, _mapId, seed);
-	if (blob.length > 0 && !loadCompressed(chunk, blob.data, blob.length)) {
+	if (blob.length <= 0) {
+		Log::debug("No chunk found in database");
+		blob.release();
+		return false;
+	}
+	if (!loadCompressed(chunk, blob.data, blob.length)) {
 		Log::warn("Failed to uncompress the model");
 		blob.release();
 		return false;
