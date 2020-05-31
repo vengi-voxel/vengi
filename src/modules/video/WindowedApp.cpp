@@ -102,7 +102,6 @@ core::AppState WindowedApp::onRunning() {
 
 	core_trace_scoped(WindowedAppStartFrame);
 	video::startFrame(_window, _rendererContext);
-	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 	core::Singleton<ShaderManager>::getInstance().update();
 
 	const uint64_t end = core::TimeProvider::highResTime();
