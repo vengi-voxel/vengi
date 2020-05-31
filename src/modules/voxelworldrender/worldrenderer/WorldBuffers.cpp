@@ -8,35 +8,37 @@
 #include "video/Types.h"
 #include "voxel/VoxelVertex.h"
 #include "core/Log.h"
+#include "core/Common.h"
 #include "video/Trace.h"
 #include "video/Renderer.h"
 
 namespace voxelworldrender {
 
+alignas(16) static constexpr glm::vec2 vecs[] = {
+	{ -1.0f, -1.0f},
+	{ -1.0f,  1.0f},
+	{  1.0f, -1.0f},
+	{  1.0f, -1.0f},
+	{ -1.0f,  1.0f},
+	{  1.0f,  1.0f},
+
+	{ -1.0f, -1.0f},
+	{  1.0f, -1.0f},
+	{ -1.0f,  1.0f},
+	{  1.0f, -1.0f},
+	{  1.0f,  1.0f},
+	{ -1.0f,  1.0f}
+};
+
 bool WorldBuffers::renderWater() {
 	video_trace_scoped(WorldBuffersRenderWater);
 	video::ScopedBuffer scopedBuf(_waterBuffer);
-	const int elements = _waterBuffer.elements(_waterVbo, 2);
+	const int elements = _waterBuffer.elements(_waterVbo, core::remove_reference<decltype(vecs[0])>::type::length());
 	video::drawArrays(video::Primitive::Triangles, elements);
 	return true;
 }
 
 bool WorldBuffers::initWaterBuffer(shader::WaterShader& waterShader) {
-	alignas(16) static constexpr glm::vec2 vecs[] = {
-		{ -1.0f, -1.0f},
-		{ -1.0f,  1.0f},
-		{  1.0f, -1.0f},
-		{  1.0f, -1.0f},
-		{ -1.0f,  1.0f},
-		{  1.0f,  1.0f},
-
-		{ -1.0f, -1.0f},
-		{  1.0f, -1.0f},
-		{ -1.0f,  1.0f},
-		{  1.0f, -1.0f},
-		{  1.0f,  1.0f},
-		{ -1.0f,  1.0f}
-	};
 	_waterVbo = _waterBuffer.create(vecs, sizeof(vecs));
 	if (_waterVbo == -1) {
 		Log::error("Failed to create water vertex buffer");
