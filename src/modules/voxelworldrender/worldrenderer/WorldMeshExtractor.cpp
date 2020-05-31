@@ -39,6 +39,7 @@ void WorldMeshExtractor::reset() {
 }
 
 bool WorldMeshExtractor::pop(voxel::Mesh& item) {
+	core_trace_value_scoped(QueryNewMesh, _positionsExtracted.size());
 	return _extracted.pop(item);
 }
 
@@ -56,6 +57,7 @@ glm::ivec3 WorldMeshExtractor::meshSize() const {
 }
 
 void WorldMeshExtractor::updateExtractionOrder(const glm::ivec3& sortPos) {
+	core_trace_value_scoped(SortExtractionOrder, _pendingExtraction.size());
 	const glm::ivec3& d = glm::abs(_pendingExtractionSortPosition - sortPos);
 	const int allowedDelta = 3 * _meshSize->intVal();
 	if (d.x < allowedDelta && d.z < allowedDelta) {

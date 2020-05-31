@@ -45,6 +45,7 @@ extern void traceMessage(const char* name);
 extern void traceThread(const char* name);
 
 #ifdef TRACY_ENABLE
+#define core_trace_value_scoped(name, x) ZoneNamedN(__tracy_scoped_##name, #name, true); ZoneValueV(__tracy_scoped_##name, (uint64_t)(x))
 #define core_trace_set(x) core::traceSet(x)
 #define core_trace_init() core::traceInit()
 #define core_trace_shutdown() core::traceShutdown()
@@ -58,6 +59,7 @@ extern void traceThread(const char* name);
 #define core_trace_end()
 #define core_trace_scoped(name) ZoneNamedN(__tracy_scoped_##name, #name, true)
 #else
+#define core_trace_value_scoped(name, x)
 #define core_trace_set(x) core::traceSet(x)
 #define core_trace_init() core::traceInit()
 #define core_trace_shutdown() core::traceShutdown()
