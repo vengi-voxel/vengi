@@ -408,10 +408,10 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 					video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 				}
 				return true;
-			});
+			}, true);
 		} else {
 			_shadow.render([] (int i, const glm::mat4& lightViewProjection) {
-				video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
+				video::clear(video::ClearFlag::Depth);
 				return true;
 			});
 		}
