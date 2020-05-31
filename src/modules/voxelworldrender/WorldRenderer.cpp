@@ -111,7 +111,7 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 	return 1;
 }
 
-glm::mat4 WorldRenderer::waterModelMatrix() const {
+glm::mat4 WorldRenderer::waterModelMatrix(const video::Camera& camera) const {
 	constexpr glm::vec3 translate(0.0f, ((float)voxel::MAX_WATER_HEIGHT) - 0.1f, 0.0f);
 	const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), translate), glm::vec3(1000.0f));
 	return model;
@@ -257,7 +257,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	video_trace_scoped(WorldRendererRenderWater);
 	video::ScopedShader scoped(_waterShader);
 	if (_waterShader.isDirty()) {
-		_waterShader.setModel(waterModelMatrix());
+		_waterShader.setModel(waterModelMatrix(camera));
 		_waterShader.setShadowmap(video::TextureUnit::One);
 		_waterShader.setCubemap(video::TextureUnit::Two);
 		_waterShader.setReflection(video::TextureUnit::Three);
