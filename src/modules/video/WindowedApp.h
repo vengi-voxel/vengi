@@ -132,6 +132,9 @@ public:
 	static double fps() {
 		return getInstance()->_fps;
 	}
+	static float dpiFactor() {
+		return getInstance()->_dpiFactor;
+	}
 	static WindowedApp* getInstance();
 };
 
