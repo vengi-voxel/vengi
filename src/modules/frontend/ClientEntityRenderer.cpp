@@ -107,6 +107,8 @@ int ClientEntityRenderer::renderEntityDetails(const core::List<ClientEntity*>& e
 	if (entities.empty()) {
 		return 0;
 	}
+	int drawCallsEntities = 0;
+#if 0
 	video_trace_scoped(RenderEntityDetails);
 	alignas(16) static const struct {
 		glm::vec3 start;
@@ -117,8 +119,6 @@ int ClientEntityRenderer::renderEntityDetails(const core::List<ClientEntity*>& e
 		{glm::vec3(0.0f), glm::up, core::Color::Green},
 		{glm::vec3(0.0f), glm::forward, core::Color::Blue}
 	};
-	int drawCallsEntities = 0;
-#if 0
 	for (frontend::ClientEntity* ent : entities) {
 		const glm::mat4 model = glm::rotate(glm::translate(ent->position()), ent->orientation(), glm::up);
 		// TODO: draw health bar
