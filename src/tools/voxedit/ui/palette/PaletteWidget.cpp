@@ -5,6 +5,7 @@
 #include "PaletteWidget.h"
 #include "voxel/MaterialColor.h"
 #include "core/Color.h"
+#include "video/WindowedApp.h"
 
 PaletteWidget::PaletteWidget() :
 		Super() {
@@ -90,9 +91,9 @@ tb::PreferredSize PaletteWidget::onCalculatePreferredContentSize(const tb::SizeC
 }
 
 void PaletteWidget::onInflate(const tb::INFLATE_INFO &info) {
-	const tb::TBDimensionConverter *dc = tb::g_tb_skin->getDimensionConverter();
-	_width = dc->dpToPx(info.node->getValueInt("width", 20));
-	_height = dc->dpToPx(info.node->getValueInt("height", 20));
+	const float scaleFactor = video::WindowedApp::dpiFactor();
+	_width = info.node->getValueInt("width", 20) * glm::floor(scaleFactor);
+	_height = info.node->getValueInt("height", 20) * glm::floor(scaleFactor);
 	_amountX = info.node->getValueInt("amount-x", 8);
 	Super::onInflate(info);
 }
