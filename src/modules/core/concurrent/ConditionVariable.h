@@ -19,9 +19,17 @@ public:
 	ConditionVariable();
 	~ConditionVariable();
 
-	bool signalOne();
-	bool signalAll();
+	bool notify_one();
+	bool notify_all();
 	bool wait(Lock& lock);
+
+	template<class PREDICATE>
+	void wait(Lock& lock, PREDICATE&& predicate) {
+		while (!predicate()) {
+			wait(lock);
+		}
+	}
+
 	bool waitTimeout(Lock& lock, uint32_t millis);
 };
 

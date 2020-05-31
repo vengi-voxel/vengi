@@ -30,7 +30,7 @@ private:
 	typedef GroupMembersSet::iterator GroupMembersSetIter;
 	typedef GroupMembersSet::const_iterator GroupMembersSetConstIter;
 
-	core_trace_mutex(core::Lock, _groupLock);
+	core_trace_mutex(core::Lock, _groupLock, "GroupLock");
 	struct Group {
 		AIPtr leader;
 		GroupMembersSet members;
@@ -43,7 +43,7 @@ private:
 	typedef Groups::iterator GroupsIter;
 
 	GroupMembersSet _empty;
-	core_trace_mutex(core::Lock, _lock);
+	core_trace_mutex(core::Lock, _lock, "GroupMgr");
 	Groups _groups;
 	GroupMembers _groupMembers;
 

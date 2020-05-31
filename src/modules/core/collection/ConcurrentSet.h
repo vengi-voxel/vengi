@@ -7,6 +7,7 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 #include <stdint.h>
 #include <unordered_set>
 #include <algorithm>
@@ -19,7 +20,7 @@ public:
 	using underlying_type = std::unordered_set<Data>;
 private:
 	underlying_type _data;
-	mutable core::Lock _mutex;
+	mutable core_trace_mutex(core::Lock, _mutex, "ConcurrentSet");
 	core::ConditionVariable _conditionVariable;
 public:
 	using value_type = Data;
@@ -39,7 +40,7 @@ public:
 			core::ScopedLock lock(_mutex);
 			result = _data.insert(data).second;
 		}
-		_conditionVariable.signalOne();
+		_conditionVariable.notify_one();
 		return result;
 	}
 
@@ -49,7 +50,7 @@ public:
 			core::ScopedLock lock(_mutex);
 			result = _data.insert(data).second;
 		}
-		_conditionVariable.signalOne();
+		_conditionVariable.notify_one();
 		return result;
 	}
 

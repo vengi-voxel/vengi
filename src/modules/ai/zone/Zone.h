@@ -53,8 +53,8 @@ protected:
 	AIScheduleList _scheduledRemove;
 	CharacterIdList _scheduledDestroy;
 	bool _debug;
-	mutable core_trace_mutex(core::Lock, _lock);
-	core_trace_mutex(core::Lock, _scheduleLock);
+	mutable core_trace_mutex(core::Lock, _lock, "AIZone");
+	core_trace_mutex(core::Lock, _scheduleLock, "AIScheduleZone");
 	ai::GroupMgr _groupManager;
 	mutable core::ThreadPool _threadPool;
 

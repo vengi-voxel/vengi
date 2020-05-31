@@ -87,7 +87,7 @@ class LUAAIRegistry : public AIRegistry {
 protected:
 	lua_State* _s = nullptr;
 
-	core_trace_mutex(core::Lock, _lock);
+	core_trace_mutex(core::Lock, _lock, "LUAAIRegistry");
 	TreeNodeFactoryMap _treeNodeFactories;
 	ConditionFactoryMap _conditionFactories;
 	FilterFactoryMap _filterFactories;

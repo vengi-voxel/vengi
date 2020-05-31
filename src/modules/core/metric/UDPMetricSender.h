@@ -31,7 +31,7 @@ private:
 	mutable SOCKET _socket;
 	const uint16_t _port;
 	mutable struct sockaddr_in* _statsd;
-	mutable core_trace_mutex(core::Lock, _connectionMutex);
+	mutable core_trace_mutex(core::Lock, _connectionMutex, "UDPMetricSender");
 
 	bool connect() const;
 public:

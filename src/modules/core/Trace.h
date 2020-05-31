@@ -50,7 +50,7 @@ extern void traceThread(const char* name);
 #define core_trace_shutdown() core::traceShutdown()
 #define core_trace_msg(message) TracyMessageL(message)
 #define core_trace_thread(name) tracy::SetThreadName(name)
-#define core_trace_mutex(type, name) TracyLockable(type, name)
+#define core_trace_mutex(type, varname, name) type varname { tracy::SourceLocationData{ nullptr, name, __FILE__, __LINE__, 0 } }
 
 #define core_trace_begin_frame(name)
 #define core_trace_end_frame(name) FrameMark
@@ -63,7 +63,7 @@ extern void traceThread(const char* name);
 #define core_trace_shutdown() core::traceShutdown()
 #define core_trace_msg(message) core::traceMessage(message)
 #define core_trace_thread(name) core::traceThread(name)
-#define core_trace_mutex(type, name) type name
+#define core_trace_mutex(type, varname, name) type varname
 
 #define core_trace_begin_frame(name) core::traceBeginFrame()
 #define core_trace_end_frame(name) core::traceEndFrame()

@@ -27,7 +27,7 @@ class ConcurrentQueue {
 private:
 	using Collection = std::vector<Data>;
 	Collection _data;
-	mutable core::Lock _mutex;
+	mutable core_trace_mutex(core::Lock,  _mutex, "ConcurrentQueue");
 	core::ConditionVariable _conditionVariable;
 	core::AtomicBool _abort { false };
 	Comparator _comparator;
@@ -57,7 +57,7 @@ public:
 	void abortWait() {
 		_abort = true;
 		core::ScopedLock lock(_mutex);
-		_conditionVariable.signalAll();
+		_conditionVariable.notify_all();
 	}
 
 	void reset() {
@@ -81,14 +81,14 @@ public:
 		core::ScopedLock lock(_mutex);
 		_data.push_back(data);
 		std::push_heap(_data.begin(), _data.end(), _comparator);
-		_conditionVariable.signalOne();
+		_conditionVariable.notify_one();
 	}
 
 	void push(Data&& data) {
 		core::ScopedLock lock(_mutex);
 		_data.push_back(core::move(data));
 		std::push_heap(_data.begin(), _data.end(), _comparator);
-		_conditionVariable.signalOne();
+		_conditionVariable.notify_one();
 	}
 
 	template<typename ... _Args>
@@ -96,7 +96,7 @@ public:
 		core::ScopedLock lock(_mutex);
 		_data.emplace_back(core::forward<_Args>(__args)...);
 		std::push_heap(_data.begin(), _data.end(), _comparator);
-		_conditionVariable.signalOne();
+		_conditionVariable.notify_one();
 	}
 
 	inline bool empty() const {

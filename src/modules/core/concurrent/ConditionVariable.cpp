@@ -16,11 +16,11 @@ ConditionVariable::~ConditionVariable() {
 	SDL_DestroyCond(_conditionVariable);
 }
 
-bool ConditionVariable::signalOne() {
+bool ConditionVariable::notify_one() {
 	return SDL_CondSignal(_conditionVariable) != -1;
 }
 
-bool ConditionVariable::signalAll() {
+bool ConditionVariable::notify_all() {
 	return SDL_CondBroadcast(_conditionVariable) != -1;
 }
 

@@ -31,11 +31,11 @@
 #include <queue>
 #include <memory>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <future>
 #include <functional>
 #include "core/concurrent/Atomic.h"
+#include "core/concurrent/Lock.h"
+#include "core/concurrent/ConditionVariable.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 
@@ -66,8 +66,8 @@ private:
 	std::queue<std::function<void()> > _tasks;
 
 	// synchronization
-	core_trace_mutex(std::mutex, _queueMutex);
-	std::condition_variable_any _queueCondition;
+	core_trace_mutex(core::Lock, _queueMutex, "ThreadPoolQueue");
+	core::ConditionVariable _queueCondition;
 	core::AtomicBool _stop { false };
 	core::AtomicBool _force { false };
 };

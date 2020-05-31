@@ -28,7 +28,7 @@ protected:
 	const IAIFactory& _aiFactory;
 	typedef std::map<core::String, TreeNodePtr> TreeMap;
 	TreeMap _treeMap;
-	core_trace_mutex(core::Lock, _lock);
+	core_trace_mutex(core::Lock, _lock, "AITreeLoader");
 
 	inline void resetError() {
 		core::ScopedLock scopedLock(_lock);
