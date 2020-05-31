@@ -145,7 +145,6 @@ IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t z, cons
 			VoxelVertex vertex;
 			vertex.position = glm::ivec3(x, y, z) + offset;
 			vertex.colorIndex = materialIn.getColor();
-			vertex.material = materialIn.getMaterial();
 			vertex.ambientOcclusion = ambientOcclusion;
 
 			entry.index = meshCurrent->addVertex(vertex) + 1;

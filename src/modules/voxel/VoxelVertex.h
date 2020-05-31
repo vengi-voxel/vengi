@@ -18,11 +18,8 @@ struct VoxelVertex {
 	/** 0 is the darkest, 3 is no occlusion at all */
 	uint8_t ambientOcclusion;
 	uint8_t colorIndex;
-	/* currently we only need to know whether it's water, or not. */
-	VoxelType material;
-	uint8_t padding;
 };
-static_assert(sizeof(VoxelVertex) == 10, "Unexpected size of the vertex struct");
+static_assert(sizeof(VoxelVertex) == 8, "Unexpected size of the vertex struct");
 
 // TODO: maybe reduce to uint16_t and use glDrawElementsBaseVertex
 typedef uint32_t IndexType;

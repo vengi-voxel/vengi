@@ -1,6 +1,6 @@
 // attributes from the VAOs
 $in vec3 a_pos;
-$in uvec3 a_info;
+$in uvec2 a_info;
 
 uniform mat4 u_model;
 uniform mat4 u_viewprojection;
@@ -16,7 +16,6 @@ $out float v_ambientocclusion;
 void main(void) {
 	uint a_ao = a_info[0];
 	uint a_colorindex = a_info[1];
-	uint a_material = a_info[2];
 	v_pos = u_model * vec4(a_pos, 1.0);
 
 	int materialColorIndex = int(a_colorindex);
