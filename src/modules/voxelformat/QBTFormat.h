@@ -28,7 +28,7 @@ private:
 	bool loadFromStream(io::FileStream& stream, VoxelVolumes& volumes);
 	bool saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bool colorMap) const;
 	bool saveColorMap(io::FileStream& stream) const;
-	bool saveModel(io::FileStream& stream, int childCount) const;
+	bool saveModel(io::FileStream& stream, const VoxelVolumes& volumes, bool colorMap) const;
 public:
 	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;

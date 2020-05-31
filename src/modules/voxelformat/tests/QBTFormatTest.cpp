@@ -77,4 +77,23 @@ TEST_F(QBTFormatTest, testSave) {
 	EXPECT_EQ(*original, *loaded);
 }
 
+TEST_F(QBTFormatTest, testResaveMultipleLayers) {
+	QBTFormat f;
+	const io::FilePtr& file = open("qubicle.qbt");
+	VoxelVolumes volumes;
+	EXPECT_TRUE(f.loadGroups(file, volumes));
+	EXPECT_EQ(17u, volumes.size());
+
+	f = QBTFormat();
+	EXPECT_TRUE(f.saveGroups(volumes, open("qubicle-savetest.qbt", io::FileMode::Write)));
+	EXPECT_EQ(17u, volumes.size());
+
+	voxelformat::clearVolumes(volumes);
+	f = QBTFormat();
+	EXPECT_TRUE(f.loadGroups(open("qubicle-savetest.qbt"), volumes));
+	EXPECT_EQ(17u, volumes.size());
+
+	voxelformat::clearVolumes(volumes);
+}
+
 }

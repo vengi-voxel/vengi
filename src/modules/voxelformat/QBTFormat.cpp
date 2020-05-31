@@ -149,11 +149,43 @@ bool QBTFormat::saveColorMap(io::FileStream& stream) const {
 	return true;
 }
 
-bool QBTFormat::saveModel(io::FileStream& stream, int childCount) const {
+bool QBTFormat::saveModel(io::FileStream& stream, const VoxelVolumes& volumes, bool colorMap) const {
+	int children = 0;
+	for (auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		++children;
+	}
 	wrapSave(stream.addInt(1)); // node type model
-	wrapSave(stream.addInt(sizeof(uint32_t)));
-	wrapSave(stream.addInt(childCount));
-	return true;
+	if (children == 0) {
+		wrapSave(stream.addInt(sizeof(uint32_t)));
+		wrapSave(stream.addInt(0));
+		return false;
+	}
+	const int sizePos = stream.pos();
+	wrapSave(stream.addInt(0));
+
+	const int dataStart = stream.pos();
+	wrapSave(stream.addInt(children));
+
+	bool success = true;
+	for (auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		if (!saveMatrix(stream, v, colorMap)) {
+			success = false;
+		}
+	}
+
+	const int dataEnd = stream.pos();
+	const int delta = dataEnd - dataStart;
+
+	stream.seek(sizePos);
+	wrapSave(stream.addInt(delta));
+
+	return success;
 }
 
 bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
@@ -175,27 +207,7 @@ bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	if (!stream.addString("DATATREE", false)) {
 		return false;
 	}
-	int children = 0;
-	for (auto& v : volumes) {
-		if (v.volume == nullptr) {
-			continue;
-		}
-		++children;
-	}
-	if (children == 0) {
-		return false;
-	}
-	saveModel(stream, children);
-	for (auto& v : volumes) {
-		if (v.volume == nullptr) {
-			continue;
-		}
-		if (!saveMatrix(stream, v, colorMap)) {
-			success = false;
-		} else {
-			++layers;
-		}
-	}
+	saveModel(stream, volumes, colorMap);
 	Log::debug("Saved %i layers", layers);
 	return success;
 }
@@ -408,7 +420,7 @@ bool QBTFormat::loadNode(io::FileStream& stream, VoxelVolumes& volumes) {
 	wrap(stream.readInt(dataSize));
 	Log::debug("Data size: %u", dataSize);
 
-	const int before = stream.remaining();
+	const int64_t before = stream.remaining();
 	switch (nodeTypeID) {
 	case 0: {
 		Log::debug("Found matrix");
@@ -441,7 +453,7 @@ bool QBTFormat::loadNode(io::FileStream& stream, VoxelVolumes& volumes) {
 		stream.skip(dataSize);
 		break;
 	}
-	const int after = stream.remaining();
+	const int64_t after = stream.remaining();
 	const int delta = before - after;
 	if (delta != (int)dataSize) {
 		Log::debug("Unexpected chunk size for type id %i, read %i, expected: %i",
