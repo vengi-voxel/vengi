@@ -21,7 +21,6 @@ protected:
 		bool inuse = false;
 		double scaleSeconds = 0.0;
 		math::AABB<int> _aabb = {glm::ivec3(0), glm::ivec3(0)};
-		glm::ivec3 _offset { 0 };
 		size_t _compressedIndexSize = 0;
 
 		video::Buffer _buffer;
@@ -37,14 +36,6 @@ protected:
 			_vbo = -1;
 			_ibo = -1;
 			inuse = false;
-		}
-
-		/**
-		 * This is the world position. Not the render positions. There is no scale
-		 * applied here.
-		 */
-		inline const glm::ivec3 &translation() const {
-			return _offset;
 		}
 
 		/**

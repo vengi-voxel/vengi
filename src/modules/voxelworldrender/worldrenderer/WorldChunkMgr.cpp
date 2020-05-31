@@ -63,7 +63,7 @@ void WorldChunkMgr::handleMeshQueue() {
 			freeChunkBuffer = &chunkBuffer;
 		}
 		// check whether we update an existing one
-		if (chunkBuffer.translation() == mesh.getOffset()) {
+		if (chunkBuffer.aabb().mins() == mesh.getOffset()) {
 			freeChunkBuffer = &chunkBuffer;
 			break;
 		}
@@ -97,7 +97,6 @@ void WorldChunkMgr::handleMeshQueue() {
 		Log::error("Failed to create index buffer");
 		return;
 	}
-	freeChunkBuffer->_offset = mesh.getOffset();
 	freeChunkBuffer->_compressedIndexSize = mesh.compressedIndexSize();
 
 	const voxel::VertexArray& vertices = mesh.getVertexVector();
@@ -130,14 +129,15 @@ void WorldChunkMgr::update(double deltaFrameSeconds, const video::Camera &camera
 			continue;
 		}
 		chunkBuffer.scaleSeconds -= deltaFrameSeconds;
-		const int distance = distance2(chunkBuffer.translation(), focusPos);
+		const glm::ivec3& pos = chunkBuffer.aabb().mins();
+		const int distance = distance2(pos, focusPos);
 		if (distance < _maxAllowedDistance) {
 			continue;
 		}
-		core_assert_always(_meshExtractor.allowReExtraction(chunkBuffer.translation()));
+		core_assert_always(_meshExtractor.allowReExtraction(pos));
 		chunkBuffer.reset();
 		_octree.remove(&chunkBuffer);
-		Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
+		Log::trace("Remove mesh from %i:%i", pos.x, pos.z);
 	}
 
 	cull(camera);
