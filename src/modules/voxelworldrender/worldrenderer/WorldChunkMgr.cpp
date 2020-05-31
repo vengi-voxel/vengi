@@ -54,6 +54,12 @@ void WorldChunkMgr::handleMeshQueue() {
 	if (!_meshExtractor.pop(mesh)) {
 		return;
 	}
+
+	const voxel::VertexArray& vertices = mesh.getVertexVector();
+	if (vertices.empty()) {
+		return;
+	}
+
 	// Now add the mesh to the list of meshes to render.
 	core_trace_scoped(WorldRendererHandleMeshQueue);
 
@@ -99,15 +105,9 @@ void WorldChunkMgr::handleMeshQueue() {
 	}
 	freeChunkBuffer->_compressedIndexSize = mesh.compressedIndexSize();
 
-	const voxel::VertexArray& vertices = mesh.getVertexVector();
-	if (vertices.empty()) {
-		buffer.update(freeChunkBuffer->_vbo, nullptr, 0);
-		buffer.update(freeChunkBuffer->_ibo, nullptr, 0);
-	} else {
-		const uint8_t* indices = mesh.compressedIndices();
-		buffer.update(freeChunkBuffer->_vbo, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type));
-		buffer.update(freeChunkBuffer->_ibo, indices, mesh.getNoOfIndices() * freeChunkBuffer->_compressedIndexSize);
-	}
+	const uint8_t* indices = mesh.compressedIndices();
+	buffer.update(freeChunkBuffer->_vbo, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type));
+	buffer.update(freeChunkBuffer->_ibo, indices, mesh.getNoOfIndices() * freeChunkBuffer->_compressedIndexSize);
 
 	const glm::ivec3& size = _meshExtractor.meshSize();
 	const glm::ivec3& mins = mesh.getOffset();
