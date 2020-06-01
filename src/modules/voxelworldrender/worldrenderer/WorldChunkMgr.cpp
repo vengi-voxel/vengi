@@ -207,9 +207,7 @@ int WorldChunkMgr::renderTerrain() {
 		const video::Buffer& buffer = chunkBuffer._buffer;
 		const int ibo = chunkBuffer._ibo;
 		const uint32_t numIndices = buffer.elements(ibo, 1, chunkBuffer._compressedIndexSize);
-		if (numIndices == 0u) {
-			return false;
-		}
+		core_assert_msg(numIndices > 0u, "Empty meshes should not be part of the array");
 		video::ScopedBuffer scopedBuf(buffer);
 		if (_worldShader->isActive()) {
 			const double delta = glm::clamp(core_max(0.0, chunkBuffer.scaleSeconds) / ScaleDuration, 0.0, 1.0);
