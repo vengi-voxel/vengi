@@ -124,10 +124,6 @@ inline void ClientEntity::setOrientation(float orientation) {
 	_orientation = orientation;
 }
 
-inline void ClientEntity::setPosition(const glm::vec3& position) {
-	_position = position;
-}
-
 inline const glm::vec3& ClientEntity::position() const {
 	return _position;
 }

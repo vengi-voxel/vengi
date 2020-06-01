@@ -65,6 +65,11 @@ void ClientEntity::update(double deltaFrameSeconds) {
 	_character.skeleton().update(_character.animationSettings(), _bones._items);
 }
 
+void ClientEntity::setPosition(const glm::vec3& position) {
+	_position = position;
+	core_assert(!glm::any(glm::isnan(_position)));
+}
+
 uint32_t ClientEntity::bindVertexBuffers(const shader::SkeletonShader& chrShader) {
 	if (_vbo.attributes() == 0) {
 		_vbo.addAttribute(chrShader.getPosAttribute(_vertices, &animation::Vertex::pos));

@@ -56,6 +56,7 @@ public:
 
 	void abortWait() {
 		_abort = true;
+		core::ScopedLock lock(_mutex);
 		_conditionVariable.signalAll();
 	}
 
