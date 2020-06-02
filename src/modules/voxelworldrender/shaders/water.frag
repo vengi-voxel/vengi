@@ -96,7 +96,7 @@ void main(void) {
 	o_color = fog(v_pos.xyz, mix(shadowColor, waterColor.xyz, 0.5), 0.5);
 	// add a blue tint and the specular highlights
 	const vec3 tint = vec3(0.0, 0.3, 0.5);
-	vec3 waterColorTint = tint * checker(v_pos.xz);
+	vec3 waterColorTint = tint * checker(v_pos.xz, 0.2);
 	o_color = mix(o_color, vec4(waterColorTint, 1.0), 0.2) + vec4(lightColor, 0.0);
 #if cl_water
 	o_color.a = clamp(depthWater / 5.0, 0.0, 1.0);
