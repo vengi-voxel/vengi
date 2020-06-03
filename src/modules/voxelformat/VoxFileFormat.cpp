@@ -43,6 +43,7 @@ RawVolume* VoxFileFormat::merge(const VoxelVolumes& volumes) const {
 RawVolume* VoxFileFormat::load(const io::FilePtr& file) {
 	VoxelVolumes volumes;
 	if (!loadGroups(file, volumes)) {
+		voxelformat::clearVolumes(volumes);
 		return nullptr;
 	}
 	RawVolume* mergedVolume = merge(volumes);
