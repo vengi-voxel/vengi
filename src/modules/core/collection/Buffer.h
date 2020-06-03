@@ -38,8 +38,14 @@ private:
 		if (_capacity >= newSize) {
 			return;
 		}
-		_capacity = align(newSize);
-		_buffer = (TYPE*)core_realloc(_buffer, _capacity * sizeof(TYPE));
+		size_t newCapacity = align(newSize);
+		TYPE* newBuffer = (TYPE*)core_malloc(newCapacity * sizeof(TYPE));
+		if (_buffer != nullptr) {
+			core_memcpy(newBuffer, _buffer, _capacity * sizeof(TYPE));
+			core_free(_buffer);
+		}
+		_buffer = newBuffer;
+		_capacity = newCapacity;
 	}
 public:
 	using value_type = TYPE;
@@ -49,12 +55,14 @@ public:
 
 	explicit Buffer(size_t amount) {
 		checkBufferSize(amount);
+		core_memset(_buffer, 0, _capacity * sizeof(TYPE));
 		_size = amount;
 	}
 
 	Buffer(const Buffer& other) {
 		checkBufferSize(other._size);
 		_size = other._size;
+		core_memcpy(_buffer, other._buffer, _size * sizeof(TYPE));
 	}
 
 	Buffer(Buffer &&other) :
@@ -71,6 +79,7 @@ public:
 		release();
 		checkBufferSize(other._size);
 		_size = other._size;
+		core_memcpy(_buffer, other._buffer, _size * sizeof(TYPE));
 		return *this;
 	}
 
@@ -141,7 +150,7 @@ public:
 
 	void push_back(const TYPE& val) {
 		checkBufferSize(_size + 1u);
-		((TYPE*)_buffer)[_size++] = val;
+		_buffer[_size++] = val;
 	}
 
 	void pop() {
@@ -150,31 +159,31 @@ public:
 	}
 
 	TYPE* data() {
-		return (TYPE*)_buffer;
+		return _buffer;
 	}
 
 	const TYPE* data() const {
-		return (const TYPE*)_buffer;
+		return _buffer;
 	}
 
 	TYPE& front() {
 		core_assert(_size > 0u);
-		return ((TYPE*)_buffer)[0];
+		return _buffer[0];
 	}
 
 	const TYPE& front() const {
 		core_assert(_size > 0u);
-		return ((const TYPE*)_buffer)[0];
+		return _buffer[0];
 	}
 
 	TYPE& back() {
 		core_assert(_size > 0u);
-		return ((TYPE*)_buffer)[_size - 1u];
+		return _buffer[_size - 1u];
 	}
 
 	const TYPE& back() const {
 		core_assert(_size > 0u);
-		return ((const TYPE*)_buffer)[_size - 1u];
+		return _buffer[_size - 1u];
 	}
 
 	void reserve(size_t size) {
@@ -202,16 +211,14 @@ public:
 		const size_t delta = core_min(_size - index, n);
 		const size_t srcIdxStart = index + delta;
 		const size_t tgtIdxStart = index;
-		size_t newSize = _size;
 		if (srcIdxStart < _size) {
 			size_t s = srcIdxStart;
 			size_t t = tgtIdxStart;
-			for (; s < _size; ++s, ++t) {
-				((TYPE*)_buffer)[t] = ((const TYPE*)_buffer)[s];
+			for (; s < _size;) {
+				_buffer[t++] = _buffer[s++];
 			}
 		}
-		newSize -= delta;
-		_size = newSize;
+		_size -= delta;
 	}
 
 	inline size_t size() const {
@@ -232,12 +239,12 @@ public:
 
 	inline const TYPE& operator[](size_t idx) const {
 		core_assert(idx < _size);
-		return ((const TYPE*)_buffer)[idx];
+		return _buffer[idx];
 	}
 
 	inline TYPE& operator[](size_t idx) {
 		core_assert(idx < _size);
-		return ((TYPE*)_buffer)[idx];
+		return _buffer[idx];
 	}
 };
 

@@ -71,6 +71,18 @@ TEST(BufferTest, testIterate) {
 	}
 }
 
+TEST(BufferTest, testIterateBig) {
+	Buffer<int> array;
+	array.reserve(10000);
+	for (int i = 0; i < (int)array.capacity(); ++i) {
+		array.push_back(i);
+	}
+	int i = 0;
+	for (const int& d : array) {
+		EXPECT_EQ(i++, d);
+	}
+}
+
 TEST(BufferTest, testCopy) {
 	Buffer<uint8_t> array;
 	array.push_back(1);
@@ -81,6 +93,9 @@ TEST(BufferTest, testCopy) {
 	Buffer<uint8_t> copy(array);
 	EXPECT_EQ(3u, copy.size()) << array;
 	EXPECT_EQ(32u, copy.capacity()) << array;
+	EXPECT_EQ(1, copy[0]);
+	EXPECT_EQ(2, copy[1]);
+	EXPECT_EQ(3, copy[2]);
 }
 
 TEST(BufferTest, testTriggerResize) {
@@ -95,10 +110,13 @@ TEST(BufferTest, testTriggerResize) {
 }
 
 TEST(BufferTest, testErase) {
-	Buffer<uint8_t> array;
+	Buffer<uint8_t, 32> array;
 	for (uint8_t i = 0; i < 128; ++i) {
 		array.push_back(i);
+		EXPECT_EQ(i, array[i]);
 	}
+	EXPECT_EQ(0, array[0]) << array;
+	EXPECT_EQ(127, array[127]) << array;
 	EXPECT_EQ(128u, array.size()) << array;
 	EXPECT_EQ(128u, array.capacity()) << array;
 	array.erase(0, 10);
