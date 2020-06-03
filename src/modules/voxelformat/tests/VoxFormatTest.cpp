@@ -21,30 +21,21 @@ TEST_F(VoxFormatTest, testLoad) {
 
 TEST_F(VoxFormatTest, testSave) {
 	VoxFormat f;
-	RawVolume* loadedVolume;
-	{
-		const io::FilePtr& file = _testApp->filesystem()->open("magicavoxel.vox");
-		ASSERT_TRUE((bool)file) << "Could not open vox file";
-		loadedVolume = f.load(file);
-		ASSERT_NE(nullptr, loadedVolume) << "Could not load vox file";
+	const io::FilePtr& file = _testApp->filesystem()->open("magicavoxel.vox");
+	ASSERT_TRUE((bool)file) << "Could not open vox file";
+	RawVolume* loadedVolume = f.load(file);
+	ASSERT_NE(nullptr, loadedVolume) << "Could not load vox file";
+
+	const io::FilePtr& fileSave = _testApp->filesystem()->open("magicavoxel-save.vox", io::FileMode::Write);
+	EXPECT_TRUE(f.save(loadedVolume, fileSave));
+	const io::FilePtr& fileLoadAfterSave = _testApp->filesystem()->open("magicavoxel-save.vox");
+	RawVolume *savedVolume = f.load(fileLoadAfterSave);
+	EXPECT_NE(nullptr, savedVolume) << "Could not load saved vox file";
+	if (savedVolume) {
+		EXPECT_EQ(*savedVolume, *loadedVolume);
+		delete savedVolume;
 	}
-
-	{
-		const io::FilePtr& fileSave = _testApp->filesystem()->open("magicavoxel-save.vox", io::FileMode::Write);
-		ASSERT_TRUE(f.save(loadedVolume, fileSave));
-	}
-
-	RawVolume *savedVolume;
-	{
-		const io::FilePtr& fileLoadAfterSave = _testApp->filesystem()->open("magicavoxel-save.vox");
-		savedVolume = f.load(fileLoadAfterSave);
-		ASSERT_NE(nullptr, savedVolume) << "Could not load saved vox file";
-	}
-
-	EXPECT_EQ(*savedVolume, *loadedVolume);
-
 	delete loadedVolume;
-	delete savedVolume;
 }
 
 }
