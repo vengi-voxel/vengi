@@ -122,37 +122,79 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 		const char *dirc = dirpart.c_str();
 		uv_fs_t req;
 		const int retVal = uv_fs_mkdir(nullptr, &req, dirc, 0740, nullptr);
-		if (retVal != 0 && req.result != UV_EEXIST) {
-			Log::debug("Failed to create dir '%s': %s", dirc, uv_strerror(retVal));
-			lastResult = false;
-			continue;
+		if (retVal != 0) {
+			if (retVal == UV_EEXIST) {
+				Log::debug("Failed to create dir '%s': %s", dirc, uv_strerror(retVal));
+				lastResult = true;
+			} else {
+				Log::error("Failed to create dir '%s': %s", dirc, uv_strerror(retVal));
+				lastResult = false;
+			}
+		} else {
+			lastResult = true;
 		}
-		lastResult = true;
+		uv_fs_req_cleanup(&req);
 	}
 	return lastResult;
 }
 
 bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter) {
 	uv_fs_t req;
-	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
-	if (amount <= 0) {
+	const int rc = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
+	if (rc == 0) {
+		// nothing found
+		uv_fs_req_cleanup(&req);
+		return true;
+	}
+	if (rc < 0) {
+		Log::debug("Failed to list directory: %s. Error was: %s", directory.c_str(), uv_strerror(rc));
 		uv_fs_req_cleanup(&req);
 		return false;
 	}
-	core::String dirFilter = filter;
-	auto iter = dirFilter.rfind(".");
-	if (iter != core::String::npos) {
-		dirFilter.erase(iter);
-	}
-	Log::debug("Filter %s by %s (dir filter: '%s')", directory.c_str(), filter.c_str(), dirFilter.c_str());
+	Log::debug("Filter %s by %s", directory.c_str(), filter.c_str());
 	uv_dirent_t ent;
 	core_memset(&ent, 0, sizeof(ent));
-	while (uv_fs_scandir_next(&req, &ent) == 0) {
+	for (;;) {
+		const int rc = uv_fs_scandir_next(&req, &ent);
+		if (rc == UV_EOF) {
+			break;
+		}
+		if (rc < 0) {
+			Log::error("Failed to iterate directory: %s. Error was: %s", directory.c_str(), uv_strerror(rc));
+			break;
+		}
 		DirEntry::Type type = DirEntry::Type::unknown;
 		if (ent.type == UV_DIRENT_DIR) {
 			type = DirEntry::Type::dir;
 		} else if (ent.type == UV_DIRENT_FILE) {
 			type = DirEntry::Type::file;
+		} else if (ent.type == UV_DIRENT_LINK) {
+			uv_fs_t linkReq;
+			const core::String pointer = directory + "/" + ent.name;
+			if (uv_fs_readlink(nullptr, &linkReq, pointer.c_str(), nullptr) != 0) {
+				Log::debug("Could not resolve symlink %s", pointer.c_str());
+				uv_fs_req_cleanup(&linkReq);
+				continue;
+			}
+			const core::String symlink((const char*)linkReq.ptr);
+			uv_fs_req_cleanup(&linkReq);
+			if (!filter.empty()) {
+				if (!core::string::matches(filter.c_str(), symlink)) {
+					continue;
+				}
+			}
+
+			const core::String& fullPath = isRelativePath(symlink) ? directory + "/" + symlink : symlink;
+
+			uv_fs_t statsReq;
+			if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
+				Log::debug("Could not stat file %s", fullPath.c_str());
+				uv_fs_req_cleanup(&statsReq);
+				continue;
+			}
+			const bool dir = (uv_fs_get_statbuf(&req)->st_mode & S_IFDIR) != 0;
+			entities.push_back(DirEntry{fullPath, dir ? DirEntry::Type::dir : DirEntry::Type::file, statsReq.statbuf.st_size});
+			uv_fs_req_cleanup(&statsReq);
 		} else if (ent.type == UV_DIRENT_UNKNOWN) {
 			type = DirEntry::Type::unknown;
 		} else {
@@ -168,38 +210,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 		const core::String fullPath = directory + "/" + ent.name;
 		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
 			Log::warn("Could not stat file %s", fullPath.c_str());
-		}
-		entities.push_back(DirEntry{ent.name, type, statsReq.statbuf.st_size});
-		uv_fs_req_cleanup(&statsReq);
-	}
-	uv_fs_req_cleanup(&req);
-	return true;
-}
-
-bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& entities) {
-	uv_fs_t req;
-	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
-	if (amount <= 0) {
-		uv_fs_req_cleanup(&req);
-		return false;
-	}
-	uv_dirent_t ent;
-	while (uv_fs_scandir_next(&req, &ent) == 0) {
-		DirEntry::Type type = DirEntry::Type::unknown;
-		if (ent.type == UV_DIRENT_DIR) {
-			type = DirEntry::Type::dir;
-		} else if (ent.type == UV_DIRENT_FILE) {
-			type = DirEntry::Type::file;
-		} else if (ent.type == UV_DIRENT_UNKNOWN) {
-			type = DirEntry::Type::unknown;
-		} else {
-			Log::debug("Unknown directory entry found: %s", ent.name);
-			continue;
-		}
-		uv_fs_t statsReq;
-		const core::String fullPath = directory + "/" + ent.name;
-		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
-			Log::warn("Could not stat file %s", fullPath.c_str());
+			statsReq.statbuf.st_size = 0;
 		}
 		entities.push_back(DirEntry{ent.name, type, statsReq.statbuf.st_size});
 		uv_fs_req_cleanup(&statsReq);
@@ -222,10 +233,10 @@ bool Filesystem::list(const core::String& directory, std::vector<DirEntry>& enti
 bool Filesystem::list(const core::String& directory, std::vector<DirEntry>& entities) const {
 	if (isRelativePath(directory)) {
 		for (const core::String& p : _paths) {
-			_list(p + directory, entities);
+			_list(p + directory, entities, "");
 		}
 	} else {
-		_list(directory, entities);
+		_list(directory, entities, "");
 	}
 	return true;
 }
