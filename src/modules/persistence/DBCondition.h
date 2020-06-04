@@ -53,9 +53,17 @@ public:
 	/**
 	 * @return A string - and never @c nullptr (but can be empty of course) - that the field of the
 	 * query is checked against.
+	 * @param[in] index The index can be used to chain multiple conditions and access values for the
+	 * particular instance behind the index. As an example, see @c DBConditionMultiple
 	 */
 	virtual const char* value(int index) const;
 
+	/**
+	 * @brief Assemble the condition sql string. This does not include there WHERE statement. Only the
+	 * field(s), comparator(s) and value(s)
+	 *
+	 * @param[in,out] parameterCount The current index of the parameters in the complete where statement.
+	 */
 	virtual core::String statement(int& parameterCount) const;
 };
 
