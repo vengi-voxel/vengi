@@ -69,10 +69,6 @@ void String::copyBuf(const char *str, size_t len) {
 	_data._str[len] = '\0';
 }
 
-String::String() :
-	String("", 0u) {
-}
-
 String::String(size_t len, char chr) {
 	_buf[0] = '\0';
 	_data._size = len;

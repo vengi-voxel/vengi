@@ -26,7 +26,7 @@ private:
 	// buffer to prevent memory allocation. If string is longer than the available buffer size,
 	// perform dynamic memory allocation
 	// ensure proper alignment
-	char _buf[64 - sizeof(data)];
+	char _buf[64 - sizeof(data)] = "";
 
 	static const constexpr size_t _stackBufCapacity = sizeof(_buf);
 
@@ -35,7 +35,7 @@ private:
 	void checkBufferSize(size_t len);
 public:
 	static constexpr const size_t npos = ~0u;
-	String();
+	constexpr String() {}
 	String(size_t len, char chr);
 	String(const char *str);
 	String(const char *str, size_t len);
