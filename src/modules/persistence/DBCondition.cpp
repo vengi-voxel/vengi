@@ -72,8 +72,8 @@ core::String DBConditionMultiple::statement(int& parameterCount) const {
 }
 
 const char* DBConditionMultiple::value(int index) const {
-	// TODO: the second index is nonsense
-	return _conditions[index]->value(index);
+	core_assert(index >= 0 && index < _conditions.size());
+	return _conditions[index]->value(0);
 }
 
 
