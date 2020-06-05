@@ -35,7 +35,7 @@ private:
 	void checkBufferSize(size_t len);
 public:
 	static constexpr const size_t npos = ~0u;
-	constexpr String() {}
+	/* constexpr */String() {}
 	String(size_t len, char chr);
 	String(const char *str);
 	String(const char *str, size_t len);
