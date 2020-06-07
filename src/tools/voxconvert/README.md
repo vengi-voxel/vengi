@@ -4,6 +4,10 @@
 
 Convert voxel volume formats between each other.
 
+Support for loading: vox, qbt, qb, vxm, binvox, cub, kvx, kv6
+
+Support for writing: vox, qbt, qb, binvox, cub
+
 ## Usage
 
 `./vengi-voxconvert --merge --scale infile outfile`
