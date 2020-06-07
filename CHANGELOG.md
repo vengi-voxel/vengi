@@ -5,9 +5,23 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
  General:
    - Added support for writing binvox files
    - Added support for reading kvx (Build-Engine) and kv6 (SLAB6) voxel volumes
+   - Performed some AFL hardening on voxel format code
+   - Don't execute keybindings if the console is active
+   - Added basic shader storage buffer support
+   - Reduced voxel vertex size from 16 to 8 bytes
+   - Apply checkerboard pattern to water surface
+   - Improved tracy profiling support
+   - A few highdpi fixes
+
+ Server:
+   - Allow to specify the database port
+   - Fixed loading database chunks
 
  VoxEdit:
-   - Added `scale` console command
+   - Added `scale` console command to produce LODs
+
+ VoxConvert:
+   - Added ability to merge all layers into one
 
 #### 0.0.3 (2020-05-17)
 
