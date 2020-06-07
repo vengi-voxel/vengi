@@ -7,7 +7,7 @@
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
-#include <vector>
+#include "core/collection/DynamicArray.h"
 
 namespace voxelrender {
 
@@ -25,8 +25,7 @@ protected:
 TEST_F(MaterialTest, testMaterial) {
 	const int w = 256;
 	const int h = 1024;
-	std::vector<uint8_t> buffer;
-	buffer.reserve(w * h * components);
+	core::DynamicArray<uint8_t> buffer(w * h * components);
 
 	ASSERT_TRUE(voxel::initDefaultMaterialColors());
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
