@@ -388,6 +388,10 @@ void SceneManager::scale(int layerId) {
 	}
 	const voxel::Region srcRegion = srcVolume->region();
 	const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+	if (targetDimensionsHalf.x < 0 || targetDimensionsHalf.y < 0 || targetDimensionsHalf.z < 0) {
+		Log::debug("Can't scale anymore");
+		return;
+	}
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
 	rescaleVolume(*srcVolume, *destVolume);
