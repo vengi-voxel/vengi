@@ -1,5 +1,7 @@
 A more detailed changelog can be found at: https://github.com/mgerhardy/engine/commits/
 
+#### 0.0.5 (2020-XX-XX)
+
 #### 0.0.4 (2020-06-07)
 
  General:
