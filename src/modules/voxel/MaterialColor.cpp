@@ -250,16 +250,20 @@ bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFi
 		Log::error("%s doesn't exist", paletteFile->name().c_str());
 		return false;
 	}
-	if (!luaFile->exists()) {
-		Log::error("Failed to load %s", luaFile->name().c_str());
-		return false;
+	core::String luaString = "";
+	if (luaFile) {
+		if (!luaFile->exists()) {
+			Log::warn("Failed to load %s", luaFile->name().c_str());
+		} else {
+			luaString = luaFile->load();
+		}
 	}
 	const image::ImagePtr& img = image::loadImage(paletteFile, false);
 	if (!img->isLoaded()) {
 		Log::error("Failed to load image %s", paletteFile->name().c_str());
 		return false;
 	}
-	return initMaterialColors(img->data(), img->width() * img->height() * img->depth(), luaFile->load());
+	return initMaterialColors(img->data(), img->width() * img->height() * img->depth(), luaString);
 }
 
 bool overrideMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile) {

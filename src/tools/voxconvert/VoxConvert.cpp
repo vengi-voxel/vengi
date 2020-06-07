@@ -25,6 +25,10 @@ core::AppState VoxConvert::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
+
+	_palette = core::Var::get("palette", voxel::getDefaultPaletteName());
+	_palette->setHelp("Specify the palette base name or absolute png file to use (1x256)");
+
 	return state;
 }
 
@@ -42,7 +46,11 @@ core::AppState VoxConvert::onInit() {
 		return core::AppState::InitFailure;
 	}
 
-	if (!voxel::initDefaultMaterialColors()) {
+	io::FilePtr paletteFile = filesystem()->open(core::string::format("palette-%s.png", _palette->strVal().c_str()));
+	if (!paletteFile->exists()) {
+		paletteFile = filesystem()->open(_palette->strVal());
+	}
+	if (!voxel::initMaterialColors(paletteFile, io::FilePtr())) {
 		Log::error("Failed to init default material colors");
 		return core::AppState::InitFailure;
 	}

@@ -16,3 +16,10 @@ Support for writing: vox, qbt, qb, binvox, cub
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
 
 Just type `vengi-voxconvert` to get a full list of commands and options.
+
+Using a different target palette is also possible by setting the `palette` config var.
+
+`./vengi-voxconvert -set palette /path/to/palette.png infile outfile`
+
+The palette file has to be in the dimensions 1x256. It is also possible to just provide the basename of the palette.
+This is e.g. `nippon`. The tool will then try to look up the file `palette-nippon.png` in the file search paths.

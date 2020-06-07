@@ -14,6 +14,7 @@
 class VoxConvert: public core::CommandlineApp {
 private:
 	using Super = core::CommandlineApp;
+	core::VarPtr _palette;
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
