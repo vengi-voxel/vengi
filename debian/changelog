@@ -1,4 +1,4 @@
-vengi (0.0.4.0-1) UNRELEASED; urgency=low
+vengi (0.0.4.0-1) unstable; urgency=low
 
   * General:
   * Added support for writing binvox files
@@ -21,7 +21,7 @@ vengi (0.0.4.0-1) UNRELEASED; urgency=low
   * VoxConvert:
   * Added ability to merge all layers into one
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 24 May 2020 22:13:09 +0200
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 7 Jun 2020 10:31:09 +0200
 
 vengi (0.0.3.0-1) unstable; urgency=low
 

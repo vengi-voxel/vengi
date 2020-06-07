@@ -1,6 +1,6 @@
 A more detailed changelog can be found at: https://github.com/mgerhardy/engine/commits/
 
-#### 0.0.4 (XXXX-XX-XX)
+#### 0.0.4 (2020-06-07)
 
  General:
    - Added support for writing binvox files
