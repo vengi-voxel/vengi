@@ -19,6 +19,10 @@ private:
 	double _tickMillis = 0.0;
 	double _tickSeconds = 0.0;
 public:
+	/**
+	 * @brief Gives you the tick time. If you need higher resolution, use @c tickMillis()
+	 * @sa tickMillis()
+	 */
 	uint64_t tickNow() const;
 
 	/**
