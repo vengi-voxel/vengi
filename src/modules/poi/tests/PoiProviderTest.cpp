@@ -33,24 +33,23 @@ TEST_F(PoiProviderTest, testExpire) {
 	EXPECT_EQ(3u, _poiProvider->count());
 	_timeProvider->setTickTime(60 * 1000UL);
 	_poiProvider->update(0UL);
-	EXPECT_EQ(1u, _poiProvider->count()) << "We should have at least one poi left";
+	EXPECT_GE(_poiProvider->count(), 1u) << "We should have at least one poi left";
 }
 
 TEST_F(PoiProviderTest, testExpireWithProperPos) {
 	const int max = 3;
 	for (int i = 0; i < max; ++i) {
 		_timeProvider->setTickTime(i * 60 * 1000UL);
-		_poiProvider->add(glm::vec3(static_cast<float>(i)));
+		_poiProvider->add(glm::vec3(static_cast<float>(i)), Type::GENERIC);
 	}
 	EXPECT_EQ(3u, _poiProvider->count());
+	// this should expire everything
+	_timeProvider->setTickTime(60000000UL);
 	_poiProvider->update(0UL);
-	EXPECT_EQ(1u, _poiProvider->count());
+	EXPECT_EQ(1u, _poiProvider->count()) << "We should have at least one poi left - but every other should be expired";
 	const poi::PoiResult& result = _poiProvider->query();
 	EXPECT_TRUE(result.valid);
-	EXPECT_EQ(glm::vec3(static_cast<float>(max - 1)),  result.pos);
-	_timeProvider->setTickTime(max * 60 * 1000UL);
-	_poiProvider->update(0UL);
-	EXPECT_EQ(1u, _poiProvider->count()) << "We should have at least one poi left";
+	EXPECT_EQ(glm::vec3(static_cast<float>(max - 1)),  result.pos) << max - 1 << " versus " << glm::to_string(result.pos);
 }
 
 TEST_F(PoiProviderTest, testQueryType) {
