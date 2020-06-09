@@ -11,6 +11,7 @@
 #include <SDL_endian.h>
 #include <limits.h>
 #include "Common.h"
+#include "StandardLib.h"
 #include "Assert.h"
 
 namespace core {
@@ -204,8 +205,9 @@ inline bool ByteStream::readBool() {
 
 inline int16_t ByteStream::readShort() {
 	core_assert(size() >= 2);
-	const int16_t *word = reinterpret_cast<const int16_t*>(getBuffer());
-	const int16_t val = SDL_SwapLE16(*word);
+	int16_t word;
+	core_memcpy(&word, getBuffer(), 2);
+	const int16_t val = SDL_SwapLE16(word);
 	_pos += 2;
 	return val;
 }
@@ -222,16 +224,18 @@ inline float ByteStream::readFloat() {
 
 inline int32_t ByteStream::readInt() {
 	core_assert(size() >= 4);
-	const int32_t *word = reinterpret_cast<const int32_t*>(getBuffer());
-	const int32_t val = SDL_SwapLE32(*word);
+	int32_t word;
+	core_memcpy(&word, getBuffer(), 4);
+	const int32_t val = SDL_SwapLE32(word);
 	_pos += 4;
 	return val;
 }
 
 inline int64_t ByteStream::readLong() {
 	core_assert(size() >= 8);
-	const int64_t *word = reinterpret_cast<const int64_t*>(getBuffer());
-	const int64_t val = SDL_SwapLE64(*word);
+	int64_t word;
+	core_memcpy(&word, getBuffer(), 8);
+	const int64_t val = SDL_SwapLE64(word);
 	_pos += 8;
 	return val;
 }
