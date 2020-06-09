@@ -72,7 +72,7 @@ protected:
 
 	ShaderAttributes _attributes;
 
-	typedef core::Map<int, int, 8> AttributeComponents;
+	typedef core::Map<int, int> AttributeComponents;
 	AttributeComponents _attributeComponents;
 
 	mutable uint32_t _time = 0u;

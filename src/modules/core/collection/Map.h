@@ -37,7 +37,7 @@ struct DefaultHasher {
  *
  * @ingroup Collections
  */
-template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE, typename HASHER = priv::DefaultHasher, typename COMPARE = priv::EqualCompare>
+template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE = 11, typename HASHER = priv::DefaultHasher, typename COMPARE = priv::EqualCompare>
 class Map {
 public:
 	using value_type = VALUETYPE;

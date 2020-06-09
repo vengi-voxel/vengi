@@ -15,7 +15,7 @@ namespace core {
  * @sa core::String
  * @ingroup Collections
  */
-template<class V, size_t SIZE = 8>
+template<class V, size_t SIZE = 11>
 using StringMap = core::Map<core::String, V, SIZE, core::StringHash>;
 
 }
