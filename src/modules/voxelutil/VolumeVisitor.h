@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 
-namespace voxel {
+namespace voxelutil {
 
 /**
  * @brief Will skip air voxels on volume
@@ -27,7 +27,7 @@ int visitVolume(const Volume& volume, Visitor&& visitor, Condition condition = C
 	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-				const Voxel& voxel = volume.voxel(x, y, z);
+				const voxel::Voxel& voxel = volume.voxel(x, y, z);
 				if (!condition(voxel)) {
 					continue;
 				}

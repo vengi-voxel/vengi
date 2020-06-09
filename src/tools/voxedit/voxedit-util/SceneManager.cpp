@@ -357,7 +357,7 @@ void SceneManager::thicken(int amount) {
 		}
 		voxel::RawVolume* thinkened = new voxel::RawVolume(v->region());
 		voxel::RawVolumeWrapper wrapper(thinkened);
-		voxel::visitVolume(*v, [&] (int32_t x, int32_t y, int32_t z, voxel::Voxel voxel) {
+		voxelutil::visitVolume(*v, [&] (int32_t x, int32_t y, int32_t z, voxel::Voxel voxel) {
 			voxelgenerator::shape::createCube(wrapper, glm::ivec3(x, y, z), dimensions, voxel);
 		});
 		setNewVolume(layerId, thinkened, true);
@@ -369,7 +369,7 @@ void SceneManager::colorToNewLayer(const voxel::Voxel voxelColor) {
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region());
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
 		voxel::RawVolumeWrapper wrapper(volume(layerId));
-		voxel::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
+		voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
 			if (voxel.getColor() == voxelColor.getColor()) {
 				newVolume->setVoxel(x, y, z, voxel);
 				wrapper.setVoxel(x, y, z, voxel::Voxel());
@@ -1319,7 +1319,7 @@ void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, st
 		}
 		glm::ivec3 modifiedMins((std::numeric_limits<int>::max)() / 2);
 		glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)() / 2);
-		const int cnt = voxel::visitVolume(*v, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel&) {
+		const int cnt = voxelutil::visitVolume(*v, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel&) {
 			if (!v->setVoxel(x, y, z, voxel())) {
 				return;
 			}

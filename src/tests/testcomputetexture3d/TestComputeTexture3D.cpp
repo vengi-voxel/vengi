@@ -63,7 +63,7 @@ void TestComputeTexture3D::initVolume() {
 	math::Random random;
 	voxel::RawVolumeWrapper wrapper(_volume.get());
 	voxelgenerator::noise::generate(wrapper, 4, 2.0f, 0.01f, 0.5f, voxelgenerator::noise::NoiseType::ridgedMF, random);
-	const int amount = voxel::visitVolume(*_volume.get(), [] (int x, int y, int z, const voxel::Voxel& voxel) {
+	const int amount = voxelutil::visitVolume(*_volume.get(), [] (int x, int y, int z, const voxel::Voxel& voxel) {
 	});
 	Log::info("%i voxels", amount);
 
