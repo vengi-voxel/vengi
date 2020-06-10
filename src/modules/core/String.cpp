@@ -463,6 +463,13 @@ core::String String::format(const char *msg, ...) {
 	return String(text);
 }
 
+char String::last() const {
+	if (empty()) {
+		return '\0';
+	}
+	return _data._str[_data._size - 1];
+}
+
 String &String::operator+=(char c) {
 	checkBufferSize(_data._size + 2);
 	_data._str[_data._size + 0] = c;

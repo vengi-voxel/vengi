@@ -76,6 +76,8 @@ public:
 	const char& operator[](size_t idx) const;
 	char& operator[](size_t idx);
 
+	char last() const;
+
 	const char *begin() const;
 	const char *end() const;
 
