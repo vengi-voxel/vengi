@@ -912,11 +912,9 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
        keypresses; it won't toggle the mod state if you send a keyrelease.  */
     const SDL_bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE;
     const SDL_bool sdlenabled = (SDL_GetModState() & KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
-    if (!osenabled && sdlenabled) {
-        SDL_ToggleModState(KMOD_CAPS, SDL_FALSE);
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
-    } else if (osenabled && !sdlenabled) {
+    if (osenabled ^ sdlenabled) {
         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
     }
 }
 - (void)keyDown:(NSEvent *)theEvent
@@ -1567,8 +1565,8 @@ int
 Cocoa_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 { @autoreleasepool
 {
-    NSView* nsview;
-    NSWindow *nswindow;
+    NSView* nsview = nil;
+    NSWindow *nswindow = nil;
 
     if ([(id)data isKindOfClass:[NSWindow class]]) {
       nswindow = (NSWindow*)data;

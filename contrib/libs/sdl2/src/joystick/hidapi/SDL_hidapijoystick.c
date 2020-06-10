@@ -631,7 +631,7 @@ HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID,
 void
 HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID, SDL_bool is_external)
 {
-    int i;
+    int i, size;
 
     for (i = 0; i < device->num_joysticks; ++i) {
         if (device->joysticks[i] == joystickID) {
@@ -640,8 +640,10 @@ HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID
                 HIDAPI_JoystickClose(joystick);
             }
 
-            SDL_memmove(&device->joysticks[i], &device->joysticks[i+1], device->num_joysticks - i - 1);
+            size = (device->num_joysticks - i - 1) * sizeof(SDL_JoystickID);
+            SDL_memmove(&device->joysticks[i], &device->joysticks[i+1], size);
             --device->num_joysticks;
+
             if (!is_external) {
                 --SDL_HIDAPI_numjoysticks;
             }
@@ -1101,6 +1103,12 @@ HIDAPI_JoystickQuit(void)
     initialized = SDL_FALSE;
 }
 
+static SDL_bool
+HIDAPI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
 {
     HIDAPI_JoystickInit,
@@ -1116,6 +1124,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickUpdate,
     HIDAPI_JoystickClose,
     HIDAPI_JoystickQuit,
+    HIDAPI_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI */

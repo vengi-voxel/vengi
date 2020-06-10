@@ -70,7 +70,7 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_IOKIT
     &SDL_DARWIN_JoystickDriver,
 #endif
-#if defined(__IPHONEOS__) || defined(__TVOS__)
+#if (defined(__IPHONEOS__) || defined(__TVOS__)) && !defined(SDL_JOYSTICK_DISABLED)
     &SDL_IOS_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_ANDROID
@@ -582,6 +582,21 @@ SDL_PrivateJoystickValid(SDL_Joystick * joystick)
     }
 
     return valid;
+}
+
+SDL_bool
+SDL_PrivateJoystickGetAutoGamepadMapping(int device_index, SDL_GamepadMapping * out)
+{
+    SDL_JoystickDriver *driver;
+    SDL_bool is_ok = SDL_FALSE;
+
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+        is_ok = driver->GetGamepadMapping(device_index, out);
+    }
+    SDL_UnlockJoysticks();
+
+    return is_ok;
 }
 
 /*
@@ -1767,6 +1782,7 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x046d, 0xc299),    /* Logitech G25 */
         MAKE_VIDPID(0x046d, 0xc29a),    /* Logitech Driving Force GT */
         MAKE_VIDPID(0x046d, 0xc29b),    /* Logitech G27 */
+        MAKE_VIDPID(0x046d, 0xc24f),    /* Logitech G29 */
         MAKE_VIDPID(0x046d, 0xc261),    /* Logitech G920 (initial mode) */
         MAKE_VIDPID(0x046d, 0xc262),    /* Logitech G920 (active mode) */
         MAKE_VIDPID(0x044f, 0xb65d),    /* Thrustmaster Wheel FFB */

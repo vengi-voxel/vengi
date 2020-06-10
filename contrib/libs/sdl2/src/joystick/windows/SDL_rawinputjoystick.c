@@ -592,8 +592,8 @@ RAWINPUT_JoystickOpen(SDL_Joystick * joystick, int device_index)
     }
 
     if (!device->driver->OpenJoystick(&device->hiddevice, joystick)) {
-        /* Only possible error is out of memory */
-        return SDL_OutOfMemory();
+        SDL_free(hwdata);
+        return -1;
     }
 
     hwdata->reserved = (void*)-1; /* crash if some code slips by that tries to use this */
@@ -725,6 +725,11 @@ RAWINPUT_JoystickQuit(void)
     SDL_RAWINPUT_inited = SDL_FALSE;
 }
 
+static SDL_bool
+RAWINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
 
 SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver =
 {
@@ -741,6 +746,7 @@ SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver =
     RAWINPUT_JoystickUpdate,
     RAWINPUT_JoystickClose,
     RAWINPUT_JoystickQuit,
+    RAWINPUT_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_RAWINPUT */

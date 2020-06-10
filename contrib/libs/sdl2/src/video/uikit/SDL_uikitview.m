@@ -37,7 +37,9 @@
 #define MAX_MOUSE_BUTTONS    5
 
 /* This is defined in SDL_sysjoystick.m */
+#if !SDL_JOYSTICK_DISABLED
 extern int SDL_AppleTVRemoteOpenedAsJoystick;
+#endif
 
 @implementation SDL_uikitview {
     SDL_Window *sdlwindow;
@@ -71,6 +73,9 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             UIPanGestureRecognizer *mouseWheelRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(mouseWheelGesture:)];
             mouseWheelRecognizer.allowedScrollTypesMask = UIScrollTypeMaskDiscrete;
             mouseWheelRecognizer.allowedTouchTypes = @[ @(UITouchTypeIndirectPointer) ];
+            mouseWheelRecognizer.cancelsTouchesInView = NO;
+            mouseWheelRecognizer.delaysTouchesBegan = NO;
+            mouseWheelRecognizer.delaysTouchesEnded = NO;
             [self addGestureRecognizer:mouseWheelRecognizer];
         }
 #endif
@@ -368,12 +373,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
 #ifdef __IPHONE_13_4
     if ([press respondsToSelector:@selector((key))]) {
-		if (press.key != nil) {
-			return (SDL_Scancode)press.key.keyCode;
-		}
-	}
+        if (press.key != nil) {
+            return (SDL_Scancode)press.key.keyCode;
+        }
+    }
 #endif
 
+#if !SDL_JOYSTICK_DISABLED
     /* Presses from Apple TV remote */
     if (!SDL_AppleTVRemoteOpenedAsJoystick) {
         switch (press.type) {
@@ -398,6 +404,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             break;
         }
     }
+#endif /* !SDL_JOYSTICK_DISABLED */
 
     return SDL_SCANCODE_UNKNOWN;
 }
@@ -465,6 +472,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
     /* Swipe gestures don't trigger begin states. */
     if (gesture.state == UIGestureRecognizerStateEnded) {
+#if !SDL_JOYSTICK_DISABLED
         if (!SDL_AppleTVRemoteOpenedAsJoystick) {
             /* Send arrow key presses for now, as we don't have an external API
              * which better maps to swipe gestures. */
@@ -483,6 +491,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                 break;
             }
         }
+#endif /* !SDL_JOYSTICK_DISABLED */
     }
 }
 #endif /* TARGET_OS_TV */

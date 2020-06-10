@@ -188,7 +188,7 @@ KMSDRM_CreateDevice(int devindex)
 
     device->driverdata = viddata;
 
-    /* Setup all functions which we can handle */
+    /* Setup all functions that can be handled from this backend. */
     device->VideoInit = KMSDRM_VideoInit;
     device->VideoQuit = KMSDRM_VideoQuit;
     device->GetDisplayModes = KMSDRM_GetDisplayModes;
@@ -303,6 +303,12 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 static void
 KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data)
 {
+    /* If the data pointer received here is the same passed as the user_data in drmModePageFlip()
+       then this is the event handler for the pageflip that was issued on drmPageFlip(): got here 
+       because of that precise page flip, the while loop gets broken here because of the right event.
+       This knowledge will allow handling different issued pageflips if sometime in the future 
+       managing different CRTCs in SDL2 is needed, for example (synchronous pageflips happen on vblank 
+       and vblank is a CRTC thing). */
     *((SDL_bool *) data) = SDL_FALSE;
 }
 
@@ -331,8 +337,12 @@ KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout) {
             return SDL_FALSE;
         }
 
+        /* Is the fd readable? Thats enough to call drmHandleEvent() on it. */
         if (pfd.revents & POLLIN) {
-            /* Page flip? If so, drmHandleEvent will unset windata->waiting_for_flip */
+            /* Page flip? ONLY if the event that made the fd readable (=POLLIN state)
+               is a page flip, will drmHandleEvent call page_flip_handler, which will break the loop.
+               The drmHandleEvent() and subsequent page_flip_handler calls are both synchronous (blocking),
+               nothing runs on a different thread, so no need to protect waiting_for_flip access with mutexes. */
             KMSDRM_drmHandleEvent(viddata->drm_fd, &ev);
         } else {
             /* Timed out and page flip didn't happen */
@@ -591,6 +601,19 @@ KMSDRM_VideoInit(_THIS)
     display.desktop_mode.format = drmToSDLPixelFormat(fb->bpp, fb->depth);
     drmModeFreeFB(fb);
 #endif
+
+    /* DRM mode index for the desktop mode is needed to complete desktop mode init NOW,
+       so look for it in the DRM modes array. */
+    for (int i = 0; i < dispdata->conn->count_modes; i++) {
+        if (!SDL_memcmp(dispdata->conn->modes + i, &dispdata->saved_crtc->mode, sizeof(drmModeModeInfo))) {
+            SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
+            if (modedata) {
+                modedata->mode_index = i;
+                display.desktop_mode.driverdata = modedata;
+            }   
+        }   
+    }   
+
     display.current_mode = display.desktop_mode;
     display.driverdata = dispdata;
     SDL_AddVideoDisplay(&display);
@@ -750,7 +773,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_WindowData *windata;
-    SDL_VideoDisplay *display;
 
 #if SDL_VIDEO_OPENGL_EGL
     if (!_this->egl_data) {
@@ -768,15 +790,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         goto error;
     }
 
-    /* Windows have one size for now */
-    display = SDL_GetDisplayForWindow(window);
-    window->w = display->desktop_mode.w;
-    window->h = display->desktop_mode.h;
-
-    /* Maybe you didn't ask for a fullscreen OpenGL window, but that's what you get */
-    window->flags |= (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
-
-    /* In case we want low-latency, double-buffer video, we take note here */
+    /* In case low-latency is wanted, double-buffered video will be used. We take note here */
     windata->double_buffer = SDL_FALSE;
 
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {

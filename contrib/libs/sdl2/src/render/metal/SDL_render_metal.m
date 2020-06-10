@@ -47,6 +47,9 @@
 
 /* Apple Metal renderer implementation */
 
+/* Used to re-create the window with Metal capability */
+extern int SDL_RecreateWindow(SDL_Window * window, Uint32 flags);
+
 /* macOS requires constants in a buffer to have a 256 byte alignment. */
 /* Use native type alignments from https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf */
 #ifdef __MACOSX__
@@ -1578,6 +1581,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_MetalView view = NULL;
     CAMetalLayer *layer = nil;
     SDL_SysWMinfo syswm;
+    Uint32 window_flags;
+    SDL_bool changed_window = SDL_FALSE;
 
     SDL_VERSION(&syswm.version);
     if (!SDL_GetWindowWMInfo(window, &syswm)) {
@@ -1588,9 +1593,20 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
+    window_flags = SDL_GetWindowFlags(window);
+    if (!(window_flags & SDL_WINDOW_METAL)) {
+        changed_window = SDL_TRUE;
+        if (SDL_RecreateWindow(window, (window_flags & ~SDL_WINDOW_OPENGL) | SDL_WINDOW_METAL) < 0) {
+            return NULL;
+        }
+    }
+
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
         SDL_OutOfMemory();
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1600,6 +1616,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (mtldevice == nil) {
         SDL_free(renderer);
         SDL_SetError("Failed to obtain Metal device");
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1610,6 +1629,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         [mtldevice release];
 #endif
         SDL_free(renderer);
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1622,6 +1644,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
         SDL_Metal_DestroyView(view);
         SDL_free(renderer);
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
