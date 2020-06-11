@@ -37,7 +37,7 @@ bool Character::loadGlider(const AnimationCachePtr& cache, const AnimationSettin
 		return false;
 	}
 	// TODO: model via inventory
-	const char *fullPath = "models/glider.vox";
+	const char *fullPath = "models/glider";
 	meshes[idx] = cache->getMesh(fullPath);
 	if (meshes[idx] == nullptr) {
 		Log::error("Failed to load glider");

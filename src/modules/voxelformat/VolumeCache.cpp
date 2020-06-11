@@ -16,8 +16,6 @@ VolumeCache::~VolumeCache() {
 	core_assert_msg(_volumes.empty(), "VolumeCache wasn't shut down properly");
 }
 
-static const char *SupportedExtensions[] = { "vox", "qb", nullptr };
-
 voxel::RawVolume* VolumeCache::loadVolume(const char* fullPath) {
 	const core::String filename = fullPath;
 	{
@@ -31,7 +29,7 @@ voxel::RawVolume* VolumeCache::loadVolume(const char* fullPath) {
 	const io::FilesystemPtr& fs = io::filesystem();
 
 	io::FilePtr file;
-	for (const char **ext = SupportedExtensions; *ext; ++ext) {
+	for (const char **ext = SUPPORTED_VOXEL_FORMATS_LOAD_LIST; *ext; ++ext) {
 		file =fs->open(core::string::format("%s.%s", fullPath, *ext));
 		if (file->exists()) {
 			break;

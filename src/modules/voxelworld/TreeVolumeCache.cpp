@@ -6,6 +6,7 @@
 #include "core/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "voxelformat/Loader.h"
 #include "core/io/Filesystem.h"
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
@@ -31,13 +32,17 @@ bool TreeVolumeCache::init() {
 		if (e.type != io::Filesystem::DirEntry::Type::dir) {
 			continue;
 		}
-		std::vector<io::Filesystem::DirEntry> treeFiles;
+		int amount = 0;
 		const core::String& treeTypeDir = core::string::format("models/trees/%s/", e.name.c_str());
-		if (!io::filesystem()->list(treeTypeDir, treeFiles, "*.vox")) {
-			Log::warn("Failed to list tree models in %s", treeTypeDir.c_str());
-			continue;
+		for (const char **ext = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD_LIST; *ext; ++ext) {
+			std::vector<io::Filesystem::DirEntry> treeFiles;
+			if (!io::filesystem()->list(treeTypeDir, treeFiles, core::string::format("*.%s", *ext))) {
+				Log::warn("Failed to list tree models in %s", treeTypeDir.c_str());
+				break;
+			}
+			amount += (int)treeFiles.size();
 		}
-		_treeTypeCount.put(e.name, (int)treeFiles.size());
+		_treeTypeCount.put(e.name, amount);
 	}
 	return true;
 }
