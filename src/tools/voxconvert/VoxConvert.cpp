@@ -25,6 +25,7 @@ core::AppState VoxConvert::onConstruct() {
 	const core::AppState state = Super::onConstruct();
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
+	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 
 	_palette = core::Var::get("palette", voxel::getDefaultPaletteName());
 	_palette->setHelp("Specify the palette base name or absolute png file to use (1x256)");
@@ -68,16 +69,21 @@ core::AppState VoxConvert::onInit() {
 		return core::AppState::InitFailure;
 	}
 
+	const io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::Write);
+	if (!outputFile->validHandle()) {
+		Log::error("Could not open target file: %s", outfile.c_str());
+		return core::AppState::InitFailure;
+	}
+	if (outputFile->length() > 0) {
+		if (!hasArg("--force") && !hasArg("-f")) {
+			Log::error("Given output file '%s' already exists", outfile.c_str());
+			return core::AppState::InitFailure;
+		}
+	}
+
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(inputFile, volumes)) {
 		Log::error("Failed to load given input file");
-		return core::AppState::InitFailure;
-	}
-
-	const io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::Write);
-	if (outputFile->length() > 0) {
-		voxelformat::clearVolumes(volumes);
-		Log::error("Given output file '%s' already exists", outfile.c_str());
 		return core::AppState::InitFailure;
 	}
 
@@ -108,6 +114,7 @@ core::AppState VoxConvert::onInit() {
 		Log::error("Failed to write to output file '%s'", outfile.c_str());
 		return core::AppState::InitFailure;
 	}
+	Log::info("Wrote output file %s", outputFile->name().c_str());
 
 	voxelformat::clearVolumes(volumes);
 
