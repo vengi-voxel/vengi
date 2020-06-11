@@ -8,6 +8,10 @@
 #include "core/io/FileStream.h"
 #include "core/String.h"
 #include "core/collection/StringMap.h"
+#include "core/collection/Buffer.h"
+#include <glm/mat3x3.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 
 namespace voxel {
 
@@ -27,24 +31,42 @@ private:
 	};
 
 	using Attributes = core::StringMap<core::String>;
+	using NodeId = uint32_t;
+
+	struct VoxTransform {
+		glm::quat rotation = glm::quat_identity<float, glm::defaultp>();
+		glm::ivec3 translation { 0 };
+	};
 
 	struct VoxModel {
-		uint32_t nodeId;
+		// node id in the scene graph
+		NodeId nodeId;
+		// there can be multiple SIZE and XYZI chunks for multiple models; volume id is their index in the
+		// stored order and the index in the @c _models or @c _regions arrays
 		uint32_t modelId;
 		Attributes attributes;
 		Attributes nodeAttributes;
 	};
 
+	uint32_t _volumeIdx = 0u;
+	uint32_t _chunks = 0u;
 	std::vector<Region> _regions;
 	std::vector<VoxModel> _models;
-	uint32_t _volumeIdx = 0;
 
+	bool skipSaving(const VoxelVolume& v) const;
 	bool saveAttributes(const Attributes& attributes, io::FileStream& stream) const;
-	bool saveChunk_LAYR(io::FileStream& stream, int layerId, const core::String& name, bool visible) const;
-	bool saveChunk_nTRN(io::FileStream& stream, int layerId, const voxel::Region& region) const;
-	bool saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* volume, const voxel::Region& region) const;
-	bool saveChunk_SIZE(io::FileStream& stream, const voxel::Region& region) const;
-	bool saveChunk_RGBA(io::FileStream& stream) const;
+
+	bool saveChunk_LAYR(io::FileStream& stream, int modelId, const core::String& name, bool visible);
+	bool saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* volume, const voxel::Region& region);
+	bool saveChunk_SIZE(io::FileStream& stream, const voxel::Region& region);
+	bool saveChunk_PACK(io::FileStream& stream, const VoxelVolumes& volumes);
+	bool saveChunk_RGBA(io::FileStream& stream);
+
+	// scene graph saving stuff
+	bool saveChunk_nGRP(io::FileStream& stream, NodeId nodeId, uint32_t volumes);
+	bool saveChunk_nSHP(io::FileStream& stream, NodeId nodeId, uint32_t volumeId);
+	bool saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins);
+	bool saveSceneGraph(io::FileStream& stream, const VoxelVolumes& volumes, int modelCount);
 
 	void initPalette();
 	void reset();
@@ -64,10 +86,12 @@ private:
 	bool loadChunk_SIZE(io::FileStream& stream, const ChunkHeader& header);
 	bool loadFirstChunks(io::FileStream& stream);
 
+	// second iteration
 	bool loadChunk_LAYR(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);
 	bool loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);
 	bool loadSecondChunks(io::FileStream& stream, VoxelVolumes& volumes);
 
+	// scene graph
 	bool loadChunk_nGRP(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);

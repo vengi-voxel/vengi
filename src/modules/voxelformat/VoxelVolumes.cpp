@@ -29,6 +29,9 @@ voxel::RawVolume *VoxelVolumes::merge() const {
 		return nullptr;
 	}
 	if (volumes.size() == 1) {
+		if (volumes[0].volume == nullptr) {
+			return nullptr;
+		}
 		return new RawVolume(volumes[0].volume);
 	}
 	std::vector<const RawVolume *> rawVolumes;
