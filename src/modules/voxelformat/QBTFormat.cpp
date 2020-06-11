@@ -118,10 +118,9 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 	wrapSaveFree(stream.addInt(localScale.y));
 	wrapSaveFree(stream.addInt(localScale.z));
 
-	glm::vec3 pivot { 0 };
-	wrapSaveFree(stream.addFloat(pivot.x));
-	wrapSaveFree(stream.addFloat(pivot.y));
-	wrapSaveFree(stream.addFloat(pivot.z));
+	wrapSaveFree(stream.addFloat(volume.pivot.x));
+	wrapSaveFree(stream.addFloat(volume.pivot.y));
+	wrapSaveFree(stream.addFloat(volume.pivot.z));
 
 	wrapSaveFree(stream.addInt(size.x));
 	wrapSaveFree(stream.addInt(size.y));
