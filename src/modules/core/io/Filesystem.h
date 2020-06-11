@@ -66,10 +66,12 @@ public:
 	 * Get the "base path". This is the directory where the application was run
 	 * from, which is probably the installation directory, and may or may not
 	 * be the process's current working directory.
+	 * @note Ends with path separator
 	 */
 	const core::String& basePath() const;
 	/**
 	 * @brief The path where the application can store data
+	 * @note Ends with path separator
 	 */
 	const core::String& homePath() const;
 

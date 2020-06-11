@@ -406,7 +406,7 @@ bool Filesystem::pushDir(const core::String& directory) {
 }
 
 io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const {
-	if (mode == FileMode::Write && !isRelativePath(filename)) {
+	if (mode == FileMode::Write) {
 		Log::debug("Use absolute path to write file %s", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
 	}
