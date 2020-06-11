@@ -68,10 +68,9 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) con
 	wrapSave(stream.addInt(size.y));
 	wrapSave(stream.addInt(size.z));
 
-	const int offset = 0;
-	wrapSave(stream.addInt(offset));
-	wrapSave(stream.addInt(offset));
-	wrapSave(stream.addInt(offset));
+	wrapSave(stream.addInt(region.getLowerX()));
+	wrapSave(stream.addInt(region.getLowerY()));
+	wrapSave(stream.addInt(region.getLowerZ()));
 
 	constexpr voxel::Voxel Empty;
 	const glm::ivec4 EmptyColor(0);
