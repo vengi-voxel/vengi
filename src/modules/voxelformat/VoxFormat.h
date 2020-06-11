@@ -43,15 +43,28 @@ private:
 		NodeId nodeId;
 		// there can be multiple SIZE and XYZI chunks for multiple models; volume id is their index in the
 		// stored order and the index in the @c _models or @c _regions arrays
-		uint32_t modelId;
+		uint32_t volumeIdx;
 		Attributes attributes;
 		Attributes nodeAttributes;
 	};
 
+	enum class SceneGraphNodeType { Transform, Group, Shape };
+	using SceneGraphChildNodes = core::Buffer<NodeId>;
+
+	struct SceneGraphNode {
+		// the index in the @c _models, @c _regions or _transforms arrays
+		uint32_t arrayIdx = 0u;
+		SceneGraphNodeType type = SceneGraphNodeType::Transform;
+		SceneGraphChildNodes childNodeIds {0};
+	};
+
+	// index here is the node id
+	core::Map<NodeId, SceneGraphNode> _sceneGraphMap;
 	uint32_t _volumeIdx = 0u;
 	uint32_t _chunks = 0u;
 	std::vector<Region> _regions;
 	std::vector<VoxModel> _models;
+	std::vector<VoxTransform> _transforms;
 
 	bool skipSaving(const VoxelVolume& v) const;
 	bool saveAttributes(const Attributes& attributes, io::FileStream& stream) const;
@@ -92,6 +105,8 @@ private:
 	bool loadSecondChunks(io::FileStream& stream, VoxelVolumes& volumes);
 
 	// scene graph
+	bool parseSceneGraphTranslation(VoxTransform& transform, const Attributes& attributes) const;
+	bool parseSceneGraphRotation(VoxTransform& transform, const Attributes& attributes) const;
 	bool loadChunk_nGRP(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);

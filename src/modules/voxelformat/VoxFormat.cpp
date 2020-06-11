@@ -14,6 +14,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <SDL_assert.h>
+#include <glm/gtc/matrix_access.hpp>
 
 namespace voxel {
 
@@ -500,18 +501,17 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 }
 
 bool VoxFormat::loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header) {
-	// Shape Node Chunk
 	uint32_t nodeId;
-	wrap(stream.readInt(nodeId)) // 0 is root?
+	wrap(stream.readInt(nodeId))
+	Log::debug("shape node: %u", nodeId);
 	Attributes nodeAttributes;
 	wrapBool(readAttributes(nodeAttributes, stream))
 	uint32_t shapeNodeNumModels;
-	wrap(stream.readInt(shapeNodeNumModels)) // must be 1
+	wrap(stream.readInt(shapeNodeNumModels))
 	if (shapeNodeNumModels != 1) {
 		Log::error("Shape node chunk contained a numModels value != 1: %i", shapeNodeNumModels);
 		return false;
 	}
-	// there can be multiple SIZE and XYZI chunks for multiple models; model id is their index in the stored order
 	uint32_t modelId;
 	wrap(stream.readInt(modelId));
 	if (modelId >= _models.size()) {
@@ -519,9 +519,11 @@ bool VoxFormat::loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header
 		return false;
 	}
 	wrapBool(readAttributes(_models[modelId].attributes, stream))
-	_models[modelId].modelId = modelId;
+	_models[modelId].volumeIdx = modelId;
 	_models[modelId].nodeId = nodeId;
 	_models[modelId].nodeAttributes = std::move(nodeAttributes);
+	const SceneGraphNode sceneNode{modelId, SceneGraphNodeType::Shape, SceneGraphChildNodes(0)};
+	_sceneGraphMap.put(nodeId, sceneNode);
 	return true;
 }
 
@@ -614,6 +616,78 @@ bool VoxFormat::loadChunk_LAYR(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
+bool VoxFormat::parseSceneGraphTranslation(VoxTransform& transform, const Attributes& attributes) const {
+	auto trans = attributes.find("_t");
+	if (trans == attributes.end()) {
+		return true;
+	}
+	const core::String& translations = trans->second;
+	glm::ivec3& v = transform.translation;
+	if (SDL_sscanf(translations.c_str(), "%d %d %d", &v.x, &v.y, &v.z) != 3) {
+		Log::error("Failed to parse translation");
+		return false;
+	}
+	Log::debug("translation %i:%i:%i", v.x, v.y, v.z);
+	return true;
+}
+
+// ROTATION type
+//
+// store a row-major rotation in the bits of a byte
+//
+// for example :
+// R =
+//  0  1  0
+//  0  0 -1
+// -1  0  0
+// ==>
+// unsigned char _r = (1 << 0) | (2 << 2) | (0 << 4) | (1 << 5) | (1 << 6)
+//
+// bit | value
+// 0-1 : 1 : index of the non-zero entry in the first row
+// 2-3 : 2 : index of the non-zero entry in the second row
+// 4   : 0 : the sign in the first row (0 : positive; 1 : negative)
+// 5   : 1 : the sign in the second row (0 : positive; 1 : negative)
+// 6   : 1 : the sign in the third row (0 : positive; 1 : negative)
+bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attributes &attributes) const {
+	auto rot = attributes.find("_r");
+	if (rot == attributes.end()) {
+		return true;
+	}
+	constexpr uint32_t row2IndexTable[] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, 2, UINT32_MAX, 1, 0, UINT32_MAX};
+	const core::String& rotation = rot->second;
+
+	const uint8_t bits = core::string::toInt(rotation);
+	const uint32_t indicesOfOnesPerRow[] {
+		(bits >> 0) & 0b11u,
+		(bits >> 2) & 0b11u,
+		row2IndexTable[(1 << indicesOfOnesPerRow[0]) | (1 << indicesOfOnesPerRow[1])]
+	};
+
+	if (indicesOfOnesPerRow[2] == UINT32_MAX) {
+		Log::error("Invalid rotation matrix found");
+		return false;
+	}
+
+	glm::mat3x3 mat3(1.0f);
+	for (size_t i = 0; i < 3; ++i) {
+		const uint8_t sign = (bits >> (i + 4)) & 1;
+		const uint32_t indexOfOne = indicesOfOnesPerRow[i];
+		mat3[i][(indexOfOne + 0) % 3] = 1 - static_cast<int8_t>(2 * sign);
+		mat3[i][(indexOfOne + 1) % 3] = 0;
+		mat3[i][(indexOfOne + 2) % 3] = 0;
+	}
+
+	for (int i = 0; i < 3; ++i) {
+		Log::debug("mat3[%i]: %.2f, %.2f, %.2f", i, mat3[i][0], mat3[i][1], mat3[i][2]);
+	}
+	transform.rotation = glm::quat_cast(mat3);
+
+	return true;
+}
+
+// (_r : int8) ROTATION
+// (_t : int32x3) translation
 bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
@@ -672,15 +746,15 @@ bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header
 			if (m.nodeId != nodeId) {
 				continue;
 			}
-			if (m.modelId >= volumes.size()) {
-				Log::error("Invalid modelid found: %u", m.modelId);
+			if (m.volumeIdx >= volumes.size()) {
+				Log::error("Invalid modelid found: %u", m.volumeIdx);
 				return false;
 			}
-			if (volumes[m.modelId].volume == nullptr) {
-				Log::error("No volume for model id: %u", m.modelId);
+			if (volumes[m.volumeIdx].volume == nullptr) {
+				Log::error("No volume for model id: %u", m.volumeIdx);
 				return false;
 			}
-			volumes[m.modelId].volume->translate(glm::ivec3(x, y, z));
+			volumes[m.volumeIdx].volume->translate(glm::ivec3(x, y, z));
 			break;
 		}
 		Log::debug("nTRN chunk not yet completely supported: translation %i:%i:%i", x, y, z);
@@ -689,8 +763,6 @@ bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header
 }
 
 bool VoxFormat::loadChunk_nGRP(io::FileStream& stream, const ChunkHeader& header) {
-	// TODO:
-	Log::warn("nGRP chunk not yet supported");
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
 	Log::debug("group node: %u", nodeId);
@@ -698,10 +770,14 @@ bool VoxFormat::loadChunk_nGRP(io::FileStream& stream, const ChunkHeader& header
 	wrapBool(readAttributes(attributes, stream))
 	uint32_t numChildren;
 	wrap(stream.readInt(numChildren))
+	SceneGraphChildNodes children(numChildren);
 	for (uint32_t i = 0; i < numChildren; ++i) {
 		uint32_t child;
 		wrap(stream.readInt(child))
+		children.push_back((child));
 	}
+	const SceneGraphNode sceneNode{0, SceneGraphNodeType::Group, children};
+	_sceneGraphMap.put(nodeId, sceneNode);
 	return true;
 }
 
@@ -910,6 +986,8 @@ void VoxFormat::reset() {
 	initPalette();
 	_regions.clear();
 	_models.clear();
+	_sceneGraphMap.clear();
+	_transforms.clear();
 	_volumeIdx = 0;
 	_chunks = 0;
 }
