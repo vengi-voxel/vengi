@@ -6,7 +6,7 @@ set(LUA_SRCS
 	ui/${PROJECT_NAME}.lua
 )
 set(FILES
-	voxel/assets/north-dir.vox
+	voxel/assets/north-dir.qb
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED FILES ${FILES} LUA_SRCS ${LUA_SRCS} NOINSTALL)

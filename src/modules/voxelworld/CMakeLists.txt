@@ -14,16 +14,16 @@ set(SRCS
 )
 
 set(FILES
-	voxel/models/trees/bush/1.vox
-	voxel/models/trees/deciduous/1.vox
-	voxel/models/trees/deciduous/2.vox
-	voxel/models/trees/deciduous/3.vox
-	voxel/models/trees/deciduous/4.vox
-	voxel/models/trees/deciduous/5.vox
-	voxel/models/trees/fir/1.vox
-	voxel/models/trees/palm/1.vox
-	voxel/models/trees/pine/1.vox
-	voxel/models/trees/trunk.vox
+	voxel/models/trees/bush/1.qb
+	voxel/models/trees/deciduous/1.qb
+	voxel/models/trees/deciduous/2.qb
+	voxel/models/trees/deciduous/3.qb
+	voxel/models/trees/deciduous/4.qb
+	voxel/models/trees/deciduous/5.qb
+	voxel/models/trees/fir/1.qb
+	voxel/models/trees/palm/1.qb
+	voxel/models/trees/pine/1.qb
+	voxel/models/trees/trunk.qb
 )
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelformat noise)
