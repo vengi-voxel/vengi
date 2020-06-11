@@ -53,7 +53,7 @@ core::AppState TestTextureAtlasRenderer::onInit() {
 		Log::error("Failed to initialize the atlas renderer");
 		return core::AppState::InitFailure;
 	}
-	_modelIndex = _meshRenderer.addMesh("assets/north-dir.vox");
+	_modelIndex = _meshRenderer.addMesh("assets/north-dir");
 	if (_modelIndex == -1) {
 		Log::error("Failed to load model");
 		return core::AppState::InitFailure;

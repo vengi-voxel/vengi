@@ -92,7 +92,7 @@ bool Character::updateTool(const AnimationCachePtr& cache, const stock::Stock& s
 
 	const char *itemName = citem.item->name();
 	char fullPath[128];
-	if (!core::string::formatBuf(fullPath, sizeof(fullPath), "models/items/%s.vox", itemName)) {
+	if (!core::string::formatBuf(fullPath, sizeof(fullPath), "models/items/%s", itemName)) {
 		Log::error("Failed to initialize the item path buffer. Can't load item %s.", itemName);
 		return false;
 	}

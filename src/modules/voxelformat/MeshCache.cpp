@@ -51,10 +51,19 @@ const voxel::Mesh* MeshCache::getMesh(const char *fullPath) {
 	return nullptr;
 }
 
+static const char *SupportedExtensions[] = { "vox", "qb", nullptr };
+
 bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 	Log::debug("Loading volume from %s", fullPath);
 	const io::FilesystemPtr& fs = io::filesystem();
-	const io::FilePtr& file = fs->open(fullPath);
+	io::FilePtr file;
+
+	for (const char **ext = SupportedExtensions; *ext; ++ext) {
+		file =fs->open(core::string::format("%s.%s", fullPath, *ext));
+		if (file->exists()) {
+			break;
+		}
+	}
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(file, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());

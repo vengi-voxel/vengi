@@ -272,7 +272,7 @@ core::String AnimationSettings::fullPath(int meshTypeIdx, const char *name) cons
 	if (name == nullptr) {
 		name = paths[meshTypeIdx].c_str();
 	}
-	return core::string::format("%s/%s/%s.vox", basePath.c_str(), _meshTypes[meshTypeIdx].c_str(), name);
+	return core::string::format("%s/%s/%s", basePath.c_str(), _meshTypes[meshTypeIdx].c_str(), name);
 }
 
 core::String AnimationSettings::path(int meshTypeIdx, const char *name) const {

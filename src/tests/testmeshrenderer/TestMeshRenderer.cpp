@@ -29,7 +29,7 @@ core::AppState TestMeshRenderer::onInit() {
 		Log::error("Failed to initialize the raw volume renderer");
 		return core::AppState::InitFailure;
 	}
-	_modelIndex = _meshRenderer.addMesh("assets/north-dir.vox");
+	_modelIndex = _meshRenderer.addMesh("assets/north-dir");
 	if (_modelIndex == -1) {
 		Log::error("Failed to load model");
 		return core::AppState::InitFailure;
