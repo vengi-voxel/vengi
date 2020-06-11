@@ -202,7 +202,7 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	color.a = alpha / 255.0f;
 	const uint8_t index = findClosestIndex(color);
 	voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-	if (index == 0) {
+	if (index == 0 && alpha == 0u) {
 		voxelType = voxel::VoxelType::Air;
 	}
 	return voxel::createVoxel(voxelType, index);
