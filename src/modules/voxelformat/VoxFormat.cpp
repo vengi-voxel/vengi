@@ -702,45 +702,24 @@ bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header
 	wrap(stream.readInt(layerId))
 	uint32_t numFrames;
 	wrap(stream.readInt(numFrames))
-	Log::debug("nTRN chunk: childNodeId: %u, layerId: %u, numFrames: %u", childNodeId, layerId, numFrames);
-	for (uint32_t i = 0; i < numFrames; ++i) {
-		Attributes transformNodeAttributes;
-		// (_r : int8) ROTATION
-		// (_t : int32x3) translation
-		//
-		// ROTATION type
-		//
-		// store a row-major rotation in the bits of a byte
-		//
-		// for example :
-		// R =
-		//  0  1  0
-		//  0  0 -1
-		// -1  0  0
-		// ==>
-		// unsigned char _r = (1 << 0) | (2 << 2) | (0 << 4) | (1 << 5) | (1 << 6)
-		//
-		// bit | value
-		// 0-1 : 1 : index of the non-zero entry in the first row
-		// 2-3 : 2 : index of the non-zero entry in the second row
-		// 4   : 0 : the sign in the first row (0 : positive; 1 : negative)
-		// 5   : 1 : the sign in the second row (0 : positive; 1 : negative)
-		// 6   : 1 : the sign in the third row (0 : positive; 1 : negative)
-		//
-		wrapBool(readAttributes(transformNodeAttributes, stream))
-		auto rot = transformNodeAttributes.find("_r");
-		if (rot != transformNodeAttributes.end()) {
-			Log::warn("nTRN chunk not yet completely supported: _r not yet parsed");
-		}
-		auto trans = transformNodeAttributes.find("_t");
-		if (trans == transformNodeAttributes.end()) {
-			continue;
-		}
+	Log::debug("nTRN chunk: node: %u, childNodeId: %u, layerId: %u, numFrames: %u", nodeId, childNodeId, layerId, numFrames);
+	if (numFrames != 1) {
+		Log::error("Transform node chunk contained a numFrames value != 1: %i", numFrames);
+		return false;
+	}
+	Attributes transformNodeAttributes;
+	wrapBool(readAttributes(transformNodeAttributes, stream))
+	auto rot = transformNodeAttributes.find("_r");
+	if (rot != transformNodeAttributes.end()) {
+		Log::warn("nTRN chunk not yet completely supported: _r not yet parsed");
+	}
+	auto trans = transformNodeAttributes.find("_t");
+	if (trans != transformNodeAttributes.end()) {
 		const core::String& translations = trans->second;
 		int x, y, z;
 		if (SDL_sscanf(translations.c_str(), "%d %d %d", &x, &y, &z) != 3) {
 			Log::error("Failed to parse translation");
-			continue;
+			return false;
 		}
 		for (auto& m : _models) {
 			if (m.nodeId != nodeId) {
