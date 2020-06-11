@@ -112,6 +112,9 @@ private:
 	bool loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);
 	bool loadSceneGraph(io::FileStream& stream, VoxelVolumes& volumes);
 
+	bool applyTransform(VoxTransform& transform, NodeId nodeId, VoxelVolumes& volumes) const;
+	bool applySceneGraph(VoxelVolumes& volumes) const;
+
 public:
 	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;

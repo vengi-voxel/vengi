@@ -709,35 +709,19 @@ bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header
 	}
 	Attributes transformNodeAttributes;
 	wrapBool(readAttributes(transformNodeAttributes, stream))
-	auto rot = transformNodeAttributes.find("_r");
-	if (rot != transformNodeAttributes.end()) {
-		Log::warn("nTRN chunk not yet completely supported: _r not yet parsed");
-	}
-	auto trans = transformNodeAttributes.find("_t");
-	if (trans != transformNodeAttributes.end()) {
-		const core::String& translations = trans->second;
-		int x, y, z;
-		if (SDL_sscanf(translations.c_str(), "%d %d %d", &x, &y, &z) != 3) {
-			Log::error("Failed to parse translation");
-			return false;
-		}
-		for (auto& m : _models) {
-			if (m.nodeId != nodeId) {
-				continue;
-			}
-			if (m.volumeIdx >= volumes.size()) {
-				Log::error("Invalid modelid found: %u", m.volumeIdx);
-				return false;
-			}
-			if (volumes[m.volumeIdx].volume == nullptr) {
-				Log::error("No volume for model id: %u", m.volumeIdx);
-				return false;
-			}
-			volumes[m.volumeIdx].volume->translate(glm::ivec3(x, y, z));
-			break;
-		}
-		Log::debug("nTRN chunk not yet completely supported: translation %i:%i:%i", x, y, z);
-	}
+
+	VoxTransform transform;
+	wrapBool(parseSceneGraphRotation(transform, transformNodeAttributes))
+	wrapBool(parseSceneGraphTranslation(transform, transformNodeAttributes))
+
+	SceneGraphChildNodes child(1);
+	child[0] = childNodeId;
+	const uint32_t arrayIdx = (uint32_t)_transforms.size();
+	const SceneGraphNode sceneNode{arrayIdx, SceneGraphNodeType::Transform, child};
+	Log::debug("transform child node id: %u, arrayIdx: %u", sceneNode.childNodeIds[0], arrayIdx);
+	_sceneGraphMap.put(nodeId, sceneNode);
+	_transforms.push_back(transform);
+
 	return true;
 }
 
@@ -871,6 +855,81 @@ bool VoxFormat::loadSceneGraph(io::FileStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
+bool VoxFormat::applySceneGraph(VoxelVolumes& volumes) const {
+	if (_sceneGraphMap.empty()) {
+		Log::debug("No scene graph found in the model");
+		return true;
+	}
+	VoxTransform transform;
+	applyTransform(transform, 0, volumes);
+	return true;
+}
+
+bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId, VoxelVolumes& volumes) const {
+	SceneGraphNode node;
+	if (!_sceneGraphMap.get(nodeId, node)) {
+		Log::error("Could not find node %u", nodeId);
+		return false;
+	}
+
+	Log::debug("node: %u - children: %u", nodeId, (uint32_t)node.childNodeIds.size());
+
+	switch (node.type) {
+	case SceneGraphNodeType::Group: {
+		Log::debug("group");
+		for (NodeId n : node.childNodeIds) {
+			if (n <= nodeId) {
+				continue;
+			}
+			VoxTransform t = transform;
+			Log::debug("childnode: %u", n);
+			wrapBool(applyTransform(t, n, volumes));
+		}
+		break;
+	}
+	case SceneGraphNodeType::Shape: {
+		Log::debug("shape");
+		if (node.arrayIdx >= _models.size()) {
+			Log::error("Invalid model array index found: %u", node.arrayIdx);
+			return false;
+		}
+		const VoxModel& m = _models[node.arrayIdx];
+		if (m.volumeIdx >= volumes.size()) {
+			Log::error("Invalid volume array index found: %u", m.volumeIdx);
+			return false;
+		}
+
+		VoxelVolume& v = volumes[m.volumeIdx];
+		v.volume->translate(transform.translation);
+		// TODO: apply final rotation to volume
+		break;
+	}
+	case SceneGraphNodeType::Transform: {
+		Log::debug("transform");
+		if (node.arrayIdx >= _transforms.size()) {
+			Log::error("Invalid transform array index found: %u", node.arrayIdx);
+			return false;
+		}
+
+		const VoxTransform& t = _transforms[node.arrayIdx];
+		transform.rotation = glm::normalize(t.rotation * transform.rotation);
+		transform.translation += glm::conjugate(transform.rotation) * glm::vec3(t.translation);
+
+		for (NodeId n : node.childNodeIds) {
+			if (n <= nodeId) {
+				continue;
+			}
+			Log::debug("childnode: %u", n);
+			wrapBool(applyTransform(transform, n, volumes));
+		}
+
+		break;
+	}
+	}
+
+	return true;
+}
+
 bool VoxFormat::checkVersionAndMagic(io::FileStream& stream) const {
 	uint32_t magic;
 	wrap(stream.readInt(magic))
@@ -958,7 +1017,9 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	wrapBool(loadSecondChunks(stream, volumes))
 	stream.seek(resetPos);
 
-	return loadSceneGraph(stream, volumes);
+	wrapBool(loadSceneGraph(stream, volumes))
+
+	return applySceneGraph(volumes);
 }
 
 void VoxFormat::reset() {
