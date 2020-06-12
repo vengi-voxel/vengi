@@ -233,7 +233,8 @@ bool VoxFormat::skipSaving(const VoxelVolume& v) const {
 	const voxel::Region& region = v.volume->region();
 	if (region.getDepthInVoxels() >= MaxRegionSize || region.getHeightInVoxels() >= MaxRegionSize
 		|| region.getWidthInVoxels() >= MaxRegionSize) {
-		Log::warn("a region exceeds the max allowed vox file boundaries");
+		Log::warn("a region exceeds the max allowed vox file boundaries: %i:%i:%i",
+				region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
 		// TODO: cut the big volume into pieces
 		return true;
 	}
@@ -534,8 +535,7 @@ bool VoxFormat::loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header
 // 4        | int        | numModels : num of SIZE and XYZI chunks
 // -------------------------------------------------------------------------------
 bool VoxFormat::loadChunk_PACK(io::FileStream& stream, const ChunkHeader& header) {
-	uint32_t numModels;
-	wrap(stream.readInt(numModels))
+	wrap(stream.readInt(_numModels))
 	return true;
 }
 

@@ -62,6 +62,7 @@ private:
 	core::Map<NodeId, SceneGraphNode> _sceneGraphMap;
 	uint32_t _volumeIdx = 0u;
 	uint32_t _chunks = 0u;
+	uint32_t _numModels = 1u;
 	std::vector<Region> _regions;
 	std::vector<VoxModel> _models;
 	std::vector<VoxTransform> _transforms;
