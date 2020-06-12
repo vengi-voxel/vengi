@@ -34,7 +34,7 @@ private:
 	using NodeId = uint32_t;
 
 	struct VoxTransform {
-		glm::quat rotation = glm::quat_identity<float, glm::defaultp>();
+		glm::quat rotation = glm::quat_cast(glm::mat3(1.0f));
 		glm::ivec3 translation { 0 };
 	};
 

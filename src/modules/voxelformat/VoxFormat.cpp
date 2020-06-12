@@ -138,10 +138,14 @@ bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId chi
 	wrapBool(stream.addInt(-1)) // reserved - must be -1
 	wrapBool(stream.addInt(0)) // layerid ???
 	wrapBool(stream.addInt(1)) // num frames
-	const core::String attributeName = "_t";
-	const core::String& translationStr = core::string::format("%i %i %i", mins.x, mins.y, mins.z);
+	if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
+		const core::String attributeName = "_t";
+		const core::String& translationStr = core::string::format("%i %i %i", mins.x, mins.z, mins.y);
+		wrapBool(saveAttributes({{attributeName, translationStr}}, stream))
+	} else {
+		wrapBool(saveAttributes({}, stream))
+	}
 	// TODO: add _r
-	wrapBool(saveAttributes({{attributeName, translationStr}}, stream))
 	++_chunks;
 	return true;
 }
@@ -258,7 +262,9 @@ bool VoxFormat::saveSceneGraph(io::FileStream& stream, const VoxelVolumes& volum
 		}
 
 		const voxel::Region& region = v.volume->region();
-		wrapBool(saveChunk_nTRN(stream, nodeId, nodeId + 1, region.getLowerCorner()))
+		const glm::ivec3& size = region.getDimensionsInVoxels();
+		const glm::vec3 pivot = glm::vec3(size.x & ~1u, size.z & ~1u, size.y & ~1u) - glm::vec3(1.0f);
+		wrapBool(saveChunk_nTRN(stream, nodeId, nodeId + 1, pivot))
 		wrapBool(saveChunk_nSHP(stream, nodeId + 1, modelId))
 
 		// transform + shape node per volume
@@ -508,7 +514,7 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 	const glm::vec3 pivot = glm::vec3(size.x & ~1u, size.z & ~1u, size.y & ~1u) - glm::vec3(1.0f);
 	const glm::ivec3& rmins = region.getLowerCorner();
 	const glm::ivec3& rmaxs = region.getUpperCorner();
-	VoxTransform finalTransform = calculateTransform(_volumeIdx);
+	const VoxTransform& finalTransform = calculateTransform(_volumeIdx);
 	const glm::ivec3& mins = calcTransform(finalTransform, rmins.x, rmins.z, rmins.y, pivot);
 	const glm::ivec3& maxs = calcTransform(finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
 	RawVolume *volume = new RawVolume(Region{mins.x, mins.z, mins.y, maxs.x, maxs.z, maxs.y});
@@ -914,9 +920,14 @@ bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId) const {
 		current = parent;
 	}
 
+	// skip root node
+	if (nodeId == 0) {
+		return true;
+	}
+
 	SceneGraphNode node;
 	if (!_sceneGraphMap.get(nodeId, node)) {
-		Log::error("Could not find node %u", nodeId);
+		Log::debug("Could not find node %u", nodeId);
 		return false;
 	}
 
@@ -929,7 +940,7 @@ bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId) const {
 		const VoxTransform& t = _transforms[node.arrayIdx];
 		transform.rotation = glm::normalize(t.rotation * transform.rotation);
 		transform.translation += glm::conjugate(transform.rotation) * glm::vec3(t.translation);
-		Log::error("Apply translation for node %u (aidx: %u) %i:%i:%i",
+		Log::debug("Apply translation for node %u (aidx: %u) %i:%i:%i",
 				nodeId, node.arrayIdx,
 				transform.translation.x, transform.translation.y, transform.translation.z);
 	}
