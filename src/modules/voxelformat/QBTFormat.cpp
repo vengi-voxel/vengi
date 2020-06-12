@@ -64,7 +64,7 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 					*zlibBuf++ = (uint8_t)0;
 					*zlibBuf++ = (uint8_t)0;
 					*zlibBuf++ = (uint8_t)0;
-					*zlibBuf++ = (uint8_t)0;
+					*zlibBuf++ = (uint8_t)0; // mask 0 == air
 					continue;
 				}
 				if (colorMap) {
@@ -81,6 +81,7 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 					*zlibBuf++ = green;
 					*zlibBuf++ = blue;
 				}
+				// mask != 0 means solid, 1 is core (surrounded by others and not visible)
 				*zlibBuf++ = 0xff;
 			}
 		}
@@ -365,20 +366,12 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 					continue;
 				}
 				if (_paletteSize > 0) {
-					voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-					if (red == 0) {
-						voxelType = voxel::VoxelType::Air;
-					}
-					const voxel::Voxel& voxel = voxel::createVoxel(voxelType, red);
+					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, red);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				} else {
 					const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
 					const uint8_t index = findClosestIndex(color);
-					voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-					if (index == 0) {
-						voxelType = voxel::VoxelType::Air;
-					}
-					const voxel::Voxel& voxel = voxel::createVoxel(voxelType, index);
+					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				}
 			}
