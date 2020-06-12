@@ -460,6 +460,33 @@ bool VoxFormat::loadChunk_SIZE(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
+/**
+ * @note This method was found in the magicavoxel discord community chat. Posted by eisenwave
+ *
+ * Performs a division but rounds towards negative infinity.
+ * For positive numbers, this is equivalent to regular division.
+ * For all numbers, this is equivalent to a floating point division and then a floor().
+ * Negative numbers will be decremented before division, leading to this type of rounding.
+ *
+ * Examples:
+ * floor(-1/2) = floor(-0.5) = -1
+ * floor(-2/2) = floor(-1) = -1
+ *
+ * This function imitates such behavior but without the use of any floating point arithmetic.
+ *
+ * @param n the number to divide
+ * @return the number divided by two, rounded towards negative infinity
+ */
+constexpr static int32_t div2Floor(int32_t n) {
+	return (n - (n < 0)) / 2;
+}
+
+glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, float x, float y, float z, const glm::vec3& pivot) const {
+	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - glm::ivec3(pivot);
+	const glm::vec3 pos = glm::ivec3(t.rotation * glm::vec3(c)) + t.translation;
+	return glm::ivec3(div2Floor(pos.x), div2Floor(pos.y), div2Floor(pos.z));
+}
+
 // 6. Chunk id 'XYZI' : model voxels
 // -------------------------------------------------------------------------------
 // # Bytes  | Type       | Value
@@ -475,19 +502,29 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 		Log::error("Invalid XYZI chunk without previous SIZE chunk");
 		return false;
 	}
-	RawVolume *volume = new RawVolume(_regions[_volumeIdx]);
+
+	const voxel::Region& region = _regions[_volumeIdx];
+	const glm::ivec3& size = region.getDimensionsInVoxels();
+	const glm::vec3 pivot = glm::vec3(size.x & ~1u, size.z & ~1u, size.y & ~1u) - glm::vec3(1.0f);
+	const glm::ivec3& rmins = region.getLowerCorner();
+	const glm::ivec3& rmaxs = region.getUpperCorner();
+	VoxTransform finalTransform = calculateTransform(_volumeIdx);
+	const glm::ivec3& mins = calcTransform(finalTransform, rmins.x, rmins.z, rmins.y, pivot);
+	const glm::ivec3& maxs = calcTransform(finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
+	RawVolume *volume = new RawVolume(Region{mins.x, mins.z, mins.y, maxs.x, maxs.z, maxs.y});
 	int volumeVoxelSet = 0;
 	for (uint32_t i = 0; i < numVoxels; ++i) {
-		// we have to flip the axis here
 		uint8_t x, y, z, colorIndex;
 		wrap(stream.readByte(x))
-		wrap(stream.readByte(z))
 		wrap(stream.readByte(y))
+		wrap(stream.readByte(z))
 		wrap(stream.readByte(colorIndex))
 		const uint8_t index = convertPaletteIndex(colorIndex);
 		voxel::VoxelType voxelType = voxel::VoxelType::Generic;
 		const voxel::Voxel& voxel = voxel::createVoxel(voxelType, index);
-		if (volume->setVoxel(x, y, z, voxel)) {
+		const glm::ivec3& pos = calcTransform(finalTransform, x, y, z, pivot);
+		// we have to flip the axis here
+		if (volume->setVoxel(pos.x, pos.z, pos.y, voxel)) {
 			++volumeVoxelSet;
 		}
 	}
@@ -525,6 +562,7 @@ bool VoxFormat::loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header
 	_models[modelId].nodeAttributes = std::move(nodeAttributes);
 	const SceneGraphNode sceneNode{modelId, SceneGraphNodeType::Shape, SceneGraphChildNodes(0)};
 	_sceneGraphMap.put(nodeId, sceneNode);
+	_leafNodes.push_back(nodeId);
 	return true;
 }
 
@@ -654,6 +692,7 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attribute
 	if (rot == attributes.end()) {
 		return true;
 	}
+	// This method was found in the magicavoxel discord community chat. Posted by eisenwave
 	constexpr uint32_t row2IndexTable[] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, 2, UINT32_MAX, 1, 0, UINT32_MAX};
 	const core::String& rotation = rot->second;
 
@@ -721,6 +760,7 @@ bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header
 	Log::debug("transform child node id: %u, arrayIdx: %u", sceneNode.childNodeIds[0], arrayIdx);
 	_sceneGraphMap.put(nodeId, sceneNode);
 	_transforms.push_back(transform);
+	_parentNodes.put(childNodeId, nodeId);
 
 	return true;
 }
@@ -733,11 +773,13 @@ bool VoxFormat::loadChunk_nGRP(io::FileStream& stream, const ChunkHeader& header
 	wrapBool(readAttributes(attributes, stream))
 	uint32_t numChildren;
 	wrap(stream.readInt(numChildren))
-	SceneGraphChildNodes children(numChildren);
+	SceneGraphChildNodes children;
+	children.reserve(numChildren);
 	for (uint32_t i = 0; i < numChildren; ++i) {
 		uint32_t child;
 		wrap(stream.readInt(child))
 		children.push_back((child));
+		_parentNodes.put(child, nodeId);
 	}
 	const SceneGraphNode sceneNode{0, SceneGraphNodeType::Group, children};
 	_sceneGraphMap.put(nodeId, sceneNode);
@@ -794,11 +836,13 @@ bool VoxFormat::loadFirstChunks(io::FileStream& stream) {
 		}
 		wrap(stream.seek(header.nextChunkPos))
 	} while (stream.remaining() > 0);
+
+	_models.resize(_regions.size());
+
 	return true;
 }
 
 bool VoxFormat::loadSecondChunks(io::FileStream& stream, VoxelVolumes& volumes) {
-	_models.resize(_regions.size());
 	volumes.resize(_regions.size());
 	do {
 		ChunkHeader header;
@@ -855,57 +899,28 @@ bool VoxFormat::loadSceneGraph(io::FileStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool VoxFormat::applySceneGraph(VoxelVolumes& volumes) const {
-	if (_sceneGraphMap.empty()) {
-		Log::debug("No scene graph found in the model");
-		return true;
-	}
+VoxFormat::VoxTransform VoxFormat::calculateTransform(uint32_t volumeIdx) const {
+	const NodeId nodeId = _models[volumeIdx].nodeId;
 	VoxTransform transform;
-	applyTransform(transform, 0, volumes);
-	return true;
+	applyTransform(transform, nodeId);
+	return transform;
 }
 
-bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId, VoxelVolumes& volumes) const {
+bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId) const {
+	NodeId parent;
+	NodeId current = nodeId;
+	while (_parentNodes.get(current, parent)) {
+		wrapBool(applyTransform(transform, parent))
+		current = parent;
+	}
+
 	SceneGraphNode node;
 	if (!_sceneGraphMap.get(nodeId, node)) {
 		Log::error("Could not find node %u", nodeId);
 		return false;
 	}
 
-	Log::debug("node: %u - children: %u", nodeId, (uint32_t)node.childNodeIds.size());
-
-	switch (node.type) {
-	case SceneGraphNodeType::Group: {
-		Log::debug("group");
-		for (NodeId n : node.childNodeIds) {
-			if (n <= nodeId) {
-				continue;
-			}
-			VoxTransform t = transform;
-			Log::debug("childnode: %u", n);
-			wrapBool(applyTransform(t, n, volumes));
-		}
-		break;
-	}
-	case SceneGraphNodeType::Shape: {
-		Log::debug("shape");
-		if (node.arrayIdx >= _models.size()) {
-			Log::error("Invalid model array index found: %u", node.arrayIdx);
-			return false;
-		}
-		const VoxModel& m = _models[node.arrayIdx];
-		if (m.volumeIdx >= volumes.size()) {
-			Log::error("Invalid volume array index found: %u", m.volumeIdx);
-			return false;
-		}
-
-		VoxelVolume& v = volumes[m.volumeIdx];
-		v.volume->translate(transform.translation);
-		// TODO: apply final rotation to volume
-		break;
-	}
-	case SceneGraphNodeType::Transform: {
-		Log::debug("transform");
+	if (node.type == SceneGraphNodeType::Transform) {
 		if (node.arrayIdx >= _transforms.size()) {
 			Log::error("Invalid transform array index found: %u", node.arrayIdx);
 			return false;
@@ -914,17 +929,9 @@ bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId, VoxelVolu
 		const VoxTransform& t = _transforms[node.arrayIdx];
 		transform.rotation = glm::normalize(t.rotation * transform.rotation);
 		transform.translation += glm::conjugate(transform.rotation) * glm::vec3(t.translation);
-
-		for (NodeId n : node.childNodeIds) {
-			if (n <= nodeId) {
-				continue;
-			}
-			Log::debug("childnode: %u", n);
-			wrapBool(applyTransform(transform, n, volumes));
-		}
-
-		break;
-	}
+		Log::error("Apply translation for node %u (aidx: %u) %i:%i:%i",
+				nodeId, node.arrayIdx,
+				transform.translation.x, transform.translation.y, transform.translation.z);
 	}
 
 	return true;
@@ -1014,12 +1021,12 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	wrapBool(loadFirstChunks(stream))
 	stream.seek(resetPos);
 
-	wrapBool(loadSecondChunks(stream, volumes))
+	wrapBool(loadSceneGraph(stream, volumes))
 	stream.seek(resetPos);
 
-	wrapBool(loadSceneGraph(stream, volumes))
+	wrapBool(loadSecondChunks(stream, volumes))
 
-	return applySceneGraph(volumes);
+	return true;
 }
 
 void VoxFormat::reset() {

@@ -66,6 +66,8 @@ private:
 	std::vector<Region> _regions;
 	std::vector<VoxModel> _models;
 	std::vector<VoxTransform> _transforms;
+	core::Map<NodeId, NodeId> _parentNodes;
+	std::vector<NodeId> _leafNodes;
 
 	bool skipSaving(const VoxelVolume& v) const;
 	bool saveAttributes(const Attributes& attributes, io::FileStream& stream) const;
@@ -112,9 +114,9 @@ private:
 	bool loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);
 	bool loadSceneGraph(io::FileStream& stream, VoxelVolumes& volumes);
-
-	bool applyTransform(VoxTransform& transform, NodeId nodeId, VoxelVolumes& volumes) const;
-	bool applySceneGraph(VoxelVolumes& volumes) const;
+	VoxTransform calculateTransform(uint32_t volumeIdx) const;
+	bool applyTransform(VoxTransform& transform, NodeId nodeId) const;
+	glm::ivec3 calcTransform(const VoxTransform& t, float x, float y, float z, const glm::vec3& pivot) const;
 
 public:
 	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
