@@ -167,9 +167,11 @@ bool VoxFormat::saveChunk_PACK(io::FileStream& stream, const VoxelVolumes& volum
 		}
 		++modelCount;
 	}
-	ScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
-	wrapBool(stream.addInt(modelCount))
-	++_chunks;
+	if (modelCount > 1) {
+		ScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
+		wrapBool(stream.addInt(modelCount))
+		++_chunks;
+	}
 	return true;
 }
 
@@ -408,6 +410,9 @@ bool VoxFormat::readChunkHeader(io::FileStream& stream, ChunkHeader& header) con
 	wrap(stream.readInt(header.chunkId))
 	wrap(stream.readInt(header.numBytesChunk))
 	wrap(stream.readInt(header.numBytesChildrenChunks))
+	uint8_t buf[4];
+	FourCCRev(buf, header.chunkId);
+	Log::debug("Chunk size for %c%c%c%c: %u, childchunks: %u", buf[0], buf[1], buf[2], buf[3], header.numBytesChunk, header.numBytesChildrenChunks);
 	header.nextChunkPos = stream.pos() + header.numBytesChunk + header.numBytesChildrenChunks;
 	return true;
 }
