@@ -57,7 +57,7 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 	io::FilePtr file;
 
 	for (const char **ext = SUPPORTED_VOXEL_FORMATS_LOAD_LIST; *ext; ++ext) {
-		file =fs->open(core::string::format("%s.%s", fullPath, *ext));
+		file = fs->open(core::string::format("%s.%s", fullPath, *ext));
 		if (file->exists()) {
 			break;
 		}
