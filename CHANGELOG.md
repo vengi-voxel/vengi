@@ -4,6 +4,14 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
 
  VoxConvert:
    - Support different palette files (cvar `palette`)
+   - Support writing outside the registered application paths
+   - Allow to overwrite existing files
+
+ General:
+   - Switched to qb as default volume format
+   - Improved scene graph support for Magicavoxel vox files
+   - Fixed invisible voxels for qb and qbt (Qubicle) volume format
+   - Support automatic loading different volume formats for assets
 
 #### 0.0.4 (2020-06-07)
 

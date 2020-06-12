@@ -1,5 +1,16 @@
 vengi (0.0.5.0-1) UNRELEASED; urgency=low
 
+  * VoxConvert:
+  * Support different palette files (cvar `palette`)
+  * Support writing outside the registered application paths
+  * Allow to overwrite existing files
+
+  * General:
+  * Switched to qb as default volume format
+  * Improved scene graph support for Magicavoxel vox files
+  * Fixed invisible voxels for qb and qbt (Qubicle) volume format
+  * Support automatic loading different volume formats for assets
+
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 7 Jun 2020 10:32:10 +0200
 
 vengi (0.0.4.0-1) unstable; urgency=low
