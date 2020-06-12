@@ -292,7 +292,6 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		const voxel::Region& region = v.volume->region();
 		wrapBool(saveChunk_SIZE(stream, region))
 		wrapBool(saveChunk_XYZI(stream, v.volume, region))
-		wrapBool(saveChunk_LAYR(stream, modelId, v.name, v.visible))
 
 		++modelId;
 	}
@@ -301,6 +300,13 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 
 	if (modelId == 0) {
 		return false;
+	}
+
+	for (auto& v : volumes) {
+		if (skipSaving(v)) {
+			continue;
+		}
+		wrapBool(saveChunk_LAYR(stream, modelId, v.name, v.visible))
 	}
 
 	wrapBool(saveSceneGraph(stream, volumes, modelId))
