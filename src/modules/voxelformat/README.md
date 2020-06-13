@@ -287,7 +287,7 @@ Format spec: <https://abfab3d.com/svx-format/>
 
 Example implementation: <https://gist.github.com/Eisenwave/799416ac162a4dddeb1312f357f1385c>
 
-#ä QEF Qubicle exchange format
+## QEF Qubicle exchange format
 
 https://getqubicle.com/learn/article.php?id=23
 
