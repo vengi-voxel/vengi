@@ -299,6 +299,12 @@ Example implementation: <https://github.com/grking/zoxel/blob/develop/src/plugin
 
 ## Sproxel CSV
 
+First line `%d,%d,%d\n` dimensions x, y, z.
+
+Following lines are RGBA values as hex string comma-separated. `#RRGGBBAA,` for (y = 0..dim.y, z = 0..dim.z, x = 0..dimx) { readRGBA }
+
+Example implementation: <https://github.com/emilk/sproxel/blob/master/ImportExport.cpp>
+
 Example files: <https://code.google.com/archive/p/sproxel/downloads>
 
 ## Paint3d 3mp
