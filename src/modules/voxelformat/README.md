@@ -286,3 +286,21 @@ Format "spec": <https://github.com/OpenRA/OpenRA/blob/master/OpenRA.Mods.Cnc/Fil
 Format spec: <https://abfab3d.com/svx-format/>
 
 Example implementation: <https://gist.github.com/Eisenwave/799416ac162a4dddeb1312f357f1385c>
+
+#ä QEF Qubicle exchange format
+
+https://getqubicle.com/learn/article.php?id=23
+
+## ZOX Zoxel
+
+Format "spec": <https://github.com/grking/zoxel/blob/develop/src/plugins/io_zoxel.py>
+
+## Sproxel CSV
+
+Example files: <https://code.google.com/archive/p/sproxel/downloads>
+
+## Paint3d 3mp
+
+Example implementation: <https://github.com/emilk/sproxel/commit/b1e2282781a7cbecfba04be4beb7a2b8debfc093>
+
+## Cubic Studio
