@@ -293,7 +293,9 @@ https://getqubicle.com/learn/article.php?id=23
 
 ## ZOX Zoxel
 
-Format "spec": <https://github.com/grking/zoxel/blob/develop/src/plugins/io_zoxel.py>
+Format spec: https://github.com/grking/zoxel/wiki/Zoxel-File-Format
+
+Example implementation: <https://github.com/grking/zoxel/blob/develop/src/plugins/io_zoxel.py>
 
 ## Sproxel CSV
 
