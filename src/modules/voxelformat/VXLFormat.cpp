@@ -32,17 +32,18 @@ bool VXLFormat::writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, u
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 
 	const uint32_t baseSize = size.x * size.z;
+	const uint64_t globalSpanStartPos = stream.pos();
+
 	for (uint32_t i = 0; i < baseSize; i++) {
-		wrapBool(stream.addInt(0)) // TODO: spanStart[i] and EmptyColumn handling
+		wrapBool(stream.addInt(0))
 	}
 	for (uint32_t i = 0; i < baseSize; i++) {
-		wrapBool(stream.addInt(0)) // TODO: spanEnd[i] and EmptyColumn handling
+		wrapBool(stream.addInt(0))
 	}
 	for (uint32_t i = 0u; i < baseSize; ++i) {
-		//if (spanStart[i] == EmptyColumn) {
-		//	continue;
-		//}
+		const uint64_t spanStartPos = stream.pos();
 
+		// TODO: EmptyColumn handling
 		// TODO: there might be multiple of this for regions that exceed the byte boundary
 		uint32_t firstNonEmptyY = 0;
 		uint32_t voxelAmountY = 0u;
@@ -56,6 +57,13 @@ bool VXLFormat::writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, u
 			wrapBool(stream.addByte(voxel.getColor()))
 			wrapBool(stream.addByte(0)) // TODO: normal
 		}
+
+		const uint64_t spanEndPos = stream.pos();
+		wrap(stream.seek(globalSpanStartPos + i * sizeof(uint32_t)))
+		wrapBool(stream.addInt(spanStartPos))
+		wrap(stream.seek(globalSpanStartPos + baseSize * sizeof(uint32_t) + i * sizeof(uint32_t)))
+		wrapBool(stream.addInt(spanEndPos))
+		wrap(stream.seek(spanEndPos))
 	}
 	// TODO: once finished, activate it
 	return false;
