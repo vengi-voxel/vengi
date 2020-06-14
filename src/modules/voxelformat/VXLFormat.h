@@ -59,6 +59,11 @@ private:
 		vxl_limb_tailer *limb_tailers = nullptr;	/* number of limb times */
 		int volumeIdx = 0;
 	};
+	// 802 is the unpadded size of vxl_header
+	static constexpr size_t HeaderSize = 802;
+	// 28 is the unpadded size of vxl_limb_header
+	static constexpr size_t LimbHeaderSize = 28;
+	static constexpr int EmptyColumn = -1;
 
 	bool readLimbHeader(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
 	bool readLimbFooter(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;

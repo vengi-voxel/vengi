@@ -44,7 +44,7 @@ bool VXLFormat::readLimb(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx,
 	volumes[mdl.volumeIdx].pivot = volume->region().getCenter();
 	++mdl.volumeIdx;
 
-	wrap(stream.seek(802 + 28 * mdl.header.n_limbs + footer.span_start_off))
+	wrap(stream.seek(HeaderSize + LimbHeaderSize * mdl.header.n_limbs + footer.span_start_off))
 	for (uint32_t i = 0; i < baseSize; i++) {
 		uint32_t v;
 		wrap(stream.readInt(v))
@@ -56,8 +56,7 @@ bool VXLFormat::readLimb(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx,
 	// Count the voxels in this limb
 	uint32_t voxelCount = 0;
 	for (uint32_t i = 0u; i < baseSize; ++i) {
-		// Empty column
-		if (colStart[i] == -1) {
+		if (colStart[i] == EmptyColumn) {
 			continue;
 		}
 
@@ -74,10 +73,8 @@ bool VXLFormat::readLimb(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx,
 		} while (z < footer.zsize);
 	}
 
-	// Read the data
 	for (uint32_t i = 0u; i < baseSize; ++i) {
-		// Empty column
-		if (colStart[i] == -1) {
+		if (colStart[i] == EmptyColumn) {
 			continue;
 		}
 
@@ -130,8 +127,7 @@ bool VXLFormat::readLimbHeader(io::FileStream& stream, vxl_mdl& mdl, uint32_t li
 }
 
 bool VXLFormat::readLimbHeaders(io::FileStream& stream, vxl_mdl& mdl) const {
-	// 802 is the unpadded size of vxl_header
-	stream.seek(802);
+	stream.seek(HeaderSize);
 	for (uint32_t i = 0; i < mdl.header.n_limbs; ++i) {
 		wrapBool(readLimbHeader(stream, mdl, i))
 	}
@@ -159,9 +155,7 @@ bool VXLFormat::readLimbFooter(io::FileStream& stream, vxl_mdl& mdl, uint32_t li
 }
 
 bool VXLFormat::readLimbFooters(io::FileStream& stream, vxl_mdl& mdl) const {
-	// 802 is the unpadded size of vxl_header
-	// 28 is the unpadded size of vxl_limb_header
-	stream.seek(802 + 28 * mdl.header.n_limbs + mdl.header.bodysize);
+	stream.seek(HeaderSize + LimbHeaderSize * mdl.header.n_limbs + mdl.header.bodysize);
 	for (uint32_t i = 0; i < mdl.header.n_limbs; ++i) {
 		wrapBool(readLimbFooter(stream, mdl, i))
 	}
