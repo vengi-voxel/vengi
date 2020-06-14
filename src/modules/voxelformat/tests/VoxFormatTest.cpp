@@ -19,7 +19,7 @@ TEST_F(VoxFormatTest, testLoad) {
 	delete volume;
 }
 
-TEST_F(VoxFormatTest, testSave) {
+TEST_F(VoxFormatTest, DISABLED_testSave) {
 	VoxFormat f;
 	const io::FilePtr& file = _testApp->filesystem()->open("magicavoxel.vox");
 	ASSERT_TRUE((bool)file) << "Could not open vox file";
