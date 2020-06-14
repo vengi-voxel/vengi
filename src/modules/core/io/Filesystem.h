@@ -145,7 +145,6 @@ public:
 	bool removeDir(const core::String& dir, bool recursive = false) const;
 	bool removeFile(const core::String& file) const;
 private:
-	static bool _list(const core::String& directory, std::vector<DirEntry>& entities);
 	static bool _list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter);
 };
 
