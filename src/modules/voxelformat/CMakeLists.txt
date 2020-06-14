@@ -8,6 +8,7 @@ set(SRCS
 	QBTFormat.h QBTFormat.cpp
 	QBFormat.h QBFormat.cpp
 	VXMFormat.h VXMFormat.cpp
+	VXLFormat.h VXLFormat.cpp
 	MeshCache.h MeshCache.cpp
 	CubFormat.h CubFormat.cpp
 	VolumeCache.h VolumeCache.cpp
@@ -25,11 +26,13 @@ set(TEST_SRCS
 	tests/CubFormatTest.cpp
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
+	tests/VXLFormatTest.cpp
 	tests/VXMFormatTest.cpp
 )
 set(TEST_FILES
 	tests/qubicle.qb
 	tests/qubicle.qbt
+	tests/cc.vxl
 	tests/test.binvox
 	tests/test.kvx
 	tests/test.kv6

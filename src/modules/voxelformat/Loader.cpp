@@ -8,6 +8,7 @@
 #include "QBTFormat.h"
 #include "QBFormat.h"
 #include "VXMFormat.h"
+#include "VXLFormat.h"
 #include "CubFormat.h"
 #include "BinVoxFormat.h"
 #include "KVXFormat.h"
@@ -15,7 +16,7 @@
 
 namespace voxelformat {
 
-const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6";
+const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl";
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub";
 
@@ -57,6 +58,11 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		}
 	} else if (ext == "vxm") {
 		voxel::VXMFormat f;
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
+	} else if (ext == "vxl") {
+		voxel::VXLFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}

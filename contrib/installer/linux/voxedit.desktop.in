@@ -10,4 +10,4 @@ Type=Application
 Keywords=3d;modeling;game;voxel;engine;pixel;art
 Categories=Graphics
 StartupNotify=true
-MimeType=application/x-slab6;application/x-build-engine;application/x-cubeworld;application/x-binvox;application/x-magicavoxel;application/x-qubicle-binary;application/x-qubicle-tree;application/x-sandbox-voxedit
+MimeType=application/x-cc-vxl;application/x-slab6;application/x-build-engine;application/x-cubeworld;application/x-binvox;application/x-magicavoxel;application/x-qubicle-binary;application/x-qubicle-tree;application/x-sandbox-voxedit

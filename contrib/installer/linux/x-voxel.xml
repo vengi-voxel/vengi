@@ -41,4 +41,8 @@
     </magic>
     <glob pattern="*.kv6"/>
   </mime-type>
+  <mime-type type="application/x-cc-vxl">
+    <comment>Voxel model used by Command and Conquer</comment>
+    <glob pattern="*.vxl"/>
+  </mime-type>
 </mime-info>
