@@ -316,3 +316,11 @@ Example files: <https://code.google.com/archive/p/sproxel/downloads>
 Example implementation: <https://github.com/emilk/sproxel/commit/b1e2282781a7cbecfba04be4beb7a2b8debfc093>
 
 ## Cubic Studio
+
+## M3D Model3D
+
+Format description: <https://bztsrc.gitlab.io/model3d>
+
+Reference implementation: <https://gitlab.com/bztsrc/model3d/blob/master/m3d.h>
+
+Example implementation for goxel: <https://github.com/guillaumechereau/goxel/pull/189/files>
