@@ -26,8 +26,120 @@ namespace voxel {
 		return false; \
 	}
 
-bool VXLFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
+bool VXLFormat::writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const {
+	const VoxelVolume& v = volumes[limbIdx];
+	const voxel::Region& region = v.volume->region();
+	const glm::ivec3& size = region.getDimensionsInVoxels();
+
+	const uint32_t baseSize = size.x * size.z;
+	for (uint32_t i = 0; i < baseSize; i++) {
+		wrapBool(stream.addInt(0)) // TODO: spanStart[i] and EmptyColumn handling
+	}
+	for (uint32_t i = 0; i < baseSize; i++) {
+		wrapBool(stream.addInt(0)) // TODO: spanEnd[i] and EmptyColumn handling
+	}
+	for (uint32_t i = 0u; i < baseSize; ++i) {
+		//if (spanStart[i] == EmptyColumn) {
+		//	continue;
+		//}
+
+		// TODO: there might be multiple of this for regions that exceed the byte boundary
+		uint32_t firstNonEmptyY = 0;
+		uint32_t voxelAmountY = 0u;
+
+		const uint8_t x = (uint8_t)(i % size.x);
+		const uint8_t z = (uint8_t)(i / size.x);
+		wrapBool(stream.addByte(firstNonEmptyY))
+		wrapBool(stream.addByte(voxelAmountY))
+		for (uint8_t y = 0; y < voxelAmountY; ++y) {
+			const voxel::Voxel& voxel = v.volume->voxel(x, y, z);
+			wrapBool(stream.addByte(voxel.getColor()))
+			wrapBool(stream.addByte(0)) // TODO: normal
+		}
+	}
+	// TODO: once finished, activate it
 	return false;
+}
+
+bool VXLFormat::writeLimbHeader(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const {
+	const VoxelVolume& v = volumes[limbIdx];
+	wrapBool(stream.append((const uint8_t*)v.name.c_str(), 15))
+	wrapBool(stream.addByte('\0'))
+	wrapBool(stream.addInt(limbIdx))
+	wrapBool(stream.addInt(1))
+	wrapBool(stream.addInt(0))
+	return true;
+}
+
+bool VXLFormat::writeLimbFooter(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const {
+	const VoxelVolume& v = volumes[limbIdx];
+	const uint32_t spanStartOff = stream.pos();
+	wrapBool(stream.addInt(spanStartOff))
+	wrapBool(stream.addInt(0)) // TODO: spanEndOff
+	wrapBool(stream.addInt(0)) // TODO: spanDataOff
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			wrapBool(stream.addFloat(0.0f)) // TODO: region.getLowerCorner
+		}
+	}
+	for (int i = 0; i < 3; ++i) {
+		wrapBool(stream.addFloat(1.0f))
+	}
+	const voxel::Region& region = v.volume->region();
+	const glm::ivec3& size = region.getDimensionsInVoxels();
+	wrapBool(stream.addByte(size.x))
+	wrapBool(stream.addByte(size.z))
+	wrapBool(stream.addByte(size.y))
+	wrapBool(stream.addByte(2))
+	return true;
+}
+
+bool VXLFormat::writeHeader(io::FileStream& stream, const VoxelVolumes& volumes) {
+	wrapBool(stream.addString("Voxel Animation"))
+	wrapBool(stream.addInt(1))
+	wrapBool(stream.addInt(volumes.size()))
+	wrapBool(stream.addInt(volumes.size()))
+	wrapBool(stream.addInt(0)) // bodysize is filled later
+	wrapBool(stream.addShort(0x1f10U))
+	const MaterialColorArray& materialColors = getMaterialColors();
+	const uint32_t paletteSize = materialColors.size();
+	for (uint32_t i = 0; i < paletteSize; ++i) {
+		const glm::u8vec4& rgba = core::Color::getRGBAVec(materialColors[i]);
+		wrapBool(stream.addByte(rgba[0]))
+		wrapBool(stream.addByte(rgba[1]))
+		wrapBool(stream.addByte(rgba[2]))
+	}
+	core_assert(stream.pos() == HeaderSize);
+	return true;
+}
+
+bool VXLFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
+	if (!(bool)file) {
+		Log::error("Could not save vxl file: No file given");
+		return false;
+	}
+
+	io::FileStream stream(file.get());
+
+	wrap(writeHeader(stream, volumes))
+	for (uint32_t i = 0; i < volumes.size(); ++i) {
+		wrapBool(writeLimbHeader(stream, volumes, i))
+	}
+	const uint64_t afterHeaderPos = stream.pos();
+	for (uint32_t i = 0; i < volumes.size(); ++i) {
+		wrapBool(writeLimb(stream, volumes, i))
+	}
+
+	const uint64_t afterBodyPos = stream.pos();
+	const uint64_t bodySize = afterBodyPos - afterHeaderPos;
+	wrap(stream.seek(HeaderBodySizeOffset));
+	wrapBool(stream.addInt(bodySize))
+	wrap(stream.seek(afterBodyPos));
+
+	for (uint32_t i = 0; i < volumes.size(); ++i) {
+		wrapBool(writeLimbFooter(stream, volumes, i))
+	}
+	return true;
 }
 
 bool VXLFormat::readLimb(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx, VoxelVolumes& volumes) const {

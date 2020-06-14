@@ -63,8 +63,18 @@ private:
 	static constexpr size_t HeaderSize = 802;
 	// 28 is the unpadded size of vxl_limb_header
 	static constexpr size_t LimbHeaderSize = 28;
+	// 92 is the unpadded size of vxl_limb_tailer
+	static constexpr size_t LimbTailerSize = 92;
+	static constexpr size_t HeaderBodySizeOffset = 28;
 	static constexpr int EmptyColumn = -1;
 
+	// writing
+	bool writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const;
+	bool writeLimbHeader(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const;
+	bool writeLimbFooter(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const;
+	bool writeHeader(io::FileStream& stream, const VoxelVolumes& volumes);
+
+	// reading
 	bool readLimbHeader(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
 	bool readLimbFooter(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
 	bool readLimb(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx, VoxelVolumes& volumes) const;

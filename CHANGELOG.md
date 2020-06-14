@@ -12,7 +12,7 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
    - Improved scene graph support for Magicavoxel vox files
    - Fixed invisible voxels for qb and qbt (Qubicle) volume format
    - Support automatic loading different volume formats for assets
-   - Support loading Command&Conquer vxl files
+   - Support Command&Conquer vxl files
 
 #### 0.0.4 (2020-06-07)
 

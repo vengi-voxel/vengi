@@ -18,7 +18,7 @@ namespace voxelformat {
 
 const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl";
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
-const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub";
+const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub,vxl";
 
 bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) {
 	if (!filePtr->exists()) {
@@ -102,6 +102,9 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 		return f.saveGroups(volumes, filePtr);
 	} else if (ext == "cub") {
 		voxel::CubFormat f;
+		return f.saveGroups(volumes, filePtr);
+	} else if (ext == "vxl") {
+		voxel::VXLFormat f;
 		return f.saveGroups(volumes, filePtr);
 	} else if (ext == "binvox") {
 		voxel::BinVoxFormat f;

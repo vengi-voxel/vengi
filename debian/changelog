@@ -10,7 +10,7 @@ vengi (0.0.5.0-1) UNRELEASED; urgency=low
   * Improved scene graph support for Magicavoxel vox files
   * Fixed invisible voxels for qb and qbt (Qubicle) volume format
   * Support automatic loading different volume formats for assets
-  * Support loading Command&Conquer vxl files
+  * Support Command&Conquer vxl files
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 7 Jun 2020 10:32:10 +0200
 
