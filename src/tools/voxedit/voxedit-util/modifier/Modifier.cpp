@@ -164,11 +164,11 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 
 bool Modifier::needsSecondAction() {
 	const glm::ivec3 delta = aabbDim();
-	if (delta.x > 1 && delta.z > 1 && delta.y == 1) {
+	if (delta.x > _gridResolution && delta.z > _gridResolution && delta.y == _gridResolution) {
 		_aabbSecondActionDirection = math::Axis::Y;
-	} else if (delta.y > 1 && delta.z > 1 && delta.x == 1) {
+	} else if (delta.y > _gridResolution && delta.z > _gridResolution && delta.x == _gridResolution) {
 		_aabbSecondActionDirection = math::Axis::X;
-	} else if (delta.x > 1 && delta.y > 1 && delta.z == 1) {
+	} else if (delta.x > _gridResolution && delta.y > _gridResolution && delta.z == _gridResolution) {
 		_aabbSecondActionDirection = math::Axis::Z;
 	} else {
 		_aabbSecondActionDirection = math::Axis::None;
