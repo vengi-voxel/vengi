@@ -1,5 +1,7 @@
 # Voxel formats (not all supported yet)
 
+<https://eisenwave.github.io/voxel-compression-docs/related/voxel_formats.html>
+
 ## Binvox (binvox)
 
 Format spec: <https://www.patrickmin.com/binvox/binvox.html>
