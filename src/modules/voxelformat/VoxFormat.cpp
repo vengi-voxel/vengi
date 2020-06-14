@@ -264,8 +264,6 @@ bool VoxFormat::saveSceneGraph(io::FileStream& stream, const VoxelVolumes& volum
 		}
 
 		const voxel::Region& region = v.volume->region();
-		const glm::ivec3& size = region.getDimensionsInVoxels();
-		const glm::vec3 pivot = glm::vec3(size.x & ~1u, size.z & ~1u, size.y & ~1u) - glm::vec3(1.0f);
 		// TODO: the translation is broken for saves.
 		const glm::ivec3 mins = region.getCenter();
 		wrapBool(saveChunk_nTRN(stream, nodeId, nodeId + 1, mins))
