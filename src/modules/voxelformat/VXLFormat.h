@@ -59,6 +59,13 @@ private:
 		vxl_limb_tailer *limb_tailers = nullptr;	/* number of limb times */
 		int volumeIdx = 0;
 	};
+
+	struct LimbOffset {
+		int64_t start;
+		int64_t end;
+		int64_t data;
+	};
+
 	// 802 is the unpadded size of vxl_header
 	static constexpr size_t HeaderSize = 802;
 	// 28 is the unpadded size of vxl_limb_header
@@ -69,9 +76,10 @@ private:
 	static constexpr int EmptyColumn = -1;
 
 	// writing
-	bool writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const;
+	bool writeLimbBodyEntry(io::FileStream& stream, voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const;
+	bool writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const;
 	bool writeLimbHeader(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const;
-	bool writeLimbFooter(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const;
+	bool writeLimbFooter(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, const LimbOffset& offsets) const;
 	bool writeHeader(io::FileStream& stream, const VoxelVolumes& volumes);
 
 	// reading
