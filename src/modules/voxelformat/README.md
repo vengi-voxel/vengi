@@ -279,7 +279,9 @@ Format spec: <https://silverspaceship.com/aosmap/aos_file_format.html>
 
 ## Command & Conquer: Red Alert 2 (vxl)
 
-Format "spec": <https://github.com/OpenRA/OpenRA/blob/master/OpenRA.Mods.Cnc/FileFormats/VxlReader.cs>
+Format spec: <http://xhp.xwis.net/documents/VXL_Format.txt>
+
+Example implementation: <https://github.com/OpenRA/OpenRA/blob/master/OpenRA.Mods.Cnc/FileFormats/VxlReader.cs>
 
 ## SVX Format
 
