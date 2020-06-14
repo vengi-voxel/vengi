@@ -50,6 +50,7 @@ public:
 
 	/**
 	 * @return A value of @c 0 indicates no error
+	 * @note This does not handle the endianness
 	 */
 	template<class Ret>
 	int peek(Ret& val) const {
