@@ -242,8 +242,8 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 
 	bool saved = voxelformat::saveVolumeFormat(filePtr, volumes);
 	if (!saved) {
-		Log::warn("Failed to save file with unknown type: %s - saving as vox instead", ext.c_str());
-		voxel::VoxFormat f;
+		Log::warn("Failed to save %s file - retry as qb instead", ext.c_str());
+		voxel::QBFormat f;
 		saved = f.saveGroups(volumes, filePtr);
 	}
 	if (saved) {
