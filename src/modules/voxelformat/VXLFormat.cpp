@@ -108,8 +108,9 @@ bool VXLFormat::readLimb(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx,
 }
 
 bool VXLFormat::readLimbs(io::FileStream& stream, vxl_mdl& mdl, VoxelVolumes& volumes) const {
-	volumes.resize(mdl.header.n_limbs);
-	for (uint32_t i = 0; i < mdl.header.n_limbs; ++i) {
+	const vxl_header& hdr = mdl.header;
+	volumes.resize(hdr.n_limbs);
+	for (uint32_t i = 0; i < hdr.n_limbs; ++i) {
 		wrapBool(readLimb(stream, mdl, i, volumes))
 	}
 	return true;
@@ -155,28 +156,29 @@ bool VXLFormat::readLimbFooter(io::FileStream& stream, vxl_mdl& mdl, uint32_t li
 }
 
 bool VXLFormat::readLimbFooters(io::FileStream& stream, vxl_mdl& mdl) const {
-	stream.seek(HeaderSize + LimbHeaderSize * mdl.header.n_limbs + mdl.header.bodysize);
-	for (uint32_t i = 0; i < mdl.header.n_limbs; ++i) {
+	const vxl_header& hdr = mdl.header;
+	stream.seek(HeaderSize + LimbHeaderSize * hdr.n_limbs + hdr.bodysize);
+	for (uint32_t i = 0; i < hdr.n_limbs; ++i) {
 		wrapBool(readLimbFooter(stream, mdl, i))
 	}
 	return true;
 }
 
 bool VXLFormat::readHeader(io::FileStream& stream, vxl_mdl& mdl) {
-	wrapBool(stream.readString(sizeof(mdl.header.filetype), mdl.header.filetype))
-	if (SDL_strcmp(mdl.header.filetype, "Voxel Animation")) {
+	vxl_header& hdr = mdl.header;
+	wrapBool(stream.readString(sizeof(hdr.filetype), hdr.filetype))
+	if (SDL_strcmp(hdr.filetype, "Voxel Animation")) {
 		return false;
 	}
-	wrap(stream.readInt(mdl.header.unknown))
-	wrap(stream.readInt(mdl.header.n_limbs))
-	wrap(stream.readInt(mdl.header.n_limbs2))
-	wrap(stream.readInt(mdl.header.bodysize))
-	wrap(stream.readShort(mdl.header.unknown2))
+	wrap(stream.readInt(hdr.unknown))
+	wrap(stream.readInt(hdr.n_limbs))
+	wrap(stream.readInt(hdr.n_limbs2))
+	wrap(stream.readInt(hdr.bodysize))
+	wrap(stream.readShort(hdr.unknown2))
 	_paletteSize = 256;
 	_palette.resize(_paletteSize);
 	bool valid = false;
 	for (uint32_t i = 0; i < _paletteSize; ++i) {
-		vxl_header& hdr = mdl.header;
 		wrap(stream.readByte(hdr.palette[i][0]))
 		wrap(stream.readByte(hdr.palette[i][1]))
 		wrap(stream.readByte(hdr.palette[i][2]))
@@ -189,7 +191,7 @@ bool VXLFormat::readHeader(io::FileStream& stream, vxl_mdl& mdl) {
 		// convert to our palette
 		const MaterialColorArray& materialColors = getMaterialColors();
 		for (uint32_t i = 0; i < _paletteSize; ++i) {
-			const uint8_t *p = mdl.header.palette[i];
+			const uint8_t *p = hdr.palette[i];
 			const glm::vec4& color = core::Color::fromRGBA(p[0], p[1], p[2], 0xff);
 			const int index = core::Color::getClosestMatch(color, materialColors);
 			Log::info("Convert color %i:%i:%i to index: %i", p[0], p[1], p[2], index);
@@ -203,13 +205,14 @@ bool VXLFormat::readHeader(io::FileStream& stream, vxl_mdl& mdl) {
 }
 
 bool VXLFormat::prepareModel(vxl_mdl& mdl) const {
-	if (mdl.header.n_limbs > 512) {
-		Log::error("Limb size exceeded the max allowed value of 512: %u", mdl.header.n_limbs);
+	const vxl_header& hdr = mdl.header;
+	if (hdr.n_limbs > 512) {
+		Log::error("Limb size exceeded the max allowed value of 512: %u", hdr.n_limbs);
 		return false;
 	}
-	mdl.limb_headers = new vxl_limb_header[mdl.header.n_limbs];
-	mdl.limb_bodies = new vxl_limb_body[mdl.header.n_limbs];
-	mdl.limb_tailers = new vxl_limb_tailer[mdl.header.n_limbs];
+	mdl.limb_headers = new vxl_limb_header[hdr.n_limbs];
+	mdl.limb_bodies = new vxl_limb_body[hdr.n_limbs];
+	mdl.limb_tailers = new vxl_limb_tailer[hdr.n_limbs];
 	return true;
 }
 
