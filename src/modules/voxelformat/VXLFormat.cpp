@@ -128,7 +128,7 @@ bool VXLFormat::readLimbHeader(io::FileStream& stream, vxl_mdl& mdl, uint32_t li
 }
 
 bool VXLFormat::readLimbHeaders(io::FileStream& stream, vxl_mdl& mdl) const {
-	stream.seek(HeaderSize);
+	wrap(stream.seek(HeaderSize))
 	for (uint32_t i = 0; i < mdl.header.n_limbs; ++i) {
 		wrapBool(readLimbHeader(stream, mdl, i))
 	}
@@ -157,7 +157,7 @@ bool VXLFormat::readLimbFooter(io::FileStream& stream, vxl_mdl& mdl, uint32_t li
 
 bool VXLFormat::readLimbFooters(io::FileStream& stream, vxl_mdl& mdl) const {
 	const vxl_header& hdr = mdl.header;
-	stream.seek(HeaderSize + LimbHeaderSize * hdr.n_limbs + hdr.bodysize);
+	wrap(stream.seek(HeaderSize + LimbHeaderSize * hdr.n_limbs + hdr.bodysize))
 	for (uint32_t i = 0; i < hdr.n_limbs; ++i) {
 		wrapBool(readLimbFooter(stream, mdl, i))
 	}
@@ -168,6 +168,7 @@ bool VXLFormat::readHeader(io::FileStream& stream, vxl_mdl& mdl) {
 	vxl_header& hdr = mdl.header;
 	wrapBool(stream.readString(sizeof(hdr.filetype), hdr.filetype))
 	if (SDL_strcmp(hdr.filetype, "Voxel Animation")) {
+		Log::error("Invalid vxl header");
 		return false;
 	}
 	wrap(stream.readInt(hdr.unknown))
