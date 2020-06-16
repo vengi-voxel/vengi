@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "check.h"
+#include "string_util.h"
 
 namespace benchmark {
 
@@ -48,11 +49,19 @@ void BenchmarkReporter::PrintBasicContext(std::ostream *out,
     Out << "CPU Caches:\n";
     for (auto &CInfo : info.caches) {
       Out << "  L" << CInfo.level << " " << CInfo.type << " "
-          << (CInfo.size / 1000) << "K";
+          << (CInfo.size / 1024) << " KiB";
       if (CInfo.num_sharing != 0)
         Out << " (x" << (info.num_cpus / CInfo.num_sharing) << ")";
       Out << "\n";
     }
+  }
+  if (!info.load_avg.empty()) {
+    Out << "Load Average: ";
+    for (auto It = info.load_avg.begin(); It != info.load_avg.end();) {
+      Out << StrFormat("%.2f", *It++);
+      if (It != info.load_avg.end()) Out << ", ";
+    }
+    Out << "\n";
   }
 
   if (info.scaling_enabled) {
@@ -70,7 +79,16 @@ void BenchmarkReporter::PrintBasicContext(std::ostream *out,
 // No initializer because it's already initialized to NULL.
 const char *BenchmarkReporter::Context::executable_name;
 
-BenchmarkReporter::Context::Context() : cpu_info(CPUInfo::Get()) {}
+BenchmarkReporter::Context::Context()
+    : cpu_info(CPUInfo::Get()), sys_info(SystemInfo::Get()) {}
+
+std::string BenchmarkReporter::Run::benchmark_name() const {
+  std::string name = run_name.str();
+  if (run_type == RT_Aggregate) {
+    name += "_" + aggregate_name;
+  }
+  return name;
+}
 
 double BenchmarkReporter::Run::GetAdjustedRealTime() const {
   double new_time = real_accumulated_time * GetTimeUnitMultiplier(time_unit);

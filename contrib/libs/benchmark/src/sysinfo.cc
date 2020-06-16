@@ -19,6 +19,7 @@
 #undef StrCat  // Don't let StrCat in string_util.h be renamed to lstrcatA
 #include <versionhelpers.h>
 #include <windows.h>
+#include <codecvt>
 #else
 #include <fcntl.h>
 #ifndef BENCHMARK_OS_FUCHSIA
@@ -36,6 +37,9 @@
 #if defined(BENCHMARK_OS_SOLARIS)
 #include <kstat.h>
 #endif
+#if defined(BENCHMARK_OS_QNX)
+#include <sys/syspage.h>
+#endif
 
 #include <algorithm>
 #include <array>
@@ -52,6 +56,7 @@
 #include <limits>
 #include <memory>
 #include <sstream>
+#include <locale>
 
 #include "check.h"
 #include "cycleclock.h"
@@ -207,6 +212,9 @@ bool ReadFromFile(std::string const& fname, ArgT* arg) {
 bool CpuScalingEnabled(int num_cpus) {
   // We don't have a valid CPU count, so don't even bother.
   if (num_cpus <= 0) return false;
+#ifdef BENCHMARK_OS_QNX
+  return false;
+#endif
 #ifndef BENCHMARK_OS_WINDOWS
   // On Linux, the CPUfreq subsystem exposes CPU information as files on the
   // local file system. If reading the exported files fails, then we may not be
@@ -262,7 +270,7 @@ std::vector<CPUInfo::CacheInfo> GetCacheSizesFromKVFS() {
       else if (f && suffix != "K")
         PrintErrorAndDie("Invalid cache size format: Expected bytes ", suffix);
       else if (suffix == "K")
-        info.size *= 1000;
+        info.size *= 1024;
     }
     if (!ReadFromFile(StrCat(FPath, "type"), &info.type))
       PrintErrorAndDie("Failed to read from file ", FPath, "type");
@@ -288,7 +296,7 @@ std::vector<CPUInfo::CacheInfo> GetCacheSizesMacOSX() {
     std::string name;
     std::string type;
     int level;
-    size_t num_sharing;
+    uint64_t num_sharing;
   } Cases[] = {{"hw.l1dcachesize", "Data", 1, CacheCounts[1]},
                {"hw.l1icachesize", "Instruction", 1, CacheCounts[1]},
                {"hw.l2cachesize", "Unified", 2, CacheCounts[2]},
@@ -354,6 +362,40 @@ std::vector<CPUInfo::CacheInfo> GetCacheSizesWindows() {
   }
   return res;
 }
+#elif BENCHMARK_OS_QNX
+std::vector<CPUInfo::CacheInfo> GetCacheSizesQNX() {
+  std::vector<CPUInfo::CacheInfo> res;
+  struct cacheattr_entry *cache = SYSPAGE_ENTRY(cacheattr);
+  uint32_t const elsize = SYSPAGE_ELEMENT_SIZE(cacheattr);
+  int num = SYSPAGE_ENTRY_SIZE(cacheattr) / elsize ;
+  for(int i = 0; i < num; ++i ) {
+    CPUInfo::CacheInfo info;
+    switch (cache->flags){
+      case CACHE_FLAG_INSTR :
+        info.type = "Instruction";
+        info.level = 1;
+        break;
+      case CACHE_FLAG_DATA :
+        info.type = "Data";
+        info.level = 1;
+        break;
+      case CACHE_FLAG_UNIFIED :
+        info.type = "Unified";
+        info.level = 2;
+      case CACHE_FLAG_SHARED :
+        info.type = "Shared";
+        info.level = 3;
+      default :
+        continue;
+        break;
+    }
+    info.size = cache->line_size * cache->num_lines;
+    info.num_sharing = 0;
+    res.push_back(std::move(info));
+    cache = SYSPAGE_ARRAY_ADJ_OFFSET(cacheattr, cache, elsize);
+  }
+  return res;
+}
 #endif
 
 std::vector<CPUInfo::CacheInfo> GetCacheSizes() {
@@ -361,9 +403,51 @@ std::vector<CPUInfo::CacheInfo> GetCacheSizes() {
   return GetCacheSizesMacOSX();
 #elif defined(BENCHMARK_OS_WINDOWS)
   return GetCacheSizesWindows();
+#elif defined(BENCHMARK_OS_QNX)
+  return GetCacheSizesQNX();
 #else
   return GetCacheSizesFromKVFS();
 #endif
+}
+
+std::string GetSystemName() {
+#if defined(BENCHMARK_OS_WINDOWS)
+  std::string str;
+  const unsigned COUNT = MAX_COMPUTERNAME_LENGTH+1;
+  TCHAR  hostname[COUNT] = {'\0'};
+  DWORD DWCOUNT = COUNT;
+  if (!GetComputerName(hostname, &DWCOUNT))
+    return std::string("");
+#ifndef UNICODE
+  str = std::string(hostname, DWCOUNT);
+#else
+  //Using wstring_convert, Is deprecated in C++17
+  using convert_type = std::codecvt_utf8<wchar_t>;
+  std::wstring_convert<convert_type, wchar_t> converter;
+  std::wstring wStr(hostname, DWCOUNT);
+  str = converter.to_bytes(wStr);
+#endif
+  return str;
+#else // defined(BENCHMARK_OS_WINDOWS)
+#ifndef HOST_NAME_MAX
+#ifdef BENCHMARK_HAS_SYSCTL // BSD/Mac Doesnt have HOST_NAME_MAX defined
+#define HOST_NAME_MAX 64
+#elif defined(BENCHMARK_OS_NACL)
+#define HOST_NAME_MAX 64
+#elif defined(BENCHMARK_OS_QNX)
+#define HOST_NAME_MAX 154
+#elif defined(BENCHMARK_OS_RTEMS)
+#define HOST_NAME_MAX 256
+#else
+#warning "HOST_NAME_MAX not defined. using 64"
+#define HOST_NAME_MAX 64
+#endif
+#endif // def HOST_NAME_MAX
+  char hostname[HOST_NAME_MAX];
+  int retVal = gethostname(hostname, HOST_NAME_MAX);
+  if (retVal != 0) return std::string("");
+  return std::string(hostname);
+#endif // Catch-all POSIX block.
 }
 
 int GetNumCPUs() {
@@ -390,6 +474,8 @@ int GetNumCPUs() {
             strerror(errno));
   }
   return NumCPU;
+#elif defined(BENCHMARK_OS_QNX)
+  return static_cast<int>(_syspage_ptr->num_cpu);
 #else
   int NumCPUs = 0;
   int MaxID = -1;
@@ -404,7 +490,13 @@ int GetNumCPUs() {
     if (ln.empty()) continue;
     size_t SplitIdx = ln.find(':');
     std::string value;
+#if defined(__s390__)
+    // s390 has another format in /proc/cpuinfo
+    // it needs to be parsed differently
+    if (SplitIdx != std::string::npos) value = ln.substr(Key.size()+1,SplitIdx-Key.size()-1);
+#else
     if (SplitIdx != std::string::npos) value = ln.substr(SplitIdx + 1);
+#endif
     if (ln.size() >= Key.size() && ln.compare(0, Key.size(), Key) == 0) {
       NumCPUs++;
       if (!value.empty()) {
@@ -563,12 +655,33 @@ double GetCPUCyclesPerSecond() {
   double clock_hz = knp->value.ui64;
   kstat_close(kc);
   return clock_hz;
+#elif defined (BENCHMARK_OS_QNX)
+  return static_cast<double>((int64_t)(SYSPAGE_ENTRY(cpuinfo)->speed) *
+                             (int64_t)(1000 * 1000));
 #endif
   // If we've fallen through, attempt to roughly estimate the CPU clock rate.
   const int estimate_time_ms = 1000;
   const auto start_ticks = cycleclock::Now();
   SleepForMilliseconds(estimate_time_ms);
   return static_cast<double>(cycleclock::Now() - start_ticks);
+}
+
+std::vector<double> GetLoadAvg() {
+#if (defined BENCHMARK_OS_FREEBSD || defined(BENCHMARK_OS_LINUX) || \
+    defined BENCHMARK_OS_MACOSX || defined BENCHMARK_OS_NETBSD ||  \
+    defined BENCHMARK_OS_OPENBSD) && !defined(__ANDROID__)
+  constexpr int kMaxSamples = 3;
+  std::vector<double> res(kMaxSamples, 0.0);
+  const int nelem = getloadavg(res.data(), kMaxSamples);
+  if (nelem < 1) {
+    res.clear();
+  } else {
+    res.resize(nelem);
+  }
+  return res;
+#else
+  return {};
+#endif
 }
 
 }  // end namespace
@@ -582,6 +695,14 @@ CPUInfo::CPUInfo()
     : num_cpus(GetNumCPUs()),
       cycles_per_second(GetCPUCyclesPerSecond()),
       caches(GetCacheSizes()),
-      scaling_enabled(CpuScalingEnabled(num_cpus)) {}
+      scaling_enabled(CpuScalingEnabled(num_cpus)),
+      load_avg(GetLoadAvg()) {}
 
+
+const SystemInfo& SystemInfo::Get() {
+  static const SystemInfo* info = new SystemInfo();
+  return *info;
+}
+
+SystemInfo::SystemInfo() : name(GetSystemName()) {}
 }  // end namespace benchmark

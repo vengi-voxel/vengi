@@ -3,6 +3,10 @@ set(SRCS
 	src/benchmark_api_internal.h
 	src/benchmark.cc
 	src/benchmark_register.cc
+	src/benchmark_api_internal.cc
+	src/benchmark_name.cc
+	src/benchmark_runner.h
+	src/benchmark_runner.cc
 	src/check.h
 	src/colorprint.cc
 	src/colorprint.h
@@ -33,6 +37,7 @@ set(SRCS
 	src/timers.cc
 	src/timers.h
 )
+
 
 set(LIB benchmark)
 engine_add_library(
