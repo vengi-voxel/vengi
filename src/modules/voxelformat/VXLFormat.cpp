@@ -16,13 +16,13 @@ namespace voxel {
 
 #define wrap(read) \
 	if (read != 0) { \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
+		Log::error("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if (!(read)) { \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
+		Log::error("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
 		return false; \
 	}
 
@@ -346,7 +346,7 @@ bool VXLFormat::readHeader(io::FileStream& stream, vxl_mdl& mdl) {
 	wrap(stream.readInt(hdr.bodysize))
 	wrap(stream.readShort(hdr.unknown2))
 
-	Log::debug("Found %u libs", hdr.n_limbs);
+	Log::debug("Found %u limbs", hdr.n_limbs);
 
 	_paletteSize = 256;
 	_palette.resize(_paletteSize);
