@@ -61,6 +61,14 @@ public:
 		(*this)[_size] = value;
 	}
 
+	const TYPE& front() const {
+		return _items[0];
+	}
+
+	TYPE& front() {
+		return _items[0];
+	}
+
 	constexpr TYPE* begin() {
 		return _items;
 	}

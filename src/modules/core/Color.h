@@ -6,7 +6,7 @@
 
 #include <glm/fwd.hpp>
 #include <glm/vec4.hpp>
-#include <vector>
+#include <float.h>
 
 namespace core {
 
@@ -51,7 +51,37 @@ public:
 		LightBrown,
 		DarkBrown;
 
-	static int getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>& colors);
+	static float getDistance(const glm::vec4& color, float hue, float saturation, float brightness);
+
+	/**
+	 * @brief Get the nearest matching color index from the list
+	 * @param color The color to find the closest match to in the given @c colors array
+	 * @return index in the colors vector or the first entry if non was found, or @c -1 on error
+	 */
+	template<class T>
+	static int getClosestMatch(const glm::vec4& color, const T& colors) {
+		if (colors.empty()) {
+			return -1;
+		}
+
+		float minDistance = FLT_MAX;
+		int minIndex = -1;
+
+		float hue;
+		float saturation;
+		float brightness;
+		getHSB(color, hue, saturation, brightness);
+
+		for (size_t i = 0; i < colors.size(); ++i) {
+			const float val = getDistance(colors[i], hue, saturation, brightness);
+			if (val < minDistance) {
+				minDistance = val;
+				minIndex = (int)i;
+			}
+		}
+		return minIndex;
+	}
+
 	static glm::vec4 fromRGB(const unsigned int rgbInt, const float a = 1.0f);
 	static glm::vec4 fromRGBA(const unsigned int rgbaInt);
 	static glm::vec4 fromARGB(const unsigned int argbInt);

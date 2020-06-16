@@ -11,7 +11,6 @@
 #include <glm/gtc/epsilon.hpp>
 
 #include <SDL.h>
-#include <limits.h>
 
 namespace core {
 
@@ -42,49 +41,6 @@ const glm::vec4 Color::Cyan         = glm::vec4(  0.f, 255, 255, 255) / glm::vec
 const glm::vec4 Color::Brown        = glm::vec4(107.f,  66,  38, 255) / glm::vec4(Color::magnitudef);
 const glm::vec4 Color::LightBrown   = glm::vec4(150.f, 107,  72, 255) / glm::vec4(Color::magnitudef);
 const glm::vec4 Color::DarkBrown    = glm::vec4( 82.f,  43,  26, 255) / glm::vec4(Color::magnitudef);
-
-/**
- * @brief Get the nearest matching color index from the list
- * @param color The color to find the closest match to in the given @c colors array
- * @return index in the colors vector or the first entry if non was found, or @c -1 on error
- */
-int Color::getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>& colors) {
-	if (colors.empty()) {
-		Log::error("");
-		return -1;
-	}
-	const float weightHue = 0.8f;
-	const float weightSaturation = 0.1f;
-	const float weightValue = 0.1f;
-
-	float minDistance = FLT_MAX;
-
-	int minIndex = -1;
-
-	float hue;
-	float saturation;
-	float brightness;
-	core::Color::getHSB(color, hue, saturation, brightness);
-
-	for (size_t i = 0; i < colors.size(); ++i) {
-		float chue;
-		float csaturation;
-		float cbrightness;
-		core::Color::getHSB(colors[i], chue, csaturation, cbrightness);
-
-		const float dH = chue - hue;
-		const float dS = csaturation - saturation;
-		const float dV = cbrightness - brightness;
-		const float val = weightHue * glm::pow(dH, 2) +
-				weightValue * glm::pow(dV, 2) +
-				weightSaturation * glm::pow(dS, 2);
-		if (val < minDistance) {
-			minDistance = val;
-			minIndex = (int)i;
-		}
-	}
-	return minIndex;
-}
 
 glm::vec4 Color::fromRGB(const unsigned int rgbInt, const float a) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
@@ -194,6 +150,25 @@ glm::vec4 Color::fromHex(const char* hex) {
 		a = 0xff;
 	}
 	return fromRGBA(r, g, b, a);
+}
+
+float Color::getDistance(const glm::vec4& color, float hue, float saturation, float brightness) {
+	float chue;
+	float csaturation;
+	float cbrightness;
+	core::Color::getHSB(color, chue, csaturation, cbrightness);
+
+	const float weightHue = 0.8f;
+	const float weightSaturation = 0.1f;
+	const float weightValue = 0.1f;
+
+	const float dH = chue - hue;
+	const float dS = csaturation - saturation;
+	const float dV = cbrightness - brightness;
+	const float val = weightHue * glm::pow(dH, 2) +
+			weightValue * glm::pow(dV, 2) +
+			weightSaturation * glm::pow(dS, 2);
+	return val;
 }
 
 unsigned int Color::getRGB(const glm::vec4& color) {
