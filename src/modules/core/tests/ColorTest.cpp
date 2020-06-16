@@ -43,4 +43,35 @@ TEST_F(ColorTest, testHex) {
 	EXPECT_EQ(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), core::Color::fromHex("#ff0000ff"));
 }
 
+TEST_F(ColorTest, testClosestMatchExact) {
+	const glm::vec4 color(0.5f, 0.5f, 0.5f, 1.0f);
+	const std::vector<glm::vec4>& colors {
+		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+		glm::vec4(0.5f, 0.5f, 0.1f, 1.0f),
+		glm::vec4(0.5f, 0.5f, 0.4f, 1.0f),
+		color, // exact match
+		glm::vec4(0.4f, 0.4f, 0.4f, 1.0f),
+		glm::vec4(0.3f, 0.3f, 0.3f, 1.0f),
+		glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)
+	};
+	const int index = core::Color::getClosestMatch(color, colors);
+	EXPECT_EQ(3, index);
+}
+
+TEST_F(ColorTest, testClosestMatch) {
+	const glm::vec4 color(0.5f, 0.5f, 0.5f, 1.0f);
+	const std::vector<glm::vec4>& colors {
+		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+		glm::vec4(0.5f, 0.5f, 0.3f, 1.0f),
+		glm::vec4(0.3f, 0.3f, 0.3f, 1.0f),
+		glm::vec4(0.46f, 0.46f, 0.46f, 1.0f), // closest match
+		glm::vec4(0.5f, 0.5f, 0.4f, 1.0f),
+		glm::vec4(0.5f, 0.5f, 0.1f, 1.0f),
+		glm::vec4(0.4f, 0.4f, 0.4f, 1.0f),
+		glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)
+	};
+	const int index = core::Color::getClosestMatch(color, colors);
+	EXPECT_EQ(3, index);
+}
+
 }

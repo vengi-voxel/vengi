@@ -5,6 +5,7 @@
 #include "Color.h"
 #include "core/Common.h"
 #include "core/GLM.h"
+#include "core/Log.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -45,16 +46,20 @@ const glm::vec4 Color::DarkBrown    = glm::vec4( 82.f,  43,  26, 255) / glm::vec
 /**
  * @brief Get the nearest matching color index from the list
  * @param color The color to find the closest match to in the given @c colors array
- * @return index in the colors vector or the first entry if non was found
+ * @return index in the colors vector or the first entry if non was found, or @c -1 on error
  */
 int Color::getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>& colors) {
+	if (colors.empty()) {
+		Log::error("");
+		return -1;
+	}
 	const float weightHue = 0.8f;
 	const float weightSaturation = 0.1f;
 	const float weightValue = 0.1f;
 
 	float minDistance = FLT_MAX;
 
-	int minIndex = 0;
+	int minIndex = -1;
 
 	float hue;
 	float saturation;
