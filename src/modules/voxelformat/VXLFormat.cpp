@@ -16,13 +16,13 @@ namespace voxel {
 
 #define wrap(read) \
 	if (read != 0) { \
-		Log::error("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if (!(read)) { \
-		Log::error("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
 		return false; \
 	}
 
