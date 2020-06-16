@@ -40,30 +40,29 @@ public:
 		}
 		_initialized = true;
 		_dirty = true;
-		const int colors = paletteBufferSize / 4;
-		if (colors != 256) {
+		_materialColors.reserve(256);
+		const size_t colors = paletteBufferSize / 4;
+		if (colors != _materialColors.capacity()) {
 			Log::error("Palette image has invalid dimensions - we need 256x1(depth: 4)");
 			return false;
 		}
-		_materialColors.reserve(colors);
 		const uint32_t* paletteData = (const uint32_t*)paletteBuffer;
-		for (int i = 0; i < colors; ++i) {
+		for (size_t i = 0; i < colors; ++i) {
 			_materialColors.emplace_back(core::Color::fromRGBA(*paletteData));
 			++paletteData;
 		}
 		Log::info("Set up %i material colors", (int)_materialColors.size());
 
-		if (_materialColors.size() != (size_t)colors) {
+		if (_materialColors.size() != colors) {
 			return false;
 		}
 
-		_colorMapping.put(voxel::VoxelType::Generic, MaterialColorIndices());
-		MaterialColorIndices& generic = (MaterialColorIndices&)_colorMapping.find(voxel::VoxelType::Generic)->value;
-		generic.resize(colors - 1);
-		// 0 is VoxelType::Air - don't add it
-		for (int i = 0; i < colors - 1; ++i) {
-			generic[i] = i + 1;
+		MaterialColorIndices generic;
+		generic.reserve(colors);
+		for (size_t i = 0; i < colors; ++i) {
+			generic.push_back(i);
 		}
+		_colorMapping.put(voxel::VoxelType::Generic, generic);
 
 		if (luaString.empty()) {
 			Log::warn("No materials defined in lua script");
@@ -92,7 +91,7 @@ public:
 							indices.push_back(index);
 							mc->_colorMapping.put((VoxelType)j, indices);
 						} else {
-							((MaterialColorIndices&)i->value).push_back(index);
+							i->value.push_back(index);
 						}
 						break;
 					}

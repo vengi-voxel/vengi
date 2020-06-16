@@ -1355,9 +1355,9 @@ bool SceneManager::randomSimilarColor(uint8_t oldIndex, uint8_t density, uint8_t
 			return false;
 		}
 	};
-	std::vector<glm::vec4> colors = voxel::getMaterialColors();
+	voxel::MaterialColorArray colors = voxel::getMaterialColors();
 	const glm::vec4 color = colors[oldIndex];
-	std::vector<uint8_t> newColorIndices;
+	voxel::MaterialColorIndices newColorIndices;
 	newColorIndices.resize(colorCount);
 	int maxColorIndices = 0;
 	auto colorIter = colors.begin();
