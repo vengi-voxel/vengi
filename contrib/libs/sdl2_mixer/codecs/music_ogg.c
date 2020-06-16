@@ -215,7 +215,7 @@ static int OGG_UpdateSection(OGG_music *music)
         music->stream = NULL;
     }
 
-    music->stream = SDL_NewAudioStream(AUDIO_S16, (Uint8)vi->channels, (int)vi->rate,
+    music->stream = SDL_NewAudioStream(AUDIO_S16SYS, (Uint8)vi->channels, (int)vi->rate,
                                        music_spec.format, music_spec.channels, music_spec.freq);
     if (!music->stream) {
         return -1;
@@ -421,7 +421,7 @@ static int OGG_GetSome(void *context, void *data, int bytes, SDL_bool *done)
 #ifdef OGG_USE_TREMOR
     amount = (int)vorbis.ov_read(&music->vf, music->buffer, music->buffer_size, &section);
 #else
-    amount = (int)vorbis.ov_read(&music->vf, music->buffer, music->buffer_size, 0, 2, 1, &section);
+    amount = (int)vorbis.ov_read(&music->vf, music->buffer, music->buffer_size, SDL_BYTEORDER == SDL_BIG_ENDIAN, 2, 1, &section);
 #endif
     if (amount < 0) {
         set_ov_error("ov_read", amount);
