@@ -246,8 +246,8 @@ bool VXLFormat::readLimb(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx,
 
 		wrap(stream.seek(dataStart + colStart[i]))
 
-		uint8_t x = (uint8_t)(i % footer.xsize);
-		uint8_t y = (uint8_t)(i / footer.xsize);
+		const uint8_t x = (uint8_t)(i % footer.xsize);
+		const uint8_t y = (uint8_t)(i / footer.xsize);
 		uint8_t z = 0;
 		do {
 			uint8_t skipCount;
