@@ -22,7 +22,7 @@ endfunction()
 #            time.
 #
 function(engine_add_executable)
-	set(_OPTIONS_ARGS WINDOWED NOINSTALL NATIVE)
+	set(_OPTIONS_ARGS WINDOWED NOINSTALL)
 	set(_ONE_VALUE_ARGS TARGET)
 	set(_MULTI_VALUE_ARGS SRCS LUA_SRCS FILES)
 
@@ -76,9 +76,6 @@ function(engine_add_executable)
 	set(INSTALL_DATA_DIR "${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
 	set(INSTALL_ICON_DIR "${CMAKE_INSTALL_DATADIR}/icons")
 	set(INSTALL_APPLICATION_DIR "${CMAKE_INSTALL_DATADIR}/applications")
-	if (${_EXE_NATIVE})
-		message(STATUS "Build native ${_EXE_TARGET}")
-	endif()
 
 	if (_EXE_NOINSTALL)
 		set(INSTALL_DATA False)
@@ -202,9 +199,7 @@ endfunction()
 
 #
 # Use this function to add binaries that are needed to build the project. E.g.
-# generating code. This is handled a little bit different than the usual engine_add_module
-# in a way that it takes care of cross compiling. In a cross compiling environment
-# you still get the native running code generator.
+# generating code.
 #
 function(engine_add_build_executable)
 	set(_OPTIONS_ARGS WINDOWED NOINSTALL)
@@ -213,25 +208,8 @@ function(engine_add_build_executable)
 
 	cmake_parse_arguments(_EXE "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
 
-	if(CMAKE_CROSSCOMPILING)
-		set(NATIVE_BINARY "${NATIVE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
-		add_custom_target("build-native-${_EXE_TARGET}"
-			COMMAND ${CMAKE_COMMAND}
-				--build "${NATIVE_BUILD_DIR}"
-				--target "${_EXE_TARGET}"
-			DEPENDS ${NATIVE_BUILD_TARGET}
-			BYPRODUCTS ${NATIVE_BINARY}
-			WORKING_DIRECTORY ${NATIVE_BUILD_DIR}
-			VERBATIM USES_TERMINAL
-		)
-
-		add_executable(${_EXE_TARGET} IMPORTED)
-		add_dependencies(${_EXE_TARGET} "build-native-${_EXE_TARGET}")
-		set_property(TARGET ${_EXE_TARGET} PROPERTY IMPORTED_LOCATION ${NATIVE_BINARY})
-	else()
-		engine_add_executable("${ARGN};NATIVE")
-		set_property(TARGET ${_EXE_TARGET}  PROPERTY INTERPROCEDURAL_OPTIMIZATION False)
-	endif()
+	engine_add_executable("${ARGN}")
+	set_property(TARGET ${_EXE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION False)
 endfunction()
 
 #

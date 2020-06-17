@@ -38,28 +38,14 @@ macro(generate_compute_shaders TARGET)
 			convert_to_camel_case(${_file} _f)
 			set(_shaderfile "${_f}Shader.h")
 			set(_shader "${GEN_DIR}${_shaderfile}")
-			# TODO We have to add the shader/ dirs of all dependencies to the include path
-			if (CMAKE_CROSS_COMPILING)
-				message(STATUS "Looking for native tool in ${NATIVE_BUILD_DIR}")
-				find_program(COMPUTESHADERTOOL_EXECUTABLE NAMES vengi-computeshadertool PATHS ${NATIVE_BUILD_DIR}/computeshadertool)
-				add_custom_command(
-					OUTPUT ${_shader}.in
-					IMPLICIT_DEPENDS C ${_shaders}
-					COMMENT "Validate ${_file} and generate ${_shaderfile}"
-					COMMAND ${COMPUTESHADERTOOL_EXECUTABLE} --shader ${_dir}/${_file} -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
-					DEPENDS ${_shaders} ${_template}
-					VERBATIM
-				)
-			else()
-				add_custom_command(
-					OUTPUT ${_shader}.in
-					IMPLICIT_DEPENDS C ${_shaders}
-					COMMENT "Validate ${_file} and generate ${_shaderfile}"
-					COMMAND computeshadertool --shader ${_dir}/${_file} -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
-					DEPENDS computeshadertool ${_shaders} ${_template}
-					VERBATIM
-				)
-			endif()
+			add_custom_command(
+				OUTPUT ${_shader}.in
+				IMPLICIT_DEPENDS C ${_shaders}
+				COMMENT "Validate ${_file} and generate ${_shaderfile}"
+				COMMAND computeshadertool --shader ${_dir}/${_file} -I ${_dir} ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shadertemplate ${_template} --sourcedir ${GEN_DIR}
+				DEPENDS computeshadertool ${_shaders} ${_template}
+				VERBATIM
+			)
 			list(APPEND _headers ${_shader})
 			add_custom_command(
 				OUTPUT ${_shader}
