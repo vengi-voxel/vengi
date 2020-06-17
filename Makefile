@@ -23,9 +23,12 @@ distclean:
 deb:
 	$(Q)debuild -b -ui -uc -us
 
+crosscompile:
+	$(Q)dockcross $(CMAKE) -H. -B$(BUILDDIR) $(CMAKE_OPTIONS)
+	$(Q)dockcross $(CMAKE) --build $(BUILDDIR) --target all
+
 windows:
-	$(Q)dockcross $(CMAKE) -H. -Bbuild $(CMAKE_OPTIONS)
-	$(Q)dockcross $(CMAKE) --build build --target all
+	$(Q)$(MAKE) crosscompile TARGET_OS=$@ BUILDDIR=$(BUILDDIR)/$@
 
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
