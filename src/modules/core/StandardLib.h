@@ -26,6 +26,10 @@
 #define core_memcpy SDL_memcpy
 #endif
 
+#ifndef core_memcmp
+#define core_memcmp SDL_memcmp
+#endif
+
 #ifndef core_zero
 #define core_zero SDL_zero
 #endif
