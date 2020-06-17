@@ -7,10 +7,12 @@
 #include "IMetricSender.h"
 #include "core/String.h"
 #include "core/concurrent/Lock.h"
-#include <stdint.h>
 #include "core/Trace.h"
 
-#ifdef WIN32
+#include <stdint.h>
+#include <SDL_platform.h>
+
+#ifdef __WINDOWS__
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif

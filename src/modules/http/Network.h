@@ -4,7 +4,8 @@
 
 #pragma once
 
-#ifdef WIN32
+#include <SDL_platform.h>
+#ifdef __WINDOWS__
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif

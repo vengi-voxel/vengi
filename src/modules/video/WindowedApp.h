@@ -13,6 +13,7 @@
 #include "video/Types.h"
 #include "video/Trace.h"
 #include "video/Version.h"
+#include <SDL_main.h>
 #include <functional>
 #include <glm/vec2.hpp>
 
