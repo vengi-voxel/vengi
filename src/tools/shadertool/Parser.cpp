@@ -322,14 +322,19 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 		int arraySize = 0;
 		if (isArray) {
 			tok.next();
-			const core::String& number = tok.next();
+			if (tok.peekNext() == "]") {
+				// dynamic sized array (ssbo)
+				arraySize = -1;
+			} else {
+				const core::String& number = tok.next();
+				arraySize = core::string::toInt(number);
+				if (arraySize == 0) {
+					arraySize = -1;
+					Log::warn("Warning in %s:%i:%i. Could not determine array size for %s (%s)", tok.file(), tok.line(), tok.col(), name.c_str(), number.c_str());
+				}
+			}
 			core_assert_always(tok.next() == "]");
 			core_assert_always(tok.next() == ";");
-			arraySize = core::string::toInt(number);
-			if (arraySize == 0) {
-				arraySize = -1;
-				Log::warn("Warning in %s:%i:%i. Could not determine array size for %s (%s)", tok.file(), tok.line(), tok.col(), name.c_str(), number.c_str());
-			}
 		}
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
 		if (uniformBlock) {
