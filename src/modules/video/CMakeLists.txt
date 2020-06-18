@@ -6,6 +6,7 @@ set(SRCS
 	gl/GLShader.cpp
 	gl/GLHelper.cpp gl/GLHelper.h
 	Buffer.cpp Buffer.h
+	BufferLockMgr.cpp BufferLockMgr.h
 	Camera.cpp Camera.h
 	Cubemap.cpp Cubemap.h
 	DriverHints.cpp
@@ -13,6 +14,7 @@ set(SRCS
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h
 	IndirectDrawBuffer.cpp IndirectDrawBuffer.h
+	PersistentMappingBuffer.cpp PersistentMappingBuffer.h
 	Renderer.cpp Renderer.h
 	RenderBuffer.cpp RenderBuffer.h
 	Shader.cpp Shader.h

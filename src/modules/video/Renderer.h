@@ -255,7 +255,8 @@ extern IdPtr genSync();
  * @see genSync()
  * @see deleteSync()
  */
-extern bool waitForSync(IdPtr id, uint64_t timeout = 0ul);
+extern bool waitForClientSync(IdPtr id, uint64_t timeout = 0ul, bool syncFlushCommands = true);
+extern bool waitForSync(IdPtr id);
 extern void deleteSync(IdPtr& id);
 extern void deleteShader(Id& id);
 extern Id genShader(ShaderType type);

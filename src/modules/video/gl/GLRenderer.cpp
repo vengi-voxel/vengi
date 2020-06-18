@@ -728,7 +728,23 @@ void deleteSync(IdPtr& id) {
 	id = InvalidId;
 }
 
-bool waitForSync(IdPtr id, uint64_t timeout) {
+bool waitForClientSync(IdPtr id, uint64_t timeout, bool syncFlushCommands) {
+	video_trace_scoped(WaitForClientSync);
+	if (id == InvalidIdPtr) {
+		return false;
+	}
+	static_assert(sizeof(IdPtr) >= sizeof(GLsync), "Unexpected sizes");
+#if SANITY_CHECKS_GL
+	if (!glIsSync((GLsync)id)) {
+		return false;
+	}
+#endif
+	const GLenum val = glClientWaitSync((GLsync)id, syncFlushCommands ? GL_SYNC_FLUSH_COMMANDS_BIT : (GLbitfield)0, (GLuint64)timeout);
+	checkError();
+	return val == GL_ALREADY_SIGNALED || val == GL_CONDITION_SATISFIED;
+}
+
+bool waitForSync(IdPtr id) {
 	video_trace_scoped(WaitForSync);
 	if (id == InvalidIdPtr) {
 		return false;
@@ -739,9 +755,9 @@ bool waitForSync(IdPtr id, uint64_t timeout) {
 		return false;
 	}
 #endif
-	const GLenum val = glClientWaitSync((GLsync)id, GL_SYNC_FLUSH_COMMANDS_BIT, (GLuint64)timeout);
+	glWaitSync((GLsync)id, (GLbitfield)0, GL_TIMEOUT_IGNORED);
 	checkError();
-	return val != GL_TIMEOUT_EXPIRED;
+	return true;
 }
 
 void genVertexArrays(uint8_t amount, Id* ids) {
