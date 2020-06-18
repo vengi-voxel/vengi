@@ -420,7 +420,6 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	video::ScopedShader scoped(_voxelShader);
 	if (_voxelShader.isDirty()) {
 		_voxelShader.setMaterialblock(_materialBlock);
-		_voxelShader.setModel(glm::mat4(1.0f));
 		if (_shadowMap->boolVal()) {
 			_voxelShader.setShadowmap(video::TextureUnit::One);
 		}
