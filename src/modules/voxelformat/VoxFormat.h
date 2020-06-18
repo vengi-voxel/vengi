@@ -30,6 +30,16 @@ private:
 		uint32_t nextChunkPos;
 	};
 
+	struct RotationMatrixPacked {
+		uint8_t nonZeroEntryInFirstRow : 2;
+		uint8_t nonZeroEntryInSecondRow : 2;
+		uint8_t signInFirstRow : 1;
+		uint8_t signInSecondRow : 1;
+		uint8_t signInThirdRow : 1;
+		uint8_t unused : 1;
+	};
+	static_assert(sizeof(RotationMatrixPacked) == 1, "packed rotation matrix should be 1 byte");
+
 	using Attributes = core::StringMap<core::String>;
 	using NodeId = uint32_t;
 

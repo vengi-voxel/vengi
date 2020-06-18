@@ -139,13 +139,17 @@ bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId chi
 	wrapBool(stream.addInt(0)) // layerid ???
 	wrapBool(stream.addInt(1)) // num frames
 	if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
-		const core::String attributeName = "_t";
-		const core::String& translationStr = core::string::format("%i %i %i", mins.x, mins.z, mins.y);
-		wrapBool(saveAttributes({{attributeName, translationStr}}, stream))
+		constexpr glm::mat3 rot(1.0f);
+		const glm::vec3& newMins = rot * glm::vec3(mins);
+		const core::String& translationStr = core::string::format("%i %i %i", (int)newMins.x, (int)newMins.z, (int)newMins.y);
+		uint8_t packedRot = 0u;
+		RotationMatrixPacked* r = (RotationMatrixPacked*)&packedRot;
+		r->nonZeroEntryInSecondRow = 1;
+		const core::String& rotationStr = core::string::format("%i", (uint32_t)packedRot);
+		wrapBool(saveAttributes({{"_t", translationStr}, {"_r", rotationStr}}, stream))
 	} else {
 		wrapBool(saveAttributes({}, stream))
 	}
-	// TODO: add _r
 	++_chunks;
 	return true;
 }
@@ -714,35 +718,30 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attribute
 	if (rot == attributes.end()) {
 		return true;
 	}
-	// This method was found in the magicavoxel discord community chat. Posted by eisenwave
-	constexpr uint32_t row2IndexTable[] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, 2, UINT32_MAX, 1, 0, UINT32_MAX};
-	const core::String& rotation = rot->second;
 
-	const uint8_t bits = core::string::toInt(rotation);
-	const uint32_t indicesOfOnesPerRow[] {
-		(bits >> 0) & 0b11u,
-		(bits >> 2) & 0b11u,
-		row2IndexTable[(1 << indicesOfOnesPerRow[0]) | (1 << indicesOfOnesPerRow[1])]
-	};
+	const uint8_t packed = core::string::toInt(rot->second);
+	const RotationMatrixPacked *packedRot = (const RotationMatrixPacked *)&packed;
+	const uint8_t nonZeroEntryInThirdRow = 3u - (packedRot->nonZeroEntryInFirstRow + packedRot->nonZeroEntryInSecondRow);
 
-	if (indicesOfOnesPerRow[2] == UINT32_MAX) {
-		Log::error("Invalid rotation matrix found");
+	// sanity checks
+	if (packedRot->nonZeroEntryInFirstRow == packedRot->nonZeroEntryInSecondRow) {
+		Log::error("Rotation column indices invalid");
+		return false;
+	}
+	if (packedRot->nonZeroEntryInFirstRow > 2 || packedRot->nonZeroEntryInSecondRow > 2 || nonZeroEntryInThirdRow > 2) {
+		Log::error("Rotation column indices out of bounds");
 		return false;
 	}
 
-	glm::mat3x3 mat3(1.0f);
-	for (size_t i = 0; i < 3; ++i) {
-		const uint8_t sign = (bits >> (i + 4)) & 1;
-		const uint32_t indexOfOne = indicesOfOnesPerRow[i];
-		mat3[i][(indexOfOne + 0) % 3] = 1 - static_cast<int8_t>(2 * sign);
-		mat3[i][(indexOfOne + 1) % 3] = 0;
-		mat3[i][(indexOfOne + 2) % 3] = 0;
-	}
+	glm::mat3x3 rotMat(0.0f);
+	rotMat[0][packedRot->nonZeroEntryInFirstRow] = packedRot->signInFirstRow ? -1.0f : 1.0f;
+	rotMat[1][packedRot->nonZeroEntryInSecondRow] = packedRot->signInSecondRow ? -1.0f : 1.0f;
+	rotMat[2][nonZeroEntryInThirdRow] = packedRot->signInThirdRow ? -1.0f : 1.0f;
 
 	for (int i = 0; i < 3; ++i) {
-		Log::debug("mat3[%i]: %.2f, %.2f, %.2f", i, mat3[i][0], mat3[i][1], mat3[i][2]);
+		Log::debug("mat3[%i]: %.2f, %.2f, %.2f", i, rotMat[i][0], rotMat[i][1], rotMat[i][2]);
 	}
-	transform.rotation = glm::quat_cast(mat3);
+	transform.rotation = glm::quat_cast(rotMat);
 
 	return true;
 }
