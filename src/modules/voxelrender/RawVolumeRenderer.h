@@ -12,6 +12,7 @@
 #include "voxel/Mesh.h"
 #include "render/Shadow.h"
 #include "video/UniformBuffer.h"
+#include "video/IndirectDrawBuffer.h"
 #include "video/Texture.h"
 #include "core/GLM.h"
 #include "core/Var.h"
@@ -47,6 +48,9 @@ protected:
 	typedef core::Array<voxel::Mesh*, MAX_VOLUMES> Meshes;
 	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
 	MeshesMap _meshes;
+
+	video::IndirectDrawBuffer _indirectDrawBuffer;
+	video::DrawElementsIndirectCommand _drawCommands[MAX_VOLUMES];
 
 	video::Buffer _vertexBuffer[MAX_VOLUMES];
 	shader::VoxelData _materialBlock;

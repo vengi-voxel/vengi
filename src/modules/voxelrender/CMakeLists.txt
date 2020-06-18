@@ -9,9 +9,10 @@ set(SRCS
 set(SRCS_SHADERS
 	shaders/_material.vert
 	shaders/voxel.vert shaders/voxel.frag
+	shaders/voxel_indirect.vert shaders/voxel_indirect.frag
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render voxelfont voxelformat)
-generate_shaders(${LIB} voxel)
+generate_shaders(${LIB} voxel voxel_indirect)
 
 set(TEST_SRCS
 	tests/MaterialTest.cpp

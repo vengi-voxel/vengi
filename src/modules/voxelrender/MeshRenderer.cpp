@@ -126,7 +126,6 @@ void MeshRenderer::renderShadows(const video::Camera& camera) {
 void MeshRenderer::prepareShader(const video::Camera& camera) {
 	if (_voxelShader.isDirty()) {
 		_voxelShader.setMaterialblock(_materialBlock);
-		_voxelShader.setModel(glm::mat4(1.0f));
 		_voxelShader.setShadowmap(video::TextureUnit::One);
 		_voxelShader.setDiffuseColor(frontend::diffuseColor);
 		_voxelShader.setAmbientColor(frontend::ambientColor);

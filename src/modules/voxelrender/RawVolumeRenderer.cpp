@@ -101,6 +101,10 @@ bool RawVolumeRenderer::init() {
 		_vertexBuffer[idx].addAttribute(attributeInfo);
 	}
 
+	if (!_indirectDrawBuffer.init()) {
+		return false;
+	}
+
 	render::ShadowParameters shadowParams;
 	shadowParams.maxDepthBuffers = shader::VoxelShaderConstants::getMaxDepthBuffers();
 	if (!_shadow.init(shadowParams)) {
@@ -381,24 +385,31 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		voxel::materialColorMarkClean();
 	}
 
+	core_memset(_drawCommands, 0, sizeof(_drawCommands));
+
 	uint32_t numIndices = 0u;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		if (_hidden[idx]) {
 			continue;
 		}
-		numIndices += _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
-		if (numIndices > 0) {
-			break;
+		const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
+		if (nIndices <= 0) {
+			continue;
 		}
+		numIndices += nIndices;
+		_drawCommands[idx].count = nIndices;
+		_drawCommands[idx].instanceCount = 1;
 	}
 	if (numIndices == 0u) {
 		return;
 	}
+	core_assert_always(_indirectDrawBuffer.update(_drawCommands, sizeof(_drawCommands)));
 
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::ScopedState scopedCullFace(video::State::CullFace);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
+	_indirectDrawBuffer.bind();
 	if (_shadowMap->boolVal()) {
 		_shadow.update(camera, true);
 		if (shadow) {
@@ -406,17 +417,14 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 			_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
 				_shadowMapShader.setLightviewprojection(lightViewProjection);
 				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-					if (_hidden[idx]) {
-						continue;
-					}
-					const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
-					if (nIndices == 0) {
+					if (_drawCommands[idx].count <= 0u) {
 						continue;
 					}
 					video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 					_shadowMapShader.setModel(_model[idx]);
 					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-					video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
+					void* bufferOffset = (void*)(intptr_t)(idx * sizeof(_drawCommands[0]));
+					video::drawElementsIndirect<voxel::IndexType>(video::Primitive::Triangles, bufferOffset);
 				}
 				return true;
 			}, true);
@@ -448,20 +456,17 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	}
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		if (_hidden[idx]) {
-			continue;
-		}
-		const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
-		if (nIndices == 0) {
+		if (_drawCommands[idx].count <= 0u) {
 			continue;
 		}
 		const glm::vec2 offset(-0.25f * idx, -0.5f * idx);
 		video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
 		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 		_voxelShader.setModel(_model[idx]);
-		static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
+		void* bufferOffset = (void*)(intptr_t)(idx * sizeof(_drawCommands[0]));
+		video::drawElementsIndirect<voxel::IndexType>(video::Primitive::Triangles, bufferOffset);
 	}
+	_indirectDrawBuffer.unbind();
 }
 
 bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model) {
@@ -518,6 +523,7 @@ std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
 	_materialBlock.shutdown();
+	_indirectDrawBuffer.shutdown();
 	for (auto& iter : _meshes) {
 		for (auto& mesh : iter.second) {
 			delete mesh;
