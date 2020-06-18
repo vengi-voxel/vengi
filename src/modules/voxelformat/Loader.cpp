@@ -26,8 +26,8 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		return false;
 	}
 	const core::String& ext = filePtr->extension();
-	if (ext == "qbt") {
-		voxel::QBTFormat f;
+	if (ext == "qb") {
+		voxel::QBFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
@@ -36,8 +36,8 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "qb") {
-		voxel::QBFormat f;
+	} else if (ext == "qbt") {
+		voxel::QBTFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
@@ -91,14 +91,14 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 	}
 
 	const core::String& ext = filePtr->extension();
-	if (ext == "qbt") {
-		voxel::QBTFormat f;
+	if (ext == "qb") {
+		voxel::QBFormat f;
 		return f.saveGroups(volumes, filePtr);
 	} else if (ext == "vox") {
 		voxel::VoxFormat f;
 		return f.saveGroups(volumes, filePtr);
-	} else if (ext == "qb") {
-		voxel::QBFormat f;
+	} else if (ext == "qbt") {
+		voxel::QBTFormat f;
 		return f.saveGroups(volumes, filePtr);
 	} else if (ext == "cub") {
 		voxel::CubFormat f;
