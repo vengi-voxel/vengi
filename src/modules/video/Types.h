@@ -176,6 +176,7 @@ enum class BufferType {
 	TransformBuffer,
 	PixelBuffer,
 	ShaderStorageBuffer,
+	IndirectBuffer,
 
 	Max
 };

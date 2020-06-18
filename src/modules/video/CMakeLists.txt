@@ -12,6 +12,7 @@ set(SRCS
 	FrameBuffer.cpp FrameBuffer.h
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h
+	IndirectDrawBuffer.cpp IndirectDrawBuffer.h
 	Renderer.cpp Renderer.h
 	RenderBuffer.cpp RenderBuffer.h
 	Shader.cpp Shader.h

@@ -33,6 +33,21 @@ typedef core::SharedPtr<Texture> TexturePtr;
 class TextureConfig;
 class StencilConfig;
 
+typedef struct alignas(16) {
+	uint32_t count;				// to the number of used vertices
+	uint32_t instanceCount = 1; // instances to draw of the current object
+	uint32_t firstIndex = 0;	// the location of the first vertex relative the current object
+	uint32_t baseInstance = 0;	// the first instance to be rendered
+} DrawArraysIndirectCommand;
+
+typedef struct alignas(16) {
+	uint32_t count;				// to the number of used vertices
+	uint32_t instanceCount = 1; // instances to draw of the current object
+	uint32_t firstIndex = 0;	// the location of the first vertex relative the current object
+	uint32_t baseVertex = 0;	// location of first vertex of the current object
+	uint32_t baseInstance = 0;	// the first instance to be rendered
+} DrawElementsIndirectCommand;
+
 namespace _priv {
 
 template<typename DATATYPE>
@@ -221,6 +236,11 @@ extern void* mapBuffer(Id handle, BufferType type, AccessMode mode);
 extern bool bindBuffer(BufferType type, Id handle);
 extern bool unbindBuffer(BufferType type);
 extern bool bindBufferBase(BufferType type, Id handle, uint32_t index = 0u);
+/**
+ * @note Buffer must be bound already
+ * @return Persistent mapped buffer storage pointer
+ */
+extern uint8_t *bufferStorage(BufferType type, size_t size);
 extern void genBuffers(uint8_t amount, Id* ids);
 extern Id genBuffer();
 extern void deleteBuffers(uint8_t amount, Id* ids);
@@ -297,6 +317,10 @@ extern void uploadTexture(video::TextureType type, video::TextureFormat format, 
 extern void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset = nullptr);
 extern void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount);
 extern void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex);
+extern void drawElementsIndirect(Primitive mode, DataType type, void* offset);
+inline void drawMultiElementsIndirect(Primitive mode, DataType type, void* offset, size_t commandSize, size_t stride = 0u);
+extern void drawArraysIndirect(Primitive mode, void* offset);
+inline void drawMultiArraysIndirect(Primitive mode, void* offset, size_t commandSize, size_t stride = 0u);
 extern void drawArrays(Primitive mode, size_t count);
 extern void drawInstancedArrays(Primitive mode, size_t count, size_t amount);
 extern void disableDebug();
@@ -329,6 +353,16 @@ inline void drawElements(Primitive mode, size_t numIndices, void* offset = nullp
 
 inline void drawElements(Primitive mode, size_t numIndices, size_t indexSize, void* offset = nullptr) {
 	drawElements(mode, numIndices, mapIndexTypeBySize(indexSize), offset);
+}
+
+template<class IndexType>
+inline void drawElementsIndirect(Primitive mode, void* offset) {
+	drawElementsIndirect(mode, mapType<IndexType>(), offset);
+}
+
+template<class IndexType>
+inline void drawMultiElementsIndirect(Primitive mode, void* offset, size_t commandSize) {
+	drawMultiElementsIndirect(mode, mapType<IndexType>(), offset, commandSize);
 }
 
 template<class IndexType>

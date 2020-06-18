@@ -129,7 +129,8 @@ static const GLenum BufferTypes[] {
 	GL_UNIFORM_BUFFER,
 	GL_TRANSFORM_FEEDBACK_BUFFER,
 	GL_PIXEL_UNPACK_BUFFER,
-	GL_SHADER_STORAGE_BUFFER
+	GL_SHADER_STORAGE_BUFFER,
+	GL_DRAW_INDIRECT_BUFFER
 };
 static_assert(core::enumVal(BufferType::Max) == lengthof(BufferTypes), "Array sizes don't match Max");
 

@@ -648,6 +648,18 @@ bool bindBuffer(BufferType type, Id handle) {
 	return true;
 }
 
+uint8_t *bufferStorage(BufferType type, size_t size) {
+	const int typeIndex = core::enumVal(type);
+	if (_priv::s.bufferHandle[typeIndex] == InvalidId) {
+		return nullptr;
+	}
+	const GLbitfield storageFlags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+	glBufferStorage(GL_ARRAY_BUFFER, (GLsizeiptr)size, nullptr, storageFlags);
+
+	const GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+	return (uint8_t*)glMapBufferRange(GL_ARRAY_BUFFER, 0, (GLsizeiptr)size, access);
+}
+
 bool unbindBuffer(BufferType type) {
 	const int typeIndex = core::enumVal(type);
 	if (_priv::s.bufferHandle[typeIndex] == InvalidId) {
@@ -1392,14 +1404,37 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 	core_assert(type != TextureType::Max);
 	if (type == TextureType::Texture1D) {
 		core_assert(height == 1);
-		glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const void*)data);
+		glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
 	} else if (type == TextureType::Texture2D) {
-		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const void*)data);
+		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
 		checkError();
 	} else {
-		glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const void*)data);
+		glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
 		checkError();
 	}
+}
+
+void drawElementsIndirect(Primitive mode, DataType type, void* offset) {
+	video_trace_scoped(DrawElementsIndirect);
+	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
+	video::validate(_priv::s.programHandle);
+	glDrawElementsIndirect(glMode, glType, (const GLvoid*)offset);
+	checkError();
+}
+
+void drawMultiElementsIndirect(Primitive mode, DataType type, void* offset, size_t commandSize, size_t stride) {
+	video_trace_scoped(DrawMultiElementsIndirect);
+	if (commandSize <= 0u) {
+		return;
+	}
+	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
+	video::validate(_priv::s.programHandle);
+	glMultiDrawElementsIndirect(glMode, glType, (const GLvoid*)offset, (GLsizei)commandSize, (GLsizei)stride);
+	checkError();
 }
 
 void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset) {
@@ -1411,7 +1446,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
 	video::validate(_priv::s.programHandle);
-	glDrawElements(glMode, (GLsizei)numIndices, glType, offset);
+	glDrawElements(glMode, (GLsizei)numIndices, glType, (GLvoid*)offset);
 	checkError();
 }
 
@@ -1449,6 +1484,27 @@ void drawArrays(Primitive mode, size_t count) {
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	video::validate(_priv::s.programHandle);
 	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
+	checkError();
+}
+
+void drawArraysIndirect(Primitive mode, void* offset) {
+	video_trace_scoped(DrawArraysIndirect);
+	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	video::validate(_priv::s.programHandle);
+	glDrawArraysIndirect(glMode, (const GLvoid*)&offset);
+	checkError();
+}
+
+void drawMultiArraysIndirect(Primitive mode, void* offset, size_t commandSize, size_t stride) {
+	video_trace_scoped(DrawMultiArraysIndirect);
+	if (commandSize <= 0u) {
+		return;
+	}
+	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	video::validate(_priv::s.programHandle);
+	glMultiDrawArraysIndirect(glMode, (const GLvoid*)offset, (GLsizei)commandSize, (GLsizei)stride);
 	checkError();
 }
 
