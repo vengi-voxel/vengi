@@ -169,8 +169,6 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 }
 
 bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core::String& shaderFile, const core::String& buffer, bool vertex) {
-	bool uniformBlock = false;
-
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
 	std::vector<std::string> files;
@@ -184,7 +182,9 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 
 	TokenIterator rawtok;
 	rawtok.init(&rawtokens);
+
 	bool preprocessorError = false;
+
 	while (rawtok.hasNext()) {
 		core::String token = rawtok.next();
 		if (rawtok.op() != '#') {
@@ -216,7 +216,13 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 
 	simplecpp::Location loc(files);
 	std::stringstream comment;
-	UniformBlock block;
+
+	BufferBlock uniformBuffer;
+	bool uniformBufferActive = false;
+
+	BufferBlock shaderStorageBuffer;
+	bool shaderStorageBufferActive = false;
+	bool shaderStorageBufferFound = false;
 
 	TokenIterator tok;
 	tok.init(&output);
@@ -266,26 +272,42 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 				Log::warn("Warning in %s:%i:%i. Could not parse layout", tok.file(), tok.line(), tok.col());
 			}
 		} else if (token == "buffer") {
-			Log::warn("SSBO not supported");
+			shaderStorageBufferFound = true;
 		} else if (token == "uniform") {
 			v = &shaderStruct.uniforms;
 		} else if (hasLayout && token == "in") {
 			shaderStruct.in.layout = layout;
 		} else if (hasLayout && token == "out") {
 			shaderStruct.out.layout = layout;
-		} else if (uniformBlock) {
+		} else if (uniformBufferActive) {
 			if (token == "}") {
-				uniformBlock = false;
-				hasLayout = false;
-				Log::trace("End of uniform block: %s", block.name.c_str());
-				shaderStruct.uniformBlocks.insert(block);
+				uniformBufferActive = false;
+				if (hasLayout) {
+					hasLayout = false;
+					uniformBuffer.layout = layout;
+				}
+				Log::trace("End of uniform block: %s", uniformBuffer.name.c_str());
+				shaderStruct.uniformBlocks.insert(uniformBuffer);
+				core_assert_always(tok.next() == ";");
+			} else {
+				tok.prev();
+			}
+		} else if (shaderStorageBufferActive) {
+			if (token == "}") {
+				shaderStorageBufferActive = false;
+				if (hasLayout) {
+					hasLayout = false;
+					shaderStorageBuffer.layout = layout;
+				}
+				Log::trace("End of buffer block: %s", shaderStorageBuffer.name.c_str());
+				shaderStruct.bufferBlocks.insert(shaderStorageBuffer);
 				core_assert_always(tok.next() == ";");
 			} else {
 				tok.prev();
 			}
 		}
 
-		if (v == nullptr && !uniformBlock) {
+		if (v == nullptr && !uniformBufferActive && !shaderStorageBufferActive && !shaderStorageBufferFound) {
 			continue;
 		}
 
@@ -309,12 +331,20 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 		}
 		core::String name = tok.next();
 		Log::trace("token: %s", name.c_str());
-		// uniform block
+		// uniform block or buffer block
 		if (name == "{") {
-			block.name = type;
-			block.members.clear();
-			Log::trace("Found uniform block: %s", type.c_str());
-			uniformBlock = true;
+			if (shaderStorageBufferFound) {
+				shaderStorageBuffer.name = type;
+				shaderStorageBuffer.members.clear();
+				Log::trace("Found uniform or buffer block: %s", type.c_str());
+				shaderStorageBufferActive = true;
+				shaderStorageBufferFound = false;
+			} else {
+				uniformBuffer.name = type;
+				uniformBuffer.members.clear();
+				Log::trace("Found uniform or buffer block: %s", type.c_str());
+				uniformBufferActive = true;
+			}
 			continue;
 		}
 		const Variable::Type typeEnum = util::getType(type, tok.line());
@@ -337,9 +367,9 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 			core_assert_always(tok.next() == ";");
 		}
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
-		if (uniformBlock) {
-			block.members.insert(Variable{typeEnum, name, arraySize});
-		} else {
+		if (uniformBufferActive) {
+			uniformBuffer.members.insert(Variable{typeEnum, name, arraySize});
+		} else if (!shaderStorageBufferActive) {
 			bool found = false;
 			for (auto i = v->begin(); i != v->end(); ++i) {
 				if (i->value.name == name) {
@@ -362,8 +392,12 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 			}
 		}
 	}
-	if (uniformBlock) {
+	if (uniformBufferActive) {
 		Log::error("Parsing error - still inside a uniform block");
+		return false;
+	}
+	if (shaderStorageBufferActive) {
+		Log::error("Parsing error - still inside a buffer block");
 		return false;
 	}
 	return true;

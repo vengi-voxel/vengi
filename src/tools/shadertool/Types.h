@@ -152,7 +152,7 @@ struct PrimitiveType {
 	const char* str;
 };
 
-struct UniformBlock {
+struct BufferBlock {
 	core::String name;
 	core::List<Variable> members;
 	Layout layout;
@@ -169,7 +169,10 @@ struct ShaderStruct {
 	core::List<Variable> uniforms;
 	core::StringMap<Layout> layouts;
 	core::StringMap<core::String> constants;
-	core::List<UniformBlock> uniformBlocks;
+	// ubo
+	core::List<BufferBlock> uniformBlocks;
+	// ssbo
+	core::List<BufferBlock> bufferBlocks;
 	// vertex only
 	core::List<Variable> attributes;
 	// vertex only

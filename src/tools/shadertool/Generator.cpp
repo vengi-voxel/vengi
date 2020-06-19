@@ -548,7 +548,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		ub += ";\n";
 		ub += "\t}\n";
 		prototypes += "\n\t/**\n";
-		prototypes += "\t * @brief The the uniform buffer for the uniform block ";
+		prototypes += "\t * @brief The uniform buffer for the uniform block ";
 		prototypes += ubuf.name;
 		prototypes += "\n";
 		prototypes += "\t */\n";
@@ -576,6 +576,26 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			Log::error("Failed to write %s", targetFileUb.c_str());
 			return false;
 		}
+	}
+
+	if (!shaderStruct.bufferBlocks.empty()) {
+		methods += "\n";
+	}
+
+	for (auto & buf : shaderStruct.bufferBlocks) {
+		const core::String& name = util::convertName(buf.name, true);
+		prototypes += "\n\t/**\n";
+		prototypes += "\t * @brief Get the binding index of the buffer object ";
+		prototypes += buf.name;
+		prototypes += "\n";
+		prototypes += "\t */\n";
+		prototypes += "\tinline int getBinding";
+		prototypes += name;
+		prototypes += "() {\n";
+		prototypes += "\t\treturn ";
+		prototypes += core::string::toString(buf.layout.binding);
+		prototypes += ";\n";
+		prototypes += "\t}\n";
 	}
 
 	core::String constants;
