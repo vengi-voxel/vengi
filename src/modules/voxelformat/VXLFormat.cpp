@@ -348,7 +348,7 @@ bool VXLFormat::readHeader(io::FileStream& stream, vxl_mdl& mdl) {
 
 	Log::debug("Found %u limbs", hdr.n_limbs);
 
-	_paletteSize = 256;
+	_paletteSize = MaxPaletteColors;
 	_palette.resize(_paletteSize);
 	bool valid = false;
 	for (uint32_t i = 0; i < _paletteSize; ++i) {
@@ -378,13 +378,10 @@ bool VXLFormat::readHeader(io::FileStream& stream, vxl_mdl& mdl) {
 
 bool VXLFormat::prepareModel(vxl_mdl& mdl) const {
 	const vxl_header& hdr = mdl.header;
-	if (hdr.n_limbs > 512) {
-		Log::error("Limb size exceeded the max allowed value of 512: %u", hdr.n_limbs);
+	if (hdr.n_limbs > MaxLimbs) {
+		Log::error("Limb size exceeded the max allowed value: %u", hdr.n_limbs);
 		return false;
 	}
-	mdl.limb_headers = new vxl_limb_header[hdr.n_limbs];
-	mdl.limb_bodies = new vxl_limb_body[hdr.n_limbs];
-	mdl.limb_tailers = new vxl_limb_tailer[hdr.n_limbs];
 	return true;
 }
 

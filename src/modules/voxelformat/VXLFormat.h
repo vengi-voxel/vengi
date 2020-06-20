@@ -16,6 +16,8 @@ namespace voxel {
  */
 class VXLFormat : public VoxFileFormat {
 private:
+	static constexpr size_t MaxLimbs = 512;
+	static constexpr size_t MaxPaletteColors = 256;
 	struct vxl_limb_header {
 		char limb_name[16];			/* ASCIIZ string - name of section */
 		uint32_t limb_number;		/* Limb number */
@@ -28,13 +30,13 @@ private:
 		uint8_t *span_data;			/* Byte data for each span length */
 	};
 	struct vxl_header {
-		char filetype[16];			/* ASCIIZ string - "Voxel Animation" */
-		uint32_t unknown;			/* Always 1 - number of animation frames? */
-		uint32_t n_limbs;			/* Number of limb headers/bodies/tailers */
-		uint32_t n_limbs2;			/* Always the same as n_limbs */
-		uint32_t bodysize;			/* Total size in bytes of all limb bodies */
-		uint16_t unknown2;			/* Always 0x1f10 - ID or end of header code? */
-		uint8_t palette[256][3];	/* 256 colour palette for the voxel in RGB format */
+		char filetype[16];					  /* ASCIIZ string - "Voxel Animation" */
+		uint32_t unknown;					  /* Always 1 - number of animation frames? */
+		uint32_t n_limbs;					  /* Number of limb headers/bodies/tailers */
+		uint32_t n_limbs2;					  /* Always the same as n_limbs */
+		uint32_t bodysize;					  /* Total size in bytes of all limb bodies */
+		uint16_t unknown2;					  /* Always 0x1f10 - ID or end of header code? */
+		uint8_t palette[MaxPaletteColors][3]; /* 256 colour palette for the voxel in RGB format */
 	};
 	struct vxl_limb_tailer {
 		uint32_t span_start_off;	/* Offset into body section to span start list */
@@ -48,15 +50,10 @@ private:
 		uint8_t type;				/* Always 2? type? unknown */
 	};
 	struct vxl_mdl {
-		~vxl_mdl() {
-			delete[] limb_headers;
-			delete[] limb_bodies;
-			delete[] limb_tailers;
-		}
 		vxl_header header;
-		vxl_limb_header *limb_headers = nullptr;	/* number of limb times */
-		vxl_limb_body *limb_bodies = nullptr;		/* number of limb times */
-		vxl_limb_tailer *limb_tailers = nullptr;	/* number of limb times */
+		vxl_limb_header limb_headers[MaxLimbs];	/* number of limb times */
+		vxl_limb_body limb_bodies[MaxLimbs];	/* number of limb times */
+		vxl_limb_tailer limb_tailers[MaxLimbs];	/* number of limb times */
 		int volumeIdx = 0;
 	};
 
