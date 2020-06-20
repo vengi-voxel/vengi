@@ -576,7 +576,7 @@ bool VoxFormat::loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header
 	wrapBool(readAttributes(_models[modelId].attributes, stream))
 	_models[modelId].volumeIdx = modelId;
 	_models[modelId].nodeId = nodeId;
-	_models[modelId].nodeAttributes = std::move(nodeAttributes);
+	_models[modelId].nodeAttributes = nodeAttributes;
 	const SceneGraphNode sceneNode{modelId, SceneGraphNodeType::Shape, SceneGraphChildNodes(0)};
 	_sceneGraphMap.put(nodeId, sceneNode);
 	_leafNodes.push_back(nodeId);
