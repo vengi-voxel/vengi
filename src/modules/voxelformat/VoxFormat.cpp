@@ -528,7 +528,12 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 	const VoxTransform& finalTransform = calculateTransform(_volumeIdx);
 	const glm::ivec3& mins = calcTransform(finalTransform, rmins.x, rmins.z, rmins.y, pivot);
 	const glm::ivec3& maxs = calcTransform(finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
-	RawVolume *volume = new RawVolume(Region{mins.x, mins.z, mins.y, maxs.x, maxs.z, maxs.y});
+	const Region translatedRegion{mins.x, mins.z, mins.y, maxs.x, maxs.z, maxs.y};
+	if (!translatedRegion.isValid()) {
+		Log::error("Invalid XYZI chunk region after transform was applied");
+		return false;
+	}
+	RawVolume *volume = new RawVolume(translatedRegion);
 	int volumeVoxelSet = 0;
 	for (uint32_t i = 0; i < numVoxels; ++i) {
 		uint8_t x, y, z, colorIndex;
