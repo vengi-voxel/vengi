@@ -145,7 +145,7 @@ bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId chi
 		uint8_t packedRot = 0u;
 		RotationMatrixPacked* r = (RotationMatrixPacked*)&packedRot;
 		r->nonZeroEntryInSecondRow = 1;
-		const core::String& rotationStr = core::string::format("%i", (uint32_t)packedRot);
+		const core::String& rotationStr = core::string::format("%u", (uint32_t)packedRot);
 		wrapBool(saveAttributes({{"_t", translationStr}, {"_r", rotationStr}}, stream))
 	} else {
 		wrapBool(saveAttributes({}, stream))
