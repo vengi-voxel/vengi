@@ -532,10 +532,11 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 	const VoxTransform& finalTransform = calculateTransform(_volumeIdx);
 	const glm::ivec3& mins = calcTransform(finalTransform, rmins.x, rmins.z, rmins.y, pivot);
 	const glm::ivec3& maxs = calcTransform(finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
-	const Region translatedRegion{mins.x, mins.z, mins.y, maxs.x, maxs.z, maxs.y};
-	if (!translatedRegion.isValid()) {
-		Log::error("Invalid XYZI chunk region after transform was applied");
-		return false;
+	Region translatedRegion{mins.x, mins.z, mins.y, maxs.x, maxs.z, maxs.y};
+	const bool applyTransformation = translatedRegion.isValid();
+	if (!applyTransformation) {
+		translatedRegion = Region(rmins, rmaxs);
+		Log::warn("Invalid XYZI chunk region after transform was applied - trying without transformation");
 	}
 	RawVolume *volume = new RawVolume(translatedRegion);
 	int volumeVoxelSet = 0;
@@ -548,10 +549,16 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 		const uint8_t index = convertPaletteIndex(colorIndex);
 		voxel::VoxelType voxelType = voxel::VoxelType::Generic;
 		const voxel::Voxel& voxel = voxel::createVoxel(voxelType, index);
-		const glm::ivec3& pos = calcTransform(finalTransform, x, y, z, pivot);
 		// we have to flip the axis here
-		if (volume->setVoxel(pos.x, pos.z, pos.y, voxel)) {
-			++volumeVoxelSet;
+		if (applyTransformation) {
+			const glm::ivec3 pos = calcTransform(finalTransform, x, y, z, pivot);
+			if (volume->setVoxel(pos.x, pos.z, pos.y, voxel)) {
+				++volumeVoxelSet;
+			}
+		} else {
+			if (volume->setVoxel(x, z, y, voxel)) {
+				++volumeVoxelSet;
+			}
 		}
 	}
 	Log::info("Loaded layer %i with %i voxels (%i)", _volumeIdx, numVoxels, volumeVoxelSet);
