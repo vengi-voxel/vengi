@@ -16,8 +16,10 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/Loader.h"
+#include "ui/turbobadger/UIApp.h"
 
-#include "../VoxEdit.h"
+static PaletteWidgetFactory paletteWidget_wf;
+static LayerWidgetFactory layerWidget_wf;
 
 namespace voxedit {
 
@@ -41,7 +43,7 @@ static const struct {
 };
 static_assert(lengthof(treeTypes) == (int)voxelgenerator::TreeType::Max, "Missing support for tree types in the ui");
 
-VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
+VoxEditWindow::VoxEditWindow(ui::turbobadger::UIApp* tool) :
 		Super(tool) {
 	setSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 	for (int i = 0; i < lengthof(treeTypes); ++i) {

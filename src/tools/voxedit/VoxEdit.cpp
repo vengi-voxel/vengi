@@ -4,6 +4,7 @@
 
 #include "VoxEdit.h"
 #include "core/Color.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxel/MaterialColor.h"
 #include "core/metric/Metric.h"
 #include "core/TimeProvider.h"
@@ -11,12 +12,12 @@
 #include "core/command/Command.h"
 #include "core/command/CommandCompleter.h"
 #include "video/Renderer.h"
-#include "ui/VoxEditWindow.h"
+#include "voxedit-ui/VoxEditWindow.h"
 #include "core/io/Filesystem.h"
 #include "voxedit-util/CustomBindingContext.h"
 
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider), _mainWindow(nullptr), _sceneMgr(voxedit::sceneMgr()) {
+		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "voxedit");
 	_allowRelativeMouseMode = false;
 }
@@ -78,7 +79,7 @@ bool VoxEdit::newFile(bool force) {
 }
 
 core::AppState VoxEdit::onCleanup() {
-	_sceneMgr.shutdown();
+	voxedit::sceneMgr().shutdown();
 	return Super::onCleanup();
 }
 
@@ -87,11 +88,11 @@ void VoxEdit::onDropFile(const core::String& file) {
 		return;
 	}
 	if (_mainWindow->isPaletteWidgetDropTarget()) {
-		if (_sceneMgr.importPalette(file)) {
+		if (voxedit::sceneMgr().importPalette(file)) {
 			return;
 		}
 	}
-	if (_sceneMgr.prefab(file)) {
+	if (voxedit::sceneMgr().prefab(file)) {
 		return;
 	}
 	Log::warn("Failed to handle %s as drop file event", file.c_str());
@@ -102,7 +103,7 @@ core::AppState VoxEdit::onConstruct() {
 
 	_framesPerSecondsCap->setVal(60.0f);
 
-	_sceneMgr.construct();
+	voxedit::sceneMgr().construct();
 
 #define COMMAND_FILE(command, help) \
 	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
@@ -165,7 +166,7 @@ core::AppState VoxEdit::onInit() {
 		return state;
 	}
 
-	if (!_sceneMgr.init()) {
+	if (!voxedit::sceneMgr().init()) {
 		Log::error("Failed to initialize the scene manager");
 		return core::AppState::InitFailure;
 	}
@@ -192,7 +193,7 @@ core::AppState VoxEdit::onInit() {
 		const char *file = _argv[_argc - 1];
 		const io::FilePtr& filePtr = filesystem()->open(file);
 		if (filePtr->exists()) {
-			_sceneMgr.load(filePtr->name());
+			voxedit::sceneMgr().load(filePtr->name());
 		}
 	}
 

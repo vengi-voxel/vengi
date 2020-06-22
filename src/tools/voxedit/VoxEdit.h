@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ui/turbobadger/UIApp.h"
-#include "ui/VoxEditWindow.h"
+#include "voxedit-ui/VoxEditWindow.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/ArrayLength.h"
 
@@ -17,8 +17,7 @@
 class VoxEdit: public ui::turbobadger::UIApp {
 private:
 	using Super = ui::turbobadger::UIApp;
-	voxedit::VoxEditWindow* _mainWindow;
-	voxedit::SceneManager& _sceneMgr;
+	voxedit::VoxEditWindow* _mainWindow = nullptr;
 
 public:
 	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

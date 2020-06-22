@@ -97,5 +97,3 @@ void PaletteWidget::onInflate(const tb::INFLATE_INFO &info) {
 	_amountX = info.node->getValueInt("amount-x", 8);
 	Super::onInflate(info);
 }
-
-static PaletteWidgetFactory paletteWidget_wf;

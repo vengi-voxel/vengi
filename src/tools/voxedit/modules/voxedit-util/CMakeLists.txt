@@ -43,7 +43,7 @@ gtest_suite_deps(tests ${LIB})
 gtest_suite_files(tests ${TEST_FILES})
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
-gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../../../modules/core/tests/AbstractTest.cpp)
+gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../../../../modules/core/tests/AbstractTest.cpp)
 gtest_suite_files(tests-${LIB} ${TEST_FILES})
 gtest_suite_deps(tests-${LIB} ${LIB})
 gtest_suite_end(tests-${LIB})

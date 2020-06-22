@@ -15,9 +15,14 @@
 #include "voxelgenerator/TreeContext.h"
 
 class Viewport;
-class VoxEdit;
 class PaletteWidget;
 class LayerWidget;
+
+namespace ui {
+namespace turbobadger {
+class UIApp;
+}
+}
 
 namespace voxedit {
 
@@ -25,7 +30,6 @@ namespace voxedit {
  * @brief Voxel editing tools panel
  */
 class VoxEditWindow: public ui::turbobadger::Window {
-	friend class ::VoxEdit;
 private:
 	using Super = ui::turbobadger::Window;
 	Viewport* _scene = nullptr;
@@ -130,12 +134,15 @@ private:
 
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
-	void resetCamera();
 	void quit();
 
 	void updateStatusBar();
 
 	void afterLoad(const core::String& file);
+public:
+	VoxEditWindow(ui::turbobadger::UIApp* tool);
+	~VoxEditWindow();
+	bool init();
 
 	// commands
 	void toggleViewport();
@@ -149,10 +156,7 @@ private:
 	bool saveScreenshot(const core::String& file);
 	bool prefab(const core::String& file);
 	bool createNew(bool force);
-public:
-	VoxEditWindow(VoxEdit* tool);
-	~VoxEditWindow();
-	bool init();
+	void resetCamera();
 
 	bool isLayerWidgetDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;

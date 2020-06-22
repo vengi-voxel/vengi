@@ -370,5 +370,3 @@ bool LayerWidget::onEvent(const tb::TBWidgetEvent &ev) {
 	}
 	return Super::onEvent(ev);
 }
-
-static LayerWidgetFactory layerWidget_wf;
