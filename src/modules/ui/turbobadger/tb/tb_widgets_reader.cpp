@@ -548,7 +548,7 @@ void TBImageWidget::onInflate(const INFLATE_INFO &info) {
 }
 
 // We can't use a linked list object since we don't know if its constructor
-// would run before of after any widget factory constructor that add itself
+// would run before or after any widget factory constructor that add itself
 // to it. Using a manual one way link list is very simple.
 TBWidgetFactory *g_registered_factories = nullptr;
 
