@@ -18,7 +18,6 @@
 #include "voxelformat/Loader.h"
 
 #include "../VoxEdit.h"
-#include <set>
 
 namespace voxedit {
 
