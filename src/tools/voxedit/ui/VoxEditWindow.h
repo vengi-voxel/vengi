@@ -127,8 +127,6 @@ private:
 	LayerSettings _layerSettings;
 	SceneSettings _settings;
 
-	core::Array<video::TexturePtr, 4> _backgrounds;
-
 	bool handleEvent(const tb::TBWidgetEvent &ev);
 
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
