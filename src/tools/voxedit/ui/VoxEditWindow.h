@@ -100,9 +100,8 @@ private:
 	tb::TBWidget *_treeSection = nullptr;
 	voxelgenerator::TreeContext _treeGeneratorContext;
 	void switchTreeType(voxelgenerator::TreeType treeType);
-	tb::TBWidget* createTreeParmeterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name);
+	tb::TBWidget* createTreeParameterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name);
 
-	core::String _voxelizeFile;
 	core::String _loadFile;
 
 	core::String _lastExecutedCommand;

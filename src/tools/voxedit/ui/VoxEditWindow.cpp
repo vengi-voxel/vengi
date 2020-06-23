@@ -204,8 +204,8 @@ bool VoxEditWindow::init() {
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #endif
 #define TREECONFIG(configType, variableName, parameterType, treeType, widget) TreeWidget{offsetof(configType, variableName), parameterType, treeType, widget}
-#define TREECONFIGINT(configType, variableName, treeType, text) TREECONFIG(configType, variableName, TreeParameterWidgetType::Int, treeType, createTreeParmeterWidget(TreeParameterWidgetType::Int, treeParameterLayout, "treeconfig-" #variableName, text))
-#define TREECONFIGFLOAT(configType, variableName, treeType, text) TREECONFIG(configType, variableName, TreeParameterWidgetType::Float, treeType, createTreeParmeterWidget(TreeParameterWidgetType::Float, treeParameterLayout, "treeconfig-" #variableName, text))
+#define TREECONFIGINT(configType, variableName, treeType, text) TREECONFIG(configType, variableName, TreeParameterWidgetType::Int, treeType, createTreeParameterWidget(TreeParameterWidgetType::Int, treeParameterLayout, "treeconfig-" #variableName, text))
+#define TREECONFIGFLOAT(configType, variableName, treeType, text) TREECONFIG(configType, variableName, TreeParameterWidgetType::Float, treeType, createTreeParameterWidget(TreeParameterWidgetType::Float, treeParameterLayout, "treeconfig-" #variableName, text))
 
 	tb::TBLayout* treeParameterLayout = getWidgetByIDAndType<tb::TBLayout>("treeparameterlayout");
 	if (treeParameterLayout != nullptr) {
@@ -293,7 +293,7 @@ bool VoxEditWindow::init() {
 	return true;
 }
 
-tb::TBWidget* VoxEditWindow::createTreeParmeterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name) {
+tb::TBWidget* VoxEditWindow::createTreeParameterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name) {
 	tb::TBWidget *value = nullptr;
 	if (type == TreeParameterWidgetType::Int) {
 		value = new tb::TBInlineSelect();
