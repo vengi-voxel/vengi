@@ -154,15 +154,6 @@ core::AppState VoxEdit::onConstruct() {
 		_mainWindow->resetCamera();
 	}).setHelp("Reset cameras in all viewports");
 
-	core::Command::registerCommand("dialog_noise", [this] (const core::CmdArgs& args) {
-		if (_mainWindow == nullptr) {
-			return;
-		}
-		tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);
-		event.ref_id = tb::TBGetHash("dialog_noise");
-		_mainWindow->invokeEvent(event);
-	}).setHelp("Opens the noise dialog");
-
 	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER, "Render the scene with voxel outlines");
 
 	return state;
