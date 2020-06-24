@@ -12,5 +12,4 @@ luac.out
 /CMakeLists.local
 .DS_Store
 autosave-*
-/.vscode
 compile_commands.json
