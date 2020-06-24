@@ -44,7 +44,7 @@ protected:
 
 	tb::MODIFIER_KEYS getModifierKeys() const;
 public:
-	UIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	UIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~UIApp();
 
 	virtual void beforeUI() {

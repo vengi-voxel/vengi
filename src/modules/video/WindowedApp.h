@@ -53,7 +53,7 @@ protected:
 	 */
 	glm::ivec2 _mouseRelativePos;
 
-	WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 
 	bool handleKeyPress(int32_t key, int16_t modifier);
 	bool handleKeyRelease(int32_t key, int16_t modifier);

@@ -158,8 +158,8 @@ static inline int mapKey(int32_t key) {
 
 tb::UIRendererGL _renderer;
 
-UIApp::UIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+UIApp::UIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
+		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize) {
 }
 
 UIApp::~UIApp() {
