@@ -18,6 +18,7 @@
 #include "video/ScopedViewPort.h"
 #include "video/TextureConfig.h"
 #include "IMGUI.h"
+#include "video/Types.h"
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <thread>
@@ -260,6 +261,7 @@ core::AppState IMGUIApp::onRunning() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
+	video::clear(video::ClearFlag::Color);
 
 	_console.update(_deltaFrameSeconds);
 
