@@ -5,6 +5,8 @@
 #pragma once
 
 #include "NoiseType.h"
+#include "video/Texture.h"
+#include <stdint.h>
 
 struct NoiseData {
 	float separation = 5.0f; // poisson
@@ -20,6 +22,6 @@ struct NoiseData {
 	NoiseType noiseType = NoiseType::Max;
 	bool enableDistance = false; // voronoi
 
-	tb::TBImage graph;
-	tb::TBImage noise;
+	video::TexturePtr graph;
+	video::TexturePtr noise;
 };
