@@ -1,10 +1,12 @@
 set(SRCS
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
-	ViewportController.h ViewportController.cpp
 	CustomBindingContext.h
 	AxisUtil.h AxisUtil.cpp
 	Config.h
+
+	AbstractViewport.h AbstractViewport.cpp
+	ViewportController.h ViewportController.cpp
 
 	anim/VolumeCache.h anim/VolumeCache.cpp
 	anim/AnimationLuaSaver.h anim/AnimationLuaSaver.cpp

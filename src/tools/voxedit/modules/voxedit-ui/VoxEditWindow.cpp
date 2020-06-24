@@ -20,6 +20,7 @@
 
 static PaletteWidgetFactory paletteWidget_wf;
 static LayerWidgetFactory layerWidget_wf;
+static ViewportFactory viewport_wf;
 
 namespace voxedit {
 

@@ -8,18 +8,16 @@
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "voxedit-util/ViewportController.h"
+#include "voxedit-util/AbstractViewport.h"
 #include "RenderShaders.h"
 
 /**
  * @brief Voxel editor scene management like input, ui and rendering.
  * @see voxedit::ViewportController
  */
-class Viewport: public ui::turbobadger::Widget {
+class Viewport: public voxedit::AbstractViewport, public ui::turbobadger::Widget {
 private:
-	shader::EdgeShader& _edgeShader;
-	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _frameBufferTexture;
-	voxedit::ViewportController _controller;
 	core::String _cameraMode;
 
 	void renderFramebuffer();
@@ -28,14 +26,6 @@ public:
 	UIWIDGET_SUBCLASS(Viewport, ui::turbobadger::Widget);
 
 	Viewport();
-	~Viewport();
-
-	video::Camera& camera();
-	void update();
-	void resetCamera();
-	bool saveImage(const char* filename);
-
-	voxedit::ViewportController& controller();
 
 	virtual void onInflate(const tb::INFLATE_INFO &info) override;
 	virtual void onProcess() override;
@@ -45,10 +35,4 @@ public:
 	virtual void onFocusChanged(bool focused) override;
 };
 
-inline voxedit::ViewportController& Viewport::controller() {
-	return _controller;
-}
-
-inline video::Camera& Viewport::camera() {
-	return _controller.camera();
-}
+UIWIDGET_FACTORY(Viewport, tb::TBValue::TYPE_NULL, tb::WIDGET_Z_TOP)

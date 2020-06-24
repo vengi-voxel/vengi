@@ -13,43 +13,8 @@
 #include "image/Image.h"
 
 Viewport::Viewport() :
-		Super(),
-		_edgeShader(shader::EdgeShader::getInstance()),
 		_frameBufferTexture((tb::UIRendererGL*) tb::g_renderer) {
 	setIsFocusable(true);
-}
-
-Viewport::~Viewport() {
-	_frameBuffer.shutdown();
-	_edgeShader.shutdown();
-}
-
-bool Viewport::saveImage(const char* filename) {
-	const video::TextureConfig& cfg = _frameBufferTexture._textureConfig;
-	core_assert(cfg.format() == video::TextureFormat::RGBA);
-	if (cfg.format() != video::TextureFormat::RGBA) {
-		return false;
-	}
-
-	core_trace_scoped(EditorSceneRenderFramebuffer);
-	_frameBuffer.bind(true);
-	voxedit::sceneMgr().render(_controller.camera(), voxedit::SceneManager::RenderScene);
-	_frameBuffer.unbind();
-
-	uint8_t *pixels;
-	if (!video::readTexture(video::TextureUnit::Upload,
-			cfg.type(), cfg.format(), _frameBufferTexture._texture,
-			_frameBufferTexture._w, _frameBufferTexture._h, &pixels)) {
-		return false;
-	}
-	image::Image::flipVerticalRGBA(pixels, _frameBufferTexture._w, _frameBufferTexture._h);
-	const bool val = image::Image::writePng(filename, pixels, _frameBufferTexture._w, _frameBufferTexture._h, 4);
-	SDL_free(pixels);
-	return val;
-}
-
-void Viewport::resetCamera() {
-	_controller.resetCamera(voxedit::sceneMgr().region());
 }
 
 bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
@@ -58,10 +23,7 @@ bool Viewport::onEvent(const tb::TBWidgetEvent &ev) {
 		const bool relative = isRelativeMouseMode();
 		const bool middle = isMiddleMouseButtonPressed();
 		const bool alt = (ev.modifierkeys & tb::TB_ALT);
-		_controller.move(relative || middle || alt, ev.target_x, ev.target_y);
-		voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
-		sceneMgr.setMousePos(_controller._mouseX, _controller._mouseY);
-		sceneMgr.setActiveCamera(&_controller.camera());
+		cursorMove(relative || middle || alt, ev.target_x, ev.target_y);
 		return true;
 	}
 	return Super::onEvent(ev);
@@ -79,16 +41,8 @@ void Viewport::onResized(int oldw, int oldh) {
 	Super::onResized(oldw, oldh);
 	const tb::TBRect& rect = getRect();
 	const glm::ivec2 frameBufferSize(rect.w, rect.h);
-	const float scaleFactor = video::getScaleFactor();
-	const glm::ivec2 windowSize(int(frameBufferSize.x / scaleFactor + 0.5f), int(frameBufferSize.y / scaleFactor + 0.5f));
-	_controller.onResize(frameBufferSize, windowSize);
-	_frameBuffer.shutdown();
-	_frameBufferTexture.shutdown();
-	video::FrameBufferConfig cfg;
-	cfg.dimension(frameBufferSize).depthBuffer(true).colorTexture(true);
-	_frameBuffer.init(cfg);
-	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
-	_frameBufferTexture.init(frameBufferSize.x, frameBufferSize.y, fboTexture->handle());
+	resize(frameBufferSize);
+	_frameBufferTexture.init(frameBufferSize.x, frameBufferSize.y, _texture->handle());
 }
 
 void Viewport::renderFramebuffer() {
@@ -160,26 +114,13 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 		mode = voxedit::ViewportController::SceneCameraMode::Left;
 	}
 	_cameraMode = cameraMode;
-	_controller.init(mode);
 
 	voxedit::ViewportController::RenderMode renderMode = voxedit::ViewportController::RenderMode::Editor;
 	const char *renderModeStr = info.node->getValueString("mode", "editor");
 	if (!SDL_strcmp(renderModeStr, "animation")) {
 		renderMode = voxedit::ViewportController::RenderMode::Animation;
 	}
-	_controller.setRenderMode(renderMode);
-
-	_edgeShader.setup();
-
-	video::ScopedShader scoped(_edgeShader);
-	_edgeShader.setModel(glm::mat4(1.0f));
-	_edgeShader.setTexture(video::TextureUnit::Zero);
-}
-
-void Viewport::update() {
-	if (_controller.renderMode() == voxedit::ViewportController::RenderMode::Editor) {
-		camera().setTarget(glm::vec3(voxedit::sceneMgr().referencePosition()));
-	}
+	init(mode, renderMode);
 }
 
 void Viewport::onProcess() {
@@ -196,19 +137,5 @@ void Viewport::onProcess() {
 		voxedit::sceneMgr().trace();
 	}
 
-	video::clearColor(core::Color::Clear);
-	{
-		core_trace_scoped(EditorSceneRenderFramebuffer);
-		_frameBuffer.bind(true);
-		if (_controller.renderMode() == voxedit::ViewportController::RenderMode::Animation) {
-			voxedit::sceneMgr().renderAnimation(_controller.camera());
-		} else {
-			voxedit::sceneMgr().render(_controller.camera());
-		}
-		_frameBuffer.unbind();
-	}
-}
-
-namespace tb {
-TB_WIDGET_FACTORY(Viewport, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
+	renderToFrameBuffer();
 }
