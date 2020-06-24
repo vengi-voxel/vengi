@@ -3,6 +3,7 @@
  */
 
 #include "RawVolumeRenderer.h"
+#include "core/Trace.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
@@ -271,6 +272,7 @@ bool RawVolumeRenderer::translate(int idx, const glm::ivec3& m) {
 }
 
 bool RawVolumeRenderer::extract(int idx, const voxel::Region& region, bool updateBuffers) {
+	core_trace_scoped(RawVolumeRendererExtract)
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
