@@ -120,6 +120,8 @@ public:
 	 */
 	bool init();
 
+	void update();
+
 	/**
 	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.
 	 * @note You take the ownership of the returned volume pointers. Don't forget to delete them.

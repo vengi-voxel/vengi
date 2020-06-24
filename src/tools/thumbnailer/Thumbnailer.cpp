@@ -130,6 +130,7 @@ core::AppState Thumbnailer::onRunning() {
 	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	_frameBuffer.init(cfg);
 
+	_renderer.update();
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_frameBuffer.bind(true);
 	_renderer.render(camera);

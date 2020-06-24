@@ -144,6 +144,7 @@ void TestVoxelFont::onRenderUI() {
 }
 
 void TestVoxelFont::doRender() {
+	_rawVolumeRenderer.update();
 	_rawVolumeRenderer.render(camera());
 }
 

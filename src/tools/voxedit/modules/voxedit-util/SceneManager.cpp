@@ -1515,6 +1515,7 @@ void SceneManager::zoom(video::Camera& camera, float level) const {
 }
 
 void SceneManager::update(double nowSeconds) {
+	_volumeRenderer.update();
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;

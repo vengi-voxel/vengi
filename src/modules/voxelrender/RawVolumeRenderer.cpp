@@ -116,6 +116,9 @@ bool RawVolumeRenderer::init() {
 	return true;
 }
 
+void RawVolumeRenderer::update() {
+}
+
 bool RawVolumeRenderer::update(int idx) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
