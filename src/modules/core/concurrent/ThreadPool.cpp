@@ -16,6 +16,13 @@ ThreadPool::ThreadPool(size_t threads, const char *name) :
 	}
 }
 
+void ThreadPool::abort() {
+	std::unique_lock lock(_queueMutex);
+	while (!_tasks.empty()) {
+		_tasks.pop();
+	}
+}
+
 void ThreadPool::init() {
 	_force = false;
 	_stop = false;

@@ -56,6 +56,7 @@ public:
 
 	size_t size() const;
 	void init();
+	void abort();
 	void shutdown(bool wait = false);
 private:
 	const size_t _threads;
