@@ -498,14 +498,30 @@ bool VoxFormat::loadChunk_SIZE(io::FileStream& stream, const ChunkHeader& header
  * @param n the number to divide
  * @return the number divided by two, rounded towards negative infinity
  */
-constexpr static int32_t div2Floor(int32_t n) {
-	return (n - (n < 0)) / 2;
+template <typename Dividend, typename Divisor,
+          std::enable_if_t<(std::is_integral_v<Dividend> && std::is_integral_v<Divisor>), int> = 0>
+constexpr auto divFloor(Dividend x, Divisor y) {
+	if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
+		return x / y;
+	} else if constexpr (std::is_signed_v<Dividend> && std::is_unsigned_v<Divisor>) {
+		auto sy = static_cast<std::make_signed_t<Divisor>>(y);
+		const bool quotientNegative = x < 0;
+		return x / sy - (x % sy != 0) * quotientNegative;
+	} else if constexpr (std::is_unsigned_v<Dividend> && std::is_signed_v<Divisor>) {
+		auto sx = static_cast<std::make_signed_t<Dividend>>(x);
+		const bool quotientNegative = y < 0;
+		return sx / y - (sx % y != 0) * quotientNegative;
+	} else {
+		const bool quotientNegative = (y < 0) != (x < 0);
+		return x / y - (x % y != 0) * quotientNegative;
+	}
 }
 
 glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, float x, float y, float z, const glm::vec3& pivot) const {
 	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - glm::ivec3(pivot);
-	const glm::vec3 pos = glm::ivec3(t.rotation * glm::vec3(c)) + t.translation;
-	return glm::ivec3(div2Floor(pos.x), div2Floor(pos.y), div2Floor(pos.z));
+	const glm::ivec3 pos = glm::ivec3(t.rotation * glm::vec3(c));
+	const glm::ivec3 rotated(divFloor(pos.x, 2), divFloor(pos.y, 2), divFloor(pos.z, 2));
+	return rotated + t.translation;
 }
 
 // 6. Chunk id 'XYZI' : model voxels
@@ -741,12 +757,13 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attribute
 	}
 
 	glm::mat3x3 rotMat(0.0f);
-	rotMat[0][packedRot->nonZeroEntryInFirstRow] = packedRot->signInFirstRow ? -1.0f : 1.0f;
-	rotMat[1][packedRot->nonZeroEntryInSecondRow] = packedRot->signInSecondRow ? -1.0f : 1.0f;
-	rotMat[2][nonZeroEntryInThirdRow] = packedRot->signInThirdRow ? -1.0f : 1.0f;
+	// glm is column major - thus we have to flip the col/row indices here
+	rotMat[packedRot->nonZeroEntryInFirstRow][0] = packedRot->signInFirstRow ? -1.0f : 1.0f;
+	rotMat[packedRot->nonZeroEntryInSecondRow][1] = packedRot->signInSecondRow ? -1.0f : 1.0f;
+	rotMat[nonZeroEntryInThirdRow][2] = packedRot->signInThirdRow ? -1.0f : 1.0f;
 
 	for (int i = 0; i < 3; ++i) {
-		Log::debug("mat3[%i]: %.2f, %.2f, %.2f", i, rotMat[i][0], rotMat[i][1], rotMat[i][2]);
+		Log::debug("mat3[%i]: %.2f, %.2f, %.2f", i, rotMat[0][i], rotMat[1][i], rotMat[2][i]);
 	}
 	transform.rotation = glm::quat_cast(rotMat);
 
