@@ -23,6 +23,7 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "VoxelShaderConstants.h"
+#include <SDL.h>
 #include <unordered_set>
 #include <algorithm>
 
@@ -65,6 +66,8 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
+
+	_threadPool.init();
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		_model[idx] = glm::mat4(1.0f);
@@ -121,6 +124,22 @@ bool RawVolumeRenderer::init() {
 }
 
 void RawVolumeRenderer::update() {
+	ExtractionCtx result;
+	int cnt = 0;
+	while (_pendingQueue.pop(result)) {
+		Meshes& meshes = _meshes[result.mins];
+		if (meshes[result.idx] != nullptr) {
+			delete meshes[result.idx];
+		}
+		meshes[result.idx] = new voxel::Mesh(std::move(result.mesh));
+		if (!update(result.idx)) {
+			Log::error("Failed to update the mesh at index %i", result.idx);
+		}
+		++cnt;
+	}
+	if (cnt > 0) {
+		Log::debug("Perform %i mesh updates in this frame", cnt);
+	}
 }
 
 bool RawVolumeRenderer::update(int idx) {
@@ -284,7 +303,7 @@ voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, con
 	return voxel::Region{mins, maxs};
 }
 
-bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region, bool updateBuffers) {
+bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 	core_trace_scoped(RawVolumeRendererExtract)
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
@@ -340,18 +359,30 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region, bool
 					continue;
 				}
 
-				Meshes& meshes = _meshes[mins];
-				if (meshes[idx] == nullptr) {
-					meshes[idx] = new voxel::Mesh(128, 128, true);
-				}
-				extractVolumeRegionToMesh(volume, extractRegion, meshes[idx]);
+				voxel::RawVolume copy(volume);
+				_threadPool.enqueue([copy{std::move(copy)}, mins, idx, extractRegion, this] () {
+					++_runningExtractorTasks;
+					voxel::Region reg = extractRegion;
+					reg.shiftUpperCorner(1, 1, 1);
+					voxel::Mesh mesh(65536, 65536, false);
+					voxel::extractCubicMesh(&copy, reg, &mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());
+					_pendingQueue.emplace(mins, idx, std::move(mesh));
+					Log::debug("Enqueue mesh for idx: %i", idx);
+					--_runningExtractorTasks;
+				});
 			}
 		}
 	}
-	if (updateBuffers && !update(idx)) {
-		Log::error("Failed to update the mesh at index %i", idx);
-	}
 	return true;
+}
+
+void RawVolumeRenderer::clearPendingExtractions() {
+	Log::debug("Clear pending extractions");
+	_threadPool.abort();
+	while (_runningExtractorTasks > 0) {
+		SDL_Delay(1);
+	}
+	_pendingQueue.clear();
 }
 
 void RawVolumeRenderer::extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const {
@@ -520,6 +551,7 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& ce
 }
 
 std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
+	_threadPool.shutdown();
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
 	_materialBlock.shutdown();

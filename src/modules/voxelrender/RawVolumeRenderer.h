@@ -5,6 +5,10 @@
 #pragma once
 
 #include "RenderShaders.h"
+#include "core/collection/ConcurrentQueue.h"
+#include "core/concurrent/Atomic.h"
+#include "core/concurrent/Concurrency.h"
+#include "core/concurrent/ThreadPool.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "video/Buffer.h"
@@ -64,6 +68,22 @@ protected:
 	glm::vec3 _diffuseColor = frontend::diffuseColor;
 	glm::vec3 _ambientColor = frontend::ambientColor;
 
+	struct ExtractionCtx {
+		ExtractionCtx() {}
+		ExtractionCtx(const glm::ivec3& _mins, int _idx, voxel::Mesh&& _mesh) :
+				mins(_mins), idx(_idx), mesh(_mesh) {
+		}
+		glm::ivec3 mins;
+		int idx;
+		voxel::Mesh mesh;
+
+		inline bool operator<(const ExtractionCtx &rhs) const {
+			return idx < rhs.idx;
+		}
+	};
+	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
+	core::AtomicInt _runningExtractorTasks { 0 };
+	core::ConcurrentQueue<ExtractionCtx> _pendingQueue;
 	void extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 
@@ -73,6 +93,8 @@ public:
 	void render(const video::Camera& camera, bool shadow = true);
 	void hide(int idx, bool hide);
 	bool hiddenState(int idx) const;
+
+	void clearPendingExtractions();
 
 	render::Shadow& shadow();
 	const render::Shadow& shadow() const;
@@ -85,7 +107,7 @@ public:
 
 	bool update(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices);
 
-	bool extractRegion(int idx, const voxel::Region& region, bool updateBuffers = true);
+	bool extractRegion(int idx, const voxel::Region& region);
 
 	bool translate(int idx, const glm::ivec3& m);
 

@@ -586,6 +586,7 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 		Log::warn("Max supported layer size exceeded: %i (max supported: %i)",
 				volumeCnt, maxLayers);
 	}
+	_volumeRenderer.clearPendingExtractions();
 	for (int idx = 0; idx < maxLayers; ++idx) {
 		_layerMgr.deleteLayer(idx, true);
 	}
@@ -641,6 +642,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	if (dirty() && !force) {
 		return false;
 	}
+	_volumeRenderer.clearPendingExtractions();
 	const int layers = _layerMgr.maxLayers();
 	for (int idx = 0; idx < layers; ++idx) {
 		_layerMgr.deleteLayer(idx, true);
@@ -1717,33 +1719,20 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 bool SceneManager::extractVolume() {
 	core_trace_scoped(SceneManagerExtract)
 	const size_t n = _extractRegions.size();
-	if (n > 0) {
-		Log::info("Extract the meshes for %i regions", (int)n);
-		// extract n regions max per frame
-		const size_t MaxPerFrame = 4;
-		const size_t x = core_min(MaxPerFrame, n);
-		int lastLayer = -1;
-		size_t i;
-		for (i = 0; i < x; ++i) {
-			const voxel::Region& region = _extractRegions[i].region;
-			const bool bigRegion = glm::all(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(64)));
-			const bool updateBuffers = bigRegion || i == x - 1 || lastLayer != _extractRegions[i].layer;
-			if (!_volumeRenderer.extractRegion(_extractRegions[i].layer, region, updateBuffers)) {
-				Log::error("Failed to extract the model mesh");
-			}
-			Log::debug("Extract layer %i with update buffers set to %i", _extractRegions[i].layer, (int)updateBuffers);
-			voxel::logRegion("Extraction", region);
-			if (bigRegion) {
-				++i;
-				break;
-			}
-			lastLayer = _extractRegions[i].layer;
-		}
-		// delete the first n entries and compact the memory of the buffer
-		RegionQueue(_extractRegions.begin() + i, _extractRegions.end()).swap(_extractRegions);
-		return true;
+	if (n <= 0) {
+		return false;
 	}
-	return false;
+	Log::info("Extract the meshes for %i regions", (int)n);
+	for (size_t i = 0; i < n; ++i) {
+		const voxel::Region& region = _extractRegions[i].region;
+		if (!_volumeRenderer.extractRegion(_extractRegions[i].layer, region)) {
+			Log::error("Failed to extract the model mesh");
+		}
+		Log::debug("Extract layer %i", _extractRegions[i].layer);
+		voxel::logRegion("Extraction", region);
+	}
+	_extractRegions.clear();
+	return true;
 }
 
 void SceneManager::noise(int octaves, float lacunarity, float frequency, float gain, voxelgenerator::noise::NoiseType type) {
