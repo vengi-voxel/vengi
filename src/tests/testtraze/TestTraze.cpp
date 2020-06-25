@@ -2,6 +2,7 @@
  * @file
  */
 #include "TestTraze.h"
+#include "core/SharedPtr.h"
 #include "core/command/Command.h"
 #include "testcore/TestAppMain.h"
 #include "voxel/MaterialColor.h"
@@ -199,7 +200,7 @@ void TestTraze::onEvent(const traze::SpawnEvent& event) {
 }
 
 void TestTraze::onEvent(const traze::NewGridEvent& event) {
-	voxel::RawVolume* v = event.get();
+	core::SharedPtr<voxel::RawVolume> v = event.get();
 	if (_spawnTime > 0.0 && _nowSeconds - _spawnTime < 4.0) {
 		const voxel::Voxel voxel = voxel::createRandomColorVoxel(voxel::VoxelType::Generic);
 		v->setVoxel(glm::ivec3(_spawnPosition.y, 0, _spawnPosition.x), voxel);
@@ -208,9 +209,9 @@ void TestTraze::onEvent(const traze::NewGridEvent& event) {
 	voxel::RawVolume* volume = _rawVolumeRenderer.volume(PlayFieldVolume);
 	voxel::Region dirtyRegion;
 	if (volume == nullptr || volume->region() != v->region()) {
-		delete _rawVolumeRenderer.setVolume(PlayFieldVolume, v);
+		volume = new voxel::RawVolume(v.get());
+		delete _rawVolumeRenderer.setVolume(PlayFieldVolume, volume);
 		dirtyRegion = v->region();
-		volume = v;
 
 		voxel::RawVolume* floor = new voxel::RawVolume(dirtyRegion);
 		const voxel::Region& region = floor->region();
@@ -254,7 +255,6 @@ void TestTraze::onEvent(const traze::NewGridEvent& event) {
 				}
 			}
 		}
-		delete v;
 		dirtyRegion = wrapper.dirtyRegion();
 	}
 	const glm::mat4& translate = glm::translate(-volume->region().getCenter());
@@ -362,7 +362,7 @@ void TestTraze::doRender() {
 	} else if (_renderPlayerNames) {
 		_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(20.0f, 20.0f, 0.0f)));
 		int yOffset = 0;
-		_voxelFontRender.text(glm::ivec3(0, yOffset, 0), core::Color::White, "Players");
+		_voxelFontRender.text(glm::ivec3(0, yOffset, 0), core::Color::White, "%i Players", (int)_players.size());
 		yOffset += _voxelFontRender.lineHeight();
 		for (const traze::Player& p : _players) {
 			_voxelFontRender.text(glm::ivec3(0, yOffset, 0), p.color, "* %s", p.name.c_str());

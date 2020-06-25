@@ -7,11 +7,12 @@
 #include "core/EventBus.h"
 #include "TrazeTypes.h"
 #include "voxel/RawVolume.h"
+#include "core/SharedPtr.h"
 #include <vector>
 
 namespace traze {
 
-EVENTBUSPAYLOADEVENT(NewGridEvent, voxel::RawVolume*);
+EVENTBUSPAYLOADEVENT(NewGridEvent, core::SharedPtr<voxel::RawVolume>);
 EVENTBUSPAYLOADEVENT(NewGamesEvent, std::vector<GameInfo>);
 EVENTBUSPAYLOADEVENT(PlayerListEvent, std::vector<Player>);
 EVENTBUSPAYLOADEVENT(TickerEvent, Ticker);

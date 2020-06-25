@@ -287,7 +287,7 @@ void Protocol::parseGridAndUpdateVolume(const core::String& json) {
 	const int width = j["width"].get<int>();
 	// x and z and swapped here
 	const voxel::Region region(glm::ivec3(-1), glm::ivec3(height, 1, width));
-	voxel::RawVolume* v = new voxel::RawVolume(region);
+	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	const auto& grid = j["tiles"];
 	int x = 0;
 	for (const auto& line : grid) {

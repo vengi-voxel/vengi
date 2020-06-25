@@ -153,7 +153,7 @@ public:
 
 	/**
 	 * @brief Client Registration
-	 * You send a request to join the game. In return you’ll get a user token that allows you to control
+	 * You send a request to join the game. In return you'll get a user token that allows you to control
 	 * your bike. The Response will be sent to your private MQTT topic.
 	 *
 	 * traze/{instanceName}/join
@@ -163,7 +163,7 @@ public:
 	 *   "mqttClientName": "myClientName"
 	 * }
 	 * @endcode
-	 * If the server accepts your request you’ll receive a message communicating your initial position. Once you give your first direction command your game starts.
+	 * If the server accepts your request you'll receive a message communicating your initial position. Once you give your first direction command your game starts.
 	 * You have to provide a unique MQTT client name in order to receive your session token on your clients own topic. It is important that you specify this very
 	 * client name in the MQTT connect call to the broker, otherwise you will not be able to receive messages on the traze/{instanceName}/player/{myClientName} topic
 	 * due to the brokers access control list settings. In order to not be subject to a MQTT deauthentication attack you should choose a client name that can not be
@@ -184,7 +184,7 @@ public:
 
 	/**
 	 * @brief Steering your Light Cycle
-	 * You steer by giving the directions for your next turn via an MQTT message. If you don’t commit a course correction within the specified timeframe your light cycle will continue on it’s previous path.
+	 * You steer by giving the directions for your next turn via an MQTT message. If you don't commit a course correction within the specified timeframe your light cycle will continue on it's previous path.
 	 *
 	 * traze/{instanceName}/{playerId}/steer
 	 * @code
