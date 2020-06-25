@@ -291,8 +291,8 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region, bool
 	}
 
 	const int s = _meshSize->intVal();
-	glm::ivec3 meshSize(s, s, s);
-	const glm::vec3& size = meshSize;
+	const glm::ivec3 meshSize(s);
+	const glm::vec3 meshSizef = meshSize;
 
 	const glm::ivec3& lower = region.getLowerCorner();
 	const glm::ivec3& upper = region.getUpperCorner();
@@ -313,11 +313,11 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region, bool
 	std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > extracted;
 
 	for (int cx = lowerX; cx <= upperX; ++cx) {
-		const int x = glm::floor(cx / size.x);
+		const int x = glm::floor(cx / meshSizef.x);
 		for (int cy = lowerY; cy <= upperY; ++cy) {
-			const int y = glm::floor(cy / size.y);
+			const int y = glm::floor(cy / meshSizef.y);
 			for (int cz = lowerZ; cz <= upperZ; ++cz) {
-				const int z = glm::floor(cz / size.z);
+				const int z = glm::floor(cz / meshSizef.z);
 				const voxel::Region& extractRegion = calculateExtractRegion(x, y, z, meshSize);
 				const glm::ivec3& mins = extractRegion.getLowerCorner();
 
