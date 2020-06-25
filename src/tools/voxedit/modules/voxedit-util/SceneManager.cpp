@@ -321,6 +321,22 @@ void SceneManager::handleAnimationViewUpdate(int layerId) {
 	_animationUpdate = true;
 }
 
+void SceneManager::queueRegionExtraction(int layerId, const voxel::Region& region) {
+	bool addNew = true;
+	for (const auto& r : _extractRegions) {
+		if (r.layer != layerId) {
+			continue;
+		}
+		if (r.region.containsRegion(region)) {
+			addNew = false;
+			break;
+		}
+	}
+	if (addNew) {
+		_extractRegions.push_back({region, layerId});
+	}
+}
+
 void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
 	Log::debug("Modified layer %i, undo state: %s", layerId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
@@ -328,19 +344,7 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId), MementoType::Modification, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
-		bool addNew = true;
-		for (const auto& r : _extractRegions) {
-			if (r.layer != layerId) {
-				continue;
-			}
-			if (r.region.containsRegion(modifiedRegion)) {
-				addNew = false;
-				break;
-			}
-		}
-		if (addNew) {
-			_extractRegions.push_back({modifiedRegion, layerId});
-		}
+		queueRegionExtraction(layerId, modifiedRegion);
 	}
 	_dirty = true;
 	_needAutoSave = true;
@@ -2042,11 +2046,11 @@ void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolum
 	if (region.isValid()) {
 		// the volume is maybe an old state and only needs to get updated in the modified region.
 		setNewVolume(layerId, volume, false);
-		_extractRegions.push_back({region, layerId});
+		queueRegionExtraction(layerId, region);
 	} else {
 		// update the whole volume
 		setNewVolume(layerId, volume, true);
-		_extractRegions.push_back({volume->region(), layerId});
+		queueRegionExtraction(layerId, volume->region());
 	}
 	setReferencePosition(layer.pivot);
 	_volumeRenderer.hide(layerId, !layer.visible);

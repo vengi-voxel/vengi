@@ -110,6 +110,7 @@ private:
 	};
 	using RegionQueue = std::vector<DirtyRegion>;
 	RegionQueue _extractRegions;
+	void queueRegionExtraction(int layerId, const voxel::Region& region);
 
 	bool _dirty = false;
 	// this is basically the same as the dirty state, but we stop
