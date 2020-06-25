@@ -56,6 +56,10 @@ public:
 
 	size_t size() const;
 	void init();
+	/**
+	 * @brief Remove queued and not yet executed tasks
+	 * @note This does not abort the current running task
+	 */
 	void abort();
 	void shutdown(bool wait = false);
 private:
