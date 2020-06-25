@@ -1724,7 +1724,7 @@ bool SceneManager::extractVolume() {
 			const voxel::Region& region = _extractRegions[i].region;
 			const bool bigRegion = glm::all(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(64)));
 			const bool updateBuffers = bigRegion || i == x - 1 || lastLayer != _extractRegions[i].layer;
-			if (!_volumeRenderer.extract(_extractRegions[i].layer, region, updateBuffers)) {
+			if (!_volumeRenderer.extractRegion(_extractRegions[i].layer, region, updateBuffers)) {
 				Log::error("Failed to extract the model mesh");
 			}
 			Log::debug("Extract layer %i with update buffers set to %i", _extractRegions[i].layer, (int)updateBuffers);

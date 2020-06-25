@@ -85,7 +85,7 @@ core::AppState Thumbnailer::onInit() {
 	const int volumesSize = (int)volumes.size();
 	for (int i = 0; i < volumesSize; ++i) {
 		_renderer.setVolume(i, volumes[i].volume);
-		_renderer.extract(i, volumes[i].volume->region());
+		_renderer.extractRegion(i, volumes[i].volume->region());
 	}
 
 	video::clearColor(::core::Color::Black);

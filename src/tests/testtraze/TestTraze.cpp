@@ -235,7 +235,7 @@ void TestTraze::onEvent(const traze::NewGridEvent& event) {
 			floor->setVoxel(x, region.getLowerY() + 2, region.getUpperZ(), voxel);
 		}
 		delete _rawVolumeRenderer.setVolume(FloorVolume, floor);
-		if (!_rawVolumeRenderer.extract(FloorVolume, region)) {
+		if (!_rawVolumeRenderer.extractRegion(FloorVolume, region)) {
 			Log::error("Failed to extract the volume");
 		}
 	} else {
@@ -263,7 +263,7 @@ void TestTraze::onEvent(const traze::NewGridEvent& event) {
 	const glm::mat4 model = rotateX * rotateY * translate;
 	_rawVolumeRenderer.setModelMatrix(PlayFieldVolume, model);
 	_rawVolumeRenderer.setModelMatrix(FloorVolume, model);
-	if (!_rawVolumeRenderer.extract(PlayFieldVolume, dirtyRegion)) {
+	if (!_rawVolumeRenderer.extractRegion(PlayFieldVolume, dirtyRegion)) {
 		Log::error("Failed to extract the volume");
 	}
 }

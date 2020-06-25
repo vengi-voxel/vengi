@@ -274,7 +274,7 @@ bool RawVolumeRenderer::translate(int idx, const glm::ivec3& m) {
 	return true;
 }
 
-bool RawVolumeRenderer::extract(int idx, const voxel::Region& region, bool updateBuffers) {
+bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region, bool updateBuffers) {
 	core_trace_scoped(RawVolumeRendererExtract)
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;

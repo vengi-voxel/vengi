@@ -80,7 +80,7 @@ public:
 
 	bool update(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices);
 
-	bool extract(int idx, const voxel::Region& region, bool updateBuffers = true);
+	bool extractRegion(int idx, const voxel::Region& region, bool updateBuffers = true);
 
 	bool translate(int idx, const glm::ivec3& m);
 
