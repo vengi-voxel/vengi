@@ -236,7 +236,7 @@ bool RawVolumeRenderer::toMesh(voxel::Mesh* mesh) {
 	if (mergedVolume == nullptr) {
 		return false;
 	}
-	extract(mergedVolume, mergedVolume->region(), mesh);
+	extractVolumeRegionToMesh(mergedVolume, mergedVolume->region(), mesh);
 	delete mergedVolume;
 	return true;
 }
@@ -250,7 +250,7 @@ bool RawVolumeRenderer::toMesh(int idx, voxel::Mesh* mesh) {
 		return false;
 	}
 
-	extract(volume, volume->region(), mesh);
+	extractVolumeRegionToMesh(volume, volume->region(), mesh);
 	return true;
 }
 
@@ -334,7 +334,7 @@ bool RawVolumeRenderer::extract(int idx, const voxel::Region& region, bool updat
 				if (meshes[idx] == nullptr) {
 					meshes[idx] = new voxel::Mesh(128, 128, true);
 				}
-				extract(volume, region, meshes[idx]);
+				extractVolumeRegionToMesh(volume, region, meshes[idx]);
 			}
 		}
 	}
@@ -344,7 +344,7 @@ bool RawVolumeRenderer::extract(int idx, const voxel::Region& region, bool updat
 	return true;
 }
 
-void RawVolumeRenderer::extract(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const {
+void RawVolumeRenderer::extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const {
 	voxel::Region reg = region;
 	reg.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(volume, reg, mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());

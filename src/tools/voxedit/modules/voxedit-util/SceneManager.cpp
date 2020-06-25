@@ -1334,7 +1334,7 @@ void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, st
 		}, condition);
 		if (cnt > 0) {
 			modified(layerId, voxel::Region{modifiedMins, modifiedMaxs});
-			Log::info("Modified %i voxels", cnt);
+			Log::debug("Modified %i voxels", cnt);
 		}
 	});
 }

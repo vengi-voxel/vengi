@@ -60,7 +60,7 @@ protected:
 	glm::vec3 _diffuseColor = frontend::diffuseColor;
 	glm::vec3 _ambientColor = frontend::ambientColor;
 
-	void extract(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
+	void extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
 
 public:
 	RawVolumeRenderer();
