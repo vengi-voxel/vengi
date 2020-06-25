@@ -274,6 +274,12 @@ bool RawVolumeRenderer::translate(int idx, const glm::ivec3& m) {
 	return true;
 }
 
+voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const {
+	const glm::ivec3 mins(x * meshSize.x, y * meshSize.y, z * meshSize.z);
+	const glm::ivec3 maxs = mins + meshSize - 1;
+	return voxel::Region{mins, maxs};
+}
+
 bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region, bool updateBuffers) {
 	core_trace_scoped(RawVolumeRendererExtract)
 	if (idx < 0 || idx >= MAX_VOLUMES) {
@@ -312,10 +318,10 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region, bool
 			const int y = glm::floor(cy / size.y);
 			for (int cz = lowerZ; cz <= upperZ; ++cz) {
 				const int z = glm::floor(cz / size.z);
-				const glm::ivec3 mins(x * meshSize.x, y * meshSize.y, z * meshSize.z);
-				const glm::ivec3 maxs = mins + meshSize - 1;
-				const voxel::Region region(mins, maxs);
-				if (!voxel::intersects(completeRegion, region)) {
+				const voxel::Region& extractRegion = calculateExtractRegion(x, y, z, meshSize);
+				const glm::ivec3& mins = extractRegion.getLowerCorner();
+
+				if (!voxel::intersects(completeRegion, extractRegion)) {
 					auto i = _meshes.find(mins);
 					if (i != _meshes.end()) {
 						Meshes& meshes = i->second;
@@ -334,7 +340,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region, bool
 				if (meshes[idx] == nullptr) {
 					meshes[idx] = new voxel::Mesh(128, 128, true);
 				}
-				extractVolumeRegionToMesh(volume, region, meshes[idx]);
+				extractVolumeRegionToMesh(volume, extractRegion, meshes[idx]);
 			}
 		}
 	}

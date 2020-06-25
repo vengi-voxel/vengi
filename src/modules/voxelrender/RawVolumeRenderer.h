@@ -61,6 +61,7 @@ protected:
 	glm::vec3 _ambientColor = frontend::ambientColor;
 
 	void extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
+	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 
 public:
 	RawVolumeRenderer();
