@@ -304,7 +304,7 @@ voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, con
 }
 
 bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
-	core_trace_scoped(RawVolumeRendererExtract)
+	core_trace_scoped(RawVolumeRendererExtract);
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
