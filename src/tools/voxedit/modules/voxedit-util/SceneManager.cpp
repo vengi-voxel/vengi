@@ -1717,7 +1717,7 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 }
 
 bool SceneManager::extractVolume() {
-	core_trace_scoped(SceneManagerExtract)
+	core_trace_scoped(SceneManagerExtract);
 	const size_t n = _extractRegions.size();
 	if (n <= 0) {
 		return false;
