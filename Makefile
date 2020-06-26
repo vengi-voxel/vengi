@@ -163,6 +163,10 @@ update-simplecpp:
 	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
 	cp $(UPDATEDIR)/simplecpp.sync/simplecpp.* contrib/libs/simplecpp
 
+update-miniz:
+	$(call UPDATE_GIT,miniz,https://github.com/richgel999/miniz.git)
+	cp $(UPDATEDIR)/miniz.sync/miniz.[ch] src/modules/core
+
 update-nuklear:
 	$(call UPDATE_GIT,nuklear,https://github.com/Immediate-Mode-UI/Nuklear)
 	cp $(UPDATEDIR)/nuklear.sync/nuklear.h src/modules/ui/nuklear/private
