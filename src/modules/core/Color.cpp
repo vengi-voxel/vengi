@@ -10,6 +10,7 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 
+#include <stdio.h>
 #include <SDL.h>
 
 namespace core {
@@ -146,7 +147,7 @@ glm::vec4 Color::fromHex(const char* hex) {
 	} else if (hex[0] == '#') {
 		hex += 1;
 	}
-	if (SDL_sscanf(hex, "%02x%02x%02x%02x", &r, &g, &b, &a) == 3) {
+	if (sscanf(hex, "%02x%02x%02x%02x", &r, &g, &b, &a) == 3) {
 		a = 0xff;
 	}
 	return fromRGBA(r, g, b, a);
