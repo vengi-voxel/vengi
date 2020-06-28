@@ -43,6 +43,13 @@
   </mime-type>
   <mime-type type="application/x-cc-vxl">
     <comment>Voxel model used by Command and Conquer</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="Voxel Animation"/>
+    </magic>
+    <glob pattern="*.vxl"/>
+  </mime-type>
+  <mime-type type="application/x-aos-vxl">
+    <comment>Voxel model used by Ace Of Spades</comment>
     <glob pattern="*.vxl"/>
   </mime-type>
 </mime-info>

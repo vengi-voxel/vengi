@@ -495,7 +495,7 @@ bool VoxFormat::loadChunk_SIZE(io::FileStream& stream, const ChunkHeader& header
  *
  * This function imitates such behavior but without the use of any floating point arithmetic.
  *
- * @param n the number to divide
+ * @param x the number to divide
  * @return the number divided by two, rounded towards negative infinity
  */
 template <typename Dividend, typename Divisor,

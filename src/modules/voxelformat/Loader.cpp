@@ -13,6 +13,7 @@
 #include "BinVoxFormat.h"
 #include "KVXFormat.h"
 #include "KV6Format.h"
+#include "AoSVXLFormat.h"
 
 namespace voxelformat {
 
@@ -65,6 +66,10 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		voxel::VXLFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
+			voxel::AoSVXLFormat f2;
+			if (!f2.loadGroups(filePtr, newVolumes)) {
+				voxelformat::clearVolumes(newVolumes);
+			}
 		}
 	} else if (ext == "binvox") {
 		voxel::BinVoxFormat f;

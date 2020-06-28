@@ -1,5 +1,6 @@
 set(LIB voxelformat)
 set(SRCS
+	AoSVXLFormat.h AoSVXLFormat.cpp
 	BinVoxFormat.h BinVoxFormat.cpp
 	KVXFormat.h KVXFormat.cpp
 	KV6Format.h KV6Format.cpp
