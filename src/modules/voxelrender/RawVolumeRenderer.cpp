@@ -376,6 +376,12 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 	return true;
 }
 
+void RawVolumeRenderer::waitForPendingExtractions() {
+	while (_runningExtractorTasks > 0) {
+		SDL_Delay(1);
+	}
+}
+
 void RawVolumeRenderer::clearPendingExtractions() {
 	Log::debug("Clear pending extractions");
 	_threadPool.abort();

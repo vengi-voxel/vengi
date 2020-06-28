@@ -95,6 +95,7 @@ public:
 	bool hiddenState(int idx) const;
 
 	void clearPendingExtractions();
+	void waitForPendingExtractions();
 
 	render::Shadow& shadow();
 	const render::Shadow& shadow() const;

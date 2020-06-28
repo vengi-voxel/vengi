@@ -13,6 +13,7 @@ A more detailed changelog can be found at: https://github.com/mgerhardy/engine/c
    - Fixed invisible voxels for qb and qbt (Qubicle) volume format
    - Support automatic loading different volume formats for assets
    - Support Command&Conquer vxl files
+   - Perform mesh extraction in dedicated threads for simple volume rendering
 
 #### 0.0.4 (2020-06-07)
 
