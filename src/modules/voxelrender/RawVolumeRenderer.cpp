@@ -341,10 +341,10 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 			const int y = glm::floor(cy / meshSizef.y);
 			for (int cz = lowerZ; cz <= upperZ; ++cz) {
 				const int z = glm::floor(cz / meshSizef.z);
-				const voxel::Region& extractRegion = calculateExtractRegion(x, y, z, meshSize);
-				const glm::ivec3& mins = extractRegion.getLowerCorner();
+				const voxel::Region& finalRegion = calculateExtractRegion(x, y, z, meshSize);
+				const glm::ivec3& mins = finalRegion.getLowerCorner();
 
-				if (!voxel::intersects(completeRegion, extractRegion)) {
+				if (!voxel::intersects(completeRegion, finalRegion)) {
 					auto i = _meshes.find(mins);
 					if (i != _meshes.end()) {
 						Meshes& meshes = i->second;
@@ -360,12 +360,12 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 				}
 
 				voxel::RawVolume copy(volume);
-				_threadPool.enqueue([copy{std::move(copy)}, mins, idx, extractRegion, this] () {
+				_threadPool.enqueue([movedCopy = std::move(copy), mins, idx, finalRegion, this] () {
 					++_runningExtractorTasks;
-					voxel::Region reg = extractRegion;
+					voxel::Region reg = finalRegion;
 					reg.shiftUpperCorner(1, 1, 1);
 					voxel::Mesh mesh(65536, 65536, false);
-					voxel::extractCubicMesh(&copy, reg, &mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());
+					voxel::extractCubicMesh(&movedCopy, reg, &mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());
 					_pendingQueue.emplace(mins, idx, std::move(mesh));
 					Log::debug("Enqueue mesh for idx: %i", idx);
 					--_runningExtractorTasks;
