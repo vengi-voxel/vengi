@@ -8,6 +8,9 @@ if(MSVC)
   list(APPEND uv_cflags /wd4201) # nonstandard extension used: nameless struct/union
   list(APPEND uv_cflags /wd4456) # declaration of 'q' hides previous local declaration
   list(APPEND uv_cflags /wd4459) # declaration of 'q' hides global declaration
+  list(APPEND uv_cflags /wd4206) # nonstandard extension used: translation unit is empty
+  list(APPEND uv_cflags /wd4996) # 'wcsrev': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name
+  list(APPEND uv_cflags /wd4210) # nonstandard extension used: function given file scope
 elseif(CMAKE_C_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
   foreach(_FLAG
     -fvisibility=hidden --std=gnu89 -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter -Wno-shadow -Wno-cast-function-type)

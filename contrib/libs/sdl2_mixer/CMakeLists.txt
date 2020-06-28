@@ -43,8 +43,8 @@ engine_add_library(
 	DEFINES MUSIC_OGG MUSIC_WAV)
 
 if (NOT SDL2_MIXER_FOUND)
-	if (MSVC)
-		target_compile_options(${LIB} PRIVATE /wd4244)
+	if(MSVC)
+		set_target_properties(${LIB} PROPERTIES COMPILE_FLAGS "/wd4305 /wd4005") # truncation from 'double' to 'float'
 	endif()
 	target_include_directories(${LIB} PRIVATE "codecs")
 	target_include_directories(${LIB} PRIVATE "libogg-1.3.2/include")
