@@ -4,6 +4,10 @@ if(MSVC)
   list(APPEND uv_cflags /W4)
   list(APPEND uv_cflags /wd4701) # potentially uninitialized local variable
   list(APPEND uv_cflags /wd4702) # unreachable code
+  list(APPEND uv_cflags /wd4245) # conversion from 'int' to 'uint64_t', signed/unsigned mismatch
+  list(APPEND uv_cflags /wd4201) # nonstandard extension used: nameless struct/union
+  list(APPEND uv_cflags /wd4456) # declaration of 'q' hides previous local declaration
+  list(APPEND uv_cflags /wd4459) # declaration of 'q' hides global declaration
 elseif(CMAKE_C_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
   foreach(_FLAG
     -fvisibility=hidden --std=gnu89 -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter -Wno-shadow -Wno-cast-function-type)
