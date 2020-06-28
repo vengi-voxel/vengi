@@ -364,7 +364,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 					++_runningExtractorTasks;
 					voxel::Region reg = finalRegion;
 					reg.shiftUpperCorner(1, 1, 1);
-					voxel::Mesh mesh(65536, 65536, false);
+					voxel::Mesh mesh(65536, 65536, true);
 					voxel::extractCubicMesh(&movedCopy, reg, &mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());
 					_pendingQueue.emplace(mins, idx, std::move(mesh));
 					Log::debug("Enqueue mesh for idx: %i", idx);
