@@ -2,6 +2,8 @@ set(LIB libuv)
 
 if(MSVC)
   list(APPEND uv_cflags /W4)
+  list(APPEND uv_cflags /wd4701) # potentially uninitialized local variable
+  list(APPEND uv_cflags /wd4702) # unreachable code
 elseif(CMAKE_C_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
   foreach(_FLAG
     -fvisibility=hidden --std=gnu89 -Wall -Wextra -Wstrict-prototypes -Wno-unused-parameter -Wno-shadow -Wno-cast-function-type)
