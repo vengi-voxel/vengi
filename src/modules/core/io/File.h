@@ -15,7 +15,10 @@ namespace io {
 class Filesystem;
 
 enum class FileMode {
-	Read, Write
+	Read,		/**< reading from the virtual file system */
+	Write,		/**< writing into the virtual file system */
+	SysRead,	/**< reading from the given path */
+	SysWrite	/**< writing into the given path */
 };
 
 extern void normalizePath(core::String& str);

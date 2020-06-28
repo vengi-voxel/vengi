@@ -173,7 +173,7 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 	if (v == nullptr) {
 		return true;
 	}
-	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
+	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::SysWrite);
 	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
@@ -229,7 +229,7 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		Log::warn("No filename given for saving");
 		return false;
 	}
-	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::Write);
+	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::SysWrite);
 	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
@@ -1632,7 +1632,7 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 	const core::String& luaFilePath = animation::luaFilename(chrName.c_str());
 	const core::String luaDir(core::string::extractPath(luaFilePath));
 	io::filesystem()->createDir(luaDir);
-	const io::FilePtr& luaFile = io::filesystem()->open(luaFilePath, io::FileMode::Write);
+	const io::FilePtr& luaFile = io::filesystem()->open(luaFilePath, io::FileMode::SysWrite);
 	const animation::AnimationSettings& animSettings = animationEntity().animationSettings();
 	if (saveAnimationEntityLua(animSettings, animationEntity().skeletonAttributes(), name, luaFile)) {
 		Log::info("Wrote lua script: %s", luaFile->name().c_str());

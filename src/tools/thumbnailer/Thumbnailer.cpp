@@ -60,7 +60,7 @@ core::AppState Thumbnailer::onInit() {
 	Log::debug("infile: %s", infile.c_str());
 	Log::debug("outfile: %s", _outfile.c_str());
 
-	_infile = filesystem()->open(infile, io::FileMode::Read);
+	_infile = filesystem()->open(infile, io::FileMode::SysRead);
 	if (!_infile->exists()) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
 		return core::AppState::InitFailure;
@@ -143,7 +143,7 @@ core::AppState Thumbnailer::onRunning() {
 			textureCfg.type(), textureCfg.format(), fboTexture->handle(),
 			fboTexture->width(), fboTexture->height(), &pixels)) {
 		image::Image::flipVerticalRGBA(pixels, fboTexture->width(), fboTexture->height());
-		const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::Write);
+		const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::SysWrite);
 		if (!image::Image::writePng(outfile->name().c_str(), pixels, fboTexture->width(), fboTexture->height(), 4)) {
 			Log::error("Failed to write image %s", outfile->name().c_str());
 		} else {

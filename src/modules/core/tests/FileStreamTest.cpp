@@ -56,7 +56,7 @@ TEST_F(FileStreamTest, testFileStreamRead) {
 
 TEST_F(FileStreamTest, testFileStreamWrite) {
 	const io::FilesystemPtr& fs = io::filesystem();
-	const FilePtr& file = fs->open(fs->homePath() + "/filestream-writetest", io::FileMode::Write);
+	const FilePtr& file = fs->open("filestream-writetest", io::FileMode::SysWrite);
 	ASSERT_TRUE(file->validHandle());
 	File* fileRaw = file.get();
 	FileStream stream(fileRaw);

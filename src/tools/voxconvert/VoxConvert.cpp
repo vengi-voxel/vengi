@@ -62,14 +62,14 @@ core::AppState VoxConvert::onInit() {
 	Log::debug("infile: %s", infile.c_str());
 	Log::debug("outfile: %s", outfile.c_str());
 
-	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::Read);
+	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
 	if (!inputFile->exists()) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
 		_exitCode = 127;
 		return core::AppState::InitFailure;
 	}
 
-	const io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::Write);
+	const io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
 	if (!outputFile->validHandle()) {
 		Log::error("Could not open target file: %s", outfile.c_str());
 		return core::AppState::InitFailure;

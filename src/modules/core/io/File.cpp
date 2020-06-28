@@ -28,12 +28,12 @@ bool File::validHandle() const {
 }
 
 bool File::exists() const {
-	if (_mode == FileMode::Read) {
+	if (_mode == FileMode::Read || _mode == FileMode::SysRead) {
 		return _file != nullptr;
 	}
 
 	// try to open in read mode
-	SDL_RWops* ops = createRWops(FileMode::Read);
+	SDL_RWops* ops = createRWops(FileMode::SysRead);
 	if (ops != nullptr) {
 		SDL_RWclose(ops);
 		return true;
@@ -63,7 +63,7 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 		return nullptr;
 	}
 	const char *fmode = "rb";
-	if (mode == FileMode::Write) {
+	if (mode == FileMode::Write || mode == FileMode::SysWrite) {
 		fmode = "wb";
 	}
 	SDL_RWops *rwops = SDL_RWFromFile(_rawPath.c_str(), fmode);
@@ -79,7 +79,7 @@ long File::write(const unsigned char *buf, size_t len) const {
 				(int)len, _rawPath.c_str());
 		return -1;
 	}
-	if (_mode != FileMode::Write) {
+	if (_mode != FileMode::Write && _mode != FileMode::SysWrite) {
 		Log::debug("Invalid file mode given - can write buffer of length %i (path: %s)",
 				(int)len, _rawPath.c_str());
 		return -1L;
@@ -175,7 +175,7 @@ int File::read(void *buffer, int n) {
 }
 
 int File::read(void *buf, size_t size, size_t maxnum) {
-	if (_mode != FileMode::Read) {
+	if (_mode != FileMode::Read && _mode != FileMode::SysRead) {
 		_state = IOSTATE_FAILED;
 		Log::debug("File %s is not opened in read mode", _rawPath.c_str());
 		return -1;

@@ -395,8 +395,12 @@ bool Filesystem::pushDir(const core::String& directory) {
 }
 
 io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const {
-	if (mode == FileMode::Write) {
-		Log::debug("Use absolute path to write file %s", filename.c_str());
+	if (mode == FileMode::SysWrite) {
+		Log::debug("Use absolute path to open file %s for writing", filename.c_str());
+		return core::make_shared<io::File>(filename, mode);
+	} else if (mode == FileMode::Write) {
+		return core::make_shared<io::File>(_homePath + filename, mode);
+	} else if (mode == FileMode::SysRead) {
 		return core::make_shared<io::File>(filename, mode);
 	}
 	io::File f(filename, FileMode::Read);
@@ -454,7 +458,7 @@ bool Filesystem::write(const core::String& filename, const core::String& string)
 }
 
 bool Filesystem::syswrite(const core::String& filename, const uint8_t* content, size_t length) const {
-	io::File f(filename, FileMode::Write);
+	io::File f(filename, FileMode::SysWrite);
 	createDir(f.path());
 	return f.write(content, length) == static_cast<long>(length);
 }
