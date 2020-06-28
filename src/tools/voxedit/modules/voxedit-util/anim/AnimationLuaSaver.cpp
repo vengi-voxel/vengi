@@ -12,7 +12,7 @@
 namespace voxedit {
 
 bool saveAnimationEntityLua(const animation::AnimationSettings& settings, const animation::SkeletonAttribute& sa, const char *name, const io::FilePtr& file) {
-	if (!file || !file->exists()) {
+	if (!file || !file->validHandle()) {
 		return false;
 	}
 	io::FileStream stream(file);
