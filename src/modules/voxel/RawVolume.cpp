@@ -31,7 +31,18 @@ RawVolume::RawVolume(const RawVolume* copy) :
 	core_memcpy((void*)_data, (void*)copy->_data, size);
 }
 
-RawVolume::RawVolume(RawVolume&& move) {
+RawVolume::RawVolume(const RawVolume& copy) :
+		_region(copy.region()) {
+	setBorderValue(copy.borderValue());
+	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	_data = (Voxel*)core_malloc(size);
+	_mins = copy._mins;
+	_maxs = copy._maxs;
+	_boundsValid = copy._boundsValid;
+	core_memcpy((void*)_data, (void*)copy._data, size);
+}
+
+RawVolume::RawVolume(RawVolume&& move) noexcept {
 	_data = move._data;
 	move._data = nullptr;
 	_mins = move._mins;

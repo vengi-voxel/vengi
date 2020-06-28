@@ -6,7 +6,6 @@
 
 #include "Voxel.h"
 #include "Region.h"
-#include "core/NonCopyable.h"
 #include <glm/vec3.hpp>
 
 namespace voxel {
@@ -17,7 +16,7 @@ namespace voxel {
  * This class is less memory-efficient than the PagedVolume, but it is the simplest possible
  * volume implementation which makes it useful for debugging and getting started with PolyVox.
  */
-class RawVolume : public core::NonCopyable {
+class RawVolume {
 public:
 	class Sampler {
 	public:
@@ -92,7 +91,8 @@ public:
 	/// Constructor for creating a fixed size volume.
 	RawVolume(const Region& region);
 	RawVolume(const RawVolume* copy);
-	RawVolume(RawVolume&& move);
+	RawVolume(const RawVolume& copy);
+	RawVolume(RawVolume&& move) noexcept;
 
 	static RawVolume* createRaw(const Voxel* data, const voxel::Region& region) {
 		return new RawVolume(data, region);
