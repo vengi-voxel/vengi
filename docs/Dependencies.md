@@ -1,8 +1,11 @@
-# Dependencies {#dependencies}
+# Dependencies
 
 * cmake
 * ninja-build
-* postgre
+* postgresql
+
+## Libraries
+
 * development headers/libs for
   * glm
   * lua >= 5.3
@@ -11,9 +14,8 @@
   * libpq
   * enet
   * libuv
-  * turbobadger
   * gtest
-  * opencl
+  * opencl (optional)
   * libuuid
   * qt (for the rcon tool)
   * mosquitto (optional)

@@ -1,4 +1,4 @@
-# Building {#building}
+# Building
 
 ## Linux
 

@@ -1,0 +1,23 @@
+site_name: vengi - voxel engine and its tools
+
+docs_dir: docs
+site_dir: build/docs
+
+theme:
+  name: readthedocs
+  highlightjs: true
+  hljs_languages: [cpp]
+
+markdown_extensions:
+  - toc:
+      toc_depth: 2
+
+nav:
+  - README.md
+  - Basics:
+      - Dependencies.md
+      - Compilation.md
+      - Setup.md
+      - Configuration.md
+  - Game Design:
+      - GameDesign.md

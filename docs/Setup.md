@@ -1,4 +1,4 @@
-# Setup {#setup}
+# Setup
 
 ## PostgreSQL
 

@@ -1,4 +1,4 @@
-# Configuration {#configuration}
+# Configuration
 
 ## Variables
 

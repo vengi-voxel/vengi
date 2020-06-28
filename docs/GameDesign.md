@@ -1,4 +1,4 @@
-# Game Design {#gamedesign}
+# Game Design
 
 This is about an mmorpg in a fantasy like world.
 
