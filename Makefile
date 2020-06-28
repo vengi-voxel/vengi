@@ -1,7 +1,7 @@
 Q              ?= @
 UPDATEDIR      := /tmp
 BUILDTYPE      ?= Debug
-BUILDDIR       ?= ./build
+BUILDDIR       ?= ./build/$(BUILDTYPE)
 INSTALL_DIR    ?= $(BUILDDIR)
 GENERATOR      := Ninja
 CMAKE          ?= cmake
