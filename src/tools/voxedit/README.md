@@ -13,7 +13,7 @@ my own engine and evolved into something that others might find useful, too.
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-quad-view.png)
 
-[more details](../../../docs/voxedit)
+[more details](../../../docs/voxedit/)
 
 ## Planned
 

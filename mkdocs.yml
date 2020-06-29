@@ -25,5 +25,8 @@ nav:
       - voxedit/Features.md
       - voxedit/Controls.md
       - voxedit/Palette.md
+  - VoxConvert:
+      - voxconvert/Index.md
+      - voxconvert/Usage.md
   - Game Design:
       - GameDesign.md
