@@ -1,4 +1,4 @@
-// dear imgui, v1.77 WIP
+// dear imgui, v1.77
 // (internal structures/api)
 
 // You may use this file to debug, understand or extend ImGui features but we don't provide any guarantee of forward compatibility!
@@ -57,15 +57,16 @@ Index of this file:
 // Clang/GCC warnings with -Weverything
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"    // for stb_textedit.h
-#pragma clang diagnostic ignored "-Wmissing-prototypes" // for stb_textedit.h
+#if __has_warning("-Wunknown-warning-option")
+#pragma clang diagnostic ignored "-Wunknown-warning-option"         // warning: unknown warning group 'xxx'
+#endif
+#pragma clang diagnostic ignored "-Wunknown-pragmas"                // warning: unknown warning group 'xxx'
+#pragma clang diagnostic ignored "-Wunused-function"                // for stb_textedit.h
+#pragma clang diagnostic ignored "-Wmissing-prototypes"             // for stb_textedit.h
 #pragma clang diagnostic ignored "-Wold-style-cast"
-#if __has_warning("-Wzero-as-null-pointer-constant")
 #pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
-#endif
-#if __has_warning("-Wdouble-promotion")
 #pragma clang diagnostic ignored "-Wdouble-promotion"
-#endif
+#pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"  // warning: implicit conversion from 'xxx' to 'float' may lose precision
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"              // warning: unknown option after '#pragma GCC diagnostic' kind
@@ -146,7 +147,7 @@ namespace ImStb
 #undef STB_TEXTEDIT_CHARTYPE
 #define STB_TEXTEDIT_STRING             ImGuiInputTextState
 #define STB_TEXTEDIT_CHARTYPE           ImWchar
-#define STB_TEXTEDIT_GETWIDTH_NEWLINE   -1.0f
+#define STB_TEXTEDIT_GETWIDTH_NEWLINE   (-1.0f)
 #define STB_TEXTEDIT_UNDOSTATECOUNT     99
 #define STB_TEXTEDIT_UNDOCHARCOUNT      999
 #include "imstb_textedit.h"
@@ -1849,12 +1850,10 @@ namespace ImGui
 
     // Popups, Modals, Tooltips
     IMGUI_API bool          BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg, bool border, ImGuiWindowFlags flags);
-    IMGUI_API void          OpenPopupEx(ImGuiID id);
+    IMGUI_API void          OpenPopupEx(ImGuiID id, ImGuiPopupFlags popup_flags = ImGuiPopupFlags_None);
     IMGUI_API void          ClosePopupToLevel(int remaining, bool restore_focus_to_window_under_popup);
     IMGUI_API void          ClosePopupsOverWindow(ImGuiWindow* ref_window, bool restore_focus_to_window_under_popup);
-    IMGUI_API bool          IsPopupOpen(ImGuiID id); // Test for id at the current BeginPopup() level of the popup stack (this doesn't scan the whole popup stack!)
-    IMGUI_API bool          IsPopupOpenAtAnyLevel(ImGuiID id);
-    IMGUI_API bool          IsAnyPopupOpen();        // Return true if any popup is open at the current BeginPopup() level of the popup stack
+    IMGUI_API bool          IsPopupOpen(ImGuiID id, ImGuiPopupFlags popup_flags);
     IMGUI_API bool          BeginPopupEx(ImGuiID id, ImGuiWindowFlags extra_flags);
     IMGUI_API void          BeginTooltipEx(ImGuiWindowFlags extra_flags, ImGuiTooltipFlags tooltip_flags);
     IMGUI_API ImGuiWindow*  GetTopMostPopupModal();
@@ -1957,6 +1956,7 @@ namespace ImGui
     IMGUI_API bool          ArrowButtonEx(const char* str_id, ImGuiDir dir, ImVec2 size_arg, ImGuiButtonFlags flags = 0);
     IMGUI_API void          Scrollbar(ImGuiAxis axis);
     IMGUI_API bool          ScrollbarEx(const ImRect& bb, ImGuiID id, ImGuiAxis axis, float* p_scroll_v, float avail_v, float contents_v, ImDrawCornerFlags rounding_corners);
+    IMGUI_API bool          ImageButtonEx(ImGuiID id, ImTextureID texture_id, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec2& padding, const ImVec4& bg_col, const ImVec4& tint_col); 
     IMGUI_API ImRect        GetWindowScrollbarRect(ImGuiWindow* window, ImGuiAxis axis);
     IMGUI_API ImGuiID       GetWindowScrollbarID(ImGuiWindow* window, ImGuiAxis axis);
     IMGUI_API ImGuiID       GetWindowResizeID(ImGuiWindow* window, int n); // 0..3: corners, 4..7: borders
@@ -2028,8 +2028,8 @@ IMGUI_API void              ImFontAtlasBuildMultiplyRectAlpha8(const unsigned ch
 // [SECTION] Test Engine Hooks (imgui_test_engine)
 //-----------------------------------------------------------------------------
 
-//#define IMGUI_ENABLE_TEST_ENGINE
 #ifdef IMGUI_ENABLE_TEST_ENGINE
+extern void                 ImGuiTestEngineHook_Shutdown(ImGuiContext* ctx);
 extern void                 ImGuiTestEngineHook_PreNewFrame(ImGuiContext* ctx);
 extern void                 ImGuiTestEngineHook_PostNewFrame(ImGuiContext* ctx);
 extern void                 ImGuiTestEngineHook_ItemAdd(ImGuiContext* ctx, const ImRect& bb, ImGuiID id);

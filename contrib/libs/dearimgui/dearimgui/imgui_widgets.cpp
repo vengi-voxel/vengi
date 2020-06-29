@@ -1,4 +1,4 @@
-// dear imgui, v1.77 WIP
+// dear imgui, v1.77
 // (widgets code)
 
 /*
@@ -58,19 +58,19 @@ Index of this file:
 
 // Clang/GCC warnings with -Weverything
 #if defined(__clang__)
-#pragma clang diagnostic ignored "-Wold-style-cast"         // warning : use of old-style cast                              // yes, they are more terse.
-#pragma clang diagnostic ignored "-Wfloat-equal"            // warning : comparing floating point with == or != is unsafe   // storing and comparing against same constants (typically 0.0f) is ok.
-#pragma clang diagnostic ignored "-Wformat-nonliteral"      // warning : format string is not a string literal              // passing non-literal to vsnformat(). yes, user passing incorrect format strings can crash the code.
-#pragma clang diagnostic ignored "-Wsign-conversion"        // warning : implicit conversion changes signedness             //
-#if __has_warning("-Wzero-as-null-pointer-constant")
-#pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"  // warning : zero as null pointer constant              // some standard header variations use #define NULL 0
+#if __has_warning("-Wunknown-warning-option")
+#pragma clang diagnostic ignored "-Wunknown-warning-option"         // warning: unknown warning group 'xxx'                      // not all warnings are known by all Clang versions and they tend to be rename-happy.. so ignoring warnings triggers new warnings on some configuration. Great!
 #endif
-#if __has_warning("-Wdouble-promotion")
-#pragma clang diagnostic ignored "-Wdouble-promotion"       // warning: implicit conversion from 'float' to 'double' when passing argument to function  // using printf() is a misery with this as C++ va_arg ellipsis changes float to double.
-#endif
-#if __has_warning("-Wdeprecated-enum-enum-conversion")
-#pragma clang diagnostic ignored "-Wdeprecated-enum-enum-conversion" // warning: bitwise operation between different enumeration types ('XXXFlags_' and 'XXXFlagsPrivate_') is deprecated
-#endif
+#pragma clang diagnostic ignored "-Wunknown-pragmas"                // warning: unknown warning group 'xxx'
+#pragma clang diagnostic ignored "-Wold-style-cast"                 // warning: use of old-style cast                            // yes, they are more terse.
+#pragma clang diagnostic ignored "-Wfloat-equal"                    // warning: comparing floating point with == or != is unsafe // storing and comparing against same constants (typically 0.0f) is ok.
+#pragma clang diagnostic ignored "-Wformat-nonliteral"              // warning: format string is not a string literal            // passing non-literal to vsnformat(). yes, user passing incorrect format strings can crash the code.
+#pragma clang diagnostic ignored "-Wsign-conversion"                // warning: implicit conversion changes signedness
+#pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"  // warning: zero as null pointer constant                    // some standard header variations use #define NULL 0
+#pragma clang diagnostic ignored "-Wdouble-promotion"               // warning: implicit conversion from 'float' to 'double' when passing argument to function  // using printf() is a misery with this as C++ va_arg ellipsis changes float to double.
+#pragma clang diagnostic ignored "-Wenum-enum-conversion"           // warning: bitwise operation between different enumeration types ('XXXFlags_' and 'XXXFlagsPrivate_')
+#pragma clang diagnostic ignored "-Wdeprecated-enum-enum-conversion"// warning: bitwise operation between different enumeration types ('XXXFlags_' and 'XXXFlagsPrivate_') is deprecated
+#pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"  // warning: implicit conversion from 'xxx' to 'float' may lose precision
 #elif defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wpragmas"                  // warning: unknown option after '#pragma GCC diagnostic' kind
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"        // warning: format not a string literal, format string not checked
@@ -981,28 +981,16 @@ void ImGui::Image(ImTextureID user_texture_id, const ImVec2& size, const ImVec2&
     }
 }
 
-// frame_padding < 0: uses FramePadding from style (default)
-// frame_padding = 0: no framing
-// frame_padding > 0: set framing size
-// The color used are the button colors.
-bool ImGui::ImageButton(ImTextureID user_texture_id, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+// ImageButton() is flawed as 'id' is always derived from 'texture_id' (see #2464 #1390)
+// We provide this internal helper to write your own variant while we figure out how to redesign the public ImageButton() API.
+bool ImGui::ImageButtonEx(ImGuiID id, ImTextureID texture_id, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec2& padding, const ImVec4& bg_col, const ImVec4& tint_col)
 {
+    ImGuiContext& g = *GImGui;
     ImGuiWindow* window = GetCurrentWindow();
     if (window->SkipItems)
         return false;
 
-    ImGuiContext& g = *GImGui;
-    const ImGuiStyle& style = g.Style;
-
-    // Default to using texture ID as ID. User can still push string/integer prefixes.
-    // We could hash the size/uv to create a unique ID but that would prevent the user from animating UV.
-    PushID((void*)(intptr_t)user_texture_id);
-    const ImGuiID id = window->GetID("#image");
-    PopID();
-
-    const ImVec2 padding = (frame_padding >= 0) ? ImVec2((float)frame_padding, (float)frame_padding) : style.FramePadding;
     const ImRect bb(window->DC.CursorPos, window->DC.CursorPos + size + padding * 2);
-    const ImRect image_bb(window->DC.CursorPos + padding, window->DC.CursorPos + padding + size);
     ItemSize(bb);
     if (!ItemAdd(bb, id))
         return false;
@@ -1013,12 +1001,31 @@ bool ImGui::ImageButton(ImTextureID user_texture_id, const ImVec2& size, const I
     // Render
     const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
     RenderNavHighlight(bb, id);
-    RenderFrame(bb.Min, bb.Max, col, true, ImClamp((float)ImMin(padding.x, padding.y), 0.0f, style.FrameRounding));
+    RenderFrame(bb.Min, bb.Max, col, true, ImClamp((float)ImMin(padding.x, padding.y), 0.0f, g.Style.FrameRounding));
     if (bg_col.w > 0.0f)
-        window->DrawList->AddRectFilled(image_bb.Min, image_bb.Max, GetColorU32(bg_col));
-    window->DrawList->AddImage(user_texture_id, image_bb.Min, image_bb.Max, uv0, uv1, GetColorU32(tint_col));
+        window->DrawList->AddRectFilled(bb.Min + padding, bb.Max - padding, GetColorU32(bg_col));
+    window->DrawList->AddImage(texture_id, bb.Min + padding, bb.Max - padding, uv0, uv1, GetColorU32(tint_col));
 
     return pressed;
+}
+
+// frame_padding < 0: uses FramePadding from style (default)
+// frame_padding = 0: no framing
+// frame_padding > 0: set framing size
+bool ImGui::ImageButton(ImTextureID user_texture_id, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+{
+    ImGuiContext& g = *GImGui;
+    ImGuiWindow* window = g.CurrentWindow;
+    if (window->SkipItems)
+        return false;
+
+    // Default to using texture ID as ID. User can still push string/integer prefixes.
+    PushID((void*)(intptr_t)user_texture_id);
+    const ImGuiID id = window->GetID("#image");
+    PopID();
+
+    const ImVec2 padding = (frame_padding >= 0) ? ImVec2((float)frame_padding, (float)frame_padding) : g.Style.FramePadding;
+    return ImageButtonEx(id, user_texture_id, size, uv0, uv1, padding, bg_col, tint_col);
 }
 
 bool ImGui::Checkbox(const char* label, bool* v)
@@ -1485,7 +1492,7 @@ bool ImGui::BeginCombo(const char* label, const char* preview_value, ImGuiComboF
 
     bool hovered, held;
     bool pressed = ButtonBehavior(frame_bb, id, &hovered, &held);
-    bool popup_open = IsPopupOpen(id);
+    bool popup_open = IsPopupOpen(id, ImGuiPopupFlags_None);
 
     const ImU32 frame_col = GetColorU32(hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
     const float value_x2 = ImMax(frame_bb.Min.x, frame_bb.Max.x - arrow_size);
@@ -1510,7 +1517,7 @@ bool ImGui::BeginCombo(const char* label, const char* preview_value, ImGuiComboF
     {
         if (window->DC.NavLayerCurrent == 0)
             window->NavLastIds[0] = id;
-        OpenPopupEx(id);
+        OpenPopupEx(id, ImGuiPopupFlags_None);
         popup_open = true;
     }
 
@@ -5627,7 +5634,7 @@ bool ImGui::CollapsingHeader(const char* label, bool* p_open, ImGuiTreeNodeFlags
     if (p_open)
         flags |= ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
     bool is_open = TreeNodeBehavior(id, flags, label);
-    if (p_open)
+    if (p_open != NULL)
     {
         // Create a small overlapping close button
         // FIXME: We can evolve this into user accessible helpers to add extra buttons on title bars, headers, etc.
@@ -6281,7 +6288,7 @@ bool ImGui::BeginMenu(const char* label, bool enabled)
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
     const ImGuiID id = window->GetID(label);
-    bool menu_is_open = IsPopupOpen(id);
+    bool menu_is_open = IsPopupOpen(id, ImGuiPopupFlags_None);
 
     // Sub-menus are ChildWindow so that mouse can be hovering across them (otherwise top-most popup menu would steal focus and not allow hovering on parent menu)
     ImGuiWindowFlags flags = ImGuiWindowFlags_ChildMenu | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNavFocus;
@@ -6407,7 +6414,7 @@ bool ImGui::BeginMenu(const char* label, bool enabled)
 
     if (!enabled) // explicitly close if an open menu becomes disabled, facilitate users code a lot in pattern such as 'if (BeginMenu("options", has_object)) { ..use object.. }'
         want_close = true;
-    if (want_close && IsPopupOpen(id))
+    if (want_close && IsPopupOpen(id, ImGuiPopupFlags_None))
         ClosePopupToLevel(g.BeginPopupStack.Size, true);
 
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.ItemFlags | ImGuiItemStatusFlags_Openable | (menu_is_open ? ImGuiItemStatusFlags_Opened : 0));
@@ -7275,7 +7282,7 @@ bool    ImGui::TabItemEx(ImGuiTabBar* tab_bar, const char* label, bool* p_open, 
     // Tooltip (FIXME: Won't work over the close button because ItemOverlap systems messes up with HoveredIdTimer)
     // We test IsItemHovered() to discard e.g. when another item is active or drag and drop over the tab bar (which g.HoveredId ignores)
     if (g.HoveredId == id && !held && g.HoveredIdNotActiveTimer > 0.50f && IsItemHovered())
-        if (!(tab_bar->Flags & ImGuiTabBarFlags_NoTooltip))
+        if (!(tab_bar->Flags & ImGuiTabBarFlags_NoTooltip) && !(tab->Flags & ImGuiTabItemFlags_NoTooltip))
             SetTooltip("%.*s", (int)(FindRenderedTextEnd(label) - label), label);
 
     return tab_contents_visible;
