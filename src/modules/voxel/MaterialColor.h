@@ -26,6 +26,7 @@ extern const char* getDefaultPaletteName();
 extern core::String extractPaletteName(const core::String& file);
 
 extern bool initDefaultMaterialColors();
+extern bool initMinecraftMaterialColors();
 extern bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
 extern bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const core::String& luaBuffer);
 extern bool overrideMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
