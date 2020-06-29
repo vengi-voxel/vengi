@@ -43,41 +43,41 @@ bool AoSVXLFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 			}
 			int z = 0;
 			for (;;) {
-				const int number_4byte_chunks = v[0];
-				const int top_color_start = v[1];
-				const int top_color_end = v[2]; // inclusive
+				const int number4byteChunks = v[0];
+				const int topColorStart = v[1];
+				const int topColorEnd = v[2]; // inclusive
 
-				for (int i = z; i < top_color_start; ++i) {
+				for (int i = z; i < topColorStart; ++i) {
 					volume->setVoxel(x, flipHeight - i, y, air);
 				}
 
-				uint32_t *rgba = (uint32_t *)(v + 4);
-				for (z = top_color_start; z <= top_color_end; ++z) {
+				const uint32_t *rgba = (const uint32_t *)(v + sizeof(uint32_t));
+				for (z = topColorStart; z <= topColorEnd; ++z) {
 					const glm::vec4& color = core::Color::fromRGBA(*rgba);
 					const int index = core::Color::getClosestMatch(color, materialColors);
 					volume->setVoxel(x, flipHeight - z, y, voxel::createVoxel(voxel::VoxelType::Generic, index));
 					++rgba;
 				}
 
-				const int len_bottom = top_color_end - top_color_start + 1;
+				const int lenBottom = topColorEnd - topColorStart + 1;
 
 				// check for end of data marker
-				if (number_4byte_chunks == 0) {
+				if (number4byteChunks == 0) {
 					// infer ACTUAL number of 4-byte chunks from the length of the color data
-					v += 4 * (len_bottom + 1);
+					v += sizeof(uint32_t) * (lenBottom + 1);
 					break;
 				}
 
 				// infer the number of bottom colors in next span from chunk length
-				const int len_top = (number_4byte_chunks - 1) - len_bottom;
+				const int len_top = (number4byteChunks - 1) - lenBottom;
 
 				// now skip the v pointer past the data to the beginning of the next span
-				v += v[0] * 4;
+				v += v[0] * sizeof(uint32_t);
 
-				const int bottom_color_end = v[3]; // aka air start - exclusive
-				const int bottom_color_start = bottom_color_end - len_top;
+				const int bottomColorEnd = v[3]; // aka air start - exclusive
+				const int bottomColorStart = bottomColorEnd - len_top;
 
-				for (z = bottom_color_start; z < bottom_color_end; ++z) {
+				for (z = bottomColorStart; z < bottomColorEnd; ++z) {
 					const glm::vec4& color = core::Color::fromRGBA(*rgba);
 					const int index = core::Color::getClosestMatch(color, materialColors);
 					volume->setVoxel(x, flipHeight - z, y, voxel::createVoxel(voxel::VoxelType::Generic, index));
