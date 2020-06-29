@@ -55,8 +55,8 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 #ifdef PKGDATADIR
 	core_assert_always(registerPath(PKGDATADIR));
 #endif
-	const core::VarPtr& corePath = core::Var::get(cfg::CorePath, nullptr, 0, "Specifies an additional filesystem search path");
-	if (corePath) {
+	const core::VarPtr& corePath = core::Var::get(cfg::CorePath, "", 0, "Specifies an additional filesystem search path");
+	if (!corePath->strVal().empty()) {
 		core_assert_always(registerPath(corePath->strVal()));
 	}
 
