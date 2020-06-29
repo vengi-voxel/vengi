@@ -19,5 +19,11 @@ nav:
       - Compilation.md
       - Setup.md
       - Configuration.md
+  - VoxEdit:
+      - voxedit/Index.md
+      - voxedit/Formats.md
+      - voxedit/Features.md
+      - voxedit/Controls.md
+      - voxedit/Palette.md
   - Game Design:
       - GameDesign.md
