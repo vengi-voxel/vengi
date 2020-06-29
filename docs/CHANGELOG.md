@@ -1,6 +1,6 @@
 # Changelog
 
-A more detailed changelog can be found at: [on github](https://github.com/mgerhardy/engine/commits/)
+A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
 ## 0.0.5 (2020-XX-XX)
 
