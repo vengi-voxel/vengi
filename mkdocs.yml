@@ -28,5 +28,7 @@ nav:
   - VoxConvert:
       - voxconvert/Index.md
       - voxconvert/Usage.md
+  - Thumbnailer:
+      - thumbnailer/Index.md
   - Game Design:
       - GameDesign.md
