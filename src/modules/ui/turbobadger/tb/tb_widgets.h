@@ -884,7 +884,7 @@ public:
 	}
 
 	/** Get the widget that should receive the events this widget invoke. By default the parent. */
-	virtual TBWidget *getEventDestination() {
+	virtual TBWidget *getEventDestination() const {
 		return m_parent;
 	}
 

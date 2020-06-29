@@ -52,7 +52,7 @@ public:
 
 	bool show(const char *title, const char *message, TBMessageWindowSettings *settings = nullptr);
 
-	virtual TBWidget *getEventDestination() override {
+	virtual TBWidget *getEventDestination() const override {
 		return m_target.get();
 	}
 

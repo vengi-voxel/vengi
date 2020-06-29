@@ -90,7 +90,7 @@ public:
 	/** Set if this text field should be allowed to squeeze below its
 		preferred size. If squeezable it may shrink to width 0. */
 	void setSqueezable(bool squeezable);
-	bool getSqueezable() {
+	bool getSqueezable() const {
 		return m_squeezable;
 	}
 
@@ -130,7 +130,7 @@ public:
 	void setSqueezable(bool squeezable) {
 		m_textfield.setSqueezable(squeezable);
 	}
-	bool getSqueezable() {
+	bool getSqueezable() const {
 		return m_textfield.getSqueezable();
 	}
 
@@ -138,7 +138,7 @@ public:
 	void setAutoRepeat(bool autoRepeatClick) {
 		m_auto_repeat_click = autoRepeatClick;
 	}
-	bool getAutoRepeat() {
+	bool getAutoRepeat() const {
 		return m_auto_repeat_click;
 	}
 

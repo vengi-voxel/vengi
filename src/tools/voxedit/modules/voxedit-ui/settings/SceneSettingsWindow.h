@@ -38,7 +38,7 @@ public:
 	SceneSettingsWindow(tb::TBWidget *target, SceneSettings* settings);
 	virtual ~SceneSettingsWindow();
 
-	tb::TBWidget *getEventDestination() override {
+	tb::TBWidget *getEventDestination() const override {
 		return _target.get();
 	}
 

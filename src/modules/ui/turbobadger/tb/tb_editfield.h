@@ -135,7 +135,7 @@ public:
 	/** Set the edit type that is a hint for virtual keyboards about what the
 		content should be. */
 	void setEditType(EDIT_TYPE type);
-	EDIT_TYPE getEditType() {
+	EDIT_TYPE getEditType() const {
 		return m_edit_type;
 	}
 

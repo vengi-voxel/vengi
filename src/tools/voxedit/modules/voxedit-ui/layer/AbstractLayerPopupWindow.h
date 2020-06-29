@@ -25,7 +25,7 @@ public:
 	AbstractLayerPopupWindow(tb::TBWidget *target, const tb::TBID &id, const char *file);
 	virtual ~AbstractLayerPopupWindow();
 
-	tb::TBWidget *getEventDestination() override {
+	tb::TBWidget *getEventDestination() const override {
 		return _target.get();
 	}
 

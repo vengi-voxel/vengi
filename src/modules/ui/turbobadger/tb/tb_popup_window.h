@@ -61,7 +61,7 @@ public:
 
 	bool show(const TBPopupAlignment &alignment);
 
-	virtual TBWidget *getEventDestination() override {
+	virtual TBWidget *getEventDestination() const override {
 		return m_target.get();
 	}
 
