@@ -20,14 +20,12 @@ nav:
       - Configuration.md
       - Formats.md
       - CHANGELOG.md
-  - VoxEdit:
-      - voxedit/Index.md
-      - voxedit/Controls.md
-      - voxedit/Palette.md
   - Client/Server:
       - server/Index.md
       - server/Setup.md
-  - VoxConvert: voxconvert/Index.md
-  - Thumbnailer: thumbnailer/Index.md
-  - MapView: mapview/Index.md
+  - Tools:
+      - VoxConvert: voxconvert/Index.md
+      - Thumbnailer: thumbnailer/Index.md
+      - MapView: mapview/Index.md
+      - VoxEdit: voxedit/Index.md
   - Game Design: GameDesign.md
