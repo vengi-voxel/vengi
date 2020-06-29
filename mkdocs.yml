@@ -17,18 +17,17 @@ nav:
   - Basics:
       - Dependencies.md
       - Compilation.md
-      - Setup.md
       - Configuration.md
+      - Formats.md
+      - CHANGELOG.md
   - VoxEdit:
       - voxedit/Index.md
-      - voxedit/Formats.md
-      - voxedit/Features.md
       - voxedit/Controls.md
       - voxedit/Palette.md
-  - VoxConvert:
-      - voxconvert/Index.md
-      - voxconvert/Usage.md
-  - Thumbnailer:
-      - thumbnailer/Index.md
-  - Game Design:
-      - GameDesign.md
+  - Client/Server:
+      - server/Index.md
+      - server/Setup.md
+  - VoxConvert: voxconvert/Index.md
+  - Thumbnailer: thumbnailer/Index.md
+  - MapView: mapview/Index.md
+  - Game Design: GameDesign.md
