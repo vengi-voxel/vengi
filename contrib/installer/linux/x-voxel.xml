@@ -29,6 +29,12 @@
   <mime-type type="application/x-sandbox-voxedit">
     <comment>Voxel model Sandbox VoxEdit</comment>
     <glob pattern="*.vxm"/>
+    <magic priority="50">
+      <match type="string" offset="0" value="VXM4"/>
+    </magic>
+    <magic priority="50">
+      <match type="string" offset="0" value="VXM5"/>
+    </magic>
   </mime-type>
   <mime-type type="application/x-build-engine">
     <comment>Voxel model used by the Build engine</comment>
