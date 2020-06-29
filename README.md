@@ -21,15 +21,15 @@ Download latest windows binaries at [github action artifacts](https://github.com
 
 ## Tools
 
-* [The voxel editor](src/tools/voxedit/README.md)
-* [Filemanager Thumbnailer](src/tools/thumbnailer/README.md)
+* [The voxel editor](docs/voxedit)
+* [Filemanager Thumbnailer](docs/thumbnailer)
 * [World viewer](src/tools/mapview/README.md)
 * [Remote AI Debugger](src/tools/rcon/README.md)
 * [Database tool](src/tools/databasetool/README.md)
 * [Shader tool](src/tools/shadertool/README.md)
 * [Compute Shader tool](src/tools/computeshadertool/README.md)
 * [Visual test applications](src/tests/README.md)
-* [Volume convert tool](src/tools/voxconvert/README.md)
+* [Volume convert tool](docs/voxconvert)
 
 ## General
 
