@@ -20,6 +20,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel voxelutil)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
+	tests/AoSVXLFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
@@ -33,6 +34,7 @@ set(TEST_SRCS
 set(TEST_FILES
 	tests/qubicle.qb
 	tests/qubicle.qbt
+	tests/aceofspades.vxl
 	tests/cc.vxl
 	tests/test.binvox
 	tests/test.kvx
