@@ -335,6 +335,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 
 	std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > extracted;
 
+	// TODO: this is iteration over a lot of duplicated region points
 	for (int cx = lowerX; cx <= upperX; ++cx) {
 		const int x = glm::floor(cx / meshSizef.x);
 		for (int cy = lowerY; cy <= upperY; ++cy) {
