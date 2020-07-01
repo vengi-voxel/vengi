@@ -7,6 +7,7 @@
 #include "core/command/Command.h"
 #include "voxelutil/VolumeMerger.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 #include <algorithm>
 
 namespace voxedit {
@@ -355,6 +356,7 @@ bool LayerManager::setActiveLayer(int layerId) {
 }
 
 bool LayerManager::deleteLayer(int layerId, bool force) {
+	core_trace_scoped(DeleteLayer);
 	if (layerId < 0 || layerId >= (int)_layers.size()) {
 		Log::debug("Invalid layer id given: %i", layerId);
 		return false;
@@ -393,6 +395,7 @@ const LayerMetadata& LayerManager::metadata(int layerId) const {
 }
 
 int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* volume, const glm::ivec3& pivot) {
+	core_trace_scoped(AddLayer);
 	const size_t maxLayers = _layers.size();
 	for (size_t layerId = 0; layerId < maxLayers; ++layerId) {
 		if (_layers[layerId].valid) {

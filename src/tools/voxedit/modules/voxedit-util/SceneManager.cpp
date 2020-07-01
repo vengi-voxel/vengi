@@ -576,6 +576,7 @@ void SceneManager::resetSceneState() {
 }
 
 bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
+	core_trace_scoped(SetNewVolumes);
 	const int volumeCnt = (int)volumes.size();
 	if (volumeCnt == 0) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
