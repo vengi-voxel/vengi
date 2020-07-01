@@ -12,10 +12,6 @@
 
 namespace voxel {
 
-const char *VoxFileFormat::magic() const {
-	return "";
-}
-
 const glm::vec4& VoxFileFormat::getColor(const Voxel& voxel) const {
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	return materialColors[voxel.getColor()];

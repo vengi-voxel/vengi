@@ -28,7 +28,6 @@ protected:
 public:
 	virtual ~VoxFileFormat() = default;
 
-	virtual const char *magic() const;
 	virtual bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) = 0;
 	virtual RawVolume* load(const io::FilePtr& file);
 	virtual bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) = 0;
