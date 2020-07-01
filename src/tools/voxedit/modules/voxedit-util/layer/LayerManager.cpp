@@ -408,6 +408,7 @@ int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* vol
 }
 
 bool LayerManager::activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume, const voxel::Region& region, const glm::ivec3& pivot) {
+	core_trace_scoped(ActivateLayer);
 	core_assert_always(layerId >= 0 && layerId < (int)_layers.size());
 	if (name == nullptr || name[0] == '\0') {
 		_layers[layerId].name = core::string::format("%i", (int)layerId);

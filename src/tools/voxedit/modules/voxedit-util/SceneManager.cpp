@@ -617,6 +617,7 @@ void SceneManager::updateGridRenderer(const voxel::Region& region) {
 }
 
 bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {
+	core_trace_scoped(SetNewVolume);
 	if (idx < 0 || idx >= _layerMgr.maxLayers()) {
 		return false;
 	}
@@ -2025,6 +2026,7 @@ void SceneManager::setGizmoPosition() {
 }
 
 void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) {
+	core_trace_scoped(SceneManagerAddLayer);
 	if (volume == nullptr) {
 		const voxel::Region& newVolumeRegion = _volumeRenderer.region();
 		volume = new voxel::RawVolume(newVolumeRegion);
