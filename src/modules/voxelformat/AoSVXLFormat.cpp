@@ -6,6 +6,7 @@
 #include "core/Assert.h"
 #include "voxel/MaterialColor.h"
 #include "core/StringUtil.h"
+#include "core/collection/Map.h"
 #include "core/Log.h"
 #include "core/Color.h"
 #include <SDL_stdinc.h>
@@ -34,29 +35,30 @@ bool AoSVXLFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 	}
 
 	const uint8_t *base = v;
-	constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air, 0);
 	const MaterialColorArray& materialColors = getMaterialColors();
+	core::Map<uint32_t, int, 521> paletteMap(32768);
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
-			for (int z = 0; z < depth; ++z) {
-				volume->setVoxel(x, flipHeight - z, y, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-			}
 			int z = 0;
 			for (;;) {
 				const int number4byteChunks = v[0];
 				const int topColorStart = v[1];
 				const int topColorEnd = v[2]; // inclusive
-
-				for (int i = z; i < topColorStart; ++i) {
-					volume->setVoxel(x, flipHeight - i, y, air);
-				}
-
+				int paletteIndex = 1;
 				const uint32_t *rgba = (const uint32_t *)(v + sizeof(uint32_t));
 				for (z = topColorStart; z <= topColorEnd; ++z) {
-					const glm::vec4& color = core::Color::fromRGBA(*rgba);
-					const int index = core::Color::getClosestMatch(color, materialColors);
-					volume->setVoxel(x, flipHeight - z, y, voxel::createVoxel(voxel::VoxelType::Generic, index));
+					if (!paletteMap.get(*rgba, paletteIndex)) {
+						const glm::vec4& color = core::Color::fromRGBA(*rgba);
+						paletteIndex = core::Color::getClosestMatch(color, materialColors);
+						if (paletteMap.size() < paletteMap.capacity()) {
+							paletteMap.put(*rgba, paletteIndex);
+						}
+					}
+					volume->setVoxel(x, flipHeight - z, y, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
 					++rgba;
+				}
+				for (int i = z; i < depth; ++i) {
+					volume->setVoxel(x, flipHeight - i, y, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
 				}
 
 				const int lenBottom = topColorEnd - topColorStart + 1;
@@ -78,9 +80,14 @@ bool AoSVXLFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 				const int bottomColorStart = bottomColorEnd - len_top;
 
 				for (z = bottomColorStart; z < bottomColorEnd; ++z) {
-					const glm::vec4& color = core::Color::fromRGBA(*rgba);
-					const int index = core::Color::getClosestMatch(color, materialColors);
-					volume->setVoxel(x, flipHeight - z, y, voxel::createVoxel(voxel::VoxelType::Generic, index));
+					if (!paletteMap.get(*rgba, paletteIndex)) {
+						const glm::vec4& color = core::Color::fromRGBA(*rgba);
+						paletteIndex = core::Color::getClosestMatch(color, materialColors);
+						if (paletteMap.size() < paletteMap.capacity()) {
+							paletteMap.put(*rgba, paletteIndex);
+						}
+					}
+					volume->setVoxel(x, flipHeight - z, y, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
 					++rgba;
 				}
 			}

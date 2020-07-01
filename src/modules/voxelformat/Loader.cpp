@@ -4,6 +4,7 @@
 
 #include "Loader.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 #include "VoxFormat.h"
 #include "QBTFormat.h"
 #include "QBFormat.h"
@@ -26,6 +27,7 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		Log::error("Failed to load model file %s", filePtr->name().c_str());
 		return false;
 	}
+	core_trace_scoped(LoadVolumeFormat);
 	const core::String& ext = filePtr->extension();
 	if (ext == "qb") {
 		voxel::QBFormat f;
