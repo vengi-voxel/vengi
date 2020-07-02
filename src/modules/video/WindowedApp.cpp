@@ -383,7 +383,7 @@ core::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 	core::Var::get(cfg::ClientMultiSampleSamples, "0");
 	core::Var::get(cfg::ClientFullscreen, "true");
-	core::Var::get(cfg::ClientWindowHghDPI, "false", core::CV_READONLY);
+	core::Var::get(cfg::ClientWindowHghDPI, "true", core::CV_READONLY);
 	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientWater, "true", core::CV_SHADER);

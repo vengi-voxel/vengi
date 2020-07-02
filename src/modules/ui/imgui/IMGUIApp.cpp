@@ -200,10 +200,15 @@ core::AppState IMGUIApp::onInit() {
 	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
 	//io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
 	ImFontConfig fontCfg;
-	fontCfg.SizePixels = 13.0f * _dpiFactor;
+	fontCfg.SizePixels = 15.0f * _dpiFactor;
+
 	io.Fonts->AddFontDefault(&fontCfg);
 
-	unsigned char* pixels;
+	ImGui::StyleColorsDark();
+	ImGuiStyle &style = ImGui::GetStyle();
+	style.ScaleAllSizes(_dpiFactor);
+
+	unsigned char *pixels;
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
