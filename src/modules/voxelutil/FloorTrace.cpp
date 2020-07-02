@@ -15,8 +15,8 @@ FloorTraceResult findWalkableFloor(voxel::PagedVolume::Sampler *sampler, const g
 		return FloorTraceResult();
 	}
 
-	const voxel::VoxelType type = sampler->voxel().getMaterial();
-	if (voxel::isEnterable(type)) {
+	const voxel::Voxel voxel = sampler->voxel();
+	if (voxel::isEnterable(voxel.getMaterial())) {
 		for (int i = 0; i < position.y; ++i) {
 			sampler->moveNegativeY();
 			if (!sampler->currentPositionValid()) {
@@ -27,7 +27,7 @@ FloorTraceResult findWalkableFloor(voxel::PagedVolume::Sampler *sampler, const g
 				return FloorTraceResult(sampler->position().y + 1, sampler->voxel());
 			}
 		}
-		return FloorTraceResult();
+		return FloorTraceResult(position.y, voxel);
 	}
 
 	const int maxDistance = core_min(maxDistanceUpwards, voxel::MAX_HEIGHT - position.y);
