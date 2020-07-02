@@ -315,33 +315,17 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 
 	const int s = _meshSize->intVal();
 	const glm::ivec3 meshSize(s);
-	const glm::vec3 meshSizef = meshSize;
-
-	const glm::ivec3& lower = region.getLowerCorner();
-	const glm::ivec3& upper = region.getUpperCorner();
-
-	const int border = 1;
+	const glm::ivec3 meshSizeMinusOne(s - 1);
 	const voxel::Region& completeRegion = volume->region();
-	const int xGap = lower.x % meshSize.x;
-	const int yGap = lower.y % meshSize.y;
-	const int zGap = lower.z % meshSize.z;
-	const int lowerX = lower.x - ((xGap == 0) ? border : 0);
-	const int lowerY = lower.y - ((yGap == 0) ? border : 0);
-	const int lowerZ = lower.z - ((zGap == 0) ? border : 0);
 
-	const int upperX = upper.x + ((xGap == meshSize.x - 1) ? border : 0);
-	const int upperY = upper.y + ((yGap == meshSize.y - 1) ? border : 0);
-	const int upperZ = upper.z + ((zGap == meshSize.z - 1) ? border : 0);
+	// convert to step coordinates that are needed to extract
+	// the given region mesh size ranges
+	const glm::ivec3& l = (region.getLowerCorner() - meshSizeMinusOne) / meshSize;
+	const glm::ivec3& u = region.getUpperCorner() / meshSize;
 
-	std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > extracted;
-
-	// TODO: this is iteration over a lot of duplicated region points
-	for (int cx = lowerX; cx <= upperX; ++cx) {
-		const int x = glm::floor(cx / meshSizef.x);
-		for (int cy = lowerY; cy <= upperY; ++cy) {
-			const int y = glm::floor(cy / meshSizef.y);
-			for (int cz = lowerZ; cz <= upperZ; ++cz) {
-				const int z = glm::floor(cz / meshSizef.z);
+	for (int x = l.x; x <= u.x; ++x) {
+		for (int y = l.y; y <= u.y; ++y) {
+			for (int z = l.z; z <= u.z; ++z) {
 				const voxel::Region& finalRegion = calculateExtractRegion(x, y, z, meshSize);
 				const glm::ivec3& mins = finalRegion.getLowerCorner();
 
@@ -352,11 +336,6 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 						delete meshes[idx];
 						meshes[idx] = nullptr;
 					}
-					continue;
-				}
-
-				auto i = extracted.insert(mins);
-				if (!i.second) {
 					continue;
 				}
 
