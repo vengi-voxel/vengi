@@ -5,6 +5,7 @@
 #include "AIDebugger.h"
 #include "MapItem.h"
 #include "Settings.h"
+#include "core/Trace.h"
 
 namespace ai {
 namespace debug {
@@ -54,6 +55,7 @@ MapItem* MapView::createMapItem(const AIStateWorld& state) {
 }
 
 MapItem* MapView::createOrUpdateMapItem(const AIStateWorld& state) {
+	core_trace_scoped(CreateOrUpdateMapItem);
 	auto i = _items.find(state.getId());
 	MapItem* item;
 	if (i == _items.end()) {
@@ -110,6 +112,7 @@ void MapView::drawBackground(QPainter* painter, const QRectF& rectf) {
 }
 
 void MapView::updateMapView() {
+	core_trace_scoped(UpdateMapView);
 	QHash<ai::CharacterId, MapItem*> copy(_items);
 	const AIDebugger::Entities& e = _debugger.getEntities();
 	for (AIDebugger::EntitiesIter i = e.begin(); i != e.end(); ++i) {

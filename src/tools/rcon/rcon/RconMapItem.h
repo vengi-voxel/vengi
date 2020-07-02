@@ -5,6 +5,7 @@
 #include <QGraphicsLineItem>
 #include "network/ProtocolEnum.h"
 #include "Settings.h"
+#include "core/Trace.h"
 
 namespace rcon {
 
@@ -46,6 +47,7 @@ public:
 	}
 
 	virtual void updateState(const ai::AIStateWorld& state) override {
+		core_trace_scoped(UpdateState);
 		Super::updateState(state);
 		// format of those attributes is %f/%f
 		updateAttrib(network::AttribType::VIEWDISTANCE, _visibilityCircle);

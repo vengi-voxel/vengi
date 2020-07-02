@@ -15,6 +15,7 @@ StateTableModel::~StateTableModel() {
 }
 
 void StateTableModel::update() {
+	core_trace_scoped(StateTableModelUpdate);
 	beginResetModel();
 	const AIDebugger::CharacterAttributesMap& a = _debugger.getAttributes();
 	_list.clear();

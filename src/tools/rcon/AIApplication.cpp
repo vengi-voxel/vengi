@@ -6,6 +6,7 @@
 #include "AINodeStaticResolver.h"
 #include "AIDebuggerWidget.h"
 #include "Version.h"
+#include "core/Trace.h"
 
 #include <QList>
 #include <QString>
@@ -18,6 +19,7 @@ namespace debug {
 
 AIApplication::AIApplication(int argc, char** argv) :
 		QApplication(argc, argv) {
+	core_trace_init();
 }
 
 void AIApplication::init() {
@@ -71,6 +73,7 @@ void AIApplication::init() {
 }
 
 AIApplication::~AIApplication() {
+	core_trace_shutdown();
 	delete _debugger;
 	delete _resolver;
 	delete _widget;

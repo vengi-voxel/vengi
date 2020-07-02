@@ -11,6 +11,7 @@
 #include <QPushButton>
 #include <QUrl>
 #include <QHeaderView>
+#include "core/Trace.h"
 
 #include "AIDebugger.h"
 #include "AIDebuggerWidget.h"
@@ -76,6 +77,7 @@ void AIDebuggerWidget::onEntitiesUpdated() {
 }
 
 void AIDebuggerWidget::onSelected() {
+	core_trace_scoped(OnSelected);
 	if (_model.editMode()) {
 		_model.abortEditMode();
 	}
@@ -98,6 +100,7 @@ void AIDebuggerWidget::onSelected() {
 }
 
 void AIDebuggerWidget::onNamesReceived() {
+	core_trace_scoped(OnNamesReceived);
 	const QString name = _namesComboBox->currentText();
 	_namesComboBox->clear();
 	const QStringList& names = _debugger.getNames();

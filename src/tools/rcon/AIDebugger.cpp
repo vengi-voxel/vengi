@@ -8,6 +8,7 @@
 #include <QtCore>
 #include <vector>
 #include "Version.h"
+#include "core/Trace.h"
 #include "ai/server/IProtocolHandler.h"
 #include "ai/server/AIStateMessage.h"
 #include "ai/server/AINamesMessage.h"
@@ -325,6 +326,7 @@ MapView* AIDebugger::createMapWidget() {
 }
 
 void AIDebugger::setNames(const std::vector<core::String>& names) {
+	core_trace_scoped(SetNames);
 	_names.clear();
 	_names.reserve(names.size());
 	for (const core::String& name : names) {
@@ -333,6 +335,7 @@ void AIDebugger::setNames(const std::vector<core::String>& names) {
 }
 
 void AIDebugger::setEntities(const std::vector<AIStateWorld>& entities) {
+	core_trace_scoped(SetEntities);
 	_entities.clear();
 	for (const AIStateWorld& state : entities) {
 		_entities.insert(state.getId(), state);
