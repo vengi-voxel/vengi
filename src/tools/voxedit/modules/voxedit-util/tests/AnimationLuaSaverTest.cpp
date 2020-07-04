@@ -27,7 +27,12 @@ TEST_F(AnimationLuaSaverTest, testSave) {
 	animation::CharacterSkeletonAttribute attributes;
 	attributes.neckHeight = -1337.0f;
 	ASSERT_TRUE(saveAnimationEntityLua(settings, attributes, "foo", file));
-	ASSERT_TRUE(core::string::contains(io::filesystem()->load("testSave.lua"), "-1337.0"));
+	file->close(); // flush
+	const io::FilePtr& fileForRead = io::filesystem()->open("testSave.lua");
+	EXPECT_STREQ(fileForRead->name().c_str(), file->name().c_str());
+	const core::String& luaContent = fileForRead->load();
+	EXPECT_NE(luaContent, "");
+	EXPECT_TRUE(core::string::contains(luaContent, "-1337.0")) << luaContent;
 }
 
 }
