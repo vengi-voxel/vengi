@@ -69,6 +69,7 @@ core::AppState TestApp::onInit() {
 
 	video::enableDebug(video::DebugSeverity::Medium);
 
+	_axis.setSize(10.0f, 10.0f, 10.0f);
 	if (!_axis.init()) {
 		return core::AppState::InitFailure;
 	}

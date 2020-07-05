@@ -26,13 +26,19 @@ private:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	int32_t _meshIndex = -1;
+	int32_t _coneXIndex = -1;
+	int32_t _coneYIndex = -1;
+	int32_t _coneZIndex = -1;
 	float _lineWidth = 4.0f;
 	glm::vec3 _pos { 0.0f };
 	glm::vec3 _size { 1.0f };
 	const bool _flipZ;
+	const bool _arrowHeads;
+
+	void createCones();
 
 public:
-	Axis(bool flipZ = true);
+	Axis(bool flipZ = true, bool arrowHeads = true);
 
 	void setSize(float x, float y, float z);
 	void setPosition(const glm::vec3& pos);
