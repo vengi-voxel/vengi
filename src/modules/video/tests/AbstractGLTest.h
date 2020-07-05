@@ -23,6 +23,15 @@ struct ShaderVarState {
 	bool clientDebugShadow = false;
 };
 
+inline ::std::ostream& operator<<(::std::ostream& os, const ShaderVarState& state) {
+	return os << "state["
+			<< "clientFog(" << state.clientFog << "), "
+			<< "clientShadowMap(" << state.clientShadowMap << "), "
+			<< "clientWater(" << state.clientWater << "), "
+			<< "clientDebugShadow(" << state.clientDebugShadow << ")"
+			<< "]";
+}
+
 class AbstractGLTest : public core::AbstractTest {
 protected:
 	SDL_Window *_window = nullptr;

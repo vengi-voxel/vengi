@@ -25,6 +25,21 @@ TEST_P(VoxelFrontendShaderTest, testWorldShader) {
 	shader.shutdown();
 }
 
+TEST_P(VoxelFrontendShaderTest, testWaterShader) {
+	if (!_supported) {
+		return;
+	}
+	const video::ShaderVarState val = GetParam();
+	core::Var::get(cfg::ClientFog, "", core::CV_SHADER)->setVal(val.clientFog);
+	core::Var::get(cfg::ClientShadowMap, "", core::CV_SHADER)->setVal(val.clientShadowMap);
+	core::Var::get(cfg::ClientWater, "", core::CV_SHADER)->setVal(val.clientWater);
+	core::Var::get(cfg::ClientDebugShadow, "", core::CV_SHADER)->setVal(val.clientDebugShadow);
+
+	shader::WaterShader shader;
+	EXPECT_TRUE(shader.setup());
+	shader.shutdown();
+}
+
 INSTANTIATE_TEST_SUITE_P(
 	ShaderVars,
 	VoxelFrontendShaderTest,
