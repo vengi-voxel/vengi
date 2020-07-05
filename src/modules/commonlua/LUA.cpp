@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "LUAFunctions.h"
 #include "Trace.h"
+#include "engine-config.h"
 
 namespace lua {
 
@@ -186,42 +187,43 @@ core::String LUA::stackDump(lua_State *L) {
 	StackChecker check(L);
 #endif
 	const int top = lua_gettop(L);
+	core::String dump = core::string::format("%i values on stack%c", top, top > 0 ? '\n' : ' ');
 	for (int i = 1; i <= top; i++) { /* repeat for each level */
 		const int t = lua_type(L, i);
 		switch (t) {
 		case LUA_TSTRING:
-			lua_pushfstring(L, "%i: %s (%s)", i, lua_tostring(L, i), luaL_typename(L, i));
+			lua_pushfstring(L, "%d: %s (%s)\n", i, lua_tostring(L, i), luaL_typename(L, i));
 			break;
 
 		case LUA_TBOOLEAN:
-			lua_pushfstring(L, "%i: %s (%s)", i, (lua_toboolean(L, i) ? "true" : "false"), luaL_typename(L, i));
+			lua_pushfstring(L, "%d: %s (%s)\n", i, (lua_toboolean(L, i) ? "true" : "false"), luaL_typename(L, i));
 			break;
 
 		case LUA_TNUMBER:
-			lua_pushfstring(L, "%i: " LUA_NUMBER_FMT " (%s)", i, lua_tonumber(L, i), luaL_typename(L, i));
+			lua_pushfstring(L, "%d: " LUA_NUMBER_FMT " (%s)\n", i, lua_tonumber(L, i), luaL_typename(L, i));
 			break;
 
 		case LUA_TUSERDATA:
 		case LUA_TLIGHTUSERDATA:
-			lua_pushfstring(L, "%i: %p (%s)", i, lua_touserdata(L, i), luaL_typename(L, i));
+			lua_pushfstring(L, "%d: %p (%s)\n", i, lua_touserdata(L, i), luaL_typename(L, i));
 			break;
 
 		case LUA_TNIL:
-			lua_pushfstring(L, "%i: nil", i);
+			lua_pushfstring(L, "%d: nil\n", i);
 			break;
 
 		default:
-			lua_pushfstring(L, "%i: (%s)", i, luaL_typename(L, i));
+			lua_pushfstring(L, "%d: (%s)\n", i, luaL_typename(L, i));
 			break;
 		}
+		const char* id = lua_tostring(L, -1);
+		if (id != nullptr) {
+			dump.append(id);
+		}
+		lua_pop(L, 1);
 	}
 
-	const char* id = lua_tostring(L, -1);
-	lua_pop(L, 1);
-	if (id == nullptr) {
-		return "";
-	}
-	return id;
+	return dump;
 }
 
 core::String LUA::stackDump() {
@@ -238,7 +240,7 @@ core::String LUA::string(const core::String& expr, const core::String& defaultVa
 		lua_getglobal(_state, "evalExpr");
 		if (lua_isstring(_state, -1)) {
 			r = lua_tostring(_state, -1);
-																																																} else if (lua_isboolean(_state, -1)) {
+		} else if (lua_isboolean(_state, -1)) {
 			r = lua_toboolean(_state, -1) ? "true" : "false";
 		}
 		/* remove lua_getglobal value */
