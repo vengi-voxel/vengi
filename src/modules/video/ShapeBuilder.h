@@ -85,26 +85,12 @@ public:
 	void aabbGridYZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
 	void aabbGridXZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
 
-	inline void cylinder(float radius, float length) {
-		if (radius <= 0.0f) {
-			return;
-		}
-		if (length <= 0.0f) {
-			return;
-		}
-		cone(radius, 0.0f, length, -1, false, true);
-	}
+	void cylinder(float radius, float length, int slices = 20);
 
 	/**
 	 * @brief Creates a triangulated cone.
-	 * @param[in] topRadius how many verts the top circle should have - if this is 0 it's a top cone
-	 * @param[in] bottomRadius how many verts the bottom circle should have - if this is 0 it's a bottom cone
-	 * @param[in] length how many world units should the cone be in length
-	 * @param[in] openingAngle override the top and bottom for an angle of opening instead
-	 * @param[in] inside the mesh should have inside geometry
-	 * @param[in] outside the mesh should have outside geometry
 	 */
-	void cone(float topRadius, float bottomRadius, float length, int openingAngle = -1, bool inside = false, bool outside = true);
+	void cone(float baseRadius, float length, int slices = 20);
 
 	void cube(const glm::vec3& mins, const glm::vec3& maxs);
 

@@ -393,138 +393,123 @@ uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec3& norma
 	return (uint32_t)_vertices.size() - 1;
 }
 
-// https://gist.github.com/gszauer/5718609
-void ShapeBuilder::cone(float topRadius, float bottomRadius, float length, int openingAngle, bool inside, bool outside) {
-	if (topRadius <= 0.0f && bottomRadius <= 0.0f) {
+void ShapeBuilder::cylinder(float radius, float length, int slices) {
+	if (radius <= 0.0f) {
 		return;
 	}
 	if (length <= 0.0f) {
 		return;
 	}
-	if (!inside && !outside) {
+
+	setPrimitive(Primitive::Triangles);
+
+	reserve(slices + 2, (2 + slices) * 3 * 2);
+	const float invNumVerts = 1.0f / float(slices);
+
+	const uint32_t capTopIndex = addVertex(glm::zero<glm::vec3>());
+	const uint32_t capBottomIndex = addVertex(glm::vec3(0.0f, 0.0f, length));
+	const uint32_t startIndex = (uint32_t)_vertices.size();
+
+	// the bottom sides of the cone
+	for (int j = 0; j < slices; j++) {
+		const float angle = glm::two_pi<float>() * j * invNumVerts;
+		const float angleSin = glm::sin(angle);
+		const float angleCos = glm::cos(angle);
+		addVertex(glm::vec3(radius * angleCos, radius * angleSin, length));
+	}
+
+	const uint32_t topIndexStart = (uint32_t)_vertices.size();
+
+	// the top sides of the cone
+	for (int j = 0; j < slices; j++) {
+		const float angle = glm::two_pi<float>() * j * invNumVerts;
+		const float angleSin = glm::sin(angle);
+		const float angleCos = glm::cos(angle);
+		addVertex(glm::vec3(radius * angleCos, radius * angleSin, 0.0f));
+	}
+
+
+	for (int i = 0; i < slices; ++i) {
+		int ip1 = i + 1;
+		if (ip1 == slices) {
+			ip1 = 0;
+		}
+
+		addIndex(startIndex + i + slices);
+		addIndex(startIndex + ip1);
+		addIndex(startIndex + i);
+
+		addIndex(startIndex + ip1);
+		addIndex(startIndex + i + slices);
+		addIndex(startIndex + ip1 + slices);
+	}
+
+	// bottom indices
+	for (int i = 0; i < slices; ++i) {
+		addIndex(startIndex + i);
+		if (i == slices - 1) {
+			addIndex(startIndex);
+		} else {
+			addIndex(startIndex + i + 1);
+		}
+		addIndex(capBottomIndex);
+	}
+
+	// top indices
+	for (int i = 0; i < slices; ++i) {
+		if (i == slices - 1) {
+			addIndex(topIndexStart);
+		} else {
+			addIndex(topIndexStart + i + 1);
+		}
+		addIndex(topIndexStart + i);
+		addIndex(capTopIndex);
+	}
+}
+
+void ShapeBuilder::cone(float baseRadius, float length, int slices) {
+	if (baseRadius <= 0.0f) {
+		return;
+	}
+	if (length <= 0.0f) {
 		return;
 	}
 
 	setPrimitive(Primitive::Triangles);
 
-	if (openingAngle > 0 && openingAngle < 180) {
-		topRadius = 0.0f;
-		bottomRadius = glm::radians(length * glm::tan(float(openingAngle) * 0.5f));
+	reserve(slices + 2, (2 + slices) * 3 * 2);
+
+	const uint32_t tipConeIndex = addVertex(glm::zero<glm::vec3>());
+	const uint32_t capCenterIndex = addVertex(glm::vec3(0.0f, 0.0f, length));
+	const uint32_t startIndex = (uint32_t)_vertices.size();
+
+	// the sides of the cone
+	const float invNumVerts = 1.0f / float(slices);
+	for (int j = 0; j < slices; j++) {
+		const float angle = glm::two_pi<float>() * j * invNumVerts;
+		const float angleSin = glm::sin(angle);
+		const float angleCos = glm::cos(angle);
+		addVertex(glm::vec3(baseRadius * angleCos, baseRadius * angleSin, length));
 	}
 
-	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
-
-	const int numVerts = 20;
-	const int offset = (outside && inside) ? 2 * numVerts : 0;
-	reserve(numVerts, offset * 3);
-
-	const float invNumVerts = 1.0f / float(numVerts);
-	if (topRadius <= 0.0f) {
-		for (int j = 0; j < numVerts; j++) {
-			addVertex(glm::zero<glm::vec3>());
+	for (int i = 0; i < slices; ++i) {
+		if (i == slices - 1) {
+			addIndex(startIndex);
+		} else {
+			addIndex(startIndex + i + 1);
 		}
-	} else {
-		for (int j = 0; j < numVerts; j++) {
-			const float angle = glm::two_pi<float>() * j * invNumVerts;
-			const float angleSin = glm::sin(angle);
-			const float angleCos = glm::cos(angle);
-			addVertex(glm::vec3(topRadius * angleCos, topRadius * angleSin, 0.0f));
-		}
+		addIndex(startIndex + i);
+		addIndex(tipConeIndex);
 	}
 
-	if (bottomRadius <= 0.0f) {
-		const glm::vec3 v(0.0f, 0.0f, length);
-		for (int j = 0; j < numVerts; j++) {
-			addVertex(v);
+	for (int i = 0; i < slices; ++i) {
+		addIndex(startIndex + i);
+		if (i == slices - 1) {
+			addIndex(startIndex);
+		} else {
+			addIndex(startIndex + i + 1);
 		}
-	} else {
-		for (int j = 0; j < numVerts; j++) {
-			const float angle = glm::two_pi<float>() * j * invNumVerts;
-			const float angleSin = glm::sin(angle);
-			const float angleCos = glm::cos(angle);
-			addVertex(glm::vec3(bottomRadius * angleCos, bottomRadius * angleSin, length));
-		}
-	}
-
-	if (topRadius == 0.0f) {
-		if (outside) {
-			for (int i = 0; i < numVerts; ++i) {
-				if (i == numVerts - 1) {
-					addIndex(startIndex + numVerts);
-				} else {
-					addIndex(startIndex + i + 1 + numVerts);
-				}
-				addIndex(startIndex + i);
-				addIndex(startIndex + i + numVerts);
-			}
-		}
-		if (inside) {
-			for (int i = offset; i < numVerts + offset; ++i) {
-				if (i == numVerts - 1 + offset) {
-					addIndex(startIndex + numVerts + offset);
-				} else {
-					addIndex(startIndex + i + 1 + numVerts);
-				}
-				addIndex(startIndex + i);
-				addIndex(startIndex + i + numVerts);
-			}
-		}
-	} else if (bottomRadius == 0.0f) {
-		if (outside) {
-			for (int i = 0; i < numVerts; ++i) {
-				addIndex(startIndex + i + numVerts);
-				if (i == numVerts - 1) {
-					addIndex(startIndex + 0);
-				} else {
-					addIndex(startIndex + i + 1);
-				}
-				addIndex(startIndex + i);
-			}
-		}
-		if (inside) {
-			for (int i = 0; i < numVerts + offset; ++i) {
-				addIndex(startIndex + i + numVerts);
-				addIndex(startIndex + i);
-				if (i == numVerts - 1 + offset) {
-					addIndex(startIndex + offset);
-				} else {
-					addIndex(startIndex + i + 1);
-				}
-			}
-		}
-	} else {
-		if (outside) {
-			for (int i = 0; i < numVerts; ++i) {
-				int ip1 = i + 1;
-				if (ip1 == numVerts) {
-					ip1 = 0;
-				}
-
-				addIndex(startIndex + i + numVerts);
-				addIndex(startIndex + ip1);
-				addIndex(startIndex + i);
-
-				addIndex(startIndex + ip1);
-				addIndex(startIndex + i + numVerts);
-				addIndex(startIndex + ip1 + numVerts);
-			}
-		}
-		if (inside) {
-			for (int i = 0; i < numVerts + offset; ++i) {
-				int ip1 = i + 1;
-				if (ip1 == numVerts + offset) {
-					ip1 = offset;
-				}
-
-				addIndex(i + numVerts);
-				addIndex(i);
-				addIndex(ip1);
-
-				addIndex(ip1);
-				addIndex(ip1 + numVerts);
-				addIndex(i + numVerts);
-			}
-		}
+		addIndex(capCenterIndex);
 	}
 }
 
