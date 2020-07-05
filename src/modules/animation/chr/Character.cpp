@@ -72,7 +72,7 @@ bool Character::updateTool(const AnimationCachePtr& cache, const stock::Stock& s
 		return false;
 	}
 	const stock::Container::ContainerItems& items = container->items();
-	if (items.size() < 1) {
+	if (items.empty()) {
 		return false;
 	}
 
