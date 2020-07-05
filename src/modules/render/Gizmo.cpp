@@ -40,16 +40,7 @@ void Gizmo::setPosition(const glm::vec3& pos) {
 	_axis.setPosition(pos);
 }
 
-void Gizmo::update(const video::Camera& camera, const glm::ivec2& pixelPos) {
-	// don't update the cached state if we have the button pressed already.
-	if (pressed()) {
-		return;
-	}
-	static glm::ivec2 lastPixelPos = pixelPos;
-	if (lastPixelPos == pixelPos) {
-		return;
-	}
-	lastPixelPos = pixelPos;
+void Gizmo::updateTranslateState(const video::Camera& camera, const glm::ivec2& pixelPos) {
 	const video::Ray& ray = camera.mouseRay(pixelPos);
 
 	const glm::vec3 p1 = ray.origin;
@@ -73,24 +64,33 @@ void Gizmo::update(const video::Camera& camera, const glm::ivec2& pixelPos) {
 	 || glm::any(glm::lessThan(paY, glm::zero<glm::vec3>())) || glm::any(glm::greaterThan(paY, GizmoSizeVec))
 	 || glm::any(glm::lessThan(paZ, glm::zero<glm::vec3>())) || glm::any(glm::greaterThan(paZ, GizmoSizeVec))) {
 		_mode = GizmoMode::None;
-		_axis.setSize(GizmoSize, GizmoSize, GizmoSize);
 		return;
 	}
 
 	const float distanceToLine = 0.2f;
 	if (distanceX < distanceY && distanceX < distanceZ && distanceX < distanceToLine) {
 		_mode = GizmoMode::TranslateX;
-		_axis.setSize(2.0f * GizmoSize, GizmoSize, GizmoSize);
 	} else if (distanceY < distanceX && distanceY < distanceZ && distanceY < distanceToLine) {
 		_mode = GizmoMode::TranslateY;
-		_axis.setSize(GizmoSize, 2.0f * GizmoSize, GizmoSize);
 	} else if (distanceZ < distanceX && distanceZ < distanceY && distanceZ < distanceToLine) {
 		_mode = GizmoMode::TranslateZ;
-		_axis.setSize(GizmoSize, GizmoSize, 2.0f * GizmoSize);
 	} else {
 		_mode = GizmoMode::None;
-		_axis.setSize(GizmoSize, GizmoSize, GizmoSize);
 	}
+}
+
+void Gizmo::update(const video::Camera& camera, const glm::ivec2& pixelPos) {
+	// don't update the cached state if we have the button pressed already.
+	if (pressed()) {
+		return;
+	}
+	static glm::ivec2 lastPixelPos = pixelPos;
+	if (lastPixelPos == pixelPos) {
+		return;
+	}
+	lastPixelPos = pixelPos;
+
+	updateTranslateState(camera, pixelPos);
 }
 
 bool Gizmo::handleDown(int32_t key, double pressedMillis) {

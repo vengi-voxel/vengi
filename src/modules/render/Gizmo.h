@@ -42,6 +42,8 @@ private:
 	glm::vec3 _pos { 0.0f };
 	bool _modelSpace = true;
 
+	void updateTranslateState(const video::Camera& camera, const glm::ivec2& pixelPos);
+
 public:
 	/**
 	 * @return The current selected Gizmo::Mode value
