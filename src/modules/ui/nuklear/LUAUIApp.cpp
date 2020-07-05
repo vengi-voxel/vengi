@@ -275,7 +275,6 @@ bool LUAUIApp::reload() {
 
 	lua_newtable(_lua.state());
 	lua_setglobal(_lua.state(), "stack");
-	lua_pop(_lua.state(), 1);
 
 	clua_vecregister<glm::vec2>(_lua.state());
 	clua_vecregister<glm::vec3>(_lua.state());
