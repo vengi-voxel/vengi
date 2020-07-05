@@ -860,7 +860,7 @@ void VoxEditWindow::onProcess() {
 	}
 
 	if (_saveAnimationButton != nullptr) {
-		_saveAnimationButton->setState(tb::WIDGET_STATE_DISABLED, sceneMgr().empty() || sceneMgr().editMode() == EditMode::Volume);
+		_saveAnimationButton->setState(tb::WIDGET_STATE_DISABLED, sceneMgr().empty() || sceneMgr().editMode() != EditMode::Animation);
 	}
 	if (_saveButton != nullptr) {
 		_saveButton->setState(tb::WIDGET_STATE_DISABLED, sceneMgr().empty());
