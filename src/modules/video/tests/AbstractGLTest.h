@@ -12,6 +12,17 @@
 
 namespace video {
 
+// can be used for parameterized tests
+// inherit from ::testing::WithParamInterface<ShaderVarState>
+// and use GetParam() to get the values
+// don't forget to do INSTANTIATE_TEST_CASE_P
+struct ShaderVarState {
+	bool clientFog = true;
+	bool clientShadowMap = true;
+	bool clientWater = true;
+	bool clientDebugShadow = false;
+};
+
 class AbstractGLTest : public core::AbstractTest {
 protected:
 	SDL_Window *_window = nullptr;

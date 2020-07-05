@@ -74,7 +74,7 @@ void main(void) {
 
 	vec2 totalDistortion = ($texture2D(u_distortion, distortedTexCoords).rg * 2.0 - 1.0) * c_wavestrength;
 
-#if cl_water
+#if cl_water == 1
 	vec2 refractTexcoords = ndc;
 	refractTexcoords += totalDistortion;
 	refractTexcoords = clamp(refractTexcoords, 0.001, 0.999);
@@ -88,7 +88,7 @@ void main(void) {
 	vec4 waterColor = mix(reflectColor, refractColor, refractiveFactor);
 #else
 	vec4 waterColor = vec4(0.0, 0.0, 0.0, 1.0);
-#endif
+#endif // cl_water
 
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
 	vec4 lightspacepos = vec4(v_lightspacepos.x + totalDistortion.x, v_lightspacepos.y, v_lightspacepos.z + totalDistortion.y, 1.0);
@@ -98,9 +98,9 @@ void main(void) {
 	const vec3 tint = vec3(0.0, 0.3, 0.5);
 	vec3 waterColorTint = tint * checker(v_pos.xz, 0.2);
 	o_color = mix(o_color, vec4(waterColorTint, 1.0), 0.2) + vec4(lightColor, 0.0);
-#if cl_water
+#if cl_water == 1
 	o_color.a = clamp(depthWater / 5.0, 0.0, 1.0);
 #else
 	o_color.a = 0.6;
-#endif
+#endif // cl_water
 }

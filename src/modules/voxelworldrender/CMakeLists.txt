@@ -25,7 +25,14 @@ set(FILES
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend voxelrender)
 generate_shaders(${LIB} world water postprocess)
 
-gtest_suite_sources(tests
+set(TEST_SRCS
 	tests/VoxelFrontendShaderTest.cpp
 )
+
+gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB} image)
+
+gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_deps(tests-${LIB} ${LIB} image)
+gtest_suite_end(tests-${LIB})
