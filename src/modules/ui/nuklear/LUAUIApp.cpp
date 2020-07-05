@@ -175,7 +175,7 @@ bool LUAUIApp::reload() {
 		{"selectable", uilua_selectable},
 		{"slider", uilua_slider},
 		{"progress", uilua_progress},
-		{"colorPicker", uilua_color_picker},
+		{"colorpicker", uilua_color_picker},
 		{"property", uilua_property},
 
 		{"button", uilua_button},

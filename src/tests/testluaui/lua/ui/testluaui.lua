@@ -185,7 +185,6 @@ function modelwin()
 
 		ui.groupBegin('model', 'border')
 			ui.layoutRow('dynamic', 768, 1)
-			ui.stylePushBackground('#444444')
 			local options = {
 				scale = modelScale,
 				omegaY = modelOmegaY.value,
@@ -193,7 +192,6 @@ function modelwin()
 				cameraTarget = modelCameraTarget
 			}
 			ui.model('assets/north-dir.vox', options)
-			ui.stylePopBackground()
 		ui.groupEnd()
 	end
 	ui.windowEnd()

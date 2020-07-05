@@ -333,6 +333,7 @@ core::AppState NuklearApp::onRunning() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
+	video::clear(video::ClearFlag::Color);
 	_console.update(_deltaFrameSeconds);
 
 	beforeUI();
