@@ -18,7 +18,7 @@ Axis::Axis(bool flipZ) : _flipZ(flipZ) {
 void Axis::render(const video::Camera& camera) {
 	video::ScopedState disableDepthTest(video::State::DepthTest, false);
 	video::ScopedLineWidth width(_lineWidth);
-	const glm::mat4& model = glm::translate(glm::scale(_size), _pos);
+	const glm::mat4& model = glm::scale(glm::translate(_pos), _size);
 	_shapeRenderer.renderAll(camera, model);
 }
 
