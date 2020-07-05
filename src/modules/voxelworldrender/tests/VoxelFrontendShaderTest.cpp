@@ -7,7 +7,9 @@
 
 namespace voxelworldrender {
 
-class VoxelFrontendShaderTest : public video::AbstractGLTest, public ::testing::WithParamInterface<video::ShaderVarState> {
+class VoxelFrontendShaderTest :
+		public video::AbstractGLTest,
+		public ::testing::WithParamInterface<video::ShaderVarState> {
 };
 
 TEST_P(VoxelFrontendShaderTest, testWorldShader) {

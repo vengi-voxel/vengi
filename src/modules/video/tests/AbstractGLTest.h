@@ -7,7 +7,9 @@
 #include "core/tests/AbstractTest.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"
+#include "core/Singleton.h"
 #include "video/Renderer.h"
+#include "video/ShaderManager.h"
 #include <SDL.h>
 
 namespace video {
@@ -43,6 +45,11 @@ protected:
 		core::Var::get(cfg::ClientShadowMap, "", core::CV_SHADER)->setVal(val.clientShadowMap);
 		core::Var::get(cfg::ClientWater, "", core::CV_SHADER)->setVal(val.clientWater);
 		core::Var::get(cfg::ClientDebugShadow, "", core::CV_SHADER)->setVal(val.clientDebugShadow);
+		core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
+		core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
+		core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
+		core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
+		core::Singleton<ShaderManager>::getInstance().update();
 	}
 
 public:
