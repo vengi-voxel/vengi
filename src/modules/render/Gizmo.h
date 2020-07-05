@@ -48,6 +48,7 @@ public:
 	 * @note update() must have been called before
 	 */
 	GizmoMode mode() const;
+	void setMode(GizmoMode mode);
 
 	bool isModelSpace() const;
 	bool isWorldSpace() const;
@@ -103,6 +104,10 @@ inline void Gizmo::setModelSpace() {
 
 inline void Gizmo::setWorldSpace() {
 	_modelSpace = false;
+}
+
+inline void Gizmo::setMode(GizmoMode mode) {
+	_mode = mode;
 }
 
 }
