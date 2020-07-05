@@ -823,7 +823,6 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 		if (_renderAxis) {
 			_gizmo.render(camera);
 		}
-		// TODO: render ground plane
 		if (!depthTest) {
 			video::disable(video::State::DepthTest);
 		}
@@ -1871,9 +1870,15 @@ bool SceneManager::trace(bool force) {
 
 	_result.didHit = false;
 	_result.validPreviousPosition = false;
+	_result.firstValidPosition = false;
 	_result.direction = ray.direction;
 	_result.hitFace = voxel::FaceNames::NoOfFaces;
 	raycastWithDirection(model, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
+		if (!_result.firstValidPosition && sampler.currentPositionValid()) {
+			_result.firstPosition = sampler.position();
+			_result.firstValidPosition = true;
+		}
+
 		if (sampler.voxel() != air) {
 			_result.didHit = true;
 			_result.hitVoxel = sampler.position();
@@ -2016,10 +2021,8 @@ void SceneManager::onActiveLayerChanged(int old, int active) {
 
 void SceneManager::setGizmoPosition() {
 	if (_gizmo.isModelSpace()) {
-		const int layerIdx = _layerMgr.activeLayer();
-		const voxel::RawVolume* volume = _volumeRenderer.volume(layerIdx);
-		const voxel::Region& region = volume->region();
-		_gizmo.setPosition(region.getLowerCorner());
+		const voxel::Region& region = modelVolume()->region();
+		_gizmo.setPosition(region.getLowerCornerf());
 	} else {
 		_gizmo.setPosition(glm::zero<glm::vec3>());
 	}
