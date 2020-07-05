@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "core/ArrayLength.h"
 #include "core/GLM.h"
+#include "video/ScopedState.h"
 #include "testcore/TestAppMain.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -45,6 +46,7 @@ core::AppState TestShapeBuilder::onInit() {
 }
 
 void TestShapeBuilder::doRender() {
+	video::ScopedState scoped(video::State::CullFace, true);
 	for (int i = 0; i < _meshCount; ++i) {
 		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(_position[i])), _scale[i]);
 		_shapeRenderer.render(_meshes[i], camera(), model);
@@ -136,14 +138,26 @@ void TestShapeBuilder::onRenderUI() {
 		}
 	}
 	if (ImGui::CollapsingHeader("Cylinder", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		static int slides = 4;
+		static float baseRadius = 20.0f;
+		static float length = 100.0f;
+		ImGui::InputInt("Slides", &slides);
+		ImGui::InputFloat("Radius", &baseRadius);
+		ImGui::InputFloat("length", &length);
 		if (ImGui::Button("Add Cylinder")) {
-			_shapeBuilder.cylinder(scale.x, scale.y);
+			_shapeBuilder.cylinder(baseRadius, length, slides);
 			buildMesh = true;
 		}
 	}
 	if (ImGui::CollapsingHeader("Cone", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		static int slides = 4;
+		static float baseRadius = 20.0f;
+		static float length = 100.0f;
+		ImGui::InputInt("Slides", &slides);
+		ImGui::InputFloat("Radius", &baseRadius);
+		ImGui::InputFloat("length", &length);
 		if (ImGui::Button("Add Cone")) {
-			_shapeBuilder.cone(10.0f, 10.0f, 20.0f, -1, true, true);
+			_shapeBuilder.cone(baseRadius, length, slides);
 			buildMesh = true;
 		}
 	}
