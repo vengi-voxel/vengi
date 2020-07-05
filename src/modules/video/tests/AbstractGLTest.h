@@ -37,6 +37,14 @@ protected:
 	SDL_Window *_window = nullptr;
 	RendererContext _ctx = nullptr;
 	bool _supported = true;
+
+	void setShaderVars(const ShaderVarState& val) {
+		core::Var::get(cfg::ClientFog, "", core::CV_SHADER)->setVal(val.clientFog);
+		core::Var::get(cfg::ClientShadowMap, "", core::CV_SHADER)->setVal(val.clientShadowMap);
+		core::Var::get(cfg::ClientWater, "", core::CV_SHADER)->setVal(val.clientWater);
+		core::Var::get(cfg::ClientDebugShadow, "", core::CV_SHADER)->setVal(val.clientDebugShadow);
+	}
+
 public:
 	void SetUp() override {
 		// 4.3 is the minimum version where compute shaders are supported
