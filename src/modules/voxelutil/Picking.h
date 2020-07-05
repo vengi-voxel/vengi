@@ -21,7 +21,8 @@ struct PickResult {
 
 	/** Did the picking operation hit anything */
 	bool didHit = false;
-
+	/** Indicates whether @c firstPosition is valid */
+	bool firstValidPosition = false;
 	bool validPreviousPosition = false;
 
 	/** The location of the solid voxel it hit */
@@ -29,6 +30,8 @@ struct PickResult {
 
 	/** The location of the step before we end the trace - see @a validPreviousLocation */
 	glm::ivec3 previousPosition;
+	/** The location where the trace entered the valid volume region */
+	glm::ivec3 firstPosition;
 
 	glm::vec3 direction;
 
