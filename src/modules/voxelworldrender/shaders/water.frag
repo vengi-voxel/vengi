@@ -47,7 +47,7 @@ void main(void) {
 	vec2 distortedTexCoords = $texture2D(u_distortion, c_wavesizefactor * vec2(v_uv.x + moveFactor, v_uv.y)).rg * 0.01;
 	distortedTexCoords = v_uv + vec2(distortedTexCoords.x, distortedTexCoords.y + moveFactor);
 
-#if cl_water
+#if cl_water == 1
 	vec2 ndc = clipSpaceToTexCoords(v_clipspace);
 	float floorDistance = depthToDistance($texture2D(u_depthmap, ndc).r);
 	float waterDistance = depthToDistance(gl_FragCoord.z);
@@ -91,7 +91,11 @@ void main(void) {
 #endif // cl_water
 
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
+#if cl_shadowmap == 1
 	vec4 lightspacepos = vec4(v_lightspacepos.x + totalDistortion.x, v_lightspacepos.y, v_lightspacepos.z + totalDistortion.y, 1.0);
+#else
+	vec4 lightspacepos = vec4(0.0);
+#endif // cl_shadowmap
 	vec3 shadowColor = shadow(lightspacepos, bias, mix(cubeColor, vec3(0.0, 0.2, 0.5), 0.01), diffuse, ambientColor);
 	o_color = fog(v_pos.xyz, mix(shadowColor, waterColor.xyz, 0.5), 0.5);
 	// add a blue tint and the specular highlights
