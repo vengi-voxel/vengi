@@ -241,6 +241,9 @@ inline bool AI::isDebuggingActive() const {
 }
 
 inline void AI::setZone(Zone* zone) {
+	if (_zone != zone || zone == nullptr) {
+		_filteredEntities.clear();
+	}
 	_zone = zone;
 }
 
