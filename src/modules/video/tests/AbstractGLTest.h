@@ -41,10 +41,10 @@ protected:
 	bool _supported = true;
 
 	void setShaderVars(const ShaderVarState& val) {
-		core::Var::get(cfg::ClientFog, "", core::CV_SHADER)->setVal(val.clientFog);
-		core::Var::get(cfg::ClientShadowMap, "", core::CV_SHADER)->setVal(val.clientShadowMap);
-		core::Var::get(cfg::ClientWater, "", core::CV_SHADER)->setVal(val.clientWater);
-		core::Var::get(cfg::ClientDebugShadow, "", core::CV_SHADER)->setVal(val.clientDebugShadow);
+		core::Var::get(cfg::ClientFog, "1", core::CV_SHADER)->setVal(val.clientFog);
+		core::Var::get(cfg::ClientShadowMap, "1", core::CV_SHADER)->setVal(val.clientShadowMap);
+		core::Var::get(cfg::ClientWater, "1", core::CV_SHADER)->setVal(val.clientWater);
+		core::Var::get(cfg::ClientDebugShadow, "1", core::CV_SHADER)->setVal(val.clientDebugShadow);
 		core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
 		core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);

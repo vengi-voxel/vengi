@@ -36,7 +36,19 @@ INSTANTIATE_TEST_SUITE_P(
 	ShaderVars,
 	VoxelFrontendShaderTest,
 	::testing::Values(
-		video::ShaderVarState{true, true, true, true}
+		video::ShaderVarState{true, true, true, true},
+		video::ShaderVarState{true, true, false, false},
+		video::ShaderVarState{true, true, true, false},
+		video::ShaderVarState{true, false, false, false},
+		video::ShaderVarState{true, false, false, true},
+		video::ShaderVarState{true, false, true, true},
+		video::ShaderVarState{false, false, false, false},
+		video::ShaderVarState{false, true, false, false},
+		video::ShaderVarState{false, true, true, false},
+		video::ShaderVarState{false, true, true, true},
+		video::ShaderVarState{false, false, true, false},
+		video::ShaderVarState{false, false, true, true},
+		video::ShaderVarState{false, false, false, true}
 	)
 );
 
