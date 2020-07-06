@@ -33,7 +33,7 @@ bool AttackMgr::startAttack(EntityId attackerId, EntityId victimId) {
 	}
 	const bool started = npc->applyDamage(attacker.get(), strength) > 0.0;
 	if (started) {
-		_map->poiProvider()->add(attacker->pos(), poi::Type::FIGHT);
+		_map->poiProvider().add(attacker->pos(), poi::Type::FIGHT);
 	}
 	return started;
 }

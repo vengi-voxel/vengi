@@ -10,8 +10,7 @@
 #include "Type.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
-#include <stack>
-#include <memory>
+#include <deque>
 
 namespace poi {
 
@@ -65,7 +64,5 @@ public:
 	 */
 	PoiResult query(Type type = Type::NONE) const;
 };
-
-typedef std::shared_ptr<PoiProvider> PoiProviderPtr;
 
 }

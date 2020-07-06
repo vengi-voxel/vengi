@@ -101,7 +101,6 @@ typedef std::shared_ptr<EntityStorage> EntityStoragePtr;
 namespace poi {
 
 class PoiProvider;
-typedef std::shared_ptr<PoiProvider> PoiProviderPtr;
 
 }
 

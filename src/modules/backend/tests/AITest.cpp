@@ -117,11 +117,11 @@ TEST_F(AITest, testActionSpawn) {
 
 TEST_F(AITest, testActionSetPointOfInterest) {
 	const NpcPtr& npc = create();
-	const size_t before = map->poiProvider()->count();
+	const size_t before = map->poiProvider().count();
 	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
 	const ai::TreeNodePtr& action = SetPointOfInterest::getFactory().create(&ctx);
 	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
-	EXPECT_GT(map->poiProvider()->count(), before);
+	EXPECT_GT(map->poiProvider().count(), before);
 }
 
 TEST_F(AITest, testActionGoHome) {

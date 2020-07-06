@@ -16,6 +16,7 @@
 #include "persistence/ISavable.h"
 #include "persistence/ForwardDecl.h"
 #include "poi/PoiProvider.h"
+#include "backend/spawn/SpawnMgr.h"
 #include "voxel/Constants.h"
 #include "DBChunkPersister.h"
 #include "MapId.h"
@@ -38,8 +39,6 @@ private:
 	voxelworld::WorldPagerPtr _pager;
 
 	core::EventBusPtr _eventBus;
-	SpawnMgrPtr _spawnMgr;
-	poi::PoiProviderPtr _poiProvider;
 	io::FilesystemPtr _filesystem;
 	persistence::PersistenceMgrPtr _persistenceMgr;
 	voxelformat::VolumeCachePtr _volumeCache;
@@ -55,6 +54,8 @@ private:
 	Users _users;
 
 	AttackMgr _attackMgr;
+	poi::PoiProvider _poiProvider;
+	SpawnMgr _spawnMgr;
 
 	struct QuadTreeNode {
 		EntityPtr entity;
@@ -138,11 +139,11 @@ public:
 	const AttackMgr& attackMgr() const;
 	AttackMgr& attackMgr();
 
-	const SpawnMgrPtr& spawnMgr() const;
-	SpawnMgrPtr& spawnMgr();
+	const SpawnMgr& spawnMgr() const;
+	SpawnMgr& spawnMgr();
 
-	const poi::PoiProviderPtr& poiProvider() const;
-	poi::PoiProviderPtr& poiProvider();
+	const poi::PoiProvider& poiProvider() const;
+	poi::PoiProvider& poiProvider();
 };
 
 inline const DBChunkPersisterPtr& Map::chunkPersister() {
@@ -173,19 +174,19 @@ inline const core::String& Map::idStr() const {
 	return _mapIdStr;
 }
 
-inline const SpawnMgrPtr& Map::spawnMgr() const {
+inline const SpawnMgr& Map::spawnMgr() const {
 	return _spawnMgr;
 }
 
-inline SpawnMgrPtr& Map::spawnMgr() {
+inline SpawnMgr& Map::spawnMgr() {
 	return _spawnMgr;
 }
 
-inline const poi::PoiProviderPtr& Map::poiProvider() const {
+inline const poi::PoiProvider& Map::poiProvider() const {
 	return _poiProvider;
 }
 
-inline poi::PoiProviderPtr& Map::poiProvider() {
+inline poi::PoiProvider& Map::poiProvider() {
 	return _poiProvider;
 }
 

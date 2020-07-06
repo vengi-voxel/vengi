@@ -72,7 +72,7 @@ void World::construct() {
 			return;
 		}
 		const int amount = args.size() == 3 ? core::string::toInt(args[2]) : 1;
-		map->spawnMgr()->spawn((network::EntityType)type, amount);
+		map->spawnMgr().spawn((network::EntityType)type, amount);
 	}).setHelp("Spawns a given amount of npcs of a particular type on the specified map");
 
 	core::Command::registerCommand("sv_chunkstruncate", [this] (const core::CmdArgs& args) {

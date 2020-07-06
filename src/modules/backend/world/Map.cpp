@@ -44,11 +44,9 @@ Map::Map(MapId mapId,
 		const DBChunkPersisterPtr& chunkPersister) :
 		_mapId(mapId), _mapIdStr(core::string::toString(mapId)),
 		_eventBus(eventBus), _filesystem(filesystem), _persistenceMgr(persistenceMgr),
-		_volumeCache(volumeCache), _attackMgr(this),
+		_volumeCache(volumeCache), _attackMgr(this), _poiProvider(timeProvider), _spawnMgr(this, filesystem, entityStorage, messageSender,
+			timeProvider, loader, containerProvider, cooldownProvider),
 		_quadTree(math::RectFloat::getMaxRect(), 100.0f), _chunkPersister(chunkPersister) {
-	_poiProvider = std::make_shared<poi::PoiProvider>(timeProvider);
-	_spawnMgr = std::make_shared<backend::SpawnMgr>(this, filesystem, entityStorage, messageSender,
-			timeProvider, loader, containerProvider, cooldownProvider);
 }
 
 Map::~Map() {
@@ -84,7 +82,7 @@ bool Map::updateEntity(const EntityPtr& entity, long dt) {
 void Map::update(long dt) {
 	core_trace_scoped(MapUpdate);
 	Log::trace("tick map %i", (int)_mapId);
-	_spawnMgr->update(dt);
+	_spawnMgr.update(dt);
 	_zone->update(dt);
 	_attackMgr.update(dt);
 
@@ -141,7 +139,7 @@ bool Map::init() {
 	_voxelWorldMgr->setSeed(seed->uintVal());
 	_zone = new ai::Zone(core::string::format("Zone %i", _mapId));
 
-	if (!_spawnMgr->init()) {
+	if (!_spawnMgr.init()) {
 		Log::error("Failed to init the spawn manager");
 		return false;
 	}
@@ -150,7 +148,7 @@ bool Map::init() {
 
 void Map::shutdown() {
 	_attackMgr.shutdown();
-	_spawnMgr->shutdown();
+	_spawnMgr.shutdown();
 	if (_pager != nullptr) {
 		_pager->shutdown();
 		_pager = voxelworld::WorldPagerPtr();
@@ -166,7 +164,7 @@ void Map::shutdown() {
 }
 
 glm::vec3 Map::findStartPosition(const EntityPtr& entity, poi::Type type) const {
-	const poi::PoiResult& result = _poiProvider->query(type);
+	const poi::PoiResult& result = _poiProvider.query(type);
 	if (result.valid) {
 		return result.pos;
 	}
@@ -182,7 +180,7 @@ void Map::addUser(const UserPtr& user) {
 	user->setMap(ptr(), pos);
 	_quadTree.insert(QuadTreeNode { user });
 	_eventBus->enqueue(std::make_shared<EntityAddToMapEvent>(user));
-	_poiProvider->add(pos, poi::Type::SPAWN);
+	_poiProvider.add(pos, poi::Type::SPAWN);
 }
 
 bool Map::removeUser(EntityId id) {
@@ -216,7 +214,7 @@ bool Map::addNpc(const NpcPtr& npc) {
 	_zone->addAI(npc->ai());
 	_quadTree.insert(QuadTreeNode { npc });
 	_eventBus->enqueue(std::make_shared<EntityAddToMapEvent>(npc));
-	_poiProvider->add(pos, poi::Type::SPAWN);
+	_poiProvider.add(pos, poi::Type::SPAWN);
 	return true;
 }
 
