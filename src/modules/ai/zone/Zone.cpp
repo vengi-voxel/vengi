@@ -7,6 +7,23 @@
 
 namespace ai {
 
+Zone::~Zone() {
+	_threadPool.shutdown();
+	for (const auto& e : _ais) {
+		e.second->setZone(nullptr);
+		_groupManager.removeFromAllGroups(e.second);
+	}
+	for (const auto& ai : _scheduledAdd) {
+		ai->setZone(nullptr);
+		_groupManager.removeFromAllGroups(ai);
+	}
+	for (const auto& ai : _scheduledRemove) {
+		ai->setZone(nullptr);
+		_groupManager.removeFromAllGroups(ai);
+	}
+	_ais.clear();
+}
+
 AIPtr Zone::getAI(CharacterId id) const {
 	core::ScopedLock scopedLock(_lock);
 	auto i = _ais.find(id);

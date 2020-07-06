@@ -84,9 +84,7 @@ public:
 		_threadPool.init();
 	}
 
-	virtual ~Zone() {
-		_threadPool.shutdown();
-	}
+	virtual ~Zone();
 
 	/**
 	 * @brief Update all the @c ICharacter and @c AI instances in this zone.
