@@ -32,10 +32,9 @@ Npc::~Npc() {
 
 void Npc::shutdown() {
 	ai::Zone* zone = _ai->getZone();
-	if (zone == nullptr) {
-		return;
+	if (zone != nullptr) {
+		zone->destroyAI(id());
 	}
-	zone->destroyAI(id());
 	_ai->setZone(nullptr);
 }
 
