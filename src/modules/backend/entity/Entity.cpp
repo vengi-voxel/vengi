@@ -112,6 +112,7 @@ void Entity::init() {
 }
 
 void Entity::shutdown() {
+	_visible.clear();
 }
 
 void Entity::onAttribChange(const attrib::DirtyValue& v) {
