@@ -7,10 +7,11 @@
 
 namespace render {
 
-class RenderShaderTest : public video::AbstractGLTest {
+
+class RenderShaderTest : public video::AbstractShaderTest {
 };
 
-TEST_F(RenderShaderTest, testTextureShader) {
+TEST_P(RenderShaderTest, testTextureShader) {
 	if (!_supported) {
 		return;
 	}
@@ -19,7 +20,7 @@ TEST_F(RenderShaderTest, testTextureShader) {
 	shader.shutdown();
 }
 
-TEST_F(RenderShaderTest, testColorShader) {
+TEST_P(RenderShaderTest, testColorShader) {
 	if (!_supported) {
 		return;
 	}
@@ -27,5 +28,7 @@ TEST_F(RenderShaderTest, testColorShader) {
 	EXPECT_TRUE(shader.setup());
 	shader.shutdown();
 }
+
+VIDEO_SHADERTEST(RenderShaderTest)
 
 }

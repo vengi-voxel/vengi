@@ -30,7 +30,14 @@ set(LIB render)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES video noise)
 generate_shaders(${LIB} ${SHADERS})
 
-gtest_suite_sources(tests
+set(TEST_SRCS
 	tests/RenderShaderTest.cpp
 )
+
+gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB} render)
+
+gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_deps(tests-${LIB} ${LIB} render)
+gtest_suite_end(tests-${LIB})
