@@ -19,7 +19,7 @@ TEST_F(HttpClientTest, testSimple) {
 	core::ConditionVariable startCondition;
 
 	core::ScopedLock lock(serverStartMutex);
-	_testApp->threadPool().enqueue([this, &serverStartMutex, &startCondition] () {
+	_testApp->threadPool().enqueue([this, &startCondition] () {
 		http::HttpServer _httpServer(_testApp->metric());
 		_httpServer.init(8095);
 		_httpServer.registerRoute(http::HttpMethod::GET, "/", [] (const http::RequestParser& request, HttpResponse* response) {
