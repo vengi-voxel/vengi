@@ -60,7 +60,7 @@ protected:
 
 public:
 	explicit ICharacter(CharacterId id) :
-			_id(id), _orientation(0.0f), _speed(0.0f) {
+			_id(id), _position(0.0f), _orientation(0.0f), _speed(0.0f) {
 	}
 
 	virtual ~ICharacter() {
