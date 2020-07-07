@@ -126,6 +126,9 @@ bool MapProvider::init() {
 
 void MapProvider::shutdown() {
 	_httpServer->unregisterRoute(http::HttpMethod::GET, "/chunk");
+	for (auto& map : _maps) {
+		map.second->shutdown();
+	}
 	_maps.clear();
 }
 
