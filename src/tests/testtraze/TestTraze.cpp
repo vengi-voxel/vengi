@@ -278,10 +278,6 @@ void TestTraze::onEvent(const traze::PlayerListEvent& event) {
 
 core::AppState TestTraze::onRunning() {
 	_rawVolumeRenderer.update();
-	const int remaining = _eventBus->update(2);
-	if (remaining) {
-		Log::debug("Remaining events in queue: %i", remaining);
-	}
 	core::AppState state = Super::onRunning();
 	if (!_protocol.connected()) {
 		if (_nextConnectTime <= 0.0) {

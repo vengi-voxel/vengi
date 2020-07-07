@@ -419,7 +419,6 @@ void ServerLoop::update() {
 	uv_run(_loop, UV_RUN_NOWAIT);
 	_network->update();
 	_httpServer->update();
-	_eventBus->update(200);
 
 	replicateVars();
 }

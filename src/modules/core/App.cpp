@@ -10,6 +10,7 @@
 #include "command/CommandHandler.h"
 #include "io/Filesystem.h"
 #include "Common.h"
+#include "EventBus.h"
 #include "metric/Metric.h"
 #include "metric/UDPMetricSender.h"
 #include "Log.h"
@@ -507,6 +508,10 @@ AppState App::onRunning() {
 
 	core::Command::update(_deltaFrameSeconds);
 
+	const int remaining = _eventBus->update(200);
+	if (remaining) {
+		Log::debug("Remaining events in queue: %i", remaining);
+	}
 	_filesystem->update();
 
 	return AppState::Cleanup;
@@ -575,6 +580,9 @@ AppState App::onCleanup() {
 		addBlocker(AppState::Init);
 		return AppState::Init;
 	}
+
+	// execute all pending async events.
+	_eventBus->update();
 
 	if (!_organisation.empty() && !_appname.empty()) {
 		Log::debug("save the config variables");
