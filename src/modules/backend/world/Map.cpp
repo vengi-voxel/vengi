@@ -160,6 +160,9 @@ void Map::shutdown() {
 	}
 	delete _zone;
 	_zone = nullptr;
+	_quadTree.clear();
+	_npcs.clear();
+	_users.clear();
 	_persistenceMgr->unregisterSavable(FOURCC, this);
 }
 
