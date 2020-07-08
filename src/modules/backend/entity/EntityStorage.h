@@ -33,6 +33,9 @@ public:
 	EntityStorage(const core::EventBusPtr& eventBus);
 	virtual ~EntityStorage();
 
+	void shutdown();
+	bool init();
+
 	void onEvent(const EntityDeleteEvent& event) override;
 
 	bool addUser(const UserPtr& user);

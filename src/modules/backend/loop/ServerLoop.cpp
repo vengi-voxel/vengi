@@ -236,6 +236,11 @@ bool ServerLoop::init() {
 		response->setText("{status: up}");
 	});
 
+	if (!_entityStorage->init()) {
+		Log::error("Failed to init the EntityStorage");
+		return false;
+	}
+
 	if (!_metricMgr->init()) {
 		Log::warn("Failed to init metric sender");
 	}
@@ -379,6 +384,7 @@ bool ServerLoop::init() {
 void ServerLoop::shutdown() {
 	_persistenceMgr->shutdown();
 	_world->shutdown();
+	_entityStorage->shutdown();
 	_dbHandler->shutdown();
 	_metricMgr->shutdown();
 	_volumeCache->shutdown();

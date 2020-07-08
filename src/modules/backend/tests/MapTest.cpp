@@ -37,6 +37,7 @@ public:
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		voxel::initDefaultMaterialColors();
 		_entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
+		ASSERT_TRUE(_entityStorage->init());
 		_protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 		_network = std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
 		_messageSender = std::make_shared<network::ServerMessageSender>(_network, _testApp->metric());

@@ -21,6 +21,17 @@ EntityStorage::~EntityStorage() {
 	core_assert(_users.empty());
 }
 
+void EntityStorage::shutdown() {
+	_eventBus->unsubscribe<EntityDeleteEvent>(*this);
+	visit([](const EntityPtr &e) { e->shutdown(); });
+	_npcs.clear();
+	_users.clear();
+}
+
+bool EntityStorage::init() {
+	return true;
+}
+
 void EntityStorage::visit(const std::function<void(const EntityPtr&)>& visitor) {
 	core_trace_scoped(EntityStorageVisit);
 	for (auto& e : _users) {
