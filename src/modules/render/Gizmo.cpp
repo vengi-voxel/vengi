@@ -16,6 +16,7 @@ static constexpr float GizmoSize = 20.0f;
 static constexpr glm::vec3 GizmoSizeVec(GizmoSize);
 
 bool Gizmo::init() {
+	_axis.setSize(GizmoSize, GizmoSize, GizmoSize);
 	if (!_axis.init()) {
 		return false;
 	}
