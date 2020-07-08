@@ -68,12 +68,12 @@ void User::sendVars() const {
 
 void User::shutdown() {
 	Log::info("Shutdown user");
-	Super::shutdown();
 	_stockMgr.shutdown();
 	_cooldownMgr.shutdown();
 	_attribMgr.shutdown();
 	_logoutMgr.shutdown();
 	_movementMgr.shutdown();
+	Super::shutdown();
 }
 
 ENetPeer* User::setPeer(ENetPeer* peer) {
