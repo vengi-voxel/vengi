@@ -34,18 +34,57 @@ ProtocolMessageFactory::ProtocolMessageFactory() :
 }
 
 ProtocolMessageFactory::~ProtocolMessageFactory() {
+	if (_usedAIState) {
+		((AIStateMessage*)_aiState)->~AIStateMessage();
+	}
 	delete[] _aiState;
+	if (_usedAISelect) {
+		((AIStateMessage*)_aiSelect)->~AIStateMessage();
+	}
 	delete[] _aiSelect;
+	if (_usedAIPause) {
+		((AIStateMessage*)_aiPause)->~AIStateMessage();
+	}
 	delete[] _aiPause;
+	if (_usedAINames) {
+		((AIStateMessage*)_aiNames)->~AIStateMessage();
+	}
 	delete[] _aiNames;
+	if (_usedAIChange) {
+		((AIStateMessage*)_aiChange)->~AIStateMessage();
+	}
 	delete[] _aiChange;
+	if (_usedAIReset) {
+		((AIStateMessage*)_aiReset)->~AIStateMessage();
+	}
 	delete[] _aiReset;
+	if (_usedAIStep) {
+		((AIStateMessage*)_aiStep)->~AIStateMessage();
+	}
 	delete[] _aiStep;
+	if (_usedAIPing) {
+		((AIStateMessage*)_aiPing)->~AIStateMessage();
+	}
 	delete[] _aiPing;
+	if (_usedAICharacterDetails) {
+		((AIStateMessage*)_aiCharacterDetails)->~AIStateMessage();
+	}
 	delete[] _aiCharacterDetails;
+	if (_usedAICharacterStatic) {
+		((AIStateMessage*)_aiCharacterStatic)->~AIStateMessage();
+	}
 	delete[] _aiCharacterStatic;
+	if (_usedAIUpdateNode) {
+		((AIStateMessage*)_aiUpdateNode)->~AIStateMessage();
+	}
 	delete[] _aiUpdateNode;
+	if (_usedAIAddNode) {
+		((AIStateMessage*)_aiAddNode)->~AIStateMessage();
+	}
 	delete[] _aiAddNode;
+	if (_usedAIDeleteNode) {
+		((AIStateMessage*)_aiDeleteNode)->~AIStateMessage();
+	}
 	delete[] _aiDeleteNode;
 }
 
@@ -70,30 +109,43 @@ IProtocolMessage *ProtocolMessageFactory::create(streamContainer& in) {
 	const uint8_t type = in.front();
 	in.pop_front();
 	if (type == PROTO_STATE) {
+		_usedAIState = true;
 		return new (_aiState) AIStateMessage(in);
 	} else if (type == PROTO_SELECT) {
+		_usedAISelect = true;
 		return new (_aiSelect) AISelectMessage(in);
 	} else if (type == PROTO_PAUSE) {
+		_usedAIPause = true;
 		return new (_aiPause) AIPauseMessage(in);
 	} else if (type == PROTO_NAMES) {
+		_usedAINames = true;
 		return new (_aiNames) AINamesMessage(in);
 	} else if (type == PROTO_CHANGE) {
+		_usedAIChange = true;
 		return new (_aiChange) AIChangeMessage(in);
 	} else if (type == PROTO_RESET) {
+		_usedAIReset = true;
 		return new (_aiReset) AIResetMessage();
 	} else if (type == PROTO_STEP) {
+		_usedAIStep = true;
 		return new (_aiStep) AIStepMessage(in);
 	} else if (type == PROTO_PING) {
+		_usedAIPing = true;
 		return new (_aiPing) AIPingMessage();
 	} else if (type == PROTO_CHARACTER_DETAILS) {
+		_usedAICharacterDetails = true;
 		return new (_aiCharacterDetails) AICharacterDetailsMessage(in);
 	} else if (type == PROTO_CHARACTER_STATIC) {
+		_usedAICharacterStatic = true;
 		return new (_aiCharacterStatic) AICharacterStaticMessage(in);
 	} else if (type == PROTO_UPDATENODE) {
+		_usedAIUpdateNode = true;
 		return new (_aiUpdateNode) AIUpdateNodeMessage(in);
 	} else if (type == PROTO_ADDNODE) {
+		_usedAIAddNode = true;
 		return new (_aiAddNode) AIAddNodeMessage(in);
 	} else if (type == PROTO_DELETENODE) {
+		_usedAIDeleteNode = true;
 		return new (_aiDeleteNode) AIDeleteNodeMessage(in);
 	}
 

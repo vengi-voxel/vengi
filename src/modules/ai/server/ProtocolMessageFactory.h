@@ -24,6 +24,20 @@ private:
 	uint8_t *_aiAddNode;
 	uint8_t *_aiDeleteNode;
 
+	bool _usedAIState = false;
+	bool _usedAISelect = false;
+	bool _usedAIPause = false;
+	bool _usedAINames = false;
+	bool _usedAIChange = false;
+	bool _usedAIReset = false;
+	bool _usedAIStep = false;
+	bool _usedAIPing = false;
+	bool _usedAICharacterDetails = false;
+	bool _usedAICharacterStatic = false;
+	bool _usedAIUpdateNode = false;
+	bool _usedAIAddNode = false;
+	bool _usedAIDeleteNode = false;
+
 	ProtocolMessageFactory();
 public:
 	~ProtocolMessageFactory();
