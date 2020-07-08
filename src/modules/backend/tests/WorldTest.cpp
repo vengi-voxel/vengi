@@ -56,10 +56,31 @@ public:
 		_httpServer = std::make_shared<http::HttpServer>(_testApp->metric());
 		persistence::DBHandlerPtr dbHandler = persistence::createDbHandlerMock();
 		core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
-		testing::Mock::AllowLeak(_persistenceMgr.get());
 		_mapProvider = std::make_shared<MapProvider>(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(),
 				_entityStorage, _messageSender, _loader, _containerProvider, _cooldownProvider,
 				_persistenceMgr, _volumeCache, _httpServer, chunkPersisterFactory, dbHandler);
+	}
+
+	void TearDown() override {
+		_entityStorage->shutdown();
+		_protocolHandlerRegistry->shutdown();
+		_network->shutdown();
+		_loader->shutdown();
+		_volumeCache->shutdown();
+		_mapProvider->shutdown();
+
+		_entityStorage.reset();
+		_protocolHandlerRegistry.reset();
+		_network.reset();
+		_messageSender.reset();
+		_loader.reset();
+		_containerProvider.release();
+		_cooldownProvider.reset();
+		_volumeCache.reset();
+		_persistenceMgr.reset();
+		_mapProvider.reset();
+
+		core::AbstractTest::TearDown();
 	}
 };
 

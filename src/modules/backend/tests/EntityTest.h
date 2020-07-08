@@ -69,6 +69,7 @@ protected:
 	persistence::PersistenceMgrPtr persistenceMgr;
 	MapProviderPtr mapProvider;
 	MapPtr map;
+	voxelformat::VolumeCachePtr volumeCache;
 
 	void SetUp() override {
 		Super::SetUp();
@@ -90,11 +91,10 @@ protected:
 		cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		filesystem = _testApp->filesystem();
 		eventBus = _testApp->eventBus();
-		voxelformat::VolumeCachePtr volumeCache = std::make_shared<voxelformat::VolumeCache>();
+		volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		http::HttpServerPtr httpServer = std::make_shared<http::HttpServer>(_testApp->metric());
 		timeProvider = _testApp->timeProvider();
 		persistenceMgr = persistence::createPersistenceMgrMock();
-		testing::Mock::AllowLeak(persistenceMgr.get());
 		persistence::DBHandlerPtr dbHandler = persistence::createDbHandlerMock();
 		// TODO: don't use the DBChunkPersister - but a mock
 		core::Factory<backend::DBChunkPersister> chunkPersisterFactory;
@@ -103,6 +103,35 @@ protected:
 				persistenceMgr, volumeCache, httpServer, chunkPersisterFactory, dbHandler);
 		ASSERT_TRUE(mapProvider->init()) << "Failed to initialize the map provider";
 		map = mapProvider->map(1);
+	}
+
+	void TearDown() override {
+		entityStorage->shutdown();
+		map->shutdown();
+		mapProvider->shutdown();
+		protocolHandlerRegistry->shutdown();
+		network->shutdown();
+		registry->shutdown();
+		loader->shutdown();
+		volumeCache->shutdown();
+
+		entityStorage.reset();
+		protocolHandlerRegistry.reset();
+		network.reset();
+		messageSender.reset();
+		registry.reset();
+		loader.reset();
+		containerProvider.release();
+		cooldownProvider.reset();
+		eventBus.reset();
+		filesystem.reset();
+		timeProvider.reset();
+		persistenceMgr.reset();
+		mapProvider.reset();
+		map.reset();
+		volumeCache.reset();
+
+		Super::TearDown();
 	}
 };
 

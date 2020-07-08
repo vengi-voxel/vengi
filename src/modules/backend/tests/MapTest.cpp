@@ -49,7 +49,27 @@ public:
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		_persistenceMgr = persistence::createPersistenceMgrMock();
 		_dbHandler = persistence::createDbHandlerMock();
-		testing::Mock::AllowLeak(_persistenceMgr.get());
+	}
+
+	void TearDown() override {
+		_entityStorage->shutdown();
+		_protocolHandlerRegistry->shutdown();
+		_network->shutdown();
+		_loader->shutdown();
+		_volumeCache->shutdown();
+
+		_entityStorage.reset();
+		_protocolHandlerRegistry.reset();
+		_network.reset();
+		_messageSender.reset();
+		_loader.reset();
+		_containerProvider.release();
+		_cooldownProvider.reset();
+		_volumeCache.reset();
+		_persistenceMgr.reset();
+		_dbHandler.reset();
+
+		core::AbstractTest::TearDown();
 	}
 };
 
