@@ -196,7 +196,7 @@ public:
 
 /** TBWidget state types (may be combined).
 	NOTE: This should exactly match SKIN_STATE in tb_skin.h! */
-enum WIDGET_STATE {
+enum WIDGET_STATE : uint8_t {
 	WIDGET_STATE_NONE = 0,
 	WIDGET_STATE_DISABLED = 1,
 	WIDGET_STATE_FOCUSED = 2,
