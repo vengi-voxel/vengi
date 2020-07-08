@@ -36,6 +36,7 @@ void Npc::shutdown() {
 		zone->destroyAI(id());
 	}
 	_ai->setZone(nullptr);
+	_ai->setCharacter(AICharacterPtr());
 	Super::shutdown();
 }
 
