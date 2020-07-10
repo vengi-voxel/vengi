@@ -171,7 +171,7 @@ bool Command::isSuitableBindingContext(BindingContext context) {
 	if (context == core::BindingContext::All) {
 		return true;
 	}
-	return context == core::bindingContext();
+	return (core::bindingContext() & context) != 0;
 }
 
 bool Command::execute(const core::String& command, const CmdArgs& args) {

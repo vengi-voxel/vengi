@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 namespace core {
 
 /**
@@ -12,11 +14,11 @@ namespace core {
  * @note Extend this in your own application by adding to @c BindingContext::FirstCustom if the available
  * types aren't enough for your use-cases.
  */
-enum BindingContext {
-	All,
-	UserInterface,
-	World,
-	FirstCustom
+enum BindingContext : uint8_t {
+	All = 0,
+	UserInterface = 1,
+	World = 2,
+	FirstCustom = 4
 };
 
 /**
