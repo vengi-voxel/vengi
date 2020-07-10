@@ -3,6 +3,7 @@
  */
 
 #include "Command.h"
+#include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 
@@ -50,14 +51,14 @@ ActionButtonCommands Command::registerActionButton(const core::String& name, Act
 	ScopedWriteLock lock(_lock);
 	const Command cPressed("+" + name, [&] (const core::CmdArgs& args) {
 		const int32_t key = args[0].toInt();
-		const int64_t millis = core::string::toLong(args[1]);
-		button.handleDown(key, millis);
+		const double seconds = core::string::toDouble(args[1]);
+		button.handleDown(key, seconds);
 	});
 	_cmds.put(cPressed.name(), cPressed);
 	const Command cReleased("-" + name, [&] (const core::CmdArgs& args) {
 		const int32_t key = args[0].toInt();
-		const int64_t millis = core::string::toLong(args[1]);
-		button.handleUp(key, millis);
+		const double seconds = core::string::toDouble(args[1]);
+		button.handleUp(key, seconds);
 	});
 	_cmds.put(cReleased.name(), cReleased);
 	updateSortedList();
