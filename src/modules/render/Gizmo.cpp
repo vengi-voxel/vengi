@@ -98,7 +98,7 @@ bool Gizmo::handleDown(int32_t key, double pressedMillis) {
 	const bool initialDown = core::ActionButton::handleDown(key, pressedMillis);
 	if (initialDown) {
 		_buttonMode = _mode;
-		_buttonLastAction = 0;
+		_buttonLastAction = 0.0;
 	}
 	return initialDown;
 }
