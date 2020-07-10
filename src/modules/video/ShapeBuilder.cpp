@@ -568,20 +568,14 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 }
 
 void ShapeBuilder::axis(const glm::vec3& scale) {
-	const glm::vec3 verticesAxis[] = {
-		glm::right * scale,
-		glm::up * scale,
-		glm::forward * scale
-	};
-
 	setColor(core::Color::Red);
-	line(glm::zero<glm::vec3>(), verticesAxis[0]);
+	line(glm::zero<glm::vec3>(), glm::right * scale);
 
 	setColor(core::Color::Green);
-	line(glm::zero<glm::vec3>(), verticesAxis[1]);
+	line(glm::zero<glm::vec3>(), glm::up * scale);
 
 	setColor(core::Color::Blue);
-	line(glm::zero<glm::vec3>(), verticesAxis[2]);
+	line(glm::zero<glm::vec3>(), glm::forward * scale);
 }
 
 void ShapeBuilder::plane(uint32_t tesselation) {
