@@ -562,7 +562,7 @@ void SceneManager::resetSceneState() {
 	_animationLayerDirtyState = -1;
 	_animationIdx = 0;
 	_animationUpdate = false;
-	_editMode = EditMode::Volume;
+	_editMode = EditMode::Model;
 	_mementoHandler.clearStates();
 	const int layerId = _layerMgr.activeLayer();
 	// push the initial state of the current layer to the memento handler to
@@ -844,11 +844,11 @@ void SceneManager::construct() {
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		core::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
-				_move[i]).setBindingContext(voxedit::BindingContext::Scene);
+				_move[i]).setBindingContext(BindingContext::Model);
 	}
 
-	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Scene);
-	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Scene);
+	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Model);
+	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Model);
 
 	core::Command::registerCommand("animation_cycle", [this] (const core::CmdArgs& argv) {
 		int offset = 1;
@@ -1024,7 +1024,7 @@ void SceneManager::construct() {
 
 	core::Command::registerCommand("setreferencepositiontocursor", [&] (const core::CmdArgs& args) {
 		setReferencePosition(cursorPosition());
-	}).setHelp("Set the reference position to the current cursor position").setBindingContext(BindingContext::Scene);
+	}).setHelp("Set the reference position to the current cursor position").setBindingContext(BindingContext::Model);
 
 	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
 		const int argc = args.size();

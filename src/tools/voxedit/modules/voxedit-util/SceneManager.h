@@ -52,7 +52,10 @@ static constexpr struct Direction {
 };
 
 enum class EditMode {
-	Volume, Animation
+	// Edit a model volume (voxels)
+	Model,
+	// Edit an animation (lua)
+	Animation
 };
 
 /**
@@ -70,7 +73,7 @@ private:
 	Modifier _modifier;
 	voxel::RawVolume* _copy = nullptr;
 	render::Gizmo _gizmo;
-	EditMode _editMode = EditMode::Volume;
+	EditMode _editMode = EditMode::Model;
 
 	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Max;
 	animation::Character _character;

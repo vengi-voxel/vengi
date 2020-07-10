@@ -318,8 +318,8 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 }
 
 void Modifier::construct() {
-	core::Command::registerActionButton("actionexecute", _actionExecuteButton).setBindingContext(BindingContext::Scene);
-	core::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton).setBindingContext(BindingContext::Scene);
+	core::Command::registerActionButton("actionexecute", _actionExecuteButton).setBindingContext(BindingContext::Model);
+	core::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton).setBindingContext(BindingContext::Model);
 
 	core::Command::registerCommand("actionselect", [&] (const core::CmdArgs& args) {
 		setModifierType(ModifierType::Select);
