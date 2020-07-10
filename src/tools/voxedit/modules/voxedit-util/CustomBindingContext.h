@@ -11,6 +11,7 @@ namespace voxedit {
 enum BindingContext {
 	UI = core::BindingContext::UserInterface,
 	Model = core::BindingContext::World,
+	Editing = Model
 };
 
 }

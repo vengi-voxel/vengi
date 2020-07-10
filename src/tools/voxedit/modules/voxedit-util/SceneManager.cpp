@@ -847,8 +847,8 @@ void SceneManager::construct() {
 				_move[i]).setBindingContext(BindingContext::Model);
 	}
 
-	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Model);
-	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Model);
+	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Editing);
+	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Editing);
 
 	core::Command::registerCommand("animation_cycle", [this] (const core::CmdArgs& argv) {
 		int offset = 1;
