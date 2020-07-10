@@ -21,8 +21,8 @@ public:
 		return !glm::any(glm::isnan(origin)) && !glm::any(glm::isnan(direction));
 	}
 
-	const glm::vec3 origin;
-	const glm::vec3 direction;
+	glm::vec3 origin;
+	glm::vec3 direction;
 };
 
 }
