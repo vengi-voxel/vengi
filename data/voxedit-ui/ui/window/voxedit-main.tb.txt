@@ -346,11 +346,19 @@ TBLayout: distribution: gravity, axis: y
 							TBWidget
 						TBClickLabel: text: Grid
 							TBCheckBox: id: optionshowgrid, value: 1, skin: voxedit-grid-button, varref: ve_showgrid
+						TBWidget
+							lp: width: 10
 						TBClickLabel: text: Grid size
 							TBInlineSelect: id: optionvoxelsize, min: 1, max: 64, value: 4, varref: ve_gridsize
+						TBWidget
+							lp: width: 10
 						TBButton: @include: definitions>menubutton, text: Reset View, id: resetcamera, command: resetcamera
 							TBSkinImage: skin: voxedit-reset-camera
+						TBWidget
+							lp: width: 10
 						TBClickLabel: text: Quad view
 							TBCheckBox: id: toggleviewport, skin: voxedit-quadview-button, command: toggleviewport
+						TBWidget
+							lp: width: 10
 						TBClickLabel: text: Animation view, id: toggleanimationlabel
 							TBCheckBox: id: toggleanimation, skin: voxedit-animation-button, command: toggleanimation
