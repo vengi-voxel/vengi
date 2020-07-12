@@ -70,17 +70,13 @@ TEST_F(CameraTest, testScreenRayStraightDown) {
 
 TEST_F(CameraTest, testMotion) {
 	// TODO: finish this
-	Camera camera;
-	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));
-	camera.lookAt(glm::vec3(0.0), glm::forward);
+	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.0, 1.0, 0.0));
 	camera.rotate(glm::vec3(0.0f, 10.0f, 0.0f));
 	camera.update(0.0);
 }
 
 TEST_F(CameraTest, testParallelLookAt) {
-	Camera camera;
-	camera.setPosition(glm::vec3(0.0, 10.0, 0.0));
-	camera.lookAt(glm::vec3(0.0), glm::up);
+	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.0, 10.0, 0.0), glm::vec3(0.0), glm::up);
 	camera.update(0.0);
 	const glm::vec4 invecs[6] = {
 		// left bottom, right bottom, right top
@@ -105,10 +101,8 @@ TEST_F(CameraTest, testParallelLookAt) {
 }
 
 TEST_F(CameraTest, testCameraFrustumCullingPerspective) {
-	Camera camera;
+	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.1, 1.0, 0.1));
 	camera.setMode(CameraMode::Perspective);
-	camera.setPosition(glm::vec3(0.1, 1.0, 0.1));
-	camera.lookAt(glm::vec3(0.0), glm::forward);
 	camera.update(0.0);
 	const math::Frustum& frustum = camera.frustum();
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
