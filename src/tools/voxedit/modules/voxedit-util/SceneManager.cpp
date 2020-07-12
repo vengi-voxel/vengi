@@ -891,6 +891,7 @@ void SceneManager::construct() {
 	core::Command::registerCommand("togglescene", [this] (const core::CmdArgs& args) {
 		if (_editMode == EditMode::Model) {
 			_editMode = EditMode::Scene;
+			_modifier.aabbStop();
 		} else if (_editMode == EditMode::Scene) {
 			_editMode = EditMode::Model;
 		}
