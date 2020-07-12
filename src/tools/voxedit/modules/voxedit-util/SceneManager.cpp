@@ -889,14 +889,7 @@ void SceneManager::construct() {
 	});
 
 	core::Command::registerCommand("togglescene", [this] (const core::CmdArgs& args) {
-		if (_editMode == EditMode::Model) {
-			_editMode = EditMode::Scene;
-			_modifier.aabbStop();
-		} else if (_editMode == EditMode::Scene) {
-			_editMode = EditMode::Model;
-		}
-		setGizmoPosition();
-		// don't abort or toggle any other mode
+		toggleEditMode();
 	}).setHelp("Toggle scene mode on/off");
 
 	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
@@ -1344,6 +1337,18 @@ void SceneManager::mirror(math::Axis axis) {
 	});
 }
 
+void SceneManager::toggleEditMode() {
+	if (_editMode == EditMode::Model) {
+		_editMode = EditMode::Scene;
+		_modifier.aabbStop();
+	} else if (_editMode == EditMode::Scene) {
+		_editMode = EditMode::Model;
+		_gizmo.resetMode();
+	}
+	setGizmoPosition();
+	// don't abort or toggle any other mode
+}
+
 void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition) {
 	// TODO: only change selection
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
@@ -1586,8 +1591,8 @@ void SceneManager::update(double nowSeconds) {
 			setGizmoPosition();
 		}
 
-		if (_renderAxis || _editMode == EditMode::Scene) {
-			_gizmo.update(*_camera, _mouseCursor);
+		if (_editMode == EditMode::Scene) {
+			_gizmo.updateMode(*_camera, _mouseCursor);
 			_gizmo.execute(nowSeconds, [&] (const glm::vec3& deltaMovement, render::GizmoMode mode) {
 				executeGizmoAction(glm::ivec3(deltaMovement), mode);
 			});

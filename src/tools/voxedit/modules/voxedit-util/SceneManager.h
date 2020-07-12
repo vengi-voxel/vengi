@@ -206,6 +206,7 @@ private:
 	void shift(int layerId, const glm::ivec3& m);
 
 	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
+	void toggleEditMode();
 
 	void zoom(video::Camera& camera, float level) const;
 

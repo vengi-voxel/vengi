@@ -54,13 +54,6 @@ private:
 	bool isMode(GizmoMode mode) const;
 
 public:
-	/**
-	 * @return The current selected Gizmo::Mode value
-	 * @note This is the mode that is currently active in the action button. That means
-	 * that the button must be triggered.
-	 */
-	GizmoMode mode() const;
-
 	bool isModelSpace() const;
 	bool isWorldSpace() const;
 	void setModelSpace();
@@ -73,7 +66,14 @@ public:
 	 * @param[in] camera The camera to take the matrix from
 	 * @param[in] pixelPos screen pixel position
 	 */
-	void update(const video::Camera& camera, const glm::ivec2& pixelPos);
+	void updateMode(const video::Camera& camera, const glm::ivec2& pixelPos);
+	void resetMode();
+	/**
+	 * @return The current selected Gizmo::Mode value
+	 * @note This is the mode that is currently active in the action button. That means
+	 * that the button must be triggered.
+	 */
+	GizmoMode mode() const;
 
 	/**
 	 * @brief Updates the origin of the gizmo
