@@ -7,6 +7,9 @@
 #include "core/IComponent.h"
 #include "core/command/ActionButton.h"
 #include "Axis.h"
+#include "video/Ray.h"
+#include "video/Camera.h"
+#include <stdint.h>
 
 namespace video {
 class Video;
@@ -14,11 +17,12 @@ class Video;
 
 namespace render {
 
-enum class GizmoMode {
-	None, TranslateX, TranslateY, TranslateZ,
-	/* TODO: Rotate, Scale,*/
+enum class GizmoMode : int8_t {
+	None = 0,
+	TranslateX, TranslateY, TranslateZ,
 	Max
 };
+
 /**
  * @brief A set of manipulator handles in the shape of a 3 axis coordinate system icon
  * used for manipulating objects in 3D space
@@ -30,7 +34,9 @@ class Gizmo : public core::IComponent, public core::ActionButton {
 private:
 	double _buttonLastAction = 0.0;
 	GizmoMode _buttonMode = GizmoMode::None;
-	glm::ivec3 _buttonLastPosition { 0 };
+	glm::vec3 _buttonLastPosition { 0.0f };
+	glm::ivec2 _pixelPos { -1 };
+	video::Ray _ray { glm::vec3(0.0f), glm::vec3(0.0f) };
 public:
 	bool handleDown(int32_t key, double pressedMillis) override;
 	bool handleUp(int32_t key, double releasedMillis) override;
@@ -41,16 +47,19 @@ private:
 	GizmoMode _mode = GizmoMode::None;
 	glm::vec3 _pos { 0.0f };
 	bool _modelSpace = true;
+	video::Camera _camera;
 
-	void updateTranslateState(const video::Camera& camera, const glm::ivec2& pixelPos);
+	bool calculateTranslationDelta(glm::vec3& delta);
+	void updateTranslateState();
+	bool isMode(GizmoMode mode) const;
 
 public:
 	/**
 	 * @return The current selected Gizmo::Mode value
-	 * @note update() must have been called before
+	 * @note This is the mode that is currently active in the action button. That means
+	 * that the button must be triggered.
 	 */
 	GizmoMode mode() const;
-	void setMode(GizmoMode mode);
 
 	bool isModelSpace() const;
 	bool isWorldSpace() const;
@@ -89,7 +98,7 @@ public:
 	/**
 	 * @brief Tries to execute the action button
 	 */
-	bool execute(double nowSeconds, const std::function<glm::ivec3(const glm::ivec3, GizmoMode)>& function);
+	bool execute(double nowSeconds, const std::function<void(const glm::vec3, GizmoMode)>& function);
 };
 
 inline bool Gizmo::isModelSpace() const {
@@ -106,10 +115,6 @@ inline void Gizmo::setModelSpace() {
 
 inline void Gizmo::setWorldSpace() {
 	_modelSpace = false;
-}
-
-inline void Gizmo::setMode(GizmoMode mode) {
-	_mode = mode;
 }
 
 }

@@ -1561,16 +1561,8 @@ void SceneManager::update(double nowSeconds) {
 
 		if (_renderAxis) {
 			_gizmo.update(*_camera, _mouseCursor);
-			_gizmo.execute(nowSeconds, [&] (const glm::ivec3& lastPos, render::GizmoMode mode) {
-				const video::Ray& ray = _camera->screenRay(_mouseCursor);
-				const glm::ivec3 rayPosFarPlane(ray.origin + ray.direction * 100.0f);
-				if (lastPos == glm::zero<glm::ivec3>()) {
-					return rayPosFarPlane;
-				}
-				// TODO: the delta calculation sucks
-				const glm::ivec3 deltaMovement = lastPos - rayPosFarPlane;
-				executeGizmoAction(deltaMovement, mode);
-				return glm::zero<glm::ivec3>();
+			_gizmo.execute(nowSeconds, [&] (const glm::vec3& deltaMovement, render::GizmoMode mode) {
+				executeGizmoAction(glm::ivec3(deltaMovement), mode);
 			});
 		}
 	}
