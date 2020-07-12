@@ -55,7 +55,9 @@ enum class EditMode {
 	// Edit a model volume (voxels)
 	Model,
 	// Edit an animation (lua)
-	Animation
+	Animation,
+	// Edit the scene (volume positions, rotations, ...)
+	Scene
 };
 
 /**

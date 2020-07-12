@@ -713,8 +713,9 @@ void SceneManager::shift(int layerId, const glm::ivec3& m) {
 	_referencePos += m;
 	_modifier.translate(m);
 	_volumeRenderer.translate(layerId, m);
-	updateGridRenderer(model->region());
+	setGizmoPosition();
 	const voxel::Region& newRegion = model->region();
+	updateGridRenderer(newRegion);
 	oldRegion.accumulate(newRegion);
 	modified(layerId, oldRegion);
 }
@@ -805,23 +806,38 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderUI) {
-		const voxel::Region& region = modelVolume()->region();
-		_gridRenderer.render(camera, aabb(region));
+		if (_editMode == EditMode::Scene) {
+			const voxel::Region& region = modelVolume()->region();
+			const bool oldRenderGrid = _gridRenderer.renderGrid();
+			const bool oldRenderAABB = _gridRenderer.renderAABB();
+			_gridRenderer.setRenderGrid(false);
+			_gridRenderer.setRenderAABB(true);
+			_gridRenderer.render(camera, aabb(region));
+			_gridRenderer.setRenderGrid(oldRenderGrid);
+			_gridRenderer.setRenderAABB(oldRenderAABB);
+		} else {
+			const voxel::Region& region = modelVolume()->region();
+			_gridRenderer.render(camera, aabb(region));
+		}
 	}
 	if (renderScene) {
 		_volumeRenderer.render(camera, _renderShadow);
 	}
 	if (renderUI) {
-		_modifier.render(camera);
-
-		// TODO: render error if rendered last - but be before grid renderer to get transparency.
-		if (_renderLockAxis) {
-			for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
-				_shapeRenderer.render(_planeMeshIndex[i], camera);
-			}
-		}
-		if (_renderAxis) {
+		if (_editMode == EditMode::Scene) {
 			_gizmo.render(camera);
+		} else {
+			_modifier.render(camera);
+
+			// TODO: render error if rendered last - but be before grid renderer to get transparency.
+			if (_renderLockAxis) {
+				for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
+					_shapeRenderer.render(_planeMeshIndex[i], camera);
+				}
+			}
+			if (_renderAxis) {
+				_gizmo.render(camera);
+			}
 		}
 		if (!depthTest) {
 			video::disable(video::State::DepthTest);
@@ -871,6 +887,16 @@ void SceneManager::construct() {
 		}
 		saveAnimationEntity(name.c_str());
 	});
+
+	core::Command::registerCommand("togglescene", [this] (const core::CmdArgs& args) {
+		if (_editMode == EditMode::Model) {
+			_editMode = EditMode::Scene;
+		} else if (_editMode == EditMode::Scene) {
+			_editMode = EditMode::Model;
+		}
+		setGizmoPosition();
+		// don't abort or toggle any other mode
+	}).setHelp("Toggle scene mode on/off");
 
 	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
 		core::String dir = ".";
@@ -1042,7 +1068,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
 
-	core::Command::registerActionButton("shift", _gizmo);
+	core::Command::registerActionButton("shift", _gizmo).setBindingContext(BindingContext::Scene);
 	core::Command::registerCommand("shift", [&] (const core::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc != 3) {
@@ -1559,7 +1585,7 @@ void SceneManager::update(double nowSeconds) {
 			setGizmoPosition();
 		}
 
-		if (_renderAxis) {
+		if (_renderAxis || _editMode == EditMode::Scene) {
 			_gizmo.update(*_camera, _mouseCursor);
 			_gizmo.execute(nowSeconds, [&] (const glm::vec3& deltaMovement, render::GizmoMode mode) {
 				executeGizmoAction(glm::ivec3(deltaMovement), mode);

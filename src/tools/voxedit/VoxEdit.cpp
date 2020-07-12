@@ -209,7 +209,11 @@ core::AppState VoxEdit::onRunning() {
 	_mainWindow->update();
 	const bool isSceneHovered = _mainWindow->isSceneHovered();
 	if (isSceneHovered) {
-		core::setBindingContext(voxedit::BindingContext::Model);
+		if (voxedit::sceneMgr().editMode() == voxedit::EditMode::Scene) {
+			core::setBindingContext(voxedit::BindingContext::Scene);
+		} else {
+			core::setBindingContext(voxedit::BindingContext::Model);
+		}
 	} else {
 		core::setBindingContext(voxedit::BindingContext::UI);
 	}

@@ -15,6 +15,9 @@ ModifierButton::ModifierButton(ModifierType newType) :
 
 bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 	const bool initialDown = Super::handleDown(key, pressedMillis);
+	if (sceneMgr().editMode() == EditMode::Scene) {
+		return initialDown;
+	}
 	if (_secondAction) {
 		execute();
 		return initialDown;

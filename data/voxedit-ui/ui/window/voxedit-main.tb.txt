@@ -362,3 +362,7 @@ TBLayout: distribution: gravity, axis: y
 							lp: width: 10
 						TBClickLabel: text: Animation view, id: toggleanimationlabel
 							TBCheckBox: id: toggleanimation, skin: voxedit-animation-button, command: toggleanimation
+						TBWidget
+							lp: width: 10
+						TBClickLabel: text: Scene view, id: togglescenelabel
+							TBCheckBox: id: togglescene, skin: voxedit-scene-button, command: togglescene
