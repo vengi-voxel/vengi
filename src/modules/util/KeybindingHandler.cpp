@@ -76,10 +76,11 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 		if (command[0] == '+') {
 			if (core::Command::execute("%s %i %f", command.c_str(), key, nowSeconds) == 1) {
 				Log::trace("The tracking command was executed");
-				return true;
+				handled = true;
+				continue;
 			}
 			Log::trace("Failed to execute the tracking command %s", command.c_str());
-			return false;
+			continue;
 		}
 		handled |= core::Command::execute(command) > 0;
 	}
