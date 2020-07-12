@@ -33,6 +33,7 @@ jobs:
             ctest -V -C Debug -R tests-voxelformat$
             ctest -V -C Debug -R tests-voxelgenerator$
             ctest -V -C Debug -R tests-voxelrender$
+            ctest -V -C Debug -R tests-voxelutil$
             ctest -V -C Debug -R tests-voxelworld$
             ctest -V -C Debug -R tests-voxelworldrender$
     linux:
@@ -66,6 +67,7 @@ jobs:
             ctest -V -C Debug -R tests-voxelformat$
             ctest -V -C Debug -R tests-voxelgenerator$
             ctest -V -C Debug -R tests-voxelrender$
+            ctest -V -C Debug -R tests-voxelutil$
             ctest -V -C Debug -R tests-voxelworld$
             ctest -V -C Debug -R tests-voxelworldrender$
     windows:
@@ -102,6 +104,7 @@ jobs:
             ctest -V -C Debug -R tests-voxelformat$
             ctest -V -C Debug -R tests-voxelgenerator$
             ctest -V -C Debug -R tests-voxelrender$
+            ctest -V -C Debug -R tests-voxelutil$
             ctest -V -C Debug -R tests-voxelworld$
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v2
