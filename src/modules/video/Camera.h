@@ -396,7 +396,7 @@ inline const glm::vec3& Camera::position() const {
 }
 
 inline void Camera::setTargetDistance(float distance) {
-	if (fabs(_distance - distance) < 0.0001f) {
+	if (glm::abs(_distance - distance) < 0.0001f) {
 		return;
 	}
 	_dirty |= DIRTY_TARGET;
