@@ -789,6 +789,9 @@ Id createKernel(Id program, const char *name) {
 }
 
 bool finish() {
+	if (!supported()) {
+		return true;
+	}
 	core_assert(_priv::_ctx.context != nullptr);
 	core_assert(_priv::_ctx.commandQueue != nullptr);
 	cl_int error = clFlush(_priv::_ctx.commandQueue);
