@@ -195,7 +195,7 @@ bool Gizmo::calculateTranslationDelta(glm::vec3& delta) {
 	}
 	const glm::vec3 targetPos = _ray.origin + _ray.direction * len;
 	const glm::vec3 dm = targetPos - _pos;
-	const float lengthOnAxis = glm::dot(direction, dm);
+	const float lengthOnAxis = glm::dot(_camera.quaternion() * direction, dm);
 	delta = direction * lengthOnAxis - _buttonLastPosition;
 	_buttonLastPosition = direction * lengthOnAxis;
 	return true;
