@@ -16,15 +16,15 @@ jobs:
             make -j 2
             ctest -V -C Debug -R tests-ai$
             ctest -V -C Debug -R tests-animation$
-            ctest -V -C Debug -R tests-cooldown$
             ctest -V -C Debug -R tests-computeshadertool$
+            ctest -V -C Debug -R tests-cooldown$
             ctest -V -C Debug -R tests-core$
             ctest -V -C Debug -R tests-eventmgr$
             ctest -V -C Debug -R tests-math$
             ctest -V -C Debug -R tests-persistence$
             ctest -V -C Debug -R tests-poi$
-            ctest -V -C Debug -R tests-stock$
             ctest -V -C Debug -R tests-shadertool$
+            ctest -V -C Debug -R tests-stock$
             ctest -V -C Debug -R tests-testtraze$
             ctest -V -C Debug -R tests-util$
             ctest -V -C Debug -R tests-uuid$
@@ -49,15 +49,15 @@ jobs:
             make -j 2
             ctest -V -C Debug -R tests-ai$
             ctest -V -C Debug -R tests-animation$
-            ctest -V -C Debug -R tests-cooldown$
             ctest -V -C Debug -R tests-computeshadertool$
+            ctest -V -C Debug -R tests-cooldown$
             ctest -V -C Debug -R tests-core$
             ctest -V -C Debug -R tests-eventmgr$
             ctest -V -C Debug -R tests-math$
             ctest -V -C Debug -R tests-persistence$
             ctest -V -C Debug -R tests-poi$
-            ctest -V -C Debug -R tests-stock$
             ctest -V -C Debug -R tests-shadertool$
+            ctest -V -C Debug -R tests-stock$
             ctest -V -C Debug -R tests-testtraze$
             ctest -V -C Debug -R tests-util$
             ctest -V -C Debug -R tests-uuid$
@@ -86,15 +86,15 @@ jobs:
             cmake --install . --component voxconvert --prefix voxconvert-install
             ctest -V -C Debug -R tests-ai$
             ctest -V -C Debug -R tests-animation$
-            ctest -V -C Debug -R tests-cooldown$
             ctest -V -C Debug -R tests-computeshadertool$
+            ctest -V -C Debug -R tests-cooldown$
             ctest -V -C Debug -R tests-core$
             ctest -V -C Debug -R tests-eventmgr$
             ctest -V -C Debug -R tests-math$
             ctest -V -C Debug -R tests-persistence$
             ctest -V -C Debug -R tests-poi$
-            ctest -V -C Debug -R tests-stock$
             ctest -V -C Debug -R tests-shadertool$
+            ctest -V -C Debug -R tests-stock$
             ctest -V -C Debug -R tests-util$
             ctest -V -C Debug -R tests-uuid$
             ctest -V -C Debug -R tests-voxedit-util$
