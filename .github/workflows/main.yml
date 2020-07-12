@@ -14,25 +14,26 @@ jobs:
             cd build
             cmake ..
             make -j 2
-            ctest -V -C Debug -R tests-animation
-            ctest -V -C Debug -R tests-cooldown
-            ctest -V -C Debug -R tests-computeshadertool
-            ctest -V -C Debug -R tests-core
-            ctest -V -C Debug -R tests-eventmgr
-            ctest -V -C Debug -R tests-math
-            ctest -V -C Debug -R tests-persistence
-            ctest -V -C Debug -R tests-poi
-            ctest -V -C Debug -R tests-stock
-            ctest -V -C Debug -R tests-shadertool
-            ctest -V -C Debug -R tests-testtraze
-            ctest -V -C Debug -R tests-util
-            ctest -V -C Debug -R tests-uuid
-            ctest -V -C Debug -R tests-voxedit-util
-            ctest -V -C Debug -R tests-voxel
-            ctest -V -C Debug -R tests-voxelformat
-            ctest -V -C Debug -R tests-voxelgenerator
-            ctest -V -C Debug -R tests-voxelrender
-            ctest -V -C Debug -R tests-voxelworld
+            ctest -V -C Debug -R tests-animation$
+            ctest -V -C Debug -R tests-cooldown$
+            ctest -V -C Debug -R tests-computeshadertool$
+            ctest -V -C Debug -R tests-core$
+            ctest -V -C Debug -R tests-eventmgr$
+            ctest -V -C Debug -R tests-math$
+            ctest -V -C Debug -R tests-persistence$
+            ctest -V -C Debug -R tests-poi$
+            ctest -V -C Debug -R tests-stock$
+            ctest -V -C Debug -R tests-shadertool$
+            ctest -V -C Debug -R tests-testtraze$
+            ctest -V -C Debug -R tests-util$
+            ctest -V -C Debug -R tests-uuid$
+            ctest -V -C Debug -R tests-voxedit-util$
+            ctest -V -C Debug -R tests-voxel$
+            ctest -V -C Debug -R tests-voxelformat$
+            ctest -V -C Debug -R tests-voxelgenerator$
+            ctest -V -C Debug -R tests-voxelrender$
+            ctest -V -C Debug -R tests-voxelworld$
+            ctest -V -C Debug -R tests-voxelworldrender$
     linux:
         runs-on: ubuntu-latest
         steps:
@@ -45,25 +46,26 @@ jobs:
             cd build
             cmake ..
             make -j 2
-            ctest -V -C Debug -R tests-animation
-            ctest -V -C Debug -R tests-cooldown
-            ctest -V -C Debug -R tests-computeshadertool
-            ctest -V -C Debug -R tests-core
-            ctest -V -C Debug -R tests-eventmgr
-            ctest -V -C Debug -R tests-math
-            ctest -V -C Debug -R tests-persistence
-            ctest -V -C Debug -R tests-poi
-            ctest -V -C Debug -R tests-stock
-            ctest -V -C Debug -R tests-shadertool
-            ctest -V -C Debug -R tests-testtraze
-            ctest -V -C Debug -R tests-util
-            ctest -V -C Debug -R tests-uuid
-            ctest -V -C Debug -R tests-voxedit-util
-            ctest -V -C Debug -R tests-voxel
-            ctest -V -C Debug -R tests-voxelformat
-            ctest -V -C Debug -R tests-voxelgenerator
-            ctest -V -C Debug -R tests-voxelrender
-            ctest -V -C Debug -R tests-voxelworld
+            ctest -V -C Debug -R tests-animation$
+            ctest -V -C Debug -R tests-cooldown$
+            ctest -V -C Debug -R tests-computeshadertool$
+            ctest -V -C Debug -R tests-core$
+            ctest -V -C Debug -R tests-eventmgr$
+            ctest -V -C Debug -R tests-math$
+            ctest -V -C Debug -R tests-persistence$
+            ctest -V -C Debug -R tests-poi$
+            ctest -V -C Debug -R tests-stock$
+            ctest -V -C Debug -R tests-shadertool$
+            ctest -V -C Debug -R tests-testtraze$
+            ctest -V -C Debug -R tests-util$
+            ctest -V -C Debug -R tests-uuid$
+            ctest -V -C Debug -R tests-voxedit-util$
+            ctest -V -C Debug -R tests-voxel$
+            ctest -V -C Debug -R tests-voxelformat$
+            ctest -V -C Debug -R tests-voxelgenerator$
+            ctest -V -C Debug -R tests-voxelrender$
+            ctest -V -C Debug -R tests-voxelworld$
+            ctest -V -C Debug -R tests-voxelworldrender$
     windows:
         runs-on: windows-latest
         steps:
@@ -80,23 +82,23 @@ jobs:
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component mapview --prefix mapview-install
             cmake --install . --component voxconvert --prefix voxconvert-install
-            ctest -V -C Debug -R tests-animation
-            ctest -V -C Debug -R tests-cooldown
-            ctest -V -C Debug -R tests-computeshadertool
-            ctest -V -C Debug -R tests-core
-            ctest -V -C Debug -R tests-eventmgr
-            ctest -V -C Debug -R tests-math
-            ctest -V -C Debug -R tests-persistence
-            ctest -V -C Debug -R tests-poi
-            ctest -V -C Debug -R tests-stock
-            ctest -V -C Debug -R tests-shadertool
-            ctest -V -C Debug -R tests-util
-            ctest -V -C Debug -R tests-uuid
-            ctest -V -C Debug -R tests-voxedit-util
-            ctest -V -C Debug -R tests-voxel
-            ctest -V -C Debug -R tests-voxelformat
-            ctest -V -C Debug -R tests-voxelgenerator
-            ctest -V -C Debug -R tests-voxelrender
+            ctest -V -C Debug -R tests-animation$
+            ctest -V -C Debug -R tests-cooldown$
+            ctest -V -C Debug -R tests-computeshadertool$
+            ctest -V -C Debug -R tests-core$
+            ctest -V -C Debug -R tests-eventmgr$
+            ctest -V -C Debug -R tests-math$
+            ctest -V -C Debug -R tests-persistence$
+            ctest -V -C Debug -R tests-poi$
+            ctest -V -C Debug -R tests-stock$
+            ctest -V -C Debug -R tests-shadertool$
+            ctest -V -C Debug -R tests-util$
+            ctest -V -C Debug -R tests-uuid$
+            ctest -V -C Debug -R tests-voxedit-util$
+            ctest -V -C Debug -R tests-voxel$
+            ctest -V -C Debug -R tests-voxelformat$
+            ctest -V -C Debug -R tests-voxelgenerator$
+            ctest -V -C Debug -R tests-voxelrender$
             ctest -V -C Debug -R tests-voxelworld$
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v2
