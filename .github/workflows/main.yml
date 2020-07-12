@@ -28,6 +28,7 @@ jobs:
             ctest -V -C Debug -R tests-testtraze$
             ctest -V -C Debug -R tests-util$
             ctest -V -C Debug -R tests-uuid$
+            ctest -V -C Debug -R tests-video$
             ctest -V -C Debug -R tests-voxedit-util$
             ctest -V -C Debug -R tests-voxel$
             ctest -V -C Debug -R tests-voxelformat$
@@ -62,6 +63,7 @@ jobs:
             ctest -V -C Debug -R tests-testtraze$
             ctest -V -C Debug -R tests-util$
             ctest -V -C Debug -R tests-uuid$
+            ctest -V -C Debug -R tests-video$
             ctest -V -C Debug -R tests-voxedit-util$
             ctest -V -C Debug -R tests-voxel$
             ctest -V -C Debug -R tests-voxelformat$
@@ -99,6 +101,7 @@ jobs:
             ctest -V -C Debug -R tests-stock$
             ctest -V -C Debug -R tests-util$
             ctest -V -C Debug -R tests-uuid$
+            ctest -V -C Debug -R tests-video$
             ctest -V -C Debug -R tests-voxedit-util$
             ctest -V -C Debug -R tests-voxel$
             ctest -V -C Debug -R tests-voxelformat$
