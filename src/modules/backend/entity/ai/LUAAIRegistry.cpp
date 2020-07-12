@@ -333,7 +333,7 @@ bool LUAAIRegistry::init() {
 	}
 
 	const core::String& btScript = io::filesystem()->load("behaviourtreenodes.lua");
-	if (!evaluate(script)) {
+	if (!evaluate(btScript)) {
 		Log::error("Failed to load behaviour tree nodes");
 		return false;
 	}
