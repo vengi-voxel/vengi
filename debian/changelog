@@ -1,5 +1,8 @@
 vengi (0.0.5.0-1) UNRELEASED; urgency=low
 
+  * VoxEdit:
+  * Started to add scene mode edit support (move volumes)
+
   * VoxConvert:
   * Support different palette files (cvar `palette`)
   * Support writing outside the registered application paths
@@ -11,6 +14,11 @@ vengi (0.0.5.0-1) UNRELEASED; urgency=low
   * Fixed invisible voxels for qb and qbt (Qubicle) volume format
   * Support automatic loading different volume formats for assets
   * Support Command&Conquer vxl files
+  * Support Ace of Spades map files (vxl)
+  * Perform mesh extraction in dedicated threads for simple volume rendering
+  * Improved gizmo rendering and translation support
+  * Fixed memory leaks on shutdown
+  * Improved profiling support via tracy
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 7 Jun 2020 10:32:10 +0200
 

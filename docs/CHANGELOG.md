@@ -4,6 +4,10 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 ## 0.0.5 (2020-XX-XX)
 
+VoxEdit:
+
+   - Started to add scene mode edit support (move volumes)
+
 VoxConvert:
 
    - Support different palette files (cvar `palette`)
@@ -19,6 +23,9 @@ General:
    - Support Command&Conquer vxl files
    - Support Ace of Spades map files (vxl)
    - Perform mesh extraction in dedicated threads for simple volume rendering
+   - Improved gizmo rendering and translation support
+   - Fixed memory leaks on shutdown
+   - Improved profiling support via tracy
 
 ## 0.0.4 (2020-06-07)
 
