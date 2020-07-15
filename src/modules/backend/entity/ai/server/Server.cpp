@@ -72,7 +72,7 @@ void Server::onConnect(Client* client) {
 }
 
 void Server::onDisconnect(Client* /*client*/) {
-	ai_log("remote debugger disconnect (%i)", _network.getConnectedClients());
+	Log::info("remote debugger disconnect (%i)", _network.getConnectedClients());
 	Zone* zone = _zone;
 	if (zone == nullptr) {
 		return;
@@ -270,7 +270,7 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 		case EV_NEWCONNECTION: {
 			_network.sendToClient(event.data.newClient, ai::AIPauseMessage(pauseState));
 			_network.sendToClient(event.data.newClient, ai::AINamesMessage(_names));
-			ai_log("new remote debugger connection (%i)", _network.getConnectedClients());
+			Log::info("new remote debugger connection (%i)", _network.getConnectedClients());
 			break;
 		}
 		case EV_ZONEADD: {
@@ -340,13 +340,13 @@ bool Server::updateNode(const ai::CharacterId& characterId, int32_t nodeId, cons
 	ConditionParser conditionParser(_aiRegistry, condition);
 	const ConditionPtr& conditionPtr = conditionParser.getCondition();
 	if (!conditionPtr) {
-		ai_log_error("Failed to parse the condition '%s'", condition.c_str());
+		Log::error("Failed to parse the condition '%s'", condition.c_str());
 		return false;
 	}
 	TreeNodeParser treeNodeParser(_aiRegistry, type);
 	TreeNodePtr newNode = treeNodeParser.getTreeNode(name);
 	if (!newNode) {
-		ai_log_error("Failed to parse the node '%s'", type.c_str());
+		Log::error("Failed to parse the node '%s'", type.c_str());
 		return false;
 	}
 	newNode->setCondition(conditionPtr);
@@ -360,7 +360,7 @@ bool Server::updateNode(const ai::CharacterId& characterId, int32_t nodeId, cons
 	} else {
 		const TreeNodePtr& parent = root->getParent(root, nodeId);
 		if (!parent) {
-			ai_log_error("No parent for non-root node '%i'", nodeId);
+			Log::error("No parent for non-root node '%i'", nodeId);
 			return false;
 		}
 		parent->replaceChild(nodeId, newNode);
@@ -389,13 +389,13 @@ bool Server::addNode(const ai::CharacterId& characterId, int32_t parentNodeId, c
 	ConditionParser conditionParser(_aiRegistry, condition);
 	const ConditionPtr& conditionPtr = conditionParser.getCondition();
 	if (!conditionPtr) {
-		ai_log_error("Failed to parse the condition '%s'", condition.c_str());
+		Log::error("Failed to parse the condition '%s'", condition.c_str());
 		return false;
 	}
 	TreeNodeParser treeNodeParser(_aiRegistry, type);
 	TreeNodePtr newNode = treeNodeParser.getTreeNode(name);
 	if (!newNode) {
-		ai_log_error("Failed to parse the node '%s'", type.c_str());
+		Log::error("Failed to parse the node '%s'", type.c_str());
 		return false;
 	}
 	newNode->setCondition(conditionPtr);
@@ -424,7 +424,7 @@ bool Server::deleteNode(const ai::CharacterId& characterId, int32_t nodeId) {
 
 	const TreeNodePtr& parent = root->getParent(root, nodeId);
 	if (!parent) {
-		ai_log_error("No parent for non-root node '%i'", nodeId);
+		Log::error("No parent for non-root node '%i'", nodeId);
 		return false;
 	}
 	parent->replaceChild(nodeId, TreeNodePtr());

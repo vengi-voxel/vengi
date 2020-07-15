@@ -3,7 +3,7 @@
  */
 
 #include "Wander.h"
-#include "../common/Random.h"
+#include "backend/entity/ai/common/Random.h"
 #include "core/StringUtil.h"
 
 namespace backend {

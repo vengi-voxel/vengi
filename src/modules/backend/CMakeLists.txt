@@ -45,7 +45,6 @@ set(SRCS
 	entity/ai/common/Common.h
 	entity/ai/common/IFactoryRegistry.h
 	entity/ai/common/IParser.h
-	entity/ai/common/Log.h
 	entity/ai/common/Math.h entity/ai/common/Math.cpp
 	entity/ai/common/MemoryAllocator.h
 	entity/ai/common/MoveVector.h

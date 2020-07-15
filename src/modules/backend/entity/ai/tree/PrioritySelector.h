@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Selector.h"
-#include "../AI.h"
+#include "backend/entity/ai/AI.h"
 
 namespace backend {
 

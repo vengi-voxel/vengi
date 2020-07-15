@@ -5,12 +5,12 @@
 
 #include "ITask.h"
 #include "core/StringUtil.h"
-#include "../movement/Steering.h"
-#include "../movement/WeightedSteering.h"
-#include "../common/Common.h"
-#include "../common/Math.h"
-#include "../common/Random.h"
-#include "../common/Assert.h"
+#include "backend/entity/ai/movement/Steering.h"
+#include "backend/entity/ai/movement/WeightedSteering.h"
+#include "backend/entity/ai/common/Common.h"
+#include "backend/entity/ai/common/Math.h"
+#include "backend/entity/ai/common/Random.h"
+#include "backend/entity/ai/common/Assert.h"
 
 namespace backend {
 

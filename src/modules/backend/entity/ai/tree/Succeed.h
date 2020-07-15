@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TreeNode.h"
-#include "../common/Log.h"
+#include "core/Log.h"
 
 namespace backend {
 
@@ -19,7 +19,7 @@ public:
 
 	ai::TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
 		if (_children.size() != 1) {
-			ai_log_error("Succeed must have exactly one child");
+			Log::error("Succeed must have exactly one child");
 			return ai::EXCEPTION;
 		}
 

@@ -5,7 +5,7 @@
 
 #include "Selector.h"
 #include "core/Common.h"
-#include "../AI.h"
+#include "backend/entity/ai/AI.h"
 
 namespace backend {
 

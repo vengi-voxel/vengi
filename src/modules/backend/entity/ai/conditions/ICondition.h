@@ -12,10 +12,9 @@
 #include <vector>
 #include <memory>
 
-#include "../common/MemoryAllocator.h"
-#include "../common/Thread.h"
-
-#include "../AIFactories.h"
+#include "backend/entity/ai/common/MemoryAllocator.h"
+#include "backend/entity/ai/common/Thread.h"
+#include "backend/entity/ai/AIFactories.h"
 
 namespace backend {
 

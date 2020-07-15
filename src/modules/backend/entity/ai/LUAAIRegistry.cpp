@@ -309,7 +309,7 @@ bool LUAAIRegistry::init() {
 	lua::clua_registertrace(_s);
 
 	lua_atpanic(_s, [] (lua_State* L) {
-		ai_log_error("Lua panic. Error message: %s", (lua_isnil(L, -1) ? "" : lua_tostring(L, -1)));
+		Log::error("Lua panic. Error message: %s", (lua_isnil(L, -1) ? "" : lua_tostring(L, -1)));
 		return 0;
 	});
 	lua_gc(_s, LUA_GCSTOP, 0);
@@ -327,7 +327,7 @@ bool LUAAIRegistry::init() {
 		"UNKNOWN, CANNOTEXECUTE, RUNNING, FINISHED, FAILED, EXCEPTION = 0, 1, 2, 3, 4, 5\n";
 
 	if (luaL_loadbufferx(_s, script, SDL_strlen(script), "", nullptr) || lua_pcall(_s, 0, 0, 0)) {
-		ai_log_error("%s", lua_tostring(_s, -1));
+		Log::error("%s", lua_tostring(_s, -1));
 		lua_pop(_s, 1);
 		return false;
 	}
@@ -379,11 +379,11 @@ LUAAIRegistry::~LUAAIRegistry() {
 
 bool LUAAIRegistry::evaluate(const char* luaBuffer, size_t size) {
 	if (_s == nullptr) {
-		ai_log_error("LUA state is not yet initialized");
+		Log::error("LUA state is not yet initialized");
 		return false;
 	}
 	if (luaL_loadbufferx(_s, luaBuffer, size, "", nullptr) || lua_pcall(_s, 0, 0, 0)) {
-		ai_log_error("%s", lua_tostring(_s, -1));
+		Log::error("%s", lua_tostring(_s, -1));
 		lua_pop(_s, 1);
 		return false;
 	}

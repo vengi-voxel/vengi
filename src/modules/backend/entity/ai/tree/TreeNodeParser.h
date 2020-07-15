@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TreeNode.h"
-#include "../common/IParser.h"
+#include "backend/entity/ai/common/IParser.h"
 #include "Steer.h"
 
 namespace backend {

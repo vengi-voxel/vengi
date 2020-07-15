@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Steering.h"
-#include "../common/Assert.h"
+#include "backend/entity/ai/common/Assert.h"
 
 namespace backend {
 namespace movement {

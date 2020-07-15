@@ -5,7 +5,7 @@
 
 #include "ai-shared/protocol/IProtocolHandler.h"
 #include "ai-shared/protocol/IProtocolMessage.h"
-#include "../common/Thread.h"
+#include "backend/entity/ai/common/Thread.h"
 #include "core/String.h"
 #include <stdint.h>
 #include <list>

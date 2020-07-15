@@ -5,7 +5,7 @@
 #pragma once
 
 #include "IFilter.h"
-#include "../zone/Zone.h"
+#include "backend/entity/ai/zone/Zone.h"
 
 namespace backend {
 

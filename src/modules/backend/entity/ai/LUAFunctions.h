@@ -45,7 +45,7 @@ static inline int luaAI_assignmetatable(lua_State* s, const char *name) {
 	luaL_getmetatable(s, name);
 #if AI_LUA_SANTITY
 	if (!lua_istable(s, -1)) {
-		ai_log_error("LUA: metatable for %s doesn't exist", name);
+		Log::error("LUA: metatable for %s doesn't exist", name);
 		return 0;
 	}
 #endif

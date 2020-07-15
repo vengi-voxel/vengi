@@ -6,7 +6,7 @@
 #pragma once
 
 #include "IFilter.h"
-#include "../LUAFunctions.h"
+#include "backend/entity/ai/LUAFunctions.h"
 
 namespace backend {
 
@@ -23,7 +23,7 @@ protected:
 		lua_getfield(_s, LUA_REGISTRYINDEX, name.c_str());
 #if AI_LUA_SANTITY > 0
 		if (lua_isnil(_s, -1)) {
-			ai_log_error("LUA filter: could not find lua userdata for %s", _name.c_str());
+			Log::error("LUA filter: could not find lua userdata for %s", _name.c_str());
 			return;
 		}
 #endif
@@ -31,14 +31,14 @@ protected:
 		lua_getmetatable(_s, -1);
 #if AI_LUA_SANTITY > 0
 		if (!lua_istable(_s, -1)) {
-			ai_log_error("LUA filter: userdata for %s doesn't have a metatable assigned", _name.c_str());
+			Log::error("LUA filter: userdata for %s doesn't have a metatable assigned", _name.c_str());
 			return;
 		}
 #endif
 		// get filter() method
 		lua_getfield(_s, -1, "filter");
 		if (!lua_isfunction(_s, -1)) {
-			ai_log_error("LUA filter: metatable for %s doesn't have the filter() function assigned", _name.c_str());
+			Log::error("LUA filter: metatable for %s doesn't have the filter() function assigned", _name.c_str());
 			return;
 		}
 
@@ -51,21 +51,21 @@ protected:
 		}
 #if AI_LUA_SANTITY > 0
 		if (!lua_isfunction(_s, -3)) {
-			ai_log_error("LUA filter: expected to find a function on stack -3");
+			Log::error("LUA filter: expected to find a function on stack -3");
 			return;
 		}
 		if (!lua_isuserdata(_s, -2)) {
-			ai_log_error("LUA filter: expected to find the userdata on -2");
+			Log::error("LUA filter: expected to find the userdata on -2");
 			return;
 		}
 		if (!lua_isuserdata(_s, -1)) {
-			ai_log_error("LUA filter: second parameter should be the ai");
+			Log::error("LUA filter: second parameter should be the ai");
 			return;
 		}
 #endif
 		const int error = lua_pcall(_s, 2, 0, 0);
 		if (error) {
-			ai_log_error("LUA filter script: %s", lua_isstring(_s, -1) ? lua_tostring(_s, -1) : "Unknown Error");
+			Log::error("LUA filter script: %s", lua_isstring(_s, -1) ? lua_tostring(_s, -1) : "Unknown Error");
 		}
 
 		// reset stack
@@ -105,7 +105,7 @@ public:
 			filterLUA(entity);
 #if AI_EXCEPTIONS
 		} catch (...) {
-			ai_log_error("Exception while evaluating lua filter");
+			Log::error("Exception while evaluating lua filter");
 		}
 #endif
 	}

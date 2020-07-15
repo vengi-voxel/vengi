@@ -5,9 +5,9 @@
 
 #include "Selector.h"
 #include <vector>
-#include "../AI.h"
+#include "backend/entity/ai/AI.h"
+#include "backend/entity/ai/common/Random.h"
 #include "core/StringUtil.h"
-#include "../common/Random.h"
 
 namespace backend {
 
