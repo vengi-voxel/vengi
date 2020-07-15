@@ -20,8 +20,7 @@ protected:
 public:
 	void SetUp() override {
 		Super::SetUp();
-		ASSERT_TRUE(postgresInit());
-		_supported = _connectionPool.init();
+		_supported = postgresInit() && _connectionPool.init();
 		if (!_supported) {
 			Log::warn("ConnectionPoolTest is skipped");
 		}
