@@ -17,7 +17,15 @@ local luatest = REGISTRY.createNode("LuaTest")
 function luatest:execute(ai, deltaMillis)
 	--print("LuaTest node execute called with parameters: ai=["..tostring(ai).."], deltaMillis=["..tostring(deltaMillis).."]")
 	local chr = ai:character()
+	if chr == nil then
+		print("error: ai has no character assigned")
+		return FAILED
+	end
 	local pos = chr:position()
+	if pos == nil then
+		print("error: could not get character position")
+		return FAILED
+	end
 	local x = pos.x
 	pos.x = pos.x + 1.0
 	pos.y = 0.5
