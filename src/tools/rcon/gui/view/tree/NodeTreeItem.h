@@ -9,7 +9,7 @@
 #include <QStyleOptionGraphicsItem>
 #include <QFontMetrics>
 
-#include <server/AIStubTypes.h>
+#include "ai-shared/protocol/AIStubTypes.h"
 
 namespace ai {
 namespace debug {

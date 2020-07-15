@@ -5,8 +5,8 @@
 
 #include "LUAAIRegistry.h"
 #include "LUAFunctions.h"
-#include "common/Common.h"
-#include "common/Assert.h"
+#include "ai-shared/common/Common.h"
+#include "ai-shared/common/Assert.h"
 #include "AI.h"
 #include "core/Trace.h"
 #include "commonlua/Trace.h"

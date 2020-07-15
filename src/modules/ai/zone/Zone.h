@@ -15,11 +15,13 @@
 
 #include "ICharacter.h"
 #include "group/GroupMgr.h"
-#include "common/Thread.h"
 #include "core/concurrent/ThreadPool.h"
 #include "core/concurrent/Lock.h"
 #include "core/Trace.h"
-#include "common/CharacterId.h"
+
+#include "ai-shared/common/Thread.h"
+#include "ai-shared/common/CharacterId.h"
+
 #include <unordered_map>
 #include <vector>
 #include <memory>

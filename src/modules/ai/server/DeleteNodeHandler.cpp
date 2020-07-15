@@ -3,9 +3,9 @@
  */
 
 #include "DeleteNodeHandler.h"
-#include "AIDeleteNodeMessage.h"
+#include "ai-shared/protocol/AIDeleteNodeMessage.h"
 #include "Server.h"
-#include "common/Log.h"
+#include "ai-shared/common/Log.h"
 
 namespace ai {
 

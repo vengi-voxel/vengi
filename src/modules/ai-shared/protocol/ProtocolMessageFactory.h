@@ -3,12 +3,12 @@
  */
 #pragma once
 
-#include "common/NonCopyable.h"
+#include "core/NonCopyable.h"
 #include "IProtocolMessage.h"
 
 namespace ai {
 
-class ProtocolMessageFactory : public NonCopyable {
+class ProtocolMessageFactory : public core::NonCopyable {
 private:
 	uint8_t *_aiState;
 	uint8_t *_aiSelect;

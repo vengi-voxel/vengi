@@ -5,9 +5,14 @@
 
 #include <vector>
 #include "core/String.h"
-#include "ICharacter.h"
-#include "common/Math.h"
-#include "tree/TreeNode.h"
+#include "ai-shared/common/Math.h"
+#include "ai-shared/common/CharacterId.h"
+#include "ai-shared/common/TreeNodeStatus.h"
+#include "ai-shared/common/CharacterAttributes.h"
+
+#ifndef AI_NOTHING_SELECTED
+#define AI_NOTHING_SELECTED (-1)
+#endif
 
 namespace ai {
 

@@ -6,19 +6,6 @@ set(SRCS
 	AIRegistry.h AIRegistry.cpp
 	LUAAIRegistry.h LUAAIRegistry.cpp
 	LUAFunctions.h LUAFunctions.cpp
-	common/Assert.h
-	common/CharacterId.h
-	common/Common.h
-	common/IFactoryRegistry.h
-	common/IParser.h
-	common/Log.h
-	common/Math.h common/Math.cpp
-	common/MemoryAllocator.h
-	common/MoveVector.h
-	common/NonCopyable.h
-	common/Random.h
-	common/StringUtil.h
-	common/Thread.h
 	conditions/And.h
 	conditions/ConditionParser.h
 	conditions/ConditionParser.cpp
@@ -67,27 +54,11 @@ set(SRCS
 	movement/WeightedSteering.h
 	movement/LUASteering.h
 	movement/LUASteering.cpp
-	server/AIAddNodeMessage.h
-	server/AIChangeMessage.h
-	server/AICharacterDetailsMessage.h server/AICharacterDetailsMessage.cpp
-	server/AICharacterStaticMessage.h server/AICharacterStaticMessage.cpp
-	server/AIDeleteNodeMessage.h
-	server/AINamesMessage.h
-	server/AIPauseMessage.h
-	server/AISelectMessage.h
-	server/AIStateMessage.h
-	server/AIStepMessage.h
-	server/AIStubTypes.h
-	server/AIUpdateNodeMessage.h
 	server/AddNodeHandler.h server/AddNodeHandler.cpp
 	server/ChangeHandler.h server/ChangeHandler.cpp
 	server/DeleteNodeHandler.h server/DeleteNodeHandler.cpp
-	server/IProtocolHandler.h
-	server/IProtocolMessage.h
 	server/Network.h server/Network.cpp
 	server/PauseHandler.h server/PauseHandler.cpp
-	server/ProtocolHandlerRegistry.h
-	server/ProtocolMessageFactory.h server/ProtocolMessageFactory.cpp
 	server/ResetHandler.h server/ResetHandler.cpp
 	server/SelectHandler.h server/SelectHandler.cpp
 	server/Server.h server/Server.cpp
@@ -115,7 +86,7 @@ set(SRCS
 	tree/loaders/lua/LUATreeLoader.h tree/loaders/lua/LUATreeLoader.cpp
 )
 set(LIB ai)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua ai-shared)
 target_include_directories(${LIB} PUBLIC .)
 target_compile_definitions(${LIB} PUBLIC -DAI_INCLUDE_LUA=1)
 

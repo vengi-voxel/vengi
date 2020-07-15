@@ -4,7 +4,7 @@
 
 #include "TreeNode.h"
 #include "AI.h"
-#include "common/Assert.h"
+#include "ai-shared/common/Assert.h"
 
 namespace ai {
 

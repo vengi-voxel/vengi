@@ -4,7 +4,7 @@
 #pragma once
 
 #include "IAIFactory.h"
-#include "common/IFactoryRegistry.h"
+#include "ai-shared/common/IFactoryRegistry.h"
 #include <vector>
 
 namespace ai {

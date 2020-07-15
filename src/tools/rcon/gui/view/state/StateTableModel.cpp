@@ -2,6 +2,7 @@
  * @file
  */
 #include "StateTableModel.h"
+#include "core/Trace.h"
 #include <QColor>
 
 namespace ai {

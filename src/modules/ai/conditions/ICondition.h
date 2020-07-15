@@ -12,8 +12,8 @@
 #include <vector>
 #include <memory>
 
-#include "common/MemoryAllocator.h"
-#include "common/Thread.h"
+#include "ai-shared/common/MemoryAllocator.h"
+#include "ai-shared/common/Thread.h"
 
 #include "AIFactories.h"
 

@@ -4,7 +4,7 @@
 
 #include "SelectHandler.h"
 #include "Server.h"
-#include "AISelectMessage.h"
+#include "ai-shared/protocol/AISelectMessage.h"
 
 namespace ai {
 

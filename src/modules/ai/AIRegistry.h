@@ -5,7 +5,7 @@
 
 #include "IAIFactory.h"
 #include "AIFactories.h"
-#include "common/IFactoryRegistry.h"
+#include "ai-shared/common/IFactoryRegistry.h"
 #include "tree/TreeNode.h"
 #include "conditions/ICondition.h"
 #include "filter/IFilter.h"

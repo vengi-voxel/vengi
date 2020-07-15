@@ -5,10 +5,13 @@
 
 #include "conditions/ICondition.h"
 #include "conditions/True.h"
-#include "common/MemoryAllocator.h"
-#include "common/Common.h"
-#include <vector>
 #include "core/String.h"
+
+#include "ai-shared/common/MemoryAllocator.h"
+#include "ai-shared/common/Common.h"
+#include "ai-shared/common/TreeNodeStatus.h"
+
+#include <vector>
 #include <memory>
 #include <algorithm>
 
@@ -17,36 +20,6 @@ namespace ai {
 class TreeNode;
 typedef std::shared_ptr<TreeNode> TreeNodePtr;
 typedef std::vector<TreeNodePtr> TreeNodes;
-
-/**
- * @brief Execution states of a TreeNode::execute() call
- */
-enum TreeNodeStatus {
-	UNKNOWN,
-	/**
-	 * Not every condition is met in order to run this node
-	 * In general this means that the attached condition has to evaluate to @c true
-	 */
-	CANNOTEXECUTE,
-	/**
-	 * This behavior is still running and thus can block others
-	 */
-	RUNNING,
-	/**
-	 * The behavior ran and terminated without any problems.
-	 */
-	FINISHED,
-	/**
-	 * Controlled failure
-	 */
-	FAILED,
-	/**
-	 * Unexpected failure while executing the the node's action
-	 */
-	EXCEPTION,
-
-	MAX_TREENODESTATUS
-};
 
 /**
  * @brief A node factory macro to ease and unify the registration at AIRegistry.

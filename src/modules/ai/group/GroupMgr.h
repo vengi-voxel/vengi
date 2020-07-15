@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "common/Thread.h"
-#include "common/Math.h"
+#include "ai-shared/common/Thread.h"
+#include "ai-shared/common/Math.h"
 #include "ICharacter.h"
 #include "AI.h"
 #include <map>

@@ -4,7 +4,7 @@
 
 #include "StepHandler.h"
 #include "Server.h"
-#include "AIStepMessage.h"
+#include "ai-shared/protocol/AIStepMessage.h"
 
 namespace ai {
 

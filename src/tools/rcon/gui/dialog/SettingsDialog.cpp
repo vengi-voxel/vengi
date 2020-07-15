@@ -4,7 +4,7 @@
 
 #include "SettingsDialog.h"
 #include "Settings.h"
-#include <SimpleAI.h>
+#include "ai-shared/common/CharacterAttributes.h"
 #include <QColorDialog>
 #include <QGroupBox>
 #include <QLabel>

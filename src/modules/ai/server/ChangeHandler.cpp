@@ -4,7 +4,7 @@
 
 #include "ChangeHandler.h"
 #include "Server.h"
-#include "AIChangeMessage.h"
+#include "ai-shared/protocol/AIChangeMessage.h"
 
 namespace ai {
 

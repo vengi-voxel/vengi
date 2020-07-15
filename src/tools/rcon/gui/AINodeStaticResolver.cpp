@@ -2,7 +2,7 @@
  * @file
  */
 #include "AINodeStaticResolver.h"
-#include <server/AIStubTypes.h>
+#include "ai-shared/protocol/AIStubTypes.h"
 #include <QObject>
 #include <QDebug>
 

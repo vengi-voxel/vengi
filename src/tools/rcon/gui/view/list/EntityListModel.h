@@ -5,8 +5,7 @@
 
 #include <QAbstractTableModel>
 #include <QTableView>
-#include "ai/SimpleAI.h"
-#include "ai/server/AIStubTypes.h"
+#include "ai-shared/protocol/AIStubTypes.h"
 
 namespace ai {
 namespace debug {

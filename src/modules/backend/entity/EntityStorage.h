@@ -5,7 +5,7 @@
 #pragma once
 
 #include "backend/ForwardDecl.h"
-#include "ai/common/CharacterId.h"
+#include "ai-shared/common/CharacterId.h"
 #include "core/EventBus.h"
 #include "backend/eventbus/Event.h"
 #include <functional>

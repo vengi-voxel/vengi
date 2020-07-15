@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Steering.h"
-#include "common/Assert.h"
+#include "ai-shared/common/Assert.h"
 
 namespace ai {
 namespace movement {

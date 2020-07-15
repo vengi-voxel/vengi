@@ -3,7 +3,7 @@
  */
 
 #include "PauseHandler.h"
-#include "AIPauseMessage.h"
+#include "ai-shared/protocol/AIPauseMessage.h"
 #include "Server.h"
 
 namespace ai {

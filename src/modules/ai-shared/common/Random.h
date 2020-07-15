@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <iterator>
 #include <stdlib.h>
-#include "common/Thread.h"
+#include "Thread.h"
 
 namespace ai {
 

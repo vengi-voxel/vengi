@@ -4,7 +4,7 @@
 #pragma once
 
 #include "tree/TreeNode.h"
-#include "common/IParser.h"
+#include "ai-shared/common/IParser.h"
 #include "Steer.h"
 
 namespace ai {

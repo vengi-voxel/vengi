@@ -70,7 +70,7 @@ set(SRCS
 
 set_property(GLOBAL PROPERTY ${PROJECT_NAME}_NOUNITY TRUE)
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ai)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ai-shared)
 target_include_directories(${PROJECT_NAME} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${AUTOGEN_TARGETS_FOLDER}

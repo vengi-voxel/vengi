@@ -4,7 +4,7 @@
  */
 
 #include "Random.h"
-#include "common/Random.h"
+#include "ai-shared/common/Random.h"
 
 namespace ai {
 

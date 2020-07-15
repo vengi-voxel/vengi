@@ -7,10 +7,10 @@
 #include "AI.h"
 #include "zone/Zone.h"
 #include "IAIFactory.h"
-#include "common/Math.h"
-#include "common/MoveVector.h"
-#include "common/StringUtil.h"
-#include "common/MemoryAllocator.h"
+#include "ai-shared/common/Math.h"
+#include "ai-shared/common/MoveVector.h"
+#include "ai-shared/common/StringUtil.h"
+#include "ai-shared/common/MemoryAllocator.h"
 #include "ICharacter.h"
 
 namespace ai {

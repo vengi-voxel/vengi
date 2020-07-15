@@ -5,7 +5,7 @@
 #pragma once
 
 #include "conditions/ICondition.h"
-#include "common/IParser.h"
+#include "ai-shared/common/IParser.h"
 #include "conditions/Filter.h"
 #include "AIRegistry.h"
 

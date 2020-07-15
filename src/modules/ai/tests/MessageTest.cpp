@@ -3,13 +3,13 @@
  */
 
 #include "TestShared.h"
-#include "server/ProtocolMessageFactory.h"
-#include "server/AIPauseMessage.h"
-#include "server/AISelectMessage.h"
-#include "server/AIChangeMessage.h"
-#include "server/AINamesMessage.h"
-#include "server/AICharacterDetailsMessage.h"
-#include "server/AIStateMessage.h"
+#include "ai-shared/protocol/ProtocolMessageFactory.h"
+#include "ai-shared/protocol/AIPauseMessage.h"
+#include "ai-shared/protocol/AISelectMessage.h"
+#include "ai-shared/protocol/AIChangeMessage.h"
+#include "ai-shared/protocol/AINamesMessage.h"
+#include "ai-shared/protocol/AICharacterDetailsMessage.h"
+#include "ai-shared/protocol/AIStateMessage.h"
 
 class MessageTest: public TestSuite {
 protected:

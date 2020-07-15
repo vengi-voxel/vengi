@@ -5,10 +5,10 @@
 #include "Network.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
-#include "IProtocolMessage.h"
-#include "IProtocolHandler.h"
-#include "ProtocolHandlerRegistry.h"
-#include "ProtocolMessageFactory.h"
+#include "ai-shared/protocol/IProtocolMessage.h"
+#include "ai-shared/protocol/IProtocolHandler.h"
+#include "ai-shared/protocol/ProtocolHandlerRegistry.h"
+#include "ai-shared/protocol/ProtocolMessageFactory.h"
 #ifdef WIN32
 #define network_cleanup() WSACleanup()
 #define network_return int

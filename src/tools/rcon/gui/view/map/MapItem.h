@@ -8,7 +8,7 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
 #include <QStyleOptionGraphicsItem>
-#include <server/AIStubTypes.h>
+#include "ai-shared/protocol/AIStubTypes.h"
 
 namespace ai {
 namespace debug {

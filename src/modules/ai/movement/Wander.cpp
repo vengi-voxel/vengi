@@ -3,7 +3,7 @@
  */
 
 #include "Wander.h"
-#include "common/Random.h"
+#include "ai-shared/common/Random.h"
 #include "core/StringUtil.h"
 
 namespace ai {

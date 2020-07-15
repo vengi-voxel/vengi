@@ -3,9 +3,9 @@
  */
 
 #include "AddNodeHandler.h"
-#include "AIAddNodeMessage.h"
+#include "ai-shared/protocol/AIAddNodeMessage.h"
 #include "Server.h"
-#include "common/Log.h"
+#include "ai-shared/common/Log.h"
 
 namespace ai {
 

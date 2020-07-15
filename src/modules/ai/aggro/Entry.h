@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "common/CharacterId.h"
+#include "ai-shared/common/CharacterId.h"
 
 namespace ai {
 

@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "IProtocolHandler.h"
+#include "ai-shared/protocol/IProtocolHandler.h"
 
 namespace ai {
 

@@ -9,7 +9,7 @@
 #include "math/Rect.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
-#include "ai/common/CharacterId.h"
+#include "ai-shared/common/CharacterId.h"
 #include "voxelutil/FloorTraceResult.h"
 #include "core/IComponent.h"
 #include "backend/attack/AttackMgr.h"

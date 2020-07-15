@@ -31,8 +31,8 @@
 #include <vector>
 #include "ICharacter.h"
 #include "AI.h"
-#include "common/MemoryAllocator.h"
-#include "common/Thread.h"
+#include "ai-shared/common/MemoryAllocator.h"
+#include "ai-shared/common/Thread.h"
 #include "core/StringUtil.h"
 
 namespace ai {

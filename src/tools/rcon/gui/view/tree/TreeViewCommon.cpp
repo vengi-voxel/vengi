@@ -2,7 +2,7 @@
  * @file
  */
 #include "TreeViewCommon.h"
-#include <SimpleAI.h>
+#include "ai-shared/common/TreeNodeStatus.h"
 
 namespace ai {
 namespace debug {

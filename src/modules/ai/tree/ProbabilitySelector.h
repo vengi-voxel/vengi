@@ -7,7 +7,7 @@
 #include <vector>
 #include "AI.h"
 #include "core/StringUtil.h"
-#include "common/Random.h"
+#include "ai-shared/common/Random.h"
 
 namespace ai {
 

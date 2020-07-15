@@ -4,7 +4,7 @@
 #pragma once
 
 #include "tree/TreeNode.h"
-#include "common/Log.h"
+#include "ai-shared/common/Log.h"
 
 namespace ai {
 

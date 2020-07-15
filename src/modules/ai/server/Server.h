@@ -3,15 +3,17 @@
  */
 #pragma once
 
-#include "common/Thread.h"
 #include "tree/TreeNode.h"
-#include <unordered_set>
 #include "Network.h"
 #include "zone/Zone.h"
 #include "AIRegistry.h"
-#include "AIStubTypes.h"
-#include "ProtocolHandlerRegistry.h"
 #include "tree/TreeNode.h"
+
+#include "ai-shared/common/Thread.h"
+#include "ai-shared/protocol/AIStubTypes.h"
+#include "ai-shared/protocol/ProtocolHandlerRegistry.h"
+
+#include <unordered_set>
 
 namespace ai {
 

@@ -3,13 +3,13 @@
  */
 #pragma once
 
-#include "common/Thread.h"
-#include <memory>
+#include "ai-shared/common/Thread.h"
 #include "core/String.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
 #include <vector>
 #include <map>
+#include <memory>
 #include <stdarg.h>
 #include <stdio.h>
 

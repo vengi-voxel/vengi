@@ -12,11 +12,11 @@
 #include "DeleteNodeHandler.h"
 #include "UpdateNodeHandler.h"
 
-#include "AIPauseMessage.h"
-#include "AIStateMessage.h"
-#include "AINamesMessage.h"
-#include "AICharacterDetailsMessage.h"
-#include "AICharacterStaticMessage.h"
+#include "ai-shared/protocol/AIPauseMessage.h"
+#include "ai-shared/protocol/AIStateMessage.h"
+#include "ai-shared/protocol/AINamesMessage.h"
+#include "ai-shared/protocol/AICharacterDetailsMessage.h"
+#include "ai-shared/protocol/AICharacterStaticMessage.h"
 
 #include "conditions/ConditionParser.h"
 #include "tree/TreeNodeParser.h"

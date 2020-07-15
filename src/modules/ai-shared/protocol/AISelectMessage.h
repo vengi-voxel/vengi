@@ -4,7 +4,7 @@
 #pragma once
 
 #include "IProtocolMessage.h"
-#include "ICharacter.h"
+#include "ai-shared/common/CharacterId.h"
 
 namespace ai {
 

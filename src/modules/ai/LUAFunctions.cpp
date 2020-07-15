@@ -8,7 +8,7 @@
 #include "group/GroupMgr.h"
 #include "zone/Zone.h"
 #include "aggro/AggroMgr.h"
-#include "common/Math.h"
+#include "ai-shared/common/Math.h"
 
 namespace ai {
 

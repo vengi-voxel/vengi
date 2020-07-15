@@ -11,9 +11,10 @@
 #include "ICharacter.h"
 #include "tree/TreeNode.h"
 #include "tree/loaders/ITreeLoader.h"
-#include "common/Thread.h"
-#include "common/NonCopyable.h"
-#include "common/Math.h"
+#include "ai-shared/protocol/AIStubTypes.h"
+#include "ai-shared/common/Thread.h"
+#include "ai-shared/common/NonCopyable.h"
+#include "ai-shared/common/Math.h"
 
 namespace ai {
 
@@ -22,10 +23,6 @@ typedef std::shared_ptr<ICharacter> ICharacterPtr;
 class Zone;
 
 typedef std::vector<CharacterId> FilteredEntities;
-
-#ifndef AI_NOTHING_SELECTED
-#define AI_NOTHING_SELECTED (-1)
-#endif
 
 /**
  * @brief This is the type the library works with. It interacts with it's real world entity by

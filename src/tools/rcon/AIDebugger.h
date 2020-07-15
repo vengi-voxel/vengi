@@ -3,12 +3,11 @@
  */
 #pragma once
 
+#include "ai-shared/protocol/IProtocolHandler.h"
+#include "ai-shared/protocol/AICharacterStaticMessage.h"
+#include "ai-shared/protocol/AICharacterDetailsMessage.h"
 #include <vector>
 #include <utility>
-#include "ai/SimpleAI.h"
-#include "ai/server/IProtocolHandler.h"
-#include "ai/server/AICharacterStaticMessage.h"
-#include "ai/server/AICharacterDetailsMessage.h"
 #include <QTcpSocket>
 #include <QSettings>
 #include <QFile>

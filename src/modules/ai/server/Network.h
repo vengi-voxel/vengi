@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#include "IProtocolHandler.h"
-#include "common/Thread.h"
+#include "ai-shared/protocol/IProtocolHandler.h"
+#include "ai-shared/common/Thread.h"
 #include "core/String.h"
 #include <stdint.h>
 #include <list>

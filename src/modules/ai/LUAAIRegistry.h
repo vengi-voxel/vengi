@@ -5,7 +5,7 @@
 #pragma once
 
 #include "AIRegistry.h"
-#include "common/Thread.h"
+#include "ai-shared/common/Thread.h"
 #include "core/concurrent/Lock.h"
 #include "tree/LUATreeNode.h"
 #include "conditions/LUACondition.h"

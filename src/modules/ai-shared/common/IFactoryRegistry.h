@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "common/NonCopyable.h"
+#include "NonCopyable.h"
 #include "core/String.h"
 #include "core/collection/StringMap.h"
 #include <memory>
