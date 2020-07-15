@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Steering.h"
-#include "backend/entity/ai/common/Assert.h"
+#include "core/Assert.h"
 
 namespace backend {
 namespace movement {
@@ -18,7 +18,7 @@ struct WeightedData {
 
 	WeightedData(const SteeringPtr& _steering, float _weight = 1.0f) :
 			steering(_steering), weight(_weight) {
-		ai_assert(weight > 0.0001f, "Weight is too small");
+		core_assert_msg(weight > 0.0001f, "Weight is too small");
 	}
 };
 typedef std::vector<WeightedData> WeightedSteerings;

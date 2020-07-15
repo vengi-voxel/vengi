@@ -10,7 +10,7 @@
 #include "backend/entity/ai/common/Common.h"
 #include "backend/entity/ai/common/Math.h"
 #include "backend/entity/ai/common/Random.h"
-#include "backend/entity/ai/common/Assert.h"
+#include "core/Assert.h"
 
 namespace backend {
 
@@ -34,7 +34,7 @@ public:
 			} else {
 				std::vector<core::String> tokens;
 				core::string::splitString(ctx->parameters, tokens, ",");
-				ai_assert(tokens.size() == ctx->steerings.size(), "weights doesn't match steerings methods count");
+				core_assert_msg(tokens.size() == ctx->steerings.size(), "weights doesn't match steerings methods count");
 				const int tokenAmount = static_cast<int>(tokens.size());
 				for (int i = 0; i < tokenAmount; ++i) {
 					weightedSteerings.push_back(movement::WeightedData(ctx->steerings[i], core::string::toFloat(tokens[i])));

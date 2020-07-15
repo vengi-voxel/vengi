@@ -4,8 +4,7 @@
 #pragma once
 
 #include "core/Common.h"
-
-#include "Log.h"
+#include "core/Log.h"
 #include <stdio.h>
 
 

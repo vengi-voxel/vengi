@@ -4,7 +4,7 @@
 
 #include "TreeNode.h"
 #include "backend/entity/ai/AI.h"
-#include "backend/entity/ai/common/Assert.h"
+#include "core/Assert.h"
 
 namespace backend {
 
@@ -168,7 +168,7 @@ TreeNodePtr TreeNode::getParent_r(const TreeNodePtr& parent, int id) const {
 }
 
 TreeNodePtr TreeNode::getParent(const TreeNodePtr& self, int id) const {
-	ai_assert(getId() != id, "Root nodes don't have a parent");
+	core_assert_msg(getId() != id, "Root nodes don't have a parent");
 	for (auto& child : _children) {
 		if (child->getId() == id) {
 			return self;

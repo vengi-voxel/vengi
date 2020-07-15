@@ -41,7 +41,6 @@ set(SRCS
 	entity/ai/filter/SelectEntitiesOfTypes.h entity/ai/filter/SelectEntitiesOfTypes.cpp
 	entity/ai/movement/WanderAroundHome.h entity/ai/movement/WanderAroundHome.cpp
 
-	entity/ai/common/Assert.h
 	entity/ai/common/Common.h
 	entity/ai/common/IFactoryRegistry.h
 	entity/ai/common/IParser.h

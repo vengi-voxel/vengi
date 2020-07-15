@@ -6,7 +6,7 @@
 #include "LUAAIRegistry.h"
 #include "LUAFunctions.h"
 #include "common/Common.h"
-#include "common/Assert.h"
+#include "core/Assert.h"
 #include "AI.h"
 #include "core/Trace.h"
 #include "commonlua/Trace.h"
@@ -284,12 +284,12 @@ lua_State* LUAAIRegistry::getLuaState() {
 }
 
 int LUAAIRegistry::pushAIMetatable() {
-	ai_assert(_s != nullptr, "LUA state is not yet initialized");
+	core_assert_msg(_s != nullptr, "LUA state is not yet initialized");
 	return luaL_getmetatable(_s, luaAI_metaai());
 }
 
 int LUAAIRegistry::pushCharacterMetatable() {
-	ai_assert(_s != nullptr, "LUA state is not yet initialized");
+	core_assert_msg(_s != nullptr, "LUA state is not yet initialized");
 	return luaL_getmetatable(_s, luaAI_metacharacter());
 }
 
