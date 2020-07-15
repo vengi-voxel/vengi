@@ -16,6 +16,21 @@ int64_t toLong(const char* str) {
 	return ::atol(str);
 }
 
+core::String eraseAllChars(const core::String& str, char chr) {
+	if (str.empty()) {
+		return str;
+	}
+	core::String tmp;
+	tmp.reserve(str.size() + 1);
+	for (auto c : str) {
+		if (c == chr) {
+			continue;
+		}
+		tmp += c;
+	}
+	return tmp;
+}
+
 char* getBeforeToken(char **buffer, const char *token, size_t bufferSize) {
 	char *begin = *buffer;
 	const size_t length = SDL_strlen(token);

@@ -306,6 +306,8 @@ extern char* append(char* buf, size_t bufsize, const char* string);
 
 extern int count(const char *buf, char chr);
 
+extern core::String eraseAllChars(const core::String& str, char chr);
+
 /**
  * @note Call @c core_free() on the returned string
  */
