@@ -86,7 +86,6 @@ jobs:
           run: |
             set VCPKG_DEFAULT_TRIPLET=x64-windows
             set VCPKG_BUILD_TYPE=release
-            vcpkg install libpq
             mkdir build
             cd build
             cmake .. -DRCON=OFF -DCMAKE_BUILD_TYPE=Release
