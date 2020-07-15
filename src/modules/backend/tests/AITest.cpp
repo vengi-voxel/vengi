@@ -37,11 +37,11 @@ TEST_F(AITest, testFilterSelectVisible) {
 	const NpcPtr& npcNotVisible = create();
 	npc->updateVisible({npc2, npc3});
 
-	const ai::FilterFactoryContext ctx("");
-	const ai::FilterPtr& filter = SelectVisible::getFactory().create(&ctx);
+	const backend::FilterFactoryContext ctx("");
+	const backend::FilterPtr& filter = SelectVisible::getFactory().create(&ctx);
 	filter->filter(npc->ai());
 
-	const ai::FilteredEntities& fe = npc->ai()->getFilteredEntities();
+	const backend::FilteredEntities& fe = npc->ai()->getFilteredEntities();
 	EXPECT_EQ(2u, fe.size())
 		<< "Expected to have two of the npcs visible, but " << fe.size() << " are";
 	EXPECT_TRUE(std::find(fe.begin(), fe.end(), npcNotVisible->id()) == fe.end())
@@ -56,11 +56,11 @@ TEST_F(AITest, testFilterSelectEntitiesOfTypes) {
 	const NpcPtr& typeTwo2 = create(network::EntityType::ANIMAL_WOLF);
 	npc->updateVisible({typeOne1, typeTwo1, typeOne2, typeTwo2});
 
-	const ai::FilterFactoryContext ctx(network::EnumNameEntityType(npc->entityType()));
-	const ai::FilterPtr& filter = SelectEntitiesOfTypes::getFactory().create(&ctx);
+	const backend::FilterFactoryContext ctx(network::EnumNameEntityType(npc->entityType()));
+	const backend::FilterPtr& filter = SelectEntitiesOfTypes::getFactory().create(&ctx);
 	filter->filter(npc->ai());
 
-	const ai::FilteredEntities& fe = npc->ai()->getFilteredEntities();
+	const backend::FilteredEntities& fe = npc->ai()->getFilteredEntities();
 	EXPECT_EQ(2u, fe.size())
 		<< "Expected to have two of the npcs visible, but " << fe.size() << " are";
 }
@@ -68,31 +68,31 @@ TEST_F(AITest, testFilterSelectEntitiesOfTypes) {
 TEST_F(AITest, testConditionIsSelectionAlive) {
 	const NpcPtr& npc = create();
 	setVisible(npc);
-	const ai::ConditionFactoryContext ctx("");
-	const ai::ConditionPtr& condition = IsSelectionAlive::getFactory().create(&ctx);
+	const backend::ConditionFactoryContext ctx("");
+	const backend::ConditionPtr& condition = IsSelectionAlive::getFactory().create(&ctx);
 	EXPECT_TRUE(condition->evaluate(npc->ai())) << "NPC should be alive";
 }
 
 TEST_F(AITest, testConditionIsClosetoSelection) {
 	const NpcPtr& npc = create();
 	setVisible(npc);
-	const ai::ConditionFactoryContext ctx("");
-	const ai::ConditionPtr& condition = IsCloseToSelection::getFactory().create(&ctx);
+	const backend::ConditionFactoryContext ctx("");
+	const backend::ConditionPtr& condition = IsCloseToSelection::getFactory().create(&ctx);
 	EXPECT_TRUE(condition->evaluate(npc->ai())) << "NPCs should be close to each other";
 }
 
 TEST_F(AITest, testConditionIsOnCooldown) {
 	const NpcPtr& npc = create();
-	const ai::ConditionFactoryContext ctx(network::EnumNameCooldownType(cooldown::Type::INCREASE));
-	const ai::ConditionPtr& condition = IsOnCooldown::getFactory().create(&ctx);
+	const backend::ConditionFactoryContext ctx(network::EnumNameCooldownType(cooldown::Type::INCREASE));
+	const backend::ConditionPtr& condition = IsOnCooldown::getFactory().create(&ctx);
 	EXPECT_EQ(cooldown::CooldownTriggerState::SUCCESS, npc->cooldownMgr().triggerCooldown(cooldown::Type::INCREASE));
 	EXPECT_TRUE(condition->evaluate(npc->ai())) << "NPC should have the cooldown triggered";
 }
 
 TEST_F(AITest, testActionTriggerCooldown) {
 	const NpcPtr& npc = create();
-	const ai::TreeNodeFactoryContext ctx("foo", network::EnumNameCooldownType(cooldown::Type::INCREASE), ai::True::get());
-	const ai::TreeNodePtr& action = TriggerCooldown::getFactory().create(&ctx);
+	const backend::TreeNodeFactoryContext ctx("foo", network::EnumNameCooldownType(cooldown::Type::INCREASE), backend::True::get());
+	const TreeNodePtr& action = TriggerCooldown::getFactory().create(&ctx);
 	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 	EXPECT_TRUE(npc->cooldownMgr().isCooldown(cooldown::Type::INCREASE));
 }
@@ -100,15 +100,15 @@ TEST_F(AITest, testActionTriggerCooldown) {
 TEST_F(AITest, testActionTriggerCooldownOnSelection) {
 	const NpcPtr& npc = create();
 	setVisible(npc);
-	const ai::TreeNodeFactoryContext ctx("foo", network::EnumNameCooldownType(cooldown::Type::INCREASE), ai::True::get());
-	const ai::TreeNodePtr& action = TriggerCooldown::getFactory().create(&ctx);
+	const backend::TreeNodeFactoryContext ctx("foo", network::EnumNameCooldownType(cooldown::Type::INCREASE), backend::True::get());
+	const TreeNodePtr& action = TriggerCooldown::getFactory().create(&ctx);
 	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 }
 
 TEST_F(AITest, testActionSpawn) {
 	const NpcPtr& npc = create();
-	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
-	const ai::TreeNodePtr& action = Spawn::getFactory().create(&ctx);
+	const backend::TreeNodeFactoryContext ctx("foo", "", backend::True::get());
+	const TreeNodePtr& action = Spawn::getFactory().create(&ctx);
 	const int before = map->npcCount();
 	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 	const int after = map->npcCount();
@@ -118,23 +118,23 @@ TEST_F(AITest, testActionSpawn) {
 TEST_F(AITest, testActionSetPointOfInterest) {
 	const NpcPtr& npc = create();
 	const size_t before = map->poiProvider().count();
-	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
-	const ai::TreeNodePtr& action = SetPointOfInterest::getFactory().create(&ctx);
+	const backend::TreeNodeFactoryContext ctx("foo", "", backend::True::get());
+	const TreeNodePtr& action = SetPointOfInterest::getFactory().create(&ctx);
 	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 	EXPECT_GT(map->poiProvider().count(), before);
 }
 
 TEST_F(AITest, testActionGoHome) {
 	const NpcPtr& npc = create();
-	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
-	const ai::TreeNodePtr& action = GoHome::getFactory().create(&ctx);
+	const backend::TreeNodeFactoryContext ctx("foo", "", backend::True::get());
+	const TreeNodePtr& action = GoHome::getFactory().create(&ctx);
 	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 }
 
 TEST_F(AITest, testActionDie) {
 	const NpcPtr& npc = create();
-	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
-	const ai::TreeNodePtr& action = Die::getFactory().create(&ctx);
+	const backend::TreeNodeFactoryContext ctx("foo", "", backend::True::get());
+	const TreeNodePtr& action = Die::getFactory().create(&ctx);
 	EXPECT_FALSE(npc->dead()) << "NPC should be alive";
 	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));
 	EXPECT_TRUE(npc->dead()) << "NPC should be dead";
@@ -142,8 +142,8 @@ TEST_F(AITest, testActionDie) {
 
 TEST_F(AITest, testActionAttackOnSelection) {
 	const NpcPtr& npc = create();
-	const ai::TreeNodeFactoryContext ctx("foo", "", ai::True::get());
-	const ai::TreeNodePtr& action = AttackOnSelection::getFactory().create(&ctx);
+	const backend::TreeNodeFactoryContext ctx("foo", "", backend::True::get());
+	const TreeNodePtr& action = AttackOnSelection::getFactory().create(&ctx);
 	EXPECT_EQ(ai::TreeNodeStatus::FAILED, action->execute(npc->ai(), 0L));
 	setVisible(npc);
 	EXPECT_EQ(ai::TreeNodeStatus::FINISHED, action->execute(npc->ai(), 0L));

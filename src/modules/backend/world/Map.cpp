@@ -136,7 +136,7 @@ bool Map::init() {
 	_pager->setNoiseOffset(glm::zero<glm::vec2>());
 
 	_voxelWorldMgr->setSeed(seed->uintVal());
-	_zone = new ai::Zone(core::string::format("Zone %i", _mapId));
+	_zone = new Zone(core::string::format("Zone %i", _mapId));
 
 	if (!_spawnMgr.init()) {
 		Log::error("Failed to init the spawn manager");

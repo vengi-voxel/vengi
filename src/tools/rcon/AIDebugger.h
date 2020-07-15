@@ -33,7 +33,7 @@ class AIDebugger: public QObject {
 	Q_OBJECT
 friend class PauseHandler;
 public:
-	typedef QHash<CharacterId, AIStateWorld> Entities;
+	typedef QHash<ai::CharacterId, ai::AIStateWorld> Entities;
 	typedef Entities::const_iterator EntitiesIter;
 	typedef QMap<QString, QString> CharacterAttributesMap;
 protected:
@@ -55,9 +55,9 @@ protected:
 	// the current selected entity id
 	ai::CharacterId _selectedId;
 	// the aggro list of the current selected entity
-	std::vector<AIStateAggroEntry> _aggro;
+	std::vector<ai::AIStateAggroEntry> _aggro;
 	// the behaviour tree states of the current selected entity
-	AIStateNode _node;
+	ai::AIStateNode _node;
 	// the attributes of the current selected entity
 	CharacterAttributesMap _attributes;
 	// the socket of the ai debug server
@@ -66,7 +66,7 @@ protected:
 	QStringList _names;
 	AINodeStaticResolver& _resolver;
 
-	bool writeMessage(const IProtocolMessage& msg);
+	bool writeMessage(const ai::IProtocolMessage& msg);
 
 private slots:
 	void readTcpData();
@@ -79,20 +79,20 @@ public:
 	 * @return The list of ai controlled entities
 	 */
 	const Entities& getEntities() const;
-	void setEntities(const std::vector<AIStateWorld>& entities);
-	void setCharacterDetails(const CharacterId& id, const AIStateAggro& aggro, const AIStateNode& node);
-	void addCharacterStaticData(const AICharacterStaticMessage& msg);
+	void setEntities(const std::vector<ai::AIStateWorld>& entities);
+	void setCharacterDetails(const ai::CharacterId& id, const ai::AIStateAggro& aggro, const ai::AIStateNode& node);
+	void addCharacterStaticData(const ai::AICharacterStaticMessage& msg);
 	void setNames(const std::vector<core::String>& names);
 	const QStringList& getNames() const;
 	/**
 	 * @return The behaviour tree node that is assigned to the selected entity
 	 */
-	const AIStateNode& getNode() const;
+	const ai::AIStateNode& getNode() const;
 	/**
 	 * @return The key/value pairs of attributes that are assigned on the server side to the selected ai entity
 	 */
 	const CharacterAttributesMap& getAttributes() const;
-	const std::vector<AIStateAggroEntry>& getAggro() const;
+	const std::vector<ai::AIStateAggroEntry>& getAggro() const;
 
 	/**
 	 * @brief Start the debugger - call this from your main method
@@ -102,7 +102,7 @@ public:
 	bool disconnectFromAIServer();
 
 	bool isSelected(const ai::AIStateWorld& ai) const;
-	const CharacterId& getSelected() const;
+	const ai::CharacterId& getSelected() const;
 	void select(const ai::AIStateWorld& ai);
 	void select(ai::CharacterId id);
 	void togglePause();
@@ -131,11 +131,11 @@ signals:
 	void onEntitiesUpdated();
 };
 
-inline const std::vector<AIStateAggroEntry>& AIDebugger::getAggro() const {
+inline const std::vector<ai::AIStateAggroEntry>& AIDebugger::getAggro() const {
 	return _aggro;
 }
 
-inline const AIStateNode& AIDebugger::getNode() const {
+inline const ai::AIStateNode& AIDebugger::getNode() const {
 	return _node;
 }
 

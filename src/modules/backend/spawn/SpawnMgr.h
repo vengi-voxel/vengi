@@ -28,7 +28,7 @@ private:
 	void spawnAnimals();
 	void spawnCharacters();
 
-	NpcPtr createNpc(network::EntityType type, const ai::TreeNodePtr& behaviour);
+	NpcPtr createNpc(network::EntityType type, const TreeNodePtr& behaviour);
 	bool onSpawn(const NpcPtr& npc, const glm::ivec3* pos);
 
 public:

@@ -83,7 +83,7 @@ protected:
 		protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 		network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
 		messageSender = std::make_shared<network::ServerMessageSender>(network, _testApp->metric());
-		registry = std::make_shared<AIRegistry>();
+		registry = std::make_shared<LUAAIRegistry>();
 		ASSERT_TRUE(registry->init());
 		loader = std::make_shared<AILoader>(registry);
 		containerProvider = core::make_shared<attrib::ContainerProvider>();

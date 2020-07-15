@@ -15,7 +15,7 @@ namespace backend {
 /**
  * @ingroup AI
  */
-class SelectEntitiesOfTypes: public ai::IFilter {
+class SelectEntitiesOfTypes: public IFilter {
 private:
 	std::bitset<core::enumVal(network::EntityType::MAX)> _entityTypes;
 public:
@@ -23,7 +23,7 @@ public:
 
 	SelectEntitiesOfTypes(const core::String& parameters);
 
-	void filter(const ai::AIPtr& entity) override;
+	void filter(const AIPtr& entity) override;
 };
 
 }

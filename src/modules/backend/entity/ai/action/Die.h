@@ -10,7 +10,7 @@
 namespace backend {
 
 AI_TASK(Die) {
-	backend::Npc& npc = chr.getNpc();
+	Npc& npc = chr.getNpc();
 	if (npc.die()) {
 		return ai::TreeNodeStatus::FINISHED;
 	}

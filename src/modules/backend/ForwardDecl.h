@@ -21,13 +21,23 @@ typedef std::shared_ptr<VolumeCache> VolumeCachePtr;
 
 }
 
-namespace ai {
+namespace backend {
 
 class Zone;
 class Server;
 class AIRegistry;
 class TreeNode;
 typedef std::shared_ptr<TreeNode> TreeNodePtr;
+
+class ICharacter;
+typedef std::shared_ptr<ICharacter> ICharacterPtr;
+class Zone;
+
+class AI;
+typedef std::shared_ptr<AI> AIPtr;
+
+class AICharacter;
+typedef std::shared_ptr<AICharacter> AICharacterPtr;
 
 }
 
@@ -78,8 +88,8 @@ typedef std::shared_ptr<MapProvider> MapProviderPtr;
 class SpawnMgr;
 typedef std::shared_ptr<SpawnMgr> SpawnMgrPtr;
 
-class AIRegistry;
-typedef std::shared_ptr<AIRegistry> AIRegistryPtr;
+class LUAAIRegistry;
+typedef std::shared_ptr<LUAAIRegistry> AIRegistryPtr;
 
 class AILoader;
 typedef std::shared_ptr<AILoader> AILoaderPtr;

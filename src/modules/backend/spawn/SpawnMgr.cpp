@@ -50,12 +50,12 @@ void SpawnMgr::spawnAnimals() {
 }
 
 void SpawnMgr::spawnEntity(network::EntityType start, network::EntityType end, int maxAmount) {
-	ai::Zone& zone = *_map->zone();
+	Zone& zone = *_map->zone();
 	const int offset = (int)start + 1;
 	const int size = (int)end - offset;
 	std::vector<int> count(size, 0);
-	zone.execute([&] (const ai::AIPtr& ai) {
-		const AICharacter& chr = ai::character_cast<AICharacter>(ai->getCharacter());
+	zone.execute([&] (const AIPtr& ai) {
+		const AICharacter& chr = character_cast<AICharacter>(ai->getCharacter());
 		const Npc& npc = chr.getNpc();
 		const network::EntityType type = npc.entityType();
 		if (type <= start || type >= end) {
@@ -86,14 +86,14 @@ bool SpawnMgr::onSpawn(const NpcPtr& npc, const glm::ivec3* pos) {
 	return false;
 }
 
-NpcPtr SpawnMgr::createNpc(network::EntityType type, const ai::TreeNodePtr& behaviour) {
+NpcPtr SpawnMgr::createNpc(network::EntityType type, const TreeNodePtr& behaviour) {
 	return std::make_shared<Npc>(type, behaviour, _map->ptr(), _messageSender,
 					_timeProvider, _containerProvider, _cooldownProvider);
 }
 
 NpcPtr SpawnMgr::spawn(network::EntityType type, const glm::ivec3* pos) {
 	const char *typeName = network::EnumNameEntityType(type);
-	const ai::TreeNodePtr& behaviour = _loader->load(typeName);
+	const TreeNodePtr& behaviour = _loader->load(typeName);
 	if (!behaviour) {
 		Log::error("could not load the behaviour tree %s", typeName);
 		return NpcPtr();
@@ -114,7 +114,7 @@ int SpawnMgr::spawn(network::EntityType type, int amount, const glm::ivec3* pos)
 	}
 
 	const char *typeName = network::EnumNameEntityType(type);
-	const ai::TreeNodePtr& behaviour = _loader->load(typeName);
+	const TreeNodePtr& behaviour = _loader->load(typeName);
 	if (!behaviour) {
 		Log::error("could not load the behaviour tree %s", typeName);
 		return 0;

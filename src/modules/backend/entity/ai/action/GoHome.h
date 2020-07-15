@@ -10,7 +10,7 @@
 namespace backend {
 
 AI_TASK(GoHome) {
-	backend::Npc& npc = chr.getNpc();
+	Npc& npc = chr.getNpc();
 	if (npc.route(npc.homePosition())) {
 		return ai::TreeNodeStatus::FINISHED;
 	}

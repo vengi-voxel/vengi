@@ -1,17 +1,7 @@
 set(SRCS
-	common/Assert.h
+	common/CharacterAttributes.h
 	common/CharacterId.h
-	common/Common.h
-	common/IFactoryRegistry.h
-	common/IParser.h
-	common/Log.h
-	common/Math.h common/Math.cpp
-	common/MemoryAllocator.h
-	common/MoveVector.h
-	common/NonCopyable.h
-	common/Random.h
-	common/StringUtil.h
-	common/Thread.h
+	common/TreeNodeStatus.h
 
 	protocol/AIAddNodeMessage.h
 	protocol/AIChangeMessage.h

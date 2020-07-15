@@ -4,6 +4,9 @@
 
 #include "AICharacter.h"
 #include "backend/entity/Npc.h"
+#include "backend/entity/ai/aggro/AggroMgr.h"
+#include "backend/entity/ai/common/Random.h"
+#include "backend/entity/ai/common/StringUtil.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 
@@ -11,7 +14,7 @@ namespace backend {
 
 AICharacter::AICharacter(ai::CharacterId id, Npc& npc) :
 		Super(id), _npc(npc) {
-	setOrientation(ai::randomf(glm::two_pi<float>()));
+	setOrientation(randomf(glm::two_pi<float>()));
 	setAttribute(ai::attributes::NAME, core::string::format("%s %" PRIChrId, npc.type(), id));
 	setAttribute(ai::attributes::ID, core::string::toString(id));
 }
@@ -36,14 +39,14 @@ void AICharacter::update(int64_t dt, bool debuggingActive) {
 	// TODO: attrib for passive aggro
 	if (true) {
 		_npc.visitVisible([&] (const EntityPtr& e) {
-			ai::AggroMgr& aggro = _npc.ai()->getAggroMgr();
+			AggroMgr& aggro = _npc.ai()->getAggroMgr();
 			aggro.addAggro(e->id(), dt / 1000.0);
 		});
 	}
 
 	if (debuggingActive) {
-		setAttribute(ai::attributes::POSITION, ai::Str::toString(getPosition()));
-		setAttribute(ai::attributes::ORIENTATION, core::string::toString(ai::toDegrees(getOrientation())));
+		setAttribute(ai::attributes::POSITION, Str::toString(getPosition()));
+		setAttribute(ai::attributes::ORIENTATION, core::string::toString(toDegrees(getOrientation())));
 		const attrib::Attributes& attribs =  _npc._attribs;
 		for (int i = 0; i <= (int)attrib::Type::MAX; ++i) {
 			const attrib::Type attribType = (attrib::Type)i;

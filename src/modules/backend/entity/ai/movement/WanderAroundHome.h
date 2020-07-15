@@ -4,19 +4,20 @@
 
 #pragma once
 
+#include "Steering.h"
 #include "backend/entity/ai/AICharacter.h"
-#include "core/Common.h"
+#include "core/StringUtil.h"
 
 namespace backend {
 
-class WanderAroundHome: public ai::movement::ISteering {
+class WanderAroundHome: public movement::ISteering {
 private:
 	float _maxDistance;
 public:
 	STEERING_FACTORY(WanderAroundHome)
 
 	explicit WanderAroundHome(const core::String& parameter) :
-			ai::movement::ISteering() {
+			movement::ISteering() {
 		if (parameter.empty()) {
 			 _maxDistance = 40.0f;
 		} else {
@@ -24,7 +25,7 @@ public:
 		}
 	}
 
-	ai::MoveVector execute (const ai::AIPtr& ai, float speed) const override;
+	MoveVector execute (const AIPtr& ai, float speed) const override;
 };
 
 

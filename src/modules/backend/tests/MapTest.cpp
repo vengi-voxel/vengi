@@ -41,7 +41,7 @@ public:
 		_protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 		_network = std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
 		_messageSender = std::make_shared<network::ServerMessageSender>(_network, _testApp->metric());
-		const AIRegistryPtr& registry = std::make_shared<AIRegistry>();
+		const AIRegistryPtr& registry = std::make_shared<LUAAIRegistry>();
 		ASSERT_TRUE(registry->init());
 		_loader = std::make_shared<AILoader>(registry);
 		_containerProvider = core::make_shared<attrib::ContainerProvider>();

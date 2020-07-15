@@ -29,7 +29,7 @@
 namespace ai {
 namespace debug {
 
-class StateHandler: public ProtocolHandler<AIStateMessage> {
+class StateHandler: public ai::ProtocolHandler<ai::AIStateMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -37,13 +37,13 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId& /*clientId*/, const AIStateMessage* msg) override {
+	void execute(const ai::ClientId& /*clientId*/, const ai::AIStateMessage* msg) override {
 		_aiDebugger.setEntities(msg->getStates());
 		emit _aiDebugger.onEntitiesUpdated();
 	}
 };
 
-class CharacterHandler: public ProtocolHandler<AICharacterDetailsMessage> {
+class CharacterHandler: public ai::ProtocolHandler<ai::AICharacterDetailsMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -51,13 +51,13 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId& /*clientId*/, const AICharacterDetailsMessage* msg) override {
+	void execute(const ai::ClientId& /*clientId*/, const ai::AICharacterDetailsMessage* msg) override {
 		_aiDebugger.setCharacterDetails(msg->getCharacterId(), msg->getAggro(), msg->getNode());
 		emit _aiDebugger.onSelected();
 	}
 };
 
-class CharacterStaticHandler: public ProtocolHandler<AICharacterStaticMessage> {
+class CharacterStaticHandler: public ai::ProtocolHandler<ai::AICharacterStaticMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -65,13 +65,13 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId& /*clientId*/, const AICharacterStaticMessage* msg) override {
+	void execute(const ai::ClientId& /*clientId*/, const ai::AICharacterStaticMessage* msg) override {
 		_aiDebugger.addCharacterStaticData(*msg);
 		emit _aiDebugger.onSelected();
 	}
 };
 
-class NamesHandler: public ProtocolHandler<AINamesMessage> {
+class NamesHandler: public ai::ProtocolHandler<ai::AINamesMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -79,13 +79,13 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId& /*clientId*/, const AINamesMessage* msg) override {
+	void execute(const ai::ClientId& /*clientId*/, const ai::AINamesMessage* msg) override {
 		_aiDebugger.setNames(msg->getNames());
 		emit _aiDebugger.onNamesReceived();
 	}
 };
 
-class PauseHandler: public ProtocolHandler<AIPauseMessage> {
+class PauseHandler: public ai::ProtocolHandler<ai::AIPauseMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -93,7 +93,7 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void execute(const ClientId& /*clientId*/, const AIPauseMessage* msg) override {
+	void execute(const ai::ClientId& /*clientId*/, const ai::AIPauseMessage* msg) override {
 		const bool pause = msg->isPause();
 		_aiDebugger._pause = pause;
 		emit _aiDebugger.onPause(pause);
@@ -103,7 +103,7 @@ public:
 AIDebugger::AIDebugger(AINodeStaticResolver& resolver) :
 		_stateHandler(new StateHandler(*this)), _characterHandler(new CharacterHandler(*this)), _characterStaticHandler(
 				new CharacterStaticHandler(*this)), _pauseHandler(new PauseHandler(*this)), _namesHandler(new NamesHandler(*this)), _nopHandler(
-				new NopHandler()), _selectedId(AI_NOTHING_SELECTED), _socket(this), _pause(false), _resolver(resolver) {
+				new ai::NopHandler()), _selectedId(AI_NOTHING_SELECTED), _socket(this), _pause(false), _resolver(resolver) {
 	connect(&_socket, SIGNAL(readyRead()), SLOT(readTcpData()));
 	connect(&_socket, SIGNAL(disconnected()), SLOT(onDisconnect()));
 
@@ -129,35 +129,35 @@ bool AIDebugger::isSelected(const ai::AIStateWorld& ai) const {
 	return _selectedId == ai.getId();
 }
 
-void AIDebugger::setCharacterDetails(const CharacterId& id, const AIStateAggro& aggro, const AIStateNode& node) {
+void AIDebugger::setCharacterDetails(const ai::CharacterId& id, const ai::AIStateAggro& aggro, const ai::AIStateNode& node) {
 	_selectedId = id;
 	_aggro = aggro.getAggro();
 	_node = node;
 	_attributes.clear();
-	const AIStateWorld& state = _entities.value(id);
-	const CharacterAttributes& attributes = state.getAttributes();
-	for (CharacterAttributes::const_iterator i = attributes.begin(); i != attributes.end(); ++i) {
+	const ai::AIStateWorld& state = _entities.value(id);
+	const ai::CharacterAttributes& attributes = state.getAttributes();
+	for (ai::CharacterAttributes::const_iterator i = attributes.begin(); i != attributes.end(); ++i) {
 		_attributes[QString(i->first.c_str())] = QString(i->second.c_str());
 	}
 }
 
-void AIDebugger::addCharacterStaticData(const AICharacterStaticMessage& msg) {
-	const std::vector<AIStateNodeStatic>& data = msg.getStaticNodeData();
+void AIDebugger::addCharacterStaticData(const ai::AICharacterStaticMessage& msg) {
+	const std::vector<ai::AIStateNodeStatic>& data = msg.getStaticNodeData();
 	_resolver.set(data);
 }
 
-const CharacterId& AIDebugger::getSelected() const {
+const ai::CharacterId& AIDebugger::getSelected() const {
 	return _selectedId;
 }
 
 void AIDebugger::togglePause() {
 	const bool newPauseMode = !_pause;
-	writeMessage(AIPauseMessage(newPauseMode));
+	writeMessage(ai::AIPauseMessage(newPauseMode));
 }
 
 void AIDebugger::select(ai::CharacterId id) {
 	qDebug() << "select " << id;
-	writeMessage(AISelectMessage(id));
+	writeMessage(ai::AISelectMessage(id));
 }
 
 void AIDebugger::select(const ai::AIStateWorld& ai) {
@@ -165,26 +165,26 @@ void AIDebugger::select(const ai::AIStateWorld& ai) {
 	select(id);
 }
 
-bool AIDebugger::writeMessage(const IProtocolMessage& msg) {
+bool AIDebugger::writeMessage(const ai::IProtocolMessage& msg) {
 	if (_socket.state() != QAbstractSocket::ConnectedState) {
 		return false;
 	}
 	// serialize into streamcontainer to get the final size
-	streamContainer out;
+	ai::streamContainer out;
 	msg.serialize(out);
 	// now put the serialized message into the byte array
 	QByteArray temp;
 	QDataStream data(&temp, QIODevice::ReadWrite);
 	// add the framing size int
 	const uint32_t size = out.size();
-	streamContainer sizeC;
-	IProtocolMessage::addInt(sizeC, size);
-	for (streamContainer::iterator i = sizeC.begin(); i != sizeC.end(); ++i) {
+	ai::streamContainer sizeC;
+	ai::IProtocolMessage::addInt(sizeC, size);
+	for (ai::streamContainer::iterator i = sizeC.begin(); i != sizeC.end(); ++i) {
 		const uint8_t byte = *i;
 		data << byte;
 	}
 	// add the real message
-	for (streamContainer::iterator i = out.begin(); i != out.end(); ++i) {
+	for (ai::streamContainer::iterator i = out.begin(); i != out.end(); ++i) {
 		const uint8_t byte = *i;
 		data << byte;
 	}
@@ -195,37 +195,37 @@ bool AIDebugger::writeMessage(const IProtocolMessage& msg) {
 }
 
 void AIDebugger::unselect() {
-	writeMessage(AISelectMessage(AI_NOTHING_SELECTED));
+	writeMessage(ai::AISelectMessage(AI_NOTHING_SELECTED));
 	_selectedId = AI_NOTHING_SELECTED;
 	_aggro.clear();
-	_node = AIStateNode();
+	_node = ai::AIStateNode();
 	_attributes.clear();
 	emit onSelected();
 	qDebug() << "unselect entity";
 }
 
 void AIDebugger::step() {
-	writeMessage(AIStepMessage(1L));
+	writeMessage(ai::AIStepMessage(1L));
 }
 
 void AIDebugger::reset() {
-	writeMessage(AIResetMessage());
+	writeMessage(ai::AIResetMessage());
 }
 
 void AIDebugger::change(const QString& name) {
-	writeMessage(AIChangeMessage(name.toStdString().c_str()));
+	writeMessage(ai::AIChangeMessage(name.toStdString().c_str()));
 }
 
 void AIDebugger::updateNode(int32_t nodeId, const QVariant& name, const QVariant& type, const QVariant& condition) {
-	writeMessage(AIUpdateNodeMessage(nodeId, _selectedId, name.toString().toStdString().c_str(), type.toString().toStdString().c_str(), condition.toString().toStdString().c_str()));
+	writeMessage(ai::AIUpdateNodeMessage(nodeId, _selectedId, name.toString().toStdString().c_str(), type.toString().toStdString().c_str(), condition.toString().toStdString().c_str()));
 }
 
 void AIDebugger::deleteNode(int32_t nodeId) {
-	writeMessage(AIDeleteNodeMessage(nodeId, _selectedId));
+	writeMessage(ai::AIDeleteNodeMessage(nodeId, _selectedId));
 }
 
 void AIDebugger::addNode(int32_t parentNodeId, const QVariant& name, const QVariant& type, const QVariant& condition) {
-	writeMessage(AIAddNodeMessage(parentNodeId, _selectedId, name.toString().toStdString().c_str(),
+	writeMessage(ai::AIAddNodeMessage(parentNodeId, _selectedId, name.toString().toStdString().c_str(),
 		type.toString().toStdString().c_str(),
 		condition.toString().toStdString().c_str()));
 }
@@ -274,7 +274,7 @@ void AIDebugger::onDisconnect() {
 		_selectedId = AI_NOTHING_SELECTED;
 		_aggro.clear();
 		_attributes.clear();
-		_node = AIStateNode();
+		_node = ai::AIStateNode();
 		emit onSelected();
 	}
 	if (!_names.empty()) {
@@ -334,10 +334,10 @@ void AIDebugger::setNames(const std::vector<core::String>& names) {
 	}
 }
 
-void AIDebugger::setEntities(const std::vector<AIStateWorld>& entities) {
+void AIDebugger::setEntities(const std::vector<ai::AIStateWorld>& entities) {
 	core_trace_scoped(SetEntities);
 	_entities.clear();
-	for (const AIStateWorld& state : entities) {
+	for (const ai::AIStateWorld& state : entities) {
 		_entities.insert(state.getId(), state);
 	}
 	if (_selectedId == AI_NOTHING_SELECTED) {

@@ -15,14 +15,14 @@ namespace backend {
 
 std::atomic<EntityId> Npc::_nextNpcId(0);
 
-Npc::Npc(network::EntityType type, const ai::TreeNodePtr& behaviour,
+Npc::Npc(network::EntityType type, const TreeNodePtr& behaviour,
 		const MapPtr& map, const network::ServerMessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownProviderPtr& cooldownProvider) :
 		Super(_nextNpcId++, map, messageSender, timeProvider, containerProvider),
 		_cooldowns(timeProvider, cooldownProvider) {
 	_entityType = type;
-	_ai = std::make_shared<ai::AI>(behaviour);
+	_ai = std::make_shared<AI>(behaviour);
 	_aiChr = std::make_shared<AICharacter>(_entityId, *this);
 	_ai->setCharacter(_aiChr);
 }
@@ -31,7 +31,7 @@ Npc::~Npc() {
 }
 
 void Npc::shutdown() {
-	ai::Zone* zone = _ai->getZone();
+	Zone* zone = _ai->getZone();
 	if (zone != nullptr) {
 		zone->destroyAI(id());
 	}
@@ -78,7 +78,7 @@ bool Npc::update(long dt) {
 		return false;
 	}
 	_cooldowns.update();
-	const ai::ICharacterPtr& character = _ai->getCharacter();
+	const ICharacterPtr& character = _ai->getCharacter();
 	character->setSpeed(current(attrib::Type::SPEED));
 	character->setOrientation(orientation());
 	return !dead();

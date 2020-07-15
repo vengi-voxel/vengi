@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ai/ForwardDecl.h"
+#include "backend/ForwardDecl.h"
 #include "ai-shared/common/CharacterId.h"
 #include "backend/entity/Entity.h"
 #include "cooldown/CooldownMgr.h"
@@ -25,7 +25,7 @@ private:
 	friend class AICharacter;
 	static std::atomic<EntityId> _nextNpcId;
 	glm::ivec3 _homePosition;
-	ai::AIPtr _ai;
+	AIPtr _ai;
 	AICharacterPtr _aiChr;
 
 	// cooldowns
@@ -37,7 +37,7 @@ private:
 
 public:
 	Npc(network::EntityType type,
-			const ai::TreeNodePtr& behaviour,
+			const TreeNodePtr& behaviour,
 			const MapPtr& map,
 			const network::ServerMessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider,
@@ -51,7 +51,7 @@ public:
 	void setHomePosition(const glm::ivec3& pos);
 	const glm::ivec3& homePosition() const;
 	bool route(const glm::ivec3& target);
-	const ai::AIPtr& ai();
+	const AIPtr& ai();
 
 	cooldown::CooldownMgr& cooldownMgr();
 
@@ -77,7 +77,7 @@ inline const glm::ivec3& Npc::homePosition() const {
 	return _homePosition;
 }
 
-inline const ai::AIPtr& Npc::ai() {
+inline const AIPtr& Npc::ai() {
 	return _ai;
 }
 

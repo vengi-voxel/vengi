@@ -18,8 +18,8 @@ protected:
 		const NpcPtr& partner = create();
 		npc->updateVisible({partner});
 
-		const ai::FilterFactoryContext filterCtx(network::EnumNameEntityType(partner->entityType()));
-		const ai::FilterPtr& filter = SelectEntitiesOfTypes::getFactory().create(&filterCtx);
+		const FilterFactoryContext filterCtx(network::EnumNameEntityType(partner->entityType()));
+		const FilterPtr& filter = SelectEntitiesOfTypes::getFactory().create(&filterCtx);
 		filter->filter(npc->ai());
 		return partner;
 	}

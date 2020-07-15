@@ -13,7 +13,7 @@
 namespace backend {
 
 SelectEntitiesOfTypes::SelectEntitiesOfTypes(const core::String& parameters) :
-		ai::IFilter("SelectEntitiesOfTypes", parameters) {
+		IFilter("SelectEntitiesOfTypes", parameters) {
 	std::vector<core::String> types;
 	core::string::splitString(parameters, types, ",");
 	for (const core::String& type : types) {
@@ -23,8 +23,8 @@ SelectEntitiesOfTypes::SelectEntitiesOfTypes(const core::String& parameters) :
 	}
 }
 
-void SelectEntitiesOfTypes::filter(const ai::AIPtr& entity) {
-	ai::FilteredEntities& entities = getFilteredEntities(entity);
+void SelectEntitiesOfTypes::filter(const AIPtr& entity) {
+	FilteredEntities& entities = getFilteredEntities(entity);
 	backend::Npc& chr = getNpc(entity);
 	chr.visitVisible([&] (const backend::EntityPtr& e) {
 		if (!_entityTypes[core::enumVal(e->entityType())]) {

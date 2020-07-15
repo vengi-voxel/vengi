@@ -10,8 +10,8 @@
 namespace backend {
 
 AI_TASK(AttackOnSelection) {
-	backend::Npc& npc = chr.getNpc();
-	const ai::FilteredEntities& selection = npc.ai()->getFilteredEntities();
+	Npc& npc = chr.getNpc();
+	const FilteredEntities& selection = npc.ai()->getFilteredEntities();
 	if (selection.empty()) {
 		return ai::TreeNodeStatus::FAILED;
 	}

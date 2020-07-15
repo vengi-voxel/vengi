@@ -7,7 +7,7 @@
 #include "Map.h"
 #include "core/IComponent.h"
 #include "backend/ForwardDecl.h"
-#include "ai/server/Server.h"
+#include "backend/entity/ai/server/Server.h"
 #include <unordered_map>
 
 namespace backend {
@@ -21,7 +21,7 @@ private:
 	AIRegistryPtr _registry;
 	core::EventBusPtr _eventBus;
 	io::FilesystemPtr _filesystem;
-	ai::Server* _aiServer = nullptr;
+	Server* _aiServer = nullptr;
 	std::unordered_map<MapId, MapPtr> _maps;
 public:
 	World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,

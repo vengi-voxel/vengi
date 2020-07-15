@@ -45,7 +45,7 @@ public:
 		_protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 		_network = std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
 		_messageSender = std::make_shared<network::ServerMessageSender>(_network, _testApp->metric());
-		_aiRegistry = std::make_shared<AIRegistry>();
+		_aiRegistry = std::make_shared<LUAAIRegistry>();
 		_loader = std::make_shared<AILoader>(_aiRegistry);
 		_containerProvider = core::make_shared<attrib::ContainerProvider>();
 		const core::String& attributes = _testApp->filesystem()->load("test-attributes.lua");

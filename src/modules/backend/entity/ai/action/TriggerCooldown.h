@@ -16,10 +16,10 @@ class TriggerCooldown: public Task {
 private:
 	cooldown::Type _cooldownId;
 public:
-	TriggerCooldown(const core::String& name, const core::String& parameters, const ai::ConditionPtr& condition);
+	TriggerCooldown(const core::String& name, const core::String& parameters, const ConditionPtr& condition);
 	NODE_FACTORY(TriggerCooldown)
 
-	ai::TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) override;
+	ai::TreeNodeStatus doAction(AICharacter& chr, int64_t deltaMillis) override;
 };
 
 }

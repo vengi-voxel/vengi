@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "AICommon.h"
+#include "ICharacter.h"
+#include "AI.h"
 #include <memory>
 
 namespace backend {
@@ -14,9 +15,9 @@ class Npc;
 /**
  * @ingroup AI
  */
-class AICharacter : public ai::ICharacter {
+class AICharacter : public ICharacter {
 private:
-	using Super = ai::ICharacter;
+	using Super = ICharacter;
 	Npc& _npc;
 public:
 	AICharacter(ai::CharacterId id, Npc& npc);
@@ -34,8 +35,8 @@ public:
 
 typedef std::shared_ptr<AICharacter> AICharacterPtr;
 
-inline Npc& getNpc(const ai::AIPtr& ai) {
-	return ai::character_cast<AICharacter>(ai->getCharacter()).getNpc();
+inline Npc& getNpc(const AIPtr& ai) {
+	return character_cast<AICharacter>(ai->getCharacter()).getNpc();
 }
 
 }

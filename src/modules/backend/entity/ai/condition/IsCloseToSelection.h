@@ -12,13 +12,13 @@ namespace backend {
 /**
  * @ingroup AI
  */
-class IsCloseToSelection: public ai::ICondition {
+class IsCloseToSelection: public ICondition {
 protected:
 	int _distance;
 
 public:
 	IsCloseToSelection(const core::String& parameters) :
-			ai::ICondition("IsCloseToSelection", parameters) {
+			ICondition("IsCloseToSelection", parameters) {
 		if (_parameters.empty()) {
 			_distance = 1;
 		} else {
@@ -27,19 +27,19 @@ public:
 	}
 	CONDITION_FACTORY(IsCloseToSelection)
 
-	bool evaluate(const ai::AIPtr& entity) override {
-		ai::Zone* zone = entity->getZone();
+	bool evaluate(const AIPtr& entity) override {
+		Zone* zone = entity->getZone();
 		if (zone == nullptr) {
 			return false;
 		}
 
-		const ai::FilteredEntities& selection = entity->getFilteredEntities();
+		const FilteredEntities& selection = entity->getFilteredEntities();
 		if (selection.empty()) {
 			return false;
 		}
 
 		for (ai::CharacterId id : selection) {
-			const ai::AIPtr& ai = zone->getAI(id);
+			const AIPtr& ai = zone->getAI(id);
 			const Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
 			const glm::vec3& pos = npc.pos();
 			const glm::vec3& ownPos = entity->getCharacter()->getPosition();

@@ -8,23 +8,23 @@
 
 namespace backend {
 
-TriggerCooldownOnSelection::TriggerCooldownOnSelection(const core::String& name, const core::String& parameters, const ai::ConditionPtr& condition) :
+TriggerCooldownOnSelection::TriggerCooldownOnSelection(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
 		Task(name, parameters, condition) {
 	_cooldownId = cooldown::getType(parameters);
 	core_assert_always(_cooldownId != cooldown::Type::NONE);
 }
 
-ai::TreeNodeStatus TriggerCooldownOnSelection::doAction(backend::AICharacter& chr, int64_t deltaMillis) {
-	const ai::FilteredEntities& selection = chr.getNpc().ai()->getFilteredEntities();
+ai::TreeNodeStatus TriggerCooldownOnSelection::doAction(AICharacter& chr, int64_t deltaMillis) {
+	const FilteredEntities& selection = chr.getNpc().ai()->getFilteredEntities();
 	if (selection.empty()) {
 		return ai::TreeNodeStatus::FAILED;
 	}
-	ai::Zone* zone = chr.getNpc().ai()->getZone();
+	Zone* zone = chr.getNpc().ai()->getZone();
 	if (zone == nullptr) {
 		return ai::TreeNodeStatus::FAILED;
 	}
 	for (ai::CharacterId id : selection) {
-		auto func = [=] (const ai::AIPtr& ai) {
+		auto func = [=] (const AIPtr& ai) {
 			Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
 			npc.cooldownMgr().triggerCooldown(_cooldownId);
 		};

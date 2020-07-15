@@ -10,7 +10,7 @@
 namespace backend {
 
 AI_TASK(SetPointOfInterest) {
-	backend::Npc& npc = chr.getNpc();
+	Npc& npc = chr.getNpc();
 	npc.setPointOfInterest();
 	return ai::TreeNodeStatus::FINISHED;
 }

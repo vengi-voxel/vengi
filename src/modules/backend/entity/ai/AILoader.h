@@ -5,7 +5,7 @@
 #pragma once
 
 #include "AICommon.h"
-#include <tree/loaders/lua/LUATreeLoader.h>
+#include "tree/loaders/lua/LUATreeLoader.h"
 #include <memory>
 
 #include "AIRegistry.h"
@@ -15,12 +15,12 @@ namespace backend {
 /**
  * @ingroup AI
  */
-class AILoader: public ai::LUATreeLoader {
+class AILoader: public LUATreeLoader {
 private:
 	AIRegistryPtr _registry;
 public:
 	AILoader(const AIRegistryPtr& registry) :
-			ai::LUATreeLoader(*registry.get()), _registry(registry) {
+			LUATreeLoader(*registry.get()), _registry(registry) {
 	}
 };
 

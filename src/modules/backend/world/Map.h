@@ -43,7 +43,7 @@ private:
 	persistence::PersistenceMgrPtr _persistenceMgr;
 	voxelformat::VolumeCachePtr _volumeCache;
 
-	ai::Zone* _zone = nullptr;
+	Zone* _zone = nullptr;
 
 	typedef std::unordered_map<ai::CharacterId, NpcPtr> Npcs;
 	typedef Npcs::iterator NpcsIter;
@@ -124,7 +124,7 @@ public:
 
 	const voxelworld::WorldPagerPtr& pager() const;
 	voxelworld::WorldMgr* worldMgr();
-	ai::Zone* zone() const;
+	Zone* zone() const;
 	MapId id() const;
 	const core::String& idStr() const;
 
@@ -190,7 +190,7 @@ inline poi::PoiProvider& Map::poiProvider() {
 	return _poiProvider;
 }
 
-inline ai::Zone* Map::zone() const {
+inline Zone* Map::zone() const {
 	return _zone;
 }
 

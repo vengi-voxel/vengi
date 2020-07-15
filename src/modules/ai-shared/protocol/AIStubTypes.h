@@ -4,8 +4,8 @@
 #pragma once
 
 #include <vector>
+#include <glm/vec3.hpp>
 #include "core/String.h"
-#include "ai-shared/common/Math.h"
 #include "ai-shared/common/CharacterId.h"
 #include "ai-shared/common/TreeNodeStatus.h"
 #include "ai-shared/common/CharacterAttributes.h"

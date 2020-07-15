@@ -98,7 +98,7 @@ bool World::init() {
 		return false;
 	}
 
-	_aiServer = new ai::Server(*_registry, aiDebugServerPort, aiDebugServerInterface);
+	_aiServer = new Server(*_registry, aiDebugServerPort, aiDebugServerInterface);
 	if (_aiServer->start()) {
 		Log::info("Start the ai debug server on %s:%i", aiDebugServerInterface, aiDebugServerPort);
 	} else {
