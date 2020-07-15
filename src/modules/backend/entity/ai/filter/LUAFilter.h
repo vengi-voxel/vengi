@@ -99,15 +99,7 @@ public:
 	}
 
 	void filter(const AIPtr& entity) override {
-#if AI_EXCEPTIONS
-		try {
-#endif
-			filterLUA(entity);
-#if AI_EXCEPTIONS
-		} catch (...) {
-			Log::error("Exception while evaluating lua filter");
-		}
-#endif
+		filterLUA(entity);
 	}
 };
 

@@ -120,16 +120,7 @@ public:
 			return ai::CANNOTEXECUTE;
 		}
 
-#if AI_EXCEPTIONS
-		try {
-#endif
-			return state(entity, runLUA(entity, deltaMillis));
-#if AI_EXCEPTIONS
-		} catch (...) {
-			Log::error("Exception while running lua tree node");
-		}
-		return state(entity, EXCEPTION);
-#endif
+		return state(entity, runLUA(entity, deltaMillis));
 	}
 };
 

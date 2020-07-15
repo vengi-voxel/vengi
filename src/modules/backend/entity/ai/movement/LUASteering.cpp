@@ -88,16 +88,7 @@ LUASteering::LUASteering(lua_State* s, const core::String& type) :
 }
 
 MoveVector LUASteering::execute(const AIPtr& entity, float speed) const {
-#if AI_EXCEPTIONS
-	try {
-#endif
-		return executeLUA(entity, speed);
-#if AI_EXCEPTIONS
-	} catch (...) {
-		Log::error("Exception while running lua steering");
-	}
-	return MoveVector(VEC3_INFINITE, 0.0f);
-#endif
+	return executeLUA(entity, speed);
 }
 
 }

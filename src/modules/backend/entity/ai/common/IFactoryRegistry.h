@@ -56,15 +56,7 @@ public:
 
 		const IFactory<TYPE, CTX>* factory = i->second;
 
-#if AI_EXCEPTIONS
-		try {
-#endif
-			return factory->create(ctx);
-#if AI_EXCEPTIONS
-		} catch (...) {
-		}
-		return std::shared_ptr<TYPE>();
-#endif
+		return factory->create(ctx);
 	}
 };
 

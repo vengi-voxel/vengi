@@ -3,7 +3,8 @@
  */
 #pragma once
 
-#include "backend/entity/ai/common/Thread.h"
+#include "core/Trace.h"
+#include "core/concurrent/Lock.h"
 #include "core/String.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"

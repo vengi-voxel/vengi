@@ -109,16 +109,7 @@ public:
 	}
 
 	bool evaluate(const AIPtr& entity) override {
-#if AI_EXCEPTIONS
-		try {
-#endif
-			return evaluateLUA(entity);
-#if AI_EXCEPTIONS
-		} catch (...) {
-			Log::error("Exception while evaluating lua condition");
-		}
-		return false;
-#endif
+		return evaluateLUA(entity);
 	}
 };
 

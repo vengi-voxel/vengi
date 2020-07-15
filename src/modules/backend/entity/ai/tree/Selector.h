@@ -10,7 +10,7 @@ namespace backend {
 #define SELECTOR_CLASS(NodeName) \
 	NodeName(const core::String& name, const core::String& parameters, const ConditionPtr& condition) : \
 		Selector(name, parameters, condition) { \
-		_type = AI_STRINGIFY(NodeName); \
+		_type = CORE_STRINGIFY(NodeName); \
 	} \
 	virtual ~NodeName() { \
 	} \

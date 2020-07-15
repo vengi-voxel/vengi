@@ -36,15 +36,7 @@ protected:
 			return ai::CANNOTEXECUTE;
 		}
 
-#if AI_EXCEPTIONS
-		try {
-#endif
-			return state(entity, doAction(entity, deltaMillis));
-#if AI_EXCEPTIONS
-		} catch (...) {
-		}
-		return state(entity, EXCEPTION);
-#endif
+		return state(entity, doAction(entity, deltaMillis));
 	}
 public:
 	ITask(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :

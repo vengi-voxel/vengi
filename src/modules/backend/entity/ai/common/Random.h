@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <iterator>
 #include <stdlib.h>
-#include "Thread.h"
 
 namespace backend {
 

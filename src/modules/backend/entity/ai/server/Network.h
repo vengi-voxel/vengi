@@ -5,7 +5,8 @@
 
 #include "ai-shared/protocol/IProtocolHandler.h"
 #include "ai-shared/protocol/IProtocolMessage.h"
-#include "backend/entity/ai/common/Thread.h"
+#include "core/Trace.h"
+#include "core/concurrent/Lock.h"
 #include "core/String.h"
 #include <stdint.h>
 #include <list>

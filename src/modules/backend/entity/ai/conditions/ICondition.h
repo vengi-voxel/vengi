@@ -9,11 +9,13 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/Trace.h"
+#include "core/concurrent/Lock.h"
+
 #include <vector>
 #include <memory>
 
 #include "backend/entity/ai/common/MemoryAllocator.h"
-#include "backend/entity/ai/common/Thread.h"
 #include "backend/entity/ai/AIFactories.h"
 
 namespace backend {

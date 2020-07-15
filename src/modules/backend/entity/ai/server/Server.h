@@ -9,7 +9,8 @@
 #include "backend/entity/ai/zone/Zone.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/entity/ai/tree/TreeNode.h"
-#include "backend/entity/ai/common/Thread.h"
+#include "core/Trace.h"
+#include "core/concurrent/Lock.h"
 
 #include "ai-shared/protocol/AIStubTypes.h"
 #include "ai-shared/protocol/ProtocolHandlerRegistry.h"

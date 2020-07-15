@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "backend/entity/ai/common/Thread.h"
+#include "core/Trace.h"
+#include "core/concurrent/Lock.h"
 #include "backend/entity/ai/common/Math.h"
 #include "backend/entity/ai/ICharacter.h"
 #include "backend/entity/ai/AI.h"

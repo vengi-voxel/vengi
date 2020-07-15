@@ -6,7 +6,8 @@
 #pragma once
 
 #include "AIRegistry.h"
-#include "common/Thread.h"
+#include "core/Trace.h"
+#include "core/concurrent/Lock.h"
 #include "core/concurrent/Lock.h"
 #include "tree/LUATreeNode.h"
 #include "conditions/LUACondition.h"

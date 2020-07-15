@@ -18,8 +18,6 @@
 #include "core/concurrent/ThreadPool.h"
 #include "core/concurrent/Lock.h"
 #include "core/Trace.h"
-
-#include "backend/entity/ai//common/Thread.h"
 #include "ai-shared/common/CharacterId.h"
 
 #include <unordered_map>

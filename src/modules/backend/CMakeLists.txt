@@ -49,7 +49,6 @@ set(SRCS
 	entity/ai/common/MoveVector.h
 	entity/ai/common/Random.h
 	entity/ai/common/StringUtil.h
-	entity/ai/common/Thread.h
 
 	entity/ai/aggro/AggroMgr.h entity/ai/aggro/AggroMgr.cpp
 	entity/ai/aggro/Entry.h

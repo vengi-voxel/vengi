@@ -12,7 +12,8 @@
 #include "ICharacter.h"
 #include "tree/TreeNode.h"
 #include "tree/loaders/ITreeLoader.h"
-#include "common/Thread.h"
+#include "core/Trace.h"
+#include "core/concurrent/Lock.h"
 #include "core/NonCopyable.h"
 #include "common/Math.h"
 
