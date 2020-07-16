@@ -11,6 +11,7 @@
 #include "backend/entity/ai/AI.h"
 #include "core/Trace.h"
 #include "commonlua/Trace.h"
+#include "commonlua/LUAFunctions.h"
 
 #include "action/Die.h"
 #include "action/GoHome.h"
@@ -279,6 +280,9 @@ static int luaAI_createsteering(lua_State* s) {
 LUAAIRegistry::LUAAIRegistry() {
 	_s = luaL_newstate();
 	lua::clua_registertrace(_s);
+	clua_cmdregister(_s);
+	clua_varregister(_s);
+	clua_logregister(_s);
 
 	lua_atpanic(_s, [] (lua_State* L) {
 		Log::error("Lua panic. Error message: %s", (lua_isnil(L, -1) ? "" : lua_tostring(L, -1)));
