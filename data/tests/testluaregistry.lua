@@ -38,6 +38,11 @@ function luatest:execute(ai, deltaMillis)
 		print("error: pos.r/x should be x+1.0")
 		return FAILED
 	end
+	chr:setPosition(pos)
+	if chr:position().x ~= pos.x then
+		print("error: setPosition did not update the character position")
+		return FAILED
+	end
 	local zone = ai:zone()
 	if zone == nil then
 		print("error: ai has no zone assigned")
