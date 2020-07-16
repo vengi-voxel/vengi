@@ -6,6 +6,7 @@
 #include "LUA.h"
 #include "core/Log.h"
 #include "core/GLM.h"
+#include "core/StringUtil.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -430,12 +431,12 @@ void clua_vecregister(lua_State* s) {
 	};
 	Log::debug("Register %s lua functions", clua_meta<RAWTYPE>::name());
 	clua_registerfuncs(s, funcs, clua_meta<RAWTYPE>::name());
-
 	const luaL_Reg globalFuncs[] = {
 		{"new", clua_vecnew<RAWTYPE>::vecnew},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, globalFuncs, clua_meta<RAWTYPE>::name(), clua_name<RAWTYPE>::name());
+	const core::String& globalMeta = core::string::format("%s_global", clua_meta<RAWTYPE>::name());
+	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<RAWTYPE>::name());
 }
 
 extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);
