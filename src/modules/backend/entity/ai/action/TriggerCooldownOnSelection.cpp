@@ -6,21 +6,23 @@
 #include "core/Common.h"
 #include "backend/entity/Npc.h"
 #include "backend/entity/ai/zone/Zone.h"
+#include "backend/entity/ai/AI.h"
+#include "backend/entity/ai/AICharacter.h"
 
 namespace backend {
 
 TriggerCooldownOnSelection::TriggerCooldownOnSelection(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
-		Task(name, parameters, condition) {
+		ITask(name, parameters, condition) {
 	_cooldownId = cooldown::getType(parameters);
 	core_assert_always(_cooldownId != cooldown::Type::NONE);
 }
 
-ai::TreeNodeStatus TriggerCooldownOnSelection::doAction(AICharacter& chr, int64_t deltaMillis) {
-	const FilteredEntities& selection = chr.getNpc().ai()->getFilteredEntities();
+ai::TreeNodeStatus TriggerCooldownOnSelection::doAction(const AIPtr& entity, int64_t deltaMillis) {
+	const FilteredEntities& selection = entity->getFilteredEntities();
 	if (selection.empty()) {
 		return ai::TreeNodeStatus::FAILED;
 	}
-	Zone* zone = chr.getNpc().ai()->getZone();
+	Zone* zone = entity->getZone();
 	if (zone == nullptr) {
 		return ai::TreeNodeStatus::FAILED;
 	}

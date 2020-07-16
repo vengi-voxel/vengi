@@ -57,4 +57,17 @@ public:
 	}
 };
 
+#define AI_TASK(TaskName) \
+/** \
+ * @ingroup AI \
+ */ \
+struct TaskName: public ::backend::ITask { \
+	TaskName(const core::String& name, const core::String& parameters, const ConditionPtr& condition) : \
+			::backend::ITask(name, parameters, condition) {} \
+	virtual ~TaskName() {} \
+	NODE_FACTORY(TaskName) \
+	ai::TreeNodeStatus doAction(const AIPtr& entity, int64_t deltaMillis) override; \
+}; \
+inline ai::TreeNodeStatus TaskName::doAction(const AIPtr& entity, int64_t deltaMillis)
+
 }

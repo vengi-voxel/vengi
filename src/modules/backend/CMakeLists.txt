@@ -25,8 +25,6 @@ set(SRCS
 
 	entity/ai/AICharacter.cpp entity/ai/AICharacter.h
 	entity/ai/AILoader.h
-	entity/ai/action/Task.cpp
-	entity/ai/action/Task.h
 	entity/ai/action/GoHome.h
 	entity/ai/action/Spawn.h
 	entity/ai/action/Die.h
