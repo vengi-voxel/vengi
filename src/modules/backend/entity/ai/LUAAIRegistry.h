@@ -8,11 +8,10 @@
 #include "AIRegistry.h"
 #include "core/Trace.h"
 #include "core/concurrent/Lock.h"
-#include "core/concurrent/Lock.h"
-#include "tree/LUATreeNode.h"
-#include "condition/LUACondition.h"
-#include "filter/LUAFilter.h"
-#include "movement/LUASteering.h"
+#include "backend/entity/ai/tree/LUATreeNode.h"
+#include "backend/entity/ai/condition/LUACondition.h"
+#include "backend/entity/ai/filter/LUAFilter.h"
+#include "backend/entity/ai/movement/LUASteering.h"
 
 namespace backend {
 

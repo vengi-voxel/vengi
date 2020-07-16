@@ -19,7 +19,6 @@
 #include "backend/metric/MetricMgr.h"
 #include "backend/entity/User.h"
 #include "backend/entity/Npc.h"
-#include "backend/entity/ai/AICommon.h"
 #include "backend/network/UserConnectHandler.h"
 #include "backend/network/UserConnectedHandler.h"
 #include "backend/network/UserDisconnectHandler.h"

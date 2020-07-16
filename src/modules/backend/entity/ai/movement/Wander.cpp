@@ -3,7 +3,7 @@
  */
 
 #include "Wander.h"
-#include "backend/entity/ai/common/Random.h"
+#include "math/Random.h"
 #include "core/StringUtil.h"
 
 namespace backend {
@@ -16,7 +16,8 @@ Wander::Wander(const core::String& parameter) :
 MoveVector Wander::execute (const AIPtr& ai, float speed) const {
 	const float orientation = ai->getCharacter()->getOrientation();
 	const glm::vec3& v = fromRadians(orientation);
-	const MoveVector d(v * speed, randomBinomial() * _rotation);
+	math::Random random;
+	const MoveVector d(v * speed, random.randomBinomial() * _rotation);
 	return d;
 }
 

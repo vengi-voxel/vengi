@@ -6,13 +6,11 @@
 #include "backend/entity/ai/condition/ICondition.h"
 #include "backend/entity/ai/condition/True.h"
 #include "backend/entity/ai/common/MemoryAllocator.h"
-#include "backend/entity/ai/common/Common.h"
 #include "ai-shared/common/TreeNodeStatus.h"
 #include "core/String.h"
 
 #include <vector>
 #include <memory>
-#include <algorithm>
 
 namespace backend {
 

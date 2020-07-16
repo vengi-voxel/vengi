@@ -16,10 +16,7 @@ protected:
 	Filters _filters;
 	int _n;
 public:
-	Random(const core::String& parameters, const Filters& filters) :
-		IFilter("Random", parameters), _filters(filters) {
-		_n = core::string::toInt(parameters);
-	}
+	Random(const core::String& parameters, const Filters& filters);
 
 	FILTER_ACTION_FACTORY(Random)
 

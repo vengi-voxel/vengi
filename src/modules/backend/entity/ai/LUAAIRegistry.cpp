@@ -8,7 +8,7 @@
 #include "common/Common.h"
 #include "core/concurrent/Lock.h"
 #include "core/Assert.h"
-#include "AI.h"
+#include "backend/entity/ai/AI.h"
 #include "core/Trace.h"
 #include "commonlua/Trace.h"
 

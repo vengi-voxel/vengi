@@ -3,12 +3,12 @@
  */
 #pragma once
 
-#include "IAIFactory.h"
-#include "AIFactories.h"
-#include "common/IFactoryRegistry.h"
-#include "tree/TreeNode.h"
-#include "condition/ICondition.h"
-#include "filter/IFilter.h"
+#include "backend/entity/ai/IAIFactory.h"
+#include "backend/entity/ai/AIFactories.h"
+#include "backend/entity/ai/common/IFactoryRegistry.h"
+#include "backend/entity/ai/tree/TreeNode.h"
+#include "backend/entity/ai/condition/ICondition.h"
+#include "backend/entity/ai/filter/IFilter.h"
 
 namespace backend {
 

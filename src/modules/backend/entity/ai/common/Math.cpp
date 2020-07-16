@@ -3,7 +3,7 @@
  */
 
 #include "Math.h"
-#include <stdio.h>
+#include <SDL_stdinc.h>
 
 namespace backend {
 
@@ -12,11 +12,7 @@ glm::vec3 parse(const core::String& in) {
 	float y = 0.0f;
 	float z = 0.0f;
 
-#ifdef _MSC_VER
-	if (::sscanf_s(in.c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
-#else
-	if (::sscanf(in.c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
-#endif
+	if (SDL_sscanf(in.c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
 		return VEC3_INFINITE;
 	}
 

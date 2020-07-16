@@ -5,6 +5,7 @@
 #include "TreeNode.h"
 #include "backend/entity/ai/AI.h"
 #include "core/Assert.h"
+#include <algorithm>
 
 namespace backend {
 

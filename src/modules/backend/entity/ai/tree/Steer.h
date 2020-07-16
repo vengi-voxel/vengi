@@ -4,13 +4,8 @@
 #pragma once
 
 #include "ITask.h"
-#include "core/StringUtil.h"
 #include "backend/entity/ai/movement/Steering.h"
 #include "backend/entity/ai/movement/WeightedSteering.h"
-#include "backend/entity/ai/common/Common.h"
-#include "backend/entity/ai/common/Math.h"
-#include "backend/entity/ai/common/Random.h"
-#include "core/Assert.h"
 
 namespace backend {
 

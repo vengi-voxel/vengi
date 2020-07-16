@@ -5,8 +5,14 @@
 
 #include "Random.h"
 #include "backend/entity/ai/common/Random.h"
+#include "core/StringUtil.h"
 
 namespace backend {
+
+Random::Random(const core::String& parameters, const Filters& filters) :
+	IFilter("Random", parameters), _filters(filters) {
+	_n = core::string::toInt(parameters);
+}
 
 void Random::filter (const AIPtr& entity) {
 	FilteredEntities& filtered = getFilteredEntities(entity);

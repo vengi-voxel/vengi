@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "backend/entity/ai/AICommon.h"
+#include "core/Log.h"
+#include "backend/entity/ai/filter/IFilter.h"
 
 namespace backend {
 

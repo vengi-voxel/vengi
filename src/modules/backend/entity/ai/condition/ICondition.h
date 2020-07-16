@@ -9,8 +9,6 @@
 #pragma once
 
 #include "core/String.h"
-#include "core/Trace.h"
-#include "core/concurrent/Lock.h"
 
 #include <vector>
 #include <memory>

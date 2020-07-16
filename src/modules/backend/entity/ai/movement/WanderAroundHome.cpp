@@ -4,7 +4,7 @@
 
 #include "WanderAroundHome.h"
 #include "backend/entity/ai/common/Math.h"
-#include "backend/entity/ai/common/Random.h"
+#include "math/Random.h"
 #include "backend/entity/Npc.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
@@ -21,7 +21,8 @@ MoveVector WanderAroundHome::execute(const AIPtr& ai, float speed) const {
 	} else {
 		v = glm::normalize(pos - target);
 	}
-	const float orientation = angle(v) + randomBinomial() * toRadians(3.0f);
+	math::Random random;
+	const float orientation = angle(v) + random.randomBinomial() * glm::radians(3.0f);
 	const MoveVector d(v * speed, orientation);
 	return d;
 }

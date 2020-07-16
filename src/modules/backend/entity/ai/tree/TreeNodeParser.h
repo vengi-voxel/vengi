@@ -3,9 +3,9 @@
  */
 #pragma once
 
-#include "TreeNode.h"
+#include "backend/entity/ai/tree/TreeNode.h"
 #include "backend/entity/ai/common/IParser.h"
-#include "Steer.h"
+#include "backend/entity/ai/tree/Steer.h"
 
 namespace backend {
 

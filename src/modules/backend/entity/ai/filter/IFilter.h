@@ -32,9 +32,7 @@
 #include "backend/entity/ai/ICharacter.h"
 #include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/common/MemoryAllocator.h"
-#include "core/Trace.h"
-#include "core/concurrent/Lock.h"
-#include "core/StringUtil.h"
+#include "core/String.h"
 
 namespace backend {
 

@@ -5,10 +5,11 @@
 #pragma once
 
 #include "Shared_generated.h"
-#include "backend/entity/ai/AICommon.h"
+#include "core/Log.h"
 #include "core/Common.h"
-#include <bitset>
 #include "core/Enum.h"
+#include "backend/entity/ai/filter/IFilter.h"
+#include <bitset>
 
 namespace backend {
 

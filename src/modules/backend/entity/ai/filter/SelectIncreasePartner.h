@@ -5,7 +5,7 @@
 #pragma once
 
 #include "cooldown/CooldownType.h"
-#include "backend/entity/ai/AICommon.h"
+#include "backend/entity/ai/filter/IFilter.h"
 
 namespace backend {
 
