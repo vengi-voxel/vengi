@@ -1,27 +1,6 @@
 /**
- * @page SimpleAI SimpleAI documentation
- *
- * @section purpose Purpose
- *
- * SimpleAI is a small and (hopefully) easy to use C++ library for behaviour
- * tree based @ai{AI}. It's main focus is about games - but of course it can be
- * used for other things, too. The project is released under the MIT license
- * and thus can be used for open source as well as commercial and closed
- * source projects. If you use it, it would be nice to provide a link to the
- * github page.
- *
- * - [GitHub page](http://github.com/mgerhardy/simpleai/)
- * - Small example use case:
- *   - https://github.com/mgerhardy/engine/tree/master/src/modules/backend/entity/ai
- *
- * @section features Features
- *
- * * Header only c++11
- * * Threadsafe (hopefully, checked with hellgrind, tsan and other tools)
- * * LUA and XML script interface to create the trees - but every other data source
- *   is possible, too. The LUA and XML script interfaces are just implemented as an
- *   [example](https://github.com/mgerhardy/simpleai/blob/master/src/run/behaviours.lua)
- *   even though they are of course fully usable to create behaviour trees.
+ * * LUA script interface to create the trees - but every other data source
+ *   is possible, too.
  * * @ref Aggro list implementation
  * * Several standard selectors and conditions (see below)
  * * Group management
@@ -131,9 +110,6 @@
  * * Single step in a @ref Zone (after it was paused)
  * * Reset states of the @ai{AI} in a @ref Zone
  * * Live editing of the behaviour tree (update, add, remove)
- *
- * Examples on how to customize the debugger
- * * [some classes](https://github.com/mgerhardy/simpleai/blob/master/contrib/exampledebugger) that provide a custom map view and map item rendering with custom data from attributes.
  */
 
 /**
@@ -141,21 +117,6 @@
  *
  * @defgroup AI
  * @{
- *
- * Main header file that you should include when you use SimpleAI.
- *
- * If you also want to use the default loaders for your behaviour trees, you can
- * include the following loader header files in your code:
- * @code{.cpp}
- * #include <tree/loaders/lua/LUATreeLoader.h>
- * #include <tree/loaders/xml/XMLTreeLoader.h>
- * @endcode
- * or define AI_INCLUDE_LUA and/or AI_INCLUDE_XML
- *
- * You can control how to allocate memory by defining your own allocator class via @c AI_ALLOCATOR_CLASS
- *
- * SimpleAI uses a left handed coordinate system with y pointing upwards (meaning, if
- * you are using a 2d application, only handle x and z).
  */
 #pragma once
 
