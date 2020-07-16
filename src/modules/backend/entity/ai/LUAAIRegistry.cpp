@@ -155,7 +155,7 @@ static int luaAI_createnode(lua_State* s) {
 		return luaL_error(s, "tree node %s is already registered", type.c_str());
 	}
 
-	luaAI_newuserdata<LuaNodeFactory*>(s, factory.get());
+	clua_newuserdata<LuaNodeFactory*>(s, factory.get());
 	const luaL_Reg nodes[] = {
 		{"execute", luaAI_nodeemptyexecute},
 		{"__tostring", luaAI_nodetostring},
@@ -196,7 +196,7 @@ static int luaAI_createcondition(lua_State* s) {
 		return luaL_error(s, "condition %s is already registered", type.c_str());
 	}
 
-	luaAI_newuserdata<LuaConditionFactory*>(s, factory.get());
+	clua_newuserdata<LuaConditionFactory*>(s, factory.get());
 	const luaL_Reg nodes[] = {
 		{"evaluate", luaAI_conditionemptyevaluate},
 		{"__tostring", luaAI_conditiontostring},
@@ -233,7 +233,7 @@ static int luaAI_createfilter(lua_State* s) {
 		return luaL_error(s, "filter %s is already registered", type.c_str());
 	}
 
-	luaAI_newuserdata<LuaFilterFactory*>(s, factory.get());
+	clua_newuserdata<LuaFilterFactory*>(s, factory.get());
 	const luaL_Reg nodes[] = {
 		{"filter", luaAI_filteremptyfilter},
 		{"__tostring", luaAI_filtertostring},
@@ -265,7 +265,7 @@ static int luaAI_createsteering(lua_State* s) {
 		return luaL_error(s, "steering %s is already registered", type.c_str());
 	}
 
-	luaAI_newuserdata<LuaSteeringFactory*>(s, factory.get());
+	clua_newuserdata<LuaSteeringFactory*>(s, factory.get());
 	const luaL_Reg nodes[] = {
 		{"filter", luaAI_steeringemptyexecute},
 		{"__tostring", luaAI_steeringtostring},
@@ -283,6 +283,7 @@ LUAAIRegistry::LUAAIRegistry() {
 	clua_cmdregister(_s);
 	clua_varregister(_s);
 	clua_logregister(_s);
+	// TODO: random module
 
 	lua_atpanic(_s, [] (lua_State* L) {
 		Log::error("Lua panic. Error message: %s", (lua_isnil(L, -1) ? "" : lua_tostring(L, -1)));
@@ -298,10 +299,8 @@ LUAAIRegistry::LUAAIRegistry() {
 		{"createSteering", luaAI_createsteering},
 		{nullptr, nullptr}
 	};
-	luaAI_registerfuncs(_s, registryFuncs, "META_REGISTRY");
+	clua_registerfuncs(_s, registryFuncs, "META_REGISTRY");
 	lua_setglobal(_s, "REGISTRY");
-
-	// TODO: random
 
 	luaAI_globalpointer(_s, this, luaAI_metaregistry());
 	luaAI_registerAll(_s);

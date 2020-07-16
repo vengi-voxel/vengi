@@ -9,6 +9,7 @@
 #include "backend/entity/ai/zone/Zone.h"
 #include "backend/entity/ai/aggro/AggroMgr.h"
 #include "backend/entity/ai/common/Math.h"
+#include "commonlua/LUAFunctions.h"
 
 namespace backend {
 
@@ -44,20 +45,8 @@ const char* luaAI_metacharacter() {
 	return "__meta_character";
 }
 
-static inline const char* luaAI_metavec() {
-	return "__meta_vec";
-}
-
-void luaAI_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name) {
-	luaL_newmetatable(s, name);
-	// assign the metatable to __index
-	lua_pushvalue(s, -1);
-	lua_setfield(s, -2, "__index");
-	luaL_setfuncs(s, funcs, 0);
-}
-
 static luaAI_AI* luaAI_toai(lua_State *s, int n) {
-	luaAI_AI* ai = luaAI_getudata<luaAI_AI*>(s, n, luaAI_metaai());
+	luaAI_AI* ai = clua_getudata<luaAI_AI*>(s, n, luaAI_metaai());
 	if (!ai->ai) {
 		luaL_error(s, "AI is already destroyed");
 	}
@@ -65,7 +54,7 @@ static luaAI_AI* luaAI_toai(lua_State *s, int n) {
 }
 
 static luaAI_ICharacter* luaAI_tocharacter(lua_State *s, int n) {
-	luaAI_ICharacter* chr = luaAI_getudata<luaAI_ICharacter*>(s, n, luaAI_metacharacter());
+	luaAI_ICharacter* chr = clua_getudata<luaAI_ICharacter*>(s, n, luaAI_metacharacter());
 	if (!chr->character) {
 		luaL_error(s, "ICharacter is already destroyed");
 	}
@@ -73,19 +62,15 @@ static luaAI_ICharacter* luaAI_tocharacter(lua_State *s, int n) {
 }
 
 static Zone* luaAI_tozone(lua_State *s, int n) {
-	return *(Zone**)luaAI_getudata<Zone*>(s, n, luaAI_metazone());
+	return *(Zone**)clua_getudata<Zone*>(s, n, luaAI_metazone());
 }
 
 static AggroMgr* luaAI_toaggromgr(lua_State *s, int n) {
-	return *(AggroMgr**)luaAI_getudata<AggroMgr*>(s, n, luaAI_metaaggromgr());
+	return *(AggroMgr**)clua_getudata<AggroMgr*>(s, n, luaAI_metaaggromgr());
 }
 
 static GroupMgr* luaAI_togroupmgr(lua_State *s, int n) {
-	return *(GroupMgr**)luaAI_getudata<GroupMgr*>(s, n, luaAI_metagroupmgr());
-}
-
-static glm::vec3* luaAI_tovec(lua_State *s, int n) {
-	return luaAI_getudata<glm::vec3*>(s, n, luaAI_metavec());
+	return *(GroupMgr**)clua_getudata<GroupMgr*>(s, n, luaAI_metagroupmgr());
 }
 
 static int luaAI_pushzone(lua_State* s, Zone* zone) {
@@ -93,33 +78,29 @@ static int luaAI_pushzone(lua_State* s, Zone* zone) {
 		lua_pushnil(s);
 		return 1;
 	}
-	return luaAI_pushudata<Zone*>(s, zone, luaAI_metazone());
+	return clua_pushudata<Zone*>(s, zone, luaAI_metazone());
 }
 
 static int luaAI_pushaggromgr(lua_State* s, AggroMgr* aggroMgr) {
-	return luaAI_pushudata<AggroMgr*>(s, aggroMgr, luaAI_metaaggromgr());
+	return clua_pushudata<AggroMgr*>(s, aggroMgr, luaAI_metaaggromgr());
 }
 
 static int luaAI_pushgroupmgr(lua_State* s, GroupMgr* groupMgr) {
-	return luaAI_pushudata<GroupMgr*>(s, groupMgr, luaAI_metagroupmgr());
+	return clua_pushudata<GroupMgr*>(s, groupMgr, luaAI_metagroupmgr());
 }
 
 static int luaAI_pushcharacter(lua_State* s, const ICharacterPtr& character) {
 	luaAI_ICharacter* raw = (luaAI_ICharacter*) lua_newuserdata(s, sizeof(luaAI_ICharacter));
 	luaAI_ICharacter* udata = new (raw)luaAI_ICharacter();
 	udata->character = character;
-	return luaAI_assignmetatable(s, luaAI_metacharacter());
+	return clua_assignmetatable(s, luaAI_metacharacter());
 }
 
 int luaAI_pushai(lua_State* s, const AIPtr& ai) {
 	luaAI_AI* raw = (luaAI_AI*) lua_newuserdata(s, sizeof(luaAI_AI));
 	luaAI_AI* udata = new (raw)luaAI_AI();
 	udata->ai = ai;
-	return luaAI_assignmetatable(s, luaAI_metaai());
-}
-
-static int luaAI_pushvec(lua_State* s, const glm::vec3& v) {
-	return luaAI_pushudata<glm::vec3>(s, v, luaAI_metavec());
+	return clua_assignmetatable(s, luaAI_metaai());
 }
 
 /***
@@ -131,7 +112,7 @@ static int luaAI_pushvec(lua_State* s, const glm::vec3& v) {
 static int luaAI_groupmgrposition(lua_State* s) {
 	const GroupMgr* groupMgr = luaAI_togroupmgr(s, 1);
 	const GroupId groupId = (GroupId)luaL_checkinteger(s, 2);
-	return luaAI_pushvec(s, groupMgr->getPosition(groupId));
+	return clua_push(s, groupMgr->getPosition(groupId));
 }
 
 /***
@@ -440,7 +421,7 @@ static int luaAI_characterid(lua_State* s) {
  */
 static int luaAI_characterposition(lua_State* s) {
 	const luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
-	return luaAI_pushvec(s, chr->character->getPosition());
+	return clua_push(s, chr->character->getPosition());
 }
 
 /***
@@ -450,7 +431,7 @@ static int luaAI_characterposition(lua_State* s) {
  */
 static int luaAI_charactersetposition(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
-	const glm::vec3* v = luaAI_tovec(s, 2);
+	const glm::vec3* v = clua_get<glm::vec3>(s, 2);
 	chr->character->setPosition(*v);
 	return 0;
 }
@@ -680,154 +661,6 @@ static int luaAI_aitostring(lua_State* s) {
 	return 1;
 }
 
-/***
- * Vector addition
- * @par vec a
- * @par vec b
- * @treturn vec the sum of a + b
- * @function vec:__add
- */
-static int luaAI_vecadd(lua_State* s) {
-	const glm::vec3* a = luaAI_tovec(s, 1);
-	const glm::vec3* b = luaAI_tovec(s, 2);
-	const glm::vec3& c = *a + *b;
-	return luaAI_pushvec(s, c);
-}
-
-/***
- * Vector dot product also as vec:__mul
- * @par vec a
- * @par vec b
- * @treturn number The dot product of a and b
- * @function vec:dot
- */
-static int luaAI_vecdot(lua_State* s) {
-	const glm::vec3* a = luaAI_tovec(s, 1);
-	const glm::vec3* b = luaAI_tovec(s, 2);
-	const float c = glm::dot(*a, *b);
-	lua_pushnumber(s, c);
-	return 1;
-}
-
-/***
- * Vector div function
- * @par vec a
- * @par vec b
- * @treturn vec a / b
- * @function vec:__div
- */
-static int luaAI_vecdiv(lua_State* s) {
-	const glm::vec3* a = luaAI_tovec(s, 1);
-	const glm::vec3* b = luaAI_tovec(s, 2);
-	const glm::vec3& c = *a / *b;
-	luaAI_pushvec(s, c);
-	return 1;
-}
-
-static int luaAI_veclen(lua_State* s) {
-	const glm::vec3* a = luaAI_tovec(s, 1);
-	const float c = glm::length(*a);
-	lua_pushnumber(s, c);
-	return 1;
-}
-
-static int luaAI_veceq(lua_State* s) {
-	const glm::vec3* a = luaAI_tovec(s, 1);
-	const glm::vec3* b = luaAI_tovec(s, 2);
-	const bool e = glm::all(glm::epsilonEqual(*a, *b, 0.0001f));
-	lua_pushboolean(s, e);
-	return 1;
-}
-
-/***
- * Vector subtraction
- * @par vec a
- * @par vec b
- * @treturn vec the result of a - b
- * @function vec:__sub
- */
-static int luaAI_vecsub(lua_State* s) {
-	const glm::vec3* a = luaAI_tovec(s, 1);
-	const glm::vec3* b = luaAI_tovec(s, 2);
-	const glm::vec3& c = *a - *b;
-	luaAI_pushvec(s, c);
-	return 1;
-}
-
-/***
- * Negates a given vector
- * @par vec a
- * @treturn vec The result of -a
- * @function vec:__unm
- */
-static int luaAI_vecnegate(lua_State* s) {
-	const glm::vec3* a = luaAI_tovec(s, 1);
-	luaAI_pushvec(s, -(*a));
-	return 1;
-}
-
-static int luaAI_vectostring(lua_State* s) {
-	const glm::vec3* a = luaAI_tovec(s, 1);
-	lua_pushfstring(s, "vec: %f:%f:%f", a->x, a->y, a->z);
-	return 1;
-}
-
-static int luaAI_vecindex(lua_State *s) {
-	const glm::vec3* v = luaAI_tovec(s, 1);
-	const char* i = luaL_checkstring(s, 2);
-
-	switch (*i) {
-	case '0':
-	case 'x':
-	case 'r':
-		lua_pushnumber(s, v->x);
-		break;
-	case '1':
-	case 'y':
-	case 'g':
-		lua_pushnumber(s, v->y);
-		break;
-	case '2':
-	case 'z':
-	case 'b':
-		lua_pushnumber(s, v->z);
-		break;
-	default:
-		lua_pushnil(s);
-		break;
-	}
-
-	return 1;
-}
-
-static int luaAI_vecnewindex(lua_State *s) {
-	glm::vec3* v = luaAI_tovec(s, 1);
-	const char *i = luaL_checkstring(s, 2);
-	const lua_Number t = luaL_checknumber(s, 3);
-
-	switch (*i) {
-	case '0':
-	case 'x':
-	case 'r':
-		v->x = (float)t;
-		break;
-	case '1':
-	case 'y':
-	case 'g':
-		v->y = (float)t;
-		break;
-	case '2':
-	case 'z':
-	case 'b':
-		v->z = (float)t;
-		break;
-	default:
-		break;
-	}
-
-	return 1;
-}
-
 static int luaAI_aisetfilteredentities(lua_State* s) {
 	luaAI_AI* ai = luaAI_toai(s, 1);
 	luaL_checktype(s, 2, LUA_TTABLE);
@@ -866,20 +699,6 @@ void luaAI_registerAll(lua_State* s) {
 		{"__tostring", luaAI_aitostring},
 		{"__gc", luaAI_aigc},
 		{"__eq", luaAI_aieq},
-		{nullptr, nullptr}
-	};
-	static const luaL_Reg vecFuncs[] = {
-		{"__add", luaAI_vecadd},
-		{"__sub", luaAI_vecsub},
-		{"__mul", luaAI_vecdot},
-		{"__div", luaAI_vecdiv},
-		{"__unm", luaAI_vecnegate},
-		{"__len", luaAI_veclen},
-		{"__eq", luaAI_veceq},
-		{"__tostring", luaAI_vectostring},
-		{"__index", luaAI_vecindex},
-		{"__newindex", luaAI_vecnewindex},
-		{"dot", luaAI_vecdot},
 		{nullptr, nullptr}
 	};
 	static const luaL_Reg zoneFuncs[] = {
@@ -928,12 +747,13 @@ void luaAI_registerAll(lua_State* s) {
 		{"__tostring", luaAI_groupmgrtostring},
 		{nullptr, nullptr}
 	};
-	luaAI_registerfuncs(s, aiFuncs, luaAI_metaai());
-	luaAI_registerfuncs(s, vecFuncs, luaAI_metavec());
-	luaAI_registerfuncs(s, zoneFuncs, luaAI_metazone());
-	luaAI_registerfuncs(s, characterFuncs, luaAI_metacharacter());
-	luaAI_registerfuncs(s, aggroMgrFuncs, luaAI_metaaggromgr());
-	luaAI_registerfuncs(s, groupMgrFuncs, luaAI_metagroupmgr());
+	clua_vecregister<glm::vec3>(s);
+	clua_vecregister<glm::ivec3>(s);
+	clua_registerfuncs(s, aiFuncs, luaAI_metaai());
+	clua_registerfuncs(s, zoneFuncs, luaAI_metazone());
+	clua_registerfuncs(s, characterFuncs, luaAI_metacharacter());
+	clua_registerfuncs(s, aggroMgrFuncs, luaAI_metaaggromgr());
+	clua_registerfuncs(s, groupMgrFuncs, luaAI_metagroupmgr());
 }
 
 }
