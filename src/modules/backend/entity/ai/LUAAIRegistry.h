@@ -126,12 +126,12 @@ public:
 	/**
 	 * @see shutdown()
 	 */
-	virtual bool init();
+	bool init(const core::String& file = "behaviourtreenodes.lua");
 
 	/**
 	 * @see init()
 	 */
-	virtual void shutdown();
+	void shutdown();
 
 	~LUAAIRegistry();
 

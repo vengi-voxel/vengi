@@ -6,6 +6,7 @@
 #include "LUAAIRegistry.h"
 #include "LUAFunctions.h"
 #include "common/Common.h"
+#include "core/concurrent/Lock.h"
 #include "core/Assert.h"
 #include "AI.h"
 #include "core/Trace.h"
@@ -276,35 +277,6 @@ static int luaAI_createsteering(lua_State* s) {
 }
 
 LUAAIRegistry::LUAAIRegistry() {
-	init();
-}
-
-lua_State* LUAAIRegistry::getLuaState() {
-	return _s;
-}
-
-int LUAAIRegistry::pushAIMetatable() {
-	core_assert_msg(_s != nullptr, "LUA state is not yet initialized");
-	return luaL_getmetatable(_s, luaAI_metaai());
-}
-
-int LUAAIRegistry::pushCharacterMetatable() {
-	core_assert_msg(_s != nullptr, "LUA state is not yet initialized");
-	return luaL_getmetatable(_s, luaAI_metacharacter());
-}
-
-static const luaL_Reg registryFuncs[] = {
-	{"createNode", luaAI_createnode},
-	{"createCondition", luaAI_createcondition},
-	{"createFilter", luaAI_createfilter},
-	{"createSteering", luaAI_createsteering},
-	{nullptr, nullptr}
-};
-
-bool LUAAIRegistry::init() {
-	if (_s != nullptr) {
-		return true;
-	}
 	_s = luaL_newstate();
 	lua::clua_registertrace(_s);
 
@@ -315,6 +287,13 @@ bool LUAAIRegistry::init() {
 	lua_gc(_s, LUA_GCSTOP, 0);
 	luaL_openlibs(_s);
 
+	static const luaL_Reg registryFuncs[] = {
+		{"createNode", luaAI_createnode},
+		{"createCondition", luaAI_createcondition},
+		{"createFilter", luaAI_createfilter},
+		{"createSteering", luaAI_createsteering},
+		{nullptr, nullptr}
+	};
 	luaAI_registerfuncs(_s, registryFuncs, "META_REGISTRY");
 	lua_setglobal(_s, "REGISTRY");
 
@@ -322,21 +301,6 @@ bool LUAAIRegistry::init() {
 
 	luaAI_globalpointer(_s, this, luaAI_metaregistry());
 	luaAI_registerAll(_s);
-
-	const char* script = ""
-		"UNKNOWN, CANNOTEXECUTE, RUNNING, FINISHED, FAILED, EXCEPTION = 0, 1, 2, 3, 4, 5\n";
-
-	if (luaL_loadbufferx(_s, script, SDL_strlen(script), "", nullptr) || lua_pcall(_s, 0, 0, 0)) {
-		Log::error("%s", lua_tostring(_s, -1));
-		lua_pop(_s, 1);
-		return false;
-	}
-
-	const core::String& btScript = io::filesystem()->load("behaviourtreenodes.lua");
-	if (!evaluate(btScript)) {
-		Log::error("Failed to load behaviour tree nodes");
-		return false;
-	}
 
 	registerNodeFactory("GoHome", GoHome::getFactory());
 	registerNodeFactory("AttackOnSelection", AttackOnSelection::getFactory());
@@ -355,6 +319,36 @@ bool LUAAIRegistry::init() {
 	registerFilterFactory("SelectEntitiesOfTypes", SelectEntitiesOfTypes::getFactory());
 
 	registerSteeringFactory("WanderAroundHome", WanderAroundHome::getFactory());
+}
+
+lua_State* LUAAIRegistry::getLuaState() {
+	return _s;
+}
+
+int LUAAIRegistry::pushAIMetatable() {
+	core_assert_msg(_s != nullptr, "LUA state is not yet initialized");
+	return luaL_getmetatable(_s, luaAI_metaai());
+}
+
+int LUAAIRegistry::pushCharacterMetatable() {
+	core_assert_msg(_s != nullptr, "LUA state is not yet initialized");
+	return luaL_getmetatable(_s, luaAI_metacharacter());
+}
+
+bool LUAAIRegistry::init(const core::String& file) {
+	const char* script = ""
+		"UNKNOWN, CANNOTEXECUTE, RUNNING, FINISHED, FAILED, EXCEPTION = 0, 1, 2, 3, 4, 5\n";
+
+	if (luaL_loadbufferx(_s, script, SDL_strlen(script), "", nullptr) || lua_pcall(_s, 0, 0, 0)) {
+		Log::error("%s", lua_tostring(_s, -1));
+		lua_pop(_s, 1);
+		return false;
+	}
+	const core::String& btScript = io::filesystem()->load(file);
+	if (!evaluate(btScript)) {
+		Log::error("Failed to load behaviour tree nodes");
+		return false;
+	}
 
 	return true;
 }
