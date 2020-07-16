@@ -3,8 +3,14 @@
  */
 
 #include "TreeNodeParser.h"
+#include "core/StringUtil.h"
 
 namespace backend {
+
+TreeNodeParser::TreeNodeParser(const IAIFactory& aiFactory, const core::String& taskString) :
+		IParser(), _aiFactory(aiFactory) {
+	_taskString = core::string::eraseAllChars(taskString, ' ');
+}
 
 void TreeNodeParser::splitTasks(const core::String& string, std::vector<core::String>& tokens) const {
 	bool inParameter = false;

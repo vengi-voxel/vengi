@@ -27,10 +27,7 @@ private:
 	void splitTasks(const core::String& string, std::vector<core::String>& tokens) const;
 	SteeringPtr getSteering(const core::String& nodeName);
 public:
-	TreeNodeParser(const IAIFactory& aiFactory, const core::String& taskString) :
-			IParser(), _aiFactory(aiFactory) {
-		_taskString = Str::eraseAllSpaces(taskString);
-	}
+	TreeNodeParser(const IAIFactory& aiFactory, const core::String& taskString);
 
 	virtual ~TreeNodeParser() {}
 

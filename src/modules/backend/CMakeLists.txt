@@ -47,7 +47,6 @@ set(SRCS
 	entity/ai/common/MemoryAllocator.h
 	entity/ai/common/MoveVector.h
 	entity/ai/common/Random.h
-	entity/ai/common/StringUtil.h
 
 	entity/ai/aggro/AggroMgr.h entity/ai/aggro/AggroMgr.cpp
 	entity/ai/aggro/Entry.h

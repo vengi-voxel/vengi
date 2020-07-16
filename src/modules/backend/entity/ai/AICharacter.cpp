@@ -6,11 +6,16 @@
 #include "backend/entity/Npc.h"
 #include "backend/entity/ai/aggro/AggroMgr.h"
 #include "backend/entity/ai/common/Random.h"
-#include "backend/entity/ai/common/StringUtil.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 
 namespace backend {
+
+inline core::String toString(const glm::vec3& pos) {
+	char buf[128];
+	SDL_snprintf(buf, sizeof(buf), "%f:%f:%f", pos.x, pos.y, pos.z);
+	return buf;
+}
 
 AICharacter::AICharacter(ai::CharacterId id, Npc& npc) :
 		Super(id), _npc(npc) {
@@ -45,7 +50,7 @@ void AICharacter::update(int64_t dt, bool debuggingActive) {
 	}
 
 	if (debuggingActive) {
-		setAttribute(ai::attributes::POSITION, Str::toString(getPosition()));
+		setAttribute(ai::attributes::POSITION, toString(getPosition()));
 		setAttribute(ai::attributes::ORIENTATION, core::string::toString(toDegrees(getOrientation())));
 		const attrib::Attributes& attribs =  _npc._attribs;
 		for (int i = 0; i <= (int)attrib::Type::MAX; ++i) {

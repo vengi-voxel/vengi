@@ -9,7 +9,6 @@
 #include "backend/entity/ai/IAIFactory.h"
 #include "backend/entity/ai/common/Math.h"
 #include "backend/entity/ai/common/MoveVector.h"
-#include "backend/entity/ai/common/StringUtil.h"
 #include "backend/entity/ai/common/MemoryAllocator.h"
 #include "backend/entity/ai/ICharacter.h"
 
