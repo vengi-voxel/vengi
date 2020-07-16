@@ -10,6 +10,7 @@
 #include <glm/gtx/norm.hpp>
 
 namespace backend {
+namespace movement {
 
 MoveVector WanderAroundHome::execute(const AIPtr& ai, float speed) const {
 	backend::Npc& npc = getNpc(ai);
@@ -27,4 +28,5 @@ MoveVector WanderAroundHome::execute(const AIPtr& ai, float speed) const {
 	return d;
 }
 
+}
 }

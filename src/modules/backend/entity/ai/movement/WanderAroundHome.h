@@ -9,6 +9,7 @@
 #include "core/StringUtil.h"
 
 namespace backend {
+namespace movement {
 
 class WanderAroundHome: public movement::ISteering {
 private:
@@ -28,5 +29,5 @@ public:
 	MoveVector execute (const AIPtr& ai, float speed) const override;
 };
 
-
+}
 }

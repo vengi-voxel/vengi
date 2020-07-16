@@ -318,7 +318,7 @@ LUAAIRegistry::LUAAIRegistry() {
 	registerFilterFactory("SelectIncreasePartner", SelectIncreasePartner::getFactory());
 	registerFilterFactory("SelectEntitiesOfTypes", SelectEntitiesOfTypes::getFactory());
 
-	registerSteeringFactory("WanderAroundHome", WanderAroundHome::getFactory());
+	registerSteeringFactory("WanderAroundHome", movement::WanderAroundHome::getFactory());
 }
 
 lua_State* LUAAIRegistry::getLuaState() {
