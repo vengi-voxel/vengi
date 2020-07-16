@@ -7,7 +7,7 @@
 #include "AIFactories.h"
 #include "common/IFactoryRegistry.h"
 #include "tree/TreeNode.h"
-#include "conditions/ICondition.h"
+#include "condition/ICondition.h"
 #include "filter/IFilter.h"
 
 namespace backend {

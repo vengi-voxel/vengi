@@ -1,5 +1,5 @@
 #include "TestShared.h"
-#include "backend/entity/ai/conditions/ConditionParser.h"
+#include "backend/entity/ai/condition/ConditionParser.h"
 #include "backend/entity/ai/tree/TreeNodeParser.h"
 
 namespace backend {

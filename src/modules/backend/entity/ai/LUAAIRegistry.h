@@ -10,7 +10,7 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/Lock.h"
 #include "tree/LUATreeNode.h"
-#include "conditions/LUACondition.h"
+#include "condition/LUACondition.h"
 #include "filter/LUAFilter.h"
 #include "movement/LUASteering.h"
 

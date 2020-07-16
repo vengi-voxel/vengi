@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#include "backend/entity/ai/conditions/ICondition.h"
-#include "backend/entity/ai/conditions/True.h"
+#include "backend/entity/ai/condition/ICondition.h"
+#include "backend/entity/ai/condition/True.h"
 #include "backend/entity/ai/common/MemoryAllocator.h"
 #include "backend/entity/ai/common/Common.h"
 #include "ai-shared/common/TreeNodeStatus.h"

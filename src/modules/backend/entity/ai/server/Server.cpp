@@ -18,7 +18,7 @@
 #include "ai-shared/protocol/AICharacterDetailsMessage.h"
 #include "ai-shared/protocol/AICharacterStaticMessage.h"
 
-#include "backend/entity/ai/conditions/ConditionParser.h"
+#include "backend/entity/ai/condition/ConditionParser.h"
 #include "backend/entity/ai/tree/TreeNodeParser.h"
 #include "core/Trace.h"
 

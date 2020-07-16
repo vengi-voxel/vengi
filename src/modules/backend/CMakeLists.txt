@@ -57,20 +57,20 @@ set(SRCS
 	entity/ai/AIRegistry.h entity/ai/AIRegistry.cpp
 	entity/ai/LUAAIRegistry.h entity/ai/LUAAIRegistry.cpp
 	entity/ai/LUAFunctions.h entity/ai/LUAFunctions.cpp
-	entity/ai/conditions/And.h
-	entity/ai/conditions/ConditionParser.h
-	entity/ai/conditions/ConditionParser.cpp
-	entity/ai/conditions/False.h
-	entity/ai/conditions/Filter.h
-	entity/ai/conditions/Filter.cpp
-	entity/ai/conditions/HasEnemies.h
-	entity/ai/conditions/ICondition.h
-	entity/ai/conditions/IsCloseToGroup.h
-	entity/ai/conditions/IsGroupLeader.h
-	entity/ai/conditions/IsInGroup.h
-	entity/ai/conditions/Not.h
-	entity/ai/conditions/Or.h
-	entity/ai/conditions/True.h
+	entity/ai/condition/And.h
+	entity/ai/condition/ConditionParser.h
+	entity/ai/condition/ConditionParser.cpp
+	entity/ai/condition/False.h
+	entity/ai/condition/Filter.h
+	entity/ai/condition/Filter.cpp
+	entity/ai/condition/HasEnemies.h
+	entity/ai/condition/ICondition.h
+	entity/ai/condition/IsCloseToGroup.h
+	entity/ai/condition/IsGroupLeader.h
+	entity/ai/condition/IsInGroup.h
+	entity/ai/condition/Not.h
+	entity/ai/condition/Or.h
+	entity/ai/condition/True.h
 	entity/ai/filter/IFilter.h
 	entity/ai/filter/SelectEmpty.h
 	entity/ai/filter/SelectGroupLeader.h

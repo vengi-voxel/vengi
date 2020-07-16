@@ -5,7 +5,7 @@
 #include "LUATreeLoader.h"
 #include "backend/entity/ai/tree/TreeNode.h"
 #include "backend/entity/ai/AIRegistry.h"
-#include "backend/entity/ai/conditions/ConditionParser.h"
+#include "backend/entity/ai/condition/ConditionParser.h"
 #include "backend/entity/ai/tree/TreeNodeParser.h"
 #include "commonlua/LUA.h"
 #include "core/concurrent/Lock.h"
