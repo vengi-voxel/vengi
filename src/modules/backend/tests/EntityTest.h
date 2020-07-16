@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/tests/AbstractTest.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/world/MapProvider.h"
@@ -20,8 +22,6 @@
 #include "voxelformat/VolumeCache.h"
 #include "persistence/tests/Mocks.h"
 #include "http/HttpServer.h"
-
-#pragma once
 
 namespace backend {
 namespace {
