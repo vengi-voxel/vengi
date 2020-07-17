@@ -36,10 +36,10 @@ TEST_F(ZoneTest, testChanges) {
 	ASSERT_TRUE(zone.removeAI(2)) << "Could not remove ai from zone";
 }
 
-TEST_F(ZoneTest, testMassAdd1000000) {
+TEST_F(ZoneTest, testAdd100) {
 	Zone zone("test1");
 	TreeNodePtr root = std::make_shared<PrioritySelector>("test", "", True::get());
-	const int n = 1000000;
+	const int n = 100;
 	for (int i = 0; i < n; ++i) {
 		ICharacterPtr character = std::make_shared<TestEntity>(i);
 		AIPtr ai = std::make_shared<AI>(root);
