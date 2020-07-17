@@ -128,7 +128,6 @@ set(SRCS
 	entity/ai/server/StepHandler.h entity/ai/server/StepHandler.cpp
 	entity/ai/server/UpdateNodeHandler.h entity/ai/server/UpdateNodeHandler.cpp
 	entity/ai/zone/Zone.h entity/ai/zone/Zone.cpp
-	entity/ai/SimpleAI.h
 	entity/ai/tree/Fail.h
 	entity/ai/tree/Limit.h
 	entity/ai/tree/Idle.h

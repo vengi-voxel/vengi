@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "AICommon.h"
+#include "core/Log.h"
 #include "tree/loaders/lua/LUATreeLoader.h"
 #include <memory>
 
-#include "AIRegistry.h"
+#include "LUAAIRegistry.h"
 
 namespace backend {
 

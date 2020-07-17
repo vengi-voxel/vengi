@@ -7,8 +7,6 @@
  * * Movement implementations for steering
  * * Network based remote @ref debugging with live editing of the behaviour tree
  * * QT5 based remote debugger
- *   * can also be used for other AI implementations. (E.g. there are java protocol classes)
- *   * [example](https://github.com/mgerhardy/simpleai/blob/master/contrib/exampledebugger) on how to extend the debugger to render application specific stuff into the map view.
  * * @ref Zone support (each zone can be debugged separately)
  * * @ref Filter support
  *
@@ -118,12 +116,6 @@
  * @defgroup AI
  * @{
  */
-#pragma once
-
-#include "AIRegistry.h"
-
-#include "tree/loaders/lua/LUATreeLoader.h"
-#include "LUAAIRegistry.h"
 
 /**
  * @}

@@ -8,7 +8,7 @@
 #include "backend/spawn/SpawnMgr.h"
 #include "backend/world/MapProvider.h"
 #include "backend/world/Map.h"
-#include "backend/entity/ai/AIRegistry.h"
+#include "backend/entity/ai/LUAAIRegistry.h"
 #include "core/io/Filesystem.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -16,7 +16,6 @@
 #include "core/Trace.h"
 #include "LUAFunctions.h"
 #include "attrib/ContainerProvider.h"
-#include <SimpleAI.h>
 
 namespace backend {
 
