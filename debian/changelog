@@ -1,5 +1,12 @@
 vengi (0.0.5.0-1) UNRELEASED; urgency=low
 
+  * Client:
+  * Fixed movement
+
+  * Server:
+  * Fixed visibility check
+  * Fixed segfault while removing npcs
+
   * VoxEdit:
   * Started to add scene mode edit support (move volumes)
 

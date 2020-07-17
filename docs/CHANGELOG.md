@@ -11,6 +11,7 @@ Client:
 Server:
 
    - Fixed visibility check
+   - Fixed segfault while removing npcs
 
 VoxEdit:
 
@@ -34,7 +35,6 @@ General:
    - Improved gizmo rendering and translation support
    - Fixed memory leaks on shutdown
    - Improved profiling support via tracy
-   - Fixed segfault while removing npcs
 
 ## 0.0.4 (2020-06-07)
 
