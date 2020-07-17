@@ -6,7 +6,6 @@
 
 #include "TreeNode.h"
 #include "backend/entity/ai/LUAFunctions.h"
-#include "backend/entity/ai/common/Common.h"
 
 namespace backend {
 

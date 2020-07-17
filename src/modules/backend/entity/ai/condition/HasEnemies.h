@@ -5,8 +5,6 @@
 #pragma once
 
 #include "ICondition.h"
-#include "backend/entity/ai/common/StringUtil.h"
-#include "backend/entity/ai/aggro/AggroMgr.h"
 
 namespace backend {
 
@@ -24,25 +22,9 @@ protected:
 public:
 	CONDITION_FACTORY(HasEnemies)
 
-	explicit HasEnemies(const core::String& parameters) :
-			ICondition("HasEnemies", parameters) {
-		if (_parameters.empty()) {
-			_enemyCount = -1;
-		} else {
-			_enemyCount = core::string::toInt(_parameters);
-		}
-	}
+	explicit HasEnemies(const core::String& parameters);
 
-	bool evaluate(const AIPtr& entity) override {
-		const AggroMgr& mgr = entity->getAggroMgr();
-		if (_enemyCount == -1) {
-			// TODO: check why boolean operator isn't working here
-			const bool hasEnemy = mgr.getHighestEntry() != nullptr;
-			return hasEnemy;
-		}
-		const int size = (int)mgr.count();
-		return size >= _enemyCount;
-	}
+	bool evaluate(const AIPtr& entity) override;
 };
 
 }

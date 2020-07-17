@@ -25,9 +25,7 @@ set(SRCS
 
 	entity/ai/AICharacter.cpp entity/ai/AICharacter.h
 	entity/ai/AILoader.h
-	entity/ai/condition/IsCloseToSelection.h
-	entity/ai/condition/IsSelectionAlive.h
-	entity/ai/condition/IsOnCooldown.h
+	entity/ai/action/Task.cpp
 	entity/ai/action/Task.h
 	entity/ai/action/GoHome.h
 	entity/ai/action/Spawn.h
@@ -44,6 +42,7 @@ set(SRCS
 	entity/ai/common/Common.h
 	entity/ai/common/IFactoryRegistry.h
 	entity/ai/common/IParser.h
+	entity/ai/common/IParser.cpp
 	entity/ai/common/Math.h entity/ai/common/Math.cpp
 	entity/ai/common/MemoryAllocator.h
 	entity/ai/common/MoveVector.h
@@ -64,22 +63,38 @@ set(SRCS
 	entity/ai/condition/Filter.h
 	entity/ai/condition/Filter.cpp
 	entity/ai/condition/HasEnemies.h
+	entity/ai/condition/HasEnemies.cpp
 	entity/ai/condition/ICondition.h
 	entity/ai/condition/IsCloseToGroup.h
+	entity/ai/condition/IsCloseToGroup.cpp
+	entity/ai/condition/IsCloseToSelection.h
+	entity/ai/condition/IsCloseToSelection.cpp
 	entity/ai/condition/IsGroupLeader.h
+	entity/ai/condition/IsGroupLeader.cpp
 	entity/ai/condition/IsInGroup.h
+	entity/ai/condition/IsInGroup.cpp
+	entity/ai/condition/IsOnCooldown.h
+	entity/ai/condition/IsOnCooldown.cpp
+	entity/ai/condition/IsSelectionAlive.h
+	entity/ai/condition/IsSelectionAlive.cpp
+	entity/ai/condition/LUACondition.h
+	entity/ai/condition/LUACondition.cpp
 	entity/ai/condition/Not.h
 	entity/ai/condition/Or.h
 	entity/ai/condition/True.h
 	entity/ai/filter/IFilter.h
 	entity/ai/filter/SelectEmpty.h
+	entity/ai/filter/SelectGroupLeader.cpp
 	entity/ai/filter/SelectGroupLeader.h
+	entity/ai/filter/SelectGroupMembers.cpp
 	entity/ai/filter/SelectGroupMembers.h
 	entity/ai/filter/SelectHighestAggro.h
+	entity/ai/filter/SelectZone.cpp
 	entity/ai/filter/SelectZone.h
 	entity/ai/filter/Union.h
 	entity/ai/filter/Union.cpp
 	entity/ai/filter/Intersection.h
+	entity/ai/filter/Intersection.cpp
 	entity/ai/filter/First.h
 	entity/ai/filter/First.cpp
 	entity/ai/filter/Last.h
@@ -122,14 +137,21 @@ set(SRCS
 	entity/ai/tree/Idle.h
 	entity/ai/tree/Invert.h
 	entity/ai/tree/ITask.h
+	entity/ai/tree/ITimedNode.cpp
 	entity/ai/tree/ITimedNode.h
 	entity/ai/tree/loaders/ITreeLoader.h
 	entity/ai/tree/Parallel.h
+	entity/ai/tree/Parallel.cpp
 	entity/ai/tree/PrioritySelector.h
+	entity/ai/tree/PrioritySelector.cpp
 	entity/ai/tree/ProbabilitySelector.h
+	entity/ai/tree/ProbabilitySelector.cpp
 	entity/ai/tree/RandomSelector.h
+	entity/ai/tree/RandomSelector.cpp
 	entity/ai/tree/Selector.h
+	entity/ai/tree/Sequence.cpp
 	entity/ai/tree/Sequence.h
+	entity/ai/tree/Steer.cpp
 	entity/ai/tree/Steer.h
 	entity/ai/tree/Succeed.h
 	entity/ai/tree/TreeNode.h entity/ai/tree/TreeNode.cpp

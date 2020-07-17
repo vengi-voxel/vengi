@@ -4,11 +4,9 @@
 #pragma once
 
 #include "TreeNode.h"
-#include <stdlib.h>
 
 namespace backend {
 
-#define NOTSTARTED -1
 #define TIMERNODE_CLASS(NodeName) \
 	NodeName(const core::String& name, const core::String& parameters, const ConditionPtr& condition) : \
 		ITimedNode(name, parameters, condition) { \
@@ -27,40 +25,10 @@ protected:
 	int64_t _timerMillis;
 	int64_t _millis;
 public:
-	ITimedNode(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
-			TreeNode(name, parameters, condition), _timerMillis(NOTSTARTED) {
-		if (!parameters.empty()) {
-			_millis = ::atol(parameters.c_str());
-		} else {
-			_millis = 1000L;
-		}
-	}
+	ITimedNode(const core::String& name, const core::String& parameters, const ConditionPtr& condition);
 	virtual ~ITimedNode() {}
 
-	ai::TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
-		const ai::TreeNodeStatus result = TreeNode::execute(entity, deltaMillis);
-		if (result == ai::CANNOTEXECUTE)
-			return ai::CANNOTEXECUTE;
-
-		if (_timerMillis == NOTSTARTED) {
-			_timerMillis = _millis;
-			const ai::TreeNodeStatus status = executeStart(entity, deltaMillis);
-			if (status == ai::FINISHED)
-				_timerMillis = NOTSTARTED;
-			return state(entity, status);
-		}
-
-		if (_timerMillis - deltaMillis > 0) {
-			_timerMillis -= deltaMillis;
-			const ai::TreeNodeStatus status = executeRunning(entity, deltaMillis);
-			if (status == ai::FINISHED)
-				_timerMillis = NOTSTARTED;
-			return state(entity, status);
-		}
-
-		_timerMillis = NOTSTARTED;
-		return state(entity, executeExpired(entity, deltaMillis));
-	}
+	ai::TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override;
 
 	/**
 	 * @brief Called whenever the timer is started or restarted
@@ -90,7 +58,5 @@ public:
 		return ai::FINISHED;
 	}
 };
-
-#undef NOTSTARTED
 
 }

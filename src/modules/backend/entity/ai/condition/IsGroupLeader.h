@@ -5,9 +5,7 @@
 #pragma once
 
 #include "ICondition.h"
-#include "backend/entity/ai/common/StringUtil.h"
-#include "backend/entity/ai/group/GroupMgr.h"
-#include "backend/entity/ai/zone/Zone.h"
+#include "backend/entity/ai/group/GroupId.h"
 
 namespace backend {
 
@@ -22,25 +20,12 @@ private:
 public:
 	CONDITION_FACTORY(IsGroupLeader)
 
-	explicit IsGroupLeader(const core::String& parameters) :
-		ICondition("IsGroupLeader", parameters) {
-		if (_parameters.empty()) {
-			_groupId = -1;
-		} else {
-			_groupId = core::string::toInt(_parameters);
-		}
-	}
+	explicit IsGroupLeader(const core::String& parameters);
 
 	virtual ~IsGroupLeader() {
 	}
 
-	bool evaluate(const AIPtr& entity) override {
-		if (_groupId == -1) {
-			return false;
-		}
-		const GroupMgr& mgr = entity->getZone()->getGroupMgr();
-		return mgr.isGroupLeader(_groupId, entity);
-	}
+	bool evaluate(const AIPtr& entity) override;
 };
 
 }

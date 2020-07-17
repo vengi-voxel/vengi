@@ -4,12 +4,13 @@
  */
 
 #include "ConditionParser.h"
+#include "core/StringUtil.h"
 
 namespace backend {
 
 ConditionParser::ConditionParser(const IAIFactory& aiFactory, const core::String& conditionString) :
 		IParser(), _aiFactory(aiFactory) {
-	_conditionString = Str::eraseAllSpaces(conditionString);
+	_conditionString = core::string::eraseAllChars(conditionString, ' ');
 }
 
 ConditionParser::~ConditionParser() {
