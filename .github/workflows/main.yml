@@ -80,7 +80,7 @@ jobs:
           with:
             vcpkgGitCommitId: 2f7a104d4d6f1f3790db929f85a4086aa6973d7f
             vcpkgTriplet: 'x64-windows'
-            vcpkgArguments: 'libpq enet libuv opencl'
+            vcpkgArguments: 'libpq'
         - name: Windows
           run: |
             set VCPKG_DEFAULT_TRIPLET=x64-windows
