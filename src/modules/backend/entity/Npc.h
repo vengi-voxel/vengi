@@ -33,6 +33,11 @@ private:
 
 	void moveToGround();
 
+	// transfer from ai to npc state
+	void updateFromAIState();
+	// transfer to ai state
+	void updateAIState();
+
 	void init() override;
 
 public:

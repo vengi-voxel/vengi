@@ -9,6 +9,7 @@
 #include "ai/AICharacter.h"
 #include "ai/AI.h"
 #include "ai/zone/Zone.h"
+#include "ai/common/Random.h"
 #include "backend/world/Map.h"
 
 namespace backend {
@@ -25,6 +26,9 @@ Npc::Npc(network::EntityType type, const TreeNodePtr& behaviour,
 	_ai = std::make_shared<AI>(behaviour);
 	_aiChr = std::make_shared<AICharacter>(_entityId, *this);
 	_ai->setCharacter(_aiChr);
+	_aiChr->setOrientation(randomf(glm::two_pi<float>()));
+	_aiChr->setAttribute(ai::attributes::NAME, core::string::format("%s " PRIEntId, this->type(), _entityId));
+	_aiChr->setAttribute(ai::attributes::ID, core::string::format(PRIEntId, _entityId));
 }
 
 Npc::~Npc() {
@@ -77,11 +81,46 @@ bool Npc::update(long dt) {
 	if (!Super::update(dt)) {
 		return false;
 	}
+
+	moveToGround();
+
+	// TODO: attrib for passive aggro
+	if (true) {
+		visitVisible([&] (const EntityPtr& e) {
+			AggroMgr& aggro = ai()->getAggroMgr();
+			aggro.addAggro(e->id(), dt / 1000.0);
+		});
+	}
+
 	_cooldowns.update();
-	const ICharacterPtr& character = _ai->getCharacter();
-	character->setSpeed(current(attrib::Type::SPEED));
-	character->setOrientation(orientation());
+
+	updateFromAIState();
+	updateAIState();
 	return !dead();
+}
+
+void Npc::updateFromAIState() {
+	setOrientation(_aiChr->getOrientation());
+	setPos(_aiChr->getPosition());
+}
+
+void Npc::updateAIState() {
+	_aiChr->setSpeed(current(attrib::Type::SPEED));
+	if (ai()->isDebuggingActive()) {
+		const core::String& posBuf = core::string::format("%.2f:%.2f:%.2f", _pos.x, _pos.y, _pos.z);
+		_aiChr->setAttribute(ai::attributes::POSITION, posBuf);
+		_aiChr->setAttribute(ai::attributes::ORIENTATION, core::string::toString(toDegrees(orientation())));
+		const attrib::Attributes& attribs =  _attribs;
+		for (int i = 0; i <= (int)attrib::Type::MAX; ++i) {
+			const attrib::Type attribType = (attrib::Type)i;
+			if (attribType == attrib::Type::NONE) {
+				continue;
+			}
+			const double current = attribs.current(attribType);
+			const double max = attribs.max(attribType);
+			_aiChr->setAttribute(network::EnumNameAttribType(attribType), core::string::format("%f/%f", current, max));
+		}
+	}
 }
 
 bool Npc::route(const glm::ivec3& target) {

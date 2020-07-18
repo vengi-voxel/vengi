@@ -22,7 +22,6 @@ private:
 public:
 	AICharacter(ai::CharacterId id, Npc& npc);
 	~AICharacter();
-	void update(int64_t dt, bool debuggingActive) override;
 
 	void setPosition(const glm::vec3& position) override;
 
