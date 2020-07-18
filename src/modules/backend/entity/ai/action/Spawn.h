@@ -18,7 +18,7 @@ namespace backend {
  */
 AI_TASK(Spawn) {
 	Npc& npc = entity->getCharacterCast<AICharacter>().getNpc();
-	const glm::ivec3 pos(npc.pos());
+	const glm::ivec3 pos = entity->getCharacter()->getPosition();
 	SpawnMgr& spawnMgr = npc.map()->spawnMgr();
 	if (spawnMgr.spawn(npc.entityType(), 1, &pos) == 1) {
 		return ai::TreeNodeStatus::FINISHED;

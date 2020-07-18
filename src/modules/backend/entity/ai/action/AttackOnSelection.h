@@ -11,12 +11,12 @@
 namespace backend {
 
 AI_TASK(AttackOnSelection) {
-	Npc& npc = entity->getCharacterCast<AICharacter>().getNpc();
-	const FilteredEntities& selection = npc.ai()->getFilteredEntities();
+	const FilteredEntities& selection = entity->getFilteredEntities();
 	if (selection.empty()) {
 		return ai::TreeNodeStatus::FAILED;
 	}
 	bool attacked = false;
+	Npc& npc = entity->getCharacterCast<AICharacter>().getNpc();
 	for (ai::CharacterId id : selection) {
 		attacked |= npc.attack(id);
 	}

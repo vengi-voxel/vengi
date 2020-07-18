@@ -20,12 +20,9 @@ private:
 	using Super = ICharacter;
 	Npc& _npc;
 public:
-	AICharacter(ai::CharacterId id, Npc& npc);
-	~AICharacter();
-
-	void setPosition(const glm::vec3& position) override;
-
-	void setOrientation(float orientation) override;
+	AICharacter(ai::CharacterId id, Npc& npc) :
+			Super(id), _npc(npc) {
+	}
 
 	inline Npc& getNpc() const {
 		return _npc;

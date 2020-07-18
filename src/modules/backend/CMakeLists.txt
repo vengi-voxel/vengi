@@ -23,7 +23,7 @@ set(SRCS
 
 	metric/MetricMgr.cpp metric/MetricMgr.h
 
-	entity/ai/AICharacter.cpp entity/ai/AICharacter.h
+	entity/ai/AICharacter.h
 	entity/ai/AILoader.h
 	entity/ai/action/GoHome.h
 	entity/ai/action/Spawn.h
