@@ -6,6 +6,7 @@
 #include "backend/entity/User.h"
 #include "backend/world/Map.h"
 #include "core/Trace.h"
+#include "core/GLM.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 
@@ -27,6 +28,7 @@ void UserMovementMgr::update(long dt) {
 	const float orientation = _user->orientation();
 	const MapPtr& map = _user->map();
 	const glm::vec3 oldPos = _user->pos();
+	glm_assert_vec3(oldPos);
 	const network::Animation oldAnimation = _user->animation();
 	const glm::vec3& newPos = _movement.update(deltaSeconds, orientation, speed, oldPos, [&] (const glm::ivec3& pos, int maxWalkHeight) {
 		return map->findFloor(pos, maxWalkHeight);

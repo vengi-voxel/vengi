@@ -244,10 +244,6 @@ inline glm::vec3 Entity::pos() const {
 	return _pos;
 }
 
-inline void Entity::setPos(const glm::vec3& pos) {
-	_pos = pos;
-}
-
 inline float Entity::size() const {
 	return _size;
 }

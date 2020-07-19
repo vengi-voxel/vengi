@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "math/Rect.h"
 #include "core/Common.h"
+#include "core/GLM.h"
 #include "math/Frustum.h"
 #include "backend/world/Map.h"
 #include "poi/PoiProvider.h"
@@ -44,6 +45,11 @@ void Entity::visibleRemove(const EntitySet& entities) {
 		Log::trace("entity %i is no longer visible for %i", (int)e->id(), (int)id());
 		sendEntityRemove(e);
 	}
+}
+
+void Entity::setPos(const glm::vec3& pos) {
+	glm_assert_vec3(pos);
+	_pos = pos;
 }
 
 void Entity::setPointOfInterest(poi::Type type) {
