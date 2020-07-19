@@ -37,7 +37,8 @@ TreeNodePtr Steer::Factory::create (const SteerNodeFactoryContext *ctx) const {
 
 ai::TreeNodeStatus Steer::doAction(const AIPtr& entity, int64_t deltaMillis) {
 	const ICharacterPtr& chr = entity->getCharacter();
-	const MoveVector& mv = _w.execute(entity, chr->getSpeed());
+	const float speed = chr->getSpeed();
+	const MoveVector& mv = _w.execute(entity, speed);
 	if (isInfinite(mv.getVector())) {
 		return ai::FAILED;
 	}

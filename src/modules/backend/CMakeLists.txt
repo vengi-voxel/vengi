@@ -111,8 +111,11 @@ set(SRCS
 	entity/ai/movement/GroupFlee.h entity/ai/movement/GroupFlee.cpp
 	entity/ai/movement/GroupSeek.h entity/ai/movement/GroupSeek.cpp
 	entity/ai/movement/Steering.h
+	entity/ai/movement/Steering.cpp
 	entity/ai/movement/TargetFlee.h
+	entity/ai/movement/TargetFlee.cpp
 	entity/ai/movement/TargetSeek.h
+	entity/ai/movement/TargetSeek.cpp
 	entity/ai/movement/Wander.h entity/ai/movement/Wander.cpp
 	entity/ai/movement/WeightedSteering.h
 	entity/ai/movement/LUASteering.h

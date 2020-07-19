@@ -5,6 +5,7 @@
 #include "TestShared.h"
 #include "core/String.h"
 #include "core/io/Filesystem.h"
+#include "backend/entity/ai/zone/Zone.h"
 #include <fstream>
 #include <streambuf>
 

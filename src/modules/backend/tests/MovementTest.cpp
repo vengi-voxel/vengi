@@ -12,6 +12,7 @@
 #include "backend/entity/ai/movement/TargetSeek.h"
 #include "backend/entity/ai/movement/Wander.h"
 #include "backend/entity/ai/movement/WeightedSteering.h"
+#include "backend/entity/ai/zone/Zone.h"
 #include "backend/entity/ai/common/Random.h"
 #include <glm/gtc/constants.hpp>
 

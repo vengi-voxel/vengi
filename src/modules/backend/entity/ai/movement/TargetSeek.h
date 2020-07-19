@@ -17,24 +17,11 @@ protected:
 public:
 	STEERING_FACTORY(TargetSeek)
 
-	explicit TargetSeek(const core::String& parameters) :
-			ISteering() {
-		_target = parse(parameters);
-	}
+	explicit TargetSeek(const core::String& parameters);
 
-	inline bool isValid () const {
-		return !isInfinite(_target);
-	}
+	inline bool isValid () const;
 
-	virtual MoveVector execute (const AIPtr& ai, float speed) const override {
-		if (!isValid()) {
-			return MoveVector(_target, 0.0f);
-		}
-		const glm::vec3& v = glm::normalize(_target - ai->getCharacter()->getPosition());
-		const float orientation = angle(v);
-		const MoveVector d(v * speed, orientation);
-		return d;
-	}
+	virtual MoveVector execute (const AIPtr& ai, float speed) const override;
 };
 
 }
