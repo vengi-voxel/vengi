@@ -66,8 +66,13 @@ void ClientEntity::update(double deltaFrameSeconds) {
 }
 
 void ClientEntity::setPosition(const glm::vec3& position) {
+	core_assert(!glm::isnan(position.x));
+	core_assert(!glm::isnan(position.y));
+	core_assert(!glm::isnan(position.z));
+	core_assert(!glm::isinf(position.x));
+	core_assert(!glm::isinf(position.y));
+	core_assert(!glm::isinf(position.z));
 	_position = position;
-	core_assert(!glm::any(glm::isnan(_position)));
 }
 
 uint32_t ClientEntity::bindVertexBuffers(const shader::SkeletonShader& chrShader) {

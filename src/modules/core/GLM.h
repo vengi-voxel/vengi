@@ -4,12 +4,21 @@
 
 #pragma once
 
+#include "core/Assert.h"
 #include "core/Common.h"
 #include "core/Hash.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
 namespace glm {
+
+#define glm_assert_vec3(vec) \
+	core_assert(!glm::isnan(vec.x)); \
+	core_assert(!glm::isnan(vec.y)); \
+	core_assert(!glm::isnan(vec.z)); \
+	core_assert(!glm::isinf(vec.x)); \
+	core_assert(!glm::isinf(vec.y)); \
+	core_assert(!glm::isinf(vec.z));
 
 constexpr vec3 forward  = vec3( 0.0f,  0.0f, -1.0f);
 constexpr vec3 backward = vec3( 0.0f,  0.0f,  1.0f);
