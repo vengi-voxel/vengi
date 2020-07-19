@@ -13,12 +13,12 @@
 namespace glm {
 
 #define glm_assert_vec3(vec) \
-	core_assert(!glm::isnan(vec.x)); \
-	core_assert(!glm::isnan(vec.y)); \
-	core_assert(!glm::isnan(vec.z)); \
-	core_assert(!glm::isinf(vec.x)); \
-	core_assert(!glm::isinf(vec.y)); \
-	core_assert(!glm::isinf(vec.z));
+	core_assert_msg(!glm::isnan(vec.x), "x is nan"); \
+	core_assert_msg(!glm::isnan(vec.y), "y is nan"); \
+	core_assert_msg(!glm::isnan(vec.z), "z is nan"); \
+	core_assert_msg(!glm::isinf(vec.x), "x is inf"); \
+	core_assert_msg(!glm::isinf(vec.y), "y is inf"); \
+	core_assert_msg(!glm::isinf(vec.z), "z is inf");
 
 constexpr vec3 forward  = vec3( 0.0f,  0.0f, -1.0f);
 constexpr vec3 backward = vec3( 0.0f,  0.0f,  1.0f);
