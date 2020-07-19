@@ -18,14 +18,20 @@ bool IsSelectionAlive::evaluate(const AIPtr& entity) {
 	if (selection.empty()) {
 		return false;
 	}
+	bool foundValidResult = true;
 	for (ai::CharacterId id : selection) {
 		const AIPtr& ai = zone->getAI(id);
+		if (!ai) {
+			foundValidResult = false;
+			continue;
+		}
+		foundValidResult = true;
 		Npc& npc = getNpc(ai);
 		if (npc.dead()) {
 			return false;
 		}
 	}
-	return true;
+	return foundValidResult;
 }
 
 }

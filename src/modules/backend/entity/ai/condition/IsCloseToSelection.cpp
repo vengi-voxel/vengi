@@ -33,16 +33,22 @@ bool IsCloseToSelection::evaluate(const AIPtr& entity) {
 		return false;
 	}
 
+	bool foundValidResult = true;
 	const glm::vec3& ownPos = entity->getCharacter()->getPosition();
 	for (ai::CharacterId id : selection) {
 		const AIPtr& ai = zone->getAI(id);
+		if (!ai) {
+			foundValidResult = false;
+			continue;
+		}
+		foundValidResult = true;
 		const glm::vec3& pos = ai->getCharacter()->getPosition();
 		const float distance = glm::distance(pos, ownPos);
 		if (distance > _distance) {
 			return false;
 		}
 	}
-	return true;
+	return foundValidResult;
 }
 
 }
