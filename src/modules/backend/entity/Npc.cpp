@@ -82,8 +82,6 @@ bool Npc::update(long dt) {
 		return false;
 	}
 
-	moveToGround();
-
 	// TODO: attrib for passive aggro
 	if (true) {
 		visitVisible([&] (const EntityPtr& e) {
@@ -95,6 +93,9 @@ bool Npc::update(long dt) {
 	_cooldowns.update();
 
 	updateFromAIState();
+
+	moveToGround();
+
 	updateAIState();
 	return !dead();
 }
@@ -105,6 +106,7 @@ void Npc::updateFromAIState() {
 }
 
 void Npc::updateAIState() {
+	_aiChr->setPosition(pos());
 	_aiChr->setSpeed(current(attrib::Type::SPEED));
 	if (ai()->isDebuggingActive()) {
 		const core::String& posBuf = core::string::format("%.2f:%.2f:%.2f", _pos.x, _pos.y, _pos.z);
