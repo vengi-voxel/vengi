@@ -4,12 +4,16 @@
  */
 #pragma once
 
-#include "backend/entity/ai/AI.h"
-#include "backend/entity/ai/IAIFactory.h"
 #include "backend/entity/ai/common/MemoryAllocator.h"
 #include "backend/entity/ai/common/MoveVector.h"
+#include "backend/entity/ai/AIFactories.h"
+#include <stdio.h>
 
 namespace backend {
+
+class AI;
+typedef std::shared_ptr<AI> AIPtr;
+
 namespace movement {
 
 #define STEERING_FACTORY(SteeringName) \

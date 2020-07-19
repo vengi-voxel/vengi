@@ -3,6 +3,7 @@
  */
 
 #include "GroupFlee.h"
+#include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/zone/Zone.h"
 
 namespace backend {

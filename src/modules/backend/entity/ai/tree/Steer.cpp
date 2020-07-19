@@ -3,9 +3,10 @@
  */
 
 #include "Steer.h"
-#include "core/StringUtil.h"
 #include "backend/entity/ai/common/Math.h"
 #include "backend/entity/ai/common/Random.h"
+#include "backend/entity/ai/AI.h"
+#include "core/StringUtil.h"
 #include "core/Assert.h"
 
 namespace backend {

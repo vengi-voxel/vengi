@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Steering.h"
+#include "backend/entity/ai/group/GroupId.h"
 
 namespace backend {
 namespace movement {

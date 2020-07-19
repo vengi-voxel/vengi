@@ -5,6 +5,8 @@
 #include "Wander.h"
 #include "math/Random.h"
 #include "core/StringUtil.h"
+#include "backend/entity/ai/AI.h"
+#include "backend/entity/ai/common/Math.h"
 
 namespace backend {
 namespace movement {

@@ -3,6 +3,7 @@
  */
 
 #include "Steering.h"
+#include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/zone/Zone.h"
 #include "backend/entity/ai/common/Math.h"
 #include "backend/entity/ai/ICharacter.h"

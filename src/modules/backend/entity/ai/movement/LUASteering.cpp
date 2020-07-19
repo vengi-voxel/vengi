@@ -6,6 +6,8 @@
 #include "LUASteering.h"
 #include "backend/entity/ai/LUAFunctions.h"
 #include "core/Log.h"
+#include "backend/entity/ai/AI.h"
+#include "backend/entity/ai/common/Math.h"
 
 namespace backend {
 namespace movement {

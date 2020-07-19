@@ -44,6 +44,7 @@ set(SRCS
 	entity/ai/common/Math.h entity/ai/common/Math.cpp
 	entity/ai/common/MemoryAllocator.h
 	entity/ai/common/MoveVector.h
+	entity/ai/common/MoveVector.cpp
 	entity/ai/common/Random.h
 
 	entity/ai/aggro/AggroMgr.h entity/ai/aggro/AggroMgr.cpp
@@ -120,6 +121,7 @@ set(SRCS
 	entity/ai/movement/TargetSeek.h
 	entity/ai/movement/TargetSeek.cpp
 	entity/ai/movement/Wander.h entity/ai/movement/Wander.cpp
+	entity/ai/movement/WeightedSteering.cpp
 	entity/ai/movement/WeightedSteering.h
 	entity/ai/movement/LUASteering.h
 	entity/ai/movement/LUASteering.cpp
