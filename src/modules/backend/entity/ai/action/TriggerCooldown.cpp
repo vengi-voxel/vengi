@@ -17,7 +17,7 @@ TriggerCooldown::TriggerCooldown(const core::String& name, const core::String& p
 }
 
 ai::TreeNodeStatus TriggerCooldown::doAction(const AIPtr& entity, int64_t deltaMillis) {
-	Npc& npc = entity->getCharacterCast<AICharacter>().getNpc();
+	Npc& npc = getNpc(entity);
 	const cooldown::CooldownTriggerState s = npc.cooldownMgr().triggerCooldown(_cooldownId);
 	if (s == cooldown::CooldownTriggerState::SUCCESS) {
 		return ai::TreeNodeStatus::FINISHED;

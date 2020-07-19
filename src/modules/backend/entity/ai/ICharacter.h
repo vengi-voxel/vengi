@@ -23,11 +23,6 @@ namespace backend {
  * @note Update the values of the @c ICharacter class only in in the @ai{ICharacter::update()}
  * method or from within the @ai{Zone} callbacks. Otherwise you will run into race conditions
  * if you run with multiple threads.
- *
- * You often need access to your world your character is living in. You need access to this
- * data to resolve the @ai{CharacterId}'s in the @ai{IFilter} implementations, to interact with
- * other entities that are not SimpleAI controlled and so on. You can use the provided
- * @ai{character_cast} function in your @ai{TreeNode}, @ai{IFilter} or @ai{ICondition} implementations.
  */
 class ICharacter : public core::NonCopyable, public std::enable_shared_from_this<ICharacter> {
 protected:
@@ -158,20 +153,5 @@ inline float ICharacter::getSpeed() const {
 }
 
 typedef std::shared_ptr<ICharacter> ICharacterPtr;
-
-template <typename CharacterType>
-inline const CharacterType& character_cast(const ICharacter& character) {
-	return static_cast<const CharacterType&>(character);
-}
-
-template <typename CharacterType>
-inline CharacterType& character_cast(ICharacter& character) {
-	return static_cast<CharacterType&>(character);
-}
-
-template <typename CharacterType>
-inline CharacterType& character_cast(const ICharacterPtr& character) {
-	return *static_cast<CharacterType*>(character.get());
-}
 
 }

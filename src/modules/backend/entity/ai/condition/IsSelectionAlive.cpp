@@ -20,8 +20,8 @@ bool IsSelectionAlive::evaluate(const AIPtr& entity) {
 	}
 	for (ai::CharacterId id : selection) {
 		const AIPtr& ai = zone->getAI(id);
-		const AICharacter& chr = ai->getCharacterCast<AICharacter>();
-		if (chr.getNpc().dead()) {
+		Npc& npc = getNpc(ai);
+		if (npc.dead()) {
 			return false;
 		}
 	}

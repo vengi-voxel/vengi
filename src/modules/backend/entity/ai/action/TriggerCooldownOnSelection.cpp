@@ -28,7 +28,7 @@ ai::TreeNodeStatus TriggerCooldownOnSelection::doAction(const AIPtr& entity, int
 	}
 	for (ai::CharacterId id : selection) {
 		auto func = [=] (const AIPtr& ai) {
-			Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
+			Npc& npc = getNpc(entity);
 			npc.cooldownMgr().triggerCooldown(_cooldownId);
 		};
 		zone->executeAsync(id, func);

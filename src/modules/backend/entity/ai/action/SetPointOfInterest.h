@@ -11,7 +11,7 @@
 namespace backend {
 
 AI_TASK(SetPointOfInterest) {
-	Npc& npc = entity->getCharacterCast<AICharacter>().getNpc();
+	Npc& npc = getNpc(entity);
 	npc.setPointOfInterest();
 	return ai::TreeNodeStatus::FINISHED;
 }

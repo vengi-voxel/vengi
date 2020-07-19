@@ -11,7 +11,7 @@
 namespace backend {
 
 AI_TASK(GoHome) {
-	Npc& npc = entity->getCharacterCast<AICharacter>().getNpc();
+	Npc& npc = getNpc(entity);
 	if (npc.route(npc.homePosition())) {
 		return ai::TreeNodeStatus::FINISHED;
 	}

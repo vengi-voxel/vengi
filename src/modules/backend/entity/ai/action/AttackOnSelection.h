@@ -16,7 +16,7 @@ AI_TASK(AttackOnSelection) {
 		return ai::TreeNodeStatus::FAILED;
 	}
 	bool attacked = false;
-	Npc& npc = entity->getCharacterCast<AICharacter>().getNpc();
+	Npc& npc = getNpc(entity);
 	for (ai::CharacterId id : selection) {
 		attacked |= npc.attack(id);
 	}

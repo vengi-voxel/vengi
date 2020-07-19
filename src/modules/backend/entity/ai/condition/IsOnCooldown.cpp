@@ -18,8 +18,8 @@ IsOnCooldown::IsOnCooldown(const core::String& parameters) :
 }
 
 bool IsOnCooldown::evaluate(const AIPtr& entity) {
-	const AICharacter& chr = character_cast<AICharacter>(entity->getCharacter());
-	return chr.getNpc().cooldownMgr().isCooldown(_cooldownId);
+	Npc& npc = getNpc(entity);
+	return npc.cooldownMgr().isCooldown(_cooldownId);
 }
 
 }

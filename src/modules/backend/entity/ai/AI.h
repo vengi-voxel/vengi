@@ -156,11 +156,6 @@ public:
 	 */
 	void setCharacter(const ICharacterPtr& character);
 
-	template <typename CharacterType>
-	inline CharacterType& getCharacterCast() const {
-		return *static_cast<CharacterType*>(_character.get());
-	}
-
 	int64_t getTime() const;
 
 	ai::CharacterId getId() const;

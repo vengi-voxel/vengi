@@ -11,7 +11,7 @@
 namespace backend {
 
 AI_TASK(Die) {
-	Npc& npc = entity->getCharacterCast<AICharacter>().getNpc();
+	Npc& npc = getNpc(entity);
 	if (npc.die()) {
 		return ai::TreeNodeStatus::FINISHED;
 	}

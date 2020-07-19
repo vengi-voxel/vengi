@@ -56,8 +56,7 @@ void SpawnMgr::spawnEntity(network::EntityType start, network::EntityType end, i
 	const int size = (int)end - offset;
 	std::vector<int> count(size, 0);
 	zone.execute([&] (const AIPtr& ai) {
-		const AICharacter& chr = character_cast<AICharacter>(ai->getCharacter());
-		const Npc& npc = chr.getNpc();
+		Npc& npc = getNpc(ai);
 		const network::EntityType type = npc.entityType();
 		if (type <= start || type >= end) {
 			return;
