@@ -10,6 +10,7 @@
 #include "backend/entity/ai/aggro/AggroMgr.h"
 #include "backend/entity/ai/common/Math.h"
 #include "commonlua/LUAFunctions.h"
+#include "lua.h"
 
 namespace backend {
 
@@ -112,7 +113,12 @@ int luaAI_pushai(lua_State* s, const AIPtr& ai) {
 static int luaAI_groupmgrposition(lua_State* s) {
 	const GroupMgr* groupMgr = luaAI_togroupmgr(s, 1);
 	const GroupId groupId = (GroupId)luaL_checkinteger(s, 2);
-	return clua_push(s, groupMgr->getPosition(groupId));
+	glm::vec3 target;
+	if (groupMgr->getPosition(groupId, target)) {
+		return clua_push(s, target);
+	}
+	lua_pushnil(s);
+	return 1;
 }
 
 /***

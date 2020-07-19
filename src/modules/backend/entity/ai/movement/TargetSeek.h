@@ -14,6 +14,7 @@ namespace movement {
 class TargetSeek: public ISteering {
 protected:
 	glm::vec3 _target;
+	bool _valid;
 public:
 	STEERING_FACTORY(TargetSeek)
 

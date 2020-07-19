@@ -26,7 +26,8 @@ TEST_F(GroupMgrTest, testMassGroupAveragePosition) {
 		_groupManager.add(groupId, e);
 	}
 	_groupManager.update(0);
-	const glm::vec3& avg = _groupManager.getPosition(groupId);
+	glm::vec3 avg;
+	EXPECT_TRUE(_groupManager.getPosition(groupId, avg));
 	const glm::vec3 pos = pos1 + pos2;
 
 	ASSERT_EQ(0.5f * pos, avg);
@@ -136,14 +137,14 @@ TEST_F(GroupTest, testGroupAveragePosition) {
 	chr->setPosition(glm::vec3(1.0f, 1.0f, 0.0f));
 	ASSERT_TRUE(groupMgr.add(id, entity1));
 	groupMgr.update(0);
-	avg = groupMgr.getPosition(id);
+	EXPECT_TRUE(groupMgr.getPosition(id, avg));
 	ASSERT_EQ(glm::vec3(1.0f, 1.0f, 0.0f), avg);
 	AIPtr entity2(new AI(TreeNodePtr()));
 	entity2->setCharacter(ICharacterPtr(new ICharacter(2)));
 	entity2->getCharacter()->setPosition(glm::vec3(3.0f, 3.0f, 0.0f));
 	ASSERT_TRUE(groupMgr.add(id, entity2));
 	groupMgr.update(0);
-	avg = groupMgr.getPosition(id);
+	EXPECT_TRUE(groupMgr.getPosition(id, avg));
 	ASSERT_EQ(glm::vec3(2.0f, 2.0f, 0.0f), avg);
 }
 

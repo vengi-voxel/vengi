@@ -61,7 +61,7 @@ public:
  */
 class SelectionSteering : public ISteering {
 protected:
-	glm::vec3 getSelectionTarget(const AIPtr& entity, size_t index) const;
+	bool getSelectionTarget(const AIPtr& entity, size_t index, glm::vec3& position) const;
 
 public:
 	virtual ~SelectionSteering() {}

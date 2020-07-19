@@ -103,7 +103,7 @@ public:
 	 *
 	 * @note This method performs a read lock on the group manager
 	 */
-	glm::vec3 getPosition(GroupId id) const;
+	bool getPosition(GroupId id, glm::vec3& position) const;
 
 	/**
 	 * @return The @ai{ICharacter} object of the leader, or @c nullptr if no such group exists.

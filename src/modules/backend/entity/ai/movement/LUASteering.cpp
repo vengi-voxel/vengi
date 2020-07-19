@@ -19,7 +19,7 @@ MoveVector LUASteering::executeLUA(const AIPtr& entity, float speed) const {
 #if AI_LUA_SANTITY > 0
 	if (lua_isnil(_s, -1)) {
 		Log::error("LUA steering: could not find lua userdata for %s", name.c_str());
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 #endif
 	// get metatable
@@ -27,14 +27,14 @@ MoveVector LUASteering::executeLUA(const AIPtr& entity, float speed) const {
 #if AI_LUA_SANTITY > 0
 	if (!lua_istable(_s, -1)) {
 		Log::error("LUA steering: userdata for %s doesn't have a metatable assigned", name.c_str());
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 #endif
 	// get execute() method
 	lua_getfield(_s, -1, "execute");
 	if (!lua_isfunction(_s, -1)) {
 		Log::error("LUA steering: metatable for %s doesn't have the execute() function assigned", name.c_str());
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 
 	// push self onto the stack
@@ -42,7 +42,7 @@ MoveVector LUASteering::executeLUA(const AIPtr& entity, float speed) const {
 
 	// first parameter is ai
 	if (luaAI_pushai(_s, entity) == 0) {
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 
 	// second parameter is speed
@@ -51,19 +51,19 @@ MoveVector LUASteering::executeLUA(const AIPtr& entity, float speed) const {
 #if AI_LUA_SANTITY > 0
 	if (!lua_isfunction(_s, -4)) {
 		Log::error("LUA steering: expected to find a function on stack -4");
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 	if (!lua_isuserdata(_s, -3)) {
 		Log::error("LUA steering: expected to find the userdata on -3");
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 	if (!lua_isuserdata(_s, -2)) {
 		Log::error("LUA steering: second parameter should be the ai");
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 	if (!lua_isnumber(_s, -1)) {
 		Log::error("LUA steering: first parameter should be the speed");
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 #endif
 	const int error = lua_pcall(_s, 3, 4, 0);
@@ -71,7 +71,7 @@ MoveVector LUASteering::executeLUA(const AIPtr& entity, float speed) const {
 		Log::error("LUA steering script: %s", lua_isstring(_s, -1) ? lua_tostring(_s, -1) : "Unknown Error");
 		// reset stack
 		lua_pop(_s, lua_gettop(_s));
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 	// we get four values back, the direction vector and the
 	const lua_Number x = luaL_checknumber(_s, -1);
@@ -81,7 +81,7 @@ MoveVector LUASteering::executeLUA(const AIPtr& entity, float speed) const {
 
 	// reset stack
 	lua_pop(_s, lua_gettop(_s));
-	return MoveVector(glm::vec3((float)x, (float)y, (float)z), (float)rotation);
+	return MoveVector(glm::vec3((float)x, (float)y, (float)z), (float)rotation, true);
 }
 
 LUASteering::LUASteering(lua_State* s, const core::String& type) :

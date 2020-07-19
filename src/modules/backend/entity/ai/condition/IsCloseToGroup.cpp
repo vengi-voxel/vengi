@@ -32,8 +32,8 @@ bool IsCloseToGroup::evaluate(const AIPtr& entity) {
 	}
 
 	const GroupMgr& mgr = entity->getZone()->getGroupMgr();
-	const glm::vec3& pos = mgr.getPosition(_groupId);
-	if (isInfinite(pos)) {
+	glm::vec3 pos;
+	if (!mgr.getPosition(_groupId, pos)) {
 		return false;
 	}
 	return glm::distance(pos, entity->getCharacter()->getPosition()) <= _distance;

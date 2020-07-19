@@ -20,9 +20,9 @@ public:
 	}
 
 	virtual MoveVector execute (const AIPtr& ai, float speed) const override {
-		const glm::vec3& target = getSelectionTarget(ai, 0);
-		if (isInfinite(target)) {
-			const MoveVector d(target, 0.0);
+		glm::vec3 target;
+		if (!getSelectionTarget(ai, 0, target)) {
+			return MoveVector::Invalid;
 		}
 		const glm::vec3& v = glm::normalize(ai->getCharacter()->getPosition() - target);
 		const float orientation = angle(v);

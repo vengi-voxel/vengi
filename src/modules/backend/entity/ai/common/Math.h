@@ -19,10 +19,6 @@ inline float toRadians (float degree) {
 	return glm::radians(degree);
 }
 
-inline bool isInfinite (const glm::vec3& vec) {
-	return glm::any(glm::isinf(vec));
-}
-
 inline float toDegrees (float radians) {
 	return glm::degrees(radians);
 }
@@ -46,8 +42,7 @@ inline T clamp(T a, T low, T high) {
 }
 
 static const glm::vec3 ZERO(0.0f);
-static const glm::vec3 VEC3_INFINITE(std::numeric_limits<float>::infinity());
 
-extern glm::vec3 parse(const core::String& in);
+extern bool parse(const core::String& in, glm::vec3& out);
 
 }

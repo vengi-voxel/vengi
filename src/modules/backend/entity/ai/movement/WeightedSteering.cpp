@@ -25,7 +25,7 @@ MoveVector WeightedSteering::execute (const AIPtr& ai, float speed) const {
 	for (const WeightedData& wd : _steerings) {
 		const float weight = wd.weight;
 		const MoveVector& mv = wd.steering->execute(ai, speed);
-		if (isInfinite(mv.getVector())) {
+		if (!mv.isValid()) {
 			continue;
 		}
 
@@ -35,11 +35,11 @@ MoveVector WeightedSteering::execute (const AIPtr& ai, float speed) const {
 	}
 
 	if (totalWeight <= 0.0000001f) {
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector::Invalid;
 	}
 
 	const float scale = 1.0f / totalWeight;
-	return MoveVector(vecBlended * scale, fmodf(angularBlended * scale, glm::two_pi<float>()));
+	return MoveVector(vecBlended * scale, fmodf(angularBlended * scale, glm::two_pi<float>()), true);
 }
 
 }

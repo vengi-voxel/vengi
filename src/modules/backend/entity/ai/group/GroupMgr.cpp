@@ -100,15 +100,16 @@ AIPtr GroupMgr::getLeader(GroupId id) const {
 	return i->second.leader;
 }
 
-glm::vec3 GroupMgr::getPosition(GroupId id) const {
+bool GroupMgr::getPosition(GroupId id, glm::vec3& position) const {
 	core::ScopedLock scopedLock(_lock);
 	const GroupsConstIter& i = _groups.find(id);
 	if (i == _groups.end()) {
-		return VEC3_INFINITE;
+		return false;
 	}
 
 	core::ScopedLock lock(_groupLock);
-	return i->second.position;
+	position = i->second.position;
+	return true;
 }
 
 bool GroupMgr::isGroupLeader(GroupId id, const AIPtr& ai) const {

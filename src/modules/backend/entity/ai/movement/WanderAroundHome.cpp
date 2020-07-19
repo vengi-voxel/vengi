@@ -24,7 +24,7 @@ MoveVector WanderAroundHome::execute(const AIPtr& ai, float speed) const {
 	}
 	math::Random random;
 	const float orientation = angle(v) + random.randomBinomial() * glm::radians(3.0f);
-	const MoveVector d(v * speed, orientation);
+	const MoveVector d(v * speed, orientation, true);
 	return d;
 }
 

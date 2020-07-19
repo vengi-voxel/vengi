@@ -11,20 +11,20 @@ namespace movement {
 
 TargetSeek::TargetSeek(const core::String& parameters) :
 		ISteering() {
-	_target = parse(parameters);
+	_valid = parse(parameters, _target);
 }
 
 bool TargetSeek::isValid () const {
-	return !isInfinite(_target);
+	return _valid;
 }
 
 MoveVector TargetSeek::execute (const AIPtr& ai, float speed) const {
 	if (!isValid()) {
-		return MoveVector(_target, 0.0f);
+		return MoveVector::Invalid;
 	}
 	const glm::vec3& v = glm::normalize(_target - ai->getCharacter()->getPosition());
 	const float orientation = angle(v);
-	const MoveVector d(v * speed, orientation);
+	const MoveVector d(v * speed, orientation, true);
 	return d;
 }
 

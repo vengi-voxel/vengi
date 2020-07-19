@@ -11,12 +11,17 @@ class MoveVector {
 protected:
 	const glm::vec3 _vec3;
 	const float _rotation;
+	bool _valid;
 public:
-	MoveVector(const glm::vec3& vec3, float rotation);
+	static const MoveVector Invalid;
 
-	MoveVector(const glm::vec3& vec3, double rotation);
+	MoveVector(const glm::vec3& vec3, float rotation, bool valid = true);
 
 	float getOrientation(float duration) const ;
+
+	inline bool isValid() const {
+		return _valid;
+	}
 
 	inline const glm::vec3& getVector() const {
 		return _vec3;

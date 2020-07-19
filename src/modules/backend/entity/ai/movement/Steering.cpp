@@ -11,19 +11,20 @@
 namespace backend {
 namespace movement {
 
-glm::vec3 SelectionSteering::getSelectionTarget(const AIPtr& entity, size_t index) const {
+bool SelectionSteering::getSelectionTarget(const AIPtr& entity, size_t index, glm::vec3& position) const {
 	const FilteredEntities& selection = entity->getFilteredEntities();
 	if (selection.empty() || selection.size() <= index) {
-		return VEC3_INFINITE;
+		return false;
 	}
 	const Zone* zone = entity->getZone();
 	const ai::CharacterId characterId = selection[index];
 	const AIPtr& ai = zone->getAI(characterId);
 	if (!ai) {
-		return VEC3_INFINITE;
+		return false;
 	}
 	const ICharacterPtr character = ai->getCharacter();
-	return character->getPosition();
+	position = character->getPosition();
+	return true;
 }
 
 }

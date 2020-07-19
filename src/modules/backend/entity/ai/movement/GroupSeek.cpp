@@ -17,15 +17,15 @@ GroupSeek::GroupSeek(const core::String& parameters) :
 MoveVector GroupSeek::execute (const AIPtr& ai, float speed) const {
 	const Zone* zone = ai->getZone();
 	if (zone == nullptr) {
-		return MoveVector(VEC3_INFINITE, 0.0f);
+		return MoveVector(glm::vec3(), 0.0f, false);
 	}
-	const glm::vec3& target = zone->getGroupMgr().getPosition(_groupId);
-	if (isInfinite(target)) {
-		return MoveVector(target, 0.0f);
+	glm::vec3 target;
+	if (!zone->getGroupMgr().getPosition(_groupId, target)) {
+		return MoveVector::Invalid;
 	}
 	const glm::vec3& v = glm::normalize(target - ai->getCharacter()->getPosition());
 	const float orientation = angle(v);
-	const MoveVector d(v * speed, orientation);
+	const MoveVector d(v * speed, orientation, true);
 	return d;
 }
 

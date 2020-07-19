@@ -7,6 +7,7 @@
 #include "backend/entity/ai/common/Random.h"
 #include "backend/entity/ai/AI.h"
 #include "core/StringUtil.h"
+#include "core/GLM.h"
 #include "core/Assert.h"
 
 namespace backend {
@@ -41,9 +42,10 @@ ai::TreeNodeStatus Steer::doAction(const AIPtr& entity, int64_t deltaMillis) {
 	const float speed = chr->getSpeed();
 	const MoveVector& mv = _w.execute(entity, speed);
 	const glm::vec3& direction = mv.getVector();
-	if (isInfinite(direction)) {
+	if (!mv.isValid()) {
 		return ai::FAILED;
 	}
+	glm_assert_vec3(direction);
 
 	const float deltaSeconds = static_cast<float>(deltaMillis) / 1000.0f;
 	const glm::vec3& pos = chr->getPosition();

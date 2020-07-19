@@ -9,6 +9,7 @@
 #include "core/Hash.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
+#include <glm/common.hpp>
 
 namespace glm {
 
