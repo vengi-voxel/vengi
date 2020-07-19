@@ -85,6 +85,7 @@ set(SRCS
 	entity/ai/filter/SelectGroupLeader.h
 	entity/ai/filter/SelectGroupMembers.cpp
 	entity/ai/filter/SelectGroupMembers.h
+	entity/ai/filter/SelectHighestAggro.cpp
 	entity/ai/filter/SelectHighestAggro.h
 	entity/ai/filter/SelectZone.cpp
 	entity/ai/filter/SelectZone.h
@@ -96,6 +97,8 @@ set(SRCS
 	entity/ai/filter/First.cpp
 	entity/ai/filter/Last.h
 	entity/ai/filter/Last.cpp
+	entity/ai/filter/LUAFilter.h
+	entity/ai/filter/LUAFilter.cpp
 	entity/ai/filter/Random.h
 	entity/ai/filter/Random.cpp
 	entity/ai/filter/Difference.h

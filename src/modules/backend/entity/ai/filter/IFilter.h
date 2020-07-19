@@ -27,9 +27,6 @@
  */
 #pragma once
 
-#include <list>
-#include <vector>
-#include "backend/entity/ai/ICharacter.h"
 #include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/common/MemoryAllocator.h"
 #include "core/String.h"
@@ -41,8 +38,10 @@ namespace backend {
  */
 #define FILTER_CLASS(FilterName) \
 	explicit FilterName(const core::String& parameters = "") : \
-		IFilter(#FilterName, parameters) { \
+		Super(#FilterName, parameters) { \
 	} \
+private: \
+	using Super = IFilter; \
 public: \
 	virtual ~FilterName() { \
 	}
@@ -62,8 +61,10 @@ public: \
 
 #define FILTER_ACTION_CLASS(FilterName) \
 	FilterName(const core::String& parameters, const Filters& filters) : \
-		IFilter(#FilterName, parameters), _filters(filters) { \
+		Super(#FilterName, parameters), _filters(filters) { \
 	} \
+private: \
+	using Super = IFilter; \
 protected: \
 	const Filters _filters; \
 public: \

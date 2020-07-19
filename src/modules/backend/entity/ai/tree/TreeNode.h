@@ -37,8 +37,11 @@ typedef std::vector<TreeNodePtr> TreeNodes;
  * @brief A node class macro that also defines a factory.
  */
 #define NODE_CLASS(NodeName) \
+private: \
+	using Super = TreeNode; \
+public: \
 	NodeName(const core::String& name, const core::String& parameters, const ConditionPtr& condition) : \
-		TreeNode(name, parameters, condition) { \
+		Super(name, parameters, condition) { \
 		_type = CORE_STRINGIFY(NodeName); \
 	} \
 	virtual ~NodeName() { \
