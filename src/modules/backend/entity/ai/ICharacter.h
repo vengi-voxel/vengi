@@ -8,9 +8,7 @@
 #include "ai-shared/common/CharacterAttributes.h"
 #include "core/String.h"
 #include "core/NonCopyable.h"
-#include <atomic>
 #include <memory>
-#include <unordered_map>
 
 namespace backend {
 
@@ -27,15 +25,15 @@ namespace backend {
 class ICharacter : public core::NonCopyable, public std::enable_shared_from_this<ICharacter> {
 protected:
 	const ai::CharacterId _id;
-	glm::vec3 _position;
-	std::atomic<float> _orientation;
+	glm::vec3 _position { 0.0f };
+	float _orientation = 0.0f;
 	// m/s
-	std::atomic<float> _speed;
+	float _speed = 0.0f;
 	ai::CharacterAttributes _attributes;
 
 public:
 	explicit ICharacter(ai::CharacterId id) :
-			_id(id), _position(0.0f), _orientation(0.0f), _speed(0.0f) {
+			_id(id) {
 	}
 
 	virtual ~ICharacter() {
@@ -107,10 +105,6 @@ public:
 		return shared_from_this();
 	}
 };
-
-inline void ICharacter::setPosition(const glm::vec3& position) {
-	_position = position;
-}
 
 inline void ICharacter::setOrientation (float orientation) {
 	_orientation = orientation;

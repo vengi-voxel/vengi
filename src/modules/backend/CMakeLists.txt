@@ -108,6 +108,7 @@ set(SRCS
 	entity/ai/filter/Complement.cpp
 	entity/ai/filter/SelectAll.h
 	entity/ai/IAIFactory.h
+	entity/ai/ICharacter.cpp
 	entity/ai/ICharacter.h
 	entity/ai/group/GroupId.h
 	entity/ai/group/GroupMgr.h entity/ai/group/GroupMgr.cpp
