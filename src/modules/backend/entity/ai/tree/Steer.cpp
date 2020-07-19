@@ -40,12 +40,15 @@ ai::TreeNodeStatus Steer::doAction(const AIPtr& entity, int64_t deltaMillis) {
 	const ICharacterPtr& chr = entity->getCharacter();
 	const float speed = chr->getSpeed();
 	const MoveVector& mv = _w.execute(entity, speed);
-	if (isInfinite(mv.getVector())) {
+	const glm::vec3& direction = mv.getVector();
+	if (isInfinite(direction)) {
 		return ai::FAILED;
 	}
 
 	const float deltaSeconds = static_cast<float>(deltaMillis) / 1000.0f;
-	chr->setPosition(chr->getPosition() + (mv.getVector() * deltaSeconds));
+	const glm::vec3& pos = chr->getPosition();
+	const glm::vec3 newPos = pos + (direction * deltaSeconds);
+	chr->setPosition(newPos);
 	chr->setOrientation(fmodf(chr->getOrientation() + mv.getRotation() * deltaSeconds, glm::two_pi<float>()));
 	return ai::FINISHED;
 }
