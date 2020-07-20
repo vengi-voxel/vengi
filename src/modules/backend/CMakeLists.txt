@@ -25,11 +25,11 @@ set(SRCS
 
 	entity/ai/AICharacter.h
 	entity/ai/AILoader.h
-	entity/ai/action/GoHome.h
-	entity/ai/action/Spawn.h
-	entity/ai/action/Die.h
-	entity/ai/action/SetPointOfInterest.h
-	entity/ai/action/AttackOnSelection.h
+	entity/ai/action/GoHome.cpp entity/ai/action/GoHome.h
+	entity/ai/action/Spawn.cpp entity/ai/action/Spawn.h
+	entity/ai/action/Die.cpp entity/ai/action/Die.h
+	entity/ai/action/SetPointOfInterest.cpp entity/ai/action/SetPointOfInterest.h
+	entity/ai/action/AttackOnSelection.cpp entity/ai/action/AttackOnSelection.h
 	entity/ai/action/TriggerCooldown.cpp entity/ai/action/TriggerCooldown.h
 	entity/ai/action/TriggerCooldownOnSelection.cpp entity/ai/action/TriggerCooldownOnSelection.h
 	entity/ai/filter/SelectVisible.cpp entity/ai/filter/SelectVisible.h

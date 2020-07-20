@@ -57,7 +57,7 @@ public:
 	}
 };
 
-#define AI_TASK(TaskName) \
+#define AI_TASK_DEFINITION(TaskName) \
 /** \
  * @ingroup AI \
  */ \
@@ -68,6 +68,12 @@ struct TaskName: public ::backend::ITask { \
 	NODE_FACTORY(TaskName) \
 	ai::TreeNodeStatus doAction(const AIPtr& entity, int64_t deltaMillis) override; \
 }; \
+
+#define AI_TASK_IMPL(TaskName) \
 inline ai::TreeNodeStatus TaskName::doAction(const AIPtr& entity, int64_t deltaMillis)
+
+#define AI_TASK(TaskName) \
+	AI_TASK_DEFINITION(TaskName) \
+	AI_TASK_IMPL(TaskName)
 
 }
