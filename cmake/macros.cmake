@@ -186,6 +186,7 @@ function(engine_add_executable)
 	endif()
 	add_custom_target(${_EXE_TARGET}-run
 		COMMAND $<TARGET_FILE:${_EXE_TARGET}>
+		USES_TERMINAL
 		DEPENDS ${_EXE_TARGET}
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}"
 	)

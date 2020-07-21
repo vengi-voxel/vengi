@@ -9,6 +9,7 @@ macro(engine_add_valgrind TARGET)
 				--undef-value-errors=yes --track-origins=no --child-silent-after-fork=no
 				--trace-children=no
 				$<TARGET_FILE:${TARGET}>
+			USES_TERMINAL
 			COMMENT "Executing valgrind memcheck and log into ${CMAKE_CURRENT_BINARY_DIR}"
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
@@ -21,6 +22,7 @@ macro(engine_add_valgrind TARGET)
 				--undef-value-errors=yes --track-origins=no --child-silent-after-fork=no
 				--trace-children=no --log-file=${CMAKE_CURRENT_BINARY_DIR}/memcheck-${TARGET}.log
 				$<TARGET_FILE:${TARGET}>
+			USES_TERMINAL
 			COMMENT "Executing valgrind memcheck and log into ${CMAKE_CURRENT_BINARY_DIR}"
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
@@ -32,6 +34,7 @@ macro(engine_add_valgrind TARGET)
 				--tool=helgrind --child-silent-after-fork=no
 				--trace-children=no --log-file=$<TARGET_FILE:${TARGET}>.helgrind.log
 				$<TARGET_FILE:${TARGET}>
+			USES_TERMINAL
 			COMMENT "Executing valgrind helgrind and log into ${CMAKE_CURRENT_BINARY_DIR}"
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}

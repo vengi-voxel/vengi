@@ -9,6 +9,7 @@ macro(engina_add_vogl TARGET)
 				--vogl_force_debug_context
 				$<TARGET_FILE:${TARGET}>
 			COMMENT "vogl trace file for ${TARGET}: ${CMAKE_BINARY_DIR}/${TARGET}.trace.bin"
+			USES_TERMINAL
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
 		)

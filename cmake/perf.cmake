@@ -6,6 +6,7 @@ macro(engine_add_perf TARGET)
 			COMMAND
 				${PERF_EXECUTABLE} record --call-graph dwarf
 				$<TARGET_FILE:${TARGET}>
+			USES_TERMINAL
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
 			DEPENDS ${TARGET}
 		)
