@@ -4,6 +4,7 @@
 
 #include "SceneManager.h"
 
+#include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeRotator.h"
@@ -817,9 +818,12 @@ void SceneManager::updateAABBMesh() {
 		const voxel::Region& region = volume->region();
 		_shapeBuilder.aabb(aabb(region));
 	}
-	const voxel::Region& region = modelVolume()->region();
-	_shapeBuilder.setColor(core::Color::White);
-	_shapeBuilder.aabb(aabb(region));
+	const voxel::RawVolume* mdl = modelVolume();
+	if (mdl != nullptr) {
+		const voxel::Region& region = mdl->region();
+		_shapeBuilder.setColor(core::Color::White);
+		_shapeBuilder.aabb(aabb(region));
+	}
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
 
