@@ -28,25 +28,22 @@ namespace {
 
 const char *CONTAINER = R"(function init()
 local player = attrib.createContainer("PLAYER")
-player:absolute("FIELDOFVIEW", 360.0)
-player:absolute("HEALTH", 100.0)
-player:absolute("STRENGTH", 1.0)
-player:absolute("VIEWDISTANCE", 10000.0)
-player:register()
+player:addAbsolute("FIELDOFVIEW", 360.0)
+player:addAbsolute("HEALTH", 100.0)
+player:addAbsolute("STRENGTH", 1.0)
+player:addAbsolute("VIEWDISTANCE", 10000.0)
 
 local rabbit = attrib.createContainer("ANIMAL_RABBIT")
-rabbit:absolute("FIELDOFVIEW", 360.0)
-rabbit:absolute("HEALTH", 100.0)
-rabbit:absolute("STRENGTH", 1.0)
-rabbit:absolute("VIEWDISTANCE", 10000.0)
-rabbit:register()
+rabbit:addAbsolute("FIELDOFVIEW", 360.0)
+rabbit:addAbsolute("HEALTH", 100.0)
+rabbit:addAbsolute("STRENGTH", 1.0)
+rabbit:addAbsolute("VIEWDISTANCE", 10000.0)
 
 local wolf = attrib.createContainer("ANIMAL_WOLF")
-wolf:absolute("FIELDOFVIEW", 360.0)
-wolf:absolute("HEALTH", 100.0)
-wolf:absolute("STRENGTH", 1.0)
-wolf:absolute("VIEWDISTANCE", 10000.0)
-wolf:register()
+wolf:addAbsolute("FIELDOFVIEW", 360.0)
+wolf:addAbsolute("HEALTH", 100.0)
+wolf:addAbsolute("STRENGTH", 1.0)
+wolf:addAbsolute("VIEWDISTANCE", 10000.0)
 end)";
 
 }
@@ -79,15 +76,12 @@ protected:
 		core::Var::get(cfg::DatabaseMaxConnections, "0");
 		voxel::initDefaultMaterialColors();
 		entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
-		ASSERT_TRUE(entityStorage->init());
 		protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 		network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
 		messageSender = std::make_shared<network::ServerMessageSender>(network, _testApp->metric());
 		registry = std::make_shared<LUAAIRegistry>();
-		ASSERT_TRUE(registry->init());
 		loader = std::make_shared<AILoader>(registry);
 		containerProvider = core::make_shared<attrib::ContainerProvider>();
-		ASSERT_TRUE(containerProvider->init(CONTAINER));
 		cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		filesystem = _testApp->filesystem();
 		eventBus = _testApp->eventBus();
@@ -101,13 +95,15 @@ protected:
 		mapProvider = std::make_shared<MapProvider>(filesystem, eventBus, timeProvider,
 				entityStorage, messageSender, loader, containerProvider, cooldownProvider,
 				persistenceMgr, volumeCache, httpServer, chunkPersisterFactory, dbHandler);
+		ASSERT_TRUE(entityStorage->init());
+		ASSERT_TRUE(registry->init());
+		ASSERT_TRUE(containerProvider->init(CONTAINER));
 		ASSERT_TRUE(mapProvider->init()) << "Failed to initialize the map provider";
 		map = mapProvider->map(1);
 	}
 
 	void TearDown() override {
 		entityStorage->shutdown();
-		map->shutdown();
 		mapProvider->shutdown();
 		protocolHandlerRegistry->shutdown();
 		network->shutdown();

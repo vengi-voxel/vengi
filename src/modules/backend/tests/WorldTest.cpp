@@ -41,7 +41,6 @@ public:
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		voxel::initDefaultMaterialColors();
 		_entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
-		ASSERT_TRUE(_entityStorage->init());
 		_protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
 		_network = std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
 		_messageSender = std::make_shared<network::ServerMessageSender>(_network, _testApp->metric());
@@ -49,7 +48,6 @@ public:
 		_loader = std::make_shared<AILoader>(_aiRegistry);
 		_containerProvider = core::make_shared<attrib::ContainerProvider>();
 		const core::String& attributes = _testApp->filesystem()->load("test-attributes.lua");
-		ASSERT_TRUE(_containerProvider->init(attributes)) << _containerProvider->error();
 		_cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 		_persistenceMgr = persistence::createPersistenceMgrMock();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
@@ -59,6 +57,8 @@ public:
 		_mapProvider = std::make_shared<MapProvider>(_testApp->filesystem(), _testApp->eventBus(), _testApp->timeProvider(),
 				_entityStorage, _messageSender, _loader, _containerProvider, _cooldownProvider,
 				_persistenceMgr, _volumeCache, _httpServer, chunkPersisterFactory, dbHandler);
+		ASSERT_TRUE(_entityStorage->init());
+		ASSERT_TRUE(_containerProvider->init(attributes)) << _containerProvider->error();
 	}
 
 	void TearDown() override {

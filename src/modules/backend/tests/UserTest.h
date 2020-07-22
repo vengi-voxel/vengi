@@ -45,9 +45,7 @@ protected:
 	void SetUp() override {
 		Super::SetUp();
 		stockDataProvider = std::make_shared<stock::StockDataProvider>();
-		ASSERT_TRUE(stockDataProvider->init(INV)) << stockDataProvider->error();
 		cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
-		ASSERT_TRUE(cooldownProvider->init(COOLDOWNS)) << cooldownProvider->error();
 
 		core::Var::get(cfg::ServerUserTimeout, "60000");
 		core::Var::get(cfg::DatabaseMinConnections, "1");
@@ -65,6 +63,8 @@ protected:
 			dbHandler->createOrUpdateTable(db::UserModel());
 			ASSERT_TRUE(persistenceMgr->init());
 		}
+		ASSERT_TRUE(stockDataProvider->init(INV)) << stockDataProvider->error();
+		ASSERT_TRUE(cooldownProvider->init(COOLDOWNS)) << cooldownProvider->error();
 	}
 
 	inline UserPtr create(EntityId id, const char* name = "noname") {
