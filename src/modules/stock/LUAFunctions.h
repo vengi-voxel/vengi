@@ -24,6 +24,7 @@ static int luaCreateContainer(lua_State * l) {
 	udata->id = containerId;
 	if (!stockDataProvider->addContainerData(udata)) {
 		const core::String& error = core::string::format("Could not add container with name: %s", containerName);
+		delete udata;
 		return lua::LUA::returnError(l, error);
 	}
 	return 1;
