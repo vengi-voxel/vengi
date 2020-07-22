@@ -16,6 +16,10 @@ Container::Container(core::String&& name, Values&& percentage, Values&& absolute
 		_stackCount(stackCount), _stackLimit(stackLimit), _hash(core::StringHash{}(_name)) {
 }
 
+Container::Container(const core::String& name) :
+	_name(name), _stackCount(1), _stackLimit(1), _hash(core::StringHash{}(_name)) {
+}
+
 const core::String& Container::name() const {
 	return _name;
 }
@@ -38,6 +42,18 @@ int Container::stackCount() const {
 
 void Container::setStackCount(int stackCount) {
 	_stackCount = stackCount;
+}
+
+void Container::setStackLimit(int stackLimit) {
+	_stackLimit = stackLimit;
+}
+
+void Container::setPercentage(const Values& values) {
+	_percentage = values;
+}
+
+void Container::setAbsolute(const Values& values) {
+	_absolute = values;
 }
 
 bool Container::increaseStackCount() {

@@ -37,6 +37,8 @@ public:
 
 	Container(core::String&& name, Values&& percentage, Values&& absolute, int stackCount = 1, int stackLimit = 1);
 
+	Container(const core::String& name);
+
 	/**
 	 * @brief Each container must have a unique name set.
 	 */
@@ -54,18 +56,19 @@ public:
 	 */
 	const Values& absolute() const;
 
-	bool operator==(const Container& rhs) const;
+	void setPercentage(const Values& values);
+	void setAbsolute(const Values& values);
 
 	int stackCount() const;
-
-	void setStackCount(int stackCount);
-
-	bool increaseStackCount();
-
-	bool decreaseStackCount();
-
 	int stackLimit() const;
 
+	void setStackCount(int stackCount);
+	void setStackLimit(int stackLimit);
+
+	bool increaseStackCount();
+	bool decreaseStackCount();
+
+	bool operator==(const Container& rhs) const;
 	bool operator==(const Container& other);
 };
 

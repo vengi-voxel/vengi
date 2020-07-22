@@ -54,6 +54,11 @@ public:
 	ContainerPtr container(const core::String& name) const;
 
 	/**
+	 * @note If a container with the given name already exists, this method returns a null pointer
+	 */
+	ContainerPtr createContainer(const core::String& name);
+
+	/**
 	 * @return The last error that occurred in an init() call
 	 */
 	inline const core::String& error() const {
