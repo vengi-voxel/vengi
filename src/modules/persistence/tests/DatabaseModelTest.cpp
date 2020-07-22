@@ -267,12 +267,8 @@ TEST_F(DatabaseModelTest, testMultipleInsert) {
 	EXPECT_EQ(count, 1);
 }
 
-TEST_F(DatabaseModelTest, test1000Insert) {
-	massInsert(1000);
-}
-
-TEST_F(DatabaseModelTest, test100Insert) {
-	massInsert(100);
+TEST_F(DatabaseModelTest, test50Insert) {
+	massInsert(50);
 }
 
 TEST_F(DatabaseModelTest, test10Insert) {
