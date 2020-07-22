@@ -76,6 +76,10 @@ void LUA::openState() {
 
 	luaL_openlibs(_state);
 
+	clua_cmdregister(_state);
+	clua_varregister(_state);
+	clua_logregister(_state);
+
 	lua_register(_state, "ioloader", clua_ioloader);
 	const char* str = "table.insert(package.searchers, 2, ioloader) \n";
 	luaL_dostring(_state, str);

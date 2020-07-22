@@ -282,9 +282,7 @@ bool LUAUIApp::reload() {
 	clua_vecregister<glm::ivec2>(_lua.state());
 	clua_vecregister<glm::ivec3>(_lua.state());
 	clua_vecregister<glm::ivec4>(_lua.state());
-	clua_cmdregister(_lua.state());
-	clua_varregister(_lua.state());
-	clua_logregister(_lua.state());
+
 	configureLUA(_lua);
 
 	const io::FilesystemPtr& fs = filesystem();

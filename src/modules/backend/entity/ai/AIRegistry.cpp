@@ -3,6 +3,13 @@
  */
 
 #include "AIRegistry.h"
+#include "action/Die.h"
+#include "action/GoHome.h"
+#include "action/Spawn.h"
+#include "action/AttackOnSelection.h"
+#include "action/SetPointOfInterest.h"
+#include "action/TriggerCooldown.h"
+#include "action/TriggerCooldownOnSelection.h"
 #include "tree/Fail.h"
 #include "tree/Limit.h"
 #include "tree/Invert.h"
@@ -24,6 +31,9 @@
 #include "condition/IsInGroup.h"
 #include "condition/IsGroupLeader.h"
 #include "condition/IsCloseToGroup.h"
+#include "condition/IsCloseToSelection.h"
+#include "condition/IsSelectionAlive.h"
+#include "condition/IsOnCooldown.h"
 #include "filter/SelectEmpty.h"
 #include "filter/SelectHighestAggro.h"
 #include "filter/SelectGroupLeader.h"
@@ -37,6 +47,9 @@
 #include "filter/Difference.h"
 #include "filter/Complement.h"
 #include "filter/SelectAll.h"
+#include "filter/SelectVisible.h"
+#include "filter/SelectEntitiesOfTypes.h"
+#include "filter/SelectIncreasePartner.h"
 #include "movement/SelectionSeek.h"
 #include "movement/SelectionFlee.h"
 #include "movement/GroupFlee.h"
@@ -46,6 +59,7 @@
 #include "movement/TargetSeek.h"
 #include "movement/Wander.h"
 #include "movement/WeightedSteering.h"
+#include "movement/WanderAroundHome.h"
 
 namespace backend {
 
@@ -63,6 +77,13 @@ AIRegistry::TreeNodeFactory::TreeNodeFactory() {
 	R_GET(RandomSelector);
 	R_GET(Sequence);
 	R_GET(Idle);
+	R_GET(GoHome);
+	R_GET(AttackOnSelection);
+	R_GET(SetPointOfInterest);
+	R_GET(Spawn);
+	R_GET(Die);
+	R_GET(TriggerCooldown);
+	R_GET(TriggerCooldownOnSelection);
 }
 
 AIRegistry::SteerNodeFactory::SteerNodeFactory() {
@@ -77,6 +98,7 @@ AIRegistry::SteeringFactory::SteeringFactory() {
 	R_MOVE(TargetFlee);
 	R_MOVE(SelectionSeek);
 	R_MOVE(SelectionFlee);
+	R_MOVE(WanderAroundHome);
 }
 
 AIRegistry::FilterFactory::FilterFactory() {
@@ -93,6 +115,9 @@ AIRegistry::FilterFactory::FilterFactory() {
 	R_GET(Difference);
 	R_GET(Complement);
 	R_GET(SelectAll);
+	R_GET(SelectVisible);
+	R_GET(SelectIncreasePartner);
+	R_GET(SelectEntitiesOfTypes);
 }
 
 AIRegistry::ConditionFactory::ConditionFactory() {
@@ -106,6 +131,9 @@ AIRegistry::ConditionFactory::ConditionFactory() {
 	R_GET(IsGroupLeader);
 	R_GET(IsInGroup);
 	R_GET(IsCloseToGroup);
+	R_GET(IsCloseToSelection);
+	R_GET(IsOnCooldown);
+	R_GET(IsSelectionAlive);
 }
 
 }

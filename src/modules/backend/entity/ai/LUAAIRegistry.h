@@ -8,6 +8,7 @@
 #include "AIRegistry.h"
 #include "core/Trace.h"
 #include "core/concurrent/Lock.h"
+#include "commonlua/LUA.h"
 #include "backend/entity/ai/tree/LUATreeNode.h"
 #include "backend/entity/ai/condition/LUACondition.h"
 #include "backend/entity/ai/filter/LUAFilter.h"
@@ -86,6 +87,7 @@ typedef std::map<core::String, LUASteeringFactoryPtr> SteeringFactoryMap;
  */
 class LUAAIRegistry : public AIRegistry {
 protected:
+	lua::LUA _lua;
 	lua_State* _s = nullptr;
 
 	core_trace_mutex(core::Lock, _lock, "LUAAIRegistry");

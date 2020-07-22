@@ -10,26 +10,7 @@
 #include "core/Assert.h"
 #include "backend/entity/ai/AI.h"
 #include "core/Trace.h"
-#include "commonlua/Trace.h"
 #include "commonlua/LUAFunctions.h"
-
-#include "action/Die.h"
-#include "action/GoHome.h"
-#include "action/Spawn.h"
-#include "action/AttackOnSelection.h"
-#include "action/SetPointOfInterest.h"
-#include "action/TriggerCooldown.h"
-#include "action/TriggerCooldownOnSelection.h"
-
-#include "condition/IsCloseToSelection.h"
-#include "condition/IsSelectionAlive.h"
-#include "condition/IsOnCooldown.h"
-
-#include "filter/SelectVisible.h"
-#include "filter/SelectEntitiesOfTypes.h"
-#include "filter/SelectIncreasePartner.h"
-
-#include "movement/WanderAroundHome.h"
 
 #include "attrib/ContainerProvider.h"
 
@@ -278,19 +259,10 @@ static int luaAI_createsteering(lua_State* s) {
 }
 
 LUAAIRegistry::LUAAIRegistry() {
-	_s = luaL_newstate();
-	lua::clua_registertrace(_s);
-	clua_cmdregister(_s);
-	clua_varregister(_s);
-	clua_logregister(_s);
+	_s = _lua.state();
 	// TODO: random module
 
-	lua_atpanic(_s, [] (lua_State* L) {
-		Log::error("Lua panic. Error message: %s", (lua_isnil(L, -1) ? "" : lua_tostring(L, -1)));
-		return 0;
-	});
 	lua_gc(_s, LUA_GCSTOP, 0);
-	luaL_openlibs(_s);
 
 	static const luaL_Reg registryFuncs[] = {
 		{"createNode", luaAI_createnode},
@@ -304,24 +276,6 @@ LUAAIRegistry::LUAAIRegistry() {
 
 	luaAI_globalpointer(_s, this, luaAI_metaregistry());
 	luaAI_registerAll(_s);
-
-	registerNodeFactory("GoHome", GoHome::getFactory());
-	registerNodeFactory("AttackOnSelection", AttackOnSelection::getFactory());
-	registerNodeFactory("SetPointOfInterest", SetPointOfInterest::getFactory());
-	registerNodeFactory("Spawn", Spawn::getFactory());
-	registerNodeFactory("Die", Die::getFactory());
-	registerNodeFactory("TriggerCooldown", TriggerCooldown::getFactory());
-	registerNodeFactory("TriggerCooldownOnSelection", TriggerCooldownOnSelection::getFactory());
-
-	registerConditionFactory("IsCloseToSelection", IsCloseToSelection::getFactory());
-	registerConditionFactory("IsOnCooldown", IsOnCooldown::getFactory());
-	registerConditionFactory("IsSelectionAlive", IsSelectionAlive::getFactory());
-
-	registerFilterFactory("SelectVisible", SelectVisible::getFactory());
-	registerFilterFactory("SelectIncreasePartner", SelectIncreasePartner::getFactory());
-	registerFilterFactory("SelectEntitiesOfTypes", SelectEntitiesOfTypes::getFactory());
-
-	registerSteeringFactory("WanderAroundHome", movement::WanderAroundHome::getFactory());
 }
 
 lua_State* LUAAIRegistry::getLuaState() {
@@ -364,10 +318,7 @@ void LUAAIRegistry::shutdown() {
 		_filterFactories.clear();
 		_steeringFactories.clear();
 	}
-	if (_s != nullptr) {
-		lua_close(_s);
-		_s = nullptr;
-	}
+	_s = nullptr;
 }
 
 LUAAIRegistry::~LUAAIRegistry() {
