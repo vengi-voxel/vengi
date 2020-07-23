@@ -80,7 +80,9 @@ set(SRCS
 	entity/ai/condition/Not.h
 	entity/ai/condition/Or.h
 	entity/ai/condition/True.h
+	entity/ai/filter/IFilter.cpp
 	entity/ai/filter/IFilter.h
+	entity/ai/filter/FilteredEntities.h
 	entity/ai/filter/SelectEmpty.h
 	entity/ai/filter/SelectGroupLeader.cpp
 	entity/ai/filter/SelectGroupLeader.h
@@ -113,6 +115,9 @@ set(SRCS
 	entity/ai/group/GroupId.h
 	entity/ai/group/GroupMgr.h entity/ai/group/GroupMgr.cpp
 	entity/ai/movement/SelectionSeek.h
+	entity/ai/movement/SelectionSeek.cpp
+	entity/ai/movement/SelectionFlee.h
+	entity/ai/movement/SelectionFlee.cpp
 	entity/ai/movement/GroupFlee.h entity/ai/movement/GroupFlee.cpp
 	entity/ai/movement/GroupSeek.h entity/ai/movement/GroupSeek.cpp
 	entity/ai/movement/Steering.h

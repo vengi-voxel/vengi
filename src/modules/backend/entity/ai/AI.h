@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ai-shared/protocol/AIStubTypes.h"
+#include "backend/entity/ai/filter/FilteredEntities.h"
 #include "group/GroupId.h"
 #include "aggro/AggroMgr.h"
 #include "ICharacter.h"
@@ -23,8 +24,6 @@ namespace backend {
 class ICharacter;
 typedef std::shared_ptr<ICharacter> ICharacterPtr;
 class Zone;
-
-typedef std::vector<ai::CharacterId> FilteredEntities;
 
 /**
  * @brief This is the type the library works with. It interacts with it's real world entity by

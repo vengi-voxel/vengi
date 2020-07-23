@@ -5,6 +5,7 @@
  */
 
 #include "Filter.h"
+#include "backend/entity/ai/AI.h"
 
 namespace backend {
 

@@ -4,7 +4,9 @@
 
 #include "SelectGroupLeader.h"
 #include "backend/entity/ai/zone/Zone.h"
+#include "backend/entity/ai/AI.h"
 #include "core/StringUtil.h"
+#include "backend/entity/ai/filter/FilteredEntities.h"
 
 namespace backend {
 

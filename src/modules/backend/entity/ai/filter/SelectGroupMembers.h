@@ -5,6 +5,7 @@
 #pragma once
 
 #include "IFilter.h"
+#include "backend/entity/ai/group/GroupId.h"
 
 namespace backend {
 

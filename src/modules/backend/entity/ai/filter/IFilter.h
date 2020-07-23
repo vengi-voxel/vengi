@@ -27,11 +27,16 @@
  */
 #pragma once
 
-#include "backend/entity/ai/AI.h"
+#include "backend/entity/ai/AIFactories.h"
 #include "backend/entity/ai/common/MemoryAllocator.h"
+#include "backend/entity/ai/filter/FilteredEntities.h"
 #include "core/String.h"
+#include <memory>
 
 namespace backend {
+
+class AI;
+typedef std::shared_ptr<AI> AIPtr;
 
 /**
  * @brief Macro to simplify the condition creation. Just give the class name of the condition as parameter.
@@ -138,16 +143,11 @@ protected:
 	 *
 	 * @see selection @ai{SelectEmpty} to do the clear from within the behaviour tree
 	 */
-	inline FilteredEntities& getFilteredEntities(const AIPtr& ai) {
-		return ai->_filteredEntities;
-	}
+	FilteredEntities& getFilteredEntities(const AIPtr& ai);
 public:
-	IFilter (const core::String& name, const core::String& parameters) :
-			_name(name), _parameters(parameters) {
-	}
+	IFilter (const core::String& name, const core::String& parameters);
 
-	virtual ~IFilter () {
-	}
+	virtual ~IFilter ();
 
 	inline const core::String& getName() const {
 		return _name;

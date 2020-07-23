@@ -4,6 +4,7 @@
 
 #include "SelectHighestAggro.h"
 #include "backend/entity/ai/aggro/AggroMgr.h"
+#include "backend/entity/ai/AI.h"
 
 namespace backend {
 
