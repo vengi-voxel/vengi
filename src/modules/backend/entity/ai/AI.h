@@ -36,7 +36,7 @@ typedef std::vector<ai::CharacterId> FilteredEntities;
  *
  * You can set single @c AI instances to no longer update their state by calling setPause()
  */
-class AI : public core::NonCopyable, public std::enable_shared_from_this<AI> {
+class AI : public core::NonCopyable {
 	friend class TreeNode;
 	friend class LUAAIRegistry;
 	friend class IFilter;
@@ -180,14 +180,6 @@ public:
 	 * @note If you call this from outside of the behaviour tree tick, you will run into race conditions.
 	 */
 	const FilteredEntities& getFilteredEntities() const;
-
-	/**
-	 * If the object is currently maintained by a shared_ptr, you can get a shared_ptr from a raw pointer
-	 * instance that shares the state with the already existing shared_ptrs around.
-	 */
-	inline std::shared_ptr<AI> ptr() {
-		return shared_from_this();
-	}
 };
 
 inline TreeNodePtr AI::getBehaviour() const {

@@ -22,7 +22,7 @@ namespace backend {
  * method or from within the @ai{Zone} callbacks. Otherwise you will run into race conditions
  * if you run with multiple threads.
  */
-class ICharacter : public core::NonCopyable, public std::enable_shared_from_this<ICharacter> {
+class ICharacter : public core::NonCopyable {
 protected:
 	const ai::CharacterId _id;
 	glm::vec3 _position { 0.0f };
@@ -95,14 +95,6 @@ public:
 	virtual void update(int64_t dt, bool debuggingActive) {
 		(void)dt;
 		(void)debuggingActive;
-	}
-
-	/**
-	 * If the object is currently maintained by a shared_ptr, you can get a shared_ptr from a raw pointer
-	 * instance that shares the state with the already existing shared_ptrs around.
-	 */
-	inline std::shared_ptr<ICharacter> ptr() {
-		return shared_from_this();
 	}
 };
 
