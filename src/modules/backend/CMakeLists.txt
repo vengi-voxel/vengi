@@ -137,10 +137,13 @@ set(SRCS
 	entity/ai/server/StepHandler.h entity/ai/server/StepHandler.cpp
 	entity/ai/server/UpdateNodeHandler.h entity/ai/server/UpdateNodeHandler.cpp
 	entity/ai/zone/Zone.h entity/ai/zone/Zone.cpp
+	entity/ai/tree/Fail.cpp
 	entity/ai/tree/Fail.h
+	entity/ai/tree/Limit.cpp
 	entity/ai/tree/Limit.h
 	entity/ai/tree/Idle.h
 	entity/ai/tree/Invert.h
+	entity/ai/tree/Invert.cpp
 	entity/ai/tree/ITask.h
 	entity/ai/tree/ITimedNode.cpp
 	entity/ai/tree/ITimedNode.h
@@ -159,6 +162,8 @@ set(SRCS
 	entity/ai/tree/Steer.cpp
 	entity/ai/tree/Steer.h
 	entity/ai/tree/Succeed.h
+	entity/ai/tree/LUATreeNode.h
+	entity/ai/tree/LUATreeNode.cpp
 	entity/ai/tree/TreeNode.h entity/ai/tree/TreeNode.cpp
 	entity/ai/tree/TreeNodeParser.h entity/ai/tree/TreeNodeParser.cpp
 	entity/ai/tree/loaders/lua/LUATreeLoader.h entity/ai/tree/loaders/lua/LUATreeLoader.cpp
