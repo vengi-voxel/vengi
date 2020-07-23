@@ -5,7 +5,6 @@
 
 #include <memory>
 
-#include "ai-shared/protocol/AIStubTypes.h"
 #include "backend/entity/ai/filter/FilteredEntities.h"
 #include "group/GroupId.h"
 #include "aggro/AggroMgr.h"
@@ -19,6 +18,10 @@
 #include "common/Math.h"
 
 namespace backend {
+
+#ifndef AI_NOTHING_SELECTED
+#define AI_NOTHING_SELECTED (-1)
+#endif
 
 class ICharacter;
 typedef std::shared_ptr<ICharacter> ICharacterPtr;
@@ -241,13 +244,6 @@ inline bool AI::hasZone() const {
 
 inline int64_t AI::getTime() const {
 	return _time;
-}
-
-inline ai::CharacterId AI::getId() const {
-	if (!_character) {
-		return AI_NOTHING_SELECTED;
-	}
-	return _character->getId();
 }
 
 typedef std::shared_ptr<AI> AIPtr;

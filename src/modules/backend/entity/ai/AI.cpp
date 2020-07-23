@@ -6,6 +6,13 @@
 
 namespace backend {
 
+ai::CharacterId AI::getId() const {
+	if (!_character) {
+		return AI_NOTHING_SELECTED;
+	}
+	return _character->getId();
+}
+
 TreeNodePtr AI::setBehaviour(const TreeNodePtr& newBehaviour) {
 	TreeNodePtr current = _behaviour;
 	_behaviour = newBehaviour;

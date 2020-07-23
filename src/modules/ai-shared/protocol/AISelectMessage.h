@@ -6,6 +6,10 @@
 #include "IProtocolMessage.h"
 #include "ai-shared/common/CharacterId.h"
 
+#ifndef AI_NOTHING_SELECTED
+#define AI_NOTHING_SELECTED (-1)
+#endif
+
 namespace ai {
 
 /**

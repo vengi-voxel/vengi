@@ -10,10 +10,6 @@
 #include "ai-shared/common/TreeNodeStatus.h"
 #include "ai-shared/common/CharacterAttributes.h"
 
-#ifndef AI_NOTHING_SELECTED
-#define AI_NOTHING_SELECTED (-1)
-#endif
-
 namespace ai {
 
 /**
