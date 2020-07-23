@@ -6,7 +6,6 @@
 
 #include "backend/entity/EntityId.h"
 #include "core/IComponent.h"
-#include <unordered_map>
 
 namespace backend {
 
