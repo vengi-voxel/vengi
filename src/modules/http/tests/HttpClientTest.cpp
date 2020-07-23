@@ -18,8 +18,8 @@ class HttpClientTest : public core::AbstractTest {
 TEST_F(HttpClientTest, testSimple) {
 	core_trace_mutex(core::Lock, serverStartMutex, "Server start mutex");
 	core::ConditionVariable startCondition;
-	bool serverSuccess = false;
-	bool finishedSetup = false;
+	core::AtomicBool serverSuccess { false };
+	core::AtomicBool finishedSetup { false };
 
 	core::ScopedLock lock(serverStartMutex);
 	_testApp->threadPool().enqueue([this, &startCondition, &serverSuccess, &finishedSetup] () {
@@ -43,7 +43,7 @@ TEST_F(HttpClientTest, testSimple) {
 		_httpServer.shutdown();
 	});
 	startCondition.wait(serverStartMutex, [&finishedSetup] {
-		return finishedSetup;
+		return (bool)finishedSetup;
 	});
 	if (!serverSuccess) {
 		return;
