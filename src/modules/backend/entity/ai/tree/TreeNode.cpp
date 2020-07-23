@@ -71,11 +71,11 @@ void TreeNode::setLastExecMillis(const AIPtr& entity) {
 	if (!entity->_debuggingActive) {
 		return;
 	}
-	entity->_lastExecMillis[getId()] = entity->_time;
+	entity->_lastExecMillis.put(getId(), entity->_time);
 }
 
 int TreeNode::getSelectorState(const AIPtr& entity) const {
-	AI::SelectorStates::const_iterator i = entity->_selectorStates.find(getId());
+	auto i = entity->_selectorStates.find(getId());
 	if (i == entity->_selectorStates.end()) {
 		return AI_NOTHING_SELECTED;
 	}
@@ -83,11 +83,11 @@ int TreeNode::getSelectorState(const AIPtr& entity) const {
 }
 
 void TreeNode::setSelectorState(const AIPtr& entity, int selected) {
-	entity->_selectorStates[getId()] = selected;
+	entity->_selectorStates.put(getId(), selected);
 }
 
 int TreeNode::getLimitState(const AIPtr& entity) const {
-	AI::LimitStates::const_iterator i = entity->_limitStates.find(getId());
+	auto i = entity->_limitStates.find(getId());
 	if (i == entity->_limitStates.end()) {
 		return 0;
 	}
@@ -95,14 +95,14 @@ int TreeNode::getLimitState(const AIPtr& entity) const {
 }
 
 void TreeNode::setLimitState(const AIPtr& entity, int amount) {
-	entity->_limitStates[getId()] = amount;
+	entity->_limitStates.put(getId(), amount);
 }
 
 ai::TreeNodeStatus TreeNode::state(const AIPtr& entity, ai::TreeNodeStatus treeNodeState) {
 	if (!entity->_debuggingActive) {
 		return treeNodeState;
 	}
-	entity->_lastStatus[getId()] = treeNodeState;
+	entity->_lastStatus.put(getId(), treeNodeState);
 	return treeNodeState;
 }
 
@@ -110,7 +110,7 @@ int64_t TreeNode::getLastExecMillis(const AIPtr& entity) const {
 	if (!entity->_debuggingActive) {
 		return -1L;
 	}
-	AI::LastExecMap::const_iterator i = entity->_lastExecMillis.find(getId());
+	auto i = entity->_lastExecMillis.find(getId());
 	if (i == entity->_lastExecMillis.end()) {
 		return -1L;
 	}
@@ -121,7 +121,7 @@ ai::TreeNodeStatus TreeNode::getLastStatus(const AIPtr& entity) const {
 	if (!entity->_debuggingActive) {
 		return ai::UNKNOWN;
 	}
-	AI::NodeStates::const_iterator i = entity->_lastStatus.find(getId());
+	auto i = entity->_lastStatus.find(getId());
 	if (i == entity->_lastStatus.end()) {
 		return ai::UNKNOWN;
 	}
