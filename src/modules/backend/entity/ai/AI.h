@@ -14,6 +14,7 @@
 #include "tree/loaders/ITreeLoader.h"
 #include "core/Trace.h"
 #include "core/concurrent/Lock.h"
+#include "core/concurrent/Atomic.h"
 #include "core/NonCopyable.h"
 #include "common/Math.h"
 
@@ -85,7 +86,7 @@ protected:
 
 	Zone* _zone;
 
-	std::atomic_bool _reset;
+	core::AtomicBool _reset;
 public:
 	/**
 	 * @param behaviour The behaviour tree node that is applied to this ai entity
