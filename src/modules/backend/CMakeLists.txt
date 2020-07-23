@@ -161,6 +161,7 @@ set(SRCS
 	entity/ai/tree/Sequence.h
 	entity/ai/tree/Steer.cpp
 	entity/ai/tree/Steer.h
+	entity/ai/tree/Succeed.cpp
 	entity/ai/tree/Succeed.h
 	entity/ai/tree/LUATreeNode.h
 	entity/ai/tree/LUATreeNode.cpp
