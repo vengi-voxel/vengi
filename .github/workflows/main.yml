@@ -15,6 +15,7 @@ jobs:
             cmake ..
             make -j 2
             ctest -V -C Debug -R tests-animation$
+            ctest -V -C Debug -R tests-attrib$
             ctest -V -C Debug -R tests-computeshadertool$
             ctest -V -C Debug -R tests-cooldown$
             ctest -V -C Debug -R tests-core$
@@ -49,6 +50,7 @@ jobs:
             cmake ..
             make -j 2
             ctest -V -C Debug -R tests-animation$
+            ctest -V -C Debug -R tests-attrib$
             ctest -V -C Debug -R tests-computeshadertool$
             ctest -V -C Debug -R tests-cooldown$
             ctest -V -C Debug -R tests-core$
@@ -93,6 +95,7 @@ jobs:
             cmake --install . --component mapview --prefix mapview-install
             cmake --install . --component voxconvert --prefix voxconvert-install
             ctest -V -C Debug -R tests-animation$
+            ctest -V -C Debug -R tests-attrib$
             ctest -V -C Debug -R tests-computeshadertool$
             ctest -V -C Debug -R tests-cooldown$
             ctest -V -C Debug -R tests-core$
