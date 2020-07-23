@@ -5,6 +5,7 @@
 
 #include "IProtocolMessage.h"
 #include "AIStubTypes.h"
+#include "core/Assert.h"
 #include <vector>
 
 namespace ai {
@@ -45,7 +46,7 @@ private:
 
 	void writeAttributes(streamContainer& out, const CharacterAttributes& attributes) const {
 		addShort(out, static_cast<int16_t>(attributes.size()));
-		for (CharacterAttributes::const_iterator i = attributes.begin(); i != attributes.end(); ++i) {
+		for (auto i = attributes.begin(); i != attributes.end(); ++i) {
 			addString(out, i->first);
 			addString(out, i->second);
 		}
@@ -53,11 +54,11 @@ private:
 
 	void readAttributes(streamContainer& in, CharacterAttributes& attributes) const {
 		const int size = readShort(in);
-		attributes.reserve(size);
+		core_assert((int)attributes.capacity() >= size);
 		for (int i = 0; i < size; ++i) {
 			const core::String& key = readString(in);
 			const core::String& value = readString(in);
-			attributes.insert(std::make_pair(key, value));
+			attributes.put(key, value);
 		}
 	}
 

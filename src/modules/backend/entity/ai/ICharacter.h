@@ -39,8 +39,8 @@ public:
 	virtual ~ICharacter() {
 	}
 
-	bool operator ==(const ICharacter& character) const;
-	bool operator !=(const ICharacter& character) const;
+	bool operator==(const ICharacter &character) const;
+	bool operator!=(const ICharacter &character) const;
 
 	ai::CharacterId getId() const;
 	/**
@@ -98,27 +98,27 @@ public:
 	}
 };
 
-inline void ICharacter::setOrientation (float orientation) {
+inline void ICharacter::setOrientation(float orientation) {
 	_orientation = orientation;
 }
 
-inline float ICharacter::getOrientation () const {
+inline float ICharacter::getOrientation() const {
 	return _orientation;
 }
 
 inline void ICharacter::setAttribute(const core::String& key, const core::String& value) {
-	_attributes[key] = value;
+	_attributes.put(key, value);
 }
 
 inline const ai::CharacterAttributes& ICharacter::getAttributes() const {
 	return _attributes;
 }
 
-inline bool ICharacter::operator ==(const ICharacter& character) const {
+inline bool ICharacter::operator==(const ICharacter &character) const {
 	return character._id == _id;
 }
 
-inline bool ICharacter::operator !=(const ICharacter& character) const {
+inline bool ICharacter::operator!=(const ICharacter &character) const {
 	return character._id != _id;
 }
 

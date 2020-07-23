@@ -94,8 +94,8 @@ TEST_F(MessageTest, testAISelectMessage) {
 
 TEST_F(MessageTest, testAIStateMessage) {
 	ai::CharacterAttributes attributes;
-	attributes.insert(std::make_pair<core::String, core::String>("Name", "Test"));
-	attributes.insert(std::make_pair<core::String, core::String>("SomethingElse", "SomeValue"));
+	attributes.put("Name", "Test");
+	attributes.put("SomethingElse", "SomeValue");
 
 	ai::AIStateMessage m;
 	ai::AIStateWorld state(1, backend::ZERO, 1.0f, attributes);

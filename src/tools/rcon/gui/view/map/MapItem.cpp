@@ -45,7 +45,7 @@ void MapItem::updateState(const AIStateWorld& state) {
 
 	const CharacterAttributes& attributes = _state.getAttributes();
 	const QString& nameAttribute = Settings::getNameAttribute(attributes::NAME);
-	CharacterAttributes::const_iterator name = attributes.find(nameAttribute.toStdString().c_str());
+	auto name = attributes.find(nameAttribute.toStdString().c_str());
 	if (name != attributes.end()) {
 		const QString nameStr(name->second.c_str());
 		setToolTip(nameStr);
@@ -74,7 +74,7 @@ void MapItem::updateState(const AIStateWorld& state) {
 	_direction->setLine(0.0, 0.0, center * end.x(), center * end.y());
 
 	const QString& groupAttribute = Settings::getGroupAttribute(attributes::GROUP);
-	CharacterAttributes::const_iterator groupIter = attributes.find(groupAttribute.toStdString().c_str());
+	auto groupIter = attributes.find(groupAttribute.toStdString().c_str());
 	if (groupIter != attributes.end()) {
 		// TODO: get color from settings
 		QColor colorGroup = QColor::fromRgb(200, 200, 0, 255);

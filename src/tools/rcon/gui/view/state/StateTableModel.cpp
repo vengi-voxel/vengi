@@ -20,7 +20,7 @@ void StateTableModel::update() {
 	beginResetModel();
 	const AIDebugger::CharacterAttributesMap& a = _debugger.getAttributes();
 	_list.clear();
-	for (AIDebugger::CharacterAttributesMap::const_iterator i = a.begin(); i != a.end(); ++i) {
+	for (auto i = a.begin(); i != a.end(); ++i) {
 		_list << i.key();
 	}
 	endResetModel();

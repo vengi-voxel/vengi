@@ -4,7 +4,7 @@
 #pragma once
 
 #include "core/String.h"
-#include <unordered_map>
+#include "core/collection/StringMap.h"
 
 namespace ai {
 
@@ -27,6 +27,6 @@ const char* const ORIENTATION = "Orientation";
 /**
  * @brief ICharacter attributes for the remote \ref debugger
  */
-typedef std::unordered_map<core::String, core::String, core::StringHash> CharacterAttributes;
+typedef core::StringMap<core::String> CharacterAttributes;
 
 }

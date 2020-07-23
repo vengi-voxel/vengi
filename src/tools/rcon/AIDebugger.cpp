@@ -136,7 +136,7 @@ void AIDebugger::setCharacterDetails(const ai::CharacterId& id, const ai::AIStat
 	_attributes.clear();
 	const ai::AIStateWorld& state = _entities.value(id);
 	const ai::CharacterAttributes& attributes = state.getAttributes();
-	for (ai::CharacterAttributes::const_iterator i = attributes.begin(); i != attributes.end(); ++i) {
+	for (auto i = attributes.begin(); i != attributes.end(); ++i) {
 		_attributes[QString(i->first.c_str())] = QString(i->second.c_str());
 	}
 }
