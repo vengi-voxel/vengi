@@ -30,7 +30,7 @@ public:
 	Request& accept(const char* mimeType);
 	Request& header(const char* key, const char *value);
 	Request& body(const char *body);
-	ResponseParser execute();
+	ResponseParser execute(int timeoutInSeconds = 10);
 };
 
 inline Request& Request::body(const char *body) {

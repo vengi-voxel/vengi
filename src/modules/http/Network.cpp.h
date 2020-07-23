@@ -4,7 +4,10 @@
 
 #pragma once
 
-#ifdef WIN32
+#include <SDL_platform.h>
+
+#ifdef __WINDOWS__
+
 #define network_cleanup() WSACleanup()
 #define network_return int
 #else

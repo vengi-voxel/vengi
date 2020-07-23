@@ -23,6 +23,9 @@ public:
 	bool notify_all();
 	bool wait(Lock& lock);
 
+	/**
+	 * @brief Predicate must return false if the waiting should continue
+	 */
 	template<class PREDICATE>
 	void wait(Lock& lock, PREDICATE&& predicate) {
 		while (!predicate()) {

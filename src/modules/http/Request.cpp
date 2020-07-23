@@ -33,7 +33,7 @@ ResponseParser Request::failed() {
 	return ResponseParser(nullptr, 0u);
 }
 
-ResponseParser Request::execute() {
+ResponseParser Request::execute(int timeoutInSeconds) {
 	if (!_url.valid()) {
 		Log::error("Invalid url given");
 		return ResponseParser(nullptr, 0u);
@@ -122,6 +122,18 @@ ResponseParser Request::execute() {
 			return failed();
 		}
 		sent += ret;
+	}
+
+	if (timeoutInSeconds > 0) {
+#ifdef __WINDOWS__
+		DWORD timeout = timeoutInSeconds * 1000;
+		setsockopt(_socketFD, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+#else
+		struct timeval tv;
+		tv.tv_sec = timeoutInSeconds;
+		tv.tv_usec = 0;
+		setsockopt(_socketFD, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#endif
 	}
 
 	uint8_t *response = nullptr;

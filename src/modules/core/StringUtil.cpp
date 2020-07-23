@@ -32,6 +32,9 @@ core::String eraseAllChars(const core::String& str, char chr) {
 }
 
 char* getBeforeToken(char **buffer, const char *token, size_t bufferSize) {
+	if (bufferSize <= 0) {
+		return nullptr;
+	}
 	char *begin = *buffer;
 	const size_t length = SDL_strlen(token);
 	while (**buffer) {

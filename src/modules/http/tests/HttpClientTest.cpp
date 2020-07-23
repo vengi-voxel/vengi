@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "core/concurrent/Atomic.h"
 #include "core/tests/AbstractTest.h"
 #include "http/HttpClient.h"
 #include "http/HttpServer.h"
@@ -17,14 +18,23 @@ class HttpClientTest : public core::AbstractTest {
 TEST_F(HttpClientTest, testSimple) {
 	core_trace_mutex(core::Lock, serverStartMutex, "Server start mutex");
 	core::ConditionVariable startCondition;
+	bool serverSuccess = false;
+	bool finishedSetup = false;
 
 	core::ScopedLock lock(serverStartMutex);
-	_testApp->threadPool().enqueue([this, &startCondition] () {
+	_testApp->threadPool().enqueue([this, &startCondition, &serverSuccess, &finishedSetup] () {
 		http::HttpServer _httpServer(_testApp->metric());
-		_httpServer.init(8095);
+		serverSuccess = _httpServer.init(8095);
+		if (!serverSuccess) {
+			Log::error("Failed to initialize the http server on port 8095");
+			finishedSetup = true;
+			startCondition.notify_one();
+			return;
+		}
 		_httpServer.registerRoute(http::HttpMethod::GET, "/", [] (const http::RequestParser& request, HttpResponse* response) {
 			response->setText("Success");
 		});
+		finishedSetup = true;
 		startCondition.notify_one();
 
 		while (_testApp->state() == core::AppState::Running) {
@@ -32,12 +42,16 @@ TEST_F(HttpClientTest, testSimple) {
 		}
 		_httpServer.shutdown();
 	});
-	startCondition.wait(serverStartMutex, [] {
-		return true;
+	startCondition.wait(serverStartMutex, [&finishedSetup] {
+		return finishedSetup;
 	});
+	if (!serverSuccess) {
+		return;
+	}
 	HttpClient client("http://localhost:8095");
+	client.setRequestTimeout(1);
 	ResponseParser response = client.get("/");
-	EXPECT_TRUE(response.valid());
+	ASSERT_TRUE(response.valid()) << "Invalid response";
 	const char *length = "";
 	EXPECT_TRUE(response.headers.get(http::header::CONTENT_LENGTH, length));
 	EXPECT_STREQ("7", length);
