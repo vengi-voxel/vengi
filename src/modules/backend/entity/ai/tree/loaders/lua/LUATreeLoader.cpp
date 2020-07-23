@@ -7,6 +7,7 @@
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/entity/ai/condition/ConditionParser.h"
 #include "backend/entity/ai/tree/TreeNodeParser.h"
+#include "backend/entity/ai/condition/True.h"
 #include "commonlua/LUA.h"
 #include "core/concurrent/Lock.h"
 

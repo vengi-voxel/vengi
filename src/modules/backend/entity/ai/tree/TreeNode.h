@@ -3,8 +3,7 @@
  */
 #pragma once
 
-#include "backend/entity/ai/condition/ICondition.h"
-#include "backend/entity/ai/condition/True.h"
+#include "backend/entity/ai/AIFactories.h"
 #include "backend/entity/ai/common/MemoryAllocator.h"
 #include "ai-shared/common/TreeNodeStatus.h"
 #include "core/String.h"
@@ -13,6 +12,9 @@
 #include <memory>
 
 namespace backend {
+
+class AI;
+typedef std::shared_ptr<AI> AIPtr;
 
 class TreeNode;
 typedef std::shared_ptr<TreeNode> TreeNodePtr;

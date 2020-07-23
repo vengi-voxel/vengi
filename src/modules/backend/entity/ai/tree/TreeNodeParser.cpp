@@ -4,6 +4,7 @@
 
 #include "TreeNodeParser.h"
 #include "core/StringUtil.h"
+#include "backend/entity/ai/condition/True.h"
 
 namespace backend {
 

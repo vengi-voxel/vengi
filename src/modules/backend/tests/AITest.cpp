@@ -9,6 +9,7 @@
 #include "backend/entity/ai/condition/IsSelectionAlive.h"
 #include "backend/entity/ai/condition/IsOnCooldown.h"
 #include "backend/entity/ai/condition/IsCloseToSelection.h"
+#include "backend/entity/ai/condition/True.h"
 #include "backend/entity/ai/action/AttackOnSelection.h"
 #include "backend/entity/ai/action/Die.h"
 #include "backend/entity/ai/action/GoHome.h"

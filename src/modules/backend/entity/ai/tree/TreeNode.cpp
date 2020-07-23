@@ -4,6 +4,7 @@
 
 #include "TreeNode.h"
 #include "backend/entity/ai/AI.h"
+#include "backend/entity/ai/condition/ICondition.h"
 #include "core/Assert.h"
 #include <algorithm>
 

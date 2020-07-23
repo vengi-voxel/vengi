@@ -5,6 +5,7 @@
 #include "TestShared.h"
 #include "backend/entity/ai/tree/PrioritySelector.h"
 #include "backend/entity/ai/zone/Zone.h"
+#include "backend/entity/ai/condition/True.h"
 
 namespace backend {
 

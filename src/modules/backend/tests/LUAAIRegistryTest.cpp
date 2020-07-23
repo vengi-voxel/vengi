@@ -6,6 +6,7 @@
 #include "core/String.h"
 #include "core/io/Filesystem.h"
 #include "backend/entity/ai/zone/Zone.h"
+#include "backend/entity/ai/condition/True.h"
 #include <fstream>
 #include <streambuf>
 
