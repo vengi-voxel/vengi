@@ -5,6 +5,7 @@
 
 #include "Steering.h"
 #include "core/Assert.h"
+#include <vector>
 
 namespace backend {
 namespace movement {

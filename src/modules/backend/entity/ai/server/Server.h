@@ -16,6 +16,7 @@
 #include "ai-shared/protocol/ProtocolHandlerRegistry.h"
 
 #include <unordered_set>
+#include <vector>
 
 namespace backend {
 

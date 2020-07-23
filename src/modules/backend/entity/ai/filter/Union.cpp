@@ -7,6 +7,7 @@
 #include "Union.h"
 #include "core/Common.h"
 #include <algorithm>
+#include <vector>
 
 namespace backend {
 

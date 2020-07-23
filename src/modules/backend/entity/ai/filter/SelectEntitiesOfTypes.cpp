@@ -9,6 +9,7 @@
 #include "backend/entity/ai/AICharacter.h"
 #include "network/ProtocolEnum.h"
 #include "core/Enum.h"
+#include <vector>
 
 namespace backend {
 

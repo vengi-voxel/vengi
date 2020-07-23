@@ -9,6 +9,7 @@
 #include "core/StringUtil.h"
 #include "core/GLM.h"
 #include "core/Assert.h"
+#include <vector>
 
 namespace backend {
 

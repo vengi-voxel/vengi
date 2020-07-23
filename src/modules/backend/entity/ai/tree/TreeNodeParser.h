@@ -6,6 +6,7 @@
 #include "backend/entity/ai/tree/TreeNode.h"
 #include "backend/entity/ai/common/IParser.h"
 #include "backend/entity/ai/tree/Steer.h"
+#include <vector>
 
 namespace backend {
 

@@ -4,6 +4,7 @@
 
 #include "Intersection.h"
 #include <algorithm>
+#include <vector>
 
 namespace backend {
 
