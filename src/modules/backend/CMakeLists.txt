@@ -152,6 +152,7 @@ set(SRCS
 	entity/ai/tree/ITask.h
 	entity/ai/tree/ITimedNode.cpp
 	entity/ai/tree/ITimedNode.h
+	entity/ai/tree/loaders/ITreeLoader.cpp
 	entity/ai/tree/loaders/ITreeLoader.h
 	entity/ai/tree/Parallel.h
 	entity/ai/tree/Parallel.cpp

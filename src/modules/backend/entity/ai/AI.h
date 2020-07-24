@@ -3,7 +3,6 @@
  */
 #pragma once
 
-#include <unordered_map>
 #include <memory>
 
 #include "ai-shared/protocol/AIStubTypes.h"
@@ -45,12 +44,12 @@ protected:
 	/**
 	 * This map is only filled if we are in debugging mode for this entity
 	 */
-	typedef std::unordered_map<int, ai::TreeNodeStatus> NodeStates;
+	typedef core::Map<int, ai::TreeNodeStatus> NodeStates;
 	NodeStates _lastStatus;
 	/**
 	 * This map is only filled if we are in debugging mode for this entity
 	 */
-	typedef std::unordered_map<int, uint64_t> LastExecMap;
+	typedef core::Map<int, uint64_t> LastExecMap;
 	LastExecMap _lastExecMillis;
 
 	/**
@@ -64,13 +63,13 @@ protected:
 	 * Often @ai{Selector} states must be stored to continue in the next step at a particular
 	 * position in the behaviour tree. This map is doing exactly this.
 	 */
-	typedef std::unordered_map<int, int> SelectorStates;
+	typedef core::Map<int, int> SelectorStates;
 	SelectorStates _selectorStates;
 
 	/**
 	 * This map stores the amount of execution for the @ai{Limit} node. The key is the node id
 	 */
-	typedef std::unordered_map<int, int> LimitStates;
+	typedef core::Map<int, int> LimitStates;
 	LimitStates _limitStates;
 
 	TreeNodePtr _behaviour;

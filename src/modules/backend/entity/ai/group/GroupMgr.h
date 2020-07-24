@@ -9,7 +9,6 @@
 #include "backend/entity/ai/common/Math.h"
 #include "backend/entity/ai/ICharacter.h"
 #include "backend/entity/ai/AI.h"
-#include <map>
 #include <memory>
 #include <numeric>
 #include <unordered_map>

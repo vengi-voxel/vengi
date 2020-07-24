@@ -5,7 +5,6 @@
 
 #include "IAIFactory.h"
 #include "common/IFactoryRegistry.h"
-#include <vector>
 
 namespace backend {
 
