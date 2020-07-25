@@ -3,8 +3,6 @@
  */
 #pragma once
 
-#include <memory>
-
 #include "backend/entity/ai/filter/FilteredEntities.h"
 #include "group/GroupId.h"
 #include "aggro/AggroMgr.h"
@@ -14,7 +12,9 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/Atomic.h"
 #include "core/NonCopyable.h"
-#include "common/Math.h"
+
+#include <memory>
+#include <glm/vec3.hpp>
 
 namespace backend {
 

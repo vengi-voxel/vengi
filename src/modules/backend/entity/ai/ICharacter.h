@@ -3,11 +3,11 @@
  */
 #pragma once
 
-#include "common/Math.h"
 #include "ai-shared/common/CharacterId.h"
 #include "ai-shared/common/CharacterAttributes.h"
 #include "core/String.h"
 #include "core/NonCopyable.h"
+#include <glm/vec3.hpp>
 #include <memory>
 
 namespace backend {
