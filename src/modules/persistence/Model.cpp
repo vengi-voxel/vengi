@@ -8,7 +8,6 @@
 #include "core/StringUtil.h"
 #include "core/Singleton.h"
 #include "core/Assert.h"
-#include <algorithm>
 
 namespace persistence {
 

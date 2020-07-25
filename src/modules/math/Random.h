@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Algorithm.h"
 #include <random>
 #include <algorithm>
 #include <stdlib.h>
@@ -33,7 +34,7 @@ public:
 
 	template<typename I>
 	I randomElement(I begin, I end) const {
-		const int n = static_cast<int>(std::distance(begin, end));
+		const int n = core::distance(begin, end);
 		std::uniform_int_distribution<> dis(0, n - 1);
 		std::advance(begin, dis(_engine));
 		return begin;

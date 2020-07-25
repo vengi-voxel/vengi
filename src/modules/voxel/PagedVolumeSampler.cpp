@@ -4,8 +4,8 @@
 
 #include "PagedVolume.h"
 #include "Morton.h"
+#include "core/Common.h"
 #include "core/Trace.h"
-#include <algorithm>
 
 namespace voxel {
 
@@ -63,7 +63,7 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 		if (_cachedChunk) {
 			const glm::ivec3& chunkPos = _cachedChunk->chunkPos();
 			if (chunkPos.x == xChunk && chunkPos.y == yChunk && chunkPos.z == zChunk) {
-				std::swap(_cachedChunk, _currentChunk);
+				core::exchange(_cachedChunk, _currentChunk);
 			} else {
 				_cachedChunk = _currentChunk;
 				_currentChunk = _volume->chunk(xChunk, yChunk, zChunk);

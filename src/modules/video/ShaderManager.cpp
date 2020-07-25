@@ -7,7 +7,7 @@
 #include "core/Var.h"
 #include "core/Log.h"
 #include "core/Trace.h"
-#include <algorithm>
+#include "core/Algorithm.h"
 
 namespace video {
 
@@ -16,7 +16,7 @@ void ShaderManager::registerShader(Shader* shader) {
 }
 
 void ShaderManager::unregisterShader(Shader* shader) {
-	auto i = std::find(_shaders.begin(), _shaders.end(), shader);
+	auto i = core::find(_shaders.begin(), _shaders.end(), shader);
 	if (i == _shaders.end()) {
 		return;
 	}

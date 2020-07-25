@@ -23,6 +23,7 @@
 #include "core/Assert.h"
 #include "core/StringUtil.h"
 #include "core/StandardLib.h"
+#include "core/Algorithm.h"
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -30,7 +31,6 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <SDL.h>
-#include <algorithm>
 #include <vector>
 #include "video/Trace.h"
 #ifdef TRACY_ENABLE
@@ -1323,7 +1323,7 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 			Log::warn("Max draw buffers exceeded");
 			return false;
 		}
-		std::sort(attachments.begin(), attachments.end());
+		core::sort(attachments.begin(), attachments.end(), [] (GLenum lhs, GLenum rhs) { return lhs < rhs; });
 		glDrawBuffers((GLsizei) attachments.size(), attachments.data());
 		checkError();
 	}

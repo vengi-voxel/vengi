@@ -70,19 +70,19 @@ Iter sortRange(Iter first, Iter last, Iter split, Comparator &comp) {
 }
 
 template<typename Iter, class Comparator>
-void sort(Iter first, Iter last, Comparator&& comp) {
+void sort(Iter first, Iter last, Comparator comp) {
 	if (first == last) {
 		return;
 	}
 
 	Iter split = first;
-	const int size = distance(first, last);
+	const int size = core::distance(first, last);
 	for (int n = size / 2; n > 0; --n) {
 		++split;
 	}
-	split = sortRange(first, last, split, comp);
-	sort(first, split, comp);
-	sort(++split, last, comp);
+	split = core::sortRange<Iter, Comparator>(first, last, split, comp);
+	core::sort<Iter, Comparator>(first, split, comp);
+	core::sort<Iter, Comparator>(++split, last, comp);
 }
 
 }

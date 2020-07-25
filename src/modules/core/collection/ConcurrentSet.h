@@ -10,7 +10,6 @@
 #include "core/Trace.h"
 #include <stdint.h>
 #include <unordered_set>
-#include <algorithm>
 
 namespace collection {
 
@@ -26,7 +25,7 @@ public:
 	using value_type = Data;
 	void swap(underlying_type& target) {
 		core::ScopedLock lock(_mutex);
-		std::swap(_data, target);
+		core::exchange(_data, target);
 	}
 
 	void clear() {

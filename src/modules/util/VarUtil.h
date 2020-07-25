@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Var.h"
-#include <algorithm>
+#include "core/Algorithm.h"
 #include <vector>
 
 namespace util {
@@ -18,7 +18,7 @@ static void visitVarSorted(Functor&& func, uint32_t flags) {
 			varList.push_back(var);
 		}
 	});
-	std::sort(varList.begin(), varList.end(), [] (const core::VarPtr& v1, const core::VarPtr& v2) {
+	core::sort(varList.begin(), varList.end(), [] (const core::VarPtr& v1, const core::VarPtr& v2) {
 		return v1->name() < v2->name();
 	});
 	for (const core::VarPtr& var : varList) {

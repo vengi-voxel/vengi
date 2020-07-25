@@ -3,7 +3,7 @@
  */
 
 #include "AggroMgr.h"
-#include <algorithm>
+#include "core/Algorithm.h"
 #include <math.h>
 
 namespace backend {
@@ -36,9 +36,9 @@ static bool EntrySorter(const Entry& a, const Entry& b) {
  * This list is ordered, so we will only remove the first X elements.
  */
 void AggroMgr::cleanupList() {
-	EntriesIter::difference_type remove = 0;
-	for (EntriesIter i = _entries.begin(); i != _entries.end(); ++i) {
-		const float aggroValue = i->getAggro();
+	int remove = 0;
+	for (const Entry& e : _entries) {
+		const float aggroValue = e.getAggro();
 		if (aggroValue > 0.0f) {
 			break;
 		}
@@ -57,7 +57,7 @@ void AggroMgr::cleanupList() {
 	}
 
 	EntriesIter i = _entries.begin();
-	std::advance(i, remove);
+	core::next(i, remove - 1);
 	_entries.erase(_entries.begin(), i);
 }
 
@@ -65,7 +65,7 @@ void AggroMgr::sort() const {
 	if (!_dirty) {
 		return;
 	}
-	std::sort(_entries.begin(), _entries.end(), EntrySorter);
+	core::sort(_entries.begin(), _entries.end(), EntrySorter);
 	_dirty = false;
 }
 
@@ -103,7 +103,7 @@ void AggroMgr::update(int64_t deltaMillis) {
 
 EntryPtr AggroMgr::addAggro(ai::CharacterId id, float amount) {
 	const CharacterIdPredicate p(id);
-	auto i = std::find_if(_entries.begin(), _entries.end(), p);
+	auto i = core::find_if(_entries.begin(), _entries.end(), p);
 	if (i == _entries.end()) {
 		Entry newEntry(id, amount);
 		switch (_reduceType) {

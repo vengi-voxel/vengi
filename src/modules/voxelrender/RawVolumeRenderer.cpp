@@ -3,6 +3,7 @@
  */
 
 #include "RawVolumeRenderer.h"
+#include "core/Common.h"
 #include "core/Trace.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxelutil/VolumeMerger.h"
@@ -21,6 +22,7 @@
 #include "core/Var.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "core/Algorithm.h"
 #include "core/StandardLib.h"
 #include "VoxelShaderConstants.h"
 #include <SDL.h>
@@ -131,7 +133,7 @@ void RawVolumeRenderer::update() {
 		if (meshes[result.idx] != nullptr) {
 			delete meshes[result.idx];
 		}
-		meshes[result.idx] = new voxel::Mesh(std::move(result.mesh));
+		meshes[result.idx] = new voxel::Mesh(core::move(result.mesh));
 		if (!update(result.idx)) {
 			Log::error("Failed to update the mesh at index %i", result.idx);
 		}
@@ -218,11 +220,11 @@ bool RawVolumeRenderer::swap(int idx1, int idx2) {
 	}
 	for (auto& i : _meshes) {
 		Meshes& meshes = i.second;
-		std::swap(meshes[idx1], meshes[idx2]);
+		core::exchange(meshes[idx1], meshes[idx2]);
 	}
-	std::swap(_hidden[idx1], _hidden[idx2]);
-	std::swap(_model[idx1], _model[idx2]);
-	std::swap(_rawVolume[idx1], _rawVolume[idx2]);
+	core::exchange(_hidden[idx1], _hidden[idx2]);
+	core::exchange(_model[idx1], _model[idx2]);
+	core::exchange(_rawVolume[idx1], _rawVolume[idx2]);
 	update(idx1);
 	update(idx2);
 
@@ -340,13 +342,13 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 				}
 
 				voxel::RawVolume copy(volume);
-				_threadPool.enqueue([movedCopy = std::move(copy), mins, idx, finalRegion, this] () {
+				_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 					++_runningExtractorTasks;
 					voxel::Region reg = finalRegion;
 					reg.shiftUpperCorner(1, 1, 1);
 					voxel::Mesh mesh(65536, 65536, true);
 					voxel::extractCubicMesh(&movedCopy, reg, &mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());
-					_pendingQueue.emplace(mins, idx, std::move(mesh));
+					_pendingQueue.emplace(mins, idx, core::move(mesh));
 					Log::debug("Enqueue mesh for idx: %i", idx);
 					--_runningExtractorTasks;
 				});

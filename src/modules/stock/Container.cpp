@@ -5,7 +5,7 @@
 #include "Container.h"
 #include "core/Log.h"
 #include "Item.h"
-#include <algorithm>
+#include "core/Algorithm.h"
 
 namespace stock {
 
@@ -50,11 +50,11 @@ bool Container::add(const ItemPtr& item) {
 }
 
 auto Container::findById(ItemId id) const {
-	return std::find_if(_items.begin(), _items.end(), [id] (const ContainerItem& item) { return item.item->id() == id; });
+	return core::find_if(_items.begin(), _items.end(), [id] (const ContainerItem& item) { return item.item->id() == id; });
 }
 
 auto Container::findByType(const ItemType& type) const {
-	return std::find_if(_items.begin(), _items.end(), [type] (const ContainerItem& item) { return item.item->type() == type; });
+	return core::find_if(_items.begin(), _items.end(), [type] (const ContainerItem& item) { return item.item->type() == type; });
 }
 
 bool Container::hasItemOfType(const ItemType& itemType) const {

@@ -48,7 +48,7 @@ void Complement::filter (const AIPtr& entity) {
 					result.begin(), result.end(),
 					filteredArray[i].begin(), filteredArray[i].end(),
 					std::back_inserter(buffer));
-			std::swap(result, buffer);
+			core::exchange(result, buffer);
 		}
 	}
 

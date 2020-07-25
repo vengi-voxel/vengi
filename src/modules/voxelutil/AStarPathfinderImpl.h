@@ -124,8 +124,7 @@ public:
 	}
 
 	iterator find(AllNodesContainer::iterator node) {
-		std::vector<AllNodesContainer::iterator>::iterator openIter = std::find(open.begin(), open.end(), node);
-		return openIter;
+		return std::find(open.begin(), open.end(), node);
 	}
 
 private:

@@ -12,13 +12,12 @@
 #include "core/StandardLib.h"
 #include "core/NonCopyable.h"
 #include "Region.h"
-#include <vector>
-#include <algorithm>
+#include "core/Trace.h"
+#include "Face.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <list>
-#include "core/Trace.h"
-#include "Face.h"
+#include <vector>
 
 namespace voxel {
 
@@ -81,7 +80,7 @@ public:
 	}
 
 	void swap(Array& other) {
-		std::swap(_elements, other._elements);
+		core::exchange(_elements, other._elements);
 	}
 };
 

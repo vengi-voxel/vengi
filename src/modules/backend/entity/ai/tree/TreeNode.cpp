@@ -6,7 +6,7 @@
 #include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/condition/ICondition.h"
 #include "core/Assert.h"
-#include <algorithm>
+#include "core/Algorithm.h"
 
 namespace backend {
 
@@ -142,7 +142,7 @@ TreeNodePtr TreeNode::getChild(int id) const {
 }
 
 bool TreeNode::replaceChild(int id, const TreeNodePtr& newNode) {
-	auto i = std::find_if(_children.begin(), _children.end(), [id] (const TreeNodePtr& other) { return other->getId() == id; });
+	auto i = core::find_if(_children.begin(), _children.end(), [id] (const TreeNodePtr& other) { return other->getId() == id; });
 	if (i == _children.end()) {
 		return false;
 	}
