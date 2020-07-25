@@ -5,8 +5,16 @@
 
 #include "IAIFactory.h"
 #include "common/IFactoryRegistry.h"
+#include <vector>
+#include <list>
 
 namespace backend {
+
+namespace movement {
+typedef std::vector<SteeringPtr> Steerings;
+}
+typedef std::vector<ConditionPtr> Conditions;
+typedef std::list<FilterPtr> Filters;
 
 /**
  * @brief Context for ITreeNodeFactory

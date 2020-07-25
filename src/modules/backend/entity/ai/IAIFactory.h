@@ -5,8 +5,6 @@
 
 #include <memory>
 #include "core/String.h"
-#include <vector>
-#include <list>
 
 namespace backend {
 
@@ -15,19 +13,14 @@ typedef std::shared_ptr<TreeNode> TreeNodePtr;
 
 class IFilter;
 typedef std::shared_ptr<IFilter> FilterPtr;
-typedef std::list<FilterPtr> Filters;
 
 namespace movement {
 class ISteering;
 }
 typedef std::shared_ptr<movement::ISteering> SteeringPtr;
-namespace movement {
-typedef std::vector<SteeringPtr> Steerings;
-}
 
 class ICondition;
 typedef std::shared_ptr<ICondition> ConditionPtr;
-typedef std::vector<ConditionPtr> Conditions;
 
 struct TreeNodeFactoryContext;
 struct ConditionFactoryContext;
