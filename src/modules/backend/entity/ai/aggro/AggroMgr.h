@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <vector>
 #include "backend/entity/ai/ICharacter.h"
+#include "core/collection/DynamicArray.h"
 #include "Entry.h"
 #include <stddef.h>
 
@@ -19,7 +19,7 @@ namespace backend {
  */
 class AggroMgr {
 public:
-	typedef std::vector<Entry> Entries;
+	typedef core::DynamicArray<Entry> Entries;
 	typedef Entries::iterator EntriesIter;
 protected:
 	mutable Entries _entries;

@@ -56,9 +56,7 @@ void AggroMgr::cleanupList() {
 		return;
 	}
 
-	EntriesIter i = _entries.begin();
-	core::next(i, remove - 1);
-	_entries.erase(_entries.begin(), i);
+	_entries.erase(0, remove);
 }
 
 void AggroMgr::sort() const {
