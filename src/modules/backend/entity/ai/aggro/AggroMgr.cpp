@@ -91,8 +91,8 @@ void AggroMgr::resetReduceValue() {
 }
 
 void AggroMgr::update(int64_t deltaMillis) {
-	for (EntriesIter i = _entries.begin(); i != _entries.end(); ++i) {
-		_dirty |= i->reduceByTime(deltaMillis);
+	for (Entry& e : _entries) {
+		_dirty |= e.reduceByTime(deltaMillis);
 	}
 
 	if (_dirty) {
@@ -103,7 +103,7 @@ void AggroMgr::update(int64_t deltaMillis) {
 
 EntryPtr AggroMgr::addAggro(ai::CharacterId id, float amount) {
 	const CharacterIdPredicate p(id);
-	EntriesIter i = std::find_if(_entries.begin(), _entries.end(), p);
+	auto i = std::find_if(_entries.begin(), _entries.end(), p);
 	if (i == _entries.end()) {
 		Entry newEntry(id, amount);
 		switch (_reduceType) {

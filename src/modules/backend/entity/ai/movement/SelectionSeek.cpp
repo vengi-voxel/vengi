@@ -4,6 +4,7 @@
 
 #include "SelectionSeek.h"
 #include "backend/entity/ai/AI.h"
+#include "backend/entity/ai/common/Math.h"
 #include <glm/geometric.hpp>
 
 namespace backend {

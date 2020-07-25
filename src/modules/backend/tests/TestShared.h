@@ -41,8 +41,7 @@ protected:
 		}
 
 		std::stringstream s;
-		for (backend::AggroMgr::Entries::const_iterator i = e.begin(); i != e.end(); ++i) {
-			const backend::Entry& ep = *i;
+		for (const backend::Entry& ep : e) {
 			s << ep.getCharacterId() << "=" << ep.getAggro() << ", ";
 		}
 		const backend::EntryPtr& highest = aggroMgr.getHighestEntry();
