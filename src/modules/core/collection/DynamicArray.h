@@ -136,6 +136,21 @@ public:
 			return *this;
 		}
 
+		iterator& operator--() {
+			--_ptr;
+			return *this;
+		}
+
+		iterator& operator-(size_t n) {
+			_ptr -= n;
+			return *this;
+		}
+
+		iterator& operator-=(size_t n) {
+			_ptr -= n;
+			return *this;
+		}
+
 		inline const TYPE* operator->() const {
 			return _ptr;
 		}
