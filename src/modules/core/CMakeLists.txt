@@ -36,6 +36,7 @@ set(SRCS
 	concurrent/ReadWriteLock.cpp concurrent/ReadWriteLock.h
 	concurrent/ThreadPool.cpp concurrent/ThreadPool.h
 
+	Algorithm.h
 	ArrayLength.h
 	Assert.cpp Assert.h
 	App.cpp App.h
