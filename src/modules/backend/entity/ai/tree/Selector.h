@@ -32,7 +32,7 @@ public:
 	virtual void getRunningChildren(const AIPtr& entity, std::vector<bool>& active) const override {
 		int n = 0;
 		int selectorState = getSelectorState(entity);
-		for (TreeNodes::const_iterator i = _children.begin(); i != _children.end(); ++i, ++n) {
+		for (auto i = _children.begin(); i != _children.end(); ++i, ++n) {
 			active.push_back(selectorState == n);
 		}
 	}

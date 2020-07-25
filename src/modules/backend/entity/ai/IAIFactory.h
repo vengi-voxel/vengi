@@ -12,7 +12,6 @@ namespace backend {
 
 class TreeNode;
 typedef std::shared_ptr<TreeNode> TreeNodePtr;
-typedef std::vector<TreeNodePtr> TreeNodes;
 
 class IFilter;
 typedef std::shared_ptr<IFilter> FilterPtr;

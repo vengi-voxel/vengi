@@ -7,7 +7,6 @@
 #include "backend/entity/ai/common/MemoryAllocator.h"
 #include "backend/entity/ai/common/MoveVector.h"
 #include "backend/entity/ai/AIFactories.h"
-#include <stdio.h>
 
 namespace backend {
 

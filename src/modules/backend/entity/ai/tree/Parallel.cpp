@@ -8,8 +8,8 @@
 namespace backend {
 
 void Parallel::getRunningChildren(const AIPtr& entity, std::vector<bool>& active) const {
-	for (TreeNodes::const_iterator i = _children.begin(); i != _children.end(); ++i) {
-		active.push_back((*i)->getLastStatus(entity) != ai::RUNNING);
+	for (const TreeNodePtr& child : _children) {
+		active.push_back(child->getLastStatus(entity) != ai::RUNNING);
 	}
 }
 /**
