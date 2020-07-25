@@ -6,6 +6,7 @@
 #include "core/StringUtil.h"
 #include "backend/entity/ai/group/GroupMgr.h"
 #include "backend/entity/ai/zone/Zone.h"
+#include <glm/geometric.hpp>
 #include <vector>
 
 namespace backend {

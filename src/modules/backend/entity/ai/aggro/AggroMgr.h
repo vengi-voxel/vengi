@@ -10,6 +10,7 @@
 #include <vector>
 #include "backend/entity/ai/ICharacter.h"
 #include "Entry.h"
+#include <stddef.h>
 
 namespace backend {
 
@@ -38,7 +39,7 @@ protected:
 
 	inline void sort() const;
 public:
-	explicit AggroMgr(std::size_t expectedEntrySize = 0u) :
+	explicit AggroMgr(size_t expectedEntrySize = 0u) :
 		_dirty(false) {
 		if (expectedEntrySize > 0) {
 			_entries.reserve(expectedEntrySize);

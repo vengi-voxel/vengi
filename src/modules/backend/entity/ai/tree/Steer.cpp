@@ -10,6 +10,7 @@
 #include "core/GLM.h"
 #include "core/Assert.h"
 #include <vector>
+#include <glm/gtc/constants.hpp>
 
 namespace backend {
 

@@ -5,6 +5,7 @@
 #include "GroupSeek.h"
 #include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/zone/Zone.h"
+#include <glm/geometric.hpp>
 
 namespace backend {
 namespace movement {

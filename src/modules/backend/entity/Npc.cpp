@@ -12,6 +12,8 @@
 #include "ai/common/Random.h"
 #include "backend/entity/ai/tree/TreeNode.h"
 #include "backend/world/Map.h"
+#include <glm/trigonometric.hpp>
+#include <glm/gtc/constants.hpp>
 
 namespace backend {
 
@@ -112,7 +114,7 @@ void Npc::updateAIState() {
 	if (ai()->isDebuggingActive()) {
 		const core::String& posBuf = core::string::format("%.2f:%.2f:%.2f", _pos.x, _pos.y, _pos.z);
 		_aiChr->setAttribute(ai::attributes::POSITION, posBuf);
-		_aiChr->setAttribute(ai::attributes::ORIENTATION, core::string::toString(toDegrees(orientation())));
+		_aiChr->setAttribute(ai::attributes::ORIENTATION, core::string::toString(glm::degrees(orientation())));
 		const attrib::Attributes& attribs =  _attribs;
 		for (int i = 0; i <= (int)attrib::Type::MAX; ++i) {
 			const attrib::Type attribType = (attrib::Type)i;

@@ -133,7 +133,7 @@ bool Map::init() {
 	const core::String& biomesData = _filesystem->load("biomes.lua");
 	_pager->init(_voxelWorldMgr->volumeData(), worldParamData, biomesData);
 	_pager->setSeed(seed->uintVal());
-	_pager->setNoiseOffset(glm::zero<glm::vec2>());
+	_pager->setNoiseOffset(glm::vec2(0.0f));
 
 	_voxelWorldMgr->setSeed(seed->uintVal());
 	_zone = new Zone(core::string::format("Zone %i", _mapId));
