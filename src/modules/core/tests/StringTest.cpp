@@ -36,7 +36,7 @@ TEST_F(StringTest, testCopyCtorBigString) {
 
 TEST_F(StringTest, testMoveAssignment) {
 	String str("/foo/bar");
-	String str2(std::move(str));
+	String str2(core::move(str));
 	EXPECT_EQ("/foo/bar", str2);
 }
 

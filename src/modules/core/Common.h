@@ -102,4 +102,18 @@ struct remove_const {
 	typedef T type;
 };
 
+template<typename T>
+inline void exchange(T &a, T &b) {
+	const T tmp = core::move(a);
+	a = core::move(b);
+	b = core::move(tmp);
+}
+
+template<class T>
+struct Less {
+	constexpr bool operator()(const T &lhs, const T &rhs) const {
+		return lhs < rhs;
+	}
+};
+
 }

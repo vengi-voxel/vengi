@@ -15,13 +15,6 @@
 
 namespace core {
 
-template<class T>
-struct Less {
-	constexpr bool operator()(const T &lhs, const T &rhs) const {
-		return lhs < rhs;
-	}
-};
-
 template<class Data, class Comparator = Less<Data>>
 class ConcurrentQueue {
 private:

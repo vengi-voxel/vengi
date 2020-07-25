@@ -99,6 +99,7 @@ endif()
 
 set(TEST_SRCS
 	tests/AbstractTest.cpp
+	tests/AlgorithmTest.cpp
 	tests/AppTest.cpp
 	tests/ArrayTest.cpp
 	tests/BufferTest.cpp

@@ -53,7 +53,7 @@ public:
 		}
 
 		inline KeyValue(KeyValue &&other) :
-				key(std::move(other.key)), value(std::move(other.value)), next(
+				key(core::move(other.key)), value(core::move(other.value)), next(
 						nullptr), first(key), second(value) {
 		}
 

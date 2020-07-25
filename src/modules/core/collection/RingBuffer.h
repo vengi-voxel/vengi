@@ -144,7 +144,7 @@ public:
 		} else {
 			++_size;
 		}
-		_buffer[_back] = std::move(x);
+		_buffer[_back] = core::move(x);
 	}
 
 	/**

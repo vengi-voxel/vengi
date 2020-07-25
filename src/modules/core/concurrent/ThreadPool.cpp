@@ -54,7 +54,7 @@ void ThreadPool::init() {
 						Log::debug(logid, "Shutdown worker thread for %i", (int)getThreadId());
 						break;
 					}
-					task = std::move(this->_tasks.front());
+					task = core::move(this->_tasks.front());
 					this->_tasks.pop();
 				}
 

@@ -63,7 +63,7 @@ private:
 	}
 
 	Command(const core::String& name, FunctionType&& func) :
-		_name(name), _help(""), _func(std::move(func)) {
+		_name(name), _help(""), _func(core::move(func)) {
 	}
 
 	static void updateSortedList();
