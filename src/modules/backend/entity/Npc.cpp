@@ -10,6 +10,7 @@
 #include "ai/AI.h"
 #include "ai/zone/Zone.h"
 #include "ai/common/Random.h"
+#include "backend/entity/ai/tree/TreeNode.h"
 #include "backend/world/Map.h"
 
 namespace backend {

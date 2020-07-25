@@ -4,6 +4,7 @@
 
 #include "Zone.h"
 #include "core/Trace.h"
+#include "backend/entity/ai/tree/TreeNode.h"
 
 namespace backend {
 

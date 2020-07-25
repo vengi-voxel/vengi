@@ -3,6 +3,7 @@
  */
 
 #include "GroupMgr.h"
+#include <list>
 
 namespace backend {
 

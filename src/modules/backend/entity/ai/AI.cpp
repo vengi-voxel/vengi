@@ -3,6 +3,7 @@
  */
 
 #include "AI.h"
+#include "tree/TreeNode.h"
 
 namespace backend {
 

@@ -9,8 +9,7 @@
 #include "group/GroupId.h"
 #include "aggro/AggroMgr.h"
 #include "ICharacter.h"
-#include "tree/TreeNode.h"
-#include "tree/loaders/ITreeLoader.h"
+#include "ai-shared/common/TreeNodeStatus.h"
 #include "core/Trace.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/Atomic.h"
@@ -22,6 +21,9 @@ namespace backend {
 #ifndef AI_NOTHING_SELECTED
 #define AI_NOTHING_SELECTED (-1)
 #endif
+
+class TreeNode;
+typedef std::shared_ptr<TreeNode> TreeNodePtr;
 
 class ICharacter;
 typedef std::shared_ptr<ICharacter> ICharacterPtr;

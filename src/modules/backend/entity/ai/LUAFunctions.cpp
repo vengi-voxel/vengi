@@ -9,6 +9,7 @@
 #include "backend/entity/ai/zone/Zone.h"
 #include "backend/entity/ai/aggro/AggroMgr.h"
 #include "backend/entity/ai/common/Math.h"
+#include "backend/entity/ai/tree/TreeNode.h"
 #include "commonlua/LUAFunctions.h"
 #include "lua.h"
 
