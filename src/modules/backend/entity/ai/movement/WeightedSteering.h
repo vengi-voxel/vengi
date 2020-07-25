@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Steering.h"
-#include "core/Assert.h"
 #include <vector>
 
 namespace backend {

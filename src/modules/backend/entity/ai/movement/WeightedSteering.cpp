@@ -5,6 +5,7 @@
 #include "WeightedSteering.h"
 #include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/common/Math.h"
+#include "core/Assert.h"
 
 namespace backend {
 namespace movement {

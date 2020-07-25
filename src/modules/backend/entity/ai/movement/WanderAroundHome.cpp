@@ -9,11 +9,22 @@
 #include "glm/gtc/epsilon.hpp"
 #include "math/Random.h"
 #include "backend/entity/Npc.h"
+#include "backend/entity/ai/AICharacter.h"
+#include "core/StringUtil.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
 namespace backend {
 namespace movement {
+
+WanderAroundHome::WanderAroundHome(const core::String& parameter) :
+		movement::ISteering() {
+	if (parameter.empty()) {
+		_maxDistance = 40.0f;
+	} else {
+		_maxDistance = core::string::toFloat(parameter);
+	}
+}
 
 MoveVector WanderAroundHome::execute(const AIPtr& ai, float speed) const {
 	backend::Npc& npc = getNpc(ai);
