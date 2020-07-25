@@ -34,4 +34,9 @@ TEST(AlgorithmTest, testSort2) {
 	EXPECT_EQ(2, foo[1]);
 }
 
+TEST(AlgorithmTest, testEmpty) {
+	core::Array<int, 0> foo{};
+	core::sort(foo.begin(), foo.end(), core::Less<int>());
+}
+
 }
