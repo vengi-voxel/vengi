@@ -4,6 +4,7 @@
 
 #include "AggroMgr.h"
 #include <algorithm>
+#include <math.h>
 
 namespace backend {
 
@@ -24,7 +25,7 @@ static bool EntrySorter(const Entry& a, const Entry& b) {
 	if (a.getAggro() > b.getAggro()) {
 		return false;
 	}
-	if (::fabs(a.getAggro() - b.getAggro()) < 0.0000001f) {
+	if (fabs(a.getAggro() - b.getAggro()) < 0.0000001f) {
 		return a.getCharacterId() < b.getCharacterId();
 	}
 	return true;
