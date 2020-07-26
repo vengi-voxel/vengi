@@ -8,6 +8,7 @@
 #include "VoxFormat.h"
 #include "QBTFormat.h"
 #include "QBFormat.h"
+#include "QEFFormat.h"
 #include "VXMFormat.h"
 #include "VXLFormat.h"
 #include "CubFormat.h"
@@ -18,8 +19,11 @@
 
 namespace voxelformat {
 
-const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl";
+// this is the list of supported voxel volume formats that are have importers implemented
+const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl,qef";
+// this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
+// this is the list of supported voxel volume formats that have exporters implemented
 const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub,vxl";
 
 bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) {
@@ -75,6 +79,11 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		}
 	} else if (ext == "binvox") {
 		voxel::BinVoxFormat f;
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
+	} else if (ext == "qef") {
+		voxel::QEFFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}

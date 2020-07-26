@@ -31,6 +31,7 @@ General:
    - Support automatic loading different volume formats for assets
    - Support Command&Conquer vxl files
    - Support Ace of Spades map files (vxl)
+   - Support Qubicle exchange format (qef)
    - Perform mesh extraction in dedicated threads for simple volume rendering
    - Improved gizmo rendering and translation support
    - Fixed memory leaks on shutdown
