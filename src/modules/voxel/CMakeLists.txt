@@ -1,7 +1,7 @@
 set(LIB voxel)
 set(SRCS
 	Constants.h
-	RandomVoxel.h
+	RandomVoxel.h RandomVoxel.cpp
 	CubicSurfaceExtractor.h CubicSurfaceExtractor.cpp
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
