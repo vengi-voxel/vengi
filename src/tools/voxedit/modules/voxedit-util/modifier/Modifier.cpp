@@ -382,7 +382,7 @@ void Modifier::construct() {
 		setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the z axis");
 
-	core::Command::registerCommand("mirrornone", [&] (const core::CmdArgs& args) {
+	core::Command::registerCommand("mirroraxisnone", [&] (const core::CmdArgs& args) {
 		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
 	}).setHelp("Disable mirror axis");
 }
