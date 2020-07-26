@@ -8,7 +8,7 @@
 
 namespace tb {
 
-#define VERTEX_BATCH_SIZE 6 * 2048
+#define VERTEX_BATCH_SIZE 65536
 
 /** TBRendererBatcher is a helper class that implements batching of draw operations for a TBRenderer.
 	If you do not want to do your own batching you can subclass this class instead of TBRenderer.
