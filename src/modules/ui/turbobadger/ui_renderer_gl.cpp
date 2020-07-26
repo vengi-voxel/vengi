@@ -171,6 +171,9 @@ void UIRendererGL::flush() {
 }
 
 void UIRendererGL::renderBatch(Batch *batch) {
+	// TODO: skin ui elements and font is not in the same bitmap - thus we
+	// are switching bitmaps very often and render batches whenever text
+	// comes into play.
 	core_trace_scoped(UIAppRenderBatch);
 	bindBitmap(batch->bitmap);
 	core_assert_always(_vbo.update(_bufferIndex, batch->vertex, sizeof(Vertex) * batch->vertex_count));
