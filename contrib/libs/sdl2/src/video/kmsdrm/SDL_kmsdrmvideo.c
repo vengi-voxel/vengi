@@ -49,13 +49,14 @@
 #define KMSDRM_DRI_PATH "/dev/dri/"
 
 static int
-check_modestting(int devindex)
+check_modesetting(int devindex)
 {
     SDL_bool available = SDL_FALSE;
     char device[512];
     int drm_fd;
 
     SDL_snprintf(device, sizeof (device), "%scard%d", KMSDRM_DRI_PATH, devindex);
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "check_modesetting: probing \"%s\"", device);
 
     drm_fd = open(device, O_RDWR | O_CLOEXEC);
     if (drm_fd >= 0) {
@@ -67,7 +68,22 @@ check_modestting(int devindex)
                              resources->count_connectors, resources->count_encoders, resources->count_crtcs);
 
                 if (resources->count_connectors > 0 && resources->count_encoders > 0 && resources->count_crtcs > 0) {
-                    available = SDL_TRUE;
+                    for (int i = 0; i < resources->count_connectors; i++) {
+                        drmModeConnector *conn = KMSDRM_drmModeGetConnector(drm_fd, resources->connectors[i]);
+
+                        if (!conn) {
+                            continue;
+                        }
+
+                        if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
+                            available = SDL_TRUE;
+                        }
+
+                        KMSDRM_drmModeFreeConnector(conn);
+                        if (available) {
+                            break;
+                        }
+                    }
                 }
                 KMSDRM_drmModeFreeResources(resources);
             }
@@ -120,7 +136,7 @@ get_driindex(void)
     int i;
 
     for (i = 0; i < devcount; i++) {
-        if (check_modestting(i)) {
+        if (check_modesetting(i)) {
             return i;
         }
     }
@@ -158,6 +174,10 @@ KMSDRM_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *viddata;
+
+    if (!KMSDRM_Available()) {
+        return NULL;
+    }
 
     if (!devindex || (devindex > 99)) {
         devindex = get_driindex();
@@ -235,7 +255,6 @@ cleanup:
 VideoBootStrap KMSDRM_bootstrap = {
     "KMSDRM",
     "KMS/DRM Video Driver",
-    KMSDRM_Available,
     KMSDRM_CreateDevice
 };
 
@@ -404,7 +423,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     EGLContext egl_context;
 #endif
 
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm, surface_fmt, surface_flags)) {
+    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
     }
 
@@ -415,7 +434,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     KMSDRM_DestroySurfaces(_this, window);
 
-    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm, width, height, surface_fmt, surface_flags);
+    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, width, height, surface_fmt, surface_flags);
 
     if (!windata->gs) {
         return SDL_SetError("Could not create GBM surface");
@@ -430,8 +449,12 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
 
-    windata->egl_surface_dirty = 0;
+    windata->egl_surface_dirty = SDL_FALSE;
 #endif
+
+    /* We can't call KMSDRM_SetCRTC() until we have a fb_id, in KMSDRM_GLES_SwapWindow().
+       So we take note here to do it there. */
+    windata->crtc_setup_pending = SDL_TRUE;
 
     return 0;
 }
@@ -468,8 +491,8 @@ KMSDRM_VideoInit(_THIS)
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opened DRM FD (%d)", viddata->drm_fd);
 
-    viddata->gbm = KMSDRM_gbm_create_device(viddata->drm_fd);
-    if (!viddata->gbm) {
+    viddata->gbm_dev = KMSDRM_gbm_create_device(viddata->drm_fd);
+    if (!viddata->gbm_dev) {
         ret = SDL_SetError("Couldn't create gbm device.");
         goto cleanup;
     }
@@ -642,9 +665,9 @@ cleanup:
             KMSDRM_drmModeFreeCrtc(dispdata->saved_crtc);
             dispdata->saved_crtc = NULL;
         }
-        if (viddata->gbm) {
-            KMSDRM_gbm_device_destroy(viddata->gbm);
-            viddata->gbm = NULL;
+        if (viddata->gbm_dev) {
+            KMSDRM_gbm_device_destroy(viddata->gbm_dev);
+            viddata->gbm_dev = NULL;
         }
         if (viddata->drm_fd >= 0) {
             close(viddata->drm_fd);
@@ -693,9 +716,9 @@ KMSDRM_VideoQuit(_THIS)
         KMSDRM_drmModeFreeCrtc(dispdata->saved_crtc);
         dispdata->saved_crtc = NULL;
     }
-    if (viddata->gbm) {
-        KMSDRM_gbm_device_destroy(viddata->gbm);
-        viddata->gbm = NULL;
+    if (viddata->gbm_dev) {
+        KMSDRM_gbm_device_destroy(viddata->gbm_dev);
+        viddata->gbm_dev = NULL;
     }
     if (viddata->drm_fd >= 0) {
         close(viddata->drm_fd);
@@ -749,17 +772,11 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 
     for (int i = 0; i < viddata->num_windows; i++) {
         SDL_Window *window = viddata->windows[i];
-        SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
-#if SDL_VIDEO_OPENGL_EGL
-        /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
-           so the correct thread-local surface and context state are available */
-        windata->egl_surface_dirty = 1;
-#else
+        /* Re-create GBM and EGL surfaces everytime we change the display mode. */
         if (KMSDRM_CreateSurfaces(_this, window)) {
             return -1;
         }
-#endif
 
         /* Tell app about the resize */
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
@@ -790,9 +807,42 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         goto error;
     }
 
-    /* In case low-latency is wanted, double-buffered video will be used. We take note here */
-    windata->double_buffer = SDL_FALSE;
+    /* Init windata fields. */
+    windata->waiting_for_flip   = SDL_FALSE;
+    windata->double_buffer      = SDL_FALSE;
+    windata->crtc_setup_pending = SDL_FALSE;
+    windata->egl_surface_dirty  = SDL_FALSE;
 
+
+    /* First remember that certain functions in SDL_Video.c will call *_SetDisplayMode when the
+       SDL_WINDOW_FULLSCREEN is set and SDL_WINDOW_FULLSCREEN_DESKTOP is not set.
+       So I am determining here that the behavior when creating an SDL_Window() in KMSDRM, is:
+
+       -Creating a normal non-fullscreen window won't change the display mode.
+        They won't cover the full screen area, either, because that breaks the image aspect ratio.
+       -Creating a SDL_WINDOW_FULLSCREEN window will change the display mode,
+        because SDL_WINDOW_FULLSCREEN flag is set.
+       -Creating a SDL_WINDOW_FULLSCREEN_DESKTOP window will not change the display mode,
+        because even if the SDL_WINDOW_FULLSCREEN flag is set, SDL_WINDOW_FULLSCREEN_DESKTOP prevents it.
+
+      If we ever decide that we want to have normal windows (non-SDL_WINDOW_FULLSCREEN) should cause a display
+      mode change, we could force the SDL_WINDOW_FULLSCREEN flag again on every window.
+      But remember that it will break games that check if a window is FULLSCREEN or not before setting
+      a fullscreen mode with SDL_SetWindowFullscreen(), like sm64ex (sm64 pc port).
+      If we ever decide that we want normal windows to cover the whole screen area, we can force window->w
+      and window->h to the original display mode dimensions.
+
+    Commented reference code for all this:
+       
+    window->flags |= (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+
+    window->w = display->desktop_mode.w;
+    window->h = display->desktop_mode.h; */
+
+
+    /* In case low-latency is wanted, double-buffered video will be used. We take note here */
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
         windata->double_buffer = SDL_TRUE;
     }

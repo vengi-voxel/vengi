@@ -39,7 +39,7 @@ typedef struct SDL_VideoData
 {
     int devindex;               /* device index that was passed on creation */
     int drm_fd;                 /* DRM file desc */
-    struct gbm_device *gbm;
+    struct gbm_device *gbm_dev;
 
     SDL_Window **windows;
     int max_windows;
@@ -71,8 +71,9 @@ typedef struct SDL_WindowData
     struct gbm_bo *crtc_bo;
     SDL_bool waiting_for_flip;
     SDL_bool double_buffer;
+    SDL_bool crtc_setup_pending;
 #if SDL_VIDEO_OPENGL_EGL
-    int egl_surface_dirty;
+    SDL_bool egl_surface_dirty;
     EGLSurface egl_surface;
 #endif
 } SDL_WindowData;

@@ -25,6 +25,7 @@
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoaopengles.h"
 #include "SDL_cocoaopengl.h"
+#include "SDL_assert.h"
 
 /* EGL implementation of SDL OpenGL support */
 
@@ -109,10 +110,12 @@ Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window)
 
 
     if (_this->egl_data == NULL) {
+        SDL_assert(!_this->gl_config.driver_loaded);
         if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0) < 0) {
             SDL_EGL_UnloadLibrary(_this);
             return -1;
         }
+        _this->gl_config.driver_loaded = 1;
     }
   
     /* Create the GLES window surface */
