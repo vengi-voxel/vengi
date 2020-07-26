@@ -330,9 +330,19 @@ core::AppState IMGUIApp::onRunning() {
 	ImGui::EndFrame();
 	ImGui::Render();
 
+	executeDrawCommands();
+
+	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+	return core::AppState::Running;
+}
+
+void IMGUIApp::executeDrawCommands() {
+	core_trace_scoped(ExecuteDrawCommands);
+
+	ImGuiIO& io = ImGui::GetIO();
 	ImDrawData* drawData = ImGui::GetDrawData();
 	drawData->ScaleClipRects(io.DisplayFramebufferScale);
-
+	int64_t drawCommands = 0;
 	for (int n = 0; n < drawData->CmdListsCount; ++n) {
 		const ImDrawList* cmdList = drawData->CmdLists[n];
 		const ImDrawIdx* idxBufferOffset = nullptr;
@@ -351,12 +361,11 @@ core::AppState IMGUIApp::onRunning() {
 				video::scissor(cr.x, cr.y, cr.z - cr.x, cr.w - cr.y);
 				video::drawElements<ImDrawIdx>(video::Primitive::Triangles, cmd->ElemCount, (void*)idxBufferOffset);
 			}
+			++drawCommands;
 			idxBufferOffset += cmd->ElemCount;
 		}
 	}
-
-	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-	return core::AppState::Running;
+	core_trace_plot("UIDrawCommands", drawCommands);
 }
 
 core::AppState IMGUIApp::onCleanup() {

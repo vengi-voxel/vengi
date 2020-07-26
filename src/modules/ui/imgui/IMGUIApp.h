@@ -37,6 +37,8 @@ protected:
 	core::String _writePathIni;
 	core::String _writePathLog;
 
+	void executeDrawCommands();
+
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual bool onTextInput(const core::String& text) override;

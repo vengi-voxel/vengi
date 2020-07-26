@@ -10,6 +10,7 @@
 #include "video/TextureAtlasRenderer.h"
 #include "core/UTF8.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 #include "core/Color.h"
 #include "core/io/Filesystem.h"
 #include "core/Assert.h"
@@ -458,6 +459,7 @@ core::AppState NuklearApp::onRunning() {
 	if (convertRes == NK_CONVERT_SUCCESS) {
 		const nk_draw_index *offset = nullptr;
 		const struct nk_draw_command *cmd;
+		int64_t drawCommands = 0;
 		nk_draw_foreach(cmd, &_ctx, &_cmds) {
 			if (!cmd->elem_count) {
 				continue;
@@ -466,7 +468,9 @@ core::AppState NuklearApp::onRunning() {
 			video::scissor(cmd->clip_rect.x, cmd->clip_rect.y, cmd->clip_rect.w, cmd->clip_rect.h);
 			video::drawElements(video::Primitive::Triangles, (size_t) cmd->elem_count, video::mapType<nk_draw_index>(), (void*) offset);
 			offset += cmd->elem_count;
+			++drawCommands;
 		}
+		core_trace_plot("UIDrawCommands", drawCommands);
 	} else {
 		 if (convertRes & NK_CONVERT_INVALID_PARAM) {
 			Log::warn("An invalid argument was passed in the function call");
