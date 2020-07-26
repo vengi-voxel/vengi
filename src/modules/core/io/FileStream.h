@@ -130,6 +130,7 @@ public:
 	 * @param[in] terminated If this is true, the read will stop on a 0 byte
 	 */
 	bool readString(int length, char *strbuff, bool terminated = false);
+	bool readLine(int length, char *strbuff);
 	bool readFormat(const char *fmt, ...);
 
 	int peekInt(uint32_t& val) const;

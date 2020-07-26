@@ -179,6 +179,37 @@ bool FileStream::readString(int length, char *strbuff, bool terminated) {
 	return true;
 }
 
+bool FileStream::readLine(int length, char *strbuff) {
+	for (int i = 0; i < length; ++i) {
+		if (_pos >= _size) {
+			Log::error("Max stream length exceeded while reading string of length: %i (read: %i)", length, i);
+			return false;
+		}
+		uint8_t chr;
+		if (readByte(chr) != 0) {
+			Log::error("Stream read error while reading string of length: %i (read: %i)", length, i);
+			return false;
+		}
+		if (chr == '\r') {
+			strbuff[i] = '\0';
+			if (peek(chr) == 0) {
+				if (chr == '\n') {
+					skip(1);
+				}
+			}
+			break;
+		} else if (chr == '\n') {
+			strbuff[i] = '\0';
+			break;
+		}
+		strbuff[i] = chr;
+		if (chr == '\0') {
+			break;
+		}
+	}
+	return true;
+}
+
 int FileStream::readByte(uint8_t& val) {
 	const int retVal = peek(val);
 	if (retVal == 0) {
