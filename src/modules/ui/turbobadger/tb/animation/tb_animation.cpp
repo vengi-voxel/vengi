@@ -4,6 +4,7 @@
 
 #include "animation/tb_animation.h"
 #include "core/Assert.h"
+#include "core/Trace.h"
 #include "tb_system.h"
 
 namespace tb {
@@ -57,6 +58,7 @@ void TBAnimationManager::abortAllAnimations() {
 
 // static
 void TBAnimationManager::update() {
+	core_trace_scoped(AnimationManagerUpdate);
 	double time_now = TBSystem::getTimeMS();
 
 	TBLinkListOf<TBAnimationObject>::Iterator iter = animating_objects.iterateForward();

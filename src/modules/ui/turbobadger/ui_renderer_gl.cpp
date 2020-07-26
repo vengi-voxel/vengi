@@ -7,6 +7,7 @@
 #include "video/Renderer.h"
 #include "core/GLM.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 #include <tb_bitmap_fragment.h>
 #include <tb_system.h>
 
@@ -115,6 +116,7 @@ bool UIRendererGL::init(const glm::ivec2& pixelDimensions, const glm::ivec2& scr
 }
 
 void UIRendererGL::beginPaint(int pixelWidth, int pixelHeight) {
+	core_trace_scoped(UIAppBeginPaint);
 #ifdef TB_RUNTIME_DEBUG_INFO
 	tb_dbg_bitmap_validations = 0;
 #endif
@@ -136,6 +138,7 @@ void UIRendererGL::beginPaint(int pixelWidth, int pixelHeight) {
 }
 
 void UIRendererGL::endPaint() {
+	core_trace_scoped(UIAppEndPaint);
 	TBRendererBatcher::endPaint();
 	_shader.deactivate();
 
@@ -168,6 +171,7 @@ void UIRendererGL::flush() {
 }
 
 void UIRendererGL::renderBatch(Batch *batch) {
+	core_trace_scoped(UIAppRenderBatch);
 	bindBitmap(batch->bitmap);
 	core_assert_always(_vbo.update(_bufferIndex, batch->vertex, sizeof(Vertex) * batch->vertex_count));
 
