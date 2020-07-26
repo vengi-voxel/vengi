@@ -1467,7 +1467,8 @@ bool SceneManager::init() {
 	const char *paletteName = core::Var::getSafe(cfg::VoxEditLastPalette)->strVal().c_str();
 	const io::FilesystemPtr& filesystem = io::filesystem();
 	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName));
-	if (!voxel::initMaterialColors(paletteFile, io::FilePtr())) {
+	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", paletteName));
+	if (!voxel::initMaterialColors(paletteFile, luaFile)) {
 		Log::warn("Failed to initialize the palette data for %s, falling back to default", paletteName);
 		if (!voxel::initDefaultMaterialColors()) {
 			Log::error("Failed to initialize the palette data");

@@ -4,6 +4,9 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 ## 0.0.6 (2020-XX-XX)
 
+VoxEdit:
+
+   - Fixed loading palette lua script with material definitions
 
 ## 0.0.5 (2020-07-26)
 

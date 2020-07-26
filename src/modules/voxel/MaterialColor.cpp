@@ -296,7 +296,12 @@ bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFi
 			Log::warn("Failed to load %s", luaFile->name().c_str());
 		} else {
 			luaString = luaFile->load();
+			if (luaString.empty()) {
+				Log::warn("No lua material definitions in %s", luaFile->name().c_str());
+			}
 		}
+	} else {
+		Log::warn("No lua material definition file given");
 	}
 	const image::ImagePtr& img = image::loadImage(paletteFile, false);
 	if (!img->isLoaded()) {
