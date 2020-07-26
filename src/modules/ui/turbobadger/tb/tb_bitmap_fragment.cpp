@@ -364,7 +364,7 @@ void TBBitmapFragmentMap::deleteBitmap() {
 // == TBBitmapFragmentManager =============================================================================
 
 TBBitmapFragmentManager::TBBitmapFragmentManager()
-	: m_num_maps_limit(0), m_add_border(false), m_default_map_w(512), m_default_map_h(512) {
+	: m_num_maps_limit(0), m_add_border(false), m_default_map_w(2048), m_default_map_h(2048) {
 }
 
 TBBitmapFragmentManager::~TBBitmapFragmentManager() {
