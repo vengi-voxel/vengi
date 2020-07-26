@@ -506,7 +506,7 @@ void TBSkin::paintElementImage(const TBRect &dstRect, TBSkinElement *element) {
 
 void TBSkin::paintElementTile(const TBRect &dstRect, TBSkinElement *element) {
 	const TBRect &rect = dstRect.expand(element->expand, element->expand);
-	g_renderer->drawBitmapTile(rect, element->bitmap->getBitmap());
+	g_renderer->drawBitmapTile(rect, element->bitmap->getBitmap(TB_VALIDATE_ALWAYS));
 }
 
 void TBSkin::paintElementStretchImage(const TBRect &dstRect, TBSkinElement *element) {

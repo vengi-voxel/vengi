@@ -94,7 +94,7 @@ public:
 
 	/** Return the bitmap for this map.
 		By default, the bitmap is validated if needed before returning (See TB_VALIDATE_TYPE) */
-	TBBitmap *getBitmap(TB_VALIDATE_TYPE validate_type = TB_VALIDATE_ALWAYS);
+	TBBitmap *getBitmap(TB_VALIDATE_TYPE validate_type);
 
 private:
 	friend class TBBitmapFragmentManager;
@@ -126,7 +126,7 @@ public:
 
 	/** Return the bitmap for this fragment.
 		By default, the bitmap is validated if needed before returning (See TB_VALIDATE_TYPE) */
-	TBBitmap *getBitmap(TB_VALIDATE_TYPE validateType = TB_VALIDATE_ALWAYS) {
+	TBBitmap *getBitmap(TB_VALIDATE_TYPE validateType) {
 		return m_map->getBitmap(validateType);
 	}
 

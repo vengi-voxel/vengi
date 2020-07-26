@@ -494,7 +494,7 @@ void TBBitmapFragmentManager::debug() {
 	int x = 0;
 	for (int i = 0; i < m_fragment_maps.getNumItems(); i++) {
 		TBBitmapFragmentMap *fm = m_fragment_maps[i];
-		if (TBBitmap *bitmap = fm->getBitmap()) {
+		if (TBBitmap *bitmap = fm->getBitmap(TB_VALIDATE_ALWAYS)) {
 			g_renderer->drawBitmap(TBRect(x, 0, fm->m_bitmap_w, fm->m_bitmap_h),
 								   TBRect(0, 0, fm->m_bitmap_w, fm->m_bitmap_h), bitmap);
 		}
