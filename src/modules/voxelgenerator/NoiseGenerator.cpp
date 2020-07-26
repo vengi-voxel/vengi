@@ -16,7 +16,7 @@ static inline float getNoise(const glm::ivec2& pos, int octaves, float lacunarit
 	const glm::vec2 fpos(pos.x * frequency, pos.y * frequency);
 	switch (type) {
 	case NoiseType::ridgedMF:
-		return ::noise::ridgedMF(fpos, octaves, lacunarity, gain);
+		return ::noise::ridgedMF(fpos, 0.0f, octaves, lacunarity, gain);
 	default:
 		return 0.0f;
 	}
