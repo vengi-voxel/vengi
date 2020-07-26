@@ -8,7 +8,7 @@
 
 namespace glm {
 	namespace neon {
-		static float32x4_t dupq_lane(float32x4_t vsrc, int lane) {
+		static inline float32x4_t dupq_lane(float32x4_t vsrc, int lane) {
 			switch(lane) {
 #if GLM_ARCH & GLM_ARCH_ARMV8_BIT
 				case 0: return vdupq_laneq_f32(vsrc, 0);
@@ -26,7 +26,7 @@ namespace glm {
 			return vdupq_n_f32(0.0f);
 		}
 
-		static float32x2_t dup_lane(float32x4_t vsrc, int lane) {
+		static inline float32x2_t dup_lane(float32x4_t vsrc, int lane) {
 			switch(lane) {
 #if GLM_ARCH & GLM_ARCH_ARMV8_BIT
 				case 0: return vdup_laneq_f32(vsrc, 0);
@@ -44,7 +44,7 @@ namespace glm {
 			return vdup_n_f32(0.0f);
 		}
 
-		static float32x4_t copy_lane(float32x4_t vdst, int dlane, float32x4_t vsrc, int slane) {
+		static inline float32x4_t copy_lane(float32x4_t vdst, int dlane, float32x4_t vsrc, int slane) {
 #if GLM_ARCH & GLM_ARCH_ARMV8_BIT
 			switch(dlane) {
 				case 0:
@@ -102,7 +102,7 @@ namespace glm {
 			return vdupq_n_f32(0.0f);
 		}
 
-		static float32x4_t mul_lane(float32x4_t v, float32x4_t vlane, int lane) {
+		static inline float32x4_t mul_lane(float32x4_t v, float32x4_t vlane, int lane) {
 #if GLM_ARCH & GLM_ARCH_ARMV8_BIT
 			switch(lane) { 
 				case 0: return vmulq_laneq_f32(v, vlane, 0); break;
@@ -119,7 +119,7 @@ namespace glm {
 #endif
 		}
 
-		static float32x4_t madd_lane(float32x4_t acc, float32x4_t v, float32x4_t vlane, int lane) {
+		static inline float32x4_t madd_lane(float32x4_t acc, float32x4_t v, float32x4_t vlane, int lane) {
 #if GLM_ARCH & GLM_ARCH_ARMV8_BIT
 #ifdef GLM_CONFIG_FORCE_FMA
 #	define FMADD_LANE(acc, x, y, L) do { asm volatile ("fmla %0.4s, %1.4s, %2.4s" : "+w"(acc) : "w"(x), "w"(dup_lane(y, L))); } while(0)
