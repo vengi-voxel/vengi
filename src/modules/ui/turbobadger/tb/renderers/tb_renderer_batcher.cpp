@@ -64,8 +64,9 @@ void TBRendererBatcher::Batch::flush(TBRendererBatcher *batchRenderer) {
 
 TBRendererBatcher::Vertex *TBRendererBatcher::Batch::reserve(TBRendererBatcher *batchRenderer, int count) {
 	core_assert(count < VERTEX_BATCH_SIZE);
-	if (vertex_count + count > VERTEX_BATCH_SIZE)
+	if (vertex_count + count > VERTEX_BATCH_SIZE) {
 		flush(batchRenderer);
+	}
 	Vertex *ret = &vertex[vertex_count];
 	vertex_count += count;
 	return ret;
@@ -122,8 +123,9 @@ TBRect TBRendererBatcher::setClipRect(const TBRect &rect, bool addToCurrent) {
 	m_clip_rect.x += m_translation_x;
 	m_clip_rect.y += m_translation_y;
 
-	if (addToCurrent)
+	if (addToCurrent) {
 		m_clip_rect = m_clip_rect.clip(old_clip_rect);
+	}
 
 	flushAllInternal();
 	setClipRect(m_clip_rect);
@@ -235,8 +237,9 @@ void TBRendererBatcher::flushAllInternal() {
 
 void TBRendererBatcher::flushBitmap(TBBitmap *bitmap) {
 	// Flush the batch if it's using this bitmap (that is about to change or be deleted)
-	if (batch.vertex_count && bitmap == batch.bitmap)
+	if (batch.vertex_count && bitmap == batch.bitmap) {
 		batch.flush(this);
+	}
 }
 
 void TBRendererBatcher::flushBitmapFragment(TBBitmapFragment *bitmapFragment) {
@@ -245,8 +248,9 @@ void TBRendererBatcher::flushBitmapFragment(TBBitmapFragment *bitmapFragment) {
 	// batch_id in our (one and only) batch.
 	// If we switch to a more advance batching system with multiple batches, we need to
 	// solve this a bit differently.
-	if (batch.vertex_count && bitmapFragment->m_batch_id == batch.batch_id)
+	if (batch.vertex_count && bitmapFragment->m_batch_id == batch.batch_id) {
 		batch.flush(this);
+	}
 }
 
 } // namespace tb
