@@ -26,7 +26,7 @@ protected:
 TEST_F(MovementTest, testFlee) {
 	movement::TargetFlee flee("0:0:0");
 	const AIPtr& ai = std::make_shared<AI>(TreeNodePtr());
-	const ICharacterPtr& entity = std::make_shared<ICharacter>(1);
+	const ICharacterPtr& entity = core::make_shared<ICharacter>(1);
 	ai->setCharacter(entity);
 
 	// flee to the left (negative x)
@@ -57,7 +57,7 @@ TEST_F(MovementTest, testFlee) {
 TEST_F(MovementTest, testWanderWithoutOrientationChange) {
 	backend::movement::Wander wander("0.0");
 	const AIPtr& ai = std::make_shared<AI>(TreeNodePtr());
-	const ICharacterPtr& entity = std::make_shared<ICharacter>(1);
+	const ICharacterPtr& entity = core::make_shared<ICharacter>(1);
 	ai->setCharacter(entity);
 
 	const double eps = 0.00001;
@@ -100,7 +100,7 @@ TEST_F(MovementTest, testWeightedSteering) {
 
 	Zone zone("movementTest");
 	const AIPtr& ai = std::make_shared<AI>(TreeNodePtr());
-	const ICharacterPtr& entity = std::make_shared<ICharacter>(1);
+	const ICharacterPtr& entity = core::make_shared<ICharacter>(1);
 	ai->setCharacter(entity);
 	entity->setOrientation(0.0f);
 	entity->setPosition(glm::vec3(0, 0, 0));

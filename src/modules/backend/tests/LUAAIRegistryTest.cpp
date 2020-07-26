@@ -17,7 +17,7 @@ protected:
 	LUAAIRegistry _registry;
 	static core::String _luaCode;
 	const ai::CharacterId _id = 1;
-	ICharacterPtr _chr = std::make_shared<TestEntity>(_id);
+	ICharacterPtr _chr = core::make_shared<TestEntity>(_id);
 	const ConditionFactoryContext ctxCondition = ConditionFactoryContext("");
 	const FilterFactoryContext ctxFilter = FilterFactoryContext("");
 	const SteeringFactoryContext ctxSteering = SteeringFactoryContext("");

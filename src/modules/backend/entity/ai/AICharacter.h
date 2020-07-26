@@ -6,7 +6,6 @@
 
 #include "ICharacter.h"
 #include "AI.h"
-#include <memory>
 
 namespace backend {
 
@@ -29,7 +28,7 @@ public:
 	}
 };
 
-typedef std::shared_ptr<AICharacter> AICharacterPtr;
+typedef core::SharedPtr<AICharacter> AICharacterPtr;
 
 inline Npc& getNpc(const AIPtr& ai) {
 	const ICharacterPtr& chr = ai->getCharacter();

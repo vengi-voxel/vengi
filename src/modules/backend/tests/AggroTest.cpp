@@ -3,6 +3,7 @@
  */
 
 #include "TestShared.h"
+#include "core/SharedPtr.h"
 
 namespace backend {
 
@@ -12,8 +13,8 @@ public:
 		backend::AggroMgr mgr(max);
 		for (int i = 1; i <= max; ++i) {
 			const ai::CharacterId id = i;
-			backend::ICharacterPtr e(new TestEntity(id));
-			backend::AIPtr ai(new backend::AI(backend::TreeNodePtr()));
+			backend::ICharacterPtr e = core::make_shared<TestEntity>(id);
+			backend::AIPtr ai = std::make_shared<backend::AI>(backend::TreeNodePtr());
 			ai->setCharacter(e);
 			backend::Entry* entry = mgr.addAggro(id, i);
 			entry->setReduceByValue(i);
@@ -29,8 +30,8 @@ public:
 TEST_F(AggroTest, testAggroMgr) {
 	backend::AggroMgr mgr;
 	const ai::CharacterId id = 1;
-	backend::ICharacterPtr entity(new TestEntity(id));
-	backend::AIPtr ai(new backend::AI(backend::TreeNodePtr()));
+	backend::ICharacterPtr entity = core::make_shared<TestEntity>(id);
+	backend::AIPtr ai = std::make_shared<backend::AI>(backend::TreeNodePtr());
 	ai->setCharacter(entity);
 	mgr.addAggro(id, 1.0f);
 	const backend::EntryPtr& entry = mgr.getHighestEntry();
@@ -63,8 +64,8 @@ TEST_F(AggroTest, testAggroMgrDegradeValue) {
 	const float reduceBySecond = 0.1f;
 	backend::AggroMgr mgr;
 	const ai::CharacterId id = 1;
-	backend::ICharacterPtr entity(new TestEntity(id));
-	backend::AIPtr ai(new backend::AI(backend::TreeNodePtr()));
+	backend::ICharacterPtr entity = core::make_shared<TestEntity>(id);
+	backend::AIPtr ai = std::make_shared<backend::AI>(backend::TreeNodePtr());
 	ai->setCharacter(entity);
 	mgr.addAggro(id, expectedAggro);
 	const backend::EntryPtr& entry = mgr.getHighestEntry();

@@ -15,11 +15,11 @@ class ZoneTest: public TestSuite {
 TEST_F(ZoneTest, testChanges) {
 	Zone zone("test1");
 	TreeNodePtr root = std::make_shared<PrioritySelector>("test", "", True::get());
-	ICharacterPtr character = std::make_shared<TestEntity>(1);
+	ICharacterPtr character = core::make_shared<TestEntity>(1);
 	AIPtr ai = std::make_shared<AI>(root);
 	ai->setCharacter(character);
 
-	ICharacterPtr character2 = std::make_shared<TestEntity>(2);
+	ICharacterPtr character2 = core::make_shared<TestEntity>(2);
 	AIPtr ai2 = std::make_shared<AI>(root);
 	ai2->setCharacter(character2);
 
@@ -43,7 +43,7 @@ TEST_F(ZoneTest, testAdd100) {
 	TreeNodePtr root = std::make_shared<PrioritySelector>("test", "", True::get());
 	const int n = 100;
 	for (int i = 0; i < n; ++i) {
-		ICharacterPtr character = std::make_shared<TestEntity>(i);
+		ICharacterPtr character = core::make_shared<TestEntity>(i);
 		AIPtr ai = std::make_shared<AI>(root);
 		ai->setCharacter(character);
 		ASSERT_TRUE(zone.addAI(ai)) << "Could not add ai to the zone";

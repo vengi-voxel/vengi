@@ -27,7 +27,7 @@ Npc::Npc(network::EntityType type, const TreeNodePtr& behaviour,
 		_cooldowns(timeProvider, cooldownProvider) {
 	_entityType = type;
 	_ai = std::make_shared<AI>(behaviour);
-	_aiChr = std::make_shared<AICharacter>(_entityId, *this);
+	_aiChr = core::make_shared<AICharacter>(_entityId, *this);
 	_ai->setCharacter(_aiChr);
 	_aiChr->setOrientation(randomf(glm::two_pi<float>()));
 	_aiChr->setAttribute(ai::attributes::NAME, core::string::format("%s " PRIEntId, this->type(), _entityId));

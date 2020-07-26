@@ -26,7 +26,7 @@ class TreeNode;
 typedef std::shared_ptr<TreeNode> TreeNodePtr;
 
 class ICharacter;
-typedef std::shared_ptr<ICharacter> ICharacterPtr;
+typedef core::SharedPtr<ICharacter> ICharacterPtr;
 class Zone;
 
 /**

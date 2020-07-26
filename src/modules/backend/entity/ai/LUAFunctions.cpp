@@ -497,7 +497,7 @@ static int luaAI_charactersetorientation(lua_State* s) {
 static int luaAI_charactereq(lua_State* s) {
 	const luaAI_ICharacter* a = luaAI_tocharacter(s, 1);
 	const luaAI_ICharacter* b = luaAI_tocharacter(s, 2);
-	const bool e = *a->character == *b->character;
+	const bool e = a->character == b->character;
 	lua_pushboolean(s, e);
 	return 1;
 }

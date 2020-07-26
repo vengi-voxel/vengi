@@ -6,9 +6,9 @@
 #include "ai-shared/common/CharacterId.h"
 #include "ai-shared/common/CharacterAttributes.h"
 #include "core/String.h"
+#include "core/SharedPtr.h"
 #include "core/NonCopyable.h"
 #include <glm/vec3.hpp>
-#include <memory>
 
 namespace backend {
 
@@ -138,6 +138,6 @@ inline float ICharacter::getSpeed() const {
 	return _speed;
 }
 
-typedef std::shared_ptr<ICharacter> ICharacterPtr;
+typedef core::SharedPtr<ICharacter> ICharacterPtr;
 
 }

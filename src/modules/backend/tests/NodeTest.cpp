@@ -24,6 +24,7 @@
 #include "backend/entity/ai/condition/IsInGroup.h"
 #include "backend/entity/ai/condition/IsGroupLeader.h"
 #include "backend/entity/ai/condition/IsCloseToGroup.h"
+#include <memory>
 
 namespace backend {
 
@@ -44,8 +45,8 @@ TEST_F(NodeTest, testSequence) {
 	node->addChild(idle1);
 	node->addChild(idle2);
 
-	AIPtr ai(new AI(node));
-	ICharacterPtr chr(new ICharacter(1));
+	AIPtr ai = std::make_shared<AI>(node);
+	ICharacterPtr chr = core::make_shared<ICharacter>(1);
 	ai->setCharacter(chr);
 	ai->update(1, true);
 	ai->getBehaviour()->execute(ai, 1);
@@ -77,8 +78,8 @@ TEST_F(NodeTest, testIdle) {
 	backend::Idle::Factory f;
 	backend::TreeNodeFactoryContext ctx("testidle", "1000", backend::True::get());
 	TreeNodePtr node = f.create(&ctx);
-	AIPtr entity(new AI(node));
-	ICharacterPtr chr(new ICharacter(1));
+	AIPtr entity = std::make_shared<AI>(node);
+	ICharacterPtr chr = core::make_shared<ICharacter>(1);
 	entity->setCharacter(chr);
 	ASSERT_EQ(ai::RUNNING, node->execute(entity, 1));
 	ASSERT_EQ(ai::FINISHED, node->execute(entity, 1000));
@@ -98,8 +99,8 @@ TEST_F(NodeTest, testParallel) {
 	node->addChild(idle1);
 	node->addChild(idle2);
 
-	AIPtr e(new AI(node));
-	ICharacterPtr chr(new ICharacter(1));
+	AIPtr e = std::make_shared<AI>(node);
+	ICharacterPtr chr = core::make_shared<ICharacter>(1);
 	e->setCharacter(chr);
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
@@ -129,8 +130,8 @@ TEST_F(NodeTest, testPrioritySelector) {
 	node->addChild(idle1);
 	node->addChild(idle2);
 
-	AIPtr e(new AI(node));
-	ICharacterPtr chr(new ICharacter(1));
+	AIPtr e = std::make_shared<AI>(node);
+	ICharacterPtr chr = core::make_shared<ICharacter>(1);
 	e->setCharacter(chr);
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
@@ -160,8 +161,8 @@ TEST_F(NodeTest, testPrioritySelectorWithCondition) {
 	node->addChild(idle1);
 	node->addChild(idle2);
 
-	AIPtr e(new AI(node));
-	ICharacterPtr chr(new ICharacter(1));
+	AIPtr e = std::make_shared<AI>(node);
+	ICharacterPtr chr = core::make_shared<ICharacter>(1);
 	e->setCharacter(chr);
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);

@@ -11,16 +11,16 @@ TEST_F(GroupMgrTest, testMassGroupAveragePosition) {
 	const glm::vec3 pos2(300.0f, 300.0f, 0.0f);
 	for (int i = 1; i <= 2; ++i) {
 		const ai::CharacterId id = i;
-		AIPtr e(new AI(TreeNodePtr()));
-		ICharacterPtr chr(new ICharacter(id));
+		AIPtr e = std::make_shared<AI>(TreeNodePtr());
+		ICharacterPtr chr = core::make_shared<ICharacter>(id);
 		e->setCharacter(chr);
 		chr->setPosition(pos1);
 		_groupManager.add(groupId, e);
 	}
 	for (int i = 3; i <= 4; ++i) {
 		const ai::CharacterId id = i;
-		AIPtr e(new AI(TreeNodePtr()));
-		ICharacterPtr chr(new ICharacter(id));
+		AIPtr e = std::make_shared<AI>(TreeNodePtr());
+		ICharacterPtr chr = core::make_shared<ICharacter>(id);
 		e->setCharacter(chr);
 		chr->setPosition(pos2);
 		_groupManager.add(groupId, e);
@@ -40,8 +40,8 @@ public:
 	inline void addMass(int max, GroupId groupId, TestEntities& ais, GroupMgr& mgr) const {
 		for (int i = 1; i <= max; ++i) {
 			const ai::CharacterId id = i;
-			AIPtr e(new AI(TreeNodePtr()));
-			ICharacterPtr chr(new ICharacter(id));
+			AIPtr e = std::make_shared<AI>(TreeNodePtr());
+			ICharacterPtr chr = core::make_shared<ICharacter>(id);
 			e->setCharacter(chr);
 			ais.push_back(e);
 			mgr.add(groupId, e);
@@ -70,8 +70,8 @@ public:
 TEST_F(GroupTest, testGroupAddRemove) {
 	const GroupId id = 1;
 	GroupMgr groupMgr;
-	AIPtr entity1(new AI(TreeNodePtr()));
-	ICharacterPtr chr(new ICharacter(id));
+	AIPtr entity1 = std::make_shared<AI>(TreeNodePtr());
+	ICharacterPtr chr = core::make_shared<ICharacter>(id);
 	entity1->setCharacter(chr);
 	ASSERT_TRUE(groupMgr.add(id, entity1));
 	ASSERT_FALSE(groupMgr.remove(0, entity1));
@@ -82,8 +82,8 @@ TEST_F(GroupTest, testGroupAddRemove) {
 TEST_F(GroupTest, testGroupIsInAny) {
 	const GroupId id = 1;
 	GroupMgr groupMgr;
-	AIPtr entity1(new AI(TreeNodePtr()));
-	ICharacterPtr chr(new ICharacter(id));
+	AIPtr entity1 = std::make_shared<AI>(TreeNodePtr());
+	ICharacterPtr chr = core::make_shared<ICharacter>(id);
 	entity1->setCharacter(chr);
 	ASSERT_TRUE(groupMgr.add(id, entity1));
 	ASSERT_TRUE(groupMgr.isInAnyGroup(entity1));
@@ -94,12 +94,12 @@ TEST_F(GroupTest, testGroupIsInAny) {
 TEST_F(GroupTest, testGroupSize) {
 	const GroupId id = 1;
 	GroupMgr groupMgr;
-	AIPtr entity1(new AI(TreeNodePtr()));
-	ICharacterPtr chr(new ICharacter(id));
+	AIPtr entity1 = std::make_shared<AI>(TreeNodePtr());
+	ICharacterPtr chr = core::make_shared<ICharacter>(id);
 	entity1->setCharacter(chr);
 	ASSERT_TRUE(groupMgr.add(id, entity1));
-	AIPtr entity2(new AI(TreeNodePtr()));
-	entity2->setCharacter(ICharacterPtr(new ICharacter(2)));
+	AIPtr entity2 = std::make_shared<AI>(TreeNodePtr());
+	entity2->setCharacter(core::make_shared<ICharacter>(2));
 	ASSERT_TRUE(groupMgr.add(id, entity2));
 	ASSERT_EQ(2, groupMgr.getGroupSize(id));
 }
@@ -107,15 +107,15 @@ TEST_F(GroupTest, testGroupSize) {
 TEST_F(GroupTest, testGroupLeader) {
 	const GroupId id = 1;
 	GroupMgr groupMgr;
-	AIPtr entity1(new AI(TreeNodePtr()));
-	ICharacterPtr chr(new ICharacter(id));
+	AIPtr entity1 = std::make_shared<AI>(TreeNodePtr());
+	ICharacterPtr chr = core::make_shared<ICharacter>(id);
 	entity1->setCharacter(chr);
 	ASSERT_TRUE(groupMgr.add(id, entity1));
 	AIPtr entity2(new AI(TreeNodePtr()));
-	entity2->setCharacter(ICharacterPtr(new ICharacter(2)));
+	entity2->setCharacter(core::make_shared<ICharacter>(2));
 	ASSERT_TRUE(groupMgr.add(id, entity2));
 	AIPtr entity3(new AI(TreeNodePtr()));
-	entity3->setCharacter(ICharacterPtr(new ICharacter(3)));
+	entity3->setCharacter(core::make_shared<ICharacter>(3));
 	ASSERT_TRUE(groupMgr.add(id, entity3));
 	ASSERT_EQ(3, groupMgr.getGroupSize(id));
 	ASSERT_TRUE(groupMgr.isGroupLeader(id, entity1));
@@ -131,16 +131,16 @@ TEST_F(GroupTest, testGroupAveragePosition) {
 	const GroupId id = 1;
 	glm::vec3 avg(0.0f);
 	GroupMgr groupMgr;
-	AIPtr entity1(new AI(TreeNodePtr()));
-	ICharacterPtr chr(new ICharacter(id));
+	AIPtr entity1 = std::make_shared<AI>(TreeNodePtr());
+	ICharacterPtr chr = core::make_shared<ICharacter>(id);
 	entity1->setCharacter(chr);
 	chr->setPosition(glm::vec3(1.0f, 1.0f, 0.0f));
 	ASSERT_TRUE(groupMgr.add(id, entity1));
 	groupMgr.update(0);
 	EXPECT_TRUE(groupMgr.getPosition(id, avg));
 	ASSERT_EQ(glm::vec3(1.0f, 1.0f, 0.0f), avg);
-	AIPtr entity2(new AI(TreeNodePtr()));
-	entity2->setCharacter(ICharacterPtr(new ICharacter(2)));
+	AIPtr entity2 = std::make_shared<AI>(TreeNodePtr());
+	entity2->setCharacter(core::make_shared<ICharacter>(2));
 	entity2->getCharacter()->setPosition(glm::vec3(3.0f, 3.0f, 0.0f));
 	ASSERT_TRUE(groupMgr.add(id, entity2));
 	groupMgr.update(0);
@@ -180,14 +180,14 @@ TEST_F(GroupMassTest, testIsInAnyGroupMass100x100) {
 TEST_F(GroupTest, testGroupRemove) {
 	const GroupId id = 1;
 	GroupMgr groupMgr;
-	AIPtr entity1(new AI(TreeNodePtr()));
-	entity1->setCharacter(ICharacterPtr(new ICharacter(1)));
+	AIPtr entity1 = std::make_shared<AI>(TreeNodePtr());
+	entity1->setCharacter(core::make_shared<ICharacter>(1));
 	ASSERT_TRUE(groupMgr.add(id, entity1));
-	AIPtr entity2(new AI(TreeNodePtr()));
-	entity2->setCharacter(ICharacterPtr(new ICharacter(2)));
+	AIPtr entity2 = std::make_shared<AI>(TreeNodePtr());
+	entity2->setCharacter(core::make_shared<ICharacter>(2));
 	ASSERT_TRUE(groupMgr.add(id, entity2));
-	AIPtr entity3(new AI(TreeNodePtr()));
-	entity3->setCharacter(ICharacterPtr(new ICharacter(3)));
+	AIPtr entity3 = std::make_shared<AI>(TreeNodePtr());
+	entity3->setCharacter(core::make_shared<ICharacter>(3));
 	ASSERT_TRUE(groupMgr.add(id, entity3));
 	ASSERT_EQ(3, groupMgr.getGroupSize(id));
 	ASSERT_TRUE(groupMgr.remove(id, entity1));

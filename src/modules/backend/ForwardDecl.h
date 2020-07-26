@@ -30,14 +30,14 @@ class TreeNode;
 typedef std::shared_ptr<TreeNode> TreeNodePtr;
 
 class ICharacter;
-typedef std::shared_ptr<ICharacter> ICharacterPtr;
+typedef core::SharedPtr<ICharacter> ICharacterPtr;
 class Zone;
 
 class AI;
 typedef std::shared_ptr<AI> AIPtr;
 
 class AICharacter;
-typedef std::shared_ptr<AICharacter> AICharacterPtr;
+typedef core::SharedPtr<AICharacter> AICharacterPtr;
 
 }
 
