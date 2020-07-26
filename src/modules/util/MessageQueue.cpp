@@ -4,6 +4,7 @@
 
 #include "MessageQueue.h"
 #include "core/command/Command.h"
+#include <algorithm>
 
 namespace {
 const double MessageDelay = 2.0;
