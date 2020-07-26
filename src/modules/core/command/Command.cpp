@@ -50,14 +50,14 @@ bool Command::unregisterCommand(const char* name) {
 ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button) {
 	ScopedWriteLock lock(_lock);
 	const Command cPressed("+" + name, [&] (const core::CmdArgs& args) {
-		const int32_t key = args[0].toInt();
-		const double seconds = core::string::toDouble(args[1]);
+		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
+		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
 		button.handleDown(key, seconds);
 	});
 	_cmds.put(cPressed.name(), cPressed);
 	const Command cReleased("-" + name, [&] (const core::CmdArgs& args) {
-		const int32_t key = args[0].toInt();
-		const double seconds = core::string::toDouble(args[1]);
+		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
+		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
 		button.handleUp(key, seconds);
 	});
 	_cmds.put(cReleased.name(), cReleased);
