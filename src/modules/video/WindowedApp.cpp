@@ -395,12 +395,7 @@ core::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientOpenGLVersion, "3.3", core::CV_READONLY);
 	core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
-#ifdef DEBUG
-	const char *defaultSyncValue = "false";
-#else
-	const char *defaultSyncValue = "true";
-#endif
-	core::Var::get(cfg::ClientVSync, defaultSyncValue);
+	core::Var::get(cfg::ClientVSync, "true")->setHelp("Limit the framerate to the monitor refresh rate");
 
 	_keybindingHandler.construct();
 
