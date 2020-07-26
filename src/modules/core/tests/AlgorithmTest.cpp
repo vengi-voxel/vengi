@@ -35,8 +35,33 @@ TEST(AlgorithmTest, testSort2) {
 }
 
 TEST(AlgorithmTest, testEmpty) {
-	core::Array<int, 0> foo{};
-	core::sort(foo.begin(), foo.end(), core::Less<int>());
+	core::Array<int, 2> foo{{0, -1}};
+	core::sort(foo.begin(), foo.begin(), core::Less<int>());
+	EXPECT_EQ(0, foo[0]);
+	EXPECT_EQ(-1, foo[1]);
+}
+
+TEST(AlgorithmTest, testPartially) {
+	core::Array<int, 5> foo{{0, -1, -2, -4, -6}};
+	core::sort(foo.begin(), core::next(foo.begin(), 2), core::Less<int>());
+	EXPECT_EQ(-1, foo[0]);
+	EXPECT_EQ( 0, foo[1]);
+	EXPECT_EQ(-2, foo[2]);
+	EXPECT_EQ(-4, foo[3]);
+	EXPECT_EQ(-6, foo[4]);
+}
+
+TEST(AlgorithmTest, testNext) {
+	core::Array<int, 5> foo{{0, -1, -2, -4, -6}};
+	auto iter = foo.begin();
+	EXPECT_EQ(iter, core::next(foo.begin(), 0));
+	++iter;
+	EXPECT_EQ(iter, core::next(foo.begin(), 1));
+}
+
+TEST(AlgorithmTest, testDistance) {
+	core::Array<int, 5> foo{{0, -1, -2, -4, -6}};
+	EXPECT_EQ((int)foo.size(), core::distance(foo.begin(), foo.end()));
 }
 
 }
