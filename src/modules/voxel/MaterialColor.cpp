@@ -15,6 +15,7 @@
 #include "core/collection/Array.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
+#include "voxel/Voxel.h"
 #include <vector>
 
 namespace voxel {
@@ -54,6 +55,7 @@ public:
 		Log::info("Set up %i material colors", (int)_materialColors.size());
 
 		if (_materialColors.size() != colors) {
+			Log::warn("Color amount mismatch");
 			return false;
 		}
 
@@ -166,9 +168,13 @@ public:
 	inline const MaterialColorIndices& getColorIndices(VoxelType type) const {
 		auto i = _colorMapping.find(type);
 		if (i == _colorMapping.end()) {
-			static MaterialColorIndices Empty(0);
-			Log::warn("Could not find color indices for voxel type %s", VoxelTypeStr[(int)type]);
-			return Empty;
+			Log::warn("Could not find color indices for voxel type %s - use generic", VoxelTypeStr[(int)type]);
+			i = _colorMapping.find(VoxelType::Generic);
+			if (i == _colorMapping.end()) {
+				Log::error("Could not find color indices for voxel type generic");
+				static MaterialColorIndices Empty(0);
+				return Empty;
+			}
 		}
 		return i->second;
 	}

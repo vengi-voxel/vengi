@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/Voxel.h"
+#include "core/Assert.h"
 #include "math/Random.h"
 #include "MaterialColor.h"
 
@@ -30,6 +31,7 @@ public:
 	 */
 	RandomVoxel(VoxelType type, const math::Random& random, int sameCount = 3) :
 			indices(getMaterialIndices(type)), _random(random), _type(type), _sameCount(sameCount) {
+		core_assert(!indices.empty());
 	}
 
 	inline operator Voxel() const {
