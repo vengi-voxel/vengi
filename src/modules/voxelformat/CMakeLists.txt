@@ -8,6 +8,7 @@ set(SRCS
 	VoxFormat.h VoxFormat.cpp
 	QBTFormat.h QBTFormat.cpp
 	QBFormat.h QBFormat.cpp
+	QEFFormat.h QEFFormat.cpp
 	VXMFormat.h VXMFormat.cpp
 	VXLFormat.h VXLFormat.cpp
 	MeshCache.h MeshCache.cpp
@@ -25,6 +26,7 @@ set(TEST_SRCS
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
+	tests/QEFFormatTest.cpp
 	tests/CubFormatTest.cpp
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
@@ -34,6 +36,7 @@ set(TEST_SRCS
 set(TEST_FILES
 	tests/qubicle.qb
 	tests/qubicle.qbt
+	tests/qubicle.qef
 	tests/aceofspades.vxl
 	tests/cc.vxl
 	tests/test.binvox
