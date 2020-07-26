@@ -7,6 +7,9 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 VoxEdit:
 
    - Fixed loading palette lua script with material definitions
+   - Fixed error in resetting mirror axis
+   - Fixed noise generation
+   - Reduced palette widget size
 
 ## 0.0.5 (2020-07-26)
 

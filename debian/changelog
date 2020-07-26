@@ -2,6 +2,9 @@ vengi (0.0.6.0-1) UNRELEASED; urgency=low
 
   * VoxEdit:
   * Fixed loading palette lua script with material definitions
+  * Fixed error in resetting mirror axis
+  * Fixed noise generation
+  * Reduced palette widget size
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 26 Jul 2020 16:17:11 +0200
 
