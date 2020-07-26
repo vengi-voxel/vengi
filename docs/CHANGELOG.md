@@ -2,7 +2,7 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
-## 0.0.5 (2020-XX-XX)
+## 0.0.5 (2020-07-26)
 
 Client:
 

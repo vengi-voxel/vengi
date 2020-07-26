@@ -1,4 +1,4 @@
-vengi (0.0.5.0-1) UNRELEASED; urgency=low
+vengi (0.0.5.0-1) unstable; urgency=low
 
   * Client:
   * Fixed movement
@@ -28,7 +28,7 @@ vengi (0.0.5.0-1) UNRELEASED; urgency=low
   * Fixed memory leaks on shutdown
   * Improved profiling support via tracy
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 7 Jun 2020 10:32:10 +0200
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 26 Jul 2020 10:32:10 +0200
 
 vengi (0.0.4.0-1) unstable; urgency=low
 
