@@ -1704,11 +1704,11 @@ void TBWidget::setHoveredWidget(TBWidget *widget, bool touch) {
 
 	TBWidget::hovered_widget = widget;
 
-	if (widget->getWantCaptureOnHover()) {
+	if (widget && widget->getWantCaptureOnHover()) {
 		setCapturedWidget(widget);
 	}
 
-	if (widget->getWantFocusOnHover()) {
+	if (widget && widget->getWantFocusOnHover()) {
 		widget->setFocus(WIDGET_FOCUS_REASON_POINTER);
 	}
 
