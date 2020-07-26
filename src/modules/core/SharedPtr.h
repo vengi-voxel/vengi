@@ -17,6 +17,8 @@ namespace core {
 template<class T>
 class SharedPtr {
 private:
+	template <typename U> friend class SharedPtr;
+
 	struct __enableIfHelper {
 		int b;
 	};
