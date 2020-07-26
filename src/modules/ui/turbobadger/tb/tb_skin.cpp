@@ -304,6 +304,9 @@ bool TBSkin::reloadBitmapsInternal() {
 	// to avoid filtering artifacts.
 	uint32_t data[4] = {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
 	m_color_frag = m_frag_manager.createNewFragment(TBID((uint32_t)0), false, 2, 2, 2, data);
+	if (m_color_frag == nullptr) {
+		return false;
+	}
 	m_color_frag->m_rect = m_color_frag->m_rect.shrink(1, 1);
 	return success;
 }
