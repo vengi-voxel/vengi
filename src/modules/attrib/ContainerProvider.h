@@ -18,8 +18,7 @@ namespace attrib {
  * @code
  * function init()
  *  local example = attrib.createContainer("example")
- *  example:absolute("ATTACKRANGE", 2.0)
- *  example:register()
+ *  example:addAbsolute("ATTACKRANGE", 2.0)
  * end
  * @endcode
  * @ingroup Attributes
