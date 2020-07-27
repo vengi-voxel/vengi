@@ -65,7 +65,7 @@ bool setThreadName(const char *name) {
 	}
 
 	if (pSetThreadDescription != nullptr) {
-		wchar_t wname[512];
+		wchar_t wname[512] = "";
 		mbstowcs(wname, name, 512);
 		pSetThreadDescription(GetCurrentThread(), wname);
 		return true;
