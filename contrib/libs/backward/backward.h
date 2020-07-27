@@ -612,9 +612,9 @@ inline std::vector<std::string> split_source_prefixes(const std::string &s) {
   std::vector<std::string> out;
   size_t last = 0;
   size_t next = 0;
-  size_t delimiter_size = sizeof(kBackwardPathDelimiter)-1;
+  size_t delimiter_size = sizeof(kBackwardPathDelimiter) - 1;
   while ((next = s.find(kBackwardPathDelimiter, last)) != std::string::npos) {
-    out.push_back(s.substr(last, next-last));
+    out.push_back(s.substr(last, next - last));
     last = next + delimiter_size;
   }
   if (last <= s.length()) {
@@ -730,7 +730,7 @@ private:
 class StackTraceImplHolder : public StackTraceImplBase {
 public:
   size_t size() const {
-    return _stacktrace.size() ? _stacktrace.size() - skip_n_firsts() : 0;
+    return (_stacktrace.size() >= skip_n_firsts()) ? _stacktrace.size() - skip_n_firsts() : 0;
   }
   Trace operator[](size_t idx) const {
     if (idx >= size()) {
@@ -1004,15 +1004,14 @@ private:
 
 #ifdef BACKWARD_SYSTEM_LINUX
 
-class TraceResolverLinuxBase
-    : public TraceResolverImplBase {
+class TraceResolverLinuxBase : public TraceResolverImplBase {
 public:
   TraceResolverLinuxBase()
-    : argv0_(get_argv0()), exec_path_(read_symlink("/proc/self/exe")) {
-  }
+      : argv0_(get_argv0()), exec_path_(read_symlink("/proc/self/exe")) {}
   std::string resolve_exec_path(Dl_info &symbol_info) const {
-    // mutates symbol_info.dli_fname to be filename to open and returns filename to display
-    if(symbol_info.dli_fname == argv0_) {
+    // mutates symbol_info.dli_fname to be filename to open and returns filename
+    // to display
+    if (symbol_info.dli_fname == argv0_) {
       // dladdr returns argv[0] in dli_fname for symbols contained in
       // the main executable, which is not a valid path if the
       // executable was found by a search of the PATH environment
@@ -1025,13 +1024,15 @@ public:
       return symbol_info.dli_fname;
     }
   }
+
 private:
   std::string argv0_;
   std::string exec_path_;
 
   static std::string get_argv0() {
     std::string argv0;
-    std::getline(std::ifstream("/proc/self/cmdline"), argv0, '\0');
+    std::ifstream ifs("/proc/self/cmdline");
+    std::getline(ifs, argv0, '\0');
     return argv0;
   }
 
@@ -1390,11 +1391,23 @@ private:
     if (result.found)
       return;
 
+#ifdef bfd_get_section_flags
     if ((bfd_get_section_flags(fobj.handle.get(), section) & SEC_ALLOC) == 0)
+#else
+    if ((bfd_section_flags(section) & SEC_ALLOC) == 0)
+#endif
       return; // a debug section is never loaded automatically.
 
+#ifdef bfd_get_section_vma
     bfd_vma sec_addr = bfd_get_section_vma(fobj.handle.get(), section);
+#else
+    bfd_vma sec_addr = bfd_section_vma(section);
+#endif
+#ifdef bfd_get_section_size
     bfd_size_type size = bfd_get_section_size(section);
+#else
+    bfd_size_type size = bfd_section_size(section);
+#endif
 
     // are we in the boundaries of the section?
     if (addr < sec_addr || addr >= sec_addr + size) {
@@ -3400,12 +3413,13 @@ public:
     // 1. If BACKWARD_CXX_SOURCE_PREFIXES is set then assume it contains
     //    a colon-separated list of path prefixes.  Try prepending each
     //    to the given path until a valid file is found.
-    const std::vector<std::string>& prefixes = get_paths_from_env_variable();
+    const std::vector<std::string> &prefixes = get_paths_from_env_variable();
     for (size_t i = 0; i < prefixes.size(); ++i) {
       // Double slashes (//) should not be a problem.
       std::string new_path = prefixes[i] + '/' + path;
       _file.reset(new std::ifstream(new_path.c_str()));
-      if (is_open()) break;
+      if (is_open())
+        break;
     }
     // 2. If no valid file found then fallback to opening the path as-is.
     if (!_file || !is_open()) {
@@ -3509,14 +3523,14 @@ private:
 
   std::vector<std::string> get_paths_from_env_variable_impl() {
     std::vector<std::string> paths;
-    const char* prefixes_str = std::getenv("BACKWARD_CXX_SOURCE_PREFIXES");
+    const char *prefixes_str = std::getenv("BACKWARD_CXX_SOURCE_PREFIXES");
     if (prefixes_str && prefixes_str[0]) {
       paths = details::split_source_prefixes(prefixes_str);
     }
     return paths;
   }
 
-  const std::vector<std::string>& get_paths_from_env_variable() {
+  const std::vector<std::string> &get_paths_from_env_variable() {
     static std::vector<std::string> paths = get_paths_from_env_variable_impl();
     return paths;
   }
@@ -3920,7 +3934,8 @@ public:
 #elif defined(__aarch64__)
     error_addr = reinterpret_cast<void *>(uctx->uc_mcontext.pc);
 #elif defined(__mips__)
-    error_addr = reinterpret_cast<void *>(reinterpret_cast<struct sigcontext*>(&uctx->uc_mcontext)->sc_pc);
+    error_addr = reinterpret_cast<void *>(
+        reinterpret_cast<struct sigcontext *>(&uctx->uc_mcontext)->sc_pc);
 #elif defined(__ppc__) || defined(__powerpc) || defined(__powerpc__) ||        \
     defined(__POWERPC__)
     error_addr = reinterpret_cast<void *>(uctx->uc_mcontext.regs->nip);
