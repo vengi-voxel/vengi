@@ -142,7 +142,8 @@ class SwiftGenerator : public BaseGenerator {
     code_.Clear();
     code_.SetValue("ACCESS", "_accessor");
     code_.SetValue("TABLEOFFSET", "VTOFFSET");
-    code_ += "// " + std::string(FlatBuffersGeneratedWarning()) + "\n";
+    code_ += "// " + std::string(FlatBuffersGeneratedWarning());
+    code_ += "// swiftlint:disable all\n";
     code_ += "import FlatBuffers\n";
     // Generate code for all the enum declarations.
 
@@ -438,14 +439,16 @@ class SwiftGenerator : public BaseGenerator {
     code_ += "; return end }";
 
     if (should_generate_create) {
-      code_ +=
-          "public static func create{{STRUCTNAME}}(_ fbb: inout "
-          "FlatBufferBuilder,";
+      code_ += "public static func create{{STRUCTNAME}}(";
+      Indent();
+      code_ += "_ fbb: inout FlatBufferBuilder,";
       for (auto it = create_func_header.begin(); it < create_func_header.end();
            ++it) {
         code_ += *it + "\\";
         if (it < create_func_header.end() - 1) code_ += ",";
       }
+      code_ += "";
+      Outdent();
       code_ += ") -> Offset<UOffset> {";
       Indent();
       code_ += "let __start = {{STRUCTNAME}}.start{{STRUCTNAME}}(&fbb)";
@@ -485,13 +488,14 @@ class SwiftGenerator : public BaseGenerator {
   void GenTableWriterFields(const FieldDef &field,
                             std::vector<std::string> *create_body,
                             std::vector<std::string> *create_header) {
-    std::string builder_string = ", _ fbb: inout FlatBufferBuilder) { fbb.add(";
+    std::string builder_string = ", _ fbb: inout FlatBufferBuilder) { ";
     auto &create_func_body = *create_body;
     auto &create_func_header = *create_header;
     auto name = Name(field);
     auto type = GenType(field.value.type);
+    auto nullable_type = (field.nullable ? type + "?" : type);
     code_.SetValue("VALUENAME", name);
-    code_.SetValue("VALUETYPE", type);
+    code_.SetValue("VALUETYPE", nullable_type);
     code_.SetValue("OFFSET", name);
     code_.SetValue("CONSTANT", field.value.constant);
     std::string check_if_vector =
@@ -506,26 +510,47 @@ class SwiftGenerator : public BaseGenerator {
 
     if (IsScalar(field.value.type.base_type) &&
         !IsBool(field.value.type.base_type)) {
+      std::string is_enum = IsEnum(field.value.type) ? ".rawValue" : "";
+      code_ +=
+          "{{VALUETYPE}}" + builder_string + "fbb.add(element: {{VALUENAME}}\\";
+
+      code_ += field.nullable ? "\\" : (is_enum + ", def: {{CONSTANT}}\\");
+
+      code_ += ", at: {{TABLEOFFSET}}.{{OFFSET}}.p) }";
+
       auto default_value = IsEnum(field.value.type) ? GenEnumDefaultValue(field)
                                                     : field.value.constant;
-      auto is_enum = IsEnum(field.value.type) ? ".rawValue" : "";
-      code_ += "{{VALUETYPE}}" + builder_string + "element: {{VALUENAME}}" +
-               is_enum +
-               ", def: {{CONSTANT}}, at: {{TABLEOFFSET}}.{{OFFSET}}.p) }";
-      create_func_header.push_back("" + name + ": " + type + " = " +
-                                   default_value);
+      create_func_header.push_back("" + name + ": " + nullable_type + " = " +
+                                   (field.nullable ? "nil" : default_value));
       return;
     }
 
     if (IsBool(field.value.type.base_type)) {
       std::string default_value =
           "0" == field.value.constant ? "false" : "true";
-      code_.SetValue("VALUETYPE", "Bool");
+
       code_.SetValue("CONSTANT", default_value);
+      code_.SetValue("VALUETYPE", field.nullable ? "Bool?" : "Bool");
       code_ += "{{VALUETYPE}}" + builder_string +
-               "element: {{VALUENAME}}, def: {{CONSTANT}}, at: "
-               "{{TABLEOFFSET}}.{{OFFSET}}.p) }";
-      create_func_header.push_back(name + ": " + type + " = " + default_value);
+               "fbb.add(element: {{VALUENAME}},\\";
+      code_ += field.nullable ? "\\" : " def: {{CONSTANT}},";
+      code_ += " at: {{TABLEOFFSET}}.{{OFFSET}}.p) }";
+      create_func_header.push_back(name + ": " + nullable_type + " = " +
+                                   (field.nullable ? "nil" : default_value));
+      return;
+    }
+
+    if (IsStruct(field.value.type)) {
+      auto struct_type = "UnsafeMutableRawPointer?";
+      auto camel_case_name = "structOf" + MakeCamel(name, true);
+      create_func_header.push_back(camel_case_name + " " + name + ": " +
+                                   struct_type + " = nil");
+      auto create_struct =
+          "guard let {{VALUENAME}} = {{VALUENAME}} else { return }; "
+          "fbb.create(struct: {{VALUENAME}}, type: {{VALUETYPE}}.self); ";
+      auto reader_type =
+          "fbb.add(structOffset: {{TABLEOFFSET}}.{{OFFSET}}.p) }";
+      code_ += struct_type + builder_string + create_struct + reader_type;
       return;
     }
 
@@ -544,7 +569,7 @@ class SwiftGenerator : public BaseGenerator {
         IsStruct(field.value.type) && field.value.type.struct_def->fixed
             ? "structOffset: {{TABLEOFFSET}}.{{OFFSET}}.p) }"
             : "offset: {{VALUENAME}}, at: {{TABLEOFFSET}}.{{OFFSET}}.p)  }";
-    code_ += offset_type + builder_string + reader_type;
+    code_ += offset_type + builder_string + "fbb.add(" + reader_type;
   }
 
   void GenTableReaderFields(const FieldDef &field) {
@@ -555,11 +580,13 @@ class SwiftGenerator : public BaseGenerator {
     code_.SetValue("VALUETYPE", type);
     code_.SetValue("OFFSET", name);
     code_.SetValue("CONSTANT", field.value.constant);
-    std::string const_string = "return o == 0 ? {{CONSTANT}} : ";
+    std::string nullable = field.nullable ? "nil" : "{{CONSTANT}}";
+    std::string optional = field.nullable ? "?" : "";
+    auto const_string = "return o == 0 ? " + nullable + " : ";
     GenComment(field.doc_comment);
     if (IsScalar(field.value.type.base_type) && !IsEnum(field.value.type) &&
         !IsBool(field.value.type.base_type)) {
-      code_ += GenReaderMainBody() + GenOffset() + const_string +
+      code_ += GenReaderMainBody(optional) + GenOffset() + const_string +
                GenReader("VALUETYPE", "o") + " }";
       if (parser_.opts.mutable_buffer) code_ += GenMutate("o", GenOffset());
       return;
@@ -570,7 +597,7 @@ class SwiftGenerator : public BaseGenerator {
           "0" == field.value.constant ? "false" : "true";
       code_.SetValue("CONSTANT", default_value);
       code_.SetValue("VALUETYPE", "Bool");
-      code_ += GenReaderMainBody() + "\\";
+      code_ += GenReaderMainBody(optional) + "\\";
       code_.SetValue("VALUETYPE", "Byte");
       code_ += GenOffset() + "return o == 0 ? {{CONSTANT}} : 0 != " +
                GenReader("VALUETYPE", "o") + " }";
@@ -581,7 +608,7 @@ class SwiftGenerator : public BaseGenerator {
     if (IsEnum(field.value.type)) {
       auto default_value = GenEnumDefaultValue(field);
       code_.SetValue("BASEVALUE", GenTypeBasic(field.value.type, false));
-      code_ += GenReaderMainBody() + "\\";
+      code_ += GenReaderMainBody(optional) + "\\";
       code_ += GenOffset() + "return o == 0 ? " + default_value + " : " +
                GenEnumConstructor("o") + "?? " + default_value + " }";
       if (parser_.opts.mutable_buffer && !IsUnion(field.value.type))
@@ -869,16 +896,20 @@ class SwiftGenerator : public BaseGenerator {
         case BASE_TYPE_STRUCT: {
           if (field.value.type.struct_def &&
               field.value.type.struct_def->fixed) {
-            std::string struct_builder =
-                type + ".pack(&builder, obj: &obj." + name + ")";
-            unpack_body.push_back("{{STRUCTNAME}}." + body + struct_builder +
-                                  builder);
+            // This is a Struct (IsStruct), not a table. We create
+            // UnsafeMutableRawPointer in this case.
+            std::string code;
+            GenerateStructArgs(*field.value.type.struct_def, &code, "", "",
+                               "$0", true);
+            code = code.substr(0, code.size() - 2);
+            code_ += "let __" + name + " = obj." + name + ".map { create" +
+                     field.value.type.struct_def->name + "(" + code + ") }";
           } else {
-            unpack_body.push_back("{{STRUCTNAME}}." + body + "__" + name +
-                                  builder);
             code_ += "let __" + name + " = " + type +
                      ".pack(&builder, obj: &obj." + name + ")";
           }
+          unpack_body.push_back("{{STRUCTNAME}}." + body + "__" + name +
+                                builder);
           break;
         }
         case BASE_TYPE_STRING: {
@@ -1044,11 +1075,12 @@ class SwiftGenerator : public BaseGenerator {
       }
       default: {
         buffer_constructor.push_back(name + " = _t." + name);
-
+        std::string nullable = field.nullable ? "?" : "";
         if (IsScalar(field.value.type.base_type) &&
             !IsBool(field.value.type.base_type) && !IsEnum(field.value.type)) {
-          code_ += "var {{VALUENAME}}: {{VALUETYPE}}";
-          base_constructor.push_back(name + " = " + field.value.constant);
+          code_ += "var {{VALUENAME}}: {{VALUETYPE}}" + nullable;
+          if (!field.nullable)
+            base_constructor.push_back(name + " = " + field.value.constant);
           break;
         }
 
@@ -1062,10 +1094,11 @@ class SwiftGenerator : public BaseGenerator {
         }
 
         if (IsBool(field.value.type.base_type)) {
-          code_ += "var {{VALUENAME}}: Bool";
+          code_ += "var {{VALUENAME}}: Bool" + nullable;
           std::string default_value =
               "0" == field.value.constant ? "false" : "true";
-          base_constructor.push_back(name + " = " + default_value);
+          if (!field.nullable)
+            base_constructor.push_back(name + " = " + default_value);
         }
       }
     }

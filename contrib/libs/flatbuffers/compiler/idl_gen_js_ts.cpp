@@ -134,12 +134,14 @@ class JsTsGenerator : public BaseGenerator {
       return;
     }
 
+    std::unordered_set<std::string> imported;
+
     std::string &code = *code_ptr;
     for (auto it = reexports.begin(); it != reexports.end(); ++it) {
       const auto &file = *it;
       const auto basename =
           flatbuffers::StripPath(flatbuffers::StripExtension(file.first));
-      if (basename != file_name_) {
+      if (basename != file_name_ && imported.find(file.second.symbol) == imported.end()) {
         if (imported_files.find(file.first) == imported_files.end()) {
           code += GenPrefixedImport(file.first, basename);
           imported_files.emplace(file.first);
@@ -155,6 +157,8 @@ class JsTsGenerator : public BaseGenerator {
         }
         code += file.second.symbol + ";\n";
         if (!file.second.target_namespace.empty()) { code += "}\n"; }
+
+        imported.emplace(file.second.symbol);
       }
     }
   }
@@ -214,7 +218,7 @@ class JsTsGenerator : public BaseGenerator {
          ++it) {
       if (lang_.language == IDLOptions::kTs) {
         if (it->find('.') == std::string::npos) {
-          code += "import { flatbuffers } from \"./flatbuffers\"\n";
+          code += "import * as flatbuffers from 'flatbuffers';\n";
           break;
         }
       } else {
@@ -366,7 +370,7 @@ class JsTsGenerator : public BaseGenerator {
       code += (it + 1) != enum_def.Vals().end() ? ",\n" : "\n";
 
       if (ev.union_type.struct_def) {
-        ReexportDescription desc = { ev.name,
+        ReexportDescription desc = { ev.union_type.struct_def->name,
                                      GetNameSpace(*ev.union_type.struct_def),
                                      GetNameSpace(enum_def) };
         reexports.insert(
@@ -969,17 +973,30 @@ class JsTsGenerator : public BaseGenerator {
     std::string constructor_func = "constructor(";
     constructor_func += (struct_def.fields.vec.empty() ? "" : "\n");
 
+
+    const auto has_create = struct_def.fixed || CanCreateFactoryMethod(struct_def);
+
     std::string pack_func_prototype =
         "/**\n * " +
         GenTypeAnnotation(kParam, "flatbuffers.Builder", "builder") + " * " +
         GenTypeAnnotation(kReturns, "flatbuffers.Offset", "") +
         " */\npack(builder:flatbuffers.Builder): flatbuffers.Offset {\n";
+
     std::string pack_func_offset_decl;
-    std::string pack_func_create_call =
+    std::string pack_func_create_call;
+
+    const auto struct_name = GenPrefixedTypeName(WrapInNameSpace(struct_def), struct_def.file);
+
+    if (has_create) {
+      pack_func_create_call =
         "  return " +
-        GenPrefixedTypeName(WrapInNameSpace(struct_def), struct_def.file) +
+        struct_name +
         ".create" + Verbose(struct_def) + "(builder" +
         (struct_def.fields.vec.empty() ? "" : ",\n    ");
+    } else {
+      pack_func_create_call = "  " + struct_name + ".start(builder);\n";
+    }
+
     if (struct_def.fixed) {
       // when packing struct, nested struct's members instead of the struct's
       // offset are used
@@ -1179,14 +1196,19 @@ class JsTsGenerator : public BaseGenerator {
         if (!field_offset_decl.empty()) {
           pack_func_offset_decl += field_offset_decl + "\n";
         }
-        pack_func_create_call += field_offset_val;
+
+        if (has_create) {
+          pack_func_create_call += field_offset_val;
+        } else {
+          pack_func_create_call += "  " + struct_name + ".add" + MakeCamel(field.name) + "(builder, " + field_offset_val + ");\n";
+        }
       }
 
       if (std::next(it) != struct_def.fields.vec.end()) {
         constructor_annotation += "\n";
         constructor_func += ",\n";
 
-        if (!struct_def.fixed) { pack_func_create_call += ",\n    "; }
+        if (!struct_def.fixed && has_create) { pack_func_create_call += ",\n    "; }
 
         unpack_func += ",\n";
         unpack_to_func += "\n";
@@ -1205,7 +1227,11 @@ class JsTsGenerator : public BaseGenerator {
     constructor_annotation += "\n */\n";
     constructor_func += "){};\n\n";
 
-    pack_func_create_call += ");";
+    if (has_create) {
+      pack_func_create_call += ");";
+    } else {
+      pack_func_create_call += "return " + struct_name + ".end(builder);";
+    }
 
     obj_api_class = "\nexport class " +
                     GetObjApiClassName(struct_def, parser.opts) + " {\n";
@@ -1804,11 +1830,29 @@ class JsTsGenerator : public BaseGenerator {
                                       false));
 
             if (lang_.language == IDLOptions::kTs) {
-              code += "static create" + MakeCamel(field.name);
+              const std::string sig_begin =
+                  "static create" + MakeCamel(field.name) +
+                  "Vector(builder:flatbuffers.Builder, data:";
+              const std::string sig_end = "):flatbuffers.Offset";
               std::string type = GenTypeName(vector_type, true) + "[]";
-              if (type == "number[]") { type += " | Uint8Array"; }
-              code += "Vector(builder:flatbuffers.Builder, data:" + type +
-                      "):flatbuffers.Offset {\n";
+              if (type == "number[]") {
+                const auto &array_type = GenType(vector_type);
+                // the old type should be deprecated in the future
+                std::string type_old = "number[]|Uint8Array";
+                std::string type_new = "number[]|" + array_type + "Array";
+                if (type_old == type_new) {
+                  type = type_new;
+                } else {
+                  // add function overloads
+                  code += sig_begin + type_new + sig_end + ";\n";
+                  code +=
+                      "/**\n * @deprecated This Uint8Array overload will "
+                      "be removed in the future.\n */\n";
+                  code += sig_begin + type_old + sig_end + ";\n";
+                  type = type_new + "|Uint8Array";
+                }
+              }
+              code += sig_begin + type + sig_end + " {\n";
             } else {
               code += object_name + ".create" + MakeCamel(field.name);
               code += "Vector = function(builder, data) {\n";
