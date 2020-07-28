@@ -32,6 +32,7 @@
 #include "core/SharedPtr.h"
 #include "commonlua/LUA.h"
 #include "ClientLUA.h"
+#include "compute/Compute.h"
 #include <SDL.h>
 #include <engine-config.h>
 
@@ -176,6 +177,8 @@ core::AppState Client::onInit() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
+
+	compute::init();
 
 	video::enableDebug(video::DebugSeverity::Medium);
 
@@ -343,6 +346,7 @@ core::AppState Client::onCleanup() {
 	_meshCache->shutdown();
 	Log::info("shutting down the volume cache");
 	_volumeCache->shutdown();
+	compute::shutdown();
 	Log::info("everything was shut down");
 
 	return Super::onCleanup();
