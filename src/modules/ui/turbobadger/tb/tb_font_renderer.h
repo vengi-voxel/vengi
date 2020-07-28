@@ -177,11 +177,11 @@ public:
 	}
 
 	/** Draw string at position x, y (marks the upper left corner of the text). */
-	void drawString(int x, int y, const TBColor &color, const char *str, int len = TB_ALL_TO_TERMINATION);
+	void drawString(int x, int y, const TBColor &color, const char *str, int len);
 
 	/** Measure the width of the given string. Should measure len characters or to the null
 		termination (whatever comes first). */
-	int getStringWidth(const char *str, int len = TB_ALL_TO_TERMINATION);
+	int getStringWidth(const char *str, int len);
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	/** Render the glyph bitmaps on screen, to analyze fragment positioning. */

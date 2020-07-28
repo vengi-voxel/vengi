@@ -52,13 +52,14 @@ void WaitingMessage::render() {
 		_connectingStart -= 2000ul;
 	}
 	const int y = _app->frameBufferHeight() / 2 - _font->getHeight() / 2;
-	const int w = _font->getStringWidth(_translatedStr);
+	const int len = SDL_strlen(_translatedStr);
+	const int w = _font->getStringWidth(_translatedStr, len);
 	const int x = _app->frameBufferWidth() / 2 - w / 2;
-	_font->drawString(x, y, _color, _translatedStr);
+	_font->drawString(x, y, _color, _translatedStr, len);
 
 	const int dotX = x + w + 5;
 	const char *dotsString = dotsArray[_dotsIndex];
-	_font->drawString(dotX, y, _color, dotsString);
+	_font->drawString(dotX, y, _color, dotsString, SDL_strlen(dotsString));
 }
 
 }

@@ -98,7 +98,7 @@ void Viewport::onPaint(const PaintProps &paintProps) {
 	renderFramebuffer();
 
 	tb::TBFontFace* font = getFont();
-	font->drawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str());
+	font->drawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str(), _cameraMode.size());
 }
 
 void Viewport::onInflate(const tb::INFLATE_INFO &info) {

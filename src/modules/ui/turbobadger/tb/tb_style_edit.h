@@ -29,7 +29,7 @@ public:
 	};
 	virtual void invalidate(const TBRect &rect) = 0;
 	virtual void drawString(int32_t x, int32_t y, TBFontFace *font, const TBColor &color, const char *str,
-							int32_t len = TB_ALL_TO_TERMINATION) = 0;
+							int32_t len) = 0;
 	virtual void drawRect(const TBRect &rect, const TBColor &color) = 0;
 	virtual void drawRectFill(const TBRect &rect, const TBColor &color) = 0;
 	virtual void drawTextSelectionBg(const TBRect &rect) = 0;
@@ -220,7 +220,7 @@ public:
 	TBTextFragment *findFragment(int32_t ofs, bool prefer_first = false) const;
 	TBTextFragment *findFragment(int32_t x, int32_t y) const;
 
-	int32_t calculateStringWidth(TBFontFace *font, const char *str, int len = TB_ALL_TO_TERMINATION) const;
+	int32_t calculateStringWidth(TBFontFace *font, const char *str, int len) const;
 	int32_t calculateTabWidth(TBFontFace *font, int32_t xpos) const;
 	int32_t calculateLineHeight(TBFontFace *font) const;
 	int32_t calculateBaseline(TBFontFace *font) const;

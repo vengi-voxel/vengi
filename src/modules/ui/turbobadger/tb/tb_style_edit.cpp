@@ -766,7 +766,7 @@ int32_t TBBlock::calculateStringWidth(TBFontFace *font, const char *str, int len
 	if (styledit->packed.password_on) {
 		// Convert the length in number or characters, since that's what matters for password width.
 		len = utf8::count_characters(str, len);
-		return font->getStringWidth(special_char_password) * len;
+		return font->getStringWidth(special_char_password, SDL_strlen(special_char_password)) * len;
 	}
 	return font->getStringWidth(str, len);
 }
@@ -1171,18 +1171,19 @@ void TBTextFragment::paint(const TBPaintProps *props) {
 		listener->DrawRect(TBRect(x, y, getWidth(block, font), getHeight(block, font)), TBColor(255, 255, 255, 128)));
 
 	if (block->styledit->packed.password_on) {
-		int cw = block->calculateStringWidth(font, special_char_password);
+		const int len = SDL_strlen(special_char_password);
+		int cw = block->calculateStringWidth(font, special_char_password, len);
 		int num_char = utf8::count_characters(str(block), len);
 		for (int i = 0; i < num_char; i++) {
-			listener->drawString(x + i * cw, y, font, color, special_char_password);
+			listener->drawString(x + i * cw, y, font, color, special_char_password, len);
 		}
 	} else if (block->styledit->packed.show_whitespace) {
 		if (isTab()) {
-			listener->drawString(x, y, font, color, special_char_tab);
+			listener->drawString(x, y, font, color, special_char_tab, SDL_strlen(special_char_tab));
 		} else if (isBreak()) {
-			listener->drawString(x, y, font, color, special_char_newln);
+			listener->drawString(x, y, font, color, special_char_newln, SDL_strlen(special_char_newln));
 		} else if (isSpace()) {
-			listener->drawString(x, y, font, color, special_char_space);
+			listener->drawString(x, y, font, color, special_char_space, SDL_strlen(special_char_space));
 		} else {
 			listener->drawString(x, y, font, color, str(block), len);
 		}

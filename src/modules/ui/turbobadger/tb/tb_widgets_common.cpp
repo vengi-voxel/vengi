@@ -21,7 +21,7 @@ void TBWidgetString::validatCachedSize(TBWidget *widget) {
 	if ((m_height == 0) || fd != m_fd) {
 		m_fd = fd;
 		TBFontFace *font = g_font_manager->getFontFace(fd);
-		m_width = font->getStringWidth(m_text);
+		m_width = font->getStringWidth(m_text, m_text.length());
 		m_height = font->getHeight();
 	}
 }
@@ -55,7 +55,7 @@ void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &
 	int y = rect.y + (rect.h - m_height) / 2;
 
 	if (m_width <= rect.w) {
-		font->drawString(x, y, color, m_text);
+		font->drawString(x, y, color, m_text, m_text.length());
 	} else {
 		// There's not enough room for the entire string
 		// so cut it off and end with ellipsis (...)
@@ -64,7 +64,7 @@ void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &
 		// Some fonts seem to render ellipsis a lot uglier than three dots.
 		const char *end = "...";
 
-		int endw = font->getStringWidth(end);
+		int endw = font->getStringWidth(end, SDL_strlen(end));
 		int startw = 0;
 		int startlen = 0;
 		while (m_text.c_str()[startlen] != 0) {
@@ -77,7 +77,7 @@ void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &
 		}
 		startlen = Max(0, startlen - 1);
 		font->drawString(x, y, color, m_text, startlen);
-		font->drawString(x + startw, y, color, end);
+		font->drawString(x + startw, y, color, end, SDL_strlen(end));
 	}
 }
 

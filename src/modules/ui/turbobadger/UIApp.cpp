@@ -230,7 +230,7 @@ void UIApp::showStr(int x, int y, const glm::vec4& color, const char *fmt, ...) 
 	va_start(ap, fmt);
 	SDL_vsnprintf(buf, sizeof(buf), fmt, ap);
 	buf[sizeof(buf) - 1] = '\0';
-	_root->getFont()->drawString(x, y, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
+	_root->getFont()->drawString(x, y, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf, SDL_strlen(buf));
 	va_end(ap);
 }
 
@@ -241,7 +241,7 @@ void UIApp::enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) 
 	SDL_vsnprintf(buf, sizeof(buf), fmt, ap);
 	buf[sizeof(buf) - 1] = '\0';
 	tb::TBFontFace* font = _root->getFont();
-	font->drawString(x, _lastShowTextY, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
+	font->drawString(x, _lastShowTextY, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf, SDL_strlen(buf));
 	_lastShowTextY += _root->getFont()->getHeight() + 5;
 	va_end(ap);
 }
