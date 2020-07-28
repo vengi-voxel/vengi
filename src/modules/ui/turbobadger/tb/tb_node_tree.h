@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Enum.h"
 #include "parser/tb_parser.h"
 #include "tb_linklist.h"
 
@@ -15,7 +16,7 @@ enum TB_NODE_READ_FLAGS {
 		data from multiple sources, or inject dependencies. */
 	TB_NODE_READ_FLAGS_APPEND = 1,
 };
-MAKE_ENUM_FLAG_COMBO(TB_NODE_READ_FLAGS);
+CORE_ENUM_BIT_OPERATIONS(TB_NODE_READ_FLAGS);
 
 /** TBNode is a tree node with a string name and a value (TBValue).
 	It may have a parent TBNode and child TBNodes.
