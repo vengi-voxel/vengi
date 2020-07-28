@@ -23,7 +23,7 @@ bool TBLanguage::load(const char *filename) {
 	TBNode *n = node.getFirstChild();
 	while (n != nullptr) {
 		const char *str = n->getValue().getString();
-		TBStr *new_str = new TBStr(str);
+		core::String *new_str = new core::String(str);
 		if ((new_str == nullptr) || !strings.add(TBID(n->getName()), new_str)) {
 			delete new_str;
 			return false;
@@ -38,8 +38,8 @@ void TBLanguage::clear() {
 }
 
 const char *TBLanguage::getString(const TBID &id) {
-	if (TBStr *str = strings.get(id)) {
-		return *str;
+	if (core::String *str = strings.get(id)) {
+		return str->c_str();
 	}
 	return "<TRANSLATE!>";
 }

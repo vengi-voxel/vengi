@@ -215,12 +215,12 @@ class TBFontInfo {
 public:
 	/** Get the font filename. */
 	const char *getFilename() const {
-		return m_filename;
+		return m_filename.c_str();
 	}
 
 	/** Get the font name. */
 	const char *getName() const {
-		return m_name;
+		return m_name.c_str();
 	}
 
 	/** Get the font ID that can be used to create this font from a
@@ -233,8 +233,8 @@ private:
 	friend class TBFontManager;
 	TBFontInfo(const char *filename, const char *name) : m_filename(filename), m_name(name), m_id(name) {
 	}
-	TBStr m_filename;
-	TBStr m_name;
+	core::String m_filename;
+	core::String m_name;
 	TBID m_id;
 };
 

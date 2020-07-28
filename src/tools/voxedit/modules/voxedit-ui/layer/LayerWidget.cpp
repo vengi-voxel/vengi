@@ -226,7 +226,7 @@ void LayerWidget::onLayerChanged(int layerId) {
 	const voxedit::Layers& layers = layerMgr.layers();
 	const core::String& finalLayerName = layers[layerId].name;
 	Log::debug("Rename layer %i to %s", layerId, finalLayerName.c_str());
-	_source.getItem(index)->str.set(finalLayerName.c_str());
+	_source.getItem(index)->str = finalLayerName;
 	_source.invokeItemChanged(index, _list);
 	_list->invalidateList();
 }

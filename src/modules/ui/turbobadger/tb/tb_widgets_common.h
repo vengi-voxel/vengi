@@ -29,12 +29,13 @@ public:
 	int getHeight(TBWidget *widget);
 
 	bool setText(const char *text);
-	bool getText(TBStr &text) const {
-		return text.set(m_text);
+	bool getText(core::String &text) const {
+		text = m_text;
+		return true;
 	}
 
 	bool isEmpty() const {
-		return m_text.isEmpty();
+		return m_text.empty();
 	}
 	bool equals(const char *str) const {
 		return m_text.equals(str);
@@ -50,7 +51,7 @@ public:
 	}
 
 private:
-	TBStr m_text;
+	core::String m_text;
 	TB_TEXT_ALIGN m_text_align;
 	// Cached data
 	int m_width, m_height;
@@ -69,7 +70,10 @@ public:
 
 	/** Set the text of the text field. */
 	virtual bool setText(const char *text) override;
-	virtual bool getText(TBStr &text) override {
+	bool setText(const core::String& text) {
+		return setText(text.c_str());
+	}
+	virtual bool getText(core::String &text) override {
 		return m_text.getText(text);
 	}
 	using TBWidget::getText; ///< Make all versions in base class available.
@@ -153,10 +157,11 @@ public:
 
 	/** Set the text of the button. */
 	virtual bool setText(const char *text) override;
-	virtual bool getText(TBStr &text) override {
+	virtual bool getText(core::String &text) override {
 		return m_textfield.getText(text);
 	}
 	using TBWidget::getText; ///< Make all versions in base class available.
+	using TBWidget::setText; ///< Make all versions in base class available.
 
 	virtual void setValue(int value) override;
 	virtual int getValue() const override;
@@ -192,7 +197,7 @@ protected:
 	bool m_auto_repeat_click;
 	bool m_toggle_mode;
 	core::VarPtr _var;
-	TBStr _command;
+	core::String _command;
 };
 
 /** TBClickLabel has a text field in its internal layout by default. Pointer input on the
@@ -219,7 +224,7 @@ public:
 	virtual bool setText(const char *text) override {
 		return m_textfield.setText(text);
 	}
-	virtual bool getText(TBStr &text) override {
+	virtual bool getText(core::String &text) override {
 		return m_textfield.getText(text);
 	}
 	using TBWidget::getText; ///< Make all versions in base class available.
@@ -333,7 +338,7 @@ public:
 protected:
 	int m_value;
 	core::VarPtr _var;
-	TBStr _command;
+	core::String _command;
 };
 
 /** TBCheckBox is a box toggling a check mark on click.
@@ -492,7 +497,7 @@ protected:
 	double m_min, m_max;
 	double m_to_pixel_factor;
 	core::VarPtr _var;
-	TBStr _command;
+	core::String _command;
 	void updateHandle();
 };
 

@@ -252,13 +252,11 @@ void TBValue::setFromStringAuto(const char *str, SET set) {
 		// If the number has nontrailing space, we'll assume a list of numbers (example: "10 -4 3.5")
 		setNull();
 		if (TBValueArray *arr = new TBValueArray) {
-			TBStr tmpstr;
-			if (tmpstr.set(str)) {
-				char *str_next = tmpstr.c_str();
-				while (char *token = next_token(str_next, ", ")) {
-					if (TBValue *new_val = arr->addValue()) {
-						new_val->setFromStringAuto(token, SET_NEW_COPY);
-					}
+			core::String tmpstr = str;
+			char *str_next = tmpstr.c_str();
+			while (char *token = next_token(str_next, ", ")) {
+				if (TBValue *new_val = arr->addValue()) {
+					new_val->setFromStringAuto(token, SET_NEW_COPY);
 				}
 			}
 			setArray(arr, SET_TAKE_OWNERSHIP);

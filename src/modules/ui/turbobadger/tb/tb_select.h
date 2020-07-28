@@ -35,9 +35,12 @@ public:
 
 	/** Set filter string so only matching items will be showed.
 		Set nullptr or empty string to remove filter and show all items. */
+	void setFilter(const core::String& filter) {
+		setFilter(filter.c_str());
+	}
 	void setFilter(const char *filter);
 	const char *getFilter() const {
-		return m_filter;
+		return m_filter.c_str();
 	}
 
 	/** Set the language string id for the header. The header is shown
@@ -107,7 +110,7 @@ protected:
 	TBLayout m_layout;
 	TBGenericStringItemSource m_default_source;
 	int m_value;
-	TBStr m_filter;
+	core::String m_filter;
 	bool m_list_is_invalid;
 	bool m_scroll_to_current;
 	TBID m_header_lng_string_id;

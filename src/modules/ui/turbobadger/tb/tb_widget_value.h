@@ -79,13 +79,14 @@ public:
 	}
 
 	/** Get value as text. Return false on fail. */
-	bool getText(TBStr &text) {
-		return text.set(m_value.getString());
+	bool getText(core::String &text) {
+		text = m_value.getString();
+		return true;
 	}
 
 	/** Get value as text. */
-	TBStr getText() {
-		TBStr text;
+	core::String getText() {
+		core::String text;
 		getText(text);
 		return text;
 	}

@@ -21,7 +21,7 @@ void TBWidgetString::validatCachedSize(TBWidget *widget) {
 	if ((m_height == 0) || fd != m_fd) {
 		m_fd = fd;
 		TBFontFace *font = g_font_manager->getFontFace(fd);
-		m_width = font->getStringWidth(m_text, m_text.length());
+		m_width = font->getStringWidth(m_text.c_str(), m_text.size());
 		m_height = font->getHeight();
 	}
 }
@@ -39,7 +39,8 @@ int TBWidgetString::getHeight(TBWidget *widget) {
 bool TBWidgetString::setText(const char *text) {
 	// Invalidate cache
 	m_height = 0;
-	return m_text.set(text);
+	m_text = text;
+	return true;
 }
 
 void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &color) {
@@ -55,7 +56,7 @@ void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &
 	int y = rect.y + (rect.h - m_height) / 2;
 
 	if (m_width <= rect.w) {
-		font->drawString(x, y, color, m_text, m_text.length());
+		font->drawString(x, y, color, m_text.c_str(), m_text.size());
 	} else {
 		// There's not enough room for the entire string
 		// so cut it off and end with ellipsis (...)
@@ -68,7 +69,7 @@ void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &
 		int startw = 0;
 		int startlen = 0;
 		while (m_text.c_str()[startlen] != 0) {
-			int new_startw = font->getStringWidth(m_text, startlen);
+			int new_startw = font->getStringWidth(m_text.c_str(), startlen);
 			if (new_startw + endw > rect.w) {
 				break;
 			}
@@ -76,7 +77,7 @@ void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &
 			startlen++;
 		}
 		startlen = Max(0, startlen - 1);
-		font->drawString(x, y, color, m_text, startlen);
+		font->drawString(x, y, color, m_text.c_str(), startlen);
 		font->drawString(x + startw, y, color, end, SDL_strlen(end));
 	}
 }
@@ -226,7 +227,7 @@ bool TBButton::onEvent(const TBWidgetEvent &ev) {
 		if (_var) {
 			_var->setVal(getValue());
 		}
-		if (!_command.isEmpty()) {
+		if (!_command.empty()) {
 			if (canToggle()) {
 				execute("%s %i", _command.c_str(), getValue());
 			} else {
@@ -407,7 +408,7 @@ void TBRadioCheckBox::setValue(int value) {
 	if (_var) {
 		_var->setVal(value != 0);
 	}
-	if (!_command.isEmpty()) {
+	if (!_command.empty()) {
 		execute("%s %i", _command.c_str(), m_value);
 	}
 	setState(WIDGET_STATE_SELECTED, value != 0);
@@ -634,7 +635,7 @@ void TBSlider::setValueDouble(double value) {
 	if (_var) {
 		_var->setVal((float)value);
 	}
-	if (!_command.isEmpty()) {
+	if (!_command.empty()) {
 		execute("%s %f", _command.c_str(), m_value);
 	}
 

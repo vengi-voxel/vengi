@@ -4,6 +4,7 @@
 
 #include "tb_node_tree.h"
 #include "core/Assert.h"
+#include "core/StringUtil.h"
 #include "tb_language.h"
 #include "tb_node_ref_tree.h"
 #include "tb_system.h"
@@ -227,9 +228,8 @@ public:
 				m_target_node->add(content_n);
 			}
 		} else {
-			TBStr err;
-			err.setFormatted("Referenced file \"%s\" was not found!", include_filename.getData());
-			onError(lineNr, err);
+			const core::String& err = core::string::format("Referenced file \"%s\" was not found!", include_filename.getData());
+			onError(lineNr, err.c_str());
 		}
 	}
 	void includeRef(int lineNr, const char *refstr) {
@@ -257,9 +257,8 @@ public:
 		if (refnode != nullptr) {
 			m_target_node->cloneChildren(refnode);
 		} else {
-			TBStr err;
-			err.setFormatted("Include \"%s\" was not found!", refstr);
-			onError(lineNr, err);
+			const core::String& err = core::string::format("Include \"%s\" was not found!", refstr);
+			onError(lineNr, err.c_str());
 		}
 	}
 

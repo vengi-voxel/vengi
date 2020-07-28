@@ -7,6 +7,7 @@
 #include "tb_tempbuffer.h"
 #include "tb_types.h"
 #include "tb_value.h"
+#include "core/StringUtil.h"
 #include <math.h>
 
 namespace tb {
@@ -18,7 +19,7 @@ void TBDimensionConverter::setDPI(int srcDpi, int dstDpi) {
 	m_dst_dpi = dstDpi;
 	m_dst_dpi_str.clear();
 	if (needConversion()) {
-		m_dst_dpi_str.setFormatted("@%d", m_dst_dpi);
+		m_dst_dpi_str = core::string::format("@%d", m_dst_dpi);
 	}
 }
 

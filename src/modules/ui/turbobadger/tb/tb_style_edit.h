@@ -100,7 +100,7 @@ public:
 	bool isFragmentSelected(const TBBlock *block, TBTextFragment *elm) const;
 	bool isSelected() const;
 	void removeContent();
-	bool getText(TBStr &text) const;
+	bool getText(core::String &text) const;
 
 public:
 	TBStyleEdit *styledit;
@@ -239,7 +239,7 @@ public:
 	int8_t align;
 	int line_width_max;
 
-	TBStr str;
+	core::String str;
 	int32_t str_len;
 	uint32_t syntax_data; ///< Free to use in any way from TBSyntaxHighlighter subclasses
 
@@ -253,7 +253,7 @@ private:
 class TBUndoEvent {
 public:
 	int32_t gofs;
-	TBStr text;
+	core::String text;
 	bool insert;
 };
 
@@ -406,7 +406,7 @@ public:
 	void clear(bool init_new = true);
 	bool setText(const char *text, TB_CARET_POS pos = TB_CARET_POS_BEGINNING);
 	bool setText(const char *text, int text_len, TB_CARET_POS pos = TB_CARET_POS_BEGINNING);
-	bool getText(TBStr &text);
+	bool getText(core::String &text);
 	bool isEmpty() const;
 
 	/** Set the default text alignment and all currently selected blocks,

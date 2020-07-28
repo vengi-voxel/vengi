@@ -56,6 +56,18 @@ bool TBTempBuffer::appendSpace(int size) {
 	return true;
 }
 
+bool TBTempBuffer::appendString(const core::String &str) {
+	// Add 1 to include the null termination in the data.
+	if (append(str.c_str(), str.size() + 1)) {
+		// Now remove the null termination from the append position
+		// again, so another call will append to the same string (instead of
+		// after the null termination of the first string)
+		m_append_pos--;
+		return true;
+	}
+	return false;
+}
+
 bool TBTempBuffer::appendString(const char *str) {
 	// Add 1 to include the null termination in the data.
 	if (append(str, SDL_strlen(str) + 1)) {

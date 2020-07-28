@@ -380,19 +380,17 @@ void VoxEditWindow::updateStatusBar() {
 		const int layerIdx = voxedit::sceneMgr().layerMgr().activeLayer();
 		const voxel::RawVolume* v = voxedit::sceneMgr().volume(layerIdx);
 		const voxel::Region& region = v->region();
-		tb::TBStr str;
 		const glm::ivec3& mins = region.getLowerCorner();
 		const glm::ivec3& maxs = region.getUpperCorner();
-		str.setFormatted("%i:%i:%i / %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
-		dimension->setText(str);
+		const core::String& str = core::string::format("%i:%i:%i / %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		dimension->setText(str.c_str());
 	}
 	if (tb::TBTextField* status = getWidgetByIDAndType<tb::TBTextField>("status")) {
 		const voxedit::Modifier& modifier = voxedit::sceneMgr().modifier();
 		if (modifier.aabbMode()) {
-			tb::TBStr str;
 			const glm::ivec3& dim = modifier.aabbDim();
-			str.setFormatted("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
-			status->setText(str);
+			const core::String& str = core::string::format("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
+			status->setText(str.c_str());
 		} else if (!_lastExecutedCommand.empty()) {
 			const video::WindowedApp* app = video::WindowedApp::getInstance();
 			core::String statusText;
@@ -620,8 +618,8 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		sceneMgr().createTree(_treeGeneratorContext);
 		return true;
 	} else if (id == TBIDC("lsystemgenerate")) {
-		const tb::TBStr& axiom = _lsystemAxiom->getText();
-		const tb::TBStr& rulesStr = _lsystemRules->getText();
+		const core::String& axiom = _lsystemAxiom->getText();
+		const core::String& rulesStr = _lsystemRules->getText();
 		std::vector<voxelgenerator::lsystem::Rule> rules;
 		if (!voxelgenerator::lsystem::parseRules(rulesStr.c_str(), rules)) {
 			Log::error("Failed to parse the lsystem rules");
@@ -732,8 +730,8 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		sceneMgr().setGridResolution(widget->getValue());
 		return true;
 	} else if (id == TBIDC("cursorx")) {
-		const tb::TBStr& str = widget->getText();
-		if (str.isEmpty()) {
+		const core::String& str = widget->getText();
+		if (str.empty()) {
 			return true;
 		}
 		const int val = core::string::toInt(str);
@@ -742,8 +740,8 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		sceneMgr().setCursorPosition(pos, true);
 		return true;
 	} else if (id == TBIDC("cursory")) {
-		const tb::TBStr& str = widget->getText();
-		if (str.isEmpty()) {
+		const core::String& str = widget->getText();
+		if (str.empty()) {
 			return true;
 		}
 		const int val = core::string::toInt(str);
@@ -752,8 +750,8 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		sceneMgr().setCursorPosition(pos, true);
 		return true;
 	} else if (id == TBIDC("cursorz")) {
-		const tb::TBStr& str = widget->getText();
-		if (str.isEmpty()) {
+		const core::String& str = widget->getText();
+		if (str.empty()) {
 			return true;
 		}
 		const int val = core::string::toInt(str);

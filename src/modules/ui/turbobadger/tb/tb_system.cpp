@@ -68,9 +68,10 @@ bool TBClipboard::setText(const char *text) {
 	return (0 == SDL_SetClipboardText(text));
 }
 
-bool TBClipboard::getText(TBStr &text) {
+bool TBClipboard::getText(core::String &text) {
 	if (const char *str = SDL_GetClipboardText()) {
-		return text.set(str);
+		text = str;
+		return true;
 	}
 	return false;
 }

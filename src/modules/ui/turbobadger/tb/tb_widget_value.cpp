@@ -44,7 +44,7 @@ void TBWidgetValue::setFromWidget(TBWidget *sourceWidget) {
 	}
 
 	// Get the value in the format
-	TBStr text;
+	core::String text;
 	switch (m_value.getType()) {
 	case TBValue::TYPE_STRING:
 		if (!sourceWidget->getText(text)) {

@@ -7,6 +7,7 @@
 #include "tb_tempbuffer.h"
 #include "tb_scroll_container.h"
 #include <stdio.h>
+#include "core/StringUtil.h"
 
 // == ResourceItem ====================================================================================
 
@@ -49,19 +50,18 @@ ResourceEditWindow::~ResourceEditWindow()
 
 void ResourceEditWindow::load(const char *resourceFile)
 {
-	m_resource_filename.set(resourceFile);
+	m_resource_filename = resourceFile;
 	setText(resourceFile);
 
 	TBTempBuffer buffer;
-	if (buffer.appendFile(m_resource_filename))
+	if (buffer.appendFile(m_resource_filename.c_str()))
 		m_source_edit->setText(buffer.getData(), buffer.getAppendPos());
 	else // Error, clear and show message
 	{
 		m_source_edit->setText("");
-		TBStr text;
-		text.setFormatted("Could not load file %s", resourceFile);
+		const core::String& text = core::string::format("Could not load file %s", resourceFile);
 		if (TBMessageWindow *msg_win = new TBMessageWindow(getParentRoot(), TBIDC("")))
-			msg_win->show("Error loading resource", text);
+			msg_win->show("Error loading resource", text.c_str());
 	}
 
 	refreshFromSource();
@@ -106,13 +106,12 @@ void ResourceEditWindow::addWidgetListItemsRecursive(TBWidget *widget, int depth
 	if (depth > 0) // Ignore the root
 	{
 		// Add a new ResourceItem for this widget
-		TBStr str;
 		const char *classname = widget->getClassName();
 		if (!*classname)
 			classname = "<Unknown widget type>";
-		str.setFormatted("% *s%s", depth - 1, "", classname);
+		const core::String& str = core::string::format("% *s%s", depth - 1, "", classname);
 
-		if (ResourceItem *item = new ResourceItem(widget, str))
+		if (ResourceItem *item = new ResourceItem(widget, str.c_str()))
 			m_widget_list_source.addItem(item);
 	}
 

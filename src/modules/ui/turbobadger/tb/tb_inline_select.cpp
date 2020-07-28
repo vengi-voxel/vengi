@@ -73,8 +73,7 @@ void TBInlineSelect::setValueInternal(int value, bool updateText) {
 	}
 
 	if (updateText) {
-		TBStr strval;
-		strval.setFormatted("%d", m_value);
+		const core::String& strval = core::string::format("%d", m_value);
 		m_editfield.setText(strval);
 	}
 
@@ -99,7 +98,7 @@ bool TBInlineSelect::onEvent(const TBWidgetEvent &ev) {
 		setValue(getValue() + m_delta);
 		return true;
 	} else if (ev.type == EVENT_TYPE_CHANGED && ev.target == &m_editfield) {
-		TBStr text;
+		core::String text;
 		m_editfield.getText(text);
 		setValueInternal(core::string::toInt(text), false);
 	}
@@ -134,8 +133,7 @@ void TBInlineSelectDouble::setValueInternal(double value, bool updateText) {
 	}
 
 	if (updateText) {
-		TBStr strval;
-		strval.setFormatted("%.3f", (float)m_value);
+		const core::String& strval = core::string::format("%.3f", (float)m_value);
 		m_editfield.setText(strval);
 	}
 
@@ -160,7 +158,7 @@ bool TBInlineSelectDouble::onEvent(const TBWidgetEvent &ev) {
 		setValueDouble(getValueDouble() + m_delta);
 		return true;
 	} else if (ev.type == EVENT_TYPE_CHANGED && ev.target == &m_editfield) {
-		TBStr text;
+		core::String text;
 		m_editfield.getText(text);
 		setValueInternal(SDL_atof(text.c_str()), false);
 	}

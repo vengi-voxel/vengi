@@ -8,6 +8,7 @@
 #include "tb_sort.h"
 #include "tb_tempbuffer.h"
 #include "tb_widgets_listener.h"
+#include "core/StringUtil.h"
 
 namespace tb {
 
@@ -96,14 +97,14 @@ void TBSelectList::onAllItemsRemoved() {
 }
 
 void TBSelectList::setFilter(const char *filter) {
-	TBStr new_filter;
+	core::String new_filter;
 	if ((filter != nullptr) && (*filter != 0)) {
-		new_filter.set(filter);
+		new_filter = filter;
 	}
-	if (m_filter.equals(new_filter)) {
+	if (m_filter == new_filter) {
 		return;
 	}
-	m_filter.set(new_filter);
+	m_filter = new_filter;
 	invalidateList();
 }
 
@@ -149,7 +150,7 @@ void TBSelectList::validateList() {
 	// Populate the sorted index list
 	int num_sorted_items = 0;
 	for (int i = 0; i < m_source->getNumItems(); i++) {
-		if (m_filter.isEmpty() || m_source->filter(i, m_filter)) {
+		if (m_filter.empty() || m_source->filter(i, m_filter)) {
 			sorted_index[num_sorted_items++] = i;
 		}
 	}
@@ -160,10 +161,9 @@ void TBSelectList::validateList() {
 	}
 
 	// Show header if we only show a subset of all items.
-	if (!m_filter.isEmpty()) {
+	if (!m_filter.empty()) {
 		if (TBWidget *widget = new TBTextField()) {
-			TBStr str;
-			str.setFormatted(g_tb_lng->getString(m_header_lng_string_id), num_sorted_items, m_source->getNumItems());
+			const core::String& str = core::string::format(g_tb_lng->getString(m_header_lng_string_id), num_sorted_items, m_source->getNumItems());
 			widget->setText(str);
 			widget->setSkinBg(TBIDC("TBList.header"));
 			widget->setState(WIDGET_STATE_DISABLED, true);

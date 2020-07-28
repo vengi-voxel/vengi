@@ -21,6 +21,7 @@
 #include "tb_font_renderer.h"
 #include "image/tb_image_manager.h"
 #include "utf8/utf8.h"
+#include "core/StringUtil.h"
 
 AdvancedItemSource advanced_source;
 TBGenericStringItemSource name_source;
@@ -147,8 +148,7 @@ void EditWindow::onProcessStates()
 			redo->setState(WIDGET_STATE_DISABLED, !edit->getStyleEdit()->canRedo());
 		if (TBTextField *info = getWidgetByIDAndType<TBTextField>(TBIDC("info")))
 		{
-			TBStr text;
-			text.setFormatted("Caret ofs: %d", edit->getStyleEdit()->caret.getGlobalOfs());
+			const core::String& text = core::string::format("Caret ofs: %d", edit->getStyleEdit()->caret.getGlobalOfs());
 			info->setText(text);
 		}
 	}
@@ -382,8 +382,7 @@ bool ScrollContainerWindow::onEvent(const TBWidgetEvent &ev)
 		{
 			for(int i = 0; i < ev.target->data.getInt(); i++)
 			{
-				TBStr str;
-				str.setFormatted("Remove %d", i);
+				const core::String& str = core::string::format("Remove %d", i);
 				TBButton *button = new TBButton;
 				button->setID(TBIDC("remove button"));
 				button->setText(str);
@@ -416,10 +415,9 @@ bool ScrollContainerWindow::onEvent(const TBWidgetEvent &ev)
 		}
 		else if (ev.target->getID() == TBIDC("popupmenu1"))
 		{
-			TBStr str;
-			str.setFormatted("Menu event received!\nref_id: %d", (int)ev.ref_id);
+			const core::String& str = core::string::format("Menu event received!\nref_id: %d", (int)ev.ref_id);
 			TBMessageWindow *msg_win = new TBMessageWindow(this, TBIDC("popup_dialog"));
-			msg_win->show("Info", str);
+			msg_win->show("Info", str.c_str());
 			return true;
 		}
 	}
@@ -432,8 +430,7 @@ void ScrollContainerWindow::onMessageReceived(TBMessage *msg)
 	{
 		if (TBWidget *target = getWidgetByID(msg->data->id1))
 		{
-			TBStr str;
-			str.setFormatted("Remove %d", msg->data->v1.getInt());
+			const core::String& str = core::string::format("Remove %d", msg->data->v1.getInt());
 			TBButton *button = new TBButton;
 			button->setID(TBIDC("remove button"));
 			button->setText(str);
@@ -549,12 +546,11 @@ void MainWindow::onMessageReceived(TBMessage *msg)
 	}
 	else if (msg->message == TBIDC("delayedmsg"))
 	{
-		TBStr text;
-		text.setFormatted("Delayed message received!\n\n"
+		const core::String& text = core::string::format("Delayed message received!\n\n"
 							"It was received %d ms after its intended fire time.",
 							(int)(TBSystem::getTimeMS() - msg->getFireTime()));
 		TBMessageWindow *msg_win = new TBMessageWindow(this, TBIDC(""));
-		msg_win->show("Message window", text);
+		msg_win->show("Message window", text.c_str());
 	}
 }
 
@@ -625,10 +621,9 @@ bool MainWindow::onEvent(const TBWidgetEvent &ev)
 				g_tb_skin->reloadBitmaps();
 			double t2 = TBSystem::getTimeMS();
 
-			TBStr message;
-			message.setFormatted("Reloading the skin graphics %d times took %dms", reload_count, (int)(t2 - t1));
+			const core::String& message = core::string::format("Reloading the skin graphics %d times took %dms", reload_count, (int)(t2 - t1));
 			TBMessageWindow *msg_win = new TBMessageWindow(ev.target, TBID());
-			msg_win->show("GFX load performance", message);
+			msg_win->show("GFX load performance", message.c_str());
 			return true;
 		}
 		else if (ev.target->getID() == TBIDC("test context lost"))
@@ -643,9 +638,9 @@ bool MainWindow::onEvent(const TBWidgetEvent &ev)
 		}
 		else if (ev.target->getID() == TBIDC("test-layout"))
 		{
-			TBStr resource_file("demo01/ui_resources/");
+			core::String resource_file("demo01/ui_resources/");
 			resource_file.append(ev.target->data.getString());
-			new LayoutWindow(getParentRoot(), resource_file);
+			new LayoutWindow(getParentRoot(), resource_file.c_str());
 			return true;
 		}
 		else if (ev.target->getID() == TBIDC("test-connections"))

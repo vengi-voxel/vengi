@@ -107,9 +107,9 @@ bool AdvancedListWindow::onEvent(const TBWidgetEvent &ev)
 	}
 	else if (select && ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("add"))
 	{
-		TBStr name = getTextByID(TBIDC("add_name"));
-		if (!name.isEmpty())
-			m_source->addItem(new AdvancedItem(name, TBIDC("boy_item"), true));
+		const core::String& name = getTextByID(TBIDC("add_name"));
+		if (!name.empty())
+			m_source->addItem(new AdvancedItem(name.c_str(), TBIDC("boy_item"), true));
 		return true;
 	}
 	else if (select && ev.type == EVENT_TYPE_CLICK && ev.target->getID() == TBIDC("delete all"))

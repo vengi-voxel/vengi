@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "core/String.h"
+
 namespace tb {
 
 /** TBTempBuffer manages a buffer that will be deleted on destruction.
@@ -47,6 +49,7 @@ public:
 		multiple calls will produce a concatenated null terminated string.
 		Returns false on OOM. */
 	bool appendString(const char *str);
+	bool appendString(const core::String& str);
 
 	/** Append a path without the ending filename.
 		The buffer will be null terminated and the append position will be

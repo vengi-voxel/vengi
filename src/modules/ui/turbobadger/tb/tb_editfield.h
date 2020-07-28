@@ -161,7 +161,7 @@ public:
 	virtual bool setText(const char *text) override {
 		return setText(text, TB_CARET_POS_BEGINNING);
 	}
-	virtual bool getText(TBStr &text) override {
+	virtual bool getText(core::String &text) override {
 		return m_style_edit.getText(text);
 	}
 	virtual void setValue(int value) override {
@@ -194,12 +194,15 @@ public:
 	bool setText(const char *text, int textLen, TB_CARET_POS pos = TB_CARET_POS_BEGINNING) {
 		return m_style_edit.setText(text, textLen, pos);
 	}
+	bool setText(const core::String &text, TB_CARET_POS pos = TB_CARET_POS_BEGINNING) {
+		return m_style_edit.setText(text.c_str(), text.size(), pos);
+	}
 
 	/** Set the placeholder text. It will be visible only when the textfield is empty. */
 	virtual bool setPlaceholderText(const char *text) {
 		return m_placeholder.setText(text);
 	}
-	virtual bool getPlaceholderText(TBStr &text) {
+	virtual bool getPlaceholderText(core::String &text) {
 		return m_placeholder.getText(text);
 	}
 

@@ -41,7 +41,7 @@ public:
 	const char *getString(const TBID &id);
 
 private:
-	TBHashTableOf<TBStr> strings;
+	TBHashTableOf<core::String> strings;
 };
 
 } // namespace tb

@@ -273,7 +273,7 @@ bool TBSkin::reloadBitmapsInternal() {
 	bool success = true;
 	TBHashTableIteratorOf<TBSkinElement> it(&m_elements);
 	while (TBSkinElement *element = it.getNextContent()) {
-		if (!element->bitmap_file.isEmpty()) {
+		if (!element->bitmap_file.empty()) {
 			core_assert(!element->bitmap);
 
 			// FIX: dedicated_map is not needed for all backends (only deprecated fixed function GL)
@@ -282,7 +282,7 @@ bool TBSkin::reloadBitmapsInternal() {
 			// Try to load bitmap fragment in the destination DPI (F.ex "foo.png" becomes "foo@192.png")
 			int bitmap_dpi = m_dim_conv.getSrcDPI();
 			if (m_dim_conv.needConversion()) {
-				m_dim_conv.getDstDPIFilename(element->bitmap_file, &filename_dst_DPI);
+				m_dim_conv.getDstDPIFilename(element->bitmap_file.c_str(), &filename_dst_DPI);
 				element->bitmap = m_frag_manager.getFragmentFromFile(filename_dst_DPI.getData(), dedicated_map);
 				if (element->bitmap != nullptr) {
 					bitmap_dpi = m_dim_conv.getDstDPI();
@@ -292,7 +292,7 @@ bool TBSkin::reloadBitmapsInternal() {
 
 			// If we still have no bitmap fragment, load from default file.
 			if (element->bitmap == nullptr) {
-				element->bitmap = m_frag_manager.getFragmentFromFile(element->bitmap_file, dedicated_map);
+				element->bitmap = m_frag_manager.getFragmentFromFile(element->bitmap_file.c_str(), dedicated_map);
 			}
 
 			if (element->bitmap == nullptr) {
@@ -703,7 +703,7 @@ void TBSkinElement::load(TBNode *n, TBSkin *skin, const char *skinPath) {
 	expand = n->getValueInt("expand", expand);
 	bitmap_dpi = 0;
 
-	name.set(n->getName());
+	name = n->getName();
 	id.set(n->getName());
 
 	const TBDimensionConverter *dim_conv = skin->getDimensionConverter();

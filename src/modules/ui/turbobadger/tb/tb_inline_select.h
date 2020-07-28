@@ -41,7 +41,7 @@ protected:
 	TBEditField m_editfield;
 
 	core::VarPtr _var;
-	TBStr _command;
+	core::String _command;
 };
 
 class TBInlineSelect : public TBInlineSelectBase {

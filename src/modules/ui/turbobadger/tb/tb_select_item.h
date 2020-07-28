@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/String.h"
 #include "tb_linklist.h"
 #include "tb_list.h"
 #include "tb_value.h"
@@ -80,6 +81,10 @@ public:
 		By default, it returns true if GetItemString contains filter. */
 	virtual bool filter(int index, const char *filter);
 
+	bool filter(int index, const core::String& filterStr) {
+		return filter(index, filterStr.c_str());
+	}
+
 	/** Get the string of an item. If an item has more than one string,
 		return the one that should be used for inline-find (pressing keys
 		in the list will scroll to the item starting with the same letters),
@@ -139,7 +144,7 @@ public:
 		deleteAllItems();
 	}
 	virtual const char *getItemString(int index) const {
-		return getItem(index)->str;
+		return getItem(index)->str.c_str();
 	}
 	virtual TBSelectItemSource *getItemSubSource(int index) {
 		return getItem(index)->sub_source;
@@ -240,7 +245,7 @@ public:
 	TBGenericStringItem(const char *str, TBSelectItemSource *subSource) : str(str), sub_source(subSource) {
 	}
 	const TBGenericStringItem &operator=(const TBGenericStringItem &other) {
-		str.set(other.str);
+		str = other.str;
 		id = other.id;
 		sub_source = other.sub_source;
 		tag = other.tag;
@@ -252,7 +257,7 @@ public:
 	}
 
 public:
-	TBStr str;
+	core::String str;
 	TBID id;
 	TBID skin_image;
 	TBSelectItemSource *sub_source;

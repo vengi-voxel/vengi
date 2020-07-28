@@ -299,7 +299,7 @@ void TBParser::onLine(char *line, TBParserTarget *target) {
 
 				if (pending_multiline) {
 					// The value wrapped to the next line, so we should remember the token and continue.
-					multi_line_token.set(token);
+					multi_line_token = token;
 					return;
 				}
 			}
@@ -339,7 +339,7 @@ void TBParser::onCompactLine(char *line, TBParserTarget *target) {
 
 		if (pending_multiline) {
 			// The value wrapped to the next line, so we should remember the token and continue.
-			multi_line_token.set(token);
+			multi_line_token = token;
 			// Since we need to call target->Leave when the multiline is ready, set multi_line_sub_level.
 			multi_line_sub_level = 1;
 			return;
@@ -363,7 +363,7 @@ void TBParser::onMultiline(char *line, TBParserTarget *target) {
 	if (!pending_multiline) {
 		// Ready with all lines
 		value.setString(multi_line_value.getData(), TBValue::SET_AS_STATIC);
-		target->onToken(current_line_nr, multi_line_token, value);
+		target->onToken(current_line_nr, multi_line_token.c_str(), value);
 
 		if (multi_line_sub_level)
 			target->leave();

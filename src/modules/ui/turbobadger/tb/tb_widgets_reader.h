@@ -157,6 +157,9 @@ public:
 	static void setIDFromNode(TBID &id, TBNode *node);
 
 	bool loadFile(TBWidget *target, const char *filename);
+	inline bool loadData(TBWidget *target, const core::String& data) {
+		return loadData(target, data.c_str());
+	}
 	bool loadData(TBWidget *target, const char *data);
 	bool loadData(TBWidget *target, const char *data, int data_len);
 	void loadNodeTree(TBWidget *target, TBNode *node);

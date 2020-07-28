@@ -36,7 +36,7 @@ public:
 	bool getChecked() const { return m_checked; }
 	bool getMale() const { return m_male; }
 private:
-	TBStr m_info;
+	core::String m_info;
 	bool m_checked;
 	bool m_male;
 };

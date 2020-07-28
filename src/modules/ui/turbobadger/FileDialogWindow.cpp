@@ -93,7 +93,7 @@ bool FileDialogItemSource::filter(int index, const char *filter) {
 		return true;
 	}
 
-	return execFileItemFilter(item->str, filter);
+	return execFileItemFilter(item->str.c_str(), filter);
 }
 
 tb::TBWidget *FileDialogItemSource::createItemWidget(int index, tb::TBSelectItemViewer *viewer) {
@@ -154,7 +154,7 @@ void FileDialogWindow::setMode(video::WindowedApp::OpenFileMode mode, const char
 			if (_mode == video::WindowedApp::OpenFileMode::Save) {
 				input->setPlaceholderText(tr("Enter filename for saving"));
 				if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
-					ok->setState(tb::WIDGET_STATE_DISABLED, input->getText().isEmpty());
+					ok->setState(tb::WIDGET_STATE_DISABLED, input->getText().empty());
 				}
 			} else {
 				input->setPlaceholderText(tr("Enter filename for loading"));
@@ -203,10 +203,10 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 			}
 			return true;
 		} else if (ev.target->getID() == TBIDC(INPUT)) {
-			const tb::TBStr& str = ev.target->getText();
+			const core::String& str = ev.target->getText();
 			if (tb::TBButton * ok = getWidgetByType<tb::TBButton>("ok")) {
 				bool disabled;
-				if (str.isEmpty()) {
+				if (str.empty()) {
 					disabled = true;
 				} else {
 					disabled = true;
@@ -274,7 +274,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 		if (id == TBIDC("ok")) {
 			if (_mode == video::WindowedApp::OpenFileMode::Save) {
 				if (tb::TBEditField * input = getWidgetByType<tb::TBEditField>(INPUT)) {
-					const tb::TBStr& filename = input->getText();
+					const core::String& filename = input->getText();
 					const core::String& sfilename = core::String(filename.c_str());
 					if (io::Filesystem::isRelativePath(sfilename)) {
 						_callback(_directory + "/" + sfilename);

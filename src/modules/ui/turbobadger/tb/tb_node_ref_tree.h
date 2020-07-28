@@ -24,7 +24,7 @@ public:
 	virtual ~TBNodeRefTree();
 
 	const char *getName() const {
-		return m_name;
+		return m_name.c_str();
 	}
 	const TBID &getNameID() const {
 		return m_name_id;
@@ -76,7 +76,7 @@ private:
 
 	void invokeChangeListenersInternal(const char *request);
 	TBNode m_node;
-	TBStr m_name;
+	core::String m_name;
 	TBID m_name_id;
 	TBLinkListOf<TBNodeRefTreeListener> m_listeners;
 	static TBLinkListOf<TBNodeRefTree> s_ref_trees;

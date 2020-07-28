@@ -54,7 +54,7 @@ public:
 
 	/** Get the text from the clipboard in UTF-8 format.
 		Returns true on success. */
-	static bool getText(TBStr &text);
+	static bool getText(core::String &text);
 };
 
 /** TBFile is a porting interface for file access. */

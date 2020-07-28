@@ -87,7 +87,7 @@ public:
 	virtual bool setText(const char *text) override {
 		return m_textfield.setText(text);
 	}
-	virtual bool getText(TBStr &text) override {
+	virtual bool getText(core::String &text) override {
 		return m_textfield.getText(text);
 	}
 	using TBWidget::getText; ///< Make all versions in base class available.

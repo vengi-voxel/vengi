@@ -184,7 +184,7 @@ TBWidget *TBWidget::getWidgetByIDInternal(const TBID &id, const TB_TYPE_ID typeI
 	return nullptr;
 }
 
-TBStr TBWidget::getTextByID(const TBID &id) {
+core::String TBWidget::getTextByID(const TBID &id) {
 	if (TBWidget *widget = getWidgetByID(id)) {
 		return widget->getText();
 	}

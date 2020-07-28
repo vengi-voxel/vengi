@@ -185,7 +185,7 @@ void TBButton::onInflate(const INFLATE_INFO &info) {
 	setToggleMode(info.node->getValueInt("toggle-mode", static_cast<int>(getToggleMode())) != 0);
 	TBWidget::onInflate(info);
 	if (const char *command = info.node->getValueString("command", nullptr)) {
-		_command.set(command);
+		_command = command;
 	}
 	if (const char *varname = info.node->getValueString("varref", nullptr)) {
 		_var = core::Var::get(varname, 0);
@@ -196,7 +196,7 @@ void TBButton::onInflate(const INFLATE_INFO &info) {
 void TBInlineSelectBase::onInflate(const INFLATE_INFO &info) {
 	Super::onInflate(info);
 	if (const char *command = info.node->getValueString("command", nullptr)) {
-		_command.set(command);
+		_command = command;
 	}
 }
 
@@ -430,7 +430,7 @@ void TBSlider::onInflate(const INFLATE_INFO &info) {
 	setLimits(min, max);
 	TBWidget::onInflate(info);
 	if (const char *command = info.node->getValueString("command", nullptr)) {
-		_command.set(command);
+		_command = command;
 	}
 	if (const char *varname = info.node->getValueString("varref", nullptr)) {
 		_var = core::Var::get(varname, m_value);
@@ -481,7 +481,7 @@ void TBSelectDropdown::onInflate(const INFLATE_INFO &info) {
 void TBRadioCheckBox::onInflate(const INFLATE_INFO &info) {
 	TBWidget::onInflate(info);
 	if (const char *command = info.node->getValueString("command", nullptr)) {
-		_command.set(command);
+		_command = command;
 	}
 	if (const char *varname = info.node->getValueString("varref", nullptr)) {
 		_var = core::Var::get(varname, m_value);

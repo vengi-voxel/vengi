@@ -186,7 +186,7 @@ public:
 	It contains a list of filenames of the files that was dropped. */
 class TBWidgetEventFileDrop : public TBWidgetEvent {
 public:
-	TBListAutoDeleteOf<TBStr> files;
+	TBListAutoDeleteOf<core::String> files;
 
 	TBOBJECT_SUBCLASS(TBWidgetEventFileDrop, TBWidgetEvent);
 
@@ -698,7 +698,7 @@ public:
 
 	/** Get the text of a child widget with the given id, or an empty string if there was
 		no widget with that id. */
-	TBStr getTextByID(const TBID &id);
+	core::String getTextByID(const TBID &id);
 
 	/** Get the value of a child widget with the given id, or 0 if there was no widget
 		with that id. */
@@ -1011,16 +1011,21 @@ public:
 		return true;
 	}
 
+	/** Set the text of this widget. Implemented by most widgets (that has text). */
+	bool setText(const core::String& text) {
+		return setText(text.c_str());
+	}
+
 	/** Get the text of this widget. Implemented by most widgets (that has text).
 		returns false if it failed. */
-	virtual bool getText(TBStr &text) {
+	virtual bool getText(core::String &text) {
 		text.clear();
 		return true;
 	}
 
 	/** Get the text of this widget. Implemented by most widgets (that has text). */
-	TBStr getText() {
-		TBStr str;
+	core::String getText() {
+		core::String str;
 		getText(str);
 		return str;
 	}

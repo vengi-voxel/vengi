@@ -5,95 +5,12 @@
 #pragma once
 
 #include "tb_types.h"
+#include "core/String.h"
 #include <SDL_stdinc.h>
 
 namespace tb {
 
 /** Some useful C-like functions that's missing in the standard. */
 const char *stristr(const char *arg1, const char *arg2);
-
-/** Simple string class that doesn't own or change the string pointer. */
-
-class TBStrC {
-protected:
-	char *s;
-
-public:
-	TBStrC(const char *str) : s(const_cast<char *>(str)) {
-	}
-
-	inline int length() const {
-		return SDL_strlen(s);
-	}
-	inline bool isEmpty() const {
-		return s[0] == 0;
-	}
-
-	inline int compare(const char *str) const {
-		return SDL_strcmp(s, str);
-	}
-	inline bool equals(const char *str) const {
-		return SDL_strcmp(s, str) == 0;
-	}
-
-	inline char operator[](int n) const {
-		return s[n];
-	}
-	inline operator const char *() const {
-		return s;
-	}
-	const char *c_str() const {
-		return s;
-	}
-};
-
-/** TBStr is a simple string class.
-	It's a compact wrapper for a char array, and doesn't do any storage magic to
-	avoid buffer copying or remember its length. It is intended as "final storage"
-	of strings since its buffer is compact.
-
-	Serious work on strings is better done using TBTempBuffer and then set on a TBStr for
-	final storage (since TBTempBuffer is optimized for speed rather than being compact).
-
-	It is guaranteed to have a valid pointer at all times. If uninitialized, emptied or on
-	out of memory, its storage will be a empty ("") const string.
-*/
-
-class TBStr : public TBStrC {
-public:
-	~TBStr();
-	TBStr();
-	TBStr(const TBStr &str);
-	TBStr(const char *str);
-	TBStr(const char *str, int len);
-
-	bool set(const char *str) {
-		return set(str, SDL_strlen(str));
-	}
-	bool set(const char *str, int len);
-	bool setFormatted(const char *format, ...);
-
-	void clear();
-
-	void remove(int ofs, int len);
-	bool insert(int ofs, const char *ins, int ins_len);
-	bool append(const char *ins, int insLen) {
-		return insert(SDL_strlen(s), ins, insLen);
-	}
-	bool append(const char *ins) {
-		return insert(SDL_strlen(s), ins, SDL_strlen(ins));
-	}
-
-	inline operator char *() const {
-		return s;
-	}
-	char *c_str() const {
-		return s;
-	}
-	const TBStr &operator=(const TBStr &str) {
-		set(str, str.length());
-		return *this;
-	}
-};
 
 } // namespace tb

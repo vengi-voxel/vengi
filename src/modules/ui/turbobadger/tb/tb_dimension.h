@@ -24,7 +24,7 @@ class TBValue;
 class TBDimensionConverter {
 	int m_src_dpi;		 ///< The source DPI (Normally the base_dpi from skin).
 	int m_dst_dpi;		 ///< The destination DPI (Normally the supported skin DPI nearest to TBSystem::getDPI).
-	TBStr m_dst_dpi_str; ///< The file suffix that should be used to load bitmaps in destinatin DPI.
+	core::String m_dst_dpi_str; ///< The file suffix that should be used to load bitmaps in destinatin DPI.
 public:
 	TBDimensionConverter() : m_src_dpi(100), m_dst_dpi(100) {
 	}
@@ -45,7 +45,7 @@ public:
 	/** Get the file name suffix that should be used to load bitmaps in the destination DPI.
 		Examples: "@96", "@196" */
 	const char *getDstDPIStr() const {
-		return m_dst_dpi_str;
+		return m_dst_dpi_str.c_str();
 	}
 
 	/** Get the file name with destination DPI suffix (F.ex "foo.png" becomes "foo@192.png").

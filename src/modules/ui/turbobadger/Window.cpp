@@ -104,29 +104,25 @@ void Window::fillWidgets(const Field* fields, int fieldAmount, void* basePtr) {
 		void* fieldPtr = (uint8_t*)basePtr + field.offset;
 		switch (field.type) {
 		case T_INT: {
-			tb::TBStr str;
-			str.setFormatted("%i", *(int*)fieldPtr);
-			widget->setText(str);
+			const core::String& str = core::string::format("%i", *(int*)fieldPtr);
+			widget->setText(str.c_str());
 			break;
 		}
 		case T_FLOAT: {
-			tb::TBStr str;
-			str.setFormatted("%f", *(float*)fieldPtr);
-			widget->setText(str);
+			const core::String& str = core::string::format("%f", *(float*)fieldPtr);
+			widget->setText(str.c_str());
 			break;
 		}
 		case T_IVEC2: {
 			glm::ivec2* vec = (glm::ivec2*)fieldPtr;
-			tb::TBStr str;
-			str.setFormatted("%i:%i", vec->x, vec->y);
-			widget->setText(str);
+			const core::String& str = core::string::format("%i:%i", vec->x, vec->y);
+			widget->setText(str.c_str());
 			break;
 		}
 		case T_VEC2: {
 			glm::vec2* vec = (glm::vec2*)fieldPtr;
-			tb::TBStr str;
-			str.setFormatted("%f:%f", vec->x, vec->y);
-			widget->setText(str);
+			const core::String& str = core::string::format("%f:%f", vec->x, vec->y);
+			widget->setText(str.c_str());
 			break;
 		}
 		}
@@ -137,7 +133,7 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 	for (int i = 0; i < fieldAmount; ++i) {
 		const Field& field = fields[i];
 		const tb::TBID name(field.name);
-		tb::TBStr str;
+		core::String str;
 
 		tb::TBSelectList *list = getWidgetByIDAndType<tb::TBSelectList>(name);
 		if (list != nullptr) {
@@ -145,7 +141,7 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 			tb::TBGenericStringItem* item = list->getDefaultSource()->getItem(value);
 			if (field.type == T_INT) {
 				const uint32_t id = item->id;
-				str.setFormatted("%i", id);
+				str = core::string::format("%i", id);
 			} else {
 				str = item->str;
 			}
@@ -264,7 +260,7 @@ core::String Window::getStr(const char *nodeId) {
 		Log::info("could not find a node with the name %s", nodeId);
 		return EMPTY;
 	}
-	const tb::TBStr& amplitude = widget->getText();
+	const core::String& amplitude = widget->getText();
 	return core::String(amplitude.c_str());
 }
 

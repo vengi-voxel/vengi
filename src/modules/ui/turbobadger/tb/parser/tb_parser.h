@@ -47,7 +47,7 @@ public:
 private:
 	int current_indent = 0;
 	int current_line_nr = 0;
-	TBStr multi_line_token;
+	core::String multi_line_token;
 	TBTempBuffer multi_line_value;
 	int multi_line_sub_level = 0;
 	bool pending_multiline = false;

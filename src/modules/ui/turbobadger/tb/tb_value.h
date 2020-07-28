@@ -6,6 +6,7 @@
 
 #include "tb_core.h"
 #include "tb_list.h"
+#include "core/String.h"
 
 namespace tb {
 
@@ -93,6 +94,11 @@ public:
 
 	/** Set the passed in string */
 	void setString(const char *val, SET set);
+
+	/** Set the passed in string */
+	void setString(const core::String& val, SET set) {
+		setString(val.c_str(), set);
+	}
 
 	/** Set the passed in object. Takes the ownership of the object! */
 	void setObject(TBTypedObject *object);

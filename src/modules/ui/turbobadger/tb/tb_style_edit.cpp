@@ -190,9 +190,9 @@ void TBSelection::correctOrder() {
 
 void TBSelection::copyToClipboard() {
 	if (isSelected()) {
-		TBStr text;
+		core::String text;
 		if (getText(text)) {
-			TBClipboard::setText(text);
+			TBClipboard::setText(text.c_str());
 		}
 	}
 }
@@ -321,7 +321,7 @@ void TBSelection::removeContent() {
 		TBBlock *block = start.block->getNext();
 		while (block != stop.block) {
 			if (!styledit->undoredo.applying) {
-				commit_string.append(block->str, block->str_len);
+				commit_string.append(block->str.c_str(), block->str_len);
 			}
 
 			TBBlock *next = block->getNext();
@@ -331,7 +331,7 @@ void TBSelection::removeContent() {
 
 		// Remove text in last block
 		if (!styledit->undoredo.applying) {
-			commit_string.append(stop.block->str, stop.ofs);
+			commit_string.append(stop.block->str.c_str(), stop.ofs);
 			styledit->undoredo.commit(styledit, start_gofs, commit_string.getAppendPos(), commit_string.getData(),
 									  false);
 		}
@@ -345,7 +345,7 @@ void TBSelection::removeContent() {
 	styledit->endLockScrollbars();
 }
 
-bool TBSelection::getText(TBStr &text) const {
+bool TBSelection::getText(core::String &text) const {
 	if (!isSelected()) {
 		text.clear();
 		return true;
@@ -357,12 +357,12 @@ bool TBSelection::getText(TBStr &text) const {
 		buf.append(start.block->str.c_str() + start.ofs, start.block->str_len - start.ofs);
 		TBBlock *block = start.block->getNext();
 		while (block != stop.block) {
-			buf.append(block->str, block->str_len);
+			buf.append(block->str.c_str(), block->str_len);
 			block = block->getNext();
 		}
 		// FIX: Add methods to change data owner from temp buffer to string!
-		buf.append(stop.block->str, stop.ofs);
-		text.set((char *)buf.getData(), buf.getAppendPos());
+		buf.append(stop.block->str.c_str(), stop.ofs);
+		text = core::String((char *)buf.getData(), buf.getAppendPos());
 	}
 	return true;
 }
@@ -431,7 +431,7 @@ bool TBCaret::move(bool forward, bool word) {
 
 	int len = pos.block->str_len;
 	if (word && !(forward && pos.ofs == len) && !(!forward && pos.ofs == 0)) {
-		const char *str = pos.block->str;
+		const char *str = pos.block->str.c_str();
 		if (forward) {
 			if (is_linebreak(str[pos.ofs])) {
 				pos.ofs++;
@@ -471,9 +471,9 @@ bool TBCaret::move(bool forward, bool word) {
 		} else {
 			int i = pos.ofs;
 			if (forward) {
-				utf8::move_inc(pos.block->str, &i, pos.block->str_len);
+				utf8::move_inc(pos.block->str.c_str(), &i, pos.block->str_len);
 			} else {
-				utf8::move_dec(pos.block->str, &i);
+				utf8::move_dec(pos.block->str.c_str(), &i);
 			}
 			pos.ofs = i;
 		}
@@ -643,7 +643,7 @@ void TBBlock::clear() {
 }
 
 void TBBlock::set(const char *newstr, int32_t len) {
-	str.set(newstr, len);
+	str = core::String(newstr, len);
 	str_len = len;
 	split();
 	layout(true, true);
@@ -708,7 +708,7 @@ void TBBlock::removeContent(int32_t ofs, int32_t len) {
 	if (len == 0) {
 		return;
 	}
-	str.remove(ofs, len);
+	str.erase(ofs, len);
 	str_len -= len;
 	layout(true, true);
 }
@@ -736,7 +736,7 @@ void TBBlock::split() {
 
 			len = len + brlen - i;
 			block->set(str.c_str() + i, len);
-			str.remove(i, len);
+			str.erase(i, len);
 			str_len -= len;
 			break;
 		}
@@ -747,7 +747,7 @@ void TBBlock::merge() {
 	TBBlock *next_block = getNext();
 	if ((next_block != nullptr) && !fragments.getLast()->isBreak()) {
 		str.append(getNext()->str);
-		str_len = str.length();
+		str_len = str.size();
 
 		styledit->blocks.doDelete(next_block);
 
@@ -786,7 +786,7 @@ int TBBlock::getStartIndentation(TBFontFace *font, int firstLineLen) const {
 	int i = 0;
 	while (i < firstLineLen) {
 		const char *current_str = str.c_str() + i;
-		UCS4 uc = utf8::decode_next(str, &i, firstLineLen);
+		UCS4 uc = utf8::decode_next(str.c_str(), &i, firstLineLen);
 		switch (uc) {
 		case '\t':
 			indentation += calculateTabWidth(font, indentation);
@@ -811,7 +811,7 @@ void TBBlock::layout(bool updateFragments, bool propagateHeight) {
 		clear();
 
 		int ofs = 0;
-		const char *text = str;
+		const char *text = str.c_str();
 		while (true) {
 			int frag_len;
 			bool is_embed = false;
@@ -1705,9 +1705,9 @@ void TBStyleEdit::copy() {
 }
 
 void TBStyleEdit::paste() {
-	TBStr text;
+	core::String text;
 	if (TBClipboard::hasText() && TBClipboard::getText(text)) {
-		insertText(text, text.length());
+		insertText(text.c_str(), text.size());
 		scrollIfNeeded(true, true);
 		invokeOnChange();
 	}
@@ -1855,7 +1855,7 @@ bool TBStyleEdit::setText(const char *text, int textLen, TB_CARET_POS pos) {
 	return true;
 }
 
-bool TBStyleEdit::getText(TBStr &text) {
+bool TBStyleEdit::getText(core::String &text) {
 	TBSelection tmp_selection(this);
 	tmp_selection.selectAll();
 	return tmp_selection.getText(text);
@@ -1869,7 +1869,7 @@ void TBStyleEdit::invokeOnChange() {
 }
 
 bool TBStyleEdit::isEmpty() const {
-	return blocks.getFirst() == blocks.getLast() && blocks.getFirst()->str.isEmpty();
+	return blocks.getFirst() == blocks.getLast() && blocks.getFirst()->str.empty();
 }
 
 void TBStyleEdit::setAlign(TB_TEXT_ALIGN align) {
@@ -1947,16 +1947,16 @@ void TBUndoRedoStack::apply(TBStyleEdit *styledit, TBUndoEvent *e, bool reverse)
 		core_assert(TBTextOfs(styledit->caret.pos).getGlobalOfs(styledit) == e->gofs);
 
 		TBTextOfs start = styledit->caret.pos;
-		styledit->caret.setGlobalOfs(e->gofs + e->text.length(), false);
-		core_assert(TBTextOfs(styledit->caret.pos).getGlobalOfs(styledit) == e->gofs + e->text.length());
+		styledit->caret.setGlobalOfs(e->gofs + e->text.size(), false);
+		core_assert(TBTextOfs(styledit->caret.pos).getGlobalOfs(styledit) == e->gofs + (int32_t)e->text.size());
 
 		styledit->selection.select(start, styledit->caret.pos);
 		styledit->selection.removeContent();
 	} else {
 		styledit->selection.selectNothing();
 		styledit->caret.setGlobalOfs(e->gofs, true, true);
-		styledit->insertText(e->text);
-		int text_len = e->text.length();
+		styledit->insertText(e->text.c_str());
+		int text_len = e->text.size();
 		if (text_len > 1) {
 			styledit->selection.select(e->gofs, e->gofs + text_len);
 		}
@@ -1985,7 +1985,7 @@ TBUndoEvent *TBUndoRedoStack::commit(TBStyleEdit *styledit, int32_t gofs, int32_
 	if (insert && (undos.getNumItems() != 0)) {
 		int num_char = utf8::count_characters(text, len);
 		TBUndoEvent *e = undos[undos.getNumItems() - 1];
-		if (num_char == 1 && e->insert && e->gofs + e->text.length() == gofs) {
+		if (num_char == 1 && e->insert && e->gofs + (int32_t)e->text.size() == gofs) {
 			// Appending a space to other space(s) should append
 			if ((text[0] == ' ' && (strpbrk(e->text.c_str(), "\r\n") == nullptr)) ||
 				// But non spaces should not
@@ -1999,7 +1999,7 @@ TBUndoEvent *TBUndoRedoStack::commit(TBStyleEdit *styledit, int32_t gofs, int32_
 	// Create a new event
 	if (TBUndoEvent *e = new TBUndoEvent()) {
 		e->gofs = gofs;
-		e->text.set(text, len);
+		e->text = core::String(text, len);
 		e->insert = insert;
 		undos.add(e);
 		return e;

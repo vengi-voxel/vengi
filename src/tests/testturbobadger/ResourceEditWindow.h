@@ -39,6 +39,9 @@ public:
 	void setSelectedWidget(TBWidget *widget);
 
 	void load(const char *resource_file);
+	void load(const core::String& resource_file) {
+		load(resource_file.c_str());
+	}
 	void refreshFromSource();
 
 	// == TBWindow ======================================================================
@@ -58,7 +61,7 @@ private:
 	TBScrollContainer *m_scroll_container;
 	TBWidget *m_build_container;
 	TBEditField *m_source_edit;
-	TBStr m_resource_filename;
+	core::String m_resource_filename;
 	TBWidgetSafePointer m_selected_widget;
 	void addWidgetListItemsRecursive(TBWidget *widget, int depth);
 	bool onDropFileEvent(const TBWidgetEvent &ev);

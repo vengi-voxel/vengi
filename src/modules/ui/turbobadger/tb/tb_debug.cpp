@@ -8,6 +8,7 @@
 #include "tb_tempbuffer.h"
 #include "tb_widgets_reader.h"
 #include "tb_window.h"
+#include "core/StringUtil.h"
 #include <SDL.h>
 
 namespace tb {
@@ -101,9 +102,9 @@ public:
 		g_renderer->translate(-getRect().w, 0);
 	}
 
-	TBStr getIdString(const TBID &id) {
-		TBStr str;
-		str.setFormatted("%u", (uint32_t)id);
+	core::String getIdString(const TBID &id) {
+		core::String str;
+		str = core::string::format("%u", (uint32_t)id);
 		return str;
 	}
 
@@ -136,13 +137,13 @@ public:
 		}
 
 		if (ev.type == EVENT_TYPE_CHANGED) {
-			TBStr extra;
-			TBStr text;
-			if (ev.target->getText(text) && text.length() > 24) {
+			core::String extra;
+			core::String text;
+			if (ev.target->getText(text) && text.size() > 24) {
 				sprintf(text.c_str() + 20, "...");
 			}
-			extra.setFormatted(", value: %.2f (\"%s\")", ev.target->getValueDouble(), text.c_str());
-			buf.appendString(extra);
+			extra = core::string::format(", value: %.2f (\"%s\")", ev.target->getValueDouble(), text.c_str());
+			buf.appendString(extra.c_str());
 		}
 		buf.appendString("\n");
 

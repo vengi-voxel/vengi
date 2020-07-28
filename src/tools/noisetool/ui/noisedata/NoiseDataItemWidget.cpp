@@ -5,6 +5,7 @@
 #include "NoiseDataItemWidget.h"
 #include "../../NoiseTool.h"
 #include "ui/turbobadger/ui_widgets.h"
+#include "core/StringUtil.h"
 
 NoiseItemSource::NoiseItemSource(NoiseTool* tool) :
 		_tool(tool) {
@@ -31,15 +32,13 @@ tb::TBWidget *NoiseItemSource::createItemWidget(int index, tb::TBSelectItemViewe
 #define NOISEDATADETAIL(text, type) \
 	if (tb::TBTextField *widget = getWidgetByIDAndType<tb::TBTextField>(TBIDC(#type))) { \
 		const NoiseData& data = item->data(); \
-		tb::TBStr str; \
-		str.setFormatted(text, data.type); \
+		const core::String& str = core::string::format(text, data.type); \
 		widget->setText(str); \
 	}
 
 #define NOISEDATADETAILDATA(text, id, data) \
 	if (tb::TBTextField *widget = getWidgetByIDAndType<tb::TBTextField>(TBIDC(id))) { \
-		tb::TBStr str; \
-		str.setFormatted(text, data); \
+		const core::String& str = core::string::format(text, data); \
 		widget->setText(str); \
 	}
 
