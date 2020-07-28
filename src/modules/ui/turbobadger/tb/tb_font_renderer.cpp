@@ -239,15 +239,12 @@ void TBFontFace::setBackgroundFont(TBFontFace *font, const TBColor &col, int xof
 	m_bgColor = col;
 }
 
-bool TBFontFace::renderGlyphs(const char *glyphStr, int glyphStrLen) {
+bool TBFontFace::renderGlyphs(const char *glyphStr) {
 	if (m_font_renderer == nullptr) {
 		return true; // This is the test font
 	}
 
-	if (glyphStrLen == TB_ALL_TO_TERMINATION) {
-		glyphStrLen = SDL_strlen(glyphStr);
-	}
-
+	const int glyphStrLen = SDL_strlen(glyphStr);
 	bool has_all_glyphs = true;
 	int i = 0;
 	while (i < glyphStrLen && glyphStr[i] != '\0') {

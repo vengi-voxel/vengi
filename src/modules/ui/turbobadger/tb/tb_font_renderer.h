@@ -146,7 +146,7 @@ public:
 	~TBFontFace();
 
 	/** Render all glyphs needed to display the string. */
-	bool renderGlyphs(const char *glyphStr, int glyphStrLen = TB_ALL_TO_TERMINATION);
+	bool renderGlyphs(const char *glyphStr);
 
 	/** Get the vertical distance (positive) from the horizontal baseline to the highest character coordinate
 		in a font face. */
