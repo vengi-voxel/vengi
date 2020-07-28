@@ -58,9 +58,6 @@ TBStr::~TBStr() {
 
 bool TBStr::set(const char *str, int len) {
 	safe_delete(s);
-	if (len == TB_ALL_TO_TERMINATION) {
-		len = SDL_strlen(str);
-	}
 	if (char *new_s = (char *)SDL_malloc(len + 1)) {
 		s = new_s;
 		SDL_memcpy(s, str, len);
@@ -123,9 +120,6 @@ void TBStr::remove(int ofs, int len) {
 
 bool TBStr::insert(int ofs, const char *ins, int insLen) {
 	int len1 = SDL_strlen(s);
-	if (insLen == TB_ALL_TO_TERMINATION) {
-		insLen = SDL_strlen(ins);
-	}
 	int newlen = len1 + insLen;
 	if (char *news = (char *)SDL_malloc(newlen + 1)) {
 		SDL_memcpy(&news[0], s, ofs);

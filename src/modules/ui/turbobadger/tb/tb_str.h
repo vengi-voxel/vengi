@@ -9,10 +9,6 @@
 
 namespace tb {
 
-/** Use as parameter for string length if you know the string is null terminated.
-	Can be used in functions that support it. */
-#define TB_ALL_TO_TERMINATION 2147483647
-
 /** Some useful C-like functions that's missing in the standard. */
 const char *stristr(const char *arg1, const char *arg2);
 
@@ -71,15 +67,21 @@ public:
 	TBStr(const char *str);
 	TBStr(const char *str, int len);
 
-	bool set(const char *str, int len = TB_ALL_TO_TERMINATION);
+	bool set(const char *str) {
+		return set(str, SDL_strlen(str));
+	}
+	bool set(const char *str, int len);
 	bool setFormatted(const char *format, ...);
 
 	void clear();
 
 	void remove(int ofs, int len);
-	bool insert(int ofs, const char *ins, int ins_len = TB_ALL_TO_TERMINATION);
-	bool append(const char *ins, int insLen = TB_ALL_TO_TERMINATION) {
+	bool insert(int ofs, const char *ins, int ins_len);
+	bool append(const char *ins, int insLen) {
 		return insert(SDL_strlen(s), ins, insLen);
+	}
+	bool append(const char *ins) {
+		return insert(SDL_strlen(s), ins, SDL_strlen(ins));
 	}
 
 	inline operator char *() const {
@@ -89,7 +91,7 @@ public:
 		return s;
 	}
 	const TBStr &operator=(const TBStr &str) {
-		set(str);
+		set(str, str.length());
 		return *this;
 	}
 };
