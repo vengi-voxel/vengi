@@ -7,14 +7,6 @@
 
 namespace tb {
 
-static const char *empty = "";
-inline void safe_delete(char *&str) {
-	if (str != empty && (str != nullptr)) {
-		SDL_free(str);
-	}
-	str = const_cast<char *>(empty);
-}
-
 const char *stristr(const char *arg1, const char *arg2) {
 	const char *a;
 	const char *b;
