@@ -1,10 +1,12 @@
 set(SRCS
 	Texture.h Texture.cpp
 	Types.h
+	Trace.h Trace.cpp
 	Compute.h
 	Shader.h Shader.cpp
 	TextureConfig.h TextureConfig.cpp
 )
+# its important to not link against opencl here - we are loading the icd lib at runtime
 set(LIB compute)
 find_package(OpenCL)
 if (OpenCL_INCLUDE_DIRS)
@@ -16,22 +18,10 @@ if (OpenCL_INCLUDE_DIRS)
 		cl/CLSymbol.c cl/CLSymbol.h
 	)
 	set(OPENCL_LIBRARY ${OpenCL_LIBRARY})
+	set(HAVE_OPENCL 1 CACHE FORCE "")
 else()
-	# if opencl wasn't found, cuda might take over
-	find_package(CUDA)
-	if (CUDA_FOUND)
-		list(APPEND SRCS
-			cuda/CUDA.h
-			cuda/CUDACompute.cpp cuda/CUDACompute.h
-			cuda/CUDATypes.h
-		)
-	endif()
-endif()
-
-if (NOT OpenCL_FOUND AND NOT OpenCL_INCLUDE_DIRS)
-	list(APPEND SRCS
-		dummy/DummyCompute.cpp
-	)
+	set(HAVE_OPENCL 0 CACHE FORCE "")
+	list(APPEND SRCS dummy/DummyCompute.cpp)
 endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util)
@@ -40,9 +30,6 @@ if (APPLE)
 endif()
 if (OpenCL_INCLUDE_DIRS)
 	target_include_directories(${LIB} PRIVATE ${OpenCL_INCLUDE_DIRS})
-endif()
-if (CUDA_TOOLKIT_INCLUDE)
-	target_include_directories(${LIB} PRIVATE ${CUDA_TOOLKIT_INCLUDE})
 endif()
 
 if (TESTS)

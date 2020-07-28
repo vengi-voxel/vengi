@@ -16,6 +16,9 @@
 #include <glm/gtc/round.hpp>
 #include "core/String.h"
 #include <unordered_map>
+#ifdef TRACY_ENABLE
+#include "core/tracy/TracyOpenCL.hpp"
+#endif
 
 namespace compute {
 
@@ -793,6 +796,7 @@ bool finish() {
 		return false;
 	}
 	error = clFinish(_priv::_ctx.commandQueue);
+	compute_trace_frame_end(_priv::_ctx._traceCtx);
 	_priv::checkError(error);
 	return error == CL_SUCCESS;
 }
@@ -1003,30 +1007,25 @@ bool init() {
 	}
 
 	error = CL_SUCCESS;
-#if 0
-	// TODO: this segfaults on nvidia/linux
-//#ifdef CL_VERSION_2_0
-	// TODO: CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE??
-	// TODO: CL_QUEUE_PROFILING_ENABLE
-	cl_queue_properties properties[] = { CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0 };
-	/**
-	 * Must be a device associated with context. It can either be in the list of devices specified when context
-	 * is created using clCreateContext or have the same device type as the device type specified when the
-	 * context is created using clCreateContextFromType.
-	 */
-	_priv::_ctx.commandQueue = clCreateCommandQueueWithProperties(
-			_priv::_ctx.context, _priv::_ctx.deviceId, properties, &error);
+	const cl_command_queue_properties queueProperties =
+#ifdef TRACY_ENABLE
+		CL_QUEUE_PROFILING_ENABLE
 #else
-	_priv::_ctx.commandQueue = clCreateCommandQueue(
-			_priv::_ctx.context, _priv::_ctx.deviceId, 0, &error);
+		0
 #endif
+	;
+	_priv::_ctx.commandQueue = clCreateCommandQueue(
+			_priv::_ctx.context, _priv::_ctx.deviceId, queueProperties, &error);
 	_priv::checkError(error);
+
+	_priv::_ctx._traceCtx = compute_trace_init(_priv::_ctx.context, _priv::_ctx.deviceId);
 
 	Log::info("OpenCL Context created");
 	return true;
 }
 
 void shutdown() {
+	compute_trace_shutdown(_priv::_ctx._traceCtx);
 	if (_priv::_ctx.commandQueue != nullptr) {
 		const cl_int error = clReleaseCommandQueue(_priv::_ctx.commandQueue);
 		_priv::checkError(error);

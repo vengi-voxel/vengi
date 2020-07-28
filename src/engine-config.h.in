@@ -21,6 +21,7 @@
 #cmakedefine HAVE_SYS_RESOURCE_H 1
 #cmakedefine HAVE_POSTGRES 1
 #cmakedefine HAVE_UUID_H 1
+#cmakedefine HAVE_OPENCL 1
 #cmakedefine HAVE_SYS_TIME_H 1
 #cmakedefine CURSES_HAVE_NCURSES_H 1
 

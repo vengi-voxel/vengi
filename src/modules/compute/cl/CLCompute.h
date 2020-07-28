@@ -8,6 +8,7 @@
 #include "CLSymbol.h"
 #include "CLMapping.h"
 #include "compute/Compute.h"
+#include "compute/Trace.h"
 #include "core/Assert.h"
 #include "core/Common.h"
 #include <vector>
@@ -31,6 +32,7 @@ struct Context {
 	size_t image3DSize[3] = {};
 	size_t maxComputeUnits = 0;
 	std::vector<cl_context_properties> externalProperties;
+	compute_trace_context* _traceCtx = nullptr;
 
 	bool features[core::enumVal(compute::Feature::Max)] = { };
 	inline bool supports(compute::Feature feature) const {
