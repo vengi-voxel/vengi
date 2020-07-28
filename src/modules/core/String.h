@@ -104,6 +104,7 @@ public:
 	String& append(int);
 	String& append(float);
 	String& append(const char *str);
+	String& append(const char *str, size_t len);
 	String& append(const String &str);
 
 	String &operator=(const char *str);
