@@ -19,6 +19,14 @@ bool RandomColorTexture::init() {
 	const float persistence = 0.3f;
 	const float frequency = 0.7f;
 	const float amplitude = 1.0f;
+	if (_noise.canUseShader()) {
+		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
+		_noise.seamlessNoise(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
+		video::TextureFormat format = video::TextureFormat::RGB;
+		_colorTexture->upload(format, ColorTextureSize, ColorTextureSize, colorTexture);
+		delete[] colorTexture;
+		return true;
+	}
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([=] () {
 		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
 		_noise.seamlessNoise(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);

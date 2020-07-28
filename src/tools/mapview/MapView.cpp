@@ -412,6 +412,7 @@ core::AppState MapView::onRunning() {
 	_soundManager->setListenerPosition(_camera.camera().position());
 	_soundManager->update();
 	_axis.render(_camera.camera());
+	compute::finish();
 	return state;
 }
 

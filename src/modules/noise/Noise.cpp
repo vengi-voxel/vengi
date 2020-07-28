@@ -71,6 +71,7 @@ double Noise::doubleValueNoise(const glm::ivec3& pos, int32_t seed) const {
 }
 
 double Noise::voronoi(const glm::dvec3& pos, bool enableDistance, double frequency, int seed) const {
+	core_trace_scoped(voronoi);
 	const glm::dvec3 p = pos * frequency;
 	const glm::ivec3 rp(
 			(p.x > 0.0 ? (int)(p.x) : (int)(p.x) - 1),
@@ -160,6 +161,7 @@ float Noise::sphereNoise(float longitude, float latitude) {
 }
 
 void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persistence, float frequency, float amplitude) const {
+	core_trace_scoped(seamlessNoise);
 	const int components = 3;
 	if (canUseShader()) {
 		const glm::ivec2 workSize(size);

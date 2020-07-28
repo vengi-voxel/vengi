@@ -365,7 +365,7 @@ core::AppState Client::onRunning() {
 		_network->update();
 		_soundManager->update();
 	}
-
+	compute::finish();
 	return state;
 }
 
