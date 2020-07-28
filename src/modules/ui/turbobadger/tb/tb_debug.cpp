@@ -149,7 +149,7 @@ public:
 		// Append the line to the output textfield
 		TBStyleEdit *se = output->getStyleEdit();
 		se->selection.selectNothing();
-		se->appendText(buf.getData(), TB_ALL_TO_TERMINATION, true);
+		se->appendText(buf.getData(), true);
 		se->scrollIfNeeded(false, true);
 
 		// Remove lines from the top if we exceed the height limit.

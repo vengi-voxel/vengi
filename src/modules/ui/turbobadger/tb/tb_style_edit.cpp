@@ -1564,11 +1564,8 @@ void TBStyleEdit::insertBreak() {
 	}
 }
 
-void TBStyleEdit::insertText(const char *text, int32_t len, bool afterLast, bool clearUndoRedo) {
-	if (len == TB_ALL_TO_TERMINATION) {
-		len = SDL_strlen(text);
-	}
-
+void TBStyleEdit::insertText(const char *text, bool afterLast, bool clearUndoRedo) {
+	const int len = SDL_strlen(text);
 	selection.removeContent();
 
 	if (afterLast) {
@@ -1657,8 +1654,9 @@ bool TBStyleEdit::keyDown(int key, SPECIAL_KEY specialKey, MODIFIER_KEYS modifie
 		insertBreak();
 	} else if (!packed.read_only && ((key != 0) && ((modifierkeys & TB_CTRL) == 0U)) && specialKey != TB_KEY_ENTER) {
 		char utf8[8];
-		int len = utf8::encode(key, utf8);
-		insertText(utf8, len);
+		const int len = utf8::encode(key, utf8);
+		utf8[len] = '\0';
+		insertText(utf8);
 	} else {
 		handled = false;
 	}

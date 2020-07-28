@@ -433,10 +433,10 @@ public:
 		return undoredo.redos.getNumItems() != 0;
 	}
 
-	void insertText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool afterLast = false,
+	void insertText(const char *text, bool afterLast = false,
 					bool clearUndoRedo = false);
-	void appendText(const char *text, int32_t len = TB_ALL_TO_TERMINATION, bool clearUndoRedo = false) {
-		insertText(text, len, true, clearUndoRedo);
+	void appendText(const char *text, bool clearUndoRedo = false) {
+		insertText(text, true, clearUndoRedo);
 	}
 	void insertBreak();
 
