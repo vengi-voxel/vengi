@@ -338,6 +338,21 @@ void String::replace(size_t index, size_t length, const char *str) {
 	insert(index, str);
 }
 
+void String::insert(size_t index, const char *str, size_t len) {
+	if (len == 0) {
+		return;
+	}
+	if (index == size()) {
+		append(str, len);
+		return;
+	}
+	const size_t newSize = _data._size + len + 1;
+	checkBufferSize(newSize);
+	SDL_memmove(_data._str + index + len, _data._str + index, _data._size - index + 1);
+	SDL_memcpy(_data._str + index, str, len);
+	_data._size += len;
+}
+
 void String::insert(size_t index, const char *str) {
 	if (index == size()) {
 		append(str);

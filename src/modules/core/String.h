@@ -66,6 +66,7 @@ public:
 	bool empty() const;
 	void clear();
 	void insert(size_t index, const char *str);
+	void insert(size_t index, const char *str, size_t len);
 
 	int toInt() const;
 	float toFloat() const;
