@@ -234,7 +234,7 @@ bool configureProgram(Id program) {
 	const cl_int error = clBuildProgram((cl_program)program,
 		0,
 		nullptr,
-		"-cl-no-signed-zeros -cl-denorms-are-zero -cl-fast-relaxed-math -cl-finite-math-only -Werror",
+		"-cl-no-signed-zeros -cl-denorms-are-zero -cl-fast-relaxed-math -cl-finite-math-only",
 		nullptr,
 		nullptr);
 	if (error == CL_BUILD_PROGRAM_FAILURE) {

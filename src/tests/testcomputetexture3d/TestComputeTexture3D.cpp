@@ -123,9 +123,6 @@ void TestComputeTexture3D::onRenderUI() {
 			core_assert_msg(_output[i] == 255, "Expected to find the value 255 in the alpha channel - but got %i", (int)_output[i]);
 			continue;
 		}
-		if (_output[i] != 0) {
-			ImGui::Text("value i(%i): %i", i, (int)_output[i]);
-		}
 	}
 	if (ImGui::InputInt2("WorkSize", glm::value_ptr(_workSize))) {
 		_workSize.x = glm::clamp(_workSize.x, 2, 64);
