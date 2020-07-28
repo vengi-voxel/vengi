@@ -92,8 +92,8 @@ tb::PreferredSize PaletteWidget::onCalculatePreferredContentSize(const tb::SizeC
 
 void PaletteWidget::onInflate(const tb::INFLATE_INFO &info) {
 	const float scaleFactor = video::WindowedApp::dpiFactor();
-	_width = info.node->getValueInt("width", 20) * glm::floor(scaleFactor);
-	_height = info.node->getValueInt("height", 20) * glm::floor(scaleFactor);
+	_width = info.node->getValueInt("width", 20) * scaleFactor;
+	_height = info.node->getValueInt("height", 20) * scaleFactor;
 	_amountX = info.node->getValueInt("amount-x", 8);
 	Super::onInflate(info);
 }

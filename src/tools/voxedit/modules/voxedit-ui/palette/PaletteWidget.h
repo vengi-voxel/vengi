@@ -12,8 +12,8 @@ protected:
 	int _width = 0;
 	int _height = 0;
 	int _padding = 0;
-	int _amountX = 0;
-	int _amountY = 0;
+	int _amountX = 8;
+	int _amountY = 8;
 	bool _dirty = true;
 	// the palette index
 	int _value = 0;
