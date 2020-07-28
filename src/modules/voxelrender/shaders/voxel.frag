@@ -10,6 +10,10 @@ uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
 layout(location = 0) $out vec4 o_color;
 
+#ifndef clgamma
+#define clgamma 2.2
+#endif
+
 void main(void) {
 #if r_renderoutline == 1
 	const float epsilona = 0.025;
@@ -38,4 +42,5 @@ void main(void) {
 		vec3 shadowColor = shadow(bias, v_color.rgb, diffuse, u_ambient_color);
 		o_color = vec4(shadowColor * v_ambientocclusion, v_color.a);
 	}
+	o_color.rgb = pow(o_color.rgb, vec3(1.0 / clgamma));
 }
