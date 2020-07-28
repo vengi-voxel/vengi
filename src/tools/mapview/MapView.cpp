@@ -15,6 +15,7 @@
 #include "core/EventBus.h"
 #include "core/command/Command.h"
 #include "voxel/Voxel.h"
+#include "compute/Compute.h"
 #include "core/io/Filesystem.h"
 #include "ui/imgui/IMGUI.h"
 #include "voxel/MaterialColor.h"
@@ -82,6 +83,8 @@ core::AppState MapView::onInit() {
 	if (state != core::AppState::Running) {
 		return state;
 	}
+
+	compute::init();
 
 	video::enableDebug(video::DebugSeverity::High);
 
@@ -429,6 +432,7 @@ core::AppState MapView::onCleanup() {
 	_worldMgr->shutdown();
 	_floorResolver.shutdown();
 	_meshCache->shutdown();
+	compute::shutdown();
 	return state;
 }
 
