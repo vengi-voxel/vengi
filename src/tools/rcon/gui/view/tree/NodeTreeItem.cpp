@@ -4,6 +4,7 @@
 #include "NodeTreeItem.h"
 #include "AIDebugger.h"
 #include "TreeViewCommon.h"
+#include "core/Enum.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QFont>
@@ -139,7 +140,7 @@ void NodeTreeItem::paint (QPainter *painter, const QStyleOptionGraphicsItem *opt
 	painter->drawText(rect, _name);
 	rect.setY(rect.y() + _lineHeight);
 	const TreeNodeStatus status = _node.getStatus();
-	const QString stateString = stateNames[status];
+	const QString stateString = stateNames[core::enumVal(status)];
 	const int64_t lastRun = _node.getLastRun();
 	painter->drawText(rect, stateString);
 	QPoint center(padding + radius, padding + radius);

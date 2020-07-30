@@ -35,7 +35,7 @@ public:
 	 * @note The returned @c TreeNodeStatus is recorded automatically
 	 */
 	virtual ai::TreeNodeStatus executeStart(const AIPtr& /*entity*/, int64_t /*deltaMillis*/) {
-		return ai::RUNNING;
+		return ai::TreeNodeStatus::RUNNING;
 	}
 
 	/**
@@ -47,7 +47,7 @@ public:
 	 * @note The returned @c TreeNodeStatus is recorded automatically
 	 */
 	virtual ai::TreeNodeStatus executeRunning(const AIPtr& /*entity*/, int64_t /*deltaMillis*/) {
-		return ai::RUNNING;
+		return ai::TreeNodeStatus::RUNNING;
 	}
 
 	/**
@@ -55,7 +55,7 @@ public:
 	 * @note The returned @c TreeNodeStatus is recorded automatically
 	 */
 	virtual ai::TreeNodeStatus executeExpired(const AIPtr& /*entity*/, int64_t /*deltaMillis*/) {
-		return ai::FINISHED;
+		return ai::TreeNodeStatus::FINISHED;
 	}
 };
 

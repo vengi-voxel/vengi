@@ -32,8 +32,8 @@ namespace backend {
 class ITask: public TreeNode {
 protected:
 	ai::TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
-		if (TreeNode::execute(entity, deltaMillis) == ai::CANNOTEXECUTE) {
-			return ai::CANNOTEXECUTE;
+		if (TreeNode::execute(entity, deltaMillis) == ai::TreeNodeStatus::CANNOTEXECUTE) {
+			return ai::TreeNodeStatus::CANNOTEXECUTE;
 		}
 
 		return state(entity, doAction(entity, deltaMillis));

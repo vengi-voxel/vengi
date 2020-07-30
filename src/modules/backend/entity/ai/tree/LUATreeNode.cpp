@@ -95,8 +95,8 @@ LUATreeNode::~LUATreeNode() {
 }
 
 ai::TreeNodeStatus LUATreeNode::execute(const AIPtr& entity, int64_t deltaMillis) {
-	if (TreeNode::execute(entity, deltaMillis) == ai::CANNOTEXECUTE) {
-		return ai::CANNOTEXECUTE;
+	if (TreeNode::execute(entity, deltaMillis) == ai::TreeNodeStatus::CANNOTEXECUTE) {
+		return ai::TreeNodeStatus::CANNOTEXECUTE;
 	}
 
 	return state(entity, runLUA(entity, deltaMillis));

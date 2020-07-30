@@ -119,7 +119,7 @@ public:
 	}
 
 	AIStateNode() :
-			_nodeId(-1), _lastRun(-1L), _status(UNKNOWN), _currentlyRunning(false) {
+			_nodeId(-1), _lastRun(-1L), _status(TreeNodeStatus::UNKNOWN), _currentlyRunning(false) {
 	}
 
 	void addChildren(const AIStateNode& child) {

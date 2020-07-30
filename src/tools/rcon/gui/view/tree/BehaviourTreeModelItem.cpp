@@ -4,6 +4,7 @@
 #include "BehaviourTreeModelItem.h"
 #include "TreeViewCommon.h"
 #include "AINodeStaticResolver.h"
+#include "core/Enum.h"
 #include <QFile>
 
 namespace ai {
@@ -46,16 +47,16 @@ BehaviourTreeModelItem* BehaviourTreeModelItem::child(int rowIndex) {
 QVariant BehaviourTreeModelItem::color() const {
 	const TreeNodeStatus status = _node->getStatus();
 	switch (status) {
-	case UNKNOWN:
-	case CANNOTEXECUTE:
+	case TreeNodeStatus::UNKNOWN:
+	case TreeNodeStatus::CANNOTEXECUTE:
 		return QColor(Qt::gray);
-	case RUNNING:
-	case FINISHED:
+	case TreeNodeStatus::RUNNING:
+	case TreeNodeStatus::FINISHED:
 		return QColor(Qt::darkGreen);
-	case FAILED:
-	case EXCEPTION:
+	case TreeNodeStatus::FAILED:
+	case TreeNodeStatus::EXCEPTION:
 		return QColor(Qt::red);
-	case MAX_TREENODESTATUS:
+	case TreeNodeStatus::MAX_TREENODESTATUS:
 		break;
 	}
 	return QVariant();
@@ -131,10 +132,10 @@ QVariant BehaviourTreeModelItem::data(int column) const {
 		return QString(_node->getCondition().c_str());
 	case COL_STATE: {
 		const TreeNodeStatus status = _node->getStatus();
-		if (status >= UNKNOWN && status < MAX_TREENODESTATUS) {
-			return stateNames[status];
+		if (status >= TreeNodeStatus::UNKNOWN && status < TreeNodeStatus::MAX_TREENODESTATUS) {
+			return stateNames[core::enumVal(status)];
 		}
-		return stateNames[UNKNOWN];
+		return stateNames[core::enumVal(TreeNodeStatus::UNKNOWN)];
 	}
 	case COL_LASTRUN:
 		return QString::number(_node->getLastRun() / 1000);

@@ -3,6 +3,7 @@
  */
 
 #include "AICharacterDetailsMessage.h"
+#include "core/Enum.h"
 
 namespace ai {
 
@@ -25,7 +26,7 @@ void AICharacterDetailsMessage::writeNode (streamContainer& out, const AIStateNo
 	addInt(out, node.getNodeId());
 	addString(out, node.getCondition());
 	addLong(out, node.getLastRun());
-	addByte(out, node.getStatus());
+	addByte(out, core::enumVal(node.getStatus()));
 	addBool(out, node.isRunning());
 	const std::vector<AIStateNode>& children = node.getChildren();
 	addShort(out, static_cast<int16_t>(children.size()));

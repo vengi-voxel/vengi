@@ -19,13 +19,13 @@ ITimedNode::ITimedNode(const core::String& name, const core::String& parameters,
 
 ai::TreeNodeStatus ITimedNode::execute(const AIPtr& entity, int64_t deltaMillis) {
 	const ai::TreeNodeStatus result = TreeNode::execute(entity, deltaMillis);
-	if (result == ai::CANNOTEXECUTE)
-		return ai::CANNOTEXECUTE;
+	if (result == ai::TreeNodeStatus::CANNOTEXECUTE)
+		return ai::TreeNodeStatus::CANNOTEXECUTE;
 
 	if (_timerMillis == NOTSTARTED) {
 		_timerMillis = _millis;
 		const ai::TreeNodeStatus status = executeStart(entity, deltaMillis);
-		if (status == ai::FINISHED)
+		if (status == ai::TreeNodeStatus::FINISHED)
 			_timerMillis = NOTSTARTED;
 		return state(entity, status);
 	}
@@ -33,7 +33,7 @@ ai::TreeNodeStatus ITimedNode::execute(const AIPtr& entity, int64_t deltaMillis)
 	if (_timerMillis - deltaMillis > 0) {
 		_timerMillis -= deltaMillis;
 		const ai::TreeNodeStatus status = executeRunning(entity, deltaMillis);
-		if (status == ai::FINISHED)
+		if (status == ai::TreeNodeStatus::FINISHED)
 			_timerMillis = NOTSTARTED;
 		return state(entity, status);
 	}

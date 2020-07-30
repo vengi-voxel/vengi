@@ -9,10 +9,10 @@
 namespace backend {
 
 ai::TreeNodeStatus Sequence::execute(const AIPtr& entity, int64_t deltaMillis) {
-	if (Selector::execute(entity, deltaMillis) == ai::CANNOTEXECUTE)
-		return ai::CANNOTEXECUTE;
+	if (Selector::execute(entity, deltaMillis) == ai::TreeNodeStatus::CANNOTEXECUTE)
+		return ai::TreeNodeStatus::CANNOTEXECUTE;
 
-	ai::TreeNodeStatus result = ai::FINISHED;
+	ai::TreeNodeStatus result = ai::TreeNodeStatus::FINISHED;
 	const int progress = core_max(0, getSelectorState(entity));
 
 	const std::size_t size = _children.size();
@@ -21,18 +21,18 @@ ai::TreeNodeStatus Sequence::execute(const AIPtr& entity, int64_t deltaMillis) {
 
 		result = child->execute(entity, deltaMillis);
 
-		if (result == ai::RUNNING) {
+		if (result == ai::TreeNodeStatus::RUNNING) {
 			setSelectorState(entity, static_cast<int>(i));
 			break;
-		} else if (result == ai::CANNOTEXECUTE || result == ai::FAILED) {
+		} else if (result == ai::TreeNodeStatus::CANNOTEXECUTE || result == ai::TreeNodeStatus::FAILED) {
 			resetState(entity);
 			break;
-		} else if (result == ai::EXCEPTION) {
+		} else if (result == ai::TreeNodeStatus::EXCEPTION) {
 			break;
 		}
 	}
 
-	if (result != ai::RUNNING) {
+	if (result != ai::TreeNodeStatus::RUNNING) {
 		resetState(entity);
 	}
 

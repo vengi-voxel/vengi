@@ -22,8 +22,8 @@ ProbabilitySelector::ProbabilitySelector(const core::String& name, const core::S
 }
 
 ai::TreeNodeStatus ProbabilitySelector::execute(const AIPtr& entity, int64_t deltaMillis) {
-	if (Selector::execute(entity, deltaMillis) == ai::CANNOTEXECUTE)
-		return ai::CANNOTEXECUTE;
+	if (Selector::execute(entity, deltaMillis) == ai::TreeNodeStatus::CANNOTEXECUTE)
+		return ai::TreeNodeStatus::CANNOTEXECUTE;
 
 	int index = getSelectorState(entity);
 	if (index == AI_NOTHING_SELECTED) {
@@ -38,7 +38,7 @@ ai::TreeNodeStatus ProbabilitySelector::execute(const AIPtr& entity, int64_t del
 
 	const TreeNodePtr& child = _children[index];
 	const ai::TreeNodeStatus result = child->execute(entity, deltaMillis);
-	if (result == ai::RUNNING) {
+	if (result == ai::TreeNodeStatus::RUNNING) {
 		setSelectorState(entity, index);
 	} else {
 		setSelectorState(entity, AI_NOTHING_SELECTED);

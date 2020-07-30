@@ -50,28 +50,28 @@ TEST_F(NodeTest, testSequence) {
 	ai->setCharacter(chr);
 	ai->update(1, true);
 	ai->getBehaviour()->execute(ai, 1);
-	ASSERT_EQ(ai::RUNNING, idle1->getLastStatus(ai));
-	ASSERT_EQ(ai::UNKNOWN, idle2->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle1->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::UNKNOWN, idle2->getLastStatus(ai));
 	ai->update(1, true);
 	ai->getBehaviour()->execute(ai, 1);
-	ASSERT_EQ(ai::RUNNING, idle1->getLastStatus(ai));
-	ASSERT_EQ(ai::UNKNOWN, idle2->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle1->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::UNKNOWN, idle2->getLastStatus(ai));
 	ai->update(1, true);
 	ai->getBehaviour()->execute(ai, 1);
-	ASSERT_EQ(ai::FINISHED, idle1->getLastStatus(ai));
-	ASSERT_EQ(ai::RUNNING, idle2->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, idle1->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle2->getLastStatus(ai));
 	ai->update(1, true);
 	ai->getBehaviour()->execute(ai, 1);
-	ASSERT_EQ(ai::FINISHED, idle1->getLastStatus(ai));
-	ASSERT_EQ(ai::RUNNING, idle2->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, idle1->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle2->getLastStatus(ai));
 	ai->update(1, true);
 	ai->getBehaviour()->execute(ai, 1);
-	ASSERT_EQ(ai::FINISHED, idle1->getLastStatus(ai));
-	ASSERT_EQ(ai::FINISHED, idle2->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, idle1->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, idle2->getLastStatus(ai));
 	ai->update(1, true);
 	ai->getBehaviour()->execute(ai, 1);
-	ASSERT_EQ(ai::RUNNING, idle1->getLastStatus(ai));
-	ASSERT_EQ(ai::FINISHED, idle2->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle1->getLastStatus(ai));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, idle2->getLastStatus(ai));
 }
 
 TEST_F(NodeTest, testIdle) {
@@ -81,8 +81,8 @@ TEST_F(NodeTest, testIdle) {
 	AIPtr entity = std::make_shared<AI>(node);
 	ICharacterPtr chr = core::make_shared<ICharacter>(1);
 	entity->setCharacter(chr);
-	ASSERT_EQ(ai::RUNNING, node->execute(entity, 1));
-	ASSERT_EQ(ai::FINISHED, node->execute(entity, 1000));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, node->execute(entity, 1));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, node->execute(entity, 1000));
 }
 
 TEST_F(NodeTest, testParallel) {
@@ -104,16 +104,16 @@ TEST_F(NodeTest, testParallel) {
 	e->setCharacter(chr);
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
-	ASSERT_EQ(ai::RUNNING, idle1->getLastStatus(e));
-	ASSERT_EQ(ai::RUNNING, idle2->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle1->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle2->getLastStatus(e));
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
-	ASSERT_EQ(ai::RUNNING, idle1->getLastStatus(e));
-	ASSERT_EQ(ai::RUNNING, idle2->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle1->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle2->getLastStatus(e));
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
-	ASSERT_EQ(ai::FINISHED, idle1->getLastStatus(e));
-	ASSERT_EQ(ai::FINISHED, idle2->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, idle1->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, idle2->getLastStatus(e));
 }
 
 TEST_F(NodeTest, testPrioritySelector) {
@@ -135,16 +135,16 @@ TEST_F(NodeTest, testPrioritySelector) {
 	e->setCharacter(chr);
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
-	ASSERT_EQ(ai::RUNNING, idle1->getLastStatus(e));
-	ASSERT_EQ(ai::UNKNOWN, idle2->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle1->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::UNKNOWN, idle2->getLastStatus(e));
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
-	ASSERT_EQ(ai::RUNNING, idle1->getLastStatus(e));
-	ASSERT_EQ(ai::UNKNOWN, idle2->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle1->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::UNKNOWN, idle2->getLastStatus(e));
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
-	ASSERT_EQ(ai::FINISHED, idle1->getLastStatus(e));
-	ASSERT_EQ(ai::UNKNOWN, idle2->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, idle1->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::UNKNOWN, idle2->getLastStatus(e));
 }
 
 TEST_F(NodeTest, testPrioritySelectorWithCondition) {
@@ -166,16 +166,16 @@ TEST_F(NodeTest, testPrioritySelectorWithCondition) {
 	e->setCharacter(chr);
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
-	ASSERT_EQ(ai::CANNOTEXECUTE, idle1->getLastStatus(e));
-	ASSERT_EQ(ai::RUNNING, idle2->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::CANNOTEXECUTE, idle1->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle2->getLastStatus(e));
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
-	ASSERT_EQ(ai::CANNOTEXECUTE, idle1->getLastStatus(e));
-	ASSERT_EQ(ai::RUNNING, idle2->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::CANNOTEXECUTE, idle1->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::RUNNING, idle2->getLastStatus(e));
 	e->update(1, true);
 	e->getBehaviour()->execute(e, 1);
-	ASSERT_EQ(ai::CANNOTEXECUTE, idle1->getLastStatus(e));
-	ASSERT_EQ(ai::FINISHED, idle2->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::CANNOTEXECUTE, idle1->getLastStatus(e));
+	ASSERT_EQ(ai::TreeNodeStatus::FINISHED, idle2->getLastStatus(e));
 }
 
 }

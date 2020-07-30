@@ -3,6 +3,7 @@
  */
 #include "TreeViewCommon.h"
 #include "ai-shared/common/TreeNodeStatus.h"
+#include "core/Enum.h"
 
 namespace ai {
 namespace debug {
@@ -17,7 +18,7 @@ E(FAILED),
 E(EXCEPTION)
 };
 #undef E
-static_assert(sizeof(stateNames) / sizeof(*stateNames) == MAX_TREENODESTATUS, "State names don't match");
+static_assert(sizeof(stateNames) / sizeof(*stateNames) == core::enumVal(TreeNodeStatus::MAX_TREENODESTATUS), "State names don't match");
 
 }
 }

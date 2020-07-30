@@ -20,25 +20,25 @@ Limit::Limit(const core::String& name, const core::String& parameters, const Con
 ai::TreeNodeStatus Limit::execute(const AIPtr& entity, int64_t deltaMillis) {
 	if (_children.size() != 1) {
 		Log::error("Limit must have exactly one node");
-		return ai::EXCEPTION;
+		return ai::TreeNodeStatus::EXCEPTION;
 	}
 
-	if (TreeNode::execute(entity, deltaMillis) == ai::CANNOTEXECUTE) {
-		return ai::CANNOTEXECUTE;
+	if (TreeNode::execute(entity, deltaMillis) == ai::TreeNodeStatus::CANNOTEXECUTE) {
+		return ai::TreeNodeStatus::CANNOTEXECUTE;
 	}
 
 	const int alreadyExecuted = getLimitState(entity);
 	if (alreadyExecuted >= _amount) {
-		return state(entity, ai::FINISHED);
+		return state(entity, ai::TreeNodeStatus::FINISHED);
 	}
 
 	const TreeNodePtr& treeNode = *_children.begin();
 	const ai::TreeNodeStatus status = treeNode->execute(entity, deltaMillis);
 	setLimitState(entity, alreadyExecuted + 1);
-	if (status == ai::RUNNING) {
-		return state(entity, ai::RUNNING);
+	if (status == ai::TreeNodeStatus::RUNNING) {
+		return state(entity, ai::TreeNodeStatus::RUNNING);
 	}
-	return state(entity, ai::FAILED);
+	return state(entity, ai::TreeNodeStatus::FAILED);
 }
 
 }

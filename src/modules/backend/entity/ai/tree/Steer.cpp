@@ -45,7 +45,7 @@ ai::TreeNodeStatus Steer::doAction(const AIPtr& entity, int64_t deltaMillis) {
 	const MoveVector& mv = _w.execute(entity, speed);
 	const glm::vec3& direction = mv.getVector();
 	if (!mv.isValid()) {
-		return ai::FAILED;
+		return ai::TreeNodeStatus::FAILED;
 	}
 	glm_assert_vec3(direction);
 
@@ -54,7 +54,7 @@ ai::TreeNodeStatus Steer::doAction(const AIPtr& entity, int64_t deltaMillis) {
 	const glm::vec3 newPos = pos + (direction * deltaSeconds);
 	chr->setPosition(newPos);
 	chr->setOrientation(fmodf(chr->getOrientation() + mv.getRotation() * deltaSeconds, glm::two_pi<float>()));
-	return ai::FINISHED;
+	return ai::TreeNodeStatus::FINISHED;
 }
 
 }

@@ -3,12 +3,14 @@
  */
 #pragma once
 
+#include <stdint.h>
+
 namespace ai {
 
 /**
  * @brief Execution states of a TreeNode::execute() call
  */
-enum TreeNodeStatus {
+enum class TreeNodeStatus : uint8_t {
 	UNKNOWN,
 	/**
 	 * Not every condition is met in order to run this node

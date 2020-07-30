@@ -119,11 +119,11 @@ int64_t TreeNode::getLastExecMillis(const AIPtr& entity) const {
 
 ai::TreeNodeStatus TreeNode::getLastStatus(const AIPtr& entity) const {
 	if (!entity->_debuggingActive) {
-		return ai::UNKNOWN;
+		return ai::TreeNodeStatus::UNKNOWN;
 	}
 	auto i = entity->_lastStatus.find(getId());
 	if (i == entity->_lastStatus.end()) {
-		return ai::UNKNOWN;
+		return ai::TreeNodeStatus::UNKNOWN;
 	}
 	return i->second;
 }
@@ -185,11 +185,11 @@ TreeNodePtr TreeNode::getParent(const TreeNodePtr& self, int id) const {
 
 ai::TreeNodeStatus TreeNode::execute(const AIPtr& entity, int64_t /*deltaMillis*/) {
 	if (!_condition->evaluate(entity)) {
-		return state(entity, ai::CANNOTEXECUTE);
+		return state(entity, ai::TreeNodeStatus::CANNOTEXECUTE);
 	}
 
 	setLastExecMillis(entity);
-	return state(entity, ai::FINISHED);
+	return state(entity, ai::TreeNodeStatus::FINISHED);
 }
 
 }
