@@ -139,7 +139,7 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter) {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
-	if (amount <= 0) {
+	if (amount < 0) {
 		uv_fs_req_cleanup(&req);
 		return false;
 	}
@@ -151,7 +151,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 	Log::debug("Filter %s by %s (dir filter: '%s')", directory.c_str(), filter.c_str(), dirFilter.c_str());
 	uv_dirent_t ent;
 	core_memset(&ent, 0, sizeof(ent));
-	while (uv_fs_scandir_next(&req, &ent) == 0) {
+	while (uv_fs_scandir_next(&req, &ent) != UV_EOF) {
 		DirEntry::Type type = DirEntry::Type::unknown;
 		if (ent.type == UV_DIRENT_DIR) {
 			type = DirEntry::Type::dir;
@@ -188,6 +188,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 		return false;
 	}
 	uv_dirent_t ent;
+	core_memset(&ent, 0, sizeof(ent));
 	while (uv_fs_scandir_next(&req, &ent) != UV_EOF) {
 		DirEntry::Type type = DirEntry::Type::unknown;
 		if (ent.type == UV_DIRENT_DIR) {
