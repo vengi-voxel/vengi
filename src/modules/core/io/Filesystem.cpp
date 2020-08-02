@@ -183,7 +183,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& entities) {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
-	if (amount <= 0) {
+	if (amount < 0) {
 		uv_fs_req_cleanup(&req);
 		return false;
 	}
