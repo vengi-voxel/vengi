@@ -63,7 +63,7 @@ binary-indep: install-indep
 	dh_installdeb
 	dh_gencontrol
 	dh_md5sums
-	dh_builddeb
+	dh_builddeb --destdir=.
 
 binary-arch: DH_OPTIONS=-a
 binary-arch: install-arch
@@ -83,7 +83,7 @@ binary-arch: install-arch
 	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
-	dh_builddeb
+	dh_builddeb --destdir=.
 
 clean:
 	dh_testdir

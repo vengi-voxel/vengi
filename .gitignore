@@ -3,6 +3,7 @@
 /.cproject
 /.clangd
 /.settings
+/*.deb
 /typescript
 gmon.out
 /*.sync
