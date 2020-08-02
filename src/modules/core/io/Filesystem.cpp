@@ -100,8 +100,10 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 		const int retVal = uv_fs_mkdir(nullptr, &req, dir.c_str(), 0740, nullptr);
 		if (retVal != 0 && req.result != UV_EEXIST) {
 			Log::error("Failed to create dir '%s': %s", dir.c_str(), uv_strerror(retVal));
+			uv_fs_req_cleanup(&req);
 			return false;
 		}
+		uv_fs_req_cleanup(&req);
 		return true;
 	}
 
@@ -125,9 +127,11 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 		if (retVal != 0 && req.result != UV_EEXIST) {
 			Log::debug("Failed to create dir '%s': %s", dirc, uv_strerror(retVal));
 			lastResult = false;
+			uv_fs_req_cleanup(&req);
 			continue;
 		}
 		lastResult = true;
+		uv_fs_req_cleanup(&req);
 	}
 	return lastResult;
 }
