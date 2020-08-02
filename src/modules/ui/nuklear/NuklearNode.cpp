@@ -5,8 +5,9 @@
 #define NK_IMPLEMENTATION
 #define STB_RECT_PACK_IMPLEMENTATION
 #define STB_TRUETYPE_IMPLEMENTATION
-#include "NuklearNode.h"
+#include "Nuklear.h"
 #undef NK_IMPLEMENTATION
+#include "NuklearNode.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>

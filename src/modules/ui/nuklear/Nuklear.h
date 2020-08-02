@@ -2,7 +2,7 @@
  * @file
  */
 
-#pragma once
+// no pragma once here. nuklear is header only and one has to include this multiple times
 
 #include "core/Assert.h"
 #include "core/Common.h"
