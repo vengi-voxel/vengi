@@ -21,21 +21,15 @@ build-unity:
   <<: *buildcache
   stage: build
   script:
-    - cmake -H. -B${BUILD_DIR}/default
-    - make -j 4 all -C ${BUILD_DIR}/default
-  artifacts:
-    paths:
-    - build/compile_commands.json
+    - cmake -H. -B${BUILD_DIR} -DDISABLE_UNITY=Off
+    - make -j 4 all -C ${BUILD_DIR}
 
 build-non-unity:
   <<: *buildcache
   stage: build
   script:
-    - cmake -H. -B${BUILD_DIR}/non-unity -DDISABLE_UNITY=On
-    - make -j 4 all -C ${BUILD_DIR}/non-unity
-  artifacts:
-    paths:
-    - build/compile_commands.json
+    - cmake -H. -B${BUILD_DIR} -DDISABLE_UNITY=On
+    - make -j 4 all -C ${BUILD_DIR}
 
 .test:
   variables:
@@ -56,31 +50,3 @@ build-non-unity:
   artifacts:
     reports:
       junit: build/*/gtest.xml
-
-.analyse:cppcheck:
-  stage: analyse
-  script:
-    - cppcheck --xml-version=2 -j 4 --enable=all --config-exclude=contrib/libs/ --project=build/compile_commands.json src 2> cppcheck.xml
-  artifacts:
-    paths:
-    - cppcheck.xml
-
-.analyse:valgrind:
-  stage: analyse
-  dependencies:
-    - build
-  script:
-    - make -j 4 tests-memcheck
-  artifacts:
-    paths:
-    - build/memcheck*.xml
-
-.pages:
-  script:
-    - make doc
-    - mv build/html/ public/
-  artifacts:
-    paths:
-    - public
-  only:
-    - master
