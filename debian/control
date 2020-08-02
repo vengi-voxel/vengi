@@ -5,9 +5,6 @@ Maintainer: Martin Gerhardy <martin.gerhardy@gmail.com>
 Build-Depends:
  cmake,
  debhelper (>=11~),
- libglm-dev,
- lua5.3,
- liblua5.3-dev,
  libsdl2-dev,
  postgresql-server-dev-all,
  libpq-dev,
