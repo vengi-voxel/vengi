@@ -126,8 +126,8 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 		voxel::BinVoxFormat f;
 		return f.saveGroups(volumes, filePtr);
 	} else {
-		Log::warn("Failed to save file with unknown type: %s - saving as vox instead", ext.c_str());
-		voxel::VoxFormat f;
+		Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
+		voxel::QBFormat f;
 		return f.saveGroups(volumes, filePtr);
 	}
 	Log::info("Save model file %s with %i layers", filePtr->name().c_str(), (int)volumes.size());
