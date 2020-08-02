@@ -143,12 +143,6 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 		uv_fs_req_cleanup(&req);
 		return false;
 	}
-	core::String dirFilter = filter;
-	auto iter = dirFilter.rfind(".");
-	if (iter != core::String::npos) {
-		dirFilter.erase(iter);
-	}
-	Log::debug("Filter %s by %s (dir filter: '%s')", directory.c_str(), filter.c_str(), dirFilter.c_str());
 	uv_dirent_t ent;
 	core_memset(&ent, 0, sizeof(ent));
 	while (uv_fs_scandir_next(&req, &ent) != UV_EOF) {
