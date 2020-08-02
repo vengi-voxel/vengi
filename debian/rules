@@ -5,7 +5,7 @@ export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 	NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
-	CMAKEFLAGS += -j$(NUMJOBS)
+#CMAKEFLAGS += -j$(NUMJOBS)
 endif
 
 MAINVER := $(shell dpkg-parsechangelog | sed -ne 's/^Version: *\([^~-]*\).*/\1/p' )
