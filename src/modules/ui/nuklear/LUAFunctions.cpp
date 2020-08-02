@@ -10,6 +10,7 @@
 #include "core/command/Command.h"
 #include "LUAUIApp.h"
 #include <SDL_stdinc.h>
+#include "Nuklear.h"
 
 namespace ui {
 namespace nuklear {
