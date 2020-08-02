@@ -10,12 +10,15 @@ variables:
   CCACHE_DIR: ${CI_PROJECT_DIR}/ccache
   BUILD_DIR: ${CI_PROJECT_DIR}/build
 
-cache:
-  paths:
-    - ccache/
-    - build/
+.buildcache: &buildcache
+  cache:
+    key: ${CI_JOB_NAME}-cache
+    paths:
+      - ccache/
+      - build/
 
 build-unity:
+  <<: *buildcache
   stage: build
   script:
     - cmake -H. -B${BUILD_DIR}/default
@@ -25,6 +28,7 @@ build-unity:
     - build/compile_commands.json
 
 build-non-unity:
+  <<: *buildcache
   stage: build
   script:
     - cmake -H. -B${BUILD_DIR}/non-unity -DDISABLE_UNITY=On
