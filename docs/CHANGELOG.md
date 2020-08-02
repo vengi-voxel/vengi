@@ -10,6 +10,7 @@ General:
    - Enable vsync by default
    - Updated external dependencies
    - Activated OpenCL in a few tools
+   - Added symlink support to virtual filesystem
 
 VoxEdit:
 

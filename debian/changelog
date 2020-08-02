@@ -5,6 +5,7 @@ vengi (0.0.6.0-1) unstable; urgency=low
   * Enable vsync by default
   * Updated external dependencies
   * Activated OpenCL in a few tools
+  * Added symlink support to virtual filesystem
 
   * VoxEdit:
   * Fixed loading palette lua script with material definitions
