@@ -153,6 +153,33 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 			type = DirEntry::Type::file;
 		} else if (ent.type == UV_DIRENT_UNKNOWN) {
 			type = DirEntry::Type::unknown;
+		} else if (ent.type == UV_DIRENT_LINK) {
+			uv_fs_t linkReq;
+			const core::String pointer = directory + "/" + ent.name;
+			if (uv_fs_readlink(nullptr, &linkReq, pointer.c_str(), nullptr) != 0) {
+				Log::debug("Could not resolve symlink %s", pointer.c_str());
+				uv_fs_req_cleanup(&linkReq);
+				continue;
+			}
+			const core::String symlink((const char*)linkReq.ptr);
+			uv_fs_req_cleanup(&linkReq);
+			if (!filter.empty()) {
+				if (!core::string::matches(filter.c_str(), symlink)) {
+					continue;
+				}
+			}
+
+			const core::String& fullPath = isRelativePath(symlink) ? directory + "/" + symlink : symlink;
+
+			uv_fs_t statsReq;
+			if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
+				Log::debug("Could not stat file %s", fullPath.c_str());
+				uv_fs_req_cleanup(&statsReq);
+				continue;
+			}
+			const bool dir = (uv_fs_get_statbuf(&req)->st_mode & S_IFDIR) != 0;
+			entities.push_back(DirEntry{fullPath, dir ? DirEntry::Type::dir : DirEntry::Type::file, statsReq.statbuf.st_size});
+			uv_fs_req_cleanup(&statsReq);
 		} else {
 			Log::debug("Unknown directory entry found: %s", ent.name);
 			continue;
