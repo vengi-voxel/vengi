@@ -93,8 +93,7 @@ public:
 		uint64_t size;
 	};
 
-	bool list(const core::String& directory, std::vector<DirEntry>& entities) const;
-	bool list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter) const;
+	bool list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter = "") const;
 
 	static bool isReadableDir(const core::String& name);
 	static bool isRelativePath(const core::String& name);
@@ -145,8 +144,7 @@ public:
 	bool removeDir(const core::String& dir, bool recursive = false) const;
 	bool removeFile(const core::String& file) const;
 private:
-	static bool _list(const core::String& directory, std::vector<DirEntry>& entities);
-	static bool _list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter);
+	static bool _list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter = "");
 };
 
 inline const Paths& Filesystem::paths() const {
