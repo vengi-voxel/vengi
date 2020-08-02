@@ -1,12 +1,19 @@
-vengi (0.0.6.0-1) UNRELEASED; urgency=low
+vengi (0.0.6.0-1) unstable; urgency=low
+
+  * General:
+  * Fixed gamma cvar usage
+  * Enable vsync by default
+  * Updated external dependencies
+  * Activated OpenCL in a few tools
 
   * VoxEdit:
   * Fixed loading palette lua script with material definitions
   * Fixed error in resetting mirror axis
   * Fixed noise generation
   * Reduced palette widget size
+  * Fixed palette widget being invisible on some dpi scales
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 26 Jul 2020 16:17:11 +0200
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 2 Aug 2020 10:59:07 +0200
 
 vengi (0.0.5.0-1) unstable; urgency=low
 

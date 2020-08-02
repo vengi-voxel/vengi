@@ -2,7 +2,14 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
-## 0.0.6 (2020-XX-XX)
+## 0.0.6 (2020-08-02)
+
+General:
+
+   - Fixed gamma cvar usage
+   - Enable vsync by default
+   - Updated external dependencies
+   - Activated OpenCL in a few tools
 
 VoxEdit:
 
@@ -10,6 +17,7 @@ VoxEdit:
    - Fixed error in resetting mirror axis
    - Fixed noise generation
    - Reduced palette widget size
+   - Fixed palette widget being invisible on some dpi scales
 
 ## 0.0.5 (2020-07-26)
 
