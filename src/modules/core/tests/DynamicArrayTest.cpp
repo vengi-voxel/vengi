@@ -9,6 +9,8 @@
 namespace core {
 
 struct DynamicArrayStruct {
+	DynamicArrayStruct() : _foo(""), _bar(1337) {
+	}
 	DynamicArrayStruct(const core::String &foo, int bar) :
 			_foo(foo), _bar(bar) {
 	}
@@ -99,6 +101,18 @@ TEST(DynamicArrayTest, testTriggerResize) {
 	array.push_back(DynamicArrayStruct("", 3));
 	EXPECT_EQ(3u, array.size()) << array;
 	EXPECT_EQ(4u, array.capacity()) << array;
+}
+
+TEST(DynamicArrayTest, testResize) {
+	DynamicArray<DynamicArrayStruct, 2> array;
+	array.push_back(DynamicArrayStruct("", 1));
+	array.push_back(DynamicArrayStruct("", 2));
+	EXPECT_EQ(2u, array.size()) << array;
+	EXPECT_EQ(2u, array.capacity()) << array;
+	array.resize(3);
+	EXPECT_EQ(4u, array.capacity()) << array;
+	ASSERT_EQ(3u, array.size()) << array;
+	EXPECT_EQ(1337, array[2]._bar) << array;
 }
 
 TEST(DynamicArrayTest, testErase) {
