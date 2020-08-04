@@ -8,9 +8,9 @@ uniform mat4 u_model;
 uniform mat4 u_viewprojection;
 uniform vec4 u_clipplane;
 
-#define MAX_BONES 16
-$constant MaxBones MAX_BONES
-uniform mat4 u_bones[MAX_BONES];
+#define MAXBONES 16
+$constant MaxBones MAXBONES
+uniform mat4 u_bones[MAXBONES];
 
 #define MATERIALCOLORS 256
 layout(std140) uniform u_materialblock {

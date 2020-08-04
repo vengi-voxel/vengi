@@ -8,9 +8,9 @@ $in uint a_bone_id;
 //$in uint a_color_index;
 //$in uint a_ambient_occlusion;
 
-#define MAX_BONES 16
-$constant MaxBones MAX_BONES
-uniform mat4 u_bones[MAX_BONES];
+#define MAXBONES 16
+$constant MaxBones MAXBONES
+uniform mat4 u_bones[MAXBONES];
 
 uniform mat4 u_lightviewprojection;
 uniform mat4 u_model;
