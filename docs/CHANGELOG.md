@@ -2,6 +2,12 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
+## 0.0.7 (2020-XX-XX)
+
+General:
+
+   - Fixed wrong-name-for-symlinks shown
+
 ## 0.0.6 (2020-08-02)
 
 General:

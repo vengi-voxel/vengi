@@ -1,3 +1,10 @@
+vengi (0.0.7.0-1) UNRELEASED; urgency=low
+
+  * General:
+  * Fixed wrong-name-for-symlinks shown
+
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 2 Aug 2020 10:59:07 +0200
+
 vengi (0.0.6.0-1) unstable; urgency=low
 
   * General:
