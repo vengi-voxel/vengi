@@ -3,8 +3,8 @@
  */
 
 #include "VoxelVolumes.h"
+#include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
-#include <vector>
 
 namespace voxel {
 

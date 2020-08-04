@@ -4,12 +4,14 @@
 
 #pragma once
 
-#include "voxel/RawVolume.h"
-#include "core/io/File.h"
 #include "core/Common.h"
+#include "core/String.h"
+#include <glm/vec3.hpp>
 #include <vector>
 
 namespace voxel {
+
+class RawVolume;
 
 static constexpr int MaxRegionSize = 256;
 
