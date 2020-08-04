@@ -56,7 +56,10 @@ TEST_F(QBTFormatTest, testSaveMultipleLayers) {
 	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
 	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
 	VoxelVolumes volumes;
-	volumes.volumes = {VoxelVolume(&layer1), VoxelVolume(&layer2), VoxelVolume(&layer3), VoxelVolume(&layer4)};
+	volumes.push_back(VoxelVolume(&layer1));
+	volumes.push_back(VoxelVolume(&layer2));
+	volumes.push_back(VoxelVolume(&layer3));
+	volumes.push_back(VoxelVolume(&layer4));
 	EXPECT_TRUE(f.saveGroups(volumes, open("qubicle-multiplelayersavetest.qbt", io::FileMode::Write)));
 	f = QBTFormat();
 	VoxelVolumes volumesLoad;

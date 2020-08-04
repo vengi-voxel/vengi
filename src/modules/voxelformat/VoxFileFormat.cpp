@@ -53,7 +53,7 @@ RawVolume* VoxFileFormat::load(const io::FilePtr& file) {
 
 bool VoxFileFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	VoxelVolumes volumes;
-	volumes.volumes = {VoxelVolume(const_cast<RawVolume*>(volume))};
+	volumes.push_back(VoxelVolume(const_cast<RawVolume*>(volume)));
 	return saveGroups(volumes, file);
 }
 
