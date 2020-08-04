@@ -54,8 +54,10 @@ This is an opensource, cross platform voxel volume editor.
 * Using the keybinding for `+actionexecute` (v) command allows you to also span an AABB with
   the cursor keys (resp. the keys that are bound to the `+movecursor[direction]` commands).
 * Enter places the reference position at the current cursor position
-* SHIFT+Tab opens the console (type cmdlist and cvarlist)
+* SHIFT+Tab opens the console (type `cmdlist` and `cvarlist`)
 
 ## Palette
 
-The editor is built around a palette of 256 colors. Custom palettes are supported.
+The editor is built around a palette of 256 colors. Custom palettes are supported. The images should have a 1x256 pixel dimension.
+
+In order to use some of the feature for procedurally generated content, you also have to define your material types with a lua script. See the existing palette lua script as a reference.
