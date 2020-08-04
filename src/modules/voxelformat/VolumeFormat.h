@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/io/File.h"
-#include "VoxFileFormat.h"
+#include "VoxelVolumes.h"
 
 namespace voxelformat {
 
