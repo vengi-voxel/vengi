@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/Common.h"
 #include "core/String.h"
 #include <glm/vec3.hpp>
 #include <vector>
@@ -29,17 +28,15 @@ struct VoxelVolumes {
 
 	~VoxelVolumes() ;
 
-	inline void push_back(VoxelVolume&& v) {
-		volumes.emplace_back(core::forward<VoxelVolume>(v));
-	}
+	void push_back(VoxelVolume&& v);
+	void resize(size_t size);
+	void reserve(size_t size);
+	bool empty() const;
+	size_t size() const;
+	voxel::RawVolume* merge() const;
 
-	inline void resize(size_t size) {
-		volumes.resize(size);
-	}
-
-	inline void reserve(size_t size) {
-		volumes.reserve(size);
-	}
+	const VoxelVolume &operator[](size_t idx) const;
+	VoxelVolume& operator[](size_t idx);
 
 	inline auto begin() {
 		return volumes.begin();
@@ -56,24 +53,6 @@ struct VoxelVolumes {
 	inline auto end() const {
 		return volumes.end();
 	}
-
-	inline bool empty() const {
-		return volumes.empty();
-	}
-
-	inline size_t size() const {
-		return volumes.size();
-	}
-
-	const VoxelVolume &operator[](size_t idx) const {
-		return volumes[idx];
-	}
-
-	VoxelVolume& operator[](size_t idx) {
-		return volumes[idx];
-	}
-
-	voxel::RawVolume* merge() const;
 };
 
 }

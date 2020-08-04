@@ -5,6 +5,7 @@
 #include "VoxelVolumes.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
+#include "core/Common.h"
 
 namespace voxel {
 
@@ -22,6 +23,34 @@ VoxelVolume::VoxelVolume(voxel::RawVolume *_volume, const core::String &_name, b
 
 VoxelVolumes::~VoxelVolumes() {
 	volumes.clear();
+}
+
+void VoxelVolumes::push_back(VoxelVolume&& v) {
+	volumes.emplace_back(core::forward<VoxelVolume>(v));
+}
+
+void VoxelVolumes::resize(size_t size) {
+	volumes.resize(size);
+}
+
+void VoxelVolumes::reserve(size_t size) {
+	volumes.reserve(size);
+}
+
+bool VoxelVolumes::empty() const {
+	return volumes.empty();
+}
+
+size_t VoxelVolumes::size() const {
+	return volumes.size();
+}
+
+const VoxelVolume &VoxelVolumes::operator[](size_t idx) const {
+	return volumes[idx];
+}
+
+VoxelVolume& VoxelVolumes::operator[](size_t idx) {
+	return volumes[idx];
 }
 
 voxel::RawVolume *VoxelVolumes::merge() const {
