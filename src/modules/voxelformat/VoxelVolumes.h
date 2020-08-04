@@ -5,8 +5,8 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/collection/DynamicArray.h"
 #include <glm/vec3.hpp>
-#include <vector>
 
 namespace voxel {
 
@@ -24,7 +24,7 @@ struct VoxelVolume {
 };
 
 struct VoxelVolumes {
-	std::vector<VoxelVolume> volumes;
+	core::DynamicArray<VoxelVolume> volumes;
 
 	~VoxelVolumes() ;
 
