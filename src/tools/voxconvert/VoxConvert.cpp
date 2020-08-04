@@ -102,10 +102,12 @@ core::AppState VoxConvert::onInit() {
 			const voxel::Region srcRegion = v.volume->region();
 			const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 			const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
-			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-			rescaleVolume(*v.volume, *destVolume);
-			delete v.volume;
-			v.volume = destVolume;
+			if (destRegion.isValid()) {
+				voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
+				rescaleVolume(*v.volume, *destVolume);
+				delete v.volume;
+				v.volume = destVolume;
+			}
 		}
 	}
 
