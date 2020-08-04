@@ -7,6 +7,7 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 General:
 
    - Fixed wrong-name-for-symlinks shown
+   - Added support for writing qef files
 
 ## 0.0.6 (2020-08-02)
 
