@@ -177,7 +177,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 				uv_fs_req_cleanup(&statsReq);
 				continue;
 			}
-			const bool dir = (uv_fs_get_statbuf(&req)->st_mode & S_IFDIR) != 0;
+			const bool dir = (uv_fs_get_statbuf(&statsReq)->st_mode & S_IFDIR) != 0;
 			entities.push_back(DirEntry{ent.name, dir ? DirEntry::Type::dir : DirEntry::Type::file, statsReq.statbuf.st_size});
 			uv_fs_req_cleanup(&statsReq);
 		} else {
