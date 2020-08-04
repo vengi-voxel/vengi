@@ -49,8 +49,8 @@ table EntityUpdate {
 
 table StartCooldown {
 	id:CooldownType (key);
-	startUTCMillis:long;
-	durationMillis:long;
+	start_utc_millis:long;
+	duration_millis:long;
 }
 
 table StopCooldown {
