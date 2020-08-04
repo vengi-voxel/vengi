@@ -4,7 +4,7 @@
 
 #include "VoxFileFormat.h"
 #include "voxel/MaterialColor.h"
-#include "Loader.h"
+#include "VolumeFormat.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Color.h"

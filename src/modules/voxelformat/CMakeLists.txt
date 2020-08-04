@@ -15,7 +15,7 @@ set(SRCS
 	CubFormat.h CubFormat.cpp
 	VolumeCache.h VolumeCache.cpp
 	VoxelVolumes.h VoxelVolumes.cpp
-	Loader.h Loader.cpp
+	VolumeFormat.h VolumeFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel voxelutil)
 

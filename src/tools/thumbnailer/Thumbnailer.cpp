@@ -12,7 +12,7 @@
 #include "video/Renderer.h"
 #include "voxel/MaterialColor.h"
 #include "video/Camera.h"
-#include "voxelformat/Loader.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFileFormat.h"
 
 Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

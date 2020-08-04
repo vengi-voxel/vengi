@@ -11,7 +11,7 @@
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
 #include "voxel/MaterialColor.h"
-#include "voxelformat/Loader.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "voxelutil/VolumeRescaler.h"
 

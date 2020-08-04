@@ -8,7 +8,7 @@
 #include "core/App.h"
 #include "core/Log.h"
 #include "core/Common.h"
-#include "voxelformat/Loader.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFileFormat.h"
 
 namespace voxedit {

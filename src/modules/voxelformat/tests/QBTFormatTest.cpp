@@ -4,7 +4,7 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/QBTFormat.h"
-#include "voxelformat/Loader.h"
+#include "voxelformat/VolumeFormat.h"
 
 namespace voxel {
 

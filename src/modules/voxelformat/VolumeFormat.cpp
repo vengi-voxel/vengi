@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "Loader.h"
+#include "VolumeFormat.h"
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "VoxFormat.h"

@@ -17,7 +17,7 @@
 #include "voxel/Face.h"
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelworld/BiomeManager.h"
-#include "voxelformat/Loader.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFormat.h"
 #include "voxelformat/QBTFormat.h"
 #include "voxelformat/CubFormat.h"

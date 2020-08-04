@@ -3,7 +3,7 @@
  */
 
 #include "VolumeCache.h"
-#include "voxelformat/Loader.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "core/io/Filesystem.h"
 #include "core/App.h"

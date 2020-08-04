@@ -15,7 +15,7 @@
 #include "layer/LayerWidget.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxelformat/Loader.h"
+#include "voxelformat/VolumeFormat.h"
 #include "ui/turbobadger/UIApp.h"
 
 static PaletteWidgetFactory paletteWidget_wf;
