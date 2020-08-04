@@ -3,8 +3,10 @@
  */
 
 #include "QEFFormat.h"
+#include "voxel/MaterialColor.h"
 #include "SDL_stdinc.h"
 #include "core/Log.h"
+#include "core/Color.h"
 #include "core/GLM.h"
 #include "voxel/Voxel.h"
 #include <glm/common.hpp>
@@ -114,7 +116,44 @@ bool QEFFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 }
 
 bool QEFFormat::saveGroups(const VoxelVolumes &volumes, const io::FilePtr &file) {
-	return false;
+	io::FileStream stream(file.get());
+	stream.addString("Qubicle Exchange Format\n", false);
+	stream.addString("Version 0.2\n", false);
+	stream.addString("www.minddesk.com\n", false);
+
+	RawVolume* mergedVolume = merge(volumes);
+
+	const voxel::Region& region = mergedVolume->region();
+	RawVolume::Sampler sampler(mergedVolume);
+	const glm::ivec3& lower = region.getLowerCorner();
+
+	const MaterialColorArray& materialColors = getMaterialColors();
+
+	const uint32_t width = region.getWidthInVoxels();
+	const uint32_t height = region.getHeightInVoxels();
+	const uint32_t depth = region.getDepthInVoxels();
+	stream.addStringFormat(false, "%i %i %i\n", width, depth, height);
+	stream.addStringFormat(false, "%i\n", (int)materialColors.size());
+	for (size_t i = 0; i < materialColors.size(); ++i) {
+		stream.addStringFormat(false, "%f %f %f\n", materialColors[i].r, materialColors[i].g, materialColors[i].b);
+	}
+
+	for (uint32_t x = 0u; x < width; ++x) {
+		for (uint32_t y = 0u; y < height; ++y) {
+			for (uint32_t z = 0u; z < depth; ++z) {
+				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
+				const voxel::Voxel& voxel = sampler.voxel();
+				if (voxel.getMaterial() == VoxelType::Air) {
+					continue;
+				}
+				// mask != 0 means solid, 1 is core (surrounded by others and not visible)
+				const int vismask = 0xff;
+				stream.addStringFormat(false, "%i %i %i %i %i\n", x, z, y, voxel.getColor(), vismask);
+			}
+		}
+	}
+	delete mergedVolume;
+	return true;
 }
 
 #undef wrap

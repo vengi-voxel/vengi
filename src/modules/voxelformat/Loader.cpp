@@ -24,7 +24,7 @@ const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vx
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 // this is the list of supported voxel volume formats that have exporters implemented
-const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub,vxl";
+const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub,vxl,qef";
 
 bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) {
 	if (!filePtr->exists()) {
@@ -115,6 +115,9 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 		return f.saveGroups(volumes, filePtr);
 	} else if (ext == "qbt") {
 		voxel::QBTFormat f;
+		return f.saveGroups(volumes, filePtr);
+	} else if (ext == "qef") {
+		voxel::QEFFormat f;
 		return f.saveGroups(volumes, filePtr);
 	} else if (ext == "cub") {
 		voxel::CubFormat f;

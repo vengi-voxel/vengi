@@ -4,7 +4,7 @@ Convert voxel volume formats between each other.
 
 Support for loading: vox, qbt, qb, qef, vxm, binvox, cub, kvx, kv6, vxl
 
-Support for writing: vox, qbt, qb, binvox, cub, vxl
+Support for writing: vox, qbt, qb, qef, binvox, cub, vxl
 
 ## Usage
 
