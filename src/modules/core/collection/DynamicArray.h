@@ -216,6 +216,16 @@ public:
 		checkBufferSize(size);
 	}
 
+	void resize(size_t size) {
+		checkBufferSize(size);
+		while (size > _size) {
+			push_back(TYPE());
+		}
+		while (size < _size) {
+			pop();
+		}
+	}
+
 	void clear() {
 		for (size_t i = 0u; i < _size; ++i) {
 			_buffer[i].~TYPE();
