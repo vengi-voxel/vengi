@@ -164,7 +164,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 			const core::String symlink((const char*)linkReq.ptr);
 			uv_fs_req_cleanup(&linkReq);
 			if (!filter.empty()) {
-				if (!core::string::matches(filter.c_str(), symlink)) {
+				if (!core::string::matches(filter, symlink)) {
 					continue;
 				}
 			}
@@ -178,7 +178,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 				continue;
 			}
 			const bool dir = (uv_fs_get_statbuf(&req)->st_mode & S_IFDIR) != 0;
-			entities.push_back(DirEntry{fullPath, dir ? DirEntry::Type::dir : DirEntry::Type::file, statsReq.statbuf.st_size});
+			entities.push_back(DirEntry{ent.name, dir ? DirEntry::Type::dir : DirEntry::Type::file, statsReq.statbuf.st_size});
 			uv_fs_req_cleanup(&statsReq);
 		} else {
 			Log::debug("Unknown directory entry found: %s", ent.name);
