@@ -62,7 +62,7 @@ TBLayout: distribution: gravity, axis: y
 					TBSection: value: 1, text: "Palette"
 						TBLayout: position: left top, axis: y
 							lp: padding: 0
-							PaletteWidget: id: palettecontainer, width: 18, height: 18, amount-x: 12, connection: current-voxel-color
+							PaletteWidget: id: palettecontainer, width: 18, height: 18, amount-x: 14, connection: current-voxel-color
 							TBLayout: position: right top, axis: x
 								lp: padding: 0
 								TBButton: @include: definitions>menubutton, text: Import, command: "importpalette"
