@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include "core/Common.h"
 #include "core/Assert.h"
+#include "core/ArrayLength.h"
 #include "math/Frustum.h"
 #include "core/Color.h"
 #include "core/GLM.h"
@@ -260,19 +261,23 @@ void ShapeBuilder::aabb(const glm::vec3& mins, const glm::vec3& maxs) {
 	addIndex(startIndex + 7);
 }
 
-void ShapeBuilder::geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive) {
+void ShapeBuilder::geom(const glm::vec3* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive) {
 	setPrimitive(primitive);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 
-	reserve(vert.size());
+	reserve(vertCount);
 
-	for (const glm::vec3& v : vert) {
-		addVertex(v);
+	for (size_t i = 0; i < vertCount; ++i) {
+		addVertex(vert[i]);
 	}
 
-	for (uint32_t i : indices) {
-		addIndex(startIndex + i);
+	for (size_t i = 0; i < indicesCount; ++i) {
+		addIndex(startIndex + indices[i]);
 	}
+}
+
+void ShapeBuilder::geom(const core::DynamicArray<glm::vec3>& vert, const core::DynamicArray<uint32_t>& indices, Primitive primitive) {
+	geom(&vert.front(), vert.size(), &indices.front(), indices.size(), primitive);
 }
 
 void ShapeBuilder::plane(const math::Plane& plane, bool normals) {

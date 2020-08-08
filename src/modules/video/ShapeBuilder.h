@@ -7,6 +7,7 @@
 #include "math/AABB.h"
 #include "math/Plane.h"
 #include "video/Types.h"
+#include "core/collection/DynamicArray.h"
 #include <glm/mat3x3.hpp>
 #include <stdint.h>
 #include <vector>
@@ -105,6 +106,7 @@ public:
 	void plane(uint32_t tesselation = 10);
 	void frustum(const Camera& camera, int splitFrustum = 0);
 	void geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
+	void geom(const glm::vec3* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive = Primitive::Triangles);
 	void plane(const math::Plane& plane, bool normal);
 	void pyramid(const glm::vec3& size = glm::vec3(1.0f));
 	/**

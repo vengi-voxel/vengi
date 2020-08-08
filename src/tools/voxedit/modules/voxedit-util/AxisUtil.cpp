@@ -3,6 +3,7 @@
  */
 
 #include "AxisUtil.h"
+#include "core/ArrayLength.h"
 
 namespace voxedit {
 
@@ -22,13 +23,13 @@ void updateShapeBuilderForPlane(video::ShapeBuilder& shapeBuilder, const voxel::
 		ul = glm::vec3(mins.x, maxs.y, mins.z);
 		lr = glm::vec3(maxs.x, mins.y, maxs.z);
 	}
-	std::vector<glm::vec3> vecs({ll, ul, ur, lr});
+	const glm::vec3 vecs[] = {ll, ul, ur, lr};
 	// lower left (0), upper left (1), upper right (2)
 	// lower left (0), upper right (2), lower right (3)
-	const std::vector<uint32_t> indices { 0, 1, 2, 0, 2, 3, 2, 1, 0, 3, 2, 0 };
+	const uint32_t indices[] = {0, 1, 2, 0, 2, 3, 2, 1, 0, 3, 2, 0};
 	shapeBuilder.clear();
 	shapeBuilder.setColor(color);
-	shapeBuilder.geom(vecs, indices);
+	shapeBuilder.geom(vecs, lengthof(vecs), indices, lengthof(indices));
 }
 
 }
