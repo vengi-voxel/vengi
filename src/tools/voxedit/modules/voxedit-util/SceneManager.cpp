@@ -50,8 +50,6 @@
 #include "core/TimeProvider.h"
 #include "attrib/ShadowAttributes.h"
 
-#include <limits>
-#include <iterator>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
@@ -1375,23 +1373,12 @@ void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, st
 		if (v == nullptr) {
 			return;
 		}
-		glm::ivec3 modifiedMins((std::numeric_limits<int>::max)() / 2);
-		glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)() / 2);
-		const int cnt = voxelutil::visitVolume(*v, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel&) {
-			if (!v->setVoxel(x, y, z, voxel())) {
-				return;
-			}
-
-			modifiedMins.x = core_min(modifiedMins.x, x);
-			modifiedMins.y = core_min(modifiedMins.y, y);
-			modifiedMins.z = core_min(modifiedMins.z, z);
-
-			modifiedMaxs.x = core_max(modifiedMaxs.x, x);
-			modifiedMaxs.y = core_max(modifiedMaxs.y, y);
-			modifiedMaxs.z = core_max(modifiedMaxs.z, z);
+		voxel::RawVolumeWrapper wrapper(v);
+		const int cnt = voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel&) {
+			v->setVoxel(x, y, z, voxel());
 		}, condition);
 		if (cnt > 0) {
-			modified(layerId, voxel::Region{modifiedMins, modifiedMaxs});
+			modified(layerId, wrapper.dirtyRegion());
 			Log::debug("Modified %i voxels", cnt);
 		}
 	});
