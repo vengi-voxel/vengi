@@ -29,7 +29,6 @@
 #include "layer/LayerManager.h"
 #include "modifier/ModifierType.h"
 #include "modifier/Modifier.h"
-#include <vector>
 #include <functional>
 
 namespace voxedit {
@@ -114,7 +113,7 @@ private:
 		voxel::Region region;
 		int layer;
 	};
-	using RegionQueue = std::vector<DirtyRegion>;
+	using RegionQueue = core::DynamicArray<DirtyRegion>;
 	RegionQueue _extractRegions;
 	void queueRegionExtraction(int layerId, const voxel::Region& region);
 
