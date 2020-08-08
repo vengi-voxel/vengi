@@ -16,7 +16,7 @@ AttractionPoint::AttractionPoint(const glm::vec3& position) :
 }
 
 Branch::Branch(Branch* parent, const glm::vec3& position, const glm::vec3& growDirection, float size) :
-		_parent(parent), _position(position), _growDirection(growDirection), _originalGrowDirection(growDirection), _size(size) {
+		_parent(parent), _children(32), _position(position), _growDirection(growDirection), _originalGrowDirection(growDirection), _size(size) {
 	if (_parent) {
 		_parent->_children.push_back(this);
 	}
@@ -138,7 +138,7 @@ bool SpaceColonization::step() {
 	}
 
 	// Generate the new branches
-	std::vector<Branch*> newBranches;
+	core::DynamicArray<Branch*> newBranches;
 	for (auto e : _branches) {
 		Branch* branch = e->value;
 		// if at least one attraction point is affecting the branch

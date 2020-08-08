@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "core/collection/Map.h"
+#include "core/collection/DynamicArray.h"
 
 namespace voxelgenerator {
 namespace tree {
@@ -24,7 +25,7 @@ struct AttractionPoint {
 
 struct Branch {
 	Branch *_parent;
-	std::vector<Branch*> _children;
+	core::DynamicArray<Branch*> _children;
 	glm::vec3 _position;
 	glm::vec3 _growDirection;
 	glm::vec3 _originalGrowDirection;
