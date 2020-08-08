@@ -101,6 +101,10 @@ public:
 		return _size == 0u;
 	}
 
+	inline size_t bytes() const {
+		return _size * sizeof(TYPE);
+	}
+
 	class iterator {
 	private:
 		TYPE* _ptr;
