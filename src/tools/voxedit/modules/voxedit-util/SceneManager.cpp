@@ -1418,9 +1418,7 @@ bool SceneManager::randomSimilarColor(uint8_t oldIndex, uint8_t density, uint8_t
 	voxel::MaterialColorIndices newColorIndices;
 	newColorIndices.resize(colorCount);
 	int maxColorIndices = 0;
-	auto colorIter = colors.begin();
-	std::advance(colorIter, oldIndex);
-	colors.erase(colorIter);
+	colors.erase(oldIndex);
 	for (; maxColorIndices < colorCount; ++maxColorIndices) {
 		const int index = core::Color::getClosestMatch(color, colors);
 		if (index <= 0) {
@@ -1428,9 +1426,7 @@ bool SceneManager::randomSimilarColor(uint8_t oldIndex, uint8_t density, uint8_t
 		}
 		const glm::vec4& c = colors[index];
 		const int materialIndex = core::Color::getClosestMatch(c, voxel::getMaterialColors());
-		auto iter = colors.begin();
-		std::advance(iter, index);
-		colors.erase(iter);
+		colors.erase(index);
 		newColorIndices[maxColorIndices] = materialIndex;
 	}
 	if (maxColorIndices <= 0) {

@@ -9,8 +9,8 @@
 #include "image/Image.h"
 
 #include <glm/vec4.hpp>
-#include <vector>
 #include "core/String.h"
+#include "core/collection/DynamicArray.h"
 
 namespace math {
 class Random;
@@ -19,8 +19,8 @@ class Random;
 namespace voxel {
 
 // this size must match the color uniform size in the shader
-typedef std::vector<glm::vec4> MaterialColorArray;
-typedef std::vector<uint8_t> MaterialColorIndices;
+typedef core::DynamicArray<glm::vec4> MaterialColorArray;
+typedef core::DynamicArray<uint8_t> MaterialColorIndices;
 
 extern const char* getDefaultPaletteName();
 extern core::String extractPaletteName(const core::String& file);
