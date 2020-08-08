@@ -203,16 +203,14 @@ void MementoHandler::markUndo(int layer, const core::String& name, const voxel::
 		// if we mark something as new undo state, we can throw away
 		// every other state that follows the new one (everything after
 		// the current state position)
-		auto iStates = _states.begin();
-		std::advance(iStates, _statePosition + 1);
-		_states.erase(iStates, _states.end());
+		_states.erase(_statePosition + 1, _states.size());
 	}
 	Log::debug("New undo state for layer %i with name %s (memento state index: %i)", layer, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume);
 	_states.emplace_back(type, data, layer, name, region);
 	while (_states.size() > MaxStates) {
-		_states.erase(_states.begin());
+		_states.erase(0);
 	}
 	_statePosition = stateSize() - 1;
 }

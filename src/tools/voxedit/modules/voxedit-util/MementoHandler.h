@@ -7,7 +7,7 @@
 #include "core/IComponent.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <vector>
+#include "core/collection/DynamicArray.h"
 #include "core/String.h"
 #include <stdint.h>
 #include <stddef.h>
@@ -110,7 +110,7 @@ struct MementoState {
  */
 class MementoHandler : public core::IComponent {
 private:
-	std::vector<MementoState> _states;
+	core::DynamicArray<MementoState> _states;
 	uint8_t _statePosition = 0u;
 	int _locked = 0;
 public:
