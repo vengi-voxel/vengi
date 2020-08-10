@@ -10,7 +10,6 @@
 #include "core/collection/DynamicArray.h"
 #include <glm/mat3x3.hpp>
 #include <stdint.h>
-#include <vector>
 
 namespace video {
 
@@ -23,14 +22,10 @@ class Camera;
  */
 class ShapeBuilder {
 public:
-	typedef std::vector<uint32_t> Indices;
-	typedef Indices::const_iterator IndicesIter;
-	typedef std::vector<glm::vec3> Vertices;
-	typedef Vertices::const_iterator VerticesIter;
-	typedef std::vector<glm::vec2> Texcoords;
-	typedef Texcoords::const_iterator TexcoordsIter;
-	typedef std::vector<glm::vec4> Colors;
-	typedef Colors::const_iterator ColorsIter;
+	typedef core::DynamicArray<uint32_t> Indices;
+	typedef core::DynamicArray<glm::vec3> Vertices;
+	typedef core::DynamicArray<glm::vec2> Texcoords;
+	typedef core::DynamicArray<glm::vec4> Colors;
 private:
 	alignas(32) Indices _indices;
 	alignas(32) Texcoords _texcoords;
@@ -105,8 +100,8 @@ public:
 	 */
 	void plane(uint32_t tesselation = 10);
 	void frustum(const Camera& camera, int splitFrustum = 0);
-	void geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
 	void geom(const glm::vec3* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive = Primitive::Triangles);
+	void geom(const core::DynamicArray<glm::vec3>& vert, const core::DynamicArray<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
 	void plane(const math::Plane& plane, bool normal);
 	void pyramid(const glm::vec3& size = glm::vec3(1.0f));
 	/**
@@ -141,7 +136,7 @@ public:
 	 */
 	const Vertices& getVertices() const;
 	const Vertices& getNormals() const;
-	void convertVertices(std::vector<glm::vec4>& out) const;
+	void convertVertices(core::DynamicArray<glm::vec4>& out) const;
 
 	template<class FUNC>
 	size_t iterate(FUNC&& func) const {
@@ -189,7 +184,7 @@ inline const ShapeBuilder::Vertices& ShapeBuilder::getNormals() const {
 	return _normals;
 }
 
-inline void ShapeBuilder::convertVertices(std::vector<glm::vec4>& out) const {
+inline void ShapeBuilder::convertVertices(core::DynamicArray<glm::vec4>& out) const {
 	const ShapeBuilder::Vertices& vertices = getVertices();
 	out.reserve(vertices.size());
 	for (const ShapeBuilder::Vertices::value_type& v : vertices) {

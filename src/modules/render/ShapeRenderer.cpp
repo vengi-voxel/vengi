@@ -94,7 +94,7 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 		return -1;
 	}
 
-	alignas(32) std::vector<Vertex> vertices;
+	core::DynamicArray<Vertex> vertices;
 	vertices.reserve(shapeBuilder.getVertices().size());
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
 		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
@@ -160,7 +160,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 		Log::warn("Invalid mesh index given: %u", meshIndex);
 		return;
 	}
-	alignas(32) std::vector<Vertex> vertices;
+	core::DynamicArray<Vertex> vertices;
 	vertices.reserve(shapeBuilder.getVertices().size());
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
 		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
@@ -182,12 +182,12 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
-bool ShapeRenderer::updatePositions(uint32_t meshIndex, const std::vector<glm::vec3>& positions) {
+bool ShapeRenderer::updatePositions(uint32_t meshIndex, const core::DynamicArray<glm::vec3>& positions) {
 	const float* posBuf = nullptr;
 	if (!positions.empty()) {
 		posBuf = glm::value_ptr(positions.front());
 	}
-	return updatePositions(meshIndex, posBuf, core::vectorSize(positions));
+	return updatePositions(meshIndex, posBuf, positions.bytes());
 }
 
 bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, size_t posBufLength) {

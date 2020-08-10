@@ -7,6 +7,7 @@
 #include "math/AABB.h"
 #include "video/ScopedLineWidth.h"
 #include "core/Color.h"
+#include "core/Vector.h"
 #include "core/collection/Array.h"
 #include "testcore/TestAppMain.h"
 #include <glm/gtc/type_ptr.hpp>

@@ -9,6 +9,7 @@
 #include "video/Types.h"
 #include "video/Shader.h"
 #include "core/IComponent.h"
+#include "core/collection/DynamicArray.h"
 #include "ColorShader.h"
 #include "ColorInstancedShader.h"
 #include "TextureShader.h"
@@ -79,7 +80,7 @@ public:
 	 * @param[in] positions The positions to render the mesh instances at
 	 * @return @c true if the update was successful, @c false otherwise
 	 */
-	bool updatePositions(uint32_t meshIndex, const std::vector<glm::vec3>& positions);
+	bool updatePositions(uint32_t meshIndex, const core::DynamicArray<glm::vec3>& positions);
 
 	/**
 	 * @brief Updating the positions for a mesh means that you are doing instanced rendering

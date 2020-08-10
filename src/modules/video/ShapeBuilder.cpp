@@ -529,7 +529,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 	if (splitFrustum > 0) {
 		int indexOffset = startIndex;
-		std::vector<float> planes;
+		core::DynamicArray<float> planes;
 		planes.reserve(splitFrustum * 2);
 
 		camera.sliceFrustum(&planes[0], splitFrustum * 2, splitFrustum);
