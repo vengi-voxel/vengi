@@ -6,13 +6,13 @@
 
 #include "core/Var.h"
 #include "core/Algorithm.h"
-#include <vector>
+#include "core/collection/DynamicArray.h"
 
 namespace util {
 
 template<class Functor>
 static void visitVarSorted(Functor&& func, uint32_t flags) {
-	std::vector<core::VarPtr> varList;
+	core::DynamicArray<core::VarPtr> varList;
 	core::Var::visit([&](const core::VarPtr& var) {
 		if (flags == 0 || (var->getFlags() & flags) != 0) {
 			varList.push_back(var);
