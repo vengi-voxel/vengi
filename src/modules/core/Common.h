@@ -102,6 +102,15 @@ struct remove_const {
 	typedef T type;
 };
 
+template <typename T, typename>
+struct remove_pointer_helper { typedef T type; };
+
+template <typename T, typename RAW>
+struct remove_pointer_helper<T, RAW *> { typedef RAW type; };
+
+template <typename T>
+struct remove_pointer : public remove_pointer_helper<T, typename remove_const<T>::type> {};
+
 template<typename T>
 inline void exchange(T &a, T &b) {
 	const T tmp = core::move(a);
