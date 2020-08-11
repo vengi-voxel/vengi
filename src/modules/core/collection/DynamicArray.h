@@ -247,6 +247,18 @@ public:
 		_buffer = nullptr;
 	}
 
+	bool erase(iterator iter) {
+		if (iter == end()) {
+			return false;
+		}
+		TYPE* ptr = iter.operator->();
+		core_assert(ptr >= begin().operator->() && ptr < end().operator->());
+		const size_t index = ptr - begin().operator->();
+		core_assert(index >= 0u && index < _capacity);
+		erase(index, 1);
+		return true;
+	}
+
 	void erase(size_t index, size_t n = 1) {
 		if (n == 0) {
 			return;
