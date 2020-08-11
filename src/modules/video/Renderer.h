@@ -52,7 +52,7 @@ namespace _priv {
 
 template<typename DATATYPE>
 struct to_type {
-	typedef typename core::remove_reference<typename std::remove_pointer<DATATYPE>::type>::type type;
+	typedef typename core::remove_reference<typename core::remove_pointer<DATATYPE>::type>::type type;
 };
 
 }
