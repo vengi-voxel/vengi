@@ -17,6 +17,7 @@
 #include "RenderBuffer.h"
 #include "core/SharedPtr.h"
 #include "core/collection/List.h"
+#include <type_traits>
 
 struct SDL_Window;
 
