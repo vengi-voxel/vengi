@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include <vector>
+#include "core/collection/DynamicArray.h"
 
 namespace video {
 
@@ -17,7 +17,7 @@ class Shader;
  */
 class ShaderManager {
 private:
-	typedef std::vector<Shader*> Shaders;
+	typedef core::DynamicArray<Shader*> Shaders;
 	Shaders _shaders;
 public:
 	void registerShader(Shader* shader);
