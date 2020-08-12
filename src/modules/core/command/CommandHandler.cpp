@@ -3,12 +3,12 @@
  */
 
 #include "CommandHandler.h"
+#include "core/collection/DynamicArray.h"
 #include "core/command/Command.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/StringUtil.h"
-#include <vector>
 
 namespace core {
 
@@ -55,7 +55,7 @@ size_t levensteinDistance(const core::String &source, const core::String &target
 
 	const size_t minSize = source.size();
 	const size_t maxSize = target.size();
-	std::vector<size_t> levDist(minSize + 1);
+	core::DynamicArray<size_t> levDist(minSize + 1);
 
 	for (size_t i = 0; i <= minSize; ++i) {
 		levDist[i] = i;

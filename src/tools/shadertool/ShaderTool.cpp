@@ -49,7 +49,7 @@ core::AppState ShaderTool::onConstruct() {
 
 void ShaderTool::validate(const core::String& name) {
 	const core::String& writePath = filesystem()->homePath();
-	std::vector<core::String> args;
+	core::DynamicArray<core::String> args;
 	args.push_back(writePath + name);
 	Log::debug("Execute glslang validator with the following commandline: %s %s", _glslangValidatorBin.c_str(),
 			   args[0].c_str());

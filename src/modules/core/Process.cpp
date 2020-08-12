@@ -39,7 +39,7 @@
 
 namespace core {
 
-int Process::exec(const core::String& command, const std::vector<core::String>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
+int Process::exec(const core::String& command, const core::DynamicArray<core::String>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
 #if defined(__LINUX__) || defined(__MACOSX__)
 	int link[2];
 	if (::pipe(link) < 0) {
