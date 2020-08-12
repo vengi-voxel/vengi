@@ -6,7 +6,8 @@
 
 #include "Shape.h"
 #include "ItemData.h"
-#include <vector>
+#include "core/collection/DynamicArray.h"
+#include <memory>
 
 namespace stock {
 
@@ -26,7 +27,7 @@ public:
 		uint8_t x;
 		uint8_t y;
 	};
-	typedef std::vector<ContainerItem> ContainerItems;
+	typedef core::DynamicArray<ContainerItem> ContainerItems;
 
 	/** each item can only be in here once */
 	static constexpr uint32_t Unique     = 1 << 0;
