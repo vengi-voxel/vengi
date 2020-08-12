@@ -620,7 +620,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (id == TBIDC("lsystemgenerate")) {
 		const core::String& axiom = _lsystemAxiom->getText();
 		const core::String& rulesStr = _lsystemRules->getText();
-		std::vector<voxelgenerator::lsystem::Rule> rules;
+		core::DynamicArray<voxelgenerator::lsystem::Rule> rules;
 		if (!voxelgenerator::lsystem::parseRules(rulesStr.c_str(), rules)) {
 			Log::error("Failed to parse the lsystem rules");
 			return true;

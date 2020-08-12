@@ -444,7 +444,7 @@ void ServerLoop::update() {
 
 void ServerLoop::replicateVars() const {
 	core_trace_scoped(ReplicateVars);
-	std::vector<core::VarPtr> vars;
+	core::DynamicArray<core::VarPtr> vars;
 	core::Var::visitDirtyReplicate([&vars] (const core::VarPtr& var) {
 		vars.push_back(var);
 	});

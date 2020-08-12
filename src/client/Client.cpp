@@ -5,6 +5,7 @@
 #include "ClientMessages_generated.h"
 #include "ServerMessages_generated.h"
 #include "Client.h"
+#include "core/collection/DynamicArray.h"
 #include "voxel/ClientPager.h"
 #include "video/TextureAtlasRenderer.h"
 #include "voxelformat/MeshCache.h"
@@ -298,7 +299,7 @@ void Client::beforeUI() {
 }
 
 void Client::sendVars() const {
-	std::vector<core::VarPtr> vars;
+	core::DynamicArray<core::VarPtr> vars;
 	core::Var::visitDirtyBroadcast([&vars] (const core::VarPtr& var) {
 		vars.push_back(var);
 	});

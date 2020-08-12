@@ -31,7 +31,7 @@ TEST(ByteStreamTest, testCopy) {
 		v.push_back(byteStream);
 	}
 
-	for (std::vector<ByteStream>::const_iterator i = v.begin(); i != v.end(); ++i) {
+	for (auto i = v.begin(); i != v.end(); ++i) {
 		ByteStream s = *i;
 		ASSERT_EQ(4001u, s.getSize());
 	}

@@ -19,7 +19,7 @@ TEST(LSystemTests, testParse) {
 			F+[!+F-F-FL]-[!-F+F+FL]>[!F<F<FL]<[!<F>F>FL]
 		}
 	)";
-	std::vector<Rule> rules;
+	core::DynamicArray<Rule> rules;
 	ASSERT_TRUE(parseRules(rulesString, rules));
 	ASSERT_EQ(2u, rules.size());
 }

@@ -47,7 +47,7 @@ void User::init() {
 }
 
 void User::sendVars() const {
-	std::vector<core::VarPtr> vars;
+	core::DynamicArray<core::VarPtr> vars;
 	core::Var::visitReplicate([&vars] (const core::VarPtr& var) {
 		vars.push_back(var);
 	});

@@ -45,7 +45,7 @@ NodeTreeItem* NodeTreeView::buildTreeItems(const AIStateNode& node, NodeTreeItem
 	NodeTreeItem* thisNode = new NodeTreeItem(nullptr, node, _resolver.get(node.getNodeId()), nodeTreeParent, nodeHeight, horizontalSpacing, verticalSpacing);
 	_scene.addItem(thisNode);
 	const std::vector<AIStateNode>& childrenNodes = node.getChildren();
-	for (std::vector<AIStateNode>::const_iterator i = childrenNodes.begin(); i != childrenNodes.end(); ++i) {
+	for (auto i = childrenNodes.begin(); i != childrenNodes.end(); ++i) {
 		NodeTreeItem* childNode = buildTreeItems(*i, thisNode);
 		thisNode->addChildren(childNode);
 	}

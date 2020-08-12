@@ -7,7 +7,7 @@
 namespace voxelgenerator {
 namespace lsystem {
 
-bool parseRules(const core::String& rulesStr, std::vector<Rule>& rules) {
+bool parseRules(const core::String& rulesStr, core::DynamicArray<Rule>& rules) {
 	core::Tokenizer tokenizer(rulesStr, " \n");
 	while (tokenizer.hasNext()) {
 		const core::String block = tokenizer.next();

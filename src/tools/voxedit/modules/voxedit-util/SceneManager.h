@@ -286,7 +286,7 @@ public:
 	 */
 	void createTree(const voxelgenerator::TreeContext& ctx);
 
-	void lsystem(const core::String &axiom, const std::vector<voxelgenerator::lsystem::Rule> &rules, float angle,
+	void lsystem(const core::String &axiom, const core::DynamicArray<voxelgenerator::lsystem::Rule> &rules, float angle,
 			float length, float width, float widthIncrement, int iterations, float leavesRadius);
 
 	/**
