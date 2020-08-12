@@ -21,6 +21,10 @@ struct Array {
 		return SIZE;
 	}
 
+	constexpr bool empty() const {
+		return false;
+	}
+
 	inline TYPE& operator[](size_t index) {
 		core_assert(index < SIZE);
 		return _items[index];
