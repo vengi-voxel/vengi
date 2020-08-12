@@ -16,7 +16,6 @@
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
 #include "voxel/Voxel.h"
-#include <vector>
 
 namespace voxel {
 
