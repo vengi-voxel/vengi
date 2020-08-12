@@ -12,9 +12,9 @@
 #include "video/ScopedViewPort.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/Buffer.h"
+#include "core/collection/Array.h"
 #include "video/Renderer.h"
 #include "core/Log.h"
-#include <vector>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
@@ -53,9 +53,10 @@ void Shadow::shutdown() {
 	_parameters = ShadowParameters();
 }
 
-static inline float getBoundingSphereRadius(const glm::vec3& center, const std::vector<glm::vec3>& points) {
+static inline float getBoundingSphereRadius(const glm::vec3& center, const core::Array<glm::vec3, 8>& points) {
 	float radius = 0.0f;
-	for (const glm::vec3& p : points) {
+	for (size_t i = 0; i < points.size(); ++i) {
+		const glm::vec3& p = points[i];
 		radius = core_max(radius, glm::distance2(center, p));
 	}
 	return glm::sqrt(radius);
@@ -68,15 +69,15 @@ glm::vec4 Shadow::splitFrustumSphereBoundingBox(const video::Camera& camera, flo
 	const float znearp = glm::project(projection, glm::vec3(0.0f, 0.0f, -near)).z;
 	const float zfarp = glm::project(projection, glm::vec3(0.0f, 0.0f, -far)).z;
 
-	std::vector<glm::vec3> points;
-	points.reserve(8);
+	core::Array<glm::vec3, 8> points;
 
+	int idx = 0;
 	for (int x = 0; x < 2; ++x) {
 		for (int y = 0; y < 2; ++y) {
 			for (int z = 0; z < 2; ++z) {
 				const glm::vec3 v(x ? 1 : -1, y ? 1 : -1, z ? zfarp : znearp);
 				const glm::vec3& p = glm::project(inverseProjection, v);
-				points.emplace_back(p);
+				points[idx++] = p;
 			}
 		}
 	}
