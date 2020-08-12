@@ -14,7 +14,6 @@
 
 #include "core/String.h"
 #include <string.h>
-#include <vector>
 #include "Types.h"
 #include "Texture.h"
 #include "cl/CLTypes.h"
@@ -77,11 +76,6 @@ Id createBufferFromType(std::false_type, BufferFlag flags, T& data) {
 template<class T>
 Id createBufferFromType(BufferFlag flags, T& data) {
 	return createBufferFromType(core::isVector<T> {}, flags, data);
-}
-
-template<class T>
-bool readBufferIntoVector(Id buffer, std::vector<T>& data) {
-	return readBuffer(buffer, core::vectorCapacity(data), data.data());
 }
 
 Id createTexture(const Texture& texture, const uint8_t* data = nullptr);
