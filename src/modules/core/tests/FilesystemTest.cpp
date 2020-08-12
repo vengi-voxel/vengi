@@ -12,7 +12,7 @@ namespace io {
 class FilesystemTest: public core::AbstractTest {
 };
 
-::std::ostream& operator<<(::std::ostream& ostream, const std::vector<io::Filesystem::DirEntry>& val) {
+::std::ostream& operator<<(::std::ostream& ostream, const core::DynamicArray<io::Filesystem::DirEntry>& val) {
 	for (const auto& e : val) {
 		ostream << e.name << " - " << core::enumVal(e.type) << ", ";
 	}
@@ -27,7 +27,7 @@ TEST_F(FilesystemTest, testListDirectory) {
 	EXPECT_TRUE(fs.syswrite("listdirtest/dir1/ignoredtoo", "ignore"));
 	EXPECT_TRUE(fs.syswrite("listdirtest/file1", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtest/file2", "2"));
-	std::vector<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
 	fs.list("listdirtest/", entities, "");
 	EXPECT_FALSE(entities.empty());
 	EXPECT_EQ(3u, entities.size()) << entities;
@@ -81,7 +81,7 @@ TEST_F(FilesystemTest, testListFilter) {
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/filexyz", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/fileother", "2"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/fileignore", "3"));
-	std::vector<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
 	fs.list("listdirtestfilter/", entities, "*xyz");
 	EXPECT_EQ(2u, entities.size()) << entities;
 	EXPECT_EQ(io::Filesystem::DirEntry::Type::dir, entities[0].type);

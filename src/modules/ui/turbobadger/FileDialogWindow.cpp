@@ -332,7 +332,7 @@ void FileDialogWindow::changeDir(const core::String& dir) {
 	_entityList.deleteAllItems();
 	_entityList.addItem(new FileDialogItem(io::Filesystem::DirEntry{"..", io::Filesystem::DirEntry::Type::dir, (uint64_t)0}));
 
-	std::vector<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
 	getApp()->filesystem()->list(_directory, entities);
 
 	Log::debug("Looking in %s and found %i entries", _directory.c_str(), (int)entities.size());

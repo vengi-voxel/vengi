@@ -136,7 +136,7 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 	return lastResult;
 }
 
-bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter) {
+bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter) {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount < 0) {
@@ -201,7 +201,7 @@ bool Filesystem::_list(const core::String& directory, std::vector<DirEntry>& ent
 	return true;
 }
 
-bool Filesystem::list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter) const {
+bool Filesystem::list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter) const {
 	if (isRelativePath(directory)) {
 		for (const core::String& p : _paths) {
 			_list(p + directory, entities, filter);
@@ -406,7 +406,7 @@ io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const 
 
 core::String Filesystem::load(const char *filename, ...) {
 	va_list ap;
-	constexpr std::size_t bufSize = 1024;
+	constexpr size_t bufSize = 1024;
 	char text[bufSize];
 
 	va_start(ap, filename);

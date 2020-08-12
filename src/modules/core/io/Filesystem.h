@@ -6,11 +6,11 @@
 
 #include "File.h"
 #include "core/String.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/Stack.h"
 #include "core/collection/StringMap.h"
 #include "core/Common.h"
 #include <memory>
-#include <stack>
-#include <vector>
 #include <uv.h>
 #include <stdarg.h>
 #include <SDL_stdinc.h>
@@ -18,7 +18,7 @@
 namespace io {
 
 typedef void (*FileWatcher)(const char* file);
-using Paths = std::vector<core::String>;
+using Paths = core::DynamicArray<core::String>;
 
 /**
  * @brief Hide platform specific details about the io handling for files.
@@ -39,7 +39,7 @@ private:
 	core::String _homePath;
 	Paths _paths;
 
-	std::stack<core::String> _dirStack;
+	core::Stack<core::String, 32> _dirStack;
 	core::StringMap<uv_fs_event_t*> _watches;
 	uv_loop_t *_loop = nullptr;
 
@@ -93,7 +93,7 @@ public:
 		uint64_t size;
 	};
 
-	bool list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter = "") const;
+	bool list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter = "") const;
 
 	static bool isReadableDir(const core::String& name);
 	static bool isRelativePath(const core::String& name);
@@ -144,7 +144,7 @@ public:
 	bool removeDir(const core::String& dir, bool recursive = false) const;
 	bool removeFile(const core::String& file) const;
 private:
-	static bool _list(const core::String& directory, std::vector<DirEntry>& entities, const core::String& filter = "");
+	static bool _list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter = "");
 };
 
 inline const Paths& Filesystem::paths() const {

@@ -20,7 +20,7 @@ int complete(core::String dir, const core::String& match, core::DynamicArray<cor
 		currentMatch = match.substr(additionalDir.size());
 	}
 
-	std::vector<io::Filesystem::DirEntry> entries;
+	core::DynamicArray<io::Filesystem::DirEntry> entries;
 	const core::String filter = match + pattern;
 	const core::String& filterName = core::string::extractFilenameWithExtension(filter.c_str());
 	const core::String& filterPath = core::string::extractPath(filter.c_str());

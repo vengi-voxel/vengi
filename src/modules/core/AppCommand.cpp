@@ -40,7 +40,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 	}).setHelp("Print the given arguments to the console (info log level)");
 
 	auto fileCompleter = [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
-		std::vector<io::Filesystem::DirEntry> entries;
+		core::DynamicArray<io::Filesystem::DirEntry> entries;
 		const io::FilesystemPtr& filesystem = io::filesystem();
 		const io::FilePtr& file = filesystem->open(str);
 		core::String filter;

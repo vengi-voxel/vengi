@@ -22,7 +22,7 @@ bool TreeVolumeCache::init() {
 		return true;
 	}
 	Log::debug("Initialize the tree volume cache");
-	std::vector<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
 	if (!io::filesystem()->list("models/trees/", entities, "*")) {
 		Log::error("Failed to list tree models");
 		return false;
@@ -35,7 +35,7 @@ bool TreeVolumeCache::init() {
 		int amount = 0;
 		const core::String& treeTypeDir = core::string::format("models/trees/%s/", e.name.c_str());
 		for (const char **ext = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD_LIST; *ext; ++ext) {
-			std::vector<io::Filesystem::DirEntry> treeFiles;
+			core::DynamicArray<io::Filesystem::DirEntry> treeFiles;
 			if (!io::filesystem()->list(treeTypeDir, treeFiles, core::string::format("*.%s", *ext))) {
 				Log::warn("Failed to list tree models in %s", treeTypeDir.c_str());
 				break;
