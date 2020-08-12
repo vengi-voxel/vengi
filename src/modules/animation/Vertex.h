@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
 #include <stdint.h>
-#include <vector>
 
 namespace animation {
 
@@ -36,10 +36,10 @@ using IndexType = uint16_t;
 /**
  * @ingroup Animation
  */
-using Vertices = std::vector<Vertex>;
+using Vertices = core::DynamicArray<Vertex>;
 /**
  * @ingroup Animation
  */
-using Indices = std::vector<IndexType>;
+using Indices = core::DynamicArray<IndexType>;
 
 }
