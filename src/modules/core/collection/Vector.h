@@ -53,12 +53,20 @@ public:
 	}
 
 	template<typename... _Args>
-	void emplace_back(_Args&&... args) {
-		(*this)[_size] = TYPE(core::forward<_Args>(args)...);
+	bool emplace_back(_Args&&... args) {
+		if (_size >= SIZE) {
+			return false;
+		}
+		(*this)[_size++] = TYPE(core::forward<_Args>(args)...);
+		return true;
 	}
 
-	void push_back(const TYPE& value) {
-		(*this)[_size] = value;
+	bool push_back(const TYPE& value) {
+		if (_size >= SIZE) {
+			return false;
+		}
+		(*this)[_size++] = value;
+		return true;
 	}
 
 	const TYPE& front() const {
@@ -71,6 +79,13 @@ public:
 
 	constexpr TYPE* begin() {
 		return _items;
+	}
+
+	void clear() {
+		for (size_t i = 0; i < _size; ++i) {
+			_items[i].~TYPE();
+		}
+		_size = 0;
 	}
 
 	constexpr const TYPE* begin() const {
