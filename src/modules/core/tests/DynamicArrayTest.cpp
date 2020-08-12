@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include "core/collection/DynamicArray.h"
 #include "core/String.h"
+#include "core/Algorithm.h"
 
 namespace core {
 
@@ -307,6 +308,41 @@ TEST(DynamicArrayTest, testInsertIterMultiple) {
 
 	DynamicArray<DynamicArrayStruct> array;
 	array.insert(array.begin(), other.begin(), other.end());
+}
+
+TEST(DynamicArrayTest, testInsertIteratorDistance) {
+	const DynamicArrayStruct buf[] = {
+		DynamicArrayStruct(core::String(1024, 'a'), 0),
+		DynamicArrayStruct(core::String(1024, 'b'), 1),
+		DynamicArrayStruct(core::String(4096, 'c'), 2),
+		DynamicArrayStruct(core::String(1337, 'd'), 3),
+		DynamicArrayStruct(core::String(0xEE, 'e'), 4),
+		DynamicArrayStruct(core::String(0xFF, 'f'), 5)
+	};
+	DynamicArray<DynamicArrayStruct> other;
+	other.insert(other.begin(), buf, 6);
+	EXPECT_EQ(6, other.end() - other.begin());
+}
+
+TEST(DynamicArrayTest, testInsertIteratorOperatorInt) {
+	const DynamicArrayStruct buf[] = {
+		DynamicArrayStruct(core::String(1024, 'a'), 0),
+		DynamicArrayStruct(core::String(1024, 'b'), 1),
+		DynamicArrayStruct(core::String(4096, 'c'), 2),
+		DynamicArrayStruct(core::String(1337, 'd'), 3),
+		DynamicArrayStruct(core::String(0xEE, 'e'), 4),
+		DynamicArrayStruct(core::String(0xFF, 'f'), 5)
+	};
+	DynamicArray<DynamicArrayStruct> other;
+	other.insert(other.begin(), buf, 6);
+	auto iter = other.begin();
+	for (int i = 0; i < 6; ++i) {
+		DynamicArrayStruct s = *iter;
+		EXPECT_EQ(i, s._bar);
+		s = *iter++;
+		EXPECT_EQ(i, s._bar);
+	}
+	EXPECT_EQ(6, other.end() - other.begin());
 }
 
 }

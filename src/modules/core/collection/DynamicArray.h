@@ -7,7 +7,6 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
-#include "core/Algorithm.h"
 #include <new>
 
 namespace core {
@@ -131,6 +130,18 @@ public:
 			return *this;
 		}
 
+		iterator operator++(int) {
+			return iterator(_ptr++);
+		}
+
+		iterator operator--(int) {
+			return iterator(_ptr--);
+		}
+
+		int operator-(iterator rhs) const {
+			return (int)(intptr_t)(_ptr - rhs._ptr);
+		}
+
 		iterator& operator+(size_t n) {
 			_ptr += n;
 			return *this;
@@ -229,7 +240,7 @@ public:
 			return;
 		}
 
-		const int n = core::distance(first, last);
+		const int n = last - first;
 
 		if (pos == end()) {
 			// TODO: this can be optimized by only calling the move ctor once
