@@ -27,7 +27,7 @@ bool RandomColorTexture::init() {
 		delete[] colorTexture;
 		return true;
 	}
-	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([=] () {
+	_noiseFuture.emplace_back(core::App::getInstance()->threadPool().enqueue([=] () {
 		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
 		_noise.seamlessNoise(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
 		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
@@ -44,7 +44,7 @@ video::Id RandomColorTexture::handle() const {
 
 void RandomColorTexture::bind(video::TextureUnit unit) {
 	if (!_noiseFuture.empty()) {
-		NoiseFuture& future = _noiseFuture.back();
+		NoiseFuture& future = _noiseFuture.front();
 		if (future.valid()) {
 			NoiseGenerationTask c = future.get();
 			Log::trace("Noise texture ready - upload it");
@@ -56,7 +56,7 @@ void RandomColorTexture::bind(video::TextureUnit unit) {
 			}
 			_colorTexture->upload(format, c.width, c.height, c.buffer);
 			delete[] c.buffer;
-			_noiseFuture.pop_back();
+			_noiseFuture.clear();
 		}
 	}
 	_colorTexture->bind(unit);
@@ -68,11 +68,11 @@ void RandomColorTexture::unbind() {
 
 void RandomColorTexture::shutdown() {
 	while (!_noiseFuture.empty()) {
-		NoiseFuture& future = _noiseFuture.back();
+		NoiseFuture& future = _noiseFuture.front();
 		if (future.valid()) {
 			NoiseGenerationTask c = future.get();
 			delete[] c.buffer;
-			_noiseFuture.pop_back();
+			_noiseFuture.clear();
 		}
 	}
 	if (_colorTexture) {

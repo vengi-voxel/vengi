@@ -3,12 +3,12 @@
  */
 #pragma once
 
+#include "core/collection/Vector.h"
 #include "video/Texture.h"
 #include "noise/Noise.h"
 #include "video/Types.h"
 #include "core/IComponent.h"
 
-#include <vector>
 #include <future>
 
 namespace render {
@@ -35,7 +35,7 @@ private:
 	};
 
 	typedef std::future<NoiseGenerationTask> NoiseFuture;
-	std::vector<NoiseFuture> _noiseFuture;
+	core::Vector<NoiseFuture, 1> _noiseFuture;
 public:
 	bool init() override;
 	void shutdown() override;
