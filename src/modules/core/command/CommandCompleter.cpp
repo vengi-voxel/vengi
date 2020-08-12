@@ -9,7 +9,7 @@
 
 namespace core {
 
-int complete(core::String dir, const core::String& match, std::vector<core::String>& matches, const char* pattern) {
+int complete(core::String dir, const core::String& match, core::DynamicArray<core::String>& matches, const char* pattern) {
 	const core::String additionalDir = core::string::extractPath(match.c_str());
 	dir += additionalDir;
 	core::String currentMatch;

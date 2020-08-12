@@ -9,6 +9,7 @@
 #include "core/StringUtil.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
+#include "core/collection/DynamicArray.h"
 #include "core/io/Filesystem.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
@@ -953,7 +954,7 @@ bool init() {
 		core::String extensionsStr = extensions.get();
 
 		Log::info("OpenCL device extensions:");
-		std::vector<core::String> extensionsVec;
+		core::DynamicArray<core::String> extensionsVec;
 		core::string::splitString(extensionsStr, extensionsVec, " ");
 		for (const auto& e : extensionsVec) {
 			Log::info("ext: %s", e.c_str());

@@ -75,7 +75,7 @@ bool Command::unregisterActionButton(const core::String& name) {
 	return amount == 2;
 }
 
-int Command::complete(const core::String& str, std::vector<core::String>& matches) const {
+int Command::complete(const core::String& str, core::DynamicArray<core::String>& matches) const {
 	if (!_completer) {
 		return 0;
 	}
@@ -155,7 +155,7 @@ int Command::execute(const core::String& command) {
 		}
 		const core::String& c = commandTokenizer.next();
 		Log::debug("command: '%s'", c.c_str());
-		std::vector<core::String> args;
+		core::DynamicArray<core::String> args;
 		while (commandTokenizer.hasNext()) {
 			args.push_back(commandTokenizer.next());
 			Log::debug("arg: '%s'", args.back().c_str());
@@ -232,7 +232,7 @@ Command& Command::setHelp(const char* help) {
 }
 
 Command& Command::setBoolCompleter() {
-	return setArgumentCompleter([] (const core::String& str, std::vector<core::String>& matches) -> int {
+	return setArgumentCompleter([] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		if (str[0] == 't') {
 			matches.emplace_back("true");
 			return 1;

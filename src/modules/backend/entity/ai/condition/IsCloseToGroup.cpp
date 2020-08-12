@@ -6,14 +6,14 @@
 #include "core/StringUtil.h"
 #include "backend/entity/ai/group/GroupMgr.h"
 #include "backend/entity/ai/zone/Zone.h"
+#include "core/collection/DynamicArray.h"
 #include <glm/geometric.hpp>
-#include <vector>
 
 namespace backend {
 
 IsCloseToGroup::IsCloseToGroup(const core::String& parameters) :
 	ICondition("IsCloseToGroup", parameters) {
-	std::vector<core::String> tokens;
+	core::DynamicArray<core::String> tokens;
 	core::string::splitString(_parameters, tokens, ",");
 	if (tokens.size() != 2) {
 		_groupId = -1;

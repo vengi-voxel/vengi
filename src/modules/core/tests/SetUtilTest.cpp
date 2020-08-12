@@ -3,16 +3,16 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/collection/Set.h"
+#include "core/collection/SetUtil.h"
 #include <numeric>
 #include <random>
 
 namespace collection {
 
-class SetTest: public testing::Test {
+class SetUtilTest: public testing::Test {
 };
 
-TEST_F(SetTest, testDiff) {
+TEST_F(SetUtilTest, testDiff) {
 	std::unordered_set<int> setDiff1;
 	const int n = 1000;
 	for (int i = 0; i < n; ++i) {
@@ -28,7 +28,7 @@ TEST_F(SetTest, testDiff) {
 	EXPECT_EQ(1u, diff.size());
 }
 
-TEST_F(SetTest, testDiff2) {
+TEST_F(SetUtilTest, testDiff2) {
 	std::unordered_set<int> setDiff1;
 	const int n = 1000;
 	for (int i = 0; i < n; ++i) {
@@ -46,7 +46,7 @@ TEST_F(SetTest, testDiff2) {
 }
 
 // exactly what is done for calculating the visible entities
-TEST_F(SetTest, testVisibleActions) {
+TEST_F(SetUtilTest, testVisibleActions) {
 	std::unordered_set<int> setVisible1;
 	std::unordered_set<int> setVisible2;
 

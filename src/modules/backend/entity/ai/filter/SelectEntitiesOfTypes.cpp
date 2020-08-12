@@ -9,13 +9,13 @@
 #include "backend/entity/ai/AICharacter.h"
 #include "network/ProtocolEnum.h"
 #include "core/Enum.h"
-#include <vector>
+#include "core/collection/DynamicArray.h"
 
 namespace backend {
 
 SelectEntitiesOfTypes::SelectEntitiesOfTypes(const core::String& parameters) :
 		IFilter("SelectEntitiesOfTypes", parameters) {
-	std::vector<core::String> types;
+	core::DynamicArray<core::String> types;
 	core::string::splitString(parameters, types, ",");
 	for (const core::String& type : types) {
 		auto entityType = network::getEnum<network::EntityType>(type.c_str(), network::EnumNamesEntityType());

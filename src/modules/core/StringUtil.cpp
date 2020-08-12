@@ -119,7 +119,7 @@ core::String replaceAll(const core::String& str, const core::String& searchStr, 
 	return s;
 }
 
-void splitString(const core::String& string, std::vector<core::String>& tokens, const char* delimiters) {
+void splitString(const core::String& string, core::DynamicArray<core::String>& tokens, const char* delimiters) {
 	// Skip delimiters at beginning.
 	size_t lastPos = string.find_first_not_of(delimiters, 0);
 	// Find first "non-delimiter".

@@ -25,6 +25,7 @@ set(SRCS
 	collection/List.h
 	collection/Map.h
 	collection/Set.h
+	collection/SetUtil.h
 	collection/Stack.h
 	collection/StringMap.h
 	collection/Vector.h
@@ -122,7 +123,7 @@ set(TEST_SRCS
 	tests/MetricTest.cpp
 	tests/PoolAllocatorTest.cpp
 	tests/ReadWriteLockTest.cpp
-	tests/SetTest.cpp
+	tests/SetUtilTest.cpp
 	tests/SharedPtrTest.cpp
 	tests/StackTest.cpp
 	tests/StringTest.cpp

@@ -11,7 +11,6 @@
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
-#include <vector>
 
 namespace core {
 
@@ -109,7 +108,7 @@ protected:
 	core::String toString(const core::String& filename) const;
 
 	template<class T>
-	core::String toString(const std::vector<T>& v) const {
+	core::String toString(const T& v) const {
 		core::String str;
 		str.reserve(4096);
 		for (auto i = v.begin(); i != v.end();) {

@@ -114,7 +114,7 @@ int executeCommands(const core::String& commandLine) {
 		if (tokInner.tokens().empty()) {
 			continue;
 		}
-		std::vector<core::String> tokens = tokInner.tokens();
+		core::DynamicArray<core::String> tokens = tokInner.tokens();
 		const core::String cmd = tokens[0];
 		tokens.erase(tokens.begin());
 		if (core::Command::execute(cmd, tokens)) {

@@ -6,8 +6,11 @@
 #include "core/App.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/String.h"
+#include "core/collection/DynamicArray.h"
 #include "core/io/Filesystem.h"
 #include "core/command/Command.h"
+#include "core/collection/Set.h"
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Tokenizer.h"
@@ -375,10 +378,10 @@ void Console::scrollPageDown() {
 
 void Console::autoComplete() {
 	// TODO: handle the cursor position properly
-	std::vector<core::String> matches;
-	const std::vector<core::String> allCommands = core::Tokenizer(_commandLine, ";").tokens();
+	core::DynamicArray<core::String> matches;
+	const core::DynamicArray<core::String> allCommands = core::Tokenizer(_commandLine, ";").tokens();
 	const core::String& lastCmd = allCommands.empty() ? "" : allCommands.back();
-	const std::vector<core::String> strings = core::Tokenizer(lastCmd, " ").tokens();
+	const core::DynamicArray<core::String> strings = core::Tokenizer(lastCmd, " ").tokens();
 	core::String baseSearchString = "";
 	bool parameter = _commandLine[_cursorPos] == ' ' || strings.size() > 1;
 	if (parameter) {
@@ -420,8 +423,13 @@ void Console::autoComplete() {
 		return;
 	}
 
-	std::sort(matches.begin(), matches.end());
-	matches.erase(std::unique(matches.begin(), matches.end()), matches.end());
+	core::Set<core::String, 11, core::StringHash> uniqueMatches;
+	uniqueMatches.insert(matches.begin(), matches.end());
+	matches.clear();
+	for (auto i = uniqueMatches.begin(); i != uniqueMatches.end(); ++i) {
+		matches.push_back(i->key);
+	}
+	core::sort(matches.begin(), matches.end(), core::Less<core::String>());
 
 	if (matches.size() == 1) {
 		if (strings.size() <= 1) {
@@ -434,9 +442,6 @@ void Console::autoComplete() {
 		}
 	} else {
 		_messages.push_back(_consolePrompt + _commandLine);
-		std::sort(begin(matches), end(matches), [](const core::String& v1, const core::String& v2) {
-			return v1 < v2;
-		});
 		int pos = 0;
 		const core::String first = matches.front();
 		for (char c : first) {
@@ -628,15 +633,19 @@ void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
 	const int maxY = _messages.size() * lineH;
 	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), _commandLine.size());
 	const int startY = core_min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y - 4, maxY);
-	MessagesIter i = _messages.rbegin();
-	std::advance(i, _scrollPos);
-	for (int y = startY; i != _messages.rend(); ++i) {
+	auto i = _messages.end();
+	--i;
+	core::prev(i, _scrollPos);
+	for (int y = startY; ; --i) {
 		if (y < rect.getMinZ()) {
 			break;
 		}
 		const glm::ivec2& size = stringSize(i->c_str(), i->size());
 		y -= size.y;
 		drawString(_consoleMarginLeft, y, *i, i->size());
+		if (i == _messages.begin()) {
+			break;
+		}
 	}
 
 	drawString(_consoleMarginLeft, startY, _consolePrompt, _consolePrompt.size());

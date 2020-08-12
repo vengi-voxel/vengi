@@ -6,7 +6,7 @@
 
 #include "core/Common.h"
 #include "core/String.h"
-#include <vector>
+#include "core/collection/DynamicArray.h"
 #include <SDL_stdinc.h>
 #include <inttypes.h>
 
@@ -60,7 +60,7 @@ inline double toDouble(const core::String& str) {
  */
 extern char* getBeforeToken(char **buffer, const char *token, size_t bufferSize);
 
-extern void splitString(const core::String& string, std::vector<core::String>& tokens, const char* delimiters = " \t\r\n\f\v");
+extern void splitString(const core::String& string, core::DynamicArray<core::String>& tokens, const char* delimiters = " \t\r\n\f\v");
 
 inline char toUpper(char in) { return SDL_toupper((int)in); }
 inline char toLower(char in) { return SDL_tolower((int)in); }
@@ -98,10 +98,10 @@ inline const char* after(const char* input, int character) {
 }
 
 inline bool endsWith(const core::String& string, const core::String& end) {
-	const std::size_t strLength = string.size();
-	const std::size_t endLength = end.size();
+	const size_t strLength = string.size();
+	const size_t endLength = end.size();
 	if (strLength >= endLength) {
-		const std::size_t index = strLength - endLength;
+		const size_t index = strLength - endLength;
 		return string.compare(index, endLength, end) == 0;
 	}
 	return false;

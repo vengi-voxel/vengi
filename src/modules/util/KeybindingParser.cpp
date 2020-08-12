@@ -5,6 +5,7 @@
 #include "KeybindingParser.h"
 #include "CustomButtonNames.h"
 #include "core/ArrayLength.h"
+#include "core/collection/DynamicArray.h"
 #include "core/Log.h"
 #include <SDL.h>
 
@@ -14,7 +15,7 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 	int modifier = KMOD_NONE;
 	if (key.size() > 1) {
 		if (core::string::contains(key, "+")) {
-			std::vector<core::String> line;
+			core::DynamicArray<core::String> line;
 			core::string::splitString(key, line, "+");
 			for (const core::String& token : line) {
 				const core::String& lower = token.toLower();

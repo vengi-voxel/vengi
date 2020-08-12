@@ -9,6 +9,7 @@
 
 #include "core/io/Filesystem.h"
 #include "core/command/Command.h"
+#include "core/collection/DynamicArray.h"
 #include "core/Color.h"
 #include "core/UTF8.h"
 #include "core/Common.h"
@@ -257,7 +258,7 @@ void UIApp::fileDialog(const std::function<void(const core::String&)>& callback,
 		dialog->addShortcut(lastDir);
 	}
 	if (!filter.empty()) {
-		std::vector<core::String> tokens;
+		core::DynamicArray<core::String> tokens;
 		core::string::splitString(filter, tokens, ";");
 		const char **filters = new const char*[tokens.size() + 1];
 		int n = 0;

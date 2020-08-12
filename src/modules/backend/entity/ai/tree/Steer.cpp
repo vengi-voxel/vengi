@@ -9,7 +9,7 @@
 #include "core/StringUtil.h"
 #include "core/GLM.h"
 #include "core/Assert.h"
-#include <vector>
+#include "core/collection/DynamicArray.h"
 #include <glm/gtc/constants.hpp>
 
 namespace backend {
@@ -27,7 +27,7 @@ TreeNodePtr Steer::Factory::create (const SteerNodeFactoryContext *ctx) const {
 			weightedSteerings.push_back(movement::WeightedData(s, 1.0f));
 		}
 	} else {
-		std::vector<core::String> tokens;
+		core::DynamicArray<core::String> tokens;
 		core::string::splitString(ctx->parameters, tokens, ",");
 		core_assert_msg(tokens.size() == ctx->steerings.size(), "weights doesn't match steerings methods count");
 		const int tokenAmount = static_cast<int>(tokens.size());

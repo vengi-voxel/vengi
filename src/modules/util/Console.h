@@ -6,11 +6,11 @@
 
 #include <SDL_stdinc.h>
 #include <SDL_log.h>
-#include <vector>
 #include "core/String.h"
 #include "core/Var.h"
 #include "core/Assert.h"
 #include "core/IComponent.h"
+#include "core/collection/DynamicArray.h"
 #include "math/Rect.h"
 #include "core/collection/ConcurrentQueue.h"
 #include <thread>
@@ -25,8 +25,7 @@ extern core::String getColor(ConsoleColor color);
 
 class Console : public core::IComponent {
 protected:
-	typedef std::vector<core::String> Messages;
-	typedef Messages::const_reverse_iterator MessagesIter;
+	typedef core::DynamicArray<core::String> Messages;
 	Messages _messages;
 
 	int _consoleMarginLeft = 5;

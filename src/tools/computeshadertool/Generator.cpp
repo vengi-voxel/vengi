@@ -6,6 +6,7 @@
 #include "core/StringUtil.h"
 #include "core/Assert.h"
 #include "core/io/Filesystem.h"
+#include "core/collection/DynamicArray.h"
 #include "Util.h"
 #include "Types.h"
 #include "core/Log.h"
@@ -455,7 +456,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 		const core::String& shaderBuffer) {
 	const core::String name = _name + "Shader";
 
-	std::vector<core::String> shaderNameParts;
+	core::DynamicArray<core::String> shaderNameParts;
 	core::string::splitString(name, shaderNameParts, "_-");
 	core::String filename = "";
 	for (core::String n : shaderNameParts) {

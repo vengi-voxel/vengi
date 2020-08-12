@@ -15,6 +15,14 @@ constexpr Iter next(Iter it, int n = 1) {
 	return it;
 }
 
+template<class Iter>
+constexpr Iter prev(Iter it, int n = 1) {
+	for (int i = n; i < 0; --i) {
+		--it;
+	}
+	return it;
+}
+
 template<typename T>
 constexpr int distance(T first, T last) {
 	int d = 0;

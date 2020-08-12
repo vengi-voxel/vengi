@@ -8,15 +8,15 @@
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "core/collection/StringMap.h"
+#include "core/collection/DynamicArray.h"
 #include "core/concurrent/ReadWriteLock.h"
 #include "ActionButton.h"
 #include <memory>
-#include <vector>
 #include <functional>
 
 namespace core {
 
-typedef std::vector<core::String> CmdArgs;
+typedef core::DynamicArray<core::String> CmdArgs;
 
 struct ActionButtonCommands {
 	const core::String first;
@@ -54,7 +54,7 @@ private:
 	const char* _help;
 	FunctionType _func;
 	BindingContext _bindingContext = BindingContext::All;
-	typedef std::function<int(const core::String&, std::vector<core::String>& matches)> CompleteFunctionType;
+	typedef std::function<int(const core::String&, core::DynamicArray<core::String>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
 	Command() :
@@ -124,10 +124,10 @@ public:
 		}
 	}
 
-	int complete(const core::String& str, std::vector<core::String>& matches) const;
+	int complete(const core::String& str, core::DynamicArray<core::String>& matches) const;
 
 	/**
-	 * @param func A functor or lambda that accepts the following parameters: @code const core::String& str, std::vector<core::String>& matches @endcode
+	 * @param func A functor or lambda that accepts the following parameters: @code const core::String& str, core::DynamicArray<core::String>& matches @endcode
 	 */
 	template<class Functor>
 	Command& setArgumentCompleter(Functor&& func) {

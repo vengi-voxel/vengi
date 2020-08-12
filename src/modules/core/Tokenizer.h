@@ -7,14 +7,15 @@
 #include "Common.h"
 #include "Assert.h"
 #include "StringUtil.h"
+#include "core/collection/DynamicArray.h"
 
 namespace core {
 
 class Tokenizer {
 protected:
-	std::vector<core::String> _tokens;
-	std::size_t _posIndex;
-	std::size_t _size;
+	core::DynamicArray<core::String> _tokens;
+	size_t _posIndex;
+	size_t _size;
 	int32_t _len;
 	bool _skipComments;
 
@@ -29,8 +30,8 @@ public:
 	 * @param sep The separator chars - they are not included in the tokens.
 	 * @param split Splits chars, they are included in the tokens - but otherwise handled like usual separators.
 	 */
-	Tokenizer(bool skipComments, const char* s, std::size_t len, const char *sep = " (){};", const char *split = "");
-	Tokenizer(const char* s, std::size_t len, const char *sep = " (){};", const char *split = "") : Tokenizer(true, s, len, sep, split) {}
+	Tokenizer(bool skipComments, const char* s, size_t len, const char *sep = " (){};", const char *split = "");
+	Tokenizer(const char* s, size_t len, const char *sep = " (){};", const char *split = "") : Tokenizer(true, s, len, sep, split) {}
 
 	Tokenizer(bool skipComments, const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string, SDL_strlen(string), sep, split) {}
 	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string, SDL_strlen(string), sep, split) {}
@@ -60,7 +61,7 @@ public:
 		return _tokens[_posIndex++];
 	}
 
-	inline const std::vector<core::String>& tokens() const {
+	inline const core::DynamicArray<core::String>& tokens() const {
 		return _tokens;
 	}
 
@@ -68,14 +69,14 @@ public:
 		return _posIndex > 0;
 	}
 
-	inline std::size_t size() const {
+	inline size_t size() const {
 		return _tokens.size();
 	}
 
 	/**
 	 * @return the current position in the tokens
 	 */
-	inline std::size_t pos() const {
+	inline size_t pos() const {
 		return _posIndex;
 	}
 

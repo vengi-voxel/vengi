@@ -175,7 +175,7 @@ core::String toString(compute::BufferFlag flagMask) {
 
 core::String convertName(const core::String& in, bool firstUpper) {
 	core::String out;
-	std::vector<core::String> nameParts;
+	core::DynamicArray<core::String> nameParts;
 	core::string::splitString(in, nameParts, "_-");
 	for (core::String& n : nameParts) {
 		if (n.size() > 1 || nameParts.size() < 2) {

@@ -3,7 +3,7 @@
  */
 
 #include "Entity.h"
-#include "core/collection/Set.h"
+#include "core/collection/SetUtil.h"
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
 #include "core/Log.h"

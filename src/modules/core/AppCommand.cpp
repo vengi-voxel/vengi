@@ -39,7 +39,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		Log::info("%s", params.c_str());
 	}).setHelp("Print the given arguments to the console (info log level)");
 
-	auto fileCompleter = [=] (const core::String& str, std::vector<core::String>& matches) -> int {
+	auto fileCompleter = [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		std::vector<io::Filesystem::DirEntry> entries;
 		const io::FilesystemPtr& filesystem = io::filesystem();
 		const io::FilePtr& file = filesystem->open(str);
@@ -172,7 +172,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::enable(hashVal, level);
 			Log::info("Set log level for %s to %s (%u)", id.c_str(), args[1].c_str(), hashVal);
 		}
-	}).setHelp("Change the log level on an id base").setArgumentCompleter([] (const core::String& str, std::vector<core::String>& matches) -> int {
+	}).setHelp("Change the log level on an id base").setArgumentCompleter([] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		if (str[0] == 't') {
 			matches.push_back("trace");
 			return 1;
