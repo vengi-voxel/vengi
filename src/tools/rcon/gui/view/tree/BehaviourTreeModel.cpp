@@ -110,7 +110,7 @@ QVariant BehaviourTreeModel::data(const QModelIndex &mdlIndex, int role) const {
 		if (mdlIndex.column() == COL_NAME) {
 			return nodeItem->icon();
 		}
-	} else if (role == Qt::TextColorRole) {
+	} else if (role == Qt::ForegroundRole) {
 		return nodeItem->color();
 	}
 

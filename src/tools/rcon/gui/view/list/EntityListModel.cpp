@@ -70,7 +70,7 @@ QVariant EntityListModel::data(const QModelIndex &mdlIndex, int role) const {
 			}
 			return state.getId();
 		}
-	} else if (role == Qt::BackgroundColorRole) {
+	} else if (role == Qt::BackgroundRole) {
 		if (_debugger.isSelected(state)) {
 			return QColor(Qt::gray);
 		}
