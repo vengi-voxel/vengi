@@ -5,12 +5,12 @@
 #pragma once
 
 #include "VoxelVertex.h"
-#include <vector>
+#include "core/collection/DynamicArray.h"
 
 namespace voxel {
 
-using VertexArray = std::vector<voxel::VoxelVertex>;
-using IndexArray = std::vector<voxel::IndexType>;
+using VertexArray = core::DynamicArray<voxel::VoxelVertex>;
+using IndexArray = core::DynamicArray<voxel::IndexType>;
 
 /**
  * @brief A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.

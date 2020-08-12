@@ -7,11 +7,11 @@
 #include "core/IComponent.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
+#include "core/collection/DynamicArray.h"
 #include "video/Camera.h"
 #include "video/Buffer.h"
 #include "voxelfont/VoxelFont.h"
 #include "RenderShaders.h"
-#include <vector>
 
 namespace voxelrender {
 
@@ -22,7 +22,7 @@ private:
 			glm::vec4 vertex;
 			glm::vec3 color {core::Color::Red};
 		};
-		std::vector<AttributeData> vertices;
+		core::DynamicArray<AttributeData> vertices;
 
 		inline void reserve(size_t amount) {
 			vertices.resize(amount);

@@ -128,8 +128,12 @@ bool AnimationCache::getBoneModel(const AnimationSettings& settings, Vertices& v
 			if (bids.mirrored[b]) {
 				// if a model is mirrored, this is usually acchieved with negative scaling values
 				// thus we have to reverse the winding order here to make the face culling work again
-				for (auto i = meshIndices.rbegin(); i != meshIndices.rend(); ++i) {
+				auto i = meshIndices.end();
+				for (--i; ; --i) {
 					indices.push_back((IndexType)(*i) + indexOffset);
+					if (i == meshIndices.begin()) {
+						break;
+					}
 				}
 			} else {
 				for (voxel::IndexType idx : meshIndices) {

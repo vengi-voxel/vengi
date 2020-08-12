@@ -7,11 +7,11 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/Assert.h"
+#include "core/collection/DynamicArray.h"
 #include "voxel/Mesh.h"
 #include <unordered_map>
 #include "core/UTF8.h"
 #include "core/StringUtil.h"
-#include <vector>
 
 struct stbtt_fontinfo;
 
@@ -61,7 +61,7 @@ public:
 	}
 
 	template<class T, class FUNC>
-	int render(const char* string, std::vector<T>& out, std::vector<uint32_t>& indices, FUNC&& func) {
+	int render(const char* string, core::DynamicArray<T>& out, voxel::IndexArray& indices, FUNC&& func) {
 		const char **s = &string;
 		const int newlines = core::string::count(string, '\n');
 
@@ -124,8 +124,8 @@ public:
 		return charCount;
 	}
 
-	int render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices);
-	int render(const char* string, voxel::VertexArray& vertices, std::vector<uint32_t>& indices);
+	int render(const char* string, core::DynamicArray<glm::vec4>& pos, voxel::IndexArray& indices);
+	int render(const char* string, voxel::VertexArray& vertices, voxel::IndexArray& indices);
 };
 
 }

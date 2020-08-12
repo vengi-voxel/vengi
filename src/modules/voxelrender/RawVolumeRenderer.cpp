@@ -149,8 +149,34 @@ bool RawVolumeRenderer::update(int idx) {
 		return false;
 	}
 	core_trace_scoped(RawVolumeRendererUpdate);
-	voxel::VertexArray vertices;
-	voxel::IndexArray indices;
+
+	size_t vertCount = 0u;
+	size_t indCount = 0u;
+	for (auto& i : _meshes) {
+		const Meshes& meshes = i.second;
+		const voxel::Mesh* mesh = meshes[idx];
+		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
+			continue;
+		}
+		const voxel::VertexArray& vertexVector = mesh->getVertexVector();
+		const voxel::IndexArray& indexVector = mesh->getIndexVector();
+		vertCount += vertexVector.size();
+		indCount += indexVector.size();
+	}
+
+	if (indCount == 0u || vertCount == 0u) {
+		_vertexBuffer[idx].update(_vertexBufferIndex[idx], nullptr, 0);
+		_vertexBuffer[idx].update(_indexBufferIndex[idx], nullptr, 0);
+		return true;
+	}
+
+	const size_t verticesBufSize = vertCount * sizeof(voxel::VoxelVertex);
+	voxel::VoxelVertex* verticesBuf = (voxel::VoxelVertex*)core_malloc(verticesBufSize);
+	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
+	voxel::IndexType* indicesBuf = (voxel::IndexType*)core_malloc(indicesBufSize);
+
+	voxel::VoxelVertex* verticesPos = verticesBuf;
+	voxel::IndexType* indicesPos = indicesBuf;
 
 	voxel::IndexType offset = (voxel::IndexType)0;
 	for (auto& i : _meshes) {
@@ -161,16 +187,32 @@ bool RawVolumeRenderer::update(int idx) {
 		}
 		const voxel::VertexArray& vertexVector = mesh->getVertexVector();
 		const voxel::IndexArray& indexVector = mesh->getIndexVector();
-		std::copy(vertexVector.begin(), vertexVector.end(), std::back_inserter(vertices));
+		core_memcpy(verticesPos, &vertexVector[0], vertexVector.size() * sizeof(voxel::VoxelVertex));
+		core_memcpy(indicesPos, &indexVector[0], indexVector.size() * sizeof(voxel::IndexType));
 
-		for (const auto& iv : indexVector) {
-			indices.push_back(iv + offset);
+		for (size_t i = 0; i < indexVector.size(); ++i) {
+			*indicesPos++ += offset;
 		}
 
+		verticesPos += vertexVector.size();
 		offset += vertexVector.size();
 	}
 
-	return update(idx, vertices, indices);
+	if (!_vertexBuffer[idx].update(_vertexBufferIndex[idx], verticesBuf, verticesBufSize)) {
+		Log::error("Failed to update the vertex buffer");
+		core_free(indicesBuf);
+		core_free(verticesBuf);
+		return false;
+	}
+	if (!_vertexBuffer[idx].update(_indexBufferIndex[idx], indicesBuf, indicesBufSize)) {
+		Log::error("Failed to update the index buffer");
+		core_free(indicesBuf);
+		core_free(verticesBuf);
+		return false;
+	}
+	core_free(indicesBuf);
+	core_free(verticesBuf);
+	return true;
 }
 
 bool RawVolumeRenderer::update(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices) {

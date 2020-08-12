@@ -4,9 +4,11 @@
 
 #include "VoxelFont.h"
 #include "core/App.h"
+#include "core/collection/DynamicArray.h"
 #include "core/io/Filesystem.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
+#include "voxel/Mesh.h"
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -187,8 +189,8 @@ bool VoxelFont::renderGlyphs(const char* string) {
 	return true;
 }
 
-int VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices) {
-	return render(string, pos, indices, [] (const voxel::VoxelVertex& vertex, std::vector<glm::vec4>& pos, int x, int y) {
+int VoxelFont::render(const char* string, core::DynamicArray<glm::vec4>& pos, voxel::IndexArray& indices) {
+	return render(string, pos, indices, [] (const voxel::VoxelVertex& vertex, core::DynamicArray<glm::vec4>& pos, int x, int y) {
 		glm::vec4 vp(vertex.position, 1.0f);
 		vp.x += x;
 		vp.y += y;
@@ -196,7 +198,7 @@ int VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vect
 	});
 }
 
-int VoxelFont::render(const char* string, voxel::VertexArray& vertices, std::vector<uint32_t>& indices) {
+int VoxelFont::render(const char* string, voxel::VertexArray& vertices, voxel::IndexArray& indices) {
 	return render(string, vertices, indices, [] (const voxel::VoxelVertex& vertex, voxel::VertexArray& vertices, int x, int y) {
 		voxel::VoxelVertex copy = vertex;
 		copy.position.x += x;

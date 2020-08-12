@@ -3,6 +3,7 @@
  */
 
 #include "VoxelFontRenderer.h"
+#include "core/collection/DynamicArray.h"
 
 namespace voxelrender {
 
@@ -84,7 +85,7 @@ void VoxelFontRenderer::text(const glm::ivec3& pos, const glm::vec4& color, cons
 	buf[sizeof(buf) - 1] = '\0';
 	va_end(ap);
 
-	_voxelFont.render(buf, _data.vertices, _indices, [&] (const voxel::VoxelVertex& vertex, std::vector<VertexData::AttributeData>& data, int x, int y) {
+	_voxelFont.render(buf, _data.vertices, _indices, [&] (const voxel::VoxelVertex& vertex, core::DynamicArray<VertexData::AttributeData>& data, int x, int y) {
 		const VertexData::AttributeData vp{glm::vec4(vertex.position.x + x + pos.x, vertex.position.y + y + pos.y, vertex.position.z + pos.z, 1.0f), color};
 		data.push_back(vp);
 	});
