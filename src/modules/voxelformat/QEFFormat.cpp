@@ -95,7 +95,7 @@ bool QEFFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 			Log::error("Failed to parse palette color");
 			return false;
 		}
-		_palette.push_back(findClosestIndex(glm::vec4(r, g, b, 1.0f)));
+		_palette[i] = findClosestIndex(glm::vec4(r, g, b, 1.0f));
 	}
 
 	voxel::RawVolume* volume = new voxel::RawVolume(region);

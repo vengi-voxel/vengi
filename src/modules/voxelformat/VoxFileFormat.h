@@ -4,17 +4,17 @@
 
 #pragma once
 
+#include "core/collection/Array.h"
 #include "voxel/RawVolume.h"
 #include "core/io/File.h"
 #include "VoxelVolumes.h"
 #include <glm/fwd.hpp>
-#include <vector>
 
 namespace voxel {
 
 class VoxFileFormat {
 protected:
-	std::vector<uint8_t> _palette;
+	core::Array<uint8_t, 256> _palette;
 	size_t _paletteSize = 0;
 
 	const glm::vec4& getColor(const Voxel& voxel) const;

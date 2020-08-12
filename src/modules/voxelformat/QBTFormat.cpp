@@ -464,7 +464,6 @@ bool QBTFormat::loadColorMap(io::FileStream& stream) {
 		return false;
 	}
 	_paletteSize = 0;
-	_palette.reserve(colorCount);
 	for (uint32_t i = 0; i < colorCount; ++i) {
 		uint8_t colorByteR;
 		uint8_t colorByteG;

@@ -387,12 +387,10 @@ void VoxFormat::initPalette() {
 		0xff880000, 0xff770000, 0xff550000, 0xff440000, 0xff220000, 0xff110000, 0xffeeeeee, 0xffdddddd, 0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777, 0xff555555, 0xff444444, 0xff222222, 0xff111111
 	};
 
-	const int paletteSize = lengthof(palette);
-	_palette.resize(paletteSize);
-	_paletteSize = paletteSize;
+	_paletteSize = lengthof(palette);
 	// convert to our palette
 	const MaterialColorArray& materialColors = getMaterialColors();
-	for (int i = 0; i < paletteSize; ++i) {
+	for (size_t i = 0u; i < _paletteSize; ++i) {
 		const uint32_t p = palette[i];
 		const glm::vec4& color = core::Color::fromRGBA(p);
 		const int index = core::Color::getClosestMatch(color, materialColors);

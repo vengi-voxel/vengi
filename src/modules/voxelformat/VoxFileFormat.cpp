@@ -19,7 +19,10 @@ const glm::vec4& VoxFileFormat::getColor(const Voxel& voxel) const {
 
 uint8_t VoxFileFormat::convertPaletteIndex(uint32_t paletteIndex) const {
 	if (paletteIndex >= _paletteSize) {
-		return paletteIndex % 255;
+		if (_paletteSize > 0) {
+			return paletteIndex % _paletteSize;
+		}
+		return paletteIndex % _palette.size();
 	}
 	return _palette[paletteIndex];
 }

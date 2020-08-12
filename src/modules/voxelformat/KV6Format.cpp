@@ -77,8 +77,7 @@ bool KV6Format::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			uint32_t palMagic;
 			wrap(stream.readInt(palMagic))
 			if (palMagic == FourCC('S','P','a','l')) {
-				_paletteSize = 256;
-				_palette.resize(_paletteSize);
+				_paletteSize = _palette.size();
 				const MaterialColorArray& materialColors = getMaterialColors();
 				for (size_t i = 0; i < _paletteSize; ++i) {
 					uint8_t r, g, b;
@@ -90,7 +89,7 @@ bool KV6Format::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 					const uint8_t ng = glm::clamp((uint32_t)glm::round((g * 255) / 63.0f), 0u, 255u);
 					const uint8_t nb = glm::clamp((uint32_t)glm::round((b * 255) / 63.0f), 0u, 255u);
 
-					const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255);
+					const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255u);
 					const int index = core::Color::getClosestMatch(color, materialColors);
 					_palette[i] = index;
 				}

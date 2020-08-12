@@ -85,9 +85,8 @@ bool KVXFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	}
 	// Read the color palette from the end of the file and convert to our palette
 	const size_t currentPos = stream.pos();
-	_paletteSize = 256;
+	_paletteSize = _palette.size();
 	stream.seek(stream.size() - 3 * _paletteSize);
-	_palette.resize(_paletteSize);
 
 	/**
 	 * The last 768 bytes of the KVX file is a standard 256-color VGA palette.

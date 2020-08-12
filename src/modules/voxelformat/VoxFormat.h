@@ -5,6 +5,7 @@
 #pragma once
 
 #include "VoxFileFormat.h"
+#include "core/collection/DynamicArray.h"
 #include "core/io/FileStream.h"
 #include "core/String.h"
 #include "core/collection/StringMap.h"
@@ -73,11 +74,11 @@ private:
 	uint32_t _volumeIdx = 0u;
 	uint32_t _chunks = 0u;
 	uint32_t _numModels = 1u;
-	std::vector<Region> _regions;
-	std::vector<VoxModel> _models;
-	std::vector<VoxTransform> _transforms;
+	core::DynamicArray<Region> _regions;
+	core::DynamicArray<VoxModel> _models;
+	core::DynamicArray<VoxTransform> _transforms;
 	core::Map<NodeId, NodeId> _parentNodes;
-	std::vector<NodeId> _leafNodes;
+	core::DynamicArray<NodeId> _leafNodes;
 
 	bool skipSaving(const VoxelVolume& v) const;
 	bool saveAttributes(const Attributes& attributes, io::FileStream& stream) const;
