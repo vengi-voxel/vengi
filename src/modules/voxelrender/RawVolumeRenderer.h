@@ -156,7 +156,7 @@ public:
 	 *
 	 * @sa init()
 	 */
-	std::vector<voxel::RawVolume*> shutdown();
+	core::DynamicArray<voxel::RawVolume*> shutdown();
 };
 
 inline render::Shadow& RawVolumeRenderer::shadow() {

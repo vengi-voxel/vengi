@@ -298,7 +298,7 @@ core::AppState TestTraze::onRunning() {
 core::AppState TestTraze::onCleanup() {
 	_voxelFontRender.shutdown();
 	_soundMgr.shutdown();
-	const std::vector<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
+	const core::DynamicArray<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
 	for (voxel::RawVolume* v : old) {
 		delete v;
 	}

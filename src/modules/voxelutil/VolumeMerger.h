@@ -4,10 +4,10 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
 #include "core/Trace.h"
 #include "core/Assert.h"
-#include <vector>
 
 namespace voxel {
 
@@ -61,6 +61,6 @@ inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume*
 	return mergeVolumes(destination, source, destination->region(), source->region());
 }
 
-extern RawVolume* merge(const std::vector<const RawVolume*>& volumes);
+extern RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes);
 
 }

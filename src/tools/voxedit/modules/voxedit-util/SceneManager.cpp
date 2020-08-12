@@ -536,7 +536,7 @@ void SceneManager::resetLastTrace() {
 }
 
 bool SceneManager::merge(int layerId1, int layerId2) {
-	std::vector<const voxel::RawVolume*> volumes;
+	core::DynamicArray<const voxel::RawVolume*> volumes;
 	volumes.resize(2);
 	volumes[0] = _volumeRenderer.volume(layerId1);
 	if (volumes[0] == nullptr) {
@@ -1625,7 +1625,7 @@ void SceneManager::shutdown() {
 		_copy = nullptr;
 	}
 
-	std::vector<voxel::RawVolume*> old = _volumeRenderer.shutdown();
+	core::DynamicArray<voxel::RawVolume*> old = _volumeRenderer.shutdown();
 	for (voxel::RawVolume* v : old) {
 		delete v;
 	}

@@ -44,7 +44,7 @@ core::AppState TestVoxelFont::onInit() {
 core::AppState TestVoxelFont::onCleanup() {
 	core::AppState state = Super::onCleanup();
 	_voxelFont.shutdown();
-	const std::vector<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
+	const core::DynamicArray<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
 	for (voxel::RawVolume* v : old) {
 		delete v;
 	}

@@ -63,7 +63,7 @@ voxel::RawVolume *VoxelVolumes::merge() const {
 		}
 		return new RawVolume(volumes[0].volume);
 	}
-	std::vector<const RawVolume *> rawVolumes;
+	core::DynamicArray<const RawVolume *> rawVolumes;
 	rawVolumes.reserve(volumes.size());
 	for (const auto &v : volumes) {
 		if (v.volume == nullptr) {

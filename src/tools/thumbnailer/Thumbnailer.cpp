@@ -158,7 +158,7 @@ core::AppState Thumbnailer::onRunning() {
 }
 
 core::AppState Thumbnailer::onCleanup() {
-	const std::vector<voxel::RawVolume*>& old = _renderer.shutdown();
+	const core::DynamicArray<voxel::RawVolume*>& old = _renderer.shutdown();
 	for (auto* v : old) {
 		delete v;
 	}

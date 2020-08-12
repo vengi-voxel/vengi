@@ -245,7 +245,7 @@ bool RawVolumeRenderer::empty(int idx) const {
 }
 
 bool RawVolumeRenderer::toMesh(voxel::Mesh* mesh) {
-	std::vector<const voxel::RawVolume*> volumes;
+	core::DynamicArray<const voxel::RawVolume*> volumes;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		const voxel::RawVolume* volume = _rawVolume[idx];
 		if (volume == nullptr) {
@@ -538,7 +538,7 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& ce
 	_shadow.setPosition(eye, center, up);
 }
 
-std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
+core::DynamicArray<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_threadPool.shutdown();
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
@@ -550,7 +550,7 @@ std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 		}
 	}
 	_meshes.clear();
-	std::vector<voxel::RawVolume*> old(MAX_VOLUMES);
+	core::DynamicArray<voxel::RawVolume*> old(MAX_VOLUMES);
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		_vertexBuffer[idx].shutdown();
 		_vertexBufferIndex[idx] = -1;

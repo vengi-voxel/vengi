@@ -10,7 +10,7 @@
 
 namespace voxel {
 
-RawVolume* merge(const std::vector<const RawVolume*>& volumes) {
+RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes) {
 	glm::ivec3 mins((std::numeric_limits<int32_t>::max)() / 2);
 	glm::ivec3 maxs((std::numeric_limits<int32_t>::min)() / 2);
 	for (const voxel::RawVolume* v : volumes) {
