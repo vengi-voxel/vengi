@@ -9,7 +9,6 @@ extern "C" {
 #include <lualib.h>
 }
 
-#include "core/collection/DynamicArray.h"
 #include "core/String.h"
 #include <memory>
 
@@ -42,7 +41,6 @@ struct LUAFunction {
 			name(_name), func(_func) {
 	}
 };
-using LUAFunctions = core::DynamicArray<lua::LUAFunction>;
 
 class LUA : public core::NonCopyable {
 private:
@@ -135,16 +133,6 @@ public:
 	void pop(int amount = 1);
 
 	void reg(const core::String& prefix, const luaL_Reg* funcs);
-
-	void reg(const core::String& prefix, const LUAFunctions& funcs) {
-		core::DynamicArray<luaL_Reg> f;
-		f.reserve(funcs.size());
-		for (const auto& func : funcs) {
-			f.emplace_back(luaL_Reg{func.name.c_str(), func.func});
-		}
-		f.emplace_back(luaL_Reg{nullptr, nullptr});
-		reg(prefix, &f[0]);
-	}
 
 	LUAType registerType(const core::String& name);
 
