@@ -203,6 +203,10 @@ public:
 		}
 	}
 
+	inline void insert(iterator pos, const TYPE& value) {
+		insert(pos, &value, 1);
+	}
+
 	void insert(iterator pos, const TYPE* array, size_t n) {
 		if (n == 0) {
 			return;
