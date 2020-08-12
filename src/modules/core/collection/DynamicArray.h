@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
+#include "core/Algorithm.h"
 #include <new>
 
 namespace core {
@@ -184,11 +185,83 @@ public:
 		new ((void *)&_buffer[_size++]) TYPE(val);
 	}
 
-	void insert(const TYPE* array, size_t n) {
+	void append(const TYPE* array, size_t n) {
 		checkBufferSize(_size + n);
 		for (size_t i = 0u; i < n; ++i) {
 			new ((void *)&_buffer[_size++]) TYPE(array[i]);
 		}
+	}
+
+	void insert(iterator pos, const TYPE* array, size_t n) {
+		if (n == 0) {
+			return;
+		}
+		if (pos == end()) {
+			append(array, n);
+			return;
+		}
+
+		const size_t startIdx = index(pos);
+		size_t s = _size - 1;
+		size_t t = s + n;
+
+		// TODO: this can be optimized by only calling the move ctor once
+		checkBufferSize(_size + n);
+
+		const size_t cnt = _size - startIdx;
+		for (size_t i = 0; i < cnt; ++i, --s, --t) {
+			new ((void*)&_buffer[t]) TYPE(core::move(_buffer[s]));
+			_buffer[s].~TYPE();
+			if (s == 0) {
+				break;
+			}
+		}
+
+		for (size_t i = 0u; i < n; ++i) {
+			new ((void *)&_buffer[startIdx + i]) TYPE(array[i]);
+		}
+		_size += n;
+	}
+
+	template<typename ITER>
+	void insert(iterator pos, ITER first, ITER last) {
+		if (first == last) {
+			return;
+		}
+
+		const int n = core::distance(first, last);
+
+		if (pos == end()) {
+			// TODO: this can be optimized by only calling the move ctor once
+			checkBufferSize(_size + n);
+
+			for (ITER i = first; i != last; ++i) {
+				new ((void *)&_buffer[_size++]) TYPE(*i);
+			}
+			return;
+		}
+
+		size_t startIdx = index(pos);
+
+		// TODO: this can be optimized by only calling the move ctor once
+		checkBufferSize(_size + n);
+
+		size_t s = _size - 1;
+		size_t t = s + n;
+
+		const size_t cnt = _size - startIdx;
+		for (size_t i = 0; i < cnt; ++i, --s, --t) {
+			new ((void*)&_buffer[t]) TYPE(core::move(_buffer[s]));
+			_buffer[s].~TYPE();
+			if (s == 0) {
+				break;
+			}
+		}
+
+		for (ITER i = first; i != last; ++i) {
+			new ((void *)&_buffer[startIdx++]) TYPE(*i);
+		}
+		_size += n;
 	}
 
 	void pop() {
@@ -255,15 +328,11 @@ public:
 		_buffer = nullptr;
 	}
 
-	bool erase(iterator iter) {
+	bool erase(iterator iter, size_t n = 1) {
 		if (iter == end()) {
 			return false;
 		}
-		TYPE* ptr = iter.operator->();
-		core_assert(ptr >= begin().operator->() && ptr < end().operator->());
-		const size_t index = ptr - begin().operator->();
-		core_assert(index >= 0u && index < _capacity);
-		erase(index, 1);
+		erase(index(iter), n);
 		return true;
 	}
 
@@ -317,6 +386,16 @@ public:
 	inline TYPE& operator[](size_t idx) {
 		core_assert(idx < _size);
 		return _buffer[idx];
+	}
+
+private:
+	constexpr size_t index(const_iterator iter) const {
+		if (iter == begin()) {
+			return 0;
+		}
+		const TYPE* ptr = iter.operator->();
+		const size_t idx = ptr - begin().operator->();
+		return idx;
 	}
 };
 

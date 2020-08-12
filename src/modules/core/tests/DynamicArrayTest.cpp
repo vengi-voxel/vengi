@@ -154,4 +154,159 @@ TEST(DynamicArrayTest, testEraseSmall) {
 	EXPECT_EQ(2, array[1]._bar) << array;
 }
 
+TEST(DynamicArrayTest, testAppend) {
+	DynamicArray<DynamicArrayStruct> array;
+	const DynamicArrayStruct buf[] = {
+		DynamicArrayStruct(core::String(1024, 'a'), 0),
+		DynamicArrayStruct(core::String(1024, 'b'), 1),
+		DynamicArrayStruct(core::String(4096, 'c'), 2),
+		DynamicArrayStruct(core::String(1337, 'd'), 3)
+	};
+	array.append(buf, 2);
+	ASSERT_EQ(2u, array.size());
+	EXPECT_EQ(0, array[0]._bar);
+	EXPECT_EQ(1, array[1]._bar);
+	array.append(&buf[2], 2);
+	ASSERT_EQ(4u, array.size());
+	EXPECT_EQ(2, array[2]._bar);
+	EXPECT_EQ(3, array[3]._bar);
+}
+
+TEST(DynamicArrayTest, testInsertSingle) {
+	const DynamicArrayStruct buf[] = {
+		DynamicArrayStruct(core::String(1024, 'a'), 0),
+		DynamicArrayStruct(core::String(1024, 'b'), 1)
+	};
+	DynamicArray<DynamicArrayStruct> array;
+	array.reserve(2);
+	array.insert(array.begin(), &buf[0], 1);
+	array.insert(array.begin(), &buf[1], 1);
+	ASSERT_EQ(2u, array.size());
+	EXPECT_EQ(1, array[0]._bar);
+	EXPECT_EQ(0, array[1]._bar);
+}
+
+TEST(DynamicArrayTest, testInsertMultiple) {
+	const DynamicArrayStruct buf[] = {
+		DynamicArrayStruct(core::String(1024, 'a'), 0),
+		DynamicArrayStruct(core::String(1024, 'b'), 1)
+	};
+	DynamicArray<DynamicArrayStruct> array;
+	array.reserve(2);
+	array.insert(array.begin(), buf, 2);
+	ASSERT_EQ(2u, array.size());
+	EXPECT_EQ(0, array[0]._bar);
+	EXPECT_EQ(1, array[1]._bar);
+}
+
+TEST(DynamicArrayTest, testInsertMiddle) {
+	const DynamicArrayStruct buf[] = {
+		DynamicArrayStruct(core::String(1024, 'a'), 0),
+		DynamicArrayStruct(core::String(1024, 'b'), 1),
+		DynamicArrayStruct(core::String(4096, 'c'), 2),
+		DynamicArrayStruct(core::String(1337, 'd'), 3),
+		DynamicArrayStruct(core::String(0xEE, 'e'), 4),
+		DynamicArrayStruct(core::String(0xFF, 'f'), 5)
+	};
+	DynamicArray<DynamicArrayStruct> array;
+	array.reserve(32);
+	array.insert(array.begin(), &buf[0], 4);
+	ASSERT_EQ(4u, array.size());
+	EXPECT_EQ(0, array[0]._bar);
+	EXPECT_EQ(1, array[1]._bar);
+	EXPECT_EQ(2, array[2]._bar);
+	EXPECT_EQ(3, array[3]._bar);
+
+	array.insert(core::next(array.begin(), 2), buf, 6);
+	ASSERT_EQ(10u, array.size());
+	EXPECT_EQ(0, array[0]._bar); // previously at [0]
+	EXPECT_EQ(1, array[1]._bar); // previously at [1]
+
+	EXPECT_EQ(0, array[2]._bar); // new insert complete array - 6 entries - 0-5
+	EXPECT_EQ(1, array[3]._bar);
+	EXPECT_EQ(2, array[4]._bar);
+	EXPECT_EQ(3, array[5]._bar);
+	EXPECT_EQ(4, array[6]._bar);
+	EXPECT_EQ(5, array[7]._bar);
+
+	EXPECT_EQ(2, array[8]._bar); // previously at [2]
+	EXPECT_EQ(3, array[9]._bar); // previously at [3]
+}
+
+TEST(DynamicArrayTest, testInsertMiddleInt) {
+	const int buf[] = {
+		0,
+		1,
+		2,
+		3,
+		4,
+		5
+	};
+	DynamicArray<int> array;
+	array.reserve(32);
+	array.insert(array.begin(), buf, 6);
+	array.insert(array.begin(), buf, 6);
+	array.insert(core::next(array.begin(), 4), buf, 1);
+	ASSERT_EQ(13u, array.size());
+	EXPECT_EQ(0, array[0]);
+	EXPECT_EQ(1, array[1]);
+	EXPECT_EQ(2, array[2]);
+	EXPECT_EQ(3, array[3]);
+	EXPECT_EQ(0, array[4]);
+	EXPECT_EQ(4, array[5]);
+	EXPECT_EQ(5, array[6]);
+	EXPECT_EQ(0, array[7]);
+	EXPECT_EQ(1, array[8]);
+	EXPECT_EQ(2, array[9]);
+	EXPECT_EQ(3, array[10]);
+	EXPECT_EQ(4, array[11]);
+	EXPECT_EQ(5, array[12]);
+}
+
+TEST(DynamicArrayTest, testInsertMiddleDynamicArrayStruct) {
+	const DynamicArrayStruct buf[] = {
+		DynamicArrayStruct(core::String(1024, 'a'), 0),
+		DynamicArrayStruct(core::String(1024, 'b'), 1),
+		DynamicArrayStruct(core::String(4096, 'c'), 2),
+		DynamicArrayStruct(core::String(1337, 'd'), 3),
+		DynamicArrayStruct(core::String(0xEE, 'e'), 4),
+		DynamicArrayStruct(core::String(0xFF, 'f'), 5)
+	};
+	DynamicArray<DynamicArrayStruct> array;
+	array.reserve(32);
+	array.insert(array.begin(), buf, 6);
+	array.insert(array.begin(), buf, 6);
+	array.insert(core::next(array.begin(), 4), buf, 1);
+	ASSERT_EQ(13u, array.size());
+	EXPECT_EQ(0, array[0]._bar);
+	EXPECT_EQ(1, array[1]._bar);
+	EXPECT_EQ(2, array[2]._bar);
+	EXPECT_EQ(3, array[3]._bar);
+	EXPECT_EQ(0, array[4]._bar);
+	EXPECT_EQ(4, array[5]._bar);
+	EXPECT_EQ(5, array[6]._bar);
+	EXPECT_EQ(0, array[7]._bar);
+	EXPECT_EQ(1, array[8]._bar);
+	EXPECT_EQ(2, array[9]._bar);
+	EXPECT_EQ(3, array[10]._bar);
+	EXPECT_EQ(4, array[11]._bar);
+	EXPECT_EQ(5, array[12]._bar);
+}
+
+TEST(DynamicArrayTest, testInsertIterMultiple) {
+	const DynamicArrayStruct buf[] = {
+		DynamicArrayStruct(core::String(1024, 'a'), 0),
+		DynamicArrayStruct(core::String(1024, 'b'), 1),
+		DynamicArrayStruct(core::String(4096, 'c'), 2),
+		DynamicArrayStruct(core::String(1337, 'd'), 3),
+		DynamicArrayStruct(core::String(0xEE, 'e'), 4),
+		DynamicArrayStruct(core::String(0xFF, 'f'), 5)
+	};
+	DynamicArray<DynamicArrayStruct> other;
+	other.insert(other.begin(), buf, 6);
+
+	DynamicArray<DynamicArrayStruct> array;
+	array.insert(array.begin(), other.begin(), other.end());
+}
+
 }
