@@ -171,6 +171,7 @@ public:
 			return _ptr == rhs._ptr;
 		}
 	};
+	using const_iterator = iterator;
 
 	template<typename... _Args>
 	void emplace_back(_Args&&... args) {
@@ -181,6 +182,13 @@ public:
 	void push_back(const TYPE& val) {
 		checkBufferSize(_size + 1u);
 		new ((void *)&_buffer[_size++]) TYPE(val);
+	}
+
+	void insert(const TYPE* array, size_t n) {
+		checkBufferSize(_size + n);
+		for (size_t i = 0u; i < n; ++i) {
+			new ((void *)&_buffer[_size++]) TYPE(array[i]);
+		}
 	}
 
 	void pop() {
