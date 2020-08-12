@@ -31,7 +31,7 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <SDL.h>
-#include <vector>
+#include "core/collection/DynamicArray.h"
 #include "video/Trace.h"
 #ifdef TRACY_ENABLE
 #include "core/tracy/TracyOpenGL.hpp"
@@ -1282,7 +1282,7 @@ const glm::vec4& framebufferUV() {
 bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
 					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
 	video_trace_scoped(SetupFramebuffer);
-	std::vector<GLenum> attachments;
+	core::DynamicArray<GLenum> attachments;
 	attachments.reserve(core::enumVal(FrameBufferAttachment::Max));
 
 	for (int i = 0; i < core::enumVal(FrameBufferAttachment::Max); ++i) {
@@ -1626,7 +1626,7 @@ bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode
 		// nothing to do is success
 		return true;
 	}
-	std::vector<const GLchar*> transformFeedbackStarts(varyings.size());
+	core::DynamicArray<const GLchar*> transformFeedbackStarts(varyings.size());
 	for (auto& transformFeedbackVaryings : varyings) {
 		transformFeedbackStarts.push_back(transformFeedbackVaryings.c_str());
 	}
