@@ -13,6 +13,7 @@
 #include "backend/entity/ai/condition/LUACondition.h"
 #include "backend/entity/ai/filter/LUAFilter.h"
 #include "backend/entity/ai/movement/LUASteering.h"
+#include <map>
 
 namespace backend {
 

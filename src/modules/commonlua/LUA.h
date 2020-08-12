@@ -8,9 +8,9 @@ extern "C" {
 #include <lauxlib.h>
 #include <lualib.h>
 }
-#include <vector>
+
+#include "core/collection/DynamicArray.h"
 #include "core/String.h"
-#include <map>
 #include <memory>
 
 #include "core/Log.h"
@@ -42,7 +42,7 @@ struct LUAFunction {
 			name(_name), func(_func) {
 	}
 };
-using LUAFunctions = std::vector<lua::LUAFunction>;
+using LUAFunctions = core::DynamicArray<lua::LUAFunction>;
 
 class LUA : public core::NonCopyable {
 private:
@@ -137,7 +137,7 @@ public:
 	void reg(const core::String& prefix, const luaL_Reg* funcs);
 
 	void reg(const core::String& prefix, const LUAFunctions& funcs) {
-		std::vector<luaL_Reg> f;
+		core::DynamicArray<luaL_Reg> f;
 		f.reserve(funcs.size());
 		for (const auto& func : funcs) {
 			f.emplace_back(luaL_Reg{func.name.c_str(), func.func});
