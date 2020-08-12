@@ -10,8 +10,6 @@ extern "C" {
 }
 
 #include "core/String.h"
-#include <memory>
-
 #include "core/Log.h"
 #include "core/NonCopyable.h"
 
@@ -175,8 +173,6 @@ inline void LUA::setError(const core::String& error) {
 inline const core::String& LUA::error() const {
 	return _error;
 }
-
-typedef std::shared_ptr<LUA> LUAPtr;
 
 }
 

@@ -12,7 +12,6 @@
 #include <glm/vec4.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
-#include <vector>
 
 extern void clua_assert(lua_State* s, bool pass, const char *msg);
 extern void clua_assert_argc(lua_State* s, bool pass);
