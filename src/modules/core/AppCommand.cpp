@@ -3,7 +3,6 @@
  */
 
 #include "AppCommand.h"
-#include <vector>
 #include "command/Command.h"
 #include "core/io/Filesystem.h"
 #include "util/VarUtil.h"
