@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Martin Gerhardy <martin.gerhardy@gmail.com>
 Build-Depends:
  cmake,
- debhelper (>=11~),
+ debhelper (>=10~),
  libsdl2-dev,
  postgresql-server-dev-all,
  libpq-dev,
