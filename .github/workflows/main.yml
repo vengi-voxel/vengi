@@ -38,7 +38,7 @@ jobs:
             ctest -V -C Debug -R tests-voxelworld$
             ctest -V -C Debug -R tests-voxelworldrender$
     packages:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         steps:
         - uses: actions/checkout@v1
         - name: Linux
@@ -52,7 +52,7 @@ jobs:
             name: debian
             path: vengi*.deb
     linux:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         steps:
         - uses: actions/checkout@v1
         - name: Linux
