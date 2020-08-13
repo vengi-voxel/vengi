@@ -204,14 +204,14 @@ bool RawVolumeRenderer::update(int idx) {
 		core_free(verticesBuf);
 		return false;
 	}
+	core_free(verticesBuf);
+
 	if (!_vertexBuffer[idx].update(_indexBufferIndex[idx], indicesBuf, indicesBufSize)) {
 		Log::error("Failed to update the index buffer");
 		core_free(indicesBuf);
-		core_free(verticesBuf);
 		return false;
 	}
 	core_free(indicesBuf);
-	core_free(verticesBuf);
 	return true;
 }
 
