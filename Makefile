@@ -21,7 +21,7 @@ distclean:
 	$(Q)git clean -fdx
 
 deb:
-	$(Q)debuild -b -ui -uc -us --buildinfo-option=-u.
+	$(Q)debuild -b -ui -uc -us
 
 crosscompile:
 	$(Q)dockcross $(CMAKE) -H. -B$(BUILDDIR) $(CMAKE_OPTIONS)
