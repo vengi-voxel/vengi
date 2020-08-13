@@ -47,9 +47,22 @@ public:
 
 	constexpr void fill(const TYPE& value) {
 		for (size_t i = 0u; i < SIZE; ++i) {
+			if (i < _size) {
+				_items[i].~TYPE();
+			}
 			_items[i] = value;
 		}
 		_size = SIZE;
+	}
+
+	constexpr void assign(const TYPE& value, size_t n) {
+		for (size_t i = 0u; i < n; ++i) {
+			if (i < _size) {
+				_items[i].~TYPE();
+			}
+			_items[i] = value;
+		}
+		_size = core_max(_size, n);
 	}
 
 	template<typename... _Args>
