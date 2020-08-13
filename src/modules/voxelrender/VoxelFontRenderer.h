@@ -11,7 +11,6 @@
 #include "video/Buffer.h"
 #include "voxelfont/VoxelFont.h"
 #include "RenderShaders.h"
-#include <limits>
 #include <vector>
 
 namespace voxelrender {
@@ -37,7 +36,7 @@ private:
 	int32_t _vertexBufferIndexId = -1;
 	glm::mat4 _viewProjectionMatrix { 1.0f };
 	glm::mat4 _modelMatrix { 1.0f };
-	std::vector<uint32_t> _indices;
+	voxel::IndexArray _indices;
 	VertexData _data;
 	const int _fontSize;
 	const int _depth;
@@ -68,7 +67,7 @@ public:
 	 */
 	void render();
 
-	inline int stringWidth(const char *str, int length = (std::numeric_limits<int>::max)()) const {
+	inline int stringWidth(const char *str, int length) const {
 		return _voxelFont.stringWidth(str, length);
 	}
 

@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include "core/UTF8.h"
 #include "core/StringUtil.h"
-#include <limits>
+#include <vector>
 
 struct stbtt_fontinfo;
 
@@ -54,7 +54,7 @@ public:
 	bool init(const char* font, uint8_t fontSize, int thickness, uint8_t optionMask, const char* glyphs);
 	void shutdown();
 
-	int stringWidth(const char *str, int length = (std::numeric_limits<int>::max)()) const;
+	int stringWidth(const char *str, int length) const;
 
 	inline int lineHeight() const {
 		return _size;

@@ -272,7 +272,7 @@ void TestTraze::onEvent(const traze::PlayerListEvent& event) {
 	_players = event.get();
 	_maxLength = 200;
 	for (const traze::Player& p : _players) {
-		_maxLength = core_max(_maxLength, _voxelFontRender.stringWidth(p.name.c_str()) + 60);
+		_maxLength = core_max(_maxLength, _voxelFontRender.stringWidth(p.name.c_str(), p.name.size()) + 60);
 	}
 }
 
@@ -350,7 +350,7 @@ void TestTraze::doRender() {
 
 	if (!_protocol.connected()) {
 		const char* connecting = "Connecting";
-		const int w = _voxelFontRender.stringWidth(connecting);
+		const int w = _voxelFontRender.stringWidth(connecting, SDL_strlen(connecting));
 		_voxelFontRender.setModelMatrix(glm::translate(glm::vec3(dim.x / 2 - w / 2, dim.y / 2 - _voxelFontRender.lineHeight() / 2, 0.0f)));
 		const glm::ivec3 pos(0, 0, 0);
 		_voxelFontRender.text(pos, core::Color::Red, "%s", connecting);
