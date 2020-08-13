@@ -48,7 +48,7 @@ private:
 	static Command* _sortedCommandList[4096];
 
 	static double _delaySeconds;
-	static std::vector<core::String> _delayedTokens;
+	static core::DynamicArray<core::String> _delayedTokens;
 
 	core::String _name;
 	const char* _help;

@@ -11,7 +11,7 @@ namespace core {
 
 Command::CommandMap Command::_cmds;
 ReadWriteLock Command::_lock("Command");
-std::vector<core::String> Command::_delayedTokens;
+core::DynamicArray<core::String> Command::_delayedTokens;
 double Command::_delaySeconds = 0.0;
 size_t  Command::_sortedCommandListSize = 0u;
 Command* Command::_sortedCommandList[4096] {};
@@ -96,7 +96,7 @@ int Command::update(double deltaFrameSeconds) {
 		return 0;
 	}
 	// make a copy - it might get modified inside the execute call
-	std::vector<core::String> copy = _delayedTokens;
+	core::DynamicArray<core::String> copy = _delayedTokens;
 	_delayedTokens.clear();
 	int executed = 0;
 	for (const core::String& fullCmd : copy) {
