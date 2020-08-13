@@ -28,7 +28,14 @@ NodeTreeItem::NodeTreeItem (QGraphicsItem* parentGraphicsItem, const AIStateNode
 	_condition = QString(_node.getCondition().c_str());
 	_name = QString(staticNodeData.getName().c_str());
 	_type = QString(staticNodeData.getType().c_str());
-	_width = core_max(130, core_max(fontMetrics.width(_name), fontMetrics.width(_condition)));
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 13, 0))
+	const int nameWidth = fontMetrics.horizontalAdvance(_name);
+	const int conditionWidth = fontMetrics.horizontalAdvance(_condition);
+#else
+	const int nameWidth = fontMetrics.width(_name);
+	const int conditionWidth = fontMetrics.width(_condition);
+#endif
+	_width = core_max(130, core_max(nameWidth, conditionWidth));
 	_lineHeight = fontMetrics.lineSpacing();
 }
 
