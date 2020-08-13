@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
+#include "core/collection/Vector.h"
+#include "voxel/Constants.h"
 #include "voxel/Voxel.h"
 #include "core/Assert.h"
 #include "core/Common.h"
@@ -69,8 +72,8 @@ void createCube(Volume& volume, const glm::ivec3& center, int width, int height,
 	const int heightLow = height / 2;
 	const int widthLow = width / 2;
 	const int depthLow = depth / 2;
-	std::vector<voxel::Voxel> voxels;
-	voxels.assign(height, voxel);
+	core::Vector<voxel::Voxel, voxel::MAX_HEIGHT> voxels;
+	voxels.assign(voxel, height);
 	volume.setVoxels(center.x - widthLow, center.y - heightLow, center.z - depthLow,
 			width, depth, &voxels.front(), height);
 }
