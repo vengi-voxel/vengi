@@ -121,6 +121,18 @@ public:
 			return *this;
 		}
 
+		iterator operator++(int) {
+			return iterator(_ptr++);
+		}
+
+		iterator operator--(int) {
+			return iterator(_ptr--);
+		}
+
+		int operator-(iterator rhs) const {
+			return (int)(intptr_t)(_ptr - rhs._ptr);
+		}
+
 		iterator& operator+(size_t n) {
 			_ptr += n;
 			return *this;
@@ -128,6 +140,21 @@ public:
 
 		iterator& operator+=(size_t n) {
 			_ptr += n;
+			return *this;
+		}
+
+		iterator& operator--() {
+			--_ptr;
+			return *this;
+		}
+
+		iterator& operator-(size_t n) {
+			_ptr -= n;
+			return *this;
+		}
+
+		iterator& operator-=(size_t n) {
+			_ptr -= n;
 			return *this;
 		}
 
@@ -147,6 +174,7 @@ public:
 			return _ptr == rhs._ptr;
 		}
 	};
+	using const_iterator = iterator;
 
 	void push_back(const TYPE& val) {
 		checkBufferSize(_size + 1u);
@@ -199,6 +227,87 @@ public:
 		_capacity = 0u;
 		_size = 0u;
 		_buffer = nullptr;
+	}
+
+	void append(const TYPE* array, size_t n) {
+		checkBufferSize(_size + n);
+		for (size_t i = 0u; i < n; ++i) {
+			_buffer[_size++] = array[i];
+		}
+	}
+
+	inline void insert(iterator pos, const TYPE& value) {
+		insert(pos, &value, 1);
+	}
+
+	void insert(iterator pos, const TYPE* array, size_t n) {
+		if (n == 0) {
+			return;
+		}
+		if (pos == end()) {
+			append(array, n);
+			return;
+		}
+
+		const size_t startIdx = index(pos);
+		size_t s = _size - 1;
+		size_t t = s + n;
+
+		// TODO: this can be optimized by only calling the move ctor once
+		checkBufferSize(_size + n);
+
+		const size_t cnt = _size - startIdx;
+		for (size_t i = 0; i < cnt; ++i, --s, --t) {
+			_buffer[t] = core::move(_buffer[s]);
+			if (s == 0) {
+				break;
+			}
+		}
+
+		for (size_t i = 0u; i < n; ++i) {
+			_buffer[startIdx + i] = array[i];
+		}
+		_size += n;
+	}
+
+	template<typename ITER>
+	void insert(iterator pos, ITER first, ITER last) {
+		if (first == last) {
+			return;
+		}
+
+		const int n = last - first;
+
+		if (pos == end()) {
+			// TODO: this can be optimized by only calling the move ctor once
+			checkBufferSize(_size + n);
+
+			for (ITER i = first; i != last; ++i) {
+				_buffer[_size++] = *i;
+			}
+			return;
+		}
+
+		size_t startIdx = index(pos);
+
+		// TODO: this can be optimized by only calling the move ctor once
+		checkBufferSize(_size + n);
+
+		size_t s = _size - 1;
+		size_t t = s + n;
+
+		const size_t cnt = _size - startIdx;
+		for (size_t i = 0; i < cnt; ++i, --s, --t) {
+			_buffer[t] = core::move(_buffer[s]);
+			if (s == 0) {
+				break;
+			}
+		}
+
+		for (ITER i = first; i != last; ++i) {
+			_buffer[startIdx++] = *i;
+		}
+		_size += n;
 	}
 
 	void erase(size_t index, size_t n) {
