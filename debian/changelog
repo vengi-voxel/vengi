@@ -3,6 +3,10 @@ vengi (0.0.7.0-1) UNRELEASED; urgency=low
   * General:
   * Fixed wrong-name-for-symlinks shown
   * Added support for writing qef files
+  * Added lua script interface to generate voxels
+
+  * VoxEdit:
+  * Converted some voxel generation functions to lua
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 2 Aug 2020 10:59:07 +0200
 

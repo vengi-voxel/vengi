@@ -8,6 +8,11 @@ General:
 
    - Fixed wrong-name-for-symlinks shown
    - Added support for writing qef files
+   - Added lua script interface to generate voxels
+
+VoxEdit:
+
+   - Converted some voxel generation functions to lua
 
 ## 0.0.6 (2020-08-02)
 
