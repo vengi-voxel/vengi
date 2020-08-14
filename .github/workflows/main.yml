@@ -21,29 +21,29 @@ jobs:
         - name: Test
           run: |
             cd build
-            ctest -V -C Debug -R tests-animation$
-            ctest -V -C Debug -R tests-attrib$
-            ctest -V -C Debug -R tests-computeshadertool$
-            ctest -V -C Debug -R tests-cooldown$
-            ctest -V -C Debug -R tests-core$
-            ctest -V -C Debug -R tests-eventmgr$
-            ctest -V -C Debug -R tests-math$
-            ctest -V -C Debug -R tests-persistence$
-            ctest -V -C Debug -R tests-poi$
-            ctest -V -C Debug -R tests-shadertool$
-            ctest -V -C Debug -R tests-stock$
-            ctest -V -C Debug -R tests-testtraze$
-            ctest -V -C Debug -R tests-util$
-            ctest -V -C Debug -R tests-uuid$
-            ctest -V -C Debug -R tests-video$
-            ctest -V -C Debug -R tests-voxedit-util$
-            ctest -V -C Debug -R tests-voxel$
-            ctest -V -C Debug -R tests-voxelformat$
-            ctest -V -C Debug -R tests-voxelgenerator$
-            ctest -V -C Debug -R tests-voxelrender$
-            ctest -V -C Debug -R tests-voxelutil$
-            ctest -V -C Debug -R tests-voxelworld$
-            ctest -V -C Debug -R tests-voxelworldrender$
+            ctest -V -R tests-animation$
+            ctest -V -R tests-attrib$
+            ctest -V -R tests-computeshadertool$
+            ctest -V -R tests-cooldown$
+            ctest -V -R tests-core$
+            ctest -V -R tests-eventmgr$
+            ctest -V -R tests-math$
+            ctest -V -R tests-persistence$
+            ctest -V -R tests-poi$
+            ctest -V -R tests-shadertool$
+            ctest -V -R tests-stock$
+            ctest -V -R tests-testtraze$
+            ctest -V -R tests-util$
+            ctest -V -R tests-uuid$
+            ctest -V -R tests-video$
+            ctest -V -R tests-voxedit-util$
+            ctest -V -R tests-voxel$
+            ctest -V -R tests-voxelformat$
+            ctest -V -R tests-voxelgenerator$
+            ctest -V -R tests-voxelrender$
+            ctest -V -R tests-voxelutil$
+            ctest -V -R tests-voxelworld$
+            ctest -V -R tests-voxelworldrender$
 
     packages:
         runs-on: ubuntu-20.04
@@ -94,29 +94,29 @@ jobs:
         - name: Test
           run: |
             cd build
-            ctest -V -C Debug -R tests-animation$
-            ctest -V -C Debug -R tests-attrib$
-            ctest -V -C Debug -R tests-computeshadertool$
-            ctest -V -C Debug -R tests-cooldown$
-            ctest -V -C Debug -R tests-core$
-            ctest -V -C Debug -R tests-eventmgr$
-            ctest -V -C Debug -R tests-math$
-            ctest -V -C Debug -R tests-persistence$
-            ctest -V -C Debug -R tests-poi$
-            ctest -V -C Debug -R tests-shadertool$
-            ctest -V -C Debug -R tests-stock$
-            ctest -V -C Debug -R tests-testtraze$
-            ctest -V -C Debug -R tests-util$
-            ctest -V -C Debug -R tests-uuid$
-            ctest -V -C Debug -R tests-video$
-            ctest -V -C Debug -R tests-voxedit-util$
-            ctest -V -C Debug -R tests-voxel$
-            ctest -V -C Debug -R tests-voxelformat$
-            ctest -V -C Debug -R tests-voxelgenerator$
-            ctest -V -C Debug -R tests-voxelrender$
-            ctest -V -C Debug -R tests-voxelutil$
-            ctest -V -C Debug -R tests-voxelworld$
-            ctest -V -C Debug -R tests-voxelworldrender$
+            ctest -V -R tests-animation$
+            ctest -V -R tests-attrib$
+            ctest -V -R tests-computeshadertool$
+            ctest -V -R tests-cooldown$
+            ctest -V -R tests-core$
+            ctest -V -R tests-eventmgr$
+            ctest -V -R tests-math$
+            ctest -V -R tests-persistence$
+            ctest -V -R tests-poi$
+            ctest -V -R tests-shadertool$
+            ctest -V -R tests-stock$
+            ctest -V -R tests-testtraze$
+            ctest -V -R tests-util$
+            ctest -V -R tests-uuid$
+            ctest -V -R tests-video$
+            ctest -V -R tests-voxedit-util$
+            ctest -V -R tests-voxel$
+            ctest -V -R tests-voxelformat$
+            ctest -V -R tests-voxelgenerator$
+            ctest -V -R tests-voxelrender$
+            ctest -V -R tests-voxelutil$
+            ctest -V -R tests-voxelworld$
+            ctest -V -R tests-voxelworldrender$
 
     windows:
         runs-on: windows-latest
@@ -151,27 +151,27 @@ jobs:
         - name: Tests
           run: |
             cd build
-            ctest -V -C Debug -R tests-animation$
-            ctest -V -C Debug -R tests-attrib$
-            ctest -V -C Debug -R tests-computeshadertool$
-            ctest -V -C Debug -R tests-cooldown$
-            ctest -V -C Debug -R tests-core$
-            ctest -V -C Debug -R tests-eventmgr$
-            ctest -V -C Debug -R tests-math$
-            ctest -V -C Debug -R tests-persistence$
-            ctest -V -C Debug -R tests-poi$
-            ctest -V -C Debug -R tests-shadertool$
-            ctest -V -C Debug -R tests-stock$
-            ctest -V -C Debug -R tests-util$
-            ctest -V -C Debug -R tests-uuid$
-            ctest -V -C Debug -R tests-video$
-            ctest -V -C Debug -R tests-voxedit-util$
-            ctest -V -C Debug -R tests-voxel$
-            ctest -V -C Debug -R tests-voxelformat$
-            ctest -V -C Debug -R tests-voxelgenerator$
-            ctest -V -C Debug -R tests-voxelrender$
-            ctest -V -C Debug -R tests-voxelutil$
-            ctest -V -C Debug -R tests-voxelworld$
+            ctest -V -R tests-animation$
+            ctest -V -R tests-attrib$
+            ctest -V -R tests-computeshadertool$
+            ctest -V -R tests-cooldown$
+            ctest -V -R tests-core$
+            ctest -V -R tests-eventmgr$
+            ctest -V -R tests-math$
+            ctest -V -R tests-persistence$
+            ctest -V -R tests-poi$
+            ctest -V -R tests-shadertool$
+            ctest -V -R tests-stock$
+            ctest -V -R tests-util$
+            ctest -V -R tests-uuid$
+            ctest -V -R tests-video$
+            ctest -V -R tests-voxedit-util$
+            ctest -V -R tests-voxel$
+            ctest -V -R tests-voxelformat$
+            ctest -V -R tests-voxelgenerator$
+            ctest -V -R tests-voxelrender$
+            ctest -V -R tests-voxelutil$
+            ctest -V -R tests-voxelworld$
 
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v2
