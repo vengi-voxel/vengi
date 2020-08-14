@@ -61,6 +61,7 @@ bool Modifier::aabbStart() {
 	// the order here matters - don't change _aabbMode earlier here
 	_aabbFirstPos = aabbPosition();
 	_secondPosValid = false;
+	_aabbSecondActionDirection = math::Axis::None;
 	_aabbMode = true;
 	return true;
 }
@@ -248,11 +249,13 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 		executeShapeAction(wrapper, minsMirror, maxsMirror, callback);
 	}
 	_secondPosValid = false;
+	_aabbSecondActionDirection = math::Axis::None;
 	return true;
 }
 
 void Modifier::aabbStop() {
 	_secondPosValid = false;
+	_aabbSecondActionDirection = math::Axis::None;
 	_aabbMode = false;
 }
 
