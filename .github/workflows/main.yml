@@ -1,4 +1,4 @@
-name: build
+name: Build
 
 on: [push, pull_request]
 
@@ -7,13 +7,20 @@ jobs:
         runs-on: macos-latest
         steps:
         - uses: actions/checkout@v1
-        - name: macOS
+
+        - name: Setup
+          run: brew install qt5 mosquitto libuv sdl2 libpq sdl2_mixer
+
+        - name: Build
           run: |
-            brew install qt5 mosquitto libuv sdl2 libpq sdl2_mixer
             mkdir build
             cd build
             cmake ..
             make -j 2
+
+        - name: Test
+          run: |
+            cd build
             ctest -V -C Debug -R tests-animation$
             ctest -V -C Debug -R tests-attrib$
             ctest -V -C Debug -R tests-computeshadertool$
@@ -37,33 +44,56 @@ jobs:
             ctest -V -C Debug -R tests-voxelutil$
             ctest -V -C Debug -R tests-voxelworld$
             ctest -V -C Debug -R tests-voxelworldrender$
+
     packages:
         runs-on: ubuntu-20.04
         steps:
         - uses: actions/checkout@v1
-        - name: Linux
+
+        - name: Setup
           run: |
             sudo apt-get update
             sudo apt-get install cmake debhelper devscripts build-essential lintian libsdl2-dev libuv1-dev libsdl2-mixer-dev postgresql-server-dev-all libpq-dev libenet-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers wayland-protocols pkg-config uuid-dev
+
+        - name: Ubuntu
+          run: |
             debuild -b -ui -uc -us
             mv ../*.deb .
-        - name: Upload the artifacts
+
+        - name: Upload the ubuntu artifacts
           uses: actions/upload-artifact@v2
           with:
             name: debian
             path: vengi*.deb
+
+        - name: Upload the ubuntu release artifacts
+          if: startsWith(github.ref, 'refs/tags/')
+          uses: Roang-zero1/github-upload-release-artifacts-action@master
+          with:
+            args: vengi*.deb
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     linux:
         runs-on: ubuntu-20.04
         steps:
         - uses: actions/checkout@v1
-        - name: Linux
+
+        - name: Setup
           run: |
             sudo apt-get update
             sudo apt-get install libsdl2-dev postgresql-server-dev-10 libpq-dev libenet-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers wayland-protocols pkg-config uuid-dev
+
+        - name: Linux
+          run: |
             mkdir build
             cd build
             cmake ..
             make -j 2
+
+        - name: Test
+          run: |
+            cd build
             ctest -V -C Debug -R tests-animation$
             ctest -V -C Debug -R tests-attrib$
             ctest -V -C Debug -R tests-computeshadertool$
@@ -87,21 +117,29 @@ jobs:
             ctest -V -C Debug -R tests-voxelutil$
             ctest -V -C Debug -R tests-voxelworld$
             ctest -V -C Debug -R tests-voxelworldrender$
+
     windows:
         runs-on: windows-latest
+
         steps:
         - uses: actions/checkout@v1
-        - name: Install vcpkg and packages
+
+        - name: Setup
           uses: lukka/run-vcpkg@v2
           id: runvcpkg
+          env:
+            VCPKG_DEFAULT_TRIPLET: x64-windows
+            VCPKG_BUILD_TYPE: release
           with:
             vcpkgGitCommitId: 2f7a104d4d6f1f3790db929f85a4086aa6973d7f
             vcpkgTriplet: 'x64-windows'
             vcpkgArguments: 'libpq'
-        - name: Windows
+
+        - name: Build
+          env:
+            VCPKG_DEFAULT_TRIPLET: x64-windows
+            VCPKG_BUILD_TYPE: release
           run: |
-            set VCPKG_DEFAULT_TRIPLET=x64-windows
-            set VCPKG_BUILD_TYPE=release
             mkdir build
             cd build
             cmake .. -DRCON=OFF -DCMAKE_BUILD_TYPE=Release
@@ -109,6 +147,10 @@ jobs:
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component mapview --prefix mapview-install
             cmake --install . --component voxconvert --prefix voxconvert-install
+
+        - name: Tests
+          run: |
+            cd build
             ctest -V -C Debug -R tests-animation$
             ctest -V -C Debug -R tests-attrib$
             ctest -V -C Debug -R tests-computeshadertool$
@@ -130,16 +172,19 @@ jobs:
             ctest -V -C Debug -R tests-voxelrender$
             ctest -V -C Debug -R tests-voxelutil$
             ctest -V -C Debug -R tests-voxelworld$
+
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v2
           with:
             name: voxedit
             path: build/voxedit-install/
+
         - name: Upload the mapview artifacts
           uses: actions/upload-artifact@v2
           with:
             name: mapview
             path: build/mapview-install/
+
         - name: Upload the voxconvert artifacts
           uses: actions/upload-artifact@v2
           with:
