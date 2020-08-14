@@ -7,12 +7,14 @@ set(SRCS
 	TreeGenerator.h TreeGenerator.cpp
 	TreeContext.h
 	LSystem.h LSystem.cpp
+	LUAGenerator.h LUAGenerator.cpp
 	NoiseGenerator.h NoiseGenerator.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil noise)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel voxelutil noise commonlua)
 
 set(TEST_SRCS
 	tests/LSystemTest.cpp
+	tests/LUAGeneratorTest.cpp
 )
 
 gtest_suite_sources(tests ${TEST_SRCS})

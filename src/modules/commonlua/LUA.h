@@ -57,6 +57,9 @@ public:
 	~LUA();
 
 	lua_State* state() const;
+	inline operator lua_State*() const {
+		return state();
+	}
 
 	/**
 	 * @return @c false if the state is not managed by this instance

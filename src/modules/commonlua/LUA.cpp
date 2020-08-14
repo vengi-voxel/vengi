@@ -72,6 +72,8 @@ LUA::~LUA() {
 }
 
 void LUA::openState() {
+	_error.clear();
+
 	_state = luaL_newstate();
 
 	luaL_openlibs(_state);
