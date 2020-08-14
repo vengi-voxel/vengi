@@ -50,7 +50,7 @@ jobs:
           uses: actions/upload-artifact@v2
           with:
             name: debian
-            path: vengi*.deb
+            path: ../vengi*.deb
     linux:
         runs-on: ubuntu-20.04
         steps:
