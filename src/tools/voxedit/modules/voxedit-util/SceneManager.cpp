@@ -871,6 +871,28 @@ void SceneManager::construct() {
 	_mementoHandler.construct();
 	_volumeRenderer.construct();
 
+	core::Command::registerCommand("xs", [&] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::error("Usage: xs <lua-generator-script-filename>");
+			return;
+		}
+		const core::String luaScript = io::filesystem()->load(args[0]);
+		if (luaScript.empty()) {
+			Log::error("Failed to load %s", args[0].c_str());
+			return;
+		}
+		const int layerId = _layerMgr.activeLayer();
+		voxel::RawVolumeWrapper wrapper(volume(layerId));
+		// TODO: limit region to selection
+		const voxel::Region& region = wrapper.region();
+		if (!_luaGenerator.exec(luaScript, &wrapper, region, _modifier.cursorVoxel())) {
+			Log::error("Failed to execute %s", args[0].c_str());
+		} else {
+			Log::info("Executed script %s", args[0].c_str());
+			modified(layerId, wrapper.dirtyRegion());
+		}
+	}).setHelp("Executes a lua script to modify the current active volume");
+
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "1");
 
@@ -1503,6 +1525,11 @@ bool SceneManager::init() {
 		return false;
 	}
 
+	if (!_luaGenerator.init()) {
+		Log::error("Failed to initialize the lua generator bindings");
+		return false;
+	}
+
 	_layerMgr.registerListener(this);
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
@@ -1630,6 +1657,7 @@ void SceneManager::shutdown() {
 		delete v;
 	}
 
+	_luaGenerator.shutdown();
 	_volumeCache.shutdown();
 	_mementoHandler.shutdown();
 	_modifier.shutdown();

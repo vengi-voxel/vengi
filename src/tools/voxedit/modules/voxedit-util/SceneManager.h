@@ -9,6 +9,7 @@
 #include "voxelgenerator/TreeContext.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/NoiseGenerator.h"
+#include "voxelgenerator/LUAGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"
@@ -153,6 +154,8 @@ private:
 	voxel::PickResult _result;
 	// existing voxel under the cursor
 	voxel::Voxel _hitCursorVoxel;
+
+	voxelgenerator::LUAGenerator _luaGenerator;
 
 	voxel::RawVolume* modelVolume();
 	/**
