@@ -31,16 +31,14 @@ namespace shape {
  */
 template<class Volume>
 void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const voxel::Voxel& voxel, math::Axis axis = math::Axis::Y) {
-	const int xRadius = width / 2;
-	const int zRadius = depth / 2;
-	const double minRadius = core_min(xRadius, zRadius);
-	const double ratioX = xRadius / minRadius;
-	const double ratioZ = zRadius / minRadius;
+	const double xRadius = width / 2.0;
+	const double zRadius = depth / 2.0;
 
-	for (int z = -zRadius; z <= zRadius; ++z) {
-		const double distanceZ = glm::pow(z / ratioZ, 2.0);
-		for (int x = -xRadius; x <= xRadius; ++x) {
-			const double distance = glm::pow(x / ratioX, 2.0) + distanceZ;
+	radius = glm::pow(radius, 2.0);
+	for (double z = -zRadius; z <= zRadius; ++z) {
+		const double distanceZ = glm::pow(z, 2.0);
+		for (double x = -xRadius; x <= xRadius; ++x) {
+			const double distance = glm::pow(x, 2.0) + distanceZ;
 			if (distance > radius) {
 				continue;
 			}

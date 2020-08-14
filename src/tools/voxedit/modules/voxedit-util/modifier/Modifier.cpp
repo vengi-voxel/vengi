@@ -139,9 +139,33 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 		}
 		break;
 	}
-	case ShapeType::Cylinder:
-		voxelgenerator::shape::createCylinder(wrapper, centerBottom, math::Axis::Y, (glm::max)(dimensions.x, dimensions.z), dimensions.y, _cursorVoxel);
+	case ShapeType::Cylinder: {
+		math::Axis axis = _aabbSecondActionDirection;
+		if (axis == math::Axis::None) {
+			axis = math::Axis::Y;
+		}
+		double radius;
+		double height;
+		switch (axis) {
+		case math::Axis::X:
+			radius = (glm::max)(dimensions.y, dimensions.z) / 2.0;
+			height = dimensions.x;
+			break;
+		case math::Axis::Y:
+			radius = (glm::max)(dimensions.x, dimensions.z) / 2.0;
+			height = dimensions.y;
+			break;
+		case math::Axis::Z:
+			radius = (glm::max)(dimensions.x, dimensions.y) / 2.0;
+			height = dimensions.z;
+			break;
+		default:
+			return false;
+		}
+
+		voxelgenerator::shape::createCylinder(wrapper, centerBottom, axis, radius, height, _cursorVoxel);
 		break;
+	}
 	case ShapeType::Cone:
 		voxelgenerator::shape::createCone(wrapper, center, dimensions, _cursorVoxel);
 		break;
