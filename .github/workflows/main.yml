@@ -151,27 +151,27 @@ jobs:
         - name: Tests
           run: |
             cd build
-            ctest -V -R tests-animation$
-            ctest -V -R tests-attrib$
-            ctest -V -R tests-computeshadertool$
-            ctest -V -R tests-cooldown$
-            ctest -V -R tests-core$
-            ctest -V -R tests-eventmgr$
-            ctest -V -R tests-math$
-            ctest -V -R tests-persistence$
-            ctest -V -R tests-poi$
-            ctest -V -R tests-shadertool$
-            ctest -V -R tests-stock$
-            ctest -V -R tests-util$
-            ctest -V -R tests-uuid$
-            ctest -V -R tests-video$
-            ctest -V -R tests-voxedit-util$
-            ctest -V -R tests-voxel$
-            ctest -V -R tests-voxelformat$
-            ctest -V -R tests-voxelgenerator$
-            ctest -V -R tests-voxelrender$
-            ctest -V -R tests-voxelutil$
-            ctest -V -R tests-voxelworld$
+            ctest -V -C Release -R tests-animation$
+            ctest -V -C Release -R tests-attrib$
+            ctest -V -C Release -R tests-computeshadertool$
+            ctest -V -C Release -R tests-cooldown$
+            ctest -V -C Release -R tests-core$
+            ctest -V -C Release -R tests-eventmgr$
+            ctest -V -C Release -R tests-math$
+            ctest -V -C Release -R tests-persistence$
+            ctest -V -C Release -R tests-poi$
+            ctest -V -C Release -R tests-shadertool$
+            ctest -V -C Release -R tests-stock$
+            ctest -V -C Release -R tests-util$
+            ctest -V -C Release -R tests-uuid$
+            ctest -V -C Release -R tests-video$
+            ctest -V -C Release -R tests-voxedit-util$
+            ctest -V -C Release -R tests-voxel$
+            ctest -V -C Release -R tests-voxelformat$
+            ctest -V -C Release -R tests-voxelgenerator$
+            ctest -V -C Release -R tests-voxelrender$
+            ctest -V -C Release -R tests-voxelutil$
+            ctest -V -C Release -R tests-voxelworld$
 
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v2
