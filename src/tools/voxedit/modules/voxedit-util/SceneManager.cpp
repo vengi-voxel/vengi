@@ -898,7 +898,8 @@ void SceneManager::construct() {
 			Log::info("Executed script %s", args[0].c_str());
 			modified(layerId, wrapper.dirtyRegion());
 		}
-	}).setHelp("Executes a lua script to modify the current active volume");
+	}).setHelp("Executes a lua script to modify the current active volume")
+		.setArgumentCompleter(core::fileCompleter("", "*.lua"));
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "1");
