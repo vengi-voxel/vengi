@@ -1,12 +1,19 @@
 local perlin = require "modules.perlin"
 
-function main(volume, region, color)
+function arguments()
+	return {
+		{ name = 'freq', desc = 'frequence for the noise function input', type = 'float' },
+		{ name = 'amplitude', desc = 'amplitude to scale the noise noise function output', type = 'float' }
+	}
+end
+
+function main(volume, region, color, freq, amplitude)
 	perlin:load()
 	local mins = region:mins()
 	local maxs = region:maxs()
 	for x = mins.x, maxs.x do
 		for z = mins.z, maxs.z do
-			local maxY = perlin:norm(perlin:noise(x / 10, z / 10, 0.3)) * region:height()
+			local maxY = perlin:norm(amplitude * perlin:noise(x * freq, z * freq, freq)) * region:height()
 			for y = 0, maxY do
 				volume:setVoxel(x, y, z, color)
 			end
