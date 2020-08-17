@@ -338,3 +338,55 @@ bool Log::enable(uint32_t id, Log::Level level) {
 bool Log::disable(uint32_t id) {
 	return _logActive.erase(id) == 1;
 }
+
+void c_logtrace(const char* msg, ...) {
+	if (_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
+		return;
+	}
+	va_list args;
+	va_start(args, msg);
+	traceVA(0u, msg, args);
+}
+
+void c_logdebug(const char* msg, ...) {
+	if (_logLevel > SDL_LOG_PRIORITY_DEBUG) {
+		return;
+	}
+	va_list args;
+	va_start(args, msg);
+	debugVA(0u, msg, args);
+}
+
+void c_loginfo(const char* msg, ...) {
+	if (_logLevel > SDL_LOG_PRIORITY_INFO) {
+		return;
+	}
+	va_list args;
+	va_start(args, msg);
+	infoVA(0u, msg, args);
+}
+
+void c_logwarn(const char* msg, ...) {
+	if (_logLevel > SDL_LOG_PRIORITY_WARN) {
+		return;
+	}
+	va_list args;
+	va_start(args, msg);
+	warnVA(0u, msg, args);
+}
+
+void c_logerror(CORE_FORMAT_STRING const char* msg, ...) {
+	if (_logLevel > SDL_LOG_PRIORITY_ERROR) {
+		return;
+	}
+	va_list args;
+	va_start(args, msg);
+	errorVA(0u, msg, args);
+}
+
+extern "C" void c_logwrite(const char* msg, size_t length) {
+	char buf[bufSize];
+	SDL_memcpy(buf, msg, core_max(bufSize - 1, length));
+	buf[sizeof(buf) - 1] = '\0';
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s", buf);
+}

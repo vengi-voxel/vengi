@@ -54,3 +54,10 @@ public:
 	static void warn(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 	static void error(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 };
+
+extern "C" void c_logtrace(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+extern "C" void c_logdebug(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+extern "C" void c_loginfo(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+extern "C" void c_logwarn(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+extern "C" void c_logerror(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+extern "C" void c_logwrite(const char* msg, size_t length);
