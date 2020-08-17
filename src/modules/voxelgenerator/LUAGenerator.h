@@ -8,6 +8,8 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 
+struct lua_State;
+
 namespace voxel {
 class Region;
 class RawVolumeWrapper;
@@ -38,7 +40,10 @@ struct LUAParameterDescription {
 };
 
 class LUAGenerator : public core::IComponent {
+protected:
+	virtual void initializeCustomState(lua_State* s) {}
 public:
+	virtual ~LUAGenerator() {}
 	bool init() override;
 	void shutdown() override;
 

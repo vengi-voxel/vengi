@@ -344,6 +344,7 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 
 	lua::LUA lua;
 	prepareState(lua);
+	initializeCustomState(lua);
 
 	// load and run once to initialize the global variables
 	if (luaL_dostring(lua, luaScript.c_str())) {
