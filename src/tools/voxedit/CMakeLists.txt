@@ -8,8 +8,10 @@ set(SRCS
 
 set(LUA_SRCS
 	modules/perlin.lua
+	modules/volume.lua
 	noise.lua
 	pyramid.lua
+	similarcolor.lua
 )
 
 set(FILES
