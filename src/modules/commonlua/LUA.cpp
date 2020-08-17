@@ -71,6 +71,18 @@ LUA::~LUA() {
 	closeState();
 }
 
+static int clua_print(lua_State *L) {
+	int nargs = lua_gettop(L);
+	for (int i = 1; i <= nargs; i++) {
+		if (lua_isstring(L, i)) {
+			const char* str = lua_tostring(L, i);
+			Log::info("%s", str);
+		}
+	}
+
+	return 0;
+}
+
 void LUA::openState() {
 	_error.clear();
 
@@ -81,6 +93,14 @@ void LUA::openState() {
 	clua_cmdregister(_state);
 	clua_varregister(_state);
 	clua_logregister(_state);
+
+	static const struct luaL_Reg printlib[] = {
+		{"print", clua_print},
+		{nullptr, nullptr}
+	};
+	lua_getglobal(_state, "_G");
+	luaL_setfuncs(_state, printlib, 0);
+	lua_pop(_state, 1);
 
 	lua_register(_state, "ioloader", clua_ioloader);
 	const char* str = "table.insert(package.searchers, 2, ioloader) \n";
