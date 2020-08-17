@@ -1397,13 +1397,16 @@ void SceneManager::toggleEditMode() {
 }
 
 void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition) {
-	// TODO: only change selection
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
 		auto* v = _volumeRenderer.volume(layerId);
 		if (v == nullptr) {
 			return;
 		}
 		voxel::RawVolumeWrapper wrapper(v);
+		const Selection& selection = _modifier.selection();
+		if (selection.isValid()) {
+			wrapper.setRegion(selection);
+		}
 		const int cnt = voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel&) {
 			v->setVoxel(x, y, z, voxel());
 		}, condition);

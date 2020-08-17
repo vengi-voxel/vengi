@@ -14,7 +14,7 @@ namespace voxel {
 class RawVolumeWrapper {
 private:
 	RawVolume* _volume;
-	const Region& _region;
+	Region _region;
 	Region _dirtyRegion = Region::InvalidRegion;
 
 public:
@@ -74,6 +74,10 @@ public:
 
 	inline const Region& region() const {
 		return _region;
+	}
+
+	void setRegion(const Region& region) {
+		_region.cropTo(region);
 	}
 
 	inline const Voxel& voxel(const glm::ivec3& pos) const {
