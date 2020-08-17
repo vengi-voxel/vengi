@@ -4,6 +4,7 @@
 
 #include "SceneManager.h"
 
+#include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeCropper.h"
@@ -881,11 +882,17 @@ void SceneManager::construct() {
 			Log::error("Failed to load %s", args[0].c_str());
 			return;
 		}
+
+		core::DynamicArray<core::String> luaArgs;
+		for (size_t i = 1; i < args.size(); ++i) {
+			luaArgs.push_back(args[i]);
+		}
+
 		const int layerId = _layerMgr.activeLayer();
 		voxel::RawVolumeWrapper wrapper(volume(layerId));
 		// TODO: limit region to selection
 		const voxel::Region& region = wrapper.region();
-		if (!_luaGenerator.exec(luaScript, &wrapper, region, _modifier.cursorVoxel())) {
+		if (!_luaGenerator.exec(luaScript, &wrapper, region, _modifier.cursorVoxel(), luaArgs)) {
 			Log::error("Failed to execute %s", args[0].c_str());
 		} else {
 			Log::info("Executed script %s", args[0].c_str());

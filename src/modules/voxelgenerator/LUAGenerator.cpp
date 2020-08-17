@@ -4,6 +4,7 @@
 
 #include "LUAGenerator.h"
 #include "commonlua/LUAFunctions.h"
+#include "core/StringUtil.h"
 #include "lauxlib.h"
 #include "lua.h"
 #include "voxel/MaterialColor.h"
@@ -203,7 +204,144 @@ bool LUAGenerator::init() {
 void LUAGenerator::shutdown() {
 }
 
-bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* volume, const voxel::Region& region, const voxel::Voxel& voxel) {
+bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params) {
+	lua::LUA lua;
+
+	// load and run once to initialize the global variables
+	if (luaL_dostring(lua, luaScript.c_str())) {
+		Log::error("%s", lua_tostring(lua, -1));
+		return false;
+	}
+
+	const int preTop = lua_gettop(lua);
+
+	// get help method
+	lua_getglobal(lua, "arguments");
+	if (!lua_isfunction(lua, -1)) {
+		// this is no error - just no parameters are needed...
+		return true;
+	}
+
+	const int error = lua_pcall(lua, 0, LUA_MULTRET, 0);
+	if (error != LUA_OK) {
+		Log::error("LUA generate arguments script: %s", lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "Unknown Error");
+		return false;
+	}
+
+	const int top = lua_gettop(lua);
+	if (top <= preTop) {
+		return true;
+	}
+
+	if (!lua_istable(lua, -1)) {
+		Log::error("Expected to get a table return value");
+		return false;
+	}
+
+	const int args = lua_rawlen(lua, -1);
+
+	for (int i = 0; i < args; ++i) {
+		lua_pushinteger(lua, i + 1); // lua starts at 1
+		lua_gettable(lua, -2);
+		if (!lua_istable(lua, -1)) {
+			Log::error("Expected to return tables of { name = 'name', desc = 'description', type = 'int' } at %i", i);
+			return false;
+		}
+
+		core::String name = "";
+		core::String description = "";
+		LUAParameterType type = LUAParameterType::Max;
+		lua_pushnil(lua);					// push nil, so lua_next removes it from stack and puts (k, v) on stack
+		while (lua_next(lua, -2) != 0) {	// -2, because we have table at -1
+			if (!lua_isstring(lua, -1) || !lua_isstring(lua, -2)) {
+				Log::error("Expected to find string as parameter key and value");
+				// only store stuff with string key and value
+				return false;
+			}
+			const char *key = lua_tostring(lua, -2);
+			const char *value = lua_tostring(lua, -1);
+			if (!SDL_strcmp(key, "name")) {
+				name = value;
+			} else if (!SDL_strncmp(key, "desc", 4)) {
+				description = value;
+			} else if (!SDL_strcmp(key, "type")) {
+				if (!SDL_strcmp(value, "int")) {
+					type = LUAParameterType::Integer;
+				} else if (!SDL_strcmp(value, "float")) {
+					type = LUAParameterType::Float;
+				} else if (!SDL_strncmp(value, "str", 3)) {
+					type = LUAParameterType::String;
+				} else if (!SDL_strncmp(value, "bool", 4)) {
+					type = LUAParameterType::Boolean;
+				} else {
+					Log::error("Invalid type found: %s", value);
+					return false;
+				}
+			} else {
+				Log::warn("Invalid key found: %s", key);
+			}
+			lua_pop(lua, 1); // remove value, keep key for lua_next
+		}
+
+		if (name.empty()) {
+			Log::error("No name = 'myname' key given");
+			return false;
+		}
+
+		if (type == LUAParameterType::Max) {
+			Log::error("No type = 'int', 'float', 'string', 'bool' key given for '%s'", name.c_str());
+			return false;
+		}
+
+		params.emplace_back(name, description, type);
+		lua_pop(lua, 1); // remove table
+	}
+	return true;
+}
+
+static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::String>& args, const core::DynamicArray<LUAParameterDescription>& argsInfo) {
+	core_assert(args.size() == argsInfo.size());
+	for (size_t i = 0u; i < argsInfo.size(); ++i) {
+		const LUAParameterDescription &d = argsInfo[i];
+		const core::String &arg = args[i];
+		switch (d.type) {
+		case LUAParameterType::String:
+			lua_pushstring(s, arg.c_str());
+			break;
+		case LUAParameterType::Boolean: {
+			const bool val = arg == "1" || arg == "true";
+			lua_pushboolean(s, val ? 1 : 0);
+			break;
+		}
+		case LUAParameterType::Integer:
+			lua_pushinteger(s, core::string::toInt(arg));
+			break;
+		case LUAParameterType::Float:
+			lua_pushnumber(s, core::string::toFloat(arg));
+			break;
+		case LUAParameterType::Max:
+			Log::error("Invalid argument type");
+			return false;
+		}
+	}
+	return true;
+}
+
+bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args) {
+	core::DynamicArray<LUAParameterDescription> argsInfo;
+	if (!argumentInfo(luaScript, argsInfo)) {
+		Log::error("Failed to get argument details");
+		return false;
+	}
+
+	if (args.size() != argsInfo.size()) {
+		Log::error("Invalid arguments given. Got %i, expected %i", (int)args.size(), (int)argsInfo.size());
+		for (const auto& e : argsInfo) {
+			Log::info(" %s => %s", e.name.c_str(), e.description.c_str());
+		}
+		return false;
+	}
+
 	lua::LUA lua;
 	prepareState(lua);
 
@@ -216,7 +354,6 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 	// get main(volume, region) method
 	lua_getglobal(lua, "main");
 	if (!lua_isfunction(lua, -1)) {
-		Log::error("%s", lua.stackDump().c_str());
 		Log::error("LUA generator: no main(volume, region) function found in '%s'", luaScript.c_str());
 		return false;
 	}
@@ -254,8 +391,14 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 		return false;
 	}
 #endif
-	const int error = lua_pcall(lua, 3, 0, 0);
-	if (error) {
+
+	if (!luaVoxel_pushargs(lua, args, argsInfo)) {
+		Log::error("Failed to push arguments");
+		return false;
+	}
+
+	const int error = lua_pcall(lua, 3 + argsInfo.size(), 0, 0);
+	if (error != LUA_OK) {
 		Log::error("LUA generate script: %s", lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "Unknown Error");
 		return false;
 	}

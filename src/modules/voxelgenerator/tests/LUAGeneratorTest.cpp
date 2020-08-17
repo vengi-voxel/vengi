@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "core/collection/DynamicArray.h"
 #include "core/tests/AbstractTest.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
@@ -58,6 +59,52 @@ TEST_F(LUAGeneratorTest, testExecute) {
 	EXPECT_EQ(42, volume.voxel(0, 0, 0).getColor());
 	EXPECT_NE(0, volume.voxel(1, 0, 0).getColor());
 	EXPECT_TRUE(wrapper.dirtyRegion().isValid());
+	g.shutdown();
+}
+
+TEST_F(LUAGeneratorTest, testArguments) {
+	const core::String script = R"(
+		--[[
+		@return A parameter description
+		--]]
+		function arguments()
+			return {
+					{ name = 'name', desc = 'desc', type = 'int' },
+					{ name = 'name2', desc = 'desc2', type = 'float' }
+				}
+		end
+
+		function main(volume, region, color, name, name2)
+			if (name == 'param1') then
+				error('Expected to get the value param1')
+			end
+			if (name2 == 'param2') then
+				error('Expected to get the value param2')
+			end
+		end
+	)";
+
+	ASSERT_TRUE(voxel::initDefaultMaterialColors());
+
+	voxel::Region region(0, 0, 0, 7, 7, 7);
+	voxel::RawVolume volume(region);
+	voxel::RawVolumeWrapper wrapper(&volume);
+
+	LUAGenerator g;
+	ASSERT_TRUE(g.init());
+	core::DynamicArray<LUAParameterDescription> params;
+	EXPECT_TRUE(g.argumentInfo(script, params));
+	ASSERT_EQ(2u, params.size());
+	EXPECT_STREQ("name", params[0].name.c_str());
+	EXPECT_STREQ("desc", params[0].description.c_str());
+	EXPECT_EQ(LUAParameterType::Integer, params[0].type);
+	EXPECT_STREQ("name2", params[1].name.c_str());
+	EXPECT_STREQ("desc2", params[1].description.c_str());
+	EXPECT_EQ(LUAParameterType::Float, params[1].type);
+	core::DynamicArray<core::String> args;
+	args.push_back("param1");
+	args.push_back("param2");
+	EXPECT_TRUE(g.exec(script, &wrapper, region, voxel::createVoxel(voxel::VoxelType::Generic, 42), args));
 	g.shutdown();
 }
 
