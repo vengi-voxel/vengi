@@ -58,7 +58,12 @@ static int luaVoxel_volume_voxel(lua_State* s) {
 	const int x = luaL_checkinteger(s, 2);
 	const int y = luaL_checkinteger(s, 3);
 	const int z = luaL_checkinteger(s, 4);
-	lua_pushinteger(s, volume->voxel(x, y, z).getColor());
+	const voxel::Voxel& voxel = volume->voxel(x, y, z);
+	if (voxel::isAir(voxel.getMaterial())) {
+		lua_pushinteger(s, -1);
+	} else {
+		lua_pushinteger(s, voxel.getColor());
+	}
 	return 1;
 }
 
@@ -76,6 +81,18 @@ static int luaVoxel_volume_setvoxel(lua_State* s) {
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_palette_colors(lua_State* s) {
+	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
+	lua_createtable(s, colors.size(), 0);
+	for (size_t i = 0; i < colors.size(); ++i) {
+		const glm::vec4& c = colors[i];
+		lua_pushinteger(s, i + 1);
+		clua_push(s, c);
+		lua_settable(s, -3);
+	}
 	return 1;
 }
 
@@ -178,6 +195,7 @@ static void prepareState(lua_State* s) {
 	clua_registerfuncs(s, regionFuncs, luaVoxel_metaregion());
 
 	static const luaL_Reg paletteFuncs[] = {
+		{"colors", luaVoxel_palette_colors},
 		{"color", luaVoxel_palette_color},
 		{"match", luaVoxel_palette_closestmatch},
 		{nullptr, nullptr}

@@ -2,7 +2,7 @@
 
 There is a console command in voxedit to execute lua scripts for generating voxels. This command expects the lua script filename and the additional arguments for the `main()` method.
 
-There are two functions in each script. One is called `arguments` and one `main`. `arguments` returns a list of parameters for the `main` function. The default parameters for `main` are `volume`, `region` and `color`.
+There are two functions in each script. One is called `arguments` and one `main`. `arguments` returns a list of parameters for the `main` function. The default parameters for `main` are `volume`, `region` and `color`. `color` is the palette index starting from `0`.
 
 # Example without parameters
 
@@ -46,6 +46,8 @@ The functions are:
 
 * `color(paletteIndex)`: pushes the vec4 of the color behind the palette index (`0-255`) as float values between `0.0` and `1.0`.
 
+* `colors()`: returns the palette RGBA colors as vec4 values.
+
 * `match(r, g, b)`: returns the closest possible palette color match for the given RGB (`0-255`) color (). The returned palette index is in the range `0-255`. This value can then be used for the `setVoxel` method.
 
 # Region
@@ -68,11 +70,11 @@ The functions are:
 
 # Volume
 
-* `voxel(x, y, z)`: returns the palette index of the voxel at the given position in the volume
+* `voxel(x, y, z)`: returns the palette index of the voxel at the given position in the volume `[0-255]`. Or -1 if there is no voxel
 
 * `region()`: return the region of the volume
 
-* `setVoxel(x, y, z, color)`: set the given color to the given coordinates in the volume
+* `setVoxel(x, y, z, color)`: set the given color to the given coordinates in the volume. `color` must be in the range `[0-255]`
 
 # Other
 

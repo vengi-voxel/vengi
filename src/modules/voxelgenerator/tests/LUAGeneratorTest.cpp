@@ -44,6 +44,7 @@ TEST_F(LUAGeneratorTest, testExecute) {
 			if match == 37 then
 				volume:setVoxel(1, 0, 0, match)
 			end
+			local colors = palette.colors()
 		end
 	)";
 
