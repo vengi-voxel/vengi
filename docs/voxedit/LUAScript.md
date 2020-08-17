@@ -50,21 +50,21 @@ The functions are:
 
 # Region
 
-* `mins()`:
+* `mins()`: the lower boundary of the region (inclusive)
 
-* `maxs()`:
+* `maxs()`: the upper boundary of the region (inclusive)
 
-* `x()`:
+* `x()`: the lower x boundary of the region
 
-* `y()`:
+* `y()`: the lower y boundary of the region
 
-* `z()`:
+* `z()`: the lower z bounary of the region
 
-* `width()`:
+* `width()`: the width of the region measured in voxels
 
-* `height()`:
+* `height()`: the height of the region measured in voxels
 
-* `depth()`:
+* `depth()`: the depth of the region measured in voxels
 
 # Volume
 
@@ -73,3 +73,7 @@ The functions are:
 * `region()`: return the region of the volume
 
 * `setVoxel(x, y, z, color)`: set the given color to the given coordinates in the volume
+
+# Other
+
+* `y` going upwards
