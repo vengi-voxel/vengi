@@ -3,14 +3,21 @@
  */
 
 #pragma once
+
+#include "core/Log.h"
+
 extern "C" {
+
+#define lua_writestringerror c_logerror
+#define lua_writestring c_logwrite
+#define lua_writeline() c_logwrite("\n", 1)
+
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
 }
 
 #include "core/String.h"
-#include "core/Log.h"
 #include "core/NonCopyable.h"
 
 namespace lua {
