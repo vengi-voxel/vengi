@@ -355,7 +355,7 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 	// get main(volume, region) method
 	lua_getglobal(lua, "main");
 	if (!lua_isfunction(lua, -1)) {
-		Log::error("LUA generator: no main(volume, region) function found in '%s'", luaScript.c_str());
+		Log::error("LUA generator: no main(volume, region, color) function found in '%s'", luaScript.c_str());
 		return false;
 	}
 

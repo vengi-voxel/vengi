@@ -7,6 +7,8 @@ set(SRCS
 )
 
 set(LUA_SRCS
+	modules/perlin.lua
+	noise.lua
 	pyramid.lua
 )
 
