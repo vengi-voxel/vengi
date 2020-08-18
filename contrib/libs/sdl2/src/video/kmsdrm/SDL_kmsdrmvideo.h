@@ -31,9 +31,16 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <gbm.h>
+#include <assert.h>
 #if SDL_VIDEO_OPENGL_EGL
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #endif
+
+/* Driverdata pointers are void struct* used to store backend-specific variables
+   and info that supports the SDL-side structs like SDL Display Devices, SDL_Windows...
+   which need to be "supported" with backend-side info and mechanisms to work. */ 
+
 
 typedef struct SDL_VideoData
 {
@@ -46,32 +53,62 @@ typedef struct SDL_VideoData
     int num_windows;
 } SDL_VideoData;
 
-
 typedef struct SDL_DisplayModeData
 {
     int mode_index;
 } SDL_DisplayModeData;
 
+struct plane {
+	drmModePlane *plane;
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+};
 
+struct crtc {
+	drmModeCrtc *crtc;
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+};
+
+struct connector {
+	drmModeConnector *connector;
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+};
+
+/* More general driverdata info that gives support and substance to the SDL_Display. */
 typedef struct SDL_DisplayData
 {
-    uint32_t crtc_id;
-    drmModeConnector *conn;
     drmModeModeInfo mode;
-    drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
+    uint32_t atomic_flags;
+
+    /* All changes will be requested via this one and only atomic request,
+       that will be sent to the kernel in the one and only atomic_commit() call
+       that takes place in SwapWindow(). */
+    drmModeAtomicReq *atomic_req;
+    struct plane *display_plane;
+    struct plane *cursor_plane;
+    struct crtc *crtc;
+    struct connector *connector;
+
+    int kms_in_fence_fd;
+    int kms_out_fence_fd;
+
+    EGLSyncKHR kms_fence; /* Signaled when kms completes changes        *
+                           * requested in atomic iotcl (pageflip, etc). */
+
+    EGLSyncKHR gpu_fence; /* Signaled when GPU rendering is done. */
+
 } SDL_DisplayData;
 
-
+/* Driverdata info that gives KMSDRM-side support and substance to the SDL_Window. */
 typedef struct SDL_WindowData
 {
     SDL_VideoData *viddata;
     struct gbm_surface *gs;
-    struct gbm_bo *curr_bo;
+    struct gbm_bo *bo;
     struct gbm_bo *next_bo;
     struct gbm_bo *crtc_bo;
-    SDL_bool waiting_for_flip;
-    SDL_bool double_buffer;
-    SDL_bool crtc_setup_pending;
 #if SDL_VIDEO_OPENGL_EGL
     SDL_bool egl_surface_dirty;
     EGLSurface egl_surface;
@@ -84,10 +121,30 @@ typedef struct KMSDRM_FBInfo
     uint32_t fb_id;     /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 
+/* Driverdata with driver-side info about the cursor. */
+typedef struct _KMSDRM_CursorData
+{
+    struct gbm_bo *bo;
+    uint32_t       crtc_id;
+    int            hot_x, hot_y;
+    int            w, h;
+    /* The video devide implemented on SDL_kmsdrmvideo.c 
+     * to be used as _THIS pointer in SDL_kmsdrmvideo.c 
+     * functions that need it. */
+    SDL_VideoDevice *video;
+} KMSDRM_CursorData;
+
 /* Helper functions */
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
-SDL_bool KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout);
+
+/* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */
+void drm_atomic_modeset(_THIS, int mode_index);
+void drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id);
+void drm_atomic_waitpending(_THIS);
+int drm_atomic_commit(_THIS, SDL_bool blocking);
+int drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y);
+int drm_atomic_movecursor(KMSDRM_CursorData *curdata, int x, int y);
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
