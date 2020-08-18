@@ -70,7 +70,7 @@ struct TaskName: public ::backend::ITask { \
 }; \
 
 #define AI_TASK_IMPL(TaskName) \
-inline ai::TreeNodeStatus TaskName::doAction(const AIPtr& entity, int64_t deltaMillis)
+ai::TreeNodeStatus TaskName::doAction(const AIPtr& entity, int64_t deltaMillis)
 
 #define AI_TASK(TaskName) \
 	AI_TASK_DEFINITION(TaskName) \
