@@ -1,6 +1,6 @@
 function arguments()
 	return {
-		{ name = 'n', desc = 'height level', type = 'int' }
+		{ name = 'n', desc = 'height level', type = 'int', default = '1' }
 	}
 end
 

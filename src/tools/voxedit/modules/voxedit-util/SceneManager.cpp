@@ -874,10 +874,14 @@ void SceneManager::construct() {
 
 	core::Command::registerCommand("xs", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
-			Log::error("Usage: xs <lua-generator-script-filename>");
+			Log::error("Usage: xs <lua-generator-script-filename> [help]");
 			return;
 		}
-		const core::String luaScript = io::filesystem()->load(args[0]);
+		core::String filename = args[0];
+		if (!core::string::endsWith(filename, ".lua")) {
+			filename.append(".lua");
+		}
+		const core::String luaScript = io::filesystem()->load(filename);
 		if (luaScript.empty()) {
 			Log::error("Failed to load %s", args[0].c_str());
 			return;

@@ -2,8 +2,8 @@ local vol = require "modules.volume"
 
 function arguments()
 	return {
-		{ name = 'density', desc = 'the voxel replacement density', type = 'int' },
-		{ name = 'colors', desc = 'the color variations', type = 'int' }
+		{ name = 'density', desc = 'the voxel replacement density', type = 'int', default = '4' },
+		{ name = 'colors', desc = 'the color variations', type = 'int', default = '4' }
 	}
 end
 

@@ -30,10 +30,11 @@ enum class LUAParameterType {
 struct LUAParameterDescription {
 	core::String name;
 	core::String description;
+	core::String defaultValue;
 	LUAParameterType type;
 
-	LUAParameterDescription(const core::String &_name, const core::String &_description, LUAParameterType _type)
-		: name(_name), description(_description), type(_type) {
+	LUAParameterDescription(const core::String &_name, const core::String &_description, const core::String &_defaultValue, LUAParameterType _type)
+		: name(_name), description(_description), defaultValue(_defaultValue), type(_type) {
 	}
 	LUAParameterDescription() : type(LUAParameterType::Max) {
 	}

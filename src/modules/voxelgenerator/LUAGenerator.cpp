@@ -268,6 +268,7 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 
 		core::String name = "";
 		core::String description = "";
+		core::String defaultValue = "";
 		LUAParameterType type = LUAParameterType::Max;
 		lua_pushnil(lua);					// push nil, so lua_next removes it from stack and puts (k, v) on stack
 		while (lua_next(lua, -2) != 0) {	// -2, because we have table at -1
@@ -282,6 +283,8 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 				name = value;
 			} else if (!SDL_strncmp(key, "desc", 4)) {
 				description = value;
+			} else if (!SDL_strcmp(key, "default")) {
+				defaultValue = value;
 			} else if (!SDL_strcmp(key, "type")) {
 				if (!SDL_strcmp(value, "int")) {
 					type = LUAParameterType::Integer;
@@ -311,17 +314,16 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 			return false;
 		}
 
-		params.emplace_back(name, description, type);
+		params.emplace_back(name, description, defaultValue, type);
 		lua_pop(lua, 1); // remove table
 	}
 	return true;
 }
 
 static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::String>& args, const core::DynamicArray<LUAParameterDescription>& argsInfo) {
-	core_assert(args.size() == argsInfo.size());
 	for (size_t i = 0u; i < argsInfo.size(); ++i) {
 		const LUAParameterDescription &d = argsInfo[i];
-		const core::String &arg = args[i];
+		const core::String &arg = args.size() > i ? args[i] : d.defaultValue;
 		switch (d.type) {
 		case LUAParameterType::String:
 			lua_pushstring(s, arg.c_str());
@@ -352,12 +354,12 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 		return false;
 	}
 
-	if (args.size() != argsInfo.size()) {
-		Log::error("Invalid arguments given. Got %i, expected %i", (int)args.size(), (int)argsInfo.size());
+	if (!args.empty() && args[0] == "help") {
+		Log::info("Parameter description");
 		for (const auto& e : argsInfo) {
-			Log::info(" %s => %s", e.name.c_str(), e.description.c_str());
+			Log::info(" %s: %s (default: '%s')", e.name.c_str(), e.description.c_str(), e.defaultValue.c_str());
 		}
-		return false;
+		return true;
 	}
 
 	lua::LUA lua;
@@ -412,7 +414,7 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 #endif
 
 	if (!luaVoxel_pushargs(lua, args, argsInfo)) {
-		Log::error("Failed to push arguments");
+		Log::error("Failed to execute main() function with the given number of arguments. Try calling with 'help' as parameter");
 		return false;
 	}
 

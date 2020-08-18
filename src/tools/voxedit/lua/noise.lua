@@ -2,8 +2,8 @@ local perlin = require "modules.perlin"
 
 function arguments()
 	return {
-		{ name = 'freq', desc = 'frequence for the noise function input', type = 'float' },
-		{ name = 'amplitude', desc = 'amplitude to scale the noise noise function output', type = 'float' }
+		{ name = 'freq', desc = 'frequence for the noise function input', type = 'float', default = '0.3' },
+		{ name = 'amplitude', desc = 'amplitude to scale the noise noise function output', type = 'float', default = '1.0' }
 	}
 end
 
