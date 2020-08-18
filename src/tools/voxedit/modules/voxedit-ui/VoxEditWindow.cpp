@@ -282,11 +282,9 @@ bool VoxEditWindow::init() {
 		Log::error("scripttype widget not found");
 		return false;
 	}
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
-	io::filesystem()->list("scripts", entities, "*.lua");
-	for (const auto& e : entities) {
-		_scripts.push_back(e.name);
-		addStringItem(_scriptItems, e.name.c_str(), e.name.c_str());
+	_scripts = sceneMgr().listScripts();
+	for (const auto& e : _scripts) {
+		addStringItem(_scriptItems, e.c_str());
 	}
 	_scriptType->setSource(&_scriptItems);
 

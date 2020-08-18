@@ -1562,6 +1562,17 @@ bool SceneManager::init() {
 	return true;
 }
 
+core::DynamicArray<core::String> SceneManager::listScripts() const {
+	core::DynamicArray<core::String> scripts;
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	io::filesystem()->list("scripts", entities, "*.lua");
+	scripts.reserve(entities.size());
+	for (const auto& e : entities) {
+		scripts.push_back(e.name);
+	}
+	return scripts;
+}
+
 bool SceneManager::runScript(const core::String& script, const core::DynamicArray<core::String>& args) {
 	const int layerId = _layerMgr.activeLayer();
 	voxel::RawVolume* volume = this->volume(layerId);
