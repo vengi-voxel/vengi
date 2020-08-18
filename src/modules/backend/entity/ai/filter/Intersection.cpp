@@ -5,6 +5,7 @@
 #include "Intersection.h"
 #include <algorithm>
 #include <vector>
+#include <iterator>
 
 namespace backend {
 

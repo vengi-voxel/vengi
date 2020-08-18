@@ -8,6 +8,7 @@
 #include "core/Common.h"
 #include <algorithm>
 #include <vector>
+#include <iterator>
 
 namespace backend {
 
