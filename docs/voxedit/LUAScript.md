@@ -79,3 +79,29 @@ The functions are:
 # Other
 
 * `y` going upwards
+
+# Available scripts
+
+## noise.lua
+
+Generates perlin noise with the frequency and amplitude as parameters with the current selected color.
+
+![noise](lua-noise.png)
+
+`xs noise.lua 0.3 1.0`
+
+## cover.lua
+
+Generates a new voxel on top of others with the current selected color and the specified height.
+
+![cover](lua-cover.png)
+
+`xs cover.lua 1`
+
+## pyramid.lua
+
+Generates a pyramid with the current selected color and with each level being 3 voxels high.
+
+![pyramid](lua-pyramid.png)
+
+`xs pyramid.lua 3`
