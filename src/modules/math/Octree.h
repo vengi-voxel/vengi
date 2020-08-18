@@ -7,6 +7,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <iterator>
 #include "AABB.h"
 #include "Frustum.h"
 #include "core/Trace.h"
