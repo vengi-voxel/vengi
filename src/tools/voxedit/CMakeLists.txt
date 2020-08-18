@@ -7,12 +7,12 @@ set(SRCS
 )
 
 set(LUA_SRCS
-	modules/perlin.lua
-	modules/volume.lua
-	cover.lua
-	noise.lua
-	pyramid.lua
-	similarcolor.lua
+	scripts/modules/perlin.lua
+	scripts/modules/volume.lua
+	scripts/cover.lua
+	scripts/noise.lua
+	scripts/pyramid.lua
+	scripts/similarcolor.lua
 )
 
 set(FILES

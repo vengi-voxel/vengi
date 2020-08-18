@@ -3,9 +3,15 @@
  */
 
 #include "VoxEditWindow.h"
+#include "core/collection/DynamicArray.h"
 #include "palette/PaletteWidget.h"
 #include "palette/PaletteSelector.h"
 #include "core/io/Filesystem.h"
+#include "tb_editfield.h"
+#include "tb_hash.h"
+#include "tb_layout.h"
+#include "tb_widgets.h"
+#include "tb_widgets_common.h"
 #include "video/WindowedApp.h"
 #include "core/Var.h"
 #include "core/StringUtil.h"
@@ -66,6 +72,9 @@ VoxEditWindow::~VoxEditWindow() {
 		dropdown->setSource(nullptr);
 	}
 	if (tb::TBSelectDropdown* dropdown = getWidgetByType<tb::TBSelectDropdown>("treetype")) {
+		dropdown->setSource(nullptr);
+	}
+	if (tb::TBSelectDropdown* dropdown = getWidgetByType<tb::TBSelectDropdown>("scripttype")) {
 		dropdown->setSource(nullptr);
 	}
 }
@@ -256,7 +265,6 @@ bool VoxEditWindow::init() {
 		Log::warn("Could not find treeparameterlayout widget");
 	}
 
-
 #undef TREECONFIGFLOAT
 #undef TREECONFIGINT
 #undef TREECONFIG
@@ -267,6 +275,20 @@ bool VoxEditWindow::init() {
 #endif
 
 	_treeType->setSource(&_treeItems);
+
+	_scriptSection = getWidgetByID("scriptsection");
+	_scriptType = getWidgetByType<tb::TBSelectDropdown>("scripttype");
+	if (_scriptType == nullptr) {
+		Log::error("scripttype widget not found");
+		return false;
+	}
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	io::filesystem()->list("scripts", entities, "*.lua");
+	for (const auto& e : entities) {
+		_scripts.push_back(e.name);
+		addStringItem(_scriptItems, e.name.c_str(), e.name.c_str());
+	}
+	_scriptType->setSource(&_scriptItems);
 
 	SceneManager& mgr = sceneMgr();
 	render::GridRenderer& gridRenderer = mgr.gridRenderer();
@@ -371,6 +393,51 @@ void VoxEditWindow::switchTreeType(voxelgenerator::TreeType treeType) {
 		} else if (widget.type == TreeParameterWidgetType::Float) {
 			const float value = *(const float*)((const uint8_t*)&_treeGeneratorContext + widget.ctxOffset);
 			widget.widget->setValueDouble(value);
+		}
+	}
+}
+
+void VoxEditWindow::switchScriptType(const core::String& scriptName) {
+	Log::info("Switch activate script to %s", scriptName.c_str());
+	_activeScript = io::filesystem()->load("scripts/" + scriptName);
+	tb::TBLayout* treeParameterLayout = getWidgetByIDAndType<tb::TBLayout>("scriptparameterslayout");
+	if (treeParameterLayout != nullptr) {
+		treeParameterLayout->deleteAllChildren();
+		core::DynamicArray<voxelgenerator::LUAParameterDescription> params;
+		sceneMgr().luaGenerator().argumentInfo(_activeScript, params);
+		for (const auto& p : params) {
+			tb::TBWidget *value = nullptr;
+			if (p.type == voxelgenerator::LUAParameterType::Integer) {
+				value = new tb::TBInlineSelect();
+				value->setValue(core::string::toInt(p.defaultValue));
+			} else if (p.type == voxelgenerator::LUAParameterType::Float) {
+				value = new tb::TBInlineSelectDouble();
+				value->setValueDouble(core::string::toDouble(p.defaultValue));
+			} else if (p.type == voxelgenerator::LUAParameterType::String) {
+				value = new tb::TBEditField();
+				value->setText(p.defaultValue);
+			} else if (p.type == voxelgenerator::LUAParameterType::Boolean) {
+				value = new tb::TBCheckBox();
+				value->setValue(p.defaultValue == "1" || p.defaultValue == "true");
+			}
+
+			tb::TBTextField *text = new tb::TBTextField();
+			text->setText(p.name);
+
+			tb::TBLayout* innerLayout = new tb::TBLayout();
+			innerLayout->addChild(text);
+			if (!p.description.empty()) {
+				tb::TBTextField *description = new tb::TBTextField();
+				description->setText(p.description);
+				innerLayout->addChild(description);
+			}
+			innerLayout->setAxis(tb::AXIS_Y);
+			if (value != nullptr) {
+				value->setID(TBIDC(p.name.c_str()));
+				innerLayout->addChild(value);
+			}
+
+			treeParameterLayout->addChild(innerLayout);
 		}
 	}
 }
@@ -549,6 +616,14 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 
+	if (id == TBIDC("show_script_panel") && _scriptSection != nullptr) {
+		if (_scriptSection->getVisibility() == tb::WIDGET_VISIBILITY_GONE) {
+			_scriptSection->setVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
+		} else {
+			_scriptSection->setVisibility(tb::WIDGET_VISIBILITY_GONE);
+		}
+	}
+
 	if (id == TBIDC("show_noise_panel") && _noiseSection != nullptr) {
 		if (_noiseSection->getVisibility() == tb::WIDGET_VISIBILITY_GONE) {
 			_noiseSection->setVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
@@ -616,6 +691,28 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			}
 		}
 		sceneMgr().createTree(_treeGeneratorContext);
+		return true;
+	} else if (id == TBIDC("scriptexecute")) {
+		core::DynamicArray<core::String> activeScriptArgs;
+		tb::TBLayout* treeParameterLayout = getWidgetByIDAndType<tb::TBLayout>("scriptparameterslayout");
+		if (treeParameterLayout != nullptr) {
+			tb::TBLinkListOf<TBWidget>::Iterator iter = treeParameterLayout->getIteratorForward();
+			while (TBWidget* w = iter.getAndStep()) {
+				if (tb::TBLayout* innerLayout = w->safeCastTo<tb::TBLayout>()) {
+					if (tb::TBWidget* valueWidget = innerLayout->getLastChild()) {
+						if (tb::TBEditField* stringField = valueWidget->safeCastTo<tb::TBEditField>()) {
+							activeScriptArgs.push_back(stringField->getText());
+						} else if (tb::TBInlineSelectDouble* floatField = valueWidget->safeCastTo<tb::TBInlineSelectDouble>()) {
+							activeScriptArgs.push_back(core::string::toString(floatField->getValueDouble()));
+						} else {
+							activeScriptArgs.push_back(core::string::toString(valueWidget->getValue()));
+						}
+					}
+				}
+			}
+		}
+
+		sceneMgr().runScript(_activeScript, activeScriptArgs);
 		return true;
 	} else if (id == TBIDC("lsystemgenerate")) {
 		const core::String& axiom = _lsystemAxiom->getText();
@@ -705,6 +802,15 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		if (tb::TBSelectDropdown *dropdown = widget->safeCastTo<tb::TBSelectDropdown>()) {
 			const int value = dropdown->getValue();
 			switchTreeType(treeTypes[value].type);
+			return true;
+		}
+		return false;
+	} else if (id == TBIDC("scripttype")) {
+		if (tb::TBSelectDropdown *dropdown = widget->safeCastTo<tb::TBSelectDropdown>()) {
+			const int value = dropdown->getValue();
+			if (value >= 0 && value < (int)_scripts.size()) {
+				switchScriptType(_scripts[value]);
+			}
 			return true;
 		}
 		return false;

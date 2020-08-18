@@ -881,7 +881,7 @@ void SceneManager::construct() {
 		if (!core::string::endsWith(filename, ".lua")) {
 			filename.append(".lua");
 		}
-		const core::String luaScript = io::filesystem()->load(filename);
+		const core::String luaScript = io::filesystem()->load("scripts/" + filename);
 		if (luaScript.empty()) {
 			Log::error("Failed to load %s", args[0].c_str());
 			return;
@@ -892,18 +892,13 @@ void SceneManager::construct() {
 			luaArgs.push_back(args[i]);
 		}
 
-		const int layerId = _layerMgr.activeLayer();
-		voxel::RawVolumeWrapper wrapper(volume(layerId));
-		// TODO: limit region to selection
-		const voxel::Region& region = wrapper.region();
-		if (!_luaGenerator.exec(luaScript, &wrapper, region, _modifier.cursorVoxel(), luaArgs)) {
+		if (!runScript(luaScript, luaArgs)) {
 			Log::error("Failed to execute %s", args[0].c_str());
 		} else {
 			Log::info("Executed script %s", args[0].c_str());
-			modified(layerId, wrapper.dirtyRegion());
 		}
 	}).setHelp("Executes a lua script to modify the current active volume")
-		.setArgumentCompleter(core::fileCompleter("", "*.lua"));
+		.setArgumentCompleter(core::fileCompleter("scripts", "*.lua"));
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "1");
@@ -1565,6 +1560,23 @@ bool SceneManager::init() {
 
 	_lockedAxis = math::Axis::None;
 	return true;
+}
+
+bool SceneManager::runScript(const core::String& script, const core::DynamicArray<core::String>& args) {
+	const int layerId = _layerMgr.activeLayer();
+	voxel::RawVolume* volume = this->volume(layerId);
+	const Selection& selection = _modifier.selection();
+	voxel::RawVolumeWrapper wrapper(volume);
+	if (selection.isValid()) {
+		wrapper.setRegion(selection);
+	}
+	const bool retVal = _luaGenerator.exec(script, &wrapper, wrapper.region(), _modifier.cursorVoxel(), args);
+	modified(layerId, wrapper.dirtyRegion());
+	return retVal;
+}
+
+voxelgenerator::LUAGenerator& SceneManager::luaGenerator() {
+	return _luaGenerator;
 }
 
 void SceneManager::animate(double nowSeconds) {

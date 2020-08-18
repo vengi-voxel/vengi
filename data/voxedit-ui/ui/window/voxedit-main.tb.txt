@@ -52,6 +52,8 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-options
 						TBButton: gravity: left, @include: definitions>menubutton, text: Trees, id: show_tree_panel
 							TBSkinImage: skin: voxedit-tree
+						TBButton: gravity: left, @include: definitions>menubutton, text: Scripts, id: show_script_panel
+							TBSkinImage: skin: voxedit-script
 						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: show_noise_panel
 						TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: show_lsystem_panel
 
@@ -161,6 +163,17 @@ TBLayout: distribution: gravity, axis: y
 							TBCheckBox: id: treeautogen, value: 0
 
 						TBButton: text: Generate, id: treegenerate, gravity: left right
+
+						TBWidget: gravity: top bottom
+
+				TBLayout: distribution: gravity, axis: y, position: right, gravity: top bottom, skin: no-padding-container, id: scriptsection, visibility: gone
+					TBTextField: gravity: left right, skin: Header, text: Scripts
+					TBLayout: position: left top, axis: y, distribution: gravity
+						TBSelectDropdown: gravity: left right, id: scripttype
+
+						TBLayout: position: left top, axis: y, id: scriptparameterslayout, distribution: gravity
+
+						TBButton: text: Execute, id: scriptexecute, gravity: left right
 
 						TBWidget: gravity: top bottom
 

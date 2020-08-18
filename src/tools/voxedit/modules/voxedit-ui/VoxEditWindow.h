@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
 #include "ui/turbobadger/Window.h"
 #include "layer/LayerWindow.h"
 #include "settings/SceneSettingsWindow.h"
@@ -105,6 +106,13 @@ private:
 	voxelgenerator::TreeContext _treeGeneratorContext;
 	void switchTreeType(voxelgenerator::TreeType treeType);
 	tb::TBWidget* createTreeParameterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name);
+
+	core::DynamicArray<core::String> _scripts;
+	tb::TBWidget *_scriptSection = nullptr;
+	tb::TBSelectDropdown *_scriptType = nullptr;
+	tb::TBGenericStringItemSource _scriptItems;
+	void switchScriptType(const core::String& scriptName);
+	core::String _activeScript;
 
 	core::String _loadFile;
 

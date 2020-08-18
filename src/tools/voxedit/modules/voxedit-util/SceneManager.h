@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
 #include "voxelutil/Picking.h"
 #include "voxel/RawVolume.h"
 #include "voxelgenerator/TreeContext.h"
@@ -322,6 +323,8 @@ public:
 	 */
 	bool prefab(const core::String& file);
 
+	bool runScript(const core::String& script, const core::DynamicArray<core::String>& args);
+
 	bool newScene(bool force, const core::String& name, const voxel::Region& region);
 
 	/**
@@ -368,6 +371,7 @@ public:
 	animation::SkeletonAttribute* skeletonAttributes();
 	animation::AnimationEntity& animationEntity();
 	const render::Gizmo& gizmo() const;
+	voxelgenerator::LUAGenerator& luaGenerator();
 
 	// LayerListener
 	void onLayerChanged(int layerId) override;
