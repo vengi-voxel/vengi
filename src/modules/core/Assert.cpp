@@ -6,9 +6,7 @@
 #include <SDL_stdinc.h>
 #include <SDL_log.h>
 
-#ifndef __WINDOWS__
 #define HAVE_BACKWARD
-#endif
 
 #ifdef HAVE_BACKWARD
 #include <backward.h>

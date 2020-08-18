@@ -2834,7 +2834,7 @@ private:
             trace.object_function = demangler.demangle(linkage);
             dwarf_dealloc(dwarf, linkage, DW_DLA_STRING);
           }
-          dwarf_dealloc(dwarf, name, DW_DLA_ATTR);
+          dwarf_dealloc(dwarf, attr_mem, DW_DLA_ATTR);
         }
         break;
 
@@ -4019,8 +4019,13 @@ public:
     signal(SIGABRT, signal_handler);
     _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
 
+#if defined(_MSC_VER)
+    set_terminate(&terminator);
+    set_unexpected(&terminator);
+#else
     std::set_terminate(&terminator);
     std::set_unexpected(&terminator);
+#endif
     _set_purecall_handler(&terminator);
     _set_invalid_parameter_handler(&invalid_parameter_handler);
   }

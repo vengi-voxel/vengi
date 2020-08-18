@@ -1,6 +1,4 @@
-if (NOT MSVC)
 add_subdirectory(backward)
-endif()
 add_subdirectory(benchmark)
 add_subdirectory(glm)
 add_subdirectory(libenet)
