@@ -9,6 +9,7 @@ set(SRCS
 set(LUA_SRCS
 	modules/perlin.lua
 	modules/volume.lua
+	cover.lua
 	noise.lua
 	pyramid.lua
 	similarcolor.lua
