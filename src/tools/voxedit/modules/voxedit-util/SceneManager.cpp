@@ -877,11 +877,7 @@ void SceneManager::construct() {
 			Log::error("Usage: xs <lua-generator-script-filename> [help]");
 			return;
 		}
-		core::String filename = args[0];
-		if (!core::string::endsWith(filename, ".lua")) {
-			filename.append(".lua");
-		}
-		const core::String luaScript = io::filesystem()->load("scripts/" + filename);
+		const core::String luaScript = _luaGenerator.load(args[0]);
 		if (luaScript.empty()) {
 			Log::error("Failed to load %s", args[0].c_str());
 			return;
@@ -898,7 +894,7 @@ void SceneManager::construct() {
 			Log::info("Executed script %s", args[0].c_str());
 		}
 	}).setHelp("Executes a lua script to modify the current active volume")
-		.setArgumentCompleter(core::fileCompleter("scripts", "*.lua"));
+		.setArgumentCompleter(voxelgenerator::scriptCompleter());
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "1");
@@ -1560,17 +1556,6 @@ bool SceneManager::init() {
 
 	_lockedAxis = math::Axis::None;
 	return true;
-}
-
-core::DynamicArray<core::String> SceneManager::listScripts() const {
-	core::DynamicArray<core::String> scripts;
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
-	io::filesystem()->list("scripts", entities, "*.lua");
-	scripts.reserve(entities.size());
-	for (const auto& e : entities) {
-		scripts.push_back(e.name);
-	}
-	return scripts;
 }
 
 bool SceneManager::runScript(const core::String& script, const core::DynamicArray<core::String>& args) {

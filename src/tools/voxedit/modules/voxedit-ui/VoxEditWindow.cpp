@@ -282,7 +282,7 @@ bool VoxEditWindow::init() {
 		Log::error("scripttype widget not found");
 		return false;
 	}
-	_scripts = sceneMgr().listScripts();
+	_scripts = sceneMgr().luaGenerator().listScripts();
 	for (const auto& e : _scripts) {
 		addStringItem(_scriptItems, e.c_str());
 	}
@@ -397,7 +397,7 @@ void VoxEditWindow::switchTreeType(voxelgenerator::TreeType treeType) {
 
 void VoxEditWindow::switchScriptType(const core::String& scriptName) {
 	Log::info("Switch activate script to %s", scriptName.c_str());
-	_activeScript = io::filesystem()->load("scripts/" + scriptName);
+	_activeScript = sceneMgr().luaGenerator().load(scriptName);
 	tb::TBLayout* treeParameterLayout = getWidgetByIDAndType<tb::TBLayout>("scriptparameterslayout");
 	if (treeParameterLayout != nullptr) {
 		treeParameterLayout->deleteAllChildren();

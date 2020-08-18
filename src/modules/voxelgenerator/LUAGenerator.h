@@ -7,6 +7,7 @@
 #include "core/IComponent.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "core/command/CommandCompleter.h"
 
 struct lua_State;
 
@@ -48,8 +49,16 @@ public:
 	bool init() override;
 	void shutdown() override;
 
+	core::String load(const core::String& scriptName) const;
+	core::DynamicArray<core::String> listScripts() const;
 	bool argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params);
 	bool exec(const core::String& luaScript, voxel::RawVolumeWrapper* volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args = core::DynamicArray<core::String>());
 };
+
+inline auto scriptCompleter() {
+	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
+		return complete("scripts", str, matches, "*.lua");
+	};
+}
 
 }

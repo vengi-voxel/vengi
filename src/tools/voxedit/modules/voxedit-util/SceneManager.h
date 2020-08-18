@@ -324,7 +324,6 @@ public:
 	bool prefab(const core::String& file);
 
 	bool runScript(const core::String& script, const core::DynamicArray<core::String>& args);
-	core::DynamicArray<core::String> listScripts() const;
 
 	bool newScene(bool force, const core::String& name, const voxel::Region& region);
 

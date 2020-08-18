@@ -14,6 +14,8 @@
 #include "commonlua/LUA.h"
 #include "voxel/Voxel.h"
 #include "core/Color.h"
+#include "core/io/Filesystem.h"
+#include "core/App.h"
 
 #define GENERATOR_LUA_SANTITY 1
 
@@ -345,6 +347,37 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 		}
 	}
 	return true;
+}
+
+core::String LUAGenerator::load(const core::String& scriptName) const {
+	core::String filename = scriptName;
+	io::normalizePath(filename);
+	if (!core::string::endsWith(filename, ".lua")) {
+		filename.append(".lua");
+	}
+	if (!filename.contains("/")) {
+		filename = "scripts/" + filename;
+	}
+	return io::filesystem()->load(filename);
+}
+
+core::DynamicArray<core::String> LUAGenerator::listScripts() const {
+	lua::LUA lua;
+	core::DynamicArray<core::String> scripts;
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	io::filesystem()->list("scripts", entities, "*.lua");
+	scripts.reserve(entities.size());
+	for (const auto& e : entities) {
+		const core::String path = "scripts/" + e.name;
+		lua.load(io::filesystem()->load(path));
+		lua_getglobal(lua, "main");
+		if (!lua_isfunction(lua, -1)) {
+			Log::debug("No main() function found in %s", path.c_str());
+			continue;
+		}
+		scripts.push_back(e.name);
+	}
+	return scripts;
 }
 
 bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args) {
