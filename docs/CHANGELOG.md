@@ -9,6 +9,7 @@ General:
    - Fixed wrong-name-for-symlinks shown
    - Added support for writing qef files
    - Added lua script interface to generate voxels
+   - Added stacktrace support for windows
 
 VoxEdit:
 

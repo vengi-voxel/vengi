@@ -22,6 +22,7 @@ This is an opensource, cross platform voxel volume editor.
 
 * Auto-saving
 * Console to script your modeling (CTRL+TAB cmdlist)
+* LUA scripting api
 * Key bindings via cfg file
 * Four viewport mode
 * Grid resolution
