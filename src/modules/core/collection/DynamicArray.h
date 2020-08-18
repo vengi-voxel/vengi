@@ -72,6 +72,8 @@ public:
 			_capacity(other._capacity), _size(other._size) {
 		_buffer = other._buffer;
 		other._buffer = nullptr;
+		other._size = 0;
+		other._capacity = 0;
 	}
 
 	~DynamicArray() {
@@ -94,6 +96,8 @@ public:
 		_size = other._size;
 		_buffer = other._buffer;
 		other._buffer = nullptr;
+		other._size = 0;
+		other._capacity = 0;
 		return *this;
 	}
 
