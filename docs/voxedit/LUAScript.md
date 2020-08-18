@@ -82,6 +82,15 @@ The functions are:
 
 * `y` going upwards.
 
+You have access to the `cvar` and `cmd` lua bindings, too. This means that you can access any `cvar` value or execute any command like `layeradd` or `layermerge` to modify the whole scene.
+
+```lua
+cmd.execute("echo test")
+var.int("cl_gamma")
+```
+
+To get a full list of commands and cvars use the console command `cmdlist` and `cvarlist`.
+
 # Available scripts
 
 ## noise.lua
