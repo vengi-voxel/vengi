@@ -1,4 +1,6 @@
-function setupBones()
+local module = {}
+
+function module.setupBones()
   local head = bone.setup("head")
   head:add("head")
 
@@ -13,3 +15,5 @@ function setupBones()
   foot:add("rightfoot")
   foot:add("leftfoot", true)
 end
+
+return module

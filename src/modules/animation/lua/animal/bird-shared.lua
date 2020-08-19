@@ -1,6 +1,6 @@
-require 'animal.shared'
+local module = {}
 
-function defaultSkeletonAttributes()
+function module.defaultSkeletonAttributes()
   local attributes = {
     scaler = 1.0,
     headScale = 1.0,
@@ -17,3 +17,5 @@ function defaultSkeletonAttributes()
   }
   return attributes
 end
+
+return module

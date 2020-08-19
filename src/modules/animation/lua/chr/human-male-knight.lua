@@ -1,13 +1,13 @@
-require 'chr.bones'
-require 'chr.shared'
+local bones = require 'chr.bones'
+local shared = require 'chr.shared'
 
 function init()
-  setupMeshTypes()
-  setupBones()
-  setBasePath("human", "male")
-  setAllPaths("knight")
+  shared.setupMeshTypes()
+  bones.setupBones()
+  shared.setBasePath("human", "male")
+  shared.setAllPaths("knight")
 
-  local attributes = defaultSkeletonAttributes()
+  local attributes = shared.defaultSkeletonAttributes()
   attributes["neckHeight"] = 0.6
   attributes["headHeight"] = 11.0
   return attributes

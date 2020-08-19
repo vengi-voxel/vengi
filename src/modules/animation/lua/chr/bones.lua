@@ -1,7 +1,9 @@
+local module = {}
+
 -- bone.setup("meshtype")
 -- bone.add("bonename", <mirrored>)
 
-function setupBones()
+function module.setupBones()
   local head = bone.setup("head")
   head:add("head")
 
@@ -32,3 +34,5 @@ function setupBones()
   -- not part of the mesh - but still used...
   bone.register("tool");
 end
+
+return module

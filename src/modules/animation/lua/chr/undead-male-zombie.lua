@@ -1,14 +1,14 @@
-require 'chr.bones'
-require 'chr.shared'
+local bones = require 'chr.bones'
+local shared = require 'chr.shared'
 
 function init()
-  setupMeshTypes()
-  setupBones()
-  setBasePath("undead", "male")
-  setAllPaths("zombie")
+  shared.setupMeshTypes()
+  bones.setupBones()
+  shared.setBasePath("undead", "male")
+  shared.setAllPaths("zombie")
   settings.setPath("shoulder", "")
 
-  local attributes = defaultSkeletonAttributes()
+  local attributes = shared.defaultSkeletonAttributes()
   attributes["headHeight"] = 14.0
   attributes["chestHeight"] = 1.0
   attributes["invisibleLegHeight"] = 0.4

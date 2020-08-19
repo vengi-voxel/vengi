@@ -1,11 +1,11 @@
-require 'chr.bones'
-require 'chr.shared'
+local bones = require 'chr.bones'
+local shared = require 'chr.shared'
 
 function init()
-  setupMeshTypes()
-  setupBones()
-  setBasePath("dwarf", "male")
-  setAllPaths("blacksmith")
+  shared.setupMeshTypes()
+  bones.setupBones()
+  shared.setBasePath("dwarf", "male")
+  shared.setAllPaths("blacksmith")
 
-  return defaultSkeletonAttributes()
+  return shared.defaultSkeletonAttributes()
 end

@@ -1,20 +1,22 @@
-function setBasePath(race, gender)
+local module = {}
+
+function module.setBasePath(race, gender)
   settings.setBasePath("models/characters/" .. race .. "/" .. gender)
 end
 
-function setupMeshTypes()
+function module.setupMeshTypes()
   settings.setType("character")
   settings.setMeshTypes("head", "chest", "belt", "pants", "hand", "foot", "shoulder", "glider")
 end
 
-function setAllPaths(path)
+function module.setAllPaths(path)
   local meshes = { "head", "chest", "belt", "pants", "hand", "foot", "shoulder" }
   for i, name in ipairs(meshes) do
     settings.setPath(name, path)
   end
 end
 
-function defaultSkeletonAttributes()
+function module.defaultSkeletonAttributes()
   local attributes = {
     scaler = 1.0,
     toolRight = 6.0,
@@ -48,3 +50,5 @@ function defaultSkeletonAttributes()
   }
   return attributes
 end
+
+return module
