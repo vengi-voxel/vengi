@@ -140,3 +140,10 @@ gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
 gtest_suite_deps(tests-${LIB} ${LIB})
 gtest_suite_end(tests-${LIB})
+
+set(BENCHMARK_SRCS
+	../core/benchmark/AbstractBenchmark.cpp
+	benchmarks/AnimationBenchmark.cpp
+)
+engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
+engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark ${LIB})
