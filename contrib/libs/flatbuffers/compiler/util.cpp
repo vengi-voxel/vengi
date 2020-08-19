@@ -20,8 +20,8 @@
 #  define _POSIX_C_SOURCE 200809L
 #  ifdef _XOPEN_SOURCE
 #   undef _XOPEN_SOURCE
-#   define _XOPEN_SOURCE 700L
 #  endif
+#  define _XOPEN_SOURCE 700L
 
 #ifdef _WIN32
 #  ifndef WIN32_LEAN_AND_MEAN
