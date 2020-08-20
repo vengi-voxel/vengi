@@ -234,7 +234,7 @@ struct clua_vecnew<glm::vec<N, float> > {
 static int vecnew(lua_State* s) {
 	glm::vec<N, float> array;
 	float value = 0.0f;
-	for (size_t i = 0; i < sizeof(array) / sizeof(array[0]); ++i) {
+	for (size_t i = 0; i < N; ++i) {
 		array[i] = luaL_optnumber(s, i + 1, value);
 		value = array[i];
 	}
@@ -247,7 +247,7 @@ struct clua_vecnew<glm::vec<N, double> > {
 static int vecnew(lua_State* s) {
 	glm::vec<N, double> array;
 	float value = 0.0f;
-	for (size_t i = 0; i < sizeof(array) / sizeof(array[0]); ++i) {
+	for (size_t i = 0; i < N; ++i) {
 		array[i] = luaL_optnumber(s, i + 1, value);
 		value = array[i];
 	}
@@ -260,7 +260,7 @@ struct clua_vecnew<glm::vec<N, int> > {
 static int vecnew(lua_State* s) {
 	glm::vec<N, int> array;
 	int value = 0;
-	for (size_t i = 0; i < sizeof(array) / sizeof(array[0]); ++i) {
+	for (size_t i = 0; i < N; ++i) {
 		array[i] = luaL_optinteger(s, i + 1, value);
 		value = array[i];
 	}
@@ -273,7 +273,7 @@ struct clua_vecnew<glm::vec<N, bool> > {
 static int vecnew(lua_State* s) {
 	glm::vec<N, bool> array;
 	int value = 0;
-	for (size_t i = 0; i < sizeof(array) / sizeof(array[0]); ++i) {
+	for (size_t i = 0; i < N; ++i) {
 		array[i] = luaL_optinteger(s, i + 1, value);
 		value = array[i];
 	}
