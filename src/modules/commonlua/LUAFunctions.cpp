@@ -236,7 +236,7 @@ void clua_quatregister(lua_State* s) {
 	const luaL_Reg funcs[] = {
 		{"__add", clua_vecadd<glm::quat>},
 		{"__sub", clua_vecsub<glm::quat>},
-		{"__mul", clua_vecdot<glm::quat>::dot},
+		{"__mul", clua_vecmul<glm::quat>},
 		{"__unm", clua_vecnegate<glm::quat>},
 		{"__len", clua_veclen<glm::quat>::len},
 		{"__index", clua_vecindex<glm::quat>},

@@ -20,6 +20,8 @@ extern "C" {
 #include "core/String.h"
 #include "core/NonCopyable.h"
 
+// https://wiki.gentoo.org/wiki/Lua/Porting_notes
+
 namespace lua {
 
 const core::String META_PREFIX = "META_";

@@ -118,6 +118,15 @@ int clua_vecdiv(lua_State* s) {
 }
 
 template<class T>
+int clua_vecmul(lua_State* s) {
+	const T* a = clua_get<T>(s, 1);
+	const T* b = clua_get<T>(s, 2);
+	const T& c = *a * *b;
+	clua_push(s, c);
+	return 1;
+}
+
+template<class T>
 struct clua_veclen {
 static int len(lua_State* s) {
 	const T* a = clua_get<T>(s, 1);
@@ -427,7 +436,7 @@ void clua_vecregister(lua_State* s) {
 	const luaL_Reg funcs[] = {
 		{"__add", clua_vecadd<RAWTYPE>},
 		{"__sub", clua_vecsub<RAWTYPE>},
-		{"__mul", clua_vecdot<RAWTYPE>::dot},
+		{"__mul", clua_vecmul<RAWTYPE>},
 		{"__div", clua_vecdiv<RAWTYPE>},
 		{"__unm", clua_vecnegate<RAWTYPE>},
 		{"__len", clua_veclen<RAWTYPE>::len},
