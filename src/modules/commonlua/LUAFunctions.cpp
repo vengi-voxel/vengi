@@ -231,3 +231,25 @@ int clua_ioloader(lua_State *s) {
 	}
 	return 1;
 }
+
+void clua_quatregister(lua_State* s) {
+	const luaL_Reg funcs[] = {
+		{"__add", clua_vecadd<glm::quat>},
+		{"__sub", clua_vecsub<glm::quat>},
+		{"__mul", clua_vecdot<glm::quat>::dot},
+		{"__unm", clua_vecnegate<glm::quat>},
+		{"__len", clua_veclen<glm::quat>::len},
+		{"__index", clua_vecindex<glm::quat>},
+		{"__newindex", clua_vecnewindex<glm::quat>},
+		{"dot", clua_vecdot<glm::quat>::dot},
+		{nullptr, nullptr}
+	};
+	Log::debug("Register %s lua functions", clua_meta<glm::quat>::name());
+	clua_registerfuncs(s, funcs, clua_meta<glm::quat>::name());
+	const luaL_Reg globalFuncs[] = {
+		{"new", clua_vecnew<glm::quat>::vecnew},
+		{nullptr, nullptr}
+	};
+	const core::String& globalMeta = core::string::format("%s_global", clua_meta<glm::quat>::name());
+	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<glm::quat>::name());
+}

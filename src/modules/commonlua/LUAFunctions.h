@@ -12,6 +12,7 @@
 #include <glm/vec4.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 extern void clua_assert(lua_State* s, bool pass, const char *msg);
 extern void clua_assert_argc(lua_State* s, bool pass);
@@ -31,6 +32,7 @@ template<> struct clua_meta<glm::ivec4> { static char const *name() {return "__m
 template<> struct clua_meta<glm::vec2> { static char const *name() {return "__meta_vec2";} };
 template<> struct clua_meta<glm::vec3> { static char const *name() {return "__meta_vec3";} };
 template<> struct clua_meta<glm::vec4> { static char const *name() {return "__meta_vec4";} };
+template<> struct clua_meta<glm::quat> { static char const *name() {return "__meta_quat";} };
 
 template<class T>
 struct clua_name {};
@@ -47,6 +49,7 @@ template<> struct clua_name<glm::ivec4> { static char const *name() {return "ive
 template<> struct clua_name<glm::vec2> { static char const *name() {return "vec2";} };
 template<> struct clua_name<glm::vec3> { static char const *name() {return "vec3";} };
 template<> struct clua_name<glm::vec4> { static char const *name() {return "vec4";} };
+template<> struct clua_name<glm::quat> { static char const *name() {return "quat";} };
 
 extern int clua_assignmetatable(lua_State* s, const char *name);
 
@@ -281,6 +284,13 @@ static int vecnew(lua_State* s) {
 }
 };
 
+template<>
+struct clua_vecnew<glm::quat> {
+static int vecnew(lua_State* s) {
+	glm::quat array = glm::quat_identity<float, glm::defaultp>();
+	return clua_push(s, array);
+}
+};
 template<class T>
 struct LuaNumberFuncs {};
 
@@ -437,6 +447,8 @@ void clua_vecregister(lua_State* s) {
 	const core::String& globalMeta = core::string::format("%s_global", clua_meta<RAWTYPE>::name());
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<RAWTYPE>::name());
 }
+
+extern void clua_quatregister(lua_State* s);
 
 extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);
 
