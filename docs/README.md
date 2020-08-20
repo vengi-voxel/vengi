@@ -2,7 +2,7 @@
 
 This is a C++ voxel game engine and its tools. It includes a voxel editor with character animation support
 and loading/saving into a lot of voxel volume formats. There are other tools like e.g. a thumbnailer for
-your filemanager and a command line tool to convert between several voxel formats are included.
+your filemanager and a command line tool to convert between several voxel formats.
 
 Find out more about features and status updates on my [twitter profile](https://twitter.com/MartinGerhardy).
 
