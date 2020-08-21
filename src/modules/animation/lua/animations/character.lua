@@ -5,16 +5,22 @@ local c_halfPi = math.pi/ 2.0
 
 function swim(animTime, v, skeleton, skeletonAttr)
 	local timeFactor = skeletonAttr.runTimeFactor
-	local sine = math.sin(animTime * timeFactor)
-	local cosine = math.cos(animTime * timeFactor)
-	local cosineSlow = math.cos(animTime * timeFactor / 4.0)
-	local movement = sine * 0.15
-	local headLook = vec2.new(math.cos(animTime) * 0.1 + math.rad(-30.0), sine * 0.1)
-	local velocity = boneutil.clamp(v / 20.0, 0.1, 2.5)
+	local sin = math.sin
+	local cos = math.cos
+	local scaledTime = animTime * timeFactor;
+	local sine = sin(scaledTime)
+	local cosine = cos(scaledTime)
+	local cosineSlow = cos(0.25 * scaledTime)
+	local movement = 0.15 * sine
+	local animTimeCos = cos(animTime);
+	local headLookX = math.rad(-30.0) + 0.1 * animTimeCos;
+	local headLookY = 0.1 * sine;
+	local velocity = boneutil.clamp(0.05 * v, 0.1, 2.5)
 
-	local head = chr.headBone(skeleton, skeletonAttr)
-	head.translation = vec3.new(0.0, skeletonAttr.neckHeight + skeletonAttr.headY + cosine * 1.3 + 0.5, -1.0 + skeletonAttr.neckForward)
-	head.orientation = boneutil.rotateXY(headLook.x, headLook.y)
+	local head = skeleton:bone("head")
+	head.scale = vec3.new(skeletonAttr.headScale)
+	head.translation = vec3.new(0.0, 0.5 + skeletonAttr.neckHeight + skeletonAttr.headY + 1.3 * cosine, -1.0 + skeletonAttr.neckForward)
+	head.orientation = boneutil.rotateXY(headLookX, headLookY)
 
 	local bodyMoveY = cosine * 0.5
 	local chest = chr.chestBone(skeleton, skeletonAttr)

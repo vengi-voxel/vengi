@@ -11,30 +11,33 @@ namespace chr {
 namespace swim {
 void update(double animTime, double velocity, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float timeFactor = skeletonAttr.runTimeFactor;
-	const float sine = glm::sin(animTime * timeFactor);
-	const float cosine = glm::cos(animTime * timeFactor);
-	const float cosineSlow = glm::cos(animTime * timeFactor / 4.0f);
+	const float scaleAnimTime = animTime * timeFactor;
+	const float sine = glm::sin(scaleAnimTime);
+	const float cosine = glm::cos(scaleAnimTime);
+	const float cosineSlow = glm::cos(0.25f * scaleAnimTime);
 	const float movement = sine * 0.15f;
-	const glm::vec2 headLook(glm::cos(animTime) * 0.1f + glm::radians(-30.0f), sine * 0.1f);
+	const float headLookX = 0.1f * glm::cos(animTime) + glm::radians(-30.0f);
+	const float headLookY = 0.1f * sine;
 
-	velocity = glm::clamp((float)(velocity / 20.0), 0.1f, 2.5f);
+	velocity = glm::clamp((float)(0.05f * velocity), 0.1f, 2.5f);
 
 	Bone &head = skeleton.headBone(skeletonAttr);
 	head.translation = glm::vec3(0.0f, skeletonAttr.neckHeight + skeletonAttr.headY + cosine * 1.3f + 0.5f, -1.0f + skeletonAttr.neckForward);
-	head.orientation = rotateXY(headLook.x, headLook.y);
+	head.orientation = rotateXY(headLookX, headLookY);
 
+	const glm::quat rotateYMovement = rotateY(movement);
 	const float bodyMoveY = cosine * 0.5f;
 	Bone &chest = skeleton.chestBone(skeletonAttr);
 	chest.translation = glm::vec3(0.0f, skeletonAttr.chestY + bodyMoveY, 0.0f);
-	chest.orientation = rotateY(movement);
+	chest.orientation = rotateYMovement;
 
 	Bone &belt = skeleton.beltBone(skeletonAttr);
 	belt.translation = glm::vec3(0.0f, skeletonAttr.beltY + bodyMoveY, 0.0f);
-	belt.orientation = rotateY(movement);
+	belt.orientation = rotateYMovement;
 
 	Bone &pants = skeleton.pantsBone(skeletonAttr);
 	pants.translation = glm::vec3(0.0f, skeletonAttr.pantsY + bodyMoveY, 0.0f);
-	pants.orientation = rotateY(movement);
+	pants.orientation = rotateYMovement;
 
 	const float handAngle = sine * 0.05f;
 	const float handMoveY = cosineSlow * 3.0f;
