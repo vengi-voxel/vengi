@@ -14,6 +14,7 @@
 #include "math/AABB.h"
 #include "core/Enum.h"
 #include "core/collection/Array.h"
+#include "commonlua/LUA.h"
 
 namespace animation {
 
@@ -32,6 +33,7 @@ protected:
 	Indices _indices;
 	double _globalTimeSeconds = 0.0;
 	math::AABB<float> _aabb { -0.5f, 0.0f, -0.5f, 0.5f, 1.0f, 0.5f };
+	lua::LUA _lua;
 
 	/**
 	 * @note Make sure to initialize the bones states of the skeleton before calling this

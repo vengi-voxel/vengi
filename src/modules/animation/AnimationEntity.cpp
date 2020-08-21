@@ -3,6 +3,9 @@
  */
 
 #include "AnimationEntity.h"
+#include "animation/LUAAnimation.h"
+#include "core/App.h"
+#include "core/io/Filesystem.h"
 #include <float.h>
 
 namespace animation {
@@ -32,6 +35,21 @@ bool AnimationEntity::init(const AnimationCachePtr& cache, const core::String& l
 	}
 	if (!initMesh(cache)) {
 		return false;
+	}
+
+	if (_settings.type() != AnimationSettings::Type::Max) {
+		const core::String& typePath = core::string::format("animations/%s.lua", AnimationSettings::TypeStrings[(int)_settings.type()]);
+		_lua.resetState();
+		luaanim_setup(_lua);
+		const core::String& luaScript = io::filesystem()->load(typePath);
+		if (!_lua.load(luaScript)) {
+			Log::warn("Could not load animations for type '%s': %s",
+					typePath.c_str(), _lua.error().c_str());
+		} else {
+			Log::info("Loaded %s", typePath.c_str());
+		}
+	} else {
+		Log::error("Could not set animation type");
 	}
 	setAnimation(animation::Animation::IDLE, false);
 	return updateAABB();

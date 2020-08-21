@@ -24,6 +24,7 @@ set(SRCS
 	Bone.cpp Bone.h
 	BoneId.cpp BoneId.h
 	BoneUtil.h
+	LUAAnimation.h LUAAnimation.cpp
 	Skeleton.h Skeleton.cpp
 	SkeletonAttribute.h
 )
@@ -124,12 +125,18 @@ set(LUA_SRCS
 	animal/bird-shared.lua
 	animal/bird-bones.lua
 	animal/shared.lua
+
+	animations/bird.lua
+	animations/character.lua
+	animations/boneutil.lua
+	animations/characterskeleton.lua
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES stock voxelformat render)
 generate_shaders(${LIB} skeleton skeletonshadowmap skeletondepthmap)
 
 set(TEST_SRCS
 	tests/CharacterSettingsTest.cpp
+	tests/LUAAnimationTest.cpp
 	tests/SkeletonTest.cpp
 )
 
