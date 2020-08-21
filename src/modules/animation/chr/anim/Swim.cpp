@@ -15,7 +15,7 @@ void update(double animTime, double velocity, CharacterSkeleton &skeleton, const
 	const float sine = glm::sin(scaleAnimTime);
 	const float cosine = glm::cos(scaleAnimTime);
 	const float cosineSlow = glm::cos(0.25f * scaleAnimTime);
-	const float movement = sine * 0.15f;
+	const float movement = 0.15f * sine;
 	const float headLookX = 0.1f * glm::cos(animTime) + glm::radians(-30.0f);
 	const float headLookY = 0.1f * sine;
 
@@ -25,7 +25,7 @@ void update(double animTime, double velocity, CharacterSkeleton &skeleton, const
 	head.translation = glm::vec3(0.0f, skeletonAttr.neckHeight + skeletonAttr.headY + cosine * 1.3f + 0.5f, -1.0f + skeletonAttr.neckForward);
 	head.orientation = rotateXY(headLookX, headLookY);
 
-	const glm::quat rotateYMovement = rotateY(movement);
+	const glm::quat& rotateYMovement = rotateY(movement);
 	const float bodyMoveY = cosine * 0.5f;
 	Bone &chest = skeleton.chestBone(skeletonAttr);
 	chest.translation = glm::vec3(0.0f, skeletonAttr.chestY + bodyMoveY, 0.0f);
@@ -63,7 +63,8 @@ void update(double animTime, double velocity, CharacterSkeleton &skeleton, const
 	Bone& tool = skeleton.bone(BoneId::Tool);
 	tool.scale = glm::vec3(skeletonAttr.toolScale * 0.8f);
 	tool.translation = glm::vec3(skeletonAttr.toolRight, skeletonAttr.pantsY, skeletonAttr.toolForward);
-	tool.orientation = rotateYZ(glm::radians(-90.0f), glm::radians(110.0f));
+	static const glm::quat toolOrientation = rotateYZ(glm::radians(-90.0f), glm::radians(110.0f));
+	tool.orientation = toolOrientation;
 
 	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr, rotateX(sine * 0.15f));
 

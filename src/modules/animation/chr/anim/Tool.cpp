@@ -41,7 +41,7 @@ static void swing(double animTime, CharacterSkeleton &skeleton, const CharacterS
 	const float movement = glm::sin(animTime * 12.0f);
 	const float torsoRotationX = movement * 0.1f;
 	const float torsoRotationY = movement * 0.01f;
-	const float torsoRotationZ = movement * 0.01f;
+	const float torsoRotationZ = torsoRotationY;
 	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
 	torso.translation = glm::zero<glm::vec3>();
 	torso.orientation = rotateXYZ(torsoRotationX, torsoRotationY, torsoRotationZ);

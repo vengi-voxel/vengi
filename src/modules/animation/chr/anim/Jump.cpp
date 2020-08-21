@@ -24,33 +24,40 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 	skeleton.bone(BoneId::Belt) = translate(0.0f, skeletonAttr.beltY, 0.0f);
 	skeleton.bone(BoneId::Pants) = translate(0.0f, skeletonAttr.pantsY, 0.0f);
 
+	const float sineHand = sine * 0.4f;
+	const float sineStopHandY = sineStop * 3.2f - sineHand;
+	const float sineStopHandZ = sineStop * 3.8f;
 	Bone &righthand = skeleton.handBone(BoneId::RightHand, skeletonAttr);
-	righthand.translation = glm::vec3(skeletonAttr.handRight + 0.5f, sineStop * 3.2f - sine * 0.4f, skeletonAttr.handForward + sineStop * 3.8f);
+	righthand.translation = glm::vec3(skeletonAttr.handRight + 0.5f, sineStopHandY, skeletonAttr.handForward + sineStopHandZ);
 	righthand.orientation = rotateX(-handWaveStop);
 
 	Bone &lefthand = skeleton.bone(BoneId::LeftHand);
-	lefthand.translation = glm::vec3(-skeletonAttr.handRight - 0.5f, sineStop * 3.2f - sine * 0.4f, skeletonAttr.handForward + sineStop * -3.8f);
+	lefthand.translation = glm::vec3(-skeletonAttr.handRight - 0.5f, sineStopHandY, skeletonAttr.handForward - sineStopHandZ);
 	lefthand.orientation = rotateX(handWaveStop);
 
 	Bone &rightfoot = skeleton.footBone(BoneId::RightFoot, skeletonAttr);
 	rightfoot.translation = glm::vec3(skeletonAttr.footRight, skeletonAttr.hipOffset, -1.0f);
-	rightfoot.orientation = rotateX(-sineStop * 1.2f + sineSlow * 0.2f);
+	const float sineStopFoot = sineStop * 1.2f;
+	const float sineSlowFoot = sineSlow * 0.2f;
+	rightfoot.orientation = rotateX(-sineStopFoot + sineSlowFoot);
 
 	Bone &leftfoot = skeleton.bone(BoneId::LeftFoot);
 	leftfoot = mirrorX(rightfoot);
-	leftfoot.orientation = rotateX(sineStop * 1.2f + sineSlow * 0.2f);
+	leftfoot.orientation = rotateX(sineStopFoot + sineSlowFoot);
 
 	skeleton.toolBone(skeletonAttr);
 
-	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr, rotateX(-sineStopAlt * 0.3f));
+	const float sineStopShoulder = sineStopAlt * 0.3f;
+	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr, rotateX(-sineStopShoulder));
 
 	Bone &leftshoulder = skeleton.bone(BoneId::LeftShoulder);
 	leftshoulder = mirrorX(rightshoulder);
-	leftshoulder.orientation = rotateX(sineStopAlt * 0.3f);
+	leftshoulder.orientation = rotateX(sineStopShoulder);
 
 	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
 	torso.translation = glm::vec3(0.0f, 0.0f, -0.2f);
-	torso.orientation = glm::angleAxis(-0.2f, glm::right);
+	static const glm::quat torsoOrientation = glm::angleAxis(-0.2f, glm::right);
+	torso.orientation = torsoOrientation;
 
 	skeleton.bone(BoneId::Glider) = zero();
 }

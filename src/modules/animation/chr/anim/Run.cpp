@@ -11,30 +11,33 @@ namespace chr {
 namespace run {
 void update(double animTime, double velocity, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float timeFactor = skeletonAttr.runTimeFactor;
-	const float sine = glm::sin(animTime * timeFactor);
-	const float cosine = glm::cos(animTime * timeFactor);
-	const float cosineDouble = glm::cos(animTime * timeFactor * 2.0f);
-	const float movement = sine * 0.35f;
-	const glm::vec2 headLook(glm::cos(animTime) * 0.05f + glm::radians(10.0f), sine * 0.1f);
+	const float scaleAnimTime = animTime * timeFactor;
+	const float sine = glm::sin(scaleAnimTime);
+	const float cosine = glm::cos(scaleAnimTime);
+	const float cosineDouble = glm::cos(scaleAnimTime * 2.0f);
+	const float movement = 0.35f * sine;
+	const float headLookX = 0.05f * glm::cos(animTime) + glm::radians(10.0f);
+	const float headLookY = 0.1f * sine;
 
-	velocity = glm::clamp((float)(velocity / 10.0), 0.1f, 2.5f);
+	velocity = glm::clamp((float)(0.01 * velocity), 0.1f, 2.5f);
 
 	Bone &head = skeleton.headBone(skeletonAttr);
-	head.translation = glm::vec3(0.0f, skeletonAttr.neckHeight + skeletonAttr.headY + cosine * 1.3f, -1.0f + skeletonAttr.neckForward);
-	head.orientation = rotateXY(headLook.x, headLook.y);
+	head.translation = glm::vec3(0.0f, skeletonAttr.neckHeight + skeletonAttr.headY + 1.3f * cosine, -1.0f + skeletonAttr.neckForward);
+	head.orientation = rotateXY(headLookX, headLookY);
 
-	const float bodyMoveY = cosine * 1.1f;
+	const glm::quat& rotateYMovement = rotateY(movement);
+	const float bodyMoveY = 1.1f * cosine;
 	Bone &chest = skeleton.chestBone(skeletonAttr);
 	chest.translation = glm::vec3(0.0f, skeletonAttr.chestY + bodyMoveY, 0.0f);
-	chest.orientation = rotateY(movement);
+	chest.orientation = rotateYMovement;
 
 	Bone &belt = skeleton.beltBone(skeletonAttr);
 	belt.translation = glm::vec3(0.0f, skeletonAttr.beltY + bodyMoveY, 0.0f);
-	belt.orientation = rotateY(movement);
+	belt.orientation = rotateYMovement;
 
 	Bone &pants = skeleton.pantsBone(skeletonAttr);
 	pants.translation = glm::vec3(0.0f, skeletonAttr.pantsY + bodyMoveY, 0.0f);
-	pants.orientation = rotateY(movement);
+	pants.orientation = rotateYMovement;
 
 	const float handAngle = sine * 0.2f;
 	const float handMoveY = cosine;

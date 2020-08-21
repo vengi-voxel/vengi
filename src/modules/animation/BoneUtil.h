@@ -13,7 +13,7 @@
 namespace animation {
 
 inline constexpr Bone zero() {
-	return Bone{glm::zero<glm::vec3>(), glm::zero<glm::vec3>(), glm::quat{ 1.0f, 0.0f, 0.0f, 0.0f }};
+	return Bone{glm::zero<glm::vec3>(), glm::zero<glm::vec3>(), glm::quat_identity<float, glm::defaultp>()};
 }
 
 inline Bone translate(float x, float y, float z) {

@@ -10,8 +10,9 @@ namespace animation {
 namespace chr {
 namespace glide {
 void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
-	const float sine = glm::sin(animTime * 3.0f) * 0.1f;
-	const float cosine = glm::cos(animTime * 3.0f);
+	const float scaledAnimTime = animTime * 3.0f;
+	const float sine = glm::sin(scaledAnimTime) * 0.1f;
+	const float cosine = glm::cos(scaledAnimTime);
 	const float movement = glm::sin(animTime) * skeletonAttr.idleTimeFactor;
 
 	Bone &head = skeleton.headBone(skeletonAttr);
@@ -23,13 +24,14 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 	skeleton.bone(BoneId::Belt) = translate(0.0f, skeletonAttr.glidingUpwards + skeletonAttr.beltY + movement, skeletonAttr.glidingForward);
 	skeleton.bone(BoneId::Pants) = translate(0.0f, skeletonAttr.glidingUpwards + skeletonAttr.pantsY + movement, skeletonAttr.glidingForward);
 
+	const float scaledHandCosine = cosine * 0.15f;
 	const float handRotation = glm::radians(-50.0f);
 	Bone &righthand = skeleton.handBone(BoneId::RightHand, skeletonAttr);
-	righthand.translation = glm::vec3(skeletonAttr.handRight, skeletonAttr.headY + sine, skeletonAttr.handForward + cosine * 0.15f);
+	righthand.translation = glm::vec3(skeletonAttr.handRight, skeletonAttr.headY + sine, skeletonAttr.handForward + scaledHandCosine);
 	righthand.orientation = rotateXZ(handRotation, glm::radians(180.0f));
 
 	Bone &lefthand = skeleton.handBone(BoneId::LeftHand, skeletonAttr);
-	lefthand.translation = glm::vec3(-skeletonAttr.handRight, skeletonAttr.headY + sine, skeletonAttr.handForward - cosine * 0.15f);
+	lefthand.translation = glm::vec3(-skeletonAttr.handRight, skeletonAttr.headY + sine, skeletonAttr.handForward - scaledHandCosine);
 	lefthand.orientation = rotateXZ(handRotation, glm::radians(-180.0f));
 
 	Bone &rightfoot = skeleton.footBone(BoneId::RightFoot, skeletonAttr);
