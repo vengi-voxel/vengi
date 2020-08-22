@@ -6,45 +6,6 @@ function module.translate(x, y, z)
 end
 --]]
 
-function module.angleAxis(angle, direction)
-	local s = math.sin(angle * 0.5)
-	local sv = vec3.new(s, s, s)
-	local v = direction * sv
-	return quat.new(math.cos(angle * 0.5), v.x, v.y, v.z)
-end
-
-module.vec3_backward = vec3.new(0.0, 0.0, 1.0)
-module.vec3_right    = vec3.new(1.0, 0.0, 0.0)
-module.vec3_up       = vec3.new(0.0, 1.0, 0.0)
-
-function module.rotateX(angle)
-	return module.angleAxis(angle, module.vec3_right)
-end
-
-function module.rotateZ(angle)
-	return module.angleAxis(angle, module.vec3_backward)
-end
-
-function module.rotateY(angle)
-	return module.angleAxis(angle, module.vec3_up)
-end
-
-function module.rotateXZ(angleX, angleZ)
-	return module.rotateX(angleX) * module.rotateZ(angleZ)
-end
-
-function module.rotateYZ(angleY, angleZ)
-	return module.rotateZ(angleZ) * module.rotateY(angleY)
-end
-
-function module.rotateXY(angleX, angleY)
-	return module.rotateY(angleY) * module.rotateX(angleX)
-end
-
-function module.rotateXYZ(angleX, angleY, angleZ)
-	return module.rotateXY(angleX, angleY) * module.rotateZ(angleZ)
-end
-
 function module.mirrorX(bone)
 	local mirrored = bone
 	mirrored.translation.x = mirrored.translation.x * -1.0
