@@ -19,7 +19,7 @@ void update(double animTime, double velocity, CharacterSkeleton &skeleton, const
 	const float headLookX = 0.1f * glm::cos(animTime) + glm::radians(-30.0f);
 	const float headLookY = 0.1f * sine;
 
-	velocity = glm::clamp((float)(0.05f * velocity), 0.1f, 2.5f);
+	velocity = glm::clamp((float)(0.05 * velocity), 0.1f, 2.5f);
 
 	Bone &head = skeleton.headBone(skeletonAttr);
 	head.translation = glm::vec3(0.0f, skeletonAttr.neckHeight + skeletonAttr.headY + cosine * 1.3f + 0.5f, -1.0f + skeletonAttr.neckForward);

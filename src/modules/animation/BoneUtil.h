@@ -33,19 +33,19 @@ inline glm::quat rotateY(float angle) {
 }
 
 inline glm::quat rotateXZ(float angleX, float angleZ) {
-	return rotateX(angleX) * rotateZ(angleZ);
+	return glm::quat(glm::vec3(angleX, 0.0f, angleZ));
 }
 
 inline glm::quat rotateYZ(float angleY, float angleZ) {
-	return rotateZ(angleZ) * rotateY(angleY);
+	return glm::quat(glm::vec3(0.0f, angleY, angleZ));
 }
 
 inline glm::quat rotateXY(float angleX, float angleY) {
-	return rotateY(angleY) * rotateX(angleX);
+	return glm::quat(glm::vec3(angleX, angleY, 0.0f));
 }
 
 inline glm::quat rotateXYZ(float angleX, float angleY, float angleZ) {
-	return rotateXY(angleX, angleY) * rotateZ(angleZ);
+	return glm::quat(glm::vec3(angleX, angleY, angleZ));
 }
 
 inline Bone mirrorX(const Bone& bone) {
