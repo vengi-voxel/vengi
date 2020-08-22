@@ -47,7 +47,7 @@ static int luaContainerAddAbsolute(lua_State * l) {
 	attrib::Type attribType = getType(type);
 	if (attribType == attrib::Type::NONE) {
 		const core::String& error = core::string::format("Unknown type given: %s", type);
-		lua::LUA::returnError(l, error);
+		return lua::LUA::returnError(l, error);
 	}
 	Values v = ctx->absolute();
 	v.put(attribType, value);
@@ -69,7 +69,7 @@ static int luaContainerAddPercentage(lua_State * l) {
 	attrib::Type attribType = getType(type);
 	if (attribType == attrib::Type::NONE) {
 		const core::String& error = core::string::format("Unknown type given: %s", type);
-		lua::LUA::returnError(l, error);
+		return lua::LUA::returnError(l, error);
 	}
 	Values v = ctx->percentage();
 	v.put(attribType, value);

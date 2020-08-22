@@ -7,7 +7,6 @@
 #include "animation/BoneUtil.h"
 #include "animation/SkeletonAttribute.h"
 #include "commonlua/LUAFunctions.h"
-#include "lua.h"
 
 namespace animation {
 
@@ -47,12 +46,12 @@ static Skeleton* luaanim_toskeleton(lua_State* s, int n) {
 	return *(Skeleton**)clua_getudata<Skeleton*>(s, n, luaanim_metaskeleton());
 }
 
-static int luaanim_pushbone(lua_State* s, const Bone& bone) {
+static int luaanim_pushbone(lua_State* s, const Bone* bone) {
 	return clua_pushudata(s, bone, luaanim_metabone());
 }
 
-static Bone& luaanim_tobone(lua_State* s, int n) {
-	return *(Bone*)clua_getudata<Bone*>(s, n, luaanim_metabone());
+static Bone* luaanim_tobone(lua_State* s, int n) {
+	return *(Bone**)clua_getudata<Bone*>(s, n, luaanim_metabone());
 }
 
 static int luaanim_skeleton_bone(lua_State* s) {
@@ -62,19 +61,19 @@ static int luaanim_skeleton_bone(lua_State* s) {
 	if (boneId == BoneId::Max) {
 		return luaL_error(s, "%s is no valid bone", name);
 	}
-	return luaanim_pushbone(s, skeleton->bone(boneId));
+	return luaanim_pushbone(s, &skeleton->bone(boneId));
 }
 
 static int luaanim_skeleton_torsobone(lua_State* s) {
 	Skeleton* skeleton = luaanim_toskeleton(s, 1);
 	const float scale = lua_tonumber(s, 2);
-	return luaanim_pushbone(s, skeleton->torsoBone(scale));
+	return luaanim_pushbone(s, &skeleton->torsoBone(scale));
 }
 
 #define luaanim_skeleton_bonebyid(name, id) \
 	static int luaanim_skeleton_##name##bone(lua_State* s) { \
 		Skeleton* skeleton = luaanim_toskeleton(s, 1); \
-		return luaanim_pushbone(s, skeleton->bone(BoneId::id)); \
+		return luaanim_pushbone(s, &skeleton->bone(BoneId::id)); \
 	}
 
 luaanim_skeleton_bonebyid(head, Head)
@@ -95,14 +94,14 @@ luaanim_skeleton_bonebyid(tail, Tail)
 luaanim_skeleton_bonebyid(body, Body)
 
 static int luaanim_bone_equal(lua_State* s) {
-	const Bone& a = luaanim_tobone(s, 1);
-	const Bone& b = luaanim_tobone(s, 2);
-	lua_pushboolean(s, &a == &b);
+	const Bone* a = luaanim_tobone(s, 1);
+	const Bone* b = luaanim_tobone(s, 2);
+	lua_pushboolean(s, a == b);
 	return 1;
 }
 
 static int luaanim_bone_tostring(lua_State* s) {
-	const Bone& bone = luaanim_tobone(s, 1);
+	const Bone& bone = *luaanim_tobone(s, 1);
 	lua_pushfstring(s, "Bone[scale: %f:%f:%f, translation: %f:%f:%f, orientation: %f:%f:%f:%f]",
 		bone.scale.x, bone.scale.y, bone.scale.z,
 		bone.translation.x, bone.translation.y, bone.translation.z,
@@ -111,9 +110,32 @@ static int luaanim_bone_tostring(lua_State* s) {
 	return 0;
 }
 
-static int luanim_skeleton_zerobone(lua_State* s) {
-	static constexpr Bone zero = animation::zero();
-	return luaanim_pushbone(s, zero);
+static int luaanim_bone_destroy(lua_State* s) {
+	return 0;
+}
+
+static int luaanim_bone_setscale(lua_State* s) {
+	Bone& bone = *luaanim_tobone(s, 1);
+	glm::vec3& v = bone.scale;
+	v.x = lua_tonumber(s, 2);
+	v.y = luaL_optnumber(s, 3, v.x);
+	v.z = luaL_optnumber(s, 4, v.y);
+	return 0;
+}
+
+static int luaanim_bone_settranslation(lua_State* s) {
+	Bone& bone = *luaanim_tobone(s, 1);
+	glm::vec3& v = bone.translation;
+	v.x = lua_tonumber(s, 2);
+	v.y = luaL_optnumber(s, 3, v.x);
+	v.z = luaL_optnumber(s, 4, v.y);
+	return 0;
+}
+
+static int luaanim_bone_setorientation(lua_State* s) {
+	Bone& bone = *luaanim_tobone(s, 1);
+	bone.orientation = *clua_get<glm::quat>(s, 2);
+	return 0;
 }
 
 static int luaanim_skeleton_hidegliderbone(lua_State* s) {
@@ -122,96 +144,70 @@ static int luaanim_skeleton_hidegliderbone(lua_State* s) {
 	return 0;
 }
 
-static int luaanim_bone_index(lua_State* s) {
-	const Bone& bone = luaanim_tobone(s, 1);
-	const char* i = luaL_checkstring(s, 2);
-
-	switch (*i) {
-	case 't':
-		return clua_push(s, bone.translation);
-	case 's':
-		return clua_push(s, bone.scale);
-	case 'o': {
-		return clua_push(s, bone.orientation);
-	}
-	}
-	return luaL_error(s, "Invalid component %s - supported are translation, scale and orientation", i);
+static int luaanim_bone_zero(lua_State* s) {
+	Bone& bone = *luaanim_tobone(s, 1);
+	bone = animation::zero();
+	return 0;
 }
 
-static int luaanim_bone_newindex(lua_State* s) {
-	Bone& bone = luaanim_tobone(s, 1);
-	const char *i = luaL_checkstring(s, 2);
-
-	switch (*i) {
-	case 't':
-		bone.translation = *clua_get<glm::vec3>(s, 3);
-		return 1;
-	case 's':
-		bone.scale = *clua_get<glm::vec3>(s, 3);
-		return 1;
-	case 'o': {
-		bone.orientation = *clua_get<glm::quat>(s, 3);
-		return 1;
-	}
-	}
-	return luaL_error(s, "Invalid component %s - supported are translation, scale and orientation", i);
+static int luaanim_bone_mirror_x(lua_State* s) {
+	Bone& self = *luaanim_tobone(s, 1);
+	const Bone& bone = *luaanim_tobone(s, 2);
+	self = mirrorX(bone);
+	return 0;
 }
 
-static int luanim_boneutil_rotate_xyz(lua_State* s) {
+static int luaanim_bone_mirror_xyz(lua_State* s) {
+	Bone& self = *luaanim_tobone(s, 1);
+	const Bone& bone = *luaanim_tobone(s, 2);
+	self = mirrorXYZ(bone);
+	return 0;
+}
+
+static int luaanim_bone_mirror_xz(lua_State* s) {
+	Bone& self = *luaanim_tobone(s, 1);
+	const Bone& bone = *luaanim_tobone(s, 2);
+	self = mirrorXZ(bone);
+	return 0;
+}
+
+static int luaanim_boneutil_rotate_xyz(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
 	const float z = lua_tonumber(s, 2);
 	return clua_push(s, rotateXZ(x, z));
 }
 
-static int luanim_boneutil_rotate_xy(lua_State* s) {
+static int luaanim_boneutil_rotate_xy(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
 	const float y = lua_tonumber(s, 2);
 	return clua_push(s, rotateXY(x, y));
 }
 
-static int luanim_boneutil_rotate_yz(lua_State* s) {
+static int luaanim_boneutil_rotate_yz(lua_State* s) {
 	const float y = lua_tonumber(s, 1);
 	const float z = lua_tonumber(s, 2);
 	return clua_push(s, rotateXY(y, z));
 }
 
-static int luanim_boneutil_rotate_xz(lua_State* s) {
+static int luaanim_boneutil_rotate_xz(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
 	const float z = lua_tonumber(s, 2);
 	return clua_push(s, rotateXY(x, z));
 }
 
-static int luanim_boneutil_rotate_x(lua_State* s) {
+static int luaanim_boneutil_rotate_x(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
 	return clua_push(s, rotateX(x));
 }
 
-static int luanim_boneutil_rotate_y(lua_State* s) {
+static int luaanim_boneutil_rotate_y(lua_State* s) {
 	const float y = lua_tonumber(s, 1);
 	return clua_push(s, rotateY(y));
 }
 
-static int luanim_boneutil_rotate_z(lua_State* s) {
+static int luaanim_boneutil_rotate_z(lua_State* s) {
 	const float z = lua_tonumber(s, 1);
 	return clua_push(s, rotateZ(z));
-}
-
-static int luaanim_boneutil_mirror_x(lua_State* s) {
-	const Bone& bone = luaanim_tobone(s, 1);
-	const Bone& mirrored = mirrorX(bone);
-	return luaanim_pushbone(s, mirrored);
-}
-
-static int luaanim_boneutil_mirror_xyz(lua_State* s) {
-	const Bone& bone = luaanim_tobone(s, 1);
-	const Bone& mirrored = mirrorXYZ(bone);
-	return luaanim_pushbone(s, mirrored);
-}
-
-static int luaanim_boneutil_mirror_xz(lua_State* s) {
-	const Bone& bone = luaanim_tobone(s, 1);
-	const Bone& mirrored = mirrorXZ(bone);
-	return luaanim_pushbone(s, mirrored);
 }
 
 static int luaanim_boneutil_mirror_vec3_xz(lua_State* s) {
@@ -222,51 +218,53 @@ static int luaanim_boneutil_mirror_vec3_xz(lua_State* s) {
 
 void luaanim_setup(lua_State* s) {
 	static const luaL_Reg boneFuncs[] = {
-		{"__eq", luaanim_bone_equal},
-		{"__tostring", luaanim_bone_tostring},
-		{"__index", luaanim_bone_index},
-		{"__newindex", luaanim_bone_newindex},
+		{"mirrorX",        luaanim_bone_mirror_x},
+		{"mirrorXYZ",      luaanim_bone_mirror_xyz},
+		{"mirrorXZ",       luaanim_bone_mirror_xz},
+		{"zero",           luaanim_bone_zero},
+		{"__eq",           luaanim_bone_equal},
+		{"__tostring",     luaanim_bone_tostring},
+		{"__gc",           luaanim_bone_destroy},
+		{"setScale",       luaanim_bone_setscale},
+		{"setTranslation", luaanim_bone_settranslation},
+		{"setOrientation", luaanim_bone_setorientation},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, boneFuncs, luaanim_metabone());
 
 	static const luaL_Reg skeletonFuncs[] = {
-		{"zeroBone", luanim_skeleton_zerobone},
-		{"bone", luaanim_skeleton_bone},
-		{"headBone", luaanim_skeleton_headbone},
-		{"chestBone", luaanim_skeleton_chestbone},
-		{"beltBone", luaanim_skeleton_beltbone},
-		{"pantsBone", luaanim_skeleton_pantsbone},
-		{"lefthandBone", luaanim_skeleton_lefthandbone},
-		{"righthandBone", luaanim_skeleton_righthandbone},
-		{"leftfootBone", luaanim_skeleton_leftfootbone},
-		{"rightfootBone", luaanim_skeleton_rightfootbone},
-		{"toolBone", luaanim_skeleton_toolbone},
-		{"leftshoulderBone", luaanim_skeleton_leftshoulderbone},
+		{"bone",              luaanim_skeleton_bone},
+		{"headBone",          luaanim_skeleton_headbone},
+		{"chestBone",         luaanim_skeleton_chestbone},
+		{"beltBone",          luaanim_skeleton_beltbone},
+		{"pantsBone",         luaanim_skeleton_pantsbone},
+		{"lefthandBone",      luaanim_skeleton_lefthandbone},
+		{"righthandBone",     luaanim_skeleton_righthandbone},
+		{"leftfootBone",      luaanim_skeleton_leftfootbone},
+		{"rightfootBone",     luaanim_skeleton_rightfootbone},
+		{"toolBone",          luaanim_skeleton_toolbone},
+		{"leftshoulderBone",  luaanim_skeleton_leftshoulderbone},
 		{"rightshoulderBone", luaanim_skeleton_rightshoulderbone},
-		{"gliderBone", luaanim_skeleton_gliderbone},
-		{"torsoBone", luaanim_skeleton_torsobone},
-		{"leftwingBone", luaanim_skeleton_leftwingbone},
-		{"rightwingBone", luaanim_skeleton_rightwingbone},
-		{"tailBone", luaanim_skeleton_tailbone},
-		{"bodyBone", luaanim_skeleton_bodybone},
-		{"headBone", luaanim_skeleton_headbone},
-		{"hideGliderBone", luaanim_skeleton_hidegliderbone},
+		{"gliderBone",        luaanim_skeleton_gliderbone},
+		{"torsoBone",         luaanim_skeleton_torsobone},
+		{"leftwingBone",      luaanim_skeleton_leftwingbone},
+		{"rightwingBone",     luaanim_skeleton_rightwingbone},
+		{"tailBone",          luaanim_skeleton_tailbone},
+		{"bodyBone",          luaanim_skeleton_bodybone},
+		{"headBone",          luaanim_skeleton_headbone},
+		{"hideGliderBone",    luaanim_skeleton_hidegliderbone},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, skeletonFuncs, luaanim_metaskeleton());
 
 	static const luaL_Reg boneutilFuncs[] = {
-		{"rotateXYZ", luanim_boneutil_rotate_xyz},
-		{"rotateXY", luanim_boneutil_rotate_xy},
-		{"rotateYZ", luanim_boneutil_rotate_yz},
-		{"rotateXZ", luanim_boneutil_rotate_xz},
-		{"rotateY", luanim_boneutil_rotate_x},
-		{"rotateX", luanim_boneutil_rotate_y},
-		{"rotateZ", luanim_boneutil_rotate_z},
-		{"mirrorX", luaanim_boneutil_mirror_x},
-		{"mirrorXYZ", luaanim_boneutil_mirror_xyz},
-		{"mirrorXZ", luaanim_boneutil_mirror_xz},
+		{"rotateXYZ",    luaanim_boneutil_rotate_xyz},
+		{"rotateXY",     luaanim_boneutil_rotate_xy},
+		{"rotateYZ",     luaanim_boneutil_rotate_yz},
+		{"rotateXZ",     luaanim_boneutil_rotate_xz},
+		{"rotateY",      luaanim_boneutil_rotate_x},
+		{"rotateX",      luaanim_boneutil_rotate_y},
+		{"rotateZ",      luaanim_boneutil_rotate_z},
 		{"mirrorVec3XZ", luaanim_boneutil_mirror_vec3_xz},
 		{nullptr, nullptr}
 	};

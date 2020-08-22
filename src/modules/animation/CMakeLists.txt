@@ -128,8 +128,6 @@ set(LUA_SRCS
 
 	animations/bird.lua
 	animations/character.lua
-	animations/boneutil.lua
-	animations/characterskeleton.lua
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES stock voxelformat render)
 generate_shaders(${LIB} skeleton skeletonshadowmap skeletondepthmap)

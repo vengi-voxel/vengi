@@ -66,7 +66,7 @@ void update(double animTime, double velocity, CharacterSkeleton &skeleton, const
 	static const glm::quat toolOrientation = rotateYZ(glm::radians(-90.0f), glm::radians(110.0f));
 	tool.orientation = toolOrientation;
 
-	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr, rotateX(sine * 0.15f));
+	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr, rotateX(movement));
 
 	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
 	torso.translation = glm::vec3(0.0f, 0.5f + sine * 0.04f, -skeletonAttr.beltY * torso.scale.z);
