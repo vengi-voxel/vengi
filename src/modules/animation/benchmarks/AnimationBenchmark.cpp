@@ -3,6 +3,7 @@
 #include "animation/chr/anim/Idle.h"
 #include "animation/chr/anim/Jump.h"
 #include "animation/chr/anim/Run.h"
+#include "animation/chr/anim/Sit.h"
 #include "animation/chr/anim/Swim.h"
 #include "animation/chr/anim/Tool.h"
 
@@ -93,6 +94,7 @@ class AnimationBenchmark: public core::AbstractBenchmark {
 CHR_ANIM_BENCHMARK_DEFINE_F(glide)
 CHR_ANIM_BENCHMARK_DEFINE_F(jump)
 CHR_ANIM_BENCHMARK_DEFINE_F(idle)
+CHR_ANIM_BENCHMARK_DEFINE_F(sit)
 CHR_ANIM_VELO_BENCHMARK_DEFINE_F(run, 1.0f)
 CHR_ANIM_VELO_BENCHMARK_DEFINE_F(swim, 1.0f)
 CHR_ANIM_LUA_VELO_BENCHMARK_DEFINE_F(swim, 1.0f)
