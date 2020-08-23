@@ -83,4 +83,9 @@ inline constexpr glm::vec3 mirrorXZ(glm::vec3 translation) {
 	return translation;
 }
 
+inline constexpr glm::vec3 mirrorX(glm::vec3 translation) {
+	translation.x = -translation.x;
+	return translation;
+}
+
 }

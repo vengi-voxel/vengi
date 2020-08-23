@@ -50,7 +50,6 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 	glider.orientation = rotateX(-torsoRotation);
 
 	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
-	torso.translation = glm::zero<glm::vec3>();
 	torso.orientation = rotateXZ(torsoRotation + sine * 0.3f, sine);
 
 	skeleton.bone(BoneId::LeftHand) = mirrorX(skeleton.bone(BoneId::RightHand));

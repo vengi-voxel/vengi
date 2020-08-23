@@ -4,6 +4,7 @@ set(SRCS
 	chr/anim/Run.cpp chr/anim/Run.h
 	chr/anim/Jump.cpp chr/anim/Jump.h
 	chr/anim/Glide.cpp chr/anim/Glide.h
+	chr/anim/Sit.cpp chr/anim/Sit.h
 	chr/anim/Swim.cpp chr/anim/Swim.h
 	chr/anim/Tool.cpp chr/anim/Tool.h
 	chr/Character.cpp chr/Character.h

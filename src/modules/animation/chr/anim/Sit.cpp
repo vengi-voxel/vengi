@@ -2,17 +2,20 @@
  * @file
  */
 
-#include "Idle.h"
+#include "Sit.h"
 #include "animation/Animation.h"
 #include "animation/BoneUtil.h"
+#include "core/Var.h"
+
+#define F(name, defaultVal) core::Var::get(name, CORE_STRINGIFY(defaultVal))->floatVal()
 
 namespace animation {
 namespace chr {
-namespace idle {
+namespace sit {
 void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float sine = glm::sin(animTime);
 	const float cosine = glm::cos(animTime);
-	const float movement = sine * skeletonAttr.idleTimeFactor;
+	const float movement = sine * skeletonAttr.idleTimeFactor - skeletonAttr.footHeight;
 
 	Bone &head = skeleton.headBone(skeletonAttr);
 	head.translation = glm::vec3(skeletonAttr.neckRight, skeletonAttr.neckHeight + skeletonAttr.headY + movement, skeletonAttr.neckForward);
@@ -30,13 +33,19 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 	righthand.translation = glm::vec3(skeletonAttr.handRight, sine * 0.5f, skeletonAttr.handForward + cosine * 0.15f);
 	righthand.orientation = rotateX(sine * -0.06f);
 
-	skeleton.bone(BoneId::RightFoot) = translate(skeletonAttr.footRight, skeletonAttr.hipOffset, 0.0f);
+	Bone& rightfoot = skeleton.footBone(BoneId::RightFoot, skeletonAttr);
+	rightfoot.translation = glm::vec3(skeletonAttr.footRight, skeletonAttr.hipOffset - skeletonAttr.footHeight, 1.0f);
+	rightfoot.orientation = rotateX(glm::radians(-80.0f));
+
+	Bone& leftfoot = skeleton.footBone(BoneId::LeftFoot, skeletonAttr);
+	leftfoot.translation = mirrorX(rightfoot.translation);
+	leftfoot.scale = mirrorX(rightfoot.scale);
+	leftfoot.orientation = rightfoot.orientation;
 
 	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr);
 
 	skeleton.bone(BoneId::Glider) = zero();
 	skeleton.bone(BoneId::LeftHand) = mirrorX(righthand);
-	skeleton.bone(BoneId::LeftFoot) = mirrorX(skeleton.bone(BoneId::RightFoot));
 	skeleton.bone(BoneId::LeftShoulder) = mirrorX(rightshoulder);
 }
 }

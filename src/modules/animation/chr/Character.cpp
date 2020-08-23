@@ -13,6 +13,7 @@
 #include "anim/Glide.h"
 #include "anim/Swim.h"
 #include "anim/Tool.h"
+#include "anim/Sit.h"
 
 namespace animation {
 
@@ -142,6 +143,9 @@ void Character::update(double deltaSeconds, const attrib::ShadowAttributes& attr
 			break;
 		case Animation::GLIDE:
 			chr::glide::update(_globalTimeSeconds, _skeleton, _attributes);
+			break;
+		case Animation::SIT:
+			chr::sit::update(_globalTimeSeconds, _skeleton, _attributes);
 			break;
 		case Animation::TOOL:
 			if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
