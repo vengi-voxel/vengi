@@ -35,6 +35,9 @@ ResponseParser HttpClient::get(const char *msg, ...) {
 		return ResponseParser(nullptr, 0u);
 	}
 	Request request(u, HttpMethod::GET);
+	for (const auto& e : _headers) {
+		request.header(e->key, e->value);
+	}
 	return request.execute(_requestTimeOut);
 }
 

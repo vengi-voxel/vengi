@@ -18,6 +18,7 @@ static constexpr const char *USER_AGENT = "User-agent";
 static constexpr const char *CONNECTION = "Connection";
 static constexpr const char *KEEP_ALIVE = "Keep-Alive";
 static constexpr const char *CONTENT_TYPE = "Content-Type";
+static constexpr const char *CHARSET = "charset";
 static constexpr const char *ACCEPT = "Accept";
 static constexpr const char *SERVER = "Server";
 static constexpr const char *HOST = "Host";
