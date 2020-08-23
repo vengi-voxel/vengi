@@ -1,3 +1,7 @@
+# Allow to override settings
+CONFIG         ?= Makefile.local
+-include $(CONFIG)
+
 Q              ?= @
 UPDATEDIR      := /tmp
 BUILDTYPE      ?= Debug
