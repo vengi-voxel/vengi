@@ -46,9 +46,7 @@ void update(double animTime, double velocity, CharacterSkeleton &skeleton, const
 	righthand.translation = glm::vec3(skeletonAttr.handRight + cosineDouble, handMoveY, skeletonAttr.handForward + handMoveZ);
 	righthand.orientation = rotateX(handAngle);
 
-	Bone &lefthand = skeleton.handBone(BoneId::LeftHand, skeletonAttr);
-	lefthand = mirrorXZ(righthand);
-	lefthand.orientation = rotateX(-handAngle);
+	skeleton.bone(BoneId::LeftHand) = mirrorX(righthand);
 
 	const float footAngle = cosine * 1.5f;
 	const float footMoveY = cosineDouble * 0.5f;
