@@ -37,6 +37,7 @@ private:
 	io::FilePtr _luaFile;
 
 	int _currentAnimationEntityIndex = 0;
+	double _timeScale = 1.0;
 	bool loadAnimationEntity();
 	void doRender() override;
 	void onRenderUI() override;

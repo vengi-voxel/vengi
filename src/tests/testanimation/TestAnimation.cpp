@@ -237,7 +237,7 @@ void TestAnimation::doRender() {
 	if (animationEntity()->animationSettings().type() == animation::AnimationSettings::Type::Character) {
 		((animation::Character*)animationEntity())->updateTool(_animationCache, _stock);
 	}
-	animationEntity()->update(_deltaFrameSeconds, _attrib);
+	animationEntity()->update(_deltaFrameSeconds * _timeScale, _attrib);
 	_renderer.render(*animationEntity(), camera());
 }
 
@@ -248,6 +248,7 @@ void TestAnimation::onRenderUI() {
 	if (ImGui::ComboStl("Animation", &_animationIdx, _animations)) {
 		animationEntity()->setAnimation((animation::Animation)_animationIdx, true);
 	}
+	ImGui::InputDouble("Timescale", &_timeScale);
 	if (animationEntity()->animationSettings().type() == animation::AnimationSettings::Type::Character) {
 		if (ImGui::ComboStl("Item/Tool", &_itemIdx, _items)) {
 			addItem(_itemIdx);

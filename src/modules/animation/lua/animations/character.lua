@@ -25,17 +25,17 @@ function swim(animTime, velocity, skeleton, skeletonAttr)
 	local rotateYMovement = boneutil.rotateY(movement)
 	local bodyMoveY = 0.5 * cosine
 	local chest = skeleton:chestBone()
-	chest:setScale(1.0, 1.0, 1.0)
+	chest:setScale(1.0)
 	chest:setTranslation(0.0, skeletonAttr.chestY + bodyMoveY, 0.0)
 	chest:setOrientation(rotateYMovement)
 
 	local belt = skeleton:beltBone()
-	belt:setScale(1.0, 1.0, 1.0)
+	belt:setScale(1.0)
 	belt:setTranslation(0.0, beltY + bodyMoveY, 0.0)
 	belt:setOrientation(rotateYMovement)
 
 	local pants = skeleton:pantsBone()
-	pants:setScale(1.0, 1.0, 1.0)
+	pants:setScale(1.0)
 	pants:setTranslation(0.0, pantsY + bodyMoveY, 0.0)
 	pants:setOrientation(rotateYMovement)
 
@@ -56,8 +56,7 @@ function swim(animTime, velocity, skeleton, skeletonAttr)
 	rightfoot:setTranslation(skeletonAttr.footRight, skeletonAttr.hipOffset - footMoveY, 0.0)
 	rightfoot:setOrientation(boneutil.rotateX(footAngle))
 
-	local leftfoot = skeleton:leftfootBone()
-	leftfoot:mirrorX(rightfoot)
+	skeleton:leftfootBone():mirrorX(rightfoot)
 
 	local tool = skeleton:toolBone()
 	tool:setScale(0.8 * skeletonAttr.toolScale)
@@ -76,6 +75,5 @@ function swim(animTime, velocity, skeleton, skeletonAttr)
 
 	skeleton:hideGliderBone()
 
-	local leftshoulder = skeleton:leftshoulderBone()
-	leftshoulder:mirrorX(rightshoulder)
+	skeleton:leftshoulderBone():mirrorX(rightshoulder)
 end
