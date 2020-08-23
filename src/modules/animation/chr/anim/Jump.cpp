@@ -50,9 +50,7 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 	const float sineStopShoulder = sineStopAlt * 0.3f;
 	Bone &rightshoulder = skeleton.shoulderBone(BoneId::RightShoulder, skeletonAttr, rotateX(-sineStopShoulder));
 
-	Bone &leftshoulder = skeleton.bone(BoneId::LeftShoulder);
-	leftshoulder = mirrorX(rightshoulder);
-	leftshoulder.orientation = rotateX(sineStopShoulder);
+	skeleton.bone(BoneId::LeftShoulder) = mirrorX(rightshoulder);
 
 	Bone &torso = skeleton.torsoBone(skeletonAttr.scaler);
 	torso.translation = glm::vec3(0.0f, 0.0f, -0.2f);

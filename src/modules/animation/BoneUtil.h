@@ -50,33 +50,36 @@ inline constexpr glm::quat rotateXYZ(float angleX, float angleY, float angleZ) {
 
 inline constexpr Bone mirrorX(const Bone& bone) {
 	Bone mirrored = bone;
-	mirrored.translation.x *= -1.0f;
+	mirrored.translation.x = -mirrored.translation.x;
 	// the winding order is fixed by reverse index buffer filling
-	mirrored.scale.x *= -1.0f;
+	mirrored.scale.x = -mirrored.scale.x;
+	mirrored.orientation.x = -mirrored.orientation.x;
+	mirrored.orientation.y = -mirrored.orientation.y;
+	mirrored.orientation.z = -mirrored.orientation.z;
 	return mirrored;
 }
 
 inline constexpr Bone mirrorXYZ(const Bone& bone) {
 	Bone mirrored = bone;
-	mirrored.translation *= -1.0f;
+	mirrored.translation = -mirrored.translation;
 	// the winding order is fixed by reverse index buffer filling
-	mirrored.scale *= -1.0f;
+	mirrored.scale = -mirrored.scale;
 	return mirrored;
 }
 
 inline constexpr Bone mirrorXZ(const Bone& bone) {
 	Bone mirrored = bone;
-	mirrored.translation.x *= -1.0f;
-	mirrored.translation.z *= -1.0f;
+	mirrored.translation.x = -mirrored.translation.x;
+	mirrored.translation.z = -mirrored.translation.z;
 	// the winding order is fixed by reverse index buffer filling
-	mirrored.scale.x *= -1.0f;
-	mirrored.scale.z *= -1.0f;
+	mirrored.scale.x = -mirrored.scale.x;
+	mirrored.scale.z = -mirrored.scale.z;
 	return mirrored;
 }
 
 inline constexpr glm::vec3 mirrorXZ(glm::vec3 translation) {
-	translation.x *= -1.0f;
-	translation.z *= -1.0f;
+	translation.x = -translation.x;
+	translation.z = -translation.z;
 	return translation;
 }
 

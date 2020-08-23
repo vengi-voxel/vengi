@@ -58,7 +58,6 @@ function swim(animTime, velocity, skeleton, skeletonAttr)
 
 	local leftfoot = skeleton:leftfootBone()
 	leftfoot:mirrorX(rightfoot)
-	leftfoot:setOrientation(boneutil.rotateX(-footAngle))
 
 	local tool = skeleton:toolBone()
 	tool:setScale(0.8 * skeletonAttr.toolScale)

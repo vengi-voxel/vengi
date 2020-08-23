@@ -38,9 +38,7 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 	rightfoot.translation = glm::vec3(skeletonAttr.footRight, skeletonAttr.glidingUpwards + skeletonAttr.hipOffset, skeletonAttr.glidingForward);
 	rightfoot.orientation = glm::quat_identity<float, glm::defaultp>();
 
-	Bone &leftfoot = skeleton.footBone(BoneId::LeftFoot, skeletonAttr);
-	leftfoot = mirrorX(rightfoot);
-	leftfoot.orientation = glm::quat_identity<float, glm::defaultp>();
+	skeleton.bone(BoneId::LeftFoot) = mirrorX(rightfoot);
 
 	skeleton.toolBone(skeletonAttr);
 

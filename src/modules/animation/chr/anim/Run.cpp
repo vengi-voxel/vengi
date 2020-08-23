@@ -56,9 +56,7 @@ void update(double animTime, double velocity, CharacterSkeleton &skeleton, const
 	rightfoot.translation = glm::vec3(skeletonAttr.footRight, skeletonAttr.hipOffset - footMoveY, 0.0f);
 	rightfoot.orientation = rotateX(footAngle);
 
-	Bone &leftfoot = skeleton.bone(BoneId::LeftFoot);
-	leftfoot = mirrorX(rightfoot);
-	leftfoot.orientation = rotateX(-footAngle);
+	skeleton.bone(BoneId::LeftFoot) = mirrorX(rightfoot);
 
 	skeleton.toolBone(skeletonAttr, cosine * 0.25f);
 
