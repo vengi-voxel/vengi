@@ -10,7 +10,6 @@
 #include "voxelgenerator/TreeContext.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/NoiseGenerator.h"
-#include "voxelgenerator/LUAGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "video/ShapeBuilder.h"
@@ -26,6 +25,7 @@
 #include "core/command/ActionButton.h"
 #include "math/Axis.h"
 #include "MementoHandler.h"
+#include "EditorLUAGenerator.h"
 #include "layer/LayerListener.h"
 #include "layer/Layer.h"
 #include "layer/LayerManager.h"
@@ -156,7 +156,7 @@ private:
 	// existing voxel under the cursor
 	voxel::Voxel _hitCursorVoxel;
 
-	voxelgenerator::LUAGenerator _luaGenerator;
+	EditorLUAGenerator _luaGenerator;
 
 	voxel::RawVolume* modelVolume();
 	/**
