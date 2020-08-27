@@ -359,7 +359,10 @@ void SceneManager::thicken(int amount) {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolume* thinkened = new voxel::RawVolume(v->region());
+		voxel::Region region = v->region();
+		region.shiftLowerCorner(-dimensions);
+		region.shiftUpperCorner(dimensions);
+		voxel::RawVolume* thinkened = new voxel::RawVolume(region);
 		voxel::RawVolumeWrapper wrapper(thinkened);
 		voxelutil::visitVolume(*v, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
 			voxelgenerator::shape::createCube(wrapper, glm::ivec3(x, y, z), dimensions, voxel);
