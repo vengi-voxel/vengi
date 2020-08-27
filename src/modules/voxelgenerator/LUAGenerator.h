@@ -45,6 +45,13 @@ class LUAGenerator : public core::IComponent {
 protected:
 	virtual void initializeCustomState(lua_State* s) {}
 public:
+	static inline const char *luaVoxel_metaregion() {
+		return "__meta_region";
+	}
+
+	static int luaVoxel_pushregion(lua_State* s, const voxel::Region* region);
+	static voxel::Region* luaVoxel_toRegion(lua_State* s, int n);
+
 	virtual ~LUAGenerator() {}
 	bool init() override;
 	void shutdown() override;

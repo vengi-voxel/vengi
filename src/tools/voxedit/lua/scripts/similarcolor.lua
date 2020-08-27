@@ -23,10 +23,10 @@ function main(volume, region, color, density, colors)
 		if voxel ~= -1 then
 			if voxel == color then
 				cnt = cnt + 1
-				return cnt % density == 0;
+				return cnt % density == 0
 			end
 		end
-		return false;
+		return false
 	end
 	vol.conditionXYZ(volume, region, visitor, condition)
 end

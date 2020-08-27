@@ -21,42 +21,27 @@
 
 namespace voxelgenerator {
 
-static const char *luaVoxel_metaregion() {
-	return "__meta_region";
-}
-
-static const char *luaVoxel_metavolume() {
-	return "__meta_volume";
+static const char *luaVoxel_metavolumewrapper() {
+	return "__meta_volumewrapper";
 }
 
 static const char *luaVoxel_metapalette() {
 	return "__meta_palette";
 }
 
-static voxel::Region* luaVoxel_toRegion(lua_State* s, int n) {
-	return *(voxel::Region**)clua_getudata<voxel::Region*>(s, n, luaVoxel_metaregion());
+static voxel::RawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
+	return *(voxel::RawVolumeWrapper**)clua_getudata<voxel::RawVolume*>(s, n, luaVoxel_metavolumewrapper());
 }
 
-static voxel::RawVolumeWrapper* luaVoxel_toVolume(lua_State* s, int n) {
-	return *(voxel::RawVolumeWrapper**)clua_getudata<voxel::RawVolume*>(s, n, luaVoxel_metavolume());
-}
-
-static int luaVoxel_pushregion(lua_State* s, const voxel::Region* region) {
-	if (region == nullptr) {
-		return luaL_error(s, "No region given - can't push");
-	}
-	return clua_pushudata(s, region, luaVoxel_metaregion());
-}
-
-static int luaVoxel_pushvolume(lua_State* s, voxel::RawVolumeWrapper* volume) {
+static int luaVoxel_pushvolumewrapper(lua_State* s, voxel::RawVolumeWrapper* volume) {
 	if (volume == nullptr) {
 		return luaL_error(s, "No volume given - can't push");
 	}
-	return clua_pushudata(s, volume, luaVoxel_metavolume());
+	return clua_pushudata(s, volume, luaVoxel_metavolumewrapper());
 }
 
-static int luaVoxel_volume_voxel(lua_State* s) {
-	const voxel::RawVolumeWrapper* volume = luaVoxel_toVolume(s, 1);
+static int luaVoxel_volumewrapper_voxel(lua_State* s) {
+	const voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	const int x = luaL_checkinteger(s, 2);
 	const int y = luaL_checkinteger(s, 3);
 	const int z = luaL_checkinteger(s, 4);
@@ -69,13 +54,13 @@ static int luaVoxel_volume_voxel(lua_State* s) {
 	return 1;
 }
 
-static int luaVoxel_volume_region(lua_State* s) {
-	const voxel::RawVolumeWrapper* volume = luaVoxel_toVolume(s, 1);
-	return luaVoxel_pushregion(s, &volume->region());
+static int luaVoxel_volumewrapper_region(lua_State* s) {
+	const voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	return LUAGenerator::luaVoxel_pushregion(s, &volume->region());
 }
 
-static int luaVoxel_volume_setvoxel(lua_State* s) {
-	voxel::RawVolumeWrapper* volume = luaVoxel_toVolume(s, 1);
+static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
+	voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	const int x = luaL_checkinteger(s, 2);
 	const int y = luaL_checkinteger(s, 3);
 	const int z = luaL_checkinteger(s, 4);
@@ -118,55 +103,55 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 }
 
 static int luaVoxel_region_width(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	lua_pushinteger(s, region->getWidthInVoxels());
 	return 1;
 }
 
 static int luaVoxel_region_height(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	lua_pushinteger(s, region->getHeightInVoxels());
 	return 1;
 }
 
 static int luaVoxel_region_depth(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	lua_pushinteger(s, region->getDepthInVoxels());
 	return 1;
 }
 
 static int luaVoxel_region_x(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	lua_pushinteger(s, region->getLowerX());
 	return 1;
 }
 
 static int luaVoxel_region_y(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	lua_pushinteger(s, region->getLowerY());
 	return 1;
 }
 
 static int luaVoxel_region_z(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	lua_pushinteger(s, region->getLowerZ());
 	return 1;
 }
 
 static int luaVoxel_region_mins(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	clua_push(s, region->getLowerCorner());
 	return 1;
 }
 
 static int luaVoxel_region_maxs(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	clua_push(s, region->getUpperCorner());
 	return 1;
 }
 
 static int luaVoxel_region_tostring(lua_State *s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	const glm::ivec3& mins = region->getLowerCorner();
 	const glm::ivec3& maxs = region->getUpperCorner();
 	lua_pushfstring(s, "region: [%i:%i:%i]/[%i:%i:%i]", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
@@ -175,17 +160,18 @@ static int luaVoxel_region_tostring(lua_State *s) {
 
 static void prepareState(lua_State* s) {
 	static const luaL_Reg volumeFuncs[] = {
-		{"voxel", luaVoxel_volume_voxel},
-		{"region", luaVoxel_volume_region},
-		{"setVoxel", luaVoxel_volume_setvoxel},
+		{"voxel", luaVoxel_volumewrapper_voxel},
+		{"region", luaVoxel_volumewrapper_region},
+		{"setVoxel", luaVoxel_volumewrapper_setvoxel},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(s, volumeFuncs, luaVoxel_metavolume());
+	clua_registerfuncs(s, volumeFuncs, luaVoxel_metavolumewrapper());
 
 	static const luaL_Reg regionFuncs[] = {
 		{"width", luaVoxel_region_width},
 		{"height", luaVoxel_region_height},
 		{"depth", luaVoxel_region_depth},
+		// TODO: change region
 		{"x", luaVoxel_region_x},
 		{"y", luaVoxel_region_y},
 		{"z", luaVoxel_region_z},
@@ -194,7 +180,7 @@ static void prepareState(lua_State* s) {
 		{"__tostring", luaVoxel_region_tostring},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(s, regionFuncs, luaVoxel_metaregion());
+	clua_registerfuncs(s, regionFuncs, LUAGenerator::luaVoxel_metaregion());
 
 	static const luaL_Reg paletteFuncs[] = {
 		{"colors", luaVoxel_palette_colors},
@@ -349,6 +335,17 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 	return true;
 }
 
+voxel::Region* LUAGenerator::luaVoxel_toRegion(lua_State* s, int n) {
+	return *(voxel::Region**)clua_getudata<voxel::Region*>(s, n, LUAGenerator::luaVoxel_metaregion());
+}
+
+int LUAGenerator::luaVoxel_pushregion(lua_State* s, const voxel::Region* region) {
+	if (region == nullptr) {
+		return luaL_error(s, "No region given - can't push");
+	}
+	return clua_pushudata(s, region, LUAGenerator::luaVoxel_metaregion());
+}
+
 core::String LUAGenerator::load(const core::String& scriptName) const {
 	core::String filename = scriptName;
 	io::normalizePath(filename);
@@ -413,7 +410,7 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 	}
 
 	// first parameter is volume
-	if (luaVoxel_pushvolume(lua, volume) == 0) {
+	if (luaVoxel_pushvolumewrapper(lua, volume) == 0) {
 		Log::error("Failed to push volume");
 		return false;
 	}
