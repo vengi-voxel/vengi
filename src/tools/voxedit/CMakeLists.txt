@@ -8,7 +8,6 @@ set(SRCS
 
 set(LUA_SRCS
 	scripts/modules/perlin.lua
-	scripts/modules/shape.lua
 	scripts/modules/volume.lua
 	scripts/cover.lua
 	scripts/noise.lua

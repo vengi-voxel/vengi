@@ -1,4 +1,3 @@
-local shp = require "modules.shape"
 local vol = require "modules.volume"
 
 function arguments()
@@ -15,7 +14,13 @@ function main(volume, region, color, amount)
 
 	local visitor = function (volume, x, y, z)
 		local voxel = volume:voxel(x, y, z)
-		shp.createCube(newVolume, x, y, z, x + amount, y + amount, z + amount, voxel)
+		for cubeX = x, x + amount do
+			for cubeZ = z, z + amount do
+				for cubeY = y, y + amount do
+					newVolume:setVoxel(cubeX, cubeY, cubeZ, voxel)
+				end
+			end
+		end
 	end
 
 	local condition = function (volume, x, y, z)
