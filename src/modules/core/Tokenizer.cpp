@@ -3,7 +3,7 @@
  */
 
 #include "Tokenizer.h"
-#include "UTF8.h"
+#include "core/UTF8.h"
 #include <string.h>
 
 namespace core {

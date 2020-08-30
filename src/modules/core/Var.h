@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/concurrent/ReadWriteLock.h"
-#include "GameConfig.h"
+#include "core/GameConfig.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/Map.h"

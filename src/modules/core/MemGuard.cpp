@@ -3,7 +3,7 @@
  */
 
 #include "MemGuard.h"
-#include "Common.h"
+#include "core/Common.h"
 #include "core/StandardLib.h"
 
 namespace core {

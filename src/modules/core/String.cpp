@@ -3,8 +3,8 @@
  */
 
 #include "String.h"
-#include "Common.h"
-#include "StandardLib.h"
+#include "core/Common.h"
+#include "core/StandardLib.h"
 #include "engine-config.h"
 #include "core/ArrayLength.h"
 #include <string.h>

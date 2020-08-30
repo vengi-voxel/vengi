@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "Common.h"
-#include "Assert.h"
-#include "StringUtil.h"
+#include "core/Common.h"
+#include "core/Assert.h"
+#include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 
 namespace core {

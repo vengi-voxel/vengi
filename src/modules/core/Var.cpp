@@ -3,11 +3,11 @@
  */
 
 #include "Var.h"
-#include "Log.h"
-#include "Common.h"
-#include "GLM.h"
-#include "Assert.h"
-#include "StringUtil.h"
+#include "core/Log.h"
+#include "core/Common.h"
+#include "core/GLM.h"
+#include "core/Assert.h"
+#include "core/StringUtil.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 

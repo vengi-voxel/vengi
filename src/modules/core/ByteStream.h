@@ -10,9 +10,9 @@
 #include "core/String.h"
 #include <SDL_endian.h>
 #include <limits.h>
-#include "Common.h"
-#include "StandardLib.h"
-#include "Assert.h"
+#include "core/Common.h"
+#include "core/StandardLib.h"
+#include "core/Assert.h"
 
 namespace core {
 

@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "Assert.h"
-#include "Common.h"
-#include "StandardLib.h"
+#include "core/Assert.h"
+#include "core/Common.h"
+#include "core/StandardLib.h"
 #include <stdint.h>
 #include <type_traits>
 #include <new>

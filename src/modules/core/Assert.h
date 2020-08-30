@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Common.h"
+#include "core/Common.h"
 #include <SDL_assert.h>
 
 extern void core_stacktrace();

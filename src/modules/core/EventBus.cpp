@@ -3,7 +3,7 @@
  */
 
 #include "EventBus.h"
-#include "Log.h"
+#include "core/Log.h"
 
 namespace core {
 

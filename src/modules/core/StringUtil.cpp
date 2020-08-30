@@ -3,7 +3,7 @@
  */
 
 #include "StringUtil.h"
-#include "Common.h"
+#include "core/Common.h"
 #include "core/StandardLib.h"
 #include <ctype.h>
 #include <math.h>
