@@ -20,6 +20,6 @@ public:
 
 	void initUIFonts() override;
 
-	core::AppState onInit() override;
+	app::AppState onInit() override;
 	bool onRenderUI() override;
 };

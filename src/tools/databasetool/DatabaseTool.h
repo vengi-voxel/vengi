@@ -15,9 +15,9 @@
  *
  * @ingroup Tools
  */
-class DatabaseTool: public core::CommandlineApp {
+class DatabaseTool: public app::CommandlineApp {
 private:
-	using Super = core::CommandlineApp;
+	using Super = app::CommandlineApp;
 protected:
 	core::String _tableFile;
 	core::String _targetFile;
@@ -33,6 +33,6 @@ protected:
 public:
 	DatabaseTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	core::AppState onConstruct() override;
-	core::AppState onRunning() override;
+	app::AppState onConstruct() override;
+	app::AppState onRunning() override;
 };

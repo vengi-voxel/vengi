@@ -7,7 +7,7 @@
 
 namespace voxel {
 
-class RegionTest: public core::AbstractTest {
+class RegionTest: public app::AbstractTest {
 };
 
 TEST_F(RegionTest, testContains) {

@@ -19,15 +19,15 @@ TestShapeBuilder::TestShapeBuilder(const metric::MetricPtr& metric, const io::Fi
 	setRenderAxis(true);
 }
 
-core::AppState TestShapeBuilder::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestShapeBuilder::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to init the shape renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	for (int i = 0; i < lengthof(_position); ++i) {
@@ -196,7 +196,7 @@ void TestShapeBuilder::onRenderUI() {
 	ImGui::End();
 }
 
-core::AppState TestShapeBuilder::onCleanup() {
+app::AppState TestShapeBuilder::onCleanup() {
 	_shapeRenderer.shutdown();
 	return Super::onCleanup();
 }

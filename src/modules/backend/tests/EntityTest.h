@@ -48,9 +48,9 @@ end)";
 
 }
 
-class EntityTest: public core::AbstractTest {
+class EntityTest: public app::AbstractTest {
 private:
-	using Super = core::AbstractTest;
+	using Super = app::AbstractTest;
 protected:
 	EntityStoragePtr entityStorage;
 	network::ProtocolHandlerRegistryPtr protocolHandlerRegistry;

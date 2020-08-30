@@ -8,7 +8,7 @@
 
 namespace voxedit {
 
-class ImageUtilsTest: public core::AbstractTest {
+class ImageUtilsTest: public app::AbstractTest {
 };
 
 TEST_F(ImageUtilsTest, testCreateAndLoadPalette) {

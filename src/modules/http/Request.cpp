@@ -14,7 +14,7 @@ namespace http {
 
 Request::Request(const Url& url, HttpMethod method) :
 		_url(url), _socketFD(INVALID_SOCKET), _method(method) {
-	_headers.put(header::USER_AGENT, core::App::getInstance()->appname().c_str());
+	_headers.put(header::USER_AGENT, app::App::getInstance()->appname().c_str());
 	_headers.put(header::CONNECTION, "close");
 	// TODO:
 	// _headers.put(header::KEEP_ALIVE, "timeout=15");

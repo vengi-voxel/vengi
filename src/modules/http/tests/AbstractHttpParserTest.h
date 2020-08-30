@@ -9,7 +9,7 @@
 
 namespace http {
 
-class AbstractHttpParserTest : public core::AbstractTest {
+class AbstractHttpParserTest : public app::AbstractTest {
 public:
 	void validateMapEntry(const core::CharPointerMap& map, const char *key, const char *value) {
 		const char* mapValue = "";

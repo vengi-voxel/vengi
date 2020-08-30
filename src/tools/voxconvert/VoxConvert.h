@@ -11,13 +11,13 @@
  *
  * @ingroup Tools
  */
-class VoxConvert: public core::CommandlineApp {
+class VoxConvert: public app::CommandlineApp {
 private:
-	using Super = core::CommandlineApp;
+	using Super = app::CommandlineApp;
 	core::VarPtr _palette;
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	core::AppState onConstruct() override;
-	core::AppState onInit() override;
+	app::AppState onConstruct() override;
+	app::AppState onInit() override;
 };

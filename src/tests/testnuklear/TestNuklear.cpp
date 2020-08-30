@@ -37,8 +37,8 @@ void TestNuklear::initUIFonts() {
 	_media.font_22 = loadFontFile(fontFile, 22.0f);
 }
 
-core::AppState TestNuklear::onInit() {
-	const core::AppState state = Super::onInit();
+app::AppState TestNuklear::onInit() {
+	const app::AppState state = Super::onInit();
 
 	SDL_memcpy(color_table, nkc_get_default_color_style(nullptr), sizeof(color_table));
 

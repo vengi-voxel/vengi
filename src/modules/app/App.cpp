@@ -27,7 +27,7 @@
 #endif
 #include <signal.h>
 
-namespace core {
+namespace app {
 
 static void catch_function(int signo) {
 	core_stacktrace();
@@ -200,7 +200,7 @@ void App::onFrame() {
 }
 
 AppState App::onConstruct() {
-	VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
+	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
 	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
 	registerArg("--loglevel").setShort("-l").setDescription("Change log level from 1 (trace) to 6 (only critical)");
@@ -244,7 +244,7 @@ AppState App::onConstruct() {
 			core::String var = _argv[i + 1];
 			const char *value = _argv[i + 2];
 			i += 2;
-			core::Var::get(var, value, CV_FROMCOMMANDLINE);
+			core::Var::get(var, value, core::CV_FROMCOMMANDLINE);
 			Log::debug("Set %s to %s", var.c_str(), value);
 		}
 	}
@@ -316,20 +316,20 @@ AppState App::onInit() {
 			break;
 		}
 		const core::String& flags = t.next();
-		uint32_t flagsMaskFromFile = CV_FROMFILE;
+		uint32_t flagsMaskFromFile = core::CV_FROMFILE;
 		for (char c : flags) {
 			if (c == 'R') {
-				flagsMaskFromFile |= CV_READONLY;
+				flagsMaskFromFile |= core::CV_READONLY;
 				Log::debug("read only flag for %s", name.c_str());
 			} else if (c == 'S') {
-				flagsMaskFromFile |= CV_SHADER;
+				flagsMaskFromFile |= core::CV_SHADER;
 				Log::debug("shader flag for %s", name.c_str());
 			} else if (c == 'X') {
-				flagsMaskFromFile |= CV_SECRET;
+				flagsMaskFromFile |= core::CV_SECRET;
 				Log::debug("secret flag for %s", name.c_str());
 			}
 		}
-		const VarPtr& old = core::Var::get(name);
+		const core::VarPtr& old = core::Var::get(name);
 		int32_t flagsMask;
 		if (old) {
 			flagsMask = (int32_t)(flagsMaskFromFile | old->getFlags());
@@ -337,7 +337,7 @@ AppState App::onInit() {
 			flagsMask = (int32_t)(flagsMaskFromFile);
 		}
 
-		flagsMask &= ~(CV_FROMCOMMANDLINE | CV_FROMENV);
+		flagsMask &= ~(core::CV_FROMCOMMANDLINE | core::CV_FROMENV);
 
 		core::Var::get(name, value.c_str(), flagsMask);
 	}
@@ -375,7 +375,7 @@ void App::onAfterInit() {
 			// already handled
 			continue;
 		}
-		if (Command::getCommand(command) == nullptr) {
+		if (core::Command::getCommand(command) == nullptr) {
 			continue;
 		}
 		core::String args;
@@ -394,7 +394,7 @@ void App::onAfterInit() {
 	const core::String& autoexecCommands = filesystem()->load("autoexec.cfg");
 	if (!autoexecCommands.empty()) {
 		Log::debug("execute autoexec.cfg");
-		Command::execute(autoexecCommands);
+		core::Command::execute(autoexecCommands);
 	} else {
 		Log::debug("skip autoexec.cfg");
 	}
@@ -402,7 +402,7 @@ void App::onAfterInit() {
 	const core::String& autoexecAppCommands = filesystem()->load("%s-autoexec.cfg", _appname.c_str());
 	if (!autoexecAppCommands.empty()) {
 		Log::debug("execute %s-autoexec.cfg", _appname.c_str());
-		Command::execute(autoexecAppCommands);
+		core::Command::execute(autoexecAppCommands);
 	}
 
 	// we might have changed the loglevel from the commandline
@@ -452,16 +452,16 @@ void App::usage() const {
 		const uint32_t flags = v->getFlags();
 		core::String flagsStr = "     ";
 		const char *value = v->strVal().c_str();
-		if ((flags & CV_READONLY) != 0) {
+		if ((flags & core::CV_READONLY) != 0) {
 			flagsStr[0]  = 'R';
 		}
-		if ((flags & CV_NOPERSIST) != 0) {
+		if ((flags & core::CV_NOPERSIST) != 0) {
 			flagsStr[1]  = 'N';
 		}
-		if ((flags & CV_SHADER) != 0) {
+		if ((flags & core::CV_SHADER) != 0) {
 			flagsStr[2]  = 'S';
 		}
-		if ((flags & CV_SECRET) != 0) {
+		if ((flags & core::CV_SECRET) != 0) {
 			flagsStr[3]  = 'X';
 			value = "***secret***";
 		}
@@ -595,13 +595,13 @@ AppState App::onCleanup() {
 			const uint32_t flags = var->getFlags();
 			core::String flagsStr;
 			const char *value = var->strVal().c_str();
-			if ((flags & CV_READONLY) == CV_READONLY) {
+			if ((flags & core::CV_READONLY) == core::CV_READONLY) {
 				flagsStr.append("R");
 			}
-			if ((flags & CV_SHADER) == CV_SHADER) {
+			if ((flags & core::CV_SHADER) == core::CV_SHADER) {
 				flagsStr.append("S");
 			}
-			if ((flags & CV_SECRET) == CV_SECRET) {
+			if ((flags & core::CV_SECRET) == core::CV_SECRET) {
 				flagsStr.append("X");
 			}
 			ss += "\"";

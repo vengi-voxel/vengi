@@ -12,7 +12,7 @@
 
 namespace video {
 
-class CameraTest : public core::AbstractTest {
+class CameraTest : public app::AbstractTest {
 public:
 	virtual ~CameraTest() {}
 protected:

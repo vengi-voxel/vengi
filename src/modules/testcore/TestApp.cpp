@@ -28,8 +28,8 @@ void TestApp::onWindowResize(int windowWidth, int windowHeight) {
 	camera().init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 
-core::AppState TestApp::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState TestApp::onConstruct() {
+	app::AppState state = Super::onConstruct();
 	core::Var::get(cfg::ClientFullscreen, "false");
 	core::Var::get(cfg::ClientWindowWidth, "1024");
 	core::Var::get(cfg::ClientWindowHeight, "768");
@@ -55,13 +55,13 @@ core::AppState TestApp::onConstruct() {
 	return state;
 }
 
-core::AppState TestApp::onInit() {
+app::AppState TestApp::onInit() {
 	// apps may provide their own keybindings
 	if (_appname != "test") {
 		_keybindingHandler.load("test-keybindings.cfg");
 	}
-	const core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+	const app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 	_logLevelVar->setVal(core::string::toString(SDL_LOG_PRIORITY_DEBUG));
@@ -71,15 +71,15 @@ core::AppState TestApp::onInit() {
 
 	_axis.setSize(10.0f, 10.0f, 10.0f);
 	if (!_axis.init()) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_plane.init() || !_plane.plane(glm::zero<glm::vec3>(), 0, _planeColor)) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_movement.init()) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _frameBufferDimension.x, _frameBufferDimension.y, _aspect);
@@ -129,9 +129,9 @@ void TestApp::beforeUI() {
 	}
 }
 
-core::AppState TestApp::onRunning() {
+app::AppState TestApp::onRunning() {
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
-	const core::AppState state = Super::onRunning();
+	const app::AppState state = Super::onRunning();
 	SDL_SetRelativeMouseMode(_cameraMotion ? SDL_TRUE : SDL_FALSE);
 	return state;
 }
@@ -153,7 +153,7 @@ void TestApp::onRenderUI() {
 	}
 }
 
-core::AppState TestApp::onCleanup() {
+app::AppState TestApp::onCleanup() {
 	_axis.shutdown();
 	_plane.shutdown();
 	_movement.shutdown();

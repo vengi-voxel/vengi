@@ -10,21 +10,21 @@
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
 
-namespace core {
+namespace app {
 
 class AbstractBenchmark : public benchmark::Fixture {
 private:
-	class BenchmarkApp: public core::CommandlineApp {
+	class BenchmarkApp: public app::CommandlineApp {
 		friend class AbstractBenchmark;
 	protected:
-		using Super = core::CommandlineApp;
+		using Super = app::CommandlineApp;
 		AbstractBenchmark* _benchmark = nullptr;
 	public:
 		BenchmarkApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark);
 		virtual ~BenchmarkApp();
 
-		virtual core::AppState onInit() override;
-		virtual core::AppState onCleanup() override;
+		virtual app::AppState onInit() override;
+		virtual app::AppState onCleanup() override;
 	};
 
 protected:

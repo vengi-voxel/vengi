@@ -9,7 +9,7 @@
 
 namespace voxel {
 
-class PickingTest: public core::AbstractTest {
+class PickingTest: public app::AbstractTest {
 };
 
 TEST_F(PickingTest, testPicking) {

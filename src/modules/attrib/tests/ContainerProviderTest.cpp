@@ -25,7 +25,7 @@ end
 
 namespace attrib {
 
-class ContainerProviderTest: public core::AbstractTest {
+class ContainerProviderTest: public app::AbstractTest {
 };
 
 TEST_F(ContainerProviderTest, testLoadingSuccess) {

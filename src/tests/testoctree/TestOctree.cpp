@@ -54,15 +54,15 @@ void TestOctree::clear() {
 	_dirty = true;
 }
 
-core::AppState TestOctree::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestOctree::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to init the shape renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const glm::ivec3& center = _octree.aabb().getCenter();
@@ -227,7 +227,7 @@ void TestOctree::doRender() {
 	_shapeRenderer.render(_queryMeshes, camera());
 }
 
-core::AppState TestOctree::onCleanup() {
+app::AppState TestOctree::onCleanup() {
 	_shapeRenderer.shutdown();
 	return Super::onCleanup();
 }

@@ -7,7 +7,7 @@
 
 namespace http {
 
-class HttpServerTest : public core::AbstractTest {
+class HttpServerTest : public app::AbstractTest {
 };
 
 TEST_F(HttpServerTest, testSimple) {

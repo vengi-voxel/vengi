@@ -22,7 +22,7 @@ left_alt altmodcommand
 )";
 }
 
-class KeybindingHandlerTest : public core::AbstractTest {
+class KeybindingHandlerTest : public app::AbstractTest {
 protected:
 	KeybindingParser _parser;
 	KeyBindingHandler _handler;
@@ -38,7 +38,7 @@ protected:
 	}
 
 	bool onInitApp() override {
-		if (!core::AbstractTest::onInitApp()) {
+		if (!app::AbstractTest::onInitApp()) {
 			return false;
 		}
 		if (_parser.invalidBindings() > 0) {
@@ -64,7 +64,7 @@ protected:
 	}
 
 	void onCleanupApp() override {
-		core::AbstractTest::onCleanupApp();
+		app::AbstractTest::onCleanupApp();
 		_handler.shutdown();
 	}
 

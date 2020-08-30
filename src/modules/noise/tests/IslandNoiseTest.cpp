@@ -11,7 +11,7 @@
 
 namespace noise {
 
-class IslandNoiseTest: public core::AbstractTest {
+class IslandNoiseTest: public app::AbstractTest {
 protected:
 	uint32_t biome(float e) {
 		if (e < 0.05)

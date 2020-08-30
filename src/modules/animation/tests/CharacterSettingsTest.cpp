@@ -37,7 +37,7 @@ function init()
 end
 )";
 
-class CharacterSettingsTest: public core::AbstractTest {
+class CharacterSettingsTest: public app::AbstractTest {
 };
 
 TEST_F(CharacterSettingsTest, testLUA) {

@@ -5,7 +5,7 @@
 #include "CommandlineApp.h"
 #include "core/Var.h"
 
-namespace core {
+namespace app {
 
 CommandlineApp::CommandlineApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize) {
@@ -15,7 +15,7 @@ CommandlineApp::~CommandlineApp() {
 }
 
 AppState CommandlineApp::onConstruct() {
-	const core::AppState state = Super::onConstruct();
+	const app::AppState state = Super::onConstruct();
 
 	registerArg("--trace").setDescription("Change log level to trace");
 	registerArg("--debug").setDescription("Change log level to debug");

@@ -30,31 +30,31 @@ TestGPUMC::TestGPUMC(const metric::MetricPtr& metric, const io::FilesystemPtr& f
 	init(ORGANISATION, "testgpumc");
 }
 
-core::AppState TestGPUMC::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState TestGPUMC::onConstruct() {
+	app::AppState state = Super::onConstruct();
 	core::Var::get("use3dtextures", "false");
 	return state;
 }
 
-core::AppState TestGPUMC::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestGPUMC::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!computevideo::init()) {
 		Log::error("Failed to init videocompute context");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!compute::init()) {
 		Log::error("Failed to init compute context");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!compute::hasFeature(compute::Feature::VideoSharing)) {
 		Log::error("The compute context needs the video state sharing feature");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_writingTo3DTextures = core::Var::getSafe("use3dtextures")->boolVal();
@@ -72,7 +72,7 @@ core::AppState TestGPUMC::onInit() {
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	voxel::Region region(0, 0, 0, REGION_SIZE - 1, REGION_SIZE - 1, REGION_SIZE - 1);
@@ -86,21 +86,21 @@ core::AppState TestGPUMC::onInit() {
 
 	if (!_renderShader.setup()) {
 		Log::error("Failed to setup render shader");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_computeShader.addDefine("SIZE", core::string::toString(REGION_SIZE));
 	if (!_computeShader.setup()) {
 		Log::error("Failed to init compute shader for using 3d textures");
 		if (_writingTo3DTextures) {
-			return core::AppState::InitFailure;
+			return app::AppState::InitFailure;
 		}
 	}
 	_computeShaderBuffer.addDefine("SIZE", core::string::toString(REGION_SIZE));
 	if (!_computeShaderBuffer.setup()) {
 		Log::error("Failed to init compute shader for using buffer");
 		if (!_writingTo3DTextures) {
-			return core::AppState::InitFailure;
+			return app::AppState::InitFailure;
 		}
 	}
 
@@ -147,7 +147,7 @@ core::AppState TestGPUMC::onInit() {
 		for (auto& image : _images) {
 			if (!image->upload(nullptr)) {
 				Log::error("Failed to upload the compute texture for the histogram pyramid");
-				return core::AppState::InitFailure;
+				return app::AppState::InitFailure;
 			}
 		}
 	} else {
@@ -170,7 +170,7 @@ core::AppState TestGPUMC::onInit() {
 		cubeIndexesBuffer = compute::createBuffer(compute::BufferFlag::WriteOnly, sizeof(char) * REGION_SIZE * REGION_SIZE * REGION_SIZE);
 		if (cubeIndexesBuffer == compute::InvalidId) {
 			Log::error("Failed to create the cube indexes compute buffer");
-			return core::AppState::InitFailure;
+			return app::AppState::InitFailure;
 		}
 		compute::TextureConfig textureCfg;
 		textureCfg.dataformat(compute::TextureDataFormat::UNSIGNED_INT8);
@@ -179,7 +179,7 @@ core::AppState TestGPUMC::onInit() {
 		cubeIndexesImage = core::make_shared<compute::Texture>(textureCfg, glm::ivec3(REGION_SIZE)); // TODO: this is CL_MEM_READ_ONLY,
 		if (!cubeIndexesImage->upload(nullptr)) {
 			Log::error("Failed to upload the cube indexes data");
-			return core::AppState::InitFailure;
+			return app::AppState::InitFailure;
 		}
 	}
 
@@ -188,7 +188,7 @@ core::AppState TestGPUMC::onInit() {
 	_rawData = core::make_shared<compute::Texture>(inputCfg, glm::ivec3(REGION_SIZE));
 	if (!_rawData->upload(_volume->data())) {
 		Log::error("Failed to upload the volume data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_vboIdx = _vbo.create();
@@ -205,7 +205,7 @@ core::AppState TestGPUMC::onInit() {
 	return state;
 }
 
-core::AppState TestGPUMC::onCleanup() {
+app::AppState TestGPUMC::onCleanup() {
 	if (_rawData) {
 		_rawData->shutdown();
 	}

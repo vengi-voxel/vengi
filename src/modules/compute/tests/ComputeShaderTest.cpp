@@ -7,9 +7,9 @@
 
 namespace compute {
 
-class ComputeShaderTest: public core::AbstractTest {
+class ComputeShaderTest: public app::AbstractTest {
 private:
-	using Super = core::AbstractTest;
+	using Super = app::AbstractTest;
 protected:
 	bool _supported = false;
 public:

@@ -9,7 +9,7 @@
 
 namespace voxedit {
 
-class MementoHandlerTest: public core::AbstractTest {
+class MementoHandlerTest: public app::AbstractTest {
 protected:
 	voxedit::MementoHandler mementoHandler;
 	std::shared_ptr<voxel::RawVolume> create(int size) const {

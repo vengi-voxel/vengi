@@ -7,7 +7,7 @@
 
 namespace video {
 
-class RendererTest : public core::AbstractTest {
+class RendererTest : public app::AbstractTest {
 };
 
 TEST_F(RendererTest, testMapType) {

@@ -34,7 +34,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const ShaderVarState& stat
 			<< "]";
 }
 
-class AbstractGLTest : public core::AbstractTest {
+class AbstractGLTest : public app::AbstractTest {
 protected:
 	SDL_Window *_window = nullptr;
 	RendererContext _ctx = nullptr;
@@ -59,7 +59,7 @@ public:
 		core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 		core::Var::get(cfg::ClientMultiSampleSamples, "0");
 		core::Var::get(cfg::ClientVSync, "false");
-		core::AbstractTest::SetUp();
+		app::AbstractTest::SetUp();
 		SDL_Init(SDL_INIT_VIDEO);
 		video::setup();
 		_window = SDL_CreateWindow("test", 0, 0, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
@@ -72,7 +72,7 @@ public:
 	}
 
 	void TearDown() override {
-		core::AbstractTest::TearDown();
+		app::AbstractTest::TearDown();
 		if (_ctx != nullptr) {
 			video::destroyContext(_ctx);
 		}

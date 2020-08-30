@@ -15,9 +15,9 @@
 
 namespace voxelgenerator {
 
-class ShapeGeneratorTest: public core::AbstractTest {
+class ShapeGeneratorTest: public app::AbstractTest {
 private:
-	using Super = core::AbstractTest;
+	using Super = app::AbstractTest;
 protected:
 	static constexpr voxel::Region _region {0, 31};
 	static constexpr glm::ivec3 _center { 15 };

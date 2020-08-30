@@ -29,7 +29,7 @@ inline bool operator==(const glm::vec3 &vecA, const glm::vec3 &vecB) {
 	return fabs(vecA[0] - vecB[0]) < epsilion && fabs(vecA[1] - vecB[1]) < epsilion && fabs(vecA[2] - vecB[2]) < epsilion;
 }
 
-class TestSuite: public core::AbstractTest {
+class TestSuite: public app::AbstractTest {
 protected:
 	backend::LUAAIRegistry _registry;
 	backend::GroupMgr _groupManager;

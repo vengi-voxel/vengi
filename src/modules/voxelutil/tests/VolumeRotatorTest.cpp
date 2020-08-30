@@ -7,7 +7,7 @@
 
 namespace voxel {
 
-class VolumeRotatorTest: public core::AbstractTest {
+class VolumeRotatorTest: public app::AbstractTest {
 protected:
 	inline core::String str(const voxel::Region& region) const {
 		return region.toString();

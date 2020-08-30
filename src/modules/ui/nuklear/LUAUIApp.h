@@ -53,8 +53,8 @@ public:
 	void popup(const core::String& message);
 	void setGlobalAlpha(float alpha);
 
-	core::AppState onInit() override;
-	core::AppState onCleanup() override;
+	app::AppState onInit() override;
+	app::AppState onCleanup() override;
 
 	bool reload();
 	bool onRenderUI() override;

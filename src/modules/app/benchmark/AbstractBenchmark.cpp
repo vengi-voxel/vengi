@@ -12,7 +12,7 @@
 
 #include <SDL.h>
 
-namespace core {
+namespace app {
 
 SDL_AssertState Test_AssertionHandler(const SDL_AssertData* data, void* userdata) {
 	return SDL_ASSERTION_BREAK;
@@ -51,7 +51,7 @@ AppState AbstractBenchmark::BenchmarkApp::onCleanup() {
 
 AppState AbstractBenchmark::BenchmarkApp::onInit() {
 	AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+	if (state != app::AppState::Running) {
 		return state;
 	}
 

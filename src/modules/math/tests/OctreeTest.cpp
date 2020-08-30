@@ -33,7 +33,7 @@ public:
 };
 }
 
-class OctreeTest : public core::AbstractTest {
+class OctreeTest : public app::AbstractTest {
 public:
 	void test(const glm::vec3& mins, const glm::vec3& maxs, int& n, const glm::ivec3& expectedMins, const glm::ivec3& expectedMaxs, int size) {
 		EXPECT_TRUE(glm::isPowerOfTwo(size));

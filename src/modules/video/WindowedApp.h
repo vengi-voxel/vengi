@@ -27,9 +27,9 @@ namespace video {
  *
  * This application also receives input events (and others) from @c io::IEventObserver
  */
-class WindowedApp: public core::App, public io::IEventObserver {
+class WindowedApp: public app::App, public io::IEventObserver {
 private:
-	using Super = core::App;
+	using Super = app::App;
 protected:
 	SDL_Window* _window = nullptr;
 	RendererContext _rendererContext = nullptr;
@@ -119,16 +119,16 @@ public:
 	 */
 	void directoryDialog(const std::function<void(const core::String)>& callback);
 
-	virtual core::AppState onRunning() override;
+	virtual app::AppState onRunning() override;
 	virtual void onAfterRunning() override;
 	virtual bool onMouseWheel(int32_t x, int32_t y) override;
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
-	virtual core::AppState onConstruct() override;
-	virtual core::AppState onInit() override;
-	virtual core::AppState onCleanup() override;
+	virtual app::AppState onConstruct() override;
+	virtual app::AppState onInit() override;
+	virtual app::AppState onCleanup() override;
 
 	static double fps() {
 		return getInstance()->_fps;

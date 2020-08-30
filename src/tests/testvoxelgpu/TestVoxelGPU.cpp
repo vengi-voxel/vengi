@@ -16,23 +16,23 @@ TestVoxelGPU::TestVoxelGPU(const metric::MetricPtr& metric, const io::Filesystem
 	init(ORGANISATION, "testvoxelgpu");
 }
 
-core::AppState TestVoxelGPU::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestVoxelGPU::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!compute::init()) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_mesher.setup()) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	voxel::Region region(0, 0, 0, _workSize.x - 1, _workSize.y - 1, _workSize.z - 1);
@@ -57,17 +57,17 @@ core::AppState TestVoxelGPU::onInit() {
 	return state;
 }
 
-core::AppState TestVoxelGPU::onCleanup() {
+app::AppState TestVoxelGPU::onCleanup() {
 	_mesher.shutdown();
 	_volumeTexture->shutdown();
 	_volume = std::shared_ptr<voxel::RawVolume>();
 	return Super::onCleanup();
 }
 
-core::AppState TestVoxelGPU::onRunning() {
+app::AppState TestVoxelGPU::onRunning() {
 	if (!_mesher.extractCubicMesh(*_volumeTexture.get(), _output, _workSize.x, _workSize.y, _workSize.z, _workSize)) {
 		Log::error("Failed to execute the compute kernel");
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	return Super::onRunning();
 }

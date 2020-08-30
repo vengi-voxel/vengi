@@ -7,7 +7,7 @@
 
 namespace voxel {
 
-class RawVolumeWrapperTest: public core::AbstractTest {
+class RawVolumeWrapperTest: public app::AbstractTest {
 };
 
 TEST_F(RawVolumeWrapperTest, testSetOneVoxelVolume) {

@@ -28,9 +28,9 @@ void TestBiomes::recalcBiomes(const glm::ivec3& pos) {
 	_resultQueue.push(new BiomesTextureResult(humidity, _biomesTextureSize));
 }
 
-core::AppState TestBiomes::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestBiomes::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -40,17 +40,17 @@ core::AppState TestBiomes::onInit() {
 
 	if (!_renderer.init(frameBufferDimension())) {
 		Log::error("Failed to setup the renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the material colors");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const core::String& biomesData = io::filesystem()->load("biomes.lua");
 	if (!_biomeMgr.init(biomesData)) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	video::TextureConfig cfg2d;
@@ -80,8 +80,8 @@ core::AppState TestBiomes::onInit() {
 	return state;
 }
 
-core::AppState TestBiomes::onRunning() {
-	core::AppState state = Super::onRunning();
+app::AppState TestBiomes::onRunning() {
+	app::AppState state = Super::onRunning();
 	Result* result = nullptr;
 	if (_resultQueue.pop(result)) {
 		switch (result->type) {
@@ -96,7 +96,7 @@ core::AppState TestBiomes::onRunning() {
 	return state;
 }
 
-core::AppState TestBiomes::onCleanup() {
+app::AppState TestBiomes::onCleanup() {
 	_biomeMgr.shutdown();
 	_workQueue.abortWait();
 	// TODO: clear mem: while () {}

@@ -16,11 +16,11 @@
 namespace backend {
 
 class ConnectTest:
-		public core::AbstractTest,
+		public app::AbstractTest,
 		public core::IEventBusHandler<network::NewConnectionEvent>,
 		public core::IEventBusHandler<network::DisconnectEvent> {
 private:
-	using Super = core::AbstractTest;
+	using Super = app::AbstractTest;
 protected:
 	core::EventBusPtr _clientEventBus;
 	core::EventBusPtr _serverEventBus;

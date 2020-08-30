@@ -41,12 +41,12 @@ tb::TBGenericStringItem* Window::addStringItem(tb::TBGenericStringItemSource& it
 	if (id == nullptr) {
 		const core::String& lowerId = core::String::lower(text);
 		item = new tb::TBGenericStringItem(translate ? tr(text) : text, TBIDC(lowerId.c_str()));
-		const core::String& iconId = core::App::getInstance()->appname() + "-" + lowerId;
+		const core::String& iconId = app::App::getInstance()->appname() + "-" + lowerId;
 		item->setSkinImage(TBIDC(iconId.c_str()));
 	} else {
 		item = new tb::TBGenericStringItem(translate ? tr(text) : text, TBIDC(id));
 		char buf[128];
-		SDL_snprintf(buf, sizeof(buf), "%s-%s", core::App::getInstance()->appname().c_str(), id);
+		SDL_snprintf(buf, sizeof(buf), "%s-%s", app::App::getInstance()->appname().c_str(), id);
 		item->setSkinImage(TBIDC(buf));
 	}
 	items.addItem(item);
@@ -401,7 +401,7 @@ bool Window::setVisible(const char *name, bool visible) {
 }
 
 void Window::requestQuit() {
-	core::App::getInstance()->requestQuit();
+	app::App::getInstance()->requestQuit();
 }
 
 }

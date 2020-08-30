@@ -9,16 +9,16 @@
 #include "core/EventBus.h"
 #include "metric/Metric.h"
 
-namespace core {
+namespace app {
 
-class CommandlineApp : public core::App {
+class CommandlineApp : public app::App {
 private:
-	using Super = core::App;
+	using Super = app::App;
 public:
 	CommandlineApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~CommandlineApp();
 
-	virtual core::AppState onConstruct() override;
+	virtual app::AppState onConstruct() override;
 };
 
 }

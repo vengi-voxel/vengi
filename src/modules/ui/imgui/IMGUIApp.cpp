@@ -125,8 +125,8 @@ void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
 	_shader.setModel(glm::mat4(1.0f));
 }
 
-core::AppState IMGUIApp::onConstruct() {
-	const core::AppState state = Super::onConstruct();
+app::AppState IMGUIApp::onConstruct() {
+	const app::AppState state = Super::onConstruct();
 	_console.construct();
 	return state;
 }
@@ -157,10 +157,10 @@ static void _setClipboardText(void*, const char* text) {
 	SDL_SetClipboardText(text);
 }
 
-core::AppState IMGUIApp::onInit() {
-	const core::AppState state = Super::onInit();
+app::AppState IMGUIApp::onInit() {
+	const app::AppState state = Super::onInit();
 	video::checkError();
-	if (state != core::AppState::Running) {
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -168,19 +168,19 @@ core::AppState IMGUIApp::onInit() {
 
 	if (!_shader.setup()) {
 		Log::error("Could not load the ui shader");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_bufferIndex = _vbo.create();
 	if (_bufferIndex < 0) {
 		Log::error("Failed to create ui vertex buffer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	_vbo.setMode(_bufferIndex, video::BufferMode::Stream);
 	_indexBufferIndex = _vbo.create(nullptr, 0, video::BufferType::IndexBuffer);
 	if (_indexBufferIndex < 0) {
 		Log::error("Failed to create ui index buffer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_camera = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
@@ -259,11 +259,11 @@ core::AppState IMGUIApp::onInit() {
 	return state;
 }
 
-core::AppState IMGUIApp::onRunning() {
+app::AppState IMGUIApp::onRunning() {
 	core_trace_scoped(IMGUIAppOnRunning);
-	core::AppState state = Super::onRunning();
+	app::AppState state = Super::onRunning();
 
-	if (state != core::AppState::Running) {
+	if (state != app::AppState::Running) {
 		return state;
 	}
 	video::clear(video::ClearFlag::Color);
@@ -333,7 +333,7 @@ core::AppState IMGUIApp::onRunning() {
 	executeDrawCommands();
 
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-	return core::AppState::Running;
+	return app::AppState::Running;
 }
 
 void IMGUIApp::executeDrawCommands() {
@@ -368,7 +368,7 @@ void IMGUIApp::executeDrawCommands() {
 	core_trace_plot("UIDrawCommands", drawCommands);
 }
 
-core::AppState IMGUIApp::onCleanup() {
+app::AppState IMGUIApp::onCleanup() {
 	if (ImGui::GetCurrentContext() != nullptr) {
 		ImGui::DestroyContext();
 	}

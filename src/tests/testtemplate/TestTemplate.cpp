@@ -9,16 +9,16 @@ TestTemplate::TestTemplate(const metric::MetricPtr& metric, const io::Filesystem
 	init(ORGANISATION, "testtemplate");
 }
 
-core::AppState TestTemplate::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestTemplate::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	return state;
 }
 
-core::AppState TestTemplate::onCleanup() {
+app::AppState TestTemplate::onCleanup() {
 	// your cleanup here
 	return Super::onCleanup();
 }

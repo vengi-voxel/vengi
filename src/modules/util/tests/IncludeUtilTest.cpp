@@ -7,7 +7,7 @@
 #include "io/Filesystem.h"
 #include <SDL_platform.h>
 
-class IncludeUtilTest : public core::AbstractTest {
+class IncludeUtilTest : public app::AbstractTest {
 };
 
 TEST_F(IncludeUtilTest, testInclude) {

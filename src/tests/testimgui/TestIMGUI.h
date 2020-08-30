@@ -19,6 +19,6 @@ private:
 public:
 	TestIMGUI(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	core::AppState onInit() override;
+	app::AppState onInit() override;
 	void onRenderUI() override;
 };

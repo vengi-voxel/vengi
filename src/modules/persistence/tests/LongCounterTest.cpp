@@ -7,7 +7,7 @@
 
 namespace persistence {
 
-class LongCounterTest : public core::AbstractTest {
+class LongCounterTest : public app::AbstractTest {
 };
 
 TEST_F(LongCounterTest, testUpdate) {

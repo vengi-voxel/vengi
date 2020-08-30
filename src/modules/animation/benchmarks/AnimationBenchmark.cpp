@@ -12,7 +12,7 @@
 
 #include "animation/LUAAnimation.h"
 
-class AnimationBenchmark: public core::AbstractBenchmark {
+class AnimationBenchmark: public app::AbstractBenchmark {
 };
 
 #define CHR_ANIM_BENCHMARK_DEFINE_F(name)                                                                              \

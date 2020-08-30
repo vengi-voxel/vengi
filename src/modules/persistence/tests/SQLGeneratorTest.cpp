@@ -9,7 +9,7 @@
 
 namespace persistence {
 
-class SQLGeneratorTest : public core::AbstractTest {
+class SQLGeneratorTest : public app::AbstractTest {
 };
 
 TEST_F(SQLGeneratorTest, testDelete) {

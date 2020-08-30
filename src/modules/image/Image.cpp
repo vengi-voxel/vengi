@@ -60,7 +60,7 @@ bool Image::load(const io::FilePtr& file) {
 ImagePtr loadImage(const io::FilePtr& file, bool async) {
 	const ImagePtr& i = createEmptyImage(file->name());
 	if (async) {
-		core::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
+		app::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
 	} else {
 		if (!i->load(file)) {
 			Log::warn("Failed to load image %s", i->name().c_str());

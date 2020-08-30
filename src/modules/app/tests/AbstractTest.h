@@ -7,22 +7,22 @@
 #include "core/tests/TestHelper.h"
 #include "app/CommandlineApp.h"
 
-namespace core {
+namespace app {
 
 class AbstractTest: public testing::Test {
 private:
-	class TestApp: public core::CommandlineApp {
+	class TestApp: public app::CommandlineApp {
 		friend class AbstractTest;
 	private:
-		using Super = core::CommandlineApp;
+		using Super = app::CommandlineApp;
 	protected:
 		AbstractTest* _test = nullptr;
 	public:
 		TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
 		virtual ~TestApp();
 
-		core::AppState onInit() override;
-		core::AppState onCleanup() override;
+		app::AppState onInit() override;
+		app::AppState onCleanup() override;
 	};
 
 protected:

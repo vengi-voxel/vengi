@@ -7,7 +7,7 @@
 
 namespace persistence {
 
-class DBConditionTest : public core::AbstractTest {
+class DBConditionTest : public app::AbstractTest {
 };
 
 TEST_F(DBConditionTest, testDBCondition) {

@@ -97,7 +97,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const voxel::RawVolume& vo
 	return os;
 }
 
-class AbstractVoxelTest: public core::AbstractTest {
+class AbstractVoxelTest: public app::AbstractTest {
 protected:
 	class Pager: public PagedVolume::Pager {
 		AbstractVoxelTest* _test;
@@ -147,7 +147,7 @@ protected:
 public:
 	void SetUp() override {
 		_volData.flushAll();
-		core::AbstractTest::SetUp();
+		app::AbstractTest::SetUp();
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		_random.setSeed(_seed);
 		_ctx = PagedVolumeWrapper(&_volData, _volData.chunk(_region.getCenter()), _region);

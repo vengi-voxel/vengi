@@ -26,9 +26,9 @@
  * @ingroup Tools
  * @ingroup Compute
  */
-class ComputeShaderTool: public core::CommandlineApp {
+class ComputeShaderTool: public app::CommandlineApp {
 private:
-	using Super = core::CommandlineApp;
+	using Super = app::CommandlineApp;
 protected:
 	core::String _namespaceSrc;
 	core::String _sourceDirectory;
@@ -48,6 +48,6 @@ public:
 	ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	~ComputeShaderTool();
 
-	core::AppState onConstruct() override;
-	core::AppState onRunning() override;
+	app::AppState onConstruct() override;
+	app::AppState onRunning() override;
 };

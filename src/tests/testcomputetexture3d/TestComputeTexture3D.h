@@ -25,13 +25,13 @@ private:
 	std::vector<uint8_t> _output;
 	std::shared_ptr<voxel::RawVolume> _volume;
 
-	core::AppState onRunning() override;
+	app::AppState onRunning() override;
 	void onRenderUI() override;
 	void doRender() override;
 	void initVolume();
 public:
 	TestComputeTexture3D(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	virtual core::AppState onInit() override;
-	virtual core::AppState onCleanup() override;
+	virtual app::AppState onInit() override;
+	virtual app::AppState onCleanup() override;
 };

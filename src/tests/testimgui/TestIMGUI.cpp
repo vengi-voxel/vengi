@@ -38,9 +38,9 @@ void TestIMGUI::onRenderUI() {
 	}
 }
 
-core::AppState TestIMGUI::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestIMGUI::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 	_logLevelVar->setVal(core::string::toString(SDL_LOG_PRIORITY_DEBUG));

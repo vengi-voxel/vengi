@@ -12,7 +12,7 @@
 
 namespace animation {
 
-class LUAAnimationTest: public core::AbstractTest {
+class LUAAnimationTest: public app::AbstractTest {
 protected:
 	void exec(const char *scriptName, const char *animation) {
 		const core::String& script = io::filesystem()->load("%s", scriptName);

@@ -9,7 +9,7 @@
 #include "voxel/Constants.h"
 #include "voxelformat/VolumeCache.h"
 
-class PagedVolumeBenchmark: public core::AbstractBenchmark {
+class PagedVolumeBenchmark: public app::AbstractBenchmark {
 protected:
 	voxelformat::VolumeCachePtr _volumeCache;
 

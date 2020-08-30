@@ -12,7 +12,7 @@
 
 namespace voxelgenerator {
 
-class LUAGeneratorTest: public core::AbstractTest {
+class LUAGeneratorTest: public app::AbstractTest {
 };
 
 TEST_F(LUAGeneratorTest, testInit) {

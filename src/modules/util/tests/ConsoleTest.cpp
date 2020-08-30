@@ -9,7 +9,7 @@
 
 namespace util {
 
-class ConsoleTest: public core::AbstractTest {
+class ConsoleTest: public app::AbstractTest {
 };
 
 class TestConsole : public util::Console {

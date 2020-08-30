@@ -130,7 +130,7 @@ void Viewport::onProcess() {
 	}
 	core_trace_scoped(EditorSceneOnProcess);
 
-	const double deltaFrameSeconds = core::App::getInstance()->deltaFrameSeconds();
+	const double deltaFrameSeconds = app::App::getInstance()->deltaFrameSeconds();
 	_controller.update(deltaFrameSeconds);
 
 	if (tb::TBWidget::hovered_widget == this) {

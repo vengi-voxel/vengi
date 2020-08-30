@@ -25,7 +25,7 @@ bool ShaderTool::parse(const core::String& filename, const core::String& buffer,
 	return shadertool::parse(io::filesystem()->absolutePath(filename), _shaderStruct, _shaderfile, buffer, vertex);
 }
 
-core::AppState ShaderTool::onConstruct() {
+app::AppState ShaderTool::onConstruct() {
 	registerArg("--glslang").setShort("-g").setDescription("Path to glslangvalidator binary").setMandatory();
 	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").setMandatory();
 	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file").setMandatory();
@@ -112,7 +112,7 @@ std::pair<core::String, bool> ShaderTool::getSource(const core::String& file) co
 	return std::make_pair(src, success);
 }
 
-core::AppState ShaderTool::onRunning() {
+app::AppState ShaderTool::onRunning() {
 	const core::String& shaderfile         = getArgVal("--shader");
 	const bool printIncludes              = hasArg("--printincludes");
 	if (!printIncludes) {
@@ -173,17 +173,17 @@ core::AppState ShaderTool::onRunning() {
 		if (!computeBuffer.second) {
 			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
 			_exitCode = 1;
-			return core::AppState::Cleanup;
+			return app::AppState::Cleanup;
 		}
 		const core::String& computeSrcSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, false, &_includes);
 		if (!parse(computeFilename, computeSrcSource, false)) {
 			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
 			_exitCode = 1;
-			return core::AppState::Cleanup;
+			return app::AppState::Cleanup;
 		}
 
 		if (!printInfo()) {
-			return core::AppState::Cleanup;
+			return app::AppState::Cleanup;
 		}
 
 		if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateConstantsBuffer, templateUniformBuffer, _shaderStruct,
@@ -191,7 +191,7 @@ core::AppState ShaderTool::onRunning() {
 				"", "", "", computeBuffer.first)) {
 			Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 			_exitCode = 1;
-			return core::AppState::Cleanup;
+			return app::AppState::Cleanup;
 		}
 
 		const core::String& computeSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, true);
@@ -200,7 +200,7 @@ core::AppState ShaderTool::onRunning() {
 
 		Log::debug("Validating shader file %s", _shaderfile.c_str());
 		validate(finalComputeFilename);
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 
 	const core::String& fragmentFilename = _shaderfile + FRAGMENT_POSTFIX;
@@ -208,7 +208,7 @@ core::AppState ShaderTool::onRunning() {
 	if (fragmentBuffer.first.empty() || !fragmentBuffer.second) {
 		Log::error("Could not load %s", fragmentFilename.c_str());
 		_exitCode = 127;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 
 	const core::String& vertexFilename = _shaderfile + VERTEX_POSTFIX;
@@ -216,7 +216,7 @@ core::AppState ShaderTool::onRunning() {
 	if (vertexBuffer.first.empty() || !vertexBuffer.second) {
 		Log::error("Could not load %s", vertexFilename.c_str());
 		_exitCode = 127;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 
 	const core::String& geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
@@ -228,29 +228,29 @@ core::AppState ShaderTool::onRunning() {
 	if (!parse(fragmentFilename, fragmentSrcSource, false)) {
 		Log::error("Failed to parse fragment shader %s", _shaderfile.c_str());
 		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	if (!parse(vertexFilename, vertexSrcSource, true)) {
 		Log::error("Failed to parse vertex shader %s", _shaderfile.c_str());
 		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	if (!geometryBuffer.first.empty()) {
 		if (!geometryBuffer.second) {
 			Log::error("Failed to parse geometry shader %s", _shaderfile.c_str());
 			_exitCode = 1;
-			return core::AppState::Cleanup;
+			return app::AppState::Cleanup;
 		}
 		const core::String& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer.first, false, &_includes);
 		if (!parse(geometryFilename, geometrySrcSource, false)) {
 			Log::error("Failed to parse geometry shader %s", _shaderfile.c_str());
 			_exitCode = 1;
-			return core::AppState::Cleanup;
+			return app::AppState::Cleanup;
 		}
 	}
 
 	if (!printInfo()) {
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 
 	if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateConstantsBuffer, templateUniformBuffer,
@@ -258,7 +258,7 @@ core::AppState ShaderTool::onRunning() {
 			vertexBuffer.first, geometryBuffer.first, fragmentBuffer.first, computeBuffer.first)) {
 		Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	const core::String& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, true);
 	const core::String& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, true);
@@ -285,7 +285,7 @@ core::AppState ShaderTool::onRunning() {
 		validate(finalGeometryFilename);
 	}
 
-	return core::AppState::Cleanup;
+	return app::AppState::Cleanup;
 }
 
 CONSOLE_APP(ShaderTool)

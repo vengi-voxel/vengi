@@ -12,22 +12,22 @@ TestTexture::TestTexture(const metric::MetricPtr& metric, const io::FilesystemPt
 	init(ORGANISATION, "testtexture");
 }
 
-core::AppState TestTexture::onInit() {
-	const core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestTexture::onInit() {
+	const app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 	setUICamera();
 
 	if (!_renderer.init(frameBufferDimension())) {
 		Log::error("Failed to init the texture renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_texture = video::createTextureFromImage("texture.png");
 	if (!_texture) {
 		Log::error("Failed to load texture");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	video::clearColor(::core::Color::White);
@@ -41,7 +41,7 @@ void TestTexture::doRender() {
 	_renderer.render(camera().projectionMatrix());
 }
 
-core::AppState TestTexture::onCleanup() {
+app::AppState TestTexture::onCleanup() {
 	if (_texture) {
 		_texture->shutdown();
 	}

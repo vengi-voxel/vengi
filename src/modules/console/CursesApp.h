@@ -7,19 +7,19 @@
 
 namespace console {
 
-class CursesApp : public core::CommandlineApp {
+class CursesApp : public app::CommandlineApp {
 private:
-	using Super = core::CommandlineApp;
+	using Super = app::CommandlineApp;
 
 	CursesConsole _console;
 public:
 	CursesApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~CursesApp();
 
-	core::AppState onConstruct() override;
-	core::AppState onInit() override;
-	core::AppState onCleanup() override;
-	core::AppState onRunning() override;
+	app::AppState onConstruct() override;
+	app::AppState onInit() override;
+	app::AppState onCleanup() override;
+	app::AppState onRunning() override;
 };
 
 }

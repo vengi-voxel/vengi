@@ -20,9 +20,9 @@ TestOctreeVisit::TestOctreeVisit(const metric::MetricPtr& metric, const io::File
 	setRenderAxis(true);
 }
 
-core::AppState TestOctreeVisit::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestOctreeVisit::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -30,7 +30,7 @@ core::AppState TestOctreeVisit::onInit() {
 
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to init the shape renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_shapeBuilder.sphere(10, 10, 5.0f);
@@ -61,9 +61,9 @@ void TestOctreeVisit::updateCamera() {
 	}
 }
 
-core::AppState TestOctreeVisit::onRunning() {
-	core::AppState state = Super::onRunning();
-	if (state != core::AppState::Running) {
+app::AppState TestOctreeVisit::onRunning() {
+	app::AppState state = Super::onRunning();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -114,7 +114,7 @@ void TestOctreeVisit::doRender() {
 	_shapeRenderer.render(_frustumMesh, camera());
 }
 
-core::AppState TestOctreeVisit::onCleanup() {
+app::AppState TestOctreeVisit::onCleanup() {
 	_shapeRenderer.shutdown();
 	return Super::onCleanup();
 }

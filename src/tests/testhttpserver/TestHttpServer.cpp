@@ -11,16 +11,16 @@ TestHttpServer::TestHttpServer(const metric::MetricPtr& metric, const io::Filesy
 	init(ORGANISATION, "testhttpserver");
 }
 
-core::AppState TestHttpServer::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState TestHttpServer::onConstruct() {
+	app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(5.0f);
 	_exitAfterRequest = core::Var::get("exitafterrequest", "0");
 	return state;
 }
 
-core::AppState TestHttpServer::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestHttpServer::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -30,7 +30,7 @@ core::AppState TestHttpServer::onInit() {
 		uv_loop_close(_loop);
 		delete _loop;
 		_loop = nullptr;
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_input.init(_loop)) {
@@ -40,7 +40,7 @@ core::AppState TestHttpServer::onInit() {
 	const int16_t port = 8088;
 	if (!_server.init(port)) {
 		Log::error("Failed to start the http server");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_server.registerRoute(http::HttpMethod::GET, "/", [&] (const http::RequestParser& request, http::HttpResponse* response) {
@@ -67,7 +67,7 @@ core::AppState TestHttpServer::onInit() {
 	return state;
 }
 
-core::AppState TestHttpServer::onRunning() {
+app::AppState TestHttpServer::onRunning() {
 	Super::onRunning();
 	uv_run(_loop, UV_RUN_NOWAIT);
 	_server.update();
@@ -78,11 +78,11 @@ core::AppState TestHttpServer::onRunning() {
 			Log::info("%i steps until shutdown", _remainingFrames);
 		}
 	}
-	return core::AppState::Running;
+	return app::AppState::Running;
 }
 
-core::AppState TestHttpServer::onCleanup() {
-	core::AppState state = Super::onCleanup();
+app::AppState TestHttpServer::onCleanup() {
+	app::AppState state = Super::onCleanup();
 	if (_loop != nullptr) {
 		uv_tty_reset_mode();
 		uv_loop_close(_loop);

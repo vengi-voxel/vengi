@@ -21,8 +21,8 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
 }
 
-core::AppState VoxConvert::onConstruct() {
-	const core::AppState state = Super::onConstruct();
+app::AppState VoxConvert::onConstruct() {
+	const app::AppState state = Super::onConstruct();
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
@@ -33,9 +33,9 @@ core::AppState VoxConvert::onConstruct() {
 	return state;
 }
 
-core::AppState VoxConvert::onInit() {
-	const core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState VoxConvert::onInit() {
+	const app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		Log::error("Failed to init application");
 		return state;
 	}
@@ -44,7 +44,7 @@ core::AppState VoxConvert::onInit() {
 		_logLevelVar->setVal(SDL_LOG_PRIORITY_INFO);
 		Log::init();
 		usage();
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	io::FilePtr paletteFile = filesystem()->open(core::string::format("palette-%s.png", _palette->strVal().c_str()));
@@ -53,7 +53,7 @@ core::AppState VoxConvert::onInit() {
 	}
 	if (!voxel::initMaterialColors(paletteFile, io::FilePtr())) {
 		Log::error("Failed to init default material colors");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const core::String infile = _argv[_argc - 2];
@@ -66,32 +66,32 @@ core::AppState VoxConvert::onInit() {
 	if (!inputFile->exists()) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
 		_exitCode = 127;
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
 	if (!outputFile->validHandle()) {
 		Log::error("Could not open target file: %s", outfile.c_str());
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (outputFile->length() > 0) {
 		if (!hasArg("--force") && !hasArg("-f")) {
 			Log::error("Given output file '%s' already exists", outfile.c_str());
-			return core::AppState::InitFailure;
+			return app::AppState::InitFailure;
 		}
 	}
 
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(inputFile, volumes)) {
 		Log::error("Failed to load given input file");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (hasArg("--merge") || hasArg("-m")) {
 		voxel::RawVolume* merged = volumes.merge();
 		if (merged == nullptr) {
 			Log::error("Failed to merge volumes");
-			return core::AppState::InitFailure;
+			return app::AppState::InitFailure;
 		}
 		voxelformat::clearVolumes(volumes);
 		volumes.push_back(voxel::VoxelVolume(merged));
@@ -114,7 +114,7 @@ core::AppState VoxConvert::onInit() {
 	if (!voxelformat::saveVolumeFormat(outputFile, volumes)) {
 		voxelformat::clearVolumes(volumes);
 		Log::error("Failed to write to output file '%s'", outfile.c_str());
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	Log::info("Wrote output file %s", outputFile->name().c_str());
 

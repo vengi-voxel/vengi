@@ -13,15 +13,15 @@
  *
  * @ingroup Tools
  */
-class UITool: public core::CommandlineApp {
+class UITool: public app::CommandlineApp {
 private:
-	using Super = core::CommandlineApp;
+	using Super = app::CommandlineApp;
 	DummyRenderer _renderer;
 	tb::TBWidget _root;
 public:
 	UITool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	core::AppState onInit() override;
-	core::AppState onRunning() override;
-	core::AppState onCleanup() override;
+	app::AppState onInit() override;
+	app::AppState onRunning() override;
+	app::AppState onCleanup() override;
 };

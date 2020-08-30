@@ -11,7 +11,7 @@
 
 namespace stock {
 
-class AbstractStockTest: public core::AbstractTest {
+class AbstractStockTest: public app::AbstractTest {
 protected:
 	StockDataProviderPtr _provider;
 	ItemData *_itemData1;
@@ -23,7 +23,7 @@ protected:
 	ItemPtr _item2;
 public:
 	virtual void SetUp() override {
-		core::AbstractTest::SetUp();
+		app::AbstractTest::SetUp();
 		_provider = std::make_shared<StockDataProvider>();
 		_itemData1 = new ItemData(1, ItemType::WEAPON);
 		_itemData1->setSize(1, 2);
@@ -55,7 +55,7 @@ public:
 	}
 
 	virtual void TearDown() override {
-		core::AbstractTest::TearDown();
+		app::AbstractTest::TearDown();
 		_provider->shutdown();
 		_itemData1 = nullptr;
 		_itemData2 = nullptr;

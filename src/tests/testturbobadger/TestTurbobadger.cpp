@@ -36,9 +36,9 @@ TestTurbobadger::TestTurbobadger(const metric::MetricPtr& metric, const io::File
 	init(ORGANISATION, "testturbobadger");
 }
 
-core::AppState TestTurbobadger::onInit() {
+app::AppState TestTurbobadger::onInit() {
 	_applicationSkin = "ui/skin/skin.tb.txt";
-	core::AppState state = Super::onInit();
+	app::AppState state = Super::onInit();
 
 	// Load language file
 	if (!tb::g_tb_lng->load("demo01/language/lng_en.tb.txt")) {

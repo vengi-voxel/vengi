@@ -13,30 +13,30 @@ CursesApp::CursesApp(const metric::MetricPtr& metric, const io::FilesystemPtr& f
 CursesApp::~CursesApp() {
 }
 
-core::AppState CursesApp::onConstruct() {
-	const core::AppState state = Super::onConstruct();
+app::AppState CursesApp::onConstruct() {
+	const app::AppState state = Super::onConstruct();
 	_console.construct();
 	return state;
 }
 
-core::AppState CursesApp::onInit() {
-	const core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState CursesApp::onInit() {
+	const app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 	if (!_console.init()) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	return state;
 }
 
-core::AppState CursesApp::onCleanup() {
+app::AppState CursesApp::onCleanup() {
 	_console.shutdown();
 	return Super::onCleanup();
 }
 
-core::AppState CursesApp::onRunning() {
-	const core::AppState state = Super::onRunning();
+app::AppState CursesApp::onRunning() {
+	const app::AppState state = Super::onRunning();
 	_console.update(_deltaFrameSeconds);
 	return state;
 }

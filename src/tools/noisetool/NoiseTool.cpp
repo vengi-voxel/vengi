@@ -36,9 +36,9 @@ void NoiseTool::remove(uint32_t dataId) {
 	}
 }
 
-core::AppState NoiseTool::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState NoiseTool::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -46,14 +46,14 @@ core::AppState NoiseTool::onInit() {
 
 	_window = new NoiseToolWindow(this);
 	if (!_window->init()) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	return state;
 }
 
-core::AppState NoiseTool::onRunning() {
-	core::AppState state = Super::onRunning();
+app::AppState NoiseTool::onRunning() {
+	app::AppState state = Super::onRunning();
 	_window->update();
 	return state;
 }

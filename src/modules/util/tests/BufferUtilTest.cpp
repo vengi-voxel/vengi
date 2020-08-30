@@ -7,7 +7,7 @@
 
 namespace util {
 
-class BufferUtilTest : public core::AbstractTest {
+class BufferUtilTest : public app::AbstractTest {
 };
 
 TEST_F(BufferUtilTest, testIndexCompress) {

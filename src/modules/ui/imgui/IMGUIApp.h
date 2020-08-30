@@ -53,11 +53,11 @@ public:
 	}
 
 	virtual void onWindowResize(int windowWidth, int windowHeight) override;
-	virtual core::AppState onConstruct() override;
-	virtual core::AppState onInit() override;
-	virtual core::AppState onRunning() override;
+	virtual app::AppState onConstruct() override;
+	virtual app::AppState onInit() override;
+	virtual app::AppState onRunning() override;
 	virtual void onRenderUI() = 0;
-	virtual core::AppState onCleanup() override;
+	virtual app::AppState onCleanup() override;
 };
 
 }

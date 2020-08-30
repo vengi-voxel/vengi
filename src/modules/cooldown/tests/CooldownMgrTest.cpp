@@ -11,7 +11,7 @@
 
 namespace cooldown {
 
-class CooldownMgrTest : public core::AbstractTest {
+class CooldownMgrTest : public app::AbstractTest {
 protected:
 	core::TimeProviderPtr _timeProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
@@ -24,7 +24,7 @@ public:
 	}
 
 	void SetUp() override {
-		core::AbstractTest::SetUp();
+		app::AbstractTest::SetUp();
 		const core::String& cooldowns = io::filesystem()->load("cooldowns.lua");
 		_cooldownProvider->init(cooldowns);
 	}

@@ -83,9 +83,9 @@ public:
 			const audio::SoundManagerPtr& soundManager);
 	~MapView();
 
-	core::AppState onConstruct() override;
-	core::AppState onInit() override;
+	app::AppState onConstruct() override;
+	app::AppState onInit() override;
 	void onRenderUI() override;
-	core::AppState onCleanup() override;
-	core::AppState onRunning() override;
+	app::AppState onCleanup() override;
+	app::AppState onRunning() override;
 };

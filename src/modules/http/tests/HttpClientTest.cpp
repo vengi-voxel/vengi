@@ -12,7 +12,7 @@
 
 namespace http {
 
-class HttpClientTest : public core::AbstractTest {
+class HttpClientTest : public app::AbstractTest {
 };
 
 TEST_F(HttpClientTest, testSimple) {
@@ -37,7 +37,7 @@ TEST_F(HttpClientTest, testSimple) {
 		finishedSetup = true;
 		startCondition.notify_one();
 
-		while (_testApp->state() == core::AppState::Running) {
+		while (_testApp->state() == app::AppState::Running) {
 			_httpServer.update();
 		}
 		_httpServer.shutdown();

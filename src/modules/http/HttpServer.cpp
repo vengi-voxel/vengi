@@ -237,7 +237,7 @@ void HttpServer::assembleError(Client& client, HttpStatus status) {
 			"\r\n",
 			(int)status,
 			toStatusString(status),
-			core::App::getInstance()->appname().c_str());
+			app::App::getInstance()->appname().c_str());
 
 	const char *errorPage = "";
 	_errorPages.get((int)status, errorPage);
@@ -341,7 +341,7 @@ bool HttpServer::route(const RequestParser& request, HttpResponse& response) {
 	}
 	response.headers.put(header::CONTENT_TYPE, http::mimetype::TEXT_PLAIN);
 	response.headers.put(header::CONNECTION, "close");
-	response.headers.put(header::SERVER, core::App::getInstance()->appname().c_str());
+	response.headers.put(header::SERVER, app::App::getInstance()->appname().c_str());
 	// TODO urldecode of request data
 	//core::string::urlDecode(request.query);
 	i->value(request, &response);

@@ -22,8 +22,8 @@ Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPt
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
 }
 
-core::AppState Thumbnailer::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState Thumbnailer::onConstruct() {
+	app::AppState state = Super::onConstruct();
 
 	auto thumbnailSizeFunc = [&] (const core::CmdArgs& args) {
 		if (args.size() == 0) {
@@ -40,9 +40,9 @@ core::AppState Thumbnailer::onConstruct() {
 	return state;
 }
 
-core::AppState Thumbnailer::onInit() {
-	const core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState Thumbnailer::onInit() {
+	const app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		Log::error("Failed to init application");
 		return state;
 	}
@@ -51,7 +51,7 @@ core::AppState Thumbnailer::onInit() {
 		_logLevelVar->setVal(SDL_LOG_PRIORITY_INFO);
 		Log::init();
 		usage();
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const core::String infile = _argv[_argc - 2];
@@ -63,23 +63,23 @@ core::AppState Thumbnailer::onInit() {
 	_infile = filesystem()->open(infile, io::FileMode::SysRead);
 	if (!_infile->exists()) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to init default material colors");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(_infile, volumes)) {
 		Log::error("Failed to load given input file");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_renderer.init()) {
 		Log::error("Failed to initialize the renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const int volumesSize = (int)volumes.size();
@@ -99,9 +99,9 @@ core::AppState Thumbnailer::onInit() {
 	return state;
 }
 
-core::AppState Thumbnailer::onRunning() {
-	core::AppState state = Super::onRunning();
-	if (state != core::AppState::Running) {
+app::AppState Thumbnailer::onRunning() {
+	app::AppState state = Super::onRunning();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -157,7 +157,7 @@ core::AppState Thumbnailer::onRunning() {
 	return state;
 }
 
-core::AppState Thumbnailer::onCleanup() {
+app::AppState Thumbnailer::onCleanup() {
 	const core::DynamicArray<voxel::RawVolume*>& old = _renderer.shutdown();
 	for (auto* v : old) {
 		delete v;

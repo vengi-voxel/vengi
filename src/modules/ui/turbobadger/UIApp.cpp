@@ -387,8 +387,8 @@ void UIApp::onWindowResize(int windowWidth, int windowHeight) {
 	_root->setRect(tb::TBRect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y));
 }
 
-core::AppState UIApp::onConstruct() {
-	const core::AppState state = Super::onConstruct();
+app::AppState UIApp::onConstruct() {
+	const app::AppState state = Super::onConstruct();
 	core::Command::registerCommand("cl_ui_debug", [&] (const core::CmdArgs& args) {
 #ifdef DEBUG
 		tb::ShowDebugInfoSettingsWindow(_root);
@@ -417,15 +417,15 @@ void UIApp::afterRootWidget() {
 	_console.render(rect, _deltaFrameSeconds);
 }
 
-core::AppState UIApp::onInit() {
-	const core::AppState state = Super::onInit();
+app::AppState UIApp::onInit() {
+	const app::AppState state = Super::onInit();
 	video::checkError();
-	if (state != core::AppState::Running) {
+	if (state != app::AppState::Running) {
 		return state;
 	}
 	if (!tb::tb_core_init(&_renderer)) {
 		Log::error(_logId, "failed to initialize the ui");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	tb::TBWidgetListener::addGlobalListener(this);
@@ -447,19 +447,19 @@ core::AppState UIApp::onInit() {
 	if (!tb::g_tb_skin->load("ui/skin/skin.tb.txt", _applicationSkin.empty() ? nullptr : _applicationSkin.c_str())) {
 		Log::error(_logId, "could not load the skin at ui/skin/skin.tb.txt and/or %s",
 				_applicationSkin.empty() ? "none" : _applicationSkin.c_str());
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_renderer.init(frameBufferDimension(), windowDimension())) {
 		Log::error(_logId, "could not init ui renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	initFonts();
 	tb::TBFontFace *font = getFont(_uiFontSize->intVal(), true);
 	if (font == nullptr) {
 		Log::error(_logId, "could not create the font face");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_root = new tb::TBWidget();
@@ -484,8 +484,8 @@ tb::TBWidget* UIApp::getWidgetAt(int x, int y, bool includeChildren) {
 	return _root->getWidgetAt(x, y, includeChildren);
 }
 
-core::AppState UIApp::onRunning() {
-	core::AppState state = Super::onRunning();
+app::AppState UIApp::onRunning() {
+	app::AppState state = Super::onRunning();
 	_console.update(_deltaFrameSeconds);
 
 	_lastShowTextY = 5;
@@ -498,7 +498,7 @@ core::AppState UIApp::onRunning() {
 		}
 	}
 
-	const bool running = state == core::AppState::Running;
+	const bool running = state == app::AppState::Running;
 	if (running) {
 		{
 			core_trace_scoped(UIAppBeforeUI);
@@ -536,7 +536,7 @@ core::AppState UIApp::onRunning() {
 	return state;
 }
 
-core::AppState UIApp::onCleanup() {
+app::AppState UIApp::onCleanup() {
 	tb::TBAnimationManager::abortAllAnimations();
 	if (_uiInitialized) {
 		tb::TBWidgetListener::removeGlobalListener(this);

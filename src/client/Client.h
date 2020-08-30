@@ -81,10 +81,10 @@ public:
 			const audio::SoundManagerPtr& soundManager);
 	~Client();
 
-	core::AppState onConstruct() override;
-	core::AppState onInit() override;
-	core::AppState onRunning() override;
-	core::AppState onCleanup() override;
+	app::AppState onConstruct() override;
+	app::AppState onInit() override;
+	app::AppState onRunning() override;
+	app::AppState onCleanup() override;
 	void onWindowResize(int windowWidth, int windowHeight) override;
 
 	client::CooldownHandler& cooldownHandler();

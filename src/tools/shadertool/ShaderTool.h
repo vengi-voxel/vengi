@@ -13,9 +13,9 @@
  *
  * @ingroup Tools
  */
-class ShaderTool: public core::CommandlineApp {
+class ShaderTool: public app::CommandlineApp {
 private:
-	using Super = core::CommandlineApp;
+	using Super = app::CommandlineApp;
 protected:
 	ShaderStruct _shaderStruct;
 	core::String _namespaceSrc;
@@ -39,6 +39,6 @@ protected:
 public:
 	ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	core::AppState onConstruct() override;
-	core::AppState onRunning() override;
+	app::AppState onConstruct() override;
+	app::AppState onRunning() override;
 };

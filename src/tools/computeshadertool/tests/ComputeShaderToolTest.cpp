@@ -8,7 +8,7 @@
 
 namespace computeshadertool {
 
-class ComputeShaderToolTest: public core::AbstractTest {
+class ComputeShaderToolTest: public app::AbstractTest {
 };
 
 TEST_F(ComputeShaderToolTest, testConvertVectorType) {

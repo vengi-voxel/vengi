@@ -20,7 +20,7 @@
 
 namespace backend {
 
-class WorldTest: public core::AbstractTest {
+class WorldTest: public app::AbstractTest {
 public:
 	EntityStoragePtr _entityStorage;
 	network::ProtocolHandlerRegistryPtr _protocolHandlerRegistry;
@@ -36,7 +36,7 @@ public:
 	http::HttpServerPtr _httpServer;
 
 	void SetUp() override {
-		core::AbstractTest::SetUp();
+		app::AbstractTest::SetUp();
 		core::Var::get(cfg::ServerSeed, "1");
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		voxel::initDefaultMaterialColors();
@@ -80,7 +80,7 @@ public:
 		_persistenceMgr.reset();
 		_mapProvider.reset();
 
-		core::AbstractTest::TearDown();
+		app::AbstractTest::TearDown();
 	}
 };
 

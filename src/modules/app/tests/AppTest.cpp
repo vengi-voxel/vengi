@@ -9,7 +9,7 @@
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
 
-namespace core {
+namespace app {
 
 TEST(AppTest, testLifecycleManual) {
 	const metric::MetricPtr metric = std::make_shared<metric::Metric>();
@@ -17,10 +17,10 @@ TEST(AppTest, testLifecycleManual) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
 	App app(metric, filesystem, eventBus, timeProvider);
-	ASSERT_EQ(core::AppState::Init, app.onConstruct());
-	ASSERT_EQ(core::AppState::Running, app.onInit());
-	ASSERT_EQ(core::AppState::Cleanup, app.onRunning());
-	ASSERT_EQ(core::AppState::Destroy, app.onCleanup());
+	ASSERT_EQ(app::AppState::Init, app.onConstruct());
+	ASSERT_EQ(app::AppState::Running, app.onInit());
+	ASSERT_EQ(app::AppState::Cleanup, app.onRunning());
+	ASSERT_EQ(app::AppState::Destroy, app.onCleanup());
 }
 
 TEST(AppTest, testLifecycleOnFrame) {
@@ -30,15 +30,15 @@ TEST(AppTest, testLifecycleOnFrame) {
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
 	App app(metric, filesystem, eventBus, timeProvider);
 	app.onFrame();
-	ASSERT_EQ(core::AppState::Construct, app.state());
+	ASSERT_EQ(app::AppState::Construct, app.state());
 	app.onFrame();
-	ASSERT_EQ(core::AppState::Init, app.state());
+	ASSERT_EQ(app::AppState::Init, app.state());
 	app.onFrame();
-	ASSERT_EQ(core::AppState::Running, app.state());
+	ASSERT_EQ(app::AppState::Running, app.state());
 	app.onFrame();
-	ASSERT_EQ(core::AppState::Cleanup, app.state());
+	ASSERT_EQ(app::AppState::Cleanup, app.state());
 	app.onFrame();
-	ASSERT_EQ(core::AppState::InvalidAppState, app.state());
+	ASSERT_EQ(app::AppState::InvalidAppState, app.state());
 }
 
 }

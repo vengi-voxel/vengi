@@ -12,7 +12,7 @@
 
 namespace core {
 
-// a singleton - available via core::App
+// a singleton - available via app::App
 class Trace {
 public:
 	Trace();

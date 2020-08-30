@@ -27,7 +27,7 @@ bool RandomColorTexture::init() {
 		delete[] colorTexture;
 		return true;
 	}
-	_noiseFuture.emplace_back(core::App::getInstance()->threadPool().enqueue([=] () {
+	_noiseFuture.emplace_back(app::App::getInstance()->threadPool().enqueue([=] () {
 		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
 		_noise.seamlessNoise(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
 		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);

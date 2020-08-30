@@ -8,7 +8,7 @@
 
 namespace cooldown {
 
-class CooldownDurationTest : public core::AbstractTest {
+class CooldownDurationTest : public app::AbstractTest {
 };
 
 TEST_F(CooldownDurationTest, testLoading) {

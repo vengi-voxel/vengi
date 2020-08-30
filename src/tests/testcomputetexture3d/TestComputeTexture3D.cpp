@@ -17,9 +17,9 @@ TestComputeTexture3D::TestComputeTexture3D(const metric::MetricPtr& metric, cons
 	init(ORGANISATION, "testcomputetexture3d");
 }
 
-core::AppState TestComputeTexture3D::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestComputeTexture3D::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -27,22 +27,22 @@ core::AppState TestComputeTexture3D::onInit() {
 
 	if (!compute::init()) {
 		Log::error("Failed to initialize the compute context");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_renderShader.setup()) {
 		Log::error("Failed to setup the compute shader");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_renderer.init(frameBufferDimension())) {
 		Log::error("Failed to setup the renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	initVolume();
@@ -87,7 +87,7 @@ void TestComputeTexture3D::initVolume() {
 	_texture2D = video::createTexture(cfg2d, _workSize.x, _workSize.y);
 }
 
-core::AppState TestComputeTexture3D::onCleanup() {
+app::AppState TestComputeTexture3D::onCleanup() {
 	if (_texture3DCompute) {
 		_texture3DCompute->shutdown();
 	}
@@ -100,7 +100,7 @@ core::AppState TestComputeTexture3D::onCleanup() {
 	return Super::onCleanup();
 }
 
-core::AppState TestComputeTexture3D::onRunning() {
+app::AppState TestComputeTexture3D::onRunning() {
 	const float step = 0.01f;
 	const bool success = _renderShader.render(*_texture3DCompute.get(), _output, _texture3DCompute->width(), _texture3DCompute->height(), _slice, _workSize);
 	if (!success) {

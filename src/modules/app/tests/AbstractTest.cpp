@@ -14,7 +14,7 @@
 extern char **_argv;
 extern int _argc;
 
-namespace core {
+namespace app {
 
 core::String AbstractTest::fileToString(const core::String& filename) const {
 	const io::FilesystemPtr& fs = _testApp->filesystem();
@@ -62,7 +62,7 @@ AppState AbstractTest::TestApp::onCleanup() {
 
 AppState AbstractTest::TestApp::onInit() {
 	AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+	if (state != app::AppState::Running) {
 		return state;
 	}
 

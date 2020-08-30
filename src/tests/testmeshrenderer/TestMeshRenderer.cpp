@@ -15,29 +15,29 @@ TestMeshRenderer::TestMeshRenderer(const metric::MetricPtr& metric,
 	init(ORGANISATION, "testmeshrenderer");
 }
 
-core::AppState TestMeshRenderer::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestMeshRenderer::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_meshRenderer.init()) {
 		Log::error("Failed to initialize the raw volume renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	_modelIndex = _meshRenderer.addMesh("assets/north-dir");
 	if (_modelIndex == -1) {
 		Log::error("Failed to load model");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	return state;
 }
 
-core::AppState TestMeshRenderer::onCleanup() {
+app::AppState TestMeshRenderer::onCleanup() {
 	_meshRenderer.shutdown();
 	return Super::onCleanup();
 }

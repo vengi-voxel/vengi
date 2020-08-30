@@ -28,7 +28,7 @@ bool ComputeShaderTool::parse(const core::String& buffer) {
 	return computeshadertool::parse(buffer, _computeFilename, _kernels, _structs, _constants);
 }
 
-core::AppState ComputeShaderTool::onConstruct() {
+app::AppState ComputeShaderTool::onConstruct() {
 	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").setMandatory();
 	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file").setMandatory();
 	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("compute");
@@ -58,26 +58,26 @@ std::pair<core::String, bool> ComputeShaderTool::getSource(const core::String& f
 	return std::make_pair(src, success);
 }
 
-core::AppState ComputeShaderTool::onRunning() {
+app::AppState ComputeShaderTool::onRunning() {
 	const core::String shaderfile = getArgVal("--shader");
 	if (shaderfile.empty()) {
 		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	_shaderTemplateFile = getArgVal("--shadertemplate");
 	if (_shaderTemplateFile.empty()) {
 		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	_namespaceSrc = getArgVal("--namespace");
 	if (_namespaceSrc.empty()) {
 		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	_shaderDirectory = getArgVal("--shaderdir");
 	if (_shaderDirectory.empty()) {
 		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	_sourceDirectory = getArgVal("--sourcedir", _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
 	_postfix = getArgVal("--postfix", "");
@@ -107,7 +107,7 @@ core::AppState ComputeShaderTool::onRunning() {
 	if (computeBuffer.first.empty() || !computeBuffer.second) {
 		Log::error("Could not load %s", _computeFilename.c_str());
 		_exitCode = 127;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 
 	compute::Shader shader;
@@ -116,12 +116,12 @@ core::AppState ComputeShaderTool::onRunning() {
 	_name = core::string::extractFilename(shaderfile.c_str());
 	if (!parse(computeSrcSource)) {
 		_exitCode = 1;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	const core::String& templateShader = filesystem()->load(_shaderTemplateFile);
 	if (!computeshadertool::generateSrc(filesystem(), templateShader, _name, _namespaceSrc, _shaderDirectory, _sourceDirectory, _kernels, _structs, _constants, _postfix, computeBuffer.first)) {
 		_exitCode = 100;
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 
 	const core::String& computeSource = shader.getSource(computeBuffer.first, true);
@@ -134,7 +134,7 @@ core::AppState ComputeShaderTool::onRunning() {
 	core::String finalComputeFilename = _appname + "-" + _computeFilename;
 	filesystem()->write(finalComputeFilename, computeSource);
 
-	return core::AppState::Cleanup;
+	return app::AppState::Cleanup;
 }
 
 CONSOLE_APP(ComputeShaderTool)

@@ -15,9 +15,9 @@ TestCamera::TestCamera(const metric::MetricPtr& metric, const io::FilesystemPtr&
 	setRenderAxis(true);
 }
 
-core::AppState TestCamera::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestCamera::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -62,7 +62,7 @@ core::AppState TestCamera::onInit() {
 		_renderCamera[i].update(0l);
 
 		if (!_frustums[i].init(_renderCamera[i], colors[i], renderSplitFrustum ? 4 : 0)) {
-			return core::AppState::InitFailure;
+			return app::AppState::InitFailure;
 		}
 		_frustums[i].setRenderAABB(renderAABB);
 	}
@@ -122,8 +122,8 @@ void TestCamera::onRenderUI() {
 	Super::onRenderUI();
 }
 
-core::AppState TestCamera::onRunning() {
-	core::AppState state = Super::onRunning();
+app::AppState TestCamera::onRunning() {
+	app::AppState state = Super::onRunning();
 	video::Camera& c = _renderCamera[_targetCamera];
 	const SDL_Keymod mods = SDL_GetModState();
 	if (mods & KMOD_SHIFT) {
@@ -133,7 +133,7 @@ core::AppState TestCamera::onRunning() {
 	return state;
 }
 
-core::AppState TestCamera::onCleanup() {
+app::AppState TestCamera::onCleanup() {
 	for (int i = 0; i < CAMERAS; ++i) {
 		_frustums[i].shutdown();
 	}

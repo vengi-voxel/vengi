@@ -8,7 +8,7 @@
 
 namespace math {
 
-class PlaneTest : public core::AbstractTest {
+class PlaneTest : public app::AbstractTest {
 };
 
 TEST_F(PlaneTest, testOrigin) {

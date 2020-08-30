@@ -6,7 +6,7 @@
 
 #include "core/TimeProvider.h"
 
-namespace core {
+namespace app {
 namespace AppCommand {
 extern void init(const core::TimeProviderPtr& timeProvider);
 }

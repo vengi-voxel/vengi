@@ -2,10 +2,10 @@
 #include "backend/entity/ai/common/Random.h"
 
 void TestSuite::SetUp() {
-	core::AbstractTest::SetUp();
+	app::AbstractTest::SetUp();
 	backend::randomSeed(0);
 }
 
 void TestSuite::TearDown() {
-	core::AbstractTest::TearDown();
+	app::AbstractTest::TearDown();
 }

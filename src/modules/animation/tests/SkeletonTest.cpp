@@ -10,7 +10,7 @@
 
 namespace animation {
 
-class SkeletonTest: public core::AbstractTest {
+class SkeletonTest: public app::AbstractTest {
 protected:
 	void test(const char *file) {
 		CharacterSkeleton skel;

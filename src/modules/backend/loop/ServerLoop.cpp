@@ -62,14 +62,14 @@ bool ServerLoop::addTimer(uv_timer_t* timer, uv_timer_cb cb, uint64_t repeatMill
 
 void ServerLoop::signalCallback(uv_signal_t* handle, int signum) {
 	if (signum == SIGHUP) {
-		core::App::getInstance()->requestQuit();
+		app::App::getInstance()->requestQuit();
 		return;
 	}
 
 	if (signum == SIGINT) {
 		//ServerLoop* loop = (ServerLoop*)handle->data;
 		// TODO: only quit if this was hit twice in under 2 seconds
-		core::App::getInstance()->requestQuit();
+		app::App::getInstance()->requestQuit();
 		return;
 	}
 }
@@ -356,7 +356,7 @@ bool ServerLoop::init() {
 		const ServerLoop* loop = (const ServerLoop*)handle->data;
 		const long dt = handle->repeat;
 		const persistence::PersistenceMgrPtr& persistenceMgr = loop->_persistenceMgr;
-		core::App::getInstance()->threadPool().enqueue([=] () {
+		app::App::getInstance()->threadPool().enqueue([=] () {
 			persistenceMgr->update(dt);
 		});
 	}, 10000);

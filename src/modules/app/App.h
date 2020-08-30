@@ -26,14 +26,12 @@ class Metric;
 using MetricPtr = std::shared_ptr<Metric>;
 class IMetricSender;
 using IMetricSenderPtr = std::shared_ptr<IMetricSender>;
-
 }
 
 /**
  * Foundation classes
  */
 namespace core {
-
 class ThreadPool;
 typedef std::shared_ptr<ThreadPool> ThreadPoolPtr;
 
@@ -45,7 +43,9 @@ typedef std::shared_ptr<EventBus> EventBusPtr;
 
 class TimeProvider;
 typedef std::shared_ptr<TimeProvider> TimeProviderPtr;
+}
 
+namespace app {
 enum class AppState : uint8_t {
 	Construct,
 	Init,
@@ -319,7 +319,7 @@ inline AppState App::state() const {
 namespace io {
 
 inline io::FilesystemPtr filesystem() {
-	return core::App::getInstance()->filesystem();
+	return app::App::getInstance()->filesystem();
 }
 
 }

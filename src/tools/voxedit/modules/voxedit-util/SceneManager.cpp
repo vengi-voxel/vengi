@@ -140,7 +140,7 @@ void SceneManager::autosave() {
 	if (!_needAutoSave) {
 		return;
 	}
-	const core::TimeProviderPtr& timeProvider = core::App::getInstance()->timeProvider();
+	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	const uint64_t delay = _autoSaveSecondsDelay->intVal();
 	if (_lastAutoSave + delay > timeProvider->tickSeconds()) {
 		return;
@@ -764,7 +764,7 @@ bool SceneManager::setGridResolution(int resolution) {
 
 void SceneManager::renderAnimation(const video::Camera& camera) {
 	attrib::ShadowAttributes attrib;
-	const double deltaFrameSeconds = core::App::getInstance()->deltaFrameSeconds();
+	const double deltaFrameSeconds = app::App::getInstance()->deltaFrameSeconds();
 	if (_animationUpdate) {
 		const voxedit::Layers& layers = _layerMgr.layers();
 		const size_t layerAmount = layers.size();
@@ -1545,7 +1545,7 @@ bool SceneManager::init() {
 	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "0.2 0.2 0.2");
 	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "1.0 1.0 1.0");
 	_cameraZoomSpeed = core::Var::get(cfg::VoxEditCameraZoomSpeed, "10.0");
-	const core::TimeProviderPtr& timeProvider = core::App::getInstance()->timeProvider();
+	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	_lastAutoSave = timeProvider->tickSeconds();
 
 	for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {

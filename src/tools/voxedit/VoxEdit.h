@@ -33,8 +33,8 @@ public:
 
 	void onDropFile(const core::String& file) override;
 
-	core::AppState onConstruct() override;
-	core::AppState onInit() override;
-	core::AppState onCleanup() override;
-	core::AppState onRunning() override;
+	app::AppState onConstruct() override;
+	app::AppState onInit() override;
+	app::AppState onCleanup() override;
+	app::AppState onRunning() override;
 };

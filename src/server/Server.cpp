@@ -39,8 +39,8 @@ Server::Server(const metric::MetricPtr& metric, const backend::ServerLoopPtr& se
 	init(ORGANISATION, "server");
 }
 
-core::AppState Server::onConstruct() {
-	const core::AppState state = Super::onConstruct();
+app::AppState Server::onConstruct() {
+	const app::AppState state = Super::onConstruct();
 
 	core::Var::get(cfg::DatabaseName, "vengi");
 	core::Var::get(cfg::DatabaseHost, "localhost");
@@ -74,9 +74,9 @@ core::AppState Server::onConstruct() {
 	return state;
 }
 
-core::AppState Server::onInit() {
-	const core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState Server::onInit() {
+	const app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -87,21 +87,21 @@ core::AppState Server::onInit() {
 
 	if (!_serverLoop->init()) {
 		Log::error("Failed to initialize the main loop - can't run server");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
-	return core::AppState::Running;
+	return app::AppState::Running;
 }
 
-core::AppState Server::onCleanup() {
+app::AppState Server::onCleanup() {
 	_serverLoop->shutdown();
 	return Super::onCleanup();
 }
 
-core::AppState Server::onRunning() {
+app::AppState Server::onRunning() {
 	Super::onRunning();
 	_serverLoop->update();
-	return core::AppState::Running;
+	return app::AppState::Running;
 }
 
 int main(int argc, char *argv[]) {

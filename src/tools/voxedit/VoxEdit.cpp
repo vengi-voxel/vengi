@@ -79,7 +79,7 @@ bool VoxEdit::newFile(bool force) {
 	return _mainWindow->createNew(force);
 }
 
-core::AppState VoxEdit::onCleanup() {
+app::AppState VoxEdit::onCleanup() {
 	voxedit::sceneMgr().shutdown();
 	return Super::onCleanup();
 }
@@ -99,8 +99,8 @@ void VoxEdit::onDropFile(const core::String& file) {
 	Log::warn("Failed to handle %s as drop file event", file.c_str());
 }
 
-core::AppState VoxEdit::onConstruct() {
-	const core::AppState state = Super::onConstruct();
+app::AppState VoxEdit::onConstruct() {
+	const app::AppState state = Super::onConstruct();
 
 	_framesPerSecondsCap->setVal(60.0f);
 
@@ -161,21 +161,21 @@ core::AppState VoxEdit::onConstruct() {
 	return state;
 }
 
-core::AppState VoxEdit::onInit() {
-	const core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState VoxEdit::onInit() {
+	const app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!voxedit::sceneMgr().init()) {
 		Log::error("Failed to initialize the scene manager");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_mainWindow = new voxedit::VoxEditWindow(this);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	video::clearColor(::core::Color::Black);
@@ -201,9 +201,9 @@ core::AppState VoxEdit::onInit() {
 	return state;
 }
 
-core::AppState VoxEdit::onRunning() {
-	core::AppState state = Super::onRunning();
-	if (state != core::AppState::Running) {
+app::AppState VoxEdit::onRunning() {
+	app::AppState state = Super::onRunning();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 	voxedit::sceneMgr().update(_nowSeconds);

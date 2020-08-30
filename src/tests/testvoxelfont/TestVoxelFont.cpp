@@ -11,29 +11,29 @@ TestVoxelFont::TestVoxelFont(const metric::MetricPtr& metric, const io::Filesyst
 	init(ORGANISATION, "testvoxelfont");
 }
 
-core::AppState TestVoxelFont::onConstruct() {
+app::AppState TestVoxelFont::onConstruct() {
 	_rawVolumeRenderer.construct();
 	return Super::onConstruct();
 }
 
-core::AppState TestVoxelFont::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestVoxelFont::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_rawVolumeRenderer.init()) {
 		Log::error("Failed to initialize the raw volume renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!changeFontSize(0)) {
 		Log::error("Failed to start voxel font test application - could not load the given font file");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	camera().setFarPlane(4000.0f);
@@ -41,8 +41,8 @@ core::AppState TestVoxelFont::onInit() {
 	return state;
 }
 
-core::AppState TestVoxelFont::onCleanup() {
-	core::AppState state = Super::onCleanup();
+app::AppState TestVoxelFont::onCleanup() {
+	app::AppState state = Super::onCleanup();
 	_voxelFont.shutdown();
 	const core::DynamicArray<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
 	for (voxel::RawVolume* v : old) {

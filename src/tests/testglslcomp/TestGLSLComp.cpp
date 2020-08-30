@@ -12,27 +12,27 @@ TestGLSLComp::TestGLSLComp(const metric::MetricPtr& metric, const io::Filesystem
 	init(ORGANISATION, "testglslcomp");
 }
 
-core::AppState TestGLSLComp::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestGLSLComp::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!video::hasFeature(video::Feature::ComputeShaders)) {
 		Log::error("This test needs compute shader support");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	camera() = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
 
 	if (!_renderer.init(frameBufferDimension())) {
 		Log::error("Failed to init the texture renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_testShader.setup()) {
 		Log::error("Failed to init the compute shader");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	video::TextureConfig cfg;
@@ -45,7 +45,7 @@ core::AppState TestGLSLComp::onInit() {
 	return state;
 }
 
-core::AppState TestGLSLComp::onCleanup() {
+app::AppState TestGLSLComp::onCleanup() {
 	_testShader.shutdown();
 	_renderer.shutdown();
 	if (_texture) {

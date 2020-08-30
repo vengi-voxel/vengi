@@ -7,7 +7,7 @@
 
 namespace attrib {
 
-class AttributesTest: public core::AbstractTest {
+class AttributesTest: public app::AbstractTest {
 };
 
 TEST_F(AttributesTest, testCurrents) {

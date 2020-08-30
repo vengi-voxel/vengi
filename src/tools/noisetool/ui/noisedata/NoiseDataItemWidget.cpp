@@ -90,7 +90,7 @@ NoiseDataList::NoiseDataList() {
 
 	_select = getWidgetByIDAndType<tb::TBSelectList>("list");
 	if (_select != nullptr) {
-		NoiseItemSource* source = ((NoiseTool*)core::App::getInstance())->noiseItemSource();
+		NoiseItemSource* source = ((NoiseTool*)app::App::getInstance())->noiseItemSource();
 		_select->setSource(source);
 		_select->getScrollContainer()->setScrollMode(tb::SCROLL_MODE_X_AUTO_Y_AUTO);
 	} else {

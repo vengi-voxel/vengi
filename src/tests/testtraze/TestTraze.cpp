@@ -46,8 +46,8 @@ const traze::Player& TestTraze::player(traze::PlayerId playerId) const {
 	return player;
 }
 
-core::AppState TestTraze::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState TestTraze::onConstruct() {
+	app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(60.0f);
 	core::Var::get("mosquitto_host", "traze.iteratec.de");
 	core::Var::get("mosquitto_port", "1883");
@@ -76,34 +76,34 @@ void TestTraze::sound(const char *soundId) {
 	}
 }
 
-core::AppState TestTraze::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestTraze::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_protocol.init()) {
 		Log::error("Failed to init protocol");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_rawVolumeRenderer.init()) {
 		Log::error("Failed to initialize the raw volume renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_messageQueue.init()) {
 		Log::error("Failed to init message queue");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_voxelFontRender.init()) {
 		Log::error("Failed to init voxel font");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_soundMgr.init()) {
 		Log::error("Failed to init sound manager");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	camera().setPosition(glm::vec3(0.0f, 50.0f, 84.0f));
@@ -276,9 +276,9 @@ void TestTraze::onEvent(const traze::PlayerListEvent& event) {
 	}
 }
 
-core::AppState TestTraze::onRunning() {
+app::AppState TestTraze::onRunning() {
 	_rawVolumeRenderer.update();
-	core::AppState state = Super::onRunning();
+	app::AppState state = Super::onRunning();
 	if (!_protocol.connected()) {
 		if (_nextConnectTime <= 0.0) {
 			_nextConnectTime = 3.0;
@@ -295,7 +295,7 @@ core::AppState TestTraze::onRunning() {
 	return state;
 }
 
-core::AppState TestTraze::onCleanup() {
+app::AppState TestTraze::onCleanup() {
 	_voxelFontRender.shutdown();
 	_soundMgr.shutdown();
 	const core::DynamicArray<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();

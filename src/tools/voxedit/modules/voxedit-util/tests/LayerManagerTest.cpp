@@ -8,9 +8,9 @@
 
 namespace voxedit {
 
-class LayerManagerTest: public core::AbstractTest {
+class LayerManagerTest: public app::AbstractTest {
 private:
-	using Super = core::AbstractTest;
+	using Super = app::AbstractTest;
 protected:
 	LayerManager _mgr;
 	std::vector<voxel::RawVolume*> _volumes;

@@ -8,7 +8,7 @@
 
 namespace voxel {
 
-class FaceTest: public core::AbstractTest {
+class FaceTest: public app::AbstractTest {
 };
 
 TEST_F(FaceTest, testNegativeX) {

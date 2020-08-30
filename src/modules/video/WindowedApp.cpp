@@ -49,7 +49,7 @@ void WindowedApp::onAfterRunning() {
 	video::endFrame(_window);
 }
 
-core::AppState WindowedApp::onRunning() {
+app::AppState WindowedApp::onRunning() {
 	video_trace_scoped(Frame);
 	core_trace_scoped(WindowedAppOnRunning);
 	if (_keybindingHandler.isPressed(util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP)) {
@@ -97,7 +97,7 @@ core::AppState WindowedApp::onRunning() {
 	}
 
 	if (quit) {
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 
 	core_trace_scoped(WindowedAppStartFrame);
@@ -110,7 +110,7 @@ core::AppState WindowedApp::onRunning() {
 
 	video_trace_frame_end();
 
-	return core::AppState::Running;
+	return app::AppState::Running;
 }
 
 bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
@@ -166,15 +166,15 @@ core::String WindowedApp::getKeyBindingsString(const char *cmd) const {
 	return _keybindingHandler.getKeyBindingsString(cmd);
 }
 
-core::AppState WindowedApp::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState WindowedApp::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (SDL_Init(SDL_INIT_VIDEO) == -1) {
 		sdlCheckError();
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	SDL_EventState(SDL_MOUSEMOTION, SDL_DISABLE);
@@ -182,7 +182,7 @@ core::AppState WindowedApp::onInit() {
 
 	if (!_keybindingHandler.init()) {
 		Log::error("Failed to initialize the key binding hendler");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_keybindingHandler.load("keybindings.cfg")) {
 		Log::warn("failed to init the global keybindings");
@@ -215,7 +215,7 @@ core::AppState WindowedApp::onInit() {
 	Log::info("Try to use display %i", displayIndex);
 	if (SDL_GetDesktopDisplayMode(displayIndex, &displayMode) == -1) {
 		Log::error("%s", SDL_GetError());
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	for (int i = 0; i < numDisplays; ++i) {
@@ -316,7 +316,7 @@ core::AppState WindowedApp::onInit() {
 		_window = InternalCreateWindow();
 		if (!_window) {
 			sdlCheckError();
-			return core::AppState::InitFailure;
+			return app::AppState::InitFailure;
 		}
 	}
 
@@ -329,7 +329,7 @@ core::AppState WindowedApp::onInit() {
 	_rendererContext = video::createContext(_window);
 	if (_rendererContext == nullptr) {
 		sdlCheckError();
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	SDL_DisableScreenSaver();
@@ -378,8 +378,8 @@ core::AppState WindowedApp::onInit() {
 	return state;
 }
 
-core::AppState WindowedApp::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState WindowedApp::onConstruct() {
+	app::AppState state = Super::onConstruct();
 	core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 	core::Var::get(cfg::ClientMultiSampleSamples, "0");
 	core::Var::get(cfg::ClientFullscreen, "true");
@@ -402,7 +402,7 @@ core::AppState WindowedApp::onConstruct() {
 	return state;
 }
 
-core::AppState WindowedApp::onCleanup() {
+app::AppState WindowedApp::onCleanup() {
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 	video::destroyContext(_rendererContext);
 	if (_window != nullptr) {

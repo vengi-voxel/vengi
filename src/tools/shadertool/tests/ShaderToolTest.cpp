@@ -5,7 +5,7 @@
 #include "app/tests/AbstractTest.h"
 #include "../Util.h"
 
-class ShaderToolTest: public core::AbstractTest {
+class ShaderToolTest: public app::AbstractTest {
 };
 
 TEST_F(ShaderToolTest, testConvertName) {

@@ -31,7 +31,7 @@ bool Protocol::init() {
 		return false;
 	}
 
-	_clientToken = uuid::generateUUID(); // + "_" + core::App::getInstance()->appname();
+	_clientToken = uuid::generateUUID(); // + "_" + app::App::getInstance()->appname();
 	Log::debug("Client token: %s", _clientToken.c_str());
 
 	_mosquitto = mosquitto_new(_clientToken.c_str(), true, this);

@@ -11,7 +11,7 @@
 #include "core/Var.h"
 #include <inttypes.h>
 
-namespace core {
+namespace app {
 
 namespace AppCommand {
 
@@ -21,7 +21,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::error("not enough arguments given. Expecting a variable name");
 			return;
 		}
-		const VarPtr& st = core::Var::get(args[0]);
+		const core::VarPtr& st = core::Var::get(args[0]);
 		if (st) {
 			st->clearHistory();
 		}
@@ -115,7 +115,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::error("not enough arguments given. Expecting a variable name");
 			return;
 		}
-		const VarPtr& st = core::Var::get(args[0]);
+		const core::VarPtr& st = core::Var::get(args[0]);
 		if (st) {
 			Log::info(" -> %s ", st->strVal().c_str());
 		} else {
@@ -208,16 +208,16 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			const uint32_t flags = var->getFlags();
 			core::String flagsStr = "     ";
 			const char *value = var->strVal().c_str();
-			if ((flags & CV_READONLY) != 0) {
+			if ((flags & core::CV_READONLY) != 0) {
 				flagsStr[0]  = 'R';
 			}
-			if ((flags & CV_NOPERSIST) != 0) {
+			if ((flags & core::CV_NOPERSIST) != 0) {
 				flagsStr[1]  = 'N';
 			}
-			if ((flags & CV_SHADER) != 0) {
+			if ((flags & core::CV_SHADER) != 0) {
 				flagsStr[2]  = 'S';
 			}
-			if ((flags & CV_SECRET) != 0) {
+			if ((flags & core::CV_SECRET) != 0) {
 				flagsStr[3]  = 'X';
 				value = "***secret***";
 			}

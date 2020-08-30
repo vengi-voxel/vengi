@@ -7,7 +7,7 @@
 
 namespace math {
 
-class AABBTest : public core::AbstractTest {
+class AABBTest : public app::AbstractTest {
 };
 
 }

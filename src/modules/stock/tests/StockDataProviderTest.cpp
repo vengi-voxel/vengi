@@ -7,7 +7,7 @@
 
 namespace stock {
 
-class StockDataProviderTest: public core::AbstractTest {
+class StockDataProviderTest: public app::AbstractTest {
 };
 
 TEST_F(StockDataProviderTest, testResetAndDuplicate) {

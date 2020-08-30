@@ -9,7 +9,7 @@
 
 namespace voxedit {
 
-class AnimationLuaSaverTest: public core::AbstractTest {
+class AnimationLuaSaverTest: public app::AbstractTest {
 };
 
 TEST_F(AnimationLuaSaverTest, testSaveDefaultValues) {

@@ -51,7 +51,7 @@ public:
 			const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider,
 			const animation::AnimationCachePtr& animationCache);
 
-	core::AppState onConstruct() override;
-	core::AppState onInit() override;
-	core::AppState onCleanup() override;
+	app::AppState onConstruct() override;
+	app::AppState onInit() override;
+	app::AppState onCleanup() override;
 };

@@ -18,8 +18,8 @@ public:
 			const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
 			const core::EventBusPtr& eventBus, const http::HttpServerPtr& httpServer);
 
-	core::AppState onConstruct() override;
-	core::AppState onInit() override;
-	core::AppState onCleanup() override;
-	core::AppState onRunning() override;
+	app::AppState onConstruct() override;
+	app::AppState onInit() override;
+	app::AppState onCleanup() override;
+	app::AppState onRunning() override;
 };

@@ -11,15 +11,15 @@ TestGLSLGeom::TestGLSLGeom(const metric::MetricPtr& metric, const io::Filesystem
 	init(ORGANISATION, "testglslgeom");
 }
 
-core::AppState TestGLSLGeom::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestGLSLGeom::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!_testShader.setup()) {
 		Log::error("Failed to init the geometry shader");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_testShader.recordUsedUniforms(true);
@@ -39,7 +39,7 @@ core::AppState TestGLSLGeom::onInit() {
 	return state;
 }
 
-core::AppState TestGLSLGeom::onCleanup() {
+app::AppState TestGLSLGeom::onCleanup() {
 	_testShader.shutdown();
 	_buffer.shutdown();
 	return Super::onCleanup();

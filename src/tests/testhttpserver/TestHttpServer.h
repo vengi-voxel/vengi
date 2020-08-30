@@ -14,9 +14,9 @@
  *
  * See e.g. https://github.com/zardus/preeny and https://lolware.net/2015/04/28/nginx-fuzzing.html
  */
-class TestHttpServer: public core::CommandlineApp {
+class TestHttpServer: public app::CommandlineApp {
 private:
-	using Super = core::CommandlineApp;
+	using Super = app::CommandlineApp;
 	http::HttpServer _server;
 	console::Input _input;
 	uv_loop_t *_loop = nullptr;
@@ -25,8 +25,8 @@ private:
 public:
 	TestHttpServer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	virtual core::AppState onConstruct() override;
-	virtual core::AppState onInit() override;
-	virtual core::AppState onRunning() override;
-	virtual core::AppState onCleanup() override;
+	virtual app::AppState onConstruct() override;
+	virtual app::AppState onInit() override;
+	virtual app::AppState onRunning() override;
+	virtual app::AppState onCleanup() override;
 };

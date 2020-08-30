@@ -30,9 +30,9 @@ private:
 public:
 	TestCamera(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	core::AppState onInit() override;
-	core::AppState onRunning() override;
-	core::AppState onCleanup() override;
+	app::AppState onInit() override;
+	app::AppState onRunning() override;
+	app::AppState onCleanup() override;
 
 	void onRenderUI() override;
 

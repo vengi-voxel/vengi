@@ -63,7 +63,7 @@ public:
 
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 
-	virtual core::AppState onInit() override;
+	virtual app::AppState onInit() override;
 	virtual void onRenderUI() override;
-	virtual core::AppState onCleanup() override;
+	virtual app::AppState onCleanup() override;
 };

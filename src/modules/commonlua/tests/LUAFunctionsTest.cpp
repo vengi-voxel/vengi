@@ -7,7 +7,7 @@
 
 namespace lua {
 
-class LUAFunctionsTest : public core::AbstractTest {
+class LUAFunctionsTest : public app::AbstractTest {
 };
 
 TEST_F(LUAFunctionsTest, testVectorCtor) {

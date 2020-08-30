@@ -155,13 +155,13 @@ struct nk_image NuklearApp::loadImageFile(const char *filename) {
 	return image;
 }
 
-core::AppState NuklearApp::onInit() {
-	const core::AppState state = Super::onInit();
+app::AppState NuklearApp::onInit() {
+	const app::AppState state = Super::onInit();
 	SDL_StartTextInput();
 	showCursor(false);
 	centerMousePosition();
 	video::checkError();
-	if (state != core::AppState::Running) {
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -174,7 +174,7 @@ core::AppState NuklearApp::onInit() {
 	alloc.free = nk_core_free;
 	if (nk_init(&_ctx, &alloc, nullptr) == 0) {
 		Log::error("Could not init the ui");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	};
 	_ctx.clip.copy = nk_sdl_clipbard_copy;
 	_ctx.clip.paste = nk_sdl_clipbard_paste;
@@ -209,7 +209,7 @@ core::AppState NuklearApp::onInit() {
 	const void *image = nk_font_atlas_bake(&_atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
 	if (image == nullptr) {
 		Log::error("Failed to bake font atlas");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	_fontTexture->upload(w, h, (const uint8_t*) image);
 	nk_font_atlas_end(&_atlas, nk_handle_id((int)_fontTexture->handle()), &_null);
@@ -223,35 +223,35 @@ core::AppState NuklearApp::onInit() {
 
 	if (!_shader.setup()) {
 		Log::error("Could not load the ui shader");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the material colors");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_meshRenderer->init()) {
 		Log::error("Could not initialize the mesh renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_textureAtlasRenderer->init()) {
 		Log::error("Could not initialize the texture atlas renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_vertexBufferIndex = _vbo.create();
 	if (_vertexBufferIndex < 0) {
 		Log::error("Failed to create ui vbo");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	_vbo.setMode(_vertexBufferIndex, video::BufferMode::Stream);
 
 	_elementBufferIndex = _vbo.create(nullptr, 0, video::BufferType::IndexBuffer);
 	if (_elementBufferIndex < 0) {
 		Log::error("Failed to create ui ibo");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_camera = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
@@ -262,11 +262,11 @@ core::AppState NuklearApp::onInit() {
 
 	if (!_vbo.update(_vertexBufferIndex, nullptr, MAX_VERTEX_MEMORY)) {
 		Log::error("Failed to upload vertex buffer data with %i bytes", MAX_VERTEX_MEMORY);
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_vbo.update(_elementBufferIndex, nullptr, MAX_ELEMENT_MEMORY)) {
 		Log::error("Failed to upload index buffer data with %i bytes", MAX_ELEMENT_MEMORY);
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	static const struct nk_draw_vertex_layout_element vertexLayout[] = {
@@ -284,7 +284,7 @@ core::AppState NuklearApp::onInit() {
 
 	if (!_console.init()) {
 		Log::error("Failed to initialize the console");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	return state;
@@ -308,8 +308,8 @@ void NuklearApp::onWindowResize(int windowWidth, int windowHeight) {
 	_camera.init(glm::zero<glm::ivec2>(), frameBufferDimension(), windowDimension());
 }
 
-core::AppState NuklearApp::onConstruct() {
-	const core::AppState state = Super::onConstruct();
+app::AppState NuklearApp::onConstruct() {
+	const app::AppState state = Super::onConstruct();
 	_console.construct();
 	return state;
 }
@@ -329,9 +329,9 @@ struct nk_font* NuklearApp::font(int size) {
 	return _fonts[fontIndex];
 }
 
-core::AppState NuklearApp::onRunning() {
-	core::AppState state = Super::onRunning();
-	if (state != core::AppState::Running) {
+app::AppState NuklearApp::onRunning() {
+	app::AppState state = Super::onRunning();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 	video::clear(video::ClearFlag::Color);
@@ -435,12 +435,12 @@ core::AppState NuklearApp::onRunning() {
 	void *vertices = _vbo.mapData(_vertexBufferIndex, video::AccessMode::Write);
 	if (vertices == nullptr) {
 		Log::warn("Failed to map vertices");
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 	void *elements = _vbo.mapData(_elementBufferIndex, video::AccessMode::Write);
 	if (elements == nullptr) {
 		Log::warn("Failed to map indices");
-		return core::AppState::Cleanup;
+		return app::AppState::Cleanup;
 	}
 
 	struct nk_buffer vbuf;
@@ -495,7 +495,7 @@ core::AppState NuklearApp::onRunning() {
 	return state;
 }
 
-core::AppState NuklearApp::onCleanup() {
+app::AppState NuklearApp::onCleanup() {
 	nk_font_atlas_clear(&_atlas);
 	nk_buffer_free(&_cmds);
 	nk_free(&_ctx);

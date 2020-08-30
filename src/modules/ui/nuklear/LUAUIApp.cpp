@@ -26,18 +26,18 @@ LUAUIApp::LUAUIApp(const metric::MetricPtr& metric,
 LUAUIApp::~LUAUIApp() {
 }
 
-core::AppState LUAUIApp::onInit() {
-	const core::AppState state = Super::onInit();
+app::AppState LUAUIApp::onInit() {
+	const app::AppState state = Super::onInit();
 
 	if (!_texturePool->init()) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const core::String& path = core::string::format("ui/%s.lua", appname().c_str());
 	_uiScriptPath = core::Var::get("ui_script", path)->strVal();
 
 	if (!reload()) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	core::Command::registerCommand("ui_reload", [this] (const core::CmdArgs&) {
@@ -75,7 +75,7 @@ core::AppState LUAUIApp::onInit() {
 	return state;
 }
 
-core::AppState LUAUIApp::onCleanup() {
+app::AppState LUAUIApp::onCleanup() {
 	_texturePool->shutdown();
 	return Super::onCleanup();
 }

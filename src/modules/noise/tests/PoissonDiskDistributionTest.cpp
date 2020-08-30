@@ -7,7 +7,7 @@
 
 namespace noise {
 
-class PoissonDiskDistributionTest: public core::AbstractTest {
+class PoissonDiskDistributionTest: public app::AbstractTest {
 };
 
 TEST_F(PoissonDiskDistributionTest, testAreaZeroOffset) {

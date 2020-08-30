@@ -11,7 +11,7 @@
 
 namespace math {
 
-class FrustumTest : public core::AbstractTest {
+class FrustumTest : public app::AbstractTest {
 protected:
 	const float _farPlane = 500.0f;
 	const float _nearPlane = 0.1f;
@@ -25,7 +25,7 @@ public:
 	}
 
 	void SetUp() override {
-		core::AbstractTest::SetUp();
+		app::AbstractTest::SetUp();
 		/* Looking from origin to 1,0,0 (right) */
 		_view = glm::lookAt(glm::vec3(0.0f), glm::right, glm::up);
 		_projection = glm::perspective(glm::radians(45.0f), 0.75f, _nearPlane, _farPlane);

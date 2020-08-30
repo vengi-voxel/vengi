@@ -8,7 +8,7 @@
 
 namespace traze {
 
-class TrazeProtocolTest: public core::AbstractTest,
+class TrazeProtocolTest: public app::AbstractTest,
 	public core::IEventBusHandler<traze::NewGridEvent>,
 	public core::IEventBusHandler<traze::PlayerListEvent>,
 	public core::IEventBusHandler<traze::TickerEvent>,
@@ -17,7 +17,7 @@ class TrazeProtocolTest: public core::AbstractTest,
 	public core::IEventBusHandler<traze::ScoreEvent>,
 	public core::IEventBusHandler<traze::NewGamesEvent> {
 private:
-	using Super = core::AbstractTest;
+	using Super = app::AbstractTest;
 protected:
 	Protocol *_p;
 	core::EventBusPtr _eventBus;
@@ -26,7 +26,7 @@ protected:
 public:
 	void SetUp() override {
 		Super::SetUp();
-		_eventBus = core::App::getInstance()->eventBus();
+		_eventBus = app::App::getInstance()->eventBus();
 		_eventBus->subscribe<traze::NewGridEvent>(*this);
 		_eventBus->subscribe<traze::NewGamesEvent>(*this);
 		_eventBus->subscribe<traze::PlayerListEvent>(*this);

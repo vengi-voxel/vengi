@@ -10,7 +10,7 @@
 
 namespace video {
 
-class ShaderTest : public core::AbstractTest {
+class ShaderTest : public app::AbstractTest {
 };
 
 TEST_F(ShaderTest, testInclude) {

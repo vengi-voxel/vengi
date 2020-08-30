@@ -10,9 +10,9 @@
 
 namespace persistence {
 
-class AbstractDatabaseTest : public core::AbstractTest {
+class AbstractDatabaseTest : public app::AbstractTest {
 private:
-	using Super = core::AbstractTest;
+	using Super = app::AbstractTest;
 public:
 	void SetUp() override {
 		Super::SetUp();

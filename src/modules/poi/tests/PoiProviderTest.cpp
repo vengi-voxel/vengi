@@ -8,11 +8,11 @@
 
 namespace poi {
 
-class PoiProviderTest: public core::AbstractTest {
+class PoiProviderTest: public app::AbstractTest {
 public:
 	core::TimeProviderPtr _timeProvider;
 	void SetUp() override {
-		core::AbstractTest::SetUp();
+		app::AbstractTest::SetUp();
 		_timeProvider = std::make_shared<core::TimeProvider>();
 	}
 };

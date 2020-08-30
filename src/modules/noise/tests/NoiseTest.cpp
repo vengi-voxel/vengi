@@ -11,7 +11,7 @@
 
 namespace noise {
 
-class NoiseTest: public core::AbstractTest {
+class NoiseTest: public app::AbstractTest {
 protected:
 	void onCleanupApp() override {
 		compute::shutdown();

@@ -13,28 +13,28 @@ UITool::UITool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesys
 	init(ORGANISATION, "uitool");
 }
 
-core::AppState UITool::onInit() {
-	const core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState UITool::onInit() {
+	const app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (_argc != 2) {
 		_exitCode = 1;
 		Log::error("Usage: %s <inputfile>", _argv[0]);
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!tb::tb_core_init(&_renderer)) {
 		Log::error("failed to initialize the ui");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!tb::g_tb_lng->load("ui/lang/en.tb.txt")) {
 		Log::warn("could not load the translation");
 	}
 	if (!tb::g_tb_skin->load("../shared/ui/skin/skin.tb.txt", nullptr)) {
 		Log::error("could not load the skin from shared dir");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	ui::turbobadger::initFonts();
 
@@ -44,7 +44,7 @@ core::AppState UITool::onInit() {
 	return state;
 }
 
-core::AppState UITool::onRunning() {
+app::AppState UITool::onRunning() {
 	ui::turbobadger::Window window((ui::turbobadger::Window*) nullptr);
 	_root.addChild(&window);
 	if (!window.loadResourceFile(_argv[1])) {
@@ -53,10 +53,10 @@ core::AppState UITool::onRunning() {
 	}
 	_root.removeChild(&window);
 
-	return core::AppState::Cleanup;
+	return app::AppState::Cleanup;
 }
 
-core::AppState UITool::onCleanup() {
+app::AppState UITool::onCleanup() {
 	tb::TBAnimationManager::abortAllAnimations();
 
 	tb::tb_core_shutdown();

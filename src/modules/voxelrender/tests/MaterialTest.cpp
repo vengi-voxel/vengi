@@ -11,7 +11,7 @@
 
 namespace voxelrender {
 
-class MaterialTest: public core::AbstractTest {
+class MaterialTest: public app::AbstractTest {
 protected:
 	const int components = 4;
 	const int w = 256;

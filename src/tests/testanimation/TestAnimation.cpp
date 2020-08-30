@@ -58,8 +58,8 @@ animation::AnimationEntity* TestAnimation::animationEntity() {
 	return &_character;
 }
 
-core::AppState TestAnimation::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState TestAnimation::onConstruct() {
+	app::AppState state = Super::onConstruct();
 
 	core::Command::registerCommand("animation_cycle", [this] (const core::CmdArgs& argv) {
 		int offset = 1;
@@ -132,9 +132,9 @@ bool TestAnimation::loadAnimationEntity() {
 	return true;
 }
 
-core::AppState TestAnimation::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestAnimation::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -147,17 +147,17 @@ core::AppState TestAnimation::onInit() {
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the default material colors");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_stockDataProvider->init(filesystem()->load("stock.lua"))) {
 		Log::error("Failed to init stock data provider: %s", _stockDataProvider->error().c_str());
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_stock.init()) {
 		Log::error("Failed to init stock");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const auto& items = _stockDataProvider->items();
@@ -171,21 +171,21 @@ core::AppState TestAnimation::onInit() {
 
 	if (_items.empty()) {
 		Log::error("Failed to load items");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_animationCache->init()) {
 		Log::error("Failed to initialize the character mesh cache");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!loadAnimationEntity()) {
 		Log::error("Failed to initialize the animation entity");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_renderer.init()) {
 		Log::error("Failed to initialize the character renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_attrib.setCurrent(attrib::Type::SPEED, 10.0);
@@ -200,7 +200,7 @@ core::AppState TestAnimation::onInit() {
 
 	const stock::ItemData* itemData = _stockDataProvider->itemData(_items[0]);
 	if (!addItem(itemData->id())) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	return state;
@@ -265,7 +265,7 @@ void TestAnimation::onRenderUI() {
 	Super::onRenderUI();
 }
 
-core::AppState TestAnimation::onCleanup() {
+app::AppState TestAnimation::onCleanup() {
 	_stock.shutdown();
 	_animationCache->shutdown();
 	_stockDataProvider->shutdown();

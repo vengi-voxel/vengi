@@ -19,30 +19,30 @@ TestTextureAtlasRenderer::TestTextureAtlasRenderer(const metric::MetricPtr& metr
 	init(ORGANISATION, "testtextureatlasrenderer");
 }
 
-core::AppState TestTextureAtlasRenderer::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestTextureAtlasRenderer::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_meshRenderer.init()) {
 		Log::error("Failed to initialize the raw volume renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!_textureShader.setup()) {
 		Log::error("Failed to init the texture shader");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const glm::ivec2& wd = windowDimension();
 	_bufIdx = _vbo.create(nullptr, sizeof(_vertices));
 	if (_bufIdx == -1) {
 		Log::error("Failed to create vertex buffer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_vbo.addAttribute(_textureShader.getColorAttribute(_bufIdx, &Vertex::r, true));
@@ -51,12 +51,12 @@ core::AppState TestTextureAtlasRenderer::onInit() {
 
 	if (!_atlasRenderer.init()) {
 		Log::error("Failed to initialize the atlas renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	_modelIndex = _meshRenderer.addMesh("assets/north-dir");
 	if (_modelIndex == -1) {
 		Log::error("Failed to load model");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	const glm::vec2 vecs[lengthof(_vertices)] = {
@@ -85,7 +85,7 @@ void TestTextureAtlasRenderer::updateModelMatrix() {
 	_modelMatrix = glm::scale(rot, glm::vec3(_scale));
 }
 
-core::AppState TestTextureAtlasRenderer::onCleanup() {
+app::AppState TestTextureAtlasRenderer::onCleanup() {
 	_meshRenderer.shutdown();
 	_atlasRenderer.shutdown();
 	_textureShader.shutdown();

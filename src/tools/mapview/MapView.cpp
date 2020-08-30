@@ -46,8 +46,8 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCach
 MapView::~MapView() {
 }
 
-core::AppState MapView::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState MapView::onConstruct() {
+	app::AppState state = Super::onConstruct();
 
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
@@ -78,9 +78,9 @@ core::AppState MapView::onConstruct() {
 	return state;
 }
 
-core::AppState MapView::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState MapView::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -90,7 +90,7 @@ core::AppState MapView::onInit() {
 
 	if (!_meshCache->init()) {
 		Log::error("Failed to initialize mesh cache");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_depthBufferRenderer.init()) {
@@ -99,27 +99,27 @@ core::AppState MapView::onInit() {
 
 	if (!_axis.init()) {
 		Log::error("Failed to init axis");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_volumeCache->init()) {
 		Log::error("Failed to init volumeCache");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_movement.init()) {
 		Log::error("Failed to init movement");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_action.init()) {
 		Log::error("Failed to init action component");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_stockDataProvider->init(filesystem()->load("stock.lua"))) {
 		Log::error("Failed to init stock data provider: %s", _stockDataProvider->error().c_str());
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_soundManager->init()) {
@@ -128,27 +128,27 @@ core::AppState MapView::onInit() {
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_animationCache->init()) {
 		Log::error("Failed to init mesh cache");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_worldMgr->init()) {
 		Log::error("Failed to init world mgr");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_floorResolver.init(_worldMgr)) {
 		Log::error("Failed to init world mgr");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_worldPager->init(_worldMgr->volumeData(), filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
 		Log::error("Failed to init world pager");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_worldMgr->setSeed(1);
@@ -156,7 +156,7 @@ core::AppState MapView::onInit() {
 
 	if (!_worldRenderer.init(_worldMgr->volumeData(), glm::ivec2(0), _frameBufferDimension)) {
 		Log::error("Failed to init world renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
@@ -165,7 +165,7 @@ core::AppState MapView::onInit() {
 	Log::info("Spawn entity at %s", glm::to_string(pos).c_str());
 
 	if (!changeEntityType(pos, _entityType)) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	core::setBindingContext(core::BindingContext::World);
@@ -398,9 +398,9 @@ void MapView::onRenderUI() {
 	ImGui::Checkbox("Update World", &_updateWorld);
 }
 
-core::AppState MapView::onRunning() {
+app::AppState MapView::onRunning() {
 	core_trace_scoped(MapViewOnRunning);
-	const core::AppState state = Super::onRunning();
+	const app::AppState state = Super::onRunning();
 
 	const bool current = isRelativeMouseMode();
 	if (current) {
@@ -416,7 +416,7 @@ core::AppState MapView::onRunning() {
 	return state;
 }
 
-core::AppState MapView::onCleanup() {
+app::AppState MapView::onCleanup() {
 	_soundManager->shutdown();
 	_stockDataProvider->shutdown();
 	_animationCache->shutdown();
@@ -428,7 +428,7 @@ core::AppState MapView::onCleanup() {
 	_action.shutdown();
 	_camera.shutdown();
 	_entity = frontend::ClientEntityPtr();
-	const core::AppState state = Super::onCleanup();
+	const app::AppState state = Super::onCleanup();
 	_worldPager->shutdown();
 	_worldMgr->shutdown();
 	_floorResolver.shutdown();

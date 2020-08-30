@@ -12,7 +12,7 @@
 
 static constexpr int MAX_BENCHMARK_VOLUME_SIZE = 64;
 static const int meshSize = voxel::MAX_MESH_CHUNK_HEIGHT;
-class CubicSurfaceExtractorBenchmark : public core::AbstractBenchmark {
+class CubicSurfaceExtractorBenchmark : public app::AbstractBenchmark {
 public:
 	void onCleanupApp() override {
 	}

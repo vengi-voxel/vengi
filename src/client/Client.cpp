@@ -115,8 +115,8 @@ void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
 	pushWindow("hud");
 }
 
-core::AppState Client::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState Client::onConstruct() {
+	app::AppState state = Super::onConstruct();
 
 	_soundManager->construct();
 	_volumeCache->construct();
@@ -157,7 +157,7 @@ core::AppState Client::onConstruct() {
 #define regHandler(type, handler, ...) \
 	r->registerHandler(network::EnumNameServerMsgType(type), std::make_shared<handler>(__VA_ARGS__));
 
-core::AppState Client::onInit() {
+app::AppState Client::onInit() {
 	eventBus()->subscribe<network::NewConnectionEvent>(*this);
 	eventBus()->subscribe<network::DisconnectEvent>(*this);
 	eventBus()->subscribe<voxelworld::WorldCreatedEvent>(*this);
@@ -174,8 +174,8 @@ core::AppState Client::onInit() {
 	regHandler(network::ServerMsgType::VarUpdate, VarUpdateHandler);
 	regHandler(network::ServerMsgType::UserInfo, UserInfoHandler);
 
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -185,34 +185,34 @@ core::AppState Client::onInit() {
 
 	if (!_meshCache->init()) {
 		Log::error("Failed to initialize mesh cache");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_network->init()) {
 		Log::error("Failed to initialize network layer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_movement.init()) {
 		Log::error("Failed to initialize movement controller");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_action.init()) {
 		Log::error("Failed to initialize action controller");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_stockDataProvider->init(filesystem()->load("stock.lua"))) {
 		Log::error("Failed to initialize stock data provider: %s", _stockDataProvider->error().c_str());
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 
 	if (!_animationCache->init()) {
 		Log::error("Failed to initialize character cache");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_soundManager->init()) {
@@ -221,32 +221,32 @@ core::AppState Client::onInit() {
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_volumeCache->init()) {
 		Log::error("Failed to initialize volume cache");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_worldMgr->init()) {
 		Log::error("Failed to initialize world manager");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_floorResolver.init(_worldMgr)) {
 		Log::error("Failed to initialize floor resolver");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_clientPager->init(_chunkUrl->strVal())) {
 		Log::error("Failed to initialize client pager");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!_worldRenderer.init(_worldMgr->volumeData(), glm::ivec2(0), frameBufferDimension())) {
 		Log::error("Failed to initialize world renderer");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	rootWindow("main");
@@ -319,7 +319,7 @@ void Client::sendVars() const {
 			network::CreateVarUpdate(fbb, fbbVars).Union());
 }
 
-core::AppState Client::onCleanup() {
+app::AppState Client::onCleanup() {
 	Log::info("shutting down the client");
 	eventBus()->unsubscribe<network::NewConnectionEvent>(*this);
 	eventBus()->unsubscribe<network::DisconnectEvent>(*this);
@@ -353,8 +353,8 @@ core::AppState Client::onCleanup() {
 	return Super::onCleanup();
 }
 
-core::AppState Client::onRunning() {
-	const core::AppState state = Super::onRunning();
+app::AppState Client::onRunning() {
+	const app::AppState state = Super::onRunning();
 	if (_network->isConnected()) {
 		const float pitch = _mouseRelativePos.y;
 		const float turn = _mouseRelativePos.x;
@@ -362,7 +362,7 @@ core::AppState Client::onRunning() {
 		sendMovement();
 		sendTriggerAction();
 	}
-	if (state == core::AppState::Running) {
+	if (state == app::AppState::Running) {
 		_network->update();
 		_soundManager->update();
 	}

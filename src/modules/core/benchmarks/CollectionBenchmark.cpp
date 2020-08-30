@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <map>
 
-class MapBenchmark: public core::AbstractBenchmark {
+class MapBenchmark: public app::AbstractBenchmark {
 };
 
 BENCHMARK_DEFINE_F(MapBenchmark, compareToMapStd) (benchmark::State& state) {

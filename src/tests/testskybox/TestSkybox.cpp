@@ -11,15 +11,15 @@ TestSkybox::TestSkybox(const metric::MetricPtr& metric, const io::FilesystemPtr&
 	init(ORGANISATION, "testskybox");
 }
 
-core::AppState TestSkybox::onConstruct() {
-	core::AppState state = Super::onConstruct();
+app::AppState TestSkybox::onConstruct() {
+	app::AppState state = Super::onConstruct();
 	_skyboxVar = core::Var::get("skybox", "bluecloud");
 	return state;
 }
 
-core::AppState TestSkybox::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::AppState::Running) {
+app::AppState TestSkybox::onInit() {
+	app::AppState state = Super::onInit();
+	if (state != app::AppState::Running) {
 		return state;
 	}
 
@@ -27,14 +27,14 @@ core::AppState TestSkybox::onInit() {
 	camera().lookAt(glm::forward);
 	if (!_skybox.init(_skyboxVar->strVal().c_str())) {
 		Log::error("Failed to initialize the skybox");
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	return state;
 }
 
-core::AppState TestSkybox::onCleanup() {
-	core::AppState state = Super::onCleanup();
+app::AppState TestSkybox::onCleanup() {
+	app::AppState state = Super::onCleanup();
 	_skybox.shutdown();
 	return state;
 }

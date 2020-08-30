@@ -143,13 +143,13 @@ bool DatabaseTool::parse(const core::String& buffer) {
 	return validate();
 }
 
-core::AppState DatabaseTool::onConstruct() {
+app::AppState DatabaseTool::onConstruct() {
 	registerArg("--tablefile").setShort("-t").setDescription("The path to the table to file").setMandatory();
 	registerArg("--outfile").setShort("-o").setDescription("The file that should be generated").setMandatory();
 	return Super::onConstruct();
 }
 
-core::AppState DatabaseTool::onRunning() {
+app::AppState DatabaseTool::onRunning() {
 	_tableFile    = getArgVal("--tablefile");
 	_targetFile   = getArgVal("--outfile");
 
@@ -157,17 +157,17 @@ core::AppState DatabaseTool::onRunning() {
 	const core::String& buf = filesystem()->load(_tableFile);
 	if (buf.empty()) {
 		Log::error("Could not load %s", _tableFile.c_str());
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
 	if (!parse(buf.c_str())) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 	if (!generateSrc()) {
-		return core::AppState::InitFailure;
+		return app::AppState::InitFailure;
 	}
 
-	return core::AppState::Cleanup;
+	return app::AppState::Cleanup;
 }
 
 CONSOLE_APP(DatabaseTool)
