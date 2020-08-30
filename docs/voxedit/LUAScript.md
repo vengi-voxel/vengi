@@ -40,6 +40,22 @@ end
 
 Execute this via console `xs scriptfile 1` where `1` will be the value of `n`. Omitting the `1` will add the `default` value from the argument list.
 
+# LayerManager
+
+`layerMgr` lets you access different layers or create new ones.
+
+The functions are:
+
+* `new(name, visible, region)`: Creates a new layer with the given `name`, the `visible` boolean, and the given size and position according to the `region`.
+
+* `get([layerId])`: Returns the `layer` for the given `layerId` - if the `layerId` is not given, it will return the current active layer. Which by default is the layer for the volume the script is currently executed for.
+
+# Layer
+
+* `name()`: Returns the current name of the layer.
+
+* `volume()`: Gives you access to the volume of the layer.
+
 # Color
 
 `palette` has several methods to work with colors. E.g. to find a closest possible match for the given palette index.
@@ -57,6 +73,10 @@ The functions are:
 * `mins()`: The lower boundary of the region (inclusive).
 
 * `maxs()`: The upper boundary of the region (inclusive).
+
+* `setMins(mins)`: The lower boundary of the region - given as `ivec3`.
+
+* `setMaxs(maxs)`: The upper boundary of the region - given as `ivec3`.
 
 * `x()`: The lower x boundary of the region.
 
@@ -77,6 +97,16 @@ The functions are:
 * `region()`: Return the region of the volume.
 
 * `setVoxel(x, y, z, color)`: Set the given color at the given coordinates in the volume. `color` must be in the range `[0-255]`.
+
+# Vectors
+
+Available vector types are `vec2`, `vec3`, `vec4` and their integer types `ivec2`, `ivec3`, `ivec4`.
+
+```lua
+local v1 = ivec3.new(1, 1, 1)
+```
+
+There are 3 possible components for this vector. You can also call `ivec3.new(1)` to fill all three values with a one. Or call it like this: `ivec3.new(1, 2)` to create a vector with the three components of `1, 2, 2`.
 
 # Other
 

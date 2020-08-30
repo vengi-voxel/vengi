@@ -150,6 +150,20 @@ static int luaVoxel_region_maxs(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_region_setmins(lua_State* s) {
+	voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
+	const glm::ivec3* mins = clua_get<glm::ivec3>(s, 2);
+	region->setLowerCorner(*mins);
+	return 0;
+}
+
+static int luaVoxel_region_setmaxs(lua_State* s) {
+	voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
+	const glm::ivec3* maxs = clua_get<glm::ivec3>(s, 2);
+	region->setUpperCorner(*maxs);
+	return 0;
+}
+
 static int luaVoxel_region_tostring(lua_State *s) {
 	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	const glm::ivec3& mins = region->getLowerCorner();
@@ -177,6 +191,8 @@ static void prepareState(lua_State* s) {
 		{"z", luaVoxel_region_z},
 		{"mins", luaVoxel_region_mins},
 		{"maxs", luaVoxel_region_maxs},
+		{"setMins", luaVoxel_region_setmins},
+		{"setMaxs", luaVoxel_region_setmaxs},
 		{"__tostring", luaVoxel_region_tostring},
 		{nullptr, nullptr}
 	};

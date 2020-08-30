@@ -31,19 +31,22 @@ struct LUALayer {
 	int layerId;
 };
 
+struct LUAVolume {
+	int layerId;
+	voxel::RawVolume* volume;
+	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
+};
+
 static LUALayer* luaVoxel_toLayer(lua_State* s, int n) {
 	return clua_getudata<LUALayer*>(s, n, luaVoxel_metalayer());
 }
 
-static int luaVoxel_pushvolume(lua_State* s, voxel::RawVolume* volume) {
-	if (volume == nullptr) {
-		return luaL_error(s, "No volume given - can't push");
-	}
-	return clua_pushudata(s, volume, luaVoxel_metavolume());
+static int luaVoxel_pushvolume(lua_State* s, const LUAVolume& luaVolume) {
+	return clua_pushudata(s, luaVolume, luaVoxel_metavolume());
 }
 
-static voxel::RawVolume* luaVoxel_tovolume(lua_State* s, int n) {
-	return *(voxel::RawVolume**)clua_getudata<voxel::RawVolume*>(s, n, luaVoxel_metavolume());
+static LUAVolume* luaVoxel_tovolume(lua_State* s, int n) {
+	return clua_getudata<LUAVolume*>(s, n, luaVoxel_metavolume());
 }
 
 static int luaVoxel_layermgr_new(lua_State* s) {
@@ -96,15 +99,16 @@ static int luaVoxel_layer_volume(lua_State* s) {
 	if (volume == nullptr) {
 		return luaL_error(s, "Invalid layer id %d given - no volume found", luaLayer->layerId);
 	}
-	return luaVoxel_pushvolume(s, volume);
+	const LUAVolume luaVolume{luaLayer->layerId, volume, voxel::Region::InvalidRegion};
+	return luaVoxel_pushvolume(s, luaVolume);
 }
 
 static int luaVoxel_volume_voxel(lua_State* s) {
-	const voxel::RawVolume* volume = luaVoxel_tovolume(s, 1);
+	const LUAVolume* volume = luaVoxel_tovolume(s, 1);
 	const int x = luaL_checkinteger(s, 2);
 	const int y = luaL_checkinteger(s, 3);
 	const int z = luaL_checkinteger(s, 4);
-	const voxel::Voxel& voxel = volume->voxel(x, y, z);
+	const voxel::Voxel& voxel = volume->volume->voxel(x, y, z);
 	if (voxel::isAir(voxel.getMaterial())) {
 		lua_pushinteger(s, -1);
 	} else {
@@ -114,13 +118,13 @@ static int luaVoxel_volume_voxel(lua_State* s) {
 }
 
 static int luaVoxel_volume_region(lua_State* s) {
-	const voxel::RawVolume* volume = luaVoxel_tovolume(s, 1);
-	return voxelgenerator::LUAGenerator::luaVoxel_pushregion(s, &volume->region());
+	const LUAVolume* volume = luaVoxel_tovolume(s, 1);
+	return voxelgenerator::LUAGenerator::luaVoxel_pushregion(s, &volume->volume->region());
 }
 
 static int luaVoxel_volume_setvoxel(lua_State* s) {
-	voxel::RawVolume* volume = luaVoxel_tovolume(s, 1);
-	voxel::RawVolumeWrapper wrapper(volume);
+	LUAVolume* volume = luaVoxel_tovolume(s, 1);
+	voxel::RawVolumeWrapper wrapper(volume->volume);
 	const int x = luaL_checkinteger(s, 2);
 	const int y = luaL_checkinteger(s, 3);
 	const int z = luaL_checkinteger(s, 4);
@@ -128,7 +132,22 @@ static int luaVoxel_volume_setvoxel(lua_State* s) {
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 	const bool insideRegion = wrapper.setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
+	if (insideRegion) {
+		if (volume->dirtyRegion.isValid()) {
+			volume->dirtyRegion.accumulate(wrapper.dirtyRegion());
+		} else {
+			volume->dirtyRegion = wrapper.dirtyRegion();
+		}
+	}
 	return 1;
+}
+
+static int luaVoxel_volume_gc(lua_State *s) {
+	LUAVolume* volume = luaVoxel_tovolume(s, 1);
+	if (volume->dirtyRegion.isValid()) {
+		sceneMgr().modified(volume->layerId, volume->dirtyRegion);
+	}
+	return 0;
 }
 
 void EditorLUAGenerator::initializeCustomState(lua_State *s) {
@@ -152,6 +171,7 @@ void EditorLUAGenerator::initializeCustomState(lua_State *s) {
 		{"voxel", luaVoxel_volume_voxel},
 		{"region", luaVoxel_volume_region},
 		{"setVoxel", luaVoxel_volume_setvoxel},
+		{"__gc", luaVoxel_volume_gc},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, volumeFuncs, luaVoxel_metavolume());
