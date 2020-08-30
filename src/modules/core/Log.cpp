@@ -2,15 +2,14 @@
  * @file
  */
 
-#include "Log.h"
-#include "Var.h"
-#include "StringUtil.h"
+#include "core/Log.h"
+#include "core/Var.h"
+#include "core/StringUtil.h"
 #include "engine-config.h"
-#include "App.h"
-#include "Common.h"
-#include "Enum.h"
-#include "ArrayLength.h"
-#include "Assert.h"
+#include "core/Common.h"
+#include "core/Enum.h"
+#include "core/ArrayLength.h"
+#include "core/Assert.h"
 #include <string.h>
 #include <stdio.h>
 #include <unordered_map>

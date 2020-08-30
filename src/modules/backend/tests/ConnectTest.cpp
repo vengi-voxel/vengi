@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "core/EventBus.h"
 #include "core/Password.h"
 #include "ServerMessages_generated.h"

@@ -6,8 +6,8 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "core/CommandlineApp.h"
 #include "core/String.h"
+#include "core/collection/DynamicArray.h"
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
@@ -86,55 +86,6 @@ inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec1<T, P>& ve
 	return os << "vec1[" << glm::to_string(vec) << "]";
 }
 
-class AbstractTest: public testing::Test {
-private:
-	class TestApp: public core::CommandlineApp {
-		friend class AbstractTest;
-	private:
-		using Super = core::CommandlineApp;
-	protected:
-		AbstractTest* _test = nullptr;
-	public:
-		TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
-		virtual ~TestApp();
-
-		core::AppState onInit() override;
-		core::AppState onCleanup() override;
-	};
-
-protected:
-	TestApp *_testApp = nullptr;
-
-	core::String toString(const core::String& filename) const;
-
-	template<class T>
-	core::String toString(const T& v) const {
-		core::String str;
-		str.reserve(4096);
-		for (auto i = v.begin(); i != v.end();) {
-			str += "'";
-			str += *i;
-			str += "'";
-			if (++i != v.end()) {
-				str += ", ";
-			}
-		}
-		return str;
-	}
-
-	virtual void onCleanupApp() {
-	}
-
-	virtual bool onInitApp() {
-		return true;
-	}
-
-public:
-	virtual void SetUp() override;
-
-	virtual void TearDown() override;
-};
-
 }
 
 inline std::ostream& operator<<(std::ostream& stream, const glm::ivec2& v) {
@@ -155,4 +106,19 @@ inline std::ostream& operator<<(std::ostream& stream, const glm::ivec3& v) {
 inline std::ostream& operator<<(std::ostream& stream, const glm::vec3& v) {
 	stream << "(x: " << v.x << ", y: " << v.y << ", z: " << v.z << ")";
 	return stream;
+}
+
+template<class T>
+core::String toString(const core::DynamicArray<T>& v) {
+	core::String str;
+	str.reserve(4096);
+	for (auto i = v.begin(); i != v.end();) {
+		str += "'";
+		str += *i;
+		str += "'";
+		if (++i != v.end()) {
+			str += ", ";
+		}
+	}
+	return str;
 }

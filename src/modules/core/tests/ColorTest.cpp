@@ -2,16 +2,13 @@
  * @file
  */
 
-#include "AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/Color.h"
 #include <SDL_endian.h>
 
 namespace core {
 
-class ColorTest: public AbstractTest {
-};
-
-TEST_F(ColorTest, testRGBA) {
+TEST(ColorTest, testRGBA) {
 	core::RGBA color;
 	color.rgba = SDL_SwapLE32(0xff6699fe);
 	EXPECT_EQ(0xfe, color.r);
@@ -34,7 +31,7 @@ TEST_F(ColorTest, testRGBA) {
 	EXPECT_EQ(0xff, convertedBack.a);
 }
 
-TEST_F(ColorTest, testHex) {
+TEST(ColorTest, testHex) {
 	EXPECT_EQ(glm::vec4(1.0f), core::Color::fromHex("#ffffff"));
 	EXPECT_EQ(glm::vec4(1.0f), core::Color::fromHex("0xffffff"));
 	EXPECT_EQ(glm::vec4(1.0f), core::Color::fromHex("0xffffffff"));
@@ -43,7 +40,7 @@ TEST_F(ColorTest, testHex) {
 	EXPECT_EQ(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), core::Color::fromHex("#ff0000ff"));
 }
 
-TEST_F(ColorTest, testClosestMatchExact) {
+TEST(ColorTest, testClosestMatchExact) {
 	const glm::vec4 color(0.5f, 0.5f, 0.5f, 1.0f);
 	const std::vector<glm::vec4>& colors {
 		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -58,7 +55,7 @@ TEST_F(ColorTest, testClosestMatchExact) {
 	EXPECT_EQ(3, index);
 }
 
-TEST_F(ColorTest, testClosestMatch) {
+TEST(ColorTest, testClosestMatch) {
 	const glm::vec4 color(0.5f, 0.5f, 0.5f, 1.0f);
 	const std::vector<glm::vec4>& colors {
 		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),

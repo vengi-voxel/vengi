@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "persistence/SQLGenerator.h"
 #include "TestModels.h"
 #include "core/StringUtil.h"

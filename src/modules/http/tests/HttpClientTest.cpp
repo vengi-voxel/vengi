@@ -3,7 +3,7 @@
  */
 
 #include "core/concurrent/Atomic.h"
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "http/HttpClient.h"
 #include "http/HttpServer.h"
 #include "core/concurrent/ThreadPool.h"

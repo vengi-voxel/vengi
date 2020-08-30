@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxel/PagedVolume.h"
 #include "voxel/RawVolume.h"

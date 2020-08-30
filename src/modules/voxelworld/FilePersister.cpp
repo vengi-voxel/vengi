@@ -5,7 +5,7 @@
 #include "FilePersister.h"
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxel/Constants.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/io/Filesystem.h"
 #include "core/Common.h"
 #include "core/StringUtil.h"

@@ -2,12 +2,16 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/command/Command.h"
 
 namespace core {
 
-class CommandTest: public AbstractTest {
+class CommandTest: public testing::Test {
+public:
+	void TearDown() override {
+		Command::shutdown();
+	}
 };
 
 TEST_F(CommandTest, testExecuteUnknown) {

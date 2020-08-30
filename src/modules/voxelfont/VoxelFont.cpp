@@ -3,7 +3,7 @@
  */
 
 #include "VoxelFont.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/collection/DynamicArray.h"
 #include "core/io/Filesystem.h"
 #include "core/Common.h"

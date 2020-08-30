@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "compute/Compute.h"
 #include "noise/Noise.h"
 #include "image/Image.h"

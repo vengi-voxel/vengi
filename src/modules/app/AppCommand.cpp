@@ -3,12 +3,12 @@
  */
 
 #include "AppCommand.h"
-#include "command/Command.h"
+#include "core/command/Command.h"
 #include "core/io/Filesystem.h"
 #include "util/VarUtil.h"
-#include "App.h"
-#include "Log.h"
-#include "Var.h"
+#include "app/App.h"
+#include "core/Log.h"
+#include "core/Var.h"
 #include <inttypes.h>
 
 namespace core {

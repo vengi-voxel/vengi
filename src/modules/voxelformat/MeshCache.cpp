@@ -8,7 +8,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "core/io/Filesystem.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/Assert.h"
 #include "voxel/CubicSurfaceExtractor.h"

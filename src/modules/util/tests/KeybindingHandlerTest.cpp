@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "util/KeybindingHandler.h"
 #include "core/command/Command.h"
 #include <SDL.h>

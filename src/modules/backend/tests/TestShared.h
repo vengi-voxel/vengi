@@ -3,7 +3,7 @@
 #include "backend/entity/ai/LUAAIRegistry.h"
 #include "backend/entity/ai/aggro/AggroMgr.h"
 #include "backend/entity/ai/group/GroupMgr.h"
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "TestEntity.h"
 #include <sstream>
 #include <iostream>

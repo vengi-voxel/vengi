@@ -5,7 +5,7 @@
 #include "IncludeUtil.h"
 #include "core/StringUtil.h"
 #include "core/io/Filesystem.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/Log.h"
 
 namespace util {

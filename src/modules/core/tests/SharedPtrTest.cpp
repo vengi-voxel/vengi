@@ -2,8 +2,8 @@
  * @file
  */
 
+#include <gtest/gtest.h>
 #include "core/Common.h"
-#include "core/tests/AbstractTest.h"
 #include "core/SharedPtr.h"
 #include "core/Algorithm.h"
 

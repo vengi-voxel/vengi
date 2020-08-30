@@ -4,7 +4,7 @@
 #include "CooldownProvider.h"
 
 #include "commonlua/LUA.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/io/Filesystem.h"

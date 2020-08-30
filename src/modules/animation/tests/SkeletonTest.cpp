@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "animation/chr/CharacterSkeleton.h"
 #include "animation/AnimationSettings.h"
 #include "animation/BoneId.h"

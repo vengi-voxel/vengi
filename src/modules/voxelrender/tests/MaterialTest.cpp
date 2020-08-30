@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "image/Image.h"
 #include "core/GLM.h"
 #include "core/Color.h"

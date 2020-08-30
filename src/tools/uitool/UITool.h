@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/CommandlineApp.h"
+#include "app/CommandlineApp.h"
 #include "ui/turbobadger/TurboBadger.h"
 #include "ui/turbobadger/UIDummies.h"
 

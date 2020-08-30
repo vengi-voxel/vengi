@@ -2,9 +2,9 @@
  * @file
  */
 
-#include "core/App.h"
+#include "app/App.h"
 #include "core/io/Filesystem.h"
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"

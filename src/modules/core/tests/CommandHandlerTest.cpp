@@ -2,13 +2,17 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/command/CommandHandler.h"
 #include "core/Var.h"
 
 namespace core {
 
-class CommandHandlerTest: public AbstractTest {
+class CommandHandlerTest: public testing::Test {
+public:
+	void TearDown() override {
+		core::Var::shutdown();
+	}
 };
 
 TEST_F(CommandHandlerTest, testReplacePlaceholdersSmallBuffer) {

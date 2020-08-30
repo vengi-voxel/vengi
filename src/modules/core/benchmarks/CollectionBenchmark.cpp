@@ -1,4 +1,4 @@
-#include "core/benchmark/AbstractBenchmark.h"
+#include "app/benchmark/AbstractBenchmark.h"
 #include "core/collection/Map.h"
 #include "core/Assert.h"
 #include <unordered_map>

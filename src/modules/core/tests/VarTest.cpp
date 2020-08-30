@@ -2,13 +2,17 @@
  * @file
  */
 
-#include "AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/Var.h"
 #include "core/StringUtil.h"
 
 namespace core {
 
-class VarTest: public AbstractTest {
+class VarTest: public testing::Test {
+public:
+	void TearDown() override {
+		core::Var::shutdown();
+	}
 };
 
 TEST_F(VarTest, testChange) {

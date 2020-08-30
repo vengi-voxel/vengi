@@ -2,13 +2,13 @@
  * @file
  */
 
+#include <gtest/gtest.h>
 #include "core/PoolAllocator.h"
 #include "core/ArrayLength.h"
-#include "AbstractTest.h"
 
 namespace core {
 
-class PoolAllocatorTest: public AbstractTest {
+class PoolAllocatorTest: public testing::Test {
 protected:
 	static int calledCtor;
 	static int calledDtor;

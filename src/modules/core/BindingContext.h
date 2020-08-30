@@ -22,11 +22,15 @@ enum BindingContext : uint8_t {
 };
 
 /**
- * @brief Returns the current binding context
+ * @brief Get the current binding context
+ * @sa setBindingContext() for more details.
  */
 extern BindingContext bindingContext();
 /**
- * @brief Updates the current binding context and returns the old one
+ * @brief Allows to change the binding context. This can be used to e.g. ignore some commands while hovering
+ * the ui and they should only be active if the scene has the focus.
+ * @return the old context
+ * @sa bindingContext()
  */
 extern BindingContext setBindingContext(int ctx);
 

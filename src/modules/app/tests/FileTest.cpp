@@ -1,4 +1,4 @@
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "core/io/Filesystem.h"
 #include "core/StringUtil.h"
 

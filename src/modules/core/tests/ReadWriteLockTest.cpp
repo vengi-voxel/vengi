@@ -2,13 +2,13 @@
  * @file
  */
 
-#include "AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/concurrent/ReadWriteLock.h"
 #include <future>
 
 namespace core {
 
-class ReadWriteLockTest: public AbstractTest {
+class ReadWriteLockTest: public testing::Test {
 protected:
 	core::ReadWriteLock _rwLock {"test"};
 	int _value = 0;

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/Picking.h"
 #include "core/GLM.h"

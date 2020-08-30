@@ -40,13 +40,10 @@ set(SRCS
 	Algorithm.h
 	ArrayLength.h
 	Assert.cpp Assert.h
-	App.cpp App.h
-	AppCommand.cpp AppCommand.h
 	BindingContext.cpp BindingContext.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
 	Common.cpp Common.h
-	CommandlineApp.h CommandlineApp.cpp
 	Enum.h
 	EventBus.cpp EventBus.h
 	FourCC.h
@@ -96,23 +93,18 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/TracyClient.cpp)
 endif()
 
 set(TEST_SRCS
-	tests/AbstractTest.cpp
+	tests/TestHelper.h
 	tests/AlgorithmTest.cpp
-	tests/AppTest.cpp
 	tests/ArrayTest.cpp
 	tests/BufferTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ColorTest.cpp
 	tests/CommandTest.cpp
-	tests/CommandCompleterTest.cpp
 	tests/CommandHandlerTest.cpp
 	tests/ConcurrentQueueTest.cpp
 	tests/CoreTest.cpp
 	tests/DynamicArrayTest.cpp
 	tests/EventBusTest.cpp
-	tests/FilesystemTest.cpp
-	tests/FileStreamTest.cpp
-	tests/FileTest.cpp
 	tests/ListTest.cpp
 	tests/LogTest.cpp
 	tests/MapTest.cpp
@@ -131,24 +123,17 @@ set(TEST_SRCS
 	tests/VectorTest.cpp
 	tests/ZipTest.cpp
 )
-set(TEST_FILES
-	tests/iotest.txt
-	tests/tokenizer.string
-)
 
-gtest_suite_files(tests ${TEST_FILES})
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
-gtest_suite_files(tests-${LIB} ${TEST_FILES})
 gtest_suite_deps(tests-${LIB} ${LIB})
 gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
-	benchmark/AbstractBenchmark.cpp
 	benchmarks/CollectionBenchmark.cpp
 )
 engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
-engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark ${LIB})
+engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app)

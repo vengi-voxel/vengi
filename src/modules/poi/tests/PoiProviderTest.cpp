@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "poi/PoiProvider.h"
 #include "voxelworld/WorldMgr.h"
 

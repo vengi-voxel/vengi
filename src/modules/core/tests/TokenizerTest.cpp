@@ -2,19 +2,21 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include <gtest/gtest.h>
+#include "core/StringUtil.h"
+#include "core/tests/TestHelper.h"
 #include "core/Tokenizer.h"
 #include "core/io/Filesystem.h"
 
 namespace core {
 
-class TokenizerTest: public AbstractTest {
+class TokenizerTest: public testing::Test {
 };
 
 TEST_F(TokenizerTest, testTokenizerNoSkipComment) {
 	const char *str = "http://foo.bar";
 	core::Tokenizer t(false, str, SDL_strlen(str), ";");
-	ASSERT_EQ(1u, t.size()) << toString(t.tokens());
+	ASSERT_EQ(1u, t.size()) << string::toString(t.tokens());
 	EXPECT_STREQ(str, t.tokens()[0].c_str()) << toString(t.tokens());
 }
 
@@ -41,14 +43,9 @@ TEST_F(TokenizerTest, testTokenizerOnlyFirstMatch) {
 }
 
 TEST_F(TokenizerTest, testTokenizerInvalidFile) {
-	const io::FilePtr& file = io::filesystem()->open("tokenizer.string");
-	ASSERT_TRUE(file->exists()) << "file doesn't exist";
-	uint8_t *buf;
-	const int n = file->read((void**)&buf);
-	ASSERT_TRUE(buf != nullptr);
-	core::Tokenizer t((const char *)buf, n, "\n");
+	const char *buf = "\x22\x50\xe2\xf6\xe2\x20\xac\x55\x22";
+	core::Tokenizer t(buf, 9, "\n");
 	EXPECT_EQ(0u, t.size()) << toString(t.tokens());
-	delete[] buf;
 }
 
 TEST_F(TokenizerTest, testTokenizerSecondMatchButEmptyString) {

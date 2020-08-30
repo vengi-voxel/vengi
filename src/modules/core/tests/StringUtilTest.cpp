@@ -2,14 +2,14 @@
  * @file
  */
 
-#include "AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/StringUtil.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
 
 namespace core {
 
-class StringUtilTest: public AbstractTest {
+class StringUtilTest: public testing::Test {
 };
 
 TEST_F(StringUtilTest, testGetBeforeToken) {

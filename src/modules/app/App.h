@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "Common.h"
-#include "Trace.h"
-#include "BindingContext.h"
-#include "String.h"
-#include "collection/List.h"
+#include "core/Common.h"
+#include "core/Trace.h"
+#include "core/BindingContext.h"
+#include "core/String.h"
+#include "core/collection/List.h"
 #include "core/concurrent/Atomic.h"
 #include "core/SharedPtr.h"
 #include <memory>
@@ -72,8 +72,6 @@ protected:
 
 	core::String _organisation;
 	core::String _appname;
-
-	BindingContext _bindingContext = BindingContext::All;
 
 	AppState _curState = AppState::Construct;
 	AppState _nextState = AppState::InvalidAppState;
@@ -278,20 +276,6 @@ public:
 
 	const core::String& currentWorkingDir() const;
 
-	/**
-	 * @brief Allows to change the binding context. This can be used to e.g. ignore some commands while hovering
-	 * the ui and they should only be active if the scene has the focus.
-	 * @return the old context
-	 * @sa bindingContext()
-	 */
-	BindingContext setBindingContext(BindingContext newInputContext);
-
-	/**
-	 * @brief Get the current binding context
-	 * @sa setBindingContext() for more details.
-	 */
-	BindingContext bindingContext() const;
-
 	static App* getInstance();
 
 private:
@@ -324,10 +308,6 @@ inline core::EventBusPtr App::eventBus() const {
 
 inline const core::String& App::appname() const {
 	return _appname;
-}
-
-inline BindingContext App::bindingContext() const {
-	return _bindingContext;
 }
 
 inline AppState App::state() const {

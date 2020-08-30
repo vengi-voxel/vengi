@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/CommandlineApp.h"
+#include "app/CommandlineApp.h"
 #include "CursesConsole.h"
 
 namespace console {

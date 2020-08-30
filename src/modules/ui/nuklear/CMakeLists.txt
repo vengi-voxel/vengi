@@ -13,4 +13,4 @@ set(SRCS
 set(FILES
 	shared/font.ttf
 )
-engine_add_module(TARGET nuklear SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelrender)
+engine_add_module(TARGET nuklear SRCS ${SRCS} FILES ${FILES} DEPENDENCIES app voxelrender)

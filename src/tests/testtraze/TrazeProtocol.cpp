@@ -7,7 +7,7 @@
 #include "core/Color.h"
 #include "uuid/UUIDUtil.h"
 #include "core/Var.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/StringUtil.h"
 #include "TrazeTypes.h"
 #include "TrazeEvents.h"

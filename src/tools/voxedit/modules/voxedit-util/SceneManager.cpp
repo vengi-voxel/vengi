@@ -33,7 +33,7 @@
 #include "core/command/Command.h"
 #include "core/command/CommandCompleter.h"
 #include "core/ArrayLength.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/Color.h"
 #include "core/StringUtil.h"
@@ -897,7 +897,7 @@ void SceneManager::construct() {
 			Log::info("Executed script %s", args[0].c_str());
 		}
 	}).setHelp("Executes a lua script to modify the current active volume")
-		.setArgumentCompleter(voxelgenerator::scriptCompleter());
+		.setArgumentCompleter(voxelgenerator::scriptCompleter(io::filesystem()));
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "1");

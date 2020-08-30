@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/App.h"
+#include "app/App.h"
 #include "core/io/IEventObserver.h"
 #include "core/io/EventHandler.h"
 #include "core/GLM.h"

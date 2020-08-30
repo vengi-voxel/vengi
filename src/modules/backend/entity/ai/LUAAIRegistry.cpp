@@ -15,7 +15,7 @@
 #include "attrib/ContainerProvider.h"
 
 #include "core/io/Filesystem.h"
-#include "core/App.h"
+#include "app/App.h"
 
 namespace backend {
 

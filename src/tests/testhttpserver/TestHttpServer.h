@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/CommandlineApp.h"
+#include "app/CommandlineApp.h"
 #include "http/HttpServer.h"
 #include "console/Input.h"
 #include <uv.h>

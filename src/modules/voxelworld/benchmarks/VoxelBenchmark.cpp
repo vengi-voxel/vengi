@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/benchmark/AbstractBenchmark.h"
+#include "app/benchmark/AbstractBenchmark.h"
 #include "voxelworld/WorldPager.h"
 #include "voxel/PagedVolume.h"
 #include "voxelworld/BiomeManager.h"

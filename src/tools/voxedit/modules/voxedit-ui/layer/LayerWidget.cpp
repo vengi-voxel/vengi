@@ -3,7 +3,7 @@
  */
 
 #include "LayerWidget.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/command/Command.h"
 #include "core/command/CommandHandler.h"
 #include "core/io/Filesystem.h"

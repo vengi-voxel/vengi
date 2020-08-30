@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Common.h"
-#include "Hash.h"
+#include "core/Common.h"
+#include "core/Hash.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>

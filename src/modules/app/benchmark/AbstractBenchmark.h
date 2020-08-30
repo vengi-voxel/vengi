@@ -5,7 +5,7 @@
 #pragma once
 
 #include <benchmark/benchmark.h>
-#include "core/CommandlineApp.h"
+#include "app/CommandlineApp.h"
 #include "core/io/Filesystem.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"

@@ -4,7 +4,7 @@
 #include "Shader.h"
 #include "core/Var.h"
 #include "core/Log.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/Assert.h"
 #include "core/Var.h"
 #include "core/StringUtil.h"

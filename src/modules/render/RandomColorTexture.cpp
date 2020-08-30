@@ -2,7 +2,7 @@
  * @file
  */
 #include "RandomColorTexture.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/concurrent/ThreadPool.h"
 #include "core/Log.h"
 

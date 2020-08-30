@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "math/Octree.h"
 #include "math/AABB.h"
 #include "math/Frustum.h"

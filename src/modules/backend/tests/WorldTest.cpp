@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "backend/world/World.h"
 #include "backend/world/MapProvider.h"
 #include "network/ProtocolHandlerRegistry.h"

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/App.h"
 #include "core/IComponent.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
@@ -62,9 +63,9 @@ public:
 	bool exec(const core::String& luaScript, voxel::RawVolumeWrapper* volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args = core::DynamicArray<core::String>());
 };
 
-inline auto scriptCompleter() {
+inline auto scriptCompleter(const io::FilesystemPtr& filesystem) {
 	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
-		return complete("scripts", str, matches, "*.lua");
+		return complete(filesystem, "scripts", str, matches, "*.lua");
 	};
 }
 

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "math/Frustum.h"
 #include "core/GLM.h"
 #include "core/StringUtil.h"

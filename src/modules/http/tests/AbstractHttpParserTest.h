@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "core/collection/Map.h"
 
 namespace http {

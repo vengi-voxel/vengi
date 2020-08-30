@@ -1,4 +1,4 @@
-#include "core/benchmark/AbstractBenchmark.h"
+#include "app/benchmark/AbstractBenchmark.h"
 #include "animation/chr/anim/Glide.h"
 #include "animation/chr/anim/Idle.h"
 #include "animation/chr/anim/Jump.h"

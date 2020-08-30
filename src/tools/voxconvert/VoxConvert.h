@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/CommandlineApp.h"
+#include "app/CommandlineApp.h"
 
 /**
  * @brief This tool is able to convert voxel volumes between different formats

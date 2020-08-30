@@ -27,9 +27,8 @@ if (MOSQUITTO_FOUND)
 	gtest_suite_sources(tests-${PROJECT_NAME}
 		tests/TrazeProtocolTest.cpp
 		TrazeProtocol.cpp
-		../../modules/core/tests/AbstractTest.cpp
 	)
-	gtest_suite_deps(tests-${PROJECT_NAME} core uuid voxel ${MOSQUITTO_LIBRARIES})
+	gtest_suite_deps(tests-${PROJECT_NAME} test-app core uuid voxel ${MOSQUITTO_LIBRARIES})
 	if (UNITTESTS)
 		target_include_directories(tests-${PROJECT_NAME} PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
 	endif()

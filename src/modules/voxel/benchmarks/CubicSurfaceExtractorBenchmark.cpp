@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/benchmark/AbstractBenchmark.h"
+#include "app/benchmark/AbstractBenchmark.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"

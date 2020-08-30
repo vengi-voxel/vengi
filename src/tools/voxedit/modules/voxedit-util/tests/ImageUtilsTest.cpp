@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "../tool/ImageUtils.h"
 #include "voxel/MaterialColor.h"
 

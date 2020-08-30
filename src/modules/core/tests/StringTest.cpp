@@ -2,12 +2,12 @@
  * @file
  */
 
-#include "AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/String.h"
 
 namespace core {
 
-class StringTest: public AbstractTest {
+class StringTest: public testing::Test {
 };
 
 TEST_F(StringTest, testLongStringToForceAllocation) {

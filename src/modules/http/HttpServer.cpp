@@ -8,7 +8,7 @@
 #include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "Network.cpp.h"
-#include "core/App.h"
+#include "app/App.h"
 #include <string.h>
 #include <SDL_stdinc.h>
 

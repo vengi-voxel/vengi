@@ -7,7 +7,7 @@
 #include "core/command/CommandHandler.h"
 #include "core/String.h"
 #include "core/Var.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/io/Filesystem.h"
 
 void clua_assert(lua_State* s, bool pass, const char *msg) {

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "../anim/AnimationLuaSaver.h"
 #include "core/StringUtil.h"
 #include "core/io/Filesystem.h"

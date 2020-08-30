@@ -6,5 +6,5 @@ set(SRCS
 	IMGUIAddons.h
 )
 set(LIB imgui)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render dearimgui)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app dearimgui)
 target_include_directories(${LIB} PUBLIC .)

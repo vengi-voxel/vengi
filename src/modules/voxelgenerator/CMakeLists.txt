@@ -26,14 +26,14 @@ set(TEST_FILES
 	testvoxelgenerator/ellipse.qb
 )
 
-set(TEST_DEPENDENCIES voxelformat)
+set(TEST_DEPENDENCIES voxelformat test-app)
 
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_files(tests ${TEST_FILES})
 gtest_suite_deps(tests ${LIB} ${TEST_DEPENDENCIES})
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
-gtest_suite_sources(tests-${LIB} ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 gtest_suite_files(tests-${LIB} ${TEST_FILES})
 gtest_suite_deps(tests-${LIB} ${LIB} ${TEST_DEPENDENCIES})
 gtest_suite_end(tests-${LIB})

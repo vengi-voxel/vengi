@@ -4,7 +4,7 @@
 
 #include "Shader.h"
 
-#include "core/App.h"
+#include "app/App.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Hash.h"

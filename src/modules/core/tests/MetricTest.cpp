@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/metric/Metric.h"
 #include "core/metric/IMetricSender.h"
 #include "core/Var.h"
@@ -26,19 +26,15 @@ public:
 
 #define PREFIX "test"
 
-class MetricTest: public core::AbstractTest {
-private:
-	using Super = core::AbstractTest;
+class MetricTest: public testing::Test {
 protected:
 	std::shared_ptr<BufferSender> sender;
 	void SetUp() override {
-		Super::SetUp();
 		sender = std::make_shared<BufferSender>();
 		ASSERT_TRUE(sender->init());
 	}
 
 	void TearDown() override {
-		Super::TearDown();
 		sender->shutdown();
 	}
 

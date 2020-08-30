@@ -5,8 +5,8 @@
 #include "animation/SkeletonAttribute.h"
 #include "animation/chr/CharacterSkeleton.h"
 #include "animation/chr/CharacterSkeletonAttribute.h"
-#include "core/App.h"
-#include "core/tests/AbstractTest.h"
+#include "app/App.h"
+#include "app/tests/AbstractTest.h"
 #include "animation/LUAAnimation.h"
 #include "core/io/Filesystem.h"
 

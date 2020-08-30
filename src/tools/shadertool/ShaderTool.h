@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/CommandlineApp.h"
+#include "app/CommandlineApp.h"
 #include "Types.h"
 #include "core/collection/List.h"
 

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "util/Console.h"
 #include "core/Var.h"
 #include "core/command/Command.h"

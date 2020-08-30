@@ -4,7 +4,7 @@
 
 #include "Shared_generated.h"
 #include "attrib/Container.h"
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "attrib/ContainerProvider.h"
 #include "gtest/gtest.h"
 

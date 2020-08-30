@@ -5,7 +5,7 @@
  */
 #include "CLCompute.h"
 #include "core/Log.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/StringUtil.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"

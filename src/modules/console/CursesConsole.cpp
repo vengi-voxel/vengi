@@ -3,7 +3,7 @@
  */
 
 #include "CursesConsole.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/GameConfig.h"
 #include <SDL_stdinc.h>

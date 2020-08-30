@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/world/MapProvider.h"
 #include "backend/world/Map.h"

@@ -3,6 +3,7 @@
  */
 
 #include "VoxEdit.h"
+#include "app/App.h"
 #include "core/Color.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/MaterialColor.h"
@@ -111,7 +112,7 @@ core::AppState VoxEdit::onConstruct() {
 		if (!command##File(file)) { \
 			Log::error("Failed to execute '" #command "' for file '%s'", file.c_str()); \
 		} \
-	}).setArgumentCompleter(core::fileCompleter(_lastDirectory)).setHelp(help)
+	}).setArgumentCompleter(core::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(help)
 
 	COMMAND_FILE(screenshot, "Save the current viewport as screenshot");
 	COMMAND_FILE(save, "Save the current scene as a volume to the given file");
@@ -128,7 +129,7 @@ core::AppState VoxEdit::onConstruct() {
 		}
 		const core::String file = args.empty() ? "" : args[0];
 		_mainWindow->loadAnimationEntity(file);
-	}).setHelp("Load the animation volumes and settings").setArgumentCompleter(core::fileCompleter("", "*.lua"));
+	}).setHelp("Load the animation volumes and settings").setArgumentCompleter(core::fileCompleter(io::filesystem(), "", "*.lua"));
 
 	core::Command::registerCommand("new", [this] (const core::CmdArgs& args) {
 		newFile();

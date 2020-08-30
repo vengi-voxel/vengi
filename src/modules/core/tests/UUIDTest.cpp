@@ -2,12 +2,12 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/UUID.h"
 
 namespace core {
 
-class UUIDTest: public AbstractTest {
+class UUIDTest: public testing::Test {
 };
 
 TEST_F(UUIDTest, test) {

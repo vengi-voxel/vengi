@@ -2,19 +2,18 @@
  * @file
  */
 
-#include "AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/concurrent/ThreadPool.h"
 #include "core/concurrent/Atomic.h"
 
 namespace core {
 
-class ThreadPoolTest: public AbstractTest {
+class ThreadPoolTest: public testing::Test {
 public:
 	core::AtomicInt _count;
 	bool _executed = false;
 
 	void SetUp() override {
-		AbstractTest::SetUp();
 		_count = 0;
 		_executed = false;
 	}

@@ -5,7 +5,7 @@
 #pragma once
 
 #include <map>
-#include "core/CommandlineApp.h"
+#include "app/CommandlineApp.h"
 #include "core/Tokenizer.h"
 #include "Table.h"
 

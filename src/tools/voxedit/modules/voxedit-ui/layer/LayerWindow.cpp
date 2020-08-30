@@ -4,7 +4,7 @@
 
 #include "LayerWindow.h"
 #include "core/Assert.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/StringUtil.h"
 #include "core/io/Filesystem.h"
 #include "tb_message_window.h"

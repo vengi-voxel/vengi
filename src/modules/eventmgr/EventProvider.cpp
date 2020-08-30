@@ -3,7 +3,7 @@
  */
 #include "EventProvider.h"
 #include "commonlua/LUA.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "persistence/DBHandler.h"

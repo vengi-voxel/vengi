@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/EventBus.h"
 
 namespace core {
@@ -28,7 +28,7 @@ public:
 class HandlerTest: public CountHandlerTest<TestEvent> {
 };
 
-class EventBusTest : public core::AbstractTest {
+class EventBusTest : public testing::Test {
 };
 
 TEST_F(EventBusTest, testSubscribeAndPublish_1) {

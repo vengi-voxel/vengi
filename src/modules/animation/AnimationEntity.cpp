@@ -4,7 +4,7 @@
 
 #include "AnimationEntity.h"
 #include "animation/LUAAnimation.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/io/Filesystem.h"
 #include <float.h>
 

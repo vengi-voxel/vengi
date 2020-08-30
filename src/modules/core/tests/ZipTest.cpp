@@ -2,12 +2,12 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include <gtest/gtest.h>
 #include "core/Zip.h"
 
 namespace core {
 
-class ZipTest: public AbstractTest {
+class ZipTest: public testing::Test {
 };
 
 TEST_F(ZipTest, testCompress) {

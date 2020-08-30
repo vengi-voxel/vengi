@@ -3,7 +3,7 @@
  */
 
 #include "TreeVolumeCache.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "voxelformat/VolumeFormat.h"

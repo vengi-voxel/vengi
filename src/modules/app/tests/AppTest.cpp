@@ -3,7 +3,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/App.h"
+#include "app/App.h"
 #include "core/metric/Metric.h"
 #include "core/io/Filesystem.h"
 #include "core/EventBus.h"

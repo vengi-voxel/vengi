@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "stock/StockDataProvider.h"
 #include "stock/Inventory.h"
 #include "stock/Container.h"

@@ -7,7 +7,7 @@
 #include "voxelworld/WorldMgr.h"
 #include "core/StringUtil.h"
 #include "core/EventBus.h"
-#include "core/App.h"
+#include "app/App.h"
 #include "core/Trace.h"
 #include "math/QuadTree.h"
 #include "core/io/Filesystem.h"

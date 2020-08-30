@@ -2,13 +2,14 @@
  * @file
  */
 
-#include "core/tests/AbstractTest.h"
+#include "app/tests/AbstractTest.h"
 #include "core/command/CommandCompleter.h"
 #include "core/io/Filesystem.h"
+#include "core/tests/TestHelper.h"
 
 namespace core {
 
-class CommandCompleterTest: public AbstractTest {
+class CommandCompleterTest: public core::AbstractTest {
 public:
 	bool onInitApp() override{
 		const io::FilesystemPtr& fs = io::filesystem();
@@ -27,7 +28,7 @@ public:
 };
 
 TEST_F(CommandCompleterTest, testComplete) {
-	auto func = fileCompleter("commandcompletertest/", "*.foo");
+	auto func = fileCompleter(io::filesystem(), "commandcompletertest/", "*.foo");
 	core::DynamicArray<core::String> matches;
 	ASSERT_EQ(5, func("", matches)) << toString(matches);
 	EXPECT_EQ("dir1/", matches[0]) << toString(matches);
@@ -38,7 +39,7 @@ TEST_F(CommandCompleterTest, testComplete) {
 }
 
 TEST_F(CommandCompleterTest, testCompleteOnlyFiles) {
-	auto func = fileCompleter("commandcompletertest/", "*.foo");
+	auto func = fileCompleter(io::filesystem(), "commandcompletertest/", "*.foo");
 	core::DynamicArray<core::String> matches;
 	ASSERT_EQ(4, func("f", matches)) << toString(matches);
 	EXPECT_EQ("foo1.foo", matches[0]) << toString(matches);
@@ -48,21 +49,21 @@ TEST_F(CommandCompleterTest, testCompleteOnlyFiles) {
 }
 
 TEST_F(CommandCompleterTest, testCompleteSubdir) {
-	auto func = fileCompleter("commandcompletertest/", "*.foo");
+	auto func = fileCompleter(io::filesystem(), "commandcompletertest/", "*.foo");
 	core::DynamicArray<core::String> matches;
 	ASSERT_EQ(1, func("dir1", matches)) << toString(matches);
 	EXPECT_EQ("dir1/", matches[0]) << toString(matches);
 }
 
 TEST_F(CommandCompleterTest, testCompleteSubdirFile) {
-	auto func = fileCompleter("commandcompletertest/dir1/", "*.foo");
+	auto func = fileCompleter(io::filesystem(), "commandcompletertest/dir1/", "*.foo");
 	core::DynamicArray<core::String> matches;
 	ASSERT_EQ(1, func("f", matches)) << toString(matches);
 	EXPECT_EQ("foo1.foo", matches[0]) << toString(matches);
 }
 
 TEST_F(CommandCompleterTest, testCompleteSubdirFile2) {
-	auto func = fileCompleter("commandcompletertest/", "*.foo");
+	auto func = fileCompleter(io::filesystem(), "commandcompletertest/", "*.foo");
 	core::DynamicArray<core::String> matches;
 	ASSERT_EQ(1, func("dir1/f", matches)) << toString(matches);
 	EXPECT_EQ("dir1/foo1.foo", matches[0]) << toString(matches);

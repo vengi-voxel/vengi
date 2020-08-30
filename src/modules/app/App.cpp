@@ -3,18 +3,18 @@
  */
 
 #include "App.h"
-#include "AppCommand.h"
-#include "Var.h"
+#include "app/AppCommand.h"
+#include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
-#include "command/Command.h"
-#include "command/CommandHandler.h"
-#include "io/Filesystem.h"
-#include "Common.h"
-#include "EventBus.h"
-#include "metric/Metric.h"
-#include "metric/UDPMetricSender.h"
-#include "Log.h"
-#include "Tokenizer.h"
+#include "core/command/Command.h"
+#include "core/command/CommandHandler.h"
+#include "core/io/Filesystem.h"
+#include "core/Common.h"
+#include "core/EventBus.h"
+#include "core/metric/Metric.h"
+#include "core/metric/UDPMetricSender.h"
+#include "core/Log.h"
+#include "core/Tokenizer.h"
 #include "core/concurrent/Concurrency.h"
 #include "util/VarUtil.h"
 #include <SDL.h>
@@ -686,16 +686,8 @@ const core::String& App::currentWorkingDir() const {
 	return _filesystem->basePath();
 }
 
-BindingContext App::setBindingContext(BindingContext newContext) {
-	if (_bindingContext == newContext) {
-		return newContext;
-	}
-	std::swap(_bindingContext, newContext);
-	Log::debug("Set the input context to %i (from %i)", (int)_bindingContext, (int)newContext);
-	return newContext;
-}
-
 core::ThreadPool& App::threadPool() {
 	return *_threadPool.get();
 }
+
 }
