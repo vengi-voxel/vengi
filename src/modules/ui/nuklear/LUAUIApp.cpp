@@ -4,6 +4,7 @@
 
 #include "LUAUIApp.h"
 #include "LUAFunctions.h"
+#include "commonlua/LUAFunctions.h"
 #include "core/io/Filesystem.h"
 #include "core/Log.h"
 #include "core/command/Command.h"
@@ -276,12 +277,7 @@ bool LUAUIApp::reload() {
 	lua_newtable(_lua.state());
 	lua_setglobal(_lua.state(), "stack");
 
-	clua_vecregister<glm::vec2>(_lua.state());
-	clua_vecregister<glm::vec3>(_lua.state());
-	clua_vecregister<glm::vec4>(_lua.state());
-	clua_vecregister<glm::ivec2>(_lua.state());
-	clua_vecregister<glm::ivec3>(_lua.state());
-	clua_vecregister<glm::ivec4>(_lua.state());
+	clua_mathregister(_lua);
 
 	configureLUA(_lua);
 

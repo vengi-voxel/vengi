@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "core/StringUtil.h"
+#include "lua.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -461,7 +462,7 @@ extern void clua_quatregister(lua_State* s);
 
 extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);
 
-extern int clua_typerror(lua_State *L, int narg, const char *tname);
+extern int clua_typerror(lua_State *s, int narg, const char *tname);
 
 extern int clua_checkboolean(lua_State *s, int index);
 
@@ -469,7 +470,8 @@ extern int clua_checkboolean(lua_State *s, int index);
  * @brief Registers all shared lua modules/globals/functions
  */
 extern void clua_register(lua_State *s);
+extern void clua_mathregister(lua_State *s);
 
-extern void clua_cmdregister(lua_State* s);
-extern void clua_varregister(lua_State* s);
-extern void clua_logregister(lua_State* s);
+extern void clua_cmdregister(lua_State *s);
+extern void clua_varregister(lua_State *s);
+extern void clua_logregister(lua_State *s);

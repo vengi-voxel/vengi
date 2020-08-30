@@ -270,14 +270,7 @@ void luaanim_setup(lua_State* s) {
 	};
 	clua_registerfuncs(s, boneutilFuncs, luaanim_metaboneutil());
 	lua_setglobal(s, "boneutil");
-
-	clua_vecregister<glm::vec2>(s);
-	clua_vecregister<glm::vec3>(s);
-	clua_vecregister<glm::vec4>(s);
-	clua_vecregister<glm::ivec2>(s);
-	clua_vecregister<glm::ivec3>(s);
-	clua_vecregister<glm::ivec4>(s);
-	clua_quatregister(s);
+	clua_mathregister(s);
 }
 
 bool luaanim_execute(lua_State* s, const char *animation, double animTime, double velocity, Skeleton &skeleton, const SkeletonAttribute &skeletonAttr) {

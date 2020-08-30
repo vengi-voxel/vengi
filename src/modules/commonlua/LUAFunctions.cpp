@@ -259,3 +259,13 @@ void clua_register(lua_State *s) {
 	clua_varregister(s);
 	clua_logregister(s);
 }
+
+void clua_mathregister(lua_State *s) {
+	clua_vecregister<glm::vec2>(s);
+	clua_vecregister<glm::vec3>(s);
+	clua_vecregister<glm::vec4>(s);
+	clua_vecregister<glm::ivec2>(s);
+	clua_vecregister<glm::ivec3>(s);
+	clua_vecregister<glm::ivec4>(s);
+	clua_quatregister(s);
+}
