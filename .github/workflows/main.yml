@@ -28,7 +28,9 @@ jobs:
             ctest -V -R tests-cooldown$
             ctest -V -R tests-core$
             ctest -V -R tests-eventmgr$
+            ctest -V -R tests-io$
             ctest -V -R tests-math$
+            ctest -V -R tests-metric$
             ctest -V -R tests-persistence$
             ctest -V -R tests-poi$
             ctest -V -R tests-shadertool$
@@ -102,7 +104,9 @@ jobs:
             ctest -V -R tests-cooldown$
             ctest -V -R tests-core$
             ctest -V -R tests-eventmgr$
+            ctest -V -R tests-io$
             ctest -V -R tests-math$
+            ctest -V -R tests-metric$
             ctest -V -R tests-persistence$
             ctest -V -R tests-poi$
             ctest -V -R tests-shadertool$
@@ -160,7 +164,9 @@ jobs:
             ctest -V -C Release -R tests-cooldown$
             ctest -V -C Release -R tests-core$
             ctest -V -C Release -R tests-eventmgr$
+            ctest -V -C Release -R tests-io$
             ctest -V -C Release -R tests-math$
+            ctest -V -C Release -R tests-metric$
             ctest -V -C Release -R tests-persistence$
             ctest -V -C Release -R tests-poi$
             ctest -V -C Release -R tests-shadertool$
