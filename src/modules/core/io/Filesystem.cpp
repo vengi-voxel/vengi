@@ -298,8 +298,7 @@ bool Filesystem::unwatch(const core::String& path) {
 	if (i == _watches.end()) {
 		return false;
 	}
-	uv_close((uv_handle_t*)i->value, nullptr);
-	delete i->value;
+	uv_close((uv_handle_t *)i->value, [](uv_handle_t *handle) { delete handle; });
 	_watches.erase(i);
 	return true;
 }
@@ -325,7 +324,7 @@ static void changeCallback (uv_fs_event_t *handle, const char *filename, int eve
 
 	// restart watching
 	uv_fs_event_stop(handle);
-	uv_fs_event_start(handle, changeCallback, path, 0);
+	uv_fs_event_start(handle, changeCallback, path, 0U);
 }
 
 bool Filesystem::watch(const core::String& path, FileWatcher watcher) {
@@ -337,15 +336,13 @@ bool Filesystem::watch(const core::String& path, FileWatcher watcher) {
 	fsEvent->data = (void*)watcher;
 	auto old = _watches.find(path);
 	if (old != _watches.end()) {
-		uv_close((uv_handle_t*)old->value, nullptr);
-		delete old->value;
+		uv_close((uv_handle_t*)old->value, [](uv_handle_t *handle) { delete handle; });
 	}
 	_watches.put(path, fsEvent);
 	const int ret = uv_fs_event_start(fsEvent, changeCallback, path.c_str(), 0);
 	if (ret != 0) {
 		_watches.remove(path);
-		uv_close((uv_handle_t*)fsEvent, nullptr);
-		delete fsEvent;
+		uv_close((uv_handle_t*)fsEvent, [](uv_handle_t *handle) { delete handle; });
 		return false;
 	}
 	return true;
