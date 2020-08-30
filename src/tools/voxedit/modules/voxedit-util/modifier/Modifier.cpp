@@ -6,7 +6,7 @@
 #include "math/Axis.h"
 #include "core/Color.h"
 #include "core/StringUtil.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "video/ScopedPolygonMode.h"

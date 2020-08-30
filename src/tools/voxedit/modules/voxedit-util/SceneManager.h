@@ -22,7 +22,7 @@
 #include "render/Gizmo.h"
 #include "core/Var.h"
 #include "core/Singleton.h"
-#include "core/command/ActionButton.h"
+#include "command/ActionButton.h"
 #include "math/Axis.h"
 #include "MementoHandler.h"
 #include "EditorLUAGenerator.h"

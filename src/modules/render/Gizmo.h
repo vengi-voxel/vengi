@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include "core/command/ActionButton.h"
+#include "command/ActionButton.h"
 #include "Axis.h"
 #include "video/Ray.h"
 #include "video/Camera.h"

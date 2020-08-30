@@ -8,7 +8,7 @@
 #include "core/IComponent.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "core/command/CommandCompleter.h"
+#include "command/CommandCompleter.h"
 
 struct lua_State;
 

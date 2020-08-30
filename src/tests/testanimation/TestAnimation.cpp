@@ -10,7 +10,7 @@
 #include "animation/chr/Character.h"
 #include "animation/animal/bird/Bird.h"
 #include "stock/ContainerData.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/ArrayLength.h"
 #include "core/collection/Array.h"
 #include "testcore/TestAppMain.h"

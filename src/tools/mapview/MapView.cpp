@@ -13,7 +13,7 @@
 #include "metric/Metric.h"
 #include "core/TimeProvider.h"
 #include "core/EventBus.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "voxel/Voxel.h"
 #include "compute/Compute.h"
 #include "io/Filesystem.h"

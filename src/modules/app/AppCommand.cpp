@@ -3,7 +3,7 @@
  */
 
 #include "AppCommand.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "io/Filesystem.h"
 #include "util/VarUtil.h"
 #include "app/App.h"

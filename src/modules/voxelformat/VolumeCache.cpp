@@ -7,7 +7,7 @@
 #include "voxelformat/VoxFileFormat.h"
 #include "io/Filesystem.h"
 #include "app/App.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/Log.h"
 
 namespace voxelformat {

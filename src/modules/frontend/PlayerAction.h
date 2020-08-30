@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/command/ActionButton.h"
+#include "command/ActionButton.h"
 #include "core/IComponent.h"
 #include "core/SharedPtr.h"
 #include "Shared_generated.h"

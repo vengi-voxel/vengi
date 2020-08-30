@@ -3,7 +3,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/command/CommandHandler.h"
+#include "command/CommandHandler.h"
 #include "core/Var.h"
 
 namespace core {

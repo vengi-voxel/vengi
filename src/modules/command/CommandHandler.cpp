@@ -4,7 +4,7 @@
 
 #include "CommandHandler.h"
 #include "core/collection/DynamicArray.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 #include "core/Var.h"

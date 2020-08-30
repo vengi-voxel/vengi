@@ -1,9 +1,4 @@
 set(SRCS
-	command/ActionButton.h command/ActionButton.cpp
-	command/CommandHandler.h command/CommandHandler.cpp
-	command/CommandCompleter.h command/CommandCompleter.cpp
-	command/Command.h command/Command.cpp
-
 	collection/Array.h
 	collection/Buffer.h
 	collection/ConcurrentQueue.h
@@ -87,8 +82,6 @@ set(TEST_SRCS
 	tests/BufferTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ColorTest.cpp
-	tests/CommandTest.cpp
-	tests/CommandHandlerTest.cpp
 	tests/ConcurrentQueueTest.cpp
 	tests/CoreTest.cpp
 	tests/DynamicArrayTest.cpp

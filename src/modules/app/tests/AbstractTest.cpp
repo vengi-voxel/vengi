@@ -5,7 +5,7 @@
 #include "AbstractTest.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "metric/Metric.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"

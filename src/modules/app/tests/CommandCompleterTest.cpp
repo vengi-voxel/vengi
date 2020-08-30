@@ -3,7 +3,7 @@
  */
 
 #include "app/tests/AbstractTest.h"
-#include "core/command/CommandCompleter.h"
+#include "command/CommandCompleter.h"
 #include "io/Filesystem.h"
 #include "core/tests/TestHelper.h"
 

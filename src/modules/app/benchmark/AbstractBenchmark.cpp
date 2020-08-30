@@ -5,7 +5,7 @@
 #include "AbstractBenchmark.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
 #include "core/EventBus.h"

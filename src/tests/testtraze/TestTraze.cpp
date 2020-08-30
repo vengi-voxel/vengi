@@ -3,7 +3,7 @@
  */
 #include "TestTraze.h"
 #include "core/SharedPtr.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "testcore/TestAppMain.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"

@@ -7,7 +7,7 @@
 #include "voxel/Voxel.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
 #include "core/Log.h"

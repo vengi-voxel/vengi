@@ -4,7 +4,7 @@
 
 #include "LUAFunctions.h"
 #include "core/Log.h"
-#include "core/command/CommandHandler.h"
+#include "command/CommandHandler.h"
 #include "core/String.h"
 #include "core/Var.h"
 #include "app/App.h"

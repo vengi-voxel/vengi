@@ -4,7 +4,7 @@
 
 #include "tb_widgets.h"
 #include "core/Assert.h"
-#include "core/command/CommandHandler.h"
+#include "command/CommandHandler.h"
 #include "tb_font_renderer.h"
 #include "tb_renderer.h"
 #include "tb_scroller.h"

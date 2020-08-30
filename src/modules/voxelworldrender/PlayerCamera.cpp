@@ -4,7 +4,7 @@
 
 #include "PlayerCamera.h"
 #include "voxel/PagedVolume.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/Trace.h"
 
 namespace voxelworldrender {

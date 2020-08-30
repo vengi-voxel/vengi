@@ -5,7 +5,7 @@
 #include "ClientMessages_generated.h"
 #include "ServerLoop.h"
 
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/Var.h"
 #include "core/Log.h"
 #include "app/App.h"
@@ -27,7 +27,7 @@
 #include "backend/network/MoveHandler.h"
 #include "persistence/PersistenceMgr.h"
 #include "backend/world/World.h"
-#include "core/command/CommandHandler.h"
+#include "command/CommandHandler.h"
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeCache.h"
 #include "eventmgr/EventMgr.h"

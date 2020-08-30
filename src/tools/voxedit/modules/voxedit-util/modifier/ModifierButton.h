@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/command/ActionButton.h"
+#include "command/ActionButton.h"
 #include "ModifierType.h"
 
 namespace voxedit {

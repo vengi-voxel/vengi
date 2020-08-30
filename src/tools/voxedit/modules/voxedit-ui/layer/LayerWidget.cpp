@@ -4,8 +4,8 @@
 
 #include "LayerWidget.h"
 #include "app/App.h"
-#include "core/command/Command.h"
-#include "core/command/CommandHandler.h"
+#include "command/Command.h"
+#include "command/CommandHandler.h"
 #include "io/Filesystem.h"
 #include "voxedit-util/SceneManager.h"
 #include "LayerRenameWindow.h"

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "KeybindingHandler.h"
 #include "CustomButtonNames.h"
 #include "app/App.h"

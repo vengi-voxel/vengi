@@ -9,12 +9,12 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Filesystem.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/collection/Set.h"
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Tokenizer.h"
-#include "core/command/CommandHandler.h"
+#include "command/CommandHandler.h"
 #include "VarUtil.h"
 #include <SDL.h>
 

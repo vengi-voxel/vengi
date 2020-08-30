@@ -3,7 +3,7 @@
  */
 
 #include "SoundManager.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/Var.h"
 #include "core/Assert.h"
 #include "core/Log.h"

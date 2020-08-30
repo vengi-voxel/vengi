@@ -3,7 +3,7 @@
  */
 
 #include "PlayerAction.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/Trace.h"
 #include "frontend/ClientEntity.h"
 

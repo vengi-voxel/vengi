@@ -4,7 +4,7 @@
 
 #include "Input.h"
 #include "core/Log.h"
-#include "core/command/CommandHandler.h"
+#include "command/CommandHandler.h"
 #include <string.h>
 
 namespace console {

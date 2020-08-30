@@ -7,7 +7,7 @@
 #include "video/Texture.h"
 #include "core/ArrayLength.h"
 #include "video/Renderer.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "LUAUIApp.h"
 #include <SDL_stdinc.h>
 #include "Nuklear.h"

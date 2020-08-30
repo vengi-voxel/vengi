@@ -10,7 +10,7 @@
 #include "video/TextureAtlasRenderer.h"
 #include "voxelformat/MeshCache.h"
 #include "voxelrender/CachedMeshRenderer.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/GLM.h"
 #include "io/Filesystem.h"
 #include "core/Color.h"

@@ -4,7 +4,7 @@
 
 #include "LayerManager.h"
 #include "core/StringUtil.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "voxelutil/VolumeMerger.h"
 #include "core/Log.h"
 #include "core/Trace.h"

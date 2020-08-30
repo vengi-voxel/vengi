@@ -3,7 +3,7 @@
  */
 
 #include "MessageQueue.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include <algorithm>
 
 namespace {

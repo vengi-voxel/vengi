@@ -6,7 +6,7 @@
 
 #include "video/Camera.h"
 #include "WorldRenderer.h"
-#include "core/command/ActionButton.h"
+#include "command/ActionButton.h"
 #include "core/BindingContext.h"
 
 namespace voxelworldrender {

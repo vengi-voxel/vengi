@@ -3,7 +3,7 @@
  */
 
 #include "PlayerMovement.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "core/Trace.h"
 
 namespace frontend {

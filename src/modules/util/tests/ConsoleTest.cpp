@@ -5,7 +5,7 @@
 #include "app/tests/AbstractTest.h"
 #include "util/Console.h"
 #include "core/Var.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 
 namespace util {
 

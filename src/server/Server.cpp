@@ -6,7 +6,7 @@
 
 #include "io/Filesystem.h"
 #include "core/Var.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "cooldown/CooldownProvider.h"
 #include "network/ServerNetwork.h"
 #include "network/ServerMessageSender.h"

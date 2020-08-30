@@ -15,7 +15,7 @@
 #include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "core/Color.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "ShaderManager.h"
 #include "util/KeybindingHandler.h"
 #include "util/KeybindingParser.h"

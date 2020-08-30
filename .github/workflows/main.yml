@@ -24,6 +24,7 @@ jobs:
             ctest -V -R tests-animation$
             ctest -V -R tests-app$
             ctest -V -R tests-attrib$
+            ctest -V -R tests-command$
             ctest -V -R tests-computeshadertool$
             ctest -V -R tests-cooldown$
             ctest -V -R tests-core$
@@ -100,6 +101,7 @@ jobs:
             ctest -V -R tests-animation$
             ctest -V -R tests-app$
             ctest -V -R tests-attrib$
+            ctest -V -R tests-command$
             ctest -V -R tests-computeshadertool$
             ctest -V -R tests-cooldown$
             ctest -V -R tests-core$
@@ -160,6 +162,7 @@ jobs:
             ctest -V -C Release -R tests-animation$
             ctest -V -C Release -R tests-app$
             ctest -V -C Release -R tests-attrib$
+            ctest -V -C Release -R tests-command$
             ctest -V -C Release -R tests-computeshadertool$
             ctest -V -C Release -R tests-cooldown$
             ctest -V -C Release -R tests-core$

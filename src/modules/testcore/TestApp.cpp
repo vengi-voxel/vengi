@@ -5,7 +5,7 @@
 #include "TestApp.h"
 #include "ui/imgui/IMGUI.h"
 #include "core/Color.h"
-#include "core/command/Command.h"
+#include "command/Command.h"
 #include "video/ScopedPolygonMode.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"
