@@ -75,10 +75,30 @@ public:
 
 	void translate(const glm::ivec3& v);
 
+	/**
+	 * @return @c true if the modifier aabb selection is not yet done, but
+	 * active already
+	 */
+	bool secondActionMode() const;
+	/**
+	 * @return The axis along which the aabb may still be modified
+	 */
 	math::Axis secondActionDirection() const;
+	/**
+	 * @return @c true if the aabb that was formed has a side that is only 1 voxel
+	 * high. This is our indicator for allowing to modify the aabb according to
+	 * it's detected axis
+	 * @sa secondActionDirection()
+	 */
 	bool needsSecondAction();
 	const Selection& selection() const;
 
+	/**
+	 * @brief The modifier can build the aabb from the center of the current
+	 * cursor position.
+	 * Set this to @c true to activate this. The default is to build the aabb
+	 * from the corner(s)
+	 */
 	void setCenterMode(bool center);
 	bool centerMode() const;
 
@@ -124,6 +144,10 @@ public:
 
 	void render(const video::Camera& camera);
 };
+
+inline bool Modifier::secondActionMode() const {
+	return _secondPosValid;
+}
 
 inline math::Axis Modifier::secondActionDirection() const {
 	return _aabbSecondActionDirection;
