@@ -146,3 +146,11 @@ Generates a pyramid with the current selected color and with each level being 3 
 ![pyramid](lua-pyramid.png)
 
 `xs pyramid.lua 3`
+
+## thicken.lua
+
+Thickens the voxel - take 1 voxel and convert to 8 voxels.
+
+![thickenbefore](lua-thicken-before.png) ![thickenafter](lua-thicken-after.png)
+
+`xs thicken.lua 1`
