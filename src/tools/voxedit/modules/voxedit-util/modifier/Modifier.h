@@ -61,7 +61,6 @@ private:
 
 	glm::ivec3 firstPos() const;
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
-	glm::ivec3 aabbPosition() const;
 	void updateMirrorPlane();
 	void renderAABBMode(const video::Camera& camera);
 	void updateSelectionBuffers();
@@ -76,6 +75,7 @@ public:
 
 	void translate(const glm::ivec3& v);
 
+	math::Axis secondActionDirection() const;
 	bool needsSecondAction();
 	const Selection& selection() const;
 
@@ -96,6 +96,7 @@ public:
 
 	bool aabbMode() const;
 	glm::ivec3 aabbDim() const;
+	glm::ivec3 aabbPosition() const;
 
 	/**
 	 * @brief Pick the start position of the modifier execution bounding box
@@ -123,6 +124,10 @@ public:
 
 	void render(const video::Camera& camera);
 };
+
+inline math::Axis Modifier::secondActionDirection() const {
+	return _aabbSecondActionDirection;
+}
 
 inline bool Modifier::centerMode() const {
 	return _center;

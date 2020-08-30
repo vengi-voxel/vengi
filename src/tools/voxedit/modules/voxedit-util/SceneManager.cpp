@@ -1983,6 +1983,7 @@ bool SceneManager::trace(bool force) {
 			return false;
 		}
 		if (sampler.currentPositionValid()) {
+			// while having an axis locked, we should end the trace if we hit the plane
 			if (_lockedAxis != math::Axis::None) {
 				const glm::ivec3& cursorPos = cursorPosition();
 				if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
