@@ -465,6 +465,11 @@ extern int clua_typerror(lua_State *L, int narg, const char *tname);
 
 extern int clua_checkboolean(lua_State *s, int index);
 
+/**
+ * @brief Registers all shared lua modules/globals/functions
+ */
+extern void clua_register(lua_State *s);
+
 extern void clua_cmdregister(lua_State* s);
 extern void clua_varregister(lua_State* s);
 extern void clua_logregister(lua_State* s);

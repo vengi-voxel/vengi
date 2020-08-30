@@ -90,9 +90,7 @@ void LUA::openState() {
 
 	luaL_openlibs(_state);
 
-	clua_cmdregister(_state);
-	clua_varregister(_state);
-	clua_logregister(_state);
+	clua_register(_state);
 
 	static const struct luaL_Reg printlib[] = {
 		{"print", clua_print},

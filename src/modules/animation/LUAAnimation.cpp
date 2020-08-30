@@ -271,10 +271,6 @@ void luaanim_setup(lua_State* s) {
 	clua_registerfuncs(s, boneutilFuncs, luaanim_metaboneutil());
 	lua_setglobal(s, "boneutil");
 
-	clua_cmdregister(s);
-	clua_varregister(s);
-	clua_logregister(s);
-
 	clua_vecregister<glm::vec2>(s);
 	clua_vecregister<glm::vec3>(s);
 	clua_vecregister<glm::vec4>(s);

@@ -207,10 +207,6 @@ static void prepareState(lua_State* s) {
 	clua_registerfuncs(s, paletteFuncs, luaVoxel_metapalette());
 	lua_setglobal(s, "palette");
 
-	clua_cmdregister(s);
-	clua_varregister(s);
-	clua_logregister(s);
-
 	clua_vecregister<glm::vec2>(s);
 	clua_vecregister<glm::vec3>(s);
 	clua_vecregister<glm::vec4>(s);

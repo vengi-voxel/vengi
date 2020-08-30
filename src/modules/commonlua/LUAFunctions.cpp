@@ -253,3 +253,9 @@ void clua_quatregister(lua_State* s) {
 	const core::String& globalMeta = core::string::format("%s_global", clua_meta<glm::quat>::name());
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<glm::quat>::name());
 }
+
+void clua_register(lua_State *s) {
+	clua_cmdregister(s);
+	clua_varregister(s);
+	clua_logregister(s);
+}
