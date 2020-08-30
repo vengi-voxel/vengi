@@ -132,7 +132,7 @@ static int luaVoxel_volume_setvoxel(lua_State* s) {
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 	const bool insideRegion = wrapper.setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
-	if (insideRegion) {
+	if (wrapper.dirtyRegion().isValid()) {
 		if (volume->dirtyRegion.isValid()) {
 			volume->dirtyRegion.accumulate(wrapper.dirtyRegion());
 		} else {
