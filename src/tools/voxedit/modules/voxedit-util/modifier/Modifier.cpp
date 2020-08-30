@@ -122,7 +122,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	const voxel::Region region(operateMins, operateMaxs);
 	voxel::logRegion("Shape action execution", region);
 	const glm::ivec3& center = region.getCenter();
-	glm::ivec3 centerBottom = region.getCenter();
+	glm::ivec3 centerBottom = center;
 	centerBottom.y = region.getLowerY();
 	const glm::ivec3& dimensions = region.getDimensionsInVoxels();
 	switch (_shapeType) {
