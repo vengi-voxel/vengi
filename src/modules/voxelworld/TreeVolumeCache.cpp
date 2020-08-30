@@ -7,7 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "voxelformat/VolumeFormat.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
 

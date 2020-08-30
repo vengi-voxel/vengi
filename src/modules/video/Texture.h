@@ -6,7 +6,7 @@
 
 #include "core/String.h"
 #include "TextureConfig.h"
-#include "core/io/IOResource.h"
+#include "io/IOResource.h"
 #include "core/SharedPtr.h"
 
 namespace image {

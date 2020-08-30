@@ -8,7 +8,7 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "core/command/Command.h"
 #include "core/collection/Set.h"
 #include "core/Common.h"

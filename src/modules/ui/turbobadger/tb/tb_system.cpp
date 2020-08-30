@@ -5,7 +5,7 @@
 #include "tb_system.h"
 
 #include "app/App.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "tb_msg.h"
 #include "tb_types.h"
 #include <SDL.h>

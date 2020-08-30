@@ -7,7 +7,7 @@
 #include "app/App.h"
 #include "core/concurrent/ThreadPool.h"
 #include "core/Assert.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "core/StandardLib.h"
 
 #define STBI_ASSERT core_assert

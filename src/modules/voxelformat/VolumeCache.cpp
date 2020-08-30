@@ -5,7 +5,7 @@
 #include "VolumeCache.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFileFormat.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "app/App.h"
 #include "core/command/Command.h"
 #include "core/Log.h"

@@ -6,7 +6,7 @@
 
 #include <benchmark/benchmark.h>
 #include "app/CommandlineApp.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxel/Voxel.h"
-#include "core/io/File.h"
+#include "io/File.h"
 #include "image/Image.h"
 
 #include <glm/vec4.hpp>

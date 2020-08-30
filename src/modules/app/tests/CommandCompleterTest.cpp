@@ -4,7 +4,7 @@
 
 #include "app/tests/AbstractTest.h"
 #include "core/command/CommandCompleter.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "core/tests/TestHelper.h"
 
 namespace core {

@@ -5,7 +5,7 @@
 #include "UITool.h"
 #include "ui/turbobadger/Window.h"
 #include "ui/turbobadger/FontUtil.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 
 UITool::UITool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {

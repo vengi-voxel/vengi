@@ -10,7 +10,7 @@
 #include "core/Assert.h"
 #include "core/StandardLib.h"
 #include "core/collection/DynamicArray.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>

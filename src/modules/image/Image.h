@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "core/io/IOResource.h"
-#include "core/io/File.h"
+#include "io/IOResource.h"
+#include "io/File.h"
 #include "core/SharedPtr.h"
 
 namespace image {

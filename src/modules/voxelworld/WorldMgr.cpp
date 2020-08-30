@@ -8,7 +8,7 @@
 #include "core/GLM.h"
 #include "core/Common.h"
 #include "core/Trace.h"
-#include "core/io/File.h"
+#include "io/File.h"
 #include "math/Random.h"
 #include "core/concurrent/Concurrency.h"
 #include "voxelutil/FloorTrace.h"

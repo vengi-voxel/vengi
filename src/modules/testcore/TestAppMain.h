@@ -5,7 +5,7 @@
 #pragma once
 #include <SDL_main.h>
 #include <memory>
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "metric/Metric.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"

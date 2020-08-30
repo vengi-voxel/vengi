@@ -7,7 +7,7 @@
 #include "ui/turbobadger/Window.h"
 #include "ui/turbobadger/ui_widgets.h"
 #include "video/WindowedApp.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 
 namespace ui {
 namespace turbobadger {

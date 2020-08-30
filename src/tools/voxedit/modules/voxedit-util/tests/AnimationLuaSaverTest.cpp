@@ -5,7 +5,7 @@
 #include "app/tests/AbstractTest.h"
 #include "../anim/AnimationLuaSaver.h"
 #include "core/StringUtil.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 
 namespace voxedit {
 

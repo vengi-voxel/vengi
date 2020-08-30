@@ -8,7 +8,7 @@
 #include "math/Random.h"
 #include "core/Color.h"
 #include "core/GLM.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "core/StringUtil.h"
 #include "core/Assert.h"
 #include "core/collection/Map.h"

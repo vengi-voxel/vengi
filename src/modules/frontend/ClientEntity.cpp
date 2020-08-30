@@ -5,7 +5,7 @@
 #include "ClientEntity.h"
 #include "animation/Vertex.h"
 #include "app/App.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "animation/AnimationSettings.h"
 #include "core/StringUtil.h"
 #include "animation/AnimationCache.h"

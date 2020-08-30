@@ -13,7 +13,7 @@
 #include "core/ArrayLength.h"
 #include <vector>
 #include "core/String.h"
-#include "core/io/File.h"
+#include "io/File.h"
 
 /**
  * @brief Renders a character animation

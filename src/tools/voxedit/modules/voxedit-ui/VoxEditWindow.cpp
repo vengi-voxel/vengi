@@ -6,7 +6,7 @@
 #include "core/collection/DynamicArray.h"
 #include "palette/PaletteWidget.h"
 #include "palette/PaletteSelector.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "tb_editfield.h"
 #include "tb_hash.h"
 #include "tb_layout.h"

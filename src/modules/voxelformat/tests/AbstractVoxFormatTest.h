@@ -6,7 +6,7 @@
 
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/VoxFileFormat.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 
 namespace voxel {
 

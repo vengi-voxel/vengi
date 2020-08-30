@@ -4,7 +4,7 @@
 
 #include "FileStream.h"
 #include <SDL_endian.h>
-#include "core/io/File.h"
+#include "io/File.h"
 #include "core/Assert.h"
 #include "core/Log.h"
 #include <stdarg.h>

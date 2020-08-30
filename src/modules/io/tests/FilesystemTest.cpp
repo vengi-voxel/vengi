@@ -2,19 +2,20 @@
  * @file
  */
 
-#include "app/tests/AbstractTest.h"
-#include "core/io/Filesystem.h"
+#include <gtest/gtest.h>
+#include "io/Filesystem.h"
 #include "core/Enum.h"
 #include "core/Algorithm.h"
+#include "core/tests/TestHelper.h"
 
 namespace io {
 
-class FilesystemTest: public core::AbstractTest {
+class FilesystemTest: public testing::Test {
 };
 
 ::std::ostream& operator<<(::std::ostream& ostream, const core::DynamicArray<io::Filesystem::DirEntry>& val) {
 	for (const auto& e : val) {
-		ostream << e.name << " - " << core::enumVal(e.type) << ", ";
+		ostream << e.name.c_str() << " - " << core::enumVal(e.type) << ", ";
 	}
 	return ostream;
 }

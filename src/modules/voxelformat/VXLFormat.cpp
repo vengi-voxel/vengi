@@ -6,7 +6,7 @@
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Assert.h"
-#include "core/io/FileStream.h"
+#include "io/FileStream.h"
 #include "core/Log.h"
 #include "voxel/MaterialColor.h"
 #include "core/collection/Buffer.h"

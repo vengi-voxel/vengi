@@ -4,7 +4,7 @@
 
 #include "VolumeCache.h"
 #include "animation/chr/CharacterSkeleton.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/Common.h"

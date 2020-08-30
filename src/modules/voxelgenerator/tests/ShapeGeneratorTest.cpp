@@ -3,7 +3,7 @@
  */
 
 #include "app/App.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"

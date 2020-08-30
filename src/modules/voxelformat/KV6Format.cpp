@@ -4,7 +4,7 @@
 
 #include "KV6Format.h"
 #include "voxel/MaterialColor.h"
-#include "core/io/FileStream.h"
+#include "io/FileStream.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/Color.h"

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/io/File.h"
+#include "io/File.h"
 #include "animation/AnimationSettings.h"
 #include "animation/chr/CharacterSkeletonAttribute.h"
 

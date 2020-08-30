@@ -49,4 +49,4 @@ void TestSkybox::doRender() {
 }
 
 TEST_APP(TestSkybox)
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"

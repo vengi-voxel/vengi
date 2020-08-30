@@ -14,7 +14,7 @@
 #include "commonlua/LUA.h"
 #include "voxel/Voxel.h"
 #include "core/Color.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "app/App.h"
 
 #define GENERATOR_LUA_SANTITY 1

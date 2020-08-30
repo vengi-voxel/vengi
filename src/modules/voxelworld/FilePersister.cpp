@@ -6,7 +6,7 @@
 #include "voxel/PagedVolumeWrapper.h"
 #include "voxel/Constants.h"
 #include "app/App.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"

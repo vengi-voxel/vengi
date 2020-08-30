@@ -38,7 +38,7 @@
 #include "core/Color.h"
 #include "core/StringUtil.h"
 #include "core/GLM.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "render/Gizmo.h"
 
 #include "AxisUtil.h"

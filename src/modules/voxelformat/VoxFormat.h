@@ -6,7 +6,7 @@
 
 #include "VoxFileFormat.h"
 #include "core/collection/DynamicArray.h"
-#include "core/io/FileStream.h"
+#include "io/FileStream.h"
 #include "core/String.h"
 #include "core/collection/StringMap.h"
 #include "core/collection/Buffer.h"

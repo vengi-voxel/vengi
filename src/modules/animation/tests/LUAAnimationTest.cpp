@@ -8,7 +8,7 @@
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "animation/LUAAnimation.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 
 namespace animation {
 

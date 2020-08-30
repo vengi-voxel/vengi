@@ -16,7 +16,7 @@
 #include "core/command/Command.h"
 #include "voxel/Voxel.h"
 #include "compute/Compute.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "ui/imgui/IMGUI.h"
 #include "voxel/MaterialColor.h"
 #include "voxelgenerator/Spiral.h"

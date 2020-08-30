@@ -1,10 +1,10 @@
-#include "app/tests/AbstractTest.h"
-#include "core/io/Filesystem.h"
+#include <gtest/gtest.h>
+#include "io/Filesystem.h"
 #include "core/StringUtil.h"
 
 namespace io {
 
-class FileTest: public core::AbstractTest {
+class FileTest: public testing::Test {
 };
 
 TEST_F(FileTest, testGetPath) {

@@ -8,7 +8,7 @@
 #include "core/Assert.h"
 #include "core/Var.h"
 #include "core/StringUtil.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "util/IncludeUtil.h"
 #include "util/VarUtil.h"
 

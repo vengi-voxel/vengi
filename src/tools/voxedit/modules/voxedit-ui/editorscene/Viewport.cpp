@@ -6,7 +6,7 @@
 #include "core/Var.h"
 #include "core/Color.h"
 #include "ui/turbobadger/UIApp.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "Viewport.h"
 
 #include "voxedit-util/SceneManager.h"

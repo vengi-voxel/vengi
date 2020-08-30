@@ -5,7 +5,7 @@
 #include "VoxelFont.h"
 #include "app/App.h"
 #include "core/collection/DynamicArray.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
 #include "voxel/Mesh.h"

@@ -39,6 +39,9 @@ set(SRCS
 	UniformBuffer.cpp UniformBuffer.h
 	Version.h
 	WindowedApp.cpp WindowedApp.h
+
+	EventHandler.cpp EventHandler.h
+	IEventObserver.h
 )
 set(SRCS_SHADERS
 	shaders/_fog.vert shaders/_fog.frag

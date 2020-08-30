@@ -10,7 +10,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include <SDL.h>
 
 namespace util {

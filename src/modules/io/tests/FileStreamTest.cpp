@@ -2,18 +2,20 @@
  * @file
  */
 
-#include "app/tests/AbstractTest.h"
-#include "core/io/FileStream.h"
-#include "core/io/Filesystem.h"
+#include <gtest/gtest.h>
+#include "io/FileStream.h"
+#include "io/Filesystem.h"
 #include "core/FourCC.h"
 
 namespace io {
 
-class FileStreamTest : public core::AbstractTest {
+class FileStreamTest : public testing::Test {
 };
 
 TEST_F(FileStreamTest, testFileStreamRead) {
-	const FilePtr& file = _testApp->filesystem()->open("iotest.txt");
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	const FilePtr& file = fs.open("iotest.txt");
 	ASSERT_TRUE(file->exists());
 	FileStream stream(file.get());
 	const int64_t remaining = stream.remaining();
@@ -55,8 +57,9 @@ TEST_F(FileStreamTest, testFileStreamRead) {
 }
 
 TEST_F(FileStreamTest, testFileStreamWrite) {
-	const io::FilesystemPtr& fs = io::filesystem();
-	const FilePtr& file = fs->open("filestream-writetest", io::FileMode::SysWrite);
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	const FilePtr& file = fs.open("filestream-writetest", io::FileMode::SysWrite);
 	ASSERT_TRUE(file->validHandle());
 	File* fileRaw = file.get();
 	FileStream stream(fileRaw);

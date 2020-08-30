@@ -4,7 +4,7 @@
 
 #include "TestNuklear.h"
 #include "testcore/TestAppMain.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "ui/nuklear/Nuklear.h"
 #include "video/TexturePool.h"
 #include "voxelformat/MeshCache.h"

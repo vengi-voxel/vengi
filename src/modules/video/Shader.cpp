@@ -9,7 +9,7 @@
 #include "core/Log.h"
 #include "core/Hash.h"
 #include "core/GLM.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "Version.h"
 #include "core/Assert.h"
 #include "core/Var.h"

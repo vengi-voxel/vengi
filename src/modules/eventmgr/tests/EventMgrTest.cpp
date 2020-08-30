@@ -6,7 +6,7 @@
 #include "EventMgrModels.h"
 #include "eventmgr/EventMgr.h"
 #include "persistence/DBHandler.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 
 namespace eventmgr {
 

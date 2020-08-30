@@ -4,13 +4,6 @@ set(SRCS
 	command/CommandCompleter.h command/CommandCompleter.cpp
 	command/Command.h command/Command.cpp
 
-	io/EventHandler.cpp io/EventHandler.h
-	io/File.cpp io/File.h
-	io/FileStream.cpp io/FileStream.h
-	io/Filesystem.cpp io/Filesystem.h
-	io/IEventObserver.h
-	io/IOResource.h
-
 	collection/Array.h
 	collection/Buffer.h
 	collection/ConcurrentQueue.h

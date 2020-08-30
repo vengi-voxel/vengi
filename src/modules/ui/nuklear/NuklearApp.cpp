@@ -12,7 +12,7 @@
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "core/Color.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "core/Assert.h"
 #include "voxel/MaterialColor.h"
 

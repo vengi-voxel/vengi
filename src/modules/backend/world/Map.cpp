@@ -10,7 +10,7 @@
 #include "app/App.h"
 #include "core/Trace.h"
 #include "math/QuadTree.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "backend/entity/Npc.h"
 #include "backend/entity/User.h"
 #include "ai/zone/Zone.h"

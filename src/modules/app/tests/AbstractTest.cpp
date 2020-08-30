@@ -9,7 +9,7 @@
 #include "metric/Metric.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 
 extern char **_argv;
 extern int _argc;

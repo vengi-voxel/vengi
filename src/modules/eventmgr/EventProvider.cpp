@@ -7,7 +7,7 @@
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "persistence/DBHandler.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "EventMgrModels.h"
 
 namespace eventmgr {

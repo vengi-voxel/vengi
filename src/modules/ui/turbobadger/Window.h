@@ -5,7 +5,7 @@
 #pragma once
 
 #include "TurboBadger.h"
-#include "core/io/IEventObserver.h"
+#include "video/IEventObserver.h"
 #include <stdint.h>
 #include "core/SharedPtr.h"
 

@@ -6,7 +6,7 @@
 #include "core/Common.h"
 #include "core/Var.h"
 #include "core/Color.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 
 #include "SceneManager.h"
 #include "image/Image.h"

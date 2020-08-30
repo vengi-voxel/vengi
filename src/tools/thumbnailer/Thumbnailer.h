@@ -8,7 +8,7 @@
 #include "video/FrameBuffer.h"
 #include "video/Texture.h"
 #include "voxelrender/RawVolumeRenderer.h"
-#include "core/io/File.h"
+#include "io/File.h"
 
 /**
  * @brief This tool is able to generate thumbnails for all supported voxel formats

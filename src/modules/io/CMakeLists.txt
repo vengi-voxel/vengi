@@ -1,10 +1,8 @@
 set(SRCS
-	io/EventHandler.cpp io/EventHandler.h
-	io/File.cpp io/File.h
-	io/FileStream.cpp io/FileStream.h
-	io/Filesystem.cpp io/Filesystem.h
-	io/IEventObserver.h
-	io/IOResource.h
+	File.cpp File.h
+	FileStream.cpp FileStream.h
+	Filesystem.cpp Filesystem.h
+	IOResource.h
 )
 
 set(LIB io)
@@ -12,7 +10,7 @@ set(LIB io)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
 
 set(TEST_FILES
-	testapp/iotest.txt
+	testio/iotest.txt
 )
 
 set(TEST_SRCS

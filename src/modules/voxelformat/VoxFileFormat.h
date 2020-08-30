@@ -6,7 +6,7 @@
 
 #include "core/collection/Array.h"
 #include "voxel/RawVolume.h"
-#include "core/io/File.h"
+#include "io/File.h"
 #include "VoxelVolumes.h"
 #include <glm/fwd.hpp>
 

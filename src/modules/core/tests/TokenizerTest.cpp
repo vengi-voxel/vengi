@@ -6,7 +6,7 @@
 #include "core/StringUtil.h"
 #include "core/tests/TestHelper.h"
 #include "core/Tokenizer.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 
 namespace core {
 

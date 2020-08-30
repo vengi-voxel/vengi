@@ -7,7 +7,7 @@
 #include "core/StringUtil.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFileFormat.h"
-#include "core/io/Filesystem.h"
+#include "io/Filesystem.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/Assert.h"
