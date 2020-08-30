@@ -7,7 +7,7 @@ set(SRCS
 
 set(LIB io)
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core libuv)
 
 set(TEST_FILES
 	testio/iotest.txt
