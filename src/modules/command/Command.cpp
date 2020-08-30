@@ -7,10 +7,10 @@
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 
-namespace core {
+namespace command {
 
 Command::CommandMap Command::_cmds;
-ReadWriteLock Command::_lock("Command");
+core::ReadWriteLock Command::_lock("Command");
 core::DynamicArray<core::String> Command::_delayedTokens;
 double Command::_delaySeconds = 0.0;
 size_t  Command::_sortedCommandListSize = 0u;
@@ -31,7 +31,7 @@ ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
 Command& Command::registerCommand(const char* name, FunctionType&& func) {
 	const core::String cname(name);
 	const Command c(cname, std::forward<FunctionType>(func));
-	ScopedWriteLock lock(_lock);
+	core::ScopedWriteLock lock(_lock);
 	_cmds.put(cname, c);
 	updateSortedList();
 	return (Command&)_cmds.find(cname)->value;
@@ -39,7 +39,7 @@ Command& Command::registerCommand(const char* name, FunctionType&& func) {
 
 bool Command::unregisterCommand(const char* name) {
 	const core::String cname(name);
-	ScopedWriteLock lock(_lock);
+	core::ScopedWriteLock lock(_lock);
 	const bool removed = _cmds.remove(cname);
 	if (removed) {
 		updateSortedList();
@@ -48,14 +48,14 @@ bool Command::unregisterCommand(const char* name) {
 }
 
 ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button) {
-	ScopedWriteLock lock(_lock);
-	const Command cPressed("+" + name, [&] (const core::CmdArgs& args) {
+	core::ScopedWriteLock lock(_lock);
+	const Command cPressed("+" + name, [&] (const command::CmdArgs& args) {
 		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
 		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
 		button.handleDown(key, seconds);
 	});
 	_cmds.put(cPressed.name(), cPressed);
-	const Command cReleased("-" + name, [&] (const core::CmdArgs& args) {
+	const Command cReleased("-" + name, [&] (const command::CmdArgs& args) {
 		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
 		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
 		button.handleUp(key, seconds);
@@ -66,7 +66,7 @@ ActionButtonCommands Command::registerActionButton(const core::String& name, Act
 }
 
 bool Command::unregisterActionButton(const core::String& name) {
-	ScopedWriteLock lock(_lock);
+	core::ScopedWriteLock lock(_lock);
 	const core::String downB("+" + name);
 	const core::String upB("-" + name);
 	int amount = _cmds.remove(downB);
@@ -131,7 +131,7 @@ int Command::execute(const char* msg, ...) {
 
 int Command::execute(const core::String& command) {
 	int executed = 0;
-	Tokenizer commandLineTokenizer(false, command, ";\n");
+	core::Tokenizer commandLineTokenizer(false, command, ";\n");
 	while (commandLineTokenizer.hasNext()) {
 		const core::String& fullCmd = commandLineTokenizer.next();
 		if (fullCmd.empty()) {
@@ -149,7 +149,7 @@ int Command::execute(const core::String& command) {
 			continue;
 		}
 		Log::debug("full command: '%s'", fullCmd.c_str());
-		Tokenizer commandTokenizer(false, fullCmd, " ");
+		core::Tokenizer commandTokenizer(false, fullCmd, " ");
 		if (!commandTokenizer.hasNext()) {
 			continue;
 		}
@@ -167,7 +167,7 @@ int Command::execute(const core::String& command) {
 	return executed;
 }
 
-bool Command::isSuitableBindingContext(BindingContext context) {
+bool Command::isSuitableBindingContext(core::BindingContext context) {
 	if (context == core::BindingContext::All) {
 		return true;
 	}
@@ -189,7 +189,7 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 	}
 	Command cmd;
 	{
-		ScopedReadLock scoped(_lock);
+		core::ScopedReadLock scoped(_lock);
 		auto i = _cmds.find(command);
 		if (i == _cmds.end()) {
 			Log::debug("could not find command callback for %s", command.c_str());
@@ -218,7 +218,7 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 }
 
 void Command::shutdown() {
-	ScopedWriteLock lock(_lock);
+	core::ScopedWriteLock lock(_lock);
 	_cmds.clear();
 }
 

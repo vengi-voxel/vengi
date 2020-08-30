@@ -147,10 +147,10 @@ private:
 
 	bool _traceViaMouse = true;
 
-	core::ActionButton _move[lengthof(DIRECTIONS)];
+	command::ActionButton _move[lengthof(DIRECTIONS)];
 
-	core::ActionButton _zoomIn;
-	core::ActionButton _zoomOut;
+	command::ActionButton _zoomIn;
+	command::ActionButton _zoomOut;
 
 	voxel::PickResult _result;
 	// existing voxel under the cursor

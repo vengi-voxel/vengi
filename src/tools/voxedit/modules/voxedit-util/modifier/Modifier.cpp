@@ -345,71 +345,71 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 }
 
 void Modifier::construct() {
-	core::Command::registerActionButton("actionexecute", _actionExecuteButton).setBindingContext(BindingContext::Model);
-	core::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton).setBindingContext(BindingContext::Model);
+	command::Command::registerActionButton("actionexecute", _actionExecuteButton).setBindingContext(BindingContext::Model);
+	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton).setBindingContext(BindingContext::Model);
 
-	core::Command::registerCommand("actionselect", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("actionselect", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Select);
 	}).setHelp("Change the modifier type to 'select'");
 
-	core::Command::registerCommand("actiondelete", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("actiondelete", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Delete);
 	}).setHelp("Change the modifier type to 'delete'");
 
-	core::Command::registerCommand("actionplace", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("actionplace", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Place);
 	}).setHelp("Change the modifier type to 'place'");
 
-	core::Command::registerCommand("actioncolorize", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("actioncolorize", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Update);
 	}).setHelp("Change the modifier type to 'colorize'");
 
-	core::Command::registerCommand("actionoverride", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("actionoverride", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Place | ModifierType::Delete);
 	}).setHelp("Change the modifier type to 'override'");
 
-	core::Command::registerCommand("shapeaabb", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("shapeaabb", [&] (const command::CmdArgs& args) {
 		setShapeType(ShapeType::AABB);
 	}).setHelp("Change the shape type to 'aabb'");
 
-	core::Command::registerCommand("shapetorus", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("shapetorus", [&] (const command::CmdArgs& args) {
 		setShapeType(ShapeType::Torus);
 	}).setHelp("Change the shape type to 'torus'");
 
-	core::Command::registerCommand("shapecylinder", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("shapecylinder", [&] (const command::CmdArgs& args) {
 		setShapeType(ShapeType::Cylinder);
 	}).setHelp("Change the shape type to 'cylinder'");
 
-	core::Command::registerCommand("shapeellipse", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("shapeellipse", [&] (const command::CmdArgs& args) {
 		setShapeType(ShapeType::Ellipse);
 	}).setHelp("Change the shape type to 'ellipse'");
 
-	core::Command::registerCommand("shapecone", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("shapecone", [&] (const command::CmdArgs& args) {
 		setShapeType(ShapeType::Cone);
 	}).setHelp("Change the shape type to 'cone'");
 
-	core::Command::registerCommand("shapedome", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("shapedome", [&] (const command::CmdArgs& args) {
 		setShapeType(ShapeType::Dome);
 	}).setHelp("Change the shape type to 'dome'");
 
-	core::Command::registerCommand("unselect", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("unselect", [&] (const command::CmdArgs& args) {
 		_selection = voxel::Region::InvalidRegion;
 		updateSelectionBuffers();
 	}).setHelp("Unselect all");
 
-	core::Command::registerCommand("mirroraxisx", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("mirroraxisx", [&] (const command::CmdArgs& args) {
 		setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the x axis");
 
-	core::Command::registerCommand("mirroraxisy", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("mirroraxisy", [&] (const command::CmdArgs& args) {
 		setMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the y axis");
 
-	core::Command::registerCommand("mirroraxisz", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("mirroraxisz", [&] (const command::CmdArgs& args) {
 		setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the z axis");
 
-	core::Command::registerCommand("mirroraxisnone", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("mirroraxisnone", [&] (const command::CmdArgs& args) {
 		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
 	}).setHelp("Disable mirror axis");
 }

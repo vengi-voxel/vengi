@@ -25,15 +25,15 @@ Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPt
 app::AppState Thumbnailer::onConstruct() {
 	app::AppState state = Super::onConstruct();
 
-	auto thumbnailSizeFunc = [&] (const core::CmdArgs& args) {
+	auto thumbnailSizeFunc = [&] (const command::CmdArgs& args) {
 		if (args.size() == 0) {
 			return;
 		}
 		_outputSize = core::string::toInt(args[0]);
 	};
 
-	core::Command::registerCommand("s", thumbnailSizeFunc).setHelp("Size of the thumbnail in pixels");
-	core::Command::registerCommand("size", thumbnailSizeFunc).setHelp("Size of the thumbnail in pixels");
+	command::Command::registerCommand("s", thumbnailSizeFunc).setHelp("Size of the thumbnail in pixels");
+	command::Command::registerCommand("size", thumbnailSizeFunc).setHelp("Size of the thumbnail in pixels");
 
 	_renderer.construct();
 

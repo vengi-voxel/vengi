@@ -74,7 +74,7 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 		}
 		Log::trace("Execute the command %s for key %i", command.c_str(), key);
 		if (command[0] == '+') {
-			if (core::Command::execute("%s %i %f", command.c_str(), key, nowSeconds) == 1) {
+			if (command::Command::execute("%s %i %f", command.c_str(), key, nowSeconds) == 1) {
 				Log::trace("The tracking command was executed");
 				handled = true;
 				continue;
@@ -82,7 +82,7 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 			Log::trace("Failed to execute the tracking command %s", command.c_str());
 			continue;
 		}
-		handled |= core::Command::execute(command) > 0;
+		handled |= command::Command::execute(command) > 0;
 	}
 	return handled;
 }
@@ -106,7 +106,7 @@ bool KeyBindingHandler::executeCommands(int32_t key, int16_t modifier, double no
 }
 
 void KeyBindingHandler::construct() {
-	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("bindlist", [this] (const command::CmdArgs& args) {
 		for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 			const CommandModifierPair& pair = i->second;
 			const core::String& command = pair.command;
@@ -115,7 +115,7 @@ void KeyBindingHandler::construct() {
 		}
 	}).setHelp("Show all known key bindings");
 
-	core::Command::registerCommand("bind", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("bind", [this] (const command::CmdArgs& args) {
 		if (args.size() != 2) {
 			Log::error("Expected parameters: key+modifier command - got %i parameters", (int)args.size());
 			return;
@@ -294,7 +294,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 				if (!isValidForBinding(modifier, pair.modifier)) {
 					continue;
 				}
-				core::Command::execute("%s %i %f", pair.command.c_str(), commandKey, nowSeconds);
+				command::Command::execute("%s %i %f", pair.command.c_str(), commandKey, nowSeconds);
 				recheck.insert(commandKey);
 			}
 			// for those keys that were activated because only a modifier was pressed (bound to e.g. left_shift),
@@ -306,7 +306,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 					if (pair.modifier != 0) {
 						continue;
 					}
-					core::Command::execute("-%s %i %f", &(pair.command.c_str()[1]), checkKey, nowSeconds);
+					command::Command::execute("-%s %i %f", &(pair.command.c_str()[1]), checkKey, nowSeconds);
 				}
 			}
 		}
@@ -331,7 +331,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 			if (!isPressed(commandKey)) {
 				continue;
 			}
-			core::Command::execute("-%s %i %f", &(pair.command.c_str()[1]), commandKey, nowSeconds);
+			command::Command::execute("-%s %i %f", &(pair.command.c_str()[1]), commandKey, nowSeconds);
 			executeCommands(commandKey, modifier, nowSeconds);
 		}
 		_pressedModifierMask &= ~(uint32_t)code;
@@ -340,7 +340,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 	for (auto i = range.first; i != range.second; ++i) {
 		const core::String& command = i->second.command;
 		if (command[0] == '+') {
-			core::Command::execute("-%s %i %f", &(command.c_str()[1]), key, nowSeconds);
+			command::Command::execute("-%s %i %f", &(command.c_str()[1]), key, nowSeconds);
 			handled = true;
 		}
 	}

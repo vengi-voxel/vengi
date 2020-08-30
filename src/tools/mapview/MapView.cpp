@@ -56,13 +56,13 @@ app::AppState MapView::onConstruct() {
 	_camera.construct();
 	_meshCache->construct();
 
-	core::Command::registerCommand("bird", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("bird", [&] (const command::CmdArgs& args) {
 		glm::vec3 pos = _entity->position();
 		pos.y = core_min(voxel::MAX_HEIGHT, pos.y + 100.0f);
 		_entity->setPosition(pos);
 	});
 
-	core::Command::registerCommand("+linemode", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("+linemode", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}

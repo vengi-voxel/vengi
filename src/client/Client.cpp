@@ -137,7 +137,7 @@ app::AppState Client::onConstruct() {
 	meshSize->setVal(glm::clamp(meshSize->intVal(), 16, 128));
 	_worldRenderer.construct();
 
-	core::Command::registerCommand("cl_attrib", [this] (const core::CmdArgs &args) {
+	command::Command::registerCommand("cl_attrib", [this] (const command::CmdArgs &args) {
 		if (!_player) {
 			Log::info("You must be logged into a gameserver");
 			return;

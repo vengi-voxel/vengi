@@ -27,9 +27,9 @@ enum class GizmoMode : int8_t {
  * @brief A set of manipulator handles in the shape of a 3 axis coordinate system icon
  * used for manipulating objects in 3D space
  *
- * @note This also implements a core::ActionButton
+ * @note This also implements a command::ActionButton
  */
-class Gizmo : public core::IComponent, public core::ActionButton {
+class Gizmo : public core::IComponent, public command::ActionButton {
 	// action button related stuff
 private:
 	double _buttonLastAction = 0.0;

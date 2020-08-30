@@ -25,12 +25,12 @@ void PlayerAction::update(double nowSeconds, const ClientEntityPtr& entity) {
 }
 
 void PlayerAction::construct() {
-	core::Command::registerActionButton("triggeraction", _triggerAction);
+	command::Command::registerActionButton("triggeraction", _triggerAction);
 }
 
 void PlayerAction::shutdown() {
-	core::Command::unregisterActionButton("triggeraction");
-	_triggerAction.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0.0);
+	command::Command::unregisterActionButton("triggeraction");
+	_triggerAction.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0.0);
 }
 
 }

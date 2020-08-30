@@ -34,11 +34,11 @@ PlayerMovement::PlayerMovement(const audio::SoundManagerPtr &soundManager) : _so
 }
 
 void PlayerMovement::construct() {
-	core::Command::registerActionButton("jump", _jumpButton);
-	core::Command::registerActionButton("move_forward", _moveForward);
-	core::Command::registerActionButton("move_backward", _moveBackward);
-	core::Command::registerActionButton("move_left", _moveLeft);
-	core::Command::registerActionButton("move_right", _moveRight);
+	command::Command::registerActionButton("jump", _jumpButton);
+	command::Command::registerActionButton("move_forward", _moveForward);
+	command::Command::registerActionButton("move_backward", _moveBackward);
+	command::Command::registerActionButton("move_left", _moveLeft);
+	command::Command::registerActionButton("move_right", _moveRight);
 }
 
 bool PlayerMovement::init() {
@@ -46,16 +46,16 @@ bool PlayerMovement::init() {
 }
 
 void PlayerMovement::shutdown() {
-	core::Command::unregisterActionButton("jump");
-	core::Command::unregisterActionButton("move_forward");
-	core::Command::unregisterActionButton("move_backward");
-	core::Command::unregisterActionButton("move_left");
-	core::Command::unregisterActionButton("move_right");
-	_jumpButton.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
-	_moveLeft.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
-	_moveRight.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
-	_moveForward.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
-	_moveBackward.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
+	command::Command::unregisterActionButton("jump");
+	command::Command::unregisterActionButton("move_forward");
+	command::Command::unregisterActionButton("move_backward");
+	command::Command::unregisterActionButton("move_left");
+	command::Command::unregisterActionButton("move_right");
+	_jumpButton.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveLeft.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveRight.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveForward.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveBackward.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
 }
 
 void PlayerMovement::update(double deltaFrameSeconds, float orientation, ClientEntityPtr& entity, const shared::WalkableFloorResolver& heightResolver) {

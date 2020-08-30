@@ -52,14 +52,14 @@ protected:
 		}
 		_handler.setBindings(_parser.getBindings());
 		_xyz = _ctrlshiftmodcommand = _somecommand = _altmodcommand = _allmodscommand = _foo = false;
-		core::Command::shutdown();
-		core::Command::registerCommand("+bar", [] (const core::CmdArgs& args) {});
-		core::Command::registerCommand("+foo", [this] (const core::CmdArgs& args) {this->_foo = true;});
-		core::Command::registerCommand("+xyz", [this] (const core::CmdArgs& args) {this->_xyz = true;});
-		core::Command::registerCommand("somecommand", [this] (const core::CmdArgs& args) {this->_somecommand = true;});
-		core::Command::registerCommand("altmodcommand", [this] (const core::CmdArgs& args) {this->_altmodcommand = true;});
-		core::Command::registerCommand("allmodscommand", [this] (const core::CmdArgs& args) {this->_allmodscommand = true;});
-		core::Command::registerCommand("ctrlshiftmodcommand", [this] (const core::CmdArgs& args) {this->_ctrlshiftmodcommand = true;});
+		command::Command::shutdown();
+		command::Command::registerCommand("+bar", [] (const command::CmdArgs& args) {});
+		command::Command::registerCommand("+foo", [this] (const command::CmdArgs& args) {this->_foo = true;});
+		command::Command::registerCommand("+xyz", [this] (const command::CmdArgs& args) {this->_xyz = true;});
+		command::Command::registerCommand("somecommand", [this] (const command::CmdArgs& args) {this->_somecommand = true;});
+		command::Command::registerCommand("altmodcommand", [this] (const command::CmdArgs& args) {this->_altmodcommand = true;});
+		command::Command::registerCommand("allmodscommand", [this] (const command::CmdArgs& args) {this->_allmodscommand = true;});
+		command::Command::registerCommand("ctrlshiftmodcommand", [this] (const command::CmdArgs& args) {this->_ctrlshiftmodcommand = true;});
 		return true;
 	}
 

@@ -38,7 +38,7 @@ app::AppState TestApp::onConstruct() {
 
 	_movement.construct();
 
-	core::Command::registerCommand("+cam_freelook", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("+cam_freelook", [this] (const command::CmdArgs& args) {
 		Log::info("target lock: %s", args[0].c_str());
 		if (args[0] == "true") {
 			camera().setRotationType(video::CameraRotationType::Target);
@@ -48,7 +48,7 @@ app::AppState TestApp::onConstruct() {
 		camera().setRotationType(video::CameraRotationType::Eye);
 	}).setHelp("Camera free look on toggle");
 
-	core::Command::registerCommand("togglerelativemouse", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("togglerelativemouse", [&] (const command::CmdArgs& args) {
 		_cameraMotion ^= true;
 	}).setHelp("Toggle relative mouse rotation mode");
 
@@ -96,7 +96,7 @@ app::AppState TestApp::onInit() {
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
-	core::Command::execute("bindlist");
+	command::Command::execute("bindlist");
 
 	return state;
 }

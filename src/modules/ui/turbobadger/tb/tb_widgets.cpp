@@ -1283,7 +1283,7 @@ void TBWidget::execute(const char* msg, ...) {
 	ev.string = buf;
 	invokeEvent(ev);
 
-	core::executeCommands(core::String(buf));
+	command::executeCommands(core::String(buf));
 	va_end(args);
 }
 

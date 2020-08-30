@@ -50,7 +50,7 @@ void Input::onRead(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
 		return;
 	}
 	const core::String commandLine(buf->base, len);
-	core::executeCommands(commandLine);
+	command::executeCommands(commandLine);
 }
 
 }

@@ -4,7 +4,7 @@
 
 #include "ActionButton.h"
 
-namespace core {
+namespace command {
 
 ActionButton::ActionButton() {
 	for (int & pressedKey : pressedKeys) {

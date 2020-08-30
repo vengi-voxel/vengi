@@ -52,14 +52,14 @@ voxel::RawVolume* VolumeCache::loadVolume(const char* fullPath) {
 }
 
 void VolumeCache::construct() {
-	core::Command::registerCommand("volumecachelist", [&] (const core::CmdArgs& argv) {
+	command::Command::registerCommand("volumecachelist", [&] (const command::CmdArgs& argv) {
 		Log::info("Cache content");
 		core::ScopedLock lock(_mutex);
 		for (const auto& e : _volumes) {
 			Log::info(" * %s", e->key.c_str());
 		}
 	});
-	core::Command::registerCommand("volumecacheclear", [&] (const core::CmdArgs& argv) {
+	command::Command::registerCommand("volumecacheclear", [&] (const command::CmdArgs& argv) {
 		core::ScopedLock lock(_mutex);
 		for (const auto & e : _volumes) {
 			delete e->value;

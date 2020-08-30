@@ -15,9 +15,9 @@ namespace voxedit {
  * @sa ModifierType
  * @sa Modifier
  */
-class ModifierButton : public core::ActionButton {
+class ModifierButton : public command::ActionButton {
 private:
-	using Super = core::ActionButton;
+	using Super = command::ActionButton;
 	ModifierType _newType;
 	ModifierType _oldType = ModifierType::None;
 	// some actions might need a second action to complete the command

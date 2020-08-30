@@ -78,7 +78,7 @@ void ServerLoop::onIdle(uv_idle_t* handle) {
 }
 
 void ServerLoop::construct() {
-	core::Command::registerCommand("sv_killnpc", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("sv_killnpc", [this] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Usage: sv_killnpc <entityid>");
 			return;
@@ -96,7 +96,7 @@ void ServerLoop::construct() {
 		}
 	}).setHelp("Kill npc with given entity id");
 
-	core::Command::registerCommand("sv_entitylist", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("sv_entitylist", [this] (const command::CmdArgs& args) {
 		_entityStorage->visit([] (const EntityPtr& e) {
 			Log::info("Id: " PRIEntId, e->id());
 			Log::info("- type: %s", e->type());
@@ -105,7 +105,7 @@ void ServerLoop::construct() {
 		});
 	}).setHelp("Show all entities in the server");
 
-	core::Command::registerCommand("sv_userlist", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("sv_userlist", [this] (const command::CmdArgs& args) {
 		_entityStorage->visitUsers([] (const UserPtr& e) {
 			Log::info("Id: " PRIEntId, e->id());
 			Log::info("- name: %s", e->name().c_str());
@@ -114,7 +114,7 @@ void ServerLoop::construct() {
 		});
 	}).setHelp("Show all users in the server");
 
-	core::Command::registerCommand("sv_npclist", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("sv_npclist", [this] (const command::CmdArgs& args) {
 		_entityStorage->visitNpcs([] (const NpcPtr& e) {
 			Log::info("Id: " PRIEntId, e->id());
 			Log::info("- type: %s", e->type());
@@ -123,7 +123,7 @@ void ServerLoop::construct() {
 		});
 	}).setHelp("Show all npcs in the server");
 
-	core::Command::registerCommand("sv_teleport", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("sv_teleport", [this] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
 			Log::info("Usage: sv_teleport <entityid> <x> <z>");
 			return;
@@ -160,7 +160,7 @@ void ServerLoop::construct() {
 		Log::warn("Could not update position for entity id %s", args[0].c_str());
 	}).setHelp("Set the position of a specific entity to the given position");
 
-	core::Command::registerCommand("sv_createuser", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("sv_createuser", [this] (const command::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Usage: sv_createuser <email> <user> <passwd>");
 			return;
@@ -191,7 +191,7 @@ void ServerLoop::construct() {
 		}
 	}).setHelp("Create a new user with a given email, name and password");
 
-	core::Command::registerCommand("sv_userdetails", [this] (const core::CmdArgs &args) {
+	command::Command::registerCommand("sv_userdetails", [this] (const command::CmdArgs &args) {
 		if (args.size() < 1) {
 			Log::info("Usage: sv_userdetails <userid>");
 			return;

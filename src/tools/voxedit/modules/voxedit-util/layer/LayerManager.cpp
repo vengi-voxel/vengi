@@ -13,7 +13,7 @@
 namespace voxedit {
 
 void LayerManager::construct() {
-	core::Command::registerCommand("layeradd", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layeradd", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
 		const char *width = args.size() > 1 ? args[1].c_str() : "64";
 		const char *height = args.size() > 2 ? args[2].c_str() : width;
@@ -33,24 +33,24 @@ void LayerManager::construct() {
 		}
 	}).setHelp("Add a new layer (with a given name and width, height, depth - all optional)");
 
-	core::Command::registerCommand("layerdelete", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerdelete", [&] (const command::CmdArgs& args) {
 		deleteLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer());
 	}).setHelp("Delete a particular layer by id - or the current active one");
 
-	core::Command::registerCommand("layerlock", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerlock", [&] (const command::CmdArgs& args) {
 		lockLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer(), true);
 	}).setHelp("Lock a particular layer by id - or the current active one");
 
-	core::Command::registerCommand("togglelayerlock", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("togglelayerlock", [&] (const command::CmdArgs& args) {
 		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
 		lockLayer(layerId, !isLocked(layerId));
 	}).setHelp("Toggle the lock state of a particular layer by id - or the current active one");
 
-	core::Command::registerCommand("layerunlock", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerunlock", [&] (const command::CmdArgs& args) {
 		lockLayer(args.size() > 0 ? core::string::toInt(args[0]) : activeLayer(), false);
 	}).setHelp("Unlock a particular layer by id - or the current active one");
 
-	core::Command::registerCommand("layeractive", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layeractive", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Active layer: %i", activeLayer());
 		} else {
@@ -61,7 +61,7 @@ void LayerManager::construct() {
 		}
 	}).setHelp("Set or print the current active layer");
 
-	core::Command::registerCommand("layerstate", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerstate", [&] (const command::CmdArgs& args) {
 		if (args.size() != 2) {
 			Log::info("Usage: layerstate <layerid> <true|false>");
 			return;
@@ -71,30 +71,30 @@ void LayerManager::construct() {
 		hideLayer(layerId, !newVisibleState);
 	}).setHelp("Change the visible state of a layer");
 
-	core::Command::registerCommand("togglelayerstate", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("togglelayerstate", [&] (const command::CmdArgs& args) {
 		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
 		hideLayer(layerId, isVisible(layerId));
 	}).setHelp("Toggle the visible state of a layer");
 
-	core::Command::registerCommand("layerhideall", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerhideall", [&] (const command::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			hideLayer(idx, true);
 		}
 	}).setHelp("Hide all layers");
 
-	core::Command::registerCommand("layerlockall", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerlockall", [&] (const command::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			lockLayer(idx, true);
 		}
 	}).setHelp("Lock all layers");
 
-	core::Command::registerCommand("layerunlockall", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerunlockall", [&] (const command::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			lockLayer(idx, false);
 		}
 	}).setHelp("Unlock all layers");
 
-	core::Command::registerCommand("layerhideothers", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			if (idx == activeLayer()) {
 				hideLayer(idx, false);
@@ -104,7 +104,7 @@ void LayerManager::construct() {
 		}
 	}).setHelp("Hide all layers");
 
-	core::Command::registerCommand("layerrename", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerrename", [&] (const command::CmdArgs& args) {
 		if (args.size() == 1) {
 			const int layerId = activeLayer();
 			rename(layerId, args[0]);
@@ -116,23 +116,23 @@ void LayerManager::construct() {
 		}
 	}).setHelp("Rename the current layer or the given layer id");
 
-	core::Command::registerCommand("layershowall", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layershowall", [&] (const command::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layers.size(); ++idx) {
 			hideLayer(idx, false);
 		}
 	}).setHelp("Show all layers");
 
-	core::Command::registerCommand("layerduplicate", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerduplicate", [&] (const command::CmdArgs& args) {
 		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
 		duplicate(layerId);
 	}).setHelp("Duplicates the current layer or the given layer id");
 
-	core::Command::registerCommand("layermoveup", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layermoveup", [&] (const command::CmdArgs& args) {
 		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
 		moveUp(layerId);
 	}).setHelp("Move the current layer or the given layer id up");
 
-	core::Command::registerCommand("layermovedown", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layermovedown", [&] (const command::CmdArgs& args) {
 		const int layerId = args.size() > 0 ? core::string::toInt(args[0]) : activeLayer();
 		moveDown(layerId);
 	}).setHelp("Move the current layer or the given layer id down");

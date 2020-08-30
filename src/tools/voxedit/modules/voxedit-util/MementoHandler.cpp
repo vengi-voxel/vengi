@@ -124,7 +124,7 @@ void MementoHandler::unlock() {
 }
 
 void MementoHandler::construct() {
-	core::Command::registerCommand("ve_mementoinfo", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("ve_mementoinfo", [&] (const command::CmdArgs& args) {
 		Log::info("Current memento state index: %i", _statePosition);
 		Log::info("Maximum memento states: %i", MaxStates);
 		int i = 0;

@@ -38,7 +38,7 @@ TEST_F(ConsoleTest, testAutoCompleteCommand) {
 	const core::String cmd1 = "abcdef_console";
 	const core::String cmd2 = "test";
 	const core::String cmdComplete = cmd1 + cmd2;
-	core::Command::registerCommand(cmdComplete.c_str(), [] (const core::CmdArgs& args) {});
+	command::Command::registerCommand(cmdComplete.c_str(), [] (const command::CmdArgs& args) {});
 	TestConsole c;
 	SDL_LogSetOutputFunction(nullptr, nullptr);
 	c.toggle();

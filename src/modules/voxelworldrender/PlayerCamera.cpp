@@ -13,9 +13,9 @@ void PlayerCamera::construct() {
 	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "28.0");
 	_cameraZoomSpeed = core::Var::get(cfg::ClientCameraZoomSpeed, "10.0");
 
-	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(_keyBindingContext);
-	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(_keyBindingContext);
-	core::Command::registerCommand("togglecamera", [this] (const core::CmdArgs& args) {
+	command::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(_keyBindingContext);
+	command::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(_keyBindingContext);
+	command::Command::registerCommand("togglecamera", [this] (const command::CmdArgs& args) {
 		toggleCameraType();
 	}).setBindingContext(_keyBindingContext);
 }
@@ -55,8 +55,8 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 }
 
 void PlayerCamera::shutdown() {
-	core::Command::unregisterActionButton("zoom_in");
-	core::Command::unregisterActionButton("zoom_out");
+	command::Command::unregisterActionButton("zoom_in");
+	command::Command::unregisterActionButton("zoom_out");
 }
 
 void PlayerCamera::zoom(float level) {

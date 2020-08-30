@@ -8,7 +8,7 @@
 #include <functional>
 #include "core/BindingContext.h"
 
-namespace core {
+namespace command {
 
 static constexpr int ACTION_BUTTON_KEY_AMOUNT = 10;
 static constexpr int ACTION_BUTTON_NO_KEY = 0;
@@ -19,7 +19,7 @@ static constexpr int ACTION_BUTTON_ALL_KEYS = -1;
  * milliseconds they were triggered. They can be bound to console commands
  * that itself can be bound to keys.
  *
- * @see core::Command::registerActionButton()
+ * @see command::Command::registerActionButton()
  */
 struct ActionButton {
 	/**

@@ -106,13 +106,13 @@ app::AppState VoxEdit::onConstruct() {
 
 	voxedit::sceneMgr().construct();
 
-#define COMMAND_FILE(command, help) \
-	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
+#define COMMAND_FILE(commandId, help) \
+	command::Command::registerCommand(#commandId, [this] (const command::CmdArgs& args) { \
 		const core::String file = args.empty() ? "" : args[0]; \
-		if (!command##File(file)) { \
-			Log::error("Failed to execute '" #command "' for file '%s'", file.c_str()); \
+		if (!commandId##File(file)) { \
+			Log::error("Failed to execute '" #commandId "' for file '%s'", file.c_str()); \
 		} \
-	}).setArgumentCompleter(core::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(help)
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(help)
 
 	COMMAND_FILE(screenshot, "Save the current viewport as screenshot");
 	COMMAND_FILE(save, "Save the current scene as a volume to the given file");
@@ -123,33 +123,33 @@ app::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(importpalette, "Import an image as a palette");
 #undef COMMAND_FILE
 
-	core::Command::registerCommand("animation_load", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("animation_load", [&] (const command::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
 			return;
 		}
 		const core::String file = args.empty() ? "" : args[0];
 		_mainWindow->loadAnimationEntity(file);
-	}).setHelp("Load the animation volumes and settings").setArgumentCompleter(core::fileCompleter(io::filesystem(), "", "*.lua"));
+	}).setHelp("Load the animation volumes and settings").setArgumentCompleter(command::fileCompleter(io::filesystem(), "", "*.lua"));
 
-	core::Command::registerCommand("new", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("new", [this] (const command::CmdArgs& args) {
 		newFile();
 	}).setHelp("Create a new scene with ui interaction");
 
-	core::Command::registerCommand("toggleviewport", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("toggleviewport", [this] (const command::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
 			return;
 		}
 		_mainWindow->toggleViewport();
 	}).setHelp("Toggle quad view on/off");
 
-	core::Command::registerCommand("toggleanimation", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("toggleanimation", [this] (const command::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
 			return;
 		}
 		_mainWindow->toggleAnimation();
 	}).setHelp("Toggle animation view on/off");
 
-	core::Command::registerCommand("resetcamera", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("resetcamera", [this] (const command::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
 			return;
 		}

@@ -75,8 +75,8 @@ void Console::skipColor(const char **cstr) {
 
 void Console::construct() {
 	_autoEnable = core::Var::get("ui_autoconsole", "false", "Activate console on output");
-	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); }).setHelp("Toggle the in-game console");
-	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); }).setHelp("Clear the text from the in-game console");
+	command::Command::registerCommand("toggleconsole", [&] (const command::CmdArgs& args) { toggle(); }).setHelp("Toggle the in-game console");
+	command::Command::registerCommand("clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp("Clear the text from the in-game console");
 }
 
 bool Console::init() {
@@ -222,7 +222,7 @@ void Console::executeCommandLine() {
 	_history.push_back(_commandLine);
 	_historyPos = _history.size();
 
-	core::executeCommands(_commandLine);
+	command::executeCommands(_commandLine);
 	clearCommandLine();
 }
 
@@ -385,7 +385,7 @@ void Console::autoComplete() {
 	core::String baseSearchString = "";
 	bool parameter = _commandLine[_cursorPos] == ' ' || strings.size() > 1;
 	if (parameter) {
-		const core::Command* cmd = core::Command::getCommand(strings.front());
+		const command::Command* cmd = command::Command::getCommand(strings.front());
 		if (cmd != nullptr) {
 			if (strings.back() == strings.front()) {
 				cmd->complete("", matches);
@@ -396,7 +396,7 @@ void Console::autoComplete() {
 	} else {
 		// try to complete the already existing command
 		baseSearchString = strings.empty() ? "" : strings.back();
-		core::Command::visitSorted([&] (const core::Command& cmd) {
+		command::Command::visitSorted([&] (const command::Command& cmd) {
 			if (strings.empty() || strings.size() == 1) {
 				// match the command name itself
 				if (core::string::matches(baseSearchString + "*", cmd.name())) {

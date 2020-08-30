@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include "command/Command.h"
 
-namespace core {
+namespace command {
 
 class CommandTest: public testing::Test {
 public:
@@ -19,7 +19,7 @@ TEST_F(CommandTest, testExecuteUnknown) {
 }
 
 TEST_F(CommandTest, testExecuteAfterUnregister) {
-	Command::registerCommand("test", [&] (const core::CmdArgs&) {
+	Command::registerCommand("test", [&] (const command::CmdArgs&) {
 	});
 	EXPECT_EQ(1, Command::execute("test"));
 	EXPECT_TRUE(Command::unregisterCommand("test")) << "Failed to unregister the 'test' command";
@@ -28,7 +28,7 @@ TEST_F(CommandTest, testExecuteAfterUnregister) {
 
 TEST_F(CommandTest, testExecuteRegistered) {
 	int reallyExecuted = 0;
-	Command::registerCommand("test", [&] (const core::CmdArgs&) {
+	Command::registerCommand("test", [&] (const command::CmdArgs&) {
 		++reallyExecuted;
 	});
 	EXPECT_EQ(1, Command::execute("test"));
@@ -37,9 +37,9 @@ TEST_F(CommandTest, testExecuteRegistered) {
 
 TEST_F(CommandTest, textExecuteParameter) {
 	core::String parameter = "command not executed at all";
-	Command::registerCommand("test", [&] (const core::CmdArgs&) {
+	Command::registerCommand("test", [&] (const command::CmdArgs&) {
 	});
-	Command::registerCommand("testparameter", [&] (const core::CmdArgs& args) {
+	Command::registerCommand("testparameter", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			parameter = "empty";
 		} else {
@@ -56,10 +56,10 @@ TEST_F(CommandTest, textExecuteParameter) {
 TEST_F(CommandTest, textExecuteSemicolonAsParameter) {
 	core::String parameter = "command not executed at all";
 	int testExecuted = 0;
-	Command::registerCommand("test", [&] (const core::CmdArgs&) {
+	Command::registerCommand("test", [&] (const command::CmdArgs&) {
 		++testExecuted;
 	});
-	Command::registerCommand("testsemicolon", [&] (const core::CmdArgs& args) {
+	Command::registerCommand("testsemicolon", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			parameter = "empty";
 		} else {

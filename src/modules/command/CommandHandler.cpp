@@ -10,7 +10,7 @@
 #include "core/Var.h"
 #include "core/StringUtil.h"
 
-namespace core {
+namespace command {
 
 bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize) {
 	int idx = 0;
@@ -83,7 +83,7 @@ size_t levensteinDistance(const core::String &source, const core::String &target
 static core::String findPotentialMatch(const core::String& arg) {
 	core::String match;
 	size_t leastCost = 1000000u;
-	core::Command::visit([&] (const core::Command& c) {
+	command::Command::visit([&] (const command::Command& c) {
 		const size_t cost = levensteinDistance(arg, c.name());
 		if (cost < leastCost) {
 			leastCost = cost;
@@ -117,7 +117,7 @@ int executeCommands(const core::String& commandLine) {
 		core::DynamicArray<core::String> tokens = tokInner.tokens();
 		const core::String cmd = tokens[0];
 		tokens.erase(tokens.begin());
-		if (core::Command::execute(cmd, tokens)) {
+		if (command::Command::execute(cmd, tokens)) {
 			if (n != -1) {
 				++n;
 			}

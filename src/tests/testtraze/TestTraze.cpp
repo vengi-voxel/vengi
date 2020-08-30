@@ -52,13 +52,13 @@ app::AppState TestTraze::onConstruct() {
 	core::Var::get("mosquitto_host", "traze.iteratec.de");
 	core::Var::get("mosquitto_port", "1883");
 	_name = core::Var::get("name", "noname_testtraze");
-	core::Command::registerCommand("join", [&] (const core::CmdArgs& args) { _protocol.join(_name->strVal()); });
-	core::Command::registerCommand("bail", [&] (const core::CmdArgs& args) { _protocol.bail(); });
-	core::Command::registerCommand("left", [&] (const core::CmdArgs& args) { _protocol.steer(traze::BikeDirection::W); });
-	core::Command::registerCommand("right", [&] (const core::CmdArgs& args) { _protocol.steer(traze::BikeDirection::E); });
-	core::Command::registerCommand("forward", [&] (const core::CmdArgs& args) { _protocol.steer(traze::BikeDirection::N); });
-	core::Command::registerCommand("backward", [&] (const core::CmdArgs& args) { _protocol.steer(traze::BikeDirection::S); });
-	core::Command::registerCommand("players", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("join", [&] (const command::CmdArgs& args) { _protocol.join(_name->strVal()); });
+	command::Command::registerCommand("bail", [&] (const command::CmdArgs& args) { _protocol.bail(); });
+	command::Command::registerCommand("left", [&] (const command::CmdArgs& args) { _protocol.steer(traze::BikeDirection::W); });
+	command::Command::registerCommand("right", [&] (const command::CmdArgs& args) { _protocol.steer(traze::BikeDirection::E); });
+	command::Command::registerCommand("forward", [&] (const command::CmdArgs& args) { _protocol.steer(traze::BikeDirection::N); });
+	command::Command::registerCommand("backward", [&] (const command::CmdArgs& args) { _protocol.steer(traze::BikeDirection::S); });
+	command::Command::registerCommand("players", [&] (const command::CmdArgs& args) {
 		for (const auto& p : _players) {
 			Log::info("%s", p.name.c_str());
 		}

@@ -22,8 +22,8 @@ private:
 	core::VarPtr _maxTargetDistance;
 	core::VarPtr _cameraZoomSpeed;
 
-	core::ActionButton _zoomIn;
-	core::ActionButton _zoomOut;
+	command::ActionButton _zoomIn;
+	command::ActionButton _zoomOut;
 
 	float _fieldOfView = 60.0f;
 	float _targetDistance = 28.0f;

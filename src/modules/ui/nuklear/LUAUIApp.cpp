@@ -40,15 +40,15 @@ app::AppState LUAUIApp::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	core::Command::registerCommand("ui_reload", [this] (const core::CmdArgs&) {
+	command::Command::registerCommand("ui_reload", [this] (const command::CmdArgs&) {
 		reload();
 	});
 
-	core::Command::registerCommand("ui_pop", [this] (const core::CmdArgs&) {
+	command::Command::registerCommand("ui_pop", [this] (const command::CmdArgs&) {
 		popWindow();
 	});
 
-	core::Command::registerCommand("ui_push", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("ui_push", [this] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Usage: ui_push <windowid> <parameter>");
 			return;
@@ -64,7 +64,7 @@ app::AppState LUAUIApp::onInit() {
 		}
 	});
 
-	core::Command::registerCommand("ui_stack", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("ui_stack", [this] (const command::CmdArgs& args) {
 		const size_t size = _windowStack.size();
 		Log::info("Current window stack");
 		for (size_t i = 0; i < size; ++i) {

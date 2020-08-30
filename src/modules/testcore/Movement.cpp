@@ -16,22 +16,22 @@ bool Movement::init() {
 }
 
 void Movement::construct() {
-	core::Command::registerActionButton("move_forward", _moveForward);
-	core::Command::registerActionButton("move_backward", _moveBackward);
-	core::Command::registerActionButton("move_left", _moveLeft);
-	core::Command::registerActionButton("move_right", _moveRight);
+	command::Command::registerActionButton("move_forward", _moveForward);
+	command::Command::registerActionButton("move_backward", _moveBackward);
+	command::Command::registerActionButton("move_left", _moveLeft);
+	command::Command::registerActionButton("move_right", _moveRight);
 }
 
 void Movement::shutdown() {
 	_deltaSeconds = 0.0;
-	core::Command::unregisterActionButton("move_forward");
-	core::Command::unregisterActionButton("move_backward");
-	core::Command::unregisterActionButton("move_left");
-	core::Command::unregisterActionButton("move_right");
-	_moveLeft.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
-	_moveRight.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
-	_moveForward.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
-	_moveBackward.handleUp(core::ACTION_BUTTON_ALL_KEYS, 0ul);
+	command::Command::unregisterActionButton("move_forward");
+	command::Command::unregisterActionButton("move_backward");
+	command::Command::unregisterActionButton("move_left");
+	command::Command::unregisterActionButton("move_right");
+	_moveLeft.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveRight.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveForward.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_moveBackward.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
 }
 
 void Movement::update(double deltaFrameSeconds) {

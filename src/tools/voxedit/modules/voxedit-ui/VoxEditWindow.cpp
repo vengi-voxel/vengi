@@ -547,7 +547,7 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 
 	for (const char** action = ACTIONS; *action != nullptr; ++action) {
 		if (ev.isAny(TBIDC(*action))) {
-			core::Command::execute("%s", *action);
+			command::Command::execute("%s", *action);
 			_lastExecutedCommand = *action;
 			return true;
 		}
@@ -872,7 +872,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	};
 	for (const char** action = ACTIONS; *action != nullptr; ++action) {
 		if (ev.isAny(TBIDC(*action)) && widget->getValue() == 1) {
-			core::Command::execute("%s", *action);
+			command::Command::execute("%s", *action);
 			_lastExecutedCommand = *action;
 			return true;
 		}
@@ -1046,7 +1046,7 @@ bool VoxEditWindow::onEvent(const tb::TBWidgetEvent &ev) {
 
 		for (const char** action = ACTIONS; *action != nullptr; ++action) {
 			if (ev.ref_id == TBIDC(*action)) {
-				core::Command::execute("%s", *action);
+				command::Command::execute("%s", *action);
 				_lastExecutedCommand = *action;
 				return true;
 			}

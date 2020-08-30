@@ -42,14 +42,14 @@ void World::update(long dt) {
 }
 
 void World::construct() {
-	core::Command::registerCommand("sv_maplist", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("sv_maplist", [this] (const command::CmdArgs& args) {
 		for (auto& e : _maps) {
 			const MapPtr& map = e.second;
 			Log::info("Map %s", map->idStr().c_str());
 		}
 	}).setHelp("List all maps");
 
-	core::Command::registerCommand("sv_spawnnpc", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("sv_spawnnpc", [this] (const command::CmdArgs& args) {
 		if (args.size() < 2) {
 			Log::info("Usage: sv_spawnnpc <mapid> <npctype> [amount:default=1]");
 			Log::info("entity types are:");
@@ -74,7 +74,7 @@ void World::construct() {
 		map->spawnMgr().spawn((network::EntityType)type, amount);
 	}).setHelp("Spawns a given amount of npcs of a particular type on the specified map");
 
-	core::Command::registerCommand("sv_chunkstruncate", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("sv_chunkstruncate", [this] (const command::CmdArgs& args) {
 		const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
 		for (auto& e : _maps) {
 			const MapPtr& map = e.second;

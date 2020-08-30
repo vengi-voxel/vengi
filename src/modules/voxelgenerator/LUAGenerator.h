@@ -65,7 +65,7 @@ public:
 
 inline auto scriptCompleter(const io::FilesystemPtr& filesystem) {
 	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
-		return complete(filesystem, "scripts", str, matches, "*.lua");
+		return command::complete(filesystem, "scripts", str, matches, "*.lua");
 	};
 }
 

@@ -77,7 +77,7 @@ int clua_checkboolean(lua_State *s, int index) {
 
 static int clua_cmdexecute(lua_State *s) {
 	const char *cmds = luaL_checkstring(s, 1);
-	core::executeCommands(cmds);
+	command::executeCommands(cmds);
 	return 0;
 }
 

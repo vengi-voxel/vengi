@@ -14,7 +14,7 @@
 #include <memory>
 #include <functional>
 
-namespace core {
+namespace command {
 
 typedef core::DynamicArray<core::String> CmdArgs;
 
@@ -43,7 +43,7 @@ private:
 	typedef std::function<void(const CmdArgs&)> FunctionType;
 
 	static CommandMap _cmds;
-	static ReadWriteLock _lock;
+	static core::ReadWriteLock _lock;
 	static size_t _sortedCommandListSize;
 	static Command* _sortedCommandList[4096];
 
@@ -53,7 +53,7 @@ private:
 	core::String _name;
 	const char* _help;
 	FunctionType _func;
-	BindingContext _bindingContext = BindingContext::All;
+	core::BindingContext _bindingContext = core::BindingContext::All;
 	typedef std::function<int(const core::String&, core::DynamicArray<core::String>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
@@ -98,7 +98,7 @@ public:
 	static int execute(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 
 	static bool execute(const core::String& command, const CmdArgs& args);
-	static bool isSuitableBindingContext(BindingContext context);
+	static bool isSuitableBindingContext(core::BindingContext context);
 
 	static Command* getCommand(const core::String& name) {
 		auto i = _cmds.find(name);
@@ -110,7 +110,7 @@ public:
 
 	template<class Functor>
 	static void visit(Functor&& func) {
-		ScopedReadLock lock(_lock);
+		core::ScopedReadLock lock(_lock);
 		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
 			func(i->value);
 		}
@@ -118,7 +118,7 @@ public:
 
 	template<class Functor>
 	static void visitSorted(Functor&& func) {
-		ScopedReadLock lock(_lock);
+		core::ScopedReadLock lock(_lock);
 		for (size_t i = 0; i < _sortedCommandListSize; ++i) {
 			func(*_sortedCommandList[i]);
 		}
@@ -152,7 +152,7 @@ inline bool Command::operator==(const Command& rhs) const {
 }
 
 inline Command& Command::setBindingContext(int bindingContext) {
-	_bindingContext = (BindingContext)bindingContext;
+	_bindingContext = (core::BindingContext)bindingContext;
 	return *this;
 }
 

@@ -16,7 +16,7 @@ namespace app {
 namespace AppCommand {
 
 void init(const core::TimeProviderPtr& timeProvider) {
-	core::Command::registerCommand("varclearhistory", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("varclearhistory", [] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::error("not enough arguments given. Expecting a variable name");
 			return;
@@ -27,10 +27,10 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}
 	}).setHelp("Clear the value history of a variable");
 
-	core::Command::registerCommand("void", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("void", [] (const command::CmdArgs& args) {
 	}).setHelp("Just a no-operation command");
 
-	core::Command::registerCommand("echo", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("echo", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info(" ");
 		}
@@ -66,7 +66,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		return i;
 	};
 
-	core::Command::registerCommand("exec", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("exec", [] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Usage: exec <file>");
 			return;
@@ -76,10 +76,10 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::warn("Could not load script - or file was empty.");
 			return;
 		}
-		core::Command::execute(cmds);
+		command::Command::execute(cmds);
 	}).setHelp("Execute a file with script commands").setArgumentCompleter(fileCompleter);
 
-	core::Command::registerCommand("toggle", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("toggle", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			Log::error("not enough arguments given. Expecting a variable name at least");
 			return;
@@ -110,7 +110,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}
 	}).setHelp("Toggle between true/false for a variable");
 
-	core::Command::registerCommand("show", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("show", [] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::error("not enough arguments given. Expecting a variable name");
 			return;
@@ -123,40 +123,40 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}
 	}).setHelp("Show the value of a variable");
 
-	core::Command::registerCommand("timemillis", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("timemillis", [&] (const command::CmdArgs& args) {
 		const uint64_t millis = timeProvider->tickNow();
 		Log::info("%" PRId64, millis);
 	}).setHelp("Print current milliseconds to console");
 
-	core::Command::registerCommand("logerror", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("logerror", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::error("%s", args[0].c_str());
 	}).setHelp("Log given message as error");
 
-	core::Command::registerCommand("loginfo", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("loginfo", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::info("%s", args[0].c_str());
 	}).setHelp("Log given message as info");
 
-	core::Command::registerCommand("logdebug", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("logdebug", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::debug("%s", args[0].c_str());
 	}).setHelp("Log given message as debug");
 
-	core::Command::registerCommand("logwarn", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("logwarn", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::warn("%s", args[0].c_str());
 	}).setHelp("Log given message as warn");
 
-	core::Command::registerCommand("log", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("log", [] (const command::CmdArgs& args) {
 		if (args.size() < 2) {
 			Log::info("Usage: log <logid> <trace|debug|info|warn|error|none>");
 			return;
@@ -200,7 +200,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		return 5;
 	});
 
-	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("cvarlist", [] (const command::CmdArgs& args) {
 		util::visitVarSorted([&] (const core::VarPtr& var) {
 			if (!args.empty() && !core::string::matches(args[0], var->name())) {
 				return;
@@ -235,8 +235,8 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}, 0u);
 	}).setHelp("Show the list of known variables (wildcards supported)");
 
-	core::Command::registerCommand("cmdlist", [] (const core::CmdArgs& args) {
-		core::Command::visitSorted([&] (const core::Command& cmd) {
+	command::Command::registerCommand("cmdlist", [] (const command::CmdArgs& args) {
+		command::Command::visitSorted([&] (const command::Command& cmd) {
 			if (!args.empty() && !core::string::matches(args[0], cmd.name())) {
 				return;
 			}

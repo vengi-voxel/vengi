@@ -17,11 +17,11 @@ typedef core::SharedPtr<ClientEntity> ClientEntityPtr;
 /**
  * @brief Trigger action component that does the input listening
  *
- * @see core::ActionButton
+ * @see command::ActionButton
  */
 class PlayerAction : public core::IComponent {
 private:
-	core::ActionButton _triggerAction;
+	command::ActionButton _triggerAction;
 	int _triggerActionCounter = 0;
 public:
 	bool init() override;

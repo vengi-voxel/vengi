@@ -15,14 +15,14 @@ namespace testcore {
 /**
  * @brief Movement component that does the input listening
  *
- * @see core::ActionButton
+ * @see command::ActionButton
  */
 class Movement : public core::IComponent {
 protected:
-	core::ActionButton _moveLeft;
-	core::ActionButton _moveRight;
-	core::ActionButton _moveBackward;
-	core::ActionButton _moveForward;
+	command::ActionButton _moveLeft;
+	command::ActionButton _moveRight;
+	command::ActionButton _moveBackward;
+	command::ActionButton _moveForward;
 
 	double _deltaSeconds = 0.0;
 

@@ -6,7 +6,7 @@
 
 #include "core/StringUtil.h"
 
-namespace core {
+namespace command {
 
 extern bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize);
 /**

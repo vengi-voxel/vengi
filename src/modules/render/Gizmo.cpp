@@ -126,7 +126,7 @@ void Gizmo::updateMode(const video::Camera& camera, const glm::ivec2& pixelPos) 
 }
 
 bool Gizmo::handleDown(int32_t key, double pressedMillis) {
-	const bool initialDown = core::ActionButton::handleDown(key, pressedMillis);
+	const bool initialDown = command::ActionButton::handleDown(key, pressedMillis);
 	if (initialDown) {
 		_buttonMode = _mode;
 		_buttonLastAction = 0.0;
@@ -140,7 +140,7 @@ bool Gizmo::handleDown(int32_t key, double pressedMillis) {
 }
 
 bool Gizmo::handleUp(int32_t key, double releasedMillis) {
-	const bool allUp = core::ActionButton::handleUp(key, releasedMillis);
+	const bool allUp = command::ActionButton::handleUp(key, releasedMillis);
 	if (!allUp) {
 		return false;
 	}

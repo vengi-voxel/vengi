@@ -61,7 +61,7 @@ animation::AnimationEntity* TestAnimation::animationEntity() {
 app::AppState TestAnimation::onConstruct() {
 	app::AppState state = Super::onConstruct();
 
-	core::Command::registerCommand("animation_cycle", [this] (const core::CmdArgs& argv) {
+	command::Command::registerCommand("animation_cycle", [this] (const command::CmdArgs& argv) {
 		int offset = 1;
 		if (argv.size() > 0) {
 			offset = core::string::toInt(argv[0]);
@@ -75,7 +75,7 @@ app::AppState TestAnimation::onConstruct() {
 		animationEntity()->setAnimation((animation::Animation)_animationIdx, true);
 	});
 
-	core::Command::registerCommand("animation_cycleenttype", [this] (const core::CmdArgs& argv) {
+	command::Command::registerCommand("animation_cycleenttype", [this] (const command::CmdArgs& argv) {
 		int offset = 1;
 		if (argv.size() > 0) {
 			offset = core::string::toInt(argv[0]);
@@ -89,7 +89,7 @@ app::AppState TestAnimation::onConstruct() {
 		loadAnimationEntity();
 	});
 
-	core::Command::registerCommand("animation_cycletype", [this] (const core::CmdArgs& argv) {
+	command::Command::registerCommand("animation_cycletype", [this] (const command::CmdArgs& argv) {
 		int offset = 1;
 		if (argv.size() > 0) {
 			offset = core::string::toInt(argv[0]);

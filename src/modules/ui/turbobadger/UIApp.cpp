@@ -389,7 +389,7 @@ void UIApp::onWindowResize(int windowWidth, int windowHeight) {
 
 app::AppState UIApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
-	core::Command::registerCommand("cl_ui_debug", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("cl_ui_debug", [&] (const command::CmdArgs& args) {
 #ifdef DEBUG
 		tb::ShowDebugInfoSettingsWindow(_root);
 #endif

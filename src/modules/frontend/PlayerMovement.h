@@ -16,16 +16,16 @@ namespace frontend {
 /**
  * @brief Movement component that does the input listening, animation changes and sounds
  *
- * @see core::ActionButton
+ * @see command::ActionButton
  */
 class PlayerMovement : public core::IComponent, public shared::SharedMovement {
 private:
 	using Super = shared::SharedMovement;
-	core::ActionButton _moveLeft;
-	core::ActionButton _moveRight;
-	core::ActionButton _moveBackward;
-	core::ActionButton _moveForward;
-	core::ActionButton _jumpButton;
+	command::ActionButton _moveLeft;
+	command::ActionButton _moveRight;
+	command::ActionButton _moveBackward;
+	command::ActionButton _moveForward;
+	command::ActionButton _jumpButton;
 
 	int _footstepSoundChannel = -1;
 	int _ambienceSoundChannel = -1;

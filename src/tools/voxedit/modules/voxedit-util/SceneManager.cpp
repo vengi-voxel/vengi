@@ -875,7 +875,7 @@ void SceneManager::construct() {
 	_mementoHandler.construct();
 	_volumeRenderer.construct();
 
-	core::Command::registerCommand("xs", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			Log::error("Usage: xs <lua-generator-script-filename> [help]");
 			return;
@@ -903,15 +903,15 @@ void SceneManager::construct() {
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "1");
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
-		core::Command::registerActionButton(
+		command::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
 				_move[i]).setBindingContext(BindingContext::Model);
 	}
 
-	core::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Editing);
-	core::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Editing);
+	command::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Editing);
+	command::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Editing);
 
-	core::Command::registerCommand("animation_cycle", [this] (const core::CmdArgs& argv) {
+	command::Command::registerCommand("animation_cycle", [this] (const command::CmdArgs& argv) {
 		int offset = 1;
 		if (argv.size() > 0) {
 			offset = core::string::toInt(argv[0]);
@@ -925,7 +925,7 @@ void SceneManager::construct() {
 		animationEntity().setAnimation((animation::Animation)_animationIdx, true);
 	});
 
-	core::Command::registerCommand("animation_save", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("animation_save", [&] (const command::CmdArgs& args) {
 		core::String name = "entity";
 		if (!args.empty()) {
 			name = args[0];
@@ -933,11 +933,11 @@ void SceneManager::construct() {
 		saveAnimationEntity(name.c_str());
 	});
 
-	core::Command::registerCommand("togglescene", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("togglescene", [this] (const command::CmdArgs& args) {
 		toggleEditMode();
 	}).setHelp("Toggle scene mode on/off");
 
-	core::Command::registerCommand("layerssave", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerssave", [&] (const command::CmdArgs& args) {
 		core::String dir = ".";
 		if (!args.empty()) {
 			dir = args[0];
@@ -947,7 +947,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Save all layers into filenames represented by their layer names");
 
-	core::Command::registerCommand("layersave", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layersave", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc < 1) {
 			Log::info("Usage: layersave <layerId> [<file>]");
@@ -963,7 +963,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Save a single layer to the given path with their layer names");
 
-	core::Command::registerCommand("newscene", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("newscene", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
 		const char *width = args.size() > 1 ? args[1].c_str() : "64";
 		const char *height = args.size() > 2 ? args[2].c_str() : width;
@@ -981,7 +981,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Create a new scene (with a given name and width, height, depth - all optional)");
 
-	core::Command::registerCommand("noise", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("noise", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc != 4) {
 			Log::info("Usage: noise <octaves> <lacunarity> <frequency> <gain>");
@@ -995,11 +995,11 @@ void SceneManager::construct() {
 		noise(octaves, lacunarity, frequency, gain, type);
 	}).setHelp("Fill the volume with noise");
 
-	core::Command::registerCommand("crop", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("crop", [&] (const command::CmdArgs& args) {
 		crop();
 	}).setHelp("Crop the volume");
 
-	core::Command::registerCommand("scale", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("scale", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
 		int layerId = _layerMgr.activeLayer();
 		if (argc == 1) {
@@ -1011,7 +1011,7 @@ void SceneManager::construct() {
 		scale(layerId);
 	}).setHelp("Scale the volume");
 
-	core::Command::registerCommand("colortolayer", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc < 1) {
 			const voxel::Voxel voxel = _modifier.cursorVoxel();
@@ -1023,11 +1023,11 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Move the voxels of the current selected palette index or the given index into a new layer");
 
-	core::Command::registerCommand("abortaction", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
 		_modifier.aabbStop();
 	}).setHelp("Aborts the current modifier action");
 
-	core::Command::registerCommand("thicken", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("thicken", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
 		int value = 1;
 		if (argc >= 1) {
@@ -1036,7 +1036,7 @@ void SceneManager::construct() {
 		thicken(value);
 	}).setHelp("Thicken existing voxels");
 
-	core::Command::registerCommand("setvoxelresolution", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("setvoxelresolution", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc == 1) {
 			const int size = core::string::toInt(args[0]);
@@ -1046,7 +1046,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("");
 
-	core::Command::registerCommand("setreferenceposition", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("setreferenceposition", [&] (const command::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Expected to get x, y and z coordinates");
 			return;
@@ -1057,7 +1057,7 @@ void SceneManager::construct() {
 		setReferencePosition(glm::ivec3(x, y, z));
 	}).setHelp("Set the reference position to the specified position");
 
-	core::Command::registerCommand("movecursor", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("movecursor", [this] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
 			Log::info("Expected to get relative x, y and z coordinates");
 			return;
@@ -1068,7 +1068,7 @@ void SceneManager::construct() {
 		moveCursor(x, y, z);
 	}).setHelp("Move the cursor by the specified offsets");
 
-	core::Command::registerCommand("loadpalette", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("loadpalette", [this] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Expected to get the palette NAME as part of palette-NAME.[png|lua]");
 			return;
@@ -1076,7 +1076,7 @@ void SceneManager::construct() {
 		loadPalette(args[0]);
 	}).setHelp("Load an existing palette by name. E.g. 'nippon'");
 
-	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("cursor", [this] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
 			Log::info("Expected to get x, y and z coordinates");
 			return;
@@ -1087,11 +1087,11 @@ void SceneManager::construct() {
 		setCursorPosition(glm::ivec3(x, y, z), true);
 	}).setHelp("Set the cursor to the specified position");
 
-	core::Command::registerCommand("setreferencepositiontocursor", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("setreferencepositiontocursor", [&] (const command::CmdArgs& args) {
 		setReferencePosition(cursorPosition());
 	}).setHelp("Set the reference position to the current cursor position").setBindingContext(BindingContext::Model);
 
-	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
+	command::Command::registerCommand("resize", [this] (const command::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc == 1) {
 			const int size = core::string::toInt(args[0]);
@@ -1107,8 +1107,8 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
 
-	core::Command::registerActionButton("shift", _gizmo).setBindingContext(BindingContext::Scene);
-	core::Command::registerCommand("shift", [&] (const core::CmdArgs& args) {
+	command::Command::registerActionButton("shift", _gizmo).setBindingContext(BindingContext::Scene);
+	command::Command::registerCommand("shift", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc != 3) {
 			Log::info("Expected to get x, y and z values");
@@ -1120,7 +1120,7 @@ void SceneManager::construct() {
 		shift(x, y, z);
 	}).setHelp("Shift the volume by the given values");
 
-	core::Command::registerCommand("center_referenceposition", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("center_referenceposition", [&] (const command::CmdArgs& args) {
 		const glm::ivec3& refPos = referencePosition();
 		_layerMgr.foreachGroupLayer([&] (int layerId) {
 			const auto* v = _volumeRenderer.volume(layerId);
@@ -1134,7 +1134,7 @@ void SceneManager::construct() {
 		});
 	}).setHelp("Center the current active layers at the reference position");
 
-	core::Command::registerCommand("center_origin", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("center_origin", [&] (const command::CmdArgs& args) {
 		_layerMgr.foreachGroupLayer([&] (int layerId) {
 			const auto* v = _volumeRenderer.volume(layerId);
 			if (v == nullptr) {
@@ -1147,7 +1147,7 @@ void SceneManager::construct() {
 		setReferencePosition(glm::zero<glm::ivec3>());
 	}).setHelp("Center the current active layers at the origin");
 
-	core::Command::registerCommand("move", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("move", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
 		if (argc != 3) {
 			Log::info("Expected to get x, y and z values");
@@ -1159,31 +1159,31 @@ void SceneManager::construct() {
 		move(x, y, z);
 	}).setHelp("Move the voxels inside the volume by the given values");
 
-	core::Command::registerCommand("copy", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("copy", [&] (const command::CmdArgs& args) {
 		copy();
 	}).setHelp("Copy selection");
 
-	core::Command::registerCommand("paste", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
 		paste(_referencePos);
 	}).setHelp("Paste clipboard to current reference position");
 
-	core::Command::registerCommand("pastecursor", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("pastecursor", [&] (const command::CmdArgs& args) {
 		paste(_modifier.cursorPosition());
 	}).setHelp("Paste clipboard to current cursor position");
 
-	core::Command::registerCommand("cut", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("cut", [&] (const command::CmdArgs& args) {
 		cut();
 	}).setHelp("Cut selection");
 
-	core::Command::registerCommand("undo", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("undo", [&] (const command::CmdArgs& args) {
 		undo();
 	}).setHelp("Undo your last step");
 
-	core::Command::registerCommand("redo", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("redo", [&] (const command::CmdArgs& args) {
 		redo();
 	}).setHelp("Redo your last step");
 
-	core::Command::registerCommand("rotate", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("rotate", [&] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
 			Log::info("Expected to get x, y and z angles in degrees"
 					" and optionally a boolean to rotate around the reference position");
@@ -1199,7 +1199,7 @@ void SceneManager::construct() {
 		rotate(x, y, z, true, rotateAroundReferencePosition);
 	}).setHelp("Rotate scene by the given angles (in degree)");
 
-	core::Command::registerCommand("layermerge", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layermerge", [&] (const command::CmdArgs& args) {
 		int layer1;
 		int layer2;
 		if (args.size() == 2) {
@@ -1213,7 +1213,7 @@ void SceneManager::construct() {
 		merge(layer1, layer2);
 	}).setHelp("Merged two given layers or active layer with the one below");
 
-	core::Command::registerCommand("layerdetails", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("layerdetails", [&] (const command::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
 			const Layer& layer = _layerMgr.layer(idx);
 			if (!layer.valid) {
@@ -1233,7 +1233,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Show details to all layers");
 
-	core::Command::registerCommand("animate", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("animate", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Usage: animate <framedelaymillis> <0|1>");
 			Log::info("framedelay of 0 will stop the animation, too");
@@ -1248,7 +1248,7 @@ void SceneManager::construct() {
 		_animationSpeed = core::string::toDouble(args[0]) / 1000.0;
 	}).setHelp("Animate all visible layers with the given delay in millis between the frames");
 
-	core::Command::registerCommand("setcolor", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("setcolor", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Usage: setcolor <index>");
 			return;
@@ -1258,7 +1258,7 @@ void SceneManager::construct() {
 		_modifier.setCursorVoxel(voxel);
 	}).setHelp("Use the given index to select the color from the current palette");
 
-	core::Command::registerCommand("setcolorrgb", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("setcolorrgb", [&] (const command::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Usage: setcolorrgb <red> <green> <blue> (color range 0-255)");
 			return;
@@ -1273,7 +1273,7 @@ void SceneManager::construct() {
 		_modifier.setCursorVoxel(voxel);
 	}).setHelp("Set the current selected color by finding the closest rgb match in the palette");
 
-	core::Command::registerCommand("pickcolor", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("pickcolor", [&] (const command::CmdArgs& args) {
 		// during mouse movement, the current cursor position might be at an air voxel (this
 		// depends on the mode you are editing in), thus we should use the cursor voxel in
 		// that case
@@ -1290,7 +1290,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Pick the current selected color from current cursor voxel");
 
-	core::Command::registerCommand("replacecolor", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("replacecolor", [&] (const command::CmdArgs& args) {
 		if (args.size() != 2) {
 			Log::info("Usage: replacecolor <current-color-index> <new-color-index>");
 			return;
@@ -1300,7 +1300,7 @@ void SceneManager::construct() {
 		replaceColor(oldIndex, newIndex);
 	}).setHelp("Replace a particular palette index with another index - if target is -1 is will be removed");
 
-	core::Command::registerCommand("randomsimilarcolor", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("randomsimilarcolor", [&] (const command::CmdArgs& args) {
 		if (args.size() < 1) {
 			Log::info("Usage: randomsimilarcolor <color-index> [density] [colors]");
 			return;
@@ -1314,7 +1314,7 @@ void SceneManager::construct() {
 		randomSimilarColor(colorIndex, density, colors);
 	}).setHelp("Replace a particular palette index with another random and similar index");
 
-	core::Command::registerCommand("mirror", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("mirror", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Usage: mirror <axis:x,y,z>");
 			return;
@@ -1329,7 +1329,7 @@ void SceneManager::construct() {
 		mirror(axis);
 	}).setHelp("Mirror the selected layers around the given axis");
 
-	core::Command::registerCommand("lock", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Usage: lock <axis:x,y,z>");
 			return;
@@ -1345,25 +1345,25 @@ void SceneManager::construct() {
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the given axis at the current cursor position");
 
-	core::Command::registerCommand("lockx", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("lockx", [&] (const command::CmdArgs& args) {
 		const math::Axis axis = math::Axis::X;
 		const bool unlock = (_lockedAxis & axis) == axis;
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the x axis at the current cursor position");
 
-	core::Command::registerCommand("locky", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("locky", [&] (const command::CmdArgs& args) {
 		const math::Axis axis = math::Axis::Y;
 		const bool unlock = (_lockedAxis & axis) == axis;
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the y axis at the current cursor position");
 
-	core::Command::registerCommand("lockz", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("lockz", [&] (const command::CmdArgs& args) {
 		const math::Axis axis = math::Axis::Z;
 		const bool unlock = (_lockedAxis & axis) == axis;
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the z axis at the current cursor position");
 
-	core::Command::registerCommand("centerplane", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("centerplane", [&] (const command::CmdArgs& args) {
 		modifier().setCenterMode(!modifier().centerMode());
 	}).setHelp("Toggle center plane building");
 }

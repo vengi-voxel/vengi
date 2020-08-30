@@ -212,16 +212,16 @@ AppState App::onConstruct() {
 
 	Log::init();
 
-	core::Command::registerCommand("set", [] (const core::CmdArgs& args) {
+	command::Command::registerCommand("set", [] (const command::CmdArgs& args) {
 		if (args.size() < 2) {
 			return;
 		}
 		core::Var::get(args[0], "")->setVal(core::string::join(args.begin() + 1, args.end(), " "));
 	}).setHelp("Set a variable name");
 
-	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
+	command::Command::registerCommand("quit", [&] (const command::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
 
-	core::Command::registerCommand("core_trace", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("core_trace", [&] (const command::CmdArgs& args) {
 		if (toggleTrace()) {
 			Log::info("Activated statsd based tracing metrics");
 		} else {
@@ -375,7 +375,7 @@ void App::onAfterInit() {
 			// already handled
 			continue;
 		}
-		if (core::Command::getCommand(command) == nullptr) {
+		if (command::Command::getCommand(command) == nullptr) {
 			continue;
 		}
 		core::String args;
@@ -389,12 +389,12 @@ void App::onAfterInit() {
 			args.append(" ");
 		}
 		Log::debug("Execute %s with %i arguments", command.c_str(), (int)args.size());
-		core::executeCommands(command + " " + args);
+		command::executeCommands(command + " " + args);
 	}
 	const core::String& autoexecCommands = filesystem()->load("autoexec.cfg");
 	if (!autoexecCommands.empty()) {
 		Log::debug("execute autoexec.cfg");
-		core::Command::execute(autoexecCommands);
+		command::Command::execute(autoexecCommands);
 	} else {
 		Log::debug("skip autoexec.cfg");
 	}
@@ -402,7 +402,7 @@ void App::onAfterInit() {
 	const core::String& autoexecAppCommands = filesystem()->load("%s-autoexec.cfg", _appname.c_str());
 	if (!autoexecAppCommands.empty()) {
 		Log::debug("execute %s-autoexec.cfg", _appname.c_str());
-		core::Command::execute(autoexecAppCommands);
+		command::Command::execute(autoexecAppCommands);
 	}
 
 	// we might have changed the loglevel from the commandline
@@ -442,7 +442,7 @@ void App::usage() const {
 	core::Var::visit([&] (const core::VarPtr& v) {
 		maxWidth = core_max(maxWidth, (int)v->name().size());
 	});
-	core::Command::visit([&] (const core::Command& c) {
+	command::Command::visit([&] (const command::Command& c) {
 		maxWidth = core_max(maxWidth, (int)SDL_strlen(c.name()));
 	});
 
@@ -482,7 +482,7 @@ void App::usage() const {
 
 	Log::info("------------");
 	Log::info("Commands:");
-	core::Command::visitSorted([=] (const core::Command& c) {
+	command::Command::visitSorted([=] (const command::Command& c) {
 		Log::info("   %-*s %s", maxWidth, c.name(), c.help());
 	});
 	Log::info("------------");
@@ -506,7 +506,7 @@ AppState App::onRunning() {
 		_syslogVar->markClean();
 	}
 
-	core::Command::update(_deltaFrameSeconds);
+	command::Command::update(_deltaFrameSeconds);
 
 	const int remaining = _eventBus->update(200);
 	if (remaining) {
@@ -617,7 +617,7 @@ AppState App::onCleanup() {
 		Log::warn("don't save the config variables");
 	}
 
-	core::Command::shutdown();
+	command::Command::shutdown();
 	core::Var::shutdown();
 
 	const SDL_AssertData *item = SDL_GetAssertionReport();

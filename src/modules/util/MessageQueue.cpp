@@ -25,7 +25,7 @@ void MessageQueue::message(const char *msg, ...) {
 }
 
 void MessageQueue::construct() {
-	core::Command::registerCommand("addmessage", [&] (const core::CmdArgs& args) {
+	command::Command::registerCommand("addmessage", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
@@ -39,7 +39,7 @@ bool MessageQueue::init() {
 
 void MessageQueue::shutdown() {
 	_messageEventQueue.clear();
-	core::Command::unregisterCommand("addmessage");
+	command::Command::unregisterCommand("addmessage");
 }
 
 void MessageQueue::update(double deltaFrameSeconds) {

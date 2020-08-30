@@ -9,7 +9,7 @@
 #include "core/Var.h"
 #include "io/Filesystem.h"
 
-namespace core {
+namespace command {
 
 extern int complete(const io::FilesystemPtr& filesystem, core::String dir, const core::String& match, core::DynamicArray<core::String>& matches, const char* pattern);
 
