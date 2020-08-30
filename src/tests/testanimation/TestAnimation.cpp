@@ -254,6 +254,11 @@ void TestAnimation::onRenderUI() {
 			addItem(_itemIdx);
 		}
 	}
+	static double speed = 0.0f;
+	speed = _attrib.current(attrib::Type::SPEED);
+	if (ImGui::InputDouble("Speed", &speed)) {
+		_attrib.setCurrent(attrib::Type::SPEED, speed);
+	}
 	if (ImGui::ComboStl("Entity", &_currentAnimationEntityIndex, animationEntityTypes())) {
 		loadAnimationEntity();
 	}
