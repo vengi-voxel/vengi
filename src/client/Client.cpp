@@ -28,7 +28,7 @@
 #include "network/StopCooldownHandler.h"
 #include "audio/SoundManager.h"
 #include "voxel/MaterialColor.h"
-#include "core/metric/Metric.h"
+#include "metric/Metric.h"
 #include "core/TimeProvider.h"
 #include "core/SharedPtr.h"
 #include "commonlua/LUA.h"

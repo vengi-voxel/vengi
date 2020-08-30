@@ -6,7 +6,7 @@
 
 #include "ServerMessages_generated.h"
 #include "ServerNetwork.h"
-#include "core/metric/Metric.h"
+#include "metric/Metric.h"
 #include "core/Log.h"
 #include <memory>
 

@@ -3,8 +3,8 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/metric/Metric.h"
-#include "core/metric/IMetricSender.h"
+#include "metric/Metric.h"
+#include "metric/IMetricSender.h"
 #include "core/Var.h"
 
 namespace metric {

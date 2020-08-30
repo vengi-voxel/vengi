@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Network.h"
-#include "core/metric/Metric.h"
+#include "metric/Metric.h"
 
 namespace network {
 

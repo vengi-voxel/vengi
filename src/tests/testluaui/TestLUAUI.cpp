@@ -7,7 +7,7 @@
 #include "video/TextureAtlasRenderer.h"
 #include "core/TimeProvider.h"
 #include "core/EventBus.h"
-#include "core/metric/Metric.h"
+#include "metric/Metric.h"
 #include "voxelformat/MeshCache.h"
 #include "voxelrender/CachedMeshRenderer.h"
 

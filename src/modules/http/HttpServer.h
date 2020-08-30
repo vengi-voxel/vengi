@@ -13,7 +13,7 @@
 #include "HttpQuery.h"
 #include "core/collection/Map.h"
 #include "core/collection/List.h"
-#include "core/metric/Metric.h"
+#include "metric/Metric.h"
 #include <stdint.h>
 #include <functional>
 #include <memory>

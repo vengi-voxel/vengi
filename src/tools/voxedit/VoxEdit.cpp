@@ -7,7 +7,7 @@
 #include "core/Color.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/MaterialColor.h"
-#include "core/metric/Metric.h"
+#include "metric/Metric.h"
 #include "core/TimeProvider.h"
 #include "core/EventBus.h"
 #include "core/command/Command.h"

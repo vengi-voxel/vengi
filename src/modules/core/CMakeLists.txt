@@ -4,11 +4,6 @@ set(SRCS
 	command/CommandCompleter.h command/CommandCompleter.cpp
 	command/Command.h command/Command.cpp
 
-	metric/Metric.h metric/Metric.cpp
-	metric/UDPMetricSender.h metric/UDPMetricSender.cpp
-	metric/IMetricSender.h
-	metric/MetricEvent.h
-
 	io/EventHandler.cpp io/EventHandler.h
 	io/File.cpp io/File.h
 	io/FileStream.cpp io/FileStream.h
@@ -109,7 +104,6 @@ set(TEST_SRCS
 	tests/LogTest.cpp
 	tests/MapTest.cpp
 	tests/MD5Test.cpp
-	tests/MetricTest.cpp
 	tests/PoolAllocatorTest.cpp
 	tests/ReadWriteLockTest.cpp
 	tests/SetUtilTest.cpp

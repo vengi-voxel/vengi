@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "app/App.h"
-#include "core/metric/Metric.h"
+#include "metric/Metric.h"
 #include "core/io/Filesystem.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"

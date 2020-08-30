@@ -14,7 +14,7 @@
 #include "backend/entity/Npc.h"
 #include "backend/entity/User.h"
 #include "ai/zone/Zone.h"
-#include "core/metric/MetricEvent.h"
+#include "metric/MetricEvent.h"
 #include "backend/eventbus/Event.h"
 #include "backend/spawn/SpawnMgr.h"
 #include "persistence/PersistenceMgr.h"

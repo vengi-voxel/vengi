@@ -6,7 +6,7 @@
 #include "core/Log.h"
 #include "core/EventBus.h"
 #include "backend/entity/Entity.h"
-#include "core/metric/UDPMetricSender.h"
+#include "metric/UDPMetricSender.h"
 #include "network/ProtocolEnum.h"
 #include "backend/world/Map.h"
 

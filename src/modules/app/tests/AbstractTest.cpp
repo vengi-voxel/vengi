@@ -6,7 +6,7 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/command/Command.h"
-#include "core/metric/Metric.h"
+#include "metric/Metric.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
 #include "core/io/Filesystem.h"

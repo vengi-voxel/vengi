@@ -7,7 +7,7 @@
 #include "core/Var.h"
 #include "core/command/Command.h"
 #include "core/io/Filesystem.h"
-#include "core/metric/Metric.h"
+#include "metric/Metric.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
 #include "voxel/MaterialColor.h"

@@ -11,8 +11,8 @@ if (WINDOWS)
 	set_property(GLOBAL PROPERTY ${LIB}_NOUNITY TRUE)
 endif()
 
-set(LIBS sdl2 glm libuv backward)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS} core)
+set(LIBS metric sdl2 glm libuv backward)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
 set(TEST_MODULE_SRCS
 	tests/AbstractTest.cpp
