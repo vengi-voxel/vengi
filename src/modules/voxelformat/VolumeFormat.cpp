@@ -28,7 +28,7 @@ const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub,vxl,qef";
 
 bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) {
 	if (!filePtr->exists()) {
-		Log::error("Failed to load model file %s", filePtr->name().c_str());
+		Log::error("Failed to load model file %s. Doesn't exist.", filePtr->name().c_str());
 		return false;
 	}
 	core_trace_scoped(LoadVolumeFormat);
@@ -93,7 +93,7 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		return false;
 	}
 	if (newVolumes.empty()) {
-		Log::error("Failed to load model file %s", filePtr->name().c_str());
+		Log::error("Failed to load model file %s. Broken file.", filePtr->name().c_str());
 		return false;
 	}
 	Log::info("Load model file %s with %i layers", filePtr->name().c_str(), (int)newVolumes.size());

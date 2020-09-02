@@ -62,6 +62,10 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 			break;
 		}
 	}
+	if (!file->exists()) {
+		Log::error("Failed to load %s for any of the supported format extensions", fullPath);
+		return false;
+	}
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(file, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());

@@ -8,6 +8,7 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#include "core/StringUtil.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFileFormat.h"
 
@@ -15,9 +16,20 @@ namespace voxedit {
 namespace anim {
 
 bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::VoxelVolumes& volumes) {
-	Log::info("Loading volume from %s", fullPath.c_str());
+	Log::info("Loading volume from %s into the cache", fullPath.c_str());
 	const io::FilesystemPtr& fs = io::filesystem();
-	const io::FilePtr& file = fs->open(fullPath);
+
+	io::FilePtr file;
+	for (const char **ext = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD_LIST; *ext; ++ext) {
+		file = fs->open(core::string::format("%s.%s", fullPath.c_str(), *ext));
+		if (file->exists()) {
+			break;
+		}
+	}
+	if (!file->exists()) {
+		Log::error("Failed to load %s for any of the supported format extensions", fullPath.c_str());
+		return false;
+	}
 	voxel::VoxelVolumes localVolumes;
 	// TODO: use the cache luke
 	if (!voxelformat::loadVolumeFormat(file, localVolumes)) {
