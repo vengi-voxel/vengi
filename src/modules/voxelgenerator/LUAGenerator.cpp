@@ -329,6 +329,8 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 					type = LUAParameterType::Integer;
 				} else if (!SDL_strcmp(value, "float")) {
 					type = LUAParameterType::Float;
+				} else if (!SDL_strcmp(value, "colorindex")) {
+					type = LUAParameterType::ColorIndex;
 				} else if (!SDL_strncmp(value, "str", 3)) {
 					type = LUAParameterType::String;
 				} else if (!SDL_strncmp(value, "bool", 4)) {
@@ -372,6 +374,7 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 			lua_pushboolean(s, val ? 1 : 0);
 			break;
 		}
+		case LUAParameterType::ColorIndex:
 		case LUAParameterType::Integer:
 			lua_pushinteger(s, glm::clamp(core::string::toInt(arg), (int)d.minValue, (int)d.maxValue));
 			break;

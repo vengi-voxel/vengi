@@ -405,22 +405,33 @@ void VoxEditWindow::switchScriptType(const core::String& scriptName) {
 		sceneMgr().luaGenerator().argumentInfo(_activeScript, params);
 		for (const auto& p : params) {
 			tb::TBWidget *value = nullptr;
-			if (p.type == voxelgenerator::LUAParameterType::Integer) {
+			switch (p.type) {
+			case voxelgenerator::LUAParameterType::ColorIndex:
+			// TODO: implement paletteselector
+			case voxelgenerator::LUAParameterType::Integer: {
 				tb::TBInlineSelect *w = new tb::TBInlineSelect();
 				w->setLimits(p.minValue, p.maxValue);
 				value = w;
 				value->setValue(core::string::toInt(p.defaultValue));
-			} else if (p.type == voxelgenerator::LUAParameterType::Float) {
+				break;
+			}
+			case voxelgenerator::LUAParameterType::Float: {
 				tb::TBInlineSelectDouble *w = new tb::TBInlineSelectDouble();
 				w->setLimits(p.minValue, p.maxValue);
 				value = w;
 				value->setValueDouble(core::string::toDouble(p.defaultValue));
-			} else if (p.type == voxelgenerator::LUAParameterType::String) {
+				break;
+			}
+			case voxelgenerator::LUAParameterType::String:
 				value = new tb::TBEditField();
 				value->setText(p.defaultValue);
-			} else if (p.type == voxelgenerator::LUAParameterType::Boolean) {
+				break;
+			case voxelgenerator::LUAParameterType::Boolean:
 				value = new tb::TBCheckBox();
 				value->setValue(p.defaultValue == "1" || p.defaultValue == "true");
+				break;
+			case voxelgenerator::LUAParameterType::Max:
+				return;
 			}
 
 			tb::TBTextField *text = new tb::TBTextField();

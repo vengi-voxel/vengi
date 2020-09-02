@@ -25,6 +25,7 @@ enum class LUAParameterType {
 	Integer,
 	Float,
 	Boolean,
+	ColorIndex,
 
 	Max
 };

@@ -2,7 +2,7 @@ local vol = require "modules.volume"
 
 function arguments()
 	return {
-		{ name = 'grasscolor', desc = 'the palette index of the color to use as grass', type = 'int', default = '-1', min = '-1', max = '255' },
+		{ name = 'grasscolor', desc = 'the palette index of the color to use as grass', type = 'colorindex', default = '-1', min = '-1', max = '255' },
 		{ name = 'height', desc = 'the height of the grass to add', type = 'int', default = '4' },
 		{ name = 'density', desc = 'the density of the grass', type = 'int', default = '2' },
 		{ name = 'similarcolors', desc = 'the amount of similar colors', type = 'int', default = '4' }

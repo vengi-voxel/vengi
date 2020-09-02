@@ -2,7 +2,7 @@ local vol = require "modules.volume"
 
 function arguments()
 	return {
-		{ name = 'newcolor', desc = 'the palette color index', type = 'int' }
+		{ name = 'newcolor', desc = 'the palette color index', type = 'colorindex' }
 	}
 end
 
