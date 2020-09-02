@@ -8,6 +8,7 @@
 #include "voxel/PagedVolume.h"
 #include "voxel/RawVolume.h"
 #include "core/Common.h"
+#include <glm/ext/scalar_constants.hpp>
 #include <glm/common.hpp>
 
 namespace voxel {
@@ -130,9 +131,13 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 	const int dj = ((y1 < y2) ? 1 : ((y1 > y2) ? -1 : 0));
 	const int dk = ((z1 < z2) ? 1 : ((z1 > z2) ? -1 : 0));
 
-	const float deltatx = 1.0f / glm::abs(x2 - x1);
-	const float deltaty = 1.0f / glm::abs(y2 - y1);
-	const float deltatz = 1.0f / glm::abs(z2 - z1);
+	const float distX = glm::abs(x2 - x1);
+	const float distY = glm::abs(y2 - y1);
+	const float distZ = glm::abs(z2 - z1);
+
+	const float deltatx = glm::abs(distX) < glm::epsilon<float>() ? 1.0f : 1.0f / distX;
+	const float deltaty = glm::abs(distY) < glm::epsilon<float>() ? 1.0f : 1.0f / distY;
+	const float deltatz = glm::abs(distZ) < glm::epsilon<float>() ? 1.0f : 1.0f / distZ;
 
 	const float minx = floorf(x1), maxx = minx + 1.0f;
 	float tx = ((x1 > x2) ? (x1 - minx) : (maxx - x1)) * deltatx;
