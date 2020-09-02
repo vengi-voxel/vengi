@@ -10,8 +10,7 @@ end
 function main(volume, region, color, density, colors)
 	local cnt = 0
 
-	-- TODO: find similar colors and put them into the newindices
-	local newindices = {5, 6, 7, 8, 9}
+	local newindices = palette.similar(color, colors)
 	local visitor = function (volume, x, y, z)
 		local indidx = math.random(1, #newindices)
 		local c = newindices[indidx]
