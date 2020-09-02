@@ -14,6 +14,7 @@
 #ifndef __WINDOWS__
 #include <unistd.h>
 #endif
+#include <uv.h>
 
 namespace io {
 

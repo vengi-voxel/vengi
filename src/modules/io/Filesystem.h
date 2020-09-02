@@ -11,9 +11,14 @@
 #include "core/collection/StringMap.h"
 #include "core/Common.h"
 #include <memory>
-#include <uv.h>
 #include <stdarg.h>
 #include <SDL_stdinc.h>
+
+struct uv_fs_event_s;
+typedef struct uv_fs_event_s uv_fs_event_t;
+
+struct uv_loop_s;
+typedef struct uv_loop_s uv_loop_t;
 
 namespace io {
 
