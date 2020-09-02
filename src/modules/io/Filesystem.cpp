@@ -223,7 +223,7 @@ bool Filesystem::chdir(const core::String& directory) {
 
 void Filesystem::shutdown() {
 	for (const auto& e : _watches) {
-		uv_fs_event_stop((uv_fs_event_t*)e->value);
+		uv_fs_event_stop(e->value);
 	}
 	if (_loop != nullptr) {
 		uv_run(_loop, UV_RUN_NOWAIT);
