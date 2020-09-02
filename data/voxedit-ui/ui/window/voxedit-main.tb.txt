@@ -262,8 +262,6 @@ TBLayout: distribution: gravity, axis: y
 								TBSkinImage: skin: voxedit-crop
 							TBButton: @include: definitions>menubutton, text: Extend, id: extend, command: "resize", auto-repeat: 1
 								TBSkinImage: skin: voxedit-extend
-							TBButton: @include: definitions>menubutton, text: Random color, id: randomsimilarcolor, command: "randomsimilarcolor -1"
-								TBSkinImage: skin: voxedit-colors
 							TBButton: @include: definitions>menubutton, text: Layer from color, id: colortolayer, command: "colortolayer"
 							TBButton: @include: definitions>menubutton, text: Thicken, id: thicken, command: "thicken"
 							TBButton: @include: definitions>menubutton, text: Scale, id: scale, command: "scale"

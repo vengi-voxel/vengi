@@ -1300,20 +1300,6 @@ void SceneManager::construct() {
 		replaceColor(oldIndex, newIndex);
 	}).setHelp("Replace a particular palette index with another index - if target is -1 is will be removed");
 
-	command::Command::registerCommand("randomsimilarcolor", [&] (const command::CmdArgs& args) {
-		if (args.size() < 1) {
-			Log::info("Usage: randomsimilarcolor <color-index> [density] [colors]");
-			return;
-		}
-		int colorIndex = core::string::toInt(args[0]);
-		if (colorIndex == -1) {
-			colorIndex = _modifier.cursorVoxel().getColor();
-		}
-		const int density = (glm::max)(1, args.size() >= 2 ? core::string::toInt(args[1]) : 4);
-		const int colors = (glm::max)(1, args.size() >= 3 ? core::string::toInt(args[2]) : 4);
-		randomSimilarColor(colorIndex, density, colors);
-	}).setHelp("Replace a particular palette index with another random and similar index");
-
 	command::Command::registerCommand("mirror", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Usage: mirror <axis:x,y,z>");
@@ -1413,47 +1399,6 @@ void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, st
 			Log::debug("Modified %i voxels", cnt);
 		}
 	});
-}
-
-bool SceneManager::randomSimilarColor(uint8_t oldIndex, uint8_t density, uint8_t colorCount) {
-	struct OnlyParticularIndexDensityVisitCondition {
-		const uint8_t _index;
-		const int _density;
-		int _cnt = 0;
-		OnlyParticularIndexDensityVisitCondition(uint8_t index, int density) :
-				_index(index), _density(density) {
-		}
-		inline bool operator() (const voxel::Voxel& voxel) {
-			if (voxel.getColor() == _index) {
-				++_cnt;
-				return _cnt % _density == 0;
-			}
-			return false;
-		}
-	};
-	voxel::MaterialColorArray colors = voxel::getMaterialColors();
-	const glm::vec4 color = colors[oldIndex];
-	voxel::MaterialColorIndices newColorIndices;
-	newColorIndices.resize(colorCount);
-	int maxColorIndices = 0;
-	colors.erase(oldIndex);
-	for (; maxColorIndices < colorCount; ++maxColorIndices) {
-		const int index = core::Color::getClosestMatch(color, colors);
-		if (index <= 0) {
-			break;
-		}
-		const glm::vec4& c = colors[index];
-		const int materialIndex = core::Color::getClosestMatch(c, voxel::getMaterialColors());
-		colors.erase(index);
-		newColorIndices[maxColorIndices] = materialIndex;
-	}
-	if (maxColorIndices <= 0) {
-		return false;
-	}
-	math::Random random;
-	const OnlyParticularIndexDensityVisitCondition condition(oldIndex, density);
-	setVoxelsForCondition([&] () { return voxel::createVoxel(voxel::VoxelType::Generic, newColorIndices[random.random(0, maxColorIndices - 1)]); }, condition);
-	return true;
 }
 
 void SceneManager::replaceColor(uint8_t oldIndex, int newIndex) {
