@@ -225,8 +225,14 @@ int clua_ioloader(lua_State *s) {
 	core::String name = luaL_checkstring(s, 1);
 	name.replaceAllChars('.', '/');
 	name.append(".lua");
-	const core::String& content = io::filesystem()->load(name);
+	const io::FilePtr& file = io::filesystem()->open(name);
+	if (!file->exists()) {
+		return luaL_error(s, "Could not open required file %s", name.c_str());
+	}
+	const core::String& content = file->load();
+	Log::debug("Loading lua module %s with %i bytes", name.c_str(), (int)content.size());
 	if (luaL_loadbuffer(s, content.c_str(), content.size(), name.c_str())) {
+		Log::error("%s", lua_tostring(s, -1));
 		lua_pop(s, 1);
 	}
 	return 1;
