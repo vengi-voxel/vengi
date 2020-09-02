@@ -10,6 +10,7 @@
 #include "voxelformat/MeshCache.h"
 #include "voxelrender/CachedMeshRenderer.h"
 #include "video/TextureAtlasRenderer.h"
+#include <limits.h>
 #include "overview.c"
 #include "extended.c"
 #include "node_editor.c"
