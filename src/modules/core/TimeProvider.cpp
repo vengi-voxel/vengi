@@ -11,16 +11,23 @@
 
 namespace core {
 
+static constexpr uint64_t SecToMillis = (uint64_t)1000;
+static constexpr double SecToMillisD = 1000.0;
+
 void TimeProvider::updateTickTime() {
-	_highResTime = SDL_GetPerformanceCounter();
-	_tickSeconds = _highResTime / (double)SDL_GetPerformanceFrequency();
-	_tickMillis = _highResTime / (double)(SDL_GetPerformanceFrequency() / (uint64_t)1000);
+	const double freq = (double)highResTimeResolution();
+	const uint64_t res = highResTimeResolution() / SecToMillis;
+	_highResTime = highResTime();
+	_tickSeconds = _highResTime / freq;
+	_tickMillis = _highResTime / (double)res;
 }
 
 void TimeProvider::setTickTime(uint64_t tickMillis) {
-	_highResTime = tickMillis * (SDL_GetPerformanceFrequency() / (uint64_t)1000);
-	_tickSeconds = _highResTime / (double)SDL_GetPerformanceFrequency();
-	_tickMillis = _highResTime / (double)(SDL_GetPerformanceFrequency() / (uint64_t)1000);
+	const double freq = (double)highResTimeResolution();
+	const uint64_t res = highResTimeResolution() / SecToMillis;
+	_highResTime = tickMillis * res;
+	_tickSeconds = _highResTime / freq;
+	_tickMillis = _highResTime / (double)res;
 }
 
 uint64_t TimeProvider::highResTimeResolution() {
@@ -28,11 +35,11 @@ uint64_t TimeProvider::highResTimeResolution() {
 }
 
 uint64_t TimeProvider::tickNow() const {
-	return _highResTime / (SDL_GetPerformanceFrequency() / (uint64_t)1000);
+	return _highResTime / (highResTimeResolution() / SecToMillis);
 }
 
 uint64_t TimeProvider::systemMillis() {
-	return SDL_GetPerformanceCounter() / (SDL_GetPerformanceFrequency() / (uint64_t)1000);
+	return highResTime() / (highResTimeResolution() / SecToMillis);
 }
 
 uint64_t TimeProvider::highResTime() {
