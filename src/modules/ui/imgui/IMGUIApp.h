@@ -46,7 +46,8 @@ protected:
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 public:
-	IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem,
+			const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~IMGUIApp();
 
 	virtual void beforeUI() {
