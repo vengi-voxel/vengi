@@ -10,10 +10,15 @@ General:
    - Added support for writing qef files
    - Added lua script interface to generate voxels
    - Added stacktrace support for windows
+   - Refactored module structure (split app and core)
+   - Optimized character animations
+   - Added quaternion lua support
+   - Updated external dependencies
 
 VoxEdit:
 
    - Converted some voxel generation functions to lua
+   - Implemented new voxel generator scripts
 
 ## 0.0.6 (2020-08-02)
 

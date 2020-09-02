@@ -5,9 +5,14 @@ vengi (0.0.7.0-1) UNRELEASED; urgency=low
   * Added support for writing qef files
   * Added lua script interface to generate voxels
   * Added stacktrace support for windows
+  * Refactored module structure (split app and core)
+  * Optimized character animations
+  * Added quaternion lua support
+  * Updated external dependencies
 
   * VoxEdit:
   * Converted some voxel generation functions to lua
+  * Implemented new voxel generator scripts
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 2 Aug 2020 10:59:07 +0200
 
