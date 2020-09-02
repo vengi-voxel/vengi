@@ -14,6 +14,7 @@ CMAKE_OPTIONS  ?= -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -G$(GENERATOR) --graphviz=$(BU
 all:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS); fi
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
+	$(Q)$(CMAKE) -E create_symlink build/Debug/compile_commands.json compile_commands.json
 
 release:
 	$(Q)$(MAKE) BUILDTYPE=Release
@@ -41,6 +42,7 @@ release-%:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS); fi
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 	$(Q)$(CMAKE) --install $(BUILDDIR) --component $@ --prefix $(INSTALL_DIR)/install-$@
+	$(Q)$(CMAKE) -E create_symlink build/Debug/compile_commands.json compile_commands.json
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)
