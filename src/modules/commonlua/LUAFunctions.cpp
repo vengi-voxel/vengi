@@ -225,8 +225,9 @@ int clua_ioloader(lua_State *s) {
 	core::String name = luaL_checkstring(s, 1);
 	name.replaceAllChars('.', '/');
 	name.append(".lua");
-	const io::FilePtr& file = io::filesystem()->open(name);
+	io::FilePtr file = io::filesystem()->open(name);
 	if (!file->exists()) {
+		file = io::FilePtr();
 		return luaL_error(s, "Could not open required file %s", name.c_str());
 	}
 	const core::String& content = file->load();

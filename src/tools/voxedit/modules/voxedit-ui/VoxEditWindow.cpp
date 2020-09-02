@@ -424,18 +424,28 @@ void VoxEditWindow::switchScriptType(const core::String& scriptName) {
 			}
 
 			tb::TBTextField *text = new tb::TBTextField();
+			text->setTextAlign(tb::TB_TEXT_ALIGN_LEFT);
 			text->setText(p.name);
+			text->setSkinBg("Header");
+			text->setGravity(tb::WIDGET_GRAVITY::WIDGET_GRAVITY_LEFT_RIGHT);
 
 			tb::TBLayout* innerLayout = new tb::TBLayout();
 			innerLayout->addChild(text);
+			innerLayout->setGravity(tb::WIDGET_GRAVITY::WIDGET_GRAVITY_LEFT_RIGHT);
+			innerLayout->setLayoutDistribution(tb::LAYOUT_DISTRIBUTION::LAYOUT_DISTRIBUTION_GRAVITY);
+			innerLayout->setAxis(tb::AXIS_Y);
 			if (!p.description.empty()) {
 				tb::TBTextField *description = new tb::TBTextField();
 				description->setText(p.description);
+				description->setSqueezable(true);
+				description->setTextAlign(tb::TB_TEXT_ALIGN_LEFT);
+				description->setGravity(tb::WIDGET_GRAVITY::WIDGET_GRAVITY_LEFT_RIGHT);
+
 				innerLayout->addChild(description);
 			}
-			innerLayout->setAxis(tb::AXIS_Y);
 			if (value != nullptr) {
 				value->setID(TBIDC(p.name.c_str()));
+				value->setGravity(tb::WIDGET_GRAVITY::WIDGET_GRAVITY_LEFT_RIGHT);
 				innerLayout->addChild(value);
 			}
 
