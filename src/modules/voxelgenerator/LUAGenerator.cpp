@@ -102,6 +102,43 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_palette_similar(lua_State* s) {
+	const int paletteIndex = lua_tointeger(s, 1);
+	const int colorCount = lua_tointeger(s, 2);
+	voxel::MaterialColorArray colors = voxel::getMaterialColors();
+	if (paletteIndex < 0 || paletteIndex >= (int)colors.size()) {
+		return luaL_error(s, "Palette index out of bounds");
+	}
+	const glm::vec4 color = colors[paletteIndex];
+	voxel::MaterialColorIndices newColorIndices;
+	newColorIndices.resize(colorCount);
+	int maxColorIndices = 0;
+	colors.erase(paletteIndex);
+	for (; maxColorIndices < colorCount; ++maxColorIndices) {
+		const int index = core::Color::getClosestMatch(color, colors);
+		if (index <= 0) {
+			break;
+		}
+		const glm::vec4& c = colors[index];
+		const int materialIndex = core::Color::getClosestMatch(c, voxel::getMaterialColors());
+		colors.erase(index);
+		newColorIndices[maxColorIndices] = materialIndex;
+	}
+	if (maxColorIndices <= 0) {
+		lua_pushnil(s);
+		return 1;
+	}
+
+	lua_createtable(s, newColorIndices.size(), 0);
+	for (size_t i = 0; i < newColorIndices.size(); ++i) {
+		lua_pushinteger(s, i + 1);
+		lua_pushinteger(s, newColorIndices[i]);
+		lua_settable(s, -3);
+	}
+
+	return 1;
+}
+
 static int luaVoxel_region_width(lua_State* s) {
 	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	lua_pushinteger(s, region->getWidthInVoxels());
@@ -202,6 +239,7 @@ static void prepareState(lua_State* s) {
 		{"colors", luaVoxel_palette_colors},
 		{"color", luaVoxel_palette_color},
 		{"match", luaVoxel_palette_closestmatch},
+		{"similar", luaVoxel_palette_similar},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, paletteFuncs, luaVoxel_metapalette());

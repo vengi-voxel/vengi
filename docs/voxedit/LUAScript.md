@@ -68,6 +68,8 @@ The functions are:
 
 * `match(r, g, b)`: Returns the closest possible palette color match for the given RGB (`0-255`) color. The returned palette index is in the range `0-255`. This value can then be used for the `setVoxel` method.
 
+* `similar(paletteindex, [coloramount])`: Return a table with similar colors given by their palette index.
+
 # Region
 
 * `mins()`: The lower boundary of the region (inclusive).
