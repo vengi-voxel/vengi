@@ -263,7 +263,6 @@ TBLayout: distribution: gravity, axis: y
 							TBButton: @include: definitions>menubutton, text: Extend, id: extend, command: "resize", auto-repeat: 1
 								TBSkinImage: skin: voxedit-extend
 							TBButton: @include: definitions>menubutton, text: Layer from color, id: colortolayer, command: "colortolayer"
-							TBButton: @include: definitions>menubutton, text: Thicken, id: thicken, command: "thicken"
 							TBButton: @include: definitions>menubutton, text: Scale, id: scale, command: "scale"
 
 					TBSection: value: 1, text: "Translate"
