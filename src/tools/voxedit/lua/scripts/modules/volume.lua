@@ -1,6 +1,6 @@
 local module = {}
 
-function module.conditionXYZ(volume, region, visitor, condition)
+function module.conditionYXZ(volume, region, visitor, condition)
 	local mins = region:mins()
 	local maxs = region:maxs()
 	for y = mins.y, maxs.y do
@@ -14,9 +14,28 @@ function module.conditionXYZ(volume, region, visitor, condition)
 	end
 end
 
-function module.visitXYZ(volume, region, visitor)
+function module.conditionYXZDown(volume, region, visitor, condition)
+	local mins = region:mins()
+	local maxs = region:maxs()
+	for y = maxs.y, mins.y, -1 do
+		for x = mins.x, maxs.x do
+			for z = mins.z, maxs.z do
+				if condition(volume, x, y, z) then
+					visitor(volume, x, y, z)
+				end
+			end
+		end
+	end
+end
+
+function module.visitYXZDown(volume, region, visitor)
 	local condition = function (x, y, z) return true end
-	module.conditionXYZ(volume, region, visitor, condition)
+	module.conditionYXZDown(volume, region, visitor, condition)
+end
+
+function module.visitYXZ(volume, region, visitor)
+	local condition = function (x, y, z) return true end
+	module.conditionYXZ(volume, region, visitor, condition)
 end
 
 return module

@@ -264,6 +264,8 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 		core::String name = "";
 		core::String description = "";
 		core::String defaultValue = "";
+		double minValue = 0.0;
+		double maxValue = 100.0;
 		LUAParameterType type = LUAParameterType::Max;
 		lua_pushnil(lua);					// push nil, so lua_next removes it from stack and puts (k, v) on stack
 		while (lua_next(lua, -2) != 0) {	// -2, because we have table at -1
@@ -280,6 +282,10 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 				description = value;
 			} else if (!SDL_strcmp(key, "default")) {
 				defaultValue = value;
+			} else if (!SDL_strcmp(key, "min")) {
+				minValue = SDL_atof(value);
+			} else if (!SDL_strcmp(key, "max")) {
+				maxValue = SDL_atof(value);
 			} else if (!SDL_strcmp(key, "type")) {
 				if (!SDL_strcmp(value, "int")) {
 					type = LUAParameterType::Integer;
@@ -309,7 +315,7 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 			return false;
 		}
 
-		params.emplace_back(name, description, defaultValue, type);
+		params.emplace_back(name, description, defaultValue, minValue, maxValue, type);
 		lua_pop(lua, 1); // remove table
 	}
 	return true;
@@ -329,10 +335,10 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 			break;
 		}
 		case LUAParameterType::Integer:
-			lua_pushinteger(s, core::string::toInt(arg));
+			lua_pushinteger(s, glm::clamp(core::string::toInt(arg), (int)d.minValue, (int)d.maxValue));
 			break;
 		case LUAParameterType::Float:
-			lua_pushnumber(s, core::string::toFloat(arg));
+			lua_pushnumber(s, glm::clamp(core::string::toFloat(arg), (float)d.minValue, (float)d.maxValue));
 			break;
 		case LUAParameterType::Max:
 			Log::error("Invalid argument type");

@@ -406,10 +406,14 @@ void VoxEditWindow::switchScriptType(const core::String& scriptName) {
 		for (const auto& p : params) {
 			tb::TBWidget *value = nullptr;
 			if (p.type == voxelgenerator::LUAParameterType::Integer) {
-				value = new tb::TBInlineSelect();
+				tb::TBInlineSelect *w = new tb::TBInlineSelect();
+				w->setLimits(p.minValue, p.maxValue);
+				value = w;
 				value->setValue(core::string::toInt(p.defaultValue));
 			} else if (p.type == voxelgenerator::LUAParameterType::Float) {
-				value = new tb::TBInlineSelectDouble();
+				tb::TBInlineSelectDouble *w = new tb::TBInlineSelectDouble();
+				w->setLimits(p.minValue, p.maxValue);
+				value = w;
 				value->setValueDouble(core::string::toDouble(p.defaultValue));
 			} else if (p.type == voxelgenerator::LUAParameterType::String) {
 				value = new tb::TBEditField();

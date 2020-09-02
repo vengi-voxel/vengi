@@ -28,5 +28,5 @@ function main(volume, region, color, density, colors)
 		end
 		return false
 	end
-	vol.conditionXYZ(volume, region, visitor, condition)
+	vol.conditionYXZ(volume, region, visitor, condition)
 end

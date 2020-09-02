@@ -3,7 +3,7 @@ local vol = require "modules.volume"
 function arguments()
 	return {
 		{ name = 'amount', desc = 'the amount of voxel to add', type = 'int', default = '1' },
-		{ name = 'thickencolor', desc = 'a value of -1 means everything except air - otherwise it is taken as palette index', type = 'int', default = '-1' }
+		{ name = 'thickencolor', desc = 'a value of -1 means everything except air - otherwise it is taken as palette index', type = 'int', default = '-1', min = '-1', max = '255' }
 	}
 end
 
@@ -37,5 +37,5 @@ function main(volume, region, color, amount, thickencolor)
 		end
 		return false
 	end
-	vol.conditionXYZ(volume, region, visitor, condition)
+	vol.conditionYXZ(volume, region, visitor, condition)
 end
