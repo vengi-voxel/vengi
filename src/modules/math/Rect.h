@@ -30,8 +30,8 @@ public:
 	}
 
 	static const Rect<TYPE>& getMaxRect() {
-		static constexpr TYPE lowest = std::numeric_limits<TYPE>::lowest();
-		static constexpr TYPE max = (std::numeric_limits<TYPE>::max)();
+		static constexpr TYPE lowest = std::numeric_limits<TYPE>::lowest() / 2.0f;
+		static constexpr TYPE max = (std::numeric_limits<TYPE>::max)() / 2.0f;
 		static const Rect<TYPE> maxRect(lowest, lowest, max, max);
 		return maxRect;
 	}
