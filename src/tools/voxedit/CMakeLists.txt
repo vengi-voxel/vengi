@@ -10,6 +10,7 @@ set(LUA_SRCS
 	scripts/modules/perlin.lua
 	scripts/modules/volume.lua
 	scripts/cover.lua
+	scripts/grass.lua
 	scripts/noise.lua
 	scripts/pyramid.lua
 	scripts/similarcolor.lua
