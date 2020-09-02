@@ -26,6 +26,9 @@
 #include <sys/time.h>
 #endif
 #include <signal.h>
+#if defined(__GLIBC__) && (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 2) && defined(DEBUG)
+#include <fenv.h>
+#endif
 
 namespace app {
 
@@ -45,6 +48,10 @@ App* App::getInstance() {
 App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		_filesystem(filesystem), _eventBus(eventBus), _threadPool(std::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
 		_timeProvider(timeProvider), _metric(metric) {
+#if defined(__GLIBC__) && (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 2) && defined(DEBUG)
+	feenableexcept(FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW | FE_INVALID);
+#endif
+
 	signal(SIGSEGV, catch_function);
 	_initialLogLevel = SDL_LOG_PRIORITY_INFO;
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)_initialLogLevel);
