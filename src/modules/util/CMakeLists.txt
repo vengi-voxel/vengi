@@ -10,7 +10,7 @@ set(SRCS
 	VarUtil.h
 )
 set(LIB util)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math command)
 
 set(TEST_SRCS
 	tests/BufferUtilTest.cpp

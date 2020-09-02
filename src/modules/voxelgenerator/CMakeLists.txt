@@ -10,7 +10,7 @@ set(SRCS
 	LUAGenerator.h LUAGenerator.cpp
 	NoiseGenerator.h NoiseGenerator.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel voxelutil noise commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil noise commonlua)
 
 set(TEST_SRCS
 	tests/LSystemTest.cpp
