@@ -2,22 +2,27 @@ local vol = require "modules.volume"
 
 function arguments()
 	return {
+		{ name = 'grasscolor', desc = 'the palette index of the color to use as grass', type = 'int', default = '-1', min = '-1', max = '255' },
 		{ name = 'height', desc = 'the height of the grass to add', type = 'int', default = '4' },
 		{ name = 'density', desc = 'the density of the grass', type = 'int', default = '2' },
-		{ name = 'grasscolor', desc = 'the palette index of the color to use as grass', type = 'int', min = '0', max = '255' }
+		{ name = 'similarcolors', desc = 'the amount of similar colors', type = 'int', default = '4' }
 	}
 end
 
-function main(volume, region, color, height, density, grasscolor)
-	print("create grass with color " .. grasscolor .. " and in the height range 1.." .. height)
-	local newindices = palette.similar(grasscolor, 4)
+function main(volume, region, color, grasscolor, height, density, similarcolors)
+	if grasscolor == -1 then
+		grasscolor = palette.match(0, 255, 0)
+	end
+	local newindices = palette.similar(grasscolor, similarcolors)
 
 	local visitor = function (volume, x, y, z)
 		local rndHeight = math.random(1, height)
 		local indidx = math.random(1, #newindices)
 		local c = newindices[indidx]
 		for h = 1, rndHeight do
-			volume:setVoxel(x, y + h, z, c)
+			if volume:voxel(x, y + h + 1, z) == -1 then
+				volume:setVoxel(x, y + h, z, c)
+			end
 		end
 	end
 

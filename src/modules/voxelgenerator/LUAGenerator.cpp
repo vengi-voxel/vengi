@@ -95,7 +95,7 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const float g = luaL_checkinteger(s, 2) / 255.0f;
 	const float b = luaL_checkinteger(s, 3) / 255.0f;
 	const int match = core::Color::getClosestMatch(glm::vec4(r, b, g, 1.0f), materialColors);
-	if (match < 0 || match > 255) {
+	if (match < 0 || match > (int)materialColors.size()) {
 		return luaL_error(s, "Given color index is not valid or palette is not loaded");
 	}
 	lua_pushinteger(s, match);
