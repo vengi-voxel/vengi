@@ -219,5 +219,5 @@ elseif (DARWIN)
 	add_definitions(-DTB_USE_CURRENT_DIRECTORY)
 endif()
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES app render)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES imgui app render)
 target_include_directories(${LIB} PUBLIC tb)

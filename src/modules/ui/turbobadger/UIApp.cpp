@@ -484,8 +484,7 @@ tb::TBWidget* UIApp::getWidgetAt(int x, int y, bool includeChildren) {
 	return _root->getWidgetAt(x, y, includeChildren);
 }
 
-app::AppState UIApp::onRunning() {
-	app::AppState state = Super::onRunning();
+void UIApp::beforeUI() {
 	_console.update(_deltaFrameSeconds);
 
 	_lastShowTextY = 5;
@@ -498,42 +497,33 @@ app::AppState UIApp::onRunning() {
 		}
 	}
 
-	const bool running = state == app::AppState::Running;
-	if (running) {
-		{
-			core_trace_scoped(UIAppBeforeUI);
-			beforeUI();
-		}
+	const bool renderUI = _renderUI->boolVal();
+	if (renderUI) {
+		core_trace_scoped(UIAppUpdateUI);
+		tb::TBAnimationManager::update();
+		_root->invokeProcessStates();
+		_root->invokeProcess();
 
-		const bool renderUI = _renderUI->boolVal();
-		if (renderUI) {
-			core_trace_scoped(UIAppUpdateUI);
-			tb::TBAnimationManager::update();
-			_root->invokeProcessStates();
-			_root->invokeProcess();
-
-			_renderer.beginPaint(_frameBufferDimension.x, _frameBufferDimension.y);
-			_root->invokePaint(tb::TBWidget::PaintProps());
-		}
-		{
-			core_trace_scoped(UIAppAfterUI);
-			afterRootWidget();
-		}
-		if (renderUI) {
-			core_trace_scoped(UIAppEndPaint);
-			_renderer.endPaint();
-			// If animations are running, reinvalidate immediately
-			if (tb::TBAnimationManager::hasAnimationsRunning()) {
-				_root->invalidate();
-			}
-		}
-		double next_fire_time = tb::TBMessageHandler::getNextMessageFireTime();
-		double now = tb::TBSystem::getTimeMS();
-		if (next_fire_time == TB_NOT_SOON || (next_fire_time - now) <= 1.0) {
-			tb::TBMessageHandler::processMessages();
+		_renderer.beginPaint(_frameBufferDimension.x, _frameBufferDimension.y);
+		_root->invokePaint(tb::TBWidget::PaintProps());
+	}
+	{
+		core_trace_scoped(UIAppAfterUI);
+		afterRootWidget();
+	}
+	if (renderUI) {
+		core_trace_scoped(UIAppEndPaint);
+		_renderer.endPaint();
+		// If animations are running, reinvalidate immediately
+		if (tb::TBAnimationManager::hasAnimationsRunning()) {
+			_root->invalidate();
 		}
 	}
-	return state;
+	double next_fire_time = tb::TBMessageHandler::getNextMessageFireTime();
+	double now = tb::TBSystem::getTimeMS();
+	if (next_fire_time == TB_NOT_SOON || (next_fire_time - now) <= 1.0) {
+		tb::TBMessageHandler::processMessages();
+	}
 }
 
 app::AppState UIApp::onCleanup() {

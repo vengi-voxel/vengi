@@ -37,7 +37,7 @@ public:
 	const NoiseDataMap& noiseData() const;
 
 	app::AppState onInit() override;
-	app::AppState onRunning() override;
+	void onRenderUI() override;
 };
 
 inline const NoiseDataMap& NoiseTool::noiseData() const {

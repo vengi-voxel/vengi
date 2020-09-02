@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "video/WindowedApp.h"
+#include "ui/imgui/IMGUIApp.h"
 #include "Window.h"
 #include "Console.h"
 #include <tb_widgets_listener.h>
@@ -15,9 +15,9 @@ namespace turbobadger {
 /**
  * @ingroup UI
  */
-class UIApp: public video::WindowedApp, private tb::TBWidgetListener {
+class UIApp: public ui::imgui::IMGUIApp, private tb::TBWidgetListener {
 private:
-	using Super = video::WindowedApp;
+	using Super = ui::imgui::IMGUIApp;
 protected:
 	static constexpr uint32_t _logId = Log::logid("UIAPP");
 	tb::TBWidget* _root = nullptr;
@@ -47,8 +47,7 @@ public:
 	UIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~UIApp();
 
-	virtual void beforeUI() {
-	}
+	virtual void beforeUI() override;
 
 	template<class T>
 	T* getWidgetByType(const char *name);
@@ -68,10 +67,11 @@ public:
 	 */
 	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) override;
 
+	virtual void onRenderUI() override {}
+
 	virtual void onWindowResize(int windowWidth, int windowHeight) override;
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;
-	virtual app::AppState onRunning() override;
 	virtual app::AppState onCleanup() override;
 };
 

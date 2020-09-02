@@ -52,10 +52,8 @@ app::AppState NoiseTool::onInit() {
 	return state;
 }
 
-app::AppState NoiseTool::onRunning() {
-	app::AppState state = Super::onRunning();
+void NoiseTool::onRenderUI() {
 	_window->update();
-	return state;
 }
 
 int main(int argc, char *argv[]) {

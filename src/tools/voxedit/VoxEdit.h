@@ -31,6 +31,8 @@ public:
 	bool prefabFile(const core::String& file);
 	bool newFile(bool force = false);
 
+	void onRenderUI() override;
+
 	void onDropFile(const core::String& file) override;
 
 	app::AppState onConstruct() override;
