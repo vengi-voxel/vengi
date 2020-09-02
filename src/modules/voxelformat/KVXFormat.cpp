@@ -44,11 +44,14 @@ bool KVXFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	/**
 	 * Centroid of voxel. For extra precision, this location has been shifted up by 8 bits.
 	 */
-	glm::vec3 pivot;
-	wrap(stream.readFloat(pivot.x))
-	wrap(stream.readFloat(pivot.y))
-	wrap(stream.readFloat(pivot.z))
-	pivot /= 256.0f;
+	glm::vec3 pivot(0.0f);
+	uint32_t pivx, pivy, pivz;
+	wrap(stream.readInt(pivx))
+	wrap(stream.readInt(pivy))
+	wrap(stream.readInt(pivz))
+	pivot.x = (float)pivx / 256.0f;
+	pivot.y = (float)pivy / 256.0f;
+	pivot.z = (float)pivz / 256.0f;
 
 	if (xsiz > MaxRegionSize || ysiz > MaxRegionSize || zsiz > MaxRegionSize) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", xsiz, zsiz, ysiz);
