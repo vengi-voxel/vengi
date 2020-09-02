@@ -17,7 +17,7 @@ set(SRCS
 	VoxelVolumes.h VoxelVolumes.cpp
 	VolumeFormat.h VolumeFormat.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel voxelutil)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
