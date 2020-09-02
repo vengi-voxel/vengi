@@ -218,7 +218,6 @@ private:
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition);
-	void replaceColor(uint8_t oldIndex, int newIndex);
 	void mirror(math::Axis axis);
 	void updateAABBMesh();
 public:

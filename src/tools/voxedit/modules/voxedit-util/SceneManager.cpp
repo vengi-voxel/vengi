@@ -1261,16 +1261,6 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Pick the current selected color from current cursor voxel");
 
-	command::Command::registerCommand("replacecolor", [&] (const command::CmdArgs& args) {
-		if (args.size() != 2) {
-			Log::info("Usage: replacecolor <current-color-index> <new-color-index>");
-			return;
-		}
-		const uint8_t oldIndex = core::string::toInt(args[0]);
-		const int newIndex = core::string::toInt(args[1]);
-		replaceColor(oldIndex, newIndex);
-	}).setHelp("Replace a particular palette index with another index - if target is -1 is will be removed");
-
 	command::Command::registerCommand("mirror", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Usage: mirror <axis:x,y,z>");
@@ -1370,21 +1360,6 @@ void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, st
 			Log::debug("Modified %i voxels", cnt);
 		}
 	});
-}
-
-void SceneManager::replaceColor(uint8_t oldIndex, int newIndex) {
-	struct OnlyParticularIndexVisitCondition {
-		const uint8_t _index;
-		OnlyParticularIndexVisitCondition(uint8_t index) :
-				_index(index) {
-		}
-		inline bool operator() (const voxel::Voxel& voxel) const {
-			return voxel.getColor() == _index;
-		}
-	};
-	const voxel::Voxel voxel = newIndex < 0 ? voxel::Voxel() : voxel::createVoxel(voxel::VoxelType::Generic, newIndex);
-	const OnlyParticularIndexVisitCondition condition(oldIndex);
-	setVoxelsForCondition([&] () { return voxel; }, condition);
 }
 
 bool SceneManager::init() {
