@@ -1,9 +1,11 @@
+# syntax = docker/dockerfile:1.0-experimental
 FROM debian:bullseye as builder
 MAINTAINER Martin Gerhardy <martin.gerhardy@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update -q && apt-get install -y cmake g++ pkg-config ninja-build \
+RUN --mount=type=cache,target=/var/cache/apt \
+	apt-get update -q && apt-get install -y cmake g++ pkg-config ninja-build \
 	opencl-c-headers postgresql-server-dev-all \
 	uuid-dev ocl-icd-libopencl1
 
@@ -12,19 +14,22 @@ RUN mkdir ${TARGETDIR}
 COPY . ${TARGETDIR}
 
 RUN mkdir ${TARGETDIR}/build
-RUN cmake --version
-RUN cmake -H${TARGETDIR} -B${TARGETDIR}/build -GNinja -DCMAKE_BUILD_TYPE=Release
-RUN cmake --build ${TARGETDIR}/build --target server
-RUN cmake --install ${TARGETDIR}/build --component server --prefix installation
+RUN --mount=type=cache,target=${TARGETDIR}/build \
+	cmake -H${TARGETDIR} -B${TARGETDIR}/build -GNinja -DCMAKE_BUILD_TYPE=Release && \
+	cmake --build ${TARGETDIR}/build --target server && \
+	cmake --install ${TARGETDIR}/build --component server --prefix installation
 
 FROM debian:buster
+ARG TARGETDIR=/tmp/@ROOT_PROJECT_NAME@
 
-RUN apt-get update -q && \
+RUN --mount=type=cache,target=/var/cache/apt \
+	apt-get update -q && \
 	apt-get install -y libatomic1 libpq5 \
 	ocl-icd-libopencl1 uuid-runtime && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/*
 
+RUN mkdir -p /opt/@ROOT_PROJECT_NAME@/
 COPY --from=builder ${TARGETDIR}/build/@PROJECT_NAME@ /opt/@ROOT_PROJECT_NAME@/
 
 EXPOSE @SERVER_PORT@

@@ -43,6 +43,7 @@ macro(engine_docker NAME)
 	if (DOCKERFILE_SRC AND DOCKER_EXECUTABLE)
 		add_custom_target(${NAME}-docker
 			COMMAND
+				DOCKER_BUILDKIT=1
 				${DOCKER_EXECUTABLE}
 				build
 				${DOCKER_BUILD_ARGS}
