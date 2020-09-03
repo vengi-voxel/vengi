@@ -2,7 +2,7 @@ version: '3'
 
 services:
   db:
-    image: postgres:11
+    image: postgres:13
     restart: always
     volumes:
       - db:/var/lib/postgresql/data
@@ -14,7 +14,7 @@ services:
       - 5432:5432
 
   influxdb:
-    image: influxdb:1.7-alpine
+    image: influxdb:1.8-alpine
     restart: always
     volumes:
       - influxdb:/var/lib/influxdb
@@ -24,7 +24,7 @@ services:
       - 8090:8090
 
   telegraf:
-    image: telegraf:latest
+    image: telegraf:1.14-alpine
     container_name: telegraf
     ports:
       - "8092:8092/udp"
@@ -34,7 +34,7 @@ services:
       - @CMAKE_CURRENT_SOURCE_DIR@/telegraf.conf:/etc/telegraf/telegraf.conf:ro
 
   grafana:
-    image: grafana/grafana:6.4.1
+    image: grafana/grafana:7.1.5
     restart: always
     volumes:
       - grafana:/var/lib/grafana
