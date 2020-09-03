@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Atomic KMSDRM backend by Manuel Alfayate Corchete <redwindwanderer@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -79,7 +80,25 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
+    KMSDRM_PlaneInfo info = {0};
     int ret;
+
+    /* Do we have a pending old surfaces destruction? */
+    if (dispdata->destroy_surfaces_pending == SDL_TRUE) {
+
+        /* Take note that we have not pending old surfaces destruction.
+           Do it ASAP, DON'T GO into SwapWindowDB() with it enabled or
+           we will enter recursivity! */
+        dispdata->destroy_surfaces_pending = SDL_FALSE;
+
+        /* Do blocking pageflip, to be sure it's atomic commit is completed
+           before destroying the old surfaces and buffers. */
+        KMSDRM_GLES_SwapWindowDB(_this, window);
+
+        KMSDRM_DestroyOldSurfaces(_this);
+
+        return 0;
+    }
 
     /*************************************************************************/
     /* Block for telling KMS to wait for GPU rendering of the current frame  */
@@ -108,26 +127,51 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     /***************/
 
     /* Lock the buffer that is marked by eglSwapBuffers() to become the next front buffer (so it can not
-       be chosen by EGL as back buffer to draw on), and get a handle to it to request the pageflip on it. */
+       be chosen by EGL as back buffer to draw on), and get a handle to it to request the pageflip on it.
+       REMEMBER that gbm_surface_lock_front_buffer() ALWAYS has to be called after eglSwapBuffers(). */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
 	return SDL_SetError("Failed to lock frontbuffer");
     }
     fb = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb) {
-	 return SDL_SetError("Failed to get a new framebuffer");
+	 return SDL_SetError("Failed to get a new framebuffer from BO");
     }
 
-    /* Add the pageflip to te request list. */
-    drm_atomic_setbuffer(_this, dispdata->display_plane, fb->fb_id);
+    /* Add the pageflip to the request list. */
+    info.plane = dispdata->display_plane;
+    info.crtc_id = dispdata->crtc->crtc->crtc_id;
+    info.fb_id = fb->fb_id;
+
+    info.src_w = windata->src_w;
+    info.src_h = windata->src_h;
+    info.crtc_w = windata->output_w;
+    info.crtc_h = windata->output_h;
+    info.crtc_x = windata->output_x;
+
+    ret = drm_atomic_set_plane_props(&info);
+     if (ret) {
+        return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
+    }
+
+    /* Set the IN_FENCE and OUT_FENCE props only here, since this is the only place
+       on which we're interested in managing who and when should access the buffers
+       that the display plane uses, and that's what these props are for. */
+    if (dispdata->kms_in_fence_fd != -1)
+    {
+	if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "OUT_FENCE_PTR",
+			          VOID2U64(&dispdata->kms_out_fence_fd)) < 0)
+            return SDL_SetError("Failed to set CRTC OUT_FENCE_PTR prop");
+	if (add_plane_property(dispdata->atomic_req, dispdata->display_plane, "IN_FENCE_FD", dispdata->kms_in_fence_fd) < 0)
+            return SDL_SetError("Failed to set plane IN_FENCE_FD prop");
+    }
 
     /* Issue the one and only atomic commit where all changes will be requested!.
        We need e a non-blocking atomic commit for triple buffering, because we 
        must not block on this atomic commit so we can re-enter program loop once more. */
     ret = drm_atomic_commit(_this, SDL_FALSE);
-
     if (ret) {
-        return SDL_SetError("failed to issue atomic commit");
+        return SDL_SetError("Failed to issue atomic commit on pageflip");
     }
 
     /* Release the last front buffer so EGL can chose it as back buffer and render on it again. */
@@ -166,12 +210,15 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
+    KMSDRM_PlaneInfo info = {0};
     int ret;
 
-    /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until
-       the requested changes are done).
-       Also, there's no need to fence KMS or the GPU, because we won't be entering game loop again
-       (hence not building or executing a new cmdstring) until pageflip is done. */
+    /****************************************************************************************************/
+    /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until */
+    /* the requested changes are really done).                                                          */
+    /* Also, there's no need to fence KMS or the GPU, because we won't be entering game loop again      */
+    /* (hence not building or executing a new cmdstring) until pageflip is done.                        */
+    /****************************************************************************************************/ 
 
     /* Mark, at EGL level, the buffer that we want to become the new front buffer.
        However, it won't really happen until we request a pageflip at the KMS level and it completes. */
@@ -188,15 +235,28 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
          return SDL_SetError("Failed to get a new framebuffer BO");
     }
 
-    /* Add the pageflip to te request list. */
-    drm_atomic_setbuffer(_this, dispdata->display_plane, fb->fb_id);
+    /* Add the pageflip to the request list. */
+    info.plane = dispdata->display_plane;
+    info.crtc_id = dispdata->crtc->crtc->crtc_id;
+    info.fb_id = fb->fb_id;
+
+    info.src_w = windata->src_w;
+    info.src_h = windata->src_h;
+    info.crtc_w = windata->output_w;
+    info.crtc_h = windata->output_h;
+    info.crtc_x = windata->output_x;
+
+    ret = drm_atomic_set_plane_props(&info);
+     if (ret) {
+        return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
+    }
 
     /* Issue the one and only atomic commit where all changes will be requested!. 
        Blocking for double buffering: won't return until completed. */
     ret = drm_atomic_commit(_this, SDL_TRUE);
 
     if (ret) {
-        return SDL_SetError("failed to issue atomic commit");
+        return SDL_SetError("Failed to issue atomic commit");
     }
 
     /* Release last front buffer so EGL can chose it as back buffer and render on it again. */
@@ -206,6 +266,14 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
 
     /* Take note of current front buffer, so we can free it next time we come here. */
     windata->bo = windata->next_bo;
+
+    /* Do we have a pending old surfaces destruction? */
+    if (dispdata->destroy_surfaces_pending == SDL_TRUE) {
+        /* We have just done a blocking pageflip to the new buffers already,
+           so just do what you are here for... */
+        KMSDRM_DestroyOldSurfaces(_this);
+        dispdata->destroy_surfaces_pending = SDL_FALSE;
+    }
 
     return ret;
 }

@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Atomic KMSDRM backend by Manuel Alfayate Corchete <redwindwanderer@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,14 +50,9 @@ typedef struct SDL_VideoData
     struct gbm_device *gbm_dev;
 
     SDL_Window **windows;
-    int max_windows;
-    int num_windows;
+    unsigned int max_windows;
+    unsigned int num_windows;
 } SDL_VideoData;
-
-typedef struct SDL_DisplayModeData
-{
-    int mode_index;
-} SDL_DisplayModeData;
 
 struct plane {
 	drmModePlane *plane;
@@ -83,8 +79,8 @@ typedef struct SDL_DisplayData
     uint32_t atomic_flags;
 
     /* All changes will be requested via this one and only atomic request,
-       that will be sent to the kernel in the one and only atomic_commit() call
-       that takes place in SwapWindow(). */
+       that will be sent to the kernel in the one and only atomic_commit()
+       call that takes place in SwapWindow(). */
     drmModeAtomicReq *atomic_req;
     struct plane *display_plane;
     struct plane *cursor_plane;
@@ -99,20 +95,44 @@ typedef struct SDL_DisplayData
 
     EGLSyncKHR gpu_fence; /* Signaled when GPU rendering is done. */
 
+    /* Backup pointers of the GBM surfaces and buffers to be deleted after
+       SDL_Window destruction, since SDL_Window destruction causes it's 
+       driverdata pointer (windata) to be destroyed, so we have to 
+       keep them here instead. */
+    struct gbm_surface *old_gs;
+    struct gbm_bo *old_bo;
+    struct gbm_bo *old_next_bo;
+#if SDL_VIDEO_OPENGL_EGL
+    EGLSurface old_egl_surface;
+#endif
+
+    SDL_bool destroy_surfaces_pending;
+
 } SDL_DisplayData;
 
 /* Driverdata info that gives KMSDRM-side support and substance to the SDL_Window. */
 typedef struct SDL_WindowData
 {
     SDL_VideoData *viddata;
+    /* SDL internals expect EGL surface to be here, and in KMSDRM the GBM surface is
+       what supports the EGL surface on the driver side, so all these surfaces and buffers
+       are expected to be here, in the struct pointed by SDL_Window driverdata pointer:
+       this one. So don't try to move these to dispdata!  */
     struct gbm_surface *gs;
     struct gbm_bo *bo;
     struct gbm_bo *next_bo;
-    struct gbm_bo *crtc_bo;
+
 #if SDL_VIDEO_OPENGL_EGL
-    SDL_bool egl_surface_dirty;
     EGLSurface egl_surface;
 #endif
+
+    /* For scaling and AR correction. */
+    int32_t src_w;
+    int32_t src_h;
+    int32_t output_w;
+    int32_t output_h;
+    int32_t output_x;
+
 } SDL_WindowData;
 
 typedef struct KMSDRM_FBInfo
@@ -121,30 +141,37 @@ typedef struct KMSDRM_FBInfo
     uint32_t fb_id;     /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 
-/* Driverdata with driver-side info about the cursor. */
-typedef struct _KMSDRM_CursorData
+typedef struct KMSDRM_PlaneInfo
 {
-    struct gbm_bo *bo;
-    uint32_t       crtc_id;
-    int            hot_x, hot_y;
-    int            w, h;
-    /* The video devide implemented on SDL_kmsdrmvideo.c 
-     * to be used as _THIS pointer in SDL_kmsdrmvideo.c 
-     * functions that need it. */
-    SDL_VideoDevice *video;
-} KMSDRM_CursorData;
+    struct plane *plane;
+    uint32_t fb_id;
+    uint32_t crtc_id;
+    int32_t src_x;
+    int32_t src_y;
+    int32_t src_w;
+    int32_t src_h;
+    int32_t crtc_x;
+    int32_t crtc_y;
+    int32_t crtc_w;
+    int32_t crtc_h;
+} KMSDRM_PlaneInfo;
 
 /* Helper functions */
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
+void KMSDRM_DestroyOldSurfaces(_THIS);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */
-void drm_atomic_modeset(_THIS, int mode_index);
-void drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id);
+int drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info); 
+
 void drm_atomic_waitpending(_THIS);
 int drm_atomic_commit(_THIS, SDL_bool blocking);
-int drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y);
-int drm_atomic_movecursor(KMSDRM_CursorData *curdata, int x, int y);
+int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
+                             const char *name, uint64_t value);
+int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
+                             const char *name, uint64_t value);
+int setup_plane(_THIS, struct plane **plane, uint32_t plane_type);
+void free_plane(struct plane **plane);
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
@@ -161,6 +188,7 @@ void KMSDRM_SetWindowTitle(_THIS, SDL_Window * window);
 void KMSDRM_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon);
 void KMSDRM_SetWindowPosition(_THIS, SDL_Window * window);
 void KMSDRM_SetWindowSize(_THIS, SDL_Window * window);
+void KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen);
 void KMSDRM_ShowWindow(_THIS, SDL_Window * window);
 void KMSDRM_HideWindow(_THIS, SDL_Window * window);
 void KMSDRM_RaiseWindow(_THIS, SDL_Window * window);

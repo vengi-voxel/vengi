@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Atomic KMSDRM backend by Manuel Alfayate Corchete <redwindwanderer@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,6 +40,32 @@ static void KMSDRM_FreeCursor(SDL_Cursor * cursor);
 static void KMSDRM_WarpMouse(SDL_Window * window, int x, int y);
 static int KMSDRM_WarpMouseGlobal(int x, int y);
 
+/**********************************/
+/* Atomic helper functions block. */
+/**********************************/
+
+int
+drm_atomic_movecursor(KMSDRM_CursorData *curdata, uint16_t x, uint16_t y)
+{
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    if (!dispdata->cursor_plane) /* We can't move a non-existing cursor, but that's ok. */
+        return 0;
+
+    /* Do we have a set of changes already in the making? If not, allocate a new one. */
+    if (!dispdata->atomic_req)
+        dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
+    
+    add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_X", x - curdata->hot_x);
+    add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_Y", y - curdata->hot_y);
+
+    return 0;
+}
+
+/***************************************/
+/* Atomic helper functions block ends. */
+/***************************************/
+
 /* Converts a pixel from straight-alpha [AA, RR, GG, BB], which the SDL cursor surface has,
    to premultiplied-alpha [AA. AA*RR, AA*GG, AA*BB].
    These multiplications have to be done with floats instead of uint32_t's, and the resulting values have 
@@ -61,7 +88,6 @@ void alpha_premultiply_ARGB8888 (uint32_t *pixel) {
     /* ARGB8888 pixel recomposition. */
     (*pixel) = (((uint32_t)A << 24) | ((uint32_t)R << 16) | ((uint32_t)G << 8)) | ((uint32_t)B << 0);
 }
-
 
 static SDL_Cursor *
 KMSDRM_CreateDefaultCursor(void)
@@ -91,7 +117,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     SDL_assert(surface->pitch == surface->w * 4);
 
     if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE)) {
-        printf("Unsupported pixel format for cursor\n");
+        SDL_SetError("Unsupported pixel format for cursor");
         return NULL;
     }
 
@@ -119,8 +145,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
             goto cleanup;
     }
 
-    /* Here simply set the hox_x and hot_y, that will be used in drm_atomic_movecursor().
-       These are the coordinates of the "tip of the cursor" from it's base. */
+    /* hox_x and hot_y are the coordinates of the "tip of the cursor" from it's base. */
     curdata->hot_x = hot_x;
     curdata->hot_y = hot_y;
     curdata->w = usable_cursor_w;
@@ -213,6 +238,8 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     KMSDRM_CursorData *curdata;
     SDL_VideoDisplay *display = NULL;
     SDL_DisplayData *dispdata = NULL;
+    KMSDRM_FBInfo *fb;
+    KMSDRM_PlaneInfo info = {0};
     int ret;
 
     mouse = SDL_GetMouse();
@@ -227,18 +254,19 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
         }
     }
 
-    /* Hide cursor */
+    /**********************************/
+    /* if cursor == NULL, HIDE cursor */
+    /**********************************/
     if (!cursor) {
         /* Hide CURRENT cursor, a cursor that is already on screen
            and SDL stores in mouse->cur_cursor. */
         if (mouse->cur_cursor && mouse->cur_cursor->driverdata) {
-            curdata = (KMSDRM_CursorData *) mouse->cur_cursor->driverdata;
-            if (curdata->video) {
-
-                ret = drm_atomic_setcursor(0, 0, 0); 
-
+            if (dispdata && dispdata->cursor_plane) {
+                info.plane = dispdata->cursor_plane; /* The rest of the members are zeroed. */
+                ret = drm_atomic_set_plane_props(&info); 
+                //drm_atomic_commit(display->device, SDL_TRUE);
                 if (ret) {
-                    SDL_SetError("Could not hide current cursor with drm_atomic_setcursor).");
+                    SDL_SetError("Could not hide current cursor.");
                     return ret;
                 }
 
@@ -250,40 +278,59 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
         return SDL_SetError("Couldn't find cursor to hide.");
     }
 
-    
-    /* If cursor != NULL, show new cursor on display */
+    /************************************************/
+    /* If cursor != NULL, DO show cursor on display */
+    /************************************************/
+
     if (!display) {
         return SDL_SetError("Could not get display for mouse.");
     }
     if (!dispdata) {
         return SDL_SetError("Could not get display driverdata.");
     }
+    if (!dispdata->cursor_plane) {
+        return SDL_SetError("Hardware cursor plane not initialized.");
+    }
     
     curdata = (KMSDRM_CursorData *) cursor->driverdata;
+
     if (!curdata || !curdata->bo) {
         return SDL_SetError("Cursor not initialized properly.");
     }
 
     curdata->crtc_id  = dispdata->crtc->crtc->crtc_id;
-    curdata->video = video_device;
+    curdata->plane    = dispdata->cursor_plane;
+    curdata->video    = video_device;
 
-    /* DO show cursor */
-    ret = drm_atomic_setcursor(curdata, mouse->x - curdata->hot_x, mouse->y - curdata->hot_y);
+    fb = KMSDRM_FBFromBO(curdata->video, curdata->bo);
+
+    info.plane = dispdata->cursor_plane;
+    info.crtc_id = curdata->crtc_id;
+    info.fb_id = fb->fb_id; 
+    info.src_w = curdata->w;
+    info.src_h = curdata->h;
+    info.crtc_x = mouse->x - curdata->hot_x;
+    info.crtc_y = mouse->y - curdata->hot_y;
+    info.crtc_w = curdata->w;
+    info.crtc_h = curdata->h; 
+
+    ret = drm_atomic_set_plane_props(&info);
+    //drm_atomic_commit(display->device, SDL_TRUE);
 
     if (ret) {
-        SDL_SetError("KMSDRM_SetCursor failed.");
+        SDL_SetError("KMSDRM_ShowCursor failed.");
         return ret;
     }
 
     return 0;
 }
 
-/* Unset the cursor from the cusror plane, and ONLY WHEN THAT'S DONE,
+/* Unset the cursor from the cursor plane, and ONLY WHEN THAT'S DONE,
    DONE FOR REAL, and not only requested, destroy it by destroying the curso BO.
    Destroying the cursor BO is an special an delicate situation,
-   because drm_atomic_setcursor() returns immediately, and we DON'T 
+   because drm_atomic_set_plane_props() returns immediately, and we DON'T 
    want to get to gbm_bo_destroy() before the prop changes requested
-   in drm_atomic_setcursor() have effectively been done. So we
+   in drm_atomic_set_plane_props() have effectively been done. So we
    issue a BLOCKING atomic_commit here to avoid that situation.
    REMEMBER you yan issue an atomic_commit whenever you want, and
    the changes requested until that moment (for any planes, crtcs, etc.)
@@ -293,12 +340,13 @@ KMSDRM_FreeCursor(SDL_Cursor * cursor)
 {
     KMSDRM_CursorData *curdata = NULL;
     SDL_VideoDevice *video = NULL;
+    KMSDRM_PlaneInfo info = {0};
 
     if (cursor) {
         curdata = (KMSDRM_CursorData *) cursor->driverdata;
-        video = curdata->video;
-        if (video && curdata->bo) {
-	    drm_atomic_setcursor(0, 0, 0);
+        if (video && curdata->bo && curdata->plane) {
+            info.plane = curdata->plane; /* The other members are zeroed. */
+	    drm_atomic_set_plane_props(&info);
             /* Wait until the cursor is unset from the cursor plane before destroying it's BO. */
             drm_atomic_commit(video, SDL_TRUE);
 	    KMSDRM_gbm_bo_destroy(curdata->bo);
@@ -335,7 +383,6 @@ KMSDRM_WarpMouseGlobal(int x, int y)
 	    int ret;
 
             ret = drm_atomic_movecursor(curdata, x, y);
-            //ret = drm_atomic_commit(curdata->video, SDL_TRUE);
 
 	    if (ret) {
 		SDL_SetError("drm_atomic_movecursor() failed.");
@@ -349,6 +396,7 @@ KMSDRM_WarpMouseGlobal(int x, int y)
     } else {
         return SDL_SetError("No mouse or current cursor.");
     }
+return 0;
 }
 
 void
@@ -357,6 +405,8 @@ KMSDRM_InitMouse(_THIS)
     /* FIXME: Using UDEV it should be possible to scan all mice
      * but there's no point in doing so as there's no multimice support...yet!
      */
+
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     SDL_Mouse *mouse = SDL_GetMouse();
 
     mouse->CreateCursor = KMSDRM_CreateCursor;
@@ -366,13 +416,20 @@ KMSDRM_InitMouse(_THIS)
     mouse->WarpMouse = KMSDRM_WarpMouse;
     mouse->WarpMouseGlobal = KMSDRM_WarpMouseGlobal;
 
+    /* Init cursor plane, if we haven't yet. */
+    if (!dispdata->cursor_plane) {
+	setup_plane(_this, &(dispdata->cursor_plane), DRM_PLANE_TYPE_CURSOR);
+    }
+
     SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
 }
 
 void
 KMSDRM_QuitMouse(_THIS)
 {
-    /* TODO: ? */
+    /* Free the plane on which the cursor was being shown. */
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    free_plane(&dispdata->cursor_plane);
 }
 
 /* This is called when a mouse motion event occurs */
@@ -393,7 +450,6 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
            cursor movement request, but it cripples the movement to 30FPS, so a future solution
            is needed. SDLPoP "QUIT?" menu is an example of this situation. */
         ret = drm_atomic_movecursor(curdata, mouse->x, mouse->y);
-        //ret = drm_atomic_commit(curdata->video, SDL_TRUE);
 
 	if (ret) {
 	    SDL_SetError("drm_atomic_movecursor() failed.");
