@@ -8,7 +8,7 @@
 
 * development headers/libs for
   * glm
-  * lua >= 5.3
+  * lua >= 5.4
   * sdl2 > 2.0.4
   * postgresql-server-dev >= 9.5
   * libpq
@@ -27,9 +27,9 @@ the higher priority.
 ## Debian
 
 ```bash
-apt-get install libglm-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-all \
+apt-get install libglm-dev lua5.4 liblua5.4-dev libsdl2-dev postgresql-server-dev-all \
     libpq-dev libenet-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers \
-    wayland-protocols pkg-config uuid-dev libsdl2-mixer-dev
+    wayland-protocols pkg-config uuid-dev libsdl2-mixer-dev libuv1-dev
 ```
 
 If you want to run the database server locally, you have to install the postgres server package:
