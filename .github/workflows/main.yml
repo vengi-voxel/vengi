@@ -38,7 +38,7 @@ jobs:
             ctest -V -R tests-stock$
             ctest -V -R tests-testtraze$
             ctest -V -R tests-util$
-            ctest -V -R tests-uuid$
+            ctest -V -R tests-uuidutil$
             ctest -V -R tests-video$
             ctest -V -R tests-voxedit-util$
             ctest -V -R tests-voxel$
@@ -115,7 +115,7 @@ jobs:
             ctest -V -R tests-stock$
             ctest -V -R tests-testtraze$
             ctest -V -R tests-util$
-            ctest -V -R tests-uuid$
+            ctest -V -R tests-uuidutil$
             ctest -V -R tests-video$
             ctest -V -R tests-voxedit-util$
             ctest -V -R tests-voxel$
@@ -175,7 +175,7 @@ jobs:
             ctest -V -C Release -R tests-shadertool$
             ctest -V -C Release -R tests-stock$
             ctest -V -C Release -R tests-util$
-            ctest -V -C Release -R tests-uuid$
+            ctest -V -C Release -R tests-uuidutil$
             ctest -V -C Release -R tests-video$
             ctest -V -C Release -R tests-voxedit-util$
             ctest -V -C Release -R tests-voxel$
