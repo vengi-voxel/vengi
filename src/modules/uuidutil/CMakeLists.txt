@@ -1,17 +1,22 @@
+set(LIBS core)
+
+if (WINDOWS)
+	list(APPEND LIBS rpcrt4)
+elseif (APPLE)
+	list(APPEND LIBS "-framework CoreFoundation")
+else()
+	find_package(UUID)
+	if (UUID_LIBRARIES)
+		list(APPEND LIBS ${UUID_LIBRARIES})
+	endif()
+endif()
+
 set(SRCS
 	UUIDUtil.cpp UUIDUtil.h
 )
+
 set(LIB uuidutil)
-
-if (WINDOWS)
-	set(UUID_LIBRARIES rpcrt4)
-elseif (APPLE)
-	set(UUID_LIBRARIES "-framework CoreFoundation")
-else()
-	find_package(UUID)
-endif()
-
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core ${UUID_LIBRARIES})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
 set(TEST_SRCS
 	tests/UUIDTest.cpp
