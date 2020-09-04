@@ -1,7 +1,7 @@
 set(SRCS
 	UUIDUtil.cpp UUIDUtil.h
 )
-set(LIB uuid)
+set(LIB uuidutil)
 
 if (WINDOWS)
 	set(UUID_LIBRARIES rpcrt4)
