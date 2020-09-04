@@ -72,7 +72,7 @@ bool postgresInit() {
 #ifdef POSTGRESQL_LIBS
 				POSTGRESQL_LIBS,
 #endif
-				"libpq.dll", "libpq.so", nullptr};
+				"libpq.dll", "libpq.so", "libpq.so.5", nullptr};
 		for (const char **searchPath = searchPaths; *searchPath; ++searchPath) {
 			obj = SDL_LoadObject(*searchPath);
 			if (obj != nullptr) {

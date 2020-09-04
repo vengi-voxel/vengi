@@ -5,9 +5,20 @@ MAINTAINER Martin Gerhardy <martin.gerhardy@gmail.com>
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN --mount=type=cache,target=/var/cache/apt \
-	apt-get update -q && apt-get install -y cmake g++ pkg-config ninja-build \
-	opencl-c-headers postgresql-server-dev-all \
-	uuid-dev ocl-icd-libopencl1
+	apt-get update -q && \
+	apt-get install -y \
+		cmake \
+		g++ \
+		pkg-config \
+		ninja-build \
+		opencl-c-headers \
+		postgresql-server-dev-all \
+		libncurses-dev \
+		uuid-dev \
+		ocl-icd-libopencl1 \
+		&& \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
 
 ARG TARGETDIR=/tmp/@ROOT_PROJECT_NAME@
 RUN mkdir ${TARGETDIR}
@@ -19,19 +30,25 @@ RUN --mount=type=cache,target=${TARGETDIR}/build \
 	cmake --build ${TARGETDIR}/build --target server && \
 	cmake --install ${TARGETDIR}/build --component server --prefix installation
 
-FROM debian:buster
+FROM debian:bullseye
 ARG TARGETDIR=/tmp/@ROOT_PROJECT_NAME@
 
-RUN --mount=type=cache,target=/var/cache/apt \
+RUN \
 	apt-get update -q && \
-	apt-get install -y libatomic1 libpq5 \
-	ocl-icd-libopencl1 uuid-runtime && \
+	apt-get install -y \
+		libatomic1 \
+		libpq5 \
+		ocl-icd-libopencl1 \
+		uuid-runtime \
+		libncurses6 \
+		&& \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/@ROOT_PROJECT_NAME@/
 COPY --from=builder ${TARGETDIR}/build/@PROJECT_NAME@ /opt/@ROOT_PROJECT_NAME@/
 
+ENV CON_CURSES=0
 EXPOSE @SERVER_PORT@
 
 WORKDIR /opt/@ROOT_PROJECT_NAME@
