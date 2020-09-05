@@ -36,3 +36,19 @@ The parser includes a preprocessor.
 You can export constants from the GLSL shader code to the generated C++ code by using `$constant`.
 
 Use `$constant varname 42` to generate a method that returns 42 with a name `getVarname`
+
+## Branching / Feature toggles
+
+Usually you don't have to use branching and uniforms for feature toggles. You can use cvars with the flag `CV_SHADER` set. If you are going to change one of these cvars, the shaders are recompiled with the value of the cvar given as preprocessor define.
+
+This means that you can do stuff like:
+
+```glsl
+#if cl_shadowmap == 1
+   [...]
+#else
+   [...]
+#endif
+```
+
+The `#define` of `cl_shadowmap` is done by the shader system at compile time.
