@@ -9,13 +9,10 @@
 #include "command/Command.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
-#include "video/ScopedPolygonMode.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "../AxisUtil.h"
 #include "../CustomBindingContext.h"
 #include "../SceneManager.h"
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/transform.hpp>
 
 namespace voxedit {
 
@@ -89,25 +86,18 @@ bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 	return true;
 }
 
-void Modifier::updateSelectionBuffers() {
-	_selectionValid = _selection.isValid();
-	if (!_selectionValid) {
-		return;
-	}
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Yellow);
-	_shapeBuilder.aabb(_selection.getLowerCorner(), _selection.getUpperCorner() + glm::one<glm::ivec3>());
-	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);
+void Modifier::unselect() {
+	_selection = voxel::Region::InvalidRegion;
+	_selectionValid = false;
 }
 
 bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
-	const bool select = (_modifierType & ModifierType::Delete) == ModifierType::None;
-	if (select) {
+	const bool selectActive = (_modifierType & ModifierType::Delete) == ModifierType::None;
+	if (selectActive) {
 		_selection = voxel::Region{mins, maxs};
 	} else {
 		_selection = voxel::Region::InvalidRegion;
 	}
-	updateSelectionBuffers();
 	return true;
 }
 
@@ -163,7 +153,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 			return false;
 		}
 
-		voxelgenerator::shape::createCylinder(wrapper, centerBottom, axis, radius, height, _cursorVoxel);
+		voxelgenerator::shape::createCylinder(wrapper, centerBottom, axis, (int)glm::round(radius), (int)glm::round(height), _cursorVoxel);
 		break;
 	}
 	case ShapeType::Cone:
@@ -283,58 +273,6 @@ void Modifier::aabbStop() {
 	_aabbMode = false;
 }
 
-void Modifier::renderAABBMode(const video::Camera& camera) {
-	if (!_aabbMode) {
-		return;
-	}
-	static glm::ivec3 lastCursor = aabbPosition();
-	static math::Axis lastMirrorAxis = _mirrorAxis;
-
-	const glm::ivec3& cursor = aabbPosition();
-	const bool needsUpdate = lastCursor != cursor || lastMirrorAxis != _mirrorAxis;
-
-	if (needsUpdate) {
-		lastMirrorAxis = _mirrorAxis;
-		lastCursor = cursor;
-
-		_shapeBuilder.clear();
-		_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
-		const glm::ivec3& first = firstPos();
-		const glm::ivec3& mins = (glm::min)(first, cursor);
-		const glm::ivec3& maxs = (glm::max)(first, cursor);
-		glm::ivec3 minsMirror = mins;
-		glm::ivec3 maxsMirror = maxs;
-		const float size = _gridResolution;
-		if (getMirrorAABB(minsMirror, maxsMirror)) {
-			const math::AABB<int> first(mins, maxs);
-			const math::AABB<int> second(minsMirror, maxsMirror);
-			if (math::intersects(first, second)) {
-				_shapeBuilder.cube(glm::vec3(mins), glm::vec3(maxsMirror) + size);
-			} else {
-				_shapeBuilder.cube(glm::vec3(mins), glm::vec3(maxs) + size);
-				_shapeBuilder.cube(glm::vec3(minsMirror), glm::vec3(maxsMirror) + size);
-			}
-		} else {
-			_shapeBuilder.cube(glm::vec3(mins), glm::vec3(maxs) + size);
-		}
-		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
-	}
-	static const glm::vec2 offset(-0.25f, -0.5f);
-	video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
-	_shapeRenderer.render(_aabbMeshIndex, camera);
-}
-
-void Modifier::render(const video::Camera& camera) {
-	renderAABBMode(camera);
-	const glm::mat4& translate = glm::translate(glm::vec3(aabbPosition()));
-	const glm::mat4& scale = glm::scale(translate, glm::vec3(_gridResolution));
-	_shapeRenderer.render(_voxelCursorMesh, camera, scale);
-	_shapeRenderer.render(_mirrorMeshIndex, camera);
-	if (_selectionValid) {
-		_shapeRenderer.render(_selectionIndex, camera);
-	}
-}
-
 ModifierType Modifier::modifierType() const {
 	return _modifierType;
 }
@@ -393,8 +331,7 @@ void Modifier::construct() {
 	}).setHelp("Change the shape type to 'dome'");
 
 	command::Command::registerCommand("unselect", [&] (const command::CmdArgs& args) {
-		_selection = voxel::Region::InvalidRegion;
-		updateSelectionBuffers();
+		unselect();
 	}).setHelp("Unselect all");
 
 	command::Command::registerCommand("mirroraxisx", [&] (const command::CmdArgs& args) {
@@ -415,24 +352,13 @@ void Modifier::construct() {
 }
 
 bool Modifier::init() {
-	if (!_shapeRenderer.init()) {
-		Log::error("Failed to initialize the shape renderer");
-		return false;
-	}
-
 	return true;
 }
 
 void Modifier::shutdown() {
-	_mirrorMeshIndex = -1;
-	_aabbMeshIndex = -1;
-	_selectionIndex = -1;
-	_voxelCursorMesh = -1;
 	_mirrorAxis = math::Axis::None;
 	_aabbMode = false;
 	_modifierType = ModifierType::Place;
-	_shapeRenderer.shutdown();
-	_shapeBuilder.shutdown();
 }
 
 math::Axis Modifier::mirrorAxis() const {
@@ -457,39 +383,21 @@ void Modifier::setGridResolution(int resolution) {
 	}
 }
 
-void Modifier::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos) {
+bool Modifier::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos) {
 	if (_mirrorAxis == axis) {
 		if (_mirrorPos != mirrorPos) {
 			_mirrorPos = mirrorPos;
-			updateMirrorPlane();
+			return true;
 		}
-		return;
+		return false;
 	}
 	_mirrorPos = mirrorPos;
 	_mirrorAxis = axis;
-	updateMirrorPlane();
-}
-
-void Modifier::updateMirrorPlane() {
-	if (_mirrorAxis == math::Axis::None) {
-		if (_mirrorMeshIndex != -1) {
-			_shapeRenderer.deleteMesh(_mirrorMeshIndex);
-			_mirrorMeshIndex = -1;
-		}
-		return;
-	}
-
-	updateShapeBuilderForPlane(_shapeBuilder, sceneMgr().region(), true, _mirrorPos, _mirrorAxis,
-			core::Color::alpha(core::Color::LightGray, 0.3f));
-	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
+	return true;
 }
 
 void Modifier::setCursorVoxel(const voxel::Voxel& voxel) {
 	_cursorVoxel = voxel;
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(core::Color::darker(voxel::getMaterialColor(voxel)), 0.6f));
-	_shapeBuilder.cube(glm::vec3(-0.01f), glm::vec3(1.01f));
-	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
 void Modifier::translate(const glm::ivec3& v) {

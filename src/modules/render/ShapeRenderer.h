@@ -14,10 +14,6 @@
 #include "ColorInstancedShader.h"
 #include "TextureShader.h"
 
-namespace video {
-class Video;
-}
-
 namespace render {
 
 /**

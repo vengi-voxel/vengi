@@ -13,6 +13,8 @@ set(SRCS
 	anim/AnimationLuaSaver.h anim/AnimationLuaSaver.cpp
 
 	modifier/Modifier.h modifier/Modifier.cpp
+	modifier/ModifierRenderer.h modifier/ModifierRenderer.cpp
+	modifier/ModifierFacade.h modifier/ModifierFacade.cpp
 	modifier/ModifierType.h
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
 	modifier/ModifierType.h

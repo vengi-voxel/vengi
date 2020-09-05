@@ -4,11 +4,8 @@
 
 #pragma once
 
-#include "video/ShapeBuilder.h"
-#include "render/ShapeRenderer.h"
 #include "core/GLM.h"
 #include "core/IComponent.h"
-#include "video/Camera.h"
 #include "voxel/Voxel.h"
 #include "math/Axis.h"
 #include "voxel/Face.h"
@@ -33,7 +30,7 @@ enum ShapeType {
 };
 
 class Modifier : public core::IComponent {
-private:
+protected:
 	Selection _selection = voxel::Region::InvalidRegion;
 	bool _selectionValid = false;
 	bool _secondPosValid = false;
@@ -43,29 +40,21 @@ private:
 	glm::ivec3 _aabbSecondPos;
 	math::Axis _aabbSecondActionDirection = math::Axis::None;
 	ModifierType _modifierType = ModifierType::Place;
-	video::ShapeBuilder _shapeBuilder;
-	render::ShapeRenderer _shapeRenderer;
-	int32_t _aabbMeshIndex = -1;
-	int32_t _selectionIndex = -1;
 	int _gridResolution = 1;
-	int32_t _mirrorMeshIndex = -1;
 	math::Axis _mirrorAxis = math::Axis::None;
 	glm::ivec3 _mirrorPos {0};
 	glm::ivec3 _cursorPosition {0};
 	voxel::FaceNames _face = voxel::FaceNames::NoOfFaces;
 	voxel::Voxel _cursorVoxel;
-	int32_t _voxelCursorMesh = -1;
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 	ShapeType _shapeType = ShapeType::AABB;
 
 	glm::ivec3 firstPos() const;
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
-	void updateMirrorPlane();
-	void renderAABBMode(const video::Camera& camera);
-	void updateSelectionBuffers();
 	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
-	bool select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
+	virtual bool select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
+	virtual void unselect();
 public:
 	Modifier();
 
@@ -103,13 +92,13 @@ public:
 	bool centerMode() const;
 
 	math::Axis mirrorAxis() const;
-	void setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
+	virtual bool setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
 
 	ModifierType modifierType() const;
 	void setModifierType(ModifierType type);
 
 	const voxel::Voxel& cursorVoxel() const;
-	void setCursorVoxel(const voxel::Voxel& voxel);
+	virtual void setCursorVoxel(const voxel::Voxel& voxel);
 
 	ShapeType shapeType() const;
 	void setShapeType(ShapeType type);
@@ -141,8 +130,6 @@ public:
 	 * @note Mirrored REMOVE ME
 	 */
 	void setGridResolution(int resolution);
-
-	void render(const video::Camera& camera);
 };
 
 inline bool Modifier::secondActionMode() const {

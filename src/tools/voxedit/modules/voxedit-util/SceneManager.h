@@ -30,7 +30,7 @@
 #include "layer/Layer.h"
 #include "layer/LayerManager.h"
 #include "modifier/ModifierType.h"
-#include "modifier/Modifier.h"
+#include "modifier/ModifierFacade.h"
 #include <functional>
 
 namespace voxedit {
@@ -73,7 +73,7 @@ private:
 	render::ShapeRenderer _shapeRenderer;
 	MementoHandler _mementoHandler;
 	LayerManager _layerMgr;
-	Modifier _modifier;
+	ModifierFacade _modifier;
 	voxel::RawVolume* _copy = nullptr;
 	render::Gizmo _gizmo;
 	EditMode _editMode = EditMode::Model;
@@ -358,8 +358,8 @@ public:
 	// component access
 	const LayerManager& layerMgr() const;
 	LayerManager& layerMgr();
-	const Modifier& modifier() const;
-	Modifier& modifier();
+	const ModifierFacade& modifier() const;
+	ModifierFacade& modifier();
 	const MementoHandler& mementoHandler() const;
 	MementoHandler& mementoHandler();
 	const voxelrender::RawVolumeRenderer& renderer() const;
@@ -450,11 +450,11 @@ inline LayerManager& SceneManager::layerMgr() {
 	return _layerMgr;
 }
 
-inline const Modifier& SceneManager::modifier() const {
+inline const ModifierFacade& SceneManager::modifier() const {
 	return _modifier;
 }
 
-inline Modifier& SceneManager::modifier() {
+inline ModifierFacade& SceneManager::modifier() {
 	return _modifier;
 }
 

@@ -476,7 +476,7 @@ void VoxEditWindow::updateStatusBar() {
 		dimension->setText(str.c_str());
 	}
 	if (tb::TBTextField* status = getWidgetByIDAndType<tb::TBTextField>("status")) {
-		const voxedit::Modifier& modifier = voxedit::sceneMgr().modifier();
+		const voxedit::ModifierFacade& modifier = voxedit::sceneMgr().modifier();
 		if (modifier.aabbMode()) {
 			const glm::ivec3& dim = modifier.aabbDim();
 			const core::String& str = core::string::format("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
@@ -940,7 +940,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 void VoxEditWindow::onProcess() {
 	Super::onProcess();
 
-	const Modifier& modifier = sceneMgr().modifier();
+	const ModifierFacade& modifier = sceneMgr().modifier();
 	if (_paletteWidget->isDirty()) {
 		const int index = _paletteWidget->getValue();
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
