@@ -42,7 +42,7 @@ int generate(voxel::RawVolumeWrapper& volume, int octaves, float lacunarity, flo
 		for (int z = lowerZ; z < lowerZ + depth; ++z) {
 			glm::vec2 p(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 			const float n = getNoise(p, octaves, lacunarity, frequency, gain, type);
-			const int ni = ::noise::norm(n) * (height - 1);
+			const int ni = (int)(::noise::norm(n) * ((float)height - 1.0f));
 			glm::ivec3 vp(x, lowerY, z);
 			for (int y = 0; y < ni - 1; ++y) {
 				vp.y = lowerY + y;

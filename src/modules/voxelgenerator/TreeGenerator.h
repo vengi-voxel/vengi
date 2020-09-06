@@ -36,7 +36,7 @@ public:
 	 * @param[in] trunkHeight The height of the trunk in voxels
 	 */
 	Tree(const glm::ivec3& position, int trunkHeight, int branchLength,
-		int crownWidth, int crownHeight, int crownDepth, float branchSize, int seed, float trunkSizeFactor);
+		int crownWidth, int crownHeight, int crownDepth, float branchSize, unsigned int seed, float trunkSizeFactor);
 };
 
 /**
@@ -154,7 +154,7 @@ static glm::ivec3 createBezierTrunk(Volume& volume, const voxelgenerator::TreePa
 	glm::ivec3 end = trunkTop;
 	end.x = trunkTop.x + shiftX;
 	end.z = trunkTop.z + shiftZ;
-	float trunkSize = ctx.trunkStrength;
+	float trunkSize = (float)ctx.trunkStrength;
 	const glm::ivec3 control(ctx.pos.x, ctx.pos.y + ctx.trunkControlOffset, ctx.pos.z);
 	shape::createBezierFunc(volume, ctx.pos, end, control, voxel,
 		[&] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& voxel) {
@@ -172,10 +172,10 @@ void createTreePalm(Volume& volume, const voxelgenerator::TreePalm& ctx, math::R
 	const glm::ivec3& start = createBezierTrunk(volume, ctx, trunkVoxel);
 	const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, random);
 	const float stepWidth = glm::radians(360.0f / (float)ctx.branches);
-	const float w = ctx.leavesWidth;
+	const float w = (float)ctx.leavesWidth;
 	float angle = random.randomf(0.0f, glm::two_pi<float>());
 	for (int b = 0; b < ctx.branches; ++b) {
-		float branchSize = ctx.branchSize;
+		float branchSize = (float)ctx.branchSize;
 		const float x = glm::cos(angle);
 		const float z = glm::sin(angle);
 		const int randomLength = random.random(ctx.leavesHeight, ctx.leavesHeight + ctx.randomLeavesHeightOffset);
@@ -219,7 +219,7 @@ void createTreeFir(Volume& volume, const voxelgenerator::TreeFir& ctx, math::Ran
 	const voxel::RandomVoxel trunkVoxel(voxel::VoxelType::Wood, random);
 	createTrunk(volume, ctx, trunkVoxel);
 
-	const float stepWidth = glm::radians(360.0f / ctx.branches);
+	const float stepWidth = glm::radians(360.0f / (float)ctx.branches);
 	float angle = random.randomf(0.0f, glm::two_pi<float>());
 	glm::ivec3 leafesPos = glm::ivec3(ctx.pos.x, ctx.pos.y + ctx.trunkHeight, ctx.pos.z);
 	const int halfHeight = ((ctx.amount - 1) * ctx.stepHeight) / 2;
@@ -244,7 +244,7 @@ void createTreeFir(Volume& volume, const voxelgenerator::TreeFir& ctx, math::Ran
 			end2.z -= z * w * ctx.branchPositionFactor;
 			shape::createLine(volume, end, end2, leavesVoxel, ctx.branchStrength);
 			angle += stepWidth;
-			w += 1.0 / (double)(b + 1);
+			w += (float)(1.0 / (double)(b + 1));
 		}
 		leafesPos.y -= ctx.stepHeight;
 	}
@@ -305,7 +305,7 @@ void createTreeDomeHangingLeaves(Volume& volume, const voxelgenerator::TreeDomeH
 		const float z = glm::sin(angle);
 		const int randomLength = random.random(ctx.hangingLeavesLengthMin, ctx.hangingLeavesLengthMax);
 
-		const glm::ivec3 start(glm::round((float)ctx.pos.x - x * (ctx.leavesWidth - 1.0f) / 2.0f), y, glm::round((float)ctx.pos.z - z * (ctx.leavesDepth - 1.0f) / 2.0f));
+		const glm::ivec3 start(glm::round((float)ctx.pos.x - x * ((float)ctx.leavesWidth - 1.0f) / 2.0f), y, glm::round((float)ctx.pos.z - z * ((float)ctx.leavesDepth - 1.0f) / 2.0f));
 		const glm::ivec3 end(start.x, start.y - randomLength, start.z);
 		shape::createLine(volume, start, end, leavesVoxel, ctx.hangingLeavesThickness);
 
@@ -364,7 +364,7 @@ void createTreeCubeSideCubes(Volume& volume, const voxelgenerator::TreeCube& ctx
 template<class Volume>
 void createSpaceColonizationTree(Volume& volume, const voxelgenerator::TreeSpaceColonization& ctx, math::Random& random) {
 	Tree tree(ctx.pos, ctx.trunkHeight, ctx.branchSize, ctx.leavesWidth, ctx.leavesHeight,
-			ctx.leavesDepth, ctx.trunkStrength, ctx.seed, ctx.trunkFactor);
+			ctx.leavesDepth, (float)ctx.trunkStrength, ctx.seed, ctx.trunkFactor);
 	tree.grow();
 	const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, random);
 	tree.generate(volume, woodRandomVoxel);

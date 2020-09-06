@@ -83,7 +83,7 @@ protected:
 
 public:
 	SpaceColonization(const glm::ivec3& position, int branchLength,
-		int width, int height, int depth, float branchSize = 4.0f, int seed = 0,
+		int width, int height, int depth, float branchSize = 4.0f, unsigned int seed = 0U,
 		int minDistance = 6, int maxDistance = 10, int attractionPointCount = 400);
 	~SpaceColonization();
 

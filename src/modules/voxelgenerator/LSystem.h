@@ -50,7 +50,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 				 float widthIncrement, uint8_t iterations, math::Random& random, float leafRadius = 8.0f) {
 	const float leafDistance = glm::round(2.0f * leafRadius);
 	// apply a factor to close potential holes
-	const int leavesVoxelCnt = glm::pow(leafDistance, 3) * 2.0f;
+	const int leavesVoxelCnt = (int)(glm::pow(leafDistance, 3) * 2.0);
 
 	angle = glm::radians(angle);
 	core::String sentence = axiom;
@@ -86,7 +86,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 		switch (c) {
 		case 'F': {
 			// Draw line forwards
-			for (int j = 0; j < length; j++) {
+			for (int j = 0; j < (int)length; j++) {
 				float r = step.width / 2.0f;
 				for (float x = -r; x < r; x++) {
 					for (float y = -r; y < r; y++) {
@@ -120,7 +120,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 		}
 		case 'b': {
 			// Move backwards (no drawing)
-			for (int j = 0; j < length; j++) {
+			for (int j = 0; j < (int)length; j++) {
 				step.pos -= 1.0f * step.rotation;
 			}
 			break;

@@ -358,7 +358,7 @@ void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end
 	const math::Bezier<int> b(start, end, control);
 	const float s = 1.0f / (float) steps;
 	for (int i = 0; i < steps; ++i) {
-		const float t = s * i;
+		const float t = s * (float)i;
 		const glm::ivec3& pos = b.getPoint(t);
 		volume.setVoxel(pos, voxel);
 	}
@@ -380,7 +380,7 @@ void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3&
 	const float s = 1.0f / (float) steps;
 	glm::ivec3 lastPos = b.getPoint(0.0f);
 	for (int i = 1; i <= steps; ++i) {
-		const float t = s * i;
+		const float t = s * (float)i;
 		const glm::ivec3& pos = b.getPoint(t);
 		func(volume, lastPos, pos, voxel);
 		lastPos = pos;
@@ -395,8 +395,8 @@ void createTorus(Volume& volume, const glm::ivec3& center, int innerRadius, int 
 		for (int y = -radius; y < radius; ++y) {
 			for (int z = -radius; z < radius; ++z) {
 				const glm::vec3 pos(center.x + x, center.y + y, center.z + z);
-				const glm::vec2 q(glm::length(glm::vec2(pos.x - innerRadius, pos.z - innerRadius)), pos.y);
-				if (glm::length2(q) < outerRadiusSquare) {
+				const glm::vec2 q(glm::length(glm::vec2(pos.x - (float)innerRadius, pos.z - (float)innerRadius)), pos.y);
+				if (glm::length2(q) < (float)outerRadiusSquare) {
 					volume.setVoxel(pos, voxel);
 				}
 			}
@@ -409,11 +409,11 @@ void createCylinder(Volume& volume, const glm::vec3& centerBottom, const math::A
 	for (int i = 0; i < height; ++i) {
 		glm::ivec3 centerH;
 		if (axis == math::Axis::Y) {
-			centerH = glm::ivec3(centerBottom.x, centerBottom.y + i, centerBottom.z);
+			centerH = glm::ivec3(centerBottom.x, centerBottom.y + (float)i, centerBottom.z);
 		} else if (axis == math::Axis::X) {
-			centerH = glm::ivec3(centerBottom.x + i, centerBottom.y, centerBottom.z);
+			centerH = glm::ivec3(centerBottom.x + (float)i, centerBottom.y, centerBottom.z);
 		} else {
-			centerH = glm::ivec3(centerBottom.x, centerBottom.y, centerBottom.z + i);
+			centerH = glm::ivec3(centerBottom.x, centerBottom.y, centerBottom.z + (float)i);
 		}
 		createCirclePlane(volume, centerH, radius * 2, radius * 2, radius, voxel, axis);
 	}

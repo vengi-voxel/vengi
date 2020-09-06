@@ -29,7 +29,7 @@ void Branch::reset() {
 
 SpaceColonization::SpaceColonization(const glm::ivec3& position, int branchLength,
 	int attractionPointWidth, int attractionPointHeight, int attractionPointDepth, float branchSize,
-	int seed, int minDistance, int maxDistance, int attractionPointCount) :
+	unsigned int seed, int minDistance, int maxDistance, int attractionPointCount) :
 		_position(position), _attractionPointCount(attractionPointCount), _attractionPointWidth(attractionPointWidth),
 		_attractionPointDepth(attractionPointDepth), _attractionPointHeight(attractionPointHeight),
 		_minDistance2(minDistance * minDistance), _maxDistance2(maxDistance * maxDistance),
