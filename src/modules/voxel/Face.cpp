@@ -87,7 +87,7 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 		tmax = tzmax;
 	}
 
-	const float rayLength = fmin(tmin, tmax);
+	const float rayLength = core_min(tmin, tmax);
 	const float x = rayOrigin.x + rayDirection.x * rayLength;
 	const float y = rayOrigin.y + rayDirection.y * rayLength;
 	const float z = rayOrigin.z + rayDirection.z * rayLength;
