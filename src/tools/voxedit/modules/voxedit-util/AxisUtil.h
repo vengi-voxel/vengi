@@ -11,7 +11,7 @@
 
 namespace voxedit {
 
-inline static int getIndexForAxis(math::Axis axis) {
+inline constexpr int getIndexForAxis(math::Axis axis) {
 	if (axis == math::Axis::X) {
 		return 0;
 	} else if (axis == math::Axis::Y) {
@@ -20,7 +20,7 @@ inline static int getIndexForAxis(math::Axis axis) {
 	return 2;
 }
 
-inline static int getIndexForMirrorAxis(math::Axis axis) {
+inline constexpr int getIndexForMirrorAxis(math::Axis axis) {
 	if (axis == math::Axis::X) {
 		return 2;
 	} else if (axis == math::Axis::Y) {
