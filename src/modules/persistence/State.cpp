@@ -112,7 +112,7 @@ void State::getResult(int colIndex, FieldType type, const char **value, int *len
 		const unsigned char *byteArray = (const unsigned char*)PQgetvalue(res, currentRow, colIndex);
 		size_t byteArraySize = 0u;
 		*value = *isNull ? nullptr : (char*)PQunescapeBytea(byteArray, &byteArraySize);
-		*length = *isNull ? 0 : byteArraySize;
+		*length = *isNull ? 0 : (int)byteArraySize;
 	} else {
 		*value = *isNull ? nullptr : PQgetvalue(res, currentRow, colIndex);
 		*length = PQgetlength(res, currentRow, colIndex);
