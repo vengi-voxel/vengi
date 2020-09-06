@@ -303,13 +303,13 @@ TBLayout: distribution: gravity, axis: y
 							TBButton: id: rotatez, @include: definitions>menubutton, command: "rotate 0 0 90"
 								TBSkinImage: skin: voxedit-axis-z
 
-					TBSection: value: 1, text: "Mirror on axis"
+					TBSection: value: 1, text: "Flip on axis"
 						TBLayout: position: left top, axis: x
-							TBButton: id: mirrorx, @include: definitions>menubutton, command: "mirror x"
+							TBButton: id: mirrorx, @include: definitions>menubutton, command: "flip x"
 								TBSkinImage: skin: voxedit-axis-x
-							TBButton: id: mirrory, @include: definitions>menubutton, command: "mirror y"
+							TBButton: id: mirrory, @include: definitions>menubutton, command: "flip y"
 								TBSkinImage: skin: voxedit-axis-y
-							TBButton: id: mirrorz, @include: definitions>menubutton, command: "mirror z"
+							TBButton: id: mirrorz, @include: definitions>menubutton, command: "flip z"
 								TBSkinImage: skin: voxedit-axis-z
 
 					TBSection: value: 1, text: "Mirror axis"

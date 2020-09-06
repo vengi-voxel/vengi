@@ -1261,9 +1261,9 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Pick the current selected color from current cursor voxel");
 
-	command::Command::registerCommand("mirror", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("flip", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
-			Log::info("Usage: mirror <axis:x,y,z>");
+			Log::info("Usage: flip <axis:x,y,z>");
 			return;
 		}
 		const char axisChar = args[0][0];
@@ -1273,8 +1273,8 @@ void SceneManager::construct() {
 		} else if (axisChar == 'z') {
 			axis = math::Axis::Z;
 		}
-		mirror(axis);
-	}).setHelp("Mirror the selected layers around the given axis");
+		flip(axis);
+	}).setHelp("Flip the selected layers around the given axis");
 
 	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -1315,7 +1315,7 @@ void SceneManager::construct() {
 	}).setHelp("Toggle center plane building");
 }
 
-void SceneManager::mirror(math::Axis axis) {
+void SceneManager::flip(math::Axis axis) {
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
 		auto* model = _volumeRenderer.volume(layerId);
 		if (model == nullptr) {

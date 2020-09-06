@@ -218,7 +218,7 @@ private:
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition);
-	void mirror(math::Axis axis);
+	void flip(math::Axis axis);
 	void updateAABBMesh();
 public:
 	~SceneManager();
