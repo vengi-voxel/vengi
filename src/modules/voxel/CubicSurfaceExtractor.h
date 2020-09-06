@@ -216,7 +216,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 
 	// During extraction we create a number of different lists of quads. All the
 	// quads in a given list are in the same plane and facing in the same direction.
-	QuadListVector vecQuads[core::enumVal(FaceNames::NoOfFaces)];
+	QuadListVector vecQuads[core::enumVal(FaceNames::Max)];
 
 	const int xSize = upper.x - offset.x + 2;
 	const int ySize = upper.y - offset.y + 2;

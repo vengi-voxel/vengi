@@ -51,7 +51,7 @@ protected:
 	math::Axis _mirrorAxis = math::Axis::None;
 	glm::ivec3 _mirrorPos {0};
 	glm::ivec3 _cursorPosition {0};
-	voxel::FaceNames _face = voxel::FaceNames::NoOfFaces;
+	voxel::FaceNames _face = voxel::FaceNames::Max;
 	voxel::Voxel _cursorVoxel;
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;

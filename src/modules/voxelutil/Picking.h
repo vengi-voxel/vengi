@@ -35,7 +35,7 @@ struct PickResult {
 
 	glm::vec3 direction;
 
-	FaceNames hitFace = FaceNames::NoOfFaces;
+	FaceNames hitFace = FaceNames::Max;
 };
 
 namespace {

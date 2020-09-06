@@ -110,7 +110,7 @@ void Modifier::shutdown() {
 	_mirrorAxis = math::Axis::None;
 	_mirrorPos = glm::ivec3(0);
 	_cursorPosition = glm::ivec3(0);
-	_face = voxel::FaceNames::NoOfFaces;
+	_face = voxel::FaceNames::Max;
 	_cursorVoxel = voxel::Voxel();
 	_shapeType = ShapeType::AABB;
 }

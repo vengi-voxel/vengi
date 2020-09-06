@@ -53,7 +53,7 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 	}
 
 	if ((tmin > tymax) || (tymin > tmax)) {
-		return FaceNames::NoOfFaces;
+		return FaceNames::Max;
 	}
 
 	if (tymin > tmin) {
@@ -76,7 +76,7 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 	}
 
 	if ((tmin > tzmax) || (tzmin > tmax)) {
-		return FaceNames::NoOfFaces;
+		return FaceNames::Max;
 	}
 
 	if (tzmin > tmin) {
@@ -93,7 +93,7 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 	const float z = rayOrigin.z + rayDirection.z * rayLength;
 
 	float delta = (std::numeric_limits<float>::max)();
-	FaceNames face = FaceNames::NoOfFaces;
+	FaceNames face = FaceNames::Max;
 
 	float current = glm::abs(x - mins.x);
 	if (delta > current) {

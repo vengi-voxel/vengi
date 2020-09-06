@@ -1847,7 +1847,7 @@ bool SceneManager::trace(bool force) {
 	_result.validPreviousPosition = false;
 	_result.firstValidPosition = false;
 	_result.direction = ray.direction;
-	_result.hitFace = voxel::FaceNames::NoOfFaces;
+	_result.hitFace = voxel::FaceNames::Max;
 	raycastWithDirection(model, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 		if (!_result.firstValidPosition && sampler.currentPositionValid()) {
 			_result.firstPosition = sampler.position();
