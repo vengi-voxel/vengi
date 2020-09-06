@@ -40,7 +40,7 @@ public:
 	String(const char *str);
 	String(const char *str, size_t len);
 	String(const String &str);
-	String(String &&str);
+	String(String &&str) noexcept;
 	~String();
 
 	void reserve(size_t bytes);
@@ -110,7 +110,7 @@ public:
 
 	String &operator=(const char *str);
 	String &operator=(const String &str);
-	String &operator=(String &&str);
+	String &operator=(String &&str) noexcept;
 	String &operator=(char c);
 	String &operator+=(const char *str);
 	String &operator+=(const String &str);

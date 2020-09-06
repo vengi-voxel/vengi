@@ -99,7 +99,7 @@ String::String(const char *str, size_t len) {
 	copyBuf(str, len);
 }
 
-String::String(String &&str) {
+String::String(String &&str) noexcept {
 	if (str.onStack()) {
 		SDL_memcpy(_buf, str._buf, _stackBufCapacity);
 		str._buf[0] = '\0';
@@ -215,7 +215,7 @@ String String::substr(size_t index, size_t len) const {
 String String::lower(const char *string) {
 	core::String str(string);
 	for (char* i = str._data._str; i != str._data._str + str._data._size; ++i) {
-		*i = SDL_tolower(*i);
+		*i = (char)SDL_tolower(*i);
 	}
 	return str;
 }
@@ -223,7 +223,7 @@ String String::lower(const char *string) {
 String String::upper(const char *string) {
 	core::String str(string);
 	for (char* i = str._data._str; i != str._data._str + str._data._size; ++i) {
-		*i = SDL_toupper(*i);
+		*i = (char)SDL_toupper(*i);
 	}
 	return str;
 }
@@ -250,7 +250,7 @@ String &String::operator=(const char *str) {
 	return *this;
 }
 
-String &String::operator=(String &&str) {
+String &String::operator=(String &&str) noexcept {
 	if (&str == this) {
 		return *this;
 	}
@@ -371,7 +371,7 @@ void String::insert(size_t index, const char *str) {
 
 size_t String::rfind(const char *s) const {
 	const size_t tokenLength = SDL_strlen(s);
-	for (int i = (int)_data._size - tokenLength; i >= 0; --i) {
+	for (int i = (int)(_data._size - tokenLength); i >= 0; --i) {
 		if (!SDL_strncmp(_data._str + i, s, tokenLength)) {
 			return i;
 		}
@@ -579,7 +579,7 @@ int String::toInt() const {
 }
 
 float String::toFloat() const {
-	return SDL_atof(_data._str);
+	return (float)SDL_atof(_data._str);
 }
 
 }
