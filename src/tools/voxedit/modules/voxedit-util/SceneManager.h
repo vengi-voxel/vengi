@@ -129,7 +129,7 @@ private:
 	bool _renderLockAxis = true;
 
 	core::String _lastFilename;
-	uint64_t _lastAutoSave = 0u;
+	double _lastAutoSave = 0u;
 
 	int32_t _planeMeshIndex[3] = {-1, -1, -1};
 

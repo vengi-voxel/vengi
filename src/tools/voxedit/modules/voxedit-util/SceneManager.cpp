@@ -141,7 +141,7 @@ void SceneManager::autosave() {
 		return;
 	}
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
-	const uint64_t delay = _autoSaveSecondsDelay->intVal();
+	const double delay = (double)_autoSaveSecondsDelay->intVal();
 	if (_lastAutoSave + delay > timeProvider->tickSeconds()) {
 		return;
 	}
