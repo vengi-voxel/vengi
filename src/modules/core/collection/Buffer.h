@@ -65,7 +65,7 @@ public:
 		core_memcpy(_buffer, other._buffer, _size * sizeof(TYPE));
 	}
 
-	Buffer(Buffer &&other) :
+	Buffer(Buffer &&other) noexcept :
 			_capacity(other._capacity), _size(other._size) {
 		_buffer = other._buffer;
 		other._buffer = nullptr;
@@ -76,6 +76,9 @@ public:
 	}
 
 	Buffer &operator=(const Buffer &other) {
+		if (&other == this) {
+			return *this;
+		}
 		release();
 		checkBufferSize(other._size);
 		_size = other._size;
@@ -83,7 +86,7 @@ public:
 		return *this;
 	}
 
-	Buffer &operator=(Buffer &&other) {
+	Buffer &operator=(Buffer &&other) noexcept {
 		release();
 		_capacity = other._capacity;
 		_size = other._size;
