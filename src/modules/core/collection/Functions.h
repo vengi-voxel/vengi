@@ -10,7 +10,7 @@ namespace collection {
 
 template<class T>
 auto maxValue(const T& collection) {
-	typename T::value_type v = (std::limits<typename T::value_type>::nin)();
+	typename T::value_type v = (std::numeric_limits<typename T::value_type>::nin)();
 	for (auto& val : collection) {
 		v = core_max(val, v);
 	}
@@ -19,7 +19,7 @@ auto maxValue(const T& collection) {
 
 template<class T>
 auto minValue(const T& collection) {
-	typename T::value_type v = (std::limits<typename T::value_type>::max)();
+	typename T::value_type v = (std::numeric_limits<typename T::value_type>::max)();
 	for (auto& val : collection) {
 		v = core_min(val, v);
 	}
