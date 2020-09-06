@@ -239,7 +239,7 @@ static void camelCase(core::String& str, bool upperCamelCase) {
 		core::String sub = str.substr(0, pos);
 		core::String second = str.substr(pos + 1, str.size() - (pos + 1));
 		if (!second.empty()) {
-			second[0] = SDL_toupper(second[0]);
+			second[0] = toUpper(second[0]);
 			sub.append(second);
 		}
 		str = sub;
@@ -252,9 +252,9 @@ static void camelCase(core::String& str, bool upperCamelCase) {
 		return;
 	}
 	if (!upperCamelCase) {
-		str[0] = SDL_tolower(str[0]);
+		str[0] = toLower(str[0]);
 	} else {
-		str[0] = SDL_toupper(str[0]);
+		str[0] = toUpper(str[0]);
 	}
 }
 
