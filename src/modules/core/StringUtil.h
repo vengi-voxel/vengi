@@ -62,8 +62,8 @@ extern char* getBeforeToken(char **buffer, const char *token, size_t bufferSize)
 
 extern void splitString(const core::String& string, core::DynamicArray<core::String>& tokens, const char* delimiters = " \t\r\n\f\v");
 
-inline char toUpper(char in) { return SDL_toupper((int)in); }
-inline char toLower(char in) { return SDL_tolower((int)in); }
+inline char toUpper(char in) { return (char)SDL_toupper((int)in); }
+inline char toLower(char in) { return (char)SDL_tolower((int)in); }
 
 inline bool startsWith(const core::String& string, const core::String& token) {
 	if (string.size() < token.size()) {
