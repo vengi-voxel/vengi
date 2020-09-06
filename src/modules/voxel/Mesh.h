@@ -19,12 +19,12 @@ class Mesh {
 public:
 	Mesh(int vertices, int indices, bool mayGetResized = false);
 	Mesh() : Mesh(128, 128, true) {}
-	Mesh(Mesh&& other);
+	Mesh(Mesh&& other) noexcept;
 	Mesh(const Mesh& other);
 	~Mesh();
 
 	Mesh& operator=(const Mesh& other);
-	Mesh& operator=(Mesh&& other);
+	Mesh& operator=(Mesh&& other) noexcept;
 
 	/**
 	 * @brief Calculate the memory amount this mesh is using
