@@ -1234,9 +1234,9 @@ void SceneManager::construct() {
 			Log::info("Usage: setcolorrgb <red> <green> <blue> (color range 0-255)");
 			return;
 		}
-		const int red = core::string::toInt(args[0]);
-		const int green = core::string::toInt(args[1]);
-		const int blue = core::string::toInt(args[2]);
+		const float red = core::string::toFloat(args[0]);
+		const float green = core::string::toFloat(args[1]);
+		const float blue = core::string::toFloat(args[2]);
 		glm::vec4 color(red / 255.0f, green / 255.0, blue / 255.0, 1.0f);
 		const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 		const int index = core::Color::getClosestMatch(color, materialColors);
