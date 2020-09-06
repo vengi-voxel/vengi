@@ -371,7 +371,7 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 }
 
 void Modifier::setGridResolution(int resolution) {
-	_gridResolution = resolution;
+	_gridResolution = core_max(1, resolution);
 	if (_aabbFirstPos.x % resolution != 0) {
 		_aabbFirstPos.x = (_aabbFirstPos.x / resolution) * resolution;
 	}
