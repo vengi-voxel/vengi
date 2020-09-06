@@ -61,8 +61,8 @@ void ViewportController::onResize(const glm::ivec2& frameBufferSize, const glm::
 
 bool ViewportController::move(bool rotate, int x, int y) {
 	if (rotate) {
-		const float yaw = x - _mouseX;
-		const float pitch = y - _mouseY;
+		const float yaw = (float)(x - _mouseX);
+		const float pitch = (float)(y - _mouseY);
 		const float s = _rotationSpeed->floatVal();
 		if (_camMode == SceneCameraMode::Free) {
 			_camera.turn(yaw * s);
