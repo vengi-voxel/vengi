@@ -81,15 +81,15 @@ char *urlEncode(const char *inBuf) {
 	char *outBuf = (char*)core_malloc(maxSize + 1);
 	char *outBufPos = outBuf;
 	while (inBufPos[0] != '\0') {
-		const char inChr = inBufPos[0];
+		const uint8_t inChr = inBufPos[0];
 		if (inChr == ' ') {
 			*outBufPos++ = '+';
 		} else if (inChr == '-' || inChr == '.' || inChr == '~' || inChr == '_' || isalnum(inChr)) {
 			*outBufPos++ = inChr;
 		} else {
 			*outBufPos++ = '%';
-			*outBufPos++ = toHex(inChr >> 4);
-			*outBufPos++ = toHex(inChr & 15);
+			*outBufPos++ = toHex((char)(inChr >> 4));
+			*outBufPos++ = toHex((char)(inChr & 15));
 		}
 		++inBufPos;
 	}
