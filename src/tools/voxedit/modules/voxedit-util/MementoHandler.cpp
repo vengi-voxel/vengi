@@ -30,7 +30,7 @@ MementoData::MementoData(const uint8_t* buf, size_t bufSize,
 	}
 }
 
-MementoData::MementoData(MementoData&& o) :
+MementoData::MementoData(MementoData&& o) noexcept :
 		_compressedSize(std::exchange(o._compressedSize, 0)),
 		_buffer(std::exchange(o._buffer, nullptr)),
 		_region(o._region) {
@@ -55,7 +55,7 @@ MementoData::MementoData(const MementoData& o) :
 	}
 }
 
-MementoData& MementoData::operator=(MementoData &&o) {
+MementoData& MementoData::operator=(MementoData &&o) noexcept {
 	if (this != &o) {
 		_compressedSize = std::exchange(o._compressedSize, 0);
 		if (_buffer) {
@@ -79,7 +79,7 @@ MementoData MementoData::fromVolume(const voxel::RawVolume* volume) {
 		core_free(compressedBuf);
 		return MementoData();
 	}
-	const MementoData data(compressedBuf, finalBufSize, volume->region());
+	MementoData data(compressedBuf, finalBufSize, volume->region());
 	core_free(compressedBuf);
 
 	Log::debug("Memento state. Volume: %i, compressed: %i",
