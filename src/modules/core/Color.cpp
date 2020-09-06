@@ -97,8 +97,8 @@ glm::vec4 Color::fromHSB(const float hue, const float saturation, const float br
 		return glm::vec4(brightness, brightness, brightness, alpha);
 	}
 	glm::vec4 color(0.0f, 0.0f, 0.0f, alpha);
-	const float h = (hue - SDL_floor(hue)) * 6.f;
-	const float f = h - SDL_floor(h);
+	const float h = (hue - (float)SDL_floor(hue)) * 6.f;
+	const float f = h - (float)SDL_floor(h);
 	const float p = brightness * (1.f - saturation);
 	const float q = brightness * (1.f - saturation * f);
 	const float t = brightness * (1.f - (saturation * (1.f - f)));
@@ -166,9 +166,9 @@ float Color::getDistance(const glm::vec4& color, float hue, float saturation, fl
 	const float dH = chue - hue;
 	const float dS = csaturation - saturation;
 	const float dV = cbrightness - brightness;
-	const float val = weightHue * glm::pow(dH, 2) +
-			weightValue * glm::pow(dV, 2) +
-			weightSaturation * glm::pow(dS, 2);
+	const float val = weightHue * (float)glm::pow(dH, 2) +
+			weightValue * (float)glm::pow(dV, 2) +
+			weightSaturation * (float)glm::pow(dS, 2);
 	return val;
 }
 
@@ -234,14 +234,14 @@ float Color::intensity(const glm::vec4& color) {
 }
 
 glm::vec4 Color::darker(const glm::vec4& color, float f) {
-	f = SDL_pow(scaleFactor, f);
+	f = (float)SDL_pow(scaleFactor, f);
 	return glm::vec4(glm::clamp(glm::vec3(color) * f, 0.0f, 1.0f), color.a);
 }
 
 glm::vec4 Color::brighter(const glm::vec4& color, float f) {
 	static float min = 21.f / magnitude;
 	glm::vec3 result = glm::vec3(color);
-	f = SDL_pow(scaleFactor, f);
+	f = (float)SDL_pow(scaleFactor, f);
 	if (glm::all(glm::epsilonEqual(glm::zero<glm::vec3>(), result, 0.00001f))) {
 		return glm::vec4(min / f, min / f, min / f, color.a);
 	}
