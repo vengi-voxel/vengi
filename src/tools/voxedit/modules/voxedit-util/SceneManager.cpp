@@ -1465,10 +1465,6 @@ bool SceneManager::runScript(const core::String& script, const core::DynamicArra
 	return retVal;
 }
 
-voxelgenerator::LUAGenerator& SceneManager::luaGenerator() {
-	return _luaGenerator;
-}
-
 void SceneManager::animate(double nowSeconds) {
 	if (_animationSpeed <= 0.0) {
 		return;
@@ -1803,18 +1799,6 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	updateLockedPlane(math::Axis::X);
 	updateLockedPlane(math::Axis::Y);
 	updateLockedPlane(math::Axis::Z);
-}
-
-void SceneManager::setRenderAxis(bool renderAxis) {
-	_renderAxis = renderAxis;
-}
-
-void SceneManager::setRenderLockAxis(bool renderLockAxis) {
-	_renderLockAxis = renderLockAxis;
-}
-
-void SceneManager::setRenderShadow(bool shadow) {
-	_renderShadow = shadow;
 }
 
 bool SceneManager::trace(bool force) {

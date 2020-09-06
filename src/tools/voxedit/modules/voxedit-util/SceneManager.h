@@ -381,6 +381,22 @@ public:
 	void onLayerDeleted(int layerId, const Layer& layer) override;
 };
 
+inline voxelgenerator::LUAGenerator& SceneManager::luaGenerator() {
+	return _luaGenerator;
+}
+
+inline void SceneManager::setRenderAxis(bool renderAxis) {
+	_renderAxis = renderAxis;
+}
+
+inline void SceneManager::setRenderLockAxis(bool renderLockAxis) {
+	_renderLockAxis = renderLockAxis;
+}
+
+inline void SceneManager::setRenderShadow(bool shadow) {
+	_renderShadow = shadow;
+}
+
 inline void SceneManager::setActiveCamera(video::Camera* camera) {
 	_camera = camera;
 	resetLastTrace();
