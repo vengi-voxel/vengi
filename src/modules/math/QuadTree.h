@@ -42,7 +42,7 @@ private:
 		}
 
 	public:
-		QuadTreeNode(QuadTreeNode&& node) :
+		QuadTreeNode(QuadTreeNode&& node) noexcept :
 				_maxDepth(node._maxDepth), _depth(node._depth), _area(node._area),
 				_contents(std::move(node._contents)), _nodes(std::move(node._nodes)) {
 		}
