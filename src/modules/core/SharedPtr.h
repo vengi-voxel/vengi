@@ -57,7 +57,7 @@ public:
 		increase();
 	}
 
-	SharedPtr(SharedPtr &&obj) : _ptr(obj.get()), _refCnt(obj.refCnt()) {
+	SharedPtr(SharedPtr &&obj) noexcept : _ptr(obj.get()), _refCnt(obj.refCnt()) {
 		obj._ptr = nullptr;
 		obj._refCnt = nullptr;
 	}
@@ -86,6 +86,9 @@ public:
 	}
 
 	SharedPtr &operator=(const SharedPtr &obj) {
+		if (&obj == this) {
+			return *this;
+		}
 		release();
 		_ptr = obj._ptr;
 		_refCnt = obj._refCnt;
@@ -93,7 +96,7 @@ public:
 		return *this;
 	}
 
-	SharedPtr &operator=(SharedPtr &&obj) {
+	SharedPtr &operator=(SharedPtr &&obj) noexcept {
 		release();
 		_ptr = obj._ptr;
 		_refCnt = obj._refCnt;
