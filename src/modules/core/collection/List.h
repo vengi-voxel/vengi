@@ -53,6 +53,9 @@ public:
 	}
 
 	List& operator=(const List& other) {
+		if (&other == this) {
+			return *this;
+		}
 		clear();
 		_allocator.shutdown();
 		_allocator.init((other._allocator.max)());
