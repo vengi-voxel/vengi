@@ -234,12 +234,12 @@ inline const Voxel& RawVolume::voxel(const glm::ivec3& pos) const {
 	return voxel(pos.x, pos.y, pos.z);
 }
 
-#define CAN_GO_NEG_X(val) (val > region.getLowerX())
-#define CAN_GO_POS_X(val) (val < region.getUpperX())
-#define CAN_GO_NEG_Y(val) (val > region.getLowerY())
-#define CAN_GO_POS_Y(val) (val < region.getUpperY())
-#define CAN_GO_NEG_Z(val) (val > region.getLowerZ())
-#define CAN_GO_POS_Z(val) (val < region.getUpperZ())
+#define CAN_GO_NEG_X(val) ((val) > region.getLowerX())
+#define CAN_GO_POS_X(val) ((val) < region.getUpperX())
+#define CAN_GO_NEG_Y(val) ((val) > region.getLowerY())
+#define CAN_GO_POS_Y(val) ((val) < region.getUpperY())
+#define CAN_GO_NEG_Z(val) ((val) > region.getLowerZ())
+#define CAN_GO_POS_Z(val) ((val) < region.getUpperZ())
 
 inline const glm::ivec3& RawVolume::Sampler::position() const {
 	return _posInVolume;
