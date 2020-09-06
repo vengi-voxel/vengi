@@ -11,7 +11,9 @@
 namespace voxedit {
 
 /**
- * @brief This is the viewport controller
+ * @brief These are the viewport settings that belong to each viewport instance.
+ *
+ * The camera and render settings are part of this instance.
  *
  * @sa Viewport
  */
