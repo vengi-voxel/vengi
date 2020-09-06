@@ -46,18 +46,17 @@ void ModifierFacade::render(const video::Camera& camera) {
 			const glm::ivec3& maxs = (glm::max)(first, cursor);
 			glm::ivec3 minsMirror = mins;
 			glm::ivec3 maxsMirror = maxs;
-			const float size = (float)_gridResolution;
+			const int size = _gridResolution;
 			if (getMirrorAABB(minsMirror, maxsMirror)) {
 				const math::AABB<int> first(mins, maxs);
 				const math::AABB<int> second(minsMirror, maxsMirror);
 				if (math::intersects(first, second)) {
-					_modifierRenderer.updateAABBMesh(glm::vec3(mins), glm::vec3(maxsMirror) + size);
+					_modifierRenderer.updateAABBMesh(mins, maxsMirror + size);
 				} else {
-					_modifierRenderer.updateAABBMirrorMesh(glm::vec3(mins), glm::vec3(maxs) + size,
-														   glm::vec3(minsMirror), glm::vec3(maxsMirror) + size);
+					_modifierRenderer.updateAABBMirrorMesh(mins, maxs + size, minsMirror, maxsMirror + size);
 				}
 			} else {
-				_modifierRenderer.updateAABBMesh(glm::vec3(mins), glm::vec3(maxs) + size);
+				_modifierRenderer.updateAABBMesh(mins, maxs + size);
 			}
 		}
 
