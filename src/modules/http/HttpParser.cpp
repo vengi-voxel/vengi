@@ -48,6 +48,9 @@ HttpParser::HttpParser(HttpParser&& other) {
 }
 
 HttpParser& HttpParser::operator=(const HttpParser& other) {
+	if (&other == this) {
+		return *this;
+	}
 	buf = (uint8_t*)SDL_malloc(other.bufSize);
 	SDL_memcpy(buf, other.buf, other.bufSize);
 	bufSize = other.bufSize;
