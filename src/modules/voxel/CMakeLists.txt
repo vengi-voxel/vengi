@@ -41,6 +41,7 @@ set(TEST_SRCS
 	tests/FaceTest.cpp
 	tests/PolyVoxTest.cpp
 	tests/RegionTest.cpp
+	tests/TestHelper.h
 	tests/AmbientOcclusionTest.cpp
 	tests/RawVolumeWrapperTest.cpp
 )
