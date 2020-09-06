@@ -10,11 +10,11 @@ namespace http {
 
 RequestParser& RequestParser::operator=(RequestParser &&other) noexcept {
 	if (&other != this) {
-		Super::operator=(std::move(other));
 		query = HTTP_PARSER_NEW_BASE_CHARPTR_MAP(other.query);
 		other.query.clear();
 		method = other.method;
 		path = HTTP_PARSER_NEW_BASE(other.path);
+		Super::operator=(std::move(other));
 	}
 	return *this;
 }

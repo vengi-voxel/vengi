@@ -10,9 +10,9 @@ namespace http {
 
 ResponseParser& ResponseParser::operator=(ResponseParser &&other) noexcept {
 	if (&other != this) {
-		Super::operator=(std::move(other));
 		status = other.status;
 		statusText = HTTP_PARSER_NEW_BASE(other.statusText);
+		Super::operator=(std::move(other));
 	}
 	return *this;
 }
