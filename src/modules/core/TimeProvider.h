@@ -20,7 +20,7 @@ private:
 	double _tickSeconds = 0.0;
 public:
 	/**
-	 * @brief Gives you the tick time. If you need higher resolution, use @c tickMillis()
+	 * @brief Gives you the tick time in milliseconds. If you need this as double value, use @c tickMillis()
 	 * @sa tickMillis()
 	 */
 	uint64_t tickNow() const;
