@@ -68,7 +68,7 @@ public:
 		}
 	}
 
-	DynamicArray(DynamicArray &&other) :
+	DynamicArray(DynamicArray &&other) noexcept :
 			_capacity(other._capacity), _size(other._size) {
 		_buffer = other._buffer;
 		other._buffer = nullptr;
@@ -81,6 +81,9 @@ public:
 	}
 
 	DynamicArray &operator=(const DynamicArray &other) {
+		if (&other == this) {
+			return *this;
+		}
 		release();
 		checkBufferSize(other._size);
 		_size = other._size;
@@ -90,7 +93,7 @@ public:
 		return *this;
 	}
 
-	DynamicArray &operator=(DynamicArray &&other) {
+	DynamicArray &operator=(DynamicArray &&other) noexcept {
 		release();
 		_capacity = other._capacity;
 		_size = other._size;
