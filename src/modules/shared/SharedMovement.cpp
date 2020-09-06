@@ -13,7 +13,7 @@
 namespace shared {
 
 glm::vec3 SharedMovement::calculateDelta(const glm::quat& rot) const {
-	float speed = _speed;
+	float speed = (float)_speed;
 	if (_jumping || _swimming) {
 		glm::vec3 delta(0.0f);
 		if (_swimming) {
@@ -106,7 +106,7 @@ glm::vec3 SharedMovement::update(double deltaFrameSeconds, float orientation, do
 		_fallingVelocity -= gravity() * deltaFrameSeconds;
 	}
 	newPos.y += _fallingVelocity * deltaFrameSeconds;
-	if (newPos.y <= _floor.heightLevel) {
+	if (newPos.y <= (float)_floor.heightLevel) {
 		newPos.y = _floor.heightLevel;
 		_fallingVelocity = 0.0;
 		_jumping = false;

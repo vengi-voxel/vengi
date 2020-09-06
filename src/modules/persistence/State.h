@@ -26,7 +26,7 @@ public:
 	}
 
 	State(Connection* connection);
-	State(State&& other);
+	State(State&& other) noexcept;
 	~State();
 
 	bool isBinary() const;

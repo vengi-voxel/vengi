@@ -15,7 +15,7 @@ State::State(Connection* connection) :
 		_connection(connection) {
 }
 
-State::State(State&& other) :
+State::State(State&& other) noexcept :
 		res(other.res), lastErrorMsg(other.lastErrorMsg), affectedRows(other.affectedRows),
 		cols(other.cols), currentRow(other.currentRow), result(other.result) {
 	other.res = nullptr;

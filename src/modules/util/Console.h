@@ -53,7 +53,7 @@ protected:
 			SDL_free(message);
 			message = (char*)(intptr_t)0xdeadbeef;
 		}
-		LogLine(LogLine&& o) {
+		LogLine(LogLine&& o) noexcept {
 			category = o.category;
 			priority = o.priority;
 			message = o.message;
@@ -63,7 +63,7 @@ protected:
 		SDL_LogPriority priority;
 		char* message;
 
-		LogLine& operator=(LogLine&& o) {
+		LogLine& operator=(LogLine&& o) noexcept {
 			if (this != &o) {
 				category = o.category;
 				priority = o.priority;
@@ -74,6 +74,9 @@ protected:
 		}
 
 		LogLine& operator=(const LogLine& o) {
+			if (&o == this) {
+				return *this;
+			}
 			category = o.category;
 			priority = o.priority;
 			if (message) {
