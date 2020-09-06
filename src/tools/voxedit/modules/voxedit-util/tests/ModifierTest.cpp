@@ -47,6 +47,18 @@ protected:
 		EXPECT_EQ(modifier.cursorVoxel(), volume.voxel(regMins));
 		modifier.shutdown();
 	}
+
+	void select(voxel::RawVolume& volume, Modifier& modifier, const glm::ivec3& mins, const glm::ivec3& maxs) {
+		prepare(modifier, mins, maxs, ModifierType::Select);
+		int executed = 0;
+		modifier.aabbAction(&volume, [&] (const voxel::Region& region, ModifierType type) {
+			EXPECT_EQ(ModifierType::Select, type);
+			EXPECT_EQ(voxel::Region(mins, maxs), region);
+			++executed;
+		});
+		modifier.aabbStop();
+		EXPECT_EQ(1, executed);
+	}
 };
 
 TEST_F(ModifierTest, testModifierStartStop) {
@@ -93,6 +105,24 @@ TEST_F(ModifierTest, testModifierActionMirrorAxisY) {
 
 TEST_F(ModifierTest, testModifierActionMirrorAxisZ) {
 	testMirror(math::Axis::Z, glm::ivec3(-2), glm::ivec3(1, -2, -2));
+}
+
+TEST_F(ModifierTest, testModifierSelection) {
+	const voxel::Region region(-10, 10);
+	voxel::RawVolume volume(region);
+
+	Modifier modifier;
+	ASSERT_TRUE(modifier.init());
+	select(volume, modifier, glm::ivec3(-1), glm::ivec3(1));
+
+	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Place);
+	int modifierExecuted = 0;
+	modifier.aabbAction(&volume, [&] (const voxel::Region &region, ModifierType modifierType) {
+		++modifierExecuted;
+		EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
+	});
+	EXPECT_EQ(1, modifierExecuted);
+	modifier.shutdown();
 }
 
 }
