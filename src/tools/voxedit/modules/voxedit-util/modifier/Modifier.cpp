@@ -91,7 +91,7 @@ void Modifier::unselect() {
 	_selectionValid = false;
 }
 
-bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
+bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs) {
 	const bool selectActive = (_modifierType & ModifierType::Delete) == ModifierType::None;
 	if (selectActive) {
 		_selection = voxel::Region{mins, maxs};
@@ -240,7 +240,7 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 
 	if ((_modifierType & ModifierType::Select) == ModifierType::Select) {
 		Log::debug("select mode");
-		select(mins, maxs, volume, callback);
+		select(mins, maxs);
 		if (_selectionValid) {
 			callback(_selection, _modifierType);
 		}

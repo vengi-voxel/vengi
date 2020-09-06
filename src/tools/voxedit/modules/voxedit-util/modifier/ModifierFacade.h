@@ -14,7 +14,7 @@ private:
 	ModifierRenderer _modifierRenderer;
 
 protected:
-	bool select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) override;
+	bool select(const glm::ivec3& mins, const glm::ivec3& maxs) override;
 	void unselect() override;
 
 public:
