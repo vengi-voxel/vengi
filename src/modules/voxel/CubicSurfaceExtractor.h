@@ -98,16 +98,6 @@ typedef std::vector<QuadList> QuadListVector;
 extern IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t z, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset);
 
-/**
- * @note Notice that the ambient occlusion is different for the vertices on the side than it is for the
- * vertices on the top and bottom. To fix this, we just need to pick a consistent orientation for
- * the quads. This can be done by comparing the ambient occlusion values for each quad and selecting
- * an appropriate orientation. Quad vertices must be sorted in clockwise order.
- */
-SDL_FORCE_INLINE bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
-	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
-}
-
 extern void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads);
 
 /**

@@ -97,6 +97,16 @@ SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool cor
 	return 3 - (side1 + side2 + corner);
 }
 
+/**
+ * @note Notice that the ambient occlusion is different for the vertices on the side than it is for the
+ * vertices on the top and bottom. To fix this, we just need to pick a consistent orientation for
+ * the quads. This can be done by comparing the ambient occlusion values for each quad and selecting
+ * an appropriate orientation. Quad vertices must be sorted in clockwise order.
+ */
+SDL_FORCE_INLINE bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
+	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
+}
+
 void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads) {
 	core_trace_scoped(GenerateMeshify);
 	for (QuadList& listQuads : vecListQuads) {
