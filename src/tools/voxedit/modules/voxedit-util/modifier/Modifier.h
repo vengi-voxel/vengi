@@ -29,6 +29,13 @@ enum ShapeType {
 	Max
 };
 
+/**
+ * @brief This class is responsible for manipulating the volume with the configured shape and for
+ * doing the selection.
+ *
+ * There are several modes availalbe. E.g. having the starting point of the aabb on a corner - or
+ * at the center, mirroring the modifications and so on.
+ */
 class Modifier : public core::IComponent {
 protected:
 	Selection _selection = voxel::Region::InvalidRegion;
