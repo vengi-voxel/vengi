@@ -52,7 +52,7 @@ public:
 				key(_key), value(_value), next(nullptr), first(key), second(value) {
 		}
 
-		inline KeyValue(KeyValue &&other) :
+		inline KeyValue(KeyValue &&other) noexcept :
 				key(core::move(other.key)), value(core::move(other.value)), next(
 						nullptr), first(key), second(value) {
 		}
