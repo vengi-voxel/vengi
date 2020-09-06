@@ -359,6 +359,22 @@ void Modifier::shutdown() {
 	_mirrorAxis = math::Axis::None;
 	_aabbMode = false;
 	_modifierType = ModifierType::Place;
+	_selection = voxel::Region::InvalidRegion;
+	_selectionValid = false;
+	_secondPosValid = false;
+	_aabbMode = false;
+	_center = false;
+	_aabbFirstPos = glm::ivec3(0);
+	_aabbSecondPos = glm::ivec3(0);
+	_aabbSecondActionDirection = math::Axis::None;
+	_modifierType = ModifierType::Place;
+	_gridResolution = 1;
+	_mirrorAxis = math::Axis::None;
+	_mirrorPos = glm::ivec3(0);
+	_cursorPosition = glm::ivec3(0);
+	_face = voxel::FaceNames::NoOfFaces;
+	_cursorVoxel = voxel::Voxel();
+	_shapeType = ShapeType::AABB;
 }
 
 math::Axis Modifier::mirrorAxis() const {

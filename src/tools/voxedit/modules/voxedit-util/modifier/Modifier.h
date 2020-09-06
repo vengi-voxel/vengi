@@ -36,8 +36,8 @@ protected:
 	bool _secondPosValid = false;
 	bool _aabbMode = false;
 	bool _center = false;
-	glm::ivec3 _aabbFirstPos;
-	glm::ivec3 _aabbSecondPos;
+	glm::ivec3 _aabbFirstPos {0};
+	glm::ivec3 _aabbSecondPos {0};
 	math::Axis _aabbSecondActionDirection = math::Axis::None;
 	ModifierType _modifierType = ModifierType::Place;
 	int _gridResolution = 1;
