@@ -95,8 +95,9 @@ bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::Raw
 	const bool selectActive = (_modifierType & ModifierType::Delete) == ModifierType::None;
 	if (selectActive) {
 		_selection = voxel::Region{mins, maxs};
+		_selectionValid = _selection.isValid();
 	} else {
-		_selection = voxel::Region::InvalidRegion;
+		unselect();
 	}
 	return true;
 }
@@ -104,7 +105,7 @@ bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::Raw
 bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;
-	if (_selection.isValid()) {
+	if (_selectionValid) {
 		operateMins = (glm::max)(mins, _selection.getLowerCorner());
 		operateMaxs = (glm::min)(maxs, _selection.getUpperCorner());
 	}
@@ -239,7 +240,11 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 
 	if ((_modifierType & ModifierType::Select) == ModifierType::Select) {
 		Log::debug("select mode");
-		return select(mins, maxs, volume, callback);
+		select(mins, maxs, volume, callback);
+		if (_selectionValid) {
+			callback(_selection, _modifierType);
+		}
+		return true;
 	}
 
 	if (volume == nullptr) {

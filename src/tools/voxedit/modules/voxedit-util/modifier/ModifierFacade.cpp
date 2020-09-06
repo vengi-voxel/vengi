@@ -73,7 +73,6 @@ void ModifierFacade::render(const video::Camera& camera) {
 
 bool ModifierFacade::select(const glm::ivec3& mins, const glm::ivec3& maxs, voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
 	if (Super::select(mins, maxs, volume, callback)) {
-		_selectionValid = _selection.isValid();
 		_modifierRenderer.updateSelectionBuffers(_selection);
 		return true;
 	}
