@@ -129,13 +129,14 @@ public:
 
 	bool modifierTypeRequiresExistingVoxel() const;
 
+	/**
+	 * @param[in] pos The position inside the volume - given in absolute world coordinates
+	 * @param[in] face The voxel::FaceNames values where the trace hits an existing voxel
+	 */
 	void setCursorPosition(const glm::ivec3& pos, voxel::FaceNames face);
 	const glm::ivec3& cursorPosition() const;
 	voxel::FaceNames cursorFace() const;
 
-	/**
-	 * @note Mirrored REMOVE ME
-	 */
 	void setGridResolution(int resolution);
 };
 
