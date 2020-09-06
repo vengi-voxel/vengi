@@ -20,12 +20,99 @@ Modifier::Modifier() :
 		_deleteExecuteButton(ModifierType::Delete) {
 }
 
-void Modifier::setModifierType(ModifierType type) {
-	_modifierType = type;
+void Modifier::construct() {
+	command::Command::registerActionButton("actionexecute", _actionExecuteButton).setBindingContext(BindingContext::Model);
+	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton).setBindingContext(BindingContext::Model);
+
+	command::Command::registerCommand("actionselect", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::Select);
+	}).setHelp("Change the modifier type to 'select'");
+
+	command::Command::registerCommand("actiondelete", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::Delete);
+	}).setHelp("Change the modifier type to 'delete'");
+
+	command::Command::registerCommand("actionplace", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::Place);
+	}).setHelp("Change the modifier type to 'place'");
+
+	command::Command::registerCommand("actioncolorize", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::Update);
+	}).setHelp("Change the modifier type to 'colorize'");
+
+	command::Command::registerCommand("actionoverride", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::Place | ModifierType::Delete);
+	}).setHelp("Change the modifier type to 'override'");
+
+	command::Command::registerCommand("shapeaabb", [&] (const command::CmdArgs& args) {
+		setShapeType(ShapeType::AABB);
+	}).setHelp("Change the shape type to 'aabb'");
+
+	command::Command::registerCommand("shapetorus", [&] (const command::CmdArgs& args) {
+		setShapeType(ShapeType::Torus);
+	}).setHelp("Change the shape type to 'torus'");
+
+	command::Command::registerCommand("shapecylinder", [&] (const command::CmdArgs& args) {
+		setShapeType(ShapeType::Cylinder);
+	}).setHelp("Change the shape type to 'cylinder'");
+
+	command::Command::registerCommand("shapeellipse", [&] (const command::CmdArgs& args) {
+		setShapeType(ShapeType::Ellipse);
+	}).setHelp("Change the shape type to 'ellipse'");
+
+	command::Command::registerCommand("shapecone", [&] (const command::CmdArgs& args) {
+		setShapeType(ShapeType::Cone);
+	}).setHelp("Change the shape type to 'cone'");
+
+	command::Command::registerCommand("shapedome", [&] (const command::CmdArgs& args) {
+		setShapeType(ShapeType::Dome);
+	}).setHelp("Change the shape type to 'dome'");
+
+	command::Command::registerCommand("unselect", [&] (const command::CmdArgs& args) {
+		unselect();
+	}).setHelp("Unselect all");
+
+	command::Command::registerCommand("mirroraxisx", [&] (const command::CmdArgs& args) {
+		setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
+	}).setHelp("Mirror around the x axis");
+
+	command::Command::registerCommand("mirroraxisy", [&] (const command::CmdArgs& args) {
+		setMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
+	}).setHelp("Mirror around the y axis");
+
+	command::Command::registerCommand("mirroraxisz", [&] (const command::CmdArgs& args) {
+		setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
+	}).setHelp("Mirror around the z axis");
+
+	command::Command::registerCommand("mirroraxisnone", [&] (const command::CmdArgs& args) {
+		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
+	}).setHelp("Disable mirror axis");
 }
 
-bool Modifier::aabbMode() const {
-	return _aabbMode;
+bool Modifier::init() {
+	return true;
+}
+
+void Modifier::shutdown() {
+	_mirrorAxis = math::Axis::None;
+	_aabbMode = false;
+	_modifierType = ModifierType::Place;
+	_selection = voxel::Region::InvalidRegion;
+	_selectionValid = false;
+	_secondPosValid = false;
+	_aabbMode = false;
+	_center = false;
+	_aabbFirstPos = glm::ivec3(0);
+	_aabbSecondPos = glm::ivec3(0);
+	_aabbSecondActionDirection = math::Axis::None;
+	_modifierType = ModifierType::Place;
+	_gridResolution = 1;
+	_mirrorAxis = math::Axis::None;
+	_mirrorPos = glm::ivec3(0);
+	_cursorPosition = glm::ivec3(0);
+	_face = voxel::FaceNames::NoOfFaces;
+	_cursorVoxel = voxel::Voxel();
+	_shapeType = ShapeType::AABB;
 }
 
 glm::ivec3 Modifier::aabbPosition() const {
@@ -278,117 +365,9 @@ void Modifier::aabbStop() {
 	_aabbMode = false;
 }
 
-ModifierType Modifier::modifierType() const {
-	return _modifierType;
-}
-
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
 	return (_modifierType & ModifierType::Delete) == ModifierType::Delete
 			|| (_modifierType & ModifierType::Update) == ModifierType::Update;
-}
-
-void Modifier::construct() {
-	command::Command::registerActionButton("actionexecute", _actionExecuteButton).setBindingContext(BindingContext::Model);
-	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton).setBindingContext(BindingContext::Model);
-
-	command::Command::registerCommand("actionselect", [&] (const command::CmdArgs& args) {
-		setModifierType(ModifierType::Select);
-	}).setHelp("Change the modifier type to 'select'");
-
-	command::Command::registerCommand("actiondelete", [&] (const command::CmdArgs& args) {
-		setModifierType(ModifierType::Delete);
-	}).setHelp("Change the modifier type to 'delete'");
-
-	command::Command::registerCommand("actionplace", [&] (const command::CmdArgs& args) {
-		setModifierType(ModifierType::Place);
-	}).setHelp("Change the modifier type to 'place'");
-
-	command::Command::registerCommand("actioncolorize", [&] (const command::CmdArgs& args) {
-		setModifierType(ModifierType::Update);
-	}).setHelp("Change the modifier type to 'colorize'");
-
-	command::Command::registerCommand("actionoverride", [&] (const command::CmdArgs& args) {
-		setModifierType(ModifierType::Place | ModifierType::Delete);
-	}).setHelp("Change the modifier type to 'override'");
-
-	command::Command::registerCommand("shapeaabb", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::AABB);
-	}).setHelp("Change the shape type to 'aabb'");
-
-	command::Command::registerCommand("shapetorus", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Torus);
-	}).setHelp("Change the shape type to 'torus'");
-
-	command::Command::registerCommand("shapecylinder", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Cylinder);
-	}).setHelp("Change the shape type to 'cylinder'");
-
-	command::Command::registerCommand("shapeellipse", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Ellipse);
-	}).setHelp("Change the shape type to 'ellipse'");
-
-	command::Command::registerCommand("shapecone", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Cone);
-	}).setHelp("Change the shape type to 'cone'");
-
-	command::Command::registerCommand("shapedome", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Dome);
-	}).setHelp("Change the shape type to 'dome'");
-
-	command::Command::registerCommand("unselect", [&] (const command::CmdArgs& args) {
-		unselect();
-	}).setHelp("Unselect all");
-
-	command::Command::registerCommand("mirroraxisx", [&] (const command::CmdArgs& args) {
-		setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
-	}).setHelp("Mirror around the x axis");
-
-	command::Command::registerCommand("mirroraxisy", [&] (const command::CmdArgs& args) {
-		setMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
-	}).setHelp("Mirror around the y axis");
-
-	command::Command::registerCommand("mirroraxisz", [&] (const command::CmdArgs& args) {
-		setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
-	}).setHelp("Mirror around the z axis");
-
-	command::Command::registerCommand("mirroraxisnone", [&] (const command::CmdArgs& args) {
-		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
-	}).setHelp("Disable mirror axis");
-}
-
-bool Modifier::init() {
-	return true;
-}
-
-void Modifier::shutdown() {
-	_mirrorAxis = math::Axis::None;
-	_aabbMode = false;
-	_modifierType = ModifierType::Place;
-	_selection = voxel::Region::InvalidRegion;
-	_selectionValid = false;
-	_secondPosValid = false;
-	_aabbMode = false;
-	_center = false;
-	_aabbFirstPos = glm::ivec3(0);
-	_aabbSecondPos = glm::ivec3(0);
-	_aabbSecondActionDirection = math::Axis::None;
-	_modifierType = ModifierType::Place;
-	_gridResolution = 1;
-	_mirrorAxis = math::Axis::None;
-	_mirrorPos = glm::ivec3(0);
-	_cursorPosition = glm::ivec3(0);
-	_face = voxel::FaceNames::NoOfFaces;
-	_cursorVoxel = voxel::Voxel();
-	_shapeType = ShapeType::AABB;
-}
-
-math::Axis Modifier::mirrorAxis() const {
-	return _mirrorAxis;
-}
-
-void Modifier::setCursorPosition(const glm::ivec3& pos, voxel::FaceNames face) {
-	_cursorPosition = pos;
-	_face = face;
 }
 
 void Modifier::setGridResolution(int resolution) {
@@ -415,10 +394,6 @@ bool Modifier::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos) {
 	_mirrorPos = mirrorPos;
 	_mirrorAxis = axis;
 	return true;
-}
-
-void Modifier::setCursorVoxel(const voxel::Voxel& voxel) {
-	_cursorVoxel = voxel;
 }
 
 void Modifier::translate(const glm::ivec3& v) {

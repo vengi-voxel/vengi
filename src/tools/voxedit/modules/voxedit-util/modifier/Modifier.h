@@ -139,6 +139,18 @@ public:
 	void setGridResolution(int resolution);
 };
 
+inline void Modifier::setModifierType(ModifierType type) {
+	_modifierType = type;
+}
+
+inline ModifierType Modifier::modifierType() const {
+	return _modifierType;
+}
+
+inline bool Modifier::aabbMode() const {
+	return _aabbMode;
+}
+
 inline bool Modifier::secondActionMode() const {
 	return _secondPosValid;
 }
@@ -163,8 +175,21 @@ inline void Modifier::setShapeType(ShapeType type) {
 	_shapeType = type;
 }
 
+inline math::Axis Modifier::mirrorAxis() const {
+	return _mirrorAxis;
+}
+
+inline void Modifier::setCursorPosition(const glm::ivec3& pos, voxel::FaceNames face) {
+	_cursorPosition = pos;
+	_face = face;
+}
+
 inline voxel::FaceNames Modifier::cursorFace() const {
 	return _face;
+}
+
+inline void Modifier::setCursorVoxel(const voxel::Voxel& voxel) {
+	_cursorVoxel = voxel;
 }
 
 inline const voxel::Voxel& Modifier::cursorVoxel() const {
