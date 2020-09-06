@@ -75,14 +75,14 @@ public:
 
 	bool valid() const;
 
-	HttpParser(HttpParser&& other);
+	HttpParser(HttpParser&& other) noexcept;
 	HttpParser(const HttpParser& other);
 	~HttpParser();
 
 	const char *headerValue(const char *name) const;
 	bool isHeaderValue(const char *name, const char *value) const;
 
-	HttpParser& operator=(HttpParser&& other);
+	HttpParser& operator=(HttpParser&& other) noexcept;
 	HttpParser& operator=(const HttpParser& other);
 };
 

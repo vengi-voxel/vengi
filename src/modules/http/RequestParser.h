@@ -22,10 +22,10 @@ public:
 	HttpMethod method = HttpMethod::NOT_SUPPORTED;
 	const char* path = nullptr;
 
-	RequestParser(RequestParser&& other);
+	RequestParser(RequestParser&& other) noexcept;
 	RequestParser(const RequestParser& other);
 
-	RequestParser& operator=(RequestParser&& other);
+	RequestParser& operator=(RequestParser&& other) noexcept;
 	RequestParser& operator=(const RequestParser& other);
 };
 

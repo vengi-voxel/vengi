@@ -11,7 +11,7 @@ HttpParser::HttpParser(uint8_t* buffer, const size_t bufferSize) :
 		buf(buffer), bufSize(bufferSize) {
 }
 
-HttpParser& HttpParser::operator=(HttpParser&& other) {
+HttpParser& HttpParser::operator=(HttpParser&& other) noexcept {
 	buf = other.buf;
 	bufSize = other.bufSize;
 	_valid = other._valid;
@@ -30,7 +30,7 @@ HttpParser& HttpParser::operator=(HttpParser&& other) {
 	return *this;
 }
 
-HttpParser::HttpParser(HttpParser&& other) {
+HttpParser::HttpParser(HttpParser&& other) noexcept {
 	buf = other.buf;
 	bufSize = other.bufSize;
 	_valid = other._valid;

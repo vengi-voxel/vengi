@@ -8,7 +8,7 @@
 
 namespace http {
 
-ResponseParser& ResponseParser::operator=(ResponseParser &&other) {
+ResponseParser& ResponseParser::operator=(ResponseParser &&other) noexcept {
 	if (&other != this) {
 		Super::operator=(std::move(other));
 		status = other.status;
@@ -17,7 +17,7 @@ ResponseParser& ResponseParser::operator=(ResponseParser &&other) {
 	return *this;
 }
 
-ResponseParser::ResponseParser(ResponseParser &&other) :
+ResponseParser::ResponseParser(ResponseParser &&other) noexcept :
 		Super(std::move(other)) {
 	status = other.status;
 	statusText = HTTP_PARSER_NEW_BASE(other.statusText);

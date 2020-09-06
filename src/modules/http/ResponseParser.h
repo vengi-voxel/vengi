@@ -20,10 +20,10 @@ public:
 
 	ResponseParser(uint8_t* responseBuffer, size_t responseBufferSize);
 
-	ResponseParser(ResponseParser&& other);
+	ResponseParser(ResponseParser&& other) noexcept;
 	ResponseParser(const ResponseParser& other);
 
-	ResponseParser& operator=(ResponseParser&& other);
+	ResponseParser& operator=(ResponseParser&& other) noexcept;
 	ResponseParser& operator=(const ResponseParser& other);
 };
 

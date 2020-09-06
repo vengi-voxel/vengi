@@ -8,7 +8,7 @@
 
 namespace http {
 
-RequestParser& RequestParser::operator=(RequestParser &&other) {
+RequestParser& RequestParser::operator=(RequestParser &&other) noexcept {
 	if (&other != this) {
 		Super::operator=(std::move(other));
 		query = HTTP_PARSER_NEW_BASE_CHARPTR_MAP(other.query);
@@ -19,7 +19,7 @@ RequestParser& RequestParser::operator=(RequestParser &&other) {
 	return *this;
 }
 
-RequestParser::RequestParser(RequestParser &&other) :
+RequestParser::RequestParser(RequestParser &&other) noexcept :
 		Super(std::move(other)) {
 	query = HTTP_PARSER_NEW_BASE_CHARPTR_MAP(other.query);
 	other.query.clear();
