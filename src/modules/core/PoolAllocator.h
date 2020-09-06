@@ -6,6 +6,7 @@
 
 #include "core/Assert.h"
 #include "core/Common.h"
+#include "core/NonCopyable.h"
 #include "core/StandardLib.h"
 #include <stdint.h>
 #include <type_traits>
@@ -20,7 +21,7 @@ namespace core {
  * @brief Allocator for a fixed amount of objects. The used memory can not grow or shrink.
  */
 template<typename T, typename SIZE = uint16_t>
-class PoolAllocator {
+class PoolAllocator : public core::NonCopyable {
 public:
 	using Type = T;
 	using PointerType = T*;
