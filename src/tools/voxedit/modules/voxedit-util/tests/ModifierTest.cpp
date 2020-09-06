@@ -22,6 +22,31 @@ protected:
 		modifier.setCursorPosition(maxs, voxel::FaceNames::PositiveX);
 		modifier.aabbStep();
 	}
+
+	void testMirror(math::Axis axis, const glm::ivec3& expectedMins, const glm::ivec3& expectedMaxs) {
+		Modifier modifier;
+		ASSERT_TRUE(modifier.init());
+		const glm::ivec3 regMins(-2);
+		const glm::ivec3 regMaxs = regMins;
+		prepare(modifier, regMins, regMaxs, ModifierType::Place);
+		EXPECT_TRUE(modifier.setMirrorAxis(axis, glm::ivec3(0)));
+		const voxel::Region region(-3, 3);
+		voxel::RawVolume volume(region);
+		int modifierExecutionCount = 0;
+		voxel::Region regions[2];
+		modifier.aabbAction(&volume, [&] (const voxel::Region &region, ModifierType modifierType) {
+			if (modifierExecutionCount < lengthof(regions)) {
+				regions[modifierExecutionCount] = region;
+			}
+			++modifierExecutionCount;
+		});
+		EXPECT_EQ(lengthof(regions), modifierExecutionCount);
+		EXPECT_EQ(voxel::Region(regMins, regMaxs), regions[0]) << regions[0];
+		EXPECT_EQ(voxel::Region(expectedMins, expectedMaxs), regions[1]) << regions[1];
+		EXPECT_NE(voxel::Voxel(), modifier.cursorVoxel());
+		EXPECT_EQ(modifier.cursorVoxel(), volume.voxel(regMins));
+		modifier.shutdown();
+	}
 };
 
 TEST_F(ModifierTest, testModifierStartStop) {
@@ -56,6 +81,18 @@ TEST_F(ModifierTest, testModifierAction) {
 	});
 	EXPECT_TRUE(modifierExecuted);
 	modifier.shutdown();
+}
+
+TEST_F(ModifierTest, testModifierActionMirrorAxisX) {
+	testMirror(math::Axis::X, glm::ivec3(-2), glm::ivec3(-2, -2, 1));
+}
+
+TEST_F(ModifierTest, testModifierActionMirrorAxisY) {
+	testMirror(math::Axis::Y, glm::ivec3(-2), glm::ivec3(-2, 1, -2));
+}
+
+TEST_F(ModifierTest, testModifierActionMirrorAxisZ) {
+	testMirror(math::Axis::Z, glm::ivec3(-2), glm::ivec3(1, -2, -2));
 }
 
 }
