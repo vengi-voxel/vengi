@@ -12,7 +12,6 @@
 namespace core {
 
 static constexpr uint64_t SecToMillis = (uint64_t)1000;
-static constexpr double SecToMillisD = 1000.0;
 
 void TimeProvider::updateTickTime() {
 	const double freq = (double)highResTimeResolution();
