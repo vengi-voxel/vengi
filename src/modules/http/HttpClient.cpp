@@ -20,7 +20,7 @@ bool HttpClient::setBaseUrl(const core::String &baseUrl) {
 
 ResponseParser HttpClient::get(const char *msg, ...) {
 	va_list ap;
-	constexpr std::size_t bufSize = 2048;
+	const size_t bufSize = 2048;
 	char text[bufSize];
 
 	va_start(ap, msg);

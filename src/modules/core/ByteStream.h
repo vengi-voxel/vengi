@@ -146,7 +146,7 @@ inline void ByteStream::addBool(bool value, bool prepend) {
 
 inline void ByteStream::addString(const core::String& string) {
 	const size_t length = string.size();
-	for (std::size_t i = 0; i < length; i++) {
+	for (size_t i = 0u; i < length; i++) {
 		addByte(uint8_t(string[i]));
 	}
 	addByte(uint8_t('\0'));

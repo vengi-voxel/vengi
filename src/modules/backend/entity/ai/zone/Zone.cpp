@@ -34,7 +34,7 @@ AIPtr Zone::getAI(ai::CharacterId id) const {
 	return ai;
 }
 
-std::size_t Zone::size() const {
+size_t Zone::size() const {
 	core::ScopedLock scopedLock(_lock);
 	return _ais.size();
 }

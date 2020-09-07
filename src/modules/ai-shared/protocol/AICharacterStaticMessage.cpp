@@ -13,9 +13,9 @@ AICharacterStaticMessage::AICharacterStaticMessage(const CharacterId& id, const 
 AICharacterStaticMessage::AICharacterStaticMessage(streamContainer& in) :
 		IProtocolMessage(PROTO_CHARACTER_STATIC), _nodeStaticDataPtr(nullptr) {
 	_chrId = readInt(in);
-	const std::size_t size = readInt(in);
+	const size_t size = readInt(in);
 	_nodeStaticData.reserve(size);
-	for (std::size_t i = 0; i < size; ++i) {
+	for (size_t i = 0u; i < size; ++i) {
 		const int32_t id = readInt(in);
 		const core::String& name = readString(in);
 		const core::String& type = readString(in);
@@ -30,9 +30,9 @@ AICharacterStaticMessage::AICharacterStaticMessage(streamContainer& in) :
 void AICharacterStaticMessage::serialize(streamContainer& out) const {
 	addByte(out, _id);
 	addInt(out, _chrId);
-	const std::size_t size = _nodeStaticDataPtr->size();
+	const size_t size = _nodeStaticDataPtr->size();
 	addInt(out, static_cast<int>(size));
-	for (std::size_t i = 0; i < size; ++i) {
+	for (size_t i = 0u; i < size; ++i) {
 		addInt(out, (*_nodeStaticDataPtr)[i].getId());
 		addString(out, (*_nodeStaticDataPtr)[i].getName());
 		addString(out, (*_nodeStaticDataPtr)[i].getType());

@@ -323,7 +323,7 @@ public:
 		}
 	}
 
-	std::size_t size() const;
+	size_t size() const;
 };
 
 inline void Zone::setDebug (bool debug) {

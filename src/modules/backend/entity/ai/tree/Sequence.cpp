@@ -13,10 +13,10 @@ ai::TreeNodeStatus Sequence::execute(const AIPtr& entity, int64_t deltaMillis) {
 		return ai::TreeNodeStatus::CANNOTEXECUTE;
 
 	ai::TreeNodeStatus result = ai::TreeNodeStatus::FINISHED;
-	const int progress = core_max(0, getSelectorState(entity));
+	const size_t progress = (size_t)core_max(0, getSelectorState(entity));
 
-	const std::size_t size = _children.size();
-	for (std::size_t i = static_cast<std::size_t>(progress); i < size; ++i) {
+	const size_t size = _children.size();
+	for (size_t i = progress; i < size; ++i) {
 		TreeNodePtr& child = _children[i];
 
 		result = child->execute(entity, deltaMillis);

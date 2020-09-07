@@ -209,8 +209,8 @@ inline core::String IProtocolMessage::readString(streamContainer& in) {
 }
 
 inline void IProtocolMessage::addString(streamContainer& out, const core::String& string) {
-	const std::size_t length = string.size();
-	for (std::size_t i = 0; i < length; ++i) {
+	const size_t length = string.size();
+	for (size_t i = 0u; i < length; ++i) {
 		out.push_back(uint8_t(string[i]));
 	}
 	out.push_back(uint8_t('\0'));

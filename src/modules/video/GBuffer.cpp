@@ -14,7 +14,7 @@ namespace video {
 
 GBuffer::GBuffer() :
 		_fbo(InvalidId), _depthTexture(InvalidId) {
-	for (std::size_t i = 0; i < SDL_arraysize(_textures); ++i) {
+	for (size_t i = 0u; i < SDL_arraysize(_textures); ++i) {
 		_textures[i] = InvalidId;
 	}
 }

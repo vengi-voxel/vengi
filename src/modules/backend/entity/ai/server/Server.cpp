@@ -113,8 +113,8 @@ void Server::addChildren(const TreeNodePtr& node, ai::AIStateNode& parent, const
 	std::vector<bool> currentlyRunning(children.size());
 	node->getRunningChildren(ai, currentlyRunning);
 	const int64_t aiTime = ai->_time;
-	const std::size_t length = children.size();
-	for (std::size_t i = 0; i < length; ++i) {
+	const size_t length = children.size();
+	for (size_t i = 0u; i < length; ++i) {
 		const TreeNodePtr& childNode = children[i];
 		const int32_t id = childNode->getId();
 		const ConditionPtr& condition = childNode->getCondition();

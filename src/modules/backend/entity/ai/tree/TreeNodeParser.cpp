@@ -43,7 +43,7 @@ void TreeNodeParser::splitTasks(const core::String& string, std::vector<core::St
 SteeringPtr TreeNodeParser::getSteering (const core::String& nodeName) {
 	core::String steerType;
 	const core::String& parameters = getBetween(nodeName, "{", "}");
-	std::size_t n = nodeName.find("{");
+	size_t n = nodeName.find("{");
 	if (n == core::String::npos)
 		n = nodeName.find("(");
 	if (n != core::String::npos) {
@@ -60,7 +60,7 @@ TreeNodePtr TreeNodeParser::getTreeNode(const core::String& name) {
 	resetError();
 	core::String nodeType;
 	core::String parameters;
-	std::size_t n = _taskString.find("(");
+	size_t n = _taskString.find("(");
 	if (n == core::String::npos || _taskString.find("{") < n) {
 		parameters = getBetween(_taskString, "{", "}");
 		n = _taskString.find("{");

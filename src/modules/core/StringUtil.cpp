@@ -64,7 +64,7 @@ bool formatBuf(char *buf, size_t bufSize, const char *msg, ...) {
 
 core::String format(const char *msg, ...) {
 	va_list ap;
-	constexpr std::size_t bufSize = 1024;
+	const size_t bufSize = 1024;
 	char text[bufSize];
 
 	va_start(ap, msg);

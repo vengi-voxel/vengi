@@ -77,7 +77,7 @@ void VoxelFontRenderer::shutdown() {
 
 void VoxelFontRenderer::text(const glm::ivec3& pos, const glm::vec4& color, const char *string, ...) {
 	va_list ap;
-	constexpr std::size_t bufSize = 4096;
+	const size_t bufSize = 4096;
 	char buf[bufSize];
 
 	va_start(ap, string);

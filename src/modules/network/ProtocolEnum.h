@@ -30,7 +30,7 @@ inline const char *toString(ENUM val, const char * const *strArray) {
 
 template<class E>
 struct EnumHash {
-	inline std::size_t operator()(const E& protocolEnum) const {
+	inline size_t operator()(const E& protocolEnum) const {
 		return static_cast<size_t>(protocolEnum);
 	}
 };

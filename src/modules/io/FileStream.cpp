@@ -49,7 +49,7 @@ int FileStream::peekByte(uint8_t& val) const {
 
 bool FileStream::addStringFormat(bool terminate, const char *fmt, ...) {
 	va_list ap;
-	constexpr std::size_t bufSize = 4096;
+	const size_t bufSize = 4096;
 	char text[bufSize];
 
 	va_start(ap, fmt);
@@ -57,7 +57,7 @@ bool FileStream::addStringFormat(bool terminate, const char *fmt, ...) {
 	text[sizeof(text) - 1] = '\0';
 	va_end(ap);
 	const size_t length = SDL_strlen(text);
-	for (std::size_t i = 0; i < length; i++) {
+	for (size_t i = 0u; i < length; i++) {
 		if (!addByte(uint8_t(text[i]))) {
 			return false;
 		}
@@ -303,7 +303,7 @@ bool FileStream::append(const uint8_t *buf, size_t size) {
 
 bool FileStream::addString(const core::String& string, bool terminate) {
 	const size_t length = string.size();
-	for (std::size_t i = 0; i < length; i++) {
+	for (size_t i = 0u; i < length; i++) {
 		if (!addByte(uint8_t(string[i]))) {
 			return false;
 		}

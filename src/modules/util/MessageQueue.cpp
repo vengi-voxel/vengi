@@ -12,7 +12,7 @@ const double MessageDelay = 2.0;
 
 void MessageQueue::message(const char *msg, ...) {
 	va_list ap;
-	constexpr std::size_t bufSize = 4096;
+	const size_t bufSize = 4096;
 	char buf[bufSize];
 
 	va_start(ap, msg);

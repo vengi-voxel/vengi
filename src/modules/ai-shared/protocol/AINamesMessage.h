@@ -4,6 +4,8 @@
 #pragma once
 
 #include "IProtocolMessage.h"
+#include <vector>
+#include "core/String.h"
 
 namespace ai {
 
@@ -32,9 +34,9 @@ public:
 
 	void serialize(streamContainer& out) const override {
 		addByte(out, _id);
-		const std::size_t size = _namesPtr->size();
+		const size_t size = _namesPtr->size();
 		addInt(out, static_cast<int>(size));
-		for (std::size_t i = 0U; i < size; ++i) {
+		for (size_t i = 0U; i < size; ++i) {
 			addString(out, (*_namesPtr)[i]);
 		}
 	}

@@ -32,9 +32,10 @@ class AIStateAggro {
 private:
 	std::vector<AIStateAggroEntry> _aggro;
 public:
-	inline void reserve(std::size_t size) {
-		if (size > 0)
+	inline void reserve(size_t size) {
+		if (size > 0u) {
 			_aggro.reserve(size);
+		}
 	}
 
 	inline void addAggro(const AIStateAggroEntry& entry) {

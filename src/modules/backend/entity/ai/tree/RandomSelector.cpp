@@ -13,10 +13,10 @@ ai::TreeNodeStatus RandomSelector::execute(const AIPtr& entity, int64_t deltaMil
 	}
 
 	TreeNodes childrenShuffled = _children;
-	const std::size_t size = childrenShuffled.size();
+	const size_t size = childrenShuffled.size();
 	shuffle(childrenShuffled.begin(), childrenShuffled.end());
 	ai::TreeNodeStatus overallResult = ai::TreeNodeStatus::FINISHED;
-	std::size_t i;
+	size_t i;
 	for (i = 0; i < size; ++i) {
 		const TreeNodePtr& child = childrenShuffled[i];
 		const ai::TreeNodeStatus result = child->execute(entity, deltaMillis);

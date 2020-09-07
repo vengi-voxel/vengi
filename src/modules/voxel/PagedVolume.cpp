@@ -229,7 +229,7 @@ PagedVolume::ChunkPtr PagedVolume::chunk(int32_t chunkX, int32_t chunkY, int32_t
 	if (i == _chunks.end()) {
 		const ChunkPtr& chunk = createNewChunk(chunkX, chunkY, chunkZ);
 		_chunks.put(pos, chunk);
-		const std::size_t chunkCount = _chunks.size();
+		const size_t chunkCount = _chunks.size();
 		if (chunkCount >= _chunkCountLimit) {
 			deleteOldestChunkIfNeeded();
 		}

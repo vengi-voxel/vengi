@@ -31,7 +31,7 @@ TEST(KeybindingParserTest, testParsing) {
 	const BindMap& m = p.getBindings();
 	ASSERT_FALSE(m.empty());
 	ASSERT_EQ(0, p.invalidBindings());
-	const std::size_t expected = 13;
+	const size_t expected = 13;
 	EXPECT_EQ(expected, m.size());
 
 	int key = 'w';

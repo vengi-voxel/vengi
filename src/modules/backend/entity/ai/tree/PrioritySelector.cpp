@@ -15,10 +15,10 @@ ai::TreeNodeStatus PrioritySelector::execute(const AIPtr& entity, int64_t deltaM
 	if (index == AI_NOTHING_SELECTED) {
 		index = 0;
 	}
-	const std::size_t size = _children.size();
+	const size_t size = _children.size();
 	ai::TreeNodeStatus overallResult = ai::TreeNodeStatus::FINISHED;
-	std::size_t i = index;
-	for (std::size_t j = 0; j < i; ++j) {
+	size_t i = index;
+	for (size_t j = 0u; j < i; ++j) {
 		_children[j]->resetState(entity);
 	}
 	for (; i < size; ++i) {
