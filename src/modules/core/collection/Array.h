@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/Assert.h"
 #include <stddef.h> // size_t
 
 namespace core {
@@ -26,12 +25,10 @@ struct Array {
 	}
 
 	inline TYPE& operator[](size_t index) {
-		core_assert(index < SIZE);
 		return _items[index];
 	}
 
 	inline const TYPE& operator[](size_t index) const {
-		core_assert(index < SIZE);
 		return _items[index];
 	}
 
