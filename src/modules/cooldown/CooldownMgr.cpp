@@ -52,7 +52,7 @@ CooldownPtr CooldownMgr::cooldown(Type type) const {
 	return i->second;
 }
 
-long CooldownMgr::defaultDuration(Type type) const {
+unsigned long CooldownMgr::defaultDuration(Type type) const {
 	return _cooldownProvider->duration(type);
 }
 

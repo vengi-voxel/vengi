@@ -37,7 +37,7 @@ public:
 };
 
 inline ConditionPtr Or::Factory::create(const ConditionFactoryContext *ctx) const {
-	if (ctx->conditions.size() < 2) {
+	if (ctx->conditions.size() < 2u) {
 		return ConditionPtr();
 	}
 	return std::make_shared<Or>(ctx->conditions);

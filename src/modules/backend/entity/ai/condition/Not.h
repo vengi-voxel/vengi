@@ -36,7 +36,7 @@ public:
 };
 
 inline ConditionPtr Not::Factory::create(const ConditionFactoryContext *ctx) const {
-	if (ctx->conditions.size() != 1) {
+	if (ctx->conditions.size() != 1u) {
 		return ConditionPtr();
 	}
 	return std::make_shared<Not>(ctx->conditions.front());

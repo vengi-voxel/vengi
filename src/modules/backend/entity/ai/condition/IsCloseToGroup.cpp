@@ -15,7 +15,7 @@ IsCloseToGroup::IsCloseToGroup(const core::String& parameters) :
 	ICondition("IsCloseToGroup", parameters) {
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(_parameters, tokens, ",");
-	if (tokens.size() != 2) {
+	if (tokens.size() != 2u) {
 		_groupId = -1;
 		_distance = -1.0f;
 	} else {

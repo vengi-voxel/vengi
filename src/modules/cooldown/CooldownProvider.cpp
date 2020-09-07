@@ -18,9 +18,9 @@ CooldownProvider::CooldownProvider() {
 	}
 }
 
-long CooldownProvider::setDuration(Type type, long duration) {
+unsigned long CooldownProvider::setDuration(Type type, unsigned long duration) {
 	const int32_t t = core::enumVal<Type>(type);
-	const long old = _durations[t];
+	const unsigned long old = _durations[t];
 	_durations[t] = duration;
 	return old;
 }
@@ -47,9 +47,9 @@ bool CooldownProvider::init(const core::String& cooldowns) {
 		const char *typeStr = luaL_checkstring(s, 1);
 		const Type type = getType(typeStr);
 		if (type == cooldown::Type::NONE) {
-			luaL_error(s, "%s is an invalid cooldown type", typeStr);
+			return luaL_error(s, "%s is an invalid cooldown type", typeStr);
 		}
-		const long millis = luaL_checkinteger(s, 2);
+		const unsigned long millis = luaL_checkinteger(s, 2);
 		Log::debug("set millis for %s to %li", typeStr, millis);
 		data->_durations[core::enumVal<Type>(type)] = millis;
 		return 0;
@@ -64,7 +64,7 @@ bool CooldownProvider::init(const core::String& cooldowns) {
 	return true;
 }
 
-long CooldownProvider::duration(Type type) const {
+unsigned long CooldownProvider::duration(Type type) const {
 	if (!_initialized) {
 		::Log::warn("Trying to get cooldown duration without CooldownProvider::init() being called");
 	}

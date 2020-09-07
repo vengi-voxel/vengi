@@ -36,11 +36,6 @@ public:
 					other._reduceType), _id(other._id) {
 	}
 
-	Entry(Entry &&other) :
-			_aggro(other._aggro), _minAggro(other._minAggro), _reduceRatioSecond(other._reduceRatioSecond), _reduceValueSecond(other._reduceValueSecond), _reduceType(
-					other._reduceType), _id(other._id) {
-	}
-
 	float getAggro() const;
 	void addAggro(float aggro);
 	void setReduceByRatio(float reductionRatioPerSecond, float minimumAggro);

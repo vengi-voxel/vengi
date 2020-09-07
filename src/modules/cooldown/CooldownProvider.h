@@ -13,7 +13,7 @@ namespace cooldown {
 /**
  * @brief Duration in millis that is taken to initialize all available cooldowns
  */
-static constexpr int DefaultDuration = 1000;
+static const unsigned long DefaultDuration = 1000;
 
 /**
  * @brief Manages the cooldown durations
@@ -22,7 +22,7 @@ static constexpr int DefaultDuration = 1000;
 class CooldownProvider {
 private:
 	bool _initialized = false;
-	long _durations[core::enumVal<Type>(Type::MAX) + 1];
+	unsigned long _durations[core::enumVal<Type>(Type::MAX) + 1];
 	core::String _error;
 public:
 	/**
@@ -33,7 +33,7 @@ public:
 	/**
 	 * @return The duration in millis for the given cooldown type
 	 */
-	long duration(Type type) const;
+	unsigned long duration(Type type) const;
 
 	/**
 	 * @brief Allow to manually override the duration of a cooldown type
@@ -41,7 +41,7 @@ public:
 	 * @param[in] duration Duration is given in milliseconds.
 	 * @return the previous duration set for the given type
 	 */
-	long setDuration(Type type, long duration);
+	unsigned long setDuration(Type type, unsigned long duration);
 
 	/**
 	 * @brief Initializes the cooldown durations.

@@ -18,7 +18,7 @@ Limit::Limit(const core::String& name, const core::String& parameters, const Con
 }
 
 ai::TreeNodeStatus Limit::execute(const AIPtr& entity, int64_t deltaMillis) {
-	if (_children.size() != 1) {
+	if (_children.size() != 1u) {
 		Log::error("Limit must have exactly one node");
 		return ai::TreeNodeStatus::EXCEPTION;
 	}

@@ -40,7 +40,7 @@ void Union::filter (const AIPtr& entity) {
 			filteredArray[1].begin(), filteredArray[1].end(),
 			std::back_inserter(result));
 
-	if (filteredArray.size() >= 2) {
+	if (filteredArray.size() >= 2u) {
 		FilteredEntities buffer(max);
 		for (size_t i = 2; i < filteredArray.size(); ++i) {
 			buffer.clear();

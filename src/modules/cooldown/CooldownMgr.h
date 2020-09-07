@@ -70,7 +70,7 @@ public:
 	 */
 	bool resetCooldown(Type type);
 
-	long defaultDuration(Type type) const;
+	unsigned long defaultDuration(Type type) const;
 	CooldownPtr cooldown(Type type) const;
 
 	/**
