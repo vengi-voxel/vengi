@@ -14,7 +14,7 @@ CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldo
 }
 
 CooldownPtr CooldownMgr::createCooldown(Type type, long startMillis) const {
-	const unsigned long duration = defaultDuration(type);
+	const long duration = defaultDuration(type);
 	long expireMillis;
 	if (startMillis <= 0l) {
 		expireMillis = 0L;
@@ -52,7 +52,7 @@ CooldownPtr CooldownMgr::cooldown(Type type) const {
 	return i->second;
 }
 
-unsigned long CooldownMgr::defaultDuration(Type type) const {
+long CooldownMgr::defaultDuration(Type type) const {
 	return _cooldownProvider->duration(type);
 }
 
