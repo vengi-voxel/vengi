@@ -8,7 +8,7 @@
 #include "animation/BoneId.h"
 #include "animation/Skeleton.h"
 #include "BirdSkeletonAttribute.h"
-#include "core/GLM.h"
+#include <glm/fwd.hpp>
 
 namespace animation {
 

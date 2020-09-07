@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include "core/GLMConst.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>

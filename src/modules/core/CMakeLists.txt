@@ -32,6 +32,7 @@ set(SRCS
 	FourCC.h
 	GameConfig.h
 	GLM.cpp GLM.h
+	GLMConst.h
 	Hash.h
 	IComponent.h
 	Log.cpp Log.h

@@ -7,7 +7,7 @@
 #include "animation/BoneUtil.h"
 #include "animation/animal/bird/BirdSkeleton.h"
 #include "animation/animal/bird/BirdSkeletonAttribute.h"
-#include "core/GLM.h"
+#include "core/GLMConst.h"
 
 namespace animation {
 namespace animal {

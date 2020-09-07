@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/GLMConst.h"
 #include "core/Assert.h"
 #include "core/Common.h"
 #include "core/Hash.h"
@@ -20,13 +21,6 @@ namespace glm {
 	core_assert_msg(!glm::isinf(vec.x), "x is inf"); \
 	core_assert_msg(!glm::isinf(vec.y), "y is inf"); \
 	core_assert_msg(!glm::isinf(vec.z), "z is inf");
-
-constexpr vec3 forward  = vec3( 0.0f,  0.0f, -1.0f);
-constexpr vec3 backward = vec3( 0.0f,  0.0f,  1.0f);
-constexpr vec3 right    = vec3( 1.0f,  0.0f,  0.0f);
-constexpr vec3 left     = vec3(-1.0f,  0.0f,  0.0f);
-constexpr vec3 up       = vec3( 0.0f,  1.0f,  0.0f);
-constexpr vec3 down     = vec3( 0.0f, -1.0f,  0.0f);
 
 /**
  * Calculate the line segment PaPb that is the shortest route between
