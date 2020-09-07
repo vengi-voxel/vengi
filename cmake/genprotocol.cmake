@@ -1,3 +1,8 @@
+macro(protocol_include_dir TARGET DEPENDENCY)
+	set(GEN_DIR ${GENERATE_DIR}/protocol/${DEPENDENCY}/)
+	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
+endmacro()
+
 macro(generate_protocol TARGET)
 	set(files ${ARGV})
 	list(REMOVE_AT files 0)

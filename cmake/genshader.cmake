@@ -22,6 +22,11 @@ function(read_shader_includes shaderpath include_dirs includes_list_out)
 	set(${includes_list_out} ${_local_list} PARENT_SCOPE)
 endfunction()
 
+macro(shader_include_dir TARGET DEPENDENCY)
+	set(GEN_DIR ${GENERATE_DIR}/shaders/${DEPENDENCY}/)
+	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
+endmacro()
+
 macro(generate_shaders TARGET)
 	set(files ${ARGV})
 	list(REMOVE_AT files 0)
