@@ -121,9 +121,9 @@ public:
 		const uint32_t px = (uint32_t)position.x;
 		const uint32_t py = (uint32_t)position.y;
 		const uint32_t pz = (uint32_t)position.z;
-		const int x = (px - _offset.x) >> _k;
-		const int y = (py - _offset.y) >> _k;
-		const int z = (pz - _offset.z) >> _k;
+		const int x = (int)(px - _offset.x) >> _k;
+		const int y = (int)(py - _offset.y) >> _k;
+		const int z = (int)(pz - _offset.z) >> _k;
 		const int j = x + _numCells.x * z + _numCells.x * _numCells.z * y;
 
 		if (j >= 0 && j < (int)_grid.size()) {
@@ -246,7 +246,7 @@ std::vector<glm::vec3> poissonDiskDistribution(float separation, const math::AAB
 	// while there's points in the processing list
 	while (!processingList.empty()) {
 		// pick a random point in the processing list
-		const int randPoint = rnd.random(0, processingList.size() - 1);
+		const int randPoint = rnd.random(0, (int)processingList.size() - 1);
 		const glm::vec3 center = processingList[randPoint];
 
 		// remove it
@@ -258,9 +258,9 @@ std::vector<glm::vec3> poissonDiskDistribution(float separation, const math::AAB
 			const float randRadius = separation * (1.0f + rnd.randomf());
 			const float randAngle1 = rnd.randomf() * glm::two_pi<float>();
 			const float randAngle2 = rnd.randomf() * glm::two_pi<float>();
-			const float x = center.x + cos(randAngle1) * sin(randAngle2) * randRadius;
-			const float y = center.y + sin(randAngle1) * sin(randAngle2) * randRadius;
-			const float z = center.z + cos(randAngle2) * randRadius;
+			const float x = center.x + glm::cos(randAngle1) * glm::sin(randAngle2) * randRadius;
+			const float y = center.y + glm::sin(randAngle1) * glm::sin(randAngle2) * randRadius;
+			const float z = center.z + glm::cos(randAngle2) * randRadius;
 			const glm::vec3 newPoint(x, y, z);
 
 			// check if the new random point is in the window bounds
@@ -292,7 +292,7 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const math::Rec
 	// while there's points in the processing list
 	while (!processingList.empty()) {
 		// pick a random point in the processing list
-		const int randPoint = rnd.random(0, processingList.size() - 1);
+		const int randPoint = rnd.random(0, (int)processingList.size() - 1);
 		const glm::vec2 center = processingList[randPoint];
 
 		// remove it
@@ -303,7 +303,7 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const math::Rec
 		for (int i = 0; i < k; ++i) {
 			const float randRadius = separation * (1.0f + rnd.randomf());
 			const float randAngle = rnd.randomf() * glm::two_pi<float>();
-			const glm::vec2 newPoint = center + glm::vec2(cos(randAngle), sin(randAngle)) * randRadius;
+			const glm::vec2 newPoint = center + glm::vec2(glm::cos(randAngle), glm::sin(randAngle)) * randRadius;
 
 			// check if the new random point is in the window bounds
 			// and if it has no neighbors that are too close to them
@@ -335,7 +335,7 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
 	// while there's points in the processing list
 	while (!processingList.empty()) {
 		// pick a random point in the processing list
-		const int randPoint = rnd.random(0, processingList.size() - 1);
+		const int randPoint = rnd.random(0, (int)processingList.size() - 1);
 		const glm::vec2 center = processingList[randPoint];
 
 		// remove it
@@ -349,7 +349,7 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
 		for (int i = 0; i < k; ++i) {
 			const float randRadius = dist * (1.0f + rnd.randomf());
 			const float randAngle = rnd.randomf() * glm::two_pi<float>();
-			const glm::vec2 newPoint = center + glm::vec2(cos(randAngle), sin(randAngle)) * randRadius;
+			const glm::vec2 newPoint = center + glm::vec2(glm::cos(randAngle), glm::sin(randAngle)) * randRadius;
 
 			// check if the new random point is in the window bounds
 			// and if it has no neighbors that are too close to them
@@ -381,7 +381,7 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
 	// while there's points in the processing list
 	while (!processingList.empty()) {
 		// pick a random point in the processing list
-		const int randPoint = rnd.random(0, processingList.size() - 1);
+		const int randPoint = rnd.random(0, (int)processingList.size() - 1);
 		const glm::vec2 center = processingList[randPoint];
 
 		// remove it
@@ -395,7 +395,7 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
 		for (int i = 0; i < k; i++) {
 			const float randRadius = dist * (1.0f + rnd.randomf());
 			const float randAngle = rnd.randomf() * glm::two_pi<float>();
-			const glm::vec2 newPoint = center + glm::vec2(cos(randAngle), sin(randAngle)) * randRadius;
+			const glm::vec2 newPoint = center + glm::vec2(glm::cos(randAngle), glm::sin(randAngle)) * randRadius;
 
 			// check if the new random point is in the window bounds
 			// and if it has no neighbors that are too close to them

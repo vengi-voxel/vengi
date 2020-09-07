@@ -64,7 +64,7 @@ int32_t Noise::intValueNoise(const glm::ivec3& pos, int32_t seed) const {
 }
 
 double Noise::doubleValueNoise(const glm::ivec3& pos, int32_t seed) const {
-	constexpr double div = static_cast<double>((std::numeric_limits<int32_t>::max)() / 2 + 1);
+	constexpr double div = (std::numeric_limits<int32_t>::max)() / 2.0 + 1.0;
 	const int ni = intValueNoise(pos, seed);
 	const double n = static_cast<double>(ni / div);
 	return 1.0 - glm::abs(n);
@@ -111,7 +111,7 @@ float Noise::swissTurbulence(const glm::vec2& p, float offset, int octaves, floa
 	float amp = 1.0f;
 	glm::vec2 dsum(0.0f);
 	for (int i = 0; i < octaves; i++) {
-		const glm::vec2 in(p + glm::vec2(offset + i) + warp * dsum);
+		const glm::vec2 in(p + glm::vec2(offset + (float)i) + warp * dsum);
 		const glm::vec3& n = dnoise(in * freq);
 		sum += amp * (1.0f - glm::abs(n.x));
 		dsum += amp * glm::vec2(n.y, n.z) * -(n.x * 1.5f);
@@ -133,7 +133,7 @@ float Noise::jordanTurbulence(const glm::vec2& p, float offset, int octaves, flo
 	float dampedAmp = amp * gain;
 
 	for (int i = 1; i < octaves; i++) {
-		const glm::vec2 in((p + glm::vec2(offset + i / 256.0f)) * freq + glm::vec2(dsumWarp));
+		const glm::vec2 in((p + glm::vec2(offset + (float)i / 256.0f)) * freq + glm::vec2(dsumWarp));
 		n = dnoise(in);
 		n2 = n * n.x;
 		sum += dampedAmp * n2.x;
@@ -170,7 +170,7 @@ void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persiste
 	}
 	core::Buffer<uint8_t> bufferChannel(size * size);
 	const float pi2 = glm::two_pi<float>();
-	const float d = 1.0f / size;
+	const float d = 1.0f / (float)size;
 	for (int channel = 0; channel < components; ++channel) {
 		// seamless noise: https://www.gamedev.net/blog/33/entry-2138456-seamless-noise/
 		float s = 0.0f;

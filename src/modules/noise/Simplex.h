@@ -1,19 +1,19 @@
 /*
  Simplex Noise
- 
+
  Copyright (c) 2016, Simon Geilfus, All rights reserved.
  Code adapted from Stefan Gustavson Simplex Noise Public Domain implementation
  Curl noise adapted from Robert Bridson papers
  This code also includes variation of noise sums by Iñigo Quilez
- 
+
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that
  the following conditions are met:
- 
+
  * Redistributions of source code must retain the above copyright notice, this list of conditions and
  the following disclaimer.
  * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
  the following disclaimer in the documentation and/or other materials provided with the distribution.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
  PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
@@ -159,7 +159,7 @@ inline void seed(uint32_t s);
 
 // implementation
 
-#define FASTFLOOR(x) ( ((x)>0) ? ((int)x) : (((int)x)-1) )
+#define FASTFLOOR(x) ( ((x)>0) ? ((int)(x)) : (((int)(x))-1) )
 
 namespace details {
 /*
