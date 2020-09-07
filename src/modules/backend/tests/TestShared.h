@@ -5,6 +5,7 @@
 #include "backend/entity/ai/group/GroupMgr.h"
 #include "app/tests/AbstractTest.h"
 #include "TestEntity.h"
+#include <glm/gtc/epsilon.hpp>
 #include <sstream>
 #include <iostream>
 
@@ -25,8 +26,7 @@ inline void PrintTo(const vec4& v, ::std::ostream* os) {
 }
 
 inline bool operator==(const glm::vec3 &vecA, const glm::vec3 &vecB) {
-	static const double epsilion = 0.0001;
-	return fabs(vecA[0] - vecB[0]) < epsilion && fabs(vecA[1] - vecB[1]) < epsilion && fabs(vecA[2] - vecB[2]) < epsilion;
+	return glm::all(glm::epsilonEqual(vecA, vecB, 0.0001f));
 }
 
 class TestSuite: public app::AbstractTest {
