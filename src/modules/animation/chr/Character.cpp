@@ -124,7 +124,7 @@ void Character::update(double deltaSeconds, const attrib::ShadowAttributes& attr
 	// TODO: lerp the animations
 	for (int i = 0; i <= core::enumVal(Animation::MAX); ++i) {
 		const double aTime = _animationTimes[i];
-		if (aTime < _globalTimeSeconds) {
+		if (aTime <= _globalTimeSeconds) {
 			continue;
 		}
 		const Animation anim = (Animation)i;
