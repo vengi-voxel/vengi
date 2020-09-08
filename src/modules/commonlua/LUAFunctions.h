@@ -3,11 +3,11 @@
  */
 #pragma once
 
-#include "LUA.h"
+#include "commonlua/LUA.h"
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "core/StringUtil.h"
-#include "lua.h"
+#include <lua.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
