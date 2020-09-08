@@ -3,9 +3,7 @@
  */
 
 #include "Skeleton.h"
-#include "core/Assert.h"
 #include "animation/BoneUtil.h"
-#include "core/Log.h"
 
 namespace animation {
 
@@ -14,12 +12,10 @@ Skeleton::Skeleton() {
 }
 
 const Bone& Skeleton::bone(BoneId id) const {
-	core_assert(id != BoneId::Max);
 	return _bones[core::enumVal(id)];
 }
 
 Bone& Skeleton::bone(BoneId id) {
-	core_assert(id != BoneId::Max);
 	return _bones[core::enumVal(id)];
 }
 
