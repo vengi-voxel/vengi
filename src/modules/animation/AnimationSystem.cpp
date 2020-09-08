@@ -31,7 +31,7 @@ animation_animal_bird_idle_update_PROC* animal_bird_idle_update = nullptr;
 #define HOT_RELOAD_FUNC(name) \
 	name = animation_##name;
 
-bool AnimationSystem::init() {
+bool AnimationSystem::loadSymbols() {
 	HOT_RELOAD_FUNC(chr_glide_update);
 	HOT_RELOAD_FUNC(chr_idle_update);
 	HOT_RELOAD_FUNC(chr_jump_update);
@@ -43,6 +43,13 @@ bool AnimationSystem::init() {
 	HOT_RELOAD_FUNC(animal_bird_run_update);
 	HOT_RELOAD_FUNC(animal_bird_idle_update);
 
+	return true;
+}
+
+bool AnimationSystem::init() {
+	if (!loadSymbols()) {
+		return false;
+	}
 	return true;
 }
 

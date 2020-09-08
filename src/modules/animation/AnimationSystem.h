@@ -44,6 +44,8 @@ extern animation_animal_bird_run_update_PROC* animal_bird_run_update;
 extern animation_animal_bird_idle_update_PROC* animal_bird_idle_update;
 
 class AnimationSystem : public core::IComponent {
+private:
+	bool loadSymbols();
 public:
 	bool init() override;
 	void shutdown() override;
