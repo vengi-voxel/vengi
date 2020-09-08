@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "animation/AnimationSystem.h"
 #include "app/tests/AbstractTest.h"
 #include "animation/AnimationSettings.h"
 #include "animation/chr/CharacterSkeletonAttribute.h"
@@ -41,6 +42,8 @@ class CharacterSettingsTest: public app::AbstractTest {
 };
 
 TEST_F(CharacterSettingsTest, testLUA) {
+	AnimationSystem system;
+	ASSERT_TRUE(system.init());
 	AnimationSettings settings;
 	CharacterSkeletonAttribute skeletonAttr;
 	ASSERT_TRUE(loadAnimationSettings(TestSetters, settings, &skeletonAttr))

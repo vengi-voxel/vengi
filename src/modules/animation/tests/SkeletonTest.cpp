@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "animation/AnimationSystem.h"
 #include "app/tests/AbstractTest.h"
 #include "animation/chr/CharacterSkeleton.h"
 #include "animation/AnimationSettings.h"
@@ -13,6 +14,8 @@ namespace animation {
 class SkeletonTest: public app::AbstractTest {
 protected:
 	void test(const char *file) {
+		AnimationSystem system;
+		ASSERT_TRUE(system.init());
 		CharacterSkeleton skel;
 		AnimationSettings settings;
 		const core::String& lua = io::filesystem()->load("%s", file);

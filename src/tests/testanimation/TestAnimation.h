@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "animation/AnimationSystem.h"
 #include "testcore/TestApp.h"
 #include "animation/AnimationCache.h"
 #include "animation/AnimationRenderer.h"
@@ -25,6 +26,7 @@ private:
 	int _entityType = 0;
 	animation::AnimationCachePtr _animationCache;
 	animation::AnimationRenderer _renderer;
+	animation::AnimationSystem _animationSystem;
 	stock::StockDataProviderPtr _stockDataProvider;
 	stock::Stock _stock;
 

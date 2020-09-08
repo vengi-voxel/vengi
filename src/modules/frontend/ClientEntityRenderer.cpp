@@ -45,6 +45,10 @@ bool ClientEntityRenderer::init() {
 		Log::error("Failed to init skeleton depthmap shader");
 		return false;
 	}
+	if (!_animationSystem.init()) {
+		Log::error("Failed to init the animation system");
+		return false;
+	}
 	const int shaderMaterialColorsArraySize = lengthof(shader::SkeletonData::MaterialblockData::materialcolor);
 	const int materialColorsArraySize = (int)voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
@@ -79,6 +83,7 @@ void ClientEntityRenderer::shutdown() {
 	_skeletonShadowMapShader.shutdown();
 	_skeletondepthmapShader.shutdown();
 	_entitiesDepthBuffer.shutdown();
+	_animationSystem.shutdown();
 }
 
 void ClientEntityRenderer::update(const glm::vec3& focusPos, float seconds) {

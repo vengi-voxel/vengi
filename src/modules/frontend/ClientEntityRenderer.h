@@ -5,6 +5,7 @@
 #pragma once
 
 #include "AnimationShaders.h"
+#include "animation/AnimationSystem.h"
 #include "core/IComponent.h"
 #include "video/FrameBuffer.h"
 #include "core/Var.h"
@@ -32,6 +33,7 @@ private:
 	shader::SkeletonData _materialBlock;
 	shader::SkeletonshadowmapShader& _skeletonShadowMapShader;
 	shader::SkeletondepthmapShader& _skeletondepthmapShader;
+	animation::AnimationSystem _animationSystem;
 
 	video::FrameBuffer _entitiesDepthBuffer;
 

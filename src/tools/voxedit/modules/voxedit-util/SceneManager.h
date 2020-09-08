@@ -84,6 +84,8 @@ private:
 
 	animation::AnimationRenderer _animationRenderer;
 	animation::AnimationCachePtr _animationCache;
+	animation::AnimationSystem _animationSystem;
+
 	// if we are in animation mode and we modified the meshes, we have to
 	// update the cache with the current volume. this is the layer id
 	// that we have to perform the update for - or -1 if all layers were

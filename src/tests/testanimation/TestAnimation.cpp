@@ -139,6 +139,11 @@ app::AppState TestAnimation::onInit() {
 		return state;
 	}
 
+	if (!_animationSystem.init()) {
+		Log::error("Failed to initialize the animation system");
+		return app::AppState::InitFailure;
+	}
+
 	for (int i = core::enumVal(animation::Animation::MIN); i <= core::enumVal(animation::Animation::MAX); ++i) {
 		_animations.push_back(animation::toString((animation::Animation)i));
 	}
@@ -271,6 +276,7 @@ app::AppState TestAnimation::onCleanup() {
 	_animationCache->shutdown();
 	_stockDataProvider->shutdown();
 	_renderer.shutdown();
+	_animationSystem.shutdown();
 	return Super::onCleanup();
 }
 

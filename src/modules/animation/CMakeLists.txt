@@ -17,6 +17,7 @@ set(SRCS
 	animal/bird/BirdSkeleton.cpp animal/bird/BirdSkeleton.h
 	animal/bird/BirdSkeletonAttribute.cpp animal/bird/BirdSkeletonAttribute.h
 
+	AnimationSystem.cpp AnimationSystem.h
 	Animation.cpp Animation.h
 	AnimationCache.cpp AnimationCache.h
 	AnimationSettings.cpp AnimationSettings.h

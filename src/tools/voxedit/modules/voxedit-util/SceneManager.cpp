@@ -1413,6 +1413,10 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the volume cache");
 		return false;
 	}
+	if (!_animationSystem.init()) {
+		Log::error("Failed to initialize the animation system");
+		return false;
+	}
 	if (!_animationRenderer.init()) {
 		Log::error("Failed to initialize the character renderer");
 		return false;
@@ -1585,6 +1589,7 @@ void SceneManager::shutdown() {
 	_animationCache->shutdown();
 	_character.shutdown();
 	_bird.shutdown();
+	_animationSystem.shutdown();
 
 	_referencePointMesh = -1;
 	_aabbMeshIndex = -1;

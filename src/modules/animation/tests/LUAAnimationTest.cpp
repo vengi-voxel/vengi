@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "animation/AnimationSystem.h"
 #include "animation/SkeletonAttribute.h"
 #include "animation/chr/CharacterSkeleton.h"
 #include "animation/chr/CharacterSkeletonAttribute.h"
@@ -15,6 +16,8 @@ namespace animation {
 class LUAAnimationTest: public app::AbstractTest {
 protected:
 	void exec(const char *scriptName, const char *animation) {
+		AnimationSystem system;
+		ASSERT_TRUE(system.init());
 		const core::String& script = io::filesystem()->load("%s", scriptName);
 		lua::LUA lua;
 		luaanim_setup(lua);
