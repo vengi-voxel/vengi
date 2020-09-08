@@ -3,11 +3,7 @@
  */
 
 #include "Sit.h"
-#include "animation/Animation.h"
 #include "animation/BoneUtil.h"
-#include "core/Var.h"
-
-#define F(name, defaultVal) core::Var::get(name, CORE_STRINGIFY(defaultVal))->floatVal()
 
 namespace animation {
 namespace chr {

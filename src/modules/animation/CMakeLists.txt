@@ -28,6 +28,7 @@ set(SRCS
 	LUAAnimation.h LUAAnimation.cpp
 	Skeleton.h Skeleton.cpp
 	SkeletonAttribute.h
+	ToolAnimationType.h
 )
 set(SRCS_SHADERS
 	shaders/skeleton.vert shaders/skeleton.frag
@@ -130,7 +131,8 @@ set(LUA_SRCS
 	animations/bird.lua
 	animations/character.lua
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES stock voxelformat render)
+set(DEPENDENCIES stock voxelformat render)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES ${DEPENDENCIES})
 generate_shaders(${LIB} skeleton skeletonshadowmap skeletondepthmap)
 
 set(TEST_SRCS

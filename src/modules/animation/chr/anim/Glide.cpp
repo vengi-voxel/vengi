@@ -3,7 +3,6 @@
  */
 
 #include "Glide.h"
-#include "animation/Animation.h"
 #include "animation/BoneUtil.h"
 
 namespace animation {

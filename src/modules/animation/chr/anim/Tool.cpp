@@ -3,9 +3,7 @@
  */
 
 #include "Tool.h"
-#include "animation/Animation.h"
 #include "animation/BoneUtil.h"
-#include "core/Assert.h"
 
 namespace animation {
 namespace chr {
@@ -80,8 +78,6 @@ static void stroke(double animTime, CharacterSkeleton &skeleton, const Character
 }
 
 void update(double animTime, ToolAnimationType animation, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
-	core_assert(animation != ToolAnimationType::None && animation != ToolAnimationType::Max);
-
 	head(animTime, skeleton, skeletonAttr);
 
 	skeleton.bone(BoneId::Chest) = translate(0.0f, skeletonAttr.chestY, 0.0f);

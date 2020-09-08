@@ -5,7 +5,7 @@
 #pragma once
 
 #include "animation/chr/CharacterSkeleton.h"
-#include "animation/Animation.h"
+#include "animation/ToolAnimationType.h"
 
 namespace animation {
 namespace chr {

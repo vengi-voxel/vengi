@@ -3,7 +3,6 @@
  */
 
 #include "Idle.h"
-#include "animation/Animation.h"
 #include "animation/BoneUtil.h"
 #include "animation/animal/bird/BirdSkeleton.h"
 #include "animation/animal/bird/BirdSkeletonAttribute.h"
