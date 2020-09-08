@@ -333,15 +333,15 @@ static void changeCallback (uv_fs_event_t *handle, const char *filename, int eve
 	uv_fs_event_getpath(handle, path, &size);
 	path[size] = '\0';
 
-	FileWatcher watcherCallback = (FileWatcher)handle->data;
-	watcherCallback(filename);
+	FileWatcher* watcherCallback = (FileWatcher*)handle->data;
+	watcherCallback->callback(watcherCallback->userdata, filename);
 
 	// restart watching
 	uv_fs_event_stop(handle);
 	uv_fs_event_start(handle, changeCallback, path, 0U);
 }
 
-bool Filesystem::watch(const core::String& path, FileWatcher watcher) {
+bool Filesystem::watch(const core::String& path, FileWatcher *watcher) {
 	unwatch(path);
 	uv_fs_event_t* fsEvent = new uv_fs_event_t;
 	if (uv_fs_event_init(_loop, fsEvent) != 0) {
@@ -360,7 +360,7 @@ bool Filesystem::watch(const core::String& path, FileWatcher watcher) {
 	return true;
 }
 
-bool Filesystem::watch(const io::FilePtr& file, FileWatcher watcher) {
+bool Filesystem::watch(const io::FilePtr& file, FileWatcher *watcher) {
 	return watch(file->name(), watcher);
 }
 

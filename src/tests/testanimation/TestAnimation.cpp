@@ -125,9 +125,10 @@ bool TestAnimation::loadAnimationEntity() {
 		filesystem()->unwatch(_luaFile);
 	}
 	_luaFile = file;
-	filesystem()->watch(_luaFile, [] (const char *file) {
+	static io::FileWatcher watcher { this, [] (void* userdata, const char *file) {
 		reloadAnimationEntity = true;
-	});
+	}};
+	filesystem()->watch(_luaFile, &watcher);
 
 	return true;
 }

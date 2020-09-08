@@ -22,7 +22,10 @@ typedef struct uv_loop_s uv_loop_t;
 
 namespace io {
 
-typedef void (*FileWatcher)(const char* file);
+struct FileWatcher {
+	void *userdata;
+	void (*callback)(void* userdata, const char* file);
+};
 using Paths = core::DynamicArray<core::String>;
 
 /**
@@ -62,8 +65,8 @@ public:
 
 	bool unwatch(const core::String& path);
 	bool unwatch(const io::FilePtr& file);
-	bool watch(const core::String& path, FileWatcher watcher);
-	bool watch(const io::FilePtr& file, FileWatcher watcher);
+	bool watch(const core::String& path, FileWatcher *watcher);
+	bool watch(const io::FilePtr& file, FileWatcher *watcher);
 
 	/**
 	 * @brief Get the path where the application resides.
