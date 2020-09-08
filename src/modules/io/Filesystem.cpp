@@ -303,7 +303,7 @@ static bool closeFileWatchHandle(uv_fs_event_t* fshandle) {
 	if (uv_is_closing(handle)) {
 		return true;
 	}
-	uv_close(handle, [](uv_handle_t *handle) { delete handle; });
+	uv_close(handle, [](uv_handle_t *handle) { delete (uv_fs_event_t*)handle; });
 	return true;
 }
 
