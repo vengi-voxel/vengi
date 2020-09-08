@@ -8,7 +8,7 @@
 namespace animation {
 namespace chr {
 namespace sit {
-void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float sine = glm::sin(animTime);
 	const float cosine = glm::cos(animTime);
 	const float movement = sine * skeletonAttr.idleTimeFactor - skeletonAttr.footHeight;
@@ -46,4 +46,8 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 }
 }
 }
+}
+
+void animation_chr_sit_update(double animTime, animation::CharacterSkeleton* skeleton, const animation::CharacterSkeletonAttribute* skeletonAttr) {
+	animation::chr::sit::update(animTime, *skeleton, *skeletonAttr);
 }

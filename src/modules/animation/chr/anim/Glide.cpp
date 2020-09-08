@@ -8,7 +8,7 @@
 namespace animation {
 namespace chr {
 namespace glide {
-void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float scaledAnimTime = animTime * 3.0f;
 	const float sine = glm::sin(scaledAnimTime) * 0.1f;
 	const float cosine = glm::cos(scaledAnimTime);
@@ -57,4 +57,8 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 }
 }
 }
+}
+
+void animation_chr_glide_update(double animTime, animation::CharacterSkeleton* skeleton, const animation::CharacterSkeletonAttribute* skeletonAttr) {
+	animation::chr::glide::update(animTime, *skeleton, *skeletonAttr);
 }

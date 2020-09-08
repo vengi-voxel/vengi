@@ -9,7 +9,7 @@ namespace animation {
 namespace animal {
 namespace bird {
 namespace run {
-void update(double animTime, double velocity, BirdSkeleton &skeleton, const BirdSkeletonAttribute &skeletonAttr) {
+static void update(double animTime, double velocity, BirdSkeleton &skeleton, const BirdSkeletonAttribute &skeletonAttr) {
 	const float timeFactor = skeletonAttr.runTimeFactor;
 	const float sine = glm::sin(animTime * timeFactor);
 	const float cosine = glm::cos(animTime * timeFactor);
@@ -48,4 +48,8 @@ void update(double animTime, double velocity, BirdSkeleton &skeleton, const Bird
 }
 }
 }
+}
+
+void animation_animal_bird_run_update(double animTime, double velocity, animation::BirdSkeleton* skeleton, const animation::BirdSkeletonAttribute* skeletonAttr) {
+	animation::animal::bird::run::update(animTime, velocity, *skeleton, *skeletonAttr);
 }

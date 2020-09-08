@@ -8,7 +8,7 @@
 namespace animation {
 namespace chr {
 namespace jump {
-void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float scaledAnimTime = animTime * skeletonAttr.jumpTimeFactor;
 	const float sine = glm::sin(scaledAnimTime);
 	const float sineSlow = glm::sin(scaledAnimTime / 2.0f);
@@ -61,4 +61,8 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 }
 }
 }
+}
+
+void animation_chr_jump_update(double animTime, animation::CharacterSkeleton* skeleton, const animation::CharacterSkeletonAttribute* skeletonAttr) {
+	animation::chr::jump::update(animTime, *skeleton, *skeletonAttr);
 }

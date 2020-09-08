@@ -8,7 +8,7 @@
 namespace animation {
 namespace chr {
 namespace idle {
-void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float sine = glm::sin(animTime);
 	const float cosine = glm::cos(animTime);
 	const float movement = sine * skeletonAttr.idleTimeFactor;
@@ -40,4 +40,8 @@ void update(double animTime, CharacterSkeleton &skeleton, const CharacterSkeleto
 }
 }
 }
+}
+
+void animation_chr_idle_update(double animTime, animation::CharacterSkeleton* skeleton, const animation::CharacterSkeletonAttribute* skeletonAttr) {
+	animation::chr::idle::update(animTime, *skeleton, *skeletonAttr);
 }

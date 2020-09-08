@@ -77,7 +77,7 @@ static void stroke(double animTime, CharacterSkeleton &skeleton, const Character
 	torso.orientation = rotateXYZ(torsoRotationX, torsoRotationY, torsoRotationZ);
 }
 
-void update(double animTime, ToolAnimationType animation, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void update(double animTime, animation::ToolAnimationType animation, animation::CharacterSkeleton &skeleton, const animation::CharacterSkeletonAttribute &skeletonAttr) {
 	head(animTime, skeleton, skeletonAttr);
 
 	skeleton.bone(BoneId::Chest) = translate(0.0f, skeletonAttr.chestY, 0.0f);
@@ -112,6 +112,11 @@ void update(double animTime, ToolAnimationType animation, CharacterSkeleton &ske
 
 	skeleton.bone(BoneId::Glider) = zero();
 }
+
 }
 }
+}
+
+void animation_chr_tool_update(double animTime, animation::ToolAnimationType animation, animation::CharacterSkeleton* skeleton, const animation::CharacterSkeletonAttribute* skeletonAttr) {
+	animation::chr::tool::update(animTime, animation, *skeleton, *skeletonAttr);
 }

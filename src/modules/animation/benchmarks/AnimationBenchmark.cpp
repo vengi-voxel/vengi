@@ -22,7 +22,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		animation::CharacterSkeletonAttribute skeletonAttr;                                                            \
 		skeletonAttr.init();                                                                                           \
 		for (auto _ : state) {                                                                                         \
-			animation::chr::name::update(animTime, skeleton, skeletonAttr);                                            \
+			animation_chr_##name##_update(animTime, &skeleton, &skeletonAttr);                                         \
 		}                                                                                                              \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, chr_##name);
@@ -34,7 +34,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		animation::CharacterSkeletonAttribute skeletonAttr;                                                            \
 		skeletonAttr.init();                                                                                           \
 		for (auto _ : state) {                                                                                         \
-			animation::chr::tool::update(animTime, animation::ToolAnimationType::type, skeleton, skeletonAttr);        \
+			animation_chr_tool_update(animTime, animation::ToolAnimationType::type, &skeleton, &skeletonAttr);         \
 		}                                                                                                              \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, chr_tool_##type);
@@ -46,7 +46,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		animation::CharacterSkeletonAttribute skeletonAttr;                                                            \
 		skeletonAttr.init();                                                                                           \
 		for (auto _ : state) {                                                                                         \
-			animation::chr::name::update(animTime, velocity, skeleton, skeletonAttr);                                  \
+			animation_chr_##name##_update(animTime, velocity, &skeleton, &skeletonAttr);                               \
 		}                                                                                                              \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, chr_##name);
@@ -74,7 +74,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		animation::BirdSkeletonAttribute skeletonAttr;                                                                 \
 		skeletonAttr.init();                                                                                           \
 		for (auto _ : state) {                                                                                         \
-			animation::animal::bird::name::update(animTime, skeleton, skeletonAttr);                                   \
+			animation_animal_bird_##name##_update(animTime, &skeleton, &skeletonAttr);                                   \
 		}                                                                                                              \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, animal_bird_##name);
@@ -86,7 +86,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		animation::BirdSkeletonAttribute skeletonAttr;                                                                 \
 		skeletonAttr.init();                                                                                           \
 		for (auto _ : state) {                                                                                         \
-			animation::animal::bird::name::update(animTime, velocity, skeleton, skeletonAttr);                         \
+			animation_animal_bird_##name##_update(animTime, velocity, &skeleton, &skeletonAttr);                         \
 		}                                                                                                              \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, animalBird_##name);

@@ -49,10 +49,10 @@ void Bird::update(double deltaSeconds, const attrib::ShadowAttributes& attrib) {
 		const Animation anim = (Animation)i;
 		switch (anim) {
 		case Animation::IDLE:
-			animal::bird::idle::update(_globalTimeSeconds, _skeleton, _attributes);
+			animation_animal_bird_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::RUN:
-			animal::bird::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
+			animation_animal_bird_run_update(_globalTimeSeconds, velocity, &_skeleton, &_attributes);
 			break;
 		default:
 			break;

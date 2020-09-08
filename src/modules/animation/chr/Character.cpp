@@ -58,7 +58,7 @@ bool Character::initMesh(const AnimationCachePtr& cache) {
 	_toolIndicesOffset = _indices.size();
 
 	// ensure the bones are in a sane state - needed for getting the aabb right
-	chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
+	animation_chr_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
 
 	return true;
 }
@@ -130,28 +130,28 @@ void Character::update(double deltaSeconds, const attrib::ShadowAttributes& attr
 		const Animation anim = (Animation)i;
 		switch (anim) {
 		case Animation::IDLE:
-			chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
+			animation_chr_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::JUMP:
-			chr::jump::update(_globalTimeSeconds, _skeleton, _attributes);
+			animation_chr_jump_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::RUN:
-			chr::run::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
+			animation_chr_run_update(_globalTimeSeconds, velocity, &_skeleton, &_attributes);
 			break;
 		case Animation::SWIM:
-			chr::swim::update(_globalTimeSeconds, velocity, _skeleton, _attributes);
+			animation_chr_swim_update(_globalTimeSeconds, velocity, &_skeleton, &_attributes);
 			break;
 		case Animation::GLIDE:
-			chr::glide::update(_globalTimeSeconds, _skeleton, _attributes);
+			animation_chr_glide_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::SIT:
-			chr::sit::update(_globalTimeSeconds, _skeleton, _attributes);
+			animation_chr_sit_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::TOOL:
 			if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
-				chr::idle::update(_globalTimeSeconds, _skeleton, _attributes);
+				animation_chr_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			} else {
-				chr::tool::update(_globalTimeSeconds, _toolAnim, _skeleton, _attributes);
+				animation_chr_tool_update(_globalTimeSeconds, _toolAnim, &_skeleton, &_attributes);
 			}
 			break;
 		default:

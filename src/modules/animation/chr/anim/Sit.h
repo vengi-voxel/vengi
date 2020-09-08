@@ -6,10 +6,4 @@
 
 #include "animation/chr/CharacterSkeleton.h"
 
-namespace animation {
-namespace chr {
-namespace sit {
-extern void update(double animTime, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute& skeletonAttr);
-}
-}
-}
+extern "C" void animation_chr_sit_update(double animTime, animation::CharacterSkeleton* skeleton, const animation::CharacterSkeletonAttribute* skeletonAttr);

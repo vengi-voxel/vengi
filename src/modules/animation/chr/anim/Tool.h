@@ -7,10 +7,4 @@
 #include "animation/chr/CharacterSkeleton.h"
 #include "animation/ToolAnimationType.h"
 
-namespace animation {
-namespace chr {
-namespace tool {
-extern void update(double animTime, ToolAnimationType animation, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute& skeletonAttr);
-}
-}
-}
+extern "C" void animation_chr_tool_update(double animTime, animation::ToolAnimationType animation, animation::CharacterSkeleton* skeleton, const animation::CharacterSkeletonAttribute* skeletonAttr);

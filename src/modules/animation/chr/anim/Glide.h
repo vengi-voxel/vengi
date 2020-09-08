@@ -6,10 +6,4 @@
 
 #include "animation/chr/CharacterSkeleton.h"
 
-namespace animation {
-namespace chr {
-namespace glide {
-extern void update(double animTime, CharacterSkeleton& skeleton, const CharacterSkeletonAttribute& skeletonAttr);
-}
-}
-}
+extern "C" void animation_chr_glide_update(double animTime, animation::CharacterSkeleton* skeleton, const animation::CharacterSkeletonAttribute* skeletonAttr);

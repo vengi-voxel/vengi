@@ -8,7 +8,7 @@
 namespace animation {
 namespace chr {
 namespace run {
-void update(double animTime, double velocity, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
+static void update(double animTime, double velocity, CharacterSkeleton &skeleton, const CharacterSkeletonAttribute &skeletonAttr) {
 	const float timeFactor = skeletonAttr.runTimeFactor;
 	const float scaleAnimTime = animTime * timeFactor;
 	const float sine = glm::sin(scaleAnimTime);
@@ -68,4 +68,8 @@ void update(double animTime, double velocity, CharacterSkeleton &skeleton, const
 }
 }
 }
+}
+
+void animation_chr_run_update(double animTime, double velocity, animation::CharacterSkeleton* skeleton, const animation::CharacterSkeletonAttribute* skeletonAttr) {
+	animation::chr::run::update(animTime, velocity, *skeleton, *skeletonAttr);
 }
