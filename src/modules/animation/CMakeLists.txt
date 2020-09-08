@@ -1,18 +1,9 @@
 set(LIB animation)
 set(SRCS
-	chr/anim/Idle.cpp chr/anim/Idle.h
-	chr/anim/Run.cpp chr/anim/Run.h
-	chr/anim/Jump.cpp chr/anim/Jump.h
-	chr/anim/Glide.cpp chr/anim/Glide.h
-	chr/anim/Sit.cpp chr/anim/Sit.h
-	chr/anim/Swim.cpp chr/anim/Swim.h
-	chr/anim/Tool.cpp chr/anim/Tool.h
 	chr/Character.cpp chr/Character.h
 	chr/CharacterSkeleton.cpp chr/CharacterSkeleton.h
 	chr/CharacterSkeletonAttribute.cpp chr/CharacterSkeletonAttribute.h
 
-	animal/bird/anim/Idle.cpp animal/bird/anim/Idle.h
-	animal/bird/anim/Run.cpp animal/bird/anim/Run.h
 	animal/bird/Bird.cpp animal/bird/Bird.h
 	animal/bird/BirdSkeleton.cpp animal/bird/BirdSkeleton.h
 	animal/bird/BirdSkeletonAttribute.cpp animal/bird/BirdSkeletonAttribute.h
@@ -30,6 +21,18 @@ set(SRCS
 	Skeleton.h Skeleton.cpp
 	SkeletonAttribute.h
 	ToolAnimationType.h
+)
+set(SRCS_ANIMATIONS
+	animal/bird/anim/Idle.cpp animal/bird/anim/Idle.h
+	animal/bird/anim/Run.cpp animal/bird/anim/Run.h
+
+	chr/anim/Idle.cpp chr/anim/Idle.h
+	chr/anim/Run.cpp chr/anim/Run.h
+	chr/anim/Jump.cpp chr/anim/Jump.h
+	chr/anim/Glide.cpp chr/anim/Glide.h
+	chr/anim/Sit.cpp chr/anim/Sit.h
+	chr/anim/Swim.cpp chr/anim/Swim.h
+	chr/anim/Tool.cpp chr/anim/Tool.h
 )
 set(SRCS_SHADERS
 	shaders/skeleton.vert shaders/skeleton.frag
@@ -133,6 +136,9 @@ set(LUA_SRCS
 	animations/character.lua
 )
 set(DEPENDENCIES stock voxelformat render)
+
+list(APPEND SRCS ${SRCS_ANIMATIONS})
+
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES ${DEPENDENCIES})
 generate_shaders(${LIB} skeleton skeletonshadowmap skeletondepthmap)
 

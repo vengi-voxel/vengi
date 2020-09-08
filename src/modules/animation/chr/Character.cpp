@@ -7,13 +7,7 @@
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "stock/Item.h"
-#include "anim/Idle.h"
-#include "anim/Jump.h"
-#include "anim/Run.h"
-#include "anim/Glide.h"
-#include "anim/Swim.h"
-#include "anim/Tool.h"
-#include "anim/Sit.h"
+#include "animation/AnimationSystem.h"
 
 namespace animation {
 
@@ -58,7 +52,7 @@ bool Character::initMesh(const AnimationCachePtr& cache) {
 	_toolIndicesOffset = _indices.size();
 
 	// ensure the bones are in a sane state - needed for getting the aabb right
-	animation_chr_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
+	chr_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
 
 	return true;
 }
@@ -130,28 +124,28 @@ void Character::update(double deltaSeconds, const attrib::ShadowAttributes& attr
 		const Animation anim = (Animation)i;
 		switch (anim) {
 		case Animation::IDLE:
-			animation_chr_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
+			chr_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::JUMP:
-			animation_chr_jump_update(_globalTimeSeconds, &_skeleton, &_attributes);
+			chr_jump_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::RUN:
-			animation_chr_run_update(_globalTimeSeconds, velocity, &_skeleton, &_attributes);
+			chr_run_update(_globalTimeSeconds, velocity, &_skeleton, &_attributes);
 			break;
 		case Animation::SWIM:
-			animation_chr_swim_update(_globalTimeSeconds, velocity, &_skeleton, &_attributes);
+			chr_swim_update(_globalTimeSeconds, velocity, &_skeleton, &_attributes);
 			break;
 		case Animation::GLIDE:
-			animation_chr_glide_update(_globalTimeSeconds, &_skeleton, &_attributes);
+			chr_glide_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::SIT:
-			animation_chr_sit_update(_globalTimeSeconds, &_skeleton, &_attributes);
+			chr_sit_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::TOOL:
 			if (_toolAnim == ToolAnimationType::None || _toolAnim == ToolAnimationType::Max) {
-				animation_chr_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
+				chr_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			} else {
-				animation_chr_tool_update(_globalTimeSeconds, _toolAnim, &_skeleton, &_attributes);
+				chr_tool_update(_globalTimeSeconds, _toolAnim, &_skeleton, &_attributes);
 			}
 			break;
 		default:

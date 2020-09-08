@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "animation/AnimationSystem.h"
 #include "core/collection/DynamicArray.h"
 #include "voxelutil/Picking.h"
 #include "voxel/RawVolume.h"

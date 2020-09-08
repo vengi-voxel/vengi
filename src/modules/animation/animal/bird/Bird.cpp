@@ -4,11 +4,10 @@
 
 #include "Bird.h"
 #include "animation/Animation.h"
+#include "animation/AnimationSystem.h"
 #include "BirdSkeletonAttribute.h"
 #include "core/Common.h"
 #include "core/GLM.h"
-#include "anim/Idle.h"
-#include "anim/Run.h"
 #include "core/Log.h"
 
 namespace animation {
@@ -49,10 +48,10 @@ void Bird::update(double deltaSeconds, const attrib::ShadowAttributes& attrib) {
 		const Animation anim = (Animation)i;
 		switch (anim) {
 		case Animation::IDLE:
-			animation_animal_bird_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
+			animal_bird_idle_update(_globalTimeSeconds, &_skeleton, &_attributes);
 			break;
 		case Animation::RUN:
-			animation_animal_bird_run_update(_globalTimeSeconds, velocity, &_skeleton, &_attributes);
+			animal_bird_run_update(_globalTimeSeconds, velocity, &_skeleton, &_attributes);
 			break;
 		default:
 			break;
