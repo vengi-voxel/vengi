@@ -1,5 +1,38 @@
 set(LIB animation)
-set(SRCS
+
+set(SRCS)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	set(HOT_RELOAD_ANIM 1)
+else()
+	set(HOT_RELOAD_ANIM 0)
+endif()
+
+# Maintain a list of animations to support hot reloading
+set(SRCS_ANIMATIONS
+	animal/bird/anim/Idle.cpp animal/bird/anim/Idle.h
+	animal/bird/anim/Run.cpp animal/bird/anim/Run.h
+
+	chr/anim/Idle.cpp chr/anim/Idle.h
+	chr/anim/Run.cpp chr/anim/Run.h
+	chr/anim/Jump.cpp chr/anim/Jump.h
+	chr/anim/Glide.cpp chr/anim/Glide.h
+	chr/anim/Sit.cpp chr/anim/Sit.h
+	chr/anim/Swim.cpp chr/anim/Swim.h
+	chr/anim/Tool.cpp chr/anim/Tool.h
+)
+if (HOT_RELOAD_ANIM)
+	add_library(anim SHARED ${SRCS_ANIMATIONS})
+	target_link_libraries(anim PRIVATE glm)
+	shader_include_dir(anim animation)
+	add_dependencies(anim animation)
+	# FIXME should be $<TARGET_FILE_DIR:anim>/$<TARGET_FILE_NAME:anim> - but configure_file doesn't support
+	# generator expressions. Find a better way.
+	set(HOT_RELOAD_LIB "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib/libanim${CMAKE_SHARED_LIBRARY_SUFFIX}")
+else()
+	list(APPEND SRCS ${SRCS_ANIMATIONS})
+endif()
+
+list(APPEND SRCS
 	chr/Character.cpp chr/Character.h
 	chr/CharacterSkeleton.cpp chr/CharacterSkeleton.h
 	chr/CharacterSkeletonAttribute.cpp chr/CharacterSkeletonAttribute.h
@@ -21,18 +54,6 @@ set(SRCS
 	Skeleton.h Skeleton.cpp
 	SkeletonAttribute.h
 	ToolAnimationType.h
-)
-set(SRCS_ANIMATIONS
-	animal/bird/anim/Idle.cpp animal/bird/anim/Idle.h
-	animal/bird/anim/Run.cpp animal/bird/anim/Run.h
-
-	chr/anim/Idle.cpp chr/anim/Idle.h
-	chr/anim/Run.cpp chr/anim/Run.h
-	chr/anim/Jump.cpp chr/anim/Jump.h
-	chr/anim/Glide.cpp chr/anim/Glide.h
-	chr/anim/Sit.cpp chr/anim/Sit.h
-	chr/anim/Swim.cpp chr/anim/Swim.h
-	chr/anim/Tool.cpp chr/anim/Tool.h
 )
 set(SRCS_SHADERS
 	shaders/skeleton.vert shaders/skeleton.frag
@@ -135,12 +156,11 @@ set(LUA_SRCS
 	animations/bird.lua
 	animations/character.lua
 )
-set(DEPENDENCIES stock voxelformat render)
 
-list(APPEND SRCS ${SRCS_ANIMATIONS})
-
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES ${DEPENDENCIES})
+configure_file(animation-config.h.in animation-config.h @ONLY)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES stock voxelformat render)
 generate_shaders(${LIB} skeleton skeletonshadowmap skeletondepthmap)
+target_include_directories(${LIB} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 set(TEST_SRCS
 	tests/CharacterSettingsTest.cpp
