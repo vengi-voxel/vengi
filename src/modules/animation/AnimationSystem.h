@@ -6,6 +6,7 @@
 
 #include "animation/ToolAnimationType.h"
 #include "core/IComponent.h"
+#include "animation-config.h"
 
 #ifndef APIENTRY
 #ifdef _MSC_VER
@@ -45,6 +46,9 @@ extern animation_animal_bird_idle_update_PROC* animal_bird_idle_update;
 
 class AnimationSystem : public core::IComponent {
 private:
+#if HOT_RELOAD_ANIM == 1
+	void *_obj = nullptr;
+#endif
 	bool loadSymbols();
 public:
 	bool init() override;

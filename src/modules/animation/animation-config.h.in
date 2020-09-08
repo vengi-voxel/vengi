@@ -1,0 +1,8 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+#cmakedefine HOT_RELOAD_ANIM 1
+#cmakedefine HOT_RELOAD_LIB "@HOT_RELOAD_LIB@"
