@@ -22,7 +22,7 @@ Mesh::Mesh(int vertices, int indices, bool mayGetResized) : _mayGetResized(mayGe
 	}
 }
 
-Mesh::Mesh(Mesh&& other) {
+Mesh::Mesh(Mesh&& other) noexcept {
 	_vecIndices = std::move(other._vecIndices);
 	_vecVertices = std::move(other._vecVertices);
 	_compressedIndices = other._compressedIndices;
@@ -48,6 +48,9 @@ Mesh::Mesh(const Mesh& other) {
 }
 
 Mesh& Mesh::operator=(const Mesh& other) {
+	if (&other == this) {
+		return *this;
+	}
 	_vecIndices = other._vecIndices;
 	_vecVertices = other._vecVertices;
 	_compressedIndexSize = other._compressedIndexSize;
@@ -63,7 +66,7 @@ Mesh& Mesh::operator=(const Mesh& other) {
 	return *this;
 }
 
-Mesh& Mesh::operator=(Mesh&& other) {
+Mesh& Mesh::operator=(Mesh&& other) noexcept {
 	_vecIndices = std::move(other._vecIndices);
 	_vecVertices = std::move(other._vecVertices);
 	core_free(_compressedIndices);
