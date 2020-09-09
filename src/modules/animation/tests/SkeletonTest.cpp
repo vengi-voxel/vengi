@@ -32,6 +32,7 @@ protected:
 		EXPECT_NE(-1, settings.mapBoneIdToArrayIndex(BoneId::LeftShoulder));
 		EXPECT_NE(-1, settings.mapBoneIdToArrayIndex(BoneId::RightShoulder));
 		EXPECT_NE(-1, settings.mapBoneIdToArrayIndex(BoneId::Glider));
+		system.shutdown();
 	}
 };
 

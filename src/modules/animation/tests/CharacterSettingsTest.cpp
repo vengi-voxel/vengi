@@ -75,6 +75,7 @@ TEST_F(CharacterSettingsTest, testLUA) {
 	EXPECT_FLOAT_EQ( 106.0f,  skeletonAttr.footHeight);
 	EXPECT_FLOAT_EQ( 108.0f,  skeletonAttr.origin);
 	EXPECT_FLOAT_EQ( 109.0f,  skeletonAttr.hipOffset);
+	system.shutdown();
 }
 
 }

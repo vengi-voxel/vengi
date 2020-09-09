@@ -28,6 +28,7 @@ protected:
 		CharacterSkeletonAttribute attributes;
 		attributes.init();
 		ASSERT_TRUE(luaanim_execute(lua, animation, animTime, velocity, skeleton, attributes));
+		system.shutdown();
 	}
 };
 

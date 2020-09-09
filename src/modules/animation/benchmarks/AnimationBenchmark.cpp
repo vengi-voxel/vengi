@@ -18,6 +18,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		for (auto _ : state) {                                                                                         \
 			animation::chr_##name##_update(animTime, &skeleton, &skeletonAttr);                                        \
 		}                                                                                                              \
+		animationSystem.shutdown();                                                                                    \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, chr_##name);
 
@@ -32,6 +33,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		for (auto _ : state) {                                                                                         \
 			animation::chr_tool_update(animTime, animation::ToolAnimationType::type, &skeleton, &skeletonAttr);        \
 		}                                                                                                              \
+		animationSystem.shutdown();                                                                                    \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, chr_tool_##type);
 
@@ -46,6 +48,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		for (auto _ : state) {                                                                                         \
 			animation::chr_##name##_update(animTime, velocity, &skeleton, &skeletonAttr);                              \
 		}                                                                                                              \
+		animationSystem.shutdown();                                                                                    \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, chr_##name);
 
@@ -64,6 +67,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		for (auto _ : state) {                                                                                         \
 			animation::luaanim_execute(lua, #name, animTime, velocity, skeleton, skeletonAttr);                        \
 		}                                                                                                              \
+		animationSystem.shutdown();                                                                                    \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, chr_lua_##name);
 
@@ -78,6 +82,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		for (auto _ : state) {                                                                                         \
 			animation::animal_bird_##name##_update(animTime, &skeleton, &skeletonAttr);                                \
 		}                                                                                                              \
+		animationSystem.shutdown();                                                                                    \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, animal_bird_##name);
 
@@ -92,6 +97,7 @@ class AnimationBenchmark: public app::AbstractBenchmark {
 		for (auto _ : state) {                                                                                         \
 			animation::animal_bird_##name##_update(animTime, velocity, &skeleton, &skeletonAttr);                      \
 		}                                                                                                              \
+		animationSystem.shutdown();                                                                                    \
 	}                                                                                                                  \
 	BENCHMARK_REGISTER_F(AnimationBenchmark, animalBird_##name);
 
