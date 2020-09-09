@@ -2,7 +2,6 @@ local style = require "ui.style"
 style.init()
 
 require "ui.window.auth_failed"
-require "ui.window.debug"
 require "ui.window.disconnect"
 require "ui.window.hud"
 require "ui.window.login"
