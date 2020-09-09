@@ -10,7 +10,8 @@
 
 #ifndef APIENTRY
 #ifdef _MSC_VER
-//#define APIENTRY __declspec(dllexport)
+#define APIENTRY
+// __declspec(dllexport)
 #else
 #define APIENTRY
 #endif

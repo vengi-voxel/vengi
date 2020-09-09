@@ -53,6 +53,7 @@ bool AnimationSystem::loadSymbols() {
 #else
 #define SHARED_LIB_SUFFIX "so"
 #endif
+	// TODO: should be in construct()
 	const core::VarPtr animLibPath = core::Var::get("anim_lib", "libanim." SHARED_LIB_SUFFIX);
 	const core::String& libName = animLibPath->strVal();
 	const char *searchPaths[] = {
