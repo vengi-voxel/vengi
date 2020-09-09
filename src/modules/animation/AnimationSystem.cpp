@@ -132,8 +132,11 @@ void AnimationSystem::shutdown() {
 #if HOT_RELOAD_ANIM == 1
 	SDL_UnloadObject(_obj);
 	_obj = nullptr;
-	const core::String& libName = core::Var::getSafe("anim_lib")->strVal();
-	io::filesystem()->unwatch(libName);
+	const core::VarPtr& animLib = core::Var::get("anim_lib", nullptr);
+	if (animLib) {
+		const core::String& libName = animLib->strVal();
+		io::filesystem()->unwatch(libName);
+	}
 #endif
 }
 
