@@ -24,7 +24,7 @@ WorldChunkMgr::WorldChunkMgr(core::ThreadPool& threadPool) :
 void WorldChunkMgr::updateViewDistance(float viewDistance) {
 	const glm::vec3 cullingThreshold(_meshExtractor.meshSize());
 	const int maxCullingThreshold = core_max(cullingThreshold.x, cullingThreshold.z) * 4;
-	_maxAllowedDistance = glm::pow(viewDistance + maxCullingThreshold, 2);
+	_maxAllowedDistance = glm::pow(viewDistance + (float)maxCullingThreshold, 2);
 }
 
 bool WorldChunkMgr::init(shader::WorldShader* worldShader, voxel::PagedVolume* volume) {
@@ -207,7 +207,7 @@ int WorldChunkMgr::renderTerrain() {
 		video::ScopedBuffer scopedBuf(buffer);
 		if (_worldShader->isActive()) {
 			const double delta = glm::clamp(core_max(0.0, chunkBuffer.scaleSeconds) / ScaleDuration, 0.0, 1.0);
-			const glm::vec3 &size = glm::mix(glm::vec3(1.0f), glm::vec3(1.0f, 0.4f, 1.0f), (float)delta);
+			const glm::vec3& size = glm::mix(glm::vec3(1.0f), glm::vec3(1.0f, 0.4f, 1.0f), (float)delta);
 			const glm::mat4& model = glm::scale(size);
 			_worldShader->setModel(model);
 		}
