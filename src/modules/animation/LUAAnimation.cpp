@@ -107,7 +107,7 @@ static int luaanim_bone_tostring(lua_State* s) {
 		bone.translation.x, bone.translation.y, bone.translation.z,
 		bone.orientation.x, bone.orientation.y, bone.orientation.z, bone.orientation.w
 	);
-	return 0;
+	return 1;
 }
 
 static int luaanim_bone_destroy(lua_State* s) {
