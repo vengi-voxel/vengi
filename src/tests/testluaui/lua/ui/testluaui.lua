@@ -191,7 +191,7 @@ function modelwin()
 				cameraPos = modelCameraPos,
 				cameraTarget = modelCameraTarget
 			}
-			ui.model('assets/north-dir.vox', options)
+			ui.model('assets/north-dir', options)
 		ui.groupEnd()
 	end
 	ui.windowEnd()
