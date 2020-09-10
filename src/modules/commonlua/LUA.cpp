@@ -207,11 +207,27 @@ bool LUA::executeUpdate(uint64_t dt) {
 }
 
 core::String LUA::stackDump(lua_State *L) {
-#ifdef DEBUG
 	StackChecker check(L);
-#endif
+	constexpr int depth = 64;
+	core::String dump;
+	dump.reserve(1024);
+	dump.append("Stacktrace:\n");
+	for (int cnt = 0; cnt < depth; cnt++) {
+		lua_Debug dbg;
+		if (lua_getstack(L, cnt + 1, &dbg) == 0) {
+			break;
+		}
+		lua_getinfo(L, "Snl", &dbg);
+		const char *func = dbg.name ? dbg.name : dbg.short_src;
+		dump.append(cnt);
+		dump.append(": ");
+		dump.append(func);
+		dump.append("\n");
+	}
+	dump.append("\n");
 	const int top = lua_gettop(L);
-	core::String dump = core::string::format("%i values on stack%c", top, top > 0 ? '\n' : ' ');
+	dump.append(core::string::format("%i values on stack%c", top, top > 0 ? '\n' : ' '));
+
 	for (int i = 1; i <= top; i++) { /* repeat for each level */
 		const int t = lua_type(L, i);
 		switch (t) {
@@ -224,7 +240,7 @@ core::String LUA::stackDump(lua_State *L) {
 			break;
 
 		case LUA_TNUMBER:
-			lua_pushfstring(L, "%d: " LUA_NUMBER_FMT " (%s)\n", i, lua_tonumber(L, i), luaL_typename(L, i));
+			lua_pushfstring(L, "%d: %f (%s)\n", i, lua_tonumber(L, i), luaL_typename(L, i));
 			break;
 
 		case LUA_TUSERDATA:
