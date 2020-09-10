@@ -1,14 +1,18 @@
-require "ai.shared"
+local module = {}
 
-function wolfStayAlive (parentnode)
+local shared = require "ai.shared"
+
+local function wolfStayAlive (parentnode)
 end
 
-function registerWolf ()
+function module.register()
   local name = "ANIMAL_WOLF"
   local rootNode = AI.createTree(name):createRoot("PrioritySelector", name)
   wolfStayAlive(rootNode)
-  hunt(rootNode)
-  increasePopulation(rootNode)
-  idle(rootNode)
-  die(rootNode)
+  shared.hunt(rootNode)
+  shared.increasePopulation(rootNode)
+  shared.idle(rootNode)
+  shared.die(rootNode)
 end
+
+return module

@@ -1,7 +1,11 @@
-require "attrib.shared"
+local module = {}
 
-function registerUndeadZombie()
+local shared = require "attrib.shared"
+
+function module.register()
   local chr = attrib.createContainer("UNDEAD_MALE_ZOMBIE")
-  characterDefault(chr)
+  shared.characterDefault(chr)
   chr:addAbsolute("SPEED", 8.0)
 end
+
+return module

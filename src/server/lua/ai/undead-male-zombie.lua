@@ -1,7 +1,11 @@
-require "ai.shared"
+local module = {}
 
-function registerUndeadZombie ()
+local shared = require "ai.shared"
+
+function module.register()
   local name = "UNDEAD_MALE_ZOMBIE"
   local rootNode = AI.createTree(name):createRoot("PrioritySelector", name)
-  idlehome(rootNode)
+  shared.idlehome(rootNode)
 end
+
+return module

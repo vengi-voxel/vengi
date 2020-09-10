@@ -1,6 +1,10 @@
-require "attrib.shared"
+local module = {}
 
-function registerUndeadSkeleton()
+local shared = require "attrib.shared"
+
+function module.register()
   local chr = attrib.createContainer("UNDEAD_MALE_SKELETON")
-  characterDefault(chr)
+  shared.characterDefault(chr)
 end
+
+return module

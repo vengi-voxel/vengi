@@ -1,6 +1,10 @@
-require "attrib.shared"
+local module = {}
 
-function registerHumanShepherd()
+local shared = require "attrib.shared"
+
+function module.register()
   local chr = attrib.createContainer("HUMAN_MALE_SHEPHERD")
-  characterDefault(chr)
+  shared.characterDefault(chr)
 end
+
+return module

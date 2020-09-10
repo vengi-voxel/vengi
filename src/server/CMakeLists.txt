@@ -2,36 +2,36 @@ project(server)
 set(SRCS
 	Server.cpp Server.h
 )
+
+set(ENTITIES
+	animal-rabbit
+	animal-wolf
+	dwarf-male-blacksmith
+	human-male-blacksmith
+	human-male-knight
+	human-male-shepherd
+	human-male-worker
+	human-female-worker
+	undead-male-skeleton
+	undead-male-zombie
+)
+
 # These lua scripts are matching up with the entity type enum
 set(LUA_BEHAVIOURTREES
-	ai/animal-rabbit.lua
-	ai/animal-wolf.lua
-	ai/dwarf-male-blacksmith.lua
-	ai/human-male-blacksmith.lua
-	ai/human-male-knight.lua
-	ai/human-male-shepherd.lua
-	ai/human-male-worker.lua
-	ai/human-female-worker.lua
-	ai/undead-male-skeleton.lua
-	ai/undead-male-zombie.lua
 	ai/shared.lua
 	behaviourtrees.lua
 	behaviourtreenodes.lua
 )
 set(LUA_ATTRIBUTES
-	attrib/animal-rabbit.lua
-	attrib/animal-wolf.lua
-	attrib/dwarf-male-blacksmith.lua
-	attrib/human-male-blacksmith.lua
-	attrib/human-male-knight.lua
-	attrib/human-male-shepherd.lua
-	attrib/human-male-worker.lua
-	attrib/human-female-worker.lua
-	attrib/undead-male-skeleton.lua
-	attrib/undead-male-zombie.lua
 	attrib/shared.lua
 	attributes.lua
 )
+
+foreach(ENT ${ENTITIES})
+	list(APPEND LUA_BEHAVIOURTREES "ai/${ENT}.lua")
+	list(APPEND LUA_ATTRIBUTES "attrib/${ENT}.lua")
+endforeach()
+
 set(LUA_EVENTS
 	event/generic.lua
 	events.lua
@@ -39,7 +39,13 @@ set(LUA_EVENTS
 set(LUA_MAPS
 	map/map001.lua
 )
-set(LUA_SRCS ${LUA_BEHAVIOURTREES} ${LUA_ATTRIBUTES} ${LUA_EVENTS} ${LUA_MAPS})
+set(LUA_SRCS
+	${LUA_BEHAVIOURTREES}
+	${LUA_ATTRIBUTES}
+	${LUA_EVENTS}
+	${LUA_MAPS}
+	shared/entities.lua
+)
 
 set(FILES
 	server/server-autoexec.cfg

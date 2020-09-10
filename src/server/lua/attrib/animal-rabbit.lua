@@ -1,7 +1,11 @@
-require "attrib.shared"
+local module = {}
 
-function registerRabbit()
+local shared = require "attrib.shared"
+
+function module.register()
   local animal = attrib.createContainer("ANIMAL_RABBIT")
-  animalDefault(animal)
+  shared.animalDefault(animal)
   animal:addAbsolute("FIELDOFVIEW", 240.0)
 end
+
+return module

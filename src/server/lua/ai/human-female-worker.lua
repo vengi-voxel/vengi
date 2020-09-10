@@ -1,7 +1,11 @@
-require "ai.shared"
+local module = {}
 
-function registerHumanFemaleWorker ()
+local shared = require "ai.shared"
+
+function module.register()
   local name = "HUMAN_FEMALE_WORKER"
   local rootNode = AI.createTree(name):createRoot("PrioritySelector", name)
-  idlehome(rootNode)
+  shared.idlehome(rootNode)
 end
+
+return module

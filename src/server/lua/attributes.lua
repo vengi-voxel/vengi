@@ -1,28 +1,7 @@
-require "attrib.animal-rabbit"
-require "attrib.animal-wolf"
-require "attrib.dwarf-male-blacksmith"
-require "attrib.human-male-blacksmith"
-require "attrib.human-male-knight"
-require "attrib.human-male-shepherd"
-require "attrib.human-male-worker"
-require "attrib.human-female-worker"
-require "attrib.undead-male-skeleton"
-require "attrib.undead-male-zombie"
+local entities = require("shared.entities")
 
 function init()
-  registerDwarfBlacksmith()
-
-  registerHumanBlacksmith()
-  registerHumanKnight()
-  registerHumanShepherd()
-  registerHumanMaleWorker()
-  registerHumanFemaleWorker()
-
-  registerUndeadSkeleton()
-  registerUndeadZombie()
-
-  registerRabbit()
-  registerWolf()
+  entities.register("attrib")
 
   local player = attrib.createContainer("PLAYER")
   player:addAbsolute("SPEED", 20.0)

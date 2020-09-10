@@ -1,4 +1,4 @@
-function animalDefault(container)
+local function animalDefault(container)
 	container:addAbsolute("SPEED", 1.5)
 	container:addAbsolute("HEALTH", 100.0)
 	container:addAbsolute("ATTACKRANGE", 0.0)

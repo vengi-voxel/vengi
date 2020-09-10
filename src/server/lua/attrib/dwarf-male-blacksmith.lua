@@ -1,6 +1,10 @@
-require "attrib.shared"
+local module = {}
 
-function registerDwarfBlacksmith()
+local shared = require "attrib.shared"
+
+function module.register()
   local chr = attrib.createContainer("DWARF_MALE_BLACKSMITH")
-  characterDefault(chr)
+  shared.characterDefault(chr)
 end
+
+return module
