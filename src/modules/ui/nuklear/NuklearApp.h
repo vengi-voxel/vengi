@@ -122,7 +122,7 @@ public:
 	/**
 	 * @brief Find the best matching font for the given size
 	 */
-	struct nk_font* font(int size);
+	struct nk_font* font(float size);
 
 	struct nkc_context& context();
 

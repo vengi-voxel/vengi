@@ -314,14 +314,14 @@ app::AppState NuklearApp::onConstruct() {
 	return state;
 }
 
-struct nk_font* NuklearApp::font(int size) {
-	int bestDelta = 10000;
+struct nk_font* NuklearApp::font(float size) {
+	float bestDelta = 10000.0f;
 	int fontIndex = 0;
 	for (int i = 0; i < lengthof(_fonts); ++i) {
 		if (_fontSizes[i] == size) {
 			return _fonts[i];
 		}
-		const int delta = _fontSizes[i] - size;
+		const float delta = _fontSizes[i] - size;
 		if (delta < bestDelta) {
 			fontIndex = i;
 		}
