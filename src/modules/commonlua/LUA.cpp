@@ -278,8 +278,9 @@ int LUA::returnError(lua_State *L, const core::String& error) {
 }
 
 int LUA::returnError(lua_State *L, const char *fmt, ...) {
-	const core::String& stackdump = lua::LUA::stackDump(L);
+	core::String stackdump = lua::LUA::stackDump(L);
 	Log::error("%s", stackdump.c_str());
+	stackdump = core::String();
 	va_list argp;
 	va_start(argp, fmt);
 	luaL_where(L, 1);
