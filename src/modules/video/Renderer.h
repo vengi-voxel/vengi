@@ -301,6 +301,7 @@ extern int getOcclusionQueryResult(Id id, bool wait = false);
  * @return The previously bound frame buffer Id
  */
 extern Id bindFramebuffer(Id handle, FrameBufferMode mode = FrameBufferMode::Default);
+extern void blitFramebufferToViewport(Id handle);
 extern bool setupRenderBuffer(TextureFormat format, int w, int h, int samples);
 extern Id bindRenderbuffer(Id handle);
 extern void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, size_t size);
