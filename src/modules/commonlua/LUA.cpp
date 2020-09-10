@@ -270,6 +270,25 @@ core::String LUA::stackDump() {
 	return stackDump(_state);
 }
 
+int LUA::returnError(lua_State *L, const core::String& error) {
+	//const core::String& stackdump = lua::LUA::stackDump(L);
+	//Log::error("%s", stackdump.c_str());
+	Log::error("LUA error: %s", error.c_str());
+	return luaL_error(L, "%s", error.c_str());
+}
+
+int LUA::returnError(lua_State *L, const char *fmt, ...) {
+	const core::String& stackdump = lua::LUA::stackDump(L);
+	Log::error("%s", stackdump.c_str());
+	va_list argp;
+	va_start(argp, fmt);
+	luaL_where(L, 1);
+	lua_pushvfstring(L, fmt, argp);
+	va_end(argp);
+	lua_concat(L, 2);
+	return lua_error(L);
+}
+
 core::String LUA::string(const core::String& expr, const core::String& defaultValue) {
 	checkStack();
 	const char* r = defaultValue.c_str();
