@@ -75,7 +75,7 @@ protected:
 	int32_t _elementBufferIndex = -1;
 
 	int loadModelFile(const char *filename);
-	struct nk_font *loadFontFile(const char *filename, int fontSize);
+	struct nk_font *loadFontFile(const char *filename, float fontSize);
 	struct nk_image loadImageFile(const char *filename);
 
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;

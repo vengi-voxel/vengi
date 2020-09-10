@@ -117,7 +117,7 @@ static void nk_core_free(nk_handle, void *old) {
 	return core_free(old);
 }
 
-struct nk_font *NuklearApp::loadFontFile(const char *filename, int fontSize) {
+struct nk_font *NuklearApp::loadFontFile(const char *filename, float fontSize) {
 	const io::FilePtr& file = filesystem()->open(filename, io::FileMode::Read);
 	if (!file) {
 		Log::warn("Can't load font. Could not open '%s'", filename);
@@ -193,7 +193,7 @@ app::AppState NuklearApp::onInit() {
 	}
 
 	for (int i = 0; i < lengthof(_fonts); ++i) {
-		const int fontSize = glm::round(_fontSizes[i] * _dpiVerticalFactor);
+		const float fontSize = glm::round(_fontSizes[i]);
 		if (fontDataSize > 0u) {
 			_fonts[i] = nk_font_atlas_add_from_memory(&_atlas, fontData, fontDataSize, fontSize, nullptr);
 		}
