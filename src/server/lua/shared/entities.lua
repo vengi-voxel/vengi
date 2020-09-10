@@ -15,7 +15,8 @@ module.entities = {
 
 function module.register(prefix)
   for key, value in ipairs(module.entities) do
-    local mod = require(prefix .. '.' .. value)
+    local name = prefix .. '.' .. value
+    local mod = require(name)
     mod.register()
   end
 end

@@ -6,6 +6,7 @@
 #include "attrib/Container.h"
 #include "commonlua/LUA.h"
 #include "attrib/Container.h"
+#include "attrib/LUAAttrib.h"
 #include "commonlua/LUA.h"
 #include "ContainerProvider.h"
 #include "core/StringUtil.h"
@@ -13,92 +14,6 @@
 #include "core/SharedPtr.h"
 
 namespace attrib {
-
-static ContainerProvider* luaGetContext(lua_State * l) {
-	return lua::LUA::globalData<ContainerProvider>(l, "Provider");
-}
-
-static Container* luaGetContainerContext(lua_State * l, int n) {
-	return lua::LUA::userData<Container>(l, n, "Container");
-}
-
-static int luaCreateContainer(lua_State * l) {
-	ContainerProvider *ctx = luaGetContext(l);
-	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Unable to find Provider for createContainer");
-	}
-	const char *name = luaL_checkstring(l, 1);
-	const ContainerPtr& container = ctx->createContainer(name);
-	lua::LUA::newUserdata(l, "Container", container.get());
-	return 1;
-}
-
-static int luaContainerGC(lua_State * l) {
-	return 0;
-}
-
-static int luaContainerToString(lua_State * l) {
-	const Container *ctx = luaGetContainerContext(l, 1);
-	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for __tostring");
-	}
-	lua_pushfstring(l, "container: %s", ctx->name().c_str());
-	return 1;
-}
-
-static int luaContainerAddAbsolute(lua_State * l) {
-	Container *ctx = luaGetContainerContext(l, 1);
-	const char* type = luaL_checkstring(l, 2);
-	const double value = luaL_checknumber(l, 3);
-	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for addAbsolute(%s, %f)", type, value);
-	}
-	attrib::Type attribType = getType(type);
-	if (attribType == attrib::Type::NONE) {
-		const core::String& error = core::string::format("Unknown type given for addAbsolute(%s, %f)", type, value);
-		return lua::LUA::returnError(l, error);
-	}
-	Values v = ctx->absolute();
-	v.put(attribType, value);
-	ctx->setAbsolute(v);
-	return 0;
-}
-
-static int luaContainerSetStackLimit(lua_State * l) {
-	Container *ctx = luaGetContainerContext(l, 1);
-	const int limit = luaL_checkinteger(l, 2);
-	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for setStackLimit(%i)", limit);
-	}
-	ctx->setStackLimit(limit);
-	return 0;
-}
-
-static int luaContainerAddPercentage(lua_State * l) {
-	Container *ctx = luaGetContainerContext(l, 1);
-	const char* type = luaL_checkstring(l, 2);
-	const double value = luaL_checknumber(l, 3);
-	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for addPercentage(%s, %f)", type, value);
-	}
-	attrib::Type attribType = getType(type);
-	if (attribType == attrib::Type::NONE) {
-		return lua::LUA::returnError(l, "Unknown type given for addPercentage(%s, %f)", type, value);
-	}
-	Values v = ctx->percentage();
-	v.put(attribType, value);
-	ctx->setPercentage(v);
-	return 0;
-}
-
-static int luaContainerGetName(lua_State * l) {
-	const Container *ctx = luaGetContainerContext(l, 1);
-	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for getName()");
-	}
-	lua_pushstring(l, ctx->name().c_str());
-	return 1;
-}
 
 bool ContainerProvider::init(const core::String& luaScript) {
 	if (luaScript.empty()) {
@@ -108,27 +23,11 @@ bool ContainerProvider::init(const core::String& luaScript) {
 	_error = "";
 
 	lua::LUA lua;
-	luaL_Reg createContainer = { "createContainer", luaCreateContainer };
-	luaL_Reg eof = { nullptr, nullptr };
-	luaL_Reg funcs[] = { createContainer, eof };
-
-	lua::LUAType container = lua.registerType("Container");
-	container.addFunction("name", luaContainerGetName);
-	container.addFunction("addAbsolute", luaContainerAddAbsolute);
-	container.addFunction("addPercentage", luaContainerAddPercentage);
-	container.addFunction("setStackLimit", luaContainerSetStackLimit);
-	container.addFunction("__gc", luaContainerGC);
-	container.addFunction("__tostring", luaContainerToString);
-
-	lua.reg("attrib", funcs);
-
+	luaattrib_setup(lua, this);
 	if (!lua.load(luaScript)) {
 		_error = lua.error();
 		return false;
 	}
-
-	// loads all the attributes
-	lua.newGlobalData<ContainerProvider>("Provider", this);
 	if (!lua.execute("init")) {
 		_error = lua.error();
 		return false;
@@ -142,8 +41,10 @@ bool ContainerProvider::init(const core::String& luaScript) {
 ContainerPtr ContainerProvider::createContainer(const core::String& name) {
 	ContainerPtr c = container(name);
 	if (c) {
+		Log::debug("Container %s already exists", name.c_str());
 		return ContainerPtr();
 	}
+	Log::debug("Create container: %s", name.c_str());
 	c = core::make_shared<Container>(name);
 	addContainer(c);
 	return c;
