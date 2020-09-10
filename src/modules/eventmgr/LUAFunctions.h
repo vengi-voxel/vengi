@@ -24,7 +24,7 @@ static int luaCreateEventConfigurationData(lua_State * l) {
 	const Type type = getType(typeStr);
 	const EventConfigurationDataPtr& eventConfig = ctx->createEventConfig(nameId, type);
 	if (!eventConfig) {
-		return luaL_error(l, "Could not create event config for id '%s'", nameId);
+		return lua::LUA::returnError(l, "Could not create event config for id '%s'", nameId);
 	}
 	lua::LUA::newUserdata(l, "EventConfigurationData", eventConfig.get());
 	return 1;

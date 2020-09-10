@@ -47,7 +47,7 @@ bool CooldownProvider::init(const core::String& cooldowns) {
 		const char *typeStr = luaL_checkstring(s, 1);
 		const Type type = getType(typeStr);
 		if (type == cooldown::Type::NONE) {
-			return luaL_error(s, "%s is an invalid cooldown type", typeStr);
+			return lua::LUA::returnError(s, "%s is an invalid cooldown type", typeStr);
 		}
 		const unsigned long millis = luaL_checkinteger(s, 2);
 		Log::debug("set millis for %s to %li", typeStr, millis);

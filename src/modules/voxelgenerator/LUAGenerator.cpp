@@ -35,7 +35,7 @@ static voxel::RawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
 
 static int luaVoxel_pushvolumewrapper(lua_State* s, voxel::RawVolumeWrapper* volume) {
 	if (volume == nullptr) {
-		return luaL_error(s, "No volume given - can't push");
+		return lua::LUA::returnError(s, "No volume given - can't push");
 	}
 	return clua_pushudata(s, volume, luaVoxel_metavolumewrapper());
 }
@@ -96,7 +96,7 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const float b = luaL_checkinteger(s, 3) / 255.0f;
 	const int match = core::Color::getClosestMatch(glm::vec4(r, b, g, 1.0f), materialColors);
 	if (match < 0 || match > (int)materialColors.size()) {
-		return luaL_error(s, "Given color index is not valid or palette is not loaded");
+		return lua::LUA::returnError(s, "Given color index is not valid or palette is not loaded");
 	}
 	lua_pushinteger(s, match);
 	return 1;
@@ -107,7 +107,7 @@ static int luaVoxel_palette_similar(lua_State* s) {
 	const int colorCount = lua_tointeger(s, 2);
 	voxel::MaterialColorArray colors = voxel::getMaterialColors();
 	if (paletteIndex < 0 || paletteIndex >= (int)colors.size()) {
-		return luaL_error(s, "Palette index out of bounds");
+		return lua::LUA::returnError(s, "Palette index out of bounds");
 	}
 	const glm::vec4 color = colors[paletteIndex];
 	voxel::MaterialColorIndices newColorIndices;
@@ -395,7 +395,7 @@ voxel::Region* LUAGenerator::luaVoxel_toRegion(lua_State* s, int n) {
 
 int LUAGenerator::luaVoxel_pushregion(lua_State* s, const voxel::Region* region) {
 	if (region == nullptr) {
-		return luaL_error(s, "No region given - can't push");
+		return lua::LUA::returnError(s, "No region given - can't push");
 	}
 	return clua_pushudata(s, region, LUAGenerator::luaVoxel_metaregion());
 }

@@ -57,7 +57,7 @@ static int luaanim_settingssetpath(lua_State * l) {
 	const char *value = luaL_checkstring(l, 2);
 	const int idx = settings->getMeshTypeIdxForName(type);
 	if (idx < 0) {
-		return luaL_error(l, "Could not find mesh type for %s", type);
+		return lua::LUA::returnError(l, "Could not find mesh type for %s", type);
 	}
 	settings->setPath(idx, value);
 	return 0;
@@ -73,7 +73,7 @@ static int luaanim_settingssettype(lua_State * l) {
 			return 0;
 		}
 	}
-	return luaL_error(l, "Could not find entity type for %s", type);
+	return lua::LUA::returnError(l, "Could not find entity type for %s", type);
 }
 
 static int luaanim_boneidstostring(lua_State* s) {
@@ -101,7 +101,7 @@ static int luaanim_boneidsadd(lua_State* s) {
 	const char* boneName = luaL_checkstring(s, 2);
 	BoneId id = toBoneId(boneName);
 	if (id == BoneId::Max) {
-		return luaL_error(s, "Failed to resolve bone: '%s'", boneName);
+		return lua::LUA::returnError(s, "Failed to resolve bone: '%s'", boneName);
 	}
 	if (boneIds->num >= lengthof(boneIds->bones)) {
 		lua_pushboolean(s, 0);
@@ -123,12 +123,12 @@ static int luaanim_bonesetup(lua_State* l) {
 	const char* meshType = luaL_checkstring(l, 1);
 	const int idx = settings->getMeshTypeIdxForName(meshType);
 	if (idx < 0 || idx >= (int)AnimationSettings::MAX_ENTRIES) {
-		return luaL_error(l, "Could not find mesh type for %s", meshType);
+		return lua::LUA::returnError(l, "Could not find mesh type for %s", meshType);
 	}
 	BoneIds& b = settings->boneIds(idx);
 	b = BoneIds {};
 	if (luaanim_pushboneids(l, &b) != 1) {
-		return luaL_error(l, "Failed to push the bonesids");
+		return lua::LUA::returnError(l, "Failed to push the bone ids");
 	}
 	return 1;
 }
@@ -138,7 +138,7 @@ static int luaanim_boneregister(lua_State* l) {
 	const char* boneName = luaL_checkstring(l, 1);
 	const BoneId boneId = toBoneId(boneName);
 	if (boneId == BoneId::Max) {
-		return luaL_error(l, "Failed to resolve bone: '%s'", boneName);
+		return lua::LUA::returnError(l, "Failed to resolve bone: '%s'", boneName);
 	}
 	if (settings->registerBoneId(boneId)) {
 		lua_pushboolean(l, 1);

@@ -140,14 +140,14 @@ static int len(lua_State* s) {
 template<int N>
 struct clua_veclen<glm::vec<N, int> > {
 static int len(lua_State* s) {
-	return luaL_error(s, "'length' accepts only floating-point inputs");
+	return lua::LUA::returnError(s, "'length' accepts only floating-point inputs");
 }
 };
 
 template<int N>
 struct clua_veclen<glm::vec<N, bool> > {
 static int len(lua_State* s) {
-	return luaL_error(s, "'length' accepts only floating-point inputs");
+	return lua::LUA::returnError(s, "'length' accepts only floating-point inputs");
 }
 };
 
@@ -165,7 +165,7 @@ static int dot(lua_State* s) {
 template<int N>
 struct clua_vecdot<glm::vec<N, int> > {
 static int dot(lua_State* s) {
-	return luaL_error(s, "'dot' accepts only floating-point inputs");
+	return lua::LUA::returnError(s, "'dot' accepts only floating-point inputs");
 }
 };
 
@@ -386,7 +386,7 @@ static int clua_vecindex(lua_State *s) {
 	default:
 		break;
 	}
-	return luaL_error(s, "Invalid component %c", *i);
+	return lua::LUA::returnError(s, "Invalid component %c", *i);
 }
 
 template<class T>
@@ -428,7 +428,7 @@ static int clua_vecnewindex(lua_State *s) {
 	default:
 		break;
 	}
-	return luaL_error(s, "Invalid component %c", *i);
+	return lua::LUA::returnError(s, "Invalid component %c", *i);
 }
 
 template<class T>
