@@ -56,7 +56,7 @@ protected:
 	enum {
 		FONT_22, FONT_16, FONT_30, FONT_40, FONT_MAX
 	};
-	static constexpr int _fontSizes[FONT_MAX] { 16, 22, 30, 40 };
+	static constexpr float _fontSizes[FONT_MAX] { 16.0f, 22.0f, 30.0f, 40.0f };
 	struct nk_font *_fonts[FONT_MAX];
 
 	Console _console;
