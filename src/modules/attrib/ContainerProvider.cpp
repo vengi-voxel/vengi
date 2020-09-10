@@ -24,6 +24,9 @@ static Container* luaGetContainerContext(lua_State * l, int n) {
 
 static int luaCreateContainer(lua_State * l) {
 	ContainerProvider *ctx = luaGetContext(l);
+	if (ctx == nullptr) {
+		return lua::LUA::returnError(l, "Expected to get container as first argument");
+	}
 	const char *name = luaL_checkstring(l, 1);
 	const ContainerPtr& container = ctx->createContainer(name);
 	lua::LUA::newUserdata(l, "Container", container.get());
@@ -36,12 +39,18 @@ static int luaContainerGC(lua_State * l) {
 
 static int luaContainerToString(lua_State * l) {
 	const Container *ctx = luaGetContainerContext(l, 1);
+	if (ctx == nullptr) {
+		return lua::LUA::returnError(l, "Expected to get container as first argument");
+	}
 	lua_pushfstring(l, "container: %s", ctx->name().c_str());
 	return 1;
 }
 
 static int luaContainerAddAbsolute(lua_State * l) {
 	Container *ctx = luaGetContainerContext(l, 1);
+	if (ctx == nullptr) {
+		return lua::LUA::returnError(l, "Expected to get container as first argument");
+	}
 	const char* type = luaL_checkstring(l, 2);
 	const double value = luaL_checknumber(l, 3);
 	attrib::Type attribType = getType(type);
@@ -57,6 +66,9 @@ static int luaContainerAddAbsolute(lua_State * l) {
 
 static int luaContainerSetStackLimit(lua_State * l) {
 	Container *ctx = luaGetContainerContext(l, 1);
+	if (ctx == nullptr) {
+		return lua::LUA::returnError(l, "Expected to get container as first argument");
+	}
 	const int limit = luaL_checkinteger(l, 2);
 	ctx->setStackLimit(limit);
 	return 0;
@@ -64,6 +76,9 @@ static int luaContainerSetStackLimit(lua_State * l) {
 
 static int luaContainerAddPercentage(lua_State * l) {
 	Container *ctx = luaGetContainerContext(l, 1);
+	if (ctx == nullptr) {
+		return lua::LUA::returnError(l, "Expected to get container as first argument");
+	}
 	const char* type = luaL_checkstring(l, 2);
 	const double value = luaL_checknumber(l, 3);
 	attrib::Type attribType = getType(type);
@@ -79,6 +94,9 @@ static int luaContainerAddPercentage(lua_State * l) {
 
 static int luaContainerGetName(lua_State * l) {
 	const Container *ctx = luaGetContainerContext(l, 1);
+	if (ctx == nullptr) {
+		return lua::LUA::returnError(l, "Expected to get container as first argument");
+	}
 	lua_pushstring(l, ctx->name().c_str());
 	return 1;
 }
