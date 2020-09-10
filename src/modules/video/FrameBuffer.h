@@ -49,6 +49,7 @@ public:
 	void bind(bool clear);
 	void unbind();
 
+	video::Id handle() const;
 	TexturePtr texture(FrameBufferAttachment attachment = FrameBufferAttachment::Color0) const;
 
 	/**
@@ -61,6 +62,10 @@ public:
 
 inline const glm::ivec2& FrameBuffer::dimension() const {
 	return _dimension;
+}
+
+inline video::Id FrameBuffer::handle() const {
+	return _fbo;
 }
 
 extern bool bindTexture(TextureUnit unit, const FrameBuffer& frameBuffer, FrameBufferAttachment attachment = FrameBufferAttachment::Color0);
