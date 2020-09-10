@@ -142,7 +142,7 @@ void MeshRenderer::prepareShader(const video::Camera& camera) {
 void MeshRenderer::render(int idx, const video::Camera& camera) {
 	core_trace_scoped(MeshRendererRender);
 	if (idx < 0 || idx >= (int)_meshes.size()) {
-		Log::trace("Invalid index given in MeshRenderer::setMesh(): %i", idx);
+		Log::trace("Invalid index given in MeshRenderer::render(): %i", idx);
 		return;
 	}
 	MeshInternal& mesh = _meshes[idx];
