@@ -118,7 +118,8 @@ static int luastock_containershape_gc(lua_State * l) {
 }
 
 static int luastock_containershape_tostring(lua_State * l) {
-	lua_pushfstring(l, "container shape");
+	const ContainerShape& containerShape = *luastock_tocontainershape(l, 1);
+	lua_pushfstring(l, "container shape:\nsize: %d, free: %d", containerShape.size(), containerShape.free());
 	return 1;
 }
 
@@ -226,8 +227,7 @@ static int luastock_itemshape_gc(lua_State * l) {
 
 static int luastock_itemshape_tostring(lua_State * l) {
 	const ItemShape& itemShape = *luastock_toitemshape(l, 1);
-	const core::String& bitsStr = core::string::format("w:%i, h:%i", itemShape.width(), itemShape.height());
-	lua_pushfstring(l, "item shape:\n%s", bitsStr.c_str());
+	lua_pushfstring(l, "item shape:\nw: %d, h: %d", itemShape.width(), itemShape.height());
 	return 1;
 }
 
