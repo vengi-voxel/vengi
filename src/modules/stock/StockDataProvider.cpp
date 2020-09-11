@@ -97,7 +97,8 @@ const ItemData* StockDataProvider::itemData(const core::String& name) const {
 }
 
 bool StockDataProvider::addContainerData(ContainerData* data) {
-	if (containerData(data->name) != nullptr) {
+	auto existIter = _containerDataMap.find(data->name);
+	if (existIter != _containerDataMap.end()) {
 		Log::error("Invalid container id %s - an entry with that name already exists", data->name.c_str());
 		return false;
 	}
@@ -117,7 +118,7 @@ bool StockDataProvider::addContainerData(ContainerData* data) {
 const ContainerData* StockDataProvider::containerData(const core::String& name) const {
 	auto i = _containerDataMap.find(name);
 	if (i == _containerDataMap.end()) {
-		Log::warn("Failed to get container with name '%s'", name.c_str());
+		Log::warn("Failed to get stock container with name '%s'", name.c_str());
 		return nullptr;
 	}
 	return i->second;

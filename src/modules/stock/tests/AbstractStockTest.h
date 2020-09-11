@@ -36,9 +36,6 @@ public:
 		EXPECT_TRUE(_provider->addItemData(_itemData2)) << "Could not add item to provider for id 2";
 		EXPECT_EQ(_itemData1, _provider->itemData(1)) << "Could not get item data for id 1";
 		EXPECT_EQ(_itemData2, _provider->itemData(2)) << "Could not get item data for id 2";
-		ItemData* itemDataDup = new ItemData(1, ItemType::WEAPON);
-		EXPECT_FALSE(_provider->addItemData(itemDataDup)) << "Added duplicated item id 1 to item provider";
-		delete itemDataDup;
 
 		ContainerShape shape;
 		shape.addRect(0, 1, 1, 1);
