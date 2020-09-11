@@ -5,6 +5,7 @@ set(SRCS
 	Item.h Item.cpp
 	Shape.h Shape.cpp
 	Stock.h Stock.cpp
+	LUAStock.h LUAStock.cpp
 	StockDataProvider.h StockDataProvider.cpp
 )
 set(LUA_SRCS

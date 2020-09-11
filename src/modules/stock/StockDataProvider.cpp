@@ -3,7 +3,7 @@
  */
 
 #include "StockDataProvider.h"
-#include "LUAFunctions.h"
+#include "LUAStock.h"
 #include "core/Log.h"
 
 namespace stock {
@@ -40,47 +40,12 @@ bool StockDataProvider::init(const core::String& luaScript) {
 	_error = "";
 
 	lua::LUA lua;
-	luaL_Reg createItem = { "createItem", luaCreateItemData };
-	luaL_Reg createContainer = { "createContainer", luaCreateContainer };
-	luaL_Reg eof = { nullptr, nullptr };
-	luaL_Reg funcs[] = { createItem, createContainer, eof };
-
-	lua::LUAType item = lua.registerType("Item");
-	item.addFunction("name", luaItemDataGetName);
-	item.addFunction("setName", luaItemDataSetName);
-	item.addFunction("shape", luaItemDataGetShape);
-	item.addFunction("setSize", luaItemDataSetSize);
-	item.addFunction("addLabel", luaItemDataAddLabel);
-	item.addFunction("id", luaItemDataGetId);
-	item.addFunction("__gc", luaItemDataGC);
-	item.addFunction("__tostring", luaItemDataToString);
-
-	lua::LUAType container = lua.registerType("Container");
-	container.addFunction("name", luaContainerDataGetName);
-	container.addFunction("shape", luaContainerDataGetShape);
-	container.addFunction("id", luaContainerDataGetId);
-	container.addFunction("__gc", luaContainerDataGC);
-	container.addFunction("__tostring", luaContainerDataToString);
-
-	lua::LUAType containerShape = lua.registerType("ContainerShape");
-	containerShape.addFunction("addRect", luaContainerDataShapeAddRect);
-	containerShape.addFunction("__gc", luaContainerDataShapeGC);
-	containerShape.addFunction("__tostring", luaContainerDataShapeToString);
-
-	lua::LUAType itemShape = lua.registerType("ItemShape");
-	itemShape.addFunction("addRect", luaItemDataShapeAddRect);
-	itemShape.addFunction("__gc", luaItemDataShapeGC);
-	itemShape.addFunction("__tostring", luaItemDataShapeToString);
-
-	lua.reg("stock", funcs);
-
+	luastock_setup(lua, this);
 	if (!lua.load(luaScript)) {
 		_error = lua.error();
 		return false;
 	}
 
-	// loads all the attributes
-	lua.newGlobalData<StockDataProvider>("Provider", this);
 	if (!lua.execute("init")) {
 		_error = lua.error();
 		return false;
