@@ -108,15 +108,6 @@ public:
 	}
 
 	template<class T>
-	static T** newUserdata(lua_State *L, const core::String& prefix) {
-		T ** udata = (T **) lua_newuserdata(L, sizeof(T *));
-		const core::String name = META_PREFIX + prefix;
-		luaL_getmetatable(L, name.c_str());
-		lua_setmetatable(L, -2);
-		return udata;
-	}
-
-	template<class T>
 	static T* newUserdata(lua_State *L, const core::String& prefix, T* data) {
 		T ** udata = (T **) lua_newuserdata(L, sizeof(T *));
 		const core::String name = META_PREFIX + prefix;
