@@ -185,13 +185,13 @@ static int luaTree_CreateRoot(lua_State * l) {
 	TreeNodeParser parser(ctx->getAIFactory(), id);
 	const TreeNodePtr& node = parser.getTreeNode(name);
 	if (!node) {
-		return lua::LUA::returnError(l, "Could not create a node for " + id);
+		return lua::LUA::returnError(l, "Could not create a node for %s", id.c_str());
 	}
 
 	LUANodeWrapper* udata = lua::LUA::newUserdata(l, "Node", new LUANodeWrapper(node, ctx, ctx->getAIFactory()));
 	if (!ctx->setRoot(udata)) {
 		LUATreeLoader *loader = luaGetContext(l);
-		return lua::LUA::returnError(l, loader->getError());
+		return lua::LUA::returnError(l, "%s", loader->getError().c_str());
 	}
 	return 1;
 }
@@ -204,7 +204,7 @@ static int luaNode_AddNode(lua_State * l) {
 	TreeNodeFactoryContext factoryCtx(name, "", True::get());
 	LUANodeWrapper* udata = lua::LUA::newUserdata(l, "Node", node->addChild(id, factoryCtx));
 	if (udata == nullptr) {
-		return lua::LUA::returnError(l, "Could not create a node for " + id);
+		return lua::LUA::returnError(l, "Could not create a node for %s", id.c_str());
 	}
 	return 1;
 }
@@ -217,7 +217,7 @@ static int luaNode_SetCondition(lua_State * l) {
 	ConditionParser parser(ctx->getAIFactory(), conditionExpression);
 	const ConditionPtr& condition = parser.getCondition();
 	if (!condition) {
-		return lua::LUA::returnError(l, "Could not create a condition for " + conditionExpression + ": " + parser.getError());
+		return lua::LUA::returnError(l, "Could not create a condition for %s: %s", conditionExpression.c_str(), parser.getError().c_str());
 	}
 
 	LUAConditionWrapper* udata = lua::LUA::newUserdata(l, "Condition", new LUAConditionWrapper(condition));

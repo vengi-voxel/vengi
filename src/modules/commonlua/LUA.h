@@ -126,11 +126,6 @@ public:
 	/**
 	 * Aborts the lua execution with the given error message
 	 */
-	static int returnError(lua_State *L, const core::String& error);
-
-	/**
-	 * Aborts the lua execution with the given error message
-	 */
 	static int returnError(lua_State *L, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(2);
 
 	void pop(int amount = 1);

@@ -270,13 +270,6 @@ core::String LUA::stackDump() {
 	return stackDump(_state);
 }
 
-int LUA::returnError(lua_State *L, const core::String& error) {
-	//const core::String& stackdump = lua::LUA::stackDump(L);
-	//Log::error("%s", stackdump.c_str());
-	Log::error("LUA error: %s", error.c_str());
-	return luaL_error(L, "%s", error.c_str());
-}
-
 int LUA::returnError(lua_State *L, const char *fmt, ...) {
 	core::String stackdump = lua::LUA::stackDump(L);
 	Log::error("%s", stackdump.c_str());

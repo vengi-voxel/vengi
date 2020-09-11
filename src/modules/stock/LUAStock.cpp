@@ -59,8 +59,7 @@ static int luastock_create_container(lua_State * l) {
 	containerData->id = containerId;
 	if (!stockDataProvider->addContainerData(containerData)) {
 		delete containerData;
-		const core::String& error = core::string::format("Could not add container with name: %s", containerName);
-		return lua::LUA::returnError(l, error);
+		return lua::LUA::returnError(l, "Could not add container with name: %s", containerName);
 	}
 	return clua_pushudata(l, containerData, luastock_metacontainer());
 }
@@ -133,8 +132,7 @@ static int luastock_create_item(lua_State * l) {
 	const char *name = luaL_optstring(l, 3, nullptr);
 	const ItemType itemType = getItemType(type);
 	if (itemType == ItemType::NONE) {
-		const core::String& error = core::string::format("Unknown type given: %s", type);
-		return lua::LUA::returnError(l, error);
+		return lua::LUA::returnError(l, "Unknown type given: %s", type);
 	}
 
 	ItemData* itemData = new ItemData(itemId, itemType);
