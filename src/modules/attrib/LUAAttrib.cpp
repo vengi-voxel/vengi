@@ -47,8 +47,7 @@ static int luaattrib_container_addabsolute(lua_State * l) {
 	}
 	attrib::Type attribType = getType(type);
 	if (attribType == attrib::Type::NONE) {
-		const core::String& error = core::string::format("Unknown type given for addAbsolute(%s, %f)", type, value);
-		return lua::LUA::returnError(l, error);
+		return lua::LUA::returnError(l, "Unknown type given for addAbsolute(%s, %f)", type, value);
 	}
 	Values v = ctx->absolute();
 	v.put(attribType, value);
