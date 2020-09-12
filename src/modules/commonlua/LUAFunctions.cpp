@@ -65,12 +65,16 @@ bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name) {
 	return true;
 }
 
-void clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name) {
-	luaL_newmetatable(s, meta);
+bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name) {
+	if (luaL_newmetatable(s, meta) == 0) {
+		Log::warn("Metatable %s already exists", meta);
+		return false;
+	}
 	luaL_setfuncs(s, funcs, 0);
 	lua_pushvalue(s, -1);
 	lua_setfield(s, -1, "__index");
 	lua_setglobal(s, name);
+	return true;
 }
 
 bool clua_optboolean(lua_State* s, int index, bool defaultVal) {

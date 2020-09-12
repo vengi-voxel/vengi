@@ -100,7 +100,7 @@ T* clua_get(lua_State *s, int n) {
 
 extern bool clua_registernew(lua_State* s, const char *name, lua_CFunction func);
 extern bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name);
-extern void clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name);
+extern bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name);
 
 template<class T>
 int clua_vecadd(lua_State* s) {
