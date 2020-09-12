@@ -47,23 +47,6 @@ static void luastock_pushprovider(lua_State* s, StockDataProvider* provider) {
 	lua_setglobal(s, luastock_providerid());
 }
 
-static int luastock_create_container(lua_State * l) {
-	StockDataProvider *stockDataProvider = luastock_getprovider(l);
-	if (stockDataProvider == nullptr) {
-		return lua::LUA::returnError(l, "Could not find global provider");
-	}
-	const uint8_t containerId = (uint8_t)luaL_checkinteger(l, 1);
-	const char* containerName = luaL_checkstring(l, 2);
-	ContainerData* containerData = new ContainerData();
-	containerData->name = containerName;
-	containerData->id = containerId;
-	if (!stockDataProvider->addContainerData(containerData)) {
-		delete containerData;
-		return lua::LUA::returnError(l, "Could not add container with name: %s", containerName);
-	}
-	return clua_pushudata(l, containerData, luastock_metacontainer());
-}
-
 static ContainerData* luastock_tocontainer(lua_State * l, int n) {
 	return *(ContainerData**)clua_getudata<ContainerData*>(l, n, luastock_metacontainer());
 }
@@ -121,32 +104,6 @@ static int luastock_containershape_tostring(lua_State * l) {
 	const ContainerShape& containerShape = *luastock_tocontainershape(l, 1);
 	lua_pushfstring(l, "container shape:\nsize: %d, free: %d", containerShape.size(), containerShape.free());
 	return 1;
-}
-
-static int luastock_create_item(lua_State * l) {
-	StockDataProvider *stockDataProvider = luastock_getprovider(l);
-	if (stockDataProvider == nullptr) {
-		return lua::LUA::returnError(l, "Could not find global provider");
-	}
-	const ItemId itemId = luaL_checkinteger(l, 1);
-	const char *type = luaL_checkstring(l, 2);
-	const char *name = luaL_optstring(l, 3, nullptr);
-	const ItemType itemType = getItemType(type);
-	if (itemType == ItemType::NONE) {
-		return lua::LUA::returnError(l, "Unknown type given: %s", type);
-	}
-
-	ItemData* itemData = new ItemData(itemId, itemType);
-	if (name != nullptr) {
-		itemData->setName(name);
-	}
-
-	if (!stockDataProvider->addItemData(itemData)) {
-		delete itemData;
-		lua_pushnil(l);
-		return 1;
-	}
-	return clua_pushudata(l, itemData, luastock_metaitem());
 }
 
 static ItemData* luastock_toitem(lua_State * l, int n) {
@@ -229,6 +186,49 @@ static int luastock_itemshape_tostring(lua_State * l) {
 	const ItemShape& itemShape = *luastock_toitemshape(l, 1);
 	lua_pushfstring(l, "item shape:\nw: %d, h: %d", itemShape.width(), itemShape.height());
 	return 1;
+}
+
+static int luastock_create_container(lua_State * l) {
+	StockDataProvider *stockDataProvider = luastock_getprovider(l);
+	if (stockDataProvider == nullptr) {
+		return lua::LUA::returnError(l, "Could not find global provider");
+	}
+	const uint8_t containerId = (uint8_t)luaL_checkinteger(l, 1);
+	const char* containerName = luaL_checkstring(l, 2);
+	ContainerData* containerData = new ContainerData();
+	containerData->name = containerName;
+	containerData->id = containerId;
+	if (!stockDataProvider->addContainerData(containerData)) {
+		delete containerData;
+		return lua::LUA::returnError(l, "Could not add container with name: %s", containerName);
+	}
+	return clua_pushudata(l, containerData, luastock_metacontainer());
+}
+
+static int luastock_create_item(lua_State * l) {
+	StockDataProvider *stockDataProvider = luastock_getprovider(l);
+	if (stockDataProvider == nullptr) {
+		return lua::LUA::returnError(l, "Could not find global provider");
+	}
+	const ItemId itemId = luaL_checkinteger(l, 1);
+	const char *type = luaL_checkstring(l, 2);
+	const char *name = luaL_optstring(l, 3, nullptr);
+	const ItemType itemType = getItemType(type);
+	if (itemType == ItemType::NONE) {
+		return lua::LUA::returnError(l, "Unknown type given: %s", type);
+	}
+
+	ItemData* itemData = new ItemData(itemId, itemType);
+	if (name != nullptr) {
+		itemData->setName(name);
+	}
+
+	if (!stockDataProvider->addItemData(itemData)) {
+		delete itemData;
+		lua_pushnil(l);
+		return 1;
+	}
+	return luastock_pushitem(l, itemData);
 }
 
 void luastock_setup(lua_State* s, StockDataProvider* provider) {
