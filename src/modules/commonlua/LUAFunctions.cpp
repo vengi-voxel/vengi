@@ -8,6 +8,7 @@
 #include "core/String.h"
 #include "core/Var.h"
 #include "app/App.h"
+#include "core/collection/StringSet.h"
 #include "io/Filesystem.h"
 
 void clua_assert(lua_State* s, bool pass, const char *msg) {
@@ -53,11 +54,29 @@ bool clua_registernew(lua_State* s, const char *name, lua_CFunction func) {
 	return true;
 }
 
-bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name) {
+#ifdef DEBUG
+static bool clua_validatefuncs(const luaL_Reg* funcs) {
+	core::StringSet funcSet;
+	for (; funcs->name != nullptr; ++funcs) {
+		if (!funcSet.insert(funcs->name)) {
+			Log::error("%s is already in the given funcs", funcs->name);
+			return false;
+		}
+	}
+	return true;
+}
+#endif
+
+bool clua_registerfuncs(lua_State *s, const luaL_Reg *funcs, const char *name) {
 	if (luaL_newmetatable(s, name) == 0) {
 		Log::warn("Metatable %s already exists", name);
 		return false;
 	}
+#ifdef DEBUG
+	if (!clua_validatefuncs(funcs)) {
+		return false;
+	}
+#endif
 	luaL_setfuncs(s, funcs, 0);
 	// assign the metatable to __index
 	lua_pushvalue(s, -1);
@@ -71,6 +90,11 @@ bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *m
 		Log::warn("Metatable %s already exists", meta);
 		return false;
 	}
+#ifdef DEBUG
+	if (!clua_validatefuncs(funcs)) {
+		return false;
+	}
+#endif
 	luaL_setfuncs(s, funcs, 0);
 	lua_pushvalue(s, -1);
 	lua_setfield(s, -1, "__index");
