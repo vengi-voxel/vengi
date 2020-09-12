@@ -39,6 +39,20 @@ int clua_assignmetatable(lua_State* s, const char *name) {
 	return 1;
 }
 
+bool clua_registernew(lua_State* s, const char *name, lua_CFunction func) {
+	if (luaL_getmetatable(s, name) == 0) {
+		Log::error("Could not find metatable for %s", name);
+		return false;
+	}
+	// Set a metatable for the metatable
+	// This allows using Object(42) to make new objects
+	lua_newtable(s);
+	lua_pushcfunction(s, func);
+	lua_setfield(s, -2, "__call");
+	lua_setmetatable(s, -2);
+	return true;
+}
+
 bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name) {
 	if (luaL_newmetatable(s, name) == 0) {
 		Log::warn("Metatable %s already exists", name);
