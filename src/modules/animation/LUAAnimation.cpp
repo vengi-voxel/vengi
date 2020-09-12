@@ -268,8 +268,7 @@ void luaanim_setup(lua_State* s) {
 		{"mirrorVec3XZ", luaanim_boneutil_mirror_vec3_xz},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(s, boneutilFuncs, luaanim_metaboneutil());
-	lua_setglobal(s, "boneutil");
+	clua_registerfuncsglobal(s, boneutilFuncs, luaanim_metaboneutil(), "boneutil");
 	clua_mathregister(s);
 }
 
