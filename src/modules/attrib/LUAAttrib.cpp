@@ -148,8 +148,7 @@ void luaattrib_setup(lua_State* s, ContainerProvider* provider) {
 		{"__tostring",      luaattrib_provider_tostring},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(s, attribFuncs, luaanim_metaattrib());
-	lua_setglobal(s, "attrib");
+	clua_registerfuncsglobal(s, attribFuncs, luaanim_metaattrib(), "attrib");
 
 	luaattrib_pushcontainerprovider(s, provider);
 
