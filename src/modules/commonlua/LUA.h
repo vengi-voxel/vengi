@@ -59,6 +59,7 @@ private:
 	void openState();
 	void closeState();
 	core::String string(const core::String& expr, const core::String& defaultValue = "");
+	void setError(const core::String& error);
 
 public:
 	explicit LUA(lua_State *state);
@@ -130,7 +131,6 @@ public:
 
 	LUAType registerType(const core::String& name);
 
-	void setError(const core::String& error);
 	const core::String& error() const;
 	/**
 	 * @brief Loads a lua script into the lua state.
