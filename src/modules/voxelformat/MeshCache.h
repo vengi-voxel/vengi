@@ -14,6 +14,8 @@ namespace voxelformat {
 
 /**
  * @brief Cache @c voxel::Mesh instances by their name
+ * @note The cache is @b not threadsafe
+ * @sa MeshCache
  */
 class MeshCache : public core::IComponent {
 protected:

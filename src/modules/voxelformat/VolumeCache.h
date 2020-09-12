@@ -13,6 +13,11 @@
 
 namespace voxelformat {
 
+/**
+ * @brief Caches @c voxel::RawVolume instances by their name
+ * @note The cache is threadsafe
+ * @sa MeshCache
+ */
 class VolumeCache : public core::IComponent {
 private:
 	core::StringMap<voxel::RawVolume*> _volumes;
@@ -23,6 +28,7 @@ public:
 	 * The returned volume is not owned by the caller. The cache will delete the memory.
 	 */
 	voxel::RawVolume* loadVolume(const char* fullPath);
+	bool removeVolume(const char* fullPath);
 
 	bool init() override;
 	void shutdown() override;

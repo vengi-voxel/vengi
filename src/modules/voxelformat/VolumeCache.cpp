@@ -55,6 +55,17 @@ voxel::RawVolume* VolumeCache::loadVolume(const char* fullPath) {
 	return v;
 }
 
+bool VolumeCache::removeVolume(const char* fullPath) {
+	const core::String filename = fullPath;
+	core::ScopedLock lock(_mutex);
+	auto i = _volumes.find(filename);
+	if (i != _volumes.end()) {
+		_volumes.erase(i);
+		return true;
+	}
+	return false;
+}
+
 void VolumeCache::construct() {
 	command::Command::registerCommand("volumecachelist", [&] (const command::CmdArgs& argv) {
 		Log::info("Cache content");
