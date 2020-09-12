@@ -11,6 +11,7 @@ set(SRCS
 	collection/SetUtil.h
 	collection/Stack.h
 	collection/StringMap.h
+	collection/StringSet.h
 	collection/Vector.h
 
 	concurrent/Atomic.cpp concurrent/Atomic.h
