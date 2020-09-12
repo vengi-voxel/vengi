@@ -58,6 +58,7 @@ private:
 
 	void openState();
 	void closeState();
+	core::String string(const core::String& expr, const core::String& defaultValue = "");
 
 public:
 	explicit LUA(lua_State *state);
@@ -147,7 +148,6 @@ public:
 
 	int intValue(const core::String& path, int defaultValue = 0);
 	float floatValue(const core::String& path, float defaultValue = 0.0f);
-	core::String string(const core::String& expr, const core::String& defaultValue = "");
 };
 
 inline lua_State* LUA::state() const {
