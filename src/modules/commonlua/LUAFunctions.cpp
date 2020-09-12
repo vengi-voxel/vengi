@@ -62,6 +62,7 @@ bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name) {
 	// assign the metatable to __index
 	lua_pushvalue(s, -1);
 	lua_setfield(s, -2, "__index");
+	lua_pop(s, 1);
 	return true;
 }
 
