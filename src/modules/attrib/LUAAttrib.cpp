@@ -153,7 +153,6 @@ void luaattrib_setup(lua_State* s, ContainerProvider* provider) {
 
 	luaattrib_pushcontainerprovider(s, provider);
 
-	clua_register(s);
 	clua_mathregister(s);
 }
 

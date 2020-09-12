@@ -277,7 +277,6 @@ void luastock_setup(lua_State* s, StockDataProvider* provider) {
 
 	luastock_pushprovider(s, provider);
 
-	clua_register(s);
 	clua_mathregister(s);
 }
 
