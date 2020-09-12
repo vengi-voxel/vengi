@@ -242,8 +242,7 @@ static void prepareState(lua_State* s) {
 		{"similar", luaVoxel_palette_similar},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(s, paletteFuncs, luaVoxel_metapalette());
-	lua_setglobal(s, "palette");
+	clua_registerfuncsglobal(s, paletteFuncs, luaVoxel_metapalette(), "palette");
 
 	clua_mathregister(s);
 }
