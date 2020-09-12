@@ -240,7 +240,8 @@ void luastock_setup(lua_State* s, StockDataProvider* provider) {
 		{"addLabel",   luastock_item_addlabel},
 		{"id",         luastock_item_getid},
 		{"__gc",       luastock_item_gc},
-		{"__tostring", luastock_item_tostring}
+		{"__tostring", luastock_item_tostring},
+		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, itemFuncs, luastock_metaitem());
 
@@ -249,21 +250,24 @@ void luastock_setup(lua_State* s, StockDataProvider* provider) {
 		{"shape",      luastock_container_getshape},
 		{"id",         luastock_container_getid},
 		{"__gc",       luastock_container_gc},
-		{"__tostring", luastock_container_tostring}
+		{"__tostring", luastock_container_tostring},
+		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, containerFuncs, luastock_metacontainer());
 
 	static const luaL_Reg containerShapeFuncs[] = {
 		{"addRect",    luastock_containershape_addrect},
 		{"__gc",       luastock_containershape_gc},
-		{"__tostring", luastock_containershape_tostring}
+		{"__tostring", luastock_containershape_tostring},
+		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, containerShapeFuncs, luastock_metacontainershape());
 
 	static const luaL_Reg itemShapeFuncs[] = {
 		{"addRect",    luastock_itemshape_addrect},
 		{"__gc",       luastock_itemshape_gc},
-		{"__tostring", luastock_itemshape_tostring}
+		{"__tostring", luastock_itemshape_tostring},
+		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, itemShapeFuncs, luastock_metaitemshape());
 
