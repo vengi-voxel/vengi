@@ -48,11 +48,13 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		const video::TexturePoolPtr& texturePool,
 		const voxelrender::CachedMeshRendererPtr& meshRenderer,
 		const video::TextureAtlasRendererPtr& textureAtlasRenderer,
-		const audio::SoundManagerPtr& soundManager) :
-		Super(metric, filesystem, eventBus, timeProvider, texturePool, meshRenderer, textureAtlasRenderer), _animationCache(animationCache),
-		_network(network), _worldMgr(world), _clientPager(worldPager), _messageSender(messageSender), _movement(soundManager),
-		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache),
-		_meshCache(meshCache), _camera(_worldRenderer), _soundManager(soundManager) {
+		const audio::SoundManagerPtr& soundManager,
+		const voxelworldrender::AssetVolumeCachePtr& assetVolumeCache) :
+		Super(metric, filesystem, eventBus, timeProvider, texturePool, meshRenderer, textureAtlasRenderer),
+		_animationCache(animationCache), _network(network), _worldMgr(world), _clientPager(worldPager),
+		_messageSender(messageSender), _worldRenderer(assetVolumeCache), _movement(soundManager),
+		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _meshCache(meshCache),
+		_camera(_worldRenderer), _soundManager(soundManager) {
 	init(ORGANISATION, "client");
 }
 
@@ -124,6 +126,7 @@ app::AppState Client::onConstruct() {
 	_action.construct();
 	_camera.construct();
 	_meshCache->construct();
+	_assetVolumeCache->construct();
 
 	core::Var::get(cfg::ClientPort, SERVER_PORT, "Server port");
 	core::Var::get(cfg::ClientHost, SERVER_HOST, "Server hostname or ip");
@@ -226,6 +229,11 @@ app::AppState Client::onInit() {
 
 	if (!_volumeCache->init()) {
 		Log::error("Failed to initialize volume cache");
+		return app::AppState::InitFailure;
+	}
+
+	if (!_assetVolumeCache->init()) {
+		Log::error("Failed to init asset volume cache");
 		return app::AppState::InitFailure;
 	}
 
@@ -345,7 +353,8 @@ app::AppState Client::onCleanup() {
 	_action.shutdown();
 	_camera.shutdown();
 	_meshCache->shutdown();
-	Log::info("shutting down the volume cache");
+	Log::info("shutting down the volume caches");
+	_assetVolumeCache->shutdown();
 	_volumeCache->shutdown();
 	compute::shutdown();
 	Log::info("everything was shut down");
@@ -451,8 +460,9 @@ int main(int argc, char *argv[]) {
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
 	const video::TexturePoolPtr& texturePool = std::make_shared<video::TexturePool>(filesystem);
 	const audio::SoundManagerPtr& soundMgr = core::make_shared<audio::SoundManager>(filesystem);
+	const voxelworldrender::AssetVolumeCachePtr& assetVolumeCache = core::make_shared<voxelworldrender::AssetVolumeCache>(volumeCache);
 	Client app(metric, animationCache, stockDataProvider, network, world, pager, messageSender,
 			eventBus, timeProvider, filesystem, volumeCache, meshCache, texturePool, meshRenderer, textureAtlasRenderer,
-			soundMgr);
+			soundMgr, assetVolumeCache);
 	return app.startMainLoop(argc, argv);
 }

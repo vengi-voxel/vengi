@@ -6,6 +6,7 @@
 
 #include "ui/imgui/IMGUIApp.h"
 #include "RenderShaders.h"
+#include "voxelworldrender/AssetVolumeCache.h"
 #include "voxelworldrender/WorldRenderer.h"
 #include "voxelworldrender/PlayerCamera.h"
 #include "frontend/ClientEntity.h"
@@ -48,6 +49,7 @@ protected:
 	testcore::DepthBufferRenderer _depthBufferRenderer;
 	voxelworld::CachedFloorResolver _floorResolver;
 	audio::SoundManagerPtr _soundManager;
+	voxelworldrender::AssetVolumeCachePtr _assetVolumeCache;
 
 	bool _lineModeRendering = false;
 	bool _freelook = false;
@@ -80,7 +82,8 @@ public:
 			const voxelworld::WorldPagerPtr& worldPager,
 			const voxelformat::VolumeCachePtr& volumeCache,
 			const voxelformat::MeshCachePtr& meshCache,
-			const audio::SoundManagerPtr& soundManager);
+			const audio::SoundManagerPtr& soundManager,
+			const voxelworldrender::AssetVolumeCachePtr& assetVolumeCache);
 	~MapView();
 
 	app::AppState onConstruct() override;

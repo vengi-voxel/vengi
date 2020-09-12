@@ -7,6 +7,7 @@
 #include "RenderShaders.h"
 #include "AnimationShaders.h"
 #include "VoxelworldrenderShaders.h"
+#include "voxelworldrender/AssetVolumeCache.h"
 #include "worldrenderer/WorldChunkMgr.h"
 #include "core/Color.h"
 #include "core/GLM.h"
@@ -46,6 +47,7 @@ protected:
 	video::TexturePtr _normalTexture;
 	render::Skybox _skybox;
 	frontend::ClientEntityRenderer _entityRenderer;
+	AssetVolumeCachePtr _assetVolumeCache;
 
 	video::FrameBuffer _frameBuffer;
 	video::FrameBuffer _reflectionBuffer;
@@ -92,9 +94,9 @@ protected:
 	int renderAll(const video::Camera& camera);
 	int renderTerrain(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 	int renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
+	int renderPlants(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane);
 	int renderEntityDetails(const video::Camera& camera);
 	int renderWater(const video::Camera& camera, const glm::vec4& clipPlane);
-
 	/**
 	 * @brief 2-pass render of the reflection and the refraction buffers
 	 */
@@ -104,7 +106,7 @@ protected:
 	 */
 	int renderPostProcessEffects(const video::Camera& camera);
 public:
-	WorldRenderer();
+	WorldRenderer(const AssetVolumeCachePtr& assetVolumeCache);
 	~WorldRenderer();
 
 	void reset();

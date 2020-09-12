@@ -43,8 +43,9 @@ alignas(16) static constexpr glm::vec2 waterPlaneVecs[] = {
 	{ -1.0f,  1.0f}
 };
 
-WorldRenderer::WorldRenderer() :
-		_threadPool(1, "WorldRenderer"), _worldChunkMgr(_threadPool), _shadowMapShader(shader::ShadowmapShader::getInstance()) {
+WorldRenderer::WorldRenderer(const AssetVolumeCachePtr& assetVolumeCache) :
+		_threadPool(1, "WorldRenderer"), _worldChunkMgr(_threadPool), _assetVolumeCache(assetVolumeCache),
+		_shadowMapShader(shader::ShadowmapShader::getInstance()) {
 	setViewDistance(800.0f);
 }
 
@@ -239,7 +240,7 @@ int WorldRenderer::renderTerrain(const glm::mat4& viewProjectionMatrix, const gl
 	}
 	_worldShader.setFocuspos(_focusPos);
 	_worldShader.setLightdir(_shadow.sunDirection());
-	_worldShader.setTime(_seconds);
+	_worldShader.setTime((float)_seconds);
 	_worldShader.setFogrange(_fogRange);
 	_worldShader.setClipplane(clipPlane);
 	_worldShader.setViewprojection(viewProjectionMatrix);
@@ -314,6 +315,7 @@ int WorldRenderer::renderAll(const video::Camera& camera) {
 	const glm::mat4& vpmat = camera.viewProjectionMatrix();
 	drawCallsWorld += renderTerrain(vpmat, ignoreClipPlane);
 	drawCallsWorld += renderEntities(vpmat, ignoreClipPlane);
+	drawCallsWorld += renderPlants(vpmat, ignoreClipPlane);
 	drawCallsWorld += renderEntityDetails(camera);
 	drawCallsWorld += renderWater(camera, ignoreClipPlane);
 	_skybox.render(camera);
@@ -322,6 +324,12 @@ int WorldRenderer::renderAll(const video::Camera& camera) {
 
 int WorldRenderer::renderEntitiesToDepthMap(const video::Camera& camera) {
 	return _entityRenderer.renderEntitiesToDepthMap(_entityMgr.visibleEntities(), camera.viewProjectionMatrix());
+}
+
+int WorldRenderer::renderPlants(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane) {
+	// TODO: instanced volume rendering
+	// place plants to chunk in WorldChunkMgr and use the positions for the instanced rendering here.
+	return 0;
 }
 
 int WorldRenderer::renderEntities(const glm::mat4& viewProjectionMatrix, const glm::vec4& clipPlane) {

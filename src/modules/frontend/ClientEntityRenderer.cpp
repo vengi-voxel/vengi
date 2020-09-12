@@ -86,7 +86,7 @@ void ClientEntityRenderer::shutdown() {
 	_animationSystem.shutdown();
 }
 
-void ClientEntityRenderer::update(const glm::vec3& focusPos, float seconds) {
+void ClientEntityRenderer::update(const glm::vec3& focusPos, double seconds) {
 	_focusPos = focusPos;
 	_seconds = seconds;
 }

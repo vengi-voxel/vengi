@@ -54,6 +54,7 @@ protected:
 	voxelformat::MeshCachePtr _meshCache;
 	voxelworldrender::PlayerCamera _camera;
 	audio::SoundManagerPtr _soundManager;
+	voxelworldrender::AssetVolumeCachePtr _assetVolumeCache;
 
 	frontend::ClientEntityId id() const;
 
@@ -78,7 +79,8 @@ public:
 			const video::TexturePoolPtr& texturePool,
 			const voxelrender::CachedMeshRendererPtr& meshRenderer,
 			const video::TextureAtlasRendererPtr& textureAtlasRenderer,
-			const audio::SoundManagerPtr& soundManager);
+			const audio::SoundManagerPtr& soundManager,
+			const voxelworldrender::AssetVolumeCachePtr& assetVolumeCache);
 	~Client();
 
 	app::AppState onConstruct() override;

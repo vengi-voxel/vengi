@@ -39,7 +39,7 @@ private:
 
 	float _viewDistance = 0.0f;
 	float _fogRange = 0.0f;
-	float _seconds = 0.0f;
+	double _seconds = 0.0;
 
 	glm::vec3 _focusPos { 0.0f };
 
@@ -52,7 +52,7 @@ public:
 	bool init() override;
 	void shutdown() override;
 
-	void update(const glm::vec3& focusPos, float seconds);
+	void update(const glm::vec3& focusPos, double seconds);
 
 	void bindEntitiesDepthBuffer(video::TextureUnit texunit);
 

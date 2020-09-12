@@ -23,6 +23,7 @@
 #include "attrib/Attributes.h"
 #include "attrib/ContainerProvider.h"
 #include "audio/SoundManager.h"
+#include "voxelworldrender/AssetVolumeCache.h"
 #include <SDL.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
@@ -35,11 +36,13 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCach
 		const voxelworld::WorldPagerPtr& worldPager,
 		const voxelformat::VolumeCachePtr& volumeCache,
 		const voxelformat::MeshCachePtr& meshCache,
-		const audio::SoundManagerPtr& soundManager) :
+		const audio::SoundManagerPtr& soundManager,
+		const voxelworldrender::AssetVolumeCachePtr& assetVolumeCache) :
 		Super(metric, filesystem, eventBus, timeProvider),
-		_animationCache(animationCache), _worldMgr(worldMgr), _worldPager(worldPager), _movement(soundManager),
-		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _meshCache(meshCache),
-		_camera(_worldRenderer), _soundManager(soundManager) {
+		_animationCache(animationCache), _worldRenderer(assetVolumeCache), _worldMgr(worldMgr),
+		_worldPager(worldPager), _movement(soundManager), _stockDataProvider(stockDataProvider),
+		_volumeCache(volumeCache), _meshCache(meshCache), _camera(_worldRenderer),
+		_soundManager(soundManager), _assetVolumeCache(assetVolumeCache) {
 	init(ORGANISATION, "mapview");
 }
 
@@ -50,6 +53,8 @@ app::AppState MapView::onConstruct() {
 	app::AppState state = Super::onConstruct();
 
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
+
+	_assetVolumeCache->construct();
 
 	_movement.construct();
 	_action.construct();
@@ -104,6 +109,11 @@ app::AppState MapView::onInit() {
 
 	if (!_volumeCache->init()) {
 		Log::error("Failed to init volumeCache");
+		return app::AppState::InitFailure;
+	}
+
+	if (!_assetVolumeCache->init()) {
+		Log::error("Failed to init asset volume cache");
 		return app::AppState::InitFailure;
 	}
 
@@ -192,7 +202,7 @@ bool MapView::changeEntityType(const glm::vec3& pos, const network::EntityType e
 	attrib::Attributes attributes;
 	attributes.add(attribContainer);
 	attributes.update(0l);
-	const float speed = attributes.max(attrib::Type::SPEED);
+	const double speed = attributes.max(attrib::Type::SPEED);
 	_entity->attrib().setCurrent(attrib::Type::SPEED, speed);
 	_worldRenderer.entityMgr().removeEntity(_entity->id());
 	if (!_worldRenderer.entityMgr().addEntity(_entity)) {
@@ -421,6 +431,7 @@ app::AppState MapView::onCleanup() {
 	_stockDataProvider->shutdown();
 	_animationCache->shutdown();
 	_worldRenderer.shutdown();
+	_assetVolumeCache->shutdown();
 	_volumeCache->shutdown();
 	_depthBufferRenderer.shutdown();
 	_axis.shutdown();
@@ -462,7 +473,8 @@ int main(int argc, char *argv[]) {
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
 	const audio::SoundManagerPtr& soundMgr = core::make_shared<audio::SoundManager>(filesystem);
+	const voxelworldrender::AssetVolumeCachePtr& assetVolumeCache = core::make_shared<voxelworldrender::AssetVolumeCache>(volumeCache);
 	MapView app(metric, animationCache, stockDataProvider, filesystem, eventBus, timeProvider,
-			worldMgr, worldPager, volumeCache, meshCache, soundMgr);
+			worldMgr, worldPager, volumeCache, meshCache, soundMgr, assetVolumeCache);
 	return app.startMainLoop(argc, argv);
 }

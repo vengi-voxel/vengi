@@ -1,6 +1,7 @@
 set(LIB voxelworldrender)
 set(SRCS
 	WorldRenderer.h WorldRenderer.cpp
+	AssetVolumeCache.h AssetVolumeCache.cpp
 	PlayerCamera.cpp PlayerCamera.h
 
 	worldrenderer/WorldChunkMgr.h worldrenderer/WorldChunkMgr.cpp
@@ -21,6 +22,11 @@ set(FILES
 	sky/sky_up.png
 	shared/water-distortion.png
 	shared/water-normal.png
+
+	voxel/models/plants/1.qb
+	voxel/models/plants/2.qb
+	voxel/models/plants/3.qb
+	voxel/models/plants/4.qb
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES frontend voxelrender)
 generate_shaders(${LIB} world water postprocess)
