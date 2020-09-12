@@ -39,12 +39,16 @@ int clua_assignmetatable(lua_State* s, const char *name) {
 	return 1;
 }
 
-void clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name) {
-	luaL_newmetatable(s, name);
+bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name) {
+	if (luaL_newmetatable(s, name) == 0) {
+		Log::warn("Metatable %s already exists", name);
+		return false;
+	}
+	luaL_setfuncs(s, funcs, 0);
 	// assign the metatable to __index
 	lua_pushvalue(s, -1);
 	lua_setfield(s, -2, "__index");
-	luaL_setfuncs(s, funcs, 0);
+	return true;
 }
 
 void clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name) {

@@ -98,7 +98,7 @@ T* clua_get(lua_State *s, int n) {
 	return clua_getudata<T*>(s, n, clua_meta<RAWTYPE>::name());
 }
 
-extern void clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name);
+extern bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name);
 extern void clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name);
 
 template<class T>
