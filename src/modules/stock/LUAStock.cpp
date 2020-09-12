@@ -272,8 +272,7 @@ void luastock_setup(lua_State* s, StockDataProvider* provider) {
 		{"createContainer", luastock_create_container},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(s, stockFuncs, luastock_metastock());
-	lua_setglobal(s, "stock");
+	clua_registerfuncsglobal(s, stockFuncs, luastock_metastock(), "stock");
 
 	luastock_pushprovider(s, provider);
 
