@@ -23,7 +23,7 @@ void clua_assert(lua_State* s, bool pass, const char *msg) {
 	if (ar.name == nullptr) {
 		ar.name = "?";
 	}
-	lua::LUA::returnError(s, msg, ar.name);
+	clua_error(s, msg, ar.name);
 }
 
 void clua_assert_argc(lua_State* s, bool pass) {
@@ -102,6 +102,78 @@ bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *m
 	return true;
 }
 
+static core::String clua_stackdump(lua_State *L) {
+	constexpr int depth = 64;
+	core::String dump;
+	dump.reserve(1024);
+	dump.append("Stacktrace:\n");
+	for (int cnt = 0; cnt < depth; cnt++) {
+		lua_Debug dbg;
+		if (lua_getstack(L, cnt + 1, &dbg) == 0) {
+			break;
+		}
+		lua_getinfo(L, "Snl", &dbg);
+		const char *func = dbg.name ? dbg.name : dbg.short_src;
+		dump.append(cnt);
+		dump.append(": ");
+		dump.append(func);
+		dump.append("\n");
+	}
+	dump.append("\n");
+	const int top = lua_gettop(L);
+	dump.append(core::string::format("%i values on stack%c", top, top > 0 ? '\n' : ' '));
+
+	for (int i = 1; i <= top; i++) { /* repeat for each level */
+		const int t = lua_type(L, i);
+		switch (t) {
+		case LUA_TSTRING:
+			lua_pushfstring(L, "%d: %s (%s)\n", i, lua_tostring(L, i), luaL_typename(L, i));
+			break;
+
+		case LUA_TBOOLEAN:
+			lua_pushfstring(L, "%d: %s (%s)\n", i, (lua_toboolean(L, i) ? "true" : "false"), luaL_typename(L, i));
+			break;
+
+		case LUA_TNUMBER:
+			lua_pushfstring(L, "%d: %f (%s)\n", i, lua_tonumber(L, i), luaL_typename(L, i));
+			break;
+
+		case LUA_TUSERDATA:
+		case LUA_TLIGHTUSERDATA:
+			lua_pushfstring(L, "%d: %p (%s)\n", i, lua_touserdata(L, i), luaL_typename(L, i));
+			break;
+
+		case LUA_TNIL:
+			lua_pushfstring(L, "%d: nil\n", i);
+			break;
+
+		default:
+			lua_pushfstring(L, "%d: (%s)\n", i, luaL_typename(L, i));
+			break;
+		}
+		const char* id = lua_tostring(L, -1);
+		if (id != nullptr) {
+			dump.append(id);
+		}
+		lua_pop(L, 1);
+	}
+
+	return dump;
+}
+
+int clua_error(lua_State *s, const char *fmt, ...) {
+	core::String stackdump = clua_stackdump(s);
+	Log::error("%s", stackdump.c_str());
+	stackdump = core::String();
+	va_list argp;
+	va_start(argp, fmt);
+	luaL_where(s, 1);
+	lua_pushvfstring(s, fmt, argp);
+	va_end(argp);
+	lua_concat(s, 2);
+	return lua_error(s);
+}
+
 bool clua_optboolean(lua_State* s, int index, bool defaultVal) {
 	if (lua_isboolean(s, index)) {
 		return lua_toboolean(s, index);
@@ -140,7 +212,7 @@ static int clua_vargetstr(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
-		return lua::LUA::returnError(s, "Invalid variable %s", var);
+		return clua_error(s, "Invalid variable %s", var);
 	}
 	lua_pushstring(s, v->strVal().c_str());
 	return 1;
@@ -150,7 +222,7 @@ static int clua_vargetint(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
-		return lua::LUA::returnError(s, "Invalid variable %s", var);
+		return clua_error(s, "Invalid variable %s", var);
 	}
 	lua_pushinteger(s, v->intVal());
 	return 1;
@@ -160,7 +232,7 @@ static int clua_vargetbool(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
-		return lua::LUA::returnError(s, "Invalid variable %s", var);
+		return clua_error(s, "Invalid variable %s", var);
 	}
 	lua_pushboolean(s, v->boolVal());
 	return 1;
@@ -170,7 +242,7 @@ static int clua_vargetfloat(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
-		return lua::LUA::returnError(s, "Invalid variable %s", var);
+		return clua_error(s, "Invalid variable %s", var);
 	}
 	lua_pushnumber(s, v->floatVal());
 	return 1;
@@ -180,7 +252,7 @@ static int clua_varsetstr(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
-		return lua::LUA::returnError(s, "Invalid variable %s", var);
+		return clua_error(s, "Invalid variable %s", var);
 	}
 	v->setVal(luaL_checkstring(s, 2));
 	return 0;
@@ -190,7 +262,7 @@ static int clua_varsetbool(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
-		return lua::LUA::returnError(s, "Invalid variable %s", var);
+		return clua_error(s, "Invalid variable %s", var);
 	}
 	v->setVal(clua_checkboolean(s, 2));
 	return 0;
@@ -200,7 +272,7 @@ static int clua_varsetint(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
-		return lua::LUA::returnError(s, "Invalid variable %s", var);
+		return clua_error(s, "Invalid variable %s", var);
 	}
 	v->setVal((int)luaL_checkinteger(s, 2));
 	return 0;
@@ -210,7 +282,7 @@ static int clua_varsetfloat(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
 	if (!v) {
-		return lua::LUA::returnError(s, "Invalid variable %s", var);
+		return clua_error(s, "Invalid variable %s", var);
 	}
 	v->setVal((float)luaL_checknumber(s, 2));
 	return 0;
@@ -275,7 +347,7 @@ int clua_ioloader(lua_State *s) {
 	io::FilePtr file = io::filesystem()->open(name);
 	if (!file->exists()) {
 		file = io::FilePtr();
-		return lua::LUA::returnError(s, "Could not open required file %s", name.c_str());
+		return clua_error(s, "Could not open required file %s", name.c_str());
 	}
 	const core::String& content = file->load();
 	Log::debug("Loading lua module %s with %i bytes", name.c_str(), (int)content.size());

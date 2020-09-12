@@ -106,7 +106,7 @@ static LuaSteeringFactory* luaAI_tosteeringfactory(lua_State * s, int n) {
  */
 static int luaAI_nodeemptyexecute(lua_State* s) {
 	const LuaNodeFactory* factory = luaAI_tonodefactory(s, 1);
-	return lua::LUA::returnError(s, "There is no execute function set for node: %s", factory->type().c_str());
+	return clua_error(s, "There is no execute function set for node: %s", factory->type().c_str());
 }
 
 static int luaAI_nodetostring(lua_State* s) {
@@ -133,7 +133,7 @@ static int luaAI_createnode(lua_State* s) {
 	const LUATreeNodeFactoryPtr& factory = std::make_shared<LuaNodeFactory>(s, type);
 	const bool inserted = r->registerNodeFactory(type, *factory);
 	if (!inserted) {
-		return lua::LUA::returnError(s, "tree node %s is already registered", type.c_str());
+		return clua_error(s, "tree node %s is already registered", type.c_str());
 	}
 
 	clua_newuserdata<LuaNodeFactory*>(s, factory.get());
@@ -155,7 +155,7 @@ static int luaAI_createnode(lua_State* s) {
  */
 static int luaAI_conditionemptyevaluate(lua_State* s) {
 	const LuaConditionFactory* factory = luaAI_toconditionfactory(s, 1);
-	return lua::LUA::returnError(s, "There is no evaluate function set for condition: %s", factory->type().c_str());
+	return clua_error(s, "There is no evaluate function set for condition: %s", factory->type().c_str());
 }
 
 static int luaAI_conditiontostring(lua_State* s) {
@@ -174,7 +174,7 @@ static int luaAI_createcondition(lua_State* s) {
 	const LUAConditionFactoryPtr& factory = std::make_shared<LuaConditionFactory>(s, type);
 	const bool inserted = r->registerConditionFactory(type, *factory);
 	if (!inserted) {
-		return lua::LUA::returnError(s, "condition %s is already registered", type.c_str());
+		return clua_error(s, "condition %s is already registered", type.c_str());
 	}
 
 	clua_newuserdata<LuaConditionFactory*>(s, factory.get());
@@ -196,7 +196,7 @@ static int luaAI_createcondition(lua_State* s) {
  */
 static int luaAI_filteremptyfilter(lua_State* s) {
 	const LuaFilterFactory* factory = luaGetFilterFactoryContext(s, 1);
-	return lua::LUA::returnError(s, "There is no filter function set for filter: %s", factory->type().c_str());
+	return clua_error(s, "There is no filter function set for filter: %s", factory->type().c_str());
 }
 
 static int luaAI_filtertostring(lua_State* s) {
@@ -211,7 +211,7 @@ static int luaAI_createfilter(lua_State* s) {
 	const LUAFilterFactoryPtr& factory = std::make_shared<LuaFilterFactory>(s, type);
 	const bool inserted = r->registerFilterFactory(type, *factory);
 	if (!inserted) {
-		return lua::LUA::returnError(s, "filter %s is already registered", type.c_str());
+		return clua_error(s, "filter %s is already registered", type.c_str());
 	}
 
 	clua_newuserdata<LuaFilterFactory*>(s, factory.get());
@@ -228,7 +228,7 @@ static int luaAI_createfilter(lua_State* s) {
 
 static int luaAI_steeringemptyexecute(lua_State* s) {
 	const LuaSteeringFactory* factory = luaAI_tosteeringfactory(s, 1);
-	return lua::LUA::returnError(s, "There is no execute() function set for steering: %s", factory->type().c_str());
+	return clua_error(s, "There is no execute() function set for steering: %s", factory->type().c_str());
 }
 
 static int luaAI_steeringtostring(lua_State* s) {
@@ -243,7 +243,7 @@ static int luaAI_createsteering(lua_State* s) {
 	const LUASteeringFactoryPtr& factory = std::make_shared<LuaSteeringFactory>(s, type);
 	const bool inserted = r->registerSteeringFactory(type, *factory);
 	if (!inserted) {
-		return lua::LUA::returnError(s, "steering %s is already registered", type.c_str());
+		return clua_error(s, "steering %s is already registered", type.c_str());
 	}
 
 	clua_newuserdata<LuaSteeringFactory*>(s, factory.get());

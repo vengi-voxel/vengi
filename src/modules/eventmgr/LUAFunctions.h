@@ -6,6 +6,7 @@
 
 #include "EventConfigurationData.h"
 #include "commonlua/LUA.h"
+#include "commonlua/LUAFunctions.h"
 
 namespace eventmgr {
 
@@ -24,7 +25,7 @@ static int luaCreateEventConfigurationData(lua_State * l) {
 	const Type type = getType(typeStr);
 	const EventConfigurationDataPtr& eventConfig = ctx->createEventConfig(nameId, type);
 	if (!eventConfig) {
-		return lua::LUA::returnError(l, "Could not create event config for id '%s'", nameId);
+		return clua_error(l, "Could not create event config for id '%s'", nameId);
 	}
 	lua::LUA::newUserdata(l, "EventConfigurationData", eventConfig.get());
 	return 1;

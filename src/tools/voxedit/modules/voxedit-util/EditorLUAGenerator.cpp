@@ -71,11 +71,11 @@ static int luaVoxel_layermgr_get(lua_State* s) {
 		layerId = layerMgr.activeLayer();
 	}
 	if (layerId < 0 || layerId >= layerMgr.maxLayers()) {
-		return lua::LUA::returnError(s, "Could not find layer for id %d", layerId);
+		return clua_error(s, "Could not find layer for id %d", layerId);
 	}
 	Layer& layer = layerMgr.layer(layerId);
 	if (!layer.valid) {
-		return lua::LUA::returnError(s, "Invalid layer for id %d", layerId);
+		return clua_error(s, "Invalid layer for id %d", layerId);
 	}
 	LUALayer luaLayer{&layer, layerId};
 	return clua_pushudata(s, luaLayer, luaVoxel_metalayer());
@@ -97,7 +97,7 @@ static int luaVoxel_layer_volume(lua_State* s) {
 	LUALayer* luaLayer = luaVoxel_toLayer(s, 1);
 	voxel::RawVolume* volume = sceneMgr().volume(luaLayer->layerId);
 	if (volume == nullptr) {
-		return lua::LUA::returnError(s, "Invalid layer id %d given - no volume found", luaLayer->layerId);
+		return clua_error(s, "Invalid layer id %d given - no volume found", luaLayer->layerId);
 	}
 	const LUAVolume luaVolume{luaLayer->layerId, volume, voxel::Region::InvalidRegion};
 	return luaVoxel_pushvolume(s, luaVolume);

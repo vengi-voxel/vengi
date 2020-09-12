@@ -31,11 +31,11 @@ int biomelua_addbiome(lua_State* l) {
 	const int treeDistribution = luaL_optinteger(l, 7, 100);
 	const voxel::VoxelType type = voxel::getVoxelType(voxelType);
 	if (type == voxel::VoxelType::Max) {
-		return lua::LUA::returnError(l, "Failed to resolve voxel type: '%s'", voxelType);
+		return clua_error(l, "Failed to resolve voxel type: '%s'", voxelType);
 	}
 	Biome* biome = biomeMgr->addBiome(lower, upper, humidity, temperature, type, underGround, treeDistribution);
 	if (biome == nullptr) {
-		return lua::LUA::returnError(l, "Failed to create biome");
+		return clua_error(l, "Failed to create biome");
 	}
 	return biomelua_pushbiome(l, biome);
 }

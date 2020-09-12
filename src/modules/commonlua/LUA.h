@@ -123,11 +123,6 @@ public:
 		return *(T **) luaL_checkudata(L, n, name.c_str());
 	}
 
-	/**
-	 * Aborts the lua execution with the given error message
-	 */
-	static int returnError(lua_State *L, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(2);
-
 	void pop(int amount = 1);
 
 	void reg(const core::String& prefix, const luaL_Reg* funcs);
@@ -147,19 +142,12 @@ public:
 	 * @note Use clua_get<T>(s, -1) to get the first custom return value.
 	 */
 	bool execute(const core::String &function, int returnValues = 0);
-	/**
-	 * @brief Executes an 'update' function with a delta time parameter in the lua code
-	 */
-	bool executeUpdate(uint64_t dt);
 
 	bool valueFloatFromTable(const char* key, float *value);
 
 	int intValue(const core::String& path, int defaultValue = 0);
 	float floatValue(const core::String& path, float defaultValue = 0.0f);
 	core::String string(const core::String& expr, const core::String& defaultValue = "");
-
-	static core::String stackDump(lua_State *L);
-	core::String stackDump();
 };
 
 inline lua_State* LUA::state() const {

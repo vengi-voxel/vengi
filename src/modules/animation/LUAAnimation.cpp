@@ -59,7 +59,7 @@ static int luaanim_skeleton_bone(lua_State* s) {
 	const char* name = lua_tostring(s, 2);
 	const BoneId boneId = toBoneId(name);
 	if (boneId == BoneId::Max) {
-		return lua::LUA::returnError(s, "%s is no valid bone", name);
+		return clua_error(s, "%s is no valid bone", name);
 	}
 	return luaanim_pushbone(s, &skeleton->bone(boneId));
 }

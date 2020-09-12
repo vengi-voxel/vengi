@@ -5,6 +5,7 @@
 
 #include "commonlua/LUA.h"
 #include "app/App.h"
+#include "commonlua/LUAFunctions.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "io/Filesystem.h"
@@ -47,7 +48,7 @@ bool CooldownProvider::init(const core::String& cooldowns) {
 		const char *typeStr = luaL_checkstring(s, 1);
 		const Type type = getType(typeStr);
 		if (type == cooldown::Type::NONE) {
-			return lua::LUA::returnError(s, "%s is an invalid cooldown type", typeStr);
+			return clua_error(s, "%s is an invalid cooldown type", typeStr);
 		}
 		const unsigned long millis = luaL_checkinteger(s, 2);
 		Log::debug("set millis for %s to %li", typeStr, millis);

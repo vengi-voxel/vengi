@@ -32,7 +32,7 @@ static int luaattrib_container_gc(lua_State * l) {
 static int luaattrib_container_tostring(lua_State * l) {
 	const Container *ctx = luaattrib_tocontainer(l, 1);
 	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for __tostring");
+		return clua_error(l, "Expected to get container as first argument for __tostring");
 	}
 	lua_pushfstring(l, "container[name: %s]", ctx->name().c_str());
 	return 1;
@@ -43,11 +43,11 @@ static int luaattrib_container_addabsolute(lua_State * l) {
 	const char* type = luaL_checkstring(l, 2);
 	const double value = luaL_checknumber(l, 3);
 	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for addAbsolute(%s, %f)", type, value);
+		return clua_error(l, "Expected to get container as first argument for addAbsolute(%s, %f)", type, value);
 	}
 	attrib::Type attribType = getType(type);
 	if (attribType == attrib::Type::NONE) {
-		return lua::LUA::returnError(l, "Unknown type given for addAbsolute(%s, %f)", type, value);
+		return clua_error(l, "Unknown type given for addAbsolute(%s, %f)", type, value);
 	}
 	Values v = ctx->absolute();
 	v.put(attribType, value);
@@ -59,7 +59,7 @@ static int luaattrib_container_setstacklimit(lua_State * l) {
 	Container *ctx = luaattrib_tocontainer(l, 1);
 	const int limit = luaL_checkinteger(l, 2);
 	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for setStackLimit(%i)", limit);
+		return clua_error(l, "Expected to get container as first argument for setStackLimit(%i)", limit);
 	}
 	ctx->setStackLimit(limit);
 	return 0;
@@ -70,11 +70,11 @@ static int luaattrib_container_addpercentage(lua_State * l) {
 	const char* type = luaL_checkstring(l, 2);
 	const double value = luaL_checknumber(l, 3);
 	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for addPercentage(%s, %f)", type, value);
+		return clua_error(l, "Expected to get container as first argument for addPercentage(%s, %f)", type, value);
 	}
 	attrib::Type attribType = getType(type);
 	if (attribType == attrib::Type::NONE) {
-		return lua::LUA::returnError(l, "Unknown type given for addPercentage(%s, %f)", type, value);
+		return clua_error(l, "Unknown type given for addPercentage(%s, %f)", type, value);
 	}
 	Values v = ctx->percentage();
 	v.put(attribType, value);
@@ -85,7 +85,7 @@ static int luaattrib_container_addpercentage(lua_State * l) {
 static int luaattrib_container_getname(lua_State * l) {
 	const Container *ctx = luaattrib_tocontainer(l, 1);
 	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Expected to get container as first argument for getName()");
+		return clua_error(l, "Expected to get container as first argument for getName()");
 	}
 	lua_pushstring(l, ctx->name().c_str());
 	return 1;
@@ -111,7 +111,7 @@ static int luaattrib_provider_create_container(lua_State * l) {
 	ContainerProvider *ctx = luaattrib_getcontainerprovider(l);
 	const char *name = luaL_checkstring(l, 1);
 	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Unable to find Provider for createContainer(%s)", name);
+		return clua_error(l, "Unable to find Provider for createContainer(%s)", name);
 	}
 	const ContainerPtr& container = ctx->createContainer(name);
 	if (!container) {
@@ -124,7 +124,7 @@ static int luaattrib_provider_create_container(lua_State * l) {
 static int luaattrib_provider_tostring(lua_State* l) {
 	ContainerProvider *ctx = luaattrib_getcontainerprovider(l);
 	if (ctx == nullptr) {
-		return lua::LUA::returnError(l, "Unable to find Provider for createContainer");
+		return clua_error(l, "Unable to find Provider for createContainer");
 	}
 	const size_t size = ctx->containers().size();
 	lua_pushfstring(l, "containers[amount: %d]", (int)size);

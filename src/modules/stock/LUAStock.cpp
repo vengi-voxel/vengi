@@ -86,7 +86,7 @@ static ContainerShape* luastock_tocontainershape(lua_State * l, int n) {
 static int luastock_containershape_addrect(lua_State * l) {
 	ContainerShape *containerShape = luastock_tocontainershape(l, 1);
 	if (containerShape == nullptr) {
-		return lua::LUA::returnError(l, "Expected container shape as first parameter");
+		return clua_error(l, "Expected container shape as first parameter");
 	}
 	const uint8_t x = luaL_checkinteger(l, 2);
 	const uint8_t y = luaL_checkinteger(l, 3);
@@ -191,7 +191,7 @@ static int luastock_itemshape_tostring(lua_State * l) {
 static int luastock_create_container(lua_State * l) {
 	StockDataProvider *stockDataProvider = luastock_getprovider(l);
 	if (stockDataProvider == nullptr) {
-		return lua::LUA::returnError(l, "Could not find global provider");
+		return clua_error(l, "Could not find global provider");
 	}
 	const uint8_t containerId = (uint8_t)luaL_checkinteger(l, 1);
 	const char* containerName = luaL_checkstring(l, 2);
@@ -200,7 +200,7 @@ static int luastock_create_container(lua_State * l) {
 	containerData->id = containerId;
 	if (!stockDataProvider->addContainerData(containerData)) {
 		delete containerData;
-		return lua::LUA::returnError(l, "Could not add container with name: %s", containerName);
+		return clua_error(l, "Could not add container with name: %s", containerName);
 	}
 	return clua_pushudata(l, containerData, luastock_metacontainer());
 }
@@ -208,14 +208,14 @@ static int luastock_create_container(lua_State * l) {
 static int luastock_create_item(lua_State * l) {
 	StockDataProvider *stockDataProvider = luastock_getprovider(l);
 	if (stockDataProvider == nullptr) {
-		return lua::LUA::returnError(l, "Could not find global provider");
+		return clua_error(l, "Could not find global provider");
 	}
 	const ItemId itemId = luaL_checkinteger(l, 1);
 	const char *type = luaL_checkstring(l, 2);
 	const char *name = luaL_optstring(l, 3, nullptr);
 	const ItemType itemType = getItemType(type);
 	if (itemType == ItemType::NONE) {
-		return lua::LUA::returnError(l, "Unknown type given: %s", type);
+		return clua_error(l, "Unknown type given: %s", type);
 	}
 
 	ItemData* itemData = new ItemData(itemId, itemType);

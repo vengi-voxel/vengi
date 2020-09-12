@@ -128,7 +128,7 @@ static int luaAI_groupmgradd(lua_State* s) {
 	const GroupId groupId = (GroupId)luaL_checkinteger(s, 2);
 	luaAI_AI* ai = luaAI_toai(s, 3);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	const bool state = groupMgr->add(groupId, ai->ai);
 	lua_pushboolean(s, state);
@@ -147,7 +147,7 @@ static int luaAI_groupmgrremove(lua_State* s) {
 	const GroupId groupId = (GroupId)luaL_checkinteger(s, 2);
 	luaAI_AI* ai = luaAI_toai(s, 3);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	const bool state = groupMgr->remove(groupId, ai->ai);
 	lua_pushboolean(s, state);
@@ -166,7 +166,7 @@ static int luaAI_groupmgrisleader(lua_State* s) {
 	const GroupId groupId = (GroupId)luaL_checkinteger(s, 2);
 	luaAI_AI* ai = luaAI_toai(s, 3);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	const bool state = groupMgr->isGroupLeader(groupId, ai->ai);
 	lua_pushboolean(s, state);
@@ -185,7 +185,7 @@ static int luaAI_groupmgrisingroup(lua_State* s) {
 	const GroupId groupId = (GroupId)luaL_checkinteger(s, 2);
 	luaAI_AI* ai = luaAI_toai(s, 3);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	const bool state = groupMgr->isInGroup(groupId, ai->ai);
 	lua_pushboolean(s, state);
@@ -202,7 +202,7 @@ static int luaAI_groupmgrisinanygroup(lua_State* s) {
 	const GroupMgr* groupMgr = luaAI_togroupmgr(s, 1);
 	luaAI_AI* ai = luaAI_toai(s, 2);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	const bool state = groupMgr->isInAnyGroup(ai->ai);
 	lua_pushboolean(s, state);
@@ -438,7 +438,7 @@ static int luaAI_characterid(lua_State* s) {
 static int luaAI_characterposition(lua_State* s) {
 	const luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	return clua_push(s, chr->character->getPosition());
 }
@@ -451,7 +451,7 @@ static int luaAI_characterposition(lua_State* s) {
 static int luaAI_charactersetposition(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	const glm::vec3* v = clua_get<glm::vec3>(s, 2);
 	chr->character->setPosition(*v);
@@ -466,7 +466,7 @@ static int luaAI_charactersetposition(lua_State* s) {
 static int luaAI_characterspeed(lua_State* s) {
 	const luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	lua_pushnumber(s, chr->character->getSpeed());
 	return 1;
@@ -480,7 +480,7 @@ static int luaAI_characterspeed(lua_State* s) {
 static int luaAI_characterorientation(lua_State* s) {
 	const luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	lua_pushnumber(s, chr->character->getOrientation());
 	return 1;
@@ -494,7 +494,7 @@ static int luaAI_characterorientation(lua_State* s) {
 static int luaAI_charactersetspeed(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	const lua_Number value = luaL_checknumber(s, 2);
 	chr->character->setSpeed((float)value);
@@ -509,7 +509,7 @@ static int luaAI_charactersetspeed(lua_State* s) {
 static int luaAI_charactersetorientation(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	const lua_Number value = luaL_checknumber(s, 2);
 	chr->character->setOrientation((float)value);
@@ -524,11 +524,11 @@ static int luaAI_charactersetorientation(lua_State* s) {
 static int luaAI_charactereq(lua_State* s) {
 	const luaAI_ICharacter* a = luaAI_tocharacter(s, 1);
 	if (!a->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	const luaAI_ICharacter* b = luaAI_tocharacter(s, 2);
 	if (!b->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	const bool e = a->character == b->character;
 	lua_pushboolean(s, e);
@@ -542,7 +542,7 @@ static int luaAI_charactereq(lua_State* s) {
 static int luaAI_charactergc(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, -1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	chr->character = ICharacterPtr();
 	return 0;
@@ -556,7 +556,7 @@ static int luaAI_charactergc(lua_State* s) {
 static int luaAI_characterattributes(lua_State* s) {
 	const luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	const ai::CharacterAttributes& attributes = chr->character->getAttributes();
 	lua_newtable(s);
@@ -580,7 +580,7 @@ static int luaAI_characterattributes(lua_State* s) {
 static int luaAI_charactersetattribute(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	const char* key = luaL_checkstring(s, 2);
 	const char* value = luaL_checkstring(s, 3);
@@ -591,7 +591,7 @@ static int luaAI_charactersetattribute(lua_State* s) {
 static int luaAI_charactertostring(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
-		return lua::LUA::returnError(s, "ICharacter is already destroyed");
+		return clua_error(s, "ICharacter is already destroyed");
 	}
 	lua_pushfstring(s, "Character: %d", (lua_Integer)chr->character->getId());
 	return 1;
@@ -605,7 +605,7 @@ static int luaAI_charactertostring(lua_State* s) {
 static int luaAI_aiid(lua_State* s) {
 	const luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	lua_pushinteger(s, ai->ai->getId());
 	return 1;
@@ -619,7 +619,7 @@ static int luaAI_aiid(lua_State* s) {
 static int luaAI_aitime(lua_State* s) {
 	const luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	lua_pushinteger(s, ai->ai->getTime());
 	return 1;
@@ -633,7 +633,7 @@ static int luaAI_aitime(lua_State* s) {
 static int luaAI_aifilteredentities(lua_State* s) {
 	const luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	const FilteredEntities& filteredEntities = ai->ai->getFilteredEntities();
 	lua_newtable(s);
@@ -655,7 +655,7 @@ static int luaAI_aifilteredentities(lua_State* s) {
 static int luaAI_aigetzone(lua_State* s) {
 	const luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	return luaAI_pushzone(s, ai->ai->getZone());
 }
@@ -668,7 +668,7 @@ static int luaAI_aigetzone(lua_State* s) {
 static int luaAI_aigetaggromgr(lua_State* s) {
 	luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	return luaAI_pushaggromgr(s, &ai->ai->getAggroMgr());
 }
@@ -681,7 +681,7 @@ static int luaAI_aigetaggromgr(lua_State* s) {
 static int luaAI_aigetcharacter(lua_State* s) {
 	const luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	return luaAI_pushcharacter(s, ai->ai->getCharacter());
 }
@@ -694,7 +694,7 @@ static int luaAI_aigetcharacter(lua_State* s) {
 static int luaAI_aihaszone(lua_State* s) {
 	const luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	lua_pushboolean(s, ai->ai->hasZone() ? 1 : 0);
 	return 1;
@@ -708,11 +708,11 @@ static int luaAI_aihaszone(lua_State* s) {
 static int luaAI_aieq(lua_State* s) {
 	const luaAI_AI* a = luaAI_toai(s, 1);
 	if (!a->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	const luaAI_AI* b = luaAI_toai(s, 2);
 	if (!b->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	const bool e = a->ai->getId() == b->ai->getId();
 	lua_pushboolean(s, e);
@@ -726,7 +726,7 @@ static int luaAI_aieq(lua_State* s) {
 static int luaAI_aigc(lua_State* s) {
 	luaAI_AI* ai = luaAI_toai(s, -1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	ai->ai = AIPtr();
 	return 0;
@@ -735,7 +735,7 @@ static int luaAI_aigc(lua_State* s) {
 static int luaAI_aitostring(lua_State* s) {
 	const luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	TreeNodePtr treeNode = ai->ai->getBehaviour();
 	if (treeNode) {
@@ -749,7 +749,7 @@ static int luaAI_aitostring(lua_State* s) {
 static int luaAI_aisetfilteredentities(lua_State* s) {
 	luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	luaL_checktype(s, 2, LUA_TTABLE);
 
@@ -769,7 +769,7 @@ static int luaAI_aisetfilteredentities(lua_State* s) {
 static int luaAI_aiaddfilteredentity(lua_State* s) {
 	luaAI_AI* ai = luaAI_toai(s, 1);
 	if (!ai->ai) {
-		return lua::LUA::returnError(s, "AI is already destroyed");
+		return clua_error(s, "AI is already destroyed");
 	}
 	const ai::CharacterId id = (ai::CharacterId)luaL_checkinteger(s, 2);
 	ai->ai->addFilteredEntity(id);
