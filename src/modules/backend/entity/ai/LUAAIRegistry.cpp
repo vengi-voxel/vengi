@@ -271,8 +271,7 @@ LUAAIRegistry::LUAAIRegistry() {
 		{"createSteering", luaAI_createsteering},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(_s, registryFuncs, "META_REGISTRY");
-	lua_setglobal(_s, "REGISTRY");
+	clua_registerfuncsglobal(_s, registryFuncs, "META_REGISTRY", "REGISTRY");
 
 	luaAI_globalpointer(_s, this, luaAI_metaregistry());
 	luaAI_registerAll(_s);
