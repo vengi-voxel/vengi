@@ -75,7 +75,7 @@ void NodeConnectorWidget::onInflate(const tb::INFLATE_INFO &info) {
 tb::PreferredSize ImageWidget::onCalculatePreferredContentSize(const tb::SizeConstraints &constraints) {
 	const tb::PreferredSize& prefSize = Super::onCalculatePreferredContentSize(constraints);
 	if (prefSize.max_w == 0 || prefSize.max_h == 0) {
-		return tb::TBWidget::onCalculatePreferredContentSize(constraints);
+		return tb::TBImageWidget::onCalculatePreferredContentSize(constraints);
 	}
 	return prefSize;
 }

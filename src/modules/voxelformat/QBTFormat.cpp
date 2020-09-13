@@ -18,13 +18,13 @@ namespace voxel {
 static const bool MergeCompounds = true;
 
 #define wrapSave(write) \
-	if (write == false) { \
+	if ((write) == false) { \
 		Log::error("Could not save qbt file: " CORE_STRINGIFY(write) " failed"); \
 		return false; \
 	}
 
 #define wrapSaveFree(write) \
-	if (write == false) { \
+	if ((write) == false) { \
 		Log::error("Could not save qbt file: " CORE_STRINGIFY(write) " failed"); \
 		delete[] compressedBuf; \
 		delete[] zlibBuffer; \
@@ -32,13 +32,13 @@ static const bool MergeCompounds = true;
 	}
 
 #define wrap(read) \
-	if (read != 0) { \
+	if ((read) != 0) { \
 		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapBool(read) \
-	if (read == false) { \
+	if ((read) == false) { \
 		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
 		return false; \
 	}

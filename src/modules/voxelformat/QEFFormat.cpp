@@ -14,13 +14,13 @@
 namespace voxel {
 
 #define wrap(read) \
-	if (read != 0) { \
+	if ((read) != 0) { \
 		Log::error("Could not load qef file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapBool(read) \
-	if (read == false) { \
+	if ((read) == false) { \
 		Log::error("Could not load qef file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
 		return false; \
 	}
@@ -36,17 +36,17 @@ bool QEFFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 	char buf[64];
 
 	wrapBool(stream.readLine(64, buf))
-	if (SDL_strcmp(buf, "Qubicle Exchange Format")) {
+	if (SDL_strcmp(buf, "Qubicle Exchange Format") != 0) {
 		Log::error("Unexpected magic line: '%s'", buf);
 		return false;
 	}
 	wrapBool(stream.readLine(64, buf))
-	if (SDL_strcmp(buf, "Version 0.2")) {
+	if (SDL_strcmp(buf, "Version 0.2") != 0) {
 		Log::error("Unexpected version line: '%s'", buf);
 		return false;
 	}
 	wrapBool(stream.readLine(64, buf))
-	if (SDL_strcmp(buf, "www.minddesk.com")) {
+	if (SDL_strcmp(buf, "www.minddesk.com") != 0) {
 		Log::error("Unexpected url line: '%s'", buf);
 		return false;
 	}

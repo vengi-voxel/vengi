@@ -14,13 +14,13 @@
 namespace voxel {
 
 #define wrap(read) \
-	if (read != 0) { \
+	if ((read) != 0) { \
 		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapBool(read) \
-	if (read != true) { \
+	if ((read) != true) { \
 		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
 		return false; \
 	}

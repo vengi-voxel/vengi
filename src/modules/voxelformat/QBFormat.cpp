@@ -17,32 +17,32 @@ const int NEXT_SLICE_FLAG = 6;
 }
 
 #define wrapSave(write) \
-	if (write == false) { \
+	if ((write) == false) { \
 		Log::error("Could not save qb file: " CORE_STRINGIFY(write) " failed"); \
 		return false; \
 	}
 
 #define wrapSaveColor(color) \
-	wrapSave(stream.addByte(color.x)) \
-	wrapSave(stream.addByte(color.y)) \
-	wrapSave(stream.addByte(color.z)) \
-	wrapSave(stream.addByte(color.w))
+	wrapSave(stream.addByte((color).x)) \
+	wrapSave(stream.addByte((color).y)) \
+	wrapSave(stream.addByte((color).z)) \
+	wrapSave(stream.addByte((color).w))
 
 
 #define wrap(read) \
-	if (read != 0) { \
+	if ((read) != 0) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
 		return false; \
 	}
 
 #define wrapBool(read) \
-	if (read == false) { \
+	if ((read) == false) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
 		return false; \
 	}
 
 #define wrapColor(read) \
-	if (read != 0) { \
+	if ((read) != 0) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
 		return voxel::Voxel(); \
 	}

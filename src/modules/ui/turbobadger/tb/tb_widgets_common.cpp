@@ -83,7 +83,7 @@ void TBWidgetString::paint(TBWidget *widget, const TBRect &rect, const TBColor &
 }
 
 /** This value on m_cached_text_width means it needs to be updated again. */
-#define UPDATE_TEXT_WIDTH_CACHE -1
+#define UPDATE_TEXT_WIDTH_CACHE (-1)
 
 TBTextField::TBTextField() : m_cached_text_width(UPDATE_TEXT_WIDTH_CACHE), m_squeezable(false) {
 	setSkinBg(TBIDC("TBTextField"), WIDGET_INVOKE_INFO_NO_CALLBACKS);

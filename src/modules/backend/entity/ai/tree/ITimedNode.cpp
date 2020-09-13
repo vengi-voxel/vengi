@@ -4,7 +4,7 @@
 
 #include "ITimedNode.h"
 #include <stdlib.h>
-#define NOTSTARTED -1
+#define NOTSTARTED (-1)
 
 namespace backend {
 

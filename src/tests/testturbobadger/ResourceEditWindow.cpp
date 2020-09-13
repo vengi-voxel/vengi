@@ -109,7 +109,7 @@ void ResourceEditWindow::addWidgetListItemsRecursive(TBWidget *widget, int depth
 		const char *classname = widget->getClassName();
 		if (!*classname)
 			classname = "<Unknown widget type>";
-		const core::String& str = core::string::format("% *s%s", depth - 1, "", classname);
+		const core::String& str = core::string::format("%*s%s", depth - 1, "", classname);
 
 		if (ResourceItem *item = new ResourceItem(widget, str.c_str()))
 			m_widget_list_source.addItem(item);

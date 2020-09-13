@@ -13,7 +13,7 @@
 namespace voxel {
 
 #define wrap(read) \
-	if (read != 0) { \
+	if ((read) != 0) { \
 		Log::error("Could not load kvx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
 		return false; \
 	}

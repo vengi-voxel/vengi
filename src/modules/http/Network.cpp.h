@@ -25,7 +25,7 @@
 #include <netdb.h>
 #include <signal.h>
 #define closesocket close
-#define INVALID_SOCKET  -1
+#define INVALID_SOCKET  (-1)
 #define network_cleanup()
 #endif
 

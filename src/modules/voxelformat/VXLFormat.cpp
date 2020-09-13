@@ -15,7 +15,7 @@
 namespace voxel {
 
 #define wrap(read) \
-	if (read != 0) { \
+	if ((read) != 0) { \
 		Log::error("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
 		return false; \
 	}
@@ -336,7 +336,7 @@ bool VXLFormat::readLimbFooters(io::FileStream& stream, vxl_mdl& mdl) const {
 bool VXLFormat::readHeader(io::FileStream& stream, vxl_mdl& mdl) {
 	vxl_header& hdr = mdl.header;
 	wrapBool(stream.readString(sizeof(hdr.filetype), hdr.filetype))
-	if (SDL_strcmp(hdr.filetype, "Voxel Animation")) {
+	if (SDL_strcmp(hdr.filetype, "Voxel Animation") != 0) {
 		Log::error("Invalid vxl header");
 		return false;
 	}

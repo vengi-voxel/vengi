@@ -1004,19 +1004,19 @@ void VoxEditWindow::onProcess() {
 		char buf[64];
 		if (_cursorX != nullptr) {
 			SDL_snprintf(buf, sizeof(buf), "%i", pos.x);
-			if (SDL_strcmp(_cursorX->getText().c_str(), buf)) {
+			if (SDL_strcmp(_cursorX->getText().c_str(), buf) != 0) {
 				_cursorX->setText(buf);
 			}
 		}
 		if (_cursorY != nullptr) {
 			SDL_snprintf(buf, sizeof(buf), "%i", pos.y);
-			if (SDL_strcmp(_cursorY->getText().c_str(), buf)) {
+			if (SDL_strcmp(_cursorY->getText().c_str(), buf) != 0) {
 				_cursorY->setText(buf);
 			}
 		}
 		if (_cursorZ != nullptr) {
 			SDL_snprintf(buf, sizeof(buf), "%i", pos.z);
-			if (SDL_strcmp(_cursorZ->getText().c_str(), buf)) {
+			if (SDL_strcmp(_cursorZ->getText().c_str(), buf) != 0) {
 				_cursorZ->setText(buf);
 			}
 		}

@@ -187,7 +187,7 @@ public:
 	}
 
 	AIStateWorld(const ai::CharacterId& id, const glm::vec3& position, float orientation, CharacterAttributes&& attributes) :
-			_id(id), _position(position), _orientation(orientation), _attributes(std::move(attributes)) {
+			_id(id), _position(position), _orientation(orientation), _attributes(attributes) {
 	}
 
 	AIStateWorld(const ai::CharacterId& id, const glm::vec3& position, float orientation) :

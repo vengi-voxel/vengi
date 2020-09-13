@@ -59,7 +59,7 @@ bool ClientPager::pageIn(voxel::PagedVolume::PagerContext& pctx) {
 					x, y, z, _seed, _mapId);
 			return false;
 		}
-		if (SDL_strcmp(contentType, "application/chunk")) {
+		if (SDL_strcmp(contentType, "application/chunk") != 0) {
 			Log::error("Unexpected content type: %s for chunk at position %i:%i:%i and seed %u on map %i",
 					contentType, x, y, z, _seed, _mapId);
 			return false;

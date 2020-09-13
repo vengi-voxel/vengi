@@ -173,7 +173,7 @@ static void* loadICDLinux() {
 			if (ext == NULL) {
 				continue;
 			}
-			if (SDL_strcmp(ext, ".icd")) {
+			if (SDL_strcmp(ext, ".icd") != 0) {
 				continue;
 			}
 			char buf[512];

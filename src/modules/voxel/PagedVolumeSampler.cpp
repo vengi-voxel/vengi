@@ -9,12 +9,12 @@
 
 namespace voxel {
 
-#define CAN_GO_NEG_X(val) (val > 0)
-#define CAN_GO_POS_X(val) (val < this->_chunkSideLengthMinusOne)
-#define CAN_GO_NEG_Y(val) (val > 0)
-#define CAN_GO_POS_Y(val) (val < this->_chunkSideLengthMinusOne)
-#define CAN_GO_NEG_Z(val) (val > 0)
-#define CAN_GO_POS_Z(val) (val < this->_chunkSideLengthMinusOne)
+#define CAN_GO_NEG_X(val) ((val) > 0)
+#define CAN_GO_POS_X(val) ((val) < this->_chunkSideLengthMinusOne)
+#define CAN_GO_NEG_Y(val) ((val) > 0)
+#define CAN_GO_POS_Y(val) ((val) < this->_chunkSideLengthMinusOne)
+#define CAN_GO_NEG_Z(val) ((val) > 0)
+#define CAN_GO_POS_Z(val) ((val) < this->_chunkSideLengthMinusOne)
 
 #define NEG_X_DELTA (-(deltaX[this->_xPosInChunk-1]))
 #define POS_X_DELTA (deltaX[this->_xPosInChunk])
