@@ -189,15 +189,15 @@ static int luaVoxel_region_maxs(lua_State* s) {
 
 static int luaVoxel_region_setmins(lua_State* s) {
 	voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
-	const glm::ivec3* mins = clua_get<glm::ivec3>(s, 2);
-	region->setLowerCorner(*mins);
+	const glm::ivec3& mins = clua_tovec<glm::ivec3>(s, 2);
+	region->setLowerCorner(mins);
 	return 0;
 }
 
 static int luaVoxel_region_setmaxs(lua_State* s) {
 	voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
-	const glm::ivec3* maxs = clua_get<glm::ivec3>(s, 2);
-	region->setUpperCorner(*maxs);
+	const glm::ivec3& maxs = clua_tovec<glm::ivec3>(s, 2);
+	region->setUpperCorner(maxs);
 	return 0;
 }
 

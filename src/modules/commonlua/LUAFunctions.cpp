@@ -358,6 +358,17 @@ int clua_ioloader(lua_State *s) {
 	return 1;
 }
 
+glm::quat clua_toquat(lua_State *s, int n) {
+	luaL_checktype(s, n, LUA_TTABLE);
+	glm::quat v;
+	for (int i = 0; i < 4; ++i) {
+		lua_getfield(s, n, VEC_MEMBERS[i]);
+		v[i] = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+		lua_pop(s, 1);
+	}
+	return v;
+}
+
 void clua_quatregister(lua_State* s) {
 	const luaL_Reg funcs[] = {
 		{"__add", clua_vecadd<glm::quat>},

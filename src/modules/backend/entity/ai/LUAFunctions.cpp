@@ -453,8 +453,8 @@ static int luaAI_charactersetposition(lua_State* s) {
 	if (!chr->character) {
 		return clua_error(s, "ICharacter is already destroyed");
 	}
-	const glm::vec3* v = clua_get<glm::vec3>(s, 2);
-	chr->character->setPosition(*v);
+	const glm::vec3& v = clua_tovec<glm::vec3>(s, 2);
+	chr->character->setPosition(v);
 	return 0;
 }
 

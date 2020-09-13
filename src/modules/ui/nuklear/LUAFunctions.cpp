@@ -1221,6 +1221,42 @@ int uilua_property(lua_State *s) {
 		double value = lua_tonumber(s, 3);
 		value = nk_propertyd(ctx, name, min, value, max, step, inc_per_pixel);
 		lua_pushnumber(s, value);
+	} else if (clua_isvec<glm::vec4>(s, 3)) {
+		glm::vec4 v = clua_tovec<glm::vec4>(s, 3);
+		v.x = nk_propertyd(ctx, name, min, v.x, max, step, inc_per_pixel);
+		v.y = nk_propertyd(ctx, name, min, v.y, max, step, inc_per_pixel);
+		v.z = nk_propertyd(ctx, name, min, v.z, max, step, inc_per_pixel);
+		v.w = nk_propertyd(ctx, name, min, v.w, max, step, inc_per_pixel);
+		clua_push(s, v);
+	} else if (clua_isvec<glm::vec3>(s, 3)) {
+		glm::vec3 v = clua_tovec<glm::vec3>(s, 3);
+		v.x = nk_propertyd(ctx, name, min, v.x, max, step, inc_per_pixel);
+		v.y = nk_propertyd(ctx, name, min, v.y, max, step, inc_per_pixel);
+		v.z = nk_propertyd(ctx, name, min, v.z, max, step, inc_per_pixel);
+		clua_push(s, v);
+	} else if (clua_isvec<glm::vec2>(s, 3)) {
+		glm::vec2 v = clua_tovec<glm::vec2>(s, 3);
+		v.x = nk_propertyd(ctx, name, min, v.x, max, step, inc_per_pixel);
+		v.y = nk_propertyd(ctx, name, min, v.y, max, step, inc_per_pixel);
+		clua_push(s, v);
+	} else if (clua_isvec<glm::ivec4>(s, 3)) {
+		glm::ivec4 v = clua_tovec<glm::ivec4>(s, 3);
+		v.x = nk_propertyi(ctx, name, min, v.x, max, step, inc_per_pixel);
+		v.y = nk_propertyi(ctx, name, min, v.y, max, step, inc_per_pixel);
+		v.z = nk_propertyi(ctx, name, min, v.z, max, step, inc_per_pixel);
+		v.w = nk_propertyi(ctx, name, min, v.w, max, step, inc_per_pixel);
+		clua_push(s, v);
+	} else if (clua_isvec<glm::ivec3>(s, 3)) {
+		glm::ivec3 v = clua_tovec<glm::ivec3>(s, 3);
+		v.x = nk_propertyi(ctx, name, min, v.x, max, step, inc_per_pixel);
+		v.y = nk_propertyi(ctx, name, min, v.y, max, step, inc_per_pixel);
+		v.z = nk_propertyi(ctx, name, min, v.z, max, step, inc_per_pixel);
+		clua_push(s, v);
+	} else if (clua_isvec<glm::ivec2>(s, 3)) {
+		glm::ivec2 v = clua_tovec<glm::ivec2>(s, 3);
+		v.x = nk_propertyi(ctx, name, min, v.x, max, step, inc_per_pixel);
+		v.y = nk_propertyi(ctx, name, min, v.y, max, step, inc_per_pixel);
+		clua_push(s, v);
 	} else if (lua_istable(s, 3)) {
 		lua_getfield(s, 3, "value");
 		if (!lua_isnumber(s, -1)) {
@@ -1235,42 +1271,6 @@ int uilua_property(lua_State *s) {
 			lua_setfield(s, 3, "value");
 		}
 		lua_pushboolean(s, changed);
-	} else if (clua_istype<glm::vec4>(s, 3)) {
-		glm::vec4* v = clua_get<glm::vec4>(s, 3);
-		v->x = nk_propertyd(ctx, name, min, v->x, max, step, inc_per_pixel);
-		v->y = nk_propertyd(ctx, name, min, v->y, max, step, inc_per_pixel);
-		v->z = nk_propertyd(ctx, name, min, v->z, max, step, inc_per_pixel);
-		v->w = nk_propertyd(ctx, name, min, v->w, max, step, inc_per_pixel);
-		clua_push(s, *v);
-	} else if (clua_istype<glm::vec3>(s, 3)) {
-		glm::vec3* v = clua_get<glm::vec3>(s, 3);
-		v->x = nk_propertyd(ctx, name, min, v->x, max, step, inc_per_pixel);
-		v->y = nk_propertyd(ctx, name, min, v->y, max, step, inc_per_pixel);
-		v->z = nk_propertyd(ctx, name, min, v->z, max, step, inc_per_pixel);
-		clua_push(s, *v);
-	} else if (clua_istype<glm::vec2>(s, 3)) {
-		glm::vec2* v = clua_get<glm::vec2>(s, 3);
-		v->x = nk_propertyd(ctx, name, min, v->x, max, step, inc_per_pixel);
-		v->y = nk_propertyd(ctx, name, min, v->y, max, step, inc_per_pixel);
-		clua_push(s, *v);
-	} else if (clua_istype<glm::ivec4>(s, 3)) {
-		glm::ivec4* v = clua_get<glm::ivec4>(s, 3);
-		v->x = nk_propertyi(ctx, name, min, v->x, max, step, inc_per_pixel);
-		v->y = nk_propertyi(ctx, name, min, v->y, max, step, inc_per_pixel);
-		v->z = nk_propertyi(ctx, name, min, v->z, max, step, inc_per_pixel);
-		v->w = nk_propertyi(ctx, name, min, v->w, max, step, inc_per_pixel);
-		clua_push(s, *v);
-	} else if (clua_istype<glm::ivec3>(s, 3)) {
-		glm::ivec3* v = clua_get<glm::ivec3>(s, 3);
-		v->x = nk_propertyi(ctx, name, min, v->x, max, step, inc_per_pixel);
-		v->y = nk_propertyi(ctx, name, min, v->y, max, step, inc_per_pixel);
-		v->z = nk_propertyi(ctx, name, min, v->z, max, step, inc_per_pixel);
-		clua_push(s, *v);
-	} else if (clua_istype<glm::ivec2>(s, 3)) {
-		glm::ivec2* v = clua_get<glm::ivec2>(s, 3);
-		v->x = nk_propertyi(ctx, name, min, v->x, max, step, inc_per_pixel);
-		v->y = nk_propertyi(ctx, name, min, v->y, max, step, inc_per_pixel);
-		clua_push(s, *v);
 	} else {
 		clua_typerror(s, 3, "number, vector or table");
 	}
@@ -1303,11 +1303,11 @@ int uilua_model(lua_State *s) {
 			} else if (!SDL_strcmp(field, "omegaY")) {
 				model.omegaY = luaL_checknumber(s, -1);
 			} else if (!SDL_strcmp(field, "cameraPos")) {
-				const glm::vec3* v = clua_get<glm::vec3>(s, -1);
-				model.camera.setPosition(*v);
+				const glm::vec3& v = clua_tovec<glm::vec3>(s, -1);
+				model.camera.setPosition(v);
 			} else if (!SDL_strcmp(field, "cameraTarget")) {
-				const glm::vec3* v = clua_get<glm::vec3>(s, -1);
-				model.camera.setTarget(*v);
+				const glm::vec3& v = clua_tovec<glm::vec3>(s, -1);
+				model.camera.setTarget(v);
 			} else {
 				clua_assert(s, false, "Unknown field given");
 			}

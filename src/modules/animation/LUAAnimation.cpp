@@ -134,7 +134,7 @@ static int luaanim_bone_settranslation(lua_State* s) {
 
 static int luaanim_bone_setorientation(lua_State* s) {
 	Bone& bone = *luaanim_tobone(s, 1);
-	bone.orientation = *clua_get<glm::quat>(s, 2);
+	bone.orientation = clua_toquat(s, 2);
 	return 0;
 }
 
@@ -211,8 +211,8 @@ static int luaanim_boneutil_rotate_z(lua_State* s) {
 }
 
 static int luaanim_boneutil_mirror_vec3_xz(lua_State* s) {
-	const glm::vec3* translation = clua_get<glm::vec3>(s, 1);
-	const glm::vec3& mirrored = mirrorXZ(*translation);
+	const glm::vec3& translation = clua_tovec<glm::vec3>(s, 1);
+	const glm::vec3& mirrored = mirrorXZ(translation);
 	return clua_push(s, mirrored);
 }
 

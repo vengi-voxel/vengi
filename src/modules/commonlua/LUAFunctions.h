@@ -8,6 +8,8 @@
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "core/StringUtil.h"
+#include "lauxlib.h"
+#include <cstddef>
 #include <lua.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -89,6 +91,24 @@ bool clua_istype(lua_State *s, int n) {
 	return luaL_testudata(s, n, clua_meta<RAWTYPE>::name()) != nullptr;
 }
 
+template<typename T>
+bool clua_isvec(lua_State *s, int n) {
+	using RAWTYPE = typename std::remove_pointer<T>::type;
+	if (!lua_istable(s, n)) {
+		return false;
+	}
+	if (lua_getmetatable(s, n) == 0) {
+		return false;
+	}
+	luaL_getmetatable(s, clua_meta<RAWTYPE>::name());
+	if (lua_rawequal(s, -1, -2)) {
+		lua_pop(s, 2);
+		return true;
+	}
+	lua_pop(s, 2);
+	return false;
+}
+
 template<class T>
 int clua_push(lua_State* s, const T& v) {
 	using RAWTYPE = typename std::remove_pointer<T>::type;
@@ -105,206 +125,7 @@ extern bool clua_registernew(lua_State* s, const char *name, lua_CFunction func)
 extern bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name);
 extern bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name);
 
-template<class T>
-int clua_vecadd(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	const T* b = clua_get<T>(s, 2);
-	const T& c = *a + *b;
-	return clua_push(s, c);
-}
 
-template<class T>
-int clua_vecdiv(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	const T* b = clua_get<T>(s, 2);
-	const T& c = *a / *b;
-	clua_push(s, c);
-	return 1;
-}
-
-template<class T>
-int clua_vecmul(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	const T* b = clua_get<T>(s, 2);
-	const T& c = *a * *b;
-	clua_push(s, c);
-	return 1;
-}
-
-template<class T>
-struct clua_veclen {
-static int len(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	const float c = glm::length(*a);
-	lua_pushnumber(s, c);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_veclen<glm::vec<N, int> > {
-static int len(lua_State* s) {
-	return clua_error(s, "'length' accepts only floating-point inputs");
-}
-};
-
-template<int N>
-struct clua_veclen<glm::vec<N, bool> > {
-static int len(lua_State* s) {
-	return clua_error(s, "'length' accepts only floating-point inputs");
-}
-};
-
-template<class T>
-struct clua_vecdot {
-static int dot(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	const T* b = clua_get<T>(s, 2);
-	const float c = glm::dot(*a, *b);
-	lua_pushnumber(s, c);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_vecdot<glm::vec<N, int> > {
-static int dot(lua_State* s) {
-	return clua_error(s, "'dot' accepts only floating-point inputs");
-}
-};
-
-template<class T>
-struct clua_vecequal {};
-
-template<int N>
-struct clua_vecequal<glm::vec<N, float> > {
-static int equal(lua_State* s) {
-	const glm::vec<N, float> * a = clua_get<glm::vec<N, float> >(s, 1);
-	const glm::vec<N, float> * b = clua_get<glm::vec<N, float> >(s, 2);
-	const bool e = glm::all(glm::epsilonEqual(*a, *b, 0.0001f));
-	lua_pushboolean(s, e);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_vecequal<glm::vec<N, double> > {
-static int equal(lua_State* s) {
-	const glm::vec<N, double> * a = clua_get<glm::vec<N, double> >(s, 1);
-	const glm::vec<N, double> * b = clua_get<glm::vec<N, double> >(s, 2);
-	const bool e = glm::all(glm::epsilonEqual(*a, *b, 0.0001));
-	lua_pushboolean(s, e);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_vecequal<glm::vec<N, int> > {
-static int equal(lua_State* s) {
-	const glm::vec<N, int>* a = clua_get<glm::vec<N, int> >(s, 1);
-	const glm::vec<N, int>* b = clua_get<glm::vec<N, int> >(s, 2);
-	const bool e = glm::all(glm::equal(*a, *b));
-	lua_pushboolean(s, e);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_vecequal<glm::vec<N, bool> > {
-static int equal(lua_State* s) {
-	const glm::vec<N, bool>* a = clua_get<glm::vec<N, bool> >(s, 1);
-	const glm::vec<N, bool>* b = clua_get<glm::vec<N, bool> >(s, 2);
-	const bool e = glm::all(glm::equal(*a, *b));
-	lua_pushboolean(s, e);
-	return 1;
-}
-};
-
-template<class T>
-int clua_vecsub(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	const T* b = clua_get<T>(s, 2);
-	const T& c = *a - *b;
-	clua_push(s, c);
-	return 1;
-}
-
-template<class T>
-int clua_vecnegate(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	clua_push<T>(s, -(*a));
-	return 1;
-}
-
-template<class T>
-int clua_vectostring(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	lua_pushfstring(s, "%s", glm::to_string(*a).c_str());
-	return 1;
-}
-
-template<class T>
-struct clua_vecnew {};
-
-template<int N>
-struct clua_vecnew<glm::vec<N, float> > {
-static int vecnew(lua_State* s) {
-	glm::vec<N, float> array;
-	float value = 0.0f;
-	for (size_t i = 0; i < N; ++i) {
-		array[i] = luaL_optnumber(s, i + 1, value);
-		value = array[i];
-	}
-	return clua_push(s, array);
-}
-};
-
-template<int N>
-struct clua_vecnew<glm::vec<N, double> > {
-static int vecnew(lua_State* s) {
-	glm::vec<N, double> array;
-	float value = 0.0f;
-	for (size_t i = 0; i < N; ++i) {
-		array[i] = luaL_optnumber(s, i + 1, value);
-		value = array[i];
-	}
-	return clua_push(s, array);
-}
-};
-
-template<int N>
-struct clua_vecnew<glm::vec<N, int> > {
-static int vecnew(lua_State* s) {
-	glm::vec<N, int> array;
-	int value = 0;
-	for (size_t i = 0; i < N; ++i) {
-		array[i] = luaL_optinteger(s, i + 1, value);
-		value = array[i];
-	}
-	return clua_push(s, array);
-}
-};
-
-template<int N>
-struct clua_vecnew<glm::vec<N, bool> > {
-static int vecnew(lua_State* s) {
-	glm::vec<N, bool> array;
-	int value = 0;
-	for (size_t i = 0; i < N; ++i) {
-		array[i] = luaL_optinteger(s, i + 1, value);
-		value = array[i];
-	}
-	return clua_push(s, array);
-}
-};
-
-template<>
-struct clua_vecnew<glm::quat> {
-static int vecnew(lua_State* s) {
-	glm::quat array = glm::quat_identity<float, glm::defaultp>();
-	return clua_push(s, array);
-}
-};
 template<class T>
 struct LuaNumberFuncs {};
 
@@ -350,6 +171,254 @@ struct LuaNumberFuncs<bool> {
 	static bool check(lua_State *s, int arg) {
 		return luaL_checkinteger(s, arg);
 	}
+};
+
+static constexpr const char *VEC_MEMBERS[] = { "x", "y", "z", "w" };
+
+template<>
+inline int clua_push<glm::quat>(lua_State* s, const glm::quat& v) {
+	lua_newtable(s);
+
+	for (int i = 0; i < 4; ++i) {
+		lua_pushstring(s, VEC_MEMBERS[i]);
+		LuaNumberFuncs<glm::quat::value_type>::push(s, v[i]);
+		lua_settable(s, -3);
+	}
+
+	lua_getglobal(s, clua_meta<glm::quat>::name());
+    lua_setmetatable(s, -2);
+	return 1;
+}
+
+extern glm::quat clua_toquat(lua_State *s, int n);
+
+template<class T>
+T clua_tovec(lua_State *s, int n) {
+	luaL_checktype(s, n, LUA_TTABLE);
+	T v;
+	for (int i = 0; i < T::length(); ++i) {
+		lua_getfield(s, n, VEC_MEMBERS[i]);
+		v[i] = LuaNumberFuncs<typename T::value_type>::check(s, -1);
+		lua_pop(s, 1);
+	}
+	return v;
+}
+
+template<int N, typename T>
+int clua_push(lua_State* s, const glm::vec<N, T>& v) {
+	using RAWTYPE = glm::vec<N, T>;
+	lua_newtable(s);
+
+	for (int i = 0; i < N; ++i) {
+		lua_pushstring(s, VEC_MEMBERS[i]);
+		LuaNumberFuncs<T>::push(s, v[i]);
+		lua_settable(s, -3);
+	}
+
+	luaL_getmetatable(s, clua_meta<RAWTYPE>::name());
+    lua_setmetatable(s, -2);
+	return 1;
+}
+
+template<class T>
+int clua_vecadd(lua_State* s) {
+	const T& a = clua_tovec<T>(s, 1);
+	const T& b = clua_tovec<T>(s, 2);
+	const T& c = a + b;
+	return clua_push(s, c);
+}
+
+template<class T>
+int clua_vecdiv(lua_State* s) {
+	const T& a = clua_tovec<T>(s, 1);
+	const T& b = clua_tovec<T>(s, 2);
+	const T& c = a / b;
+	clua_push(s, c);
+	return 1;
+}
+
+template<class T>
+int clua_vecmul(lua_State* s) {
+	const T& a = clua_tovec<T>(s, 1);
+	const T& b = clua_tovec<T>(s, 2);
+	const T& c = a * b;
+	clua_push(s, c);
+	return 1;
+}
+
+template<class T>
+struct clua_veclen {
+static int len(lua_State* s) {
+	const T& a = clua_tovec<T>(s, 1);
+	const float c = glm::length(a);
+	lua_pushnumber(s, c);
+	return 1;
+}
+};
+
+template<int N>
+struct clua_veclen<glm::vec<N, int> > {
+static int len(lua_State* s) {
+	return clua_error(s, "'length' accepts only floating-point inputs");
+}
+};
+
+template<int N>
+struct clua_veclen<glm::vec<N, bool> > {
+static int len(lua_State* s) {
+	return clua_error(s, "'length' accepts only floating-point inputs");
+}
+};
+
+template<class T>
+struct clua_vecdot {
+static int dot(lua_State* s) {
+	const T& a = clua_tovec<T>(s, 1);
+	const T& b = clua_tovec<T>(s, 2);
+	const float c = glm::dot(a, b);
+	lua_pushnumber(s, c);
+	return 1;
+}
+};
+
+template<int N>
+struct clua_vecdot<glm::vec<N, int> > {
+static int dot(lua_State* s) {
+	return clua_error(s, "'dot' accepts only floating-point inputs");
+}
+};
+
+template<class T>
+struct clua_vecequal {};
+
+template<int N>
+struct clua_vecequal<glm::vec<N, float> > {
+static int equal(lua_State* s) {
+	const glm::vec<N, float>& a = clua_tovec<glm::vec<N, float> >(s, 1);
+	const glm::vec<N, float>& b = clua_tovec<glm::vec<N, float> >(s, 2);
+	const bool e = glm::all(glm::epsilonEqual(a, b, 0.0001f));
+	lua_pushboolean(s, e);
+	return 1;
+}
+};
+
+template<int N>
+struct clua_vecequal<glm::vec<N, double> > {
+static int equal(lua_State* s) {
+	const glm::vec<N, double>& a = clua_tovec<glm::vec<N, double> >(s, 1);
+	const glm::vec<N, double>& b = clua_tovec<glm::vec<N, double> >(s, 2);
+	const bool e = glm::all(glm::epsilonEqual(a, b, 0.0001));
+	lua_pushboolean(s, e);
+	return 1;
+}
+};
+
+template<int N>
+struct clua_vecequal<glm::vec<N, int> > {
+static int equal(lua_State* s) {
+	const glm::vec<N, int>& a = clua_tovec<glm::vec<N, int> >(s, 1);
+	const glm::vec<N, int>& b = clua_tovec<glm::vec<N, int> >(s, 2);
+	const bool e = glm::all(glm::equal(a, b));
+	lua_pushboolean(s, e);
+	return 1;
+}
+};
+
+template<int N>
+struct clua_vecequal<glm::vec<N, bool> > {
+static int equal(lua_State* s) {
+	const glm::vec<N, bool>& a = clua_tovec<glm::vec<N, bool> >(s, 1);
+	const glm::vec<N, bool>& b = clua_tovec<glm::vec<N, bool> >(s, 2);
+	const bool e = glm::all(glm::equal(a, b));
+	lua_pushboolean(s, e);
+	return 1;
+}
+};
+
+template<class T>
+int clua_vecsub(lua_State* s) {
+	const T& a = clua_tovec<T>(s, 1);
+	const T& b = clua_tovec<T>(s, 2);
+	const T& c = a - b;
+	clua_push(s, c);
+	return 1;
+}
+
+template<class T>
+int clua_vecnegate(lua_State* s) {
+	const T& a = clua_tovec<T>(s, 1);
+	clua_push<T>(s, -a);
+	return 1;
+}
+
+template<class T>
+int clua_vectostring(lua_State* s) {
+	const T& a = clua_tovec<T>(s, 1);
+	lua_pushfstring(s, "%s", glm::to_string(a).c_str());
+	return 1;
+}
+
+template<class T>
+struct clua_vecnew {};
+
+template<int N>
+struct clua_vecnew<glm::vec<N, float> > {
+static int vecnew(lua_State* s) {
+	glm::vec<N, float> array;
+	float value = 0.0f;
+	for (int i = 0; i < N; ++i) {
+		array[i] = luaL_optnumber(s, i + 1, value);
+		value = array[i];
+	}
+	return clua_push(s, array);
+}
+};
+
+template<int N>
+struct clua_vecnew<glm::vec<N, double> > {
+static int vecnew(lua_State* s) {
+	glm::vec<N, double> array;
+	float value = 0.0f;
+	for (int i = 0; i < N; ++i) {
+		array[i] = luaL_optnumber(s, i + 1, value);
+		value = array[i];
+	}
+	return clua_push(s, array);
+}
+};
+
+template<int N>
+struct clua_vecnew<glm::vec<N, int> > {
+static int vecnew(lua_State* s) {
+	glm::vec<N, int> array;
+	int value = 0;
+	for (int i = 0; i < N; ++i) {
+		array[i] = luaL_optinteger(s, i + 1, value);
+		value = array[i];
+	}
+	return clua_push(s, array);
+}
+};
+
+template<int N>
+struct clua_vecnew<glm::vec<N, bool> > {
+static int vecnew(lua_State* s) {
+	glm::vec<N, bool> array;
+	int value = 0;
+	for (int i = 0; i < N; ++i) {
+		array[i] = luaL_optinteger(s, i + 1, value);
+		value = array[i];
+	}
+	return clua_push(s, array);
+}
+};
+
+template<>
+struct clua_vecnew<glm::quat> {
+static int vecnew(lua_State* s) {
+	glm::quat array = glm::quat_identity<float, glm::defaultp>();
+	return clua_push(s, array);
+}
 };
 
 template<class T>
@@ -437,7 +506,7 @@ static int clua_vecnewindex(lua_State *s) {
 
 template<class T>
 void clua_vecregister(lua_State* s) {
-	using RAWTYPE = typename std::remove_pointer<T>::type;
+	using RAWTYPE = typename core::remove_reference<typename core::remove_pointer<T>::type>::type;
 	const luaL_Reg funcs[] = {
 		{"__add", clua_vecadd<RAWTYPE>},
 		{"__sub", clua_vecsub<RAWTYPE>},
@@ -449,6 +518,7 @@ void clua_vecregister(lua_State* s) {
 		{"__tostring", clua_vectostring<RAWTYPE>},
 		{"__index", clua_vecindex<RAWTYPE>},
 		{"__newindex", clua_vecnewindex<RAWTYPE>},
+		// TODO: __pow, __mod, __idiv, __lt, __le
 		{"dot", clua_vecdot<RAWTYPE>::dot},
 		{nullptr, nullptr}
 	};

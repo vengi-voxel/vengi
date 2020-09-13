@@ -34,7 +34,7 @@ function luatest:execute(ai, deltaMillis)
 		print("error: modifying a vec should not update the character position")
 		return FAILED
 	end
-	if pos.r ~= x + 1.0 then
+	if pos.x ~= x + 1.0 then
 		print("error: pos.r/x should be x+1.0")
 		return FAILED
 	end
