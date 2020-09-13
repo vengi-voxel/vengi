@@ -234,7 +234,6 @@ void luaanim_setup(lua_State* s) {
 
 	static const luaL_Reg skeletonFuncs[] = {
 		{"bone",              luaanim_skeleton_bone},
-		{"headBone",          luaanim_skeleton_headbone},
 		{"chestBone",         luaanim_skeleton_chestbone},
 		{"beltBone",          luaanim_skeleton_beltbone},
 		{"pantsBone",         luaanim_skeleton_pantsbone},
