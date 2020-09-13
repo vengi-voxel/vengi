@@ -14,12 +14,9 @@ class FaceTest: public app::AbstractTest {
 TEST_F(FaceTest, testNegativeX) {
 	glm::vec3 rayOrigin { 0.0f };
 	glm::vec3 hitPos { 14.0f };
-	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
-	const FaceNames name = raycastFaceDetection(rayOrigin, rayDirection, hitPos);
+	const FaceNames name = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(FaceNames::NegativeX, name)
-		<< "Ray did not hit the expected face. Direction is "
-		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
-		<< ", Face: " << (int) name;
+		<< "Ray did not hit the expected face. Face: " << (int) name;
 }
 
 TEST_F(FaceTest, testPositiveX) {

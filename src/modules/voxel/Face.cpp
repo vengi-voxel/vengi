@@ -5,10 +5,16 @@
 #include "Face.h"
 #include "core/Common.h"
 
+#include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
 
 namespace voxel {
+
+FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& hitPos, float halfSize) {
+	const glm::vec3& rayDirection = glm::normalize(hitPos - rayOrigin);
+	return raycastFaceDetection(rayOrigin, rayDirection, hitPos, halfSize);
+}
 
 FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 		const glm::vec3& rayDirection, const glm::vec3& hitPos, float halfSize) {

@@ -21,5 +21,6 @@ inline bool isVerticalFace(FaceNames face) {
 }
 
 extern FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const glm::vec3& hitPos, float halfSize = 0.5f);
+extern FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& hitPos, float halfSize = 0.5f);
 
 }
