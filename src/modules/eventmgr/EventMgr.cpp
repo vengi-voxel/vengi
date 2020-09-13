@@ -7,7 +7,7 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "io/Filesystem.h"
-#include "LUAFunctions.h"
+#include "LUAEventMgr.h"
 #include "EventMgrModels.h"
 #include "persistence/Timestamp.h"
 
@@ -23,17 +23,7 @@ bool EventMgr::init(const core::String& luaScript) {
 		return false;
 	}
 
-	luaL_Reg create = { "create", luaCreateEventConfigurationData };
-	luaL_Reg eof = { nullptr, nullptr };
-	luaL_Reg funcs[] = { create, eof };
-
-	lua::LUAType luaEvent = _lua.registerType("EventConfigurationData");
-	luaEvent.addFunction("type", luaEventConfigurationDataGetType);
-	luaEvent.addFunction("name", luaEventConfigurationDataGetName);
-	luaEvent.addFunction("__gc", luaEventConfigurationDataGC);
-	luaEvent.addFunction("__tostring", luaEventConfigurationDataToString);
-
-	_lua.reg("event", funcs);
+	luaeventmgr_setup(_lua, this);
 
 	if (!_lua.load(luaScript)) {
 		Log::error("%s", _lua.error().c_str());
@@ -41,7 +31,6 @@ bool EventMgr::init(const core::String& luaScript) {
 	}
 
 	// loads all the event configurations
-	_lua.newGlobalData<EventMgr>("EventMgr", this);
 	if (!_lua.execute("init")) {
 		Log::error("%s", _lua.error().c_str());
 		return false;

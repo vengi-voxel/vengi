@@ -5,7 +5,7 @@ set(SRCS
 	EventConfigurationData.h
 	EventId.h
 	EventType.h
-	LUAFunctions.h
+	LUAEventMgr.h LUAEventMgr.cpp
 )
 set(LIB eventmgr)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua network persistence)

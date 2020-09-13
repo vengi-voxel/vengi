@@ -1,3 +1,3 @@
 function init ()
-	event.create("GENERIC", "GENERIC")
+	eventmgr.create("GENERIC", "GENERIC")
 end
