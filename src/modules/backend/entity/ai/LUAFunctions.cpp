@@ -792,6 +792,8 @@ void luaAI_registerAll(lua_State* s) {
 		{"__eq", luaAI_aieq},
 		{nullptr, nullptr}
 	};
+	clua_registerfuncs(s, aiFuncs, luaAI_metaai());
+
 	static const luaL_Reg zoneFuncs[] = {
 		{"size", luaAI_zonesize},
 		{"name", luaAI_zonename},
@@ -801,6 +803,8 @@ void luaAI_registerAll(lua_State* s) {
 		{"__tostring", luaAI_zonetostring},
 		{nullptr, nullptr}
 	};
+	clua_registerfuncs(s, zoneFuncs, luaAI_metazone());
+
 	static const luaL_Reg characterFuncs[] = {
 		{"id", luaAI_characterid},
 		{"position", luaAI_characterposition},
@@ -816,6 +820,8 @@ void luaAI_registerAll(lua_State* s) {
 		{"__tostring", luaAI_charactertostring},
 		{nullptr, nullptr}
 	};
+	clua_registerfuncs(s, characterFuncs, luaAI_metacharacter());
+
 	static const luaL_Reg aggroMgrFuncs[] = {
 		{"setReduceByRatio", luaAI_aggromgrsetreducebyratio},
 		{"setReduceByValue", luaAI_aggromgrsetreducebyvalue},
@@ -826,6 +832,8 @@ void luaAI_registerAll(lua_State* s) {
 		{"__tostring", luaAI_aggromgrtostring},
 		{nullptr, nullptr}
 	};
+	clua_registerfuncs(s, aggroMgrFuncs, luaAI_metaaggromgr());
+
 	static const luaL_Reg groupMgrFuncs[] = {
 		{"add", luaAI_groupmgradd},
 		{"remove", luaAI_groupmgrremove},
@@ -838,13 +846,9 @@ void luaAI_registerAll(lua_State* s) {
 		{"__tostring", luaAI_groupmgrtostring},
 		{nullptr, nullptr}
 	};
-	clua_vecregister<glm::vec3>(s);
-	clua_vecregister<glm::ivec3>(s);
-	clua_registerfuncs(s, aiFuncs, luaAI_metaai());
-	clua_registerfuncs(s, zoneFuncs, luaAI_metazone());
-	clua_registerfuncs(s, characterFuncs, luaAI_metacharacter());
-	clua_registerfuncs(s, aggroMgrFuncs, luaAI_metaaggromgr());
 	clua_registerfuncs(s, groupMgrFuncs, luaAI_metagroupmgr());
+
+	clua_mathregister(s);
 }
 
 }

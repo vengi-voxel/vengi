@@ -16,67 +16,38 @@ namespace backend {
 
 class LUATreeWrapper;
 
-class LUAConditionWrapper {
-private:
-	const ConditionPtr& _condition;
-public:
-	LUAConditionWrapper(const ConditionPtr& condition) :
-			_condition(condition) {
-	}
-
-	inline const ConditionPtr& getCondition() const {
-		return _condition;
-	}
-};
-
 class LUANodeWrapper {
 private:
 	TreeNodePtr _node;
-	LUAConditionWrapper *_condition;
 	std::vector<LUANodeWrapper*> _children;
 	LUATreeWrapper *_tree;
-	const IAIFactory& _aiFactory;
 public:
-	LUANodeWrapper(const TreeNodePtr& node, LUATreeWrapper *tree, const IAIFactory& aiFactory) :
-			_node(node), _condition(nullptr), _tree(tree), _aiFactory(aiFactory) {
+	LUANodeWrapper(const TreeNodePtr& node, LUATreeWrapper *tree) :
+			_node(node), _tree(tree) {
 	}
 
 	~LUANodeWrapper() {
-		delete _condition;
-	}
-
-	inline const IAIFactory& getAIFactory() const{
-		return _aiFactory;
-	}
-
-	inline TreeNodePtr& getTreeNode() {
-		return _node;
 	}
 
 	inline const TreeNodePtr& getTreeNode() const {
 		return _node;
 	}
 
-	inline void setCondition(LUAConditionWrapper *condition) {
-		_condition = condition;
-		_node->setCondition(condition->getCondition());
+	inline void setCondition(const ConditionPtr& condition) {
+		_node->setCondition(condition);
 	}
 
 	inline const std::vector<LUANodeWrapper*>& getChildren() const {
 		return _children;
 	}
 
-	inline LUAConditionWrapper* getCondition() const {
-		return _condition;
-	}
-
-	LUANodeWrapper* addChild (const core::String& nodeType, const TreeNodeFactoryContext& ctx) {
-		TreeNodeParser parser(_aiFactory, nodeType);
+	LUANodeWrapper* addChild(const IAIFactory& aiFactory, const core::String& nodeType, const TreeNodeFactoryContext& ctx) {
+		TreeNodeParser parser(aiFactory, nodeType);
 		const TreeNodePtr& child = parser.getTreeNode(ctx.name);
 		if (!child) {
 			return nullptr;
 		}
-		LUANodeWrapper *node = new LUANodeWrapper(child, _tree, _aiFactory);
+		LUANodeWrapper *node = new LUANodeWrapper(child, _tree);
 		_children.push_back(node);
 		_node->addChild(child);
 		return node;
@@ -87,99 +58,113 @@ class LUATreeWrapper {
 private:
 	core::String _name;
 	LUATreeLoader* _ctx;
-	LUANodeWrapper* _root;
 public:
 	LUATreeWrapper(const core::String& name, LUATreeLoader* ctx) :
-			_name(name), _ctx(ctx), _root(nullptr) {
+			_name(name), _ctx(ctx) {
 	}
 
-	inline const IAIFactory& getAIFactory() const{
-		return _ctx->getAIFactory();
-	}
-
-	inline bool setRoot(LUANodeWrapper* root) {
-		if (_ctx->addTree(_name, root->getTreeNode())) {
-			_root = root;
-			return true;
-		}
-
-		return false;
+	inline bool setRoot(const TreeNodePtr& root) {
+		return _ctx->addTree(_name, root);
 	}
 
 	inline const core::String& getName() const {
 		return _name;
 	}
-
-	inline LUANodeWrapper* getRoot() const {
-		return _root;
-	}
 };
 
-static LUATreeLoader* luaGetContext(lua_State * l) {
-	return lua::LUA::globalData<LUATreeLoader>(l, "Loader");
+static const char *luaai_metatree() {
+	return "__meta_tree";
 }
 
-static LUATreeWrapper* luaGetTreeContext(lua_State * l, int n) {
-	return lua::LUA::userData<LUATreeWrapper>(l, n, "Tree");
+static const char *luaai_metanode() {
+	return "__meta_node";
 }
 
-static LUANodeWrapper* luaGetNodeContext(lua_State * l, int n) {
-	return lua::LUA::userData<LUANodeWrapper>(l, n, "Node");
+static const char *luaai_metaai() {
+	return "__global_ai";
 }
 
-#if 0
-static LUAConditionWrapper* luaGetConditionContext(lua_State * l, int n) {
-	return lua::LUA::userData<LUAConditionWrapper>(l, n, "Condition");
-}
-#endif
-
-static int luaMain_CreateTree(lua_State * l) {
-	LUATreeLoader *ctx = luaGetContext(l);
-	const core::String name = luaL_checkstring(l, 1);
-	lua::LUA::newUserdata(l, "Tree", new LUATreeWrapper(name, ctx));
-	return 1;
+static const char *luaai_metatreeloader() {
+	return "__meta_loader";
 }
 
-static int luaTree_GC(lua_State * l) {
-	LUATreeWrapper *tree = luaGetTreeContext(l, 1);
+static LUATreeLoader* luaai_gettreeloader(lua_State *s) {
+	lua_getglobal(s, luaai_metatreeloader());
+	LUATreeLoader *loader = (LUATreeLoader *)lua_touserdata(s, -1);
+	lua_pop(s, 1);
+	return loader;
+}
+
+static LUATreeWrapper* luaai_totree(lua_State* s, int n) {
+	return *(LUATreeWrapper**)clua_getudata<LUATreeWrapper*>(s, n, luaai_metatree());
+}
+
+static LUANodeWrapper* luaai_tonode(lua_State* s, int n) {
+	return *(LUANodeWrapper**)clua_getudata<LUANodeWrapper*>(s, n, luaai_metanode());
+}
+
+static int luaai_pushtree(lua_State* s, LUATreeWrapper *tree) {
+	if (tree == nullptr) {
+		lua_pushnil(s);
+		return 1;
+	}
+	return clua_pushudata(s, tree, luaai_metatree());
+}
+
+static int luaai_pushnode(lua_State* s, LUANodeWrapper *node) {
+	if (node == nullptr) {
+		lua_pushnil(s);
+		return 1;
+	}
+
+	return clua_pushudata(s, node, luaai_metanode());
+}
+
+static int luaai_createtree(lua_State* s) {
+	LUATreeLoader *ctx = luaai_gettreeloader(s);
+	const core::String name = luaL_checkstring(s, 1);
+	return luaai_pushtree(s, new LUATreeWrapper(name, ctx));
+}
+
+static int luaai_tree_gc(lua_State * l) {
+	LUATreeWrapper *tree = luaai_totree(l, 1);
 	delete tree;
 	return 0;
 }
 
-static int luaTree_ToString(lua_State * l) {
-	const LUATreeWrapper *tree = luaGetTreeContext(l, 1);
-	lua_pushfstring(l, "tree: %s [%s]", tree->getName().c_str(), tree->getRoot() ? "root" : "no root");
+static int luaai_tree_tostring(lua_State * l) {
+	const LUATreeWrapper *tree = luaai_totree(l, 1);
+	lua_pushfstring(l, "tree: %s", tree->getName().c_str());
 	return 1;
 }
 
-static int luaTree_GetName(lua_State * l) {
-	const LUATreeWrapper *tree = luaGetTreeContext(l, 1);
+static int luaai_tree_getname(lua_State * l) {
+	const LUATreeWrapper *tree = luaai_totree(l, 1);
 	lua_pushstring(l, tree->getName().c_str());
 	return 1;
 }
 
-static int luaNode_GC(lua_State * l) {
-	LUANodeWrapper *node = luaGetNodeContext(l, 1);
+static int luaai_node_gc(lua_State * l) {
+	LUANodeWrapper *node = luaai_tonode(l, 1);
 	delete node;
 	return 0;
 }
 
-static int luaNode_ToString(lua_State * l) {
-	const LUANodeWrapper *node = luaGetNodeContext(l, 1);
-	const LUAConditionWrapper* condition = node->getCondition();
-	lua_pushfstring(l, "node: %d children [condition: %s]", (int)node->getChildren().size(),
-			condition ? condition->getCondition()->getName().c_str() : "no condition");
+static int luaai_node_tostring(lua_State * l) {
+	const LUANodeWrapper *node = luaai_tonode(l, 1);
+	lua_pushfstring(l, "node: %d children", (int)node->getChildren().size());
 	return 1;
 }
 
-static int luaNode_GetName(lua_State * l) {
-	const LUANodeWrapper *node = luaGetNodeContext(l, 1);
+static int luaai_node_getname(lua_State * l) {
+	const LUANodeWrapper *node = luaai_tonode(l, 1);
 	lua_pushstring(l, node->getTreeNode()->getName().c_str());
 	return 1;
 }
 
-static int luaTree_CreateRoot(lua_State * l) {
-	LUATreeWrapper *ctx = luaGetTreeContext(l, 1);
+static int luaai_tree_createroot(lua_State * l) {
+	LUATreeLoader *ctx = luaai_gettreeloader(l);
+	LUATreeWrapper *tree = luaai_totree(l, 1);
 	const core::String id = luaL_checkstring(l, 2);
 	const core::String name = luaL_checkstring(l, 3);
 
@@ -189,30 +174,27 @@ static int luaTree_CreateRoot(lua_State * l) {
 		return clua_error(l, "Could not create a node for %s", id.c_str());
 	}
 
-	LUANodeWrapper* udata = lua::LUA::newUserdata(l, "Node", new LUANodeWrapper(node, ctx, ctx->getAIFactory()));
-	if (!ctx->setRoot(udata)) {
-		LUATreeLoader *loader = luaGetContext(l);
-		return clua_error(l, "%s", loader->getError().c_str());
+	LUANodeWrapper* luaNode = new LUANodeWrapper(node, tree);
+	if (!tree->setRoot(node)) {
+		delete luaNode;
+		return clua_error(l, "%s", ctx->getError().c_str());
 	}
-	return 1;
+
+	return luaai_pushnode(l, luaNode);
 }
 
-static int luaNode_AddNode(lua_State * l) {
-	LUANodeWrapper *node = luaGetNodeContext(l, 1);
+static int luaai_node_addnode(lua_State * l) {
+	LUATreeLoader *ctx = luaai_gettreeloader(l);
+	LUANodeWrapper *node = luaai_tonode(l, 1);
 	const core::String id = luaL_checkstring(l, 2);
 	const core::String name = luaL_checkstring(l, 3);
-
-	TreeNodeFactoryContext factoryCtx(name, "", True::get());
-	LUANodeWrapper* udata = lua::LUA::newUserdata(l, "Node", node->addChild(id, factoryCtx));
-	if (udata == nullptr) {
-		return clua_error(l, "Could not create a node for %s", id.c_str());
-	}
-	return 1;
+	const TreeNodeFactoryContext factoryCtx(name, "", True::get());
+	return luaai_pushnode(l, node->addChild(ctx->getAIFactory(), id, factoryCtx));
 }
 
-static int luaNode_SetCondition(lua_State * l) {
-	LUATreeLoader *ctx = luaGetContext(l);
-	LUANodeWrapper *node = luaGetNodeContext(l, 1);
+static int luaai_node_setcondition(lua_State * l) {
+	LUATreeLoader *ctx = luaai_gettreeloader(l);
+	LUANodeWrapper *node = luaai_tonode(l, 1);
 	const core::String conditionExpression = luaL_checkstring(l, 2);
 
 	ConditionParser parser(ctx->getAIFactory(), conditionExpression);
@@ -221,9 +203,13 @@ static int luaNode_SetCondition(lua_State * l) {
 		return clua_error(l, "Could not create a condition for %s: %s", conditionExpression.c_str(), parser.getError().c_str());
 	}
 
-	LUAConditionWrapper* udata = lua::LUA::newUserdata(l, "Condition", new LUAConditionWrapper(condition));
-	node->setCondition(udata);
-	return 1;
+	node->setCondition(condition);
+	return 0;
+}
+
+static void luaai_pushloader(lua_State* s, LUATreeLoader* loader) {
+	lua_pushlightuserdata(s, loader);
+	lua_setglobal(s, luaai_metatreeloader());
 }
 
 LUATreeLoader::LUATreeLoader(const IAIFactory& aiFactory) :
@@ -234,24 +220,34 @@ bool LUATreeLoader::init(const core::String& luaString) {
 	shutdown();
 
 	lua::LUA lua;
-	luaL_Reg createTree = { "createTree", luaMain_CreateTree };
-	luaL_Reg eof = { nullptr, nullptr };
-	luaL_Reg funcs[] = { createTree, eof };
 
-	lua::LUAType tree = lua.registerType("Tree");
-	tree.addFunction("createRoot", luaTree_CreateRoot);
-	tree.addFunction("getName", luaTree_GetName);
-	tree.addFunction("__gc", luaTree_GC);
-	tree.addFunction("__tostring", luaTree_ToString);
+	static const luaL_Reg treeFuncs[] = {
+		{"createRoot", luaai_tree_createroot},
+		{"getName",    luaai_tree_getname},
+		{"__gc",       luaai_tree_gc},
+		{"__tostring", luaai_tree_tostring},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncs(lua, treeFuncs, luaai_metatree());
 
-	lua::LUAType node = lua.registerType("Node");
-	node.addFunction("addNode", luaNode_AddNode);
-	node.addFunction("getName", luaNode_GetName);
-	node.addFunction("setCondition", luaNode_SetCondition);
-	node.addFunction("__gc", luaNode_GC);
-	node.addFunction("__tostring", luaNode_ToString);
+	static const luaL_Reg nodeFuncs[] = {
+		{"addNode",      luaai_node_addnode},
+		{"getName",      luaai_node_getname},
+		{"setCondition", luaai_node_setcondition},
+		{"__gc",         luaai_node_gc},
+		{"__tostring",   luaai_node_tostring},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncs(lua, nodeFuncs, luaai_metanode());
 
-	lua.reg("AI", funcs);
+	static const luaL_Reg aiFuncs[] = {
+		{"createTree", luaai_createtree},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(lua, aiFuncs, luaai_metaai(), "AI");
+	luaai_pushloader(lua, this);
+
+	clua_mathregister(lua);
 
 	if (!lua.load(luaString)) {
 		setError("%s", lua.error().c_str());
@@ -259,7 +255,6 @@ bool LUATreeLoader::init(const core::String& luaString) {
 	}
 
 	// loads all the trees
-	lua.newGlobalData<LUATreeLoader>("Loader", this);
 	if (!lua.execute("init")) {
 		setError("%s", lua.error().c_str());
 		return false;
