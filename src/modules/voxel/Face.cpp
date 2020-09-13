@@ -3,22 +3,17 @@
  */
 
 #include "Face.h"
-#include "math/AABB.h"
-#include "core/Log.h"
+#include "core/Common.h"
 
-#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
 
 namespace voxel {
 
 FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
-		const glm::vec3& rayDirection, const glm::ivec3& hitPos) {
-	math::AABB<float> aabb = math::AABB<float>(glm::vec3(0.5f), glm::vec3(1.5f));
-	aabb.shift(glm::vec3(hitPos));
-
-	const glm::vec3& mins = aabb.mins();
-	const glm::vec3& maxs = aabb.maxs();
+		const glm::vec3& rayDirection, const glm::vec3& hitPos, float halfSize) {
+	const glm::vec3 mins = hitPos - halfSize;
+	const glm::vec3 maxs = hitPos + halfSize;
 
 	/*
 	 * Ray-box intersection using IEEE numerical properties to ensure that the

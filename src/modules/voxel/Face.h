@@ -20,6 +20,6 @@ inline bool isVerticalFace(FaceNames face) {
 	 return face == FaceNames::PositiveY || face == FaceNames::NegativeY;
 }
 
-extern FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const glm::ivec3& hitPos);
+extern FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const glm::vec3& hitPos, float halfSize = 0.5f);
 
 }
