@@ -108,9 +108,6 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 	core_trace_scoped(raycastWithEndpoints);
 	typename Volume::Sampler sampler(volData);
 
-	//The doRaycast function is assuming that it is iterating over the areas defined between
-	//voxels. We actually want to define the areas as being centered on voxels (as this is
-	//what the CubicSurfaceExtractor generates). We add 0.5 here to adjust for this.
 	const float offset = 0.0f;
 	const float x1 = v3dStart.x + offset;
 	const float y1 = v3dStart.y + offset;

@@ -11,15 +11,15 @@
 
 namespace voxel {
 
-FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& hitPos, float halfSize) {
+FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& hitPos, float offsetMins, float offsetMaxs) {
 	const glm::vec3& rayDirection = glm::normalize(hitPos - rayOrigin);
-	return raycastFaceDetection(rayOrigin, rayDirection, hitPos, halfSize);
+	return raycastFaceDetection(rayOrigin, rayDirection, hitPos, offsetMins, offsetMaxs);
 }
 
 FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
-		const glm::vec3& rayDirection, const glm::vec3& hitPos, float halfSize) {
-	const glm::vec3 mins = hitPos - halfSize;
-	const glm::vec3 maxs = hitPos + halfSize;
+		const glm::vec3& rayDirection, const glm::vec3& hitPos, float offsetMins, float offsetMaxs) {
+	const glm::vec3 mins = hitPos + offsetMins;
+	const glm::vec3 maxs = hitPos + offsetMaxs;
 
 	/*
 	 * Ray-box intersection using IEEE numerical properties to ensure that the

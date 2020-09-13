@@ -1846,20 +1846,7 @@ bool SceneManager::trace(bool force) {
 		if (sampler.voxel() != air) {
 			_result.didHit = true;
 			_result.hitVoxel = sampler.position();
-			const glm::ivec3& dir = glm::ivec3(ray.origin) - _result.hitVoxel;
-			if (dir.x < 0) {
-				_result.hitFace = voxel::FaceNames::NegativeX;
-			} else if (dir.x > 0) {
-				_result.hitFace = voxel::FaceNames::PositiveX;
-			} else if (dir.y < 0) {
-				_result.hitFace = voxel::FaceNames::NegativeY;
-			} else if (dir.y > 0) {
-				_result.hitFace = voxel::FaceNames::PositiveY;
-			} else if (dir.z < 0) {
-				_result.hitFace = voxel::FaceNames::NegativeZ;
-			} else if (dir.z > 0) {
-				_result.hitFace = voxel::FaceNames::PositiveZ;
-			}
+			_result.hitFace = voxel::raycastFaceDetection(ray.origin, ray.direction, _result.hitVoxel, 0.0f, 1.0f);
 			return false;
 		}
 		if (sampler.currentPositionValid()) {
