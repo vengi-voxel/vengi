@@ -107,12 +107,14 @@ bool RawVolumeRenderer::init() {
 	}
 
 	if (!_indirectDrawBuffer.init()) {
+		Log::error("Failed to initialize the indirect draw buffer");
 		return false;
 	}
 
 	render::ShadowParameters shadowParams;
 	shadowParams.maxDepthBuffers = shader::VoxelShaderConstants::getMaxDepthBuffers();
 	if (!_shadow.init(shadowParams)) {
+		Log::error("Failed to initialize the shadow object");
 		return false;
 	}
 
