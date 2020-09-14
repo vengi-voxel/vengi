@@ -41,24 +41,33 @@ bool CooldownProvider::init(const core::String& cooldowns) {
 	_error = "";
 
 	lua::LUA lua;
-	lua.newGlobalData<CooldownProvider>("Provider", this);
 
-	lua.registerGlobal("addCooldown", [] (lua_State* s) {
-		CooldownProvider* data = lua::LUA::globalData<CooldownProvider>(s, "Provider");
-		const char *typeStr = luaL_checkstring(s, 1);
-		const Type type = getType(typeStr);
-		if (type == cooldown::Type::NONE) {
-			return clua_error(s, "%s is an invalid cooldown type", typeStr);
-		}
-		const unsigned long millis = luaL_checkinteger(s, 2);
-		Log::debug("set millis for %s to %li", typeStr, millis);
-		data->_durations[core::enumVal<Type>(type)] = millis;
-		return 0;
-	});
-
-	if (!lua.load(cooldowns)) {
+	if (!lua.load(cooldowns, 1)) {
 		_error = lua.error();
 		return false;
+	}
+
+	if (!lua_istable(lua, -1)) {
+		Log::error("Expected a table with cooldown data");
+		return false;
+	}
+
+	lua_pushnil(lua);					// push nil, so lua_next removes it from stack and puts (k, v) on stack
+	while (lua_next(lua, -2) != 0) {	// -2, because we have table at -1
+		if (!lua_isinteger(lua, -1) || !lua_isstring(lua, -2)) {
+			Log::error("Expected to find string as key and integer as value");
+			return false;
+		}
+		const char *key = lua_tostring(lua, -2);
+		const int value = lua_tointeger(lua, -1);
+		const Type type = getType(key);
+		if (type == cooldown::Type::NONE) {
+			Log::error("%s is an invalid cooldown type", key);
+			continue;
+		}
+		Log::debug("set millis for %s to %i", key, value);
+		_durations[core::enumVal<Type>(type)] = value;
+		lua_pop(lua, 1); // remove value, keep key for lua_next
 	}
 
 	_initialized = true;

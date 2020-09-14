@@ -25,9 +25,12 @@ const char *INV = R"(function init()
 end
 )";
 
-const char *COOLDOWNS = R"(addCooldown("INCREASE", 15000)
-addCooldown("HUNT", 10000)
-addCooldown("LOGOUT", 100)
+const char *COOLDOWNS = R"(
+return {
+	INCREASE = 15000,
+	HUNT = 10000,
+	LOGOUT = 10
+}
 )";
 
 }

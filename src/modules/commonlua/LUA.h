@@ -94,7 +94,7 @@ public:
 	/**
 	 * @brief Loads a lua script into the lua state.
 	 */
-	bool load(const core::String &luaString);
+	bool load(const core::String &luaString, int returnValues = 0);
 	/**
 	 * @brief Executes a function from an already loaded lua state
 	 * @param[in] function function to be called
