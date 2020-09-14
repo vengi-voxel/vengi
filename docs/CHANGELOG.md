@@ -14,6 +14,7 @@ General:
    - Optimized character animations
    - Added quaternion lua support
    - Updated external dependencies
+   - Refactored lua bindings
 
 VoxEdit:
 

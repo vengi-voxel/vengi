@@ -9,6 +9,7 @@ vengi (0.0.7.0-1) UNRELEASED; urgency=low
   * Optimized character animations
   * Added quaternion lua support
   * Updated external dependencies
+  * Refactored lua bindings
 
   * VoxEdit:
   * Converted some voxel generation functions to lua
