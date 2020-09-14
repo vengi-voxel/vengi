@@ -50,14 +50,6 @@ void debugHook(lua_State *L, lua_Debug *ar) {
 #define checkStack()
 #endif
 
-LUAType::LUAType(lua_State* state, const core::String& name) :
-		_state(state) {
-	const core::String metaTable = META_PREFIX + name;
-	luaL_newmetatable(_state, metaTable.c_str());
-	lua_pushvalue(_state, -1);
-	lua_setfield(_state, -2, "__index");
-}
-
 LUA::LUA(lua_State *state) :
 		_state(state), _destroy(false), _debug(false) {
 }
@@ -145,10 +137,6 @@ void LUA::reg(const core::String& prefix, const luaL_Reg* funcs) {
 	lua_pushvalue(_state, -1);
 	lua_setfield(_state, -1, "__index");
 	lua_setglobal(_state, prefix.c_str());
-}
-
-LUAType LUA::registerType(const core::String& name) {
-	return LUAType(_state, name);
 }
 
 bool LUA::load(const core::String& luaString) {

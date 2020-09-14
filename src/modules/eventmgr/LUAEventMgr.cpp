@@ -38,8 +38,7 @@ static int luaeventmgr_create_event(lua_State * l) {
 	if (!eventConfig) {
 		return clua_error(l, "Could not create event config for id '%s'", nameId);
 	}
-	lua::LUA::newUserdata(l, "EventConfigurationData", eventConfig.get());
-	return 1;
+	return clua_pushudata(l, eventConfig.get(), luaeventmgr_metaevent());
 }
 
 static int luaeventmgr_event_gc(lua_State * l) {

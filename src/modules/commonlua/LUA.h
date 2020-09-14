@@ -26,29 +26,6 @@ namespace lua {
 
 const core::String META_PREFIX = "META_";
 
-class LUAType {
-private:
-	lua_State* _state;
-public:
-	LUAType(lua_State* state, const core::String& name);
-
-	// only non-capturing lambdas can be converted to function pointers
-	template<class FUNC>
-	void addFunction(const core::String& name, FUNC&& func) {
-		lua_pushcfunction(_state, func);
-		lua_setfield(_state, -2, name.c_str());
-	}
-};
-
-struct LUAFunction {
-	const core::String name;
-	lua_CFunction func;
-
-	inline LUAFunction(const core::String &_name, lua_CFunction _func) :
-			name(_name), func(_func) {
-	}
-};
-
 class LUA : public core::NonCopyable {
 private:
 	lua_State *_state;
@@ -109,27 +86,9 @@ public:
 		lua_setglobal(_state, name);
 	}
 
-	template<class T>
-	static T* newUserdata(lua_State *L, const core::String& prefix, T* data) {
-		T ** udata = (T **) lua_newuserdata(L, sizeof(T *));
-		const core::String name = META_PREFIX + prefix;
-		luaL_getmetatable(L, name.c_str());
-		lua_setmetatable(L, -2);
-		*udata = data;
-		return data;
-	}
-
-	template<class T>
-	static T* userData(lua_State *L, int n, const core::String& prefix) {
-		const core::String name = META_PREFIX + prefix;
-		return *(T **) luaL_checkudata(L, n, name.c_str());
-	}
-
 	void pop(int amount = 1);
 
 	void reg(const core::String& prefix, const luaL_Reg* funcs);
-
-	LUAType registerType(const core::String& name);
 
 	const core::String& error() const;
 	/**
