@@ -3,6 +3,7 @@
  */
 
 #include "VolumeFormat.h"
+#include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "VoxFormat.h"
@@ -26,11 +27,21 @@ const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 // this is the list of supported voxel volume formats that have exporters implemented
 const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub,vxl,qef";
 
+static uint32_t loadMagic(const io::FilePtr& file) {
+	io::FileStream stream(file.get());
+	uint32_t magicWord = 0u;
+	stream.readInt(magicWord);
+	return magicWord;
+}
+
 bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) {
 	if (!filePtr->exists()) {
 		Log::error("Failed to load model file %s. Doesn't exist.", filePtr->name().c_str());
 		return false;
 	}
+
+	const uint32_t magic = loadMagic(filePtr);
+
 	core_trace_scoped(LoadVolumeFormat);
 	const core::String& ext = filePtr->extension();
 	if (ext == "qb") {
@@ -38,12 +49,12 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "vox") {
+	} else if (ext == "vox" || magic == FourCC('V','O','X',' ')) {
 		voxel::VoxFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "qbt") {
+	} else if (ext == "qbt" || magic == FourCC('Q','B',' ','2')) {
 		voxel::QBTFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
@@ -53,7 +64,7 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "kv6") {
+	} else if (ext == "kv6" || magic == FourCC('K','v','x','l')) {
 		voxel::KV6Format f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
@@ -63,26 +74,27 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "vxm") {
+	} else if (ext == "vxm" || magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4')) {
 		voxel::VXMFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "vxl") {
+	} else if (ext == "vxl" && magic == FourCC('V','O','X','E')) {
 		voxel::VXLFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
-			voxel::AoSVXLFormat f2;
-			if (!f2.loadGroups(filePtr, newVolumes)) {
-				voxelformat::clearVolumes(newVolumes);
-			}
 		}
-	} else if (ext == "binvox") {
+	} else if (ext == "vxl") {
+		voxel::AoSVXLFormat f;
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
+	} else if (ext == "binvox" || magic == FourCC('#','b','i','n')) {
 		voxel::BinVoxFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "qef") {
+	} else if (ext == "qef" || magic == FourCC('Q','u','b','i')) {
 		voxel::QEFFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
