@@ -272,7 +272,7 @@ bool LUAUIApp::reload() {
 	_lua.newGlobalData<struct nkc_context>("ccontext", &_cctx);
 	_lua.newGlobalData<LUAUIApp>("app", this);
 	_lua.newGlobalData<video::TexturePool>("texturepool", _texturePool.get());
-	_lua.reg("ui", uiFuncs);
+	clua_registerfuncsglobal(_lua, uiFuncs, "__meta_ui", "ui");
 
 	lua_newtable(_lua.state());
 	lua_setglobal(_lua.state(), "stack");

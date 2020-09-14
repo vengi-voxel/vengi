@@ -56,14 +56,16 @@ bool BiomeManager::init(const core::String& luaString) {
 	setDefaultBiome(nullptr);
 
 	lua::LUA lua;
-	lua.newGlobalData<BiomeManager>("MGR", this);
+	lua_pushlightuserdata(lua, this);
+	lua_setglobal(lua, "MGR");
+
 	const luaL_Reg funcs[] = {
 		{"addBiome", biomelua_addbiome},
 		{"addCity", biomelua_addcity},
 		{"setDefault", biomelua_setdefault},
 		{nullptr, nullptr}
 	};
-	lua.reg("biomeMgr", funcs);
+	clua_registerfuncsglobal(lua, funcs, "__meta_biomemgr", "biomeMgr");
 	biomelua_biomeregister(lua.state());
 	if (!lua.load(luaString)) {
 		Log::error("Could not load lua script. Failed with error: %s", lua.error().c_str());

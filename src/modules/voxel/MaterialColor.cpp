@@ -19,6 +19,19 @@
 
 namespace voxel {
 
+class MaterialColor;
+
+static const char* luamaterial_materialcolorid() {
+	return "__global_materialcolor";
+}
+
+static MaterialColor* luamaterial_getmaterialcolor(lua_State*s) {
+	lua_getglobal(s, luamaterial_materialcolorid());
+	MaterialColor *provider = (MaterialColor *)lua_touserdata(s, -1);
+	lua_pop(s, 1);
+	return provider;
+}
+
 class MaterialColor {
 private:
 	MaterialColorArray _materialColors;
@@ -76,7 +89,7 @@ public:
 		size_t aindex = 0u;
 		for (int i = (int)voxel::VoxelType::Air + 1; i < (int)voxel::VoxelType::Max; ++i, ++aindex) {
 			funcs[aindex] = luaL_Reg{ voxel::VoxelTypeStr[i], [] (lua_State* l) -> int {
-				MaterialColor* mc = lua::LUA::globalData<MaterialColor>(l, "MaterialColor");
+				MaterialColor* mc = luamaterial_getmaterialcolor(l);
 				const int index = luaL_checknumber(l, -1);
 				// this is hacky - but we resolve the lua function name here to reverse lookup
 				// the voxel type. This could maybe be done nicer with upvalues...
@@ -102,7 +115,7 @@ public:
 		}
 
 		luaL_Reg getmaterial = { "material", [] (lua_State* l) -> int {
-			MaterialColor* mc = lua::LUA::globalData<MaterialColor>(l, "MaterialColor");
+			MaterialColor* mc = luamaterial_getmaterialcolor(l);
 			lua_newtable(l);
 			const MaterialColorArray& colorArray = mc->getColors();
 			lua_newtable(l);
@@ -119,8 +132,9 @@ public:
 		clua_vecregister<glm::vec4>(lua.state());
 		funcs[aindex++] = getmaterial;
 		funcs[aindex++] = { nullptr, nullptr };
-		lua.newGlobalData<MaterialColor>("MaterialColor", this);
-		lua.reg("MAT", funcs.begin());
+		lua_pushlightuserdata(lua, this);
+		lua_setglobal(lua, luamaterial_materialcolorid());
+		clua_registerfuncsglobal(lua, &funcs[0], "__meta_material", "MAT");
 		if (!lua.load(luaString)) {
 			Log::error("Could not load lua script. Failed with error: %s",
 					lua.error().c_str());
