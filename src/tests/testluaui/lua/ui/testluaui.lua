@@ -278,7 +278,7 @@ function stylewin()
 			local color = colors[name]
 			if ui.comboboxBegin(nil, color, 200, 200) then
 				ui.layoutRow('dynamic', 90, 1)
-				color = ui.colorPicker(color)
+				color = ui.colorpicker(color)
 				colors[name] = color
 				ui.comboboxEnd()
 			end

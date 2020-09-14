@@ -22,7 +22,7 @@ function style()
 				if ui.comboboxBegin(nil, color, 200, 200) then
 					ui.layoutRow('dynamic', 90, 1)
 					local edit = { value = color };
-					local changed = ui.colorPicker(edit)
+					local changed = ui.colorpicker(edit)
 					ui.comboboxEnd()
 					if changed then
 						style.colors[name] = edit.value
