@@ -22,6 +22,16 @@ namespace glm {
 	core_assert_msg(!glm::isinf((vec).y), "y is inf"); \
 	core_assert_msg(!glm::isinf((vec).z), "z is inf");
 
+#define glm_assert_vec4(vec) \
+	core_assert_msg(!glm::isnan((vec).x), "x is nan"); \
+	core_assert_msg(!glm::isnan((vec).y), "y is nan"); \
+	core_assert_msg(!glm::isnan((vec).z), "z is nan"); \
+	core_assert_msg(!glm::isnan((vec).w), "w is nan"); \
+	core_assert_msg(!glm::isinf((vec).x), "x is inf"); \
+	core_assert_msg(!glm::isinf((vec).y), "y is inf"); \
+	core_assert_msg(!glm::isinf((vec).z), "z is inf"); \
+	core_assert_msg(!glm::isinf((vec).w), "w is nan");
+
 /**
  * Calculate the line segment PaPb that is the shortest route between
  * two lines P1P2 and P3P4. Calculate also the values of @c mua and @c mub where
