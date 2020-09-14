@@ -49,7 +49,7 @@ App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, c
 		_filesystem(filesystem), _eventBus(eventBus), _threadPool(std::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
 		_timeProvider(timeProvider), _metric(metric) {
 #if defined(__GLIBC__) && (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 2) && defined(DEBUG)
-	feenableexcept(FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW | FE_INVALID);
+	feenableexcept(FE_DIVBYZERO | FE_INVALID);
 #endif
 
 	signal(SIGSEGV, catch_function);
