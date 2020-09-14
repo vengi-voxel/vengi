@@ -16,8 +16,20 @@ template<> struct clua_meta<animation::BoneIds> { static char const *name() {ret
 
 namespace animation {
 
-static inline AnimationSettings* luaanim_getsettings(lua_State * l) {
-	return lua::LUA::globalData<AnimationSettings>(l, "Settings");
+static const char *luaanim_settingsid() {
+	return "__global_settings";
+}
+
+static AnimationSettings* luaanim_getsettings(lua_State *s) {
+	lua_getglobal(s, luaanim_settingsid());
+	AnimationSettings *provider = (AnimationSettings *)lua_touserdata(s, -1);
+	lua_pop(s, 1);
+	return provider;
+}
+
+static void luaanim_pushsettings(lua_State* s, AnimationSettings* provider) {
+	lua_pushlightuserdata(s, provider);
+	lua_setglobal(s, luaanim_settingsid());
 }
 
 static int luaanim_settingssetmeshtypes(lua_State * l) {
@@ -119,7 +131,7 @@ static int luaanim_pushboneids(lua_State* s, BoneIds* b) {
 }
 
 static int luaanim_bonesetup(lua_State* l) {
-	AnimationSettings* settings = lua::LUA::globalData<AnimationSettings>(l, "Settings");
+	AnimationSettings* settings = luaanim_getsettings(l);
 	const char* meshType = luaL_checkstring(l, 1);
 	const int idx = settings->getMeshTypeIdxForName(meshType);
 	if (idx < 0 || idx >= (int)AnimationSettings::MAX_ENTRIES) {
@@ -134,7 +146,7 @@ static int luaanim_bonesetup(lua_State* l) {
 }
 
 static int luaanim_boneregister(lua_State* l) {
-	AnimationSettings* settings = lua::LUA::globalData<AnimationSettings>(l, "Settings");
+	AnimationSettings* settings = luaanim_getsettings(l);
 	const char* boneName = luaL_checkstring(l, 1);
 	const BoneId boneId = toBoneId(boneName);
 	if (boneId == BoneId::Max) {
@@ -148,27 +160,6 @@ static int luaanim_boneregister(lua_State* l) {
 	return 1;
 }
 
-static constexpr luaL_Reg settingsFuncs[] = {
-	{ "setBasePath", luaanim_settingssetbasepath },
-	{ "setPath", luaanim_settingssetpath },
-	{ "setType", luaanim_settingssettype },
-	{ "setMeshTypes", luaanim_settingssetmeshtypes },
-	{ "getMeshTypes", luaanim_settingsgetmeshtypes },
-	{ nullptr, nullptr }
-};
-
-static constexpr luaL_Reg globalBoneFuncs[] = {
-	{ "setup", luaanim_bonesetup },
-	{ "register", luaanim_boneregister },
-	{ nullptr, nullptr }
-};
-
-static constexpr luaL_Reg boneFuncs[] = {
-	{"__tostring", luaanim_boneidstostring},
-	{"add", luaanim_boneidsadd},
-	{nullptr, nullptr}
-};
-
 core::String luaFilename(const char *character) {
 	return core::string::format("%s.lua", character);
 }
@@ -180,10 +171,32 @@ bool loadAnimationSettings(const core::String& luaString, AnimationSettings& set
 	}
 
 	lua::LUA lua;
-	lua.reg("settings", settingsFuncs);
-	lua.reg("bone", globalBoneFuncs);
+
+	static constexpr luaL_Reg settingsFuncs[] = {
+		{"setBasePath", luaanim_settingssetbasepath},
+		{"setPath", luaanim_settingssetpath},
+		{"setType", luaanim_settingssettype},
+		{"setMeshTypes", luaanim_settingssetmeshtypes},
+		{"getMeshTypes", luaanim_settingsgetmeshtypes},
+		{nullptr, nullptr}
+	};
+
+	static constexpr luaL_Reg globalBoneFuncs[] = {
+		{"setup", luaanim_bonesetup},
+		{"register", luaanim_boneregister},
+		{nullptr, nullptr}
+	};
+
+	static constexpr luaL_Reg boneFuncs[] = {
+		{"__tostring", luaanim_boneidstostring},
+		{"add", luaanim_boneidsadd},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(lua, settingsFuncs, "__meta_settings", "settings");
+	clua_registerfuncsglobal(lua, globalBoneFuncs, "__meta_bone", "bone");
 	clua_registerfuncs(lua.state(), boneFuncs, clua_meta<BoneIds>::name());
-	lua.newGlobalData<AnimationSettings>("Settings", &settings);
+	luaanim_pushsettings(lua, &settings);
+
 	settings.reset();
 
 	if (!lua.load(luaString)) {
