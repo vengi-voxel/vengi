@@ -149,20 +149,6 @@ bool LUA::load(const core::String& luaString, int returnValues) {
 	return true;
 }
 
-bool LUA::valueFloatFromTable(const char* key, float *value) {
-	checkStack();
-	core_assert(lua_istable(_state, -1));
-	lua_getfield(_state, -1, key);
-	if (lua_isnil(_state, -1)) {
-		lua_pop(_state, 1);
-		return false;
-	}
-
-	*value = static_cast<float>(lua_tonumber(_state, -1));
-	lua_pop(_state, 1);
-	return true;
-}
-
 bool LUA::execute(const core::String &function, int returnValues) {
 	lua_getglobal(_state, function.c_str());
 	if (lua_isnil(_state, -1)) {

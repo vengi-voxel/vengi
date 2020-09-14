@@ -183,17 +183,21 @@ bool loadAnimationSettings(const core::String& luaString, AnimationSettings& set
 	lua.reg("settings", settingsFuncs);
 	lua.reg("bone", globalBoneFuncs);
 	clua_registerfuncs(lua.state(), boneFuncs, clua_meta<BoneIds>::name());
+	lua.newGlobalData<AnimationSettings>("Settings", &settings);
+	settings.reset();
 
 	if (!lua.load(luaString)) {
 		Log::error("%s", lua.error().c_str());
 		return false;
 	}
 
-	settings.reset();
-
-	lua.newGlobalData<AnimationSettings>("Settings", &settings);
-	if (!lua.execute("init", LUA_MULTRET)) {
+	if (!lua.execute("init", 1)) {
 		Log::error("%s", lua.error().c_str());
+		return false;
+	}
+
+	if (!lua_istable(lua, -1)) {
+		Log::error("Expected to get a table as return value");
 		return false;
 	}
 
@@ -201,11 +205,16 @@ bool loadAnimationSettings(const core::String& luaString, AnimationSettings& set
 	for (; metaIter && metaIter->name; ++metaIter) {
 		const SkeletonAttributeMeta& meta = *metaIter;
 		float *saVal = (float*)(((uint8_t*)skeletonAttr) + meta.offset);
-		if (lua.valueFloatFromTable(meta.name, saVal)) {
-			Log::debug("Skeleton attribute value for %s: %f", meta.name, *saVal);
-		} else {
+
+		lua_getfield(lua, -1, meta.name);
+		if (lua_isnil(lua, -1)) {
+			lua_pop(lua, 1);
 			Log::debug("Skeleton attribute value for %s not given - use default: %f", meta.name, *saVal);
+			continue;
 		}
+		*saVal = (float)lua_tonumber(lua, -1);
+		lua_pop(lua, 1);
+		Log::debug("Skeleton attribute value for %s: %f", meta.name, *saVal);
 	}
 	return settings.init();
 }

@@ -103,8 +103,6 @@ public:
 	 */
 	bool execute(const core::String &function, int returnValues = 0);
 
-	bool valueFloatFromTable(const char* key, float *value);
-
 	int intValue(const core::String& path, int defaultValue = 0);
 	float floatValue(const core::String& path, float defaultValue = 0.0f);
 };
