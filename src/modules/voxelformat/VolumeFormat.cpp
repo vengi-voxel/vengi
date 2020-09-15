@@ -80,7 +80,7 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "vxl" && magic == FourCC('V','O','X','E')) {
+	} else if (ext == "vxl" && magic == FourCC('V','o','x','e')) {
 		voxel::VXLFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
