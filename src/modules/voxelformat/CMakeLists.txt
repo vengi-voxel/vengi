@@ -2,6 +2,7 @@ set(LIB voxelformat)
 set(SRCS
 	AoSVXLFormat.h AoSVXLFormat.cpp
 	BinVoxFormat.h BinVoxFormat.cpp
+	CSMFormat.h CSMFormat.cpp
 	KVXFormat.h KVXFormat.cpp
 	KV6Format.h KV6Format.cpp
 	VoxFileFormat.h VoxFileFormat.cpp
@@ -28,6 +29,7 @@ set(TEST_SRCS
 	tests/QBFormatTest.cpp
 	tests/QEFFormatTest.cpp
 	tests/CubFormatTest.cpp
+	tests/CSMFormatTest.cpp
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
 	tests/VXLFormatTest.cpp
@@ -38,6 +40,7 @@ set(TEST_FILES
 	tests/qubicle.qbt
 	tests/qubicle.qef
 	tests/aceofspades.vxl
+	tests/chronovox-studio.csm
 	tests/cc.vxl
 	tests/test.binvox
 	tests/test.kvx

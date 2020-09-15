@@ -12,9 +12,11 @@ General:
    - Added stacktrace support for windows
    - Refactored module structure (split app and core)
    - Optimized character animations
+   - Hot reload character animation C++ source changes in debug builds
    - Added quaternion lua support
    - Updated external dependencies
    - Refactored lua bindings
+   - Support Chronovox-Studio files (csm)
 
 VoxEdit:
 
