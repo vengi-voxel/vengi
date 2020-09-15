@@ -15,6 +15,20 @@ protected:
 	static const voxel::Voxel Empty;
 
 	void testRGB(RawVolume* volume) {
+		EXPECT_EQ(VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial());
+		EXPECT_EQ(VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial());
+		EXPECT_EQ(VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial());
+		EXPECT_EQ(VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial());
+
+		EXPECT_EQ(VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial());
+		EXPECT_EQ(VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial());
+		EXPECT_EQ(VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial());
+		EXPECT_EQ(VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial());
+
+		EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial());
+		EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
+		EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
+
 		EXPECT_EQ(  0, volume->voxel( 0,  0,  0).getColor());
 		EXPECT_EQ(  0, volume->voxel(31,  0,  0).getColor());
 		EXPECT_EQ(  0, volume->voxel(31,  0, 31).getColor());
