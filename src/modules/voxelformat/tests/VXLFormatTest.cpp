@@ -11,22 +11,16 @@ class VXLFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(VXLFormatTest, testLoad) {
-	const io::FilePtr& file = open("cc.vxl");
-	ASSERT_TRUE((bool)file) << "Could not open vxl file";
 	VXLFormat f;
-	RawVolume* volume = f.load(file);
+	std::unique_ptr<RawVolume> volume(load("cc.vxl", f));
 	ASSERT_NE(nullptr, volume) << "Could not load vxl file";
-	delete volume;
 }
 
 TEST_F(VXLFormatTest, testLoadRGB) {
-	const io::FilePtr& file = open("rgb.vxl");
-	ASSERT_TRUE((bool)file) << "Could not open vxl file";
 	VXLFormat f;
-	RawVolume* volume = f.load(file);
-	ASSERT_NE(nullptr, volume) << "Could not load vox file";
-	testRGB(volume);
-	delete volume;
+	std::unique_ptr<RawVolume> volume(load("rgb.vxl", f));
+	ASSERT_NE(nullptr, volume) << "Could not load vxl file";
+	testRGB(volume.get());
 }
 
 TEST_F(VXLFormatTest, testSave) {

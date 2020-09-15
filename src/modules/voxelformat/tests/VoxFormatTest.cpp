@@ -11,22 +11,16 @@ class VoxFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(VoxFormatTest, testLoad) {
-	const io::FilePtr& file = open("magicavoxel.vox");
-	ASSERT_TRUE((bool)file) << "Could not open vox file";
 	VoxFormat f;
-	RawVolume* volume = f.load(file);
+	std::unique_ptr<RawVolume> volume(load("magicavoxel.vox", f));
 	ASSERT_NE(nullptr, volume) << "Could not load vox file";
-	delete volume;
 }
 
 TEST_F(VoxFormatTest, testLoadRGB) {
-	const io::FilePtr& file = open("rgb.vox");
-	ASSERT_TRUE((bool)file) << "Could not open vox file";
 	VoxFormat f;
-	RawVolume* volume = f.load(file);
+	std::unique_ptr<RawVolume> volume(load("rgb.vox", f));
 	ASSERT_NE(nullptr, volume) << "Could not load vox file";
-	testRGB(volume);
-	delete volume;
+	testRGB(volume.get());
 }
 
 TEST_F(VoxFormatTest, DISABLED_testSave) {
