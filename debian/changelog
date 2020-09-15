@@ -1,4 +1,4 @@
-vengi (0.0.7.0-1) UNRELEASED; urgency=low
+vengi (0.0.7.0-1) unstable; urgency=low
 
   * General:
   * Fixed wrong-name-for-symlinks shown
@@ -19,7 +19,7 @@ vengi (0.0.7.0-1) UNRELEASED; urgency=low
   * Converted some voxel generation functions to lua
   * Implemented new voxel generator scripts
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 2 Aug 2020 10:59:07 +0200
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Tue, 15 Sep 2020 22:14:07 +0200
 
 vengi (0.0.6.0-1) unstable; urgency=low
 
