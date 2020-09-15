@@ -19,6 +19,16 @@ TEST_F(VoxFormatTest, testLoad) {
 	delete volume;
 }
 
+TEST_F(VoxFormatTest, testLoadRGB) {
+	const io::FilePtr& file = open("rgb.vox");
+	ASSERT_TRUE((bool)file) << "Could not open vox file";
+	VoxFormat f;
+	RawVolume* volume = f.load(file);
+	ASSERT_NE(nullptr, volume) << "Could not load vox file";
+	testRGB(volume);
+	delete volume;
+}
+
 TEST_F(VoxFormatTest, DISABLED_testSave) {
 	VoxFormat f;
 	const io::FilePtr& file = open("magicavoxel.vox");
