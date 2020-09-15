@@ -46,18 +46,31 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			magic[0], magic[1], magic[2], magic[3]);
 		return false;
 	}
-	const int version = magic[3] - '0';
-	if (version < 4 || version > 5) {
+	int version;
+	if (magic[3] >= '0' && magic[3] <= '9') {
+		version = magic[3] - '0';
+	} else {
+		Log::error("Invalid version found");
+		return false;
+	}
+
+	if (version < 4 || version > 6) {
 		Log::error("Could not load vxm file: Unsupported version found (%i)", version);
 		return false;
 	}
 
 	bool foundPivot = false;
 	glm::ivec3 ipivot { 0 };
+	glm::uvec3 size;
 	if (version == 4) {
 		Log::debug("Found vxm4");
-	} else if (version == 5) {
-		Log::debug("Found vxm5");
+	} else if (version >= 5) {
+		Log::debug("Found vxm%i", version);
+		if (version >= 6) {
+			wrap(stream.readInt(size.x));
+			wrap(stream.readInt(size.y));
+			wrap(stream.readInt(size.z));
+		}
 		glm::vec3 pivot;
 		wrap(stream.readFloat(pivot.x));
 		wrap(stream.readFloat(pivot.y));
@@ -87,23 +100,29 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	for (uint32_t t = 0u; t < texAmount; t++) {
 		char textureId[1024];
 		wrapBool(stream.readString(sizeof(textureId), textureId, true));
-		Log::debug("tex: %i: %s", (int)t, textureId);
-		uint32_t px = 0u;
-		for (;;) {
-			uint8_t rleStride;
-			wrap(stream.readByte(rleStride));
-			if (rleStride == 0u) {
-				break;
-			}
+		if (version >= 6) {
+			uint32_t texZipped;
+			wrap(stream.readInt(texZipped));
+			stream.skip(texZipped);
+		} else {
+			Log::debug("tex: %i: %s", (int)t, textureId);
+			uint32_t px = 0u;
+			for (;;) {
+				uint8_t rleStride;
+				wrap(stream.readByte(rleStride));
+				if (rleStride == 0u) {
+					break;
+				}
 
-			struct TexColor {
-				glm::u8vec3 rgb;
-			};
-			static_assert(sizeof(TexColor) == 3, "Unexpected TexColor size");
-			stream.skip(sizeof(TexColor));
-			px += rleStride;
-			if (px > textureDim.x * textureDim.y * sizeof(TexColor)) {
-				Log::error("RLE texture chunk exceeds max allowed size");
+				struct TexColor {
+					glm::u8vec3 rgb;
+				};
+				static_assert(sizeof(TexColor) == 3, "Unexpected TexColor size");
+				stream.skip(sizeof(TexColor));
+				px += rleStride;
+				if (px > textureDim.x * textureDim.y * sizeof(TexColor)) {
+					Log::error("RLE texture chunk exceeds max allowed size");
+				}
 			}
 		}
 	}
@@ -123,10 +142,11 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		stream.skip(quadAmount * 4 * sizeof(QuadVertex));
 	}
 
-	glm::uvec3 size;
-	wrap(stream.readInt(size.x));
-	wrap(stream.readInt(size.y));
-	wrap(stream.readInt(size.z));
+	if (version <= 5) {
+		wrap(stream.readInt(size.x));
+		wrap(stream.readInt(size.y));
+		wrap(stream.readInt(size.z));
+	}
 
 	if (glm::any(glm::greaterThan(size, glm::uvec3(MaxRegionSize)))) {
 		Log::warn("Size of volume exceeds the max allowed value");
