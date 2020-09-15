@@ -71,7 +71,7 @@ bool VXLFormat::writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, u
 		uint32_t skipCount = 0u;
 		uint32_t voxelCount = 0u;
 		bool voxelsInColumn = false;
-		for (uint8_t y = 0; y < size.y; ++y) {
+		for (uint8_t y = 0; y <= size.y; ++y) {
 			const voxel::Voxel& voxel = v.volume->voxel(x, y, z);
 			if (voxel::isAir(voxel.getMaterial())) {
 				if (voxelCount > 0) {
