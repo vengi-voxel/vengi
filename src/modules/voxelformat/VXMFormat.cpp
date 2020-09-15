@@ -79,6 +79,42 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		ipivot.y = pivot.y;
 		ipivot.z = pivot.z;
 		foundPivot = true;
+		if (version >= 9) {
+			uint8_t surface;
+			wrap(stream.readByte(surface))
+			if (surface) {
+				uint32_t startx, starty, startz;
+				uint32_t endx, endy, endz;
+				uint32_t normal;
+				wrap(stream.readInt(startx))
+				wrap(stream.readInt(starty))
+				wrap(stream.readInt(startz))
+				wrap(stream.readInt(endx))
+				wrap(stream.readInt(endy))
+				wrap(stream.readInt(endz))
+				wrap(stream.readInt(normal))
+				uint32_t skipWidth = 0u;
+				uint32_t skipHeight = 0u;
+				switch (normal) {
+				case 0:
+				case 1:
+					skipWidth = endz - startz;
+					skipHeight = endy - starty;
+					break;
+				case 2:
+				case 3:
+					skipWidth = endx - startx;
+					skipHeight = endz - startz;
+					break;
+				case 4:
+				case 5:
+					skipWidth = endx - startx;
+					skipHeight = endy - starty;
+					break;
+				}
+				stream.skip(skipWidth * skipHeight);
+			}
+		}
 		if (version >= 8) {
 			float dummy;
 			wrap(stream.readFloat(dummy));
