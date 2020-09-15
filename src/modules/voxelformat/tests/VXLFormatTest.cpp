@@ -19,7 +19,7 @@ TEST_F(VXLFormatTest, testLoad) {
 	delete volume;
 }
 
-TEST_F(VXLFormatTest, DISABLED_testLoadRGB) {
+TEST_F(VXLFormatTest, testLoadRGB) {
 	const io::FilePtr& file = open("rgb.vxl");
 	ASSERT_TRUE((bool)file) << "Could not open vxl file";
 	VXLFormat f;
@@ -29,7 +29,7 @@ TEST_F(VXLFormatTest, DISABLED_testLoadRGB) {
 	delete volume;
 }
 
-TEST_F(VXLFormatTest, DISABLED_testSave) {
+TEST_F(VXLFormatTest, testSave) {
 	VXLFormat f;
 	const io::FilePtr& file = open("cc.vxl");
 	ASSERT_TRUE((bool)file) << "Could not open vxl file";
