@@ -65,4 +65,18 @@
     <comment>Voxel model used by Ace Of Spades</comment>
     <glob pattern="*.vxl"/>
   </mime-type>
+  <mime-type type="application/x-chronvox-studio-csm">
+    <comment>Chronovox Studio Model</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value=".CSM"/>
+    </magic>
+    <glob pattern="*.csm"/>
+  </mime-type>
+  <mime-type type="application/x-chronvox-studio-nvm">
+    <comment>Nicks Voxel Model</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value=".NVM"/>
+    </magic>
+    <glob pattern="*.nvm"/>
+  </mime-type>
 </mime-info>

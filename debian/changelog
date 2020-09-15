@@ -12,6 +12,7 @@ vengi (0.0.7.0-1) UNRELEASED; urgency=low
   * Updated external dependencies
   * Refactored lua bindings
   * Support Chronovox-Studio files (csm)
+  * Support Nick's Voxel Model files (nvm)
 
   * VoxEdit:
   * Converted some voxel generation functions to lua

@@ -22,7 +22,7 @@
 namespace voxelformat {
 
 // this is the list of supported voxel volume formats that are have importers implemented
-const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl,qef,csm";
+const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl,qef,csm,nvm";
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 // this is the list of supported voxel volume formats that have exporters implemented
@@ -90,7 +90,8 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "csm" || magic == FourCC('.','C','S','M')) {
+	} else if (ext == "csm" || magic == FourCC('.','C','S','M')
+			|| ext == "nvm" || magic == FourCC('.','N','V','M')) {
 		voxel::CSMFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);

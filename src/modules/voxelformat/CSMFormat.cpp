@@ -25,15 +25,8 @@ namespace voxel {
 		return false; \
 	}
 
-static bool readString(io::FileStream& stream, core::String& str, int version) {
-	if (version < 4) {
-		uint8_t length;
-		wrap(stream.readByte(length))
-		char name[256];
-		wrapBool(stream.readString(length, name))
-		name[length] = '\0';
-		str = name;
-	} else {
+static bool readString(io::FileStream& stream, core::String& str, bool readStringAsInt) {
+	if (readStringAsInt) {
 		uint32_t length;
 		wrap(stream.readInt(length))
 		if (length > 4096) {
@@ -41,6 +34,13 @@ static bool readString(io::FileStream& stream, core::String& str, int version) {
 			return false;
 		}
 		char name[4096];
+		wrapBool(stream.readString(length, name))
+		name[length] = '\0';
+		str = name;
+	} else {
+		uint8_t length;
+		wrap(stream.readByte(length))
+		char name[256];
 		wrapBool(stream.readString(length, name))
 		name[length] = '\0';
 		str = name;
@@ -59,15 +59,26 @@ bool CSMFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 	io::FileStream stream(file.get());
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readInt(magic))
+	const bool isNVM = magic == FourCC('.','N','V','M');
 	wrap(stream.readInt(version))
 	wrap(stream.readInt(blank))
 	wrap(stream.readInt(matrixCount))
+
+	if (isNVM && version > 2) {
+		Log::warn("nvm is only supported up to version 2");
+	}
+	if (!isNVM && version > 4) {
+		Log::warn("csm is only supported up to version 4");
+	}
+
+	const bool readStringAsInt = isNVM || version >= 4;
+
 	for (uint16_t i = 0u; (uint16_t)i < matrixCount; ++i) {
 		core::String name;
 		core::String parent;
-		wrapBool(readString(stream, name, version))
+		wrapBool(readString(stream, name, readStringAsInt))
 		if (version > 1) {
-			wrapBool(readString(stream, parent, version))
+			wrapBool(readString(stream, parent, readStringAsInt))
 		}
 		uint16_t posx, posy, posz;
 		wrap(stream.readShort(posx))

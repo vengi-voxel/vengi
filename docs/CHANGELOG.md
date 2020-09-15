@@ -17,6 +17,7 @@ General:
    - Updated external dependencies
    - Refactored lua bindings
    - Support Chronovox-Studio files (csm)
+   - Support Nick's Voxel Model files (nvm)
 
 VoxEdit:
 

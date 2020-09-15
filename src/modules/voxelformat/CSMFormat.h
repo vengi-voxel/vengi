@@ -12,7 +12,7 @@
 namespace voxel {
 
 /**
- * @brief Chronovox Studio Model
+ * @brief Chronovox Studio Model and Nick's Voxel Model
  */
 class CSMFormat : public VoxFileFormat {
 public:

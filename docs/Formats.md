@@ -11,5 +11,7 @@ It can load a lot of different formats:
 * SLAB6 kv6
 * Command and Conquer vxl
 * Ace Of Spades vxl
+* Chronovox-Studio csm
+* Nick's Voxel Model nvm
 
 And can also save to a lot of those.
