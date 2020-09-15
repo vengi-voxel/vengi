@@ -54,7 +54,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		return false;
 	}
 
-	if (version < 4 || version > 7) {
+	if (version < 4 || version > 8) {
 		Log::error("Could not load vxm file: Unsupported version found (%i)", version);
 		return false;
 	}
@@ -79,6 +79,13 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		ipivot.y = pivot.y;
 		ipivot.z = pivot.z;
 		foundPivot = true;
+		if (version >= 8) {
+			float dummy;
+			wrap(stream.readFloat(dummy));
+			wrap(stream.readFloat(dummy));
+			wrap(stream.readFloat(dummy));
+			wrap(stream.readFloat(dummy));
+		}
 	}
 
 	uint32_t lodLevels = 1;
