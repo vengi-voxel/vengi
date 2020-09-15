@@ -46,6 +46,12 @@ bool AoSVXLFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 				const int topColorEnd = v[2]; // inclusive
 				int paletteIndex = 1;
 				const uint32_t *rgba = (const uint32_t *)(v + sizeof(uint32_t));
+				if (topColorStart < 0 || topColorStart >= depth) {
+					return false;
+				}
+				if (topColorEnd < 0 || topColorEnd >= depth) {
+					return false;
+				}
 				for (z = topColorStart; z <= topColorEnd; ++z) {
 					if (!paletteMap.get(*rgba, paletteIndex)) {
 						const glm::vec4& color = core::Color::fromRGBA(*rgba);
@@ -78,6 +84,12 @@ bool AoSVXLFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 
 				const int bottomColorEnd = v[3]; // aka air start - exclusive
 				const int bottomColorStart = bottomColorEnd - len_top;
+				if (bottomColorStart < 0 || bottomColorStart >= depth) {
+					return false;
+				}
+				if (bottomColorEnd < 0 || bottomColorEnd >= depth) {
+					return false;
+				}
 
 				for (z = bottomColorStart; z < bottomColorEnd; ++z) {
 					if (!paletteMap.get(*rgba, paletteIndex)) {
