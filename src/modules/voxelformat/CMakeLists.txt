@@ -48,6 +48,10 @@ set(TEST_FILES
 	tests/magicavoxel.vox
 	tests/test.vxm
 	tests/cw.cub
+	tests/rgb.vxl
+	tests/rgb.vox
+	tests/rgb.qb
+	tests/rgb.cub
 )
 
 gtest_suite_files(tests ${TEST_FILES})

@@ -29,6 +29,13 @@ TEST_F(QBFormatTest, testLoad) {
 	ASSERT_EQ(Empty, volume->voxel(22, 0, 4)) << *volume;
 }
 
+TEST_F(QBFormatTest, testLoadRGB) {
+	QBFormat f;
+	std::unique_ptr<RawVolume> volume(load("rgb.qb", f));
+	ASSERT_NE(nullptr, volume) << "Could not load qb file";
+	testRGB(volume.get());
+}
+
 TEST_F(QBFormatTest, testSaveSmallVoxel) {
 	QBFormat f;
 	Region region(glm::ivec3(0), glm::ivec3(1));
