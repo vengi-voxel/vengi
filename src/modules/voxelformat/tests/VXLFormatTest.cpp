@@ -19,6 +19,16 @@ TEST_F(VXLFormatTest, testLoad) {
 	delete volume;
 }
 
+TEST_F(VXLFormatTest, DISABLED_testLoadRGB) {
+	const io::FilePtr& file = open("rgb.vxl");
+	ASSERT_TRUE((bool)file) << "Could not open vxl file";
+	VXLFormat f;
+	RawVolume* volume = f.load(file);
+	ASSERT_NE(nullptr, volume) << "Could not load vox file";
+	testRGB(volume);
+	delete volume;
+}
+
 TEST_F(VXLFormatTest, DISABLED_testSave) {
 	VXLFormat f;
 	const io::FilePtr& file = open("cc.vxl");
