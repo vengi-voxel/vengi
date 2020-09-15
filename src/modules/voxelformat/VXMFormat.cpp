@@ -36,22 +36,27 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	}
 	io::FileStream stream(file.get());
 
-	uint32_t header;
-	wrap(stream.readInt(header))
-	constexpr uint32_t headerMagic5 = FourCC('V','X','M','5');
-	constexpr uint32_t headerMagic4 = FourCC('V','X','M','4');
-	if (header != headerMagic5 && header != headerMagic4) {
-		uint8_t buf[4];
-		FourCCRev(buf, header);
-		Log::error("Could not load vxm file: Invalid magic found (%s)", (const char *)buf);
+	uint8_t magic[4];
+	wrap(stream.readByte(magic[0]))
+	wrap(stream.readByte(magic[1]))
+	wrap(stream.readByte(magic[2]))
+	wrap(stream.readByte(magic[3]))
+	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'M') {
+		Log::error("Could not load vxm file: Invalid magic found (%c%c%c%c)",
+			magic[0], magic[1], magic[2], magic[3]);
+		return false;
+	}
+	const int version = magic[3] - '0';
+	if (version < 4 || version > 5) {
+		Log::error("Could not load vxm file: Unsupported version found (%i)", version);
 		return false;
 	}
 
 	bool foundPivot = false;
 	glm::ivec3 ipivot { 0 };
-	if (header == headerMagic4) {
+	if (version == 4) {
 		Log::debug("Found vxm4");
-	} else if (header == headerMagic5) {
+	} else if (version == 5) {
 		Log::debug("Found vxm5");
 		glm::vec3 pivot;
 		wrap(stream.readFloat(pivot.x));
