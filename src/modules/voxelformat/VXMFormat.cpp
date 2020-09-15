@@ -54,7 +54,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		return false;
 	}
 
-	if (version < 4 || version > 6) {
+	if (version < 4 || version > 7) {
 		Log::error("Could not load vxm file: Unsupported version found (%i)", version);
 		return false;
 	}
@@ -81,65 +81,71 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		foundPivot = true;
 	}
 
-	glm::uvec2 textureDim;
-	wrap(stream.readInt(textureDim.x));
-	wrap(stream.readInt(textureDim.y));
-	if (glm::any(glm::greaterThan(textureDim, glm::uvec2(2048)))) {
-		Log::warn("Size of texture exceeds the max allowed value");
-		return false;
+	uint32_t lodLevels = 1;
+	if (version >= 7) {
+		wrap(stream.readInt(lodLevels));
 	}
+	for (uint32_t lodLevel = 0u; lodLevel < lodLevels; ++lodLevel) {
+		glm::uvec2 textureDim;
+		wrap(stream.readInt(textureDim.x));
+		wrap(stream.readInt(textureDim.y));
+		if (glm::any(glm::greaterThan(textureDim, glm::uvec2(2048)))) {
+			Log::warn("Size of texture exceeds the max allowed value");
+			return false;
+		}
 
-	uint32_t texAmount;
-	wrap(stream.readInt(texAmount));
-	if (texAmount > 0xFFFF) {
-		Log::warn("Size of textures exceeds the max allowed value: %i", texAmount);
-		return false;
-	}
+		uint32_t texAmount;
+		wrap(stream.readInt(texAmount));
+		if (texAmount > 0xFFFF) {
+			Log::warn("Size of textures exceeds the max allowed value: %i", texAmount);
+			return false;
+		}
 
-	Log::debug("texAmount: %i", (int)texAmount);
-	for (uint32_t t = 0u; t < texAmount; t++) {
-		char textureId[1024];
-		wrapBool(stream.readString(sizeof(textureId), textureId, true));
-		if (version >= 6) {
-			uint32_t texZipped;
-			wrap(stream.readInt(texZipped));
-			stream.skip(texZipped);
-		} else {
-			Log::debug("tex: %i: %s", (int)t, textureId);
-			uint32_t px = 0u;
-			for (;;) {
-				uint8_t rleStride;
-				wrap(stream.readByte(rleStride));
-				if (rleStride == 0u) {
-					break;
-				}
+		Log::debug("texAmount: %i", (int)texAmount);
+		for (uint32_t t = 0u; t < texAmount; t++) {
+			char textureId[1024];
+			wrapBool(stream.readString(sizeof(textureId), textureId, true));
+			if (version >= 6) {
+				uint32_t texZipped;
+				wrap(stream.readInt(texZipped));
+				stream.skip(texZipped);
+			} else {
+				Log::debug("tex: %i: %s", (int)t, textureId);
+				uint32_t px = 0u;
+				for (;;) {
+					uint8_t rleStride;
+					wrap(stream.readByte(rleStride));
+					if (rleStride == 0u) {
+						break;
+					}
 
-				struct TexColor {
-					glm::u8vec3 rgb;
-				};
-				static_assert(sizeof(TexColor) == 3, "Unexpected TexColor size");
-				stream.skip(sizeof(TexColor));
-				px += rleStride;
-				if (px > textureDim.x * textureDim.y * sizeof(TexColor)) {
-					Log::error("RLE texture chunk exceeds max allowed size");
+					struct TexColor {
+						glm::u8vec3 rgb;
+					};
+					static_assert(sizeof(TexColor) == 3, "Unexpected TexColor size");
+					stream.skip(sizeof(TexColor));
+					px += rleStride;
+					if (px > textureDim.x * textureDim.y * sizeof(TexColor)) {
+						Log::error("RLE texture chunk exceeds max allowed size");
+					}
 				}
 			}
 		}
-	}
 
-	for (int i = 0; i < 6; ++i) {
-		uint32_t quadAmount;
-		wrap(stream.readInt(quadAmount));
-		if (quadAmount > 0x40000U) {
-			Log::warn("Size of quads exceeds the max allowed value");
-			return false;
+		for (int i = 0; i < 6; ++i) {
+			uint32_t quadAmount;
+			wrap(stream.readInt(quadAmount));
+			if (quadAmount > 0x40000U) {
+				Log::warn("Size of quads exceeds the max allowed value");
+				return false;
+			}
+			struct QuadVertex {
+				glm::vec3 pos;
+				glm::ivec2 uv;
+			};
+			static_assert(sizeof(QuadVertex) == 20, "Unexpected QuadVertex size");
+			stream.skip(quadAmount * 4 * sizeof(QuadVertex));
 		}
-		struct QuadVertex {
-			glm::vec3 pos;
-			glm::ivec2 uv;
-		};
-		static_assert(sizeof(QuadVertex) == 20, "Unexpected QuadVertex size");
-		stream.skip(quadAmount * 4 * sizeof(QuadVertex));
 	}
 
 	if (version <= 5) {
