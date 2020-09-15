@@ -18,6 +18,7 @@ General:
    - Refactored lua bindings
    - Support Chronovox-Studio files (csm)
    - Support Nick's Voxel Model files (nvm)
+   - Support more versions of the vxm format
 
 VoxEdit:
 

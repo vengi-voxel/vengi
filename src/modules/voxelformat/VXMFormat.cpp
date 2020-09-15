@@ -49,12 +49,14 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	int version;
 	if (magic[3] >= '0' && magic[3] <= '9') {
 		version = magic[3] - '0';
+	} else if (magic[3] == 'A') {
+		version = 10 + magic[3] - 'A';
 	} else {
 		Log::error("Invalid version found");
 		return false;
 	}
 
-	if (version < 4 || version > 8) {
+	if (version < 4 || version > 10) {
 		Log::error("Could not load vxm file: Unsupported version found (%i)", version);
 		return false;
 	}
@@ -83,9 +85,13 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			uint8_t surface;
 			wrap(stream.readByte(surface))
 			if (surface) {
+				uint32_t skipWidth = 0u;
+				uint32_t skipHeight = 0u;
 				uint32_t startx, starty, startz;
 				uint32_t endx, endy, endz;
 				uint32_t normal;
+				// since version 10 the start and end values are floats
+				// but for us this fact doesn't matter
 				wrap(stream.readInt(startx))
 				wrap(stream.readInt(starty))
 				wrap(stream.readInt(startz))
@@ -93,34 +99,37 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 				wrap(stream.readInt(endy))
 				wrap(stream.readInt(endz))
 				wrap(stream.readInt(normal))
-				uint32_t skipWidth = 0u;
-				uint32_t skipHeight = 0u;
-				switch (normal) {
-				case 0:
-				case 1:
-					skipWidth = endz - startz;
-					skipHeight = endy - starty;
-					break;
-				case 2:
-				case 3:
-					skipWidth = endx - startx;
-					skipHeight = endz - startz;
-					break;
-				case 4:
-				case 5:
-					skipWidth = endx - startx;
-					skipHeight = endy - starty;
-					break;
+				if (version >= 10) {
+					wrap(stream.readInt(skipWidth))
+					wrap(stream.readInt(skipHeight))
+				} else {
+					switch (normal) {
+					case 0:
+					case 1:
+						skipWidth = endz - startz;
+						skipHeight = endy - starty;
+						break;
+					case 2:
+					case 3:
+						skipWidth = endx - startx;
+						skipHeight = endz - startz;
+						break;
+					case 4:
+					case 5:
+						skipWidth = endx - startx;
+						skipHeight = endy - starty;
+						break;
+					}
 				}
 				stream.skip(skipWidth * skipHeight);
 			}
 		}
 		if (version >= 8) {
-			float dummy;
-			wrap(stream.readFloat(dummy));
-			wrap(stream.readFloat(dummy));
-			wrap(stream.readFloat(dummy));
-			wrap(stream.readFloat(dummy));
+			float dummy;                   // since version 'A'
+			wrap(stream.readFloat(dummy)); // lod scale
+			wrap(stream.readFloat(dummy)); // lod pivot x
+			wrap(stream.readFloat(dummy)); // lod pivot y
+			wrap(stream.readFloat(dummy)); // lod pivot z
 		}
 	}
 
@@ -270,6 +279,24 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		}
 		idx += length;
 	}
+
+	if (version >= 10) {
+		uint8_t surface;
+		wrap(stream.readByte(surface))
+		if (surface) {
+			uint32_t startx, starty, startz;
+			uint32_t endx, endy, endz;
+			uint32_t normal;
+			wrap(stream.readInt(startx))
+			wrap(stream.readInt(starty))
+			wrap(stream.readInt(startz))
+			wrap(stream.readInt(endx))
+			wrap(stream.readInt(endy))
+			wrap(stream.readInt(endz))
+			wrap(stream.readInt(normal))
+		}
+	}
+
 	delete[] palette;
 	volumes.push_back(VoxelVolume(volume, "", true, ipivot));
 	return true;
