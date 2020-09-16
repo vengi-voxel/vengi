@@ -22,3 +22,16 @@ This is e.g. `nippon`. The tool will then try to look up the file `palette-nippo
 
 You can convert to a different palette with this command. The closest possible color will be chosen for each
 color from the source file palette to the specified palette.
+
+## Convert volume to mesh
+
+You can export your volume model into a obj or ply.
+
+`./vengi-voxconvert infile.vox outfile.obj`
+
+Cvars to control the meshing:
+
+* `voxformat_mergequads`
+* `voxformat_reusevertices`
+
+See `./vengi-voxconvert --help` for details.
