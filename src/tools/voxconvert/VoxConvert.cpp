@@ -27,8 +27,11 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 
+	core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->setHelp("Merge similar quads to optimize the mesh");
+	core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->setHelp("Reuse vertices or always create new ones");
+
 	_palette = core::Var::get("palette", voxel::getDefaultPaletteName());
-	_palette->setHelp("Specify the palette base name or absolute png file to use (1x256)");
+	_palette->setHelp("This is the NAME part of palette-<NAME>.pngor absolute png file to use (1x256)");
 
 	return state;
 }

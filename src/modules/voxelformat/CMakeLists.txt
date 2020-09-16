@@ -14,6 +14,8 @@ set(SRCS
 	VXLFormat.h VXLFormat.cpp
 	MeshCache.h MeshCache.cpp
 	CubFormat.h CubFormat.cpp
+	OBJFormat.h OBJFormat.cpp
+	PLYFormat.h PLYFormat.cpp
 	VolumeCache.h VolumeCache.cpp
 	VoxelVolumes.h VoxelVolumes.cpp
 	VolumeFormat.h VolumeFormat.cpp

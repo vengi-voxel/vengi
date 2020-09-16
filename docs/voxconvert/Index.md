@@ -1,6 +1,6 @@
 # General
 
-Convert voxel volume formats between each other.
+Convert voxel volume formats between each other or export to obj or ply.
 
 [Supported voxel formats](../Formats.md)
 

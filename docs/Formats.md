@@ -15,3 +15,5 @@ It can load a lot of different formats:
 * Nick's Voxel Model nvm
 
 And can also save to a lot of those.
+
+Exporting to ply and obj is also supported.

@@ -4,6 +4,10 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 ## 0.0.8 (2020-XX-XX)
 
+General:
+
+   - Added obj and ply export support
+
 ## 0.0.7 (2020-09-15)
 
 General:

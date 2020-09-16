@@ -12,6 +12,8 @@
 
 namespace voxel {
 
+class Mesh;
+
 class VoxFileFormat {
 protected:
 	core::Array<uint8_t, 256> _palette;
@@ -34,5 +36,14 @@ public:
 	virtual bool save(const RawVolume* volume, const io::FilePtr& file);
 };
 
+class MeshExporter : public VoxFileFormat {
+public:
+	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override {
+		return false;
+	}
+
+	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	virtual bool saveMesh(const voxel::Mesh& mesh, const io::FilePtr& file) = 0;
+};
 
 }

@@ -1313,6 +1313,9 @@ void SceneManager::construct() {
 	command::Command::registerCommand("centerplane", [&] (const command::CmdArgs& args) {
 		modifier().setCenterMode(!modifier().centerMode());
 	}).setHelp("Toggle center plane building");
+
+	core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->setHelp("Merge similar quads to optimize the mesh");
+	core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->setHelp("Reuse vertices or always create new ones");
 }
 
 void SceneManager::flip(math::Axis axis) {

@@ -6,18 +6,20 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/Trace.h"
-#include "VoxFormat.h"
-#include "QBTFormat.h"
-#include "QBFormat.h"
-#include "QEFFormat.h"
-#include "VXMFormat.h"
-#include "VXLFormat.h"
-#include "CubFormat.h"
-#include "BinVoxFormat.h"
-#include "KVXFormat.h"
-#include "KV6Format.h"
-#include "AoSVXLFormat.h"
+#include "voxelformat/PLYFormat.h"
+#include "voxelformat/VoxFormat.h"
+#include "voxelformat/QBTFormat.h"
+#include "voxelformat/QBFormat.h"
+#include "voxelformat/QEFFormat.h"
+#include "voxelformat/VXMFormat.h"
+#include "voxelformat/VXLFormat.h"
+#include "voxelformat/CubFormat.h"
+#include "voxelformat/BinVoxFormat.h"
+#include "voxelformat/KVXFormat.h"
+#include "voxelformat/KV6Format.h"
+#include "voxelformat/AoSVXLFormat.h"
 #include "voxelformat/CSMFormat.h"
+#include "voxelformat/OBJFormat.h"
 
 namespace voxelformat {
 
@@ -26,7 +28,7 @@ const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vx
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 // this is the list of supported voxel volume formats that have exporters implemented
-const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub,vxl,qef";
+const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub,vxl,qef,obj,ply";
 
 static uint32_t loadMagic(const io::FilePtr& file) {
 	io::FileStream stream(file.get());
@@ -146,6 +148,12 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 		return f.saveGroups(volumes, filePtr);
 	} else if (ext == "binvox") {
 		voxel::BinVoxFormat f;
+		return f.saveGroups(volumes, filePtr);
+	} else if (ext == "obj") {
+		voxel::OBJFormat f;
+		return f.saveGroups(volumes, filePtr);
+	} else if (ext == "ply") {
+		voxel::PLYFormat f;
 		return f.saveGroups(volumes, filePtr);
 	} else {
 		Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
