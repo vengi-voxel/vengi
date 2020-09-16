@@ -75,7 +75,9 @@ bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 	bool reuseVertices = core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->boolVal();
 
 	voxel::Mesh mesh;
-	voxel::extractCubicMesh(volume, volume->region(), &mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices);
+	voxel::Region region = volume->region();
+	region.shiftUpperCorner(1, 1, 1);
+	voxel::extractCubicMesh(volume, region, &mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices);
 	delete volume;
 	return saveMesh(mesh, file);
 }
