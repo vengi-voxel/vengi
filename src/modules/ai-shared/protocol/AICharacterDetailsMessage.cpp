@@ -4,6 +4,7 @@
 
 #include "AICharacterDetailsMessage.h"
 #include "core/Enum.h"
+#include "core/collection/DynamicArray.h"
 
 namespace ai {
 
@@ -28,17 +29,17 @@ void AICharacterDetailsMessage::writeNode (streamContainer& out, const AIStateNo
 	addLong(out, node.getLastRun());
 	addByte(out, core::enumVal(node.getStatus()));
 	addBool(out, node.isRunning());
-	const std::vector<AIStateNode>& children = node.getChildren();
+	const core::DynamicArray<AIStateNode>& children = node.getChildren();
 	addShort(out, static_cast<int16_t>(children.size()));
-	for (std::vector<AIStateNode>::const_iterator i = children.begin(); i != children.end(); ++i) {
+	for (core::DynamicArray<AIStateNode>::iterator i = children.begin(); i != children.end(); ++i) {
 		writeNode(out, *i);
 	}
 }
 
 void AICharacterDetailsMessage::writeAggro(streamContainer& out, const AIStateAggro& aggro) const {
-	const std::vector<AIStateAggroEntry>& a = aggro.getAggro();
+	const core::DynamicArray<AIStateAggroEntry>& a = aggro.getAggro();
 	addShort(out, static_cast<int16_t>(a.size()));
-	for (std::vector<AIStateAggroEntry>::const_iterator i = a.begin(); i != a.end(); ++i) {
+	for (core::DynamicArray<AIStateAggroEntry>::iterator i = a.begin(); i != a.end(); ++i) {
 		addInt(out, i->id);
 		addFloat(out, i->aggro);
 	}

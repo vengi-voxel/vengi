@@ -3,8 +3,7 @@
  */
 #include "AINodeStaticResolver.h"
 #include "ai-shared/protocol/AIStubTypes.h"
-#include <QObject>
-#include <QDebug>
+#include "core/Log.h"
 
 namespace ai {
 namespace debug {
@@ -16,19 +15,19 @@ static const ai::AIStateNodeStatic UNKNOWN(-1, "unknown", "unknown", "unknown", 
 AINodeStaticResolver::AINodeStaticResolver() {
 }
 
-void AINodeStaticResolver::set(const std::vector<ai::AIStateNodeStatic>& data) {
+void AINodeStaticResolver::set(const core::DynamicArray<ai::AIStateNodeStatic>& data) {
 	_data = data;
 	_hash.clear();
 	for (const ai::AIStateNodeStatic& s : _data) {
-		_hash[s.getId()] = &s;
+		_hash.put(s.getId(), &s);
 	}
-	qDebug() << "received " << _hash.size() << " entries";
+	Log::debug("received %i entities", (int)_hash.size());
 }
 
 const ai::AIStateNodeStatic& AINodeStaticResolver::get(int32_t id) const {
-	const ai::AIStateNodeStatic* s = _hash[id];
-	if (s == nullptr) {
-		qDebug() << "entry for " << id << " wasn't found";
+	const ai::AIStateNodeStatic* s;
+	if (_hash.get(id, s)) {
+		Log::debug("entry for %i wasn't found", id);
 		return anon::UNKNOWN;
 	}
 	return *s;

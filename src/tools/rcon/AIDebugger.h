@@ -6,7 +6,6 @@
 #include "ai-shared/protocol/IProtocolHandler.h"
 #include "ai-shared/protocol/AICharacterStaticMessage.h"
 #include "ai-shared/protocol/AICharacterDetailsMessage.h"
-#include <vector>
 #include <utility>
 #include <QTcpSocket>
 #include <QSettings>
@@ -55,7 +54,7 @@ protected:
 	// the current selected entity id
 	ai::CharacterId _selectedId;
 	// the aggro list of the current selected entity
-	std::vector<ai::AIStateAggroEntry> _aggro;
+	core::DynamicArray<ai::AIStateAggroEntry> _aggro;
 	// the behaviour tree states of the current selected entity
 	ai::AIStateNode _node;
 	// the attributes of the current selected entity
@@ -79,10 +78,10 @@ public:
 	 * @return The list of ai controlled entities
 	 */
 	const Entities& getEntities() const;
-	void setEntities(const std::vector<ai::AIStateWorld>& entities);
+	void setEntities(const core::DynamicArray<ai::AIStateWorld>& entities);
 	void setCharacterDetails(const ai::CharacterId& id, const ai::AIStateAggro& aggro, const ai::AIStateNode& node);
 	void addCharacterStaticData(const ai::AICharacterStaticMessage& msg);
-	void setNames(const std::vector<core::String>& names);
+	void setNames(const core::DynamicArray<core::String>& names);
 	const QStringList& getNames() const;
 	/**
 	 * @return The behaviour tree node that is assigned to the selected entity
@@ -92,7 +91,7 @@ public:
 	 * @return The key/value pairs of attributes that are assigned on the server side to the selected ai entity
 	 */
 	const CharacterAttributesMap& getAttributes() const;
-	const std::vector<ai::AIStateAggroEntry>& getAggro() const;
+	const core::DynamicArray<ai::AIStateAggroEntry>& getAggro() const;
 
 	/**
 	 * @brief Start the debugger - call this from your main method
@@ -131,7 +130,7 @@ signals:
 	void onEntitiesUpdated();
 };
 
-inline const std::vector<ai::AIStateAggroEntry>& AIDebugger::getAggro() const {
+inline const core::DynamicArray<ai::AIStateAggroEntry>& AIDebugger::getAggro() const {
 	return _aggro;
 }
 

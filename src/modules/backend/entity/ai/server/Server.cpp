@@ -100,7 +100,7 @@ bool Server::start() {
 	return _network.start();
 }
 
-void Server::addChildren(const TreeNodePtr& node, std::vector<ai::AIStateNodeStatic>& out) const {
+void Server::addChildren(const TreeNodePtr& node, core::DynamicArray<ai::AIStateNodeStatic>& out) const {
 	for (const TreeNodePtr& childNode : node->getChildren()) {
 		const int32_t nodeId = childNode->getId();
 		out.push_back(ai::AIStateNodeStatic(nodeId, childNode->getName(), childNode->getType(), childNode->getParameters(), childNode->getCondition()->getName(), childNode->getCondition()->getParameters()));
@@ -150,7 +150,7 @@ void Server::broadcastStaticCharacterDetails(const Zone* zone) {
 		if (!ai) {
 			return false;
 		}
-		std::vector<ai::AIStateNodeStatic> nodeStaticData;
+		core::DynamicArray<ai::AIStateNodeStatic> nodeStaticData;
 		const TreeNodePtr& node = ai->getBehaviour();
 		const int32_t nodeId = node->getId();
 		nodeStaticData.push_back(ai::AIStateNodeStatic(nodeId, node->getName(), node->getType(), node->getParameters(), node->getCondition()->getName(), node->getCondition()->getParameters()));
@@ -274,24 +274,24 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 			break;
 		}
 		case EV_ZONEADD: {
-			if (!_zones.insert(event.data.zone).second) {
+			if (!_zones.insert(event.data.zone)) {
 				return;
 			}
 			_names.clear();
-			for (const Zone* z : _zones) {
-				_names.push_back(z->getName());
+			for (const auto& z : _zones) {
+				_names.push_back(z->first->getName());
 			}
 			_network.broadcast(ai::AINamesMessage(_names));
 			break;
 		}
 		case EV_ZONEREMOVE: {
 			_zone.compare_exchange(event.data.zone, nullptr);
-			if (_zones.erase(event.data.zone) != 1) {
+			if (_zones.remove(event.data.zone) != 1) {
 				return;
 			}
 			_names.clear();
-			for (const Zone* z : _zones) {
-				_names.push_back(z->getName());
+			for (const auto& z : _zones) {
+				_names.push_back(z->first->getName());
 			}
 			_network.broadcast(ai::AINamesMessage(_names));
 			break;
@@ -305,7 +305,8 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 			_zone = nullzone;
 			resetSelection();
 
-			for (Zone* z : _zones) {
+			for (const auto& iter : _zones) {
+				Zone* z = iter->first;
 				const bool debug = z->getName() == event.strData;
 				if (!debug) {
 					continue;

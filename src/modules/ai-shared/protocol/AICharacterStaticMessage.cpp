@@ -6,7 +6,7 @@
 
 namespace ai {
 
-AICharacterStaticMessage::AICharacterStaticMessage(const CharacterId& id, const std::vector<AIStateNodeStatic>& nodeStaticData) :
+AICharacterStaticMessage::AICharacterStaticMessage(const CharacterId& id, const core::DynamicArray<AIStateNodeStatic>& nodeStaticData) :
 		IProtocolMessage(PROTO_CHARACTER_STATIC), _chrId(id), _nodeStaticDataPtr(&nodeStaticData) {
 }
 

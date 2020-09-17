@@ -5,7 +5,6 @@
 
 #include "IProtocolMessage.h"
 #include "AIStubTypes.h"
-#include <vector>
 
 namespace ai {
 

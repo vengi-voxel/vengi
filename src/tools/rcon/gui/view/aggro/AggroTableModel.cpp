@@ -20,7 +20,7 @@ void AggroTableModel::update() {
 }
 
 int AggroTableModel::rowCount(const QModelIndex & /*parent*/) const {
-	const std::vector<AIStateAggroEntry>& aggro = _debugger.getAggro();
+	const core::DynamicArray<AIStateAggroEntry>& aggro = _debugger.getAggro();
 	return aggro.size();
 }
 
@@ -47,13 +47,13 @@ QVariant AggroTableModel::headerData(int section, Qt::Orientation orientation, i
 }
 
 QVariant AggroTableModel::data(const QModelIndex &mdlIndex, int role) const {
-	const std::vector<AIStateAggroEntry>& aggro = _debugger.getAggro();
+	const core::DynamicArray<AIStateAggroEntry>& aggro = _debugger.getAggro();
 	if (role == Qt::DisplayRole) {
 		switch (mdlIndex.column()) {
 		case 0:
-			return aggro.at(mdlIndex.row()).id;
+			return aggro[mdlIndex.row()].id;
 		case 1:
-			return aggro.at(mdlIndex.row()).aggro;
+			return aggro[mdlIndex.row()].aggro;
 		default:
 			break;
 		}

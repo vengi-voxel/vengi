@@ -3,14 +3,14 @@
  */
 #pragma once
 
-#include <unordered_map>
 #include "IProtocolHandler.h"
+#include "core/collection/Map.h"
 
 namespace ai {
 
 class ProtocolHandlerRegistry {
 private:
-	typedef std::unordered_map<ProtocolId, IProtocolHandler*> ProtocolHandlers;
+	typedef core::Map<ProtocolId, IProtocolHandler*> ProtocolHandlers;
 	ProtocolHandlers _registry;
 
 	ProtocolHandlerRegistry() {
@@ -27,7 +27,7 @@ public:
 	}
 
 	inline void registerHandler(const ProtocolId& type, IProtocolHandler* handler) {
-		_registry.insert(std::make_pair(type, handler));
+		_registry.put(type, handler);
 	}
 
 	inline IProtocolHandler* getHandler(const IProtocolMessage& msg) {

@@ -44,7 +44,7 @@ void NodeTreeView::updateTreeWidget() {
 NodeTreeItem* NodeTreeView::buildTreeItems(const AIStateNode& node, NodeTreeItem* nodeTreeParent) {
 	NodeTreeItem* thisNode = new NodeTreeItem(nullptr, node, _resolver.get(node.getNodeId()), nodeTreeParent, nodeHeight, horizontalSpacing, verticalSpacing);
 	_scene.addItem(thisNode);
-	const std::vector<AIStateNode>& childrenNodes = node.getChildren();
+	const core::DynamicArray<AIStateNode>& childrenNodes = node.getChildren();
 	for (auto i = childrenNodes.begin(); i != childrenNodes.end(); ++i) {
 		NodeTreeItem* childNode = buildTreeItems(*i, thisNode);
 		thisNode->addChildren(childNode);

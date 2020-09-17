@@ -142,7 +142,7 @@ void AIDebugger::setCharacterDetails(const ai::CharacterId& id, const ai::AIStat
 }
 
 void AIDebugger::addCharacterStaticData(const ai::AICharacterStaticMessage& msg) {
-	const std::vector<ai::AIStateNodeStatic>& data = msg.getStaticNodeData();
+	const core::DynamicArray<ai::AIStateNodeStatic>& data = msg.getStaticNodeData();
 	_resolver.set(data);
 }
 
@@ -325,7 +325,7 @@ MapView* AIDebugger::createMapWidget() {
 	return new MapView(*this);
 }
 
-void AIDebugger::setNames(const std::vector<core::String>& names) {
+void AIDebugger::setNames(const core::DynamicArray<core::String>& names) {
 	core_trace_scoped(SetNames);
 	_names.clear();
 	_names.reserve(names.size());
@@ -334,7 +334,7 @@ void AIDebugger::setNames(const std::vector<core::String>& names) {
 	}
 }
 
-void AIDebugger::setEntities(const std::vector<ai::AIStateWorld>& entities) {
+void AIDebugger::setEntities(const core::DynamicArray<ai::AIStateWorld>& entities) {
 	core_trace_scoped(SetEntities);
 	_entities.clear();
 	for (const ai::AIStateWorld& state : entities) {

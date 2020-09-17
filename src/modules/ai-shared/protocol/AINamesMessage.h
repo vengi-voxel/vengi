@@ -4,8 +4,8 @@
 #pragma once
 
 #include "IProtocolMessage.h"
-#include <vector>
 #include "core/String.h"
+#include "core/collection/DynamicArray.h"
 
 namespace ai {
 
@@ -16,11 +16,11 @@ namespace ai {
  */
 class AINamesMessage: public IProtocolMessage {
 private:
-	std::vector<core::String> _names;
-	const std::vector<core::String>* _namesPtr;
+	core::DynamicArray<core::String> _names;
+	const core::DynamicArray<core::String>* _namesPtr;
 
 public:
-	explicit AINamesMessage(const std::vector<core::String>& names) :
+	explicit AINamesMessage(const core::DynamicArray<core::String>& names) :
 			IProtocolMessage(PROTO_NAMES), _namesPtr(&names) {
 	}
 
@@ -41,7 +41,7 @@ public:
 		}
 	}
 
-	inline const std::vector<core::String>& getNames() const {
+	inline const core::DynamicArray<core::String>& getNames() const {
 		if (_namesPtr)
 			return *_namesPtr;
 		return _names;

@@ -1,14 +1,15 @@
 /**
  * @file
  */
+
 #pragma once
 
-#include <vector>
 #include <glm/vec3.hpp>
 #include "core/String.h"
 #include "ai-shared/common/CharacterId.h"
 #include "ai-shared/common/TreeNodeStatus.h"
 #include "ai-shared/common/CharacterAttributes.h"
+#include "core/collection/DynamicArray.h"
 
 namespace ai {
 
@@ -30,7 +31,7 @@ struct AIStateAggroEntry {
  */
 class AIStateAggro {
 private:
-	std::vector<AIStateAggroEntry> _aggro;
+	core::DynamicArray<AIStateAggroEntry> _aggro;
 public:
 	inline void reserve(size_t size) {
 		if (size > 0u) {
@@ -42,7 +43,7 @@ public:
 		_aggro.push_back(entry);
 	}
 
-	inline const std::vector<AIStateAggroEntry>& getAggro() const {
+	inline const core::DynamicArray<AIStateAggroEntry>& getAggro() const {
 		return _aggro;
 	}
 };
@@ -109,7 +110,7 @@ class AIStateNode {
 private:
 	int32_t _nodeId;
 	core::String _condition;
-	typedef std::vector<AIStateNode> NodeVector;
+	typedef core::DynamicArray<AIStateNode> NodeVector;
 	NodeVector _children;
 	int64_t _lastRun;
 	TreeNodeStatus _status;
@@ -128,14 +129,14 @@ public:
 	}
 
 	void addChildren(AIStateNode&& child) {
-		_children.push_back(std::move(child));
+		_children.push_back(child);
 	}
 
-	inline const std::vector<AIStateNode>& getChildren() const {
+	inline const core::DynamicArray<AIStateNode>& getChildren() const {
 		return _children;
 	}
 
-	inline std::vector<AIStateNode>& getChildren() {
+	inline core::DynamicArray<AIStateNode>& getChildren() {
 		return _children;
 	}
 

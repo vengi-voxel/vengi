@@ -10,13 +10,12 @@
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/entity/ai/tree/TreeNode.h"
 #include "core/Trace.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/Set.h"
 #include "core/concurrent/Lock.h"
 
 #include "ai-shared/protocol/AIStubTypes.h"
 #include "ai-shared/protocol/ProtocolHandlerRegistry.h"
-
-#include <unordered_set>
-#include <vector>
 
 namespace backend {
 
@@ -48,8 +47,8 @@ class NopHandler;
  */
 class Server: public INetworkListener {
 protected:
-	typedef std::unordered_set<Zone*> Zones;
-	typedef Zones::const_iterator ZoneConstIter;
+	typedef core::Set<Zone*> Zones;
+	typedef Zones::iterator ZoneConstIter;
 	typedef Zones::iterator ZoneIter;
 	Zones _zones;
 	AIRegistry& _aiRegistry;
@@ -69,7 +68,7 @@ protected:
 	// the current active debugging zone
 	core::AtomicPtr<Zone> _zone;
 	core_trace_mutex(core::Lock, _lock, "AIServer");
-	std::vector<core::String> _names;
+	core::DynamicArray<core::String> _names;
 	uint32_t _broadcastMask = 0u;
 
 	enum EventType {
@@ -101,7 +100,7 @@ protected:
 
 	void resetSelection();
 
-	void addChildren(const TreeNodePtr& node, std::vector<ai::AIStateNodeStatic>& out) const;
+	void addChildren(const TreeNodePtr& node, core::DynamicArray<ai::AIStateNodeStatic>& out) const;
 	void addChildren(const TreeNodePtr& node, ai::AIStateNode& parent, const AIPtr& ai) const;
 
 	// only call these from the Server::update method

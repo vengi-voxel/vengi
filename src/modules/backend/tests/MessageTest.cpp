@@ -10,6 +10,7 @@
 #include "ai-shared/protocol/AINamesMessage.h"
 #include "ai-shared/protocol/AICharacterDetailsMessage.h"
 #include "ai-shared/protocol/AIStateMessage.h"
+#include "core/collection/DynamicArray.h"
 
 class MessageTest: public TestSuite {
 protected:
@@ -70,7 +71,7 @@ TEST_F(MessageTest, testAIPauseMessage) {
 }
 
 TEST_F(MessageTest, testAINamesMessage) {
-	std::vector<core::String> names;
+	core::DynamicArray<core::String> names;
 	names.push_back("Test");
 	ai::AINamesMessage m(names);
 	ai::AINamesMessage* d = serializeDeserialize(m);

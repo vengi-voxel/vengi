@@ -6,7 +6,6 @@
 #include "IProtocolMessage.h"
 #include "AIStubTypes.h"
 #include "core/Assert.h"
-#include <vector>
 
 namespace ai {
 
@@ -17,7 +16,7 @@ namespace ai {
  */
 class AIStateMessage: public IProtocolMessage {
 private:
-	typedef std::vector<AIStateWorld> States;
+	typedef core::DynamicArray<AIStateWorld> States;
 	States _states;
 
 	void readState (streamContainer& in) {
@@ -80,7 +79,7 @@ public:
 	}
 
 	void addState(AIStateWorld&& tree) {
-		_states.push_back(std::move(tree));
+		_states.push_back(tree);
 	}
 
 	void serialize(streamContainer& out) const override {
@@ -91,7 +90,7 @@ public:
 		}
 	}
 
-	inline const std::vector<AIStateWorld>& getStates() const {
+	inline const core::DynamicArray<AIStateWorld>& getStates() const {
 		return _states;
 	}
 };

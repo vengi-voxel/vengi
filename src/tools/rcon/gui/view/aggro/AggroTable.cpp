@@ -36,8 +36,8 @@ void AggroTable::selectEntity(const QModelIndex &current, const QModelIndex &pre
 		return;
 	}
 	const QModelIndex index = _proxyModel.mapToSource(current);
-	const std::vector<AIStateAggroEntry>& aggro = _debugger.getAggro();
-	const AIStateAggroEntry& aggroState = aggro.at(index.row());
+	const core::DynamicArray<AIStateAggroEntry>& aggro = _debugger.getAggro();
+	const AIStateAggroEntry& aggroState = aggro[index.row()];
 	_debugger.select(aggroState.id);
 }
 
