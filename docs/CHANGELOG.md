@@ -7,6 +7,7 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 General:
 
    - Added obj and ply export support
+   - Restructured the documentation
 
 ## 0.0.7 (2020-09-15)
 

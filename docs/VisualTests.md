@@ -14,11 +14,13 @@ Run these test applications with
 make __directoryname__-run
 ```
 
+or by directly executing the generated binary after compiling them.
+
 ## testanimation
 
 Test the voxel animation module with a default character and items of the stock module.
 
-See [README.md](testanimation/README.md) for more details.
+See [this](TestAnimation.md) for more details.
 
 ## testimgui
 
@@ -96,7 +98,7 @@ Just an empty template for new test applications.
 
 ## testtraze
 
-* [traze client](testtraze/README.md)
+* [traze client](Traze.md)
 
 ## testhttpserver
 

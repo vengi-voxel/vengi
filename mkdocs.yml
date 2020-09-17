@@ -30,4 +30,10 @@ nav:
       - VoxConvert: voxconvert/Index.md
       - Thumbnailer: thumbnailer/Index.md
       - MapView: mapview/Index.md
-  - Game Design: GameDesign.md
+  - Development:
+      - Visual Tests: VisualTests.md
+      - Game Design: GameDesign.md
+      - Shader integration: ShaderTool.md
+      - Compute Shader integration: ComputeShaderTool.md
+      - Persistence: Persistence.md
+      - AI development: AIRemoteDebugger.md
