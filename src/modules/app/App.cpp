@@ -22,9 +22,6 @@
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
 #include <signal.h>
 #if defined(__GLIBC__) && (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 2) && defined(DEBUG)
 #include <fenv.h>
@@ -648,20 +645,6 @@ AppState App::onCleanup() {
 		_metric->shutdown();
 	}
 
-#if defined(HAVE_SYS_RESOURCE_H)
-#if defined(HAVE_SYS_TIME_H)
-	struct rusage usage;
-	if (0 == getrusage(RUSAGE_SELF, &usage)) {
-		Log::info("Max resident set size used: %li kb", usage.ru_maxrss);
-		Log::info("Number of soft page faults: %li", usage.ru_minflt);
-		Log::info("Number of page faults: %li", usage.ru_majflt);
-		Log::info("Filesystem inputs: %li", usage.ru_inblock);
-		Log::info("Filesystem outputs: %li", usage.ru_oublock);
-		Log::info("System cpu time: %li ms", usage.ru_stime.tv_sec * 1000L + usage.ru_stime.tv_usec / 1000L);
-		Log::info("User cpu time: %li ms", usage.ru_utime.tv_sec * 1000L + usage.ru_utime.tv_usec / 1000L);
-	}
-#endif
-#endif
 	SDL_Quit();
 
 	return AppState::Destroy;
