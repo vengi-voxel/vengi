@@ -1,9 +1,13 @@
 site_name: vengi - voxel engine and its tools
-
+site_author: Martin Gerhardy
+site_description: Voxel editor for linux windows and macosx
 docs_dir: docs
 site_dir: build/docs
+repo_url: https://github.com/mgerhardy/engine
+repo_name: GitHub
 
 theme:
+  custom_dir: docs/theme
   name: readthedocs
   highlightjs: true
   hljs_languages: [cpp]
