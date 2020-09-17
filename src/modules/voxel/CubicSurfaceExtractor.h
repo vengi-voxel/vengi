@@ -98,7 +98,7 @@ typedef std::vector<QuadList> QuadListVector;
 extern IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t z, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset);
 
-extern void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads);
+extern void meshify(Mesh* result, bool mergeQuads, bool ambientOcclusion, QuadListVector& vecListQuads);
 
 /**
  * The CubicSurfaceExtractor creates a mesh in which each voxel appears to be rendered as a cube
@@ -187,7 +187,7 @@ extern void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads)
  * @li The user could provide a custom mesh class, e.g a thin wrapper around an openGL VBO to allow direct writing into this structure.
  */
 template<typename VolumeType, typename IsQuadNeeded>
-void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, IsQuadNeeded isQuadNeeded, const glm::ivec3& translate, bool mergeQuads = true, bool reuseVertices = true) {
+void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, IsQuadNeeded isQuadNeeded, const glm::ivec3& translate, bool mergeQuads = true, bool reuseVertices = true, bool ambientOcclusion = true) {
 	core_trace_scoped(ExtractCubicMesh);
 
 	result->clear();
@@ -408,7 +408,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	{
 		core_trace_scoped(GenerateMesh);
 		for (QuadListVector& vecListQuads : vecQuads) {
-			meshify(result, mergeQuads, vecListQuads);
+			meshify(result, mergeQuads, ambientOcclusion, vecListQuads);
 		}
 	}
 

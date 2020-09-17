@@ -29,6 +29,7 @@ app::AppState VoxConvert::onConstruct() {
 
 	core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->setHelp("Merge similar quads to optimize the mesh");
 	core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->setHelp("Reuse vertices or always create new ones");
+	core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->setHelp("Extra vertices for ambient occlusion");
 
 	_palette = core::Var::get("palette", voxel::getDefaultPaletteName());
 	_palette->setHelp("This is the NAME part of palette-<NAME>.pngor absolute png file to use (1x256)");
