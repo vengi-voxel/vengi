@@ -1,0 +1,130 @@
+namespace ai;
+
+struct Vec3 {
+	x:float;
+	y:float;
+	z:float;
+}
+
+table MapEntry {
+	key:string (required);
+	value:string;
+}
+
+table Step {
+	millis:long;
+}
+
+table Reset {
+}
+
+table Ping {
+}
+
+table Names {
+	names:[string];
+}
+
+table Select {
+	character_id:long;
+}
+
+table Pause {
+	pause:bool;
+}
+
+table ChangeZone {
+	name:string (required);
+}
+
+table AddNode {
+	parent_node_id:uint;
+	character_id:long;
+	name:string (required);
+	type:string (required);
+	condition:string (required);
+}
+
+table DeleteNode {
+	node_id:uint;
+	character_id:long;
+}
+
+table UpdateNode {
+	node_id:uint;
+	character_id:long;
+	name:string (required);
+	type:string (required);
+	condition:string (required);
+}
+
+table StateAggroEntry {
+	character_id:long;
+	aggro:float;
+}
+
+table StateAggro {
+	aggro:[StateAggroEntry];
+}
+
+table StateNodeStatic {
+	node_id:uint;
+	name:string (required);
+	type:string (required);
+	parameters:string (required);
+	condition_type:string (required);
+	condition_parameters:string (required);
+}
+
+table StateNode {
+	node_id:uint;
+	condition:string (required);
+	children:[StateNode];
+	last_run:long;
+	status:byte;
+	currently_running:bool;
+}
+
+table State {
+	character_id:long;
+	position:Vec3 (required);
+	orientation:float;
+	attributes:[MapEntry];
+}
+
+table StateWorld {
+	states:[State];
+}
+
+table CharacterStatic {
+	character_id:long;
+	node_statics:[StateNodeStatic];
+}
+
+table CharacterDetails {
+	character_id:long;
+	aggro:StateAggro;
+	root:StateNode;
+}
+
+union MsgType {
+	Names,
+	Select,
+	Pause,
+	Reset,
+	Ping,
+	Step,
+	ChangeZone,
+	AddNode,
+	DeleteNode,
+	UpdateNode,
+	StateWorld,
+	CharacterDetails,
+	CharacterStatic
+}
+
+table Message {
+	data:MsgType;
+}
+
+root_type Message;
