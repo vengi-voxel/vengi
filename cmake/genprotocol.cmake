@@ -20,16 +20,16 @@ macro(generate_protocol TARGET)
 			find_program(FLATC_EXECUTABLE NAMES vengi-flatc PATHS ${NATIVE_BUILD_DIR}/flatc)
 			add_custom_command(
 				OUTPUT ${GEN_DIR}${HEADER}
-				COMMAND ${FLATC_EXECUTABLE} -c -I ${CMAKE_CURRENT_SOURCE_DIR}/../attrib/definitions --scoped-enums -o ${GEN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
-				DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
+				COMMAND ${FLATC_EXECUTABLE} -c --scoped-enums -o ${GEN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/protocolq/${DEFINITION}
+				DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/protocol/${DEFINITION}
 				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 				COMMENT "Generating source code for ${DEFINITION}"
 			)
 		else()
 			add_custom_command(
 				OUTPUT ${GEN_DIR}${HEADER}
-				COMMAND flatc -c -I ${CMAKE_CURRENT_SOURCE_DIR}/../attrib/definitions --scoped-enums -o ${GEN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
-				DEPENDS flatc ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
+				COMMAND flatc -c --scoped-enums -o ${GEN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/protocol/${DEFINITION}
+				DEPENDS flatc ${CMAKE_CURRENT_SOURCE_DIR}/protocol/${DEFINITION}
 				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 				COMMENT "Generating source code for ${DEFINITION}"
 			)
