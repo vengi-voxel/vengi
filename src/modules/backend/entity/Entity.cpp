@@ -13,8 +13,8 @@
 #include "math/Frustum.h"
 #include "backend/world/Map.h"
 #include "poi/PoiProvider.h"
-#include "network/ServerMessageSender.h"
-#include "network/ProtocolEnum.h"
+#include "backend/network/ServerMessageSender.h"
+#include "shared/ProtocolEnum.h"
 #include "attrib/ContainerProvider.h"
 #include <glm/trigonometric.hpp>
 

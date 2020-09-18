@@ -8,7 +8,7 @@
 #include "core/Trace.h"
 #include "core/EventBus.h"
 #include "core/IComponent.h"
-#include "network/ServerNetwork.h"
+#include "backend/network/ServerNetwork.h"
 #include "network/NetworkEvents.h"
 #include "backend/ForwardDecl.h"
 #include "backend/world/World.h"

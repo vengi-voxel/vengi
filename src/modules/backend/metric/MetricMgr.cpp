@@ -7,7 +7,7 @@
 #include "core/EventBus.h"
 #include "backend/entity/Entity.h"
 #include "metric/UDPMetricSender.h"
-#include "network/ProtocolEnum.h"
+#include "shared/ProtocolEnum.h"
 #include "backend/world/Map.h"
 
 namespace backend {

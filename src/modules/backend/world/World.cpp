@@ -3,7 +3,7 @@
  */
 
 #include "World.h"
-#include "network/ProtocolEnum.h"
+#include "shared/ProtocolEnum.h"
 #include "command/Command.h"
 #include "backend/spawn/SpawnMgr.h"
 #include "backend/world/MapProvider.h"

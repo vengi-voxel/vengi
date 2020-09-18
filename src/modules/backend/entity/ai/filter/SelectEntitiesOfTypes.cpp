@@ -7,7 +7,7 @@
 #include "core/Common.h"
 #include "backend/entity/Npc.h"
 #include "backend/entity/ai/AICharacter.h"
-#include "network/ProtocolEnum.h"
+#include "shared/ProtocolEnum.h"
 #include "core/Enum.h"
 #include "core/collection/DynamicArray.h"
 

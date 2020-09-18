@@ -9,7 +9,7 @@ set(LIB cooldown)
 set(FILES
 	shared/cooldowns.lua
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES commonlua network)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES commonlua shared)
 
 set(TEST_SRCS
 	tests/CooldownProviderTest.cpp

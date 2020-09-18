@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ProtocolHandlerRegistry.h"
 #include "core/Log.h"
 

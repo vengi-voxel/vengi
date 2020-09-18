@@ -11,7 +11,7 @@
 #include "network/NetworkEvents.h"
 #include "network/ProtocolHandlerRegistry.h"
 
-#include "network/ServerNetwork.h"
+#include "backend/network/ServerNetwork.h"
 
 namespace backend {
 

@@ -4,6 +4,7 @@
 
 #include "ClientPager.h"
 #include "app/App.h"
+#include "core/Log.h"
 #include "http/ResponseParser.h"
 #include "http/HttpMimeType.h"
 #include "voxel/Region.h"

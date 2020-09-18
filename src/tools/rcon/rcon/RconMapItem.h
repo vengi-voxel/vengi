@@ -3,7 +3,7 @@
 #include "MapItem.h"
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
-#include "network/ProtocolEnum.h"
+#include "shared/ProtocolEnum.h"
 #include "Settings.h"
 #include "core/Trace.h"
 

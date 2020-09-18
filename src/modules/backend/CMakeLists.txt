@@ -20,6 +20,8 @@ set(SRCS
 	network/UserConnectedHandler.h
 	network/UserDisconnectHandler.h
 	network/VarUpdateHandler.h
+	network/ServerMessageSender.h network/ServerMessageSender.cpp
+	network/ServerNetwork.h network/ServerNetwork.cpp
 
 	metric/MetricMgr.cpp metric/MetricMgr.h
 
@@ -206,7 +208,6 @@ set(TEST_FILES
 )
 set(TEST_SRCS
 	tests/AITest.cpp
-	tests/ConnectTest.cpp
 	tests/UserCooldownMgrTest.cpp
 	tests/MapProviderTest.cpp
 	tests/MapTest.cpp

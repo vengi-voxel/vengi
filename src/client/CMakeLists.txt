@@ -1,23 +1,9 @@
 project(client)
+add_subdirectory(modules)
+
 set(SRCS
 	Client.h Client.cpp
 	ClientLUA.h ClientLUA.cpp
-
-	voxel/ClientPager.h
-	voxel/ClientPager.cpp
-
-	cooldown/CooldownHandler.h
-
-	network/AttribUpdateHandler.h
-	network/AuthFailedHandler.h
-	network/EntitySpawnHandler.h
-	network/UserInfoHandler.h
-	network/UserSpawnHandler.h
-	network/EntityUpdateHandler.h
-	network/EntityRemoveHandler.h
-	network/VarUpdateHandler.h
-	network/StartCooldownHandler.h
-	network/StopCooldownHandler.h
 )
 
 set(LUA_SRCS
@@ -41,6 +27,7 @@ set(FILES
 	shared/biomes.lua
 	shared/worldparams.lua
 )
+set(DEPENDENCIES nuklear voxelworldrender client-network client-cooldown client-voxel)
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES nuklear voxelworldrender voxelworld http)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ${DEPENDENCIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} modules)

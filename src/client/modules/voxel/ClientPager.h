@@ -6,7 +6,6 @@
 
 #include "voxelworld/FilePersister.h"
 #include "voxel/PagedVolume.h"
-#include "network/ClientMessageSender.h"
 #include "http/HttpClient.h"
 #include "core/SharedPtr.h"
 
