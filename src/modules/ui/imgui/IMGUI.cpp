@@ -79,6 +79,12 @@ void TooltipText(const char* text) {
 	}
 }
 
+void TextCentered(const char *text) {
+	const float w = ImGui::CalcTextSize(text).x;
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - w) * 0.5f);
+	ImGui::TextUnformatted(text);
+}
+
 void Image(video::Id handle, const glm::ivec2& size) {
 	ImGui::Image((void*)(intptr_t)handle, ImVec2(size.x, size.y));
 }

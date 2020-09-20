@@ -39,7 +39,5 @@ static bool ComboStl(const char* label, int* current_item, const Collection& ite
 		(void*) &items, (int)items.size(), height_in_items);
 }
 IMGUI_API void TooltipText(const char* text);
-
-
-
+IMGUI_API void TextCentered(const char *text);
 }
