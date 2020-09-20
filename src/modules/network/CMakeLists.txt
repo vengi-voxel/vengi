@@ -1,4 +1,5 @@
 set(SRCS
+	AbstractClientNetwork.h AbstractClientNetwork.cpp
 	IProtocolHandler.h
 	IMsgProtocolHandler.h
 	Network.cpp Network.h
