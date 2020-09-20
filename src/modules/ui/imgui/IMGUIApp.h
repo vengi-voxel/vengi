@@ -37,6 +37,9 @@ protected:
 	core::String _writePathIni;
 	core::String _writePathLog;
 
+	ImFont* _defaultFont = nullptr;
+	ImFont* _bigFont = nullptr;
+
 	void executeDrawCommands();
 
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;

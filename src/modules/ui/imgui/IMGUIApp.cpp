@@ -199,10 +199,14 @@ app::AppState IMGUIApp::onInit() {
 	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
 	//io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
+
 	ImFontConfig fontCfg;
 	fontCfg.SizePixels = 15.0f * _dpiFactor;
+	_defaultFont = io.Fonts->AddFontDefault(&fontCfg);
 
-	io.Fonts->AddFontDefault(&fontCfg);
+	ImFontConfig bigFontCfg;
+	bigFontCfg.SizePixels = 25.0f * _dpiFactor;
+	_bigFont = io.Fonts->AddFontDefault(&bigFontCfg);
 
 	ImGui::StyleColorsDark();
 	ImGuiStyle &style = ImGui::GetStyle();
