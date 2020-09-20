@@ -17,10 +17,10 @@ if (OpenCL_INCLUDE_DIRS)
 		cl/CLTypes.h
 		cl/CLSymbol.c cl/CLSymbol.h
 	)
-	set(OPENCL_LIBRARY ${OpenCL_LIBRARY} CACHE FORCE "")
-	set(HAVE_OPENCL 1 CACHE FORCE "")
+	set(OPENCL_LIBRARY ${OpenCL_LIBRARY} CACHE STRING "" FORCE)
+	set(HAVE_OPENCL 1 CACHE STRING "" FORCE)
 else()
-	set(HAVE_OPENCL 0 CACHE FORCE "")
+	set(HAVE_OPENCL 0 CACHE STRING "" FORCE)
 	list(APPEND SRCS dummy/DummyCompute.cpp)
 endif()
 
