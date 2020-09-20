@@ -150,7 +150,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DRCON=OFF -DCMAKE_BUILD_TYPE=Release
+            cmake .. -DCMAKE_BUILD_TYPE=Release
             cmake --build .
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component mapview --prefix mapview-install

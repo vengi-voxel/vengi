@@ -17,7 +17,6 @@
   * gtest
   * opencl (optional)
   * libuuid
-  * qt (for the rcon tool)
   * mosquitto (optional)
 
 Some of these dependencies might not be available as packages in your toolchain - most
@@ -28,7 +27,7 @@ the higher priority.
 
 ```bash
 apt-get install libglm-dev lua5.4 liblua5.4-dev libsdl2-dev postgresql-server-dev-all \
-    libpq-dev libenet-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers \
+    libpq-dev libenet-dev opencl-c-headers \
     wayland-protocols pkg-config uuid-dev libsdl2-mixer-dev libuv1-dev
 ```
 
