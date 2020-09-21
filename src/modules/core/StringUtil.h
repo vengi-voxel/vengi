@@ -46,6 +46,10 @@ inline double toDouble(const core::String& str) {
 	return (double)SDL_atof(str.c_str());
 }
 
+inline double toDouble(const char* str) {
+	return (double)SDL_atof(str);
+}
+
 /**
  * @brief Modifies the string input buffer by looking for the given token, replace the start of the token with @c \0
  * and returns the position after the given token.
