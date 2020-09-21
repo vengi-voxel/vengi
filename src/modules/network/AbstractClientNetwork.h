@@ -10,9 +10,10 @@ namespace network {
 
 class AbstractClientNetwork : public Network {
 private:
+	using Super = Network;
+protected:
 	ENetHost* _client = nullptr;
 	ENetPeer* _peer = nullptr;
-	using Super = Network;
 public:
 	AbstractClientNetwork(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, const core::EventBusPtr& eventBus);
 

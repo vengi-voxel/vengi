@@ -32,7 +32,7 @@ public:
 	virtual void execute(ENetPeer* peer, const void* message) override {
 		auto* attachment = getAttachment<ATTACHMENTTYPE>(peer);
 		if (_needsAttachment && attachment == nullptr) {
-			::Log::error("No attachment yet for a message that needs one: %s", _msgType);
+			Log::error("No attachment yet for a message that needs one: %s", _msgType);
 			return;
 		}
 		const auto* msg = getMsg<MSGTYPE>(message);
