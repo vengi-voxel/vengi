@@ -110,7 +110,7 @@ update-backward:
 	sed -i 's/backward.hpp/backward.h/g' contrib/libs/backward/backward.cpp
 
 update-dearimgui:
-	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
+	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git -b tables)
 	cp $(UPDATEDIR)/imgui.sync/im*.h $(UPDATEDIR)/imgui.sync/im*.cpp $(UPDATEDIR)/imgui.sync/misc/cpp/* contrib/libs/dearimgui/dearimgui
 	mv contrib/libs/dearimgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
 	sed -i 's/"imgui.h"/"ui\/imgui\/IMGUI.h"/g' src/tests/testimgui/Demo.cpp
