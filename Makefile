@@ -154,16 +154,16 @@ update-sdl2mixer:
 
 update-glslang:
 	$(call UPDATE_GIT,glslang,https://github.com/KhronosGroup/glslang.git)
-	rm -rf src/tools/glslang/External
-	cp -r $(UPDATEDIR)/glslang.sync/External src/tools/glslang/
-	rm -rf src/tools/glslang/glslang
-	cp -r $(UPDATEDIR)/glslang.sync/glslang src/tools/glslang/
-	rm -rf src/tools/glslang/OGLCompilersDLL
-	cp -r $(UPDATEDIR)/glslang.sync/OGLCompilersDLL src/tools/glslang/
-	rm -rf src/tools/glslang/SPIRV
-	cp -r $(UPDATEDIR)/glslang.sync/SPIRV src/tools/glslang/
-	rm -rf src/tools/glslang/StandAlone
-	cp -r $(UPDATEDIR)/glslang.sync/StandAlone src/tools/glslang/
+	rm -rf tools/glslang/External
+	cp -r $(UPDATEDIR)/glslang.sync/External tools/glslang/
+	rm -rf tools/glslang/glslang
+	cp -r $(UPDATEDIR)/glslang.sync/glslang tools/glslang/
+	rm -rf tools/glslang/OGLCompilersDLL
+	cp -r $(UPDATEDIR)/glslang.sync/OGLCompilersDLL tools/glslang/
+	rm -rf tools/glslang/SPIRV
+	cp -r $(UPDATEDIR)/glslang.sync/SPIRV tools/glslang/
+	rm -rf tools/glslang/StandAlone
+	cp -r $(UPDATEDIR)/glslang.sync/StandAlone tools/glslang/
 
 update-simplecpp:
 	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)

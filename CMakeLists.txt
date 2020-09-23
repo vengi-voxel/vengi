@@ -172,6 +172,7 @@ include_directories(src/modules/compute/shaders)
 include_directories(src/modules)
 
 add_subdirectory(contrib/libs)
+add_subdirectory(tools)
 
 if (UNITTESTS)
 	enable_testing()
