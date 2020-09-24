@@ -18,6 +18,7 @@
 // Dont't remove `format off`, it prevent reordering of win-includes.
 
 #  define _POSIX_C_SOURCE 200809L
+#  undef _XOPEN_SOURCE
 #  define _XOPEN_SOURCE 700L
 
 #ifdef _WIN32
