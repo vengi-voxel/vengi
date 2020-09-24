@@ -106,8 +106,8 @@ bool ToggleButton(const char *text, bool state) {
 	if (state) {
 		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4& buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
-		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::darker(buttonColor));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::darker(buttonHoveredColor));
+		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::brighter(buttonColor));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::brighter(buttonHoveredColor));
 	}
 	const bool pressed = ImGui::Button(text);
 	if (state) {
