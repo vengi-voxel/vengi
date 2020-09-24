@@ -45,7 +45,7 @@ bool IsCloseToSelection::evaluate(const AIPtr& entity) {
 		foundValidResult = true;
 		const glm::vec3& pos = ai->getCharacter()->getPosition();
 		const float distance = glm::distance(pos, ownPos);
-		if (distance > _distance) {
+		if (distance > (float)_distance) {
 			return false;
 		}
 	}
