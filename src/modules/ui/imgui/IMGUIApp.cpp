@@ -299,6 +299,11 @@ app::AppState IMGUIApp::onRunning() {
 
 	_console.update(_deltaFrameSeconds);
 
+	if (_uiFontSize->isDirty()) {
+		loadFonts();
+		_uiFontSize->markClean();
+	}
+
 	ImGuiIO& io = ImGui::GetIO();
 	io.MousePos = ImVec2(_mousePos.x, _mousePos.y);
 
