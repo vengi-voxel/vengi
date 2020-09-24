@@ -40,18 +40,24 @@ bool ServerMessageSender::sendServerMessage(ENetPeer** peers, int numPeers, Flat
 	Log::debug(logid, "Send %s to %i peers", msgType, numPeers);
 	core_assert(numPeers > 0);
 	int sent = 0;
+	int notsent = 0;
 	auto packet = createServerPacket(fbb, type, data, flags);
 	const metric::TagMap& tags {{"direction", "out"}, {"type", msgType}};
 	{
 		// TODO: lock
 		for (int i = 0; i < numPeers; ++i) {
 			if (!_network->sendMessage(peers[i], packet)) {
-				_metric->count("network_not_sent", 1, tags);
+				++notsent;
 				Log::trace(logid, "Could not send message of type %s to peer %i", msgType, i);
 			} else {
-				_metric->count("network_sent", 1, tags);
 				++sent;
 			}
+		}
+		if (notsent > 0) {
+			_metric->count("network_not_sent", notsent, tags);
+		}
+		if (sent > 0) {
+			_metric->count("network_sent", sent, tags);
 		}
 	}
 	fbb.Clear();
