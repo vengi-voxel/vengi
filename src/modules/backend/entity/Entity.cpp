@@ -152,7 +152,6 @@ void Entity::broadcastAttribUpdate() {
 	// TODO: send current and max values to the clients
 	// TODO: collect which of them are dirty, and maintain a list of
 	// those that are for the owning client only or which of them must be broadcasted
-	_attribUpdateFBB.Clear();
 	auto iter = _dirtyAttributeTypes.begin();
 	auto attribs = _attribUpdateFBB.CreateVector<flatbuffers::Offset<network::AttribEntry>>(_dirtyAttributeTypes.size(),
 		[&] (size_t i) {
