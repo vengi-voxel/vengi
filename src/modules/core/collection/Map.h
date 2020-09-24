@@ -28,6 +28,13 @@ struct DefaultHasher {
 	}
 };
 
+struct SharedPtrHasher {
+	template<typename T>
+	inline size_t operator() (const T& o) const {
+		return (size_t)(intptr_t)o.get();
+	}
+};
+
 }
 
 /**
