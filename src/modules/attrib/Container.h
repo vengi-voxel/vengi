@@ -82,8 +82,8 @@ private:
 	int _stackLimit;
 public:
 	ContainerBuilder(const core::String& name, int stackLimit = 1);
-	ContainerBuilder& addPercentage(Type type, double value);
-	ContainerBuilder& addAbsolute(Type type, double value);
+	ContainerBuilder& setPercentage(Type type, double value);
+	ContainerBuilder& setAbsolute(Type type, double value);
 
 	Container create() const;
 };

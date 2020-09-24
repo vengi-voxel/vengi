@@ -67,7 +67,7 @@ double Npc::applyDamage(Entity* attacker, double damage) {
 	if (health > 0.0) {
 		health = core_max(0.0, health - damage);
 		if (attacker != nullptr) {
-			_ai->getAggroMgr().addAggro(attacker->id(), damage);
+			_ai->getAggroMgr().addAggro(attacker->id(), (float)damage);
 		}
 		setCurrent(attrib::Type::HEALTH, health);
 		return damage;

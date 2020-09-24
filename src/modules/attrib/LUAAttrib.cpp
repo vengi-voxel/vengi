@@ -50,7 +50,7 @@ static int luaattrib_container_addabsolute(lua_State * l) {
 		return clua_error(l, "Unknown type given for addAbsolute(%s, %f)", type, value);
 	}
 	Values v = ctx->absolute();
-	v.put(attribType, value);
+	v[core::enumVal(attribType)] = value;
 	ctx->setAbsolute(v);
 	return 0;
 }
@@ -77,7 +77,7 @@ static int luaattrib_container_addpercentage(lua_State * l) {
 		return clua_error(l, "Unknown type given for addPercentage(%s, %f)", type, value);
 	}
 	Values v = ctx->percentage();
-	v.put(attribType, value);
+	v[core::enumVal(attribType)] = value;
 	ctx->setPercentage(v);
 	return 0;
 }

@@ -6,6 +6,7 @@
 #include "attrib/Container.h"
 #include "app/tests/AbstractTest.h"
 #include "attrib/ContainerProvider.h"
+#include "core/Enum.h"
 #include "gtest/gtest.h"
 
 const char *TestLoadingSuccess = R"(
@@ -33,11 +34,8 @@ TEST_F(ContainerProviderTest, testLoadingSuccess) {
 	ASSERT_TRUE(p.init(TestLoadingSuccess)) << p.error();
 	const ContainerPtr& c = p.container("test1");
 	ASSERT_TRUE(c) << "Could not find container test1";
-	double value;
-	EXPECT_TRUE(c->absolute().get(network::AttribType::ATTACKRANGE, value));
-	EXPECT_DOUBLE_EQ(2.0, value);
-	EXPECT_TRUE(c->percentage().get(network::AttribType::ATTACKRANGE, value));
-	EXPECT_DOUBLE_EQ(25.0, value);
+	EXPECT_DOUBLE_EQ(2.0, c->absolute()[core::enumVal(Type::ATTACKRANGE)]);
+	EXPECT_DOUBLE_EQ(25.0, c->percentage()[core::enumVal(Type::ATTACKRANGE)]);
 }
 
 TEST_F(ContainerProviderTest, testLoadingUnknownType) {

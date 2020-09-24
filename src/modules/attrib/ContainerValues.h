@@ -10,8 +10,6 @@
 
 namespace attrib {
 
-typedef core::Map<Type, double, 8, network::EnumHash<Type> > Values;
-typedef Values::iterator ValuesConstIter;
-typedef Values::iterator ValuesIter;
+typedef core::Array<double, (int)Type::MAX + 1> Values;
 
 }

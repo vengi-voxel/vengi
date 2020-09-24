@@ -3,6 +3,7 @@
  */
 
 #include "Container.h"
+#include "core/Enum.h"
 
 namespace attrib {
 
@@ -18,6 +19,8 @@ Container::Container(core::String&& name, Values&& percentage, Values&& absolute
 
 Container::Container(const core::String& name) :
 	_name(name), _stackCount(1), _stackLimit(1), _hash(core::StringHash{}(_name)) {
+	_percentage.fill(0.0);
+	_absolute.fill(0.0);
 }
 
 const core::String& Container::name() const {
@@ -85,15 +88,17 @@ bool Container::operator==(const Container& other) {
 
 ContainerBuilder::ContainerBuilder(const core::String& name, int stackLimit) :
 		_name(name), _stackLimit(stackLimit) {
+	_percentage.fill(0.0);
+	_absolute.fill(0.0);
 }
 
-ContainerBuilder& ContainerBuilder::addPercentage(Type type, double value) {
-	_percentage.put(type, value);
+ContainerBuilder& ContainerBuilder::setPercentage(Type type, double value) {
+	_percentage[core::enumVal(type)] = value;
 	return *this;
 }
 
-ContainerBuilder& ContainerBuilder::addAbsolute(Type type, double value) {
-	_absolute.put(type, value);
+ContainerBuilder& ContainerBuilder::setAbsolute(Type type, double value) {
+	_absolute[core::enumVal(type)] = value;
 	return *this;
 }
 

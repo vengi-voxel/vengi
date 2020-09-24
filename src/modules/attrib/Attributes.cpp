@@ -5,38 +5,10 @@
 #include "Attributes.h"
 #include "core/Common.h"
 #include "core/Trace.h"
-#include <unordered_set>
+#include <glm/common.hpp>
+#include <glm/ext/scalar_constants.hpp>
 
 namespace attrib {
-
-typedef std::unordered_set<Type, network::EnumHash<Type> > TypeSet;
-
-TypeSet mapFindChangedValues(const Values& in1, const Values& in2) {
-	TypeSet result;
-	for (const auto& e : in1) {
-		const Type& key = e->key;
-		const auto& i = in2.find(key);
-		if (i == in2.end()) {
-			result.insert(key);
-			continue;
-		}
-		const double oldValue = i->value;
-		const double newValue = e->value;
-		if (SDL_fabs(newValue - oldValue) > (double)0.000001) {
-			result.insert(key);
-		}
-	}
-	for (const auto& e : in2) {
-		const Type& key = e->key;
-		auto i = in1.find(key);
-		if (i == in2.end()) {
-			result.insert(key);
-			continue;
-		}
-	}
-
-	return result;
-}
 
 Attributes::Attributes(Attributes* parent) :
 		_dirty(false), _lock("Attributes"), _attribLock("Attributes2"), _parent(parent) {
@@ -59,24 +31,22 @@ bool Attributes::update(long dt) {
 	Values percentages;
 	calculateMax(max, percentages);
 
-	for (const auto& p : percentages) {
-		double value;
-		if (!max.get(p->key, value)) {
+	for (size_t i = 0; i < percentages.size(); ++i) {
+		if (max[i] <= glm::epsilon<double>()) {
 			continue;
 		}
-		value *= 1.0 + (p->value * 0.01);
-		max.put(p->key, value);
+		max[i] *= 1.0 + (percentages[i] * 0.01);
 	}
 
 	core::ScopedReadLock scopedLock(_attribLock);
 	if (!_listeners.empty()) {
-		const TypeSet& diff = mapFindChangedValues(_max, max);
-		for (const Type& e : diff) {
-			double value;
-			if (!max.get(e, value)) {
+		for (size_t i = 0; i < max.size(); ++i) {
+			const double oldValue = _max[i];
+			const double newValue = max[i];
+			if (glm::abs(newValue - oldValue) <= glm::epsilon<double>()) {
 				continue;
 			}
-			const DirtyValue v{e, false, value};
+			const DirtyValue v{(Type)i, false, max[i]};
 			for (const auto& listener : _listeners) {
 				listener(v);
 			}
@@ -85,15 +55,11 @@ bool Attributes::update(long dt) {
 	_max = max;
 
 	// cap your currents to the max allowed value
-	for (ValuesIter i = _current.begin(); i != _current.end(); ++i) {
-		ValuesIter mi = _max.find(i->key);
-		if (mi == _max.end()) {
-			continue;
-		}
-		double old = i->value;
-		i->value = core_min(mi->value, i->value);
-		if (SDL_fabs(old - i->value) > (double)0.000001) {
-			const DirtyValue v{i->key, true, i->value};
+	for (size_t i = 0; i < _current.size(); ++i) {
+		const double old = _current[i];
+		_current[i] = core_min(_max[i], old);
+		if (glm::abs(old - _current[i]) > glm::epsilon<double>()) {
+			const DirtyValue v{(Type)i, true, _current[i]};
 			for (const auto& listener : _listeners) {
 				listener(v);
 			}
@@ -103,6 +69,9 @@ bool Attributes::update(long dt) {
 }
 
 void Attributes::calculateMax(Values& absolutes, Values& percentages) const {
+	absolutes.fill(0.0);
+	percentages.fill(0.0);
+
 	if (_parent != nullptr) {
 		_parent->calculateMax(absolutes, percentages);
 	}
@@ -112,26 +81,17 @@ void Attributes::calculateMax(Values& absolutes, Values& percentages) const {
 		core::ScopedReadLock scopedLock(_lock);
 		containers = _containers;
 	}
+
 	for (const auto& e : containers) {
 		const Container& c = e->value;
 		const double stackCount = c.stackCount();
 		const Values& abs = c.absolute();
-		for (ValuesConstIter i = abs.begin(); i != abs.end(); ++i) {
-			auto v = absolutes.find(i->key);
-			if (v == absolutes.end()) {
-				absolutes.put(i->key, i->value * stackCount);
-			} else {
-				v->value += i->value * stackCount;
-			}
+		for (size_t i = 0; i < abs.size(); ++i) {
+			absolutes[i] += abs[i] * stackCount;
 		}
 		const Values& rel = c.percentage();
-		for (ValuesConstIter i = rel.begin(); i != rel.end(); ++i) {
-			auto v = percentages.find(i->key);
-			if (v == percentages.end()) {
-				percentages.put(i->key, i->value * stackCount);
-			} else {
-				v->value += i->value * stackCount;
-			}
+		for (size_t i = 0; i < rel.size(); ++i) {
+			percentages[i] += rel[i] * stackCount;
 		}
 	}
 }
@@ -188,17 +148,9 @@ void Attributes::remove(const core::String& name) {
 
 double Attributes::setCurrent(Type type, double value) {
 	core::ScopedWriteLock scopedLock(_attribLock);
-	auto i = _max.find(type);
-	if (i == _max.end()) {
-		const DirtyValue v{type, true, value};
-		_current.put(type, value);
-		for (const auto& listener : _listeners) {
-			listener(v);
-		}
-		return value;
-	}
-	const double max = core_min(i->second, value);
-	_current.put(type, max);
+	const auto idx = core::enumVal(type);
+	const double max = _max[idx] <= glm::epsilon<double>() ? value : core_min(_max[idx], value);
+	_current[idx] = max;
 	const DirtyValue v{type, true, max};
 	for (const auto& listener : _listeners) {
 		listener(v);
@@ -207,14 +159,14 @@ double Attributes::setCurrent(Type type, double value) {
 }
 
 void Attributes::markAsDirty() {
-	for (ValuesIter i = _current.begin(); i != _current.end(); ++i) {
-		const DirtyValue v{i->first, true, i->second};
+	for (size_t i = 0; i < _current.size(); ++i) {
+		const DirtyValue v{(Type)i, true, _current[i]};
 		for (const auto& listener : _listeners) {
 			listener(v);
 		}
 	}
-	for (ValuesIter i = _max.begin(); i != _max.end(); ++i) {
-		const DirtyValue v{i->first, false, i->second};
+	for (size_t i = 0; i < _max.size(); ++i) {
+		const DirtyValue v{(Type)i, false, _max[i]};
 		for (const auto& listener : _listeners) {
 			listener(v);
 		}

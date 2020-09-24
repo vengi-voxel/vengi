@@ -175,20 +175,12 @@ public:
 
 inline double Attributes::current(Type type) const {
 	core::ScopedReadLock scopedLock(_attribLock);
-	auto i = _current.find(type);
-	if (i == _current.end()) {
-		return 0.0;
-	}
-	return i->second;
+	return _current[core::enumVal(type)];
 }
 
 inline double Attributes::max(Type type) const {
 	core::ScopedReadLock scopedLock(_attribLock);
-	auto i = _max.find(type);
-	if (i == _max.end()) {
-		return 0.0;
-	}
-	return i->second;
+	return _max[core::enumVal(type)];
 }
 
 inline void Attributes::setName(const core::String& name) {

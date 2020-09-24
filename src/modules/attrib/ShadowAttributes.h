@@ -29,29 +29,22 @@ public:
 		return true;
 	}
 
-	inline void setMax(Type type, double value) {
-		_max.put(type, value);
-	}
-
-	double setCurrent(Type type, double value) {
-		_current.put(type, value);
+	inline double setMax(Type type, double value) {
+		_max[core::enumVal(type)] = value;
 		return value;
 	}
 
-	double current(Type type) const {
-		auto i = _current.find(type);
-		if (i == _current.end()) {
-			return 0.0;
-		}
-		return i->value;
+	inline double setCurrent(Type type, double value) {
+		_current[core::enumVal(type)] = value;
+		return value;
 	}
 
-	double max(Type type) const {
-		auto i = _max.find(type);
-		if (i == _max.end()) {
-			return 0.0;
-		}
-		return i->value;
+	inline double current(Type type) const {
+		return _current[core::enumVal(type)];
+	}
+
+	inline double max(Type type) const {
+		return _max[core::enumVal(type)];
 	}
 };
 
