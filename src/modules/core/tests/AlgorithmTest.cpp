@@ -66,7 +66,7 @@ TEST(AlgorithmTest, testDistance) {
 }
 
 TEST(AlgorithmTest, sortedDifference) {
-	int out[512];
+	int out[8];
 	{
 		const int buf1[] = {1, 2, 3, 4, 5};
 		const int buf2[] = {5, 6, 7, 8, 9};
