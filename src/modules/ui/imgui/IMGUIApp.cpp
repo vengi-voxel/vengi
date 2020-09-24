@@ -4,6 +4,7 @@
 
 #include "IMGUIApp.h"
 
+#include "core/Var.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
 #include "command/Command.h"
@@ -132,7 +133,7 @@ app::AppState IMGUIApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_console.construct();
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
-	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false");
+	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST);
 	return state;
 }
 
