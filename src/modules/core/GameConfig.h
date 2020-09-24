@@ -28,6 +28,7 @@ constexpr const char *ClientWindowDisplay = "cl_display";
 constexpr const char *ClientWindowHeight = "cl_height";
 constexpr const char *ClientWindowHghDPI = "cl_highdpi";
 constexpr const char *UIShowMetrics = "ui_showmetrics";
+constexpr const char *UIFontSize = "ui_fontsize";
 
 constexpr const char *AudioSoundVolume = "snd_volume";
 constexpr const char *AudioMusicVolume = "snd_musicvolume";

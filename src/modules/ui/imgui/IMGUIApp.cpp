@@ -134,6 +134,7 @@ app::AppState IMGUIApp::onConstruct() {
 	_console.construct();
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST);
+	_uiFontSize = core::Var::get(cfg::UIFontSize, "14");
 	return state;
 }
 
@@ -161,6 +162,43 @@ static const char* _getClipboardText(void*) {
 
 static void _setClipboardText(void*, const char* text) {
 	SDL_SetClipboardText(text);
+}
+
+void IMGUIApp::loadFonts() {
+	ImGuiIO& io = ImGui::GetIO();
+	io.Fonts->Clear();
+	ImFontConfig fontCfg;
+	fontCfg.MergeMode = true;
+	static const ImWchar rangesBasic[] = {
+		0x0020, 0x00FF, // Basic Latin + Latin Supplement
+		0x03BC, 0x03BC, // micro
+		0x03C3, 0x03C3, // small sigma
+		0x2013, 0x2013, // en dash
+		0x2264, 0x2264, // less-than or equal to
+		0,
+	};
+	io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
+											_uiFontSize->floatVal() * _dpiFactor, nullptr, rangesBasic);
+
+	static const ImWchar rangesIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
+											_uiFontSize->floatVal() * _dpiFactor, &fontCfg, rangesIcons);
+
+	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
+											_uiFontSize->floatVal() * 2.0f * _dpiFactor);
+	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
+											_uiFontSize->floatVal() * _dpiFactor);
+
+	unsigned char *pixels;
+	int width, height;
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+	video::TextureConfig cfg;
+	cfg.format(video::TextureFormat::RGBA);
+	video::bindTexture(video::TextureUnit::Upload, cfg.type(), _texture);
+	video::setupTexture(cfg);
+	video::uploadTexture(cfg.type(), cfg.format(), width, height, pixels, 0);
+	io.Fonts->TexID = (void *) (intptr_t) _texture;
 }
 
 app::AppState IMGUIApp::onInit() {
@@ -202,42 +240,14 @@ app::AppState IMGUIApp::onInit() {
 	_writePathLog = _filesystem->writePath(logFile.c_str());
 	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
+
 	//io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
-	ImFontConfig fontCfg;
-	fontCfg.MergeMode = true;
-	static const ImWchar rangesBasic[] = {
-		0x0020, 0x00FF, // Basic Latin + Latin Supplement
-		0x03BC, 0x03BC, // micro
-		0x03C3, 0x03C3, // small sigma
-		0x2013, 0x2013, // en dash
-		0x2264, 0x2264, // less-than or equal to
-		0,
-	};
-	io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											 12.0f * _dpiFactor, nullptr, rangesBasic);
-	static const ImWchar rangesIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											 10.0f * _dpiFactor, &fontCfg, rangesIcons);
-	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-													   20.0f * _dpiFactor);
-	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-														 12.0f * _dpiFactor);
+	_texture = video::genTexture();
+	loadFonts();
 
 	ImGui::StyleColorsDark();
 	ImGuiStyle &style = ImGui::GetStyle();
 	style.ScaleAllSizes(_dpiFactor);
-
-	unsigned char *pixels;
-	int width, height;
-	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-	_texture = video::genTexture();
-	video::TextureConfig cfg;
-	cfg.format(video::TextureFormat::RGBA);
-	video::bindTexture(video::TextureUnit::Upload, cfg.type(), _texture);
-	video::setupTexture(cfg);
-	video::uploadTexture(cfg.type(), cfg.format(), width, height, pixels, 0);
-	io.Fonts->TexID = (void *) (intptr_t) _texture;
 
 	io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
 	io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
@@ -302,7 +312,7 @@ app::AppState IMGUIApp::onRunning() {
 
 	const bool renderUI = _renderUI->boolVal();
 
-	io.DeltaTime = _deltaFrameSeconds;
+	io.DeltaTime = (float)_deltaFrameSeconds;
 	const uint32_t mouseMask = SDL_GetMouseState(nullptr, nullptr);
 	// If a mouse press event came, always pass it as "mouse held this frame",
 	// so we don't miss click-release events that are shorter than 1 frame.

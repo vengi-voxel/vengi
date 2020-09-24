@@ -24,9 +24,11 @@ class IMGUIApp: public video::WindowedApp {
 private:
 	using Super = video::WindowedApp;
 	video::Camera _camera;
+	void loadFonts();
 protected:
 	core::VarPtr _renderUI;
 	core::VarPtr _showMetrics;
+	core::VarPtr _uiFontSize;
 	video::Id _texture = video::InvalidId;
 	shader::TextureShader _shader;
 	video::Buffer _vbo;
