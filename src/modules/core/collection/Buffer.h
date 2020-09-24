@@ -179,7 +179,7 @@ public:
 	};
 	using const_iterator = iterator;
 
-	void push_back(const TYPE& val) {
+	inline void push_back(const TYPE& val) {
 		checkBufferSize(_size + 1u);
 		_buffer[_size++] = val;
 	}

@@ -68,22 +68,23 @@ TEST(AlgorithmTest, testDistance) {
 TEST(AlgorithmTest, sortedDifference) {
 	int out[8];
 	{
-		const int buf1[] = {1, 2, 3, 4, 5};
-		const int buf2[] = {5, 6, 7, 8, 9};
+		const int buf1[] = {1, 2, 3, 4, 5, 7, 10, 11, 12};
+		const int buf2[] = {5, 6, 7, 8, 9, 10, 11, 13};
 		int amount = 0;
 		core::sortedDifference(buf1, lengthof(buf1), buf2, lengthof(buf2), out, lengthof(out), amount);
-		ASSERT_EQ(4, amount);
+		ASSERT_EQ(5, amount);
 		EXPECT_EQ(1, out[0]);
 		EXPECT_EQ(2, out[1]);
 		EXPECT_EQ(3, out[2]);
 		EXPECT_EQ(4, out[3]);
+		EXPECT_EQ(12, out[4]);
 		amount = 0;
 		core::sortedDifference(buf2, lengthof(buf2), buf1, lengthof(buf1), out, lengthof(out), amount);
 		ASSERT_EQ(4, amount);
-		EXPECT_EQ(1, out[0]);
-		EXPECT_EQ(2, out[1]);
-		EXPECT_EQ(3, out[2]);
-		EXPECT_EQ(4, out[3]);
+		EXPECT_EQ(6, out[0]);
+		EXPECT_EQ(8, out[1]);
+		EXPECT_EQ(9, out[2]);
+		EXPECT_EQ(13, out[3]);
 	}
 }
 

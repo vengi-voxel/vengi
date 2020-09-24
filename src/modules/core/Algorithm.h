@@ -118,12 +118,15 @@ void sortedDifference(const Type *buf1, int buf1Length, const Type *buf2, int bu
 		}
 		if (buf1[i] < buf2[j]) {
 			out[outIdx++] = buf1[i++];
-		} else if (buf2[j] < buf1[i]) {
-			out[outIdx++] = buf2[j++];
-		} else {
+		} else if (buf1[i] == buf2[j]) {
 			++i;
 			++j;
+		} else {
+			++j;
 		}
+	}
+	for (;i < buf1Length;) {
+		out[outIdx++] = buf1[i++];
 	}
 }
 
