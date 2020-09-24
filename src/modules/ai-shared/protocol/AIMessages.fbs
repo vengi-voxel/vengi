@@ -32,7 +32,7 @@ table Names {
 }
 
 table Select {
-	character_id:long;
+	character_id:int;
 }
 
 table Pause {
@@ -45,7 +45,7 @@ table ChangeZone {
 
 table AddNode {
 	parent_node_id:uint;
-	character_id:long;
+	character_id:int;
 	name:string (required);
 	type:string (required);
 	condition:string (required);
@@ -53,19 +53,19 @@ table AddNode {
 
 table DeleteNode {
 	node_id:uint;
-	character_id:long;
+	character_id:int;
 }
 
 table UpdateNode {
 	node_id:uint;
-	character_id:long;
+	character_id:int;
 	name:string (required);
 	type:string (required);
 	condition:string (required);
 }
 
 table StateAggroEntry {
-	character_id:long;
+	character_id:int;
 	aggro:float;
 }
 
@@ -115,7 +115,7 @@ table StateNode {
 }
 
 table State {
-	character_id:long;
+	character_id:int;
 	position:Vec3 (required);
 	orientation:float;
 	meta_attributes:[MapEntry] (required);
@@ -127,12 +127,12 @@ table StateWorld {
 }
 
 table CharacterStatic {
-	character_id:long;
+	character_id:int;
 	node_statics:[StateNodeStatic];
 }
 
 table CharacterDetails {
-	character_id:long;
+	character_id:int;
 	aggro:[StateAggroEntry];
 	root:StateNode;
 }
