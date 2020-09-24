@@ -58,6 +58,8 @@ typedef core::SharedPtr<Var> VarPtr;
  * @endcode
  */
 class Var {
+public:
+	typedef bool (*ValidatorFunc)(const core::String& value);
 protected:
 	friend class SharedPtr<Var>;
 	typedef Map<core::String, VarPtr, 64, core::StringHash> VarMap;
@@ -86,12 +88,13 @@ protected:
 
 	core::DynamicArray<Value> _history;
 	uint32_t _currentHistoryPos = 0;
-	bool _dirty;
+	bool _dirty = false;
+	ValidatorFunc _validator = nullptr;
 
 	void addValueToHistory(const core::String& value);
 
 	// invisible - use the static get method
-	Var(const core::String& name, const core::String& value = "", uint32_t flags = 0u, const char *help = nullptr);
+	Var(const core::String& name, const core::String& value = "", uint32_t flags = 0u, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr);
 public:
 	~Var();
 
@@ -105,14 +108,14 @@ public:
 	 *
 	 * @note This is using a read/write lock to allow access from different threads.
 	 */
-	static VarPtr get(const core::String& name, const char* value = nullptr, int32_t flags = -1, const char *help = nullptr);
+	static VarPtr get(const core::String& name, const char* value = nullptr, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr);
 
-	static inline VarPtr get(const core::String& name, const char* value, const char *help) {
-		return get(name, value, -1, help);
+	static inline VarPtr get(const core::String& name, const char* value, const char *help, ValidatorFunc validatorFunc = nullptr) {
+		return get(name, value, -1, help, validatorFunc);
 	}
 
-	static inline VarPtr get(const core::String& name, const String& value, int32_t flags = -1, const char *help = nullptr) {
-		return get(name, value.c_str(), flags, help);
+	static inline VarPtr get(const core::String& name, const String& value, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr) {
+		return get(name, value.c_str(), flags, help, validatorFunc);
 	}
 
 	/**
@@ -129,6 +132,7 @@ public:
 	 * The memory is now owned. Make sure it is available for the whole lifetime of this instance.
 	 */
 	void setHelp(const char *help);
+	void setValidator(ValidatorFunc func);
 
 	const char *help() const;
 

@@ -82,7 +82,7 @@ glm::vec3 Var::vec3Val() const {
 	return glm::vec3(x, y, z);
 }
 
-VarPtr Var::get(const core::String& name, const char* value, int32_t flags, const char *help) {
+VarPtr Var::get(const core::String& name, const char* value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
 	VarMap::iterator i;
 	bool missing;
 	{
@@ -102,7 +102,9 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
-				value = envValue;
+				if (!validatorFunc || validatorFunc(envValue)) {
+					value = envValue;
+				}
 				flagsMask |= CV_FROMENV;
 				flagsMask &= ~CV_FROMFILE;
 			}
@@ -112,7 +114,7 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 			return VarPtr();
 		}
 
-		const VarPtr& p = core::make_shared<Var>(name, value, flagsMask, help);
+		const VarPtr& p = core::make_shared<Var>(name, value, flagsMask, help, validatorFunc);
 		ScopedWriteLock lock(_lock);
 		_vars.put(name, p);
 		return p;
@@ -151,8 +153,8 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 	return v;
 }
 
-Var::Var(const core::String& name, const core::String& value, unsigned int flags, const char *help) :
-		_name(name), _help(help), _flags(flags), _dirty(false) {
+Var::Var(const core::String& name, const core::String& value, unsigned int flags, const char *help, ValidatorFunc validatorFunc) :
+		_name(name), _help(help), _flags(flags), _validator(validatorFunc) {
 	addValueToHistory(value);
 	core_assert(_currentHistoryPos == 0);
 }
@@ -186,6 +188,12 @@ void Var::setVal(const core::String& value) {
 	if ((_flags & CV_READONLY) != 0u) {
 		Log::error("%s is write protected", _name.c_str());
 		return;
+	}
+	if (_validator != nullptr) {
+		if (!_validator(value)) {
+			Log::debug("Validator doesn't allow to set '%s' for '%s'", value.c_str(), _name.c_str());
+			return;
+		}
 	}
 	_dirty = _history[_currentHistoryPos]._value != value;
 	if (_dirty) {
