@@ -1,1 +1,2 @@
+add_subdirectory(binary_to_compressed_c)
 add_subdirectory(glslang)

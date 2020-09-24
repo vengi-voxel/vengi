@@ -22,6 +22,9 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <thread>
+#include "FontAwesomeSolid.h"
+#include "ArimoRegular.h"
+#include "IconsFontAwesome5.h"
 
 namespace ui {
 namespace imgui {
@@ -199,14 +202,25 @@ app::AppState IMGUIApp::onInit() {
 	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
 	//io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
-
 	ImFontConfig fontCfg;
-	fontCfg.SizePixels = 15.0f * _dpiFactor;
-	_defaultFont = io.Fonts->AddFontDefault(&fontCfg);
-
-	ImFontConfig bigFontCfg;
-	bigFontCfg.SizePixels = 25.0f * _dpiFactor;
-	_bigFont = io.Fonts->AddFontDefault(&bigFontCfg);
+	fontCfg.MergeMode = true;
+	static const ImWchar rangesBasic[] = {
+		0x0020, 0x00FF, // Basic Latin + Latin Supplement
+		0x03BC, 0x03BC, // micro
+		0x03C3, 0x03C3, // small sigma
+		0x2013, 0x2013, // en dash
+		0x2264, 0x2264, // less-than or equal to
+		0,
+	};
+	io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
+											 15.0f * _dpiFactor, nullptr, rangesBasic);
+	static const ImWchar rangesIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
+											 14.0f * _dpiFactor, &fontCfg, rangesIcons);
+	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
+													   20.0f * _dpiFactor);
+	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
+														 15.0f * _dpiFactor);
 
 	ImGui::StyleColorsDark();
 	ImGuiStyle &style = ImGui::GetStyle();
