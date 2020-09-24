@@ -42,5 +42,7 @@ static bool ComboStl(const char* label, int* current_item, const Collection& ite
 IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 IMGUI_API void TextCentered(const char *text);
 IMGUI_API bool ToggleButton(const char *text, bool state);
+IMGUI_API void TableKeyValue(const char *key, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(2);
+IMGUI_API void TableKeyValue(const char *key, const core::String &value);
 
 }

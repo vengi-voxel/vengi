@@ -102,6 +102,23 @@ void Image(video::Id handle, const glm::ivec2& size) {
 	ImGui::Image((void*)(intptr_t)handle, ImVec2(size.x, size.y));
 }
 
+void TableKeyValue(const char *key, const char *msg, ...) {
+	ImGui::TableNextRow();
+	ImGui::TextUnformatted(key);
+	ImGui::TableNextCell();
+	va_list ap;
+	va_start(ap, msg);
+	ImGui::TextV(msg, ap);
+	va_end(ap);
+}
+
+void TableKeyValue(const char *key, const core::String &value) {
+	ImGui::TableNextRow();
+	ImGui::TextUnformatted(key);
+	ImGui::TableNextCell();
+	ImGui::TextUnformatted(value.c_str());
+}
+
 bool ToggleButton(const char *text, bool state) {
 	if (state) {
 		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
