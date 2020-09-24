@@ -23,7 +23,6 @@ protected:
 	tb::TBWidget* _root = nullptr;
 	Console _console;
 	core::VarPtr _uiFontSize;
-	core::VarPtr _renderUI;
 	core::VarPtr _lastDirectory;
 	int _lastShowTextY = -1;
 	core::String _applicationSkin;

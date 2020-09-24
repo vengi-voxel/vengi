@@ -395,7 +395,6 @@ app::AppState UIApp::onConstruct() {
 #endif
 	}).setHelp("Show ui debug information - only available in debug builds");
 
-	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 	_lastDirectory = core::Var::get("cl_ui_lastdirectory", io::filesystem()->homePath().c_str());
 	_uiFontSize = core::Var::get("ui_fontsize", "14");
 
