@@ -96,4 +96,36 @@ TEST(AlgorithmTest, sortedIntersection) {
 	}
 }
 
+TEST(AlgorithmTest, sortedUnion) {
+	int out[16];
+	{
+		const int buf1[] = {1, 2, 3, 4, 5};
+		const int buf2[] = {5, 6, 7, 8, 9};
+		int amount = 0;
+		core::sortedUnion(buf1, lengthof(buf1), buf2, lengthof(buf2), out, lengthof(out), amount);
+		ASSERT_EQ(9, amount);
+		EXPECT_EQ(1, out[0]);
+		EXPECT_EQ(2, out[1]);
+		EXPECT_EQ(3, out[2]);
+		EXPECT_EQ(4, out[3]);
+		EXPECT_EQ(5, out[4]);
+		EXPECT_EQ(6, out[5]);
+		EXPECT_EQ(7, out[6]);
+		EXPECT_EQ(8, out[7]);
+		EXPECT_EQ(9, out[8]);
+		amount = 0;
+		core::sortedUnion(buf2, lengthof(buf2), buf1, lengthof(buf1), out, lengthof(out), amount);
+		ASSERT_EQ(9, amount);
+		EXPECT_EQ(1, out[0]);
+		EXPECT_EQ(2, out[1]);
+		EXPECT_EQ(3, out[2]);
+		EXPECT_EQ(4, out[3]);
+		EXPECT_EQ(5, out[4]);
+		EXPECT_EQ(6, out[5]);
+		EXPECT_EQ(7, out[6]);
+		EXPECT_EQ(8, out[7]);
+		EXPECT_EQ(9, out[8]);
+	}
+}
+
 }
