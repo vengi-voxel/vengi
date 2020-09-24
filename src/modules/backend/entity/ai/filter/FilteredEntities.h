@@ -5,10 +5,10 @@
 #pragma once
 
 #include "ai-shared/common/CharacterId.h"
-#include <vector>
+#include "core/collection/DynamicArray.h"
 
 namespace backend {
 
-typedef std::vector<ai::CharacterId> FilteredEntities;
+typedef core::DynamicArray<ai::CharacterId> FilteredEntities;
 
 }
