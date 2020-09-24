@@ -19,6 +19,7 @@ SHIFT+w +xyz
 SHIFT+ctrl+ALT+w allmodscommand
 ctrl+SHIFT+w ctrlshiftmodcommand
 left_alt altmodcommand
+ctrl++ "echo +"
 left_mouse void
 right_mouse void
 wheelup void
@@ -31,7 +32,7 @@ TEST(KeybindingParserTest, testParsing) {
 	const BindMap& m = p.getBindings();
 	ASSERT_FALSE(m.empty());
 	ASSERT_EQ(0, p.invalidBindings());
-	const size_t expected = 13;
+	const size_t expected = 14;
 	EXPECT_EQ(expected, m.size());
 
 	int key = 'w';
@@ -95,6 +96,19 @@ TEST(KeybindingParserTest, testParsing) {
 		EXPECT_EQ("someothercommand +", command);
 		EXPECT_TRUE(mod & KMOD_LALT) << "command " << command << " modifier wasn't parsed properly";
 		EXPECT_TRUE(!(mod & KMOD_RALT)) << "command " << command << " modifier wasn't parsed properly";
+		++count;
+	}
+	EXPECT_EQ(1, count);
+
+	key = '+';
+	count = 0;
+	range = m.equal_range(key);
+	for (auto i = range.first; i != range.second; ++i) {
+		const CommandModifierPair& pair = i->second;
+		const core::String& command = pair.command;
+		const int16_t mod = pair.modifier;
+		EXPECT_EQ("echo +", command);
+		EXPECT_TRUE(mod & KMOD_CTRL) << "command " << command << " modifier wasn't parsed properly";
 		++count;
 	}
 	EXPECT_EQ(1, count);

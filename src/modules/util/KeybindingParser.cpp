@@ -5,6 +5,7 @@
 #include "KeybindingParser.h"
 #include "CustomButtonNames.h"
 #include "core/ArrayLength.h"
+#include "core/Tokenizer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Log.h"
 #include <SDL.h>
@@ -13,32 +14,33 @@ namespace util {
 
 void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& command) {
 	int modifier = KMOD_NONE;
-	if (key.size() > 1) {
-		if (core::string::contains(key, "+")) {
-			core::DynamicArray<core::String> line;
-			core::string::splitString(key, line, "+");
-			for (const core::String& token : line) {
-				const core::String& lower = token.toLower();
-				if (lower == "shift") {
-					modifier |= KMOD_SHIFT;
-				} else if (lower == "left_shift") {
-					modifier |= KMOD_LSHIFT;
-				} else if (lower == "right_shift") {
-					modifier |= KMOD_RSHIFT;
-				} else if (lower == "alt") {
-					modifier |= KMOD_ALT;
-				} else if (lower == "left_alt") {
-					modifier |= KMOD_LALT;
-				} else if (lower == "right_alt") {
-					modifier |= KMOD_RALT;
-				} else if (lower == "ctrl") {
-					modifier |= KMOD_CTRL;
-				} else if (lower == "left_ctrl") {
-					modifier |= KMOD_LCTRL;
-				} else if (lower == "right_ctrl") {
-					modifier |= KMOD_RCTRL;
-				} else {
-					key = token;
+	core::Tokenizer tok(true, key, "+");
+	const core::DynamicArray<core::String>& line = tok.tokens();
+	if (line.size() > 1) {
+		for (const core::String& token : line) {
+			const core::String& lower = token.toLower();
+			if (lower == "shift") {
+				modifier |= KMOD_SHIFT;
+			} else if (lower == "left_shift") {
+				modifier |= KMOD_LSHIFT;
+			} else if (lower == "right_shift") {
+				modifier |= KMOD_RSHIFT;
+			} else if (lower == "alt") {
+				modifier |= KMOD_ALT;
+			} else if (lower == "left_alt") {
+				modifier |= KMOD_LALT;
+			} else if (lower == "right_alt") {
+				modifier |= KMOD_RALT;
+			} else if (lower == "ctrl") {
+				modifier |= KMOD_CTRL;
+			} else if (lower == "left_ctrl") {
+				modifier |= KMOD_LCTRL;
+			} else if (lower == "right_ctrl") {
+				modifier |= KMOD_RCTRL;
+			} else {
+				key = token;
+				if (key.empty()) {
+					key = "+";
 				}
 			}
 		}
