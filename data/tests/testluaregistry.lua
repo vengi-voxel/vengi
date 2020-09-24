@@ -113,11 +113,11 @@ function luatest:execute(ai, deltaMillis)
 		print("error: expected value was " .. aggroVal .. " - but found was " .. val)
 		return FAILED
 	end
-	chr:setAttribute("Key", "Value")
-	chr:setAttribute("Key2", "Value2")
-	chr:setAttribute("Attribute", "1.0")
-	if chr:attributes()["Key"] ~= "Value" then
-		print("error: expected attribute for 'Key' is 'Value' - but found was " .. chr:attributes()["Key"])
+	chr:setMetaAttribute("Key", "Value")
+	chr:setMetaAttribute("Key2", "Value2")
+	chr:setMetaAttribute("Attribute", "1.0")
+	if chr:metaAttributes()["Key"] ~= "Value" then
+		print("error: expected attribute for 'Key' is 'Value' - but found was " .. chr:metaAttributes()["Key"])
 		return FAILED
 	end
 	local execute = function (ai)
@@ -157,8 +157,8 @@ function luatest:execute(ai, deltaMillis)
 	end
 	print("aggroentries:")
 	printtable(entries)
-	print("attributes:")
-	printtable(chr:attributes())
+	print("metaattributes:")
+	printtable(chr:metaAttributes())
 	print("position: " .. tostring(pos))
 	print("position x: " .. pos.x)
 	print("position y: " .. pos.y)
