@@ -48,7 +48,7 @@ public:
 			const cooldown::CooldownProviderPtr& cooldownProvider,
 			const stock::StockDataProviderPtr& stockDataProvider);
 
-	void execute(ENetPeer* peer, const void* message) override;
+	void executeWithRaw(ENetPeer* peer, const void* message, const uint8_t* rawData, size_t rawDataLength) override;
 };
 
 }

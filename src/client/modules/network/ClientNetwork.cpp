@@ -21,13 +21,14 @@ bool ClientNetwork::packetReceived(ENetEvent& event) {
 	}
 	const ServerMessage *req = GetServerMessage(event.packet->data);
 	ServerMsgType type = req->data_type();
-	ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(EnumNameServerMsgType(type));
+	const char *typeName = EnumNameServerMsgType(type);
+	ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(type);
 	if (!handler) {
-		Log::error("No handler for server msg type %s", EnumNameServerMsgType(type));
+		Log::error("No handler for server msg type %s", typeName);
 		return false;
 	}
-	Log::debug("Received %s", EnumNameServerMsgType(type));
-	handler->execute(event.peer, reinterpret_cast<const flatbuffers::Table*>(req->data()));
+	Log::debug("Received %s", typeName);
+	handler->executeWithRaw(event.peer, req->data(), (const uint8_t*)event.packet->data, event.packet->dataLength);
 	return true;
 }
 

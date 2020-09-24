@@ -3,7 +3,6 @@
  */
 
 #include "DeleteNodeHandler.h"
-#include "ai-shared/protocol/AIDeleteNodeMessage.h"
 #include "Server.h"
 #include "core/Log.h"
 
@@ -12,10 +11,9 @@ namespace backend {
 DeleteNodeHandler::DeleteNodeHandler(Server& server) : _server(server) {
 }
 
-void DeleteNodeHandler::execute(const ai::ClientId& /*clientId*/, const ai::IProtocolMessage& message) {
-	const ai::AIDeleteNodeMessage& msg = static_cast<const ai::AIDeleteNodeMessage&>(message);
-	if (!_server.deleteNode(msg.getCharacterId(), msg.getNodeId())) {
-		Log::error("Failed to delete the node %u", msg.getNodeId());
+void DeleteNodeHandler::executeWithRaw(void* attachment, const ai::DeleteNode* message, const uint8_t* rawData, size_t rawDataSize) {
+	if (!_server.deleteNode(message->character_id(), message->node_id())) {
+		Log::error("Failed to delete the node %u", message->node_id());
 	}
 }
 

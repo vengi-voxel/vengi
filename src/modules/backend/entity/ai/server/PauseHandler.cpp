@@ -3,7 +3,6 @@
  */
 
 #include "PauseHandler.h"
-#include "ai-shared/protocol/AIPauseMessage.h"
 #include "Server.h"
 
 namespace backend {
@@ -11,9 +10,8 @@ namespace backend {
 PauseHandler::PauseHandler(Server& server) : _server(server) {
 }
 
-void PauseHandler::execute(const ai::ClientId& clientId, const ai::IProtocolMessage& message) {
-	const ai::AIPauseMessage& msg = static_cast<const ai::AIPauseMessage&>(message);
-	_server.pause(clientId, msg.isPause());
+void PauseHandler::executeWithRaw(void* attachment, const ai::Pause* message, const uint8_t* rawData, size_t rawDataSize) {
+	_server.pause(message->pause());
 }
 
 }

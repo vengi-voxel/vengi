@@ -4,16 +4,14 @@
 
 #include "ChangeHandler.h"
 #include "Server.h"
-#include "ai-shared/protocol/AIChangeMessage.h"
 
 namespace backend {
 
 ChangeHandler::ChangeHandler(Server& server) : _server(server) {
 }
 
-void ChangeHandler::execute(const ai::ClientId& /*clientId*/, const ai::IProtocolMessage& message) {
-	const ai::AIChangeMessage& msg = static_cast<const ai::AIChangeMessage&>(message);
-	_server.setDebug(msg.getName());
+void ChangeHandler::executeWithRaw(void* attachment, const ai::ChangeZone* message, const uint8_t* rawData, size_t rawDataSize) {
+	_server.setDebug(message->name()->c_str());
 }
 
 }

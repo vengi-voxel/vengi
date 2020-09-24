@@ -4,7 +4,8 @@
 #pragma once
 
 #include "ai-shared/common/CharacterId.h"
-#include "ai-shared/common/CharacterAttributes.h"
+#include "ai-shared/common/CharacterMetaAttributes.h"
+#include "attrib/ShadowAttributes.h"
 #include "core/String.h"
 #include "core/SharedPtr.h"
 #include "core/NonCopyable.h"
@@ -27,9 +28,8 @@ protected:
 	const ai::CharacterId _id;
 	glm::vec3 _position { 0.0f };
 	float _orientation = 0.0f;
-	// m/s
-	float _speed = 0.0f;
-	ai::CharacterAttributes _attributes;
+	attrib::ShadowAttributes _shadowAttributes;
+	ai::CharacterMetaAttributes _metaAttributes;
 
 public:
 	explicit ICharacter(ai::CharacterId id) :
@@ -49,6 +49,12 @@ public:
 	 */
 	virtual void setPosition(const glm::vec3& position);
 
+	const attrib::ShadowAttributes& shadowAttributes() const;
+	double getCurrent(attrib::Type type) const;
+	double getMax(attrib::Type type) const;
+	void setCurrent(attrib::Type type, double value);
+	void setMax(attrib::Type type, double value);
+
 	const glm::vec3& getPosition() const;
 	/**
 	 * @note This is virtual because you might want to override this in your implementation to
@@ -64,26 +70,14 @@ public:
 	 */
 	float getOrientation() const;
 	/**
-	 * @brief Sets the speed for the character in m/s
-	 *
-	 * @see getSpeed()
-	 */
-	virtual void setSpeed(float speed);
-	/**
-	 * @return The speed for the character in m/s
-	 *
-	 * @see setSpeed()
-	 */
-	float getSpeed() const;
-	/**
-	 * @brief Set an attribute that can be used for debugging
+	 * @brief Set an meta attribute that can be used for debugging
 	 * @see AI::isDebuggingActive()
 	 */
-	virtual void setAttribute(const core::String& key, const core::String& value);
+	virtual void setMetaAttribute(const core::String& key, const core::String& value);
 	/**
 	 * @brief Get the debugger attributes.
 	 */
-	const ai::CharacterAttributes& getAttributes() const;
+	const ai::CharacterMetaAttributes& getMetaAttributes() const;
 	/**
 	 * @brief override this method to let your own @c ICharacter implementation
 	 * tick with the @c Zone::update
@@ -106,12 +100,12 @@ inline float ICharacter::getOrientation() const {
 	return _orientation;
 }
 
-inline void ICharacter::setAttribute(const core::String& key, const core::String& value) {
-	_attributes.put(key, value);
+inline void ICharacter::setMetaAttribute(const core::String& key, const core::String& value) {
+	_metaAttributes.put(key, value);
 }
 
-inline const ai::CharacterAttributes& ICharacter::getAttributes() const {
-	return _attributes;
+inline const ai::CharacterMetaAttributes& ICharacter::getMetaAttributes() const {
+	return _metaAttributes;
 }
 
 inline bool ICharacter::operator==(const ICharacter &character) const {
@@ -128,14 +122,6 @@ inline ai::CharacterId ICharacter::getId() const {
 
 inline const glm::vec3& ICharacter::getPosition() const {
 	return _position;
-}
-
-inline void ICharacter::setSpeed(float speed) {
-	_speed = speed;
-}
-
-inline float ICharacter::getSpeed() const {
-	return _speed;
 }
 
 typedef core::SharedPtr<ICharacter> ICharacterPtr;

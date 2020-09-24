@@ -7,11 +7,11 @@
 #include "group/GroupId.h"
 #include "aggro/AggroMgr.h"
 #include "ICharacter.h"
-#include "ai-shared/common/TreeNodeStatus.h"
 #include "core/Trace.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/Atomic.h"
 #include "core/NonCopyable.h"
+#include "AIMessages_generated.h"
 
 #include <memory>
 #include <glm/vec3.hpp>

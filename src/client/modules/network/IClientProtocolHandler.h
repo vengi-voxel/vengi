@@ -21,16 +21,14 @@ public:
 
 	virtual ~IClientProtocolHandler() {
 	}
-
-	virtual void execute(Client* attachment, const MSGTYPE* message) override = 0;
 };
 
 #define CLIENTPROTOHANDLER(msgType) \
 struct msgType##Handler: public IClientProtocolHandler<msgType> { \
 	msgType##Handler() : IClientProtocolHandler<msgType>() {} \
-	void execute(Client* attachment, const msgType* message) override; \
+	void executeWithRaw(Client* attachment, const msgType* message, const uint8_t* rawData, size_t rawDataSize) override; \
 }
 
 #define CLIENTPROTOHANDLERIMPL(msgType) \
 CLIENTPROTOHANDLER(msgType); \
-inline void msgType##Handler::execute(Client* client, const msgType* message)
+inline void msgType##Handler::executeWithRaw(Client* client, const msgType* message, const uint8_t* rawData, size_t rawDataSize)

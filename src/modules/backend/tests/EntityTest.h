@@ -76,7 +76,7 @@ protected:
 		core::Var::get(cfg::DatabaseMaxConnections, "0");
 		voxel::initDefaultMaterialColors();
 		entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
-		protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+		protocolHandlerRegistry = core::make_shared<network::ProtocolHandlerRegistry>();
 		network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
 		messageSender = std::make_shared<network::ServerMessageSender>(network, _testApp->metric());
 		registry = std::make_shared<LUAAIRegistry>();
@@ -112,7 +112,7 @@ protected:
 		volumeCache->shutdown();
 
 		entityStorage.reset();
-		protocolHandlerRegistry.reset();
+		protocolHandlerRegistry.release();
 		network.reset();
 		messageSender.reset();
 		registry.reset();

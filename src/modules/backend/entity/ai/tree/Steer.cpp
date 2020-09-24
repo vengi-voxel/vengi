@@ -41,8 +41,8 @@ TreeNodePtr Steer::Factory::create (const SteerNodeFactoryContext *ctx) const {
 
 ai::TreeNodeStatus Steer::doAction(const AIPtr& entity, int64_t deltaMillis) {
 	const ICharacterPtr& chr = entity->getCharacter();
-	const float speed = chr->getSpeed();
-	const MoveVector& mv = _w.execute(entity, speed);
+	const double speed = chr->getCurrent(attrib::Type::SPEED);
+	const MoveVector& mv = _w.execute(entity, (float)speed);
 	const glm::vec3& direction = mv.getVector();
 	if (!mv.isValid()) {
 		return ai::TreeNodeStatus::FAILED;

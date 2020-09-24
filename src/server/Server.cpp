@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 	const attrib::ContainerProviderPtr& containerProvider = core::make_shared<attrib::ContainerProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 
-	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = core::make_shared<network::ProtocolHandlerRegistry>();
 	const network::ServerNetworkPtr& network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, eventBus, metric);
 	const network::ServerMessageSenderPtr& messageSender = std::make_shared<network::ServerMessageSender>(network, metric);
 
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
 	const eventmgr::EventProviderPtr& eventProvider = std::make_shared<eventmgr::EventProvider>(dbHandler);
 	const eventmgr::EventMgrPtr& eventMgr = std::make_shared<eventmgr::EventMgr>(eventProvider, timeProvider);
 
-	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, registry, eventBus, filesystem);
+	const backend::WorldPtr& world = std::make_shared<backend::World>(mapProvider, registry, eventBus, filesystem, metric);
 	const backend::MetricMgrPtr& metricMgr = std::make_shared<backend::MetricMgr>(metric, eventBus);
 	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(timeProvider, mapProvider,
 			messageSender, world, dbHandler, network, filesystem, entityStorage, eventBus, containerProvider,

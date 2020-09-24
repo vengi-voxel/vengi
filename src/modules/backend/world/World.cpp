@@ -23,9 +23,10 @@ constexpr int aiDebugServerPort = 11338;
 constexpr const char* aiDebugServerInterface = "127.0.0.1";
 
 World::World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,
-		const core::EventBusPtr& eventBus, const io::FilesystemPtr& filesystem) :
+		const core::EventBusPtr& eventBus, const io::FilesystemPtr& filesystem,
+		const metric::MetricPtr& metric) :
 		_mapProvider(mapProvider), _registry(registry),
-		_eventBus(eventBus), _filesystem(filesystem) {
+		_eventBus(eventBus), _filesystem(filesystem), _metric(metric) {
 }
 
 World::~World() {
@@ -97,7 +98,7 @@ bool World::init() {
 		return false;
 	}
 
-	_aiServer = new Server(*_registry, aiDebugServerPort, aiDebugServerInterface);
+	_aiServer = new Server(*_registry, _metric, aiDebugServerPort, aiDebugServerInterface);
 	if (_aiServer->start()) {
 		Log::info("Start the ai debug server on %s:%i", aiDebugServerInterface, aiDebugServerPort);
 	} else {

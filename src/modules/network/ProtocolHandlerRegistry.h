@@ -4,15 +4,17 @@
 
 #pragma once
 
-#include <memory>
-#include <unordered_map>
 #include "IProtocolHandler.h"
+#include "core/Log.h"
+#include "core/Enum.h"
+#include "core/SharedPtr.h"
+#include "core/collection/Map.h"
 
 namespace network {
 
 class ProtocolHandlerRegistry {
 private:
-	typedef std::unordered_map<const char*, ProtocolHandlerPtr> ProtocolHandlers;
+	typedef core::Map<uint32_t, ProtocolHandlerPtr> ProtocolHandlers;
 	ProtocolHandlers _registry;
 
 public:
@@ -21,13 +23,23 @@ public:
 
 	void shutdown();
 
-	ProtocolHandlerPtr getHandler(const char* type);
+	template <typename ENUM>
+	ProtocolHandlerPtr getHandler(ENUM type) {
+		ProtocolHandlers::iterator i = _registry.find(core::enumVal(type));
+		if (i != _registry.end()) {
+			return i->second;
+		}
 
-	inline void registerHandler(const char* type, const ProtocolHandlerPtr& handler) {
-		_registry.insert(std::make_pair(type, handler));
+		Log::error("Failed to get protocol handler for %u", core::enumVal(type));
+		return ProtocolHandlerPtr();
+	}
+
+	template <typename ENUM>
+	inline void registerHandler(const ENUM type, const ProtocolHandlerPtr &handler) {
+		_registry.put(core::enumVal(type), handler);
 	}
 };
 
-typedef std::shared_ptr<ProtocolHandlerRegistry> ProtocolHandlerRegistryPtr;
+typedef core::SharedPtr<ProtocolHandlerRegistry> ProtocolHandlerRegistryPtr;
 
 }

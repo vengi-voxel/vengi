@@ -220,9 +220,6 @@ void ServerLoop::construct() {
 	_volumeCache->construct();
 }
 
-#define regHandler(type, handler, ...) \
-	r->registerHandler(network::EnumNameClientMsgType(type), std::make_shared<handler>(__VA_ARGS__));
-
 bool ServerLoop::init() {
 	_loop = new uv_loop_t;
 	if (uv_loop_init(_loop) != 0) {
@@ -319,14 +316,14 @@ bool ServerLoop::init() {
 	}
 
 	const network::ProtocolHandlerRegistryPtr& r = _network->registry();
-	regHandler(network::ClientMsgType::UserConnect, UserConnectHandler,
+	r->registerHandler(network::ClientMsgType::UserConnect, std::make_shared<UserConnectHandler>(
 			_network, _mapProvider, _dbHandler, _persistenceMgr, _entityStorage, _messageSender,
-			_timeProvider, _attribContainerProvider, _cooldownProvider, _stockDataProvider);
-	regHandler(network::ClientMsgType::UserConnected, UserConnectedHandler);
-	regHandler(network::ClientMsgType::UserDisconnect, UserDisconnectHandler);
-	regHandler(network::ClientMsgType::TriggerAction, TriggerActionHandler);
-	regHandler(network::ClientMsgType::Move, MoveHandler);
-	regHandler(network::ClientMsgType::VarUpdate, VarUpdateHandler);
+			_timeProvider, _attribContainerProvider, _cooldownProvider, _stockDataProvider));
+	r->registerHandler(network::ClientMsgType::UserConnected, std::make_shared<UserConnectedHandler>());
+	r->registerHandler(network::ClientMsgType::UserDisconnect, std::make_shared<UserDisconnectHandler>());
+	r->registerHandler(network::ClientMsgType::TriggerAction, std::make_shared<TriggerActionHandler>());
+	r->registerHandler(network::ClientMsgType::Move, std::make_shared<MoveHandler>());
+	r->registerHandler(network::ClientMsgType::VarUpdate, std::make_shared<VarUpdateHandler>());
 
 	Log::info("Init material");
 	if (!voxel::initDefaultMaterialColors()) {

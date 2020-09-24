@@ -15,7 +15,6 @@
 #include "io/Filesystem.h"
 #include "core/Color.h"
 #include "core/Password.h"
-#include "network/IMsgProtocolHandler.h"
 #include "network/AttribUpdateHandler.h"
 #include "network/AuthFailedHandler.h"
 #include "network/EntityRemoveHandler.h"
@@ -157,25 +156,22 @@ app::AppState Client::onConstruct() {
 	return state;
 }
 
-#define regHandler(type, handler, ...) \
-	r->registerHandler(network::EnumNameServerMsgType(type), std::make_shared<handler>(__VA_ARGS__));
-
 app::AppState Client::onInit() {
 	eventBus()->subscribe<network::NewConnectionEvent>(*this);
 	eventBus()->subscribe<network::DisconnectEvent>(*this);
 	eventBus()->subscribe<voxelworld::WorldCreatedEvent>(*this);
 
 	const network::ProtocolHandlerRegistryPtr& r = _network->registry();
-	regHandler(network::ServerMsgType::AttribUpdate, AttribUpdateHandler);
-	regHandler(network::ServerMsgType::EntitySpawn, EntitySpawnHandler);
-	regHandler(network::ServerMsgType::EntityRemove, EntityRemoveHandler);
-	regHandler(network::ServerMsgType::EntityUpdate, EntityUpdateHandler);
-	regHandler(network::ServerMsgType::UserSpawn, UserSpawnHandler);
-	regHandler(network::ServerMsgType::AuthFailed, AuthFailedHandler);
-	regHandler(network::ServerMsgType::StartCooldown, StartCooldownHandler);
-	regHandler(network::ServerMsgType::StopCooldown, StopCooldownHandler);
-	regHandler(network::ServerMsgType::VarUpdate, VarUpdateHandler);
-	regHandler(network::ServerMsgType::UserInfo, UserInfoHandler);
+	r->registerHandler(network::ServerMsgType::AttribUpdate, std::make_shared<AttribUpdateHandler>());
+	r->registerHandler(network::ServerMsgType::EntitySpawn, std::make_shared<EntitySpawnHandler>());
+	r->registerHandler(network::ServerMsgType::EntityRemove, std::make_shared<EntityRemoveHandler>());
+	r->registerHandler(network::ServerMsgType::EntityUpdate, std::make_shared<EntityUpdateHandler>());
+	r->registerHandler(network::ServerMsgType::UserSpawn, std::make_shared<UserSpawnHandler>());
+	r->registerHandler(network::ServerMsgType::AuthFailed, std::make_shared<AuthFailedHandler>());
+	r->registerHandler(network::ServerMsgType::StartCooldown, std::make_shared<StartCooldownHandler>());
+	r->registerHandler(network::ServerMsgType::StopCooldown, std::make_shared<StopCooldownHandler>());
+	r->registerHandler(network::ServerMsgType::VarUpdate, std::make_shared<VarUpdateHandler>());
+	r->registerHandler(network::ServerMsgType::UserInfo, std::make_shared<UserInfoHandler>());
 
 	app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
@@ -451,7 +447,7 @@ int main(int argc, char *argv[]) {
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
-	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = core::make_shared<network::ProtocolHandlerRegistry>();
 	const network::ClientNetworkPtr& network = std::make_shared<network::ClientNetwork>(protocolHandlerRegistry, eventBus);
 	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
 	const client::ClientPagerPtr& pager = core::make_shared<client::ClientPager>();

@@ -2,31 +2,31 @@
  * @file
  */
 
-#include "ClientMessages_generated.h"
-#include "ServerNetwork.h"
+#include "AIMessages_generated.h"
+#include "AIServerNetwork.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 
 namespace network {
 
-ServerNetwork::ServerNetwork(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry,
+AIServerNetwork::AIServerNetwork(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry,
 		const core::EventBusPtr& eventBus, const metric::MetricPtr& metric) :
 		Super(protocolHandlerRegistry, eventBus, metric) {
 }
 
-bool ServerNetwork::packetReceived(ENetEvent& event) {
+bool AIServerNetwork::packetReceived(ENetEvent& event) {
 	flatbuffers::Verifier v(event.packet->data, event.packet->dataLength);
 
-	if (!VerifyClientMessageBuffer(v)) {
-		Log::error("Illegal client packet received with length: %i", (int)event.packet->dataLength);
+	if (!ai::VerifyMessageBuffer(v)) {
+		Log::error("Illegal ai packet received with length: %i", (int)event.packet->dataLength);
 		return false;
 	}
-	const ClientMessage *req = GetClientMessage(event.packet->data);
-	ClientMsgType type = req->data_type();
-	const char *clientMsgType = EnumNameClientMsgType(type);
+	const ai::Message *req = ai::GetMessage(event.packet->data);
+	ai::MsgType type = req->data_type();
+	const char *clientMsgType = ai::EnumNameMsgType(type);
 	ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(type);
 	if (!handler) {
-		Log::error("No handler for client msg type %s", clientMsgType);
+		Log::error("No handler for ai msg type %s", clientMsgType);
 		return false;
 	}
 	const metric::TagMap& tags  {{"direction", "in"}, {"type", clientMsgType}};

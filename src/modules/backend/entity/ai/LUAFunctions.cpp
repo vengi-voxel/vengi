@@ -459,16 +459,20 @@ static int luaAI_charactersetposition(lua_State* s) {
 }
 
 /***
- * Get the speed of the character
- * @treturn number Speed value of the character
+ * Get the current valid attribute of the character
+ * @treturn number Current value of the character for the given attribute type
  * @function character:speed
  */
-static int luaAI_characterspeed(lua_State* s) {
+static int luaAI_charactercurrent(lua_State* s) {
 	const luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
 		return clua_error(s, "ICharacter is already destroyed");
 	}
-	lua_pushnumber(s, chr->character->getSpeed());
+	const int type = luaL_checkinteger(s, 2);
+	if (type <= (int)attrib::Type::NONE || type >= (int)attrib::Type::MAX) {
+		return clua_typerror(s, 2, "attribute type is outside the valid range");
+	}
+	lua_pushnumber(s, chr->character->getCurrent((attrib::Type)type));
 	return 1;
 }
 
@@ -484,21 +488,6 @@ static int luaAI_characterorientation(lua_State* s) {
 	}
 	lua_pushnumber(s, chr->character->getOrientation());
 	return 1;
-}
-
-/***
- * Set the speed for a character
- * @par number speed
- * @function character:setSpeed
- */
-static int luaAI_charactersetspeed(lua_State* s) {
-	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
-	if (!chr->character) {
-		return clua_error(s, "ICharacter is already destroyed");
-	}
-	const lua_Number value = luaL_checknumber(s, 2);
-	chr->character->setSpeed((float)value);
-	return 0;
 }
 
 /***
@@ -549,16 +538,16 @@ static int luaAI_charactergc(lua_State* s) {
 }
 
 /***
- * Pushes the table of character (debugger) attributes onto the stack
+ * Pushes the table of character (debugger) meta attributes onto the stack
  * @treturn {string, string, ....} Table with the key/value pair of the character attributes
  * @function character:attributes
  */
-static int luaAI_characterattributes(lua_State* s) {
+static int luaAI_charactermetaattributes(lua_State* s) {
 	const luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
 		return clua_error(s, "ICharacter is already destroyed");
 	}
-	const ai::CharacterAttributes& attributes = chr->character->getAttributes();
+	const ai::CharacterMetaAttributes& attributes = chr->character->getMetaAttributes();
 	lua_newtable(s);
 	const int top = lua_gettop(s);
 	for (auto it = attributes.begin(); it != attributes.end(); ++it) {
@@ -577,14 +566,14 @@ static int luaAI_characterattributes(lua_State* s) {
  * @par string value The value of the attribute
  * @function character:setAttribute
  */
-static int luaAI_charactersetattribute(lua_State* s) {
+static int luaAI_charactersetmetaattribute(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
 	if (!chr->character) {
 		return clua_error(s, "ICharacter is already destroyed");
 	}
 	const char* key = luaL_checkstring(s, 2);
 	const char* value = luaL_checkstring(s, 3);
-	chr->character->setAttribute(key, value);
+	chr->character->setMetaAttribute(key, value);
 	return 0;
 }
 
@@ -809,12 +798,11 @@ void luaAI_registerAll(lua_State* s) {
 		{"id", luaAI_characterid},
 		{"position", luaAI_characterposition},
 		{"setPosition", luaAI_charactersetposition},
-		{"speed", luaAI_characterspeed},
-		{"setSpeed", luaAI_charactersetspeed},
+		{"current", luaAI_charactercurrent},
 		{"orientation", luaAI_characterorientation},
 		{"setOrientation", luaAI_charactersetorientation},
-		{"setAttribute", luaAI_charactersetattribute},
-		{"attributes", luaAI_characterattributes},
+		{"setMetaAttribute", luaAI_charactersetmetaattribute},
+		{"metaAttributes", luaAI_charactermetaattributes},
 		{"__eq", luaAI_charactereq},
 		{"__gc", luaAI_charactergc},
 		{"__tostring", luaAI_charactertostring},

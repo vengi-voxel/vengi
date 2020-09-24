@@ -41,7 +41,7 @@ public:
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		voxel::initDefaultMaterialColors();
 		_entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
-		_protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+		_protocolHandlerRegistry = core::make_shared<network::ProtocolHandlerRegistry>();
 		_network = std::make_shared<network::ServerNetwork>(_protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());
 		_messageSender = std::make_shared<network::ServerMessageSender>(_network, _testApp->metric());
 		_aiRegistry = std::make_shared<LUAAIRegistry>();
@@ -70,7 +70,7 @@ public:
 		_mapProvider->shutdown();
 
 		_entityStorage.reset();
-		_protocolHandlerRegistry.reset();
+		_protocolHandlerRegistry.release();
 		_network.reset();
 		_messageSender.reset();
 		_loader.reset();
@@ -85,7 +85,7 @@ public:
 };
 
 #define create(name) \
-	World name(_mapProvider, _aiRegistry, _testApp->eventBus(), _testApp->filesystem());
+	World name(_mapProvider, _aiRegistry, _testApp->eventBus(), _testApp->filesystem(), _testApp->metric());
 
 TEST_F(WorldTest, testInitShutdown) {
 	create(world);

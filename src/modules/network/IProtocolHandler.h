@@ -8,8 +8,8 @@ extern "C" {
 #include <enet/enet.h>
 }
 #include <memory>
-#include <flatbuffers/flatbuffers.h>
 #include "core/Common.h"
+#include <stdint.h>
 
 namespace network {
 
@@ -35,7 +35,10 @@ public:
 	virtual ~IProtocolHandler() {
 	}
 
-	virtual void execute(ENetPeer* peer, const void* message) = 0;
+	virtual void executeWithRaw(ENetPeer* peer, const void* message, const uint8_t* /*rawData*/, size_t /*rawDataSize*/) = 0;
+};
+
+class NopHandler : public IProtocolHandler {
 };
 
 typedef std::shared_ptr<IProtocolHandler> ProtocolHandlerPtr;

@@ -5,7 +5,7 @@
 
 #include "backend/entity/ai/AIFactories.h"
 #include "backend/entity/ai/common/MemoryAllocator.h"
-#include "ai-shared/common/TreeNodeStatus.h"
+#include "AIMessages_generated.h"
 #include "core/String.h"
 
 #include <vector>

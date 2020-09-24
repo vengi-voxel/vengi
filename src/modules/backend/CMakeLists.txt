@@ -133,10 +133,11 @@ set(SRCS
 	entity/ai/movement/WeightedSteering.h
 	entity/ai/movement/LUASteering.h
 	entity/ai/movement/LUASteering.cpp
+	entity/ai/server/AIMessageSender.h entity/ai/server/AIMessageSender.cpp
+	entity/ai/server/AIServerNetwork.h entity/ai/server/AIServerNetwork.cpp
 	entity/ai/server/AddNodeHandler.h entity/ai/server/AddNodeHandler.cpp
 	entity/ai/server/ChangeHandler.h entity/ai/server/ChangeHandler.cpp
 	entity/ai/server/DeleteNodeHandler.h entity/ai/server/DeleteNodeHandler.cpp
-	entity/ai/server/Network.h entity/ai/server/Network.cpp
 	entity/ai/server/PauseHandler.h entity/ai/server/PauseHandler.cpp
 	entity/ai/server/ResetHandler.h entity/ai/server/ResetHandler.cpp
 	entity/ai/server/SelectHandler.h entity/ai/server/SelectHandler.cpp
@@ -221,7 +222,6 @@ set(TEST_SRCS
 	tests/GroupTest.cpp
 	tests/LUAAIRegistryTest.cpp
 	tests/LUATreeLoaderTest.cpp
-	tests/MessageTest.cpp
 	tests/MovementTest.cpp
 	tests/NodeTest.cpp
 	tests/ParserTest.cpp

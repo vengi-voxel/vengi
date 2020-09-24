@@ -27,6 +27,6 @@ const char* const ORIENTATION = "Orientation";
 /**
  * @brief ICharacter attributes for the remote \ref debugger
  */
-typedef core::StringMap<core::String> CharacterAttributes;
+typedef core::StringMap<core::String> CharacterMetaAttributes;
 
 }

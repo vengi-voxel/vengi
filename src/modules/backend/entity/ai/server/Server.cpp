@@ -3,6 +3,7 @@
  */
 
 #include "Server.h"
+#include "AIMessages_generated.h"
 #include "SelectHandler.h"
 #include "PauseHandler.h"
 #include "ResetHandler.h"
@@ -12,15 +13,19 @@
 #include "DeleteNodeHandler.h"
 #include "UpdateNodeHandler.h"
 
-#include "ai-shared/protocol/AIPauseMessage.h"
-#include "ai-shared/protocol/AIStateMessage.h"
-#include "ai-shared/protocol/AINamesMessage.h"
-#include "ai-shared/protocol/AICharacterDetailsMessage.h"
-#include "ai-shared/protocol/AICharacterStaticMessage.h"
-
+#include "attrib/ShadowAttributes.h"
 #include "backend/entity/ai/condition/ConditionParser.h"
 #include "backend/entity/ai/tree/TreeNodeParser.h"
+#include "backend/entity/ai/zone/Zone.h"
+#include "core/EventBus.h"
+#include "core/SharedPtr.h"
 #include "core/Trace.h"
+#include "core/collection/DynamicArray.h"
+#include "flatbuffers/flatbuffers.h"
+#include "network/NetworkEvents.h"
+#include "backend/network/ServerNetwork.h"
+#include "backend/network/ServerMessageSender.h"
+#include <memory>
 
 namespace backend {
 
@@ -29,34 +34,31 @@ const int SV_BROADCAST_CHRDETAILS = 1 << 0;
 const int SV_BROADCAST_STATE      = 1 << 1;
 }
 
-Server::Server(AIRegistry& aiRegistry, short port, const core::String& hostname) :
-		_aiRegistry(aiRegistry), _network(port, hostname), _selectedCharacterId(AI_NOTHING_SELECTED), _time(0L),
-		_selectHandler(new SelectHandler(*this)), _pauseHandler(new PauseHandler(*this)), _resetHandler(new ResetHandler(*this)),
-		_stepHandler(new StepHandler(*this)), _changeHandler(new ChangeHandler(*this)), _addNodeHandler(new AddNodeHandler(*this)),
-		_deleteNodeHandler(new DeleteNodeHandler(*this)), _updateNodeHandler(new UpdateNodeHandler(*this)), _pause(false), _zone(nullptr) {
-	_network.addListener(this);
-	ai::ProtocolHandlerRegistry& r = ai::ProtocolHandlerRegistry::get();
-	r.registerHandler(ai::PROTO_SELECT, _selectHandler);
-	r.registerHandler(ai::PROTO_PAUSE, _pauseHandler);
-	r.registerHandler(ai::PROTO_RESET, _resetHandler);
-	r.registerHandler(ai::PROTO_STEP, _stepHandler);
-	r.registerHandler(ai::PROTO_PING, &_nopHandler);
-	r.registerHandler(ai::PROTO_CHANGE, _changeHandler);
-	r.registerHandler(ai::PROTO_ADDNODE, _addNodeHandler);
-	r.registerHandler(ai::PROTO_DELETENODE, _deleteNodeHandler);
-	r.registerHandler(ai::PROTO_UPDATENODE, _updateNodeHandler);
+Server::Server(AIRegistry& aiRegistry, const metric::MetricPtr& metric,
+		short port, const core::String& hostname) :
+		_aiRegistry(aiRegistry), _selectedCharacterId(AI_NOTHING_SELECTED),
+		_time(0L), _pause(false), _zone(nullptr), _port(port), _hostname(hostname) {
+	const network::ProtocolHandlerRegistryPtr& r = core::make_shared<network::ProtocolHandlerRegistry>();
+	r->registerHandler(ai::MsgType::Select, std::make_shared<SelectHandler>(*this));
+	r->registerHandler(ai::MsgType::Pause, std::make_shared<PauseHandler>(*this));
+	r->registerHandler(ai::MsgType::Reset, std::make_shared<ResetHandler>(*this));
+	r->registerHandler(ai::MsgType::Step, std::make_shared<StepHandler>(*this));
+	r->registerHandler(ai::MsgType::Ping, std::make_shared<SelectHandler>(*this));
+	r->registerHandler(ai::MsgType::ChangeZone, std::make_shared<ChangeHandler>(*this));
+	r->registerHandler(ai::MsgType::AddNode, std::make_shared<AddNodeHandler>(*this));
+	r->registerHandler(ai::MsgType::DeleteNode, std::make_shared<DeleteNodeHandler>(*this));
+	r->registerHandler(ai::MsgType::UpdateNode, std::make_shared<UpdateNodeHandler>(*this));
+
+	_eventBus = std::make_shared<core::EventBus>(2);
+	_eventBus->subscribe<network::NewConnectionEvent>(*this);
+	_eventBus->subscribe<network::DisconnectEvent>(*this);
+
+	_network = std::make_shared<network::AIServerNetwork>(r, _eventBus, metric);
+	_messageSender = std::make_shared<network::AIMessageSender>(_network, metric);
 }
 
 Server::~Server() {
-	delete _selectHandler;
-	delete _pauseHandler;
-	delete _resetHandler;
-	delete _stepHandler;
-	delete _changeHandler;
-	delete _addNodeHandler;
-	delete _deleteNodeHandler;
-	delete _updateNodeHandler;
-	_network.removeListener(this);
+	_network->shutdown();
 }
 
 void Server::enqueueEvent(const Event& event) {
@@ -64,22 +66,17 @@ void Server::enqueueEvent(const Event& event) {
 	_events.push_back(event);
 }
 
-void Server::onConnect(Client* client) {
+void Server::onEvent(const network::NewConnectionEvent& evt) {
 	Event event;
 	event.type = EV_NEWCONNECTION;
-	event.data.newClient = client;
+	event.data.peer = evt.get();
 	enqueueEvent(event);
 }
 
-void Server::onDisconnect(Client* /*client*/) {
-	Log::info("remote debugger disconnect (%i)", _network.getConnectedClients());
+void Server::onEvent(const network::DisconnectEvent& event) {
+	Log::info("remote debugger disconnect");
 	Zone* zone = _zone;
 	if (zone == nullptr) {
-		return;
-	}
-
-	// if there are still connected clients left, don't disable the debug mode for the zone
-	if (_network.getConnectedClients() > 0) {
 		return;
 	}
 
@@ -88,7 +85,7 @@ void Server::onDisconnect(Client* /*client*/) {
 		// restore the zone state if no player is left for debugging
 		const bool pauseState = _pause;
 		if (pauseState) {
-			pause(0, false);
+			pause(false);
 		}
 
 		// only if noone else already started a new debug session
@@ -97,47 +94,64 @@ void Server::onDisconnect(Client* /*client*/) {
 }
 
 bool Server::start() {
-	return _network.start();
-}
-
-void Server::addChildren(const TreeNodePtr& node, core::DynamicArray<ai::AIStateNodeStatic>& out) const {
-	for (const TreeNodePtr& childNode : node->getChildren()) {
-		const int32_t nodeId = childNode->getId();
-		out.push_back(ai::AIStateNodeStatic(nodeId, childNode->getName(), childNode->getType(), childNode->getParameters(), childNode->getCondition()->getName(), childNode->getCondition()->getParameters()));
-		addChildren(childNode, out);
+	if (!_network->init()) {
+		return false;
 	}
-}
 
-void Server::addChildren(const TreeNodePtr& node, ai::AIStateNode& parent, const AIPtr& ai) const {
-	const TreeNodes& children = node->getChildren();
-	std::vector<bool> currentlyRunning(children.size());
-	node->getRunningChildren(ai, currentlyRunning);
-	const int64_t aiTime = ai->_time;
-	const size_t length = children.size();
-	for (size_t i = 0u; i < length; ++i) {
-		const TreeNodePtr& childNode = children[i];
-		const int32_t id = childNode->getId();
-		const ConditionPtr& condition = childNode->getCondition();
-		const core::String conditionStr = condition ? condition->getNameWithConditions(ai) : "";
-		const int64_t lastRun = childNode->getLastExecMillis(ai);
-		const int64_t delta = lastRun == -1 ? -1 : aiTime - lastRun;
-		ai::AIStateNode child(id, conditionStr, delta, childNode->getLastStatus(ai), currentlyRunning[i]);
-		addChildren(childNode, child, ai);
-		parent.addChildren(child);
-	}
+	return _network->bind(_port, _hostname, 1, 1);
 }
 
 void Server::broadcastState(const Zone* zone) {
 	core_trace_scoped(AIServerBroadcastState);
 	_broadcastMask |= SV_BROADCAST_STATE;
-	ai::AIStateMessage msg;
+	core::DynamicArray<flatbuffers::Offset<ai::State>> offsets;
+	offsets.reserve(zone->size());
 	auto func = [&] (const AIPtr& ai) {
 		const ICharacterPtr& chr = ai->getCharacter();
-		const ai::AIStateWorld b(chr->getId(), chr->getPosition(), chr->getOrientation(), chr->getAttributes());
-		msg.addState(b);
+		const glm::vec3& chrPosition = chr->getPosition();
+		const ai::Vec3 position(chrPosition.x, chrPosition.y, chrPosition.z);
+		const ai::CharacterMetaAttributes& chrMetaAttributes = chr->getMetaAttributes();
+		auto metaAttributeIter = chrMetaAttributes.begin();
+		auto metaAttributes = _stateFBB.CreateVector<flatbuffers::Offset<ai::MapEntry>>(chrMetaAttributes.size(),
+			[&] (size_t i) {
+				const core::String& sname = metaAttributeIter->first;
+				const core::String& svalue = metaAttributeIter->second;
+				auto name = _stateFBB.CreateString(sname.c_str(), sname.size());
+				auto value = _stateFBB.CreateString(svalue.c_str(), svalue.size());
+				++metaAttributeIter;
+				return ai::CreateMapEntry(_stateFBB, name, value);
+			});
+		const attrib::ShadowAttributes& chrShadowAttributes = chr->shadowAttributes();
+		auto attributes = _stateFBB.CreateVector<flatbuffers::Offset<ai::AttribEntry>>((size_t)attrib::Type::MAX,
+			[&] (size_t i) {
+				attrib::Type attribType = (attrib::Type)i;
+				return ai::CreateAttribEntry(_stateFBB, (int)i, chrShadowAttributes.current(attribType), chrShadowAttributes.max(attribType));
+			});
+		offsets.push_back(ai::CreateState(_stateFBB, chr->getId(), &position, chr->getOrientation(), metaAttributes, attributes));
 	};
 	zone->execute(func);
-	_network.broadcast(msg);
+	auto states = _stateFBB.CreateVector(offsets.data(), offsets.size());
+	_messageSender->broadcastServerMessage(_stateFBB, ai::MsgType::StateWorld,
+		ai::CreateStateWorld(_stateFBB, states).Union());
+}
+
+void Server::addChildren(const TreeNodePtr& node, core::DynamicArray<flatbuffers::Offset<ai::StateNodeStatic>>& offsets) const {
+	for (const TreeNodePtr& childNode : node->getChildren()) {
+		const int32_t nodeId = childNode->getId();
+		const core::String& snodename = childNode->getName();
+		const core::String& snodetype = childNode->getType();
+		const core::String& snodeparameters = childNode->getParameters();
+		const core::String& sconditionname = childNode->getCondition()->getName();
+		const core::String& sconditionparameters = childNode->getCondition()->getParameters();
+		auto nodename = _staticCharacterDetailsFBB.CreateString(snodename.c_str(), snodename.size());
+		auto nodetype = _staticCharacterDetailsFBB.CreateString(snodetype.c_str(), snodetype.size());
+		auto nodeparameters = _staticCharacterDetailsFBB.CreateString(snodeparameters.c_str(), snodeparameters.size());
+		auto conditionname = _staticCharacterDetailsFBB.CreateString(sconditionname.c_str(), sconditionname.size());
+		auto conditionparameters = _staticCharacterDetailsFBB.CreateString(sconditionparameters.c_str(), sconditionparameters.size());
+		offsets.push_back(ai::CreateStateNodeStatic(_staticCharacterDetailsFBB, nodeId, nodename, nodetype,
+			 nodeparameters, conditionname, conditionparameters));
+		addChildren(childNode, offsets);
+	}
 }
 
 void Server::broadcastStaticCharacterDetails(const Zone* zone) {
@@ -146,23 +160,61 @@ void Server::broadcastStaticCharacterDetails(const Zone* zone) {
 		return;
 	}
 
+	core::DynamicArray<flatbuffers::Offset<ai::StateNodeStatic>> offsets;
+	offsets.reserve(zone->size());
 	static const auto func = [&] (const AIPtr& ai) {
 		if (!ai) {
 			return false;
 		}
-		core::DynamicArray<ai::AIStateNodeStatic> nodeStaticData;
 		const TreeNodePtr& node = ai->getBehaviour();
 		const int32_t nodeId = node->getId();
-		nodeStaticData.push_back(ai::AIStateNodeStatic(nodeId, node->getName(), node->getType(), node->getParameters(), node->getCondition()->getName(), node->getCondition()->getParameters()));
-		addChildren(node, nodeStaticData);
-
-		const ai::AICharacterStaticMessage msgStatic(ai->getId(), nodeStaticData);
-		_network.broadcast(msgStatic);
+		const core::String& snodename = node->getName();
+		const core::String& snodetype = node->getType();
+		const core::String& snodeparameters = node->getParameters();
+		const core::String& sconditionname = node->getCondition()->getName();
+		const core::String& sconditionparameters = node->getCondition()->getParameters();
+		auto nodename = _staticCharacterDetailsFBB.CreateString(snodename.c_str(), snodename.size());
+		auto nodetype = _staticCharacterDetailsFBB.CreateString(snodetype.c_str(), snodetype.size());
+		auto nodeparameters = _staticCharacterDetailsFBB.CreateString(snodeparameters.c_str(), snodeparameters.size());
+		auto conditionname = _staticCharacterDetailsFBB.CreateString(sconditionname.c_str(), sconditionname.size());
+		auto conditionparameters = _staticCharacterDetailsFBB.CreateString(sconditionparameters.c_str(), sconditionparameters.size());
+		offsets.push_back(ai::CreateStateNodeStatic(_staticCharacterDetailsFBB, nodeId, nodename, nodetype,
+			 nodeparameters, conditionname, conditionparameters));
+		addChildren(node, offsets);
+		_messageSender->broadcastServerMessage(_staticCharacterDetailsFBB, ai::MsgType::CharacterStatic,
+			ai::CreateCharacterStatic(_staticCharacterDetailsFBB, ai->getId(), _staticCharacterDetailsFBB.CreateVector(offsets.data(), offsets.size())).Union());
 		return true;
 	};
+
 	if (!zone->execute(id, func)) {
 		resetSelection();
 	}
+}
+
+flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> Server::addChildren(const TreeNodePtr& node, const AIPtr& ai) const {
+	const TreeNodes& children = node->getChildren();
+	std::vector<bool> currentlyRunning(children.size());
+	node->getRunningChildren(ai, currentlyRunning);
+	const int64_t aiTime = ai->_time;
+	const size_t length = children.size();
+	core::DynamicArray<flatbuffers::Offset<ai::StateNode>> offsets;
+	offsets.reserve(length);
+	for (size_t i = 0u; i < length; ++i) {
+		const TreeNodePtr& childNode = children[i];
+		const int32_t nodeId = childNode->getId();
+		const ConditionPtr& condition = childNode->getCondition();
+		const core::String conditionStr = condition ? condition->getNameWithConditions(ai) : "";
+		const int64_t lastRun = childNode->getLastExecMillis(ai);
+		const int64_t delta = lastRun == -1 ? -1 : aiTime - lastRun;
+		ai::TreeNodeStatus status = node->getLastStatus(ai);
+		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> childNodeChildren = addChildren(childNode, ai);
+
+		flatbuffers::Offset<ai::StateNode> child = ai::CreateStateNode(_characterDetailsFBB,
+			nodeId, _characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()),
+			childNodeChildren, delta, (int)status, true);
+		offsets.push_back(child);
+	}
+	return _characterDetailsFBB.CreateVector(offsets.data(), offsets.size());
 }
 
 void Server::broadcastCharacterDetails(const Zone* zone) {
@@ -172,7 +224,6 @@ void Server::broadcastCharacterDetails(const Zone* zone) {
 	if (id == AI_NOTHING_SELECTED) {
 		return;
 	}
-
 	static const auto func = [&] (const AIPtr& ai) {
 		if (!ai) {
 			return false;
@@ -181,18 +232,23 @@ void Server::broadcastCharacterDetails(const Zone* zone) {
 		const int32_t nodeId = node->getId();
 		const ConditionPtr& condition = node->getCondition();
 		const core::String conditionStr = condition ? condition->getNameWithConditions(ai) : "";
-		ai::AIStateNode root(nodeId, conditionStr, _time - node->getLastExecMillis(ai), node->getLastStatus(ai), true);
-		addChildren(node, root, ai);
+		ai::TreeNodeStatus status = node->getLastStatus(ai);
+		const int64_t lastRun = _time - node->getLastExecMillis(ai);
+		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> children = addChildren(node, ai);
+		flatbuffers::Offset<ai::StateNode> rootnode = ai::CreateStateNode(_characterDetailsFBB, nodeId,
+			_characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()), children, lastRun, (int)status, true);
 
-		ai::AIStateAggro aggro;
+		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateAggroEntry>>> aggro;
 		const AggroMgr::Entries& entries = ai->getAggroMgr().getEntries();
-		aggro.reserve(entries.size());
+		core::DynamicArray<flatbuffers::Offset<ai::StateAggroEntry>> offsets;
+		offsets.reserve(entries.size());
 		for (const Entry& e : entries) {
-			aggro.addAggro(ai::AIStateAggroEntry(e.getCharacterId(), e.getAggro()));
+			offsets.push_back(ai::CreateStateAggroEntry(_characterDetailsFBB, e.getCharacterId(), e.getAggro()));
 		}
 
-		const ai::AICharacterDetailsMessage msg(ai->getId(), aggro, root);
-		_network.broadcast(msg);
+		_messageSender->broadcastServerMessage(_characterDetailsFBB, ai::MsgType::CharacterDetails,
+			ai::CreateCharacterDetails(_characterDetailsFBB, ai->getId(),
+				_characterDetailsFBB.CreateVector(offsets.data(), offsets.size()), rootnode).Union());
 		return true;
 	};
 	if (!zone->execute(id, func)) {
@@ -207,6 +263,7 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 		events = std::move(_events);
 		_events.clear();
 	}
+	bool sendNames = false;
 	for (Event& event : events) {
 		switch (event.type) {
 		case EV_SELECTION: {
@@ -254,7 +311,8 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 					ai->setPause(newPauseState);
 				};
 				zone->executeParallel(func);
-				_network.broadcast(ai::AIPauseMessage(newPauseState));
+				_messageSender->broadcastServerMessage(_pauseFBB, ai::MsgType::Pause,
+					ai::CreatePause(_pauseFBB, _pause).Union());
 				// send the last time the most recent state until we unpause
 				if (newPauseState) {
 					broadcastState(zone);
@@ -268,9 +326,11 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 			break;
 		}
 		case EV_NEWCONNECTION: {
-			_network.sendToClient(event.data.newClient, ai::AIPauseMessage(pauseState));
-			_network.sendToClient(event.data.newClient, ai::AINamesMessage(_names));
-			Log::info("new remote debugger connection (%i)", _network.getConnectedClients());
+			_messageSender->broadcastServerMessage(_pauseFBB, ai::MsgType::Pause,
+				ai::CreatePause(_pauseFBB, pauseState).Union());
+
+			sendNames = true;
+			Log::info("new remote debugger connection");
 			break;
 		}
 		case EV_ZONEADD: {
@@ -281,7 +341,7 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 			for (const auto& z : _zones) {
 				_names.push_back(z->first->getName());
 			}
-			_network.broadcast(ai::AINamesMessage(_names));
+			sendNames = true;
 			break;
 		}
 		case EV_ZONEREMOVE: {
@@ -293,12 +353,12 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 			for (const auto& z : _zones) {
 				_names.push_back(z->first->getName());
 			}
-			_network.broadcast(ai::AINamesMessage(_names));
+			sendNames = true;
 			break;
 		}
 		case EV_SETDEBUG: {
 			if (_pause) {
-				pause(0, false);
+				pause(false);
 			}
 
 			Zone* nullzone = nullptr;
@@ -321,6 +381,15 @@ void Server::handleEvents(Zone* zone, bool pauseState) {
 		case EV_MAX:
 			break;
 		}
+	}
+
+	if (sendNames) {
+		auto names = _namesFBB.CreateVector<flatbuffers::Offset<flatbuffers::String>>(_names.size(),
+			[&] (size_t i) {
+				return _namesFBB.CreateString(_names[i].c_str(), _names[i].size());
+			});
+		_messageSender->broadcastServerMessage(_namesFBB, ai::MsgType::Names,
+			ai::CreateNames(_namesFBB, names).Union());
 	}
 }
 
@@ -468,14 +537,14 @@ void Server::reset() {
 	enqueueEvent(event);
 }
 
-void Server::select(const ai::ClientId& /*clientId*/, const ai::CharacterId& id) {
+void Server::select(const ai::CharacterId& id) {
 	Event event;
 	event.type = EV_SELECTION;
 	event.data.characterId = id;
 	enqueueEvent(event);
 }
 
-void Server::pause(const ai::ClientId& /*clientId*/, bool state) {
+void Server::pause(bool state) {
 	Event event;
 	event.type = EV_PAUSE;
 	event.data.pauseState = state;
@@ -490,16 +559,16 @@ void Server::step(int64_t stepMillis) {
 }
 
 void Server::update(int64_t deltaTime) {
+	_eventBus->update();
 	core_trace_scoped(AIServerUpdate);
 	_time += deltaTime;
-	const int clients = _network.getConnectedClients();
 	Zone* zone = _zone;
 	bool pauseState = _pause;
 	_broadcastMask = 0u;
 
 	handleEvents(zone, pauseState);
 
-	if (clients > 0 && zone != nullptr) {
+	if (zone != nullptr) {
 		if (!pauseState) {
 			if ((_broadcastMask & SV_BROADCAST_STATE) == 0) {
 				broadcastState(zone);
@@ -509,10 +578,10 @@ void Server::update(int64_t deltaTime) {
 			}
 		}
 	} else if (pauseState) {
-		pause(1, false);
+		pause(false);
 		resetSelection();
 	}
-	_network.update(deltaTime);
+	_network->update();
 }
 
 }

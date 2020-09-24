@@ -21,11 +21,13 @@ private:
 	AIRegistryPtr _registry;
 	core::EventBusPtr _eventBus;
 	io::FilesystemPtr _filesystem;
+	metric::MetricPtr _metric;
 	Server* _aiServer = nullptr;
 	std::unordered_map<MapId, MapPtr> _maps;
 public:
 	World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,
-			const core::EventBusPtr& eventBus, const io::FilesystemPtr& filesystem);
+			const core::EventBusPtr& eventBus, const io::FilesystemPtr& filesystem,
+			const metric::MetricPtr& metric);
 	~World();
 
 	void update(long dt);

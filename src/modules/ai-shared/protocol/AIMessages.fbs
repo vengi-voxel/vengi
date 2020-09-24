@@ -11,6 +11,12 @@ table MapEntry {
 	value:string;
 }
 
+table AttribEntry {
+	key:int;
+	current:double;
+	max:double;
+}
+
 table Step {
 	millis:long;
 }
@@ -63,10 +69,6 @@ table StateAggroEntry {
 	aggro:float;
 }
 
-table StateAggro {
-	aggro:[StateAggroEntry];
-}
-
 table StateNodeStatic {
 	node_id:uint;
 	name:string (required);
@@ -74,6 +76,33 @@ table StateNodeStatic {
 	parameters:string (required);
 	condition_type:string (required);
 	condition_parameters:string (required);
+}
+
+enum TreeNodeStatus : byte {
+	UNKNOWN,
+	/**
+	 * Not every condition is met in order to run this node
+	 * In general this means that the attached condition has to evaluate to @c true
+	 */
+	CANNOTEXECUTE,
+	/**
+	 * This behavior is still running and thus can block others
+	 */
+	RUNNING,
+	/**
+	 * The behavior ran and terminated without any problems.
+	 */
+	FINISHED,
+	/**
+	 * Controlled failure
+	 */
+	FAILED,
+	/**
+	 * Unexpected failure while executing the the node's action
+	 */
+	EXCEPTION,
+
+	MAX_TREENODESTATUS
 }
 
 table StateNode {
@@ -89,7 +118,8 @@ table State {
 	character_id:long;
 	position:Vec3 (required);
 	orientation:float;
-	attributes:[MapEntry];
+	meta_attributes:[MapEntry] (required);
+	attrib:[AttribEntry] (required);
 }
 
 table StateWorld {
@@ -103,7 +133,7 @@ table CharacterStatic {
 
 table CharacterDetails {
 	character_id:long;
-	aggro:StateAggro;
+	aggro:[StateAggroEntry];
 	root:StateNode;
 }
 

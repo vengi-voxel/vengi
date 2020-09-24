@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "attrib/ShadowAttributes.h"
 #if 0
 #include "voxelutil/AStarPathfinder.h"
 #endif
@@ -30,8 +31,8 @@ Npc::Npc(network::EntityType type, const TreeNodePtr& behaviour,
 	_aiChr = core::make_shared<AICharacter>(_entityId, *this);
 	_ai->setCharacter(_aiChr);
 	_aiChr->setOrientation(randomf(glm::two_pi<float>()));
-	_aiChr->setAttribute(ai::attributes::NAME, core::string::format("%s " PRIEntId, this->type(), _entityId));
-	_aiChr->setAttribute(ai::attributes::ID, core::string::format(PRIEntId, _entityId));
+	_aiChr->setMetaAttribute(ai::attributes::NAME, this->type());
+	_aiChr->setMetaAttribute(ai::attributes::ID, core::string::format(PRIEntId, _entityId));
 }
 
 Npc::~Npc() {
@@ -110,21 +111,10 @@ void Npc::updateFromAIState() {
 
 void Npc::updateAIState() {
 	_aiChr->setPosition(pos());
-	_aiChr->setSpeed(current(attrib::Type::SPEED));
-	if (ai()->isDebuggingActive()) {
-		const core::String& posBuf = core::string::format("%.2f:%.2f:%.2f", _pos.x, _pos.y, _pos.z);
-		_aiChr->setAttribute(ai::attributes::POSITION, posBuf);
-		_aiChr->setAttribute(ai::attributes::ORIENTATION, core::string::toString(glm::degrees(orientation())));
-		const attrib::Attributes& attribs =  _attribs;
-		for (int i = 0; i <= (int)attrib::Type::MAX; ++i) {
-			const attrib::Type attribType = (attrib::Type)i;
-			if (attribType == attrib::Type::NONE) {
-				continue;
-			}
-			const double current = attribs.current(attribType);
-			const double max = attribs.max(attribType);
-			_aiChr->setAttribute(network::EnumNameAttribType(attribType), core::string::format("%f/%f", current, max));
-		}
+	for (int i = 0; i <= (int)attrib::Type::MAX; ++i) {
+		const attrib::Type attribType = (attrib::Type)i;
+		_aiChr->setCurrent(attribType, _attribs.current(attribType));
+		_aiChr->setMax(attribType, _attribs.max(attribType));
 	}
 }
 

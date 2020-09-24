@@ -3,34 +3,24 @@
  */
 #pragma once
 
-#include "Network.h"
-
 #include "backend/entity/ai/tree/TreeNode.h"
 #include "backend/entity/ai/zone/Zone.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/entity/ai/tree/TreeNode.h"
+#include "backend/entity/ai/server/AIMessageSender.h"
+#include "core/EventBus.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
 #include "core/concurrent/Lock.h"
-
-#include "ai-shared/protocol/AIStubTypes.h"
-#include "ai-shared/protocol/ProtocolHandlerRegistry.h"
+#include "core/concurrent/Atomic.h"
+#include "AIServerNetwork.h"
+#include "network/NetworkEvents.h"
+#include "AIMessages_generated.h"
 
 namespace backend {
 
-class AIStateNode;
-class AIStateNodeStatic;
-
-class SelectHandler;
-class PauseHandler;
-class ResetHandler;
-class StepHandler;
-class ChangeHandler;
-class AddNodeHandler;
-class DeleteNodeHandler;
-class UpdateNodeHandler;
-class NopHandler;
+class Zone;
 
 /**
  * @brief The server can serialize the state of the @ai{AI} and broadcast it to all connected clients.
@@ -45,31 +35,33 @@ class NopHandler;
  *
  * You can only debug one @ai{Zone} at the same time. The debugging session is shared between all connected clients.
  */
-class Server: public INetworkListener {
+class Server : public core::IEventBusHandler<network::NewConnectionEvent>,
+	public core::IEventBusHandler<network::DisconnectEvent> {
 protected:
 	typedef core::Set<Zone*> Zones;
 	typedef Zones::iterator ZoneConstIter;
 	typedef Zones::iterator ZoneIter;
 	Zones _zones;
 	AIRegistry& _aiRegistry;
-	Network _network;
+	network::AIServerNetworkPtr _network;
+	network::AIMessageSenderPtr _messageSender;
+	mutable flatbuffers::FlatBufferBuilder _staticCharacterDetailsFBB;
+	mutable flatbuffers::FlatBufferBuilder _characterDetailsFBB;
+	mutable flatbuffers::FlatBufferBuilder _stateFBB;
+	mutable flatbuffers::FlatBufferBuilder _pauseFBB;
+	mutable flatbuffers::FlatBufferBuilder _namesFBB;
+
+	core::EventBusPtr _eventBus;
 	ai::CharacterId _selectedCharacterId;
 	int64_t _time;
-	SelectHandler *_selectHandler;
-	PauseHandler *_pauseHandler;
-	ResetHandler *_resetHandler;
-	StepHandler *_stepHandler;
-	ChangeHandler *_changeHandler;
-	AddNodeHandler *_addNodeHandler;
-	DeleteNodeHandler *_deleteNodeHandler;
-	UpdateNodeHandler *_updateNodeHandler;
-	ai::NopHandler _nopHandler;
 	core::AtomicBool _pause;
 	// the current active debugging zone
 	core::AtomicPtr<Zone> _zone;
 	core_trace_mutex(core::Lock, _lock, "AIServer");
 	core::DynamicArray<core::String> _names;
 	uint32_t _broadcastMask = 0u;
+	short _port;
+	core::String _hostname;
 
 	enum EventType {
 		EV_SELECTION,
@@ -90,7 +82,7 @@ protected:
 			ai::CharacterId characterId;
 			int64_t stepMillis;
 			Zone* zone;
-			Client* newClient;
+			ENetPeer* peer;
 			bool pauseState;
 		} data;
 		core::String strData = "";
@@ -100,27 +92,27 @@ protected:
 
 	void resetSelection();
 
-	void addChildren(const TreeNodePtr& node, core::DynamicArray<ai::AIStateNodeStatic>& out) const;
-	void addChildren(const TreeNodePtr& node, ai::AIStateNode& parent, const AIPtr& ai) const;
+	void addChildren(const TreeNodePtr& node, core::DynamicArray<flatbuffers::Offset<ai::StateNodeStatic>>& offsets) const;
+	flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> addChildren(const TreeNodePtr& node, const AIPtr& ai) const;
 
 	// only call these from the Server::update method
 	void broadcastState(const Zone* zone);
 	void broadcastCharacterDetails(const Zone* zone);
 	void broadcastStaticCharacterDetails(const Zone* zone);
 
-	void onConnect(Client* client) override;
-	void onDisconnect(Client* client) override;
-
 	void handleEvents(Zone* zone, bool pauseState);
 	void enqueueEvent(const Event& event);
 public:
-	Server(AIRegistry& aiRegistry, short port = 10001, const core::String& hostname = "0.0.0.0");
+	Server(AIRegistry& aiRegistry, const metric::MetricPtr& metric, short port = 10001, const core::String& hostname = "0.0.0.0");
 	virtual ~Server();
 
 	/**
 	 * @brief Start to listen on the specified port
 	 */
 	bool start();
+
+	void onEvent(const network::NewConnectionEvent& event) override;
+	void onEvent(const network::DisconnectEvent& event) override;
 
 	/**
 	 * @brief Update the specified node with the given values for the specified @ai{ICharacter} and all the
@@ -195,12 +187,12 @@ public:
 	 * @brief Select a particular character (resp. @ai{AI} instance) and send detail
 	 * information to all the connected clients for this entity.
 	 */
-	void select(const ai::ClientId& clientId, const ai::CharacterId& id);
+	void select(const ai::CharacterId& id);
 
 	/**
 	 * @brief Will pause/unpause the execution of the behaviour trees for all watched @ai{AI} instances.
 	 */
-	void pause(const ai::ClientId& clientId, bool pause);
+	void pause(bool pause);
 
 	/**
 	 * @brief Performs one step of the @ai{AI} in pause mode

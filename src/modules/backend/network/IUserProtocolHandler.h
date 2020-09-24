@@ -22,18 +22,16 @@ public:
 
 	virtual ~IUserProtocolHandler() {
 	}
-
-	virtual void execute(User* attachment, const MSGTYPE* message) override = 0;
 };
 
 #define USERPROTOHANDLER(msgType) \
 struct msgType##Handler: public IUserProtocolHandler<msgType> { \
 	msgType##Handler() : IUserProtocolHandler<msgType>(#msgType) {} \
-	void execute(User* attachment, const msgType* message) override; \
+	void executeWithRaw(User* attachment, const msgType* message, const uint8_t* rawData, size_t rawDataLength) override; \
 }
 
 #define USERPROTOHANDLERIMPL(msgType) \
 USERPROTOHANDLER(msgType); \
-inline void msgType##Handler::execute(User* user, const msgType* message)
+inline void msgType##Handler::executeWithRaw(User* user, const msgType* message, const uint8_t* rawData, size_t rawDataLength)
 
 }

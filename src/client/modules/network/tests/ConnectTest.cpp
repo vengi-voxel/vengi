@@ -40,7 +40,7 @@ public:
 	void SetUp() override {
 		_clientEventBus = std::make_shared<core::EventBus>();
 		_serverEventBus = std::make_shared<core::EventBus>();
-		_protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+		_protocolHandlerRegistry = core::make_shared<network::ProtocolHandlerRegistry>();
 		_clientNetwork = std::make_shared<network::ClientNetwork>(_protocolHandlerRegistry, _clientEventBus);
 		_clientMessageSender = std::make_shared<network::ClientMessageSender>(_clientNetwork);
 		const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
@@ -99,14 +99,14 @@ public:
 			UserConnectHandler(int *called) : _called(called) {
 			}
 
-			void execute(ENetPeer* peer, const void* message) override {
+			void executeWithRaw(ENetPeer* peer, const void* message, const uint8_t* rawData, size_t rawDataSize) override {
 				(*_called)++;
 			}
 		};
 
 		_serverNetwork->init();
 		const network::ProtocolHandlerRegistryPtr& r = _serverNetwork->registry();
-		r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::UserConnect), std::make_shared<UserConnectHandler>(&_userConnectHandlerCalled));
+		r->registerHandler(network::ClientMsgType::UserConnect, std::make_shared<UserConnectHandler>(&_userConnectHandlerCalled));
 		_clientNetwork->init();
 
 		_disconnectEvent = 0;

@@ -3,19 +3,20 @@
  */
 #pragma once
 
-#include "ai-shared/protocol/IProtocolHandler.h"
+#include "network/IMsgProtocolHandler.h"
+#include "AIMessages_generated.h"
 
 namespace backend {
 
 class Server;
 
-class ChangeHandler: public ai::IProtocolHandler {
+class ChangeHandler: public network::IMsgProtocolHandler<ai::ChangeZone, void> {
 private:
 	Server& _server;
 public:
 	explicit ChangeHandler(Server& server);
 
-	void execute(const ai::ClientId& /*clientId*/, const ai::IProtocolMessage& message) override;
+	void executeWithRaw(void* attachment, const ai::ChangeZone* message, const uint8_t* rawData, size_t rawDataSize) override;
 };
 
 }

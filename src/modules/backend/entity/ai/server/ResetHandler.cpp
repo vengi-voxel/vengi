@@ -10,7 +10,7 @@ namespace backend {
 ResetHandler::ResetHandler(Server& server) : _server(server) {
 }
 
-void ResetHandler::execute(const ai::ClientId& /*clientId*/, const ai::IProtocolMessage& /*message*/) {
+void ResetHandler::executeWithRaw(void*, const ai::Reset*, const uint8_t*, size_t) {
 	_server.reset();
 }
 

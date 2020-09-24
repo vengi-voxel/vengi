@@ -74,7 +74,7 @@ UserPtr UserConnectHandler::login(ENetPeer* peer, const core::String& email, con
 	return u;
 }
 
-void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
+void UserConnectHandler::executeWithRaw(ENetPeer* peer, const void* raw, const uint8_t* rawData, size_t rawDataLength) {
 	const auto* message = getMsg<network::UserConnect>(raw);
 
 	const core::String email(message->email()->c_str());
