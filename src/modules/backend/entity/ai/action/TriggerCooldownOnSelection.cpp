@@ -13,6 +13,7 @@ namespace backend {
 
 TriggerCooldownOnSelection::TriggerCooldownOnSelection(const core::String& name, const core::String& parameters, const ConditionPtr& condition) :
 		ITask(name, parameters, condition) {
+	_type = "TriggerCooldownOnSelection";
 	_cooldownId = cooldown::getType(parameters);
 	core_assert_always(_cooldownId != cooldown::Type::NONE);
 }

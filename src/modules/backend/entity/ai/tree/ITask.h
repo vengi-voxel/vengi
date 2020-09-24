@@ -8,24 +8,6 @@
 namespace backend {
 
 /**
- * @brief Macro for the constructor of a task. Just give the class name as parameter.
- */
-#define TASK_CLASS_CTOR(TaskName) \
-	TaskName(const core::String& name, const core::String& parameters, const ConditionPtr& condition) : \
-			ITask(name, parameters, condition)
-/**
- * @brief Macro for the destructor of a task. Just give the class name as parameter.
- */
-#define TASK_CLASS_DTOR(TaskName) virtual ~TaskName()
-
-/**
- * @brief Macro to simplify the task creation. Just give the class name as parameter.
- */
-#define TASK_CLASS(TaskName) \
-	TASK_CLASS_CTOR(TaskName) {}\
-	TASK_CLASS_DTOR(TaskName) {}
-
-/**
  * @brief A node for your real actions in the behaviour tree
  * @note This node doesn't support children
  */
@@ -63,11 +45,11 @@ public:
  */ \
 struct TaskName: public ::backend::ITask { \
 	TaskName(const core::String& name, const core::String& parameters, const ConditionPtr& condition) : \
-			::backend::ITask(name, parameters, condition) {} \
+			::backend::ITask(name, parameters, condition) {_type = #TaskName; } \
 	virtual ~TaskName() {} \
 	NODE_FACTORY(TaskName) \
 	ai::TreeNodeStatus doAction(const AIPtr& entity, int64_t deltaMillis) override; \
-}; \
+};
 
 #define AI_TASK_IMPL(TaskName) \
 ai::TreeNodeStatus TaskName::doAction(const AIPtr& entity, int64_t deltaMillis)
