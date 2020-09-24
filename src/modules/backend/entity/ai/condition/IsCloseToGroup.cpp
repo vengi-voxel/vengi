@@ -8,6 +8,8 @@
 #include "backend/entity/ai/zone/Zone.h"
 #include "core/collection/DynamicArray.h"
 #include <glm/geometric.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
 
 namespace backend {
 
@@ -22,6 +24,7 @@ IsCloseToGroup::IsCloseToGroup(const core::String& parameters) :
 		_groupId = core::string::toInt(tokens[0]);
 		_distance = core::string::toFloat(tokens[1]);
 	}
+	_distance = glm::pow(_distance, 2.0);
 }
 
 bool IsCloseToGroup::evaluate(const AIPtr& entity) {
@@ -38,7 +41,7 @@ bool IsCloseToGroup::evaluate(const AIPtr& entity) {
 	if (!mgr.getPosition(_groupId, pos)) {
 		return false;
 	}
-	return glm::distance(pos, entity->getCharacter()->getPosition()) <= _distance;
+	return glm::distance2(pos, entity->getCharacter()->getPosition()) <= _distance;
 }
 
 }
