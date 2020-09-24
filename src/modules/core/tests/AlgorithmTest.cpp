@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "core/Algorithm.h"
+#include "core/ArrayLength.h"
 #include "core/collection/Array.h"
 
 namespace core {
@@ -62,6 +63,21 @@ TEST(AlgorithmTest, testNext) {
 TEST(AlgorithmTest, testDistance) {
 	core::Array<int, 5> foo{{0, -1, -2, -4, -6}};
 	EXPECT_EQ((int)foo.size(), core::distance(foo.begin(), foo.end()));
+}
+
+TEST(AlgorithmTest, sortedDifference) {
+	int out[512];
+	{
+		const int buf1[] = {1, 2, 3, 4, 5};
+		const int buf2[] = {5, 6, 7, 8, 9};
+		int amount = 0;
+		core::sortedDifference(buf1, lengthof(buf1), buf2, lengthof(buf2), out, lengthof(out), amount);
+		ASSERT_EQ(4, amount);
+		EXPECT_EQ(1, out[0]);
+		EXPECT_EQ(2, out[1]);
+		EXPECT_EQ(3, out[2]);
+		EXPECT_EQ(4, out[3]);
+	}
 }
 
 }

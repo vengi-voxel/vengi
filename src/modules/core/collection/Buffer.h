@@ -313,7 +313,7 @@ public:
 		_size += n;
 	}
 
-	void erase(size_t index, size_t n) {
+	void erase(size_t index, size_t n = 1u) {
 		if (n == 0) {
 			return;
 		}
