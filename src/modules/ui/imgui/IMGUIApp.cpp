@@ -213,14 +213,14 @@ app::AppState IMGUIApp::onInit() {
 		0,
 	};
 	io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											 15.0f * _dpiFactor, nullptr, rangesBasic);
+											 12.0f * _dpiFactor, nullptr, rangesBasic);
 	static const ImWchar rangesIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											 14.0f * _dpiFactor, &fontCfg, rangesIcons);
+											 10.0f * _dpiFactor, &fontCfg, rangesIcons);
 	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 													   20.0f * _dpiFactor);
 	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-														 15.0f * _dpiFactor);
+														 12.0f * _dpiFactor);
 
 	ImGui::StyleColorsDark();
 	ImGuiStyle &style = ImGui::GetStyle();
