@@ -3,6 +3,7 @@
  */
 
 #include "IMGUI.h"
+#include "core/Color.h"
 #include <SDL_stdinc.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -71,12 +72,24 @@ bool CheckboxVar(const char* label, const char* varName) {
 	return CheckboxVar(label, var);
 }
 
-void TooltipText(const char* text) {
+bool TooltipText(const char* msg, ...) {
 	if (ImGui::IsItemHovered()) {
 		ImGui::BeginTooltip();
+
+		va_list ap;
+		constexpr size_t bufSize = 4096;
+		char text[bufSize];
+
+		va_start(ap, msg);
+		SDL_vsnprintf(text, bufSize, msg, ap);
+		text[sizeof(text) - 1] = '\0';
+		va_end(ap);
+
 		ImGui::Text("%s", text);
 		ImGui::EndTooltip();
+		return true;
 	}
+	return false;
 }
 
 void TextCentered(const char *text) {
@@ -87,6 +100,20 @@ void TextCentered(const char *text) {
 
 void Image(video::Id handle, const glm::ivec2& size) {
 	ImGui::Image((void*)(intptr_t)handle, ImVec2(size.x, size.y));
+}
+
+bool ToggleButton(const char *text, bool state) {
+	if (state) {
+		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+		const ImVec4& buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::darker(buttonColor));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::darker(buttonHoveredColor));
+	}
+	const bool pressed = ImGui::Button(text);
+	if (state) {
+		ImGui::PopStyleColor(2);
+	}
+	return pressed;
 }
 
 }

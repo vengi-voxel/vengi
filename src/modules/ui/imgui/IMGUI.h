@@ -7,6 +7,7 @@
 
 #include "IMGUIInternal.h"
 #include "video/Types.h"
+#include "core/Common.h"
 #include "core/Var.h"
 #include <vector>
 #include "core/collection/Array.h"
@@ -38,6 +39,8 @@ static bool ComboStl(const char* label, int* current_item, const Collection& ite
 		},
 		(void*) &items, (int)items.size(), height_in_items);
 }
-IMGUI_API void TooltipText(const char* text);
+IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 IMGUI_API void TextCentered(const char *text);
+IMGUI_API bool ToggleButton(const char *text, bool state);
+
 }
