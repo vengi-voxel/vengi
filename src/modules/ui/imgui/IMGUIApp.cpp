@@ -131,6 +131,8 @@ void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
 app::AppState IMGUIApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_console.construct();
+	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
+	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false");
 	return state;
 }
 
@@ -166,8 +168,6 @@ app::AppState IMGUIApp::onInit() {
 	if (state != app::AppState::Running) {
 		return state;
 	}
-
-	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 
 	if (!_shader.setup()) {
 		Log::error("Could not load the ui shader");
@@ -335,6 +335,13 @@ app::AppState IMGUIApp::onRunning() {
 	if (renderUI) {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
+		bool showMetrics = _showMetrics->boolVal();
+		if (showMetrics) {
+			ImGui::ShowMetricsWindow(&showMetrics);
+			if (!showMetrics) {
+				_showMetrics->setVal("false");
+			}
+		}
 	}
 
 	if (ImGui::IsAnyWindowHovered()) {

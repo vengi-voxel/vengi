@@ -26,6 +26,7 @@ private:
 	video::Camera _camera;
 protected:
 	core::VarPtr _renderUI;
+	core::VarPtr _showMetrics;
 	video::Id _texture = video::InvalidId;
 	shader::TextureShader _shader;
 	video::Buffer _vbo;
