@@ -80,4 +80,20 @@ TEST(AlgorithmTest, sortedDifference) {
 	}
 }
 
+TEST(AlgorithmTest, sortedIntersection) {
+	int out[4];
+	{
+		const int buf1[] = {1, 2, 3, 4, 5, 10, 11, 12, 19, 21, 23, 26};
+		const int buf2[] = {5, 6, 7, 8, 9, 10, 13, 15, 19, 24, 25, 26};
+		int amount = 0;
+		core::sortedIntersection(buf1, lengthof(buf1), buf2, lengthof(buf2), out, lengthof(out), amount);
+		ASSERT_GE(4, amount);
+		EXPECT_EQ(4, amount);
+		EXPECT_EQ(5, out[0]);
+		EXPECT_EQ(10, out[1]);
+		EXPECT_EQ(19, out[2]);
+		EXPECT_EQ(26, out[3]);
+	}
+}
+
 }

@@ -127,4 +127,25 @@ void sortedDifference(const Type *buf1, int buf1Length, const Type *buf2, int bu
 	}
 }
 
+template <typename Type>
+void sortedIntersection(const Type *buf1, int buf1Length, const Type *buf2, int buf2Length, Type *out, int outLength, int& outIdx) {
+	int i = 0;
+	int j = 0;
+	outIdx = 0;
+	while (i < buf1Length && j < buf2Length) {
+		if (outLength <= outIdx) {
+			return;
+		}
+		if (buf1[i] < buf2[j]) {
+			++i;
+		} else if (buf2[j] < buf1[i]) {
+			++j;
+		} else {
+			out[outIdx++] = buf1[i];
+			++i;
+			++j;
+		}
+	}
+}
+
 }
