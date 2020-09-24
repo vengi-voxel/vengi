@@ -45,6 +45,13 @@ TEST_F(StringUtilTest, testExtractPath) {
 	EXPECT_EQ("/a/b/c/def/", core::string::extractPath("/a/b/c/def/foo.bar"));
 }
 
+TEST_F(StringUtilTest, testSplit) {
+	core::DynamicArray<core::String> tokens;
+	core::string::splitString("foobar++", tokens, "+");
+	ASSERT_EQ(1, tokens.size());
+	EXPECT_EQ("foobar", tokens[0]);
+}
+
 TEST_F(StringUtilTest, testAppendSmall1) {
 	char buf1[4] = { '\0' };
 	EXPECT_EQ(&buf1[1], core::string::append(buf1, sizeof(buf1), "a"));
