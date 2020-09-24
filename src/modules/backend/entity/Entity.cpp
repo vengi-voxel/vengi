@@ -160,7 +160,7 @@ void Entity::broadcastAttribUpdate() {
 			// TODO: maybe not needed?
 			const network::AttribMode mode = network::AttribMode::Percentage;
 			const bool current = dirtyValue.current;
-			return network::CreateAttribEntry(_attribUpdateFBB, dirtyValue.type, value, mode, current);
+			return network::CreateAttribEntry(_attribUpdateFBB, dirtyValue.type, (float)value, mode, current);
 		});
 	sendToVisible(_attribUpdateFBB, network::ServerMsgType::AttribUpdate,
 			network::CreateAttribUpdate(_attribUpdateFBB, id(), attribs).Union(), true);
@@ -245,7 +245,7 @@ math::RectFloat Entity::rect() const {
 
 math::RectFloat Entity::viewRect() const {
 	const glm::vec3 p = pos();
-	const float viewDistance = current(attrib::Type::VIEWDISTANCE);
+	const float viewDistance = (float)current(attrib::Type::VIEWDISTANCE);
 	core_assert_msg(viewDistance > 0.0f, "Expected to get a view distance > 0.0f, but got %f (EntityType: %i)", viewDistance, (int)entityType());
 	return math::RectFloat(p.x - viewDistance, p.z - viewDistance, p.x + viewDistance, p.z + viewDistance);
 }
