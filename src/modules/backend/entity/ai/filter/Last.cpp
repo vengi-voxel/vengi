@@ -8,16 +8,17 @@
 namespace backend {
 
 void Last::filter (const AIPtr& entity) {
-	FilteredEntities& filtered = getFilteredEntities(entity);
-	const FilteredEntities copy = filtered;
-	filtered.clear();
-	_filters.front()->filter(entity);
-	const auto& value = getFilteredEntities(entity).back();
-	filtered.clear();
-	for (auto& e : copy) {
-		filtered.push_back(e);
+	// TODO: could be optimized by running them in reverse and check if there is a result
+	for (auto& f : _filters) {
+		f->filter(entity);
 	}
-	filtered.push_back(value);
+	FilteredEntities& filtered = getFilteredEntities(entity);
+	if (filtered.empty()) {
+		return;
+	}
+	const ai::CharacterId id = filtered[filtered.size() - 1];
+	filtered.clear();
+	filtered.push_back(id);
 }
 
 }

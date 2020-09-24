@@ -5,10 +5,10 @@
 #pragma once
 
 #include "ai-shared/common/CharacterId.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 
 namespace backend {
 
-typedef core::DynamicArray<ai::CharacterId> FilteredEntities;
+typedef core::Buffer<ai::CharacterId> FilteredEntities;
 
 }

@@ -9,15 +9,20 @@ namespace backend {
 
 void First::filter (const AIPtr& entity) {
 	FilteredEntities& filtered = getFilteredEntities(entity);
-	const FilteredEntities copy = filtered;
-	filtered.clear();
-	_filters.front()->filter(entity);
-	const auto& value = getFilteredEntities(entity).front();
-	filtered.clear();
-	for (auto& e : copy) {
-		filtered.push_back(e);
+	for (auto& f : _filters) {
+		f->filter(entity);
+		if (!filtered.empty()) {
+			// skip every other filter here
+			break;
+		}
 	}
-	filtered.push_back(value);
+	if (filtered.empty()) {
+		return;
+	}
+	const ai::CharacterId id = filtered[0];
+	filtered.clear();
+	filtered.push_back(id);
+
 }
 
 }

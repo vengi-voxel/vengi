@@ -5,61 +5,41 @@
  */
 
 #include "Complement.h"
+#include "core/Algorithm.h"
 #include "core/Common.h"
-#include <algorithm>
-#include <vector>
-#include <iterator>
+#include "FilteredEntities.h"
+#include "FilterUtil.h"
 
 namespace backend {
 
+static size_t complement(size_t maxSize, core::Array<FilteredEntities, 2>& filteredArray) {
+	FilteredEntities intersection(maxSize);
+	int outSize = 0;
+	core::sortedDifference(filteredArray[0].data(), filteredArray[0].size(), filteredArray[1].data(), filteredArray[1].size(), intersection.data(), intersection.capacity(), outSize);
+	filteredArray[0].clear();
+	filteredArray[0].append(intersection.data(), outSize);
+	return outSize;
+}
+
 void Complement::filter (const AIPtr& entity) {
 	FilteredEntities& filtered = getFilteredEntities(entity);
-	// create a copy
-	const FilteredEntities alreadyFiltered = filtered;
-	// now clear the entity list
+
+	FilterState state;
+	state.add(filtered, nullptr);
+
 	filtered.clear();
 
-	std::vector<FilteredEntities> filteredArray(_filters.size());
-	int n = 0;
-	size_t max = 0u;
 	for (auto& f : _filters) {
 		f->filter(entity);
-		filteredArray[n++] = filtered;
-		max = core_max(filtered.size(), max);
-		// safe and clear
-		filtered.clear();
-	}
-
-	for (size_t i = 0; i < filteredArray.size(); ++i) {
-		std::sort(filteredArray[i].begin(), filteredArray[i].end());
-	}
-
-	FilteredEntities result(max);
-	std::set_difference(
-			filteredArray[0].begin(), filteredArray[0].end(),
-			filteredArray[1].begin(), filteredArray[1].end(),
-			std::back_inserter(result));
-
-	if (filteredArray.size() >= 2) {
-		FilteredEntities buffer(max);
-		for (size_t i = 2; i < filteredArray.size(); ++i) {
-			buffer.clear();
-			std::sort(result.begin(), result.end());
-			std::set_difference(
-					result.begin(), result.end(),
-					filteredArray[i].begin(), filteredArray[i].end(),
-					std::back_inserter(buffer));
-			core::exchange(result, buffer);
+		if (filtered.empty()) {
+			continue;
 		}
-	}
 
-	filtered.reserve(alreadyFiltered.size() + max);
-	for (auto& e : alreadyFiltered) {
-		filtered.push_back(e);
+		state.add(filtered, complement);
 	}
-	for (auto& e : result) {
-		filtered.push_back(e);
-	}
+	core_assert(state.n == 1);
+	core_assert(filtered.empty());
+	filtered.append(state.filteredArray[0].data(), state.filteredArray[0].size());
 }
 
 }

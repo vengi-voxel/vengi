@@ -246,6 +246,17 @@ TEST_F(AITest, testComplement) {
 	EXPECT_EQ(19, filteredEntities[0]);
 }
 
+TEST_F(AITest, testComplementWithEmpty) {
+	const NpcPtr& npc = create();
+	Filters filters;
+	filters.push_back(std::make_shared<FakeFilter>("1,2,3,5,6,10,4", Filters()));
+	filters.push_back(std::make_shared<FakeFilter>("3,9,10,2,4", Filters()));
+	backend::Complement filter("", filters);
+	filter.filter(npc->ai());
+	const FilteredEntities& filteredEntities = npc->ai()->getFilteredEntities();
+	EXPECT_TRUE(filteredEntities.empty());
+}
+
 TEST_F(AITest, testUnion) {
 	const NpcPtr& npc = create();
 	Filters filters;

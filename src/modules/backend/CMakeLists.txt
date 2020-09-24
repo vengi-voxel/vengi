@@ -84,6 +84,7 @@ set(SRCS
 	entity/ai/condition/True.h
 	entity/ai/filter/IFilter.cpp
 	entity/ai/filter/IFilter.h
+	entity/ai/filter/FilterUtil.h
 	entity/ai/filter/FilteredEntities.h
 	entity/ai/filter/SelectEmpty.h
 	entity/ai/filter/SelectGroupLeader.cpp
