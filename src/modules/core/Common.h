@@ -125,4 +125,18 @@ struct Less {
 	}
 };
 
+template<class T>
+struct Equal {
+	constexpr bool operator()(const T &lhs, const T &rhs) const {
+		return lhs == rhs;
+	}
+};
+
+template<class T>
+struct Greater {
+	constexpr bool operator()(const T &lhs, const T &rhs) const {
+		return lhs > rhs;
+	}
+};
+
 }
