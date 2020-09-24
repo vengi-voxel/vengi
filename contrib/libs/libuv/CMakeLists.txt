@@ -222,6 +222,30 @@ if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
   list(APPEND uv_sources src/unix/no-proctitle.c src/unix/sunos.c)
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+  list(APPEND uv_defines _BSD_SOURCE)
+  list(APPEND uv_libraries bsd network)
+  list(APPEND uv_sources
+	  src/unix/haiku.c
+	  src/unix/bsd-ifaddrs.c
+	  src/unix/no-fsevents.c
+	  src/unix/no-proctitle.c
+	  src/unix/posix-hrtime.c
+	  src/unix/posix-poll.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
+  list(APPEND uv_sources
+    src/unix/posix-hrtime.c
+    src/unix/posix-poll.c
+    src/unix/qnx.c
+    src/unix/bsd-ifaddrs.c
+    src/unix/no-proctitle.c
+    src/unix/no-fsevents.c)
+  list(APPEND uv_cflags -fno-strict-aliasing)
+  list(APPEND uv_libraries socket)
+endif()
+
 engine_add_library(LIB ${LIB} SRCS ${uv_sources})
 if (NOT LIBUV_FOUND)
   target_compile_definitions(${LIB} PRIVATE ${uv_defines} BUILDING_UV_SHARED=1)
