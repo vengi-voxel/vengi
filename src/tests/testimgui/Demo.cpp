@@ -628,7 +628,7 @@ static void ShowDemoWindowWidgets()
                 "Hold SHIFT/ALT for faster/slower edit.\n"
                 "Double-click or CTRL+click to input value.");
 
-            ImGui::DragInt("drag int 0..100", &i2, 1, 0, 100, "%d%%", ImGuiSliderFlags_ClampOnInput);
+            ImGui::DragInt("drag int 0..100", &i2, 1, 0, 100, "%d%%", ImGuiSliderFlags_AlwaysClamp);
 
             static float f1 = 1.00f, f2 = 0.0067f;
             ImGui::DragFloat("drag float", &f1, 0.005f);
@@ -1569,7 +1569,7 @@ static void ShowDemoWindowWidgets()
     {
         // Demonstrate using advanced flags for DragXXX and SliderXXX functions. Note that the flags are the same!
         static ImGuiSliderFlags flags = ImGuiSliderFlags_None;
-        ImGui::CheckboxFlags("ImGuiSliderFlags_ClampOnInput", (unsigned int*)&flags, ImGuiSliderFlags_ClampOnInput);
+        ImGui::CheckboxFlags("ImGuiSliderFlags_AlwaysClamp", (unsigned int*)&flags, ImGuiSliderFlags_AlwaysClamp);
         ImGui::SameLine(); HelpMarker("Always clamp value to min/max bounds (if any) when input manually with CTRL+Click.");
         ImGui::CheckboxFlags("ImGuiSliderFlags_Logarithmic", (unsigned int*)&flags, ImGuiSliderFlags_Logarithmic);
         ImGui::SameLine(); HelpMarker("Enable logarithmic editing (more precision for small values).");
@@ -1602,7 +1602,7 @@ static void ShowDemoWindowWidgets()
     {
         static float begin = 10, end = 90;
         static int begin_i = 100, end_i = 1000;
-        ImGui::DragFloatRange2("range float", &begin, &end, 0.25f, 0.0f, 100.0f, "Min: %.1f %%", "Max: %.1f %%", ImGuiSliderFlags_ClampOnInput);
+        ImGui::DragFloatRange2("range float", &begin, &end, 0.25f, 0.0f, 100.0f, "Min: %.1f %%", "Max: %.1f %%", ImGuiSliderFlags_AlwaysClamp);
         ImGui::DragIntRange2("range int", &begin_i, &end_i, 5, 0, 1000, "Min: %d units", "Max: %d units");
         ImGui::DragIntRange2("range int (no bounds)", &begin_i, &end_i, 5, 0, 0, "Min: %d units", "Max: %d units");
         ImGui::TreePop();
@@ -3207,6 +3207,8 @@ struct MyItem
     // however qsort doesn't allow passing user data to comparing function.
     // As a workaround, we are storing the sort specs in a static/global for the comparing function to access.
     // In your own use case you would probably pass the sort specs to your sorting/comparing functions directly and not use a global.
+    // We could technically call ImGui::TableGetSortSpecs() in CompareWithSortSpecs(), but considering that this function is called
+    // very often by the sorting algorithm it would be a little wasteful.
     static const ImGuiTableSortSpecs* s_current_sort_specs;
 
     // Compare function to be used by qsort()
@@ -3468,7 +3470,7 @@ static void ShowDemoWindowTables()
             ImGui::TableSetupColumn("AAA", ImGuiTableColumnFlags_WidthFixed);// | ImGuiTableColumnFlags_NoResize);
             ImGui::TableSetupColumn("BBB", ImGuiTableColumnFlags_WidthFixed);
             ImGui::TableSetupColumn("CCC", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
             for (int row = 0; row < 5; row++)
             {
                 ImGui::TableNextRow();
@@ -3488,7 +3490,7 @@ static void ShowDemoWindowTables()
             ImGui::TableSetupColumn("DDD", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("EEE", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("FFF", ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultHide);
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
             for (int row = 0; row < 5; row++)
             {
                 ImGui::TableNextRow();
@@ -3515,12 +3517,12 @@ static void ShowDemoWindowTables()
 
         if (ImGui::BeginTable("##table1", 3, flags))
         {
-            // Submit columns name with TableSetupColumn() and call TableAutoHeaders() to create a row with a header in each column.
+            // Submit columns name with TableSetupColumn() and call TableHeadersRow() to create a row with a header in each column.
             // (Later we will show how TableSetupColumn() has other uses, optional flags, sizing weight etc.)
             ImGui::TableSetupColumn("One");
             ImGui::TableSetupColumn("Two");
             ImGui::TableSetupColumn("Three");
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
             for (int row = 0; row < 6; row++)
             {
                 ImGui::TableNextRow();
@@ -3538,7 +3540,7 @@ static void ShowDemoWindowTables()
             ImGui::TableSetupColumn("One");
             ImGui::TableSetupColumn("Two");
             ImGui::TableSetupColumn("Three");
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
             for (int row = 0; row < 6; row++)
             {
                 ImGui::TableNextRow();
@@ -3585,16 +3587,16 @@ static void ShowDemoWindowTables()
     {
         HelpMarker("Here we activate ScrollY, which will create a child window container to allow hosting scrollable contents.\n\nWe also demonstrate using ImGuiListClipper to virtualize the submission of many items.");
         ImVec2 size = ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 7);
-        static ImGuiTableFlags flags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollFreezeTopRow | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+        static ImGuiTableFlags flags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
         ImGui::CheckboxFlags("ImGuiTableFlags_ScrollY", (unsigned int*)&flags, ImGuiTableFlags_ScrollY);
-        ImGui::CheckboxFlags("ImGuiTableFlags_ScrollFreezeTopRow", (unsigned int*)&flags, ImGuiTableFlags_ScrollFreezeTopRow);
 
         if (ImGui::BeginTable("##table1", 3, flags, size))
         {
+            ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
             ImGui::TableSetupColumn("One", ImGuiTableColumnFlags_None);
             ImGui::TableSetupColumn("Two", ImGuiTableColumnFlags_None);
             ImGui::TableSetupColumn("Three", ImGuiTableColumnFlags_None);
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
             ImGuiListClipper clipper;
             clipper.Begin(1000);
             while (clipper.Step())
@@ -3620,21 +3622,26 @@ static void ShowDemoWindowTables()
     {
         HelpMarker("When ScrollX is enabled, the default sizing policy becomes ImGuiTableFlags_SizingPolicyFixedX, as automatically stretching columns doesn't make much sense with horizontal scrolling.\n\nAlso note that as of the current version, you will almost always want to enable ScrollY along with ScrollX, because the container window won't automatically extend vertically to fix contents (this may be improved in future versions).");
         ImVec2 size = ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 10);
-        static ImGuiTableFlags flags = ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollFreezeTopRow | ImGuiTableFlags_ScrollFreezeLeftColumn | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+        static ImGuiTableFlags flags = ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+        static int freeze_cols = 1;
+        static int freeze_rows = 1;
         ImGui::CheckboxFlags("ImGuiTableFlags_ScrollY", (unsigned int*)&flags, ImGuiTableFlags_ScrollY);
-        ImGui::CheckboxFlags("ImGuiTableFlags_ScrollFreezeTopRow", (unsigned int*)&flags, ImGuiTableFlags_ScrollFreezeTopRow);
-        ImGui::CheckboxFlags("ImGuiTableFlags_ScrollFreezeLeftColumn", (unsigned int*)&flags, ImGuiTableFlags_ScrollFreezeLeftColumn);
+        ImGui::SetNextItemWidth(ImGui::GetFrameHeight());
+        ImGui::DragInt("freeze_cols", &freeze_cols, 0.2f, 0, 9, NULL, ImGuiSliderFlags_NoInput);
+        ImGui::SetNextItemWidth(ImGui::GetFrameHeight());
+        ImGui::DragInt("freeze_rows", &freeze_rows, 0.2f, 0, 9, NULL, ImGuiSliderFlags_NoInput);
 
         if (ImGui::BeginTable("##table1", 7, flags, size))
         {
-            ImGui::TableSetupColumn("Line #", ImGuiTableColumnFlags_NoHide); // Make the first column not hideable to match our use of ImGuiTableFlags_ScrollFreezeLeftColumn
+            ImGui::TableSetupScrollFreeze(freeze_cols, freeze_rows);
+            ImGui::TableSetupColumn("Line #", ImGuiTableColumnFlags_NoHide); // Make the first column not hideable to match our use of TableSetupScrollFreeze()
             ImGui::TableSetupColumn("One", ImGuiTableColumnFlags_None);
             ImGui::TableSetupColumn("Two", ImGuiTableColumnFlags_None);
             ImGui::TableSetupColumn("Three", ImGuiTableColumnFlags_None);
             ImGui::TableSetupColumn("Four", ImGuiTableColumnFlags_None);
             ImGui::TableSetupColumn("Five", ImGuiTableColumnFlags_None);
             ImGui::TableSetupColumn("Six", ImGuiTableColumnFlags_None);
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
             for (int row = 0; row < 20; row++)
             {
                 ImGui::TableNextRow();
@@ -3700,7 +3707,7 @@ static void ShowDemoWindowTables()
         {
             for (int column = 0; column < column_count; column++)
                 ImGui::TableSetupColumn(column_names[column], column_flags[column]);
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
             for (int row = 0; row < 8; row++)
             {
                 ImGui::Indent(2.0f); // Add some indentation to demonstrate usage of per-column IndentEnable/IndentDisable flags.
@@ -3728,7 +3735,7 @@ static void ShowDemoWindowTables()
         {
             ImGui::TableSetupColumn("A0");
             ImGui::TableSetupColumn("A1");
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
 
             ImGui::TableNextRow();  ImGui::Text("A0 Cell 0");
             {
@@ -3737,7 +3744,7 @@ static void ShowDemoWindowTables()
                 {
                     ImGui::TableSetupColumn("B0");
                     ImGui::TableSetupColumn("B1");
-                    ImGui::TableAutoHeaders();
+                    ImGui::TableHeadersRow();
 
                     ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
                     ImGui::Text("B0 Cell 0");
@@ -3783,7 +3790,7 @@ static void ShowDemoWindowTables()
             flags &= ~(ImGuiTableFlags_SizingPolicyMaskX_ ^ ImGuiTableFlags_SizingPolicyFixedX);    // Can't specify both sizing polices so we clear the other
         ImGui::SameLine(); HelpMarker("Default if _ScrollX if enabled. Makes columns use _WidthFixed by default, or _WidthAlwaysAutoResize if _Resizable is not set.");
         ImGui::CheckboxFlags("ImGuiTableFlags_Resizable", (unsigned int*)&flags, ImGuiTableFlags_Resizable);
-        ImGui::CheckboxFlags("ImGuiTableFlags_NoClipX", (unsigned int*)&flags, ImGuiTableFlags_NoClipX);
+        ImGui::CheckboxFlags("ImGuiTableFlags_NoClip", (unsigned int*)&flags, ImGuiTableFlags_NoClip);
 
         if (ImGui::BeginTable("##3ways", 3, flags, ImVec2(0, 100)))
         {
@@ -3933,7 +3940,6 @@ static void ShowDemoWindowTables()
     {
         static ImGuiTableFlags flags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg;
         //ImGui::CheckboxFlags("ImGuiTableFlags_Scroll", (unsigned int*)&flags, ImGuiTableFlags_Scroll);
-        //ImGui::CheckboxFlags("ImGuiTableFlags_ScrollFreezeLeftColumn", (unsigned int*)&flags, ImGuiTableFlags_ScrollFreezeLeftColumn);
 
         if (ImGui::BeginTable("##3ways", 3, flags))
         {
@@ -3941,7 +3947,7 @@ static void ShowDemoWindowTables()
             ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
             ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, ImGui::GetFontSize() * 6);
             ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, ImGui::GetFontSize() * 10);
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
 
             // Simple storage to output a dummy file-system.
             struct MyTreeNode
@@ -3999,7 +4005,7 @@ static void ShowDemoWindowTables()
         ImGui::TreePop();
     }
 
-    // Demonstrate using TableHeader() calls instead of TableAutoHeaders()
+    // Demonstrate using TableHeader() calls instead of TableHeadersRow()
     if (open_action != -1)
         ImGui::SetNextItemOpen(open_action != 0);
     if (ImGui::TreeNode("Custom headers"))
@@ -4015,7 +4021,7 @@ static void ShowDemoWindowTables()
             // FIXME: It would be nice to actually demonstrate full-featured selection using those checkbox.
             static bool column_selected[3] = {};
 
-            // Instead of calling TableAutoHeaders() we'll submit custom headers ourselves
+            // Instead of calling TableHeadersRow() we'll submit custom headers ourselves
             ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
             for (int column = 0; column < COLUMNS_COUNT; column++)
             {
@@ -4046,12 +4052,12 @@ static void ShowDemoWindowTables()
         ImGui::TreePop();
     }
 
-    // Demonstrate creating custom context menus inside columns, while playing it nice with context menus provided by TableHeader()/TableAutoHeaders()
+    // Demonstrate creating custom context menus inside columns, while playing it nice with context menus provided by TableHeadersRow()/TableHeader()
     if (open_action != -1)
         ImGui::SetNextItemOpen(open_action != 0);
     if (ImGui::TreeNode("Context menus"))
     {
-        HelpMarker("By default, TableHeader()/TableAutoHeaders() will open a context-menu on right-click.");
+        HelpMarker("By default, TableHeadersRow()/TableHeader() will open a context-menu on right-click.");
         ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingPolicyFixedX | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Borders;
         const int COLUMNS_COUNT = 3;
         if (ImGui::BeginTable("##table1", COLUMNS_COUNT, flags))
@@ -4061,7 +4067,7 @@ static void ShowDemoWindowTables()
             ImGui::TableSetupColumn("Three");
 
             // Context Menu 1: right-click on header (including empty section after the third column!) should open Default Table Popup
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
             for (int row = 0; row < 4; row++)
             {
                 ImGui::TableNextRow();
@@ -4142,7 +4148,7 @@ static void ShowDemoWindowTables()
         static ImGuiTableFlags flags =
             ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_MultiSortable
             | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV
-            | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollFreezeTopRow;
+            | ImGuiTableFlags_ScrollY;
         if (ImGui::BeginTable("##table", 4, flags, ImVec2(0, 250), 0.0f))
         {
             // Declare columns
@@ -4156,18 +4162,21 @@ static void ShowDemoWindowTables()
             ImGui::TableSetupColumn("Name",                                                  ImGuiTableColumnFlags_WidthFixed,   -1.0f, MyItemColumnID_Name);
             ImGui::TableSetupColumn("Action",   ImGuiTableColumnFlags_NoSort               | ImGuiTableColumnFlags_WidthFixed,   -1.0f, MyItemColumnID_Action);
             ImGui::TableSetupColumn("Quantity", ImGuiTableColumnFlags_PreferSortDescending | ImGuiTableColumnFlags_WidthStretch, -1.0f, MyItemColumnID_Quantity);
+            ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
 
             // Sort our data if sort specs have been changed!
-            if (const ImGuiTableSortSpecs* sorts_specs = ImGui::TableGetSortSpecs())
-                if (sorts_specs->SpecsChanged && items.Size > 1)
+            if (ImGuiTableSortSpecs* sorts_specs = ImGui::TableGetSortSpecs())
+                if (sorts_specs->SpecsDirty)
                 {
                     MyItem::s_current_sort_specs = sorts_specs; // Store in variable accessible by the sort function.
-                    qsort(&items[0], (size_t)items.Size, sizeof(items[0]), MyItem::CompareWithSortSpecs);
+                    if (items.Size > 1)
+                        qsort(&items[0], (size_t)items.Size, sizeof(items[0]), MyItem::CompareWithSortSpecs);
                     MyItem::s_current_sort_specs = NULL;
+                    sorts_specs->SpecsDirty = false;
                 }
 
             // Display data
-            ImGui::TableAutoHeaders();
+            ImGui::TableHeadersRow();
             ImGuiListClipper clipper;
             clipper.Begin(items.Size);
             while (clipper.Step())
@@ -4199,14 +4208,14 @@ static void ShowDemoWindowTables()
             ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_MultiSortable
             | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
             | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY
-            | ImGuiTableFlags_ScrollFreezeTopRow | ImGuiTableFlags_ScrollFreezeLeftColumn
             | ImGuiTableFlags_SizingPolicyFixedX
             ;
 
         enum ContentsType { CT_Text, CT_Button, CT_SmallButton, CT_FillButton, CT_Selectable };
         static int contents_type = CT_FillButton;
         const char* contents_type_names[] = { "Text", "Button", "SmallButton", "FillButton", "Selectable" };
-
+        static int freeze_cols = 1;
+        static int freeze_rows = 1;
         static int items_count = IM_ARRAYSIZE(template_items_names);
         static ImVec2 outer_size_value = ImVec2(0, 250);
         static float row_min_height = 0.0f; // Auto
@@ -4249,7 +4258,6 @@ static void ShowDemoWindowTables()
 
             ImGui::BulletText("Padding, Sizing:");
             ImGui::Indent();
-            ImGui::CheckboxFlags("ImGuiTableFlags_NoClipX", (unsigned int*)&flags, ImGuiTableFlags_NoClipX);
             if (ImGui::CheckboxFlags("ImGuiTableFlags_SizingPolicyStretchX", (unsigned int*)&flags, ImGuiTableFlags_SizingPolicyStretchX))
                 flags &= ~(ImGuiTableFlags_SizingPolicyMaskX_ ^ ImGuiTableFlags_SizingPolicyStretchX);  // Can't specify both sizing polices so we clear the other
             ImGui::SameLine(); HelpMarker("[Default if ScrollX is off]\nFit all columns within available width (or specified inner_width). Fixed and Stretch columns allowed.");
@@ -4260,26 +4268,18 @@ static void ShowDemoWindowTables()
             ImGui::CheckboxFlags("ImGuiTableFlags_NoHostExtendY", (unsigned int*)&flags, ImGuiTableFlags_NoHostExtendY);
             ImGui::CheckboxFlags("ImGuiTableFlags_NoKeepColumnsVisible", (unsigned int*)&flags, ImGuiTableFlags_NoKeepColumnsVisible);
             ImGui::SameLine(); HelpMarker("Only available if ScrollX is disabled.");
+            ImGui::CheckboxFlags("ImGuiTableFlags_NoClip", (unsigned int*)&flags, ImGuiTableFlags_NoClip);
+            ImGui::SameLine(); HelpMarker("Disable clipping rectangle for every individual columns (reduce draw command count, items will be able to overflow into other columns). Generally incompatible with ScrollFreeze options.");
             ImGui::Unindent();
 
             ImGui::BulletText("Scrolling:");
             ImGui::Indent();
             ImGui::CheckboxFlags("ImGuiTableFlags_ScrollX", (unsigned int*)&flags, ImGuiTableFlags_ScrollX);
             ImGui::CheckboxFlags("ImGuiTableFlags_ScrollY", (unsigned int*)&flags, ImGuiTableFlags_ScrollY);
-
-            // For the purpose of our "advanced" demo, we expose the 3 freezing variants on both axises instead of only exposing the most common flag.
-            //ImGui::CheckboxFlags("ImGuiTableFlags_ScrollFreezeTopRow", (unsigned int*)&flags, ImGuiTableFlags_ScrollFreezeTopRow);
-            //ImGui::CheckboxFlags("ImGuiTableFlags_ScrollFreezeLeftColumn", (unsigned int*)&flags, ImGuiTableFlags_ScrollFreezeLeftColumn);
-            int freeze_row_count = (flags & ImGuiTableFlags_ScrollFreezeRowsMask_) >> ImGuiTableFlags_ScrollFreezeRowsShift_;
-            int freeze_col_count = (flags & ImGuiTableFlags_ScrollFreezeColumnsMask_) >> ImGuiTableFlags_ScrollFreezeColumnsShift_;
             ImGui::SetNextItemWidth(ImGui::GetFrameHeight());
-            if (ImGui::DragInt("ImGuiTableFlags_ScrollFreezeTopRow/2Rows/3Rows", &freeze_row_count, 0.2f, 0, 3))
-                if (freeze_row_count >= 0 && freeze_row_count <= 3)
-                    flags = (flags & ~ImGuiTableFlags_ScrollFreezeRowsMask_) | (freeze_row_count << ImGuiTableFlags_ScrollFreezeRowsShift_);
+            ImGui::DragInt("freeze_cols", &freeze_cols, 0.2f, 0, 9, NULL, ImGuiSliderFlags_NoInput);
             ImGui::SetNextItemWidth(ImGui::GetFrameHeight());
-            if (ImGui::DragInt("ImGuiTableFlags_ScrollFreezeLeftColumn/2Columns/3Columns", &freeze_col_count, 0.2f, 0, 3))
-                if (freeze_col_count >= 0 && freeze_col_count <= 3)
-                    flags = (flags & ~ImGuiTableFlags_ScrollFreezeColumnsMask_) | (freeze_col_count << ImGuiTableFlags_ScrollFreezeColumnsShift_);
+            ImGui::DragInt("freeze_rows", &freeze_rows, 0.2f, 0, 9, NULL, ImGuiSliderFlags_NoInput);
 
             ImGui::Unindent();
 
@@ -4338,6 +4338,7 @@ static void ShowDemoWindowTables()
             // Declare columns
             // We use the "user_id" parameter of TableSetupColumn() to specify a user id that will be stored in the sort specifications.
             // This is so our sort function can identify a column given our own identifier. We could also identify them based on their index!
+            ImGui::TableSetupScrollFreeze(freeze_cols, freeze_rows);
             ImGui::TableSetupColumn("ID",          ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed | (lock_first_column_visibility ? ImGuiTableColumnFlags_NoHide : 0), -1.0f, MyItemColumnID_ID);
             ImGui::TableSetupColumn("Name",        ImGuiTableColumnFlags_WidthFixed, -1.0f, MyItemColumnID_Name);
             ImGui::TableSetupColumn("Action",      ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed, -1.0f, MyItemColumnID_Action);
@@ -4346,14 +4347,15 @@ static void ShowDemoWindowTables()
             ImGui::TableSetupColumn("Hidden",      ImGuiTableColumnFlags_DefaultHide | ImGuiTableColumnFlags_NoSort);
 
             // Sort our data if sort specs have been changed!
-            const ImGuiTableSortSpecs* sorts_specs = ImGui::TableGetSortSpecs();
-            if (sorts_specs && sorts_specs->SpecsChanged)
+            ImGuiTableSortSpecs* sorts_specs = ImGui::TableGetSortSpecs();
+            if (sorts_specs && sorts_specs->SpecsDirty)
                 items_need_sort = true;
             if (sorts_specs && items_need_sort && items.Size > 1)
             {
                 MyItem::s_current_sort_specs = sorts_specs; // Store in variable accessible by the sort function.
                 qsort(&items[0], (size_t)items.Size, sizeof(items[0]), MyItem::CompareWithSortSpecs);
                 MyItem::s_current_sort_specs = NULL;
+                sorts_specs->SpecsDirty = false;
             }
             items_need_sort = false;
 
@@ -4363,7 +4365,7 @@ static void ShowDemoWindowTables()
 
             // Show headers
             if (show_headers)
-                ImGui::TableAutoHeaders();
+                ImGui::TableHeadersRow();
 
             // Show data
             // FIXME-TABLE FIXME-NAV: How we can get decent up/down even though we have the buttons here?
@@ -4376,7 +4378,7 @@ static void ShowDemoWindowTables()
                 for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++)
 #else
             {
-                for (int row_n = 0; row_n < items_count; n++)
+                for (int row_n = 0; row_n < items_count; row_n++)
 #endif
                 {
                     MyItem* item = &items[row_n];
@@ -5334,9 +5336,9 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
                 "rebuild the font atlas, and call style.ScaleAllSizes() on a reference ImGuiStyle structure.\n"
                 "Using those settings here will give you poor quality results.");
             static float window_scale = 1.0f;
-            if (ImGui::DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_ClampOnInput)) // Scale only this window
+            if (ImGui::DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp)) // Scale only this window
                 ImGui::SetWindowFontScale(window_scale);
-            ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_ClampOnInput); // Scale everything
+            ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp); // Scale everything
             ImGui::PopItemWidth();
 
             ImGui::EndTabItem();

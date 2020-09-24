@@ -1589,7 +1589,7 @@ struct IMGUI_API ImGuiWindowTempData
     ImVector<ImGuiWindow*>  ChildWindows;
     ImGuiStorage*           StateStorage;           // Current persistent per-window storage (store e.g. tree node open/close state)
     ImGuiColumns*           CurrentColumns;         // Current columns set
-    ImGuiTable*             CurrentTable;           // Current table set
+    int                     CurrentTableIdx;        // Current table index (into g.Tables)
     ImGuiLayoutType         LayoutType;
     ImGuiLayoutType         ParentLayoutType;       // Layout type of parent window at the time of Begin()
     int                     FocusCounterRegular;    // (Legacy Focus/Tabbing system) Sequential counter, start at -1 and increase as assigned via FocusableItemRegister() (FIXME-NAV: Needs redesign)
@@ -1632,7 +1632,7 @@ struct IMGUI_API ImGuiWindowTempData
         TreeJumpToParentOnPopMask = 0x00;
         StateStorage = NULL;
         CurrentColumns = NULL;
-        CurrentTable = NULL;
+        CurrentTableIdx = -1;
         LayoutType = ParentLayoutType = ImGuiLayoutType_Vertical;
         FocusCounterRegular = FocusCounterTabStop = -1;
 
@@ -1999,7 +1999,6 @@ struct ImGuiTable
     bool                        IsInsideRow;                // Set when inside TableBeginRow()/TableEndRow().
     bool                        IsInitializing;
     bool                        IsSortSpecsDirty;
-    bool                        IsSortSpecsChangedForUser;  // Reported to end-user via TableGetSortSpecs()->SpecsChanged and then clear.
     bool                        IsUsingHeaders;             // Set when the first row had the ImGuiTableRowFlags_Headers flag.
     bool                        IsContextPopupOpen;         // Set when default context menu is open (also see: ContextPopupColumn, InstanceInteracted).
     bool                        IsSettingsRequestLoad;
@@ -2238,7 +2237,7 @@ namespace ImGui
     IMGUI_API void          TableDrawContextMenu(ImGuiTable* table);
     IMGUI_API void          TableOpenContextMenu(ImGuiTable* table, int column_n);
     IMGUI_API void          TableReorderDrawChannelsForMerge(ImGuiTable* table);
-    IMGUI_API void          TableSortSpecsClickColumn(ImGuiTable* table, ImGuiTableColumn* column, bool add_to_existing_sort_orders);
+    IMGUI_API void          TableSetColumnSortDirection(ImGuiTable* table, int column_n, ImGuiSortDirection sort_direction, bool append_to_sort_specs);
     IMGUI_API void          TableSortSpecsSanitize(ImGuiTable* table);
     IMGUI_API void          TableSortSpecsBuild(ImGuiTable* table);
     IMGUI_API void          TableBeginRow(ImGuiTable* table);
@@ -2252,7 +2251,7 @@ namespace ImGui
     IMGUI_API void          PushTableBackground();
     IMGUI_API void          PopTableBackground();
 
-    // Tables - Settings
+    // Tables: Settings
     IMGUI_API void                  TableLoadSettings(ImGuiTable* table);
     IMGUI_API void                  TableSaveSettings(ImGuiTable* table);
     IMGUI_API ImGuiTableSettings*   TableGetBoundSettings(ImGuiTable* table);
