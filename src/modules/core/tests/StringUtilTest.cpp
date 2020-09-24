@@ -48,7 +48,7 @@ TEST_F(StringUtilTest, testExtractPath) {
 TEST_F(StringUtilTest, testSplit) {
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString("foobar++", tokens, "+");
-	ASSERT_EQ(1, tokens.size());
+	ASSERT_EQ(1u, tokens.size());
 	EXPECT_EQ("foobar", tokens[0]);
 }
 
