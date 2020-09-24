@@ -134,7 +134,11 @@ app::AppState IMGUIApp::onConstruct() {
 	_console.construct();
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST);
-	_uiFontSize = core::Var::get(cfg::UIFontSize, "14");
+	_uiFontSize = core::Var::get(cfg::UIFontSize, "14", -1, "Allow to change the ui font size",
+								[](const core::String &val) {
+									const float size = core::string::toFloat(val);
+									return size >= 2.0f;
+								});
 	return state;
 }
 
