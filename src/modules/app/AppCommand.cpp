@@ -4,6 +4,7 @@
 
 #include "AppCommand.h"
 #include "command/Command.h"
+#include "core/StringUtil.h"
 #include "io/Filesystem.h"
 #include "util/VarUtil.h"
 #include "app/App.h"
@@ -109,6 +110,36 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::error("Could not toggle %s", args[0].c_str());
 		}
 	}).setHelp("Toggle between true/false for a variable");
+
+	command::Command::registerCommand("inc", [] (const command::CmdArgs& args) {
+		if (args.empty()) {
+			Log::error("not enough arguments given. Expecting a variable name at least");
+			return;
+		}
+		const core::VarPtr& var = core::Var::get(args[0]);
+		if (!var) {
+			Log::error("given var doesn't exist: %s", args[0].c_str());
+			return;
+		}
+		const float delta = args.size() > 1 ? core::string::toFloat(args[1]) : 1.0f;
+		var->setVal(var->floatVal() + delta);
+		Log::debug("Increase %s by %f", var->name().c_str(), delta);
+	}).setHelp("Increase a cvar value by the given value (default: 1)");
+
+	command::Command::registerCommand("dec", [] (const command::CmdArgs& args) {
+		if (args.empty()) {
+			Log::error("not enough arguments given. Expecting a variable name at least");
+			return;
+		}
+		const core::VarPtr& var = core::Var::get(args[0]);
+		if (!var) {
+			Log::error("given var doesn't exist: %s", args[0].c_str());
+			return;
+		}
+		const float delta = args.size() > 1 ? core::string::toFloat(args[1]) : 1.0f;
+		var->setVal(var->floatVal() - delta);
+		Log::debug("Decrease %s by %f", var->name().c_str(), delta);
+	}).setHelp("Decrease a cvar value by the given value (default: 1)");
 
 	command::Command::registerCommand("show", [] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
