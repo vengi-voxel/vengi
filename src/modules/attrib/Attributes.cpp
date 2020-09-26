@@ -12,6 +12,8 @@ namespace attrib {
 
 Attributes::Attributes(Attributes* parent) :
 		_dirty(false), _lock("Attributes"), _attribLock("Attributes2"), _parent(parent) {
+	_current.fill(0.0);
+	_max.fill(0.0);
 }
 
 bool Attributes::update(long dt) {
