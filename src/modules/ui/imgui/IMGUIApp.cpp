@@ -192,6 +192,8 @@ void IMGUIApp::loadFonts() {
 											_uiFontSize->floatVal() * 2.0f * _dpiFactor);
 	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 											_uiFontSize->floatVal() * _dpiFactor);
+	_smallFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
+											_uiFontSize->floatVal() * 0.8f * _dpiFactor);
 
 	unsigned char *pixels;
 	int width, height;
@@ -403,7 +405,7 @@ void IMGUIApp::executeDrawCommands() {
 			} else {
 				video::bindTexture(video::TextureUnit::Zero, video::TextureType::Texture2D, (video::Id)(intptr_t)cmd->TextureId);
 				const ImVec4& cr = cmd->ClipRect;
-				video::scissor(cr.x, cr.y, cr.z - cr.x, cr.w - cr.y);
+				video::scissor((int)cr.x, (int)cr.y, (int)cr.z - (int)cr.x, (int)cr.w - (int)cr.y);
 				video::drawElements<ImDrawIdx>(video::Primitive::Triangles, cmd->ElemCount, (void*)idxBufferOffset);
 			}
 			++drawCommands;

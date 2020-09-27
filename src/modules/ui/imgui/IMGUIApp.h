@@ -42,6 +42,7 @@ protected:
 
 	ImFont* _defaultFont = nullptr;
 	ImFont* _bigFont = nullptr;
+	ImFont* _smallFont = nullptr;
 
 	void executeDrawCommands();
 
