@@ -141,8 +141,10 @@ protected:
 	 * @param[in,out] entity The entity that is used to evaluate a condition
 	 * @sa getNameWithConditions()
 	 */
-	virtual void getConditionNameWithValue(core::String& s, const AIPtr& entity) {
-		(void)entity;
+	virtual void getConditionNameWithValue(core::String& s, const AIPtr&) {
+		if (_parameters.empty()) {
+			return;
+		}
 		s += "{";
 		s += _parameters;
 		s += "}";
