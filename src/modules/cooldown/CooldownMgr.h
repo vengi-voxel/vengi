@@ -50,9 +50,9 @@ protected:
 	 * @brief Create @c Cooldown instances for the pool
 	 * @param[in] type The @c Type to start
 	 * @param[in] startMillis The millisecond timestamp when the Cooldown was triggered.
-	 * If this is less than @c 0 the @c TimeProvider will be used to resolve the time
+	 * If this is @c 0 the @c TimeProvider will be used to resolve the time
 	 */
-	CooldownPtr createCooldown(Type type, long startMillis = -1l) const;
+	CooldownPtr createCooldown(Type type, uint64_t startMillis = 0lu) const;
 public:
 	CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 	virtual ~CooldownMgr() {}
@@ -70,7 +70,7 @@ public:
 	 */
 	bool resetCooldown(Type type);
 
-	unsigned long defaultDuration(Type type) const;
+	uint64_t defaultDuration(Type type) const;
 	CooldownPtr cooldown(Type type) const;
 
 	/**

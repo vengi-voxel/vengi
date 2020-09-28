@@ -18,7 +18,8 @@ enum CooldownTriggerState {
 	/**
 	 * @brief There is already a cooldown of the same type running.
 	 */
-	ALREADY_RUNNING
+	ALREADY_RUNNING,
+	FAILED
 };
 
 }

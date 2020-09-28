@@ -3,6 +3,7 @@
  */
 
 #include "CooldownMgr.h"
+#include "cooldown/CooldownTriggerState.h"
 #include "core/Common.h"
 #include "core/Singleton.h"
 #include "core/Log.h"
@@ -13,9 +14,9 @@ CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldo
 		_timeProvider(timeProvider), _cooldownProvider(cooldownProvider), _lock("CooldownMgr") {
 }
 
-CooldownPtr CooldownMgr::createCooldown(Type type, long startMillis) const {
-	const long duration = defaultDuration(type);
-	long expireMillis;
+CooldownPtr CooldownMgr::createCooldown(Type type, uint64_t startMillis) const {
+	const uint64_t duration = defaultDuration(type);
+	uint64_t expireMillis;
 	if (startMillis <= 0l) {
 		expireMillis = 0L;
 		startMillis = 0L;
@@ -26,6 +27,9 @@ CooldownPtr CooldownMgr::createCooldown(Type type, long startMillis) const {
 }
 
 CooldownTriggerState CooldownMgr::triggerCooldown(Type type, const CooldownCallback& callback) {
+	if (type == Type::NONE) {
+		return CooldownTriggerState::FAILED;
+	}
 	core::ScopedWriteLock lock(_lock);
 	CooldownPtr c = cooldown(type);
 	if (!c) {
@@ -52,7 +56,7 @@ CooldownPtr CooldownMgr::cooldown(Type type) const {
 	return i->second;
 }
 
-unsigned long CooldownMgr::defaultDuration(Type type) const {
+uint64_t CooldownMgr::defaultDuration(Type type) const {
 	return _cooldownProvider->duration(type);
 }
 

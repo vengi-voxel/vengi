@@ -22,6 +22,8 @@ ai::TreeNodeStatus TriggerCooldown::doAction(const AIPtr& entity, int64_t deltaM
 	const cooldown::CooldownTriggerState s = npc.cooldownMgr().triggerCooldown(_cooldownId);
 	if (s == cooldown::CooldownTriggerState::SUCCESS) {
 		return ai::TreeNodeStatus::FINISHED;
+	} else if (s == cooldown::CooldownTriggerState::FAILED) {
+		return ai::TreeNodeStatus::EXCEPTION;
 	}
 	return ai::TreeNodeStatus::FAILED;
 }
