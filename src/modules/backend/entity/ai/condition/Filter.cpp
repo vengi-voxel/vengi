@@ -53,7 +53,7 @@ bool Filter::evaluate(const AIPtr& entity) {
 	for (const FilterPtr& filter : _filters) {
 		filter->filter(entity);
 	}
-	return !entity->_filteredEntities.empty();
+	return state(!entity->_filteredEntities.empty());
 }
 
 }

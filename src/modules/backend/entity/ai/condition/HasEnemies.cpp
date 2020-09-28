@@ -23,10 +23,10 @@ bool HasEnemies::evaluate(const AIPtr& entity) {
 	if (_enemyCount == -1) {
 		// TODO: check why boolean operator isn't working here
 		const bool hasEnemy = mgr.getHighestEntry() != nullptr;
-		return hasEnemy;
+		return state(hasEnemy);
 	}
 	const int size = (int)mgr.count();
-	return size >= _enemyCount;
+	return state(size >= _enemyCount);
 }
 
 }

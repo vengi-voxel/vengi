@@ -31,7 +31,7 @@ public:
 	}
 
 	bool evaluate(const AIPtr& entity) override {
-		return !_condition->evaluate(entity);
+		return state(!_condition->evaluate(entity));
 	}
 };
 

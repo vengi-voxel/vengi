@@ -29,19 +29,19 @@ IsCloseToGroup::IsCloseToGroup(const core::String& parameters) :
 
 bool IsCloseToGroup::evaluate(const AIPtr& entity) {
 	if (_groupId == -1) {
-		return false;
+		return state(false);
 	}
 
 	if (_distance < 0.0f) {
-		return false;
+		return state(false);
 	}
 
 	const GroupMgr& mgr = entity->getZone()->getGroupMgr();
 	glm::vec3 pos;
 	if (!mgr.getPosition(_groupId, pos)) {
-		return false;
+		return state(false);
 	}
-	return glm::distance2(pos, entity->getCharacter()->getPosition()) <= _distance;
+	return state(glm::distance2(pos, entity->getCharacter()->getPosition()) <= _distance);
 }
 
 }

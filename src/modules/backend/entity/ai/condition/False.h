@@ -16,7 +16,7 @@ public:
 	CONDITION_CLASS_SINGLETON(False)
 
 	bool evaluate(const AIPtr& /*entity*/) override {
-		return false;
+		return state(false);
 	}
 };
 

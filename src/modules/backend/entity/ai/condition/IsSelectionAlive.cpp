@@ -12,11 +12,11 @@ namespace backend {
 bool IsSelectionAlive::evaluate(const AIPtr& entity) {
 	const Zone* zone = entity->getZone();
 	if (zone == nullptr) {
-		return false;
+		return state(false);
 	}
 	const FilteredEntities& selection = entity->getFilteredEntities();
 	if (selection.empty()) {
-		return false;
+		return state(false);
 	}
 	bool foundValidResult = true;
 	for (ai::CharacterId id : selection) {
@@ -28,10 +28,10 @@ bool IsSelectionAlive::evaluate(const AIPtr& entity) {
 		foundValidResult = true;
 		Npc& npc = getNpc(ai);
 		if (npc.dead()) {
-			return false;
+			return state(false);
 		}
 	}
-	return foundValidResult;
+	return state(foundValidResult);
 }
 
 }

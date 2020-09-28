@@ -19,7 +19,7 @@ public:
 };
 
 inline bool True::evaluate(const AIPtr& /* entity */) {
-	return true;
+	return state(true);
 }
 
 }

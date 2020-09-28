@@ -20,10 +20,10 @@ IsGroupLeader::IsGroupLeader(const core::String& parameters) :
 
 bool IsGroupLeader::evaluate(const AIPtr& entity) {
 	if (_groupId == -1) {
-		return false;
+		return state(false);
 	}
 	const GroupMgr& mgr = entity->getZone()->getGroupMgr();
-	return mgr.isGroupLeader(_groupId, entity);
+	return state(mgr.isGroupLeader(_groupId, entity));
 }
 
 }

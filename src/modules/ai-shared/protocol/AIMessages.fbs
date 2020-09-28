@@ -108,6 +108,7 @@ enum TreeNodeStatus : byte {
 table StateNode {
 	node_id:uint;
 	condition:string (required);
+	condition_state:bool;
 	children:[StateNode];
 	last_run:long;
 	status:byte;

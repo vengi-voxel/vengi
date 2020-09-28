@@ -204,13 +204,14 @@ flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> Ser
 		const int32_t nodeId = childNode->getId();
 		const ConditionPtr& condition = childNode->getCondition();
 		const core::String conditionStr = condition ? condition->getNameWithConditions(ai) : "";
+		const bool conditionState = condition ? condition->result() : false;
 		const int64_t lastRun = childNode->getLastExecMillis(ai);
 		const int64_t delta = lastRun == -1 ? -1 : aiTime - lastRun;
 		ai::TreeNodeStatus status = node->getLastStatus(ai);
 		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> childNodeChildren = addChildren(childNode, ai);
 
 		flatbuffers::Offset<ai::StateNode> child = ai::CreateStateNode(_characterDetailsFBB,
-			nodeId, _characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()),
+			nodeId, _characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()), conditionState,
 			childNodeChildren, delta, (int)status, true);
 		offsets.push_back(child);
 	}
@@ -232,11 +233,12 @@ void Server::broadcastCharacterDetails(const Zone* zone) {
 		const int32_t nodeId = node->getId();
 		const ConditionPtr& condition = node->getCondition();
 		const core::String conditionStr = condition ? condition->getNameWithConditions(ai) : "";
+		const bool conditionState = condition ? condition->result() : false;
 		ai::TreeNodeStatus status = node->getLastStatus(ai);
 		const int64_t lastRun = _time - node->getLastExecMillis(ai);
 		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> children = addChildren(node, ai);
 		flatbuffers::Offset<ai::StateNode> rootnode = ai::CreateStateNode(_characterDetailsFBB, nodeId,
-			_characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()), children, lastRun, (int)status, true);
+			_characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()), conditionState, children, lastRun, (int)status, true);
 
 		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateAggroEntry>>> aggro;
 		const AggroMgr::Entries& entries = ai->getAggroMgr().getEntries();

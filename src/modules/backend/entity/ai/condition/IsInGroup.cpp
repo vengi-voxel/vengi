@@ -21,9 +21,9 @@ IsInGroup::IsInGroup(const core::String& parameters) :
 bool IsInGroup::evaluate(const AIPtr& entity) {
 	const GroupMgr& mgr = entity->getZone()->getGroupMgr();
 	if (_groupId == -1) {
-		return mgr.isInAnyGroup(entity);
+		return state(mgr.isInAnyGroup(entity));
 	}
-	return mgr.isInGroup(_groupId, entity);
+	return state(mgr.isInGroup(_groupId, entity));
 }
 
 }

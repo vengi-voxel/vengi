@@ -19,7 +19,7 @@ IsOnCooldown::IsOnCooldown(const core::String& parameters) :
 
 bool IsOnCooldown::evaluate(const AIPtr& entity) {
 	Npc& npc = getNpc(entity);
-	return npc.cooldownMgr().isCooldown(_cooldownId);
+	return state(npc.cooldownMgr().isCooldown(_cooldownId));
 }
 
 }

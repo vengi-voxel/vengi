@@ -46,7 +46,7 @@ public:
 	}
 
 	bool evaluate(const AIPtr& entity) override {
-		return evaluateLUA(entity);
+		return state(evaluateLUA(entity));
 	}
 };
 

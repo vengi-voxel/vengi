@@ -133,6 +133,10 @@ protected:
 	int _id;
 	const core::String _name;
 	const core::String _parameters;
+	/**
+	 * @brief Last execution result
+	 */
+	bool _result = false;
 
 	/**
 	 * @brief Override this method to get a more detailed result in @c getNameWithConditions()
@@ -149,6 +153,12 @@ protected:
 		s += _parameters;
 		s += "}";
 	}
+
+	inline bool state(bool result) {
+		_result = result;
+		return _result;
+	}
+
 public:
 	ICondition(const core::String& name, const core::String& parameters) :
 			_id(getNextId()), _name(name), _parameters(parameters) {
@@ -170,6 +180,12 @@ public:
 	const core::String& getName() const;
 
 	/**
+	 * @note only recorded if the condition uses the @c state() method.
+	 * @return Result of the last @c evaluate() call
+	 */
+	bool result() const;
+
+	/**
 	 * @brief Returns the raw parameters of the condition
 	 */
 	const core::String& getParameters() const;
@@ -183,12 +199,13 @@ public:
 		core::String s;
 		s += getName();
 		getConditionNameWithValue(s, entity);
-		s += "[";
-		s += (evaluate(entity) ? "1" : "0");
-		s += "]";
 		return s;
 	}
 };
+
+inline bool ICondition::result() const {
+	return _result;
+}
 
 inline const core::String& ICondition::getName() const {
 	return _name;

@@ -28,11 +28,11 @@ public:
 	bool evaluate(const AIPtr& entity) override {
 		for (ConditionsIter i = _conditions.begin(); i != _conditions.end(); ++i) {
 			if (!(*i)->evaluate(entity)) {
-				return false;
+				return state(false);
 			}
 		}
 
-		return true;
+		return state(true);
 	}
 };
 
