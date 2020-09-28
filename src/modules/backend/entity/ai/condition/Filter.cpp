@@ -27,10 +27,10 @@ void Filter::getConditionNameWithValue(core::String& s, const AIPtr& entity) {
 		for (ai::CharacterId id : entity->_filteredEntities) {
 			if (!firstChr)
 				s += ",";
-			s += id;
+			s.append((int)id);
 			firstChr = false;
 			++cnt;
-			if (cnt > 15) {
+			if (cnt > 5) {
 				s += ",...";
 				break;
 			}
