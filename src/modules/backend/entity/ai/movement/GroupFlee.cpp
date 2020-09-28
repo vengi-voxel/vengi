@@ -5,7 +5,6 @@
 #include "GroupFlee.h"
 #include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/zone/Zone.h"
-#include <glm/geometric.hpp>
 
 namespace backend {
 namespace movement {
@@ -24,10 +23,7 @@ MoveVector GroupFlee::execute (const AIPtr& ai, float speed) const {
 	if (!zone->getGroupMgr().getPosition(_groupId, target)) {
 		return MoveVector::Invalid;
 	}
-	const glm::vec3& v = glm::normalize(ai->getCharacter()->getPosition() - target);
-	const float orientation = angle(v);
-	const MoveVector d(v * speed, orientation, true);
-	return d;
+	return flee(ai->getCharacter()->getPosition(), target, speed);
 }
 
 }

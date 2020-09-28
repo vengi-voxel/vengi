@@ -53,6 +53,11 @@ public:
 	 * because there was an error.
 	 */
 	virtual MoveVector execute (const AIPtr& ai, float speed) const = 0;
+
+	MoveVector seek(const glm::vec3& pos, const glm::vec3& target, float speed) const;
+	inline MoveVector flee(const glm::vec3& pos, const glm::vec3& target, float speed) const {
+		return seek(target, pos, speed);
+	}
 };
 
 /**
