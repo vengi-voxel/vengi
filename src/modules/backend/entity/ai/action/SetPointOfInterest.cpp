@@ -10,7 +10,9 @@ namespace backend {
 
 AI_TASK_IMPL(SetPointOfInterest) {
 	Npc& npc = getNpc(entity);
-	npc.setPointOfInterest();
+	// TODO: poi type
+	const poi::Type type = poi::Type::GENERIC;
+	npc.setPointOfInterest(type);
 	return ai::TreeNodeStatus::FINISHED;
 }
 
