@@ -625,7 +625,7 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
                fragmentLength);
 
         if (startCommand -> fragmentsRemaining <= 0)
-          enet_peer_dispatch_incoming_reliable_commands (peer, channel);
+          enet_peer_dispatch_incoming_reliable_commands (peer, channel, NULL);
     }
 
     return 0;
@@ -743,7 +743,7 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
                fragmentLength);
 
         if (startCommand -> fragmentsRemaining <= 0)
-          enet_peer_dispatch_incoming_unreliable_commands (peer, channel);
+          enet_peer_dispatch_incoming_unreliable_commands (peer, channel, NULL);
     }
 
     return 0;
@@ -858,19 +858,22 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
 
     if (peer -> lastReceiveTime > 0)
     {
-       enet_uint32 accumRoundTripTime = (peer -> roundTripTime << 8) + peer -> roundTripTimeRemainder;
-       enet_uint32 accumRoundTripTimeVariance = (peer -> roundTripTimeVariance << 8) + peer -> roundTripTimeVarianceRemainder;
-
        enet_peer_throttle (peer, roundTripTime);
 
-       roundTripTime <<= 8;
-       accumRoundTripTimeVariance = (accumRoundTripTimeVariance * 3 + ENET_DIFFERENCE (roundTripTime, accumRoundTripTime)) / 4;
-       accumRoundTripTime = (accumRoundTripTime * 7 + roundTripTime) / 8;
+       peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
 
-       peer -> roundTripTime = accumRoundTripTime >> 8;
-       peer -> roundTripTimeRemainder = accumRoundTripTime & 0xFF;
-       peer -> roundTripTimeVariance = accumRoundTripTimeVariance >> 8;
-       peer -> roundTripTimeVarianceRemainder = accumRoundTripTimeVariance & 0xFF;
+       if (roundTripTime >= peer -> roundTripTime)
+       {
+          enet_uint32 diff = roundTripTime - peer -> roundTripTime;
+          peer -> roundTripTimeVariance += diff / 4;
+          peer -> roundTripTime += diff / 8;
+       }
+       else
+       {
+          enet_uint32 diff = peer -> roundTripTime - roundTripTime;
+          peer -> roundTripTimeVariance += diff / 4;
+          peer -> roundTripTime -= diff / 8;
+       }
     }
     else
     {
@@ -881,14 +884,14 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
     if (peer -> roundTripTime < peer -> lowestRoundTripTime)
       peer -> lowestRoundTripTime = peer -> roundTripTime;
 
-    if (peer -> roundTripTimeVariance > peer -> highestRoundTripTimeVariance) 
+    if (peer -> roundTripTimeVariance > peer -> highestRoundTripTimeVariance)
       peer -> highestRoundTripTimeVariance = peer -> roundTripTimeVariance;
 
     if (peer -> packetThrottleEpoch == 0 ||
         ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> packetThrottleEpoch) >= peer -> packetThrottleInterval)
     {
         peer -> lastRoundTripTime = peer -> lowestRoundTripTime;
-        peer -> lastRoundTripTimeVariance = ENET_MAX (peer -> highestRoundTripTimeVariance, (peer -> lowestRoundTripTime + 23) / 24);
+        peer -> lastRoundTripTimeVariance = ENET_MAX (peer -> highestRoundTripTimeVariance, 1);
         peer -> lowestRoundTripTime = peer -> roundTripTime;
         peer -> highestRoundTripTimeVariance = peer -> roundTripTimeVariance;
         peer -> packetThrottleEpoch = host -> serviceTime;
