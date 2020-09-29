@@ -8,7 +8,6 @@
 #include "core/IComponent.h"
 #include "backend/ForwardDecl.h"
 #include "backend/entity/ai/server/Server.h"
-#include <unordered_map>
 
 namespace backend {
 
@@ -23,7 +22,7 @@ private:
 	io::FilesystemPtr _filesystem;
 	metric::MetricPtr _metric;
 	Server* _aiServer = nullptr;
-	std::unordered_map<MapId, MapPtr> _maps;
+	core::Map<MapId, MapPtr> _maps;
 public:
 	World(const MapProviderPtr& mapProvider, const AIRegistryPtr& registry,
 			const core::EventBusPtr& eventBus, const io::FilesystemPtr& filesystem,

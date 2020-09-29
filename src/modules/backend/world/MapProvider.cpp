@@ -119,15 +119,15 @@ bool MapProvider::init() {
 		Log::warn("Failed to init map %i", mapId);
 		return false;
 	}
-	_maps.insert(std::make_pair(mapId, map));
+	_maps.put(mapId, map);
 	Log::info("Map provider initialized with %i maps", (int)_maps.size());
 	return true;
 }
 
 void MapProvider::shutdown() {
 	_httpServer->unregisterRoute(http::HttpMethod::GET, "/chunk");
-	for (auto& map : _maps) {
-		map.second->shutdown();
+	for (const auto& map : _maps) {
+		map->value->shutdown();
 	}
 	_maps.clear();
 }

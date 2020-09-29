@@ -7,11 +7,11 @@
 #include "backend/ForwardDecl.h"
 #include "MapId.h"
 #include "core/IComponent.h"
+#include "core/collection/Map.h"
 #include "http/HttpServer.h"
 #include "DBChunkPersister.h"
 #include "core/Factory.h"
 #include <memory>
-#include <unordered_map>
 
 namespace backend {
 
@@ -20,7 +20,7 @@ namespace backend {
  */
 class MapProvider : public core::IComponent {
 public:
-	using Maps = std::unordered_map<MapId, MapPtr>;
+	using Maps = core::Map<MapId, MapPtr>;
 private:
 	io::FilesystemPtr _filesystem;
 	core::EventBusPtr _eventBus;
@@ -36,7 +36,7 @@ private:
 	core::Factory<DBChunkPersister> _chunkPersisterFactory;
 	persistence::DBHandlerPtr _dbHandler;
 
-	std::unordered_map<MapId, MapPtr> _maps;
+	Maps _maps;
 public:
 	MapProvider(
 			const io::FilesystemPtr& filesystem,

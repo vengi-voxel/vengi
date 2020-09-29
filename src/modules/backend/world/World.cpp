@@ -35,8 +35,8 @@ World::~World() {
 
 void World::update(long dt) {
 	core_trace_scoped(WorldUpdate);
-	for (auto& e : _maps) {
-		const MapPtr& map = e.second;
+	for (const auto& e : _maps) {
+		const MapPtr& map = e->value;
 		map->update(dt);
 	}
 	_aiServer->update(dt);
@@ -44,8 +44,8 @@ void World::update(long dt) {
 
 void World::construct() {
 	command::Command::registerCommand("sv_maplist", [this] (const command::CmdArgs& args) {
-		for (auto& e : _maps) {
-			const MapPtr& map = e.second;
+		for (const auto& e : _maps) {
+			const MapPtr& map = e->value;
 			Log::info("Map %s", map->idStr().c_str());
 		}
 	}).setHelp("List all maps");
@@ -77,8 +77,8 @@ void World::construct() {
 
 	command::Command::registerCommand("sv_chunkstruncate", [this] (const command::CmdArgs& args) {
 		const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
-		for (auto& e : _maps) {
-			const MapPtr& map = e.second;
+		for (const auto& e : _maps) {
+			const MapPtr& map = e->value;
 			Log::info("Truncate chunks on map %i for seed %u", map->id(), seed->uintVal());
 			map->chunkPersister()->truncate(seed->uintVal());
 		}
@@ -110,8 +110,8 @@ bool World::init() {
 		Log::error("Could not initialize any map");
 		return false;
 	}
-	for (auto& e : _maps) {
-		const MapPtr& map = e.second;
+	for (const auto& e : _maps) {
+		const MapPtr& map = e->value;
 		_aiServer->addZone(map->zone());
 	}
 
@@ -119,8 +119,8 @@ bool World::init() {
 }
 
 void World::shutdown() {
-	for (auto& e : _maps) {
-		const MapPtr& map = e.second;
+	for (const auto& e : _maps) {
+		const MapPtr& map = e->value;
 		_aiServer->removeZone(map->zone());
 	}
 	_maps.clear();
