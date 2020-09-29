@@ -2210,10 +2210,25 @@ static void SetCursorPosYAndSetupForPrevLine(float pos_y, float line_height)
     }
 }
 
-// Use case A: Begin() called from constructor with items_height<0, then called again from Sync() in StepNo 1
+ImGuiListClipper::ImGuiListClipper(int items_count, float items_height)
+{
+    DisplayStart = DisplayEnd = 0;
+    ItemsCount = -1;
+    StepNo = 0;
+    ItemsFrozen = 0;
+    ItemsHeight = StartPosY = 0.0f;
+    Begin(items_count, items_height);
+}
+
+ImGuiListClipper::~ImGuiListClipper()
+{
+    IM_ASSERT(ItemsCount == -1 && "Forgot to call End(), or to Step() until false?");
+}
+
+// Use case A: Begin() called from constructor with items_height<0, then called again from Step() in StepNo 1
 // Use case B: Begin() called from constructor with items_height>0
 // FIXME-LEGACY: Ideally we should remove the Begin/End functions but they are part of the legacy API we still support. This is why some of the code in Step() calling Begin() and reassign some fields, spaghetti style.
-void ImGuiListClipper::Begin(int count, float items_height)
+void ImGuiListClipper::Begin(int items_count, float items_height)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
@@ -2224,25 +2239,21 @@ void ImGuiListClipper::Begin(int count, float items_height)
 
     StartPosY = window->DC.CursorPos.y;
     ItemsHeight = items_height;
-    ItemsCount = count;
+    ItemsCount = items_count;
+    ItemsFrozen = 0;
     StepNo = 0;
-    DisplayEnd = DisplayStart = -1;
-    if (ItemsHeight > 0.0f)
-    {
-        ImGui::CalcListClipping(ItemsCount, ItemsHeight, &DisplayStart, &DisplayEnd); // calculate how many to clip/display
-        if (DisplayStart > 0)
-            SetCursorPosYAndSetupForPrevLine(StartPosY + DisplayStart * ItemsHeight, ItemsHeight); // advance cursor
-        StepNo = 2;
-    }
+    DisplayStart = -1;
+    DisplayEnd = 0;
 }
 
 void ImGuiListClipper::End()
 {
-    if (ItemsCount < 0)
+    if (ItemsCount < 0) // Already ended
         return;
+
     // In theory here we should assert that ImGui::GetCursorPosY() == StartPosY + DisplayEnd * ItemsHeight, but it feels saner to just seek at the end and not assert/crash the user.
-    if (ItemsCount < INT_MAX)
-        SetCursorPosYAndSetupForPrevLine(StartPosY + ItemsCount * ItemsHeight, ItemsHeight); // advance cursor
+    if (ItemsCount < INT_MAX && DisplayStart >= 0)
+        SetCursorPosYAndSetupForPrevLine(StartPosY + (ItemsCount - ItemsFrozen) * ItemsHeight, ItemsHeight);
     ItemsCount = -1;
     StepNo = 3;
 }
@@ -2256,51 +2267,90 @@ bool ImGuiListClipper::Step()
     if (table && table->IsInsideRow)
         ImGui::TableEndRow(table);
 
-    if (ItemsCount == 0 || GetSkipItemForListClipping())
+    // Reached end of list
+    if (DisplayEnd >= ItemsCount || GetSkipItemForListClipping())
     {
-        ItemsCount = -1;
+        End();
         return false;
     }
-    if (StepNo == 0) // Step 0: the clipper let you process the first element, regardless of it being visible or not, so we can measure the element height.
-    {
-        DisplayStart = 0;
-        DisplayEnd = 1;
-        StartPosY = window->DC.CursorPos.y;
-        StepNo = 1;
-        return true;
-    }
-    if (StepNo == 1) // Step 1: the clipper infer height from first element, calculate the actual range of elements to display, and position the cursor before the first element.
-    {
-        if (ItemsCount == 1) { ItemsCount = -1; return false; }
 
-        float items_height;
+    // Step 0: Let you process the first element (regardless of it being visible or not, so we can measure the element height)
+    if (StepNo == 0)
+    {
+        // While we are in frozen row state, keep displaying items one by one, unclipped
+        // FIXME: Could be stored as a table-agnostic state.
+        if (table != NULL && !table->IsFreezeRowsPassed)
+        {
+            DisplayStart = ItemsFrozen;
+            DisplayEnd = ItemsFrozen + 1;
+            ItemsFrozen++;
+            return true;
+        }
+
+        StartPosY = window->DC.CursorPos.y;
+        if (ItemsHeight <= 0.0f)
+        {
+            // Submit the first item so we can measure its height (generally it is 0..1)
+            DisplayStart = ItemsFrozen;
+            DisplayEnd = ItemsFrozen + 1;
+            StepNo = 1;
+            return true;
+        }
+
+        // Already has item height (given by user in Begin): skip to calculating step
+        DisplayStart = DisplayEnd;
+        StepNo = 2;
+    }
+
+    // Step 1: the clipper infer height from first element
+    if (StepNo == 1)
+    {
+        IM_ASSERT(ItemsHeight <= 0.0f);
         if (table)
         {
             const float pos_y1 = table->RowPosY1;   // Using this instead of StartPosY to handle clipper straddling the frozen row
             const float pos_y2 = table->RowPosY2;   // Using this instead of CursorPos.y to take account of tallest cell.
-            items_height = pos_y2 - pos_y1;
+            ItemsHeight = pos_y2 - pos_y1;
             window->DC.CursorPos.y = pos_y2;
-            IM_ASSERT(items_height > 0.0f);   // If this triggers, it means Item 0 hasn't moved the cursor vertically
         }
         else
         {
-            items_height = window->DC.CursorPos.y - StartPosY;
-            IM_ASSERT(items_height > 0.0f);         // If this triggers, it means Item 0 hasn't moved the cursor vertically
+            ItemsHeight = window->DC.CursorPos.y - StartPosY;
         }
-        Begin(ItemsCount - 1, items_height);
-        DisplayStart++;
-        DisplayEnd++;
-        StepNo = 3;
-        return true;
+        IM_ASSERT(ItemsHeight > 0.0f && "Unable to calculate item height! First item hasn't moved the cursor vertically!");
+        StepNo = 2;
     }
-    if (StepNo == 2) // Step 2: empty step only required if an explicit items_height was passed to constructor or Begin() and user still call Step(). Does nothing and switch to Step 3.
+
+    // Step 2: calculate the actual range of elements to display, and position the cursor before the first element
+    if (StepNo == 2)
     {
-        IM_ASSERT(DisplayStart >= 0 && DisplayEnd >= 0);
+        IM_ASSERT(ItemsHeight > 0.0f);
+
+        int already_submitted = DisplayEnd;
+        ImGui::CalcListClipping(ItemsCount - already_submitted, ItemsHeight, &DisplayStart, &DisplayEnd);
+        DisplayStart += already_submitted;
+        DisplayEnd += already_submitted;
+
+        // Seek cursor
+        if (DisplayStart > already_submitted)
+            SetCursorPosYAndSetupForPrevLine(StartPosY + (DisplayStart - ItemsFrozen) * ItemsHeight, ItemsHeight);
+
         StepNo = 3;
         return true;
     }
-    if (StepNo == 3) // Step 3: the clipper validate that we have reached the expected Y position (corresponding to element DisplayEnd), advance the cursor to the end of the list and then returns 'false' to end the loop.
-        End();
+
+    // Step 3: the clipper validate that we have reached the expected Y position (corresponding to element DisplayEnd),
+    // Advance the cursor to the end of the list and then returns 'false' to end the loop.
+    if (StepNo == 3)
+    {
+        // Seek cursor
+        if (ItemsCount < INT_MAX)
+            SetCursorPosYAndSetupForPrevLine(StartPosY + (ItemsCount - ItemsFrozen) * ItemsHeight, ItemsHeight); // advance cursor
+        ItemsCount = -1;
+        return false;
+    }
+
+    IM_ASSERT(0);
     return false;
 }
 
@@ -8104,7 +8154,7 @@ ImVec2 ImGui::FindBestWindowPosForPopupEx(const ImVec2& ref_pos, const ImVec2& s
 
     // For tooltip we prefer avoiding the cursor at all cost even if it means that part of the tooltip won't be visible.
     if (policy == ImGuiPopupPositionPolicy_Tooltip)
-        return ref_pos + ImVec2(2, 2); 
+        return ref_pos + ImVec2(2, 2);
 
     // Otherwise try to keep within display
     ImVec2 pos = ref_pos;
@@ -10498,7 +10548,8 @@ void ImGui::ShowMetricsWindow(bool* p_open)
                     NodeDrawCmdShowMeshAndBoundingBox(window, draw_list, pcmd, elem_offset, true, false);
 
                 // Display individual triangles/vertices. Hover on to get the corresponding triangle highlighted.
-                ImGuiListClipper clipper(pcmd->ElemCount / 3); // Manually coarse clip our print out of individual vertices to save CPU, only items that may be visible.
+                ImGuiListClipper clipper;
+                clipper.Begin(pcmd->ElemCount / 3); // Manually coarse clip our print out of individual vertices to save CPU, only items that may be visible.
                 while (clipper.Step())
                     for (int prim = clipper.DisplayStart, idx_i = elem_offset + clipper.DisplayStart * 3; prim < clipper.DisplayEnd; prim++)
                     {
