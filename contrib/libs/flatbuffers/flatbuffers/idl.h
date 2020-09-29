@@ -296,7 +296,7 @@ struct FieldDef : public Definition {
         shared(false),
         native_inline(false),
         flexbuffer(false),
-        nullable(false),
+        optional(false),
         nested_flatbuffer(NULL),
         padding(0) {}
 
@@ -304,6 +304,10 @@ struct FieldDef : public Definition {
                                       const Parser &parser) const;
 
   bool Deserialize(Parser &parser, const reflection::Field *field);
+
+  bool IsScalarOptional() const {
+    return IsScalar(value.type.base_type) && optional;
+  }
 
   Value value;
   bool deprecated;  // Field is allowed to be present in old data, but can't be.
@@ -315,7 +319,7 @@ struct FieldDef : public Definition {
   bool native_inline;  // Field will be defined inline (instead of as a pointer)
                        // for native tables if field is a struct.
   bool flexbuffer;     // This field contains FlexBuffer data.
-  bool nullable;       // If True, this field is Null (as opposed to default
+  bool optional;       // If True, this field is Null (as opposed to default
                        // valued).
   StructDef *nested_flatbuffer;  // This field contains nested FlatBuffer data.
   size_t padding;                // Bytes to always pad after this field.
@@ -843,6 +847,11 @@ class Parser : public ParserState {
 
   FLATBUFFERS_CHECKED_ERROR Error(const std::string &msg);
 
+  // @brief Verify that any of 'opts.lang_to_generate' supports Optional scalars
+  // in a schema.
+  // @param opts Options used to parce a schema and generate code.
+  static bool SupportsOptionalScalars(const flatbuffers::IDLOptions &opts);
+
  private:
   void Message(const std::string &msg);
   void Warning(const std::string &msg);
@@ -932,7 +941,7 @@ class Parser : public ParserState {
 
   bool SupportsAdvancedUnionFeatures() const;
   bool SupportsAdvancedArrayFeatures() const;
-  bool SupportsNullableScalars() const;
+  bool SupportsOptionalScalars() const;
   Namespace *UniqueNamespace(Namespace *ns);
 
   FLATBUFFERS_CHECKED_ERROR RecurseError();
