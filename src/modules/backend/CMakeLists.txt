@@ -137,6 +137,7 @@ set(SRCS
 	entity/ai/server/AIServerNetwork.h entity/ai/server/AIServerNetwork.cpp
 	entity/ai/server/AddNodeHandler.h entity/ai/server/AddNodeHandler.cpp
 	entity/ai/server/ChangeHandler.h entity/ai/server/ChangeHandler.cpp
+	entity/ai/server/ExecuteCommandHandler.h entity/ai/server/ExecuteCommandHandler.cpp
 	entity/ai/server/DeleteNodeHandler.h entity/ai/server/DeleteNodeHandler.cpp
 	entity/ai/server/PauseHandler.h entity/ai/server/PauseHandler.cpp
 	entity/ai/server/ResetHandler.h entity/ai/server/ResetHandler.cpp

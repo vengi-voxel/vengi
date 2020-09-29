@@ -12,6 +12,7 @@
 #include "AddNodeHandler.h"
 #include "DeleteNodeHandler.h"
 #include "UpdateNodeHandler.h"
+#include "ExecuteCommandHandler.h"
 
 #include "attrib/ShadowAttributes.h"
 #include "backend/entity/ai/condition/ConditionParser.h"
@@ -48,6 +49,7 @@ Server::Server(AIRegistry& aiRegistry, const metric::MetricPtr& metric,
 	r->registerHandler(ai::MsgType::AddNode, std::make_shared<AddNodeHandler>(*this));
 	r->registerHandler(ai::MsgType::DeleteNode, std::make_shared<DeleteNodeHandler>(*this));
 	r->registerHandler(ai::MsgType::UpdateNode, std::make_shared<UpdateNodeHandler>(*this));
+	r->registerHandler(ai::MsgType::ExecuteCommand, std::make_shared<ExecuteCommandHandler>());
 
 	_eventBus = std::make_shared<core::EventBus>(2);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
@@ -207,12 +209,11 @@ flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> Ser
 		const bool conditionState = condition ? condition->result() : false;
 		const int64_t lastRun = childNode->getLastExecMillis(ai);
 		const int64_t delta = lastRun == -1 ? -1 : aiTime - lastRun;
-		ai::TreeNodeStatus status = node->getLastStatus(ai);
+		ai::TreeNodeStatus status = childNode->getLastStatus(ai);
 		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> childNodeChildren = addChildren(childNode, ai);
-
 		flatbuffers::Offset<ai::StateNode> child = ai::CreateStateNode(_characterDetailsFBB,
 			nodeId, _characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()), conditionState,
-			childNodeChildren, delta, (int)status, true);
+			childNodeChildren, delta, status);
 		offsets.push_back(child);
 	}
 	return _characterDetailsFBB.CreateVector(offsets.data(), offsets.size());
@@ -238,7 +239,7 @@ void Server::broadcastCharacterDetails(const Zone* zone) {
 		const int64_t lastRun = _time - node->getLastExecMillis(ai);
 		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> children = addChildren(node, ai);
 		flatbuffers::Offset<ai::StateNode> rootnode = ai::CreateStateNode(_characterDetailsFBB, nodeId,
-			_characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()), conditionState, children, lastRun, (int)status, true);
+			_characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()), conditionState, children, lastRun, status);
 
 		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateAggroEntry>>> aggro;
 		const AggroMgr::Entries& entries = ai->getAggroMgr().getEntries();

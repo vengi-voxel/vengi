@@ -111,8 +111,7 @@ table StateNode {
 	condition_state:bool;
 	children:[StateNode];
 	last_run:long;
-	status:byte;
-	currently_running:bool;
+	status:TreeNodeStatus;
 }
 
 table State {
@@ -138,6 +137,10 @@ table CharacterDetails {
 	root:StateNode;
 }
 
+table ExecuteCommand {
+	command:string (required);
+}
+
 union MsgType {
 	Names,
 	Select,
@@ -151,7 +154,8 @@ union MsgType {
 	UpdateNode,
 	StateWorld,
 	CharacterDetails,
-	CharacterStatic
+	CharacterStatic,
+	ExecuteCommand
 }
 
 table Message {
