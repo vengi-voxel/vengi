@@ -62,9 +62,7 @@
 # include <AvailabilityMacros.h>
 #endif
 
-#if defined(_POSIX_PATH_MAX)
-# define UV__PATH_MAX _POSIX_PATH_MAX
-#elif defined(PATH_MAX)
+#if defined(PATH_MAX)
 # define UV__PATH_MAX PATH_MAX
 #else
 # define UV__PATH_MAX 8192
@@ -336,15 +334,8 @@ struct uv__mmsghdr {
   unsigned int msg_len;
 };
 
-int uv__recvmmsg(int fd,
-                 struct uv__mmsghdr* mmsg,
-                 unsigned int vlen,
-                 unsigned int flags,
-                 struct timespec* timeout);
-int uv__sendmmsg(int fd,
-                 struct uv__mmsghdr* mmsg,
-                 unsigned int vlen,
-                 unsigned int flags);
+int uv__recvmmsg(int fd, struct uv__mmsghdr* mmsg, unsigned int vlen);
+int uv__sendmmsg(int fd, struct uv__mmsghdr* mmsg, unsigned int vlen);
 #else
 #define HAVE_MMSG 0
 #endif

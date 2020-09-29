@@ -38,11 +38,10 @@ set(uv_sources
 if(WIN32)
   list(APPEND uv_defines WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0600)
   list(APPEND uv_libraries
+       psapi
+       user32
        advapi32
        iphlpapi
-       psapi
-       shell32
-       user32
        userenv
        ws2_32)
   list(APPEND uv_sources
@@ -73,7 +72,8 @@ if(WIN32)
        src/win/winsock.c)
 else()
   list(APPEND uv_defines _FILE_OFFSET_BITS=64 _LARGEFILE_SOURCE)
-  if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+  if(NOT CMAKE_SYSTEM_NAME MATCHES "Android|OS390|QNX")
+    # TODO: This should be replaced with find_package(Threads) if possible
     # Android has pthread as part of its c library, not as a separate
     # libpthread.so.
     list(APPEND uv_libraries pthread)
@@ -104,13 +104,17 @@ if(CMAKE_SYSTEM_NAME STREQUAL "AIX")
        _ALL_SOURCE
        _LINUX_SOURCE_COMPAT
        _THREAD_SAFE
-       _XOPEN_SOURCE=500)
+       _XOPEN_SOURCE=500
+       HAVE_SYS_AHAFS_EVPRODS_H)
   list(APPEND uv_libraries perfstat)
-  list(APPEND uv_sources src/unix/aix.c)
+  list(APPEND uv_sources
+       src/unix/aix.c
+       src/unix/aix-common.c)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
-  list(APPEND uv_libs dl)
+  list(APPEND uv_defines _GNU_SOURCE)
+  list(APPEND uv_libraries dl)
   list(APPEND uv_sources
        src/unix/android-ifaddrs.c
        src/unix/linux-core.c
@@ -118,10 +122,12 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
        src/unix/linux-syscalls.c
        src/unix/procfs-exepath.c
        src/unix/pthread-fixes.c
-       src/unix/sysinfo-loadavg.c)
+       src/unix/random-getentropy.c
+       src/unix/random-getrandom.c
+       src/unix/random-sysctl-linux.c)
 endif()
 
-if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "Android|Linux|OS/390")
+if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "Android|Linux|OS390")
   list(APPEND uv_sources src/unix/proctitle.c)
 endif()
 
@@ -131,7 +137,6 @@ endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "DragonFly|FreeBSD|NetBSD|OpenBSD")
   list(APPEND uv_sources src/unix/posix-hrtime.c src/unix/bsd-proctitle.c)
-  list(APPEND uv_libraries kvm)
 endif()
 
 if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "DragonFly|FreeBSD|NetBSD|OpenBSD")
@@ -163,22 +168,23 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
        src/unix/linux-syscalls.c
        src/unix/procfs-exepath.c
        src/unix/random-getrandom.c
-       src/unix/random-sysctl-linux.c
-       src/unix/sysinfo-loadavg.c)
+       src/unix/random-sysctl-linux.c)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
   list(APPEND uv_sources src/unix/netbsd.c)
+  list(APPEND uv_libraries kvm)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
   list(APPEND uv_sources src/unix/openbsd.c)
 endif()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "OS/390")
+if(CMAKE_SYSTEM_NAME STREQUAL "OS390")
   list(APPEND uv_defines PATH_MAX=255)
   list(APPEND uv_defines _AE_BIMODAL)
   list(APPEND uv_defines _ALL_SOURCE)
+  list(APPEND uv_defines _ISOC99_SOURCE)
   list(APPEND uv_defines _LARGE_TIME_API)
   list(APPEND uv_defines _OPEN_MSGQ_EXT)
   list(APPEND uv_defines _OPEN_SYS_FILE_EXT)
@@ -191,9 +197,23 @@ if(CMAKE_SYSTEM_NAME STREQUAL "OS/390")
   list(APPEND uv_defines _XOPEN_SOURCE_EXTENDED)
   list(APPEND uv_sources
        src/unix/pthread-fixes.c
-       src/unix/pthread-barrier.c
        src/unix/os390.c
        src/unix/os390-syscalls.c)
+  list(APPEND uv_cflags -Wc,DLL -Wc,exportall -Wc,xplink)
+  list(APPEND uv_libraries -Wl,xplink)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "OS400")
+  list(APPEND uv_defines
+       _ALL_SOURCE
+       _LINUX_SOURCE_COMPAT
+       _THREAD_SAFE
+       _XOPEN_SOURCE=500)
+  list(APPEND uv_sources
+    src/unix/aix-common.c
+    src/unix/ibmi.c
+    src/unix/no-fsevents.c
+    src/unix/posix-poll.c)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
