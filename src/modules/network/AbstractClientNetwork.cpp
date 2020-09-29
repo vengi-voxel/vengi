@@ -38,12 +38,15 @@ ENetPeer* AbstractClientNetwork::connect(uint16_t port, const core::String& host
 	enet_host_compress_with_range_coder(_client);
 
 	ENetAddress address;
-	enet_address_set_host(&address, hostname.c_str());
+	if (enet_address_set_host(&address, hostname.c_str()) < 0) {
+		Log::error("Failed to lookup %s:%i", hostname.c_str(), (int)port);
+		return nullptr;
+	}
 	address.port = port;
 
 	_peer = enet_host_connect(_client, &address, maxChannels, 0);
 	if (_peer == nullptr) {
-		Log::error("Failed to connect to peer");
+		Log::error("Failed to connect to host %s:%i", hostname.c_str(), (int)port);
 		return nullptr;
 	}
 

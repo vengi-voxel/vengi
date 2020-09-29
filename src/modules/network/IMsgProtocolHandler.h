@@ -41,9 +41,3 @@ public:
 };
 
 }
-
-#define MSGPROTOHANDLER(attachmentType, msgType, attachmentNeeded) \
-struct msgType##Handler: public network::IMsgProtocolHandler<msgType, attachmentType> { \
-	msgType##Handler() : network::IMsgProtocolHandler<msgType, attachmentType>(true, CORE_STRINGIFY(msgType)) {} \
-	void execute(attachmentType* attachment, const msgType* message) override; \
-}
