@@ -76,8 +76,9 @@ void Network::updateHost(ENetHost* host) {
 		}
 		case ENET_EVENT_TYPE_DISCONNECT: {
 			core_trace_scoped(NetworkDisconnect);
-			Log::info("New disconnect event received");
-			_eventBus->publish(DisconnectEvent(event.peer, (DisconnectReason)event.data));
+			const DisconnectReason reason = (DisconnectReason)event.data;
+			Log::info("New disconnect event received with reason: %i", (int)reason);
+			_eventBus->publish(DisconnectEvent(event.peer, reason));
 			break;
 		}
 		case ENET_EVENT_TYPE_NONE: {
