@@ -109,6 +109,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     uint32_t bo_stride, pixel;
     uint32_t *buffer = NULL;
     size_t bufsize;
+    unsigned int i, j;
 
     /* All code below assumes ARGB8888 format for the cursor surface, like other backends do.
        Also, the GBM BO pixels have to be alpha-premultiplied, but the SDL surface we receive has
@@ -140,7 +141,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
             goto cleanup;
     }
 
-    if (usable_cursor_w == 0 || usable_cursor_w == 0) {
+    if (usable_cursor_w == 0 || usable_cursor_h == 0) {
             SDL_SetError("Could not get an usable GBM cursor size");
             goto cleanup;
     }
@@ -183,8 +184,8 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     SDL_memset(buffer, 0x00, bo_stride * curdata->h);
 
     /* Copy from SDL surface to buffer, pre-multiplying by alpha each pixel as we go. */
-    for (int i = 0; i < surface->h; i++) {
-        for (int j = 0; j < surface->w; j++) {
+    for (i = 0; i < surface->h; i++) {
+        for (j = 0; j < surface->w; j++) {
             pixel = ((uint32_t*)surface->pixels)[i * surface->w + j];
             alpha_premultiply_ARGB8888 (&pixel);
 	    SDL_memcpy(buffer + (i * curdata->w)  + j, &pixel, 4);
@@ -240,7 +241,6 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     SDL_DisplayData *dispdata = NULL;
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
-    int ret;
 
     mouse = SDL_GetMouse();
     if (!mouse) {
@@ -259,29 +259,22 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     /**********************************/
     if (!cursor) {
         /* Hide CURRENT cursor, a cursor that is already on screen
-           and SDL stores in mouse->cur_cursor. */
+           and SDL is stored in mouse->cur_cursor. */
         if (mouse->cur_cursor && mouse->cur_cursor->driverdata) {
-            if (dispdata && dispdata->cursor_plane) {
-                info.plane = dispdata->cursor_plane; /* The rest of the members are zeroed. */
-                ret = drm_atomic_set_plane_props(&info); 
-                //drm_atomic_commit(display->device, SDL_TRUE);
-                if (ret) {
-                    SDL_SetError("Could not hide current cursor.");
-                    return ret;
+                if (dispdata && dispdata->cursor_plane) {
+                    info.plane = dispdata->cursor_plane; /* The rest of the members are zeroed. */
+                    drm_atomic_set_plane_props(&info);
+                    if (drm_atomic_commit(display->device, SDL_TRUE))
+                        return SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
                 }
-
                 return 0;
-
-            }
         }
-
         return SDL_SetError("Couldn't find cursor to hide.");
     }
 
     /************************************************/
     /* If cursor != NULL, DO show cursor on display */
     /************************************************/
-
     if (!display) {
         return SDL_SetError("Could not get display for mouse.");
     }
@@ -314,14 +307,11 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     info.crtc_w = curdata->w;
     info.crtc_h = curdata->h; 
 
-    ret = drm_atomic_set_plane_props(&info);
-    //drm_atomic_commit(display->device, SDL_TRUE);
+    drm_atomic_set_plane_props(&info);
 
-    if (ret) {
-        SDL_SetError("KMSDRM_ShowCursor failed.");
-        return ret;
+    if (drm_atomic_commit(display->device, SDL_TRUE)) {
+        return SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
     }
-
     return 0;
 }
 
@@ -339,22 +329,24 @@ static void
 KMSDRM_FreeCursor(SDL_Cursor * cursor)
 {
     KMSDRM_CursorData *curdata = NULL;
-    SDL_VideoDevice *video = NULL;
+    SDL_VideoDevice *video_device = SDL_GetVideoDevice();
     KMSDRM_PlaneInfo info = {0};
-
     if (cursor) {
         curdata = (KMSDRM_CursorData *) cursor->driverdata;
-        if (video && curdata->bo && curdata->plane) {
+        if (video_device && curdata->bo && curdata->plane) {
             info.plane = curdata->plane; /* The other members are zeroed. */
 	    drm_atomic_set_plane_props(&info);
             /* Wait until the cursor is unset from the cursor plane before destroying it's BO. */
-            drm_atomic_commit(video, SDL_TRUE);
+            if (drm_atomic_commit(video_device, SDL_TRUE)) {
+                SDL_SetError("Failed atomic commit in KMSDRM_FreeCursor.");
+            }
 	    KMSDRM_gbm_bo_destroy(curdata->bo);
 	    curdata->bo = NULL;
-
-	    SDL_free(cursor->driverdata);
-	    SDL_free(cursor);
         }
+
+	/* Even if the cursor is not ours, free it. */
+	SDL_free(cursor->driverdata);
+	SDL_free(cursor);
     }
 }
 
@@ -380,15 +372,10 @@ KMSDRM_WarpMouseGlobal(int x, int y)
         /* And now update the cursor graphic position on screen. */
         curdata = (KMSDRM_CursorData *) mouse->cur_cursor->driverdata;
         if (curdata->bo) {
-	    int ret;
 
-            ret = drm_atomic_movecursor(curdata, x, y);
-
-	    if (ret) {
-		SDL_SetError("drm_atomic_movecursor() failed.");
+	    if (drm_atomic_movecursor(curdata, x, y)) {
+		return SDL_SetError("drm_atomic_movecursor() failed.");
 	    }
-
-	    return ret;
 
         } else {
             return SDL_SetError("Cursor not initialized properly.");
@@ -438,7 +425,6 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     KMSDRM_CursorData *curdata;
-    int ret;
 
     /* We must NOT call SDL_SendMouseMotion() here or we will enter recursivity!
        That's why we move the cursor graphic ONLY. */
@@ -449,9 +435,8 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
            cursor won't move in these situations. We could do an atomic_commit() for each
            cursor movement request, but it cripples the movement to 30FPS, so a future solution
            is needed. SDLPoP "QUIT?" menu is an example of this situation. */
-        ret = drm_atomic_movecursor(curdata, mouse->x, mouse->y);
 
-	if (ret) {
+	if (drm_atomic_movecursor(curdata, mouse->x, mouse->y)) {
 	    SDL_SetError("drm_atomic_movecursor() failed.");
 	}
     }

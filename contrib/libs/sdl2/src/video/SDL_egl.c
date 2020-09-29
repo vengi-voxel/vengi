@@ -72,6 +72,13 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.dylib"   //???
 #define DEFAULT_OGL_ES "libGLESv1_CM.dylib"     //???
 
+#elif defined(__OpenBSD__)
+#define DEFAULT_OGL "libGL.so"
+#define DEFAULT_EGL "libEGL.so"
+#define DEFAULT_OGL_ES2 "libGLESv2.so"
+#define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
+#define DEFAULT_OGL_ES "libGLESv1_CM.so"
+
 #else
 /* Desktop Linux */
 #define DEFAULT_OGL "libGL.so.1"
@@ -145,12 +152,8 @@ int SDL_EGL_SetErrorEx(const char * message, const char * eglFunctionName, EGLin
 }
 
 /* EGL implementation of SDL OpenGL ES support */
-typedef enum {
-    SDL_EGL_DISPLAY_EXTENSION,
-    SDL_EGL_CLIENT_EXTENSION
-} SDL_EGL_ExtensionType;
 
-static SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext)
+SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext)
 {
     size_t ext_len;
     const char *ext_override;
