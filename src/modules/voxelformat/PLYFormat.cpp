@@ -14,7 +14,7 @@
 
 namespace voxel {
 
-bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float scale) {
+bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float scale, bool quad) {
 	io::FileStream stream(file);
 
 	const int nv = mesh.getNoOfVertices();
@@ -37,7 +37,14 @@ bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 	stream.addStringFormat(false, "property uchar green\n");
 	stream.addStringFormat(false, "property uchar blue\n");
 
-	stream.addStringFormat(false, "element face %i\n", ni / 3);
+	int faces;
+	if (quad) {
+		faces = ni / 6;
+	} else {
+		faces = ni / 3;
+	}
+
+	stream.addStringFormat(false, "element face %i\n", faces);
 	stream.addStringFormat(false, "property list uchar uint vertex_indices\n");
 
 	stream.addStringFormat(false, "end_header\n");
@@ -51,11 +58,21 @@ bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 			(uint8_t)(color.r * 255.0f), (uint8_t)(color.g * 255.0f), (uint8_t)(color.b * 255.0f));
 	}
 
-	for (int i = 0; i < ni; i += 3) {
-		const voxel::IndexType one   = indices[i + 0];
-		const voxel::IndexType two   = indices[i + 1];
-		const voxel::IndexType three = indices[i + 2];
-		stream.addStringFormat(false, "3 %i %i %i\n", (int)one, (int)two, (int)three);
+	if (quad) {
+		for (int i = 0; i < ni; i += 3) {
+			const voxel::IndexType one   = indices[i + 0];
+			const voxel::IndexType two   = indices[i + 1];
+			const voxel::IndexType three = indices[i + 2];
+			stream.addStringFormat(false, "3 %i %i %i\n", (int)one, (int)two, (int)three);
+		}
+	} else {
+		for (int i = 0; i < ni; i += 6) {
+			const voxel::IndexType one   = indices[i + 0];
+			const voxel::IndexType two   = indices[i + 1];
+			const voxel::IndexType three = indices[i + 2];
+			const voxel::IndexType four  = indices[i + 5];
+			stream.addStringFormat(false, "4 %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+		}
 	}
 	return true;
 }

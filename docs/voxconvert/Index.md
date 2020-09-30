@@ -31,7 +31,10 @@ You can export your volume model into a obj or ply.
 
 Cvars to control the meshing:
 
+* `voxformat_ambientocclusion`: Don't export extra quads for ambient occlusion voxels
 * `voxformat_mergequads`
 * `voxformat_reusevertices`
+* `voxformat_scale`: Scale the vertices by the given factor
+* `voxformat_quads`: Export to quads
 
 See `./vengi-voxconvert --help` for details.
