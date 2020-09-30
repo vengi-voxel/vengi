@@ -43,7 +43,7 @@ public:
 	}
 
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
-	virtual bool saveMesh(const voxel::Mesh& mesh, const io::FilePtr& file) = 0;
+	virtual bool saveMesh(const voxel::Mesh& mesh, const io::FilePtr& file, float scale) = 0;
 };
 
 }

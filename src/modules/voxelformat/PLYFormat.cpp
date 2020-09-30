@@ -14,7 +14,7 @@
 
 namespace voxel {
 
-bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file) {
+bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float scale) {
 	io::FileStream stream(file);
 
 	const int nv = mesh.getNoOfVertices();
@@ -30,9 +30,9 @@ bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file) {
 	stream.addStringFormat(false, "comment github.com/mgerhardy/engine\n");
 
 	stream.addStringFormat(false, "element vertex %i\n", nv);
-	stream.addStringFormat(false, "property int x\n");
-	stream.addStringFormat(false, "property int z\n");
-	stream.addStringFormat(false, "property int y\n");
+	stream.addStringFormat(false, "property float x\n");
+	stream.addStringFormat(false, "property float z\n");
+	stream.addStringFormat(false, "property float y\n");
 	stream.addStringFormat(false, "property uchar red\n");
 	stream.addStringFormat(false, "property uchar green\n");
 	stream.addStringFormat(false, "property uchar blue\n");
@@ -46,8 +46,8 @@ bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file) {
 	for (int i = 0; i < nv; ++i) {
 		const voxel::VoxelVertex& v = vertices[i];
 		const glm::vec4& color = colors[v.colorIndex];
-		stream.addStringFormat(false, "%i %i %i %u %u %u\n",
-			v.position.x, v.position.y, -v.position.z,
+		stream.addStringFormat(false, "%f %f %f %u %u %u\n",
+			(float)v.position.x * scale, (float)v.position.y * scale, -(float)v.position.z * scale,
 			(uint8_t)(color.r * 255.0f), (uint8_t)(color.g * 255.0f), (uint8_t)(color.b * 255.0f));
 	}
 
