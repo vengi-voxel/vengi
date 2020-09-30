@@ -36,5 +36,7 @@ Cvars to control the meshing:
 * `voxformat_reusevertices`
 * `voxformat_scale`: Scale the vertices by the given factor
 * `voxformat_quads`: Export to quads
+* `voxformat_withcolor`: Export vertex colors
+* `voxformat_withtexcoords`: Export texture coordinates
 
 See `./vengi-voxconvert --help` for details.

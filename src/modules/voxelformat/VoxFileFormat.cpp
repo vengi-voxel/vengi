@@ -76,13 +76,15 @@ bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 	const bool ambientOcclusion = core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->boolVal();
 	const float scale = core::Var::get("voxformat_scale", "1.0", core::CV_NOPERSIST)->floatVal();
 	const bool quads = core::Var::get("voxformat_quads", "true", core::CV_NOPERSIST)->boolVal();
+	const bool withColor = core::Var::get("voxformat_withcolor", "true", core::CV_NOPERSIST)->boolVal();
+	const bool withTexCoords = core::Var::get("voxformat_withtexcoords", "true", core::CV_NOPERSIST)->boolVal();
 
 	voxel::Mesh mesh;
 	voxel::Region region = volume->region();
 	region.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(volume, region, &mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 	delete volume;
-	return saveMesh(mesh, file, scale, quads);
+	return saveMesh(mesh, file, scale, quads, withColor, withTexCoords);
 }
 
 }

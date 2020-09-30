@@ -36,9 +36,7 @@ void OBJFormat::writeMtlFile(const core::String& mtlName) const {
 	stream.addStringFormat(false, "map_Kd palette-%s.png\n", voxel::getDefaultPaletteName());
 }
 
-bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float scale, bool quad) {
-	bool withColor = true;
-
+bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float scale, bool quad, bool withColor, bool withTexCoords) {
 	io::FileStream stream(file);
 
 	const int nv = mesh.getNoOfVertices();
@@ -53,9 +51,8 @@ bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 
 	// 1 x 256 is the texture format that we are using for our palette
 	const float texcoord = 1.0f / (float)colors.size();
-	// it is only 1 pixel high
+	// it is only 1 pixel high - sample the middle
 	const float v1 = 0.5f;
-	const float v2 = 0.5f;
 
 	stream.addStringFormat(false, "# github.com/mgerhardy/engine\n");
 	stream.addStringFormat(false, "\n");
@@ -65,24 +62,25 @@ bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 
 	for (int i = 0; i < nv; ++i) {
 		const voxel::VoxelVertex& v = vertices[i];
+		stream.addStringFormat(false, "v %.04f %.04f %.04f",
+				(float)v.position.x * scale, (float)v.position.y * scale, (float)v.position.z * scale);
 		if (withColor) {
 			const glm::vec4& color = colors[v.colorIndex];
-			stream.addStringFormat(false, "v %.04f %.04f %.04f %.03f %.03f %.03f\n",
-				(float)v.position.x * scale, (float)v.position.y * scale, (float)v.position.z * scale, color.r, color.g, color.b);
-		} else {
-			stream.addStringFormat(false, "v %.04f %.04f %.04f\n",
-				(float)v.position.x * scale, (float)v.position.y * scale, (float)v.position.z * scale);
+			stream.addStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
 		}
+		stream.addStringFormat(false, "\n");
 	}
 
 	if (quad) {
-		for (int i = 0; i < ni; i += 6) {
-			const voxel::VoxelVertex& v = vertices[indices[i]];
-			const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
-			stream.addStringFormat(false, "vt %f %f\n", u, v1);
-			stream.addStringFormat(false, "vt %f %f\n", u, v1);
-			stream.addStringFormat(false, "vt %f %f\n", u, v2);
-			stream.addStringFormat(false, "vt %f %f\n", u, v2);
+		if (withTexCoords) {
+			for (int i = 0; i < ni; i += 6) {
+				const voxel::VoxelVertex& v = vertices[indices[i]];
+				const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
+				stream.addStringFormat(false, "vt %f %f\n", u, v1);
+				stream.addStringFormat(false, "vt %f %f\n", u, v1);
+				stream.addStringFormat(false, "vt %f %f\n", u, v1);
+				stream.addStringFormat(false, "vt %f %f\n", u, v1);
+			}
 		}
 
 		int uvi = 0;
@@ -91,23 +89,33 @@ bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 			const voxel::IndexType two   = indices[i + 1] + 1;
 			const voxel::IndexType three = indices[i + 2] + 1;
 			const voxel::IndexType four  = indices[i + 5] + 1;
-			stream.addStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n",
-				(int)one, uvi + 1, (int)two, uvi + 2, (int)three, uvi + 3, (int)four, uvi + 4);
+			if (withTexCoords) {
+				stream.addStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n",
+					(int)one, uvi + 1, (int)two, uvi + 2, (int)three, uvi + 3, (int)four, uvi + 4);
+			} else {
+				stream.addStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+			}
 		}
 	} else {
-		for (int i = 0; i < ni; i += 3) {
-			const voxel::VoxelVertex& v = vertices[indices[i]];
-			const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
-			stream.addStringFormat(false, "vt %f %f\n", u, v1);
-			stream.addStringFormat(false, "vt %f %f\n", u, v1);
-			stream.addStringFormat(false, "vt %f %f\n", u, v2);
+		if (withTexCoords) {
+			for (int i = 0; i < ni; i += 3) {
+				const voxel::VoxelVertex& v = vertices[indices[i]];
+				const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
+				stream.addStringFormat(false, "vt %f %f\n", u, v1);
+				stream.addStringFormat(false, "vt %f %f\n", u, v1);
+				stream.addStringFormat(false, "vt %f %f\n", u, v1);
+			}
 		}
 
 		for (int i = 0; i < ni; i += 3) {
 			const voxel::IndexType one   = indices[i + 0] + 1;
 			const voxel::IndexType two   = indices[i + 1] + 1;
 			const voxel::IndexType three = indices[i + 2] + 1;
-			stream.addStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, i + 1, (int)two, i + 2, (int)three, i + 3);
+			if (withTexCoords) {
+				stream.addStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, i + 1, (int)two, i + 2, (int)three, i + 3);
+			} else {
+				stream.addStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
+			}
 		}
 	}
 
