@@ -71,16 +71,17 @@ bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 		return false;
 	}
 
-	bool mergeQuads = core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->boolVal();
-	bool reuseVertices = core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->boolVal();
-	bool ambientOcclusion = core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->boolVal();
+	const bool mergeQuads = core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->boolVal();
+	const bool reuseVertices = core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->boolVal();
+	const bool ambientOcclusion = core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->boolVal();
+	const float scale = core::Var::get("voxformat_scale", "1.0", core::CV_NOPERSIST)->floatVal();
 
 	voxel::Mesh mesh;
 	voxel::Region region = volume->region();
 	region.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(volume, region, &mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 	delete volume;
-	return saveMesh(mesh, file);
+	return saveMesh(mesh, file, scale);
 }
 
 }

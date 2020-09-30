@@ -24,12 +24,19 @@ void OBJFormat::writeMtlFile(const core::String& mtlName) const {
 		return;
 	}
 	io::FileStream stream(file);
+	stream.addStringFormat(false, "# github.com/mgerhardy/engine\n");
+	stream.addStringFormat(false, "\n");
 	stream.addStringFormat(false, "newmtl palette\n");
-	stream.addStringFormat(false, "map_Ka palette-nippon.png\n");
-	stream.addStringFormat(false, "map_Kd palette-nippon.png\n");
+	stream.addStringFormat(false, "Ka 1.000000 1.000000 1.000000\n");
+	stream.addStringFormat(false, "Kd 1.000000 1.000000 1.000000\n");
+	stream.addStringFormat(false, "Ks 0.000000 0.000000 0.000000\n");
+	stream.addStringFormat(false, "Tr 1.000000\n");
+	stream.addStringFormat(false, "illum 1\n");
+	stream.addStringFormat(false, "Ns 0.000000\n");
+	stream.addStringFormat(false, "map_Kd palette-%s.png\n", voxel::getDefaultPaletteName());
 }
 
-bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file) {
+bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float scale) {
 	bool withColor = true;
 
 	io::FileStream stream(file);
@@ -51,6 +58,8 @@ bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file) {
 	const float v2 = 1.0f;
 
 	stream.addStringFormat(false, "# github.com/mgerhardy/engine\n");
+	stream.addStringFormat(false, "\n");
+	stream.addStringFormat(false, "g Model\n");
 	stream.addStringFormat(false, "mtllib palette.mtl\n");
 	for (int i = 0; i < nv; ++i) {
 		const voxel::VoxelVertex& v = vertices[i];
@@ -58,11 +67,11 @@ bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file) {
 		const float u2 = (float)(v.colorIndex + 1) * texcoord;
 		if (withColor) {
 			const glm::vec4& color = colors[v.colorIndex];
-			stream.addStringFormat(false, "v %i %i %i %f %f %f\n",
-				v.position.x, v.position.y, v.position.z, color.r, color.g, color.b);
+			stream.addStringFormat(false, "v %.04f %.04f %.04f %.03f %.03f %.03f\n",
+				(float)v.position.x * scale, (float)v.position.y * scale, (float)v.position.z * scale, color.r, color.g, color.b);
 		} else {
-			stream.addStringFormat(false, "v %i %i %i\n",
-				v.position.x, v.position.y, v.position.z);
+			stream.addStringFormat(false, "v %.04f %.04f %.04f\n",
+				(float)v.position.x * scale, (float)v.position.y * scale, (float)v.position.z * scale);
 		}
 		if (i % 3 == 0) {
 			stream.addStringFormat(false, "vt %f %f\n", u1, v1);
