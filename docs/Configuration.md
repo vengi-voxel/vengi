@@ -16,6 +16,25 @@ take precendence over the default settings that are specified in the code.
 The environment variable can be either lower case or upper case. For example it will work if you have `CL_WIDTH` or `cl_width`
 exported. The lower case variant has the higher priority.
 
+### Commandline
+
+```bash
+./vengi-voxvonvert -set voxformat_scale 2.0 [...]
+```
+
+### Environment
+
+```bash
+export VOXFORMAT_SCALE=2.0
+./vengi-voxconvert [...]
+```
+
+### Configuration file
+
+* Linux: `~/.local/share/vengi/voxconvert/voxconvert.vars`
+* Windows: `C:/Users/bob/AppData/Roaming/vengi/voxconvert/voxconvert.vars`
+* Mac: `/Users/bob/Library/Application Support/vengi/voxconvert/voxconvert.vars`
+
 ## Commands
 
 To get a list of supported commands (they might differ from application to application), type the command `cmdlist` to the
