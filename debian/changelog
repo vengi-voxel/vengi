@@ -1,10 +1,15 @@
-vengi (0.0.8.0-1) UNRELEASED; urgency=low
+vengi (0.0.8.0-1) unstable; urgency=low
 
   * General:
   * Added obj and ply export support
   * Restructured the documentation
+  * Improved font support for imgui ui
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Tue, 15 Sep 2020 22:14:07 +0200
+  * Backend:
+  * Reworked ai debugging network protocol
+  * Optimized behaviour tree filters
+
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Wed, 30 Sep 2020 22:38:13 +0200
 
 vengi (0.0.7.0-1) unstable; urgency=low
 
