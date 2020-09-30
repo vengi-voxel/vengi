@@ -40,6 +40,8 @@ export VOXFORMAT_SCALE=2.0
 To get a list of supported commands (they might differ from application to application), type the command `cmdlist` to the
 in-game console (`CTRL+Tab` in the default binding).
 
+You can also get a list when doing `./vengi-app --help` on the command line.
+
 ## Key bindings
 
 You can also modify or add key bindings to commands. Type `bindlist` to the console to get a list of the current active bindings
