@@ -4,6 +4,10 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 ## 0.0.9 (2020-XX-XX)
 
+General:
+
+   - Added obj texcoord export sampling the borders of the texel
+
 ## 0.0.8 (2020-09-30)
 
 General:

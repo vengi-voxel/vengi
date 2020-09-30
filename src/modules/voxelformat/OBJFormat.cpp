@@ -54,8 +54,8 @@ bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 	// 1 x 256 is the texture format that we are using for our palette
 	const float texcoord = 1.0f / (float)colors.size();
 	// it is only 1 pixel high
-	const float v1 = 0.0f;
-	const float v2 = 1.0f;
+	const float v1 = 0.5f;
+	const float v2 = 0.5f;
 
 	stream.addStringFormat(false, "# github.com/mgerhardy/engine\n");
 	stream.addStringFormat(false, "\n");
@@ -78,12 +78,11 @@ bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 	if (quad) {
 		for (int i = 0; i < ni; i += 6) {
 			const voxel::VoxelVertex& v = vertices[indices[i]];
-			const float u1 = (float)v.colorIndex * texcoord;
-			const float u2 = (float)(v.colorIndex + 1) * texcoord;
-			stream.addStringFormat(false, "vt %f %f\n", u1, v1);
-			stream.addStringFormat(false, "vt %f %f\n", u2, v1);
-			stream.addStringFormat(false, "vt %f %f\n", u2, v2);
-			stream.addStringFormat(false, "vt %f %f\n", u1, v2);
+			const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
+			stream.addStringFormat(false, "vt %f %f\n", u, v1);
+			stream.addStringFormat(false, "vt %f %f\n", u, v1);
+			stream.addStringFormat(false, "vt %f %f\n", u, v2);
+			stream.addStringFormat(false, "vt %f %f\n", u, v2);
 		}
 
 		int uvi = 0;
@@ -98,11 +97,10 @@ bool OBJFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 	} else {
 		for (int i = 0; i < ni; i += 3) {
 			const voxel::VoxelVertex& v = vertices[indices[i]];
-			const float u1 = (float)v.colorIndex * texcoord;
-			const float u2 = (float)(v.colorIndex + 1) * texcoord;
-			stream.addStringFormat(false, "vt %f %f\n", u1, v1);
-			stream.addStringFormat(false, "vt %f %f\n", u2, v1);
-			stream.addStringFormat(false, "vt %f %f\n", u2, v2);
+			const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
+			stream.addStringFormat(false, "vt %f %f\n", u, v1);
+			stream.addStringFormat(false, "vt %f %f\n", u, v1);
+			stream.addStringFormat(false, "vt %f %f\n", u, v2);
 		}
 
 		for (int i = 0; i < ni; i += 3) {
