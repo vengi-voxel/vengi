@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/GLM.h"
+#include "core/collection/Set.h"
 #include "math/Rect.h"
 #include "core/concurrent/ReadWriteLock.h"
 #include "attrib/Attributes.h"
@@ -49,7 +50,8 @@ protected:
 	// attribute stuff
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
-	std::unordered_set<attrib::DirtyValue> _dirtyAttributeTypes;
+	bool _dirtyAttributes = false;
+	core::Array<attrib::DirtyValue, (int)attrib::Type::MAX + 1> _dirtyAttributeTypes;
 
 	MapPtr _map;
 

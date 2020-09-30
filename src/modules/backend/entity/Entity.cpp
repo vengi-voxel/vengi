@@ -124,7 +124,8 @@ void Entity::shutdown() {
 void Entity::onAttribChange(const attrib::DirtyValue& v) {
 	Log::debug("Attrib changed for type %s (current: %s) to value %f",
 			network::EnumNameAttribType(v.type), (v.current ? "true" : "false"), v.value);
-	_dirtyAttributeTypes.insert(v);
+	_dirtyAttributeTypes[core::enumVal(v.type)] = v;
+	_dirtyAttributes = true;
 }
 
 bool Entity::addContainer(const core::String& id) {
@@ -148,13 +149,23 @@ bool Entity::removeContainer(const core::String& id) {
 }
 
 void Entity::broadcastAttribUpdate() {
-	core_trace_scoped(BroadcastAttribUpdate);
 	// TODO: send current and max values to the clients
 	// TODO: collect which of them are dirty, and maintain a list of
 	// those that are for the owning client only or which of them must be broadcasted
+	int dirtyCount = 0;
+	for (const auto& d : _dirtyAttributeTypes) {
+		if (d.type != attrib::Type::NONE) {
+			++dirtyCount;
+		}
+	}
+	core_assert_msg(dirtyCount > 0, "Unexpected dirty attributes - _dirtyAttributes and _dirtyAttributeTypes are out of sync.");
+	core_trace_scoped(BroadcastAttribUpdate);
 	auto iter = _dirtyAttributeTypes.begin();
-	auto attribs = _attribUpdateFBB.CreateVector<flatbuffers::Offset<network::AttribEntry>>(_dirtyAttributeTypes.size(),
+	auto attribs = _attribUpdateFBB.CreateVector<flatbuffers::Offset<network::AttribEntry>>(dirtyCount,
 		[&] (size_t i) {
+			while (iter->type == attrib::Type::NONE) {
+				++iter;
+			}
 			const attrib::DirtyValue& dirtyValue = *iter++;
 			const double value = dirtyValue.value;
 			// TODO: maybe not needed?
@@ -164,13 +175,14 @@ void Entity::broadcastAttribUpdate() {
 		});
 	sendToVisible(_attribUpdateFBB, network::ServerMsgType::AttribUpdate,
 			network::CreateAttribUpdate(_attribUpdateFBB, id(), attribs).Union(), true);
+	_dirtyAttributeTypes.fill(attrib::DirtyValue{});
 }
 
 bool Entity::update(long dt) {
 	_attribs.update(dt);
-	if (!_dirtyAttributeTypes.empty()) {
+	if (_dirtyAttributes) {
 		broadcastAttribUpdate();
-		_dirtyAttributeTypes.clear();
+		_dirtyAttributes = false;
 	}
 	return true;
 }

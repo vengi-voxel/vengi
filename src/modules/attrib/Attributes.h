@@ -15,9 +15,9 @@
 namespace attrib {
 
 struct DirtyValue {
-	attrib::Type type;
-	bool current;
-	double value;
+	attrib::Type type = attrib::Type::NONE;
+	bool current = false;
+	double value = 0.0;
 
 	inline bool operator==(const DirtyValue& rhs) const {
 		return type == rhs.type && current == rhs.current;
