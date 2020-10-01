@@ -28,7 +28,7 @@ namespace voxelformat {
 const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl,qef,csm,nvm";
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
-// this is the list of supported voxel volume formats that have exporters implemented
+// this is the list of supported voxel or mesh formats that have exporters implemented
 const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,binvox,cub,vxl,qef,obj,ply";
 
 static uint32_t loadMagic(const io::FilePtr& file) {
