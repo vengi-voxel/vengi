@@ -151,6 +151,14 @@ inline core::String stripExtension(const core::String& str) {
 	return str.substr(0, pos) ;
 }
 
+inline core::String extractExtension(const core::String& str) {
+	const size_t pos = str.rfind(".");
+	if (pos == core::String::npos) {
+		return "";
+	}
+	return str.substr(pos + 1) ;
+}
+
 inline core::String extractFilenameWithExtension(const core::String& str) {
 	const size_t pathPos = str.rfind('/');
 	if (pathPos == core::String::npos) {

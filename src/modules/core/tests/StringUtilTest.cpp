@@ -45,6 +45,11 @@ TEST_F(StringUtilTest, testExtractPath) {
 	EXPECT_EQ("/a/b/c/def/", core::string::extractPath("/a/b/c/def/foo.bar"));
 }
 
+TEST_F(StringUtilTest, testExtractExtension) {
+	EXPECT_EQ("bar", core::string::extractExtension("/a/b/c/def/foo.bar"));
+	EXPECT_EQ("foo", core::string::extractExtension("/a/b/c/def/foo.bar.foo"));
+}
+
 TEST_F(StringUtilTest, testSplit) {
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString("foobar++", tokens, "+");
