@@ -27,12 +27,22 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 
-	core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->setHelp("Merge similar quads to optimize the mesh");
-	core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->setHelp("Reuse vertices or always create new ones");
-	core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->setHelp("Extra vertices for ambient occlusion");
-
+	_mergeQuads = core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST);
+	_mergeQuads->setHelp("Merge similar quads to optimize the mesh");
+	_reuseVertices = core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST);
+	_reuseVertices->setHelp("Reuse vertices or always create new ones");
+	_ambientOcclusion = core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST);
+	_ambientOcclusion->setHelp("Extra vertices for ambient occlusion");
+	_scale = core::Var::get("voxformat_scale", "1.0", core::CV_NOPERSIST);
+	_scale->setHelp("Scale the vertices by the given factor");
+	_quads = core::Var::get("voxformat_quads", "true", core::CV_NOPERSIST);
+	_quads->setHelp("Export as quads. If this false, triangles will be used.");
+	_withColor = core::Var::get("voxformat_withcolor", "true", core::CV_NOPERSIST);
+	_withColor->setHelp("Export with vertex colors");
+	_withTexCoords = core::Var::get("voxformat_withtexcoords", "true", core::CV_NOPERSIST);
+	_withTexCoords->setHelp("Export with uv coordinates of the palette image");
 	_palette = core::Var::get("palette", voxel::getDefaultPaletteName());
-	_palette->setHelp("This is the NAME part of palette-<NAME>.pngor absolute png file to use (1x256)");
+	_palette->setHelp("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 
 	return state;
 }
