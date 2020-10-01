@@ -78,7 +78,10 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "vxm" || magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4')) {
+	} else if (ext == "vxm" || magic == FourCC('V','X','M','A')
+			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
+			|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
+			|| magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4')) {
 		voxel::VXMFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);

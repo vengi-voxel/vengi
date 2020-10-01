@@ -64,10 +64,8 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	bool foundPivot = false;
 	glm::ivec3 ipivot { 0 };
 	glm::uvec3 size;
-	if (version == 4) {
-		Log::debug("Found vxm4");
-	} else if (version >= 5) {
-		Log::debug("Found vxm%i", version);
+	Log::debug("Found vxm%i", version);
+	if (version >= 5) {
 		if (version >= 6) {
 			wrap(stream.readInt(size.x));
 			wrap(stream.readInt(size.y));
