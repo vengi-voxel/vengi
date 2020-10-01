@@ -40,3 +40,11 @@ Cvars to control the meshing:
 * `voxformat_withtexcoords`: Export texture coordinates
 
 See `./vengi-voxconvert --help` for details.
+
+## Batch convert
+
+To convert a complete directory of e.g. `*.vox` to `*.obj` files, you can use e.g. the bash like this:
+
+```bash
+for i in *.vox; do vengi-voxconvert $i ${i%.vox}.obj; done
+```

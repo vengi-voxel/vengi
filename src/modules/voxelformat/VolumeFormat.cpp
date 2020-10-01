@@ -123,7 +123,7 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 }
 
 bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
-	if (isMeshFormat(filePtr->fileName())) {
+	if (isMeshFormat(filePtr->name())) {
 		return saveMeshFormat(filePtr, volumes);
 	}
 	return saveVolumeFormat(filePtr, volumes);
