@@ -177,7 +177,7 @@ bool saveMeshFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
 		voxel::PLYFormat f;
 		return f.saveGroups(volumes, filePtr);
 	}
-	Log::error("Failed to save model file %s - unknown extension '%s' given", ext.c_str());
+	Log::error("Failed to save model file %s - unknown extension '%s' given", filePtr->name().c_str(), ext.c_str());
 	return false;
 }
 
