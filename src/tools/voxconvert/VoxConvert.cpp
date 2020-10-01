@@ -115,7 +115,7 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 
-	if (!voxelformat::saveVolumeFormat(outputFile, volumes)) {
+	if (!voxelformat::saveFormat(outputFile, volumes)) {
 		voxelformat::clearVolumes(volumes);
 		Log::error("Failed to write to output file '%s'", outfile.c_str());
 		return app::AppState::InitFailure;

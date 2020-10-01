@@ -181,7 +181,7 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 	const Layer& layer = _layerMgr.layer(layerId);
 	voxel::VoxelVolumes volumes;
 	volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
-	if (voxelformat::saveVolumeFormat(filePtr, volumes)) {
+	if (voxelformat::saveFormat(filePtr, volumes)) {
 		Log::info("Saved layer %i to %s", layerId, filePtr->name().c_str());
 		return true;
 	}
@@ -240,7 +240,7 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		ext = "vox";
 	}
 
-	bool saved = voxelformat::saveVolumeFormat(filePtr, volumes);
+	bool saved = voxelformat::saveFormat(filePtr, volumes);
 	if (!saved) {
 		Log::warn("Failed to save %s file - retry as qb instead", ext.c_str());
 		voxel::QBFormat f;

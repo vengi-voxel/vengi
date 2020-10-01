@@ -5,6 +5,7 @@
 #include "VolumeFormat.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "voxelformat/PLYFormat.h"
 #include "voxelformat/VoxFormat.h"
@@ -121,6 +122,13 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 	return true;
 }
 
+bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
+	if (isMeshFormat(filePtr->fileName())) {
+		return saveMeshFormat(filePtr, volumes);
+	}
+	return saveVolumeFormat(filePtr, volumes);
+}
+
 bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
 	if (volumes.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
@@ -149,18 +157,36 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 	} else if (ext == "binvox") {
 		voxel::BinVoxFormat f;
 		return f.saveGroups(volumes, filePtr);
-	} else if (ext == "obj") {
+	}
+	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
+	voxel::QBFormat f;
+	return f.saveGroups(volumes, filePtr);
+}
+
+bool saveMeshFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
+	if (volumes.empty()) {
+		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
+		return false;
+	}
+
+	const core::String& ext = filePtr->extension();
+	if (ext == "obj") {
 		voxel::OBJFormat f;
 		return f.saveGroups(volumes, filePtr);
 	} else if (ext == "ply") {
 		voxel::PLYFormat f;
 		return f.saveGroups(volumes, filePtr);
-	} else {
-		Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
-		voxel::QBFormat f;
-		return f.saveGroups(volumes, filePtr);
 	}
-	Log::info("Save model file %s with %i layers", filePtr->name().c_str(), (int)volumes.size());
+	Log::error("Failed to save model file %s - unknown extension '%s' given", ext.c_str());
+	return false;
+}
+
+
+bool isMeshFormat(const core::String& filename) {
+	const core::String& ext = core::string::extractExtension(filename);
+	if (ext == "obj" || ext == "ply") {
+		return true;
+	}
 	return false;
 }
 
