@@ -14,23 +14,22 @@
 
 namespace voxel {
 
-bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float scale, bool quad, bool withColor, bool withTexCoords) {
+bool PLYFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float scale, bool quad, bool withColor, bool withTexCoords) {
 	io::FileStream stream(file);
-
-	const int nv = mesh.getNoOfVertices();
-	const int ni = mesh.getNoOfIndices();
-	if (ni % 3 != 0) {
-		Log::error("Unexpected indices amount");
-		return false;
-	}
-	const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
-	const voxel::IndexType* indices = mesh.getRawIndexData();
 
 	stream.addStringFormat(false, "ply\nformat ascii 1.0\n");
 	stream.addStringFormat(false, "comment github.com/mgerhardy/engine\n");
 	stream.addStringFormat(false, "comment TextureFile palette-%s.png\n", voxel::getDefaultPaletteName());
 
-	stream.addStringFormat(false, "element vertex %i\n", nv);
+	int elements = 0;
+	int indices = 0;
+	for (const auto& meshExt : meshes) {
+		const voxel::Mesh& mesh = *meshExt.mesh;
+		elements += mesh.getNoOfVertices();
+		indices += mesh.getNoOfIndices();
+	}
+
+	stream.addStringFormat(false, "element vertex %i\n", elements);
 	stream.addStringFormat(false, "property float x\n");
 	stream.addStringFormat(false, "property float z\n");
 	stream.addStringFormat(false, "property float y\n");
@@ -46,9 +45,9 @@ bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 
 	int faces;
 	if (quad) {
-		faces = ni / 6;
+		faces = indices / 6;
 	} else {
-		faces = ni / 3;
+		faces = indices / 3;
 	}
 
 	stream.addStringFormat(false, "element face %i\n", faces);
@@ -61,37 +60,55 @@ bool PLYFormat::saveMesh(const voxel::Mesh& mesh, const io::FilePtr &file, float
 	// it is only 1 pixel high - sample the middle
 	const float v1 = 0.5f;
 
-	for (int i = 0; i < nv; ++i) {
-		const voxel::VoxelVertex& v = vertices[i];
-		const glm::vec4& color = colors[v.colorIndex];
-		stream.addStringFormat(false, "%f %f %f",
-			(float)v.position.x * scale, (float)v.position.y * scale, -(float)v.position.z * scale);
-		if (withTexCoords) {
-			const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
-			stream.addStringFormat(false, " %f %f", u, v1);
+	for (const auto& meshExt : meshes) {
+		const voxel::Mesh& mesh = *meshExt.mesh;
+		const int nv = mesh.getNoOfVertices();
+		const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
+
+		for (int i = 0; i < nv; ++i) {
+			const voxel::VoxelVertex& v = vertices[i];
+			const glm::vec4& color = colors[v.colorIndex];
+			stream.addStringFormat(false, "%f %f %f",
+				(float)v.position.x * scale, (float)v.position.y * scale, -(float)v.position.z * scale);
+			if (withTexCoords) {
+				const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
+				stream.addStringFormat(false, " %f %f", u, v1);
+			}
+			if (withColor) {
+				stream.addStringFormat(false, " %u %u %u",
+					(uint8_t)(color.r * 255.0f), (uint8_t)(color.g * 255.0f), (uint8_t)(color.b * 255.0f));
+			}
+			stream.addStringFormat(false, "\n");
 		}
-		if (withColor) {
-			stream.addStringFormat(false, " %u %u %u",
-				(uint8_t)(color.r * 255.0f), (uint8_t)(color.g * 255.0f), (uint8_t)(color.b * 255.0f));
-		}
-		stream.addStringFormat(false, "\n");
 	}
 
-	if (quad) {
-		for (int i = 0; i < ni; i += 6) {
-			const voxel::IndexType one   = indices[i + 0];
-			const voxel::IndexType two   = indices[i + 1];
-			const voxel::IndexType three = indices[i + 2];
-			const voxel::IndexType four  = indices[i + 5];
-			stream.addStringFormat(false, "4 %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+	int idxOffset = 0;
+	for (const auto& meshExt : meshes) {
+		const voxel::Mesh& mesh = *meshExt.mesh;
+		const int ni = mesh.getNoOfIndices();
+		const int nv = mesh.getNoOfVertices();
+		if (ni % 3 != 0) {
+			Log::error("Unexpected indices amount");
+			return false;
 		}
-	} else {
-		for (int i = 0; i < ni; i += 3) {
-			const voxel::IndexType one   = indices[i + 0];
-			const voxel::IndexType two   = indices[i + 1];
-			const voxel::IndexType three = indices[i + 2];
-			stream.addStringFormat(false, "3 %i %i %i\n", (int)one, (int)two, (int)three);
+		const voxel::IndexType* indices = mesh.getRawIndexData();
+		if (quad) {
+			for (int i = 0; i < ni; i += 6) {
+				const uint32_t one   = idxOffset + indices[i + 0];
+				const uint32_t two   = idxOffset + indices[i + 1];
+				const uint32_t three = idxOffset + indices[i + 2];
+				const uint32_t four  = idxOffset + indices[i + 5];
+				stream.addStringFormat(false, "4 %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+			}
+		} else {
+			for (int i = 0; i < ni; i += 3) {
+				const uint32_t one   = idxOffset + indices[i + 0];
+				const uint32_t two   = idxOffset + indices[i + 1];
+				const uint32_t three = idxOffset + indices[i + 2];
+				stream.addStringFormat(false, "3 %i %i %i\n", (int)one, (int)two, (int)three);
+			}
 		}
+		idxOffset += nv;
 	}
 	return true;
 }

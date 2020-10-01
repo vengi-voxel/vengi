@@ -13,6 +13,6 @@ namespace voxel {
  */
 class PLYFormat : public MeshExporter {
 public:
-	bool saveMesh(const voxel::Mesh& mesh, const io::FilePtr& file, float scale, bool quad, bool withColor, bool withTexCoords) override;
+	bool saveMeshes(const Meshes& meshes, const io::FilePtr& file, float scale, bool quad, bool withColor, bool withTexCoords) override;
 };
 }

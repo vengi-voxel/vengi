@@ -1316,6 +1316,12 @@ void SceneManager::construct() {
 
 	core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->setHelp("Merge similar quads to optimize the mesh");
 	core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->setHelp("Reuse vertices or always create new ones");
+	core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->setHelp("Extra vertices for ambient occlusion");
+	core::Var::get("voxformat_scale", "1.0", core::CV_NOPERSIST)->setHelp("Scale the vertices by the given factor");
+	core::Var::get("voxformat_quads", "true", core::CV_NOPERSIST)->setHelp("Export as quads. If this false, triangles will be used.");
+	core::Var::get("voxformat_withcolor", "true", core::CV_NOPERSIST)->setHelp("Export with vertex colors");
+	core::Var::get("voxformat_withtexcoords", "true", core::CV_NOPERSIST)->setHelp("Export with uv coordinates of the palette image");
+	core::Var::get("palette", voxel::getDefaultPaletteName())->setHelp("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 }
 
 void SceneManager::flip(math::Axis axis) {

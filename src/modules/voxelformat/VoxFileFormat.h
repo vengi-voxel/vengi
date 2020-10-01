@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/collection/Array.h"
+#include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
 #include "io/File.h"
 #include "VoxelVolumes.h"
@@ -37,13 +38,20 @@ public:
 };
 
 class MeshExporter : public VoxFileFormat {
+protected:
+	struct MeshExt {
+		MeshExt(voxel::Mesh* mesh, const core::String& name);
+		voxel::Mesh* mesh = nullptr;
+		core::String name;
+	};
+	using Meshes = core::DynamicArray<MeshExt>;
+	virtual bool saveMeshes(const Meshes& meshes, const io::FilePtr& file, float scale = 1.0f, bool quad = false, bool withColor = true, bool withTexCoords = true) = 0;
 public:
 	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override {
 		return false;
 	}
 
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
-	virtual bool saveMesh(const voxel::Mesh& mesh, const io::FilePtr& file, float scale = 1.0f, bool quad = false, bool withColor = true, bool withTexCoords = true) = 0;
 };
 
 }

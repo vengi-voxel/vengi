@@ -4,6 +4,7 @@
 
 #include "VoxFileFormat.h"
 #include "core/Var.h"
+#include "core/collection/DynamicArray.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
@@ -12,6 +13,7 @@
 #include "core/Log.h"
 #include "core/Color.h"
 #include "voxel/Mesh.h"
+#include "voxelformat/VoxelVolumes.h"
 #include <limits>
 
 namespace voxel {
@@ -64,13 +66,11 @@ bool VoxFileFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	return saveGroups(volumes, file);
 }
 
-bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
-	voxel::RawVolume *volume = volumes.merge();
-	if (volume == nullptr) {
-		Log::error("Could not merge volumes");
-		return false;
-	}
+MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const core::String &_name) :
+		mesh(_mesh), name(_name) {
+}
 
+bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
 	const bool mergeQuads = core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->boolVal();
 	const bool reuseVertices = core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->boolVal();
 	const bool ambientOcclusion = core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->boolVal();
@@ -79,12 +79,20 @@ bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 	const bool withColor = core::Var::get("voxformat_withcolor", "true", core::CV_NOPERSIST)->boolVal();
 	const bool withTexCoords = core::Var::get("voxformat_withtexcoords", "true", core::CV_NOPERSIST)->boolVal();
 
-	voxel::Mesh mesh;
-	voxel::Region region = volume->region();
-	region.shiftUpperCorner(1, 1, 1);
-	voxel::extractCubicMesh(volume, region, &mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
-	delete volume;
-	return saveMesh(mesh, file, scale, quads, withColor, withTexCoords);
+	Meshes meshes;
+	for (const VoxelVolume& v : volumes) {
+		voxel::Mesh *mesh = new voxel::Mesh();
+		voxel::Region region = v.volume->region();
+		region.shiftUpperCorner(1, 1, 1);
+		voxel::extractCubicMesh(v.volume, region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+		meshes.emplace_back(mesh, v.name);
+	}
+	Log::info("Save meshes");
+	const bool state = saveMeshes(meshes, file, scale, quads, withColor, withTexCoords);
+	for (MeshExt& meshext : meshes) {
+		delete meshext.mesh;
+	}
+	return state;
 }
 
 }

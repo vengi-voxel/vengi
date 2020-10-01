@@ -118,6 +118,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (mergeVolumes) {
+		Log::info("Merge layers");
 		voxel::RawVolume* merged = volumes.merge();
 		if (merged == nullptr) {
 			Log::error("Failed to merge volumes");
@@ -128,6 +129,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (scaleVolumes) {
+		Log::info("Scale layers");
 		for (auto& v : volumes) {
 			const voxel::Region srcRegion = v.volume->region();
 			const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
@@ -141,6 +143,7 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 
+	Log::info("Save");
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
 		voxelformat::clearVolumes(volumes);
 		Log::error("Failed to write to output file '%s'", outfile.c_str());
