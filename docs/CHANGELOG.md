@@ -6,7 +6,8 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 General:
 
-   - Added obj texcoord export sampling the borders of the texel
+   - Fixed obj texcoord export: Sampling the borders of the texel now
+   - Added multi object support to obj export
 
 ## 0.0.8 (2020-09-30)
 

@@ -1,7 +1,8 @@
 vengi (0.0.9.0-1) UNRELEASED; urgency=low
 
   * General:
-  * Added obj texcoord export sampling the borders of the texel
+  * Fixed obj texcoord export: Sampling the borders of the texel now
+  * Added multi object support to obj export
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Wed, 30 Sep 2020 22:38:13 +0200
 
