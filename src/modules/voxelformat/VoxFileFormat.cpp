@@ -87,7 +87,7 @@ bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 		voxel::extractCubicMesh(v.volume, region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 		meshes.emplace_back(mesh, v.name);
 	}
-	Log::info("Save meshes");
+	Log::debug("Save meshes");
 	const bool state = saveMeshes(meshes, file, scale, quads, withColor, withTexCoords);
 	for (MeshExt& meshext : meshes) {
 		delete meshext.mesh;

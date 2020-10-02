@@ -62,6 +62,7 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 			Log::error("Unexpected indices amount");
 			return false;
 		}
+		const glm::vec3 offset(mesh->getOffset());
 		const voxel::VoxelVertex* vertices = mesh->getRawVertexData();
 		const voxel::IndexType* indices = mesh->getRawIndexData();
 		const char *objectName = meshExt.name.c_str();
@@ -75,7 +76,7 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 		for (int i = 0; i < nv; ++i) {
 			const voxel::VoxelVertex& v = vertices[i];
 			stream.addStringFormat(false, "v %.04f %.04f %.04f",
-					(float)v.position.x * scale, (float)v.position.y * scale, (float)v.position.z * scale);
+					(offset.x + (float)v.position.x) * scale, (offset.y + (float)v.position.y) * scale, (offset.z + (float)v.position.z) * scale);
 			if (withColor) {
 				const glm::vec4& color = colors[v.colorIndex];
 				stream.addStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);

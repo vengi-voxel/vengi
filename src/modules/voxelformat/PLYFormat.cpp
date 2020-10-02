@@ -62,6 +62,7 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 
 	for (const auto& meshExt : meshes) {
 		const voxel::Mesh& mesh = *meshExt.mesh;
+		const glm::vec3 offset(mesh.getOffset());
 		const int nv = mesh.getNoOfVertices();
 		const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
 
@@ -69,7 +70,7 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 			const voxel::VoxelVertex& v = vertices[i];
 			const glm::vec4& color = colors[v.colorIndex];
 			stream.addStringFormat(false, "%f %f %f",
-				(float)v.position.x * scale, (float)v.position.y * scale, -(float)v.position.z * scale);
+				(offset.x + (float)v.position.x) * scale, (offset.y + (float)v.position.y) * scale, -(offset.z + (float)v.position.z) * scale);
 			if (withTexCoords) {
 				const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
 				stream.addStringFormat(false, " %f %f", u, v1);
