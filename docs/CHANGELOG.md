@@ -7,6 +7,7 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 General:
 
    - Added `--version` and `-v` commandline option to show the current version of each application
+   - Fixed texture coordinate indices for multi layer obj exports
 
 ## 0.0.9 (2020-10-03)
 
