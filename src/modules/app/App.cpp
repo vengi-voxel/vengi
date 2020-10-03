@@ -359,6 +359,10 @@ AppState App::onInit() {
 			usage();
 			return AppState::Destroy;
 		}
+		if (SDL_strcmp(_argv[i], "--version") == 0 || SDL_strcmp(_argv[i], "-v") == 0) {
+			Log::info("%s " PROJECT_VERSION, _appname.c_str());
+			return AppState::Destroy;
+		}
 	}
 
 	core_trace_init();
@@ -421,7 +425,8 @@ void App::usage() const {
 	const core::VarPtr& logLevel = core::Var::get(cfg::CoreLogLevel, "");
 	logLevel->setVal((int)Log::Level::Info);
 	Log::init();
-	Log::info("Usage: %s [--help] [-set configvar value] [-commandname]", _appname.c_str());
+	Log::info("Version " PROJECT_VERSION);
+	Log::info("Usage: %s [--help] [--version] [-set configvar value] [-commandname]", _appname.c_str());
 	Log::info("------------");
 
 	int maxWidthLong = 0;
