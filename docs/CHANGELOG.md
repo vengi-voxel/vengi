@@ -2,6 +2,8 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
+## 0.0.10 (2020-XX-XX)
+
 ## 0.0.9 (2020-10-03)
 
 General:
