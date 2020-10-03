@@ -54,6 +54,7 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 	Log::debug("Exporting %i layers", (int)meshes.size());
 
 	int idxOffset = 0;
+	int texcoordOffset = 0;
 	for (const auto& meshExt : meshes) {
 		const voxel::Mesh* mesh = meshExt.mesh;
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
@@ -97,7 +98,7 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 				}
 			}
 
-			int uvi = 0;
+			int uvi = texcoordOffset;
 			for (int i = 0; i < ni; i += 6, uvi += 4) {
 				const uint32_t one   = idxOffset + indices[i + 0] + 1;
 				const uint32_t two   = idxOffset + indices[i + 1] + 1;
@@ -110,6 +111,7 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 					stream.addStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
 				}
 			}
+			texcoordOffset += ni / 6 * 4;
 		} else {
 			if (withTexCoords) {
 				for (int i = 0; i < ni; i += 3) {
@@ -126,11 +128,14 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 				const uint32_t two   = idxOffset + indices[i + 1] + 1;
 				const uint32_t three = idxOffset + indices[i + 2] + 1;
 				if (withTexCoords) {
-					stream.addStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, i + 1, (int)two, i + 2, (int)three, i + 3);
+					stream.addStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one,
+							texcoordOffset + i + 1, (int)two, texcoordOffset + i + 2, (int)three, texcoordOffset + i + 3);
 				} else {
 					stream.addStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
 				}
 			}
+			texcoordOffset += ni;
+
 		}
 		idxOffset += nv;
 	}
