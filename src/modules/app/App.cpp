@@ -496,7 +496,12 @@ void App::usage() const {
 	});
 	Log::info("------------");
 	Log::info("Config variables can either be set via autoexec.cfg, %s.vars, environment or commandline parameter.", _appname.c_str());
-	Log::info("Environment variables must be exported in upper case.");
+	Log::info("The highest order is the command line. If you specify it on the command line, every other method");
+	Log::info("will not be used. If the engine finds the cvar name in your environment variables, this one will");
+	Log::info("take precendence over the one the is found in the configuration file. Next is the configuration");
+	Log::info("file - this one will take precendence over the default settings that are specified in the code.");
+	Log::info("The environment variable can be either lower case or upper case. For example it will work if you");
+	Log::info("have CL_WIDTH or cl_width exported. The lower case variant has the higher priority.");
 	Log::info("Examples:");
 	Log::info("export the variable CORE_LOGLEVEL with the value 0 to override previous values.");
 	Log::info("%s -set core_loglevel 0.", _appname.c_str());
