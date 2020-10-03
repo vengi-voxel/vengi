@@ -14,6 +14,7 @@
 #include "voxel/VoxelVertex.h"
 #include "voxel/Mesh.h"
 #include "voxelformat/VoxelVolumes.h"
+#include "engine-config.h"
 
 namespace voxel {
 
@@ -24,7 +25,7 @@ void OBJFormat::writeMtlFile(const core::String& mtlName) const {
 		return;
 	}
 	io::FileStream stream(file);
-	stream.addStringFormat(false, "# github.com/mgerhardy/engine\n");
+	stream.addStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
 	stream.addStringFormat(false, "\n");
 	stream.addStringFormat(false, "newmtl palette\n");
 	stream.addStringFormat(false, "Ka 1.000000 1.000000 1.000000\n");
@@ -46,7 +47,7 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 	// it is only 1 pixel high - sample the middle
 	const float v1 = 0.5f;
 
-	stream.addStringFormat(false, "# github.com/mgerhardy/engine\n");
+	stream.addStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
 	stream.addStringFormat(false, "\n");
 	stream.addStringFormat(false, "g Model\n");
 

@@ -11,6 +11,7 @@
 #include "voxel/VoxelVertex.h"
 #include "voxel/Mesh.h"
 #include "voxelformat/VoxelVolumes.h"
+#include "engine-config.h"
 
 namespace voxel {
 
@@ -18,7 +19,7 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 	io::FileStream stream(file);
 
 	stream.addStringFormat(false, "ply\nformat ascii 1.0\n");
-	stream.addStringFormat(false, "comment github.com/mgerhardy/engine\n");
+	stream.addStringFormat(false, "comment version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
 	stream.addStringFormat(false, "comment TextureFile palette-%s.png\n", voxel::getDefaultPaletteName());
 
 	int elements = 0;
