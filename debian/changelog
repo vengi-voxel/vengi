@@ -1,10 +1,10 @@
-vengi (0.0.9.0-1) UNRELEASED; urgency=low
+vengi (0.0.9.0-1) unstable; urgency=low
 
   * General:
   * Fixed obj texcoord export: Sampling the borders of the texel now
   * Added multi object support to obj export
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Wed, 30 Sep 2020 22:38:13 +0200
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Wed, 3 Oct 2020 10:28:15 +0200
 
 vengi (0.0.8.0-1) unstable; urgency=low
 
