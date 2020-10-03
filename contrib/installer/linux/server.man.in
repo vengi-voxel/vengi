@@ -12,8 +12,8 @@
 for the voxel based game engine vengi.
 .SH OPTIONS
 .TP
-\fB\--trace|--debug\fR
-Enable debug logging
+\fB\--trace|--debug|--info|--warn|--error\fR
+Enable trace, debug, info, warn or error logging
 
 .TP
 \fB\--help\fR
@@ -22,6 +22,10 @@ Print usage information
 .TP
 \fB\-set <varname> <value>\fR
 Change the value of a config variable.
+
+.TP
+\fB\--version|-v\fR
+Print the version of the application.
 
 .SH CONSOLE COMMANDS
 .TP

@@ -2,7 +2,7 @@
 .\" under the GNU General Public License 3 or (at your option) any later version.
 .TH @COMMANDLINE@ 14 "May 2020" "@COMMANDLINE@" "games"
 .SH NAME
-@COMMANDLINE@ \- convert voxel volume formats
+@COMMANDLINE@ \- convert voxel volume formats or export as mesh
 
 .SH SYNOPSIS
 .PP
@@ -11,28 +11,36 @@
 \fB@COMMANDLINE@\fP is a command line application that can convert several voxel
 volume formats into others. Supported formats are e.g. cub (CubeWorld), qb/qbt
 (Qubicle), vox (MagicaVoxel), vmx (VoxEdit Sandbox), kvx (Build engine), kv6 (SLAB6),
-binvox and maybe others.
+binvox and others. It can also export to mesh formats like obj and ply with a number
+of options.
 .SH OPTIONS
 .TP
-\fB\--trace|--debug\fR
-Enable debug logging
-
-.TP
-\fB\--trace|--debug\fR
-Enable debug logging
+\fB\--trace|--debug|--info\fR
+Enable trace, debug or info logging
 
 .TP
 \fB\--merge|-m\fR
 Merge all layers into one. Some destination formats only support one layer - for
-those formats this is an explicit parameter.
+those formats this is an explicit parameter. If you are going to export to a mesh
+format like wavefront obj, this option changes the behaviour of the exporter, too.
 
 .TP
 \fB\--scale|-s\fR
 Save the target volume with a down-sampled version of the input volume.
 
 .TP
+\fB\-set <varname> <value>\fR
+Change the value of a config variable. \fB-set palette /path/to/palette.png\fR is
+going to use a different palette for importing and exporting the voxels. It should
+have the dimensions 1x256.
+
+.TP
+\fB\--version|-v\fR
+Print the version of the application.
+
+.TP
 \fB\--help\fR
-Print usage information
+Print usage information with a a full list of cvars
 
 .SH HOMEPAGE
 https://github.com/mgerhardy/engine
