@@ -4,6 +4,10 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 ## 0.0.10 (2020-XX-XX)
 
+General:
+
+   - Added `--version` and `-v` commandline option to show the current version of each application
+
 ## 0.0.9 (2020-10-03)
 
 General:
