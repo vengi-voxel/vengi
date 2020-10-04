@@ -2,7 +2,9 @@
  * @file
  */
 
+#include "SDL_events.h"
 #include "app/tests/AbstractTest.h"
+#include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 #include "command/Command.h"
 #include <SDL.h>
@@ -19,6 +21,7 @@ SHIFT+w +xyz
 SHIFT+ctrl+ALT+w allmodscommand
 ctrl+SHIFT+w ctrlshiftmodcommand
 left_alt altmodcommand
+double_left_mouse doubleleftclick
 )";
 }
 
@@ -32,6 +35,7 @@ protected:
 	bool _altmodcommand = false;
 	bool _foo = false;
 	bool _xyz = false;
+	bool _doubleLeftClick = false;
 
 	KeybindingHandlerTest() :
 			_parser(keybindingtest::CFG) {
@@ -42,7 +46,7 @@ protected:
 			return false;
 		}
 		if (_parser.invalidBindings() > 0) {
-			Log::error("Not all bindings could get parsed");
+			Log::error("Not all bindings could get parsed. Invalid bindings: %i", _parser.invalidBindings());
 			return false;
 		}
 		_handler.construct();
@@ -51,7 +55,7 @@ protected:
 			return false;
 		}
 		_handler.setBindings(_parser.getBindings());
-		_xyz = _ctrlshiftmodcommand = _somecommand = _altmodcommand = _allmodscommand = _foo = false;
+		_xyz = _ctrlshiftmodcommand = _somecommand = _altmodcommand = _allmodscommand = _foo = _doubleLeftClick = false;
 		command::Command::shutdown();
 		command::Command::registerCommand("+bar", [] (const command::CmdArgs& args) {});
 		command::Command::registerCommand("+foo", [this] (const command::CmdArgs& args) {this->_foo = true;});
@@ -60,6 +64,7 @@ protected:
 		command::Command::registerCommand("altmodcommand", [this] (const command::CmdArgs& args) {this->_altmodcommand = true;});
 		command::Command::registerCommand("allmodscommand", [this] (const command::CmdArgs& args) {this->_allmodscommand = true;});
 		command::Command::registerCommand("ctrlshiftmodcommand", [this] (const command::CmdArgs& args) {this->_ctrlshiftmodcommand = true;});
+		command::Command::registerCommand("doubleleftclick", [this] (const command::CmdArgs& args) {this->_doubleLeftClick = true;});
 		return true;
 	}
 
@@ -68,14 +73,14 @@ protected:
 		_handler.shutdown();
 	}
 
-	void execute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true) {
-		EXPECT_TRUE(_handler.execute(key, modifier, pressed, 0.0))
-				<< "Command for key '" << KeyBindingHandler::toString(key, modifier) << "' should be executed";
+	void execute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true, uint16_t count = 1u) {
+		EXPECT_TRUE(_handler.execute(key, modifier, pressed, 0.0, count))
+				<< "Command for key '" << KeyBindingHandler::toString(key, modifier, count) << "' should be executed";
 	}
 
-	void notExecute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true) {
-		EXPECT_FALSE(_handler.execute(key, modifier, pressed, 0.0))
-				<< "Command for key '" << KeyBindingHandler::toString(key, modifier) << "' should not be executed";
+	void notExecute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true, uint16_t count = 1u) {
+		EXPECT_FALSE(_handler.execute(key, modifier, pressed, 0.0, count))
+				<< "Command for key '" << KeyBindingHandler::toString(key, modifier, count) << "' should not be executed";
 	}
 
 	/**
@@ -148,6 +153,13 @@ TEST_F(KeybindingHandlerTest, testRightShiftModifier) {
 TEST_F(KeybindingHandlerTest, testShiftModifier) {
 	execute(SDLK_w, KMOD_LSHIFT);
 	EXPECT_TRUE(_xyz) << "expected command wasn't executed";
+}
+
+TEST_F(KeybindingHandlerTest, testDoubleLeftClick) {
+	notExecute(button::CUSTOM_SDLK_MOUSE_LEFT, 0, true, 1);
+	EXPECT_FALSE(_doubleLeftClick) << "the command should not get executed on single click events";
+	execute(button::CUSTOM_SDLK_MOUSE_LEFT, 0, true, 2);
+	EXPECT_TRUE(_doubleLeftClick) << "the command should get executed on double click events";
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlModifierA) {

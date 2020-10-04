@@ -10,11 +10,12 @@
 namespace util {
 
 struct CommandModifierPair {
-	inline CommandModifierPair(const core::String& _command, int16_t _modifier) :
-			command(_command), modifier(_modifier) {
+	inline CommandModifierPair(const core::String& _command, int16_t _modifier, uint16_t _count) :
+			command(_command), modifier(_modifier), count(_count) {
 	}
 	core::String command;
 	int16_t modifier;
+	uint16_t count;
 };
 typedef std::unordered_multimap<int32_t, CommandModifierPair> BindMap;
 

@@ -62,11 +62,14 @@ bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
  * @return @c true if the key+modifier combination lead to a command execution via
  * key bindings, @c false otherwise
  */
-static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modMask, double nowSeconds) {
+static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modMask, double nowSeconds, uint16_t count) {
 	auto range = bindings.equal_range(key);
 	const int16_t modifier = modMask & (KMOD_SHIFT | KMOD_CTRL | KMOD_ALT);
 	bool handled = false;
 	for (auto i = range.first; i != range.second; ++i) {
+		if (count > 0 && i->second.count != count) {
+			continue;
+		}
 		const core::String& command = i->second.command;
 		const int16_t mod = i->second.modifier;
 		if (!isValidForBinding(modifier, mod)) {
@@ -87,19 +90,19 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 	return handled;
 }
 
-bool KeyBindingHandler::executeCommands(int32_t key, int16_t modifier, double nowSeconds) {
+bool KeyBindingHandler::executeCommands(int32_t key, int16_t modifier, double nowSeconds, uint16_t count) {
 	// first try to find an exact match of key and current held modifiers
-	if (executeCommandsForBinding(_bindings, key, modifier, nowSeconds)) {
+	if (executeCommandsForBinding(_bindings, key, modifier, nowSeconds, count)) {
 		return true;
 	}
 	// if no such exact match was found, try to remove those modifiers that should be ignored because they e.g. have their own bound command
 	// this might happen if you bound a command to e.g. shift. Having shift pressed while pressing another key combination like ctrl+w would
 	// not match if that special bound key shift wouldn't get removed from the mask to check.
-	if (_pressedModifierMask != 0u && executeCommandsForBinding(_bindings, key, (int16_t)((uint32_t)modifier ^ _pressedModifierMask), nowSeconds)) {
+	if (_pressedModifierMask != 0u && executeCommandsForBinding(_bindings, key, (int16_t)((uint32_t)modifier ^ _pressedModifierMask), nowSeconds, count)) {
 		return true;
 	}
 	// at last try to find a key that was bound without any modifier.
-	if (executeCommandsForBinding(_bindings, key, 0, nowSeconds)) {
+	if (executeCommandsForBinding(_bindings, key, 0, nowSeconds, count)) {
 		return true;
 	}
 	return false;
@@ -110,7 +113,7 @@ void KeyBindingHandler::construct() {
 		for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 			const CommandModifierPair& pair = i->second;
 			const core::String& command = pair.command;
-			const core::String& keyBinding = getKeyBindingsString(command.c_str());
+			const core::String& keyBinding = getKeyBindingsString(command.c_str(), pair.count);
 			Log::info("%-25s %s", keyBinding.c_str(), command.c_str());
 		}
 	}).setHelp("Show all known key bindings");
@@ -186,8 +189,8 @@ void KeyBindingHandler::setBindings(const BindMap& bindings) {
 	_bindings = bindings;
 }
 
-core::String KeyBindingHandler::toString(int32_t key, int16_t modifier) {
-	const core::String& name = getKeyName(key);
+core::String KeyBindingHandler::toString(int32_t key, int16_t modifier, uint16_t count) {
+	const core::String& name = getKeyName(key, count);
 	if (modifier <= 0) {
 		return name;
 	}
@@ -196,16 +199,16 @@ core::String KeyBindingHandler::toString(int32_t key, int16_t modifier) {
 	return core::string::format("%s+%s", modifierName, name.c_str());
 }
 
-core::String KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
+core::String KeyBindingHandler::getKeyBindingsString(const char *cmd, uint16_t count) const {
 	int16_t modifier;
 	int32_t key;
-	if (!resolveKeyBindings(cmd, &modifier, &key)) {
+	if (!resolveKeyBindings(cmd, &modifier, &key, nullptr)) {
 		return "";
 	}
-	return toString(key, modifier);
+	return toString(key, modifier, count);
 }
 
-bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key) const {
+bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key, uint16_t *count) const {
 	const char *match = SDL_strchr(cmd, ' ');
 	const size_t size = match != nullptr ? (size_t)(intptr_t)(match - cmd) : SDL_strlen(cmd);
 	for (const auto& b : _bindings) {
@@ -213,6 +216,9 @@ bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, i
 		if (!SDL_strcmp(pair.command.c_str(), cmd) || !SDL_strncmp(pair.command.c_str(), cmd, size)) {
 			if (modifier != nullptr) {
 				*modifier = pair.modifier;
+			}
+			if (count != nullptr) {
+				*count = pair.count;
 			}
 			if (key != nullptr) {
 				*key = b.first;
@@ -223,9 +229,9 @@ bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, i
 	return false;
 }
 
-core::String KeyBindingHandler::getKeyName(int32_t key) {
+core::String KeyBindingHandler::getKeyName(int32_t key, uint16_t count) {
 	for (int i = 0; i < lengthof(button::CUSTOMBUTTONMAPPING); ++i) {
-		if (button::CUSTOMBUTTONMAPPING[i].key == key) {
+		if (button::CUSTOMBUTTONMAPPING[i].key == key && button::CUSTOMBUTTONMAPPING[i].count == count) {
 			return button::CUSTOMBUTTONMAPPING[i].name;
 		}
 	}
@@ -248,7 +254,7 @@ const char* KeyBindingHandler::getModifierName(int16_t modifier) {
 	return "<unknown>";
 }
 
-bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, double nowSeconds) {
+bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, double nowSeconds, uint16_t count) {
 	int16_t code = 0;
 	switch (key) {
 	case SDLK_LCTRL:
@@ -280,6 +286,9 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 			std::unordered_set<int32_t> recheck;
 			for (auto& b : _bindings) {
 				const CommandModifierPair& pair = b.second;
+				if (pair.count != count) {
+					continue;
+				}
 				const int32_t commandKey = b.first;
 				if (pair.command[0] != '+') {
 					// no action button command
@@ -310,7 +319,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 				}
 			}
 		}
-		const bool retVal = executeCommands(key, modifier, nowSeconds);
+		const bool retVal = executeCommands(key, modifier, nowSeconds, count);
 		if (retVal) {
 			_pressedModifierMask |= (uint32_t)code;
 		}
@@ -332,13 +341,14 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 				continue;
 			}
 			command::Command::execute("-%s %i %f", &(pair.command.c_str()[1]), commandKey, nowSeconds);
-			executeCommands(commandKey, modifier, nowSeconds);
+			executeCommands(commandKey, modifier, nowSeconds, 0u);
 		}
 		_pressedModifierMask &= ~(uint32_t)code;
 	}
 	auto range = _bindings.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
-		const core::String& command = i->second.command;
+		const CommandModifierPair& pair = i->second;
+		const core::String& command = pair.command;
 		if (command[0] == '+') {
 			command::Command::execute("-%s %i %f", &(command.c_str()[1]), key, nowSeconds);
 			handled = true;

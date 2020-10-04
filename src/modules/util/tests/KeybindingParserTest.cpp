@@ -22,6 +22,7 @@ left_alt altmodcommand
 ctrl++ "echo +"
 left_mouse void
 right_mouse void
+double_right_mouse void
 wheelup void
 wheeldown void
 )";
@@ -32,7 +33,7 @@ TEST(KeybindingParserTest, testParsing) {
 	const BindMap& m = p.getBindings();
 	ASSERT_FALSE(m.empty());
 	ASSERT_EQ(0, p.invalidBindings());
-	const size_t expected = 14;
+	const size_t expected = 15;
 	EXPECT_EQ(expected, m.size());
 
 	int key = 'w';
@@ -125,7 +126,6 @@ TEST(KeybindingParserTest, testParsing) {
 		++count;
 	}
 	EXPECT_EQ(1, count);
-
 }
 
 }

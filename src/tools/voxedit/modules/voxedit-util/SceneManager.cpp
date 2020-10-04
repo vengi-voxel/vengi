@@ -895,6 +895,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("mouse_layer_select", [&] (const command::CmdArgs&) {
 		if (_sceneModeLayerTrace != -1) {
+			Log::debug("switch active layer to hovered layer from scene mode: %i", _sceneModeLayerTrace);
 			_layerMgr.setActiveLayer(_sceneModeLayerTrace);
 		}
 	}).setBindingContext(BindingContext::Scene);

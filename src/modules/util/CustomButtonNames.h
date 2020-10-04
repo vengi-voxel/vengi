@@ -26,14 +26,18 @@ static const int32_t CUSTOM_SDLK_MOUSE_WHEEL_DOWN   = CUSTOM_SDL_KEYCODE(CUSTOM_
 static const struct CustomButtonMapping {
 	int32_t key;
 	core::String name;
+	uint16_t count;
 } CUSTOMBUTTONMAPPING[] = {
-	{CUSTOM_SDLK_MOUSE_LEFT, "left_mouse"},
-	{CUSTOM_SDLK_MOUSE_MIDDLE, "middle_mouse"},
-	{CUSTOM_SDLK_MOUSE_RIGHT, "right_mouse"},
-	{CUSTOM_SDLK_MOUSE_X1, "x1_mouse"},
-	{CUSTOM_SDLK_MOUSE_X2, "x2_mouse"},
-	{CUSTOM_SDLK_MOUSE_WHEEL_UP, "wheelup"},
-	{CUSTOM_SDLK_MOUSE_WHEEL_DOWN, "wheeldown"},
+	{CUSTOM_SDLK_MOUSE_LEFT, "left_mouse", 1u},
+	{CUSTOM_SDLK_MOUSE_MIDDLE, "middle_mouse", 1u},
+	{CUSTOM_SDLK_MOUSE_RIGHT, "right_mouse", 1u},
+	{CUSTOM_SDLK_MOUSE_LEFT, "double_left_mouse", 2u},
+	{CUSTOM_SDLK_MOUSE_MIDDLE, "double_middle_mouse", 2u},
+	{CUSTOM_SDLK_MOUSE_RIGHT, "double_right_mouse", 2u},
+	{CUSTOM_SDLK_MOUSE_X1, "x1_mouse", 1u},
+	{CUSTOM_SDLK_MOUSE_X2, "x2_mouse", 1u},
+	{CUSTOM_SDLK_MOUSE_WHEEL_UP, "wheelup", 1u},
+	{CUSTOM_SDLK_MOUSE_WHEEL_DOWN, "wheeldown", 1u},
 };
 
 // note: doesn't contain all combinations

@@ -47,9 +47,11 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 	}
 
 	SDL_Keycode keyCode = SDLK_UNKNOWN;
+	uint16_t count = 1u;
 	for (int i = 0; i < lengthof(button::CUSTOMBUTTONMAPPING); ++i) {
 		if (button::CUSTOMBUTTONMAPPING[i].name == key) {
 			keyCode = button::CUSTOMBUTTONMAPPING[i].key;
+			count = button::CUSTOMBUTTONMAPPING[i].count;
 			break;
 		}
 	}
@@ -62,7 +64,7 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 		++_invalidBindings;
 		return;
 	}
-	_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier)));
+	_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier, count)));
 }
 
 KeybindingParser::KeybindingParser(const core::String& key, const core::String& binding) :

@@ -123,8 +123,8 @@ bool WindowedApp::handleKeyRelease(int32_t key, int16_t /*modifier*/) {
 	return _keybindingHandler.execute(key, SDL_GetModState(), false, nowSeconds());
 }
 
-bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier) {
-	return _keybindingHandler.execute(key, modifier, true, nowSeconds());
+bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier, uint16_t count) {
+	return _keybindingHandler.execute(key, modifier, true, nowSeconds(), count);
 }
 
 bool WindowedApp::onMouseWheel(int32_t x, int32_t y) {
@@ -137,10 +137,7 @@ bool WindowedApp::onMouseWheel(int32_t x, int32_t y) {
 }
 
 void WindowedApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
-	if (clicks > 1) {
-		return;
-	}
-	handleKeyPress(CUSTOM_SDL_KEYCODE(button), SDL_GetModState());
+	handleKeyPress(CUSTOM_SDL_KEYCODE(button), SDL_GetModState(), clicks);
 }
 
 void WindowedApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
