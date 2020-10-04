@@ -1816,6 +1816,10 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 }
 
 bool SceneManager::trace(bool force) {
+	if (_editMode != EditMode::Model) {
+		return false;
+	}
+
 	// mouse tracing is diabled - e.g. because the voxel cursor was moved by keyboard
 	// shortcuts in this case the execution of the modifier would result in a
 	// re-execution of the trace. And that would move the voxel cursor to the mouse pos
