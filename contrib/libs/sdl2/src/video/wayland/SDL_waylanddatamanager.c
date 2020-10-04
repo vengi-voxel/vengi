@@ -181,7 +181,7 @@ mime_data_list_find(struct wl_list* list,
 static int
 mime_data_list_add(struct wl_list* list, 
                    const char* mime_type,
-                   const void* buffer, size_t length)
+                   void* buffer, size_t length)
 {
     int status = 0;
     size_t mime_type_length = 0;

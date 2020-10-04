@@ -311,6 +311,7 @@ static jmethodID midIsScreenKeyboardShown;
 static jmethodID midIsTablet;
 static jmethodID midManualBackButton;
 static jmethodID midMinimizeWindow;
+static jmethodID midOpenURL;
 static jmethodID midRequestPermission;
 static jmethodID midSendMessage;
 static jmethodID midSetActivityTitle;
@@ -589,6 +590,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass, "isTablet", "()Z");
     midManualBackButton = (*env)->GetStaticMethodID(env, mActivityClass, "manualBackButton", "()V");
     midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass, "minimizeWindow","()V");
+    midOpenURL = (*env)->GetStaticMethodID(env, mActivityClass, "openURL", "(Ljava/lang/String;)I");
     midRequestPermission = (*env)->GetStaticMethodID(env, mActivityClass, "requestPermission", "(Ljava/lang/String;I)V");
     midSendMessage = (*env)->GetStaticMethodID(env, mActivityClass, "sendMessage", "(II)Z");
     midSetActivityTitle = (*env)->GetStaticMethodID(env, mActivityClass, "setActivityTitle","(Ljava/lang/String;)Z");
@@ -618,6 +620,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midIsTablet ||
         !midManualBackButton ||
         !midMinimizeWindow ||
+        !midOpenURL ||
         !midRequestPermission ||
         !midSendMessage ||
         !midSetActivityTitle ||
@@ -2601,6 +2604,16 @@ int Android_JNI_GetLocale(char *buf, size_t buflen)
     AConfiguration_delete(cfg);
 
     return 0;
+}
+
+int
+Android_JNI_OpenURL(const char *url)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    jstring jurl = (*env)->NewStringUTF(env, url);
+    const int ret = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);
+    (*env)->DeleteLocalRef(env, jurl);
+    return ret;
 }
 
 #endif /* __ANDROID__ */
