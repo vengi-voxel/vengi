@@ -1882,6 +1882,9 @@ bool SceneManager::trace(bool force) {
 			if (!layer.valid) {
 				continue;
 			}
+			if (!layer.visible) {
+				continue;
+			}
 			const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
 			core_assert_always(volume != nullptr);
 			const voxel::Region& region = volume->region();
