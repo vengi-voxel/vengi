@@ -7,7 +7,6 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "render/Axis.h"
-#include "video/Ray.h"
 #include "video/Camera.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/intersect.hpp>

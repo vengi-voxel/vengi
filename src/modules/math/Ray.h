@@ -8,11 +8,10 @@
 #include <glm/vector_relational.hpp>
 #include <glm/vec3.hpp>
 
-namespace video {
+namespace math {
 
 /**
  * @brief Defines origin and direction of a ray
- * @ingroup Video
  */
 class Ray {
 public:

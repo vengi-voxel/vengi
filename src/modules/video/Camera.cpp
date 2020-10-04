@@ -8,7 +8,7 @@
 #include "core/Singleton.h"
 #include "math/AABB.h"
 #include "core/GLM.h"
-#include "Ray.h"
+#include "math/Ray.h"
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -313,13 +313,13 @@ void Camera::updateViewMatrix() {
 	_eyePosition =_invViewMatrix[3];
 }
 
-Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
+math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
 	return screenRay(glm::vec2(pixelPos.x / (float)_frameBufferSize.x, pixelPos.y / (float)_frameBufferSize.y));
 	/*const glm::vec2 newPos = glm::vec2(screenPos - _position) / glm::vec2(dimension());
 	return screenRay(newPos);*/
 }
 
-Ray Camera::screenRay(const glm::vec2& screenPos) const {
+math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	// project screen position [0.0-1.0] to [-1.0,1.0] and flip y axis
 	// to bring them into homogeneous clip coordinates
 	const float x = (2.0f * screenPos.x) - 1.0f;
@@ -331,11 +331,11 @@ Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	rayEyeSpace.w = 0.0f;
 
 	const glm::vec3& rayDirection = glm::normalize(glm::vec3(inverseViewMatrix() * rayEyeSpace));
-	return Ray(position(), rayDirection);
+	return math::Ray(position(), rayDirection);
 }
 
 glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
-	const Ray& ray = screenRay(glm::vec2(screenPos));
+	const math::Ray& ray = screenRay(glm::vec2(screenPos));
 	return ray.origin + ray.direction * screenPos.z;
 }
 

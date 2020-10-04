@@ -10,6 +10,7 @@ set(SRCS
 	QuadTree.h
 	QuadTreeCache.h
 	Random.cpp Random.h
+	Ray.h
 	Rect.h
 )
 set(LIB math)

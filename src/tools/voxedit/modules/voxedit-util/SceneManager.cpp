@@ -27,7 +27,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedBlendMode.h"
-#include "video/Ray.h"
+#include "math/Ray.h"
 #include "math/Random.h"
 #include "math/Axis.h"
 #include "command/Command.h"
@@ -1837,7 +1837,7 @@ bool SceneManager::trace(bool force) {
 	_lastRaytraceX = _mouseCursor.x;
 	_lastRaytraceY = _mouseCursor.y;
 
-	const video::Ray& ray = _camera->mouseRay(_mouseCursor);
+	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
 	const glm::vec3& dirWithLength = ray.direction * _camera->farPlane();
 	static constexpr voxel::Voxel air;
 

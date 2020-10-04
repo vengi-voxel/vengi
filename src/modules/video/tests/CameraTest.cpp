@@ -8,7 +8,13 @@
 #include "math/Frustum.h"
 #include "math/AABB.h"
 #include "video/Camera.h"
-#include "video/Ray.h"
+#include "math/Ray.h"
+
+namespace math {
+::std::ostream& operator<<(::std::ostream& ostream, const Ray& val) {
+	return ostream << "origin: " << glm::to_string(val.origin) << " - direction: " << glm::to_string(val.direction);
+}
+}
 
 namespace video {
 
@@ -28,10 +34,6 @@ protected:
 		return camera;
 	}
 };
-
-::std::ostream& operator<<(::std::ostream& ostream, const Ray& val) {
-	return ostream << "origin: " << glm::to_string(val.origin) << " - direction: " << glm::to_string(val.direction);
-}
 
 TEST_F(CameraTest, testLookAt) {
 	Camera camera = setup();
@@ -63,7 +65,7 @@ TEST_F(CameraTest, testLookAt) {
 TEST_F(CameraTest, testScreenRayStraightDown) {
 	Camera camera = setup();
 	// get the world position from the center of the screen
-	const Ray& ray = camera.screenRay(glm::vec2(0.5f));
+	const math::Ray& ray = camera.screenRay(glm::vec2(0.5f));
 	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.00001f))) << ray << " - " << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
 	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.position(), ray.origin, 0.00001f))) << ray << " - " << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
 }
