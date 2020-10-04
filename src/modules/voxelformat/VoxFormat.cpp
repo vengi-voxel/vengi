@@ -582,7 +582,7 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 		delete volumes[_volumeIdx].volume;
 	}
 	volumes[_volumeIdx].volume = volume;
-	volumes[_volumeIdx].pivot = volume->region().getCenter();
+	volumes[_volumeIdx].pivot = pivot;
 	++_volumeIdx;
 	return true;
 }
