@@ -348,6 +348,15 @@ public:
 	void render(const video::Camera& camera, uint8_t renderMask = RenderAll);
 	void renderAnimation(const video::Camera& camera);
 
+	/**
+	 * @return @c true if the trace was executed, @c false otherwise
+	 * @param[in] force Forces the trace even if the mouse did not move. This is useful for situations
+	 * where the volume was modified without moving the mouse.
+	 * @note The mouse trace can be disabled (might happen when you move the cursor via keyboard
+	 * shortcuts). This requires the mouse to be moved before having it active again.
+	 *
+	 * @sa resetLastTrace()
+	 */
 	bool trace(bool force = false);
 	void resetLastTrace();
 
