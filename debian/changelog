@@ -3,6 +3,10 @@ vengi (0.0.10.0-1) UNRELEASED; urgency=low
   * General:
   * Added `--version` and `-v` commandline option to show the current version of each application
   * Fixed texture coordinate indices for multi layer obj exports
+  * Improved magicavoxel transform support for some models
+
+  * VoxEdit:
+  * Improved scene edit mode
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Wed, 3 Oct 2020 10:28:15 +0200
 
