@@ -149,6 +149,7 @@ private:
 	glm::ivec2 _mouseCursor { 0 };
 
 	bool _traceViaMouse = true;
+	int _sceneModeLayerTrace = -1;
 
 	command::ActionButton _move[lengthof(DIRECTIONS)];
 

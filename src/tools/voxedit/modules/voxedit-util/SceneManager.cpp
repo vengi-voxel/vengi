@@ -514,6 +514,7 @@ void SceneManager::redo() {
 }
 
 void SceneManager::resetLastTrace() {
+	_sceneModeLayerTrace = -1;
 	if (!_traceViaMouse) {
 		return;
 	}
@@ -891,6 +892,12 @@ void SceneManager::construct() {
 
 	command::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Editing);
 	command::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Editing);
+
+	command::Command::registerCommand("mouse_layer_select", [&] (const command::CmdArgs&) {
+		if (_sceneModeLayerTrace != -1) {
+			_layerMgr.setActiveLayer(_sceneModeLayerTrace);
+		}
+	}).setBindingContext(BindingContext::Scene);
 
 	command::Command::registerCommand("animation_cycle", [this] (const command::CmdArgs& argv) {
 		int offset = 1;
@@ -1816,15 +1823,56 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-static bool intersectAABB(const math::AABB& aabb, const math::Ray& ray, float rayLength, float& distance) {
-	const glm::vec3& dirWithLength = ray.direction * rayLength;
-	return false;
+static bool intersectAABB(const math::AABB<float>& aabb, const math::Ray& ray, float rayLength, float& distance) {
+	glm::vec3 pos1;
+	glm::vec3 pos2;
+	double t_near = -rayLength;
+	double t_far = rayLength;
+
+	glm::vec3 mins = aabb.mins();
+	glm::vec3 maxs = aabb.maxs();
+
+	for (int i = 0; i < 3; i++) {	 // we test slabs in every direction
+		if (ray.direction[i] == 0) { // ray parallel to planes in this direction
+			if (ray.origin[i] < mins[i] || ray.origin[i] > maxs[i]) {
+				return false; // parallel AND outside box : no intersection possible
+			}
+		} else { // ray not parallel to planes in this direction
+			pos1[i] = (mins[i] - ray.origin[i]) / ray.direction[i];
+			pos2[i] = (maxs[i] - ray.origin[i]) / ray.direction[i];
+
+			if (pos1[i] > pos2[i]) { // we want pos1 to hold values for intersection with near plane
+				core::exchange(pos1, pos2);
+			}
+			if (pos1[i] > t_near) {
+				t_near = pos1[i];
+			}
+			if (pos2[i] < t_far) {
+				t_far = pos2[i];
+			}
+			if (t_near > t_far || t_far < 0) {
+				return false;
+			}
+		}
+	}
+	distance = t_far;
+	return true;
 }
 
 bool SceneManager::trace(bool force) {
 	if (_editMode == EditMode::Scene) {
-		int bestLayerIdx = -1;
-		float intersectDist = FLT_MAX;
+		if (_sceneModeLayerTrace != -1) {
+			// if the trace is not forced, and the mouse cursor position did not change, don't
+			// re-execute the trace.
+			if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
+				return true;
+			}
+		}
+		_sceneModeLayerTrace = -1;
+		core_trace_scoped(EditorSceneOnProcessUpdateRay);
+		_lastRaytraceX = _mouseCursor.x;
+		_lastRaytraceY = _mouseCursor.y;
+		float intersectDist = _camera->farPlane();
 		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
 			const Layer& layer = _layerMgr.layer(idx);
 			if (!layer.valid) {
@@ -1838,14 +1886,12 @@ bool SceneManager::trace(bool force) {
 			if (intersectAABB(aabb(region), ray, _camera->farPlane(), distance)) {
 				if (distance < intersectDist) {
 					intersectDist = distance;
-					bestLayerIdx = idx;
+					_sceneModeLayerTrace = idx;
 				}
 			}
 		}
-		if (bestLayerIdx != -1) {
-			_layerMgr.setActiveLayer(bestLayerIdx);
-		}
-		return false;
+		Log::trace("Hovered layer: %i", _sceneModeLayerTrace);
+		return true;
 	} else if (_editMode != EditMode::Model) {
 		return false;
 	}
