@@ -5,6 +5,7 @@
 #include "SceneManager.h"
 
 #include "core/collection/DynamicArray.h"
+#include "math/AABB.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeCropper.h"
@@ -1815,8 +1816,37 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	updateLockedPlane(math::Axis::Z);
 }
 
+static bool intersectAABB(const math::AABB& aabb, const math::Ray& ray, float rayLength, float& distance) {
+	const glm::vec3& dirWithLength = ray.direction * rayLength;
+	return false;
+}
+
 bool SceneManager::trace(bool force) {
-	if (_editMode != EditMode::Model) {
+	if (_editMode == EditMode::Scene) {
+		int bestLayerIdx = -1;
+		float intersectDist = FLT_MAX;
+		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
+			const Layer& layer = _layerMgr.layer(idx);
+			if (!layer.valid) {
+				continue;
+			}
+			const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
+			core_assert_always(volume != nullptr);
+			const voxel::Region& region = volume->region();
+			const math::Ray& ray = _camera->mouseRay(_mouseCursor);
+			float distance = 0.0f;
+			if (intersectAABB(aabb(region), ray, _camera->farPlane(), distance)) {
+				if (distance < intersectDist) {
+					intersectDist = distance;
+					bestLayerIdx = idx;
+				}
+			}
+		}
+		if (bestLayerIdx != -1) {
+			_layerMgr.setActiveLayer(bestLayerIdx);
+		}
+		return false;
+	} else if (_editMode != EditMode::Model) {
 		return false;
 	}
 
