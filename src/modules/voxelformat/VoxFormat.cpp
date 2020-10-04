@@ -539,13 +539,15 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 	}
 
 	const voxel::Region& region = _regions[_volumeIdx];
-	const glm::ivec3& size = region.getDimensionsInVoxels();
+	const glm::uvec3 size(region.getDimensionsInVoxels());
 	const glm::vec3 pivot = glm::vec3(size.x & ~1u, size.z & ~1u, size.y & ~1u) - glm::vec3(1.0f);
 	const glm::ivec3& rmins = region.getLowerCorner();
 	const glm::ivec3& rmaxs = region.getUpperCorner();
 	const VoxTransform& finalTransform = calculateTransform(_volumeIdx);
-	const glm::ivec3& mins = calcTransform(finalTransform, rmins.x, rmins.z, rmins.y, pivot);
-	const glm::ivec3& maxs = calcTransform(finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
+	const glm::ivec3& tmins = calcTransform(finalTransform, rmins.x, rmins.z, rmins.y, pivot);
+	const glm::ivec3& tmaxs = calcTransform(finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
+	const glm::ivec3 mins = glm::min(tmins, tmaxs);
+	const glm::ivec3 maxs = glm::max(tmins, tmaxs);
 	Region translatedRegion{mins.x, mins.z, mins.y, maxs.x, maxs.z, maxs.y};
 	const bool applyTransformation = translatedRegion.isValid();
 	if (!applyTransformation) {
