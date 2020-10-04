@@ -1544,7 +1544,10 @@ void SceneManager::update(double nowSeconds) {
 	}
 
 	if (_camera != nullptr) {
-		if (_modelSpace->boolVal() != _gizmo.isModelSpace()) {
+		if (_editMode == EditMode::Scene) {
+			_gizmo.setModelSpace();
+			setGizmoPosition();
+		} else if (_modelSpace->boolVal() != _gizmo.isModelSpace()) {
 			const bool newModelSpaceState = _modelSpace->boolVal();
 			if (newModelSpaceState) {
 				Log::info("switch to model space");
