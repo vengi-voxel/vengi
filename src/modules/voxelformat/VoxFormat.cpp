@@ -772,7 +772,7 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attribute
 
 // (_r : int8) ROTATION
 // (_t : int32x3) translation
-bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
+bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
 	Log::debug("transform node: %u", nodeId);
@@ -922,7 +922,7 @@ bool VoxFormat::loadSecondChunks(io::FileStream& stream, VoxelVolumes& volumes) 
 // T   T    //
 // |   |    //
 // S   S    //
-bool VoxFormat::loadSceneGraph(io::FileStream& stream, VoxelVolumes& volumes) {
+bool VoxFormat::loadSceneGraph(io::FileStream& stream) {
 	do {
 		ChunkHeader header;
 		wrapBool(readChunkHeader(stream, header))
@@ -932,7 +932,7 @@ bool VoxFormat::loadSceneGraph(io::FileStream& stream, VoxelVolumes& volumes) {
 			wrapBool(loadChunk_nGRP(stream, header))
 			break;
 		case FourCC('n','T','R','N'):
-			wrapBool(loadChunk_nTRN(stream, header, volumes))
+			wrapBool(loadChunk_nTRN(stream, header))
 			break;
 		case FourCC('n','S','H','P'):
 			wrapBool(loadChunk_nSHP(stream, header))
@@ -1071,7 +1071,7 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	wrapBool(loadFirstChunks(stream))
 	stream.seek(resetPos);
 
-	wrapBool(loadSceneGraph(stream, volumes))
+	wrapBool(loadSceneGraph(stream))
 	stream.seek(resetPos);
 
 	wrapBool(loadSecondChunks(stream, volumes))
