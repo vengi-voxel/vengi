@@ -9,7 +9,7 @@
 
 namespace glm {
 
-float intersectLines(const glm::vec3& p1,
+bool intersectLines(const glm::vec3& p1,
 		const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& p4,
 		glm::vec3& pa, glm::vec3& pb, float *pmua,
 		float *pmub) {

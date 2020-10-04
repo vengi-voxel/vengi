@@ -39,7 +39,7 @@ namespace glm {
  *  Pb = P3 + mub (P4 - P3)
  * @return @c false if no solution exists.
  */
-float intersectLines(const glm::vec3& p1,
+bool intersectLines(const glm::vec3& p1,
 		const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& p4,
 		glm::vec3& pa, glm::vec3& pb, float *pmua = nullptr,
 		float *pmub = nullptr);
