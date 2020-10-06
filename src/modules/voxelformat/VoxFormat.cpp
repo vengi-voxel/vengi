@@ -978,7 +978,7 @@ bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId) const {
 
 		const VoxTransform& t = _transforms[node.arrayIdx];
 		transform.rotation = glm::normalize(t.rotation * transform.rotation);
-		transform.translation += glm::conjugate(transform.rotation) * glm::vec3(t.translation);
+		transform.translation += t.rotation * glm::vec3(t.translation);
 		Log::debug("Apply translation for node %u (aidx: %u) %i:%i:%i",
 				nodeId, node.arrayIdx,
 				transform.translation.x, transform.translation.y, transform.translation.z);
