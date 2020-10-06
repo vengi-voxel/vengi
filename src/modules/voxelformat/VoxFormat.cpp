@@ -561,6 +561,7 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 		wrap(stream.readByte(x))
 		wrap(stream.readByte(y))
 		wrap(stream.readByte(z))
+		x = size.x - 1 - x;
 		wrap(stream.readByte(colorIndex))
 		const uint8_t index = convertPaletteIndex(colorIndex);
 		voxel::VoxelType voxelType = voxel::VoxelType::Generic;
