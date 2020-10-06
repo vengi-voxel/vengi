@@ -479,40 +479,9 @@ bool VoxFormat::loadChunk_SIZE(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
-/**
- * @note This method was found in the magicavoxel discord community chat. Posted by eisenwave
- *
- * Performs a division but rounds towards negative infinity.
- * For positive numbers, this is equivalent to regular division.
- * For all numbers, this is equivalent to a floating point division and then a floor().
- * Negative numbers will be decremented before division, leading to this type of rounding.
- *
- * Examples:
- * floor(-1/2) = floor(-0.5) = -1
- * floor(-2/2) = floor(-1) = -1
- *
- * This function imitates such behavior but without the use of any floating point arithmetic.
- *
- * @param x the number to divide
- * @return the number divided by two, rounded towards negative infinity
- */
-template <typename Dividend, typename Divisor,
-          std::enable_if_t<(std::is_integral_v<Dividend> && std::is_integral_v<Divisor>), int> = 0>
-constexpr auto divFloor(Dividend x, Divisor y) {
-	if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
-		return x / y;
-	} else if constexpr (std::is_signed_v<Dividend> && std::is_unsigned_v<Divisor>) {
-		auto sy = static_cast<std::make_signed_t<Divisor>>(y);
-		const bool quotientNegative = x < 0;
-		return x / sy - (x % sy != 0) * quotientNegative;
-	} else if constexpr (std::is_unsigned_v<Dividend> && std::is_signed_v<Divisor>) {
-		auto sx = static_cast<std::make_signed_t<Dividend>>(x);
-		const bool quotientNegative = y < 0;
-		return sx / y - (sx % y != 0) * quotientNegative;
-	} else {
-		const bool quotientNegative = (y < 0) != (x < 0);
-		return x / y - (x % y != 0) * quotientNegative;
-	}
+static inline int divFloor(int x, int y) {
+	const bool quotientNegative = x < 0;
+	return x / y - (x % y != 0 && quotientNegative);
 }
 
 glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, float x, float y, float z, const glm::vec3& pivot) const {
