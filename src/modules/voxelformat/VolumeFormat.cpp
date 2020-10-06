@@ -13,6 +13,7 @@
 #include "voxelformat/QBFormat.h"
 #include "voxelformat/QEFFormat.h"
 #include "voxelformat/VXMFormat.h"
+#include "voxelformat/VXRFormat.h"
 #include "voxelformat/VXLFormat.h"
 #include "voxelformat/CubFormat.h"
 #include "voxelformat/BinVoxFormat.h"
@@ -25,7 +26,7 @@
 namespace voxelformat {
 
 // this is the list of supported voxel volume formats that are have importers implemented
-const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl,qef,csm,nvm";
+const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl,qef,csm,nvm,vxr";
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 // this is the list of supported voxel or mesh formats that have exporters implemented
@@ -83,6 +84,15 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 			|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
 			|| magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4')) {
 		voxel::VXMFormat f;
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
+	} else if (ext == "vxr"
+			|| magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
+			|| magic == FourCC('V','X','R','5') || magic == FourCC('V','X','R','4')
+			|| magic == FourCC('V','X','R','3') || magic == FourCC('V','X','R','2')
+			|| magic == FourCC('V','X','R','1')) {
+		voxel::VXRFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}

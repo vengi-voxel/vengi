@@ -11,6 +11,7 @@ set(SRCS
 	QBFormat.h QBFormat.cpp
 	QEFFormat.h QEFFormat.cpp
 	VXMFormat.h VXMFormat.cpp
+	VXRFormat.h VXRFormat.cpp
 	VXLFormat.h VXLFormat.cpp
 	MeshCache.h MeshCache.cpp
 	CubFormat.h CubFormat.cpp

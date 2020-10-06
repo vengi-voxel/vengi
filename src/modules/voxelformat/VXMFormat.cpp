@@ -154,7 +154,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		Log::debug("texAmount: %i", (int)texAmount);
 		for (uint32_t t = 0u; t < texAmount; t++) {
 			char textureId[1024];
-			wrapBool(stream.readString(sizeof(textureId), textureId, true));
+			wrapBool(stream.readString(sizeof(textureId), textureId, true))
 			if (version >= 6) {
 				uint32_t texZipped;
 				wrap(stream.readInt(texZipped));
