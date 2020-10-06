@@ -1099,27 +1099,34 @@ static void ShowDemoWindowWidgets()
         }
         if (ImGui::TreeNode("Grid"))
         {
-            static int selected[4 * 4] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-            for (int i = 0; i < 4 * 4; i++)
-            {
-                ImGui::PushID(i);
-                if (ImGui::Selectable("Sailor", selected[i] != 0, 0, ImVec2(50, 50)))
-                {
-                    // Toggle
-                    selected[i] = !selected[i];
+            static char selected[4][4] = { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
 
-                    // Note: We _unnecessarily_ test for both x/y and i here only to silence some static analyzer.
-                    // The second part of each test is unnecessary.
-                    int x = i % 4;
-                    int y = i / 4;
-                    if (x > 0)           { selected[i - 1] ^= 1; }
-                    if (x < 3 && i < 15) { selected[i + 1] ^= 1; }
-                    if (y > 0 && i > 3)  { selected[i - 4] ^= 1; }
-                    if (y < 3 && i < 12) { selected[i + 4] ^= 1; }
+            // Add in a bit of silly fun...
+            const float time = (float)ImGui::GetTime();
+            const bool winning_state = memchr(selected, 0, sizeof(selected)) == NULL; // If all cells are selected...
+            if (winning_state)
+                ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f + 0.5f * cosf(time * 2.0f), 0.5f + 0.5f * sinf(time * 3.0f)));
+
+            for (int y = 0; y < 4; y++)
+                for (int x = 0; x < 4; x++)
+                {
+                    if (x > 0)
+                        ImGui::SameLine();
+                    ImGui::PushID(y * 4 + x);
+                    if (ImGui::Selectable("Sailor", selected[y][x] != 0, 0, ImVec2(50, 50)))
+                    {
+                        // Toggle clicked cell + toggle neighbors
+                        selected[y][x] ^= 1;
+                        if (x > 0) { selected[y][x - 1] ^= 1; }
+                        if (x < 3) { selected[y][x + 1] ^= 1; }
+                        if (y > 0) { selected[y - 1][x] ^= 1; }
+                        if (y < 3) { selected[y + 1][x] ^= 1; }
+                    }
+                    ImGui::PopID();
                 }
-                if ((i % 4) < 3) ImGui::SameLine();
-                ImGui::PopID();
-            }
+
+            if (winning_state)
+                ImGui::PopStyleVar();
             ImGui::TreePop();
         }
         if (ImGui::TreeNode("Alignment"))
@@ -3305,31 +3312,30 @@ static void ShowDemoWindowTables()
 
         // This essentially the same as above, except instead of using a for loop we call TableSetColumnIndex() manually.
         // Sometimes this makes more sense.
-        HelpMarker("Using TableNextRow() + calling TableSetColumnIndex() _before_ each cell, manually.");
+        HelpMarker("Using TableNextRow() + calling TableNextColumn() _before_ each cell, manually.");
         if (ImGui::BeginTable("##table2", 3))
         {
             for (int row = 0; row < 4; row++)
             {
                 ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ImGui::TableNextColumn();
                 ImGui::Text("Row %d", row);
-                ImGui::TableSetColumnIndex(1);
+                ImGui::TableNextColumn();
                 ImGui::Text("Some contents");
-                ImGui::TableSetColumnIndex(2);
+                ImGui::TableNextColumn();
                 ImGui::Text("123.456");
             }
             ImGui::EndTable();
         }
 
-        // Another subtle variant, we call TableNextCell() _before_ each cell. At the end of a row, TableNextCell() will create a new row.
-        // Note that we don't call TableNextRow() here!
-        // If we want to call TableNextRow(), then we don't need to call TableNextCell() for the first cell.
-        HelpMarker("Only using TableNextCell(), which tends to be convenient for tables where every cells contains the same type of contents.\nThis is also more similar to the old NextColumn() function of the Columns API, and provided to facilitate the Columns->Tables API transition.");
+        // Another subtle variant, we call TableNextColumn() _before_ each cell. At the end of a row, TableNextColumn() will create a new row.
+        // Note that we never TableNextRow() here!
+        HelpMarker("Only using TableNextColumn(), which tends to be convenient for tables where every cells contains the same type of contents.\nThis is also more similar to the old NextColumn() function of the Columns API, and provided to facilitate the Columns->Tables API transition.");
         if (ImGui::BeginTable("##table4", 3))
         {
             for (int item = 0; item < 14; item++)
             {
-                ImGui::TableNextCell();
+                ImGui::TableNextColumn();
                 ImGui::Text("Item %d", item);
             }
             ImGui::EndTable();
@@ -3343,8 +3349,12 @@ static void ShowDemoWindowTables()
     if (ImGui::TreeNode("Borders, background"))
     {
         // Expose a few Borders related flags interactively
+        enum ContentsType { CT_Text, CT_FillButton };
         static ImGuiTableFlags flags = ImGuiTableFlags_BordersOuter | ImGuiTableFlags_RowBg;
+        static bool display_headers = false;
         static bool display_width = false;
+        static int contents_type = CT_FillButton;
+
         ImGui::CheckboxFlags("ImGuiTableFlags_RowBg", (unsigned int*)&flags, ImGuiTableFlags_RowBg);
         ImGui::CheckboxFlags("ImGuiTableFlags_Borders", (unsigned int*)&flags, ImGuiTableFlags_Borders);
         ImGui::SameLine(); HelpMarker("ImGuiTableFlags_Borders\n = ImGuiTableFlags_BordersInnerV\n | ImGuiTableFlags_BordersOuterV\n | ImGuiTableFlags_BordersInnerV\n | ImGuiTableFlags_BordersOuterH");
@@ -3360,15 +3370,31 @@ static void ShowDemoWindowTables()
         ImGui::Indent();
         ImGui::CheckboxFlags("ImGuiTableFlags_BordersOuterV", (unsigned int*)&flags, ImGuiTableFlags_BordersOuterV);
         ImGui::CheckboxFlags("ImGuiTableFlags_BordersInnerV", (unsigned int*)&flags, ImGuiTableFlags_BordersInnerV);
+        ImGui::CheckboxFlags("ImGuiTableFlags_NoBordersInBody", (unsigned int*)&flags, ImGuiTableFlags_NoBordersInBody); ImGui::SameLine(); HelpMarker("Disable vertical borders in columns Body (borders will always appears in Headers");
+        ImGui::CheckboxFlags("ImGuiTableFlags_NoBordersInBodyUntilResize", (unsigned int*)&flags, ImGuiTableFlags_NoBordersInBodyUntilResize); ImGui::SameLine(); HelpMarker("Disable vertical borders in columns Body until hovered for resize (borders will always appears in Headers)");
         ImGui::Unindent();
 
         ImGui::CheckboxFlags("ImGuiTableFlags_BordersOuter", (unsigned int*)&flags, ImGuiTableFlags_BordersOuter);
         ImGui::CheckboxFlags("ImGuiTableFlags_BordersInner", (unsigned int*)&flags, ImGuiTableFlags_BordersInner);
         ImGui::Unindent();
-        ImGui::Checkbox("Debug Display width", &display_width);
+        ImGui::AlignTextToFramePadding(); ImGui::Text("Cell contents:");
+        ImGui::SameLine(); ImGui::RadioButton("Text", &contents_type, CT_Text);
+        ImGui::SameLine(); ImGui::RadioButton("FillButton", &contents_type, CT_FillButton);
+        ImGui::Checkbox("Display headers", &display_headers);
+        ImGui::Checkbox("Display debug width", &display_width);
 
         if (ImGui::BeginTable("##table1", 3, flags))
         {
+            // Display headers so we can inspect their interaction with borders.
+            // (Headers are not the main purpose of this section of the demo, so we are not elaborating on them too much. See other sections for details)
+            if (display_headers)
+            {
+                ImGui::TableSetupColumn("One");
+                ImGui::TableSetupColumn("Two");
+                ImGui::TableSetupColumn("Three");
+                ImGui::TableHeadersRow();
+            }
+
             for (int row = 0; row < 5; row++)
             {
                 ImGui::TableNextRow();
@@ -3378,7 +3404,7 @@ static void ShowDemoWindowTables()
                     char buf[32];
                     if (display_width)
                     {
-                        // [DEBUG] Draw limits
+                        // [DEBUG] Draw limits FIXME-TABLE: Move to Advanced section
                         ImVec2 p = ImGui::GetCursorScreenPos();
                         float contents_x1 = p.x;
                         float contents_x2 = ImGui::GetWindowPos().x + ImGui::GetContentRegionMax().x;
@@ -3395,7 +3421,11 @@ static void ShowDemoWindowTables()
                     {
                         sprintf(buf, "Hello %d,%d", row, column);
                     }
-                    ImGui::TextUnformatted(buf);
+
+                    if (contents_type == CT_Text)
+                        ImGui::TextUnformatted(buf);
+                    else if (contents_type)
+                        ImGui::Button(buf, ImVec2(-FLT_MIN, 0.0f));
                 }
             }
             ImGui::EndTable();
@@ -3510,10 +3540,12 @@ static void ShowDemoWindowTables()
     if (ImGui::TreeNode("Reorderable, hideable, with headers"))
     {
         HelpMarker("Click and drag column headers to reorder columns.\n\nYou can also right-click on a header to open a context menu.");
-        static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV;
+        static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_NoBordersInBody;
         ImGui::CheckboxFlags("ImGuiTableFlags_Resizable", (unsigned int*)&flags, ImGuiTableFlags_Resizable);
         ImGui::CheckboxFlags("ImGuiTableFlags_Reorderable", (unsigned int*)&flags, ImGuiTableFlags_Reorderable);
         ImGui::CheckboxFlags("ImGuiTableFlags_Hideable", (unsigned int*)&flags, ImGuiTableFlags_Hideable);
+        ImGui::CheckboxFlags("ImGuiTableFlags_NoBordersInBody", (unsigned int*)&flags, ImGuiTableFlags_NoBordersInBody);
+        ImGui::CheckboxFlags("ImGuiTableFlags_NoBordersInBodyUntilResize", (unsigned int*)&flags, ImGuiTableFlags_NoBordersInBodyUntilResize);
 
         if (ImGui::BeginTable("##table1", 3, flags))
         {
@@ -3647,7 +3679,7 @@ static void ShowDemoWindowTables()
                 ImGui::TableNextRow();
                 for (int column = 0; column < 7; column++)
                 {
-                    // Both TableNextCell() and TableSetColumnIndex() return false when a column is not visible, which can be used for clipping.
+                    // Both TableNextColumn() and TableSetColumnIndex() return false when a column is not visible, which can be used for clipping.
                     if (!ImGui::TableSetColumnIndex(column))
                         continue;
                     if (column == 0)
@@ -3675,7 +3707,7 @@ static void ShowDemoWindowTables()
             for (int column = 0; column < column_count; column++)
             {
                 // Make the UI compact because there are so many fields
-                ImGui::TableNextCell();
+                ImGui::TableNextColumn();
                 ImGuiStyle& style = ImGui::GetStyle();
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(style.FramePadding.x, 2));
                 ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(style.ItemSpacing.x, 2));
@@ -3731,36 +3763,39 @@ static void ShowDemoWindowTables()
     {
         HelpMarker("This demonstrate embedding a table into another table cell.");
 
-        if (ImGui::BeginTable("recurse1", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_BordersFullHeightV | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable))
+        if (ImGui::BeginTable("recurse1", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable))
         {
             ImGui::TableSetupColumn("A0");
             ImGui::TableSetupColumn("A1");
             ImGui::TableHeadersRow();
 
-            ImGui::TableNextRow();  ImGui::Text("A0 Cell 0");
+            ImGui::TableNextColumn();
+            ImGui::Text("A0 Cell 0");
             {
                 float rows_height = ImGui::GetTextLineHeightWithSpacing() * 2;
-                if (ImGui::BeginTable("recurse2", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_BordersFullHeightV | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable))
+                if (ImGui::BeginTable("recurse2", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable))
                 {
                     ImGui::TableSetupColumn("B0");
                     ImGui::TableSetupColumn("B1");
                     ImGui::TableHeadersRow();
 
                     ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
+                    ImGui::TableNextColumn();
                     ImGui::Text("B0 Cell 0");
-                    ImGui::TableNextCell();
+                    ImGui::TableNextColumn();
                     ImGui::Text("B0 Cell 1");
                     ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
+                    ImGui::TableNextColumn();
                     ImGui::Text("B1 Cell 0");
-                    ImGui::TableNextCell();
+                    ImGui::TableNextColumn();
                     ImGui::Text("B1 Cell 1");
 
                     ImGui::EndTable();
                 }
             }
-            ImGui::TableNextCell(); ImGui::Text("A0 Cell 1");
-            ImGui::TableNextRow();  ImGui::Text("A1 Cell 0");
-            ImGui::TableNextCell(); ImGui::Text("A1 Cell 1");
+            ImGui::TableNextColumn(); ImGui::Text("A0 Cell 1");
+            ImGui::TableNextColumn(); ImGui::Text("A1 Cell 0");
+            ImGui::TableNextColumn(); ImGui::Text("A1 Cell 1");
             ImGui::EndTable();
         }
         ImGui::TreePop();
@@ -3872,6 +3907,7 @@ static void ShowDemoWindowTables()
             {
                 float min_row_height = (float)(int)(ImGui::GetFontSize() * 0.30f * row);
                 ImGui::TableNextRow(ImGuiTableRowFlags_None, min_row_height);
+                ImGui::TableNextColumn();
                 ImGui::Text("min_row_height = %.2f", min_row_height);
             }
             ImGui::EndTable();
@@ -3938,7 +3974,7 @@ static void ShowDemoWindowTables()
         ImGui::SetNextItemOpen(open_action != 0);
     if (ImGui::TreeNode("Tree view"))
     {
-        static ImGuiTableFlags flags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg;
+        static ImGuiTableFlags flags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody;
         //ImGui::CheckboxFlags("ImGuiTableFlags_Scroll", (unsigned int*)&flags, ImGuiTableFlags_Scroll);
 
         if (ImGui::BeginTable("##3ways", 3, flags))
@@ -3960,13 +3996,14 @@ static void ShowDemoWindowTables()
                 static void DisplayNode(const MyTreeNode* node, const MyTreeNode* all_nodes)
                 {
                     ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
                     const bool is_folder = (node->ChildCount > 0);
                     if (is_folder)
                     {
                         bool open = ImGui::TreeNodeEx(node->Name, ImGuiTreeNodeFlags_SpanFullWidth);
-                        ImGui::TableNextCell();
+                        ImGui::TableNextColumn();
                         ImGui::TextDisabled("--");
-                        ImGui::TableNextCell();
+                        ImGui::TableNextColumn();
                         ImGui::TextUnformatted(node->Type);
                         if (open)
                         {
@@ -3978,9 +4015,9 @@ static void ShowDemoWindowTables()
                     else
                     {
                         ImGui::TreeNodeEx(node->Name, ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth);
-                        ImGui::TableNextCell();
+                        ImGui::TableNextColumn();
                         ImGui::Text("%d", node->Size);
-                        ImGui::TableNextCell();
+                        ImGui::TableNextColumn();
                         ImGui::TextUnformatted(node->Type);
                     }
                 }
@@ -4057,54 +4094,91 @@ static void ShowDemoWindowTables()
         ImGui::SetNextItemOpen(open_action != 0);
     if (ImGui::TreeNode("Context menus"))
     {
-        HelpMarker("By default, TableHeadersRow()/TableHeader() will open a context-menu on right-click.");
-        ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingPolicyFixedX | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Borders;
+        HelpMarker("By default, right-clicking over a TableHeadersRow()/TableHeader() line will open the default context-menu.\nUsing ImGuiTableFlags_ContextMenuInBody we also allow right-clicking over columns body.");
+        static ImGuiTableFlags flags1 = ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Borders | ImGuiTableFlags_ContextMenuInBody;
+        ImGui::CheckboxFlags("ImGuiTableFlags_ContextMenuInBody", (unsigned int*)&flags1, ImGuiTableFlags_ContextMenuInBody);
+
+        // Context Menus: first example
+        // [1.1] Right-click on the TableHeadersRow() line to open the default table context menu.
+        // [1.2] Right-click in columns also open the default table context menu (if ImGuiTableFlags_ContextMenuInBody is set)
         const int COLUMNS_COUNT = 3;
-        if (ImGui::BeginTable("##table1", COLUMNS_COUNT, flags))
+        if (ImGui::BeginTable("##table1", COLUMNS_COUNT, flags1))
         {
             ImGui::TableSetupColumn("One");
             ImGui::TableSetupColumn("Two");
             ImGui::TableSetupColumn("Three");
 
-            // Context Menu 1: right-click on header (including empty section after the third column!) should open Default Table Popup
+            // [1.1]] Right-click on the TableHeadersRow() line to open the default table context menu.
             ImGui::TableHeadersRow();
+
+            // Submit dummy contents
             for (int row = 0; row < 4; row++)
             {
                 ImGui::TableNextRow();
                 for (int column = 0; column < COLUMNS_COUNT; column++)
                 {
                     ImGui::TableSetColumnIndex(column);
-                    ImGui::PushID(row * COLUMNS_COUNT + column);
+                    ImGui::Text("Cell %d,%d", 0, row);
+                }
+            }
+            ImGui::EndTable();
+        }
+
+        // Context Menus: second example
+        // [2.1] Right-click on the TableHeadersRow() line to open the default table context menu.
+        // [2.2] Right-click on the ".." to open a custom popup
+        // [2.3] Right-click in columns to open another custom popup
+        HelpMarker("Demonstrate mixing table context menu (over header), item context button (over button) and custom per-colum context menu (over column body).");
+        ImGuiTableFlags flags2 = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingPolicyFixedX | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Borders;
+        if (ImGui::BeginTable("##table2", COLUMNS_COUNT, flags2))
+        {
+            ImGui::TableSetupColumn("One");
+            ImGui::TableSetupColumn("Two");
+            ImGui::TableSetupColumn("Three");
+
+            // [2.1] Right-click on the TableHeadersRow() line to open the default table context menu.
+            ImGui::TableHeadersRow();
+            for (int row = 0; row < 4; row++)
+            {
+                ImGui::TableNextRow();
+                for (int column = 0; column < COLUMNS_COUNT; column++)
+                {
+                    // Submit dummy contents
+                    ImGui::TableSetColumnIndex(column);
                     ImGui::Text("Cell %d,%d", column, row);
                     ImGui::SameLine();
 
-                    // Context Menu 2: right-click on buttons open Custom Button Popup
+                    // [2.2] Right-click on the ".." to open a custom popup
+                    ImGui::PushID(row * COLUMNS_COUNT + column);
                     ImGui::SmallButton("..");
                     if (ImGui::BeginPopupContextItem())
                     {
-                        ImGui::Text("This is the popup for Button() On Cell %d,%d", column, row);
-                        ImGui::Selectable("Close");
+                        ImGui::Text("This is the popup for Button(\"..\") in Cell %d,%d", column, row);
+                        if (ImGui::Button("Close"))
+                            ImGui::CloseCurrentPopup();
                         ImGui::EndPopup();
                     }
                     ImGui::PopID();
                 }
             }
 
-            // Context Menu 3: Right-click anywhere in columns opens a custom popup
-            // We use the ImGuiPopupFlags_NoOpenOverExistingPopup flag to avoid displaying over either the standard TableHeader context-menu or the Button context-menu.
+            // [2.3] Right-click anywhere in columns to open another custom popup
+            // (instead of testing for !IsAnyItemHovered() we could also call OpenPopup() with ImGuiPopupFlags_NoOpenOverExistingPopup
+            // to manage popup priority as the popups triggers, here "are we hovering a column" are overlapping)
             const int hovered_column = ImGui::TableGetHoveredColumn();
             for (int column = 0; column < COLUMNS_COUNT + 1; column++)
             {
                 ImGui::PushID(column);
-                if (hovered_column == column && ImGui::IsMouseReleased(1))
-                    ImGui::OpenPopup("MyPopup", ImGuiPopupFlags_NoOpenOverExistingPopup);
+                if (hovered_column == column && !ImGui::IsAnyItemHovered() && ImGui::IsMouseReleased(1))
+                    ImGui::OpenPopup("MyPopup");
                 if (ImGui::BeginPopup("MyPopup"))
                 {
                     if (column == COLUMNS_COUNT)
-                        ImGui::Text("This is the popup for unused space after the last column.");
+                        ImGui::Text("This is a custom popup for unused space after the last column.");
                     else
-                        ImGui::Text("This is the popup for Column '%s'", ImGui::TableGetColumnName(column));
-                    ImGui::Selectable("Close");
+                        ImGui::Text("This is a custom popup for Column %d", column);
+                    if (ImGui::Button("Close"))
+                        ImGui::CloseCurrentPopup();
                     ImGui::EndPopup();
                 }
                 ImGui::PopID();
@@ -4147,7 +4221,7 @@ static void ShowDemoWindowTables()
 
         static ImGuiTableFlags flags =
             ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_MultiSortable
-            | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV
+            | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_NoBordersInBody
             | ImGuiTableFlags_ScrollY;
         if (ImGui::BeginTable("##table", 4, flags, ImVec2(0, 250), 0.0f))
         {
@@ -4185,13 +4259,13 @@ static void ShowDemoWindowTables()
                     MyItem* item = &items[row_n];
                     ImGui::PushID(item->ID);
                     ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TableNextColumn();
                     ImGui::Text("%04d", item->ID);
-                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TableNextColumn();
                     ImGui::TextUnformatted(item->Name);
-                    ImGui::TableSetColumnIndex(2);
+                    ImGui::TableNextColumn();
                     ImGui::SmallButton("None");
-                    ImGui::TableSetColumnIndex(3);
+                    ImGui::TableNextColumn();
                     ImGui::Text("%d", item->Quantity);
                     ImGui::PopID();
                 }
@@ -4206,7 +4280,7 @@ static void ShowDemoWindowTables()
     {
         static ImGuiTableFlags flags =
             ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_MultiSortable
-            | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
+            | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_NoBordersInBody
             | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY
             | ImGuiTableFlags_SizingPolicyFixedX
             ;
@@ -4242,6 +4316,7 @@ static void ShowDemoWindowTables()
             ImGui::CheckboxFlags("ImGuiTableFlags_Sortable", (unsigned int*)&flags, ImGuiTableFlags_Sortable);
             ImGui::CheckboxFlags("ImGuiTableFlags_MultiSortable", (unsigned int*)&flags, ImGuiTableFlags_MultiSortable);
             ImGui::CheckboxFlags("ImGuiTableFlags_NoSavedSettings", (unsigned int*)&flags, ImGuiTableFlags_NoSavedSettings);
+            ImGui::CheckboxFlags("ImGuiTableFlags_ContextMenuInBody", (unsigned int*)&flags, ImGuiTableFlags_ContextMenuInBody);
             ImGui::Unindent();
 
             ImGui::BulletText("Decoration:");
@@ -4253,7 +4328,8 @@ static void ShowDemoWindowTables()
             ImGui::CheckboxFlags("ImGuiTableFlags_BordersH", (unsigned int*)&flags, ImGuiTableFlags_BordersH);
             ImGui::CheckboxFlags("ImGuiTableFlags_BordersOuterH", (unsigned int*)&flags, ImGuiTableFlags_BordersOuterH);
             ImGui::CheckboxFlags("ImGuiTableFlags_BordersInnerH", (unsigned int*)&flags, ImGuiTableFlags_BordersInnerH);
-            ImGui::CheckboxFlags("ImGuiTableFlags_BordersFullHeightV", (unsigned int*)&flags, ImGuiTableFlags_BordersFullHeightV);
+            ImGui::CheckboxFlags("ImGuiTableFlags_NoBordersInBody", (unsigned int*)&flags, ImGuiTableFlags_NoBordersInBody); ImGui::SameLine(); HelpMarker("Disable vertical borders in columns Body (borders will always appears in Headers");
+            ImGui::CheckboxFlags("ImGuiTableFlags_NoBordersInBodyUntilResize", (unsigned int*)&flags, ImGuiTableFlags_NoBordersInBodyUntilResize); ImGui::SameLine(); HelpMarker("Disable vertical borders in columns Body until hovered for resize (borders will always appears in Headers)");
             ImGui::Unindent();
 
             ImGui::BulletText("Padding, Sizing:");
@@ -4388,6 +4464,7 @@ static void ShowDemoWindowTables()
                     const bool item_is_selected = selection.contains(item->ID);
                     ImGui::PushID(item->ID);
                     ImGui::TableNextRow(ImGuiTableRowFlags_None, row_min_height);
+                    ImGui::TableNextColumn();
 
                     // For the demo purpose we can select among different type of items submitted in the first column
                     char label[32];
@@ -4419,14 +4496,14 @@ static void ShowDemoWindowTables()
                         }
                     }
 
-                    ImGui::TableNextCell();
+                    ImGui::TableNextColumn();
                     ImGui::TextUnformatted(item->Name);
 
                     // Here we demonstrate marking our data set as needing to be sorted again if we modified a quantity,
                     // and we are currently sorting on the column showing the Quantity.
                     // To avoid triggering a sort while holding the button, we only trigger it when the button has been released.
                     // You will probably need a more advanced system in your code if you want to automatically sort when a specific entry changes.
-                    if (ImGui::TableNextCell())
+                    if (ImGui::TableNextColumn())
                     {
                         if (ImGui::SmallButton("Chop")) { item->Quantity += 1; }
                         if (sorts_specs_using_quantity && ImGui::IsItemDeactivated()) { items_need_sort = true; }
@@ -4435,16 +4512,16 @@ static void ShowDemoWindowTables()
                         if (sorts_specs_using_quantity && ImGui::IsItemDeactivated()) { items_need_sort = true; }
                     }
 
-                    ImGui::TableNextCell();
+                    ImGui::TableNextColumn();
                     ImGui::Text("%d", item->Quantity);
 
-                    ImGui::TableNextCell();
+                    ImGui::TableNextColumn();
                     if (show_wrapped_text)
                         ImGui::TextWrapped("Lorem ipsum dolor sit amet");
                     else
                         ImGui::Text("Lorem ipsum dolor sit amet");
 
-                    ImGui::TableNextCell();
+                    ImGui::TableNextColumn();
                     ImGui::Text("1234");
 
                     ImGui::PopID();
