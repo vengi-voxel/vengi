@@ -40,6 +40,9 @@ namespace glm
 
 #		if GLM_CONFIG_XYZW_ONLY
 			T x, y, z, w;
+#			if GLM_CONFIG_SWIZZLE == GLM_SWIZZLE_FUNCTION
+			GLM_SWIZZLE_GEN_VEC_FROM_VEC4_COMP(T, Q, x, y, z, w)
+#			endif//GLM_CONFIG_SWIZZLE
 #		elif GLM_CONFIG_ANONYMOUS_STRUCT == GLM_ENABLE
 			union
 			{

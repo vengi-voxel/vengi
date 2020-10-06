@@ -56,7 +56,11 @@ namespace glm
 
 			//Prevent a division by 0 error later on
 			T VectorMagnitude = x.x * x.x + x.y * x.y + x.z * x.z;
-			if (glm::abs(VectorMagnitude - static_cast<T>(0)) < glm::epsilon<T>()) {
+			//Despite the compiler might say, we actually want to compare
+			//VectorMagnitude to 0. here; we could use denorm_int() compiling a
+			//project with unsafe maths optimizations might make the comparison
+			//always false, even when VectorMagnitude is 0.
+			if (VectorMagnitude < std::numeric_limits<T>::min()) {
 				//Equivalent to raising a real number to a power
 				return qua<T, Q>(pow(x.w, y), 0, 0, 0);
 			}
