@@ -105,7 +105,7 @@ void Image(video::Id handle, const glm::ivec2& size) {
 void TableKeyValue(const char *key, const char *msg, ...) {
 	ImGui::TableNextRow();
 	ImGui::TextUnformatted(key);
-	ImGui::TableNextCell();
+	ImGui::TableNextColumn();
 	va_list ap;
 	va_start(ap, msg);
 	ImGui::TextV(msg, ap);
@@ -115,7 +115,7 @@ void TableKeyValue(const char *key, const char *msg, ...) {
 void TableKeyValue(const char *key, const core::String &value) {
 	ImGui::TableNextRow();
 	ImGui::TextUnformatted(key);
-	ImGui::TableNextCell();
+	ImGui::TableNextColumn();
 	ImGui::TextUnformatted(value.c_str());
 }
 
