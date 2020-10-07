@@ -241,6 +241,7 @@ public:
 	 * @param[in] screenPos The normalized screen coordinates. The z component defines the length of the ray
 	 */
 	glm::vec3 screenToWorld(const glm::vec3& screenPos) const;
+	glm::ivec2 worldToScreen(const glm::vec3& worldPos) const;
 
 	void update(double deltaFrameSeconds);
 
