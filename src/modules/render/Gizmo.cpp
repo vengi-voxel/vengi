@@ -9,6 +9,7 @@
 #include "render/Axis.h"
 #include "video/Camera.h"
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/closest_point.hpp>
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>
 
@@ -56,50 +57,35 @@ void Gizmo::setPosition(const glm::vec3& pos) {
 }
 
 void Gizmo::updateTranslateState() {
-	const glm::vec3 p1 = _ray.origin;
-	const glm::vec3 p2 = p1 + _ray.direction * _camera.farPlane();
+	_mode = GizmoMode::None;
 
-	glm::vec3 paX;
-	glm::vec3 pbX;
-	glm::vec3 paY;
-	glm::vec3 pbY;
-	glm::vec3 paZ;
-	glm::vec3 pbZ;
+	static const glm::vec3 PLANENORMALS[3] = {
+		glm::backward,
+		glm::up,
+		glm::right
+	};
 
-	const bool intersectX = glm::intersectLines(p1, p2, _pos, _pos + glm::vec3(GizmoSize,  0.0f,  0.0f), paX, pbX);
-	const bool intersectY = glm::intersectLines(p1, p2, _pos, _pos + glm::vec3( 0.0f, GizmoSize,  0.0f), paY, pbY);
-	const bool intersectZ = glm::intersectLines(p1, p2, _pos, _pos + glm::vec3( 0.0f,  0.0f, GizmoSize), paZ, pbZ);
-	const float distanceX = intersectX ? glm::distance2(paX, pbX) : FLT_MAX;
-	const float distanceY = intersectY ? glm::distance2(paY, pbY) : FLT_MAX;
-	const float distanceZ = intersectZ ? glm::distance2(paZ, pbZ) : FLT_MAX;
+	static const glm::vec3 DIRECTIONS[3] = {
+		glm::right,
+		glm::up,
+		glm::backward
+	};
+	for (int i = 0; i < 3; i++) {
+		float len;
+		if (!glm::intersectRayPlane(_ray.origin, _ray.direction, _pos, PLANENORMALS[i], len)) {
+			continue;
+		}
 
-	const bool smallerX = glm::any(glm::lessThan(paX, _pos));
-	const bool biggerX = glm::any(glm::greaterThan(paX, _pos + GizmoSizeVec));
+		const glm::vec3 posOnPlan = _ray.origin + _ray.direction * len;
+		const glm::vec2 intersectPos = _camera.worldToScreen(posOnPlan);
+		const glm::vec2 start = _camera.worldToScreen(_pos);
+		const glm::vec2 end = _camera.worldToScreen(_pos + DIRECTIONS[i] * GizmoSize);
 
-	const bool smallerY = glm::any(glm::lessThan(paY, _pos));
-	const bool biggerY = glm::any(glm::greaterThan(paY, _pos + GizmoSizeVec));
-
-	const bool smallerZ = glm::any(glm::lessThan(paZ, _pos));
-	const bool biggerZ = glm::any(glm::greaterThan(paZ, _pos + GizmoSizeVec));
-
-	const bool outsideX = smallerX || biggerX;
-	const bool outsideY = smallerY || biggerY;
-	const bool outsideZ = smallerZ || biggerZ;
-
-	if (outsideX && outsideY && outsideZ) {
-		_mode = GizmoMode::None;
-		return;
-	}
-
-	const float distanceToLine = 0.3f;
-	if (distanceX < distanceY && distanceX < distanceZ && distanceX < distanceToLine) {
-		_mode = GizmoMode::TranslateX;
-	} else if (distanceY < distanceX && distanceY < distanceZ && distanceY < distanceToLine) {
-		_mode = GizmoMode::TranslateY;
-	} else if (distanceZ < distanceX && distanceZ < distanceY && distanceZ < distanceToLine) {
-		_mode = GizmoMode::TranslateZ;
-	} else {
-		_mode = GizmoMode::None;
+		glm::vec2 pointOnAxis = glm::closestPointOnLine(intersectPos, start, end);
+		if (glm::length(pointOnAxis - intersectPos) < 6.0f) {
+			_mode = (GizmoMode)(core::enumVal(GizmoMode::TranslateX) + i);
+			break;
+		}
 	}
 }
 
