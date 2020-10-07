@@ -74,12 +74,11 @@ void Gizmo::updateTranslateState() {
 			continue;
 		}
 
-		const glm::vec3 posOnPlan = _ray.origin + _ray.direction * len;
-		const glm::vec2 intersectPos = _camera.worldToScreen(posOnPlan);
-		const glm::vec2 start = _camera.worldToScreen(_pos);
-		const glm::vec2 end = _camera.worldToScreen(_pos + DIRECTIONS[i] * GizmoSize);
-
-		glm::vec2 pointOnAxis = glm::closestPointOnLine(intersectPos, start, end);
+		const glm::vec3& posOnPlane = _ray.origin + _ray.direction * len;
+		const glm::vec2& intersectPos = _camera.worldToScreen(posOnPlane);
+		const glm::vec2& start = _camera.worldToScreen(_pos);
+		const glm::vec2& end = _camera.worldToScreen(_pos + DIRECTIONS[i] * GizmoSize);
+		const glm::vec2& pointOnAxis = glm::closestPointOnLine(intersectPos, start, end);
 		if (glm::length(pointOnAxis - intersectPos) < 6.0f) {
 			_mode = (GizmoMode)(core::enumVal(GizmoMode::TranslateX) + i);
 			break;
@@ -99,8 +98,8 @@ bool Gizmo::calculateTranslationDelta(glm::vec3& delta) {
 	if (!glm::intersectRayPlane(_ray.origin, _ray.direction, _pos, planeNormal, len)) {
 		return false;
 	}
-	const glm::vec3 targetPos = _ray.origin + _ray.direction * glm::abs(len);
-	const glm::vec3 dm = targetPos - _pos;
+	const glm::vec3& posOnPlane = _ray.origin + _ray.direction * len;
+	const glm::vec3 dm = posOnPlane - _pos;
 	const glm::vec3 rotDir = glm::conjugate(_camera.quaternion()) * direction;
 	const float lengthOnAxis = glm::dot(rotDir, dm);
 	const glm::vec3 moveLength = rotDir * -lengthOnAxis;
