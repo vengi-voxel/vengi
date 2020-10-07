@@ -9,6 +9,7 @@ General:
    - Added `--version` and `-v` commandline option to show the current version of each application
    - Fixed texture coordinate indices for multi layer obj exports
    - Improved magicavoxel transform support for some models
+   - Fixed magicavoxel x-axis handling
 
 VoxEdit:
 
