@@ -12,6 +12,7 @@
 #include <glm/gtx/closest_point.hpp>
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/geometric.hpp>
 
 namespace render {
 
@@ -81,6 +82,7 @@ void Gizmo::updateTranslateState() {
 		const glm::vec2& pointOnAxis = glm::closestPointOnLine(intersectPos, start, end);
 		if (glm::length(pointOnAxis - intersectPos) < 6.0f) {
 			_mode = (GizmoMode)(core::enumVal(GizmoMode::TranslateX) + i);
+			_buttonLastPosition = posOnPlane - _pos;
 			break;
 		}
 	}
@@ -91,20 +93,23 @@ bool Gizmo::calculateTranslationDelta(glm::vec3& delta) {
 		return false;
 	}
 	const int index = core::enumVal(_buttonMode) - core::enumVal(GizmoMode::TranslateX);
-	const glm::vec3& planeNormal = PLANENORMALS[index];
-	const glm::vec3& direction = DIRECTIONS[index];
 
+	const glm::vec3& camToModel = glm::normalize(_pos - _camera.eye());
+	const glm::vec3& ortho = glm::cross(DIRECTIONS[index], camToModel);
+	const glm::vec3& planeNormal = glm::normalize(glm::cross(DIRECTIONS[index], ortho));
 	float len;
 	if (!glm::intersectRayPlane(_ray.origin, _ray.direction, _pos, planeNormal, len)) {
 		return false;
 	}
+
 	const glm::vec3& posOnPlane = _ray.origin + _ray.direction * len;
-	const glm::vec3 dm = posOnPlane - _pos;
-	const glm::vec3 rotDir = glm::conjugate(_camera.quaternion()) * direction;
-	const float lengthOnAxis = glm::dot(rotDir, dm);
-	const glm::vec3 moveLength = rotDir * -lengthOnAxis;
-	delta = moveLength - _buttonLastPosition;
-	_buttonLastPosition = moveLength;
+	const glm::vec3& translateDist = posOnPlane - _buttonLastPosition;
+	const float axisLength = glm::dot(DIRECTIONS[index], translateDist - _pos);
+	if (axisLength < 1.0f && axisLength > -1.0f) {
+		return false;
+	}
+	delta = DIRECTIONS[index] * axisLength;
+	_buttonLastPosition = posOnPlane - _pos;
 	return true;
 }
 
