@@ -16,7 +16,16 @@
 namespace render {
 
 static constexpr float GizmoSize = 20.0f;
-static constexpr glm::vec3 GizmoSizeVec(GizmoSize);
+static const glm::vec3 PLANENORMALS[3] = {
+	glm::backward,
+	glm::up,
+	glm::right
+};
+static const glm::vec3 DIRECTIONS[3] = {
+	glm::right,
+	glm::up,
+	glm::backward
+};
 
 bool Gizmo::init() {
 	_axis.setSize(GizmoSize, GizmoSize, GizmoSize);
@@ -59,17 +68,6 @@ void Gizmo::setPosition(const glm::vec3& pos) {
 void Gizmo::updateTranslateState() {
 	_mode = GizmoMode::None;
 
-	static const glm::vec3 PLANENORMALS[3] = {
-		glm::backward,
-		glm::up,
-		glm::right
-	};
-
-	static const glm::vec3 DIRECTIONS[3] = {
-		glm::right,
-		glm::up,
-		glm::backward
-	};
 	for (int i = 0; i < 3; i++) {
 		float len;
 		if (!glm::intersectRayPlane(_ray.origin, _ray.direction, _pos, PLANENORMALS[i], len)) {
