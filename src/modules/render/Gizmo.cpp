@@ -87,6 +87,32 @@ void Gizmo::updateTranslateState() {
 	}
 }
 
+bool Gizmo::calculateTranslationDelta(glm::vec3& delta) {
+	if (!isTranslation()) {
+		return false;
+	}
+	const int index = core::enumVal(_buttonMode) - core::enumVal(GizmoMode::TranslateX);
+	const glm::vec3& planeNormal = PLANENORMALS[index];
+	const glm::vec3& direction = DIRECTIONS[index];
+
+	float len;
+	if (!glm::intersectRayPlane(_ray.origin, _ray.direction, _pos, planeNormal, len)) {
+		return false;
+	}
+	const glm::vec3 targetPos = _ray.origin + _ray.direction * glm::abs(len);
+	const glm::vec3 dm = targetPos - _pos;
+	const glm::vec3 rotDir = glm::conjugate(_camera.quaternion()) * direction;
+	const float lengthOnAxis = glm::dot(rotDir, dm);
+	const glm::vec3 moveLength = rotDir * -lengthOnAxis;
+	delta = moveLength - _buttonLastPosition;
+	_buttonLastPosition = moveLength;
+	return true;
+}
+
+bool Gizmo::isTranslation() const {
+	return _buttonMode == GizmoMode::TranslateX || _buttonMode == GizmoMode::TranslateY || _buttonMode == GizmoMode::TranslateZ;
+}
+
 void Gizmo::resetMode() {
 	_pixelPos = glm::ivec2(-1);
 	_buttonLastPosition = glm::vec3(0.0f);
@@ -153,40 +179,6 @@ bool Gizmo::execute(double nowSeconds, const std::function<void(const glm::vec3,
 
 	_buttonLastAction = nowSeconds;
 	callback(delta, _buttonMode);
-	return true;
-}
-
-bool Gizmo::calculateTranslationDelta(glm::vec3& delta) {
-	glm::vec3 planeNormal;
-	glm::vec3 direction;
-	switch (_buttonMode) {
-	case GizmoMode::TranslateX:
-		planeNormal = glm::up;
-		direction = glm::right;
-		break;
-	case GizmoMode::TranslateY:
-		planeNormal = glm::left;
-		direction = glm::up;
-		break;
-	case GizmoMode::TranslateZ:
-		planeNormal = glm::up;
-		direction = glm::backward;
-		break;
-	default:
-		return false;
-	}
-
-	float len;
-	if (!glm::intersectRayPlane(_ray.origin, _ray.direction, _pos, planeNormal, len)) {
-		return false;
-	}
-	const glm::vec3 targetPos = _ray.origin + _ray.direction * glm::abs(len);
-	const glm::vec3 dm = targetPos - _pos;
-	const glm::vec3 rotDir = glm::conjugate(_camera.quaternion()) * direction;
-	const float lengthOnAxis = glm::dot(rotDir, dm);
-	const glm::vec3 moveLength = rotDir * -lengthOnAxis;
-	delta = moveLength - _buttonLastPosition;
-	_buttonLastPosition = moveLength;
 	return true;
 }
 

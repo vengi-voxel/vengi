@@ -37,6 +37,8 @@ private:
 	glm::vec3 _buttonLastPosition { 0.0f };
 	glm::ivec2 _pixelPos { -1 };
 	math::Ray _ray { glm::vec3(0.0f), glm::vec3(0.0f) };
+
+	bool isTranslation() const;
 public:
 	bool handleDown(int32_t key, double pressedMillis) override;
 	bool handleUp(int32_t key, double releasedMillis) override;
