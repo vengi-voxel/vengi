@@ -1116,7 +1116,7 @@ public:
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
-    set_context(context);
+    set_context((CONTEXT*)context);
     set_error_addr(error_addr);
     CONTEXT localCtx; // used when no context is provided
 
