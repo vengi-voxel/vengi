@@ -592,13 +592,13 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	return true;
 }
 
-static inline math::AABB<float> aabb(const voxel::Region& region) {
+static inline math::AABB<float> toAABB(const voxel::Region& region) {
 	const math::AABB<int> intaabb(region.getLowerCorner(), region.getUpperCorner() + 1);
 	return math::AABB<float>(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
 }
 
 void SceneManager::updateGridRenderer(const voxel::Region& region) {
-	_gridRenderer.update(aabb(region));
+	_gridRenderer.update(toAABB(region));
 }
 
 bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {
@@ -800,13 +800,13 @@ void SceneManager::updateAABBMesh() {
 		const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
 		core_assert_always(volume != nullptr);
 		const voxel::Region& region = volume->region();
-		_shapeBuilder.aabb(aabb(region));
+		_shapeBuilder.aabb(toAABB(region));
 	}
 	const voxel::RawVolume* mdl = modelVolume();
 	if (mdl != nullptr) {
 		const voxel::Region& region = mdl->region();
 		_shapeBuilder.setColor(core::Color::White);
-		_shapeBuilder.aabb(aabb(region));
+		_shapeBuilder.aabb(toAABB(region));
 	}
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
@@ -820,7 +820,7 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		} else {
 			const voxel::Region& region = modelVolume()->region();
-			_gridRenderer.render(camera, aabb(region));
+			_gridRenderer.render(camera, toAABB(region));
 		}
 	}
 	if (renderScene) {
@@ -1827,42 +1827,6 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-static bool intersectAABB(const math::AABB<float>& aabb, const math::Ray& ray, float rayLength, float& distance) {
-	glm::vec3 pos1;
-	glm::vec3 pos2;
-	double t_near = -rayLength;
-	double t_far = rayLength;
-
-	glm::vec3 mins = aabb.mins();
-	glm::vec3 maxs = aabb.maxs();
-
-	for (int i = 0; i < 3; i++) {	 // we test slabs in every direction
-		if (ray.direction[i] == 0) { // ray parallel to planes in this direction
-			if (ray.origin[i] < mins[i] || ray.origin[i] > maxs[i]) {
-				return false; // parallel AND outside box : no intersection possible
-			}
-		} else { // ray not parallel to planes in this direction
-			pos1[i] = (mins[i] - ray.origin[i]) / ray.direction[i];
-			pos2[i] = (maxs[i] - ray.origin[i]) / ray.direction[i];
-
-			if (pos1[i] > pos2[i]) { // we want pos1 to hold values for intersection with near plane
-				core::exchange(pos1, pos2);
-			}
-			if (pos1[i] > t_near) {
-				t_near = pos1[i];
-			}
-			if (pos2[i] < t_far) {
-				t_far = pos2[i];
-			}
-			if (t_near > t_far || t_far < 0) {
-				return false;
-			}
-		}
-	}
-	distance = t_far;
-	return true;
-}
-
 bool SceneManager::trace(bool force) {
 	if (_editMode == EditMode::Scene) {
 		if (_sceneModeLayerTrace != -1) {
@@ -1890,7 +1854,8 @@ bool SceneManager::trace(bool force) {
 			const voxel::Region& region = volume->region();
 			const math::Ray& ray = _camera->mouseRay(_mouseCursor);
 			float distance = 0.0f;
-			if (intersectAABB(aabb(region), ray, _camera->farPlane(), distance)) {
+			const math::AABB<float>& aabb = toAABB(region);
+			if (aabb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
 				if (distance < intersectDist) {
 					intersectDist = distance;
 					_sceneModeLayerTrace = idx;
