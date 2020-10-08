@@ -22,7 +22,7 @@ void ViewportController::resetCamera(const voxel::Region& region) {
 	_camera.setTargetDistance(distance * 2.0f);
 	if (_camMode == SceneCameraMode::Free) {
 		const int height = region.getHeightInCells();
-		_camera.setPosition(glm::vec3(-distance, height + distance, -distance));
+		_camera.setPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	} else if (_camMode == SceneCameraMode::Top) {
 		const int height = region.getHeightInCells();
 		_camera.setPosition(glm::vec3(center.x, height + center.y, center.z));
@@ -41,17 +41,8 @@ void ViewportController::update(double deltaFrameSeconds) {
 void ViewportController::init(ViewportController::SceneCameraMode mode) {
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camMode = mode;
-	switch (mode) {
-	case SceneCameraMode::Top:
-	case SceneCameraMode::Front:
-	case SceneCameraMode::Left:
-		// TODO: make ortho
-		_camera.setMode(video::CameraMode::Perspective);
-		break;
-	case SceneCameraMode::Free:
-		_camera.setMode(video::CameraMode::Perspective);
-		break;
-	}
+	// TODO: make ortho if non-free mode
+	_camera.setMode(video::CameraMode::Perspective);
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 }
 
