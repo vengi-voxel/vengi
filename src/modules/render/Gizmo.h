@@ -38,7 +38,6 @@ private:
 	glm::ivec2 _pixelPos { -1 };
 	math::Ray _ray { glm::vec3(0.0f), glm::vec3(0.0f) };
 
-	bool isTranslation() const;
 public:
 	bool handleDown(int32_t key, double pressedMillis) override;
 	bool handleUp(int32_t key, double releasedMillis) override;
@@ -54,6 +53,7 @@ private:
 	bool calculateTranslationDelta(glm::vec3& delta);
 	void updateTranslateState();
 	bool isMode(GizmoMode mode) const;
+	bool isTranslation() const;
 
 public:
 	bool isModelSpace() const;
