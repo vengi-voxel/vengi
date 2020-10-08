@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include <glm/vec3.hpp>
 #include <limits>
 
@@ -165,6 +166,42 @@ public:
 	void shrink(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
 	/// Shrinks this AABB by the amounts specified.
 	void shrink(const glm::tvec3<TYPE>& v3dAmount);
+
+	bool intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, float rayLength, float& distance) const {
+		glm::vec3 pos1;
+		glm::vec3 pos2;
+		double t_near = -rayLength;
+		double t_far = rayLength;
+
+		glm::vec3 minsV = mins();
+		glm::vec3 maxsV = maxs();
+
+		for (int i = 0; i < 3; i++) {	 // we test slabs in every direction
+			if (rayDirection[i] == 0) { // ray parallel to planes in this direction
+				if (rayOrigin[i] < minsV[i] || rayOrigin[i] > maxsV[i]) {
+					return false; // parallel AND outside box : no intersection possible
+				}
+			} else { // ray not parallel to planes in this direction
+				pos1[i] = (minsV[i] - rayOrigin[i]) / rayDirection[i];
+				pos2[i] = (maxsV[i] - rayOrigin[i]) / rayDirection[i];
+
+				if (pos1[i] > pos2[i]) { // we want pos1 to hold values for intersection with near plane
+					core::exchange(pos1, pos2);
+				}
+				if (pos1[i] > t_near) {
+					t_near = pos1[i];
+				}
+				if (pos2[i] < t_far) {
+					t_far = pos2[i];
+				}
+				if (t_near > t_far || t_far < 0) {
+					return false;
+				}
+			}
+		}
+		distance = (float)t_far;
+		return true;
+	}
 private:
 	glm::tvec3<TYPE> _mins {0};
 	glm::tvec3<TYPE> _maxs {0};
