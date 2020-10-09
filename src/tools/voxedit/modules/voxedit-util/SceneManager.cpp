@@ -1720,7 +1720,7 @@ bool SceneManager::extractVolume() {
 	if (n <= 0) {
 		return false;
 	}
-	Log::info("Extract the meshes for %i regions", (int)n);
+	Log::debug("Extract the meshes for %i regions", (int)n);
 	for (size_t i = 0; i < n; ++i) {
 		const voxel::Region& region = _extractRegions[i].region;
 		if (!_volumeRenderer.extractRegion(_extractRegions[i].layer, region)) {
