@@ -696,7 +696,7 @@ void SceneManager::shift(int layerId, const glm::ivec3& m) {
 	voxel::RawVolume* model = volume(layerId);
 	Log::debug("Shift region by %s on layer %i", glm::to_string(m).c_str(), layerId);
 	voxel::Region oldRegion = model->region();
-	_referencePos += m;
+	setReferencePosition(_referencePos + m);
 	_modifier.translate(m);
 	_volumeRenderer.translate(layerId, m);
 	setGizmoPosition();
