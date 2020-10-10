@@ -10,6 +10,7 @@
 
 #include "SceneManager.h"
 #include "image/Image.h"
+#include "video/WindowedApp.h"
 
 namespace voxedit {
 
@@ -50,8 +51,7 @@ void AbstractViewport::resetCamera() {
 }
 
 void AbstractViewport::resize(const glm::ivec2& frameBufferSize) {
-	const float scaleFactor = video::getScaleFactor();
-	const glm::ivec2 windowSize(int(frameBufferSize.x / scaleFactor + 0.5f), int(frameBufferSize.y / scaleFactor + 0.5f));
+	const glm::ivec2 windowSize = video::WindowedApp::getInstance()->windowDimension();
 	_controller.onResize(frameBufferSize, windowSize);
 	_frameBuffer.shutdown();
 
