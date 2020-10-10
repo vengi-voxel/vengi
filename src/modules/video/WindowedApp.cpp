@@ -259,7 +259,7 @@ app::AppState WindowedApp::onInit() {
 	}
 	SDL_Rect displayBounds;
 	SDL_GetDisplayBounds(displayIndex, &displayBounds);
-	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHghDPI);
+	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
 	if (highDPI->boolVal()) {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 		Log::info("Enable high dpi support");
@@ -267,7 +267,7 @@ app::AppState WindowedApp::onInit() {
 		float hdpi = -1.0f;
 		float vdpi = -1.0f;
 		if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0) {
-#ifdef _APPLE_
+#ifdef __APPLE__
 			const float baseDpi = 72.0f;
 #else
 			const float baseDpi = 96.0f;
@@ -380,7 +380,7 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 	core::Var::get(cfg::ClientMultiSampleSamples, "0");
 	core::Var::get(cfg::ClientFullscreen, "true");
-	core::Var::get(cfg::ClientWindowHghDPI, "true", core::CV_READONLY);
+	core::Var::get(cfg::ClientWindowHighDPI, "false", core::CV_READONLY);
 	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER)->setHelp("Render the world with fog");
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientWater, "true", core::CV_SHADER);

@@ -8,16 +8,11 @@
 #include "io/Filesystem.h"
 #include "tb_msg.h"
 #include "tb_types.h"
+#include "video/WindowedApp.h"
 #include <SDL.h>
 #include <stdio.h>
 
 namespace tb {
-
-#ifdef _APPLE_
-const int TB_defaultDpi = 72;
-#else
-const int TB_defaultDpi = 96;
-#endif
 
 double TBSystem::getTimeMS() {
 	Uint64 freq = SDL_GetPerformanceFrequency();
@@ -37,22 +32,18 @@ int TBSystem::getLongClickDelayMS() {
 }
 
 int TBSystem::getPanThreshold() {
-	return 5 * getDPI() / TB_defaultDpi;
+	return 5;
 }
 
 int TBSystem::getPixelsPerLine() {
-	return 40 * getDPI() / TB_defaultDpi;
+	return 40;
 }
 
 int TBSystem::getDPI() {
-#if SDL_VERSION_ATLEAST(2, 0, 4)
-	float ddpi;
-	if (SDL_GetDisplayDPI(0, &ddpi, NULL, NULL) != 0) {
-		return TB_defaultDpi;
-	}
-	return (int)ddpi;
+#ifdef __APPLE__
+	return 72;
 #else
-	return TB_defaultDpi;
+	return 96;
 #endif
 }
 
