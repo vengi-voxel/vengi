@@ -61,11 +61,11 @@ void TBClipboard::empty() {
 }
 
 bool TBClipboard::hasText() {
-	return SDL_HasClipboardText() != 0U;
+	return SDL_HasClipboardText() != SDL_FALSE;
 }
 
 bool TBClipboard::setText(const char *text) {
-	return (0 == SDL_SetClipboardText(text));
+	return SDL_SetClipboardText(text) == 0;
 }
 
 bool TBClipboard::getText(core::String &text) {

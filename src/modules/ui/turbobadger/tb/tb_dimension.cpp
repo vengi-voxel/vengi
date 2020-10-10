@@ -25,7 +25,7 @@ void TBDimensionConverter::setDPI(int srcDpi, int dstDpi) {
 
 void TBDimensionConverter::getDstDPIFilename(const char *filename, TBTempBuffer *tempbuf) const {
 	int dot_pos = 0;
-	for (dot_pos = SDL_strlen(filename) - 1; dot_pos > 0; dot_pos--) {
+	for (dot_pos = (int)SDL_strlen(filename) - 1; dot_pos > 0; dot_pos--) {
 		if (filename[dot_pos] == '.') {
 			break;
 		}
@@ -44,7 +44,7 @@ float TBDimensionConverter::dpToPxF(float dp) const {
 	if (dp <= TB_INVALID_DIMENSION || dp == 0 || !needConversion()) {
 		return dp;
 	}
-	return dp * m_dst_dpi / m_src_dpi;
+	return dp * (float)m_dst_dpi / (float)m_src_dpi;
 }
 
 int TBDimensionConverter::mmToPx(int mm) const {
@@ -55,7 +55,7 @@ float TBDimensionConverter::mmToPxF(float mm) const {
 	if (mm <= TB_INVALID_DIMENSION || mm == 0) {
 		return mm;
 	}
-	return mm * TBSystem::getDPI() / 25.4F;
+	return mm * (float)TBSystem::getDPI() / 25.4F;
 }
 
 int TBDimensionConverter::getPxFromString(const char *str, int defValue) const {
