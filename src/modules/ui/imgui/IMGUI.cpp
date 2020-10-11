@@ -137,8 +137,8 @@ bool DisabledButton(const char *text, bool disabled) {
 	if (disabled) {
 		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4& buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
-		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::brighter(buttonColor));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::brighter(buttonHoveredColor));
+		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::gray(buttonColor));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::gray(buttonHoveredColor));
 		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 	}
 	const bool pressed = ImGui::Button(text);
