@@ -94,7 +94,7 @@ bool Npc::update(long dt) {
 	if (true) {
 		visitVisible([&] (const EntityPtr& e) {
 			AggroMgr& aggro = ai()->getAggroMgr();
-			aggro.addAggro(e->id(), dt / 1000.0);
+			aggro.addAggro(e->id(), (float)((double)dt / 1000.0));
 		});
 	}
 
