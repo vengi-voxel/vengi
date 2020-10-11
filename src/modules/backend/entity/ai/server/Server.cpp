@@ -204,7 +204,6 @@ flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> Ser
 	const TreeNodes& children = node->getChildren();
 	std::vector<bool> currentlyRunning(children.size());
 	node->getRunningChildren(ai, currentlyRunning);
-	const int64_t aiTime = ai->_time;
 	const size_t length = children.size();
 	core::DynamicArray<flatbuffers::Offset<ai::StateNode>> offsets;
 	offsets.reserve(length);
@@ -215,12 +214,11 @@ flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> Ser
 		const core::String conditionStr = condition ? condition->getNameWithConditions(ai) : "";
 		const bool conditionState = condition ? condition->result() : false;
 		const int64_t lastRun = childNode->getLastExecMillis(ai);
-		const int64_t delta = lastRun == -1 ? -1 : aiTime - lastRun;
 		ai::TreeNodeStatus status = childNode->getLastStatus(ai);
 		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> childNodeChildren = addChildren(childNode, ai);
 		flatbuffers::Offset<ai::StateNode> child = ai::CreateStateNode(_characterDetailsFBB,
 			nodeId, _characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()), conditionState,
-			childNodeChildren, delta, status);
+			childNodeChildren, lastRun, status);
 		offsets.push_back(child);
 	}
 	return _characterDetailsFBB.CreateVector(offsets.data(), offsets.size());
@@ -243,7 +241,7 @@ void Server::broadcastCharacterDetails(const Zone* zone) {
 		const core::String conditionStr = condition ? condition->getNameWithConditions(ai) : "";
 		const bool conditionState = condition ? condition->result() : false;
 		ai::TreeNodeStatus status = node->getLastStatus(ai);
-		const int64_t lastRun = _time - node->getLastExecMillis(ai);
+		const int64_t lastRun = node->getLastExecMillis(ai);
 		flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ai::StateNode>>> children = addChildren(node, ai);
 		flatbuffers::Offset<ai::StateNode> rootnode = ai::CreateStateNode(_characterDetailsFBB, nodeId,
 			_characterDetailsFBB.CreateString(conditionStr.c_str(), conditionStr.size()), conditionState, children, lastRun, status);
