@@ -28,15 +28,9 @@ public:
 	float randomBinomial(float max = 1.0f) const;
 
 	template<typename I>
-	void shuffle(I begin, I end) {
-		std::shuffle(begin, end, _engine);
-	}
-
-	template<typename I>
 	I randomElement(I begin, I end) const {
 		const int n = core::distance(begin, end);
-		std::uniform_int_distribution<> dis(0, n - 1);
-		core::next(begin, dis(_engine));
+		core::next(begin, random(0, n - 1));
 		return begin;
 	}
 
