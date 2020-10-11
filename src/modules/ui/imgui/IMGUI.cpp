@@ -113,7 +113,7 @@ void TableKeyValue(const char *key, const char *msg, ...) {
 }
 
 void TableKeyValue(const char *key, const core::String &value) {
-	ImGui::TableNextRow();
+	ImGui::TableNextColumn();
 	ImGui::TextUnformatted(key);
 	ImGui::TableNextColumn();
 	ImGui::TextUnformatted(value.c_str());
