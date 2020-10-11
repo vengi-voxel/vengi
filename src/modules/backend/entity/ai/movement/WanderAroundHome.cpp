@@ -32,10 +32,10 @@ MoveVector WanderAroundHome::execute(const AIPtr& ai, float speed) const {
 	const glm::vec3& pos = npc.pos();
 	if (glm::distance2(glm::vec2(target.x, target.z), glm::vec2(pos.x, pos.z)) <= 1.0f) {
 		math::Random random(npc.id() + (unsigned int)npc.time());
-		const float radians = random.randomf(0.0f, glm::two_pi<float>());
-		const glm::vec3 relNewTarget(glm::cos(radians) * _maxDistance, 0.0f, glm::sin(radians) * _maxDistance);
+		const float theta = random.randomf(0.0f, glm::two_pi<float>());
 		const glm::vec3& home = npc.homePosition();
-		npc.setTargetPosition(relNewTarget + home);
+		const glm::vec3 newTarget(home.x + glm::cos(theta) * _maxDistance, home.y, home.z + glm::sin(theta) * _maxDistance);
+		npc.setTargetPosition(newTarget);
 	}
 	return seek(ai->getCharacter()->getPosition(), target, speed);
 }
