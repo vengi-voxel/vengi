@@ -1,4 +1,4 @@
-// dear imgui, v1.79 WIP
+// dear imgui, v1.79
 // (widgets code)
 
 /*
@@ -1072,7 +1072,8 @@ bool ImGui::Checkbox(const char* label, bool* v)
     RenderNavHighlight(total_bb, id);
     RenderFrame(check_bb.Min, check_bb.Max, GetColorU32((held && hovered) ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg), true, style.FrameRounding);
     ImU32 check_col = GetColorU32(ImGuiCol_CheckMark);
-    if (window->DC.ItemFlags & ImGuiItemFlags_MixedValue)
+    bool mixed_value = (window->DC.ItemFlags & ImGuiItemFlags_MixedValue) != 0;
+    if (mixed_value)
     {
         // Undocumented tristate/mixed/indeterminate checkbox (#2644)
         ImVec2 pad(ImMax(1.0f, IM_FLOOR(square_sz / 3.6f)), ImMax(1.0f, IM_FLOOR(square_sz / 3.6f)));
@@ -1085,7 +1086,7 @@ bool ImGui::Checkbox(const char* label, bool* v)
     }
 
     if (g.LogEnabled)
-        LogRenderedText(&total_bb.Min, *v ? "[x]" : "[ ]");
+        LogRenderedText(&total_bb.Min, mixed_value ? "[~]" : *v ? "[x]" : "[ ]");
     if (label_size.x > 0.0f)
         RenderText(ImVec2(check_bb.Max.x + style.ItemInnerSpacing.x, check_bb.Min.y + style.FramePadding.y), label);
 
@@ -1096,7 +1097,21 @@ bool ImGui::Checkbox(const char* label, bool* v)
 bool ImGui::CheckboxFlags(const char* label, unsigned int* flags, unsigned int flags_value)
 {
     bool v = ((*flags & flags_value) == flags_value);
-    bool pressed = Checkbox(label, &v);
+    bool pressed;
+    if (v == false && (*flags & flags_value) != 0)
+    {
+        // Mixed value (FIXME: find a way to expose neatly to Checkbox?)
+        ImGuiWindow* window = GetCurrentWindow();
+        const ImGuiItemFlags backup_item_flags = window->DC.ItemFlags;
+        window->DC.ItemFlags |= ImGuiItemFlags_MixedValue;
+        pressed = Checkbox(label, &v);
+        window->DC.ItemFlags = backup_item_flags;
+    }
+    else
+    {
+        // Regular checkbox
+        pressed = Checkbox(label, &v);
+    }
     if (pressed)
     {
         if (v)
@@ -7833,6 +7848,7 @@ bool ImGui::TabItemLabelAndCloseButton(ImDrawList* draw_list, const ImRect& bb, 
         text_pixel_clip_bb.Max.x -= close_button_sz;
     }
 
+    // FIXME: if FramePadding is noticeably large, ellipsis_max_x will be wrong here (e.g. #3497), maybe for consistency that parameter of RenderTextEllipsis() shouldn't exist..
     float ellipsis_max_x = close_button_visible ? text_pixel_clip_bb.Max.x : bb.Max.x - 1.0f;
     RenderTextEllipsis(draw_list, text_ellipsis_clip_bb.Min, text_ellipsis_clip_bb.Max, text_pixel_clip_bb.Max.x, ellipsis_max_x, label, NULL, &label_size);
 
@@ -8541,6 +8557,14 @@ bool    ImGui::BeginTableEx(const char* name, ImGuiID id, int columns_count, ImG
         table->RawData.resize(0);
     if (table->RawData.Size == 0)
     {
+        // For reference, the total _allocation count_ for a table is:
+        // + 0 (for ImGuiTable instance, we sharing allocation in g.Tables pool)
+        // + 1 (for table->RawData allocated below)
+        // + 1 (for table->Splitter._Channels)
+        // + 2 * active_channels_count (for ImDrawCmd and ImDrawIdx buffers inside channels)
+        // Where active_channels_count is variable but often == columns_count or columns_count + 1, see TableUpdateDrawChannels() for details.
+        // Unused channels don't perform their +2 allocations.
+
         // Allocate single buffer for our arrays
         ImSpanAllocator<3> span_allocator;
         span_allocator.ReserveBytes(0, columns_count * sizeof(ImGuiTableColumn));
@@ -9186,7 +9210,7 @@ void    ImGui::TableUpdateBorders(ImGuiTable* table)
         if (column->Flags & (ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoDirectResize_))
             continue;
 
-        // ImGuiTableFlags_NoBordersInBodyUntilResize will be honored in TableDrawBorders() 
+        // ImGuiTableFlags_NoBordersInBodyUntilResize will be honored in TableDrawBorders()
         const float border_y2_hit = (table->Flags & ImGuiTableFlags_NoBordersInBody) ? hit_y2_head : hit_y2_body;
         if ((table->Flags & ImGuiTableFlags_NoBordersInBody) && table->IsUsingHeaders == false)
             continue;
