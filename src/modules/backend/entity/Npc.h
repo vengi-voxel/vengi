@@ -11,6 +11,7 @@
 #include "backend/ForwardDecl.h"
 #include "backend/entity/EntityId.h"
 #include "backend/network/ServerMessageSender.h"
+#include "math/Random.h"
 
 #include <atomic>
 
@@ -26,6 +27,7 @@ private:
 	static std::atomic<EntityId> _nextNpcId;
 	glm::vec3 _homePosition;
 	glm::vec3 _targetPosition;
+	math::Random _random;
 	AIPtr _ai;
 	AICharacterPtr _aiChr;
 	long _time = 0;
@@ -56,6 +58,8 @@ public:
 	void shutdown() override;
 	long time() const;
 
+	math::Random& random();
+
 	void setHomePosition(const glm::vec3& pos);
 	const glm::vec3& homePosition() const;
 	void setTargetPosition(const glm::vec3& pos);
@@ -78,6 +82,10 @@ public:
 
 	bool update(long dt) override;
 };
+
+inline math::Random& Npc::random() {
+	return _random;
+}
 
 inline void Npc::setHomePosition(const glm::vec3& pos) {
 	_homePosition = pos;

@@ -27,6 +27,7 @@ Npc::Npc(network::EntityType type, const TreeNodePtr& behaviour,
 		Super(_nextNpcId++, map, messageSender, timeProvider, containerProvider),
 		_cooldowns(timeProvider, cooldownProvider) {
 	_entityType = type;
+	_random.setSeed((unsigned int)_entityId);
 	_ai = std::make_shared<AI>(behaviour);
 	_aiChr = core::make_shared<AICharacter>(_entityId, *this);
 	_ai->setCharacter(_aiChr);
