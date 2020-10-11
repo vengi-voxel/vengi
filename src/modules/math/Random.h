@@ -6,7 +6,6 @@
 
 #include "core/Algorithm.h"
 #include <random>
-#include <algorithm>
 #include <stdlib.h>
 
 namespace math {
