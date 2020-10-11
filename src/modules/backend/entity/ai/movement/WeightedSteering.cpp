@@ -6,6 +6,7 @@
 #include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/common/Math.h"
 #include "core/Assert.h"
+#include <glm/common.hpp>
 #include <glm/gtc/constants.hpp>
 
 namespace backend {
@@ -41,7 +42,7 @@ MoveVector WeightedSteering::execute (const AIPtr& ai, float speed) const {
 	}
 
 	const float scale = 1.0f / totalWeight;
-	return MoveVector(vecBlended * scale, fmodf(angularBlended * scale, glm::two_pi<float>()), true);
+	return MoveVector(vecBlended * scale, glm::mod(angularBlended * scale, glm::two_pi<float>()), true);
 }
 
 }
