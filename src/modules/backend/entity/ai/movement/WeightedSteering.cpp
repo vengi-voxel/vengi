@@ -5,7 +5,9 @@
 #include "WeightedSteering.h"
 #include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/common/Math.h"
+#include "common/MoveVector.h"
 #include "core/Assert.h"
+#include "core/Log.h"
 #include <glm/common.hpp>
 #include <glm/gtc/constants.hpp>
 
@@ -25,9 +27,11 @@ MoveVector WeightedSteering::execute (const AIPtr& ai, float speed) const {
 	float totalWeight = 0.0f;
 	glm::vec3 vecBlended(0.0f);
 	float angularBlended = 0.0f;
+	MoveVectorState state = MoveVectorState::Invalid;
 	for (const WeightedData& wd : _steerings) {
 		const float weight = wd.weight;
 		const MoveVector& mv = wd.steering->execute(ai, speed);
+		state = mv.state();
 		if (!mv.isValid()) {
 			continue;
 		}
@@ -37,12 +41,15 @@ MoveVector WeightedSteering::execute (const AIPtr& ai, float speed) const {
 		totalWeight += weight;
 	}
 
-	if (totalWeight <= 0.0000001f) {
+	if (state == MoveVectorState::Invalid) {
 		return MoveVector::Invalid;
+	}
+	if (state == MoveVectorState::TargetReached) {
+		return MoveVector::TargetReached;
 	}
 
 	const float scale = 1.0f / totalWeight;
-	return MoveVector(vecBlended * scale, glm::mod(angularBlended * scale, glm::two_pi<float>()), true);
+	return MoveVector(vecBlended * scale, glm::mod(angularBlended * scale, glm::two_pi<float>()));
 }
 
 }

@@ -25,7 +25,7 @@ MoveVector Wander::execute (const AIPtr& ai, float speed) const {
 	backend::Npc& npc = getNpc(ai);
 	const float orientation = ai->getCharacter()->getOrientation();
 	const glm::vec3& v = fromRadians(orientation);
-	return {v * speed, npc.random().randomBinomial() * _rotation, true};
+	return MoveVector(v * speed, npc.random().randomBinomial() * _rotation);
 }
 
 }

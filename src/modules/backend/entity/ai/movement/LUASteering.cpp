@@ -81,7 +81,7 @@ MoveVector LUASteering::executeLUA(const AIPtr& entity, float speed) const {
 
 	// reset stack
 	lua_pop(_s, lua_gettop(_s));
-	return MoveVector(glm::vec3((float)x, (float)y, (float)z), (float)rotation, true);
+	return MoveVector(glm::vec3((float)x, (float)y, (float)z), (float)rotation);
 }
 
 LUASteering::LUASteering(lua_State* s, const core::String& type) :

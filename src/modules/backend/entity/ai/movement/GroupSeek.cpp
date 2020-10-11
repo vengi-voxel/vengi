@@ -17,7 +17,7 @@ GroupSeek::GroupSeek(const core::String& parameters) :
 MoveVector GroupSeek::execute (const AIPtr& ai, float speed) const {
 	const Zone* zone = ai->getZone();
 	if (zone == nullptr) {
-		return MoveVector(glm::vec3(), 0.0f, false);
+		return MoveVector::Invalid;
 	}
 	glm::vec3 target;
 	if (!zone->getGroupMgr().getPosition(_groupId, target)) {

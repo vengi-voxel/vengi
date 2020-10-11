@@ -7,6 +7,7 @@
 #include "backend/entity/ai/zone/Zone.h"
 #include "backend/entity/ai/common/Math.h"
 #include "backend/entity/ai/ICharacter.h"
+#include "common/MoveVector.h"
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -35,11 +36,11 @@ MoveVector ISteering::seek(const glm::vec3& pos, const glm::vec3& target, float 
 	const glm::vec3& dist = target - pos;
 	const float dot = glm::length2(dist);
 	if (dot <= glm::epsilon<float>()) {
-		return MoveVector::Invalid;
+		return MoveVector::TargetReached;
 	}
 	const glm::vec3& v = dist * glm::inversesqrt(dot);
 	const float orientation = angle(v);
-	return {v * speed, orientation};
+	return MoveVector(v * speed, orientation);
 }
 
 }

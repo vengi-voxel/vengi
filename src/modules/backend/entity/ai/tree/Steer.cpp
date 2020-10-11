@@ -44,16 +44,20 @@ ai::TreeNodeStatus Steer::doAction(const AIPtr& entity, int64_t deltaMillis) {
 	const ICharacterPtr& chr = entity->getCharacter();
 	const double speed = chr->getCurrent(attrib::Type::SPEED);
 	const MoveVector& mv = _w.execute(entity, (float)speed);
-	const glm::vec3& direction = mv.getVector();
+	if (mv.isTargetReached()) {
+		return ai::TreeNodeStatus::FINISHED;
+	}
 	if (!mv.isValid()) {
 		return ai::TreeNodeStatus::FAILED;
 	}
-	glm_assert_vec3(direction);
 
-	const float deltaSeconds = static_cast<float>(deltaMillis) / 1000.0f;
+	const glm::vec3& direction = mv.getVector();
 	const glm::vec3& pos = chr->getPosition();
+	const float deltaSeconds = static_cast<float>(deltaMillis) / 1000.0f;
+	glm_assert_vec3(direction);
 	const glm::vec3 newPos = pos + (direction * deltaSeconds);
 	chr->setPosition(newPos);
+
 	const float src = chr->getOrientation() - glm::pi<float>();
 	const float dest = mv.getRotation() - glm::pi<float>();
 	const float lerpedRot = glm::lerp(src, dest, deltaSeconds) + glm::pi<float>();
