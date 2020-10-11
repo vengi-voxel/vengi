@@ -95,6 +95,7 @@ public:
 	static unsigned int getBGRA(const glm::vec4& color);
 	static void getHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
 
+	static glm::vec4 gray(const glm::vec4&);
 	static glm::vec4 alpha(const glm::vec4&, float alpha);
 	static float brightness(const glm::vec4&);
 	static float intensity(const glm::vec4&);
