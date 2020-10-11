@@ -10,6 +10,7 @@
 #include "core/GLM.h"
 #include "core/Assert.h"
 #include "core/collection/DynamicArray.h"
+#include <glm/gtx/compatibility.hpp>
 #include <glm/gtc/constants.hpp>
 
 namespace backend {
@@ -53,7 +54,10 @@ ai::TreeNodeStatus Steer::doAction(const AIPtr& entity, int64_t deltaMillis) {
 	const glm::vec3& pos = chr->getPosition();
 	const glm::vec3 newPos = pos + (direction * deltaSeconds);
 	chr->setPosition(newPos);
-	chr->setOrientation(fmodf(chr->getOrientation() + mv.getRotation() * deltaSeconds, glm::two_pi<float>()));
+	const float src = chr->getOrientation() - glm::pi<float>();
+	const float dest = mv.getRotation() - glm::pi<float>();
+	const float lerpedRot = glm::lerp(src, dest, deltaSeconds) + glm::pi<float>();
+	chr->setOrientation(lerpedRot);
 	return ai::TreeNodeStatus::FINISHED;
 }
 
