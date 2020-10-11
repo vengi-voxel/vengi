@@ -28,27 +28,16 @@ WanderAroundHome::WanderAroundHome(const core::String& parameter) :
 
 MoveVector WanderAroundHome::execute(const AIPtr& ai, float speed) const {
 	backend::Npc& npc = getNpc(ai);
-	const glm::vec3& target = npc.homePosition();
+	const glm::vec3& target = npc.targetPosition();
 	const glm::vec3& pos = npc.pos();
-	if (glm::all(glm::epsilonEqual(pos, target, 0.000001f))) {
-		return MoveVector::Invalid;
+	if (glm::distance2(glm::vec2(target.x, target.z), glm::vec2(pos.x, pos.z)) <= 1.0f) {
+		math::Random random(npc.id() + (unsigned int)npc.time());
+		const float radians = random.randomf(0.0f, glm::two_pi<float>());
+		const glm::vec3 relNewTarget(glm::cos(radians) * _maxDistance, 0.0f, glm::sin(radians) * _maxDistance);
+		const glm::vec3& home = npc.homePosition();
+		npc.setTargetPosition(relNewTarget + home);
 	}
-	glm::vec3 dist;
-	const float homeDistance2 = glm::distance2(pos, target);
-	if (homeDistance2 > _maxDistance * _maxDistance) {
-		dist = target - pos;
-	} else {
-		dist = pos - target;
-	}
-	const float dot = glm::length2(dist);
-	if (dot <= glm::epsilon<float>()) {
-		return MoveVector::Invalid;
-	}
-	const glm::vec3& dir = dist * glm::inversesqrt(dot);
-	glm_assert_vec3(dir);
-	math::Random random;
-	const float orientation = angle(dir) + random.randomBinomial() * glm::radians(3.0f);
-	return {dir * speed, orientation, true};
+	return seek(ai->getCharacter()->getPosition(), target, speed);
 }
 
 }

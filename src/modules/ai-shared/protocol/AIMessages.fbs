@@ -117,6 +117,8 @@ table StateNode {
 table State {
 	character_id:int;
 	position:Vec3 (required);
+	home_position:Vec3 (required);
+	target_position:Vec3 (required);
 	orientation:float;
 	meta_attributes:[MapEntry] (required);
 	attrib:[AttribEntry] (required);

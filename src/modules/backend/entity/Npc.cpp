@@ -58,8 +58,10 @@ void Npc::init(const glm::ivec3* pos) {
 	Log::info("spawn character %i with behaviour tree %s at position %i:%i:%i",
 			ai()->getId(), ai()->getBehaviour()->getName().c_str(),
 			randomPos.x, randomPos.y, randomPos.z);
-	setHomePosition(randomPos);
-	_aiChr->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
+	const glm::vec3 spawnPos(randomPos.x, randomPos.y, randomPos.z);
+	setHomePosition(spawnPos);
+	setTargetPosition(spawnPos);
+	_aiChr->setPosition(spawnPos);
 	init();
 }
 
@@ -82,6 +84,7 @@ bool Npc::die() {
 
 bool Npc::update(long dt) {
 	core_trace_scoped(NpcUpdate);
+	_time += dt;
 	if (!Super::update(dt)) {
 		return false;
 	}
@@ -118,7 +121,7 @@ void Npc::updateAIState() {
 	}
 }
 
-bool Npc::route(const glm::ivec3& target) {
+bool Npc::route(const glm::vec3& target) {
 #if 0
 	std::list<glm::ivec3> result;
 	const glm::vec3& pos = _aiChr->getPosition();
@@ -128,6 +131,7 @@ bool Npc::route(const glm::ivec3& target) {
 		return false;
 	}
 	// TODO: use the route
+	setTargetPosition(target);
 #endif
 	return true;
 }

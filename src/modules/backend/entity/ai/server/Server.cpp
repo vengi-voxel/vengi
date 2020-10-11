@@ -3,7 +3,9 @@
  */
 
 #include "Server.h"
+#include "AICharacter.h"
 #include "AIMessages_generated.h"
+#include "Npc.h"
 #include "SelectHandler.h"
 #include "PauseHandler.h"
 #include "ResetHandler.h"
@@ -111,7 +113,12 @@ void Server::broadcastState(const Zone* zone) {
 	auto func = [&] (const AIPtr& ai) {
 		const ICharacterPtr& chr = ai->getCharacter();
 		const glm::vec3& chrPosition = chr->getPosition();
+		const backend::Npc& npc = getNpc(ai);
+		const glm::vec3& chrHomePosition = npc.homePosition();
+		const glm::vec3& chrTargetPosition = npc.targetPosition();
 		const ai::Vec3 position(chrPosition.x, chrPosition.y, chrPosition.z);
+		const ai::Vec3 targetPosition(chrTargetPosition.x, chrTargetPosition.y, chrTargetPosition.z);
+		const ai::Vec3 homePosition(chrHomePosition.x, chrHomePosition.y, chrHomePosition.z);
 		const ai::CharacterMetaAttributes& chrMetaAttributes = chr->getMetaAttributes();
 		auto metaAttributeIter = chrMetaAttributes.begin();
 		auto metaAttributes = _stateFBB.CreateVector<flatbuffers::Offset<ai::MapEntry>>(chrMetaAttributes.size(),
@@ -129,7 +136,7 @@ void Server::broadcastState(const Zone* zone) {
 				attrib::Type attribType = (attrib::Type)i;
 				return ai::CreateAttribEntry(_stateFBB, (int)i, chrShadowAttributes.current(attribType), chrShadowAttributes.max(attribType));
 			});
-		offsets.push_back(ai::CreateState(_stateFBB, chr->getId(), &position, chr->getOrientation(), metaAttributes, attributes));
+		offsets.push_back(ai::CreateState(_stateFBB, chr->getId(), &position, &homePosition, &targetPosition, chr->getOrientation(), metaAttributes, attributes));
 	};
 	zone->execute(func);
 	auto states = _stateFBB.CreateVector(offsets.data(), offsets.size());

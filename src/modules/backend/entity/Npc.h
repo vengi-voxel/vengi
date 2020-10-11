@@ -24,9 +24,11 @@ private:
 	using Super = Entity;
 	friend class AICharacter;
 	static std::atomic<EntityId> _nextNpcId;
-	glm::ivec3 _homePosition;
+	glm::vec3 _homePosition;
+	glm::vec3 _targetPosition;
 	AIPtr _ai;
 	AICharacterPtr _aiChr;
+	long _time = 0;
 
 	// cooldowns
 	cooldown::CooldownMgr _cooldowns;
@@ -52,10 +54,13 @@ public:
 
 	void init(const glm::ivec3* pos);
 	void shutdown() override;
+	long time() const;
 
-	void setHomePosition(const glm::ivec3& pos);
-	const glm::ivec3& homePosition() const;
-	bool route(const glm::ivec3& target);
+	void setHomePosition(const glm::vec3& pos);
+	const glm::vec3& homePosition() const;
+	void setTargetPosition(const glm::vec3& pos);
+	const glm::vec3& targetPosition() const;
+	bool route(const glm::vec3& target);
 	const AIPtr& ai();
 
 	cooldown::CooldownMgr& cooldownMgr();
@@ -74,12 +79,24 @@ public:
 	bool update(long dt) override;
 };
 
-inline void Npc::setHomePosition(const glm::ivec3& pos) {
+inline void Npc::setHomePosition(const glm::vec3& pos) {
 	_homePosition = pos;
 }
 
-inline const glm::ivec3& Npc::homePosition() const {
+inline const glm::vec3& Npc::homePosition() const {
 	return _homePosition;
+}
+
+inline long Npc::time() const {
+	return _time;
+}
+
+inline void Npc::setTargetPosition(const glm::vec3& pos) {
+	_targetPosition = pos;
+}
+
+inline const glm::vec3& Npc::targetPosition() const {
+	return _targetPosition;
 }
 
 inline const AIPtr& Npc::ai() {
