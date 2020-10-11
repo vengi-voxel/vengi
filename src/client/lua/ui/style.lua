@@ -48,7 +48,6 @@ module.style = {
 		["hover"] = "#2d2d2d",
 		["text background"] = "#ff0000",
 		["cursor normal"] = "#2d2d2d",
-		["cursor normal"] = "#2d2d2d",
 	},
 	window = {
 		["header"] = {
