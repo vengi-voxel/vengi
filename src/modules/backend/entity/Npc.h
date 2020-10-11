@@ -30,7 +30,6 @@ private:
 	math::Random _random;
 	AIPtr _ai;
 	AICharacterPtr _aiChr;
-	long _time = 0;
 
 	// cooldowns
 	cooldown::CooldownMgr _cooldowns;
@@ -56,7 +55,6 @@ public:
 
 	void init(const glm::ivec3* pos);
 	void shutdown() override;
-	long time() const;
 
 	math::Random& random();
 
@@ -93,10 +91,6 @@ inline void Npc::setHomePosition(const glm::vec3& pos) {
 
 inline const glm::vec3& Npc::homePosition() const {
 	return _homePosition;
-}
-
-inline long Npc::time() const {
-	return _time;
 }
 
 inline void Npc::setTargetPosition(const glm::vec3& pos) {
