@@ -63,10 +63,10 @@ public:
 	/**
 	 * @brief Gives access to the last error state of the @c ITreeLoader
 	 */
-	core::String getError() const;
+	const core::String& getError() const;
 };
 
-inline core::String ITreeLoader::getError() const {
+inline const core::String& ITreeLoader::getError() const {
 	return _error;
 }
 
