@@ -42,8 +42,8 @@ public:
 	/**
 	 * @brief Register a new @c TreeNode as behaviour tree with the specified @c name
 	 *
-	 * @param name The name to register the given root node under
-	 * @param root The @c TreeNode that will act as behaviour tree root node
+	 * @param[in] name The name to register the given root node under
+	 * @param[in] root The @c TreeNode that will act as behaviour tree root node
 	 *
 	 * @return @c true if the registration process went fine, @c false otherwise (there is already
 	 * a behaviour tree registered with the same name or the given root node is invalid.
@@ -51,7 +51,10 @@ public:
 	bool addTree(const core::String& name, const TreeNodePtr& root);
 
 	/**
-	 * @brief Loads on particular behaviour tree.
+	 * @brief Searches a particular behaviour tree.
+	 * @note The tree must already be registered with the given name
+	 * @param[in] name The name of the tree it was registered with
+	 * @sa addTree()
 	 */
 	TreeNodePtr load(const core::String &name);
 
