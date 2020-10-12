@@ -26,15 +26,14 @@ ai::TreeNodeStatus PrioritySelector::execute(const AIPtr& entity, int64_t deltaM
 		const ai::TreeNodeStatus result = child->execute(entity, deltaMillis);
 		if (result == ai::TreeNodeStatus::RUNNING) {
 			setSelectorState(entity, static_cast<int>(i));
-		} else if (result == ai::TreeNodeStatus::CANNOTEXECUTE || result == ai::TreeNodeStatus::FAILED) {
-			child->resetState(entity);
-			setSelectorState(entity, AI_NOTHING_SELECTED);
-			continue;
 		} else {
 			setSelectorState(entity, AI_NOTHING_SELECTED);
 		}
 		child->resetState(entity);
 		overallResult = result;
+		if (result == ai::TreeNodeStatus::CANNOTEXECUTE || result == ai::TreeNodeStatus::FAILED) {
+			continue;
+		}
 		break;
 	}
 	for (++i; i < size; ++i) {
