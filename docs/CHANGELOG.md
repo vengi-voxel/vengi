@@ -15,6 +15,10 @@ VoxEdit:
 
    - Improved scene edit mode
 
+Tools:
+
+   - Rewrote the ai debugger
+
 ## 0.0.9 (2020-10-03)
 
 General:

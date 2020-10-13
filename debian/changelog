@@ -9,6 +9,9 @@ vengi (0.0.10.0-1) UNRELEASED; urgency=low
   * VoxEdit:
   * Improved scene edit mode
 
+  * Tools:
+  * Rewrote the ai debugger
+
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Wed, 3 Oct 2020 10:28:15 +0200
 
 vengi (0.0.9.0-1) unstable; urgency=low
