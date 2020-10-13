@@ -557,8 +557,8 @@ void AIDebug::dbgTree() {
 	if (!hasDetails()) {
 		return;
 	}
-	const ImVec2 size(frameBufferWidth(), 200);
-	const ImVec2 pos(0, frameBufferHeight() - size.y);
+	const ImVec2 size((float)frameBufferWidth(), 200.0f);
+	const ImVec2 pos(0.0f, (float)frameBufferHeight() - size.y);
 	ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Behaviourtree")) {
@@ -585,6 +585,10 @@ float AIDebug::dbgMapZoom() const {
 	return _zoom;
 }
 
+ImVec2 AIDebug::dbgMapCalculateOffsetPos(float x, float y) const {
+	return ImVec2(-x * dbgMapZoom() + _frameBufferDimension.x / 2.0f, -y * dbgMapZoom() + _frameBufferDimension.y / 2.0f);
+}
+
 ImVec2 AIDebug::dbgMapConvertEntPos(float x, float y) const {
 	return ImVec2(dbgMapZoom() * (_dbgMapOffset.x + x), dbgMapZoom() * (_dbgMapOffset.y + y));
 }
@@ -597,7 +601,7 @@ void AIDebug::dbgMap() {
 		for (const auto &e : *_stateWorldMsg->states()) {
 			const bool selected = isSelected(e->character_id());
 			if (selected) {
-				_dbgMapOffset = ImVec2(-e->position()->x() * dbgMapZoom() + _frameBufferDimension.x / 2.0f, -e->position()->z() * dbgMapZoom() + _frameBufferDimension.y / 2.0f);
+				_dbgMapOffset = dbgMapCalculateOffsetPos(e->position()->x(), e->position()->z());
 				break;
 			}
 		}

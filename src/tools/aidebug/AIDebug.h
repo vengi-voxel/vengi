@@ -97,6 +97,7 @@ private:
 	void dbgBar();
 	float dbgMapZoom() const;
 	ImVec2 dbgMapConvertEntPos(float x, float y) const;
+	ImVec2 dbgMapCalculateOffsetPos(float x, float y) const;
 	bool dbgMapIsVisible(const ImVec2& pos, const ImVec2& mapMins, const ImVec2& mapMaxs) const;
 	void dbgMap();
 	void dbgStats();
