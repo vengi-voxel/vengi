@@ -577,22 +577,6 @@ void AIDebug::dbgTree() {
 	ImGui::End();
 }
 
-bool AIDebug::dbgMapIsVisible(const ImVec2& pos, const ImVec2& mapMins, const ImVec2& mapMaxs) const {
-	return pos.x > mapMins.x && pos.y > mapMins.y && pos.x < mapMaxs.x && pos.y < mapMaxs.y;
-}
-
-float AIDebug::dbgMapZoom() const {
-	return _zoom;
-}
-
-ImVec2 AIDebug::dbgMapCalculateOffsetPos(float x, float y) const {
-	return ImVec2(-x * dbgMapZoom() + _frameBufferDimension.x / 2.0f, -y * dbgMapZoom() + _frameBufferDimension.y / 2.0f);
-}
-
-ImVec2 AIDebug::dbgMapConvertEntPos(float x, float y) const {
-	return ImVec2(dbgMapZoom() * (_dbgMapOffset.x + x), dbgMapZoom() * (_dbgMapOffset.y + y));
-}
-
 void AIDebug::dbgMap() {
 	if (_stateWorldMsg == nullptr || _stateWorldMsg->states() == nullptr) {
 		return;
@@ -601,7 +585,7 @@ void AIDebug::dbgMap() {
 		for (const auto &e : *_stateWorldMsg->states()) {
 			const bool selected = isSelected(e->character_id());
 			if (selected) {
-				_dbgMapOffset = dbgMapCalculateOffsetPos(e->position()->x(), e->position()->z());
+				_map.centerAtEntPos(e->position()->x(), e->position()->z());
 				break;
 			}
 		}
@@ -621,15 +605,15 @@ void AIDebug::dbgMap() {
 	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 	const ImVec2 mapMins(0.0f, 0.0f);
 	const ImVec2 mapMaxs(_frameBufferDimension.x, _frameBufferDimension.y);
+	_map.setMinsMaxs(mapMins, mapMaxs);
 	if (ImGui::Begin("##map", nullptr, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings)) {
 		dbgBar();
 
 		if (ImGui::IsMouseDragging(ImGuiMouseButton_Right, 0)) {
-			_dbgMapOffset.x += _mouseRelativePos.x;
-			_dbgMapOffset.y += _mouseRelativePos.y;
+			_map.scroll(_mouseRelativePos);
 		}
 
-		const float radius = 10.0f * dbgMapZoom();
+		const float radius = 10.0f * _map.zoom();
 		const ImVec2 entSize(radius * 2.0f);
 		ImDrawList *draw = ImGui::GetWindowDrawList();
 		const ImVec2& clipRectMins = ImGui::GetCursorPos();
@@ -638,8 +622,8 @@ void AIDebug::dbgMap() {
 		clipRectMaxs.y += clipRectMins.y;
 		draw->PushClipRect(clipRectMins, clipRectMaxs, true);
 		for (const auto &e : *_stateWorldMsg->states()) {
-			const ImVec2& entPos = dbgMapConvertEntPos(e->position()->x(), e->position()->z());
-			if (!dbgMapIsVisible(entPos, mapMins, mapMaxs)) {
+			const ImVec2& entPos = _map.entPosToMap(e->position()->x(), e->position()->z());
+			if (!_map.isVisible(entPos, mapMins, mapMaxs)) {
 				continue;
 			}
 			const float orientation = e->orientation();
@@ -684,18 +668,18 @@ void AIDebug::dbgMap() {
 			draw->AddCircle(entPos, radius, col, 12, 1.0f);
 			draw->AddLine(entPos, {entPos.x + dir.x * radius * 2.0f, entPos.y + dir.y * radius * 2.0f}, col, 1.0f);
 			if (selected) {
-				const ImVec2& homePos = dbgMapConvertEntPos(e->home_position()->x(), e->home_position()->z());
-				const ImVec2& targetPos = dbgMapConvertEntPos(e->target_position()->x(), e->target_position()->z());
+				const ImVec2& homePos = _map.entPosToMap(e->home_position()->x(), e->home_position()->z());
+				const ImVec2& targetPos = _map.entPosToMap(e->target_position()->x(), e->target_position()->z());
 				draw->AddLine(entPos, homePos, homecol, 1.0f);
 				draw->AddLine(entPos, targetPos, targetcol, 1.0f);
 			}
 
-			const float viewRadius = (float)attribCurrent[core::enumVal(attrib::Type::VIEWDISTANCE)] * dbgMapZoom();
+			const float viewRadius = (float)attribCurrent[core::enumVal(attrib::Type::VIEWDISTANCE)] * _map.zoom();
 			if (viewRadius > radius) {
 				draw->AddCircle(entPos, (float)viewRadius, viewRadiusColor, 18, 1.0f);
 			}
 
-			const float attackRadius = (float)attribCurrent[core::enumVal(attrib::Type::ATTACKRANGE)] * dbgMapZoom();
+			const float attackRadius = (float)attribCurrent[core::enumVal(attrib::Type::ATTACKRANGE)] * _map.zoom();
 			if (attackRadius > 0.0) {
 				draw->AddCircle(entPos, (float)attackRadius, attackRadiusColor, 12, 1.0f);
 			}
@@ -720,9 +704,12 @@ void AIDebug::dbgMap() {
 		draw->PopClipRect();
 	}
 	if (ImGui::IsWindowHovered()) {
-		_zoom = core_max(0.01f, dbgMapZoom() + ImGui::GetIO().MouseWheel * 0.1f);
-		// TODO: don't center on selection - but on the relative position in the map view
-		//_centerOnSelection = true;
+		const float deltaZoom = ImGui::GetIO().MouseWheel * 0.1f;
+		if (glm::abs(deltaZoom) > glm::epsilon<float>()) {
+			const ImVec2 mousePos = ImGui::GetMousePos();
+			const ImVec2 mouseMapPos(mousePos.x - mapMins.x, mousePos.y - mapMins.y);
+			_map.zoomAtMapPos(mouseMapPos.x, mouseMapPos.y, deltaZoom);
+		}
 	}
 	ImGui::End();
 }
@@ -809,11 +796,10 @@ void AIDebug::onEvent(const network::DisconnectEvent &event) {
 	_chrStaticMsg = nullptr;
 	_stateWorldMsg = nullptr;
 	_namesMsg = nullptr;
-	_dbgMapOffset = { 0.0f, 0.0f };
+	_map.reset();
 	_pause = false;
 	_centerOnSelection = false;
 	_zoneId = "";
-	_zoom = 1.0f;
 	_entityListFilter[0] = '\0';
 	_stateWorldSize = 0u;
 	_characterDetailsSize = 0u;

@@ -12,6 +12,7 @@
 #include "network/MessageSender.h"
 #include "network/NetworkEvents.h"
 #include "ui/imgui/IMGUIApp.h"
+#include "Map.h"
 
 /**
  * @ingroup Tools
@@ -25,7 +26,6 @@ private:
 	using Super = ui::imgui::IMGUIApp;
 	char _aiServer[1024] = "127.0.0.1";
 	int _port = _defaultPort;
-	ImVec2 _dbgMapOffset { 0.0f, 0.0f };
 
 	int _dbgTreeIdAdd = -1;
 	int _dbgTreeIdEdit = -1;
@@ -36,10 +36,10 @@ private:
 		Max
 	};
 
+	Map _map;
 	State _state = State::Connect;
 	bool _pause = false;
 	bool _centerOnSelection = false;
-	float _zoom = 1.0f;
 	char _entityListFilter[64] = "";
 	size_t _stateWorldSize = 0u;
 	size_t _characterDetailsSize = 0u;
@@ -95,10 +95,6 @@ private:
 
 	bool dbgConnect();
 	void dbgBar();
-	float dbgMapZoom() const;
-	ImVec2 dbgMapConvertEntPos(float x, float y) const;
-	ImVec2 dbgMapCalculateOffsetPos(float x, float y) const;
-	bool dbgMapIsVisible(const ImVec2& pos, const ImVec2& mapMins, const ImVec2& mapMaxs) const;
 	void dbgMap();
 	void dbgStats();
 	void dbgEntities();
