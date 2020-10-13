@@ -1868,7 +1868,7 @@ bool SceneManager::trace(bool force) {
 		return false;
 	}
 
-	// mouse tracing is diabled - e.g. because the voxel cursor was moved by keyboard
+	// mouse tracing is disabled - e.g. because the voxel cursor was moved by keyboard
 	// shortcuts in this case the execution of the modifier would result in a
 	// re-execution of the trace. And that would move the voxel cursor to the mouse pos
 	if (!_traceViaMouse) {
