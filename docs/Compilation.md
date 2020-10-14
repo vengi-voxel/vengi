@@ -17,7 +17,16 @@ The project should be buildable with every ide that supports cmake. QTCreator, E
 
 ## Mac
 
-You can generate your xcode project via cmake.
+You can generate your xcode project via cmake or build like this:
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+If you are using the cmake Makefile generator, you get the same targets as for Linux above. You can also just type `make voxedit-run` to compile and run only VoxEdit.
 
 ## Hints
 
