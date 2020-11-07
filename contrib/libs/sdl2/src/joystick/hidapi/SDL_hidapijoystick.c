@@ -63,6 +63,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_PS4
     &SDL_HIDAPI_DriverPS4,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_PS5
+    &SDL_HIDAPI_DriverPS5,
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM
     &SDL_HIDAPI_DriverSteam,
 #endif
@@ -385,6 +388,26 @@ HIDAPI_ShutdownDiscovery()
         usyms = NULL;
     }
 #endif
+}
+
+void
+HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size)
+{
+    int i;
+    char *buffer;
+    size_t length = SDL_strlen(prefix) + 11*(USB_PACKET_LENGTH/8) + (5*USB_PACKET_LENGTH) + 1 + 1;
+
+    buffer = (char *)SDL_malloc(length);
+    SDL_snprintf(buffer, length, prefix, size);
+    for (i = 0; i < size; ++i) {
+        if ((i % 8) == 0) {
+            SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), "\n%.2d:      ", i);
+        }
+        SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), " 0x%.2x", data[i]);
+    }
+    SDL_strlcat(buffer, "\n", length);
+    SDL_Log("%s", buffer);
+    SDL_free(buffer);
 }
 
 static void HIDAPI_JoystickDetect(void);
@@ -1048,6 +1071,37 @@ HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
     return result;
 }
 
+static SDL_bool
+HIDAPI_JoystickHasLED(SDL_Joystick * joystick)
+{
+    SDL_bool result = SDL_FALSE;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->HasJoystickLED(device, joystick);
+    }
+
+    return result;
+}
+
+static int
+HIDAPI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    int result;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->SetJoystickLED(device, joystick, red, green, blue);
+    } else {
+        SDL_SetError("SetLED failed, device disconnected");
+        result = -1;
+    }
+
+    return result;
+}
+
 static void
 HIDAPI_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -1121,6 +1175,8 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,
     HIDAPI_JoystickRumble,
+    HIDAPI_JoystickHasLED,
+    HIDAPI_JoystickSetLED,
     HIDAPI_JoystickUpdate,
     HIDAPI_JoystickClose,
     HIDAPI_JoystickQuit,

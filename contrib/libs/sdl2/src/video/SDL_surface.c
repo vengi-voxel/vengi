@@ -249,6 +249,20 @@ SDL_SetSurfaceRLE(SDL_Surface * surface, int flag)
     return 0;
 }
 
+SDL_bool
+SDL_HasSurfaceRLE(SDL_Surface * surface)
+{
+    if (!surface) {
+        return SDL_FALSE;
+    }
+
+    if (!(surface->map->info.flags & SDL_COPY_RLE_DESIRED)) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
+
 int
 SDL_SetColorKey(SDL_Surface * surface, int flag, Uint32 key)
 {
@@ -1026,7 +1040,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     surface->map->info.g = 0xFF;
     surface->map->info.b = 0xFF;
     surface->map->info.a = 0xFF;
-    surface->map->info.flags = 0;
+    surface->map->info.flags = (copy_flags & (SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY));
     SDL_InvalidateMap(surface->map);
 
     /* Copy over the image data */

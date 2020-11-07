@@ -772,7 +772,6 @@ SDL_DYNAPI_PROC(int,SDL_UIKitRunApp,(int a, char *b, SDL_main_func c),(a,b,c),re
 #endif
 SDL_DYNAPI_PROC(size_t,SDL_SIMDGetAlignment,(void),(),return)
 SDL_DYNAPI_PROC(void*,SDL_SIMDAlloc,(const size_t a),(a),return)
-SDL_DYNAPI_PROC(void*,SDL_SIMDRealloc,(void *a, const size_t b),(a, b),return)
 SDL_DYNAPI_PROC(void,SDL_SIMDFree,(void *a),(a),)
 SDL_DYNAPI_PROC(Sint64,SDL_RWsize,(SDL_RWops *a),(a),return)
 SDL_DYNAPI_PROC(Sint64,SDL_RWseek,(SDL_RWops *a, Sint64 b, int c),(a,b,c),return)
@@ -824,7 +823,13 @@ SDL_DYNAPI_PROC(void,SDL_Metal_GetDrawableSize,(SDL_Window *a, int *b, int *c),(
 SDL_DYNAPI_PROC(double,SDL_trunc,(double a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_truncf,(float a),(a),return)
 SDL_DYNAPI_PROC(SDL_Locale *,SDL_GetPreferredLocales,(void),(),return)
+SDL_DYNAPI_PROC(void*,SDL_SIMDRealloc,(void *a, const size_t b),(a, b),return)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(SDL_bool,SDL_AndroidRequestPermission,(const char *a),(a),return)
 #endif
 SDL_DYNAPI_PROC(int,SDL_OpenURL,(const char *a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_HasSurfaceRLE,(SDL_Surface *a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerHasLED,(SDL_GameController *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerSetLED,(SDL_GameController *a, Uint8 b, Uint8 c, Uint8 d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickHasLED,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_JoystickSetLED,(SDL_Joystick *a, Uint8 b, Uint8 c, Uint8 d),(a,b,c,d),return)

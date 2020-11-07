@@ -901,6 +901,54 @@ SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
     return result;
 }
 
+SDL_bool
+SDL_JoystickHasLED(SDL_Joystick * joystick)
+{
+    SDL_bool result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return SDL_FALSE;
+    }
+
+    SDL_LockJoysticks();
+
+    result = joystick->driver->HasLED(joystick);
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+int
+SDL_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    int result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return -1;
+    }
+
+    SDL_LockJoysticks();
+
+    if (red == joystick->led_red &&
+        green == joystick->led_green &&
+        blue == joystick->led_blue) {
+        /* Avoid spamming the driver */
+        result = 0;
+    } else {
+        result = joystick->driver->SetLED(joystick, red, green, blue);
+    }
+
+    /* Save the LED value regardless of success, so we don't spam the driver */
+    joystick->led_red = red;
+    joystick->led_green = green;
+    joystick->led_blue = blue;
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
 /*
  * Close a joystick previously opened with SDL_JoystickOpen()
  */
@@ -1687,12 +1735,13 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
     if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
         if (vendor == 0x0000 && product == 0x0000) {
             /* Some devices are only identifiable by their name */
-            if (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
-                SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
-                SDL_strcmp(name, "Wireless Gamepad") == 0) {
+            if (name &&
+                (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
+                 SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
+                 SDL_strcmp(name, "Wireless Gamepad") == 0)) {
                 /* HORI or PowerA Switch Pro Controller clone */
                 type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
-            } else if (SDL_strcmp(name, "Virtual Joystick") == 0) {
+            } else if (name && SDL_strcmp(name, "Virtual Joystick") == 0) {
                 type = SDL_CONTROLLER_TYPE_VIRTUAL;
             } else {
                 type = SDL_CONTROLLER_TYPE_UNKNOWN;
@@ -1715,6 +1764,9 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             case k_eControllerType_PS4Controller:
                 type = SDL_CONTROLLER_TYPE_PS4;
                 break;
+            case k_eControllerType_PS5Controller:
+                type = SDL_CONTROLLER_TYPE_PS5;
+                break;
             case k_eControllerType_SwitchProController:
             case k_eControllerType_SwitchInputOnlyController:
                 type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
@@ -1729,16 +1781,50 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
 }
 
 SDL_bool
-SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor, Uint16 product)
+SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id)
 {
-    EControllerType eType = GuessControllerType(vendor, product);
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1 ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+SDL_bool
+SDL_IsJoystickPS4(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_PS4Controller);
+}
+
+SDL_bool
+SDL_IsJoystickPS5(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_PS5Controller);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_SwitchProController ||
+            eType == k_eControllerType_SwitchInputOnlyController);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
     return (eType == k_eControllerType_SwitchInputOnlyController);
 }
 
 SDL_bool
-SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
+SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id)
 {
-    EControllerType eType = GuessControllerType(vendor, product);
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
     return (eType == k_eControllerType_SteamController ||
             eType == k_eControllerType_SteamControllerV2);
 }

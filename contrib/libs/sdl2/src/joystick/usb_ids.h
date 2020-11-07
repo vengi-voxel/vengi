@@ -24,6 +24,7 @@
 
 /* Definitions of useful USB VID/PID values */
 
+#define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_HYPERKIN     0x2e24
 #define USB_VENDOR_MICROSOFT    0x045e
 #define USB_VENDOR_NINTENDO     0x057e
@@ -42,6 +43,7 @@
 #define USB_PRODUCT_SONY_DS4                            0x05c4
 #define USB_PRODUCT_SONY_DS4_DONGLE                     0x0ba0
 #define USB_PRODUCT_SONY_DS4_SLIM                       0x09cc
+#define USB_PRODUCT_SONY_DS5                            0x0ce6
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1             0x02e3
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2             0x0b00
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH   0x0b05

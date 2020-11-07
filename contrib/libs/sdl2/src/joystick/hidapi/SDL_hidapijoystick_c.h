@@ -32,6 +32,7 @@
 
 /* This is the full set of HIDAPI drivers available */
 #define SDL_JOYSTICK_HIDAPI_PS4
+#define SDL_JOYSTICK_HIDAPI_PS5
 #define SDL_JOYSTICK_HIDAPI_SWITCH
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
@@ -94,6 +95,8 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     SDL_bool (*UpdateDevice)(SDL_HIDAPI_Device *device);
     SDL_bool (*OpenJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     int (*RumbleJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
+    SDL_bool (*HasJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
+    int (*SetJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
     void (*CloseJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     void (*FreeDevice)(SDL_HIDAPI_Device *device);
     void (*PostUpdate)(void);
@@ -106,6 +109,7 @@ typedef struct _SDL_HIDAPI_DeviceDriver
 
 /* HIDAPI device support */
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
@@ -119,6 +123,8 @@ extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint
 extern void HIDAPI_UpdateDevices(void);
 extern SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID, SDL_bool is_external);
 extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID, SDL_bool is_external);
+
+extern void HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size);
 
 #endif /* SDL_JOYSTICK_HIDAPI_H */
 

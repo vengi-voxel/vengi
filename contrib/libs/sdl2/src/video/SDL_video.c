@@ -112,6 +112,10 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_OFFSCREEN
     &OFFSCREEN_bootstrap,
 #endif
+#if SDL_VIDEO_DRIVER_OS2
+    &OS2DIVE_bootstrap,
+    &OS2VMAN_bootstrap,
+#endif
 #if SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
 #endif
@@ -595,11 +599,11 @@ SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode)
     }
     display.current_mode = display.desktop_mode;
 
-    return SDL_AddVideoDisplay(&display);
+    return SDL_AddVideoDisplay(&display, SDL_FALSE);
 }
 
 int
-SDL_AddVideoDisplay(const SDL_VideoDisplay * display)
+SDL_AddVideoDisplay(const SDL_VideoDisplay * display, SDL_bool send_event)
 {
     SDL_VideoDisplay *displays;
     int index = -1;
@@ -621,10 +625,29 @@ SDL_AddVideoDisplay(const SDL_VideoDisplay * display)
             SDL_itoa(index, name, 10);
             displays[index].name = SDL_strdup(name);
         }
+
+        if (send_event) {
+            SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_CONNECTED, 0);
+        }
     } else {
         SDL_OutOfMemory();
     }
     return index;
+}
+
+void
+SDL_DelVideoDisplay(int index)
+{
+    if (index < 0 || index >= _this->num_displays) {
+        return;
+    }
+
+    SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_DISCONNECTED, 0);
+
+    if (index < (_this->num_displays - 1)) {
+        SDL_memmove(&_this->displays[index], &_this->displays[index+1], (_this->num_displays - index - 1)*sizeof(_this->displays[index]));
+    }
+    --_this->num_displays;
 }
 
 int
@@ -2129,8 +2152,8 @@ SDL_SetWindowMinimumSize(SDL_Window * window, int min_w, int min_h)
         return;
     }
 
-    if ((window->max_w && min_w >= window->max_w) ||
-        (window->max_h && min_h >= window->max_h)) {
+    if ((window->max_w && min_w > window->max_w) ||
+        (window->max_h && min_h > window->max_h)) {
         SDL_SetError("SDL_SetWindowMinimumSize(): Tried to set minimum size larger than maximum size");
         return;
     }
@@ -2172,7 +2195,7 @@ SDL_SetWindowMaximumSize(SDL_Window * window, int max_w, int max_h)
         return;
     }
 
-    if (max_w <= window->min_w || max_h <= window->min_h) {
+    if (max_w < window->min_w || max_h < window->min_h) {
         SDL_SetError("SDL_SetWindowMaximumSize(): Tried to set maximum size smaller than minimum size");
         return;
     }
@@ -3907,9 +3930,11 @@ SDL_IsScreenKeyboardShown(SDL_Window *window)
 #if SDL_VIDEO_DRIVER_HAIKU
 #include "haiku/SDL_bmessagebox.h"
 #endif
+#if SDL_VIDEO_DRIVER_OS2
+#include "os2/SDL_os2messagebox.h"
+#endif
 
-
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_HAIKU
+#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_OS2
 static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
@@ -4006,6 +4031,13 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_HAIKU) &&
         HAIKU_ShowMessageBox(messageboxdata, buttonid) == 0) {
+        retval = 0;
+    }
+#endif
+#if SDL_VIDEO_DRIVER_OS2
+    if (retval == -1 &&
+        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_OS2) &&
+        OS2_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif

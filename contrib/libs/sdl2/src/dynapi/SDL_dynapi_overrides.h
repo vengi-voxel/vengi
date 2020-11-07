@@ -716,7 +716,6 @@
 #define SDL_UIKitRunApp SDL_UIKitRunApp_REAL
 #define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_REAL
 #define SDL_SIMDAlloc SDL_SIMDAlloc_REAL
-#define SDL_SIMDRealloc SDL_SIMDRealloc_REAL
 #define SDL_SIMDFree SDL_SIMDFree_REAL
 #define SDL_RWsize SDL_RWsize_REAL
 #define SDL_RWseek SDL_RWseek_REAL
@@ -765,5 +764,11 @@
 #define SDL_trunc SDL_trunc_REAL
 #define SDL_truncf SDL_truncf_REAL
 #define SDL_GetPreferredLocales SDL_GetPreferredLocales_REAL
+#define SDL_SIMDRealloc SDL_SIMDRealloc_REAL
 #define SDL_AndroidRequestPermission SDL_AndroidRequestPermission_REAL
 #define SDL_OpenURL SDL_OpenURL_REAL
+#define SDL_HasSurfaceRLE SDL_HasSurfaceRLE_REAL
+#define SDL_GameControllerHasLED SDL_GameControllerHasLED_REAL
+#define SDL_GameControllerSetLED SDL_GameControllerSetLED_REAL
+#define SDL_JoystickHasLED SDL_JoystickHasLED_REAL
+#define SDL_JoystickSetLED SDL_JoystickSetLED_REAL

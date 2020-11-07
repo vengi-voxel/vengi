@@ -65,7 +65,8 @@ typedef enum
     SDL_CONTROLLER_TYPE_PS3,
     SDL_CONTROLLER_TYPE_PS4,
     SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO,
-    SDL_CONTROLLER_TYPE_VIRTUAL
+    SDL_CONTROLLER_TYPE_VIRTUAL,
+    SDL_CONTROLLER_TYPE_PS5
 } SDL_GameControllerType;
 
 typedef enum
@@ -362,6 +363,11 @@ typedef enum
     SDL_CONTROLLER_BUTTON_DPAD_DOWN,
     SDL_CONTROLLER_BUTTON_DPAD_LEFT,
     SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
+    SDL_CONTROLLER_BUTTON_MISC1,    // Xbox Series X share button, PS4/PS5 touchpad button, Nintendo Switch Pro capture button
+    SDL_CONTROLLER_BUTTON_PADDLE1,  // Xbox Elite paddle P1
+    SDL_CONTROLLER_BUTTON_PADDLE2,  // Xbox Elite paddle P3
+    SDL_CONTROLLER_BUTTON_PADDLE3,  // Xbox Elite paddle P2
+    SDL_CONTROLLER_BUTTON_PADDLE4,  // Xbox Elite paddle P4
     SDL_CONTROLLER_BUTTON_MAX
 } SDL_GameControllerButton;
 
@@ -403,6 +409,27 @@ extern DECLSPEC Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *ga
  *  \return 0, or -1 if rumble isn't supported on this joystick
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+
+/**
+ *  Return whether a controller has an LED
+ *
+ *  \param gamecontroller The controller to query
+ *
+ *  \return SDL_TRUE, or SDL_FALSE if this controller does not have a modifiable LED
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *gamecontroller);
+
+/**
+ *  Update a controller's LED color.
+ *
+ *  \param controller The joystick to update
+ *  \param red The intensity of the red LED
+ *  \param green The intensity of the green LED
+ *  \param blue The intensity of the blue LED
+ *
+ *  \return 0, or -1 if this controller does not have a modifiable LED
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 green, Uint8 blue);
 
 /**
  *  Close a controller previously opened with SDL_GameControllerOpen().

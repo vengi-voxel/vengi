@@ -60,8 +60,8 @@ typedef struct dumb_buffer {
 
     /* Parameters for our memory-mapped image. */
     struct {
-	uint32_t *mem;
-	unsigned int size;
+        uint32_t *mem;
+        unsigned int size;
     } dumb;
 
     unsigned int width;
@@ -90,6 +90,9 @@ typedef struct SDL_VideoData
     SDL_Window **windows;
     unsigned int max_windows;
     unsigned int num_windows;
+
+    SDL_bool video_init;        /* Has VideoInit succeeded? */
+
 } SDL_VideoData;
 
 typedef struct plane {
