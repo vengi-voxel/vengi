@@ -274,7 +274,6 @@ app::AppState IMGUIApp::onInit() {
 	io.KeyMap[ImGuiKey_X] = SDLK_x;
 	io.KeyMap[ImGuiKey_Y] = SDLK_y;
 	io.KeyMap[ImGuiKey_Z] = SDLK_z;
-	io.RenderDrawListsFn = nullptr;
 	io.SetClipboardTextFn = _setClipboardText;
 	io.GetClipboardTextFn = _getClipboardText;
 	io.ClipboardUserData = nullptr;
@@ -366,7 +365,7 @@ app::AppState IMGUIApp::onRunning() {
 		}
 	}
 
-	if (ImGui::IsAnyWindowHovered()) {
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {
 		core::setBindingContext(core::BindingContext::UserInterface);
 	} else {
 		core::setBindingContext(core::BindingContext::World);

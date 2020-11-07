@@ -25,7 +25,7 @@
 namespace priv {
 
 static const uint32_t TableFlags =
-	ImGuiTableFlags_Scroll | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+	ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 	ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg;
 
 }

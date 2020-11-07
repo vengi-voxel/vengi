@@ -24,9 +24,9 @@ bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFl
 	return false;
 }
 
-bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float step_fast, int decimal_precision, ImGuiInputTextFlags extra_flags) {
+bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
 	float v = var->floatVal();
-	if (InputFloat(label, &v, step, step_fast, decimal_precision, extra_flags)) {
+	if (InputFloat(label, &v, step, step_fast, "%.3f", extra_flags)) {
 		var->setVal(v);
 		return true;
 	}
