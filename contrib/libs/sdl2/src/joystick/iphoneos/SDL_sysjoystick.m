@@ -235,7 +235,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             /* Assume DS4 Slim unless/until GCController flows VID/PID */
             vendor = USB_VENDOR_SONY;
             product = USB_PRODUCT_SONY_DS4_SLIM;
-            if ( device->has_dualshock_touchpad ) {
+            if (device->has_dualshock_touchpad) {
                 subtype = 1;
             } else {
                 subtype = 0;
@@ -305,9 +305,11 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 
     *guid16++ = SDL_SwapLE16(device->button_mask);
 
-    if (subtype != 0) {
+    if (vendor == USB_VENDOR_APPLE) {
         /* Note that this is an MFI controller and what subtype it is */
         device->guid.data[14] = 'm';
+        device->guid.data[15] = subtype;
+    } else {
         device->guid.data[15] = subtype;
     }
 
@@ -1013,12 +1015,19 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
 @implementation SDL_RumbleContext {
     SDL_RumbleMotor *low_frequency_motor;
     SDL_RumbleMotor *high_frequency_motor;
+    SDL_RumbleMotor *left_trigger_motor;
+    SDL_RumbleMotor *right_trigger_motor;
 }
 
--(id) initWithLowFrequencyMotor:(SDL_RumbleMotor*)low_frequency_motor andHighFrequencyMotor:(SDL_RumbleMotor*)high_frequency_motor
+-(id) initWithLowFrequencyMotor:(SDL_RumbleMotor*)low_frequency_motor
+             HighFrequencyMotor:(SDL_RumbleMotor*)high_frequency_motor
+               LeftTriggerMotor:(SDL_RumbleMotor*)left_trigger_motor
+              RightTriggerMotor:(SDL_RumbleMotor*)right_trigger_motor
 {
     self->low_frequency_motor = low_frequency_motor;
     self->high_frequency_motor = high_frequency_motor;
+    self->left_trigger_motor = left_trigger_motor;
+    self->right_trigger_motor = right_trigger_motor;
     return self;
 }
 
@@ -1028,6 +1037,19 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
 
     result += [self->low_frequency_motor setIntensity:((float)low_frequency_rumble / 65535.0f)];
     result += [self->high_frequency_motor setIntensity:((float)high_frequency_rumble / 65535.0f)];
+    return ((result < 0) ? -1 : 0);
+}
+
+-(int) rumbleLeftTrigger:(Uint16)left_rumble andRightTrigger:(Uint16)right_rumble
+{
+    int result = 0;
+
+    if (self->left_trigger_motor && self->right_trigger_motor) {
+        result += [self->left_trigger_motor setIntensity:((float)left_rumble / 65535.0f)];
+        result += [self->right_trigger_motor setIntensity:((float)right_rumble / 65535.0f)];
+    } else {
+        result = SDL_Unsupported();
+    }
     return ((result < 0) ? -1 : 0);
 }
 
@@ -1045,8 +1067,13 @@ static SDL_RumbleContext *IOS_JoystickInitRumble(GCController *controller)
         if (@available(iOS 14.0, tvOS 14.0, *)) {
             SDL_RumbleMotor *low_frequency_motor = [[SDL_RumbleMotor alloc] initWithController:controller locality:GCHapticsLocalityLeftHandle];
             SDL_RumbleMotor *high_frequency_motor = [[SDL_RumbleMotor alloc] initWithController:controller locality:GCHapticsLocalityRightHandle];
+            SDL_RumbleMotor *left_trigger_motor = [[SDL_RumbleMotor alloc] initWithController:controller locality:GCHapticsLocalityLeftTrigger];
+            SDL_RumbleMotor *right_trigger_motor = [[SDL_RumbleMotor alloc] initWithController:controller locality:GCHapticsLocalityRightTrigger];
             if (low_frequency_motor && high_frequency_motor) {
-                return [[SDL_RumbleContext alloc] initWithLowFrequencyMotor:low_frequency_motor andHighFrequencyMotor:high_frequency_motor];
+                return [[SDL_RumbleContext alloc] initWithLowFrequencyMotor:low_frequency_motor
+                                                         HighFrequencyMotor:high_frequency_motor
+                                                           LeftTriggerMotor:left_trigger_motor
+                                                          RightTriggerMotor:right_trigger_motor];
             }
         }
     }
@@ -1073,6 +1100,32 @@ IOS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
     if (device->rumble) {
         SDL_RumbleContext *rumble = (__bridge SDL_RumbleContext *)device->rumble;
         return [rumble rumbleWithLowFrequency:low_frequency_rumble andHighFrequency:high_frequency_rumble];
+    } else {
+        return SDL_Unsupported();
+    }
+#else
+    return SDL_Unsupported();
+#endif
+}
+
+static int
+IOS_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
+#ifdef ENABLE_MFI_RUMBLE
+    SDL_JoystickDeviceItem *device = joystick->hwdata;
+
+    if (@available(iOS 14.0, tvOS 14.0, *)) {
+        if (!device->rumble && device->controller && device->controller.haptics) {
+            SDL_RumbleContext *rumble = IOS_JoystickInitRumble(device->controller);
+            if (rumble) {
+                device->rumble = (void *)CFBridgingRetain(rumble);
+            }
+        }
+    }
+
+    if (device->rumble) {
+        SDL_RumbleContext *rumble = (__bridge SDL_RumbleContext *)device->rumble;
+        return [rumble rumbleLeftTrigger:left_rumble andRightTrigger:right_rumble];
     } else {
         return SDL_Unsupported();
     }
@@ -1228,6 +1281,7 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver =
     IOS_JoystickGetDeviceInstanceID,
     IOS_JoystickOpen,
     IOS_JoystickRumble,
+    IOS_JoystickRumbleTriggers,
     IOS_JoystickHasLED,
     IOS_JoystickSetLED,
     IOS_JoystickUpdate,

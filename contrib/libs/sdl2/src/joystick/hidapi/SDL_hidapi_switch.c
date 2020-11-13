@@ -40,7 +40,6 @@
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_SWITCH_PROTOCOL*/
-#define DEBUG_SWITCH_PROTOCOL
 
 /* Define this to get log output for rumble logic */
 /*#define DEBUG_RUMBLE*/
@@ -924,6 +923,12 @@ HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_frequency_rumble, high_frequency_rumble);
 }
 
+static int
+HIDAPI_DriverSwitch_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
+    return SDL_Unsupported();
+}
+
 static SDL_bool
 HIDAPI_DriverSwitch_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
@@ -1290,6 +1295,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     HIDAPI_DriverSwitch_UpdateDevice,
     HIDAPI_DriverSwitch_OpenJoystick,
     HIDAPI_DriverSwitch_RumbleJoystick,
+    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
     HIDAPI_DriverSwitch_HasJoystickLED,
     HIDAPI_DriverSwitch_SetJoystickLED,
     HIDAPI_DriverSwitch_CloseJoystick,
