@@ -45,6 +45,7 @@ This is an opensource, cross platform voxel volume editor.
 * Import bitmaps as plane
 * Copy/Cut/Paste - paste to cursor or reference position
 * Exporting single layers into meshes
+* Generate level of details (LOD) volumes
 
 ## Controls
 
