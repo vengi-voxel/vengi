@@ -26,7 +26,7 @@ set(SRCS
 	postgres/PQSymbol.h postgres/PQSymbol.cpp
 )
 
-set(PostgreSQL_ADDITIONAL_VERSIONS "10;10.4;11;12")
+set(PostgreSQL_ADDITIONAL_VERSIONS "10;10.4;11;12;13;14;15;16")
 find_package(PostgreSQL)
 
 set(LIB persistence)
