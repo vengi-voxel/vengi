@@ -32,16 +32,19 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_PS5
 
-typedef struct
+/* Define this if you want to log all packets from the controller */
+/*#define DEBUG_PS5_PROTOCOL*/
+
+typedef enum
 {
-    Uint8 ucLeftJoystickX;
-    Uint8 ucLeftJoystickY;
-    Uint8 ucRightJoystickX;
-    Uint8 ucRightJoystickY;
-    Uint8 rgucButtonsHatAndCounter[ 3 ];
-    Uint8 ucTriggerLeft;
-    Uint8 ucTriggerRight;
-} PS5SimpleStatePacket_t;
+    k_EPS5ReportIdState = 0x01,
+    k_EPS5ReportIdBluetoothState = 0x31,
+} EPS5ReportId;
+
+typedef enum
+{
+    k_EPS5FeatureReportIdSerialNumber = 0x09,
+} EPS5FeatureReportId;
 
 typedef struct
 {
@@ -49,12 +52,55 @@ typedef struct
     Uint8 ucLeftJoystickY;
     Uint8 ucRightJoystickX;
     Uint8 ucRightJoystickY;
+    Uint8 rgucButtonsHatAndCounter[3];
     Uint8 ucTriggerLeft;
     Uint8 ucTriggerRight;
-    Uint8 ucCounter;
-    Uint8 rgucButtonsAndHat[ 3 ];
-    Uint8 rgucUnknown[ 53 ];
+} PS5SimpleStatePacket_t;
+
+typedef struct
+{
+    Uint8 ucLeftJoystickX;              /* 0 */
+    Uint8 ucLeftJoystickY;              /* 1 */
+    Uint8 ucRightJoystickX;             /* 2 */
+    Uint8 ucRightJoystickY;             /* 3 */
+    Uint8 ucTriggerLeft;                /* 4 */
+    Uint8 ucTriggerRight;               /* 5 */
+    Uint8 ucCounter;                    /* 6 */
+    Uint8 rgucButtonsAndHat[3];         /* 7 */
+    Uint8 ucZero;                       /* 10 */
+    Uint8 rgucPacketSequence[4];        /* 11 - 32 bit little endian */
+    Uint8 rgucAccel[6];                 /* 15 */
+    Uint8 rgucGyro[6];                  /* 21 */
+    Uint8 rgucTimer1[4];                /* 27 - 32 bit little endian */
+    Uint8 ucBatteryTemp;                /* 31 */
+    Uint8 ucTouchpadCounter1;           /* 32 - high bit clear + counter */
+    Uint8 rgucTouchpadData1[3];         /* 33 - X/Y, 12 bits per axis */
+    Uint8 ucTouchpadCounter2;           /* 36 - high bit clear + counter */
+    Uint8 rgucTouchpadData2[3];         /* 37 - X/Y, 12 bits per axis */
+    Uint8 rgucUnknown1[8];              /* 40 */
+    Uint8 rgucTimer2[4];                /* 48 - 32 bit little endian */
+    Uint8 ucBatteryLevel;               /* 52 */
+    Uint8 ucConnectState;               /* 53 - 0x08 = USB, 0x03 = headphone */
+
+    /* There's more unknown data at the end, and a 32-bit CRC on Bluetooth */
 } PS5StatePacket_t;
+
+
+static void ReadFeatureReport(hid_device *dev, Uint8 report_id)
+{
+    Uint8 report[USB_PACKET_LENGTH + 1];
+    int size;
+
+    SDL_memset(report, 0, sizeof(report));
+    report[0] = report_id;
+    size = hid_get_feature_report(dev, report, sizeof(report));
+    if (size > 0) {
+#ifdef DEBUG_PS5_PROTOCOL
+        SDL_Log("Report %d\n", report_id);
+        HIDAPI_DumpPacket("Report: size = %d", report, size);
+#endif
+    }
+}
 
 typedef struct {
     union
@@ -64,9 +110,6 @@ typedef struct {
     } last_state;
 } SDL_DriverPS5_Context;
 
-
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_PS5_PROTOCOL*/
 
 static SDL_bool
 HIDAPI_DriverPS5_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -119,9 +162,17 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     }
     device->context = ctx;
 
+    /* Read the serial number (Bluetooth address in reverse byte order)
+       This will also enable enhanced reports over Bluetooth
+    */
+    ReadFeatureReport(device->dev, k_EPS5FeatureReportIdSerialNumber);
+
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = 16;
+    joystick->nbuttons = 17;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
+    joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+
+    SDL_PrivateJoystickAddTouchpad(joystick, 2);
 
     return SDL_TRUE;
 }
@@ -247,7 +298,11 @@ HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, hid_device *dev
 static void
 HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacket_t *packet)
 {
+    static const float TOUCHPAD_SCALEX = 1.0f / 1920;
+    static const float TOUCHPAD_SCALEY = 1.0f / 1070;
     Sint16 axis;
+    Uint8 touchpad_state;
+    int touchpad_x, touchpad_y;
 
     if (ctx->last_state.state.rgucButtonsAndHat[0] != packet->rgucButtonsAndHat[0]) {
         {
@@ -316,10 +371,11 @@ HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
     }
 
     if (ctx->last_state.state.rgucButtonsAndHat[2] != packet->rgucButtonsAndHat[2]) {
-        Uint8 data = (packet->rgucButtonsAndHat[2] & 0x03);
+        Uint8 data = packet->rgucButtonsAndHat[2];
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, 15, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, 15, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, 16, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     axis = ((int)packet->ucTriggerLeft * 257) - 32768;
@@ -335,6 +391,32 @@ HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
     axis = ((int)packet->ucRightJoystickY * 257) - 32768;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
+    if (packet->ucBatteryLevel & 0x10) {
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+    } else {
+        /* Battery level ranges from 0 to 10 */
+        int level = (packet->ucBatteryLevel & 0xF);
+        if (level == 0) {
+            joystick->epowerlevel = SDL_JOYSTICK_POWER_EMPTY;
+        } else if (level <= 2) {
+            joystick->epowerlevel = SDL_JOYSTICK_POWER_LOW;
+        } else if (level <= 7) {
+            joystick->epowerlevel = SDL_JOYSTICK_POWER_MEDIUM;
+        } else {
+            joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
+        }
+    }
+
+    touchpad_state = ((packet->ucTouchpadCounter1 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+    touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
+    touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
+    SDL_PrivateJoystickTouchpad(joystick, 0, 0, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+
+    touchpad_state = ((packet->ucTouchpadCounter2 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+    touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
+    touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
+    SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+
     SDL_memcpy(&ctx->last_state.state, packet, sizeof(ctx->last_state.state));
 }
 
@@ -343,7 +425,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     SDL_Joystick *joystick = NULL;
-    Uint8 data[USB_PACKET_LENGTH];
+    Uint8 data[USB_PACKET_LENGTH*2];
     int size;
 
     if (device->num_joysticks > 0) {
@@ -358,12 +440,15 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         HIDAPI_DumpPacket("PS5 packet: size = %d", data, size);
 #endif
         switch (data[0]) {
-        case 0x01:
+        case k_EPS5ReportIdState:
             if (size == 10) {
                 HIDAPI_DriverPS5_HandleSimpleStatePacket(joystick, device->dev, ctx, (PS5SimpleStatePacket_t *)&data[1]);
             } else {
                 HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[1]);
             }
+            break;
+        case k_EPS5ReportIdBluetoothState:
+            HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[2]);
             break;
         default:
 #ifdef DEBUG_JOYSTICK

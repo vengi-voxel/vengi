@@ -173,6 +173,8 @@ typedef unsigned int uintptr_t;
 #define HAVE_VSSCANF 1
 #define HAVE_SCALBN 1
 #define HAVE_SCALBNF 1
+#define HAVE_TRUNC  1
+#define HAVE_TRUNCF 1
 #endif
 /* This function is available with at least the VC++ 2008 C runtime library */
 #if _MSC_VER >= 1400
