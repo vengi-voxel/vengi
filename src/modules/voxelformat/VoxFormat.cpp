@@ -241,8 +241,8 @@ bool VoxFormat::skipSaving(const VoxelVolume& v) const {
 		return true;
 	}
 	const voxel::Region& region = v.volume->region();
-	if (region.getDepthInVoxels() >= MaxRegionSize || region.getHeightInVoxels() >= MaxRegionSize
-		|| region.getWidthInVoxels() >= MaxRegionSize) {
+	if (region.getDepthInVoxels() > MaxRegionSize || region.getHeightInVoxels() > MaxRegionSize
+		|| region.getWidthInVoxels() > MaxRegionSize) {
 		Log::warn("a region exceeds the max allowed vox file boundaries: %i:%i:%i",
 				region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
 		// TODO: cut the big volume into pieces
@@ -466,8 +466,8 @@ bool VoxFormat::loadChunk_SIZE(io::FileStream& stream, const ChunkHeader& header
 		Log::error("Found invalid region in vox file: %i:%i:%i", x, y, z);
 		return false;
 	}
-	if (region.getWidthInVoxels() >= MaxRegionSize || region.getHeightInVoxels() >= MaxRegionSize ||
-		region.getDepthInVoxels() >= MaxRegionSize) {
+	if (region.getWidthInVoxels() > MaxRegionSize || region.getHeightInVoxels() > MaxRegionSize ||
+		region.getDepthInVoxels() > MaxRegionSize) {
 		Log::error("Found invalid region in vox file: %i:%i:%i", x, y, z);
 		return false;
 	}
