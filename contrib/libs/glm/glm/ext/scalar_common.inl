@@ -149,4 +149,22 @@ namespace glm
 		genType const Mirror = Clamp + Rest;
 		return mix(Rest, static_cast<genType>(1) - Rest, Mirror >= static_cast<genType>(1));
 	}
+
+	template<typename genType>
+	GLM_FUNC_QUALIFIER int iround(genType const& x)
+	{
+		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'iround' only accept floating-point inputs");
+		assert(static_cast<genType>(0.0) <= x);
+
+		return static_cast<int>(x + static_cast<genType>(0.5));
+	}
+
+	template<typename genType>
+	GLM_FUNC_QUALIFIER uint uround(genType const& x)
+	{
+		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'uround' only accept floating-point inputs");
+		assert(static_cast<genType>(0.0) <= x);
+
+		return static_cast<uint>(x + static_cast<genType>(0.5));
+	}
 }//namespace glm

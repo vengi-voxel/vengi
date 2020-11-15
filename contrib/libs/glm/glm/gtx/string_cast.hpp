@@ -11,8 +11,6 @@
 /// Include <glm/gtx/string_cast.hpp> to use the features of this extension.
 ///
 /// Setup strings for GLM type values
-///
-/// This extension is not supported with CUDA
 
 #pragma once
 
@@ -30,10 +28,6 @@
 #	else
 #		pragma message("GLM: GLM_GTX_string_cast extension included")
 #	endif
-#endif
-
-#if(GLM_COMPILER & GLM_COMPILER_CUDA)
-#	error "GLM_GTX_string_cast is not supported on CUDA compiler"
 #endif
 
 namespace glm

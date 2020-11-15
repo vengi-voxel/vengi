@@ -159,9 +159,9 @@ namespace detail
 			root = sqrt(trace + static_cast<T>(1.0));
 			Orientation.w = static_cast<T>(0.5) * root;
 			root = static_cast<T>(0.5) / root;
-			Orientation.x = root * (Row[1].z - Row[2].y);
-			Orientation.y = root * (Row[2].x - Row[0].z);
-			Orientation.z = root * (Row[0].y - Row[1].x);
+			Orientation.x = root * (Row[2].y - Row[1].z);
+			Orientation.y = root * (Row[0].z - Row[2].x);
+			Orientation.z = root * (Row[1].x - Row[0].y);
 		} // End if > 0
 		else
 		{

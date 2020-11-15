@@ -665,13 +665,13 @@ namespace glm
 		mat<3, 3, T, defaultp> Result;
 		Result[0][0] = c;
 		Result[0][1] = s;
-		Result[0][2] = 0.0f;
+		Result[0][2] = T(0.0);
 		Result[1][0] = -s;
 		Result[1][1] = c;
-		Result[1][2] = 0.0f;
-		Result[2][0] = 0.0f;
-		Result[2][1] = 0.0f;
-		Result[2][2] = 1.0f;
+		Result[1][2] = T(0.0);
+		Result[2][0] = T(0.0);
+		Result[2][1] = T(0.0);
+		Result[2][2] = T(1.0);
 		return Result;
 	}
 

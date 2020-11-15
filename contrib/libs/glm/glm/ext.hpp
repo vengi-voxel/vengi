@@ -111,6 +111,7 @@
 #include "./ext/scalar_constants.hpp"
 #include "./ext/scalar_integer.hpp"
 #include "./ext/scalar_packing.hpp"
+#include "./ext/scalar_reciprocal.hpp"
 #include "./ext/scalar_relational.hpp"
 #include "./ext/scalar_ulp.hpp"
 
@@ -120,6 +121,7 @@
 #include "./ext/vector_common.hpp"
 #include "./ext/vector_integer.hpp"
 #include "./ext/vector_packing.hpp"
+#include "./ext/vector_reciprocal.hpp"
 #include "./ext/vector_relational.hpp"
 #include "./ext/vector_ulp.hpp"
 

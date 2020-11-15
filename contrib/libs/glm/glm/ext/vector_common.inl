@@ -126,4 +126,22 @@ namespace glm
 		vec<L, T, Q> const Mirror = Clamp + Rest;
 		return mix(Rest, vec<L, T, Q>(1) - Rest, glm::greaterThanEqual(Mirror, vec<L, T, Q>(1)));
 	}
+
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, int, Q> iround(vec<L, T, Q> const& x)
+	{
+		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'iround' only accept floating-point inputs");
+		assert(all(lessThanEqual(vec<L, T, Q>(0), x)));
+
+		return vec<L, int, Q>(x + static_cast<T>(0.5));
+	}
+
+	template<length_t L, typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER vec<L, uint, Q> uround(vec<L, T, Q> const& x)
+	{
+		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'uround' only accept floating-point inputs");
+		assert(all(lessThanEqual(vec<L, T, Q>(0), x)));
+
+		return vec<L, uint, Q>(x + static_cast<T>(0.5));
+	}
 }//namespace glm

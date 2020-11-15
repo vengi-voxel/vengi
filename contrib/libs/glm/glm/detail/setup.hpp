@@ -806,12 +806,20 @@ namespace detail
 ///////////////////////////////////////////////////////////////////////////////////
 // Configure the use of defaulted function
 
-#if GLM_HAS_DEFAULTED_FUNCTIONS && GLM_CONFIG_CTOR_INIT == GLM_CTOR_INIT_DISABLE
+#if GLM_HAS_DEFAULTED_FUNCTIONS
 #	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_ENABLE
 #	define GLM_DEFAULT = default
 #else
 #	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_DISABLE
 #	define GLM_DEFAULT
+#endif
+
+#if GLM_CONFIG_CTOR_INIT == GLM_CTOR_INIT_DISABLE && GLM_CONFIG_DEFAULTED_FUNCTIONS == GLM_ENABLE
+#	define GLM_CONFIG_DEFAULTED_DEFAULT_CTOR GLM_ENABLE
+#	define GLM_DEFAULT_CTOR GLM_DEFAULT
+#else
+#	define GLM_CONFIG_DEFAULTED_DEFAULT_CTOR GLM_DISABLE
+#	define GLM_DEFAULT_CTOR
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////
