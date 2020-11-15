@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,16 +18,30 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 
-/* Return true if the RawInput driver is enabled */
-extern SDL_bool RAWINPUT_IsEnabled();
+#ifndef SDL_DirectFB_vulkan_h_
+#define SDL_DirectFB_vulkan_h_
 
-/* Return true if a RawInput device is present and supported as a joystick */
-extern SDL_bool RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version);
+#include "../SDL_vulkan_internal.h"
+#include "../SDL_sysvideo.h"
 
-/* Returns 0 if message was handled */
-extern LRESULT RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_DIRECTFB
 
+int DirectFB_Vulkan_LoadLibrary(_THIS, const char *path);
+void DirectFB_Vulkan_UnloadLibrary(_THIS);
+SDL_bool DirectFB_Vulkan_GetInstanceExtensions(_THIS,
+                                          SDL_Window *window,
+                                          unsigned *count,
+                                          const char **names);
+SDL_bool DirectFB_Vulkan_CreateSurface(_THIS,
+                                  SDL_Window *window,
+                                  VkInstance instance,
+                                  VkSurfaceKHR *surface);
+
+#endif
+
+#endif /* SDL_DirectFB_vulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

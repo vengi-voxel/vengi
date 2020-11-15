@@ -26,6 +26,7 @@
 #include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
+#include "SDL_rawinputjoystick_c.h"
 
 #include "../../core/windows/SDL_windows.h"
 #define COBJMACROS
@@ -243,6 +244,12 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 
 #ifdef SDL_JOYSTICK_HIDAPI
         if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
+            ignore_joystick = SDL_TRUE;
+        }
+#endif
+
+#ifdef SDL_JOYSTICK_RAWINPUT
+        if (!ignore_joystick && RAWINPUT_IsDevicePresent(vendor, product, version)) {
             ignore_joystick = SDL_TRUE;
         }
 #endif
@@ -607,6 +614,12 @@ WGI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
     return SDL_Unsupported();
 }
 
+static int
+WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 static Uint8
 ConvertHatValue(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition value)
 {
@@ -752,6 +765,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickRumbleTriggers,
     WGI_JoystickHasLED,
     WGI_JoystickSetLED,
+    WGI_JoystickSetSensorsEnabled,
     WGI_JoystickUpdate,
     WGI_JoystickClose,
     WGI_JoystickQuit,

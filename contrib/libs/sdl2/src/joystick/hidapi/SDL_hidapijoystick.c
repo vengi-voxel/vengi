@@ -443,13 +443,6 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
         return NULL;
     }
 
-#ifdef SDL_JOYSTICK_RAWINPUT
-    if (RAWINPUT_IsDevicePresent(device->vendor_id, device->product_id, device->version)) {
-        /* The RAWINPUT driver is taking care of this device */
-        return NULL;
-    }
-#endif
-
 	if (device->vendor_id != USB_VENDOR_VALVE) {
         if (device->usage_page && device->usage_page != USAGE_PAGE_GENERIC_DESKTOP) {
             return NULL;
@@ -535,7 +528,7 @@ HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
 
     /* Disconnect any joysticks */
     while (device->num_joysticks) {
-        HIDAPI_JoystickDisconnected(device, device->joysticks[0], SDL_FALSE);
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
 
     device->driver->FreeDevice(device);
@@ -608,11 +601,6 @@ HIDAPI_JoystickInit(void)
         return -1;
     }
 
-#ifdef __WINDOWS__
-    /* On Windows, turns out HIDAPI for Xbox controllers doesn't allow background input, so off by default */
-    SDL_SetHintWithPriority(SDL_HINT_JOYSTICK_HIDAPI_XBOX, "0", SDL_HINT_DEFAULT);
-#endif
-
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
         SDL_AddHintCallback(driver->hint, SDL_HIDAPIDriverHintChanged, NULL);
@@ -629,7 +617,7 @@ HIDAPI_JoystickInit(void)
 }
 
 SDL_bool
-HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID, SDL_bool is_external)
+HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID)
 {
     SDL_JoystickID joystickID;
     SDL_JoystickID *joysticks = (SDL_JoystickID *)SDL_realloc(device->joysticks, (device->num_joysticks + 1)*sizeof(*device->joysticks));
@@ -640,9 +628,7 @@ HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID,
     joystickID = SDL_GetNextJoystickInstanceID();
     device->joysticks = joysticks;
     device->joysticks[device->num_joysticks++] = joystickID;
-    if (!is_external) {
-        ++SDL_HIDAPI_numjoysticks;
-    }
+    ++SDL_HIDAPI_numjoysticks;
 
     SDL_PrivateJoystickAdded(joystickID);
 
@@ -653,14 +639,14 @@ HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID,
 }
 
 void
-HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID, SDL_bool is_external)
+HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
 {
     int i, size;
 
     for (i = 0; i < device->num_joysticks; ++i) {
         if (device->joysticks[i] == joystickID) {
             SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joystickID);
-            if (joystick && !is_external) {
+            if (joystick) {
                 HIDAPI_JoystickClose(joystick);
             }
 
@@ -668,9 +654,7 @@ HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID
             SDL_memmove(&device->joysticks[i], &device->joysticks[i+1], size);
             --device->num_joysticks;
 
-            if (!is_external) {
-                --SDL_HIDAPI_numjoysticks;
-            }
+            --SDL_HIDAPI_numjoysticks;
             if (device->num_joysticks == 0) {
                 SDL_free(device->joysticks);
                 device->joysticks = NULL;
@@ -688,6 +672,24 @@ static int
 HIDAPI_JoystickGetCount(void)
 {
     return SDL_HIDAPI_numjoysticks;
+}
+
+static char *
+HIDAPI_ConvertString(const wchar_t *wide_string)
+{
+    char *string = NULL;
+
+    if (wide_string) {
+        string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+        if (!string) {
+            if (sizeof(wchar_t) == sizeof(Uint16)) {
+                string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+            } else if (sizeof(wchar_t) == sizeof(Uint32)) {
+                string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+            }
+        }
+    }
+    return string;
 }
 
 static void
@@ -743,29 +745,9 @@ HIDAPI_AddDevice(struct hid_device_info *info)
 
     /* Need the device name before getting the driver to know whether to ignore this device */
     {
-        char *manufacturer_string = NULL;
-        char *product_string = NULL;
-
-        if (info->manufacturer_string) {
-            manufacturer_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-            if (!manufacturer_string) {
-                if (sizeof(wchar_t) == sizeof(Uint16)) {
-                    manufacturer_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-                } else if (sizeof(wchar_t) == sizeof(Uint32)) {
-                    manufacturer_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-                }
-            }
-        }
-        if (info->product_string) {
-            product_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-            if (!product_string) {
-                if (sizeof(wchar_t) == sizeof(Uint16)) {
-                    product_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-                } else if (sizeof(wchar_t) == sizeof(Uint32)) {
-                    product_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-                }
-            }
-        }
+        char *manufacturer_string = HIDAPI_ConvertString(info->manufacturer_string);
+        char *product_string = HIDAPI_ConvertString(info->product_string);
+        char *serial_number = HIDAPI_ConvertString(info->serial_number);
 
         device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
 
@@ -776,7 +758,14 @@ HIDAPI_AddDevice(struct hid_device_info *info)
             SDL_free(product_string);
         }
 
+        if (serial_number && *serial_number) {
+            device->serial = serial_number;
+        } else {
+            SDL_free(serial_number);
+        }
+
         if (!device->name) {
+            SDL_free(device->serial);
             SDL_free(device->path);
             SDL_free(device);
             return;
@@ -793,7 +782,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     HIDAPI_SetupDeviceDriver(device);
 
 #ifdef DEBUG_HIDAPI
-    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
+    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
 #endif
 }
 
@@ -813,6 +802,7 @@ HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             HIDAPI_CleanupDeviceDriver(device);
 
             SDL_DestroyMutex(device->dev_lock);
+            SDL_free(device->serial);
             SDL_free(device->name);
             SDL_free(device->path);
             SDL_free(device);
@@ -926,7 +916,6 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, cons
 static void
 HIDAPI_JoystickDetect(void)
 {
-    int i;
     if (SDL_AtomicTryLock(&SDL_HIDAPI_spinlock)) {
         HIDAPI_UpdateDiscovery();
         if (SDL_HIDAPI_discovery.m_bHaveDevicesChanged) {
@@ -935,12 +924,6 @@ HIDAPI_JoystickDetect(void)
             SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_FALSE;
         }
         SDL_AtomicUnlock(&SDL_HIDAPI_spinlock);
-    }
-    for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
-        SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->PostUpdate) {
-            driver->PostUpdate();
-        }
     }
 }
 
@@ -1051,6 +1034,10 @@ HIDAPI_JoystickOpen(SDL_Joystick * joystick, int device_index)
         return -1;
     }
 
+    if (!joystick->serial && device->serial) {
+        joystick->serial = SDL_strdup(device->serial);
+    }
+
     joystick->hwdata = hwdata;
     return 0;
 }
@@ -1114,6 +1101,23 @@ HIDAPI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blu
         result = device->driver->SetJoystickLED(device, joystick, red, green, blue);
     } else {
         SDL_SetError("SetLED failed, device disconnected");
+        result = -1;
+    }
+
+    return result;
+}
+
+static int
+HIDAPI_JoystickSetSensorsEnabled(SDL_Joystick * joystick, SDL_bool enabled)
+{
+    int result;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->SetJoystickSensorsEnabled(device, joystick, enabled);
+    } else {
+        SDL_SetError("SetSensorsEnabled failed, device disconnected");
         result = -1;
     }
 
@@ -1196,6 +1200,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickRumbleTriggers,
     HIDAPI_JoystickHasLED,
     HIDAPI_JoystickSetLED,
+    HIDAPI_JoystickSetSensorsEnabled,
     HIDAPI_JoystickUpdate,
     HIDAPI_JoystickClose,
     HIDAPI_JoystickQuit,

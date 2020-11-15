@@ -298,13 +298,13 @@ static int is_BLE(hid_device *dev)
 			"hid",
 			NULL);
 		if (hid_dev) {
-			unsigned short dev_vid;
-			unsigned short dev_pid;
-			int bus_type;
+			unsigned short dev_vid = 0;
+			unsigned short dev_pid = 0;
+			int bus_type = 0;
 			char *serial_number_utf8 = NULL;
 			char *product_name_utf8 = NULL;
 
-			ret = parse_uevent_info(
+			parse_uevent_info(
 			           udev_device_get_sysattr_value(hid_dev, "uevent"),
 			           &bus_type,
 			           &dev_vid,
@@ -719,7 +719,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	dev->device_handle = open(path, O_RDWR);
 
 	/* If we have a good handle, return it. */
-	if (dev->device_handle > 0) {
+	if (dev->device_handle >= 0) {
 
 		/* Get the report descriptor */
 		int res, desc_size = 0;

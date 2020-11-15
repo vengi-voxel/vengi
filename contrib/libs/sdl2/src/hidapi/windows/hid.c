@@ -326,7 +326,7 @@ int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
         { 0x0738, 0x2217 }   /* SPEEDLINK COMPETITION PRO */
     };
 
-    for (i = 0; i < SDL_arraysize(known_bad); i++) {
+    for (i = 0; i < (sizeof(known_bad)/sizeof(known_bad[0])); i++) {
         if ((vendor_id == known_bad[i].vid) && (product_id == known_bad[i].pid)) {
             return 1;
         }
@@ -406,6 +406,11 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 		if (!res) {
 			/* register_error(dev, "Unable to call SetupDiGetDeviceInterfaceDetail");
 			   Continue to the next device. */
+			goto cont;
+		}
+
+		/* XInput devices don't get real HID reports and are better handled by the raw input driver */
+		if (strstr(device_interface_detail_data->DevicePath, "&ig_") != NULL) {
 			goto cont;
 		}
 
@@ -715,6 +720,14 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 	size_t stashed_length = length;
 	unsigned char *buf;
 
+#if 1
+	/* If the application is writing to the device, it knows how much data to write.
+	 * This matches the behavior on other platforms. It's also important when writing
+	 * to Sony game controllers over Bluetooth, where there's a CRC at the end which
+	 * must not be tampered with.
+	 */
+	buf = (unsigned char *) data;
+#else
 	/* Make sure the right number of bytes are passed to WriteFile. Windows
 	   expects the number of bytes which are in the _longest_ report (plus
 	   one for the report number) bytes even if the data is a report
@@ -732,6 +745,7 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 		memset(buf + length, 0, dev->output_report_length - length);
 		length = dev->output_report_length;
 	}
+#endif
 	if (length > 512)
 	{
 		return hid_write_output_report( dev, data, stashed_length );
@@ -911,12 +925,6 @@ int HID_API_EXPORT HID_API_CALL hid_get_feature_report(hid_device *dev, unsigned
 		register_error(dev, "Send Feature Report GetOverLappedResult");
 		return -1;
 	}
-
-	/* bytes_returned does not include the first byte which contains the
-	   report ID. The data buffer actually contains one more byte than
-	   bytes_returned. */
-	bytes_returned++;
-
 
 	return bytes_returned;
 #endif

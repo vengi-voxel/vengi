@@ -146,6 +146,11 @@
 #define SDL_JOYSTICK_VIRTUAL    1
 #define SDL_HAPTIC_IOKIT    1
 
+/* The MFI controller support requires ARC Objective C runtime */
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1080 && !defined(__i386__)
+#define SDL_JOYSTICK_MFI 1
+#endif
+
 /* Enable the dummy sensor driver */
 #define SDL_SENSOR_DUMMY  1
 
@@ -198,7 +203,7 @@
 #endif
 
 /* Metal only supported on 64-bit architectures with 10.11+ */
-#if TARGET_CPU_X86_64 && (MAC_OS_X_VERSION_MAX_ALLOWED >= 101100)
+#if TARGET_RT_64_BIT && (MAC_OS_X_VERSION_MAX_ALLOWED >= 101100)
 #define SDL_PLATFORM_SUPPORTS_METAL    1
 #else
 #define SDL_PLATFORM_SUPPORTS_METAL    0
