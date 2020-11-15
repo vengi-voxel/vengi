@@ -177,10 +177,9 @@ namespace flatbuffers {
   #define FLATBUFFERS_CONSTEXPR_CPP11
 #endif
 
-// This macro is never used in code!
 #if (defined(__cplusplus) && __cplusplus >= 201402L) || \
     (defined(__cpp_constexpr) && __cpp_constexpr >= 201304)
-  #define FLATBUFFERS_CONSTEXPR_CPP14 FLATBUFFERS_CONSTEXPR
+  #define FLATBUFFERS_CONSTEXPR_CPP14 FLATBUFFERS_CONSTEXPR_CPP11
 #else
   #define FLATBUFFERS_CONSTEXPR_CPP14
 #endif
@@ -198,6 +197,7 @@ namespace flatbuffers {
 #if (!defined(_MSC_VER) || _MSC_FULL_VER >= 180020827) && \
     (!defined(__GNUC__) || (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)) || \
     defined(__clang__)
+  #define FLATBUFFERS_DEFAULT_DECLARATION
   #define FLATBUFFERS_DELETE_FUNC(func) func = delete;
 #else
   #define FLATBUFFERS_DELETE_FUNC(func) private: func;

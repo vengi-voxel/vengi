@@ -438,6 +438,10 @@ struct EnumDef : public Definition {
   SymbolTable<EnumVal> vals;
 };
 
+inline bool IsString(const Type &type) {
+  return type.base_type == BASE_TYPE_STRING;
+}
+
 inline bool IsStruct(const Type &type) {
   return type.base_type == BASE_TYPE_STRUCT && type.struct_def->fixed;
 }
@@ -538,6 +542,7 @@ struct IDLOptions {
   std::string cpp_object_api_pointer_type;
   std::string cpp_object_api_string_type;
   bool cpp_object_api_string_flexible_constructor;
+  bool cpp_direct_copy;
   bool gen_nullable;
   bool java_checkerframework;
   bool gen_generated;
@@ -596,6 +601,9 @@ struct IDLOptions {
 
   MiniReflect mini_reflect;
 
+  // If set, require all fields in a table to be explicitly numbered.
+  bool require_explicit_ids;
+
   // The corresponding language bit will be set if a language is included
   // for code generation.
   unsigned long lang_to_generate;
@@ -632,6 +640,7 @@ struct IDLOptions {
         gen_compare(false),
         cpp_object_api_pointer_type("std::unique_ptr"),
         cpp_object_api_string_flexible_constructor(false),
+        cpp_direct_copy(true),
         gen_nullable(false),
         java_checkerframework(false),
         gen_generated(false),
@@ -655,6 +664,7 @@ struct IDLOptions {
         filename_extension(),
         lang(IDLOptions::kJava),
         mini_reflect(IDLOptions::kNone),
+        require_explicit_ids(false),
         lang_to_generate(0),
         set_empty_strings_to_null(true),
         set_empty_vectors_to_null(true) {}
@@ -794,6 +804,11 @@ class Parser : public ParserState {
     }
   }
 
+#ifdef FLATBUFFERS_DEFAULT_DECLARATION
+  Parser(Parser&&) = default;
+  Parser& operator=(Parser&&) = default;
+#endif
+
   // Parse the string containing either schema or JSON data, which will
   // populate the SymbolTable's or the FlatBufferBuilder above.
   // include_paths is used to resolve any include statements, and typically
@@ -807,6 +822,8 @@ class Parser : public ParserState {
   // paths from user input, please call PosixPath on them first.
   bool Parse(const char *_source, const char **include_paths = nullptr,
              const char *source_filename = nullptr);
+
+  bool ParseJson(const char *json, const char *json_filename = nullptr);
 
   // Set the root type. May override the one set in the schema.
   bool SetRootType(const char *name);
@@ -935,6 +952,7 @@ class Parser : public ParserState {
                                     const char **include_paths,
                                     const char *source_filename,
                                     const char *include_filename);
+  FLATBUFFERS_CHECKED_ERROR DoParseJson();
   FLATBUFFERS_CHECKED_ERROR CheckClash(std::vector<FieldDef *> &fields,
                                        StructDef *struct_def,
                                        const char *suffix, BaseType baseType);
@@ -1005,6 +1023,10 @@ extern bool GenerateText(const Parser &parser, const void *flatbuffer,
                          std::string *text);
 extern bool GenerateTextFile(const Parser &parser, const std::string &path,
                              const std::string &file_name);
+
+// Generate Json schema to string
+// See idl_gen_json_schema.cpp.
+extern bool GenerateJsonSchema(const Parser &parser, std::string *json);
 
 // Generate binary files from a given FlatBuffer, and a given Parser
 // object that has been populated with the corresponding schema.
@@ -1146,6 +1168,8 @@ bool GeneratePythonGRPC(const Parser &parser, const std::string &path,
 extern bool GenerateSwiftGRPC(const Parser &parser, const std::string &path,
                               const std::string &file_name);
 
+extern bool GenerateTSGRPC(const Parser &parser, const std::string &path,
+                             const std::string &file_name);
 }  // namespace flatbuffers
 
 #endif  // FLATBUFFERS_IDL_H_

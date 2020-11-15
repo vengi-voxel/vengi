@@ -25,6 +25,8 @@ set(COMPILER_SRCS
 	compiler/src/compiler/swift_generator.h
 	compiler/src/compiler/python_generator.cc
 	compiler/src/compiler/python_generator.h
+	compiler/src/compiler/ts_generator.cc
+	compiler/src/compiler/ts_generator.h
 	compiler/code_generators.cpp
 	compiler/flatc.cpp
 	compiler/flatc_main.cpp
