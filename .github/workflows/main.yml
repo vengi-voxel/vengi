@@ -133,20 +133,13 @@ jobs:
         - uses: actions/checkout@v1
 
         - name: Setup
-          uses: lukka/run-vcpkg@v2
+          uses: lukka/run-vcpkg@v6
           id: runvcpkg
-          env:
-            VCPKG_DEFAULT_TRIPLET: x64-windows
-            VCPKG_BUILD_TYPE: release
           with:
-            vcpkgGitCommitId: 2f7a104d4d6f1f3790db929f85a4086aa6973d7f
             vcpkgTriplet: 'x64-windows'
             vcpkgArguments: 'libpq'
 
         - name: Build
-          env:
-            VCPKG_DEFAULT_TRIPLET: x64-windows
-            VCPKG_BUILD_TYPE: release
           run: |
             mkdir build
             cd build
