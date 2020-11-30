@@ -97,7 +97,7 @@ void Client::sendMovement() {
 
 void Client::onEvent(const network::DisconnectEvent& event) {
 	_network->destroy();
-	pushWindow("main");
+	rootWindow("main");
 	pushWindow("disconnect_info");
 }
 
@@ -107,7 +107,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 
 void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
 	Log::info("world created");
-	pushWindow("hud");
+	rootWindow("hud");
 }
 
 app::AppState Client::onConstruct() {
