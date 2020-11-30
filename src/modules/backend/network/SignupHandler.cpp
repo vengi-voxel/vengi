@@ -57,6 +57,7 @@ void SignupHandler::executeWithRaw(ENetPeer* peer, const void* raw, const uint8_
 	db::UserModel userModel;
 	userModel.setEmail(email);
 	userModel.setValidated(false);
+	userModel.setName(email);
 	userModel.setPassword(core::pwhash(password, "TODO"));
 	if (!_dbHandler->insert(userModel)) {
 		Log::error("Failed to register user for %s", email.c_str());
