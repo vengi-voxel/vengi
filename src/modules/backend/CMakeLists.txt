@@ -17,6 +17,8 @@ set(SRCS
 	network/MoveHandler.h
 	network/TriggerActionHandler.h
 	network/UserConnectHandler.cpp network/UserConnectHandler.h
+	network/SignupHandler.cpp network/SignupHandler.h
+	network/SignupValidateHandler.cpp network/SignupValidateHandler.h
 	network/UserConnectedHandler.h
 	network/UserDisconnectHandler.h
 	network/VarUpdateHandler.h

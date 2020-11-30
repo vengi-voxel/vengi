@@ -10,6 +10,18 @@ table UserConnect {
 	password:string (required);
 }
 
+// signup - verify your email - and enter the token
+table Signup {
+	email:string (required);
+	password:string (required);
+}
+
+// the token to claim a newly registered email
+table SignupValidate {
+	email:string (required);
+	token:string (required);
+}
+
 /// a message that the client is sending once the connection is successful and it is
 /// ready to receive more data
 table UserConnected {
@@ -31,7 +43,7 @@ table Move {
 	yaw:float;
 }
 
-union ClientMsgType { VarUpdate, UserConnect, UserConnected, UserDisconnect, TriggerAction, Move }
+union ClientMsgType { VarUpdate, UserConnect, Signup, SignupValidate, UserConnected, UserDisconnect, TriggerAction, Move }
 
 table ClientMessage {
 	data:ClientMsgType;

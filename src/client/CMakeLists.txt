@@ -12,11 +12,11 @@ set(LUA_SRCS
 	ui/window/auth_failed.lua
 	ui/window/disconnect.lua
 	ui/window/hud.lua
-	ui/window/login.lua
 	ui/window/main.lua
 	ui/window/options.lua
 	ui/window/popup.lua
 	ui/window/style.lua
+	ui/window/validation_failed.lua
 	ui/${PROJECT_NAME}.lua
 )
 

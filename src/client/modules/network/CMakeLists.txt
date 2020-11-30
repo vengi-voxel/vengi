@@ -7,6 +7,7 @@ set(SRCS
 	EntitySpawnHandler.h
 	EntityUpdateHandler.h
 	IClientProtocolHandler.h
+	SignupValidationStateHandler.h
 	StartCooldownHandler.h
 	StopCooldownHandler.h
 	UserInfoHandler.h

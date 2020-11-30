@@ -8,6 +8,11 @@ namespace network;
 table AuthFailed {
 }
 
+/// signup validation response
+table SignupValidationState {
+	state:bool = false;
+}
+
 /// this message is sent whenever a user gets into the visible area of another user
 table UserSpawn {
 	id:long (key);
@@ -86,7 +91,8 @@ union ServerMsgType {
 	StartCooldown,
 	StopCooldown,
 	VarUpdate,
-	UserInfo
+	UserInfo,
+	SignupValidationState
 }
 
 table ServerMessage {

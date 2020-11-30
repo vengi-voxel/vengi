@@ -25,6 +25,7 @@
 #include "network/VarUpdateHandler.h"
 #include "network/StartCooldownHandler.h"
 #include "network/StopCooldownHandler.h"
+#include "network/SignupValidationStateHandler.h"
 #include "audio/SoundManager.h"
 #include "voxel/MaterialColor.h"
 #include "metric/Metric.h"
@@ -101,14 +102,7 @@ void Client::onEvent(const network::DisconnectEvent& event) {
 }
 
 void Client::onEvent(const network::NewConnectionEvent& event) {
-	flatbuffers::FlatBufferBuilder fbb;
-	const core::String& email = core::Var::getSafe(cfg::ClientEmail)->strVal();
-	const core::String& password = core::Var::getSafe(cfg::ClientPassword)->strVal();
-	Log::info("Trying to log into the server with %s", email.c_str());
-	const core::String& pwhash = core::pwhash(password, "TODO");
-	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnect,
-			network::CreateUserConnect(fbb, fbb.CreateString(email.c_str(), email.size()),
-			fbb.CreateString(pwhash.c_str(), pwhash.size())).Union());
+	Log::info("Connection succesful");
 }
 
 void Client::onEvent(const voxelworld::WorldCreatedEvent& event) {
@@ -171,6 +165,7 @@ app::AppState Client::onInit() {
 	r->registerHandler(network::ServerMsgType::StartCooldown, std::make_shared<StartCooldownHandler>());
 	r->registerHandler(network::ServerMsgType::StopCooldown, std::make_shared<StopCooldownHandler>());
 	r->registerHandler(network::ServerMsgType::VarUpdate, std::make_shared<VarUpdateHandler>());
+	r->registerHandler(network::ServerMsgType::SignupValidationState, std::make_shared<SignupValidationStateHandler>());
 	r->registerHandler(network::ServerMsgType::UserInfo, std::make_shared<UserInfoHandler>());
 
 	app::AppState state = Super::onInit();
@@ -420,6 +415,43 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnected,
 			network::CreateUserConnected(fbb).Union());
+}
+
+bool Client::signup(const core::String &email, const core::String &password) {
+	Log::info("Signup %s", email.c_str());
+	flatbuffers::FlatBufferBuilder fbb;
+	return _messageSender->sendClientMessage(fbb, network::ClientMsgType::Signup,
+			network::CreateSignupDirect(fbb, email.c_str(), password.c_str()).Union());
+}
+
+bool Client::validate(const core::String &email, const core::String &token) {
+	flatbuffers::FlatBufferBuilder fbb;
+	return _messageSender->sendClientMessage(fbb, network::ClientMsgType::SignupValidate,
+			network::CreateSignupValidateDirect(fbb, email.c_str(), token.c_str()).Union());
+}
+
+void Client::validationState(bool state) {
+	if (state) {
+		return;
+	}
+	pushWindow("validation_failed");
+}
+
+bool Client::isConnected() const {
+	return _network->isConnected();
+}
+
+bool Client::isConnecting() const {
+	return _network->isConnecting();
+}
+
+bool Client::auth(const core::String &email, const core::String &password) {
+	flatbuffers::FlatBufferBuilder fbb;
+	Log::info("Trying to log into the server with %s", email.c_str());
+	const core::String& pwhash = core::pwhash(password, "TODO");
+	return _messageSender->sendClientMessage(fbb, network::ClientMsgType::UserConnect,
+			network::CreateUserConnect(fbb, fbb.CreateString(email.c_str(), email.size()),
+			fbb.CreateString(pwhash.c_str(), pwhash.size())).Union());
 }
 
 bool Client::connect(uint16_t port, const core::String& hostname) {

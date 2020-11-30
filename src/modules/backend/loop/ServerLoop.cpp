@@ -25,6 +25,8 @@
 #include "backend/network/TriggerActionHandler.h"
 #include "backend/network/VarUpdateHandler.h"
 #include "backend/network/MoveHandler.h"
+#include "backend/network/SignupHandler.h"
+#include "backend/network/SignupValidateHandler.h"
 #include "persistence/PersistenceMgr.h"
 #include "backend/world/World.h"
 #include "command/CommandHandler.h"
@@ -183,6 +185,7 @@ void ServerLoop::construct() {
 		db::UserModel model;
 		model.setEmail(email);
 		model.setName(user);
+		model.setValidated(false);
 		model.setPassword(core::pwhash(passwd, "TODO"));
 		if (!_dbHandler->insert(model)) {
 			Log::error("Failed to register user");
@@ -263,6 +266,10 @@ bool ServerLoop::init() {
 		Log::error("Failed to create user table");
 		return false;
 	}
+	if (!_dbHandler->createOrUpdateTable(db::SignupModel())) {
+		Log::error("Failed to create signup table");
+		return false;
+	}
 	if (!_dbHandler->createOrUpdateTable(db::AttribModel())) {
 		Log::error("Failed to create attrib table");
 		return false;
@@ -319,6 +326,8 @@ bool ServerLoop::init() {
 	r->registerHandler(network::ClientMsgType::UserConnect, std::make_shared<UserConnectHandler>(
 			_network, _mapProvider, _dbHandler, _persistenceMgr, _entityStorage, _messageSender,
 			_timeProvider, _attribContainerProvider, _cooldownProvider, _stockDataProvider));
+	r->registerHandler(network::ClientMsgType::Signup, std::make_shared<SignupHandler>(_dbHandler));
+	r->registerHandler(network::ClientMsgType::SignupValidate, std::make_shared<SignupValidateHandler>(_network, _dbHandler, _messageSender));
 	r->registerHandler(network::ClientMsgType::UserConnected, std::make_shared<UserConnectedHandler>());
 	r->registerHandler(network::ClientMsgType::UserDisconnect, std::make_shared<UserDisconnectHandler>());
 	r->registerHandler(network::ClientMsgType::TriggerAction, std::make_shared<TriggerActionHandler>());

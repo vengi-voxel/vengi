@@ -100,10 +100,17 @@ public:
 	void onEvent(const voxelworld::WorldCreatedEvent& event) override;
 	void onEvent(const network::DisconnectEvent& event) override;
 
+	bool isConnected() const;
+	bool isConnecting() const;
 	bool connect(uint16_t port, const core::String& hostname);
-	void authFailed();
 	void disconnect();
-	/** @brief spawns our own player */
+	bool auth(const core::String &email, const core::String &password);
+	void authFailed();
+	bool signup(const core::String &email, const core::String &password);
+	bool validate(const core::String &email, const core::String &token);
+	void validationState(bool state);
+
+	/** @brief spawn our own player */
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
 
 	void entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos, animation::Animation animation);

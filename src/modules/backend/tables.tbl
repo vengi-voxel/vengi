@@ -10,6 +10,12 @@ table user {
 		lowercase
 		operator set
 	}
+	field validated {
+		type boolean
+		notnull
+		default false
+		operator set
+	}
 	field name {
 		type string
 		notnull
@@ -38,6 +44,22 @@ table user {
 		name unique
 		id primarykey
 		id autoincrement 1000000
+	}
+}
+
+table signup {
+	namespace backend
+	field userid {
+		type long
+		operator set
+	}
+	field token {
+		type string
+		notnull
+		operator set
+	}
+	constraints {
+		userid foreignkey user id
 	}
 }
 
