@@ -4,6 +4,10 @@ Convert voxel volume formats between each other or export to obj or ply.
 
 [Supported voxel formats](../Formats.md)
 
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxconvert-export-to-obj.png)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxconvert-export-obj.png)
+
 ## Usage
 
 `./vengi-voxconvert --merge --scale infile outfile`

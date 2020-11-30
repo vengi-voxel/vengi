@@ -2,6 +2,8 @@
 
 This is an opensource, cross platform voxel volume editor.
 
+You can load and save a lot of different [voxel formats](../Formats.md).
+
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/dwarf-in-editor.jpeg)
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-custom-shader.png)

@@ -40,4 +40,11 @@ nav:
       - Shader integration: ShaderTool.md
       - Compute Shader integration: ComputeShaderTool.md
       - Persistence: Persistence.md
+      - Animations: Animations.md
+      - Attributes: Attributes.md
+      - Network: Network.md
       - AI development: AIRemoteDebugger.md
+  - Test applications:
+      - TestAnimation: TestAnimation.md
+      - Traze: Traze.md
+      - VisualTests.md

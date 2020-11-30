@@ -1,7 +1,5 @@
 # Traze
 
-## About
-
 This is a voxel based representation of the traze game available at [traze.iteratec.de](https://traze.iteratec.de).
 
 It uses mqtt for communication. The lib that is used for this is [mosquitto](https://github.com/eclipse/mosquitto).
@@ -12,7 +10,7 @@ to move your bike, you are joined.
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/traze.png)
 
-## TODO
+# TODO
 
 * add scoreboard menu
 * player explosions

@@ -1,6 +1,5 @@
 local c_halfPi = math.pi/ 2.0
 local toolOrientation = boneutil.rotateYZ(math.rad(-90.0), math.rad(110.0))
-local vec3_one = vec3.new(1.0, 1.0, 1.0)
 
 function swim(animTime, velocity, skeleton, skeletonAttr)
 	local timeFactor = skeletonAttr.runTimeFactor
