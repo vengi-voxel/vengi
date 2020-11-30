@@ -19,6 +19,10 @@ AbstractViewport::AbstractViewport() :
 }
 
 AbstractViewport::~AbstractViewport() {
+	shutdown();
+}
+
+void AbstractViewport::shutdown() {
 	_frameBuffer.shutdown();
 	_edgeShader.shutdown();
 }
@@ -62,9 +66,9 @@ void AbstractViewport::resize(const glm::ivec2& frameBufferSize) {
 	_texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 }
 
-bool AbstractViewport::init(ViewportController::SceneCameraMode mode, ViewportController::RenderMode renderMode) {
-	_controller.init(mode);
-	_controller.setRenderMode(renderMode);
+bool AbstractViewport::init() {
+	setMode(ViewportController::SceneCameraMode::Free);
+	setRenderMode(ViewportController::RenderMode::Editor);
 
 	if (!_edgeShader.setup()) {
 		return false;
@@ -77,10 +81,19 @@ bool AbstractViewport::init(ViewportController::SceneCameraMode mode, ViewportCo
 	return true;
 }
 
+void AbstractViewport::setMode(ViewportController::SceneCameraMode mode) {
+	_controller.init(mode);
+}
+
+void AbstractViewport::setRenderMode(ViewportController::RenderMode renderMode) {
+	_controller.setRenderMode(renderMode);
+}
+
 void AbstractViewport::update() {
-	if (_controller.renderMode() == ViewportController::RenderMode::Editor) {
-		camera().setTarget(glm::vec3(voxedit::sceneMgr().referencePosition()));
+	if (_controller.renderMode() != ViewportController::RenderMode::Editor) {
+		return;
 	}
+	camera().setTarget(glm::vec3(voxedit::sceneMgr().referencePosition()));
 }
 
 void AbstractViewport::cursorMove(bool rotate, int x, int y) {

@@ -151,6 +151,7 @@ public:
 	VoxEditWindow(ui::turbobadger::UIApp* tool);
 	~VoxEditWindow();
 	bool init();
+	void shutdown();
 
 	// commands
 	void toggleViewport();

@@ -30,9 +30,11 @@ protected:
 public:
 	~AbstractViewport();
 
-	bool init(ViewportController::SceneCameraMode mode = ViewportController::SceneCameraMode::Free,
-			ViewportController::RenderMode renderMode = ViewportController::RenderMode::Editor);
-	void update();
+	virtual bool init();
+	void setMode(ViewportController::SceneCameraMode mode = ViewportController::SceneCameraMode::Free);
+	void setRenderMode(ViewportController::RenderMode renderMode = ViewportController::RenderMode::Editor);
+	virtual void shutdown();
+	virtual void update();
 	void resetCamera();
 	bool saveImage(const char* filename);
 
