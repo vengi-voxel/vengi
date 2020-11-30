@@ -84,7 +84,7 @@ bool CooldownMgr::isCooldown(Type type) {
 		Log::trace("Cooldown of type %i is not running", core::enumVal(type));
 		return false;
 	}
-	Log::debug("Cooldown of type %i is running and has a runtime of %lims",
+	Log::trace("Cooldown of type %i is running and has a runtime of %lims",
 			core::enumVal(type), c->duration());
 	return true;
 }
