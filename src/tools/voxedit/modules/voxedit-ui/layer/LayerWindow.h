@@ -15,7 +15,7 @@ enum class LayerWindowType {
 	Edit
 };
 
-constexpr const int MaxVolumeSize = 128;
+constexpr const int MaxVolumeSize = 256;
 struct LayerSettings {
 	core::String name;
 	glm::ivec3 position;
