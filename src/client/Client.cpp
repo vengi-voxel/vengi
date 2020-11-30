@@ -97,7 +97,7 @@ void Client::sendMovement() {
 
 void Client::onEvent(const network::DisconnectEvent& event) {
 	_network->destroy();
-	pushWindow("login");
+	pushWindow("main");
 	pushWindow("disconnect_info");
 }
 
