@@ -5,6 +5,7 @@
 #include "AbstractDatabaseTest.h"
 #include "TestModel.h"
 #include "BlobtestModel.h"
+#include "persistence/DBCondition.h"
 #include "persistence/DBHandler.h"
 #include "engine-config.h"
 
@@ -163,6 +164,31 @@ TEST_F(DatabaseModelTest, testSelectAll) {
 		++count;
 	}));
 	EXPECT_EQ(count, expected);
+}
+
+TEST_F(DatabaseModelTest, testCount) {
+	if (!_supported) {
+		return;
+	}
+	int64_t id = -1L;
+	const int expected = 5;
+	for (int i = 0; i < expected; ++i) {
+		createModel(core::string::format("testCount%i@b.c.d", i), "secret", id);
+	}
+	EXPECT_EQ(expected, _dbHandler.count(db::TestModel(), persistence::DBConditionOne()));
+}
+
+TEST_F(DatabaseModelTest, testCountCondition) {
+	if (!_supported) {
+		return;
+	}
+	int64_t id = -1L;
+	const int expected = 5;
+	for (int i = 0; i < expected; ++i) {
+		createModel(core::string::format("testCountCondition%i@b.c.d", i), "secret", id);
+	}
+	EXPECT_EQ(0, _dbHandler.count(db::TestModel(), db::DBConditionTestModelEmail("foo@bar.de")));
+	EXPECT_EQ(1, _dbHandler.count(db::TestModel(), db::DBConditionTestModelEmail("testCountCondition0@b.c.d")));
 }
 
 TEST_F(DatabaseModelTest, testSelectByEmail) {

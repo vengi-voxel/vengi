@@ -86,6 +86,17 @@ bool State::asBool(int colIndex) const {
 	return isBool(value);
 }
 
+int State::asInt(int colIndex) const {
+	const char *value;
+	int length;
+	bool isNull;
+	getResult(colIndex, FieldType::INT, &value, &length, &isNull);
+	if (length == 0) {
+		return 0;
+	}
+	return core::string::toInt(value);
+}
+
 const char *State::columnName(int colIndex) const {
 #ifdef HAVE_POSTGRES
 	return PQfname(res, colIndex);
@@ -147,7 +158,7 @@ void State::checkLastResult(ConnectionType* connection) {
 	switch (lastState) {
 	case PGRES_NONFATAL_ERROR: {
 		char *lastErrorMsg = PQerrorMessage(connection);
-		Log::warn("Mon fatal error: %s", lastErrorMsg);
+		Log::warn("Non fatal error: %s", lastErrorMsg);
 		PQfreemem(lastErrorMsg);
 		result = true;
 		break;

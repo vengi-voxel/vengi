@@ -31,7 +31,7 @@ Workflow to update a table:
 - Edit the `tbl` file
 - Run your build
 - Run the application
-  - The table, constraint, sequence... is updated to the state that is defined in your code. This allows you to go back and forth in your commits to test things. ***But keep in mind that removing a column from a table can lead to data loss. Because readding it, doesn't remember the previous values of course.***
+  - The table, constraint, sequence... is updated to the state that is defined in your code. This allows you to go back and forth in your commits to test things. ***But keep in mind that removing a column from a table can lead to data loss. Because re-adding it, doesn't remember the previous values of course.***
 
 ### Select by condition
 

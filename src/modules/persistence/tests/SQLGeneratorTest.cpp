@@ -88,6 +88,10 @@ TEST_F(SQLGeneratorTest, testInsertAutoIncrementGiven) {
 			createInsertStatement(model));
 }
 
+TEST_F(SQLGeneratorTest, testCount) {
+	ASSERT_EQ(R"(SELECT COUNT(*) FROM "public"."test")", createCountStatement(db::TestModel()));
+}
+
 TEST_F(SQLGeneratorTest, testInsertMultiple) {
 	const int amount = 10;
 	std::vector<db::TestModel> models(amount);

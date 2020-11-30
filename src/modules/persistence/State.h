@@ -61,6 +61,8 @@ public:
 	bool asBool(int colIndex) const;
 	static bool isBool(const char *value);
 
+	int asInt(int colIndex) const;
+
 	ResultType* res = nullptr;
 
 	char* lastErrorMsg = nullptr;

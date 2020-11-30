@@ -43,6 +43,26 @@ Connection* DBHandler::connection() const {
 	return _connectionPool.connection();
 }
 
+int DBHandler::count(const Model& model, const DBCondition& condition) {
+	BindParam params(10);
+	const core::String& query = createCountStatement(model, &params);
+	int conditionAmount = params.position;
+	const core::String& where = createWhere(condition, conditionAmount);
+	const int conditionOffset = conditionAmount - params.position;
+	if (conditionOffset > 0) {
+		const State s = execInternalWithCondition(query + where, params, conditionOffset, condition);
+		if (!s.result) {
+			return -1;
+		}
+		return s.asInt(0);
+	}
+	const State s = execInternalWithParameters(query + where, params);
+	if (!s.result) {
+		return -1;
+	}
+	return s.asInt(0);
+}
+
 bool DBHandler::update(Model& model, const DBCondition& condition) const {
 	BindParam params(10);
 	const core::String& query = createUpdateStatement(model, &params);

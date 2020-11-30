@@ -29,6 +29,7 @@ extern core::String createInsertValuesStatement(const Model& table, BindParam* p
 extern core::String createInsertStatement(const Model& model, BindParam* params = nullptr, int* parameterCount = nullptr);
 extern core::String createInsertStatement(const std::vector<const Model*>& tables, BindParam* params = nullptr, int* parameterCount = nullptr);
 
+extern core::String createCountStatement(const Model& model, BindParam* params = nullptr);
 extern core::String createSelect(const Model& model, BindParam* params = nullptr);
 extern const char* createTransactionBegin();
 extern const char* createTransactionCommit();

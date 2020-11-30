@@ -654,6 +654,14 @@ static void createWhereStatementsForKeys(core::String& stmt, int& index, const M
 	}
 }
 
+core::String createCountStatement(const Model& model, BindParam* params) {
+	core::String stmt = "SELECT COUNT(*) FROM ";
+	createTableIdentifier(stmt, model);
+	int index = 1;
+	createWhereStatementsForKeys(stmt, index, model, params);
+	return stmt;
+}
+
 core::String createUpdateStatement(const Model& model, BindParam* params, int* parameterCount) {
 	core::String stmt;
 	stmt += "UPDATE ";

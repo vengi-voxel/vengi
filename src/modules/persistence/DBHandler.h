@@ -212,6 +212,11 @@ public:
 
 	bool insert(std::vector<const Model*>& models) const;
 
+	/**
+	 * @return @c -1 on error - otherwise the result of the count
+	 */
+	int count(const Model& model, const DBCondition& condition);
+
 	template<class MODEL>
 	bool insert(std::vector<MODEL>& models) const {
 		std::vector<const Model*> converted(models.size());
