@@ -120,7 +120,7 @@ SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 
     for (i = 0; i < raw_device_count; i++) {
         RID_DEVICE_INFO rdi;
-        char devName[128];
+        char devName[MAX_PATH];
         UINT rdiSize = sizeof(rdi);
         UINT nameSize = SDL_arraysize(devName);
 
@@ -249,7 +249,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 #endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT
-        if (!ignore_joystick && RAWINPUT_IsDevicePresent(vendor, product, version)) {
+        if (!ignore_joystick && RAWINPUT_IsDevicePresent(vendor, product, version, name)) {
             ignore_joystick = SDL_TRUE;
         }
 #endif

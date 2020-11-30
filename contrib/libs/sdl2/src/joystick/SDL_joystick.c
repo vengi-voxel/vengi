@@ -1036,6 +1036,7 @@ SDL_JoystickClose(SDL_Joystick *joystick)
         SDL_free(touchpad->fingers);
     }
     SDL_free(joystick->touchpads);
+    SDL_free(joystick->sensors);
     SDL_free(joystick);
 
     SDL_UnlockJoysticks();
@@ -1638,6 +1639,7 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     } replacements[] = {
         { "NVIDIA Corporation ", "" },
         { "Performance Designed Products", "PDP" },
+        { "HORI CO.,LTD.", "HORI" },
         { "HORI CO.,LTD", "HORI" },
     };
     const char *custom_name;
@@ -1725,6 +1727,12 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     }
 
     return name;
+}
+
+SDL_GameControllerType
+SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product)
+{
+    return SDL_GetJoystickGameControllerType(NULL, vendor, product, -1, 0, 0, 0);
 }
 
 SDL_GameControllerType
