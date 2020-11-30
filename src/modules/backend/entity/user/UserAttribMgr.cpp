@@ -39,8 +39,9 @@ bool UserAttribMgr::init() {
 	}
 
 	// initialize the models
-	_dirtyModels.resize(int(attrib::Type::MAX));
-	for (std::underlying_type<attrib::Type>::type i = 0; i < int(attrib::Type::MAX); ++i) {
+	const int maxDirtyModels = core::enumVal(attrib::Type::MAX);
+	_dirtyModels.resize(maxDirtyModels + 1);
+	for (int i = 0; i <= maxDirtyModels; ++i) {
 		db::AttribModel& model = _dirtyModels[i];
 		model.setAttribtype(i);
 		model.setUserid(_userId);
