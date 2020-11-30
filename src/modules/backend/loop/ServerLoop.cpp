@@ -259,19 +259,19 @@ bool ServerLoop::init() {
 		Log::error("Failed to init the dbhandler");
 		return false;
 	}
-	if (!_dbHandler->createTable(db::UserModel())) {
+	if (!_dbHandler->createOrUpdateTable(db::UserModel())) {
 		Log::error("Failed to create user table");
 		return false;
 	}
-	if (!_dbHandler->createTable(db::AttribModel())) {
+	if (!_dbHandler->createOrUpdateTable(db::AttribModel())) {
 		Log::error("Failed to create attrib table");
 		return false;
 	}
-	if (!_dbHandler->createTable(db::InventoryModel())) {
+	if (!_dbHandler->createOrUpdateTable(db::InventoryModel())) {
 		Log::error("Failed to create stock table");
 		return false;
 	}
-	if (!_dbHandler->createTable(db::CooldownModel())) {
+	if (!_dbHandler->createOrUpdateTable(db::CooldownModel())) {
 		Log::error("Failed to create cooldown table");
 		return false;
 	}
