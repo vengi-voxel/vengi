@@ -43,7 +43,16 @@ table Move {
 	yaw:float;
 }
 
-union ClientMsgType { VarUpdate, UserConnect, Signup, SignupValidate, UserConnected, UserDisconnect, TriggerAction, Move }
+union ClientMsgType {
+	VarUpdate,
+	UserConnect,
+	Signup,
+	SignupValidate,
+	UserConnected,
+	UserDisconnect,
+	TriggerAction,
+	Move
+}
 
 table ClientMessage {
 	data:ClientMsgType;
