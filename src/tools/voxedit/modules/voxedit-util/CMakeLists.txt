@@ -8,6 +8,7 @@ set(SRCS
 	Config.h
 
 	AbstractViewport.h AbstractViewport.cpp
+	AbstractMainWindow.h AbstractMainWindow.cpp
 	ViewportController.h ViewportController.cpp
 
 	anim/VolumeCache.h anim/VolumeCache.cpp

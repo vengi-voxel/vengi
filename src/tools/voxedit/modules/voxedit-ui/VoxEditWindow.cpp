@@ -50,8 +50,8 @@ static const struct {
 };
 static_assert(lengthof(treeTypes) == (int)voxelgenerator::TreeType::Max, "Missing support for tree types in the ui");
 
-VoxEditWindow::VoxEditWindow(ui::turbobadger::UIApp* tool) :
-		Super(tool) {
+VoxEditWindow::VoxEditWindow(::ui::turbobadger::UIApp* tool) :
+		Super(tool), AbstractMainWindow(tool) {
 	setSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 	for (int i = 0; i < lengthof(treeTypes); ++i) {
 		addStringItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
@@ -311,9 +311,12 @@ bool VoxEditWindow::init() {
 		}
 		afterLoad("");
 	}
-	_scene->setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
+	((Viewport*)_scene)->setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
 
 	return true;
+}
+
+void VoxEditWindow::shutdown() {
 }
 
 tb::TBWidget* VoxEditWindow::createTreeParameterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name) {
@@ -525,34 +528,34 @@ bool VoxEditWindow::isPaletteWidgetDropTarget() const {
 }
 
 bool VoxEditWindow::isSceneHovered() const {
-	return tb::TBWidget::hovered_widget == _scene
-			|| tb::TBWidget::hovered_widget == _sceneTop
-			|| tb::TBWidget::hovered_widget == _sceneLeft
-			|| tb::TBWidget::hovered_widget == _sceneFront
-			|| tb::TBWidget::hovered_widget == _sceneAnimation;
+	return tb::TBWidget::hovered_widget == (tb::TBWidget*)_scene
+			|| tb::TBWidget::hovered_widget == (tb::TBWidget*)_sceneTop
+			|| tb::TBWidget::hovered_widget == (tb::TBWidget*)_sceneLeft
+			|| tb::TBWidget::hovered_widget == (tb::TBWidget*)_sceneFront
+			|| tb::TBWidget::hovered_widget == (tb::TBWidget*)_sceneAnimation;
 }
 
 void VoxEditWindow::toggleViewport() {
 	bool vis = false;
 	if (_sceneTop != nullptr) {
-		vis = _sceneTop->getVisibilityCombined();
+		vis = ((Viewport*)_sceneTop)->getVisibilityCombined();
 	}
 	if (!vis && _sceneLeft != nullptr) {
-		vis = _sceneLeft->getVisibilityCombined();
+		vis = ((Viewport*)_sceneLeft)->getVisibilityCombined();
 	}
 	if (!vis && _sceneFront != nullptr) {
-		vis = _sceneFront->getVisibilityCombined();
+		vis = ((Viewport*)_sceneFront)->getVisibilityCombined();
 	}
 
 	const tb::WIDGET_VISIBILITY visibility = vis ? tb::WIDGET_VISIBILITY_GONE : tb::WIDGET_VISIBILITY_VISIBLE;
 	if (_sceneTop != nullptr) {
-		_sceneTop->setVisibility(visibility);
+		((Viewport*)_sceneTop)->setVisibility(visibility);
 	}
 	if (_sceneLeft != nullptr) {
-		_sceneLeft->setVisibility(visibility);
+		((Viewport*)_sceneLeft)->setVisibility(visibility);
 	}
 	if (_sceneFront != nullptr) {
-		_sceneFront->setVisibility(visibility);
+		((Viewport*)_sceneFront)->setVisibility(visibility);
 	}
 }
 
@@ -1101,33 +1104,6 @@ void VoxEditWindow::quit() {
 	close();
 }
 
-bool VoxEditWindow::importAsPlane(const core::String& file) {
-	if (file.empty()) {
-		getApp()->openDialog([this] (const core::String file) { importAsPlane(file); }, "png");
-		return true;
-	}
-
-	return sceneMgr().importAsPlane(file);
-}
-
-bool VoxEditWindow::importPalette(const core::String& file) {
-	if (file.empty()) {
-		getApp()->openDialog([this] (const core::String file) { importPalette(file); }, "png");
-		return true;
-	}
-
-	return sceneMgr().importPalette(file);
-}
-
-bool VoxEditWindow::importHeightmap(const core::String& file) {
-	if (file.empty()) {
-		getApp()->openDialog([this] (const core::String file) { importHeightmap(file); }, "png");
-		return true;
-	}
-
-	return sceneMgr().importHeightmap(file);
-}
-
 bool VoxEditWindow::save(const core::String& file) {
 	if (file.empty()) {
 		getApp()->saveDialog([this] (const core::String uifile) {save(uifile); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
@@ -1141,49 +1117,6 @@ bool VoxEditWindow::save(const core::String& file) {
 	Log::info("Saved the model to %s", file.c_str());
 	_lastOpenedFile->setVal(file);
 	return true;
-}
-
-bool VoxEditWindow::saveScreenshot(const core::String& file) {
-	if (file.empty()) {
-		getApp()->saveDialog([this] (const core::String file) {saveScreenshot(file); }, "png");
-		return true;
-	}
-	if (!_scene->saveImage(file.c_str())) {
-		Log::warn("Failed to save screenshot");
-		return false;
-	}
-	Log::info("Screenshot created at '%s'", file.c_str());
-	return true;
-}
-
-void VoxEditWindow::resetCamera() {
-	_scene->resetCamera();
-	if (_sceneTop != nullptr) {
-		_sceneTop->resetCamera();
-	}
-	if (_sceneLeft != nullptr) {
-		_sceneLeft->resetCamera();
-	}
-	if (_sceneFront != nullptr) {
-		_sceneFront->resetCamera();
-	}
-	if (_sceneAnimation != nullptr) {
-		_sceneAnimation->resetCamera();
-	}
-}
-
-bool VoxEditWindow::prefab(const core::String& file) {
-	if (file.empty()) {
-		getApp()->openDialog([this] (const core::String file) { prefab(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
-		return true;
-	}
-
-	return sceneMgr().prefab(file);
-}
-
-void VoxEditWindow::afterLoad(const core::String& file) {
-	_lastOpenedFile->setVal(file);
-	resetCamera();
 }
 
 bool VoxEditWindow::loadAnimationEntity(const core::String& file) {

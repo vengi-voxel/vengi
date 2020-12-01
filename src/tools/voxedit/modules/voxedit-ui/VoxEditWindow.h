@@ -14,6 +14,7 @@
 #include "core/collection/List.h"
 #include "math/Axis.h"
 #include "voxelgenerator/TreeContext.h"
+#include "voxedit-util/AbstractMainWindow.h"
 
 class Viewport;
 class PaletteWidget;
@@ -30,14 +31,9 @@ namespace voxedit {
 /**
  * @brief Voxel editing tools panel
  */
-class VoxEditWindow: public ui::turbobadger::Window {
+class VoxEditWindow: public ui::turbobadger::Window, public AbstractMainWindow {
 private:
 	using Super = ui::turbobadger::Window;
-	Viewport* _scene = nullptr;
-	Viewport* _sceneTop = nullptr;
-	Viewport* _sceneLeft = nullptr;
-	Viewport* _sceneFront = nullptr;
-	Viewport* _sceneAnimation = nullptr;
 	tb::TBLayout* _animationWidget = nullptr;
 	PaletteWidget* _paletteWidget = nullptr;
 	LayerWidget* _layerWidget = nullptr;
@@ -103,7 +99,6 @@ private:
 	tb::TBSelectDropdown *_treeType = nullptr;
 	tb::TBCheckBox *_treeAutoGenerateOnChange = nullptr;
 	tb::TBWidget *_treeSection = nullptr;
-	voxelgenerator::TreeContext _treeGeneratorContext;
 	void switchTreeType(voxelgenerator::TreeType treeType);
 	tb::TBWidget* createTreeParameterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name);
 
@@ -112,11 +107,6 @@ private:
 	tb::TBSelectDropdown *_scriptType = nullptr;
 	tb::TBGenericStringItemSource _scriptItems;
 	void switchScriptType(const core::String& scriptName);
-	core::String _activeScript;
-
-	core::String _loadFile;
-
-	core::String _lastExecutedCommand;
 
 	tb::TBGenericStringItemSource _treeItems;
 	tb::TBGenericStringItemSource _fileItems;
@@ -129,15 +119,6 @@ private:
 	tb::TBCheckBox *_showLockAxis = nullptr;
 	tb::TBCheckBox *_renderShadow = nullptr;
 
-	bool _fourViewAvailable = false;
-	bool _animationViewAvailable = false;
-	core::VarPtr _lastOpenedFile;
-
-	glm::ivec3 _lastCursorPos;
-
-	LayerSettings _layerSettings;
-	SceneSettings _settings;
-
 	bool handleEvent(const tb::TBWidgetEvent &ev);
 
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
@@ -145,10 +126,8 @@ private:
 	void quit();
 
 	void updateStatusBar();
-
-	void afterLoad(const core::String& file);
 public:
-	VoxEditWindow(ui::turbobadger::UIApp* tool);
+	VoxEditWindow(::ui::turbobadger::UIApp* tool);
 	~VoxEditWindow();
 	bool init();
 	void shutdown();
@@ -156,16 +135,10 @@ public:
 	// commands
 	void toggleViewport();
 	void toggleAnimation();
-	bool importHeightmap(const core::String& file);
-	bool importAsPlane(const core::String& file);
-	bool importPalette(const core::String& file);
 	bool save(const core::String& file);
 	bool load(const core::String& file);
 	bool loadAnimationEntity(const core::String& file);
-	bool saveScreenshot(const core::String& file);
-	bool prefab(const core::String& file);
 	bool createNew(bool force);
-	void resetCamera();
 
 	bool isLayerWidgetDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
