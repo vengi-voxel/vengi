@@ -57,6 +57,8 @@ public:
 			const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~IMGUIApp();
 
+	const video::Camera& camera() const;
+
 	virtual void beforeUI() {
 	}
 
@@ -67,6 +69,10 @@ public:
 	virtual void onRenderUI() = 0;
 	virtual app::AppState onCleanup() override;
 };
+
+inline const video::Camera& IMGUIApp::camera() const {
+	return _camera;
+}
 
 }
 }
