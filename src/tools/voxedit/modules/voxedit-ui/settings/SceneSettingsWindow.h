@@ -5,22 +5,9 @@
 #pragma once
 
 #include "ui/turbobadger/Window.h"
+#include "voxedit-util/SceneSettings.h"
 
 namespace voxedit {
-
-class SceneSettings {
-public:
-	glm::vec3 diffuseColor;
-	glm::vec3 ambientColor;
-	glm::vec3 sunPosition;
-	glm::vec3 sunDirection;
-
-	bool diffuseDirty = false;
-	bool ambientDirty = false;
-	bool sunPositionDirty = false;
-	bool sunDirectionDirty = false;
-	bool backgroundsDirty = false;
-};
 
 class SceneSettingsWindow : public tb::TBWindow, private tb::TBWidgetListener {
 private:

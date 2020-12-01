@@ -2,6 +2,7 @@ set(SRCS
 	EditorLUAGenerator.h EditorLUAGenerator.cpp
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
+	SceneSettings.h
 	CustomBindingContext.h
 	AxisUtil.h AxisUtil.cpp
 	Config.h
@@ -22,6 +23,7 @@ set(SRCS
 	layer/LayerManager.h layer/LayerManager.cpp
 	layer/LayerListener.h
 	layer/Layer.h
+	layer/LayerSettings.h
 
 	tool/ImageUtils.h tool/ImageUtils.cpp
 	tool/Clipboard.h tool/Clipboard.cpp

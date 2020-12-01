@@ -56,7 +56,7 @@ void LayerWindow::onShow() {
 
 void LayerWindow::checkSize() {
 	if (tb::TBWidget* f = getWidgetByID("note")) {
-		if (_layerSettings.size.x <= MaxVolumeSize && _layerSettings.size.y <= MaxVolumeSize && _layerSettings.size.z <= MaxVolumeSize) {
+		if (_layerSettings.size.x <= voxedit::_priv::MaxVolumeSize && _layerSettings.size.y <= voxedit::_priv::MaxVolumeSize && _layerSettings.size.z <= voxedit::_priv::MaxVolumeSize) {
 			f->setText("");
 			return;
 		}

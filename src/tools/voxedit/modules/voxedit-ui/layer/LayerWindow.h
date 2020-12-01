@@ -5,6 +5,7 @@
 #pragma once
 
 #include "AbstractLayerPopupWindow.h"
+#include "voxedit-util/layer/LayerSettings.h"
 #include "voxel/Region.h"
 
 namespace voxedit {
@@ -13,32 +14,6 @@ enum class LayerWindowType {
 	NewScene,
 	Create,
 	Edit
-};
-
-constexpr const int MaxVolumeSize = 256;
-struct LayerSettings {
-	core::String name;
-	glm::ivec3 position;
-	glm::ivec3 size;
-
-	inline void reset() {
-		position = glm::ivec3(0);
-		size = glm::ivec3(32);
-	}
-
-	inline voxel::Region region() {
-		const voxel::Region region(position, position + size - 1);
-		if (!region.isValid()) {
-			reset();
-			return voxel::Region {position, position + size - 1};
-		}
-		const glm::ivec3& dim = region.getDimensionsInCells();
-		if (dim.x >= MaxVolumeSize || dim.y >= MaxVolumeSize || dim.z >= MaxVolumeSize) {
-			reset();
-			return voxel::Region {position, position + size - 1};
-		}
-		return region;
-	}
 };
 
 class LayerWindowSettings {
