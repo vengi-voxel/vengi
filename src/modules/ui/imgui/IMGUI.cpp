@@ -4,6 +4,7 @@
 
 #include "IMGUI.h"
 #include "core/Color.h"
+#include "command/Command.h"
 #include <SDL_stdinc.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -100,6 +101,14 @@ void TextCentered(const char *text) {
 
 void Image(video::Id handle, const glm::ivec2& size, const glm::vec2& uv0, const glm::vec2& uv1) {
 	ImGui::Image((void*)(intptr_t)handle, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
+}
+
+bool MenuItemCmd(const char *label, const char *command) {
+	if (ImGui::MenuItem(label)) {
+		command::Command::execute("%s", command);
+		return true;
+	}
+	return false;
 }
 
 void TableKeyValue(const char *key, const char *msg, ...) {

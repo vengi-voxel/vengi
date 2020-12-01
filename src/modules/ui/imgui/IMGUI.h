@@ -25,6 +25,7 @@ IMGUI_API bool InputVarFloat(const char* label, const core::VarPtr& var, float s
 IMGUI_API bool InputVarInt(const char* label, const core::VarPtr& var, int step = 1, int step_fast = 100, ImGuiInputTextFlags extra_flags = 0);
 IMGUI_API bool CheckboxVar(const char* label, const core::VarPtr& var);
 IMGUI_API bool CheckboxVar(const char* label, const char* varName);
+IMGUI_API bool MenuItemCmd(const char *label, const char *command);
 
 template<class Collection>
 static bool ComboStl(const char* label, int* current_item, const Collection& items, int height_in_items = -1) {
