@@ -81,6 +81,9 @@ bool VoxEdit::newFile(bool force) {
 
 app::AppState VoxEdit::onCleanup() {
 	voxedit::sceneMgr().shutdown();
+	if (_mainWindow) {
+		_mainWindow->shutdown();
+	}
 	return Super::onCleanup();
 }
 
