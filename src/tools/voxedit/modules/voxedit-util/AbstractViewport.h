@@ -21,6 +21,7 @@ protected:
 	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
 	voxedit::ViewportController _controller;
+	core::String _cameraMode;
 
 	AbstractViewport();
 	void renderToFrameBuffer();

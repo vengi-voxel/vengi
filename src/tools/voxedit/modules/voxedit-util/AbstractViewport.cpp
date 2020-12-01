@@ -83,6 +83,16 @@ bool AbstractViewport::init() {
 
 void AbstractViewport::setMode(ViewportController::SceneCameraMode mode) {
 	_controller.init(mode);
+
+	if (mode == voxedit::ViewportController::SceneCameraMode::Top) {
+		_cameraMode = "top";
+	} else if (mode == voxedit::ViewportController::SceneCameraMode::Front) {
+		_cameraMode = "front";
+	} else if (mode == voxedit::ViewportController::SceneCameraMode::Left) {
+		_cameraMode = "left";
+	} else {
+		_cameraMode = "free";
+	}
 }
 
 void AbstractViewport::setRenderMode(ViewportController::RenderMode renderMode) {

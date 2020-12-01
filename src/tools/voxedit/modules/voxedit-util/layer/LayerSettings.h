@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/String.h"
 #include "voxel/Region.h"
 #include <glm/vec3.hpp>
@@ -9,7 +11,7 @@
 namespace voxedit {
 
 namespace _priv {
-constexpr const int MaxVolumeSize = 256;
+static constexpr const int MaxVolumeSize = 256;
 }
 
 struct LayerSettings {

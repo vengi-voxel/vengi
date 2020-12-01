@@ -116,7 +116,6 @@ void Viewport::onInflate(const tb::INFLATE_INFO &info) {
 		mode = voxedit::ViewportController::SceneCameraMode::Left;
 	}
 	setMode(mode);
-	_cameraMode = cameraMode;
 
 	voxedit::ViewportController::RenderMode renderMode = voxedit::ViewportController::RenderMode::Editor;
 	const char *renderModeStr = info.node->getValueString("mode", "editor");

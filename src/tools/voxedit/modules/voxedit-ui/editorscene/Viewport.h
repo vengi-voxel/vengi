@@ -18,7 +18,6 @@
 class Viewport: public voxedit::AbstractViewport, public ui::turbobadger::Widget {
 private:
 	tb::UIBitmapGL _frameBufferTexture;
-	core::String _cameraMode;
 
 	void renderFramebuffer();
 

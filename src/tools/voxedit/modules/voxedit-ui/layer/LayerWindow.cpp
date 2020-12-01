@@ -60,7 +60,7 @@ void LayerWindow::checkSize() {
 			f->setText("");
 			return;
 		}
-		static_assert(MaxVolumeSize == 256, "Expected the max volume size to be 256");
+		static_assert(_priv::MaxVolumeSize == 256, "Expected the max volume size to be 256");
 		f->setText(tr("Volume size can't get saved to e.g. vox file format. Max value is 256 for the size."));
 	}
 }
