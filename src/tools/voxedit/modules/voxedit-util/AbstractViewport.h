@@ -29,7 +29,7 @@ protected:
 	void cursorMove(bool, int x, int y);
 
 public:
-	~AbstractViewport();
+	virtual ~AbstractViewport();
 
 	virtual bool init();
 	void setMode(ViewportController::SceneCameraMode mode = ViewportController::SceneCameraMode::Free);

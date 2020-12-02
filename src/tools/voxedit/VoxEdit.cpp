@@ -5,7 +5,6 @@
 #include "VoxEdit.h"
 #include "app/App.h"
 #include "core/Color.h"
-#include "voxedit-util/SceneManager.h"
 #include "voxel/MaterialColor.h"
 #include "metric/Metric.h"
 #include "core/TimeProvider.h"
@@ -15,6 +14,8 @@
 #include "video/Renderer.h"
 #include "voxedit-ui/VoxEditWindow.h"
 #include "io/Filesystem.h"
+
+#include "voxedit-util/SceneManager.h"
 #include "voxedit-util/CustomBindingContext.h"
 
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
@@ -85,9 +86,6 @@ app::AppState VoxEdit::onCleanup() {
 		_mainWindow->shutdown();
 	}
 	return Super::onCleanup();
-}
-
-void VoxEdit::onRenderUI() {
 }
 
 void VoxEdit::onDropFile(const core::String& file) {
@@ -212,13 +210,16 @@ app::AppState VoxEdit::onInit() {
 	return state;
 }
 
+void VoxEdit::onRenderUI() {
+	voxedit::sceneMgr().update(_nowSeconds);
+	_mainWindow->update();
+}
+
 app::AppState VoxEdit::onRunning() {
 	app::AppState state = Super::onRunning();
 	if (state != app::AppState::Running) {
 		return state;
 	}
-	voxedit::sceneMgr().update(_nowSeconds);
-	_mainWindow->update();
 	const bool isSceneHovered = _mainWindow->isSceneHovered();
 	if (isSceneHovered) {
 		if (voxedit::sceneMgr().editMode() == voxedit::EditMode::Scene) {

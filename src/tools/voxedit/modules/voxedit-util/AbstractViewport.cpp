@@ -69,6 +69,7 @@ void AbstractViewport::resize(const glm::ivec2& frameBufferSize) {
 bool AbstractViewport::init() {
 	setMode(ViewportController::SceneCameraMode::Free);
 	setRenderMode(ViewportController::RenderMode::Editor);
+	resetCamera();
 
 	if (!_edgeShader.setup()) {
 		return false;

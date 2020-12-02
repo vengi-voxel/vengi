@@ -5,9 +5,12 @@
 #pragma once
 
 #include "ui/turbobadger/UIApp.h"
-#include "voxedit-ui/VoxEditWindow.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/ArrayLength.h"
+
+namespace voxedit {
+class VoxEditWindow;
+}
 
 /**
  * @brief This is a voxel editor that can import and export multiple mesh/voxel formats.
