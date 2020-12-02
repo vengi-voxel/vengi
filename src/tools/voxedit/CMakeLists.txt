@@ -1,4 +1,10 @@
-set(UI_MODULE voxedit-ui)
+set(VOXEDIT_USE_TURBOBADGER ON CACHE BOOL "Use turbobadger ui - still the default")
+
+if (VOXEDIT_USE_TURBOBADGER)
+	set(UI_MODULE voxedit-ui)
+else()
+	set(UI_MODULE voxedit-imgui)
+endif()
 include_directories(modules)
 add_subdirectory(modules)
 
@@ -29,3 +35,6 @@ set(FILES
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} WINDOWED)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ${UI_MODULE} voxedit-util)
+if (VOXEDIT_USE_TURBOBADGER)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC USE_TURBOBADGER=1)
+endif()

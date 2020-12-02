@@ -4,9 +4,16 @@
 
 #pragma once
 
-#include "ui/turbobadger/UIApp.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/ArrayLength.h"
+
+#if USE_TURBOBADGER
+#include "ui/turbobadger/UIApp.h"
+using UIAppType = ui::turbobadger::UIApp;
+#else
+#include "ui/imgui/IMGUIApp.h"
+using UIAppType = ui::imgui::IMGUIApp;
+#endif
 
 namespace voxedit {
 class VoxEditWindow;
@@ -17,9 +24,9 @@ class VoxEditWindow;
  *
  * @ingroup Tools
  */
-class VoxEdit: public ui::turbobadger::UIApp {
+class VoxEdit: public UIAppType {
 private:
-	using Super = ui::turbobadger::UIApp;
+	using Super = UIAppType;
 	voxedit::VoxEditWindow* _mainWindow = nullptr;
 
 public:
