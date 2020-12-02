@@ -28,6 +28,9 @@ distclean:
 deb:
 	$(Q)debuild -b -ui -uc -us
 
+ccmake:
+	$(Q)ccmake -B$(BUILDDIR) -S.
+
 crosscompile:
 	$(Q)dockcross $(CMAKE) -H. -B$(BUILDDIR) $(CMAKE_OPTIONS)
 	$(Q)dockcross $(CMAKE) --build $(BUILDDIR) --target all
