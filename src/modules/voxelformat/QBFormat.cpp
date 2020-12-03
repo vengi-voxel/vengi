@@ -192,14 +192,14 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	}
 	glm::vec4 color(0.0f);
 	if (_colorFormat == ColorFormat::RGBA) {
-		color.r = red / 255.0f;
-		color.b = blue / 255.0f;
+		color.r = (float)red / 255.0f;
+		color.b = (float)blue / 255.0f;
 	} else {
-		color.r = blue / 255.0f;
-		color.b = red / 255.0f;
+		color.r = (float)blue / 255.0f;
+		color.b = (float)red / 255.0f;
 	}
-	color.g = green / 255.0f;
-	color.a = alpha / 255.0f;
+	color.g = (float)green / 255.0f;
+	color.a = (float)alpha / 255.0f;
 	const uint8_t index = findClosestIndex(color);
 	voxel::VoxelType voxelType = voxel::VoxelType::Generic;
 	if (index == 0 && alpha == 0u) {
@@ -275,7 +275,7 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 
 	uint32_t z = 0u;
 	while (z < size.z) {
-		int index = 0;
+		uint32_t index = 0;
 		for (;;) {
 			uint32_t data;
 			wrap(stream.peekInt(data))
@@ -297,8 +297,8 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 			}
 			const voxel::Voxel& voxel = getVoxel(stream);
 			for (uint32_t j = 0; j < count; ++j) {
-				const int x = (index + j) % size.x;
-				const int y = (index + j) / size.x;
+				const uint32_t x = (index + j) % size.x;
+				const uint32_t y = (index + j) / size.x;
 				if (!setVoxel(v, x, y, z, offset, voxel)) {
 					return false;
 				}

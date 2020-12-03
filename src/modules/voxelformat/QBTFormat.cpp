@@ -49,7 +49,7 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 	const glm::ivec3& maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
 
-	const int zlibBufSize = size.x * size.y * size.z * sizeof(uint32_t);
+	const int zlibBufSize = size.x * size.y * size.z * (int)sizeof(uint32_t);
 	core_assert(zlibBufSize > 0);
 	uint8_t * const zlibBuffer = new uint8_t[zlibBufSize];
 	const uint32_t compressedBufSize = core::zip::compressBound(zlibBufSize);
@@ -95,14 +95,14 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 	}
 
 	wrapSaveFree(stream.addInt(0)); // node type matrix
-	const int nameLength = volume.name.size();
-	const int nameSize = sizeof(uint32_t) + nameLength;
-	const int positionSize = 3 * sizeof(uint32_t);
-	const int localScaleSize = 3 * sizeof(uint32_t);
-	const int pivotSize = 3 * sizeof(float);
-	const int sizeSize = 3 * sizeof(uint32_t);
-	const int compressedDataSize = sizeof(uint32_t) + realBufSize;
-	const int datasize = nameSize + positionSize + localScaleSize + pivotSize + sizeSize + compressedDataSize;
+	const size_t nameLength = volume.name.size();
+	const size_t nameSize = sizeof(uint32_t) + nameLength;
+	const size_t positionSize = 3 * sizeof(uint32_t);
+	const size_t localScaleSize = 3 * sizeof(uint32_t);
+	const size_t pivotSize = 3 * sizeof(float);
+	const size_t sizeSize = 3 * sizeof(uint32_t);
+	const size_t compressedDataSize = sizeof(uint32_t) + realBufSize;
+	const uint32_t datasize = (uint32_t)(nameSize + positionSize + localScaleSize + pivotSize + sizeSize + compressedDataSize);
 	wrapSaveFree(stream.addInt(datasize));
 
 	const size_t chunkStartPos = stream.pos();
@@ -446,7 +446,7 @@ bool QBTFormat::loadNode(io::FileStream& stream, VoxelVolumes& volumes) {
 		break;
 	}
 	const int64_t after = stream.remaining();
-	const int delta = before - after;
+	const int delta = (int)(before - after);
 	if (delta != (int)dataSize) {
 		Log::debug("Unexpected chunk size for type id %i, read %i, expected: %i",
 				nodeTypeID, delta, (int)dataSize);
