@@ -228,6 +228,16 @@ int FileStream::readShort(uint16_t& val) {
 	return retVal;
 }
 
+int FileStream::readShortBE(uint16_t& val) {
+	const int retVal = peek(val);
+	if (retVal == 0) {
+		_pos += sizeof(val);
+		const int16_t swapped = SDL_SwapBE16(val);
+		val = swapped;
+	}
+	return retVal;
+}
+
 int FileStream::readFloat(float& val) {
 	union toint {
 		float f;
@@ -240,11 +250,33 @@ int FileStream::readFloat(float& val) {
 	return retVal;
 }
 
+int FileStream::readFloatBE(float& val) {
+	union toint {
+		float f;
+		uint32_t i;
+	} tmp;
+	const int retVal = readIntBE(tmp.i);
+	if (retVal == 0) {
+		val = tmp.f;
+	}
+	return retVal;
+}
+
 int FileStream::readInt(uint32_t& val) {
 	const int retVal = peek(val);
 	if (retVal == 0) {
 		_pos += sizeof(val);
 		const uint32_t swapped = SDL_SwapLE32(val);
+		val = swapped;
+	}
+	return retVal;
+}
+
+int FileStream::readIntBE(uint32_t& val) {
+	const int retVal = peek(val);
+	if (retVal == 0) {
+		_pos += sizeof(val);
+		const uint32_t swapped = SDL_SwapBE32(val);
 		val = swapped;
 	}
 	return retVal;
@@ -264,6 +296,16 @@ int FileStream::readLong(uint64_t& val) {
 	if (retVal == 0) {
 		_pos += sizeof(val);
 		const uint64_t swapped = SDL_SwapLE64(val);
+		val = swapped;
+	}
+	return retVal;
+}
+
+int FileStream::readLongBE(uint64_t& val) {
+	const int retVal = peek(val);
+	if (retVal == 0) {
+		_pos += sizeof(val);
+		const uint64_t swapped = SDL_SwapBE64(val);
 		val = swapped;
 	}
 	return retVal;
@@ -336,6 +378,30 @@ bool FileStream::addFloat(float value) {
 	} tmp;
 	tmp.f = value;
 	return addInt(tmp.i);
+}
+
+bool FileStream::addShortBE(uint16_t word) {
+	const uint16_t swappedWord = SDL_SwapBE16(word);
+	return write<uint16_t>(swappedWord);
+}
+
+bool FileStream::addIntBE(uint32_t dword) {
+	uint32_t swappedDWord = SDL_SwapBE32(dword);
+	return write<uint32_t>(swappedDWord);
+}
+
+bool FileStream::addLongBE(uint64_t dword) {
+	uint64_t swappedDWord = SDL_SwapBE64(dword);
+	return write<uint64_t>(swappedDWord);
+}
+
+bool FileStream::addFloatBE(float value) {
+	union toint {
+		float f;
+		uint32_t i;
+	} tmp;
+	tmp.f = value;
+	return addIntBE(tmp.i);
 }
 
 int FileStream::seek(int64_t position) {

@@ -42,6 +42,10 @@ public:
 	bool addInt(uint32_t dword);
 	bool addLong(uint64_t dword);
 	bool addFloat(float value);
+	bool addShortBE(uint16_t word);
+	bool addIntBE(uint32_t dword);
+	bool addLongBE(uint64_t dword);
+	bool addFloatBE(float value);
 	bool addStringFormat(bool terminate, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(3);
 	bool addString(const core::String& string, bool terminate = true);
 	bool addFormat(const char *fmt, ...);
@@ -121,6 +125,10 @@ public:
 	int readInt(uint32_t& val);
 	int readLong(uint64_t& val);
 	int readFloat(float& val);
+	int readShortBE(uint16_t& val);
+	int readIntBE(uint32_t& val);
+	int readLongBE(uint64_t& val);
+	int readFloatBE(float& val);
 	/**
 	 * @brief Read a fixed-width string from a file. It may be null-terminated, but
 	 * the position of the stream is still advanced by the given length
@@ -135,6 +143,8 @@ public:
 
 	int peekInt(uint32_t& val) const;
 	int peekShort(uint16_t& val) const;
+	int peekIntBE(uint32_t& val) const;
+	int peekShortBE(uint16_t& val) const;
 	int peekByte(uint8_t& val) const;
 
 	bool append(const uint8_t *buf, size_t size);
