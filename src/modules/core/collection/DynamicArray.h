@@ -323,6 +323,16 @@ public:
 		checkBufferSize(size);
 	}
 
+	void insert(size_t size, TYPE type) {
+		checkBufferSize(size);
+		while (size > _size) {
+			push_back(type);
+		}
+		while (size < _size) {
+			pop();
+		}
+	}
+
 	void resize(size_t size) {
 		checkBufferSize(size);
 		while (size > _size) {
