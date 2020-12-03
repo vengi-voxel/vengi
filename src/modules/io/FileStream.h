@@ -50,6 +50,9 @@ public:
 	bool addString(const core::String& string, bool terminate = true);
 	bool addFormat(const char *fmt, ...);
 
+	/**
+	 * @return -1 on error
+	 */
 	int seek(int64_t position);
 
 	/**
