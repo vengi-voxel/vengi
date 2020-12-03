@@ -40,6 +40,7 @@ set(SRCS
 	MD5.cpp MD5.h
 	PoolAllocator.h
 	MemGuard.cpp MemGuard.h
+	MemoryStreamReadOnly.cpp MemoryStreamReadOnly.h
 	NonCopyable.h
 	Password.h
 	Process.cpp Process.h
