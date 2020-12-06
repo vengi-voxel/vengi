@@ -112,6 +112,7 @@ private:
 	bool loadChunk_PACK(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_RGBA(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_rOBJ(io::FileStream& stream, const ChunkHeader& header);
+	bool loadChunk_rCAM(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_SIZE(io::FileStream& stream, const ChunkHeader& header);
 	bool loadFirstChunks(io::FileStream& stream);
 

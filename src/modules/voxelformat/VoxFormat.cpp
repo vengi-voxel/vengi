@@ -818,6 +818,20 @@ bool VoxFormat::loadChunk_nGRP(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
+bool VoxFormat::loadChunk_rCAM(io::FileStream& stream, const ChunkHeader& header) {
+	uint32_t cameraId;
+	wrap(stream.readInt(cameraId))
+	Attributes cameraAttributes;
+	// (_mode : string)
+	// (_focus : vec(3))
+	// (_angle : vec(3))
+	// (_radius : int)
+	// (_frustum : float)
+	// (_fov : int)
+	wrapBool(readAttributes(cameraAttributes, stream))
+	return true;
+}
+
 // the rendering setting are not open yet because they are changing frequently.
 // But you can still read it since it is just in the DICT format.
 bool VoxFormat::loadChunk_rOBJ(io::FileStream& stream, const ChunkHeader& header) {
@@ -897,6 +911,9 @@ bool VoxFormat::loadFirstChunks(io::FileStream& stream) {
 			break;
 		case FourCC('N','O','T','E'):
 			wrapBool(loadChunk_NOTE(stream, header))
+			break;
+		case FourCC('r','C','A','M'):
+			wrapBool(loadChunk_rCAM(stream, header))
 			break;
 		case FourCC('r','O','B','J'):
 			wrapBool(loadChunk_rOBJ(stream, header))
