@@ -107,6 +107,8 @@ private:
 	// first iteration
 	bool loadChunk_MATL(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_MATT(io::FileStream& stream, const ChunkHeader& header);
+	bool loadChunk_IMAP(io::FileStream& stream, const ChunkHeader& header);
+	bool loadChunk_NOTE(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_PACK(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_RGBA(io::FileStream& stream, const ChunkHeader& header);
 	bool loadChunk_rOBJ(io::FileStream& stream, const ChunkHeader& header);

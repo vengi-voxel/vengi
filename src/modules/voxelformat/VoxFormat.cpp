@@ -825,6 +825,39 @@ bool VoxFormat::loadChunk_MATL(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
+// Represents the palette "index" map
+// TODO: take this into account while mapping the colors - see _palette member
+bool VoxFormat::loadChunk_IMAP(io::FileStream& stream, const ChunkHeader& header) {
+	for (int i = 0; i < 256; i++) {
+		uint8_t paletteIndex;
+		wrap(stream.readByte(paletteIndex))
+	}
+	return true;
+}
+
+// Contains all color type names
+bool VoxFormat::loadChunk_NOTE(io::FileStream& stream, const ChunkHeader& header) {
+	uint32_t numColorNames;
+	wrap(stream.readInt(numColorNames))
+	for (uint32_t i = 0; i < numColorNames; ++i) {
+		uint32_t len;
+		char name[1024];
+		wrap(stream.readInt(len));
+		Log::debug("String of length %i", (int)len);
+		if (len >= (uint32_t)sizeof(name)) {
+			Log::error("Max string length for color name exceeded");
+			return false;
+		}
+		if (!stream.readString(len, name)) {
+			Log::error("Failed to read color name");
+			return false;
+		}
+		name[len] = '\0';
+		Log::debug("Found color name %s", name);
+	}
+	return true;
+}
+
 bool VoxFormat::loadFirstChunks(io::FileStream& stream) {
 	do {
 		ChunkHeader header;
@@ -841,6 +874,12 @@ bool VoxFormat::loadFirstChunks(io::FileStream& stream) {
 			break;
 		case FourCC('R','G','B','A'):
 			wrapBool(loadChunk_RGBA(stream, header))
+			break;
+		case FourCC('I','M','A','P'):
+			wrapBool(loadChunk_IMAP(stream, header))
+			break;
+		case FourCC('N','O','T','E'):
+			wrapBool(loadChunk_NOTE(stream, header))
 			break;
 		case FourCC('r','O','B','J'):
 			wrapBool(loadChunk_rOBJ(stream, header))
