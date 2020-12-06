@@ -497,6 +497,9 @@ glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, float x, float y, flo
 // -------------------------------------------------------------------------------
 // 4        | int        | numVoxels (N)
 // 4 x N    | int        | (x, y, z, colorIndex) : 1 byte for each component
+//                       | Note: Z axis is vertical axis, so you might want to
+//                       | read them first and then assemble as (x, z, y) for Y-up
+//                       | coordinate system.
 // -------------------------------------------------------------------------------
 bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
 	uint32_t numVoxels;
@@ -673,6 +676,20 @@ bool VoxFormat::loadChunk_LAYR(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
+// Note: in order to build transformations, you need to traverse the scene
+// graph recursively, starting with root Transform node, and then for every
+// next transform:
+//
+// * Translations are added when traversing
+// * Rotation matrices are multiplied (parent * transform)
+//
+// It's preferable to maintain two separate stacks for translations
+// (vec3 stack), and a matrix stack. For every Transfrom node, you peek the
+// stacks, and add vector in a stack to Transform node's translation vector,
+// and multiply stack's rotation matrix by Transform node's rotation matrix,
+// and push these values to their respective stacks.
+//
+// For every Shape node, you can just pop both values and use them.
 bool VoxFormat::parseSceneGraphTranslation(VoxTransform& transform, const Attributes& attributes) const {
 	auto trans = attributes.find("_t");
 	if (trans == attributes.end()) {
@@ -690,7 +707,7 @@ bool VoxFormat::parseSceneGraphTranslation(VoxTransform& transform, const Attrib
 
 // ROTATION type
 //
-// store a row-major rotation in the bits of a byte
+// store a row-major (XZY) rotation in the bits of a byte
 //
 // for example :
 // R =
@@ -740,8 +757,8 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attribute
 	return true;
 }
 
-// (_r : int8) ROTATION
-// (_t : int32x3) translation
+// (_r : int8) ROTATION in STRING (i.e. "36")
+// (_t : int32x3) translation in STRING format separated by spaces (i.e. "-1 10 4"). The anchor for these translations is center of the box.
 bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
