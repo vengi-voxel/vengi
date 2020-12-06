@@ -146,7 +146,7 @@ int MemoryStreamReadOnly::readShort(uint16_t& val) {
 	const int retVal = peek(val);
 	if (retVal == 0) {
 		_pos += sizeof(val);
-		const int16_t swapped = SDL_SwapLE16(val);
+		const uint16_t swapped = SDL_SwapLE16(val);
 		val = swapped;
 	}
 	return retVal;
@@ -156,7 +156,7 @@ int MemoryStreamReadOnly::readShortBE(uint16_t& val) {
 	const int retVal = peek(val);
 	if (retVal == 0) {
 		_pos += sizeof(val);
-		const int16_t swapped = SDL_SwapBE16(val);
+		const uint16_t swapped = SDL_SwapBE16(val);
 		val = swapped;
 	}
 	return retVal;
@@ -236,7 +236,7 @@ int MemoryStreamReadOnly::readLongBE(uint64_t& val) {
 }
 
 int MemoryStreamReadOnly::seek(int64_t position) {
-	if (position > _size || position < 0) {
+	if (position >= _size || position < 0) {
 		return -1;
 	}
 	_pos = position;

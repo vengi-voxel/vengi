@@ -36,7 +36,7 @@ public:
 	inline int read(Ret &val) {
 		const int retVal = peek<Ret>(val);
 		if (retVal == 0) {
-			_pos += sizeof(val);
+			_pos += sizeof(Ret);
 		}
 		return retVal;
 	}
