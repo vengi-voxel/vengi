@@ -41,6 +41,7 @@ protected:
 	core::String _writePathLog;
 	core::VarPtr _lastDirectory;
 	bool _showFileDialog = false;
+	core::String _fileDialogFilter;
 	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
 	std::function<void(const core::String&)> _fileDialogCallback {};
 

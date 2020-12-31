@@ -359,7 +359,7 @@ app::AppState IMGUIApp::onRunning() {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
 
-		// TODO: filter, lastDir, ...
+		// TODO: _fileDialogFilter, lastDir, ...
 		// const core::String& lastDir = _lastDirectory->strVal();
 		char buf[512];
 		if (showFileDialog(&_showFileDialog, buf, sizeof(buf), _fileDialogMode)) {
@@ -440,6 +440,7 @@ void IMGUIApp::fileDialog(const std::function<void(const core::String&)>& callba
 	_showFileDialog = true;
 	_fileDialogCallback = callback;
 	_fileDialogMode = mode;
+	_fileDialogFilter = filter;
 }
 
 }

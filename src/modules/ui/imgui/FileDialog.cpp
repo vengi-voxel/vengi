@@ -57,7 +57,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 								  ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
 				fileDialogCurrentFile = "";
 				if (ImGui::IsMouseDoubleClicked(0)) {
-					fileDialogCurrentPath = entities[i].name;
+					fileDialogCurrentPath = assemblePath(fileDialogCurrentPath, entities[i].name);
 					fileDialogFolderSelectIndex = 0;
 					fileDialogFileSelectIndex = 0;
 					ImGui::SetScrollHereY(0.0f);
