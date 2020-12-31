@@ -3,6 +3,7 @@ set(LIB imgui)
 set(SRCS
 	IMGUIApp.cpp IMGUIApp.h
 	Console.cpp Console.h
+	FileDialog.cpp FileDialog.h
 	IMGUI.cpp IMGUI.h
 	IMGUIInternal.h
 	IMGUIAddons.h
