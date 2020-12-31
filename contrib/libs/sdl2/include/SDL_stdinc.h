@@ -31,7 +31,9 @@
 #include "SDL_config.h"
 
 #ifdef __APPLE__
-#define _DARWIN_C_SOURCE /* for memset_pattern4() */
+#ifndef _DARWIN_C_SOURCE
+#define _DARWIN_C_SOURCE 1 /* for memset_pattern4() */
+#endif
 #endif
 
 #ifdef HAVE_SYS_TYPES_H
@@ -547,6 +549,10 @@ extern DECLSPEC double SDLCALL SDL_log10(double x);
 extern DECLSPEC float SDLCALL SDL_log10f(float x);
 extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
 extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
+extern DECLSPEC double SDLCALL SDL_round(double x);
+extern DECLSPEC float SDLCALL SDL_roundf(float x);
+extern DECLSPEC long SDLCALL SDL_lround(double x);
+extern DECLSPEC long SDLCALL SDL_lroundf(float x);
 extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
 extern DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
 extern DECLSPEC double SDLCALL SDL_sin(double x);

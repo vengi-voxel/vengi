@@ -26,7 +26,6 @@
 #include "SDL.h"
 #include "SDL_x11video.h"
 #include "SDL_x11dyn.h"
-#include "SDL_assert.h"
 #include "SDL_x11messagebox.h"
 
 #include <X11/keysym.h>
@@ -246,7 +245,7 @@ X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
 
     /* Go over text and break linefeeds into separate lines. */
-    if ( messageboxdata->message && messageboxdata->message[ 0 ] ) {
+    if ( messageboxdata->message[0] ) {
         const char *text = messageboxdata->message;
         const int linecount = CountLinesOfText(text);
         TextLineData *plinedata = (TextLineData *) SDL_malloc(sizeof (TextLineData) * linecount);
@@ -409,7 +408,6 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
     Display *display = data->display;
     SDL_WindowData *windowdata = NULL;
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
-    const char *title = messageboxdata->title ? messageboxdata->title : "";
     char *title_locale = NULL;
 
     if ( messageboxdata->window ) {
@@ -454,10 +452,10 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
         X11_XSetTransientForHint( display, data->window, windowdata->xwindow );
     }
 
-    X11_XStoreName( display, data->window, title);
+    X11_XStoreName( display, data->window, messageboxdata->title );
     _NET_WM_NAME = X11_XInternAtom(display, "_NET_WM_NAME", False);
 
-    title_locale = SDL_iconv_utf8_locale(title);
+    title_locale = SDL_iconv_utf8_locale(messageboxdata->title);
     if (title_locale) {
         XTextProperty titleprop;
         Status status = X11_XStringListToTextProperty(&title_locale, 1, &titleprop);
@@ -471,7 +469,7 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
         XTextProperty titleprop;
-        Status status = X11_Xutf8TextListToTextProperty(display, (char **) &title, 1,
+        Status status = X11_Xutf8TextListToTextProperty(display, (char **) &messageboxdata->title, 1,
                                             XUTF8StringStyle, &titleprop);
         if (status == Success) {
             X11_XSetTextProperty(display, data->window, &titleprop,

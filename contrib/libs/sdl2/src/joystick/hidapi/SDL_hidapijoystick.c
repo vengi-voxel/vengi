@@ -22,7 +22,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "SDL_assert.h"
 #include "SDL_atomic.h"
 #include "SDL_endian.h"
 #include "SDL_hints.h"
@@ -443,7 +442,7 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
         return NULL;
     }
 
-	if (device->vendor_id != USB_VENDOR_VALVE) {
+    if (device->vendor_id != USB_VENDOR_VALVE) {
         if (device->usage_page && device->usage_page != USAGE_PAGE_GENERIC_DESKTOP) {
             return NULL;
         }
@@ -587,7 +586,7 @@ HIDAPI_JoystickInit(void)
     }
 
 #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__TVOS__)
-	/* The hidapi framwork is weak-linked on Apple platforms */
+    /* The hidapi framwork is weak-linked on Apple platforms */
     int HID_API_EXPORT HID_API_CALL hid_init(void) __attribute__((weak_import));
 
     if (hid_init == NULL) {
@@ -823,6 +822,11 @@ static void
 HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 {
     SDL_HIDAPI_Device *curr, *last;
+
+#ifdef DEBUG_HIDAPI
+    SDL_Log("Removing HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
+#endif
+
     for (curr = SDL_HIDAPI_devices, last = NULL; curr; last = curr, curr = curr->next) {
         if (curr == device) {
             if (last) {
@@ -832,6 +836,11 @@ HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             }
 
             HIDAPI_CleanupDeviceDriver(device);
+
+            /* Make sure the rumble thread is done with this device */
+            while (SDL_AtomicGet(&device->rumble_pending) > 0) {
+                SDL_Delay(10);
+            }
 
             SDL_DestroyMutex(device->dev_lock);
             SDL_free(device->serial);
@@ -897,16 +906,23 @@ HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL_HIDAPI_Devi
 
     if (vendor_id == USB_VENDOR_MICROSOFT) {
         /* If we're looking for the wireless XBox 360 controller, also look for the dongle */
-       if (product_id == 0x02a1 && device->product_id == 0x0719) {
-           return SDL_TRUE;
-       }
+        if (product_id == 0x02a1 && device->product_id == 0x0719) {
+            return SDL_TRUE;
+        }
 
-       /* If we're looking for the raw input Xbox One controller, match it against any other Xbox One controller */
-       if (vendor_id == USB_VENDOR_MICROSOFT &&
-           product_id == USB_PRODUCT_XBOX_ONE_RAW_INPUT_CONTROLLER &&
-           SDL_GetJoystickGameControllerType(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol) == SDL_CONTROLLER_TYPE_XBOXONE) {
-           return SDL_TRUE;
-       }
+        /* If we're looking for the raw input Xbox One controller, match it against any other Xbox One controller */
+        if (product_id == USB_PRODUCT_XBOX_ONE_RAW_INPUT_CONTROLLER &&
+            SDL_GetJoystickGameControllerType(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol) == SDL_CONTROLLER_TYPE_XBOXONE) {
+            return SDL_TRUE;
+        }
+
+        /* If we're looking for an XInput controller, match it against any other Xbox controller */
+        if (product_id == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
+            SDL_GameControllerType type = SDL_GetJoystickGameControllerType(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol);
+            if (type == SDL_CONTROLLER_TYPE_XBOX360 || type == SDL_CONTROLLER_TYPE_XBOXONE) {
+                return SDL_TRUE;
+            }
+        }
     }
     return SDL_FALSE;
 }
@@ -991,7 +1007,9 @@ HIDAPI_UpdateDevices(void)
         while (device) {
             if (device->driver) {
                 if (SDL_TryLockMutex(device->dev_lock) == 0) {
+                    device->updating = SDL_TRUE;
                     device->driver->UpdateDevice(device);
+                    device->updating = SDL_FALSE;
                     SDL_UnlockMutex(device->dev_lock);
                 }
             }
@@ -1186,10 +1204,21 @@ HIDAPI_JoystickClose(SDL_Joystick * joystick)
 {
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
+        int i;
 
-        /* Wait for pending rumble to complete */
-        while (SDL_AtomicGet(&device->rumble_pending) > 0) {
-            SDL_Delay(10);
+        /* Wait up to 30 ms for pending rumble to complete */
+        if (device->updating) {
+            /* Unlock the device so rumble can complete */
+            SDL_UnlockMutex(device->dev_lock);
+        }
+        for (i = 0; i < 3; ++i) {
+            if (SDL_AtomicGet(&device->rumble_pending) > 0) {
+                SDL_Delay(10);
+            }
+        }
+        if (device->updating) {
+            /* Relock the device */
+            SDL_LockMutex(device->dev_lock);
         }
 
         device->driver->CloseJoystick(device, joystick);
@@ -1208,11 +1237,14 @@ HIDAPI_JoystickQuit(void)
 
     HIDAPI_ShutdownDiscovery();
 
+    SDL_HIDAPI_QuitRumble();
+
     while (SDL_HIDAPI_devices) {
         HIDAPI_DelDevice(SDL_HIDAPI_devices);
     }
 
-    SDL_HIDAPI_QuitRumble();
+    /* Make sure the drivers cleaned up properly */
+    SDL_assert(SDL_HIDAPI_numjoysticks == 0);
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
@@ -1222,9 +1254,6 @@ HIDAPI_JoystickQuit(void)
                         SDL_HIDAPIDriverHintChanged, NULL);
 
     hid_exit();
-
-    /* Make sure the drivers cleaned up properly */
-    SDL_assert(SDL_HIDAPI_numjoysticks == 0);
 
     shutting_down = SDL_FALSE;
     initialized = SDL_FALSE;

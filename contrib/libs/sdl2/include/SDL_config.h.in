@@ -42,11 +42,12 @@
 #undef volatile
 
 /* C datatypes */
-#ifdef __LP64__
+#if defined(__LP64__) || defined(_LP64) || defined(_WIN64)
 #define SIZEOF_VOIDP 8
 #else
 #define SIZEOF_VOIDP 4
 #endif
+
 #undef HAVE_GCC_ATOMICS
 #undef HAVE_GCC_SYNC_LOCK_TEST_AND_SET
 
@@ -119,7 +120,6 @@
 #undef HAVE_STRRCHR
 #undef HAVE_STRSTR
 #undef HAVE_STRTOK_R
-#undef HAVE_STRTOK_S
 #undef HAVE_ITOA
 #undef HAVE__LTOA
 #undef HAVE__UITOA
@@ -170,8 +170,12 @@
 #undef HAVE_LOGF
 #undef HAVE_LOG10
 #undef HAVE_LOG10F
+#undef HAVE_LROUND
+#undef HAVE_LROUNDF
 #undef HAVE_POW
 #undef HAVE_POWF
+#undef HAVE_ROUND
+#undef HAVE_ROUNDF
 #undef HAVE_SCALBN
 #undef HAVE_SCALBNF
 #undef HAVE_SIN
@@ -199,6 +203,7 @@
 #undef HAVE_PTHREAD_SET_NAME_NP
 #undef HAVE_SEM_TIMEDWAIT
 #undef HAVE_GETAUXVAL
+#undef HAVE_ELF_AUX_INFO
 #undef HAVE_POLL
 #undef HAVE__EXIT
 
@@ -211,11 +216,14 @@
 #undef HAVE_ALTIVEC_H
 #undef HAVE_DBUS_DBUS_H
 #undef HAVE_FCITX
-#undef HAVE_INOTIFY_H
+#undef HAVE_SYS_INOTIFY_H
+#undef HAVE_INOTIFY_INIT
+#undef HAVE_INOTIFY_INIT1
+#undef HAVE_INOTIFY
 #undef HAVE_IBUS_IBUS_H
 #undef HAVE_IMMINTRIN_H
-#undef HAVE_LIBSAMPLERATE_H
 #undef HAVE_LIBUDEV_H
+#undef HAVE_LIBSAMPLERATE_H
 
 #undef HAVE_DDRAW_H
 #undef HAVE_DINPUT_H
@@ -283,6 +291,7 @@
 #undef SDL_AUDIO_DRIVER_SUNAUDIO
 #undef SDL_AUDIO_DRIVER_WASAPI
 #undef SDL_AUDIO_DRIVER_WINMM
+#undef SDL_AUDIO_DRIVER_OS2
 
 /* Enable various input drivers */
 #undef SDL_INPUT_LINUXEV
@@ -321,18 +330,22 @@
 #undef SDL_LOADSO_DUMMY
 #undef SDL_LOADSO_LDG
 #undef SDL_LOADSO_WINDOWS
+#undef SDL_LOADSO_OS2
 
 /* Enable various threading systems */
+#undef SDL_THREAD_GENERIC_COND_SUFFIX
 #undef SDL_THREAD_PTHREAD
 #undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
 #undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
 #undef SDL_THREAD_WINDOWS
+#undef SDL_THREAD_OS2
 
 /* Enable various timer systems */
 #undef SDL_TIMER_HAIKU
 #undef SDL_TIMER_DUMMY
 #undef SDL_TIMER_UNIX
 #undef SDL_TIMER_WINDOWS
+#undef SDL_TIMER_OS2
 
 /* Enable various video drivers */
 #undef SDL_VIDEO_DRIVER_HAIKU
@@ -377,6 +390,7 @@
 #undef SDL_VIDEO_DRIVER_NACL
 #undef SDL_VIDEO_DRIVER_VIVANTE
 #undef SDL_VIDEO_DRIVER_VIVANTE_VDK
+#undef SDL_VIDEO_DRIVER_OS2
 #undef SDL_VIDEO_DRIVER_QNX
 
 #undef SDL_VIDEO_RENDER_D3D
@@ -423,6 +437,7 @@
 #undef SDL_FILESYSTEM_NACL
 #undef SDL_FILESYSTEM_ANDROID
 #undef SDL_FILESYSTEM_EMSCRIPTEN
+#undef SDL_FILESYSTEM_OS2
 
 /* Enable assembly routines */
 #undef SDL_ASSEMBLY_ROUTINES

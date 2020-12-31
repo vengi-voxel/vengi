@@ -22,7 +22,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_KMSDRM && SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_DRIVER_KMSDRM
 
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmopengles.h"
@@ -59,11 +59,24 @@ KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
 #endif
 }
 
-
 int
 KMSDRM_GLES_LoadLibrary(_THIS, const char *path) {
+    /* Just pretend you do this here, but don't do it until KMSDRM_CreateWindow(),
+       where we do the same library load we would normally do here.
+       because this gets called by SDL_CreateWindow() before KMSDR_CreateWindow(),
+       so gbm dev isn't yet created when this is called, AND we can't alter the
+       call order in SDL_CreateWindow(). */
+#if 0
     NativeDisplayType display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
     return SDL_EGL_LoadLibrary(_this, path, display, EGL_PLATFORM_GBM_MESA);
+#endif
+    return 0;
+}
+
+void
+KMSDRM_GLES_UnloadLibrary(_THIS) {
+    /* As with KMSDRM_GLES_LoadLibrary(), we define our own "dummy" unloading function
+       so we manually unload the library whenever we want. */
 }
 
 SDL_EGL_CreateContext_impl(KMSDRM)
@@ -94,6 +107,7 @@ static EGLSyncKHR create_fence(int fd, _THIS)
         EGL_SYNC_NATIVE_FENCE_FD_ANDROID, fd,
         EGL_NONE,
     };
+
     EGLSyncKHR fence = _this->egl_data->eglCreateSyncKHR
         (_this->egl_data->egl_display, EGL_SYNC_NATIVE_FENCE_ANDROID, attrib_list);
 
@@ -210,11 +224,10 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
         uint32_t blob_id;
         SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
 
-        dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
         add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
-        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
+        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "active", 1);
         dispdata->modeset_pending = SDL_FALSE;
     }
 
@@ -223,8 +236,13 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
     /* this must not block so the game can start building another    */
     /* frame, even if the just-requested pageflip hasnt't completed. */
     /*****************************************************************/   
-    if (drm_atomic_commit(_this, SDL_FALSE)) {
+    if (drm_atomic_commit(_this, SDL_FALSE, dispdata->modeset_pending)) {
         return SDL_SetError("Failed to issue atomic commit on pageflip");
+    }
+
+    /* If we had a pending modesetting, we have done it by now.  */
+    if (dispdata->modeset_pending) {
+        dispdata->modeset_pending = SDL_FALSE;
     }
 
     /* Release the previous front buffer so EGL can chose it as back buffer
@@ -269,22 +287,23 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
 
-    /****************************************************************************************************/
-    /* In double-buffer mode, atomic_commit will always be synchronous/blocking (ie: won't return until */
-    /* the requested changes are really done).                                                          */
-    /* Also, there's no need to fence KMS or the GPU, because we won't be entering game loop again      */
-    /* (hence not building or executing a new cmdstring) until pageflip is done, so we don't need to    */
-    /* protect the KMS/GPU access to the buffer.                                                        */
-    /****************************************************************************************************/ 
+    /**********************************************************************************/
+    /* In double-buffer mode, atomic_commit will always be synchronous/blocking (ie:  */
+    /* won't return until the requested changes are really done).                     */         /* Also, there's no need to fence KMS or the GPU, because we won't be entering    */
+    /* game loop again (hence not building or executing a new cmdstring) until        */
+    /* pageflip is done, so we don't need to protect the KMS/GPU access to the buffer.*/     
+    /**********************************************************************************/ 
 
     /* Mark, at EGL level, the buffer that we want to become the new front buffer.
-       However, it won't really happen until we request a pageflip at the KMS level and it completes. */
+       It won't really happen until we request a pageflip at the KMS level and it
+       completes. */
     if (! _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
         return SDL_EGL_SetError("Failed to swap EGL buffers", "eglSwapBuffers");
     }
 
-    /* Lock the buffer that is marked by eglSwapBuffers() to become the next front buffer (so it can not
-       be chosen by EGL as back buffer to draw on), and get a handle to it to request the pageflip on it. */
+    /* Lock the buffer that is marked by eglSwapBuffers() to become the next front buffer
+       (so it can not be chosen by EGL as back buffer to draw on), and get a handle to it,
+       to request the pageflip on it. */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
         return SDL_SetError("Failed to lock frontbuffer");
@@ -310,20 +329,25 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
     /* Do we have a pending modesetting? If so, set the necessary 
        props so it's included in the incoming atomic commit. */
     if (dispdata->modeset_pending) {
-        SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
         uint32_t blob_id;
-        dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
+
+        SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
+
         add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
-        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
-        dispdata->modeset_pending = SDL_FALSE;
+        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "active", 1);
     }
 
     /* Issue the one and only atomic commit where all changes will be requested!. 
        Blocking for double buffering: won't return until completed. */
-    if (drm_atomic_commit(_this, SDL_TRUE)) {
-        return SDL_SetError("Failed to issue atomic commit");
+    if (drm_atomic_commit(_this, SDL_TRUE, dispdata->modeset_pending)) {
+        return SDL_SetError("Failed to issue atomic commit on pageflip");
+    }
+
+    /* If we had a pending modesetting, we have done it by now.  */
+    if (dispdata->modeset_pending) {
+        dispdata->modeset_pending = SDL_FALSE;
     }
 
     /* Release last front buffer so EGL can chose it as back buffer and render on it again. */
@@ -341,16 +365,6 @@ int
 KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
-
-     /* Get the EGL context, now that SDL_CreateRenderer() has already been called,
-       and call eglMakeCurrent() on it and the EGL surface. */
-#if SDL_VIDEO_OPENGL_EGL
-    if (windata->egl_context_pending) {
-        EGLContext egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-        SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
-        windata->egl_context_pending = SDL_FALSE;
-    }
-#endif
 
     if (windata->swap_window == NULL) {
         /* We want the fenced version by default, but it needs extensions. */
@@ -372,6 +386,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
 
 SDL_EGL_MakeCurrent_impl(KMSDRM)
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM && SDL_VIDEO_OPENGL_EGL */
+#endif /* SDL_VIDEO_DRIVER_KMSDRM */
 
 /* vi: set ts=4 sw=4 expandtab: */

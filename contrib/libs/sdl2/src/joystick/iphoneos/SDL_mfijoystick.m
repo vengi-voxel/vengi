@@ -21,7 +21,6 @@
 #include "../../SDL_internal.h"
 
 /* This is the iOS implementation of the SDL joystick API */
-#include "SDL_assert.h"
 #include "SDL_events.h"
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
@@ -479,9 +478,9 @@ static int
 IOS_JoystickInit(void)
 {
 #if defined(__MACOSX__)
-	if (!is_macos11()) {
-		return 0;
-	}
+    if (!is_macos11()) {
+        return 0;
+    }
 #endif
 
     @autoreleasepool {
@@ -1013,7 +1012,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
     @autoreleasepool {
         if (@available(macos 11.0, iOS 14.0, tvOS 14.0, *)) {
             NSError *error;
-            
+
             if (self->engine == nil) {
                 return SDL_SetError("Haptics engine was stopped");
             }
@@ -1293,7 +1292,7 @@ IOS_JoystickUpdate(SDL_Joystick *joystick)
     if (device == NULL) {
         return;
     }
-    
+
     if (device->accelerometer) {
         IOS_AccelerometerUpdate(joystick);
     } else if (device->controller) {

@@ -31,7 +31,6 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "SDL_assert.h"
 #include "SDL_windowsvideo.h"
 #include "SDL_windowstaskdialog.h"
 
@@ -586,7 +585,6 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     /* Jan 25th, 2013 - dant@fleetsa.com
      *
-     *
      * I've tried to make this more reasonable, but I've run in to a lot
      * of nonsense.
      *
@@ -610,8 +608,6 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
      * somewhat correct.
      *
      * Honestly, a long term solution is to use CreateWindow, not CreateDialog.
-     *
-
      *
      * In order to get text dimensions we need to have a DC with the desired font.
      * I'm assuming a dialog box in SDL is rare enough we can to the create.

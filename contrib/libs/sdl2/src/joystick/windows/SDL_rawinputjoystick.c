@@ -33,7 +33,6 @@
 
 #if SDL_JOYSTICK_RAWINPUT
 
-#include "SDL_assert.h"
 #include "SDL_endian.h"
 #include "SDL_events.h"
 #include "SDL_hints.h"
@@ -68,7 +67,6 @@ typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 #endif
 
 /*#define DEBUG_RAWINPUT*/
-#define DEBUG_RAWINPUT
 
 #ifndef RIDEV_EXINPUTSINK
 #define RIDEV_EXINPUTSINK       0x00001000
@@ -282,6 +280,7 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint32 match_state
 
 static struct {
     XINPUT_STATE_EX state;
+    XINPUT_BATTERY_INFORMATION_EX battery;
     SDL_bool connected; /* Currently has an active XInput device */
     SDL_bool used; /* Is currently mapped to an SDL device */
     Uint8 correlation_id;
@@ -308,6 +307,8 @@ RAWINPUT_UpdateXInput()
                 if (XINPUTGETSTATE(user_index, &xinput_state[user_index].state) != ERROR_SUCCESS) {
                     xinput_state[user_index].connected = SDL_FALSE;
                 }
+                xinput_state[user_index].battery.BatteryType = BATTERY_TYPE_UNKNOWN;
+                XINPUTGETBATTERYINFORMATION(user_index, BATTERY_DEVTYPE_GAMEPAD, &xinput_state[user_index].battery);
             }
         }
     }
@@ -539,21 +540,19 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
         HRESULT hr;
         HMODULE hModule = LoadLibraryA("combase.dll");
         if (hModule != NULL) {
-            typedef HRESULT (WINAPI *WindowsCreateString_t)(PCNZWCH sourceString, UINT32 length, HSTRING* string);
-            typedef HRESULT (WINAPI *WindowsDeleteString_t)(HSTRING string);
+            typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
             typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
 
-            WindowsCreateString_t WindowsCreateStringFunc = (WindowsCreateString_t)GetProcAddress(hModule, "WindowsCreateString");
-            WindowsDeleteString_t WindowsDeleteStringFunc = (WindowsDeleteString_t)GetProcAddress(hModule, "WindowsDeleteString");
+            WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
             RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
-            if (WindowsCreateStringFunc && WindowsDeleteStringFunc && RoGetActivationFactoryFunc) {
+            if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
                 LPTSTR pNamespace = L"Windows.Gaming.Input.Gamepad";
+                HSTRING_HEADER hNamespaceStringHeader;
                 HSTRING hNamespaceString;
 
-                hr = WindowsCreateStringFunc(pNamespace, SDL_wcslen(pNamespace), &hNamespaceString);
+                hr = WindowsCreateStringReferenceFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceStringHeader, &hNamespaceString);
                 if (SUCCEEDED(hr)) {
                     RoGetActivationFactoryFunc(hNamespaceString, &SDL_IID_IGamepadStatics, &wgi_state.gamepad_statics);
-                    WindowsDeleteStringFunc(hNamespaceString);
                 }
             }
             FreeLibrary(hModule);
@@ -578,10 +577,10 @@ RAWINPUT_WindowsGamingInputSlotMatches(const WindowsMatchState *state, WindowsGa
 static SDL_bool
 RAWINPUT_GuessWindowsGamingInputSlot(const WindowsMatchState *state, Uint8 *correlation_id, WindowsGamingInputGamepadState **slot)
 {
-    int match_count;
+    int match_count, user_index;
 
     match_count = 0;
-    for (int user_index = 0; user_index < wgi_state.per_gamepad_count; ++user_index) {
+    for (user_index = 0; user_index < wgi_state.per_gamepad_count; ++user_index) {
         WindowsGamingInputGamepadState *gamepad_state = wgi_state.per_gamepad[user_index];
         if (RAWINPUT_WindowsGamingInputSlotMatches(state, gamepad_state)) {
             ++match_count;
@@ -605,7 +604,8 @@ RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
     wgi_state.need_device_list_update = SDL_TRUE;
     --wgi_state.ref_count;
     if (!wgi_state.ref_count && wgi_state.initialized) {
-        for (int ii = 0; ii < wgi_state.per_gamepad_count; ii++) {
+        int ii;
+        for (ii = 0; ii < wgi_state.per_gamepad_count; ii++) {
             __x_ABI_CWindows_CGaming_CInput_CIGamepad_Release(wgi_state.per_gamepad[ii]->gamepad);
         }
         if (wgi_state.per_gamepad) {
@@ -805,7 +805,7 @@ RAWINPUT_DelDevice(SDL_RAWINPUT_Device *device, SDL_bool send_event)
             SDL_PrivateJoystickRemoved(device->joystick_id);
 
 #ifdef DEBUG_RAWINPUT
-            SDL_Log("Removing RAWINPUT device '%s' VID 0x%.4x, PID 0x%.4x, version %d, handle 0x%.8x\n", device->name, device->vendor_id, device->product_id, device->version, device->hDevice);
+            SDL_Log("Removing RAWINPUT device '%s' VID 0x%.4x, PID 0x%.4x, version %d, handle %p\n", device->name, device->vendor_id, device->product_id, device->version, device->hDevice);
 #endif
             RAWINPUT_ReleaseDevice(device);
             return;
@@ -1206,7 +1206,7 @@ RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         }
     }
 
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+    SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_UNKNOWN);
 
     return 0;
 }
@@ -1655,6 +1655,8 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     if (!has_trigger_data && ctx->xinput_enabled && ctx->xinput_correlated) {
         RAWINPUT_UpdateXInput();
         if (xinput_state[ctx->xinput_slot].connected) {
+            XINPUT_BATTERY_INFORMATION_EX *battery_info = &xinput_state[ctx->xinput_slot].battery;
+
             if (ctx->guide_hack) {
                 SDL_PrivateJoystickButton(joystick, guide_button, (xinput_state[ctx->xinput_slot].state.Gamepad.wButtons & XINPUT_GAMEPAD_GUIDE) ? SDL_PRESSED : SDL_RELEASED);
             }
@@ -1663,6 +1665,30 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                 SDL_PrivateJoystickAxis(joystick, right_trigger, ((int)xinput_state[ctx->xinput_slot].state.Gamepad.bRightTrigger * 257) - 32768);
             }
             has_trigger_data = SDL_TRUE;
+
+            if (battery_info->BatteryType != BATTERY_TYPE_UNKNOWN) {
+                SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
+                if (battery_info->BatteryType == BATTERY_TYPE_WIRED) {
+                    ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
+                } else {
+                    switch (battery_info->BatteryLevel) {
+                    case BATTERY_LEVEL_EMPTY:
+                        ePowerLevel = SDL_JOYSTICK_POWER_EMPTY;
+                        break;
+                    case BATTERY_LEVEL_LOW:
+                        ePowerLevel = SDL_JOYSTICK_POWER_LOW;
+                        break;
+                    case BATTERY_LEVEL_MEDIUM:
+                        ePowerLevel = SDL_JOYSTICK_POWER_MEDIUM;
+                        break;
+                    default:
+                    case BATTERY_LEVEL_FULL:
+                        ePowerLevel = SDL_JOYSTICK_POWER_FULL;
+                        break;
+                    }
+                }
+                SDL_PrivateJoystickBatteryLevel(joystick, ePowerLevel);
+            }
         }
     }
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */

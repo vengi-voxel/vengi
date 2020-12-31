@@ -605,17 +605,6 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_PS4 "SDL_JOYSTICK_HIDAPI_PS4"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for PS5 controllers should be used.
- *
- *  This variable can be set to the following values:
- *    "0"       - HIDAPI driver is not used
- *    "1"       - HIDAPI driver is used
- *
- *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
- */
-#define SDL_HINT_JOYSTICK_HIDAPI_PS5 "SDL_JOYSTICK_HIDAPI_PS5"
-
-/**
  *  \brief  A variable controlling whether extended input reports should be used for PS4 controllers when using the HIDAPI driver.
  *
  *  This variable can be set to the following values:
@@ -629,6 +618,41 @@ extern "C" {
  *  power cycling the controller.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE "SDL_JOYSTICK_HIDAPI_PS4_RUMBLE"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for PS5 controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS5 "SDL_JOYSTICK_HIDAPI_PS5"
+
+/**
+ *  \brief  A variable controlling whether extended input reports should be used for PS5 controllers when using the HIDAPI driver.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - extended reports are not enabled (the default)
+ *    "1"       - extended reports
+ *
+ *  Extended input reports allow rumble on Bluetooth PS5 controllers, but
+ *  break DirectInput handling for applications that don't use SDL.
+ *
+ *  Once extended reports are enabled, they can not be disabled without
+ *  power cycling the controller.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE "SDL_JOYSTICK_HIDAPI_PS5_RUMBLE"
+
+/**
+ *  \brief  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a PS5 controller.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - player LEDs are not enabled
+ *    "1"       - player LEDs are enabled (the default)
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED "SDL_JOYSTICK_HIDAPI_PS5_PLAYER_LED"
 
 /**
  *  \brief  A variable controlling whether the HIDAPI driver for Steam Controllers should be used.
@@ -709,14 +733,22 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
 
  /**
-  *  \brief  A variable controlling whether Linux joysticks adhere their HID-defined deadzones or return unfiltered values.
-  *      This is useful for Wine which implements its own deadzone handler if requested by games, also it enables xinput
-  *      games to receive unfiltered values as required from the API.
+  *  \brief  A variable controlling whether a separate thread should be used
+  *          for handling joystick detection and raw input messages on Windows
   *
   *  This variable can be set to the following values:
-  *    "0"       - Linux deadzones are not used by SDL
-  *    "1"       - Linux deadzones are used by SDL (the default)
+  *    "0"       - A separate thread is not used (the default)
+  *    "1"       - A separate thread is used for handling raw input messages
   *
+  */
+#define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
+
+ /**
+  *  \brief  A variable controlling whether joysticks on Linux adhere to their HID-defined deadzones or return unfiltered values.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Return unfiltered joystick axis values (the default)
+  *    "1"       - Return axis values with deadzones taken into account
   */
 #define SDL_HINT_LINUX_JOYSTICK_DEADZONES "SDL_LINUX_JOYSTICK_DEADZONES"
 
@@ -1174,6 +1206,39 @@ extern "C" {
 #define SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING "SDL_WINDOWS_DISABLE_THREAD_NAMING"
 
 /**
+ * \brief Force SDL to use Critical Sections for mutexes on Windows.
+ *        On Windows 7 and newer, Slim Reader/Writer Locks are available.
+ *        They offer better performance, allocate no kernel ressources and
+ *        use less memory. SDL will fall back to Critical Sections on older
+ *        OS versions or if forced to by this hint.
+ *        This also affects Condition Variables. When SRW mutexes are used,
+ *        SDL will use Windows Condition Variables as well. Else, a generic
+ *        SDL_cond implementation will be used that works with all mutexes.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Use SRW Locks when available. If not, fall back to Critical Sections. (default)
+ *    "1"       - Force the use of Critical Sections in all cases.
+ *
+ */
+#define SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS "SDL_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS"
+
+/**
+ * \brief Force SDL to use Kernel Semaphores on Windows.
+ *        Kernel Semaphores are inter-process and require a context
+ *        switch on every interaction. On Windows 8 and newer, the
+ *        WaitOnAddress API is available. Using that and atomics to
+ *        implement semaphores increases performance.
+ *        SDL will fall back to Kernel Objects on older OS versions
+ *        or if forced to by this hint.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Use Atomics and WaitOnAddress API when available. If not, fall back to Kernel Objects. (default)
+ *    "1"       - Force the use of Kernel Objects in all cases.
+ *
+ */
+#define SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL "SDL_WINDOWS_FORCE_SEMAPHORE_KERNEL"
+
+/**
  * \brief Tell SDL which Dispmanx layer to use on a Raspberry PI
  *
  * Also known as Z-order. The variable can take a negative or positive value.
@@ -1292,6 +1357,32 @@ extern "C" {
  *  will result in undefined behavior.
  */
 #define SDL_HINT_RENDER_BATCHING  "SDL_RENDER_BATCHING"
+
+
+/**
+ *  \brief  A variable controlling whether SDL updates joystick state when getting input events
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "0"     - You'll call SDL_JoystickUpdate() manually
+ *    "1"     - SDL will automatically call SDL_JoystickUpdate() (default)
+ *
+ *  This hint can be toggled on and off at runtime.
+ */
+#define SDL_HINT_AUTO_UPDATE_JOYSTICKS  "SDL_AUTO_UPDATE_JOYSTICKS"
+
+
+/**
+ *  \brief  A variable controlling whether SDL updates sensor state when getting input events
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "0"     - You'll call SDL_SensorUpdate() manually
+ *    "1"     - SDL will automatically call SDL_SensorUpdate() (default)
+ *
+ *  This hint can be toggled on and off at runtime.
+ */
+#define SDL_HINT_AUTO_UPDATE_SENSORS    "SDL_AUTO_UPDATE_SENSORS"
 
 
 /**

@@ -96,6 +96,7 @@ static VideoBootStrap *bootstrap[] = {
 #endif
 #if SDL_VIDEO_DRIVER_KMSDRM
     &KMSDRM_bootstrap,
+    &KMSDRM_LEGACY_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_RPI
     &RPI_bootstrap,
@@ -1672,6 +1673,11 @@ int
 SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
 {
     SDL_bool loaded_opengl = SDL_FALSE;
+    SDL_bool need_gl_unload = SDL_FALSE;
+    SDL_bool need_gl_load = SDL_FALSE;
+    SDL_bool loaded_vulkan = SDL_FALSE;
+    SDL_bool need_vulkan_unload = SDL_FALSE;
+    SDL_bool need_vulkan_load = SDL_FALSE;
 
     if ((flags & SDL_WINDOW_OPENGL) && !_this->GL_CreateContext) {
         return SDL_SetError("OpenGL support is either not configured in SDL "
@@ -1705,46 +1711,72 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
 
     if ((window->flags & SDL_WINDOW_OPENGL) != (flags & SDL_WINDOW_OPENGL)) {
         if (flags & SDL_WINDOW_OPENGL) {
-            if (SDL_GL_LoadLibrary(NULL) < 0) {
-                return -1;
-            }
-            loaded_opengl = SDL_TRUE;
+            need_gl_load = SDL_TRUE;
         } else {
-            SDL_GL_UnloadLibrary();
+            need_gl_unload = SDL_TRUE;
         }
     } else if (window->flags & SDL_WINDOW_OPENGL) {
+        need_gl_unload = SDL_TRUE;
+        need_gl_load  = SDL_TRUE;
+    }
+
+    if ((window->flags & SDL_WINDOW_METAL) != (flags & SDL_WINDOW_METAL)) {
+        if (flags & SDL_WINDOW_METAL) {
+            need_gl_load = SDL_TRUE;
+        } else {
+            need_gl_unload = SDL_TRUE;
+        }
+    } else if (window->flags & SDL_WINDOW_METAL) {
+        need_gl_unload = SDL_TRUE;
+        need_gl_load  = SDL_TRUE;
+    }
+
+    if ((window->flags & SDL_WINDOW_VULKAN) != (flags & SDL_WINDOW_VULKAN)) {
+        if (flags & SDL_WINDOW_VULKAN) {
+            need_vulkan_load = SDL_TRUE;
+        } else {
+            need_vulkan_unload = SDL_TRUE;
+        }
+    } else if (window->flags & SDL_WINDOW_VULKAN) {
+        need_vulkan_unload = SDL_TRUE;
+        need_vulkan_load  = SDL_TRUE;
+    }
+
+    if ((flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
+        SDL_SetError("Vulkan and OpenGL not supported on same window");
+        return -1;
+    }
+
+    if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_OPENGL)) {
+        SDL_SetError("Metal and OpenGL not supported on same window");
+        return -1;
+    }
+
+    if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_VULKAN)) {
+        SDL_SetError("Metal and Vulkan not supported on same window");
+        return -1;
+    }
+
+    if (need_gl_unload) {
         SDL_GL_UnloadLibrary();
+    }
+
+    if (need_vulkan_unload) {
+        SDL_Vulkan_UnloadLibrary();
+    }
+
+    if (need_gl_load) {
         if (SDL_GL_LoadLibrary(NULL) < 0) {
             return -1;
         }
         loaded_opengl = SDL_TRUE;
     }
 
-    if ((window->flags & SDL_WINDOW_VULKAN) != (flags & SDL_WINDOW_VULKAN)) {
-        SDL_SetError("Can't change SDL_WINDOW_VULKAN window flag");
-        return -1;
-    }
-
-    /*
-    if ((window->flags & SDL_WINDOW_METAL) != (flags & SDL_WINDOW_METAL)) {
-        SDL_SetError("Can't change SDL_WINDOW_METAL window flag");
-        return -1;
-    }
-    */
-
-    if ((window->flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError("Vulkan and OpenGL not supported on same window");
-        return -1;
-    }
-
-    if ((window->flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError("Metal and OpenGL not supported on same window");
-        return -1;
-    }
-
-    if ((window->flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_VULKAN)) {
-        SDL_SetError("Metal and Vulkan not supported on same window");
-        return -1;
+    if (need_vulkan_load) {
+        if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
+            return -1;
+        }
+        loaded_vulkan = SDL_TRUE;
     }
 
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
@@ -1756,6 +1788,10 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
             if (loaded_opengl) {
                 SDL_GL_UnloadLibrary();
                 window->flags &= ~SDL_WINDOW_OPENGL;
+            }
+            if (loaded_vulkan) {
+                SDL_Vulkan_UnloadLibrary();
+                window->flags &= ~SDL_WINDOW_VULKAN;
             }
             return -1;
         }
@@ -3962,6 +3998,7 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     int show_cursor_prev;
     SDL_bool mouse_captured;
     SDL_Window *current_window;
+    SDL_MessageBoxData mbdata;
 
     if (!messageboxdata) {
         return SDL_InvalidParamError("messageboxdata");
@@ -3980,6 +4017,11 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     if (!buttonid) {
         buttonid = &dummybutton;
     }
+
+    SDL_memcpy(&mbdata, messageboxdata, sizeof(*messageboxdata));
+    if (!mbdata.title) mbdata.title = "";
+    if (!mbdata.message) mbdata.message = "";
+    messageboxdata = &mbdata;
 
     if (_this && _this->ShowMessageBox) {
         retval = _this->ShowMessageBox(_this, messageboxdata, buttonid);
@@ -4066,6 +4108,8 @@ SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message, S
     /* Web browsers don't (currently) have an API for a custom message box
        that can block, but for the most common case (SDL_ShowSimpleMessageBox),
        we can use the standard Javascript alert() function. */
+    if (!title) title = "";
+    if (!message) message = "";
     EM_ASM_({
         alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1));
     }, title, message);

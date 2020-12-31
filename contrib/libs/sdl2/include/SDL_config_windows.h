@@ -119,9 +119,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
 /* #undef HAVE_STRTOK_R */
-#if defined(_MSC_VER)
-#define HAVE_STRTOK_S 1
-#endif
 /* These functions have security warnings, so we won't use them */
 /* #undef HAVE__LTOA */
 /* #undef HAVE__ULTOA */
@@ -172,7 +169,12 @@ typedef unsigned int uintptr_t;
 /* These functions were added with the VC++ 2013 C runtime library */
 #if _MSC_VER >= 1800
 #define HAVE_STRTOLL 1
+#define HAVE_STRTOULL 1
 #define HAVE_VSSCANF 1
+#define HAVE_LROUND 1
+#define HAVE_LROUNDF 1
+#define HAVE_ROUND 1
+#define HAVE_ROUNDF 1
 #define HAVE_SCALBN 1
 #define HAVE_SCALBNF 1
 #define HAVE_TRUNC  1
@@ -233,6 +235,7 @@ typedef unsigned int uintptr_t;
 #define SDL_LOADSO_WINDOWS  1
 
 /* Enable various threading systems */
+#define SDL_THREAD_GENERIC_COND_SUFFIX 1
 #define SDL_THREAD_WINDOWS  1
 
 /* Enable various timer systems */

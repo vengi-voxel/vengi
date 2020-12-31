@@ -26,6 +26,7 @@
 #include "SDL_RLEaccel_c.h"
 #include "SDL_pixels_c.h"
 #include "SDL_yuv_c.h"
+#include "../render/SDL_sysrender.h"
 
 
 /* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
@@ -746,6 +747,14 @@ int
 SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
               SDL_Surface * dst, SDL_Rect * dstrect)
 {
+    return SDL_PrivateUpperBlitScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+}
+
+
+int
+SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
+              SDL_Surface * dst, SDL_Rect * dstrect, SDL_ScaleMode scaleMode)
+{
     double src_x0, src_y0, src_x1, src_y1;
     double dst_x0, dst_y0, dst_x1, dst_y1;
     SDL_Rect final_src, final_dst;
@@ -788,25 +797,25 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
     if (NULL == dstrect) {
         dst_x0 = 0;
         dst_y0 = 0;
-        dst_x1 = dst_w - 1;
-        dst_y1 = dst_h - 1;
+        dst_x1 = dst_w;
+        dst_y1 = dst_h;
     } else {
         dst_x0 = dstrect->x;
         dst_y0 = dstrect->y;
-        dst_x1 = dst_x0 + dst_w - 1;
-        dst_y1 = dst_y0 + dst_h - 1;
+        dst_x1 = dst_x0 + dst_w;
+        dst_y1 = dst_y0 + dst_h;
     }
 
     if (NULL == srcrect) {
         src_x0 = 0;
         src_y0 = 0;
-        src_x1 = src_w - 1;
-        src_y1 = src_h - 1;
+        src_x1 = src_w;
+        src_y1 = src_h;
     } else {
         src_x0 = srcrect->x;
         src_y0 = srcrect->y;
-        src_x1 = src_x0 + src_w - 1;
-        src_y1 = src_y0 + src_h - 1;
+        src_x1 = src_x0 + src_w;
+        src_y1 = src_y0 + src_h;
 
         /* Clip source rectangle to the source surface */
 
@@ -815,9 +824,9 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
             src_x0 = 0;
         }
 
-        if (src_x1 >= src->w) {
-            dst_x1 -= (src_x1 - src->w + 1) * scaling_w;
-            src_x1 = src->w - 1;
+        if (src_x1 > src->w) {
+            dst_x1 -= (src_x1 - src->w) * scaling_w;
+            src_x1 = src->w;
         }
 
         if (src_y0 < 0) {
@@ -825,9 +834,9 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
             src_y0 = 0;
         }
 
-        if (src_y1 >= src->h) {
-            dst_y1 -= (src_y1 - src->h + 1) * scaling_h;
-            src_y1 = src->h - 1;
+        if (src_y1 > src->h) {
+            dst_y1 -= (src_y1 - src->h) * scaling_h;
+            src_y1 = src->h;
         }
     }
 
@@ -844,9 +853,9 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
         dst_x0 = 0;
     }
 
-    if (dst_x1 >= dst->clip_rect.w) {
-        src_x1 -= (dst_x1 - dst->clip_rect.w + 1) / scaling_w;
-        dst_x1 = dst->clip_rect.w - 1;
+    if (dst_x1 > dst->clip_rect.w) {
+        src_x1 -= (dst_x1 - dst->clip_rect.w) / scaling_w;
+        dst_x1 = dst->clip_rect.w;
     }
 
     if (dst_y0 < 0) {
@@ -854,9 +863,9 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
         dst_y0 = 0;
     }
 
-    if (dst_y1 >= dst->clip_rect.h) {
-        src_y1 -= (dst_y1 - dst->clip_rect.h + 1) / scaling_h;
-        dst_y1 = dst->clip_rect.h - 1;
+    if (dst_y1 > dst->clip_rect.h) {
+        src_y1 -= (dst_y1 - dst->clip_rect.h) / scaling_h;
+        dst_y1 = dst->clip_rect.h;
     }
 
     /* Translate back to surface coordinates */
@@ -867,13 +876,13 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
 
     final_src.x = (int)SDL_floor(src_x0 + 0.5);
     final_src.y = (int)SDL_floor(src_y0 + 0.5);
-    final_src.w = (int)SDL_floor(src_x1 + 1 + 0.5) - (int)SDL_floor(src_x0 + 0.5);
-    final_src.h = (int)SDL_floor(src_y1 + 1 + 0.5) - (int)SDL_floor(src_y0 + 0.5);
+    final_src.w = (int)SDL_floor(src_x1 + 0.5) - (int)SDL_floor(src_x0 + 0.5);
+    final_src.h = (int)SDL_floor(src_y1 + 0.5) - (int)SDL_floor(src_y0 + 0.5);
 
     final_dst.x = (int)SDL_floor(dst_x0 + 0.5);
     final_dst.y = (int)SDL_floor(dst_y0 + 0.5);
-    final_dst.w = (int)SDL_floor(dst_x1 - dst_x0 + 1.5);
-    final_dst.h = (int)SDL_floor(dst_y1 - dst_y0 + 1.5);
+    final_dst.w = (int)SDL_floor(dst_x1 - dst_x0 + 0.5);
+    final_dst.h = (int)SDL_floor(dst_y1 - dst_y0 + 0.5);
 
     if (final_dst.w < 0)
         final_dst.w = 0;
@@ -889,7 +898,7 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
         return 0;
     }
 
-    return SDL_LowerBlitScaled(src, &final_src, dst, &final_dst);
+    return SDL_PrivateLowerBlitScaled(src, &final_src, dst, &final_dst, scaleMode);
 }
 
 /**
@@ -899,6 +908,13 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
 int
 SDL_LowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
                 SDL_Surface * dst, SDL_Rect * dstrect)
+{
+    return SDL_PrivateLowerBlitScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+}
+
+int
+SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
+                SDL_Surface * dst, SDL_Rect * dstrect, SDL_ScaleMode scaleMode)
 {
     static const Uint32 complex_copy_flags = (
         SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
@@ -911,12 +927,93 @@ SDL_LowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
         SDL_InvalidateMap(src->map);
     }
 
-    if ( !(src->map->info.flags & complex_copy_flags) &&
-         src->format->format == dst->format->format &&
-         !SDL_ISPIXELFORMAT_INDEXED(src->format->format) ) {
-        return SDL_SoftStretch( src, srcrect, dst, dstrect );
+    if (scaleMode == SDL_ScaleModeNearest) {
+        if ( !(src->map->info.flags & complex_copy_flags) &&
+                src->format->format == dst->format->format &&
+                !SDL_ISPIXELFORMAT_INDEXED(src->format->format) ) {
+            return SDL_SoftStretch( src, srcrect, dst, dstrect );
+        } else {
+            return SDL_LowerBlit( src, srcrect, dst, dstrect );
+        }
     } else {
-        return SDL_LowerBlit( src, srcrect, dst, dstrect );
+        if ( !(src->map->info.flags & complex_copy_flags) &&
+             src->format->format == dst->format->format &&
+             !SDL_ISPIXELFORMAT_INDEXED(src->format->format) &&
+             src->format->BytesPerPixel == 4 &&
+             src->format->format != SDL_PIXELFORMAT_ARGB2101010) {
+            /* fast path */
+            return SDL_SoftStretchLinear(src, srcrect, dst, dstrect);
+        } else {
+            /* Use intermediate surface(s) */
+            SDL_Surface *tmp1 = NULL;
+            int ret;
+            SDL_Rect srcrect2;
+            int is_complex_copy_flags = (src->map->info.flags & complex_copy_flags);
+
+            Uint32 flags;
+            Uint8 r, g, b;
+            Uint8 alpha;
+            SDL_BlendMode blendMode;
+
+            /* Save source infos */
+            flags = src->flags;
+            SDL_GetSurfaceColorMod(src, &r, &g, &b);
+            SDL_GetSurfaceAlphaMod(src, &alpha);
+            SDL_GetSurfaceBlendMode(src, &blendMode);
+            srcrect2.x = srcrect->x;
+            srcrect2.y = srcrect->y;
+            srcrect2.w = srcrect->w;
+            srcrect2.h = srcrect->h;
+
+            /* Change source format if not appropriate for scaling */
+            if (src->format->BytesPerPixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
+                SDL_Rect tmprect;
+                int fmt;
+                tmprect.x = 0;
+                tmprect.y = 0;
+                tmprect.w = src->w;
+                tmprect.h = src->h;
+                if (dst->format->BytesPerPixel == 4 && dst->format->format != SDL_PIXELFORMAT_ARGB2101010) {
+                    fmt = dst->format->format;
+                } else {
+                    fmt = SDL_PIXELFORMAT_ARGB8888;
+                }
+                tmp1 = SDL_CreateRGBSurfaceWithFormat(flags, src->w, src->h, 0, fmt);
+                SDL_LowerBlit(src, srcrect, tmp1, &tmprect);
+
+
+                srcrect2.x = 0;
+                srcrect2.y = 0;
+                SDL_SetSurfaceColorMod(tmp1, r, g, b);
+                SDL_SetSurfaceAlphaMod(tmp1, alpha);
+                SDL_SetSurfaceBlendMode(tmp1, blendMode);
+
+                src = tmp1;
+            }
+
+            /* Intermediate scaling */
+            if (is_complex_copy_flags || src->format->format != dst->format->format) {
+                SDL_Rect tmprect;
+                SDL_Surface *tmp2 = SDL_CreateRGBSurfaceWithFormat(flags, dstrect->w, dstrect->h, 0, src->format->format);
+                SDL_SoftStretchLinear(src, &srcrect2, tmp2, NULL);
+
+                SDL_SetSurfaceColorMod(tmp2, r, g, b);
+                SDL_SetSurfaceAlphaMod(tmp2, alpha);
+                SDL_SetSurfaceBlendMode(tmp2, blendMode);
+
+                tmprect.x = 0;
+                tmprect.y = 0;
+                tmprect.w = dstrect->w;
+                tmprect.h = dstrect->h;
+                ret = SDL_LowerBlit(tmp2, &tmprect, dst, dstrect);
+                SDL_FreeSurface(tmp2);
+            } else {
+                ret = SDL_SoftStretchLinear(src, &srcrect2, dst, dstrect);
+            }
+
+            SDL_FreeSurface(tmp1);
+            return ret;
+        }
     }
 }
 

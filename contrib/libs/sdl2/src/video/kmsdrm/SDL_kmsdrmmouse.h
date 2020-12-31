@@ -33,19 +33,21 @@
 /* Driverdata with driver-side info about the cursor. */
 typedef struct _KMSDRM_CursorData
 {
-    struct gbm_bo *bo;
-    struct plane *plane;
-    uint32_t       crtc_id;
     uint16_t       hot_x, hot_y;
     uint16_t       w, h;
-    /* The video devide implemented on SDL_kmsdrmvideo.c 
-     * to be used as _THIS pointer in SDL_kmsdrmvideo.c 
-     * functions that need it. */
-    SDL_VideoDevice *video;
+
+    /* The buffer where we store the mouse bitmap ready to be used.
+       We get it ready and filled in CreateCursor(), and copy it to a GBM BO in ShowCursor().*/     
+    uint32_t *buffer;
+    size_t buffer_size;
+    size_t buffer_pitch;
+
 } KMSDRM_CursorData;
 
 extern void KMSDRM_InitMouse(_THIS);
-extern void KMSDRM_QuitMouse(_THIS);
+extern void KMSDRM_DeinitMouse(_THIS);
+
+extern void KMSDRM_InitCursor();
 
 #endif /* SDL_KMSDRM_mouse_h_ */
 

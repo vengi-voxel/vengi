@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_RENDER_OGL_ES && !SDL_RENDER_DISABLED
 
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_opengles.h"
 #include "../SDL_sysrender.h"
@@ -1165,7 +1164,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, RENDERER_CONTEXT_MAJOR);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, RENDERER_CONTEXT_MINOR);
 
-        if (SDL_RecreateWindow(window, window_flags | SDL_WINDOW_OPENGL) < 0) {
+        if (SDL_RecreateWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)) | SDL_WINDOW_OPENGL) < 0) {
             goto error;
         }
     }

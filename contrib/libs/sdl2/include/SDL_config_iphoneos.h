@@ -112,8 +112,12 @@
 #define HAVE_LOGF   1
 #define HAVE_LOG10  1
 #define HAVE_LOG10F 1
+#define HAVE_LROUND 1
+#define HAVE_LROUNDF 1
 #define HAVE_POW    1
 #define HAVE_POWF   1
+#define HAVE_ROUND 1
+#define HAVE_ROUNDF 1
 #define HAVE_SCALBN 1
 #define HAVE_SCALBNF    1
 #define HAVE_SIN    1
@@ -138,8 +142,9 @@
 /* Enable the stub haptic driver (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DUMMY 1
 
-/* Enable MFi joystick support */
-#define SDL_JOYSTICK_HIDAPI 1
+/* Enable joystick support */
+/* Only enable HIDAPI support if you want to support Steam Controllers on iOS and tvOS */
+/*#define SDL_JOYSTICK_HIDAPI 1*/
 #define SDL_JOYSTICK_MFI 1
 #define SDL_JOYSTICK_VIRTUAL    1
 
@@ -170,8 +175,10 @@
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
 
-/* Metal supported on 64-bit devices running iOS 8.0 and tvOS 9.0 and newer */
-#if !TARGET_OS_SIMULATOR && !TARGET_CPU_ARM && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 80000) || (__TV_OS_VERSION_MIN_REQUIRED >= 90000))
+/* Metal supported on 64-bit devices running iOS 8.0 and tvOS 9.0 and newer
+   Also supported in simulator from iOS 13.0 and tvOS 13.0
+ */
+#if (TARGET_OS_SIMULATOR && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 130000) || (__TV_OS_VERSION_MIN_REQUIRED >= 130000))) || (!TARGET_CPU_ARM && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 80000) || (__TV_OS_VERSION_MIN_REQUIRED >= 90000)))
 #define SDL_PLATFORM_SUPPORTS_METAL	1
 #else
 #define SDL_PLATFORM_SUPPORTS_METAL	0
