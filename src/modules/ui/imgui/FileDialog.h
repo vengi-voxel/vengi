@@ -6,13 +6,12 @@
 
 #pragma once
 
+#include "video/WindowedApp.h"
+
 namespace ui {
 namespace imgui {
 
-enum class FileDialogType { OpenFile, SelectFolder };
-
-extern void showFileDialog(bool *open, char *buffer, unsigned int bufferSize,
-						   FileDialogType type = FileDialogType::OpenFile);
+extern void showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type);
 
 }
 }

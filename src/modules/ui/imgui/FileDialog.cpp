@@ -19,7 +19,7 @@ static core::String assemblePath(const core::String &dir, const core::String &en
 	return dir + (dir.last() == '/' ? "" : "/") + ent;
 }
 
-void showFileDialog(bool *open, char *buffer, unsigned int bufferSize, FileDialogType type) {
+void showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type) {
 	static size_t fileDialogFileSelectIndex = 0;
 	static size_t fileDialogFolderSelectIndex = 0;
 	static core::String fileDialogCurrentPath = io::filesystem()->basePath();
@@ -277,7 +277,7 @@ void showFileDialog(bool *open, char *buffer, unsigned int bufferSize, FileDialo
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Choose")) {
-			if (type == FileDialogType::SelectFolder) {
+			if (type == video::WindowedApp::OpenFileMode::Directory) {
 				if (fileDialogCurrentFolder == "") {
 					SDL_strlcpy(fileDialogError, "Error: You must select a folder!", sizeof(fileDialogError));
 				} else {
