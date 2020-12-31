@@ -243,7 +243,11 @@ void Filesystem::shutdown() {
 
 core::String Filesystem::absolutePath(const core::String& path) {
 	uv_fs_t req;
-	uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
+	const int retVal = uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
+	if (retVal != 0) {
+		Log::error("Failed to get absolute path for '%s': %s", path.c_str(), uv_strerror(retVal));
+		return "";
+	}
 	const char *c = (const char *)uv_fs_get_ptr(&req);
 	if (c == nullptr) {
 		uv_fs_req_cleanup(&req);
