@@ -13,13 +13,11 @@ namespace imgui {
 
 enum class FileDialogSortOrder { Up, Down, None };
 
-static bool fileDialogOpen = false;
-
 static core::String assemblePath(const core::String &dir, const core::String &ent) {
 	return dir + (dir.last() == '/' ? "" : "/") + ent;
 }
 
-void showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type) {
+bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type) {
 	static size_t fileDialogFileSelectIndex = 0;
 	static size_t fileDialogFolderSelectIndex = 0;
 	static core::String fileDialogCurrentPath = io::filesystem()->basePath();
@@ -31,7 +29,7 @@ void showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 	static FileDialogSortOrder dateSortOrder = FileDialogSortOrder::None;
 	static FileDialogSortOrder typeSortOrder = FileDialogSortOrder::None;
 
-	if (open != nullptr && *open) {
+	if (open == nullptr || *open) {
 		ImGui::SetNextWindowSize(ImVec2(740.0f, 410.0f));
 		ImGui::Begin("Select a file", nullptr, ImGuiWindowFlags_NoResize);
 
@@ -273,7 +271,13 @@ void showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 			fileDialogFileSelectIndex = 0;
 			fileDialogFolderSelectIndex = 0;
 			fileDialogCurrentFile = "";
-			fileDialogOpen = false;
+			core_assert(bufferSize >= 1);
+			buffer[0] = '\0';
+			if (open != nullptr) {
+				*open = false;
+			}
+			ImGui::End();
+			return true;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Choose")) {
@@ -286,7 +290,26 @@ void showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 					fileDialogFileSelectIndex = 0;
 					fileDialogFolderSelectIndex = 0;
 					fileDialogCurrentFile = "";
-					fileDialogOpen = false;
+					if (open != nullptr) {
+						*open = false;
+					}
+					ImGui::End();
+					return true;
+				}
+			} else if (type == video::WindowedApp::OpenFileMode::Open) {
+				if (fileDialogCurrentFile == "") {
+					SDL_strlcpy(fileDialogError, "Error: You must select a file!", sizeof(fileDialogError));
+				} else {
+					const core::String &fullPath = assemblePath(fileDialogCurrentPath, fileDialogCurrentFile);
+					SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
+					fileDialogFileSelectIndex = 0;
+					fileDialogFolderSelectIndex = 0;
+					fileDialogCurrentFile = "";
+					if (open != nullptr) {
+						*open = false;
+					}
+					ImGui::End();
+					return true;
 				}
 			}
 		}
@@ -297,6 +320,7 @@ void showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 
 		ImGui::End();
 	}
+	return false;
 }
 
 }

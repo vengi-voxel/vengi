@@ -4,6 +4,7 @@
 
 #include "IMGUIApp.h"
 
+#include "FileDialog.h"
 #include "core/Var.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
@@ -357,6 +358,14 @@ app::AppState IMGUIApp::onRunning() {
 	if (renderUI) {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
+
+		// TODO: filter, lastDir, ...
+		// const core::String& lastDir = _lastDirectory->strVal();
+		char buf[512];
+		if (showFileDialog(&_showFileDialog, buf, sizeof(buf), _fileDialogMode)) {
+			_fileDialogCallback(buf);
+		}
+
 		bool showMetrics = _showMetrics->boolVal();
 		if (showMetrics) {
 			ImGui::ShowMetricsWindow(&showMetrics);
@@ -425,6 +434,12 @@ app::AppState IMGUIApp::onCleanup() {
 	_indexBufferIndex = -1;
 	_bufferIndex = -1;
 	return Super::onCleanup();
+}
+
+void IMGUIApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) {
+	_showFileDialog = true;
+	_fileDialogCallback = callback;
+	_fileDialogMode = mode;
 }
 
 }

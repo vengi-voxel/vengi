@@ -40,6 +40,9 @@ protected:
 	core::String _writePathIni;
 	core::String _writePathLog;
 	core::VarPtr _lastDirectory;
+	bool _showFileDialog = false;
+	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
+	std::function<void(const core::String&)> _fileDialogCallback {};
 
 	ImFont* _defaultFont = nullptr;
 	ImFont* _bigFont = nullptr;
@@ -69,6 +72,11 @@ public:
 	virtual app::AppState onRunning() override;
 	virtual void onRenderUI() = 0;
 	virtual app::AppState onCleanup() override;
+
+	/**
+	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
+	 */
+	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) override;
 };
 
 inline const video::Camera& IMGUIApp::camera() const {
