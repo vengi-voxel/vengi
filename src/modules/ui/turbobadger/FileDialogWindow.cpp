@@ -3,6 +3,7 @@
  */
 
 #include "FileDialogWindow.h"
+#include "core/StringUtil.h"
 #include "ui/turbobadger/UIApp.h"
 #include <SDL_stdinc.h>
 
@@ -13,41 +14,6 @@ static const char *FILELIST = "files";
 static const char *DIRLIST = "dirs";
 static const char *FILTERLIST = "filter";
 static const char *INPUT = "input";
-
-bool FileDialogItemSource::execFileItemFilter(const char* str, const char* filter) {
-	// filters might be separated by a ,
-	char buf[4096];
-	SDL_strlcpy(buf, filter, sizeof(buf));
-	buf[sizeof(buf) - 1] = '\0';
-
-	char *sep = SDL_strstr(buf, ",");
-	if (sep == nullptr) {
-		if (!SDL_strcmp(buf, "*") || !SDL_strncmp(buf, "*.", 2)) {
-			return core::string::matches(buf, str);
-		}
-		char patternBuf[32];
-		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", buf);
-		return core::string::matches(patternBuf, str);
-	}
-
-	char *f = buf;
-	while (*sep == ',') {
-		*sep = '\0';
-		char patternBuf[32];
-		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
-		if (core::string::matches(patternBuf, str)) {
-			return true;
-		}
-		f = ++sep;
-		sep = SDL_strchr(f, ',');
-		if (sep == nullptr) {
-			break;
-		}
-	}
-	char patternBuf[32];
-	SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
-	return core::string::matches(patternBuf, str);
-}
 
 FileDialogItemWidget::FileDialogItemWidget(FileDialogItem *item) : tb::TBLayout() {
 	setSkinBg(TBIDC("TBSelectItem"));
@@ -93,7 +59,7 @@ bool FileDialogItemSource::filter(int index, const char *filter) {
 		return true;
 	}
 
-	return execFileItemFilter(item->str.c_str(), filter);
+	return core::string::fileMatchesMultiple(filter, item->str.c_str());
 }
 
 tb::TBWidget *FileDialogItemSource::createItemWidget(int index, tb::TBSelectItemViewer *viewer) {
@@ -218,7 +184,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 							if (!SDL_strcmp(filter, "*")) {
 								continue;
 							}
-							if (FileDialogItemSource::execFileItemFilter(str.c_str(), filter)) {
+							if (core::string::fileMatchesMultiple(filter, str.c_str())) {
 								disabled = false;
 								break;
 							}

@@ -305,6 +305,12 @@ inline bool matches(const core::String& pattern, const core::String& text) {
 }
 
 /**
+ * @note patterns are separated by a comma. Example *.vox,*.qb,*.mcr
+ * @return @c true if any of the given patterns matched with the given input text
+ */
+extern bool fileMatchesMultiple(const char* patterns, const char* text);
+
+/**
  * @param[in,out] str Converts a string into UpperCamelCase.
  * @note Underscores are removed and the following character is also converted to upper case.
  * Example: @c foo_bar will end as @c FooBar

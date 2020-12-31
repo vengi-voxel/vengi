@@ -51,8 +51,6 @@ public:
 
 	inline void setMode(video::WindowedApp::OpenFileMode mode) { _mode = mode; }
 	inline void setShowHidden(bool showHidden) { _showHidden = showHidden; }
-
-	static bool execFileItemFilter(const char* str, const char* filter);
 };
 
 class FileDialogWindow: public ui::turbobadger::Window {

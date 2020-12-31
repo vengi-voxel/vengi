@@ -234,6 +234,40 @@ bool matches(const char* pattern, const char* text) {
 	return patternMatch(pattern, text);
 }
 
+bool fileMatchesMultiple(const char* patterns, const char* text) {
+	char buf[4096];
+	SDL_strlcpy(buf, patterns, sizeof(buf));
+	buf[sizeof(buf) - 1] = '\0';
+
+	char *sep = SDL_strstr(buf, ",");
+	if (sep == nullptr) {
+		if (!SDL_strcmp(buf, "*") || !SDL_strncmp(buf, "*.", 2)) {
+			return core::string::matches(buf, text);
+		}
+		char patternBuf[32];
+		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", buf);
+		return core::string::matches(patternBuf, text);
+	}
+
+	char *f = buf;
+	while (*sep == ',') {
+		*sep = '\0';
+		char patternBuf[32];
+		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
+		if (core::string::matches(patternBuf, text)) {
+			return true;
+		}
+		f = ++sep;
+		sep = SDL_strchr(f, ',');
+		if (sep == nullptr) {
+			break;
+		}
+	}
+	char patternBuf[32];
+	SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
+	return core::string::matches(patternBuf, text);
+}
+
 static void camelCase(core::String& str, bool upperCamelCase) {
 	if (str.empty()) {
 		return;
