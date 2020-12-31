@@ -395,8 +395,6 @@ app::AppState UIApp::onConstruct() {
 #endif
 	}).setHelp("Show ui debug information - only available in debug builds");
 
-	_lastDirectory = core::Var::get("cl_ui_lastdirectory", io::filesystem()->homePath().c_str());
-
 	_console.construct();
 
 	return state;

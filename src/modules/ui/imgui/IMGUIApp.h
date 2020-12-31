@@ -39,6 +39,7 @@ protected:
 	bool _mousePressed[3] = {false};
 	core::String _writePathIni;
 	core::String _writePathLog;
+	core::VarPtr _lastDirectory;
 
 	ImFont* _defaultFont = nullptr;
 	ImFont* _bigFont = nullptr;

@@ -132,6 +132,7 @@ void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
 app::AppState IMGUIApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_console.construct();
+	_lastDirectory = core::Var::get("cl_ui_lastdirectory", io::filesystem()->homePath().c_str());
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST);
 	_uiFontSize = core::Var::get(cfg::UIFontSize, "14", -1, "Allow to change the ui font size",

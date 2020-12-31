@@ -22,7 +22,6 @@ protected:
 	static constexpr uint32_t _logId = Log::logid("UIAPP");
 	tb::TBWidget* _root = nullptr;
 	Console _console;
-	core::VarPtr _lastDirectory;
 	int _lastShowTextY = -1;
 	core::String _applicationSkin;
 	bool _uiInitialized = false;
