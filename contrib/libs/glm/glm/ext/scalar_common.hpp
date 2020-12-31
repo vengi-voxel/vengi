@@ -156,7 +156,7 @@ namespace glm
 	/// implementation, presumably the direction that is fastest.
 	///
 	/// @param x The values of the argument must be greater or equal to zero.
-	/// @tparam T floating point scalar types.
+	/// @tparam genType floating point scalar types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/round.xml">GLSL round man page</a>
 	/// @see ext_scalar_common extension.
@@ -168,7 +168,7 @@ namespace glm
 	/// implementation, presumably the direction that is fastest.
 	///
 	/// @param x The values of the argument must be greater or equal to zero.
-	/// @tparam T floating point scalar types.
+	/// @tparam genType floating point scalar types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/round.xml">GLSL round man page</a>
 	/// @see ext_scalar_common extension.

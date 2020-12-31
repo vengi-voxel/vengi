@@ -33,13 +33,13 @@ namespace glm
 	GLM_FUNC_QUALIFIER bool isIdentity(mat<C, R, T, Q> const& m, T const& epsilon)
 	{
 		bool result = true;
-		for(length_t i = 0; result && i < m[0].length() ; ++i)
+		for(length_t i = 0; result && i < m.length(); ++i)
 		{
-			for(length_t j = 0; result && j < i ; ++j)
+			for(length_t j = 0; result && j < glm::min(i, m[0].length()); ++j)
 				result = abs(m[i][j]) <= epsilon;
-			if(result)
+			if(result && i < m[0].length())
 				result = abs(m[i][i] - 1) <= epsilon;
-			for(length_t j = i + 1; result && j < m.length(); ++j)
+			for(length_t j = i + 1; result && j < m[0].length(); ++j)
 				result = abs(m[i][j]) <= epsilon;
 		}
 		return result;
