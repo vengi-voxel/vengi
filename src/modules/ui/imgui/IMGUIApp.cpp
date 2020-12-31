@@ -133,7 +133,7 @@ void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
 app::AppState IMGUIApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_console.construct();
-	_lastDirectory = core::Var::get("cl_ui_lastdirectory", io::filesystem()->homePath().c_str());
+	_lastDirectory = core::Var::get(cfg::UILastDirectory, io::filesystem()->homePath().c_str());
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST);
 	_uiFontSize = core::Var::get(cfg::UIFontSize, "14", -1, "Allow to change the ui font size",
@@ -359,11 +359,10 @@ app::AppState IMGUIApp::onRunning() {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
 
-		// TODO: _fileDialogFilter, lastDir, ...
-		// const core::String& lastDir = _lastDirectory->strVal();
 		char buf[512];
-		if (showFileDialog(&_showFileDialog, buf, sizeof(buf), _fileDialogMode)) {
+		if (showFileDialog(&_showFileDialog, buf, sizeof(buf), _fileDialogMode, _fileDialogFilter)) {
 			_fileDialogCallback(buf);
+			_showFileDialog = false;
 		}
 
 		bool showMetrics = _showMetrics->boolVal();

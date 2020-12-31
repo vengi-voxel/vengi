@@ -17,10 +17,11 @@ namespace imgui {
  * the dialog.
  * @param buffer Output buffer for the full path of the selected entity
  * @param bufferSize Output buffer size
+ * @param filter Filter wildcard
  * @return @c true if user input was made - either an entity was selected, or the selection was cancelled.
  * @return @c false if no user input was made yet and the dialog should still run
  */
-extern bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type);
+extern bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type, const core::String& filter);
 
 }
 }

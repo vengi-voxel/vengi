@@ -6,6 +6,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
+#include "core/Var.h"
 #include "io/Filesystem.h"
 
 namespace ui {
@@ -17,10 +18,13 @@ static core::String assemblePath(const core::String &dir, const core::String &en
 	return dir + (dir.last() == '/' ? "" : "/") + ent;
 }
 
-bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type) {
+// TODO: make filters selectable
+bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type, const core::String& filter) {
 	static size_t fileDialogFileSelectIndex = 0;
 	static size_t fileDialogFolderSelectIndex = 0;
-	static core::String fileDialogCurrentPath = io::filesystem()->basePath();
+	const core::VarPtr& lastDirVar = core::Var::getSafe(cfg::UILastDirectory);
+	const core::String& lastDir = lastDirVar->strVal();
+	static core::String fileDialogCurrentPath = lastDir;
 	static core::String fileDialogCurrentFile = "";
 	static core::String fileDialogCurrentFolder = "";
 	static char fileDialogError[500] = "";
@@ -28,6 +32,11 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 	static FileDialogSortOrder sizeSortOrder = FileDialogSortOrder::None;
 	static FileDialogSortOrder dateSortOrder = FileDialogSortOrder::None;
 	static FileDialogSortOrder typeSortOrder = FileDialogSortOrder::None;
+
+	if (!io::filesystem()->exists(fileDialogCurrentPath)) {
+		fileDialogCurrentPath = io::filesystem()->homePath();
+		lastDirVar->setVal(fileDialogCurrentPath);
+	}
 
 	if (open == nullptr || *open) {
 		ImGui::SetNextWindowSize(ImVec2(740.0f, 410.0f));
@@ -46,6 +55,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 							  ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
 			if (ImGui::IsMouseDoubleClicked(0)) {
 				fileDialogCurrentPath = io::filesystem()->absolutePath(fileDialogCurrentPath + "/..");
+				lastDirVar->setVal(fileDialogCurrentPath);
 			}
 		}
 		for (size_t i = 0; i < entities.size(); ++i) {
@@ -58,10 +68,12 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 				fileDialogCurrentFile = "";
 				if (ImGui::IsMouseDoubleClicked(0)) {
 					fileDialogCurrentPath = assemblePath(fileDialogCurrentPath, entities[i].name);
+					lastDirVar->setVal(fileDialogCurrentPath);
 					fileDialogFolderSelectIndex = 0;
 					fileDialogFileSelectIndex = 0;
 					ImGui::SetScrollHereY(0.0f);
 					fileDialogCurrentFolder = "";
+					fileDialogError[0] = '\0';
 				} else {
 					fileDialogFolderSelectIndex = i;
 					fileDialogCurrentFolder = entities[i].name;
@@ -128,6 +140,11 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 			if (entities[i].type != io::Filesystem::DirEntry::Type::file) {
 				continue;
 			}
+			if (!filter.empty()) {
+				if (!core::string::fileMatchesMultiple(filter.c_str(), entities[i].name.c_str())) {
+					continue;
+				}
+			}
 			files.push_back(entities[i]);
 		}
 
@@ -179,6 +196,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 				fileDialogFileSelectIndex = i;
 				fileDialogCurrentFile = files[i].name;
 				fileDialogCurrentFolder = "";
+				fileDialogError[0] = '\0';
 			}
 			ImGui::NextColumn();
 			ImGui::TextUnformatted(core::string::humanSize(files[i].size).c_str());
@@ -293,6 +311,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 					if (open != nullptr) {
 						*open = false;
 					}
+					fileDialogError[0] = '\0';
 					ImGui::End();
 					return true;
 				}
@@ -308,6 +327,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 					if (open != nullptr) {
 						*open = false;
 					}
+					fileDialogError[0] = '\0';
 					ImGui::End();
 					return true;
 				}
