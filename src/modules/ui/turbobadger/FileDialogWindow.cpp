@@ -330,7 +330,7 @@ void FileDialogWindow::changeDir(const core::String& dir) {
 	_lastDirectory->setVal(_directory);
 
 	_entityList.deleteAllItems();
-	_entityList.addItem(new FileDialogItem(io::Filesystem::DirEntry{"..", io::Filesystem::DirEntry::Type::dir, (uint64_t)0}));
+	_entityList.addItem(new FileDialogItem(io::Filesystem::DirEntry{"..", io::Filesystem::DirEntry::Type::dir, (uint64_t)0, (uint64_t)0}));
 
 	core::DynamicArray<io::Filesystem::DirEntry> entities;
 	getApp()->filesystem()->list(_directory, entities);
