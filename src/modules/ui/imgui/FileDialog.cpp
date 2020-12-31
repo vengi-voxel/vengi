@@ -296,7 +296,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 					ImGui::End();
 					return true;
 				}
-			} else if (type == video::WindowedApp::OpenFileMode::Open) {
+			} else if (type == video::WindowedApp::OpenFileMode::Open || type == video::WindowedApp::OpenFileMode::Save) {
 				if (fileDialogCurrentFile == "") {
 					SDL_strlcpy(fileDialogError, "Error: You must select a file!", sizeof(fileDialogError));
 				} else {
