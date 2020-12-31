@@ -404,19 +404,6 @@ void AIDebug::dbgAggro() {
 	ImGui::End();
 }
 
-static core::String humanSize(uint64_t bytes) {
-	static const char *units[] = {"B", "KB", "MB", "GB", "TB"};
-	static const char length = lengthof(units);
-
-	int unitIdx = 0;
-	double dblBytes = bytes;
-	for (; bytes / 1024 > 0 && unitIdx < length - 1; ++unitIdx, bytes /= 1024) {
-		dblBytes = bytes / 1024.0;
-	}
-
-	return core::string::format("%.02lf%s", dblBytes, units[unitIdx]);
-}
-
 void AIDebug::dbgStats() {
 	if (!_showStats) {
 		return;
@@ -434,10 +421,10 @@ void AIDebug::dbgStats() {
 			ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_WidthAutoResize);
 			ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthAutoResize);
 			ImGui::TableHeadersRow();
-			ImGui::TableKeyValue("StateWorld", humanSize(_stateWorldSize));
-			ImGui::TableKeyValue("CharacterStatic", humanSize(_characterStaticSize));
-			ImGui::TableKeyValue("CharacterDetails", humanSize(_characterDetailsSize));
-			ImGui::TableKeyValue("Names", humanSize(_namesSize));
+			ImGui::TableKeyValue("StateWorld", core::string::humanSize(_stateWorldSize));
+			ImGui::TableKeyValue("CharacterStatic", core::string::humanSize(_characterStaticSize));
+			ImGui::TableKeyValue("CharacterDetails", core::string::humanSize(_characterDetailsSize));
+			ImGui::TableKeyValue("Names", core::string::humanSize(_namesSize));
 			ImGui::EndTable();
 		}
 	}

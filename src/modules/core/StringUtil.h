@@ -15,6 +15,7 @@ namespace string {
 
 extern core::String format(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 extern bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(3);
+extern core::String humanSize(uint64_t bytes);
 
 inline int toInt(const char* str) {
 	return SDL_atoi(str);

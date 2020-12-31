@@ -75,6 +75,19 @@ core::String format(const char *msg, ...) {
 	return core::String(text);
 }
 
+core::String humanSize(uint64_t bytes) {
+	static const char *units[] = {"B", "KB", "MB", "GB", "TB"};
+	static const char length = lengthof(units);
+
+	int unitIdx = 0;
+	double dblBytes = bytes;
+	for (; bytes / 1024 > 0 && unitIdx < length - 1; ++unitIdx, bytes /= 1024) {
+		dblBytes = bytes / 1024.0;
+	}
+
+	return core::string::format("%.02lf%s", dblBytes, units[unitIdx]);
+}
+
 char *urlEncode(const char *inBuf) {
 	const char *inBufPos = inBuf;
 	const size_t maxSize = SDL_strlen(inBuf) * 3;
