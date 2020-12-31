@@ -135,7 +135,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 		ImGui::NextColumn();
 		ImGui::Separator();
 
-		core::DynamicArray<io::Filesystem::DirEntry> files;
+		core::DynamicArray<const io::Filesystem::DirEntry*> files(entities.size());
 		for (size_t i = 0; i < entities.size(); ++i) {
 			if (entities[i].type != io::Filesystem::DirEntry::Type::file) {
 				continue;
@@ -145,37 +145,37 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 					continue;
 				}
 			}
-			files.push_back(entities[i]);
+			files.push_back(&entities[i]);
 		}
 
-		static auto nameSorter = [](const io::Filesystem::DirEntry &a, const io::Filesystem::DirEntry &b) {
+		static auto nameSorter = [](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 			if (fileNameSortOrder == FileDialogSortOrder::Down) {
-				return a.name > b.name;
+				return a->name > b->name;
 			}
-			return a.name < b.name;
+			return a->name < b->name;
 		};
 
-		static auto sizeSorter = [](const io::Filesystem::DirEntry &a, const io::Filesystem::DirEntry &b) {
+		static auto sizeSorter = [](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 			if (sizeSortOrder == FileDialogSortOrder::Down) {
-				return a.size > b.size;
+				return a->size > b->size;
 			}
-			return a.size < b.size;
+			return a->size < b->size;
 		};
 
-		static auto extensionSorter = [](const io::Filesystem::DirEntry &a, const io::Filesystem::DirEntry &b) {
-			const core::String &aext = core::string::extractExtension(a.name);
-			const core::String &bext = core::string::extractExtension(b.name);
+		static auto extensionSorter = [](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+			const core::String &aext = core::string::extractExtension(a->name);
+			const core::String &bext = core::string::extractExtension(b->name);
 			if (typeSortOrder == FileDialogSortOrder::Down) {
 				return aext > bext;
 			}
 			return aext < bext;
 		};
 
-		static auto mtimeSorter = [](const io::Filesystem::DirEntry &a, const io::Filesystem::DirEntry &b) {
+		static auto mtimeSorter = [](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 			if (dateSortOrder == FileDialogSortOrder::Down) {
-				return a.mtime > b.mtime;
+				return a->mtime > b->mtime;
 			}
-			return a.mtime < b.mtime;
+			return a->mtime < b->mtime;
 		};
 
 		// Sort files
@@ -190,20 +190,20 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 		}
 
 		for (size_t i = 0; i < files.size(); ++i) {
-			if (ImGui::Selectable(files[i].name.c_str(), i == fileDialogFileSelectIndex,
+			if (ImGui::Selectable(files[i]->name.c_str(), i == fileDialogFileSelectIndex,
 								  ImGuiSelectableFlags_AllowDoubleClick,
 								  ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
 				fileDialogFileSelectIndex = i;
-				fileDialogCurrentFile = files[i].name;
+				fileDialogCurrentFile = files[i]->name;
 				fileDialogCurrentFolder = "";
 				fileDialogError[0] = '\0';
 			}
 			ImGui::NextColumn();
-			ImGui::TextUnformatted(core::string::humanSize(files[i].size).c_str());
+			ImGui::TextUnformatted(core::string::humanSize(files[i]->size).c_str());
 			ImGui::NextColumn();
-			ImGui::TextUnformatted(core::string::extractExtension(files[i].name).c_str());
+			ImGui::TextUnformatted(core::string::extractExtension(files[i]->name).c_str());
 			ImGui::NextColumn();
-			const core::String &lastModified = core::TimeProvider::toString(files[i].mtime);
+			const core::String &lastModified = core::TimeProvider::toString(files[i]->mtime);
 			ImGui::TextUnformatted(lastModified.c_str());
 			ImGui::NextColumn();
 		}
