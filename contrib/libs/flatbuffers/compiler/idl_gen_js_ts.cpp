@@ -517,7 +517,7 @@ class JsTsGenerator : public BaseGenerator {
             const auto enum_name = WrapInNameSpace(*type.enum_def);
             return (allowNull) ? (enum_name + "|null") : (enum_name);
           }
-
+          
           return (allowNull) ? ("number|null") : ("number");
         }
         return "flatbuffers.Offset";
@@ -2115,7 +2115,7 @@ class JsTsGenerator : public BaseGenerator {
       if (!object_namespace.empty()) { code += "}\n"; }
     }
   }
-
+  
   static bool HasNullDefault(const FieldDef &field) {
     return field.optional && field.value.constant == "null";
   }

@@ -20,7 +20,6 @@
 #if defined(__MINGW32__) || defined(__MINGW64__) || defined(__CYGWIN__) || \
     defined(__QNXNTO__)
 #  define _POSIX_C_SOURCE 200809L
-#  undef _XOPEN_SOURCE
 #  define _XOPEN_SOURCE 700L
 #endif
 
