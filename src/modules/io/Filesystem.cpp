@@ -165,7 +165,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 			const core::String symlink((const char*)linkReq.ptr);
 			uv_fs_req_cleanup(&linkReq);
 			if (!filter.empty()) {
-				if (!core::string::matches(filter, symlink)) {
+				if (!core::string::fileMatchesMultiple(filter.c_str(), symlink.c_str())) {
 					continue;
 				}
 			}
@@ -187,7 +187,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 			continue;
 		}
 		if (!filter.empty()) {
-			if (!core::string::matches(filter.c_str(), ent.name)) {
+			if (!core::string::fileMatchesMultiple(filter.c_str(), ent.name)) {
 				continue;
 			}
 		}
