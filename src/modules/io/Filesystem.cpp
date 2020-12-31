@@ -179,7 +179,8 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 				continue;
 			}
 			const bool dir = (uv_fs_get_statbuf(&statsReq)->st_mode & S_IFDIR) != 0;
-			entities.push_back(DirEntry{ent.name, dir ? DirEntry::Type::dir : DirEntry::Type::file, statsReq.statbuf.st_size});
+			const uint64_t mtimeMillis = (uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
+			entities.push_back(DirEntry{ent.name, dir ? DirEntry::Type::dir : DirEntry::Type::file, statsReq.statbuf.st_size, mtimeMillis});
 			uv_fs_req_cleanup(&statsReq);
 		} else {
 			Log::debug("Unknown directory entry found: %s", ent.name);
@@ -195,7 +196,8 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
 			Log::warn("Could not stat file %s", fullPath.c_str());
 		}
-		entities.push_back(DirEntry{ent.name, type, statsReq.statbuf.st_size});
+		const uint64_t mtimeMillis = (uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
+		entities.push_back(DirEntry{ent.name, type, statsReq.statbuf.st_size, mtimeMillis});
 		uv_fs_req_cleanup(&statsReq);
 	}
 	uv_fs_req_cleanup(&req);

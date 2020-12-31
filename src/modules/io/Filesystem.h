@@ -98,7 +98,8 @@ public:
 			unknown
 		};
 		Type type;
-		uint64_t size;
+		uint64_t size;	/**< size in bytes */
+		uint64_t mtime;	/**< last modification time in millis */
 	};
 
 	bool list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter = "") const;
