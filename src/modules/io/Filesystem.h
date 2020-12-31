@@ -102,6 +102,13 @@ public:
 		uint64_t mtime;	/**< last modification time in millis */
 	};
 
+	/**
+	 * @brief List all entities in a directory that match the given optional filter
+	 * @param directory The directory to list
+	 * @param entities The list of directory entities that were found
+	 * @param filter Wildcard for filtering the returned entities
+	 * @return @c true if the directory could get opened
+	 */
 	bool list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter = "") const;
 
 	static bool isReadableDir(const core::String& name);
