@@ -46,6 +46,6 @@ IMGUI_API bool ToggleButton(const char *text, bool state);
 IMGUI_API void TableKeyValue(const char *key, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 IMGUI_API void TableKeyValue(const char *key, const core::String &value);
 IMGUI_API bool DisabledButton(const char *text, bool disabled);
-IMGUI_API int Size(int size);
+IMGUI_API float Size(float size);
 
 }
