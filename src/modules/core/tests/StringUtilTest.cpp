@@ -188,12 +188,19 @@ TEST_F(StringUtilTest, testStarsWith) {
 
 TEST_F(StringUtilTest, testMatches) {
 	EXPECT_TRUE(core::string::matches("foobar", "foo*"));
-	//EXPECT_TRUE(core::string::matches("foobar", "*oo*"));
 	EXPECT_TRUE(core::string::matches("foobar", "?oo?*"));
 	EXPECT_TRUE(core::string::matches("foobar", "*bar"));
 	EXPECT_TRUE(core::string::matches("file.ext", "*.ext"));
 	EXPECT_TRUE(core::string::matches("foobar", "fo?bar"));
 	EXPECT_FALSE(core::string::matches("foo", "foo?"));
+}
+
+TEST_F(StringUtilTest, testFileMatchesMultiple) {
+	EXPECT_TRUE(core::string::fileMatchesMultiple("foobar.txt", "*.txt"));
+	EXPECT_TRUE(core::string::fileMatchesMultiple("foobar.txt", "*.tet,*.no,*.no2,*.no3,*.txt"));
+	EXPECT_TRUE(core::string::fileMatchesMultiple("foobar.txt", "tet,no,no2,no3,txt"));
+	EXPECT_FALSE(core::string::fileMatchesMultiple("foobar.txt", "*.bar,*.foo"));
+	EXPECT_FALSE(core::string::fileMatchesMultiple("foobar.txt", "bar,foo"));
 }
 
 }

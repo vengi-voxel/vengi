@@ -3,6 +3,7 @@
  */
 
 #include "StringUtil.h"
+#include "SDL_stdinc.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
 #include <ctype.h>
@@ -253,7 +254,11 @@ bool fileMatchesMultiple(const char* text, const char* patterns) {
 	while (*sep == ',') {
 		*sep = '\0';
 		char patternBuf[32];
-		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
+		if (!SDL_strcmp(f, "*") || !SDL_strncmp(f, "*.", 2)) {
+			SDL_strlcpy(patternBuf, f, sizeof(patternBuf));
+		} else {
+			SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
+		}
 		if (core::string::matches(text, patternBuf)) {
 			return true;
 		}
@@ -264,7 +269,11 @@ bool fileMatchesMultiple(const char* text, const char* patterns) {
 		}
 	}
 	char patternBuf[32];
-	SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
+	if (!SDL_strcmp(f, "*") || !SDL_strncmp(f, "*.", 2)) {
+		SDL_strlcpy(patternBuf, f, sizeof(patternBuf));
+	} else {
+		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
+	}
 	return core::string::matches(text, patternBuf);
 }
 

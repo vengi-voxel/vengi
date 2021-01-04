@@ -306,6 +306,7 @@ inline bool matches(const core::String& text, const core::String& pattern) {
 
 /**
  * @note patterns are separated by a comma. Example *.vox,*.qb,*.mcr
+ * @note Only for file extensions
  * @return @c true if any of the given patterns matched with the given input text
  */
 extern bool fileMatchesMultiple(const char* text, const char* patterns);
