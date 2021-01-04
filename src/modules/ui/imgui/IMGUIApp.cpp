@@ -346,21 +346,6 @@ app::AppState IMGUIApp::onRunning() {
 
 	showCursor(io.MouseDrawCursor ? false : true);
 
-	video::ScopedShader scopedShader(_shader);
-	_shader.setViewprojection(_camera.projectionMatrix());
-	_shader.setModel(glm::mat4(1.0f));
-	_shader.setTexture(video::TextureUnit::Zero);
-
-	video::ScopedViewPort scopedViewPort(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-
-	video::enable(video::State::Blend);
-	video::disable(video::State::DepthTest);
-	video::enable(video::State::Scissor);
-	video::disable(video::State::CullFace);
-	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
-	video::blendEquation(video::BlendEquation::Add);
-
 	if (renderUI) {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
@@ -385,6 +370,21 @@ app::AppState IMGUIApp::onRunning() {
 	} else {
 		core::setBindingContext(core::BindingContext::World);
 	}
+
+	video::ScopedShader scopedShader(_shader);
+	_shader.setViewprojection(_camera.projectionMatrix());
+	_shader.setModel(glm::mat4(1.0f));
+	_shader.setTexture(video::TextureUnit::Zero);
+
+	video::ScopedViewPort scopedViewPort(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+
+	video::enable(video::State::Blend);
+	video::disable(video::State::DepthTest);
+	video::enable(video::State::Scissor);
+	video::disable(video::State::CullFace);
+	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
+	video::blendEquation(video::BlendEquation::Add);
 
 	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	_console.render(rect, _deltaFrameSeconds);
