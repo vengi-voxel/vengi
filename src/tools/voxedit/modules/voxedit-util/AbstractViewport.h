@@ -39,9 +39,14 @@ public:
 	void resetCamera();
 	bool saveImage(const char* filename);
 
+	video::FrameBuffer& frameBuffer();
 	video::Camera& camera();
 	ViewportController& controller();
 };
+
+inline video::FrameBuffer& AbstractViewport::frameBuffer() {
+	return _frameBuffer;
+}
 
 inline ViewportController& AbstractViewport::controller() {
 	return _controller;
