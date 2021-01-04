@@ -233,7 +233,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 
 	command::Command::registerCommand("cvarlist", [] (const command::CmdArgs& args) {
 		util::visitVarSorted([&] (const core::VarPtr& var) {
-			if (!args.empty() && !core::string::matches(args[0], var->name())) {
+			if (!args.empty() && !core::string::matches(var->name(), args[0])) {
 				return;
 			}
 			const uint32_t flags = var->getFlags();
@@ -268,7 +268,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 
 	command::Command::registerCommand("cmdlist", [] (const command::CmdArgs& args) {
 		command::Command::visitSorted([&] (const command::Command& cmd) {
-			if (!args.empty() && !core::string::matches(args[0], cmd.name())) {
+			if (!args.empty() && !core::string::matches(cmd.name(), args[0])) {
 				return;
 			}
 			Log::info("* %s - %s", cmd.name(), cmd.help());

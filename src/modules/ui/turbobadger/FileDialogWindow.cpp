@@ -59,7 +59,7 @@ bool FileDialogItemSource::filter(int index, const char *filter) {
 		return true;
 	}
 
-	return core::string::fileMatchesMultiple(filter, item->str.c_str());
+	return core::string::fileMatchesMultiple(item->str.c_str(), filter);
 }
 
 tb::TBWidget *FileDialogItemSource::createItemWidget(int index, tb::TBSelectItemViewer *viewer) {
@@ -184,7 +184,7 @@ bool FileDialogWindow::onEvent(const tb::TBWidgetEvent &ev) {
 							if (!SDL_strcmp(filter, "*")) {
 								continue;
 							}
-							if (core::string::fileMatchesMultiple(filter, str.c_str())) {
+							if (core::string::fileMatchesMultiple(str.c_str(), filter)) {
 								disabled = false;
 								break;
 							}

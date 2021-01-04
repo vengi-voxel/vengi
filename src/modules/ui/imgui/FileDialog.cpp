@@ -153,7 +153,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 				continue;
 			}
 			if (!filter.empty()) {
-				if (!core::string::fileMatchesMultiple(filter.c_str(), entities[i].name.c_str())) {
+				if (!core::string::fileMatchesMultiple(entities[i].name.c_str(), filter.c_str())) {
 					continue;
 				}
 			}

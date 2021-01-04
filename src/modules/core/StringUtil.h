@@ -298,17 +298,17 @@ core::String join(const ITER& begin, const ITER& end, const char *delimiter, FUN
  * @param[in] pattern The pattern can deal with wildcards like * and ?
  * @param[in] text The text to match against the pattern
  */
-extern bool matches(const char* pattern, const char* text);
-extern bool matches(const core::String& pattern, const char* text);
-inline bool matches(const core::String& pattern, const core::String& text) {
-	return matches(pattern, text.c_str());
+extern bool matches(const char* text, const char* pattern);
+extern bool matches(const char* text, const core::String& pattern);
+inline bool matches(const core::String& text, const core::String& pattern) {
+	return matches(text.c_str(), pattern);
 }
 
 /**
  * @note patterns are separated by a comma. Example *.vox,*.qb,*.mcr
  * @return @c true if any of the given patterns matched with the given input text
  */
-extern bool fileMatchesMultiple(const char* patterns, const char* text);
+extern bool fileMatchesMultiple(const char* text, const char* patterns);
 
 /**
  * @param[in,out] str Converts a string into UpperCamelCase.

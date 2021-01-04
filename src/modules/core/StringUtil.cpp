@@ -163,8 +163,8 @@ bool isInteger(const core::String& in) {
 	return true;
 }
 
-static bool patternMatch(const char *pattern, const char *text);
-static bool patternMatchMulti(const char* pattern, const char* text) {
+static bool patternMatch(const char *text, const char *pattern);
+static bool patternMatchMulti(const char* text, const char* pattern) {
 	const char *p = pattern;
 	const char *t = text;
 	char c;
@@ -195,7 +195,7 @@ static bool patternMatchMulti(const char* pattern, const char* text) {
 	return false;
 }
 
-static bool patternMatch(const char *pattern, const char *text) {
+static bool patternMatch(const char *text, const char *pattern) {
 	const char *p = pattern;
 	const char *t = text;
 	char c;
@@ -203,7 +203,7 @@ static bool patternMatch(const char *pattern, const char *text) {
 	while ((c = *p++) != '\0') {
 		switch (c) {
 		case '*':
-			return patternMatchMulti(p, t);
+			return patternMatchMulti(t, p);
 		case '?':
 			if (*t == '\0') {
 				return false;
@@ -220,21 +220,21 @@ static bool patternMatch(const char *pattern, const char *text) {
 	return *t == '\0';
 }
 
-bool matches(const core::String& pattern, const char* text) {
+bool matches(const char* text, const core::String& pattern) {
 	if (pattern.empty()) {
 		return true;
 	}
-	return patternMatch(pattern.c_str(), text);
+	return patternMatch(text, pattern.c_str());
 }
 
-bool matches(const char* pattern, const char* text) {
+bool matches(const char* text, const char* pattern) {
 	if (pattern == nullptr || pattern[0] == '\0') {
 		return true;
 	}
-	return patternMatch(pattern, text);
+	return patternMatch(text, pattern);
 }
 
-bool fileMatchesMultiple(const char* patterns, const char* text) {
+bool fileMatchesMultiple(const char* text, const char* patterns) {
 	char buf[4096];
 	SDL_strlcpy(buf, patterns, sizeof(buf));
 	buf[sizeof(buf) - 1] = '\0';
@@ -242,11 +242,11 @@ bool fileMatchesMultiple(const char* patterns, const char* text) {
 	char *sep = SDL_strstr(buf, ",");
 	if (sep == nullptr) {
 		if (!SDL_strcmp(buf, "*") || !SDL_strncmp(buf, "*.", 2)) {
-			return core::string::matches(buf, text);
+			return core::string::matches(text, buf);
 		}
 		char patternBuf[32];
 		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", buf);
-		return core::string::matches(patternBuf, text);
+		return core::string::matches(text, patternBuf);
 	}
 
 	char *f = buf;
@@ -254,7 +254,7 @@ bool fileMatchesMultiple(const char* patterns, const char* text) {
 		*sep = '\0';
 		char patternBuf[32];
 		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
-		if (core::string::matches(patternBuf, text)) {
+		if (core::string::matches(text, patternBuf)) {
 			return true;
 		}
 		f = ++sep;
@@ -265,7 +265,7 @@ bool fileMatchesMultiple(const char* patterns, const char* text) {
 	}
 	char patternBuf[32];
 	SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
-	return core::string::matches(patternBuf, text);
+	return core::string::matches(text, patternBuf);
 }
 
 static void camelCase(core::String& str, bool upperCamelCase) {
