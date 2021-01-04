@@ -593,6 +593,7 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 }
 
 static inline math::AABB<float> toAABB(const voxel::Region& region) {
+	core_assert(region.isValid());
 	const math::AABB<int> intaabb(region.getLowerCorner(), region.getUpperCorner() + 1);
 	return math::AABB<float>(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
 }

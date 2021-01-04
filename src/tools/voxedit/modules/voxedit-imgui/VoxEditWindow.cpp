@@ -49,15 +49,14 @@ void VoxEditWindow::afterLoad(const core::String &file) {
 
 bool VoxEditWindow::init() {
 	SceneManager &mgr = sceneMgr();
-#if 0
 	render::GridRenderer& gridRenderer = mgr.gridRenderer();
-	gridRenderer.setRenderAABB(_showAABB->getValue() != 0);
-	gridRenderer.setRenderGrid(_showGrid->getValue() != 0);
-	mgr.setGridResolution(_voxelSize->getValue());
-	mgr.setRenderAxis(_showAxis->getValue() != 0);
-	mgr.setRenderLockAxis(_showLockAxis->getValue() != 0);
-	mgr.setRenderShadow(_renderShadow->getValue() != 0);
-#endif
+
+	gridRenderer.setRenderAABB(core::Var::get("ve_showaabb", "1")->boolVal());
+	gridRenderer.setRenderGrid(core::Var::get("ve_showgrid", "1")->boolVal());
+	mgr.setGridResolution(core::Var::get("ve_gridsize", "1")->intVal());
+	mgr.setRenderAxis(core::Var::get("ve_showaxis", "1")->boolVal());
+	mgr.setRenderLockAxis(core::Var::get("ve_showlockedaxis", "1")->boolVal());
+	mgr.setRenderShadow(core::Var::get("ve_rendershadow", "1")->boolVal());
 
 	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
 	if (mgr.load(_lastOpenedFile->strVal())) {
