@@ -593,7 +593,7 @@ void AIDebug::dbgMap() {
 	const ImVec2 mapMins(0.0f, 0.0f);
 	const ImVec2 mapMaxs(_frameBufferDimension.x, _frameBufferDimension.y);
 	_map.setMinsMaxs(mapMins, mapMaxs);
-	if (ImGui::Begin("##map", nullptr, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings)) {
+	if (ImGui::Begin("##map", nullptr, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking)) {
 		dbgBar();
 
 		if (ImGui::IsMouseDragging(ImGuiMouseButton_Right, 0)) {

@@ -280,6 +280,12 @@ app::AppState IMGUIApp::onInit() {
 	io.GetClipboardTextFn = _getClipboardText;
 	io.ClipboardUserData = nullptr;
 
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
+	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+	io.ConfigDockingWithShift = false;
+
 #ifdef _WIN32
 	SDL_SysWMinfo wmInfo;
 	SDL_VERSION(&wmInfo.version);
