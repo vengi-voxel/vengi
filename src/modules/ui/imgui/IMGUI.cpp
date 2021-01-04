@@ -158,4 +158,8 @@ bool DisabledButton(const char *text, bool disabled) {
 	return pressed;
 }
 
+int Size(int size) {
+	return (int)((float)size * ImGui::GetWindowDpiScale());
+}
+
 }

@@ -53,7 +53,14 @@ void Viewport::renderFramebuffer() {
 		}
 	}
 	const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
-	ImGui::Image(texture->handle(), ImGui::GetWindowSize(), uva, uvc);
+	ImGui::SetNextWindowSize(ImGui::GetWindowSize());
+	const ImVec2 windowPos = ImGui::GetWindowPos();
+	if (ImGui::Begin(_cameraMode.c_str(), nullptr, ImGuiWindowFlags_NoDecoration)) {
+		ImGui::Image(texture->handle(), ImGui::GetWindowSize(), uva, uvc);
+		ImGui::SetCursorPos(ImVec2(windowPos.x + 5, windowPos.x + 5));
+		ImGui::Text("%s", _cameraMode.c_str());
+	}
+	ImGui::End();
 	if (shader != nullptr) {
 		shader->deactivate();
 		video::useProgram(prevShader);
@@ -79,9 +86,6 @@ void Viewport::update() {
 
 	renderToFrameBuffer();
 	renderFramebuffer();
-
-	// tb::TBFontFace* font = getFont();
-	// font->drawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str(), _cameraMode.size());
 }
 
 } // namespace voxedit
