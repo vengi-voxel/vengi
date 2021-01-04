@@ -171,56 +171,51 @@ bool VoxEditWindow::isPaletteWidgetDropTarget() const {
 	return false;
 }
 
+void VoxEditWindow::actionMenuItem(const char *title, const char *command) {
+	if (ImGui::MenuItem(title, command)) {
+		_lastExecutedCommand = command;
+		command::executeCommands(_lastExecutedCommand);
+	}
+}
+
 void VoxEditWindow::menuBar() {
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
-			if (ImGui::MenuItem("New", "new")) {
-				_lastExecutedCommand = "new";
-				command::executeCommands(_lastExecutedCommand);
-			}
-			if (ImGui::MenuItem("Load", "load")) {
-				_lastExecutedCommand = "load";
-				command::executeCommands(_lastExecutedCommand);
-			}
-			if (ImGui::MenuItem("Save", "save")) {
-				_lastExecutedCommand = "save";
-				command::executeCommands(_lastExecutedCommand);
-			}
-			if (ImGui::MenuItem("Load Animation", "animation_load")) {
-				_lastExecutedCommand = "animation_load";
-				command::executeCommands(_lastExecutedCommand);
-			}
-			if (ImGui::MenuItem("Save Animation", "animation_save")) {
-				_lastExecutedCommand = "animation_save";
-				command::executeCommands(_lastExecutedCommand);
-			}
-			if (ImGui::MenuItem("Prefab", "prefab")) {
-				_lastExecutedCommand = "prefab";
-				command::executeCommands(_lastExecutedCommand);
-			}
-			if (ImGui::MenuItem("Heightmap", "importheightmap")) {
-				_lastExecutedCommand = "importheightmap";
-				command::executeCommands(_lastExecutedCommand);
-			}
-			if (ImGui::MenuItem("Image as Plane", "importplane")) {
-				_lastExecutedCommand = "importplane";
-				command::executeCommands(_lastExecutedCommand);
-			}
+			actionMenuItem("New", "new");
+			actionMenuItem("Load", "load");
+			actionMenuItem("Save", "save");
+			actionMenuItem("Load Animation", "animation_load");
+			actionMenuItem("Save Animation", "animation_save");
+			actionMenuItem("Prefab", "prefab");
+			actionMenuItem("Heightmap", "importheightmap");
+			actionMenuItem("Image as Plane", "importplane");
 			if (ImGui::MenuItem("Quit")) {
 				_app->requestQuit();
 			}
 			ImGui::EndMenu();
+		}
+		actionMenuItem("Undo", "undo");
+		actionMenuItem("Redo", "redo");
+		if (ImGui::MenuItem("Settings")) {
+			// TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings_open
+		}
+		if (ImGui::MenuItem("Trees")) {
+			// TBButton: gravity: left, @include: definitions>menubutton, text: Trees, id: show_tree_panel
+		}
+		if (ImGui::MenuItem("Scripts")) {
+			// TBButton: gravity: left, @include: definitions>menubutton, text: Scripts, id: show_script_panel
+		}
+		if (ImGui::MenuItem("Noise")) {
+			// TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: show_noise_panel
+		}
+		if (ImGui::MenuItem("L-System")) {
+			// TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: show_lsystem_panel
 		}
 		ImGui::EndMainMenuBar();
 	}
 }
 
 void VoxEditWindow::palette() {
-#if 0
-	if (_paletteWidget != nullptr) {
-		_paletteWidget->setVoxelColor(sceneMgr().hitCursorVoxel().getColor());
-	}
-#endif
 	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
 	const float height = ImGui::GetWindowHeight();
 	const float width = ImGui::Size(120.0f);
@@ -262,14 +257,6 @@ void VoxEditWindow::palette() {
 	ImGui::End();
 }
 
-void VoxEditWindow::scene() {
-	_scene->update();
-	_sceneTop->update();
-	_sceneLeft->update();
-	_sceneFront->update();
-	_sceneAnimation->update();
-}
-
 void VoxEditWindow::tools() {
 }
 
@@ -284,7 +271,11 @@ void VoxEditWindow::leftWidget() {
 }
 
 void VoxEditWindow::mainWidget() {
-	scene();
+	_scene->update();
+	_sceneTop->update();
+	_sceneLeft->update();
+	_sceneFront->update();
+	_sceneAnimation->update();
 }
 
 void VoxEditWindow::rightWidget() {

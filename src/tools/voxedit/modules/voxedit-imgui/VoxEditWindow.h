@@ -22,7 +22,6 @@ private:
 
 	void menuBar();
 	void palette();
-	void scene();
 	void tools();
 	void layers();
 	void statusBar();
@@ -32,6 +31,8 @@ private:
 	void rightWidget();
 
 	void afterLoad(const core::String &file);
+
+	void actionMenuItem(const char *title, const char *command);
 
 public:
 	VoxEditWindow(video::WindowedApp *app);
