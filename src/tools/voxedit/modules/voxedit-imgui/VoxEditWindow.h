@@ -23,11 +23,13 @@ private:
 	core::DynamicArray<core::String> _scripts;
 
 	core::VarPtr _showAxisVar;
+	core::VarPtr _showGridVar;
 	core::VarPtr _modelSpaceVar;
 	core::VarPtr _showLockedAxisVar;
 	core::VarPtr _showAabbVar;
 	core::VarPtr _renderShadowVar;
 	core::VarPtr _animationSpeedVar;
+	core::VarPtr _gridSizeVar;
 
 	void menuBar();
 	void palette();
@@ -40,6 +42,8 @@ private:
 	void rightWidget();
 
 	void afterLoad(const core::String &file);
+
+	void updateSettings();
 
 	bool actionButton(const char *title, const char *command);
 	bool actionMenuItem(const char *title, const char *command);

@@ -5,6 +5,7 @@
 #include "VoxEditWindow.h"
 #include "Viewport.h"
 #include "command/CommandHandler.h"
+#include "core/StringUtil.h"
 #include "ui/imgui/IMGUI.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -84,24 +85,19 @@ void VoxEditWindow::afterLoad(const core::String &file) {
 }
 
 bool VoxEditWindow::init() {
-	SceneManager &mgr = sceneMgr();
-	render::GridRenderer& gridRenderer = mgr.gridRenderer();
-
-	gridRenderer.setRenderAABB(core::Var::get(cfg::VoxEditShowaabb, "0")->boolVal());
-	gridRenderer.setRenderGrid(core::Var::get(cfg::VoxEditShowgrid, "1")->boolVal());
-	mgr.setGridResolution(core::Var::get(cfg::VoxEditGridsize, "4")->intVal());
-	mgr.setRenderAxis(core::Var::get(cfg::VoxEditShowaxis, "1")->boolVal());
-	mgr.setRenderLockAxis(core::Var::get(cfg::VoxEditShowlockedaxis, "1")->boolVal());
-	mgr.setRenderShadow(core::Var::get(cfg::VoxEditRendershadow, "1")->boolVal());
-
-	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis);
-	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace);
-	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis);
-	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb);
-	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow);
-	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed);
-
+	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1");
+	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1");
+	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "0");
+	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis, "1");
+	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb, "0");
+	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow, "1");
+	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed, "1");
+	_gridSizeVar = core::Var::get(cfg::VoxEditGridsize, "4", "The size of the voxel grid", [] (const core::String& val) { const int intVal = core::string::toInt(val); return intVal >= 1 && intVal <= 64; });
 	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
+
+	updateSettings();
+
+	SceneManager &mgr = sceneMgr();
 	if (mgr.load(_lastOpenedFile->strVal())) {
 		afterLoad(_lastOpenedFile->strVal());
 	} else {
@@ -252,10 +248,11 @@ void VoxEditWindow::menuBar() {
 
 void VoxEditWindow::palette() {
 	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
-	const float height = ImGui::GetWindowHeight();
+	const float height = ImGui::GetContentRegionAvail().y;
 	const float width = ImGui::Size(120.0f);
 	const ImVec2 size(width, height);
 	ImGui::SetNextWindowSize(size);
+	ImGui::SetNextWindowPos(ImGui::GetCursorPos());
 	int voxelColorIndex = sceneMgr().hitCursorVoxel().getColor();
 	if (ImGui::Begin("Palette", nullptr, ImGuiWindowFlags_NoDecoration)) {
 		const ImVec2& pos = ImGui::GetWindowPos();
@@ -339,6 +336,33 @@ void VoxEditWindow::layers() {
 }
 
 void VoxEditWindow::statusBar() {
+	const ImVec2& size = ImGui::GetContentRegionAvail();
+	const float statusBarHeight = ImGui::Size(40);
+	ImGui::SetNextWindowSize(ImVec2(size.x, statusBarHeight));
+	const ImVec2& pos = ImGui::GetWindowPos();
+	ImVec2 statusBarPos = pos;
+	statusBarPos.y += size.y - statusBarHeight;
+	ImGui::SetNextWindowPos(statusBarPos);
+	if (ImGui::Begin("##statusbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("-");
+		ImGui::SameLine();
+		ImGui::Text("-");
+		ImGui::SameLine();
+		ImGui::CheckboxVar("Grid", _showGridVar);
+		ImGui::SameLine();
+		ImGui::InputVarInt("Grid size", _gridSizeVar);
+		ImGui::SameLine();
+		actionButton("Reset camera", "resetcamera");
+		ImGui::SameLine();
+		actionButton("Quad view", "toggleviewport");
+		ImGui::SameLine();
+		actionButton("Animation view", "toggleanimation");
+		ImGui::SameLine();
+		actionButton("Scene view", "togglescene");
+	}
+	ImGui::End();
+	ImGui::SetNextWindowPos(pos);
+	ImGui::SetNextWindowSize(ImVec2(size.x, size.y - statusBarHeight));
 }
 
 void VoxEditWindow::leftWidget() {
@@ -399,6 +423,18 @@ void VoxEditWindow::rightWidget() {
 	layers();
 }
 
+void VoxEditWindow::updateSettings() {
+	SceneManager &mgr = sceneMgr();
+	mgr.setGridResolution(_gridSizeVar->intVal());
+	mgr.setRenderAxis(_showAxisVar->boolVal());
+	mgr.setRenderLockAxis(_showLockedAxisVar->boolVal());
+	mgr.setRenderShadow(_renderShadowVar->boolVal());
+
+	render::GridRenderer& gridRenderer = mgr.gridRenderer();
+	gridRenderer.setRenderAABB(_showAabbVar->boolVal());
+	gridRenderer.setRenderGrid(_showGridVar->boolVal());
+}
+
 void VoxEditWindow::update() {
 	const ImVec2 pos(0.0f, 0.0f);
 	const ImVec2 size = _app->frameBufferDimension();
@@ -409,12 +445,13 @@ void VoxEditWindow::update() {
 						 ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
 						 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking)) {
 		menuBar();
+		statusBar();
 		leftWidget();
 		mainWidget();
 		rightWidget();
-		statusBar();
 	}
 	ImGui::End();
+	updateSettings();
 }
 
 bool VoxEditWindow::isSceneHovered() const {
