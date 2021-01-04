@@ -171,7 +171,7 @@ bool VoxEditWindow::isPaletteWidgetDropTarget() const {
 }
 
 void VoxEditWindow::menuBar() {
-	if (ImGui::BeginMenuBar()) {
+	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("New", "new")) {
 				_lastExecutedCommand = "new";
@@ -210,7 +210,7 @@ void VoxEditWindow::menuBar() {
 			}
 			ImGui::EndMenu();
 		}
-		ImGui::EndMenuBar();
+		ImGui::EndMainMenuBar();
 	}
 }
 
