@@ -17,7 +17,6 @@ class Viewport : public voxedit::AbstractViewport {
 private:
 	using Super = voxedit::AbstractViewport;
 	video::Id _frameBufferTexture = video::InvalidId;
-	core::String _cameraMode;
 	video::WindowedApp *_app;
 	void renderFramebuffer();
 

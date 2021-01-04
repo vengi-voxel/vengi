@@ -19,6 +19,7 @@ Viewport::Viewport(video::WindowedApp *app) : _app(app) {
 
 bool Viewport::init() {
 	if (!Super::init()) {
+		Log::error("Failed to initialize abstract viewport");
 		return false;
 	}
 	resize(_app->frameBufferDimension());
