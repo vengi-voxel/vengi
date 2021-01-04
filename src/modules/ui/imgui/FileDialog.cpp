@@ -39,8 +39,19 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 	}
 
 	if (open == nullptr || *open) {
-		ImGui::SetNextWindowSize(ImVec2(740.0f, 410.0f));
-		ImGui::Begin("Select a file", nullptr, ImGuiWindowFlags_NoResize);
+		ImGui::SetNextWindowSize(ImVec2(740.0f, 434.0f));
+		const char *title;
+		switch (type){
+		case video::WindowedApp::OpenFileMode::Directory:
+			title = "Select a directory";
+			break;
+		case video::WindowedApp::OpenFileMode::Save:
+		case video::WindowedApp::OpenFileMode::Open:
+		default:
+			title = "Select a file";
+			break;
+		}
+		ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoResize);
 
 		core::DynamicArray<io::Filesystem::DirEntry> entities;
 		if (!io::filesystem()->list(fileDialogCurrentPath, entities)) {
@@ -135,7 +146,8 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 		ImGui::NextColumn();
 		ImGui::Separator();
 
-		core::DynamicArray<const io::Filesystem::DirEntry*> files(entities.size());
+		core::DynamicArray<const io::Filesystem::DirEntry*> files;
+		files.reserve(entities.size());
 		for (size_t i = 0; i < entities.size(); ++i) {
 			if (entities[i].type != io::Filesystem::DirEntry::Type::file) {
 				continue;
@@ -283,8 +295,11 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 			ImGui::EndPopup();
 		}
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 120);
+		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 320);
 
+		ImGui::LabelText("Filter:", "%s", filter.c_str());
+
+		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 120);
 		if (ImGui::Button("Cancel")) {
 			fileDialogFileSelectIndex = 0;
 			fileDialogFolderSelectIndex = 0;
