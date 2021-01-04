@@ -76,8 +76,8 @@ void Viewport::update() {
 	const bool alt = ImGui::GetIO().KeyAlt;
 	cursorMove(relative || middle || alt, (int)ImGui::GetIO().MousePos.x, (int)ImGui::GetIO().MousePos.y);
 
-	// renderToFrameBuffer();
-	// renderFramebuffer();
+	renderToFrameBuffer();
+	renderFramebuffer();
 
 	// tb::TBFontFace* font = getFont();
 	// font->drawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str(), _cameraMode.size());
