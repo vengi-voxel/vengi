@@ -29,6 +29,15 @@ enum ShapeType {
 	Max
 };
 
+static constexpr const char* ShapeTypeStr[ShapeType::Max] {
+	"AABB",
+	"Torus",
+	"Cylinder",
+	"Cone",
+	"Dome",
+	"Ellipse"
+};
+
 /**
  * @brief This class is responsible for manipulating the volume with the configured shape and for
  * doing the selection.

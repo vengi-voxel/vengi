@@ -8,6 +8,7 @@
 #include "ui/imgui/IMGUI.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/anim/AnimationLuaSaver.h"
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
@@ -257,7 +258,43 @@ void VoxEditWindow::palette() {
 	ImGui::End();
 }
 
+void VoxEditWindow::actionButton(const char *title, const char *command) {
+	if (ImGui::MenuItem(title, command)) {
+		_lastExecutedCommand = command;
+		command::executeCommands(_lastExecutedCommand);
+	}
+}
+
+void VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
+	if (ImGui::RadioButton(title, sceneMgr().modifier().modifierType() == type)) {
+		sceneMgr().modifier().setModifierType(type);
+	}
+}
+
 void VoxEditWindow::tools() {
+	if (ImGui::Begin("Tool", nullptr, ImGuiWindowFlags_NoDecoration)) {
+		modifierRadioButton("Place", ModifierType::Place);
+		modifierRadioButton("Select", ModifierType::Select);
+		modifierRadioButton("Delete", ModifierType::Delete);
+		modifierRadioButton("Override", ModifierType::Place | ModifierType::Delete);
+		modifierRadioButton("Colorize", ModifierType::Update);
+
+		const ShapeType currentSelectedShapeType = sceneMgr().modifier().shapeType();
+		if (ImGui::BeginCombo("Shape", ShapeTypeStr[(int)currentSelectedShapeType], ImGuiComboFlags_None)) {
+			for (int i = 0; i < (int)ShapeType::Max; ++i) {
+				const ShapeType type = (ShapeType)i;
+				const bool selected = type == currentSelectedShapeType;
+				if (ImGui::Selectable(ShapeTypeStr[i], selected)) {
+					sceneMgr().modifier().setShapeType(type);
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+	}
+	ImGui::End();
 }
 
 void VoxEditWindow::layers() {
@@ -268,6 +305,7 @@ void VoxEditWindow::statusBar() {
 
 void VoxEditWindow::leftWidget() {
 	palette();
+	tools();
 }
 
 void VoxEditWindow::mainWidget() {
@@ -279,7 +317,14 @@ void VoxEditWindow::mainWidget() {
 }
 
 void VoxEditWindow::rightWidget() {
-	tools();
+	if (ImGui::Begin("Operations", nullptr, ImGuiWindowFlags_NoDecoration)) {
+		actionButton("Crop", "crop");
+		actionButton("Extend", "resize");
+		actionButton("Layer from color", "colortolayer");
+		actionButton("Scale", "scale");
+	}
+	ImGui::End();
+
 	layers();
 }
 

@@ -8,6 +8,7 @@
 #include "voxedit-util/AbstractMainWindow.h"
 #include "voxedit-util/SceneSettings.h"
 #include "voxedit-util/layer/LayerSettings.h"
+#include "voxedit-util/modifier/ModifierType.h"
 #include "voxelgenerator/TreeContext.h"
 
 namespace voxedit {
@@ -32,7 +33,9 @@ private:
 
 	void afterLoad(const core::String &file);
 
+	void actionButton(const char *title, const char *command);
 	void actionMenuItem(const char *title, const char *command);
+	void modifierRadioButton(const char *title, ModifierType type);
 
 public:
 	VoxEditWindow(video::WindowedApp *app);
