@@ -4,6 +4,7 @@
 
 #include "core/Common.h"
 #include "core/StringUtil.h"
+#include "math/Axis.h"
 #include "video/WindowedApp.h"
 #include "voxedit-util/AbstractMainWindow.h"
 #include "voxedit-util/SceneSettings.h"
@@ -21,6 +22,13 @@ private:
 
 	core::DynamicArray<core::String> _scripts;
 
+	core::VarPtr _showAxisVar;
+	core::VarPtr _modelSpaceVar;
+	core::VarPtr _showLockedAxisVar;
+	core::VarPtr _showAabbVar;
+	core::VarPtr _renderShadowVar;
+	core::VarPtr _animationSpeedVar;
+
 	void menuBar();
 	void palette();
 	void tools();
@@ -33,9 +41,10 @@ private:
 
 	void afterLoad(const core::String &file);
 
-	void actionButton(const char *title, const char *command);
-	void actionMenuItem(const char *title, const char *command);
-	void modifierRadioButton(const char *title, ModifierType type);
+	bool actionButton(const char *title, const char *command);
+	bool actionMenuItem(const char *title, const char *command);
+	bool modifierRadioButton(const char *title, ModifierType type);
+	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 
 public:
 	VoxEditWindow(video::WindowedApp *app);

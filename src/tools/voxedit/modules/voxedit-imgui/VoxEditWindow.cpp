@@ -44,6 +44,40 @@ VoxEditWindow::~VoxEditWindow() {
 	delete _sceneAnimation;
 }
 
+bool VoxEditWindow::actionButton(const char *title, const char *command) {
+	if (ImGui::Button(title)) {
+		_lastExecutedCommand = command;
+		command::executeCommands(_lastExecutedCommand);
+		return true;
+	}
+	return false;
+}
+
+bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
+	if (ImGui::RadioButton(title, sceneMgr().modifier().modifierType() == type)) {
+		sceneMgr().modifier().setModifierType(type);
+		return true;
+	}
+	return false;
+}
+
+bool VoxEditWindow::actionMenuItem(const char *title, const char *command) {
+	if (ImGui::MenuItem(title, command)) {
+		_lastExecutedCommand = command;
+		command::executeCommands(_lastExecutedCommand);
+		return true;
+	}
+	return false;
+}
+
+bool VoxEditWindow::mirrorAxisRadioButton(const char *title, math::Axis type) {
+	if (ImGui::RadioButton(title, sceneMgr().modifier().mirrorAxis() == type)) {
+		sceneMgr().modifier().setMirrorAxis(type, sceneMgr().referencePosition());
+		return true;
+	}
+	return false;
+}
+
 void VoxEditWindow::afterLoad(const core::String &file) {
 	_lastOpenedFile->setVal(file);
 	resetCamera();
@@ -53,12 +87,19 @@ bool VoxEditWindow::init() {
 	SceneManager &mgr = sceneMgr();
 	render::GridRenderer& gridRenderer = mgr.gridRenderer();
 
-	gridRenderer.setRenderAABB(core::Var::get("ve_showaabb", "1")->boolVal());
-	gridRenderer.setRenderGrid(core::Var::get("ve_showgrid", "1")->boolVal());
-	mgr.setGridResolution(core::Var::get("ve_gridsize", "1")->intVal());
-	mgr.setRenderAxis(core::Var::get("ve_showaxis", "1")->boolVal());
-	mgr.setRenderLockAxis(core::Var::get("ve_showlockedaxis", "1")->boolVal());
-	mgr.setRenderShadow(core::Var::get("ve_rendershadow", "1")->boolVal());
+	gridRenderer.setRenderAABB(core::Var::get(cfg::VoxEditShowaabb, "0")->boolVal());
+	gridRenderer.setRenderGrid(core::Var::get(cfg::VoxEditShowgrid, "1")->boolVal());
+	mgr.setGridResolution(core::Var::get(cfg::VoxEditGridsize, "4")->intVal());
+	mgr.setRenderAxis(core::Var::get(cfg::VoxEditShowaxis, "1")->boolVal());
+	mgr.setRenderLockAxis(core::Var::get(cfg::VoxEditShowlockedaxis, "1")->boolVal());
+	mgr.setRenderShadow(core::Var::get(cfg::VoxEditRendershadow, "1")->boolVal());
+
+	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis);
+	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace);
+	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis);
+	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb);
+	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow);
+	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed);
 
 	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
 	if (mgr.load(_lastOpenedFile->strVal())) {
@@ -172,13 +213,6 @@ bool VoxEditWindow::isPaletteWidgetDropTarget() const {
 	return false;
 }
 
-void VoxEditWindow::actionMenuItem(const char *title, const char *command) {
-	if (ImGui::MenuItem(title, command)) {
-		_lastExecutedCommand = command;
-		command::executeCommands(_lastExecutedCommand);
-	}
-}
-
 void VoxEditWindow::menuBar() {
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
@@ -222,14 +256,15 @@ void VoxEditWindow::palette() {
 	const float width = ImGui::Size(120.0f);
 	const ImVec2 size(width, height);
 	ImGui::SetNextWindowSize(size);
-	uint32_t voxelColorIndex = sceneMgr().hitCursorVoxel().getColor();
+	int voxelColorIndex = sceneMgr().hitCursorVoxel().getColor();
 	if (ImGui::Begin("Palette", nullptr, ImGuiWindowFlags_NoDecoration)) {
 		const ImVec2& pos = ImGui::GetWindowPos();
 		const float size = ImGui::Size(20);
 		const int amountX = (int)(ImGui::GetWindowWidth() / size);
 		const int amountY = (int)(ImGui::GetWindowHeight() / size);
-		const uint32_t max = colors.size();
-		uint32_t i = 0;
+		const int max = colors.size();
+		int i = 0;
+		float usedHeight = 0;
 		for (int y = 0; y < amountY; ++y) {
 			for (int x = 0; x < amountX; ++x) {
 				if (i >= max) {
@@ -253,22 +288,25 @@ void VoxEditWindow::palette() {
 				}
 				++i;
 			}
+			if (i >= max) {
+				break;
+			}
+			usedHeight += size;
+		}
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + usedHeight);
+		if (ImGui::InputInt("Color index", &voxelColorIndex)) {
+			sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, voxelColorIndex));
+		}
+		actionButton("Import palette", "importpalette");
+		ImGui::SameLine();
+		if (ImGui::Button("Load palette")) {
+#if 0
+			TBButton: @include: definitions>menubutton, text: Load, id: loadpalette
+#endif
 		}
 	}
 	ImGui::End();
-}
-
-void VoxEditWindow::actionButton(const char *title, const char *command) {
-	if (ImGui::MenuItem(title, command)) {
-		_lastExecutedCommand = command;
-		command::executeCommands(_lastExecutedCommand);
-	}
-}
-
-void VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
-	if (ImGui::RadioButton(title, sceneMgr().modifier().modifierType() == type)) {
-		sceneMgr().modifier().setModifierType(type);
-	}
 }
 
 void VoxEditWindow::tools() {
@@ -322,6 +360,39 @@ void VoxEditWindow::rightWidget() {
 		actionButton("Extend", "resize");
 		actionButton("Layer from color", "colortolayer");
 		actionButton("Scale", "scale");
+
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Rotate on axis")) {
+			actionButton("Rotate X", "rotate 90 0 0");
+			actionButton("Rotate Y", "rotate 0 90 0");
+			actionButton("Rotate Z", "rotate 0 0 90");
+		}
+
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Flip on axis")) {
+			actionButton("Flip X", "flip x");
+			actionButton("Flip Y", "flip y");
+			actionButton("Flip Z", "flip z");
+		}
+
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Mirror on axis")) {
+			mirrorAxisRadioButton("none", math::Axis::None);
+			mirrorAxisRadioButton("x", math::Axis::X);
+			mirrorAxisRadioButton("y", math::Axis::Y);
+			mirrorAxisRadioButton("z", math::Axis::Z);
+		}
+
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Options")) {
+			ImGui::CheckboxVar("Show axis", _showAxisVar);
+			ImGui::CheckboxVar("Model space", _modelSpaceVar);
+			ImGui::CheckboxVar("Show locked axis", _showLockedAxisVar);
+			ImGui::CheckboxVar("Bounding box", _showAabbVar);
+			ImGui::CheckboxVar("Shadow", _renderShadowVar);
+			ImGui::CheckboxVar("Outlines", "r_renderoutline");
+			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
+		}
 	}
 	ImGui::End();
 
