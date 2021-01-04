@@ -242,7 +242,7 @@ bool fileMatchesMultiple(const char* text, const char* patterns) {
 
 	char *sep = SDL_strstr(buf, ",");
 	if (sep == nullptr) {
-		if (!SDL_strcmp(buf, "*") || !SDL_strncmp(buf, "*.", 2)) {
+		if (buf[0] == '*') {
 			return core::string::matches(text, buf);
 		}
 		char patternBuf[32];
@@ -254,7 +254,7 @@ bool fileMatchesMultiple(const char* text, const char* patterns) {
 	while (*sep == ',') {
 		*sep = '\0';
 		char patternBuf[32];
-		if (!SDL_strcmp(f, "*") || !SDL_strncmp(f, "*.", 2)) {
+		if (f[0] == '*') {
 			SDL_strlcpy(patternBuf, f, sizeof(patternBuf));
 		} else {
 			SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
@@ -269,7 +269,7 @@ bool fileMatchesMultiple(const char* text, const char* patterns) {
 		}
 	}
 	char patternBuf[32];
-	if (!SDL_strcmp(f, "*") || !SDL_strncmp(f, "*.", 2)) {
+	if (f[0] == '*') {
 		SDL_strlcpy(patternBuf, f, sizeof(patternBuf));
 	} else {
 		SDL_snprintf(patternBuf, sizeof(patternBuf), "*.%s", f);
