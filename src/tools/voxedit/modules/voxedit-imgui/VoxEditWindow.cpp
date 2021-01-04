@@ -9,6 +9,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/anim/AnimationLuaSaver.h"
+#include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxedit {
@@ -220,16 +221,53 @@ void VoxEditWindow::palette() {
 		_paletteWidget->setVoxelColor(sceneMgr().hitCursorVoxel().getColor());
 	}
 #endif
+	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
+	const float height = ImGui::GetWindowHeight();
+	const float width = ImGui::Size(120.0f);
+	const ImVec2 size(width, height);
+	ImGui::SetNextWindowSize(size);
+	uint32_t voxelColorIndex = sceneMgr().hitCursorVoxel().getColor();
+	if (ImGui::Begin("Palette", nullptr, ImGuiWindowFlags_NoDecoration)) {
+		const ImVec2& pos = ImGui::GetWindowPos();
+		const float size = ImGui::Size(20);
+		const int amountX = (int)(ImGui::GetWindowWidth() / size);
+		const int amountY = (int)(ImGui::GetWindowHeight() / size);
+		const uint32_t max = colors.size();
+		uint32_t i = 0;
+		for (int y = 0; y < amountY; ++y) {
+			for (int x = 0; x < amountX; ++x) {
+				if (i >= max) {
+					break;
+				}
+				const float transX = pos.x + (float)x * size;
+				const float transY = pos.y + (float)y * size;
+				const ImVec2 v1(transX, transY);
+				const ImVec2 v2(transX + (float)size, transY + (float)size);
+				ImGui::GetWindowDrawList()->AddRectFilled(v1, v2, core::Color::getRGBA(colors[i]));
+
+				if (ImGui::IsMouseHoveringRect(v1, v2)) {
+					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::Red));
+					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+						sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, i));
+					}
+				} else if (i == voxelColorIndex) {
+					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::Yellow));
+				} else {
+					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::Black));
+				}
+				++i;
+			}
+		}
+	}
+	ImGui::End();
 }
 
 void VoxEditWindow::scene() {
 	_scene->update();
-#if 0
 	_sceneTop->update();
 	_sceneLeft->update();
 	_sceneFront->update();
 	_sceneAnimation->update();
-#endif
 }
 
 void VoxEditWindow::tools() {
@@ -241,20 +279,32 @@ void VoxEditWindow::layers() {
 void VoxEditWindow::statusBar() {
 }
 
+void VoxEditWindow::leftWidget() {
+	palette();
+}
+
+void VoxEditWindow::mainWidget() {
+	scene();
+}
+
+void VoxEditWindow::rightWidget() {
+	tools();
+	layers();
+}
+
 void VoxEditWindow::update() {
 	const ImVec2 pos(0.0f, 0.0f);
 	const ImVec2 size = _app->frameBufferDimension();
 	ImGui::SetNextWindowSize(size);
 	ImGui::SetNextWindowPos(pos);
-	if (ImGui::Begin("##main", nullptr,
+	if (ImGui::Begin("##app", nullptr,
 					 ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
 						 ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
-						 ImGuiWindowFlags_MenuBar)) {
+						 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking)) {
 		menuBar();
-		scene();
-		palette();
-		tools();
-		layers();
+		leftWidget();
+		mainWidget();
+		rightWidget();
 		statusBar();
 	}
 	ImGui::End();

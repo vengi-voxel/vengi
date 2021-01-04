@@ -28,7 +28,7 @@ bool Viewport::init() {
 	return true;
 }
 
-void Viewport::renderFramebuffer() {
+void Viewport::renderFramebuffer(const glm::ivec2& size) {
 	// use the uv coords here to take a potential fb flip into account
 	const glm::vec4 &uv = _frameBuffer.uv();
 	const glm::vec2 uva(uv.x, uv.y);
@@ -53,12 +53,9 @@ void Viewport::renderFramebuffer() {
 		}
 	}
 	const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
-	ImGui::SetNextWindowSize(ImGui::GetWindowSize());
-	const ImVec2 windowPos = ImGui::GetWindowPos();
-	if (ImGui::Begin(_cameraMode.c_str(), nullptr, ImGuiWindowFlags_NoDecoration)) {
+	ImGui::SetNextWindowSize(size);
+	if (ImGui::Begin(_cameraMode.c_str())) {
 		ImGui::Image(texture->handle(), ImGui::GetWindowSize(), uva, uvc);
-		ImGui::SetCursorPos(ImVec2(windowPos.x + 5, windowPos.x + 5));
-		ImGui::Text("%s", _cameraMode.c_str());
 	}
 	ImGui::End();
 	if (shader != nullptr) {
@@ -85,7 +82,7 @@ void Viewport::update() {
 	cursorMove(relative || middle || alt, (int)ImGui::GetIO().MousePos.x, (int)ImGui::GetIO().MousePos.y);
 
 	renderToFrameBuffer();
-	renderFramebuffer();
+	renderFramebuffer(ImGui::GetWindowSize());
 }
 
 } // namespace voxedit

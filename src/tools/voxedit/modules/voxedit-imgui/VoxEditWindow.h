@@ -27,6 +27,10 @@ private:
 	void layers();
 	void statusBar();
 
+	void leftWidget();
+	void mainWidget();
+	void rightWidget();
+
 	void afterLoad(const core::String &file);
 
 public:
