@@ -278,6 +278,10 @@ public:
 	bool typeIsBool() const;
 };
 
+inline void Var::setValidator(Var::ValidatorFunc func) {
+	_validator = func;
+}
+
 inline uint32_t Var::getHistorySize() const {
 	return (uint32_t)_history.size();
 }
