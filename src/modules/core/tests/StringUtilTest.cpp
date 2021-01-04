@@ -186,4 +186,14 @@ TEST_F(StringUtilTest, testStarsWith) {
 	EXPECT_TRUE(core::string::startsWith("foobar", "foo"));
 }
 
+TEST_F(StringUtilTest, testMatches) {
+	EXPECT_TRUE(core::string::matches("foobar", "foo*"));
+	//EXPECT_TRUE(core::string::matches("foobar", "*oo*"));
+	EXPECT_TRUE(core::string::matches("foobar", "?oo?*"));
+	EXPECT_TRUE(core::string::matches("foobar", "*bar"));
+	EXPECT_TRUE(core::string::matches("file.ext", "*.ext"));
+	EXPECT_TRUE(core::string::matches("foobar", "fo?bar"));
+	EXPECT_FALSE(core::string::matches("foo", "foo?"));
+}
+
 }
