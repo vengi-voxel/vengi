@@ -51,7 +51,9 @@ bool AbstractViewport::saveImage(const char* filename) {
 }
 
 void AbstractViewport::resetCamera() {
-	_controller.resetCamera(voxedit::sceneMgr().region());
+	const voxel::Region& region = voxedit::sceneMgr().region();
+	core_assert_msg(region.isValid(), "Scene not properly initialized");
+	_controller.resetCamera(region);
 }
 
 void AbstractViewport::resize(const glm::ivec2& frameBufferSize) {

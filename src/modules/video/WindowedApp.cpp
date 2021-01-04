@@ -3,23 +3,23 @@
  */
 
 #include "WindowedApp.h"
+#include "Renderer.h"
+#include "Shader.h"
+#include "ShaderManager.h"
+#include "command/Command.h"
+#include "core/ArrayLength.h"
 #include "core/Assert.h"
+#include "core/Color.h"
 #include "core/Common.h"
-#include "io/Filesystem.h"
+#include "core/Log.h"
 #include "core/Singleton.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
-#include "Renderer.h"
 #include "gl/GLVersion.h"
-#include "Shader.h"
-#include "core/ArrayLength.h"
-#include "core/Log.h"
-#include "core/Color.h"
-#include "command/Command.h"
-#include "ShaderManager.h"
+#include "io/Filesystem.h"
+#include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 #include "util/KeybindingParser.h"
-#include "util/CustomButtonNames.h"
 #include <glm/common.hpp>
 
 namespace video {

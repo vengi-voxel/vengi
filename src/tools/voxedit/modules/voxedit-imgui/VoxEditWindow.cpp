@@ -4,25 +4,33 @@
 
 #include "VoxEditWindow.h"
 #include "Viewport.h"
+#include "command/CommandHandler.h"
 #include "ui/imgui/IMGUI.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/anim/AnimationLuaSaver.h"
+#include "voxelformat/VolumeFormat.h"
 
 namespace voxedit {
 
 VoxEditWindow::VoxEditWindow(video::WindowedApp *app) : Super(app) {
 	_scene = new Viewport(app);
+	_scene->init();
 
 	_sceneTop = new Viewport(app);
+	_sceneTop->init();
 	_sceneTop->setMode(voxedit::ViewportController::SceneCameraMode::Top);
 
 	_sceneLeft = new Viewport(app);
+	_sceneLeft->init();
 	_sceneLeft->setMode(voxedit::ViewportController::SceneCameraMode::Left);
 
 	_sceneFront = new Viewport(app);
+	_sceneFront->init();
 	_sceneFront->setMode(voxedit::ViewportController::SceneCameraMode::Front);
 
 	_sceneAnimation = new Viewport(app);
+	_sceneAnimation->init();
 	_sceneAnimation->setRenderMode(voxedit::ViewportController::RenderMode::Animation);
 }
 
@@ -65,7 +73,6 @@ bool VoxEditWindow::init() {
 		}
 		afterLoad("");
 	}
-	//_scene->setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
 
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	mgr.modifier().setCursorVoxel(voxel);
@@ -74,12 +81,10 @@ bool VoxEditWindow::init() {
 
 void VoxEditWindow::shutdown() {
 	_scene->shutdown();
-#if 0
 	_sceneTop->shutdown();
 	_sceneLeft->shutdown();
 	_sceneFront->shutdown();
 	_sceneAnimation->shutdown();
-#endif
 }
 
 void VoxEditWindow::toggleViewport() {
@@ -89,18 +94,72 @@ void VoxEditWindow::toggleAnimation() {
 }
 
 bool VoxEditWindow::save(const core::String &file) {
-	return false;
+	if (file.empty()) {
+		_app->saveDialog([this] (const core::String uifile) {save(uifile); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
+		return true;
+	}
+	if (!sceneMgr().save(file)) {
+		Log::warn("Failed to save the model");
+		//popup(tr("Error"), tr("Failed to save the model"));
+		return false;
+	}
+	Log::info("Saved the model to %s", file.c_str());
+	_lastOpenedFile->setVal(file);
+	return true;
 }
 
 bool VoxEditWindow::load(const core::String &file) {
+	if (file.empty()) {
+		_app->openDialog([this] (const core::String file) { core::String copy(file); load(copy); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
+		return true;
+	}
+
+	if (!sceneMgr().dirty()) {
+		if (sceneMgr().load(file)) {
+			afterLoad(file);
+			return true;
+		}
+		return false;
+	}
+
+	_loadFile = file;
+#if 0
+	popup(tr("Unsaved Modifications"),
+			tr("There are unsaved modifications.\nDo you wish to discard them and load?"),
+			PopupType::YesNo, "unsaved_changes_load");
+#endif
 	return false;
 }
 
 bool VoxEditWindow::loadAnimationEntity(const core::String &file) {
-	return false;
+	if (file.empty()) {
+		_app->openDialog([this] (const core::String file) { core::String copy(file); loadAnimationEntity(copy); }, "lua");
+		return true;
+	}
+	if (!sceneMgr().loadAnimationEntity(file)) {
+		return false;
+	}
+	resetCamera();
+	#if 0
+	// TODO:
+	const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
+	for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
+		const animation::SkeletonAttributeMeta& meta = *metaIter;
+	}
+	#endif
+	return true;
 }
 
 bool VoxEditWindow::createNew(bool force) {
+#if 0
+	if (!force && sceneMgr().dirty()) {
+		popup(tr("Unsaved Modifications"),
+				tr("There are unsaved modifications.\nDo you wish to discard them and close?"),
+				PopupType::YesNo, "unsaved_changes_new");
+	} else {
+		// TODO: scene settings and new scene creation
+	}
+#endif
 	return false;
 }
 
@@ -117,27 +176,35 @@ void VoxEditWindow::menuBar() {
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("New", "new")) {
 				_lastExecutedCommand = "new";
+				command::executeCommands(_lastExecutedCommand);
 			}
 			if (ImGui::MenuItem("Load", "load")) {
 				_lastExecutedCommand = "load";
+				command::executeCommands(_lastExecutedCommand);
 			}
 			if (ImGui::MenuItem("Save", "save")) {
 				_lastExecutedCommand = "save";
+				command::executeCommands(_lastExecutedCommand);
 			}
 			if (ImGui::MenuItem("Load Animation", "animation_load")) {
 				_lastExecutedCommand = "animation_load";
+				command::executeCommands(_lastExecutedCommand);
 			}
 			if (ImGui::MenuItem("Save Animation", "animation_save")) {
 				_lastExecutedCommand = "animation_save";
+				command::executeCommands(_lastExecutedCommand);
 			}
 			if (ImGui::MenuItem("Prefab", "prefab")) {
 				_lastExecutedCommand = "prefab";
+				command::executeCommands(_lastExecutedCommand);
 			}
 			if (ImGui::MenuItem("Heightmap", "importheightmap")) {
 				_lastExecutedCommand = "importheightmap";
+				command::executeCommands(_lastExecutedCommand);
 			}
 			if (ImGui::MenuItem("Image as Plane", "importplane")) {
 				_lastExecutedCommand = "importplane";
+				command::executeCommands(_lastExecutedCommand);
 			}
 			if (ImGui::MenuItem("Quit")) {
 				_app->requestQuit();

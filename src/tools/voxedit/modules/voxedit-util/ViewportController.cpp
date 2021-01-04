@@ -7,6 +7,7 @@
 namespace voxedit {
 
 void ViewportController::resetCamera(const voxel::Region& region) {
+	core_assert_msg(region.isValid(), "Invalid region given");
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(5000.0f);
 	const glm::ivec3& center = region.getCenter();
