@@ -399,7 +399,7 @@ void Console::autoComplete() {
 		command::Command::visitSorted([&] (const command::Command& cmd) {
 			if (strings.empty() || strings.size() == 1) {
 				// match the command name itself
-				if (core::string::matches(baseSearchString + "*", cmd.name())) {
+				if (core::string::matches(cmd.name(), baseSearchString + "*")) {
 					matches.push_back(cmd.name());
 				}
 			} else {
@@ -413,7 +413,7 @@ void Console::autoComplete() {
 		}
 		baseSearchString += '*';
 		util::visitVarSorted([&] (const core::VarPtr& var) {
-			if (core::string::matches(baseSearchString, var->name())) {
+			if (core::string::matches(var->name(), baseSearchString)) {
 				matches.push_back(var->name());
 			}
 		}, 0u);
