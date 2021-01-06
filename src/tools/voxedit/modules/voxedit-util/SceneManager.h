@@ -358,7 +358,7 @@ public:
 	 *
 	 * @sa resetLastTrace()
 	 */
-	bool trace(bool force = false);
+	bool trace(bool force = false, voxel::PickResult *result = nullptr);
 	void resetLastTrace();
 
 	math::Axis lockedAxis() const;

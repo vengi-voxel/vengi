@@ -1828,7 +1828,10 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool SceneManager::trace(bool force) {
+bool SceneManager::trace(bool force, voxel::PickResult *result) {
+	if (result) {
+		*result = _result;
+	}
 	if (_editMode == EditMode::Scene) {
 		if (_sceneModeLayerTrace != -1) {
 			// if the trace is not forced, and the mouse cursor position did not change, don't
@@ -1957,6 +1960,10 @@ bool SceneManager::trace(bool force) {
 
 	if (_result.didHit) {
 		_hitCursorVoxel = model->voxel(_result.hitVoxel);
+	}
+
+	if (result) {
+		*result = _result;
 	}
 
 	return true;
