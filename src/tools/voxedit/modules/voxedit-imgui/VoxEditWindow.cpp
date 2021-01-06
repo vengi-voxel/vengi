@@ -78,8 +78,9 @@ bool VoxEditWindow::actionMenuItem(const char *title, const char *command) {
 }
 
 bool VoxEditWindow::mirrorAxisRadioButton(const char *title, math::Axis type) {
-	if (ImGui::RadioButton(title, sceneMgr().modifier().mirrorAxis() == type)) {
-		sceneMgr().modifier().setMirrorAxis(type, sceneMgr().referencePosition());
+	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
+	if (ImGui::RadioButton(title, modifier.mirrorAxis() == type)) {
+		modifier.setMirrorAxis(type, sceneMgr().referencePosition());
 		return true;
 	}
 	return false;
