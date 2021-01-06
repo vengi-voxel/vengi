@@ -47,6 +47,8 @@ private:
 	void updateSettings();
 	void registerPopups();
 
+	void executeCommand(const char *command);
+
 	bool actionButton(const char *title, const char *command);
 	bool actionMenuItem(const char *title, const char *command);
 	bool modifierRadioButton(const char *title, ModifierType type);

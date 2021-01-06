@@ -47,10 +47,14 @@ VoxEditWindow::~VoxEditWindow() {
 	delete _sceneAnimation;
 }
 
+void VoxEditWindow::executeCommand(const char *command) {
+	_lastExecutedCommand = command;
+	command::executeCommands(_lastExecutedCommand);
+}
+
 bool VoxEditWindow::actionButton(const char *title, const char *command) {
 	if (ImGui::Button(title)) {
-		_lastExecutedCommand = command;
-		command::executeCommands(_lastExecutedCommand);
+		executeCommand(command);
 		return true;
 	}
 	return false;
@@ -67,8 +71,7 @@ bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
 bool VoxEditWindow::actionMenuItem(const char *title, const char *command) {
 	const core::String& keybinding = _app->getKeyBindingsString(command);
 	if (ImGui::MenuItem(title, keybinding.c_str())) {
-		command::executeCommands(command);
-		_lastExecutedCommand = command;
+		executeCommand(command);
 		return true;
 	}
 	return false;
@@ -383,7 +386,6 @@ void VoxEditWindow::statusBar() {
 				statusText = core::string::format("Command: %s (%s)", _lastExecutedCommand.c_str(), keybindingStr.c_str());
 			}
 			ImGui::Text("%s", statusText.c_str());
-			_lastExecutedCommand.clear();
 		}
 		ImGui::SameLine();
 		ImGui::CheckboxVar("Grid", _showGridVar);
@@ -420,6 +422,47 @@ void VoxEditWindow::rightWidget() {
 		actionButton("Extend", "resize");
 		actionButton("Layer from color", "colortolayer");
 		actionButton("Scale", "scale");
+
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
+			static glm::vec3 translate {0.0f};
+			ImGui::InputFloat("X", &translate.x);
+			ImGui::InputFloat("Y", &translate.x);
+			ImGui::InputFloat("Z", &translate.x);
+			if (ImGui::Button("Volumes")) {
+				sceneMgr().shift(translate.x, translate.y, translate.z);
+			}
+			if (ImGui::Button("Voxels")) {
+				sceneMgr().move(translate.x, translate.y, translate.z);
+			}
+		}
+
+		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
+			glm::ivec3 translate = sceneMgr().modifier().cursorPosition();
+			uint32_t lockedAxis = (uint32_t)sceneMgr().lockedAxis();
+			if (ImGui::CheckboxFlags("X", &lockedAxis, (uint32_t)math::Axis::X)) {
+				executeCommand("lockx");
+			}
+			ImGui::SameLine();
+			if (ImGui::InputInt("X", &translate.x)) {
+				sceneMgr().setCursorPosition(translate, true);
+			}
+			if (ImGui::CheckboxFlags("Y", &lockedAxis, (uint32_t)math::Axis::Y)) {
+				executeCommand("locky");
+			}
+			ImGui::SameLine();
+			if (ImGui::InputInt("Y", &translate.y)) {
+				sceneMgr().setCursorPosition(translate, true);
+			}
+			if (ImGui::CheckboxFlags("Z", &lockedAxis, (uint32_t)math::Axis::Z)) {
+				executeCommand("lockz");
+			}
+			ImGui::SameLine();
+			if (ImGui::InputInt("Z", &translate.z)) {
+				sceneMgr().setCursorPosition(translate, true);
+			}
+		}
 
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -566,7 +609,8 @@ void VoxEditWindow::update() {
 }
 
 bool VoxEditWindow::isSceneHovered() const {
-	return false;
+	return ((Viewport *)_scene)->isHovered() || ((Viewport *)_sceneTop)->isHovered() ||
+		   ((Viewport *)_sceneLeft)->isHovered() || ((Viewport *)_sceneFront)->isHovered() ||
+		   ((Viewport *)_sceneAnimation)->isHovered();
 }
-
 }

@@ -18,14 +18,20 @@ private:
 	using Super = voxedit::AbstractViewport;
 	video::Id _frameBufferTexture = video::InvalidId;
 	video::WindowedApp *_app;
+	bool _hovered = false;
 
 public:
 	Viewport(video::WindowedApp *app);
 	virtual ~Viewport() {
 	}
 
+	bool isHovered() const;
 	void update() override;
 	bool init() override;
 };
+
+inline bool Viewport::isHovered() const {
+	return _hovered;
+}
 
 }
