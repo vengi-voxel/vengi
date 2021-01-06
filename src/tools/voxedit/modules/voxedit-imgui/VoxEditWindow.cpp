@@ -246,7 +246,15 @@ void VoxEditWindow::menuBar() {
 		}
 		actionMenuItem(ICON_FA_UNDO" Undo", "undo");
 		actionMenuItem(ICON_FA_REDO" Redo", "redo");
-		if (ImGui::MenuItem("Settings")) {
+		if (ImGui::BeginMenu("Options")) {
+			ImGui::CheckboxVar("Show axis", _showAxisVar);
+			ImGui::CheckboxVar("Model space", _modelSpaceVar);
+			ImGui::CheckboxVar("Show locked axis", _showLockedAxisVar);
+			ImGui::CheckboxVar("Bounding box", _showAabbVar);
+			ImGui::CheckboxVar("Shadow", _renderShadowVar);
+			ImGui::CheckboxVar("Outlines", "r_renderoutline");
+			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
+			ImGui::EndMenu();
 			// TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings_open
 		}
 		if (ImGui::MenuItem("Trees")) {
@@ -351,6 +359,9 @@ void VoxEditWindow::tools() {
 }
 
 void VoxEditWindow::layers() {
+	if (ImGui::Begin("Layers", nullptr, ImGuiWindowFlags_NoDecoration)) {
+	}
+	ImGui::End();
 }
 
 void VoxEditWindow::statusBar() {
@@ -418,65 +429,72 @@ void VoxEditWindow::mainWidget() {
 }
 
 void VoxEditWindow::rightWidget() {
-	if (ImGui::Begin("Operations", nullptr, ImGuiWindowFlags_NoDecoration)) {
+	if (ImGui::Begin("Positions", nullptr, ImGuiWindowFlags_NoDecoration)) {
+		if (ImGui::CollapsingHeader("Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
+			static glm::vec3 translate {0.0f};
+			ImGui::InputFloat("X##translate", &translate.x);
+			ImGui::InputFloat("Y##translate", &translate.y);
+			ImGui::InputFloat("Z##translate", &translate.z);
+			if (ImGui::Button("Volumes")) {
+				sceneMgr().shift(translate.x, translate.y, translate.z);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Voxels")) {
+				sceneMgr().move(translate.x, translate.y, translate.z);
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
+			glm::ivec3 cursorPosition = sceneMgr().modifier().cursorPosition();
+			uint32_t lockedAxis = (uint32_t)sceneMgr().lockedAxis();
+			if (ImGui::CheckboxFlags("X##cursorlock", &lockedAxis, (uint32_t)math::Axis::X)) {
+				executeCommand("lockx");
+			}
+			ImGui::SameLine();
+			if (ImGui::InputInt("X##cursor", &cursorPosition.x)) {
+				sceneMgr().setCursorPosition(cursorPosition, true);
+			}
+			if (ImGui::CheckboxFlags("Y##cursorlock", &lockedAxis, (uint32_t)math::Axis::Y)) {
+				executeCommand("locky");
+			}
+			ImGui::SameLine();
+			if (ImGui::InputInt("Y##cursor", &cursorPosition.y)) {
+				sceneMgr().setCursorPosition(cursorPosition, true);
+			}
+			if (ImGui::CheckboxFlags("Z##cursorlock", &lockedAxis, (uint32_t)math::Axis::Z)) {
+				executeCommand("lockz");
+			}
+			ImGui::SameLine();
+			if (ImGui::InputInt("Z##cursor", &cursorPosition.z)) {
+				sceneMgr().setCursorPosition(cursorPosition, true);
+			}
+		}
+	}
+	ImGui::End();
+
+	if (ImGui::Begin("Modifiers", nullptr, ImGuiWindowFlags_NoDecoration)) {
 		actionButton("Crop", "crop");
 		actionButton("Extend", "resize");
 		actionButton("Layer from color", "colortolayer");
 		actionButton("Scale", "scale");
 
 		ImGui::Separator();
-		if (ImGui::CollapsingHeader("Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
-			static glm::vec3 translate {0.0f};
-			ImGui::InputFloat("X", &translate.x);
-			ImGui::InputFloat("Y", &translate.x);
-			ImGui::InputFloat("Z", &translate.x);
-			if (ImGui::Button("Volumes")) {
-				sceneMgr().shift(translate.x, translate.y, translate.z);
-			}
-			if (ImGui::Button("Voxels")) {
-				sceneMgr().move(translate.x, translate.y, translate.z);
-			}
-		}
 
-		ImGui::Separator();
-		if (ImGui::CollapsingHeader("Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
-			glm::ivec3 translate = sceneMgr().modifier().cursorPosition();
-			uint32_t lockedAxis = (uint32_t)sceneMgr().lockedAxis();
-			if (ImGui::CheckboxFlags("X", &lockedAxis, (uint32_t)math::Axis::X)) {
-				executeCommand("lockx");
-			}
-			ImGui::SameLine();
-			if (ImGui::InputInt("X", &translate.x)) {
-				sceneMgr().setCursorPosition(translate, true);
-			}
-			if (ImGui::CheckboxFlags("Y", &lockedAxis, (uint32_t)math::Axis::Y)) {
-				executeCommand("locky");
-			}
-			ImGui::SameLine();
-			if (ImGui::InputInt("Y", &translate.y)) {
-				sceneMgr().setCursorPosition(translate, true);
-			}
-			if (ImGui::CheckboxFlags("Z", &lockedAxis, (uint32_t)math::Axis::Z)) {
-				executeCommand("lockz");
-			}
-			ImGui::SameLine();
-			if (ImGui::InputInt("Z", &translate.z)) {
-				sceneMgr().setCursorPosition(translate, true);
-			}
-		}
-
-		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			actionButton("Rotate X", "rotate 90 0 0");
-			actionButton("Rotate Y", "rotate 0 90 0");
-			actionButton("Rotate Z", "rotate 0 0 90");
+			actionButton("X", "rotate 90 0 0");
+			ImGui::SameLine();
+			actionButton("Y", "rotate 0 90 0");
+			ImGui::SameLine();
+			actionButton("Z", "rotate 0 0 90");
 		}
 
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Flip on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			actionButton("Flip X", "flip x");
-			actionButton("Flip Y", "flip y");
-			actionButton("Flip Z", "flip z");
+			actionButton("X", "flip x");
+			ImGui::SameLine();
+			actionButton("Y", "flip y");
+			ImGui::SameLine();
+			actionButton("Z", "flip z");
 		}
 
 		ImGui::Separator();
@@ -485,17 +503,6 @@ void VoxEditWindow::rightWidget() {
 			mirrorAxisRadioButton("x", math::Axis::X);
 			mirrorAxisRadioButton("y", math::Axis::Y);
 			mirrorAxisRadioButton("z", math::Axis::Z);
-		}
-
-		ImGui::Separator();
-		if (ImGui::CollapsingHeader("Options", ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::CheckboxVar("Show axis", _showAxisVar);
-			ImGui::CheckboxVar("Model space", _modelSpaceVar);
-			ImGui::CheckboxVar("Show locked axis", _showLockedAxisVar);
-			ImGui::CheckboxVar("Bounding box", _showAabbVar);
-			ImGui::CheckboxVar("Shadow", _renderShadowVar);
-			ImGui::CheckboxVar("Outlines", "r_renderoutline");
-			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
 		}
 	}
 	ImGui::End();
@@ -592,10 +599,13 @@ void VoxEditWindow::update() {
 		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->GetWorkSize());
 		ImGuiID dockIdMain = dockspaceId;
 		ImGuiID dockIdLeft = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Left, 0.10f, nullptr, &dockIdMain);
-		ImGuiID dockIdRight = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Right, 0.10f, nullptr, &dockIdMain);
+		ImGuiID dockIdRight = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Right, 0.20f, nullptr, &dockIdMain);
 		ImGuiID dockIdLeftDown = ImGui::DockBuilderSplitNode(dockIdLeft, ImGuiDir_Down, 0.50f, nullptr, &dockIdLeft);
+		ImGuiID dockIdRightDown = ImGui::DockBuilderSplitNode(dockIdRight, ImGuiDir_Down, 0.50f, nullptr, &dockIdRight);
 		ImGui::DockBuilderDockWindow("Palette", dockIdLeft);
-		ImGui::DockBuilderDockWindow("Operations", dockIdRight);
+		ImGui::DockBuilderDockWindow("Positions", dockIdRight);
+		ImGui::DockBuilderDockWindow("Modifiers", dockIdRight);
+		ImGui::DockBuilderDockWindow("Layers", dockIdRightDown);
 		ImGui::DockBuilderDockWindow("Tools", dockIdLeftDown);
 		ImGui::DockBuilderDockWindow("free", dockIdMain);
 		ImGui::DockBuilderDockWindow("front", dockIdMain);
