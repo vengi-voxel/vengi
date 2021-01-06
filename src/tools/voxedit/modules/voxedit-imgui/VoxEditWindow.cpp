@@ -6,6 +6,8 @@
 #include "Viewport.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
+#include "dearimgui/imgui.h"
+#include "ui/imgui/IconsFontAwesome5.h"
 #include "ui/imgui/IMGUI.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -63,9 +65,10 @@ bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
 }
 
 bool VoxEditWindow::actionMenuItem(const char *title, const char *command) {
-	if (ImGui::MenuItem(title, command)) {
+	const core::String& keybinding = _app->getKeyBindingsString(command);
+	if (ImGui::MenuItem(title, keybinding.c_str())) {
+		command::executeCommands(command);
 		_lastExecutedCommand = command;
-		command::executeCommands(_lastExecutedCommand);
 		return true;
 	}
 	return false;
@@ -219,22 +222,26 @@ bool VoxEditWindow::isPaletteWidgetDropTarget() const {
 
 void VoxEditWindow::menuBar() {
 	if (ImGui::BeginMenuBar()) {
-		if (ImGui::BeginMenu("File")) {
+		if (ImGui::BeginMenu(ICON_FA_FILE " File")) {
 			actionMenuItem("New", "new");
 			actionMenuItem("Load", "load");
-			actionMenuItem("Save", "save");
+			actionMenuItem(ICON_FA_SAVE" Save", "save");
+			ImGui::Separator();
 			actionMenuItem("Load Animation", "animation_load");
-			actionMenuItem("Save Animation", "animation_save");
+			actionMenuItem(ICON_FA_SAVE" Save Animation", "animation_save");
+			ImGui::Separator();
 			actionMenuItem("Prefab", "prefab");
-			actionMenuItem("Heightmap", "importheightmap");
-			actionMenuItem("Image as Plane", "importplane");
+			ImGui::Separator();
+			actionMenuItem(ICON_FA_IMAGE" Heightmap", "importheightmap");
+			actionMenuItem(ICON_FA_IMAGE" Image as Plane", "importplane");
+			ImGui::Separator();
 			if (ImGui::MenuItem("Quit")) {
 				_app->requestQuit();
 			}
 			ImGui::EndMenu();
 		}
-		actionMenuItem("Undo", "undo");
-		actionMenuItem("Redo", "redo");
+		actionMenuItem(ICON_FA_UNDO" Undo", "undo");
+		actionMenuItem(ICON_FA_REDO" Redo", "redo");
 		if (ImGui::MenuItem("Settings")) {
 			// TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings_open
 		}

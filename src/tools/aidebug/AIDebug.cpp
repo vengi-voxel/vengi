@@ -20,7 +20,7 @@
 #include "metric/Metric.h"
 #include "network/IMsgProtocolHandler.h"
 #include "network/ProtocolHandlerRegistry.h"
-#include "IconsFontAwesome5.h"
+#include "ui/imgui/IconsFontAwesome5.h"
 
 namespace priv {
 
