@@ -32,7 +32,7 @@ bool Viewport::init() {
 void Viewport::update() {
 	Super::update();
 	ImGui::SetNextWindowSize(ImGui::GetWindowSize());
-
+	_hovered = false;
 	if (ImGui::Begin(_cameraMode.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs)) {
 		const double deltaFrameSeconds = app::App::getInstance()->deltaFrameSeconds();
 		_controller.update(deltaFrameSeconds);

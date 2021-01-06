@@ -216,11 +216,11 @@ bool VoxEditWindow::createNew(bool force) {
 }
 
 bool VoxEditWindow::isLayerWidgetDropTarget() const {
-	return false;
+	return false; // TODO
 }
 
 bool VoxEditWindow::isPaletteWidgetDropTarget() const {
-	return false;
+	return false; // TODO
 }
 
 void VoxEditWindow::menuBar() {
