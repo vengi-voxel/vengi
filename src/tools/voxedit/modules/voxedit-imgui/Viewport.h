@@ -18,7 +18,6 @@ private:
 	using Super = voxedit::AbstractViewport;
 	video::Id _frameBufferTexture = video::InvalidId;
 	video::WindowedApp *_app;
-	void renderFramebuffer(const glm::ivec2& size);
 
 public:
 	Viewport(video::WindowedApp *app);

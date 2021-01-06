@@ -6,6 +6,7 @@
 #include "core/StringUtil.h"
 #include "math/Axis.h"
 #include "video/WindowedApp.h"
+#include "ui/imgui/IMGUI.h"
 #include "voxedit-util/AbstractMainWindow.h"
 #include "voxedit-util/SceneSettings.h"
 #include "voxedit-util/layer/LayerSettings.h"
@@ -44,6 +45,7 @@ private:
 	void afterLoad(const core::String &file);
 
 	void updateSettings();
+	void registerPopups();
 
 	bool actionButton(const char *title, const char *command);
 	bool actionMenuItem(const char *title, const char *command);

@@ -9,8 +9,8 @@
 #include "ui/imgui/IMGUI.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/anim/AnimationLuaSaver.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
 
@@ -92,7 +92,10 @@ bool VoxEditWindow::init() {
 	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb, "0");
 	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow, "1");
 	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed, "1");
-	_gridSizeVar = core::Var::get(cfg::VoxEditGridsize, "4", "The size of the voxel grid", [] (const core::String& val) { const int intVal = core::string::toInt(val); return intVal >= 1 && intVal <= 64; });
+	_gridSizeVar = core::Var::get(cfg::VoxEditGridsize, "4", "The size of the voxel grid", [](const core::String &val) {
+		const int intVal = core::string::toInt(val);
+		return intVal >= 1 && intVal <= 64;
+	});
 	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
 
 	updateSettings();
@@ -133,12 +136,13 @@ void VoxEditWindow::toggleAnimation() {
 
 bool VoxEditWindow::save(const core::String &file) {
 	if (file.empty()) {
-		_app->saveDialog([this] (const core::String uifile) {save(uifile); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
+		_app->saveDialog([this](const core::String uifile) { save(uifile); },
+						 voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
 		return true;
 	}
 	if (!sceneMgr().save(file)) {
 		Log::warn("Failed to save the model");
-		//popup(tr("Error"), tr("Failed to save the model"));
+		ImGui::OpenPopup("Failed to save");
 		return false;
 	}
 	Log::info("Saved the model to %s", file.c_str());
@@ -161,11 +165,7 @@ bool VoxEditWindow::load(const core::String &file) {
 	}
 
 	_loadFile = file;
-#if 0
-	popup(tr("Unsaved Modifications"),
-			tr("There are unsaved modifications.\nDo you wish to discard them and load?"),
-			PopupType::YesNo, "unsaved_changes_load");
-#endif
+	ImGui::OpenPopup("Unsaved Modifications");
 	return false;
 }
 
@@ -178,26 +178,34 @@ bool VoxEditWindow::loadAnimationEntity(const core::String &file) {
 		return false;
 	}
 	resetCamera();
-	#if 0
+#if 0
 	// TODO:
 	const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
 	for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
 		const animation::SkeletonAttributeMeta& meta = *metaIter;
 	}
-	#endif
+#endif
 	return true;
 }
 
 bool VoxEditWindow::createNew(bool force) {
-#if 0
 	if (!force && sceneMgr().dirty()) {
-		popup(tr("Unsaved Modifications"),
-				tr("There are unsaved modifications.\nDo you wish to discard them and close?"),
-				PopupType::YesNo, "unsaved_changes_new");
+		_loadFile.clear();
+		ImGui::OpenPopup("Unsaved Modifications");
 	} else {
-		// TODO: scene settings and new scene creation
+		// TODO: layer settings edit popup
+		const voxel::Region &region = _layerSettings.region();
+		if (region.isValid()) {
+			if (!voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
+				return false;
+			}
+			afterLoad("");
+		} else {
+			ImGui::OpenPopup("Invalid dimensions");
+			_layerSettings.reset();
+		}
+		return true;
 	}
-#endif
 	return false;
 }
 
@@ -210,7 +218,7 @@ bool VoxEditWindow::isPaletteWidgetDropTarget() const {
 }
 
 void VoxEditWindow::menuBar() {
-	if (ImGui::BeginMainMenuBar()) {
+	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
 			actionMenuItem("New", "new");
 			actionMenuItem("Load", "load");
@@ -242,20 +250,19 @@ void VoxEditWindow::menuBar() {
 		if (ImGui::MenuItem("L-System")) {
 			// TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: show_lsystem_panel
 		}
-		ImGui::EndMainMenuBar();
+		ImGui::EndMenuBar();
 	}
 }
 
 void VoxEditWindow::palette() {
-	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
+	const voxel::MaterialColorArray &colors = voxel::getMaterialColors();
 	const float height = ImGui::GetContentRegionAvail().y;
 	const float width = ImGui::Size(120.0f);
 	const ImVec2 size(width, height);
-	ImGui::SetNextWindowSize(size);
-	ImGui::SetNextWindowPos(ImGui::GetCursorPos());
+	ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 	int voxelColorIndex = sceneMgr().hitCursorVoxel().getColor();
 	if (ImGui::Begin("Palette", nullptr, ImGuiWindowFlags_NoDecoration)) {
-		const ImVec2& pos = ImGui::GetWindowPos();
+		const ImVec2 &pos = ImGui::GetWindowPos();
 		const float size = ImGui::Size(20);
 		const int amountX = (int)(ImGui::GetWindowWidth() / size);
 		const int amountY = (int)(ImGui::GetWindowHeight() / size);
@@ -307,7 +314,7 @@ void VoxEditWindow::palette() {
 }
 
 void VoxEditWindow::tools() {
-	if (ImGui::Begin("Tool", nullptr, ImGuiWindowFlags_NoDecoration)) {
+	if (ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_NoDecoration)) {
 		modifierRadioButton("Place", ModifierType::Place);
 		modifierRadioButton("Select", ModifierType::Select);
 		modifierRadioButton("Delete", ModifierType::Delete);
@@ -336,14 +343,15 @@ void VoxEditWindow::layers() {
 }
 
 void VoxEditWindow::statusBar() {
-	const ImVec2& size = ImGui::GetContentRegionAvail();
-	const float statusBarHeight = ImGui::Size(40);
+	ImGuiViewport *viewport = ImGui::GetMainViewport();
+	const ImVec2 &size = viewport->GetWorkSize();
+	const float statusBarHeight = ImGui::Size(30);
 	ImGui::SetNextWindowSize(ImVec2(size.x, statusBarHeight));
-	const ImVec2& pos = ImGui::GetWindowPos();
-	ImVec2 statusBarPos = pos;
+	ImVec2 statusBarPos = viewport->GetWorkPos();
 	statusBarPos.y += size.y - statusBarHeight;
 	ImGui::SetNextWindowPos(statusBarPos);
-	if (ImGui::Begin("##statusbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::Begin("##statusbar", nullptr,
+					 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove)) {
 		ImGui::Text("-");
 		ImGui::SameLine();
 		ImGui::Text("-");
@@ -361,8 +369,6 @@ void VoxEditWindow::statusBar() {
 		actionButton("Scene view", "togglescene");
 	}
 	ImGui::End();
-	ImGui::SetNextWindowPos(pos);
-	ImGui::SetNextWindowSize(ImVec2(size.x, size.y - statusBarHeight));
 }
 
 void VoxEditWindow::leftWidget() {
@@ -386,21 +392,21 @@ void VoxEditWindow::rightWidget() {
 		actionButton("Scale", "scale");
 
 		ImGui::Separator();
-		if (ImGui::CollapsingHeader("Rotate on axis")) {
+		if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
 			actionButton("Rotate X", "rotate 90 0 0");
 			actionButton("Rotate Y", "rotate 0 90 0");
 			actionButton("Rotate Z", "rotate 0 0 90");
 		}
 
 		ImGui::Separator();
-		if (ImGui::CollapsingHeader("Flip on axis")) {
+		if (ImGui::CollapsingHeader("Flip on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
 			actionButton("Flip X", "flip x");
 			actionButton("Flip Y", "flip y");
 			actionButton("Flip Z", "flip z");
 		}
 
 		ImGui::Separator();
-		if (ImGui::CollapsingHeader("Mirror on axis")) {
+		if (ImGui::CollapsingHeader("Mirror on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
 			mirrorAxisRadioButton("none", math::Axis::None);
 			mirrorAxisRadioButton("x", math::Axis::X);
 			mirrorAxisRadioButton("y", math::Axis::Y);
@@ -408,7 +414,7 @@ void VoxEditWindow::rightWidget() {
 		}
 
 		ImGui::Separator();
-		if (ImGui::CollapsingHeader("Options")) {
+		if (ImGui::CollapsingHeader("Options", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::CheckboxVar("Show axis", _showAxisVar);
 			ImGui::CheckboxVar("Model space", _modelSpaceVar);
 			ImGui::CheckboxVar("Show locked axis", _showLockedAxisVar);
@@ -430,31 +436,107 @@ void VoxEditWindow::updateSettings() {
 	mgr.setRenderLockAxis(_showLockedAxisVar->boolVal());
 	mgr.setRenderShadow(_renderShadowVar->boolVal());
 
-	render::GridRenderer& gridRenderer = mgr.gridRenderer();
+	render::GridRenderer &gridRenderer = mgr.gridRenderer();
 	gridRenderer.setRenderAABB(_showAabbVar->boolVal());
 	gridRenderer.setRenderGrid(_showGridVar->boolVal());
 }
 
+void VoxEditWindow::registerPopups() {
+	if (ImGui::BeginPopupModal("Unsaved Modifications", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::TextUnformatted("There are unsaved modifications.\nDo you wish to discard them?");
+		ImGui::Separator();
+		if (ImGui::Button("Yes")) {
+			ImGui::CloseCurrentPopup();
+			if (!_loadFile.empty()) {
+				sceneMgr().load(_loadFile);
+				afterLoad(_loadFile);
+			} else {
+				createNew(true);
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("No")) {
+			ImGui::CloseCurrentPopup();
+			_loadFile.clear();
+		}
+		ImGui::EndPopup();
+	}
+
+	if (ImGui::BeginPopupModal("Invalid dimensions", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::TextUnformatted("The layer dimensions are not valid!");
+		ImGui::Separator();
+		if (ImGui::Button("OK")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	if (ImGui::BeginPopupModal("Failed to save", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::TextUnformatted("Failed to save the model!");
+		ImGui::Separator();
+		if (ImGui::Button("OK")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+
 void VoxEditWindow::update() {
 	const ImVec2 pos(0.0f, 0.0f);
-	const ImVec2 size = _app->frameBufferDimension();
-	ImGui::SetNextWindowSize(size);
-	ImGui::SetNextWindowPos(pos);
-	if (ImGui::Begin("##app", nullptr,
-					 ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
-						 ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
-						 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking)) {
-		menuBar();
-		statusBar();
-		leftWidget();
-		mainWidget();
-		rightWidget();
-	}
+	// const ImVec2 size = _app->frameBufferDimension();
+	ImGuiViewport *viewport = ImGui::GetMainViewport();
+
+	ImGui::SetNextWindowPos(viewport->GetWorkPos());
+	ImGui::SetNextWindowSize(viewport->GetWorkSize());
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
+	windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoMove;
+	ImGui::Begin("##app", nullptr, windowFlags);
+	ImGui::PopStyleVar(3);
+
+	menuBar();
+	statusBar();
+	registerPopups();
+
+	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
+	ImGui::DockSpace(dockspaceId);
+
+	leftWidget();
+	mainWidget();
+	rightWidget();
+
 	ImGui::End();
+
+	static bool init = false;
+	if (!init) {
+		ImGui::DockBuilderRemoveNode(dockspaceId);
+		ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->GetWorkSize());
+		ImGuiID dockIdMain = dockspaceId;
+		ImGuiID dockIdLeft = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Left, 0.10f, nullptr, &dockIdMain);
+		ImGuiID dockIdRight = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Right, 0.10f, nullptr, &dockIdMain);
+		ImGuiID dockIdLeftDown = ImGui::DockBuilderSplitNode(dockIdLeft, ImGuiDir_Down, 0.50f, nullptr, &dockIdLeft);
+		ImGui::DockBuilderDockWindow("Palette", dockIdLeft);
+		ImGui::DockBuilderDockWindow("Operations", dockIdRight);
+		ImGui::DockBuilderDockWindow("Tools", dockIdLeftDown);
+		ImGui::DockBuilderDockWindow("free", dockIdMain);
+		ImGui::DockBuilderDockWindow("front", dockIdMain);
+		ImGui::DockBuilderDockWindow("left", dockIdMain);
+		ImGui::DockBuilderDockWindow("top", dockIdMain);
+
+		ImGui::DockBuilderFinish(dockspaceId);
+		init = true;
+	}
+
 	updateSettings();
 }
 
 bool VoxEditWindow::isSceneHovered() const {
 	return false;
 }
-} // namespace voxedit
+
+}
