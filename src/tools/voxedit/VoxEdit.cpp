@@ -89,6 +89,9 @@ app::AppState VoxEdit::onCleanup() {
 	voxedit::sceneMgr().shutdown();
 	if (_mainWindow) {
 		_mainWindow->shutdown();
+#if !USE_TURBOBADGER
+		delete _mainWindow;
+#endif
 	}
 	return Super::onCleanup();
 }
