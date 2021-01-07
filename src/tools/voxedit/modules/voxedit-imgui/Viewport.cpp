@@ -85,6 +85,8 @@ void Viewport::update() {
 			voxedit::sceneMgr().trace();
 		}
 	}
+	const ImVec2& windowSize = ImGui::GetWindowSize();
+	resize(glm::ivec2(windowSize.x, windowSize.y));
 	ImGui::End();
 }
 

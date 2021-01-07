@@ -9,6 +9,7 @@
 #include "ui/imgui/IMGUI.h"
 #include "voxedit-util/AbstractMainWindow.h"
 #include "voxedit-util/SceneSettings.h"
+#include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxelgenerator/TreeContext.h"
@@ -48,6 +49,8 @@ private:
 	void registerPopups();
 
 	void executeCommand(const char *command);
+
+	void addLayerItem(int layerId, const voxedit::Layer &layer);
 
 	bool actionButton(const char *title, const char *command);
 	bool actionMenuItem(const char *title, const char *command);

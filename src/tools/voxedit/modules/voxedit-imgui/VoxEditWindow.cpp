@@ -257,6 +257,14 @@ void VoxEditWindow::menuBar() {
 			ImGui::EndMenu();
 			// TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings_open
 		}
+		if (ImGui::BeginMenu("View")) {
+			ImGui::CheckboxVar("Grid", _showGridVar);
+			actionButton("Reset camera", "resetcamera");
+			actionButton("Quad view", "toggleviewport");
+			actionButton("Animation view", "toggleanimation");
+			actionButton("Scene view", "togglescene");
+			ImGui::EndMenu();
+		}
 		if (ImGui::MenuItem("Trees")) {
 			// TBButton: gravity: left, @include: definitions>menubutton, text: Trees, id: show_tree_panel
 		}
@@ -358,8 +366,71 @@ void VoxEditWindow::tools() {
 	ImGui::End();
 }
 
+void VoxEditWindow::addLayerItem(int layerId, const voxedit::Layer &layer) {
+	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+
+	const core::String &visibleId = core::string::format("##visible-layer-%i", layerId);
+	bool visible = layer.visible;
+	if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
+		layerMgr.hideLayer(layerId, visible);
+	}
+	ImGui::SameLine();
+
+	const core::String &lockedId = core::string::format("##locked-layer-%i", layerId);
+	bool locked = layer.locked;
+	if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
+		layerMgr.lockLayer(layerId, locked);
+	}
+	ImGui::SameLine();
+
+	const core::String &nameId = core::string::format("##name-layer-%i", layerId);
+	core::String layerName = layer.name;
+	if (ImGui::InputText(nameId.c_str(), &layerName)) {
+		Log::info("layer name: %s", layerName.c_str());
+		layerMgr.rename(layerId, layerName);
+	}
+	ImGui::SameLine();
+
+	const core::String &deleteId = core::string::format("X##delete-layer-%i", layerId);
+	if (ImGui::Button(deleteId.c_str())) {
+		layerMgr.deleteLayer(layerId);
+	}
+
+	// TODO: context menu
+	// TODO: hightlight active layer
+}
+
 void VoxEditWindow::layers() {
 	if (ImGui::Begin("Layers", nullptr, ImGuiWindowFlags_NoDecoration)) {
+		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+		const voxedit::Layers& layers = layerMgr.layers();
+		const int layerCnt = layers.size();
+		for (int l = 0; l < layerCnt; ++l) {
+			if (!layers[l].valid) {
+				continue;
+			}
+			addLayerItem(l, layers[l]);
+		}
+		if (ImGui::Button("+")) {
+			voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
+			voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
+			const int layerId = layerMgr.activeLayer();
+			const voxel::RawVolume* v = sceneMgr.volume(layerId);
+			const voxel::Region& region = v->region();
+			_layerSettings.position = region.getLowerCorner();
+			_layerSettings.size = region.getDimensionsInCells();
+			if (_layerSettings.name.empty()) {
+				_layerSettings.name = layerMgr.layer(layerId).name;
+			}
+			// TODO: layer settings
+			if (region.isValid()) {
+				voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
+				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCenter());
+				layerMgr.setActiveLayer(layerId);
+			} else {
+				_layerSettings.reset();
+			}
+		}
 	}
 	ImGui::End();
 }
@@ -400,17 +471,7 @@ void VoxEditWindow::statusBar() {
 			ImGui::Text("%s", statusText.c_str());
 		}
 		ImGui::SameLine();
-		ImGui::CheckboxVar("Grid", _showGridVar);
-		ImGui::SameLine();
 		ImGui::InputVarInt("Grid size", _gridSizeVar);
-		ImGui::SameLine();
-		actionButton("Reset camera", "resetcamera");
-		ImGui::SameLine();
-		actionButton("Quad view", "toggleviewport");
-		ImGui::SameLine();
-		actionButton("Animation view", "toggleanimation");
-		ImGui::SameLine();
-		actionButton("Scene view", "togglescene");
 	}
 	ImGui::End();
 }
