@@ -48,4 +48,10 @@ IMGUI_API void TableKeyValue(const char *key, const core::String &value);
 IMGUI_API bool DisabledButton(const char *text, bool disabled);
 IMGUI_API float Size(float size);
 
+IMGUI_API bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags = 0,
+						 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
+IMGUI_API bool InputTextMultiline(const char *label, core::String *str, const ImVec2 &size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0,
+								  ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
+IMGUI_API bool InputTextWithHint(const char *label, const char *hint, core::String *str, ImGuiInputTextFlags flags = 0,
+								 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
 }

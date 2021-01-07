@@ -12,6 +12,67 @@
 
 namespace ImGui {
 
+namespace _priv {
+
+struct InputTextCallback_UserData {
+	core::String *Str;
+	ImGuiInputTextCallback ChainCallback;
+	void *ChainCallbackUserData;
+};
+
+static int InputTextCallback(ImGuiInputTextCallbackData *data) {
+	InputTextCallback_UserData *userData = (InputTextCallback_UserData *)data->UserData;
+	if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
+		// Resize string callback
+		// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we need to set them back
+		// to what we want.
+		core::String *str = userData->Str;
+		core_assert(data->Buf == str->c_str());
+		str->reserve(data->BufTextLen);
+		data->Buf = (char *)str->c_str();
+	} else if (userData->ChainCallback) {
+		// Forward to user callback, if any
+		data->UserData = userData->ChainCallbackUserData;
+		return userData->ChainCallback(data);
+	}
+	return 0;
+}
+
+}
+
+bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *userData) {
+	core_assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+	flags |= ImGuiInputTextFlags_CallbackResize;
+
+	_priv::InputTextCallback_UserData cb_userData;
+	cb_userData.Str = str;
+	cb_userData.ChainCallback = callback;
+	cb_userData.ChainCallbackUserData = userData;
+	return InputText(label, str->c_str(), str->capacity(), flags, _priv::InputTextCallback, &cb_userData);
+}
+
+bool InputTextMultiline(const char *label, core::String *str, const ImVec2 &size, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *userData) {
+	core_assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+	flags |= ImGuiInputTextFlags_CallbackResize;
+
+	_priv::InputTextCallback_UserData cb_userData;
+	cb_userData.Str = str;
+	cb_userData.ChainCallback = callback;
+	cb_userData.ChainCallbackUserData = userData;
+	return InputTextMultiline(label, str->c_str(), str->capacity(), size, flags, _priv::InputTextCallback, &cb_userData);
+}
+
+bool InputTextWithHint(const char *label, const char *hint, core::String *str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *userData) {
+	core_assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+	flags |= ImGuiInputTextFlags_CallbackResize;
+
+	_priv::InputTextCallback_UserData cb_userData;
+	cb_userData.Str = str;
+	cb_userData.ChainCallback = callback;
+	cb_userData.ChainCallbackUserData = userData;
+	return InputTextWithHint(label, hint, str->c_str(), str->capacity(), flags, _priv::InputTextCallback, &cb_userData);
+}
+
 bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFlags flags) {
 	const core::String& buf = var->strVal();
 	constexpr int size = 256;
