@@ -57,6 +57,7 @@ public:
 
 	const char *c_str() const;
 	char *c_str();
+	size_t capacity() const;
 	size_t size() const;
 	int compare(const String& str) const;
 	int compare(const char *str, size_t len) const;
@@ -136,6 +137,13 @@ inline const char *String::c_str() const {
 
 inline char *String::c_str() {
 	return _data._str;
+}
+
+inline size_t String::capacity() const {
+	if (onStack()) {
+		return _stackBufCapacity;
+	}
+	return _data._capacity;
 }
 
 inline size_t String::size() const {
