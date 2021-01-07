@@ -57,6 +57,9 @@ void AbstractViewport::resetCamera() {
 }
 
 void AbstractViewport::resize(const glm::ivec2& frameBufferSize) {
+	if (_texture && _texture->width() == frameBufferSize.x && _texture->height() == frameBufferSize.y) {
+		return;
+	}
 	const glm::ivec2 windowSize = video::WindowedApp::getInstance()->windowDimension();
 	_controller.onResize(frameBufferSize, windowSize);
 	_frameBuffer.shutdown();

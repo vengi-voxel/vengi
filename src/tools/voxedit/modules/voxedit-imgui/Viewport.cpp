@@ -55,7 +55,8 @@ void Viewport::update() {
 				shader->setUniformMatrix(loc, projectionMatrix);
 			}
 		}
-
+		const ImVec2& windowSize = ImGui::GetWindowSize();
+		resize(glm::ivec2(windowSize.x, windowSize.y));
 		renderToFrameBuffer();
 
 		// use the uv coords here to take a potential fb flip into account
@@ -85,8 +86,6 @@ void Viewport::update() {
 			voxedit::sceneMgr().trace();
 		}
 	}
-	const ImVec2& windowSize = ImGui::GetWindowSize();
-	resize(glm::ivec2(windowSize.x, windowSize.y));
 	ImGui::End();
 }
 
