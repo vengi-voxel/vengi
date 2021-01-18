@@ -114,10 +114,17 @@ public:
 		return true;
 	}
 
-	bool waitAndPop(Data& poppedValue) {
+	bool waitAndPop(Data& poppedValue, uint32_t timeoutMillis = 0u) {
 		core::ScopedLock lock(_mutex);
 		if (_data.empty()) {
-			_conditionVariable.wait(_mutex);
+			if (timeoutMillis == 0u) {
+				_conditionVariable.wait(_mutex);
+			} else {
+				const core::ConditionVariableState state = _conditionVariable.waitTimeout(_mutex, timeoutMillis);
+				if (state != core::ConditionVariableState::Signaled) {
+					return false;
+				}
+			}
 		}
 		if (_abort) {
 			return false;

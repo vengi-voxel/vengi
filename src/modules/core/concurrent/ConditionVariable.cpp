@@ -28,8 +28,15 @@ bool ConditionVariable::wait(Lock& lock) {
 	return SDL_CondWait(_conditionVariable, lock.handle()) != -1;
 }
 
-bool ConditionVariable::waitTimeout(Lock& lock, uint32_t millis) {
-	return SDL_CondWaitTimeout(_conditionVariable, lock.handle(), millis) == -1;
+ConditionVariableState ConditionVariable::waitTimeout(Lock& lock, uint32_t millis) {
+	const int retVal = SDL_CondWaitTimeout(_conditionVariable, lock.handle(), millis);
+	if (retVal == 0) {
+		return ConditionVariableState::Signaled;
+	}
+	if (retVal == -1) {
+		return ConditionVariableState::Error;
+	}
+	return ConditionVariableState::Timeout;
 }
 
 }

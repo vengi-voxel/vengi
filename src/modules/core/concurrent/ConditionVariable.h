@@ -12,6 +12,12 @@ namespace core {
 
 class Lock;
 
+enum class ConditionVariableState {
+	Signaled,
+	Timeout,
+	Error
+};
+
 class ConditionVariable {
 private:
 	SDL_cond* _conditionVariable;
@@ -33,7 +39,7 @@ public:
 		}
 	}
 
-	bool waitTimeout(Lock& lock, uint32_t millis);
+	ConditionVariableState waitTimeout(Lock& lock, uint32_t millis);
 };
 
 }
