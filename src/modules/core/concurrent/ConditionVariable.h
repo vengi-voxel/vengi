@@ -33,9 +33,13 @@ public:
 	 * @brief Predicate must return false if the waiting should continue
 	 */
 	template<class PREDICATE>
-	void wait(Lock& lock, PREDICATE&& predicate) {
+	void wait(Lock& lock, PREDICATE&& predicate, uint32_t millis = 0u) {
 		while (!predicate()) {
-			wait(lock);
+			if (millis == 0u) {
+				wait(lock);
+			} else {
+				waitTimeout(lock, millis);
+			}
 		}
 	}
 
