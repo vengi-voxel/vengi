@@ -14,8 +14,12 @@ AtomicBool::operator bool() const {
 	return SDL_AtomicGet(const_cast<SDL_atomic_t*>(&_value)) == 1;
 }
 
+bool AtomicBool::compare_exchange(bool expectedVal, bool newVal) {
+	return (bool)SDL_AtomicCAS(&_value, (int)expectedVal, (int)newVal);
+}
+
 bool AtomicBool::exchange(bool rhs) {
-	return SDL_AtomicSet(&_value, rhs) == 1;
+	return (bool)SDL_AtomicSet(&_value, rhs);
 }
 
 void AtomicBool::operator=(bool rhs) {
@@ -44,6 +48,10 @@ AtomicInt::operator int() const {
 
 int AtomicInt::exchange(int rhs) {
 	return SDL_AtomicSet(&_value, rhs);
+}
+
+bool AtomicInt::compare_exchange(int expectedVal, int newVal) {
+	return (bool)SDL_AtomicCAS(&_value, expectedVal, newVal);
 }
 
 void AtomicInt::operator=(int rhs) {

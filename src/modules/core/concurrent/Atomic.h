@@ -35,7 +35,7 @@ public:
 	operator int() const;
 
 	int exchange(int rhs);
-	int compare_exchange(int expectedVal, int newVal);
+	bool compare_exchange(int expectedVal, int newVal);
 
 	void operator=(int rhs);
 	void operator=(const AtomicInt& rhs);
