@@ -90,7 +90,7 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 
 	std::future<return_type> res = task->get_future();
 	{
-		std::unique_lock lock(_queueMutex);
+		core::ScopedLock lock(_queueMutex);
 		if (_stop) {
 			return std::future<return_type>();
 		}
