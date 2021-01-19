@@ -17,7 +17,7 @@ ThreadPool::ThreadPool(size_t threads, const char *name) :
 }
 
 void ThreadPool::abort() {
-	std::unique_lock lock(_queueMutex);
+	core::ScopedLock lock(_queueMutex);
 	while (!_tasks.empty()) {
 		_tasks.pop();
 	}
