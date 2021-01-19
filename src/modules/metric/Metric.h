@@ -81,6 +81,7 @@ public:
 	 * of the number of samples per event count. For example, a sample rate of 1/10
 	 * would be exported as 0.1. Valid counter values are in the range (-2^63^, 2^63^).
 	 * @code <metric name>:<value>|c[|@<sample rate>] @endcode
+	 * @note Record event counts
 	 */
 	bool count(const char* key, int delta, const TagMap& tags = {}, float sampleRate = 1.0f) const;
 
@@ -91,6 +92,7 @@ public:
 	 * gauge in a car. It differs from a counter by being calculated at the
 	 * client rather than the server. Valid gauge values are in the range [0, 2^64^)
 	 * @code <metric name>:<value>|g @endcode
+	 * @note Record raw values
 	 */
 	bool gauge(const char* key, uint32_t value, const TagMap& tags = {}) const;
 
@@ -100,6 +102,7 @@ public:
 	 * and end time, for example the time to complete rendering of a web page for
 	 * a user. Valid timer values are in the range [0, 2^64^).
 	 * @code <metric name>:<value>|ms @endcode
+	 * @note Record execution times
 	 */
 	bool timing(const char* key, uint32_t millis, const TagMap& tags = {}) const;
 
@@ -110,6 +113,7 @@ public:
 	 * the same, this is currently an alias for a timer. Valid histogram values
 	 * are in the range [0, 2^64^).
 	 * @code <metric name>:<value>|h @endcode
+	 * @note Record value distributions
 	 */
 	bool histogram(const char* key, uint32_t millis, const TagMap& tags = {}) const;
 
@@ -124,6 +128,7 @@ public:
 	 * @code <metric name> @endcode
 	 * While this is convenient, the full, explicit metric form should be used.
 	 * The shortened form is documented here for completeness.
+	 * @note Record execution rates
 	 */
 	bool meter(const char* key, int value, const TagMap& tags = {}) const;
 };
