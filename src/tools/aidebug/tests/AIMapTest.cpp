@@ -5,7 +5,7 @@
 #include "app/tests/AbstractTest.h"
 #include "../Map.h"
 
-class MapTest: public app::AbstractTest {
+class AIMapTest: public app::AbstractTest {
 private:
 	using Super = app::AbstractTest;
 public:
@@ -18,17 +18,17 @@ public:
 	}
 };
 
-TEST_F(MapTest, testConvertCoordinatesNoScroll) {
+TEST_F(AIMapTest, testConvertCoordinatesNoScroll) {
 	EXPECT_EQ(glm::ivec2(0), _map.entPosToMap(0.0f, 0.0f));
 	EXPECT_EQ(glm::ivec2(500), _map.entPosToMap(500.0f, 500.0f));
 }
 
-TEST_F(MapTest, testConvertCoordinatesNoScrollNeeded) {
+TEST_F(AIMapTest, testConvertCoordinatesNoScrollNeeded) {
 	_map.centerAtEntPos(100.0f, 50.0f);
 	EXPECT_EQ(glm::ivec2(0), _map.entPosToMap(0.0f, 0.0f));
 }
 
-TEST_F(MapTest, testConvertCoordinatesScrolled) {
+TEST_F(AIMapTest, testConvertCoordinatesScrolled) {
 	_map.centerAtEntPos(200.0f, 100.0f);
 	EXPECT_EQ(glm::ivec2(-100, -50), _map.entPosToMap(0.0f, 0.0f));
 }

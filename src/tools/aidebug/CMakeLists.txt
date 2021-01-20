@@ -11,7 +11,7 @@ engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES imgui ai-shared network attrib)
 
 set(TEST_SRCS
-	tests/MapTest.cpp
+	tests/AIMapTest.cpp
 	Map.h Map.cpp
 )
 
