@@ -32,7 +32,6 @@ public:
 
 	void abortWait() {
 		_abort = true;
-		core::ScopedLock lock(_mutex);
 		_conditionVariable.notify_all();
 	}
 
@@ -51,21 +50,27 @@ public:
 	}
 
 	void push(Data const& data) {
-		core::ScopedLock lock(_mutex);
-		_data.push_back(data);
+		{
+			core::ScopedLock lock(_mutex);
+			_data.push_back(data);
+		}
 		_conditionVariable.notify_one();
 	}
 
 	void push(Data&& data) {
-		core::ScopedLock lock(_mutex);
-		_data.push_back(core::move(data));
+		{
+			core::ScopedLock lock(_mutex);
+			_data.push_back(core::move(data));
+		}
 		_conditionVariable.notify_one();
 	}
 
 	template<typename ... _Args>
 	void emplace(_Args&&... __args) {
-		core::ScopedLock lock(_mutex);
-		_data.emplace_back(core::forward<_Args>(__args)...);
+		{
+			core::ScopedLock lock(_mutex);
+			_data.emplace_back(core::forward<_Args>(__args)...);
+		}
 		_conditionVariable.notify_one();
 	}
 
