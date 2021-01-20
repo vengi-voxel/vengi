@@ -5,7 +5,7 @@
 #pragma once
 
 #include "RenderShaders.h"
-#include "core/collection/ConcurrentQueue.h"
+#include "core/collection/ConcurrentPriorityQueue.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Concurrency.h"
 #include "core/concurrent/ThreadPool.h"
@@ -83,7 +83,7 @@ protected:
 	};
 	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
 	core::AtomicInt _runningExtractorTasks { 0 };
-	core::ConcurrentQueue<ExtractionCtx> _pendingQueue;
+	core::ConcurrentPriorityQueue<ExtractionCtx> _pendingQueue;
 	void extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 

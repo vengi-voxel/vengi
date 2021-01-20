@@ -8,15 +8,15 @@
 #include "voxelworld/BiomeManager.h"
 #include "video/Texture.h"
 #include "render/TextureRenderer.h"
-#include "core/collection/ConcurrentQueue.h"
+#include "core/collection/ConcurrentPriorityQueue.h"
 #include "EventResult.h"
 
 class TestBiomes: public TestApp {
 private:
 	using Super = TestApp;
 
-	core::ConcurrentQueue<Event*> _workQueue;
-	core::ConcurrentQueue<Result*> _resultQueue;
+	core::ConcurrentPriorityQueue<Event*> _workQueue;
+	core::ConcurrentPriorityQueue<Result*> _resultQueue;
 
 	voxelworld::BiomeManager _biomeMgr;
 	glm::ivec3 _biomesPos;

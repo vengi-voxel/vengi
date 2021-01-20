@@ -3,16 +3,16 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/collection/ConcurrentQueue.h"
+#include "core/collection/ConcurrentPriorityQueue.h"
 #include <thread>
 
 namespace collection {
 
-class ConcurrentQueueTest : public testing::Test {
+class ConcurrentPriorityQueueTest : public testing::Test {
 };
 
-TEST_F(ConcurrentQueueTest, testPushPop) {
-	core::ConcurrentQueue<int> queue;
+TEST_F(ConcurrentPriorityQueueTest, testPushPop) {
+	core::ConcurrentPriorityQueue<int> queue;
 	const int n = 1000;
 	for (int i = 0; i < n; ++i) {
 		queue.push(i);
@@ -25,8 +25,8 @@ TEST_F(ConcurrentQueueTest, testPushPop) {
 	}
 }
 
-TEST_F(ConcurrentQueueTest, testPushWaitAndPop) {
-	core::ConcurrentQueue<int> queue;
+TEST_F(ConcurrentPriorityQueueTest, testPushWaitAndPop) {
+	core::ConcurrentPriorityQueue<int> queue;
 	const int n = 1000;
 	for (int i = 0; i < n; ++i) {
 		queue.push(i);
@@ -39,8 +39,8 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPop) {
 	}
 }
 
-TEST_F(ConcurrentQueueTest, testPushWaitAndPopConcurrent) {
-	core::ConcurrentQueue<uint32_t> queue;
+TEST_F(ConcurrentPriorityQueueTest, testPushWaitAndPopConcurrent) {
+	core::ConcurrentPriorityQueue<uint32_t> queue;
 	const uint32_t n = 1000u;
 	std::thread thread([&] () {
 		for (uint32_t i = 0; i < n; ++i) {
@@ -54,8 +54,8 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopConcurrent) {
 	thread.join();
 }
 
-TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
-	core::ConcurrentQueue<uint32_t> queue;
+TEST_F(ConcurrentPriorityQueueTest, testPushWaitAndPopMultipleThreads) {
+	core::ConcurrentPriorityQueue<uint32_t> queue;
 	const uint32_t n = 1000u;
 	std::thread threadPush([&] () {
 		for (uint32_t i = 0u; i < n; ++i) {
@@ -72,8 +72,8 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
 	threadPop.join();
 }
 
-TEST_F(ConcurrentQueueTest, testAbortWait) {
-	core::ConcurrentQueue<int> queue;
+TEST_F(ConcurrentPriorityQueueTest, testAbortWait) {
+	core::ConcurrentPriorityQueue<int> queue;
 	std::thread threadWait([&] () {
 		int v;
 		ASSERT_FALSE(queue.waitAndPop(v, 1000u));
@@ -83,9 +83,9 @@ TEST_F(ConcurrentQueueTest, testAbortWait) {
 	threadWait.join();
 }
 
-TEST_F(ConcurrentQueueTest, testSort) {
+TEST_F(ConcurrentPriorityQueueTest, testSort) {
 	{
-		core::ConcurrentQueue<int> queue;
+		core::ConcurrentPriorityQueue<int> queue;
 		queue.push(1);
 		queue.push(3);
 		queue.push(2);
@@ -94,7 +94,7 @@ TEST_F(ConcurrentQueueTest, testSort) {
 		EXPECT_EQ(3, val);
 	}
 	{
-		core::ConcurrentQueue<int, std::greater<int>> queue;
+		core::ConcurrentPriorityQueue<int, std::greater<int>> queue;
 		queue.push(1);
 		queue.push(3);
 		queue.push(2);

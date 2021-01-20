@@ -7,7 +7,7 @@
 #include "ui/turbobadger/Window.h"
 #include "ui/turbobadger/ui_widgets.h"
 #include "core/Common.h"
-#include "core/collection/ConcurrentQueue.h"
+#include "core/collection/ConcurrentPriorityQueue.h"
 #include "noise/Noise.h"
 #include "../NoiseData.h"
 
@@ -35,7 +35,7 @@ private:
 			return noiseBuffer < rhs.noiseBuffer;
 		}
 	};
-	core::ConcurrentQueue<QueueData> _queue;
+	core::ConcurrentPriorityQueue<QueueData> _queue;
 
 	int _noiseWidth = 768;
 	int _noiseHeight = 1024;

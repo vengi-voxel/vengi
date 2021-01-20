@@ -16,11 +16,11 @@
 namespace core {
 
 template<class Data, class Comparator = Less<Data>>
-class ConcurrentQueue {
+class ConcurrentPriorityQueue {
 private:
 	using Collection = std::vector<Data>;
 	Collection _data;
-	mutable core_trace_mutex(core::Lock,  _mutex, "ConcurrentQueue");
+	mutable core_trace_mutex(core::Lock,  _mutex, "ConcurrentPriorityQueue");
 	core::ConditionVariable _conditionVariable;
 	core::AtomicBool _abort { false };
 	Comparator _comparator;
@@ -28,13 +28,13 @@ public:
 	using value_type = Data;
 	using Key = Data;
 
-	ConcurrentQueue() :
+	ConcurrentPriorityQueue() :
 			_comparator(Comparator()) {
 	}
-	ConcurrentQueue(Comparator comparator) :
+	ConcurrentPriorityQueue(Comparator comparator) :
 			_comparator(comparator) {
 	}
-	~ConcurrentQueue() {
+	~ConcurrentPriorityQueue() {
 		abortWait();
 	}
 
@@ -117,17 +117,22 @@ public:
 	bool waitAndPop(Data& poppedValue, uint32_t timeoutMillis = 0u) {
 		core::ScopedLock lock(_mutex);
 		if (_data.empty()) {
+			if (_abort) {
+				return false;
+			}
 			if (timeoutMillis == 0u) {
-				_conditionVariable.wait(_mutex);
+				if (!_conditionVariable.wait(_mutex)) {
+					return false;
+				}
 			} else {
 				const core::ConditionVariableState state = _conditionVariable.waitTimeout(_mutex, timeoutMillis);
 				if (state != core::ConditionVariableState::Signaled) {
 					return false;
 				}
 			}
-		}
-		if (_abort) {
-			return false;
+			if (_abort) {
+				return false;
+			}
 		}
 		poppedValue = core::move(_data.front());
 		std::pop_heap(_data.begin(), _data.end(), _comparator);

@@ -7,7 +7,7 @@
 #include "voxel/Mesh.h"
 #include "core/concurrent/ThreadPool.h"
 #include "core/Var.h"
-#include "core/collection/ConcurrentQueue.h"
+#include "core/collection/ConcurrentPriorityQueue.h"
 #include "voxel/PagedVolume.h"
 #include "core/concurrent/Atomic.h"
 
@@ -22,7 +22,7 @@ typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
 
 class WorldMeshExtractor {
 private:
-	core::ConcurrentQueue<voxel::Mesh> _extracted;
+	core::ConcurrentPriorityQueue<voxel::Mesh> _extracted;
 	glm::ivec3 _pendingExtractionSortPosition { 0, 0, 0 };
 	struct CloseToPoint {
 		glm::ivec2 _refPoint;
@@ -37,7 +37,7 @@ private:
 		}
 	};
 
-	core::ConcurrentQueue<glm::ivec3, CloseToPoint> _pendingExtraction { CloseToPoint(_pendingExtractionSortPosition) };
+	core::ConcurrentPriorityQueue<glm::ivec3, CloseToPoint> _pendingExtraction { CloseToPoint(_pendingExtractionSortPosition) };
 	// fast lookup for positions that are already extracted
 	PositionSet _positionsExtracted;
 	core::VarPtr _meshSize;
