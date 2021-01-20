@@ -22,6 +22,7 @@ set(SRCS
 	concurrent/Lock.cpp concurrent/Lock.h
 	concurrent/ReadWriteLock.cpp concurrent/ReadWriteLock.h
 	concurrent/ThreadPool.cpp concurrent/ThreadPool.h
+	concurrent/Thread.cpp concurrent/Thread.h
 
 	Algorithm.h
 	ArrayLength.h
@@ -105,6 +106,7 @@ set(TEST_SRCS
 	tests/StringTest.cpp
 	tests/StringUtilTest.cpp
 	tests/ThreadPoolTest.cpp
+	tests/ThreadTest.cpp
 	tests/TokenizerTest.cpp
 	tests/VarTest.cpp
 	tests/VectorTest.cpp
