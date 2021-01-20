@@ -9,6 +9,7 @@
 #include "core/String.h"
 #include "core/SharedPtr.h"
 #include "core/NonCopyable.h"
+#include "math/Random.h"
 #include <glm/vec3.hpp>
 
 namespace backend {
@@ -30,14 +31,17 @@ protected:
 	float _orientation = 0.0f;
 	attrib::ShadowAttributes _shadowAttributes;
 	ai::CharacterMetaAttributes _metaAttributes;
+	math::Random _random;
 
 public:
 	explicit ICharacter(ai::CharacterId id) :
 			_id(id) {
+		_random.setSeed((unsigned int)_id);
 	}
 
 	virtual ~ICharacter() {
 	}
+	math::Random& random();
 
 	bool operator==(const ICharacter &character) const;
 	bool operator!=(const ICharacter &character) const;
@@ -91,6 +95,10 @@ public:
 		(void)debuggingActive;
 	}
 };
+
+inline math::Random& ICharacter::random() {
+	return _random;
+}
 
 inline void ICharacter::setOrientation(float orientation) {
 	_orientation = orientation;

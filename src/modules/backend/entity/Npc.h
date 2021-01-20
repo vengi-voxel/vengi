@@ -27,7 +27,6 @@ private:
 	static std::atomic<EntityId> _nextNpcId;
 	glm::vec3 _homePosition;
 	glm::vec3 _targetPosition;
-	math::Random _random;
 	AIPtr _ai;
 	AICharacterPtr _aiChr;
 
@@ -56,8 +55,6 @@ public:
 	void init(const glm::ivec3* pos);
 	void shutdown() override;
 
-	math::Random& random();
-
 	void setHomePosition(const glm::vec3& pos);
 	const glm::vec3& homePosition() const;
 	void setTargetPosition(const glm::vec3& pos);
@@ -80,10 +77,6 @@ public:
 
 	bool update(long dt) override;
 };
-
-inline math::Random& Npc::random() {
-	return _random;
-}
 
 inline void Npc::setHomePosition(const glm::vec3& pos) {
 	_homePosition = pos;

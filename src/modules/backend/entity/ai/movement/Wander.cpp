@@ -3,9 +3,7 @@
  */
 
 #include "Wander.h"
-#include "AICharacter.h"
 #include "core/StringUtil.h"
-#include "backend/entity/Npc.h"
 #include "backend/entity/ai/AI.h"
 #include "backend/entity/ai/common/Math.h"
 #include <glm/trigonometric.hpp>
@@ -22,10 +20,10 @@ static inline glm::vec3 fromRadians(float radians) {
 }
 
 MoveVector Wander::execute (const AIPtr& ai, float speed) const {
-	backend::Npc& npc = getNpc(ai);
+	const backend::ICharacterPtr& chr = ai->getCharacter();
 	const float orientation = ai->getCharacter()->getOrientation();
 	const glm::vec3& v = fromRadians(orientation);
-	return MoveVector(v * speed, npc.random().randomBinomial() * _rotation);
+	return MoveVector(v * speed, chr->random().randomBinomial() * _rotation);
 }
 
 }

@@ -29,14 +29,15 @@ WanderAroundHome::WanderAroundHome(const core::String& parameter) :
 MoveVector WanderAroundHome::execute(const AIPtr& ai, float speed) const {
 	backend::Npc& npc = getNpc(ai);
 	const glm::vec3& target = npc.targetPosition();
-	const glm::vec3& pos = npc.pos();
+	const backend::ICharacterPtr& chr = ai->getCharacter();
+	const glm::vec3& pos = chr->getPosition();
 	if (glm::distance2(glm::vec2(target.x, target.z), glm::vec2(pos.x, pos.z)) <= 1.0f) {
-		const float theta = npc.random().randomf(0.0f, glm::two_pi<float>());
+		const float theta = chr->random().randomf(0.0f, glm::two_pi<float>());
 		const glm::vec3& home = npc.homePosition();
 		const glm::vec3 newTarget(home.x + glm::cos(theta) * _maxDistance, home.y, home.z + glm::sin(theta) * _maxDistance);
 		npc.setTargetPosition(newTarget);
 	}
-	return seek(ai->getCharacter()->getPosition(), target, speed);
+	return seek(pos, target, speed);
 }
 
 }
