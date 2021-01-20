@@ -11,40 +11,23 @@
 #include "core/Common.h"
 #include <stdint.h>
 #include <vector>
-#include <algorithm>
 
 namespace core {
 
-template<class Data, class Comparator = Less<Data>>
-class ConcurrentPriorityQueue {
+template<class Data>
+class ConcurrentQueue {
 private:
 	using Collection = std::vector<Data>;
 	Collection _data;
-	mutable core_trace_mutex(core::Lock,  _mutex, "ConcurrentPriorityQueue");
+	mutable core_trace_mutex(core::Lock,  _mutex, "ConcurrentQueue");
 	core::ConditionVariable _conditionVariable;
 	core::AtomicBool _abort { false };
-	Comparator _comparator;
 public:
 	using value_type = Data;
 	using Key = Data;
 
-	ConcurrentPriorityQueue() :
-			_comparator(Comparator()) {
-	}
-	ConcurrentPriorityQueue(Comparator comparator) :
-			_comparator(comparator) {
-	}
-	~ConcurrentPriorityQueue() {
+	~ConcurrentQueue() {
 		abortWait();
-	}
-
-	void setComparator(Comparator comparator) {
-		core::ScopedLock lock(_mutex);
-		_comparator = comparator;
-		if (_data.empty()) {
-			return;
-		}
-		std::make_heap(const_cast<Data*>(&_data.front()), const_cast<Data*>(&_data.front()) + _data.size(), _comparator);
 	}
 
 	void abortWait() {
@@ -67,25 +50,15 @@ public:
 		_data.release();
 	}
 
-	void sort() {
-		core::ScopedLock lock(_mutex);
-		if (_data.empty()) {
-			return;
-		}
-		std::make_heap(const_cast<Data*>(&_data.front()), const_cast<Data*>(&_data.front()) + _data.size(), _comparator);
-	}
-
 	void push(Data const& data) {
 		core::ScopedLock lock(_mutex);
 		_data.push_back(data);
-		std::push_heap(_data.begin(), _data.end(), _comparator);
 		_conditionVariable.notify_one();
 	}
 
 	void push(Data&& data) {
 		core::ScopedLock lock(_mutex);
 		_data.push_back(core::move(data));
-		std::push_heap(_data.begin(), _data.end(), _comparator);
 		_conditionVariable.notify_one();
 	}
 
@@ -93,7 +66,6 @@ public:
 	void emplace(_Args&&... __args) {
 		core::ScopedLock lock(_mutex);
 		_data.emplace_back(core::forward<_Args>(__args)...);
-		std::push_heap(_data.begin(), _data.end(), _comparator);
 		_conditionVariable.notify_one();
 	}
 
@@ -114,8 +86,7 @@ public:
 		}
 
 		poppedValue = core::move(_data.front());
-		std::pop_heap(_data.begin(), _data.end(), _comparator);
-		_data.pop_back();
+		_data.erase(_data.begin());
 		return true;
 	}
 
@@ -140,8 +111,7 @@ public:
 			}
 		}
 		poppedValue = core::move(_data.front());
-		std::pop_heap(_data.begin(), _data.end(), _comparator);
-		_data.pop_back();
+		_data.erase(_data.begin());
 		return true;
 	}
 };

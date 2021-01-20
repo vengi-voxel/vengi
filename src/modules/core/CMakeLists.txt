@@ -1,6 +1,8 @@
 set(SRCS
 	collection/Array.h
 	collection/Buffer.h
+	collection/ConcurrentDynamicArray.h
+	collection/ConcurrentQueue.h
 	collection/ConcurrentPriorityQueue.h
 	collection/ConcurrentSet.h
 	collection/DynamicArray.h
@@ -85,6 +87,8 @@ set(TEST_SRCS
 	tests/BufferTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ColorTest.cpp
+	tests/ConcurrentDynamicArrayTest.cpp
+	tests/ConcurrentQueueTest.cpp
 	tests/ConcurrentPriorityQueueTest.cpp
 	tests/CoreTest.cpp
 	tests/DynamicArrayTest.cpp
