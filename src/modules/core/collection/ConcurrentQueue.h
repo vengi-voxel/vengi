@@ -27,6 +27,12 @@ public:
 	using value_type = Data;
 	using Key = Data;
 
+	ConcurrentQueue(size_t reserve = 0u) {
+		if (reserve) {
+			_data.reserve(reserve);
+		}
+	}
+
 	~ConcurrentQueue() {
 		abortWait();
 	}

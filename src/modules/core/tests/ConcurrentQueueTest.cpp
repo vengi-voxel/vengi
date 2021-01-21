@@ -40,8 +40,8 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPop) {
 }
 
 TEST_F(ConcurrentQueueTest, testPushWaitAndPopConcurrent) {
-	core::ConcurrentQueue<uint32_t> queue;
 	const uint32_t n = 1000u;
+	core::ConcurrentQueue<uint32_t> queue(n);
 	std::thread thread([&] () {
 		for (uint32_t i = 0; i < n; ++i) {
 			queue.push(i);
@@ -55,8 +55,8 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopConcurrent) {
 }
 
 TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
-	core::ConcurrentQueue<uint32_t> queue;
 	const uint32_t n = 1000u;
+	core::ConcurrentQueue<uint32_t> queue(n);
 	std::thread threadPush([&] () {
 		for (uint32_t i = 0u; i < n; ++i) {
 			queue.push(i);

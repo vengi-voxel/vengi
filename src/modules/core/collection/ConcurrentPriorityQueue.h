@@ -28,12 +28,19 @@ public:
 	using value_type = Data;
 	using Key = Data;
 
-	ConcurrentPriorityQueue() :
+	ConcurrentPriorityQueue(size_t reserve = 0u) :
 			_comparator(Comparator()) {
+		if (reserve) {
+			_data.reserve(reserve);
+		}
 	}
-	ConcurrentPriorityQueue(Comparator comparator) :
+	ConcurrentPriorityQueue(Comparator comparator, size_t reserve = 0u) :
 			_comparator(comparator) {
+		if (reserve) {
+			_data.reserve(reserve);
+		}
 	}
+
 	~ConcurrentPriorityQueue() {
 		abortWait();
 	}

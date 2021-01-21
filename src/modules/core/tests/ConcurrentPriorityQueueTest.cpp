@@ -12,8 +12,8 @@ class ConcurrentPriorityQueueTest : public testing::Test {
 };
 
 TEST_F(ConcurrentPriorityQueueTest, testPushPop) {
-	core::ConcurrentPriorityQueue<int> queue;
 	const int n = 1000;
+	core::ConcurrentPriorityQueue<int> queue(n);
 	for (int i = 0; i < n; ++i) {
 		queue.push(i);
 	}
@@ -26,8 +26,8 @@ TEST_F(ConcurrentPriorityQueueTest, testPushPop) {
 }
 
 TEST_F(ConcurrentPriorityQueueTest, testPushWaitAndPop) {
-	core::ConcurrentPriorityQueue<int> queue;
 	const int n = 1000;
+	core::ConcurrentPriorityQueue<int> queue(n);
 	for (int i = 0; i < n; ++i) {
 		queue.push(i);
 	}
@@ -40,8 +40,8 @@ TEST_F(ConcurrentPriorityQueueTest, testPushWaitAndPop) {
 }
 
 TEST_F(ConcurrentPriorityQueueTest, testPushWaitAndPopConcurrent) {
-	core::ConcurrentPriorityQueue<uint32_t> queue;
 	const uint32_t n = 1000u;
+	core::ConcurrentPriorityQueue<uint32_t> queue(n);
 	std::thread thread([&] () {
 		for (uint32_t i = 0; i < n; ++i) {
 			queue.push(i);
@@ -55,8 +55,8 @@ TEST_F(ConcurrentPriorityQueueTest, testPushWaitAndPopConcurrent) {
 }
 
 TEST_F(ConcurrentPriorityQueueTest, testPushWaitAndPopMultipleThreads) {
-	core::ConcurrentPriorityQueue<uint32_t> queue;
 	const uint32_t n = 1000u;
+	core::ConcurrentPriorityQueue<uint32_t> queue(n);
 	std::thread threadPush([&] () {
 		for (uint32_t i = 0u; i < n; ++i) {
 			queue.push(i);
@@ -85,7 +85,7 @@ TEST_F(ConcurrentPriorityQueueTest, testAbortWait) {
 
 TEST_F(ConcurrentPriorityQueueTest, testSort) {
 	{
-		core::ConcurrentPriorityQueue<int> queue;
+		core::ConcurrentPriorityQueue<int> queue(3);
 		queue.push(1);
 		queue.push(3);
 		queue.push(2);
