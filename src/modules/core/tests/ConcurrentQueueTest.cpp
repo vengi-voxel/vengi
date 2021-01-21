@@ -50,6 +50,7 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopConcurrent) {
 	for (uint32_t i = 0; i < n; ++i) {
 		uint32_t v;
 		ASSERT_TRUE(queue.waitAndPop(v));
+		ASSERT_EQ(i, v);
 	}
 	thread.join();
 }
@@ -66,6 +67,7 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
 		for (uint32_t i = 0u; i < n; ++i) {
 			uint32_t v;
 			ASSERT_TRUE(queue.waitAndPop(v));
+			ASSERT_EQ(i, v);
 		}
 	});
 	threadPush.join();
