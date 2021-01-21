@@ -11,7 +11,7 @@
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/concurrent/ReadWriteLock.h"
-#include "core/collection/ConcurrentPriorityQueue.h"
+#include "core/collection/ConcurrentQueue.h"
 
 namespace core {
 
@@ -136,7 +136,7 @@ private:
 	typedef std::unordered_map<ClassTypeId, EventBusHandlerReferences> EventBusHandlerReferenceMap;
 	core::ReadWriteLock _lock;
 
-	core::ConcurrentPriorityQueue<IEventBusEventPtr, std::less<IEventBusEventPtr> > _queue;
+	core::ConcurrentQueue<IEventBusEventPtr> _queue;
 
 	class EventBusHandlerReference {
 	private:

@@ -12,7 +12,7 @@
 #include "core/IComponent.h"
 #include "core/collection/DynamicArray.h"
 #include "math/Rect.h"
-#include "core/collection/ConcurrentPriorityQueue.h"
+#include "core/collection/ConcurrentQueue.h"
 #include <thread>
 
 namespace util {
@@ -85,12 +85,8 @@ protected:
 			message = SDL_strdup(o.message);
 			return *this;
 		}
-
-		inline bool operator<(const LogLine& logLine) const {
-			return category < logLine.category && priority < logLine.priority && message < logLine.message;
-		}
 	};
-	core::ConcurrentPriorityQueue<LogLine> _messageQueue;
+	core::ConcurrentQueue<LogLine> _messageQueue;
 	Messages _history;
 	uint32_t _historyPos = 0;
 	const std::thread::id _mainThread;

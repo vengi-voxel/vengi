@@ -7,7 +7,7 @@
 #include "Connection.h"
 #include "core/Var.h"
 #include "core/Trace.h"
-#include "core/collection/ConcurrentPriorityQueue.h"
+#include "core/collection/ConcurrentQueue.h"
 #include "core/IComponent.h"
 #include "core/concurrent/Atomic.h"
 
@@ -31,7 +31,7 @@ protected:
 	core::VarPtr _minConnections;
 	core::VarPtr _maxConnections;
 
-	core::ConcurrentPriorityQueue<Connection*> _connections;
+	core::ConcurrentQueue<Connection*> _connections;
 
 public:
 	ConnectionPool();
