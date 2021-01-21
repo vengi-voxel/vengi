@@ -12,8 +12,8 @@ class ConcurrentDynamicArrayTest : public testing::Test {
 };
 
 TEST_F(ConcurrentDynamicArrayTest, testPushPop) {
-	core::ConcurrentDynamicArray<int> array;
 	const int n = 1000;
+	core::ConcurrentDynamicArray<int> array(n);
 	for (int i = 0; i < n; ++i) {
 		array.push(i);
 	}

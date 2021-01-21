@@ -22,6 +22,12 @@ private:
 public:
 	using value_type = Data;
 
+	ConcurrentDynamicArray(size_t reserve = 0u) {
+		if (reserve) {
+			_data.reserve(reserve);
+		}
+	}
+
 	size_t size() const {
 		core::ScopedLock lock(_mutex);
 		return _data.size();
