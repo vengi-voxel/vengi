@@ -126,18 +126,13 @@ public:
 
 	bool waitAndPop(Data& poppedValue) {
 		core::ScopedLock lock(_mutex);
-		if (_data.empty()) {
-			if (_abort) {
+		while (_data.empty() && !_abort) {
+			if (!_conditionVariable.wait(_mutex)) {
 				return false;
 			}
-			while (_data.empty() && !_abort) {
-				if (!_conditionVariable.wait(_mutex)) {
-					return false;
-				}
-			}
-			if (_abort) {
-				return false;
-			}
+		}
+		if (_abort) {
+			return false;
 		}
 		poppedValue = core::move(_data.front());
 		std::pop_heap(_data.begin(), _data.end(), _comparator);
