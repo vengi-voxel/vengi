@@ -124,19 +124,14 @@ public:
 		return true;
 	}
 
-	bool waitAndPop(Data& poppedValue, uint32_t timeoutMillis = 0u) {
+	bool waitAndPop(Data& poppedValue) {
 		core::ScopedLock lock(_mutex);
 		if (_data.empty()) {
 			if (_abort) {
 				return false;
 			}
-			if (timeoutMillis == 0u) {
+			while (_data.empty() && !_abort) {
 				if (!_conditionVariable.wait(_mutex)) {
-					return false;
-				}
-			} else {
-				const core::ConditionVariableState state = _conditionVariable.waitTimeout(_mutex, timeoutMillis);
-				if (state != core::ConditionVariableState::Signaled) {
 					return false;
 				}
 			}

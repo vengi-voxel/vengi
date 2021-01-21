@@ -27,6 +27,11 @@ public:
 
 	bool notify_one();
 	bool notify_all();
+	/**
+	 * @brief Wait for the condition to get signaled
+	 * @note Keep in mind that you have to wrap this in a predicate check to
+	 * work around spurious wakeups.
+	 */
 	bool wait(Lock& lock);
 
 	/**

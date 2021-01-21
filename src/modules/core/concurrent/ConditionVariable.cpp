@@ -17,15 +17,15 @@ ConditionVariable::~ConditionVariable() {
 }
 
 bool ConditionVariable::notify_one() {
-	return SDL_CondSignal(_conditionVariable) != -1;
+	return SDL_CondSignal(_conditionVariable) == 0;
 }
 
 bool ConditionVariable::notify_all() {
-	return SDL_CondBroadcast(_conditionVariable) != -1;
+	return SDL_CondBroadcast(_conditionVariable) == 0;
 }
 
 bool ConditionVariable::wait(Lock& lock) {
-	return SDL_CondWait(_conditionVariable, lock.handle()) != -1;
+	return SDL_CondWait(_conditionVariable, lock.handle()) == 0;
 }
 
 ConditionVariableState ConditionVariable::waitTimeout(Lock& lock, uint32_t millis) {

@@ -34,7 +34,7 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPop) {
 	ASSERT_EQ((int)queue.size(), n);
 	for (int i = 0; i < n; ++i) {
 		int v;
-		ASSERT_TRUE(queue.waitAndPop(v, 100u));
+		ASSERT_TRUE(queue.waitAndPop(v));
 		ASSERT_EQ(i, v);
 	}
 }
@@ -49,7 +49,7 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopConcurrent) {
 	});
 	for (uint32_t i = 0; i < n; ++i) {
 		uint32_t v;
-		ASSERT_TRUE(queue.waitAndPop(v, 100u));
+		ASSERT_TRUE(queue.waitAndPop(v));
 	}
 	thread.join();
 }
@@ -65,7 +65,7 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
 	std::thread threadPop([&] () {
 		for (uint32_t i = 0u; i < n; ++i) {
 			uint32_t v;
-			ASSERT_TRUE(queue.waitAndPop(v, 100u));
+			ASSERT_TRUE(queue.waitAndPop(v));
 		}
 	});
 	threadPush.join();
@@ -76,7 +76,7 @@ TEST_F(ConcurrentQueueTest, testAbortWait) {
 	core::ConcurrentQueue<int> queue;
 	std::thread threadWait([&] () {
 		int v;
-		ASSERT_FALSE(queue.waitAndPop(v, 1000u));
+		ASSERT_FALSE(queue.waitAndPop(v));
 	});
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	queue.abortWait();
