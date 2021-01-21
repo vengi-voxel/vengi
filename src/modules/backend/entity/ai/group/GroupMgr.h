@@ -42,10 +42,9 @@ private:
 	typedef Groups::const_iterator GroupsConstIter;
 	typedef Groups::iterator GroupsIter;
 
-	GroupMembersSet _empty;
 	core_trace_mutex(core::Lock, _lock, "GroupMgr");
-	Groups _groups;
-	GroupMembers _groupMembers;
+	Groups _groups core_thread_guarded_by(_lock);
+	GroupMembers _groupMembers core_thread_guarded_by(_lock);
 
 public:
 	GroupMgr () {

@@ -12,6 +12,7 @@
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
+#include "core/concurrent/Concurrency.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/Atomic.h"
 #include "AIServerNetwork.h"
@@ -57,7 +58,6 @@ protected:
 	core::AtomicBool _pause;
 	// the current active debugging zone
 	core::AtomicPtr<Zone> _zone;
-	core_trace_mutex(core::Lock, _lock, "AIServer");
 	core::DynamicArray<core::String> _names;
 	uint32_t _broadcastMask = 0u;
 	short _port;
@@ -88,7 +88,8 @@ protected:
 		core::String strData = "";
 		EventType type;
 	};
-	std::vector<Event> _events;
+	std::vector<Event> _events core_thread_guarded_by(_lock);
+	core_trace_mutex(core::Lock, _lock, "AIServer");
 
 	void resetSelection();
 

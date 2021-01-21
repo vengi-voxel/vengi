@@ -16,7 +16,7 @@ template<class Data, size_t INCREASE = 32u>
 class ConcurrentDynamicArray {
 private:
 	using Collection = core::DynamicArray<Data, INCREASE>;
-	Collection _data;
+	Collection _data core_thread_guarded_by(_mutex);
 	mutable core_trace_mutex(core::Lock, _mutex, "ConcurrentDynamicArray");
 
 public:

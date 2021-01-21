@@ -19,7 +19,7 @@ template<class Data>
 class ConcurrentQueue {
 private:
 	using Collection = std::vector<Data>;
-	Collection _data;
+	Collection _data core_thread_guarded_by(_mutex);
 	mutable core_trace_mutex(core::Lock,  _mutex, "ConcurrentQueue");
 	core::ConditionVariable _conditionVariable;
 	core::AtomicBool _abort { false };

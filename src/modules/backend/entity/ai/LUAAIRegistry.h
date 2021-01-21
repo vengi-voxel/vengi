@@ -7,6 +7,7 @@
 
 #include "AIRegistry.h"
 #include "core/Trace.h"
+#include "core/concurrent/Concurrency.h"
 #include "core/concurrent/Lock.h"
 #include "commonlua/LUA.h"
 #include "backend/entity/ai/tree/LUATreeNode.h"
@@ -92,10 +93,10 @@ protected:
 	lua_State* _s = nullptr;
 
 	core_trace_mutex(core::Lock, _lock, "LUAAIRegistry");
-	TreeNodeFactoryMap _treeNodeFactories;
-	ConditionFactoryMap _conditionFactories;
-	FilterFactoryMap _filterFactories;
-	SteeringFactoryMap _steeringFactories;
+	TreeNodeFactoryMap _treeNodeFactories core_thread_guarded_by(_lock);
+	ConditionFactoryMap _conditionFactories core_thread_guarded_by(_lock);
+	FilterFactoryMap _filterFactories core_thread_guarded_by(_lock);
+	SteeringFactoryMap _steeringFactories core_thread_guarded_by(_lock);
 public:
 	LUAAIRegistry();
 

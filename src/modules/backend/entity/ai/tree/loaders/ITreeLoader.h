@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/Trace.h"
+#include "core/concurrent/Concurrency.h"
 #include "core/concurrent/Lock.h"
 #include "core/String.h"
 #include "core/collection/StringMap.h"
@@ -24,12 +25,12 @@ class ITreeLoader {
 protected:
 	const IAIFactory& _aiFactory;
 	typedef core::StringMap<TreeNodePtr> TreeMap;
-	TreeMap _treeMap;
+	TreeMap _treeMap core_thread_guarded_by(_lock);
 	core_trace_mutex(core::Lock, _lock, "AITreeLoader");
 
 	void resetError();
 private:
-	core::String _error;		/**< make sure to set this member if your own implementation ran into an error. @sa ITreeLoader::getError */
+	core::String _error core_thread_guarded_by(_lock);		/**< make sure to set this member if your own implementation ran into an error. @sa ITreeLoader::getError */
 public:
 	explicit ITreeLoader(const IAIFactory& aiFactory);
 

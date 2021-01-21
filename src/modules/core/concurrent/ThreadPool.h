@@ -68,7 +68,7 @@ private:
 	// need to keep track of threads so we can join them
 	std::vector<std::thread> _workers;
 	// the task queue
-	std::queue<std::function<void()> > _tasks;
+	std::queue<std::function<void()> > _tasks core_thread_guarded_by(_queueMutex);
 
 	// synchronization
 	core_trace_mutex(core::Lock, _queueMutex, "ThreadPoolQueue");

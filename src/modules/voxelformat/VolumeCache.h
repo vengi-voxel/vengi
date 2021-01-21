@@ -20,7 +20,7 @@ namespace voxelformat {
  */
 class VolumeCache : public core::IComponent {
 private:
-	core::StringMap<voxel::RawVolume*> _volumes;
+	core::StringMap<voxel::RawVolume*> _volumes core_thread_guarded_by(_mutex);
 	core_trace_mutex(core::Lock, _mutex, "VolumeCache");
 public:
 	~VolumeCache();

@@ -19,7 +19,7 @@ template<class Data, class Comparator = Less<Data>>
 class ConcurrentPriorityQueue {
 private:
 	using Collection = std::vector<Data>;
-	Collection _data;
+	Collection _data core_thread_guarded_by(_mutex);
 	mutable core_trace_mutex(core::Lock,  _mutex, "ConcurrentPriorityQueue");
 	core::ConditionVariable _conditionVariable;
 	core::AtomicBool _abort { false };

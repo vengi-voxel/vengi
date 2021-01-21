@@ -18,7 +18,7 @@ class ConcurrentSet {
 public:
 	using underlying_type = std::unordered_set<Data>;
 private:
-	underlying_type _data;
+	underlying_type _data core_thread_guarded_by(_mutex);
 	mutable core_trace_mutex(core::Lock, _mutex, "ConcurrentSet");
 	core::ConditionVariable _conditionVariable;
 public:

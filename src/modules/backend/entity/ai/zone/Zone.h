@@ -48,10 +48,10 @@ public:
 
 protected:
 	const core::String _name;
-	AIMap _ais;
-	AIScheduleList _scheduledAdd;
-	CharacterIdList _scheduledRemove;
-	CharacterIdList _scheduledDestroy;
+	AIMap _ais core_thread_guarded_by(_lock);
+	AIScheduleList _scheduledAdd core_thread_guarded_by(_scheduleLock);
+	CharacterIdList _scheduledRemove core_thread_guarded_by(_scheduleLock);
+	CharacterIdList _scheduledDestroy core_thread_guarded_by(_scheduleLock);
 	bool _debug;
 	mutable core_trace_mutex(core::Lock, _lock, "AIZone");
 	core_trace_mutex(core::Lock, _scheduleLock, "AIScheduleZone");
