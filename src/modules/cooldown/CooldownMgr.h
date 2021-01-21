@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/concurrent/Concurrency.h"
 #include "core/concurrent/ReadWriteLock.h"
 #include "Cooldown.h"
 #include "core/IComponent.h"
@@ -38,13 +39,13 @@ protected:
 	 * @brief Running cooldowns - sorted by expire time. There can only be one cooldown of the same
 	 * type at the same time.
 	 */
-	CooldownQueue _queue;
+	CooldownQueue _queue core_thread_guarded_by(_lock);
 
 	typedef core::Map<Type, CooldownPtr, 8, network::EnumHash<Type> > Cooldowns;
 	/**
 	 * @brief This is a pool of @c Cooldown instances.
 	 */
-	Cooldowns _cooldowns;
+	Cooldowns _cooldowns core_thread_guarded_by(_lock);
 
 	/**
 	 * @brief Create @c Cooldown instances for the pool

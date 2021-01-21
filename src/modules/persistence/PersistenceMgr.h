@@ -27,7 +27,7 @@ private:
 	static constexpr uint32_t logid = Log::logid("PersistenceMgr");
 	using Savables = std::unordered_set<ISavable*>;
 	using Map = std::map<uint32_t, Savables>;
-	Map _savables;
+	Map _savables core_thread_guarded_by(_lock);
 	core::ReadWriteLock _lock;
 	const DBHandlerPtr _dbHandler;
 public:

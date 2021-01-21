@@ -117,7 +117,13 @@ void Entity::init() {
 	}
 }
 
+int Entity::visibleCount() const {
+	core::ScopedReadLock scoped(_visibleLock);
+	return (int)_visible.size();
+}
+
 void Entity::shutdown() {
+	core::ScopedWriteLock scoped(_visibleLock);
 	_visible.clear();
 }
 
@@ -196,9 +202,11 @@ void Entity::updateVisible(const EntitySet& set) {
 	_visible = core::setUnion(stillVisible, add);
 	_visibleLock.unlockWrite();
 
+	_visibleLock.lockRead();
 	for (const auto& e : _visible) {
 		sendEntityUpdate(e);
 	}
+	_visibleLock.unlockRead();
 
 	if (!add.empty()) {
 		visibleAdd(add);

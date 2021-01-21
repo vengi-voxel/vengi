@@ -6,6 +6,7 @@
 
 #include "core/GLM.h"
 #include "core/collection/Set.h"
+#include "core/concurrent/Concurrency.h"
 #include "math/Rect.h"
 #include "core/concurrent/ReadWriteLock.h"
 #include "attrib/Attributes.h"
@@ -33,7 +34,7 @@ typedef std::unordered_set<EntityPtr> EntitySet;
 class Entity {
 private:
 	core::ReadWriteLock _visibleLock {"Entity"};
-	EntitySet _visible;
+	EntitySet _visible core_thread_guarded_by(_visibleLock);
 	// they are stored as members to reduce memory allocations
 	mutable flatbuffers::FlatBufferBuilder _attribUpdateFBB;
 	mutable flatbuffers::FlatBufferBuilder _entityUpdateFBB;
@@ -199,10 +200,6 @@ public:
 	void sendToVisible(flatbuffers::FlatBufferBuilder& fbb, network::ServerMsgType type,
 			flatbuffers::Offset<void> data, bool sendToSelf = false, uint32_t flags = ENET_PACKET_FLAG_RELIABLE) const;
 };
-
-inline int Entity::visibleCount() const {
-	return (int)_visible.size();
-}
 
 inline const MapPtr& Entity::map() const {
 	return _map;

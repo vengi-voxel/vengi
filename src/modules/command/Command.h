@@ -42,7 +42,7 @@ private:
 	typedef core::StringMap<Command> CommandMap;
 	typedef std::function<void(const CmdArgs&)> FunctionType;
 
-	static CommandMap _cmds;
+	static CommandMap _cmds core_thread_guarded_by(_lock);
 	static core::ReadWriteLock _lock;
 	static size_t _sortedCommandListSize;
 	static Command* _sortedCommandList[4096];
@@ -101,6 +101,7 @@ public:
 	static bool isSuitableBindingContext(core::BindingContext context);
 
 	static Command* getCommand(const core::String& name) {
+		core::ScopedReadLock lock(_lock);
 		auto i = _cmds.find(name);
 		if (i == _cmds.end()) {
 			return nullptr;

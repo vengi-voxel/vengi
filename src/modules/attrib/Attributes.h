@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Container.h"
+#include "core/concurrent/Concurrency.h"
 #include "core/concurrent/ReadWriteLock.h"
 #include "core/concurrent/Atomic.h"
 #include <functional>
@@ -69,9 +70,9 @@ namespace attrib {
 class Attributes {
 protected:
 	core::AtomicBool _dirty { false };
-	Values _current;
-	Values _max;
-	Containers _containers;
+	Values _current core_thread_guarded_by(_attribLock);
+	Values _max core_thread_guarded_by(_attribLock);
+	Containers _containers core_thread_guarded_by(_lock);
 	// keep them here for ref counting
 	core::StringMap<ContainerPtr> _containerPtrs;
 	core::ReadWriteLock _lock;

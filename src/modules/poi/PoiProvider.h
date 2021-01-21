@@ -37,7 +37,7 @@ private:
 	};
 
 	typedef std::deque<Poi> PoiQueue;
-	PoiQueue _pois;
+	PoiQueue _pois core_thread_guarded_by(_lock);
 
 	core::TimeProviderPtr _timeProvider;
 	core::ReadWriteLock _lock;

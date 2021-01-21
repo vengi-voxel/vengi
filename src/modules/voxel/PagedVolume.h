@@ -266,7 +266,7 @@ private:
 	uint32_t _chunkCountLimit = 0u;
 
 	typedef core::Map<glm::ivec3, ChunkPtr, 64, glm::hash<glm::ivec3>> ChunkMap;
-	mutable ChunkMap _chunks;
+	mutable ChunkMap _chunks core_thread_guarded_by(_volumeLock);
 
 	// The size of the chunks
 	uint16_t _chunkSideLength;

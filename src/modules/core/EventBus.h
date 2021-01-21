@@ -157,7 +157,7 @@ private:
 		}
 	};
 
-	EventBusHandlerReferenceMap _handlers;
+	EventBusHandlerReferenceMap _handlers core_thread_guarded_by(_lock);
 
 	int unsubscribe(ClassTypeId index, void* handler, const IEventBusTopic* topic);
 	void subscribe(ClassTypeId index, void *handler, const IEventBusTopic* topic);
