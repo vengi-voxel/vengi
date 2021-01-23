@@ -62,11 +62,11 @@ protected:
 	 * @brief called in the zone update to add new @c AI instances.
 	 *
 	 * @note Make sure to also call @c removeAI whenever you despawn the given @c AI instance
-	 * @note This doesn't lock the zone - but because @c Zone::update already does it
+	 * @note This doesn't lock the zone - because @c Zone::update already does it
 	 */
 	bool doAddAI(const AIPtr& ai);
 	/**
-	 * @note This doesn't lock the zone - but only because @c Zone::update already does it
+	 * @note This doesn't lock the zone - because @c Zone::update already does it
 	 */
 	bool doRemoveAI(const ai::CharacterId& id);
 	/**
@@ -74,7 +74,7 @@ protected:
 	 *
 	 * @note That means, that this can be called in case the attached @c ICharacter instances or the @c AI instance itself is
 	 * already invalid.
-	 * @note This doesn't lock the zone - but because @c Zone::update already does it
+	 * @note This doesn't lock the zone - because @c Zone::update already does it
 	 */
 	bool doDestroyAI(const ai::CharacterId& id);
 

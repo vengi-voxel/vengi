@@ -3,6 +3,7 @@
  */
 
 #include "UserCooldownMgr.h"
+#include "core/concurrent/Lock.h"
 #include "persistence/DBHandler.h"
 #include "persistence/PersistenceMgr.h"
 #include "core/Log.h"
@@ -25,8 +26,9 @@ bool UserCooldownMgr::init() {
 		const cooldown::Type type = (cooldown::Type)id;
 		const uint64_t millis = model.starttime().millis();
 		const cooldown::CooldownPtr& c = createCooldown(type, millis);
-		_cooldowns.put(type, c);
 		if (c->running()) {
+			core::ScopedWriteLock scoped(_lock);
+			_cooldowns.put(type, c);
 			_queue.push(c);
 		}
 	})) {
