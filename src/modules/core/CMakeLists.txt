@@ -21,6 +21,7 @@ set(SRCS
 	concurrent/ConditionVariable.h concurrent/ConditionVariable.cpp
 	concurrent/Lock.cpp concurrent/Lock.h
 	concurrent/ReadWriteLock.cpp concurrent/ReadWriteLock.h
+	concurrent/Semaphore.cpp concurrent/Semaphore.h
 	concurrent/ThreadPool.cpp concurrent/ThreadPool.h
 	concurrent/Thread.cpp concurrent/Thread.h
 
