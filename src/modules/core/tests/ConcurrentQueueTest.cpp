@@ -2,6 +2,7 @@
  * @file
  */
 
+#include <future>
 #include <gtest/gtest.h>
 #include "core/collection/ConcurrentQueue.h"
 #include <thread>
@@ -55,6 +56,18 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopConcurrent) {
 	thread.join();
 }
 
+TEST_F(ConcurrentQueueTest, testPushThread) {
+	const uint32_t n = 1000u;
+	core::ConcurrentQueue<uint32_t> queue(n);
+	std::thread threadPush([&] () {
+		for (uint32_t i = 0u; i < n; ++i) {
+			queue.push(i);
+		}
+	});
+	threadPush.join();
+	EXPECT_EQ(n, queue.size());
+}
+
 TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
 	const uint32_t n = 1000u;
 	core::ConcurrentQueue<uint32_t> queue(n);
@@ -63,15 +76,20 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
 			queue.push(i);
 		}
 	});
-	std::thread threadPop([&] () {
+	std::future<bool> future = std::async(std::launch::async, [&queue] () {
 		for (uint32_t i = 0u; i < n; ++i) {
 			uint32_t v;
-			ASSERT_TRUE(queue.waitAndPop(v));
-			ASSERT_EQ(i, v);
+			if (!queue.waitAndPop(v)) {
+				return false;
+			}
+			if (i != v) {
+				return false;
+			}
 		}
+		return true;
 	});
 	threadPush.join();
-	threadPop.join();
+	EXPECT_TRUE(future.get());
 }
 
 TEST_F(ConcurrentQueueTest, testAbortWait) {
