@@ -283,9 +283,9 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 
 		// left to right, bottom to top, front to back
 		for (int i = idx; i < idx + length; i++) {
-			const int xx = i / (size.y * size.z);
-			const int yy = (i / size.z) % size.y;
-			const int zz = i % size.z;
+			const int xx = i / (int)(size.y * size.z);
+			const int yy = (i / (int)size.z) % (int)size.y;
+			const int zz = i % (int)size.z;
 			const uint8_t index = palette[matIdx];
 			voxel::VoxelType voxelType = voxel::VoxelType::Generic;
 			if (index == 0) {
