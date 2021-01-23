@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -106,7 +106,8 @@ HIDAPI_DriverXbox360_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 
 static SDL_bool SetSlotLED(hid_device *dev, Uint8 slot)
 {
-    Uint8 mode = 0x02 + slot;
+    const SDL_bool blink = SDL_FALSE;
+    Uint8 mode = (blink ? 0x02 : 0x06) + slot;
     const Uint8 led_packet[] = { 0x01, 0x03, mode };
 
     if (hid_write(dev, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
@@ -133,7 +134,9 @@ HIDAPI_DriverXbox360_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joystic
     if (!device->dev) {
         return;
     }
-    SetSlotLED(device->dev, (player_index % 4));
+    if (player_index >= 0) {
+        SetSlotLED(device->dev, (player_index % 4));
+    }
 }
 
 static SDL_bool
@@ -321,13 +324,17 @@ HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverXbox360_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    if (device->dev) {
-        hid_close(device->dev);
-        device->dev = NULL;
-    }
+    SDL_LockMutex(device->dev_lock);
+    {
+        if (device->dev) {
+            hid_close(device->dev);
+            device->dev = NULL;
+        }
 
-    SDL_free(device->context);
-    device->context = NULL;
+        SDL_free(device->context);
+        device->context = NULL;
+    }
+    SDL_UnlockMutex(device->dev_lock);
 }
 
 static void

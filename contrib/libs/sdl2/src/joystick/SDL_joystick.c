@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -62,6 +62,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     &SDL_WINDOWS_JoystickDriver,
 #endif
+#if defined(SDL_JOYSTICK_WINMM)
+    &SDL_WINMM_JoystickDriver,
+#endif
 #ifdef SDL_JOYSTICK_LINUX
     &SDL_LINUX_JoystickDriver,
 #endif
@@ -82,6 +85,12 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #endif
 #ifdef SDL_JOYSTICK_USBHID  /* !!! FIXME: "USBHID" is a generic name, and doubly-confusing with HIDAPI next to it. This is the *BSD interface, rename this. */
     &SDL_BSD_JoystickDriver,
+#endif
+#ifdef SDL_JOYSTICK_OS2
+    &SDL_OS2_JoystickDriver,
+#endif
+#ifdef SDL_JOYSTICK_PSP
+    &SDL_PSP_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_VIRTUAL
     &SDL_VIRTUAL_JoystickDriver,
@@ -160,9 +169,6 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
     int device_index;
     int existing_player_index;
 
-    if (player_index < 0) {
-        return SDL_FALSE;
-    }
     if (player_index >= SDL_joystick_player_count) {
         SDL_JoystickID *new_players = (SDL_JoystickID *)SDL_realloc(SDL_joystick_players, (player_index + 1)*sizeof(*SDL_joystick_players));
         if (!new_players) {
@@ -184,7 +190,9 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
         SDL_joystick_players[existing_player_index] = -1;
     }
 
-    SDL_joystick_players[player_index] = instance_id;
+    if (player_index >= 0) {
+        SDL_joystick_players[player_index] = instance_id;
+    }
 
     /* Update the driver with the new index */
     device_index = SDL_JoystickGetDeviceIndexFromInstanceID(instance_id);
@@ -341,7 +349,7 @@ SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
     Uint32 id = MAKE_VIDPID(SDL_JoystickGetVendor(joystick),
                             SDL_JoystickGetProduct(joystick));
 
-/*printf("JOYSTICK '%s' VID/PID 0x%.4x/0x%.4x AXES: %d\n", joystick->name, vendor, product, joystick->naxes);*/
+    /*printf("JOYSTICK '%s' VID/PID 0x%.4x/0x%.4x AXES: %d\n", joystick->name, vendor, product, joystick->naxes);*/
 
     if (joystick->naxes == 2) {
         /* Assume D-pad or thumbstick style axes are centered at 0 */
@@ -1247,7 +1255,6 @@ SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
             SDL_PrivateJoystickTouchpad(joystick, i, j, SDL_RELEASED, 0.0f, 0.0f, 0.0f);
         }
     }
-
 }
 
 void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
@@ -1881,6 +1888,10 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             case k_eControllerType_SwitchInputOnlyController:
                 type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
                 break;
+            case k_eControllerType_SwitchJoyConLeft:
+            case k_eControllerType_SwitchJoyConRight:
+                type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
+                break;
             default:
                 type = SDL_CONTROLLER_TYPE_UNKNOWN;
                 break;
@@ -1896,6 +1907,29 @@ SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id)
     if (vendor_id == USB_VENDOR_MICROSOFT) {
         if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1 ||
             product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2 ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+SDL_bool
+SDL_IsJoystickXboxOneEliteSeries1(Uint16 vendor_id, Uint16 product_id)
+{
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+SDL_bool
+SDL_IsJoystickXboxOneEliteSeries2(Uint16 vendor_id, Uint16 product_id)
+{
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2 ||
             product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH) {
             return SDL_TRUE;
         }
@@ -1942,6 +1976,28 @@ SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
     return (eType == k_eControllerType_SwitchInputOnlyController);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchJoyCon(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_SwitchJoyConLeft ||
+            eType == k_eControllerType_SwitchJoyConRight);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchJoyConLeft(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_SwitchJoyConLeft);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchJoyConRight(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_SwitchJoyConRight);
 }
 
 SDL_bool

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,6 +41,7 @@
 #include "relative-pointer-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
+#include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 
 #ifdef SDL_INPUT_LINUXEV
 #include <linux/input.h>
@@ -56,6 +57,9 @@
 #include <poll.h>
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
+
+/* Weston uses a ratio of 10 units per scroll tick */
+#define WAYLAND_WHEEL_AXIS_UNIT 10
 
 typedef struct {
     // repeat_rate in range of [1, 1000]
@@ -325,6 +329,10 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
          * event with no following motion event, but with the new coordinates
          * as part of the enter event. */
         pointer_handle_motion(data, pointer, serial, sx_w, sy_w);
+        /* If the cursor was changed while our window didn't have pointer
+         * focus, we might need to trigger another call to
+         * wl_pointer_set_cursor() for the new cursor to be displayed. */
+        SDL_SetCursor(NULL);
     }
 }
 
@@ -466,6 +474,9 @@ pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
                 return;
         }
 
+        x /= WAYLAND_WHEEL_AXIS_UNIT;
+        y /= WAYLAND_WHEEL_AXIS_UNIT;
+
         SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
@@ -523,7 +534,17 @@ pointer_handle_frame(void *data, struct wl_pointer *pointer)
 {
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window = input->pointer_focus;
-    float x = input->pointer_curr_axis_info.x, y = input->pointer_curr_axis_info.y;
+    float x, y;
+
+    if (input->pointer_curr_axis_info.is_x_discrete)
+        x = input->pointer_curr_axis_info.x;
+    else
+        x = input->pointer_curr_axis_info.x / WAYLAND_WHEEL_AXIS_UNIT;
+
+    if (input->pointer_curr_axis_info.is_y_discrete)
+        y = input->pointer_curr_axis_info.y;
+    else
+        y = input->pointer_curr_axis_info.y / WAYLAND_WHEEL_AXIS_UNIT;
 
     /* clear pointer_curr_axis_info for next frame */
     memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
@@ -1415,6 +1436,37 @@ int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input)
 {
     pointer_confine_destroy(input);
     input->confined_pointer_window = NULL;
+    return 0;
+}
+
+int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input)
+{
+    SDL_WindowData *w = window->driverdata;
+    SDL_VideoData *d = input->display;
+
+    if (!d->key_inhibitor_manager)
+        return -1;
+
+    if (w->key_inhibitor)
+        return 0;
+
+    w->key_inhibitor =
+        zwp_keyboard_shortcuts_inhibit_manager_v1_inhibit_shortcuts(d->key_inhibitor_manager,
+                                                                    w->surface,
+                                                                    input->seat);
+    
+    return 0;
+}
+
+int Wayland_input_ungrab_keyboard(SDL_Window *window)
+{
+    SDL_WindowData *w = window->driverdata;
+
+    if (w->key_inhibitor) {
+        zwp_keyboard_shortcuts_inhibitor_v1_destroy(w->key_inhibitor);
+        w->key_inhibitor = NULL;
+    }
+
     return 0;
 }
 

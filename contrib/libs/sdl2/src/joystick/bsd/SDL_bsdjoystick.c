@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -69,7 +69,7 @@
 #include <sys/joystick.h>
 #endif
 
-#if SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H
+#if SDL_HAVE_MACHINE_JOYSTICK_H
 #include <machine/joystick.h>
 #endif
 
@@ -546,7 +546,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
     Sint32 dpad[4] = {0, 0, 0, 0};
 #endif
 
-#if defined(__FREEBSD__) || SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
+#if defined(__FREEBSD__) || SDL_HAVE_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
     struct joystick gameport;
     static int x, y, xmin = 0xffff, ymin = 0xffff, xmax = 0, ymax = 0;
 
@@ -591,7 +591,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
         }
         return;
     }
-#endif /* defined(__FREEBSD__) || SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H */
+#endif /* defined(__FREEBSD__) || SDL_HAVE_MACHINE_JOYSTICK_H */
 
     rep = &joy->hwdata->inreport;
 

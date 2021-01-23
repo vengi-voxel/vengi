@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -415,7 +415,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
              * Microsoft our specific use case is legal and correct:
              * https://github.com/microsoft/STL/pull/593#issuecomment-655799859
              */
-            HMODULE synch120 = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
+            HMODULE synch120 = GetModuleHandle(TEXT("api-ms-win-core-synch-l1-2-0.dll"));
             if (synch120) {
                 /* Try to load required functions provided by Win 8 or newer */
                 pWaitOnAddress = (pfnWaitOnAddress) GetProcAddress(synch120, "WaitOnAddress");

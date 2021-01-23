@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,6 +48,9 @@ extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input);
 
 extern void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id);
 extern void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d);
+
+extern int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input);
+extern int Wayland_input_ungrab_keyboard(SDL_Window *window);
 
 #endif /* SDL_waylandevents_h_ */
 

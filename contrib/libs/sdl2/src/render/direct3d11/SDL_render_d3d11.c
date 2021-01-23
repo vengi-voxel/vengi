@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,6 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
+
+#include "SDL_render.h"
+#include "SDL_system.h"
 
 #if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
 
@@ -1240,6 +1243,8 @@ D3D11_DestroyTexture(SDL_Renderer * renderer,
     SAFE_RELEASE(data->mainTextureResourceViewU);
     SAFE_RELEASE(data->mainTextureV);
     SAFE_RELEASE(data->mainTextureResourceViewV);
+    SAFE_RELEASE(data->mainTextureNV);
+    SAFE_RELEASE(data->mainTextureResourceViewNV);
     SDL_free(data->pixels);
     SDL_free(data);
     texture->driverdata = NULL;
@@ -1371,6 +1376,7 @@ D3D11_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
+#if SDL_HAVE_YUV
 static int
 D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
                        const SDL_Rect * rect,
@@ -1397,6 +1403,31 @@ D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     }
     return 0;
 }
+
+static int
+D3D11_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
+                       const SDL_Rect * rect,
+                       const Uint8 *Yplane, int Ypitch,
+                       const Uint8 *UVplane, int UVpitch)
+{
+    D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->driverdata;
+
+    if (!textureData) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
+    }
+
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch) < 0) {
+        return -1;
+    }
+
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureNV, 2, rect->x / 2, rect->y / 2, ((rect->w + 1) / 2), (rect->h + 1) / 2, UVplane, UVpitch) < 0) {
+        return -1;
+    }
+    return 0;
+}
+#endif
 
 static int
 D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
@@ -2510,7 +2541,10 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
+#if SDL_HAVE_YUV
     renderer->UpdateTextureYUV = D3D11_UpdateTextureYUV;
+    renderer->UpdateTextureNV = D3D11_UpdateTextureNV;
+#endif
     renderer->LockTexture = D3D11_LockTexture;
     renderer->UnlockTexture = D3D11_UnlockTexture;
     renderer->SetTextureScaleMode = D3D11_SetTextureScaleMode;
@@ -2592,5 +2626,31 @@ SDL_RenderDriver D3D11_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
+
+#ifdef __WIN32__
+/* This function needs to always exist on Windows, for the Dynamic API. */
+ID3D11Device *
+SDL_RenderGetD3D11Device(SDL_Renderer * renderer)
+{
+    ID3D11Device *device = NULL;
+
+#if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
+    D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
+
+    /* Make sure that this is a D3D renderer */
+    if (renderer->DestroyRenderer != D3D11_DestroyRenderer) {
+        SDL_SetError("Renderer is not a D3D11 renderer");
+        return NULL;
+    }
+
+    device = (ID3D11Device *)data->d3dDevice;
+    if (device) {
+        ID3D11Device_AddRef(device);
+    }
+#endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
+
+    return device;
+}
+#endif /* __WIN32__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

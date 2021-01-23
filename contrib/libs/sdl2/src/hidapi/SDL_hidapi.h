@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,14 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../SDL_internal.h"
 
-#include "../../SDL_internal.h"
+#ifdef SDL_JOYSTICK_HIDAPI
 
-#ifndef SDL_kmsdrmevents_h_
-#define SDL_kmsdrmevents_h_
+#ifdef SDL_LIBUSB_DYNAMIC
+#define HAVE_ENABLE_GAMECUBE_ADAPTORS
+#endif
 
-extern void KMSDRM_LEGACY_PumpEvents(_THIS);
-extern void KMSDRM_LEGACY_EventInit(_THIS);
-extern void KMSDRM_LEGACY_EventQuit(_THIS);
+#ifdef HAVE_ENABLE_GAMECUBE_ADAPTORS
+extern void SDL_EnableGameCubeAdaptors(void);
+#endif
 
-#endif /* SDL_kmsdrmevents_h_ */
+#endif /* SDL_JOYSTICK_HIDAPI */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */

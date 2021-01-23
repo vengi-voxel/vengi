@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,18 +25,24 @@
 /* Definitions of useful USB VID/PID values */
 
 #define USB_VENDOR_APPLE        0x05ac
+#define USB_VENDOR_GOOGLE       0x18d1
 #define USB_VENDOR_HYPERKIN     0x2e24
 #define USB_VENDOR_MICROSOFT    0x045e
 #define USB_VENDOR_NINTENDO     0x057e
 #define USB_VENDOR_NVIDIA       0x0955
 #define USB_VENDOR_PDP          0x0e6f
 #define USB_VENDOR_POWERA       0x24c6
-#define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_RAZER        0x1532
+#define USB_VENDOR_SHENZHEN     0x0079
+#define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_VALVE        0x28de
 
+#define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER            0x9400
+#define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER           0x1846
 #define USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER           0x0337
 #define USB_PRODUCT_NINTENDO_SWITCH_PRO                 0x2009
+#define USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT        0x2006
+#define USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT       0x2007
 #define USB_PRODUCT_RAZER_PANTHERA                      0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                  0x1008
 #define USB_PRODUCT_RAZER_ATROX                         0x0a00

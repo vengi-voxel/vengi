@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -616,6 +616,11 @@ extern "C" {
  *
  *  Once extended reports are enabled, they can not be disabled without
  *  power cycling the controller.
+ *
+ *  For compatibility with applications written for versions of SDL prior
+ *  to the introduction of PS5 controller support, this value will also
+ *  control the state of extended reports on PS5 controllers when the
+ *  SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE hint is not explicitly set.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE "SDL_JOYSTICK_HIDAPI_PS4_RUMBLE"
 
@@ -642,6 +647,10 @@ extern "C" {
  *
  *  Once extended reports are enabled, they can not be disabled without
  *  power cycling the controller.
+ *
+ *  For compatibility with applications written for versions of SDL prior
+ *  to the introduction of PS5 controller support, this value defaults to
+ *  the value of SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE "SDL_JOYSTICK_HIDAPI_PS5_RUMBLE"
 
@@ -653,6 +662,17 @@ extern "C" {
  *    "1"       - player LEDs are enabled (the default)
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED "SDL_JOYSTICK_HIDAPI_PS5_PLAYER_LED"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for Google Stadia controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_STADIA "SDL_JOYSTICK_HIDAPI_STADIA"
 
 /**
  *  \brief  A variable controlling whether the HIDAPI driver for Steam Controllers should be used.
@@ -675,6 +695,17 @@ extern "C" {
  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH "SDL_JOYSTICK_HIDAPI_SWITCH"
+
+ /**
+  *  \brief  A variable controlling whether Switch Joy-Cons should be treated the same as Switch Pro Controllers when using the HIDAPI driver.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - basic Joy-Con support with no analog input (the default)
+  *    "1"       - Joy-Cons treated as half full Pro Controllers with analog inputs and sensors
+  *
+  *  This does not combine Joy-Cons into a single controller. That's up to the user.
+  */
+#define SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS "SDL_JOYSTICK_HIDAPI_JOY_CONS"
 
 /**
  *  \brief  A variable controlling whether the HIDAPI driver for XBox controllers should be used.
@@ -1237,6 +1268,26 @@ extern "C" {
  *
  */
 #define SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL "SDL_WINDOWS_FORCE_SEMAPHORE_KERNEL"
+
+/**
+ * \brief Use the D3D9Ex API introduced in Windows Vista, instead of normal D3D9.
+ *        Direct3D 9Ex contains changes to state management that can eliminate device
+ *        loss errors during scenarios like Alt+Tab or UAC prompts. D3D9Ex may require
+ *        some changes to your application to cope with the new behavior, so this
+ *        is disabled by default.
+ *
+ *  This hint must be set before initializing the video subsystem.
+ *
+ *  For more information on Direct3D 9Ex, see:
+ *    - https://docs.microsoft.com/en-us/windows/win32/direct3darticles/graphics-apis-in-windows-vista#direct3d-9ex
+ *    - https://docs.microsoft.com/en-us/windows/win32/direct3darticles/direct3d-9ex-improvements
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Use the original Direct3D 9 API (default)
+ *    "1"       - Use the Direct3D 9Ex API on Vista and later (and fall back if D3D9Ex is unavailable)
+ *
+ */
+#define SDL_HINT_WINDOWS_USE_D3D9EX "SDL_WINDOWS_USE_D3D9EX"
 
 /**
  * \brief Tell SDL which Dispmanx layer to use on a Raspberry PI

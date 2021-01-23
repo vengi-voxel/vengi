@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,6 +37,7 @@ typedef struct
     HINSTANCE hinstance;
     HBITMAP hbm;
     WNDPROC wndproc;
+    HHOOK keyboard_hook;
     SDL_bool created;
     WPARAM mouse_button_flags;
     LPARAM last_pointer_update;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -79,7 +79,7 @@ GetWasapiDeviceName(IMMDevice *device)
         PROPVARIANT var;
         PropVariantInit(&var);
         if (SUCCEEDED(IPropertyStore_GetValue(props, &SDL_PKEY_Device_FriendlyName, &var))) {
-            utf8dev = WIN_StringToUTF8(var.pwszVal);
+            utf8dev = WIN_StringToUTF8W(var.pwszVal);
         }
         PropVariantClear(&var);
         IPropertyStore_Release(props);
@@ -251,7 +251,7 @@ WASAPI_PlatformInit(void)
         return WIN_SetErrorFromHRESULT("WASAPI CoCreateInstance(MMDeviceEnumerator)", ret);
     }
 
-    libavrt = LoadLibraryW(L"avrt.dll");  /* this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now! */
+    libavrt = LoadLibrary(TEXT("avrt.dll"));  /* this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now! */
     if (libavrt) {
         pAvSetMmThreadCharacteristicsW = (pfnAvSetMmThreadCharacteristicsW) GetProcAddress(libavrt, "AvSetMmThreadCharacteristicsW");
         pAvRevertMmThreadCharacteristics = (pfnAvRevertMmThreadCharacteristics) GetProcAddress(libavrt, "AvRevertMmThreadCharacteristics");
@@ -291,7 +291,7 @@ WASAPI_PlatformThreadInit(_THIS)
     /* Set this thread to very high "Pro Audio" priority. */
     if (pAvSetMmThreadCharacteristicsW) {
         DWORD idx = 0;
-        this->hidden->task = pAvSetMmThreadCharacteristicsW(TEXT("Pro Audio"), &idx);
+        this->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
     }
 }
 

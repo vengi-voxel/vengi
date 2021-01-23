@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -447,7 +447,9 @@ static int OS2_Init(SDL_AudioDriverImpl * impl)
 }
 
 
-AudioBootStrap OS2AUDIO_bootstrap = { "MMOS2", "OS/2 DART", OS2_Init, 0 };
+AudioBootStrap OS2AUDIO_bootstrap = {
+    "DART", "OS/2 DART", OS2_Init, 0
+};
 
 #endif /* SDL_AUDIO_DRIVER_OS2 */
 

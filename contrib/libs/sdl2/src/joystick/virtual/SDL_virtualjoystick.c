@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -445,6 +445,6 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver =
     VIRTUAL_JoystickGetGamepadMapping
 };
 
-#endif /* SDL_JOYSTICK_VIRTUAL || SDL_JOYSTICK_DISABLED */
+#endif /* SDL_JOYSTICK_VIRTUAL */
 
 /* vi: set ts=4 sw=4 expandtab: */

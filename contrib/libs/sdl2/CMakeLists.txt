@@ -861,6 +861,7 @@ if(LIBC)
     else()
       set(HAVE_ALLOCA_H 1)
       set(HAVE_ALLOCA 1)
+      check_symbol_exists(clock_gettime_nsec_np HAVE_CLOCK_GETTIME_NSEC_NP)
     endif()
 
     check_struct_has_member("struct sigaction" "sa_sigaction" "signal.h" HAVE_SA_SIGACTION)
@@ -1388,8 +1389,13 @@ elseif(WINDOWS)
     endif()
   endif()
 
+  if(WINDOWS_STORE)
+    file(GLOB WINRT_MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/winrt/*.cpp)
+    set(SOURCE_FILES ${SOURCE_FILES} ${WINRT_MISC_SOURCES})
+  else()
   file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/windows/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${MISC_SOURCES})
+  endif()
   set(HAVE_SDL_MISC TRUE)
 
   # Check for DirectX
@@ -1402,26 +1408,6 @@ elseif(WINDOWS)
         message_error("DIRECTX requires the \$DXSDK_DIR environment variable to be set")
       endif()
       set(CMAKE_REQUIRED_FLAGS "/I\"$ENV{DXSDK_DIR}\\Include\"")
-    endif()
-
-    if(HAVE_WIN32_CC)
-      # xinput.h may need windows.h, but doesn't include it itself.
-      check_c_source_compiles("
-        #include <windows.h>
-        #include <xinput.h>
-        int main(int argc, char **argv) { }" HAVE_XINPUT_H)
-      check_c_source_compiles("
-        #include <windows.h>
-        #include <xinput.h>
-        XINPUT_GAMEPAD_EX x1;
-        int main(int argc, char **argv) { }" HAVE_XINPUT_GAMEPAD_EX)
-      check_c_source_compiles("
-        #include <windows.h>
-        #include <xinput.h>
-        XINPUT_STATE_EX s1;
-        int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
-    else()
-      check_include_file(xinput.h HAVE_XINPUT_H)
     endif()
 
     check_include_file(d3d9.h HAVE_D3D_H)
@@ -1442,6 +1428,26 @@ elseif(WINDOWS)
       endif()
     endif()
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+  endif()
+
+  if(HAVE_WIN32_CC)
+    # xinput.h may need windows.h, but does not include it itself.
+    check_c_source_compiles("
+      #include <windows.h>
+      #include <xinput.h>
+      int main(int argc, char **argv) { }" HAVE_XINPUT_H)
+    check_c_source_compiles("
+      #include <windows.h>
+      #include <xinput.h>
+      XINPUT_GAMEPAD_EX x1;
+      int main(int argc, char **argv) { }" HAVE_XINPUT_GAMEPAD_EX)
+    check_c_source_compiles("
+      #include <windows.h>
+      #include <xinput.h>
+      XINPUT_STATE_EX s1;
+      int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
+  else()
+    check_include_file(xinput.h HAVE_XINPUT_H)
   endif()
 
   # headers needed elsewhere
@@ -1512,7 +1518,7 @@ elseif(WINDOWS)
     set(HAVE_SDL_THREADS TRUE)
   endif()
 
-  if(SDL_SENSOR AND HAVE_SENSORSAPI_H)
+  if(SDL_SENSOR AND HAVE_SENSORSAPI_H AND NOT WINDOWS_STORE)
     set(SDL_SENSOR_WINDOWS 1)
     set(HAVE_SDL_SENSORS TRUE)
     file(GLOB WINDOWS_SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/windows/*.c)

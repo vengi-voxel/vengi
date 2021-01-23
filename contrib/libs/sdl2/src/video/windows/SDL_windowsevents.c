@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -426,6 +426,47 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
         }
     }
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
+}
+
+LRESULT CALLBACK
+WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode < 0 || nCode != HC_ACTION) {
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
+
+    KBDLLHOOKSTRUCT* hookData = (KBDLLHOOKSTRUCT*)lParam;
+    SDL_Scancode scanCode;
+    switch (hookData->vkCode) {
+    case VK_LWIN:
+        scanCode = SDL_SCANCODE_LGUI;
+        break;
+    case VK_RWIN:
+        scanCode = SDL_SCANCODE_RGUI;
+        break;
+    case VK_LMENU:
+        scanCode = SDL_SCANCODE_LALT;
+        break;
+    case VK_RMENU:
+        scanCode = SDL_SCANCODE_RALT;
+        break;
+    case VK_LCONTROL:
+        scanCode = SDL_SCANCODE_LCTRL;
+        break;
+    case VK_RCONTROL:
+        scanCode = SDL_SCANCODE_RCTRL;
+        break;
+    default:
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
+
+    if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+        SDL_SendKeyboardKey(SDL_PRESSED, scanCode);
+    } else {
+        SDL_SendKeyboardKey(SDL_RELEASED, scanCode);
+    }
+
+    return 1;
 }
 
 LRESULT CALLBACK
@@ -1250,7 +1291,7 @@ struct SDL_WIN_OSVERSIONINFOW {
 static SDL_bool
 IsWin10FCUorNewer(void)
 {
-    HMODULE handle = GetModuleHandleW(L"ntdll.dll");
+    HMODULE handle = GetModuleHandle(TEXT("ntdll.dll"));
     if (handle) {
         typedef LONG(WINAPI* RtlGetVersionPtr)(struct SDL_WIN_OSVERSIONINFOW*);
         RtlGetVersionPtr getVersionPtr = (RtlGetVersionPtr)GetProcAddress(handle, "RtlGetVersion");

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -197,7 +197,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                     if (SUCCEEDED(hr)) {
                         PCWSTR string = WindowsGetStringRawBufferFunc(hString, NULL);
                         if (string) {
-                            name = WIN_StringToUTF8(string);
+                            name = WIN_StringToUTF8W(string);
                         }
                         WindowsDeleteStringFunc(hString);
                     }
@@ -372,7 +372,7 @@ WGI_JoystickInit(void)
         WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
         RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
         if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
-            LPTSTR pNamespace;
+            PCWSTR pNamespace;
             HSTRING_HEADER hNamespaceStringHeader;
             HSTRING hNamespaceString;
 

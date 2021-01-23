@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,8 +47,8 @@
 
 /* Fake window to help with DirectInput events. */
 HWND SDL_HelperWindow = NULL;
-static WCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
-static WCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
+static const TCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
+static const TCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
 static ATOM SDL_HelperWindowClass = 0;
 
 /* For borderless Windows, still want the following flags:
@@ -708,7 +708,7 @@ WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     HDC hdc;
     BOOL succeeded = FALSE;
 
-    hdc = CreateDC(data->DeviceName, NULL, NULL, NULL);
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
     if (hdc) {
         succeeded = SetDeviceGammaRamp(hdc, (LPVOID)ramp);
         if (!succeeded) {
@@ -727,7 +727,7 @@ WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
     HDC hdc;
     BOOL succeeded = FALSE;
 
-    hdc = CreateDC(data->DeviceName, NULL, NULL, NULL);
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
     if (hdc) {
         succeeded = GetDeviceGammaRamp(hdc, (LPVOID)ramp);
         if (!succeeded) {
@@ -738,10 +738,57 @@ WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
     return succeeded ? 0 : -1;
 }
 
+static void WIN_GrabKeyboard(SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HMODULE module;
+
+    if (data->keyboard_hook) {
+        return;
+    }
+
+    /* SetWindowsHookEx() needs to know which module contains the hook we
+       want to install. This is complicated by the fact that SDL can be
+       linked statically or dynamically. Fortunately XP and later provide
+       this nice API that will go through the loaded modules and find the
+       one containing our code.
+    */
+    if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT | GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                           (LPTSTR)WIN_KeyboardHookProc,
+                           &module)) {
+        return;
+    }
+
+    /* To grab the keyboard, we have to install a low-level keyboard hook to
+       intercept keys that would normally be captured by the OS. Intercepting
+       all key events on the system is rather invasive, but it's what Microsoft
+       actually documents that you do to capture these.
+    */
+    data->keyboard_hook = SetWindowsHookEx(WH_KEYBOARD_LL, WIN_KeyboardHookProc, module, 0);
+}
+
+void WIN_UngrabKeyboard(SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+
+    if (data->keyboard_hook) {
+        UnhookWindowsHookEx(data->keyboard_hook);
+        data->keyboard_hook = NULL;
+    }
+}
+
 void
 WIN_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
+
+    if (grabbed) {
+        if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
+            WIN_GrabKeyboard(window);
+        }
+    } else {
+        WIN_UngrabKeyboard(window);
+    }
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         UINT flags = SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE;
@@ -759,6 +806,9 @@ WIN_DestroyWindow(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
     if (data) {
+        if (data->keyboard_hook) {
+            UnhookWindowsHookEx(data->keyboard_hook);
+        }
         ReleaseDC(data->hwnd, data->hdc);
         RemoveProp(data->hwnd, TEXT("SDL_WindowData"));
         if (data->created) {
@@ -826,7 +876,7 @@ SDL_HelperWindowCreate(void)
     /* Create the class. */
     SDL_zero(wce);
     wce.lpfnWndProc = DefWindowProc;
-    wce.lpszClassName = (LPCWSTR) SDL_HelperWindowClassName;
+    wce.lpszClassName = SDL_HelperWindowClassName;
     wce.hInstance = hInstance;
 
     /* Register the class. */

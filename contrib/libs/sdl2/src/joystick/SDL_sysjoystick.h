@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,6 @@
 #define SDL_sysjoystick_h_
 
 /* This is the system specific header for the SDL joystick API */
-
 #include "SDL_joystick.h"
 #include "SDL_joystick_c.h"
 
@@ -204,6 +203,9 @@ extern SDL_JoystickDriver SDL_LINUX_JoystickDriver;
 extern SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver;
 extern SDL_JoystickDriver SDL_WGI_JoystickDriver;
 extern SDL_JoystickDriver SDL_WINDOWS_JoystickDriver;
+extern SDL_JoystickDriver SDL_WINMM_JoystickDriver;
+extern SDL_JoystickDriver SDL_OS2_JoystickDriver;
+extern SDL_JoystickDriver SDL_PSP_JoystickDriver;
 
 #endif /* SDL_sysjoystick_h_ */
 

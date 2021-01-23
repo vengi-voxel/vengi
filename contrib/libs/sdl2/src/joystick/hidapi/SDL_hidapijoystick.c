@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -59,11 +59,17 @@ struct joystick_hwdata
 };
 
 static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
+#ifdef SDL_JOYSTICK_HIDAPI_GAMECUBE
+    &SDL_HIDAPI_DriverGameCube,
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_PS4
     &SDL_HIDAPI_DriverPS4,
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_PS5
     &SDL_HIDAPI_DriverPS5,
+#endif
+#ifdef SDL_JOYSTICK_HIDAPI_STADIA
+    &SDL_HIDAPI_DriverStadia,
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM
     &SDL_HIDAPI_DriverSteam,
@@ -77,9 +83,6 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_XBOXONE
     &SDL_HIDAPI_DriverXboxOne,
-#endif
-#ifdef SDL_JOYSTICK_HIDAPI_GAMECUBE
-    &SDL_HIDAPI_DriverGameCube,
 #endif
 };
 static int SDL_HIDAPI_numdrivers = 0;
@@ -408,6 +411,12 @@ HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size)
     SDL_strlcat(buffer, "\n", length);
     SDL_Log("%s", buffer);
     SDL_free(buffer);
+}
+
+float
+HIDAPI_RemapVal(float val, float val_min, float val_max, float output_min, float output_max)
+{
+    return output_min + (output_max - output_min) * (val - val_min) / (val_max - val_min);
 }
 
 static void HIDAPI_JoystickDetect(void);

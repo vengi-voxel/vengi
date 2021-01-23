@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -854,3 +854,7 @@ SDL_DYNAPI_PROC(float,SDL_roundf,(float a),(a),return)
 SDL_DYNAPI_PROC(long,SDL_lround,(double a),(a),return)
 SDL_DYNAPI_PROC(long,SDL_lroundf,(float a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SoftStretchLinear,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)
+#ifdef __WIN32__
+SDL_DYNAPI_PROC(ID3D11Device*,SDL_RenderGetD3D11Device,(SDL_Renderer *a),(a),return)
+#endif
+SDL_DYNAPI_PROC(int,SDL_UpdateNVTexture,(SDL_Texture *a, const SDL_Rect *b, const Uint8 *c, int d, const Uint8 *e, int f),(a,b,c,d,e,f),return)

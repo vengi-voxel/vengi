@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -488,14 +488,18 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
     }
 
     if (ctx->has_share_button) {
-        /* Version 1 of the firmware for Xbox One Series X */
-        if (ctx->last_state[18] != data[18]) {
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[18] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        }
-
-        /* Version 2 of the firmware for Xbox One Series X */
-        if (ctx->last_state[22] != data[22]) {
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[22] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        /* Xbox Series X firmware version 5.0, report is 36 bytes, share button is in byte 18
+         * Xbox Series X firmware version 5.1, report is 44 bytes, share button is in byte 18
+         * Xbox Series X firmware version 5.5, report is 48 bytes, share button is in byte 22
+         */
+        if (size < 48) {
+            if (ctx->last_state[18] != data[18]) {
+                SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[18] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+            }
+        } else {
+            if (ctx->last_state[22] != data[22]) {
+                SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[22] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+            }
         }
     }
 
@@ -1054,11 +1058,15 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverXboxOne_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    hid_close(device->dev);
-    device->dev = NULL;
+    SDL_LockMutex(device->dev_lock);
+    {
+        hid_close(device->dev);
+        device->dev = NULL;
 
-    SDL_free(device->context);
-    device->context = NULL;
+        SDL_free(device->context);
+        device->context = NULL;
+    }
+    SDL_UnlockMutex(device->dev_lock);
 }
 
 static void

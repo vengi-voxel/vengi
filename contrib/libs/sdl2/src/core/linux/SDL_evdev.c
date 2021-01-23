@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -220,6 +220,9 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
     case SDL_UDEV_DEVICEADDED:
         if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD |
             SDL_UDEV_DEVICE_TOUCHSCREEN)))
+            return;
+
+        if ((udev_class & SDL_UDEV_DEVICE_JOYSTICK))
             return;
 
         SDL_EVDEV_device_added(dev_path, udev_class);

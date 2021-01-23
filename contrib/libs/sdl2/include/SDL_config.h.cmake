@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -191,6 +191,7 @@
 #cmakedefine HAVE_SYSCONF 1
 #cmakedefine HAVE_SYSCTLBYNAME 1
 #cmakedefine HAVE_CLOCK_GETTIME 1
+#cmakedefine HAVE_CLOCK_GETTIME_NSEC_NP 1
 #cmakedefine HAVE_GETPAGESIZE 1
 #cmakedefine HAVE_MPROTECT 1
 #cmakedefine HAVE_ICONV 1
@@ -305,8 +306,9 @@
 #cmakedefine SDL_JOYSTICK_MFI @SDL_JOYSTICK_MFI@
 #cmakedefine SDL_JOYSTICK_LINUX @SDL_JOYSTICK_LINUX@
 #cmakedefine SDL_JOYSTICK_WINMM @SDL_JOYSTICK_WINMM@
+#cmakedefine SDL_JOYSTICK_OS2 @SDL_JOYSTICK_OS2@
 #cmakedefine SDL_JOYSTICK_USBHID @SDL_JOYSTICK_USBHID@
-#cmakedefine SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H @SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H@
+#cmakedefine SDL_HAVE_MACHINE_JOYSTICK_H @SDL_HAVE_MACHINE_JOYSTICK_H@
 #cmakedefine SDL_JOYSTICK_HIDAPI @SDL_JOYSTICK_HIDAPI@
 #cmakedefine SDL_JOYSTICK_EMSCRIPTEN @SDL_JOYSTICK_EMSCRIPTEN@
 #cmakedefine SDL_JOYSTICK_VIRTUAL @SDL_JOYSTICK_VIRTUAL@

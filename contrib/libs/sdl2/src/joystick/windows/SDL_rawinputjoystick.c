@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -44,7 +44,9 @@
 #include "../../core/windows/SDL_hid.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
+#ifdef HAVE_XINPUT_H
 #define SDL_JOYSTICK_RAWINPUT_XINPUT
+#endif
 #ifdef SDL_WINDOWS10_SDK
 #define SDL_JOYSTICK_RAWINPUT_WGI
 #endif
@@ -546,7 +548,7 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
             WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
             RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
             if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
-                LPTSTR pNamespace = L"Windows.Gaming.Input.Gamepad";
+                PCWSTR pNamespace = L"Windows.Gaming.Input.Gamepad";
                 HSTRING_HEADER hNamespaceStringHeader;
                 HSTRING hNamespaceString;
 
@@ -733,10 +735,10 @@ RAWINPUT_AddDevice(HANDLE hDevice)
         WCHAR string[128];
 
         if (SDL_HidD_GetManufacturerString(hFile, string, sizeof(string))) {
-            manufacturer_string = WIN_StringToUTF8(string);
+            manufacturer_string = WIN_StringToUTF8W(string);
         }
         if (SDL_HidD_GetProductString(hFile, string, sizeof(string))) {
-            product_string = WIN_StringToUTF8(string);
+            product_string = WIN_StringToUTF8W(string);
         }
 
         device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
@@ -1216,9 +1218,8 @@ RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
 {
 #if defined(SDL_JOYSTICK_RAWINPUT_WGI) || defined(SDL_JOYSTICK_RAWINPUT_XINPUT)
     RAWINPUT_DeviceContext *ctx = joystick->hwdata;
-#endif
-
     SDL_bool rumbled = SDL_FALSE;
+#endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
     if (!rumbled && ctx->wgi_correlated) {

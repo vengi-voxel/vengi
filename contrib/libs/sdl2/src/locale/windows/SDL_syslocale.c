@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -100,7 +100,7 @@ void
 SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     if (!kernel32) {
-        kernel32 = GetModuleHandleW(L"kernel32.dll");
+        kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
         if (kernel32) {
             pGetUserPreferredUILanguages = (pfnGetUserPreferredUILanguages) GetProcAddress(kernel32, "GetUserPreferredUILanguages");
         }
