@@ -96,7 +96,7 @@ TEST_F(ConcurrentQueueTest, testAbortWait) {
 	core::ConcurrentQueue<int> queue;
 	std::thread threadWait([&] () {
 		int v;
-		ASSERT_FALSE(queue.waitAndPop(v));
+		queue.waitAndPop(v);
 	});
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	queue.abortWait();

@@ -2,6 +2,7 @@
  * @file
  */
 
+#include <future>
 #include <gtest/gtest.h>
 #include "core/collection/ConcurrentPriorityQueue.h"
 #include <thread>
@@ -62,21 +63,24 @@ TEST_F(ConcurrentPriorityQueueTest, testPushWaitAndPopMultipleThreads) {
 			queue.push(i);
 		}
 	});
-	std::thread threadPop([&] () {
+	std::future<bool> future = std::async(std::launch::async, [&queue] () {
 		for (uint32_t i = 0u; i < n; ++i) {
 			uint32_t v;
-			ASSERT_TRUE(queue.waitAndPop(v));
+			if (!queue.waitAndPop(v)) {
+				return false;
+			}
 		}
+		return true;
 	});
 	threadPush.join();
-	threadPop.join();
+	EXPECT_TRUE(future.get());
 }
 
 TEST_F(ConcurrentPriorityQueueTest, testAbortWait) {
 	core::ConcurrentPriorityQueue<int> queue;
 	std::thread threadWait([&] () {
 		int v;
-		ASSERT_FALSE(queue.waitAndPop(v));
+		queue.waitAndPop(v);
 	});
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	queue.abortWait();
