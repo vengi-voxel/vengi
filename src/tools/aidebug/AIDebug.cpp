@@ -16,6 +16,7 @@
 #include "core/EventBus.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
+#include "dearimgui/imgui.h"
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
 #include "network/IMsgProtocolHandler.h"
@@ -301,8 +302,8 @@ bool AIDebug::dbgConnect() {
 
 	ImGui::TextUnformatted(ICON_FA_SERVER " Servers");
 	if (ImGui::BeginTable("##serverlist", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
-		ImGui::TableSetupColumn("Hostname", ImGuiTableColumnFlags_WidthAuto);
-		ImGui::TableSetupColumn("Port", ImGuiTableColumnFlags_WidthAuto);
+		ImGui::TableSetupColumn("Hostname", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("Port", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableHeadersRow();
 		for (const Server& s : _history) {
 			ImGui::TableNextColumn();
@@ -335,9 +336,9 @@ void AIDebug::dbgAttributes() {
 	ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Attributes")) {
 		if (ImGui::BeginTable("##attributeslist", 3, priv::TableFlags)) {
-			ImGui::TableSetupColumn("Attribute", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("Current", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("Max", ImGuiTableColumnFlags_WidthAuto);
+			ImGui::TableSetupColumn("Attribute", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Current", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Max", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableHeadersRow();
 			for (const auto &a : *state->attrib()) {
 				ImGui::TableNextColumn();
@@ -362,8 +363,8 @@ void AIDebug::dbgMetaAttributes() {
 	ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Properties")) {
 		if (ImGui::BeginTable("##metaattributeslist", 2, priv::TableFlags)) {
-			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthAuto);
+			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableHeadersRow();
 
 			for (const auto &a : *state->meta_attributes()) {
@@ -389,8 +390,8 @@ void AIDebug::dbgAggro() {
 	ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Aggro")) {
 		if (ImGui::BeginTable("##aggrolist", 2, priv::TableFlags)) {
-			ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("Aggro", ImGuiTableColumnFlags_WidthAuto);
+			ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Aggro", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableHeadersRow();
 			for (const auto &e : *aggrolist) {
 				ImGui::TableNextColumn();
@@ -418,8 +419,8 @@ void AIDebug::dbgStats() {
 		}
 		ImGui::Separator();
 		if (ImGui::BeginTable("Network traffic", 2, priv::TableFlags)) {
-			ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthAuto);
+			ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableHeadersRow();
 			ImGui::TableKeyValue("StateWorld", core::string::humanSize(_stateWorldSize));
 			ImGui::TableKeyValue("CharacterStatic", core::string::humanSize(_characterStaticSize));
@@ -448,8 +449,8 @@ void AIDebug::dbgEntities() {
 		if (_stateWorldMsg != nullptr) {
 			ImGui::InputText(ICON_FA_SEARCH_LOCATION " Filter", _entityListFilter, sizeof(_entityListFilter));
 			if (ImGui::BeginTable("##entitylist", 2, priv::TableFlags)) {
-				ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_WidthAuto);
-				ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthAuto);
+				ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_WidthStretch);
+				ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
 				ImGui::TableHeadersRow();
 				for (const auto &e : *_stateWorldMsg->states()) {
 					core::String name = "Unknown";
@@ -550,12 +551,12 @@ void AIDebug::dbgTree() {
 	ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Behaviourtree")) {
 		if (ImGui::BeginTable("##nodelist", 6, priv::TableFlags)) {
-			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("Parameter", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("Condition", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("State", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn(ICON_FA_CLOCK " Last run", ImGuiTableColumnFlags_WidthAuto);
+			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Parameter", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Condition", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("State", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn(ICON_FA_CLOCK " Last run", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableHeadersRow();
 			dbgTreeNode_r(_chrDetailsMsg->root(), 0);
 			ImGui::EndTable();
