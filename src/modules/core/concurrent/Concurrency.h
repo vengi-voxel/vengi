@@ -9,6 +9,7 @@
 
 // Enable thread safety attributes only with clang.
 // The attributes can be safely erased when compiling with other compilers.
+// TODO: support msvc https://devblogs.microsoft.com/cppblog/concurrency-code-analysis-in-visual-studio-2019/
 #ifdef __clang__
 #define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
 #else
