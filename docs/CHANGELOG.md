@@ -10,10 +10,12 @@ General:
    - Fixed texture coordinate indices for multi layer obj exports
    - Improved magicavoxel transform support for some models
    - Fixed magicavoxel x-axis handling
+   - Support newer versions of vxm
 
 VoxEdit:
 
    - Improved scene edit mode
+   - Progress on the ui conversion to dear imgui
 
 Tools:
 
