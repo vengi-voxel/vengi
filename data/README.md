@@ -6,7 +6,7 @@ assets installed. Therefore it is important to know, that the directory part of
 the original artifact will be removed. An example:
 
    You have a module names `foo` and it has assets in `data/foo`.
-   You also have a module names `bar` which depends on `foo.
+   You also have a module names `bar` which depends on `foo`.
 
    `bar` will now automatically get the files installed that `foo` offers.
    But - not in `$install_prefix/bar/foo/myasset.ext` - but in
