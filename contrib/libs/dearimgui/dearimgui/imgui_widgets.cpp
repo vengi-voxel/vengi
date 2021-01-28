@@ -1,4 +1,4 @@
-// dear imgui, v1.80
+// dear imgui, v1.81 WIP
 // (widgets code)
 
 /*
@@ -7305,6 +7305,7 @@ static ImU32   ImGui::TabBarCalcTabID(ImGuiTabBar* tab_bar, const char* label, I
 {
     if (docked_window != NULL)
     {
+        IM_UNUSED(tab_bar);
         IM_ASSERT(tab_bar->Flags & ImGuiTabBarFlags_DockNode);
         ImGuiID id = ImHashStr(label);
         KeepAliveID(id);
