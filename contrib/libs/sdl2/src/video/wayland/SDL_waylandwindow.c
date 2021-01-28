@@ -628,6 +628,16 @@ Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }
 
 void
+Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
+{
+    /* No-op, this is handled by the xdg-shell/wl_shell callbacks.
+     * Also note that we do NOT implement SetMaximumSize/SetMinimumSize, as
+     * those are also no-ops for the same reason, but SDL_video.c does not
+     * require a driver implementation.
+     */
+}
+
+void
 Wayland_MaximizeWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *wind = window->driverdata;
@@ -660,18 +670,26 @@ Wayland_MinimizeWindow(_THIS, SDL_Window * window)
 }
 
 void
-Wayland_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+Wayland_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
     if (grabbed) {
         Wayland_input_confine_pointer(window, data->input);
+    } else {
+        Wayland_input_unconfine_pointer(data->input);
+    }
+}
 
-        if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE))
-            Wayland_input_grab_keyboard(window, data->input);
+void
+Wayland_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    if (grabbed) {
+        Wayland_input_grab_keyboard(window, data->input);
     } else {
         Wayland_input_ungrab_keyboard(window);
-        Wayland_input_unconfine_pointer(data->input);
     }
 }
 

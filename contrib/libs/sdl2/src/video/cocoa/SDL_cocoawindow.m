@@ -1109,7 +1109,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     x = (int)point.x;
     y = (int)(window->h - point.y);
 
-    if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
+    if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
         if (x < 0 || x >= window->w || y < 0 || y >= window->h) {
             if (x < 0) {
                 x = 0;
@@ -1958,7 +1958,7 @@ Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 }
 
 void
-Cocoa_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;

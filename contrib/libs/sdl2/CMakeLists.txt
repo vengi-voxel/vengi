@@ -861,7 +861,18 @@ if(LIBC)
     else()
       set(HAVE_ALLOCA_H 1)
       set(HAVE_ALLOCA 1)
-      check_symbol_exists(clock_gettime_nsec_np HAVE_CLOCK_GETTIME_NSEC_NP)
+      if(IOS OR TVOS)   # assuming iOS / TVOS >= 10.0
+        set(HAVE_CLOCK_GETTIME_NSEC_NP 1)
+      else()
+        CHECK_C_SOURCE_COMPILES("
+          #include <AvailabilityMacros.h>
+          #include <time.h>
+          #if MAC_OS_X_VERSION_MIN_REQUIRED < 101200
+          #error Need 10.12 or newer target
+          #endif
+          int main(int argc, char **argv) { return !clock_gettime_nsec_np(CLOCK_MONOTONIC); }
+        " HAVE_CLOCK_GETTIME_NSEC_NP)
+      endif()
     endif()
 
     check_struct_has_member("struct sigaction" "sa_sigaction" "signal.h" HAVE_SA_SIGACTION)
@@ -1668,6 +1679,7 @@ elseif(APPLE)
 
   if(IOS OR TVOS)
     file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/ios/*.m)
+    file(GLOB SDLMAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/uikit/*.c)
   else()
     file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/macosx/*.m)
   endif()

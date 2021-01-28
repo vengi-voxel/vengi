@@ -282,7 +282,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
         window->flags |= SDL_WINDOW_INPUT_FOCUS;
         SDL_SetKeyboardFocus(data->window);
 
-        if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
+        if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
             RECT rect;
             GetClientRect(hwnd, &rect);
             ClientToScreen(hwnd, (LPPOINT) & rect);
@@ -778,17 +778,9 @@ void WIN_UngrabKeyboard(SDL_Window *window)
 }
 
 void
-WIN_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+WIN_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
-
-    if (grabbed) {
-        if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
-            WIN_GrabKeyboard(window);
-        }
-    } else {
-        WIN_UngrabKeyboard(window);
-    }
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         UINT flags = SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE;
@@ -797,6 +789,16 @@ WIN_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
             flags |= SWP_NOACTIVATE;
         }
         WIN_SetWindowPositionInternal(_this, window, flags);
+    }
+}
+
+void
+WIN_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+{
+    if (grabbed) {
+        WIN_GrabKeyboard(window);
+    } else {
+        WIN_UngrabKeyboard(window);
     }
 }
 
@@ -971,7 +973,7 @@ WIN_UpdateClipCursor(SDL_Window *window)
         return;
     }
 
-    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_INPUT_GRABBED)) &&
+    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         if (mouse->relative_mode && !mouse->relative_mode_warp) {
             if (GetWindowRect(data->hwnd, &rect)) {

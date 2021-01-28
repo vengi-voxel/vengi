@@ -200,9 +200,11 @@ Wayland_CreateDevice(int devindex)
     device->SetWindowFullscreen = Wayland_SetWindowFullscreen;
     device->MaximizeWindow = Wayland_MaximizeWindow;
     device->MinimizeWindow = Wayland_MinimizeWindow;
-    device->SetWindowGrab = Wayland_SetWindowGrab;
+    device->SetWindowMouseGrab = Wayland_SetWindowMouseGrab;
+    device->SetWindowKeyboardGrab = Wayland_SetWindowKeyboardGrab;
     device->RestoreWindow = Wayland_RestoreWindow;
     device->SetWindowBordered = Wayland_SetWindowBordered;
+    device->SetWindowResizable = Wayland_SetWindowResizable;
     device->SetWindowSize = Wayland_SetWindowSize;
     device->SetWindowTitle = Wayland_SetWindowTitle;
     device->DestroyWindow = Wayland_DestroyWindow;

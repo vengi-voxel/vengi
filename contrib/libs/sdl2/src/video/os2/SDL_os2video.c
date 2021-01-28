@@ -183,7 +183,7 @@ static VOID _mouseCheck(WINDATA *pWinData)
 {
     SDL_Mouse *pSDLMouse = SDL_GetMouse();
 
-    if ((pSDLMouse->relative_mode || (pWinData->window->flags & SDL_WINDOW_INPUT_GRABBED) != 0) &&
+    if ((pSDLMouse->relative_mode || (pWinData->window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) &&
         ((pWinData->window->flags & SDL_WINDOW_INPUT_FOCUS) != 0)) {
         /* We will make a real capture in _wmMouseButton() */
     } else {
@@ -232,7 +232,7 @@ static VOID _wmMouseMove(WINDATA *pWinData, SHORT lX, SHORT lY)
 
     if (!pSDLMouse->relative_mode || pSDLMouse->relative_mode_warp) {
         if (!pSDLMouse->relative_mode && fWinActive &&
-            ((pWinData->window->flags & SDL_WINDOW_INPUT_GRABBED) != 0) &&
+            ((pWinData->window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) &&
             (WinQueryCapture(HWND_DESKTOP) == pWinData->hwnd)) {
 
             pointl.x = lX;
@@ -281,7 +281,7 @@ static VOID _wmMouseButton(WINDATA *pWinData, ULONG ulButton, BOOL fDown)
                                       SDL_BUTTON_MIDDLE };
     SDL_Mouse *pSDLMouse = SDL_GetMouse();
 
-    if ((pSDLMouse->relative_mode || ((pWinData->window->flags & SDL_WINDOW_INPUT_GRABBED) != 0)) &&
+    if ((pSDLMouse->relative_mode || ((pWinData->window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0)) &&
         ((pWinData->window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) &&
         (WinQueryCapture(HWND_DESKTOP) != pWinData->hwnd)) {
         /* Mouse should be captured. */
@@ -1147,7 +1147,7 @@ static int OS2_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
   return 0;
 }
 
-static void OS2_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+static void OS2_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 {
     WINDATA *pWinData = (WINDATA *)window->driverdata;
 
@@ -1616,7 +1616,7 @@ static SDL_VideoDevice *OS2_CreateDevice(int devindex)
     device->GetWindowWMInfo = OS2_GetWindowWMInfo;
     device->OnWindowEnter = OS2_OnWindowEnter;
     device->SetWindowHitTest = OS2_SetWindowHitTest;
-    device->SetWindowGrab = OS2_SetWindowGrab;
+    device->SetWindowMouseGrab = OS2_SetWindowMouseGrab;
     device->CreateWindowFramebuffer = OS2_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = OS2_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = OS2_DestroyWindowFramebuffer;
