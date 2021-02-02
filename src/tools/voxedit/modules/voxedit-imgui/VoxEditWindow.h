@@ -33,6 +33,12 @@ private:
 	core::VarPtr _animationSpeedVar;
 	core::VarPtr _gridSizeVar;
 
+	Viewport* _scene = nullptr;
+	Viewport* _sceneTop = nullptr;
+	Viewport* _sceneLeft = nullptr;
+	Viewport* _sceneFront = nullptr;
+	Viewport* _sceneAnimation = nullptr;
+
 	void menuBar();
 	void palette();
 	void tools();
@@ -56,10 +62,11 @@ private:
 	bool actionMenuItem(const char *title, const char *command, bool enabled = true);
 	bool modifierRadioButton(const char *title, ModifierType type);
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
+	bool saveImage(const char *file) override;
 
 public:
 	VoxEditWindow(video::WindowedApp *app);
-	~VoxEditWindow();
+	virtual ~VoxEditWindow();
 	bool init();
 	void shutdown();
 
@@ -74,6 +81,7 @@ public:
 	bool isLayerWidgetDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
 
+	void resetCamera() override;
 	void update();
 	bool isSceneHovered() const;
 };

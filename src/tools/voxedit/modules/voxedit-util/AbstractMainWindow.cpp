@@ -25,28 +25,12 @@ bool AbstractMainWindow::saveScreenshot(const core::String& file) {
 		_app->saveDialog([this] (const core::String file) {saveScreenshot(file); }, "png");
 		return true;
 	}
-	if (!_scene->saveImage(file.c_str())) {
+	if (!saveImage(file.c_str())) {
 		Log::warn("Failed to save screenshot");
 		return false;
 	}
 	Log::info("Screenshot created at '%s'", file.c_str());
 	return true;
-}
-
-void AbstractMainWindow::resetCamera() {
-	_scene->resetCamera();
-	if (_sceneTop != nullptr) {
-		_sceneTop->resetCamera();
-	}
-	if (_sceneLeft != nullptr) {
-		_sceneLeft->resetCamera();
-	}
-	if (_sceneFront != nullptr) {
-		_sceneFront->resetCamera();
-	}
-	if (_sceneAnimation != nullptr) {
-		_sceneAnimation->resetCamera();
-	}
 }
 
 void AbstractMainWindow::afterLoad(const core::String &file) {
@@ -81,5 +65,4 @@ bool AbstractMainWindow::importHeightmap(const core::String& file) {
 	return sceneMgr().importHeightmap(file);
 }
 
-
-} // namespace voxedit
+}

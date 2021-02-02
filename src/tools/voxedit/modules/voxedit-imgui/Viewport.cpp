@@ -15,7 +15,7 @@
 
 namespace voxedit {
 
-Viewport::Viewport(video::WindowedApp *app) : _app(app) {
+Viewport::Viewport(video::WindowedApp *app, const core::String& id) : _app(app), _id(id) {
 }
 
 bool Viewport::init() {
@@ -36,11 +36,7 @@ void Viewport::update() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	core::String id = _cameraMode;
-	if (_controller.renderMode() == ViewportController::RenderMode::Animation) {
-		id = "animation";
-	}
-	if (ImGui::Begin(id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs)) {
+	if (ImGui::Begin(_id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs)) {
 		const ImVec2& windowPos = ImGui::GetWindowPos();
 		const double deltaFrameSeconds = app::App::getInstance()->deltaFrameSeconds();
 		_controller.update(deltaFrameSeconds);

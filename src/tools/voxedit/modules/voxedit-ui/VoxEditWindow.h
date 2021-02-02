@@ -85,6 +85,12 @@ private:
 	tb::TBInlineSelectDouble* _gain;
 	tb::TBWidget *_noiseSection = nullptr;
 
+	Viewport* _scene = nullptr;
+	Viewport* _sceneTop = nullptr;
+	Viewport* _sceneLeft = nullptr;
+	Viewport* _sceneFront = nullptr;
+	Viewport* _sceneAnimation = nullptr;
+
 	// tree related
 	enum TreeParameterWidgetType {
 		Int, Float
@@ -124,11 +130,12 @@ private:
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
 	void quit();
+	bool saveImage(const char *file) override;
 
 	void updateStatusBar();
 public:
 	VoxEditWindow(::ui::turbobadger::UIApp* tool);
-	~VoxEditWindow();
+	virtual ~VoxEditWindow();
 	bool init();
 	void shutdown();
 
@@ -142,6 +149,7 @@ public:
 
 	bool isLayerWidgetDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
+	void resetCamera() override;
 
 	void update();
 	bool isSceneHovered() const;

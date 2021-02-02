@@ -311,12 +311,32 @@ bool VoxEditWindow::init() {
 		}
 		afterLoad("");
 	}
-	((Viewport*)_scene)->setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
+	_scene->setFocus(tb::WIDGET_FOCUS_REASON_UNKNOWN);
 
 	return true;
 }
 
 void VoxEditWindow::shutdown() {
+}
+
+void VoxEditWindow::resetCamera() {
+	_scene->resetCamera();
+	if (_sceneTop != nullptr) {
+		_sceneTop->resetCamera();
+	}
+	if (_sceneLeft != nullptr) {
+		_sceneLeft->resetCamera();
+	}
+	if (_sceneFront != nullptr) {
+		_sceneFront->resetCamera();
+	}
+	if (_sceneAnimation != nullptr) {
+		_sceneAnimation->resetCamera();
+	}
+}
+
+bool VoxEditWindow::saveImage(const char *file) {
+	return _scene->saveImage(file);
 }
 
 tb::TBWidget* VoxEditWindow::createTreeParameterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name) {
@@ -538,24 +558,24 @@ bool VoxEditWindow::isSceneHovered() const {
 void VoxEditWindow::toggleViewport() {
 	bool vis = false;
 	if (_sceneTop != nullptr) {
-		vis = ((Viewport*)_sceneTop)->getVisibilityCombined();
+		vis = _sceneTop->getVisibilityCombined();
 	}
 	if (!vis && _sceneLeft != nullptr) {
-		vis = ((Viewport*)_sceneLeft)->getVisibilityCombined();
+		vis = _sceneLeft->getVisibilityCombined();
 	}
 	if (!vis && _sceneFront != nullptr) {
-		vis = ((Viewport*)_sceneFront)->getVisibilityCombined();
+		vis = _sceneFront->getVisibilityCombined();
 	}
 
 	const tb::WIDGET_VISIBILITY visibility = vis ? tb::WIDGET_VISIBILITY_GONE : tb::WIDGET_VISIBILITY_VISIBLE;
 	if (_sceneTop != nullptr) {
-		((Viewport*)_sceneTop)->setVisibility(visibility);
+		_sceneTop->setVisibility(visibility);
 	}
 	if (_sceneLeft != nullptr) {
-		((Viewport*)_sceneLeft)->setVisibility(visibility);
+		_sceneLeft->setVisibility(visibility);
 	}
 	if (_sceneFront != nullptr) {
-		((Viewport*)_sceneFront)->setVisibility(visibility);
+		_sceneFront->setVisibility(visibility);
 	}
 }
 

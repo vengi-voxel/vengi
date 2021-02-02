@@ -28,18 +28,14 @@ protected:
 	bool _fourViewAvailable = false;
 	bool _animationViewAvailable = false;
 
-	AbstractViewport* _scene = nullptr;
-	AbstractViewport* _sceneTop = nullptr;
-	AbstractViewport* _sceneLeft = nullptr;
-	AbstractViewport* _sceneFront = nullptr;
-	AbstractViewport* _sceneAnimation = nullptr;
-
 	voxelgenerator::TreeContext _treeGeneratorContext;
 
 	void afterLoad(const core::String& file);
+	virtual bool saveImage(const char *file) = 0;
 
 public:
 	AbstractMainWindow(video::WindowedApp* app);
+	virtual ~AbstractMainWindow() {}
 
 	bool importHeightmap(const core::String& file);
 	bool importAsPlane(const core::String& file);
@@ -47,7 +43,7 @@ public:
 
 	bool saveScreenshot(const core::String& file);
 	bool prefab(const core::String& file);
-	void resetCamera();
+	virtual void resetCamera() = 0;
 };
 
 }

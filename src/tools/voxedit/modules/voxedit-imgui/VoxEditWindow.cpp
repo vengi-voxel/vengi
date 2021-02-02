@@ -20,22 +20,22 @@
 namespace voxedit {
 
 VoxEditWindow::VoxEditWindow(video::WindowedApp *app) : Super(app) {
-	_scene = new Viewport(app);
+	_scene = new Viewport(app, "free");
 	_scene->init();
 
-	_sceneTop = new Viewport(app);
+	_sceneTop = new Viewport(app, "top");
 	_sceneTop->init();
 	_sceneTop->setMode(voxedit::ViewportController::SceneCameraMode::Top);
 
-	_sceneLeft = new Viewport(app);
+	_sceneLeft = new Viewport(app, "left");
 	_sceneLeft->init();
 	_sceneLeft->setMode(voxedit::ViewportController::SceneCameraMode::Left);
 
-	_sceneFront = new Viewport(app);
+	_sceneFront = new Viewport(app, "front");
 	_sceneFront->init();
 	_sceneFront->setMode(voxedit::ViewportController::SceneCameraMode::Front);
 
-	_sceneAnimation = new Viewport(app);
+	_sceneAnimation = new Viewport(app, "animation");
 	_sceneAnimation->init();
 	_sceneAnimation->setRenderMode(voxedit::ViewportController::RenderMode::Animation);
 }
@@ -46,6 +46,14 @@ VoxEditWindow::~VoxEditWindow() {
 	delete _sceneLeft;
 	delete _sceneFront;
 	delete _sceneAnimation;
+}
+
+void VoxEditWindow::resetCamera() {
+	_scene->resetCamera();
+	_sceneTop->resetCamera();
+	_sceneLeft->resetCamera();
+	_sceneFront->resetCamera();
+	_sceneAnimation->resetCamera();
 }
 
 void VoxEditWindow::executeCommand(const char *command) {
@@ -670,11 +678,11 @@ void VoxEditWindow::update() {
 		ImGui::DockBuilderDockWindow("Modifiers", dockIdRight);
 		ImGui::DockBuilderDockWindow("Layers", dockIdRightDown);
 		ImGui::DockBuilderDockWindow("Tools", dockIdLeftDown);
-		ImGui::DockBuilderDockWindow("free", dockIdMain);
-		ImGui::DockBuilderDockWindow("front", dockIdMain);
-		ImGui::DockBuilderDockWindow("left", dockIdMain);
-		ImGui::DockBuilderDockWindow("top", dockIdMain);
-		ImGui::DockBuilderDockWindow("animation", dockIdMain);
+		ImGui::DockBuilderDockWindow(_scene->id().c_str(), dockIdMain);
+		ImGui::DockBuilderDockWindow(_sceneLeft->id().c_str(), dockIdMain);
+		ImGui::DockBuilderDockWindow(_sceneTop->id().c_str(), dockIdMain);
+		ImGui::DockBuilderDockWindow(_sceneFront->id().c_str(), dockIdMain);
+		ImGui::DockBuilderDockWindow(_sceneAnimation->id().c_str(), dockIdMain);
 
 		ImGui::DockBuilderFinish(dockspaceId);
 		init = true;
@@ -683,9 +691,13 @@ void VoxEditWindow::update() {
 	updateSettings();
 }
 
+bool VoxEditWindow::saveImage(const char *file) {
+	return _scene->saveImage(file);
+}
+
 bool VoxEditWindow::isSceneHovered() const {
-	return ((Viewport *)_scene)->isHovered() || ((Viewport *)_sceneTop)->isHovered() ||
-		   ((Viewport *)_sceneLeft)->isHovered() || ((Viewport *)_sceneFront)->isHovered() ||
-		   ((Viewport *)_sceneAnimation)->isHovered();
+	return _scene->isHovered() || _sceneTop->isHovered() ||
+		   _sceneLeft->isHovered() || _sceneFront->isHovered() ||
+		   _sceneAnimation->isHovered();
 }
 }
