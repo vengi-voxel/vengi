@@ -256,11 +256,11 @@ void VoxEditWindow::menuBar() {
 		actionMenuItem(ICON_FA_UNDO" Undo", "undo", sceneMgr().mementoHandler().canUndo());
 		actionMenuItem(ICON_FA_REDO" Redo", "redo", sceneMgr().mementoHandler().canRedo());
 		if (ImGui::BeginMenu(ICON_FA_COG"Options")) {
-			ImGui::CheckboxVar("Grid", _showGridVar);
+			ImGui::CheckboxVar(ICON_FA_BORDER_ALL"Grid", _showGridVar);
 			ImGui::CheckboxVar("Show axis", _showAxisVar);
 			ImGui::CheckboxVar("Model space", _modelSpaceVar);
 			ImGui::CheckboxVar("Show locked axis", _showLockedAxisVar);
-			ImGui::CheckboxVar("Bounding box", _showAabbVar);
+			ImGui::CheckboxVar(ICON_FA_DICE_SIX"Bounding box", _showAabbVar);
 			ImGui::CheckboxVar("Shadow", _renderShadowVar);
 			ImGui::CheckboxVar("Outlines", "r_renderoutline");
 			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
@@ -401,9 +401,9 @@ void VoxEditWindow::addLayerItem(int layerId, const voxedit::Layer &layer) {
 	ImGui::PopID();
 
 	if (ImGui::BeginPopupContextItem("Edit")) {
-		actionMenuItem("Delete", "layerdelete");
+		actionMenuItem(ICON_FA_ERASER"Delete", "layerdelete");
 		actionMenuItem("Hide others", "layerhideothers");
-		actionMenuItem("Duplicate", "layerduplicate");
+		actionMenuItem(ICON_FA_COPY"Duplicate", "layerduplicate");
 		actionMenuItem(ICON_FA_EYE"Show all", "layershowall");
 		actionMenuItem("Hide all", "layerhideall");
 		actionMenuItem(ICON_FA_CARET_SQUARE_UP"Move up", "layermoveup");
@@ -640,7 +640,7 @@ void VoxEditWindow::updateSettings() {
 
 void VoxEditWindow::registerPopups() {
 	if (ImGui::BeginPopupModal("Unsaved Modifications", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::TextUnformatted("There are unsaved modifications.\nDo you wish to discard them?");
+		ImGui::TextUnformatted(ICON_FA_QUESTION"There are unsaved modifications.\nDo you wish to discard them?");
 		ImGui::Separator();
 		if (ImGui::Button("Yes")) {
 			ImGui::CloseCurrentPopup();
@@ -660,18 +660,18 @@ void VoxEditWindow::registerPopups() {
 	}
 
 	if (ImGui::BeginPopupModal("Invalid dimensions", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::TextUnformatted("The layer dimensions are not valid!");
+		ImGui::TextUnformatted(ICON_FA_EXCLAMATION_TRIANGLE"The layer dimensions are not valid!");
 		ImGui::Separator();
-		if (ImGui::Button("OK")) {
+		if (ImGui::Button(ICON_FA_CHECK"OK")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
 	}
 
 	if (ImGui::BeginPopupModal("Failed to save", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::TextUnformatted("Failed to save the model!");
+		ImGui::TextUnformatted(ICON_FA_EXCLAMATION_TRIANGLE"Failed to save the model!");
 		ImGui::Separator();
-		if (ImGui::Button("OK")) {
+		if (ImGui::Button(ICON_FA_CHECK"OK")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
