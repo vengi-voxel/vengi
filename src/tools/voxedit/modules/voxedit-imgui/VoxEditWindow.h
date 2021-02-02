@@ -39,6 +39,11 @@ private:
 	Viewport* _sceneFront = nullptr;
 	Viewport* _sceneAnimation = nullptr;
 
+	bool _showTreePanel = false;
+	bool _showScriptsPanel = false;
+	bool _showLSystemPanel = false;
+	bool _showNoisePanel = false;
+
 	void menuBar();
 	void palette();
 	void tools();

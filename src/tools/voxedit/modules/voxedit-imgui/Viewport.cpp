@@ -89,6 +89,14 @@ void Viewport::update() {
 			voxedit::sceneMgr().setActiveCamera(&_controller.camera());
 			voxedit::sceneMgr().trace();
 		}
+
+		if (_controller.renderMode() == ViewportController::RenderMode::Animation) {
+			const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
+			for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
+				//const animation::SkeletonAttributeMeta& meta = *metaIter;
+				// TODO:
+			}
+		}
 	}
 	ImGui::End();
 	ImGui::PopStyleVar(3);
