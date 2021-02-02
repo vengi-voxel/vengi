@@ -9,7 +9,6 @@
 #include "video/Types.h"
 #include "core/Common.h"
 #include "core/Var.h"
-#include <vector>
 #include "core/collection/Array.h"
 #include <glm/fwd.hpp>
 
