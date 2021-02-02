@@ -60,8 +60,10 @@ void AbstractViewport::resize(const glm::ivec2& frameBufferSize) {
 	if (_texture && _texture->width() == frameBufferSize.x && _texture->height() == frameBufferSize.y) {
 		return;
 	}
-	const glm::ivec2 windowSize = video::WindowedApp::getInstance()->windowDimension();
-	_controller.onResize(frameBufferSize, windowSize);
+	const glm::vec2 windowSize(video::WindowedApp::getInstance()->windowDimension());
+	const glm::vec2 windowFrameBufferSize(video::WindowedApp::getInstance()->frameBufferDimension());
+	const glm::vec2 scale = windowFrameBufferSize / windowSize;
+	_controller.onResize(frameBufferSize, glm::ivec2(frameBufferSize.x * scale.x, frameBufferSize.y * scale.y));
 	_frameBuffer.shutdown();
 
 	video::FrameBufferConfig cfg;
