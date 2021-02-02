@@ -67,6 +67,8 @@ public:
 	virtual void beforeUI() {
 	}
 
+	int fontSize() const;
+
 	virtual void onWindowResize(int windowWidth, int windowHeight) override;
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;
@@ -79,6 +81,10 @@ public:
 	 */
 	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) override;
 };
+
+inline int IMGUIApp::fontSize() const {
+	return _uiFontSize->intVal();
+}
 
 inline const video::Camera& IMGUIApp::camera() const {
 	return _camera;
