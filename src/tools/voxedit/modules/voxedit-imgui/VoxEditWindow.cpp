@@ -260,10 +260,10 @@ void VoxEditWindow::menuBar() {
 		}
 		if (ImGui::BeginMenu("View")) {
 			ImGui::CheckboxVar("Grid", _showGridVar);
-			actionButton("Reset camera", "resetcamera");
-			actionButton("Quad view", "toggleviewport");
-			actionButton("Animation view", "toggleanimation");
-			actionButton("Scene view", "togglescene");
+			actionMenuItem("Reset camera", "resetcamera");
+			actionMenuItem("Quad view", "toggleviewport");
+			actionMenuItem("Animation view", "toggleanimation");
+			actionMenuItem("Scene view", "togglescene");
 			ImGui::EndMenu();
 		}
 		if (ImGui::MenuItem("Trees")) {
