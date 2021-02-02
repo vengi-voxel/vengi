@@ -1,6 +1,6 @@
 /**
  * @file
- * @defgroup Compute
+ * @defgroup Metric
  * @{
  *
  * The metric module can generate multiple metric flavors for statsd and influx.
