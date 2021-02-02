@@ -88,7 +88,7 @@ void Viewport::update() {
 			video::useProgram(prevShader);
 		}
 #endif
-		if (ImGui::IsItemHovered()) {
+		if (ImGui::IsItemFocused() || ImGui::IsItemHovered()) {
 			_hovered = true;
 			voxedit::sceneMgr().setActiveCamera(&_controller.camera());
 			voxedit::sceneMgr().trace();
