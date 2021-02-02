@@ -3,6 +3,7 @@
  */
 
 #include "VoxEditWindow.h"
+#include "IMGUIApp.h"
 #include "Viewport.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
@@ -438,7 +439,7 @@ void VoxEditWindow::layers() {
 void VoxEditWindow::statusBar() {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const ImVec2 &size = viewport->GetWorkSize();
-	const float statusBarHeight = ImGui::Size(30);
+	const float statusBarHeight = ImGui::Size((float)((ui::imgui::IMGUIApp*)_app)->fontSize() + 16.0f);
 	ImGui::SetNextWindowSize(ImVec2(size.x, statusBarHeight));
 	ImVec2 statusBarPos = viewport->GetWorkPos();
 	statusBarPos.y += size.y - statusBarHeight;
@@ -471,6 +472,7 @@ void VoxEditWindow::statusBar() {
 			ImGui::Text("%s", statusText.c_str());
 		}
 		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::Size(140.0f));
 		ImGui::InputVarInt("Grid size", _gridSizeVar);
 	}
 	ImGui::End();
