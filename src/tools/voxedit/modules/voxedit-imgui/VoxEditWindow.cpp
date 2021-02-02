@@ -410,7 +410,7 @@ void VoxEditWindow::addLayerItem(int layerId, const voxedit::Layer &layer) {
 		actionMenuItem(ICON_FA_CARET_SQUARE_DOWN"Move down", "layermovedown");
 		actionMenuItem("Merge", "layermerge");
 		actionMenuItem(ICON_FA_LOCK"Lock all", "layerlockall");
-		actionMenuItem("Unlock all", "layerunlockall");
+		actionMenuItem(ICON_FA_UNLOCK"Unlock all", "layerunlockall");
 		actionMenuItem("Center origin", "center_origin");
 		actionMenuItem("Center reference", "center_referenceposition");
 		actionMenuItem(ICON_FA_SAVE"Save", "layerssave");

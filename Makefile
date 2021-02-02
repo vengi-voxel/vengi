@@ -201,3 +201,13 @@ update-flextgl:
 # TODO lua support
 updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-glslang update-simplecpp
 	$(MAKE) -C $(BUILDDIR) update-libs
+
+update-icons:
+	$(call UPDATE_GIT,font-awesome,https://github.com/FortAwesome/Font-Awesome)
+	$(call UPDATE_GIT,iconfontcppheaders,https://github.com/juliettef/IconFontCppHeaders)
+	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsFontAwesome5.h src/modules/ui/imgui/
+	cp $(UPDATEDIR)/font-awesome.sync/webfonts/fa-solid-900.ttf data/imgui
+
+update-fonts:
+	curl -o $(UPDATEDIR)/arimo.zip https://fonts.google.com/download?family=Arimo
+	unzip -jo $(UPDATEDIR)/arimo.zip static/Arimo-Regular.ttf -d data/imgui
