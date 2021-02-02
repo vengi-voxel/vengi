@@ -377,52 +377,84 @@ void VoxEditWindow::tools() {
 
 void VoxEditWindow::addLayerItem(int layerId, const voxedit::Layer &layer) {
 	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+	ImGui::TableNextColumn();
 
 	const core::String &visibleId = core::string::format("##visible-layer-%i", layerId);
 	bool visible = layer.visible;
 	if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
-		layerMgr.hideLayer(layerId, visible);
+		layerMgr.hideLayer(layerId, !visible);
 	}
-	ImGui::SameLine();
+	ImGui::TableNextColumn();
 
 	const core::String &lockedId = core::string::format("##locked-layer-%i", layerId);
 	bool locked = layer.locked;
 	if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
 		layerMgr.lockLayer(layerId, locked);
 	}
-	ImGui::SameLine();
+	ImGui::TableNextColumn();
 
 	const core::String &nameId = core::string::format("##name-layer-%i", layerId);
-	core::String layerName = layer.name;
-	if (ImGui::InputText(nameId.c_str(), &layerName)) {
-		Log::info("layer name: %s", layerName.c_str());
-		layerMgr.rename(layerId, layerName);
+	ImGui::PushID(nameId.c_str());
+	if (ImGui::Selectable(layer.name.c_str(), layerId == layerMgr.activeLayer(), ImGuiSelectableFlags_SpanAllColumns)) {
+		layerMgr.setActiveLayer(layerId);
 	}
-	ImGui::SameLine();
+	ImGui::PopID();
+
+	if (ImGui::BeginPopupContextItem("Edit")) {
+		actionMenuItem("Delete", "layerdelete");
+		actionMenuItem("Hide others", "layerhideothers");
+		actionMenuItem("Duplicate", "layerduplicate");
+		actionMenuItem("Show all", "layershowall");
+		actionMenuItem("Hide all", "layerhideall");
+		actionMenuItem("Move up", "layermoveup");
+		actionMenuItem("Move down", "layermovedown");
+		actionMenuItem("Merge", "layermerge");
+		actionMenuItem("Lock all", "layerlockall");
+		actionMenuItem("Unlock all", "layerunlockall");
+		actionMenuItem("Center origin", "center_origin");
+		actionMenuItem("Center reference", "center_referenceposition");
+		actionMenuItem("Save", "layerssave");
+		core::String layerName = layer.name;
+		if (ImGui::InputText("Name", &layerName)) {
+			layerMgr.rename(layerId, layerName);
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::TableNextColumn();
 
 	const core::String &deleteId = core::string::format("X##delete-layer-%i", layerId);
 	if (ImGui::Button(deleteId.c_str())) {
 		layerMgr.deleteLayer(layerId);
 	}
-
-	// TODO: context menu
-	// TODO: hightlight active layer
 }
 
 void VoxEditWindow::layers() {
+	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
+	voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
 	if (ImGui::Begin("Layers", nullptr, ImGuiWindowFlags_NoDecoration)) {
-		voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
-		const voxedit::Layers& layers = layerMgr.layers();
-		const int layerCnt = layers.size();
-		for (int l = 0; l < layerCnt; ++l) {
-			if (!layers[l].valid) {
-				continue;
+		ImGui::BeginChild("##layertable", ImVec2(0.0f, 400.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
+		static const uint32_t TableFlags =
+			ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
+			ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg;
+		if (ImGui::BeginTable("##nodelist", 4, TableFlags)) {
+			ImGui::TableSetupColumn(ICON_FA_EYE"##visiblelayer", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(ICON_FA_LOCK"##lockedlayer", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn(ICON_FA_ERASER"##deletelayer", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableHeadersRow();
+			const voxedit::Layers& layers = layerMgr.layers();
+			const int layerCnt = layers.size();
+			for (int l = 0; l < layerCnt; ++l) {
+				if (!layers[l].valid) {
+					continue;
+				}
+				addLayerItem(l, layers[l]);
 			}
-			addLayerItem(l, layers[l]);
+			ImGui::EndTable();
 		}
-		if (ImGui::Button("+")) {
-			voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
-			voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
+		ImGui::EndChild();
+		if (ImGui::Button(ICON_FA_PLUS_SQUARE"##newlayer")) {
 			const int layerId = layerMgr.activeLayer();
 			const voxel::RawVolume* v = sceneMgr.volume(layerId);
 			const voxel::Region& region = v->region();
@@ -440,6 +472,14 @@ void VoxEditWindow::layers() {
 				_layerSettings.reset();
 			}
 		}
+
+		ImGui::SameLine();
+		//if (ImGui::CheckBox(ICON_FA_PLAY"##animatelayers")) {
+		//	executeCommand("animate <cvar:ve_animspeed>");
+		//}
+		actionButton(ICON_FA_CARET_SQUARE_DOWN, "layermovedown");
+		ImGui::SameLine();
+		actionButton(ICON_FA_CARET_SQUARE_UP, "layermoveup");
 	}
 	ImGui::End();
 }
