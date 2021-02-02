@@ -427,6 +427,12 @@ voxel::RawVolume* SceneManager::volume(int idx) {
 	return v;
 }
 
+const voxel::RawVolume* SceneManager::volume(int idx) const {
+	const voxel::RawVolume* v = _volumeRenderer.volume(idx);
+	//core_assert_msg(v != nullptr, "Volume for index %i is null", idx);
+	return v;
+}
+
 voxel::RawVolume* SceneManager::modelVolume() {
 	const int idx = _layerMgr.activeLayer();
 	return volume(idx);
@@ -1488,8 +1494,12 @@ bool SceneManager::runScript(const core::String& script, const core::DynamicArra
 	return retVal;
 }
 
+bool SceneManager::animateActive() const {
+	return _animationSpeed > 0.0;
+}
+
 void SceneManager::animate(double nowSeconds) {
-	if (_animationSpeed <= 0.0) {
+	if (!animateActive()) {
 		return;
 	}
 	if (_nextFrameSwitch <= nowSeconds) {

@@ -114,7 +114,7 @@ private:
 	tb::TBGenericStringItemSource _scriptItems;
 	void switchScriptType(const core::String& scriptName);
 
-	tb::TBGenericStringItemSource _treeItems;
+	tb::TBGenericStringItemSource 	_treeItems;
 	tb::TBGenericStringItemSource _fileItems;
 	tb::TBGenericStringItemSource _animationItems;
 

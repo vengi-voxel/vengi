@@ -258,6 +258,7 @@ public:
 
 	void modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo = true);
 	voxel::RawVolume* volume(int idx);
+	const voxel::RawVolume* volume(int idx) const;
 
 	/**
 	 * @brief Import a heightmap in the current layer of the scene
@@ -338,6 +339,11 @@ public:
 	 */
 	bool empty() const;
 	EditMode editMode() const;
+
+	/**
+	 * @note This is not about the animation scene mode, but the animation of the layers
+	 */
+	bool animateActive() const;
 
 	static const uint8_t RenderScene = 1u << 0u;
 	static const uint8_t RenderUI    = 1u << 1u;

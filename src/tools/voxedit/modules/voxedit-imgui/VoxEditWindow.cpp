@@ -255,7 +255,8 @@ void VoxEditWindow::menuBar() {
 		}
 		actionMenuItem(ICON_FA_UNDO" Undo", "undo", sceneMgr().mementoHandler().canUndo());
 		actionMenuItem(ICON_FA_REDO" Redo", "redo", sceneMgr().mementoHandler().canRedo());
-		if (ImGui::BeginMenu("Options")) {
+		if (ImGui::BeginMenu(ICON_FA_COG"Options")) {
+			ImGui::CheckboxVar("Grid", _showGridVar);
 			ImGui::CheckboxVar("Show axis", _showAxisVar);
 			ImGui::CheckboxVar("Model space", _modelSpaceVar);
 			ImGui::CheckboxVar("Show locked axis", _showLockedAxisVar);
@@ -266,24 +267,23 @@ void VoxEditWindow::menuBar() {
 			ImGui::EndMenu();
 			// TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings_open
 		}
-		if (ImGui::BeginMenu("View")) {
-			ImGui::CheckboxVar("Grid", _showGridVar);
+		if (ImGui::BeginMenu(ICON_FA_EYE"View")) {
 			actionMenuItem("Reset camera", "resetcamera");
 			actionMenuItem("Quad view", "toggleviewport");
 			actionMenuItem("Animation view", "toggleanimation");
 			actionMenuItem("Scene view", "togglescene");
 			ImGui::EndMenu();
 		}
-		if (ImGui::MenuItem("Trees")) {
+		if (ImGui::MenuItem(ICON_FA_TREE"Trees")) {
 			// TBButton: gravity: left, @include: definitions>menubutton, text: Trees, id: show_tree_panel
 		}
-		if (ImGui::MenuItem("Scripts")) {
+		if (ImGui::MenuItem(ICON_FA_CODE"Scripts")) {
 			// TBButton: gravity: left, @include: definitions>menubutton, text: Scripts, id: show_script_panel
 		}
-		if (ImGui::MenuItem("Noise")) {
+		if (ImGui::MenuItem(ICON_FA_RANDOM"Noise")) {
 			// TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: show_noise_panel
 		}
-		if (ImGui::MenuItem("L-System")) {
+		if (ImGui::MenuItem(ICON_FA_LEAF"L-System")) {
 			// TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: show_lsystem_panel
 		}
 		ImGui::EndMenuBar();
@@ -395,7 +395,7 @@ void VoxEditWindow::addLayerItem(int layerId, const voxedit::Layer &layer) {
 
 	const core::String &nameId = core::string::format("##name-layer-%i", layerId);
 	ImGui::PushID(nameId.c_str());
-	if (ImGui::Selectable(layer.name.c_str(), layerId == layerMgr.activeLayer(), ImGuiSelectableFlags_SpanAllColumns)) {
+	if (ImGui::Selectable(layer.name.c_str(), layerId == layerMgr.activeLayer())) {
 		layerMgr.setActiveLayer(layerId);
 	}
 	ImGui::PopID();
@@ -404,16 +404,16 @@ void VoxEditWindow::addLayerItem(int layerId, const voxedit::Layer &layer) {
 		actionMenuItem("Delete", "layerdelete");
 		actionMenuItem("Hide others", "layerhideothers");
 		actionMenuItem("Duplicate", "layerduplicate");
-		actionMenuItem("Show all", "layershowall");
+		actionMenuItem(ICON_FA_EYE"Show all", "layershowall");
 		actionMenuItem("Hide all", "layerhideall");
-		actionMenuItem("Move up", "layermoveup");
-		actionMenuItem("Move down", "layermovedown");
+		actionMenuItem(ICON_FA_CARET_SQUARE_UP"Move up", "layermoveup");
+		actionMenuItem(ICON_FA_CARET_SQUARE_DOWN"Move down", "layermovedown");
 		actionMenuItem("Merge", "layermerge");
-		actionMenuItem("Lock all", "layerlockall");
+		actionMenuItem(ICON_FA_LOCK"Lock all", "layerlockall");
 		actionMenuItem("Unlock all", "layerunlockall");
 		actionMenuItem("Center origin", "center_origin");
 		actionMenuItem("Center reference", "center_referenceposition");
-		actionMenuItem("Save", "layerssave");
+		actionMenuItem(ICON_FA_SAVE"Save", "layerssave");
 		core::String layerName = layer.name;
 		if (ImGui::InputText("Name", &layerName)) {
 			layerMgr.rename(layerId, layerName);
@@ -423,7 +423,7 @@ void VoxEditWindow::addLayerItem(int layerId, const voxedit::Layer &layer) {
 
 	ImGui::TableNextColumn();
 
-	const core::String &deleteId = core::string::format("X##delete-layer-%i", layerId);
+	const core::String &deleteId = core::string::format(ICON_FA_ERASER"##delete-layer-%i", layerId);
 	if (ImGui::Button(deleteId.c_str())) {
 		layerMgr.deleteLayer(layerId);
 	}
@@ -441,7 +441,7 @@ void VoxEditWindow::layers() {
 			ImGui::TableSetupColumn(ICON_FA_EYE"##visiblelayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(ICON_FA_LOCK"##lockedlayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn(ICON_FA_ERASER"##deletelayer", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("##deletelayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableHeadersRow();
 			const voxedit::Layers& layers = layerMgr.layers();
 			const int layerCnt = layers.size();
@@ -459,7 +459,7 @@ void VoxEditWindow::layers() {
 			const voxel::RawVolume* v = sceneMgr.volume(layerId);
 			const voxel::Region& region = v->region();
 			_layerSettings.position = region.getLowerCorner();
-			_layerSettings.size = region.getDimensionsInCells();
+			_layerSettings.size = region.getDimensionsInVoxels();
 			if (_layerSettings.name.empty()) {
 				_layerSettings.name = layerMgr.layer(layerId).name;
 			}
@@ -474,12 +474,14 @@ void VoxEditWindow::layers() {
 		}
 
 		ImGui::SameLine();
-		//if (ImGui::CheckBox(ICON_FA_PLAY"##animatelayers")) {
-		//	executeCommand("animate <cvar:ve_animspeed>");
-		//}
-		actionButton(ICON_FA_CARET_SQUARE_DOWN, "layermovedown");
+		if (ImGui::ToggleButton(ICON_FA_PLAY"##animatelayers", sceneMgr.animateActive())) {
+			core::String cmd = core::string::format("animate %f", _animationSpeedVar->floatVal());
+			executeCommand(cmd.c_str());
+		}
 		ImGui::SameLine();
 		actionButton(ICON_FA_CARET_SQUARE_UP, "layermoveup");
+		ImGui::SameLine();
+		actionButton(ICON_FA_CARET_SQUARE_DOWN, "layermovedown");
 	}
 	ImGui::End();
 }
@@ -492,10 +494,14 @@ void VoxEditWindow::statusBar() {
 	ImVec2 statusBarPos = viewport->GetWorkPos();
 	statusBarPos.y += size.y - statusBarHeight;
 	ImGui::SetNextWindowPos(statusBarPos);
-	if (ImGui::Begin("##statusbar", nullptr,
-					 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove)) {
-		const int layerIdx = voxedit::sceneMgr().layerMgr().activeLayer();
-		const voxel::RawVolume* v = voxedit::sceneMgr().volume(layerIdx);
+	const uint32_t statusBarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove;
+	if (ImGui::Begin("##statusbar", nullptr, statusBarFlags)) {
+		const voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
+		const voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
+		const voxedit::ModifierFacade& modifier = sceneMgr.modifier();
+
+		const int layerIdx = layerMgr.activeLayer();
+		const voxel::RawVolume* v = sceneMgr.volume(layerIdx);
 		const voxel::Region& region = v->region();
 		const glm::ivec3& mins = region.getLowerCorner();
 		const glm::ivec3& maxs = region.getUpperCorner();
@@ -503,7 +509,6 @@ void VoxEditWindow::statusBar() {
 		ImGui::Text("%s", str.c_str());
 		ImGui::SameLine();
 
-		const voxedit::ModifierFacade& modifier = voxedit::sceneMgr().modifier();
 		if (modifier.aabbMode()) {
 			const glm::ivec3& dim = modifier.aabbDim();
 			const core::String& str = core::string::format("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
@@ -584,8 +589,8 @@ void VoxEditWindow::rightWidget() {
 	ImGui::End();
 
 	if (ImGui::Begin("Modifiers", nullptr, ImGuiWindowFlags_NoDecoration)) {
-		actionButton("Crop", "crop");
-		actionButton("Extend", "resize");
+		actionButton(ICON_FA_CROP"Crop", "crop");
+		actionButton(ICON_FA_EXPAND"Extend", "resize");
 		actionButton("Layer from color", "colortolayer");
 		actionButton("Scale", "scale");
 
