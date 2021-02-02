@@ -53,7 +53,7 @@ private:
 	void addLayerItem(int layerId, const voxedit::Layer &layer);
 
 	bool actionButton(const char *title, const char *command);
-	bool actionMenuItem(const char *title, const char *command);
+	bool actionMenuItem(const char *title, const char *command, bool enabled = true);
 	bool modifierRadioButton(const char *title, ModifierType type);
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 

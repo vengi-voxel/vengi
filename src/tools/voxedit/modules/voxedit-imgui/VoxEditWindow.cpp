@@ -69,9 +69,9 @@ bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
 	return false;
 }
 
-bool VoxEditWindow::actionMenuItem(const char *title, const char *command) {
+bool VoxEditWindow::actionMenuItem(const char *title, const char *command, bool enabled) {
 	const core::String& keybinding = _app->getKeyBindingsString(command);
-	if (ImGui::MenuItem(title, keybinding.c_str())) {
+	if (ImGui::MenuItem(title, keybinding.c_str(), false, enabled)) {
 		executeCommand(command);
 		return true;
 	}
@@ -245,8 +245,8 @@ void VoxEditWindow::menuBar() {
 			}
 			ImGui::EndMenu();
 		}
-		actionMenuItem(ICON_FA_UNDO" Undo", "undo");
-		actionMenuItem(ICON_FA_REDO" Redo", "redo");
+		actionMenuItem(ICON_FA_UNDO" Undo", "undo", sceneMgr().mementoHandler().canUndo());
+		actionMenuItem(ICON_FA_REDO" Redo", "redo", sceneMgr().mementoHandler().canRedo());
 		if (ImGui::BeginMenu("Options")) {
 			ImGui::CheckboxVar("Show axis", _showAxisVar);
 			ImGui::CheckboxVar("Model space", _modelSpaceVar);
