@@ -674,6 +674,7 @@ void VoxEditWindow::update() {
 		ImGui::DockBuilderDockWindow("front", dockIdMain);
 		ImGui::DockBuilderDockWindow("left", dockIdMain);
 		ImGui::DockBuilderDockWindow("top", dockIdMain);
+		ImGui::DockBuilderDockWindow("animation", dockIdMain);
 
 		ImGui::DockBuilderFinish(dockspaceId);
 		init = true;
