@@ -389,7 +389,7 @@ void ImDrawListSharedData::SetCircleSegmentMaxError(float max_error)
     CircleSegmentMaxError = max_error;
     for (int i = 0; i < IM_ARRAYSIZE(CircleSegmentCounts); i++)
     {
-        const float radius = (float)i;
+        const float radius = i + 1.0f;
         const int segment_count = IM_DRAWLIST_CIRCLE_AUTO_SEGMENT_CALC(radius, CircleSegmentMaxError);
         CircleSegmentCounts[i] = (ImU8)ImMin(segment_count, 255);
     }
