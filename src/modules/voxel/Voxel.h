@@ -41,7 +41,7 @@ enum class VoxelType : uint8_t {
 	Max
 };
 
-static const char* VoxelTypeStr[] = {
+static constexpr const char* VoxelTypeStr[] = {
 	"Air",
 	"Water",
 	"Generic",
