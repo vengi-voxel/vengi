@@ -30,6 +30,8 @@
 #define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System##title"
 
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications##popuptitle"
+#define POPUP_TITLE_NEW_SCENE "New scene##popuptitle"
+#define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
 #define POPUP_TITLE_INVALID_DIMENSION "Invalid dimensions##popuptitle"
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
@@ -222,18 +224,7 @@ bool VoxEditWindow::createNew(bool force) {
 		_loadFile.clear();
 		ImGui::OpenPopup(POPUP_TITLE_UNSAVED);
 	} else {
-		// TODO: layer settings edit popup
-		const voxel::Region &region = _layerSettings.region();
-		if (region.isValid()) {
-			if (!voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
-				return false;
-			}
-			afterLoad("");
-		} else {
-			ImGui::OpenPopup(POPUP_TITLE_INVALID_DIMENSION);
-			_layerSettings.reset();
-		}
-		return true;
+		ImGui::OpenPopup(POPUP_TITLE_NEW_SCENE);
 	}
 	return false;
 }
@@ -277,8 +268,8 @@ void VoxEditWindow::menuBar() {
 			ImGui::CheckboxVar("Shadow", _renderShadowVar);
 			ImGui::CheckboxVar("Outlines", "r_renderoutline");
 			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
+			// TODO: scene_settings_open
 			ImGui::EndMenu();
-			// TODO: TBButton: gravity: left, @include: definitions>menubutton, text: Settings, id: scene_settings_open
 		}
 		if (ImGui::BeginMenu(ICON_FA_EYE"View")) {
 			actionMenuItem("Reset camera", "resetcamera");
@@ -481,14 +472,7 @@ void VoxEditWindow::layers() {
 			if (_layerSettings.name.empty()) {
 				_layerSettings.name = layerMgr.layer(layerId).name;
 			}
-			// TODO: layer settings
-			if (region.isValid()) {
-				voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
-				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCenter());
-				layerMgr.setActiveLayer(layerId);
-			} else {
-				_layerSettings.reset();
-			}
+			ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
 		}
 		ImGui::TooltipText("Add a new layer");
 
@@ -715,6 +699,38 @@ void VoxEditWindow::registerPopups() {
 		ImGui::EndPopup();
 	}
 
+	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		// TODO: layer settings
+		if (ImGui::Button(ICON_FA_CHECK " OK##newscene")) {
+			const voxel::Region &region = _layerSettings.region();
+			if (region.isValid()) {
+				if (voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
+					afterLoad("");
+				}
+			} else {
+				ImGui::OpenPopup(POPUP_TITLE_INVALID_DIMENSION);
+				_layerSettings.reset();
+			}
+		}
+		ImGui::EndPopup();
+	}
+
+	if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		// TODO: layer settings
+		if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
+			const voxel::Region &region = _layerSettings.region();
+			if (region.isValid()) {
+				voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
+				voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCenter());
+				layerMgr.setActiveLayer(layerId);
+			} else {
+				_layerSettings.reset();
+			}
+		}
+		ImGui::EndPopup();
+	}
+
 	if (ImGui::BeginPopupModal(POPUP_TITLE_LOAD_PALETTE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted("Select the palette");
 		ImGui::Separator();
@@ -751,9 +767,9 @@ void VoxEditWindow::update() {
 	ImGui::Begin("##app", nullptr, windowFlags);
 	ImGui::PopStyleVar(3);
 
+	registerPopups();
 	menuBar();
 	statusBar();
-	registerPopups();
 
 	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceId);
@@ -761,7 +777,6 @@ void VoxEditWindow::update() {
 	leftWidget();
 	mainWidget();
 	rightWidget();
-
 
 	ImGui::End();
 
