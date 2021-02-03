@@ -893,21 +893,43 @@ void VoxEditWindow::treePanel() {
 
 void VoxEditWindow::lsystemPanel() {
 	if (ImGui::Begin(TITLE_LSYSTEMPANEL)) {
+		ImGui::InputText("Axiom", &_lsystemData.axiom);
+		ImGui::InputText("Rules", &_lsystemData.rulesStr);
+		ImGui::InputFloat("angle", &_lsystemData.angle);
+		ImGui::InputFloat("length", &_lsystemData.length);
+		ImGui::InputFloat("width", &_lsystemData.width);
+		ImGui::InputFloat("widthIncrement", &_lsystemData.widthIncrement);
+		ImGui::InputInt("iterations", &_lsystemData.iterations);
+		ImGui::InputFloat("leavesRadius", &_lsystemData.leavesRadius);
 
+		if (ImGui::Button(ICON_FA_CHECK " OK##lsystem")) {
+			core::DynamicArray<voxelgenerator::lsystem::Rule> rules;
+			if (voxelgenerator::lsystem::parseRules(_lsystemData.rulesStr.c_str(), rules)) {
+				sceneMgr().lsystem(_lsystemData.axiom.c_str(), rules, _lsystemData.angle,
+					_lsystemData.length, _lsystemData.width, _lsystemData.widthIncrement, _lsystemData.iterations, _lsystemData.leavesRadius);
+			}
+		}
 	}
 	ImGui::End();
 }
 
 void VoxEditWindow::noisePanel() {
 	if (ImGui::Begin(TITLE_NOISEPANEL)) {
+		ImGui::InputInt("Octaves", &_noiseData.octaves);
+		ImGui::InputFloat("Frequency", &_noiseData.frequency);
+		ImGui::InputFloat("Lacunarity", &_noiseData.lacunarity);
+		ImGui::InputFloat("Gain", &_noiseData.gain);
 
+		if (ImGui::Button(ICON_FA_CHECK " OK##noise")) {
+			sceneMgr().noise(_noiseData.octaves, _noiseData.lacunarity, _noiseData.frequency, _noiseData.gain, voxelgenerator::noise::NoiseType::ridgedMF);
+		}
 	}
 	ImGui::End();
 }
 
 void VoxEditWindow::scriptPanel() {
 	if (ImGui::Begin(TITLE_SCRIPTPANEL)) {
-
+		//_scripts = sceneMgr().luaGenerator().listScripts();
 	}
 	ImGui::End();
 }
