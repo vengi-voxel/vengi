@@ -1,5 +1,9 @@
+/**
+ * @file
+ */
+
 #include "FileDialog.h"
-#include "IMGUIInternal.h"
+#include "IMGUI.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
 #include "core/Log.h"
@@ -39,7 +43,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 	}
 
 	if (open == nullptr || *open) {
-		ImGui::SetNextWindowSize(ImVec2(740.0f, 434.0f));
+		ImGui::SetNextWindowSize(ImVec2(ImGui::Size(740.0f), ImGui::Size(494.0f)), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type){
 		case video::WindowedApp::OpenFileMode::Directory:
@@ -51,7 +55,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 			title = "Select a file";
 			break;
 		}
-		ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoResize);
+		ImGui::Begin(title, nullptr);
 
 		core::DynamicArray<io::Filesystem::DirEntry> entities;
 		if (!io::filesystem()->list(fileDialogCurrentPath, entities)) {
@@ -60,7 +64,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 
 		ImGui::Text("%s", fileDialogCurrentPath.c_str());
 
-		ImGui::BeginChild("Directories##1", ImVec2(200, 300), true, ImGuiWindowFlags_HorizontalScrollbar);
+		ImGui::BeginChild("Directories##1", ImVec2(ImGui::Size(200), ImGui::Size(300)), true, ImGuiWindowFlags_HorizontalScrollbar);
 
 		if (ImGui::Selectable("..", false, ImGuiSelectableFlags_AllowDoubleClick,
 							  ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
@@ -95,19 +99,19 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 
 		ImGui::SameLine();
 
-		ImGui::BeginChild("Files##1", ImVec2(516, 300), true, ImGuiWindowFlags_HorizontalScrollbar);
+		ImGui::BeginChild("Files##1", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::Size(300)), true, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::Columns(4);
-		static float initialSpacingColumn0 = 230.0f;
-		if (initialSpacingColumn0 > 0) {
-			ImGui::SetColumnWidth(0, initialSpacingColumn0);
-			initialSpacingColumn0 = 0.0f;
+		static float initialSpacingColumn3 = ImGui::Size(120.0f);
+		if (initialSpacingColumn3 > 0) {
+			ImGui::SetColumnWidth(3, initialSpacingColumn3);
+			initialSpacingColumn3 = 0.0f;
 		}
-		static float initialSpacingColumn1 = 80.0f;
+		static float initialSpacingColumn1 = ImGui::Size(80.0f);
 		if (initialSpacingColumn1 > 0) {
 			ImGui::SetColumnWidth(1, initialSpacingColumn1);
 			initialSpacingColumn1 = 0.0f;
 		}
-		static float initialSpacingColumn2 = 80.0f;
+		static float initialSpacingColumn2 = ImGui::Size(80.0f);
 		if (initialSpacingColumn2 > 0) {
 			ImGui::SetColumnWidth(2, initialSpacingColumn2);
 			initialSpacingColumn2 = 0.0f;
@@ -226,8 +230,10 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 						 fileDialogCurrentFolder.size() > 0 ? fileDialogCurrentFolder : fileDialogCurrentFile);
 		ImGui::PushItemWidth(724);
 		ImGui::InputText("", selectedFilePath.c_str(), selectedFilePath.size(), ImGuiInputTextFlags_ReadOnly);
-
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
+		if (type == video::WindowedApp::OpenFileMode::Save) {
+			ImGui::InputText("Filename", &fileDialogCurrentFile);
+		}
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::Size(6));
 
 		if (ImGui::Button("New folder")) {
 			ImGui::OpenPopup("NewFolderPopup");
@@ -295,11 +301,20 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 			ImGui::EndPopup();
 		}
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 320);
-
+		const ImVec2 filterTextSize = ImGui::CalcTextSize(filter.c_str());
+		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - filterTextSize.x - ImGui::Size(25.0f));
 		ImGui::LabelText("Filter:", "%s", filter.c_str());
 
-		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 120);
+		const char *buttonText = "Choose";
+		if (type == video::WindowedApp::OpenFileMode::Open) {
+			buttonText = "Open";
+		} else if (type == video::WindowedApp::OpenFileMode::Save) {
+			buttonText = "Save";
+		}
+
+		const ImVec2 cancelTextSize = ImGui::CalcTextSize("Cancel");
+		const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
+		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - cancelTextSize.x - chooseTextSize.x - ImGui::Size(40.0f));
 		if (ImGui::Button("Cancel")) {
 			fileDialogFileSelectIndex = 0;
 			fileDialogFolderSelectIndex = 0;
@@ -313,7 +328,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 			return true;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Choose")) {
+		if (ImGui::Button(buttonText)) {
 			if (type == video::WindowedApp::OpenFileMode::Directory) {
 				if (fileDialogCurrentFolder == "") {
 					SDL_strlcpy(fileDialogError, "Error: You must select a folder!", sizeof(fileDialogError));
