@@ -69,6 +69,11 @@ private:
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 	bool saveImage(const char *file) override;
 
+	void switchTreeType(voxelgenerator::TreeType treeType);
+	void treePanel();
+	void lsystemPanel();
+	void noisePanel();
+	void scriptPanel();
 public:
 	VoxEditWindow(video::WindowedApp *app);
 	virtual ~VoxEditWindow();

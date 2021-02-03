@@ -23,7 +23,10 @@
 #define TITLE_MODIFIERS "Modifiers"
 #define TITLE_LAYERS "Layers"
 #define TITLE_TOOLS "Tools"
-
+#define TITLE_TREES "Trees"
+#define TITLE_NOISEPANEL "Noise"
+#define TITLE_SCRIPTPANEL "Script"
+#define TITLE_LSYSTEMPANEL "L-System"
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications"
 #define POPUP_TITLE_INVALID_DIMENSION "Invalid dimensions"
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save"
@@ -718,16 +721,16 @@ void VoxEditWindow::update() {
 	rightWidget();
 
 	if (_showTreePanel) {
-		// TODO:
+		treePanel();
 	}
 	if (_showScriptsPanel) {
-		// TODO:
+		scriptPanel();
 	}
 	if (_showLSystemPanel) {
-		// TODO:
+		lsystemPanel();
 	}
 	if (_showNoisePanel) {
-		// TODO:
+		noisePanel();
 	}
 
 	ImGui::End();
@@ -758,6 +761,77 @@ void VoxEditWindow::update() {
 	}
 
 	updateSettings();
+}
+
+void VoxEditWindow::switchTreeType(voxelgenerator::TreeType treeType) {
+	switch (treeType) {
+		case voxelgenerator::TreeType::Dome:
+			_treeGeneratorContext.dome = voxelgenerator::TreeDome();
+			break;
+		case voxelgenerator::TreeType::DomeHangingLeaves:
+			_treeGeneratorContext.domehanging = voxelgenerator::TreeDomeHanging();
+			break;
+		case voxelgenerator::TreeType::Cone:
+			_treeGeneratorContext.cone = voxelgenerator::TreeCone();
+			break;
+		case voxelgenerator::TreeType::Ellipsis:
+			_treeGeneratorContext.ellipsis = voxelgenerator::TreeEllipsis();
+			break;
+		case voxelgenerator::TreeType::BranchesEllipsis:
+			_treeGeneratorContext.branchellipsis = voxelgenerator::TreeBranchEllipsis();
+			break;
+		case voxelgenerator::TreeType::Cube:
+		case voxelgenerator::TreeType::CubeSideCubes:
+			_treeGeneratorContext.cube = voxelgenerator::TreeCube();
+			break;
+		case voxelgenerator::TreeType::Pine:
+			_treeGeneratorContext.pine = voxelgenerator::TreePine();
+			break;
+		case voxelgenerator::TreeType::Fir:
+			_treeGeneratorContext.fir = voxelgenerator::TreeFir();
+			break;
+		case voxelgenerator::TreeType::Palm:
+			_treeGeneratorContext.palm = voxelgenerator::TreePalm();
+			break;
+		case voxelgenerator::TreeType::SpaceColonization:
+			_treeGeneratorContext.spacecolonization = voxelgenerator::TreeSpaceColonization();
+			break;
+		case voxelgenerator::TreeType::Max:
+		default:
+			break;
+	}
+	_treeGeneratorContext.cfg.type = treeType;
+}
+
+void VoxEditWindow::treePanel() {
+	if (ImGui::Begin(TITLE_TREES, nullptr, ImGuiWindowFlags_NoDecoration)) {
+		if (ImGui::Button(" OK")) {
+			_treeGeneratorContext.cfg.pos = sceneMgr().referencePosition();
+			sceneMgr().createTree(_treeGeneratorContext);
+		}
+	}
+	ImGui::End();
+}
+
+void VoxEditWindow::lsystemPanel() {
+	if (ImGui::Begin(TITLE_LSYSTEMPANEL)) {
+
+	}
+	ImGui::End();
+}
+
+void VoxEditWindow::noisePanel() {
+	if (ImGui::Begin(TITLE_NOISEPANEL)) {
+
+	}
+	ImGui::End();
+}
+
+void VoxEditWindow::scriptPanel() {
+	if (ImGui::Begin(TITLE_SCRIPTPANEL)) {
+
+	}
+	ImGui::End();
 }
 
 bool VoxEditWindow::saveImage(const char *file) {
