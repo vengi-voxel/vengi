@@ -18,18 +18,21 @@
 #include "voxelformat/VolumeFormat.h"
 
 #define LAYERPOPUP "##layerpopup"
-#define TITLE_PALETTE "Palette"
-#define TITLE_POSITIONS "Positions"
-#define TITLE_MODIFIERS "Modifiers"
-#define TITLE_LAYERS "Layers"
-#define TITLE_TOOLS "Tools"
-#define TITLE_TREES ICON_FA_TREE " Trees"
-#define TITLE_NOISEPANEL ICON_FA_RANDOM " Noise"
-#define TITLE_SCRIPTPANEL ICON_FA_CODE " Script"
-#define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System"
-#define POPUP_TITLE_UNSAVED "Unsaved Modifications"
-#define POPUP_TITLE_INVALID_DIMENSION "Invalid dimensions"
-#define POPUP_TITLE_FAILED_TO_SAVE "Failed to save"
+
+#define TITLE_PALETTE "Palette##title"
+#define TITLE_POSITIONS "Positions##title"
+#define TITLE_MODIFIERS "Modifiers##title"
+#define TITLE_LAYERS "Layers##title"
+#define TITLE_TOOLS "Tools##title"
+#define TITLE_TREES ICON_FA_TREE " Trees##title"
+#define TITLE_NOISEPANEL ICON_FA_RANDOM " Noise##title"
+#define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
+#define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System##title"
+
+#define POPUP_TITLE_UNSAVED "Unsaved Modifications##popuptitle"
+#define POPUP_TITLE_INVALID_DIMENSION "Invalid dimensions##popuptitle"
+#define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
+#define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
 
 namespace voxedit {
 
@@ -54,6 +57,7 @@ VoxEditWindow::VoxEditWindow(video::WindowedApp *app) : Super(app) {
 	_sceneAnimation->setRenderMode(voxedit::ViewportController::RenderMode::Animation);
 
 	switchTreeType(voxelgenerator::TreeType::Dome);
+	_currentSelectedPalette = voxel::getDefaultPaletteName();
 }
 
 VoxEditWindow::~VoxEditWindow() {
@@ -279,6 +283,7 @@ void VoxEditWindow::menuBar() {
 		if (ImGui::BeginMenu(ICON_FA_EYE"View")) {
 			actionMenuItem("Reset camera", "resetcamera");
 			actionMenuItem("Quad view", "toggleviewport");
+			// TODO: quadview
 			actionMenuItem("Animation view", "toggleanimation");
 			actionMenuItem("Scene view", "togglescene");
 			ImGui::EndMenu();
@@ -338,12 +343,27 @@ void VoxEditWindow::palette() {
 		actionButton("Import palette", "importpalette");
 		ImGui::SameLine();
 		if (ImGui::Button("Load palette")) {
-#if 0
-			TBButton: @include: definitions>menubutton, text: Load, id: loadpalette
-#endif
+			reloadAvailablePalettes();
+			ImGui::OpenPopup(POPUP_TITLE_LOAD_PALETTE);
 		}
 	}
 	ImGui::End();
+}
+
+void VoxEditWindow::reloadAvailablePalettes() {
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	io::filesystem()->list("", entities, "palette-*.png");
+	if (entities.empty()) {
+		Log::error("Could not find any palettes");
+	}
+	_availablePalettes.clear();
+	for (const io::Filesystem::DirEntry& file : entities) {
+		if (file.type != io::Filesystem::DirEntry::Type::file) {
+			continue;
+		}
+		const core::String& name = voxel::extractPaletteName(file.name);
+		_availablePalettes.push_back(name);
+	}
 }
 
 void VoxEditWindow::tools() {
@@ -690,6 +710,24 @@ void VoxEditWindow::registerPopups() {
 		ImGui::TextUnformatted("Failed to save the model!");
 		ImGui::Separator();
 		if (ImGui::Button(ICON_FA_CHECK " OK##failedsave")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	if (ImGui::BeginPopupModal(POPUP_TITLE_LOAD_PALETTE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::TextUnformatted("Select the palette");
+		ImGui::Separator();
+		if (ImGui::BeginCombo(ICON_FA_TREE " Type", _currentSelectedPalette.c_str(), 0)) {
+			for (const core::String& palette : _availablePalettes) {
+				if (ImGui::Selectable(palette.c_str(), palette == _currentSelectedPalette)) {
+					_currentSelectedPalette = palette;
+					sceneMgr().loadPalette(_currentSelectedPalette);
+				}
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::Button(ICON_FA_CHECK " OK##loadpalette")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();

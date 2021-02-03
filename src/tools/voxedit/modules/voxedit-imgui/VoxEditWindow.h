@@ -62,6 +62,10 @@ private:
 		float leavesRadius = 8.0f;
 	};
 	LSystemData _lsystemData;
+	core::String _currentSelectedPalette;
+	core::DynamicArray<core::String> _availablePalettes;
+
+	void reloadAvailablePalettes();
 
 	void menuBar();
 	void palette();
