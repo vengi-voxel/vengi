@@ -39,6 +39,11 @@ private:
 	Viewport* _sceneFront = nullptr;
 	Viewport* _sceneAnimation = nullptr;
 
+	bool _popupUnsaved = false;
+	bool _popupNewScene = false;
+	bool _popupFailedToSave = false;
+	bool _popupInvalidDimensions = false;
+
 	struct NoiseData {
 		int octaves = 4;
 		float frequency = 0.01f;

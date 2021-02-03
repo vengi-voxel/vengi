@@ -350,7 +350,7 @@ app::AppState IMGUIApp::onRunning() {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
 
-		char buf[512];
+		char buf[512] = "";
 		if (showFileDialog(&_showFileDialog, buf, sizeof(buf), _fileDialogMode, _fileDialogFilter)) {
 			_fileDialogCallback(buf);
 			_showFileDialog = false;

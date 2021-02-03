@@ -37,12 +37,12 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 	static FileDialogSortOrder dateSortOrder = FileDialogSortOrder::None;
 	static FileDialogSortOrder typeSortOrder = FileDialogSortOrder::None;
 
-	if (!io::filesystem()->exists(fileDialogCurrentPath)) {
-		fileDialogCurrentPath = io::filesystem()->homePath();
-		lastDirVar->setVal(fileDialogCurrentPath);
-	}
-
 	if (open == nullptr || *open) {
+		if (!io::filesystem()->exists(fileDialogCurrentPath)) {
+			fileDialogCurrentPath = io::filesystem()->homePath();
+			lastDirVar->setVal(fileDialogCurrentPath);
+		}
+
 		ImGui::SetNextWindowSize(ImVec2(ImGui::Size(740.0f), ImGui::Size(494.0f)), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type){

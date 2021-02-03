@@ -180,7 +180,7 @@ bool VoxEditWindow::save(const core::String &file) {
 	}
 	if (!sceneMgr().save(file)) {
 		Log::warn("Failed to save the model");
-		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
+		_popupFailedToSave = true;
 		return false;
 	}
 	Log::info("Saved the model to %s", file.c_str());
@@ -190,7 +190,7 @@ bool VoxEditWindow::save(const core::String &file) {
 
 bool VoxEditWindow::load(const core::String &file) {
 	if (file.empty()) {
-		_app->openDialog([this] (const core::String file) { core::String copy(file); load(copy); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
+		_app->openDialog([this] (const core::String file) { load(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
 	}
 
@@ -203,7 +203,7 @@ bool VoxEditWindow::load(const core::String &file) {
 	}
 
 	_loadFile = file;
-	ImGui::OpenPopup(POPUP_TITLE_UNSAVED);
+	_popupUnsaved = true;
 	return false;
 }
 
@@ -222,9 +222,9 @@ bool VoxEditWindow::loadAnimationEntity(const core::String &file) {
 bool VoxEditWindow::createNew(bool force) {
 	if (!force && sceneMgr().dirty()) {
 		_loadFile.clear();
-		ImGui::OpenPopup(POPUP_TITLE_UNSAVED);
+		_popupUnsaved = true;
 	} else {
-		ImGui::OpenPopup(POPUP_TITLE_NEW_SCENE);
+		_popupNewScene = true;
 	}
 	return false;
 }
@@ -691,6 +691,23 @@ void VoxEditWindow::updateSettings() {
 }
 
 void VoxEditWindow::registerPopups() {
+	if (_popupUnsaved) {
+		ImGui::OpenPopup(POPUP_TITLE_UNSAVED);
+		_popupUnsaved = false;
+	}
+	if (_popupNewScene) {
+		ImGui::OpenPopup(POPUP_TITLE_NEW_SCENE);
+		_popupNewScene = false;
+	}
+	if (_popupFailedToSave) {
+		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
+		_popupFailedToSave = false;
+	}
+	if (_popupInvalidDimensions) {
+		ImGui::OpenPopup(POPUP_TITLE_INVALID_DIMENSION);
+		_popupInvalidDimensions = false;
+	}
+
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted(ICON_FA_QUESTION);
 		ImGui::Spacing();
@@ -729,6 +746,7 @@ void VoxEditWindow::registerPopups() {
 
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiPopupFlags_AnyPopupLevel)) {
 		// TODO: layer settings
+		// TODO: size, position
 		if (ImGui::Button(ICON_FA_CHECK " OK##newscene")) {
 			const voxel::Region &region = _layerSettings.region();
 			if (region.isValid()) {
@@ -736,7 +754,7 @@ void VoxEditWindow::registerPopups() {
 					afterLoad("");
 				}
 			} else {
-				ImGui::OpenPopup(POPUP_TITLE_INVALID_DIMENSION);
+				_popupInvalidDimensions = true;
 				_layerSettings.reset();
 			}
 		}
