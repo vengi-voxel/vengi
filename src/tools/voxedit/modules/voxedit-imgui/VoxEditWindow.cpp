@@ -23,10 +23,10 @@
 #define TITLE_MODIFIERS "Modifiers"
 #define TITLE_LAYERS "Layers"
 #define TITLE_TOOLS "Tools"
-#define TITLE_TREES "Trees"
-#define TITLE_NOISEPANEL "Noise"
-#define TITLE_SCRIPTPANEL "Script"
-#define TITLE_LSYSTEMPANEL "L-System"
+#define TITLE_TREES ICON_FA_TREE " Trees"
+#define TITLE_NOISEPANEL ICON_FA_RANDOM " Noise"
+#define TITLE_SCRIPTPANEL ICON_FA_CODE " Script"
+#define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System"
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications"
 #define POPUP_TITLE_INVALID_DIMENSION "Invalid dimensions"
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save"
@@ -283,18 +283,6 @@ void VoxEditWindow::menuBar() {
 			actionMenuItem("Scene view", "togglescene");
 			ImGui::EndMenu();
 		}
-		if (ImGui::MenuItem(ICON_FA_TREE " Trees")) {
-			_showTreePanel = !_showTreePanel;
-		}
-		if (ImGui::MenuItem(ICON_FA_CODE " Scripts")) {
-			_showScriptsPanel = !_showScriptsPanel;
-		}
-		if (ImGui::MenuItem(ICON_FA_RANDOM " Noise")) {
-			_showNoisePanel = !_showNoisePanel;
-		}
-		if (ImGui::MenuItem(ICON_FA_LEAF " L-System")) {
-			_showLSystemPanel = !_showLSystemPanel;
-		}
 		ImGui::EndMenuBar();
 	}
 }
@@ -482,16 +470,20 @@ void VoxEditWindow::layers() {
 				_layerSettings.reset();
 			}
 		}
+		ImGui::TooltipText("Add a new layer");
 
 		ImGui::SameLine();
-		if (ImGui::ToggleButton(ICON_FA_PLAY"##animatelayers", sceneMgr.animateActive())) {
+		if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", !sceneMgr.animateActive() || layerMgr.validLayers() <= 1)) {
 			core::String cmd = core::string::format("animate %f", _animationSpeedVar->floatVal());
 			executeCommand(cmd.c_str());
 		}
+		ImGui::TooltipText("Animate the layers");
 		ImGui::SameLine();
 		actionButton(ICON_FA_CARET_SQUARE_UP, "layermoveup");
+		ImGui::TooltipText("Move the layer one level up");
 		ImGui::SameLine();
 		actionButton(ICON_FA_CARET_SQUARE_DOWN, "layermovedown");
+		ImGui::TooltipText("Move the layer one level down");
 	}
 	ImGui::End();
 }
@@ -555,6 +547,16 @@ void VoxEditWindow::mainWidget() {
 }
 
 void VoxEditWindow::rightWidget() {
+	positionsPanel();
+	modifierPanel();
+	treePanel();
+	scriptPanel();
+	lsystemPanel();
+	noisePanel();
+	layers();
+}
+
+void VoxEditWindow::positionsPanel() {
 	if (ImGui::Begin(TITLE_POSITIONS, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
 			static glm::vec3 translate {0.0f};
@@ -597,7 +599,9 @@ void VoxEditWindow::rightWidget() {
 		}
 	}
 	ImGui::End();
+}
 
+void VoxEditWindow::modifierPanel() {
 	if (ImGui::Begin(TITLE_MODIFIERS, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		actionButton(ICON_FA_CROP " Crop", "crop");
 		actionButton(ICON_FA_EXPAND_ARROWS_ALT " Extend", "resize");
@@ -632,8 +636,6 @@ void VoxEditWindow::rightWidget() {
 		}
 	}
 	ImGui::End();
-
-	layers();
 }
 
 void VoxEditWindow::updateSettings() {
@@ -722,18 +724,6 @@ void VoxEditWindow::update() {
 	mainWidget();
 	rightWidget();
 
-	if (_showTreePanel) {
-		treePanel();
-	}
-	if (_showScriptsPanel) {
-		scriptPanel();
-	}
-	if (_showLSystemPanel) {
-		lsystemPanel();
-	}
-	if (_showNoisePanel) {
-		noisePanel();
-	}
 
 	ImGui::End();
 
@@ -751,6 +741,10 @@ void VoxEditWindow::update() {
 		ImGui::DockBuilderDockWindow(TITLE_POSITIONS, dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_LAYERS, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_TREES, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_NOISEPANEL, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_TOOLS, dockIdLeftDown);
 		ImGui::DockBuilderDockWindow(_scene->id().c_str(), dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneLeft->id().c_str(), dockIdMain);

@@ -39,11 +39,6 @@ private:
 	Viewport* _sceneFront = nullptr;
 	Viewport* _sceneAnimation = nullptr;
 
-	bool _showTreePanel = false;
-	bool _showScriptsPanel = false;
-	bool _showLSystemPanel = false;
-	bool _showNoisePanel = false;
-
 	struct NoiseData {
 		int octaves = 4;
 		float frequency = 0.01f;
@@ -98,6 +93,9 @@ private:
 	void lsystemPanel();
 	void noisePanel();
 	void scriptPanel();
+	void modifierPanel();
+	void positionsPanel();
+
 public:
 	VoxEditWindow(video::WindowedApp *app);
 	virtual ~VoxEditWindow();
