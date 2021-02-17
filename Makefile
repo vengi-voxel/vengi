@@ -60,14 +60,6 @@ define UPDATE_GIT
 	fi;
 endef
 
-define UPDATE_HG
-	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
-		hg clone $(2) $(UPDATEDIR)/$(1).sync; \
-	else \
-		cd $(UPDATEDIR)/$(1).sync && hg pull && hg update; \
-	fi;
-endef
-
 update-libuv:
 	$(call UPDATE_GIT,libuv,https://github.com/libuv/libuv.git)
 	rm -rf contrib/libs/libuv/include/uv/*.[ch]
@@ -140,7 +132,7 @@ update-glm:
 	rm contrib/libs/glm/glm/CMakeLists.txt
 
 update-sdl2:
-	$(call UPDATE_HG,sdl2,https://hg.libsdl.org/SDL)
+	$(call UPDATE_GIT,sdl2,https://github.com/libsdl-org/SDL.git)
 	rm -rf contrib/libs/sdl2/src/* contrib/libs/sdl2/include/* contrib/libs/sdl2/cmake/*
 	cp -r $(UPDATEDIR)/sdl2.sync/src/* contrib/libs/sdl2/src
 	cp -r $(UPDATEDIR)/sdl2.sync/wayland-protocols/* contrib/libs/sdl2/wayland-protocols
