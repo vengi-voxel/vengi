@@ -1116,7 +1116,7 @@ public:
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
-    set_context((CONTEXT*)context);
+    set_context(static_cast<CONTEXT*>(context));
     set_error_addr(error_addr);
     CONTEXT localCtx; // used when no context is provided
 
@@ -4159,7 +4159,11 @@ public:
 #elif defined(__arm__)
     error_addr = reinterpret_cast<void *>(uctx->uc_mcontext.arm_pc);
 #elif defined(__aarch64__)
-    error_addr = reinterpret_cast<void *>(uctx->uc_mcontext.pc);
+    #if defined(__APPLE__)
+      error_addr = reinterpret_cast<void *>(uctx->uc_mcontext->__ss.__pc);
+    #else
+      error_addr = reinterpret_cast<void *>(uctx->uc_mcontext.pc);
+    #endif
 #elif defined(__mips__)
     error_addr = reinterpret_cast<void *>(
         reinterpret_cast<struct sigcontext *>(&uctx->uc_mcontext)->sc_pc);

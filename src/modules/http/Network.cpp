@@ -6,7 +6,7 @@
 #include "Network.cpp.h"
 
 bool networkInit() {
-	#ifdef WIN32
+#ifdef WIN32
 	WSADATA wsaData;
 	const int wsaResult = WSAStartup(MAKEWORD(2,2), &wsaData);
 	if (wsaResult != NO_ERROR) {
