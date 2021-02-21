@@ -9,7 +9,7 @@ jobs:
         - uses: actions/checkout@v1
 
         - name: Setup
-          run: brew install qt5 mosquitto libuv sdl2 libpq sdl2_mixer
+          run: brew install mosquitto libuv sdl2 libpq sdl2_mixer
 
         - name: Build
           run: |
@@ -57,7 +57,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install cmake debhelper devscripts build-essential lintian libsdl2-dev libuv1-dev libsdl2-mixer-dev postgresql-server-dev-all libpq-dev libenet-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers wayland-protocols pkg-config uuid-dev
+            sudo apt-get install cmake debhelper devscripts build-essential lintian libsdl2-dev libuv1-dev libsdl2-mixer-dev postgresql-server-dev-all libpq-dev libenet-dev opencl-c-headers wayland-protocols pkg-config uuid-dev
 
         - name: Ubuntu
           run: |
@@ -86,7 +86,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install libsdl2-dev postgresql-server-dev-10 libpq-dev libenet-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers wayland-protocols pkg-config uuid-dev ninja-build
+            sudo apt-get install libsdl2-dev postgresql-server-dev-10 libpq-dev libenet-dev opencl-c-headers wayland-protocols pkg-config uuid-dev ninja-build
 
         - name: Linux
           run: |
