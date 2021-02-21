@@ -57,7 +57,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install cmake debhelper devscripts build-essential lintian libsdl2-dev libuv1-dev libsdl2-mixer-dev postgresql-server-dev-all libpq-dev libenet-dev opencl-c-headers wayland-protocols pkg-config uuid-dev
+            sudo apt-get install cmake debhelper devscripts build-essential lintian libsdl2-dev libuv1-dev libsdl2-mixer-dev postgresql-server-dev-13 libpq-dev libenet-dev opencl-c-headers wayland-protocols pkg-config uuid-dev
 
         - name: Ubuntu
           run: |
@@ -80,13 +80,30 @@ jobs:
 
     linux:
         runs-on: ubuntu-20.04
+
+        services:
+          postgres:
+            image: postgres:13
+            env:
+              POSTGRES_DB: postgres_db
+              POSTGRES_PASSWORD: postgres_password
+              POSTGRES_PORT: 5432
+              POSTGRES_USER: postgres_user
+            ports:
+            - 5432:5432
+            options: >-
+              --health-cmd pg_isready
+              --health-interval 10s
+              --health-timeout 5s
+              --health-retries 5
+
         steps:
         - uses: actions/checkout@v1
 
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install libsdl2-dev postgresql-server-dev-10 libpq-dev libenet-dev opencl-c-headers wayland-protocols pkg-config uuid-dev ninja-build
+            sudo apt-get install libsdl2-dev postgresql-server-dev-13 libpq-dev libenet-dev opencl-c-headers wayland-protocols pkg-config uuid-dev ninja-build
 
         - name: Linux
           run: |
