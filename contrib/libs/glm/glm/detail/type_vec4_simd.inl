@@ -304,7 +304,7 @@ namespace detail
 	{
 		static bool call(vec<4, float, Q> const& v1, vec<4, float, Q> const& v2)
 		{
-			return _mm_movemask_ps(_mm_cmpeq_ps(v1.data, v2.data)) != 0;
+			return _mm_movemask_ps(_mm_cmpneq_ps(v1.data, v2.data)) == 0;
 		}
 	};
 
