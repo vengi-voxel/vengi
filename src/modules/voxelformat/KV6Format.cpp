@@ -85,9 +85,9 @@ bool KV6Format::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 					wrap(stream.readByte(g))
 					wrap(stream.readByte(r))
 
-					const uint8_t nr = glm::clamp((uint32_t)glm::round((r * 255) / 63.0f), 0u, 255u);
-					const uint8_t ng = glm::clamp((uint32_t)glm::round((g * 255) / 63.0f), 0u, 255u);
-					const uint8_t nb = glm::clamp((uint32_t)glm::round((b * 255) / 63.0f), 0u, 255u);
+					const uint8_t nr = glm::clamp((uint32_t)glm::round(((float)r * 255.0f) / 63.0f), 0u, 255u);
+					const uint8_t ng = glm::clamp((uint32_t)glm::round(((float)g * 255.0f) / 63.0f), 0u, 255u);
+					const uint8_t nb = glm::clamp((uint32_t)glm::round(((float)b * 255.0f) / 63.0f), 0u, 255u);
 
 					const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255u);
 					const int index = core::Color::getClosestMatch(color, materialColors);
