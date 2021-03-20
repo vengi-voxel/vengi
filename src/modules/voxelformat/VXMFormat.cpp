@@ -49,14 +49,14 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	int version;
 	if (magic[3] >= '0' && magic[3] <= '9') {
 		version = magic[3] - '0';
-	} else if (magic[3] >= 'A' && magic[3] <= 'B') {
+	} else if (magic[3] >= 'A' && magic[3] <= 'C') {
 		version = 10 + magic[3] - 'A';
 	} else {
 		Log::error("Invalid version found");
 		return false;
 	}
 
-	if (version < 4 || version > 11) {
+	if (version < 4 || version > 12) {
 		Log::error("Could not load vxm file: Unsupported version found (%i)", version);
 		return false;
 	}
@@ -255,46 +255,55 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	}
 
 	const Region region(glm::ivec3(0), glm::ivec3(size) - 1);
-	RawVolume* volume = new RawVolume(region);
 
 	if (!foundPivot) {
 		ipivot = region.getCenter();
 	}
 
-	int idx = 0;
-	for (;;) {
-		uint8_t length;
-		wrap(stream.readByte(length));
-		if (length == 0u) {
-			break;
-		}
+	uint8_t maxLayers = 1;
+	if (version > 12) {
+		wrap(stream.readByte(maxLayers));
+	}
 
-		uint8_t matIdx;
-		wrap(stream.readByte(matIdx));
-		if (matIdx == 0xFFU) {
-			idx += length;
-			continue;
-		}
-		if (matIdx >= materialAmount) {
-			// at least try to load the rest
-			idx += length;
-			continue;
-		}
-
-		// left to right, bottom to top, front to back
-		for (int i = idx; i < idx + length; i++) {
-			const int xx = i / (int)(size.y * size.z);
-			const int yy = (i / (int)size.z) % (int)size.y;
-			const int zz = i % (int)size.z;
-			const uint8_t index = palette[matIdx];
-			voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-			if (index == 0) {
-				voxelType = voxel::VoxelType::Air;
+	for (uint8_t layer = 0; layer < maxLayers; ++layer) {
+		RawVolume* volume = new RawVolume(region);
+		int idx = 0;
+		for (;;) {
+			uint8_t length;
+			wrap(stream.readByte(length));
+			if (length == 0u) {
+				break;
 			}
-			const Voxel voxel = createColorVoxel(voxelType, index);
-			volume->setVoxel(size.x - 1 - xx, yy, zz, voxel);
+
+			uint8_t matIdx;
+			wrap(stream.readByte(matIdx));
+			if (matIdx == 0xFFU) {
+				idx += length;
+				continue;
+			}
+			if (matIdx >= materialAmount) {
+				// at least try to load the rest
+				idx += length;
+				continue;
+			}
+
+			// left to right, bottom to top, front to back
+			for (int i = idx; i < idx + length; i++) {
+				const int xx = i / (int)(size.y * size.z);
+				const int yy = (i / (int)size.z) % (int)size.y;
+				const int zz = i % (int)size.z;
+				const uint8_t index = palette[matIdx];
+				voxel::VoxelType voxelType = voxel::VoxelType::Generic;
+				if (index == 0) {
+					voxelType = voxel::VoxelType::Air;
+				}
+				const Voxel voxel = createColorVoxel(voxelType, index);
+				volume->setVoxel(size.x - 1 - xx, yy, zz, voxel);
+			}
+			idx += length;
 		}
-		idx += length;
+		const core::String& name = core::String::format("layer %i", (int)layer);
+		volumes.push_back(VoxelVolume(volume, name, true, ipivot));
 	}
 
 	if (version >= 10) {
@@ -315,7 +324,6 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	}
 
 	delete[] palette;
-	volumes.push_back(VoxelVolume(volume, "", true, ipivot));
 	return true;
 }
 
