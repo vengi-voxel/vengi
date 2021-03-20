@@ -1,4 +1,4 @@
-project(client)
+project(owclient)
 add_subdirectory(modules)
 
 set(SRCS
@@ -17,11 +17,11 @@ set(LUA_SRCS
 	ui/window/popup.lua
 	ui/window/style.lua
 	ui/window/validation_failed.lua
-	ui/${PROJECT_NAME}.lua
+	ui/client.lua
 )
 
 set(FILES
-	client/client-keybindings.cfg
+	${PROJECT_NAME}/${PROJECT_NAME}-keybindings.cfg
 
 	shared/font.ttf
 	shared/biomes.lua

@@ -1,4 +1,4 @@
-project(server)
+project(owserver)
 set(SRCS
 	Server.cpp Server.h
 )
@@ -48,7 +48,7 @@ set(LUA_SRCS
 )
 
 set(FILES
-	server/server-autoexec.cfg
+	${PROJECT_NAME}/${PROJECT_NAME}-autoexec.cfg
 )
 set(MANIFESTS
 	deployment/postgres-config.yaml.in
@@ -56,8 +56,9 @@ set(MANIFESTS
 	deployment/postgres-service.yaml.in
 	deployment/postgres-storage.yaml.in
 	deployment/postgres-secrets.yaml.in
-	deployment/server-deployment.yaml.in
-	deployment/server-service.yaml.in
+	deployment/owserver-deployment.yaml.in
+	deployment/owserver-service.yaml.in
+	deployment/owserver-ingress.yaml.in
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS})

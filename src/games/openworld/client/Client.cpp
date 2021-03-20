@@ -55,7 +55,7 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		_messageSender(messageSender), _worldRenderer(assetVolumeCache), _movement(soundManager),
 		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _meshCache(meshCache),
 		_camera(_worldRenderer), _soundManager(soundManager), _assetVolumeCache(assetVolumeCache) {
-	init(ORGANISATION, "client");
+	init(ORGANISATION, "owclient");
 }
 
 Client::~Client() {
