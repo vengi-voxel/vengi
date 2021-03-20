@@ -147,7 +147,13 @@ bool QEFFormat::saveGroups(const VoxelVolumes &volumes, const io::FilePtr &file)
 					continue;
 				}
 				// mask != 0 means solid, 1 is core (surrounded by others and not visible)
-				const int vismask = 0xff;
+				// if (mask &&  2 ==  2) // left side visible
+				// if (mask &&  4 ==  4) // right side visible
+				// if (mask &&  8 ==  8) // top side visible
+				// if (mask && 16 == 16) // bottom side visible
+				// if (mask && 32 == 32) // front side visible
+				// if (mask && 64 == 64) // back side visible
+				const int vismask = 0x7E; // TODO: this produces voxels where every side is visible, it's up to the importer to fix this atm
 				stream.addStringFormat(false, "%i %i %i %i %i\n", x, z, y, voxel.getColor(), vismask);
 			}
 		}

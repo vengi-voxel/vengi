@@ -18,7 +18,7 @@ namespace voxel {
  * @see QBTFormat
  * @see QBFormat
  *
- * http://minddesk.com/learn/article.php?id=23
+ * https://getqubicle.com/qubicle/documentation/docs/file/qef/
  */
 class QEFFormat : public VoxFileFormat {
 public:

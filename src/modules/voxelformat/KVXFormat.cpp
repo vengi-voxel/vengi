@@ -172,7 +172,7 @@ bool KVXFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 				 * fill the inner voxels
 				 */
 				if (!(header.slabbackfacecullinfo & (1 << 4))) {
-					for (int i = lastZ + 1; i < header.slabztop; ++i) {
+					for (uint32_t i = lastZ + 1; i < header.slabztop; ++i) {
 						volume->setVoxel(x, (zsiz - 1) - i, y, lastCol);
 					}
 				}
