@@ -33,7 +33,7 @@ if (${STACK_DETAILS_AUTO_DETECT})
 	include(FindPackageHandleStandardArgs)
 
 	# find libdw
-	find_path(LIBDW_INCLUDE_DIR NAMES "elfutil	s/libdw.h" "elfutils/libdwfl.h")
+	find_path(LIBDW_INCLUDE_DIR NAMES "elfutils/libdw.h" "elfutils/libdwfl.h")
 	find_library(LIBDW_LIBRARY dw)
 	set(LIBDW_INCLUDE_DIRS ${LIBDW_INCLUDE_DIR} )
 	set(LIBDW_LIBRARIES ${LIBDW_LIBRARY} )
