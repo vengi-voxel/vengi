@@ -37,7 +37,6 @@ set(COMPILER_SRCS
 	compiler/idl_gen_java.cpp
 	compiler/idl_gen_go.cpp
 	compiler/idl_gen_grpc.cpp
-	compiler/idl_gen_js_ts.cpp
 	compiler/idl_gen_json_schema.cpp
 	compiler/idl_gen_kotlin.cpp
 	compiler/idl_gen_lobster.cpp
@@ -47,6 +46,7 @@ set(COMPILER_SRCS
 	compiler/idl_gen_rust.cpp
 	compiler/idl_gen_swift.cpp
 	compiler/idl_gen_text.cpp
+	compiler/idl_gen_ts.cpp
 	compiler/idl_parser.cpp
 	compiler/reflection.cpp
 	compiler/util.cpp
