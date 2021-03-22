@@ -85,10 +85,10 @@ jobs:
           postgres:
             image: postgres:13
             env:
-              POSTGRES_DB: postgres_db
-              POSTGRES_PASSWORD: postgres_password
+              POSTGRES_DB: enginetest
+              POSTGRES_PASSWORD: engine
               POSTGRES_PORT: 5432
-              POSTGRES_USER: postgres_user
+              POSTGRES_USER: vengi
             ports:
             - 5432:5432
             options: >-
@@ -113,6 +113,8 @@ jobs:
             cmake --build .
 
         - name: Test
+          env:
+            DB_HOST: postgres
           run: |
             cd build
             ctest -V -R tests-animation$
