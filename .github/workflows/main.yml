@@ -113,8 +113,6 @@ jobs:
             cmake --build .
 
         - name: Test
-          env:
-            DB_HOST: postgres
           run: |
             cd build
             ctest -V -R tests-animation$
