@@ -17,6 +17,13 @@ TEST_F(QEFFormatTest, testLoad) {
 	ASSERT_NE(nullptr, volume) << "Could not load qef file";
 }
 
+TEST_F(QEFFormatTest, testLoadRGB) {
+	QEFFormat f;
+	std::unique_ptr<RawVolume> volume(load("rgb.qef", f));
+	ASSERT_NE(nullptr, volume) << "Could not load qef file";
+	testRGB(volume.get());
+}
+
 TEST_F(QEFFormatTest, testSaveSmallVoxel) {
 	QEFFormat f;
 	Region region(glm::ivec3(0), glm::ivec3(1));

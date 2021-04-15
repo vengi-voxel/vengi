@@ -57,6 +57,7 @@ set(TEST_FILES
 	tests/rgb.vxl
 	tests/rgb.vox
 	tests/rgb.qb
+	tests/rgb.qef
 	tests/rgb.cub
 )
 
