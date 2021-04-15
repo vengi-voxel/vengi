@@ -17,6 +17,12 @@ TEST_F(QEFFormatTest, testLoad) {
 	ASSERT_NE(nullptr, volume) << "Could not load qef file";
 }
 
+TEST_F(QEFFormatTest, testLoad2) {
+	QEFFormat f;
+	std::unique_ptr<RawVolume> volume(load("testload.qef", f));
+	ASSERT_NE(nullptr, volume) << "Could not load qef file";
+}
+
 TEST_F(QEFFormatTest, testLoadRGB) {
 	QEFFormat f;
 	std::unique_ptr<RawVolume> volume(load("rgb.qef", f));

@@ -44,6 +44,7 @@ set(TEST_FILES
 	tests/qubicle.qb
 	tests/qubicle.qbt
 	tests/qubicle.qef
+	tests/testload.qef
 	tests/aceofspades.vxl
 	tests/chronovox-studio.csm
 	tests/cc.vxl
