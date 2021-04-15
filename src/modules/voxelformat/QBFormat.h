@@ -12,7 +12,7 @@ namespace voxel {
 /**
  * @brief Qubicle Binary (qb) format.
  *
- * http://minddesk.com/learn/article.php?id=22
+ * https://getqubicle.com/qubicle/documentation/docs/file/qb/
  */
 class QBFormat : public VoxFileFormat {
 private:
