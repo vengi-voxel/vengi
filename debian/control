@@ -6,7 +6,7 @@ Build-Depends:
  cmake,
  debhelper,
  libsdl2-dev,
- postgresql-server-dev-13,
+ postgresql-server-dev-12,
  libpq-dev,
  libenet-dev,
  libuv1-dev,
