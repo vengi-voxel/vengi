@@ -11,6 +11,7 @@ General:
    - Improved magicavoxel transform support for some models
    - Fixed magicavoxel x-axis handling
    - Support newer versions of vxm
+   - Fixed bug in file dialog which prevents you to delete characters #77
 
 VoxEdit:
 
