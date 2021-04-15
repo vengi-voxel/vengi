@@ -96,7 +96,7 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
 	io.KeyCtrl  = (modifiers & KMOD_CTRL) != 0;
 	io.KeyAlt   = (modifiers & KMOD_ALT) != 0;
 	io.KeySuper = (modifiers & KMOD_GUI) != 0;
-	return true;
+	return false;
 }
 
 bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
