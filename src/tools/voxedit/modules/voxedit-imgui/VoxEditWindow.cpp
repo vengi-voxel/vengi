@@ -530,10 +530,10 @@ void VoxEditWindow::layers() {
 
 void VoxEditWindow::statusBar() {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
-	const ImVec2 &size = viewport->GetWorkSize();
+	const ImVec2 &size = viewport->WorkSize;
 	const float statusBarHeight = ImGui::Size((float)((ui::imgui::IMGUIApp*)_app)->fontSize() + 16.0f);
 	ImGui::SetNextWindowSize(ImVec2(size.x, statusBarHeight));
-	ImVec2 statusBarPos = viewport->GetWorkPos();
+	ImVec2 statusBarPos = viewport->WorkPos;
 	statusBarPos.y += size.y - statusBarHeight;
 	ImGui::SetNextWindowPos(statusBarPos);
 	const uint32_t statusBarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove;
@@ -768,8 +768,8 @@ void VoxEditWindow::update() {
 	// const ImVec2 size = _app->frameBufferDimension();
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 
-	ImGui::SetNextWindowPos(viewport->GetWorkPos());
-	ImGui::SetNextWindowSize(viewport->GetWorkSize());
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
 	ImGui::SetNextWindowViewport(viewport->ID);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -798,7 +798,7 @@ void VoxEditWindow::update() {
 	if (!init) {
 		ImGui::DockBuilderRemoveNode(dockspaceId);
 		ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
-		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->GetWorkSize());
+		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
 		ImGuiID dockIdMain = dockspaceId;
 		ImGuiID dockIdLeft = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Left, 0.10f, nullptr, &dockIdMain);
 		ImGuiID dockIdRight = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Right, 0.20f, nullptr, &dockIdMain);
