@@ -284,7 +284,6 @@ app::AppState IMGUIApp::onInit() {
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
-	io.ConfigDockingWithShift = false;
 
 #ifdef _WIN32
 	SDL_SysWMinfo wmInfo;
