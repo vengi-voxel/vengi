@@ -73,6 +73,7 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.dylib"     //???
 
 #elif defined(__OpenBSD__)
+/* OpenBSD */
 #define DEFAULT_OGL "libGL.so"
 #define DEFAULT_EGL "libEGL.so"
 #define DEFAULT_OGL_ES2 "libGLESv2.so"
@@ -80,9 +81,10 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.so"
 
 #else
-/* Desktop Linux */
+/* Desktop Linux/Unix-like */
 #define DEFAULT_OGL "libGL.so.1"
 #define DEFAULT_EGL "libEGL.so.1"
+#define ALT_OGL "libOpenGL.so.0"
 #define DEFAULT_OGL_ES2 "libGLESv2.so.2"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so.1"
 #define DEFAULT_OGL_ES "libGLESv1_CM.so.1"
@@ -374,6 +376,12 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
         else {
             path = DEFAULT_OGL;
             egl_dll_handle = SDL_LoadObject(path);
+#ifdef ALT_OGL
+            if (egl_dll_handle == NULL) {
+                path = ALT_OGL;
+                egl_dll_handle = SDL_LoadObject(path);
+            }
+#endif
         }
 #endif        
     }
@@ -684,21 +692,22 @@ static void dumpconfig(_THIS, EGLConfig config)
 #endif /* DUMP_EGL_CONFIG */
 
 int
-SDL_EGL_ChooseConfig(_THIS) 
+SDL_EGL_ChooseConfig(_THIS)
 {
-/* 64 seems nice. */
+    /* 64 seems nice. */
     EGLint attribs[64];
     EGLint found_configs = 0, value;
     /* 128 seems even nicer here */
     EGLConfig configs[128];
     SDL_bool has_matching_format = SDL_FALSE;
-    int i, j, best_bitdiff = -1, bitdiff;
+    int i, j, best_bitdiff = -1, best_truecolor_bitdiff = -1;
+    int truecolor_config_idx = -1;
    
     if (!_this->egl_data) {
         /* The EGL library wasn't loaded, SDL_GetError() should have info */
         return -1;
     }
-  
+
     /* Get a valid EGL configuration */
     i = 0;
     attribs[i++] = EGL_RED_SIZE;
@@ -767,6 +776,8 @@ SDL_EGL_ChooseConfig(_THIS)
 
     attribs[i++] = EGL_NONE;
 
+    SDL_assert(i < SDL_arraysize(attribs));
+
     if (_this->egl_data->eglChooseConfig(_this->egl_data->egl_display,
         attribs,
         configs, SDL_arraysize(configs),
@@ -776,15 +787,17 @@ SDL_EGL_ChooseConfig(_THIS)
     }
 
     /* first ensure that a found config has a matching format, or the function will fall through. */
-    for (i = 0; i < found_configs; i++ ) {
-        if (_this->egl_data->egl_required_visual_id)
-        {
+    if (_this->egl_data->egl_required_visual_id)
+    {
+        for (i = 0; i < found_configs; i++ ) {
             EGLint format;
             _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
                                             configs[i],
                                             EGL_NATIVE_VISUAL_ID, &format);
-            if (_this->egl_data->egl_required_visual_id == format)
+            if (_this->egl_data->egl_required_visual_id == format) {
                 has_matching_format = SDL_TRUE;
+                break;
+            }
         }
     }
 
@@ -792,17 +805,30 @@ SDL_EGL_ChooseConfig(_THIS)
     /* From those, we select the one that matches our requirements more closely via a makeshift algorithm */
 
     for (i = 0; i < found_configs; i++ ) {
-        if (has_matching_format && _this->egl_data->egl_required_visual_id)
-        {
+        SDL_bool is_truecolor = SDL_FALSE;
+        int bitdiff = 0;
+
+        if (has_matching_format && _this->egl_data->egl_required_visual_id) {
             EGLint format;
             _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
                                             configs[i], 
                                             EGL_NATIVE_VISUAL_ID, &format);
-            if (_this->egl_data->egl_required_visual_id != format)
+            if (_this->egl_data->egl_required_visual_id != format) {
                 continue;
+            }
         }
 
-        bitdiff = 0;
+        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, configs[i], EGL_RED_SIZE, &value);
+        if (value == 8) {
+            _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, configs[i], EGL_GREEN_SIZE, &value);
+            if (value == 8) {
+                _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, configs[i], EGL_BLUE_SIZE, &value);
+                if (value == 8) {
+                    is_truecolor = SDL_TRUE;
+                }
+            }
+        }
+
         for (j = 0; j < SDL_arraysize(attribs) - 1; j += 2) {
             if (attribs[j] == EGL_NONE) {
                break;
@@ -820,16 +846,37 @@ SDL_EGL_ChooseConfig(_THIS)
             }
         }
 
-        if (bitdiff < best_bitdiff || best_bitdiff == -1) {
+        if ((bitdiff < best_bitdiff) || (best_bitdiff == -1)) {
             _this->egl_data->egl_config = configs[i];
-            
             best_bitdiff = bitdiff;
         }
 
-        if (bitdiff == 0) {
-            break; /* we found an exact match! */
+        if (is_truecolor && ((bitdiff < best_truecolor_bitdiff) || (best_truecolor_bitdiff == -1))) {
+            truecolor_config_idx = i;
+            best_truecolor_bitdiff = bitdiff;
         }
     }
+
+    #define FAVOR_TRUECOLOR 1
+    #if FAVOR_TRUECOLOR
+    /* Some apps request a low color depth, either because they _assume_
+       they'll get a larger one but don't want to fail if only smaller ones
+       are available, or they just never called SDL_GL_SetAttribute at all and
+       got a tiny default. For these cases, a game that would otherwise run
+       at 24-bit color might get dithered down to something smaller, which is
+       worth avoiding. If the app requested <= 16 bit color and an exact 24-bit
+       match is available, favor that. Otherwise, we look for the closest
+       match. Note that while the API promises what you request _or better_,
+       it's feasible this can be disastrous for performance for custom software
+       on small hardware that all expected to actually get 16-bit color. In this
+       case, turn off FAVOR_TRUECOLOR (and maybe send a patch to make this more
+       flexible). */
+    if ( ((_this->gl_config.red_size + _this->gl_config.blue_size + _this->gl_config.green_size) <= 16) ) {
+        if (truecolor_config_idx != -1) {
+            _this->egl_data->egl_config = configs[truecolor_config_idx];
+        }
+    }
+    #endif
 
 #ifdef DUMP_EGL_CONFIG
     dumpconfig(_this, _this->egl_data->egl_config);

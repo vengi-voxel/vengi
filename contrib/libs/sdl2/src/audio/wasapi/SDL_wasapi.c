@@ -58,42 +58,6 @@ static const IID SDL_IID_IAudioCaptureClient = { 0xc8adbd64, 0xe71e, 0x48a0,{ 0x
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 
-static SDL_bool
-WStrEqual(const WCHAR *a, const WCHAR *b)
-{
-    while (*a) {
-        if (*a != *b) {
-            return SDL_FALSE;
-        }
-        a++;
-        b++;
-    }
-    return *b == 0;
-}
-
-static size_t
-WStrLen(const WCHAR *wstr)
-{
-    size_t retval = 0;
-    if (wstr) {
-        while (*(wstr++)) {
-            retval++;
-        }
-    }
-    return retval;
-}
-
-static WCHAR *
-WStrDupe(const WCHAR *wstr)
-{
-    const size_t len = (WStrLen(wstr) + 1) * sizeof (WCHAR);
-    WCHAR *retval = (WCHAR *) SDL_malloc(len);
-    if (retval) {
-        SDL_memcpy(retval, wstr, len);
-    }
-    return retval;
-}
-
 
 void
 WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
@@ -103,7 +67,7 @@ WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
     DevIdList *prev = NULL;
     for (i = deviceid_list; i; i = next) {
         next = i->next;
-        if (WStrEqual(i->str, devid)) {
+        if (SDL_wcscmp(i->str, devid) == 0) {
             if (prev) {
                 prev->next = next;
             } else {
@@ -117,10 +81,33 @@ WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
     }
 }
 
+static SDL_AudioFormat
+WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
+{
+    if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
+        return AUDIO_F32SYS;
+    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
+        return AUDIO_S16SYS;
+    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
+        return AUDIO_S32SYS;
+    } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+        const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *) waveformat;
+        if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
+            return AUDIO_F32SYS;
+        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
+            return AUDIO_S16SYS;
+        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
+            return AUDIO_S32SYS;
+        }
+    }
+    return 0;
+}
+
 void
-WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid)
+WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
 {
     DevIdList *devidlist;
+    SDL_AudioSpec spec;
 
     /* You can have multiple endpoints on a device that are mutually exclusive ("Speakers" vs "Line Out" or whatever).
        In a perfect world, things that are unplugged won't be in this collection. The only gotcha is probably for
@@ -129,7 +116,7 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid)
 
     /* see if we already have this one. */
     for (devidlist = deviceid_list; devidlist; devidlist = devidlist->next) {
-        if (WStrEqual(devidlist->str, devid)) {
+        if (SDL_wcscmp(devidlist->str, devid) == 0) {
             return;  /* we already have this. */
         }
     }
@@ -139,7 +126,7 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid)
         return;  /* oh well. */
     }
 
-    devid = WStrDupe(devid);
+    devid = SDL_wcsdup(devid);
     if (!devid) {
         SDL_free(devidlist);
         return;  /* oh well. */
@@ -149,7 +136,11 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid)
     devidlist->next = deviceid_list;
     deviceid_list = devidlist;
 
-    SDL_AddAudioDevice(iscapture, devname, (void *) devid);
+    SDL_zero(spec);
+    spec.channels = fmt->Format.nChannels;
+    spec.freq = fmt->Format.nSamplesPerSec;
+    spec.format = WaveFormatToSDLFormat((WAVEFORMATEX *) fmt);
+    SDL_AddAudioDevice(iscapture, devname, &spec, (void *) devid);
 }
 
 static void
@@ -539,22 +530,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     this->spec.channels = (Uint8) waveformat->nChannels;
 
     /* Make sure we have a valid format that we can convert to whatever WASAPI wants. */
-    if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
-        wasapi_format = AUDIO_F32SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
-        wasapi_format = AUDIO_S16SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
-        wasapi_format = AUDIO_S32SYS;
-    } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
-        const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *) waveformat;
-        if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            wasapi_format = AUDIO_F32SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
-            wasapi_format = AUDIO_S16SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            wasapi_format = AUDIO_S32SYS;
-        }
-    }
+    wasapi_format = WaveFormatToSDLFormat(waveformat);
 
     while ((!valid_format) && (test_format)) {
         if (test_format == wasapi_format) {
@@ -574,6 +550,9 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         return WIN_SetErrorFromHRESULT("WASAPI can't determine minimum device period", ret);
     }
 
+#if 1  /* we're getting reports that WASAPI's resampler introduces distortions, so it's disabled for now. --ryan. */
+    this->spec.freq = waveformat->nSamplesPerSec;  /* force sampling rate so our resampler kicks in, if necessary. */
+#else
     /* favor WASAPI's resampler over our own, in Win7+. */
     if (this->spec.freq != waveformat->nSamplesPerSec) {
         /* RATEADJUST only works with output devices in share mode, and is available in Win7 and later.*/
@@ -581,11 +560,11 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
             streamflags |= AUDCLNT_STREAMFLAGS_RATEADJUST;
             waveformat->nSamplesPerSec = this->spec.freq;
             waveformat->nAvgBytesPerSec = waveformat->nSamplesPerSec * waveformat->nChannels * (waveformat->wBitsPerSample / 8);
-        }
-        else {
+        } else {
             this->spec.freq = waveformat->nSamplesPerSec;  /* force sampling rate so our resampler kicks in. */
         }
     }
+#endif
 
     streamflags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
     ret = IAudioClient_Initialize(client, sharemode, streamflags, 0, 0, waveformat, NULL);
@@ -677,7 +656,7 @@ WASAPI_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (!devid) {  /* is default device? */
         this->hidden->default_device_generation = SDL_AtomicGet(iscapture ? &WASAPI_DefaultCaptureGeneration : &WASAPI_DefaultPlaybackGeneration);
     } else {
-        this->hidden->devid = WStrDupe(devid);
+        this->hidden->devid = SDL_wcsdup(devid);
         if (!this->hidden->devid) {
             return SDL_OutOfMemory();
         }

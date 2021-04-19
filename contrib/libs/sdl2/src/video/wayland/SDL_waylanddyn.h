@@ -38,6 +38,7 @@ struct wl_shm;
 #include "wayland-cursor.h"
 #include "wayland-util.h"
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-compose.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -64,7 +65,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 
-#ifdef _WAYLAND_CLIENT_H
+#if defined(_WAYLAND_CLIENT_H) || defined(WAYLAND_CLIENT_H)
 #error Do not include wayland-client ahead of SDL_waylanddyn.h in dynamic loading mode
 #endif
 

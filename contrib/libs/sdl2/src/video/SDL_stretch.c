@@ -94,6 +94,11 @@ SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
         return 0;
     }
 
+    if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
+        dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
+        return SDL_SetError("Size too large for scaling");
+    }
+
     /* Lock the destination if it's in hardware */
     dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
@@ -852,13 +857,13 @@ SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     incy = (src_h << 16) / dst_h;                                                       \
     incx = (src_w << 16) / dst_w;                                                       \
     dst_gap   = dst_pitch - bpp * dst_w;                                                \
-    posy = 0;                                                                           \
+    posy = incy / 2;                                                                    \
 
 #define SDL_SCALE_NEAREST__HEIGHT                                                       \
     srcy = (posy >> 16);                                                                \
     src_h0  = (const Uint32 *)((const Uint8 *)src_ptr + srcy * src_pitch);              \
     posy += incy;                                                                       \
-    posx = 0;                                                                           \
+    posx = incx / 2;                                                                    \
     n = dst_w;
 
 

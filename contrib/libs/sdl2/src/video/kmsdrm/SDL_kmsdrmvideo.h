@@ -41,12 +41,18 @@ typedef struct SDL_VideoData
 
     struct gbm_device *gbm_dev;
 
-    SDL_bool video_init;        /* Has VideoInit succeeded? */
-    SDL_bool vulkan_mode;       /* Are we in Vulkan mode? One VK window is enough to be. */
+    SDL_bool video_init;             /* Has VideoInit succeeded? */
+    SDL_bool vulkan_mode;            /* Are we in Vulkan mode? One VK window is enough to be. */
+    SDL_bool async_pageflip_support; /* Does the hardware support async. pageflips? */ 
 
     SDL_Window **windows;
     int max_windows;
     int num_windows;
+
+    /* Even if we have several displays, we only have to
+       open 1 FD and create 1 gbm device. */
+    SDL_bool gbm_init;
+
 } SDL_VideoData;
 
 
@@ -66,8 +72,6 @@ typedef struct SDL_DisplayData
 
     drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
 
-    SDL_bool gbm_init;
-
     /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's driverdata struct,
        because setting/unsetting up these is done on window creation/destruction,
        where we may not have an SDL_Cursor at all (so no SDL_Cursor driverdata).
@@ -75,7 +79,7 @@ typedef struct SDL_DisplayData
     struct gbm_bo *cursor_bo;
     uint64_t cursor_w, cursor_h;
 
-    SDL_bool set_default_cursor_pending;
+    SDL_bool default_cursor_init;
     SDL_bool modeset_pending;
 
 } SDL_DisplayData;
@@ -132,6 +136,8 @@ void KMSDRM_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon);
 void KMSDRM_SetWindowPosition(_THIS, SDL_Window * window);
 void KMSDRM_SetWindowSize(_THIS, SDL_Window * window);
 void KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen);
+int KMSDRM_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp);
+int KMSDRM_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp);
 void KMSDRM_ShowWindow(_THIS, SDL_Window * window);
 void KMSDRM_HideWindow(_THIS, SDL_Window * window);
 void KMSDRM_RaiseWindow(_THIS, SDL_Window * window);

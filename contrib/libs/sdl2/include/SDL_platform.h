@@ -175,6 +175,9 @@
 #define __SDL_NOGETPROCADDR__
 #endif
 
+#if defined(__vita__)
+#define __VITA__ 1
+#endif
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -183,7 +186,18 @@ extern "C" {
 #endif
 
 /**
- *  \brief Gets the name of the platform.
+ * Get the name of the platform.
+ *
+ * Here are the names returned for some (but not all) supported platforms:
+ *
+ * - "Windows"
+ * - "Mac OS X"
+ * - "Linux"
+ * - "iOS"
+ * - "Android"
+ *
+ * \returns the name of the platform. If the correct platform name is not
+ *          available, returns a string beginning with the text "Unknown".
  */
 extern DECLSPEC const char * SDLCALL SDL_GetPlatform (void);
 

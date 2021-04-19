@@ -148,7 +148,7 @@ SDL_ceilf(float x)
 #if defined(HAVE_CEILF)
     return ceilf(x);
 #else
-    return (float)SDL_ceil((float)x);
+    return (float)SDL_ceil((double)x);
 #endif
 }
 
@@ -504,21 +504,40 @@ int SDL_abs(int x)
 }
 
 #if defined(HAVE_CTYPE_H)
+int SDL_isalpha(int x) { return isalpha(x); }
+int SDL_isalnum(int x) { return isalnum(x); }
 int SDL_isdigit(int x) { return isdigit(x); }
+int SDL_isxdigit(int x) { return isxdigit(x); }
+int SDL_ispunct(int x) { return ispunct(x); }
 int SDL_isspace(int x) { return isspace(x); }
 int SDL_isupper(int x) { return isupper(x); }
 int SDL_islower(int x) { return islower(x); }
+int SDL_isprint(int x) { return isprint(x); }
+int SDL_isgraph(int x) { return isgraph(x); }
+int SDL_iscntrl(int x) { return iscntrl(x); }
 int SDL_toupper(int x) { return toupper(x); }
 int SDL_tolower(int x) { return tolower(x); }
 #else
+int SDL_isalpha(int x) { return (SDL_isupper(x)) || (SDL_islower(x)); }
+int SDL_isalnum(int x) { return (SDL_isalpha(x)) || (SDL_isdigit(x)); }
 int SDL_isdigit(int x) { return ((x) >= '0') && ((x) <= '9'); }
+int SDL_isxdigit(int x) { return (((x) >= 'A') && ((x) <= 'F')) || (((x) >= 'a') && ((x) <= 'f')) || (SDL_isdigit(x)); }
+int SDL_ispunct(int x) { return (SDL_isgraph(x)) && (!SDL_isalnum(x)); }
 int SDL_isspace(int x) { return ((x) == ' ') || ((x) == '\t') || ((x) == '\r') || ((x) == '\n') || ((x) == '\f') || ((x) == '\v'); }
 int SDL_isupper(int x) { return ((x) >= 'A') && ((x) <= 'Z'); }
 int SDL_islower(int x) { return ((x) >= 'a') && ((x) <= 'z'); }
+int SDL_isprint(int x) { return ((x) >= ' ') && ((x) < '\x7f'); }
+int SDL_isgraph(int x) { return (SDL_isprint(x)) && ((x) != ' '); }
+int SDL_iscntrl(int x) { return (((x) >= '\0') && ((x) <= '\x1f')) || ((x) == '\x7f'); }
 int SDL_toupper(int x) { return ((x) >= 'a') && ((x) <= 'z') ? ('A'+((x)-'a')) : (x); }
 int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a'+((x)-'A')) : (x); }
 #endif
 
+#if defined(HAVE_CTYPE_H) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+int SDL_isblank(int x) { return isblank(x); }
+#else
+int SDL_isblank(int x) { return ((x) == ' ') || ((x) == '\t'); }
+#endif
 
 #ifndef HAVE_LIBC
 /* These are some C runtime intrinsics that need to be defined */
@@ -530,42 +549,28 @@ int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a'+((x)-'A')) :
 __declspec(selectany) int _fltused = 1;
 #endif
 
-/* The optimizer on Visual Studio 2005 and later generates memcpy() calls */
-#if (_MSC_VER >= 1400) && defined(_WIN64) && !defined(_DEBUG) && !(_MSC_VER >= 1900 && defined(_MT))
-#include <intrin.h>
+/* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls */
+#if _MSC_VER >= 1400
+extern void *memcpy(void* dst, const void* src, size_t len);
+#pragma intrinsic(memcpy)
 
 #pragma function(memcpy)
-void * memcpy ( void * destination, const void * source, size_t num )
+void *
+memcpy(void *dst, const void *src, size_t len)
 {
-    const Uint8 *src = (const Uint8 *)source;
-    Uint8 *dst = (Uint8 *)destination;
-    size_t i;
-    
-    /* All WIN64 architectures have SSE, right? */
-    if (!((uintptr_t) src & 15) && !((uintptr_t) dst & 15)) {
-        __m128 values[4];
-        for (i = num / 64; i--;) {
-            _mm_prefetch(src, _MM_HINT_NTA);
-            values[0] = *(__m128 *) (src + 0);
-            values[1] = *(__m128 *) (src + 16);
-            values[2] = *(__m128 *) (src + 32);
-            values[3] = *(__m128 *) (src + 48);
-            _mm_stream_ps((float *) (dst + 0), values[0]);
-            _mm_stream_ps((float *) (dst + 16), values[1]);
-            _mm_stream_ps((float *) (dst + 32), values[2]);
-            _mm_stream_ps((float *) (dst + 48), values[3]);
-            src += 64;
-            dst += 64;
-        }
-        num &= 63;
-    }
-
-    while (num--) {
-        *dst++ = *src++;
-    }
-    return destination;
+    return SDL_memcpy(dst, src, len);
 }
-#endif /* _MSC_VER == 1600 && defined(_WIN64) && !defined(_DEBUG) */
+
+extern void *memset(void* dst, int c, size_t len);
+#pragma intrinsic(memset)
+
+#pragma function(memset)
+void *
+memset(void *dst, int c, size_t len)
+{
+    return SDL_memset(dst, c, len);
+}
+#endif /* _MSC_VER >= 1400 */
 
 #ifdef _M_IX86
 

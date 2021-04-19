@@ -33,6 +33,10 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
+#if defined(HAVE__WCSDUP) && !defined(HAVE_WCSDUP)
+#define wcsdup _wcsdup
+#endif
+
 #include <libusb.h>
 #include <locale.h> /* setlocale */
 
@@ -502,7 +506,9 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x15e4, /* Numark */
 		0x162e, /* Joytech */
 		0x1689, /* Razer Onza */
+		0x1949, /* Lab126, Inc. */
 		0x1bad, /* Harmonix */
+		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
 	};
 
@@ -530,6 +536,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
 		0x1532, /* Razer Wildcat */
+		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
 		0x2e24, /* Hyperkin */
 	};

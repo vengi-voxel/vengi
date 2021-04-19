@@ -129,22 +129,6 @@ typedef struct {
     Uint8 right_trigger_rumble;
 } SDL_DriverXboxOne_Context;
 
-
-static SDL_bool
-IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
-{
-    /* Check to see if it's the Xbox One S or Xbox One Elite Series 2 in Bluetooth mode */
-    if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH ||
-            product_id == USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH ||
-            product_id == USB_PRODUCT_XBOX_ONE_SERIES_X_BLUETOOTH) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
-
 static SDL_bool
 ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 {
@@ -154,7 +138,8 @@ ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 ControllerHasTriggerRumble(Uint16 vendor_id, Uint16 product_id)
 {
-    return SDL_IsJoystickXboxOneElite(vendor_id, product_id);
+    // All the Microsoft Xbox One controllers have trigger rumble
+    return (vendor_id == USB_VENDOR_MICROSOFT);
 }
 
 static SDL_bool
@@ -179,7 +164,11 @@ SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
     /* The Windows driver is taking care of acks */
 #else
     if ((data[1] & 0x30) == 0x30) {
-        Uint8 ack_packet[] = { 0x01, 0x20, data[2], 0x09, 0x00, data[0], 0x20, data[3], 0x00, 0x00, 0x00, 0x00, 0x00 };
+        Uint8 ack_packet[] = { 0x01, 0x20, 0x00, 0x09, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+        ack_packet[2] = data[2];
+        ack_packet[5] = data[0];
+        ack_packet[7] = data[3];
 
         /* The initial ack needs 0x80 added to the response, for some reason */
         if (data[0] == 0x04 && data[1] == 0xF0) {
@@ -289,7 +278,7 @@ HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, SDL_GameControllerType 
 #endif
 #ifdef __MACOSX__
     /* Wired Xbox One controllers are handled by the 360Controller driver */
-    if (!IsBluetoothXboxOneController(vendor_id, product_id)) {
+    if (!SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
         return SDL_FALSE;
     }
 #endif
@@ -343,7 +332,7 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 
     ctx->vendor_id = device->vendor_id;
     ctx->product_id = device->product_id;
-    ctx->bluetooth = IsBluetoothXboxOneController(device->vendor_id, device->product_id);
+    ctx->bluetooth = SDL_IsJoystickBluetoothXboxOne(device->vendor_id, device->product_id);
     ctx->start_time = SDL_GetTicks();
     ctx->sequence = 1;
     ctx->has_paddles = ControllerHasPaddles(ctx->vendor_id, ctx->product_id);
@@ -530,7 +519,7 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
             button4_bit = 0x04;
 
             /* The mapped controller state is at offset 4, the raw state is at offset 18, compare them to see if the paddles are mapped */
-            paddles_mapped = (SDL_memcmp(&data[4], &data[18], 14) != 0);
+            paddles_mapped = (SDL_memcmp(&data[4], &data[18], 2) != 0);
 
         } else /* if (size == 38) */ {
             /* XBox One Elite Series 2 */

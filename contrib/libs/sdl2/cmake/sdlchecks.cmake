@@ -131,6 +131,37 @@ endmacro()
 # Requires:
 # - PkgCheckModules
 # Optional:
+# - PIPEWIRE_SHARED opt
+# - HAVE_DLOPEN opt
+macro(CheckPipewire)
+    if(PIPEWIRE)
+        pkg_check_modules(PKG_PIPEWIRE libpipewire-0.3>=0.3.20)
+        if(PKG_PIPEWIRE_FOUND)
+            set(HAVE_PIPEWIRE TRUE)
+            file(GLOB PIPEWIRE_SOURCES ${SDL2_SOURCE_DIR}/src/audio/pipewire/*.c)
+            set(SOURCE_FILES ${SOURCE_FILES} ${PIPEWIRE_SOURCES})
+            set(SDL_AUDIO_DRIVER_PIPEWIRE 1)
+            list(APPEND EXTRA_CFLAGS ${PKG_PIPEWIRE_CFLAGS})
+            if(PIPEWIRE_SHARED)
+                if(NOT HAVE_DLOPEN)
+                    message_warn("You must have SDL_LoadObject() support for dynamic Pipewire loading")
+                else()
+                    FindLibraryAndSONAME("pipewire-0.3")
+                    set(SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC "\"${PIPEWIRE_0.3_LIB_SONAME}\"")
+                    set(HAVE_PIPEWIRE_SHARED TRUE)
+                endif()
+            else()
+                list(APPEND EXTRA_LDFLAGS ${PKG_PIPEWIRE_LDFLAGS})
+            endif()
+            set(HAVE_SDL_AUDIO TRUE)
+        endif()
+    endif()
+endmacro()
+
+
+# Requires:
+# - PkgCheckModules
+# Optional:
 # - PULSEAUDIO_SHARED opt
 # - HAVE_DLOPEN opt
 macro(CheckPulseAudio)
@@ -400,7 +431,7 @@ macro(CheckX11)
 
     check_include_file(X11/Xcursor/Xcursor.h HAVE_XCURSOR_H)
     check_include_file(X11/extensions/Xinerama.h HAVE_XINERAMA_H)
-    check_include_file(X11/extensions/XInput2.h HAVE_XINPUT_H)
+    check_include_file(X11/extensions/XInput2.h HAVE_XINPUT2_H)
     check_include_file(X11/extensions/Xrandr.h HAVE_XRANDR_H)
     check_include_file(X11/extensions/Xrender.h HAVE_XRENDER_H)
     check_include_file(X11/extensions/scrnsaver.h HAVE_XSS_H)
@@ -498,7 +529,7 @@ macro(CheckX11)
         set(SDL_VIDEO_DRIVER_X11_XINERAMA 1)
       endif()
 
-      if(VIDEO_X11_XINPUT AND HAVE_XINPUT_H)
+      if(VIDEO_X11_XINPUT AND HAVE_XINPUT2_H)
         set(HAVE_VIDEO_X11_XINPUT TRUE)
         if(HAVE_X11_SHARED AND XI_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 "\"${XI_LIB_SONAME}\"")
@@ -747,6 +778,22 @@ macro(CheckVivante)
 endmacro(CheckVivante)
 
 # Requires:
+# - libglvnd
+macro(CheckOpenGLKMSDRM)
+  if(VIDEO_OPENGL AND HAVE_VIDEO_KMSDRM)
+    check_c_source_compiles("
+        #include <GL/gl.h>
+        int main(int argc, char** argv) {}" HAVE_VIDEO_OPENGL)
+
+    if(HAVE_VIDEO_OPENGL)
+      set(HAVE_VIDEO_OPENGL TRUE)
+      set(SDL_VIDEO_OPENGL 1)
+      set(SDL_VIDEO_RENDER_OGL 1)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
 # - nada
 macro(CheckOpenGLX11)
   if(VIDEO_OPENGL)
@@ -766,9 +813,16 @@ endmacro()
 
 # Requires:
 # - PkgCheckModules
+macro(CheckEGL)
+  pkg_check_modules(EGL egl)
+  string(REPLACE "-D_THREAD_SAFE;" "-D_THREAD_SAFE=1;" EGL_CFLAGS "${EGL_CFLAGS}")
+endmacro()
+
+# Requires:
+# - PkgCheckModules
 macro(CheckEGLKMSDRM)
   if (HAVE_VIDEO_OPENGLES OR HAVE_VIDEO_OPENGL)
-    pkg_check_modules(EGL egl)
+    CheckEGL()
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
     check_c_source_compiles("
 	#define EGL_API_FB
@@ -786,7 +840,7 @@ endmacro()
 # Requires:
 # - PkgCheckModules
 macro(CheckOpenGLESX11)
-  pkg_check_modules(EGL egl)
+  CheckEGL()
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
   if(VIDEO_OPENGLES)
     check_c_source_compiles("
@@ -865,6 +919,9 @@ macro(CheckPTHREAD)
     elseif(HAIKU)
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "")
+    elseif(EMSCRIPTEN)
+      set(PTHREAD_CFLAGS "-D_REENTRANT -pthread")
+      set(PTHREAD_LDFLAGS "-pthread")
     else()
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "-lpthread")
