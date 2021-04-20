@@ -21,7 +21,7 @@ To specify the database that should be used use the config bars **db_name**, **d
 For example:
 
 ```bash
-./vengi-server -set db_host 192.168.0.1 -set db_post 5432 -db_name vengi -db_pw engine
+./vengi-owserver -set db_host 192.168.0.1 -set db_post 5432 -db_name vengi -db_pw engine
 ```
 
 For the client connect you need a user in the database. You can create users with a server
@@ -36,7 +36,7 @@ server. The gameserver has a built-in http server, too. If you want to use any o
 you have to set it via `sv_httpchunkurl` like this:
 
 ```bash
-./vengi-server -set sv_httpchunkurl http://myhostname:8080/mychunkurl
+./vengi-owserver -set sv_httpchunkurl http://myhostname:8080/mychunkurl
 ```
 
 ... or export the environment variable `SV_HTTPCHUNKURL` or add it to your config file (see
