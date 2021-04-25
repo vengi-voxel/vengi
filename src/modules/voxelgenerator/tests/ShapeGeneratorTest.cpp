@@ -5,6 +5,7 @@
 #include "app/App.h"
 #include "io/Filesystem.h"
 #include "app/tests/AbstractTest.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
@@ -39,6 +40,7 @@ protected:
 public:
 	void SetUp() override {
 		Super::SetUp();
+		voxel::initDefaultMaterialColors();
 		_volume = new voxel::RawVolume(_region);
 	}
 
