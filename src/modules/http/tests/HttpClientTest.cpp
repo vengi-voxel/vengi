@@ -55,7 +55,7 @@ TEST_F(HttpClientTest, testSimple) {
 	const char *length = "";
 	EXPECT_TRUE(response.headers.get(http::header::CONTENT_LENGTH, length));
 	EXPECT_STREQ("7", length);
-	const char *type;
+	const char *type = "";
 	EXPECT_TRUE(response.headers.get(http::header::CONTENT_TYPE, type));
 	EXPECT_STREQ("text/plain", type);
 }
