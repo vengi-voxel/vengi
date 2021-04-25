@@ -342,7 +342,7 @@ static int stb_compress_chunk(stb_uchar *history,
 static int stb_compress_inner(stb_uchar *input, stb_uint length)
 {
     int literals = 0;
-    stb_uint len,i;
+    stb_uint i;
 
     stb_uchar **chash;
     chash = (stb_uchar**) malloc(stb__hashsize * sizeof(stb_uchar*));
@@ -360,8 +360,7 @@ static int stb_compress_inner(stb_uchar *input, stb_uint length)
 
     stb__running_adler = 1;
 
-    len = stb_compress_chunk(input, input, input+length, length, &literals, chash, stb__hashsize-1);
-    assert(len == length);
+    stb_compress_chunk(input, input, input+length, length, &literals, chash, stb__hashsize-1);
 
     outliterals(input+length - literals, literals);
 
