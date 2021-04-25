@@ -276,7 +276,7 @@ const ai::State *AIDebug::entityState() const {
 		return nullptr;
 	}
 
-	const ai::State *state;
+	const ai::State *state = nullptr;
 	_entityStates.get(_chrDetailsMsg->character_id(), state);
 	return state;
 }
