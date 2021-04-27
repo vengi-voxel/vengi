@@ -137,7 +137,7 @@ bool AIDebug::addToHistory(const core::String& host, int port) {
 void AIDebug::onMessage(const ai::StateWorld *, const uint8_t *rawData, size_t rawDataLength) {
 	core_assert(lengthof(_stateWorldBuf) > rawDataLength);
 	core_memcpy(_stateWorldBuf, rawData, rawDataLength);
-	const ai::Message *rootMsg = ai::GetMessage(_stateWorldBuf);
+	const ai::AIRootMessage *rootMsg = ai::GetAIRootMessage(_stateWorldBuf);
 	_stateWorldMsg = (ai::StateWorld *)rootMsg->data();
 	_entityStates.clear();
 	_stateWorldSize += rawDataLength;
@@ -153,7 +153,7 @@ void AIDebug::onMessage(const ai::CharacterDetails *, const uint8_t *rawData, si
 	const auto oldCharacterId = _chrDetailsMsg == nullptr ? 0 : _chrDetailsMsg->character_id();
 	core_assert(lengthof(_chrDetailsBuf) > rawDataLength);
 	core_memcpy(_chrDetailsBuf, rawData, rawDataLength);
-	const ai::Message *rootMsg = ai::GetMessage(_chrDetailsBuf);
+	const ai::AIRootMessage *rootMsg = ai::GetAIRootMessage(_chrDetailsBuf);
 	ai::CharacterDetails *chrDetailsMsg = (ai::CharacterDetails *)rootMsg->data();
 	if (_chrDetailsMsg == nullptr || chrDetailsMsg->character_id() != oldCharacterId) {
 		_centerOnSelection = true;
@@ -165,7 +165,7 @@ void AIDebug::onMessage(const ai::CharacterDetails *, const uint8_t *rawData, si
 void AIDebug::onMessage(const ai::CharacterStatic *, const uint8_t *rawData, size_t rawDataLength) {
 	core_assert(lengthof(_chrStaticBuf) > rawDataLength);
 	core_memcpy(_chrStaticBuf, rawData, rawDataLength);
-	const ai::Message *rootMsg = ai::GetMessage(_chrStaticBuf);
+	const ai::AIRootMessage *rootMsg = ai::GetAIRootMessage(_chrStaticBuf);
 	_chrStaticMsg = (ai::CharacterStatic *)rootMsg->data();
 	_nodeStates.clear();
 	_characterStaticSize += rawDataLength;
@@ -180,7 +180,7 @@ void AIDebug::onMessage(const ai::CharacterStatic *, const uint8_t *rawData, siz
 void AIDebug::onMessage(const ai::Names *, const uint8_t *rawData, size_t rawDataLength) {
 	core_assert(lengthof(_namesBuf) > rawDataLength);
 	core_memcpy(_namesBuf, rawData, rawDataLength);
-	const ai::Message *rootMsg = ai::GetMessage(_namesBuf);
+	const ai::AIRootMessage *rootMsg = ai::GetAIRootMessage(_namesBuf);
 	_namesMsg = (ai::Names *)rootMsg->data();
 	_state = State::Debugging;
 	_namesSize += rawDataLength;
