@@ -22,7 +22,6 @@
 #include "IMGUI.h"
 #include "video/Types.h"
 #include <SDL.h>
-#include <SDL_syswm.h>
 #include <thread>
 #include "FontAwesomeSolid.h"
 #include "ArimoRegular.h"
@@ -285,12 +284,6 @@ app::AppState IMGUIApp::onInit() {
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
 
-#ifdef _WIN32
-	SDL_SysWMinfo wmInfo;
-	SDL_VERSION(&wmInfo.version);
-	SDL_GetWindowWMInfo(_window, &wmInfo);
-	io.ImeWindowHandle = wmInfo.info.win.window;
-#endif
 	SDL_StartTextInput();
 
 	_console.init();
