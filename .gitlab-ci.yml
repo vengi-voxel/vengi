@@ -1,9 +1,6 @@
-image: registry.gitlab.com/mgerhardy/engine-docker:master
-
 stages:
   - build
   - test
-  - analyse
 
 variables:
   CCACHE_BASEDIR: ${CI_PROJECT_DIR}
@@ -17,19 +14,24 @@ variables:
       - ccache/
       - build/
 
-.build-unity:
-  <<: *buildcache
+.build: &build
+  image: registry.gitlab.com/vengi/build-images/${CI_JOB_NAME}:master
   stage: build
   script:
-    - cmake -H. -B${BUILD_DIR} -DDISABLE_UNITY=Off
+    - cmake -H. -B${BUILD_DIR}
     - make -j 4 all -C ${BUILD_DIR}
 
-build-non-unity:
+osx-x86_64:
   <<: *buildcache
-  stage: build
-  script:
-    - cmake -H. -B${BUILD_DIR} -DDISABLE_UNITY=On
-    - make -j 4 all -C ${BUILD_DIR}
+  <<: *build
+
+mxe:
+  <<: *buildcache
+  <<: *build
+
+debian:
+  <<: *buildcache
+  <<: *build
 
 .test:
   variables:
