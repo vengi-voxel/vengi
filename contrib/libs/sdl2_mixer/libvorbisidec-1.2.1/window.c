@@ -16,7 +16,6 @@
  ********************************************************************/
 
 #include <stdlib.h>
-#include <math.h>
 #include "misc.h"
 #include "window.h"
 #include "window_lookup.h"

@@ -17,7 +17,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <ogg/ogg.h>
 #include "ivorbiscodec.h"
 #include "codec_internal.h"
@@ -435,5 +434,4 @@ vorbis_func_floor floor0_exportbundle={
   &floor0_unpack,&floor0_look,&floor0_free_info,
   &floor0_free_look,&floor0_inverse1,&floor0_inverse2
 };
-
 

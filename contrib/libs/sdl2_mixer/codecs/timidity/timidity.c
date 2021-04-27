@@ -1,5 +1,4 @@
 /*
-
     TiMidity -- Experimental MIDI to WAVE converter
     Copyright (C) 1995 Tuukka Toivonen <toivonen@clinet.fi>
 
@@ -7,15 +6,8 @@
     it under the terms of the Perl Artistic License, available in COPYING.
 */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "SDL.h"
+#include "../../utils.h" /* for SDL_strtokr() */
 
 #include "timidity.h"
 
@@ -28,11 +20,12 @@
 
 #include "tables.h"
 
-ToneBank *master_tonebank[MAXBANK], *master_drumset[MAXBANK];
+static ToneBank *master_tonebank[MAXBANK], *master_drumset[MAXBANK];
 
 static char def_instr_name[256] = "";
 
 #define MAXWORDS 10
+#define MAX_RCFCOUNT 50
 
 /* Quick-and-dirty fgets() replacement. */
 
@@ -66,146 +59,141 @@ static char *RWgets(SDL_RWops *rw, char *s, int size)
     return (num_read != 0) ? s : NULL;
 }
 
-static int read_config_file(const char *name)
+static int read_config_file(const char *name, int rcf_count)
 {
   SDL_RWops *rw;
-  char tmp[1024], *w[MAXWORDS], *cp;
-  ToneBank *bank=0;
-  int i, j, k, line=0, words;
-  static int rcf_count=0;
+  char tmp[1024];
+  char *w[MAXWORDS], *cp;
+  char *endp;
+  ToneBank *bank;
+  int i, j, k, line, r, words;
 
-  if (rcf_count>50)
-  {
+  if (rcf_count >= MAX_RCFCOUNT) {
     SNDDBG(("Probable source loop in configuration files\n"));
-    return (-1);
+    return -1;
   }
 
-  if (!(rw=open_file(name)))
+  if (!(rw=timi_openfile(name)))
    return -1;
+
+  bank = NULL;
+  line = 0;
+  r = -1; /* start by assuming failure, */
 
   while (RWgets(rw, tmp, sizeof(tmp)))
   {
     line++;
     words=0;
-    w[0]=strtok(tmp, " \t\240");
+    w[0]=SDL_strtokr(tmp, " \t\240", &endp);
     if (!w[0]) continue;
 
         /* Originally the TiMidity++ extensions were prefixed like this */
-    if (strcmp(w[0], "#extension") == 0)
+    if (SDL_strcmp(w[0], "#extension") == 0)
     {
-        w[0]=strtok(0, " \t\240");
+        w[0]=SDL_strtokr(0, " \t\240", &endp);
         if (!w[0]) continue;
     }
 
     if (*w[0] == '#')
         continue;
 
-    while (w[words] && *w[words] != '#' && (words < (MAXWORDS-1)))
-      w[++words]=strtok(0," \t\240");
-
-        /*
-         * TiMidity++ adds a number of extensions to the config file format.
-         * Many of them are completely irrelevant to SDL_sound, but at least
-         * we shouldn't choke on them.
-         *
-         * Unfortunately the documentation for these extensions is often quite
-         * vague, gramatically strange or completely absent.
-         */
-    if (
-           !strcmp(w[0], "comm")      /* "comm" program second        */
-        || !strcmp(w[0], "HTTPproxy") /* "HTTPproxy" hostname:port    */
-        || !strcmp(w[0], "FTPproxy")  /* "FTPproxy" hostname:port     */
-        || !strcmp(w[0], "mailaddr")  /* "mailaddr" your-mail-address */
-        || !strcmp(w[0], "opt")       /* "opt" timidity-options       */
-       )
-    {
-            /*
-             * + "comm" sets some kind of comment -- the documentation is too
-             *   vague for me to understand at this time.
-             * + "HTTPproxy", "FTPproxy" and "mailaddr" are for reading data
-             *   over a network, rather than from the file system.
-             * + "opt" specifies default options for TiMidity++.
-             *
-             * These are all quite useless for our version of TiMidity, so
-             * they can safely remain no-ops.
-             */
-    } else if (!strcmp(w[0], "timeout")) /* "timeout" program second */
-    {
-            /*
-             * Specifies a timeout value of the program. A number of seconds
-             * before TiMidity kills the note. This may be useful to implement
-             * later, but I don't see any urgent need for it.
-             */
-        SNDDBG(("FIXME: Implement \"timeout\" in TiMidity config.\n"));
-    } else if (!strcmp(w[0], "copydrumset")  /* "copydrumset" drumset */
-               || !strcmp(w[0], "copybank")) /* "copybank" bank       */
-    {
-            /*
-             * Copies all the settings of the specified drumset or bank to
-             * the current drumset or bank. May be useful later, but not a
-             * high priority.
-             */
-        SNDDBG(("FIXME: Implement \"%s\" in TiMidity config.\n", w[0]));
-    } else if (!strcmp(w[0], "undef")) /* "undef" progno */
-    {
-            /*
-             * Undefines the tone "progno" of the current tone bank (or
-             * drum set?). Not a high priority.
-             */
-        SNDDBG(("FIXME: Implement \"undef\" in TiMidity config.\n"));
-    } else if (!strcmp(w[0], "altassign")) /* "altassign" prog1 prog2 ... */
-    {
-            /*
-             * Sets the alternate assign for drum set. Whatever that's
-             * supposed to mean.
-             */
-        SNDDBG(("FIXME: Implement \"altassign\" in TiMidity config.\n"));
-    } else if (!strcmp(w[0], "soundfont")
-               || !strcmp(w[0], "font"))
-    {
-            /*
-             * I can't find any documentation for these, but I guess they're
-             * an alternative way of loading/unloading instruments.
-             * 
-             * "soundfont" sf_file "remove"
-             * "soundfont" sf_file ["order=" order] ["cutoff=" cutoff]
-             *                     ["reso=" reso] ["amp=" amp]
-             * "font" "exclude" bank preset keynote
-             * "font" "order" order bank preset keynote
-             */
-        SNDDBG(("FIXME: Implmement \"%s\" in TiMidity config.\n", w[0]));
-    } else if (!strcmp(w[0], "progbase"))
-    {
-            /*
-             * The documentation for this makes absolutely no sense to me, but
-             * apparently it sets some sort of base offset for tone numbers.
-             * Why anyone would want to do this is beyond me.
-             */
-        SNDDBG(("FIXME: Implement \"progbase\" in TiMidity config.\n"));
-    } else if (!strcmp(w[0], "map")) /* "map" name set1 elem1 set2 elem2 */
-    {
-            /*
-             * This extension is the one we will need to implement, as it is
-             * used by the "eawpats". Unfortunately I cannot find any
-             * documentation whatsoever for it, but it looks like it's used
-             * for remapping one instrument to another somehow.
-             */
-        SNDDBG(("FIXME: Implement \"map\" in TiMidity config.\n"));
+    while (w[words] && *w[words] != '#') {
+      if (++words == MAXWORDS) break;
+      w[words]=SDL_strtokr(NULL, " \t\240", &endp);
     }
 
-        /* Standard TiMidity config */
-    
-    else if (!strcmp(w[0], "dir"))
+    /* TiMidity++ adds a number of extensions to the config file format.
+     * Many of them are completely irrelevant to SDL_sound, but at least
+     * we shouldn't choke on them.
+     *
+     * Unfortunately the documentation for these extensions is often quite
+     * vague, gramatically strange or completely absent.
+     */
+    if (!SDL_strcmp(w[0], "comm")      /* "comm" program second        */ ||
+        !SDL_strcmp(w[0], "HTTPproxy") /* "HTTPproxy" hostname:port    */ ||
+        !SDL_strcmp(w[0], "FTPproxy")  /* "FTPproxy" hostname:port     */ ||
+        !SDL_strcmp(w[0], "mailaddr")  /* "mailaddr" your-mail-address */ ||
+        !SDL_strcmp(w[0], "opt")       /* "opt" timidity-options       */  )
+    {
+      /* + "comm" sets some kind of comment -- the documentation is too
+       *   vague for me to understand at this time.
+       * + "HTTPproxy", "FTPproxy" and "mailaddr" are for reading data
+       *   over a network, rather than from the file system.
+       * + "opt" specifies default options for TiMidity++.
+       *
+       * Quite useless for us, so they can safely remain no-ops.
+       */
+    }
+    else if (!SDL_strcmp(w[0], "timeout")) /* "timeout" program second */
+    {
+      /* Specifies a timeout value of the program. A number of seconds
+       * before TiMidity kills the note. No urgent need for it.
+       */
+      SNDDBG(("FIXME: Implement \"timeout\" in TiMidity config.\n"));
+    }
+    else if (!SDL_strcmp(w[0], "copydrumset")  /* "copydrumset" drumset */ ||
+             !SDL_strcmp(w[0], "copybank")) /* "copybank" bank       */
+    {
+      /* Copies all the settings of the specified drumset or bank to
+       * the current drumset or bank. May be useful later, but not a
+       * high priority.
+       */
+      SNDDBG(("FIXME: Implement \"%s\" in TiMidity config.\n", w[0]));
+    }
+    else if (!SDL_strcmp(w[0], "undef")) /* "undef" progno */
+    {
+      /* Undefines the tone "progno" of the current tone bank (or
+       * drum set?). Not a high priority.
+       */
+      SNDDBG(("FIXME: Implement \"undef\" in TiMidity config.\n"));
+    }
+    else if (!SDL_strcmp(w[0], "altassign")) /* "altassign" prog1 prog2 ... */
+    {
+      /* Sets the alternate assign for drum set. Whatever that's
+       * supposed to mean.
+       */
+      SNDDBG(("FIXME: Implement \"altassign\" in TiMidity config.\n"));
+    }
+    else if (!SDL_strcmp(w[0], "soundfont") ||
+             !SDL_strcmp(w[0], "font"))
+    {
+      /* "soundfont" sf_file "remove"
+       * "soundfont" sf_file ["order=" order] ["cutoff=" cutoff]
+       *                     ["reso=" reso] ["amp=" amp]
+       * "font" "exclude" bank preset keynote
+       * "font" "order" order bank preset keynote
+       */
+      SNDDBG(("FIXME: Implmement \"%s\" in TiMidity config.\n", w[0]));
+    }
+    else if (!SDL_strcmp(w[0], "progbase"))
+    {
+      /* The documentation for this makes absolutely no sense to me, but
+       * apparently it sets some sort of base offset for tone numbers.
+       */
+      SNDDBG(("FIXME: Implement \"progbase\" in TiMidity config.\n"));
+    }
+    else if (!SDL_strcmp(w[0], "map")) /* "map" name set1 elem1 set2 elem2 */
+    {
+      /* This one is used by the "eawpats". Looks like it's used
+       * for remapping one instrument to another somehow.
+       */
+      SNDDBG(("FIXME: Implement \"map\" in TiMidity config.\n"));
+    }
+
+    /* Standard TiMidity config */
+    else if (!SDL_strcmp(w[0], "dir"))
     {
       if (words < 2)
       {
 	SNDDBG(("%s: line %d: No directory given\n", name, line));
 	goto fail;
       }
-      for (i=1; i<words; i++)
-	add_to_pathlist(w[i], strlen(w[i]));
+      for (i=1; i<words; i++) {
+	if (timi_add_pathlist(w[i], SDL_strlen(w[i])) < 0)
+	  goto fail;
+      }
     }
-    else if (!strcmp(w[0], "source"))
+    else if (!SDL_strcmp(w[0], "source"))
     {
       if (words < 2)
       {
@@ -214,17 +202,13 @@ static int read_config_file(const char *name)
       }
       for (i=1; i<words; i++)
       {
-	int status;
-	rcf_count++;
-	status = read_config_file(w[i]);
-	rcf_count--;
-	if (status != 0) {
-	  SDL_RWclose(rw);
-	  return status;
-	}
+	r = read_config_file(w[i], rcf_count + 1);
+	if (r != 0)
+	  goto fail;
       }
+      r = -1; /* not finished yet, */
     }
-    else if (!strcmp(w[0], "default"))
+    else if (!SDL_strcmp(w[0], "default"))
     {
       if (words != 2)
       {
@@ -232,17 +216,16 @@ static int read_config_file(const char *name)
 		name, line));
 	goto fail;
       }
-      strncpy(def_instr_name, w[1], 255);
-      def_instr_name[255]='\0';
+      SDL_strlcpy(def_instr_name, w[1], 256);
     }
-    else if (!strcmp(w[0], "drumset"))
+    else if (!SDL_strcmp(w[0], "drumset"))
     {
       if (words < 2)
       {
 	SNDDBG(("%s: line %d: No drum set number given\n", name, line));
 	goto fail;
       }
-      i=atoi(w[1]);
+      i=SDL_atoi(w[1]);
       if (i<0 || i>(MAXBANK-1))
       {
 	SNDDBG(("%s: line %d: Drum set must be between 0 and %d\n",
@@ -251,21 +234,21 @@ static int read_config_file(const char *name)
       }
       if (!master_drumset[i])
       {
-	master_drumset[i] = safe_malloc(sizeof(ToneBank));
-	memset(master_drumset[i], 0, sizeof(ToneBank));
-	master_drumset[i]->tone = safe_malloc(128 * sizeof(ToneBankElement));
-	memset(master_drumset[i]->tone, 0, 128 * sizeof(ToneBankElement));
+	master_drumset[i] = SDL_calloc(1, sizeof(ToneBank));
+	if (!master_drumset[i]) goto fail;
+	master_drumset[i]->tone = SDL_calloc(128, sizeof(ToneBankElement));
+	if (!master_drumset[i]->tone) goto fail;
       }
       bank=master_drumset[i];
     }
-    else if (!strcmp(w[0], "bank"))
+    else if (!SDL_strcmp(w[0], "bank"))
     {
       if (words < 2)
       {
 	SNDDBG(("%s: line %d: No bank number given\n", name, line));
 	goto fail;
       }
-      i=atoi(w[1]);
+      i=SDL_atoi(w[1]);
       if (i<0 || i>(MAXBANK-1))
       {
 	SNDDBG(("%s: line %d: Tone bank must be between 0 and %d\n",
@@ -274,21 +257,22 @@ static int read_config_file(const char *name)
       }
       if (!master_tonebank[i])
       {
-	master_tonebank[i] = safe_malloc(sizeof(ToneBank));
-	memset(master_tonebank[i], 0, sizeof(ToneBank));
-	master_tonebank[i]->tone = safe_malloc(128 * sizeof(ToneBankElement));
-	memset(master_tonebank[i]->tone, 0, 128 * sizeof(ToneBankElement));
+	master_tonebank[i] = SDL_calloc(1, sizeof(ToneBank));
+	if (!master_tonebank[i]) goto fail;
+	master_tonebank[i]->tone = SDL_calloc(128, sizeof(ToneBankElement));
+	if (!master_tonebank[i]->tone) goto fail;
       }
       bank=master_tonebank[i];
     }
     else
     {
+      size_t sz;
       if ((words < 2) || (*w[0] < '0' || *w[0] > '9'))
       {
 	SNDDBG(("%s: line %d: syntax error\n", name, line));
-	continue;
+	goto fail;
       }
-      i=atoi(w[0]);
+      i=SDL_atoi(w[0]);
       if (i<0 || i>127)
       {
 	SNDDBG(("%s: line %d: Program must be between 0 and 127\n",
@@ -301,24 +285,26 @@ static int read_config_file(const char *name)
 		name, line));
 	goto fail;
       }
-      if (bank->tone[i].name)
-	free(bank->tone[i].name);
-      strcpy((bank->tone[i].name=safe_malloc(strlen(w[1])+1)),w[1]);
+      SDL_free(bank->tone[i].name);
+      sz = SDL_strlen(w[1])+1;
+      bank->tone[i].name = SDL_malloc(sz);
+      if (!bank->tone[i].name) goto fail;
+      SDL_memcpy(bank->tone[i].name,w[1],sz);
       bank->tone[i].note=bank->tone[i].amp=bank->tone[i].pan=
       bank->tone[i].strip_loop=bank->tone[i].strip_envelope=
       bank->tone[i].strip_tail=-1;
 
       for (j=2; j<words; j++)
       {
-	if (!(cp=strchr(w[j], '=')))
+	if (!(cp=SDL_strchr(w[j], '=')))
 	{
 	  SNDDBG(("%s: line %d: bad patch option %s\n", name, line, w[j]));
 	  goto fail;
 	}
 	*cp++=0;
-	if (!strcmp(w[j], "amp"))
+	if (!SDL_strcmp(w[j], "amp"))
 	{
-	  k=atoi(cp);
+	  k=SDL_atoi(cp);
 	  if ((k<0 || k>MAX_AMPLIFICATION) || (*cp < '0' || *cp > '9'))
 	  {
 	    SNDDBG(("%s: line %d: amplification must be between 0 and %d\n",
@@ -327,9 +313,9 @@ static int read_config_file(const char *name)
 	  }
 	  bank->tone[i].amp=k;
 	}
-	else if (!strcmp(w[j], "note"))
+	else if (!SDL_strcmp(w[j], "note"))
 	{
-	  k=atoi(cp);
+	  k=SDL_atoi(cp);
 	  if ((k<0 || k>127) || (*cp < '0' || *cp > '9'))
 	  {
 	    SNDDBG(("%s: line %d: note must be between 0 and 127\n",
@@ -338,16 +324,16 @@ static int read_config_file(const char *name)
 	  }
 	  bank->tone[i].note=k;
 	}
-	else if (!strcmp(w[j], "pan"))
+	else if (!SDL_strcmp(w[j], "pan"))
 	{
-	  if (!strcmp(cp, "center"))
+	  if (!SDL_strcmp(cp, "center"))
 	    k=64;
-	  else if (!strcmp(cp, "left"))
+	  else if (!SDL_strcmp(cp, "left"))
 	    k=0;
-	  else if (!strcmp(cp, "right"))
+	  else if (!SDL_strcmp(cp, "right"))
 	    k=127;
 	  else
-	    k=((atoi(cp)+100) * 100) / 157;
+	    k=((SDL_atoi(cp)+100) * 100) / 157;
 	  if ((k<0 || k>127) || (k==0 && *cp!='-' && (*cp < '0' || *cp > '9')))
 	  {
 	    SNDDBG(("%s: line %d: panning must be left, right, center, or between -100 and 100\n",
@@ -356,11 +342,11 @@ static int read_config_file(const char *name)
 	  }
 	  bank->tone[i].pan=k;
 	}
-	else if (!strcmp(w[j], "keep"))
+	else if (!SDL_strcmp(w[j], "keep"))
 	{
-	  if (!strcmp(cp, "env"))
+	  if (!SDL_strcmp(cp, "env"))
 	    bank->tone[i].strip_envelope=0;
-	  else if (!strcmp(cp, "loop"))
+	  else if (!SDL_strcmp(cp, "loop"))
 	    bank->tone[i].strip_loop=0;
 	  else
 	  {
@@ -368,13 +354,13 @@ static int read_config_file(const char *name)
 	    goto fail;
 	  }
 	}
-	else if (!strcmp(w[j], "strip"))
+	else if (!SDL_strcmp(w[j], "strip"))
 	{
-	  if (!strcmp(cp, "env"))
+	  if (!SDL_strcmp(cp, "env"))
 	    bank->tone[i].strip_envelope=1;
-	  else if (!strcmp(cp, "loop"))
+	  else if (!SDL_strcmp(cp, "loop"))
 	    bank->tone[i].strip_loop=1;
-	  else if (!strcmp(cp, "tail"))
+	  else if (!SDL_strcmp(cp, "tail"))
 	    bank->tone[i].strip_tail=1;
 	  else
 	  {
@@ -391,78 +377,113 @@ static int read_config_file(const char *name)
       }
     }
   }
-  SDL_RWclose(rw);
-  return 0;
+
+  r = 0; /* we're good. */
 fail:
   SDL_RWclose(rw);
+  return r;
+}
+
+#if defined(_WIN32)||defined(__CYGWIN__)||defined(__OS2__)
+/* FIXME: What about C:FOO ? */
+static SDL_INLINE char *get_last_dirsep (const char *p) {
+  char *p1 = SDL_strrchr(p, '/');
+  char *p2 = SDL_strrchr(p, '\\');
+  if (!p1) return p2;
+  if (!p2) return p1;
+  return (p1 > p2)? p1 : p2;
+}
+#else /* assumed UNIX-ish : */
+static SDL_INLINE char *get_last_dirsep (const char *p) {
+  return SDL_strrchr(p, '/');
+}
+#endif
+
+static int init_alloc_banks(void)
+{
+  /* Allocate memory for the standard tonebank and drumset */
+  master_tonebank[0] = SDL_calloc(1, sizeof(ToneBank));
+  if (!master_tonebank[0]) goto _nomem;
+  master_tonebank[0]->tone = SDL_calloc(128, sizeof(ToneBankElement));
+  if (!master_tonebank[0]->tone) goto _nomem;
+
+  master_drumset[0] = SDL_calloc(1, sizeof(ToneBank));
+  if (!master_drumset[0]) goto _nomem;
+  master_drumset[0]->tone = SDL_calloc(128, sizeof(ToneBankElement));
+  if (!master_drumset[0]->tone) goto _nomem;
+
+  return 0;
+_nomem:
+  SNDDBG(("Out of memory\n"));
+  Timidity_Exit ();
   return -2;
+}
+
+static int init_begin_config(const char *cf)
+{
+  const char *p = get_last_dirsep(cf);
+  if (p != NULL)
+      return timi_add_pathlist(cf, p - cf + 1); /* including DIRSEP */
+  return 0;
+}
+
+static int init_with_config(const char *cf)
+{
+  int rc = init_begin_config(cf);
+  if (rc != 0) {
+      Timidity_Exit ();
+      return rc;
+  }
+  rc = read_config_file(cf, 0);
+  if (rc != 0) {
+      Timidity_Exit ();
+  }
+  return rc;
 }
 
 int Timidity_Init_NoConfig(void)
 {
-  /* Allocate memory for the standard tonebank and drumset */
-  master_tonebank[0] = safe_malloc(sizeof(ToneBank));
-  memset(master_tonebank[0], 0, sizeof(ToneBank));
-  master_tonebank[0]->tone = safe_malloc(128 * sizeof(ToneBankElement));
-  memset(master_tonebank[0]->tone, 0, 128 * sizeof(ToneBankElement));
-
-  master_drumset[0] = safe_malloc(sizeof(ToneBank));
-  memset(master_drumset[0], 0, sizeof(ToneBank));
-  master_drumset[0]->tone = safe_malloc(128 * sizeof(ToneBankElement));
-  memset(master_drumset[0]->tone, 0, 128 * sizeof(ToneBankElement));
-
-  return 0;
+  master_tonebank[0] = NULL;
+  master_drumset[0] = NULL;
+  return init_alloc_banks();
 }
 
 int Timidity_Init(const char *config_file)
 {
-  const char *p;
-
-  Timidity_Init_NoConfig();
-
-  if (config_file == NULL || *config_file == '\0')
-      config_file = TIMIDITY_CFG;
-
-  p = strrchr(config_file, '/');
-#if defined(__WIN32__)||defined(__OS2__)
-  if (!p) p = strrchr(config_file, '\\');
-#endif
-  if (p != NULL)
-    add_to_pathlist(config_file, p - config_file + 1);
-
-  if (read_config_file(config_file) < 0) {
-      Timidity_Exit();
-      return -1;
+  int rc = Timidity_Init_NoConfig();
+  if (rc != 0) {
+      return rc;
   }
-  return 0;
+  if (config_file == NULL || *config_file == '\0') {
+      return init_with_config(TIMIDITY_CFG);
+  }
+  return init_with_config(config_file);
 }
 
-MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
+static void do_song_load(SDL_RWops *rw, SDL_AudioSpec *audio, MidiSong **out)
 {
   MidiSong *song;
   int i;
 
+  *out = NULL;
   if (rw == NULL)
-      return NULL;
+      return;
 
   /* Allocate memory for the song */
-  song = (MidiSong *)safe_malloc(sizeof(*song));
+  song = (MidiSong *)SDL_calloc(1, sizeof(*song));
   if (song == NULL)
-      return NULL;
-  memset(song, 0, sizeof(*song));
+      return;
 
   for (i = 0; i < MAXBANK; i++)
   {
-    if (master_tonebank[i])
-    {
-      song->tonebank[i] = safe_malloc(sizeof(ToneBank));
-      memset(song->tonebank[i], 0, sizeof(ToneBank));
+    if (master_tonebank[i]) {
+      song->tonebank[i] = SDL_calloc(1, sizeof(ToneBank));
+      if (!song->tonebank[i]) goto fail;
       song->tonebank[i]->tone = master_tonebank[i]->tone;
     }
-    if (master_drumset[i])
-    {
-      song->drumset[i] = safe_malloc(sizeof(ToneBank));
-      memset(song->drumset[i], 0, sizeof(ToneBank));
+    if (master_drumset[i]) {
+      song->drumset[i] = SDL_calloc(1, sizeof(ToneBank));
+      if (!song->drumset[i]) goto fail;
       song->drumset[i]->tone = master_drumset[i]->tone;
     }
   }
@@ -485,47 +506,47 @@ MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
       song->encoding |= PE_MONO;
   else if (audio->channels > 2) {
       SDL_SetError("Surround sound not supported");
-      free(song);
-      return NULL;
+      goto fail;
   }
   switch (audio->format) {
   case AUDIO_S8:
-	  song->write = s32tos8;
-	  break;
+    song->write = timi_s32tos8;
+    break;
   case AUDIO_U8:
-	  song->write = s32tou8;
-	  break;
+    song->write = timi_s32tou8;
+    break;
   case AUDIO_S16LSB:
-	  song->write = s32tos16l;
-	  break;
+    song->write = timi_s32tos16l;
+    break;
   case AUDIO_S16MSB:
-	  song->write = s32tos16b;
-	  break;
+    song->write = timi_s32tos16b;
+    break;
   case AUDIO_U16LSB:
-	  song->write = s32tou16l;
-	  break;
+    song->write = timi_s32tou16l;
+    break;
   case AUDIO_U16MSB:
-	  song->write = s32tou16b;
-	  break;
+    song->write = timi_s32tou16b;
+    break;
   case AUDIO_S32LSB:
-	  song->write = s32tos32l;
-	  break;
+    song->write = timi_s32tos32l;
+    break;
   case AUDIO_S32MSB:
-	  song->write = s32tos32b;
-	  break;
+    song->write = timi_s32tos32b;
+    break;
   case AUDIO_F32SYS:
-	  song->write = s32tof32;
-	  break;
+    song->write = timi_s32tof32;
+    break;
   default:
-	  SDL_SetError("Unsupported audio format");
-	  free(song);
-	  return NULL;
+    SDL_SetError("Unsupported audio format");
+    goto fail;
   }
 
   song->buffer_size = audio->samples;
-  song->resample_buffer = safe_malloc(audio->samples * sizeof(sample_t));
-  song->common_buffer = safe_malloc(audio->samples * 2 * sizeof(Sint32));
-  
+  song->resample_buffer = SDL_malloc(audio->samples * sizeof(sample_t));
+  if (!song->resample_buffer) goto fail;
+  song->common_buffer = SDL_malloc(audio->samples * 2 * sizeof(Sint32));
+  if (!song->common_buffer) goto fail;
+
   song->control_ratio = audio->freq / CONTROLS_PER_SECOND;
   if (song->control_ratio < 1)
       song->control_ratio = 1;
@@ -538,17 +559,11 @@ MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
   song->events = read_midi_file(song, &(song->groomed_event_count),
       &song->samples);
 
-  /* The RWops can safely be closed at this point, but let's make that the
-   * responsibility of the caller.
-   */
-  
   /* Make sure everything is okay */
-  if (!song->events) {
-    free(song);
-    return(NULL);
-  }
+  if (!song->events)
+    goto fail;
 
-  song->default_instrument = 0;
+  song->default_instrument = NULL;
   song->default_program = DEFAULT_PROGRAM;
 
   if (*def_instr_name)
@@ -556,66 +571,68 @@ MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
 
   load_missing_instruments(song);
 
-  return(song);
+  if (! song->oom)
+      *out = song;
+  else {
+fail: Timidity_FreeSong(song);
+  }
+}
+
+MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
+{
+  MidiSong *song;
+  do_song_load(rw, audio, &song);
+  return song;
 }
 
 void Timidity_FreeSong(MidiSong *song)
 {
   int i;
 
+  if (!song) return;
+
   free_instruments(song);
 
-  for (i = 0; i < 128; i++)
-  {
-    if (song->tonebank[i])
-      free(song->tonebank[i]);
-    if (song->drumset[i])
-      free(song->drumset[i]);
+  for (i = 0; i < 128; i++) {
+    SDL_free(song->tonebank[i]);
+    SDL_free(song->drumset[i]);
   }
-  
-  free(song->common_buffer);
-  free(song->resample_buffer);
-  free(song->events);
-  free(song);
+
+  SDL_free(song->common_buffer);
+  SDL_free(song->resample_buffer);
+  SDL_free(song->events);
+
+  SDL_free(song);
 }
 
 void Timidity_Exit(void)
 {
   int i, j;
 
-  for (i = 0; i < MAXBANK; i++)
-  {
-    if (master_tonebank[i])
-    {
+  for (i = 0; i < MAXBANK; i++) {
+    if (master_tonebank[i]) {
       ToneBankElement *e = master_tonebank[i]->tone;
-      if (e != NULL)
-      {
-        for (j = 0; j < 128; j++)
-        {
-          if (e[j].name != NULL)
-            free(e[j].name);
+      if (e != NULL) {
+        for (j = 0; j < 128; j++) {
+          SDL_free(e[j].name);
         }
-        free(e);
+        SDL_free(e);
       }
-      free(master_tonebank[i]);
+      SDL_free(master_tonebank[i]);
       master_tonebank[i] = NULL;
     }
-    if (master_drumset[i])
-    {
+    if (master_drumset[i]) {
       ToneBankElement *e = master_drumset[i]->tone;
-      if (e != NULL)
-      {
-        for (j = 0; j < 128; j++)
-        {
-          if (e[j].name != NULL)
-            free(e[j].name);
+      if (e != NULL) {
+        for (j = 0; j < 128; j++) {
+          SDL_free(e[j].name);
         }
-        free(e);
+        SDL_free(e);
       }
-      free(master_drumset[i]);
+      SDL_free(master_drumset[i]);
       master_drumset[i] = NULL;
     }
   }
 
-  free_pathlist();
+  timi_free_pathlist();
 }

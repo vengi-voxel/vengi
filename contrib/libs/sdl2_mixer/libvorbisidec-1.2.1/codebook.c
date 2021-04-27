@@ -17,7 +17,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <ogg/ogg.h>
 #include "ivorbiscodec.h"
 #include "codebook.h"
@@ -168,7 +167,7 @@ STIN long decode_packed_entry_number(codebook *book,
   int  read=book->dec_maxlength;
   long lo,hi;
   long lok = oggpack_look(b,book->dec_firsttablen);
- 
+
   if (lok >= 0) {
     long entry = book->dec_firsttable[lok];
     if(entry&0x80000000UL){

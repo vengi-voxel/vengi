@@ -1,5 +1,4 @@
 /*
-
     TiMidity -- Experimental MIDI to WAVE converter
     Copyright (C) 1995 Tuukka Toivonen <toivonen@clinet.fi>
 
@@ -8,18 +7,11 @@
 
     mix.c */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "SDL.h"
 
 #include "timidity.h"
 #include "options.h"
+#include "common.h"
 #include "instrum.h"
 #include "playmidi.h"
 #include "output.h"
@@ -84,15 +76,15 @@ void apply_envelope_to_amp(MidiSong *song, int v)
 	  ramp *= (float)vol_table[song->voice[v].envelope_volume>>23];
 	}
 
-      la = (Sint32)FSCALE(lamp,AMP_BITS);
-      
+      la = (Sint32)TIM_FSCALE(lamp,AMP_BITS);
+
       if (la>MAX_AMP_VALUE)
 	la=MAX_AMP_VALUE;
 
-      ra = (Sint32)FSCALE(ramp,AMP_BITS);
+      ra = (Sint32)TIM_FSCALE(ramp,AMP_BITS);
       if (ra>MAX_AMP_VALUE)
 	ra=MAX_AMP_VALUE;
-      
+
       song->voice[v].left_mix = la;
       song->voice[v].right_mix = ra;
     }
@@ -103,7 +95,7 @@ void apply_envelope_to_amp(MidiSong *song, int v)
       if (song->voice[v].sample->modes & MODES_ENVELOPE)
 	lamp *= (float)vol_table[song->voice[v].envelope_volume>>23];
 
-      la = (Sint32)FSCALE(lamp,AMP_BITS);
+      la = (Sint32)TIM_FSCALE(lamp,AMP_BITS);
 
       if (la>MAX_AMP_VALUE)
 	la=MAX_AMP_VALUE;
@@ -153,9 +145,9 @@ static void update_tremolo(MidiSong *song, int v)
      song->voice[v].tremolo_phase -= SINE_CYCLE_LENGTH<<RATE_SHIFT;  */
 
   song->voice[v].tremolo_volume = (float) 
-    (1.0 - FSCALENEG((sine(song->voice[v].tremolo_phase >> RATE_SHIFT) + 1.0)
-		    * depth * TREMOLO_AMPLITUDE_TUNING,
-		    17));
+    (1.0 - TIM_FSCALENEG((timi_sine(song->voice[v].tremolo_phase >> RATE_SHIFT) + 1.0)
+			  * depth * TREMOLO_AMPLITUDE_TUNING,
+			 17));
 
   /* I'm not sure about the +1.0 there -- it makes tremoloed voices'
      volumes on average the lower the higher the tremolo amplitude. */
@@ -194,7 +186,7 @@ static void mix_mystery_signal(MidiSong *song, sample_t *sp, Sint32 *lp, int v,
       left = vp->left_mix;
       right = vp->right_mix;
     }
-  
+
   while (count)
     if (cc < count)
       {
@@ -240,7 +232,7 @@ static void mix_center_signal(MidiSong *song, sample_t *sp, Sint32 *lp, int v,
 	return;	/* Envelope ran out */
       left = vp->left_mix;
     }
-  
+
   while (count)
     if (cc < count)
       {
@@ -277,7 +269,7 @@ static void mix_single_signal(MidiSong *song, sample_t *sp, Sint32 *lp, int v,
     left=vp->left_mix;
   int cc;
   sample_t s;
-  
+
   if (!(cc = vp->control_counter))
     {
       cc = song->control_ratio;
@@ -285,7 +277,7 @@ static void mix_single_signal(MidiSong *song, sample_t *sp, Sint32 *lp, int v,
 	return;	/* Envelope ran out */
       left = vp->left_mix;
     }
-  
+
   while (count)
     if (cc < count)
       {
@@ -322,7 +314,7 @@ static void mix_mono_signal(MidiSong *song, sample_t *sp, Sint32 *lp, int v,
     left=vp->left_mix;
   int cc;
   sample_t s;
-  
+
   if (!(cc = vp->control_counter))
     {
       cc = song->control_ratio;
@@ -330,7 +322,7 @@ static void mix_mono_signal(MidiSong *song, sample_t *sp, Sint32 *lp, int v,
 	return;	/* Envelope ran out */
       left = vp->left_mix;
     }
-  
+
   while (count)
     if (cc < count)
       {
@@ -363,7 +355,7 @@ static void mix_mystery(MidiSong *song, sample_t *sp, Sint32 *lp, int v, int cou
     left = song->voice[v].left_mix, 
     right = song->voice[v].right_mix;
   sample_t s;
-  
+
   while (count--)
     {
       s = *sp++;
@@ -377,7 +369,7 @@ static void mix_center(MidiSong *song, sample_t *sp, Sint32 *lp, int v, int coun
   final_volume_t 
     left = song->voice[v].left_mix;
   sample_t s;
-  
+
   while (count--)
     {
       s = *sp++;
@@ -391,7 +383,7 @@ static void mix_single(MidiSong *song, sample_t *sp, Sint32 *lp, int v, int coun
   final_volume_t 
     left = song->voice[v].left_mix;
   sample_t s;
-  
+
   while (count--)
     {
       s = *sp++;
@@ -405,7 +397,7 @@ static void mix_mono(MidiSong *song, sample_t *sp, Sint32 *lp, int v, int count)
   final_volume_t 
     left = song->voice[v].left_mix;
   sample_t s;
-  
+
   while (count--)
     {
       s = *sp++;
@@ -416,7 +408,6 @@ static void mix_mono(MidiSong *song, sample_t *sp, Sint32 *lp, int v, int count)
 /* Ramp a note out in c samples */
 static void ramp_out(MidiSong *song, sample_t *sp, Sint32 *lp, int v, Sint32 c)
 {
-
   /* should be final_volume_t, but Uint8 gives trouble. */
   Sint32 left, right, li, ri;
 
@@ -454,7 +445,7 @@ static void ramp_out(MidiSong *song, sample_t *sp, Sint32 *lp, int v, Sint32 c)
 	      left += li;
 	      if (left<0)
 		return;
-	      s=*sp++;	
+	      s=*sp++;
 	      MIXATION(left);
 	      MIXATION(left);
 	    }
@@ -542,16 +533,17 @@ void mix_voice(MidiSong *song, Sint32 *buf, int v, Sint32 c)
 		mix_center(song, sp, buf, v, c);
 	    }
 	  else
-	    { 
+	    {
 	      /* It's either full left or full right. In either case,
 		 every other sample is 0. Just get the offset right: */
 	      if (vp->panned == PANNED_RIGHT) buf++;
-	      
+
 	      if (vp->envelope_increment || vp->tremolo_phase_increment)
 		mix_single_signal(song, sp, buf, v, c);
-	      else 
+	      else
 		mix_single(song, sp, buf, v, c);
 	    }
 	}
     }
 }
+

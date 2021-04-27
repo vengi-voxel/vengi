@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: stdio-based convenience library for opening/seeking/decoding
- last mod: $Id: vorbisfile.c 19172 2014-06-24 14:44:34Z xiphmont $
+ last mod: $Id$
 
  ********************************************************************/
 
@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <math.h>
 
 #include "ivorbiscodec.h"
 #include "ivorbisfile.h"

@@ -24,10 +24,6 @@
 
 #include "SDL_mixer.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-
 /* The constant 'MThd' */
 #define MIDI_MAGIC	0x4d546864
 /* The constant 'RIFF' */
@@ -84,7 +80,7 @@ static MIDIEvent *CreateEvent(Uint32 time, Uint8 event, Uint8 a, Uint8 b)
 {
     MIDIEvent *newEvent;
 
-    newEvent = calloc(1, sizeof(MIDIEvent));
+    newEvent = SDL_calloc(1, sizeof(MIDIEvent));
 
     if (newEvent)
     {
@@ -157,8 +153,8 @@ static MIDIEvent *MIDITracktoStream(MIDITrack *track)
             if (len)
             {
                 currentEvent->extraLen = len;
-                currentEvent->extraData = malloc(len);
-                memcpy(currentEvent->extraData, &(track->data[currentPos]), len);
+                currentEvent->extraData = SDL_malloc(len);
+                SDL_memcpy(currentEvent->extraData, &(track->data[currentPos]), len);
                 currentPos += len;
             }
         }
@@ -210,7 +206,7 @@ static MIDIEvent *MIDITracktoStream(MIDITrack *track)
     }
 
     currentEvent = head->next;
-    free(head); /* release the dummy head event */
+    SDL_free(head); /* release the dummy head event */
     return currentEvent;
 }
 
@@ -229,10 +225,10 @@ static MIDIEvent *MIDItoStream(MIDIFile *mididata)
     if (NULL == head)
         return NULL;
 
-    track = (MIDIEvent**) calloc(1, sizeof(MIDIEvent*) * mididata->nTracks);
+    track = (MIDIEvent**) SDL_calloc(1, sizeof(MIDIEvent*) * mididata->nTracks);
     if (NULL == track)
     {
-        free(head);
+        SDL_free(head);
         return NULL;
     }
 
@@ -244,7 +240,7 @@ static MIDIEvent *MIDItoStream(MIDIFile *mididata)
     /* TODO */
     while(1)
     {
-        Uint32 lowestTime = INT_MAX;
+        Uint32 lowestTime = 0x7FFFFFFF; /* INT_MAX */
         int currentTrackID = -1;
 
         /* Find the next event */
@@ -274,8 +270,8 @@ static MIDIEvent *MIDItoStream(MIDIFile *mididata)
     currentEvent->next = 0;
 
     currentEvent = head->next;
-    free(track);
-    free(head); /* release the dummy head event */
+    SDL_free(track);
+    SDL_free(head); /* release the dummy head event */
     return currentEvent;
 }
 
@@ -319,7 +315,7 @@ static int ReadMIDIFile(MIDIFile *mididata, SDL_RWops *src)
     mididata->nTracks = tracks;
 
     /* Allocate tracks */
-    mididata->track = (MIDITrack*) calloc(1, sizeof(MIDITrack) * mididata->nTracks);
+    mididata->track = (MIDITrack*) SDL_calloc(1, sizeof(MIDITrack) * mididata->nTracks);
     if (NULL == mididata->track)
     {
         Mix_SetError("Out of memory");
@@ -337,7 +333,7 @@ static int ReadMIDIFile(MIDIFile *mididata, SDL_RWops *src)
         SDL_RWread(src, &size, 1, 4);
         size = BE_LONG(size);
         mididata->track[i].len = size;
-        mididata->track[i].data = malloc(size);
+        mididata->track[i].data = SDL_malloc(size);
         if (NULL == mididata->track[i].data)
         {
             Mix_SetError("Out of memory");
@@ -351,7 +347,7 @@ bail:
     for(;i >= 0; i--)
     {
         if (mididata->track[i].data)
-            free(mididata->track[i].data);
+            SDL_free(mididata->track[i].data);
     }
 
     return 0;
@@ -363,7 +359,7 @@ MIDIEvent *CreateMIDIEventList(SDL_RWops *src, Uint16 *division)
     MIDIEvent *eventList;
     int trackID;
 
-    mididata = calloc(1, sizeof(MIDIFile));
+    mididata = SDL_calloc(1, sizeof(MIDIFile));
     if (!mididata)
         return NULL;
 
@@ -373,13 +369,13 @@ MIDIEvent *CreateMIDIEventList(SDL_RWops *src, Uint16 *division)
         /* Read in the data */
         if ( ! ReadMIDIFile(mididata, src))
         {
-            free(mididata);
+            SDL_free(mididata);
             return NULL;
         }
     }
     else
     {
-        free(mididata);
+        SDL_free(mididata);
         return NULL;
     }
 
@@ -389,16 +385,16 @@ MIDIEvent *CreateMIDIEventList(SDL_RWops *src, Uint16 *division)
     eventList = MIDItoStream(mididata);
     if (eventList == NULL)
     {
-        free(mididata);
+        SDL_free(mididata);
         return NULL;
     }
     for(trackID = 0; trackID < mididata->nTracks; trackID++)
     {
         if (mididata->track[trackID].data)
-            free(mididata->track[trackID].data);
+            SDL_free(mididata->track[trackID].data);
     }
-    free(mididata->track);
-    free(mididata);
+    SDL_free(mididata->track);
+    SDL_free(mididata);
 
     return eventList;
 }
@@ -413,8 +409,8 @@ void FreeMIDIEventList(MIDIEvent *head)
     {
         next = cur->next;
         if (cur->extraData)
-            free (cur->extraData);
-        free (cur);
+            SDL_free (cur->extraData);
+        SDL_free (cur);
         cur = next;
     }
 }

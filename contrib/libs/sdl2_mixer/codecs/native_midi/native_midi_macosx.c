@@ -19,13 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* This is Mac OS X only, using Core MIDI. */
-
 #include "SDL_config.h"
 
 #if __MACOSX__
 
-#include <CoreServices/CoreServices.h>      /* ComponentDescription */
+/* Mac OS X 10.6+, using Core MIDI. */
+
+#include "SDL_stdinc.h"
+
 #include <AudioUnit/AudioUnit.h>
 #include <AudioToolbox/AudioToolbox.h>
 #include <AvailabilityMacros.h>
@@ -51,8 +52,8 @@ static int latched_volume = MIX_MAX_VOLUME;
 static OSStatus
 GetSequenceLength(MusicSequence sequence, MusicTimeStamp *_sequenceLength)
 {
-    // http://lists.apple.com/archives/Coreaudio-api/2003/Jul/msg00370.html
-    // figure out sequence length
+    /* http://lists.apple.com/archives/Coreaudio-api/2003/Jul/msg00370.html
+     * figure out sequence length */
     UInt32 ntracks, i;
     MusicTimeStamp sequenceLength = 0;
     OSStatus err;
@@ -85,10 +86,9 @@ GetSequenceLength(MusicSequence sequence, MusicTimeStamp *_sequenceLength)
     return noErr;
 }
 
-
-/* we're looking for the sequence output audiounit. */
 static OSStatus
-GetSequenceAudioUnit(MusicSequence sequence, AudioUnit *aunit)
+GetSequenceAudioUnitMatching(MusicSequence sequence, AudioUnit *aunit,
+                             OSType type, OSType subtype)
 {
     AUGraph graph;
     UInt32 nodecount, i;
@@ -104,50 +104,92 @@ GetSequenceAudioUnit(MusicSequence sequence, AudioUnit *aunit)
 
     for (i = 0; i < nodecount; i++) {
         AUNode node;
+        AudioComponentDescription desc;
 
         if (AUGraphGetIndNode(graph, i, &node) != noErr)
             continue;  /* better luck next time. */
 
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1050 /* this is deprecated, but works back to 10.0 */
-        {
-            struct ComponentDescription desc;
-            UInt32 classdatasize = 0;
-            void *classdata = NULL;
-            err = AUGraphGetNodeInfo(graph, node, &desc, &classdatasize,
-                                     &classdata, aunit);
-            if (err != noErr)
-                continue;
-            else if (desc.componentType != kAudioUnitType_Output)
-                continue;
-            else if (desc.componentSubType != kAudioUnitSubType_DefaultOutput)
-                continue;
-        }
-        #else  /* not deprecated, but requires 10.5 or later */
-        {
-        # if !defined(AUDIO_UNIT_VERSION) || ((AUDIO_UNIT_VERSION + 0) < 1060)
-         /* AUGraphAddNode () is changed to take an AudioComponentDescription*
-          * desc parameter instead of a ComponentDescription* in the 10.6 SDK.
-          * AudioComponentDescription is in 10.6 or newer, but it is actually
-          * the same as struct ComponentDescription with 20 bytes of size and
-          * the same offsets of all members, therefore, is binary compatible. */
-        #   define AudioComponentDescription ComponentDescription
-        # endif
-            AudioComponentDescription desc;
-            if (AUGraphNodeInfo(graph, node, &desc, aunit) != noErr)
-                continue;
-            else if (desc.componentType != kAudioUnitType_Output)
-                continue;
-            else if (desc.componentSubType != kAudioUnitSubType_DefaultOutput)
-                continue;
-        }
-        #endif
+        if (AUGraphNodeInfo(graph, node, &desc, aunit) != noErr)
+            continue;
+        else if (desc.componentType != type)
+            continue;
+        else if (desc.componentSubType != subtype)
+            continue;
 
         return noErr;  /* found it! */
     }
 
+    *aunit = NULL;
     return kAUGraphErr_NodeNotFound;
 }
 
+typedef struct {
+    AudioUnit aunit;
+    SDL_bool soundfont_set;
+    CFURLRef default_url;
+} macosx_load_soundfont_ctx;
+
+static int SDLCALL
+macosx_load_soundfont(const char *path, void *data)
+{
+    CFURLRef url;
+    OSStatus err;
+    macosx_load_soundfont_ctx *ctx = data;
+    if (ctx->soundfont_set)
+        return SDL_FALSE;
+
+    url = CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault,
+                                                  (const UInt8*)path,
+                                                  strlen(path), false);
+    if (!url)
+        return SDL_FALSE;
+
+    err = AudioUnitSetProperty(ctx->aunit, kMusicDeviceProperty_SoundBankURL,
+                               kAudioUnitScope_Global, 0, &url, sizeof(url));
+    CFRelease(url);
+    if (err != noErr) {
+        if (ctx->default_url)
+            err = AudioUnitSetProperty(ctx->aunit,
+                                       kMusicDeviceProperty_SoundBankURL,
+                                       kAudioUnitScope_Global, 0,
+                                       &ctx->default_url, sizeof(CFURLRef));
+        if (err != noErr) {
+            /* uh-oh, this might leave the audio unit in an unusable state
+               (e.g. if the soundfont was an incompatible file type) */
+        }
+        return SDL_FALSE;
+    }
+
+    ctx->soundfont_set = SDL_TRUE;
+    return SDL_TRUE;
+}
+
+static void
+SetSequenceSoundFont(MusicSequence sequence)
+{
+    OSStatus err;
+    macosx_load_soundfont_ctx ctx;
+    ctx.soundfont_set = SDL_FALSE;
+    ctx.default_url = NULL;
+
+    CFBundleRef bundle = CFBundleGetBundleWithIdentifier(
+                                   CFSTR("com.apple.audio.units.Components"));
+    if (bundle)
+        ctx.default_url = CFBundleCopyResourceURL(bundle,
+                                                  CFSTR("gs_instruments"),
+                                                  CFSTR("dls"), NULL);
+
+    err = GetSequenceAudioUnitMatching(sequence, &ctx.aunit,
+                                 kAudioUnitType_MusicDevice,
+                                 kAudioUnitSubType_DLSSynth);
+    if (err != noErr)
+        return;
+
+    Mix_EachSoundFont(macosx_load_soundfont, &ctx);
+    if (ctx.default_url)
+        CFRelease(ctx.default_url);
+    return;
+}
 
 int native_midi_detect(void)
 {
@@ -169,18 +211,18 @@ NativeMidiSong *native_midi_loadsong_RW(SDL_RWops *src, int freesrc)
     if (SDL_RWseek(src, 0, RW_SEEK_SET) < 0)
         goto fail;
 
-    buf = malloc(len);
+    buf = SDL_malloc(len);
     if (buf == NULL)
         goto fail;
 
     if (SDL_RWread(src, buf, len, 1) != 1)
         goto fail;
 
-    retval = malloc(sizeof(NativeMidiSong));
+    retval = SDL_malloc(sizeof(NativeMidiSong));
     if (retval == NULL)
         goto fail;
 
-    memset(retval, '\0', sizeof (*retval));
+    SDL_memset(retval, '\0', sizeof (*retval));
 
     if (NewMusicPlayer(&retval->player) != noErr)
         goto fail;
@@ -191,26 +233,11 @@ NativeMidiSong *native_midi_loadsong_RW(SDL_RWops *src, int freesrc)
     if (data == NULL)
         goto fail;
 
-    free(buf);
+    SDL_free(buf);
     buf = NULL;
 
-    #if MAC_OS_X_VERSION_MIN_REQUIRED < 1050
-    /* MusicSequenceLoadSMFData() (avail. in 10.2, no 64 bit) is
-     * equivalent to calling MusicSequenceLoadSMFDataWithFlags()
-     * with a flags value of 0 (avail. in 10.3, avail. 64 bit).
-     * So, we use MusicSequenceLoadSMFData() for powerpc versions
-     * but the *WithFlags() on intel which require 10.4 anyway. */
-    # if defined(__ppc__) || defined(__POWERPC__)
-    if (MusicSequenceLoadSMFData(song->sequence, data) != noErr)
-        goto fail;
-    # else
-    if (MusicSequenceLoadSMFDataWithFlags(retval->sequence, data, 0) != noErr)
-        goto fail;
-    # endif
-    #else  /* MusicSequenceFileLoadData() requires 10.5 or later.  */
     if (MusicSequenceFileLoadData(retval->sequence, data, 0, 0) != noErr)
         goto fail;
-    #endif
 
     CFRelease(data);
     data = NULL;
@@ -232,14 +259,14 @@ fail:
             DisposeMusicSequence(retval->sequence);
         if (retval->player)
             DisposeMusicPlayer(retval->player);
-        free(retval);
+        SDL_free(retval);
     }
 
     if (data)
         CFRelease(data);
 
     if (buf)
-        free(buf);
+        SDL_free(buf);
 
     return NULL;
 }
@@ -256,7 +283,7 @@ void native_midi_freesong(NativeMidiSong *song)
 
         DisposeMusicSequence(song->sequence);
         DisposeMusicPlayer(song->player);
-        free(song);
+        SDL_free(song);
     }
 }
 
@@ -277,14 +304,17 @@ void native_midi_start(NativeMidiSong *song, int loops)
     currentsong->loops = loops;
 
     MusicPlayerPreroll(song->player);
-    MusicPlayerSetTime(song->player, 0);
-    MusicPlayerStart(song->player);
-
-    GetSequenceAudioUnit(song->sequence, &song->audiounit);
+    GetSequenceAudioUnitMatching(song->sequence, &song->audiounit,
+                                 kAudioUnitType_Output,
+                                 kAudioUnitSubType_DefaultOutput);
+    SetSequenceSoundFont(song->sequence);
 
     vol = latched_volume;
     latched_volume++;  /* just make this not match. */
     native_midi_setvolume(vol);
+
+    MusicPlayerSetTime(song->player, 0);
+    MusicPlayerStart(song->player);
 
     Mix_LockAudio();
     SDL_PauseAudio(0);
@@ -347,4 +377,3 @@ const char *native_midi_error(void)
 }
 
 #endif /* Mac OS X native MIDI support */
-

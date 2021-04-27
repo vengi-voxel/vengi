@@ -36,7 +36,7 @@ static void _v_readstring(oggpack_buffer *o,char *buf,int bytes){
   }
 }
 
-static int _v_toupper(int c) {
+STIN int _v_toupper(int c) {
   return (c >= 'a' && c <= 'z') ? (c & ~('a' - 'A')) : c;
 }
 

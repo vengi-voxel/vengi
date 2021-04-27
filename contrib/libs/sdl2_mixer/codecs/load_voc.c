@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -289,6 +289,8 @@ static int voc_get_block(SDL_RWops *src, vs_t *v, SDL_AudioSpec *spec)
 
                 if (uc)
                     spec->channels = 2;  /* Stereo */
+                /* VOC_EXTENDED may be read before spec->channels inited: */
+                else spec->channels = 1;
                 /* Needed number of channels before finishing
                    compute for rate */
                 spec->freq = (256000000L/(65536L - v->rate))/spec->channels;

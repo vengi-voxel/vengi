@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,10 +24,6 @@
   effect callback API. They are meant for speed over quality.  :)
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "SDL.h"
 #include "SDL_mixer.h"
 
 #define MIX_INTERNAL_EFFECT__
@@ -38,7 +34,7 @@
     #include <unistd.h>
     struct timeval tv1;
     struct timeval tv2;
-
+    
     gettimeofday(&tv1, NULL);
 
         ... do your thing here ...
@@ -104,7 +100,6 @@ static void SDLCALL _Eff_reversestereo8(int chan, void *stream, int len, void *u
                (((*ptr) & 0xFF000000) >> 8) | (((*ptr) & 0x00FF0000) << 8);
     }
 }
-
 
 int Mix_SetReverseStereo(int channel, int flip)
 {

@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -635,7 +635,7 @@ static SDL_bool ParseFMT(WAV_Music *wave, Uint32 chunk_length)
     WaveFMT *format;
     WaveFMTex *formatEx = NULL;
     Uint8 *data;
-    Uint16 bitsamplerate;
+    int bits;
     SDL_bool loaded = SDL_FALSE;
 
     if (chunk_length < sizeof(*format)) {
@@ -682,20 +682,20 @@ static SDL_bool ParseFMT(WAV_Music *wave, Uint32 chunk_length)
             goto done;
     }
     spec->freq = (int)SDL_SwapLE32(format->frequency);
-    bitsamplerate = SDL_SwapLE16(format->bitspersample);
-    switch (bitsamplerate) {
+    bits = (int) SDL_SwapLE16(format->bitspersample);
+    switch (bits) {
         case 8:
             switch(wave->encoding) {
             case PCM_CODE:  spec->format = AUDIO_U8; break;
             case ALAW_CODE: spec->format = AUDIO_S16; break;
             case uLAW_CODE: spec->format = AUDIO_S16; break;
-            default: goto unknown_length;
+            default: goto unknown_bits;
             }
             break;
         case 16:
             switch(wave->encoding) {
             case PCM_CODE: spec->format = AUDIO_S16; break;
-            default: goto unknown_length;
+            default: goto unknown_bits;
             }
             break;
         case 24:
@@ -704,13 +704,14 @@ static SDL_bool ParseFMT(WAV_Music *wave, Uint32 chunk_length)
                 wave->decode = fetch_pcm24le;
                 spec->format = AUDIO_S32;
                 break;
-            default: goto unknown_length;
+            default: goto unknown_bits;
             }
+            break;
         case 32:
             switch(wave->encoding) {
             case PCM_CODE:   spec->format = AUDIO_S32; break;
             case FLOAT_CODE: spec->format = AUDIO_F32; break;
-            default: goto unknown_length;
+            default: goto unknown_bits;
             }
             break;
         case 64:
@@ -719,17 +720,17 @@ static SDL_bool ParseFMT(WAV_Music *wave, Uint32 chunk_length)
                 wave->decode = fetch_float64le;
                 spec->format = AUDIO_F32;
                 break;
-            default: goto unknown_length;
+            default: goto unknown_bits;
             }
             break;
         default:
-            unknown_length:
-            Mix_SetError("Unknown PCM data format of %d-bit length", (int)bitsamplerate);
+            unknown_bits:
+            Mix_SetError("Unknown PCM format with %d bits", bits);
             goto done;
     }
     spec->channels = (Uint8) SDL_SwapLE16(format->channels);
     spec->samples = 4096;       /* Good default buffer size */
-    wave->samplesize = spec->channels * (bitsamplerate / 8);
+    wave->samplesize = spec->channels * (bits / 8);
     /* SDL_CalculateAudioSpec */
     spec->size = SDL_AUDIO_BITSIZE(spec->format) / 8;
     spec->size *= spec->channels;
@@ -1198,6 +1199,7 @@ Mix_MusicInterface Mix_MusicInterface_WAV =
     WAV_Play,
     NULL,   /* IsPlaying */
     WAV_GetAudio,
+    NULL,       /* Jump */
     WAV_Seek,   /* Seek */
     WAV_Tell,   /* Tell */
     WAV_Duration,

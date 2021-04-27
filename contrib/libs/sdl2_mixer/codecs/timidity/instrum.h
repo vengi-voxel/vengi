@@ -1,14 +1,15 @@
 /*
-
     TiMidity -- Experimental MIDI to WAVE converter
     Copyright (C) 1995 Tuukka Toivonen <toivonen@clinet.fi>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the Perl Artistic License, available in COPYING.
 
-   instrum.h
+    instrum.h
+*/
 
-   */
+#ifndef TIMIDITY_INSTRUM_H
+#define TIMIDITY_INSTRUM_H
 
 /* Bits in modes: */
 #define MODES_16BIT	(1<<0)
@@ -25,6 +26,12 @@
 
 #define SPECIAL_PROGRAM -1
 
+#define load_missing_instruments TIMI_NAMESPACE(load_missing_instruments)
+#define free_instruments TIMI_NAMESPACE(free_instruments)
+#define set_default_instrument TIMI_NAMESPACE(set_default_instrument)
+
 extern int load_missing_instruments(MidiSong *song);
 extern void free_instruments(MidiSong *song);
-extern int set_default_instrument(MidiSong *song, char *name);
+extern int set_default_instrument(MidiSong *song, const char *name);
+
+#endif /* TIMIDITY_INSTRUM_H */

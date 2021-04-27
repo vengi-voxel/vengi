@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,6 +39,7 @@ typedef enum
     MIX_MUSIC_MAD,
     MIX_MUSIC_FLAC,
     MIX_MUSIC_OPUS,
+    MIX_MUSIC_LIBXMP,
     MIX_MUSIC_LAST
 } Mix_MusicAPI;
 
@@ -106,6 +107,9 @@ typedef struct
 
     /* Get music data, returns the number of bytes left */
     int (*GetAudio)(void *music, void *data, int bytes);
+
+    /* Jump to a given order in mod music */
+    int (*Jump)(void *music, int order);
 
     /* Seek to a play position (in seconds) */
     int (*Seek)(void *music, double position);

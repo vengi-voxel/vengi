@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -150,9 +150,164 @@ typedef struct {
     unsigned short last_nchannels;
     unsigned int last_samplerate;
 
+    double total_length;
+    int sample_rate;
+    int sample_position;
+
     unsigned char input_buffer[MAD_INPUT_BUFFER_SIZE + MAD_BUFFER_GUARD];
 } MAD_Music;
 
+static void read_update_buffer(struct mad_stream *stream, MAD_Music *music);
+
+static double extract_length(struct mad_header *header, struct mad_stream *stream, Sint64 file_size)
+{
+    int mpeg_version = 0;
+    int xing_offset = 0;
+    Uint32 samples_per_frame = 0;
+    Uint32 frames_count = 0;
+    unsigned char const *frames_count_raw;
+
+    /* There are two methods to compute duration:
+     * - Using Xing/Info/VBRI headers
+     * - Rely on filesize and first size of frame in condition of CRB
+     * https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#VBRHeaders
+     */
+
+    if (!stream->this_frame || !stream->next_frame ||
+        stream->next_frame <= stream->this_frame ||
+        (stream->next_frame - stream->this_frame) < 48) {
+        return -1.0; /* Too small buffer to get any necessary headers */
+    }
+
+    mpeg_version = (stream->this_frame[1] >> 3) & 0x03;
+
+    switch(mpeg_version) {
+    case 0x03: /* MPEG1 */
+        if (header->mode == MAD_MODE_SINGLE_CHANNEL) {
+            xing_offset = 4 + 17;
+        } else {
+            xing_offset = 4 + 32;
+        }
+        break;
+    default:  /* MPEG2 and MPEG2.5 */
+        if (header->mode == MAD_MODE_SINGLE_CHANNEL) {
+            xing_offset = 4 + 17;
+        } else {
+            xing_offset = 4 + 9;
+        }
+        break;
+    }
+
+    switch(header->layer)
+    {
+    case MAD_LAYER_I:
+        samples_per_frame = 384;
+        break;
+    case MAD_LAYER_II:
+        samples_per_frame = 1152;
+        break;
+    case MAD_LAYER_III:
+        if (mpeg_version == 0x03) {
+            samples_per_frame = 1152;
+        } else {
+            samples_per_frame = 576;
+        }
+        break;
+    default:
+        return -1.0;
+    }
+
+    if (SDL_memcmp(stream->this_frame + xing_offset, "Xing", 4) == 0 ||
+        SDL_memcmp(stream->this_frame + xing_offset, "Info", 4) == 0) {
+        /* Xing header to get the count of frames for VBR */
+        frames_count_raw = stream->this_frame + xing_offset + 8;
+        frames_count = ((Uint32)frames_count_raw[0] << 24) +
+                       ((Uint32)frames_count_raw[1] << 16) +
+                       ((Uint32)frames_count_raw[2] << 8) +
+                       ((Uint32)frames_count_raw[3]);
+    }
+    else if (SDL_memcmp(stream->this_frame + xing_offset, "VBRI", 4) == 0) {
+        /* VBRI header to get the count of frames for VBR */
+        frames_count_raw = stream->this_frame + xing_offset + 14;
+        frames_count = ((Uint32)frames_count_raw[0] << 24) +
+                       ((Uint32)frames_count_raw[1] << 16) +
+                       ((Uint32)frames_count_raw[2] << 8) +
+                       ((Uint32)frames_count_raw[3]);
+    } else {
+        /* To get a count of frames for CBR, divide the file size with a size of one frame */
+        frames_count = (Uint32)(file_size / (stream->next_frame - stream->this_frame));
+    }
+
+    return (double)(frames_count * samples_per_frame) / header->samplerate;
+}
+
+static int calculate_total_time(MAD_Music *music)
+{
+    mad_timer_t time = mad_timer_zero;
+    struct mad_header header;
+    struct mad_stream stream;
+    SDL_bool is_first_frame = SDL_TRUE;
+    int ret = 0;
+
+    mad_header_init(&header);
+    mad_stream_init(&stream);
+
+    while (1)
+    {
+        read_update_buffer(&stream, music);
+
+        if (mad_header_decode(&header, &stream) == -1) {
+            if (MAD_RECOVERABLE(stream.error)) {
+                if ((music->status & MS_input_error) == 0) {
+                    continue;
+                }
+                if (is_first_frame) {
+                    ret = -1;
+                }
+                break;
+            } else if (stream.error == MAD_ERROR_BUFLEN) {
+                if ((music->status & MS_input_error) == 0) {
+                    continue;
+                }
+                if (is_first_frame) {
+                    ret = -1;
+                }
+                break;
+            } else {
+                Mix_SetError("mad_frame_decode() failed, corrupt stream?");
+                music->status |= MS_decode_error;
+                if (is_first_frame) {
+                    ret = -1;
+                }
+                break;
+            }
+        }
+
+        music->sample_rate = (int)header.samplerate;
+        mad_timer_add(&time, header.duration);
+
+        if (is_first_frame) {
+            music->total_length = extract_length(&header, &stream, music->mp3file.length);
+            if (music->total_length > 0.0) {
+                break; /* Duration has been recognized */
+            }
+            is_first_frame = SDL_FALSE;
+            /* Otherwise, do the full scan of MP3 file to retrieve a duration */
+        }
+    }
+
+    if (!is_first_frame) {
+        music->total_length = (double)(mad_timer_count(time, (enum mad_units)music->sample_rate)) / (double)music->sample_rate;
+    }
+    mad_stream_finish(&stream);
+    mad_header_finish(&header);
+    SDL_memset(music->input_buffer, 0, sizeof(music->input_buffer));
+
+    music->status = 0;
+
+    MP3_RWseek(&music->mp3file, 0, RW_SEEK_SET);
+    return ret;
+}
 
 static int MAD_Seek(void *context, double position);
 
@@ -165,13 +320,21 @@ static void *MAD_CreateFromRW(SDL_RWops *src, int freesrc)
         SDL_OutOfMemory();
         return NULL;
     }
-    music->mp3file.src = src;
     music->volume = MIX_MAX_VOLUME;
 
-    music->mp3file.length = SDL_RWsize(src);
+    if (MP3_RWinit(&music->mp3file, src) < 0) {
+        SDL_free(music);
+        return NULL;
+    }
     if (mp3_skiptags(&music->mp3file, SDL_FALSE) < 0) {
         SDL_free(music);
         Mix_SetError("music_mad: corrupt mp3 file (bad tags.)");
+        return NULL;
+    }
+
+    if (calculate_total_time(music) < 0) {
+        SDL_free(music);
+        Mix_SetError("music_mad: corrupt mp3 file (bad stream.)");
         return NULL;
     }
 
@@ -208,10 +371,10 @@ static int MAD_Play(void *context, int play_count)
 /* Reads the next frame from the file.
    Returns true on success or false on failure.
  */
-static SDL_bool read_next_frame(MAD_Music *music)
+static void read_update_buffer(struct mad_stream *stream, MAD_Music *music)
 {
-    if (music->stream.buffer == NULL ||
-        music->stream.error == MAD_ERROR_BUFLEN) {
+    if (stream->buffer == NULL ||
+        stream->error == MAD_ERROR_BUFLEN) {
         size_t read_size;
         size_t remaining;
         unsigned char *read_start;
@@ -219,9 +382,9 @@ static SDL_bool read_next_frame(MAD_Music *music)
         /* There might be some bytes in the buffer left over from last
            time.    If so, move them down and read more bytes following
            them. */
-        if (music->stream.next_frame != NULL) {
-            remaining = music->stream.bufend - music->stream.next_frame;
-            memmove(music->input_buffer, music->stream.next_frame, remaining);
+        if (stream->next_frame != NULL) {
+            remaining = (size_t)(stream->bufend - stream->next_frame);
+            SDL_memmove(music->input_buffer, stream->next_frame, remaining);
             read_start = music->input_buffer + remaining;
             read_size = MAD_INPUT_BUFFER_SIZE - remaining;
 
@@ -247,10 +410,18 @@ static SDL_bool read_next_frame(MAD_Music *music)
         }
 
         /* Now feed those bytes into the libmad stream. */
-        mad_stream_buffer(&music->stream, music->input_buffer,
+        mad_stream_buffer(stream, music->input_buffer,
                                             read_size + remaining);
-        music->stream.error = MAD_ERROR_NONE;
+        stream->error = MAD_ERROR_NONE;
     }
+}
+
+/* Reads the next frame from the file.
+   Returns true on success or false on failure.
+ */
+static SDL_bool read_next_frame(MAD_Music *music)
+{
+    read_update_buffer(&music->stream, music);
 
     /* Now ask libmad to extract a frame from the data we just put in
        its buffer. */
@@ -312,7 +483,7 @@ static SDL_bool decode_frame(MAD_Music *music)
         if (music->audiostream) {
             SDL_FreeAudioStream(music->audiostream);
         }
-        music->audiostream = SDL_NewAudioStream(AUDIO_S16, (Uint8)pcm->channels, (int)pcm->samplerate,
+        music->audiostream = SDL_NewAudioStream(AUDIO_S16SYS, (Uint8)pcm->channels, (int)pcm->samplerate,
                                                 music_spec.format, music_spec.channels, music_spec.freq);
         if (!music->audiostream) {
             return SDL_FALSE;
@@ -343,6 +514,7 @@ static SDL_bool decode_frame(MAD_Music *music)
         }
     }
 
+    music->sample_position += nsamples;
     result = SDL_AudioStreamPut(music->audiostream, buffer, (int)(nsamples * nchannels * sizeof(Sint16)));
     SDL_stack_free(buffer);
 
@@ -403,6 +575,8 @@ static int MAD_Seek(void *context, double position)
     int_part = (int)position;
     mad_timer_set(&target, (unsigned long)int_part, (unsigned long)((position - int_part) * 1000000), 1000000);
 
+    music->sample_position = (int)(position * music->sample_rate);
+
     if (mad_timer_compare(music->next_frame_start, target) > 0) {
         /* In order to seek backwards in a VBR file, we have to rewind and
            start again from the beginning.    This isn't necessary if the
@@ -435,6 +609,18 @@ static int MAD_Seek(void *context, double position)
        we could get more precise by decoding the frame now and counting
        the appropriate number of samples out of it. */
     return 0;
+}
+
+static double MAD_Tell(void *context)
+{
+    MAD_Music *music = (MAD_Music *)context;
+    return (double)music->sample_position / (double)music->sample_rate;
+}
+
+static double MAD_Duration(void *context)
+{
+    MAD_Music *music = (MAD_Music *)context;
+    return music->total_length;
 }
 
 static void MAD_Delete(void *context)
@@ -471,9 +657,10 @@ Mix_MusicInterface Mix_MusicInterface_MAD =
     MAD_Play,
     NULL,   /* IsPlaying */
     MAD_GetAudio,
+    NULL,   /* Jump */
     MAD_Seek,
-    NULL,   /* Tell */
-    NULL,   /* Duration */
+    MAD_Tell,
+    MAD_Duration,
     NULL,   /* LoopStart */
     NULL,   /* LoopEnd */
     NULL,   /* LoopLength */

@@ -20,6 +20,9 @@
 #include "config.h"
 #endif
 
+#ifdef _WIN32
+#define _USE_MATH_DEFINES 1
+#endif
 #include <math.h>
 #include <ogg/os_types.h>
 

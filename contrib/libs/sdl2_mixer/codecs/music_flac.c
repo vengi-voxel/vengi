@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,10 +24,11 @@
 
 #ifdef MUSIC_FLAC
 
-#include "SDL_assert.h"
 #include "SDL_loadso.h"
+#include "SDL_assert.h"
 
 #include "music_flac.h"
+#include "utils.h"
 
 #include <FLAC/stream_decoder.h>
 
@@ -365,50 +366,6 @@ static FLAC__StreamDecoderWriteStatus flac_write_music_cb(
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
-/* Parse time string of the form HH:MM:SS.mmm and return equivalent sample
- * position */
-static FLAC__int64 parse_time(char *time, unsigned samplerate_hz)
-{
-    char *num_start, *p;
-    FLAC__int64 result = 0;
-    char c; int val;
-
-    /* Time is directly expressed as a sample position */
-    if (SDL_strchr(time, ':') == NULL) {
-        return SDL_strtoll(time, NULL, 10);
-    }
-
-    result = 0;
-    num_start = time;
-
-    for (p = time; *p != '\0'; ++p) {
-        if (*p == '.' || *p == ':') {
-            c = *p; *p = '\0';
-            if ((val = SDL_atoi(num_start)) < 0)
-                return -1;
-            result = result * 60 + val;
-            num_start = p + 1;
-            *p = c;
-        }
-
-        if (*p == '.') {
-            double val_f = SDL_atof(p);
-            if (val_f < 0) return -1;
-            return result * samplerate_hz + (FLAC__int64) (val_f * samplerate_hz);
-        }
-    }
-
-    if ((val = SDL_atoi(num_start)) < 0) return -1;
-    return (result * 60 + val) * samplerate_hz;
-}
-
-static SDL_bool is_loop_tag(const char *tag)
-{
-    char buf[5];
-    SDL_strlcpy(buf, tag, 5);
-    return SDL_strcasecmp(buf, "LOOP") == 0;
-}
-
 static void flac_metadata_music_cb(
                     const FLAC__StreamDecoder *decoder,
                     const FLAC__StreamMetadata *metadata,
@@ -461,17 +418,17 @@ static void flac_metadata_music_cb(
 
             /* Want to match LOOP-START, LOOP_START, etc. Remove - or _ from
              * string if it is present at position 4. */
-            if (is_loop_tag(argument) && ((argument[4] == '_') || (argument[4] == '-'))) {
+            if (_Mix_IsLoopTag(argument) && ((argument[4] == '_') || (argument[4] == '-'))) {
                 SDL_memmove(argument + 4, argument + 5, SDL_strlen(argument) - 4);
             }
 
             if (SDL_strcasecmp(argument, "LOOPSTART") == 0)
-                music->loop_start = parse_time(value, rate);
+                music->loop_start = _Mix_ParseTime(value, rate);
             else if (SDL_strcasecmp(argument, "LOOPLENGTH") == 0) {
                 music->loop_len = SDL_strtoll(value, NULL, 10);
                 is_loop_length = SDL_TRUE;
             } else if (SDL_strcasecmp(argument, "LOOPEND") == 0) {
-                music->loop_end = parse_time(value, rate);
+                music->loop_end = _Mix_ParseTime(value, rate);
                 is_loop_length = SDL_FALSE;
             } else if (SDL_strcasecmp(argument, "TITLE") == 0) {
                 meta_tags_set(&music->tags, MIX_META_TITLE, value);
@@ -786,6 +743,7 @@ Mix_MusicInterface Mix_MusicInterface_FLAC =
     FLAC_Play,
     NULL,   /* IsPlaying */
     FLAC_GetAudio,
+    NULL,   /* Jump */
     FLAC_Seek,
     FLAC_Tell,
     FLAC_Duration,

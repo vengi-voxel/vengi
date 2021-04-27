@@ -37,7 +37,7 @@
 #ifndef  _LOW_ACCURACY_
 /* 64 bit multiply */
 
-#if !(defined WIN32 && defined WINCE)
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 
@@ -239,7 +239,3 @@ STIN ogg_int32_t VFLOAT_ADD(ogg_int32_t a,ogg_int32_t ap,
 }
 
 #endif
-
-
-
-

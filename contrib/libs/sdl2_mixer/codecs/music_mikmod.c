@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -236,13 +236,15 @@ static void MIKMOD_Close(void)
 
 typedef struct
 {
-    MREADER mr;
-    /* struct MREADER in libmikmod <= 3.2.0-beta2
-     * doesn't have iobase members. adding them here
-     * so that if we compile against 3.2.0-beta2, we
-     * can still run OK against 3.2.0b3 and newer. */
+    /* MREADER basic members in libmikmod2/3: */
+    int  (*Seek)(struct MREADER*, long, int);
+    long (*Tell)(struct MREADER*);
+    BOOL (*Read)(struct MREADER*, void*, size_t);
+    int  (*Get)(struct MREADER*);
+    BOOL (*Eof)(struct MREADER*);
+    /* no iobase members in libmikmod <= 3.2.0-beta2 */
     long iobase, prev_iobase;
-    Sint64 offset;
+
     Sint64 eof;
     SDL_RWops *src;
 } LMM_MREADER;
@@ -252,16 +254,16 @@ int LMM_Seek(struct MREADER *mr,long to,int dir)
     Sint64 offset = to;
     LMM_MREADER* lmmmr = (LMM_MREADER*)mr;
     if (dir == SEEK_SET) {
-        offset += lmmmr->offset;
-        if (offset < lmmmr->offset)
+        offset += lmmmr->iobase;
+        if (offset < lmmmr->iobase)
             return -1;
     }
-    return (SDL_RWseek(lmmmr->src, offset, dir) < lmmmr->offset)? -1 : 0;
+    return (SDL_RWseek(lmmmr->src, offset, dir) < lmmmr->iobase)? -1 : 0;
 }
 long LMM_Tell(struct MREADER *mr)
 {
     LMM_MREADER* lmmmr = (LMM_MREADER*)mr;
-    return (long)(SDL_RWtell(lmmmr->src) - lmmmr->offset);
+    return (long)(SDL_RWtell(lmmmr->src) - lmmmr->iobase);
 }
 BOOL LMM_Read(struct MREADER *mr,void *buf,size_t sz)
 {
@@ -288,16 +290,16 @@ MODULE *MikMod_LoadSongRW(SDL_RWops *src, int maxchan)
 {
     LMM_MREADER lmmmr;
     SDL_memset(&lmmmr, 0, sizeof(LMM_MREADER));
-    lmmmr.mr.Seek = LMM_Seek;
-    lmmmr.mr.Tell = LMM_Tell;
-    lmmmr.mr.Read = LMM_Read;
-    lmmmr.mr.Get = LMM_Get;
-    lmmmr.mr.Eof = LMM_Eof;
+    lmmmr.Seek = LMM_Seek;
+    lmmmr.Tell = LMM_Tell;
+    lmmmr.Read = LMM_Read;
+    lmmmr.Get = LMM_Get;
+    lmmmr.Eof = LMM_Eof;
 
-    lmmmr.offset = SDL_RWtell(src);
+    lmmmr.prev_iobase = lmmmr.iobase = SDL_RWtell(src);
     SDL_RWseek(src, 0, RW_SEEK_END);
     lmmmr.eof = SDL_RWtell(src);
-    SDL_RWseek(src, lmmmr.offset, RW_SEEK_SET);
+    SDL_RWseek(src, lmmmr.iobase, RW_SEEK_SET);
     lmmmr.src = src;
     return mikmod.Player_LoadGeneric((MREADER*)&lmmmr, maxchan, 0);
 }
@@ -443,6 +445,14 @@ static int MIKMOD_GetAudio(void *context, void *data, int bytes)
     return music_pcm_getaudio(context, data, bytes, MIX_MAX_VOLUME, MIKMOD_GetSome);
 }
 
+/* Jump to a given order */
+static int MIKMOD_Jump(void *context, int order)
+{
+    (void)context;
+    mikmod.Player_SetPosition((UWORD)order);
+    return 0;
+}
+
 /* Jump (seek) to a given position (time is in seconds) */
 static int MIKMOD_Seek(void *context, double position)
 {
@@ -500,6 +510,7 @@ Mix_MusicInterface Mix_MusicInterface_MIKMOD =
     MIKMOD_Play,
     MIKMOD_IsPlaying,
     MIKMOD_GetAudio,
+    MIKMOD_Jump,
     MIKMOD_Seek,
     NULL,   /* Tell */
     NULL,   /* Duration */

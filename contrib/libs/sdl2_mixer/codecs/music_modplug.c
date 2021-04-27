@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,6 +39,7 @@ typedef struct {
     void (*ModPlug_Unload)(ModPlugFile* file);
     int  (*ModPlug_Read)(ModPlugFile* file, void* buffer, int size);
     void (*ModPlug_Seek)(ModPlugFile* file, int millisecond);
+    void (*ModPlug_SeekOrder)(ModPlugFile* file, int order);
     int  (*ModPlug_GetLength)(ModPlugFile* file);
     void (*ModPlug_GetSettings)(ModPlug_Settings* settings);
     void (*ModPlug_SetSettings)(const ModPlug_Settings* settings);
@@ -72,8 +73,7 @@ static int MODPLUG_Load(void)
         }
 #elif defined(__MACOSX__)
         extern ModPlugFile* ModPlug_Load(const void* data, int size) __attribute__((weak_import));
-        if (ModPlug_Load == NULL)
-        {
+        if (ModPlug_Load == NULL) {
             /* Missing weakly linked framework */
             Mix_SetError("Missing modplug.framework");
             return -1;
@@ -83,6 +83,7 @@ static int MODPLUG_Load(void)
         FUNCTION_LOADER(ModPlug_Unload, void (*)(ModPlugFile* file))
         FUNCTION_LOADER(ModPlug_Read, int  (*)(ModPlugFile* file, void* buffer, int size))
         FUNCTION_LOADER(ModPlug_Seek, void (*)(ModPlugFile* file, int millisecond))
+        FUNCTION_LOADER(ModPlug_SeekOrder, void (*)(ModPlugFile* file, int order))
         FUNCTION_LOADER(ModPlug_GetLength, int (*)(ModPlugFile* file))
         FUNCTION_LOADER(ModPlug_GetSettings, void (*)(ModPlug_Settings* settings))
         FUNCTION_LOADER(ModPlug_SetSettings, void (*)(const ModPlug_Settings* settings))
@@ -152,7 +153,7 @@ static int MODPLUG_Open(const SDL_AudioSpec *spec)
     settings.mBassRange = 50;
     settings.mSurroundDepth = 0;
     settings.mSurroundDelay = 10;
-    settings.mLoopCount = 0;
+    settings.mLoopCount = -1;
     modplug.ModPlug_SetSettings(&settings);
     return 0;
 }
@@ -270,9 +271,18 @@ static int MODPLUG_GetSome(void *context, void *data, int bytes, SDL_bool *done)
     }
     return 0;
 }
+
 static int MODPLUG_GetAudio(void *context, void *data, int bytes)
 {
     return music_pcm_getaudio(context, data, bytes, MIX_MAX_VOLUME, MODPLUG_GetSome);
+}
+
+/* Jump to a given order */
+static int MODPLUG_Jump(void *context, int order)
+{
+    MODPLUG_Music *music = (MODPLUG_Music *)context;
+    modplug.ModPlug_SeekOrder(music->file, order);
+    return 0;
 }
 
 /* Jump (seek) to a given position */
@@ -330,6 +340,7 @@ Mix_MusicInterface Mix_MusicInterface_MODPLUG =
     MODPLUG_Play,
     NULL,   /* IsPlaying */
     MODPLUG_GetAudio,
+    MODPLUG_Jump,
     MODPLUG_Seek,
     NULL,   /* Tell */
     MODPLUG_Duration,

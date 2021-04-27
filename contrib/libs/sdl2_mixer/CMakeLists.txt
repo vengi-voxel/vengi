@@ -1,15 +1,16 @@
 set(SRCS
-	compat.c
 	effect_position.c
 	effects_internal.c
 	effect_stereoreverse.c
 	mixer.c
 	music.c
+	utils.c
 	codecs/load_aiff.c
 	codecs/load_voc.c
 	codecs/music_cmd.c
 	codecs/music_ogg.c
 	codecs/music_wav.c
+	codecs/music_xmp.c
 	libogg-1.3.2/src/framing.c
 	libogg-1.3.2/src/bitwise.c
 	libvorbis-1.3.6/lib/mapping0.c

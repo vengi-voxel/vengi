@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,10 @@
 /* This file supports an external command for playing music */
 
 #ifdef MUSIC_CMD
+
+#ifdef __APPLE__
+#define _DARWIN_C_SOURCE
+#endif
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -279,6 +283,7 @@ Mix_MusicInterface Mix_MusicInterface_CMD =
     MusicCMD_Play,
     MusicCMD_IsPlaying,
     NULL,   /* GetAudio */
+    NULL,   /* Jump */
     NULL,   /* Seek */
     NULL,   /* Tell */
     NULL,   /* Duration */

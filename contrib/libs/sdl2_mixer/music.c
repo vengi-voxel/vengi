@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,7 @@
 #include "music_wav.h"
 #include "music_mikmod.h"
 #include "music_modplug.h"
+#include "music_xmp.h"
 #include "music_nativemidi.h"
 #include "music_fluidsynth.h"
 #include "music_timidity.h"
@@ -40,7 +41,7 @@
 #include "music_flac.h"
 #include "native_midi/native_midi.h"
 
-#include "compat.h"
+#include "utils.h"
 
 /* Check to make sure we are building with a new enough SDL */
 #if SDL_COMPILEDVERSION < SDL_VERSIONNUM(2, 0, 7)
@@ -176,6 +177,9 @@ static Mix_MusicInterface *s_music_interfaces[] =
 #endif
 #ifdef MUSIC_MP3_MAD
     &Mix_MusicInterface_MAD,
+#endif
+#ifdef MUSIC_MOD_XMP
+    &Mix_MusicInterface_XMP,
 #endif
 #ifdef MUSIC_MOD_MODPLUG
     &Mix_MusicInterface_MODPLUG,
@@ -528,7 +532,8 @@ Mix_MusicType detect_music_type(SDL_RWops *src)
     }
 
     if (SDL_memcmp(magic, "ID3", 3) == 0 ||
-        (magic[0] == 0xFF && (magic[1] & 0xFE) == 0xFA)) {
+    /* see: https://bugzilla.libsdl.org/show_bug.cgi?id=5322 */
+        (magic[0] == 0xFF && (magic[1] & 0xE6) == 0xE2)) {
         return MUS_MP3;
     }
 
@@ -896,6 +901,26 @@ int Mix_PlayMusic(Mix_Music *music, int loops)
     return Mix_FadeInMusicPos(music, loops, 0, 0.0);
 }
 
+/* Jump to a given order in mod music. */
+int Mix_ModMusicJumpToOrder(int order)
+{
+    int retval = -1;
+
+    Mix_LockAudio();
+    if (music_playing) {
+        if (music_playing->interface->Jump) {
+            retval = music_playing->interface->Jump(music_playing->context, order);
+        } else {
+            Mix_SetError("Jump not implemented for music type");
+        }
+    } else {
+        Mix_SetError("Music isn't playing");
+    }
+    Mix_UnlockAudio();
+
+    return retval;
+}
+
 /* Set the playing music position */
 int music_internal_position(double position)
 {
@@ -1054,8 +1079,6 @@ double Mix_GetMusicLoopLengthTime(Mix_Music *music)
     return(retval);
 }
 
-
-
 /* Set the music's initial volume */
 static void music_internal_initialize_volume(void)
 {
@@ -1093,7 +1116,7 @@ int Mix_VolumeMusic(int volume)
     return(prev_volume);
 }
 
-int Mix_GetVolumeMusicStream(Mix_Music *music)
+int Mix_GetMusicVolume(Mix_Music *music)
 {
     int prev_volume;
 
@@ -1265,13 +1288,14 @@ int Mix_SetMusicCMD(const char *command)
 int Mix_SetSynchroValue(int i)
 {
     /* Not supported by any players at this time */
-    return(-1);
+    (void) i;
+    return -1;
 }
 
 int Mix_GetSynchroValue(void)
 {
     /* Not supported by any players at this time */
-    return(-1);
+    return -1;
 }
 
 
@@ -1382,7 +1406,7 @@ const char* Mix_GetSoundFonts(void)
        Time to start guessing where they might be...
      */
     {
-        static const char *s_soundfont_paths[] = {
+        static char *s_soundfont_paths[] = {
             "/usr/share/sounds/sf2/FluidR3_GM.sf2"  /* Remember to add ',' here */
         };
         unsigned i;
@@ -1414,7 +1438,7 @@ int Mix_EachSoundFont(int (SDLCALL *function)(const char*, void*), void *data)
         return 0;
     }
 
-#if defined(_WIN32)||defined(__OS2__)
+#if defined(_WIN32) || defined(__OS2__)
 #define PATHSEP ";"
 #else
 #define PATHSEP ":;"

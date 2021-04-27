@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,13 +24,9 @@
   effect callback API. They are meant for speed over quality.  :)
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "SDL.h"
 #include "SDL_endian.h"
 #include "SDL_mixer.h"
+
 #include "mixer.h"
 
 #define MIX_INTERNAL_EFFECT__
@@ -41,7 +37,7 @@
     #include <unistd.h>
     struct timeval tv1;
     struct timeval tv2;
-
+    
     gettimeofday(&tv1, NULL);
 
         ... do your thing here ...
@@ -173,7 +169,7 @@ static void SDLCALL _Eff_position_u8_c4(int chan, void *stream, int len, void *u
     }
 
     if (args->room_angle == 0)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
+    for (i = 0; i < len; i += sizeof (Uint8) * 4) {
         /* must adjust the sample so that 0 is the center */
         *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
             * args->left_f) * args->distance_f) + 128);
@@ -189,7 +185,7 @@ static void SDLCALL _Eff_position_u8_c4(int chan, void *stream, int len, void *u
         ptr++;
     }
     else if (args->room_angle == 90)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
+    for (i = 0; i < len; i += sizeof (Uint8) * 4) {
         /* must adjust the sample so that 0 is the center */
         *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
             * args->right_f) * args->distance_f) + 128);
@@ -205,7 +201,7 @@ static void SDLCALL _Eff_position_u8_c4(int chan, void *stream, int len, void *u
         ptr++;
     }
     else if (args->room_angle == 180)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
+    for (i = 0; i < len; i += sizeof (Uint8) * 4) {
         /* must adjust the sample so that 0 is the center */
         *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
             * args->right_rear_f) * args->distance_f) + 128);
@@ -221,7 +217,7 @@ static void SDLCALL _Eff_position_u8_c4(int chan, void *stream, int len, void *u
         ptr++;
     }
     else if (args->room_angle == 270)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
+    for (i = 0; i < len; i += sizeof (Uint8) * 4) {
         /* must adjust the sample so that 0 is the center */
         *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
             * args->left_rear_f) * args->distance_f) + 128);
@@ -237,7 +233,6 @@ static void SDLCALL _Eff_position_u8_c4(int chan, void *stream, int len, void *u
         ptr++;
     }
 }
-
 
 static void SDLCALL _Eff_position_u8_c6(int chan, void *stream, int len, void *udata)
 {
@@ -403,12 +398,12 @@ static void SDLCALL _Eff_position_table_u8(int chan, void *stream, int len, void
         *p = (d[l[(*p & 0xFF000000) >> 24]] << 24) |
              (d[r[(*p & 0x00FF0000) >> 16]] << 16) |
              (d[l[(*p & 0x0000FF00) >>  8]] <<  8) |
-             (d[r[(*p & 0x000000FF)      ]]     ) ;
+             (d[r[(*p & 0x000000FF)      ]]      ) ;
 #else
         *p = (d[r[(*p & 0xFF000000) >> 24]] << 24) |
              (d[l[(*p & 0x00FF0000) >> 16]] << 16) |
              (d[r[(*p & 0x0000FF00) >>  8]] <<  8) |
-             (d[l[(*p & 0x000000FF)      ]]     ) ;
+             (d[l[(*p & 0x000000FF)      ]]      ) ;
 #endif
         ++p;
     }
@@ -497,6 +492,7 @@ static void SDLCALL _Eff_position_s8_c4(int chan, void *stream, int len, void *u
       }
     }
 }
+
 static void SDLCALL _Eff_position_s8_c6(int chan, void *stream, int len, void *udata)
 {
     volatile position_args *args = (volatile position_args *) udata;
@@ -557,7 +553,6 @@ static void SDLCALL _Eff_position_s8_c6(int chan, void *stream, int len, void *u
     }
 }
 
-
 /*
  * This one runs about 10.1 times faster than the non-table version, with
  *  no loss in quality. It does, however, require 64k of memory for the
@@ -601,12 +596,12 @@ static void SDLCALL _Eff_position_table_s8(int chan, void *stream, int len, void
         *p = (d[l[((Sint16)(Sint8)((*p & 0xFF000000) >> 24))+128]] << 24) |
              (d[r[((Sint16)(Sint8)((*p & 0x00FF0000) >> 16))+128]] << 16) |
              (d[l[((Sint16)(Sint8)((*p & 0x0000FF00) >>  8))+128]] <<  8) |
-             (d[r[((Sint16)(Sint8)((*p & 0x000000FF)     ))+128]]     ) ;
+             (d[r[((Sint16)(Sint8)((*p & 0x000000FF)      ))+128]]      ) ;
 #else
         *p = (d[r[((Sint16)(Sint8)((*p & 0xFF000000) >> 24))+128]] << 24) |
              (d[l[((Sint16)(Sint8)((*p & 0x00FF0000) >> 16))+128]] << 16) |
              (d[r[((Sint16)(Sint8)((*p & 0x0000FF00) >>  8))+128]] <<  8) |
-             (d[l[((Sint16)(Sint8)((*p & 0x000000FF)     ))+128]]     ) ;
+             (d[l[((Sint16)(Sint8)((*p & 0x000000FF)      ))+128]]      ) ;
 #endif
         ++p;
     }
@@ -642,6 +637,7 @@ static void SDLCALL _Eff_position_u16lsb(int chan, void *stream, int len, void *
         }
     }
 }
+
 static void SDLCALL _Eff_position_u16lsb_c4(int chan, void *stream, int len, void *udata)
 {
     volatile position_args *args = (volatile position_args *) udata;
@@ -693,6 +689,7 @@ static void SDLCALL _Eff_position_u16lsb_c4(int chan, void *stream, int len, voi
         }
     }
 }
+
 static void SDLCALL _Eff_position_u16lsb_c6(int chan, void *stream, int len, void *udata)
 {
     volatile position_args *args = (volatile position_args *) udata;
@@ -1063,6 +1060,7 @@ static void SDLCALL _Eff_position_s16msb(int chan, void *stream, int len, void *
         *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
     }
 }
+
 static void SDLCALL _Eff_position_s16msb_c4(int chan, void *stream, int len, void *udata)
 {
     /* 16 signed bits (lsb) * 4 channels. */
@@ -1109,6 +1107,7 @@ static void SDLCALL _Eff_position_s16msb_c4(int chan, void *stream, int len, voi
         }
     }
 }
+
 static void SDLCALL _Eff_position_s16msb_c6(int chan, void *stream, int len, void *udata)
 {
     /* 16 signed bits (lsb) * 6 channels. */
@@ -1200,6 +1199,7 @@ static void SDLCALL _Eff_position_s32lsb(int chan, void *stream, int len, void *
         }
     }
 }
+
 static void SDLCALL _Eff_position_s32lsb_c4(int chan, void *stream, int len, void *udata)
 {
     /* 32 signed bits (lsb) * 4 channels. */
@@ -1324,6 +1324,7 @@ static void SDLCALL _Eff_position_s32msb(int chan, void *stream, int len, void *
         *(ptr++) = (Sint32) SDL_SwapBE32(swapr);
     }
 }
+
 static void SDLCALL _Eff_position_s32msb_c4(int chan, void *stream, int len, void *udata)
 {
     /* 32 signed bits (lsb) * 4 channels. */
@@ -1370,6 +1371,7 @@ static void SDLCALL _Eff_position_s32msb_c4(int chan, void *stream, int len, voi
         }
     }
 }
+
 static void SDLCALL _Eff_position_s32msb_c6(int chan, void *stream, int len, void *udata)
 {
     /* 32 signed bits (lsb) * 6 channels. */
@@ -1446,6 +1448,7 @@ static void SDLCALL _Eff_position_f32sys(int chan, void *stream, int len, void *
         *(ptr++) = swapr;
     }
 }
+
 static void SDLCALL _Eff_position_f32sys_c4(int chan, void *stream, int len, void *udata)
 {
     /* float * 4 channels. */
@@ -1488,6 +1491,7 @@ static void SDLCALL _Eff_position_f32sys_c4(int chan, void *stream, int len, voi
         }
     }
 }
+
 static void SDLCALL _Eff_position_f32sys_c6(int chan, void *stream, int len, void *udata)
 {
     /* float * 6 channels. */
@@ -1554,7 +1558,6 @@ static void init_position_args(position_args *args)
     Mix_QuerySpec(NULL, NULL, (int *) &args->channels);
 }
 
-
 static position_args *get_position_arg(int channel)
 {
     void *rc;
@@ -1598,18 +1601,17 @@ static position_args *get_position_arg(int channel)
     return(pos_args_array[channel]);
 }
 
-
 static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
 {
     Mix_EffectFunc_t f = NULL;
 
     switch (format) {
         case AUDIO_U8:
-        switch (channels) {
+            switch (channels) {
             case 1:
             case 2:
                 f = (_Eff_build_volume_table_u8()) ? _Eff_position_table_u8 :
-                                                        _Eff_position_u8;
+                                                     _Eff_position_u8;
                 break;
             case 4:
                 f = _Eff_position_u8_c4;
@@ -1620,15 +1622,15 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
             default:
                 Mix_SetError("Unsupported audio channels");
                 break;
-        }
-        break;
+            }
+            break;
 
         case AUDIO_S8:
-        switch (channels) {
+            switch (channels) {
             case 1:
             case 2:
                 f = (_Eff_build_volume_table_s8()) ? _Eff_position_table_s8 :
-                                                        _Eff_position_s8;
+                                                     _Eff_position_s8;
                 break;
             case 4:
                 f = _Eff_position_s8_c4;
@@ -1639,11 +1641,11 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
             default:
                 Mix_SetError("Unsupported audio channels");
                 break;
-        }
-        break;
+            }
+            break;
 
         case AUDIO_U16LSB:
-        switch (channels) {
+            switch (channels) {
             case 1:
             case 2:
                 f = _Eff_position_u16lsb;
@@ -1657,11 +1659,11 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
             default:
                 Mix_SetError("Unsupported audio channels");
                 break;
-        }
-        break;
+            }
+            break;
 
         case AUDIO_S16LSB:
-        switch (channels) {
+            switch (channels) {
             case 1:
             case 2:
                 f = _Eff_position_s16lsb;
@@ -1675,11 +1677,11 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
             default:
                 Mix_SetError("Unsupported audio channels");
                 break;
-        }
-        break;
+            }
+            break;
 
         case AUDIO_U16MSB:
-        switch (channels) {
+            switch (channels) {
             case 1:
             case 2:
                 f = _Eff_position_u16msb;
@@ -1693,11 +1695,11 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
             default:
                 Mix_SetError("Unsupported audio channels");
                 break;
-        }
-        break;
+            }
+            break;
 
         case AUDIO_S16MSB:
-        switch (channels) {
+            switch (channels) {
             case 1:
             case 2:
                 f = _Eff_position_s16msb;
@@ -1711,11 +1713,11 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
             default:
                 Mix_SetError("Unsupported audio channels");
                 break;
-        }
-        break;
+            }
+            break;
 
         case AUDIO_S32MSB:
-        switch (channels) {
+            switch (channels) {
             case 1:
             case 2:
                 f = _Eff_position_s32msb;
@@ -1729,11 +1731,11 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
             default:
                 Mix_SetError("Unsupported audio channels");
                 break;
-        }
-        break;
+            }
+            break;
 
         case AUDIO_S32LSB:
-        switch (channels) {
+            switch (channels) {
             case 1:
             case 2:
                 f = _Eff_position_s32lsb;
@@ -1747,11 +1749,11 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
             default:
                 Mix_SetError("Unsupported audio channels");
                 break;
-        }
-        break;
+            }
+            break;
 
         case AUDIO_F32SYS:
-        switch (channels) {
+            switch (channels) {
             case 1:
             case 2:
                 f = _Eff_position_f32sys;
@@ -1765,8 +1767,8 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
             default:
                 Mix_SetError("Unsupported audio channels");
                 break;
-        }
-        break;
+            }
+            break;
 
         default:
             Mix_SetError("Unsupported audio format");
@@ -1783,7 +1785,7 @@ static void set_amplitudes(int channels, int angle, int room_angle)
     int left = 255, right = 255;
     int left_rear = 255, right_rear = 255, center = 255;
 
-    angle = SDL_abs(angle) % 360;  /* make angle between 0 and 359. */
+    /* our only caller Mix_SetPosition() already makes angle between 0 and 359. */
 
     if (channels == 2)
     {
@@ -1885,16 +1887,16 @@ static void set_amplitudes(int channels, int angle, int room_angle)
         speaker_amplitude[3] = (Uint8)right;
     }
     else if (room_angle == 180) {
-    if (channels == 2) {
+        if (channels == 2) {
             speaker_amplitude[0] = (Uint8)right;
             speaker_amplitude[1] = (Uint8)left;
-    }
-    else {
+        }
+        else {
             speaker_amplitude[0] = (Uint8)right_rear;
             speaker_amplitude[1] = (Uint8)left_rear;
             speaker_amplitude[2] = (Uint8)right;
             speaker_amplitude[3] = (Uint8)left;
-    }
+        }
     }
     else if (room_angle == 270) {
         speaker_amplitude[0] = (Uint8)right;
@@ -1932,12 +1934,12 @@ int Mix_SetPanning(int channel, Uint8 left, Uint8 right)
         /* left = 255 =>  angle = -90;  left = 0 => angle = +89 */
         int angle = 0;
         if ((left != 255) || (right != 255)) {
-        angle = (int)left;
+            angle = (int)left;
             angle = 127 - angle;
-        angle = -angle;
+            angle = -angle;
             angle = angle * 90 / 128; /* Make it larger for more effect? */
         }
-        return(Mix_SetPosition(channel, angle, 0));
+        return Mix_SetPosition(channel, angle, 0);
     }
 
     f = get_position_effect_func(format, channels);
@@ -2001,7 +2003,7 @@ int Mix_SetDistance(int channel, Uint8 distance)
 
     distance = 255 - distance;  /* flip it to our scale. */
 
-        /* it's a no-op; unregister the effect, if it's registered. */
+    /* it's a no-op; unregister the effect, if it's registered. */
     if ((distance == 255) && (args->left_u8 == 255) && (args->right_u8 == 255)) {
         if (args->in_use) {
             retval = _Mix_UnregisterEffect_locked(channel, f);
@@ -2039,7 +2041,9 @@ int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
     if (f == NULL)
         return(0);
 
-    angle = SDL_abs(angle) % 360;  /* make angle between 0 and 359. */
+    /* make angle between 0 and 359. */
+    angle %= 360;
+    if (angle < 0) angle += 360;
 
     Mix_LockAudio();
     args = get_position_arg(channel);
@@ -2062,9 +2066,9 @@ int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
 
     if (channels == 2)
     {
-      if (angle > 180)
-          room_angle = 180; /* exchange left and right channels */
-      else room_angle = 0;
+        if (angle > 180)
+            room_angle = 180; /* exchange left and right channels */
+        else room_angle = 0;
     }
 
     if (channels == 4 || channels == 6)

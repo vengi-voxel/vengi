@@ -6,6 +6,9 @@
     it under the terms of the Perl Artistic License, available in COPYING.
 */
 
+#ifndef TIMIDITY_OPTIONS_H
+#define TIMIDITY_OPTIONS_H
+
 /* When a patch file can't be opened, one of these extensions is
    appended to the filename and the open is tried again.
  */
@@ -34,9 +37,12 @@
 #define CONTROLS_PER_SECOND 1000
 
 /* Make envelopes twice as fast. Saves ~20% CPU time (notes decay
-   faster) and sounds more like a GUS. There is now a command line
-   option to toggle this as well. */
+   faster) and sounds more like a GUS. */
 #define FAST_DECAY
+
+/* A somewhat arbitrary output frequency range. */
+#define MIN_OUTPUT_RATE 4000
+#define MAX_OUTPUT_RATE 256000
 
 /* How many bits to use for the fractional part of sample positions.
    This affects tonal accuracy. The entire position counter must fit
@@ -61,6 +67,7 @@
 /**************************************************************************/
 
 /* change FRACTION_BITS above, not these */
+#define INTEGER_BITS (32 - FRACTION_BITS)
 #define INTEGER_MASK (0xFFFFFFFF << FRACTION_BITS)
 #define FRACTION_MASK (~ INTEGER_MASK)
 
@@ -69,8 +76,7 @@
 
 #define MAX_AMPLIFICATION 800
 
-/* You could specify a complete path, e.g. "/etc/timidity.cfg", and
-   then specify the library directory in the configuration file. */
+/* The TiMidity configuration file */
 #ifndef TIMIDITY_CFG
 #define TIMIDITY_CFG "timidity.cfg"
 #endif
@@ -81,8 +87,8 @@
 
 #define MAX_AMP_VALUE ((1<<(AMP_BITS+1))-1)
 
-#define FSCALE(a,b) (float)((a) * (double)(1<<(b)))
-#define FSCALENEG(a,b) (float)((a) * (1.0L / (double)(1<<(b))))
+#define TIM_FSCALE(a,b) (float)((a) * (double)(1<<(b)))
+#define TIM_FSCALENEG(a,b) (float)((a) * (1.0L / (double)(1<<(b))))
 
 /* Vibrato and tremolo Choices of the Day */
 #define SWEEP_TUNING 38
@@ -95,7 +101,7 @@
 #define RATE_SHIFT 5
 
 #ifndef PI
-  #define PI 3.14159265358979323846
+#define PI 3.14159265358979323846
 #endif
 
-#define SNDDBG(X)
+#endif /* TIMIDITY_OPTIONS_H */

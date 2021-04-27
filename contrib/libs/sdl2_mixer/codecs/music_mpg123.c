@@ -1,6 +1,6 @@
 /*
   SDL_mixer:    An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.    In no event will the authors be held liable for any damages
@@ -23,14 +23,13 @@
 
 #ifdef MUSIC_MP3_MPG123
 
-#include <stdio.h>      /* For SEEK_SET */
-
-#include "SDL_assert.h"
 #include "SDL_loadso.h"
+#include "SDL_assert.h"
 
 #include "music_mpg123.h"
 #include "mp3utils.h"
 
+#include <stdio.h>      /* For SEEK_SET */
 #include <mpg123.h>
 
 
@@ -146,8 +145,7 @@ static void MPG123_Delete(void *context);
 
 static int mpg123_format_to_sdl(int fmt)
 {
-    switch (fmt)
-    {
+    switch (fmt) {
         case MPG123_ENC_SIGNED_8:       return AUDIO_S8;
         case MPG123_ENC_UNSIGNED_8:     return AUDIO_U8;
         case MPG123_ENC_SIGNED_16:      return AUDIO_S16SYS;
@@ -162,8 +160,7 @@ static int mpg123_format_to_sdl(int fmt)
 #ifdef DEBUG_MPG123
 static const char *mpg123_format_str(int fmt)
 {
-    switch (fmt)
-    {
+    switch (fmt) {
 #define f(x) case x: return #x;
         f(MPG123_ENC_UNSIGNED_8)
         f(MPG123_ENC_UNSIGNED_16)
@@ -227,12 +224,15 @@ static void *MPG123_CreateFromRW(SDL_RWops *src, int freesrc)
 
     music = (MPG123_Music*)SDL_calloc(1, sizeof(*music));
     if (!music) {
+        SDL_OutOfMemory();
         return NULL;
     }
-    music->mp3file.src = src;
     music->volume = MIX_MAX_VOLUME;
 
-    music->mp3file.length = SDL_RWsize(src);
+    if (MP3_RWinit(&music->mp3file, src) < 0) {
+        SDL_free(music);
+        return NULL;
+    }
     if (mp3_skiptags(&music->mp3file, SDL_TRUE) < 0) {
         SDL_free(music);
         Mix_SetError("music_mpg123: corrupt mp3 file (bad tags.)");
@@ -299,8 +299,8 @@ static void *MPG123_CreateFromRW(SDL_RWops *src, int freesrc)
         return NULL;
     }
 #ifdef DEBUG_MPG123
-        printf("MPG123 format: %s, channels: %d, rate: %ld\n",
-                mpg123_format_str(encoding), channels, rate);
+    printf("MPG123 format: %s, channels: %d, rate: %ld\n",
+            mpg123_format_str(encoding), channels, rate);
 #endif
 
     format = mpg123_format_to_sdl(encoding);
@@ -496,6 +496,7 @@ Mix_MusicInterface Mix_MusicInterface_MPG123 =
     MPG123_Play,
     NULL,   /* IsPlaying */
     MPG123_GetAudio,
+    NULL,   /* Jump */
     MPG123_Seek,
     MPG123_Tell,
     MPG123_Duration,

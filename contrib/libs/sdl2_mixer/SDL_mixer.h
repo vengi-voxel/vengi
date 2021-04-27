@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -578,7 +578,7 @@ extern DECLSPEC int SDLCALL Mix_Volume(int channel, int volume);
 extern DECLSPEC int SDLCALL Mix_VolumeChunk(Mix_Chunk *chunk, int volume);
 extern DECLSPEC int SDLCALL Mix_VolumeMusic(int volume);
 /* Get the current volume value in the range of 0-128 of a music stream */
-extern DECLSPEC int SDLCALL Mix_GetVolumeMusicStream(Mix_Music *music);
+extern DECLSPEC int SDLCALL Mix_GetMusicVolume(Mix_Music *music);
 
 /* Halt playing of a particular channel */
 extern DECLSPEC int SDLCALL Mix_HaltChannel(int channel);
@@ -613,6 +613,12 @@ extern DECLSPEC void SDLCALL Mix_PauseMusic(void);
 extern DECLSPEC void SDLCALL Mix_ResumeMusic(void);
 extern DECLSPEC void SDLCALL Mix_RewindMusic(void);
 extern DECLSPEC int SDLCALL Mix_PausedMusic(void);
+
+/* Jump to a given order in mod music.
+   Returns 0 if successful, or -1 if failed or isn't implemented.
+   Only for MOD music formats.
+ */
+extern DECLSPEC int SDLCALL Mix_ModMusicJumpToOrder(int order);
 
 /* Set the current position in the music stream.
    This returns 0 if successful, or -1 if it failed or isn't implemented.

@@ -1,19 +1,10 @@
 /*
-
     TiMidity -- Experimental MIDI to WAVE converter
     Copyright (C) 1995 Tuukka Toivonen <toivonen@clinet.fi>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the Perl Artistic License, available in COPYING.
 */
-
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "SDL.h"
 
@@ -22,6 +13,7 @@
 #include "common.h"
 #include "instrum.h"
 #include "playmidi.h"
+#include "readmidi.h"
 
 /* Computes how many (fractional) samples one MIDI delta-time unit contains */
 static void compute_sample_increment(MidiSong *song, Sint32 tempo,
@@ -57,15 +49,21 @@ static Sint32 getvl(SDL_RWops *rw)
    or unprintable characters will be converted to periods. */
 static int dumpstring(SDL_RWops *rw, Sint32 len, Uint8 type)
 {
-  static char *label[]={
+  static const char *label[] = {
     "Text event: ", "Text: ", "Copyright: ", "Track name: ",
-    "Instrument: ", "Lyric: ", "Marker: ", "Cue point: "};
-  signed char *s=safe_malloc(len+1);
-  if (len != (Sint32) SDL_RWread(rw, s, 1, len))
+    "Instrument: ", "Lyric: ", "Marker: ", "Cue point: " };
+  signed char *s = SDL_malloc(len+1);
+  if (!s)
     {
-      free(s);
+      SDL_RWseek(song->rw, len, RW_SEEK_CUR);/* should I ? */
       return -1;
     }
+  if (len != (Sint32) SDL_RWread(rw, s, 1, len))
+    {
+      SDL_free(s);
+      return -1;
+    }
+
   s[len]='\0';
   while (len--)
     {
@@ -73,16 +71,21 @@ static int dumpstring(SDL_RWops *rw, Sint32 len, Uint8 type)
 	s[len]='.';
     }
   SNDDBG(("%s%s", label[(type>7) ? 0 : type], s));
-  free(s);
+  SDL_free(s);
   return 0;
 }
 #endif
 
-#define MIDIEVENT(at,t,ch,pa,pb) \
-  new=safe_malloc(sizeof(MidiEventList)); \
-  new->event.time=at; new->event.type=t; new->event.channel=ch; \
-  new->event.a=pa; new->event.b=pb; new->next=0;\
-  return new;
+#define MIDIEVENT(at,t,ch,pa,pb)				\
+  newlist = (MidiEventList *) SDL_malloc(sizeof(MidiEventList));\
+  if (!newlist) {song->oom = 1; return NULL;}			\
+  newlist->event.time = at;					\
+  newlist->event.type = t;					\
+  newlist->event.channel = ch;					\
+  newlist->event.a = pa;					\
+  newlist->event.b = pb;					\
+  newlist->next = NULL;						\
+  return newlist;
 
 #define MAGIC_EOT ((MidiEventList *)(-1))
 
@@ -94,7 +97,7 @@ static MidiEventList *read_midi_event(MidiSong *song)
   static Uint8 nrpn=0, rpn_msb[16], rpn_lsb[16]; /* one per channel */
   Uint8 me, type, a,b,c;
   Sint32 len;
-  MidiEventList *new;
+  MidiEventList *newlist;
 
   for (;;)
     {
@@ -104,7 +107,7 @@ static MidiEventList *read_midi_event(MidiSong *song)
 	  SNDDBG(("read_midi_event: SDL_RWread() failure\n"));
 	  return NULL;
 	}
-      
+
       if(me==0xF0 || me == 0xF7) /* SysEx event */
 	{
 	  len=getvl(song->rw);
@@ -130,7 +133,7 @@ static MidiEventList *read_midi_event(MidiSong *song)
 		SDL_RWread(song->rw, &b, 1, 1);
 		SDL_RWread(song->rw, &c, 1, 1);
 		MIDIEVENT(song->at, ME_TEMPO, c, a, b);
-		
+
 	      default:
 		SNDDBG(("(Meta event type 0x%02x, length %d)\n", type, len));
 		SDL_RWseek(song->rw, len, RW_SEEK_CUR);
@@ -179,12 +182,12 @@ static MidiEventList *read_midi_event(MidiSong *song)
 		  case 121: control=ME_RESET_CONTROLLERS; break;
 		  case 123: control=ME_ALL_NOTES_OFF; break;
 
-		    /* These should be the SCC-1 tone bank switch
-		       commands. I don't know why there are two, or
-		       why the latter only allows switching to bank 0.
-		       Also, some MIDI files use 0 as some sort of
-		       continuous controller. This will cause lots of
-		       warnings about undefined tone banks. */
+		  /* These should be the SCC-1 tone bank switch
+		     commands. I don't know why there are two, or
+		     why the latter only allows switching to bank 0.
+		     Also, some MIDI files use 0 as some sort of
+		     continuous controller. This will cause lots of
+		     warnings about undefined tone banks. */
 		  case 0: control=ME_TONE_BANK; break;
 		  case 32:
 		    if (b!=0) {
@@ -200,7 +203,7 @@ static MidiEventList *read_midi_event(MidiSong *song)
 		  case 101: nrpn=0; rpn_lsb[lastchan]=b; break;
 		  case 99: nrpn=1; rpn_msb[lastchan]=b; break;
 		  case 98: nrpn=1; rpn_lsb[lastchan]=b; break;
-		    
+
 		  case 6:
 		    if (nrpn)
 		      {
@@ -208,7 +211,7 @@ static MidiEventList *read_midi_event(MidiSong *song)
 				rpn_msb[lastchan], rpn_lsb[lastchan], b));
 			break;
 		      }
-		    
+
 		    switch((rpn_msb[lastchan]<<8) | rpn_lsb[lastchan])
 		      {
 		      case 0x0000: /* Pitch bend sensitivity */
@@ -225,13 +228,13 @@ static MidiEventList *read_midi_event(MidiSong *song)
 			break;
 		      }
 		    break;
-		    
+
 		  default:
 		    SNDDBG(("(Control %d: %d)\n", a, b));
 		    break;
 		  }
 		if (control != 255)
-		  { 
+		  {
 		    MIDIEVENT(song->at, control, lastchan, b, 0); 
 		  }
 	      }
@@ -249,15 +252,15 @@ static MidiEventList *read_midi_event(MidiSong *song)
 	      b &= 0x7F;
 	      MIDIEVENT(song->at, ME_PITCHWHEEL, lastchan, a, b);
 
-	    default: 
+	    default:
 	      SNDDBG(("*** Can't happen: status 0x%02X, channel 0x%02X\n",
 		      laststatus, lastchan));
 	      break;
 	    }
 	}
     }
-  
-  return new;
+
+  return newlist;
 }
 
 #undef MIDIEVENT
@@ -267,7 +270,7 @@ static MidiEventList *read_midi_event(MidiSong *song)
 static int read_track(MidiSong *song, int append)
 {
   MidiEventList *meep;
-  MidiEventList *next, *new;
+  MidiEventList *next, *newlist;
   Sint32 len;
   Sint64 next_pos, pos;
   char tmp[4];
@@ -284,7 +287,6 @@ static int read_track(MidiSong *song, int append)
     song->at=0;
 
   /* Check the formalities */
-  
   if (SDL_RWread(song->rw, tmp, 1, 4) != 4 || SDL_RWread(song->rw, &len, 4, 1) != 1)
     {
       SNDDBG(("Can't read track header.\n"));
@@ -292,7 +294,7 @@ static int read_track(MidiSong *song, int append)
     }
   len=(Sint32)SDL_SwapBE32((Uint32)len);
   next_pos = SDL_RWtell(song->rw) + len;
-  if (memcmp(tmp, "MTrk", 4))
+  if (SDL_memcmp(tmp, "MTrk", 4))
     {
       SNDDBG(("Corrupt MIDI file.\n"));
       return -2;
@@ -300,29 +302,31 @@ static int read_track(MidiSong *song, int append)
 
   for (;;)
     {
-      if (!(new=read_midi_event(song))) /* Some kind of error  */
+      if (!(newlist=read_midi_event(song))) /* Some kind of error  */
 	return -2;
 
-      if (new==MAGIC_EOT) /* End-of-track Hack. */
+      if (newlist==MAGIC_EOT) /* End-of-track Hack. */
 	{
-          pos = SDL_RWtell(song->rw);
-          if (pos < next_pos)
-            SDL_RWseek(song->rw, next_pos - pos, RW_SEEK_CUR);
+	/* If the track ends before the size of the
+	 * track data, skip any junk at the end.  */
+	  pos = SDL_RWtell(song->rw);
+	  if (pos < next_pos)
+	    SDL_RWseek(song->rw, next_pos - pos, RW_SEEK_CUR);
 	  return 0;
 	}
 
       next=meep->next;
-      while (next && (next->event.time < new->event.time))
+      while (next && (next->event.time < newlist->event.time))
 	{
 	  meep=next;
 	  next=meep->next;
 	}
-	  
-      new->next=next;
-      meep->next=new;
+
+      newlist->next=next;
+      meep->next=newlist;
 
       song->event_count++; /* Count the event. (About one?) */
-      meep=new;
+      meep=newlist;
     }
 }
 
@@ -330,14 +334,14 @@ static int read_track(MidiSong *song, int append)
 static void free_midi_list(MidiSong *song)
 {
   MidiEventList *meep, *next;
-  if (!(meep = song->evlist)) return;
+  meep = song->evlist;
   while (meep)
     {
       next=meep->next;
-      free(meep);
+      SDL_free(meep);
       meep=next;
     }
-  song->evlist=NULL;
+  song->evlist = NULL;
 }
 
 /* Allocate an array of MidiEvents and fill it from the linked list of
@@ -352,7 +356,7 @@ static MidiEvent *groom_list(MidiSong *song, Sint32 divisions,Sint32 *eventsp,
   Sint32 i, our_event_count, tempo, skip_this_event, new_value;
   Sint32 sample_cum, samples_to_do, at, st, dt, counting_time;
 
-  int current_bank[MAXCHAN], current_set[MAXCHAN], current_program[MAXCHAN]; 
+  int current_bank[MAXCHAN], current_set[MAXCHAN], current_program[MAXCHAN];
   /* Or should each bank have its own current program? */
 
   for (i=0; i<MAXCHAN; i++)
@@ -366,7 +370,12 @@ static MidiEvent *groom_list(MidiSong *song, Sint32 divisions,Sint32 *eventsp,
   compute_sample_increment(song, tempo, divisions);
 
   /* This may allocate a bit more than we need */
-  groomed_list=lp=safe_malloc(sizeof(MidiEvent) * (song->event_count+1));
+  groomed_list=lp=SDL_malloc(sizeof(MidiEvent) * (song->event_count+1));
+  if (!groomed_list) {
+    song->oom=1;
+    free_midi_list(song);
+    return NULL;
+  }
   meep=song->evlist;
 
   our_event_count=0;
@@ -397,7 +406,7 @@ static MidiEvent *groom_list(MidiSong *song, Sint32 divisions,Sint32 *eventsp,
 		}
 	      if (current_set[meep->event.channel] != new_value)
 		current_set[meep->event.channel]=new_value;
-	      else 
+	      else
 		skip_this_event=1;
 	    }
 	  else
@@ -443,7 +452,7 @@ static MidiEvent *groom_list(MidiSong *song, Sint32 divisions,Sint32 *eventsp,
 	    }
 	  if (song->tonebank[meep->event.a]) /* Is this a defined tone bank? */
 	    new_value=meep->event.a;
-	  else 
+	  else
 	    {
 	      SNDDBG(("Tone bank %d is undefined\n", meep->event.a));
 	      new_value=meep->event.a=0;
@@ -473,7 +482,7 @@ static MidiEvent *groom_list(MidiSong *song, Sint32 divisions,Sint32 *eventsp,
 	  _overflow:
 	      SNDDBG(("Overflow in sample counter\n"));
 	      free_midi_list(song);
-	      free(groomed_list);
+	      SDL_free(groomed_list);
 	      return NULL;
 	    }
 	  st += samples_to_do;
@@ -523,9 +532,9 @@ MidiEvent *read_midi_file(MidiSong *song, Sint32 *count, Sint32 *sp)
       SNDDBG(("Not a MIDI file!\n"));
       return NULL;
     }
-  if (memcmp(tmp, "RIFF", 4) == 0) { /* RMID ?? */
-    if (SDL_RWread(song->rw, tmp, 1, 4) != 4 || memcmp(tmp, "RMID", 4) != 0 ||
-	SDL_RWread(song->rw, tmp, 1, 4) != 4 || memcmp(tmp, "data", 4) != 0 ||
+  if (SDL_memcmp(tmp, "RIFF", 4) == 0) { /* RMID ?? */
+    if (SDL_RWread(song->rw, tmp, 1, 4) != 4 || SDL_memcmp(tmp, "RMID", 4) != 0 ||
+	SDL_RWread(song->rw, tmp, 1, 4) != 4 || SDL_memcmp(tmp, "data", 4) != 0 ||
 	SDL_RWread(song->rw, tmp, 1, 4) != 4 ||
 	/* SMF must begin from here onwards: */
 	SDL_RWread(song->rw, tmp, 1, 4) != 4 || SDL_RWread(song->rw, &len, 4, 1) != 1)
@@ -535,12 +544,13 @@ MidiEvent *read_midi_file(MidiSong *song, Sint32 *count, Sint32 *sp)
       }
   }
   len=(Sint32)SDL_SwapBE32((Uint32)len);
-  if (memcmp(tmp, "MThd", 4) || len < 6)
+  if (SDL_memcmp(tmp, "MThd", 4) || len < 6)
     {
       SNDDBG(("Not a MIDI file!\n"));
       return NULL;
     }
 
+  format=tracks=divisions_tmp = -1;
   SDL_RWread(song->rw, &format, 2, 1);
   SDL_RWread(song->rw, &tracks, 2, 1);
   SDL_RWread(song->rw, &divisions_tmp, 2, 1);
@@ -580,8 +590,11 @@ MidiEvent *read_midi_file(MidiSong *song, Sint32 *count, Sint32 *sp)
 	  format, tracks, divisions));
 
   /* Put a do-nothing event first in the list for easier processing */
-  song->evlist=safe_malloc(sizeof(MidiEventList));
-  memset(song->evlist, 0, sizeof(MidiEventList));
+  song->evlist=SDL_calloc(1, sizeof(MidiEventList));
+  if (!song->evlist) {
+    song->oom=1;
+    return NULL;
+  }
   song->event_count++;
 
   switch(format)

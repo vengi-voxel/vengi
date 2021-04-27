@@ -1,14 +1,15 @@
 /*
-
     TiMidity -- Experimental MIDI to WAVE converter
     Copyright (C) 1995 Tuukka Toivonen <toivonen@clinet.fi>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the Perl Artistic License, available in COPYING.
 
-   playmidi.h
+    playmidi.h
+*/
 
-   */
+#ifndef TIMIDITY_PLAYMIDI_H
+#define TIMIDITY_PLAYMIDI_H
 
 /* Midi events */
 #define ME_NONE 	0
@@ -51,3 +52,5 @@
 /* Anything but PANNED_MYSTERY only uses the left volume */
 
 #define ISDRUMCHANNEL(s, c) (((s)->drumchannels & (1<<(c))))
+
+#endif /* TIMIDITY_PLAYMIDI_H */

@@ -17,15 +17,28 @@
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
-
-  James Le Cuirot
-  chewi@aura-online.co.uk
 */
 
-/* This file supports playing MIDI files with FluidSynth */
+#ifndef UTILS_H_
+#define UTILS_H_
 
-#include "music.h"
+/* misc helper routines */
 
-extern Mix_MusicInterface Mix_MusicInterface_FLUIDSYNTH;
+#include "SDL_stdinc.h"
+#include "SDL_version.h"
 
-/* vi: set ts=4 sw=4 expandtab: */
+#if SDL_VERSION_ATLEAST(2,0,12)
+#define HAVE_SDL_STRTOKR
+#else
+#define SDL_strtokr _MIX_strtokr
+extern char *SDL_strtokr(char *s1, const char *s2, char **saveptr);
+#endif
+
+/* Parse time string of the form HH:MM:SS.mmm and return equivalent sample
+ * position */
+extern Sint64 _Mix_ParseTime(char *time, long samplerate_hz);
+
+extern SDL_bool _Mix_IsLoopTag(const char *tag);
+
+#endif /* UTILS_H_ */
+

@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,16 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef COMPAT_H_
-#define COMPAT_H_
+/* This file supports playing MOD files with libxmp */
 
-#include "SDL.h"
+#include "music.h"
 
-#if SDL_VERSION_ATLEAST(2,0,12)
-#define HAVE_SDL_STRTOKR
-#else
-#define SDL_strtokr _MIX_strtokr
-extern char *SDL_strtokr(char *s1, const char *s2, char **saveptr);
-#endif
+extern Mix_MusicInterface Mix_MusicInterface_XMP;
 
-#endif /* COMPAT_H_ */
+/* vi: set ts=4 sw=4 expandtab: */

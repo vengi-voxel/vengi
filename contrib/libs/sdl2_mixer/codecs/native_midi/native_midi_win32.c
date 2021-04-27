@@ -24,12 +24,10 @@
 
 #if __WIN32__
 #define WIN32_LEAN_AND_MEAN
+
 #include <windows.h>
-#include <windowsx.h>
 #include <mmsystem.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
+
 #include "native_midi.h"
 #include "native_midi_common.h"
 
@@ -96,10 +94,10 @@ static void MIDItoStream(NativeMidiSong *song, MIDIEvent *evntlist)
     eventcount++;
     event=event->next;
   }
-  song->NewEvents=malloc(eventcount*3*sizeof(DWORD));
+  song->NewEvents = SDL_malloc(eventcount*3*sizeof(DWORD));
   if (!song->NewEvents)
     return;
-  memset(song->NewEvents,0,(eventcount*3*sizeof(DWORD)));
+  SDL_memset(song->NewEvents,0,(eventcount*3*sizeof(DWORD)));
 
   eventcount=0;
   event=evntlist;
@@ -210,17 +208,17 @@ NativeMidiSong *native_midi_loadsong_RW(SDL_RWops *src, int freesrc)
     NativeMidiSong *newsong;
     MIDIEvent       *evntlist = NULL;
 
-    newsong=malloc(sizeof(NativeMidiSong));
+    newsong = SDL_malloc(sizeof(NativeMidiSong));
     if (!newsong) {
         return NULL;
     }
-    memset(newsong,0,sizeof(NativeMidiSong));
+    SDL_memset(newsong,0,sizeof(NativeMidiSong));
 
     /* Attempt to load the midi file */
     evntlist = CreateMIDIEventList(src, &newsong->ppqn);
     if (!evntlist)
     {
-        free(newsong);
+        SDL_free(newsong);
         return NULL;
     }
 
@@ -244,8 +242,8 @@ void native_midi_freesong(NativeMidiSong *song)
   if (song)
   {
     if (song->NewEvents)
-      free(song->NewEvents);
-    free(song);
+      SDL_free(song->NewEvents);
+    SDL_free(song);
   }
 }
 
