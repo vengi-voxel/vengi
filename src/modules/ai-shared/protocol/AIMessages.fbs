@@ -160,8 +160,8 @@ union MsgType {
 	ExecuteCommand
 }
 
-table Message {
+table AIRootMessage {
 	data:MsgType;
 }
 
-root_type Message;
+root_type AIRootMessage;

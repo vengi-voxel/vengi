@@ -17,11 +17,11 @@ AIServerNetwork::AIServerNetwork(const ProtocolHandlerRegistryPtr& protocolHandl
 bool AIServerNetwork::packetReceived(ENetEvent& event) {
 	flatbuffers::Verifier v(event.packet->data, event.packet->dataLength);
 
-	if (!ai::VerifyMessageBuffer(v)) {
+	if (!ai::VerifyAIRootMessageBuffer(v)) {
 		Log::error("Illegal ai packet received with length: %i", (int)event.packet->dataLength);
 		return false;
 	}
-	const ai::Message *req = ai::GetMessage(event.packet->data);
+	const ai::AIRootMessage *req = ai::GetAIRootMessage(event.packet->data);
 	ai::MsgType type = req->data_type();
 	const char *clientMsgType = ai::EnumNameMsgType(type);
 	ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(type);

@@ -21,8 +21,8 @@ ENetPacket* AIMessageSender::createServerPacket(ai::MsgType type, const void * d
 }
 
 ENetPacket* AIMessageSender::createServerPacket(FlatBufferBuilder& fbb, ai::MsgType type, Offset<void> data, uint32_t flags) {
-	auto msg = CreateMessage(fbb, type, data);
-	FinishMessageBuffer(fbb, msg);
+	auto msg = CreateAIRootMessage(fbb, type, data);
+	FinishAIRootMessageBuffer(fbb, msg);
 	return createServerPacket(type, fbb.GetBufferPointer(), fbb.GetSize(), flags);
 }
 

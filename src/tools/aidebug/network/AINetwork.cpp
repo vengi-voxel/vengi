@@ -18,11 +18,11 @@ AINetwork::AINetwork(const ProtocolHandlerRegistryPtr& protocolHandlerRegistry, 
 bool AINetwork::packetReceived(ENetEvent& event) {
 	flatbuffers::Verifier v(event.packet->data, event.packet->dataLength);
 
-	if (!ai::VerifyMessageBuffer(v)) {
+	if (!ai::VerifyAIRootMessageBuffer(v)) {
 		Log::error("Illegal server packet received with length: %i", (int)event.packet->dataLength);
 		return false;
 	}
-	const ai::Message *req = ai::GetMessage(event.packet->data);
+	const ai::AIRootMessage *req = ai::GetAIRootMessage(event.packet->data);
 	ai::MsgType type = req->data_type();
 	const char *typeName = ai::EnumNameMsgType(type);
 	const ProtocolHandlerPtr& handler = _protocolHandlerRegistry->getHandler(type);

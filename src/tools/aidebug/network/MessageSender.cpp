@@ -9,8 +9,8 @@
 namespace network {
 
 inline ENetPacket* createPacket(FlatBufferBuilder& fbb, ai::MsgType type, Offset<void> data, uint32_t flags) {
-	auto msg = CreateMessage(fbb, type, data);
-	FinishMessageBuffer(fbb, msg);
+	auto msg = CreateAIRootMessage(fbb, type, data);
+	FinishAIRootMessageBuffer(fbb, msg);
 	ENetPacket* packet = enet_packet_create(fbb.GetBufferPointer(), fbb.GetSize(), flags);
 	Log::trace("Create package: %s - size %u", EnumNameMsgType(type), fbb.GetSize());
 	return packet;
