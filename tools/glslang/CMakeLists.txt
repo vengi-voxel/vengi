@@ -2,6 +2,7 @@ set(CMAKE_CXX_CLANG_TIDY "")
 set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "")
 set(CMAKE_LINK_WHAT_YOU_USE FALSE)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+set(GLSLANG_GENERATED_INCLUDEDIR "${CMAKE_BINARY_DIR}/include")
 
 project(glslang)
 if(WIN32)
@@ -23,6 +24,18 @@ function(glslang_set_link_args TARGET)
 		endif()
 	endif(WIN32)
 endfunction(glslang_set_link_args)
+
+# glslang_add_build_info_dependency() adds the glslang-build-info dependency and
+# generated include directories to target.
+function(glslang_add_build_info_dependency target)
+    target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${GLSLANG_GENERATED_INCLUDEDIR}>)
+endfunction()
+
+function(glslang_only_export_explicit_symbols target)
+endfunction()
+
+function(glslang_pch target pch)
+endfunction()
 
 set(ENABLE_SPVREMAPPER On)
 add_subdirectory(glslang)
@@ -49,9 +62,13 @@ if (NOT MSVC)
 	set_target_properties(spirv-remap PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-reorder -Wno-shadow -Wno-unknown-pragmas -Wno-non-virtual-dtor -Wno-missing-field-initializers -Wno-ignored-qualifiers ${ADDITIONAL_COMPILE_FLAGS}")
 	set_target_properties(glslangValidator PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-reorder -Wno-shadow -Wno-unknown-pragmas -Wno-non-virtual-dtor -Wno-missing-field-initializers -Wno-ignored-qualifiers ${ADDITIONAL_COMPILE_FLAGS}")
 	set_target_properties(glslang-default-resource-limits PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-reorder -Wno-shadow -Wno-unknown-pragmas -Wno-non-virtual-dtor -Wno-missing-field-initializers -Wno-ignored-qualifiers ${ADDITIONAL_COMPILE_FLAGS}")
+	set_target_properties(MachineIndependent PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-reorder -Wno-shadow -Wno-unknown-pragmas -Wno-non-virtual-dtor -Wno-missing-field-initializers -Wno-ignored-qualifiers ${ADDITIONAL_COMPILE_FLAGS}")
 	if (ENABLE_SPVREMAPPER)
 		set_target_properties(SPVRemapper PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-reorder -Wno-shadow -Wno-non-virtual-dtor -Wno-missing-field-initializers -Wno-ignored-qualifiers ${ADDITIONAL_COMPILE_FLAGS}")
 	endif()
 	set_target_properties(SPIRV PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-reorder -Wno-shadow -Wno-unused-variable -Wno-non-virtual-dtor -Wno-missing-field-initializers -Wno-ignored-qualifiers ${ADDITIONAL_COMPILE_FLAGS}")
 	set_target_properties(OGLCompiler PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-reorder -Wno-shadow -Wno-unused-variable -Wno-non-virtual-dtor -Wno-missing-field-initializers -Wno-ignored-qualifiers ${ADDITIONAL_COMPILE_FLAGS}")
+
+	target_include_directories(MachineIndependent PRIVATE .)
+	target_include_directories(SPIRV PRIVATE .)
 endif()
