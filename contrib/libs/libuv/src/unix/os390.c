@@ -28,6 +28,7 @@
 #include <builtins.h>
 #include <termios.h>
 #include <sys/msg.h>
+#include <sys/resource.h>
 #include "zos-base.h"
 #if defined(__clang__)
 #include "csrsic.h"
@@ -61,12 +62,6 @@
 
 /* Address of the rsm control and enumeration area. */
 #define CVTRCEP_OFFSET    0x490
-
-/*
-    Number of frames currently available to system.
-    Excluded are frames backing perm storage, frames offline, and bad frames.
-*/
-#define RCEPOOL_OFFSET    0x004
 
 /* Total number of frames currently on all available frame queues. */
 #define RCEAFC_OFFSET     0x088
@@ -181,25 +176,25 @@ uint64_t uv_get_free_memory(void) {
   data_area_ptr rcep = {0};
   cvt.assign = *(data_area_ptr_assign_type*)(CVT_PTR);
   rcep.assign = *(data_area_ptr_assign_type*)(cvt.deref + CVTRCEP_OFFSET);
-  freeram = *((uint64_t*)(rcep.deref + RCEAFC_OFFSET)) * 4;
+  freeram = (uint64_t)*((uint32_t*)(rcep.deref + RCEAFC_OFFSET)) * 4096;
   return freeram;
 }
 
 
 uint64_t uv_get_total_memory(void) {
-  uint64_t totalram;
-
-  data_area_ptr cvt = {0};
-  data_area_ptr rcep = {0};
-  cvt.assign = *(data_area_ptr_assign_type*)(CVT_PTR);
-  rcep.assign = *(data_area_ptr_assign_type*)(cvt.deref + CVTRCEP_OFFSET);
-  totalram = *((uint64_t*)(rcep.deref + RCEPOOL_OFFSET)) * 4;
-  return totalram;
+  /* Use CVTRLSTG to get the size of actual real storage online at IPL in K. */
+  return (uint64_t)((int)((char *__ptr32 *__ptr32 *)0)[4][214]) * 1024;
 }
 
 
 uint64_t uv_get_constrained_memory(void) {
-  return 0;  /* Memory constraints are unknown. */
+  struct rlimit rl;
+
+  /* RLIMIT_MEMLIMIT return value is in megabytes rather than bytes. */
+  if (getrlimit(RLIMIT_MEMLIMIT, &rl) == 0)
+    return rl.rlim_cur * 1024 * 1024;
+
+  return 0; /* There is no memory limit set. */
 }
 
 
