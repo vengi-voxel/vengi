@@ -167,7 +167,8 @@ update-simplecpp:
 
 update-miniz:
 	$(call UPDATE_GIT,miniz,https://github.com/richgel999/miniz.git)
-	cp $(UPDATEDIR)/miniz.sync/miniz.[ch] src/modules/core
+	cd $(UPDATEDIR)/miniz.sync; ./amalgamate.sh
+	cp $(UPDATEDIR)/miniz.sync/amalgamation/miniz.[ch] src/modules/core
 
 update-nuklear:
 	$(call UPDATE_GIT,nuklear,https://github.com/Immediate-Mode-UI/Nuklear)
