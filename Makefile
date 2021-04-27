@@ -140,7 +140,7 @@ update-sdl2:
 	cp -r $(UPDATEDIR)/sdl2.sync/cmake/* contrib/libs/sdl2/cmake
 
 update-sdl2mixer:
-	$(call UPDATE_HG,sdl2_mixer,https://hg.libsdl.org/SDL_mixer)
+	$(call UPDATE_GIT,sdl2_mixer,https://github.com/libsdl-org/SDL_mixer)
 	rm -rf contrib/libs/sdl2_mixer/*
 	cp -r $(UPDATEDIR)/sdl2_mixer.sync/src/* contrib/libs/sdl2_mixer
 	cp -r $(UPDATEDIR)/sdl2_mixer.sync/include/* contrib/libs/sdl2_mixer
