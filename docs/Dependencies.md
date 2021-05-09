@@ -44,17 +44,17 @@ CREATE EXTENSION pgcrypto;
 ## MacPorts
 
 ```bash
-port install qt5 postgresql95-server
+port install postgresql95-server
 ```
 
 ## Brew
 
 ```bash
-brew install qt5 mosquitto libuv sdl2 libpq sdl2_mixer
+brew install mosquitto libuv sdl2 libpq sdl2_mixer
 ```
 
 ## Windows
 
 ```bash
-vcpkg install sdl2 libuv libpq lua glm glslang gtest qt5 mosquitto
+vcpkg install sdl2 libuv libpq lua glm glslang gtest mosquitto
 ```
