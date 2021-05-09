@@ -70,6 +70,7 @@ set(DB_PW "engine" CACHE STRING "The database password")
 set(SERVER_PORT "11337" CACHE STRING "Port where the server is listening on")
 set(HTTP_SERVER_PORT "8080" CACHE STRING "Port where the http server is listening on")
 set(DOCKER_REGISTRY "" CACHE STRING "Docker registry")
+option(USE_STACKTRACES "Enable stacktraces" ON)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	set(WINDOWS 1)

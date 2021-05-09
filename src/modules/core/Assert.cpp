@@ -6,8 +6,6 @@
 #include <SDL_stdinc.h>
 #include <SDL_log.h>
 
-#define HAVE_BACKWARD
-
 #ifdef HAVE_BACKWARD
 #include <backward.h>
 #endif
