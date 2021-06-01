@@ -54,6 +54,7 @@ typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
+    struct wl_callback *frame_callback;
     union {
         SDL_xdg_shell_surface xdg;
         SDL_zxdg_shell_surface zxdg;
@@ -66,6 +67,8 @@ typedef struct {
     struct zxdg_toplevel_decoration_v1 *server_decoration;
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
+
+    SDL_atomic_t swap_interval_ready;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct qt_extended_surface *extended_surface;

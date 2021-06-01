@@ -893,6 +893,12 @@ extern DECLSPEC void SDLCALL SDL_GetWindowSize(SDL_Window * window, int *w,
  * initialized to 0, 0, 0, 0 (if a non-NULL pointer is provided), as if the
  * window in question was borderless.
  *
+ * Note: This function may fail on systems where the window has not yet been
+ * decorated by the display server (for example, immediately after calling
+ * SDL_CreateWindow). It is recommended that you wait at least until the
+ * window has been presented and composited, so that the window system has a
+ * chance to decorate the window and provide the border dimensions to SDL.
+ *
  * This function also returns -1 if getting the information is not supported.
  *
  * \param window the window to query the size values of the border
@@ -1795,7 +1801,7 @@ extern DECLSPEC void SDLCALL SDL_GL_GetDrawableSize(SDL_Window * window, int *w,
  * vsync. Adaptive vsync works the same as vsync, but if you've already missed
  * the vertical retrace for a given frame, it swaps buffers immediately, which
  * might be less jarring for the user during occasional framerate drops. If
- * application requests adaptive vsync and the system does not support it,
+ * an application requests adaptive vsync and the system does not support it,
  * this function will fail and return -1. In such a case, you should probably
  * retry the call with 1 for the interval.
  *

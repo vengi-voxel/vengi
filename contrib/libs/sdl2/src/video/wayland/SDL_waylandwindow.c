@@ -199,6 +199,23 @@ static const struct wl_shell_surface_listener shell_surface_listener_wl = {
 };
 
 
+static const struct wl_callback_listener surface_frame_listener;
+
+static void
+handle_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
+{
+    SDL_WindowData *wind = (SDL_WindowData *) data;
+    SDL_AtomicSet(&wind->swap_interval_ready, 1);  /* mark window as ready to present again. */
+
+    /* reset this callback to fire again once a new frame was presented and compositor wants the next one. */
+    wind->frame_callback = wl_surface_frame(wind->surface);
+    wl_callback_destroy(cb);
+    wl_callback_add_listener(wind->frame_callback, &surface_frame_listener, data);
+}
+
+static const struct wl_callback_listener surface_frame_listener = {
+    handle_surface_frame_done
+};
 
 
 static void
@@ -665,11 +682,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
         data->shell_surface.xdg.roleobj.toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
         xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, c->classname);
         xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
-
-        /* Create the window decorations */
-        if (c->decoration_manager) {
-            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
-        }
     } else if (c->shell.zxdg) {
         data->shell_surface.zxdg.surface = zxdg_shell_v6_get_xdg_surface(c->shell.zxdg, data->surface);
         zxdg_surface_v6_set_user_data(data->shell_surface.zxdg.surface, data);
@@ -688,7 +700,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
 
     /* Restore state that was set prior to this call */
     Wayland_SetWindowTitle(_this, window);
-    Wayland_SetWindowBordered(_this, window, (window->flags & SDL_WINDOW_BORDERLESS) == 0);
     if (window->flags & SDL_WINDOW_MAXIMIZED) {
         Wayland_MaximizeWindow(_this, window);
     }
@@ -707,6 +718,11 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
                 WAYLAND_wl_display_dispatch(c->display);
             }
         }
+
+        /* Create the window decorations */
+        if (data->shell_surface.xdg.roleobj.toplevel && c->decoration_manager) {
+            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
+        }
     } else if (c->shell.zxdg) {
         if (data->shell_surface.zxdg.surface) {
             while (!data->shell_surface.zxdg.initial_configure_seen) {
@@ -714,6 +730,15 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
                 WAYLAND_wl_display_dispatch(c->display);
             }
         }
+    }
+
+    /* Unlike the rest of window state we have to set this _after_ flushing the
+     * display, because we need to create the decorations before possibly hiding
+     * them immediately afterward. But don't call it redundantly, the protocol
+     * may not interpret a redundant call nicely and cause weird stuff to happen
+     */
+    if (window->flags & SDL_WINDOW_BORDERLESS) {
+        Wayland_SetWindowBordered(_this, window, SDL_FALSE);
     }
 }
 
@@ -833,6 +858,11 @@ Wayland_RestoreWindow(_THIS, SDL_Window * window)
     SDL_WindowData *wind = window->driverdata;
     const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
 
+    /* Set this flag now even if we never actually maximized, eventually
+     * ShowWindow will take care of it along with the other window state.
+     */
+    window->flags &= ~SDL_WINDOW_MAXIMIZED;
+
     /* Note that xdg-shell does NOT provide a way to unset minimize! */
     if (viddata->shell.xdg) {
         if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
@@ -876,6 +906,15 @@ Wayland_MaximizeWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+
+    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+        return;
+    }
+
+    /* Set this flag now even if we don't actually maximize yet, eventually
+     * ShowWindow will take care of it along with the other window state.
+     */
+    window->flags |= SDL_WINDOW_MAXIMIZED;
 
     if (viddata->shell.xdg) {
         if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
@@ -995,6 +1034,15 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     data->surface =
         wl_compositor_create_surface(c->compositor);
     wl_surface_add_listener(data->surface, &surface_listener, data);
+
+    /* Fire a callback when the compositor wants a new frame rendered.
+     * Right now this only matters for OpenGL; we use this callback to add a
+     * wait timeout that avoids getting deadlocked by the compositor when the
+     * window isn't visible.
+     */
+    if (window->flags & SDL_WINDOW_OPENGL) {
+        wl_callback_add_listener(wl_surface_frame(data->surface), &surface_frame_listener, data);
+    }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     if (c->surface_extension) {
@@ -1196,6 +1244,10 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
         }
 
         SDL_free(wind->outputs);
+
+        if (wind->frame_callback) {
+            wl_callback_destroy(wind->frame_callback);
+        }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
         if (wind->extended_surface) {
