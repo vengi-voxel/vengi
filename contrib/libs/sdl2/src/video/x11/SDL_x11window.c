@@ -372,6 +372,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     SDL_DisplayData *displaydata =
         (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    const SDL_bool force_override_redirect = SDL_GetHintBoolean(SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT, SDL_FALSE);
     SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
@@ -444,7 +445,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
         depth = displaydata->depth;
     }
 
-    xattr.override_redirect = ((window->flags & SDL_WINDOW_TOOLTIP) || (window->flags & SDL_WINDOW_POPUP_MENU)) ? True : False;
+    xattr.override_redirect = ((window->flags & SDL_WINDOW_TOOLTIP) || (window->flags & SDL_WINDOW_POPUP_MENU) || force_override_redirect) ? True : False;
     xattr.backing_store = NotUseful;
     xattr.background_pixmap = None;
     xattr.border_pixel = 0;
@@ -1745,6 +1746,30 @@ X11_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
     } else {
         X11_XDeleteProperty(display, data->xwindow, XdndAware);
     }
+}
+
+int
+X11_FlashWindow(_THIS, SDL_Window * window, Uint32 flash_count)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_DisplayData *displaydata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    Display *display = data->videodata->display;
+
+    Atom demands_attention = X11_XInternAtom(display, "_NET_WM_STATE_DEMANDS_ATTENTION", 1);
+    Atom wm_state = X11_XInternAtom(display, "_NET_WM_STATE", 1);
+
+    XEvent snd_ntfy_ev = {ClientMessage};
+    snd_ntfy_ev.xclient.window = data->xwindow;
+    snd_ntfy_ev.xclient.message_type = wm_state;
+    snd_ntfy_ev.xclient.format = 32;
+    snd_ntfy_ev.xclient.data.l[0] = 1; /* _NET_WM_STATE_ADD */
+    snd_ntfy_ev.xclient.data.l[1] = demands_attention;
+    snd_ntfy_ev.xclient.data.l[2] = 0;
+    snd_ntfy_ev.xclient.data.l[3] = 1; /* normal application */
+    snd_ntfy_ev.xclient.data.l[4] = 0;
+    X11_XSendEvent(display, RootWindow(display, displaydata->screen), False, SubstructureNotifyMask | SubstructureRedirectMask, &snd_ntfy_ev);
+
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

@@ -480,6 +480,7 @@ static void usb_string_cache_destroy()
 
 	usb_string_cache = NULL;
 	usb_string_cache_size = 0;
+	usb_string_cache_insert_pos = 0;
 }
 
 static struct usb_string_cache_entry *usb_string_cache_insert()
@@ -732,8 +733,12 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 								if (dev_vid && dev_pid) {
 									string_cache = usb_string_cache_find(&desc, handle);
 									if (string_cache) {
-										cur_dev->manufacturer_string = wcsdup(string_cache->vendor);
-										cur_dev->product_string = wcsdup(string_cache->product);
+										if (string_cache->vendor) {
+											cur_dev->manufacturer_string = wcsdup(string_cache->vendor);
+										}
+										if (string_cache->product) {
+											cur_dev->product_string = wcsdup(string_cache->product);
+										}
 									}
 								} else {
 									if (desc.iManufacturer > 0)

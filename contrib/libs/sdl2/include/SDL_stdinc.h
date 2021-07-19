@@ -403,7 +403,7 @@ typedef void *(SDLCALL *SDL_realloc_func)(void *mem, size_t size);
 typedef void (SDLCALL *SDL_free_func)(void *mem);
 
 /**
- *  \brief Get the current set of SDL memory functions
+ * Get the current set of SDL memory functions
  */
 extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
                                                     SDL_calloc_func *calloc_func,
@@ -411,12 +411,7 @@ extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func
                                                     SDL_free_func *free_func);
 
 /**
- *  \brief Replace SDL's memory allocation functions with a custom set
- *
- *  \note If you are replacing SDL's memory functions, you should call
- *        SDL_GetNumAllocations() and be very careful if it returns non-zero.
- *        That means that your free function will be called with memory
- *        allocated by the previous memory allocation functions.
+ * Replace SDL's memory allocation functions with a custom set
  */
 extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_calloc_func calloc_func,
@@ -424,7 +419,7 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_free_func free_func);
 
 /**
- *  \brief Get the number of outstanding (unfreed) allocations
+ * Get the number of outstanding (unfreed) allocations
  */
 extern DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 
@@ -481,16 +476,28 @@ SDL_FORCE_INLINE void SDL_memset4(void *dst, Uint32 val, size_t dwords)
     size_t _n = (dwords + 3) / 4;
     Uint32 *_p = SDL_static_cast(Uint32 *, dst);
     Uint32 _val = (val);
-    if (dwords == 0)
+    if (dwords == 0) {
         return;
-    switch (dwords % 4)
-    {
+    }
+
+    /* !!! FIXME: there are better ways to do this, but this is just to clean this up for now. */
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wimplicit-fallthrough"
+    #endif
+
+    switch (dwords % 4) {
         case 0: do {    *_p++ = _val;   /* fallthrough */
         case 3:         *_p++ = _val;   /* fallthrough */
         case 2:         *_p++ = _val;   /* fallthrough */
         case 1:         *_p++ = _val;   /* fallthrough */
         } while ( --_n );
     }
+
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
+
 #endif
 }
 
@@ -613,8 +620,8 @@ extern DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
                                          size_t * inbytesleft, char **outbuf,
                                          size_t * outbytesleft);
 /**
- *  This function converts a string between encodings in one pass, returning a
- *  string that must be freed with SDL_free() or NULL on error.
+ * This function converts a string between encodings in one pass, returning a
+ * string that must be freed with SDL_free() or NULL on error.
  */
 extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
                                                const char *fromcode,

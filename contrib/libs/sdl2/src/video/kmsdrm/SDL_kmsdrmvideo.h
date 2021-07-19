@@ -68,7 +68,7 @@ typedef struct SDL_DisplayData
     drmModeCrtc *crtc;
     drmModeModeInfo mode;
     drmModeModeInfo original_mode;
-    drmModeModeInfo next_mode; /* New mode to be set on the CRTC. */
+    drmModeModeInfo fullscreen_mode;
 
     drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
 
@@ -80,8 +80,6 @@ typedef struct SDL_DisplayData
     uint64_t cursor_w, cursor_h;
 
     SDL_bool default_cursor_init;
-    SDL_bool modeset_pending;
-
 } SDL_DisplayData;
 
 typedef struct SDL_WindowData
@@ -99,13 +97,7 @@ typedef struct SDL_WindowData
     SDL_bool double_buffer;
 
     EGLSurface egl_surface;
-
-    /* The size we chose for the GBM surface. REMEMBER that the CRTC must always have
-       a mode with the same size configured before trying to flip to a buffer of that
-       surface or drmModePageFlip() will return -28. */
-    uint32_t surface_w;
-    uint32_t surface_h;
-
+    SDL_bool egl_surface_dirty;
 } SDL_WindowData;
 
 typedef struct KMSDRM_FBInfo

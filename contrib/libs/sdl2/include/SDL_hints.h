@@ -727,19 +727,6 @@ extern "C" {
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX   "SDL_JOYSTICK_HIDAPI_XBOX"
 
- /**
-  *  \brief  A variable controlling whether the HIDAPI driver for XBox controllers on Windows should pull correlated
-  *      data from XInput.
-  *
-  *  This variable can be set to the following values:
-  *    "0"       - HIDAPI Xbox driver will only use HIDAPI data
-  *    "1"       - HIDAPI Xbox driver will also pull data from XInput, providing better trigger axes, guide button
-  *                presses, and rumble support
-  *
-  *  The default is "1".  This hint applies to any joysticks opened after setting the hint.
-  */
-#define SDL_HINT_JOYSTICK_HIDAPI_CORRELATE_XINPUT   "SDL_JOYSTICK_HIDAPI_CORRELATE_XINPUT"
-
 /**
  *  \brief  A variable controlling whether the HIDAPI driver for Nintendo GameCube controllers should be used.
  *
@@ -750,6 +737,17 @@ extern "C" {
  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE "SDL_JOYSTICK_HIDAPI_GAMECUBE"
+
+ /**
+  *  \brief  A variable controlling whether the HIDAPI driver for Amazon Luna controllers connected via Bluetooth should be used.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - HIDAPI driver is not used
+  *    "1"       - HIDAPI driver is used
+  *
+  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+  */
+#define SDL_HINT_JOYSTICK_HIDAPI_LUNA "SDL_JOYSTICK_HIDAPI_LUNA"
 
 /**
  *  \brief  A variable that controls whether Steam Controllers should be exposed using the SDL joystick and game controller APIs
@@ -771,6 +769,19 @@ extern "C" {
   *
   */
 #define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
+
+ /**
+  *  \brief  A variable controlling whether the RAWINPUT driver should pull correlated data from XInput.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - RAWINPUT driver will only use data from raw input APIs
+  *    "1"       - RAWINPUT driver will also pull data from XInput, providing
+  *                better trigger axes, guide button presses, and rumble support
+  *                for Xbox controllers
+  *
+  *  The default is "1".  This hint applies to any joysticks opened after setting the hint.
+  */
+#define SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT   "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"
 
  /**
   *  \brief  A variable controlling whether a separate thread should be used
@@ -1659,6 +1670,17 @@ extern "C" {
  */
 #define SDL_HINT_PREFERRED_LOCALES "SDL_PREFERRED_LOCALES"
 
+/**
+ *  \brief Mark X11 windows as override-redirect.
+ *
+ *  If set, this _might_ increase framerate at the expense of the desktop
+ *  not working as expected. Override-redirect windows aren't noticed by the
+ *  window manager at all.
+ *
+ *  You should probably only use this for fullscreen windows, and you probably
+ *  shouldn't even use it for that. But it's here if you want to try!
+ */
+#define SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT "SDL_X11_FORCE_OVERRIDE_REDIRECT"
 
 /**
  *  \brief  An enumeration of hint priorities
@@ -1748,7 +1770,7 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  *
  * \param name the hint to watch
  * \param callback An SDL_HintCallback function that will be called when the
- *        hint value changes
+ *                 hint value changes
  * \param userdata a pointer to pass to the callback function
  *
  * \since This function is available since SDL 2.0.0.
@@ -1764,7 +1786,7 @@ extern DECLSPEC void SDLCALL SDL_AddHintCallback(const char *name,
  *
  * \param name the hint being watched
  * \param callback An SDL_HintCallback function that will be called when the
- *        hint value changes
+ *                 hint value changes
  * \param userdata a pointer being passed to the callback function
  *
  * \since This function is available since SDL 2.0.0.

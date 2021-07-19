@@ -162,7 +162,7 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
         top = HWND_NOTOPMOST;
     }
 
-    WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);    
+    WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);
 
     data->expected_resize = SDL_TRUE;
     SetWindowPos(hwnd, top, x, y, w, h, flags);
@@ -364,7 +364,7 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         return 0;
 #else
         return SDL_SetError("Could not create GLES window surface (EGL support not configured)");
-#endif /* SDL_VIDEO_OPENGL_EGL */ 
+#endif /* SDL_VIDEO_OPENGL_EGL */
     }
 #endif /* SDL_VIDEO_OPENGL_ES2 */
 
@@ -559,7 +559,7 @@ WIN_ShowWindow(_THIS, SDL_Window * window)
     DWORD style;
     HWND hwnd;
     int nCmdShow;
-    
+
     hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
     nCmdShow = SW_SHOW;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
@@ -992,33 +992,12 @@ WIN_UpdateClipCursor(SDL_Window *window)
 
     if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
-        if (mouse->relative_mode && !mouse->relative_mode_warp) {
-            if (GetWindowRect(data->hwnd, &rect)) {
-                LONG cx, cy;
-
-                cx = (rect.left + rect.right) / 2;
-                cy = (rect.top + rect.bottom) / 2;
-
-                /* Make an absurdly small clip rect */
-                rect.left = cx - 1;
-                rect.right = cx + 1;
-                rect.top = cy - 1;
-                rect.bottom = cy + 1;
-
-                if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
-                    if (ClipCursor(&rect)) {
-                        data->cursor_clipped_rect = rect;
-                    }
-                }
-            }
-        } else {
-            if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
-                ClientToScreen(data->hwnd, (LPPOINT) & rect);
-                ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
-                if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
-                    if (ClipCursor(&rect)) {
-                        data->cursor_clipped_rect = rect;
-                    }
+        if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
+            ClientToScreen(data->hwnd, (LPPOINT) & rect);
+            ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
+            if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
+                if (ClipCursor(&rect)) {
+                    data->cursor_clipped_rect = rect;
                 }
             }
         }
@@ -1082,6 +1061,24 @@ WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
 {
     const SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     DragAcceptFiles(data->hwnd, accept ? TRUE : FALSE);
+}
+
+int
+WIN_FlashWindow(_THIS, SDL_Window * window, Uint32 flash_count)
+{
+    HWND hwnd;
+    FLASHWINFO desc;
+
+    hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    desc.cbSize = sizeof(desc);
+    desc.hwnd = hwnd;
+    desc.dwFlags = FLASHW_TRAY;
+    desc.uCount = flash_count; /* flash x times */
+    desc.dwTimeout = 0;
+
+    FlashWindowEx(&desc);
+
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

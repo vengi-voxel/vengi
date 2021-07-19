@@ -290,6 +290,7 @@ KMSDRM_CreateDevice(int devindex)
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
     device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
+    device->GL_DefaultProfileConfig = KMSDRM_GLES_DefaultProfileConfig;
 
 #if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = KMSDRM_Vulkan_LoadLibrary;
@@ -537,8 +538,10 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = NULL;
     SDL_VideoDisplay display = {0};
+    SDL_DisplayModeData *modedata = NULL;
     drmModeEncoder *encoder = NULL;
     drmModeCrtc *crtc = NULL;
+    int mode_index;
     int i, j;
     int ret = 0;
 
@@ -551,7 +554,6 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
 
     /* Initialize some of the members of the new display's driverdata
        to sane values. */
-    dispdata->modeset_pending = SDL_FALSE;
     dispdata->cursor_bo = NULL;
 
     /* Since we create and show the default cursor on KMSDRM_InitMouse(),
@@ -627,6 +629,23 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
         goto cleanup;
     }
 
+    /* Find the index of the mode attached to this CRTC */
+    mode_index = -1;
+
+    for (i = 0; i < connector->count_modes; i++) {
+        drmModeModeInfo *mode = &connector->modes[i];
+
+        if (!SDL_memcmp(mode, &crtc->mode, sizeof(crtc->mode))) {
+          mode_index = i;
+          break;
+        }
+    }
+
+    if (mode_index == -1) {
+      ret = SDL_SetError("Failed to find index of mode attached to the CRTC.");
+      goto cleanup;
+    }
+
     /*********************************************/
     /* Create an SDL Display for this connector. */
     /*********************************************/
@@ -639,9 +658,8 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
        which is the mode currently setup on the CRTC
        we found for the active connector. */
     dispdata->mode = crtc->mode;
-
-    /* Save the original mode for restoration on quit. */
-    dispdata->original_mode = dispdata->mode;
+    dispdata->original_mode = crtc->mode;
+    dispdata->fullscreen_mode = crtc->mode;
 
     if (dispdata->mode.hdisplay == 0 || dispdata->mode.vdisplay == 0 ) {
         ret = SDL_SetError("Couldn't get a valid connector videomode.");
@@ -658,11 +676,21 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
 
     /* Setup the display.
        There's no problem with it being still incomplete. */
+    modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
+
+    if (!modedata) {
+        ret = SDL_OutOfMemory();
+        goto cleanup;
+    }
+
+    modedata->mode_index = mode_index;
+
     display.driverdata = dispdata;
     display.desktop_mode.w = dispdata->mode.hdisplay;
     display.desktop_mode.h = dispdata->mode.vdisplay;
     display.desktop_mode.refresh_rate = dispdata->mode.vrefresh;
     display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
+    display.desktop_mode.driverdata = modedata;
     display.current_mode = display.desktop_mode;
 
     /* Add the display to the list of SDL displays. */
@@ -900,6 +928,43 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     }
 }
 
+static void
+KMSDRM_GetModeToSet(SDL_Window *window, drmModeModeInfo *out_mode) {
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
+
+    if ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN) {
+        *out_mode = dispdata->fullscreen_mode;
+    } else {
+        drmModeModeInfo *mode;
+
+        mode = KMSDRM_GetClosestDisplayMode(display,
+          window->windowed.w, window->windowed.h, 0);
+
+        if (mode) {
+            *out_mode = *mode;
+        } else {
+            *out_mode = dispdata->original_mode;
+        }
+    }
+}
+
+static void
+KMSDRM_DirtySurfaces(SDL_Window *window) {
+    SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
+    drmModeModeInfo mode;
+
+    /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
+       so the correct thread-local surface and context state are available */
+    windata->egl_surface_dirty = SDL_TRUE;
+
+    /* The app may be waiting for the resize event after calling SetWindowSize
+       or SetWindowFullscreen, send a fake event for now since the actual
+       recreation is deferred */
+    KMSDRM_GetModeToSet(window, &mode);
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode.hdisplay, mode.vdisplay);
+}
+
 /* This determines the size of the fb, which comes from the GBM surface
    that we create here. */
 int
@@ -907,6 +972,8 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
 
     uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
     uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
@@ -915,9 +982,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     int ret = 0;
 
-    /* If the current window already has surfaces, destroy them before creating other.
-       This is mainly for ReconfigureWindow(), where we simply call CreateSurfaces()
-       for regenerating a window's surfaces. */
+    /* If the current window already has surfaces, destroy them before creating other. */
     if (windata->gs) {
         KMSDRM_DestroySurfaces(_this, window);
     }
@@ -928,8 +993,19 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
         "GBM surface format not supported. Trying anyway.");
     }
 
+    /* The KMSDRM backend doesn't always set the mode the higher-level code in
+       SDL_video.c expects. Hulk-smash the display's current_mode to keep the
+       mode that's set in sync with what SDL_video.c thinks is set */
+    KMSDRM_GetModeToSet(window, &dispdata->mode);
+
+    display->current_mode.w = dispdata->mode.hdisplay;
+    display->current_mode.h = dispdata->mode.vdisplay;
+    display->current_mode.refresh_rate = dispdata->mode.vrefresh;
+    display->current_mode.format = SDL_PIXELFORMAT_ARGB8888;
+
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
-                      windata->surface_w, windata->surface_h, surface_fmt, surface_flags);
+                      dispdata->mode.hdisplay, dispdata->mode.vdisplay,
+                      surface_fmt, surface_flags);
 
     if (!windata->gs) {
         return SDL_SetError("Could not create GBM surface");
@@ -950,6 +1026,11 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
        go back to delayed SDL_EGL_MakeCurrent() call in SwapWindow. */
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
     ret = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
+                        dispdata->mode.hdisplay, dispdata->mode.vdisplay);
+
+    windata->egl_surface_dirty = SDL_FALSE;
 
 cleanup:
 
@@ -1068,18 +1149,10 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 
     /* Take note of the new mode to be set, and leave the CRTC modeset pending
        so it's done in SwapWindow. */
-    dispdata->mode = conn->modes[modedata->mode_index];
-    dispdata->modeset_pending = SDL_TRUE; 
+    dispdata->fullscreen_mode = conn->modes[modedata->mode_index];
 
     for (i = 0; i < viddata->num_windows; i++) {
-        SDL_Window *window = viddata->windows[i];
-
-        if (KMSDRM_CreateSurfaces(_this, window)) {
-            return -1;
-        }
-
-        /* Tell app about the window resize */
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
+        KMSDRM_DirtySurfaces(viddata->windows[i]);
     }
 
     return 0;
@@ -1241,34 +1314,20 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
            are considered "windowed" at this point of their life.
            If a window is fullscreen, SDL internals will call
            KMSDRM_SetWindowFullscreen() to reconfigure it if necessary. */
-
         mode = KMSDRM_GetClosestDisplayMode(display,
                  window->windowed.w, window->windowed.h, 0 );
 
         if (mode) {
-            windata->surface_w = mode->hdisplay;
-            windata->surface_h = mode->vdisplay;
-            dispdata->mode = *mode;
+            dispdata->fullscreen_mode = *mode;
         } else {
-            windata->surface_w = dispdata->original_mode.hdisplay;
-            windata->surface_h = dispdata->original_mode.vdisplay;
-            dispdata->mode = dispdata->original_mode;
+            dispdata->fullscreen_mode = dispdata->original_mode;
         }
-
-        /* Take note to do the modesettng on the CRTC in SwapWindow. */
-        dispdata->modeset_pending = SDL_TRUE;
 
         /* Create the window surfaces with the size we have just chosen.
            Needs the window diverdata in place. */
         if ((ret = KMSDRM_CreateSurfaces(_this, window))) {
             return (SDL_SetError("Can't window GBM/EGL surfaces on window creation."));
         }
-
-        /* Tell app about the size we have determined for the window,
-           so SDL pre-scales to that size for us. */
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-            windata->surface_w, windata->surface_h);
-
     } /* NON-Vulkan block ends. */
 
     /* Add window to the internal list of tracked windows. Note, while it may
@@ -1302,75 +1361,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
        and KMSDRM_DestroyWindow() will be called by SDL_CreateWindow()
        if we return error on any of the previous returns of the function. */ 
     return ret;
-}
-
-/*****************************************************************************/
-/* Re-create a window surfaces without destroying the window itself,         */ 
-/* and set a videomode on the CRTC that matches the surfaces size.           */
-/* To be used by SetWindowSize() and SetWindowFullscreen().                  */
-/*****************************************************************************/
-void
-KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
-
-    SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *dispdata = display->driverdata;
-    uint32_t refresh_rate = 0;
-
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ==
-                         SDL_WINDOW_FULLSCREEN_DESKTOP)
-    {
-
-        /* Update the current mode to the desktop mode. */
-        windata->surface_w = dispdata->original_mode.hdisplay;
-        windata->surface_h = dispdata->original_mode.vdisplay;
-        dispdata->mode = dispdata->original_mode;
-
-    } else {
-
-        drmModeModeInfo *mode;
-
-        /* Refresh rate is only important for fullscreen windows. */
-        if ((window->flags & SDL_WINDOW_FULLSCREEN) ==
-                             SDL_WINDOW_FULLSCREEN)
-        {
-            refresh_rate = (uint32_t)window->fullscreen_mode.refresh_rate;
-        }
-
-        /* Try to find a valid video mode matching the size of the window. */
-        mode = KMSDRM_GetClosestDisplayMode(display,
-          window->windowed.w, window->windowed.h, refresh_rate );
-
-        if (mode) {
-            /* If matching mode found, recreate the GBM surface with the size
-               of that mode and configure it on the CRTC. */
-            windata->surface_w = mode->hdisplay;
-            windata->surface_h = mode->vdisplay;
-            dispdata->mode = *mode;
-        } else {
-            /* If not matching mode found, recreate the GBM surfaces with the
-               size of the mode that was originally configured on the CRTC,
-               and setup that mode on the CRTC. */
-            windata->surface_w = dispdata->original_mode.hdisplay;
-            windata->surface_h = dispdata->original_mode.vdisplay;
-            dispdata->mode = dispdata->original_mode;
-        }
-
-        /* Tell app about the size we have determined for the window,
-           so SDL pre-scales to that size for us. */
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-                            windata->surface_w, windata->surface_h);
-    }
-
-    /* Recreate the GBM (and EGL) surfaces, and mark the CRTC mode/fb setting
-       as pending so it's done on SwapWindow.  */
-    KMSDRM_CreateSurfaces(_this, window);
-    dispdata->modeset_pending = SDL_TRUE;
-
-    /* Tell app about the size we have determined for the window,
-       so SDL pre-scales to that size for us. */
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-                        windata->surface_w, windata->surface_h);
 }
 
 int
@@ -1432,7 +1422,7 @@ KMSDRM_SetWindowSize(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     if (!viddata->vulkan_mode) {
-        KMSDRM_ReconfigureWindow(_this, window);
+        KMSDRM_DirtySurfaces(window);
     }
 }
 void
@@ -1441,7 +1431,7 @@ KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * displa
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     if (!viddata->vulkan_mode) {
-        KMSDRM_ReconfigureWindow(_this, window);
+        KMSDRM_DirtySurfaces(window);
     }
 }
 void

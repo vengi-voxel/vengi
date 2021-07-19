@@ -586,6 +586,27 @@ SDL_CutEvent(SDL_EventEntry *entry)
     SDL_AtomicAdd(&SDL_EventQ.count, -1);
 }
 
+static int
+SDL_SendWakeupEvent()
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (!_this || !_this->SendWakeupEvent) {
+        return 0;
+    }
+    if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
+        if (_this->wakeup_window) {
+            _this->SendWakeupEvent(_this, _this->wakeup_window);
+
+            /* No more wakeup events needed until we enter a new wait */
+            _this->wakeup_window = NULL;
+        }
+        if (_this->wakeup_lock) {
+            SDL_UnlockMutex(_this->wakeup_lock);
+        }
+    }
+    return 0;
+}
+
 /* Lock the event queue, take a peep at it, and unlock it */
 int
 SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
@@ -662,6 +683,11 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
     } else {
         return SDL_SetError("Couldn't lock event queue");
     }
+
+    if (used > 0 && action == SDL_ADDEVENT) {
+        SDL_SendWakeupEvent();
+    }
+
     return (used);
 }
 
@@ -759,6 +785,82 @@ SDL_PollEvent(SDL_Event * event)
     return SDL_WaitEventTimeout(event, 0);
 }
 
+static int
+SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event, int timeout)
+{
+    for (;;) {
+        /* Pump events on entry and each time we wake to ensure:
+           a) All pending events are batch processed after waking up from a wait
+           b) Waiting can be completely skipped if events are already available to be pumped
+           c) Periodic processing that takes place in some platform PumpEvents() functions happens
+        */
+        SDL_PumpEvents();
+
+        if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
+            int status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
+            /* If status == 0 we are going to block so wakeup will be needed. */
+            if (status == 0) {
+                _this->wakeup_window = wakeup_window;
+            } else {
+                _this->wakeup_window = NULL;
+            }
+            if (_this->wakeup_lock) {
+                SDL_UnlockMutex(_this->wakeup_lock);
+            }
+            if (status < 0) {
+                /* Got an error: return */
+                break;
+            }
+            if (status > 0) {
+                /* There is an event, we can return. */
+                SDL_SendPendingSignalEvents();  /* in case we had a signal handler fire, etc. */
+                return 1;
+            }
+            /* No events found in the queue, call WaitEventTimeout to wait for an event. */
+            status = _this->WaitEventTimeout(_this, timeout);
+            /* Set wakeup_window to NULL without holding the lock. */
+            _this->wakeup_window = NULL;
+            if (status <= 0) {
+                /* There is either an error or the timeout is elapsed: return */
+                return status;
+            }
+            /* An event was found and pumped into the SDL events queue. Continue the loop
+              to let SDL_PeepEvents pick it up .*/
+        }
+    }
+    return 0;
+}
+
+static int
+SDL_events_need_polling() {
+    SDL_bool need_polling = SDL_FALSE;
+
+#if !SDL_JOYSTICK_DISABLED
+    need_polling = \
+        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY)) \
+        && (SDL_NumJoysticks() > 0);
+#endif
+
+#if !SDL_SENSOR_DISABLED
+    need_polling = need_polling || (!SDL_disabled_events[SDL_SENSORUPDATE >> 8] && \
+        (SDL_NumSensors() > 0));
+#endif
+
+    return need_polling;
+}
+
+static SDL_Window *
+SDL_find_active_window(SDL_VideoDevice * _this)
+{
+    SDL_Window *window;
+    for (window = _this->windows; window; window = window->next) {
+        if (!window->is_destroying) {
+            return window;
+        }
+    }
+    return NULL;
+}
+
 int
 SDL_WaitEvent(SDL_Event * event)
 {
@@ -768,10 +870,26 @@ SDL_WaitEvent(SDL_Event * event)
 int
 SDL_WaitEventTimeout(SDL_Event * event, int timeout)
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *wakeup_window;
     Uint32 expiration = 0;
 
     if (timeout > 0)
         expiration = SDL_GetTicks() + timeout;
+
+    if (timeout != 0 && _this && _this->WaitEventTimeout && _this->SendWakeupEvent && !SDL_events_need_polling()) {
+        /* Look if a shown window is available to send the wakeup event. */
+        wakeup_window = SDL_find_active_window(_this);
+        if (wakeup_window) {
+            int status = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, timeout);
+
+            /* There may be implementation-defined conditions where the backend cannot
+               reliably wait for the next event. If that happens, fall back to polling. */
+            if (status >= 0) {
+                return status;
+            }
+        }
+    }
 
     for (;;) {
         SDL_PumpEvents();

@@ -590,8 +590,12 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         /* All other controllers have the standard set of 19 buttons and 6 axes */
         SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,", sizeof(mapping_string));
 
-        if (SDL_IsJoystickXboxOneSeriesX(vendor, product)) {
-            /* XBox One Series X Controllers have a share button under the guide button */
+        if (SDL_IsJoystickXboxSeriesX(vendor, product)) {
+            /* XBox Series X Controllers have a share button under the guide button */
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+        } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
+                   (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
+            /* Amazon Luna Controller has a mic button under the guide button */
             SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
         } else if (SDL_IsJoystickXboxOneElite(vendor, product)) {
             /* XBox One Elite Controllers have 4 back paddle buttons */
@@ -1779,11 +1783,12 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
 
     if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE)) {
         /* We shouldn't ignore Steam's virtual gamepad since it's using the hints to filter out the real controllers so it can remap input for the virtual controller */
+        /* https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices */
         SDL_bool bSteamVirtualGamepad = SDL_FALSE;
 #if defined(__LINUX__)
-        bSteamVirtualGamepad = (vendor == 0x28DE && product == 0x11FF);
+        bSteamVirtualGamepad = (vendor == USB_VENDOR_VALVE && product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD);
 #elif defined(__MACOSX__)
-        bSteamVirtualGamepad = (vendor == 0x045E && product == 0x028E && version == 1);
+        bSteamVirtualGamepad = (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 1);
 #elif defined(__WIN32__)
         /* We can't tell on Windows, but Steam will block others in input hooks */
         bSteamVirtualGamepad = SDL_TRUE;
@@ -2404,6 +2409,12 @@ int
 SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_JoystickSetLED(SDL_GameControllerGetJoystick(gamecontroller), red, green, blue);
+}
+
+int
+SDL_GameControllerSendEffect(SDL_GameController *gamecontroller, const void *data, int size)
+{
+    return SDL_JoystickSendEffect(SDL_GameControllerGetJoystick(gamecontroller), data, size);
 }
 
 void

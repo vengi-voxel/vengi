@@ -345,6 +345,29 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
 #endif
 }
 
+static int
+GetXftDPI(Display* dpy)
+{
+    char* xdefault_resource;
+    int xft_dpi, err;
+
+    xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
+
+    if(!xdefault_resource) {
+        return 0;
+    }
+
+    /*
+     * It's possible for SDL_atoi to call strtol, if it fails due to a
+     * overflow or an underflow, it will return LONG_MAX or LONG_MIN and set
+     * errno to ERANGE. So we need to check for this so we dont get crazy dpi
+     * values
+     */
+    xft_dpi = SDL_atoi(xdefault_resource);
+    err = errno;
+
+    return err == ERANGE ? 0 : xft_dpi;
+}
 
 static int
 X11_InitModes_XRandR(_THIS)
@@ -417,6 +440,7 @@ X11_InitModes_XRandR(_THIS)
                 RRMode modeID;
                 RRCrtc output_crtc;
                 XRRCrtcInfo *crtc;
+                int xft_dpi = 0;
 
                 /* The primary output _should_ always be sorted first, but just in case... */
                 if ((looking_for_primary && (res->outputs[output] != primary)) ||
@@ -471,6 +495,14 @@ X11_InitModes_XRandR(_THIS)
                 displaydata->hdpi = display_mm_width ? (((float) mode.w) * 25.4f / display_mm_width) : 0.0f;
                 displaydata->vdpi = display_mm_height ? (((float) mode.h) * 25.4f / display_mm_height) : 0.0f;
                 displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
+
+                /* if xft dpi is available we will use this over xrandr */
+                xft_dpi = GetXftDPI(dpy);
+                if(xft_dpi > 0) {
+                    displaydata->hdpi = (float)xft_dpi;
+                    displaydata->vdpi = (float)xft_dpi;
+                }
+
                 displaydata->scanline_pad = scanline_pad;
                 displaydata->x = display_x;
                 displaydata->y = display_y;
@@ -970,6 +1002,7 @@ X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode
     Display *display = viddata->display;
     SDL_DisplayData *data = (SDL_DisplayData *) sdl_display->driverdata;
     SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
+    int mm_width, mm_height;
 
     viddata->last_mode_change_deadline = SDL_GetTicks() + (PENDING_FOCUS_TIME * 2);
 
@@ -998,10 +1031,23 @@ X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode
             return SDL_SetError("Couldn't get XRandR crtc info");
         }
 
+        X11_XGrabServer(display);
+        status = X11_XRRSetCrtcConfig(display, res, output_info->crtc, CurrentTime,
+          0, 0, None, crtc->rotation, NULL, 0);
+        if (status != Success) {
+            goto setCrtcError;
+        }
+
+        mm_width = mode->w * DisplayWidthMM(display, data->screen) / DisplayWidth(display, data->screen);
+        mm_height = mode->h * DisplayHeightMM(display, data->screen) / DisplayHeight(display, data->screen);
+        X11_XRRSetScreenSize(display, RootWindow(display, data->screen), mode->w, mode->h, mm_width, mm_height);
+
         status = X11_XRRSetCrtcConfig (display, res, output_info->crtc, CurrentTime,
           crtc->x, crtc->y, modedata->xrandr_mode, crtc->rotation,
           &data->xrandr_output, 1);
 
+setCrtcError:
+        X11_XUngrabServer(display);
         X11_XRRFreeCrtcInfo(crtc);
         X11_XRRFreeOutputInfo(output_info);
         X11_XRRFreeScreenResources(res);

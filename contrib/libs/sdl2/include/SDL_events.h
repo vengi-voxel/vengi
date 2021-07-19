@@ -671,8 +671,8 @@ typedef enum
  *
  * `action` may be any of the following:
  *
- * - `SDL_ADDEVENT`: up to `numevents` events will be added to the back of
- *   the event queue.
+ * - `SDL_ADDEVENT`: up to `numevents` events will be added to the back of the
+ *   event queue.
  * - `SDL_PEEKEVENT`: `numevents` events at the front of the event queue,
  *   within the specified minimum and maximum type, will be returned to the
  *   caller and will _not_ be removed from the queue.
@@ -784,10 +784,10 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
 /**
  * Poll for currently pending events.
  *
- * If `event` is not NULL, the next event is removed from the queue and
- * stored in the SDL_Event structure pointed to by `event`. The 1 returned
- * refers to this event, immediately stored in the SDL Event structure -- not
- * an event to follow.
+ * If `event` is not NULL, the next event is removed from the queue and stored
+ * in the SDL_Event structure pointed to by `event`. The 1 returned refers to
+ * this event, immediately stored in the SDL Event structure -- not an event
+ * to follow.
  *
  * If `event` is NULL, it simply returns 1 if there is an event in the queue,
  * but will not remove it from the queue.
@@ -829,8 +829,8 @@ extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
 /**
  * Wait indefinitely for the next available event.
  *
- * If `event` is not NULL, the next event is removed from the queue and
- * stored in the SDL_Event structure pointed to by `event`.
+ * If `event` is not NULL, the next event is removed from the queue and stored
+ * in the SDL_Event structure pointed to by `event`.
  *
  * As this function implicitly calls SDL_PumpEvents(), you can only call this
  * function in the thread that initialized the video subsystem.
@@ -847,11 +847,11 @@ extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
 extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event * event);
 
 /**
- * Wait until the specified timeout (in milliseconds) for
- * the next available event.
+ * Wait until the specified timeout (in milliseconds) for the next available
+ * event.
  *
- * If `event` is not NULL, the next event is removed from the queue and
- * stored in the SDL_Event structure pointed to by `event`.
+ * If `event` is not NULL, the next event is removed from the queue and stored
+ * in the SDL_Event structure pointed to by `event`.
  *
  * As this function implicitly calls SDL_PumpEvents(), you can only call this
  * function in the thread that initialized the video subsystem.
@@ -909,9 +909,8 @@ extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event * event);
  * \param userdata what was passed as `userdata` to SDL_SetEventFilter()
  *        or SDL_AddEventWatch, etc
  * \param event the event that triggered the callback
- * \returns Filters return 1 to permit event to be added to the queue, and
- *          0 to disallow it. When used with SDL_AddEventWatch, the return
- *          value is ignored.
+ * \returns 1 to permit event to be added to the queue, and 0 to disallow
+ *          it. When used with SDL_AddEventWatch, the return value is ignored.
  *
  * \sa SDL_SetEventFilter
  * \sa SDL_AddEventWatch
@@ -934,10 +933,10 @@ typedef int (SDLCALL * SDL_EventFilter) (void *userdata, SDL_Event * event);
  * interrupt signal (e.g. pressing Ctrl-C), it will be delivered to the
  * application at the next event poll.
  *
- * There is one caveat when dealing with the ::SDL_QuitEvent event type.  The
+ * There is one caveat when dealing with the ::SDL_QuitEvent event type. The
  * event filter is only called when the window manager desires to close the
- * application window.  If the event filter returns 1, then the window will
- * be closed, otherwise the window will remain open if possible.
+ * application window. If the event filter returns 1, then the window will be
+ * closed, otherwise the window will remain open if possible.
  *
  * Note: Disabled events never make it to the event filter function; see
  * SDL_EventState().
@@ -1005,8 +1004,7 @@ extern DECLSPEC void SDLCALL SDL_AddEventWatch(SDL_EventFilter filter,
                                                void *userdata);
 
 /**
- * Remove an event watch callback added with
- * SDL_AddEventWatch().
+ * Remove an event watch callback added with SDL_AddEventWatch().
  *
  * This function takes the same input as SDL_AddEventWatch() to identify and
  * delete the corresponding callback.
@@ -1020,8 +1018,8 @@ extern DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter,
                                                void *userdata);
 
 /**
- * Run a specific filter function on the current event
- * queue, removing any events for which the filter returns 0.
+ * Run a specific filter function on the current event queue, removing any
+ * events for which the filter returns 0.
  *
  * See SDL_SetEventFilter() for more information. Unlike SDL_SetEventFilter(),
  * this function does not change the filter permanently, it only uses the
@@ -1074,7 +1072,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_EventState(Uint32 type, int state);
  * 0xFFFFFFFF), but is clearer to write.
  *
  * \param numevents the number of events to be allocated
- * \returns The beginning event number, or (Uint32)-1 if there are not enough
+ * \returns the beginning event number, or (Uint32)-1 if there are not enough
  *          user-defined events left.
  *
  * \since This function is available since SDL 2.0.0.

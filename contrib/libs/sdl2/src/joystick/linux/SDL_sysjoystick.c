@@ -127,6 +127,14 @@ FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
             inpid->version = 0x0902;
         }
     }
+
+    /* For Atari vcs modern and classic controllers have the version reflecting
+     * firmware version, but the mapping stays stable so ignore
+     * version information */
+    if (inpid->vendor == 0x3250
+            && (inpid->product == 0x1001 || inpid->product == 0x1002)) {
+        inpid->version = 0;
+    }
 }
 
 #ifdef SDL_JOYSTICK_HIDAPI
@@ -1082,6 +1090,12 @@ LINUX_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 }
 
 static int
+LINUX_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
+}
+
+static int
 LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
@@ -1595,6 +1609,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickRumbleTriggers,
     LINUX_JoystickHasLED,
     LINUX_JoystickSetLED,
+    LINUX_JoystickSendEffect,
     LINUX_JoystickSetSensorsEnabled,
     LINUX_JoystickUpdate,
     LINUX_JoystickClose,

@@ -178,8 +178,8 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
  * return type, even if the implementation returns a jobject. The rationale
  * being that the SDL headers can avoid including jni.h.
  *
- * The jobject returned by the function is a local reference and must
- * be released by the caller. See the PushLocalFrame() and PopLocalFrame() or
+ * The jobject returned by the function is a local reference and must be
+ * released by the caller. See the PushLocalFrame() and PopLocalFrame() or
  * DeleteLocalRef() functions of the Java native interface:
  *
  * https://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/functions.html
@@ -218,7 +218,7 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
  * - API level 11: Android 3.0
  * - API level 10: Android 2.3.3
  *
- * \returns Android API level.
+ * \returns the Android API level.
  */
 extern DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
 
@@ -311,8 +311,7 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
 /**
  * Request permissions at runtime.
  *
- * This blocks the calling thread until the permission is granted or
- * denied.
+ * This blocks the calling thread until the permission is granted or denied.
  *
  * \param permission The permission to request.
  * \returns SDL_TRUE if the permission was granted, SDL_FALSE otherwise.
@@ -439,7 +438,7 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
 /**
  * Detects the device family of WinRT plattform at runtime.
  *
- * \returns A value from the SDL_WinRT_DeviceFamily enum.
+ * \returns a value from the SDL_WinRT_DeviceFamily enum.
  */
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
