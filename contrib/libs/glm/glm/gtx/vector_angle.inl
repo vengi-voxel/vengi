@@ -20,14 +20,15 @@ namespace glm
 		return acos(clamp(dot(x, y), T(-1), T(1)));
 	}
 
-	//! \todo epsilon is hard coded to 0.01
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER T orientedAngle(vec<2, T, Q> const& x, vec<2, T, Q> const& y)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'orientedAngle' only accept floating-point inputs");
 		T const Angle(acos(clamp(dot(x, y), T(-1), T(1))));
 
-		if(all(epsilonEqual(y, glm::rotate(x, Angle), T(0.0001))))
+		T const partialCross = x.x * y.y - y.x * x.y;
+
+		if (partialCross > T(0))
 			return Angle;
 		else
 			return -Angle;

@@ -172,12 +172,18 @@ namespace detail
 			j = Next[i];
 			k = Next[j];
 
+#           ifdef GLM_FORCE_QUAT_DATA_XYZW
+                int off = 0;
+#           else
+                int off = 1;
+#           endif
+
 			root = sqrt(Row[i][i] - Row[j][j] - Row[k][k] + static_cast<T>(1.0));
 
-			Orientation[i] = static_cast<T>(0.5) * root;
+			Orientation[i + off] = static_cast<T>(0.5) * root;
 			root = static_cast<T>(0.5) / root;
-			Orientation[j] = root * (Row[i][j] + Row[j][i]);
-			Orientation[k] = root * (Row[i][k] + Row[k][i]);
+			Orientation[j + off] = root * (Row[i][j] + Row[j][i]);
+			Orientation[k + off] = root * (Row[i][k] + Row[k][i]);
 			Orientation.w = root * (Row[j][k] - Row[k][j]);
 		} // End if <= 0
 
