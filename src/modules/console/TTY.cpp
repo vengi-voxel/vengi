@@ -2,14 +2,14 @@
  * @file
  */
 
-#include "Input.h"
+#include "TTY.h"
 #include "core/Log.h"
 #include "command/CommandHandler.h"
 #include <string.h>
 
 namespace console {
 
-bool Input::init(uv_loop_t* loop) {
+bool TTY::init(uv_loop_t* loop) {
 	_tty.data = this;
 	int ttyFileDescriptor = 0;
 	if (uv_tty_init(loop, &_tty, ttyFileDescriptor, 1) != 0) {
@@ -24,19 +24,19 @@ bool Input::init(uv_loop_t* loop) {
 	return true;
 }
 
-void Input::shutdown() {
+void TTY::shutdown() {
 	uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(&_tty);
 	uv_read_stop(stream);
 	uv_close((uv_handle_t*)stream, nullptr);
 }
 
-void Input::onAllocBuffer(uv_handle_t *handle, size_t suggestedSize, uv_buf_t *buf) {
-	Input* self = static_cast<Input*>(handle->data);
+void TTY::onAllocBuffer(uv_handle_t *handle, size_t suggestedSize, uv_buf_t *buf) {
+	TTY* self = static_cast<TTY*>(handle->data);
 	buf->len = sizeof(self->_input);
 	buf->base = self->_input;
 }
 
-void Input::onRead(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
+void TTY::onRead(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
 	if (nread < 0) {
 		return uv_close(reinterpret_cast<uv_handle_t*>(stream), nullptr);
 	}

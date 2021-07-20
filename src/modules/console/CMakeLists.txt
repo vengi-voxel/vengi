@@ -1,5 +1,5 @@
 set(SRCS
-	Input.cpp Input.h
+	TTY.cpp TTY.h
 	CursesConsole.cpp CursesConsole.h
 	CursesApp.cpp CursesApp.h
 )

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "util/Console.h"
-#include "console/Input.h"
+#include "console/TTY.h"
 #include "core/Var.h"
 #include <uv.h>
 
@@ -15,7 +15,7 @@ class CursesConsole : public util::Console {
 private:
 	using Super = util::Console;
 	core::VarPtr _cursesVar;
-	console::Input _input;
+	console::TTY _input;
 	bool _enableCurses = false;
 	bool _cursesActive = false;
 	uv_loop_t _loop;

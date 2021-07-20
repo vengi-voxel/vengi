@@ -6,8 +6,7 @@
 
 #include "app/CommandlineApp.h"
 #include "http/HttpServer.h"
-#include "console/Input.h"
-#include <uv.h>
+#include "console/TTY.h"
 
 /**
  * @brief Test application to allow fuzzing the http server code
@@ -18,7 +17,7 @@ class TestHttpServer: public app::CommandlineApp {
 private:
 	using Super = app::CommandlineApp;
 	http::HttpServer _server;
-	console::Input _input;
+	console::TTY _input;
 	uv_loop_t *_loop = nullptr;
 	core::VarPtr _exitAfterRequest;
 	int _remainingFrames = 0;

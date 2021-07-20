@@ -11,7 +11,7 @@ namespace console {
 /**
  * @brief Non-blocking console input reading e.g. for dedicated server command line
  */
-class Input {
+class TTY {
 private:
 	char _input[256];
 	uv_tty_t _tty;
