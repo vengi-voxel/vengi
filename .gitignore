@@ -15,3 +15,4 @@ luac.out
 autosave-*
 /.vscode
 compile_commands.json
+/.cache
