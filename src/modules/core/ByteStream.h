@@ -6,13 +6,13 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <vector>
 #include "core/String.h"
 #include <SDL_endian.h>
 #include <limits.h>
 #include "core/Common.h"
 #include "core/StandardLib.h"
 #include "core/Assert.h"
+#include "core/collection/Buffer.h"
 
 namespace core {
 
@@ -21,7 +21,7 @@ namespace core {
 
 class ByteStream {
 private:
-	typedef std::vector<uint8_t> Buffer;
+	typedef core::Buffer<uint8_t> Buffer;
 	Buffer _buffer;
 	int _pos = 0;
 
