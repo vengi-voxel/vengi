@@ -110,12 +110,24 @@ void CursesConsole::handleTTYInput() {
 			cursorDown();
 			_input.setCmdline(_commandLine.c_str(), _commandLine.size());
 			break;
+		case ConsoleKey::Abort:
+			if (_abortPressCount == _cursorPos) {
+				app::App::getInstance()->requestQuit();
+			} else {
+				_abortPressCount = _cursorPos;
+				Log::info("press once again to abort");
+			}
+			break;
 		default:
 			break;
 		}
 	}
+	if (_abortPressCount != _cursorPos) {
+		_abortPressCount = -1;
+	}
 	if (commandLineExecute) {
 		executeCommandLine();
+		_abortPressCount = -1;
 	}
 }
 

@@ -15,6 +15,7 @@ enum class ConsoleKey {
 	CursorRight,
 	CursorUp,
 	CursorDown,
+	Abort,
 
 	Max
 };
@@ -34,6 +35,7 @@ private:
 
 	// used in raw mode (unix)
 	int _eraseKey = -1;
+	int _quitKey = -1;
 
 	void resetCmdLine();
 

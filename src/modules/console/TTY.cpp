@@ -29,6 +29,8 @@ bool TTY::init(uv_loop_t* loop, bool raw) {
 		uv_tty_set_mode(&_tty, UV_TTY_MODE_RAW);
 		tcgetattr(_priv::stdinFileHandle, &_tty.orig_termios);
 		_eraseKey = _tty.orig_termios.c_cc[VERASE];
+		_quitKey = _tty.orig_termios.c_cc[VINTR];
+		// TODO: IUTF8 in _tty.orig_termios.c_iflag
 #endif
 	}
 	uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(&_tty);
@@ -111,6 +113,8 @@ void TTY::doReadRaw(ssize_t nread, const uv_buf_t *buf) {
 			}
 		} else if (key == '\t') {
 			_cmdlineKey = ConsoleKey::Tab;
+		} else if (key == _quitKey) {
+			_cmdlineKey = ConsoleKey::Abort;
 		} else if (key == '\r' || key == '\n') {
 			_cmdline[_cmdlineSize] = '\0';
 			_cmdlineValid = true;

@@ -18,6 +18,8 @@ private:
 	console::TTY _input;
 	bool _enableCurses = false;
 	bool _cursesActive = false;
+	int _abortPressCount = -1;
+
 	uv_loop_t _loop;
 	void handleTTYInput();
 protected:
