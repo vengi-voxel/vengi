@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/GameConfig.h"
+#include "command/CommandHandler.h"
 #include <SDL_stdinc.h>
 
 #include "engine-config.h"
@@ -42,52 +43,80 @@ void CursesConsole::update(double deltaFrameSeconds) {
 		_cursesVar->markClean();
 	}
 #ifdef CURSES_HAVE_NCURSES_H
-	if (!_cursesActive) {
-		uv_run(&_loop, UV_RUN_NOWAIT);
+	if (_cursesActive) {
+		int key = getch();
+		while (key != ERR) {
+			if (key == KEY_ENTER || key == '\n') {
+				executeCommandLine();
+			} else if (key == KEY_CTAB || key == '\t') {
+				autoComplete();
+			} else if (key == KEY_RESIZE) {
+				clear();
+				refresh();
+			} else if (key == KEY_BACKSPACE || key == 8 || key == 127) {
+				cursorDelete();
+			} else if (key == KEY_LEFT) {
+				cursorLeft();
+			} else if (key == KEY_PPAGE) {
+				scrollPageUp();
+			} else if (key == KEY_NPAGE) {
+				scrollPageDown();
+			} else if (key == KEY_HOME) {
+				_cursorPos = 0;
+			} else if (key == KEY_RIGHT) {
+				cursorRight();
+			} else if (key == KEY_END) {
+				_cursorPos = _commandLine.size();
+			} else if (key == KEY_UP) {
+				cursorUp();
+			} else if (key == KEY_DC) {
+				cursorDelete(false);
+			} else if (key == KEY_IC) {
+				_overwrite ^= true;
+			} else if (key == KEY_DOWN) {
+				cursorDown();
+			} else if (key >= 32 && key < 127) {
+				const char buf[] = { (char)key, '\0' };
+				insertText(buf);
+			}
+			key = getch();
+		}
+		const math::Rect<int> rect(0, 0, COLS - 1, LINES - 1);
+		render(rect, deltaFrameSeconds);
 		return;
 	}
-	int key = getch();
-	while (key != ERR) {
-		if (key == KEY_ENTER || key == '\n') {
-			executeCommandLine();
-		} else if (key == KEY_CTAB || key == '\t') {
-			autoComplete();
-		} else if (key == KEY_RESIZE) {
-			clear();
-			refresh();
-		} else if (key == KEY_BACKSPACE || key == 8 || key == 127) {
-			cursorDelete();
-		} else if (key == KEY_LEFT) {
-			cursorLeft();
-		} else if (key == KEY_PPAGE) {
-			scrollPageUp();
-		} else if (key == KEY_NPAGE) {
-			scrollPageDown();
-		} else if (key == KEY_HOME) {
-			_cursorPos = 0;
-		} else if (key == KEY_RIGHT) {
-			cursorRight();
-		} else if (key == KEY_END) {
-			_cursorPos = _commandLine.size();
-		} else if (key == KEY_UP) {
-			cursorUp();
-		} else if (key == KEY_DC) {
-			cursorDelete(false);
-		} else if (key == KEY_IC) {
-			_overwrite ^= true;
-		} else if (key == KEY_DOWN) {
-			cursorDown();
-		} else if (key >= 32 && key < 127) {
-			const char buf[] = { (char)key, '\0' };
-			insertText(buf);
-		}
-		key = getch();
-	}
-	const math::Rect<int> rect(0, 0, COLS - 1, LINES - 1);
-	render(rect, deltaFrameSeconds);
-#else
-	uv_run(&_loop, UV_RUN_NOWAIT);
 #endif
+	uv_run(&_loop, UV_RUN_NOWAIT);
+	handleTTYInput();
+}
+
+void CursesConsole::handleTTYInput() {
+	const ConsoleKey consoleKey = _input.swapConsoleKey();
+	char cmdlineBuf[256];
+	const bool commandLineExecute = _input.swap(cmdlineBuf, sizeof(cmdlineBuf));
+	_commandLine = core::String(cmdlineBuf);
+	_cursorPos = _commandLine.size();
+	if (consoleKey != ConsoleKey::None) {
+		switch (consoleKey) {
+		case ConsoleKey::Tab:
+			autoComplete();
+			_input.setCmdline(_commandLine.c_str(), _commandLine.size());
+			break;
+		case ConsoleKey::CursorUp:
+			cursorUp();
+			_input.setCmdline(_commandLine.c_str(), _commandLine.size());
+			break;
+		case ConsoleKey::CursorDown:
+			cursorDown();
+			_input.setCmdline(_commandLine.c_str(), _commandLine.size());
+			break;
+		default:
+			break;
+		}
+	}
+	if (commandLineExecute) {
+		executeCommandLine();
+	}
 }
 
 void CursesConsole::drawString(int x, int y, const glm::ivec4& color, int colorIndex, const char* str, int len) {
@@ -169,6 +198,7 @@ void CursesConsole::construct() {
 }
 
 bool CursesConsole::init() {
+	Super::init();
 	_enableCurses = _cursesVar->boolVal();
 	_input.init(&_loop);
 	initCurses();

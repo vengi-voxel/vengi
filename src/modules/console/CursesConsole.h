@@ -19,6 +19,7 @@ private:
 	bool _enableCurses = false;
 	bool _cursesActive = false;
 	uv_loop_t _loop;
+	void handleTTYInput();
 protected:
 	void initCurses();
 	void shutdownCurses();
