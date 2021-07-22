@@ -38,8 +38,17 @@ protected:
 
 	core::String getColor(ConsoleColor color);
 
+	/**
+	 * @brief Checks whether the given input string is a color string.
+	 *
+	 * A color string is started with ^ and followed by a number which indicates the color.
+	 */
 	bool isColor(const char *cstr);
 
+	/**
+	 * @brief Set the given pointer to the next character after a color string
+	 * @see isColor()
+	 */
 	void skipColor(const char **cstr);
 
 	void printHistory();
