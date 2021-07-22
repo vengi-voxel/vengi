@@ -98,6 +98,21 @@ TEST(BufferTest, testCopy) {
 	EXPECT_EQ(3, copy[2]);
 }
 
+TEST(BufferTest, testInsert) {
+	Buffer<uint8_t> array;
+	array.insert(array.begin(), 3);
+	array.insert(array.begin(), 2);
+	array.insert(array.begin(), 1);
+	EXPECT_EQ(3u, array.size()) << array;
+	EXPECT_EQ(32u, array.capacity()) << array;
+	Buffer<uint8_t> copy(array);
+	EXPECT_EQ(3u, copy.size()) << array;
+	EXPECT_EQ(32u, copy.capacity()) << array;
+	EXPECT_EQ(1, copy[0]);
+	EXPECT_EQ(2, copy[1]);
+	EXPECT_EQ(3, copy[2]);
+}
+
 TEST(BufferTest, testTriggerResize) {
 	Buffer<uint8_t, 2> array;
 	array.push_back(1);

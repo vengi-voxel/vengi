@@ -38,6 +38,10 @@ private:
 		if (_capacity >= newSize) {
 			return;
 		}
+		replaceBuffer(newSize);
+	}
+
+	void replaceBuffer(size_t newSize) {
 		size_t newCapacity = align(newSize);
 		TYPE* newBuffer = (TYPE*)core_malloc(newCapacity * sizeof(TYPE));
 		if (_buffer != nullptr) {
@@ -273,6 +277,14 @@ public:
 		_size += n;
 	}
 
+	/**
+	 * @brief This might shrink the buffer capacity. If any new slots were added, they are not initialized
+	 */
+	void resize(size_t size) {
+		replaceBuffer(size);
+		_size = size;
+	}
+
 	template<typename ITER>
 	void insert(iterator pos, ITER first, ITER last) {
 		if (first == last) {
@@ -357,6 +369,16 @@ public:
 	inline TYPE& operator[](size_t idx) {
 		core_assert(idx < _size);
 		return _buffer[idx];
+	}
+
+private:
+	constexpr size_t index(const_iterator iter) const {
+		if (iter == begin()) {
+			return 0;
+		}
+		const TYPE* ptr = iter.operator->();
+		const size_t idx = ptr - begin().operator->();
+		return idx;
 	}
 };
 
