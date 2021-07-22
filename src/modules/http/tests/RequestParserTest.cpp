@@ -8,6 +8,24 @@
 namespace http {
 
 class RequestParserTest : public AbstractHttpParserTest {
+protected:
+	void testQueryParams(const char *queryLine, const char *expected) {
+		core::String hdr = core::String::format(
+			"GET %s HTTP/1.1\r\n"
+			"Host: localhost:8088\r\n"
+			"User-Agent: curl/7.67.0\r\n"
+			"Accept: */*\r\n"
+			"\r\n", queryLine);
+		RequestParser request((uint8_t*)SDL_strdup(hdr.c_str()), hdr.size());
+		EXPECT_TRUE(request.valid());
+		EXPECT_STREQ("HTTP/1.1", request.protocolVersion);
+		EXPECT_EQ(HttpMethod::GET, request.method);
+		EXPECT_STREQ(expected, request.path);
+	}
+
+	void testQueryParamsValid(const char *queryLine) {
+		testQueryParams(queryLine, queryLine);
+	}
 };
 
 TEST_F(RequestParserTest, testSimple) {
@@ -65,5 +83,24 @@ TEST_F(RequestParserTest, testQuery) {
 	validateMapEntry(request.query, "param4", "1");
 }
 
+TEST_F(RequestParserTest, testQueryInvalidFirstParamSep) {
+	testQueryParams("/foo&param=value", "/foo&param=value");
+}
+
+TEST_F(RequestParserTest, testQueryEmptyParams) {
+	testQueryParams("/foo?", "/foo");
+}
+
+TEST_F(RequestParserTest, testQueryEmptyParamsInvalid) {
+	testQueryParams("/foo?&", "/foo");
+}
+
+TEST_F(RequestParserTest, testQueryNoPathEmptyParams) {
+	testQueryParams("?", "");
+}
+
+TEST_F(RequestParserTest, testQueryNoPathButParams) {
+	testQueryParams("?foo=1", "");
+}
 
 }
