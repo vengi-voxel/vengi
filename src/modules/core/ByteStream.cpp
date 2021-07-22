@@ -18,7 +18,7 @@ int32_t ByteStream::peekInt() const {
 		return -1;
 	}
 	uint8_t buf[l];
-	VectorBuffer::const_iterator it = begin();
+	Buffer::const_iterator it = begin();
 	for (int i = 0; i < l; ++i) {
 		buf[i] = *it++;
 	}
@@ -33,7 +33,7 @@ int16_t ByteStream::peekShort() const {
 		return -1;
 	}
 	uint8_t buf[l];
-	VectorBuffer::const_iterator it = begin();
+	Buffer::const_iterator it = begin();
 	for (int i = 0; i < l; ++i) {
 		buf[i] = *it++;
 	}

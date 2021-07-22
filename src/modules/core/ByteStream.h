@@ -21,19 +21,19 @@ namespace core {
 
 class ByteStream {
 private:
-	typedef std::vector<uint8_t> VectorBuffer;
-	VectorBuffer _buffer;
+	typedef std::vector<uint8_t> Buffer;
+	Buffer _buffer;
 	int _pos = 0;
 
 	inline int size() const {
 		return (int)(_buffer.size() - _pos);
 	}
 
-	inline VectorBuffer::const_iterator begin() const {
+	inline Buffer::const_iterator begin() const {
 		return _buffer.begin() + _pos;
 	}
 
-	inline VectorBuffer::iterator begin() {
+	inline Buffer::iterator begin() {
 		return _buffer.begin() + _pos;
 	}
 
