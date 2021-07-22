@@ -77,6 +77,7 @@ void Console::construct() {
 	_autoEnable = core::Var::get("ui_autoconsole", "false", "Activate console on output");
 	command::Command::registerCommand("toggleconsole", [&] (const command::CmdArgs& args) { toggle(); }).setHelp("Toggle the in-game console");
 	command::Command::registerCommand("clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp("Clear the text from the in-game console");
+	command::Command::registerCommand("history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp("Print the command history");
 }
 
 bool Console::init() {
@@ -103,6 +104,17 @@ void Console::shutdown() {
 		Log::debug("Wrote the history");
 	}
 	clear();
+
+	command::Command::unregisterCommand("toggleconsole");
+	command::Command::unregisterCommand("clear");
+	command::Command::unregisterCommand("history");
+	_autoEnable = {};
+}
+
+void Console::printHistory() {
+	for (const core::String& s : _history) {
+		Log::info("%s", s.c_str());
+	}
 }
 
 bool Console::onKeyPress(int32_t key, int16_t modifier) {

@@ -42,6 +42,8 @@ protected:
 
 	void skipColor(const char **cstr);
 
+	void printHistory();
+
 	/**
 	 * @brief Data structure to store a log entry call from a different thread.
 	 */
