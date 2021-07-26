@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "voxelformat/MeshCache.h"
 #include "AnimationSettings.h"
 #include "core/Assert.h"
@@ -54,6 +55,6 @@ public:
 			const std::function<bool(const voxel::Mesh* (&meshes)[AnimationSettings::MAX_ENTRIES])>& loadAdditional = {});
 };
 
-using AnimationCachePtr = std::shared_ptr<AnimationCache>;
+using AnimationCachePtr = core::SharedPtr<AnimationCache>;
 
 }

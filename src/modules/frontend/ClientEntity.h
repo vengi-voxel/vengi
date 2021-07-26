@@ -23,7 +23,7 @@ class SkeletonShader;
 
 namespace animation {
 class AnimationCache;
-using AnimationCachePtr = std::shared_ptr<AnimationCache>;
+using AnimationCachePtr = core::SharedPtr<AnimationCache>;
 }
 
 namespace frontend {

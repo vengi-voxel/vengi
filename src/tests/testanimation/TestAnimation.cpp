@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>(meshCache);
+	const animation::AnimationCachePtr& animationCache = core::make_shared<animation::AnimationCache>(meshCache);
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
 	TestAnimation app(metric, stockDataProvider, filesystem, eventBus, timeProvider, animationCache);
 	return app.startMainLoop(argc, argv);

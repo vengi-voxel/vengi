@@ -474,7 +474,7 @@ int main(int argc, char *argv[]) {
 	const voxelformat::MeshCachePtr& meshCache = std::make_shared<voxelformat::MeshCache>();
 	const voxelrender::CachedMeshRendererPtr& meshRenderer = core::make_shared<voxelrender::CachedMeshRenderer>(meshCache);
 	const video::TextureAtlasRendererPtr& textureAtlasRenderer = core::make_shared<video::TextureAtlasRenderer>();
-	const animation::AnimationCachePtr& animationCache = std::make_shared<animation::AnimationCache>(meshCache);
+	const animation::AnimationCachePtr& animationCache = core::make_shared<animation::AnimationCache>(meshCache);
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
