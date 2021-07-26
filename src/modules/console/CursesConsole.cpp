@@ -8,6 +8,7 @@
 #include "core/GameConfig.h"
 #include "command/CommandHandler.h"
 #include <SDL_stdinc.h>
+#include <SDL_assert.h>
 
 #include "engine-config.h"
 
@@ -114,8 +115,12 @@ void CursesConsole::handleTTYInput() {
 			if (_abortPressCount == _cursorPos) {
 				app::App::getInstance()->requestQuit();
 			} else {
+#ifdef DEBUG
+				SDL_TriggerBreakpoint();
+#else
 				_abortPressCount = _cursorPos;
 				Log::info("press once again to abort");
+#endif
 			}
 			break;
 		default:
