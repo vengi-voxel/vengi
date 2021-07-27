@@ -384,7 +384,7 @@ public:
 			size_t t = tgtIdxStart;
 			for (; s < _size; ++s, ++t) {
 				_buffer[t].~TYPE();
-				new ((void*)&_buffer[t]) TYPE(_buffer[s]);
+				new ((void*)&_buffer[t]) TYPE(core::move(_buffer[s]));
 			}
 		}
 		newSize -= delta;
