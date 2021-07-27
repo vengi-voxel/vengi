@@ -27,16 +27,16 @@
 
 #pragma once
 
-#include <vector>
 #include <queue>
-#include <memory>
 #include <thread>
 #include <future>
 #include <functional>
+#include "core/collection/DynamicArray.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
 #include "core/Trace.h"
+#include "core/SharedPtr.h"
 #include "core/Log.h"
 
 namespace core {
@@ -66,7 +66,7 @@ private:
 	const size_t _threads;
 	const char *_name;
 	// need to keep track of threads so we can join them
-	std::vector<std::thread> _workers;
+	core::DynamicArray<std::thread> _workers;
 	// the task queue
 	std::queue<std::function<void()> > _tasks core_thread_guarded_by(_queueMutex);
 
@@ -86,7 +86,7 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 		return std::future<return_type>();
 	}
 
-	auto task = std::make_shared<std::packaged_task<return_type()> >(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+	core::SharedPtr<std::packaged_task<return_type()> > task = core::make_shared<std::packaged_task<return_type()> >(std::bind(core::forward<F>(f), core::forward<Args>(args)...));
 
 	std::future<return_type> res = task->get_future();
 	{
@@ -94,7 +94,7 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 		if (_stop) {
 			return std::future<return_type>();
 		}
-		_tasks.emplace([task]() {(*task)();});
+		_tasks.emplace([task]() {(*task.get())();});
 	}
 	_queueCondition.notify_one();
 	return res;
