@@ -1,7 +1,7 @@
 set(SRCS
 	TTY.cpp TTY.h
 	TextConsole.cpp TextConsole.h
-	CursesApp.cpp CursesApp.h
+	TextConsoleApp.cpp TextConsoleApp.h
 )
 set(LIB console)
 

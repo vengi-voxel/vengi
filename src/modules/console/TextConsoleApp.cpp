@@ -2,24 +2,24 @@
  * @file
  */
 
-#include "CursesApp.h"
+#include "TextConsoleApp.h"
 
 namespace console {
 
-CursesApp::CursesApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
+TextConsoleApp::TextConsoleApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize) {
 }
 
-CursesApp::~CursesApp() {
+TextConsoleApp::~TextConsoleApp() {
 }
 
-app::AppState CursesApp::onConstruct() {
+app::AppState TextConsoleApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_console.construct();
 	return state;
 }
 
-app::AppState CursesApp::onInit() {
+app::AppState TextConsoleApp::onInit() {
 	const app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
 		return state;
@@ -30,12 +30,12 @@ app::AppState CursesApp::onInit() {
 	return state;
 }
 
-app::AppState CursesApp::onCleanup() {
+app::AppState TextConsoleApp::onCleanup() {
 	_console.shutdown();
 	return Super::onCleanup();
 }
 
-app::AppState CursesApp::onRunning() {
+app::AppState TextConsoleApp::onRunning() {
 	const app::AppState state = Super::onRunning();
 	_console.update(_deltaFrameSeconds);
 	return state;

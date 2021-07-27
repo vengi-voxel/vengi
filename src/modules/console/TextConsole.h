@@ -11,6 +11,9 @@
 
 namespace console {
 
+/**
+ * Text console for input and output. Supports curses or tty input/output with several modes
+ */
 class TextConsole : public util::Console {
 private:
 	using Super = util::Console;
