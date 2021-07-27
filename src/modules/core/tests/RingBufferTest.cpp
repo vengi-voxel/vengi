@@ -60,9 +60,24 @@ TEST(RingBufferTest, testIterate) {
 	EXPECT_EQ(16u, list.size());
 	int cnt = 0;
 	for (auto iter = list.begin(); iter != list.end(); ++iter) {
+		EXPECT_EQ(iter->a, cnt);
 		++cnt;
 	}
 	EXPECT_EQ(16, cnt);
+}
+
+TEST(RingBufferTest, testIterateOverflow) {
+	core::RingBuffer<Type, 8> list;
+	for (int i = 0; i < 16; ++i) {
+		list.push_back({i, i});
+	}
+	EXPECT_EQ(8u, list.size());
+	int cnt = 0;
+	for (auto iter = list.begin(); iter != list.end(); ++iter) {
+		EXPECT_EQ(iter->a, cnt + 8);
+		++cnt;
+	}
+	EXPECT_EQ(8, cnt);
 }
 
 TEST(RingBufferTest, testIterateRangeBased) {
