@@ -27,11 +27,11 @@
 
 #pragma once
 
-#include <queue>
 #include <thread>
 #include <future>
 #include <functional>
 #include "core/collection/DynamicArray.h"
+#include "core/collection/Queue.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
@@ -68,7 +68,7 @@ private:
 	// need to keep track of threads so we can join them
 	core::DynamicArray<std::thread> _workers;
 	// the task queue
-	std::queue<std::function<void()> > _tasks core_thread_guarded_by(_queueMutex);
+	core::Queue<std::function<void()> > _tasks core_thread_guarded_by(_queueMutex);
 
 	// synchronization
 	core_trace_mutex(core::Lock, _queueMutex, "ThreadPoolQueue");

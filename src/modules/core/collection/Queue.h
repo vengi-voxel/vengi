@@ -42,6 +42,11 @@ public:
 		return _array.end();
 	}
 
+	template<typename... Args>
+	void emplace(Args&&... args) {
+		_array.emplace_back(core::forward<Args>(args)...);
+	}
+
 	void push(const TYPE &x) {
 		_array.push_back(x);
 	}
