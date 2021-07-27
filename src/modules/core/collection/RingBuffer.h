@@ -56,6 +56,10 @@ public:
 		inline bool operator==(const iterator& rhs) const {
 			return _ringBuffer == rhs._ringBuffer && _idx == rhs._idx;
 		}
+
+		inline const TYPE* operator->() const {
+			return &_ringBuffer->_buffer[_idx];
+		}
 	};
 
 	iterator begin() {

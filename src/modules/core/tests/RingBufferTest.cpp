@@ -49,6 +49,7 @@ TEST(RingBufferTest, testWrap) {
 	EXPECT_EQ(2, list[1].a);
 	EXPECT_EQ(3, list[2].a);
 	EXPECT_EQ(4, list[3].a);
+	EXPECT_EQ(2, list.begin()->a);
 }
 
 TEST(RingBufferTest, testIterate) {
