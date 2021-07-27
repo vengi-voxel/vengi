@@ -11,7 +11,7 @@
 
 namespace console {
 
-class CursesConsole : public util::Console {
+class TextConsole : public util::Console {
 private:
 	using Super = util::Console;
 	core::VarPtr _cursesVar;
@@ -32,8 +32,8 @@ protected:
 	void afterRender(const math::Rect<int> &rect) override;
 	void beforeRender(const math::Rect<int> &rect) override;
 public:
-	CursesConsole();
-	virtual ~CursesConsole();
+	TextConsole();
+	virtual ~TextConsole();
 
 	bool init() override;
 	void construct() override;

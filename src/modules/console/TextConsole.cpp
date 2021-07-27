@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "CursesConsole.h"
+#include "TextConsole.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/GameConfig.h"
@@ -19,7 +19,7 @@
 
 namespace console {
 
-CursesConsole::CursesConsole() :
+TextConsole::TextConsole() :
 		Super() {
 	_consoleMarginLeft = 1;
 	_consoleMarginLeftBehindPrompt = 1;
@@ -27,12 +27,12 @@ CursesConsole::CursesConsole() :
 	uv_loop_init(&_loop);
 }
 
-CursesConsole::~CursesConsole() {
+TextConsole::~TextConsole() {
 	uv_run(&_loop, UV_RUN_NOWAIT);
 	core_assert_always(uv_loop_close(&_loop) == 0);
 }
 
-void CursesConsole::update(double deltaFrameSeconds) {
+void TextConsole::update(double deltaFrameSeconds) {
 	Super::update(deltaFrameSeconds);
 	if (_cursesVar->isDirty()) {
 		_enableCurses = _cursesVar->boolVal();
@@ -91,7 +91,7 @@ void CursesConsole::update(double deltaFrameSeconds) {
 	handleTTYInput();
 }
 
-void CursesConsole::handleTTYInput() {
+void TextConsole::handleTTYInput() {
 	const ConsoleKey consoleKey = _input.swapConsoleKey();
 	char cmdlineBuf[256];
 	const bool commandLineExecute = _input.swap(cmdlineBuf, sizeof(cmdlineBuf));
@@ -136,7 +136,7 @@ void CursesConsole::handleTTYInput() {
 	}
 }
 
-void CursesConsole::drawString(int x, int y, const glm::ivec4& color, int colorIndex, const char* str, int len) {
+void TextConsole::drawString(int x, int y, const glm::ivec4& color, int colorIndex, const char* str, int len) {
 #ifdef CURSES_HAVE_NCURSES_H
 	if (!_cursesActive) {
 		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s\n", str);
@@ -155,15 +155,15 @@ void CursesConsole::drawString(int x, int y, const glm::ivec4& color, int colorI
 #endif
 }
 
-int CursesConsole::lineHeight() {
+int TextConsole::lineHeight() {
 	return 1;
 }
 
-glm::ivec2 CursesConsole::stringSize(const char* s, int length) {
+glm::ivec2 TextConsole::stringSize(const char* s, int length) {
 	return glm::ivec2(core_min(length, (int)SDL_strlen(s)), lineHeight());
 }
 
-void CursesConsole::afterRender(const math::Rect<int> &rect) {
+void TextConsole::afterRender(const math::Rect<int> &rect) {
 #ifdef CURSES_HAVE_NCURSES_H
 	if (!_cursesActive) {
 		return;
@@ -173,10 +173,10 @@ void CursesConsole::afterRender(const math::Rect<int> &rect) {
 #endif
 }
 
-void CursesConsole::beforeRender(const math::Rect<int> &) {
+void TextConsole::beforeRender(const math::Rect<int> &) {
 }
 
-void CursesConsole::initCurses() {
+void TextConsole::initCurses() {
 #ifdef CURSES_HAVE_NCURSES_H
 	if (!_enableCurses) {
 		return;
@@ -209,12 +209,12 @@ void CursesConsole::initCurses() {
 #endif
 }
 
-void CursesConsole::construct() {
+void TextConsole::construct() {
 	Super::construct();
 	_cursesVar = core::Var::get(cfg::ConsoleCurses, "false", "Use curses for the console");
 }
 
-bool CursesConsole::init() {
+bool TextConsole::init() {
 	Super::init();
 	_enableCurses = _cursesVar->boolVal();
 	_input.init(&_loop);
@@ -222,7 +222,7 @@ bool CursesConsole::init() {
 	return true;
 }
 
-void CursesConsole::shutdownCurses() {
+void TextConsole::shutdownCurses() {
 #ifdef CURSES_HAVE_NCURSES_H
 	if (!_cursesActive) {
 		return;
@@ -241,7 +241,7 @@ void CursesConsole::shutdownCurses() {
 #endif
 }
 
-void CursesConsole::shutdown() {
+void TextConsole::shutdown() {
 	SDL_LogSetOutputFunction(_logFunction, _logUserData);
 	shutdownCurses();
 	_input.shutdown();
