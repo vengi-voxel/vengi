@@ -9,6 +9,8 @@ namespace console {
 
 /**
  * This is an application with an interactive text console to enter commands and change cvars
+ * @sa command::Command
+ * @sa core::Var
  */
 class TextConsoleApp : public app::CommandlineApp {
 private:

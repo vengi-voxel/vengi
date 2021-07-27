@@ -11,6 +11,9 @@
 
 namespace app {
 
+/**
+ * Base application class that handles command line arguments, but doesn't support console input
+ */
 class CommandlineApp : public app::App {
 private:
 	using Super = app::App;

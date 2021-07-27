@@ -46,6 +46,9 @@ typedef std::shared_ptr<TimeProvider> TimeProviderPtr;
 }
 
 namespace app {
+/**
+ * These are the various app states of the lifecycle
+ */
 enum class AppState : uint8_t {
 	Construct,
 	Init,
