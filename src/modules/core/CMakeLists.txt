@@ -99,8 +99,8 @@ set(TEST_SRCS
 	tests/ByteStreamTest.cpp
 	tests/ColorTest.cpp
 	tests/ConcurrentDynamicArrayTest.cpp
-	tests/ConcurrentQueueTest.cpp
 	tests/ConcurrentPriorityQueueTest.cpp
+	tests/ConcurrentQueueTest.cpp
 	tests/CoreTest.cpp
 	tests/DynamicArrayTest.cpp
 	tests/EventBusTest.cpp
@@ -110,6 +110,7 @@ set(TEST_SRCS
 	tests/MD5Test.cpp
 	tests/PoolAllocatorTest.cpp
 	tests/ReadWriteLockTest.cpp
+	tests/RingBufferTest.cpp
 	tests/SetUtilTest.cpp
 	tests/SharedPtrTest.cpp
 	tests/StackTest.cpp
