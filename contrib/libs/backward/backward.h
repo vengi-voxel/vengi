@@ -35,6 +35,9 @@
 #define BACKWARD_CXX11
 #define BACKWARD_ATLEAST_CXX11
 #define BACKWARD_ATLEAST_CXX98
+#if __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define BACKWARD_ATLEAST_CXX17
+#endif
 #else
 #define BACKWARD_CXX98
 #define BACKWARD_ATLEAST_CXX98
@@ -88,6 +91,7 @@
 #include <string>
 #include <vector>
 #include <exception>
+#include <iterator>
 
 #if defined(BACKWARD_SYSTEM_LINUX)
 
@@ -1087,7 +1091,7 @@ public:
 
   size_t load_from(void *addr, size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
-    load_here(depth + 8, contxt, error_addr);
+    load_here(depth + 8, context, error_addr);
 
     for (size_t i = 0; i < _stacktrace.size(); ++i) {
       if (_stacktrace[i] == addr) {
@@ -1206,19 +1210,21 @@ class StackTrace : public StackTraceImpl<system_tag::current_tag> {};
 
 /*************** TRACE RESOLVER ***************/
 
-template <typename TAG> class TraceResolverImpl;
-
-#ifdef BACKWARD_SYSTEM_UNKNOWN
-
-template <> class TraceResolverImpl<system_tag::unknown_tag> {
-public:
-  template <class ST> void load_stacktrace(ST &) {}
-  ResolvedTrace resolve(ResolvedTrace t) { return t; }
-};
-
-#endif
-
 class TraceResolverImplBase {
+public:
+  virtual ~TraceResolverImplBase() {}
+
+  virtual void load_addresses(void *const*addresses, int address_count) {
+    (void)addresses;
+    (void)address_count;
+  }
+
+  template <class ST> void load_stacktrace(ST &st) {
+    load_addresses(st.begin(), (int)st.size());
+  }
+
+  virtual ResolvedTrace resolve(ResolvedTrace t) { return t; }
+
 protected:
   std::string demangle(const char *funcname) {
     return _demangler.demangle(funcname);
@@ -1227,6 +1233,15 @@ protected:
 private:
   details::demangler _demangler;
 };
+
+template <typename TAG> class TraceResolverImpl;
+
+#ifdef BACKWARD_SYSTEM_UNKNOWN
+
+template <> class TraceResolverImpl<system_tag::unknown_tag>
+    : public TraceResolverImplBase {};
+
+#endif
 
 #ifdef BACKWARD_SYSTEM_LINUX
 
@@ -1244,6 +1259,12 @@ public:
       // variable; In that case, we actually open /proc/self/exe, which
       // is always the actual executable (even if it was deleted/replaced!)
       // but display the path that /proc/self/exe links to.
+      // However, this right away reduces probability of successful symbol
+      // resolution, because libbfd may try to find *.debug files in the
+      // same dir, in case symbols are stripped. As a result, it may try
+      // to find a file /proc/self/<exe_name>.debug, which obviously does
+      // not exist. /proc/self/exe is a last resort. First load attempt
+      // should go for the original executable file path.
       symbol_info.dli_fname = "/proc/self/exe";
       return exec_path_;
     } else {
@@ -1292,15 +1313,14 @@ template <>
 class TraceResolverLinuxImpl<trace_resolver_tag::backtrace_symbol>
     : public TraceResolverLinuxBase {
 public:
-  template <class ST> void load_stacktrace(ST &st) {
-    using namespace details;
-    if (st.size() == 0) {
+  void load_addresses(void *const*addresses, int address_count) override {
+    if (address_count == 0) {
       return;
     }
-    _symbols.reset(backtrace_symbols(st.begin(), (int)st.size()));
+    _symbols.reset(backtrace_symbols(addresses, address_count));
   }
 
-  ResolvedTrace resolve(ResolvedTrace trace) {
+  ResolvedTrace resolve(ResolvedTrace trace) override {
     char *filename = _symbols[trace.idx];
     char *funcname = filename;
     while (*funcname && *funcname != '(') {
@@ -1337,9 +1357,7 @@ class TraceResolverLinuxImpl<trace_resolver_tag::libbfd>
 public:
   TraceResolverLinuxImpl() : _bfd_loaded(false) {}
 
-  template <class ST> void load_stacktrace(ST &) {}
-
-  ResolvedTrace resolve(ResolvedTrace trace) {
+  ResolvedTrace resolve(ResolvedTrace trace) override {
     Dl_info symbol_info;
 
     // trace.addr is a virtual address in memory pointing to some code.
@@ -1369,9 +1387,45 @@ public:
     }
 
     trace.object_filename = resolve_exec_path(symbol_info);
-    bfd_fileobject &fobj = load_object_with_bfd(symbol_info.dli_fname);
-    if (!fobj.handle) {
-      return trace; // sad, we couldn't load the object :(
+    bfd_fileobject *fobj;
+    // Before rushing to resolution need to ensure the executable
+    // file still can be used. For that compare inode numbers of
+    // what is stored by the executable's file path, and in the
+    // dli_fname, which not necessarily equals to the executable.
+    // It can be a shared library, or /proc/self/exe, and in the
+    // latter case has drawbacks. See the exec path resolution for
+    // details. In short - the dli object should be used only as
+    // the last resort.
+    // If inode numbers are equal, it is known dli_fname and the
+    // executable file are the same. This is guaranteed by Linux,
+    // because if the executable file is changed/deleted, it will
+    // be done in a new inode. The old file will be preserved in
+    // /proc/self/exe, and may even have inode 0. The latter can
+    // happen if the inode was actually reused, and the file was
+    // kept only in the main memory.
+    //
+    struct stat obj_stat;
+    struct stat dli_stat;
+    if (stat(trace.object_filename.c_str(), &obj_stat) == 0 &&
+        stat(symbol_info.dli_fname, &dli_stat) == 0 &&
+        obj_stat.st_ino == dli_stat.st_ino) {
+      // The executable file, and the shared object containing the
+      // address are the same file. Safe to use the original path.
+      // this is preferable. Libbfd will search for stripped debug
+      // symbols in the same directory.
+      fobj = load_object_with_bfd(trace.object_filename);
+    } else{
+      // The original object file was *deleted*! The only hope is
+      // that the debug symbols are either inside the shared
+      // object file, or are in the same directory, and this is
+      // not /proc/self/exe.
+      fobj = nullptr;
+    }
+    if (fobj == nullptr || !fobj->handle) {
+      fobj = load_object_with_bfd(symbol_info.dli_fname);
+      if (!fobj->handle) {
+        return trace;
+      }
     }
 
     find_sym_result *details_selected; // to be filled.
@@ -1506,7 +1560,7 @@ private:
   typedef details::hashtable<std::string, bfd_fileobject>::type fobj_bfd_map_t;
   fobj_bfd_map_t _fobj_bfd_map;
 
-  bfd_fileobject &load_object_with_bfd(const std::string &filename_object) {
+  bfd_fileobject *load_object_with_bfd(const std::string &filename_object) {
     using namespace details;
 
     if (!_bfd_loaded) {
@@ -1517,11 +1571,11 @@ private:
 
     fobj_bfd_map_t::iterator it = _fobj_bfd_map.find(filename_object);
     if (it != _fobj_bfd_map.end()) {
-      return it->second;
+      return &it->second;
     }
 
     // this new object is empty for now.
-    bfd_fileobject &r = _fobj_bfd_map[filename_object];
+    bfd_fileobject *r = &_fobj_bfd_map[filename_object];
 
     // we do the work temporary in this one;
     bfd_handle_t bfd_handle;
@@ -1570,9 +1624,9 @@ private:
       return r; // damned, that's a stripped file that you got there!
     }
 
-    r.handle = move(bfd_handle);
-    r.symtab = move(symtab);
-    r.dynamic_symtab = move(dynamic_symtab);
+    r->handle = move(bfd_handle);
+    r->symtab = move(symtab);
+    r->dynamic_symtab = move(dynamic_symtab);
     return r;
   }
 
@@ -1591,15 +1645,15 @@ private:
     find_sym_result result;
   };
 
-  find_sym_result find_symbol_details(bfd_fileobject &fobj, void *addr,
+  find_sym_result find_symbol_details(bfd_fileobject *fobj, void *addr,
                                       void *base_addr) {
     find_sym_context context;
     context.self = this;
-    context.fobj = &fobj;
+    context.fobj = fobj;
     context.addr = addr;
     context.base_addr = base_addr;
     context.result.found = false;
-    bfd_map_over_sections(fobj.handle.get(), &find_in_section_trampoline,
+    bfd_map_over_sections(fobj->handle.get(), &find_in_section_trampoline,
                           static_cast<void *>(&context));
     return context.result;
   }
@@ -1608,24 +1662,24 @@ private:
     find_sym_context *context = static_cast<find_sym_context *>(data);
     context->self->find_in_section(
         reinterpret_cast<bfd_vma>(context->addr),
-        reinterpret_cast<bfd_vma>(context->base_addr), *context->fobj, section,
+        reinterpret_cast<bfd_vma>(context->base_addr), context->fobj, section,
         context->result);
   }
 
-  void find_in_section(bfd_vma addr, bfd_vma base_addr, bfd_fileobject &fobj,
+  void find_in_section(bfd_vma addr, bfd_vma base_addr, bfd_fileobject *fobj,
                        asection *section, find_sym_result &result) {
     if (result.found)
       return;
 
 #ifdef bfd_get_section_flags
-    if ((bfd_get_section_flags(fobj.handle.get(), section) & SEC_ALLOC) == 0)
+    if ((bfd_get_section_flags(fobj->handle.get(), section) & SEC_ALLOC) == 0)
 #else
     if ((bfd_section_flags(section) & SEC_ALLOC) == 0)
 #endif
       return; // a debug section is never loaded automatically.
 
 #ifdef bfd_get_section_vma
-    bfd_vma sec_addr = bfd_get_section_vma(fobj.handle.get(), section);
+    bfd_vma sec_addr = bfd_get_section_vma(fobj->handle.get(), section);
 #else
     bfd_vma sec_addr = bfd_section_vma(section);
 #endif
@@ -1647,15 +1701,15 @@ private:
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif
-    if (!result.found && fobj.symtab) {
+    if (!result.found && fobj->symtab) {
       result.found = bfd_find_nearest_line(
-          fobj.handle.get(), section, fobj.symtab.get(), addr - sec_addr,
+          fobj->handle.get(), section, fobj->symtab.get(), addr - sec_addr,
           &result.filename, &result.funcname, &result.line);
     }
 
-    if (!result.found && fobj.dynamic_symtab) {
+    if (!result.found && fobj->dynamic_symtab) {
       result.found = bfd_find_nearest_line(
-          fobj.handle.get(), section, fobj.dynamic_symtab.get(),
+          fobj->handle.get(), section, fobj->dynamic_symtab.get(),
           addr - sec_addr, &result.filename, &result.funcname, &result.line);
     }
 #if defined(__clang__)
@@ -1664,13 +1718,13 @@ private:
   }
 
   ResolvedTrace::source_locs_t
-  backtrace_inliners(bfd_fileobject &fobj, find_sym_result previous_result) {
+  backtrace_inliners(bfd_fileobject *fobj, find_sym_result previous_result) {
     // This function can be called ONLY after a SUCCESSFUL call to
     // find_symbol_details. The state is global to the bfd_handle.
     ResolvedTrace::source_locs_t results;
     while (previous_result.found) {
       find_sym_result result;
-      result.found = bfd_find_inliner_info(fobj.handle.get(), &result.filename,
+      result.found = bfd_find_inliner_info(fobj->handle.get(), &result.filename,
                                            &result.funcname, &result.line);
 
       if (result
@@ -1713,9 +1767,7 @@ class TraceResolverLinuxImpl<trace_resolver_tag::libdw>
 public:
   TraceResolverLinuxImpl() : _dwfl_handle_initialized(false) {}
 
-  template <class ST> void load_stacktrace(ST &) {}
-
-  ResolvedTrace resolve(ResolvedTrace trace) {
+  ResolvedTrace resolve(ResolvedTrace trace) override {
     using namespace details;
 
     Dwarf_Addr trace_addr = (Dwarf_Addr)trace.addr;
@@ -2042,9 +2094,7 @@ class TraceResolverLinuxImpl<trace_resolver_tag::libdwarf>
 public:
   TraceResolverLinuxImpl() : _dwarf_loaded(false) {}
 
-  template <class ST> void load_stacktrace(ST &) {}
-
-  ResolvedTrace resolve(ResolvedTrace trace) {
+  ResolvedTrace resolve(ResolvedTrace trace) override {
     // trace.addr is a virtual address in memory pointing to some code.
     // Let's try to find from which loaded object it comes from.
     // The loaded object can be yourself btw.
@@ -3424,15 +3474,14 @@ template <>
 class TraceResolverDarwinImpl<trace_resolver_tag::backtrace_symbol>
     : public TraceResolverImplBase {
 public:
-  template <class ST> void load_stacktrace(ST &st) {
-    using namespace details;
-    if (st.size() == 0) {
+  void load_addresses(void *const*addresses, int address_count) override {
+    if (address_count == 0) {
       return;
     }
-    _symbols.reset(backtrace_symbols(st.begin(), st.size()));
+    _symbols.reset(backtrace_symbols(addresses, address_count));
   }
 
-  ResolvedTrace resolve(ResolvedTrace trace) {
+  ResolvedTrace resolve(ResolvedTrace trace) override {
     // parse:
     // <n>  <file>  <addr>  <mangled-name> + <offset>
     char *filename = _symbols[trace.idx];
@@ -3542,7 +3591,8 @@ public:
   }
 };
 
-template <> class TraceResolverImpl<system_tag::windows_tag> {
+template <> class TraceResolverImpl<system_tag::windows_tag>
+    : public TraceResolverImplBase {
 public:
   TraceResolverImpl() {
 
@@ -3567,8 +3617,6 @@ public:
     image_type = h->FileHeader.Machine;
   }
 
-  template <class ST> void load_stacktrace(ST &) {}
-
   static const int max_sym_len = 255;
   struct symbol_t {
     SYMBOL_INFO sym;
@@ -3577,7 +3625,7 @@ public:
 
   DWORD64 displacement;
 
-  ResolvedTrace resolve(ResolvedTrace t) {
+  ResolvedTrace resolve(ResolvedTrace t) override {
     HANDLE process = GetCurrentProcess();
 
     char name[256];
@@ -3836,7 +3884,7 @@ public:
   cfile_streambuf(FILE *_sink) : sink(_sink) {}
   int_type underflow() override { return traits_type::eof(); }
   int_type overflow(int_type ch) override {
-    if (traits_type::not_eof(ch) && fwrite(&ch, sizeof ch, 1, sink) == 1) {
+    if (traits_type::not_eof(ch) && fputc(ch, sink) != EOF) {
       return ch;
     }
     return traits_type::eof();
@@ -4170,6 +4218,8 @@ public:
 #elif defined(__ppc__) || defined(__powerpc) || defined(__powerpc__) ||        \
     defined(__POWERPC__)
     error_addr = reinterpret_cast<void *>(uctx->uc_mcontext.regs->nip);
+#elif defined(__riscv)
+    error_addr = reinterpret_cast<void *>(uctx->uc_mcontext.__gregs[REG_PC]);
 #elif defined(__s390x__)
     error_addr = reinterpret_cast<void *>(uctx->uc_mcontext.psw.addr);
 #elif defined(__APPLE__) && defined(__x86_64__)
@@ -4256,7 +4306,9 @@ public:
     set_unexpected(&terminator);
 #else
     std::set_terminate(&terminator);
+#ifndef BACKWARD_ATLEAST_CXX17
     std::set_unexpected(&terminator);
+#endif
 #endif
     _set_purecall_handler(&terminator);
     _set_invalid_parameter_handler(&invalid_parameter_handler);
@@ -4385,9 +4437,8 @@ private:
 
     StackTrace st;
     st.set_machine_type(printer.resolver().machine_type());
-    st.set_context(ctx());
     st.set_thread_handle(thread_handle());
-    st.load_here(32 + skip_frames);
+    st.load_here(32 + skip_frames, ctx());
     st.skip_n_firsts(skip_frames);
 
     printer.address = true;
