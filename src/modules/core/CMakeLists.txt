@@ -109,6 +109,7 @@ set(TEST_SRCS
 	tests/MapTest.cpp
 	tests/MD5Test.cpp
 	tests/PoolAllocatorTest.cpp
+	tests/QueueTest.cpp
 	tests/ReadWriteLockTest.cpp
 	tests/RingBufferTest.cpp
 	tests/SetUtilTest.cpp
