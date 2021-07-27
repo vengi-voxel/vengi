@@ -7,18 +7,18 @@
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
+#include "core/collection/DynamicArray.h"
 #include "core/Trace.h"
 #include "core/Common.h"
 #include "core/Assert.h"
 #include <stdint.h>
-#include <vector>
 
 namespace core {
 
 template<class Data>
 class ConcurrentQueue {
 private:
-	using Collection = std::vector<Data>;
+	using Collection = core::DynamicArray<Data>;
 	Collection _data core_thread_guarded_by(_mutex);
 	mutable core_trace_mutex(core::Lock,  _mutex, "ConcurrentQueue");
 	core::ConditionVariable _conditionVariable;
