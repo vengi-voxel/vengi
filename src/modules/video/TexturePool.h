@@ -8,8 +8,8 @@
 #include "io/Filesystem.h"
 #include "Texture.h"
 #include "core/String.h"
+#include "core/SharedPtr.h"
 #include "core/collection/StringMap.h"
-#include <memory>
 
 namespace video {
 
@@ -30,6 +30,6 @@ public:
 	void clear();
 };
 
-typedef std::shared_ptr<TexturePool> TexturePoolPtr;
+typedef core::SharedPtr<TexturePool> TexturePoolPtr;
 
 }

@@ -486,7 +486,7 @@ int main(int argc, char *argv[]) {
 	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(pager);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	const stock::StockDataProviderPtr& stockDataProvider = std::make_shared<stock::StockDataProvider>();
-	const video::TexturePoolPtr& texturePool = std::make_shared<video::TexturePool>(filesystem);
+	const video::TexturePoolPtr& texturePool = core::make_shared<video::TexturePool>(filesystem);
 	const audio::SoundManagerPtr& soundMgr = core::make_shared<audio::SoundManager>(filesystem);
 	const voxelworldrender::AssetVolumeCachePtr& assetVolumeCache = core::make_shared<voxelworldrender::AssetVolumeCache>(volumeCache);
 	Client app(metric, animationCache, stockDataProvider, network, world, pager, messageSender,

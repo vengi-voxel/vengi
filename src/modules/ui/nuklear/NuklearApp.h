@@ -11,11 +11,10 @@
 #include "Console.h"
 #include "RenderShaders.h"
 #include "NuklearNode.h"
-#include <memory>
 
 namespace video {
 class TexturePool;
-using TexturePoolPtr = std::shared_ptr<TexturePool>;
+using TexturePoolPtr = core::SharedPtr<TexturePool>;
 
 class TextureAtlasRenderer;
 using TextureAtlasRendererPtr = core::SharedPtr<TextureAtlasRenderer>;
