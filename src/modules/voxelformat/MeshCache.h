@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "voxel/Mesh.h"
 #include "core/IComponent.h"
 #include "core/StringUtil.h"
 #include "core/collection/StringMap.h"
-#include <memory>
 
 namespace voxelformat {
 
@@ -32,6 +32,6 @@ public:
 	void shutdown() override;
 };
 
-using MeshCachePtr = std::shared_ptr<MeshCache>;
+using MeshCachePtr = core::SharedPtr<MeshCache>;
 
 }

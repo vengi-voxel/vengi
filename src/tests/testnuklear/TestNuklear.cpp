@@ -99,7 +99,7 @@ bool TestNuklear::onRenderUI() {
 }
 
 int main(int argc, char *argv[]) {
-	const voxelformat::MeshCachePtr& meshCache = std::make_shared<voxelformat::MeshCache>();
+	const voxelformat::MeshCachePtr& meshCache = core::make_shared<voxelformat::MeshCache>();
 	const voxelrender::CachedMeshRendererPtr& meshRenderer = core::make_shared<voxelrender::CachedMeshRenderer>(meshCache);
 	const video::TextureAtlasRendererPtr& textureAtlasRenderer = core::make_shared<video::TextureAtlasRenderer>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();

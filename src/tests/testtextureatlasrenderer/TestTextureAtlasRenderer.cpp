@@ -15,7 +15,7 @@ TestTextureAtlasRenderer::TestTextureAtlasRenderer(const metric::MetricPtr& metr
 		const core::EventBusPtr& eventBus,
 		const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider),
-		_meshRenderer(std::make_shared<voxelformat::MeshCache>()) {
+		_meshRenderer(core::make_shared<voxelformat::MeshCache>()) {
 	init(ORGANISATION, "testtextureatlasrenderer");
 }
 

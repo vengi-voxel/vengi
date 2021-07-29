@@ -461,7 +461,7 @@ bool MapView::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 int main(int argc, char *argv[]) {
-	const voxelformat::MeshCachePtr& meshCache = std::make_shared<voxelformat::MeshCache>();
+	const voxelformat::MeshCachePtr& meshCache = core::make_shared<voxelformat::MeshCache>();
 	const animation::AnimationCachePtr& animationCache = core::make_shared<animation::AnimationCache>(meshCache);
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const voxelformat::VolumeCachePtr& volumeCache = std::make_shared<voxelformat::VolumeCache>();

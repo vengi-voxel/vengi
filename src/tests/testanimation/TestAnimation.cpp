@@ -281,7 +281,7 @@ app::AppState TestAnimation::onCleanup() {
 }
 
 int main(int argc, char *argv[]) {
-	const voxelformat::MeshCachePtr& meshCache = std::make_shared<voxelformat::MeshCache>();
+	const voxelformat::MeshCachePtr& meshCache = core::make_shared<voxelformat::MeshCache>();
 	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
