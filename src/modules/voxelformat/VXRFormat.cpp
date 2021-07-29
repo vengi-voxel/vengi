@@ -184,7 +184,7 @@ bool VXRFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		return false;
 	}
 
-	if (version < 1 || version > 7) {
+	if (version < 1 || version > 8) {
 		Log::error("Could not load vxr file: Unsupported version found (%i)", version);
 		return false;
 	}
@@ -220,6 +220,43 @@ bool VXRFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			}
 		}
 		return true;
+	}
+
+	if (version >= 8) {
+		char baseTemplate[1024];
+		wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
+
+		const bool isStatic = stream.readBool();
+		if (isStatic) {
+			uint32_t lodLevels;
+			wrap(stream.readInt(lodLevels))
+			for (uint32_t i = 0 ; i < lodLevels; ++i) {
+				uint32_t dummy;
+				wrap(stream.readInt(dummy))
+				wrap(stream.readInt(dummy))
+				uint32_t diffuseTexZipped;
+				wrap(stream.readInt(diffuseTexZipped))
+				stream.skip(diffuseTexZipped);
+				const bool hasEmissive = stream.readBool();
+				if (hasEmissive) {
+					uint32_t emissiveTexZipped;
+					wrap(stream.readInt(emissiveTexZipped))
+					stream.skip(emissiveTexZipped);
+				}
+				uint32_t quadAmount;
+				wrap(stream.readInt(quadAmount))
+				for (uint32_t quad = 0; quad < quadAmount; ++quad) {
+					for (int v = 0; v < 4; ++v) {
+						float dummyFloat;
+						wrap(stream.readFloat(dummyFloat))
+						wrap(stream.readFloat(dummyFloat))
+						wrap(stream.readFloat(dummyFloat))
+						wrap(stream.readFloat(dummyFloat))
+						wrap(stream.readFloat(dummyFloat))
+					}
+				}
+			}
+		}
 	}
 
 	uint32_t children = 0;
