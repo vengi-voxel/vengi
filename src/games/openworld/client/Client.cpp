@@ -481,7 +481,7 @@ int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = core::make_shared<network::ProtocolHandlerRegistry>();
 	const network::ClientNetworkPtr& network = std::make_shared<network::ClientNetwork>(protocolHandlerRegistry, eventBus);
-	const network::ClientMessageSenderPtr& messageSender = std::make_shared<network::ClientMessageSender>(network);
+	const network::ClientMessageSenderPtr& messageSender = core::make_shared<network::ClientMessageSender>(network);
 	const client::ClientPagerPtr& pager = core::make_shared<client::ClientPager>();
 	const voxelworld::WorldMgrPtr& world = std::make_shared<voxelworld::WorldMgr>(pager);
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();

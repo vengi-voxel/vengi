@@ -6,7 +6,7 @@
 
 #include "ClientMessages_generated.h"
 #include "ClientNetwork.h"
-#include <memory>
+#include "core/SharedPtr.h"
 
 namespace network {
 
@@ -26,6 +26,6 @@ public:
 	bool sendClientMessage(FlatBufferBuilder& fbb, ClientMsgType type, Offset<void> data, uint32_t flags = ENET_PACKET_FLAG_RELIABLE);
 };
 
-typedef std::shared_ptr<ClientMessageSender> ClientMessageSenderPtr;
+typedef core::SharedPtr<ClientMessageSender> ClientMessageSenderPtr;
 
 }
