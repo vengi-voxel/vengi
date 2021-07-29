@@ -10,7 +10,7 @@ General:
    - Fixed texture coordinate indices for multi layer obj exports
    - Improved magicavoxel transform support for some models
    - Fixed magicavoxel x-axis handling
-   - Support newer versions of vxm
+   - Support newer versions of vxm and vxr
    - Fixed bug in file dialog which prevents you to delete characters #77
 
 VoxEdit:
