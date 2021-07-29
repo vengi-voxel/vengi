@@ -107,6 +107,7 @@ bool VXRFormat::importChildOld(io::FileStream& stream, uint32_t version) {
 
 bool VXRFormat::importChild(const core::String& vxrPath, io::FileStream& stream, VoxelVolumes& volumes, uint32_t version) {
 	uint32_t dummy;
+	float dummyf;
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
 	char filename[1024];
@@ -132,6 +133,10 @@ bool VXRFormat::importChild(const core::String& vxrPath, io::FileStream& stream,
 		}
 		return true;
 	}
+	if (version >= 9) {
+		stream.readBool(); // collidable
+		stream.readBool(); // decorative
+	}
 	if (version >= 6) {
 		wrap(stream.readInt(dummy)) // color
 		stream.readBool(); // favorite
@@ -140,17 +145,32 @@ bool VXRFormat::importChild(const core::String& vxrPath, io::FileStream& stream,
 	stream.readBool(); // mirror x axis
 	stream.readBool(); // mirror y axis
 	stream.readBool(); // mirror z axis
-	stream.readBool(); // ???
-	stream.readBool(); // ???
-	stream.readBool(); // ???
-	stream.readBool(); // ???
-	stream.readBool(); // ???
-	wrap(stream.readInt(dummy)) // ???
-	wrap(stream.readInt(dummy)) // ???
-	stream.readBool(); // ???
-	stream.readBool(); // ???
-	stream.readBool(); // ???
-	stream.readBool(); // ???
+	stream.readBool(); // preview mirror x axis
+	stream.readBool(); // preview mirror y axis
+	stream.readBool(); // preview mirror z axis
+	stream.readBool(); // ikAnchor
+	if (version >= 9) {
+		char effectorId[1024];
+		wrapBool(stream.readString(sizeof(effectorId), effectorId, true))
+		stream.readBool(); // constraints visible
+		wrap(stream.readFloat(dummyf)) // rollmin ???
+		wrap(stream.readFloat(dummyf)) // rollmax ???
+		uint32_t constraints;
+		wrap(stream.readInt(constraints))
+		for (uint32_t i = 0; i < constraints; ++i) {
+			wrap(stream.readFloat(dummyf)) // x
+			wrap(stream.readFloat(dummyf)) // z
+			wrap(stream.readFloat(dummyf)) // radius
+		}
+	} else {
+		stream.readBool(); // ???
+		wrap(stream.readFloat(dummyf)) // ???
+		wrap(stream.readFloat(dummyf)) // ???
+		stream.readBool(); // ???
+		stream.readBool(); // ???
+		stream.readBool(); // ???
+		stream.readBool(); // ???
+	}
 	uint32_t children = 0;
 	wrap(stream.readInt(children))
 	for (uint32_t i = 0; i < children; ++i) {
@@ -184,7 +204,7 @@ bool VXRFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		return false;
 	}
 
-	if (version < 1 || version > 8) {
+	if (version < 1 || version > 9) {
 		Log::error("Could not load vxr file: Unsupported version found (%i)", version);
 		return false;
 	}
