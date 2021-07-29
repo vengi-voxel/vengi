@@ -793,7 +793,7 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
     }
 #endif
 
-    if (WAYLAND_xkb_compose_state_feed(input->xkb.compose_state, sym) == XKB_COMPOSE_FEED_ACCEPTED) {
+    if (input->xkb.compose_state && WAYLAND_xkb_compose_state_feed(input->xkb.compose_state, sym) == XKB_COMPOSE_FEED_ACCEPTED) {
         switch(WAYLAND_xkb_compose_state_get_status(input->xkb.compose_state)) {
             case XKB_COMPOSE_COMPOSING:
                 *handled_by_ime = SDL_TRUE;
@@ -925,7 +925,7 @@ keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
                             int32_t rate, int32_t delay)
 {
     struct SDL_WaylandInput *input = data;
-    input->keyboard_repeat.repeat_rate = SDL_max(0, SDL_min(rate, 1000));
+    input->keyboard_repeat.repeat_rate = SDL_clamp(rate, 0, 1000);
     input->keyboard_repeat.repeat_delay = delay;
     input->keyboard_repeat.is_initialized = SDL_TRUE;
 }

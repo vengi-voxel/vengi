@@ -755,6 +755,66 @@ GLES_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
     return 0;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
+static int
+GLES_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        int num_vertices, const void *indices, int num_indices, int size_indices,
+        float scale_x, float scale_y)
+{
+    GLES_TextureData *texturedata = NULL;
+    int i;
+    int count = indices ? num_indices : num_vertices;
+    GLfloat *verts;
+    int sz = 2 + 4 + (texture ? 2 : 0);
+
+    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    if (texture) {
+        texturedata = (GLES_TextureData *) texture->driverdata;
+    }
+
+    cmd->data.draw.count = count;
+    size_indices = indices ? size_indices : 0;
+
+    for (i = 0; i < count; i++) {
+        int j;
+        float *xy_;
+        SDL_Color col_;
+        if (size_indices == 4) {
+            j = ((const Uint32 *)indices)[i];
+        } else if (size_indices == 2) {
+            j = ((const Uint16 *)indices)[i];
+        } else if (size_indices == 1) {
+            j = ((const Uint8 *)indices)[i];
+        } else {
+            j = i;
+        }
+
+        xy_ = (float *)((char*)xy + j * xy_stride);
+        col_ = *(SDL_Color *)((char*)color + j * color_stride);
+
+        *(verts++) = xy_[0] * scale_x;
+        *(verts++) = xy_[1] * scale_y;
+
+        *(verts++) = col_.r * inv255f;
+        *(verts++) = col_.g * inv255f;
+        *(verts++) = col_.b * inv255f;
+        *(verts++) = col_.a * inv255f;
+
+        if (texture) {
+            float *uv_ = (float *)((char*)uv + j * uv_stride);
+            *(verts++) = uv_[0] * texturedata->texw;
+            *(verts++) = uv_[1] * texturedata->texh;
+        }
+    }
+    return 0;
+}
+#endif
+
 static void
 SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 {
@@ -988,6 +1048,34 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 break;
             }
 
+            case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
+                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                SDL_Texture *texture = cmd->data.draw.texture;
+                const size_t count = cmd->data.draw.count;
+                int stride = (2 + 4 + (texture ? 2 : 0)) * sizeof (float);
+
+                if (texture) {
+                    SetCopyState(data, cmd);
+                } else {
+                    SetDrawState(data, cmd);
+                }
+
+                data->glEnableClientState(GL_COLOR_ARRAY);
+
+                data->glVertexPointer(2, GL_FLOAT, stride, verts);
+                data->glColorPointer(4, GL_FLOAT, stride, verts + 2);
+                if (texture) {
+                    data->glTexCoordPointer(2, GL_FLOAT, stride, verts + 2 + 4);
+                }
+
+                data->glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
+
+                data->glDisableClientState(GL_COLOR_ARRAY);
+#endif
+                break;
+            }
+
             case SDL_RENDERCMD_NO_OP:
                 break;
         }
@@ -1198,6 +1286,9 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = GLES_QueueFillRects;
     renderer->QueueCopy = GLES_QueueCopy;
     renderer->QueueCopyEx = GLES_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
+    renderer->QueueGeometry = GLES_QueueGeometry;
+#endif
     renderer->RunCommandQueue = GLES_RunCommandQueue;
     renderer->RenderReadPixels = GLES_RenderReadPixels;
     renderer->RenderPresent = GLES_RenderPresent;

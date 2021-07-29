@@ -86,6 +86,16 @@ typedef struct SDL_RendererInfo
 } SDL_RendererInfo;
 
 /**
+ *  Vertex structure
+ */
+typedef struct SDL_Vertex
+{
+    SDL_FPoint position;        /**< Vertex position, in SDL_Renderer coordinates  */
+    SDL_Color  color;           /**< Vertex color */
+    SDL_FPoint tex_coord;       /**< Normalized texture coordinates, if needed */
+} SDL_Vertex;
+
+/**
  * The scaling mode for a texture.
  */
 typedef enum
@@ -136,7 +146,6 @@ typedef struct SDL_Renderer SDL_Renderer;
  */
 struct SDL_Texture;
 typedef struct SDL_Texture SDL_Texture;
-
 
 /* Function prototypes */
 
@@ -479,6 +488,29 @@ extern DECLSPEC int SDLCALL SDL_SetTextureScaleMode(SDL_Texture * texture,
  */
 extern DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture * texture,
                                                     SDL_ScaleMode *scaleMode);
+
+/**
+ * Associate a user-specified pointer with a texture.
+ *
+ * \param texture the texture to update.
+ * \param userdata the pointer to associate with the texture.
+ * \returns 0 on success, or -1 if the texture is not valid.
+ *
+ * \sa SDL_GetTextureUserData
+ */
+extern DECLSPEC int SDLCALL SDL_SetTextureUserData(SDL_Texture * texture,
+                                                   void *userdata);
+
+/**
+ * Get the user-specified pointer associated with a texture
+ *
+ * \param texture the texture to query.
+ * \return the pointer associated with the texture, or NULL if the texture is
+ *         not valid.
+ *
+ * \sa SDL_SetTextureUserData
+ */
+extern DECLSPEC void * SDLCALL SDL_GetTextureUserData(SDL_Texture * texture);
 
 /**
  * Update the given texture rectangle with new pixel data.
@@ -1418,6 +1450,54 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
                                             const double angle,
                                             const SDL_FPoint *center,
                                             const SDL_RendererFlip flip);
+
+/**
+ * Render a list of triangles, optionally using a texture and indices into the
+ * vertex array Color and alpha modulation is done per vertex
+ * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ *
+ * \param texture (optional) The SDL texture to use.
+ * \param vertices Vertices.
+ * \param num_vertices Number of vertices.
+ * \param indices (optional) An array of integer indices into the 'vertices'
+ *                array, if NULL all vertices will be rendered in sequential
+ *                order.
+ * \param num_indices Number of indices.
+ * \return 0 on success, or -1 if the operation is not supported
+ *
+ * \sa SDL_Vertex
+ */
+extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
+                                               SDL_Texture *texture,
+                                               const SDL_Vertex *vertices, int num_vertices,
+                                               const int *indices, int num_indices);
+
+/**
+ * Render a list of triangles, optionally using a texture and indices into the
+ * vertex arrays Color and alpha modulation is done per vertex
+ * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ *
+ * \param texture (optional) The SDL texture to use.
+ * \param xy Vertex positions
+ * \param xy_stride Byte size to move from one element to the next element
+ * \param color Vertex colors (as SDL_Color)
+ * \param color_stride Byte size to move from one element to the next element
+ * \param uv Vertex normalized texture coordinates
+ * \param uv_stride Byte size to move from one element to the next element
+ * \param num_vertices Number of vertices.
+ * \param indices (optional) An array of indices into the 'vertices' arrays,
+ *                if NULL all vertices will be rendered in sequential order.
+ * \param num_indices Number of indices.
+ * \param size_indices Index size: 1 (byte), 2 (short), 4 (int)
+ * \return 0 on success, or -1 if the operation is not supported
+ */
+extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
+                                               SDL_Texture *texture,
+                                               const float *xy, int xy_stride,
+                                               const int *color, int color_stride,
+                                               const float *uv, int uv_stride,
+                                               int num_vertices,
+                                               const void *indices, int num_indices, int size_indices);
 
 /**
  * Read pixels from the current rendering target to an array of pixels.

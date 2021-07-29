@@ -19,39 +19,24 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_h_
-#define SDL_config_h_
+#ifndef SDL_triangle_h_
+#define SDL_triangle_h_
 
-#include "SDL_platform.h"
+#include "../../SDL_internal.h"
 
-/**
- *  \file SDL_config.h
- */
+extern int SDL_SW_FillTriangle(SDL_Surface *dst,
+        SDL_Point *d0, SDL_Point *d1, SDL_Point *d2,
+        SDL_BlendMode blend, SDL_Color c0, SDL_Color c1, SDL_Color c2);
 
-/* Add any platform that doesn't build using the configure system. */
-#if defined(__WIN32__)
-#include "SDL_config_windows.h"
-#elif defined(__WINRT__)
-#include "SDL_config_winrt.h"
-#elif defined(__MACOSX__)
-#include "SDL_config_macosx.h"
-#elif defined(__IPHONEOS__)
-#include "SDL_config_iphoneos.h"
-#elif defined(__ANDROID__)
-#include "SDL_config_android.h"
-#elif defined(__PSP__)
-#include "SDL_config_psp.h"
-#elif defined(__OS2__)
-#include "SDL_config_os2.h"
-#elif defined(__EMSCRIPTEN__)
-#include "SDL_config_emscripten.h"
-#else
-/* This is a minimal configuration just to get SDL running on new platforms. */
-#include "SDL_config_minimal.h"
-#endif /* platform config */
+extern int SDL_SW_BlitTriangle(
+        SDL_Surface *src,
+        SDL_Point *s0, SDL_Point *s1, SDL_Point *s2,
+        SDL_Surface *dst,
+        SDL_Point *d0, SDL_Point *d1, SDL_Point *d2,
+        SDL_Color c0, SDL_Color c1, SDL_Color c2);
 
-#ifdef USING_GENERATED_CONFIG_H
-#error Wrong SDL_config.h, check your include path?
-#endif
+extern void trianglepoint_2_fixedpoint(SDL_Point *a);
 
-#endif /* SDL_config_h_ */
+#endif /* SDL_triangle_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

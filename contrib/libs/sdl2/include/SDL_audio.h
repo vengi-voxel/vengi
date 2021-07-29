@@ -462,6 +462,19 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * hostname/IP address for a remote audio server, or a filename in the
  * diskaudio driver.
  *
+ * An opened audio device starts out paused, and should be enabled for playing
+ * by calling SDL_PauseAudioDevice(devid, 0) when you are ready for your audio
+ * callback function to be called. Since the audio driver may modify the
+ * requested size of the audio buffer, you should allocate any local mixing
+ * buffers after you open the audio device.
+ *
+ * The audio callback runs in a separate thread in most cases; you can prevent
+ * race conditions between your callback and other threads without fully
+ * pausing playback with SDL_LockAudioDevice(). For more information about the
+ * callback, see SDL_AudioSpec.
+ *
+ * Managing the audio spec via 'desired' and 'obtained':
+ *
  * When filling in the desired audio spec structure:
  *
  * - `desired->freq` should be the frequency in sample-frames-per-second (Hz).
@@ -510,19 +523,11 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * callback's float32 audio to int16 before feeding it to the hardware and
  * will keep the originally requested format in the `obtained` structure.
  *
+ * The resulting audio specs, varying depending on hardware and on what
+ * changes were allowed, will then be written back to `obtained`.
+ *
  * If your application can only handle one specific data format, pass a zero
  * for `allowed_changes` and let SDL transparently handle any differences.
- *
- * An opened audio device starts out paused, and should be enabled for playing
- * by calling SDL_PauseAudioDevice(devid, 0) when you are ready for your audio
- * callback function to be called. Since the audio driver may modify the
- * requested size of the audio buffer, you should allocate any local mixing
- * buffers after you open the audio device.
- *
- * The audio callback runs in a separate thread in most cases; you can prevent
- * race conditions between your callback and other threads without fully
- * pausing playback with SDL_LockAudioDevice(). For more information about the
- * callback, see SDL_AudioSpec.
  *
  * \param device a UTF-8 string reported by SDL_GetAudioDeviceName() or a
  *               driver-specific name as appropriate. NULL requests the most

@@ -116,6 +116,17 @@ char *alloca();
 #endif
 
 /**
+ * Check if the compiler supports a given builtin.
+ * Supported by virtually all clang versions and recent gcc. Use this
+ * instead of checking the clang version if possible.
+ */
+#ifdef __has_builtin
+#define _SDL_HAS_BUILTIN(x) __has_builtin(x)
+#else
+#define _SDL_HAS_BUILTIN(x) 0
+#endif
+
+/**
  *  The number of elements in an array.
  */
 #define SDL_arraysize(array)    (sizeof(array)/sizeof(array[0]))
@@ -430,10 +441,10 @@ extern DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, in
 
 extern DECLSPEC int SDLCALL SDL_abs(int x);
 
-/* !!! FIXME: these have side effects. You probably shouldn't use them. */
-/* !!! FIXME: Maybe we do forceinline functions of SDL_mini, SDL_minf, etc? */
+/* NOTE: these double-evaluate their arguments, so you should never have side effects in the parameters */
 #define SDL_min(x, y) (((x) < (y)) ? (x) : (y))
 #define SDL_max(x, y) (((x) > (y)) ? (x) : (y))
+#define SDL_clamp(x, a, b) (((x) < (a)) ? (a) : (((x) > (b)) ? (b) : (x)))
 
 extern DECLSPEC int SDLCALL SDL_isalpha(int x);
 extern DECLSPEC int SDLCALL SDL_isalnum(int x);

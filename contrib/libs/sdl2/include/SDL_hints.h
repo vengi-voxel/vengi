@@ -146,6 +146,26 @@ extern "C" {
 #define SDL_HINT_ANDROID_TRAP_BACK_BUTTON "SDL_ANDROID_TRAP_BACK_BUTTON"
 
 /**
+ *  \brief Specify an application name.
+ * 
+ * This hint lets you specify the application name sent to the OS when
+ * required. For example, this will often appear in volume control applets for
+ * audio streams, and in lists of applications which are inhibiting the
+ * screensaver.  You should use a string that describes your program ("My Game
+ * 2: The Revenge")
+ *
+ * Setting this to "" or leaving it unset will have SDL use a reasonable
+ * default: probably the application's name or "SDL Application" if SDL
+ * doesn't have any better information.
+ *
+ * Note that, for audio streams, this can be overridden with
+ * SDL_HINT_AUDIO_DEVICE_APP_NAME.
+ *
+ * On targets where this is not supported, this hint does nothing.
+ */
+#define SDL_HINT_APP_NAME "SDL_APP_NAME"
+
+/**
  *  \brief  A variable controlling whether controllers used with the Apple TV
  *  generate UI events.
  *
@@ -199,8 +219,9 @@ extern "C" {
  * that describes your program ("My Game 2: The Revenge")
  *
  * Setting this to "" or leaving it unset will have SDL use a reasonable
- * default: probably the application's name or "SDL Application" if SDL
- * doesn't have any better information.
+ * default: this will be the name set with SDL_HINT_APP_NAME, if that hint is
+ * set. Otherwise, it'll probably the application's name or "SDL Application"
+ * if SDL doesn't have any better information.
  *
  * On targets where this is not supported, this hint does nothing.
  */
@@ -537,6 +558,15 @@ extern "C" {
 #define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
 
 /**
+ * \brief A variable to control whether certain IMEs should show native UI components (such as the Candidate List) instead of suppressing them.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Native UI components are not display. (default)
+ *   "1"       - Native UI components are displayed.
+ */
+#define SDL_HINT_IME_SHOW_UI "SDL_IME_SHOW_UI"
+
+/**
  * \brief  A variable controlling whether the home indicator bar on iPhone X
  *         should be hidden.
  *
@@ -711,8 +741,10 @@ extern "C" {
  *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch controller is opened
  *
  *  This variable can be set to the following values:
- *    "0"       - home button LED is left off
- *    "1"       - home button LED is turned on (the default)
+ *    "0"       - home button LED is turned off
+ *    "1"       - home button LED is turned on
+ *
+ *  By default the Home button LED state is not changed.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED "SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED"
 
@@ -1102,6 +1134,26 @@ extern "C" {
 #define SDL_HINT_RPI_VIDEO_LAYER           "SDL_RPI_VIDEO_LAYER"
 
 /**
+ *  \brief Specify an "activity name" for screensaver inhibition.
+ *
+ * Some platforms, notably Linux desktops, list the applications which are
+ * inhibiting the screensaver or other power-saving features.
+ *
+ * This hint lets you specify the "activity name" sent to the OS when
+ * SDL_DisableScreenSaver() is used (or the screensaver is automatically
+ * disabled). The contents of this hint are used when the screensaver is
+ * disabled. You should use a string that describes what your program is doing
+ * (and, therefore, why the screensaver is disabled).  For example, "Playing a
+ * game" or "Watching a video".
+ * 
+ * Setting this to "" or leaving it unset will have SDL use a reasonable
+ * default: "Playing a game" or something similar.
+ *
+ * On targets where this is not supported, this hint does nothing.
+ */
+#define SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME "SDL_SCREENSAVER_INHIBIT_ACTIVITY_NAME"
+
+/**
  *  \brief Specifies whether SDL_THREAD_PRIORITY_TIME_CRITICAL should be treated as realtime.
  *
  *  On some platforms, like Linux, a realtime priority thread may be subject to restrictions
@@ -1219,6 +1271,17 @@ extern "C" {
 #define SDL_HINT_VIDEO_DOUBLE_BUFFER      "SDL_VIDEO_DOUBLE_BUFFER"
 
 /**
+ * \brief A variable controlling whether the EGL window is allowed to be
+ * composited as transparent, rather than opaque.
+ *
+ * Most window systems will always render windows opaque, even if the surface
+ * format has an alpha channel. This is not always true, however, so by default
+ * SDL will try to enforce opaque composition. To override this behavior, you
+ * can set this hint to "1".
+ */
+#define SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY "SDL_VIDEO_EGL_ALLOW_TRANSPARENCY"
+
+/**
  * \brief A variable controlling whether the graphics context is externally managed.
  *
  * This variable can be set to the following values:
@@ -1264,6 +1327,17 @@ extern "C" {
  *
  */
 #define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
+
+/**
+ *  \brief  A variable controlling whether the libdecor Wayland backend is allowed to be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - libdecor use is disabled.
+ *    "1"       - libdecor use is enabled (default).
+ *
+ *  libdecor is used over xdg-shell when xdg-decoration protocol is unavailable.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR "SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR"
 
 /**
 *  \brief  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").

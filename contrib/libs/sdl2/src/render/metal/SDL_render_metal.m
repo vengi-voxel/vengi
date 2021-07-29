@@ -279,26 +279,35 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
 
     switch (cache->vertexFunction) {
         case SDL_METAL_VERTEX_SOLID:
-            /* position (float2) */
-            vertdesc.layouts[0].stride = sizeof(float) * 2;
+            /* position (float2), color (uchar4normalized) */
+            vertdesc.layouts[0].stride = sizeof(float) * 2 + sizeof (int);
             vertdesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
 
             vertdesc.attributes[0].format = MTLVertexFormatFloat2;
             vertdesc.attributes[0].offset = 0;
             vertdesc.attributes[0].bufferIndex = 0;
+
+            vertdesc.attributes[1].format = MTLVertexFormatUChar4Normalized;
+            vertdesc.attributes[1].offset = sizeof (float) * 2;
+            vertdesc.attributes[1].bufferIndex = 0;
+
             break;
         case SDL_METAL_VERTEX_COPY:
-            /* position (float2), texcoord (float2) */
-            vertdesc.layouts[0].stride = sizeof(float) * 4;
+            /* position (float2), color (uchar4normalized), texcoord (float2) */
+            vertdesc.layouts[0].stride = sizeof(float) * 2 + sizeof (int) + sizeof (float) * 2;
             vertdesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
 
             vertdesc.attributes[0].format = MTLVertexFormatFloat2;
             vertdesc.attributes[0].offset = 0;
             vertdesc.attributes[0].bufferIndex = 0;
 
-            vertdesc.attributes[1].format = MTLVertexFormatFloat2;
-            vertdesc.attributes[1].offset = sizeof(float) * 2;
+            vertdesc.attributes[1].format = MTLVertexFormatUChar4Normalized;
+            vertdesc.attributes[1].offset = sizeof (float) * 2;
             vertdesc.attributes[1].bufferIndex = 0;
+
+            vertdesc.attributes[2].format = MTLVertexFormatFloat2;
+            vertdesc.attributes[2].offset = sizeof(float) * 2 + sizeof (int);
+            vertdesc.attributes[2].bufferIndex = 0;
             break;
     }
 
@@ -1060,38 +1069,56 @@ METAL_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     if (!verts) {
         return -1;
     }
+    /*
+     * FIXME: not needed anymore, some cleanup to do 
+     *
     *(verts++) = ((float)cmd->data.color.r) / 255.0f;
     *(verts++) = ((float)cmd->data.color.g) / 255.0f;
     *(verts++) = ((float)cmd->data.color.b) / 255.0f;
     *(verts++) = ((float)cmd->data.color.a) / 255.0f;
+    */
     return 0;
 }
 
 static int
 METAL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
-    const size_t vertlen = (sizeof (float) * 2) * count;
+    const int color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
+    const size_t vertlen = (2 * sizeof (float) + sizeof (int)) * count;
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
     cmd->data.draw.count = count;
-    SDL_memcpy(verts, points, vertlen);
+
+    for (int i = 0; i < count; i++, points++) {
+        *(verts++) = points->x;
+        *(verts++) = points->y;
+        *((int *)verts++) = color;
+    }
     return 0;
 }
 
 static int
 METAL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
+
+    const int color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
+
     SDL_assert(count >= 2);  /* should have been checked at the higher level. */
 
-    const size_t vertlen = (sizeof (float) * 2) * count;
+    const size_t vertlen = (2 * sizeof (float) + sizeof (int)) * count;
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
     cmd->data.draw.count = count;
-    SDL_memcpy(verts, points, vertlen);
+
+    for (int i = 0; i < count; i++, points++) {
+        *(verts++) = points->x;
+        *(verts++) = points->y;
+        *((int *)verts++) = color;
+    }
 
     /* If the line segment is completely horizontal or vertical,
        make it one pixel longer, to satisfy the diamond-exit rule.
@@ -1101,8 +1128,8 @@ METAL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
        that are missing a pixel that frames something and not arbitrary
        angles. Maybe !!! FIXME for later, though. */
 
-    points += count - 2;  /* update the last line. */
-    verts += (count * 2) - 2;
+    points -= 2;  /* update the last line. */
+    verts -= 2 + 1;
 
     const float xstart = points[0].x;
     const float ystart = points[0].y;
@@ -1121,7 +1148,8 @@ METAL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 static int
 METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
-    const size_t vertlen = (sizeof (float) * 8) * count;
+    const int color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
+    const size_t vertlen = 4 * (2 * sizeof (float) + sizeof (int)) * count;
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
@@ -1140,12 +1168,19 @@ METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
         } else {
             *(verts++) = rects->x;
             *(verts++) = rects->y + rects->h;
+            *((int *)verts++) = color;
+
             *(verts++) = rects->x;
             *(verts++) = rects->y;
+            *((int *)verts++) = color;
+
             *(verts++) = rects->x + rects->w;
             *(verts++) = rects->y + rects->h;
+            *((int *)verts++) = color;
+
             *(verts++) = rects->x + rects->w;
             *(verts++) = rects->y;
+            *((int *)verts++) = color;
         }
     }
 
@@ -1162,8 +1197,9 @@ METAL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 {
     const float texw = (float) texture->w;
     const float texh = (float) texture->h;
+    const int color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
     // !!! FIXME: use an index buffer
-    const size_t vertlen = (sizeof (float) * 16);
+    const size_t vertlen = 4 * (2 * sizeof (float) + sizeof (int) + 2 * sizeof (float));
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
@@ -1174,21 +1210,25 @@ METAL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     /* Interleaved positions and texture coordinates */
     *(verts++) = dstrect->x;
     *(verts++) = dstrect->y + dstrect->h;
+    *((int *)verts++) = color;
     *(verts++) = normtex(srcrect->x, texw);
     *(verts++) = normtex(srcrect->y + srcrect->h, texh);
 
     *(verts++) = dstrect->x;
     *(verts++) = dstrect->y;
+    *((int *)verts++) = color;
     *(verts++) = normtex(srcrect->x, texw);
     *(verts++) = normtex(srcrect->y, texh);
 
     *(verts++) = dstrect->x + dstrect->w;
     *(verts++) = dstrect->y + dstrect->h;
+    *((int *)verts++) = color;
     *(verts++) = normtex(srcrect->x + srcrect->w, texw);
     *(verts++) = normtex(srcrect->y + srcrect->h, texh);
 
     *(verts++) = dstrect->x + dstrect->w;
     *(verts++) = dstrect->y;
+    *((int *)verts++) = color;
     *(verts++) = normtex(srcrect->x + srcrect->w, texw);
     *(verts++) = normtex(srcrect->y, texh);
 
@@ -1200,12 +1240,13 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
                   const SDL_Rect * srcquad, const SDL_FRect * dstrect,
                   const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
+    const int color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
     const float texw = (float) texture->w;
     const float texh = (float) texture->h;
     const float rads = (float)(M_PI * (float) angle / 180.0f);
     const float c = cosf(rads), s = sinf(rads);
     float minu, maxu, minv, maxv;
-    const size_t vertlen = (sizeof (float) * 32);
+    const size_t vertlen = 16 * sizeof (float) + 4 * (2 * sizeof (float) + sizeof (int) + 2 * sizeof (float));
     float *verts;
 
     // cheat and store this offset in (count) because it needs to be aligned in ways other fields don't and we aren't using count otherwise.
@@ -1252,27 +1293,78 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     /* Interleaved positions and texture coordinates */
     *(verts++) = -center->x;
     *(verts++) = dstrect->h - center->y;
+    *((int *)verts++) = color;
     *(verts++) = minu;
     *(verts++) = maxv;
 
     *(verts++) = -center->x;
     *(verts++) = -center->y;
+    *((int *)verts++) = color;
     *(verts++) = minu;
     *(verts++) = minv;
 
     *(verts++) = dstrect->w - center->x;
     *(verts++) = dstrect->h - center->y;
+    *((int *)verts++) = color;
     *(verts++) = maxu;
     *(verts++) = maxv;
 
     *(verts++) = dstrect->w - center->x;
     *(verts++) = -center->y;
+    *((int *)verts++) = color;
     *(verts++) = maxu;
     *(verts++) = minv;
 
     return 0;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
+static int
+METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        int num_vertices, const void *indices, int num_indices, int size_indices,
+        float scale_x, float scale_y)
+{
+    int count = indices ? num_indices : num_vertices;
+    const size_t vertlen = (2 * sizeof (float) + sizeof (int) + (texture ? 2 : 0) * sizeof (float)) * count;
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+    size_indices = indices ? size_indices : 0;
+
+    for (int i = 0; i < count; i++) {
+        int j;
+        if (size_indices == 4) {
+            j = ((const Uint32 *)indices)[i];
+        } else if (size_indices == 2) {
+            j = ((const Uint16 *)indices)[i];
+        } else if (size_indices == 1) {
+            j = ((const Uint8 *)indices)[i];
+        } else {
+            j = i;
+        }
+
+        float *xy_ = (float *)((char*)xy + j * xy_stride);
+        int col_ = *(int *)((char*)color + j * color_stride);
+
+        *(verts++) = xy_[0] * scale_x;
+        *(verts++) = xy_[1] * scale_y;
+
+        *((int *)verts++) = col_;
+
+        if (texture) {
+            float *uv_ = (float *)((char*)uv + j * uv_stride);
+            *(verts++) = uv_[0];
+            *(verts++) = uv_[1];
+        }
+    }
+
+    return 0;
+}
+#endif
 
 typedef struct
 {
@@ -1529,6 +1621,22 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 SetCopyState(renderer, cmd, CONSTANTS_OFFSET_INVALID, mtlbufvertex, &statecache);
                 [data.mtlcmdencoder setVertexBuffer:mtlbufvertex offset:cmd->data.draw.count atIndex:3];  // transform
                 [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
+                break;
+            }
+
+            case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
+                const size_t count = cmd->data.draw.count;
+                SDL_Texture *texture = cmd->data.draw.texture;
+
+                if (texture) {
+                    SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
+                    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                } else {
+                    SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
+                    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                }
+#endif
                 break;
             }
 
@@ -1894,6 +2002,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = METAL_QueueFillRects;
     renderer->QueueCopy = METAL_QueueCopy;
     renderer->QueueCopyEx = METAL_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
+    renderer->QueueGeometry = METAL_QueueGeometry;
+#endif
     renderer->RunCommandQueue = METAL_RunCommandQueue;
     renderer->RenderReadPixels = METAL_RenderReadPixels;
     renderer->RenderPresent = METAL_RenderPresent;

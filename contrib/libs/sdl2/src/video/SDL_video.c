@@ -187,14 +187,6 @@ ShouldUseTextureFramebuffer()
         return SDL_FALSE;
     }
 
-    /* If the user has specified a software renderer we can't use a
-       texture framebuffer, or renderer creation will go recursive.
-     */
-    hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-    if (hint && SDL_strcasecmp(hint, "software") == 0) {
-        return SDL_FALSE;
-    }
-
     /* See if the user or application wants a specific behavior */
     hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
     if (hint) {
@@ -497,7 +489,7 @@ SDL_VideoInit(const char *driver_name)
     if (driver_name == NULL) {
         driver_name = SDL_getenv("SDL_VIDEODRIVER");
     }
-    if (driver_name != NULL) {
+    if (driver_name != NULL && *driver_name != 0) {
         const char *driver_attempt = driver_name;
         while(driver_attempt != NULL && *driver_attempt != 0 && video == NULL) {
             const char* driver_attempt_end = SDL_strchr(driver_attempt, ',');
@@ -505,7 +497,8 @@ SDL_VideoInit(const char *driver_name)
                                                                      : SDL_strlen(driver_attempt);
 
             for (i = 0; bootstrap[i]; ++i) {
-                if (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0) {
+                if ((driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
+                    (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0)) {
                     video = bootstrap[i]->create(index);
                     break;
                 }
@@ -2794,11 +2787,7 @@ SDL_SetWindowMouseGrab(SDL_Window * window, SDL_bool grabbed)
 SDL_bool
 SDL_GetWindowGrab(SDL_Window * window)
 {
-    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
-    SDL_assert(!_this->grabbed_window ||
-               ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) ||
-               ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0));
-    return window == _this->grabbed_window;
+    return (SDL_GetWindowKeyboardGrab(window) || SDL_GetWindowMouseGrab(window));
 }
 
 SDL_bool
@@ -2820,10 +2809,12 @@ SDL_GetWindowMouseGrab(SDL_Window * window)
 SDL_Window *
 SDL_GetGrabbedWindow(void)
 {
-    SDL_assert(!_this->grabbed_window ||
-               ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) ||
-               ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0));
-    return _this->grabbed_window;
+    if (_this->grabbed_window &&
+        (_this->grabbed_window->flags & (SDL_WINDOW_MOUSE_GRABBED|SDL_WINDOW_KEYBOARD_GRABBED)) != 0) {
+        return _this->grabbed_window;
+    } else {
+        return NULL;
+    }
 }
 
 int

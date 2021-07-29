@@ -880,3 +880,7 @@ SDL_DYNAPI_PROC(int,SDL_FlashWindow,(SDL_Window *a, SDL_FlashOperation b),(a,b),
 SDL_DYNAPI_PROC(int,SDL_GameControllerSendEffect,(SDL_GameController *a, const void *b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_JoystickSendEffect,(SDL_Joystick *a, const void *b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(float,SDL_GameControllerGetSensorDataRate,(SDL_GameController *a, SDL_SensorType b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_SetTextureUserData,(SDL_Texture *a, void *b),(a,b),return)
+SDL_DYNAPI_PROC(void*,SDL_GetTextureUserData,(SDL_Texture *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_RenderGeometry,(SDL_Renderer *a, SDL_Texture *b, const SDL_Vertex *c, int d, const int *e, int f),(a,b,c,d,e,f),return)
+SDL_DYNAPI_PROC(int,SDL_RenderGeometryRaw,(SDL_Renderer *a, SDL_Texture *b, const float *c, int d, const int *e, int f, const float *g, int h, int i, const void *j, int k, int l),(a,b,c,d,e,f,g,h,i,j,k,l),return)

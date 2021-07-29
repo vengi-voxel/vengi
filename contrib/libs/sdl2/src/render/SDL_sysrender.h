@@ -58,6 +58,7 @@ struct SDL_Texture
     Uint32 last_command_generation; /* last command queue generation this texture was in. */
 
     void *driverdata;           /**< Driver specific texture representation */
+    void *userdata;
 
     SDL_Texture *prev;
     SDL_Texture *next;
@@ -74,7 +75,8 @@ typedef enum
     SDL_RENDERCMD_DRAW_LINES,
     SDL_RENDERCMD_FILL_RECTS,
     SDL_RENDERCMD_COPY,
-    SDL_RENDERCMD_COPY_EX
+    SDL_RENDERCMD_COPY_EX,
+    SDL_RENDERCMD_GEOMETRY
 } SDL_RenderCommandType;
 
 typedef struct SDL_RenderCommand
@@ -127,6 +129,13 @@ struct SDL_Renderer
     int (*QueueCopyEx) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                         const SDL_Rect * srcquad, const SDL_FRect * dstrect,
                         const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip);
+#if SDL_HAVE_RENDER_GEOMETRY
+    int (*QueueGeometry) (SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+                          const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+                          int num_vertices, const void *indices, int num_indices, int size_indices,
+                          float scale_x, float scale_y);
+#endif
+
     int (*RunCommandQueue) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
     int (*UpdateTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
                           const SDL_Rect * rect, const void *pixels,

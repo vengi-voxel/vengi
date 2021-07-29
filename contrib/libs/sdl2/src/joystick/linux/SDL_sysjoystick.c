@@ -268,6 +268,15 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
 }
 #endif /* SDL_USE_LIBUDEV */
 
+static void
+FreeJoylistItem(SDL_joylist_item *item)
+{
+    SDL_free(item->mapping);
+    SDL_free(item->path);
+    SDL_free(item->name);
+    SDL_free(item);
+}
+
 static int
 MaybeAddDevice(const char *path)
 {
@@ -293,7 +302,7 @@ MaybeAddDevice(const char *path)
         }
     }
 
-    fd = open(path, O_RDONLY, 0);
+    fd = open(path, O_RDONLY | O_CLOEXEC, 0);
     if (fd < 0) {
         return -1;
     }
@@ -308,21 +317,18 @@ MaybeAddDevice(const char *path)
         return -1;
     }
 
-    item = (SDL_joylist_item *) SDL_malloc(sizeof (SDL_joylist_item));
+    item = (SDL_joylist_item *) SDL_calloc(1, sizeof (SDL_joylist_item));
     if (item == NULL) {
         return -1;
     }
 
-    SDL_zerop(item);
     item->devnum = sb.st_rdev;
     item->path = SDL_strdup(path);
     item->name = name;
     item->guid = guid;
 
     if ((item->path == NULL) || (item->name == NULL)) {
-         SDL_free(item->path);
-         SDL_free(item->name);
-         SDL_free(item);
+         FreeJoylistItem(item);
          return -1;
     }
 
@@ -342,6 +348,31 @@ MaybeAddDevice(const char *path)
     return numjoysticks;
 }
 
+static void
+RemoveJoylistItem(SDL_joylist_item *item, SDL_joylist_item *prev)
+{
+    if (item->hwdata) {
+        item->hwdata->item = NULL;
+    }
+
+    if (prev != NULL) {
+        prev->next = item->next;
+    } else {
+        SDL_assert(SDL_joylist == item);
+        SDL_joylist = item->next;
+    }
+
+    if (item == SDL_joylist_tail) {
+        SDL_joylist_tail = prev;
+    }
+
+    /* Need to decrement the joystick count before we post the event */
+    --numjoysticks;
+
+    SDL_PrivateJoystickRemoved(item->device_instance);
+    FreeJoylistItem(item);
+}
+
 static int
 MaybeRemoveDevice(const char *path)
 {
@@ -356,30 +387,7 @@ MaybeRemoveDevice(const char *path)
         /* found it, remove it. */
         if (SDL_strcmp(path, item->path) == 0) {
             const int retval = item->device_instance;
-            if (item->hwdata) {
-                item->hwdata->item = NULL;
-            }
-            if (prev != NULL) {
-                prev->next = item->next;
-            } else {
-                SDL_assert(SDL_joylist == item);
-                SDL_joylist = item->next;
-            }
-            if (item == SDL_joylist_tail) {
-                SDL_joylist_tail = prev;
-            }
-
-            /* Need to decrement the joystick count before we post the event */
-            --numjoysticks;
-
-            SDL_PrivateJoystickRemoved(item->device_instance);
-
-            if (item->mapping) {
-                SDL_free(item->mapping);
-            }
-            SDL_free(item->path);
-            SDL_free(item->name);
-            SDL_free(item);
+            RemoveJoylistItem(item, prev);
             return retval;
         }
         prev = item;
@@ -396,26 +404,7 @@ HandlePendingRemovals(void)
 
     while (item != NULL) {
         if (item->hwdata && item->hwdata->gone) {
-            item->hwdata->item = NULL;
-
-            if (prev != NULL) {
-                prev->next = item->next;
-            } else {
-                SDL_assert(SDL_joylist == item);
-                SDL_joylist = item->next;
-            }
-            if (item == SDL_joylist_tail) {
-                SDL_joylist_tail = prev;
-            }
-
-            /* Need to decrement the joystick count before we post the event */
-            --numjoysticks;
-
-            SDL_PrivateJoystickRemoved(item->device_instance);
-
-            SDL_free(item->path);
-            SDL_free(item->name);
-            SDL_free(item);
+            RemoveJoylistItem(item, prev);
 
             if (prev != NULL) {
                 item = prev->next;
@@ -444,9 +433,7 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
     item->m_bSteamController = SDL_TRUE;
 
     if ((item->path == NULL) || (item->name == NULL)) {
-         SDL_free(item->path);
-         SDL_free(item->name);
-         SDL_free(item);
+         FreeJoylistItem(item);
          return SDL_FALSE;
     }
 
@@ -474,26 +461,7 @@ static void SteamControllerDisconnectedCallback(int device_instance)
     for (item = SDL_joylist; item != NULL; item = item->next) {
         /* found it, remove it. */
         if (item->device_instance == device_instance) {
-            if (item->hwdata) {
-                item->hwdata->item = NULL;
-            }
-            if (prev != NULL) {
-                prev->next = item->next;
-            } else {
-                SDL_assert(SDL_joylist == item);
-                SDL_joylist = item->next;
-            }
-            if (item == SDL_joylist_tail) {
-                SDL_joylist_tail = prev;
-            }
-
-            /* Need to decrement the joystick count before we post the event */
-            --numjoysticks;
-
-            SDL_PrivateJoystickRemoved(item->device_instance);
-
-            SDL_free(item->name);
-            SDL_free(item);
+            RemoveJoylistItem(item, prev);
             return;
         }
         prev = item;
@@ -659,14 +627,16 @@ LINUX_JoystickDetect(void)
 static int
 LINUX_JoystickInit(void)
 {
+    const char *devices = SDL_GetHint("SDL_JOYSTICK_DEVICE");
+
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_UNSET) {
-        if (SDL_getenv("SDL_JOYSTICK_DISABLE_UDEV") != NULL) {
+        if (!SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", SDL_FALSE)) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
             enumeration_method = ENUMERATION_FALLBACK;
-        }
-        else if (access("/.flatpak-info", F_OK) == 0
+
+        } else if (access("/.flatpak-info", F_OK) == 0
                  || access("/run/host/container-manager", F_OK) == 0) {
             /* Explicitly check `/.flatpak-info` because, for old versions of
              * Flatpak, this was the only available way to tell if we were in
@@ -674,8 +644,8 @@ LINUX_JoystickInit(void)
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "Container detected, disabling udev integration");
             enumeration_method = ENUMERATION_FALLBACK;
-        }
-        else {
+
+        } else {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "Using udev for joystick device discovery");
             enumeration_method = ENUMERATION_LIBUDEV;
@@ -684,9 +654,9 @@ LINUX_JoystickInit(void)
 #endif
 
     /* First see if the user specified one or more joysticks to use */
-    if (SDL_getenv("SDL_JOYSTICK_DEVICE") != NULL) {
+    if (devices != NULL) {
         char *envcopy, *envpath, *delim;
-        envcopy = SDL_strdup(SDL_getenv("SDL_JOYSTICK_DEVICE"));
+        envcopy = SDL_strdup(devices);
         envpath = envcopy;
         while (envpath != NULL) {
             delim = SDL_strchr(envpath, ':');
@@ -705,6 +675,9 @@ LINUX_JoystickInit(void)
     /* Force immediate joystick detection if using fallback */
     last_joy_detect_time = 0;
     last_input_dir_mtime = 0;
+
+    /* Manually scan first, since we sort by device number and udev doesn't */
+    LINUX_JoystickDetect();
 
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
@@ -747,9 +720,6 @@ LINUX_JoystickInit(void)
             }
         }
 #endif /* HAVE_INOTIFY */
-
-        /* Report all devices currently present */
-        LINUX_JoystickDetect();
     }
 
     return 0;
@@ -993,7 +963,7 @@ PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
                                      &joystick->naxes,
                                      &joystick->nhats);
     } else {
-        const int fd = open(item->path, O_RDWR, 0);
+        const int fd = open(item->path, O_RDWR | O_CLOEXEC, 0);
         if (fd < 0) {
             return SDL_SetError("Unable to open %s", item->path);
         }
@@ -1405,9 +1375,7 @@ LINUX_JoystickQuit(void)
 
     for (item = SDL_joylist; item; item = next) {
         next = item->next;
-        SDL_free(item->path);
-        SDL_free(item->name);
-        SDL_free(item);
+        FreeJoylistItem(item);
     }
 
     SDL_joylist = SDL_joylist_tail = NULL;

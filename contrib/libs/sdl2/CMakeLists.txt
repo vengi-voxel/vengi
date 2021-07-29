@@ -58,12 +58,12 @@ include(cmake/sdlchecks.cmake)
 # set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 15)
-set(SDL_INTERFACE_AGE 1)
-set(SDL_BINARY_AGE 15)
+set(SDL_MICRO_VERSION 17)
+set(SDL_INTERFACE_AGE 0)
+set(SDL_BINARY_AGE 17)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 # the following should match the versions in Xcode project file:
-set(DYLIB_CURRENT_VERSION 15.1.0)
+set(DYLIB_CURRENT_VERSION 17.0.0)
 set(DYLIB_COMPATIBILITY_VERSION 1.0.0)
 
 # Calculate a libtool-like version number
@@ -214,7 +214,7 @@ if(APPLE OR ARCH_64)
     set(OPT_DEF_SSEMATH ON)
   endif()
 endif()
-if(UNIX OR MINGW OR MSYS OR USE_CLANG OR VITA)
+if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA)
   set(OPT_DEF_LIBC ON)
 endif()
 
@@ -309,13 +309,11 @@ if(EMSCRIPTEN)
   set(SDL_ATOMIC_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
   set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
-  set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
 endif()
 
 if(VITA)
   set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
-  set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
 endif()
 
 # When defined, respect CMake's BUILD_SHARED_LIBS setting:
@@ -371,7 +369,6 @@ set_option(VIDEO_OPENGL        "Include OpenGL support" ON)
 set_option(VIDEO_OPENGLES      "Include OpenGL ES support" ON)
 set_option(PTHREADS            "Use POSIX threads for multi-threading" ${SDL_PTHREADS_ENABLED_BY_DEFAULT})
 dep_option(PTHREADS_SEM        "Use pthread semaphores" ON "PTHREADS" OFF)
-set_option(SDL_DLOPEN          "Use dlopen for shared object loading" ${SDL_DLOPEN_ENABLED_BY_DEFAULT})
 dep_option(OSS                 "Support the OSS audio API" ON "UNIX_SYS OR RISCOS" OFF)
 set_option(ALSA                "Support the ALSA audio API" ${UNIX_SYS})
 dep_option(ALSA_SHARED         "Dynamically load ALSA audio support" ON "ALSA" OFF)
@@ -398,6 +395,8 @@ set_option(CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" O
 set_option(VIDEO_X11           "Use X11 video driver" ${UNIX_SYS})
 set_option(VIDEO_WAYLAND       "Use Wayland video driver" ${UNIX_SYS})
 dep_option(WAYLAND_SHARED      "Dynamically load Wayland support" ON "VIDEO_WAYLAND" OFF)
+dep_option(WAYLAND_LIBDECOR    "Use client-side window decorations on Wayland" ON "VIDEO_WAYLAND" ON)
+dep_option(LIBDECOR_SHARED     "Dynamically load libdecor support" ON "WAYLAND_LIBDECOR" OFF)
 dep_option(VIDEO_WAYLAND_QT_TOUCH  "QtWayland server support for Wayland video driver" ON "VIDEO_WAYLAND" OFF)
 set_option(VIDEO_RPI           "Use Raspberry Pi video driver" ${UNIX_SYS})
 dep_option(X11_SHARED          "Dynamically load X11 support" ON "VIDEO_X11" OFF)
@@ -761,6 +760,7 @@ if(ASSEMBLY)
     set(HAVE_SSE TRUE)
     set(HAVE_SSE2 TRUE)
     set(HAVE_SSE3 TRUE)
+    check_include_file("immintrin.h" HAVE_IMMINTRIN_H)
     set(SDL_ASSEMBLY_ROUTINES 1)
   endif()
 endif()
@@ -907,11 +907,6 @@ if(SDL_HAPTIC)
 endif()
 
 
-# TODO: in configure.ac, the test for LOADSO and SDL_DLOPEN is a bit weird:
-# if LOADSO is not wanted, SDL_LOADSO_DISABLED is set
-# If however on Unix or APPLE dlopen() is detected via CheckDLOPEN(),
-# SDL_LOADSO_DISABLED will not be set, regardless of the LOADSO settings
-
 # General SDL subsystem options, valid for all platforms
 if(SDL_AUDIO)
   # CheckDummyAudio/CheckDiskAudio - valid for all platforms
@@ -929,10 +924,15 @@ if(SDL_AUDIO)
   endif()
 endif()
 
-if(SDL_DLOPEN)
+if(UNIX OR APPLE)
   # Relevant for Unix/Darwin only
-  if(UNIX OR APPLE)
-    CheckDLOPEN()
+  set(DYNAPI_NEEDS_DLOPEN 1)
+  CheckDLOPEN()
+  if(SDL_LOADSO AND HAVE_DLOPEN)
+    set(SDL_LOADSO_DLOPEN 1)
+    file(GLOB DLOPEN_SOURCES ${SDL2_SOURCE_DIR}/src/loadso/dlopen/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${DLOPEN_SOURCES})
+    set(HAVE_SDL_LOADSO TRUE)
   endif()
 endif()
 
@@ -994,7 +994,7 @@ if(ANDROID)
     find_library(ANDROID_OPENSLES_LIBRARY OpenSLES)
     list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_OPENSLES_LIBRARY})
 
-    set(SDL_AUDIO_DRIVER_AAUDIO 0)
+    set(SDL_AUDIO_DRIVER_AAUDIO 1)
     file(GLOB AAUDIO_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/aaudio/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${AAUDIO_AUDIO_SOURCES})
 
@@ -1158,7 +1158,7 @@ elseif(EMSCRIPTEN)
 
   CheckPTHREAD()
 
-elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
+elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
   if(SDL_AUDIO)
     if(SYSV5 OR SOLARIS OR HPUX)
         set(SDL_AUDIO_DRIVER_SUNAUDIO 1)
@@ -2013,30 +2013,46 @@ elseif(APPLE)
   CheckPTHREAD()
 
 elseif(HAIKU)
+  if(SDL_AUDIO)
+    set(SDL_AUDIO_DRIVER_HAIKU 1)
+    file(GLOB HAIKU_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/haiku/*.cc)
+    set(SOURCE_FILES ${SOURCE_FILES} ${HAIKU_AUDIO_SOURCES})
+    set(HAVE_SDL_AUDIO TRUE)
+  endif()
+
+  if(SDL_JOYSTICK)
+    set(SDL_JOYSTICK_HAIKU 1)
+    file(GLOB HAIKU_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/haiku/*.cc)
+    set(SOURCE_FILES ${SOURCE_FILES} ${HAIKU_JOYSTICK_SOURCES})
+    set(HAVE_SDL_JOYSTICK TRUE)
+  endif()
+
   file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/haiku/*.cc)
   set(SOURCE_FILES ${SOURCE_FILES} ${MISC_SOURCES})
   set(HAVE_SDL_MISC TRUE)
 
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_HAIKU 1)
-    file(GLOB HAIKUVIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/haiku/*.c)
+    file(GLOB HAIKUVIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/haiku/*.cc)
     set(SOURCE_FILES ${SOURCE_FILES} ${HAIKUVIDEO_SOURCES})
     set(HAVE_SDL_VIDEO TRUE)
 
     if(VIDEO_OPENGL)
       # TODO: Use FIND_PACKAGE(OpenGL) instead
       set(SDL_VIDEO_OPENGL 1)
-      set(SDL_VIDEO_OPENGL_BGL 1)
+      set(SDL_VIDEO_OPENGL_HAIKU 1)
       set(SDL_VIDEO_RENDER_OGL 1)
       list(APPEND EXTRA_LIBS GL)
       set(HAVE_VIDEO_OPENGL TRUE)
     endif()
   endif()
 
-  set(SDL_FILESYSTEM_HAIKU 1)
-  file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/haiku/*.cc)
-  set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
-  set(HAVE_SDL_FILESYSTEM TRUE)
+  if(SDL_FILESYSTEM)
+    set(SDL_FILESYSTEM_HAIKU 1)
+    file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/haiku/*.cc)
+    set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
+    set(HAVE_SDL_FILESYSTEM TRUE)
+  endif()
 
   if(SDL_TIMERS)
     set(SDL_TIMER_HAIKU 1)
@@ -2045,13 +2061,24 @@ elseif(HAIKU)
     set(HAVE_SDL_TIMERS TRUE)
   endif()
 
+  if(SDL_POWER)
+    set(SDL_POWER_HAIKU 1)
+    file(GLOB HAIKU_POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/haiku/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${HAIKU_POWER_SOURCES})
+    set(HAVE_SDL_POWER TRUE)
+  endif()
+
   if(SDL_LOCALE)
     file(GLOB LOCALE_SOURCES ${SDL2_SOURCE_DIR}/src/locale/haiku/*.cc)
     set(SOURCE_FILES ${SOURCE_FILES} ${LOCALE_SOURCES})
     set(HAVE_SDL_LOCALE TRUE)
   endif()
 
+  file(GLOB MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/haiku/*.cc)
+  set(SOURCE_FILES ${SOURCE_FILES} ${MAIN_SOURCES})
+
   CheckPTHREAD()
+  list(APPEND EXTRA_LIBS root be media game device textencoding)
 
 elseif(RISCOS)
   file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/riscos/*.c)
@@ -2204,6 +2231,11 @@ elseif(VITA)
 
 #  CheckPTHREAD()
 
+endif()
+
+if(VIDEO_VULKAN AND NOT SDL_LOADSO)
+  message(STATUS "Vulkan support is available, but disabled because there's no loadso.")
+  set(VIDEO_VULKAN OFF)
 endif()
 
 if(VIDEO_VULKAN)
@@ -2556,7 +2588,6 @@ if(SDL_SHARED)
   endif()
   if(IOS OR TVOS)
     set_property(TARGET SDL2 APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
-    target_compile_definitions(SDL2 PRIVATE IOS_DYLIB=1)
   endif()
 endif()
 

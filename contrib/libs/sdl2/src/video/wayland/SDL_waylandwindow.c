@@ -219,9 +219,15 @@ handle_configure_xdg_toplevel(void *data,
 
             /* Foolishly do what the compositor says here. If it's wrong, don't
              * blame us, we were explicitly instructed to do this.
+             *
+             * UPDATE: Nope, we can't actually do that, the compositor may give
+             * us a completely stateless, sizeless configure, with which we have
+             * to enforce our own state anyway.
              */
-            window->w = width;
-            window->h = height;
+            if (width != 0 && height != 0) {
+                window->w = width;
+                window->h = height;
+            }
 
             /* This part is good though. */
             if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
@@ -347,6 +353,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
             /* We might need to re-enter fullscreen after being restored from minimized */
             SetFullscreen(window, driverdata->output);
             fullscreen = SDL_TRUE;
+            floating = SDL_FALSE;
         }
 
         /* Always send a maximized/restore event; if the event is redundant it will

@@ -213,6 +213,16 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                         (int) cmd->data.draw.b, (int) cmd->data.draw.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.texture);
                 break;
+
+            case SDL_RENDERCMD_GEOMETRY:
+                SDL_Log(" %u. geometry (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, tex=%p)", i++,
+                        (unsigned int) cmd->data.draw.first,
+                        (unsigned int) cmd->data.draw.count,
+                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
+                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.blend, cmd->data.draw.texture);
+                break;
+
         }
         cmd = cmd->next;
     }
@@ -562,6 +572,35 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
     return retval;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
+static int
+QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
+        const float *xy, int xy_stride,
+        const int *color, int color_stride,
+        const float *uv, int uv_stride,
+        int num_vertices,
+        const void *indices, int num_indices, int size_indices,
+        float scale_x, float scale_y)
+{
+    SDL_RenderCommand *cmd;
+    int retval = -1;
+    if (texture) {
+        cmd = PrepQueueCmdDrawTexture(renderer, texture, SDL_RENDERCMD_GEOMETRY);
+    } else {
+        cmd = PrepQueueCmdDrawSolid(renderer, SDL_RENDERCMD_GEOMETRY);
+    }
+    if (cmd != NULL) {
+        retval = renderer->QueueGeometry(renderer, cmd, texture,
+                xy, xy_stride, color, color_stride, uv, uv_stride,
+                num_vertices, indices, num_indices, size_indices,
+                scale_x, scale_y);
+        if (retval < 0) {
+            cmd->command = SDL_RENDERCMD_NO_OP;
+        }
+    }
+    return retval;
+}
+#endif
 
 static int UpdateLogicalSize(SDL_Renderer *renderer);
 
@@ -833,7 +872,8 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
         goto error;
     }
 
-    if (SDL_GetHint(SDL_HINT_RENDER_VSYNC)) {
+    hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
+    if (hint && *hint) {
         if (SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE)) {
             flags |= SDL_RENDERER_PRESENTVSYNC;
         } else {
@@ -1483,6 +1523,23 @@ SDL_GetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode *scaleMode)
         *scaleMode = texture->scaleMode;
     }
     return 0;
+}
+
+int
+SDL_SetTextureUserData(SDL_Texture * texture, void *userdata)
+{
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    texture->userdata = userdata;
+    return 0;
+}
+
+void *
+SDL_GetTextureUserData(SDL_Texture * texture)
+{
+    CHECK_TEXTURE_MAGIC(texture, NULL);
+
+    return texture->userdata;
 }
 
 #if SDL_HAVE_YUV
@@ -3284,6 +3341,488 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip);
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
+
+
+#define SDL_OFFSETOF(_TYPE,_MEMBER)  ((intptr_t)&(((_TYPE*)0)->_MEMBER))
+int
+SDL_RenderGeometry(SDL_Renderer *renderer,
+                               SDL_Texture *texture,
+                               const SDL_Vertex *vertices, int num_vertices,
+                               const int *indices, int num_indices)
+{
+    const float *xy = (const float *)((const Uint8 *)vertices + SDL_OFFSETOF(SDL_Vertex, position));
+    int xy_stride = sizeof (SDL_Vertex);
+    const int *color = (const int *) ((const Uint8 *)vertices + SDL_OFFSETOF(SDL_Vertex, color));
+    int color_stride = sizeof (SDL_Vertex);
+    const float *uv = (const float *)((const Uint8 *)vertices + SDL_OFFSETOF(SDL_Vertex, tex_coord));
+    int uv_stride = sizeof (SDL_Vertex);
+    int size_indices = 4;
+
+    return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);
+}
+
+#if SDL_HAVE_RENDER_GEOMETRY
+static int
+remap_one_indice(
+        int prev,
+        int k,
+        SDL_Texture *texture,
+        const float *xy, int xy_stride,
+        const int *color, int color_stride,
+        const float *uv, int uv_stride)
+{
+    const float *xy0_, *xy1_, *uv0_, *uv1_;
+    int col0_, col1_;
+    xy0_ = (const float *)((const char*)xy + prev * xy_stride);
+    xy1_ = (const float *)((const char*)xy + k * xy_stride);
+    if (xy0_[0] != xy1_[0]) {
+        return k;
+    }
+    if (xy0_[1] != xy1_[1]) {
+        return k;
+    }
+    if (texture) {
+        uv0_ = (const float *)((const char*)uv + prev * uv_stride);
+        uv1_ = (const float *)((const char*)uv + k * uv_stride);
+        if (uv0_[0] != uv1_[0]) {
+            return k;
+        }
+        if (uv0_[1] != uv1_[1]) {
+            return k;
+        }
+    }
+    col0_ = *(const int *)((const char*)color + prev * color_stride);
+    col1_ = *(const int *)((const char*)color + k * color_stride);
+
+    if (col0_ != col1_) {
+        return k;
+    }
+
+    return prev;
+}
+
+static int
+remap_indices(
+        int prev[3],
+        int k,
+        SDL_Texture *texture,
+        const float *xy, int xy_stride,
+        const int *color, int color_stride,
+        const float *uv, int uv_stride)
+{
+    int i;
+    if (prev[0] == -1) {
+        return k;
+    }
+
+    for (i = 0; i < 3; i++) {
+        int new_k = remap_one_indice(prev[i], k, texture, xy, xy_stride, color, color_stride, uv, uv_stride);
+        if (new_k != k) {
+            return new_k;
+        }
+    }
+    return k;
+}
+
+#define DEBUG_SW_RENDER_GEOMETRY 0
+/* For the software renderer, try to reinterpret triangles as SDL_Rect */
+static int SDLCALL
+SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
+                         SDL_Texture *texture,
+                         const float *xy, int xy_stride,
+                         const int *color, int color_stride,
+                         const float *uv, int uv_stride,
+                         int num_vertices,
+                         const void *indices, int num_indices, int size_indices)
+{
+    int i;
+    int retval = 0;
+    int count = indices ? num_indices : num_vertices;
+    int prev[3]; /* Previous triangle vertex indices */
+    int texw = 0, texh = 0;
+    SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
+    Uint8 r = 0, g = 0, b = 0, a = 0;
+
+    /* Save */
+    SDL_GetRenderDrawBlendMode(renderer, &blendMode);
+    SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+
+    if (texture) {
+        SDL_QueryTexture(texture, NULL, NULL, &texw, &texh);
+    }
+
+    prev[0] = -1; prev[1] = -1; prev[2] = -1;
+    size_indices = indices ? size_indices : 0;
+
+    for (i = 0; i < count; i += 3) {
+        int k0, k1, k2; /* Current triangle indices */
+        int is_quad = 1;
+#if DEBUG_SW_RENDER_GEOMETRY
+        int is_uniform = 1;
+        int is_rectangle = 1;
+#endif
+        int A = -1;  /* Top left vertex */
+        int B = -1;  /* Bottom right vertex */
+        int C = -1;  /* Third vertex of current triangle */
+        int C2 = -1; /* Last, vertex of previous triangle */
+
+        if (size_indices == 4) {
+            k0 = ((const Uint32 *)indices)[i];
+            k1 = ((const Uint32 *)indices)[i + 1];
+            k2 = ((const Uint32 *)indices)[i + 2];
+        } else if (size_indices == 2) {
+            k0 = ((const Uint16 *)indices)[i];
+            k1 = ((const Uint16 *)indices)[i + 1];
+            k2 = ((const Uint16 *)indices)[i + 2];
+        } else if (size_indices == 1) {
+            k0 = ((const Uint8 *)indices)[i];
+            k1 = ((const Uint8 *)indices)[i + 1];
+            k2 = ((const Uint8 *)indices)[i + 2];
+        } else {
+            /* Vertices were not provided by indices. Maybe some are duplicated.
+             * We try to indentificate the duplicates by comparing with the previous three vertices */
+            k0 = remap_indices(prev, i, texture, xy, xy_stride, color, color_stride, uv, uv_stride);
+            k1 = remap_indices(prev, i + 1, texture, xy, xy_stride, color, color_stride, uv, uv_stride);
+            k2 = remap_indices(prev, i + 2, texture, xy, xy_stride, color, color_stride, uv, uv_stride);
+        }
+
+        if (prev[0] == -1) {
+            prev[0] = k0;
+            prev[1] = k1;
+            prev[2] = k2;
+            continue;
+        }
+
+        /* Two triangles forming a quadialateral,
+         * prev and current triangles must have exactly 2 common vertices */
+        {
+            int cnt = 0, j = 3;
+            while (j--) {
+                int p = prev[j];
+                if (p == k0 || p == k1 || p == k2) {
+                    cnt++;
+                }
+            }
+            is_quad = (cnt == 2);
+        }
+
+        /* Identify vertices */
+        if (is_quad) {
+            const float *xy0_, *xy1_, *xy2_;
+            float x0, x1, x2;
+            float y0, y1, y2;
+            xy0_ = (const float *)((const char*)xy + k0 * xy_stride);
+            xy1_ = (const float *)((const char*)xy + k1 * xy_stride);
+            xy2_ = (const float *)((const char*)xy + k2 * xy_stride);
+            x0 = xy0_[0]; y0 = xy0_[1];
+            x1 = xy1_[0]; y1 = xy1_[1];
+            x2 = xy2_[0]; y2 = xy2_[1];
+
+            /* Find top-left */
+            if (x0 <= x1 && y0 <= y1) {
+                if (x0 <= x2 && y0 <= y2) {
+                    A = k0;
+                } else {
+                    A = k2;
+                }
+            } else {
+                if (x1 <= x2 && y1 <= y2) {
+                    A = k1;
+                } else {
+                    A = k2;
+                }
+            }
+
+            /* Find bottom-right */
+            if (x0 >= x1 && y0 >= y1) {
+                if (x0 >= x2 && y0 >= y2) {
+                    B = k0;
+                } else {
+                    B = k2;
+                }
+            } else {
+                if (x1 >= x2 && y1 >= y2) {
+                    B = k1;
+                } else {
+                    B = k2;
+                }
+            }
+
+            /* Find C */
+            if (k0 != A && k0 != B) {
+                C = k0;
+            } else if (k1 != A && k1 != B) {
+                C = k1;
+            } else {
+                C = k2;
+            }
+
+            /* Find C2 */
+            if (prev[0] != A && prev[0] != B) {
+                C2 = prev[0];
+            } else if (prev[1] != A && prev[1] != B) {
+                C2 = prev[1];
+            } else {
+                C2 = prev[2];
+            }
+
+            xy0_ = (const float *)((const char*)xy + A * xy_stride);
+            xy1_ = (const float *)((const char*)xy + B * xy_stride);
+            xy2_ = (const float *)((const char*)xy + C * xy_stride);
+            x0 = xy0_[0]; y0 = xy0_[1];
+            x1 = xy1_[0]; y1 = xy1_[1];
+            x2 = xy2_[0]; y2 = xy2_[1];
+
+            /* Check if triangle A B C is rectangle */
+            if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)){
+                /* ok */
+            } else {
+                is_quad = 0;
+#if DEBUG_SW_RENDER_GEOMETRY
+                is_rectangle = 0;
+#endif
+            }
+
+            xy2_ = (const float *)((const char*)xy + C2 * xy_stride);
+            x2 = xy2_[0]; y2 = xy2_[1];
+
+            /* Check if triangle A B C2 is rectangle */
+            if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)){
+                /* ok */
+            } else {
+                is_quad = 0;
+#if DEBUG_SW_RENDER_GEOMETRY
+                is_rectangle = 0;
+#endif
+            }
+        }
+
+        /* Check if uniformly colored */
+        if (is_quad) {
+            const int col0_ = *(const int *)((const char*)color + A * color_stride);
+            const int col1_ = *(const int *)((const char*)color + B * color_stride);
+            const int col2_ = *(const int *)((const char*)color + C * color_stride);
+            const int col3_ = *(const int *)((const char*)color + C2 * color_stride);
+            if (col0_ == col1_ && col0_ == col2_ && col0_ == col3_) {
+                /* ok */
+            } else {
+                is_quad = 0;
+#if DEBUG_SW_RENDER_GEOMETRY
+                is_uniform = 0;
+#endif
+            }
+        }
+
+        /* Start rendering rect */
+        if (is_quad) {
+            SDL_Rect s;
+            SDL_FRect d;
+            const float *xy0_, *xy1_, *uv0_, *uv1_;
+            SDL_Color col0_ = *(const SDL_Color *)((const char*)color + k0 * color_stride);
+
+            xy0_ = (const float *)((const char*)xy + A * xy_stride);
+            xy1_ = (const float *)((const char*)xy + B * xy_stride);
+
+            if (texture) {
+                uv0_ = (const float *)((const char*)uv + A * uv_stride);
+                uv1_ = (const float *)((const char*)uv + B * uv_stride);
+                s.x = (int) (uv0_[0] * texw);
+                s.y = (int) (uv0_[1] * texh);
+                s.w = (int) (uv1_[0] * texw - s.x);
+                s.h = (int) (uv1_[1] * texh - s.y);
+            }
+
+            d.x = xy0_[0];
+            d.y = xy0_[1];
+            d.w = xy1_[0] - d.x;
+            d.h = xy1_[1] - d.y;
+
+            /* Rect + texture */
+            if (texture && s.w != 0 && s.h != 0) {
+                SDL_SetTextureAlphaMod(texture, col0_.a);
+                SDL_SetTextureColorMod(texture, col0_.r, col0_.g, col0_.b);
+                SDL_RenderCopyF(renderer, texture, &s, &d);
+#if DEBUG_SW_RENDER_GEOMETRY
+                SDL_Log("Rect-COPY: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                        (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
+#endif
+            } else if (d.w != 0.0f && d.h != 0.0f) { /* Rect, no texture */
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderDrawColor(renderer, col0_.r, col0_.g, col0_.b, col0_.a);
+                SDL_RenderFillRectF(renderer, &d);
+#if DEBUG_SW_RENDER_GEOMETRY
+                SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                        (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
+            } else {
+                SDL_Log("Rect-DISMISS: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                        (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
+#endif
+            }
+
+            prev[0] = -1;
+        } else {
+            /* Render triangles */
+            if (prev[0] != -1) {
+#if DEBUG_SW_RENDER_GEOMETRY
+                SDL_Log("Triangle %d %d %d - is_uniform:%d is_rectangle:%d", prev[0], prev[1], prev[2], is_uniform, is_rectangle);
+#endif
+                retval = QueueCmdGeometry(renderer, texture,
+                                          xy, xy_stride, color, color_stride, uv, uv_stride,
+                                          num_vertices, prev, 3, 4, renderer->scale.x, renderer->scale.y);
+                if (retval < 0) {
+                    goto end;
+                } else {
+                    FlushRenderCommandsIfNotBatching(renderer);
+                }
+            }
+
+            prev[0] = k0;
+            prev[1] = k1;
+            prev[2] = k2;
+        }
+    } /* End for(), next triangle */
+
+    if (prev[0] != -1) {
+        /* flush the last triangle */
+#if DEBUG_SW_RENDER_GEOMETRY
+        SDL_Log("Last triangle %d %d %d", prev[0], prev[1], prev[2]);
+#endif
+        retval = QueueCmdGeometry(renderer, texture,
+                                  xy, xy_stride, color, color_stride, uv, uv_stride,
+                                  num_vertices, prev, 3, 4, renderer->scale.x, renderer->scale.y);
+        if (retval < 0) {
+            goto end;
+        } else {
+            FlushRenderCommandsIfNotBatching(renderer);
+        }
+    }
+
+end:
+    /* Restore */
+    SDL_SetRenderDrawBlendMode(renderer, blendMode);
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+
+    return retval;
+}
+#endif
+
+int
+SDL_RenderGeometryRaw(SDL_Renderer *renderer,
+                                  SDL_Texture *texture,
+                                  const float *xy, int xy_stride,
+                                  const int *color, int color_stride,
+                                  const float *uv, int uv_stride,
+                                  int num_vertices,
+                                  const void *indices, int num_indices, int size_indices)
+{
+#if SDL_HAVE_RENDER_GEOMETRY
+    int i;
+    int retval = 0;
+    int count = indices ? num_indices : num_vertices;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (!renderer->QueueGeometry) {
+        return SDL_Unsupported();
+    }
+
+    if (texture) {
+        CHECK_TEXTURE_MAGIC(texture, -1);
+
+        if (renderer != texture->renderer) {
+            return SDL_SetError("Texture was not created with this renderer");
+        }
+    }
+
+    if (!xy) {
+        return SDL_InvalidParamError("xy");
+    }
+
+    if (!color) {
+        return SDL_InvalidParamError("color");
+    }
+
+    if (texture && !uv) {
+        return SDL_InvalidParamError("uv");
+    }
+
+    if (count % 3 != 0) {
+        return SDL_InvalidParamError(indices ? "num_indices" : "num_vertices");
+    }
+
+    if (indices) {
+        if (size_indices != 1 && size_indices != 2 && size_indices != 4) {
+            return SDL_InvalidParamError("size_indices");
+        }
+    } else {
+        size_indices = 0;
+    }
+
+#if DONT_DRAW_WHILE_HIDDEN
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+#endif
+
+    if (num_vertices < 3) {
+        return 0;
+    }
+
+    if (texture && texture->native) {
+        texture = texture->native;
+    }
+
+    if (texture) {
+        for (i = 0; i < num_vertices; ++i) {
+            const float *uv_ = (const float *)((const char*)uv + i * uv_stride);
+            float u = uv_[0];
+            float v = uv_[1];
+            if (u < 0.0f || v < 0.0f || u > 1.0f || v > 1.0f) {
+                return SDL_SetError("Values of 'uv' out of bounds %f %f at %d/%d", u, v, i, num_vertices);
+            }
+        }
+    }
+
+    if (indices) {
+        for (i = 0; i < num_indices; ++i) {
+            int j;
+            if (size_indices == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indices == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else {
+                j = ((const Uint8 *)indices)[i];
+            }
+            if (j < 0 || j >= num_vertices) {
+                return SDL_SetError("Values of 'indices' out of bounds");
+            }
+        }
+    }
+
+    if (texture) {
+        texture->last_command_generation = renderer->render_command_generation;
+    }
+
+    /* For the software renderer, try to reinterpret triangles as SDL_Rect */
+    if (renderer->info.flags & SDL_RENDERER_SOFTWARE) {
+        return SDL_SW_RenderGeometryRaw(renderer, texture,
+                xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
+                indices, num_indices, size_indices);
+    }
+
+    retval = QueueCmdGeometry(renderer, texture,
+            xy, xy_stride, color, color_stride, uv, uv_stride,
+            num_vertices,
+            indices, num_indices, size_indices,
+            renderer->scale.x, renderer->scale.y);
+
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+#else
+    return SDL_SetError("SDL not built with RenderGeometry support");
+#endif
+}
+
 
 int
 SDL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,

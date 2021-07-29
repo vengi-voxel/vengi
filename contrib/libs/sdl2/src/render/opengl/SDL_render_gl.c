@@ -21,7 +21,6 @@
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
-
 #include "SDL_hints.h"
 #include "SDL_opengl.h"
 #include "../SDL_sysrender.h"
@@ -1052,6 +1051,66 @@ GL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     return 0;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
+static int
+GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        int num_vertices, const void *indices, int num_indices, int size_indices,
+        float scale_x, float scale_y)
+{
+    GL_TextureData *texturedata = NULL;
+    int i;
+    int count = indices ? num_indices : num_vertices;
+    GLfloat *verts;
+    int sz = 2 + 4 + (texture ? 2 : 0);
+
+    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    if (texture) {
+        texturedata = (GL_TextureData *) texture->driverdata;
+    }
+
+    cmd->data.draw.count = count;
+    size_indices = indices ? size_indices : 0;
+
+    for (i = 0; i < count; i++) {
+        int j;
+        float *xy_;
+        SDL_Color col_;
+        if (size_indices == 4) {
+            j = ((const Uint32 *)indices)[i];
+        } else if (size_indices == 2) {
+            j = ((const Uint16 *)indices)[i];
+        } else if (size_indices == 1) {
+            j = ((const Uint8 *)indices)[i];
+        } else {
+            j = i;
+        }
+
+        xy_ = (float *)((char*)xy + j * xy_stride);
+        col_ = *(SDL_Color *)((char*)color + j * color_stride);
+
+        *(verts++) = xy_[0] * scale_x;
+        *(verts++) = xy_[1] * scale_y;
+
+        *(verts++) = col_.r * inv255f;
+        *(verts++) = col_.g * inv255f;
+        *(verts++) = col_.b * inv255f;
+        *(verts++) = col_.a * inv255f;
+
+        if (texture) {
+            float *uv_ = (float *)((char*)uv + j * uv_stride);
+            *(verts++) = uv_[0] * texturedata->texw;
+            *(verts++) = uv_[1] * texturedata->texh;
+        }
+    }
+    return 0;
+}
+#endif
+
 static void
 SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
 {
@@ -1181,18 +1240,26 @@ SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
         const GLenum textype = data->textype;
 #if SDL_HAVE_YUV
         if (texturedata->yuv) {
-            data->glActiveTextureARB(GL_TEXTURE2_ARB);
+            if (data->GL_ARB_multitexture_supported) {
+                data->glActiveTextureARB(GL_TEXTURE2_ARB);
+            }
             data->glBindTexture(textype, texturedata->vtexture);
 
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+            if (data->GL_ARB_multitexture_supported) {
+                data->glActiveTextureARB(GL_TEXTURE1_ARB);
+            }
             data->glBindTexture(textype, texturedata->utexture);
         }
         if (texturedata->nv12) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+            if (data->GL_ARB_multitexture_supported) {
+                data->glActiveTextureARB(GL_TEXTURE1_ARB);
+            }
             data->glBindTexture(textype, texturedata->utexture);
         }
 #endif
-        data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
         data->glBindTexture(textype, texturedata->texture);
 
         data->drawstate.texture = texture;
@@ -1373,6 +1440,50 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
+            case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
+                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                SDL_Texture *texture = cmd->data.draw.texture;
+                const size_t count = cmd->data.draw.count;
+
+                if (texture) {
+                    SetCopyState(data, cmd);
+                } else {
+                    SetDrawState(data, cmd, SHADER_SOLID);
+                }
+
+                {
+                    int j;
+                    float currentColor[4];
+                    data->glGetFloatv(GL_CURRENT_COLOR, currentColor);
+                    data->glBegin(GL_TRIANGLES);
+                    for (j = 0; j < count; ++j)
+                    {
+                        const GLfloat x = *(verts++);
+                        const GLfloat y = *(verts++);
+
+                        const GLfloat r = *(verts++);
+                        const GLfloat g = *(verts++);
+                        const GLfloat b = *(verts++);
+                        const GLfloat a = *(verts++);
+
+                        data->glColor4f(r, g, b, a);
+
+                        if (texture) {
+                            GLfloat u = *(verts++);
+                            GLfloat v = *(verts++);
+                            data->glTexCoord2f(u,v);
+                        }
+                        data->glVertex2f(x, y);
+                    }
+                    data->glEnd();
+                    data->glColor4f(currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
+                }
+#endif
+                break;
+           }
+
+
             case SDL_RENDERCMD_NO_OP:
                 break;
         }
@@ -1544,13 +1655,19 @@ GL_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, floa
     data->glEnable(textype);
 #if SDL_HAVE_YUV
     if (texturedata->yuv) {
-        data->glActiveTextureARB(GL_TEXTURE2_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE2_ARB);
+        }
         data->glBindTexture(textype, texturedata->vtexture);
 
-        data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        }
         data->glBindTexture(textype, texturedata->utexture);
 
-        data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
     }
 #endif
     data->glBindTexture(textype, texturedata->texture);
@@ -1575,13 +1692,19 @@ GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
 
 #if SDL_HAVE_YUV
     if (texturedata->yuv) {
-        data->glActiveTextureARB(GL_TEXTURE2_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE2_ARB);
+        }
         data->glDisable(textype);
 
-        data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        }
         data->glDisable(textype);
 
-        data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
     }
 #endif
 
@@ -1654,6 +1777,9 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = GL_QueueFillRects;
     renderer->QueueCopy = GL_QueueCopy;
     renderer->QueueCopyEx = GL_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
+    renderer->QueueGeometry = GL_QueueGeometry;
+#endif
     renderer->RunCommandQueue = GL_RunCommandQueue;
     renderer->RenderReadPixels = GL_RenderReadPixels;
     renderer->RenderPresent = GL_RenderPresent;

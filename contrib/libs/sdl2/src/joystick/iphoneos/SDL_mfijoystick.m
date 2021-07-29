@@ -298,10 +298,10 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
                 subtype = 1;
             } else if (device->has_xbox_share_button) {
                 /* Assume Xbox Series X Controller unless/until GCController flows VID/PID */
-                product = USB_PRODUCT_XBOX_SERIES_X_BLUETOOTH;
+                product = USB_PRODUCT_XBOX_SERIES_X_BLE;
                 subtype = 1;
             } else {
-                /* Assume Xbox One S BLE Controller unless/until GCController flows VID/PID */
+                /* Assume Xbox One S Bluetooth Controller unless/until GCController flows VID/PID */
                 product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
                 subtype = 0;
             }
@@ -783,9 +783,9 @@ IOS_AccelerometerUpdate(SDL_Joystick *joystick)
      */
 
     /* clamp the data */
-    accel.x = SDL_min(SDL_max(accel.x, -maxgforce), maxgforce);
-    accel.y = SDL_min(SDL_max(accel.y, -maxgforce), maxgforce);
-    accel.z = SDL_min(SDL_max(accel.z, -maxgforce), maxgforce);
+    accel.x = SDL_clamp(accel.x, -maxgforce, maxgforce);
+    accel.y = SDL_clamp(accel.y, -maxgforce, maxgforce);
+    accel.z = SDL_clamp(accel.z, -maxgforce, maxgforce);
 
     /* pass in data mapped to range of SInt16 */
     SDL_PrivateJoystickAxis(joystick, 0,  (accel.x / maxgforce) * maxsint16);
@@ -1491,7 +1491,32 @@ IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (is_macos11()) {
-        return [GCController supportsHIDDevice:device] ? SDL_TRUE : SDL_FALSE;
+        if ([GCController supportsHIDDevice:device]) {
+            return SDL_TRUE;
+        }
+
+        /* GCController supportsHIDDevice may return false if the device hasn't been
+         * seen by the framework yet, so check a few controllers we know are supported.
+         */
+        {
+            Sint32 vendor = 0;
+            Sint32 product = 0;
+            CFTypeRef refCF = NULL;
+
+            refCF = IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey));
+            if (refCF) {
+                CFNumberGetValue(refCF, kCFNumberSInt32Type, &vendor);
+            }
+
+            refCF = IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey));
+            if (refCF) {
+                CFNumberGetValue(refCF, kCFNumberSInt32Type, &product);
+            }
+
+            if (vendor == USB_VENDOR_MICROSOFT && SDL_IsJoystickXboxSeriesX(vendor, product)) {
+                return SDL_TRUE;
+            }
+        }
     }
     return SDL_FALSE;
 }

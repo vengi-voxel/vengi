@@ -358,7 +358,9 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
             mouse->last_y = center_y;
             return 0;
         }
-        SDL_WarpMouseInWindow(window, center_x, center_y);
+        if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
+            SDL_WarpMouseInWindow(window, center_x, center_y);
+        }
     }
 
     if (relative) {
@@ -410,8 +412,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
         int x_max = 0, y_max = 0;
 
-        /* !!! FIXME: shouldn't this be (window) instead of (mouse->focus)? */
-        SDL_GetWindowSize(mouse->focus, &x_max, &y_max);
+        SDL_GetWindowSize(window, &x_max, &y_max);
         --x_max;
         --y_max;
 
@@ -818,6 +819,11 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
     mouse->scale_accum_x = 0.0f;
     mouse->scale_accum_y = 0.0f;
 
+    if (enabled) {
+        /* Update cursor visibility before we potentially warp the mouse */
+        SDL_SetCursor(NULL);
+    }
+
     if (enabled && focusWindow) {
         SDL_SetMouseFocus(focusWindow);
 
@@ -825,20 +831,22 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
             SDL_WarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2);
     }
 
-    if (mouse->focus) {
-        SDL_UpdateWindowGrab(mouse->focus);
+    if (focusWindow) {
+        SDL_UpdateWindowGrab(focusWindow);
 
         /* Put the cursor back to where the application expects it */
         if (!enabled) {
-            SDL_WarpMouseInWindow(mouse->focus, mouse->x, mouse->y);
+            SDL_WarpMouseInWindow(focusWindow, mouse->x, mouse->y);
         }
+    }
+
+    if (!enabled) {
+        /* Update cursor visibility after we restore the mouse position */
+        SDL_SetCursor(NULL);
     }
 
     /* Flush pending mouse motion - ideally we would pump events, but that's not always safe */
     SDL_FlushEvent(SDL_MOUSEMOTION);
-
-    /* Update cursor visibility */
-    SDL_SetCursor(NULL);
 
     return 0;
 }
