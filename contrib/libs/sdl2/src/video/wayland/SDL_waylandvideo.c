@@ -43,15 +43,18 @@
 #include <fcntl.h>
 #include <xkbcommon/xkbcommon.h>
 
-#include "SDL_waylanddyn.h"
 #include <wayland-util.h>
 
 #include "xdg-shell-client-protocol.h"
-#include "xdg-shell-unstable-v6-client-protocol.h"
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 #include "idle-inhibit-unstable-v1-client-protocol.h"
 #include "xdg-activation-v1-client-protocol.h"
+#include "text-input-unstable-v3-client-protocol.h"
+
+#ifdef HAVE_LIBDECOR_H
+#include <libdecor.h>
+#endif
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
@@ -122,6 +125,39 @@ get_classname()
 
     /* Finally use the default we've used forever */
     return SDL_strdup("SDL_App");
+}
+
+static const char *SDL_WAYLAND_surface_tag = "sdl-window";
+static const char *SDL_WAYLAND_output_tag = "sdl-output";
+
+void SDL_WAYLAND_register_surface(struct wl_surface *surface)
+{
+    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
+        wl_proxy_set_tag((struct wl_proxy *)surface, &SDL_WAYLAND_surface_tag);
+    }
+}
+
+void SDL_WAYLAND_register_output(struct wl_output *output)
+{
+    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
+        wl_proxy_set_tag((struct wl_proxy *)output, &SDL_WAYLAND_output_tag);
+    }
+}
+
+SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
+{
+    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
+        return wl_proxy_get_tag((struct wl_proxy *) surface) == &SDL_WAYLAND_surface_tag;
+    }
+    return SDL_TRUE; /* For older clients we have to assume this is us... */
+}
+
+SDL_bool SDL_WAYLAND_own_output(struct wl_output *output)
+{
+    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
+        return wl_proxy_get_tag((struct wl_proxy *) output) == &SDL_WAYLAND_output_tag;
+    }
+    return SDL_TRUE; /* For older clients we have to assume this is us... */
 }
 
 static void
@@ -217,6 +253,7 @@ Wayland_CreateDevice(int devindex)
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
     device->FlashWindow = Wayland_FlashWindow;
+    device->HasScreenKeyboardSupport = Wayland_HasScreenKeyboardSupport;
 
     device->SetClipboardText = Wayland_SetClipboardText;
     device->GetClipboardText = Wayland_GetClipboardText;
@@ -389,6 +426,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     data->scale_factor = 1.0;
 
     wl_output_add_listener(output, &output_listener, data);
+    SDL_WAYLAND_register_output(output);
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
@@ -410,18 +448,6 @@ static const struct qt_windowmanager_listener windowmanager_listener = {
 };
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-
-static void
-handle_ping_zxdg_shell(void *data, struct zxdg_shell_v6 *zxdg, uint32_t serial)
-{
-    zxdg_shell_v6_pong(zxdg, serial);
-}
-
-static const struct zxdg_shell_v6_listener shell_listener_zxdg = {
-    handle_ping_zxdg_shell
-};
-
-
 static void
 handle_ping_xdg_wm_base(void *data, struct xdg_wm_base *xdg, uint32_t serial)
 {
@@ -433,6 +459,21 @@ static const struct xdg_wm_base_listener shell_listener_xdg = {
 };
 
 
+#ifdef HAVE_LIBDECOR_H
+static void
+libdecor_error(struct libdecor *context,
+               enum libdecor_error error,
+               const char *message)
+{
+    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "libdecor error (%d): %s\n", error, message);
+}
+
+static struct libdecor_interface libdecor_interface = {
+    libdecor_error,
+};
+#endif
+
+
 static void
 display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
                       const char *interface, uint32_t version)
@@ -441,45 +482,42 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 
     /*printf("WAYLAND INTERFACE: %s\n", interface);*/
 
-    if (strcmp(interface, "wl_compositor") == 0) {
+    if (SDL_strcmp(interface, "wl_compositor") == 0) {
         d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(3, version));
-    } else if (strcmp(interface, "wl_output") == 0) {
+    } else if (SDL_strcmp(interface, "wl_output") == 0) {
         Wayland_add_display(d, id);
-    } else if (strcmp(interface, "wl_seat") == 0) {
+    } else if (SDL_strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id, version);
-    } else if (strcmp(interface, "xdg_wm_base") == 0) {
+    } else if (SDL_strcmp(interface, "xdg_wm_base") == 0) {
         d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, 1);
         xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
-    } else if (strcmp(interface, "zxdg_shell_v6") == 0) {
-        d->shell.zxdg = wl_registry_bind(d->registry, id, &zxdg_shell_v6_interface, 1);
-        zxdg_shell_v6_add_listener(d->shell.zxdg, &shell_listener_zxdg, NULL);
-    } else if (strcmp(interface, "wl_shell") == 0) {
-        d->shell.wl = wl_registry_bind(d->registry, id, &wl_shell_interface, 1);
-    } else if (strcmp(interface, "wl_shm") == 0) {
+    } else if (SDL_strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
         d->cursor_theme = WAYLAND_wl_cursor_theme_load(NULL, 32, d->shm);
-    } else if (strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
         Wayland_display_add_relative_pointer_manager(d, id);
-    } else if (strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
         Wayland_display_add_pointer_constraints(d, id);
-    } else if (strcmp(interface, "zwp_keyboard_shortcuts_inhibit_manager_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_keyboard_shortcuts_inhibit_manager_v1") == 0) {
         d->key_inhibitor_manager = wl_registry_bind(d->registry, id, &zwp_keyboard_shortcuts_inhibit_manager_v1_interface, 1);
-    } else if (strcmp(interface, "zwp_idle_inhibit_manager_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_idle_inhibit_manager_v1") == 0) {
         d->idle_inhibit_manager = wl_registry_bind(d->registry, id, &zwp_idle_inhibit_manager_v1_interface, 1);
-    } else if (strcmp(interface, "xdg_activation_v1") == 0) {
+    } else if (SDL_strcmp(interface, "xdg_activation_v1") == 0) {
         d->activation_manager = wl_registry_bind(d->registry, id, &xdg_activation_v1_interface, 1);
-    } else if (strcmp(interface, "wl_data_device_manager") == 0) {
+    } else if (strcmp(interface, "zwp_text_input_manager_v3") == 0) {
+        Wayland_add_text_input_manager(d, id, version);
+    } else if (SDL_strcmp(interface, "wl_data_device_manager") == 0) {
         Wayland_add_data_device_manager(d, id, version);
-    } else if (strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
         d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-    } else if (strcmp(interface, "qt_touch_extension") == 0) {
+    } else if (SDL_strcmp(interface, "qt_touch_extension") == 0) {
         Wayland_touch_create(d, id);
-    } else if (strcmp(interface, "qt_surface_extension") == 0) {
+    } else if (SDL_strcmp(interface, "qt_surface_extension") == 0) {
         d->surface_extension = wl_registry_bind(registry, id,
                 &qt_surface_extension_interface, 1);
-    } else if (strcmp(interface, "qt_windowmanager") == 0) {
+    } else if (SDL_strcmp(interface, "qt_windowmanager") == 0) {
         d->windowmanager = wl_registry_bind(registry, id,
                 &qt_windowmanager_interface, 1);
         qt_windowmanager_add_listener(d->windowmanager, &windowmanager_listener, d);
@@ -515,6 +553,19 @@ Wayland_VideoInit(_THIS)
     // First roundtrip to receive all registry objects.
     WAYLAND_wl_display_roundtrip(data->display);
 
+#ifdef HAVE_LIBDECOR_H
+    /* Don't have server-side decorations? Try client-side instead. */
+    if (!data->decoration_manager && SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR) {
+        data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
+
+        /* If libdecor works, we don't need xdg-shell anymore. */
+        if (data->shell.libdecor && data->shell.xdg) {
+            xdg_wm_base_destroy(data->shell.xdg);
+            data->shell.xdg = NULL;
+        }
+    }
+#endif
+
     // Second roundtrip to receive all output events.
     WAYLAND_wl_display_roundtrip(data->display);
 
@@ -526,10 +577,6 @@ Wayland_VideoInit(_THIS)
     WAYLAND_wl_display_flush(data->display);
 
     Wayland_InitKeyboard(_this);
-
-#if SDL_USE_LIBDBUS
-    SDL_DBus_Init();
-#endif
 
     return 0;
 }
@@ -597,6 +644,11 @@ Wayland_VideoQuit(_THIS)
     if (data->key_inhibitor_manager)
         zwp_keyboard_shortcuts_inhibit_manager_v1_destroy(data->key_inhibitor_manager);
 
+    Wayland_QuitKeyboard(_this);
+
+    if (data->text_input_manager)
+        zwp_text_input_manager_v3_destroy(data->text_input_manager);
+
     if (data->xkb_context) {
         WAYLAND_xkb_context_unref(data->xkb_context);
         data->xkb_context = NULL;
@@ -620,25 +672,24 @@ Wayland_VideoQuit(_THIS)
     if (data->cursor_theme)
         WAYLAND_wl_cursor_theme_destroy(data->cursor_theme);
 
-    if (data->shell.wl)
-        wl_shell_destroy(data->shell.wl);
-
     if (data->shell.xdg)
         xdg_wm_base_destroy(data->shell.xdg);
 
-    if (data->shell.zxdg)
-        zxdg_shell_v6_destroy(data->shell.zxdg);
-
     if (data->decoration_manager)
         zxdg_decoration_manager_v1_destroy(data->decoration_manager);
+
+#ifdef HAVE_LIBDECOR_H
+    if (data->shell.libdecor) {
+        libdecor_unref(data->shell.libdecor);
+        data->shell.libdecor = NULL;
+    }
+#endif
 
     if (data->compositor)
         wl_compositor_destroy(data->compositor);
 
     if (data->registry)
         wl_registry_destroy(data->registry);
-
-    Wayland_QuitKeyboard(_this);
 
     SDL_free(data->classname);
 }

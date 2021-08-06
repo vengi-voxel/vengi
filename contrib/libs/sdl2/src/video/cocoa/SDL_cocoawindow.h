@@ -48,6 +48,7 @@ typedef enum
     BOOL inFullscreenTransition;
     PendingWindowOperation pendingWindowOperation;
     BOOL isMoving;
+    int focusClickPending;
     int pendingWindowWarpX, pendingWindowWarpY;
     BOOL isDragAreaRunning;
 }
@@ -62,8 +63,12 @@ typedef enum
 -(void) close;
 
 -(BOOL) isMoving;
+-(BOOL) isMovingOrFocusClickPending;
+-(void) setFocusClickPending:(int) button;
+-(void) clearFocusClickPending:(int) button;
 -(void) setPendingMoveX:(int)x Y:(int)y;
 -(void) windowDidFinishMoving;
+-(void) onMovingOrFocusClickPendingStateCleared;
 
 /* Window delegate functionality */
 -(BOOL) windowShouldClose:(id) sender;
@@ -117,6 +122,7 @@ struct SDL_WindowData
     NSMutableArray *nscontexts;
     SDL_bool created;
     SDL_bool inWindowFullscreenTransition;
+    NSInteger flash_request;
     Cocoa_WindowListener *listener;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL
@@ -151,7 +157,7 @@ extern void Cocoa_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool Cocoa_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info);
 extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void Cocoa_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept);
-extern int Cocoa_FlashWindow(_THIS, SDL_Window * window, Uint32 flash_count);
+extern int Cocoa_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
 
 #endif /* SDL_cocoawindow_h_ */
 

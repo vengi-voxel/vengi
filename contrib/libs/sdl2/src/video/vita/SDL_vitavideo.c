@@ -418,6 +418,7 @@ void VITA_PumpEvents(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
+
     VITA_PollTouch();
     VITA_PollKeyboard();
     VITA_PollMouse();
@@ -435,8 +436,12 @@ void VITA_PumpEvents(_THIS)
             // Convert UTF16 to UTF8
             utf16_to_utf8(videodata->ime_buffer, utf8_buffer);
 
-            // send sdl event
+            // Send SDL event
             SDL_SendKeyboardText((const char*)utf8_buffer);
+
+            // Send enter key only on enter
+            if (result.button == SCE_IME_DIALOG_BUTTON_ENTER)
+                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_RETURN);
 
             sceImeDialogTerm();
 
@@ -449,3 +454,4 @@ void VITA_PumpEvents(_THIS)
 #endif /* SDL_VIDEO_DRIVER_VITA */
 
 /* vi: set ts=4 sw=4 expandtab: */
+

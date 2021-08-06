@@ -25,20 +25,10 @@
 #ifndef SDL_waylandvideo_h_
 #define SDL_waylandvideo_h_
 
-
-/*
-!!! FIXME: xdg_wm_base is the stable replacement for zxdg_shell_v6. While it's
-!!! FIXME:  harmless to leave it here, consider deleting the obsolete codepath
-!!! FIXME:  soon, since Wayland (with xdg_wm_base) will probably be mainline
-!!! FIXME:  by the time people are relying on this SDL target. It's available
-!!! FIXME:  in Ubuntu 18.04 (and other distros).
-*/
-
 #include <EGL/egl.h>
 #include "wayland-util.h"
 
 #include "../SDL_sysvideo.h"
-#include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
 
 struct xkb_context;
@@ -60,8 +50,9 @@ typedef struct {
     struct wl_pointer *pointer;
     struct {
         struct xdg_wm_base *xdg;
-        struct zxdg_shell_v6 *zxdg;
-        struct wl_shell *wl;
+#ifdef HAVE_LIBDECOR_H
+        struct libdecor *libdecor;
+#endif
     } shell;
     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
     struct zwp_pointer_constraints_v1 *pointer_constraints;
@@ -70,6 +61,7 @@ typedef struct {
     struct zwp_keyboard_shortcuts_inhibit_manager_v1 *key_inhibitor_manager;
     struct zwp_idle_inhibit_manager_v1 *idle_inhibit_manager;
     struct xdg_activation_v1 *activation_manager;
+    struct zwp_text_input_manager_v3 *text_input_manager;
 
     EGLDisplay edpy;
     EGLContext context;
@@ -98,6 +90,14 @@ typedef struct {
     SDL_VideoDisplay placeholder;
     SDL_bool done;
 } SDL_WaylandOutputData;
+
+/* Needed here to get wl_surface declaration, fixes GitHub#4594 */
+#include "SDL_waylanddyn.h"
+
+extern void SDL_WAYLAND_register_surface(struct wl_surface *surface);
+extern void SDL_WAYLAND_register_output(struct wl_output *output);
+extern SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
+extern SDL_bool SDL_WAYLAND_own_output(struct wl_output *output);
 
 #endif /* SDL_waylandvideo_h_ */
 

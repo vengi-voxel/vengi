@@ -963,6 +963,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Fix our size to the current size */
             info = (MINMAXINFO *) lParam;
             if (SDL_GetWindowFlags(data->window) & SDL_WINDOW_RESIZABLE) {
+                if (SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS) {
+                    int screenW = GetSystemMetrics(SM_CXSCREEN);
+                    int screenH = GetSystemMetrics(SM_CYSCREEN);
+                    info->ptMaxSize.x = SDL_max(w, screenW);
+                    info->ptMaxSize.y = SDL_max(h, screenH);
+                    info->ptMaxPosition.x = SDL_min(0, ((screenW - w) / 2));
+                    info->ptMaxPosition.y = SDL_min(0, ((screenH - h) / 2));
+                }
                 info->ptMinTrackSize.x = w + min_w;
                 info->ptMinTrackSize.y = h + min_h;
                 if (constrain_max_size) {
@@ -1364,6 +1372,13 @@ WIN_PumpEvents(_THIS)
     }
     if ((keystate[SDL_SCANCODE_RSHIFT] == SDL_PRESSED) && !(GetKeyState(VK_RSHIFT) & 0x8000)) {
         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RSHIFT);
+    }
+    /* The Windows key state gets lost when using Windows+Space or Windows+G shortcuts */
+    if ((keystate[SDL_SCANCODE_LGUI] == SDL_PRESSED) && !(GetKeyState(VK_LWIN) & 0x8000)) {
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
+    }
+    if ((keystate[SDL_SCANCODE_RGUI] == SDL_PRESSED) && !(GetKeyState(VK_RWIN) & 0x8000)) {
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RGUI);
     }
 
     /* Update the clipping rect in case someone else has stolen it */

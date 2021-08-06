@@ -1162,7 +1162,7 @@ void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers)
     }
 }
 
-void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type)
+void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate)
 {
     int nsensors = joystick->nsensors + 1;
     SDL_JoystickSensorInfo *sensors = (SDL_JoystickSensorInfo *)SDL_realloc(joystick->sensors, (nsensors * sizeof(SDL_JoystickSensorInfo)));
@@ -1171,6 +1171,7 @@ void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type)
 
         SDL_zerop(sensor);
         sensor->type = type;
+        sensor->rate = rate;
 
         joystick->nsensors = nsensors;
         joystick->sensors = sensors;
@@ -1898,6 +1899,16 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
         } else if (vendor == 0x0001 && product == 0x0001) {
             type = SDL_CONTROLLER_TYPE_UNKNOWN;
 
+        } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
+                   (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
+            type = SDL_CONTROLLER_TYPE_AMAZON_LUNA;
+
+        } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
+            type = SDL_CONTROLLER_TYPE_GOOGLE_STADIA;
+
+        } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+                type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
+
         } else {
             switch (GuessControllerType(vendor, product)) {
             case k_eControllerType_XBox360Controller:
@@ -1955,14 +1966,16 @@ SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
         }
     }
     if (vendor_id == USB_VENDOR_PDP) {
-        if (product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_AFTERGLOW ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_BLUE) {
+        if (product_id == USB_PRODUCT_XBOX_SERIES_X_VICTRIX_GAMBIT ||
+            product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_BLUE ||
+            product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_AFTERGLOW) {
             return SDL_TRUE;
         }
     }
     if (vendor_id == USB_VENDOR_POWERA_ALT) {
-        if (product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO2) {
+        if ((product_id >= 0x2001 && product_id <= 0x201a) ||
+            product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO2 ||
+            product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_SPECTRA) {
             return SDL_TRUE;
         }
     }
@@ -2002,7 +2015,8 @@ SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
     return (eType == k_eControllerType_SwitchProController ||
-            eType == k_eControllerType_SwitchInputOnlyController);
+            eType == k_eControllerType_SwitchInputOnlyController ||
+            (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP));
 }
 
 SDL_bool
@@ -2104,11 +2118,46 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
     return SDL_FALSE;
 }
 
+static SDL_bool SDL_IsJoystickProductArcadeStick(Uint32 vidpid)
+{
+    static Uint32 arcadestick_joysticks[] = {
+        MAKE_VIDPID(0x0079, 0x181a),    /* Venom Arcade Stick */
+        MAKE_VIDPID(0x0f0d, 0x006a),    /* Real Arcade Pro 4 */
+        MAKE_VIDPID(0x0079, 0x181b),    /* Venom Arcade Stick */
+        MAKE_VIDPID(0x0c12, 0x0ef6),    /* Hitbox Arcade Stick */
+        MAKE_VIDPID(0x0f0d, 0x008a),    /* HORI Real Arcade Pro 4 */
+        MAKE_VIDPID(0x0f0d, 0x0016),    /* Hori Real Arcade Pro.EX */
+        MAKE_VIDPID(0x0f0d, 0x001b),    /* Hori Real Arcade Pro VX */
+        MAKE_VIDPID(0x0f0d, 0x008c),    /* Hori Real Arcade Pro 4 */
+        MAKE_VIDPID(0x1bad, 0xf03d),    /* Street Fighter IV Arcade Stick TE - Chun Li */
+        MAKE_VIDPID(0x1bad, 0xf502),    /* Hori Real Arcade Pro.VX SA */
+        MAKE_VIDPID(0x1bad, 0xf504),    /* Hori Real Arcade Pro. EX */
+        MAKE_VIDPID(0x1bad, 0xf506),    /* Hori Real Arcade Pro.EX Premium VLX */
+        MAKE_VIDPID(0x24c6, 0x5000),    /* Razer Atrox Arcade Stick */
+        MAKE_VIDPID(0x24c6, 0x5501),    /* Hori Real Arcade Pro VX-SA */
+        MAKE_VIDPID(0x24c6, 0x550e),    /* Hori Real Arcade Pro V Kai 360 */
+        MAKE_VIDPID(0x0f0d, 0x0063),    /* Hori Real Arcade Pro Hayabusa (USA) Xbox One */
+        MAKE_VIDPID(0x0f0d, 0x0078),    /* Hori Real Arcade Pro V Kai Xbox One */
+        MAKE_VIDPID(0x1532, 0x0a00),    /* Razer Atrox Arcade Stick */
+        MAKE_VIDPID(0x0f0d, 0x00aa),    /* HORI Real Arcade Pro V Hayabusa in Switch Mode */
+        MAKE_VIDPID(0x20d6, 0xa715),    /* PowerA Nintendo Switch Fusion Arcade Stick */
+    };
+    int i;
+
+    for (i = 0; i < SDL_arraysize(arcadestick_joysticks); ++i) {
+        if (vidpid == arcadestick_joysticks[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 static SDL_bool SDL_IsJoystickProductFlightStick(Uint32 vidpid)
 {
     static Uint32 flightstick_joysticks[] = {
         MAKE_VIDPID(0x044f, 0x0402),    /* HOTAS Warthog Joystick */
         MAKE_VIDPID(0x0738, 0x2221),    /* Saitek Pro Flight X-56 Rhino Stick */
+        MAKE_VIDPID(0x044f, 0xb10a),    /* ThrustMaster, Inc. T.16000M Joystick */
     };
     int i;
 
@@ -2181,6 +2230,10 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
 
     if (SDL_IsJoystickProductWheel(vidpid)) {
         return SDL_JOYSTICK_TYPE_WHEEL;
+    }
+
+    if (SDL_IsJoystickProductArcadeStick(vidpid)) {
+        return SDL_JOYSTICK_TYPE_ARCADE_STICK;
     }
 
     if (SDL_IsJoystickProductFlightStick(vidpid)) {
@@ -2331,6 +2384,10 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
 
         MAKE_VIDPID(0x2516, 0x001f),  /* Cooler Master Storm Mizar Mouse */
         MAKE_VIDPID(0x2516, 0x0028),  /* Cooler Master Storm Alcor Mouse */
+
+        /*****************************************************************/
+        /* Additional entries                                            */
+        /*****************************************************************/
 
         /* Anne Pro II Keyboard */
         MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard */
@@ -2691,25 +2748,23 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const
         if (sensor->type == type) {
             if (sensor->enabled) {
                 num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
-                if (SDL_memcmp(data, sensor->data, num_values*sizeof(*data)) != 0) {
 
-                    /* Update internal sensor state */
-                    SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
+                /* Update internal sensor state */
+                SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
 
-                    /* Post the event, if desired */
+                /* Post the event, if desired */
 #if !SDL_EVENTS_DISABLED
-                    if (SDL_GetEventState(SDL_CONTROLLERSENSORUPDATE) == SDL_ENABLE) {
-                        SDL_Event event;
-                        event.type = SDL_CONTROLLERSENSORUPDATE;
-                        event.csensor.which = joystick->instance_id;
-                        event.csensor.sensor = type;
-                        num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));
-                        SDL_memset(event.csensor.data, 0, sizeof(event.csensor.data));
-                        SDL_memcpy(event.csensor.data, data, num_values*sizeof(*data));
-                        posted = SDL_PushEvent(&event) == 1;
-                    }
-#endif /* !SDL_EVENTS_DISABLED */
+                if (SDL_GetEventState(SDL_CONTROLLERSENSORUPDATE) == SDL_ENABLE) {
+                    SDL_Event event;
+                    event.type = SDL_CONTROLLERSENSORUPDATE;
+                    event.csensor.which = joystick->instance_id;
+                    event.csensor.sensor = type;
+                    num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));
+                    SDL_memset(event.csensor.data, 0, sizeof(event.csensor.data));
+                    SDL_memcpy(event.csensor.data, data, num_values*sizeof(*data));
+                    posted = SDL_PushEvent(&event) == 1;
                 }
+#endif /* !SDL_EVENTS_DISABLED */
             }
             break;
         }

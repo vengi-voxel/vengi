@@ -27,6 +27,7 @@
 #include "SDL_stdinc.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../usb_ids.h"
 
 #include "SDL_mfijoystick_c.h"
@@ -128,7 +129,49 @@ GetDeviceForIndex(int device_index)
 }
 
 #ifdef SDL_JOYSTICK_MFI
-static void
+static BOOL
+IsControllerPS4(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"DualShock 4"]) {
+            return TRUE;
+        }
+    } else {
+        if ([controller.vendorName containsString: @"DUALSHOCK"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
+IsControllerPS5(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"DualSense"]) {
+            return TRUE;
+        }
+    } else {
+        if ([controller.vendorName containsString: @"DualSense"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
+IsControllerXbox(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Xbox One"]) {
+            return TRUE;
+        }
+    } else {
+        if ([controller.vendorName containsString: @"Xbox"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
 IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
     Uint16 *guid16 = (Uint16 *)device->guid.data;
@@ -153,13 +196,22 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 
     if (controller.extendedGamepad) {
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
-        BOOL is_xbox = [controller.vendorName containsString: @"Xbox"];
-        BOOL is_ps4 = [controller.vendorName containsString: @"DUALSHOCK"];
-        BOOL is_ps5 = [controller.vendorName containsString: @"DualSense"];
+        BOOL is_xbox = IsControllerXbox(controller);
+        BOOL is_ps4 = IsControllerPS4(controller);
+        BOOL is_ps5 = IsControllerPS5(controller);
 #if TARGET_OS_TV
         BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5);
 #endif
         int nbuttons = 0;
+
+#ifdef SDL_JOYSTICK_HIDAPI
+        if ((is_xbox && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOXONE)) ||
+            (is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS4)) ||
+            (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS5))) {
+            /* The HIDAPI driver is taking care of this device */
+            return FALSE;
+        }
+#endif
 
         /* These buttons are part of the original MFi spec */
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_A);
@@ -342,6 +394,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
     /* This will be set when the first button press of the controller is
      * detected. */
     controller.playerIndex = -1;
+    return TRUE;
 }
 #endif /* SDL_JOYSTICK_MFI */
 
@@ -390,7 +443,10 @@ IOS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
 #endif /* SDL_JOYSTICK_iOS_ACCELEROMETER */
     } else if (controller) {
 #ifdef SDL_JOYSTICK_MFI
-        IOS_AddMFIJoystickDevice(device, controller);
+        if (!IOS_AddMFIJoystickDevice(device, controller)) {
+            SDL_free(device);
+            return;
+        }
 #else
         SDL_free(device);
         return;
@@ -664,10 +720,10 @@ IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
                 GCController *controller = joystick->hwdata->controller;
                 GCMotion *motion = controller.motion;
                 if (motion && motion.hasRotationRate) {
-                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
                 }
                 if (motion && motion.hasGravityAndUserAcceleration) {
-                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
                 }
             }
 #endif /* ENABLE_MFI_SENSORS */
@@ -1019,23 +1075,23 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 #ifdef ENABLE_MFI_RUMBLE
 
 @interface SDL_RumbleMotor : NSObject
+    @property(nonatomic,strong) CHHapticEngine *engine API_AVAILABLE(macos(11.0), ios(13.0), tvos(14.0));
+    @property(nonatomic,strong) id<CHHapticPatternPlayer> player API_AVAILABLE(macos(11.0), ios(13.0), tvos(14.0));
+    @property bool active;
 @end
 
 @implementation SDL_RumbleMotor {
-    CHHapticEngine *engine API_AVAILABLE(macos(11.0), ios(13.0), tvos(14.0));
-    id<CHHapticPatternPlayer> player API_AVAILABLE(macos(11.0), ios(13.0), tvos(14.0));
-    bool active;
 }
 
 -(void)cleanup
 {
-    if (self->player != nil) {
-        [self->player cancelAndReturnError:nil];
-        self->player = nil;
+    if (self.player != nil) {
+        [self.player cancelAndReturnError:nil];
+        self.player = nil;
     }
-    if (self->engine != nil) {
-        [self->engine stopWithCompletionHandler:nil];
-        self->engine = nil;
+    if (self.engine != nil) {
+        [self.engine stopWithCompletionHandler:nil];
+        self.engine = nil;
     }
 }
 
@@ -1043,21 +1099,21 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
     @autoreleasepool {
         if (@available(macos 11.0, iOS 14.0, tvOS 14.0, *)) {
-            NSError *error;
+            NSError *error = nil;
 
-            if (self->engine == nil) {
+            if (self.engine == nil) {
                 return SDL_SetError("Haptics engine was stopped");
             }
 
             if (intensity == 0.0f) {
-                if (self->player && self->active) {
-                    [self->player stopAtTime:0 error:&error];
+                if (self.player && self.active) {
+                    [self.player stopAtTime:0 error:&error];
                 }
-                self->active = false;
+                self.active = false;
                 return 0;
             }
 
-            if (self->player == nil) {
+            if (self.player == nil) {
                 CHHapticEventParameter *param = [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0f];
                 CHHapticEvent *event = [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
                 CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error];
@@ -1065,22 +1121,22 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                     return SDL_SetError("Couldn't create haptic pattern: %s", [error.localizedDescription UTF8String]);
                 }
 
-                self->player = [self->engine createPlayerWithPattern:pattern error:&error];
+                self.player = [self.engine createPlayerWithPattern:pattern error:&error];
                 if (error != nil) {
                     return SDL_SetError("Couldn't create haptic player: %s", [error.localizedDescription UTF8String]);
                 }
-                self->active = false;
+                self.active = false;
             }
 
             CHHapticDynamicParameter *param = [[CHHapticDynamicParameter alloc] initWithParameterID:CHHapticDynamicParameterIDHapticIntensityControl value:intensity relativeTime:0];
-            [self->player sendParameters:[NSArray arrayWithObject:param] atTime:0 error:&error];
+            [self.player sendParameters:[NSArray arrayWithObject:param] atTime:0 error:&error];
             if (error != nil) {
                 return SDL_SetError("Couldn't update haptic player: %s", [error.localizedDescription UTF8String]);
             }
 
-            if (!self->active) {
-                [self->player startAtTime:0 error:&error];
-                self->active = true;
+            if (!self.active) {
+                [self.player startAtTime:0 error:&error];
+                self.active = true;
             }
         }
 
@@ -1094,36 +1150,36 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         self = [super init];
         NSError *error;
 
-        self->engine = [controller.haptics createEngineWithLocality:locality];
-        if (self->engine == nil) {
+        self.engine = [controller.haptics createEngineWithLocality:locality];
+        if (self.engine == nil) {
             SDL_SetError("Couldn't create haptics engine");
             return nil;
         }
 
-        [self->engine startAndReturnError:&error];
+        [self.engine startAndReturnError:&error];
         if (error != nil) {
             SDL_SetError("Couldn't start haptics engine");
             return nil;
         }
 
         __weak typeof(self) weakSelf = self;
-        self->engine.stoppedHandler = ^(CHHapticEngineStoppedReason stoppedReason) {
+        self.engine.stoppedHandler = ^(CHHapticEngineStoppedReason stoppedReason) {
             SDL_RumbleMotor *_this = weakSelf;
             if (_this == nil) {
                 return;
             }
 
-            _this->player = nil;
-            _this->engine = nil;
+            _this.player = nil;
+            _this.engine = nil;
         };
-        self->engine.resetHandler = ^{
+        self.engine.resetHandler = ^{
             SDL_RumbleMotor *_this = weakSelf;
             if (_this == nil) {
                 return;
             }
 
-            _this->player = nil;
-            [_this->engine startAndReturnError:nil];
+            _this.player = nil;
+            [_this.engine startAndReturnError:nil];
         };
 
         return self;
@@ -1133,13 +1189,13 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 @end
 
 @interface SDL_RumbleContext : NSObject
+    @property(nonatomic,strong) SDL_RumbleMotor *m_low_frequency_motor;
+    @property(nonatomic,strong) SDL_RumbleMotor *m_high_frequency_motor;
+    @property(nonatomic,strong) SDL_RumbleMotor *m_left_trigger_motor;
+    @property(nonatomic,strong) SDL_RumbleMotor *m_right_trigger_motor;
 @end
 
 @implementation SDL_RumbleContext {
-    SDL_RumbleMotor *m_low_frequency_motor;
-    SDL_RumbleMotor *m_high_frequency_motor;
-    SDL_RumbleMotor *m_left_trigger_motor;
-    SDL_RumbleMotor *m_right_trigger_motor;
 }
 
 -(id) initWithLowFrequencyMotor:(SDL_RumbleMotor*)low_frequency_motor
@@ -1148,10 +1204,10 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
               RightTriggerMotor:(SDL_RumbleMotor*)right_trigger_motor
 {
     self = [super init];
-    self->m_low_frequency_motor = low_frequency_motor;
-    self->m_high_frequency_motor = high_frequency_motor;
-    self->m_left_trigger_motor = left_trigger_motor;
-    self->m_right_trigger_motor = right_trigger_motor;
+    self.m_low_frequency_motor = low_frequency_motor;
+    self.m_high_frequency_motor = high_frequency_motor;
+    self.m_left_trigger_motor = left_trigger_motor;
+    self.m_right_trigger_motor = right_trigger_motor;
     return self;
 }
 
@@ -1159,8 +1215,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
     int result = 0;
 
-    result += [self->m_low_frequency_motor setIntensity:((float)low_frequency_rumble / 65535.0f)];
-    result += [self->m_high_frequency_motor setIntensity:((float)high_frequency_rumble / 65535.0f)];
+    result += [self.m_low_frequency_motor setIntensity:((float)low_frequency_rumble / 65535.0f)];
+    result += [self.m_high_frequency_motor setIntensity:((float)high_frequency_rumble / 65535.0f)];
     return ((result < 0) ? -1 : 0);
 }
 
@@ -1168,9 +1224,9 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
     int result = 0;
 
-    if (self->m_left_trigger_motor && self->m_right_trigger_motor) {
-        result += [self->m_left_trigger_motor setIntensity:((float)left_rumble / 65535.0f)];
-        result += [self->m_right_trigger_motor setIntensity:((float)right_rumble / 65535.0f)];
+    if (self.m_left_trigger_motor && self.m_right_trigger_motor) {
+        result += [self.m_left_trigger_motor setIntensity:((float)left_rumble / 65535.0f)];
+        result += [self.m_right_trigger_motor setIntensity:((float)right_rumble / 65535.0f)];
     } else {
         result = SDL_Unsupported();
     }
@@ -1179,8 +1235,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
 -(void)cleanup
 {
-    [self->m_low_frequency_motor cleanup];
-    [self->m_high_frequency_motor cleanup];
+    [self.m_low_frequency_motor cleanup];
+    [self.m_high_frequency_motor cleanup];
 }
 
 @end

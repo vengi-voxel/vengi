@@ -67,7 +67,9 @@ typedef enum
     SDL_CONTROLLER_TYPE_PS4,
     SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO,
     SDL_CONTROLLER_TYPE_VIRTUAL,
-    SDL_CONTROLLER_TYPE_PS5
+    SDL_CONTROLLER_TYPE_PS5,
+    SDL_CONTROLLER_TYPE_AMAZON_LUNA,
+    SDL_CONTROLLER_TYPE_GOOGLE_STADIA
 } SDL_GameControllerType;
 
 typedef enum
@@ -531,6 +533,10 @@ typedef enum
  * SDL_GameController mapping. You do not normally need to call this function
  * unless you are parsing SDL_GameController mappings in your own code.
  *
+ * Note specially that "righttrigger" and "lefttrigger" map to
+ * `SDL_CONTROLLER_AXIS_TRIGGERRIGHT` and `SDL_CONTROLLER_AXIS_TRIGGERLEFT`,
+ * respectively.
+ *
  * \param str string representing a SDL_GameController axis
  * \returns the SDL_GameControllerAxis enum corresponding to the input string,
  *          or `SDL_CONTROLLER_AXIS_INVALID` if no match was found.
@@ -751,6 +757,16 @@ extern DECLSPEC int SDLCALL SDL_GameControllerSetSensorEnabled(SDL_GameControlle
  * \returns SDL_TRUE if the sensor is enabled, SDL_FALSE otherwise.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerIsSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type);
+
+/**
+ * Get the data rate (number of events per second) of a game controller
+ * sensor.
+ *
+ * \param gamecontroller The controller to query
+ * \param type The type of sensor to query
+ * \return the data rate, or 0.0f if the data rate is not available.
+ */
+extern DECLSPEC float SDLCALL SDL_GameControllerGetSensorDataRate(SDL_GameController *gamecontroller, SDL_SensorType type);
 
 /**
  * Get the current state of a game controller sensor.

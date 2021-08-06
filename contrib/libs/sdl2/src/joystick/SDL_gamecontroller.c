@@ -485,7 +485,7 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(SDL_JoystickGU
         /* Accelerometer, shouldn't have a game controller mapping */
         return NULL;
     }
-    if (!(button_mask & face_button_mask) || !axis_mask) {
+    if (!(button_mask & face_button_mask)) {
         /* We don't know what buttons or axes are supported, don't make up a mapping */
         return NULL;
     }
@@ -593,10 +593,6 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         if (SDL_IsJoystickXboxSeriesX(vendor, product)) {
             /* XBox Series X Controllers have a share button under the guide button */
             SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-        } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
-                   (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
-            /* Amazon Luna Controller has a mic button under the guide button */
-            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
         } else if (SDL_IsJoystickXboxOneElite(vendor, product)) {
             /* XBox One Elite Controllers have 4 back paddle buttons */
             SDL_strlcat(mapping_string, "paddle1:b15,paddle2:b17,paddle3:b16,paddle4:b18,", sizeof(mapping_string));
@@ -619,17 +615,21 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 /* Joy-Cons have extra buttons in the same place as paddles */
                 if (SDL_IsJoystickNintendoSwitchJoyConLeft(vendor, product)) {
                     SDL_strlcat(mapping_string, "paddle2:b17,paddle4:b19,", sizeof(mapping_string));
-                }
-                else if (SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product)) {
+                } else if (SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product)) {
                     SDL_strlcat(mapping_string, "paddle1:b16,paddle3:b18,", sizeof(mapping_string));
                 }
+                break;
+            case SDL_CONTROLLER_TYPE_AMAZON_LUNA:
+                /* Amazon Luna Controller has a mic button under the guide button */
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                break;
+            case SDL_CONTROLLER_TYPE_GOOGLE_STADIA:
+                /* The Google Stadia controller has a share button and a Google Assistant button */
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 break;
             default:
                 if (vendor == 0 && product == 0) {
                     /* This is a Bluetooth Nintendo Switch Pro controller */
-                    SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-                } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
-                    /* The Google Stadia controller has a share button and a Google Assistant button */
                     SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 }
                 break;
@@ -651,6 +651,25 @@ static ControllerMapping_t *SDL_CreateMappingForRAWINPUTController(SDL_JoystickG
 
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
     SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,guide:b10,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
+
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string,
+                      &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+}
+
+/*
+ * Helper function to guess at a mapping for WGI controllers
+ */
+static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID guid)
+{
+    SDL_bool existing;
+    char mapping_string[1024];
+
+    if (guid.data[15] != SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+        return NULL;
+    }
+
+    SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
+    SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:b10,dpdown:b12,dpleft:b13,dpright:b11,leftx:a1,lefty:a0~,rightx:a3,righty:a2~,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
 
     return SDL_PrivateAddMappingForGUID(guid, mapping_string,
                       &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
@@ -687,6 +706,9 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
         }
         if (!mapping && SDL_IsJoystickRAWINPUT(guid)) {
             mapping = SDL_CreateMappingForRAWINPUTController(guid);
+        }
+        if (!mapping && SDL_IsJoystickWGI(guid)) {
+            mapping = SDL_CreateMappingForWGIController(guid);
         }
     }
     return mapping;
@@ -1160,15 +1182,12 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
             mapping = SDL_PrivateAddMappingForGUID(guid,
 "none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3",
                           &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+        } else if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box") || SDL_strstr(name, "XBOX")) {
+            mapping = s_pXInputMapping;
         }
     }
 #endif /* __LINUX__ */
 
-    if (!mapping && name && !SDL_IsJoystickWGI(guid)) {
-        if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box") || SDL_strstr(name, "XBOX")) {
-            mapping = s_pXInputMapping;
-        }
-    }
     if (!mapping) {
         mapping = s_pDefaultMapping;
     }
@@ -2178,6 +2197,29 @@ SDL_bool SDL_GameControllerIsSensorEnabled(SDL_GameController *gamecontroller, S
         }
     }
     return SDL_FALSE;
+}
+
+/*
+ *  Get the data rate of a game controller sensor.
+ */
+float
+SDL_GameControllerGetSensorDataRate(SDL_GameController *gamecontroller, SDL_SensorType type)
+{
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+    int i;
+
+    if (!joystick) {
+        return 0.0f;
+    }
+
+    for (i = 0; i < joystick->nsensors; ++i) {
+        SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+        if (sensor->type == type) {
+            return sensor->rate;
+        }
+    }
+    return 0.0f;
 }
 
 /*

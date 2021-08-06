@@ -68,6 +68,8 @@ typedef struct
     unsigned long user_time;
     Atom xdnd_req;
     Window xdnd_source;
+    SDL_bool flashing_window;
+    Uint32 flash_cancel_time;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;
 #endif
@@ -107,7 +109,7 @@ extern SDL_bool X11_GetWindowWMInfo(_THIS, SDL_Window * window,
                                     struct SDL_SysWMinfo *info);
 extern int X11_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void X11_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept);
-extern int X11_FlashWindow(_THIS, SDL_Window * window, Uint32 flash_count);
+extern int X11_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
 
 #endif /* SDL_x11window_h_ */
 

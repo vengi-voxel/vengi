@@ -1064,17 +1064,27 @@ WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
 }
 
 int
-WIN_FlashWindow(_THIS, SDL_Window * window, Uint32 flash_count)
+WIN_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation)
 {
-    HWND hwnd;
     FLASHWINFO desc;
 
-    hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    SDL_zero(desc);
     desc.cbSize = sizeof(desc);
-    desc.hwnd = hwnd;
-    desc.dwFlags = FLASHW_TRAY;
-    desc.uCount = flash_count; /* flash x times */
-    desc.dwTimeout = 0;
+    desc.hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    switch (operation) {
+    case SDL_FLASH_CANCEL:
+        desc.dwFlags = FLASHW_STOP;
+        break;
+    case SDL_FLASH_BRIEFLY:
+        desc.dwFlags = FLASHW_TRAY;
+        desc.uCount = 1;
+        break;
+    case SDL_FLASH_UNTIL_FOCUSED:
+        desc.dwFlags = (FLASHW_TRAY | FLASHW_TIMERNOFG);
+        break;
+    default:
+        return SDL_Unsupported();
+    }
 
     FlashWindowEx(&desc);
 

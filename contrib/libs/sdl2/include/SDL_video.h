@@ -188,6 +188,9 @@ typedef enum
     SDL_DISPLAYEVENT_DISCONNECTED   /**< Display has been removed from the system */
 } SDL_DisplayEventID;
 
+/**
+ *  \brief Display orientation
+ */
 typedef enum
 {
     SDL_ORIENTATION_UNKNOWN,            /**< The display orientation can't be determined */
@@ -196,6 +199,16 @@ typedef enum
     SDL_ORIENTATION_PORTRAIT,           /**< The display is in portrait mode */
     SDL_ORIENTATION_PORTRAIT_FLIPPED    /**< The display is in portrait mode, upside down */
 } SDL_DisplayOrientation;
+
+/**
+ *  \brief Window flash operation
+ */
+typedef enum
+{
+    SDL_FLASH_CANCEL,                   /**< Cancel any window flash state */
+    SDL_FLASH_BRIEFLY,                  /**< Flash the window briefly to get attention */
+    SDL_FLASH_UNTIL_FOCUSED,            /**< Flash the window until it gets focus */
+} SDL_FlashOperation;
 
 /**
  *  \brief An opaque handle to an OpenGL context.
@@ -1378,12 +1391,13 @@ extern DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window * window);
  * the video hardware. Each table is an array of 256 16-bit quantities,
  * representing a mapping between the input and output for that channel. The
  * input is the index into the array, and the output is the 16-bit gamma value
- * at that index, scaled to the output color precision. Despite the name and
- * signature, this method sets the gamma ramp of the entire display, not an
- * individual window. A window is considered to be owned by the display that
- * contains the window's center pixel. (The index of this display can be
- * retrieved using SDL_GetWindowDisplayIndex().) The gamma ramp set will not
- * follow the window if it is moved to another display.
+ * at that index, scaled to the output color precision.
+ *
+ * Despite the name and signature, this method sets the gamma ramp of the
+ * entire display, not an individual window. A window is considered to be
+ * owned by the display that contains the window's center pixel. (The index of
+ * this display can be retrieved using SDL_GetWindowDisplayIndex().) The gamma
+ * ramp set will not follow the window if it is moved to another display.
  *
  * \param window the window used to select the display whose gamma ramp will
  *               be changed
@@ -1509,14 +1523,12 @@ extern DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window * window,
 /**
  * Request a window to demand attention from the user.
  *
- * \param window the window to request the flashing for
- * \param flash_count number of times the window gets flashed on systems that
- *                    support flashing the window multiple times, like
- *                    Windows, else it is ignored
+ * \param window the window to be flashed
+ * \param operation the flash operation
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  */
-extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window * window, Uint32 flash_count);
+extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window * window, SDL_FlashOperation operation);
 
 /**
  * Destroy a window.
