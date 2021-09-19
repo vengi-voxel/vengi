@@ -1,5 +1,0 @@
-TBLayout: axis: y, distribution: available, size: available
-	TBClickLabel: text: Name
-		TBEditField: id: name
-			lp: width: 100
-	TBLayout: distribution-position: right bottom, id: buttons

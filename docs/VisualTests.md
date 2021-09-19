@@ -80,10 +80,6 @@ Uses GLSL compute shader to render a circle.
 
 Conversion of OpenCL marching cubes taken from: <https://github.com/smistad/GPU-Marching-Cubes.git>
 
-## testturbobadger
-
-Renders the turbobadger demo.
-
 ## testluaui
 
 Test the nuklear lua ui binding

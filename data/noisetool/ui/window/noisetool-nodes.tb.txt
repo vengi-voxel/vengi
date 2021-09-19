@@ -1,9 +1,0 @@
-WindowInfo
-	title Noise data
-	position 770 50
-	size 600 600
-TBLayout
-	axis y
-	distribution gravity
-	gravity all
-	id nodes

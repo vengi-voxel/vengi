@@ -1,5 +1,0 @@
-TBCheckBox: id: visible, skin: voxedit-visible-button
-TBCheckBox: id: locked, skin: voxedit-lock-layer-button
-TBLayout: axis: y, position: left, spacing: 0, ignore-input: 1, size: available, position: left top
-	TBTextField: id: name, text-align: left
-TBButton: id: delete, skin: TBWindow.close

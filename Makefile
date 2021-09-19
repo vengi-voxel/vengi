@@ -78,7 +78,6 @@ update-stb:
 	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/stb_image.h
 	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/stb_image_write.h
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/stb_truetype.h
-	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/ui/turbobadger/tb/thirdparty
 
 update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
