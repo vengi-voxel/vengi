@@ -7,9 +7,12 @@ vengi (0.0.10.0-1) unstable; urgency=low
   * Fixed texture coordinate indices for multi layer obj exports
   * Improved magicavoxel transform support for some models
   * Fixed magicavoxel x-axis handling
+  * Support newer versions of vxm and vxr
+  * Fixed bug in file dialog which prevents you to delete characters #77
 
   * VoxEdit:
   * Improved scene edit mode
+  * Progress on the ui conversion to dear imgui
 
   * Tools:
   * Rewrote the ai debugger
