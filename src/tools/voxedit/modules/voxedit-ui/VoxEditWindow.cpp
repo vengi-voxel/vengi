@@ -32,7 +32,6 @@
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications##popuptitle"
 #define POPUP_TITLE_NEW_SCENE "New scene##popuptitle"
 #define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
-#define POPUP_TITLE_INVALID_DIMENSION "Invalid dimensions##popuptitle"
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
 
@@ -143,7 +142,7 @@ bool VoxEditWindow::init() {
 		afterLoad(_lastOpenedFile->strVal());
 	} else {
 		voxel::Region region = _layerSettings.region();
-		if (region.isValid()) {
+		if (!region.isValid()) {
 			_layerSettings.reset();
 			region = _layerSettings.region();
 		}
@@ -703,10 +702,6 @@ void VoxEditWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
 		_popupFailedToSave = false;
 	}
-	if (_popupInvalidDimensions) {
-		ImGui::OpenPopup(POPUP_TITLE_INVALID_DIMENSION);
-		_popupInvalidDimensions = false;
-	}
 
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted(ICON_FA_QUESTION);
@@ -745,17 +740,14 @@ void VoxEditWindow::registerPopups() {
 	}
 
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiPopupFlags_AnyPopupLevel)) {
-		// TODO: layer settings
-		// TODO: size, position
+		ImGui::InputText("Name", &_layerSettings.name);
+		ImGui::InputVec3("Position", _layerSettings.position);
+		ImGui::InputVec3("Size", _layerSettings.size);
 		if (ImGui::Button(ICON_FA_CHECK " OK##newscene")) {
+			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _layerSettings.region();
-			if (region.isValid()) {
-				if (voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
-					afterLoad("");
-				}
-			} else {
-				_popupInvalidDimensions = true;
-				_layerSettings.reset();
+			if (voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
+				afterLoad("");
 			}
 		}
 		ImGui::SetItemDefaultFocus();

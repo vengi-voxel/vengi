@@ -42,7 +42,6 @@ private:
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
-	bool _popupInvalidDimensions = false;
 
 	struct NoiseData {
 		int octaves = 4;

@@ -19,6 +19,10 @@ struct LayerSettings {
 	glm::ivec3 position;
 	glm::ivec3 size;
 
+	LayerSettings() {
+		reset();
+	}
+
 	inline void reset() {
 		position = glm::ivec3(0);
 		size = glm::ivec3(32);
