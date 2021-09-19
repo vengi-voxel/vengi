@@ -39,6 +39,8 @@ private:
 	Viewport* _sceneFront = nullptr;
 	Viewport* _sceneAnimation = nullptr;
 
+	// these states are here because the popups are triggered
+	// outside the ui state handling
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;

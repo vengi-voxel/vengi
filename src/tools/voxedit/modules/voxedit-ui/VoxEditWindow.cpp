@@ -34,6 +34,7 @@
 #define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
+#define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
 
 namespace voxedit {
 
@@ -267,7 +268,9 @@ void VoxEditWindow::menuBar() {
 			ImGui::CheckboxVar("Shadow", _renderShadowVar);
 			ImGui::CheckboxVar("Outlines", "r_renderoutline");
 			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
-			// TODO: scene_settings_open
+			if (ImGui::Button("Scene settings")) {
+				ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu(ICON_FA_EYE"View")) {
@@ -701,6 +704,20 @@ void VoxEditWindow::registerPopups() {
 	if (_popupFailedToSave) {
 		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
 		_popupFailedToSave = false;
+	}
+
+	if (ImGui::BeginPopupModal(POPUP_TITLE_SCENE_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::TextUnformatted("Scene settings");
+		ImGui::Separator();
+		ImGui::InputVec3("Diffuse color", _settings.diffuseColor);
+		ImGui::InputVec3("Ambient color", _settings.ambientColor);
+		ImGui::InputVec3("Sun position", _settings.sunPosition);
+		ImGui::InputVec3("Sun direction", _settings.sunDirection);
+		if (ImGui::Button(ICON_FA_CHECK " OK##scenesettings")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::EndPopup();
 	}
 
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
