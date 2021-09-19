@@ -523,17 +523,17 @@ void VoxEditWindow::layers() {
 			ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
 		}
 		if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			// TODO: layer settings
+			ImGui::InputText("Name", &_layerSettings.name);
+			ImGui::InputVec3("Position", _layerSettings.position);
+			ImGui::InputVec3("Size", _layerSettings.size);
 			if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
-				const voxel::Region &region = _layerSettings.region();
-				if (region.isValid()) {
-					voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
-					voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
-					const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCenter());
-					layerMgr.setActiveLayer(layerId);
-				} else {
-					_layerSettings.reset();
-				}
+				ImGui::CloseCurrentPopup();
+				voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
+				voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCenter());
+				layerMgr.setActiveLayer(layerId);
+			}
+			if (ImGui::Button(ICON_FA_TIMES " Cancel##layersettings")) {
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SetItemDefaultFocus();
