@@ -8,8 +8,7 @@
 #include "video/FrameBuffer.h"
 #include "video/WindowedApp.h"
 #include "video/gl/GLTypes.h"
-#include "voxedit-util/AbstractViewport.h"
-#include "voxedit-util/ViewportController.h"
+#include "AbstractViewport.h"
 
 namespace voxedit {
 

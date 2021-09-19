@@ -7,7 +7,7 @@
 #include "math/Axis.h"
 #include "video/WindowedApp.h"
 #include "ui/imgui/IMGUI.h"
-#include "voxedit-util/AbstractMainWindow.h"
+#include "AbstractMainWindow.h"
 #include "voxedit-util/SceneSettings.h"
 #include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"

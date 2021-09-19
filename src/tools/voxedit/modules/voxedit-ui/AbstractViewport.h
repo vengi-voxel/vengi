@@ -6,7 +6,7 @@
 
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
-#include "ViewportController.h"
+#include "voxedit-util/ViewportController.h"
 #include "RenderShaders.h"
 
 namespace voxedit {

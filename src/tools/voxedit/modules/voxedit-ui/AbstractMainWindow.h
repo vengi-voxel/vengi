@@ -3,7 +3,7 @@
  */
 
 #include "core/Var.h"
-#include "voxedit-util/AbstractViewport.h"
+#include "AbstractViewport.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/SceneSettings.h"
 #include "video/WindowedApp.h"

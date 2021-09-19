@@ -8,7 +8,7 @@
 #include "core/Color.h"
 #include "io/Filesystem.h"
 
-#include "SceneManager.h"
+#include "voxedit-util/SceneManager.h"
 #include "image/Image.h"
 #include "video/WindowedApp.h"
 

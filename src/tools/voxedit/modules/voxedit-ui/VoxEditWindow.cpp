@@ -713,7 +713,7 @@ void VoxEditWindow::registerPopups() {
 		ImGui::InputVec3("Ambient color", _settings.ambientColor);
 		ImGui::InputVec3("Sun position", _settings.sunPosition);
 		ImGui::InputVec3("Sun direction", _settings.sunDirection);
-		if (ImGui::Button(ICON_FA_CHECK " OK##scenesettings")) {
+		if (ImGui::Button(ICON_FA_CHECK " Done##scenesettings")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -766,6 +766,10 @@ void VoxEditWindow::registerPopups() {
 			if (voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
 				afterLoad("");
 			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_TIMES " Close##newscene")) {
+			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::EndPopup();
