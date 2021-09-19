@@ -302,8 +302,9 @@ void VoxEditWindow::menuBar() {
 		}
 		if (ImGui::BeginMenu(ICON_FA_EYE"View")) {
 			actionMenuItem("Reset camera", "resetcamera");
-			actionMenuItem("Quad view", "toggleviewport");
-			// TODO: quadview
+			if (actionMenuItem("Quad view", "toggleviewport")) {
+				// TODO: quadview
+			}
 			actionMenuItem("Animation view", "toggleanimation");
 			actionMenuItem("Scene view", "togglescene");
 			ImGui::EndMenu();
@@ -1032,6 +1033,7 @@ void VoxEditWindow::scriptPanel() {
 	if (ImGui::Begin(TITLE_SCRIPTPANEL)) {
 		//_scripts = sceneMgr().luaGenerator().listScripts();
 	}
+	// TODO: implement me
 	ImGui::End();
 }
 
