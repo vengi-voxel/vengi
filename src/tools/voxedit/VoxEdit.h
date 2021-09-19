@@ -7,13 +7,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "core/ArrayLength.h"
 
-#if USE_TURBOBADGER
-#include "ui/turbobadger/UIApp.h"
-using UIAppType = ui::turbobadger::UIApp;
-#else
 #include "ui/imgui/IMGUIApp.h"
-using UIAppType = ui::imgui::IMGUIApp;
-#endif
 
 namespace voxedit {
 class VoxEditWindow;
@@ -24,9 +18,9 @@ class VoxEditWindow;
  *
  * @ingroup Tools
  */
-class VoxEdit: public UIAppType {
+class VoxEdit: public ui::imgui::IMGUIApp {
 private:
-	using Super = UIAppType;
+	using Super = ui::imgui::IMGUIApp;
 	voxedit::VoxEditWindow* _mainWindow = nullptr;
 
 public:

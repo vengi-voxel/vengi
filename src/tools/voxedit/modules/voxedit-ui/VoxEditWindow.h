@@ -2,88 +2,36 @@
  * @file
  */
 
-#pragma once
-
-#include "core/collection/DynamicArray.h"
-#include "ui/turbobadger/Window.h"
-#include "layer/LayerWindow.h"
-#include "settings/SceneSettingsWindow.h"
 #include "core/Common.h"
 #include "core/StringUtil.h"
-#include "core/collection/Array.h"
-#include "core/collection/List.h"
 #include "math/Axis.h"
-#include "voxelgenerator/TreeContext.h"
+#include "video/WindowedApp.h"
+#include "ui/imgui/IMGUI.h"
 #include "voxedit-util/AbstractMainWindow.h"
-
-class Viewport;
-class PaletteWidget;
-class LayerWidget;
-
-namespace ui {
-namespace turbobadger {
-class UIApp;
-}
-}
+#include "voxedit-util/SceneSettings.h"
+#include "voxedit-util/layer/Layer.h"
+#include "voxedit-util/layer/LayerSettings.h"
+#include "voxedit-util/modifier/ModifierType.h"
+#include "voxelgenerator/TreeContext.h"
 
 namespace voxedit {
 
-/**
- * @brief Voxel editing tools panel
- */
-class VoxEditWindow: public ui::turbobadger::Window, public AbstractMainWindow {
+class Viewport;
+
+class VoxEditWindow : public AbstractMainWindow {
 private:
-	using Super = ui::turbobadger::Window;
-	tb::TBLayout* _animationWidget = nullptr;
-	PaletteWidget* _paletteWidget = nullptr;
-	LayerWidget* _layerWidget = nullptr;
-	tb::TBWidget* _saveButton = nullptr;
-	tb::TBWidget* _saveAnimationButton = nullptr;
-	tb::TBWidget* _undoButton = nullptr;
-	tb::TBWidget* _redoButton = nullptr;
+	using Super = AbstractMainWindow;
 
-	tb::TBEditField* _cursorX = nullptr;
-	tb::TBEditField* _cursorY = nullptr;
-	tb::TBEditField* _cursorZ = nullptr;
+	core::DynamicArray<core::String> _scripts;
 
-	tb::TBEditField* _paletteIndex = nullptr;
-
-	tb::TBCheckBox* _lockedX = nullptr;
-	tb::TBCheckBox* _lockedY = nullptr;
-	tb::TBCheckBox* _lockedZ = nullptr;
-
-	tb::TBInlineSelect* _translateX = nullptr;
-	tb::TBInlineSelect* _translateY = nullptr;
-	tb::TBInlineSelect* _translateZ = nullptr;
-
-	tb::TBRadioButton* _mirrorAxisNone = nullptr;
-	tb::TBRadioButton* _mirrorAxisX = nullptr;
-	tb::TBRadioButton* _mirrorAxisY = nullptr;
-	tb::TBRadioButton* _mirrorAxisZ = nullptr;
-
-	tb::TBRadioButton* _selectModifier = nullptr;
-	tb::TBRadioButton* _placeModifier = nullptr;
-	tb::TBRadioButton* _deleteModifier = nullptr;
-	tb::TBRadioButton* _overrideModifier = nullptr;
-	tb::TBRadioButton* _colorizeModifier = nullptr;
-
-	// lsystem related
-	tb::TBEditField *_lsystemAxiom = nullptr;
-	tb::TBEditField *_lsystemRules = nullptr;
-	tb::TBInlineSelectDouble *_lsystemAngle = nullptr;
-	tb::TBInlineSelectDouble *_lsystemLength = nullptr;
-	tb::TBInlineSelectDouble *_lsystemWidth = nullptr;
-	tb::TBInlineSelectDouble *_lsystemWidthIncrement = nullptr;
-	tb::TBInlineSelect *_lsystemIterations = nullptr;
-	tb::TBInlineSelectDouble *_lsystemLeavesRadius = nullptr;
-	tb::TBWidget *_lsystemSection = nullptr;
-
-	// noise related
-	tb::TBInlineSelect* _octaves;
-	tb::TBInlineSelectDouble* _frequency;
-	tb::TBInlineSelectDouble* _lacunarity;
-	tb::TBInlineSelectDouble* _gain;
-	tb::TBWidget *_noiseSection = nullptr;
+	core::VarPtr _showAxisVar;
+	core::VarPtr _showGridVar;
+	core::VarPtr _modelSpaceVar;
+	core::VarPtr _showLockedAxisVar;
+	core::VarPtr _showAabbVar;
+	core::VarPtr _renderShadowVar;
+	core::VarPtr _animationSpeedVar;
+	core::VarPtr _gridSizeVar;
 
 	Viewport* _scene = nullptr;
 	Viewport* _sceneTop = nullptr;
@@ -91,50 +39,74 @@ private:
 	Viewport* _sceneFront = nullptr;
 	Viewport* _sceneAnimation = nullptr;
 
-	// tree related
-	enum TreeParameterWidgetType {
-		Int, Float
+	bool _popupUnsaved = false;
+	bool _popupNewScene = false;
+	bool _popupFailedToSave = false;
+	bool _popupInvalidDimensions = false;
+
+	struct NoiseData {
+		int octaves = 4;
+		float frequency = 0.01f;
+		float lacunarity = 2.0f;
+		float gain = 0.5f;
 	};
-	struct TreeWidget {
-		size_t ctxOffset = 0u; // offset in voxelgenerator::TreeContext
-		TreeParameterWidgetType type = TreeParameterWidgetType::Int;
-		voxelgenerator::TreeType treeType = voxelgenerator::TreeType::Max;
-		tb::TBWidget* widget = nullptr;
+	NoiseData _noiseData;
+
+	struct LSystemData {
+		core::String axiom = "F";
+		core::String rulesStr = R"(
+			{
+				F
+				(67)F+[!+F-F-F(37)L]-[!-F+F+F(142)L]>[!F<F<F(128)L]<[!<F>F>F(123)L]
+			})";
+		float angle = 22.5f;
+		float length = 12.0f;
+		float width = 4.0f;
+		float widthIncrement = 1.5f;
+		int iterations = 2;
+		float leavesRadius = 8.0f;
 	};
-	core::List<TreeWidget> _treeWidgets;
-	tb::TBSelectDropdown *_treeType = nullptr;
-	tb::TBCheckBox *_treeAutoGenerateOnChange = nullptr;
-	tb::TBWidget *_treeSection = nullptr;
-	void switchTreeType(voxelgenerator::TreeType treeType);
-	tb::TBWidget* createTreeParameterWidget(TreeParameterWidgetType type, tb::TBLayout* parent, const char *id, const char *name);
+	LSystemData _lsystemData;
+	core::String _currentSelectedPalette;
+	core::DynamicArray<core::String> _availablePalettes;
 
-	core::DynamicArray<core::String> _scripts;
-	tb::TBWidget *_scriptSection = nullptr;
-	tb::TBSelectDropdown *_scriptType = nullptr;
-	tb::TBGenericStringItemSource _scriptItems;
-	void switchScriptType(const core::String& scriptName);
+	void reloadAvailablePalettes();
 
-	tb::TBGenericStringItemSource 	_treeItems;
-	tb::TBGenericStringItemSource _fileItems;
-	tb::TBGenericStringItemSource _animationItems;
+	void menuBar();
+	void palette();
+	void tools();
+	void layers();
+	void statusBar();
 
-	tb::TBInlineSelect *_voxelSize = nullptr;
-	tb::TBCheckBox *_showGrid = nullptr;
-	tb::TBCheckBox *_showAABB = nullptr;
-	tb::TBCheckBox *_showAxis = nullptr;
-	tb::TBCheckBox *_showLockAxis = nullptr;
-	tb::TBCheckBox *_renderShadow = nullptr;
+	void leftWidget();
+	void mainWidget();
+	void rightWidget();
 
-	bool handleEvent(const tb::TBWidgetEvent &ev);
+	void afterLoad(const core::String &file);
 
-	bool handleClickEvent(const tb::TBWidgetEvent &ev);
-	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
-	void quit();
+	void updateSettings();
+	void registerPopups();
+
+	void executeCommand(const char *command);
+
+	void addLayerItem(int layerId, const voxedit::Layer &layer);
+
+	bool actionButton(const char *title, const char *command);
+	bool actionMenuItem(const char *title, const char *command, bool enabled = true);
+	bool modifierRadioButton(const char *title, ModifierType type);
+	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 	bool saveImage(const char *file) override;
 
-	void updateStatusBar();
+	void switchTreeType(voxelgenerator::TreeType treeType);
+	void treePanel();
+	void lsystemPanel();
+	void noisePanel();
+	void scriptPanel();
+	void modifierPanel();
+	void positionsPanel();
+
 public:
-	VoxEditWindow(::ui::turbobadger::UIApp* tool);
+	VoxEditWindow(video::WindowedApp *app);
 	virtual ~VoxEditWindow();
 	bool init();
 	void shutdown();
@@ -142,21 +114,17 @@ public:
 	// commands
 	void toggleViewport();
 	void toggleAnimation();
-	bool save(const core::String& file);
-	bool load(const core::String& file);
-	bool loadAnimationEntity(const core::String& file);
+	bool save(const core::String &file);
+	bool load(const core::String &file);
+	bool loadAnimationEntity(const core::String &file);
 	bool createNew(bool force);
 
 	bool isLayerWidgetDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
-	void resetCamera() override;
 
+	void resetCamera() override;
 	void update();
 	bool isSceneHovered() const;
-
-	bool onEvent(const tb::TBWidgetEvent &ev) override;
-	void onProcess() override;
-	void onDie() override;
 };
 
-}
+} // namespace voxedit

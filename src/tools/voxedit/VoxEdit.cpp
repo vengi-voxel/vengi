@@ -17,11 +17,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/CustomBindingContext.h"
 
-#if USE_TURBOBADGER
 #include "voxedit-ui/VoxEditWindow.h"
-#else
-#include "voxedit-imgui/VoxEditWindow.h"
-#endif
 
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -89,9 +85,7 @@ app::AppState VoxEdit::onCleanup() {
 	voxedit::sceneMgr().shutdown();
 	if (_mainWindow) {
 		_mainWindow->shutdown();
-#if !USE_TURBOBADGER
 		delete _mainWindow;
-#endif
 	}
 	return Super::onCleanup();
 }
@@ -118,23 +112,13 @@ app::AppState VoxEdit::onConstruct() {
 
 	voxedit::sceneMgr().construct();
 
-#if USE_TURBOBADGER
 #define COMMAND_FILE(commandId, help) \
 	command::Command::registerCommand(#commandId, [this] (const command::CmdArgs& args) { \
 		const core::String file = args.empty() ? "" : args[0]; \
 		if (!commandId##File(file)) { \
 			Log::error("Failed to execute '" #commandId "' for file '%s'", file.c_str()); \
 		} \
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(help)
-#else
-#define COMMAND_FILE(commandId, help) \
-	command::Command::registerCommand(#commandId, [this] (const command::CmdArgs& args) { \
-		const core::String file = args.empty() ? "" : args[0]; \
-		if (!commandId##File(file)) { \
-			Log::error("Failed to execute '" #commandId "' for file '%s'", file.c_str()); \
-		} \
-	}).setHelp(help)
-#endif
+	})/*.setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory))*/.setHelp(help)
 
 	COMMAND_FILE(screenshot, "Save the current viewport as screenshot");
 	COMMAND_FILE(save, "Save the current scene as a volume to the given file");

@@ -1,6 +1,2 @@
 add_subdirectory(voxedit-util)
-if (VOXEDIT_USE_TURBOBADGER)
-	add_subdirectory(voxedit-ui)
-else()
-	add_subdirectory(voxedit-imgui)
-endif()
+add_subdirectory(voxedit-ui)
