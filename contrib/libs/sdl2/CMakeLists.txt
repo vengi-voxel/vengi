@@ -431,6 +431,7 @@ set_option(SDL_TEST            "Build the test directory" OFF)
 
 if(VITA)
     set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
+    set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
 endif()
 
 
@@ -539,6 +540,15 @@ if(USE_GCC OR USE_CLANG)
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     if(HAVE_NO_UNDEFINED AND NOT (USE_CLANG AND WINDOWS))
       list(APPEND EXTRA_LDFLAGS "-Wl,--no-undefined")
+    endif()
+  endif()
+
+  # Force color diagnostics when one of these conditions are met
+  if(DEFINED ENV{CI} OR DEFINED ENV{USE_CCACHE} OR CMAKE_GENERATOR MATCHES Ninja)
+    if(EMSCRIPTEN OR (USE_GCC AND NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 4.9))
+      list(APPEND EXTRA_CFLAGS -fdiagnostics-color=always)
+    elseif(USE_CLANG AND NOT CMAKE_C_COMPILER_ID MATCHES AppleClang)
+      list(APPEND EXTRA_CFLAGS -fcolor-diagnostics)
     endif()
   endif()
 endif()
@@ -1570,7 +1580,7 @@ elseif(WINDOWS)
     set(SDL_THREAD_WINDOWS 1)
     set(SOURCE_FILES ${SOURCE_FILES}
       ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syscond.c
-      ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_syscond_srw.c
+      ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_syscond_cv.c
       ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_sysmutex.c
       ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_syssem.c
       ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_systhread.c
@@ -2180,6 +2190,29 @@ elseif(VITA)
       endif()
     endif()
 
+    if(VIDEO_VITA_PVR)
+      check_include_file(gpu_es4/psp2_pvr_hint.h HAVE_PVR_H)
+
+      if(HAVE_PVR_H)
+        add_definitions("-D__psp2__")
+        set(SDL_VIDEO_OPENGL_EGL 1)
+        set(HAVE_VIDEO_OPENGLES TRUE)
+        set(SDL_VIDEO_OPENGL_ES 1)
+        set(SDL_VIDEO_RENDER_OGL_ES 1)
+        set(SDL_VIDEO_OPENGL_ES2 1)
+        set(SDL_VIDEO_RENDER_OGL_ES2 1)
+
+        list(APPEND EXTRA_LIBS
+          libgpu_es4_ext_stub_weak
+          libIMGEGL_stub_weak
+        )
+        set(HAVE_VIDEO_VITA_PVR ON)
+        set(SDL_VIDEO_VITA_PVR 1)
+      else()
+        set(HAVE_VIDEO_VITA_PVR OFF)
+      endif()
+    endif()
+
     set(SDL_VIDEO_RENDER_VITA_GXM 1)
 
     list(APPEND EXTRA_LIBS
@@ -2197,6 +2230,7 @@ elseif(VITA)
       SceHid_stub
       SceMotion_stub
       ScePower_stub
+      SceProcessmgr_stub
       m
     )
     if(HAVE_VIDEO_VITA_PIB)
@@ -2329,14 +2363,42 @@ listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 # Compat helpers for the configuration files
+find_package(Git)
+if(Git_FOUND)
+  execute_process(COMMAND
+    "${GIT_EXECUTABLE}" remote get-url origin
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    RESULT_VARIABLE GIT_URL_STATUS
+    OUTPUT_VARIABLE GIT_URL
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(COMMAND
+    "${GIT_EXECUTABLE}" rev-list --max-count=1 HEAD~..
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    RESULT_VARIABLE GIT_REVISION_STATUS
+    OUTPUT_VARIABLE GIT_REVISION
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  if(GIT_URL_STATUS EQUAL 0 OR GIT_REVISION_STATUS EQUAL 0)
+    set(SDL_REVISION "${GIT_URL}@${GIT_REVISION}")
+  else()
+    set(SDL_REVISION "")
+  endif()
+else()
+  set(SDL_REVISION "")
+endif()
+
+configure_file("${SDL2_SOURCE_DIR}/include/SDL_revision.h.cmake"
+  "${SDL2_BINARY_DIR}/include/SDL_revision.h")
+
 if(NOT WINDOWS OR CYGWIN OR MINGW)
 
   set(prefix ${CMAKE_INSTALL_PREFIX})
 
   set(exec_prefix "\${prefix}")
-  set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
-  set(bindir "\${exec_prefix}/bin")
-  set(includedir "\${prefix}/include")
+  set(libdir "${CMAKE_INSTALL_FULL_LIBDIR}")
+  set(bindir "${CMAKE_INSTALL_FULL_BINDIR}")
+  set(includedir "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
   if(SDL_STATIC)
     set(ENABLE_STATIC_TRUE "")
     set(ENABLE_STATIC_FALSE "#")
@@ -2440,31 +2502,6 @@ if (ASAN)
   endif()
 endif()
 
-if(ANDROID)
-FILE(GLOB PLATFORM_SRCS
-	${SDL2_SOURCE_DIR}/src/filesystem/unix/*.c
-	${SDL2_SOURCE_DIR}/src/filesystem/dummy/*.c
-	${SDL2_SOURCE_DIR}/src/filesystem/android/*.c
-	${SDL2_SOURCE_DIR}/src/video/android/*.c
-	${SDL2_SOURCE_DIR}/src/core/android/*.c
-	${SDL2_SOURCE_DIR}/src/timer/unix/*.c
-	${SDL2_SOURCE_DIR}/src/loadso/dlopen/*.c
-	${SDL2_SOURCE_DIR}/src/main/android/*.c
-	${SDL2_SOURCE_DIR}/src/thread/pthread/*.c
-	${SDL2_SOURCE_DIR}/src/audio/android/*.c
-	${SDL2_SOURCE_DIR}/src/joystick/dummy/*.c
-	${SDL2_SOURCE_DIR}/src/joystick/android/*.c
-	${SDL2_SOURCE_DIR}/src/power/android/*.c)
-
-	set(ANDROID_LDFLAGS "-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit")
-endif()
-
-if (LINUX OR EMSCRIPTEN)
-	set(DEFINES USING_GENERATED_CONFIG_H)
-else()
-	set(DEFINES "")
-endif()
-
 ##### Info output #####
 message(STATUS "")
 message(STATUS "SDL2 was configured with the following options:")
@@ -2472,6 +2509,7 @@ message(STATUS "")
 message(STATUS "Platform: ${CMAKE_SYSTEM}")
 message(STATUS "64-bit:   ${ARCH_64}")
 message(STATUS "Compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "Revision: ${SDL_REVISION}")
 message(STATUS "")
 message(STATUS "Subsystems:")
 foreach(_SUB ${SDL_SUBSYSTEMS})
@@ -2541,7 +2579,7 @@ if(NOT WINDOWS_STORE)
 add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
 # alias target for in-tree builds
 add_library(SDL2::SDL2main ALIAS SDL2main)
-target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
+target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
 set(_INSTALL_LIBS "SDL2main")
 endif()
 
@@ -2582,7 +2620,7 @@ if(SDL_SHARED)
   endif()
   set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
   target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
-  target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
+  target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
   if(ANDROID)
     target_include_directories(SDL2 PRIVATE ${ANDROID_NDK}/sources/android/cpufeatures)
   endif()
@@ -2614,7 +2652,7 @@ if(SDL_STATIC)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2-static ALIAS SDL2-static)
-  if (NOT SDL_SHARED OR NOT WIN32)
+  if (NOT SDL_SHARED OR NOT WIN32 OR MINGW)
     set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
     # Note: Apparently, OUTPUT_NAME must really be unique; even when
     # CMAKE_IMPORT_LIBRARY_SUFFIX or the like are given. Otherwise
@@ -2642,15 +2680,15 @@ endif()
 
 ##### Installation targets #####
 install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
-  LIBRARY DESTINATION "lib${LIB_SUFFIX}"
-  ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
-  RUNTIME DESTINATION bin)
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
 ##### Export files #####
-if (WINDOWS)
+if (WINDOWS AND NOT MINGW)
   set(PKG_PREFIX "cmake")
 else ()
-  set(PKG_PREFIX "lib/cmake/SDL2")
+  set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
 endif ()
 
 include(CMakePackageConfigHelpers)
@@ -2679,30 +2717,22 @@ foreach(_FNAME ${BIN_INCLUDE_FILES})
   list(REMOVE_ITEM INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/${_INCNAME})
 endforeach()
 list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
-install(FILES ${INCLUDE_FILES} DESTINATION include/SDL2)
+install(FILES ${INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2)
 
 set(SOPOSTFIX "")
 
-if(NOT (WINDOWS OR CYGWIN))
+if(NOT (WINDOWS OR CYGWIN) OR MINGW)
   if(SDL_SHARED)
-    if (APPLE)
-        set(SOEXT "dylib")
-    else()
-        set(SOEXT "so")
-    endif()
-    install(CODE "
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      \"libSDL2-2.0.${SOEXT}\" \"libSDL2.${SOEXT}\")")
-    install(FILES ${SDL2_BINARY_DIR}/libSDL2.${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
+    set(SOEXT ${CMAKE_SHARED_LIBRARY_SUFFIX}) # ".so", ".dylib", etc.
   endif()
   if(FREEBSD)
     # FreeBSD uses ${PREFIX}/libdata/pkgconfig
     install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
   else()
     install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
-      DESTINATION "lib${LIB_SUFFIX}/pkgconfig")
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
   endif()
-  install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION bin)
+  install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
   # TODO: what about the .spec file? Is it only needed for RPM creation?
   install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_FULL_DATAROOTDIR}/aclocal")
 endif()

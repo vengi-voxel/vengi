@@ -287,10 +287,10 @@ void *
 SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset)
 {
     const size_t needed = renderer->vertex_data_used + numbytes + alignment;
-    size_t current_offset = renderer->vertex_data_used;
+    const size_t current_offset = renderer->vertex_data_used;
 
-    size_t aligner = (alignment && ((current_offset & (alignment - 1)) != 0)) ? (alignment - (current_offset & (alignment - 1))) : 0;
-    size_t aligned = current_offset + aligner;
+    const size_t aligner = (alignment && ((current_offset & (alignment - 1)) != 0)) ? (alignment - (current_offset & (alignment - 1))) : 0;
+    const size_t aligned = current_offset + aligner;
 
     if (renderer->vertex_data_allocation < needed) {
         const size_t current_allocation = renderer->vertex_data ? renderer->vertex_data_allocation : 1024;
@@ -4122,6 +4122,21 @@ SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode)
 {
     blendMode = SDL_GetLongBlendMode(blendMode);
     return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
+}
+
+int
+SDL_RenderSetVSync(SDL_Renderer * renderer, int vsync)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (vsync != 0 && vsync != 1) {
+        return SDL_Unsupported();
+    }
+
+    if (renderer->SetVSync) {
+        return renderer->SetVSync(renderer, vsync);
+    }
+    return SDL_Unsupported();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
