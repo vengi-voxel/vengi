@@ -1,4 +1,6 @@
-vengi (0.0.10.0-1) UNRELEASED; urgency=low
+vengi (0.0.11.0-1) UNRELEASED; urgency=low
+
+vengi (0.0.10.0-1) unstable; urgency=low
 
   * General:
   * Added `--version` and `-v` commandline option to show the current version of each application
