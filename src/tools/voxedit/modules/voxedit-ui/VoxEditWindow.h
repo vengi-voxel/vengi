@@ -7,7 +7,6 @@
 #include "math/Axis.h"
 #include "video/WindowedApp.h"
 #include "ui/imgui/IMGUI.h"
-#include "AbstractMainWindow.h"
 #include "voxedit-util/SceneSettings.h"
 #include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"
@@ -18,10 +17,8 @@ namespace voxedit {
 
 class Viewport;
 
-class VoxEditWindow : public AbstractMainWindow {
+class VoxEditWindow {
 private:
-	using Super = AbstractMainWindow;
-
 	core::DynamicArray<core::String> _scripts;
 
 	core::VarPtr _showAxisVar;
@@ -70,6 +67,22 @@ private:
 	LSystemData _lsystemData;
 	core::String _currentSelectedPalette;
 	core::DynamicArray<core::String> _availablePalettes;
+	video::WindowedApp* _app;
+	core::VarPtr _lastOpenedFile;
+
+	glm::ivec3 _lastCursorPos;
+
+	LayerSettings _layerSettings;
+	SceneSettings _settings;
+
+	core::String _activeScript;
+	core::String _loadFile;
+	core::String _lastExecutedCommand;
+
+	bool _fourViewAvailable = false;
+	bool _animationViewAvailable = false;
+
+	voxelgenerator::TreeContext _treeGeneratorContext;
 
 	void reloadAvailablePalettes();
 
@@ -96,7 +109,7 @@ private:
 	bool actionMenuItem(const char *title, const char *command, bool enabled = true);
 	bool modifierRadioButton(const char *title, ModifierType type);
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
-	bool saveImage(const char *file) override;
+	bool saveImage(const char *file);
 
 	void switchTreeType(voxelgenerator::TreeType treeType);
 	void treePanel();
@@ -123,9 +136,16 @@ public:
 	bool isLayerWidgetDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
 
-	void resetCamera() override;
+	void resetCamera();
 	void update();
 	bool isSceneHovered() const;
+
+	bool importHeightmap(const core::String& file);
+	bool importAsPlane(const core::String& file);
+	bool importPalette(const core::String& file);
+
+	bool saveScreenshot(const core::String& file);
+	bool prefab(const core::String& file);
 };
 
 } // namespace voxedit

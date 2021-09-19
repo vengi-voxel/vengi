@@ -8,27 +8,48 @@
 #include "video/FrameBuffer.h"
 #include "video/WindowedApp.h"
 #include "video/gl/GLTypes.h"
-#include "AbstractViewport.h"
+#include "video/Camera.h"
+#include "video/FrameBuffer.h"
+#include "voxedit-util/ViewportController.h"
+#include "RenderShaders.h"
 
 namespace voxedit {
 
-class Viewport : public voxedit::AbstractViewport {
+class Viewport {
 private:
-	using Super = voxedit::AbstractViewport;
 	video::Id _frameBufferTexture = video::InvalidId;
 	video::WindowedApp *_app;
 	const core::String _id;
 	bool _hovered = false;
+	shader::EdgeShader& _edgeShader;
+	video::FrameBuffer _frameBuffer;
+	video::TexturePtr _texture;
+	voxedit::ViewportController _controller;
+	core::String _cameraMode;
+
+	void renderToFrameBuffer();
+	void resize(const glm::ivec2& frameBufferSize);
+	void cursorMove(bool, int x, int y);
 
 public:
 	Viewport(video::WindowedApp *app, const core::String& id);
-	virtual ~Viewport() {
-	}
+	~Viewport();
 
 	bool isHovered() const;
-	void update() override;
-	bool init() override;
+	void update();
+	bool init();
+	void shutdown();
+
 	const core::String& id() const;
+
+	void setMode(ViewportController::SceneCameraMode mode = ViewportController::SceneCameraMode::Free);
+	void setRenderMode(ViewportController::RenderMode renderMode = ViewportController::RenderMode::Editor);
+	void resetCamera();
+	bool saveImage(const char* filename);
+
+	video::FrameBuffer& frameBuffer();
+	video::Camera& camera();
+	ViewportController& controller();
 };
 
 inline const core::String& Viewport::id() const {
@@ -37,6 +58,18 @@ inline const core::String& Viewport::id() const {
 
 inline bool Viewport::isHovered() const {
 	return _hovered;
+}
+
+inline video::FrameBuffer& Viewport::frameBuffer() {
+	return _frameBuffer;
+}
+
+inline ViewportController& Viewport::controller() {
+	return _controller;
+}
+
+inline video::Camera& Viewport::camera() {
+	return _controller.camera();
 }
 
 }

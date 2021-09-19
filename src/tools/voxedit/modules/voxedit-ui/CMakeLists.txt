@@ -1,8 +1,6 @@
 set(LIB voxedit-ui)
 
 set(SRCS
-	AbstractViewport.h AbstractViewport.cpp
-	AbstractMainWindow.h AbstractMainWindow.cpp
 	VoxEditWindow.h VoxEditWindow.cpp
 	Viewport.h Viewport.cpp
 )

@@ -38,7 +38,7 @@
 
 namespace voxedit {
 
-VoxEditWindow::VoxEditWindow(video::WindowedApp *app) : Super(app) {
+VoxEditWindow::VoxEditWindow(video::WindowedApp *app) : _app(app) {
 	_scene = new Viewport(app, "free");
 	_scene->init();
 
@@ -115,11 +115,6 @@ bool VoxEditWindow::mirrorAxisRadioButton(const char *title, math::Axis type) {
 		return true;
 	}
 	return false;
-}
-
-void VoxEditWindow::afterLoad(const core::String &file) {
-	_lastOpenedFile->setVal(file);
-	resetCamera();
 }
 
 bool VoxEditWindow::init() {
@@ -217,6 +212,38 @@ bool VoxEditWindow::loadAnimationEntity(const core::String &file) {
 	}
 	resetCamera();
 	return true;
+}
+
+void VoxEditWindow::afterLoad(const core::String &file) {
+	_lastOpenedFile->setVal(file);
+	resetCamera();
+}
+
+bool VoxEditWindow::importAsPlane(const core::String& file) {
+	if (file.empty()) {
+		_app->openDialog([this] (const core::String file) { importAsPlane(file); }, "png");
+		return true;
+	}
+
+	return sceneMgr().importAsPlane(file);
+}
+
+bool VoxEditWindow::importPalette(const core::String& file) {
+	if (file.empty()) {
+		_app->openDialog([this] (const core::String file) { importPalette(file); }, "png");
+		return true;
+	}
+
+	return sceneMgr().importPalette(file);
+}
+
+bool VoxEditWindow::importHeightmap(const core::String& file) {
+	if (file.empty()) {
+		_app->openDialog([this] (const core::String file) { importHeightmap(file); }, "png");
+		return true;
+	}
+
+	return sceneMgr().importHeightmap(file);
 }
 
 bool VoxEditWindow::createNew(bool force) {
@@ -756,7 +783,7 @@ void VoxEditWindow::registerPopups() {
 		ImGui::EndPopup();
 	}
 
-	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiPopupFlags_AnyPopupLevel)) {
+	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::InputText("Name", &_layerSettings.name);
 		ImGui::InputVec3("Position", _layerSettings.position);
 		ImGui::InputVec3("Size", _layerSettings.size);
@@ -1017,4 +1044,28 @@ bool VoxEditWindow::isSceneHovered() const {
 		   _sceneLeft->isHovered() || _sceneFront->isHovered() ||
 		   _sceneAnimation->isHovered();
 }
+
+
+bool VoxEditWindow::prefab(const core::String &file) {
+	if (file.empty()) {
+		_app->openDialog([this](const core::String file) { prefab(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
+		return true;
+	}
+
+	return sceneMgr().prefab(file);
+}
+
+bool VoxEditWindow::saveScreenshot(const core::String& file) {
+	if (file.empty()) {
+		_app->saveDialog([this] (const core::String file) {saveScreenshot(file); }, "png");
+		return true;
+	}
+	if (!saveImage(file.c_str())) {
+		Log::warn("Failed to save screenshot");
+		return false;
+	}
+	Log::info("Screenshot created at '%s'", file.c_str());
+	return true;
+}
+
 }
