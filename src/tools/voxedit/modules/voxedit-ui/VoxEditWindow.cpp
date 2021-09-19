@@ -706,7 +706,7 @@ void VoxEditWindow::registerPopups() {
 		_popupFailedToSave = false;
 	}
 
-	if (ImGui::BeginPopupModal(POPUP_TITLE_SCENE_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted("Scene settings");
 		ImGui::Separator();
 		ImGui::InputVec3("Diffuse color", _settings.diffuseColor);
@@ -744,7 +744,7 @@ void VoxEditWindow::registerPopups() {
 		ImGui::EndPopup();
 	}
 
-	if (ImGui::BeginPopupModal(POPUP_TITLE_FAILED_TO_SAVE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted(ICON_FA_EXCLAMATION_TRIANGLE);
 		ImGui::SameLine();
 		ImGui::TextUnformatted("Failed to save the model!");
