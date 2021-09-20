@@ -112,7 +112,11 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	io.KeyShift = (modifier & KMOD_SHIFT) != 0;
 	io.KeyCtrl  = (modifier & KMOD_CTRL) != 0;
 	io.KeyAlt   = (modifier & KMOD_ALT) != 0;
+#ifdef _WIN32
+	io.KeySuper = false;
+#else
 	io.KeySuper = (modifier & KMOD_GUI) != 0;
+#endif
 	return true;
 }
 
@@ -265,10 +269,13 @@ app::AppState IMGUIApp::onInit() {
 	io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
 	io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
 	io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
+	io.KeyMap[ImGuiKey_Insert] = SDL_SCANCODE_INSERT;
 	io.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
 	io.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
+	io.KeyMap[ImGuiKey_Space] = SDL_SCANCODE_SPACE;
 	io.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
 	io.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
+	io.KeyMap[ImGuiKey_KeyPadEnter] = SDL_SCANCODE_KP_ENTER;
 	io.KeyMap[ImGuiKey_A] = SDLK_a;
 	io.KeyMap[ImGuiKey_C] = SDLK_c;
 	io.KeyMap[ImGuiKey_V] = SDLK_v;
