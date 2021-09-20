@@ -996,7 +996,7 @@ void VoxEditWindow::treePanel() {
 void VoxEditWindow::lsystemPanel() {
 	if (ImGui::Begin(TITLE_LSYSTEMPANEL)) {
 		ImGui::InputText("Axiom", &_lsystemData.axiom);
-		ImGui::InputText("Rules", &_lsystemData.rulesStr);
+		ImGui::InputTextMultiline("Rules", &_lsystemData.rulesStr);
 		ImGui::InputFloat("angle", &_lsystemData.angle);
 		ImGui::InputFloat("length", &_lsystemData.length);
 		ImGui::InputFloat("width", &_lsystemData.width);

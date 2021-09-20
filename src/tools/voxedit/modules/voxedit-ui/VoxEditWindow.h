@@ -56,11 +56,10 @@ private:
 
 	struct LSystemData {
 		core::String axiom = "F";
-		core::String rulesStr = R"(
-			{
-				F
-				(67)F+[!+F-F-F(37)L]-[!-F+F+F(142)L]>[!F<F<F(128)L]<[!<F>F>F(123)L]
-			})";
+		core::String rulesStr = R"({
+	F
+	(67)F+[!+F-F-F(37)L]-[!-F+F+F(142)L]>[!F<F<F(128)L]<[!<F>F>F(123)L]
+})";
 		float angle = 22.5f;
 		float length = 12.0f;
 		float width = 4.0f;
@@ -82,9 +81,6 @@ private:
 	core::String _activeScript;
 	core::String _loadFile;
 	core::String _lastExecutedCommand;
-
-	bool _fourViewAvailable = false;
-	bool _animationViewAvailable = false;
 
 	voxelgenerator::TreeContext _treeGeneratorContext;
 
