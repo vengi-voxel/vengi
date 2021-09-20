@@ -1031,9 +1031,54 @@ void VoxEditWindow::noisePanel() {
 
 void VoxEditWindow::scriptPanel() {
 	if (ImGui::Begin(TITLE_SCRIPTPANEL)) {
-		//_scripts = sceneMgr().luaGenerator().listScripts();
+		if (_scripts.empty()) {
+			_scripts = sceneMgr().luaGenerator().listScripts();
+		}
+
+		if (ImGui::ComboStl("Script", &_currentScript, _scripts)) {
+			const core::String& scriptName = _scripts[_currentScript];
+			_activeScript = sceneMgr().luaGenerator().load(scriptName);
+			sceneMgr().luaGenerator().argumentInfo(_activeScript, _scriptParameterDescription);
+			const int parameterCount = _scriptParameterDescription.size();
+			_scriptParameters.clear();
+			_scriptParameters.resize(parameterCount);
+			for (int i = 0; i < parameterCount; ++i) {
+				const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
+				_scriptParameters[i] = p.defaultValue;
+			}
+		}
+
+		const int n = _scriptParameterDescription.size();
+		for (int i = 0; i < n; ++i) {
+			const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
+			switch (p.type) {
+			case voxelgenerator::LUAParameterType::ColorIndex:
+			case voxelgenerator::LUAParameterType::Integer:
+			case voxelgenerator::LUAParameterType::Float:
+			case voxelgenerator::LUAParameterType::String: {
+				core::String &str = _scriptParameters[i];
+				ImGui::InputText(p.name.c_str(), &str);
+				break;
+			}
+			case voxelgenerator::LUAParameterType::Boolean: {
+				core::String &str = _scriptParameters[i];
+				bool checked = str == "1";
+				if (ImGui::Checkbox(p.name.c_str(), &checked)) {
+					str = checked ? "1" : "0";
+				}
+				break;
+			}
+			case voxelgenerator::LUAParameterType::Max:
+				return;
+			}
+			ImGui::SameLine();
+			ImGui::TextWrapped("%s", p.description.c_str());
+		}
+
+		if (ImGui::Button("Execute##scriptpanel")) {
+			sceneMgr().runScript(_activeScript, _scriptParameters);
+		}
 	}
-	// TODO: implement me
 	ImGui::End();
 }
 

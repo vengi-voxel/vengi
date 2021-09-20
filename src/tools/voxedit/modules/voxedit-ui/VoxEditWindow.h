@@ -11,6 +11,7 @@
 #include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxelgenerator/LUAGenerator.h"
 #include "voxelgenerator/TreeContext.h"
 
 namespace voxedit {
@@ -19,7 +20,10 @@ class Viewport;
 
 class VoxEditWindow {
 private:
+	int _currentScript = -1;
 	core::DynamicArray<core::String> _scripts;
+	core::DynamicArray<voxelgenerator::LUAParameterDescription> _scriptParameterDescription;
+	core::DynamicArray<core::String> _scriptParameters;
 
 	core::VarPtr _showAxisVar;
 	core::VarPtr _showGridVar;
