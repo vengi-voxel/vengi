@@ -304,9 +304,7 @@ void VoxEditWindow::menuBar() {
 		}
 		if (ImGui::BeginMenu(ICON_FA_EYE"View")) {
 			actionMenuItem("Reset camera", "resetcamera");
-			if (actionMenuItem("Quad view", "toggleviewport")) {
-				// TODO: quadview
-			}
+			actionMenuItem("Quad view", "toggleviewport");
 			actionMenuItem("Animation view", "toggleanimation");
 			actionMenuItem("Scene view", "togglescene");
 			ImGui::EndMenu();
