@@ -162,9 +162,11 @@ void VoxEditWindow::shutdown() {
 }
 
 void VoxEditWindow::toggleViewport() {
+	// TODO: ??
 }
 
 void VoxEditWindow::toggleAnimation() {
+	// TODO: ??
 }
 
 bool VoxEditWindow::save(const core::String &file) {
@@ -1052,9 +1054,31 @@ void VoxEditWindow::scriptPanel() {
 		for (int i = 0; i < n; ++i) {
 			const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
 			switch (p.type) {
-			case voxelgenerator::LUAParameterType::ColorIndex:
-			case voxelgenerator::LUAParameterType::Integer:
-			case voxelgenerator::LUAParameterType::Float:
+			case voxelgenerator::LUAParameterType::ColorIndex: {
+				// TODO: select palette color
+				core::String &str = _scriptParameters[i];
+				int val = core::string::toInt(str);
+				if (ImGui::InputInt(p.name.c_str(), &val)) {
+					str = core::string::toString(val);
+				}
+				break;
+			}
+			case voxelgenerator::LUAParameterType::Integer: {
+				core::String &str = _scriptParameters[i];
+				int val = core::string::toInt(str);
+				if (ImGui::InputInt(p.name.c_str(), &val)) {
+					str = core::string::toString(val);
+				}
+				break;
+			}
+			case voxelgenerator::LUAParameterType::Float: {
+				core::String &str = _scriptParameters[i];
+				float val = core::string::toFloat(str);
+				if (ImGui::InputFloat(p.name.c_str(), &val)) {
+					str = core::string::toString(val);
+				}
+				break;
+			}
 			case voxelgenerator::LUAParameterType::String: {
 				core::String &str = _scriptParameters[i];
 				ImGui::InputText(p.name.c_str(), &str);
