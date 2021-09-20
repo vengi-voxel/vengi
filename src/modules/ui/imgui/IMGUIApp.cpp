@@ -123,8 +123,18 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowWidth, windowHeight);
 	ImGuiIO& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
-	//io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
+	int w = _windowDimension.x;
+	int h = _windowDimension.y;
+	if (SDL_GetWindowFlags(_window) & SDL_WINDOW_MINIMIZED) {
+		w = h = 0;
+	}
+
+	io.DisplaySize = _windowDimension;
+	if (w > 0 && h > 0) {
+		const float xScale = (float)_frameBufferDimension.x / (float)_windowDimension.x;
+		const float yScale = (float)_frameBufferDimension.y / (float)_windowDimension.y;
+		io.DisplayFramebufferScale = ImVec2(xScale, yScale);
+	}
 
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 	_camera.update(0.0);
@@ -250,9 +260,12 @@ app::AppState IMGUIApp::onInit() {
 	const core::String logFile = _appname + "-imgui.log";
 	_writePathLog = _filesystem->writePath(logFile.c_str());
 	io.LogFilename = _writePathLog.c_str();
-	io.DisplaySize = ImVec2((float)_frameBufferDimension.x, (float)_frameBufferDimension.y);
 
-	//io.DisplayFramebufferScale = ImVec2(_dpiHorizontalFactor, _dpiVerticalFactor);
+	io.DisplaySize = _windowDimension;
+	const float xScale = (float)_frameBufferDimension.x / (float)_windowDimension.x;
+	const float yScale = (float)_frameBufferDimension.y / (float)_windowDimension.y;
+	io.DisplayFramebufferScale = ImVec2(xScale, yScale);
+
 	_texture = video::genTexture();
 	loadFonts();
 
