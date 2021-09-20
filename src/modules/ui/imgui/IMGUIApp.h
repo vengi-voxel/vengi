@@ -13,6 +13,8 @@
 #include <stack>
 #include "core/collection/Array.h"
 
+struct SDL_Cursor;
+
 namespace ui {
 namespace imgui {
 
@@ -42,6 +44,7 @@ protected:
 	core::VarPtr _lastDirectory;
 	bool _showFileDialog = false;
 	core::String _fileDialogFilter;
+	SDL_Cursor* _mouseCursors[ImGuiMouseCursor_COUNT];
 	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
 	std::function<void(const core::String&)> _fileDialogCallback {};
 

@@ -291,6 +291,18 @@ app::AppState IMGUIApp::onInit() {
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
 
+	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+
+	_mouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+	_mouseCursors[ImGuiMouseCursor_TextInput] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+	_mouseCursors[ImGuiMouseCursor_ResizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+	_mouseCursors[ImGuiMouseCursor_ResizeNS] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
+	_mouseCursors[ImGuiMouseCursor_ResizeEW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
+	_mouseCursors[ImGuiMouseCursor_ResizeNESW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
+	_mouseCursors[ImGuiMouseCursor_ResizeNWSE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+	_mouseCursors[ImGuiMouseCursor_Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+	_mouseCursors[ImGuiMouseCursor_NotAllowed] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
+
 	SDL_StartTextInput();
 
 	_console.init();
@@ -318,6 +330,20 @@ app::AppState IMGUIApp::onRunning() {
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.MousePos = ImVec2(_mousePos.x, _mousePos.y);
+
+	if (!(io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)) {
+		ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+		if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None) {
+			SDL_ShowCursor(SDL_FALSE);
+		} else {
+			SDL_Cursor *cursor = _mouseCursors[imgui_cursor];
+			if (cursor == nullptr) {
+				cursor = _mouseCursors[ImGuiMouseCursor_Arrow];
+			}
+			SDL_SetCursor(cursor);
+			SDL_ShowCursor(SDL_TRUE);
+		}
+	}
 
 	core_assert(_bufferIndex > -1);
 	core_assert(_indexBufferIndex > -1);
@@ -429,6 +455,10 @@ void IMGUIApp::executeDrawCommands() {
 }
 
 app::AppState IMGUIApp::onCleanup() {
+	for (int i = 0; i < ImGuiMouseCursor_COUNT; ++i) {
+		SDL_FreeCursor(_mouseCursors[i]);
+	}
+
 	if (ImGui::GetCurrentContext() != nullptr) {
 		ImGui::DestroyContext();
 	}
