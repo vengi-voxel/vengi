@@ -42,6 +42,7 @@ protected:
 	float _dpiVerticalFactor = 1.0f;
 	bool _allowRelativeMouseMode = true;
 	bool _showWindow = true;
+	bool _singleWindowMode = false;
 
 	util::KeyBindingHandler _keybindingHandler;
 	/**
@@ -73,6 +74,7 @@ protected:
 
 public:
 	bool isRelativeMouseMode() const;
+	bool isSingleWindowMode() const;
 
 	/**
 	 * @brief This may differ from windowDimension() if we're rendering to a high-DPI
@@ -135,6 +137,10 @@ public:
 	}
 	static WindowedApp* getInstance();
 };
+
+inline bool WindowedApp::isSingleWindowMode() const {
+	return _singleWindowMode;
+}
 
 inline const glm::ivec2& WindowedApp::frameBufferDimension() const {
 	return _frameBufferDimension;

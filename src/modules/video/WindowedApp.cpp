@@ -39,6 +39,11 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 
 WindowedApp::WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize), _frameBufferDimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
+#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS)
+	_singleWindowMode = true;
+#else
+	_singleWindowMode = false;
+#endif
 }
 
 WindowedApp::~WindowedApp() {
