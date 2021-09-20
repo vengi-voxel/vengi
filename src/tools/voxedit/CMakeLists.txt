@@ -1,4 +1,3 @@
-set(UI_MODULE voxedit-ui)
 include_directories(modules)
 add_subdirectory(modules)
 
@@ -28,4 +27,4 @@ set(FILES
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ${UI_MODULE} voxedit-util)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES voxedit-ui voxedit-util)
