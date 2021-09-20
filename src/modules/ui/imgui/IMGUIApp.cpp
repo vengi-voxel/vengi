@@ -26,6 +26,7 @@
 #include "FontAwesomeSolid.h"
 #include "ArimoRegular.h"
 #include "IconsFontAwesome5.h"
+#include "IMGUIStyle.h"
 
 namespace ui {
 namespace imgui {
@@ -269,7 +270,8 @@ app::AppState IMGUIApp::onInit() {
 	_texture = video::genTexture();
 	loadFonts();
 
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsCorporateGrey();
+	//ImGui::StyleColorsDark();
 	ImGuiStyle &style = ImGui::GetStyle();
 	style.ScaleAllSizes(_dpiFactor);
 

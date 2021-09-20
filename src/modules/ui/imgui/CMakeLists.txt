@@ -5,6 +5,7 @@ set(SRCS
 	Console.cpp Console.h
 	FileDialog.cpp FileDialog.h
 	IMGUI.cpp IMGUI.h
+	IMGUIStyle.cpp IMGUIStyle.h
 	IMGUIInternal.h
 )
 
