@@ -6,7 +6,6 @@ set(SRCS
 	FileDialog.cpp FileDialog.h
 	IMGUI.cpp IMGUI.h
 	IMGUIInternal.h
-	IMGUIAddons.h
 )
 
 set(GEN_DIR ${GENERATE_DIR}/${LIB})
