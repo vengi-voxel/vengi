@@ -94,8 +94,9 @@ static void nk_sdl_clipbard_paste(nk_handle usr, struct nk_text_edit *edit) {
 	if (!SDL_HasClipboardText()) {
 		return;
 	}
-	const char *text = SDL_GetClipboardText();
+	char *text = SDL_GetClipboardText();
 	nk_textedit_paste(edit, text, nk_strlen(text));
+	SDL_free(text);
 }
 
 static void nk_sdl_clipbard_copy(nk_handle usr, const char *text, int len) {
