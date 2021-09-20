@@ -343,6 +343,7 @@ app::AppState IMGUIApp::onRunning() {
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.MousePos = ImVec2(_mousePos.x, _mousePos.y);
+	io.MouseHoveredViewport = 0;
 
 	if (!(io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)) {
 		ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
