@@ -41,6 +41,12 @@ private:
 public:
 	ShapeBuilder(int initialSize = 0);
 
+	/**
+	 * @brief Reserve additional vertex data
+	 *
+	 * @param vertices The amount of additional vertices
+	 * @param indices The amount of additional indices
+	 */
 	inline void reserve(int vertices, int indices) {
 		_colors.reserve(_colors.size() + vertices);
 		_vertices.reserve(_vertices.size() + vertices);

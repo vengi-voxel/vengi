@@ -53,7 +53,7 @@ void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float st
 	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wx = near ? 0.0f : width.x;
-	const int n = (int)(width.x / stepWidth) + (int)(width.y / stepWidth) + 2;
+	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
 	reserve(n * 2, n * 2);
 	for (float y = 0.0f; y <= width.y; y += stepWidth) {
 		addIndex(addVertex(glm::vec3(wx, y, 0.0f) + mins));
@@ -70,7 +70,7 @@ void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float st
 	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wy = near ? 0.0f : width.y;
-	const int n = (int)(width.x / stepWidth) + (int)(width.y / stepWidth) + 2;
+	const int n = (int)(width.x / stepWidth) + (int)(width.z / stepWidth) + 2;
 	reserve(n * 2, n * 2);
 	for (float x = 0.0f; x <= width.x; x += stepWidth) {
 		addIndex(addVertex(glm::vec3(x, wy, 0.0f) + mins));
