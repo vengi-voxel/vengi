@@ -558,11 +558,11 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 	bindTexture(unit, type, handle);
 	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
 	const int pitch = w * f.bits / 8;
-	*pixels = (uint8_t*)SDL_malloc(h * pitch);
+	*pixels = (uint8_t*)core_malloc(h * pitch);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glGetTexImage(_priv::TextureTypes[core::enumVal(type)], 0, f.dataFormat, f.dataType, (void*)*pixels);
 	if (checkError()) {
-		SDL_free(*pixels);
+		core_free(*pixels);
 		*pixels = nullptr;
 		return false;
 	}
