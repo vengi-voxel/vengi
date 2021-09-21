@@ -24,8 +24,10 @@
 #include <SDL.h>
 #include <thread>
 #include "FontAwesomeSolid.h"
+#include "ForkAwesomeWebFont.h"
 #include "ArimoRegular.h"
 #include "IconsFontAwesome5.h"
+#include "IconsForkAwesome.h"
 #include "IMGUIStyle.h"
 
 namespace ui {
@@ -200,9 +202,13 @@ void IMGUIApp::loadFonts() {
 	io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 											_uiFontSize->floatVal() * _dpiFactor, nullptr, rangesBasic);
 
-	static const ImWchar rangesIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+	static const ImWchar rangesFAIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											_uiFontSize->floatVal() * _dpiFactor, &fontCfg, rangesIcons);
+											_uiFontSize->floatVal() * _dpiFactor, &fontCfg, rangesFAIcons);
+
+	static const ImWchar rangesFKIcons[] = {ICON_MIN_FK, ICON_MAX_FK, 0};
+	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
+											_uiFontSize->floatVal() * _dpiFactor, &fontCfg, rangesFKIcons);
 
 	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 											_uiFontSize->floatVal() * 2.0f * _dpiFactor);

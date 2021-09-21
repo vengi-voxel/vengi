@@ -197,8 +197,11 @@ updatelibs: update-nuklear update-libuv update-stb update-googletest update-benc
 update-icons:
 	$(call UPDATE_GIT,font-awesome,https://github.com/FortAwesome/Font-Awesome)
 	$(call UPDATE_GIT,iconfontcppheaders,https://github.com/juliettef/IconFontCppHeaders)
+	$(call UPDATE_GIT,fork-awesome,https://github.com/ForkAwesome/Fork-Awesome)
 	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsFontAwesome5.h src/modules/ui/imgui/
 	cp $(UPDATEDIR)/font-awesome.sync/webfonts/fa-solid-900.ttf data/imgui
+	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsForkAwesome.h src/modules/ui/imgui/
+	cp $(UPDATEDIR)/fork-awesome.sync/fonts/forkawesome-webfont.ttf data/imgui
 
 update-fonts:
 	curl -o $(UPDATEDIR)/arimo.zip https://fonts.google.com/download?family=Arimo
