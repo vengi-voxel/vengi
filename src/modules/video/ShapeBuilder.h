@@ -6,6 +6,7 @@
 
 #include "math/AABB.h"
 #include "math/Plane.h"
+#include "ui/imgui/IconsFontAwesome5.h"
 #include "video/Types.h"
 #include "core/collection/DynamicArray.h"
 #include <glm/mat3x3.hpp>
@@ -40,19 +41,22 @@ private:
 public:
 	ShapeBuilder(int initialSize = 0);
 
-	inline void reserve(int vertices, int additionalIndices = 0) {
-		_colors.reserve(_colors.size() + vertices + additionalIndices);
+	inline void reserve(int vertices, int indices) {
+		_colors.reserve(_colors.size() + vertices);
 		_vertices.reserve(_vertices.size() + vertices);
 		_normals.reserve(_normals.size() + vertices);
-		_indices.reserve(_indices.size() + vertices * 3 + additionalIndices);
 		_texcoords.reserve(_texcoords.size() + vertices);
+
+		_indices.reserve(_indices.size() + indices);
 	}
 
 	inline void addIndex(uint32_t index) {
+		core_assert(_indices.capacity() > _indices.size());
 		_indices.push_back(index);
 	}
 
 	inline void addIndex(uint32_t index1, uint32_t index2, uint32_t index3) {
+		core_assert(_indices.capacity() >= _indices.size() + 3);
 		_indices.push_back(index1);
 		_indices.push_back(index2);
 		_indices.push_back(index3);
@@ -74,7 +78,7 @@ public:
 		_texcoords.clear();
 		_position = glm::vec3(0.0f);
 		if (_initialSize > 0) {
-			reserve(_initialSize);
+			reserve(_initialSize, _initialSize);
 		}
 	}
 	void aabbGridXY(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);

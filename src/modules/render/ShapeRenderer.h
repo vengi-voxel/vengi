@@ -26,6 +26,13 @@ class ShapeRenderer : public core::IComponent {
 public:
 	static constexpr int MAX_MESHES = 16;
 private:
+	struct Vertex {
+		glm::vec4 pos;
+		glm::vec4 color;
+		glm::vec2 uv;
+		glm::vec3 normal;
+	};
+
 	video::Buffer _vbo[MAX_MESHES];
 	int32_t _vertexIndex[MAX_MESHES];
 	bool _hidden[MAX_MESHES] { false };
@@ -40,6 +47,8 @@ private:
 	shader::ColorShader& _colorShader;
 	shader::ColorInstancedShader& _colorInstancedShader;
 	shader::TextureShader& _textureShader;
+
+	core::DynamicArray<Vertex> _vertices;
 
 	int renderAllInstanced(const video::Camera& camera, const glm::mat4& model) const;
 	int renderAllTextured(const video::Camera& camera, const glm::mat4& model) const;

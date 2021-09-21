@@ -12,13 +12,6 @@
 
 namespace render {
 
-struct Vertex {
-	glm::vec4 pos;
-	glm::vec4 color;
-	glm::vec2 uv;
-	glm::vec3 normal;
-};
-
 ShapeRenderer::ShapeRenderer() :
 		_colorShader(shader::ColorShader::getInstance()),
 		_colorInstancedShader(shader::ColorInstancedShader::getInstance()),
@@ -94,16 +87,16 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 		return -1;
 	}
 
-	core::DynamicArray<Vertex> vertices;
-	vertices.reserve(shapeBuilder.getVertices().size());
+	_vertices.clear();
+	_vertices.reserve(shapeBuilder.getVertices().size());
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
-		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
+		_vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
 	});
 	const void* verticesData = nullptr;
-	if (!vertices.empty()) {
-		verticesData = &vertices.front();
+	if (!_vertices.empty()) {
+		verticesData = &_vertices.front();
 	}
-	_vertexIndex[meshIndex] = _vbo[meshIndex].create(verticesData, vertices.size() * sizeof(Vertex));
+	_vertexIndex[meshIndex] = _vbo[meshIndex].create(verticesData, _vertices.size() * sizeof(Vertex));
 	if (_vertexIndex[meshIndex] == -1) {
 		Log::error("Could not create vbo for vertices");
 		return -1;
@@ -160,18 +153,18 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 		Log::warn("Invalid mesh index given: %u", meshIndex);
 		return;
 	}
-	core::DynamicArray<Vertex> vertices;
-	vertices.reserve(shapeBuilder.getVertices().size());
+	_vertices.clear();
+	_vertices.reserve(shapeBuilder.getVertices().size());
 	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
-		vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
+		_vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
 	});
 	const void* verticesData = nullptr;
-	if (!vertices.empty()) {
-		verticesData = &vertices.front();
+	if (!_vertices.empty()) {
+		verticesData = &_vertices.front();
 	}
 	video::Buffer& vbo = _vbo[meshIndex];
-	core_assert_always(vbo.update(_vertexIndex[meshIndex], verticesData, vertices.size() * sizeof(Vertex)));
-	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
+	core_assert_always(vbo.update(_vertexIndex[meshIndex], verticesData, _vertices.size() * sizeof(Vertex)));
+	const video::ShapeBuilder::Indices& indices = shapeBuilder.getIndices();
 	const void* indicesData = nullptr;
 	if (!indices.empty()) {
 		indicesData = &indices.front();
@@ -206,7 +199,7 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, siz
 		// TODO: this looks broken... somehow
 		video::Attribute attributeOffset = _colorInstancedShader.getOffsetAttribute(_offsetIndex[meshIndex], &glm::vec3::x);
 		attributeOffset.divisor = 1;
-		attributeOffset.stride = attributeOffset.size * sizeof(float);
+		attributeOffset.stride = (int)(attributeOffset.size * sizeof(float));
 		core_assert_always(_vbo[meshIndex].addAttribute(attributeOffset));
 	} else {
 		core_assert_always(vbo.update(_offsetIndex[meshIndex], posBuf, posBufLength));

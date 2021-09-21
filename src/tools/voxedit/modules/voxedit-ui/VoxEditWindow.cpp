@@ -358,9 +358,9 @@ void VoxEditWindow::palette() {
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + usedHeight);
-		if (ImGui::InputInt("Color index", &voxelColorIndex)) {
-			sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, voxelColorIndex));
-		}
+		ImGui::Text("Color: %i", voxelColorIndex);
+		ImGui::TooltipText("Palette color index for current voxel under cursor");
+		//sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, voxelColorIndex));
 		actionButton("Import palette", "importpalette");
 		ImGui::SameLine();
 		if (ImGui::Button("Load palette##button")) {
