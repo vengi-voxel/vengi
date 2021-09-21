@@ -12,6 +12,7 @@
 
 #include "image/Image.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/ViewportController.h"
 
 
 namespace voxedit {
@@ -23,13 +24,13 @@ Viewport::~Viewport() {
 	shutdown();
 }
 
-bool Viewport::init() {
+bool Viewport::init(ViewportController::RenderMode renderMode) {
+	_controller.setRenderMode(renderMode);
 	setMode(ViewportController::SceneCameraMode::Free);
-	setRenderMode(ViewportController::RenderMode::Editor);
 	resetCamera();
 
 	if (!_edgeShader.setup()) {
-		Log::error("Failed to initialize abstract viewport");
+		Log::error("Failed to initialize viewport");
 		return false;
 	}
 
@@ -39,80 +40,51 @@ bool Viewport::init() {
 
 	resize(_app->frameBufferDimension());
 	resetCamera();
-	voxedit::sceneMgr().setActiveCamera(&_controller.camera());
+	sceneMgr().setActiveCamera(&_controller.camera());
 	return true;
 }
 
 void Viewport::update() {
-	if (_controller.renderMode() != ViewportController::RenderMode::Editor) {
-		return;
-	}
-	camera().setTarget(glm::vec3(voxedit::sceneMgr().referencePosition()));
+	camera().setTarget(glm::vec3(sceneMgr().referencePosition()));
 
-	ImGui::SetNextWindowSize(ImGui::GetWindowSize());
+	const glm::ivec2 &contentSize = ImGui::GetWindowContentRegionMax();
 	_hovered = false;
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	if (ImGui::Begin(_id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar)) {
-		const ImVec2& windowPos = ImGui::GetWindowPos();
-		const double deltaFrameSeconds = app::App::getInstance()->deltaFrameSeconds();
-		_controller.update(deltaFrameSeconds);
-		const ImVec2& windowSize = ImGui::GetWindowSize();
-		resize(glm::ivec2(windowSize.x, windowSize.y));
+		if (_controller.renderMode() == ViewportController::RenderMode::Animation && sceneMgr().editMode() != EditMode::Animation) {
+			ImGui::TextDisabled("No animation loaded");
+		} else {
+			const video::WindowedApp *app = video::WindowedApp::getInstance();
+			const double deltaFrameSeconds = app->deltaFrameSeconds();
+			_controller.update(deltaFrameSeconds);
 
-		const bool relative = video::WindowedApp::getInstance()->isRelativeMouseMode();
-		const bool alt = ImGui::GetIO().KeyAlt;
-		const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
-		const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
-		const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y);
-		cursorMove(relative || middle || alt, mouseX, mouseY);
-		renderToFrameBuffer();
+			resize(contentSize);
 
-		// use the uv coords here to take a potential fb flip into account
-		const glm::vec4 &uv = _frameBuffer.uv();
-		const glm::vec2 uva(uv.x, uv.y);
-		const glm::vec2 uvc(uv.z, uv.w);
-		const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+			renderToFrameBuffer();
 
-#if 0 // TODO: this doesn't work, as we don't render directly in dearimgui - but only collect render commands
-		video::Shader *shader = nullptr;
-		video::Id prevShader = video::InvalidId;
-		switch (_controller.shaderType()) {
-		case voxedit::ViewportController::ShaderType::Edge:
-			shader = &_edgeShader;
-			break;
-		default:
-			break;
-		}
-		if (shader != nullptr) {
-			prevShader = video::getProgram();
-			shader->activate();
-			const glm::mat4 &projectionMatrix = camera().projectionMatrix();
-			const int loc = shader->getUniformLocation("u_viewprojection");
-			if (loc >= 0) {
-				shader->setUniformMatrix(loc, projectionMatrix);
-			}
-		}
-#endif
-		ImGui::Image(texture->handle(), windowSize, uva, uvc);
-#if 0
-		if (shader != nullptr) {
-			shader->deactivate();
-			video::useProgram(prevShader);
-		}
-#endif
-		if (ImGui::IsItemFocused() || ImGui::IsItemHovered()) {
-			_hovered = true;
-			voxedit::sceneMgr().setActiveCamera(&_controller.camera());
-			voxedit::sceneMgr().trace();
-		}
+			// use the uv coords here to take a potential fb flip into account
+			const glm::vec4 &uv = _frameBuffer.uv();
+			const glm::vec2 uva(uv.x, uv.y);
+			const glm::vec2 uvc(uv.z, uv.w);
+			const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+			ImGui::Image(texture->handle(), contentSize, uva, uvc);
 
-		if (_controller.renderMode() == ViewportController::RenderMode::Animation) {
-			const animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
-			for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
-				//const animation::SkeletonAttributeMeta& meta = *metaIter;
-				// TODO:
+			if (ImGui::IsItemFocused() || ImGui::IsItemHovered()) {
+				const glm::ivec2 windowPos = ImGui::GetWindowPos();
+				const glm::ivec2 windowSize = ImGui::GetWindowSize();
+				const glm::ivec2 headerSize = windowSize - contentSize;
+				const bool relative = app->isRelativeMouseMode();
+				const bool alt = ImGui::GetIO().KeyAlt;
+				const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+				const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
+				const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y);
+				cursorMove(relative || middle || alt, mouseX, mouseY + headerSize.y);
+
+				_hovered = true;
+				sceneMgr().setActiveCamera(&_controller.camera());
+				sceneMgr().trace();
 			}
 		}
 	}
@@ -133,7 +105,7 @@ bool Viewport::saveImage(const char* filename) {
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_frameBuffer.bind(true);
-	voxedit::sceneMgr().render(_controller.camera(), voxedit::SceneManager::RenderScene);
+	sceneMgr().render(_controller.camera(), SceneManager::RenderScene);
 	_frameBuffer.unbind();
 
 	uint8_t *pixels;
@@ -144,12 +116,12 @@ bool Viewport::saveImage(const char* filename) {
 	}
 	image::Image::flipVerticalRGBA(pixels, _texture->width(), _texture->height());
 	const bool val = image::Image::writePng(filename, pixels, _texture->width(), _texture->height(), 4);
-	SDL_free(pixels);
+	core_free(pixels);
 	return val;
 }
 
 void Viewport::resetCamera() {
-	const voxel::Region& region = voxedit::sceneMgr().region();
+	const voxel::Region& region = sceneMgr().region();
 	core_assert_msg(region.isValid(), "Scene not properly initialized");
 	_controller.resetCamera(region);
 }
@@ -158,6 +130,7 @@ void Viewport::resize(const glm::ivec2& frameBufferSize) {
 	if (_texture && _texture->width() == frameBufferSize.x && _texture->height() == frameBufferSize.y) {
 		return;
 	}
+	Log::debug("Resize %s to %i:%i", _id.c_str(), frameBufferSize.x, frameBufferSize.y);
 	const glm::vec2 windowSize(video::WindowedApp::getInstance()->windowDimension());
 	const glm::vec2 windowFrameBufferSize(video::WindowedApp::getInstance()->frameBufferDimension());
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
@@ -173,27 +146,12 @@ void Viewport::resize(const glm::ivec2& frameBufferSize) {
 
 void Viewport::setMode(ViewportController::SceneCameraMode mode) {
 	_controller.init(mode);
-
-	if (mode == voxedit::ViewportController::SceneCameraMode::Top) {
-		_cameraMode = "top";
-	} else if (mode == voxedit::ViewportController::SceneCameraMode::Front) {
-		_cameraMode = "front";
-	} else if (mode == voxedit::ViewportController::SceneCameraMode::Left) {
-		_cameraMode = "left";
-	} else {
-		_cameraMode = "free";
-	}
-}
-
-void Viewport::setRenderMode(ViewportController::RenderMode renderMode) {
-	_controller.setRenderMode(renderMode);
 }
 
 void Viewport::cursorMove(bool rotate, int x, int y) {
 	_controller.move(rotate, x, y);
-	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
-	sceneMgr.setMousePos(_controller._mouseX, _controller._mouseY);
-	sceneMgr.setActiveCamera(&_controller.camera());
+	sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
+	sceneMgr().setActiveCamera(&_controller.camera());
 }
 
 void Viewport::renderToFrameBuffer() {
@@ -201,9 +159,9 @@ void Viewport::renderToFrameBuffer() {
 	video::clearColor(core::Color::Clear);
 	_frameBuffer.bind(true);
 	if (_controller.renderMode() == ViewportController::RenderMode::Animation) {
-		voxedit::sceneMgr().renderAnimation(_controller.camera());
+		sceneMgr().renderAnimation(_controller.camera());
 	} else {
-		voxedit::sceneMgr().render(_controller.camera());
+		sceneMgr().render(_controller.camera());
 	}
 	_frameBuffer.unbind();
 }

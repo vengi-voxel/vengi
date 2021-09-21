@@ -23,13 +23,6 @@ public:
 		Free, Top, Left, Front
 	};
 
-	enum class ShaderType {
-		None,
-		Edge,
-
-		Max
-	};
-
 	enum class RenderMode {
 		Editor,
 		Animation,
@@ -42,7 +35,6 @@ private:
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 	core::VarPtr _rotationSpeed;
 	video::Camera _camera;
-	ShaderType _shaderType = ShaderType::None;
 	RenderMode _renderMode = RenderMode::Editor;
 public:
 	bool _mouseDown = false;
@@ -53,9 +45,7 @@ public:
 	void resetCamera(const voxel::Region& region);
 
 	RenderMode renderMode() const;
-	RenderMode setRenderMode(RenderMode mode);
-	void setShaderType(ShaderType type);
-	ShaderType shaderType() const;
+	void setRenderMode(RenderMode mode);
 
 	void onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
 
@@ -73,10 +63,8 @@ inline ViewportController::RenderMode ViewportController::renderMode() const {
 	return _renderMode;
 }
 
-inline ViewportController::RenderMode ViewportController::setRenderMode(RenderMode renderMode) {
-	const RenderMode old = _renderMode;
+inline void ViewportController::setRenderMode(RenderMode renderMode) {
 	_renderMode = renderMode;
-	return old;
 }
 
 inline video::Camera& ViewportController::camera() {
@@ -89,14 +77,6 @@ inline float ViewportController::angle() const {
 
 inline void ViewportController::setAngle(float angle) {
 	_angle = angle;
-}
-
-inline ViewportController::ShaderType ViewportController::shaderType() const {
-	return _shaderType;
-}
-
-inline void ViewportController::setShaderType(ShaderType type) {
-	_shaderType = type;
 }
 
 }

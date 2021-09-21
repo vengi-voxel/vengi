@@ -25,7 +25,6 @@ private:
 	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
 	voxedit::ViewportController _controller;
-	core::String _cameraMode;
 
 	void renderToFrameBuffer();
 	void resize(const glm::ivec2& frameBufferSize);
@@ -37,13 +36,12 @@ public:
 
 	bool isHovered() const;
 	void update();
-	bool init();
+	bool init(ViewportController::RenderMode renderMode = ViewportController::RenderMode::Editor);
 	void shutdown();
 
 	const core::String& id() const;
 
 	void setMode(ViewportController::SceneCameraMode mode = ViewportController::SceneCameraMode::Free);
-	void setRenderMode(ViewportController::RenderMode renderMode = ViewportController::RenderMode::Editor);
 	void resetCamera();
 	bool saveImage(const char* filename);
 

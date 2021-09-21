@@ -28,6 +28,7 @@
 #define TITLE_NOISEPANEL ICON_FA_RANDOM " Noise##title"
 #define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
 #define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System##title"
+#define TITLE_ANIMATION_SETTINGS "Animation##animationsettings"
 
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications##popuptitle"
 #define POPUP_TITLE_NEW_SCENE "New scene##popuptitle"
@@ -39,24 +40,23 @@
 namespace voxedit {
 
 VoxEditWindow::VoxEditWindow(video::WindowedApp *app) : _app(app) {
-	_scene = new Viewport(app, "free");
+	_scene = new Viewport(app, "free##viewport");
 	_scene->init();
 
-	_sceneTop = new Viewport(app, "top");
+	_sceneTop = new Viewport(app, "top##viewport");
 	_sceneTop->init();
 	_sceneTop->setMode(voxedit::ViewportController::SceneCameraMode::Top);
 
-	_sceneLeft = new Viewport(app, "left");
+	_sceneLeft = new Viewport(app, "left##viewport");
 	_sceneLeft->init();
 	_sceneLeft->setMode(voxedit::ViewportController::SceneCameraMode::Left);
 
-	_sceneFront = new Viewport(app, "front");
+	_sceneFront = new Viewport(app, "front##viewport");
 	_sceneFront->init();
 	_sceneFront->setMode(voxedit::ViewportController::SceneCameraMode::Front);
 
-	_sceneAnimation = new Viewport(app, "animation");
-	_sceneAnimation->init();
-	_sceneAnimation->setRenderMode(voxedit::ViewportController::RenderMode::Animation);
+	_sceneAnimation = new Viewport(app, "animation##viewport");
+	_sceneAnimation->init(voxedit::ViewportController::RenderMode::Animation);
 
 	switchTreeType(voxelgenerator::TreeType::Dome);
 	_currentSelectedPalette = voxel::getDefaultPaletteName();
@@ -83,12 +83,13 @@ void VoxEditWindow::executeCommand(const char *command) {
 	command::executeCommands(_lastExecutedCommand);
 }
 
-bool VoxEditWindow::actionButton(const char *title, const char *command) {
-	if (ImGui::Button(title)) {
+void VoxEditWindow::actionButton(const char *title, const char *command, const char *tooltip, float width) {
+	if (ImGui::Button(title, ImVec2(width, 0))) {
 		executeCommand(command);
-		return true;
 	}
-	return false;
+	if (tooltip != nullptr) {
+		ImGui::TooltipText("%s", tooltip);
+	}
 }
 
 bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
@@ -375,12 +376,16 @@ void VoxEditWindow::palette() {
 				for (const core::String& palette : _availablePalettes) {
 					if (ImGui::Selectable(palette.c_str(), palette == _currentSelectedPalette)) {
 						_currentSelectedPalette = palette;
-						sceneMgr().loadPalette(_currentSelectedPalette);
 					}
 				}
 				ImGui::EndCombo();
 			}
 			if (ImGui::Button(ICON_FA_CHECK " OK##loadpalette")) {
+				sceneMgr().loadPalette(_currentSelectedPalette);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_TIMES " Cancel##loadpalette")) {
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SetItemDefaultFocus();
@@ -614,6 +619,23 @@ void VoxEditWindow::mainWidget() {
 	_sceneLeft->update();
 	_sceneFront->update();
 	_sceneAnimation->update();
+	if (ImGui::Begin(TITLE_ANIMATION_SETTINGS, nullptr, 0)) {
+		if (sceneMgr().editMode() == EditMode::Animation) {
+			animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
+			for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
+				const animation::SkeletonAttributeMeta& meta = *metaIter;
+				float *v = (float*)(((uint8_t*)skeletonAttributes) + meta.offset);
+				ImGui::InputFloat(meta.name, v);
+			}
+		} else {
+			ImGui::TextDisabled("No animation loaded");
+			ImGui::NewLine();
+			if (ImGui::Button("Load Animation")) {
+				executeCommand("animation_load");
+			}
+		}
+	}
+	ImGui::End();
 }
 
 void VoxEditWindow::rightWidget() {
@@ -642,27 +664,35 @@ void VoxEditWindow::positionsPanel() {
 			}
 		}
 
+		ImGui::NewLine();
+
 		if (ImGui::CollapsingHeader(ICON_FA_CUBE " Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
 			glm::ivec3 cursorPosition = sceneMgr().modifier().cursorPosition();
 			uint32_t lockedAxis = (uint32_t)sceneMgr().lockedAxis();
 			if (ImGui::CheckboxFlags("X##cursorlock", &lockedAxis, (uint32_t)math::Axis::X)) {
 				executeCommand("lockx");
 			}
+			ImGui::TooltipText("Lock the x axis");
 			ImGui::SameLine();
+
 			if (ImGui::InputInt("X##cursor", &cursorPosition.x)) {
 				sceneMgr().setCursorPosition(cursorPosition, true);
 			}
 			if (ImGui::CheckboxFlags("Y##cursorlock", &lockedAxis, (uint32_t)math::Axis::Y)) {
 				executeCommand("locky");
 			}
+			ImGui::TooltipText("Lock the y axis");
 			ImGui::SameLine();
+
 			if (ImGui::InputInt("Y##cursor", &cursorPosition.y)) {
 				sceneMgr().setCursorPosition(cursorPosition, true);
 			}
 			if (ImGui::CheckboxFlags("Z##cursorlock", &lockedAxis, (uint32_t)math::Axis::Z)) {
 				executeCommand("lockz");
 			}
+			ImGui::TooltipText("Lock the z axis");
 			ImGui::SameLine();
+
 			if (ImGui::InputInt("Z##cursor", &cursorPosition.z)) {
 				sceneMgr().setCursorPosition(cursorPosition, true);
 			}
@@ -673,31 +703,37 @@ void VoxEditWindow::positionsPanel() {
 
 void VoxEditWindow::modifierPanel() {
 	if (ImGui::Begin(TITLE_MODIFIERS, nullptr, ImGuiWindowFlags_NoDecoration)) {
-		actionButton(ICON_FA_CROP " Crop", "crop");
-		actionButton(ICON_FA_EXPAND_ARROWS_ALT " Extend", "resize");
-		actionButton(ICON_FA_OBJECT_UNGROUP " Layer from color", "colortolayer");
-		actionButton(ICON_FA_COMPRESS_ALT " Scale", "scale");
+		const float windowWidth = ImGui::GetWindowWidth();
+		actionButton(ICON_FA_CROP " Crop layer", "crop", "Crop the current layer to the voxel boundaries", windowWidth);
+		actionButton(ICON_FA_EXPAND_ARROWS_ALT " Extend all layers", "resize", nullptr, windowWidth);
+		actionButton(ICON_FA_OBJECT_UNGROUP " Layer from color", "colortolayer", "Create a new layer from the current selected color", windowWidth);
+		actionButton(ICON_FA_COMPRESS_ALT " Scale", "scale", "Scale the current layer down", windowWidth);
 
-		ImGui::Separator();
+		ImGui::NewLine();
 
 		if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			actionButton("X", "rotate 90 0 0");
+			actionButton("X", "rotate 90 0 0", nullptr, windowWidth / 3.0f);
+			ImGui::TooltipText("Rotate by 90 degree on the x axis");
 			ImGui::SameLine();
-			actionButton("Y", "rotate 0 90 0");
+			actionButton("Y", "rotate 0 90 0", nullptr, windowWidth / 3.0f);
+			ImGui::TooltipText("Rotate by 90 degree on the y axis");
 			ImGui::SameLine();
-			actionButton("Z", "rotate 0 0 90");
+			actionButton("Z", "rotate 0 0 90", nullptr, windowWidth / 3.0f);
+			ImGui::TooltipText("Rotate by 90 degree on the z axis");
 		}
 
-		ImGui::Separator();
+		ImGui::NewLine();
+
 		if (ImGui::CollapsingHeader("Flip on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			actionButton("X", "flip x");
+			actionButton("X", "flip x", nullptr, windowWidth / 3.0f);
 			ImGui::SameLine();
-			actionButton("Y", "flip y");
+			actionButton("Y", "flip y", nullptr, windowWidth / 3.0f);
 			ImGui::SameLine();
-			actionButton("Z", "flip z");
+			actionButton("Z", "flip z", nullptr, windowWidth / 3.0f);
 		}
 
-		ImGui::Separator();
+		ImGui::NewLine();
+
 		if (ImGui::CollapsingHeader("Mirror on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
 			mirrorAxisRadioButton("none", math::Axis::None);
 			mirrorAxisRadioButton("x", math::Axis::X);
@@ -848,6 +884,7 @@ void VoxEditWindow::update() {
 		ImGui::DockBuilderDockWindow(TITLE_PALETTE, dockIdLeft);
 		ImGui::DockBuilderDockWindow(TITLE_POSITIONS, dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_LAYERS, dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_TREES, dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_NOISEPANEL, dockIdRightDown);
