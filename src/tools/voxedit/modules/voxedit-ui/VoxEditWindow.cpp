@@ -3,12 +3,12 @@
  */
 
 #include "VoxEditWindow.h"
-#include "IMGUIApp.h"
 #include "Viewport.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
-#include "dearimgui/imgui.h"
+#include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
+#include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUI.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -712,13 +712,13 @@ void VoxEditWindow::modifierPanel() {
 		ImGui::NewLine();
 
 		if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			actionButton("X", "rotate 90 0 0", nullptr, windowWidth / 3.0f);
+			actionButton(ICON_FK_REPEAT " X", "rotate 90 0 0", nullptr, windowWidth / 3.0f);
 			ImGui::TooltipText("Rotate by 90 degree on the x axis");
 			ImGui::SameLine();
-			actionButton("Y", "rotate 0 90 0", nullptr, windowWidth / 3.0f);
+			actionButton(ICON_FK_REPEAT " Y", "rotate 0 90 0", nullptr, windowWidth / 3.0f);
 			ImGui::TooltipText("Rotate by 90 degree on the y axis");
 			ImGui::SameLine();
-			actionButton("Z", "rotate 0 0 90", nullptr, windowWidth / 3.0f);
+			actionButton(ICON_FK_REPEAT " Z", "rotate 0 0 90", nullptr, windowWidth / 3.0f);
 			ImGui::TooltipText("Rotate by 90 degree on the z axis");
 		}
 
