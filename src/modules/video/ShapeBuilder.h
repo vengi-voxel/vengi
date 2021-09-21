@@ -76,6 +76,7 @@ public:
 		_vertices.clear();
 		_indices.clear();
 		_texcoords.clear();
+		_normals.clear();
 		_position = glm::vec3(0.0f);
 		if (_initialSize > 0) {
 			reserve(_initialSize, _initialSize);
