@@ -103,7 +103,11 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
 	io.KeyShift = (modifiers & KMOD_SHIFT) != 0;
 	io.KeyCtrl  = (modifiers & KMOD_CTRL) != 0;
 	io.KeyAlt   = (modifiers & KMOD_ALT) != 0;
-	io.KeySuper = (modifiers & KMOD_GUI) != 0;
+#ifdef _WIN32
+	io.KeySuper = false;
+#else
+	io.KeySuper = (modifier & KMOD_GUI) != 0;
+#endif
 	return false;
 }
 
