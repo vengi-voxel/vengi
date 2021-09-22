@@ -7,7 +7,6 @@
 #include "math/Axis.h"
 #include "video/WindowedApp.h"
 #include "ui/imgui/IMGUI.h"
-#include "voxedit-util/SceneSettings.h"
 #include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -45,6 +44,7 @@ private:
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
+	bool _popupSceneSettings = false;
 
 	struct NoiseData {
 		int octaves = 4;
@@ -76,7 +76,6 @@ private:
 	glm::ivec3 _lastCursorPos;
 
 	LayerSettings _layerSettings;
-	SceneSettings _settings;
 
 	core::String _activeScript;
 	core::String _loadFile;

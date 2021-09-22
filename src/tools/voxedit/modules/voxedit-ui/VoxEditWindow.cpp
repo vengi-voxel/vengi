@@ -6,7 +6,6 @@
 #include "Viewport.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
-#include "dearimgui/imgui.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
 #include "ui/imgui/IMGUIApp.h"
@@ -18,6 +17,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
 #include "engine-config.h"
+#include <glm/gtc/type_ptr.hpp>
 
 #define LAYERPOPUP "##layerpopup"
 
@@ -301,7 +301,7 @@ void VoxEditWindow::menuBar() {
 			ImGui::CheckboxVar("Outlines", "r_renderoutline");
 			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
 			if (ImGui::Button("Scene settings")) {
-				ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
+				_popupSceneSettings = true;
 			}
 			ImGui::EndMenu();
 		}
@@ -778,14 +778,40 @@ void VoxEditWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
 		_popupFailedToSave = false;
 	}
+	if (_popupSceneSettings) {
+		ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
+		_popupSceneSettings = false;
+	}
 
 	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted("Scene settings");
 		ImGui::Separator();
-		ImGui::InputVec3("Diffuse color", _settings.diffuseColor);
-		ImGui::InputVec3("Ambient color", _settings.ambientColor);
-		ImGui::InputVec3("Sun position", _settings.sunPosition);
-		ImGui::InputVec3("Sun direction", _settings.sunDirection);
+		glm::vec3 col;
+
+		col = core::Var::getSafe(cfg::VoxEditAmbientColor)->vec3Val();
+		if (ImGui::ColorEdit3("Diffuse color", glm::value_ptr(col))) {
+			const core::String &c = core::string::format("%f %f %f", col.x, col.y, col.z);
+			core::Var::getSafe(cfg::VoxEditAmbientColor)->setVal(c);
+		}
+
+		col = core::Var::getSafe(cfg::VoxEditDiffuseColor)->vec3Val();
+		if (ImGui::ColorEdit3("Ambient color", glm::value_ptr(col))) {
+			const core::String &c = core::string::format("%f %f %f", col.x, col.y, col.z);
+			core::Var::getSafe(cfg::VoxEditAmbientColor)->setVal(c);
+		}
+
+		glm::vec3 sunPosition = sceneMgr().renderer().shadow().sunPosition();
+		if (ImGui::InputVec3("Sun position", sunPosition)) {
+			sceneMgr().renderer().setSunPosition(sunPosition, glm::zero<glm::vec3>(), glm::up);
+		}
+
+#if 0
+		glm::vec3 sunDirection = sceneMgr().renderer().shadow().sunDirection();
+		if (ImGui::InputVec3("Sun direction", sunDirection)) {
+			// TODO: sun direction
+		}
+#endif
+
 		if (ImGui::Button(ICON_FA_CHECK " Done##scenesettings")) {
 			ImGui::CloseCurrentPopup();
 		}

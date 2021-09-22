@@ -314,6 +314,8 @@ app::AppState IMGUIApp::onInit() {
 
 	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
 
+	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
+
 	_mouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 	_mouseCursors[ImGuiMouseCursor_TextInput] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
 	_mouseCursors[ImGuiMouseCursor_ResizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
