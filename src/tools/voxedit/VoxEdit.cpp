@@ -141,20 +141,6 @@ app::AppState VoxEdit::onConstruct() {
 		newFile();
 	}).setHelp("Create a new scene with ui interaction");
 
-	command::Command::registerCommand("toggleviewport", [this] (const command::CmdArgs& args) {
-		if (_mainWindow == nullptr) {
-			return;
-		}
-		_mainWindow->toggleViewport();
-	}).setHelp("Toggle quad view on/off");
-
-	command::Command::registerCommand("toggleanimation", [this] (const command::CmdArgs& args) {
-		if (_mainWindow == nullptr) {
-			return;
-		}
-		_mainWindow->toggleAnimation();
-	}).setHelp("Toggle animation view on/off");
-
 	command::Command::registerCommand("resetcamera", [this] (const command::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
 			return;

@@ -111,6 +111,14 @@ bool VoxEditWindow::actionMenuItem(const char *title, const char *command, bool 
 	return false;
 }
 
+void VoxEditWindow::urlItem(const char *title, const char *url) {
+	video::WindowedApp* app = video::WindowedApp::getInstance();
+	const core::String& cmd = core::String::format("url %s", url);
+	if (actionMenuItem(title, cmd.c_str())) {
+		app->minimize();
+	}
+}
+
 bool VoxEditWindow::mirrorAxisRadioButton(const char *title, math::Axis type) {
 	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
 	if (ImGui::RadioButton(title, modifier.mirrorAxis() == type)) {
@@ -162,14 +170,6 @@ void VoxEditWindow::shutdown() {
 	_sceneLeft->shutdown();
 	_sceneFront->shutdown();
 	_sceneAnimation->shutdown();
-}
-
-void VoxEditWindow::toggleViewport() {
-	// TODO: ??
-}
-
-void VoxEditWindow::toggleAnimation() {
-	// TODO: ??
 }
 
 bool VoxEditWindow::save(const core::String &file) {
@@ -307,21 +307,16 @@ void VoxEditWindow::menuBar() {
 		}
 		if (ImGui::BeginMenu(ICON_FA_EYE" View")) {
 			actionMenuItem("Reset camera", "resetcamera");
-			actionMenuItem("Quad view", "toggleviewport");
-			actionMenuItem("Animation view", "toggleanimation");
 			actionMenuItem("Scene view", "togglescene");
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu(ICON_FK_INFO" About")) {
-			video::WindowedApp* app = video::WindowedApp::getInstance();
-			if (actionMenuItem(ICON_FK_GITHUB " Bug reports", "url https://github.com/mgerhardy/engine")) {
-				app->minimize();
-			}
-			if (actionMenuItem(ICON_FK_TWITTER " Twitter", "url https://twitter.com/MartinGerhardy")) {
-				app->minimize();
-			}
-			ImGui::Separator();
 			ImGui::Text("VoxEdit " PROJECT_VERSION);
+			ImGui::Separator();
+
+			urlItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/engine");
+			urlItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy");
+
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();

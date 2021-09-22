@@ -107,6 +107,7 @@ private:
 
 	void actionButton(const char *title, const char *command, const char *tooltip = nullptr, float width = 0.0f);
 	bool actionMenuItem(const char *title, const char *command, bool enabled = true);
+	void urlItem(const char *title, const char *url);
 	bool modifierRadioButton(const char *title, ModifierType type);
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 	bool saveImage(const char *file);
@@ -126,8 +127,6 @@ public:
 	void shutdown();
 
 	// commands
-	void toggleViewport();
-	void toggleAnimation();
 	bool save(const core::String &file);
 	bool load(const core::String &file);
 	bool loadAnimationEntity(const core::String &file);
