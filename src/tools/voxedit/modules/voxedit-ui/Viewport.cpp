@@ -47,12 +47,12 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 void Viewport::update() {
 	camera().setTarget(glm::vec3(sceneMgr().referencePosition()));
 
-	const glm::ivec2 &contentSize = ImGui::GetWindowContentRegionMax();
 	_hovered = false;
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	if (ImGui::Begin(_id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar)) {
+		const glm::ivec2 &contentSize = ImGui::GetWindowContentRegionMax();
 		if (_controller.renderMode() == ViewportController::RenderMode::Animation && sceneMgr().editMode() != EditMode::Animation) {
 			ImGui::TextDisabled("No animation loaded");
 		} else {
