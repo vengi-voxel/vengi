@@ -123,6 +123,22 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	return true;
 }
 
+void IMGUIApp::onWindowClose(void *windowHandle) {
+	Super::onWindowClose(windowHandle);
+}
+
+void IMGUIApp::onWindowMoved(void *windowHandle) {
+	Super::onWindowMoved(windowHandle);
+}
+
+void IMGUIApp::onWindowFocusGained(void *windowHandle) {
+	Super::onWindowFocusGained(windowHandle);
+}
+
+void IMGUIApp::onWindowFocusLost(void *windowHandle) {
+	Super::onWindowFocusLost(windowHandle);
+}
+
 void IMGUIApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
 	ImGuiIO& io = ImGui::GetIO();

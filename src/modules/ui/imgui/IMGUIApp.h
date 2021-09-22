@@ -71,6 +71,10 @@ public:
 	}
 
 	int fontSize() const;
+	virtual void onWindowClose(void *windowHandle) override;
+	virtual void onWindowMoved(void *windowHandle) override;
+	virtual void onWindowFocusGained(void *windowHandle) override;
+	virtual void onWindowFocusLost(void *windowHandle) override;
 	virtual void onWindowResize(void *windowHandle, int windowWidth, int windowHeight) override;
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;
