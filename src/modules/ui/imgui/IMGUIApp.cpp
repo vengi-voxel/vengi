@@ -374,6 +374,38 @@ app::AppState IMGUIApp::onInit() {
 	return state;
 }
 
+void IMGUIApp::beforeUI() {
+	ImGuiIO& io = ImGui::GetIO();
+	io.MousePos = ImVec2(_mousePos.x, _mousePos.y);
+	io.MouseHoveredViewport = 0;
+
+	if (!(io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)) {
+		ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+		if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None) {
+			showCursor(false);
+		} else {
+			SDL_Cursor *cursor = _mouseCursors[imgui_cursor];
+			if (cursor == nullptr) {
+				cursor = _mouseCursors[ImGuiMouseCursor_Arrow];
+			}
+			SDL_SetCursor(cursor);
+			showCursor(true);
+		}
+	}
+
+	io.DeltaTime = (float)_deltaFrameSeconds;
+	const uint32_t mouseMask = SDL_GetMouseState(nullptr, nullptr);
+	// If a mouse press event came, always pass it as "mouse held this frame",
+	// so we don't miss click-release events that are shorter than 1 frame.
+	io.MouseDown[0] = _mousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+	io.MouseDown[1] = _mousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+	io.MouseDown[2] = _mousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
+	_mousePressed[0] = _mousePressed[1] = _mousePressed[2] = false;
+
+	io.MouseWheel = (float)_mouseWheel;
+	_mouseWheel = 0;
+}
+
 app::AppState IMGUIApp::onRunning() {
 	core_trace_scoped(IMGUIAppOnRunning);
 	app::AppState state = Super::onRunning();
@@ -390,24 +422,6 @@ app::AppState IMGUIApp::onRunning() {
 		_uiFontSize->markClean();
 	}
 
-	ImGuiIO& io = ImGui::GetIO();
-	io.MousePos = ImVec2(_mousePos.x, _mousePos.y);
-	io.MouseHoveredViewport = 0;
-
-	if (!(io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)) {
-		ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
-		if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None) {
-			SDL_ShowCursor(SDL_FALSE);
-		} else {
-			SDL_Cursor *cursor = _mouseCursors[imgui_cursor];
-			if (cursor == nullptr) {
-				cursor = _mouseCursors[ImGuiMouseCursor_Arrow];
-			}
-			SDL_SetCursor(cursor);
-			SDL_ShowCursor(SDL_TRUE);
-		}
-	}
-
 	core_assert(_bufferIndex > -1);
 	core_assert(_indexBufferIndex > -1);
 
@@ -416,24 +430,9 @@ app::AppState IMGUIApp::onRunning() {
 		beforeUI();
 	}
 
-	const bool renderUI = _renderUI->boolVal();
-
-	io.DeltaTime = (float)_deltaFrameSeconds;
-	const uint32_t mouseMask = SDL_GetMouseState(nullptr, nullptr);
-	// If a mouse press event came, always pass it as "mouse held this frame",
-	// so we don't miss click-release events that are shorter than 1 frame.
-	io.MouseDown[0] = _mousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
-	io.MouseDown[1] = _mousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-	io.MouseDown[2] = _mousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-	_mousePressed[0] = _mousePressed[1] = _mousePressed[2] = false;
-
-	io.MouseWheel = (float)_mouseWheel;
-	_mouseWheel = 0;
-
 	ImGui::NewFrame();
 
-	showCursor(io.MouseDrawCursor ? false : true);
-
+	const bool renderUI = _renderUI->boolVal();
 	if (renderUI) {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
@@ -480,6 +479,15 @@ app::AppState IMGUIApp::onRunning() {
 	ImGui::Render();
 
 	executeDrawCommands();
+
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
+		SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+		SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+	}
 
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	return app::AppState::Running;

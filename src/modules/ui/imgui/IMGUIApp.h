@@ -67,8 +67,7 @@ public:
 
 	const video::Camera& camera() const;
 
-	virtual void beforeUI() {
-	}
+	virtual void beforeUI();
 
 	int fontSize() const;
 	virtual void onWindowClose(void *windowHandle) override;
