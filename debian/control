@@ -34,12 +34,18 @@ Description: Voxel editor
  Load voxel formats for several volumes.
  Supported formats for loading are:
   Magicvoxel vox
-  Qubicle qbt and qb
-  Sandbox VoxEdit vxm
+  Qubicle qbt, qef and qb
+  Sandbox VoxEdit vxm and vxr
   binvox
   CubeWorld cub
+  Build engine kvx
+  SLAB6 kv6
+  Command and Conquer vxl
+  Ace Of Spades vxl
+  Chronovox-Studio csm
+  Nick's Voxel Model nvm
  Supported formats for saving are:
-  vox, qbt, qb, cub
+  vox,qbt,qb,binvox,cub,vxl,qef,obj,ply
 
 Package: vengi-thumbnailer
 Architecture: any
@@ -49,10 +55,16 @@ Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Thumbnailer for voxel models
  Supported formats are:
   Magicvoxel vox
-  Qubicle qbt and qb
-  Sandbox VoxEdit vxm
+  Qubicle qbt, qef and qb
+  Sandbox VoxEdit vxm and vxr
   binvox
   CubeWorld cub
+  Build engine kvx
+  SLAB6 kv6
+  Command and Conquer vxl
+  Ace Of Spades vxl
+  Chronovox-Studio csm
+  Nick's Voxel Model nvm
 
 Package: vengi-voxconvert
 Architecture: any
@@ -62,10 +74,18 @@ Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Converter for voxel models
  Supported formats are:
   Magicvoxel vox
-  Qubicle qbt and qb
-  Sandbox VoxEdit vxm
+  Qubicle qbt, qef and qb
+  Sandbox VoxEdit vxm and vxr
   binvox
   CubeWorld cub
+  Build engine kvx
+  SLAB6 kv6
+  Command and Conquer vxl
+  Ace Of Spades vxl
+  Chronovox-Studio csm
+  Nick's Voxel Model nvm
+ Supported formats for saving are:
+  vox,qbt,qb,binvox,cub,vxl,qef,obj,ply
 
 Package: vengi-owserver
 Architecture: any
