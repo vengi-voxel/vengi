@@ -245,6 +245,14 @@ void IMGUIApp::loadFonts() {
 	io.Fonts->TexID = (void *) (intptr_t) _texture;
 }
 
+static void* _imguiAlloc(size_t size, void*) {
+	return core_malloc(size);
+}
+
+static void _imguiFree(void *mem, void*) {
+	core_free(mem);
+}
+
 app::AppState IMGUIApp::onInit() {
 	const app::AppState state = Super::onInit();
 	video::checkError();
@@ -275,7 +283,9 @@ app::AppState IMGUIApp::onInit() {
 	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, &ImDrawVert::u));
 	_vbo.addAttribute(_shader.getPosAttribute(_bufferIndex, &ImDrawVert::x));
 
+	ImGui::SetAllocatorFunctions(_imguiAlloc, _imguiFree);
 	ImGui::CreateContext();
+
 	ImGuiIO& io = ImGui::GetIO();
 	const core::String iniFile = _appname + "-imgui.ini";
 	_writePathIni = _filesystem->writePath(iniFile.c_str());
