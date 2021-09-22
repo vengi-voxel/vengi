@@ -889,7 +889,7 @@ void SceneManager::construct() {
 		.setArgumentCompleter(voxelgenerator::scriptCompleter(io::filesystem()));
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
-	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "1");
+	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "0");
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(
