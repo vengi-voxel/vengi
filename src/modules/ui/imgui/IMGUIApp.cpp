@@ -125,22 +125,35 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 
 void IMGUIApp::onWindowClose(void *windowHandle) {
 	Super::onWindowClose(windowHandle);
+	if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(windowHandle)) {
+		viewport->PlatformRequestClose = true;
+	}
 }
 
 void IMGUIApp::onWindowMoved(void *windowHandle) {
 	Super::onWindowMoved(windowHandle);
+	if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(windowHandle)) {
+		viewport->PlatformRequestMove = true;
+	}
 }
 
 void IMGUIApp::onWindowFocusGained(void *windowHandle) {
 	Super::onWindowFocusGained(windowHandle);
+	ImGuiIO& io = ImGui::GetIO();
+	io.AddFocusEvent(true);
 }
 
 void IMGUIApp::onWindowFocusLost(void *windowHandle) {
 	Super::onWindowFocusLost(windowHandle);
+	ImGuiIO& io = ImGui::GetIO();
+	io.AddFocusEvent(false);
 }
 
 void IMGUIApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
+	if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(windowHandle)) {
+		viewport->PlatformRequestResize = true;
+	}
 	ImGuiIO& io = ImGui::GetIO();
 	int w = _windowDimension.x;
 	int h = _windowDimension.y;
