@@ -160,8 +160,8 @@ void TextCentered(const char *text) {
 	ImGui::TextUnformatted(text);
 }
 
-void Image(video::Id handle, const glm::ivec2& size, const glm::vec2& uv0, const glm::vec2& uv1) {
-	ImGui::Image((void*)(intptr_t)handle, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
+void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0, const glm::vec2 &uv1, const glm::vec4 &tintColor, const glm::vec4 &borderColor) {
+	ImGui::Image((void *)(intptr_t)handle, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y), ImVec4(tintColor), ImVec4(borderColor));
 }
 
 bool MenuItemCmd(const char *label, const char *command) {

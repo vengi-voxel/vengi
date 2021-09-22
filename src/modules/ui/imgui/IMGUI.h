@@ -14,8 +14,10 @@
 
 namespace ImGui {
 
-IMGUI_API void Image(video::Id handle, const glm::ivec2& size, const glm::vec2& uv0 = glm::vec2(0, 0), const glm::vec2& uv1 = glm::vec2(1, 1));
-IMGUI_API bool InputVec2(const char* label, glm::ivec2& vec, ImGuiInputTextFlags flags = 0);
+IMGUI_API void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0 = glm::vec2(0),
+					 const glm::vec2 &uv1 = glm::vec2(1), const glm::vec4 &tintColor = glm::vec4(1),
+					 const glm::vec4 &borderColor = glm::vec4(0));
+IMGUI_API bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec2(const char* label, glm::vec2& vec, const char *format = "%.2f", ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec3(const char* label, glm::ivec3& vec, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec3(const char* label, glm::vec3& vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
