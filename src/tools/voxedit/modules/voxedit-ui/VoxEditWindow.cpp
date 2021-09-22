@@ -6,6 +6,7 @@
 #include "Viewport.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
+#include "dearimgui/imgui.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
 #include "ui/imgui/IMGUIApp.h"
@@ -16,6 +17,7 @@
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
+#include "engine-config.h"
 
 #define LAYERPOPUP "##layerpopup"
 
@@ -271,7 +273,7 @@ void VoxEditWindow::menuBar() {
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu(ICON_FA_FILE " File")) {
 			actionMenuItem("New", "new");
-			actionMenuItem("Load", "load");
+			actionMenuItem(ICON_FK_FLOPPY_O " Load", "load");
 			actionMenuItem(ICON_FA_SAVE " Save", "save");
 			ImGui::Separator();
 			actionMenuItem("Load Animation", "animation_load");
@@ -303,11 +305,18 @@ void VoxEditWindow::menuBar() {
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_FA_EYE"View")) {
+		if (ImGui::BeginMenu(ICON_FA_EYE" View")) {
 			actionMenuItem("Reset camera", "resetcamera");
 			actionMenuItem("Quad view", "toggleviewport");
 			actionMenuItem("Animation view", "toggleanimation");
 			actionMenuItem("Scene view", "togglescene");
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu(ICON_FK_INFO" About")) {
+			actionMenuItem(ICON_FK_GITHUB " Bug reports", "url https://github.com/mgerhardy/engine");
+			actionMenuItem(ICON_FK_TWITTER " Twitter", "url https://twitter.com/MartinGerhardy");
+			ImGui::Separator();
+			ImGui::Text("VoxEdit " PROJECT_VERSION);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
