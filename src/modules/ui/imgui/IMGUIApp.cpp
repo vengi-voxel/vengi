@@ -123,8 +123,8 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	return true;
 }
 
-void IMGUIApp::onWindowResize(int windowWidth, int windowHeight) {
-	Super::onWindowResize(windowWidth, windowHeight);
+void IMGUIApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
 	ImGuiIO& io = ImGui::GetIO();
 	int w = _windowDimension.x;
 	int h = _windowDimension.y;

@@ -370,8 +370,8 @@ app::AppState Client::onRunning() {
 	return state;
 }
 
-void Client::onWindowResize(int windowWidth, int windowHeight) {
-	Super::onWindowResize(windowWidth, windowHeight);
+void Client::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 

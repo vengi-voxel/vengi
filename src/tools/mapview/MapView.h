@@ -70,7 +70,7 @@ protected:
 	bool changeEntityType(const glm::vec3& pos, const network::EntityType entityType);
 
 	bool onKeyPress(int32_t key, int16_t modifier) override;
-	void onWindowResize(int windowWidth, int windowHeight) override;
+	void onWindowResize(void *windowHandle, int windowWidth, int windowHeight) override;
 	void beforeUI() override;
 	glm::vec3 spawnPos() const;
 

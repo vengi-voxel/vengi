@@ -87,7 +87,7 @@ public:
 	app::AppState onInit() override;
 	app::AppState onRunning() override;
 	app::AppState onCleanup() override;
-	void onWindowResize(int windowWidth, int windowHeight) override;
+	void onWindowResize(void *windowHandle, int windowWidth, int windowHeight) override;
 
 	client::CooldownHandler& cooldownHandler();
 

@@ -105,10 +105,22 @@ public:
 	virtual void onFingerMotion(int64_t finger, float x, float y, float dx, float dy) {
 	}
 
-	virtual void onWindowResize(int windowWidth, int windowHeight) {
+	virtual void onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
 	}
 
-	virtual void onWindowRestore() {
+	virtual void onWindowClose(void *windowHandle) {
+	}
+
+	virtual void onWindowMoved(void *windowHandle) {
+	}
+
+	virtual void onWindowFocusGained(void *windowHandle) {
+	}
+
+	virtual void onWindowFocusLost(void *windowHandle) {
+	}
+
+	virtual void onWindowRestore(void *windowHandle) {
 	}
 
 	/**

@@ -132,25 +132,44 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 	case SDL_FINGERMOTION:
 		fingerMotion(event.tfinger.fingerId, event.tfinger.x, event.tfinger.y, event.tfinger.dx, event.tfinger.dy);
 		break;
-	case SDL_WINDOWEVENT:
+	case SDL_WINDOWEVENT: {
+		SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
 		switch (event.window.event) {
 		case SDL_WINDOWEVENT_RESTORED:
 			for (IEventObserver* observer : _observers) {
-				observer->onWindowRestore();
+				observer->onWindowRestore((void*)window);
 			}
 			break;
 		case SDL_WINDOWEVENT_RESIZED:
-		case SDL_WINDOWEVENT_SIZE_CHANGED:
 			for (IEventObserver* observer : _observers) {
 				const int w = event.window.data1;
 				const int h = event.window.data2;
-				observer->onWindowResize(w, h);
+				observer->onWindowResize((void*)window, w, h);
 			}
 			break;
 		case SDL_WINDOWEVENT_CLOSE:
+			for (IEventObserver* observer : _observers) {
+				observer->onWindowClose((void*)window);
+			}
+			return false;
+		case SDL_WINDOWEVENT_MOVED:
+			for (IEventObserver* observer : _observers) {
+				observer->onWindowMoved((void*)window);
+			}
+			return false;
+		case SDL_WINDOWEVENT_FOCUS_GAINED:
+			for (IEventObserver* observer : _observers) {
+				observer->onWindowFocusGained((void*)window);
+			}
+			return false;
+		case SDL_WINDOWEVENT_FOCUS_LOST:
+			for (IEventObserver* observer : _observers) {
+				observer->onWindowFocusLost((void*)window);
+			}
 			return false;
 		}
 		break;
+	}
 	}
 
 	// Traverse through the list and try to find the specified observer

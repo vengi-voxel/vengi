@@ -125,7 +125,7 @@ public:
 
 	struct nkc_context& context();
 
-	virtual void onWindowResize(int windowWidth, int windowHeight) override;
+	virtual void onWindowResize(void *windowHandle, int windowWidth, int windowHeight) override;
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;
 	virtual app::AppState onRunning() override;

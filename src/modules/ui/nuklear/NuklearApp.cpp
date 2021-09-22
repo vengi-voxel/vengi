@@ -304,8 +304,8 @@ void NuklearApp::initUIConfig(struct nk_convert_config& config) {
 	config.line_AA = NK_ANTI_ALIASING_ON;
 }
 
-void NuklearApp::onWindowResize(int windowWidth, int windowHeight) {
-	Super::onWindowResize(windowWidth, windowHeight);
+void NuklearApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
 	_camera.init(glm::zero<glm::ivec2>(), frameBufferDimension(), windowDimension());
 }
 

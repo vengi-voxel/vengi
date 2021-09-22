@@ -448,8 +448,8 @@ app::AppState MapView::onCleanup() {
 	return state;
 }
 
-void MapView::onWindowResize(int windowWidth, int windowHeight) {
-	Super::onWindowResize(windowWidth, windowHeight);
+void MapView::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
 	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 

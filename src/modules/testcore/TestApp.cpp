@@ -23,8 +23,8 @@ TestApp::TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& files
 TestApp::~TestApp() {
 }
 
-void TestApp::onWindowResize(int windowWidth, int windowHeight) {
-	Super::onWindowResize(windowWidth, windowHeight);
+void TestApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
+	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
 	camera().init(glm::ivec2(0), frameBufferDimension(), windowDimension());
 }
 
