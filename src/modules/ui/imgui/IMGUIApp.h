@@ -37,7 +37,8 @@ protected:
 	Console _console;
 	int32_t _bufferIndex = -1;
 	int32_t _indexBufferIndex = -1;
-	int8_t _mouseWheel = 0;
+	int8_t _mouseWheelX = 0;
+	int8_t _mouseWheelY = 0;
 	bool _mousePressed[3] = {false};
 	core::String _writePathIni;
 	core::String _writePathLog;

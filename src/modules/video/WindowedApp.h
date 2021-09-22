@@ -76,6 +76,8 @@ public:
 	bool isRelativeMouseMode() const;
 	bool isSingleWindowMode() const;
 
+	void *windowHandle();
+
 	/**
 	 * @brief This may differ from windowDimension() if we're rendering to a high-DPI
 	 * drawable, i.e. the window was created with high-DPI support (Apple calls this
@@ -142,6 +144,10 @@ public:
 	}
 	static WindowedApp* getInstance();
 };
+
+inline void* WindowedApp::windowHandle() {
+	return _window;
+}
 
 inline bool WindowedApp::isSingleWindowMode() const {
 	return _singleWindowMode;

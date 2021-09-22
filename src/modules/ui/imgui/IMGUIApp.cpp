@@ -4,11 +4,10 @@
 
 #include "IMGUIApp.h"
 
-#include "FileDialog.h"
-#include "core/Var.h"
 #include "io/Filesystem.h"
-#include "core/TimeProvider.h"
 #include "command/Command.h"
+#include "core/Var.h"
+#include "core/TimeProvider.h"
 #include "core/Color.h"
 #include "core/UTF8.h"
 #include "core/Common.h"
@@ -19,16 +18,18 @@
 #include "video/Shader.h"
 #include "video/ScopedViewPort.h"
 #include "video/TextureConfig.h"
-#include "IMGUI.h"
 #include "video/Types.h"
-#include <SDL.h>
-#include <thread>
+
+#include "IMGUI.h"
 #include "FontAwesomeSolid.h"
 #include "ForkAwesomeWebFont.h"
 #include "ArimoRegular.h"
 #include "IconsFontAwesome5.h"
 #include "IconsForkAwesome.h"
 #include "IMGUIStyle.h"
+#include "FileDialog.h"
+
+#include <SDL.h>
 
 namespace ui {
 namespace imgui {
@@ -45,9 +46,14 @@ bool IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
 		return true;
 	}
 	if (y > 0) {
-		_mouseWheel = 1;
+		_mouseWheelY += 1;
 	} else if (y < 0) {
-		_mouseWheel = -1;
+		_mouseWheelY -= 1;
+	}
+	if (x > 0) {
+		_mouseWheelX += 1;
+	} else if (x < 0) {
+		_mouseWheelX -= 1;
 	}
 	return Super::onMouseWheel(x, y);
 }
@@ -258,12 +264,177 @@ void IMGUIApp::loadFonts() {
 	io.Fonts->TexID = (void *) (intptr_t) _texture;
 }
 
+// Helper structure we store in the void* RenderUserData field of each ImGuiViewport to easily retrieve our backend
+// data.
+struct _imguiViewportData {
+	SDL_Window *window = nullptr;
+	uint32_t windowID = 0;
+	bool windowOwned = false;
+	void* renderContext = nullptr;
+
+	~_imguiViewportData() {
+		core_assert(window == nullptr && renderContext == nullptr);
+	}
+};
+
 static void* _imguiAlloc(size_t size, void*) {
 	return core_malloc(size);
 }
 
 static void _imguiFree(void *mem, void*) {
 	core_free(mem);
+}
+
+static IMGUIApp *_imguiGetBackendUserdata() {
+	return ImGui::GetCurrentContext() ? (IMGUIApp *)ImGui::GetIO().BackendPlatformUserData : nullptr;
+}
+
+static void _imguiCreateWindow(ImGuiViewport *viewport) {
+	IMGUIApp *bd = _imguiGetBackendUserdata();
+	_imguiViewportData *vd = IM_NEW(_imguiViewportData)();
+	viewport->PlatformUserData = vd;
+
+	ImGuiViewport *main_viewport = ImGui::GetMainViewport();
+	_imguiViewportData *main_viewport_data = (_imguiViewportData *)main_viewport->PlatformUserData;
+
+	// Share GL resources with main context
+	bool use_opengl = (main_viewport_data->renderContext != NULL);
+	SDL_GLContext backup_context = NULL;
+	if (use_opengl) {
+		backup_context = SDL_GL_GetCurrentContext();
+		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+		SDL_GL_MakeCurrent(main_viewport_data->window, main_viewport_data->renderContext);
+	}
+
+	Uint32 sdl_flags = 0;
+	sdl_flags |= use_opengl ? SDL_WINDOW_OPENGL : 0;
+	sdl_flags |= SDL_GetWindowFlags((SDL_Window*)bd->windowHandle()) & SDL_WINDOW_ALLOW_HIGHDPI;
+	sdl_flags |= SDL_WINDOW_HIDDEN;
+	sdl_flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? SDL_WINDOW_BORDERLESS : 0;
+	sdl_flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : SDL_WINDOW_RESIZABLE;
+#if !defined(_WIN32)
+	// See SDL hack in ImGui_ImplSDL2_ShowWindow().
+	sdl_flags |= (viewport->Flags & ImGuiViewportFlags_NoTaskBarIcon) ? SDL_WINDOW_SKIP_TASKBAR : 0;
+#endif
+	sdl_flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? SDL_WINDOW_ALWAYS_ON_TOP : 0;
+	vd->window = SDL_CreateWindow("No Title Yet", (int)viewport->Pos.x, (int)viewport->Pos.y, (int)viewport->Size.x,
+								  (int)viewport->Size.y, sdl_flags);
+	vd->windowOwned = true;
+	if (use_opengl) {
+		vd->renderContext = SDL_GL_CreateContext(vd->window);
+		SDL_GL_SetSwapInterval(0);
+	}
+	if (use_opengl && backup_context)
+		SDL_GL_MakeCurrent(vd->window, backup_context);
+
+	viewport->PlatformHandle = (void *)vd->window;
+#if defined(_WIN32)
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (SDL_GetWindowWMInfo(vd->Window, &info))
+		viewport->PlatformHandleRaw = info.info.win.window;
+#endif
+}
+
+static void _imguiDestroyWindow(ImGuiViewport *viewport) {
+	if (_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData) {
+		if (vd->renderContext && vd->windowOwned)
+			SDL_GL_DeleteContext(vd->renderContext);
+		if (vd->window && vd->windowOwned)
+			SDL_DestroyWindow(vd->window);
+		vd->renderContext = NULL;
+		vd->window = NULL;
+		IM_DELETE(vd);
+	}
+	viewport->PlatformUserData = viewport->PlatformHandle = NULL;
+}
+
+static void _imguiShowWindow(ImGuiViewport *viewport) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+#if defined(_WIN32)
+	HWND hwnd = (HWND)viewport->PlatformHandleRaw;
+
+	// SDL hack: Hide icon from task bar
+	// Note: SDL 2.0.6+ has a SDL_WINDOW_SKIP_TASKBAR flag which is supported under Windows but the way it create the
+	// window breaks our seamless transition.
+	if (viewport->Flags & ImGuiViewportFlags_NoTaskBarIcon) {
+		LONG ex_style = ::GetWindowLong(hwnd, GWL_EXSTYLE);
+		ex_style &= ~WS_EX_APPWINDOW;
+		ex_style |= WS_EX_TOOLWINDOW;
+		::SetWindowLong(hwnd, GWL_EXSTYLE, ex_style);
+	}
+
+	// SDL hack: SDL always activate/focus windows :/
+	if (viewport->Flags & ImGuiViewportFlags_NoFocusOnAppearing) {
+		::ShowWindow(hwnd, SW_SHOWNA);
+		return;
+	}
+#endif
+
+	SDL_ShowWindow(vd->window);
+}
+
+static ImVec2 _imguiGetWindowPos(ImGuiViewport *viewport) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	int x = 0, y = 0;
+	SDL_GetWindowPosition(vd->window, &x, &y);
+	return ImVec2((float)x, (float)y);
+}
+
+static void _imguiSetWindowPos(ImGuiViewport *viewport, ImVec2 pos) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	SDL_SetWindowPosition(vd->window, (int)pos.x, (int)pos.y);
+}
+
+static ImVec2 _imguiGetWindowSize(ImGuiViewport *viewport) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	int w = 0, h = 0;
+	SDL_GetWindowSize(vd->window, &w, &h);
+	return ImVec2((float)w, (float)h);
+}
+
+static void _imguiSetWindowSize(ImGuiViewport *viewport, ImVec2 size) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	SDL_SetWindowSize(vd->window, (int)size.x, (int)size.y);
+}
+
+static void _imguiSetWindowTitle(ImGuiViewport *viewport, const char *title) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	SDL_SetWindowTitle(vd->window, title);
+}
+
+static void _imguiSetWindowAlpha(ImGuiViewport *viewport, float alpha) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	SDL_SetWindowOpacity(vd->window, alpha);
+}
+
+static void _imguiSetWindowFocus(ImGuiViewport *viewport) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	SDL_RaiseWindow(vd->window);
+}
+
+static bool _imguiGetWindowFocus(ImGuiViewport *viewport) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	return (SDL_GetWindowFlags(vd->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+}
+
+static bool _imguiGetWindowMinimized(ImGuiViewport *viewport) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	return (SDL_GetWindowFlags(vd->window) & SDL_WINDOW_MINIMIZED) != 0;
+}
+
+static void _imguiRenderWindow(ImGuiViewport *viewport, void *) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	if (vd->renderContext)
+		SDL_GL_MakeCurrent(vd->window, vd->renderContext);
+}
+
+static void _imguiSwapBuffers(ImGuiViewport *viewport, void *) {
+	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
+	if (vd->renderContext) {
+		SDL_GL_MakeCurrent(vd->window, vd->renderContext);
+		SDL_GL_SwapWindow(vd->window);
+	}
 }
 
 app::AppState IMGUIApp::onInit() {
@@ -295,6 +466,13 @@ app::AppState IMGUIApp::onInit() {
 	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &ImDrawVert::r, true));
 	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, &ImDrawVert::u));
 	_vbo.addAttribute(_shader.getPosAttribute(_bufferIndex, &ImDrawVert::x));
+
+	// Set SDL hint to receive mouse click events on window focus, otherwise SDL doesn't emit the event.
+	// Without this, when clicking to gain focus, our widgets wouldn't activate even though they showed as hovered.
+	// (This is unfortunately a global SDL setting, so enabling it might have a side-effect on your application.
+	// It is unlikely to make a difference, but if your app absolutely needs to ignore the initial on-focus click:
+	// you can ignore SDL_MOUSEBUTTONDOWN events coming right after a SDL_WINDOWEVENT_FOCUS_GAINED)
+	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
 	ImGui::SetAllocatorFunctions(_imguiAlloc, _imguiFree);
 	ImGui::CreateContext();
@@ -352,6 +530,44 @@ app::AppState IMGUIApp::onInit() {
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
 
 	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+	io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
+	io.BackendPlatformUserData = (void *)this;
+
+	ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
+	platformIO.Platform_CreateWindow = _imguiCreateWindow;
+	platformIO.Platform_DestroyWindow = _imguiDestroyWindow;
+	platformIO.Platform_ShowWindow = _imguiShowWindow;
+	platformIO.Platform_SetWindowPos = _imguiSetWindowPos;
+	platformIO.Platform_GetWindowPos = _imguiGetWindowPos;
+	platformIO.Platform_SetWindowSize = _imguiSetWindowSize;
+	platformIO.Platform_GetWindowSize = _imguiGetWindowSize;
+	platformIO.Platform_SetWindowFocus = _imguiSetWindowFocus;
+	platformIO.Platform_GetWindowFocus = _imguiGetWindowFocus;
+	platformIO.Platform_GetWindowMinimized = _imguiGetWindowMinimized;
+	platformIO.Platform_SetWindowTitle = _imguiSetWindowTitle;
+	platformIO.Platform_RenderWindow = _imguiRenderWindow;
+	platformIO.Platform_SwapBuffers = _imguiSwapBuffers;
+	platformIO.Platform_SetWindowAlpha = _imguiSetWindowAlpha;
+
+	platformIO.Monitors.resize(0);
+	int displayCount = SDL_GetNumVideoDisplays();
+	for (int n = 0; n < displayCount; n++) {
+		// Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness
+		// settings, which generally needs to be set in the manifest or at runtime.
+		ImGuiPlatformMonitor monitor;
+		SDL_Rect r;
+		SDL_GetDisplayBounds(n, &r);
+		monitor.MainPos = monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+		monitor.MainSize = monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+		SDL_GetDisplayUsableBounds(n, &r);
+		monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+		monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+		float dpi = 0.0f;
+		if (!SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr)) {
+			monitor.DpiScale = dpi / 96.0f;
+		}
+		platformIO.Monitors.push_back(monitor);
+	}
 
 	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
 
@@ -365,6 +581,17 @@ app::AppState IMGUIApp::onInit() {
 	_mouseCursors[ImGuiMouseCursor_Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
 	_mouseCursors[ImGuiMouseCursor_NotAllowed] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
 
+	ImGuiViewport *mainViewport = ImGui::GetMainViewport();
+	mainViewport->PlatformHandle = (void *)_window;
+
+	_imguiViewportData *vd = IM_NEW(_imguiViewportData)();
+	vd->window = _window;
+	vd->windowID = SDL_GetWindowID(_window);
+	vd->windowOwned = false;
+	vd->renderContext = _rendererContext;
+	mainViewport->PlatformUserData = vd;
+	mainViewport->PlatformHandle = vd->window;
+
 	SDL_StartTextInput();
 
 	_console.init();
@@ -375,35 +602,81 @@ app::AppState IMGUIApp::onInit() {
 }
 
 void IMGUIApp::beforeUI() {
-	ImGuiIO& io = ImGui::GetIO();
-	io.MousePos = ImVec2(_mousePos.x, _mousePos.y);
+	ImGuiIO &io = ImGui::GetIO();
+
+	io.DeltaTime = (float)_deltaFrameSeconds;
+
+	ImVec2 mousePosPrev = io.MousePos;
+	io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 	io.MouseHoveredViewport = 0;
 
-	if (!(io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)) {
-		ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
-		if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None) {
-			showCursor(false);
+	io.MouseWheel = (float)_mouseWheelY;
+	io.MouseWheelH = (float)_mouseWheelX;
+	_mouseWheelX = _mouseWheelY = 0;
+
+	// Update mouse buttons
+	int mouseXLocal, mouseYLocal;
+	Uint32 mouseButtons = SDL_GetMouseState(&mouseXLocal, &mouseYLocal);
+	// If a mouse press event came, always pass it as "mouse held this frame", so we
+	// don't miss click-release events that are shorter than 1 frame.
+	io.MouseDown[0] = _mousePressed[0] || (mouseButtons & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+	io.MouseDown[1] = _mousePressed[1] || (mouseButtons & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+	io.MouseDown[2] = _mousePressed[2] || (mouseButtons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
+	_mousePressed[0] = _mousePressed[1] = _mousePressed[2] = false;
+
+	SDL_Window *mouseWindow = NULL;
+	if (isSingleWindowMode()) {
+		mouseWindow = (SDL_GetWindowFlags(_window) & SDL_WINDOW_INPUT_FOCUS) ? _window : NULL;
+	} else {
+		// Obtain focused and hovered window. We forward mouse input when focused or when hovered (and no other window
+		// is capturing)
+		SDL_Window *focusedWindow = SDL_GetKeyboardFocus();
+		SDL_Window *hoveredWindow = SDL_GetMouseFocus();
+		if (hoveredWindow && (_window == hoveredWindow || ImGui::FindViewportByPlatformHandle((void *)hoveredWindow))) {
+			mouseWindow = hoveredWindow;
+		} else if (focusedWindow &&
+				   (_window == focusedWindow || ImGui::FindViewportByPlatformHandle((void *)focusedWindow))) {
+			mouseWindow = focusedWindow;
+		}
+
+		// SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g.
+		// trigger other operations outside
+		SDL_CaptureMouse(ImGui::IsAnyMouseDown() ? SDL_TRUE : SDL_FALSE);
+	}
+
+	if (mouseWindow == nullptr) {
+		return;
+	}
+
+	// Set OS mouse position from Dear ImGui if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos
+	// is enabled by user)
+	if (io.WantSetMousePos) {
+		if (!isSingleWindowMode() && (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0) {
+			SDL_WarpMouseGlobal((int)mousePosPrev.x, (int)mousePosPrev.y);
 		} else {
-			SDL_Cursor *cursor = _mouseCursors[imgui_cursor];
-			if (cursor == nullptr) {
-				cursor = _mouseCursors[ImGuiMouseCursor_Arrow];
-			}
-			SDL_SetCursor(cursor);
-			showCursor(true);
+			SDL_WarpMouseInWindow(_window, (int)mousePosPrev.x, (int)mousePosPrev.y);
 		}
 	}
 
-	io.DeltaTime = (float)_deltaFrameSeconds;
-	const uint32_t mouseMask = SDL_GetMouseState(nullptr, nullptr);
-	// If a mouse press event came, always pass it as "mouse held this frame",
-	// so we don't miss click-release events that are shorter than 1 frame.
-	io.MouseDown[0] = _mousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
-	io.MouseDown[1] = _mousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-	io.MouseDown[2] = _mousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-	_mousePressed[0] = _mousePressed[1] = _mousePressed[2] = false;
-
-	io.MouseWheel = (float)_mouseWheel;
-	_mouseWheel = 0;
+	if (isSingleWindowMode()) {
+		io.MousePos = ImVec2((float)mouseXLocal, (float)mouseYLocal);
+	} else {
+		// Set Dear ImGui mouse position from OS position + get buttons. (this is the common behavior)
+		int mouseXGlobal, mouseYGlobal;
+		SDL_GetGlobalMouseState(&mouseXGlobal, &mouseYGlobal);
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+			// Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on
+			// the upper-left of the primary monitor)
+			io.MousePos = ImVec2((float)mouseXGlobal, (float)mouseYGlobal);
+		} else {
+			// Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is
+			// on the upper-left corner of the app window) Unlike local position obtained earlier this will be valid
+			// when straying out of bounds.
+			int windowX, windowY;
+			SDL_GetWindowPosition(mouseWindow, &windowX, &windowY);
+			io.MousePos = ImVec2((float)(mouseXGlobal - windowX), (float)(mouseYGlobal - windowY));
+		}
+	}
 }
 
 app::AppState IMGUIApp::onRunning() {
