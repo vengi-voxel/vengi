@@ -11,7 +11,6 @@ set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "Root dir")
 set(SCRIPTS_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 set(GENERATE_DIR ${CMAKE_BINARY_DIR}/generated CACHE STRING "Generated code dir")
 add_custom_target(codegen)
-add_custom_target(update-libs)
 
 include(CMakeParseArguments)
 include(CheckCXXCompilerFlag)
