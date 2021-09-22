@@ -132,6 +132,11 @@ public:
 	virtual app::AppState onInit() override;
 	virtual app::AppState onCleanup() override;
 
+	/**
+	 * Minimize the application window but continue running
+	 */
+	void minimize();
+
 	static double fps() {
 		return getInstance()->_fps;
 	}

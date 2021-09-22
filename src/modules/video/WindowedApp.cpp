@@ -21,6 +21,7 @@
 #include "util/KeybindingHandler.h"
 #include "util/KeybindingParser.h"
 #include <glm/common.hpp>
+#include <SDL.h>
 
 namespace video {
 
@@ -445,6 +446,10 @@ bool WindowedApp::setRelativeMouseMode(bool mode) {
 
 void WindowedApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) {
 	Log::warn("This is not implemented in the base windowed application");
+}
+
+void WindowedApp::minimize() {
+	SDL_MinimizeWindow(_window);
 }
 
 WindowedApp* WindowedApp::getInstance() {

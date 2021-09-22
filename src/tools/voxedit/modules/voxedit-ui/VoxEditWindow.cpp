@@ -313,8 +313,13 @@ void VoxEditWindow::menuBar() {
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu(ICON_FK_INFO" About")) {
-			actionMenuItem(ICON_FK_GITHUB " Bug reports", "url https://github.com/mgerhardy/engine");
-			actionMenuItem(ICON_FK_TWITTER " Twitter", "url https://twitter.com/MartinGerhardy");
+			video::WindowedApp* app = video::WindowedApp::getInstance();
+			if (actionMenuItem(ICON_FK_GITHUB " Bug reports", "url https://github.com/mgerhardy/engine")) {
+				app->minimize();
+			}
+			if (actionMenuItem(ICON_FK_TWITTER " Twitter", "url https://twitter.com/MartinGerhardy")) {
+				app->minimize();
+			}
 			ImGui::Separator();
 			ImGui::Text("VoxEdit " PROJECT_VERSION);
 			ImGui::EndMenu();
