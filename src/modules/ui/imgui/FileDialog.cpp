@@ -66,8 +66,9 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 
 		ImGui::BeginChild("Directories##1", ImVec2(ImGui::Size(200), ImGui::Size(300)), true, ImGuiWindowFlags_HorizontalScrollbar);
 
+		const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
 		if (ImGui::Selectable("..", false, ImGuiSelectableFlags_AllowDoubleClick,
-							  ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
+							  ImVec2(contentRegionWidth, 0))) {
 			if (ImGui::IsMouseDoubleClicked(0)) {
 				fileDialogCurrentPath = io::filesystem()->absolutePath(fileDialogCurrentPath + "/..");
 				lastDirVar->setVal(fileDialogCurrentPath);
@@ -79,7 +80,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 			}
 			if (ImGui::Selectable(entities[i].name.c_str(), i == fileDialogFolderSelectIndex,
 								  ImGuiSelectableFlags_AllowDoubleClick,
-								  ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
+								  ImVec2(contentRegionWidth, 0))) {
 				fileDialogCurrentFile = "";
 				if (ImGui::IsMouseDoubleClicked(0)) {
 					fileDialogCurrentPath = assemblePath(fileDialogCurrentPath, entities[i].name);
@@ -99,7 +100,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 
 		ImGui::SameLine();
 
-		ImGui::BeginChild("Files##1", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::Size(300)), true, ImGuiWindowFlags_HorizontalScrollbar);
+		ImGui::BeginChild("Files##1", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::Size(300)), true, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::Columns(4);
 		static float initialSpacingColumn3 = ImGui::Size(120.0f);
 		if (initialSpacingColumn3 > 0) {
@@ -208,7 +209,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 		for (size_t i = 0; i < files.size(); ++i) {
 			if (ImGui::Selectable(files[i]->name.c_str(), i == fileDialogFileSelectIndex,
 								  ImGuiSelectableFlags_AllowDoubleClick,
-								  ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
+								  ImVec2(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x, 0))) {
 				fileDialogFileSelectIndex = i;
 				fileDialogCurrentFile = files[i]->name;
 				fileDialogCurrentFolder = "";

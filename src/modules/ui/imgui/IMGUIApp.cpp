@@ -429,8 +429,9 @@ static bool _imguiGetWindowMinimized(ImGuiViewport *viewport) {
 
 static void _imguiRenderWindow(ImGuiViewport *viewport, void *) {
 	_imguiViewportData *vd = (_imguiViewportData *)viewport->PlatformUserData;
-	if (vd->renderContext)
+	if (vd->renderContext) {
 		SDL_GL_MakeCurrent(vd->window, vd->renderContext);
+	}
 }
 
 static void _imguiSwapBuffers(ImGuiViewport *viewport, void *) {
@@ -552,7 +553,6 @@ app::AppState IMGUIApp::onInit() {
 	platformIO.Platform_RenderWindow = _imguiRenderWindow;
 	platformIO.Platform_SwapBuffers = _imguiSwapBuffers;
 	platformIO.Platform_SetWindowAlpha = _imguiSetWindowAlpha;
-
 	platformIO.Monitors.resize(0);
 	int displayCount = SDL_GetNumVideoDisplays();
 	for (int n = 0; n < displayCount; n++) {
@@ -566,13 +566,14 @@ app::AppState IMGUIApp::onInit() {
 		SDL_GetDisplayUsableBounds(n, &r);
 		monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
 		monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+#if 0
 		float dpi = 0.0f;
 		if (!SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr)) {
 			monitor.DpiScale = dpi / 96.0f;
 		}
+#endif
 		platformIO.Monitors.push_back(monitor);
 	}
-
 	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
 
 	_mouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
@@ -757,14 +758,8 @@ app::AppState IMGUIApp::onRunning() {
 
 	executeDrawCommands();
 
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-		SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
-		SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
-		SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
-	}
+	ImGui::UpdatePlatformWindows();
+	ImGui::RenderPlatformWindowsDefault();
 
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	return app::AppState::Running;
@@ -803,6 +798,8 @@ void IMGUIApp::executeDrawCommands() {
 }
 
 app::AppState IMGUIApp::onCleanup() {
+	ImGui::DestroyPlatformWindows();
+
 	for (int i = 0; i < ImGuiMouseCursor_COUNT; ++i) {
 		SDL_FreeCursor(_mouseCursors[i]);
 	}

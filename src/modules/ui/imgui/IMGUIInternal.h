@@ -49,17 +49,10 @@ struct ImDrawVert { \
         operator glm::ivec4() const { return glm::ivec4(x,y,z,w); }           \
         operator glm::vec4() const { return glm::vec4(x,y,z,w); }
 
+#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 #define IM_ASSERT(_EXPR) core_assert(_EXPR)
 #include <dearimgui/imgui.h>
-#define IMGUI_DEFINE_PLACEMENT_NEW
 #include <dearimgui/imgui_internal.h>
-
-template<class T, class ... Args>
-T* imguiAlloc(Args&&... args) {
-	T* instance = (T*) ImGui::MemAlloc(sizeof(T));
-	IM_PLACEMENT_NEW(instance) T(core::forward<Args>(args)...);
-	return instance;
-}
 
 /**
  * @}
