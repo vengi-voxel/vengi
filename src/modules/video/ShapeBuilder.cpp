@@ -453,7 +453,6 @@ void ShapeBuilder::cylinder(float radius, float length, int slices) {
 		addVertex(glm::vec3(radius * angleCos, radius * angleSin, 0.0f));
 	}
 
-
 	for (int i = 0; i < slices; ++i) {
 		int ip1 = i + 1;
 		if (ip1 == slices) {
@@ -556,7 +555,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 		const int steps = splitFrustum / splitFrustum + 1;
 		const int nindices = steps * lengthof(indices) + 2;
-		reserve(math::FRUSTUM_VERTICES_MAX * splitFrustum + targetLineVertices, nindices);
+		reserve(math::FRUSTUM_VERTICES_MAX * steps + targetLineVertices, nindices);
 
 		for (int splitStep = 0; splitStep < splitFrustum; ++splitStep) {
 			const float near = planes[splitStep * 2 + 0];
@@ -622,7 +621,7 @@ void ShapeBuilder::plane(uint32_t tesselation) {
 	const float scaleX = meshBounds.x / (float)(tesselation + 1);
 	const float scaleY = meshBounds.y / (float)(tesselation + 1);
 
-	reserve(strucWidth * strucWidth, tesselation * tesselation * 6);
+	reserve(strucWidth * strucWidth, (tesselation + 1) * (tesselation + 1) * 6);
 
 	for (float y = 0.0f; y < strucWidth; ++y) {
 		for (float x = 0.0f; x < strucWidth; ++x) {
