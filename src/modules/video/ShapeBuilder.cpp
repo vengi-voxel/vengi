@@ -548,14 +548,13 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 	if (splitFrustum > 0) {
 		int indexOffset = startIndex;
-		core::DynamicArray<float> planes;
-		planes.reserve(splitFrustum * 2);
+		core::DynamicArray<float> planes(splitFrustum * 2);
 
 		camera.sliceFrustum(&planes[0], splitFrustum * 2, splitFrustum);
 
-		const int steps = splitFrustum / splitFrustum + 1;
-		const int nindices = steps * lengthof(indices) + 2;
-		reserve(math::FRUSTUM_VERTICES_MAX * steps + targetLineVertices, nindices);
+		const int steps = splitFrustum;
+		const int nindices = steps * lengthof(indices) + targetLineVertices;
+		reserve(lengthof(out) * steps + targetLineVertices, nindices);
 
 		for (int splitStep = 0; splitStep < splitFrustum; ++splitStep) {
 			const float near = planes[splitStep * 2 + 0];
@@ -572,8 +571,8 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 			indexOffset += math::FRUSTUM_VERTICES_MAX;
 		}
 	} else {
-		const int nindices = lengthof(indices) + 2;
-		reserve(math::FRUSTUM_VERTICES_MAX + targetLineVertices, nindices);
+		const int nindices = lengthof(indices) + targetLineVertices;
+		reserve(lengthof(out) + targetLineVertices, nindices);
 
 		for (size_t i = 0; i < lengthof(out); ++i) {
 			addVertex(out[i]);
