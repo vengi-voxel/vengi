@@ -64,6 +64,8 @@ app::AppState WindowedApp::onRunning() {
 	if (_keybindingHandler.isPressed(util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN)) {
 		handleKeyRelease(util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN, 0);
 	}
+
+	// ignore the state here
 	Super::onRunning();
 
 	SDL_GetMouseState(&_mousePos.x, &_mousePos.y);
@@ -103,6 +105,7 @@ app::AppState WindowedApp::onRunning() {
 	}
 
 	if (quit) {
+		Log::info("Quitting the application");
 		return app::AppState::Cleanup;
 	}
 

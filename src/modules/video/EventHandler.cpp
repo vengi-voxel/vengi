@@ -151,22 +151,22 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 			for (IEventObserver* observer : _observers) {
 				observer->onWindowClose((void*)window);
 			}
-			return false;
+			break;
 		case SDL_WINDOWEVENT_MOVED:
 			for (IEventObserver* observer : _observers) {
 				observer->onWindowMoved((void*)window);
 			}
-			return false;
+			break;
 		case SDL_WINDOWEVENT_FOCUS_GAINED:
 			for (IEventObserver* observer : _observers) {
 				observer->onWindowFocusGained((void*)window);
 			}
-			return false;
+			break;
 		case SDL_WINDOWEVENT_FOCUS_LOST:
 			for (IEventObserver* observer : _observers) {
 				observer->onWindowFocusLost((void*)window);
 			}
-			return false;
+			break;
 		}
 		break;
 	}
