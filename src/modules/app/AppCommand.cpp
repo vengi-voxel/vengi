@@ -11,6 +11,7 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include <inttypes.h>
+#include <SDL.h>
 
 namespace app {
 
@@ -19,7 +20,7 @@ namespace AppCommand {
 void init(const core::TimeProviderPtr& timeProvider) {
 	command::Command::registerCommand("varclearhistory", [] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
-			Log::error("not enough arguments given. Expecting a variable name");
+			Log::info("Usage: varclearhistory <cvar>");
 			return;
 		}
 		const core::VarPtr& st = core::Var::get(args[0]);
@@ -30,6 +31,14 @@ void init(const core::TimeProviderPtr& timeProvider) {
 
 	command::Command::registerCommand("void", [] (const command::CmdArgs& args) {
 	}).setHelp("Just a no-operation command");
+
+	command::Command::registerCommand("url", [] (const command::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Usage: url <http://my-url>");
+			return;
+		}
+		SDL_OpenURL(args[0].c_str());
+	}).setHelp("Open the given url in a browser");
 
 	command::Command::registerCommand("echo", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -82,7 +91,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 
 	command::Command::registerCommand("toggle", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
-			Log::error("not enough arguments given. Expecting a variable name at least");
+			Log::info("Usage: toggle <cvar>");
 			return;
 		}
 		const core::VarPtr& var = core::Var::get(args[0]);
@@ -113,7 +122,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 
 	command::Command::registerCommand("inc", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
-			Log::error("not enough arguments given. Expecting a variable name at least");
+			Log::info("Usage: inc <cvar> [<delta:1.0>]");
 			return;
 		}
 		const core::VarPtr& var = core::Var::get(args[0]);
@@ -128,7 +137,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 
 	command::Command::registerCommand("dec", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
-			Log::error("not enough arguments given. Expecting a variable name at least");
+			Log::info("Usage: dec <cvar> [<delta:1.0>]");
 			return;
 		}
 		const core::VarPtr& var = core::Var::get(args[0]);
@@ -143,14 +152,14 @@ void init(const core::TimeProviderPtr& timeProvider) {
 
 	command::Command::registerCommand("show", [] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
-			Log::error("not enough arguments given. Expecting a variable name");
+			Log::info("Usage: show <cvar>");
 			return;
 		}
 		const core::VarPtr& st = core::Var::get(args[0]);
 		if (st) {
 			Log::info(" -> %s ", st->strVal().c_str());
 		} else {
-			Log::info("not found");
+			Log::info("Variable %s not found", args[0].c_str());
 		}
 	}).setHelp("Show the value of a variable");
 
