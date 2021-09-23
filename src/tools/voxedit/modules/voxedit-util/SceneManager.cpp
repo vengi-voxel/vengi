@@ -1909,7 +1909,8 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 	_lastRaytraceY = _mouseCursor.y;
 
 	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
-	const glm::vec3& dirWithLength = ray.direction * _camera->farPlane();
+	float rayLength = _camera->farPlane();
+	const glm::vec3& dirWithLength = ray.direction * rayLength;
 	static constexpr voxel::Voxel air;
 
 	_result.didHit = false;
