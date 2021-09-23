@@ -304,6 +304,15 @@ glm::ivec3 Modifier::firstPos() const {
 	return f;
 }
 
+math::AABB<int> Modifier::aabb() const {
+	const int size = _gridResolution;
+	const glm::ivec3& pos = aabbPosition();
+	const glm::ivec3& firstP = firstPos();
+	const glm::ivec3 mins = (glm::min)(firstP, pos);
+	const glm::ivec3 maxs = (glm::max)(firstP, pos) + (size - 1);
+	return math::AABB<int>(mins, maxs);
+}
+
 glm::ivec3 Modifier::aabbDim() const {
 	const int size = _gridResolution;
 	glm::ivec3 pos = aabbPosition();
@@ -319,15 +328,11 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 		return false;
 	}
 
-	const int size = _gridResolution;
-	const glm::ivec3& pos = aabbPosition();
-	const glm::ivec3& firstP = firstPos();
-	const glm::ivec3 mins = (glm::min)(firstP, pos);
-	const glm::ivec3 maxs = (glm::max)(firstP, pos) + (size - 1);
+	const math::AABB<int> a = aabb();
 
 	if ((_modifierType & ModifierType::Select) == ModifierType::Select) {
 		Log::debug("select mode");
-		select(mins, maxs);
+		select(a.mins(), a.maxs());
 		if (_selectionValid) {
 			callback(_selection, _modifierType);
 		}
@@ -340,18 +345,17 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 	}
 
 	ModifierVolumeWrapper wrapper(volume, _modifierType);
-	glm::ivec3 minsMirror = mins;
-	glm::ivec3 maxsMirror = maxs;
+	glm::ivec3 minsMirror = a.mins();
+	glm::ivec3 maxsMirror = a.maxs();
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
-		return executeShapeAction(wrapper, mins, maxs, callback);
+		return executeShapeAction(wrapper, a.mins(), a.maxs(), callback);
 	}
 	Log::debug("Execute mirror action");
-	const math::AABB<int> first(mins, maxs);
 	const math::AABB<int> second(minsMirror, maxsMirror);
-	if (math::intersects(first, second)) {
-		executeShapeAction(wrapper, mins, maxsMirror, callback);
+	if (math::intersects(a, second)) {
+		executeShapeAction(wrapper, a.mins(), maxsMirror, callback);
 	} else {
-		executeShapeAction(wrapper, mins, maxs, callback);
+		executeShapeAction(wrapper, a.mins(), a.maxs(), callback);
 		executeShapeAction(wrapper, minsMirror, maxsMirror, callback);
 	}
 	_secondPosValid = false;

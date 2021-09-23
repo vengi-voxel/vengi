@@ -122,6 +122,7 @@ public:
 	bool aabbMode() const;
 	glm::ivec3 aabbDim() const;
 	glm::ivec3 aabbPosition() const;
+	math::AABB<int> aabb() const;
 
 	/**
 	 * @brief Pick the start position of the modifier execution bounding box
