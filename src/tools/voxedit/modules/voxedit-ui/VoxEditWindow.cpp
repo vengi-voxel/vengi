@@ -325,19 +325,25 @@ void VoxEditWindow::menuBar() {
 
 void VoxEditWindow::palette() {
 	const voxel::MaterialColorArray &colors = voxel::getMaterialColors();
-	const float height = ImGui::GetContentRegionAvail().y;
+	const float height = ImGui::GetContentRegionMax().y;
 	const float width = ImGui::Size(120.0f);
 	const ImVec2 size(width, height);
 	ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
-	int voxelColorIndex = sceneMgr().hitCursorVoxel().getColor();
+	int voxelColorTraceIndex = sceneMgr().hitCursorVoxel().getColor();
+	int voxelColorSelectedIndex = sceneMgr().modifier().cursorVoxel().getColor();
 	if (ImGui::Begin(TITLE_PALETTE, nullptr, ImGuiWindowFlags_NoDecoration)) {
-		const ImVec2 &pos = ImGui::GetWindowPos();
+		ImVec2 pos = ImGui::GetWindowPos();
+		pos.x += ImGui::GetWindowContentRegionMin().x;
+		pos.y += ImGui::GetWindowContentRegionMin().y;
 		const float size = ImGui::Size(20);
-		const int amountX = (int)(ImGui::GetWindowWidth() / size);
-		const int amountY = (int)(ImGui::GetWindowHeight() / size);
+		const ImVec2& maxs = ImGui::GetWindowContentRegionMax();
+		const ImVec2& mins = ImGui::GetWindowContentRegionMin();
+		const int amountX = (int)((maxs.x - mins.x) / size);
+		const int amountY = (int)((maxs.y - mins.y) / size);
 		const int max = colors.size();
 		int i = 0;
 		float usedHeight = 0;
+		bool colorHovered = false;
 		for (int y = 0; y < amountY; ++y) {
 			for (int x = 0; x < amountX; ++x) {
 				if (i >= max) {
@@ -349,13 +355,16 @@ void VoxEditWindow::palette() {
 				const ImVec2 v2(transX + (float)size, transY + (float)size);
 				ImGui::GetWindowDrawList()->AddRectFilled(v1, v2, core::Color::getRGBA(colors[i]));
 
-				if (ImGui::IsMouseHoveringRect(v1, v2)) {
+				if (!colorHovered && ImGui::IsMouseHoveringRect(v1, v2)) {
+					colorHovered = true;
 					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::Red));
 					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 						sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, i));
 					}
-				} else if (i == voxelColorIndex) {
+				} else if (i == voxelColorTraceIndex) {
 					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::Yellow));
+				} else if (i == voxelColorSelectedIndex) {
+					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::DarkRed));
 				} else {
 					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::Black));
 				}
@@ -367,8 +376,8 @@ void VoxEditWindow::palette() {
 			usedHeight += size;
 		}
 
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + usedHeight);
-		ImGui::Text("Color: %i", voxelColorIndex);
+		ImGui::SetCursorPosY(pos.y + usedHeight);
+		ImGui::Text("Color: %i (voxel %i)", voxelColorSelectedIndex, voxelColorTraceIndex);
 		ImGui::TooltipText("Palette color index for current voxel under cursor");
 		//sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, voxelColorIndex));
 		actionButton("Import palette", "importpalette");
