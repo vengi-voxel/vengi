@@ -1202,7 +1202,7 @@ void VoxEditWindow::scriptPanel() {
 			sceneMgr().runScript(_activeScript, _scriptParameters);
 		}
 
-		urlButton("Scripting manual", "https://mgerhardy.github.io/engine/voxedit/LUAScript/");
+		urlButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/engine/voxedit/LUAScript/");
 	}
 	ImGui::End();
 }
