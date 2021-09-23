@@ -12,10 +12,6 @@ void StyleColorsCorporateGrey() {
 	ImGuiStyle &style = ImGui::GetStyle();
 	ImVec4 *colors = style.Colors;
 
-	/// 0 = FLAT APPEARENCE
-	/// 1 = MORE "3D" LOOK
-	float is3D = 0.0f;
-
 	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
 	colors[ImGuiCol_ChildBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
@@ -71,7 +67,7 @@ void StyleColorsCorporateGrey() {
 	style.WindowBorderSize = 1;
 	style.ChildBorderSize = 1;
 	style.PopupBorderSize = 1;
-	style.FrameBorderSize = is3D;
+	style.FrameBorderSize = 2;
 
 	style.WindowRounding = 3;
 	style.ChildRounding = 3;
@@ -79,7 +75,7 @@ void StyleColorsCorporateGrey() {
 	style.ScrollbarRounding = 2;
 	style.GrabRounding = 3;
 
-	style.TabBorderSize = is3D;
+	style.TabBorderSize = 2;
 	style.TabRounding = 3;
 
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
