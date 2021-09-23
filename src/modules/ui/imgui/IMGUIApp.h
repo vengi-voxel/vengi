@@ -82,11 +82,27 @@ public:
 	virtual void onRenderUI() = 0;
 	virtual app::AppState onCleanup() override;
 
+	ImFont *defaultFont();
+	ImFont *bigFont();
+	ImFont *smallFont();
+
 	/**
 	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
 	 */
 	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) override;
 };
+
+inline ImFont *IMGUIApp::defaultFont() {
+	return _defaultFont;
+}
+
+inline ImFont *IMGUIApp::bigFont() {
+	return _bigFont;
+}
+
+inline ImFont *IMGUIApp::smallFont() {
+	return _smallFont;
+}
 
 inline int IMGUIApp::fontSize() const {
 	return _uiFontSize->intVal();
