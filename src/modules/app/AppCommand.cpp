@@ -12,6 +12,13 @@
 #include "core/Var.h"
 #include <inttypes.h>
 #include <SDL.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <shellapi.h>
+#else
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
 namespace app {
 
@@ -40,7 +47,20 @@ void init(const core::TimeProviderPtr& timeProvider) {
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 		SDL_OpenURL(args[0].c_str());
 #else
-		Log::error("Open url is not available");
+
+#ifdef _WIN32
+		ShellExecuteA(nullptr, nullptr, url, nullptr, nullptr, 0);
+#elif defined __APPLE__
+		char buf[1024];
+		snprintf(buf, sizeof(buf) - 1, "open %s", url);
+		buf[sizeof(buf) - 1] = '\0';
+		system(buf);
+#else
+		char buf[1024];
+		snprintf(buf, sizeof(buf) - 1, "xdg-open %s", url);
+		buf[sizeof(buf) - 1] = '\0';
+		system(buf);
+#endif
 #endif
 	}).setHelp("Open the given url in a browser");
 
