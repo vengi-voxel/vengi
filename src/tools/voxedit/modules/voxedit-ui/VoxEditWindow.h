@@ -104,7 +104,8 @@ private:
 
 	void addLayerItem(int layerId, const voxedit::Layer &layer);
 
-	void actionButton(const char *title, const char *command, const char *tooltip = nullptr, float width = 0.0f);
+	bool actionButton(const char *title, const char *command, const char *tooltip = nullptr, float width = 0.0f);
+	void urlButton(const char *title, const char *url);
 	bool actionMenuItem(const char *title, const char *command, bool enabled = true);
 	void urlItem(const char *title, const char *url);
 	bool modifierRadioButton(const char *title, ModifierType type);

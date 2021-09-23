@@ -85,13 +85,15 @@ void VoxEditWindow::executeCommand(const char *command) {
 	command::executeCommands(_lastExecutedCommand);
 }
 
-void VoxEditWindow::actionButton(const char *title, const char *command, const char *tooltip, float width) {
+bool VoxEditWindow::actionButton(const char *title, const char *command, const char *tooltip, float width) {
 	if (ImGui::Button(title, ImVec2(width, 0))) {
 		executeCommand(command);
+		return true;
 	}
 	if (tooltip != nullptr) {
 		ImGui::TooltipText("%s", tooltip);
 	}
+	return false;
 }
 
 bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
@@ -115,6 +117,14 @@ void VoxEditWindow::urlItem(const char *title, const char *url) {
 	video::WindowedApp* app = video::WindowedApp::getInstance();
 	const core::String& cmd = core::String::format("url %s", url);
 	if (actionMenuItem(title, cmd.c_str())) {
+		app->minimize();
+	}
+}
+
+void VoxEditWindow::urlButton(const char *title, const char *url) {
+	video::WindowedApp* app = video::WindowedApp::getInstance();
+	const core::String& cmd = core::String::format("url %s", url);
+	if (actionButton(title, cmd.c_str())) {
 		app->minimize();
 	}
 }
@@ -1180,6 +1190,8 @@ void VoxEditWindow::scriptPanel() {
 		if (ImGui::Button("Execute##scriptpanel")) {
 			sceneMgr().runScript(_activeScript, _scriptParameters);
 		}
+
+		urlButton("Scripting manual", "https://mgerhardy.github.io/engine/voxedit/LUAScript/");
 	}
 	ImGui::End();
 }
