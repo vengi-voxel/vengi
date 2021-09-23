@@ -78,13 +78,10 @@ bool InputTextWithHint(const char *label, const char *hint, core::String *str, I
 }
 
 bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFlags flags) {
-	const core::String& buf = var->strVal();
-	constexpr int size = 256;
-	char newVal[size];
-	SDL_snprintf(newVal, size, "%s", buf.c_str());
+	core::String buf = var->strVal();
 	flags &= ~ImGuiInputTextFlags_EnterReturnsTrue;
-	if (InputText(label, newVal, size, flags)) {
-		var->setVal(newVal);
+	if (InputText(label, &buf, flags)) {
+		var->setVal(buf);
 		return true;
 	}
 	return false;

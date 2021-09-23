@@ -852,7 +852,6 @@ void VoxEditWindow::registerPopups() {
 
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted(ICON_FA_QUESTION);
-		ImGui::Spacing();
 		ImGui::SameLine();
 		ImGui::TextUnformatted("There are unsaved modifications.\nDo you wish to discard them?");
 		ImGui::Separator();
