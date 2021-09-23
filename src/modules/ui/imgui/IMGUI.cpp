@@ -27,8 +27,12 @@ static int InputTextCallback(ImGuiInputTextCallbackData *data) {
 		// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we need to set them back
 		// to what we want.
 		core::String *str = userData->Str;
+		const int lold = str->size();
 		core_assert(data->Buf == str->c_str());
 		str->reserve(data->BufTextLen);
+		for (int i = lold; i < data->BufTextLen; ++i) {
+			str->append(" ");
+		}
 		data->Buf = (char *)str->c_str();
 	} else if (userData->ChainCallback) {
 		// Forward to user callback, if any
