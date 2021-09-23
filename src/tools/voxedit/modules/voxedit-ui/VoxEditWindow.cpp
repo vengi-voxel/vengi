@@ -309,7 +309,6 @@ void VoxEditWindow::menuBar() {
 			ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", _showAabbVar);
 			ImGui::CheckboxVar("Shadow", _renderShadowVar);
 			ImGui::CheckboxVar("Outlines", "r_renderoutline");
-			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
 			if (ImGui::Button("Scene settings")) {
 				_popupSceneSettings = true;
 			}
@@ -556,6 +555,7 @@ void VoxEditWindow::layers() {
 			}
 			ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
 		}
+		ImGui::TooltipText("Add a new layer");
 		if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			ImGui::InputText("Name", &_layerSettings.name);
 			ImGui::InputVec3("Position", _layerSettings.position);
@@ -567,26 +567,38 @@ void VoxEditWindow::layers() {
 				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCenter());
 				layerMgr.setActiveLayer(layerId);
 			}
+			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_TIMES " Cancel##layersettings")) {
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SetItemDefaultFocus();
 			ImGui::EndPopup();
 		}
-		ImGui::TooltipText("Add a new layer");
 
 		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", !sceneMgr.animateActive() || layerMgr.validLayers() <= 1)) {
-			core::String cmd = core::string::format("animate %f", _animationSpeedVar->floatVal());
-			executeCommand(cmd.c_str());
+		const bool multipleLayers = layerMgr.validLayers() <= 1;
+		if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", multipleLayers)) {
+			if (sceneMgr.animateActive()) {
+				executeCommand("animate 0");
+			} else {
+				const core::String& cmd = core::string::format("animate %f", _animationSpeedVar->floatVal());
+				executeCommand(cmd.c_str());
+			}
 		}
-		ImGui::TooltipText("Animate the layers");
 		ImGui::SameLine();
-		actionButton(ICON_FA_CARET_SQUARE_UP, "layermoveup");
+		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_UP"##layers", multipleLayers)) {
+			executeCommand("layermoveup");
+		}
 		ImGui::TooltipText("Move the layer one level up");
 		ImGui::SameLine();
-		actionButton(ICON_FA_CARET_SQUARE_DOWN, "layermovedown");
+		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_DOWN "##layers", multipleLayers)) {
+			executeCommand("layermovedown");
+		}
 		ImGui::TooltipText("Move the layer one level down");
+		if (!multipleLayers) {
+			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
+			ImGui::TooltipText("Millisecond delay between frames");
+		}
 	}
 	ImGui::End();
 }
