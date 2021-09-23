@@ -363,20 +363,21 @@ void VoxEditWindow::palette() {
 				const float transY = pos.y + (float)y * size;
 				const ImVec2 v1(transX, transY);
 				const ImVec2 v2(transX + (float)size, transY + (float)size);
-				ImGui::GetWindowDrawList()->AddRectFilled(v1, v2, core::Color::getRGBA(colors[i]));
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+				drawList->AddRectFilled(v1, v2, core::Color::getRGBA(colors[i]));
 
 				if (!colorHovered && ImGui::IsMouseHoveringRect(v1, v2)) {
 					colorHovered = true;
-					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::Red));
+					drawList->AddRect(v1, v2, core::Color::getRGBA(core::Color::Red));
 					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 						sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, i));
 					}
 				} else if (i == voxelColorTraceIndex) {
-					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::Yellow));
+					drawList->AddRect(v1, v2, core::Color::getRGBA(core::Color::Yellow));
 				} else if (i == voxelColorSelectedIndex) {
-					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::DarkRed));
+					drawList->AddRect(v1, v2, core::Color::getRGBA(core::Color::DarkRed));
 				} else {
-					ImGui::GetWindowDrawList()->AddRect(v1, v2, core::Color::getRGBA(core::Color::Black));
+					drawList->AddRect(v1, v2, core::Color::getRGBA(core::Color::Black));
 				}
 				++i;
 			}
