@@ -1174,8 +1174,7 @@ void VoxEditWindow::scriptPanel() {
 			case voxelgenerator::LUAParameterType::Max:
 				return;
 			}
-			ImGui::SameLine();
-			ImGui::TextWrapped("%s", p.description.c_str());
+			ImGui::TooltipText("%s", p.description.c_str());
 		}
 
 		if (ImGui::Button("Execute##scriptpanel")) {
