@@ -37,7 +37,11 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::info("Usage: url <http://my-url>");
 			return;
 		}
+#if SDL_VERSION_ATLEAST(2, 0, 14)
 		SDL_OpenURL(args[0].c_str());
+#else
+		Log::error("Open url is not available");
+#endif
 	}).setHelp("Open the given url in a browser");
 
 	command::Command::registerCommand("echo", [] (const command::CmdArgs& args) {
