@@ -145,7 +145,7 @@ bool VoxEditWindow::init() {
 	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis, "1");
 	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb, "0");
 	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow, "1");
-	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed, "1");
+	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed, "100");
 	_gridSizeVar = core::Var::get(cfg::VoxEditGridsize, "4", "The size of the voxel grid", [](const core::String &val) {
 		const int intVal = core::string::toInt(val);
 		return intVal >= 1 && intVal <= 64;
