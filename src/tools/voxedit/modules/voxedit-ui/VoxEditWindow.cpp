@@ -325,6 +325,7 @@ void VoxEditWindow::menuBar() {
 
 			urlItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/engine");
 			urlItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy");
+			urlItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy");
 
 			ImGui::EndMenu();
 		}
