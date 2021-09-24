@@ -41,7 +41,7 @@
 
 namespace voxedit {
 
-VoxEditWindow::VoxEditWindow(video::WindowedApp *app) : _app(app) {
+VoxEditWindow::VoxEditWindow(ui::imgui::IMGUIApp *app) : _app(app) {
 	_scene = new Viewport(app, "free##viewport");
 	_scene->init();
 
@@ -798,6 +798,19 @@ void VoxEditWindow::updateSettings() {
 	gridRenderer.setRenderGrid(_showGridVar->boolVal());
 }
 
+void VoxEditWindow::dialog(const char *icon, const char *text) {
+	ImGui::AlignTextToFramePadding();
+	ImGui::PushFont(_app->bigFont());
+	ImGui::Text("%s", icon);
+	ImGui::PopFont();
+	ImGui::SameLine();
+	ImGui::Spacing();
+	ImGui::SameLine();
+	ImGui::TextWrapped("%s", text);
+	ImGui::Spacing();
+	ImGui::Separator();
+}
+
 void VoxEditWindow::registerPopups() {
 	if (_popupUnsaved) {
 		ImGui::OpenPopup(POPUP_TITLE_UNSAVED);
@@ -853,10 +866,7 @@ void VoxEditWindow::registerPopups() {
 	}
 
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::TextUnformatted(ICON_FA_QUESTION);
-		ImGui::SameLine();
-		ImGui::TextUnformatted("There are unsaved modifications.\nDo you wish to discard them?");
-		ImGui::Separator();
+		dialog(ICON_FA_QUESTION, "There are unsaved modifications.\nDo you wish to discard them?");
 		if (ImGui::Button(ICON_FA_CHECK " Yes##unsaved")) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
@@ -876,10 +886,7 @@ void VoxEditWindow::registerPopups() {
 	}
 
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::TextUnformatted(ICON_FA_EXCLAMATION_TRIANGLE);
-		ImGui::SameLine();
-		ImGui::TextUnformatted("Failed to save the model!");
-		ImGui::Separator();
+		dialog(ICON_FA_EXCLAMATION_TRIANGLE, "Failed to save the model!");
 		if (ImGui::Button(ICON_FA_CHECK " OK##failedsave")) {
 			ImGui::CloseCurrentPopup();
 		}

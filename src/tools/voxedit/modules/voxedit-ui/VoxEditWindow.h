@@ -5,7 +5,7 @@
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "math/Axis.h"
-#include "video/WindowedApp.h"
+#include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUI.h"
 #include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"
@@ -70,7 +70,7 @@ private:
 	LSystemData _lsystemData;
 	core::String _currentSelectedPalette;
 	core::DynamicArray<core::String> _availablePalettes;
-	video::WindowedApp* _app;
+	ui::imgui::IMGUIApp* _app;
 	core::VarPtr _lastOpenedFile;
 
 	glm::ivec3 _lastCursorPos;
@@ -94,6 +94,8 @@ private:
 	void leftWidget();
 	void mainWidget();
 	void rightWidget();
+
+	void dialog(const char *icon, const char *text);
 
 	void afterLoad(const core::String &file);
 
@@ -121,7 +123,7 @@ private:
 	void positionsPanel();
 
 public:
-	VoxEditWindow(video::WindowedApp *app);
+	VoxEditWindow(ui::imgui::IMGUIApp *app);
 	virtual ~VoxEditWindow();
 	bool init();
 	void shutdown();
