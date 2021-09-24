@@ -663,7 +663,16 @@ void VoxEditWindow::mainWidget() {
 	_sceneAnimation->update();
 	if (ImGui::Begin(TITLE_ANIMATION_SETTINGS, nullptr, 0)) {
 		if (sceneMgr().editMode() == EditMode::Animation) {
-			animation::SkeletonAttribute* skeletonAttributes = sceneMgr().skeletonAttributes();
+			static int animation = (int)animation::Animation::IDLE;
+			if (ImGui::Combo("Animation", &animation,
+					[](void *pmds, int idx, const char **pOut) {
+						*pOut = network::EnumNameAnimation((animation::Animation)idx);
+						return **pOut != '\0';
+					},
+					(void *)network::EnumNamesAnimation(), (int)network::Animation::MAX + 1, 10)) {
+				sceneMgr().animationEntity().setAnimation((animation::Animation)animation, true);
+			}
+			animation::SkeletonAttribute *skeletonAttributes = sceneMgr().skeletonAttributes();
 			for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
 				const animation::SkeletonAttributeMeta& meta = *metaIter;
 				float *v = (float*)(((uint8_t*)skeletonAttributes) + meta.offset);
