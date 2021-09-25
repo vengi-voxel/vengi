@@ -1,4 +1,101 @@
 #include "Notify.h"
+#include "SDL_stdinc.h"
+
+ImGuiToast::ImGuiToast(ImGuiToastType type, const char *message) {
+	IM_ASSERT(type < ImGuiToastType_COUNT);
+
+	_type = type;
+	_dismissTime = NOTIFY_DEFAULT_DISMISS;
+	_creationTime = SDL_GetTicks();
+
+	SDL_strlcpy(_content, message, sizeof(_content));
+}
+
+const char *ImGuiToast::defaultTitle() const {
+	switch (_type) {
+	case ImGuiToastType_Debug:
+		return "Debug";
+	case ImGuiToastType_Warning:
+		return "Warning";
+	case ImGuiToastType_Error:
+		return "Error";
+	case ImGuiToastType_Info:
+		return "Info";
+	}
+	return "Unknown";
+}
+
+ImGuiToastType ImGuiToast::type() const {
+	return _type;
+}
+
+ImVec4 ImGuiToast::color() const {
+	switch (_type) {
+	case ImGuiToastType_None:
+		return {255, 255, 255, 255}; // White
+	case ImGuiToastType_Debug:
+		return {0, 255, 0, 255}; // Green
+	case ImGuiToastType_Warning:
+		return {255, 255, 0, 255}; // Yellow
+	case ImGuiToastType_Error:
+		return {255, 0, 0, 255}; // Error
+	case ImGuiToastType_Info:
+	default:
+		return {0, 157, 255, 255}; // Blue
+	}
+}
+
+const char *ImGuiToast::icon() const {
+	switch (_type) {
+	case ImGuiToastType_None:
+		return nullptr;
+	case ImGuiToastType_Debug:
+		return ICON_FA_CHECK_CIRCLE;
+	case ImGuiToastType_Warning:
+		return ICON_FA_EXCLAMATION_TRIANGLE;
+	case ImGuiToastType_Error:
+		return ICON_FA_TIMES_CIRCLE;
+	case ImGuiToastType_Info:
+	default:
+		return ICON_FA_INFO_CIRCLE;
+	}
+}
+
+const char *ImGuiToast::content() const {
+	return _content;
+}
+
+uint32_t ImGuiToast::elapsedTime() const {
+	return SDL_GetTicks() - _creationTime;
+}
+
+ImGuiToastPhase ImGuiToast::phase() const {
+	const uint32_t elapsed = elapsedTime();
+
+	if (elapsed > NOTIFY_FADE_IN_OUT_TIME + _dismissTime + NOTIFY_FADE_IN_OUT_TIME) {
+		return ImGuiToastPhase_Expired;
+	} else if (elapsed > NOTIFY_FADE_IN_OUT_TIME + _dismissTime) {
+		return ImGuiToastPhase_FadeOut;
+	} else if (elapsed > NOTIFY_FADE_IN_OUT_TIME) {
+		return ImGuiToastPhase_Wait;
+	}
+	return ImGuiToastPhase_FadeIn;
+}
+
+float ImGuiToast::fadePercent() const {
+	const ImGuiToastPhase p = phase();
+	const uint32_t elapsed = elapsedTime();
+
+	if (p == ImGuiToastPhase_FadeIn) {
+		return ((float)elapsed / (float)NOTIFY_FADE_IN_OUT_TIME) * NOTIFY_OPACITY;
+	} else if (p == ImGuiToastPhase_FadeOut) {
+		return (1.0f - (((float)elapsed - (float)NOTIFY_FADE_IN_OUT_TIME - (float)_dismissTime) /
+						(float)NOTIFY_FADE_IN_OUT_TIME)) *
+			   NOTIFY_OPACITY;
+	}
+
+	return NOTIFY_OPACITY;
+}
 
 namespace ImGui {
 
@@ -20,7 +117,6 @@ int RenderNotifications(core::DynamicArray<ImGuiToast> &notifications) {
 
 		// Get icon, title and other data
 		const char *icon = currentToast->icon();
-		const char *title = currentToast->title();
 		const char *content = currentToast->content();
 		const char *default_title = currentToast->defaultTitle();
 		const float opacity = currentToast->fadePercent(); // Get opacity based of the current phase
@@ -53,15 +149,7 @@ int RenderNotifications(core::DynamicArray<ImGuiToast> &notifications) {
 			}
 
 			// If a title is set
-			if (!NOTIFY_NULL_OR_EMPTY(title)) {
-				// If a title and an icon is set, we want to render on same line
-				if (!NOTIFY_NULL_OR_EMPTY(icon)) {
-					ImGui::SameLine();
-				}
-
-				ImGui::TextUnformatted(title); // Render title text
-				wasTitleRendered = true;
-			} else if (!NOTIFY_NULL_OR_EMPTY(default_title)) {
+			if (!NOTIFY_NULL_OR_EMPTY(default_title)) {
 				if (!NOTIFY_NULL_OR_EMPTY(icon)) {
 					ImGui::SameLine();
 				}

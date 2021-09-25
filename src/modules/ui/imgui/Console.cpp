@@ -35,7 +35,7 @@ void Console::addLogLine(int category, SDL_LogPriority priority, const char *mes
 	default:
 		return;
 	}
-	_notifications.emplace_back(toastType, "%s", message);
+	_notifications.emplace_back(toastType, message);
 }
 
 void Console::drawString(int x, int y, const glm::ivec4& color, int, const char* str, int len) {
