@@ -122,8 +122,8 @@ int RenderNotifications(core::DynamicArray<ImGuiToast> &notifications) {
 		const float opacity = currentToast->fadePercent(); // Get opacity based of the current phase
 
 		// Window rendering
-		auto text_color = currentToast->color();
-		text_color.w = opacity;
+		ImVec4 textColor = currentToast->color();
+		textColor.w = opacity;
 
 		// Generate new unique name for this toast
 		char windowName[50];
@@ -133,10 +133,7 @@ int RenderNotifications(core::DynamicArray<ImGuiToast> &notifications) {
 		ImGui::SetNextWindowBgAlpha(opacity);
 		const ImVec2 windowPos(vpSize.x - NOTIFY_PADDING_X, vpSize.y - NOTIFY_PADDING_Y - height);
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
-		ImGui::Begin(windowName, nullptr, NOTIFY_TOAST_FLAGS);
-
-		// Here we render the toast content
-		{
+		if (ImGui::Begin(windowName, nullptr, NOTIFY_TOAST_FLAGS)) {
 			// We want to support multi-line text, this will wrap the text after 1/3 of the screen width
 			ImGui::PushTextWrapPos(vpSize.x / 3.0f);
 
@@ -144,7 +141,7 @@ int RenderNotifications(core::DynamicArray<ImGuiToast> &notifications) {
 
 			// If an icon is set
 			if (!NOTIFY_NULL_OR_EMPTY(icon)) {
-				ImGui::TextColored(text_color, "%s", icon);
+				ImGui::TextColored(textColor, "%s", icon);
 				wasTitleRendered = true;
 			}
 
@@ -175,10 +172,11 @@ int RenderNotifications(core::DynamicArray<ImGuiToast> &notifications) {
 			}
 
 			ImGui::PopTextWrapPos();
+
+			// Save height for next toasts
+			height += ImGui::GetWindowHeight() + NOTIFY_PADDING_MESSAGE_Y;
 		}
 
-		// Save height for next toasts
-		height += ImGui::GetWindowHeight() + NOTIFY_PADDING_MESSAGE_Y;
 
 		ImGui::End();
 	}
