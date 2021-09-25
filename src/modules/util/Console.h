@@ -118,7 +118,7 @@ protected:
 
 	static core::String removeAnsiColors(const char* message);
 	static void logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message);
-	void addLogLine(int category, SDL_LogPriority priority, const char *message);
+	virtual void addLogLine(int category, SDL_LogPriority priority, const char *message);
 
 	// cursor move on the commandline
 	void cursorLeft();
