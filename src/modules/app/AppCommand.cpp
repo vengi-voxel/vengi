@@ -44,8 +44,9 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::info("Usage: url <http://my-url>");
 			return;
 		}
+		const char *url = args[0].c_str();
 #if SDL_VERSION_ATLEAST(2, 0, 14)
-		SDL_OpenURL(args[0].c_str());
+		SDL_OpenURL(url);
 #else
 
 #ifdef _WIN32
