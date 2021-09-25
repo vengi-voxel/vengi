@@ -529,7 +529,7 @@ void VoxEditWindow::layers() {
 		static const uint32_t TableFlags =
 			ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
 			ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg;
-		if (ImGui::BeginTable("##nodelist", 4, TableFlags)) {
+		if (ImGui::BeginTable("##layerlist", 4, TableFlags)) {
 			ImGui::TableSetupColumn(ICON_FA_EYE"##visiblelayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(ICON_FA_LOCK"##lockedlayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
