@@ -312,6 +312,9 @@ void VoxEditWindow::menuBar() {
 			if (ImGui::Button("Scene settings")) {
 				_popupSceneSettings = true;
 			}
+			if (ImGui::Button("Bindings")) {
+				_app->showBindingsDialog();
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu(ICON_FA_EYE" View")) {
