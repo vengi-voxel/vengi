@@ -148,6 +148,10 @@ void TestApp::onRenderUI() {
 	}
 	ImGui::InputVarFloat("Rotation speed", _rotationSpeed, 0.01f, 0.1f);
 	ImGui::Separator();
+	ImGui::SameLine();
+	if (ImGui::Button("Bindings")) {
+		showBindingsDialog();
+	}
 	if (ImGui::Button("Quit")) {
 		requestQuit();
 	}
