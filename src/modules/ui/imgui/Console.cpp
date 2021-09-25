@@ -10,6 +10,10 @@ Console::Console() :
 		Super() {
 }
 
+void Console::addLogLine(int category, SDL_LogPriority priority, const char *message) {
+	Super::addLogLine(category, priority, message);
+}
+
 void Console::drawString(int x, int y, const glm::ivec4& color, int, const char* str, int len) {
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
 	drawList->AddText(ImVec2(x, y), IM_COL32(color.r, color.g, color.b, color.a), str);

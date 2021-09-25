@@ -18,6 +18,7 @@ class IMGUIApp;
 class Console : public util::Console {
 private:
 	using Super = util::Console;
+	void addLogLine(int category, SDL_LogPriority priority, const char *message) override;
 
 	void drawString(int x, int y, const glm::ivec4& color, int, const char* str, int len) override;
 	int lineHeight() override;
