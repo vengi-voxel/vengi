@@ -73,8 +73,6 @@ private:
 	ui::imgui::IMGUIApp* _app;
 	core::VarPtr _lastOpenedFile;
 
-	glm::ivec3 _lastCursorPos;
-
 	LayerSettings _layerSettings;
 
 	core::String _activeScript;

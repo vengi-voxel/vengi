@@ -17,7 +17,6 @@ namespace voxedit {
 
 class Viewport {
 private:
-	video::Id _frameBufferTexture = video::InvalidId;
 	video::WindowedApp *_app;
 	const core::String _id;
 	bool _hovered = false;
