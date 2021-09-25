@@ -4,6 +4,7 @@ set(SRCS
 	IMGUIApp.cpp IMGUIApp.h
 	Console.cpp Console.h
 	FileDialog.cpp FileDialog.h
+	Notify.cpp Notify.h
 	IMGUI.cpp IMGUI.h
 	IMGUIStyle.cpp IMGUIStyle.h
 	IMGUIInternal.h

@@ -6,6 +6,7 @@
 
 #include "util/Console.h"
 #include "IMGUI.h"
+#include "Notify.h"
 
 namespace ui {
 namespace imgui {
@@ -18,6 +19,7 @@ class IMGUIApp;
 class Console : public util::Console {
 private:
 	using Super = util::Console;
+	core::DynamicArray<ImGuiToast> _notifications;
 	void addLogLine(int category, SDL_LogPriority priority, const char *message) override;
 
 	void drawString(int x, int y, const glm::ivec4& color, int, const char* str, int len) override;
@@ -28,6 +30,8 @@ private:
 
 public:
 	Console();
+
+	void renderNotifications();
 };
 
 }

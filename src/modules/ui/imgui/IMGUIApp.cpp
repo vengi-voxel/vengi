@@ -729,6 +729,7 @@ app::AppState IMGUIApp::onRunning() {
 			}
 		}
 	}
+	_console.renderNotifications();
 
 	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {
 		core::setBindingContext(core::BindingContext::UserInterface);
