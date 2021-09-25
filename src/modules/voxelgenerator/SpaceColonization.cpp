@@ -139,6 +139,7 @@ bool SpaceColonization::step() {
 
 	// Generate the new branches
 	core::DynamicArray<Branch*> newBranches;
+	newBranches.reserve(_branches.size());
 	for (auto e : _branches) {
 		Branch* branch = e->value;
 		// if at least one attraction point is affecting the branch
