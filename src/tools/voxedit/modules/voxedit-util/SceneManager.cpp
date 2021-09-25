@@ -1645,6 +1645,8 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 	const animation::AnimationSettings& animSettings = animationEntity().animationSettings();
 	if (saveAnimationEntityLua(animSettings, animationEntity().skeletonAttributes(), name, luaFile)) {
 		Log::info("Wrote lua script: %s", luaFile->name().c_str());
+	} else {
+		Log::error("Failed to write lua script: %s", luaFile->name().c_str());
 	}
 
 	const voxedit::Layers& layers = _layerMgr.layers();
