@@ -721,6 +721,45 @@ app::AppState IMGUIApp::onRunning() {
 			_showFileDialog = false;
 		}
 
+		if (_showBindingsDialog) {
+			if (ImGui::Begin("Bindings", &_showBindingsDialog, 0)) {
+				const util::BindMap& bindings = _keybindingHandler.bindings();
+				static const uint32_t TableFlags =
+					ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
+					ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg;
+				if (ImGui::BeginTable("##bindingslist", 3, TableFlags)) {
+					ImGui::TableSetupColumn("Keys##bindingslist", ImGuiTableColumnFlags_WidthFixed);
+					ImGui::TableSetupColumn("Command##bindingslist", ImGuiTableColumnFlags_WidthFixed);
+					ImGui::TableSetupColumn("Description##bindingslist", ImGuiTableColumnFlags_WidthStretch);
+					ImGui::TableHeadersRow();
+
+					for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
+						const util::CommandModifierPair& pair = i->second;
+						const core::String& command = pair.command;
+						const core::String& keyBinding = _keybindingHandler.getKeyBindingsString(command.c_str(), pair.count);
+						ImGui::TableNextColumn();
+						ImGui::TextUnformatted(keyBinding.c_str());
+						ImGui::TableNextColumn();
+						ImGui::TextUnformatted(command.c_str());
+						const command::Command* cmd = nullptr;
+						if (command.contains(" ")) {
+							cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
+						} else {
+							cmd = command::Command::getCommand(command);
+						}
+						ImGui::TableNextColumn();
+						if (!cmd) {
+							ImGui::TextColored(core::Color::Red, "Failed to get command for %s", command.c_str());
+						} else {
+							ImGui::TextUnformatted(cmd->help() ? cmd->help() : "");
+						}
+					}
+					ImGui::EndTable();
+				}
+			}
+			ImGui::End();
+		}
+
 		bool showMetrics = _showMetrics->boolVal();
 		if (showMetrics) {
 			ImGui::ShowMetricsWindow(&showMetrics);

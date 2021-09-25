@@ -43,7 +43,10 @@ protected:
 	core::String _writePathIni;
 	core::String _writePathLog;
 	core::VarPtr _lastDirectory;
+
+	bool _showBindingsDialog = false;
 	bool _showFileDialog = false;
+
 	core::String _fileDialogFilter;
 	SDL_Cursor* _mouseCursors[ImGuiMouseCursor_COUNT];
 	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
@@ -86,11 +89,16 @@ public:
 	ImFont *bigFont();
 	ImFont *smallFont();
 
+	void showBindingsDialog();
 	/**
 	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
 	 */
 	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) override;
 };
+
+inline void IMGUIApp::showBindingsDialog() {
+	_showBindingsDialog = true;
+}
 
 inline ImFont *IMGUIApp::defaultFont() {
 	return _defaultFont;

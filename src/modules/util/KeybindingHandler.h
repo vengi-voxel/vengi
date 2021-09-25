@@ -60,6 +60,7 @@ public:
 	 */
 	bool load(const core::String& name);
 	void setBindings(const BindMap& bindings);
+	const BindMap bindings() const;
 
 	bool isPressed(int32_t key) const;
 
@@ -71,6 +72,10 @@ public:
 
 inline bool KeyBindingHandler::isPressed(int32_t key) const {
 	return _keys.find(key) != _keys.end();
+}
+
+inline const BindMap KeyBindingHandler::bindings() const {
+	return _bindings;
 }
 
 }
