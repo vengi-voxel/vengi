@@ -163,10 +163,10 @@ glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, 
  */
 template<class Volume>
 void createEllipse(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const voxel::Voxel& voxel) {
-	const int heightLow = height / 2;
+	const int heightLow = core_max(1, height / 2);
 	const int heightHigh = height - heightLow;
 	const double minDimension = core_min(width, depth);
-	const double adjustedMinRadius = minDimension / 2.0;
+	const double adjustedMinRadius = core_max(1.0, minDimension / 2.0);
 	const double heightFactor = heightLow / adjustedMinRadius;
 	const int start = heightLow - 1;
 	const double minRadius = glm::pow(adjustedMinRadius + 0.5, 2.0);
@@ -285,9 +285,9 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 	const int dj = ((y1 < y2) ? 1 : ((y1 > y2) ? -1 : 0));
 	const int dk = ((z1 < z2) ? 1 : ((z1 > z2) ? -1 : 0));
 
-	const float deltatx = 1.0f / glm::abs(x2 - x1);
-	const float deltaty = 1.0f / glm::abs(y2 - y1);
-	const float deltatz = 1.0f / glm::abs(z2 - z1);
+	const float deltatx = 1.0f / core_max(1.0f, glm::abs(x2 - x1));
+	const float deltaty = 1.0f / core_max(1.0f, glm::abs(y2 - y1));
+	const float deltatz = 1.0f / core_max(1.0f, glm::abs(z2 - z1));
 
 	const float minx = glm::floor(x1), maxx = minx + 1.0f;
 	float tx = ((x1 > x2) ? (x1 - minx) : (maxx - x1)) * deltatx;
