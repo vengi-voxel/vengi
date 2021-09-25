@@ -10,6 +10,7 @@
 #include "core/GLM.h"
 #include "core/collection/Map.h"
 #include "core/collection/DynamicArray.h"
+#include <glm/gtc/epsilon.hpp>
 
 namespace voxelgenerator {
 namespace tree {
@@ -60,7 +61,14 @@ protected:
 	Branch *_root;
 	using AttractionPoints = std::vector<AttractionPoint>;
 	AttractionPoints _attractionPoints;
-	using Branches = core::Map<glm::vec3, Branch*, 64, glm::hash<glm::vec3>>;
+
+	struct EqualCompare {
+		inline bool operator() (const glm::vec3& lhs, const glm::vec3& rhs) const {
+			return glm::all(glm::epsilonEqual(lhs, rhs, 0.001f));
+		}
+	};
+
+	using Branches = core::Map<glm::vec3, Branch*, 64, glm::hash<glm::vec3>, EqualCompare>;
 	Branches _branches;
 	math::Random _random;
 
@@ -71,6 +79,9 @@ protected:
 
 	template<class Volume, class Voxel, class Size>
 	void generateLeaves_r(Volume& volume, const Voxel& voxel, Branch* branch, const Size& size) const {
+		if (!branch) {
+			return;
+		}
 		if (branch->_children.empty()) {
 			const glm::ivec3& s = size;
 			shape::createEllipse(volume, branch->_position, s.x, s.y, s.z, voxel);
