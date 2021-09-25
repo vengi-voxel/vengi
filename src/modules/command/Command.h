@@ -144,12 +144,17 @@ public:
 	const char* help() const;
 
 	Command& setBindingContext(int bindingContext);
+	int bindingContext() const;
 
 	bool operator==(const Command& rhs) const;
 };
 
 inline bool Command::operator==(const Command& rhs) const {
 	return rhs._name == _name;
+}
+
+inline int Command::bindingContext() const {
+	return _bindingContext;
 }
 
 inline Command& Command::setBindingContext(int bindingContext) {
