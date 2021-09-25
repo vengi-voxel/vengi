@@ -3,9 +3,10 @@ vengi (0.0.11.0-1) UNRELEASED; urgency=low
   * General:
   * Added url command
   * Reduced memory allocations per frame
+  * Added key bindings dialog
 
   * VoxEdit:
-  * Removed old ui and switched to dear imgui
+  * Removed old ui and switched to dearimgui
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 19 Sep 2021 10:28:15 +0200
 
@@ -21,7 +22,7 @@ vengi (0.0.10.0-1) unstable; urgency=low
 
   * VoxEdit:
   * Improved scene edit mode
-  * Progress on the ui conversion to dear imgui
+  * Progress on the ui conversion to dearimgui
 
   * Tools:
   * Rewrote the ai debugger

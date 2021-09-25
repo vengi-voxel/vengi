@@ -8,10 +8,11 @@ General:
 
    - Added url command
    - Reduced memory allocations per frame
+   - Added key bindings dialog
 
 VoxEdit:
 
-   - Removed old ui and switched to dear imgui
+   - Removed old ui and switched to dearimgui
 
 ## 0.0.10 (2021-09-19)
 
@@ -27,7 +28,7 @@ General:
 VoxEdit:
 
    - Improved scene edit mode
-   - Progress on the ui conversion to dear imgui
+   - Progress on the ui conversion to dearimgui
 
 Tools:
 
