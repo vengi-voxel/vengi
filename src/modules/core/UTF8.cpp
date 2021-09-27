@@ -7,6 +7,48 @@
 namespace core {
 namespace utf8 {
 
+int toUtf8(unsigned int c, char *buf, size_t bufSize) {
+	if (c < 0x80) {
+		if (bufSize < 1) {
+			return 0;
+		}
+		buf[0] = (char)c;
+		return 1;
+	}
+
+	if (c < 0x800) {
+		if (bufSize < 2) {
+			return 0;
+		}
+		buf[0] = (char)(0xc0 + (c >> 6));
+		buf[1] = (char)(0x80 + (c & 0x3f));
+		return 2;
+	}
+
+	if (c >= 0xdc00 && c < 0xe000) {
+		return 0;
+	}
+
+	if (c >= 0xd800 && c < 0xdc00) {
+		if (bufSize < 4) {
+			return 0;
+		}
+		buf[0] = (char)(0xf0 + (c >> 18));
+		buf[1] = (char)(0x80 + ((c >> 12) & 0x3f));
+		buf[2] = (char)(0x80 + ((c >> 6) & 0x3f));
+		buf[3] = (char)(0x80 + (c & 0x3f));
+		return 4;
+	}
+
+	if (bufSize < 3) {
+		return 0;
+	}
+	buf[0] = (char)(0xe0 + (c >> 12));
+	buf[1] = (char)(0x80 + ((c >> 6) & 0x3f));
+	buf[2] = (char)(0x80 + (c & 0x3f));
+	return 3;
+}
+
 size_t lengthChar(uint8_t c) {
 	if (c < 0x80) {
 		return 1;
@@ -43,24 +85,24 @@ size_t lengthInt(int c) {
 	return 0;
 }
 
-size_t length(const char* str) {
+size_t length(const char *str) {
 	size_t result = 0;
 
 	while (str[0] != '\0') {
-		const size_t n = lengthChar((uint8_t) *str);
+		const size_t n = lengthChar((uint8_t)*str);
 		str += n;
 		result++;
 	}
 	return result;
 }
 
-int next(const char** str) {
-	const char* s = *str;
+int next(const char **str) {
+	const char *s = *str;
 	if (s[0] == '\0') {
 		return -1;
 	}
 
-	const unsigned char* buf = (const unsigned char*)(s);
+	const unsigned char *buf = (const unsigned char *)s;
 	size_t len;
 	int cp;
 	int min;

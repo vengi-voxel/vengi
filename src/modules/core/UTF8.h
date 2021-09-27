@@ -16,6 +16,8 @@ namespace utf8 {
  */
 extern int next(const char** str);
 
+extern int toUtf8(unsigned int c, char *buf, size_t bufSize);
+
 extern size_t length(const char* str);
 
 extern size_t lengthChar(uint8_t c);
