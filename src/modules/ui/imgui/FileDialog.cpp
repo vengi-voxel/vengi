@@ -23,6 +23,8 @@ static core::String assemblePath(const core::String &dir, const core::String &en
 }
 
 // TODO: make filters selectable
+// TODO: list registered data paths from filesystem
+// TODO: allow to specify the starting directory
 bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type, const core::String& filter) {
 	static size_t fileDialogFileSelectIndex = 0;
 	static size_t fileDialogFolderSelectIndex = 0;
