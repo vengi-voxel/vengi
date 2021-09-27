@@ -7,6 +7,7 @@
 #include "math/Axis.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUI.h"
+#include "ui/imgui/TextEditor.h"
 #include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -44,6 +45,7 @@ private:
 	bool _popupFailedToSave = false;
 	bool _popupSceneSettings = false;
 	bool _scriptEditor = false;
+	TextEditor _textEditor;
 
 	struct NoiseData {
 		int octaves = 4;
@@ -75,7 +77,7 @@ private:
 	LayerSettings _layerSettings;
 
 	core::String _activeScript;
-	core::String _editScript;
+	core::String _activeScriptFilename;
 	core::String _loadFile;
 	core::String _lastExecutedCommand;
 

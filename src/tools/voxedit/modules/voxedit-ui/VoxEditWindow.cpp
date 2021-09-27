@@ -9,6 +9,7 @@
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
 #include "ui/imgui/IMGUIApp.h"
+#include "ui/imgui/FileDialog.h"
 #include "ui/imgui/IMGUI.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -38,7 +39,7 @@
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
-#define WINDOW_TITLE_SCRIPT_EDITOR "Script Editor##scripteditor"
+#define WINDOW_TITLE_SCRIPT_EDITOR ICON_FK_CODE "Script Editor##scripteditor"
 
 namespace voxedit {
 
@@ -1225,15 +1226,24 @@ void VoxEditWindow::scriptPanel() {
 			}
 			ImGui::TooltipText("%s", p.description.c_str());
 		}
-
-		if (ImGui::Button("Execute##scriptpanel")) {
+		const bool validScriptIndex = _currentScript >= 0 && _currentScript < (int)_scripts.size();
+		const bool validScript = validScriptIndex && _scripts[_currentScript].valid;
+		if (ImGui::DisabledButton("Execute##scriptpanel", !validScript)) {
 			sceneMgr().runScript(_activeScript, _scriptParameters);
 		}
-		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
+		ImGui::SameLine();
+		if (ImGui::Button("New##scriptpanel")) {
+			_scriptEditor = true;
+			_textEditor.SetText("");
+			_activeScriptFilename = "";
+			_activeScript = "";
+		}
+		if (validScriptIndex) {
 			ImGui::SameLine();
 			if (ImGui::Button("Edit##scriptpanel")) {
 				_scriptEditor = true;
-				_editScript = _activeScript;
+				_activeScriptFilename = _scripts[_currentScript].filename;
+				_textEditor.SetText(_activeScript.c_str());
 			}
 		}
 
@@ -1242,14 +1252,72 @@ void VoxEditWindow::scriptPanel() {
 	ImGui::End();
 
 	if (_scriptEditor) {
-		if (ImGui::Begin(WINDOW_TITLE_SCRIPT_EDITOR, &_scriptEditor)) {
-			if (ImGui::Button(ICON_FA_CHECK " Apply and execute##scripteditor")) {
-				_activeScript = _editScript;
-				reloadScriptParameters(_activeScript);
+		if (ImGui::Begin(WINDOW_TITLE_SCRIPT_EDITOR, &_scriptEditor, ImGuiWindowFlags_MenuBar)) {
+			if (ImGui::BeginMenuBar()) {
+				if (ImGui::BeginMenu(ICON_FK_FILES_O "File")) {
+					if (ImGui::MenuItem(ICON_FA_CHECK " Apply and execute##scripteditor")) {
+						_activeScript = _textEditor.GetText().c_str();
+						reloadScriptParameters(_activeScript);
+					}
+					if (!_activeScriptFilename.empty()) {
+						if (ImGui::MenuItem(ICON_FA_SAVE " Save##scripteditor")) {
+							if (_app->filesystem()->write("scripts/" + _activeScriptFilename, _textEditor.GetText().c_str())) {
+								_activeScript = _textEditor.GetText().c_str();
+								reloadScriptParameters(_activeScript);
+							}
+						}
+						ImGui::TooltipText("Overwrite scripts/%s", _activeScriptFilename.c_str());
+					}
+					if (ImGui::MenuItem(ICON_FA_SAVE " Save As##scripteditor")) {
+						core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
+						_app->fileDialog(
+							[&](const core::String &file) {
+								if (_app->filesystem()->write(file, _textEditor.GetText().c_str())) {
+									_scripts.clear();
+									_currentScript = -1;
+									Log::info("Saved script to %s", file.c_str());
+								} else {
+									Log::warn("Failed to save script %s", file.c_str());
+								}
+							},
+							video::WindowedApp::OpenFileMode::Save, "*.lua");
+					}
+					if (ImGui::MenuItem("Close##scripteditor")) {
+						_scriptEditor = false;
+					}
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu(ICON_FK_PENCIL " Edit")) {
+					if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "ALT-Backspace", nullptr, _textEditor.CanUndo()))
+						_textEditor.Undo();
+					if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl-Y", nullptr, _textEditor.CanRedo()))
+						_textEditor.Redo();
+
+					ImGui::Separator();
+
+					if (ImGui::MenuItem(ICON_FA_COPY " Copy", "Ctrl-C", nullptr, _textEditor.HasSelection()))
+						_textEditor.Copy();
+					if (ImGui::MenuItem(ICON_FA_CUT " Cut", "Ctrl-X", nullptr, _textEditor.HasSelection()))
+						_textEditor.Cut();
+					if (ImGui::MenuItem("Delete", "Del", nullptr, _textEditor.HasSelection()))
+						_textEditor.Delete();
+					if (ImGui::MenuItem(ICON_FA_PASTE " Paste", "Ctrl-V", nullptr,
+										ImGui::GetClipboardText() != nullptr))
+						_textEditor.Paste();
+
+					ImGui::Separator();
+
+					if (ImGui::MenuItem("Select all", nullptr, nullptr))
+						_textEditor.SetSelection(TextEditor::Coordinates(),
+												 TextEditor::Coordinates(_textEditor.GetTotalLines(), 0));
+
+					ImGui::EndMenu();
+				}
+
+				ImGui::EndMenuBar();
 			}
-			ImGui::PushAllowKeyboardFocus(true);
-			ImGui::InputTextMultiline("##scripteditor", &_editScript, ImGui::GetContentRegionAvail());
-			ImGui::PopAllowKeyboardFocus();
+
+			_textEditor.Render(WINDOW_TITLE_SCRIPT_EDITOR);
 		}
 		ImGui::End();
 	}
