@@ -1228,9 +1228,12 @@ void VoxEditWindow::scriptPanel() {
 		if (ImGui::Button("Execute##scriptpanel")) {
 			sceneMgr().runScript(_activeScript, _scriptParameters);
 		}
-		ImGui::SameLine();
-		if (ImGui::Button("Edit##scriptpanel")) {
-			_scriptEditor = true;
+		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
+			ImGui::SameLine();
+			if (ImGui::Button("Edit##scriptpanel")) {
+				_scriptEditor = true;
+				_editScript = _activeScript;
+			}
 		}
 
 		urlButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/engine/voxedit/LUAScript/");
@@ -1238,21 +1241,16 @@ void VoxEditWindow::scriptPanel() {
 	ImGui::End();
 
 	if (_scriptEditor) {
-		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
-			_editScript = _activeScript;
-			if (ImGui::Begin(WINDOW_TITLE_SCRIPT_EDITOR, &_scriptEditor)) {
-				if (ImGui::Button(ICON_FA_CHECK " Apply and execute##scripteditor")) {
-					_activeScript = _editScript;
-					reloadScriptParameters(_activeScript);
-				}
-				ImGui::PushAllowKeyboardFocus(true);
-				ImGui::InputTextMultiline("##scripteditor", &_editScript, ImGui::GetContentRegionAvail());
-				ImGui::PopAllowKeyboardFocus();
+		if (ImGui::Begin(WINDOW_TITLE_SCRIPT_EDITOR, &_scriptEditor)) {
+			if (ImGui::Button(ICON_FA_CHECK " Apply and execute##scripteditor")) {
+				_activeScript = _editScript;
+				reloadScriptParameters(_activeScript);
 			}
-			ImGui::End();
-		} else {
-			_scriptEditor = false;
+			ImGui::PushAllowKeyboardFocus(true);
+			ImGui::InputTextMultiline("##scripteditor", &_editScript, ImGui::GetContentRegionAvail());
+			ImGui::PopAllowKeyboardFocus();
 		}
+		ImGui::End();
 	}
 }
 
