@@ -142,6 +142,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount < 0) {
 		uv_fs_req_cleanup(&req);
+		Log::debug("No files found in %s", directory.c_str());
 		return false;
 	}
 	uv_dirent_t ent;
@@ -166,6 +167,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 			uv_fs_req_cleanup(&linkReq);
 			if (!filter.empty()) {
 				if (!core::string::fileMatchesMultiple(symlink.c_str(), filter.c_str())) {
+					Log::debug("File %s doesn't match filter %s", symlink.c_str(), filter.c_str());
 					continue;
 				}
 			}
@@ -188,6 +190,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 		}
 		if (!filter.empty()) {
 			if (!core::string::fileMatchesMultiple(ent.name, filter.c_str())) {
+				Log::debug("Entity %s doesn't match filter %s", ent.name, filter.c_str());
 				continue;
 			}
 		}
@@ -207,7 +210,9 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 bool Filesystem::list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter) const {
 	if (isRelativePath(directory)) {
 		for (const core::String& p : _paths) {
-			_list(p + directory, entities, filter);
+			const core::String fullDir = p + directory;
+			Log::debug("List %s in %s", filter.c_str(), fullDir.c_str());
+			_list(fullDir, entities, filter);
 		}
 	} else {
 		_list(directory, entities, filter);
