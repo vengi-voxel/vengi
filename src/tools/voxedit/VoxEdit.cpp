@@ -170,6 +170,7 @@ app::AppState VoxEdit::onInit() {
 		return app::AppState::InitFailure;
 	}
 
+	// needed for handling the module includes
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::error("Failed to register lua generator script path");
 		return app::AppState::InitFailure;

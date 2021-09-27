@@ -1172,7 +1172,7 @@ void VoxEditWindow::scriptPanel() {
 		}
 
 		if (ImGui::ComboStl("Script", &_currentScript, _scripts)) {
-			const core::String& scriptName = _scripts[_currentScript];
+			const core::String& scriptName = _scripts[_currentScript].filename;
 			_activeScript = sceneMgr().luaGenerator().load(scriptName);
 			reloadScriptParameters(_activeScript);
 		}

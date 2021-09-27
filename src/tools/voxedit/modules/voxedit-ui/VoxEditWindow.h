@@ -20,7 +20,7 @@ class Viewport;
 class VoxEditWindow {
 private:
 	int _currentScript = -1;
-	core::DynamicArray<core::String> _scripts;
+	core::DynamicArray<voxelgenerator::LUAScript> _scripts;
 	core::DynamicArray<voxelgenerator::LUAParameterDescription> _scriptParameterDescription;
 	core::DynamicArray<core::String> _scriptParameters;
 

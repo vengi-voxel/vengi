@@ -45,6 +45,15 @@ struct LUAParameterDescription {
 	}
 };
 
+struct LUAScript {
+	core::String filename;
+	bool valid; // main() was found
+
+	const char *c_str() const {
+		return filename.c_str();
+	}
+};
+
 class LUAGenerator : public core::IComponent {
 protected:
 	virtual void initializeCustomState(lua_State* s) {}
@@ -61,7 +70,7 @@ public:
 	void shutdown() override;
 
 	core::String load(const core::String& scriptName) const;
-	core::DynamicArray<core::String> listScripts() const;
+	core::DynamicArray<LUAScript> listScripts() const;
 	bool argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params);
 	bool exec(const core::String& luaScript, voxel::RawVolumeWrapper* volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args = core::DynamicArray<core::String>());
 };

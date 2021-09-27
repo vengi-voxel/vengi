@@ -411,9 +411,9 @@ core::String LUAGenerator::load(const core::String& scriptName) const {
 	return io::filesystem()->load(filename);
 }
 
-core::DynamicArray<core::String> LUAGenerator::listScripts() const {
+core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
 	lua::LUA lua;
-	core::DynamicArray<core::String> scripts;
+	core::DynamicArray<LUAScript> scripts;
 	core::DynamicArray<io::Filesystem::DirEntry> entities;
 	io::filesystem()->list("scripts", entities, "*.lua");
 	scripts.reserve(entities.size());
@@ -423,9 +423,10 @@ core::DynamicArray<core::String> LUAGenerator::listScripts() const {
 		lua_getglobal(lua, "main");
 		if (!lua_isfunction(lua, -1)) {
 			Log::debug("No main() function found in %s", path.c_str());
+			scripts.push_back({e.name, false});
 			continue;
 		}
-		scripts.push_back(e.name);
+		scripts.push_back({e.name, true});
 	}
 	return scripts;
 }
