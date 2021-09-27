@@ -1155,6 +1155,7 @@ void VoxEditWindow::noisePanel() {
 }
 
 void VoxEditWindow::reloadScriptParameters(const core::String& script) {
+	_scriptParameterDescription.clear();
 	sceneMgr().luaGenerator().argumentInfo(script, _scriptParameterDescription);
 	const int parameterCount = _scriptParameterDescription.size();
 	_scriptParameters.clear();
