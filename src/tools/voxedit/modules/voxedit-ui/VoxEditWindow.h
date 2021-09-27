@@ -39,12 +39,11 @@ private:
 	Viewport* _sceneFront = nullptr;
 	Viewport* _sceneAnimation = nullptr;
 
-	// these states are here because the popups are triggered
-	// outside the ui state handling
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
 	bool _popupSceneSettings = false;
+	bool _scriptEditor = false;
 
 	struct NoiseData {
 		int octaves = 4;
@@ -76,6 +75,7 @@ private:
 	LayerSettings _layerSettings;
 
 	core::String _activeScript;
+	core::String _editScript;
 	core::String _loadFile;
 	core::String _lastExecutedCommand;
 
@@ -111,6 +111,7 @@ private:
 	bool modifierRadioButton(const char *title, ModifierType type);
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 	bool saveImage(const char *file);
+	void reloadScriptParameters(const core::String& script);
 
 	void switchTreeType(voxelgenerator::TreeType treeType);
 	void treePanel();

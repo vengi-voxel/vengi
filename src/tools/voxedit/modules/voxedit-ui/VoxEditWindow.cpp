@@ -38,6 +38,7 @@
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
+#define WINDOW_TITLE_SCRIPT_EDITOR "Script Editor##scripteditor"
 
 namespace voxedit {
 
@@ -982,7 +983,8 @@ void VoxEditWindow::update() {
 		ImGui::DockBuilderDockWindow(_sceneTop->id().c_str(), dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneFront->id().c_str(), dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneAnimation->id().c_str(), dockIdMain);
-
+		ImGuiID dockIdMainDown = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Down, 0.50f, nullptr, &dockIdMain);
+		ImGui::DockBuilderDockWindow(WINDOW_TITLE_SCRIPT_EDITOR, dockIdMainDown);
 		ImGui::DockBuilderFinish(dockspaceId);
 		init = true;
 	}
@@ -1152,6 +1154,17 @@ void VoxEditWindow::noisePanel() {
 	ImGui::End();
 }
 
+void VoxEditWindow::reloadScriptParameters(const core::String& script) {
+	sceneMgr().luaGenerator().argumentInfo(script, _scriptParameterDescription);
+	const int parameterCount = _scriptParameterDescription.size();
+	_scriptParameters.clear();
+	_scriptParameters.resize(parameterCount);
+	for (int i = 0; i < parameterCount; ++i) {
+		const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
+		_scriptParameters[i] = p.defaultValue;
+	}
+}
+
 void VoxEditWindow::scriptPanel() {
 	if (ImGui::Begin(TITLE_SCRIPTPANEL)) {
 		if (_scripts.empty()) {
@@ -1161,14 +1174,7 @@ void VoxEditWindow::scriptPanel() {
 		if (ImGui::ComboStl("Script", &_currentScript, _scripts)) {
 			const core::String& scriptName = _scripts[_currentScript];
 			_activeScript = sceneMgr().luaGenerator().load(scriptName);
-			sceneMgr().luaGenerator().argumentInfo(_activeScript, _scriptParameterDescription);
-			const int parameterCount = _scriptParameterDescription.size();
-			_scriptParameters.clear();
-			_scriptParameters.resize(parameterCount);
-			for (int i = 0; i < parameterCount; ++i) {
-				const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
-				_scriptParameters[i] = p.defaultValue;
-			}
+			reloadScriptParameters(_activeScript);
 		}
 
 		const int n = _scriptParameterDescription.size();
@@ -1222,10 +1228,32 @@ void VoxEditWindow::scriptPanel() {
 		if (ImGui::Button("Execute##scriptpanel")) {
 			sceneMgr().runScript(_activeScript, _scriptParameters);
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("Edit##scriptpanel")) {
+			_scriptEditor = true;
+		}
 
 		urlButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/engine/voxedit/LUAScript/");
 	}
 	ImGui::End();
+
+	if (_scriptEditor) {
+		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
+			_editScript = _activeScript;
+			if (ImGui::Begin(WINDOW_TITLE_SCRIPT_EDITOR, &_scriptEditor)) {
+				if (ImGui::Button(ICON_FA_CHECK " Apply and execute##scripteditor")) {
+					_activeScript = _editScript;
+					reloadScriptParameters(_activeScript);
+				}
+				ImGui::PushAllowKeyboardFocus(true);
+				ImGui::InputTextMultiline("##scripteditor", &_editScript, ImGui::GetContentRegionAvail());
+				ImGui::PopAllowKeyboardFocus();
+			}
+			ImGui::End();
+		} else {
+			_scriptEditor = false;
+		}
+	}
 }
 
 bool VoxEditWindow::saveImage(const char *file) {
