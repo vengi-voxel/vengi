@@ -11,10 +11,10 @@
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/NoisePanel.h"
 #include "voxedit-ui/ScriptPanel.h"
+#include "voxedit-ui/TreePanel.h"
 #include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
-#include "voxelgenerator/TreeContext.h"
 
 namespace voxedit {
 
@@ -52,11 +52,10 @@ private:
 	core::String _loadFile;
 	core::String _lastExecutedCommand;
 
-	voxelgenerator::TreeContext _treeGeneratorContext;
-
 	NoisePanel _noisePanel;
 	LSystemPanel _lsystemPanel;
 	ScriptPanel _scriptPanel;
+	TreePanel _treePanel;
 
 	void reloadAvailablePalettes();
 
@@ -88,8 +87,6 @@ private:
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 	bool saveImage(const char *file);
 
-	void switchTreeType(voxelgenerator::TreeType treeType);
-	void treePanel();
 	void modifierPanel();
 	void positionsPanel();
 

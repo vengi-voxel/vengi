@@ -4,6 +4,7 @@ set(SRCS
 	LSystemPanel.h LSystemPanel.cpp
 	NoisePanel.h NoisePanel.cpp
 	ScriptPanel.h ScriptPanel.cpp
+	TreePanel.h TreePanel.cpp
 	Viewport.h Viewport.cpp
 	VoxEditWindow.h VoxEditWindow.cpp
 )
