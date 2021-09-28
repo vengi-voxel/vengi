@@ -3,6 +3,7 @@ set(LIB voxedit-ui)
 set(SRCS
 	LSystemPanel.h LSystemPanel.cpp
 	NoisePanel.h NoisePanel.cpp
+	ScriptPanel.h ScriptPanel.cpp
 	Viewport.h Viewport.cpp
 	VoxEditWindow.h VoxEditWindow.cpp
 )

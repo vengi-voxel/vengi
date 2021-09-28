@@ -10,10 +10,10 @@
 #include "ui/imgui/TextEditor.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/NoisePanel.h"
+#include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
-#include "voxelgenerator/LUAGenerator.h"
 #include "voxelgenerator/TreeContext.h"
 
 namespace voxedit {
@@ -22,11 +22,6 @@ class Viewport;
 
 class VoxEditWindow {
 private:
-	int _currentScript = -1;
-	core::DynamicArray<voxelgenerator::LUAScript> _scripts;
-	core::DynamicArray<voxelgenerator::LUAParameterDescription> _scriptParameterDescription;
-	core::DynamicArray<core::String> _scriptParameters;
-
 	core::VarPtr _showAxisVar;
 	core::VarPtr _showGridVar;
 	core::VarPtr _modelSpaceVar;
@@ -46,8 +41,6 @@ private:
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
 	bool _popupSceneSettings = false;
-	bool _scriptEditor = false;
-	TextEditor _textEditor;
 
 	core::String _currentSelectedPalette;
 	core::DynamicArray<core::String> _availablePalettes;
@@ -56,8 +49,6 @@ private:
 
 	LayerSettings _layerSettings;
 
-	core::String _activeScript;
-	core::String _activeScriptFilename;
 	core::String _loadFile;
 	core::String _lastExecutedCommand;
 
@@ -65,6 +56,7 @@ private:
 
 	NoisePanel _noisePanel;
 	LSystemPanel _lsystemPanel;
+	ScriptPanel _scriptPanel;
 
 	void reloadAvailablePalettes();
 
@@ -95,11 +87,9 @@ private:
 	bool modifierRadioButton(const char *title, ModifierType type);
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 	bool saveImage(const char *file);
-	void reloadScriptParameters(const core::String& script);
 
 	void switchTreeType(voxelgenerator::TreeType treeType);
 	void treePanel();
-	void scriptPanel();
 	void modifierPanel();
 	void positionsPanel();
 
