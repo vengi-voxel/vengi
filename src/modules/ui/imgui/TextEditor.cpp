@@ -956,7 +956,6 @@ void TextEditor::Render(const char *aTitle, const ImVec2 &aSize, bool aBorder) {
 	_textChanged = false;
 	_cursorPositionChanged = false;
 
-	ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::ColorConvertU32ToFloat4(_palette[(int)PaletteIndex::Background]));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 	if (!_ignoreImGuiChild)
 		ImGui::BeginChild(aTitle, aSize, aBorder,
@@ -981,7 +980,6 @@ void TextEditor::Render(const char *aTitle, const ImVec2 &aSize, bool aBorder) {
 		ImGui::EndChild();
 
 	ImGui::PopStyleVar();
-	ImGui::PopStyleColor();
 
 	_withinRender = false;
 }
