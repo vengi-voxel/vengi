@@ -79,14 +79,6 @@ void VoxEditWindow::resetCamera() {
 	_sceneAnimation->resetCamera();
 }
 
-bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
-	if (ImGui::RadioButton(title, sceneMgr().modifier().modifierType() == type)) {
-		sceneMgr().modifier().setModifierType(type);
-		return true;
-	}
-	return false;
-}
-
 bool VoxEditWindow::actionMenuItem(const char *title, const char *command, bool enabled) {
 	return ImGui::CommandMenuItem(title, command, enabled, &_lastExecutedCommand);
 }
@@ -395,32 +387,6 @@ void VoxEditWindow::reloadAvailablePalettes() {
 	}
 }
 
-void VoxEditWindow::tools() {
-	if (ImGui::Begin(TITLE_TOOLS, nullptr, ImGuiWindowFlags_NoDecoration)) {
-		modifierRadioButton(ICON_FA_PEN " Place", ModifierType::Place);
-		modifierRadioButton(ICON_FA_EXPAND " Select", ModifierType::Select);
-		modifierRadioButton(ICON_FA_ERASER " Delete", ModifierType::Delete);
-		modifierRadioButton(ICON_FA_FILTER " Override", ModifierType::Place | ModifierType::Delete);
-		modifierRadioButton(ICON_FA_PAINT_BRUSH " Colorize", ModifierType::Update);
-
-		const ShapeType currentSelectedShapeType = sceneMgr().modifier().shapeType();
-		if (ImGui::BeginCombo("Shape", ShapeTypeStr[(int)currentSelectedShapeType], ImGuiComboFlags_None)) {
-			for (int i = 0; i < (int)ShapeType::Max; ++i) {
-				const ShapeType type = (ShapeType)i;
-				const bool selected = type == currentSelectedShapeType;
-				if (ImGui::Selectable(ShapeTypeStr[i], selected)) {
-					sceneMgr().modifier().setShapeType(type);
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-	}
-	ImGui::End();
-}
-
 void VoxEditWindow::statusBar() {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const ImVec2 &size = viewport->WorkSize;
@@ -468,7 +434,7 @@ void VoxEditWindow::statusBar() {
 
 void VoxEditWindow::leftWidget() {
 	palette();
-	tools();
+	_toolsPanel.update(TITLE_TOOLS);
 }
 
 void VoxEditWindow::mainWidget() {
@@ -480,7 +446,7 @@ void VoxEditWindow::mainWidget() {
 }
 
 void VoxEditWindow::rightWidget() {
-	positionsPanel();
+	_cursorPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
 	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_treePanel.update(TITLE_TREES);
@@ -488,59 +454,6 @@ void VoxEditWindow::rightWidget() {
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	_noisePanel.update(TITLE_NOISEPANEL);
 	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
-}
-
-void VoxEditWindow::positionsPanel() {
-	if (ImGui::Begin(TITLE_POSITIONS, nullptr, ImGuiWindowFlags_NoDecoration)) {
-		if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
-			static glm::vec3 translate {0.0f};
-			ImGui::InputFloat("X##translate", &translate.x);
-			ImGui::InputFloat("Y##translate", &translate.y);
-			ImGui::InputFloat("Z##translate", &translate.z);
-			if (ImGui::Button(ICON_FA_BORDER_STYLE " Volumes")) {
-				sceneMgr().shift(translate.x, translate.y, translate.z);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_CUBES " Voxels")) {
-				sceneMgr().move(translate.x, translate.y, translate.z);
-			}
-		}
-
-		ImGui::NewLine();
-
-		if (ImGui::CollapsingHeader(ICON_FA_CUBE " Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
-			glm::ivec3 cursorPosition = sceneMgr().modifier().cursorPosition();
-			uint32_t lockedAxis = (uint32_t)sceneMgr().lockedAxis();
-			if (ImGui::CheckboxFlags("X##cursorlock", &lockedAxis, (uint32_t)math::Axis::X)) {
-				command::executeCommands("lockx", &_lastExecutedCommand);
-			}
-			ImGui::TooltipText("Lock the x axis");
-			ImGui::SameLine();
-
-			if (ImGui::InputInt("X##cursor", &cursorPosition.x)) {
-				sceneMgr().setCursorPosition(cursorPosition, true);
-			}
-			if (ImGui::CheckboxFlags("Y##cursorlock", &lockedAxis, (uint32_t)math::Axis::Y)) {
-				command::executeCommands("locky", &_lastExecutedCommand);
-			}
-			ImGui::TooltipText("Lock the y axis");
-			ImGui::SameLine();
-
-			if (ImGui::InputInt("Y##cursor", &cursorPosition.y)) {
-				sceneMgr().setCursorPosition(cursorPosition, true);
-			}
-			if (ImGui::CheckboxFlags("Z##cursorlock", &lockedAxis, (uint32_t)math::Axis::Z)) {
-				command::executeCommands("lockz", &_lastExecutedCommand);
-			}
-			ImGui::TooltipText("Lock the z axis");
-			ImGui::SameLine();
-
-			if (ImGui::InputInt("Z##cursor", &cursorPosition.z)) {
-				sceneMgr().setCursorPosition(cursorPosition, true);
-			}
-		}
-	}
-	ImGui::End();
 }
 
 void VoxEditWindow::updateSettings() {
