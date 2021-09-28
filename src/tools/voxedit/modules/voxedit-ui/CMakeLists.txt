@@ -7,6 +7,7 @@ set(SRCS
 	LSystemPanel.h LSystemPanel.cpp
 	ModifierPanel.h ModifierPanel.cpp
 	NoisePanel.h NoisePanel.cpp
+	PalettePanel.h PalettePanel.cpp
 	ScriptPanel.h ScriptPanel.cpp
 	ToolsPanel.h ToolsPanel.cpp
 	TreePanel.h TreePanel.cpp

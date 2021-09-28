@@ -14,6 +14,7 @@
 #include "voxedit-ui/LayerPanel.h"
 #include "voxedit-ui/ModifierPanel.h"
 #include "voxedit-ui/NoisePanel.h"
+#include "voxedit-ui/PalettePanel.h"
 #include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-ui/TreePanel.h"
@@ -54,8 +55,6 @@ private:
 	bool _popupFailedToSave = false;
 	bool _popupSceneSettings = false;
 
-	core::String _currentSelectedPalette;
-	core::DynamicArray<core::String> _availablePalettes;
 	ui::imgui::IMGUIApp* _app;
 	core::VarPtr _lastOpenedFile;
 
@@ -73,11 +72,9 @@ private:
 	ModifierPanel _modifierPanel;
 	CursorPanel _cursorPanel;
 	ToolsPanel _toolsPanel;
-
-	void reloadAvailablePalettes();
+	PalettePanel _palettePanel;
 
 	void menuBar();
-	void palette();
 	void statusBar();
 
 	void leftWidget();
@@ -124,4 +121,4 @@ public:
 	bool prefab(const core::String& file);
 };
 
-} // namespace voxedit
+}
