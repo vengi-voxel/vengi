@@ -18,7 +18,6 @@
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
-#include "engine-config.h"
 #include <glm/gtc/type_ptr.hpp>
 
 #define TITLE_PALETTE "Palette##title"
@@ -74,10 +73,6 @@ void VoxEditWindow::resetCamera() {
 	_sceneLeft->resetCamera();
 	_sceneFront->resetCamera();
 	_sceneAnimation->resetCamera();
-}
-
-bool VoxEditWindow::actionMenuItem(const char *title, const char *command, bool enabled) {
-	return ImGui::CommandMenuItem(title, command, enabled, &_lastExecutedCommand);
 }
 
 bool VoxEditWindow::init() {
@@ -221,63 +216,6 @@ bool VoxEditWindow::isPaletteWidgetDropTarget() const {
 	return false; // TODO
 }
 
-void VoxEditWindow::menuBar() {
-	if (ImGui::BeginMenuBar()) {
-		if (ImGui::BeginMenu(ICON_FA_FILE " File")) {
-			actionMenuItem("New", "new");
-			actionMenuItem(ICON_FK_FLOPPY_O " Load", "load");
-			actionMenuItem(ICON_FA_SAVE " Save", "save");
-			ImGui::Separator();
-			actionMenuItem("Load Animation", "animation_load");
-			actionMenuItem(ICON_FA_SAVE " Save Animation", "animation_save");
-			ImGui::Separator();
-			actionMenuItem("Prefab", "prefab");
-			ImGui::Separator();
-			actionMenuItem(ICON_FA_IMAGE " Heightmap", "importheightmap");
-			actionMenuItem(ICON_FA_IMAGE " Image as Plane", "importplane");
-			ImGui::Separator();
-			if (ImGui::MenuItem("Quit")) {
-				_app->requestQuit();
-			}
-			ImGui::EndMenu();
-		}
-		actionMenuItem(ICON_FA_UNDO " Undo", "undo", sceneMgr().mementoHandler().canUndo());
-		actionMenuItem(ICON_FA_REDO " Redo", "redo", sceneMgr().mementoHandler().canRedo());
-		if (ImGui::BeginMenu(ICON_FA_COG " Options")) {
-			ImGui::CheckboxVar(ICON_FA_BORDER_ALL " Grid", _showGridVar);
-			ImGui::CheckboxVar("Show axis", _showAxisVar);
-			ImGui::CheckboxVar("Model space", _modelSpaceVar);
-			ImGui::CheckboxVar("Show locked axis", _showLockedAxisVar);
-			ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", _showAabbVar);
-			ImGui::CheckboxVar("Shadow", _renderShadowVar);
-			ImGui::CheckboxVar("Outlines", "r_renderoutline");
-			if (ImGui::Button("Scene settings")) {
-				_popupSceneSettings = true;
-			}
-			if (ImGui::Button("Bindings")) {
-				_app->showBindingsDialog();
-			}
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu(ICON_FA_EYE" View")) {
-			actionMenuItem("Reset camera", "resetcamera");
-			actionMenuItem("Scene view", "togglescene");
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu(ICON_FK_INFO" About")) {
-			ImGui::Text("VoxEdit " PROJECT_VERSION);
-			ImGui::Separator();
-
-			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/engine");
-			ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy");
-			ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy");
-
-			ImGui::EndMenu();
-		}
-		ImGui::EndMenuBar();
-	}
-}
-
 void VoxEditWindow::statusBar() {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const ImVec2 &size = viewport->WorkSize;
@@ -385,9 +323,9 @@ void VoxEditWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
 		_popupFailedToSave = false;
 	}
-	if (_popupSceneSettings) {
+	if (_menuBar._popupSceneSettings) {
 		ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
-		_popupSceneSettings = false;
+		_menuBar._popupSceneSettings = false;
 	}
 
 	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -492,7 +430,7 @@ void VoxEditWindow::update() {
 	ImGui::Begin("##app", nullptr, windowFlags);
 	ImGui::PopStyleVar(3);
 
-	menuBar();
+	_menuBar.update(_app, _lastExecutedCommand);
 	statusBar();
 
 	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");

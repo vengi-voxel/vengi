@@ -5,6 +5,7 @@ set(SRCS
 	CursorPanel.h CursorPanel.cpp
 	LayerPanel.h LayerPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
+	MenuBar.h MenuBar.cpp
 	ModifierPanel.h ModifierPanel.cpp
 	NoisePanel.h NoisePanel.cpp
 	PalettePanel.h PalettePanel.cpp

@@ -12,6 +12,7 @@
 #include "voxedit-ui/CursorPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/LayerPanel.h"
+#include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/ModifierPanel.h"
 #include "voxedit-ui/NoisePanel.h"
 #include "voxedit-ui/PalettePanel.h"
@@ -53,7 +54,6 @@ private:
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
-	bool _popupSceneSettings = false;
 
 	ui::imgui::IMGUIApp* _app;
 	core::VarPtr _lastOpenedFile;
@@ -73,8 +73,8 @@ private:
 	CursorPanel _cursorPanel;
 	ToolsPanel _toolsPanel;
 	PalettePanel _palettePanel;
+	MenuBar _menuBar;
 
-	void menuBar();
 	void statusBar();
 
 	void leftWidget();
@@ -88,10 +88,6 @@ private:
 	void updateSettings();
 	void registerPopups();
 
-	bool actionButton(const char *title, const char *command, const char *tooltip = nullptr, float width = 0.0f);
-	bool actionMenuItem(const char *title, const char *command, bool enabled = true);
-	bool modifierRadioButton(const char *title, ModifierType type);
-	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 	bool saveImage(const char *file);
 
 public:
