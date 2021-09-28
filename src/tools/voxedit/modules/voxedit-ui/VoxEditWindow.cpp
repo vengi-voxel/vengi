@@ -1260,13 +1260,13 @@ void VoxEditWindow::scriptPanel() {
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu(ICON_FK_FILES_O "File")) {
 					if (ImGui::MenuItem(ICON_FA_CHECK " Apply and execute##scripteditor")) {
-						_activeScript = _textEditor.GetText().c_str();
+						_activeScript = _textEditor.GetText();
 						reloadScriptParameters(_activeScript);
 					}
 					if (!_activeScriptFilename.empty()) {
 						if (ImGui::MenuItem(ICON_FA_SAVE " Save##scripteditor")) {
-							if (_app->filesystem()->write("scripts/" + _activeScriptFilename, _textEditor.GetText().c_str())) {
-								_activeScript = _textEditor.GetText().c_str();
+							if (_app->filesystem()->write("scripts/" + _activeScriptFilename, _textEditor.GetText())) {
+								_activeScript = _textEditor.GetText();
 								reloadScriptParameters(_activeScript);
 							}
 						}
@@ -1276,7 +1276,7 @@ void VoxEditWindow::scriptPanel() {
 						core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
 						_app->fileDialog(
 							[&](const core::String &file) {
-								if (_app->filesystem()->write(file, _textEditor.GetText().c_str())) {
+								if (_app->filesystem()->write(file, _textEditor.GetText())) {
 									_scripts.clear();
 									_currentScript = -1;
 									Log::info("Saved script to %s", file.c_str());
