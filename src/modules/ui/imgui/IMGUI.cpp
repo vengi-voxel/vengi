@@ -123,6 +123,16 @@ bool InputVarInt(const char* label, const core::VarPtr& var, int step, int step_
 	return false;
 }
 
+bool InputVarInt(const char* label, const char* varName, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
+	core::VarPtr var = core::Var::getSafe(varName);
+	int v = var->intVal();
+	if (InputInt(label, &v, step, step_fast, extra_flags)) {
+		var->setVal(v);
+		return true;
+	}
+	return false;
+}
+
 bool CheckboxVar(const char* label, const core::VarPtr& var) {
 	bool val = var->boolVal();
 	if (Checkbox(label, &val)) {

@@ -10,6 +10,7 @@ set(SRCS
 	NoisePanel.h NoisePanel.cpp
 	PalettePanel.h PalettePanel.cpp
 	ScriptPanel.h ScriptPanel.cpp
+	StatusBar.h StatusBar.cpp
 	ToolsPanel.h ToolsPanel.cpp
 	TreePanel.h TreePanel.cpp
 	Viewport.h Viewport.cpp

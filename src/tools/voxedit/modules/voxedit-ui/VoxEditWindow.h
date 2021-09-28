@@ -17,6 +17,7 @@
 #include "voxedit-ui/NoisePanel.h"
 #include "voxedit-ui/PalettePanel.h"
 #include "voxedit-ui/ScriptPanel.h"
+#include "voxedit-ui/StatusBar.h"
 #include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-ui/TreePanel.h"
 #include "voxedit-util/layer/Layer.h"
@@ -74,8 +75,7 @@ private:
 	ToolsPanel _toolsPanel;
 	PalettePanel _palettePanel;
 	MenuBar _menuBar;
-
-	void statusBar();
+	StatusBar _statusBar;
 
 	void leftWidget();
 	void mainWidget();
