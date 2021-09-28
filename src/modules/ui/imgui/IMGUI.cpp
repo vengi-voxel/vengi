@@ -226,7 +226,7 @@ float Size(float size) {
 	return size * ImGui::GetWindowDpiScale();
 }
 
-const char *CommandButton(const char *title, const char *command, const char *tooltip, float width) {
+const char *CommandButton(const char *title, const char *command, const char *tooltip, float width, command::CommandExecutionListener* listener) {
 	if (ImGui::Button(title, ImVec2(width, 0))) {
 		if (command::executeCommands(command) > 0) {
 			return command;
@@ -248,11 +248,11 @@ bool URLButton(const char *title, const char *url) {
 	return false;
 }
 
-const char *CommandMenuItem(const char *title, const char *command, bool enabled) {
+const char *CommandMenuItem(const char *title, const char *command, bool enabled, command::CommandExecutionListener* listener) {
 	video::WindowedApp* app = video::WindowedApp::getInstance();
 	const core::String& keybinding = app->getKeyBindingsString(command);
 	if (ImGui::MenuItem(title, keybinding.c_str(), false, enabled)) {
-		if (command::executeCommands(command) > 0) {
+		if (command::executeCommands(command, listener) > 0) {
 			return command;
 		}
 	}
