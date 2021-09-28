@@ -94,7 +94,7 @@ static core::String findPotentialMatch(const core::String& arg) {
 	return match;
 }
 
-int executeCommands(const core::String& commandLine) {
+int executeCommands(const core::String& commandLine, CommandExecutionListener *listener) {
 	if (commandLine.empty()) {
 		return 0;
 	}
@@ -120,6 +120,9 @@ int executeCommands(const core::String& commandLine) {
 		if (command::Command::execute(cmd, tokens)) {
 			if (n != -1) {
 				++n;
+				if (listener) {
+					(*listener)(cmd, tokens);
+				}
 			}
 			continue;
 		}
