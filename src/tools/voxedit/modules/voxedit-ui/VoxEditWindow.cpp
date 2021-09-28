@@ -1173,6 +1173,8 @@ void VoxEditWindow::scriptPanel() {
 			_scripts = sceneMgr().luaGenerator().listScripts();
 		}
 
+		ImGui::TextUnformatted("LUA scripts for manipulating the voxel volumes");
+
 		if (ImGui::ComboStl("Script", &_currentScript, _scripts)) {
 			const core::String& scriptName = _scripts[_currentScript].filename;
 			_activeScript = sceneMgr().luaGenerator().load(scriptName);
@@ -1231,13 +1233,14 @@ void VoxEditWindow::scriptPanel() {
 		if (ImGui::DisabledButton("Execute##scriptpanel", !validScript)) {
 			sceneMgr().runScript(_activeScript, _scriptParameters);
 		}
+		ImGui::TooltipText("Execute the selected script for the currently loaded voxel volumes");
 		ImGui::SameLine();
 		if (ImGui::Button("New##scriptpanel")) {
 			_scriptEditor = true;
-			_textEditor.SetText("");
 			_activeScriptFilename = "";
-			_activeScript = "";
+			_textEditor.SetText("");
 		}
+		ImGui::TooltipText("Create a new lua script");
 		if (validScriptIndex) {
 			ImGui::SameLine();
 			if (ImGui::Button("Edit##scriptpanel")) {
@@ -1245,6 +1248,7 @@ void VoxEditWindow::scriptPanel() {
 				_activeScriptFilename = _scripts[_currentScript].filename;
 				_textEditor.SetText(_activeScript.c_str());
 			}
+			ImGui::TooltipText("Edit the selected lua script");
 		}
 
 		urlButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/engine/voxedit/LUAScript/");
