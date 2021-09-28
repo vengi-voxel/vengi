@@ -1292,20 +1292,20 @@ void VoxEditWindow::scriptPanel() {
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu(ICON_FK_PENCIL " Edit")) {
-					if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "ALT-Backspace", nullptr, _textEditor.CanUndo()))
+					if (ImGui::MenuItem(ICON_FA_UNDO " Undo", nullptr, nullptr, _textEditor.CanUndo()))
 						_textEditor.Undo();
-					if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl-Y", nullptr, _textEditor.CanRedo()))
+					if (ImGui::MenuItem(ICON_FA_REDO " Redo", nullptr, nullptr, _textEditor.CanRedo()))
 						_textEditor.Redo();
 
 					ImGui::Separator();
 
-					if (ImGui::MenuItem(ICON_FA_COPY " Copy", "Ctrl-C", nullptr, _textEditor.HasSelection()))
+					if (ImGui::MenuItem(ICON_FA_COPY " Copy", nullptr, nullptr, _textEditor.HasSelection()))
 						_textEditor.Copy();
-					if (ImGui::MenuItem(ICON_FA_CUT " Cut", "Ctrl-X", nullptr, _textEditor.HasSelection()))
+					if (ImGui::MenuItem(ICON_FA_CUT " Cut", nullptr, nullptr, _textEditor.HasSelection()))
 						_textEditor.Cut();
-					if (ImGui::MenuItem("Delete", "Del", nullptr, _textEditor.HasSelection()))
+					if (ImGui::MenuItem("Delete", nullptr, nullptr, _textEditor.HasSelection()))
 						_textEditor.Delete();
-					if (ImGui::MenuItem(ICON_FA_PASTE " Paste", "Ctrl-V", nullptr,
+					if (ImGui::MenuItem(ICON_FA_PASTE " Paste", nullptr, nullptr,
 										ImGui::GetClipboardText() != nullptr))
 						_textEditor.Paste();
 
