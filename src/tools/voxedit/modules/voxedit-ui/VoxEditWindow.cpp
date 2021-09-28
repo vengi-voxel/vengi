@@ -87,17 +87,6 @@ void VoxEditWindow::executeCommand(const char *command) {
 	command::executeCommands(_lastExecutedCommand);
 }
 
-bool VoxEditWindow::actionButton(const char *title, const char *command, const char *tooltip, float width) {
-	if (ImGui::Button(title, ImVec2(width, 0))) {
-		executeCommand(command);
-		return true;
-	}
-	if (tooltip != nullptr) {
-		ImGui::TooltipText("%s", tooltip);
-	}
-	return false;
-}
-
 bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
 	if (ImGui::RadioButton(title, sceneMgr().modifier().modifierType() == type)) {
 		sceneMgr().modifier().setModifierType(type);
@@ -123,12 +112,12 @@ void VoxEditWindow::urlItem(const char *title, const char *url) {
 	}
 }
 
-void VoxEditWindow::urlButton(const char *title, const char *url) {
-	video::WindowedApp* app = video::WindowedApp::getInstance();
-	const core::String& cmd = core::String::format("url %s", url);
-	if (actionButton(title, cmd.c_str())) {
-		app->minimize();
+bool VoxEditWindow::actionButton(const char *title, const char *command, const char *tooltip, float width) {
+	if (ImGui::CommandButton(title, command, tooltip, width)) {
+		_lastExecutedCommand = command;
+		return true;
 	}
+	return false;
 }
 
 bool VoxEditWindow::mirrorAxisRadioButton(const char *title, math::Axis type) {
@@ -699,8 +688,8 @@ void VoxEditWindow::rightWidget() {
 	modifierPanel();
 	treePanel();
 	scriptPanel();
-	lsystemPanel();
-	noisePanel();
+	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
+	_noisePanel.update(TITLE_NOISEPANEL);
 	layers();
 }
 
@@ -1119,42 +1108,6 @@ void VoxEditWindow::treePanel() {
 	ImGui::End();
 }
 
-void VoxEditWindow::lsystemPanel() {
-	if (ImGui::Begin(TITLE_LSYSTEMPANEL)) {
-		ImGui::InputText("Axiom", &_lsystemData.axiom);
-		ImGui::InputTextMultiline("Rules", &_lsystemData.rulesStr);
-		ImGui::InputFloat("angle", &_lsystemData.angle);
-		ImGui::InputFloat("length", &_lsystemData.length);
-		ImGui::InputFloat("width", &_lsystemData.width);
-		ImGui::InputFloat("widthIncrement", &_lsystemData.widthIncrement);
-		ImGui::InputInt("iterations", &_lsystemData.iterations);
-		ImGui::InputFloat("leavesRadius", &_lsystemData.leavesRadius);
-
-		if (ImGui::Button(ICON_FA_CHECK " OK##lsystem")) {
-			core::DynamicArray<voxelgenerator::lsystem::Rule> rules;
-			if (voxelgenerator::lsystem::parseRules(_lsystemData.rulesStr.c_str(), rules)) {
-				sceneMgr().lsystem(_lsystemData.axiom.c_str(), rules, _lsystemData.angle,
-					_lsystemData.length, _lsystemData.width, _lsystemData.widthIncrement, _lsystemData.iterations, _lsystemData.leavesRadius);
-			}
-		}
-	}
-	ImGui::End();
-}
-
-void VoxEditWindow::noisePanel() {
-	if (ImGui::Begin(TITLE_NOISEPANEL)) {
-		ImGui::InputInt("Octaves", &_noiseData.octaves);
-		ImGui::InputFloat("Frequency", &_noiseData.frequency);
-		ImGui::InputFloat("Lacunarity", &_noiseData.lacunarity);
-		ImGui::InputFloat("Gain", &_noiseData.gain);
-
-		if (ImGui::Button(ICON_FA_CHECK " OK##noise")) {
-			sceneMgr().noise(_noiseData.octaves, _noiseData.lacunarity, _noiseData.frequency, _noiseData.gain, voxelgenerator::noise::NoiseType::ridgedMF);
-		}
-	}
-	ImGui::End();
-}
-
 void VoxEditWindow::reloadScriptParameters(const core::String& script) {
 	_scriptParameterDescription.clear();
 	sceneMgr().luaGenerator().argumentInfo(script, _scriptParameterDescription);
@@ -1261,7 +1214,7 @@ void VoxEditWindow::scriptPanel() {
 			ImGui::TooltipText("Edit the selected lua script");
 		}
 
-		urlButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/engine/voxedit/LUAScript/");
+		ImGui::URLButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/engine/voxedit/LUAScript/");
 	}
 	ImGui::End();
 

@@ -3,8 +3,10 @@
  */
 
 #include "IMGUI.h"
+#include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "command/Command.h"
+#include "video/WindowedApp.h"
 #include <SDL_stdinc.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -222,6 +224,47 @@ bool DisabledButton(const char *text, bool disabled) {
 
 float Size(float size) {
 	return size * ImGui::GetWindowDpiScale();
+}
+
+const char *CommandButton(const char *title, const char *command, const char *tooltip, float width) {
+	if (ImGui::Button(title, ImVec2(width, 0))) {
+		if (command::executeCommands(command) > 0) {
+			return command;
+		}
+	}
+	if (tooltip != nullptr) {
+		ImGui::TooltipText("%s", tooltip);
+	}
+	return nullptr;
+}
+
+bool URLButton(const char *title, const char *url) {
+	video::WindowedApp* app = video::WindowedApp::getInstance();
+	const core::String& cmd = core::String::format("url %s", url);
+	if (CommandButton(title, cmd.c_str())) {
+		app->minimize();
+		return true;
+	}
+	return false;
+}
+
+const char *CommandMenuItem(const char *title, const char *command, bool enabled) {
+	video::WindowedApp* app = video::WindowedApp::getInstance();
+	const core::String& keybinding = app->getKeyBindingsString(command);
+	if (ImGui::MenuItem(title, keybinding.c_str(), false, enabled)) {
+		if (command::executeCommands(command) > 0) {
+			return command;
+		}
+	}
+	return nullptr;
+}
+
+void URLItem(const char *title, const char *url) {
+	video::WindowedApp* app = video::WindowedApp::getInstance();
+	const core::String& cmd = core::String::format("url %s", url);
+	if (CommandButton(title, cmd.c_str())) {
+		app->minimize();
+	}
 }
 
 }

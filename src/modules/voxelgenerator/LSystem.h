@@ -44,6 +44,19 @@ extern bool parseRules(const core::String& rulesStr, core::DynamicArray<Rule>& r
 
 /**
  * @brief Generate voxels according to the given L-System rules
+ *
+ * @li @c F Draw line forwards
+ * @li @c ( Set voxel type
+ * @li @c b Move backwards (no drawing)
+ * @li @c L Leaf
+ * @li @c + Rotate right
+ * @li @c - Rotate left
+ * @li @c > Rotate forward
+ * @li @c < Rotate back
+ * @li @c # Increment width
+ * @li @c ! Decrement width
+ * @li @c [ Push
+ * @li @c ] Pop
  */
 template<class Volume>
 void generate(Volume& volume, const glm::ivec3& position, const core::String &axiom, const core::DynamicArray<Rule> &rules, float angle, float length, float width,
