@@ -1258,7 +1258,7 @@ void VoxEditWindow::scriptPanel() {
 	if (_scriptEditor) {
 		if (ImGui::Begin(WINDOW_TITLE_SCRIPT_EDITOR, &_scriptEditor, ImGuiWindowFlags_MenuBar)) {
 			if (ImGui::BeginMenuBar()) {
-				if (ImGui::BeginMenu(ICON_FK_FILES_O "File")) {
+				if (ImGui::BeginMenu(ICON_FA_FILE " File##scripteditor")) {
 					if (ImGui::MenuItem(ICON_FA_CHECK " Apply and execute##scripteditor")) {
 						_activeScript = _textEditor.GetText();
 						reloadScriptParameters(_activeScript);
@@ -1291,27 +1291,27 @@ void VoxEditWindow::scriptPanel() {
 					}
 					ImGui::EndMenu();
 				}
-				if (ImGui::BeginMenu(ICON_FK_PENCIL " Edit")) {
-					if (ImGui::MenuItem(ICON_FA_UNDO " Undo", nullptr, nullptr, _textEditor.CanUndo()))
+				if (ImGui::BeginMenu(ICON_FK_PENCIL " Edit##scripteditor")) {
+					if (ImGui::MenuItem(ICON_FA_UNDO " Undo##scripteditor", nullptr, nullptr, _textEditor.CanUndo()))
 						_textEditor.Undo();
-					if (ImGui::MenuItem(ICON_FA_REDO " Redo", nullptr, nullptr, _textEditor.CanRedo()))
+					if (ImGui::MenuItem(ICON_FA_REDO " Redo##scripteditor", nullptr, nullptr, _textEditor.CanRedo()))
 						_textEditor.Redo();
 
 					ImGui::Separator();
 
-					if (ImGui::MenuItem(ICON_FA_COPY " Copy", nullptr, nullptr, _textEditor.HasSelection()))
+					if (ImGui::MenuItem(ICON_FA_COPY " Copy##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
 						_textEditor.Copy();
-					if (ImGui::MenuItem(ICON_FA_CUT " Cut", nullptr, nullptr, _textEditor.HasSelection()))
+					if (ImGui::MenuItem(ICON_FA_CUT " Cut##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
 						_textEditor.Cut();
-					if (ImGui::MenuItem("Delete", nullptr, nullptr, _textEditor.HasSelection()))
+					if (ImGui::MenuItem("Delete##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
 						_textEditor.Delete();
-					if (ImGui::MenuItem(ICON_FA_PASTE " Paste", nullptr, nullptr,
+					if (ImGui::MenuItem(ICON_FA_PASTE " Paste##scripteditor", nullptr, nullptr,
 										ImGui::GetClipboardText() != nullptr))
 						_textEditor.Paste();
 
 					ImGui::Separator();
 
-					if (ImGui::MenuItem("Select all", nullptr, nullptr))
+					if (ImGui::MenuItem("Select all##scripteditor", nullptr, nullptr))
 						_textEditor.SetSelection(TextEditor::Coordinates(),
 												 TextEditor::Coordinates(_textEditor.GetTotalLines(), 0));
 
