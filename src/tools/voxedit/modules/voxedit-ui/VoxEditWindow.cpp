@@ -79,11 +79,6 @@ void VoxEditWindow::resetCamera() {
 	_sceneAnimation->resetCamera();
 }
 
-void VoxEditWindow::executeCommand(const char *command) {
-	_lastExecutedCommand = command;
-	command::executeCommands(_lastExecutedCommand);
-}
-
 bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
 	if (ImGui::RadioButton(title, sceneMgr().modifier().modifierType() == type)) {
 		sceneMgr().modifier().setModifierType(type);
@@ -93,19 +88,11 @@ bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
 }
 
 bool VoxEditWindow::actionMenuItem(const char *title, const char *command, bool enabled) {
-	if (ImGui::CommandMenuItem(title, command, enabled)) {
-		_lastExecutedCommand = command;
-		return true;
-	}
-	return false;
+	return ImGui::CommandMenuItem(title, command, enabled, &_lastExecutedCommand);
 }
 
 bool VoxEditWindow::actionButton(const char *title, const char *command, const char *tooltip, float width) {
-	if (ImGui::CommandButton(title, command, tooltip, width)) {
-		_lastExecutedCommand = command;
-		return true;
-	}
-	return false;
+	return ImGui::CommandButton(title, command, tooltip, width, &_lastExecutedCommand);
 }
 
 bool VoxEditWindow::mirrorAxisRadioButton(const char *title, math::Axis type) {
@@ -475,14 +462,14 @@ void VoxEditWindow::statusBar() {
 			const glm::ivec3& dim = modifier.aabbDim();
 			const core::String& str = core::string::format("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
 			ImGui::Text("%s", str.c_str());
-		} else if (!_lastExecutedCommand.empty()) {
+		} else if (!_lastExecutedCommand.command.empty()) {
 			const video::WindowedApp* app = video::WindowedApp::getInstance();
 			core::String statusText;
-			const core::String& keybindingStr = app->getKeyBindingsString(_lastExecutedCommand.c_str());
+			const core::String& keybindingStr = app->getKeyBindingsString(_lastExecutedCommand.command.c_str());
 			if (keybindingStr.empty()) {
-				statusText = core::string::format("Command: %s", _lastExecutedCommand.c_str());
+				statusText = core::string::format("Command: %s", _lastExecutedCommand.command.c_str());
 			} else {
-				statusText = core::string::format("Command: %s (%s)", _lastExecutedCommand.c_str(), keybindingStr.c_str());
+				statusText = core::string::format("Command: %s (%s)", _lastExecutedCommand.command.c_str(), keybindingStr.c_str());
 			}
 			ImGui::Text("%s", statusText.c_str());
 		}
@@ -504,49 +491,17 @@ void VoxEditWindow::mainWidget() {
 	_sceneLeft->update();
 	_sceneFront->update();
 	_sceneAnimation->update();
-	if (ImGui::Begin(TITLE_ANIMATION_SETTINGS, nullptr, 0)) {
-		if (sceneMgr().editMode() == EditMode::Animation) {
-			static int animation = (int)animation::Animation::IDLE;
-			if (ImGui::Combo("Animation", &animation,
-					[](void *pmds, int idx, const char **pOut) {
-						*pOut = network::EnumNameAnimation((animation::Animation)idx);
-						return **pOut != '\0';
-					},
-					(void *)network::EnumNamesAnimation(), (int)network::Animation::MAX + 1, 10)) {
-				sceneMgr().animationEntity().setAnimation((animation::Animation)animation, true);
-			}
-			animation::SkeletonAttribute *skeletonAttributes = sceneMgr().skeletonAttributes();
-			for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
-				const animation::SkeletonAttributeMeta& meta = *metaIter;
-				float *v = (float*)(((uint8_t*)skeletonAttributes) + meta.offset);
-				ImGui::InputFloat(meta.name, v);
-			}
-		} else {
-			ImGui::TextDisabled("No animation loaded");
-			ImGui::NewLine();
-			if (ImGui::Button("Load Animation")) {
-				executeCommand("animation_load");
-			}
-		}
-	}
-	ImGui::End();
 }
 
 void VoxEditWindow::rightWidget() {
 	positionsPanel();
 	modifierPanel();
-	struct LastExecutedCommand : public command::CommandExecutionListener {
-		core::String &_lastExecutedCommand;
-		LastExecutedCommand(core::String &lastExecutedCommand) : _lastExecutedCommand(lastExecutedCommand) {}
-		void operator()(const core::String& cmd, const core::DynamicArray<core::String> &args) override {
-			_lastExecutedCommand = cmd;
-		};
-	} commandExecutionListener(_lastExecutedCommand);
+	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_treePanel.update(TITLE_TREES);
 	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	_noisePanel.update(TITLE_NOISEPANEL);
-	_layerPanel.update(TITLE_LAYERS, &_layerSettings, commandExecutionListener);
+	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
 }
 
 void VoxEditWindow::positionsPanel() {
@@ -571,7 +526,7 @@ void VoxEditWindow::positionsPanel() {
 			glm::ivec3 cursorPosition = sceneMgr().modifier().cursorPosition();
 			uint32_t lockedAxis = (uint32_t)sceneMgr().lockedAxis();
 			if (ImGui::CheckboxFlags("X##cursorlock", &lockedAxis, (uint32_t)math::Axis::X)) {
-				executeCommand("lockx");
+				command::executeCommands("lockx", &_lastExecutedCommand);
 			}
 			ImGui::TooltipText("Lock the x axis");
 			ImGui::SameLine();
@@ -580,7 +535,7 @@ void VoxEditWindow::positionsPanel() {
 				sceneMgr().setCursorPosition(cursorPosition, true);
 			}
 			if (ImGui::CheckboxFlags("Y##cursorlock", &lockedAxis, (uint32_t)math::Axis::Y)) {
-				executeCommand("locky");
+				command::executeCommands("locky", &_lastExecutedCommand);
 			}
 			ImGui::TooltipText("Lock the y axis");
 			ImGui::SameLine();
@@ -589,7 +544,7 @@ void VoxEditWindow::positionsPanel() {
 				sceneMgr().setCursorPosition(cursorPosition, true);
 			}
 			if (ImGui::CheckboxFlags("Z##cursorlock", &lockedAxis, (uint32_t)math::Axis::Z)) {
-				executeCommand("lockz");
+				command::executeCommands("lockz", &_lastExecutedCommand);
 			}
 			ImGui::TooltipText("Lock the z axis");
 			ImGui::SameLine();

@@ -8,6 +8,7 @@
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUI.h"
 #include "ui/imgui/TextEditor.h"
+#include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/LayerPanel.h"
 #include "voxedit-ui/NoisePanel.h"
@@ -23,6 +24,13 @@ class Viewport;
 
 class VoxEditWindow {
 private:
+	struct LastExecutedCommand : public command::CommandExecutionListener {
+		core::String command;
+		void operator()(const core::String& cmd, const core::DynamicArray<core::String> &args) override {
+			command = cmd;
+		}
+	};
+
 	core::VarPtr _showAxisVar;
 	core::VarPtr _showGridVar;
 	core::VarPtr _modelSpaceVar;
@@ -51,13 +59,14 @@ private:
 	LayerSettings _layerSettings;
 
 	core::String _loadFile;
-	core::String _lastExecutedCommand;
 
+	LastExecutedCommand _lastExecutedCommand;
 	NoisePanel _noisePanel;
 	LSystemPanel _lsystemPanel;
 	ScriptPanel _scriptPanel;
 	TreePanel _treePanel;
 	LayerPanel _layerPanel;
+	AnimationPanel _animationPanel;
 
 	void reloadAvailablePalettes();
 
@@ -76,8 +85,6 @@ private:
 
 	void updateSettings();
 	void registerPopups();
-
-	void executeCommand(const char *command);
 
 	bool actionButton(const char *title, const char *command, const char *tooltip = nullptr, float width = 0.0f);
 	bool actionMenuItem(const char *title, const char *command, bool enabled = true);
