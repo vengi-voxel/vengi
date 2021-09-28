@@ -1,6 +1,7 @@
 set(LIB voxedit-ui)
 
 set(SRCS
+	LayerPanel.h LayerPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
 	NoisePanel.h NoisePanel.cpp
 	ScriptPanel.h ScriptPanel.cpp

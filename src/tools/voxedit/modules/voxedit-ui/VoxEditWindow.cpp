@@ -6,6 +6,7 @@
 #include "Viewport.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
 #include "ui/imgui/IMGUIApp.h"
@@ -20,8 +21,6 @@
 #include "engine-config.h"
 #include <glm/gtc/type_ptr.hpp>
 
-#define LAYERPOPUP "##layerpopup"
-
 #define TITLE_PALETTE "Palette##title"
 #define TITLE_POSITIONS "Positions##title"
 #define TITLE_MODIFIERS "Modifiers##title"
@@ -35,7 +34,6 @@
 
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications##popuptitle"
 #define POPUP_TITLE_NEW_SCENE "New scene##popuptitle"
-#define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
@@ -95,20 +93,11 @@ bool VoxEditWindow::modifierRadioButton(const char *title, ModifierType type) {
 }
 
 bool VoxEditWindow::actionMenuItem(const char *title, const char *command, bool enabled) {
-	const core::String& keybinding = _app->getKeyBindingsString(command);
-	if (ImGui::MenuItem(title, keybinding.c_str(), false, enabled)) {
-		executeCommand(command);
+	if (ImGui::CommandMenuItem(title, command, enabled)) {
+		_lastExecutedCommand = command;
 		return true;
 	}
 	return false;
-}
-
-void VoxEditWindow::urlItem(const char *title, const char *url) {
-	video::WindowedApp* app = video::WindowedApp::getInstance();
-	const core::String& cmd = core::String::format("url %s", url);
-	if (actionMenuItem(title, cmd.c_str())) {
-		app->minimize();
-	}
 }
 
 bool VoxEditWindow::actionButton(const char *title, const char *command, const char *tooltip, float width) {
@@ -316,9 +305,9 @@ void VoxEditWindow::menuBar() {
 			ImGui::Text("VoxEdit " PROJECT_VERSION);
 			ImGui::Separator();
 
-			urlItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/engine");
-			urlItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy");
-			urlItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy");
+			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/engine");
+			ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy");
+			ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy");
 
 			ImGui::EndMenu();
 		}
@@ -459,145 +448,6 @@ void VoxEditWindow::tools() {
 	ImGui::End();
 }
 
-void VoxEditWindow::addLayerItem(int layerId, const voxedit::Layer &layer) {
-	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
-	ImGui::TableNextColumn();
-
-	const core::String &visibleId = core::string::format("##visible-layer-%i", layerId);
-	bool visible = layer.visible;
-	if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
-		layerMgr.hideLayer(layerId, !visible);
-	}
-	ImGui::TableNextColumn();
-
-	const core::String &lockedId = core::string::format("##locked-layer-%i", layerId);
-	bool locked = layer.locked;
-	if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
-		layerMgr.lockLayer(layerId, locked);
-	}
-	ImGui::TableNextColumn();
-
-	const core::String &nameId = core::string::format("##name-layer-%i", layerId);
-	ImGui::PushID(nameId.c_str());
-	if (ImGui::Selectable(layer.name.c_str(), layerId == layerMgr.activeLayer())) {
-		layerMgr.setActiveLayer(layerId);
-	}
-	ImGui::PopID();
-
-	const core::String &contextMenuId = core::string::format("Edit##context-layer-%i", layerId);
-	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
-		actionMenuItem(ICON_FA_TRASH_ALT " Delete" LAYERPOPUP, "layerdelete");
-		actionMenuItem(ICON_FA_EYE_SLASH " Hide others" LAYERPOPUP, "layerhideothers");
-		actionMenuItem(ICON_FA_COPY " Duplicate" LAYERPOPUP, "layerduplicate");
-		actionMenuItem(ICON_FA_EYE " Show all" LAYERPOPUP, "layershowall");
-		actionMenuItem(ICON_FA_EYE_SLASH " Hide all" LAYERPOPUP, "layerhideall");
-		actionMenuItem(ICON_FA_CARET_SQUARE_UP " Move up" LAYERPOPUP, "layermoveup");
-		actionMenuItem(ICON_FA_CARET_SQUARE_DOWN " Move down" LAYERPOPUP, "layermovedown");
-		actionMenuItem(ICON_FA_OBJECT_GROUP " Merge" LAYERPOPUP, "layermerge");
-		actionMenuItem(ICON_FA_LOCK " Lock all" LAYERPOPUP, "layerlockall");
-		actionMenuItem(ICON_FA_UNLOCK " Unlock all" LAYERPOPUP, "layerunlockall");
-		actionMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center origin" LAYERPOPUP, "center_origin");
-		actionMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center reference" LAYERPOPUP, "center_referenceposition");
-		actionMenuItem(ICON_FA_SAVE " Save" LAYERPOPUP, "layerssave");
-		core::String layerName = layer.name;
-		if (ImGui::InputText("Name" LAYERPOPUP, &layerName)) {
-			layerMgr.rename(layerId, layerName);
-		}
-		ImGui::EndPopup();
-	}
-
-	ImGui::TableNextColumn();
-
-	const core::String &deleteId = core::string::format(ICON_FA_TRASH_ALT"##delete-layer-%i", layerId);
-	if (ImGui::Button(deleteId.c_str())) {
-		layerMgr.deleteLayer(layerId);
-	}
-}
-
-void VoxEditWindow::layers() {
-	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
-	voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
-	if (ImGui::Begin(TITLE_LAYERS, nullptr, ImGuiWindowFlags_NoDecoration)) {
-		ImGui::BeginChild("##layertable", ImVec2(0.0f, 400.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
-		static const uint32_t TableFlags =
-			ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
-			ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg;
-		if (ImGui::BeginTable("##layerlist", 4, TableFlags)) {
-			ImGui::TableSetupColumn(ICON_FA_EYE"##visiblelayer", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn(ICON_FA_LOCK"##lockedlayer", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("##deletelayer", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableHeadersRow();
-			const voxedit::Layers& layers = layerMgr.layers();
-			const int layerCnt = layers.size();
-			for (int l = 0; l < layerCnt; ++l) {
-				if (!layers[l].valid) {
-					continue;
-				}
-				addLayerItem(l, layers[l]);
-			}
-			ImGui::EndTable();
-		}
-		ImGui::EndChild();
-		if (ImGui::Button(ICON_FA_PLUS_SQUARE"##newlayer")) {
-			const int layerId = layerMgr.activeLayer();
-			const voxel::RawVolume* v = sceneMgr.volume(layerId);
-			const voxel::Region& region = v->region();
-			_layerSettings.position = region.getLowerCorner();
-			_layerSettings.size = region.getDimensionsInVoxels();
-			if (_layerSettings.name.empty()) {
-				_layerSettings.name = layerMgr.layer(layerId).name;
-			}
-			ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
-		}
-		ImGui::TooltipText("Add a new layer");
-		if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::InputText("Name", &_layerSettings.name);
-			ImGui::InputVec3("Position", _layerSettings.position);
-			ImGui::InputVec3("Size", _layerSettings.size);
-			if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
-				ImGui::CloseCurrentPopup();
-				voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
-				voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
-				const int layerId = layerMgr.addLayer(_layerSettings.name.c_str(), true, v, v->region().getCenter());
-				layerMgr.setActiveLayer(layerId);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_TIMES " Cancel##layersettings")) {
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SetItemDefaultFocus();
-			ImGui::EndPopup();
-		}
-
-		ImGui::SameLine();
-		const bool multipleLayers = layerMgr.validLayers() <= 1;
-		if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", multipleLayers)) {
-			if (sceneMgr.animateActive()) {
-				executeCommand("animate 0");
-			} else {
-				const core::String& cmd = core::string::format("animate %f", _animationSpeedVar->floatVal());
-				executeCommand(cmd.c_str());
-			}
-		}
-		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_UP"##layers", multipleLayers)) {
-			executeCommand("layermoveup");
-		}
-		ImGui::TooltipText("Move the layer one level up");
-		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_DOWN "##layers", multipleLayers)) {
-			executeCommand("layermovedown");
-		}
-		ImGui::TooltipText("Move the layer one level down");
-		if (!multipleLayers) {
-			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
-			ImGui::TooltipText("Millisecond delay between frames");
-		}
-	}
-	ImGui::End();
-}
-
 void VoxEditWindow::statusBar() {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const ImVec2 &size = viewport->WorkSize;
@@ -685,11 +535,18 @@ void VoxEditWindow::mainWidget() {
 void VoxEditWindow::rightWidget() {
 	positionsPanel();
 	modifierPanel();
+	struct LastExecutedCommand : public command::CommandExecutionListener {
+		core::String &_lastExecutedCommand;
+		LastExecutedCommand(core::String &lastExecutedCommand) : _lastExecutedCommand(lastExecutedCommand) {}
+		void operator()(const core::String& cmd, const core::DynamicArray<core::String> &args) override {
+			_lastExecutedCommand = cmd;
+		};
+	} commandExecutionListener(_lastExecutedCommand);
 	_treePanel.update(TITLE_TREES);
 	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	_noisePanel.update(TITLE_NOISEPANEL);
-	layers();
+	_layerPanel.update(TITLE_LAYERS, &_layerSettings, commandExecutionListener);
 }
 
 void VoxEditWindow::positionsPanel() {

@@ -9,6 +9,7 @@
 #include "ui/imgui/IMGUI.h"
 #include "ui/imgui/TextEditor.h"
 #include "voxedit-ui/LSystemPanel.h"
+#include "voxedit-ui/LayerPanel.h"
 #include "voxedit-ui/NoisePanel.h"
 #include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/TreePanel.h"
@@ -56,13 +57,13 @@ private:
 	LSystemPanel _lsystemPanel;
 	ScriptPanel _scriptPanel;
 	TreePanel _treePanel;
+	LayerPanel _layerPanel;
 
 	void reloadAvailablePalettes();
 
 	void menuBar();
 	void palette();
 	void tools();
-	void layers();
 	void statusBar();
 
 	void leftWidget();
@@ -78,11 +79,8 @@ private:
 
 	void executeCommand(const char *command);
 
-	void addLayerItem(int layerId, const voxedit::Layer &layer);
-
 	bool actionButton(const char *title, const char *command, const char *tooltip = nullptr, float width = 0.0f);
 	bool actionMenuItem(const char *title, const char *command, bool enabled = true);
-	void urlItem(const char *title, const char *url);
 	bool modifierRadioButton(const char *title, ModifierType type);
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 	bool saveImage(const char *file);
