@@ -11,6 +11,7 @@
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/LayerPanel.h"
+#include "voxedit-ui/ModifierPanel.h"
 #include "voxedit-ui/NoisePanel.h"
 #include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/TreePanel.h"
@@ -67,6 +68,7 @@ private:
 	TreePanel _treePanel;
 	LayerPanel _layerPanel;
 	AnimationPanel _animationPanel;
+	ModifierPanel _modifierPanel;
 
 	void reloadAvailablePalettes();
 
@@ -92,7 +94,6 @@ private:
 	bool mirrorAxisRadioButton(const char *title, math::Axis type);
 	bool saveImage(const char *file);
 
-	void modifierPanel();
 	void positionsPanel();
 
 public:

@@ -4,6 +4,7 @@ set(SRCS
 	AnimationPanel.h AnimationPanel.cpp
 	LayerPanel.h LayerPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
+	ModifierPanel.h ModifierPanel.cpp
 	NoisePanel.h NoisePanel.cpp
 	ScriptPanel.h ScriptPanel.cpp
 	TreePanel.h TreePanel.cpp

@@ -91,19 +91,6 @@ bool VoxEditWindow::actionMenuItem(const char *title, const char *command, bool 
 	return ImGui::CommandMenuItem(title, command, enabled, &_lastExecutedCommand);
 }
 
-bool VoxEditWindow::actionButton(const char *title, const char *command, const char *tooltip, float width) {
-	return ImGui::CommandButton(title, command, tooltip, width, &_lastExecutedCommand);
-}
-
-bool VoxEditWindow::mirrorAxisRadioButton(const char *title, math::Axis type) {
-	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
-	if (ImGui::RadioButton(title, modifier.mirrorAxis() == type)) {
-		modifier.setMirrorAxis(type, sceneMgr().referencePosition());
-		return true;
-	}
-	return false;
-}
-
 bool VoxEditWindow::init() {
 	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1");
 	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1");
@@ -359,8 +346,7 @@ void VoxEditWindow::palette() {
 		ImGui::SetCursorPosY(pos.y + usedHeight);
 		ImGui::Text("Color: %i (voxel %i)", voxelColorSelectedIndex, voxelColorTraceIndex);
 		ImGui::TooltipText("Palette color index for current voxel under cursor");
-		//sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, voxelColorIndex));
-		actionButton("Import palette", "importpalette");
+		ImGui::CommandButton("Import palette", "importpalette", nullptr, 0.0f, &_lastExecutedCommand);
 		ImGui::SameLine();
 		if (ImGui::Button("Load palette##button")) {
 			reloadAvailablePalettes();
@@ -495,7 +481,7 @@ void VoxEditWindow::mainWidget() {
 
 void VoxEditWindow::rightWidget() {
 	positionsPanel();
-	modifierPanel();
+	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_treePanel.update(TITLE_TREES);
 	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app);
@@ -552,49 +538,6 @@ void VoxEditWindow::positionsPanel() {
 			if (ImGui::InputInt("Z##cursor", &cursorPosition.z)) {
 				sceneMgr().setCursorPosition(cursorPosition, true);
 			}
-		}
-	}
-	ImGui::End();
-}
-
-void VoxEditWindow::modifierPanel() {
-	if (ImGui::Begin(TITLE_MODIFIERS, nullptr, ImGuiWindowFlags_NoDecoration)) {
-		const float windowWidth = ImGui::GetWindowWidth();
-		actionButton(ICON_FA_CROP " Crop layer", "crop", "Crop the current layer to the voxel boundaries", windowWidth);
-		actionButton(ICON_FA_EXPAND_ARROWS_ALT " Extend all layers", "resize", nullptr, windowWidth);
-		actionButton(ICON_FA_OBJECT_UNGROUP " Layer from color", "colortolayer", "Create a new layer from the current selected color", windowWidth);
-		actionButton(ICON_FA_COMPRESS_ALT " Scale", "scale", "Scale the current layer down", windowWidth);
-
-		ImGui::NewLine();
-
-		if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			actionButton(ICON_FK_REPEAT " X", "rotate 90 0 0", nullptr, windowWidth / 3.0f);
-			ImGui::TooltipText("Rotate by 90 degree on the x axis");
-			ImGui::SameLine();
-			actionButton(ICON_FK_REPEAT " Y", "rotate 0 90 0", nullptr, windowWidth / 3.0f);
-			ImGui::TooltipText("Rotate by 90 degree on the y axis");
-			ImGui::SameLine();
-			actionButton(ICON_FK_REPEAT " Z", "rotate 0 0 90", nullptr, windowWidth / 3.0f);
-			ImGui::TooltipText("Rotate by 90 degree on the z axis");
-		}
-
-		ImGui::NewLine();
-
-		if (ImGui::CollapsingHeader("Flip on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			actionButton("X", "flip x", nullptr, windowWidth / 3.0f);
-			ImGui::SameLine();
-			actionButton("Y", "flip y", nullptr, windowWidth / 3.0f);
-			ImGui::SameLine();
-			actionButton("Z", "flip z", nullptr, windowWidth / 3.0f);
-		}
-
-		ImGui::NewLine();
-
-		if (ImGui::CollapsingHeader("Mirror on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			mirrorAxisRadioButton("none", math::Axis::None);
-			mirrorAxisRadioButton("x", math::Axis::X);
-			mirrorAxisRadioButton("y", math::Axis::Y);
-			mirrorAxisRadioButton("z", math::Axis::Z);
 		}
 	}
 	ImGui::End();
