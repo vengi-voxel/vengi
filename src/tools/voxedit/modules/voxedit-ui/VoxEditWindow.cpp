@@ -369,20 +369,20 @@ void VoxEditWindow::palette() {
 				const ImVec2 v1(transX, transY);
 				const ImVec2 v2(transX + (float)size, transY + (float)size);
 				ImDrawList* drawList = ImGui::GetWindowDrawList();
-				drawList->AddRectFilled(v1, v2, core::Color::getRGBA(colors[i]));
+				drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(colors[i]));
 
 				if (!colorHovered && ImGui::IsMouseHoveringRect(v1, v2)) {
 					colorHovered = true;
-					drawList->AddRect(v1, v2, core::Color::getRGBA(core::Color::Red));
+					drawList->AddRect(v1, v2, ImGui::GetColorU32(core::Color::Red));
 					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 						sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, i));
 					}
 				} else if (i == voxelColorTraceIndex) {
-					drawList->AddRect(v1, v2, core::Color::getRGBA(core::Color::Yellow));
+					drawList->AddRect(v1, v2, ImGui::GetColorU32(core::Color::Yellow));
 				} else if (i == voxelColorSelectedIndex) {
-					drawList->AddRect(v1, v2, core::Color::getRGBA(core::Color::DarkRed));
+					drawList->AddRect(v1, v2, ImGui::GetColorU32(core::Color::DarkRed));
 				} else {
-					drawList->AddRect(v1, v2, core::Color::getRGBA(core::Color::Black));
+					drawList->AddRect(v1, v2, ImGui::GetColorU32(core::Color::Black));
 				}
 				++i;
 			}
@@ -1186,11 +1186,21 @@ void VoxEditWindow::scriptPanel() {
 			const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
 			switch (p.type) {
 			case voxelgenerator::LUAParameterType::ColorIndex: {
-				// TODO: select palette color
+				const voxel::MaterialColorArray &colors = voxel::getMaterialColors();
 				core::String &str = _scriptParameters[i];
 				int val = core::string::toInt(str);
+				if (val >= 0 && val < (int)colors.size()) {
+					const float size = ImGui::Size(20);
+					const ImVec2 v1(ImGui::GetWindowPos().x + ImGui::GetCursorPosX(), ImGui::GetWindowPos().y + ImGui::GetCursorPosY());
+					const ImVec2 v2(v1.x + size, v1.y + size);
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
+					drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(colors[val]));
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size);
+				}
 				if (ImGui::InputInt(p.name.c_str(), &val)) {
-					str = core::string::toString(val);
+					if (val >= 0 && val < (int)colors.size()) {
+						str = core::string::toString(val);
+					}
 				}
 				break;
 			}
