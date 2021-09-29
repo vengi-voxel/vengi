@@ -98,6 +98,10 @@ protected:
 public:
 	~Var();
 
+	static bool boolValidator(const core::String& value) {
+		return value == "1" || value == "true" || value == "false" || value == "0";
+	}
+
 	/**
 	 * @brief Creates a new or gets an already existing var
 	 *

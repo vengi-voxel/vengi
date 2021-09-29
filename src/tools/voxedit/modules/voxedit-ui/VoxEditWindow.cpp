@@ -76,12 +76,12 @@ void VoxEditWindow::resetCamera() {
 }
 
 bool VoxEditWindow::init() {
-	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1");
-	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1");
-	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "0");
-	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis, "1");
-	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb, "0");
-	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow, "1");
+	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", nullptr, core::Var::boolValidator);
+	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1", nullptr, core::Var::boolValidator);
+	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "0", nullptr, core::Var::boolValidator);
+	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis, "1", nullptr, core::Var::boolValidator);
+	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb, "0", nullptr, core::Var::boolValidator);
+	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow, "1", nullptr, core::Var::boolValidator);
 	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed, "100");
 	_gridSizeVar = core::Var::get(cfg::VoxEditGridsize, "4", "The size of the voxel grid", [](const core::String &val) {
 		const int intVal = core::string::toInt(val);
@@ -370,7 +370,6 @@ void VoxEditWindow::registerPopups() {
 
 void VoxEditWindow::update() {
 	const ImVec2 pos(0.0f, 0.0f);
-	// const ImVec2 size = _app->frameBufferDimension();
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 
 	ImGui::SetNextWindowPos(viewport->WorkPos);
