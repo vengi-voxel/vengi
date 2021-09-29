@@ -112,22 +112,54 @@ app::AppState VoxEdit::onConstruct() {
 
 	voxedit::sceneMgr().construct();
 
-#define COMMAND_FILE(commandId, help) \
-	command::Command::registerCommand(#commandId, [this] (const command::CmdArgs& args) { \
-		const core::String file = args.empty() ? "" : args[0]; \
-		if (!commandId##File(file)) { \
-			Log::error("Failed to execute '" #commandId "' for file '%s'", file.c_str()); \
-		} \
-	})/*.setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory))*/.setHelp(help)
+	command::Command::registerCommand("screenshot", [this](const command::CmdArgs &args) {
+		const core::String file = args.empty() ? "" : args[0];
+		if (!screenshotFile(file)) {
+			Log::error("Failed to execute 'screenshot' for file '%s'", file.c_str());
+		}
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current viewport as screenshot");
 
-	COMMAND_FILE(screenshot, "Save the current viewport as screenshot");
-	COMMAND_FILE(save, "Save the current scene as a volume to the given file");
-	COMMAND_FILE(load, "Load a scene from the given volume file");
-	COMMAND_FILE(prefab, "Add a volume to the existing scene from the given file");
-	COMMAND_FILE(importheightmap, "Import a 2d heightmap image into the current active volume layer");
-	COMMAND_FILE(importplane, "Import an image as a plane into a new layer");
-	COMMAND_FILE(importpalette, "Import an image as a palette");
-#undef COMMAND_FILE
+	command::Command::registerCommand("save", [this](const command::CmdArgs &args) {
+		const core::String file = args.empty() ? "" : args[0];
+		if (!saveFile(file)) {
+			Log::error("Failed to execute 'save' for file '%s'", file.c_str());
+		}
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
+
+	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {
+		const core::String file = args.empty() ? "" : args[0];
+		if (!loadFile(file)) {
+			Log::error("Failed to execute 'load' for file '%s'", file.c_str());
+		}
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Load a scene from the given volume file");
+
+	command::Command::registerCommand("prefab", [this](const command::CmdArgs &args) {
+		const core::String file = args.empty() ? "" : args[0];
+		if (!prefabFile(file)) {
+			Log::error("Failed to execute 'prefab' for file '%s'", file.c_str());
+		}
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Add a volume to the existing scene from the given file");
+
+	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
+		const core::String file = args.empty() ? "" : args[0];
+		if (!importheightmapFile(file)) {
+			Log::error("Failed to execute 'importheightmap' for file '%s'", file.c_str());
+		}
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active volume layer");
+
+	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
+		const core::String file = args.empty() ? "" : args[0];
+		if (!importplaneFile(file)) {
+			Log::error("Failed to execute 'importplane' for file '%s'", file.c_str());
+		}
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a plane into a new layer");
+
+	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
+		const core::String file = args.empty() ? "" : args[0];
+		if (!importpaletteFile(file)) {
+			Log::error("Failed to execute 'importpalette' for file '%s'", file.c_str());
+		}
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a palette");
 
 	command::Command::registerCommand("animation_load", [&] (const command::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
