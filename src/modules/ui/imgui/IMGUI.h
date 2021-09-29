@@ -61,5 +61,6 @@ IMGUI_API const char *CommandButton(const char *title, const char *command, cons
 IMGUI_API bool URLButton(const char *title, const char *url);
 IMGUI_API const char *CommandMenuItem(const char *title, const char *command, bool enabled = true, command::CommandExecutionListener* listener = nullptr);
 IMGUI_API void URLItem(const char *title, const char *url);
+IMGUI_API void TooltipCommand(const char *command);
 
 }

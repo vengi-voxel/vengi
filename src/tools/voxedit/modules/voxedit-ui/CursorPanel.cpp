@@ -32,7 +32,7 @@ void CursorPanel::update(const char *title, command::CommandExecutionListener &l
 			if (ImGui::CheckboxFlags("X##cursorlock", &lockedAxis, (uint32_t)math::Axis::X)) {
 				command::executeCommands("lockx", &listener);
 			}
-			ImGui::TooltipText("Lock the x axis");
+			ImGui::TooltipCommand("lockx");
 			ImGui::SameLine();
 
 			if (ImGui::InputInt("X##cursor", &cursorPosition.x)) {
@@ -41,7 +41,7 @@ void CursorPanel::update(const char *title, command::CommandExecutionListener &l
 			if (ImGui::CheckboxFlags("Y##cursorlock", &lockedAxis, (uint32_t)math::Axis::Y)) {
 				command::executeCommands("locky", &listener);
 			}
-			ImGui::TooltipText("Lock the y axis");
+			ImGui::TooltipCommand("locky");
 			ImGui::SameLine();
 
 			if (ImGui::InputInt("Y##cursor", &cursorPosition.y)) {
@@ -50,7 +50,7 @@ void CursorPanel::update(const char *title, command::CommandExecutionListener &l
 			if (ImGui::CheckboxFlags("Z##cursorlock", &lockedAxis, (uint32_t)math::Axis::Z)) {
 				command::executeCommands("lockz", &listener);
 			}
-			ImGui::TooltipText("Lock the z axis");
+			ImGui::TooltipCommand("lockz");
 			ImGui::SameLine();
 
 			if (ImGui::InputInt("Z##cursor", &cursorPosition.z)) {

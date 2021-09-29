@@ -113,6 +113,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			if (ImGui::Button(ICON_FA_TIMES " Cancel##loadpalette")) {
 				ImGui::CloseCurrentPopup();
 			}
+			// TODO: link to docu on how to add new palettes
 			ImGui::SetItemDefaultFocus();
 			ImGui::EndPopup();
 		}

@@ -246,7 +246,7 @@ float Size(float size) {
 	return size * ImGui::GetWindowDpiScale();
 }
 
-static void CommandTooltip(const char *command) {
+void TooltipCommand(const char *command) {
 	if (ImGui::IsItemHovered()) {
 		char buf[64];
 		SDL_strlcpy(buf, command, sizeof(buf));
@@ -271,7 +271,7 @@ const char *CommandButton(const char *title, const char *command, const char *to
 	if (tooltip != nullptr) {
 		ImGui::TooltipText("%s", tooltip);
 	} else {
-		CommandTooltip(command);
+		TooltipCommand(command);
 	}
 	return nullptr;
 }
@@ -294,7 +294,7 @@ const char *CommandMenuItem(const char *title, const char *command, bool enabled
 			return command;
 		}
 	}
-	CommandTooltip(command);
+	TooltipCommand(command);
 	return nullptr;
 }
 
