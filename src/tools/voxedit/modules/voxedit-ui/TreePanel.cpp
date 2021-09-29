@@ -72,6 +72,7 @@ void TreePanel::update(const char *title) {
 	static_assert(lengthof(treeTypes) == (int)voxelgenerator::TreeType::Max, "Missing support for tree types in the ui");
 
 	if (ImGui::Begin(title)) {
+		core_trace_scoped(TreePanel)
 		if (ImGui::BeginCombo(ICON_FA_TREE " Type", treeTypes[core::enumVal(_treeGeneratorContext.cfg.type)].name, 0)) {
 			for (int i = 0; i < lengthof(treeTypes); ++i) {
 				if (ImGui::Selectable(treeTypes[i].name, i == core::enumVal(_treeGeneratorContext.cfg.type))) {

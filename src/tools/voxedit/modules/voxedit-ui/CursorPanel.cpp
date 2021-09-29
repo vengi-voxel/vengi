@@ -10,6 +10,7 @@ namespace voxedit {
 
 void CursorPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+		core_trace_scoped(CursorPanel)
 		if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
 			static glm::vec3 translate {0.0f};
 			ImGui::InputFloat("X##translate", &translate.x);

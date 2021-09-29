@@ -83,6 +83,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
 	voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+		core_trace_scoped(LayerPanel)
 		ImGui::BeginChild("##layertable", ImVec2(0.0f, 400.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
 		static const uint32_t TableFlags =
 			ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |

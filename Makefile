@@ -60,6 +60,11 @@ define UPDATE_GIT
 	fi;
 endef
 
+tracy:
+	$(Q)git submodule update --init --recursive
+	$(Q)$(MAKE) -C src/modules/core/tracy/profiler/build/unix release
+	$(Q)src/modules/core/tracy/profiler/build/unix/Tracy-release
+
 update-libuv:
 	$(call UPDATE_GIT,libuv,https://github.com/libuv/libuv.git)
 	rm -rf contrib/libs/libuv/include/uv/*.[ch]

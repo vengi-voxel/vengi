@@ -110,7 +110,7 @@ protected:
 	bool _overwrite = false;
 	bool _cursorBlink = false;
 	bool _useOriginalLogFunction = true;
-	int _frame = 0;
+	double _frame = 0.0;
 	int _cursorPos = 0;
 	int _scrollPos = 0;
 	int _maxLines = 0;

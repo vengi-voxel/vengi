@@ -21,6 +21,7 @@ bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
 
 void ModifierPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+		core_trace_scoped(ModifierPanel)
 		const float windowWidth = ImGui::GetWindowWidth();
 		ImGui::CommandButton(ICON_FA_CROP " Crop layer", "crop", "Crop the current layer to the voxel boundaries", windowWidth, &listener);
 		ImGui::CommandButton(ICON_FA_EXPAND_ARROWS_ALT " Extend all layers", "resize", nullptr, windowWidth, &listener);

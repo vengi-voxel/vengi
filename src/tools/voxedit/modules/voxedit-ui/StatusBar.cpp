@@ -22,6 +22,7 @@ void StatusBar::update(const core::String &lastExecutedCommand) {
 	ImGui::SetNextWindowPos(statusBarPos);
 	const uint32_t statusBarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove;
 	if (ImGui::Begin("##statusbar", nullptr, statusBarFlags)) {
+		core_trace_scoped(StatusBar)
 		const voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
 		const voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
 		const voxedit::ModifierFacade& modifier = sceneMgr.modifier();

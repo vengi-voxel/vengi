@@ -10,6 +10,7 @@ namespace voxedit {
 
 void LSystemPanel::update(const char *title) {
 	if (ImGui::Begin(title)) {
+		core_trace_scoped(LSystemPanel)
 		ImGui::InputText("Axiom##noise", &_lsystemData.axiom);
 		ImGui::InputTextMultiline("Rules##noise", &_lsystemData.rulesStr);
 		ImGui::InputFloat("Angle##noise", &_lsystemData.angle);

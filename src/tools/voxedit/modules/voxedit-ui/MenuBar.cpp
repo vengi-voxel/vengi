@@ -18,6 +18,7 @@ bool MenuBar::actionMenuItem(const char *title, const char *command, command::Co
 
 void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener &listener) {
 	if (ImGui::BeginMenuBar()) {
+		core_trace_scoped(MenuBar)
 		if (ImGui::BeginMenu(ICON_FA_FILE " File")) {
 			actionMenuItem("New", "new", listener);
 			actionMenuItem(ICON_FK_FLOPPY_O " Load", "load", listener);

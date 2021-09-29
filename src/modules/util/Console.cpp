@@ -633,6 +633,7 @@ void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
 	if (!_consoleActive) {
 		return;
 	}
+	core_trace_scoped(ConsoleRender)
 
 	beforeRender(rect);
 
@@ -642,7 +643,7 @@ void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
 		afterRender(rect);
 		return;
 	}
-	const int maxY = _messages.size() * lineH;
+	const int maxY = (int)_messages.size() * lineH;
 	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), _commandLine.size());
 	const int startY = core_min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y - 4, maxY);
 	auto i = _messages.end();

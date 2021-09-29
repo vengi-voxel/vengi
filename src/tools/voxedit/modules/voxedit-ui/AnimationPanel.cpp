@@ -3,6 +3,7 @@
  */
 
 #include "AnimationPanel.h"
+#include "core/Trace.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUI.h"
 
@@ -10,6 +11,7 @@ namespace voxedit {
 
 void AnimationPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, 0)) {
+		core_trace_scoped(AnimationPanel)
 		if (sceneMgr().editMode() == EditMode::Animation) {
 			static animation::Animation animation = animation::Animation::IDLE;
 			if (ImGui::BeginCombo("Animation", network::EnumNameAnimation(animation), ImGuiComboFlags_None)) {

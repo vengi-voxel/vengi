@@ -10,6 +10,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
+#include "core/Trace.h"
 #include "core/Var.h"
 #include "io/Filesystem.h"
 
@@ -69,6 +70,7 @@ bool FileDialog::readDir() {
 // TODO: allow to specify the starting directory
 bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type) {
 	if (open == nullptr || *open) {
+		core_trace_scoped(FileDialog)
 		ImGui::SetNextWindowSize(ImVec2(ImGui::Size(740.0f), ImGui::Size(494.0f)), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type){

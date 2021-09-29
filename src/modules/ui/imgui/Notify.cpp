@@ -1,5 +1,6 @@
 #include "Notify.h"
 #include "SDL_stdinc.h"
+#include "core/Trace.h"
 
 ImGuiToast::ImGuiToast(ImGuiToastType type, const char *message) {
 	IM_ASSERT(type < ImGuiToastType_COUNT);
@@ -100,6 +101,7 @@ float ImGuiToast::fadePercent() const {
 namespace ImGui {
 
 int RenderNotifications(core::DynamicArray<ImGuiToast> &notifications) {
+	core_trace_scoped(RenderNotifications)
 	const ImVec2 &vpSize = ImGui::GetMainViewport()->Size;
 
 	float height = 0.0f;
@@ -176,7 +178,6 @@ int RenderNotifications(core::DynamicArray<ImGuiToast> &notifications) {
 			// Save height for next toasts
 			height += ImGui::GetWindowHeight() + NOTIFY_PADDING_MESSAGE_Y;
 		}
-
 
 		ImGui::End();
 	}
