@@ -39,8 +39,6 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_edgeShader.setTexture(video::TextureUnit::Zero);
 
 	resize(_app->frameBufferDimension());
-	resetCamera();
-	sceneMgr().setActiveCamera(&_controller.camera());
 	return true;
 }
 

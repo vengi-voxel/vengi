@@ -417,8 +417,10 @@ inline void SceneManager::setRenderShadow(bool shadow) {
 }
 
 inline void SceneManager::setActiveCamera(video::Camera* camera) {
-	_camera = camera;
-	resetLastTrace();
+	if (_camera != camera) {
+		resetLastTrace();
+		_camera = camera;
+	}
 }
 
 inline const render::Gizmo& SceneManager::gizmo() const {
