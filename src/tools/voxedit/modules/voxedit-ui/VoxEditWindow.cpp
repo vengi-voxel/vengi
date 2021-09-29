@@ -258,7 +258,7 @@ void VoxEditWindow::updateSettings() {
 void VoxEditWindow::dialog(const char *icon, const char *text) {
 	ImGui::AlignTextToFramePadding();
 	ImGui::PushFont(_app->bigFont());
-	ImGui::Text("%s", icon);
+	ImGui::TextUnformatted(icon);
 	ImGui::PopFont();
 	ImGui::SameLine();
 	ImGui::Spacing();
