@@ -41,22 +41,10 @@ namespace voxedit {
 
 VoxEditWindow::VoxEditWindow(ui::imgui::IMGUIApp *app) : _app(app) {
 	_scene = new Viewport(app, "free##viewport");
-	_scene->init();
-
 	_sceneTop = new Viewport(app, "top##viewport");
-	_sceneTop->init();
-	_sceneTop->setMode(voxedit::ViewportController::SceneCameraMode::Top);
-
 	_sceneLeft = new Viewport(app, "left##viewport");
-	_sceneLeft->init();
-	_sceneLeft->setMode(voxedit::ViewportController::SceneCameraMode::Left);
-
 	_sceneFront = new Viewport(app, "front##viewport");
-	_sceneFront->init();
-	_sceneFront->setMode(voxedit::ViewportController::SceneCameraMode::Front);
-
 	_sceneAnimation = new Viewport(app, "animation##viewport");
-	_sceneAnimation->init(voxedit::ViewportController::RenderMode::Animation);
 }
 
 VoxEditWindow::~VoxEditWindow() {
@@ -76,6 +64,21 @@ void VoxEditWindow::resetCamera() {
 }
 
 bool VoxEditWindow::init() {
+	_scene->init(voxedit::ViewportController::RenderMode::Editor);
+	_scene->setMode(voxedit::ViewportController::SceneCameraMode::Free);
+
+	_sceneTop->init(voxedit::ViewportController::RenderMode::Editor);
+	_sceneTop->setMode(voxedit::ViewportController::SceneCameraMode::Top);
+
+	_sceneLeft->init(voxedit::ViewportController::RenderMode::Editor);
+	_sceneLeft->setMode(voxedit::ViewportController::SceneCameraMode::Left);
+
+	_sceneFront->init(voxedit::ViewportController::RenderMode::Editor);
+	_sceneFront->setMode(voxedit::ViewportController::SceneCameraMode::Front);
+
+	_sceneAnimation->init(voxedit::ViewportController::RenderMode::Animation);
+	_sceneAnimation->setMode(voxedit::ViewportController::SceneCameraMode::Free);
+
 	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", nullptr, core::Var::boolValidator);
 	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1", nullptr, core::Var::boolValidator);
 	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "0", nullptr, core::Var::boolValidator);
