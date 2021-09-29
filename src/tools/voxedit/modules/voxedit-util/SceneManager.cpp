@@ -905,7 +905,7 @@ void SceneManager::construct() {
 			Log::debug("switch active layer to hovered layer from scene mode: %i", _sceneModeLayerTrace);
 			_layerMgr.setActiveLayer(_sceneModeLayerTrace);
 		}
-	}).setBindingContext(BindingContext::Scene);
+	}).setHelp("Switch active layer to hovered layer from scene mode").setBindingContext(BindingContext::Scene);
 
 	command::Command::registerCommand("animation_cycle", [this] (const command::CmdArgs& argv) {
 		int offset = 1;
@@ -919,7 +919,7 @@ void SceneManager::construct() {
 		_animationIdx %= (core::enumVal(animation::Animation::MAX) + 1);
 		Log::info("current animation idx: %i", _animationIdx);
 		animationEntity().setAnimation((animation::Animation)_animationIdx, true);
-	});
+	}).setHelp("Cycle between all possible animations");
 
 	command::Command::registerCommand("animation_save", [&] (const command::CmdArgs& args) {
 		core::String name = "entity";
@@ -927,7 +927,7 @@ void SceneManager::construct() {
 			name = args[0];
 		}
 		saveAnimationEntity(name.c_str());
-	});
+	}).setHelp("Save the animation models and config values");
 
 	command::Command::registerCommand("togglescene", [this] (const command::CmdArgs& args) {
 		toggleEditMode();
@@ -993,7 +993,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("crop", [&] (const command::CmdArgs& args) {
 		crop();
-	}).setHelp("Crop the volume");
+	}).setHelp("Crop the current layer to the voxel boundaries");
 
 	command::Command::registerCommand("scale", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
@@ -1001,11 +1001,10 @@ void SceneManager::construct() {
 		if (argc == 1) {
 			layerId = core::string::toInt(args[0]);
 		} else {
-			Log::info("Scale layer %i by half", layerId);
 			Log::info("Usage: scale (<layerId>)");
 		}
 		scale(layerId);
-	}).setHelp("Scale the volume");
+	}).setHelp("Scale the current layer or given layer down");
 
 	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
 		const int argc = args.size();
@@ -1022,16 +1021,6 @@ void SceneManager::construct() {
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
 		_modifier.aabbStop();
 	}).setHelp("Aborts the current modifier action");
-
-	command::Command::registerCommand("setvoxelresolution", [&] (const command::CmdArgs& args) {
-		const int argc = args.size();
-		if (argc == 1) {
-			const int size = core::string::toInt(args[0]);
-			setGridResolution(size);
-		} else {
-			Log::warn("Expected to get a voxel resolution >= 1");
-		}
-	}).setHelp("");
 
 	command::Command::registerCommand("setreferenceposition", [&] (const command::CmdArgs& args) {
 		if (args.size() != 3) {
