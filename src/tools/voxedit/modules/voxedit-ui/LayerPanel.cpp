@@ -157,7 +157,6 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		ImGui::TooltipText("Move the layer one level down");
 		if (!multipleLayers) {
 			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
-			ImGui::TooltipText("Millisecond delay between frames");
 		}
 	}
 	ImGui::End();
