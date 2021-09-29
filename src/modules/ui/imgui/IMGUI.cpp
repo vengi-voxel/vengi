@@ -259,7 +259,7 @@ float Size(float size) {
 
 const char *CommandButton(const char *title, const char *command, const char *tooltip, float width, command::CommandExecutionListener* listener) {
 	if (ImGui::Button(title, ImVec2(width, 0))) {
-		if (command::executeCommands(command) > 0) {
+		if (command::executeCommands(command, listener) > 0) {
 			return command;
 		}
 	}
