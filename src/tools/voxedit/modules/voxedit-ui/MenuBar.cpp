@@ -22,6 +22,7 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			actionMenuItem("New", "new", listener);
 			actionMenuItem(ICON_FK_FLOPPY_O " Load", "load", listener);
 			actionMenuItem(ICON_FA_SAVE " Save", "save", listener);
+			actionMenuItem(ICON_FA_CAMERA " Screenshot", "screenshot", listener);
 			ImGui::Separator();
 			actionMenuItem("Load Animation", "animation_load", listener);
 			actionMenuItem(ICON_FA_SAVE " Save Animation", "animation_save", listener);
