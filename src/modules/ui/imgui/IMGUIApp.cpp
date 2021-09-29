@@ -857,10 +857,10 @@ app::AppState IMGUIApp::onCleanup() {
 
 void IMGUIApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) {
 	_showFileDialog = true;
-	_fileDialog.openDir(_fileDialogFilter);
 	_fileDialogCallback = callback;
 	_fileDialogMode = mode;
 	_fileDialogFilter = filter;
+	_fileDialog.openDir(_fileDialogFilter);
 }
 
 }
