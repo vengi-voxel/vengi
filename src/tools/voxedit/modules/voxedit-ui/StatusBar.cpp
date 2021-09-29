@@ -31,24 +31,20 @@ void StatusBar::update(const core::String &lastExecutedCommand) {
 		const voxel::Region& region = v->region();
 		const glm::ivec3& mins = region.getLowerCorner();
 		const glm::ivec3& maxs = region.getUpperCorner();
-		const core::String& str = core::string::format("%i:%i:%i / %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
-		ImGui::Text("%s", str.c_str());
+		ImGui::Text("%i:%i:%i / %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		ImGui::SameLine();
 
 		if (modifier.aabbMode()) {
 			const glm::ivec3& dim = modifier.aabbDim();
-			const core::String& str = core::string::format("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
-			ImGui::Text("%s", str.c_str());
+			ImGui::Text("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
 		} else if (!lastExecutedCommand.empty()) {
 			const video::WindowedApp* app = video::WindowedApp::getInstance();
-			core::String statusText;
 			const core::String& keybindingStr = app->getKeyBindingsString(lastExecutedCommand.c_str());
 			if (keybindingStr.empty()) {
-				statusText = core::string::format("Command: %s", lastExecutedCommand.c_str());
+				ImGui::Text("Command: %s", lastExecutedCommand.c_str());
 			} else {
-				statusText = core::string::format("Command: %s (%s)", lastExecutedCommand.c_str(), keybindingStr.c_str());
+				ImGui::Text("Command: %s (%s)", lastExecutedCommand.c_str(), keybindingStr.c_str());
 			}
-			ImGui::Text("%s", statusText.c_str());
 		}
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ImGui::Size(140.0f));
