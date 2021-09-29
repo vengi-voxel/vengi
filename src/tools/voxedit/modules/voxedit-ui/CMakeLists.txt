@@ -5,6 +5,7 @@ set(SRCS
 	CursorPanel.h CursorPanel.cpp
 	LayerPanel.h LayerPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
+	MainWindow.h MainWindow.cpp
 	MenuBar.h MenuBar.cpp
 	ModifierPanel.h ModifierPanel.cpp
 	NoisePanel.h NoisePanel.cpp
@@ -14,7 +15,6 @@ set(SRCS
 	ToolsPanel.h ToolsPanel.cpp
 	TreePanel.h TreePanel.cpp
 	Viewport.h Viewport.cpp
-	VoxEditWindow.h VoxEditWindow.cpp
 )
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES imgui voxedit-util)

@@ -10,7 +10,7 @@
 #include "ui/imgui/IMGUIApp.h"
 
 namespace voxedit {
-class VoxEditWindow;
+class MainWindow;
 }
 
 /**
@@ -21,7 +21,7 @@ class VoxEditWindow;
 class VoxEdit: public ui::imgui::IMGUIApp {
 private:
 	using Super = ui::imgui::IMGUIApp;
-	voxedit::VoxEditWindow* _mainWindow = nullptr;
+	voxedit::MainWindow* _mainWindow = nullptr;
 
 public:
 	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

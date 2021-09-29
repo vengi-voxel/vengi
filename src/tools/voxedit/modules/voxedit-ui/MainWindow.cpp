@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "VoxEditWindow.h"
+#include "MainWindow.h"
 #include "Viewport.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
@@ -39,7 +39,7 @@
 
 namespace voxedit {
 
-VoxEditWindow::VoxEditWindow(ui::imgui::IMGUIApp *app) : _app(app) {
+MainWindow::MainWindow(ui::imgui::IMGUIApp *app) : _app(app) {
 	_scene = new Viewport(app, "free##viewport");
 	_sceneTop = new Viewport(app, "top##viewport");
 	_sceneLeft = new Viewport(app, "left##viewport");
@@ -47,7 +47,7 @@ VoxEditWindow::VoxEditWindow(ui::imgui::IMGUIApp *app) : _app(app) {
 	_sceneAnimation = new Viewport(app, "animation##viewport");
 }
 
-VoxEditWindow::~VoxEditWindow() {
+MainWindow::~MainWindow() {
 	delete _scene;
 	delete _sceneTop;
 	delete _sceneLeft;
@@ -55,7 +55,7 @@ VoxEditWindow::~VoxEditWindow() {
 	delete _sceneAnimation;
 }
 
-void VoxEditWindow::resetCamera() {
+void MainWindow::resetCamera() {
 	_scene->resetCamera();
 	_sceneTop->resetCamera();
 	_sceneLeft->resetCamera();
@@ -63,7 +63,7 @@ void VoxEditWindow::resetCamera() {
 	_sceneAnimation->resetCamera();
 }
 
-bool VoxEditWindow::init() {
+bool MainWindow::init() {
 	_scene->init(voxedit::ViewportController::RenderMode::Editor);
 	_scene->setMode(voxedit::ViewportController::SceneCameraMode::Free);
 
@@ -114,7 +114,7 @@ bool VoxEditWindow::init() {
 	return true;
 }
 
-void VoxEditWindow::shutdown() {
+void MainWindow::shutdown() {
 	_scene->shutdown();
 	_sceneTop->shutdown();
 	_sceneLeft->shutdown();
@@ -122,7 +122,7 @@ void VoxEditWindow::shutdown() {
 	_sceneAnimation->shutdown();
 }
 
-bool VoxEditWindow::save(const core::String &file) {
+bool MainWindow::save(const core::String &file) {
 	if (file.empty()) {
 		_app->saveDialog([this](const core::String uifile) { save(uifile); },
 						 voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
@@ -138,7 +138,7 @@ bool VoxEditWindow::save(const core::String &file) {
 	return true;
 }
 
-bool VoxEditWindow::load(const core::String &file) {
+bool MainWindow::load(const core::String &file) {
 	if (file.empty()) {
 		_app->openDialog([this] (const core::String file) { load(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
@@ -157,7 +157,7 @@ bool VoxEditWindow::load(const core::String &file) {
 	return false;
 }
 
-bool VoxEditWindow::loadAnimationEntity(const core::String &file) {
+bool MainWindow::loadAnimationEntity(const core::String &file) {
 	if (file.empty()) {
 		_app->openDialog([this] (const core::String file) { core::String copy(file); loadAnimationEntity(copy); }, "lua");
 		return true;
@@ -169,12 +169,12 @@ bool VoxEditWindow::loadAnimationEntity(const core::String &file) {
 	return true;
 }
 
-void VoxEditWindow::afterLoad(const core::String &file) {
+void MainWindow::afterLoad(const core::String &file) {
 	_lastOpenedFile->setVal(file);
 	resetCamera();
 }
 
-bool VoxEditWindow::importAsPlane(const core::String& file) {
+bool MainWindow::importAsPlane(const core::String& file) {
 	if (file.empty()) {
 		_app->openDialog([this] (const core::String file) { importAsPlane(file); }, "png");
 		return true;
@@ -183,7 +183,7 @@ bool VoxEditWindow::importAsPlane(const core::String& file) {
 	return sceneMgr().importAsPlane(file);
 }
 
-bool VoxEditWindow::importPalette(const core::String& file) {
+bool MainWindow::importPalette(const core::String& file) {
 	if (file.empty()) {
 		_app->openDialog([this] (const core::String file) { importPalette(file); }, "png");
 		return true;
@@ -192,7 +192,7 @@ bool VoxEditWindow::importPalette(const core::String& file) {
 	return sceneMgr().importPalette(file);
 }
 
-bool VoxEditWindow::importHeightmap(const core::String& file) {
+bool MainWindow::importHeightmap(const core::String& file) {
 	if (file.empty()) {
 		_app->openDialog([this] (const core::String file) { importHeightmap(file); }, "png");
 		return true;
@@ -201,7 +201,7 @@ bool VoxEditWindow::importHeightmap(const core::String& file) {
 	return sceneMgr().importHeightmap(file);
 }
 
-bool VoxEditWindow::createNew(bool force) {
+bool MainWindow::createNew(bool force) {
 	if (!force && sceneMgr().dirty()) {
 		_loadFile.clear();
 		_popupUnsaved = true;
@@ -211,20 +211,20 @@ bool VoxEditWindow::createNew(bool force) {
 	return false;
 }
 
-bool VoxEditWindow::isLayerWidgetDropTarget() const {
+bool MainWindow::isLayerWidgetDropTarget() const {
 	return false; // TODO
 }
 
-bool VoxEditWindow::isPaletteWidgetDropTarget() const {
+bool MainWindow::isPaletteWidgetDropTarget() const {
 	return false; // TODO
 }
 
-void VoxEditWindow::leftWidget() {
+void MainWindow::leftWidget() {
 	_palettePanel.update(TITLE_PALETTE, _lastExecutedCommand);
 	_toolsPanel.update(TITLE_TOOLS);
 }
 
-void VoxEditWindow::mainWidget() {
+void MainWindow::mainWidget() {
 	_scene->update();
 	_sceneTop->update();
 	_sceneLeft->update();
@@ -232,7 +232,7 @@ void VoxEditWindow::mainWidget() {
 	_sceneAnimation->update();
 }
 
-void VoxEditWindow::rightWidget() {
+void MainWindow::rightWidget() {
 	_cursorPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
 	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
@@ -243,7 +243,7 @@ void VoxEditWindow::rightWidget() {
 	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
 }
 
-void VoxEditWindow::updateSettings() {
+void MainWindow::updateSettings() {
 	SceneManager &mgr = sceneMgr();
 	mgr.setGridResolution(_gridSizeVar->intVal());
 	mgr.setRenderAxis(_showAxisVar->boolVal());
@@ -255,7 +255,7 @@ void VoxEditWindow::updateSettings() {
 	gridRenderer.setRenderGrid(_showGridVar->boolVal());
 }
 
-void VoxEditWindow::dialog(const char *icon, const char *text) {
+void MainWindow::dialog(const char *icon, const char *text) {
 	ImGui::AlignTextToFramePadding();
 	ImGui::PushFont(_app->bigFont());
 	ImGui::TextUnformatted(icon);
@@ -268,7 +268,7 @@ void VoxEditWindow::dialog(const char *icon, const char *text) {
 	ImGui::Separator();
 }
 
-void VoxEditWindow::registerPopups() {
+void MainWindow::registerPopups() {
 	if (_popupUnsaved) {
 		ImGui::OpenPopup(POPUP_TITLE_UNSAVED);
 		_popupUnsaved = false;
@@ -371,7 +371,7 @@ void VoxEditWindow::registerPopups() {
 	}
 }
 
-void VoxEditWindow::update() {
+void MainWindow::update() {
 	const ImVec2 pos(0.0f, 0.0f);
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 
@@ -435,18 +435,18 @@ void VoxEditWindow::update() {
 	updateSettings();
 }
 
-bool VoxEditWindow::saveImage(const char *file) {
+bool MainWindow::saveImage(const char *file) {
 	return _scene->saveImage(file);
 }
 
-bool VoxEditWindow::isSceneHovered() const {
+bool MainWindow::isSceneHovered() const {
 	return _scene->isHovered() || _sceneTop->isHovered() ||
 		   _sceneLeft->isHovered() || _sceneFront->isHovered() ||
 		   _sceneAnimation->isHovered();
 }
 
 
-bool VoxEditWindow::prefab(const core::String &file) {
+bool MainWindow::prefab(const core::String &file) {
 	if (file.empty()) {
 		_app->openDialog([this](const core::String file) { prefab(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
 		return true;
@@ -455,7 +455,7 @@ bool VoxEditWindow::prefab(const core::String &file) {
 	return sceneMgr().prefab(file);
 }
 
-bool VoxEditWindow::saveScreenshot(const core::String& file) {
+bool MainWindow::saveScreenshot(const core::String& file) {
 	if (file.empty()) {
 		_app->saveDialog([this] (const core::String file) {saveScreenshot(file); }, "png");
 		return true;

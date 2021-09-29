@@ -28,7 +28,7 @@ namespace voxedit {
 
 class Viewport;
 
-class VoxEditWindow {
+class MainWindow {
 private:
 	struct LastExecutedCommand : public command::CommandExecutionListener {
 		core::String command;
@@ -91,8 +91,8 @@ private:
 	bool saveImage(const char *file);
 
 public:
-	VoxEditWindow(ui::imgui::IMGUIApp *app);
-	virtual ~VoxEditWindow();
+	MainWindow(ui::imgui::IMGUIApp *app);
+	virtual ~MainWindow();
 	bool init();
 	void shutdown();
 

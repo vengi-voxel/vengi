@@ -17,7 +17,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/CustomBindingContext.h"
 
-#include "voxedit-ui/VoxEditWindow.h"
+#include "voxedit-ui/MainWindow.h"
 
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -164,7 +164,7 @@ app::AppState VoxEdit::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_mainWindow = new voxedit::VoxEditWindow(this);
+	_mainWindow = new voxedit::MainWindow(this);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
 		return app::AppState::InitFailure;
