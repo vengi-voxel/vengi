@@ -246,6 +246,22 @@ float Size(float size) {
 	return size * ImGui::GetWindowDpiScale();
 }
 
+static void CommandTooltip(const char *command) {
+	if (ImGui::IsItemHovered()) {
+		char buf[64];
+		SDL_strlcpy(buf, command, sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+		char *firstwhitespace = SDL_strchr(buf, ' ');
+		if (firstwhitespace) {
+			*firstwhitespace = '\0';
+		}
+		const char *help = command::help(buf);
+		if (help && *help) {
+			ImGui::TooltipText("%s", help);
+		}
+	}
+}
+
 const char *CommandButton(const char *title, const char *command, const char *tooltip, float width, command::CommandExecutionListener* listener) {
 	if (ImGui::Button(title, ImVec2(width, 0))) {
 		if (command::executeCommands(command, listener) > 0) {
@@ -254,6 +270,8 @@ const char *CommandButton(const char *title, const char *command, const char *to
 	}
 	if (tooltip != nullptr) {
 		ImGui::TooltipText("%s", tooltip);
+	} else {
+		CommandTooltip(command);
 	}
 	return nullptr;
 }
@@ -276,6 +294,7 @@ const char *CommandMenuItem(const char *title, const char *command, bool enabled
 			return command;
 		}
 	}
+	CommandTooltip(command);
 	return nullptr;
 }
 
