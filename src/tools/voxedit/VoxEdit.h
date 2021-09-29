@@ -26,12 +26,6 @@ private:
 public:
 	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	bool saveFile(const core::String& file);
-	bool loadFile(const core::String& file);
-	bool screenshotFile(const core::String& file);
-	bool prefabFile(const core::String& file);
-	bool newFile(bool force = false);
-
 	void onRenderUI() override;
 
 	void onDropFile(const core::String& file) override;

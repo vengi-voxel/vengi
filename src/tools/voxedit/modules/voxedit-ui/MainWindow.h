@@ -88,8 +88,6 @@ private:
 	void updateSettings();
 	void registerPopups();
 
-	bool saveImage(const char *file);
-
 public:
 	MainWindow(ui::imgui::IMGUIApp *app);
 	virtual ~MainWindow();
@@ -110,7 +108,6 @@ public:
 	bool isSceneHovered() const;
 
 	bool saveScreenshot(const core::String& file);
-	bool prefab(const core::String& file);
 };
 
 }

@@ -123,11 +123,6 @@ void MainWindow::shutdown() {
 }
 
 bool MainWindow::save(const core::String &file) {
-	if (file.empty()) {
-		_app->saveDialog([this](const core::String uifile) { save(uifile); },
-						 voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
-		return true;
-	}
 	if (!sceneMgr().save(file)) {
 		Log::warn("Failed to save the model");
 		_popupFailedToSave = true;
@@ -404,33 +399,15 @@ void MainWindow::update() {
 	updateSettings();
 }
 
-bool MainWindow::saveImage(const char *file) {
-	return _scene->saveImage(file);
-}
-
 bool MainWindow::isSceneHovered() const {
 	return _scene->isHovered() || _sceneTop->isHovered() ||
 		   _sceneLeft->isHovered() || _sceneFront->isHovered() ||
 		   _sceneAnimation->isHovered();
 }
 
-
-bool MainWindow::prefab(const core::String &file) {
-	if (file.empty()) {
-		_app->openDialog([this](const core::String file) { prefab(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
-		return true;
-	}
-
-	return sceneMgr().prefab(file);
-}
-
 bool MainWindow::saveScreenshot(const core::String& file) {
-	if (file.empty()) {
-		_app->saveDialog([this] (const core::String file) {saveScreenshot(file); }, "png");
-		return true;
-	}
-	if (!saveImage(file.c_str())) {
-		Log::warn("Failed to save screenshot");
+	if (!_scene->saveImage(file.c_str())) {
+		Log::warn("Failed to save screenshot to file '%s'", file.c_str());
 		return false;
 	}
 	Log::info("Screenshot created at '%s'", file.c_str());

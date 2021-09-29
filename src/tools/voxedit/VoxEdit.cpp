@@ -18,46 +18,12 @@
 #include "voxedit-util/CustomBindingContext.h"
 
 #include "voxedit-ui/MainWindow.h"
+#include "voxelformat/VolumeFormat.h"
 
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "voxedit");
 	_allowRelativeMouseMode = false;
-}
-
-bool VoxEdit::saveFile(const core::String& file) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->save(file);
-}
-
-bool VoxEdit::screenshotFile(const core::String& file) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->saveScreenshot(file);
-}
-
-bool VoxEdit::loadFile(const core::String& file) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->load(file);
-}
-
-bool VoxEdit::prefabFile(const core::String& file) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->prefab(file);
-}
-
-bool VoxEdit::newFile(bool force) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->createNew(force);
 }
 
 app::AppState VoxEdit::onCleanup() {
@@ -92,36 +58,49 @@ app::AppState VoxEdit::onConstruct() {
 	voxedit::sceneMgr().construct();
 
 	command::Command::registerCommand("screenshot", [this](const command::CmdArgs &args) {
-		const core::String file = args.empty() ? "" : args[0];
-		if (!screenshotFile(file)) {
-			Log::error("Failed to execute 'screenshot' for file '%s'", file.c_str());
+		if (_mainWindow == nullptr) {
+			return;
 		}
+		if (args.empty()) {
+			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, "png");
+			return;
+		}
+		_mainWindow->saveScreenshot(args[0]);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current viewport as screenshot");
 
 	command::Command::registerCommand("save", [this](const command::CmdArgs &args) {
-		const core::String file = args.empty() ? "" : args[0];
-		if (!saveFile(file)) {
-			Log::error("Failed to execute 'save' for file '%s'", file.c_str());
+		if (_mainWindow == nullptr) {
+			return;
 		}
+		if (args.empty()) {
+			saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
+			return;
+		}
+		_mainWindow->save(args[0]);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
 
 	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {
-		const core::String file = args.empty() ? "" : args[0];
-		if (!loadFile(file)) {
-			Log::error("Failed to execute 'load' for file '%s'", file.c_str());
+		if (_mainWindow == nullptr) {
+			return;
 		}
+		if (args.empty()) {
+			openDialog([this] (const core::String &file) {_mainWindow->load(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
+			return;
+		}
+		_mainWindow->load(args[0]);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Load a scene from the given volume file");
 
 	command::Command::registerCommand("prefab", [this](const command::CmdArgs &args) {
-		const core::String file = args.empty() ? "" : args[0];
-		if (!prefabFile(file)) {
-			Log::error("Failed to execute 'prefab' for file '%s'", file.c_str());
+		if (args.empty()) {
+			openDialog([](const core::String &file) { voxedit::sceneMgr().prefab(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
+			return;
 		}
+		voxedit::sceneMgr().prefab(args[0]);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Add a volume to the existing scene from the given file");
 
 	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([this] (const core::String file) { voxedit::sceneMgr().importHeightmap(file); }, "png");
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, "png");
 			return;
 		}
 		if (!voxedit::sceneMgr().importHeightmap(args[0])) {
@@ -131,7 +110,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([this] (const core::String file) { voxedit::sceneMgr().importAsPlane(file); }, "png");
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, "png");
 			return;
 		}
 		if (!voxedit::sceneMgr().importAsPlane(args[0])) {
@@ -141,7 +120,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([this] (const core::String file) { voxedit::sceneMgr().importPalette(file); }, "png");
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, "png");
 			return;
 		}
 		if (!voxedit::sceneMgr().importPalette(args[0])) {
@@ -154,14 +133,17 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			openDialog([this] (const core::String file) { _mainWindow->loadAnimationEntity(file); }, "lua");
+			openDialog([this] (const core::String &file) { _mainWindow->loadAnimationEntity(file); }, "lua");
 			return;
 		}
 		_mainWindow->loadAnimationEntity(args[0]);
 	}).setHelp("Load the animation volumes and settings").setArgumentCompleter(command::fileCompleter(io::filesystem(), "", "*.lua"));
 
 	command::Command::registerCommand("new", [this] (const command::CmdArgs& args) {
-		newFile();
+		if (_mainWindow == nullptr) {
+			return false;
+		}
+		return _mainWindow->createNew(false);
 	}).setHelp("Create a new scene with ui interaction");
 
 	command::Command::registerCommand("resetcamera", [this] (const command::CmdArgs& args) {
@@ -170,8 +152,6 @@ app::AppState VoxEdit::onConstruct() {
 		}
 		_mainWindow->resetCamera();
 	}).setHelp("Reset cameras in all viewports");
-
-	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER, "Render the scene with voxel outlines");
 
 	return state;
 }
