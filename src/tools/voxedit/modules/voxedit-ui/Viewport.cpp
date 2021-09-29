@@ -69,16 +69,15 @@ void Viewport::update() {
 			const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 			ImGui::Image(texture->handle(), contentSize, uva, uvc);
 
-			if (ImGui::IsItemFocused() || ImGui::IsItemHovered()) {
+			if (ImGui::IsItemHovered()) {
 				const glm::ivec2 windowPos = ImGui::GetWindowPos();
 				const glm::ivec2 windowSize = ImGui::GetWindowSize();
 				const glm::ivec2 headerSize = windowSize - contentSize;
-				const bool relative = app->isRelativeMouseMode();
 				const bool alt = ImGui::GetIO().KeyAlt;
 				const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 				const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 				const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y);
-				const bool rotate = relative || middle || alt;
+				const bool rotate = middle || alt;
 				_controller.move(rotate, mouseX, mouseY + headerSize.y);
 				_hovered = true;
 				sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
