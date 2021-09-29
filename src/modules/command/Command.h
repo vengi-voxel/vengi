@@ -170,4 +170,12 @@ inline const char* Command::help() const {
 	return _help;
 }
 
+inline const char *help(const core::String &cmd) {
+	Command* command = Command::getCommand(cmd);
+	if (!command || !command->help()) {
+		return "";
+	}
+	return command->help();
+}
+
 }

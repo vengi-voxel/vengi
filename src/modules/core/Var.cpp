@@ -150,6 +150,9 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 		const uint32_t preserve = v->_flags & CV_PRESERVE;
 		v->_flags = flagsMask | preserve;
 	}
+	if (!v->_help) {
+		v->_help = help;
+	}
 	return v;
 }
 

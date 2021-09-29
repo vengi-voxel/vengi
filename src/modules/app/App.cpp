@@ -212,7 +212,7 @@ AppState App::onConstruct() {
 	if (!logLevelVal.empty()) {
 		logVar->setVal(logLevelVal);
 	}
-	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
+	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false", "Log to the system log", core::Var::boolValidator);
 
 	Log::init();
 
