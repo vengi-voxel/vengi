@@ -123,7 +123,6 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
 				ImGui::CloseCurrentPopup();
 				voxel::RawVolume* v = new voxel::RawVolume(layerSettings->region());
-				voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 				const int layerId = layerMgr.addLayer(layerSettings->name.c_str(), true, v, v->region().getCenter());
 				layerMgr.setActiveLayer(layerId);
 			}
