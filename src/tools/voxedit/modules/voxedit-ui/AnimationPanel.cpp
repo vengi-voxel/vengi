@@ -11,14 +11,20 @@ namespace voxedit {
 void AnimationPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, 0)) {
 		if (sceneMgr().editMode() == EditMode::Animation) {
-			static int animation = (int)animation::Animation::IDLE;
-			if (ImGui::Combo("Animation", &animation,
-					[](void *pmds, int idx, const char **pOut) {
-						*pOut = network::EnumNameAnimation((animation::Animation)idx);
-						return **pOut != '\0';
-					},
-					(void *)network::EnumNamesAnimation(), (int)network::Animation::MAX + 1, 10)) {
-				sceneMgr().animationEntity().setAnimation((animation::Animation)animation, true);
+			static animation::Animation animation = animation::Animation::IDLE;
+			if (ImGui::BeginCombo("Animation", network::EnumNameAnimation(animation), ImGuiComboFlags_None)) {
+				for (int i = ((int)animation::Animation::MIN); i <= (int)animation::Animation::MAX; ++i) {
+					const animation::Animation type = (animation::Animation)i;
+					bool selected = type == animation;
+					if (ImGui::Selectable(network::EnumNameAnimation(type), selected)) {
+						animation = type;
+						sceneMgr().animationEntity().setAnimation(type, true);
+					}
+					if (selected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
 			}
 			animation::SkeletonAttribute *skeletonAttributes = sceneMgr().skeletonAttributes();
 			for (const animation::SkeletonAttributeMeta* metaIter = skeletonAttributes->metaArray(); metaIter->name; ++metaIter) {
