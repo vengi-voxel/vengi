@@ -25,27 +25,6 @@ VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& files
 	_allowRelativeMouseMode = false;
 }
 
-bool VoxEdit::importheightmapFile(const core::String& file) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->importHeightmap(file);
-}
-
-bool VoxEdit::importplaneFile(const core::String& file) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->importAsPlane(file);
-}
-
-bool VoxEdit::importpaletteFile(const core::String& file) {
-	if (_mainWindow == nullptr) {
-		return false;
-	}
-	return _mainWindow->importPalette(file);
-}
-
 bool VoxEdit::saveFile(const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return false;
@@ -141,23 +120,32 @@ app::AppState VoxEdit::onConstruct() {
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Add a volume to the existing scene from the given file");
 
 	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
-		const core::String file = args.empty() ? "" : args[0];
-		if (!importheightmapFile(file)) {
-			Log::error("Failed to execute 'importheightmap' for file '%s'", file.c_str());
+		if (args.empty()) {
+			openDialog([this] (const core::String file) { voxedit::sceneMgr().importHeightmap(file); }, "png");
+			return;
+		}
+		if (!voxedit::sceneMgr().importHeightmap(args[0])) {
+			Log::error("Failed to execute 'importheightmap' for file '%s'", args[0].c_str());
 		}
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active volume layer");
 
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
-		const core::String file = args.empty() ? "" : args[0];
-		if (!importplaneFile(file)) {
-			Log::error("Failed to execute 'importplane' for file '%s'", file.c_str());
+		if (args.empty()) {
+			openDialog([this] (const core::String file) { voxedit::sceneMgr().importAsPlane(file); }, "png");
+			return;
+		}
+		if (!voxedit::sceneMgr().importAsPlane(args[0])) {
+			Log::error("Failed to execute 'importplane' for file '%s'", args[0].c_str());
 		}
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a plane into a new layer");
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
-		const core::String file = args.empty() ? "" : args[0];
-		if (!importpaletteFile(file)) {
-			Log::error("Failed to execute 'importpalette' for file '%s'", file.c_str());
+		if (args.empty()) {
+			openDialog([this] (const core::String file) { voxedit::sceneMgr().importPalette(file); }, "png");
+			return;
+		}
+		if (!voxedit::sceneMgr().importPalette(args[0])) {
+			Log::error("Failed to execute 'importpalette' for file '%s'", args[0].c_str());
 		}
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a palette");
 
@@ -165,8 +153,11 @@ app::AppState VoxEdit::onConstruct() {
 		if (_mainWindow == nullptr) {
 			return;
 		}
-		const core::String file = args.empty() ? "" : args[0];
-		_mainWindow->loadAnimationEntity(file);
+		if (args.empty()) {
+			openDialog([this] (const core::String file) { _mainWindow->loadAnimationEntity(file); }, "lua");
+			return;
+		}
+		_mainWindow->loadAnimationEntity(args[0]);
 	}).setHelp("Load the animation volumes and settings").setArgumentCompleter(command::fileCompleter(io::filesystem(), "", "*.lua"));
 
 	command::Command::registerCommand("new", [this] (const command::CmdArgs& args) {

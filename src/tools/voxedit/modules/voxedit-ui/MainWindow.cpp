@@ -158,10 +158,6 @@ bool MainWindow::load(const core::String &file) {
 }
 
 bool MainWindow::loadAnimationEntity(const core::String &file) {
-	if (file.empty()) {
-		_app->openDialog([this] (const core::String file) { core::String copy(file); loadAnimationEntity(copy); }, "lua");
-		return true;
-	}
 	if (!sceneMgr().loadAnimationEntity(file)) {
 		return false;
 	}
@@ -172,33 +168,6 @@ bool MainWindow::loadAnimationEntity(const core::String &file) {
 void MainWindow::afterLoad(const core::String &file) {
 	_lastOpenedFile->setVal(file);
 	resetCamera();
-}
-
-bool MainWindow::importAsPlane(const core::String& file) {
-	if (file.empty()) {
-		_app->openDialog([this] (const core::String file) { importAsPlane(file); }, "png");
-		return true;
-	}
-
-	return sceneMgr().importAsPlane(file);
-}
-
-bool MainWindow::importPalette(const core::String& file) {
-	if (file.empty()) {
-		_app->openDialog([this] (const core::String file) { importPalette(file); }, "png");
-		return true;
-	}
-
-	return sceneMgr().importPalette(file);
-}
-
-bool MainWindow::importHeightmap(const core::String& file) {
-	if (file.empty()) {
-		_app->openDialog([this] (const core::String file) { importHeightmap(file); }, "png");
-		return true;
-	}
-
-	return sceneMgr().importHeightmap(file);
 }
 
 bool MainWindow::createNew(bool force) {

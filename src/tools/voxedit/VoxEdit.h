@@ -26,9 +26,6 @@ private:
 public:
 	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	bool importheightmapFile(const core::String& file);
-	bool importplaneFile(const core::String& file);
-	bool importpaletteFile(const core::String& file);
 	bool saveFile(const core::String& file);
 	bool loadFile(const core::String& file);
 	bool screenshotFile(const core::String& file);

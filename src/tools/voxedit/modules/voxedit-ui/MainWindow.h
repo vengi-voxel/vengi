@@ -109,10 +109,6 @@ public:
 	void update();
 	bool isSceneHovered() const;
 
-	bool importHeightmap(const core::String& file);
-	bool importAsPlane(const core::String& file);
-	bool importPalette(const core::String& file);
-
 	bool saveScreenshot(const core::String& file);
 	bool prefab(const core::String& file);
 };
