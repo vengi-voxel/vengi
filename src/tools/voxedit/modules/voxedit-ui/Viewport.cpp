@@ -78,9 +78,10 @@ void Viewport::update() {
 				const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 				const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 				const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y);
-				cursorMove(relative || middle || alt, mouseX, mouseY + headerSize.y);
-
+				const bool rotate = relative || middle || alt;
+				_controller.move(rotate, mouseX, mouseY + headerSize.y);
 				_hovered = true;
+				sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
 				sceneMgr().setActiveCamera(&_controller.camera());
 				sceneMgr().trace();
 			}
@@ -144,12 +145,6 @@ void Viewport::resize(const glm::ivec2& frameBufferSize) {
 
 void Viewport::setMode(ViewportController::SceneCameraMode mode) {
 	_controller.init(mode);
-}
-
-void Viewport::cursorMove(bool rotate, int x, int y) {
-	_controller.move(rotate, x, y);
-	sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
-	sceneMgr().setActiveCamera(&_controller.camera());
 }
 
 void Viewport::renderToFrameBuffer() {

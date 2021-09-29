@@ -27,7 +27,6 @@ private:
 
 	void renderToFrameBuffer();
 	void resize(const glm::ivec2& frameBufferSize);
-	void cursorMove(bool, int x, int y);
 
 public:
 	Viewport(video::WindowedApp *app, const core::String& id);
