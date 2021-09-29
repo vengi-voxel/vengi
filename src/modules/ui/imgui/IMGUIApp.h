@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "FileDialog.h"
 #include "video/WindowedApp.h"
 #include "video/Camera.h"
 #include "video/Buffer.h"
@@ -55,6 +56,8 @@ protected:
 	ImFont* _defaultFont = nullptr;
 	ImFont* _bigFont = nullptr;
 	ImFont* _smallFont = nullptr;
+
+	FileDialog _fileDialog;
 
 	void executeDrawCommands();
 

@@ -16,35 +16,59 @@
 namespace ui {
 namespace imgui {
 
-enum class FileDialogSortOrder { Up, Down, None };
-
 static core::String assemblePath(const core::String &dir, const core::String &ent) {
 	return dir + (dir.last() == '/' ? "" : "/") + ent;
+}
+
+void FileDialog::applyFilter() {
+	files.clear();
+	files.reserve(entities.size());
+	for (size_t i = 0; i < entities.size(); ++i) {
+		if (entities[i].type != io::Filesystem::DirEntry::Type::file) {
+			continue;
+		}
+		if (!_filter.empty()) {
+			if (!core::string::fileMatchesMultiple(entities[i].name.c_str(), _filter.c_str())) {
+				continue;
+			}
+		}
+		files.push_back(&entities[i]);
+	}
+}
+
+bool FileDialog::openDir(const core::String& filter) {
+	_filter = filter;
+
+	const core::VarPtr& lastDirVar = core::Var::getSafe(cfg::UILastDirectory);
+	const core::String& lastDir = lastDirVar->strVal();
+	fileDialogCurrentPath = lastDir;
+	fileDialogCurrentFile = "";
+	fileDialogCurrentFolder = "";
+
+	if (!io::filesystem()->exists(fileDialogCurrentPath)) {
+		fileDialogCurrentPath = io::filesystem()->homePath();
+		core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
+	}
+
+	return readDir();
+}
+
+bool FileDialog::readDir() {
+	entities.clear();
+	if (!io::filesystem()->list(fileDialogCurrentPath, entities)) {
+		Log::warn("Failed to list dir %s", fileDialogCurrentPath.c_str());
+		return false;
+	}
+
+	applyFilter();
+	return true;
 }
 
 // TODO: make filters selectable
 // TODO: list registered data paths from filesystem
 // TODO: allow to specify the starting directory
-bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type, const core::String& filter) {
-	static size_t fileDialogFileSelectIndex = 0;
-	static size_t fileDialogFolderSelectIndex = 0;
-	const core::VarPtr& lastDirVar = core::Var::getSafe(cfg::UILastDirectory);
-	const core::String& lastDir = lastDirVar->strVal();
-	static core::String fileDialogCurrentPath = lastDir;
-	static core::String fileDialogCurrentFile = "";
-	static core::String fileDialogCurrentFolder = "";
-	static char fileDialogError[500] = "";
-	static FileDialogSortOrder fileNameSortOrder = FileDialogSortOrder::None;
-	static FileDialogSortOrder sizeSortOrder = FileDialogSortOrder::None;
-	static FileDialogSortOrder dateSortOrder = FileDialogSortOrder::None;
-	static FileDialogSortOrder typeSortOrder = FileDialogSortOrder::None;
-
+bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type) {
 	if (open == nullptr || *open) {
-		if (!io::filesystem()->exists(fileDialogCurrentPath)) {
-			fileDialogCurrentPath = io::filesystem()->homePath();
-			lastDirVar->setVal(fileDialogCurrentPath);
-		}
-
 		ImGui::SetNextWindowSize(ImVec2(ImGui::Size(740.0f), ImGui::Size(494.0f)), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type){
@@ -59,11 +83,6 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 		}
 		ImGui::Begin(title, nullptr);
 
-		core::DynamicArray<io::Filesystem::DirEntry> entities;
-		if (!io::filesystem()->list(fileDialogCurrentPath, entities)) {
-			Log::warn("Failed to list dir %s", fileDialogCurrentPath.c_str());
-		}
-
 		ImGui::Text("%s", fileDialogCurrentPath.c_str());
 
 		ImGui::BeginChild("Directories##1", ImVec2(ImGui::Size(200), ImGui::Size(300)), true, ImGuiWindowFlags_HorizontalScrollbar);
@@ -73,7 +92,8 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 							  ImVec2(contentRegionWidth, 0))) {
 			if (ImGui::IsMouseDoubleClicked(0)) {
 				fileDialogCurrentPath = io::filesystem()->absolutePath(fileDialogCurrentPath + "/..");
-				lastDirVar->setVal(fileDialogCurrentPath);
+				core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
+				readDir();
 			}
 		}
 		for (size_t i = 0; i < entities.size(); ++i) {
@@ -86,12 +106,14 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 				fileDialogCurrentFile = "";
 				if (ImGui::IsMouseDoubleClicked(0)) {
 					fileDialogCurrentPath = assemblePath(fileDialogCurrentPath, entities[i].name);
-					lastDirVar->setVal(fileDialogCurrentPath);
+					core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
 					fileDialogFolderSelectIndex = 0;
 					fileDialogFileSelectIndex = 0;
 					ImGui::SetScrollHereY(0.0f);
 					fileDialogCurrentFolder = "";
 					fileDialogError[0] = '\0';
+					readDir();
+					break;
 				} else {
 					fileDialogFolderSelectIndex = i;
 					fileDialogCurrentFolder = entities[i].name;
@@ -153,35 +175,21 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 		ImGui::NextColumn();
 		ImGui::Separator();
 
-		core::DynamicArray<const io::Filesystem::DirEntry*> files;
-		files.reserve(entities.size());
-		for (size_t i = 0; i < entities.size(); ++i) {
-			if (entities[i].type != io::Filesystem::DirEntry::Type::file) {
-				continue;
-			}
-			if (!filter.empty()) {
-				if (!core::string::fileMatchesMultiple(entities[i].name.c_str(), filter.c_str())) {
-					continue;
-				}
-			}
-			files.push_back(&entities[i]);
-		}
-
-		static auto nameSorter = [](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+		static auto nameSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 			if (fileNameSortOrder == FileDialogSortOrder::Down) {
 				return a->name > b->name;
 			}
 			return a->name < b->name;
 		};
 
-		static auto sizeSorter = [](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+		static auto sizeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 			if (sizeSortOrder == FileDialogSortOrder::Down) {
 				return a->size > b->size;
 			}
 			return a->size < b->size;
 		};
 
-		static auto extensionSorter = [](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+		static auto extensionSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 			const core::String &aext = core::string::extractExtension(a->name);
 			const core::String &bext = core::string::extractExtension(b->name);
 			if (typeSortOrder == FileDialogSortOrder::Down) {
@@ -190,7 +198,7 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 			return aext < bext;
 		};
 
-		static auto mtimeSorter = [](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+		static auto mtimeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 			if (dateSortOrder == FileDialogSortOrder::Down) {
 				return a->mtime > b->mtime;
 			}
@@ -243,7 +251,6 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 		}
 		ImGui::SameLine();
 
-		static bool disableDeleteButton = false;
 		disableDeleteButton = (fileDialogCurrentFolder == "");
 		if (disableDeleteButton) {
 			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -262,8 +269,6 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 		if (ImGui::BeginPopup("NewFolderPopup", ImGuiWindowFlags_Modal)) {
 			ImGui::Text("Enter a name for the new folder");
-			static char newFolderName[500] = "";
-			static char newFolderError[500] = "";
 			ImGui::InputText("", newFolderName, sizeof(newFolderName));
 			if (ImGui::Button("Create##1")) {
 				if (strlen(newFolderName) <= 0) {
@@ -304,9 +309,11 @@ bool showFileDialog(bool *open, char *buffer, unsigned int bufferSize, video::Wi
 			ImGui::EndPopup();
 		}
 		ImGui::SameLine();
-		const ImVec2 filterTextSize = ImGui::CalcTextSize(filter.c_str());
+		const ImVec2 filterTextSize = ImGui::CalcTextSize(_filter.c_str());
 		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - filterTextSize.x - ImGui::Size(25.0f));
-		ImGui::LabelText("Filter:", "%s", filter.c_str());
+		if (ImGui::InputText("Filter", &_filter)) {
+			applyFilter();
+		}
 
 		const char *buttonText = "Choose";
 		if (type == video::WindowedApp::OpenFileMode::Open) {
