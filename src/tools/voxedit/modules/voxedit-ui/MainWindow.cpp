@@ -307,6 +307,7 @@ void MainWindow::registerPopups() {
 	}
 
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
+		// TODO: dialog broken
 		dialog(ICON_FA_EXCLAMATION_TRIANGLE, "Failed to save the model!");
 		if (ImGui::Button(ICON_FA_CHECK " OK##failedsave")) {
 			ImGui::CloseCurrentPopup();
