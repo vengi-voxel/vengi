@@ -59,7 +59,6 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		const ImU32 redColor = ImGui::GetColorU32(core::Color::Red);
 		const ImU32 yellowColor = ImGui::GetColorU32(core::Color::Yellow);
 		const ImU32 darkRedColor = ImGui::GetColorU32(core::Color::DarkRed);
-		const ImU32 blackColor = ImGui::GetColorU32(core::Color::Black);
 
 		for (int y = 0; y < amountY; ++y) {
 			const float transY = pos.y + (float)y * size;
@@ -68,7 +67,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 					break;
 				}
 				const float transX = pos.x + (float)x * size;
-				const ImVec2 v1(transX, transY);
+				const ImVec2 v1(transX + 1.0f, transY + 1.0f);
 				const ImVec2 v2(transX + (float)size, transY + (float)size);
 				drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(colors[i]));
 
@@ -82,8 +81,6 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 					drawList->AddRect(v1, v2, yellowColor);
 				} else if (i == voxelColorSelectedIndex) {
 					drawList->AddRect(v1, v2, darkRedColor);
-				} else {
-					drawList->AddRect(v1, v2, blackColor);
 				}
 				++i;
 			}
