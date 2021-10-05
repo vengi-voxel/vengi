@@ -341,9 +341,10 @@ void MainWindow::update() {
 	core_trace_scoped(MainWindow);
 	const ImVec2 pos(0.0f, 0.0f);
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
+	const float statusBarHeight = ImGui::Size((float)_app->fontSize() + 16.0f);
 
 	ImGui::SetNextWindowPos(viewport->WorkPos);
-	ImGui::SetNextWindowSize(viewport->WorkSize);
+	ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight));
 	ImGui::SetNextWindowViewport(viewport->ID);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -355,8 +356,6 @@ void MainWindow::update() {
 	ImGui::PopStyleVar(3);
 
 	_menuBar.update(_app, _lastExecutedCommand);
-	const float statusBarHeight = ImGui::Size((float)_app->fontSize() + 16.0f);
-	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, _lastExecutedCommand.command);
 
 	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceId);
@@ -368,6 +367,8 @@ void MainWindow::update() {
 	registerPopups();
 
 	ImGui::End();
+
+	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, _lastExecutedCommand.command);
 
 	static bool init = false;
 	if (!init) {

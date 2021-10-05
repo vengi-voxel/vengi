@@ -8,6 +8,7 @@
 #include "core/Common.h"
 #include "core/Var.h"
 #include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIApp.h"
 #include "io/Filesystem.h"
 #include "video/WindowedApp.h"
 
@@ -58,38 +59,12 @@ void Viewport::update() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	if (ImGui::Begin(_id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar)) {
 		core_trace_scoped(Viewport);
-		const glm::ivec2 &contentSize = ImGui::GetWindowContentRegionMax();
+		const ImVec2 &contentSize = ImGui::GetWindowContentRegionMax();
 
-		const int currentCamRotType = (int)_controller.camera().rotationType();
-		if (ImGui::BeginCombo("Reference point", camRotTypes[currentCamRotType])) {
-			for (int n = 0; n < lengthof(camRotTypes); n++) {
-				const bool isSelected = (currentCamRotType == n);
-				if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-					_controller.camera().setRotationType((video::CameraRotationType)n);
-				}
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-		const int currentPolygonMode = (int)_controller.camera().polygonMode();
-		if (ImGui::BeginCombo("Camera mode", cameraModes[currentPolygonMode])) {
-			for (int n = 0; n < lengthof(cameraModes); n++) {
-				const bool isSelected = (currentCamRotType == n);
-				if (ImGui::Selectable(cameraModes[n], isSelected)) {
-					_controller.camera().setPolygonMode((video::PolygonMode)n);
-				}
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
 		if (_controller.renderMode() == ViewportController::RenderMode::Animation && sceneMgr().editMode() != EditMode::Animation) {
 			ImGui::TextDisabled("No animation loaded");
 		} else {
-			const video::WindowedApp *app = video::WindowedApp::getInstance();
+			const ui::imgui::IMGUIApp *app = (ui::imgui::IMGUIApp*)video::WindowedApp::getInstance();
 			const double deltaFrameSeconds = app->deltaFrameSeconds();
 			_controller.update(deltaFrameSeconds);
 
@@ -104,20 +79,53 @@ void Viewport::update() {
 			const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 			ImGui::Image(texture->handle(), contentSize, uva, uvc);
 
+			const ImVec2 windowPos = ImGui::GetWindowPos();
+			const ImVec2 windowSize = ImGui::GetWindowSize();
 			if (ImGui::IsItemHovered()) {
-				const glm::ivec2 windowPos = ImGui::GetWindowPos();
-				const glm::ivec2 windowSize = ImGui::GetWindowSize();
-				const glm::ivec2 headerSize = windowSize - contentSize;
+				const int headerSize = app->fontSize() + (int)(ImGui::GetStyle().FramePadding.y * 2.0f);
 				const bool alt = ImGui::GetIO().KeyAlt;
 				const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
-				const int mouseX = (int)ImGui::GetIO().MousePos.x - windowPos.x;
-				const int mouseY = (int)ImGui::GetIO().MousePos.y - windowPos.y;
+				const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
+				const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y) - headerSize;
 				const bool rotate = middle || alt;
-				_controller.move(rotate, mouseX, mouseY + headerSize.y);
+				_controller.move(rotate, mouseX, mouseY);
 				_hovered = true;
 				sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
 				sceneMgr().setActiveCamera(&_controller.camera());
 				sceneMgr().trace();
+			}
+
+			const float height = (float)app->fontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+			const float maxWidth = 200.0f;
+			ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
+			ImGui::SetNextItemWidth(maxWidth);
+			const int currentCamRotType = (int)_controller.camera().rotationType();
+			if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
+				for (int n = 0; n < lengthof(camRotTypes); n++) {
+					const bool isSelected = (currentCamRotType == n);
+					if (ImGui::Selectable(camRotTypes[n], isSelected)) {
+						_controller.camera().setRotationType((video::CameraRotationType)n);
+					}
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::SetCursorPos(ImVec2(windowSize.x - maxWidth, windowSize.y - height));
+			const int currentPolygonMode = (int)_controller.camera().polygonMode();
+			ImGui::SetNextItemWidth(maxWidth);
+			if (ImGui::BeginCombo("#cameramode", cameraModes[currentPolygonMode])) {
+				for (int n = 0; n < lengthof(cameraModes); n++) {
+					const bool isSelected = (currentPolygonMode == n);
+					if (ImGui::Selectable(cameraModes[n], isSelected)) {
+						_controller.camera().setPolygonMode((video::PolygonMode)n);
+					}
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
 			}
 		}
 	}

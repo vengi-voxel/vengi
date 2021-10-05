@@ -14,12 +14,13 @@ namespace voxedit {
 
 void StatusBar::update(const char *title, float height, const core::String &lastExecutedCommand) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowViewport(viewport->ID);
 	const ImVec2 &size = viewport->WorkSize;
-	ImGui::SetNextWindowSize(ImVec2(size.x, statusBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(size.x, height));
 	ImVec2 statusBarPos = viewport->WorkPos;
-	statusBarPos.y += size.y - statusBarHeight;
+	statusBarPos.y += size.y - height;
 	ImGui::SetNextWindowPos(statusBarPos);
-	const uint32_t statusBarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove;
+	const uint32_t statusBarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus;
 	if (ImGui::Begin(title, nullptr, statusBarFlags)) {
 		core_trace_scoped(StatusBar);
 		const voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
