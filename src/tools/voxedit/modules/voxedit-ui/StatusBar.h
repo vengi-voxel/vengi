@@ -10,7 +10,7 @@ namespace voxedit {
 
 class StatusBar {
 public:
-	void update(const core::String &lastExecutedCommand);
+	void update(const char *title, const core::String &lastExecutedCommand);
 };
 
 }

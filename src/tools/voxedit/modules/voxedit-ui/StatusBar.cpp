@@ -12,7 +12,7 @@
 
 namespace voxedit {
 
-void StatusBar::update(const core::String &lastExecutedCommand) {
+void StatusBar::update(const char *title, const core::String &lastExecutedCommand) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const ImVec2 &size = viewport->WorkSize;
 	const float statusBarHeight = ImGui::Size((float)((ui::imgui::IMGUIApp*)video::WindowedApp::getInstance())->fontSize() + 16.0f);
@@ -21,7 +21,7 @@ void StatusBar::update(const core::String &lastExecutedCommand) {
 	statusBarPos.y += size.y - statusBarHeight;
 	ImGui::SetNextWindowPos(statusBarPos);
 	const uint32_t statusBarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove;
-	if (ImGui::Begin("##statusbar", nullptr, statusBarFlags)) {
+	if (ImGui::Begin(title, nullptr, statusBarFlags)) {
 		core_trace_scoped(StatusBar);
 		const voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
 		const voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();

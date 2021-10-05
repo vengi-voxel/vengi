@@ -20,6 +20,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include <glm/gtc/type_ptr.hpp>
 
+#define TITLE_STATUSBAR "##statusbar"
 #define TITLE_PALETTE "Palette##title"
 #define TITLE_POSITIONS "Positions##title"
 #define TITLE_MODIFIERS "Modifiers##title"
@@ -354,7 +355,7 @@ void MainWindow::update() {
 	ImGui::PopStyleVar(3);
 
 	_menuBar.update(_app, _lastExecutedCommand);
-	_statusBar.update(_lastExecutedCommand.command);
+	_statusBar.update(TITLE_STATUSBAR, _lastExecutedCommand.command);
 
 	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceId);
