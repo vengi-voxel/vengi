@@ -12,10 +12,9 @@
 
 namespace voxedit {
 
-void StatusBar::update(const char *title, const core::String &lastExecutedCommand) {
+void StatusBar::update(const char *title, float height, const core::String &lastExecutedCommand) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const ImVec2 &size = viewport->WorkSize;
-	const float statusBarHeight = ImGui::Size((float)((ui::imgui::IMGUIApp*)video::WindowedApp::getInstance())->fontSize() + 16.0f);
 	ImGui::SetNextWindowSize(ImVec2(size.x, statusBarHeight));
 	ImVec2 statusBarPos = viewport->WorkPos;
 	statusBarPos.y += size.y - statusBarHeight;

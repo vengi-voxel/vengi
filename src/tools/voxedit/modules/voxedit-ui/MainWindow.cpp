@@ -355,7 +355,8 @@ void MainWindow::update() {
 	ImGui::PopStyleVar(3);
 
 	_menuBar.update(_app, _lastExecutedCommand);
-	_statusBar.update(TITLE_STATUSBAR, _lastExecutedCommand.command);
+	const float statusBarHeight = ImGui::Size((float)_app->fontSize() + 16.0f);
+	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, _lastExecutedCommand.command);
 
 	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceId);
