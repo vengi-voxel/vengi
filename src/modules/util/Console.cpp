@@ -633,7 +633,7 @@ void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
 	if (!_consoleActive) {
 		return;
 	}
-	core_trace_scoped(ConsoleRender)
+	core_trace_scoped(ConsoleRender);
 
 	beforeRender(rect);
 
