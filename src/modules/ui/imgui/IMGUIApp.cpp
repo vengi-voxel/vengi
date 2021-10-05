@@ -717,7 +717,9 @@ app::AppState IMGUIApp::onRunning() {
 
 		char buf[512] = "";
 		if (_fileDialog.showFileDialog(&_showFileDialog, buf, sizeof(buf), _fileDialogMode)) {
-			_fileDialogCallback(buf);
+			if (buf[0] != '\0') {
+				_fileDialogCallback(buf);
+			}
 			_showFileDialog = false;
 		}
 
