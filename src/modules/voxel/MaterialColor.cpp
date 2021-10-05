@@ -410,8 +410,8 @@ bool createPalette(const image::ImagePtr& image, uint32_t *colorsBuffer, int col
 			}
 			colorset.put(rgba, true);
 			if (paletteIndex >= colors) {
-				Log::warn("palette indices exceeded");
-				return false;
+				Log::warn("Palette indices exceeded - only %i colors were loaded", colors);
+				return true;
 			}
 			colorsBuffer[paletteIndex++] = rgba;
 		}
