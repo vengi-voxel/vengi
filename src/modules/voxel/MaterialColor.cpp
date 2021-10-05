@@ -79,7 +79,7 @@ public:
 		_colorMapping.put(voxel::VoxelType::Generic, generic);
 
 		if (luaString.empty()) {
-			Log::warn("No materials defined in lua script");
+			Log::warn("No materials defined in palette lua script");
 			return true;
 		}
 

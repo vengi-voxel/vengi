@@ -59,7 +59,6 @@ void Viewport::update() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	if (ImGui::Begin(_id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar)) {
 		core_trace_scoped(Viewport);
-		const ImVec2 &contentSize = ImGui::GetWindowContentRegionMax();
 
 		if (_controller.renderMode() == ViewportController::RenderMode::Animation && sceneMgr().editMode() != EditMode::Animation) {
 			ImGui::TextDisabled("No animation loaded");
@@ -67,11 +66,12 @@ void Viewport::update() {
 			const ui::imgui::IMGUIApp *app = (ui::imgui::IMGUIApp*)video::WindowedApp::getInstance();
 			const double deltaFrameSeconds = app->deltaFrameSeconds();
 			_controller.update(deltaFrameSeconds);
+			const int headerSize = app->fontSize() + (int)(ImGui::GetStyle().FramePadding.y * 2.0f);
 
+			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
+			contentSize.y -= (float)headerSize;
 			resize(contentSize);
-
 			renderToFrameBuffer();
-
 			// use the uv coords here to take a potential fb flip into account
 			const glm::vec4 &uv = _frameBuffer.uv();
 			const glm::vec2 uva(uv.x, uv.y);
@@ -79,12 +79,10 @@ void Viewport::update() {
 			const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 			ImGui::Image(texture->handle(), contentSize, uva, uvc);
 
-			const ImVec2 windowPos = ImGui::GetWindowPos();
-			const ImVec2 windowSize = ImGui::GetWindowSize();
 			if (ImGui::IsItemHovered()) {
-				const int headerSize = app->fontSize() + (int)(ImGui::GetStyle().FramePadding.y * 2.0f);
 				const bool alt = ImGui::GetIO().KeyAlt;
 				const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+				const ImVec2 windowPos = ImGui::GetWindowPos();
 				const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 				const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y) - headerSize;
 				const bool rotate = middle || alt;
@@ -97,6 +95,7 @@ void Viewport::update() {
 
 			const float height = (float)app->fontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 			const float maxWidth = 200.0f;
+			const ImVec2 windowSize = ImGui::GetWindowSize();
 			ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
 			ImGui::SetNextItemWidth(maxWidth);
 			const int currentCamRotType = (int)_controller.camera().rotationType();
