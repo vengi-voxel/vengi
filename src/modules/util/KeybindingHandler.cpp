@@ -172,7 +172,7 @@ bool KeyBindingHandler::load(const core::String& filename) {
 	if (bindings.empty()) {
 		return false;
 	}
-	Log::info("Load key bindings from %s", filename.c_str());
+	Log::debug("Load key bindings from %s", filename.c_str());
 	const KeybindingParser p(bindings);
 	for (const auto& entry : p.getBindings()) {
 		auto i = _bindings.find(entry.first);
