@@ -3,6 +3,7 @@
  */
 
 #include "Viewport.h"
+#include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Var.h"
@@ -45,8 +46,12 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 void Viewport::update() {
 	camera().setTarget(glm::vec3(sceneMgr().referencePosition()));
 
-	// TODO: render mode
-	// TODO: reference point
+	static const char *cameraModes[] = {"Points", "Lines", "Solid"};
+	static_assert(lengthof(cameraModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
+
+	static const char *camRotTypes[] = {"Reference Point", "Eye"};
+	static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
+
 	_hovered = false;
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -54,6 +59,33 @@ void Viewport::update() {
 	if (ImGui::Begin(_id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar)) {
 		core_trace_scoped(Viewport);
 		const glm::ivec2 &contentSize = ImGui::GetWindowContentRegionMax();
+
+		const int currentCamRotType = (int)_controller.camera().rotationType();
+		if (ImGui::BeginCombo("Reference point", camRotTypes[currentCamRotType])) {
+			for (int n = 0; n < lengthof(camRotTypes); n++) {
+				const bool isSelected = (currentCamRotType == n);
+				if (ImGui::Selectable(camRotTypes[n], isSelected)) {
+					_controller.camera().setRotationType((video::CameraRotationType)n);
+				}
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		const int currentPolygonMode = (int)_controller.camera().polygonMode();
+		if (ImGui::BeginCombo("Camera mode", cameraModes[currentPolygonMode])) {
+			for (int n = 0; n < lengthof(cameraModes); n++) {
+				const bool isSelected = (currentCamRotType == n);
+				if (ImGui::Selectable(cameraModes[n], isSelected)) {
+					_controller.camera().setPolygonMode((video::PolygonMode)n);
+				}
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
 		if (_controller.renderMode() == ViewportController::RenderMode::Animation && sceneMgr().editMode() != EditMode::Animation) {
 			ImGui::TextDisabled("No animation loaded");
 		} else {
@@ -78,8 +110,8 @@ void Viewport::update() {
 				const glm::ivec2 headerSize = windowSize - contentSize;
 				const bool alt = ImGui::GetIO().KeyAlt;
 				const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
-				const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
-				const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y);
+				const int mouseX = (int)ImGui::GetIO().MousePos.x - windowPos.x;
+				const int mouseY = (int)ImGui::GetIO().MousePos.y - windowPos.y;
 				const bool rotate = middle || alt;
 				_controller.move(rotate, mouseX, mouseY + headerSize.y);
 				_hovered = true;
