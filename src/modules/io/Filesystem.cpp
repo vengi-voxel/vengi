@@ -301,7 +301,7 @@ bool Filesystem::registerPath(const core::String& path) {
 		return false;
 	}
 	_paths.push_back(path);
-	Log::info("Registered data path: '%s'", path.c_str());
+	Log::debug("Registered data path: '%s'", path.c_str());
 	return true;
 }
 
