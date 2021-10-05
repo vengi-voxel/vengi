@@ -248,7 +248,7 @@ bool Shader::init() {
 	if (_initialized) {
 		fetchAttributes();
 		fetchUniforms();
-		Log::info("Register shader: %s", _name.c_str());
+		Log::debug("Register shader: %s", _name.c_str());
 		core::Singleton<ShaderManager>::getInstance().registerShader(this);
 	}
 	return success;

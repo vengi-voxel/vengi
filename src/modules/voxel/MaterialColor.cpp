@@ -64,7 +64,7 @@ public:
 			_materialColors.emplace_back(core::Color::fromRGBA(*paletteData));
 			++paletteData;
 		}
-		Log::info("Set up %i material colors", (int)_materialColors.size());
+		Log::debug("Set up %i material colors", (int)_materialColors.size());
 
 		if (_materialColors.size() != colors) {
 			Log::warn("Color amount mismatch");

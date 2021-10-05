@@ -601,7 +601,7 @@ app::AppState IMGUIApp::onInit() {
 
 	_console.init();
 
-	Log::info("Set up imgui");
+	Log::debug("Set up imgui");
 
 	return state;
 }

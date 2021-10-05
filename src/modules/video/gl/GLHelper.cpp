@@ -207,8 +207,8 @@ void setupLimitsAndSpecs() {
 		checkError();
 	}
 
-	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
-	Log::info("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[core::enumVal(Limit::MaxElementIndices)]);
+	Log::debug("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
+	Log::debug("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[core::enumVal(Limit::MaxElementIndices)]);
 }
 
 void setupFeatures() {
@@ -235,10 +235,10 @@ void setupFeatures() {
 
 	int numExts;
 	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
-	Log::info("OpenGL extensions:");
+	Log::debug("OpenGL extensions:");
 	for (int i = 0; i < numExts; ++i) {
 		const char *extensionStr = (const char *) glGetStringi(GL_EXTENSIONS, i);
-		Log::info("ext: %s", extensionStr);
+		Log::debug("ext: %s", extensionStr);
 	}
 
 	for (size_t i = 0; i < SDL_arraysize(extensionArray); ++i) {
@@ -246,7 +246,7 @@ void setupFeatures() {
 		for (const char *extStr : extStrVector) {
 			renderState().features[i] = SDL_GL_ExtensionSupported(extStr);
 			if (renderState().features[i]) {
-				Log::info("Detected feature: %s", extStr);
+				Log::debug("Detected feature: %s", extStr);
 				break;
 			}
 		}

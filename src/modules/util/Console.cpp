@@ -85,7 +85,7 @@ bool Console::init() {
 	const core::String& content = fs->load("%s", _historyFilename);
 	core::string::splitString(content, _history, "\n");
 	_historyPos = _history.size();
-	Log::info("Loaded %i history entries", _historyPos);
+	Log::debug("Loaded %i history entries", _historyPos);
 
 	return true;
 }

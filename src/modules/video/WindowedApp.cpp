@@ -105,7 +105,7 @@ app::AppState WindowedApp::onRunning() {
 	}
 
 	if (quit) {
-		Log::info("Quitting the application");
+		Log::debug("Quitting the application");
 		return app::AppState::Cleanup;
 	}
 
@@ -197,28 +197,28 @@ app::AppState WindowedApp::onInit() {
 
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 
-	Log::info("CPU count: %d", SDL_GetCPUCount());
-	Log::info("CacheLine size: %d", SDL_GetCPUCacheLineSize());
-	Log::info("RDTSC: %d", SDL_HasRDTSC());
-	Log::info("Altivec: %d", SDL_HasAltiVec());
-	Log::info("MMX: %d", SDL_HasMMX());
-	Log::info("3DNow: %d", SDL_Has3DNow());
-	Log::info("SSE: %d", SDL_HasSSE());
-	Log::info("SSE2: %d", SDL_HasSSE2());
-	Log::info("SSE3: %d", SDL_HasSSE3());
-	Log::info("SSE4.1: %d", SDL_HasSSE41());
-	Log::info("SSE4.2: %d", SDL_HasSSE42());
-	Log::info("AVX: %d", SDL_HasAVX());
-	Log::info("AVX2: %d", SDL_HasAVX2());
+	Log::debug("CPU count: %d", SDL_GetCPUCount());
+	Log::debug("CacheLine size: %d", SDL_GetCPUCacheLineSize());
+	Log::debug("RDTSC: %d", SDL_HasRDTSC());
+	Log::debug("Altivec: %d", SDL_HasAltiVec());
+	Log::debug("MMX: %d", SDL_HasMMX());
+	Log::debug("3DNow: %d", SDL_Has3DNow());
+	Log::debug("SSE: %d", SDL_HasSSE());
+	Log::debug("SSE2: %d", SDL_HasSSE2());
+	Log::debug("SSE3: %d", SDL_HasSSE3());
+	Log::debug("SSE4.1: %d", SDL_HasSSE41());
+	Log::debug("SSE4.2: %d", SDL_HasSSE42());
+	Log::debug("AVX: %d", SDL_HasAVX());
+	Log::debug("AVX2: %d", SDL_HasAVX2());
 #if SDL_VERSION_ATLEAST(2, 0, 9)
-	Log::info("NEON: %d", SDL_HasNEON());
+	Log::debug("NEON: %d", SDL_HasNEON());
 #endif
-	Log::info("RAM: %d MB", SDL_GetSystemRAM());
+	Log::debug("RAM: %d MB", SDL_GetSystemRAM());
 
 	SDL_DisplayMode displayMode;
 	const int numDisplays = core_max(0, SDL_GetNumVideoDisplays());
 	const int displayIndex = glm::clamp(core::Var::getSafe(cfg::ClientWindowDisplay)->intVal(), 0, numDisplays);
-	Log::info("Try to use display %i", displayIndex);
+	Log::debug("Try to use display %i", displayIndex);
 	if (SDL_GetDesktopDisplayMode(displayIndex, &displayMode) == -1) {
 		Log::error("%s", SDL_GetError());
 		return app::AppState::InitFailure;
@@ -233,7 +233,7 @@ app::AppState WindowedApp::onInit() {
 		float hdpi = -1.0f;
 		float vdpi = -1.0f;
 		SDL_GetDisplayDPI(i, &ddpi, &hdpi, &vdpi);
-		Log::info("Display %i: %i:%i x %i:%i (dpi: %f, h: %f, v: %f)", i, dr.x, dr.y, dr.w, dr.h, ddpi, hdpi, vdpi);
+		Log::debug("Display %i: %i:%i x %i:%i (dpi: %f, h: %f, v: %f)", i, dr.x, dr.y, dr.w, dr.h, ddpi, hdpi, vdpi);
 	}
 
 	int width = core::Var::get(cfg::ClientWindowWidth, displayMode.w)->intVal();
@@ -271,7 +271,7 @@ app::AppState WindowedApp::onInit() {
 	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
 	if (highDPI->boolVal()) {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-		Log::info("Enable high dpi support");
+		Log::debug("Enable high dpi support");
 		float ddpi = -1.0f;
 		float hdpi = -1.0f;
 		float vdpi = -1.0f;
@@ -290,7 +290,7 @@ app::AppState WindowedApp::onInit() {
 			_dpiVerticalFactor = 1.0f;
 		}
 	} else {
-		Log::info("Disable high dpi support");
+		Log::debug("Disable high dpi support");
 		_dpiFactor = 1.0f;
 		_dpiHorizontalFactor = 1.0f;
 		_dpiVerticalFactor = 1.0f;
@@ -301,15 +301,15 @@ app::AppState WindowedApp::onInit() {
 
 	const int videoDrivers = SDL_GetNumVideoDrivers();
 	for (int i = 0; i < videoDrivers; ++i) {
-		Log::info("available driver: %s", SDL_GetVideoDriver(i));
+		Log::debug("available driver: %s", SDL_GetVideoDriver(i));
 	}
 
-	Log::info("driver: %s", SDL_GetCurrentVideoDriver());
-	Log::info("found %i displays (use %i at %i:%i)", numDisplays, displayIndex, displayBounds.x, displayBounds.y);
+	Log::debug("driver: %s", SDL_GetCurrentVideoDriver());
+	Log::debug("found %i displays (use %i at %i:%i)", numDisplays, displayIndex, displayBounds.x, displayBounds.y);
 	if (fullscreen && numDisplays > 1) {
 		width = displayMode.w;
 		height = displayMode.h;
-		Log::info("use fake fullscreen for display %i: %i:%i", displayIndex, width, height);
+		Log::debug("use fake fullscreen for display %i: %i:%i", displayIndex, width, height);
 	}
 
 #define InternalCreateWindow() SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags)
@@ -351,11 +351,11 @@ app::AppState WindowedApp::onInit() {
 
 	int screen = 0;
 	int modes = SDL_GetNumDisplayModes(screen);
-	Log::info("possible display modes:");
+	Log::debug("possible display modes:");
 	for (int i = 0; i < modes; i++) {
 		SDL_GetDisplayMode(screen, i, &displayMode);
 		const char *name = SDL_GetPixelFormatName(displayMode.format);
-		Log::info("%ix%i@%iHz %s", displayMode.w, displayMode.h, displayMode.refresh_rate, name);
+		Log::debug("%ix%i@%iHz %s", displayMode.w, displayMode.h, displayMode.refresh_rate, name);
 	}
 
 	// some platforms may override or hardcode the resolution - so
@@ -369,11 +369,11 @@ app::AppState WindowedApp::onInit() {
 	SDL_GetWindowSize(_window, &windowWidth, &windowHeight);
 	_windowDimension = glm::ivec2(windowWidth, windowHeight);
 
-	Log::info("resolution (%i:%i) (pixel)", _frameBufferDimension.x, _frameBufferDimension.y);
-	Log::info("resolution (%i:%i) (screen)", _windowDimension.x, _windowDimension.y);
-	Log::info("dpi factor: %f", _dpiFactor);
-	Log::info("dpi factor h: %f", _dpiHorizontalFactor);
-	Log::info("dpi factor v: %f", _dpiVerticalFactor);
+	Log::debug("resolution (%i:%i) (pixel)", _frameBufferDimension.x, _frameBufferDimension.y);
+	Log::debug("resolution (%i:%i) (screen)", _windowDimension.x, _windowDimension.y);
+	Log::debug("dpi factor: %f", _dpiFactor);
+	Log::debug("dpi factor h: %f", _dpiHorizontalFactor);
+	Log::debug("dpi factor v: %f", _dpiVerticalFactor);
 
 	const float scaleFactor = _frameBufferDimension.x / (float)_windowDimension.x;
 	video::init(_windowDimension.x, _windowDimension.y, scaleFactor);

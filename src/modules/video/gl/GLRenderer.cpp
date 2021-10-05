@@ -1831,7 +1831,7 @@ void setup() {
 		glMajor = version.majorVersion;
 		glMinor = version.minorVersion;
 	}
-	Log::info("Request gl context %i.%i", glMajor, glMinor);
+	Log::debug("Request gl context %i.%i", glMajor, glMinor);
 	GLVersion glv(glMajor, glMinor);
 	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
 		if (GLVersions[i].version == glv) {
@@ -1884,7 +1884,7 @@ float getScaleFactor() {
 bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &_priv::s.glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
-	Log::info("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
+	Log::debug("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
 
 	resize(windowWidth, windowHeight, scaleFactor);
 
@@ -1899,9 +1899,9 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	const char *glvendor = (const char*)glGetString(GL_VENDOR);
 	const char* glrenderer = (const char*)glGetString(GL_RENDERER);
 	const char* glversion = (const char*)glGetString(GL_VERSION);
-	Log::info("GL_VENDOR: %s", glvendor);
-	Log::info("GL_RENDERER: %s", glrenderer);
-	Log::info("GL_VERSION: %s", glversion);
+	Log::debug("GL_VENDOR: %s", glvendor);
+	Log::debug("GL_RENDERER: %s", glrenderer);
+	Log::debug("GL_VERSION: %s", glversion);
 	if (glvendor != nullptr) {
 		const core::String vendor(glvendor);
 		for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
@@ -1912,7 +1912,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 
 	for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
 		if (_priv::s.vendor[i]) {
-			Log::info("Found vendor: %s", _priv::VendorStrings[i]);
+			Log::debug("Found vendor: %s", _priv::VendorStrings[i]);
 		} else {
 			Log::debug("Didn't find vendor: %s", _priv::VendorStrings[i]);
 		}
@@ -1929,13 +1929,13 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		SDL_GL_SetSwapInterval(0);
 	}
 	if (SDL_GL_GetSwapInterval() == 0) {
-		Log::info("Deactivated vsync");
+		Log::debug("Deactivated vsync");
 	} else {
-		Log::info("Activated vsync");
+		Log::debug("Activated vsync");
 	}
 
 	if (hasFeature(Feature::DirectStateAccess)) {
-		Log::info("Use direct state access");
+		Log::debug("Use direct state access");
 	}
 
 	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
@@ -1948,17 +1948,17 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		Log::warn("Could not get FSAA context");
 		multisampling = false;
 	} else {
-		Log::info("Got FSAA context with %i buffers and %i samples", buffers, samples);
+		Log::debug("Got FSAA context with %i buffers and %i samples", buffers, samples);
 	}
 
 	int profile;
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile);
 	if (profile == SDL_GL_CONTEXT_PROFILE_CORE) {
-		Log::info("Got core profile");
+		Log::debug("Got core profile");
 	} else if (profile == SDL_GL_CONTEXT_PROFILE_ES) {
-		Log::info("Got ES profile");
+		Log::debug("Got ES profile");
 	} else if (profile == SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) {
-		Log::info("Got compatibility profile");
+		Log::debug("Got compatibility profile");
 	} else {
 		Log::warn("Unknown profile: %i", profile);
 	}
