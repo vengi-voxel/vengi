@@ -228,7 +228,7 @@ void MainWindow::dialog(const char *icon, const char *text) {
 	ImGui::SameLine();
 	ImGui::Spacing();
 	ImGui::SameLine();
-	ImGui::TextWrapped("%s", text);
+	ImGui::TextUnformatted(text);
 	ImGui::Spacing();
 	ImGui::Separator();
 }
@@ -308,7 +308,6 @@ void MainWindow::registerPopups() {
 	}
 
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
-		// TODO: dialog broken
 		dialog(ICON_FA_EXCLAMATION_TRIANGLE, "Failed to save the model!");
 		if (ImGui::Button(ICON_FA_CHECK " OK##failedsave")) {
 			ImGui::CloseCurrentPopup();
@@ -328,11 +327,11 @@ void MainWindow::registerPopups() {
 				afterLoad("");
 			}
 		}
+		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
 		if (ImGui::Button(ICON_FA_TIMES " Close##newscene")) {
 			ImGui::CloseCurrentPopup();
 		}
-		ImGui::SetItemDefaultFocus();
 		ImGui::EndPopup();
 	}
 }
