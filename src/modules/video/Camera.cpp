@@ -45,7 +45,7 @@ bool Camera::lookAt(const glm::vec3& position) {
 }
 
 void Camera::turn(float radians) {
-	if (fabs(radians) < 0.00001f) {
+	if (fabs((double)radians) < 0.00001) {
 		return;
 	}
 	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up);
@@ -53,7 +53,7 @@ void Camera::turn(float radians) {
 }
 
 void Camera::rotate(float radians, const glm::vec3& axis) {
-	if (fabs(radians) < 0.00001f) {
+	if (fabs((double)radians) < 0.00001) {
 		return;
 	}
 	const glm::quat& quat = glm::angleAxis(radians, axis);
@@ -131,7 +131,7 @@ void Camera::init(const glm::ivec2& position, const glm::ivec2& frameBufferSize,
 	_position = position;
 	_frameBufferSize = frameBufferSize;
 	_windowSize = windowSize;
-	_frameBufferAspectRatio = _frameBufferSize.x / static_cast<float>(_frameBufferSize.y);
+	_frameBufferAspectRatio = (float)_frameBufferSize.x / (float)_frameBufferSize.y;
 	_dirty = DIRTY_ALL;
 }
 
@@ -161,6 +161,8 @@ void Camera::rotate(const glm::vec3& radians) {
 		setPitch(radians.x);
 		setRoll(radians.z);
 		break;
+	case CameraType::Max:
+		break;
 	}
 }
 
@@ -184,7 +186,7 @@ void Camera::setPitch(float radians) {
 			curPitch = maxPitch;
 		}
 		if (glm::abs(curPitch + radians) > maxPitch) {
-			radians = copysign(maxPitch, curPitch) - curPitch;
+			radians = (float)copysign((double)maxPitch, (double)curPitch) - curPitch;
 		}
 	}
 	if (radians != 0) {
@@ -300,6 +302,8 @@ void Camera::updateProjectionMatrix() {
 	case CameraMode::Perspective:
 		_projectionMatrix = perspectiveMatrix();
 		break;
+	case CameraMode::Max:
+		break;
 	}
 	_invProjectionMatrix = glm::inverse(_projectionMatrix);
 }
@@ -314,7 +318,7 @@ void Camera::updateViewMatrix() {
 }
 
 math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
-	return screenRay(glm::vec2(pixelPos.x / (float)_frameBufferSize.x, pixelPos.y / (float)_frameBufferSize.y));
+	return screenRay(glm::vec2((float)pixelPos.x / (float)_frameBufferSize.x, (float)pixelPos.y / (float)_frameBufferSize.y));
 	/*const glm::vec2 newPos = glm::vec2(screenPos - _position) / glm::vec2(dimension());
 	return screenRay(newPos);*/
 }
@@ -344,10 +348,10 @@ glm::ivec2 Camera::worldToScreen(const glm::vec3& worldPos) const {
 	trans *= 0.5f / trans.w;
 	trans += glm::vec4(0.5f, 0.5f, 0.0f, 0.0f);
 	trans.y = 1.0f - trans.y;
-	trans.x *= _windowSize.x;
-	trans.y *= _windowSize.y;
-	trans.x += _position.x;
-	trans.y += _position.y;
+	trans.x *= (float)_windowSize.x;
+	trans.y *= (float)_windowSize.y;
+	trans.x += (float)_position.x;
+	trans.y += (float)_position.y;
 	return glm::ivec2(trans.x, trans.y);
 }
 
@@ -361,7 +365,7 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 	const float far = farPlane();
 	const float ratio = far / near;
 #if 1
-	const int8_t numSlices = splits * 2;
+	const int numSlices = splits * 2;
 	const float splitsf = (float)numSlices;
 	const float dist = far - near;
 	const float sliceWeightInv = 1.0f - sliceWeight;
@@ -369,8 +373,8 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 	sliceBuf[0] = near;
 	sliceBuf[numSlices - 1] = far;
 
-	for (uint8_t nearIdx = 2, farIdx = 1; nearIdx < numSlices; farIdx += 2, nearIdx += 2) {
-		const float si = float(int8_t(farIdx)) / splitsf;
+	for (int nearIdx = 2, farIdx = 1; nearIdx < numSlices; farIdx += 2, nearIdx += 2) {
+		const float si = (float)farIdx / splitsf;
 		const float nearp = sliceWeight * (near * glm::pow(ratio, si)) + sliceWeightInv * (near + dist * si);
 		sliceBuf[nearIdx] = nearp;
 		sliceBuf[farIdx] = nearp * 1.005f;
@@ -445,10 +449,10 @@ glm::vec4 Camera::sphereBoundingBox() const {
 }
 
 glm::mat4 Camera::orthogonalMatrix() const {
-	const float left = x();
-	const float bottom = y();
-	const float right = left + _windowSize.x;
-	const float top = bottom + _windowSize.y;
+	const float left = (float)x();
+	const float bottom = (float)y();
+	const float right = left + (float)_windowSize.x;
+	const float top = bottom + (float)_windowSize.y;
 	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
 	core_assert_msg(top > bottom, "Invalid dimension given: top must be greater than bottom but is %f", top);
 	return glm::ortho(left, right, top, bottom, nearPlane(), farPlane());
