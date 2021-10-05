@@ -45,6 +45,8 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 void Viewport::update() {
 	camera().setTarget(glm::vec3(sceneMgr().referencePosition()));
 
+	// TODO: render mode
+	// TODO: reference point
 	_hovered = false;
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);

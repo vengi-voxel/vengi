@@ -4,6 +4,7 @@ vengi (0.0.11.0-1) UNRELEASED; urgency=low
   * Added url command
   * Reduced memory allocations per frame
   * Added key bindings dialog
+  * Added notifications for warnings and errors in the ui
 
   * VoxEdit:
   * Removed old ui and switched to dearimgui

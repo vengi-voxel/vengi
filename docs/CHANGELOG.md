@@ -9,6 +9,7 @@ General:
    - Added url command
    - Reduced memory allocations per frame
    - Added key bindings dialog
+   - Added notifications for warnings and errors in the ui
 
 VoxEdit:
 
