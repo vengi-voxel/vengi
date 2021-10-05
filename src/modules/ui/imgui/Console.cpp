@@ -12,7 +12,7 @@ Console::Console() :
 
 void Console::addLogLine(int category, SDL_LogPriority priority, const char *message) {
 	Super::addLogLine(category, priority, message);
-	if (priority < SDL_LOG_PRIORITY_WARN) {
+	if (priority < SDL_LOG_PRIORITY_INFO) {
 		return;
 	}
 
