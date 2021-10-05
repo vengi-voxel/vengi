@@ -52,30 +52,36 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		int i = 0;
 		float usedHeight = 0;
 		bool colorHovered = false;
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		const ImU32 redColor = ImGui::GetColorU32(core::Color::Red);
+		const ImU32 yellowColor = ImGui::GetColorU32(core::Color::Yellow);
+		const ImU32 darkRedColor = ImGui::GetColorU32(core::Color::DarkRed);
+		const ImU32 blackColor = ImGui::GetColorU32(core::Color::Black);
+
 		for (int y = 0; y < amountY; ++y) {
+			const float transY = pos.y + (float)y * size;
 			for (int x = 0; x < amountX; ++x) {
 				if (i >= max) {
 					break;
 				}
 				const float transX = pos.x + (float)x * size;
-				const float transY = pos.y + (float)y * size;
 				const ImVec2 v1(transX, transY);
 				const ImVec2 v2(transX + (float)size, transY + (float)size);
-				ImDrawList* drawList = ImGui::GetWindowDrawList();
 				drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(colors[i]));
 
 				if (!colorHovered && ImGui::IsMouseHoveringRect(v1, v2)) {
 					colorHovered = true;
-					drawList->AddRect(v1, v2, ImGui::GetColorU32(core::Color::Red));
+					drawList->AddRect(v1, v2, redColor);
 					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 						sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, i));
 					}
 				} else if (i == voxelColorTraceIndex) {
-					drawList->AddRect(v1, v2, ImGui::GetColorU32(core::Color::Yellow));
+					drawList->AddRect(v1, v2, yellowColor);
 				} else if (i == voxelColorSelectedIndex) {
-					drawList->AddRect(v1, v2, ImGui::GetColorU32(core::Color::DarkRed));
+					drawList->AddRect(v1, v2, darkRedColor);
 				} else {
-					drawList->AddRect(v1, v2, ImGui::GetColorU32(core::Color::Black));
+					drawList->AddRect(v1, v2, blackColor);
 				}
 				++i;
 			}
