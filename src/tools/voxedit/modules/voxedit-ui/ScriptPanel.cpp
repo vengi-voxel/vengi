@@ -104,7 +104,13 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 		if (ImGui::Button("New##scriptpanel")) {
 			_scriptEditor = true;
 			_activeScriptFilename = "";
-			_textEditor.SetText("");
+			if (!_scripts.empty()) {
+				const core::String& scriptName = _scripts[0].filename;
+				const core::String& script = sceneMgr().luaGenerator().load(scriptName);
+				_textEditor.SetText(script);
+			} else {
+				_textEditor.SetText("");
+			}
 		}
 		ImGui::TooltipText("Create a new lua script");
 		if (validScriptIndex) {
