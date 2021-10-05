@@ -63,12 +63,12 @@ enum ImGuiToastPos_ {
 class ImGuiToast {
 private:
 	ImGuiToastType _type = ImGuiToastType_None;
-	char _content[NOTIFY_MAX_MSG_LENGTH];
+	core::String _message;
 	int _dismissTime = NOTIFY_DEFAULT_DISMISS;
 	uint64_t _creationTime = 0;
 
 public:
-	ImGuiToast(ImGuiToastType type, const char *message);
+	ImGuiToast(ImGuiToastType type, const core::String &message);
 
 	const char *defaultTitle() const;
 	ImGuiToastType type() const;

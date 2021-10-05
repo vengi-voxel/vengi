@@ -2,14 +2,13 @@
 #include "SDL_stdinc.h"
 #include "core/Trace.h"
 
-ImGuiToast::ImGuiToast(ImGuiToastType type, const char *message) {
+ImGuiToast::ImGuiToast(ImGuiToastType type, const core::String &message) {
 	IM_ASSERT(type < ImGuiToastType_COUNT);
 
 	_type = type;
 	_dismissTime = NOTIFY_DEFAULT_DISMISS;
 	_creationTime = SDL_GetTicks();
-
-	SDL_strlcpy(_content, message, sizeof(_content));
+	_message = message;
 }
 
 const char *ImGuiToast::defaultTitle() const {
@@ -63,7 +62,7 @@ const char *ImGuiToast::icon() const {
 }
 
 const char *ImGuiToast::content() const {
-	return _content;
+	return _message.c_str();
 }
 
 uint32_t ImGuiToast::elapsedTime() const {
