@@ -51,8 +51,8 @@ You can also modify or add key bindings to commands. Type `bindlist` to the cons
 
 You can either log via syslog (on unix) or to stdout (this might of course differ from platform to platform).
 
-The log level is configured by the `core_loglevel` variable. The lower the value, the more you see. `0` is the highest log level
-(trace).
+The log level is configured by the `core_loglevel` variable. The lower the value, the more you see. `1` is the highest log level
+(trace), where 5 is the lowest log level (fatal error).
 
 ## General
 

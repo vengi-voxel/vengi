@@ -14,7 +14,7 @@
 class Log {
 public:
 	enum class Level {
-		None = -1,
+		None = 0,
 		Trace = SDL_LOG_PRIORITY_VERBOSE,
 		Debug = SDL_LOG_PRIORITY_DEBUG,
 		Info = SDL_LOG_PRIORITY_INFO,

@@ -205,6 +205,7 @@ void App::onFrame() {
 
 AppState App::onConstruct() {
 	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
+	logVar->setHelp("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors.");
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
 	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
 	registerArg("--loglevel").setShort("-l").setDescription("Change log level from 1 (trace) to 6 (only critical)");
@@ -503,8 +504,8 @@ void App::usage() const {
 	Log::info("The environment variable can be either lower case or upper case. For example it will work if you");
 	Log::info("have CL_WIDTH or cl_width exported. The lower case variant has the higher priority.");
 	Log::info("Examples:");
-	Log::info("export the variable CORE_LOGLEVEL with the value 0 to override previous values.");
-	Log::info("%s -set core_loglevel 0.", _appname.c_str());
+	Log::info("export the variable CORE_LOGLEVEL with the value 1 to override previous values.");
+	Log::info("%s -set core_loglevel 1.", _appname.c_str());
 }
 
 void App::onAfterRunning() {
