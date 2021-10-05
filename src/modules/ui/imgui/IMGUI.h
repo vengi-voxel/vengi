@@ -24,6 +24,7 @@ IMGUI_API bool InputVec3(const char* label, glm::ivec3& vec, ImGuiInputTextFlags
 IMGUI_API bool InputVec3(const char* label, glm::vec3& vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVarFloat(const char* label, const core::VarPtr& var, float step = 0.0f, float step_fast = 0.0f, ImGuiInputTextFlags extra_flags = 0);
+IMGUI_API bool InputVarFloat(const char* label, const char *varName, float step = 0.0f, float step_fast = 0.0f, ImGuiInputTextFlags extra_flags = 0);
 IMGUI_API bool InputVarInt(const char* label, const core::VarPtr& var, int step = 1, int step_fast = 100, ImGuiInputTextFlags extra_flags = 0);
 IMGUI_API bool InputVarInt(const char* label, const char* varName, int step = 1, int step_fast = 100, ImGuiInputTextFlags extra_flags = 0);
 IMGUI_API bool CheckboxVar(const char* label, const core::VarPtr& var);

@@ -104,6 +104,11 @@ bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float
 	return false;
 }
 
+bool InputVarFloat(const char* label, const char *varName, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
+	core::VarPtr var = core::Var::getSafe(varName);
+	return InputVarFloat(label, var, step, step_fast, extra_flags);
+}
+
 bool InputVec2(const char* label, glm::ivec2& vec, ImGuiInputTextFlags flags) {
 	return InputInt2(label, glm::value_ptr(vec), flags);
 }
