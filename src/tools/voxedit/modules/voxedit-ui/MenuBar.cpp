@@ -59,6 +59,7 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 		if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
 			actionMenuItem("Reset camera", "resetcamera", listener);
 			actionMenuItem("Scene view", "togglescene", listener);
+			actionMenuItem("Console", "toggleconsole", listener);
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu(ICON_FK_INFO " About")) {
