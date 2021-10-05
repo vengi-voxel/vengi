@@ -64,9 +64,7 @@ glm::ivec2 Console::stringSize(const char* s, int length) {
 }
 
 void Console::renderNotifications() {
-	if (ImGui::RenderNotifications(_notifications) > 0) {
-		_consoleActive = false;
-	}
+	ImGui::RenderNotifications(_notifications);
 }
 
 }
