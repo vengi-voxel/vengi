@@ -467,7 +467,7 @@ bool parse(const core::String& buffer, const core::String& computeFilename, core
 			break;
 		}
 	}
-	Log::info("Found %i kernels", (int)kernels.size());
+	Log::debug("Found %i kernels", (int)kernels.size());
 	simplecpp::cleanup(included);
 	return true;
 }

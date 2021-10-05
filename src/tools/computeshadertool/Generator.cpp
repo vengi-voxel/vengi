@@ -553,7 +553,7 @@ bool generateSrc(const io::FilesystemPtr& filesystem,
 	src = core::string::replaceAll(src, "$createkernels$", createKernels);
 	src = core::string::replaceAll(src, "$shaderbuffer$", maxStringLength(shaderBuffer));
 	const core::String targetFile = sourceDirectory + filename + ".h" + postfix;
-	Log::info("Generate shader bindings for %s at %s", _name.c_str(), targetFile.c_str());
+	Log::debug("Generate shader bindings for %s at %s", _name.c_str(), targetFile.c_str());
 	if (!filesystem->syswrite(targetFile, src)) {
 		Log::error("Failed to write %s", targetFile.c_str());
 		return false;
