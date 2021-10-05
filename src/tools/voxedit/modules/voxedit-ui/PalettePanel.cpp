@@ -48,11 +48,13 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		const ImVec2& mins = ImGui::GetWindowContentRegionMin();
 		const int amountX = (int)((maxs.x - mins.x) / size);
 		const int amountY = (int)((maxs.y - mins.y) / size);
-		const int max = colors.size();
+		const int max = (int)colors.size();
 		int i = 0;
 		float usedHeight = 0;
 		bool colorHovered = false;
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		const ImDrawListFlags backupFlags = drawList->Flags;
+		drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
 
 		const ImU32 redColor = ImGui::GetColorU32(core::Color::Red);
 		const ImU32 yellowColor = ImGui::GetColorU32(core::Color::Yellow);
@@ -90,6 +92,9 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			}
 			usedHeight += size;
 		}
+
+		// restore the draw list flags from above
+		drawList->Flags = backupFlags;
 
 		ImGui::SetCursorPosY(pos.y + usedHeight);
 		ImGui::Text("Color: %i (voxel %i)", voxelColorSelectedIndex, voxelColorTraceIndex);
