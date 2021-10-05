@@ -65,6 +65,159 @@ bool FileDialog::readDir() {
 	return true;
 }
 
+void FileDialog::directoryPanel() {
+	ImGui::BeginChild("Directories##filedialog", ImVec2(ImGui::Size(200), ImGui::Size(300)), true,
+					  ImGuiWindowFlags_HorizontalScrollbar);
+
+	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
+	if (ImGui::Selectable("..", false, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(contentRegionWidth, 0))) {
+		if (ImGui::IsMouseDoubleClicked(0)) {
+			fileDialogCurrentPath = io::filesystem()->absolutePath(fileDialogCurrentPath + "/..");
+			core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
+			readDir();
+		}
+	}
+	for (size_t i = 0; i < entities.size(); ++i) {
+		if (entities[i].type != io::Filesystem::DirEntry::Type::dir) {
+			continue;
+		}
+		if (ImGui::Selectable(entities[i].name.c_str(), i == fileDialogFolderSelectIndex,
+							  ImGuiSelectableFlags_AllowDoubleClick, ImVec2(contentRegionWidth, 0))) {
+			fileDialogCurrentFile = "";
+			if (ImGui::IsMouseDoubleClicked(0)) {
+				fileDialogCurrentPath = assemblePath(fileDialogCurrentPath, entities[i].name);
+				core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
+				fileDialogFolderSelectIndex = 0;
+				fileDialogFileSelectIndex = 0;
+				ImGui::SetScrollHereY(0.0f);
+				fileDialogCurrentFolder = "";
+				fileDialogError[0] = '\0';
+				readDir();
+				break;
+			} else {
+				fileDialogFolderSelectIndex = i;
+				fileDialogCurrentFolder = entities[i].name;
+			}
+		}
+	}
+	ImGui::EndChild();
+}
+
+void FileDialog::filesPanel() {
+	ImGui::BeginChild("Files##1", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::Size(300)), true,
+					  ImGuiWindowFlags_HorizontalScrollbar);
+	ImGui::Columns(4);
+	static float initialSpacingColumn3 = ImGui::Size(120.0f);
+	if (initialSpacingColumn3 > 0) {
+		ImGui::SetColumnWidth(3, initialSpacingColumn3);
+		initialSpacingColumn3 = 0.0f;
+	}
+	static float initialSpacingColumn1 = ImGui::Size(80.0f);
+	if (initialSpacingColumn1 > 0) {
+		ImGui::SetColumnWidth(1, initialSpacingColumn1);
+		initialSpacingColumn1 = 0.0f;
+	}
+	static float initialSpacingColumn2 = ImGui::Size(80.0f);
+	if (initialSpacingColumn2 > 0) {
+		ImGui::SetColumnWidth(2, initialSpacingColumn2);
+		initialSpacingColumn2 = 0.0f;
+	}
+	if (ImGui::Selectable("File")) {
+		sizeSortOrder = FileDialogSortOrder::None;
+		dateSortOrder = FileDialogSortOrder::None;
+		typeSortOrder = FileDialogSortOrder::None;
+		fileNameSortOrder =
+			(fileNameSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
+	}
+	ImGui::NextColumn();
+	if (ImGui::Selectable("Size")) {
+		fileNameSortOrder = FileDialogSortOrder::None;
+		dateSortOrder = FileDialogSortOrder::None;
+		typeSortOrder = FileDialogSortOrder::None;
+		sizeSortOrder =
+			(sizeSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
+	}
+	ImGui::NextColumn();
+	if (ImGui::Selectable("Type")) {
+		fileNameSortOrder = FileDialogSortOrder::None;
+		dateSortOrder = FileDialogSortOrder::None;
+		sizeSortOrder = FileDialogSortOrder::None;
+		typeSortOrder =
+			(typeSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
+	}
+	ImGui::NextColumn();
+	if (ImGui::Selectable("Date")) {
+		fileNameSortOrder = FileDialogSortOrder::None;
+		sizeSortOrder = FileDialogSortOrder::None;
+		typeSortOrder = FileDialogSortOrder::None;
+		dateSortOrder =
+			(dateSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
+	}
+	ImGui::NextColumn();
+	ImGui::Separator();
+
+	static auto nameSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+		if (fileNameSortOrder == FileDialogSortOrder::Down) {
+			return a->name > b->name;
+		}
+		return a->name < b->name;
+	};
+
+	static auto sizeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+		if (sizeSortOrder == FileDialogSortOrder::Down) {
+			return a->size > b->size;
+		}
+		return a->size < b->size;
+	};
+
+	static auto extensionSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+		const core::String &aext = core::string::extractExtension(a->name);
+		const core::String &bext = core::string::extractExtension(b->name);
+		if (typeSortOrder == FileDialogSortOrder::Down) {
+			return aext > bext;
+		}
+		return aext < bext;
+	};
+
+	static auto mtimeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+		if (dateSortOrder == FileDialogSortOrder::Down) {
+			return a->mtime > b->mtime;
+		}
+		return a->mtime < b->mtime;
+	};
+
+	// Sort files
+	if (fileNameSortOrder != FileDialogSortOrder::None) {
+		core::sort(files.begin(), files.end(), nameSorter);
+	} else if (sizeSortOrder != FileDialogSortOrder::None) {
+		core::sort(files.begin(), files.end(), sizeSorter);
+	} else if (typeSortOrder != FileDialogSortOrder::None) {
+		core::sort(files.begin(), files.end(), extensionSorter);
+	} else if (dateSortOrder != FileDialogSortOrder::None) {
+		core::sort(files.begin(), files.end(), mtimeSorter);
+	}
+
+	for (size_t i = 0; i < files.size(); ++i) {
+		if (ImGui::Selectable(files[i]->name.c_str(), i == fileDialogFileSelectIndex,
+							  ImGuiSelectableFlags_AllowDoubleClick,
+							  ImVec2(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x, 0))) {
+			fileDialogFileSelectIndex = i;
+			fileDialogCurrentFile = files[i]->name;
+			fileDialogCurrentFolder = "";
+			fileDialogError[0] = '\0';
+		}
+		ImGui::NextColumn();
+		ImGui::TextUnformatted(core::string::humanSize(files[i]->size).c_str());
+		ImGui::NextColumn();
+		ImGui::TextUnformatted(core::string::extractExtension(files[i]->name).c_str());
+		ImGui::NextColumn();
+		const core::String &lastModified = core::TimeProvider::toString(files[i]->mtime);
+		ImGui::TextUnformatted(lastModified.c_str());
+		ImGui::NextColumn();
+	}
+	ImGui::EndChild();
+}
+
 // TODO: make filters selectable
 // TODO: list registered data paths from filesystem
 // TODO: allow to specify the starting directory
@@ -90,163 +243,17 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 		if (ImGui::BeginPopupModal(title, nullptr)) {
 			ImGui::Text("%s", fileDialogCurrentPath.c_str());
 
-			ImGui::BeginChild("Directories##1", ImVec2(ImGui::Size(200), ImGui::Size(300)), true,
-							  ImGuiWindowFlags_HorizontalScrollbar);
-
-			const float contentRegionWidth =
-				ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
-			if (ImGui::Selectable("..", false, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(contentRegionWidth, 0))) {
-				if (ImGui::IsMouseDoubleClicked(0)) {
-					fileDialogCurrentPath = io::filesystem()->absolutePath(fileDialogCurrentPath + "/..");
-					core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
-					readDir();
-				}
-			}
-			for (size_t i = 0; i < entities.size(); ++i) {
-				if (entities[i].type != io::Filesystem::DirEntry::Type::dir) {
-					continue;
-				}
-				if (ImGui::Selectable(entities[i].name.c_str(), i == fileDialogFolderSelectIndex,
-									  ImGuiSelectableFlags_AllowDoubleClick, ImVec2(contentRegionWidth, 0))) {
-					fileDialogCurrentFile = "";
-					if (ImGui::IsMouseDoubleClicked(0)) {
-						fileDialogCurrentPath = assemblePath(fileDialogCurrentPath, entities[i].name);
-						core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
-						fileDialogFolderSelectIndex = 0;
-						fileDialogFileSelectIndex = 0;
-						ImGui::SetScrollHereY(0.0f);
-						fileDialogCurrentFolder = "";
-						fileDialogError[0] = '\0';
-						readDir();
-						break;
-					} else {
-						fileDialogFolderSelectIndex = i;
-						fileDialogCurrentFolder = entities[i].name;
-					}
-				}
-			}
-			ImGui::EndChild();
+			directoryPanel();
 
 			ImGui::SameLine();
 
-			ImGui::BeginChild("Files##1", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::Size(300)), true,
-							  ImGuiWindowFlags_HorizontalScrollbar);
-			ImGui::Columns(4);
-			static float initialSpacingColumn3 = ImGui::Size(120.0f);
-			if (initialSpacingColumn3 > 0) {
-				ImGui::SetColumnWidth(3, initialSpacingColumn3);
-				initialSpacingColumn3 = 0.0f;
-			}
-			static float initialSpacingColumn1 = ImGui::Size(80.0f);
-			if (initialSpacingColumn1 > 0) {
-				ImGui::SetColumnWidth(1, initialSpacingColumn1);
-				initialSpacingColumn1 = 0.0f;
-			}
-			static float initialSpacingColumn2 = ImGui::Size(80.0f);
-			if (initialSpacingColumn2 > 0) {
-				ImGui::SetColumnWidth(2, initialSpacingColumn2);
-				initialSpacingColumn2 = 0.0f;
-			}
-			if (ImGui::Selectable("File")) {
-				sizeSortOrder = FileDialogSortOrder::None;
-				dateSortOrder = FileDialogSortOrder::None;
-				typeSortOrder = FileDialogSortOrder::None;
-				fileNameSortOrder = (fileNameSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up
-																					: FileDialogSortOrder::Down);
-			}
-			ImGui::NextColumn();
-			if (ImGui::Selectable("Size")) {
-				fileNameSortOrder = FileDialogSortOrder::None;
-				dateSortOrder = FileDialogSortOrder::None;
-				typeSortOrder = FileDialogSortOrder::None;
-				sizeSortOrder =
-					(sizeSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
-			}
-			ImGui::NextColumn();
-			if (ImGui::Selectable("Type")) {
-				fileNameSortOrder = FileDialogSortOrder::None;
-				dateSortOrder = FileDialogSortOrder::None;
-				sizeSortOrder = FileDialogSortOrder::None;
-				typeSortOrder =
-					(typeSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
-			}
-			ImGui::NextColumn();
-			if (ImGui::Selectable("Date")) {
-				fileNameSortOrder = FileDialogSortOrder::None;
-				sizeSortOrder = FileDialogSortOrder::None;
-				typeSortOrder = FileDialogSortOrder::None;
-				dateSortOrder =
-					(dateSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
-			}
-			ImGui::NextColumn();
-			ImGui::Separator();
-
-			static auto nameSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
-				if (fileNameSortOrder == FileDialogSortOrder::Down) {
-					return a->name > b->name;
-				}
-				return a->name < b->name;
-			};
-
-			static auto sizeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
-				if (sizeSortOrder == FileDialogSortOrder::Down) {
-					return a->size > b->size;
-				}
-				return a->size < b->size;
-			};
-
-			static auto extensionSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
-				const core::String &aext = core::string::extractExtension(a->name);
-				const core::String &bext = core::string::extractExtension(b->name);
-				if (typeSortOrder == FileDialogSortOrder::Down) {
-					return aext > bext;
-				}
-				return aext < bext;
-			};
-
-			static auto mtimeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
-				if (dateSortOrder == FileDialogSortOrder::Down) {
-					return a->mtime > b->mtime;
-				}
-				return a->mtime < b->mtime;
-			};
-
-			// Sort files
-			if (fileNameSortOrder != FileDialogSortOrder::None) {
-				core::sort(files.begin(), files.end(), nameSorter);
-			} else if (sizeSortOrder != FileDialogSortOrder::None) {
-				core::sort(files.begin(), files.end(), sizeSorter);
-			} else if (typeSortOrder != FileDialogSortOrder::None) {
-				core::sort(files.begin(), files.end(), extensionSorter);
-			} else if (dateSortOrder != FileDialogSortOrder::None) {
-				core::sort(files.begin(), files.end(), mtimeSorter);
-			}
-
-			for (size_t i = 0; i < files.size(); ++i) {
-				if (ImGui::Selectable(
-						files[i]->name.c_str(), i == fileDialogFileSelectIndex, ImGuiSelectableFlags_AllowDoubleClick,
-						ImVec2(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x, 0))) {
-					fileDialogFileSelectIndex = i;
-					fileDialogCurrentFile = files[i]->name;
-					fileDialogCurrentFolder = "";
-					fileDialogError[0] = '\0';
-				}
-				ImGui::NextColumn();
-				ImGui::TextUnformatted(core::string::humanSize(files[i]->size).c_str());
-				ImGui::NextColumn();
-				ImGui::TextUnformatted(core::string::extractExtension(files[i]->name).c_str());
-				ImGui::NextColumn();
-				const core::String &lastModified = core::TimeProvider::toString(files[i]->mtime);
-				ImGui::TextUnformatted(lastModified.c_str());
-				ImGui::NextColumn();
-			}
-			ImGui::EndChild();
+			filesPanel();
 
 			core::String selectedFilePath =
 				assemblePath(fileDialogCurrentPath,
 							 fileDialogCurrentFolder.size() > 0 ? fileDialogCurrentFolder : fileDialogCurrentFile);
 			ImGui::PushItemWidth(724);
-			ImGui::InputText("", selectedFilePath.c_str(), selectedFilePath.size(), ImGuiInputTextFlags_ReadOnly);
+			ImGui::InputText("", &selectedFilePath, ImGuiInputTextFlags_ReadOnly);
 			if (type == video::WindowedApp::OpenFileMode::Save) {
 				ImGui::InputText("Filename", &fileDialogCurrentFile);
 			}

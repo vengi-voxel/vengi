@@ -36,6 +36,8 @@ private:
 
 	void applyFilter();
 	bool readDir();
+	void directoryPanel();
+	void filesPanel();
 
 public:
 	/**
