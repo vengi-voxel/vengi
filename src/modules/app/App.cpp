@@ -175,11 +175,16 @@ void App::onFrame() {
 				onAfterRunning();
 			}
 			const double framesPerSecondsCap = _framesPerSecondsCap->floatVal();
-			if (framesPerSecondsCap >= 1.0 && _nextFrameSeconds > now) {
-				const double delay = _nextFrameSeconds - now;
-				_nextFrameSeconds = now + 1.0 / framesPerSecondsCap;
-				if (delay > 0.0) {
-					SDL_Delay(delay);
+			if (framesPerSecondsCap >= 1.0) {
+				if (_nextFrameSeconds > now) {
+					const double delay = _nextFrameSeconds - now;
+					_nextFrameSeconds = now + 1.0 / framesPerSecondsCap;
+					if (delay > 0.0) {
+						const uint32_t milliDelay = (uint32_t)(delay * 1000.0);
+						SDL_Delay(milliDelay);
+					}
+				} else {
+					_nextFrameSeconds = now + 1.0 / framesPerSecondsCap;
 				}
 			}
 			break;
