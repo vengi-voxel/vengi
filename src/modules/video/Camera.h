@@ -21,17 +21,20 @@ namespace video {
 
 enum class CameraType {
 	FirstPerson,
-	Free
+	Free,
+	Max
 };
 
 enum class CameraRotationType {
 	Target,
-	Eye
+	Eye,
+	Max
 };
 
 enum class CameraMode {
 	Perspective,
-	Orthogonal
+	Orthogonal,
+	Max
 };
 
 /**
