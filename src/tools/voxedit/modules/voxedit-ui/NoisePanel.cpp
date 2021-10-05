@@ -10,7 +10,7 @@ namespace voxedit {
 
 void NoisePanel::update(const char *title) {
 	if (ImGui::Begin(title)) {
-		core_trace_scoped(NoisePanel)
+		core_trace_scoped(NoisePanel);
 		ImGui::InputInt("Octaves##noise", &_noiseData.octaves);
 		ImGui::InputFloat("Frequency##noise", &_noiseData.frequency);
 		ImGui::InputFloat("Lacunarity##noise", &_noiseData.lacunarity);

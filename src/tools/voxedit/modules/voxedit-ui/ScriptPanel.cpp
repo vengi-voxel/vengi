@@ -24,7 +24,7 @@ void ScriptPanel::reloadScriptParameters(const core::String& script) {
 
 void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::imgui::IMGUIApp* app) {
 	if (ImGui::Begin(title)) {
-		core_trace_scoped(ScriptPanel)
+		core_trace_scoped(ScriptPanel);
 		if (_scripts.empty()) {
 			_scripts = sceneMgr().luaGenerator().listScripts();
 		}

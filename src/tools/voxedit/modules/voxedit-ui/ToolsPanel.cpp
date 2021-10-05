@@ -18,7 +18,7 @@ bool ToolsPanel::modifierRadioButton(const char *title, ModifierType type) {
 
 void ToolsPanel::update(const char *title) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
-		core_trace_scoped(ToolsPanel)
+		core_trace_scoped(ToolsPanel);
 		modifierRadioButton(ICON_FA_PEN " Place", ModifierType::Place);
 		modifierRadioButton(ICON_FA_EXPAND " Select", ModifierType::Select);
 		modifierRadioButton(ICON_FA_ERASER " Delete", ModifierType::Delete);
