@@ -66,9 +66,6 @@ protected:
 	static VarMap _vars;
 	static ReadWriteLock _lock;
 
-	core::VarPtr _volume;
-	core::VarPtr _musicVolume;
-
 	const core::String _name;
 	const char* _help = nullptr;
 	uint32_t _flags;
