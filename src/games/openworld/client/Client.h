@@ -121,5 +121,3 @@ public:
 inline client::CooldownHandler& Client::cooldownHandler() {
 	return _cooldownHandler;
 }
-
-typedef std::shared_ptr<Client> ClientPtr;

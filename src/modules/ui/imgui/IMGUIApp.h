@@ -10,8 +10,6 @@
 #include "video/Buffer.h"
 #include "RenderShaders.h"
 #include "Console.h"
-#include <map>
-#include <stack>
 #include "core/collection/Array.h"
 
 struct SDL_Cursor;
