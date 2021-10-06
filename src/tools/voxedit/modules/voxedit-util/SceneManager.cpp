@@ -401,20 +401,24 @@ void SceneManager::crop() {
 	modified(layerId, newVolume->region());
 }
 
-void SceneManager::resize(const glm::ivec3& size) {
+void SceneManager::resize(int layerId, const glm::ivec3& size) {
+	voxel::RawVolume* newVolume = voxedit::tool::resize(volume(layerId), size);
+	if (newVolume == nullptr) {
+		return;
+	}
+	setNewVolume(layerId, newVolume, false);
+	if (glm::all(glm::greaterThanEqual(size, glm::zero<glm::ivec3>()))) {
+		// we don't have to reextract a mesh if only new empty voxels were added.
+		modified(layerId, voxel::Region::InvalidRegion);
+	} else {
+		modified(layerId, newVolume->region());
+	}
+}
+
+void SceneManager::resizeAll(const glm::ivec3& size) {
 	const glm::ivec3 refPos = referencePosition();
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
-		voxel::RawVolume* newVolume = voxedit::tool::resize(volume(layerId), size);
-		if (newVolume == nullptr) {
-			return;
-		}
-		setNewVolume(layerId, newVolume, false);
-		if (glm::all(glm::greaterThanEqual(size, glm::zero<glm::ivec3>()))) {
-			// we don't have to reextract a mesh if only new empty voxels were added.
-			modified(layerId, voxel::Region::InvalidRegion);
-		} else {
-			modified(layerId, newVolume->region());
-		}
+		resize(layerId, size);
 	});
 	if (region().containsPoint(refPos)) {
 		setReferencePosition(refPos);
@@ -1068,18 +1072,18 @@ void SceneManager::construct() {
 	}).setHelp("Set the reference position to the current cursor position").setBindingContext(BindingContext::Model);
 
 	command::Command::registerCommand("resize", [this] (const command::CmdArgs& args) {
-		const int argc = args.size();
+		const int argc = (int)args.size();
 		if (argc == 1) {
 			const int size = core::string::toInt(args[0]);
-			resize(glm::ivec3(size));
+			resizeAll(glm::ivec3(size));
 		} else if (argc == 3) {
 			glm::ivec3 size;
 			for (int i = 0; i < argc; ++i) {
 				size[i] = core::string::toInt(args[i]);
 			}
-			resize(size);
+			resizeAll(size);
 		} else {
-			resize(glm::ivec3(1));
+			resizeAll(glm::ivec3(1));
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
 

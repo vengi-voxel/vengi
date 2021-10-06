@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "command/CommandHandler.h"
+#include "core/String.h"
 
 namespace voxedit {
 

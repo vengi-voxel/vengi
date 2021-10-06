@@ -184,7 +184,7 @@ private:
 	void colorToNewLayer(const voxel::Voxel voxelColor);
 	void crop();
 	void scale(int layerId);
-	void resize(const glm::ivec3& size);
+	void resizeAll(const glm::ivec3& size);
 	int size() const;
 
 	/**
@@ -206,11 +206,6 @@ private:
 	 * @brief Move the voxels inside the volume regions
 	 */
 	void move(int layerId, const glm::ivec3& m);
-
-	/**
-	 * @brief Shift the whole volume by the given voxel amount
-	 */
-	void shift(int layerId, const glm::ivec3& m);
 
 	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
 	void toggleEditMode();
@@ -236,6 +231,13 @@ public:
 	 * @return The full region of all layers of the whole scene
 	 */
 	voxel::Region region() const;
+
+	void resize(int layerId, const glm::ivec3& size);
+
+	/**
+	 * @brief Shift the whole volume by the given voxel amount
+	 */
+	void shift(int layerId, const glm::ivec3& m);
 
 	void setGizmoPosition();
 
