@@ -55,7 +55,8 @@ bool VXRFormat::importChildOld(io::FileStream& stream, uint32_t version) {
 	uint32_t frameCount;
 	wrap(stream.readInt(frameCount))
 	for (uint32_t i = 0u; i < frameCount; ++i) {
-		wrap(stream.readInt(dummy)) // frame index
+		uint32_t frame;
+		wrap(stream.readInt(frame)) // frame index
 		wrap(stream.readInt(dummy)) // ???
 		if (version > 1) {
 			stream.readBool();

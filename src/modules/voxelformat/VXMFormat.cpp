@@ -9,24 +9,113 @@
 #include "core/GLM.h"
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include <glm/common.hpp>
 
 namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (size: %i) (line %i)", (int)stream.remaining(), (int)stream.size(), (int)__LINE__); \
+		return false; \
+	}
+
+#define wrapDelete(read, mem) \
+	if ((read) != 0) { \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (size: %i) (line %i)", (int)stream.remaining(), (int)stream.size(), (int)__LINE__); \
+		delete (mem); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) != true) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (size: %i) (line %i)", (int)stream.remaining(), (int)stream.size(), (int)__LINE__); \
 		return false; \
 	}
 
+bool VXMFormat::writeRLE(io::FileStream &stream, int length, voxel::Voxel &voxel) const {
+	if (length == 0) {
+		return true;
+	}
+	wrapBool(stream.addByte(length))
+	if (voxel::isAir(voxel.getMaterial())) {
+		wrapBool(stream.addByte(0xFF))
+	} else {
+		// TODO: if the color is 255 here - and we are no empty voxel, we are in trouble.
+		wrapBool(stream.addByte(voxel.getColor()))
+	}
+	return true;
+}
+
 bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
-	return false;
+	io::FileStream stream(file.get());
+	wrapBool(stream.addInt(FourCC('V','X','M', '4')));
+	wrapBool(stream.addInt(0)); // texture dim x
+	wrapBool(stream.addInt(0)); // texture dim y
+	wrapBool(stream.addInt(0)); // texamount
+
+	for (int i = 0; i < 6; ++i) {
+		wrapBool(stream.addInt(0)); // quadamount
+	}
+
+	const MaterialColorArray& materialColors = getMaterialColors();
+
+	RawVolume* mergedVolume = merge(volumes);
+	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
+	const voxel::Region& region = mergedVolume->region();
+	RawVolume::Sampler sampler(mergedVolume);
+	const glm::ivec3& mins = region.getLowerCorner();
+	const glm::ivec3& maxs = region.getUpperCorner();
+	const uint32_t width = region.getWidthInVoxels();
+	const uint32_t height = region.getHeightInVoxels();
+	const uint32_t depth = region.getDepthInVoxels();
+
+	// we have to flip depth with height for our own coordinate system
+	wrapBool(stream.addInt(width))
+	wrapBool(stream.addInt(height))
+	wrapBool(stream.addInt(depth))
+
+	int numColors = (int)materialColors.size();
+	if (numColors > 254) {
+		numColors = 254;
+	}
+	if (numColors <= 0) {
+		return false;
+	}
+	wrapBool(stream.addByte(numColors))
+	for (int i = 0; i < numColors; ++i) {
+		const glm::u8vec4 &matcolor = core::Color::getRGBAVec(materialColors[i]);
+		wrapBool(stream.addByte(matcolor.b))
+		wrapBool(stream.addByte(matcolor.g))
+		wrapBool(stream.addByte(matcolor.r))
+		wrapBool(stream.addByte(matcolor.a))
+		wrapBool(stream.addBool(false)) // emissive
+	}
+	uint32_t rleCount = 0u;
+	voxel::Voxel prevVoxel;
+
+	for (uint32_t x = 0u; x < width; ++x) {
+		for (uint32_t y = 0u; y < height; ++y) {
+			for (uint32_t z = 0u; z < depth; ++z) {
+				core_assert_always(sampler.setPosition(maxs.x - x, mins.y + y, mins.z + z));
+				const voxel::Voxel& voxel = sampler.voxel();
+				if (prevVoxel.getColor() != voxel.getColor() || rleCount >= 255) {
+					wrapBool(writeRLE(stream, rleCount, prevVoxel))
+					prevVoxel = voxel;
+					rleCount = 0;
+				}
+				++rleCount;
+			}
+		}
+	}
+	if (rleCount > 0) {
+		wrapBool(writeRLE(stream, rleCount, prevVoxel))
+	}
+
+	wrapBool(stream.addByte(0))
+	wrapBool(stream.addByte(0))
+
+	return true;
 }
 
 bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
@@ -63,7 +152,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 
 	bool foundPivot = false;
 	glm::ivec3 ipivot { 0 };
-	glm::uvec3 size;
+	glm::uvec3 size(0);
 	Log::debug("Found vxm%i", version);
 	if (version >= 5) {
 		if (version >= 6) {
@@ -237,8 +326,11 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	uint8_t materialAmount;
 	wrap(stream.readByte(materialAmount));
 	Log::debug("Palette of size %i", (int)materialAmount);
+	uint8_t palette[256];
+	if ((int)materialAmount > lengthof(palette)) {
+		return false;
+	}
 
-	uint8_t *palette = new uint8_t[materialAmount];
 	for (int i = 0; i < (int) materialAmount; ++i) {
 		uint8_t blue;
 		wrap(stream.readByte(blue));
@@ -270,13 +362,13 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		int idx = 0;
 		for (;;) {
 			uint8_t length;
-			wrap(stream.readByte(length));
+			wrapDelete(stream.readByte(length), volume);
 			if (length == 0u) {
 				break;
 			}
 
 			uint8_t matIdx;
-			wrap(stream.readByte(matIdx));
+			wrapDelete(stream.readByte(matIdx), volume);
 			if (matIdx == 0xFFU) {
 				idx += length;
 				continue;
@@ -287,17 +379,15 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 				continue;
 			}
 
+			const uint8_t index = palette[matIdx];
+			const voxel::VoxelType voxelType = voxel::VoxelType::Generic;
+			const Voxel voxel = createColorVoxel(voxelType, index);
+
 			// left to right, bottom to top, front to back
 			for (int i = idx; i < idx + length; i++) {
 				const int xx = i / (int)(size.y * size.z);
 				const int yy = (i / (int)size.z) % (int)size.y;
 				const int zz = i % (int)size.z;
-				const uint8_t index = palette[matIdx];
-				voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-				if (index == 0) {
-					voxelType = voxel::VoxelType::Air;
-				}
-				const Voxel voxel = createColorVoxel(voxelType, index);
 				volume->setVoxel(size.x - 1 - xx, yy, zz, voxel);
 			}
 			idx += length;
@@ -323,11 +413,11 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		}
 	}
 
-	delete[] palette;
 	return true;
 }
 
 #undef wrap
 #undef wrapBool
+#undef wrapDelete
 
 }
