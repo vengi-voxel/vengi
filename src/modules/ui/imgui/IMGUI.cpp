@@ -83,8 +83,9 @@ bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFl
 	core::String buf = var->strVal();
 	flags &= ~ImGuiInputTextFlags_EnterReturnsTrue;
 	if (InputText(label, &buf, flags)) {
-		var->setVal(buf);
-		return true;
+		if (var->setVal(buf)) {
+			return true;
+		}
 	}
 	if (var->help()) {
 		TooltipText("%s", var->help());
@@ -95,8 +96,9 @@ bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFl
 bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
 	float v = var->floatVal();
 	if (InputFloat(label, &v, step, step_fast, "%.3f", extra_flags)) {
-		var->setVal(v);
-		return true;
+		if (var->setVal(v)) {
+			return true;
+		}
 	}
 	if (var->help()) {
 		TooltipText("%s", var->help());
@@ -128,8 +130,9 @@ bool InputVec3(const char* label, glm::ivec3& vec, ImGuiInputTextFlags flags) {
 bool InputVarInt(const char* label, const core::VarPtr& var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
 	int v = var->intVal();
 	if (InputInt(label, &v, step, step_fast, extra_flags)) {
-		var->setVal(v);
-		return true;
+		if (var->setVal(v)) {
+			return true;
+		}
 	}
 	if (var->help()) {
 		TooltipText("%s", var->help());
@@ -145,8 +148,9 @@ bool InputVarInt(const char* label, const char* varName, int step, int step_fast
 bool CheckboxVar(const char* label, const core::VarPtr& var) {
 	bool val = var->boolVal();
 	if (Checkbox(label, &val)) {
-		var->setVal(val);
-		return true;
+		if (var->setVal(val)) {
+			return true;
+		}
 	}
 	if (var->help()) {
 		TooltipText("%s", var->help());
