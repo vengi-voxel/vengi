@@ -7,12 +7,19 @@
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/Color.h"
+#include "core/ScopedPtr.h"
 
 namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
 		Log::error("Could not load cub file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		return false; \
+	}
+
+#define wrapBool(read) \
+	if ((read) != true) { \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
 		return false; \
 	}
 
@@ -74,6 +81,7 @@ bool CubFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	io::FileStream stream(file.get());
 
 	RawVolume* mergedVolume = merge(volumes);
+	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
 
 	const voxel::Region& region = mergedVolume->region();
 	RawVolume::Sampler sampler(mergedVolume);
@@ -86,9 +94,9 @@ bool CubFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	const uint32_t depth = region.getDepthInVoxels();
 
 	// we have to flip depth with height for our own coordinate system
-	stream.addInt(width);
-	stream.addInt(depth);
-	stream.addInt(height);
+	wrapBool(stream.addInt(width))
+	wrapBool(stream.addInt(depth))
+	wrapBool(stream.addInt(height))
 
 	for (uint32_t y = 0u; y < height; ++y) {
 		for (uint32_t z = 0u; z < depth; ++z) {
@@ -96,20 +104,19 @@ bool CubFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
 				const voxel::Voxel& voxel = sampler.voxel();
 				if (voxel.getMaterial() == VoxelType::Air) {
-					stream.addByte(0);
-					stream.addByte(0);
-					stream.addByte(0);
+					wrapBool(stream.addByte(0))
+					wrapBool(stream.addByte(0))
+					wrapBool(stream.addByte(0))
 					continue;
 				}
 				const glm::vec4& color = materialColors[voxel.getColor()];
 				const glm::u8vec4& rgba = core::Color::getRGBAVec(color);
-				stream.addByte(rgba.r);
-				stream.addByte(rgba.g);
-				stream.addByte(rgba.b);
+				wrapBool(stream.addByte(rgba.r))
+				wrapBool(stream.addByte(rgba.g))
+				wrapBool(stream.addByte(rgba.b))
 			}
 		}
 	}
-	delete mergedVolume;
 	return true;
 }
 
