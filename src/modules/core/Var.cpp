@@ -31,18 +31,18 @@ void Var::shutdown() {
 	_vars.clear();
 }
 
-void Var::setVal(int value) {
+bool Var::setVal(int value) {
 	if (intVal() == value) {
-		return;
+		return true;
 	}
-	setVal(core::string::format("%i", value));
+	return setVal(core::string::format("%i", value));
 }
 
-void Var::setVal(float value) {
+bool Var::setVal(float value) {
 	if (glm::epsilonEqual(floatVal(), value, glm::epsilon<float>())) {
-		return;
+		return true;
 	}
-	setVal(core::string::format("%f", value));
+	return setVal(core::string::format("%f", value));
 }
 
 VarPtr Var::getSafe(const core::String& name) {
@@ -187,15 +187,15 @@ bool Var::useHistory(uint32_t historyIndex) {
 	return true;
 }
 
-void Var::setVal(const core::String& value) {
+bool Var::setVal(const core::String& value) {
 	if ((_flags & CV_READONLY) != 0u) {
 		Log::error("%s is write protected", _name.c_str());
-		return;
+		return false;
 	}
 	if (_validator != nullptr) {
 		if (!_validator(value)) {
 			Log::debug("Validator doesn't allow to set '%s' for '%s'", value.c_str(), _name.c_str());
-			return;
+			return false;
 		}
 	}
 	_dirty = _history[_currentHistoryPos]._value != value;
@@ -218,6 +218,7 @@ void Var::setVal(const core::String& value) {
 			_currentHistoryPos = (uint32_t)_history.size() - 1;
 		}
 	}
+	return true;
 }
 
 }

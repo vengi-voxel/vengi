@@ -250,21 +250,21 @@ public:
 	 */
 	bool boolVal() const;
 	glm::vec3 vec3Val() const;
-	void setVal(const core::String& value);
-	inline void setVal(const char* value) {
+	bool setVal(const core::String& value);
+	inline bool setVal(const char* value) {
 		if (!SDL_strcmp(_history[_currentHistoryPos]._value.c_str(), value)) {
-			return;
+			return true;
 		}
-		setVal(core::String(value));
+		return setVal(core::String(value));
 	}
-	inline void setVal(bool value) {
+	inline bool setVal(bool value) {
 		if (boolVal() == value) {
-			return;
+			return true;
 		}
-		setVal(value ? VAR_TRUE : VAR_FALSE);
+		return setVal(value ? VAR_TRUE : VAR_FALSE);
 	}
-	void setVal(int value);
-	void setVal(float value);
+	bool setVal(int value);
+	bool setVal(float value);
 	/**
 	 * @return The string value of this var
 	 */
