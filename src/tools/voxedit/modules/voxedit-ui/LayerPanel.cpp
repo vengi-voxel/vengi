@@ -95,7 +95,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			ImGui::TableSetupColumn("##deletelayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableHeadersRow();
 			const voxedit::Layers& layers = layerMgr.layers();
-			const int layerCnt = layers.size();
+			const int layerCnt = (int)layers.size();
 			for (int l = 0; l < layerCnt; ++l) {
 				if (!layers[l].valid) {
 					continue;
