@@ -149,9 +149,9 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 		// some flags should not get removed
 		const uint32_t preserve = v->_flags & CV_PRESERVE;
 		v->_flags = flagsMask | preserve;
-		if (validatorFunc != nullptr) {
-			v->_validator = validatorFunc;
-		}
+	}
+	if (validatorFunc != nullptr) {
+		v->_validator = validatorFunc;
 	}
 	if (!v->_help) {
 		v->_help = help;
