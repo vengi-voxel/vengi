@@ -5,9 +5,11 @@ vengi (0.0.11.0-1) UNRELEASED; urgency=low
   * Reduced memory allocations per frame
   * Added key bindings dialog
   * Added notifications for warnings and errors in the ui
+  * Fixed Sandbox Voxedit VXM v12 loading and added saving support
 
   * VoxEdit:
   * Removed old ui and switched to dearimgui
+  * Added lua script editor
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 19 Sep 2021 10:28:15 +0200
 

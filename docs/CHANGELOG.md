@@ -10,10 +10,12 @@ General:
    - Reduced memory allocations per frame
    - Added key bindings dialog
    - Added notifications for warnings and errors in the ui
+   - Fixed Sandbox Voxedit VXM v12 loading and added saving support
 
 VoxEdit:
 
    - Removed old ui and switched to dearimgui
+   - Added lua script editor
 
 ## 0.0.10 (2021-09-19)
 
