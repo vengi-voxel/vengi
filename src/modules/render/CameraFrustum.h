@@ -26,6 +26,7 @@ protected:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 
+	glm::vec4 _color;
 	int _splitFrustum = -1;
 	int32_t _frustumMesh = -1;
 	int32_t _aabbMesh = -1;

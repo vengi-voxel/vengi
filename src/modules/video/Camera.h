@@ -112,6 +112,10 @@ public:
 	int frameBufferWidth() const;
 	int frameBufferHeight() const;
 
+	inline bool dirty() const {
+		return _dirty != 0u;
+	}
+
 	/**
 	 * @note Not the world position of the camera - but for controlling the viewport
 	 */
@@ -161,8 +165,8 @@ public:
 	void setPosition(const glm::vec3& pos);
 	void move(const glm::vec3& delta);
 
-	glm::mat4 orthogonalMatrix() const;
-	glm::mat4 perspectiveMatrix() const;
+	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
+	glm::mat4 perspectiveMatrix(float nplane, float fplane) const;
 	const glm::mat4& inverseViewMatrix() const;
 	const glm::mat4& viewMatrix() const;
 	const glm::mat4& projectionMatrix() const;

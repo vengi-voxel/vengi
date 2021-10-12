@@ -298,10 +298,10 @@ void Camera::updateProjectionMatrix() {
 	}
 	switch(_mode) {
 	case CameraMode::Orthogonal:
-		_projectionMatrix = orthogonalMatrix();
+		_projectionMatrix = orthogonalMatrix(nearPlane(), farPlane());
 		break;
 	case CameraMode::Perspective:
-		_projectionMatrix = perspectiveMatrix();
+		_projectionMatrix = perspectiveMatrix(nearPlane(), farPlane());
 		break;
 	case CameraMode::Max:
 		break;
@@ -402,11 +402,11 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::F
 	glm::mat4 proj;
 	switch(_mode) {
 	case CameraMode::Orthogonal:
-		proj = glm::ortho(0.0f, (float)_windowSize.x, (float)_windowSize.y, 0.0f, nearPlane, farPlane);
+		proj = orthogonalMatrix(nearPlane, farPlane);
 		break;
 	case CameraMode::Perspective:
 	default:
-		proj = glm::perspective(glm::radians(_fieldOfView), _frameBufferAspectRatio, nearPlane, farPlane);
+		proj = perspectiveMatrix(nearPlane, farPlane);
 		break;
 	}
 
@@ -449,18 +449,18 @@ glm::vec4 Camera::sphereBoundingBox() const {
 	return glm::vec4(sphereCenter, sphereRadius);
 }
 
-glm::mat4 Camera::orthogonalMatrix() const {
+glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 	const float left = (float)x();
 	const float bottom = (float)y();
 	const float right = left + (float)_windowSize.x;
 	const float top = bottom + (float)_windowSize.y;
 	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
 	core_assert_msg(top > bottom, "Invalid dimension given: top must be greater than bottom but is %f", top);
-	return glm::ortho(left, right, top, bottom, nearPlane(), farPlane());
+	return glm::ortho(left, right, top, bottom, nplane, fplane);
 }
 
-glm::mat4 Camera::perspectiveMatrix() const {
-	return glm::perspectiveFovRH_NO(glm::radians(_fieldOfView), (float)_windowSize.x, (float)_windowSize.y, nearPlane(), farPlane());
+glm::mat4 Camera::perspectiveMatrix(float nplane, float fplane) const {
+	return glm::perspectiveFovRH_NO(glm::radians(_fieldOfView), (float)_windowSize.x, (float)_windowSize.y, nplane, fplane);
 }
 
 void Camera::setNearPlane(float nearPlane) {
