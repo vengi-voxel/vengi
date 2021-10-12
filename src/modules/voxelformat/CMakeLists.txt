@@ -54,6 +54,7 @@ set(TEST_FILES
 	tests/minecraft_113.mca
 	tests/magicavoxel.vox
 	tests/test.vxm
+	tests/test2.vxm
 	tests/cw.cub
 	tests/rgb.vxl
 	tests/rgb.vox

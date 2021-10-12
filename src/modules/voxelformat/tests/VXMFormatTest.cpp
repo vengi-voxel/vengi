@@ -10,10 +10,10 @@ namespace voxel {
 class VXMFormatTest: public AbstractVoxFormatTest {
 };
 
-TEST_F(VXMFormatTest, DISABLED_testLoad) {
+TEST_F(VXMFormatTest, testLoad) {
 	VXMFormat f;
-	std::unique_ptr<RawVolume> volume(load("test.vmx", f));
-	ASSERT_NE(nullptr, volume) << "Could not load vmx file";
+	std::unique_ptr<RawVolume> volume(load("test.vxm", f));
+	ASSERT_NE(nullptr, volume) << "Could not load vxm file";
 }
 
 TEST_F(VXMFormatTest, testSaveVerySmallVoxel) {
