@@ -38,7 +38,7 @@ TEST_F(VXMFormatTest, testSaveVerySmallVoxel) {
 	EXPECT_EQ(original, *loaded);
 }
 
-TEST_F(VXMFormatTest, DISABLED_testSaveSmallVoxel) {
+TEST_F(VXMFormatTest, testSaveSmallVoxel) {
 	VXMFormat f;
 	Region region(glm::ivec3(0), glm::ivec3(1));
 	RawVolume original(region);
