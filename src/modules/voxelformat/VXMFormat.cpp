@@ -353,7 +353,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	}
 
 	uint8_t maxLayers = 1;
-	if (version > 12) {
+	if (version >= 12) {
 		wrap(stream.readByte(maxLayers));
 	}
 

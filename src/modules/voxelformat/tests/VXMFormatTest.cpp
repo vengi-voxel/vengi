@@ -16,6 +16,12 @@ TEST_F(VXMFormatTest, testLoad) {
 	ASSERT_NE(nullptr, volume) << "Could not load vxm file";
 }
 
+TEST_F(VXMFormatTest, testLoadFileCreatedBySandboxVoxeditVersion12) {
+	VXMFormat f;
+	std::unique_ptr<RawVolume> volume(load("test2.vxm", f));
+	ASSERT_NE(nullptr, volume) << "Could not load vxm file";
+}
+
 TEST_F(VXMFormatTest, testSaveVerySmallVoxel) {
 	VXMFormat f;
 	Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
