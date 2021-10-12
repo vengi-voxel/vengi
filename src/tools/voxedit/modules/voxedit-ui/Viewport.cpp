@@ -196,10 +196,11 @@ void Viewport::renderToFrameBuffer() {
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	video::clearColor(core::Color::Clear);
 	_frameBuffer.bind(true);
+	video::Camera &camera = _controller.camera();
 	if (_controller.renderMode() == ViewportController::RenderMode::Animation) {
-		sceneMgr().renderAnimation(_controller.camera());
+		sceneMgr().renderAnimation(camera);
 	} else {
-		sceneMgr().render(_controller.camera());
+		sceneMgr().render(camera);
 	}
 	_frameBuffer.unbind();
 }
