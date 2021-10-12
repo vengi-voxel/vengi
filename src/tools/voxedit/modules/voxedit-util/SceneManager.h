@@ -244,6 +244,7 @@ public:
 	void setMousePos(int x, int y);
 
 	void setActiveCamera(video::Camera* camera);
+	video::Camera* activeCamera();
 
 	const voxel::Voxel& hitCursorVoxel() const;
 
@@ -423,6 +424,10 @@ inline void SceneManager::setActiveCamera(video::Camera* camera) {
 		resetLastTrace();
 		_camera = camera;
 	}
+}
+
+inline video::Camera* SceneManager::activeCamera() {
+	return _camera;
 }
 
 inline const render::Gizmo& SceneManager::gizmo() const {
