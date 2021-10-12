@@ -47,8 +47,8 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 void Viewport::update() {
 	camera().setTarget(glm::vec3(sceneMgr().referencePosition()));
 
-	static const char *cameraModes[] = {"Points", "Lines", "Solid"};
-	static_assert(lengthof(cameraModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
+	static const char *polygonModes[] = {"Points", "Lines", "Solid"};
+	static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
 
 	static const char *camRotTypes[] = {"Reference Point", "Eye"};
 	static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
@@ -118,10 +118,10 @@ void Viewport::update() {
 			ImGui::SetCursorPos(ImVec2(windowSize.x - maxWidth, windowSize.y - height));
 			const int currentPolygonMode = (int)_controller.camera().polygonMode();
 			ImGui::SetNextItemWidth(maxWidth);
-			if (ImGui::BeginCombo("#cameramode", cameraModes[currentPolygonMode])) {
-				for (int n = 0; n < lengthof(cameraModes); n++) {
+			if (ImGui::BeginCombo("##polygonmode", polygonModes[currentPolygonMode])) {
+				for (int n = 0; n < lengthof(polygonModes); n++) {
 					const bool isSelected = (currentPolygonMode == n);
-					if (ImGui::Selectable(cameraModes[n], isSelected)) {
+					if (ImGui::Selectable(polygonModes[n], isSelected)) {
 						_controller.camera().setPolygonMode((video::PolygonMode)n);
 					}
 					if (isSelected) {
