@@ -7,6 +7,8 @@
 #include "core/FourCC.h"
 #include "core/Color.h"
 #include "core/GLM.h"
+#include "core/String.h"
+#include "core/StringUtil.h"
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -360,6 +362,14 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	for (uint8_t layer = 0; layer < maxLayers; ++layer) {
 		RawVolume* volume = new RawVolume(region);
 		int idx = 0;
+		bool visible = true;
+		char layerName[1024];
+		if (version >= 12) {
+			wrapBool(stream.readString(sizeof(layerName), layerName, true))
+			visible = stream.readBool();
+		} else {
+			core::string::formatBuf(layerName, sizeof(layerName), "Main");
+		}
 		for (;;) {
 			uint8_t length;
 			wrapDelete(stream.readByte(length), volume);
@@ -392,8 +402,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			}
 			idx += length;
 		}
-		const core::String& name = core::String::format("layer %i", (int)layer);
-		volumes.push_back(VoxelVolume(volume, name, true, ipivot));
+		volumes.push_back(VoxelVolume(volume, layerName, visible, ipivot));
 	}
 
 	if (version >= 10) {
