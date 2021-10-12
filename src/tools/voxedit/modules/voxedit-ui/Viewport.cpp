@@ -57,7 +57,11 @@ void Viewport::update() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	if (ImGui::Begin(_id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar)) {
+	int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar;
+	if (sceneMgr().dirty()) {
+		sceneWindowFlags |= ImGuiWindowFlags_UnsavedDocument;
+	}
+	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
 		core_trace_scoped(Viewport);
 
 		if (_controller.renderMode() == ViewportController::RenderMode::Animation && sceneMgr().editMode() != EditMode::Animation) {
