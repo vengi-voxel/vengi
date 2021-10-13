@@ -391,6 +391,8 @@ public:
 	animation::AnimationEntity& animationEntity();
 	const render::Gizmo& gizmo() const;
 	voxelgenerator::LUAGenerator& luaGenerator();
+	video::ShapeBuilder& shapeBuilder();
+	render::ShapeRenderer& shapeRenderer();
 
 	// LayerListener
 	void onLayerChanged(int layerId) override;
@@ -402,6 +404,14 @@ public:
 	void onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) override;
 	void onLayerDeleted(int layerId, const Layer& layer) override;
 };
+
+inline video::ShapeBuilder &SceneManager::shapeBuilder() {
+	return _shapeBuilder;
+}
+
+inline render::ShapeRenderer &SceneManager::shapeRenderer() {
+	return _shapeRenderer;
+}
 
 inline voxelgenerator::LUAGenerator& SceneManager::luaGenerator() {
 	return _luaGenerator;

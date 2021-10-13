@@ -10,6 +10,7 @@
 #include "ui/imgui/IMGUI.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "io/Filesystem.h"
+#include "video/ShapeBuilder.h"
 #include "video/WindowedApp.h"
 
 #include "image/Image.h"
@@ -18,6 +19,10 @@
 
 
 namespace voxedit {
+
+namespace _priv {
+static const uint32_t VIEWPORT_DEBUG_TRACE = (1 << 0);
+}
 
 Viewport::Viewport(video::WindowedApp *app, const core::String& id) : _app(app), _id(id), _edgeShader(shader::EdgeShader::getInstance()) {
 }
@@ -41,6 +46,9 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_edgeShader.setTexture(video::TextureUnit::Zero);
 
 	resize(_app->frameBufferDimension());
+
+	_debug = core::Var::get("ve_viewportdebugflag", 0);
+	_debug->setHelp("Debug bit mask. 1 means rendering the traces for the active camera");
 	return true;
 }
 
@@ -202,6 +210,37 @@ void Viewport::renderToFrameBuffer() {
 	} else {
 		sceneMgr().render(camera);
 	}
+	if ((_debug->intVal() & _priv::VIEWPORT_DEBUG_TRACE) != 0) {
+		video::Camera *activeCamera = sceneMgr().activeCamera();
+		if (activeCamera) {
+			const math::Ray& ray = activeCamera->mouseRay(glm::ivec2(_controller._mouseX, _controller._mouseY));
+			const float rayLength = activeCamera->farPlane();
+			const glm::vec3& dirWithLength = ray.direction * rayLength;
+
+			Log::trace("%s: origin(%f:%f:%f) dir(%f:%f:%f), rayLength: %f - mouse(%i:%i)",
+					_id.c_str(),
+					ray.origin.x, ray.origin.y, ray.origin.z,
+					dirWithLength.x, dirWithLength.y, dirWithLength.z,
+					rayLength,
+					_controller._mouseX, _controller._mouseY);
+
+			video::ShapeBuilder &builder = sceneMgr().shapeBuilder();
+			builder.clear();
+			builder.setColor(core::Color::DarkRed);
+			builder.line(glm::vec3(0), ray.origin * dirWithLength);
+			builder.setColor(core::Color::Green);
+			builder.line(glm::vec3(0), ray.origin);
+			builder.setColor(core::Color::Yellow);
+			builder.line(glm::vec3(0), dirWithLength);
+			builder.setColor(core::Color::Blue);
+			builder.line(glm::vec3(0), ray.direction);
+
+			render::ShapeRenderer &renderer = sceneMgr().shapeRenderer();
+			renderer.createOrUpdate(_mesh, builder);
+			renderer.render(_mesh, camera);
+		}
+	}
+
 	_frameBuffer.unbind();
 }
 
