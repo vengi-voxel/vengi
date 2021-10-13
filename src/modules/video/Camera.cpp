@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/Singleton.h"
+#include <glm/gtc/epsilon.hpp>
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "math/Ray.h"
@@ -363,7 +364,7 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 	core_assert_always(splits >= 1);
 	const float near = nearPlane();
 	const float far = farPlane();
-	const float ratio = far / near;
+	const float ratio = far / (glm::abs(near) + glm::epsilon<float>());
 #if 1
 	const int numSlices = splits * 2;
 	const float splitsf = (float)numSlices;
