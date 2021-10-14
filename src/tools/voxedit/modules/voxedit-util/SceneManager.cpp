@@ -1514,12 +1514,7 @@ void SceneManager::animate(double nowSeconds) {
 void SceneManager::zoom(video::Camera& camera, float level) const {
 	const float cameraSpeed = _cameraZoomSpeed->floatVal();
 	const float value = cameraSpeed * level;
-	const float targetDistance = glm::clamp(camera.targetDistance() + value, 0.0f, 1000.0f);
-	if (targetDistance > 1.0f) {
-		const glm::vec3& moveDelta = glm::backward * value;
-		camera.move(moveDelta);
-		camera.setTargetDistance(targetDistance);
-	}
+	camera.zoom(value);
 }
 
 void SceneManager::update(double nowSeconds) {
