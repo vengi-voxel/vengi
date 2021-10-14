@@ -300,21 +300,24 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		++modelId;
 	}
 
+	if (modelId > 0) {
+		wrapBool(saveSceneGraph(stream, volumes, modelId))
+
+		for (auto& v : volumes) {
+			if (skipSaving(v)) {
+				continue;
+			}
+			wrapBool(saveChunk_LAYR(stream, modelId, v.name, v.visible))
+		}
+	}
+
 	wrapBool(saveChunk_RGBA(stream))
 
-	if (modelId == 0) {
-		return false;
-	}
-
-	for (auto& v : volumes) {
-		if (skipSaving(v)) {
-			continue;
-		}
-		wrapBool(saveChunk_LAYR(stream, modelId, v.name, v.visible))
-	}
-
-	wrapBool(saveSceneGraph(stream, volumes, modelId))
-
+	// IMAP
+	// MATL
+	// rOBJ
+	// rCAM
+	// NOTE
 	return true;
 }
 
@@ -820,12 +823,12 @@ bool VoxFormat::loadChunk_rCAM(io::FileStream& stream, const ChunkHeader& header
 	uint32_t cameraId;
 	wrap(stream.readInt(cameraId))
 	Attributes cameraAttributes;
-	// (_mode : string)
+	// (_mode : string - pers)
 	// (_focus : vec(3))
 	// (_angle : vec(3))
 	// (_radius : int)
 	// (_frustum : float)
-	// (_fov : int)
+	// (_fov : int degree)
 	wrapBool(readAttributes(cameraAttributes, stream))
 	return true;
 }
