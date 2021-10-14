@@ -485,9 +485,9 @@ static inline int divFloor(int x, int y) {
 	return x / y - (x % y != 0 && quotientNegative);
 }
 
-glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, float x, float y, float z, const glm::vec3& pivot) const {
-	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - glm::ivec3(pivot);
-	const glm::ivec3 pos = glm::ivec3(t.rotation * glm::vec3(c));
+glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, int x, int y, int z, const glm::ivec3& pivot) const {
+	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - pivot;
+	const glm::ivec3 pos = glm::ivec3(t.rotation * glm::vec3(c.x + 0.5f, c.y + 0.5f, c.z + 0.5f));
 	const glm::ivec3 rotated(divFloor(pos.x, 2), divFloor(pos.y, 2), divFloor(pos.z, 2));
 	return rotated + t.translation;
 }
@@ -513,7 +513,7 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 
 	const voxel::Region& region = _regions[_volumeIdx];
 	const glm::uvec3 size(region.getDimensionsInVoxels());
-	const glm::vec3 pivot = glm::vec3(size.x & ~1u, size.z & ~1u, size.y & ~1u) - glm::vec3(1.0f);
+	const glm::ivec3 pivot = glm::ivec3(size.x - 1, size.z - 1, size.y - 1);
 	const glm::ivec3& rmins = region.getLowerCorner();
 	const glm::ivec3& rmaxs = region.getUpperCorner();
 	const VoxTransform& finalTransform = calculateTransform(_volumeIdx);

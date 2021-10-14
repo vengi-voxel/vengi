@@ -130,7 +130,7 @@ private:
 	bool loadSceneGraph(io::FileStream& stream);
 	VoxTransform calculateTransform(uint32_t volumeIdx) const;
 	bool applyTransform(VoxTransform& transform, NodeId nodeId) const;
-	glm::ivec3 calcTransform(const VoxTransform& t, float x, float y, float z, const glm::vec3& pivot) const;
+	glm::ivec3 calcTransform(const VoxTransform& t, int x, int y, int z, const glm::ivec3& pivot) const;
 
 public:
 	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
