@@ -130,6 +130,8 @@ public:
 	CameraType type() const;
 	void setType(CameraType type);
 
+	void zoom(float value);
+
 	CameraMode mode() const;
 	void setMode(CameraMode mode);
 
@@ -173,7 +175,13 @@ public:
 	const glm::mat4& inverseProjectionMatrix() const;
 	const glm::mat4& viewProjectionMatrix() const;
 
+	/**
+	 * @return the field of view in degree
+	 */
 	float fieldOfView() const;
+	/**
+	 * @param angles in degree
+	 */
 	void setFieldOfView(float angles);
 
 	float aspectRatio() const;

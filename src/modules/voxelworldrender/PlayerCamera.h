@@ -50,6 +50,9 @@ public:
 	void shutdown();
 	void update(const glm::vec3& entityPosition, double nowSeconds, double deltaFrameSeconds, double speed);
 
+	/**
+	 * @param fieldOfView in degree
+	 */
 	void setFieldOfView(float fieldOfView);
 	void rotate(float pitch, float turn, float speed);
 

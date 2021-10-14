@@ -449,6 +449,20 @@ glm::vec4 Camera::sphereBoundingBox() const {
 	return glm::vec4(sphereCenter, sphereRadius);
 }
 
+void Camera::zoom(float value) {
+	if (_mode == CameraMode::Perspective) {
+		const float targetDist = glm::clamp(targetDistance() + value, 0.0f, 1000.0f);
+		if (targetDist > 1.0f) {
+			const glm::vec3& moveDelta = glm::backward * value;
+			move(moveDelta);
+			setTargetDistance(targetDist);
+		}
+	} else {
+		value = glm::clamp(glm::sign(value) * 0.25f, 1.0f, 179.0f);
+		setFieldOfView(_fieldOfView + _fieldOfView * value);
+	}
+}
+
 glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 	const float left = (float)x();
 	const float bottom = (float)y();
