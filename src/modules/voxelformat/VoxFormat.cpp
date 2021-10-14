@@ -171,17 +171,15 @@ bool VoxFormat::saveChunk_PACK(io::FileStream& stream, const VoxelVolumes& volum
 		}
 		++modelCount;
 	}
-	if (modelCount > 1) {
-		ScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
-		wrapBool(stream.addInt(modelCount))
-		++_chunks;
-	}
+	ScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
+	wrapBool(stream.addInt(modelCount))
+	++_chunks;
 	return true;
 }
 
 bool VoxFormat::saveChunk_RGBA(io::FileStream& stream) {
 	const MaterialColorArray& materialColors = getMaterialColors();
-	const int numColors = materialColors.size();
+	const int numColors = (int)materialColors.size();
 	if (numColors > 256) {
 		Log::error("More colors than supported");
 		return false;
