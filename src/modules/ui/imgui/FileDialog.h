@@ -17,27 +17,33 @@ enum class FileDialogSortOrder { Up, Down, None };
 
 class FileDialog {
 private:
-	char fileDialogError[500] = "";
-	size_t fileDialogFileSelectIndex = 0;
-	size_t fileDialogFolderSelectIndex = 0;
-	core::String fileDialogCurrentPath;
-	core::String fileDialogCurrentFile;
-	core::String fileDialogCurrentFolder;
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
-	core::DynamicArray<const io::Filesystem::DirEntry*> files;
-	FileDialogSortOrder fileNameSortOrder = FileDialogSortOrder::None;
-	FileDialogSortOrder sizeSortOrder = FileDialogSortOrder::None;
-	FileDialogSortOrder dateSortOrder = FileDialogSortOrder::None;
-	FileDialogSortOrder typeSortOrder = FileDialogSortOrder::None;
+	char _error[500] = "";
+	size_t _fileSelectIndex = 0;
+	size_t _folderSelectIndex = 0;
+	core::String _currentPath;
+	core::String _currentFile;
+	core::String _currentFolder;
+	core::DynamicArray<io::Filesystem::DirEntry> _entities;
+	core::DynamicArray<const io::Filesystem::DirEntry*> _files;
+	FileDialogSortOrder _fileNameSortOrder = FileDialogSortOrder::None;
+	FileDialogSortOrder _sizeSortOrder = FileDialogSortOrder::None;
+	FileDialogSortOrder _dateSortOrder = FileDialogSortOrder::None;
+	FileDialogSortOrder _typeSortOrder = FileDialogSortOrder::None;
 	core::String _filter;
-	bool disableDeleteButton = false;
-	char newFolderName[500] = "";
-	char newFolderError[500] = "";
+	bool _disableDeleteButton = false;
+	char _newFolderName[500] = "";
+	char _newFolderError[500] = "";
+
+	void setCurrentPath(const core::String& path);
 
 	void applyFilter();
 	bool readDir();
 	void directoryPanel();
-	void filesPanel();
+	void bookmarkPanel();
+	/**
+	 * @return @c true if a file was double clicked
+	 */
+	bool filesPanel();
 
 public:
 	/**

@@ -75,7 +75,7 @@ void Viewport::update() {
 		if (_controller.renderMode() == ViewportController::RenderMode::Animation && sceneMgr().editMode() != EditMode::Animation) {
 			ImGui::TextDisabled("No animation loaded");
 		} else {
-			const ui::imgui::IMGUIApp *app = (ui::imgui::IMGUIApp*)video::WindowedApp::getInstance();
+			const ui::imgui::IMGUIApp *app = imguiApp();
 			const double deltaFrameSeconds = app->deltaFrameSeconds();
 			_controller.update(deltaFrameSeconds);
 			const int headerSize = app->fontSize() + (int)(ImGui::GetStyle().FramePadding.y * 2.0f);

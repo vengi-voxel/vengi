@@ -4,6 +4,7 @@
 
 #include "FileDialog.h"
 #include "IMGUI.h"
+#include "IconsForkAwesome.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
 #include "core/Log.h"
@@ -13,27 +14,28 @@
 #include "core/Trace.h"
 #include "core/Var.h"
 #include "io/Filesystem.h"
+#include "ui/imgui/IMGUIApp.h"
 
 namespace ui {
 namespace imgui {
 
 static core::String assemblePath(const core::String &dir, const core::String &ent) {
-	return dir + (dir.last() == '/' ? "" : "/") + ent;
+	return dir + ((dir.last() == '\\' || dir.last() == '/') ? "" : "/") + ent;
 }
 
 void FileDialog::applyFilter() {
-	files.clear();
-	files.reserve(entities.size());
-	for (size_t i = 0; i < entities.size(); ++i) {
-		if (entities[i].type != io::Filesystem::DirEntry::Type::file) {
+	_files.clear();
+	_files.reserve(_entities.size());
+	for (size_t i = 0; i < _entities.size(); ++i) {
+		if (_entities[i].type != io::Filesystem::DirEntry::Type::file) {
 			continue;
 		}
 		if (!_filter.empty()) {
-			if (!core::string::fileMatchesMultiple(entities[i].name.c_str(), _filter.c_str())) {
+			if (!core::string::fileMatchesMultiple(_entities[i].name.c_str(), _filter.c_str())) {
 				continue;
 			}
 		}
-		files.push_back(&entities[i]);
+		_files.push_back(&_entities[i]);
 	}
 }
 
@@ -42,27 +44,58 @@ bool FileDialog::openDir(const core::String &filter) {
 
 	const core::VarPtr &lastDirVar = core::Var::getSafe(cfg::UILastDirectory);
 	const core::String &lastDir = lastDirVar->strVal();
-	fileDialogCurrentPath = lastDir;
-	fileDialogCurrentFile = "";
-	fileDialogCurrentFolder = "";
+	_currentPath = lastDir;
+	_currentFile = "";
+	_currentFolder = "";
 
-	if (!io::filesystem()->exists(fileDialogCurrentPath)) {
-		fileDialogCurrentPath = io::filesystem()->homePath();
-		core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
+	if (!io::filesystem()->exists(_currentPath)) {
+		_currentPath = io::filesystem()->homePath();
+		core::Var::getSafe(cfg::UILastDirectory)->setVal(_currentPath);
 	}
 
 	return readDir();
 }
 
 bool FileDialog::readDir() {
-	entities.clear();
-	if (!io::filesystem()->list(fileDialogCurrentPath, entities)) {
-		Log::warn("Failed to list dir %s", fileDialogCurrentPath.c_str());
+	_entities.clear();
+	if (!io::filesystem()->list(_currentPath, _entities)) {
+		Log::warn("Failed to list dir %s", _currentPath.c_str());
 		return false;
 	}
 
 	applyFilter();
 	return true;
+}
+
+void FileDialog::bookmarkPanel() {
+	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(ImGui::Size(200), ImGui::Size(300)), true,
+					  ImGuiWindowFlags_HorizontalScrollbar);
+	ImGui::TextUnformatted(ICON_FK_BOOKMARK" Locations");
+	ImGui::Separator();
+
+	const io::Paths& paths = io::filesystem()->paths();
+	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
+	const ImVec2 size(contentRegionWidth, 0);
+	for (const core::String& path : paths) {
+		const core::String& absPath = io::filesystem()->absolutePath(path);
+		if (ImGui::Selectable(absPath.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+			setCurrentPath(absPath);
+		}
+		ImGui::TooltipText("%s", path.c_str());
+	}
+
+	ImGui::EndChild();
+}
+
+void FileDialog::setCurrentPath(const core::String& path) {
+	_currentFile = "";
+	_folderSelectIndex = 0;
+	_fileSelectIndex = 0;
+	_currentFolder = "";
+	_error[0] = '\0';
+	_currentPath = path;
+	core::Var::getSafe(cfg::UILastDirectory)->setVal(_currentPath);
+	readDir();
 }
 
 void FileDialog::directoryPanel() {
@@ -71,39 +104,30 @@ void FileDialog::directoryPanel() {
 
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
 	if (ImGui::Selectable("..", false, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(contentRegionWidth, 0))) {
-		if (ImGui::IsMouseDoubleClicked(0)) {
-			fileDialogCurrentPath = io::filesystem()->absolutePath(fileDialogCurrentPath + "/..");
-			core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
-			readDir();
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+			setCurrentPath(io::filesystem()->absolutePath(_currentPath + "/.."));
 		}
 	}
-	for (size_t i = 0; i < entities.size(); ++i) {
-		if (entities[i].type != io::Filesystem::DirEntry::Type::dir) {
+	for (size_t i = 0; i < _entities.size(); ++i) {
+		if (_entities[i].type != io::Filesystem::DirEntry::Type::dir) {
 			continue;
 		}
-		if (ImGui::Selectable(entities[i].name.c_str(), i == fileDialogFolderSelectIndex,
-							  ImGuiSelectableFlags_AllowDoubleClick, ImVec2(contentRegionWidth, 0))) {
-			fileDialogCurrentFile = "";
-			if (ImGui::IsMouseDoubleClicked(0)) {
-				fileDialogCurrentPath = assemblePath(fileDialogCurrentPath, entities[i].name);
-				core::Var::getSafe(cfg::UILastDirectory)->setVal(fileDialogCurrentPath);
-				fileDialogFolderSelectIndex = 0;
-				fileDialogFileSelectIndex = 0;
-				ImGui::SetScrollHereY(0.0f);
-				fileDialogCurrentFolder = "";
-				fileDialogError[0] = '\0';
-				readDir();
+		const bool selected = i == _folderSelectIndex;
+		const ImVec2 size(contentRegionWidth, 0);
+		if (ImGui::Selectable(_entities[i].name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+				setCurrentPath(assemblePath(_currentPath, _entities[i].name));
 				break;
 			} else {
-				fileDialogFolderSelectIndex = i;
-				fileDialogCurrentFolder = entities[i].name;
+				_folderSelectIndex = i;
+				_currentFolder = _entities[i].name;
 			}
 		}
 	}
 	ImGui::EndChild();
 }
 
-void FileDialog::filesPanel() {
+bool FileDialog::filesPanel() {
 	ImGui::BeginChild("Files##1", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::Size(300)), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 	ImGui::Columns(4);
@@ -122,49 +146,49 @@ void FileDialog::filesPanel() {
 		ImGui::SetColumnWidth(2, initialSpacingColumn2);
 		initialSpacingColumn2 = 0.0f;
 	}
-	if (ImGui::Selectable("File")) {
-		sizeSortOrder = FileDialogSortOrder::None;
-		dateSortOrder = FileDialogSortOrder::None;
-		typeSortOrder = FileDialogSortOrder::None;
-		fileNameSortOrder =
-			(fileNameSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
+	if (ImGui::Selectable("File##filespanel")) {
+		_sizeSortOrder = FileDialogSortOrder::None;
+		_dateSortOrder = FileDialogSortOrder::None;
+		_typeSortOrder = FileDialogSortOrder::None;
+		_fileNameSortOrder =
+			(_fileNameSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
 	}
 	ImGui::NextColumn();
-	if (ImGui::Selectable("Size")) {
-		fileNameSortOrder = FileDialogSortOrder::None;
-		dateSortOrder = FileDialogSortOrder::None;
-		typeSortOrder = FileDialogSortOrder::None;
-		sizeSortOrder =
-			(sizeSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
+	if (ImGui::Selectable("Size##filespanel")) {
+		_fileNameSortOrder = FileDialogSortOrder::None;
+		_dateSortOrder = FileDialogSortOrder::None;
+		_typeSortOrder = FileDialogSortOrder::None;
+		_sizeSortOrder =
+			(_sizeSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
 	}
 	ImGui::NextColumn();
-	if (ImGui::Selectable("Type")) {
-		fileNameSortOrder = FileDialogSortOrder::None;
-		dateSortOrder = FileDialogSortOrder::None;
-		sizeSortOrder = FileDialogSortOrder::None;
-		typeSortOrder =
-			(typeSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
+	if (ImGui::Selectable("Type##filespanel")) {
+		_fileNameSortOrder = FileDialogSortOrder::None;
+		_dateSortOrder = FileDialogSortOrder::None;
+		_sizeSortOrder = FileDialogSortOrder::None;
+		_typeSortOrder =
+			(_typeSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
 	}
 	ImGui::NextColumn();
-	if (ImGui::Selectable("Date")) {
-		fileNameSortOrder = FileDialogSortOrder::None;
-		sizeSortOrder = FileDialogSortOrder::None;
-		typeSortOrder = FileDialogSortOrder::None;
-		dateSortOrder =
-			(dateSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
+	if (ImGui::Selectable("Date##filespanel")) {
+		_fileNameSortOrder = FileDialogSortOrder::None;
+		_sizeSortOrder = FileDialogSortOrder::None;
+		_typeSortOrder = FileDialogSortOrder::None;
+		_dateSortOrder =
+			(_dateSortOrder == FileDialogSortOrder::Down ? FileDialogSortOrder::Up : FileDialogSortOrder::Down);
 	}
 	ImGui::NextColumn();
 	ImGui::Separator();
 
 	static auto nameSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
-		if (fileNameSortOrder == FileDialogSortOrder::Down) {
+		if (_fileNameSortOrder == FileDialogSortOrder::Down) {
 			return a->name > b->name;
 		}
 		return a->name < b->name;
 	};
 
 	static auto sizeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
-		if (sizeSortOrder == FileDialogSortOrder::Down) {
+		if (_sizeSortOrder == FileDialogSortOrder::Down) {
 			return a->size > b->size;
 		}
 		return a->size < b->size;
@@ -173,57 +197,64 @@ void FileDialog::filesPanel() {
 	static auto extensionSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 		const core::String &aext = core::string::extractExtension(a->name);
 		const core::String &bext = core::string::extractExtension(b->name);
-		if (typeSortOrder == FileDialogSortOrder::Down) {
+		if (_typeSortOrder == FileDialogSortOrder::Down) {
 			return aext > bext;
 		}
 		return aext < bext;
 	};
 
 	static auto mtimeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
-		if (dateSortOrder == FileDialogSortOrder::Down) {
+		if (_dateSortOrder == FileDialogSortOrder::Down) {
 			return a->mtime > b->mtime;
 		}
 		return a->mtime < b->mtime;
 	};
 
 	// Sort files
-	if (fileNameSortOrder != FileDialogSortOrder::None) {
-		core::sort(files.begin(), files.end(), nameSorter);
-	} else if (sizeSortOrder != FileDialogSortOrder::None) {
-		core::sort(files.begin(), files.end(), sizeSorter);
-	} else if (typeSortOrder != FileDialogSortOrder::None) {
-		core::sort(files.begin(), files.end(), extensionSorter);
-	} else if (dateSortOrder != FileDialogSortOrder::None) {
-		core::sort(files.begin(), files.end(), mtimeSorter);
+	if (_fileNameSortOrder != FileDialogSortOrder::None) {
+		core::sort(_files.begin(), _files.end(), nameSorter);
+	} else if (_sizeSortOrder != FileDialogSortOrder::None) {
+		core::sort(_files.begin(), _files.end(), sizeSorter);
+	} else if (_typeSortOrder != FileDialogSortOrder::None) {
+		core::sort(_files.begin(), _files.end(), extensionSorter);
+	} else if (_dateSortOrder != FileDialogSortOrder::None) {
+		core::sort(_files.begin(), _files.end(), mtimeSorter);
 	}
 
-	for (size_t i = 0; i < files.size(); ++i) {
-		if (ImGui::Selectable(files[i]->name.c_str(), i == fileDialogFileSelectIndex,
-							  ImGuiSelectableFlags_AllowDoubleClick,
-							  ImVec2(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x, 0))) {
-			fileDialogFileSelectIndex = i;
-			fileDialogCurrentFile = files[i]->name;
-			fileDialogCurrentFolder = "";
-			fileDialogError[0] = '\0';
+	bool doubleClicked = false;
+	const ImVec2 size(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x, 0);
+	for (size_t i = 0; i < _files.size(); ++i) {
+		const bool selected = i == _fileSelectIndex;
+		if (ImGui::Selectable(_files[i]->name.c_str(), selected, ImGuiSelectableFlags_None, size)) {
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+				doubleClicked = true;
+			}
+			_fileSelectIndex = i;
+			_currentFile = _files[i]->name;
+			_currentFolder = "";
+			_error[0] = '\0';
 		}
 		ImGui::NextColumn();
-		ImGui::TextUnformatted(core::string::humanSize(files[i]->size).c_str());
+		const core::String &humanSize = core::string::humanSize(_files[i]->size);
+		ImGui::TextUnformatted(humanSize.c_str());
 		ImGui::NextColumn();
-		ImGui::TextUnformatted(core::string::extractExtension(files[i]->name).c_str());
+		const core::String &fileExt = core::string::extractExtension(_files[i]->name);
+		ImGui::TextUnformatted(fileExt.c_str());
 		ImGui::NextColumn();
-		const core::String &lastModified = core::TimeProvider::toString(files[i]->mtime);
+		const core::String &lastModified = core::TimeProvider::toString(_files[i]->mtime);
 		ImGui::TextUnformatted(lastModified.c_str());
 		ImGui::NextColumn();
 	}
 	ImGui::EndChild();
+	return doubleClicked;
 }
 
 // TODO: make filters selectable
-// TODO: list registered data paths from filesystem
 // TODO: allow to specify the starting directory
 bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSize,
 								video::WindowedApp::OpenFileMode type) {
 	if (open == nullptr || *open) {
+		bool doubleClickedFile = false;
 		core_trace_scoped(FileDialog);
 		ImGui::SetNextWindowSize(ImVec2(ImGui::Size(740.0f), ImGui::Size(494.0f)), ImGuiCond_FirstUseEver);
 		const char *title;
@@ -240,22 +271,28 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 		if (!ImGui::IsPopupOpen(title)) {
 			ImGui::OpenPopup(title);
 		}
-		if (ImGui::BeginPopupModal(title, nullptr)) {
-			ImGui::Text("%s", fileDialogCurrentPath.c_str());
+		if (ImGui::BeginPopupModal(title, open)) {
+
+			ImGui::TextUnformatted(ICON_FK_FOLDER_OPEN_O " Current path: ");
+			ImGui::SameLine();
+			ImGui::TextUnformatted(_currentPath.c_str());
+
+			bookmarkPanel();
+
+			ImGui::SameLine();
 
 			directoryPanel();
 
 			ImGui::SameLine();
 
-			filesPanel();
+			doubleClickedFile = filesPanel();
 
 			core::String selectedFilePath =
-				assemblePath(fileDialogCurrentPath,
-							 fileDialogCurrentFolder.size() > 0 ? fileDialogCurrentFolder : fileDialogCurrentFile);
+				assemblePath(_currentPath, !_currentFolder.empty() ? _currentFolder : _currentFile);
 			ImGui::PushItemWidth(724);
 			ImGui::InputText("", &selectedFilePath, ImGuiInputTextFlags_ReadOnly);
 			if (type == video::WindowedApp::OpenFileMode::Save) {
-				ImGui::InputText("Filename", &fileDialogCurrentFile);
+				ImGui::InputText("Filename", &_currentFile);
 			}
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::Size(6));
 
@@ -264,15 +301,15 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			}
 			ImGui::SameLine();
 
-			disableDeleteButton = (fileDialogCurrentFolder == "");
-			if (disableDeleteButton) {
+			_disableDeleteButton = (_currentFolder == "");
+			if (_disableDeleteButton) {
 				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 			}
 			if (ImGui::Button("Delete folder")) {
 				ImGui::OpenPopup("DeleteFolderPopup");
 			}
-			if (disableDeleteButton) {
+			if (_disableDeleteButton) {
 				ImGui::PopStyleVar();
 				ImGui::PopItemFlag();
 			}
@@ -280,14 +317,14 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			ImVec2 center(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x * 0.5f,
 						  ImGui::GetWindowPos().y + ImGui::GetWindowSize().y * 0.5f);
 			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-			if (ImGui::BeginPopup("NewFolderPopup", ImGuiWindowFlags_Modal)) {
+			if (ImGui::BeginPopupModal("NewFolderPopup")) {
 				ImGui::Text("Enter a name for the new folder");
-				ImGui::InputText("", newFolderName, sizeof(newFolderName));
+				ImGui::InputText("", _newFolderName, sizeof(_newFolderName));
 				if (ImGui::Button("Create##1")) {
-					if (strlen(newFolderName) <= 0) {
-						SDL_strlcpy(newFolderError, "Folder name can't be empty", sizeof(newFolderError));
+					if (strlen(_newFolderName) <= 0) {
+						SDL_strlcpy(_newFolderError, "Folder name can't be empty", sizeof(_newFolderError));
 					} else {
-						const core::String &newFilePath = assemblePath(fileDialogCurrentPath, newFolderName);
+						const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
 						io::filesystem()->createDir(newFilePath);
 						ImGui::CloseCurrentPopup();
 					}
@@ -295,22 +332,22 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 				ImGui::SetItemDefaultFocus();
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel##1") || ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Escape])) {
-					newFolderName[0] = '\0';
-					newFolderError[0] = '\0';
+					_newFolderName[0] = '\0';
+					_newFolderError[0] = '\0';
 					ImGui::CloseCurrentPopup();
 				}
-				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", newFolderError);
+				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _newFolderError);
 				ImGui::EndPopup();
 			}
 
 			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-			if (ImGui::BeginPopup("DeleteFolderPopup", ImGuiWindowFlags_Modal)) {
+			if (ImGui::BeginPopupModal("DeleteFolderPopup")) {
 				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "Are you sure you want to delete this folder?");
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
-				ImGui::TextUnformatted(fileDialogCurrentFolder.c_str());
+				ImGui::TextUnformatted(_currentFolder.c_str());
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
 				if (ImGui::Button("Yes")) {
-					const core::String &removePath = assemblePath(fileDialogCurrentPath, fileDialogCurrentFolder);
+					const core::String &removePath = assemblePath(_currentPath, _currentFolder);
 					if (!io::filesystem()->removeDir(removePath, false)) {
 						Log::warn("Failed to delete directory '%s'", removePath.c_str());
 					}
@@ -341,61 +378,61 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
 			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - cancelTextSize.x - chooseTextSize.x - ImGui::Size(40.0f));
 			if (ImGui::Button("Cancel") || ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Escape])) {
-				fileDialogFileSelectIndex = 0;
-				fileDialogFolderSelectIndex = 0;
-				fileDialogCurrentFile = "";
+				_fileSelectIndex = 0;
+				_folderSelectIndex = 0;
+				_currentFile = "";
 				core_assert(bufferSize >= 1);
 				buffer[0] = '\0';
 				if (open != nullptr) {
 					*open = false;
 				}
-				ImGui::End();
+				ImGui::EndPopup();
 				return true;
 			}
 			ImGui::SameLine();
-			if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Enter])) {
+			if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Enter]) || doubleClickedFile) {
 				if (type == video::WindowedApp::OpenFileMode::Directory) {
-					if (fileDialogCurrentFolder == "") {
-						SDL_strlcpy(fileDialogError, "Error: You must select a folder!", sizeof(fileDialogError));
+					if (_currentFolder == "") {
+						SDL_strlcpy(_error, "Error: You must select a folder!", sizeof(_error));
 					} else {
-						const core::String &fullPath = assemblePath(fileDialogCurrentPath, fileDialogCurrentFolder);
+						const core::String &fullPath = assemblePath(_currentPath, _currentFolder);
 						SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
-						fileDialogFileSelectIndex = 0;
-						fileDialogFolderSelectIndex = 0;
-						fileDialogCurrentFile = "";
+						_fileSelectIndex = 0;
+						_folderSelectIndex = 0;
+						_currentFile = "";
 						if (open != nullptr) {
 							*open = false;
 						}
-						fileDialogError[0] = '\0';
-						ImGui::End();
+						_error[0] = '\0';
+						ImGui::EndPopup();
 						return true;
 					}
 				} else if (type == video::WindowedApp::OpenFileMode::Open ||
 						   type == video::WindowedApp::OpenFileMode::Save) {
-					if (fileDialogCurrentFile == "") {
-						SDL_strlcpy(fileDialogError, "Error: You must select a file!", sizeof(fileDialogError));
+					if (_currentFile == "") {
+						SDL_strlcpy(_error, "Error: You must select a file!", sizeof(_error));
 					} else {
-						const core::String &fullPath = assemblePath(fileDialogCurrentPath, fileDialogCurrentFile);
+						const core::String &fullPath = assemblePath(_currentPath, _currentFile);
 						SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
-						fileDialogFileSelectIndex = 0;
-						fileDialogFolderSelectIndex = 0;
-						fileDialogCurrentFile = "";
+						_fileSelectIndex = 0;
+						_folderSelectIndex = 0;
+						_currentFile = "";
 						if (open != nullptr) {
 							*open = false;
 						}
-						fileDialogError[0] = '\0';
-						ImGui::End();
+						_error[0] = '\0';
+						ImGui::EndPopup();
 						return true;
 					}
 				}
 			}
 			ImGui::SetItemDefaultFocus();
 
-			if (strlen(fileDialogError) > 0) {
-				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", fileDialogError);
+			if (strlen(_error) > 0) {
+				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _error);
 			}
 
-			ImGui::End();
+			ImGui::EndPopup();
 		}
 	}
 	return false;

@@ -123,3 +123,7 @@ inline const video::Camera& IMGUIApp::camera() const {
 
 }
 }
+
+inline ui::imgui::IMGUIApp* imguiApp() {
+	return (ui::imgui::IMGUIApp*)video::WindowedApp::getInstance();
+}

@@ -715,14 +715,6 @@ app::AppState IMGUIApp::onRunning() {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
 
-		char buf[512] = "";
-		if (_fileDialog.showFileDialog(&_showFileDialog, buf, sizeof(buf), _fileDialogMode)) {
-			if (buf[0] != '\0') {
-				_fileDialogCallback(buf);
-			}
-			_showFileDialog = false;
-		}
-
 		if (_showBindingsDialog) {
 			if (ImGui::Begin("Bindings", &_showBindingsDialog, 0)) {
 				const util::BindMap& bindings = _keybindingHandler.bindings();
@@ -769,11 +761,21 @@ app::AppState IMGUIApp::onRunning() {
 				_showMetrics->setVal("false");
 			}
 		}
-	}
-	_console.renderNotifications();
+		_console.renderNotifications();
 
-	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {
-		core::setBindingContext(core::BindingContext::UserInterface);
+		char buf[512] = "";
+		if (_fileDialog.showFileDialog(&_showFileDialog, buf, sizeof(buf), _fileDialogMode)) {
+			if (buf[0] != '\0') {
+				_fileDialogCallback(buf);
+			}
+			_showFileDialog = false;
+		}
+
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {
+			core::setBindingContext(core::BindingContext::UserInterface);
+		} else {
+			core::setBindingContext(core::BindingContext::World);
+		}
 	} else {
 		core::setBindingContext(core::BindingContext::World);
 	}
