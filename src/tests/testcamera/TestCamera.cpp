@@ -23,16 +23,16 @@ app::AppState TestCamera::onInit() {
 
 	const float nearPlane = 5.0f;
 
-	const int ents = _entities.size();
+	const int ents = (int)_entities.size();
 	const int rows = ents / 5;
 	const int cols = ents / rows;
 	const float distance = 40.0f;
-	const float deltaY = rows / 2.0f * -distance;
-	const float deltaX = cols / 2.0f * -distance;
+	const float deltaY = (float)rows / 2.0f * -distance;
+	const float deltaX = (float)cols / 2.0f * -distance;
 	core_assert(ents - rows * cols == 0);
 	for (int row = 0; row < rows; ++row) {
 		for (int col = 0; col < cols; ++col) {
-			const glm::vec3 p(deltaX + distance * col, deltaY + distance * row, 50.0f);
+			const glm::vec3 p(deltaX + distance * (float)col, deltaY + distance * (float)row, 50.0f);
 			_entities[row * cols + col].setPosition(p).init();
 		}
 	}
@@ -138,7 +138,7 @@ app::AppState TestCamera::onCleanup() {
 		_frustums[i].shutdown();
 	}
 
-	const int ents = _entities.size();
+	const int ents = (int)_entities.size();
 	for (int i = 0; i < ents; ++i) {
 		_entities[i].shutdown();
 	}
