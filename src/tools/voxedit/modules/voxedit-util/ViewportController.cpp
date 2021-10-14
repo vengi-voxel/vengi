@@ -11,17 +11,15 @@ void ViewportController::resetCamera(const voxel::Region& region) {
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(5000.0f);
 	const glm::ivec3& center = region.getCenter();
-	if (_renderMode == RenderMode::Animation) {
-		_camera.setTarget(glm::zero<glm::vec3>());
-		_camera.setPosition(glm::vec3(10.0f, 5.0f, 10.0f));
-		_camera.setTargetDistance(10.0f);
-		return;
-	}
-	_camera.setTarget(center);
 	const glm::vec3 dim(region.getDimensionsInVoxels());
 	const float distance = glm::length(dim);
+	_camera.setTarget(center);
 	_camera.setTargetDistance(distance * 2.0f);
-	if (_camMode == SceneCameraMode::Free) {
+	if (_renderMode == RenderMode::Animation) {
+		_camera.setTarget(glm::zero<glm::vec3>());
+		const int height = region.getHeightInCells();
+		_camera.setPosition(glm::vec3(-distance, (float)height + distance, -distance));
+	} else if (_camMode == SceneCameraMode::Free) {
 		const int height = region.getHeightInCells();
 		_camera.setPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	} else if (_camMode == SceneCameraMode::Top) {
