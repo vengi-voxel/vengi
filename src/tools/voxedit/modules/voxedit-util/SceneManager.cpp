@@ -4,6 +4,7 @@
 
 #include "SceneManager.h"
 
+#include "animation/Animation.h"
 #include "core/collection/DynamicArray.h"
 #include "math/AABB.h"
 #include "voxel/RawVolume.h"
@@ -1712,6 +1713,9 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 	resetSceneState();
 	_animationUpdate = true;
 	_editMode = EditMode::Animation;
+
+	animationEntity().setAnimation(animation::Animation::IDLE, true);
+
 	return true;
 }
 
