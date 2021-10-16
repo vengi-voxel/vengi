@@ -97,6 +97,9 @@
 #define GLM_COMPILER_CLANG41		0x200000C0
 #define GLM_COMPILER_CLANG42		0x200000D0
 
+// HIP
+#define GLM_COMPILER_HIP			0x40000000
+
 // Build model
 #define GLM_MODEL_32				0x00000010
 #define GLM_MODEL_64				0x00000020
@@ -134,6 +137,10 @@
 #	elif CUDA_VERSION < 7000
 #		error "GLM requires CUDA 7.0 or higher"
 #	endif
+
+// HIP
+#elif defined(__HIP__)
+#	define GLM_COMPILER GLM_COMPILER_HIP
 
 // SYCL
 #elif defined(__SYCL_DEVICE_ONLY__)

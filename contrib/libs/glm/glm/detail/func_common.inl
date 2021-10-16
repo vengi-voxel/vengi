@@ -401,7 +401,7 @@ namespace detail
 	template<typename genType>
 	GLM_FUNC_QUALIFIER genType mod(genType x, genType y)
 	{
-#		if GLM_COMPILER & GLM_COMPILER_CUDA
+#		if (GLM_COMPILER & GLM_COMPILER_CUDA) || (GLM_COMPILER & GLM_COMPILER_HIP)
 			// Another Cuda compiler bug https://github.com/g-truc/glm/issues/530
 			vec<1, genType, defaultp> Result(mod(vec<1, genType, defaultp>(x), y));
 			return Result.x;
@@ -601,7 +601,7 @@ namespace detail
 #				endif
 #			elif (GLM_COMPILER & (GLM_COMPILER_GCC | GLM_COMPILER_CLANG)) && (GLM_PLATFORM & GLM_PLATFORM_ANDROID) && __cplusplus < 201103L
 				return _isnan(x) != 0;
-#			elif GLM_COMPILER & GLM_COMPILER_CUDA
+#			elif (GLM_COMPILER & GLM_COMPILER_CUDA) || (GLM_COMPILER & GLM_COMPILER_HIP)
 				return ::isnan(x) != 0;
 #			else
 				return std::isnan(x);
@@ -642,7 +642,7 @@ namespace detail
 #				else
 					return std::isinf(x);
 #				endif
-#			elif GLM_COMPILER & GLM_COMPILER_CUDA
+#			elif (GLM_COMPILER & GLM_COMPILER_CUDA) || (GLM_COMPILER & GLM_COMPILER_HIP)
 				// http://developer.download.nvidia.com/compute/cuda/4_2/rel/toolkit/docs/online/group__CUDA__MATH__DOUBLE_g13431dd2b40b51f9139cbb7f50c18fab.html#g13431dd2b40b51f9139cbb7f50c18fab
 				return ::isinf(double(x)) != 0;
 #			else

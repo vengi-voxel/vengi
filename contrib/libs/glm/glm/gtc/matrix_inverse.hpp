@@ -6,7 +6,7 @@
 /// @defgroup gtc_matrix_inverse GLM_GTC_matrix_inverse
 /// @ingroup gtc
 ///
-/// Include <glm/gtc/matrix_integer.hpp> to use the features of this extension.
+/// Include <glm/gtc/matrix_inverse.hpp> to use the features of this extension.
 ///
 /// Defines additional matrix inverting functions.
 
