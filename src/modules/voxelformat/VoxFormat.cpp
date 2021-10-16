@@ -138,18 +138,8 @@ bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId chi
 	wrapBool(stream.addInt(-1)) // reserved - must be -1
 	wrapBool(stream.addInt(0)) // layerid
 	wrapBool(stream.addInt(1)) // num frames
-	if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
-		constexpr glm::mat3 rot(1.0f);
-		const glm::vec3& newMins = rot * glm::vec3(mins);
-		const core::String& translationStr = core::string::format("%i %i %i", (int)newMins.x, (int)newMins.z, (int)newMins.y);
-		uint8_t packedRot = 0u;
-		RotationMatrixPacked* r = (RotationMatrixPacked*)&packedRot;
-		r->nonZeroEntryInSecondRow = 1;
-		const core::String& rotationStr = core::string::format("%u", (uint32_t)packedRot);
-		wrapBool(saveAttributes({{"_t", translationStr}, {"_r", rotationStr}}, stream))
-	} else {
-		wrapBool(saveAttributes({}, stream))
-	}
+	const core::String& translationStr = core::string::format("%i %i %i", mins.x, mins.z, mins.y);
+	wrapBool(saveAttributes({{"_r", "4"}, {"_t", translationStr}}, stream))
 	++_chunks;
 	return true;
 }
