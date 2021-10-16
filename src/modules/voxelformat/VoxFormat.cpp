@@ -97,9 +97,7 @@ public:
 bool VoxFormat::saveChunk_LAYR(io::FileStream& stream, int modelId, const core::String& name, bool visible) {
 	ScopedChunkWriter scoped(stream, FourCC('L','A','Y','R'));
 	wrapBool(stream.addInt(modelId))
-	const core::String attributeName = "_name";
-	const core::String attributeVisible = "_visible";
-	wrapBool(saveAttributes({{attributeName, name}, {attributeVisible, visible ? "1" : "0"}}, stream))
+	wrapBool(saveAttributes({{"_name", name}, {"_hidden", visible ? "0" : "1"}}, stream))
 	wrapBool(stream.addInt((uint32_t)-1)) // must always be -1
 	++_chunks;
 	return true;
