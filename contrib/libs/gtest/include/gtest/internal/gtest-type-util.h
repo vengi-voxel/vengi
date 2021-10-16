@@ -30,10 +30,8 @@
 // Type utilities needed for implementing typed and type-parameterized
 // tests.
 
-// GOOGLETEST_CM0001 DO NOT DELETE
-
-#ifndef GTEST_INCLUDE_GTEST_INTERNAL_GTEST_TYPE_UTIL_H_
-#define GTEST_INCLUDE_GTEST_INTERNAL_GTEST_TYPE_UTIL_H_
+#ifndef GOOGLETEST_INCLUDE_GTEST_INTERNAL_GTEST_TYPE_UTIL_H_
+#define GOOGLETEST_INCLUDE_GTEST_INTERNAL_GTEST_TYPE_UTIL_H_
 
 #include "gtest/internal/gtest-port.h"
 
@@ -97,8 +95,6 @@ std::string GetTypeName() {
   return "<type>";
 #endif  // GTEST_HAS_RTTI
 }
-
-#if GTEST_HAS_TYPED_TEST || GTEST_HAS_TYPED_TEST_P
 
 // A unique type indicating an empty node
 struct None {};
@@ -175,8 +171,6 @@ struct GenerateTypeList {
   using type = typename proxy::type;
 };
 
-#endif  // GTEST_HAS_TYPED_TEST || GTEST_HAS_TYPED_TEST_P
-
 }  // namespace internal
 
 template <typename... Ts>
@@ -184,4 +178,4 @@ using Types = internal::ProxyTypeList<Ts...>;
 
 }  // namespace testing
 
-#endif  // GTEST_INCLUDE_GTEST_INTERNAL_GTEST_TYPE_UTIL_H_
+#endif  // GOOGLETEST_INCLUDE_GTEST_INTERNAL_GTEST_TYPE_UTIL_H_

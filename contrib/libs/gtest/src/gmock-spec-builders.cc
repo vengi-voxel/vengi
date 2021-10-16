@@ -283,7 +283,7 @@ GTEST_API_ ThreadLocal<Sequence*> g_gmock_implicit_sequence;
 void ReportUninterestingCall(CallReaction reaction, const std::string& msg) {
   // Include a stack trace only if --gmock_verbose=info is specified.
   const int stack_frames_to_skip =
-      GMOCK_FLAG(verbose) == kInfoVerbosity ? 3 : -1;
+      GMOCK_FLAG_GET(verbose) == kInfoVerbosity ? 3 : -1;
   switch (reaction) {
     case kAllow:
       Log(kInfo, msg, stack_frames_to_skip);
@@ -295,8 +295,8 @@ void ReportUninterestingCall(CallReaction reaction, const std::string& msg) {
               "call should not happen.  Do not suppress it by blindly adding "
               "an EXPECT_CALL() if you don't mean to enforce the call.  "
               "See "
-              "https://github.com/google/googletest/blob/master/googlemock/"
-              "docs/cook_book.md#"
+              "https://github.com/google/googletest/blob/master/docs/"
+              "gmock_cook_book.md#"
               "knowing-when-to-expect for details.\n",
           stack_frames_to_skip);
       break;
@@ -613,8 +613,7 @@ class MockObjectRegistry {
   // object alive.  Therefore we report any living object as test
   // failure, unless the user explicitly asked us to ignore it.
   ~MockObjectRegistry() {
-    if (!GMOCK_FLAG(catch_leaked_mocks))
-      return;
+    if (!GMOCK_FLAG_GET(catch_leaked_mocks)) return;
 
     int leaked_count = 0;
     for (StateMap::const_iterator it = states_.begin(); it != states_.end();
@@ -716,9 +715,10 @@ internal::CallReaction Mock::GetReactionOnUninterestingCalls(
     const void* mock_obj)
         GTEST_LOCK_EXCLUDED_(internal::g_gmock_mutex) {
   internal::MutexLock l(&internal::g_gmock_mutex);
-  return (g_uninteresting_call_reaction.count(mock_obj) == 0) ?
-      internal::intToCallReaction(GMOCK_FLAG(default_mock_behavior)) :
-      g_uninteresting_call_reaction[mock_obj];
+  return (g_uninteresting_call_reaction.count(mock_obj) == 0)
+             ? internal::intToCallReaction(
+                   GMOCK_FLAG_GET(default_mock_behavior))
+             : g_uninteresting_call_reaction[mock_obj];
 }
 
 // Tells Google Mock to ignore mock_obj when checking for leaked mock
