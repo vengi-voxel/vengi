@@ -11,6 +11,7 @@ General:
    - Added key bindings dialog
    - Added notifications for warnings and errors in the ui
    - Fixed Sandbox Voxedit VXM v12 loading and added saving support
+   - Fixed MagicaVoxel vox file rotation handling
 
 VoxEdit:
 
