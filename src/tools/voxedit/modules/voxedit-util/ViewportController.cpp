@@ -43,7 +43,9 @@ void ViewportController::init(ViewportController::SceneCameraMode mode) {
 	if (mode == ViewportController::SceneCameraMode::Free) {
 		_camera.setMode(video::CameraMode::Perspective);
 	} else {
-		_camera.setMode(video::CameraMode::Orthogonal);
+		// TODO: activate parallel projection
+		//_camera.setMode(video::CameraMode::Orthogonal);
+		_camera.setMode(video::CameraMode::Perspective);
 	}
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 }
