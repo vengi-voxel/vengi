@@ -465,12 +465,12 @@ void Camera::zoom(float value) {
 
 glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 	const float left = (float)x();
-	const float bottom = (float)y();
+	const float top = (float)y();
 	const float right = left + (float)_windowSize.x;
-	const float top = bottom + (float)_windowSize.y;
+	const float bottom = top + (float)_windowSize.y;
 	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
-	core_assert_msg(top > bottom, "Invalid dimension given: top must be greater than bottom but is %f", top);
-	return glm::ortho(left, right, top, bottom, nplane, fplane);
+	core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
+	return glm::ortho(left, right, bottom, top, nplane, fplane);
 }
 
 glm::mat4 Camera::perspectiveMatrix(float nplane, float fplane) const {
