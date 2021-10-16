@@ -300,7 +300,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		++modelId;
 	}
 
-	if (modelId > 0) {
+	if (0 && modelId > 0) {
 		wrapBool(saveSceneGraph(stream, volumes, modelId))
 
 		for (auto& v : volumes) {
