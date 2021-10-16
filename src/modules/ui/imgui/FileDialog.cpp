@@ -8,6 +8,7 @@
 #include "IconsForkAwesome.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
+#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -180,7 +181,7 @@ void FileDialog::directoryPanel() {
 }
 
 bool FileDialog::hide(const core::String &file) const {
-	if (_showHidden) {
+	if (_showHidden->boolVal()) {
 		return false;
 	}
 	return file[0] == '.';
@@ -333,14 +334,8 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 		if (!ImGui::IsPopupOpen(title)) {
 			ImGui::OpenPopup(title);
 		}
+		_showHidden = core::Var::getSafe(cfg::UIShowHidden);
 		if (ImGui::BeginPopupModal(title, open)) {
-			if (ImGui::BeginPopupContextItem()) {
-				if (ImGui::MenuItem("Show hidden entries", nullptr, false, _showHidden)) {
-					_showHidden ^= true;
-				}
-				ImGui::EndPopup();
-			}
-
 			ImGui::TextUnformatted(ICON_FK_FOLDER_OPEN_O " Current path: ");
 			ImGui::SameLine();
 			ImGui::TextUnformatted(_currentPath.c_str());
@@ -382,7 +377,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 				ImGui::PopItemFlag();
 			}
 			ImGui::SameLine();
-			ImGui::Checkbox("Show hidden", &_showHidden);
+			ImGui::CheckboxVar("Show hidden", _showHidden);
 
 			ImVec2 center(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x * 0.5f,
 						  ImGui::GetWindowPos().y + ImGui::GetWindowSize().y * 0.5f);

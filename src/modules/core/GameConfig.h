@@ -30,6 +30,8 @@ constexpr const char *ClientWindowHighDPI = "cl_highdpi";
 constexpr const char *UIShowMetrics = "ui_showmetrics";
 constexpr const char *UIFontSize = "ui_fontsize";
 constexpr const char *UILastDirectory = "ui_lastdirectory";
+// filedialog
+constexpr const char *UIShowHidden = "ui_showhidden";
 constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";
 
 constexpr const char *AudioSoundVolume = "snd_volume";

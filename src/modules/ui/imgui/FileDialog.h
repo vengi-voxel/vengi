@@ -32,7 +32,7 @@ private:
 	float _filterTextWidth = 0.0f;
 	int _currentFilterEntry = -1;
 	core::DynamicArray<core::String> _filterEntries;
-	bool _showHidden = true;
+	core::VarPtr _showHidden;
 	bool _disableDeleteButton = false;
 	char _newFolderName[500] = "";
 	char _newFolderError[500] = "";
