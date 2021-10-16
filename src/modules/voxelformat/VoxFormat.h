@@ -20,7 +20,7 @@ namespace voxel {
  * @brief MagicaVoxel vox format load and save functions
  *
  * https://github.com/ephtracy/voxel-model.git
- * https://voxel.codeplex.com/wikipage?title=Sample%20Codes
+ * https://ephtracy.github.io/
  */
 class VoxFormat : public VoxFileFormat {
 private:

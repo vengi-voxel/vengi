@@ -841,6 +841,80 @@ bool VoxFormat::loadChunk_rCAM(io::FileStream& stream, const ChunkHeader& header
 bool VoxFormat::loadChunk_rOBJ(io::FileStream& stream, const ChunkHeader& header) {
 	Attributes attributes;
 	wrapBool(readAttributes(attributes, stream))
+	// _type => _setting
+	// _ground => 1
+	// _grid => 0
+	// _edge => 0
+	// _bg_c => 0
+	// _bg_a => 0
+	// _scale => 1 1 1
+	// _cell => 1
+
+	// _type => _bloom
+	// _mix => 0.11
+	// _scale => 0.27
+	// _aspect => 0
+	// _threshold => 1
+
+	// _type => _edge
+	// _color => 0 0 0
+	// _width => 0.2
+
+	// _type => _bg
+	// _color => 0 0 0
+
+	// _type => _bounce
+	// _diffuse => 2
+	// _specular => 5
+	// _scatter => 5
+	// _energy => 3
+
+	// _type => _env
+	// _mode => 0
+
+	// _type => _inf
+	// _i => 0.55
+	// _k => 255 255 255
+	// _angle => 40 334
+	// _area => 0
+	// _disk => 0
+
+	// _type => _uni
+	// _i => 0.58
+	// _k => 215 255 253
+
+	// _type => _ibl
+	// _path => HDR_041_Path_Env.hdr
+	// _i => 1
+	// _rot => 0
+
+	// _type => _atm
+	// _ray_d => 0.4
+	// _ray_k => 45 104 255
+	// _mie_d => 0.4
+	// _mie_k => 255 255 255
+	// _mie_g => 0.85
+	// _o3_d => 0
+	// _o3_k => 105 255 110
+
+	// _type => _fog_uni
+	// _d => 0
+	// _k => 255 255 255
+	// _g => 0
+
+	// _type => _lens
+	// _proj => 0
+	// _fov => 45
+	// _aperture => 0.25
+	// _blade_n => 0
+	// _blade_r => 0
+
+	// _type => _film
+	// _expo => 1
+	// _vig => 0
+	// _aces => 1
+	// _gam => 2.2
+
 	return true;
 }
 
@@ -854,8 +928,11 @@ bool VoxFormat::loadChunk_MATL(io::FileStream& stream, const ChunkHeader& header
 	// (_spec : float)
 	// (_ior : float)
 	// (_att : float)
+	// (_d : float)
 	// (_flux : float)
-	// (_plastic)
+	// (_emit : float)
+	// (_plastic : 0|1)
+	// (_metal : 0|1)
 	wrapBool(readAttributes(materialAttributes, stream))
 	return true;
 }
