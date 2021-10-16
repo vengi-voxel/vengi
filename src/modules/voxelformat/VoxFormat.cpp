@@ -289,16 +289,17 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		++modelId;
 	}
 
-	if (0 && modelId > 0) {
-		wrapBool(saveSceneGraph(stream, volumes, modelId))
+	// TODO: mv can't load the vox file when we write these chunks
+#if 0
+	wrapBool(saveSceneGraph(stream, volumes, modelId))
 
-		for (auto& v : volumes) {
-			if (skipSaving(v)) {
-				continue;
-			}
-			wrapBool(saveChunk_LAYR(stream, modelId, v.name, v.visible))
+	for (auto& v : volumes) {
+		if (skipSaving(v)) {
+			continue;
 		}
+		wrapBool(saveChunk_LAYR(stream, modelId, v.name, v.visible))
 	}
+#endif
 
 	wrapBool(saveChunk_RGBA(stream))
 
