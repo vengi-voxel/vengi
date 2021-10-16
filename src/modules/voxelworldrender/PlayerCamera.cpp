@@ -46,7 +46,7 @@ bool PlayerCamera::init(const glm::ivec2& position, const glm::ivec2& frameBuffe
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setFieldOfView(_fieldOfView);
 	_camera.setTargetDistance(_targetDistance);
-	_camera.setPosition(_cameraPosition);
+	_camera.setWorldPosition(_cameraPosition);
 	_camera.setTarget(glm::vec3(0.0f));
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.update(0.0);

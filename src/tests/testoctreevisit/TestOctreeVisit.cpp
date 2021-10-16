@@ -49,7 +49,7 @@ void TestOctreeVisit::updateCamera() {
 	_octreeCamera.init(glm::ivec2(0), _ortho ? glm::ivec2(100, 50) : frameBufferDimension(), _ortho ? glm::ivec2(100, 50) : frameBufferDimension());
 	_octreeCamera.setOmega(_omega);
 
-	_octreeCamera.setPosition(_pos);
+	_octreeCamera.setWorldPosition(_pos);
 	_octreeCamera.lookAt(_lookAt);
 	_octreeCamera.setFarPlane(_farPlane);
 	_octreeCamera.setNearPlane(_nearPlane);

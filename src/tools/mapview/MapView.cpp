@@ -273,7 +273,7 @@ void MapView::beforeUI() {
 void MapView::onRenderUI() {
 	if (ImGui::CollapsingHeader("Stats")) {
 		const video::Camera& camera = _camera.camera();
-		const glm::vec3& pos = camera.position();
+		const glm::vec3& pos = camera.worldPosition();
 		const glm::vec3& targetpos = camera.target();
 		const float distance = camera.targetDistance();
 		const float pitch = camera.pitch();
@@ -419,7 +419,7 @@ app::AppState MapView::onRunning() {
 		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 
-	_soundManager->setListenerPosition(_camera.camera().position());
+	_soundManager->setListenerPosition(_camera.camera().worldPosition());
 	_soundManager->update();
 	_axis.render(_camera.camera());
 	compute::finish();

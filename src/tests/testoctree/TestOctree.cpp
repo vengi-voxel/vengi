@@ -71,7 +71,7 @@ app::AppState TestOctree::onInit() {
 
 	_octree.setListener(&_listener);
 	camera().setFarPlane(4000.0f);
-	camera().setPosition(glm::vec3(0.0f, 1250.0f, 2500.0f));
+	camera().setWorldPosition(glm::vec3(0.0f, 1250.0f, 2500.0f));
 
 	insert();
 

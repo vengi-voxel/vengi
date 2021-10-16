@@ -106,7 +106,7 @@ app::AppState TestTraze::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	camera().setPosition(glm::vec3(0.0f, 50.0f, 84.0f));
+	camera().setWorldPosition(glm::vec3(0.0f, 50.0f, 84.0f));
 	_logLevelVar->setVal(core::string::toString(SDL_LOG_PRIORITY_INFO));
 	Log::init();
 
@@ -290,7 +290,7 @@ app::AppState TestTraze::onRunning() {
 		_protocol.subscribe(_games[_currentGameIndex]);
 	}
 	_messageQueue.update(_deltaFrameSeconds);
-	_soundMgr.setListenerPosition(camera().position());
+	_soundMgr.setListenerPosition(camera().worldPosition());
 	_soundMgr.update();
 	return state;
 }

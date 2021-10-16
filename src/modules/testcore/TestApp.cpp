@@ -84,7 +84,7 @@ app::AppState TestApp::onInit() {
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _frameBufferDimension.x, _frameBufferDimension.y, _aspect);
 	camera().init(glm::ivec2(0), frameBufferDimension(), windowDimension());
-	camera().setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
+	camera().setWorldPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	camera().lookAt(glm::vec3(0.0f));
 
 	video::clearColor(::core::Color::Black);
@@ -142,9 +142,9 @@ void TestApp::onRenderUI() {
 	ImGui::Checkbox("Render plane", &_renderPlane);
 	ImGui::Checkbox("Camera motion", &_cameraMotion);
 	ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f);
-	glm::vec3 cameraPos = camera().position();
+	glm::vec3 cameraPos = camera().worldPosition();
 	if (ImGui::InputFloat3("Camera position", glm::value_ptr(cameraPos))) {
-		camera().setPosition(cameraPos);
+		camera().setWorldPosition(cameraPos);
 	}
 	ImGui::InputVarFloat("Rotation speed", _rotationSpeed, 0.01f, 0.1f);
 	ImGui::Separator();

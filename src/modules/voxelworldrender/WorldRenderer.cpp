@@ -273,7 +273,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 		_waterShader.markClean();
 	}
 	_waterShader.setFocuspos(_focusPos);
-	_waterShader.setCamerapos(camera.position());
+	_waterShader.setCamerapos(camera.worldPosition());
 	_waterShader.setLightdir(_shadow.sunDirection());
 	_waterShader.setFogrange(_fogRange);
 	_waterShader.setTime(_seconds);

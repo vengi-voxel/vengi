@@ -28,7 +28,7 @@ protected:
 		camera.setNearPlane(0.1f);
 		camera.setFarPlane(100.0f);
 		camera.init(glm::ivec2(0), dimension, dimension);
-		camera.setPosition(position);
+		camera.setWorldPosition(position);
 		camera.lookAt(lookAt, lookAlong);
 		camera.update(0.0);
 		return camera;
@@ -67,7 +67,7 @@ TEST_F(CameraTest, testScreenRayStraightDown) {
 	// get the world position from the center of the screen
 	const math::Ray& ray = camera.screenRay(glm::vec2(0.5f));
 	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.00001f))) << ray << " - " << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.position(), ray.origin, 0.00001f))) << ray << " - " << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.worldPosition(), ray.origin, 0.00001f))) << ray << " - " << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
 }
 
 TEST_F(CameraTest, testMotion) {
@@ -116,7 +116,7 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	Camera camera;
 	camera.init(glm::ivec2(0), glm::vec2(100.0f, 100.0f), glm::vec2(100.0f, 100.0f));
 	camera.setMode(CameraMode::Orthogonal);
-	camera.setPosition(glm::vec3(0.1, 1.0, 0.1));
+	camera.setWorldPosition(glm::vec3(0.1, 1.0, 0.1));
 	camera.lookAt(glm::vec3(0.0), glm::forward);
 	camera.update(0.0);
 	const math::Frustum& frustum = camera.frustum();

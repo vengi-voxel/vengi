@@ -72,9 +72,9 @@ protected:
 	// ortho
 	glm::ivec2 _windowSize {0};
 	// the position that is used for ortho projection matrices
-	glm::ivec2 _position {0};
+	glm::ivec2 _orthoPosition {0};
 	// the position of the camera in the world
-	glm::vec3 _pos {0.0f};
+	glm::vec3 _worldPos {0.0f};
 	glm::vec3 _eyePosition { 0.0f };
 	glm::quat _quat = glm::quat(1, 0, 0, 0);
 	uint32_t _dirty = DIRTY_ALL;
@@ -108,7 +108,7 @@ protected:
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
-	void init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
+	void init(const glm::ivec2& orthoPosition, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
 	int frameBufferWidth() const;
 	int frameBufferHeight() const;
 
@@ -119,11 +119,11 @@ public:
 	/**
 	 * @note Not the world position of the camera - but for controlling the viewport
 	 */
-	int x() const;
+	int orthoX() const;
 	/**
 	 * @note Not the world position of the camera - but for controlling the viewport
 	 */
-	int y() const;
+	int orthoY() const;
 
 	const glm::vec3& eye() const;
 
@@ -163,8 +163,8 @@ public:
 
 	glm::vec3 direction() const;
 
-	const glm::vec3& position() const;
-	void setPosition(const glm::vec3& pos);
+	const glm::vec3& worldPosition() const;
+	void setWorldPosition(const glm::vec3& worldPos);
 	void move(const glm::vec3& delta);
 
 	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
@@ -291,12 +291,12 @@ inline int Camera::frameBufferHeight() const {
 	return _frameBufferSize.y;
 }
 
-inline int Camera::x() const {
-	return _position.x;
+inline int Camera::orthoX() const {
+	return _orthoPosition.x;
 }
 
-inline int Camera::y() const {
-	return _position.y;
+inline int Camera::orthoY() const {
+	return _orthoPosition.y;
 }
 
 inline void Camera::setType(CameraType type) {
@@ -406,8 +406,8 @@ inline void Camera::setAspectRatio(float aspect) {
 	_frameBufferAspectRatio = aspect;
 }
 
-inline const glm::vec3& Camera::position() const {
-	return _pos;
+inline const glm::vec3& Camera::worldPosition() const {
+	return _worldPos;
 }
 
 inline void Camera::setTargetDistance(float distance) {
@@ -426,9 +426,9 @@ inline float Camera::targetDistance() const {
 	return _distance;
 }
 
-inline Camera uiCamera(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
+inline Camera uiCamera(const glm::ivec2& orthoPosition, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
 	Camera camera(CameraType::FirstPerson, video::CameraMode::Orthogonal);
-	camera.init(position, frameBufferSize, windowSize);
+	camera.init(orthoPosition, frameBufferSize, windowSize);
 	camera.setNearPlane(-1.0f);
 	camera.setFarPlane(1.0f);
 	camera.update(0.0);

@@ -23,7 +23,7 @@ app::AppState TestSkybox::onInit() {
 		return state;
 	}
 
-	camera().setPosition(glm::backward);
+	camera().setWorldPosition(glm::backward);
 	camera().lookAt(glm::forward);
 	if (!_skybox.init(_skyboxVar->strVal().c_str())) {
 		Log::error("Failed to initialize the skybox");

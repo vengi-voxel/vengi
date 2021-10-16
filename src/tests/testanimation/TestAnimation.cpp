@@ -148,7 +148,7 @@ app::AppState TestAnimation::onInit() {
 		_animations.push_back(animation::toString((animation::Animation)i));
 	}
 
-	camera().setPosition(glm::vec3(10.0f, 5.0f, 10.0f));
+	camera().setWorldPosition(glm::vec3(10.0f, 5.0f, 10.0f));
 	camera().lookAt(glm::zero<glm::vec3>());
 
 	if (!voxel::initDefaultMaterialColors()) {

@@ -18,18 +18,18 @@ void ViewportController::resetCamera(const voxel::Region& region) {
 	if (_renderMode == RenderMode::Animation) {
 		_camera.setTarget(glm::zero<glm::vec3>());
 		const int height = region.getHeightInCells();
-		_camera.setPosition(glm::vec3(-distance, (float)height + distance, -distance));
+		_camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	} else if (_camMode == SceneCameraMode::Free) {
 		const int height = region.getHeightInCells();
-		_camera.setPosition(glm::vec3(-distance, (float)height + distance, -distance));
+		_camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	} else if (_camMode == SceneCameraMode::Top) {
 		const int height = region.getHeightInCells();
-		_camera.setPosition(glm::vec3(center.x, height + center.y, center.z));
+		_camera.setWorldPosition(glm::vec3(center.x, height + center.y, center.z));
 	} else if (_camMode == SceneCameraMode::Left) {
-		_camera.setPosition(glm::vec3(-center.x, center.y, center.z));
+		_camera.setWorldPosition(glm::vec3(-center.x, center.y, center.z));
 	} else if (_camMode == SceneCameraMode::Front) {
 		const int depth = region.getDepthInCells();
-		_camera.setPosition(glm::vec3(center.x, center.y, -depth - center.z));
+		_camera.setWorldPosition(glm::vec3(center.x, center.y, -depth - center.z));
 	}
 }
 

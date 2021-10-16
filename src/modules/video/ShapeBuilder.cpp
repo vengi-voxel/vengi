@@ -585,7 +585,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 	if (camera.rotationType() == CameraRotationType::Target) {
 		setColor(core::Color::Green);
-		addVertex(camera.position());
+		addVertex(camera.worldPosition());
 		addVertex(camera.target());
 		// TODO: index looks wrong
 		addIndex(startIndex + math::FRUSTUM_VERTICES_MAX + 0);

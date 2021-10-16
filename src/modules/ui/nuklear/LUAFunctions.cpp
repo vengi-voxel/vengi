@@ -1289,7 +1289,7 @@ int uilua_model(lua_State *s) {
 	model.camera.setTargetDistance(40.0f);
 	model.camera.setRotationType(video::CameraRotationType::Target);
 	model.camera.setTarget(glm::vec3(0.0f));
-	model.camera.setPosition(glm::vec3(0.0f, 200.0f, 200.0f));
+	model.camera.setWorldPosition(glm::vec3(0.0f, 200.0f, 200.0f));
 
 	if (argc == 2) {
 		if (!lua_istable(s, 2)) {
@@ -1304,7 +1304,7 @@ int uilua_model(lua_State *s) {
 				model.omegaY = luaL_checknumber(s, -1);
 			} else if (!SDL_strcmp(field, "cameraPos")) {
 				const glm::vec3& v = clua_tovec<glm::vec3>(s, -1);
-				model.camera.setPosition(v);
+				model.camera.setWorldPosition(v);
 			} else if (!SDL_strcmp(field, "cameraTarget")) {
 				const glm::vec3& v = clua_tovec<glm::vec3>(s, -1);
 				model.camera.setTarget(v);

@@ -117,7 +117,7 @@ app::AppState Thumbnailer::onRunning() {
 	const float distance = glm::length(dim);
 	camera.setTargetDistance(distance * 2.0f);
 	const int height = region.getHeightInCells();
-	camera.setPosition(glm::vec3(-distance, height + distance, -distance));
+	camera.setWorldPosition(glm::vec3(-distance, height + distance, -distance));
 	camera.lookAt(center);
 	camera.setFarPlane(5000.0f);
 	camera.update(1L);

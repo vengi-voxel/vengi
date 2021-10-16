@@ -174,12 +174,12 @@ void WorldChunkMgr::extractMeshes(const video::Camera& camera) {
 
 	const float farplane = camera.farPlane();
 
-	glm::vec3 mins = camera.position();
+	glm::vec3 mins = camera.worldPosition();
 	mins.x -= farplane;
 	mins.y = 0;
 	mins.z -= farplane;
 
-	glm::vec3 maxs = camera.position();
+	glm::vec3 maxs = camera.worldPosition();
 	maxs.x += farplane;
 	maxs.y = voxel::MAX_HEIGHT;
 	maxs.z += farplane;

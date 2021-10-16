@@ -48,7 +48,7 @@ app::AppState TestCamera::onInit() {
 		_renderCamera[i].init(glm::ivec2(0), ortho ? glm::ivec2(100, 50) : frameBufferDimension(), ortho ? glm::ivec2(100, 50) : windowDimension());
 		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 
-		_renderCamera[i].setPosition(glm::zero<glm::vec3>());
+		_renderCamera[i].setWorldPosition(glm::zero<glm::vec3>());
 		_renderCamera[i].lookAt(glm::vec3(10.0f, 70.0f, 10.0f));
 		_renderCamera[i].setNearPlane(nearPlane);
 		_renderCamera[i].setFarPlane(40.0f);
@@ -73,7 +73,7 @@ app::AppState TestCamera::onInit() {
 }
 
 void TestCamera::resetCameraPosition() {
-	camera().setPosition(glm::vec3(0.0f, 100.0f, 250.0f));
+	camera().setWorldPosition(glm::vec3(0.0f, 100.0f, 250.0f));
 	camera().setAngles(0.0f, 0.0f, 0.0f);
 	camera().lookAt(glm::vec3(0.0f));
 }
@@ -129,7 +129,7 @@ app::AppState TestCamera::onRunning() {
 	if (mods & KMOD_SHIFT) {
 		c.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	}
-	camera().setTarget(c.position());
+	camera().setTarget(c.worldPosition());
 	return state;
 }
 

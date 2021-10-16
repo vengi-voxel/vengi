@@ -18,7 +18,7 @@
 namespace video {
 
 Camera::Camera(CameraType type, CameraMode mode) :
-	_type(type), _mode(mode), _pos(glm::vec3(0.0f)), _omega(0.0f) {
+	_type(type), _mode(mode), _worldPos(glm::vec3(0.0f)), _omega(0.0f) {
 }
 
 float Camera::pitch() const {
@@ -73,12 +73,12 @@ glm::vec3 Camera::up() const {
 	return glm::conjugate(_quat) * glm::up;
 }
 
-void Camera::setPosition(const glm::vec3& pos) {
-	if (glm::all(glm::epsilonEqual(_pos, pos, 0.0001f))) {
+void Camera::setWorldPosition(const glm::vec3& worldPos) {
+	if (glm::all(glm::epsilonEqual(_worldPos, worldPos, 0.0001f))) {
 		return;
 	}
 	_dirty |= DIRTY_POSITON;
-	_pos = pos;
+	_worldPos = worldPos;
 	if (_rotationType == CameraRotationType::Target) {
 		lookAt(_target);
 	}
@@ -125,11 +125,11 @@ void Camera::rotate(const glm::quat& rotation) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
-void Camera::init(const glm::ivec2& position, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
-	if (_position == position && _frameBufferSize == frameBufferSize && _windowSize == windowSize) {
+void Camera::init(const glm::ivec2& orthoPosition, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
+	if (_orthoPosition == orthoPosition && _frameBufferSize == frameBufferSize && _windowSize == windowSize) {
 		return;
 	}
-	_position = position;
+	_orthoPosition = orthoPosition;
 	_frameBufferSize = frameBufferSize;
 	_windowSize = windowSize;
 	_frameBufferAspectRatio = (float)_frameBufferSize.x / (float)_frameBufferSize.y;
@@ -141,9 +141,9 @@ void Camera::move(const glm::vec3& delta) {
 		return;
 	}
 	_dirty |= DIRTY_POSITON;
-	_pos += forward() * -delta.z;
-	_pos += right() * delta.x;
-	_pos += up() * delta.y;
+	_worldPos += forward() * -delta.z;
+	_worldPos += right() * delta.x;
+	_worldPos += up() * delta.y;
 	if (_rotationType == CameraRotationType::Target) {
 		lookAt(_target, glm::up);
 		_dirty |= DIRTY_TARGET;
@@ -208,11 +208,11 @@ void Camera::slerp(const glm::vec3& radians, float factor) {
 }
 
 bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
-	if (glm::all(glm::epsilonEqual(_pos, position, 0.0001f))) {
+	if (glm::all(glm::epsilonEqual(_worldPos, position, 0.0001f))) {
 		return false;
 	}
 
-	glm::vec3 targetDir = glm::normalize(position - _pos);
+	glm::vec3 targetDir = glm::normalize(position - _worldPos);
 	if (glm::length2(targetDir) == 0) {
 		targetDir = glm::forward;
 	}
@@ -231,12 +231,12 @@ bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 		}
 	}
 
-	_quat = glm::quat_cast(glm::lookAt(_pos, _pos + targetDir, upDir));
+	_quat = glm::quat_cast(glm::lookAt(_worldPos, _worldPos + targetDir, upDir));
 	_dirty |= DIRTY_ORIENTATION;
 	core_assert_msg(!glm::any(glm::isnan(_quat)), "upDirection(%f:%f:%f), position(%f:%f:%f), _pos(%f:%f:%f)",
-			upDirection.x, upDirection.y, upDirection.z, position.x, position.y, position.z, _pos.x, _pos.y, _pos.z);
+			upDirection.x, upDirection.y, upDirection.z, position.x, position.y, position.z, _worldPos.x, _worldPos.y, _worldPos.z);
 	core_assert_msg(!glm::any(glm::isinf(_quat)), "upDirection(%f:%f:%f), position(%f:%f:%f), _pos(%f:%f:%f)",
-			upDirection.x, upDirection.y, upDirection.z, position.x, position.y, position.z, _pos.x, _pos.y, _pos.z);
+			upDirection.x, upDirection.y, upDirection.z, position.x, position.y, position.z, _worldPos.x, _worldPos.y, _worldPos.z);
 	return true;
 }
 
@@ -259,10 +259,10 @@ void Camera::updateTarget() {
 	}
 	const glm::vec3& backward = -forward();
 	const glm::vec3& newPosition = _target + backward * _distance;
-	if (glm::all(glm::epsilonEqual(_pos, newPosition, 0.0001f))) {
+	if (glm::all(glm::epsilonEqual(_worldPos, newPosition, 0.0001f))) {
 		return;
 	}
-	_pos = newPosition;
+	_worldPos = newPosition;
 	_dirty |= DIRTY_POSITON;
 }
 
@@ -310,7 +310,7 @@ void Camera::updateViewMatrix() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON)) {
 		return;
 	}
-	_viewMatrix = glm::translate(orientation(), -_pos);
+	_viewMatrix = glm::translate(orientation(), -_worldPos);
 	_invViewMatrix = glm::inverse(_viewMatrix);
 	_eyePosition =_invViewMatrix[3];
 }
@@ -333,7 +333,7 @@ math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	rayEyeSpace.w = 0.0f;
 
 	const glm::vec3& rayDirection = glm::normalize(glm::vec3(inverseViewMatrix() * rayEyeSpace));
-	return math::Ray(position(), rayDirection);
+	return math::Ray(worldPosition(), rayDirection);
 }
 
 glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
@@ -348,8 +348,8 @@ glm::ivec2 Camera::worldToScreen(const glm::vec3& worldPos) const {
 	trans.y = 1.0f - trans.y;
 	trans.x *= (float)_windowSize.x;
 	trans.y *= (float)_windowSize.y;
-	trans.x += (float)_position.x;
-	trans.y += (float)_position.y;
+	trans.x += (float)_orthoPosition.x;
+	trans.y += (float)_orthoPosition.y;
 	return glm::ivec2(trans.x, trans.y);
 }
 
@@ -461,8 +461,8 @@ void Camera::zoom(float value) {
 }
 
 glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
-	const float left = (float)x();
-	const float top = (float)y();
+	const float left = (float)orthoX();
+	const float top = (float)orthoY();
 	const float right = left + (float)_windowSize.x;
 	const float bottom = top + (float)_windowSize.y;
 	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
@@ -471,7 +471,8 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 }
 
 glm::mat4 Camera::perspectiveMatrix(float nplane, float fplane) const {
-	return glm::perspectiveFovRH_NO(glm::radians(_fieldOfView), (float)_windowSize.x, (float)_windowSize.y, nplane, fplane);
+	const float fov = glm::radians(_fieldOfView);
+	return glm::perspectiveFovRH_NO(fov, (float)_windowSize.x, (float)_windowSize.y, nplane, fplane);
 }
 
 void Camera::setNearPlane(float nearPlane) {
