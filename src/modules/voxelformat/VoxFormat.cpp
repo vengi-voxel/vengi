@@ -265,7 +265,7 @@ bool VoxFormat::saveSceneGraph(io::FileStream& stream, const VoxelVolumes& volum
 
 		++modelId;
 	}
-	return true;
+	return modelCount == modelId;
 }
 
 bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
