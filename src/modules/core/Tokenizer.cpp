@@ -155,8 +155,8 @@ bool Tokenizer::skipComments(const char **s, bool skipWhitespace) {
 	if (!_skipComments) {
 		return false;
 	}
-	char c = **s;
-	if (c != '/') {
+	const char c = **s;
+	if (c != '/' && c != '#') {
 		return false;
 	}
 	const char next = (*s)[1];
@@ -178,7 +178,7 @@ bool Tokenizer::skipComments(const char **s, bool skipWhitespace) {
 		*s += l + 2;
 		skip(s, skipWhitespace);
 		return true;
-	} else if (next == '/') {
+	} else if (next == '/' || c == '#') {
 		while (**s != '\0' && **s != '\n') {
 			(*s)++;
 			if (--_len <= 0) {
