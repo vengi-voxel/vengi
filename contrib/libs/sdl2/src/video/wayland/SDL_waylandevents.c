@@ -60,6 +60,7 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-compose.h>
+#include "../../events/imKStoUCS.h"
 
 /* Weston uses a ratio of 10 units per scroll tick */
 #define WAYLAND_WHEEL_AXIS_UNIT 10
@@ -230,11 +231,21 @@ Wayland_PumpEvents(_THIS)
         keyboard_repeat_handle(&input->keyboard_repeat, now);
     }
 
+    /* If we're trying to dispatch the display in another thread,
+     * we could trigger a race condition and end up blocking
+     * in wl_display_dispatch() */
+    if (SDL_TryLockMutex(d->display_dispatch_lock) != 0) {
+        return;
+    }
+
     if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0)) {
         err = WAYLAND_wl_display_dispatch(d->display);
     } else {
         err = WAYLAND_wl_display_dispatch_pending(d->display);
     }
+
+    SDL_UnlockMutex(d->display_dispatch_lock);
+
     if (err == -1 && !d->display_disconnected) {
         /* Something has failed with the Wayland connection -- for example,
          * the compositor may have shut down and closed its end of the socket,
@@ -839,7 +850,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     }
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-        if (has_text) {
+        if (has_text && !(SDL_GetModState() & KMOD_CTRL)) {
             Wayland_data_device_set_serial(input->data_device, serial);
             if (!handled_by_ime) {
                 SDL_SendKeyboardText(text);
@@ -870,7 +881,7 @@ Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
         }
 
         if (WAYLAND_xkb_keymap_key_get_syms_by_level(keymap, key, sdlKeymap->layout, 0, &syms) > 0) {
-            uint32_t keycode = WAYLAND_xkb_keysym_to_utf32(syms[0]);
+            uint32_t keycode = SDL_KeySymToUcs4(syms[0]);
             if (keycode) {
                 sdlKeymap->keymap[scancode] = keycode;
             } else {

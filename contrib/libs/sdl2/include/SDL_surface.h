@@ -159,6 +159,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
 
 
 /* !!! FIXME for 2.1: why does this ask for depth? Format provides that. */
+
 /**
  * Allocate a new RGB surface with a specific pixel format.
  *
@@ -218,6 +219,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
                                                               Uint32 Amask);
 
 /* !!! FIXME for 2.1: why does this ask for depth? Format provides that. */
+
 /**
  * Allocate a new RGB surface with with a specific pixel format and existing
  * pixel data.
@@ -305,7 +307,12 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
 /**
  * Load a BMP image from a seekable SDL data stream.
  *
- * The new surface should be freed with SDL_FreeSurface().
+ * The new surface should be freed with SDL_FreeSurface(). Not doing so will
+ * result in a memory leak.
+ *
+ * src is an open SDL_RWops buffer, typically loaded with SDL_RWFromFile.
+ * Alternitavely, you might also use the macro SDL_LoadBMP to load a bitmap
+ * from a file, convert it to an SDL_Surface and then close the file.
  *
  * \param src the data stream for the surface
  * \param freesrc non-zero to close the stream after being read
@@ -313,6 +320,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
  *          error; call SDL_GetError() for more information.
  *
  * \sa SDL_FreeSurface
+ * \sa SDL_RWFromFile
  * \sa SDL_LoadBMP
  * \sa SDL_SaveBMP_RW
  */
@@ -634,7 +642,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  *          call SDL_GetError() for more information.
  *
  * \sa SDL_AllocFormat
- * \sa SDL_ConvertSurfaceFormat
+ * \sa SDL_ConvertSurface
  * \sa SDL_CreateRGBSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat
@@ -805,12 +813,12 @@ extern DECLSPEC int SDLCALL SDL_LowerBlit
      SDL_Surface * dst, SDL_Rect * dstrect);
 
 
- /**
-  * Perform a fast, low quality, stretch blit between two surfaces of the
-  * same format.
-  *
-  * Please use SDL_BlitScaled() instead.
-  */
+/**
+ * Perform a fast, low quality, stretch blit between two surfaces of the same
+ * format.
+ *
+ * Please use SDL_BlitScaled() instead.
+ */
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
                                             const SDL_Rect * srcrect,
                                             SDL_Surface * dst,

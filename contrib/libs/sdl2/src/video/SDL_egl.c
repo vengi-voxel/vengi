@@ -546,7 +546,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     /* Get the EGL version with a valid egl_display, for EGL <= 1.4 */
     SDL_EGL_GetVersion(_this);
 
-    _this->egl_data->is_offscreen = 0;
+    _this->egl_data->is_offscreen = SDL_FALSE;
 
     return 0;
 }
@@ -634,7 +634,7 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
     /* Get the EGL version with a valid egl_display, for EGL <= 1.4 */
     SDL_EGL_GetVersion(_this);
 
-    _this->egl_data->is_offscreen = 1;
+    _this->egl_data->is_offscreen = SDL_TRUE;
 
     return 0;
 }
@@ -1010,27 +1010,24 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         }
     }
 
-    if (_this->gl_config.no_error) {
 #ifdef EGL_KHR_create_context_no_error
+    if (_this->gl_config.no_error) {
         if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_create_context_no_error")) {
             attribs[attr++] = EGL_CONTEXT_OPENGL_NO_ERROR_KHR;
             attribs[attr++] = _this->gl_config.no_error;
-        } else
-#endif
-        {
-            SDL_SetError("EGL implementation does not support no_error contexts");
-            return NULL;
         }
     }
+#endif
 
     attribs[attr++] = EGL_NONE;
 
     /* Bind the API */
     if (profile_es) {
-        _this->egl_data->eglBindAPI(EGL_OPENGL_ES_API);
+        _this->egl_data->apitype = EGL_OPENGL_ES_API;
     } else {
-        _this->egl_data->eglBindAPI(EGL_OPENGL_API);
+        _this->egl_data->apitype = EGL_OPENGL_API;
     }
+    _this->egl_data->eglBindAPI(_this->egl_data->apitype);
 
     egl_context = _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
                                       _this->egl_data->egl_config,
@@ -1106,6 +1103,11 @@ SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context)
         } else {
             return SDL_SetError("OpenGL not initialized");  /* something clearly went wrong somewhere. */
         }
+    }
+
+    /* Make sure current thread has a valid API bound to it. */
+    if (_this->egl_data->eglBindAPI) {
+        _this->egl_data->eglBindAPI(_this->egl_data->apitype);
     }
 
     /* The android emulator crashes badly if you try to eglMakeCurrent 

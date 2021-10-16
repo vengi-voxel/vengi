@@ -1084,6 +1084,9 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
         cmd = cmd->next;
     }
 
+    sceGxmEndScene(data->gxm_context, NULL, NULL);
+    data->drawing = SDL_FALSE;
+
     return 0;
 }
 
@@ -1179,11 +1182,8 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     SceCommonDialogUpdateParam updateParam;
 
-    if (data->drawing) {
-        sceGxmEndScene(data->gxm_context, NULL, NULL);
-        if (data->displayData.wait_vblank) {
-            sceGxmFinish(data->gxm_context);
-        }
+    if (data->displayData.wait_vblank) {
+        sceGxmFinish(data->gxm_context);
     }
 
     data->displayData.address = data->displayBufferData[data->backBufferIndex];
@@ -1222,8 +1222,6 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
     data->pool_index = 0;
 
     data->current_pool = (data->current_pool + 1) % 2;
-
-    data->drawing = SDL_FALSE;
 }
 
 static void

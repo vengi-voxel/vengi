@@ -1011,7 +1011,7 @@ gxm_texture_get_datap(const gxm_texture *texture)
 gxm_texture *
 create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget)
 {
-    gxm_texture *texture = SDL_malloc(sizeof(gxm_texture));
+    gxm_texture *texture = SDL_calloc(1, sizeof(gxm_texture));
     const int tex_size =  ((w + 7) & ~ 7) * h * tex_format_to_bytespp(format);
     void *texture_data;
 
@@ -1026,6 +1026,18 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
         &texture->data_UID
     );
+
+    /* Try SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE in case we're out of VRAM */
+    if (!texture_data) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "CDRAM texture allocation failed\n");
+        texture_data = mem_gpu_alloc(
+            SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
+            tex_size,
+            SCE_GXM_TEXTURE_ALIGNMENT,
+            SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
+            &texture->data_UID
+        );
+    }
 
     if (!texture_data) {
         free(texture);
@@ -1044,6 +1056,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         const uint32_t alignedHeight = ALIGN(h, SCE_GXM_TILE_SIZEY);
         uint32_t sampleCount = alignedWidth*alignedHeight;
         uint32_t depthStrideInSamples = alignedWidth;
+        const uint32_t alignedColorSurfaceStride = ALIGN(w, 8);
 
         int err = sceGxmColorSurfaceInit(
             &texture->gxm_colorsurface,
@@ -1053,7 +1066,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
             SCE_GXM_OUTPUT_REGISTER_SIZE_32BIT,
             w,
             h,
-            w,
+            alignedColorSurfaceStride,
             texture_data
         );
 
