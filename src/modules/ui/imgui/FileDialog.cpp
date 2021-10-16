@@ -63,7 +63,7 @@ bool FileDialog::openDir(const io::FormatDescription* formats) {
 			_filterEntries.push_back(str);
 			++formats;
 		}
-		selectFilter((int)_filterEntries.size() - 1);
+		selectFilter(0);
 	}
 
 	const core::VarPtr &lastDirVar = core::Var::getSafe(cfg::UILastDirectory);
