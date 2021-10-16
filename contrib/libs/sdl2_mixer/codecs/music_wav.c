@@ -825,9 +825,8 @@ static void read_meta_field(Mix_MusicMetaTags *tags, Mix_MusicMetaTag tag_type, 
 
 static SDL_bool ParseLIST(WAV_Music *wave, Uint32 chunk_length)
 {
-    SDL_bool loaded = SDL_FALSE;
-
     Uint8 *data;
+
     data = (Uint8 *)SDL_malloc(chunk_length);
     if (!data) {
         Mix_SetError("Out of memory");
@@ -857,13 +856,12 @@ static SDL_bool ParseLIST(WAV_Music *wave, Uint32 chunk_length)
             }
             i++;
         }
-        loaded = SDL_TRUE;
     }
 
     /* done: */
     SDL_free(data);
 
-    return loaded;
+    return SDL_TRUE;
 }
 
 static SDL_bool LoadWAVMusic(WAV_Music *wave)

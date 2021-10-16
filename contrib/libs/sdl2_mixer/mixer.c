@@ -702,6 +702,7 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
 
     /* Find out what kind of audio file this is */
     if (SDL_RWread(src, magic, 1, 4) != 4) {
+        SDL_free(chunk);
         if (freesrc) {
             SDL_RWclose(src);
         }
@@ -1085,6 +1086,9 @@ int Mix_VolumeChunk(Mix_Chunk *chunk, int volume)
 {
     int prev_volume;
 
+    if (chunk == NULL) {
+        return(-1);
+    }
     prev_volume = chunk->volume;
     if (volume >= 0) {
         if (volume > MIX_MAX_VOLUME) {

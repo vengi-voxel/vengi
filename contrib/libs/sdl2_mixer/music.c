@@ -221,6 +221,17 @@ const char *Mix_GetMusicDecoder(int index)
     return(music_decoders[index]);
 }
 
+SDL_bool Mix_HasMusicDecoder(const char *name)
+{
+    int index;
+    for (index = 0; index < num_decoders; ++index) {
+        if (SDL_strcasecmp(name, music_decoders[index]) == 0) {
+                return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 static void add_music_decoder(const char *decoder)
 {
     void *ptr;
@@ -611,6 +622,7 @@ Mix_Music *Mix_LoadMUS(const char *file)
                     SDL_strcasecmp(ext, "DBM") == 0 ||
                     SDL_strcasecmp(ext, "DSM") == 0 ||
                     SDL_strcasecmp(ext, "FAR") == 0 ||
+                    SDL_strcasecmp(ext, "GDM") == 0 ||
                     SDL_strcasecmp(ext, "IT") == 0 ||
                     SDL_strcasecmp(ext, "MED") == 0 ||
                     SDL_strcasecmp(ext, "MDL") == 0 ||
