@@ -26,11 +26,39 @@
 namespace voxelformat {
 
 // this is the list of supported voxel volume formats that are have importers implemented
-const char *SUPPORTED_VOXEL_FORMATS_LOAD = "vox,qbt,qb,vxm,binvox,cub,kvx,kv6,vxl,qef,csm,nvm,vxr";
+const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
+	{"MagicaVoxel", "vox"},
+	{"Qubicle", "qbt"},
+	{"Qubicle", "qb"},
+	{"Sandbox VoxEdit", "vxm"},
+	{"Sandbox VoxEdit", "vxr"},
+	{"BinVox", "binvox"},
+	{"CubeWorld", "cub"},
+	{"Build engine", "kvx"},
+	{"Ace of Spades", "kv6"},
+	{"Tiberian Sun", "vxl"},
+	{"Qubicle", "qef"},
+	{"Chronovox", "csm"},
+	{"Nicks Voxel Model", "nvm"},
+	{nullptr, nullptr}
+};
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 // this is the list of supported voxel or mesh formats that have exporters implemented
-const char *SUPPORTED_VOXEL_FORMATS_SAVE = "vox,qbt,qb,vxm,binvox,cub,vxl,qef,obj,ply";
+const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
+	{"MagicaVoxel", "vox"},
+	{"Qubicle", "qbt"},
+	{"Qubicle", "qb"},
+	{"Sandbox VoxEdit", "vxm"},
+	{"BinVox", "binvox"},
+	{"CubeWorld", "cub"},
+	{"Build engine", "kvx"},
+	{"Tiberian Sun", "vxl"},
+	{"Qubicle", "qef"},
+	{"WaveFront OBJ", "obj"},
+	{"Polygon File Format", "ply"},
+	{nullptr, nullptr}
+};
 
 static uint32_t loadMagic(const io::FilePtr& file) {
 	io::FileStream stream(file.get());

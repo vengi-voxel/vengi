@@ -62,7 +62,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, "png");
+			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, io::format::png());
 			return;
 		}
 		_mainWindow->saveScreenshot(args[0]);
@@ -100,7 +100,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, "png");
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, io::format::png());
 			return;
 		}
 		if (!voxedit::sceneMgr().importHeightmap(args[0])) {
@@ -110,7 +110,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, "png");
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, io::format::png());
 			return;
 		}
 		if (!voxedit::sceneMgr().importAsPlane(args[0])) {
@@ -120,7 +120,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, "png");
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, io::format::png());
 			return;
 		}
 		if (!voxedit::sceneMgr().importPalette(args[0])) {
@@ -133,7 +133,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			openDialog([this] (const core::String &file) { _mainWindow->loadAnimationEntity(file); }, "lua");
+			openDialog([this] (const core::String &file) { _mainWindow->loadAnimationEntity(file); }, io::format::lua());
 			return;
 		}
 		_mainWindow->loadAnimationEntity(args[0]);

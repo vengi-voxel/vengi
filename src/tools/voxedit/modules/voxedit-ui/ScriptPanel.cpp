@@ -156,7 +156,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 									Log::warn("Failed to save script %s", file.c_str());
 								}
 							},
-							video::WindowedApp::OpenFileMode::Save, "*.lua");
+							video::WindowedApp::OpenFileMode::Save, io::format::lua());
 					}
 					if (ImGui::MenuItem("Close##scripteditor")) {
 						_scriptEditor = false;

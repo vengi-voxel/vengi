@@ -29,12 +29,17 @@ private:
 	FileDialogSortOrder _sizeSortOrder = FileDialogSortOrder::None;
 	FileDialogSortOrder _dateSortOrder = FileDialogSortOrder::None;
 	FileDialogSortOrder _typeSortOrder = FileDialogSortOrder::None;
-	core::String _filter;
+	float _filterTextWidth = 0.0f;
+	int _currentFilterEntry = -1;
+	core::DynamicArray<core::String> _filterEntries;
+	bool _showHidden = true;
 	bool _disableDeleteButton = false;
 	char _newFolderName[500] = "";
 	char _newFolderError[500] = "";
 
 	void setCurrentPath(const core::String& path);
+	void selectFilter(int index);
+	bool hide(const core::String &file) const;
 
 	void applyFilter();
 	bool readDir();
@@ -46,10 +51,7 @@ private:
 	bool filesPanel();
 
 public:
-	/**
-	 * @param filter Filter wildcard
-	 */
-	bool openDir(const core::String& filter);
+	bool openDir(const io::FormatDescription* formats);
 	/**
 	* @param open The visibility state of the dialog. This is set to false if the dialog should get closed.
 	* This happens on user input. If the function returns @c true the boolean is set to false to no longer show

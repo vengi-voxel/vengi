@@ -447,7 +447,7 @@ bool WindowedApp::setRelativeMouseMode(bool mode) {
 	return mode;
 }
 
-void WindowedApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) {
+void WindowedApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats) {
 	Log::warn("This is not implemented in the base windowed application");
 }
 

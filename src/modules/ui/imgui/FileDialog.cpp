@@ -14,6 +14,7 @@
 #include "core/Trace.h"
 #include "core/Var.h"
 #include "io/Filesystem.h"
+#include "io/FormatDescription.h"
 #include "ui/imgui/IMGUIApp.h"
 
 namespace ui {
@@ -30,8 +31,9 @@ void FileDialog::applyFilter() {
 		if (_entities[i].type != io::Filesystem::DirEntry::Type::file) {
 			continue;
 		}
-		if (!_filter.empty()) {
-			if (!core::string::fileMatchesMultiple(_entities[i].name.c_str(), _filter.c_str())) {
+		if (_currentFilterEntry != -1) {
+			const core::String& filter = io::getWildcardsFromPattern(_filterEntries[_currentFilterEntry]);
+			if (!core::string::fileMatchesMultiple(_entities[i].name.c_str(), filter.c_str())) {
 				continue;
 			}
 		}
@@ -39,8 +41,28 @@ void FileDialog::applyFilter() {
 	}
 }
 
-bool FileDialog::openDir(const core::String &filter) {
-	_filter = filter;
+void FileDialog::selectFilter(int index) {
+	core_assert(index >= -1 && index <= (int)_filterEntries.size());
+	_currentFilterEntry = index;
+	applyFilter();
+}
+
+bool FileDialog::openDir(const io::FormatDescription* formats) {
+	if (formats == nullptr) {
+		_filterEntries.clear();
+		_filterTextWidth = 0.0f;
+		_currentFilterEntry = -1;
+	} else {
+		_filterTextWidth = 0.0f;
+		while (formats->name != nullptr) {
+			const core::String& str = io::convertToFilePattern(*formats);
+			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
+			_filterTextWidth = core_max(_filterTextWidth, filterTextSize.x);
+			_filterEntries.push_back(str);
+			++formats;
+		}
+		selectFilter((int)_filterEntries.size() - 1);
+	}
 
 	const core::VarPtr &lastDirVar = core::Var::getSafe(cfg::UILastDirectory);
 	const core::String &lastDir = lastDirVar->strVal();
@@ -112,6 +134,9 @@ void FileDialog::directoryPanel() {
 		if (_entities[i].type != io::Filesystem::DirEntry::Type::dir) {
 			continue;
 		}
+		if (hide(_entities[i].name)) {
+			continue;
+		}
 		const bool selected = i == _folderSelectIndex;
 		const ImVec2 size(contentRegionWidth, 0);
 		if (ImGui::Selectable(_entities[i].name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
@@ -125,6 +150,13 @@ void FileDialog::directoryPanel() {
 		}
 	}
 	ImGui::EndChild();
+}
+
+bool FileDialog::hide(const core::String &file) const {
+	if (_showHidden) {
+		return false;
+	}
+	return file[0] == '.';
 }
 
 bool FileDialog::filesPanel() {
@@ -224,6 +256,9 @@ bool FileDialog::filesPanel() {
 	bool doubleClicked = false;
 	const ImVec2 size(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x, 0);
 	for (size_t i = 0; i < _files.size(); ++i) {
+		if (hide(_files[i]->name)) {
+			continue;
+		}
 		const bool selected = i == _fileSelectIndex;
 		if (ImGui::Selectable(_files[i]->name.c_str(), selected, ImGuiSelectableFlags_None, size)) {
 			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
@@ -272,6 +307,12 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			ImGui::OpenPopup(title);
 		}
 		if (ImGui::BeginPopupModal(title, open)) {
+			if (ImGui::BeginPopupContextItem()) {
+				if (ImGui::MenuItem("Show hidden entries", nullptr, false, _showHidden)) {
+					_showHidden ^= true;
+				}
+				ImGui::EndPopup();
+			}
 
 			ImGui::TextUnformatted(ICON_FK_FOLDER_OPEN_O " Current path: ");
 			ImGui::SameLine();
@@ -360,11 +401,12 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 				ImGui::SetItemDefaultFocus();
 				ImGui::EndPopup();
 			}
-			ImGui::SameLine();
-			const ImVec2 filterTextSize = ImGui::CalcTextSize(_filter.c_str());
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - filterTextSize.x - ImGui::Size(25.0f));
-			if (ImGui::InputText("Filter", &_filter)) {
-				applyFilter();
+			if (!_filterEntries.empty()) {
+				ImGui::SameLine();
+				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - _filterTextWidth - ImGui::Size(25.0f));
+				if (ImGui::ComboStl("Filter", &_currentFilterEntry, _filterEntries)) {
+					selectFilter(_currentFilterEntry);
+				}
 			}
 
 			const char *buttonText = "Choose";

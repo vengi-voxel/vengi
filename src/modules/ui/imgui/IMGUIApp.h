@@ -46,7 +46,6 @@ protected:
 	bool _showBindingsDialog = false;
 	bool _showFileDialog = false;
 
-	core::String _fileDialogFilter;
 	SDL_Cursor* _mouseCursors[ImGuiMouseCursor_COUNT];
 	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
 	std::function<void(const core::String&)> _fileDialogCallback {};
@@ -91,10 +90,7 @@ public:
 	ImFont *smallFont();
 
 	void showBindingsDialog();
-	/**
-	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
-	 */
-	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter) override;
+	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats = nullptr) override;
 };
 
 inline void IMGUIApp::showBindingsDialog() {

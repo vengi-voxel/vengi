@@ -8,6 +8,7 @@
 #include "video/IEventObserver.h"
 #include "video/EventHandler.h"
 #include "core/GLM.h"
+#include "io/FormatDescription.h"
 #include "util/KeybindingParser.h"
 #include "util/KeybindingHandler.h"
 #include "video/Types.h"
@@ -104,20 +105,20 @@ public:
 	/**
 	 * @brief Opens a file dialog
 	 * @param[in] mode @c OpenFileMode
-	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
+	 * @param[in] formats nullptr terminated list of formats that are used to filter the entries
 	 */
-	virtual void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const core::String& filter = "");
+	virtual void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats = nullptr);
 
 	/**
 	 * @brief Wrapper method for @c fileDialog()
-	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
+	 * @param[in] formats nullptr terminated list of formats that are used to filter the entries
 	 */
-	void saveDialog(const std::function<void(const core::String)>& callback, const core::String& filter = "");
+	void saveDialog(const std::function<void(const core::String)>& callback, const io::FormatDescription* formats = nullptr);
 	/**
 	 * @brief Wrapper method for @c fileDialog()
-	 * @param[in] filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
+	 * @param[in] formats nullptr terminated list of formats that are used to filter the entries
 	 */
-	void openDialog(const std::function<void(const core::String)>& callback, const core::String& filter = "");
+	void openDialog(const std::function<void(const core::String)>& callback, const io::FormatDescription* formats = nullptr);
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 */
@@ -169,12 +170,12 @@ inline int WindowedApp::frameBufferHeight() const {
 	return _frameBufferDimension.y;
 }
 
-inline void WindowedApp::saveDialog(const std::function<void(const core::String)>& callback, const core::String& filter) {
-	fileDialog(callback, OpenFileMode::Save, filter);
+inline void WindowedApp::saveDialog(const std::function<void(const core::String)>& callback, const io::FormatDescription* formats) {
+	fileDialog(callback, OpenFileMode::Save, formats);
 }
 
-inline void WindowedApp::openDialog(const std::function<void(const core::String)>& callback, const core::String& filter) {
-	fileDialog(callback, OpenFileMode::Open, filter);
+inline void WindowedApp::openDialog(const std::function<void(const core::String)>& callback, const io::FormatDescription* formats) {
+	fileDialog(callback, OpenFileMode::Open, formats);
 }
 
 inline void WindowedApp::directoryDialog(const std::function<void(const core::String)>& callback) {
