@@ -92,6 +92,9 @@ void Viewport::update() {
 			ImGui::Image(texture->handle(), contentSize, uva, uvc);
 
 			if (ImGui::IsItemHovered()) {
+				if (sceneMgr().modifier().modifierType() == ModifierType::ColorPicker) {
+					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+				}
 				const bool alt = ImGui::GetIO().KeyAlt;
 				const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 				const ImVec2 windowPos = ImGui::GetWindowPos();
