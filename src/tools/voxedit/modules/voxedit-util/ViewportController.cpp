@@ -67,7 +67,7 @@ void ViewportController::move(bool pan, bool rotate, int x, int y) {
 			_camera.setPitch(pitch * s);
 		}
 	} else if (pan) {
-		// TODO:
+		_camera.pan(_mouseX - x, _mouseY - y);
 	}
 	_mouseX = x;
 	_mouseY = y;

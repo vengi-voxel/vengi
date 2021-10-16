@@ -61,6 +61,21 @@ void Camera::rotate(float radians, const glm::vec3& axis) {
 	rotate(quat);
 }
 
+void Camera::pan(int x, int y) {
+	switch(_mode) {
+	case CameraMode::Orthogonal:
+		_orthoPosition.x += x;
+		_orthoPosition.y += y;
+		break;
+	case CameraMode::Perspective:
+	case CameraMode::Max:
+		// TODO:
+		break;
+	}
+
+	_dirty |= DIRTY_PERSPECTIVE;
+}
+
 glm::vec3 Camera::forward() const {
 	return glm::conjugate(_quat) * glm::forward;
 }
@@ -461,8 +476,8 @@ void Camera::zoom(float value) {
 }
 
 glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
-	const float left = (float)orthoX();
-	const float top = (float)orthoY();
+	const float left = (float)_orthoPosition.x;
+	const float top = (float)_orthoPosition.y;
 	const float right = left + (float)_windowSize.x;
 	const float bottom = top + (float)_windowSize.y;
 	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);

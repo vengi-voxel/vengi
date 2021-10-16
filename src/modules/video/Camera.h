@@ -116,15 +116,6 @@ public:
 		return _dirty != 0u;
 	}
 
-	/**
-	 * @note Not the world position of the camera - but for controlling the viewport
-	 */
-	int orthoX() const;
-	/**
-	 * @note Not the world position of the camera - but for controlling the viewport
-	 */
-	int orthoY() const;
-
 	const glm::vec3& eye() const;
 
 	CameraType type() const;
@@ -165,6 +156,7 @@ public:
 
 	const glm::vec3& worldPosition() const;
 	void setWorldPosition(const glm::vec3& worldPos);
+	const glm::ivec2& orthoPosition() const;
 	void move(const glm::vec3& delta);
 
 	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
@@ -208,6 +200,8 @@ public:
 	 * @brief Rotation around the y-axis relative to world up
 	 */
 	void turn(float radians);
+
+	void pan(int x, int y);
 
 	void rotate(float radians, const glm::vec3& axis);
 	void rotate(const glm::quat& rotation);
@@ -291,12 +285,8 @@ inline int Camera::frameBufferHeight() const {
 	return _frameBufferSize.y;
 }
 
-inline int Camera::orthoX() const {
-	return _orthoPosition.x;
-}
-
-inline int Camera::orthoY() const {
-	return _orthoPosition.y;
+inline const glm::ivec2& Camera::orthoPosition() const {
+	return _orthoPosition;
 }
 
 inline void Camera::setType(CameraType type) {
