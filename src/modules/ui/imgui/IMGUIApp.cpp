@@ -708,6 +708,19 @@ app::AppState IMGUIApp::onRunning() {
 		beforeUI();
 	}
 
+	ImGuiIO &io = ImGui::GetIO();
+	if ((io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) == 0) {
+		ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+		if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None) {
+			// Hide OS mouse cursor if imgui is drawing it or if it wants no cursor
+			SDL_ShowCursor(SDL_FALSE);
+		} else {
+			// Show OS mouse cursor
+			SDL_SetCursor(_mouseCursors[imgui_cursor] ? _mouseCursors[imgui_cursor]
+													  : _mouseCursors[ImGuiMouseCursor_Arrow]);
+			SDL_ShowCursor(SDL_TRUE);
+		}
+	}
 	ImGui::NewFrame();
 
 	const bool renderUI = _renderUI->boolVal();
