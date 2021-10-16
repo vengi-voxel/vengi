@@ -40,8 +40,12 @@ void ViewportController::update(double deltaFrameSeconds) {
 void ViewportController::init(ViewportController::SceneCameraMode mode) {
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camMode = mode;
-	// TODO: make ortho if non-free mode
-	_camera.setMode(video::CameraMode::Perspective);
+	if (mode == ViewportController::SceneCameraMode::Free) {
+		_camera.setMode(video::CameraMode::Perspective);
+	} else {
+		// TODO: make ortho if non-free mode
+		_camera.setMode(video::CameraMode::Perspective);
+	}
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 }
 
