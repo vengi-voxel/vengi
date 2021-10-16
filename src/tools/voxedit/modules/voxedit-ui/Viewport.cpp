@@ -101,7 +101,8 @@ void Viewport::update() {
 				const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 				const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y) - headerSize;
 				const bool rotate = middle || alt;
-				_controller.move(rotate, mouseX, mouseY);
+				const bool pan = ImGui::GetIO().KeyShift;
+				_controller.move(pan, rotate, mouseX, mouseY);
 				_hovered = true;
 				sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
 				sceneMgr().setActiveCamera(&_controller.camera());

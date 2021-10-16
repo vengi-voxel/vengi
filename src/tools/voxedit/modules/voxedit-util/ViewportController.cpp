@@ -53,7 +53,7 @@ void ViewportController::onResize(const glm::ivec2& frameBufferSize, const glm::
 	_camera.init(glm::ivec2(0), frameBufferSize, windowSize);
 }
 
-void ViewportController::move(bool rotate, int x, int y) {
+void ViewportController::move(bool pan, bool rotate, int x, int y) {
 	if (rotate) {
 		const float yaw = (float)(x - _mouseX);
 		const float pitch = (float)(y - _mouseY);
@@ -62,6 +62,8 @@ void ViewportController::move(bool rotate, int x, int y) {
 			_camera.turn(yaw * s);
 			_camera.setPitch(pitch * s);
 		}
+	} else if (pan) {
+		// TODO:
 	}
 	_mouseX = x;
 	_mouseY = y;

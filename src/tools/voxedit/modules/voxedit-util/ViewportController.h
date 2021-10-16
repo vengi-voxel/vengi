@@ -51,7 +51,7 @@ public:
 
 	void update(double deltaFrameSeconds);
 
-	void move(bool rotate, int x, int y);
+	void move(bool pan, bool rotate, int x, int y);
 
 	video::Camera& camera();
 
