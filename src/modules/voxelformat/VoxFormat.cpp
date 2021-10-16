@@ -565,7 +565,7 @@ bool VoxFormat::loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header
 		return false;
 	}
 	uint32_t modelId;
-	wrap(stream.readInt(modelId));
+	wrap(stream.readInt(modelId))
 	if (modelId >= _models.size()) {
 		Log::error("ModelId %i exceeds boundaries [%i,%i]", modelId, 0, (int)_models.size());
 		return false;
@@ -761,19 +761,17 @@ bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header
 	wrap(stream.readInt(childNodeId))
 	uint32_t reserved;
 	wrap(stream.readInt(reserved))
-	uint32_t layerId;
-	wrap(stream.readInt(layerId))
-	uint32_t numFrames;
-	wrap(stream.readInt(numFrames))
-	Log::debug("nTRN chunk: node: %u, childNodeId: %u, layerId: %u, numFrames: %u", nodeId, childNodeId, layerId, numFrames);
-	if (numFrames != 1) {
-		Log::error("Transform node chunk contained a numFrames value != 1: %i", numFrames);
+	VoxTransform transform;
+	wrap(stream.readInt(transform.layerId))
+	wrap(stream.readInt(transform.numFrames))
+	Log::debug("nTRN chunk: node: %u, childNodeId: %u, layerId: %u, numFrames: %u", nodeId, childNodeId, transform.layerId, transform.numFrames);
+	if (transform.numFrames != 1) {
+		Log::error("Transform node chunk contained a numFrames value != 1: %i", transform.numFrames);
 		return false;
 	}
 	Attributes transformNodeAttributes;
 	wrapBool(readAttributes(transformNodeAttributes, stream))
 
-	VoxTransform transform;
 	wrapBool(parseSceneGraphRotation(transform, transformNodeAttributes))
 	wrapBool(parseSceneGraphTranslation(transform, transformNodeAttributes))
 
