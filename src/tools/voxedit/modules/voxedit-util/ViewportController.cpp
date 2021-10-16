@@ -43,14 +43,18 @@ void ViewportController::init(ViewportController::SceneCameraMode mode) {
 	if (mode == ViewportController::SceneCameraMode::Free) {
 		_camera.setMode(video::CameraMode::Perspective);
 	} else {
-		// TODO: make ortho if non-free mode
-		_camera.setMode(video::CameraMode::Perspective);
+		_camera.setMode(video::CameraMode::Orthogonal);
 	}
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 }
 
 void ViewportController::onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
-	_camera.init(glm::ivec2(0), frameBufferSize, windowSize);
+	if (_camera.mode() == video::CameraMode::Perspective) {
+		_camera.init(glm::ivec2(0), frameBufferSize, windowSize);
+	} else {
+		const glm::ivec2 size = windowSize / 5;
+		_camera.init(size / -2, size, size);
+	}
 }
 
 void ViewportController::move(bool pan, bool rotate, int x, int y) {
