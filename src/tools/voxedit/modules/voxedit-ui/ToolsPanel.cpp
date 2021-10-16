@@ -4,6 +4,7 @@
 
 #include "ToolsPanel.h"
 #include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IconsForkAwesome.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -22,6 +23,7 @@ void ToolsPanel::update(const char *title) {
 		modifierRadioButton(ICON_FA_PEN " Place", ModifierType::Place);
 		modifierRadioButton(ICON_FA_EXPAND " Select", ModifierType::Select);
 		modifierRadioButton(ICON_FA_ERASER " Delete", ModifierType::Delete);
+		modifierRadioButton(ICON_FK_PENCIL " Pick color", ModifierType::ColorPicker);
 		modifierRadioButton(ICON_FA_FILTER " Override", ModifierType::Place | ModifierType::Delete);
 		modifierRadioButton(ICON_FA_PAINT_BRUSH " Colorize", ModifierType::Update);
 

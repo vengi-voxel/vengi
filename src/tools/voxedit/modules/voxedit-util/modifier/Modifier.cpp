@@ -28,6 +28,10 @@ void Modifier::construct() {
 		setModifierType(ModifierType::Select);
 	}).setHelp("Change the modifier type to 'select'");
 
+	command::Command::registerCommand("actioncolorpicker", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::ColorPicker);
+	}).setHelp("Change the modifier type to 'color picker'");
+
 	command::Command::registerCommand("actiondelete", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Delete);
 	}).setHelp("Change the modifier type to 'delete'");
@@ -142,11 +146,12 @@ bool Modifier::aabbStart() {
 	if (_aabbMode) {
 		return false;
 	}
+
 	// the order here matters - don't change _aabbMode earlier here
 	_aabbFirstPos = aabbPosition();
 	_secondPosValid = false;
 	_aabbSecondActionDirection = math::Axis::None;
-	_aabbMode = true;
+	_aabbMode = _modifierType != ModifierType::ColorPicker;
 	return true;
 }
 
@@ -266,6 +271,10 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 }
 
 bool Modifier::needsSecondAction() {
+	if (_modifierType == ModifierType::ColorPicker) {
+		return false;
+	}
+
 	const glm::ivec3 delta = aabbDim();
 	if (delta.x > _gridResolution && delta.z > _gridResolution && delta.y == _gridResolution) {
 		_aabbSecondActionDirection = math::Axis::Y;
@@ -323,6 +332,13 @@ glm::ivec3 Modifier::aabbDim() const {
 }
 
 bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
+	if (_modifierType == ModifierType::ColorPicker) {
+		if (volume->region().containsPoint(_aabbFirstPos)) {
+			_cursorVoxel = volume->voxel(_aabbFirstPos);
+			return true;
+		}
+		return false;
+	}
 	if (!_aabbMode) {
 		Log::debug("Not in aabb mode - can't perform action");
 		return false;

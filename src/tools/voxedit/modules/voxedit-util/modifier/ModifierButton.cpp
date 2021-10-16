@@ -61,7 +61,7 @@ void ModifierButton::execute() {
 		Log::debug("Execute modifier action on layer %i", layerId);
 		voxel::RawVolume* volume = sceneMgr().volume(layerId);
 		mgr.aabbAction(volume, [&] (const voxel::Region& region, ModifierType type) {
-			if (type != ModifierType::Select) {
+			if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
 				sceneMgr().modified(layerId, region);
 			}
 		});
