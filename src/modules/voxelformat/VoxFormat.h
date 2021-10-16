@@ -51,10 +51,10 @@ private:
 
 	struct VoxModel {
 		// node id in the scene graph
-		NodeId nodeId;
+		NodeId nodeId = 0;
 		// there can be multiple SIZE and XYZI chunks for multiple models; volume id is their index in the
 		// stored order and the index in the @c _models or @c _regions arrays
-		uint32_t volumeIdx;
+		uint32_t volumeIdx = 0;
 		Attributes attributes;
 		Attributes nodeAttributes;
 	};

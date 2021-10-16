@@ -926,6 +926,7 @@ bool VoxFormat::loadFirstChunks(io::FileStream& stream) {
 		wrap(stream.seek(header.nextChunkPos))
 	} while (stream.remaining() > 0);
 
+	_models.clear();
 	_models.resize(_regions.size());
 
 	return true;
