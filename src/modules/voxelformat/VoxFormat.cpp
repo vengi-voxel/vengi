@@ -33,7 +33,7 @@ namespace voxel {
 class ScopedChunkWriter {
 private:
 	io::FileStream& _stream;
-	uint64_t _chunkSizePos;
+	int64_t _chunkSizePos;
 	uint32_t _chunkId;
 public:
 	ScopedChunkWriter(io::FileStream& stream, uint32_t chunkId) : _stream(stream), _chunkId(chunkId) {
@@ -47,8 +47,8 @@ public:
 	}
 
 	~ScopedChunkWriter() {
-		const uint64_t chunkStart = _chunkSizePos + 2 * sizeof(uint32_t);
-		const uint64_t currentPos = _stream.pos();
+		const int64_t chunkStart = _chunkSizePos + 2 * sizeof(uint32_t);
+		const int64_t currentPos = _stream.pos();
 		core_assert_msg(chunkStart <= currentPos, "%u should be <= %u", (uint32_t)chunkStart, (uint32_t)currentPos);
 		const uint64_t chunkSize = currentPos - chunkStart;
 		_stream.seek(_chunkSizePos);
@@ -83,7 +83,7 @@ public:
 
 	~ScopedHeader() {
 		// magic, version, main chunk, main chunk size, main chunk child size
-		const uint64_t currentPos = _stream.pos();
+		const int64_t currentPos = _stream.pos();
 		const int64_t mainChildChunkSize = _stream.pos() - _headerSize;
 		_stream.seek(_chunkCountPos);
 		_stream.addInt(_chunks);
@@ -136,7 +136,7 @@ bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId chi
 	wrapBool(saveAttributes({}, stream))
 	wrapBool(stream.addInt(childNodeId))
 	wrapBool(stream.addInt(-1)) // reserved - must be -1
-	wrapBool(stream.addInt(0)) // layerid ???
+	wrapBool(stream.addInt(0)) // layerid
 	wrapBool(stream.addInt(1)) // num frames
 	if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
 		constexpr glm::mat3 rot(1.0f);
@@ -266,7 +266,6 @@ bool VoxFormat::saveSceneGraph(io::FileStream& stream, const VoxelVolumes& volum
 		}
 
 		const voxel::Region& region = v.volume->region();
-		// TODO: the translation is broken for saves.
 		const glm::ivec3 mins = region.getCenter();
 		wrapBool(saveChunk_nTRN(stream, nodeId, nodeId + 1, mins))
 		wrapBool(saveChunk_nSHP(stream, nodeId + 1, modelId))
