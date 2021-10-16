@@ -45,6 +45,8 @@ private:
 	 */
 	core::String _basePath;
 	core::String _homePath;
+	core::String _downloadDir;
+	core::String _documentsDir;
 	Paths _paths;
 
 	core::Stack<core::String, 32> _dirStack;
@@ -56,12 +58,16 @@ public:
 
 	bool init(const core::String& organisation, const core::String& appname);
 	void shutdown();
+	bool parseXDGUserDirs();
 
 	void update();
 
 	const Paths& paths() const;
 
 	bool registerPath(const core::String& path);
+
+	core::String downloadDir() const;
+	core::String documentsDir() const;
 
 	bool unwatch(const core::String& path);
 	bool unwatch(const io::FilePtr& file);

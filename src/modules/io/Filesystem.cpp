@@ -4,6 +4,7 @@
 
 #include "Filesystem.h"
 #include "core/Assert.h"
+#include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "core/Log.h"
 #include "core/Common.h"
@@ -66,7 +67,61 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 
+	parseXDGUserDirs();
 	return true;
+}
+
+/**
+ * @brief Replace the shell variable for the home dir
+ */
+static inline core::String replaceHome(const core::String& in) {
+	char *envHome = SDL_getenv("HOME");
+	if (envHome == nullptr) {
+		return in;
+	}
+	core::String out = core::string::replaceAll(in, "$HOME", envHome);
+	return core::string::replaceAll(out, "${HOME}", envHome);
+}
+
+bool Filesystem::parseXDGUserDirs() {
+	char *envHome = SDL_getenv("HOME");
+	if (envHome == nullptr) {
+		Log::debug("Can't read xdg user dirs: HOME env var not found");
+		return false;
+	}
+	const core::String& xdgUserDirs = core::string::format("%s/.config/user-dirs.dirs", envHome);
+	if (!exists(xdgUserDirs)) {
+		Log::debug("Can't read xdg user dirs: %s doesn't exists", xdgUserDirs.c_str());
+		return false;
+	}
+	const core::String& xdgUserDirsContent = load(xdgUserDirs);
+	if (xdgUserDirsContent.empty()) {
+		Log::debug("Could not read %s", xdgUserDirs.c_str());
+		return false;
+	}
+	core::Tokenizer tok(true, xdgUserDirsContent, "=");
+	while (tok.hasNext()) {
+		const core::String var = tok.next();
+		if (!tok.hasNext()) {
+			return false;
+		}
+		const core::String value = tok.next();
+		if (var == "XDG_DOWNLOAD_DIR") {
+			_downloadDir = replaceHome(value);
+		} else if (var == "XDG_DOCUMENTS_DIR") {
+			_documentsDir = replaceHome(value);
+		}
+	}
+
+	return true;
+}
+
+core::String Filesystem::downloadDir() const {
+	return _downloadDir;
+}
+
+core::String Filesystem::documentsDir() const {
+	return _documentsDir;
 }
 
 bool Filesystem::removeFile(const core::String& file) const {
