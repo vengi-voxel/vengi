@@ -54,7 +54,7 @@ void ShaderTool::validate(const core::String& name) {
 	Log::debug("Execute glslang validator with the following commandline: %s %s", _glslangValidatorBin.c_str(),
 			   args[0].c_str());
 	char output[4096] = "";
-	int exitCode = core::Process::exec(_glslangValidatorBin, args, nullptr, sizeof(output), output);
+	int exitCode = core::Process::exec(_glslangValidatorBin, args, nullptr, output, sizeof(output));
 	if (exitCode != 0) {
 		Log::error("Failed to validate shader '%s'. Exitcode: %i", name.c_str(), exitCode);
 		if (output[0] != '\0') {

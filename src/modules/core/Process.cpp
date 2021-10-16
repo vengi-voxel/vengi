@@ -6,6 +6,7 @@
 #include <SDL_platform.h>
 #include <SDL_assert.h>
 #include "core/Log.h"
+#include "core/Tokenizer.h"
 
 #include <fcntl.h>
 #include <string.h>
@@ -39,7 +40,20 @@
 
 namespace core {
 
-int Process::exec(const core::String& command, const core::DynamicArray<core::String>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
+core::String Process::findInPath(const core::String& command) {
+	char *path = SDL_getenv("PATH");
+	char *pathDup = SDL_strdup(path);
+	core::Tokenizer tok(pathDup, ":");
+	while (tok.hasNext()) {
+		const core::String& pathEntry = tok.next();
+		// TODO:
+		Log::debug("Path entry: %s", pathEntry.c_str());
+	}
+	SDL_free(pathDup);
+	return command;
+}
+
+int Process::exec(const core::String& command, const core::DynamicArray<core::String>& arguments, const char* workingDirectory, char *output, size_t bufSize) {
 #if defined(__LINUX__) || defined(__MACOSX__)
 	int link[2];
 	if (::pipe(link) < 0) {
