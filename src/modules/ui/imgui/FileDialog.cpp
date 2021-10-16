@@ -381,6 +381,8 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 				ImGui::PopStyleVar();
 				ImGui::PopItemFlag();
 			}
+			ImGui::SameLine();
+			ImGui::Checkbox("Show hidden", &_showHidden);
 
 			ImVec2 center(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x * 0.5f,
 						  ImGui::GetWindowPos().y + ImGui::GetWindowSize().y * 0.5f);
