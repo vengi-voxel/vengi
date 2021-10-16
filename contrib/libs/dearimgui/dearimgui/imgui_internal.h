@@ -1,4 +1,4 @@
-// dear imgui, v1.85 WIP
+// dear imgui, v1.86 WIP
 // (internal structures/api)
 
 // You may use this file to debug, understand or extend ImGui features but we don't provide any guarantee of forward compatibility!
@@ -24,7 +24,7 @@ Index of this file:
 // [SECTION] Docking support
 // [SECTION] Viewport support
 // [SECTION] Settings support
-// [SECTION] Metrics, Debug
+// [SECTION] Metrics, Debug tools
 // [SECTION] Generic context hooks
 // [SECTION] ImGuiContext (main imgui context)
 // [SECTION] ImGuiWindowTempData, ImGuiWindow
@@ -157,6 +157,7 @@ typedef int ImGuiNavDirSourceFlags;     // -> enum ImGuiNavDirSourceFlags_  // F
 typedef int ImGuiNavMoveFlags;          // -> enum ImGuiNavMoveFlags_       // Flags: for navigation requests
 typedef int ImGuiNextItemDataFlags;     // -> enum ImGuiNextItemDataFlags_  // Flags: for SetNextItemXXX() functions
 typedef int ImGuiNextWindowDataFlags;   // -> enum ImGuiNextWindowDataFlags_// Flags: for SetNextWindowXXX() functions
+typedef int ImGuiScrollFlags;           // -> enum ImGuiScrollFlags_        // Flags: for ScrollToItem() and navigation requests
 typedef int ImGuiSeparatorFlags;        // -> enum ImGuiSeparatorFlags_     // Flags: for SeparatorEx()
 typedef int ImGuiTextFlags;             // -> enum ImGuiTextFlags_          // Flags: for TextEx()
 typedef int ImGuiTooltipFlags;          // -> enum ImGuiTooltipFlags_       // Flags: for BeginTooltipEx()
@@ -755,7 +756,7 @@ enum ImGuiItemFlags_
     ImGuiItemFlags_SelectableDontClosePopup = 1 << 5,  // false     // Disable MenuItem/Selectable() automatically closing their popup window
     ImGuiItemFlags_MixedValue               = 1 << 6,  // false     // [BETA] Represent a mixed/indeterminate value, generally multi-selection where values differ. Currently only supported by Checkbox() (later should support all sorts of widgets)
     ImGuiItemFlags_ReadOnly                 = 1 << 7,  // false     // [ALPHA] Allow hovering interactions but underlying value is not changed.
-    ImGuiItemFlags_Inputable                = 1 << 8   // false     // [WIP] Auto-activate item when focused. Currently only used and supported by a few items before it becomes a generic feature.
+    ImGuiItemFlags_Inputable                = 1 << 8   // false     // [WIP] Auto-activate input mode when tab focused. Currently only used and supported by a few items before it becomes a generic feature.
 };
 
 // Storage for LastItem data
@@ -770,9 +771,7 @@ enum ImGuiItemStatusFlags_
     ImGuiItemStatusFlags_HasDeactivated     = 1 << 5,   // Set if the widget/group is able to provide data for the ImGuiItemStatusFlags_Deactivated flag.
     ImGuiItemStatusFlags_Deactivated        = 1 << 6,   // Only valid if ImGuiItemStatusFlags_HasDeactivated is set.
     ImGuiItemStatusFlags_HoveredWindow      = 1 << 7,   // Override the HoveredWindow test to allow cross-window hover testing.
-    ImGuiItemStatusFlags_FocusedByCode      = 1 << 8,   // Set when the Focusable item just got focused from code.
-    ImGuiItemStatusFlags_FocusedByTabbing   = 1 << 9,   // Set when the Focusable item just got focused by Tabbing.
-    ImGuiItemStatusFlags_Focused            = ImGuiItemStatusFlags_FocusedByCode | ImGuiItemStatusFlags_FocusedByTabbing
+    ImGuiItemStatusFlags_FocusedByTabbing   = 1 << 8    // Set when the Focusable item just got focused by Tabbing (FIXME: to be removed soon)
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
     , // [imgui_tests only]
@@ -1195,6 +1194,21 @@ enum ImGuiActivateFlags_
     ImGuiActivateFlags_TryToPreserveState   = 1 << 2        // Request widget to preserve state if it can (e.g. InputText will try to preserve cursor/selection)
 };
 
+// Early work-in-progress API for ScrollToItem()
+enum ImGuiScrollFlags_
+{
+    ImGuiScrollFlags_None                   = 0,
+    ImGuiScrollFlags_KeepVisibleEdgeX       = 1 << 0,       // If item is not visible: scroll as little as possible on X axis to bring item back into view [default for X axis]
+    ImGuiScrollFlags_KeepVisibleEdgeY       = 1 << 1,       // If item is not visible: scroll as little as possible on Y axis to bring item back into view [default for Y axis for windows that are already visible]
+    ImGuiScrollFlags_KeepVisibleCenterX     = 1 << 2,       // If item is not visible: scroll to make the item centered on X axis [rarely used]
+    ImGuiScrollFlags_KeepVisibleCenterY     = 1 << 3,       // If item is not visible: scroll to make the item centered on Y axis
+    ImGuiScrollFlags_AlwaysCenterX          = 1 << 4,       // Always center the result item on X axis [rarely used]
+    ImGuiScrollFlags_AlwaysCenterY          = 1 << 5,       // Always center the result item on Y axis [default for Y axis for appearing window)
+    ImGuiScrollFlags_NoScrollParent         = 1 << 6,       // Disable forwarding scrolling to parent window if required to keep item/rect visible (only scroll window the function was applied to).
+    ImGuiScrollFlags_MaskX_                 = ImGuiScrollFlags_KeepVisibleEdgeX | ImGuiScrollFlags_KeepVisibleCenterX | ImGuiScrollFlags_AlwaysCenterX,
+    ImGuiScrollFlags_MaskY_                 = ImGuiScrollFlags_KeepVisibleEdgeY | ImGuiScrollFlags_KeepVisibleCenterY | ImGuiScrollFlags_AlwaysCenterY
+};
+
 enum ImGuiNavHighlightFlags_
 {
     ImGuiNavHighlightFlags_None             = 0,
@@ -1221,9 +1235,12 @@ enum ImGuiNavMoveFlags_
     ImGuiNavMoveFlags_WrapY                 = 1 << 3,   // This is not super useful but provided for completeness
     ImGuiNavMoveFlags_AllowCurrentNavId     = 1 << 4,   // Allow scoring and considering the current NavId as a move target candidate. This is used when the move source is offset (e.g. pressing PageDown actually needs to send a Up move request, if we are pressing PageDown from the bottom-most item we need to stay in place)
     ImGuiNavMoveFlags_AlsoScoreVisibleSet   = 1 << 5,   // Store alternate result in NavMoveResultLocalVisible that only comprise elements that are already fully visible (used by PageUp/PageDown)
-    ImGuiNavMoveFlags_ScrollToEdge          = 1 << 6,
+    ImGuiNavMoveFlags_ScrollToEdgeY         = 1 << 6,   // Force scrolling to min/max (used by Home/End) // FIXME-NAV: Aim to remove or reword, probably unnecessary
     ImGuiNavMoveFlags_Forwarded             = 1 << 7,
-    ImGuiNavMoveFlags_DebugNoResult         = 1 << 8
+    ImGuiNavMoveFlags_DebugNoResult         = 1 << 8,   // Dummy scoring for debug purpose, don't apply result
+    ImGuiNavMoveFlags_Tabbing               = 1 << 9,   // == Focus + Activate if item is Inputable + DontChangeNavHighlight
+    ImGuiNavMoveFlags_Activate              = 1 << 10,
+    ImGuiNavMoveFlags_DontSetNavHighlight   = 1 << 11   // Do not alter the visible state of keyboard vs mouse nav highlight
 };
 
 enum ImGuiNavLayer
@@ -1239,12 +1256,13 @@ struct ImGuiNavItemData
     ImGuiID             ID;             // Init,Move    // Best candidate item ID
     ImGuiID             FocusScopeId;   // Init,Move    // Best candidate focus scope ID
     ImRect              RectRel;        // Init,Move    // Best candidate bounding box in window relative space
+    ImGuiItemFlags      InFlags;        // ????,Move    // Best candidate item flags
     float               DistBox;        //      Move    // Best candidate box distance to current NavId
     float               DistCenter;     //      Move    // Best candidate center distance to current NavId
     float               DistAxial;      //      Move    // Best candidate axial distance to current NavId
 
     ImGuiNavItemData()  { Clear(); }
-    void Clear()        { Window = NULL; ID = FocusScopeId = 0; RectRel = ImRect(); DistBox = DistCenter = DistAxial = FLT_MAX; }
+    void Clear()        { Window = NULL; ID = FocusScopeId = 0; InFlags = 0; DistBox = DistCenter = DistAxial = FLT_MAX; }
 };
 
 //-----------------------------------------------------------------------------
@@ -1536,11 +1554,12 @@ struct ImGuiSettingsHandler
 };
 
 //-----------------------------------------------------------------------------
-// [SECTION] Metrics, Debug
+// [SECTION] Metrics, Debug Tools
 //-----------------------------------------------------------------------------
 
 struct ImGuiMetricsConfig
 {
+    bool        ShowStackTool;
     bool        ShowWindowsRects;
     bool        ShowWindowsBeginOrder;
     bool        ShowTablesRects;
@@ -1552,6 +1571,7 @@ struct ImGuiMetricsConfig
 
     ImGuiMetricsConfig()
     {
+        ShowStackTool = false;
         ShowWindowsRects = false;
         ShowWindowsBeginOrder = false;
         ShowTablesRects = false;
@@ -1561,6 +1581,27 @@ struct ImGuiMetricsConfig
         ShowWindowsRectsType = -1;
         ShowTablesRectsType = -1;
     }
+};
+
+struct ImGuiStackLevelInfo
+{
+    ImGuiID                 ID;
+    ImS8                    QueryFrameCount;            // >= 1: Query in progress
+    bool                    QuerySuccess;               // Obtained result from DebugHookIdInfo()
+    char                    Desc[58];                   // Arbitrarily sized buffer to hold a result (FIXME: could replace Results[] with a chunk stream?)
+
+    ImGuiStackLevelInfo()   { memset(this, 0, sizeof(*this)); }
+};
+
+// State for Stack tool queries
+struct ImGuiStackTool
+{
+    int                     LastActiveFrame;
+    int                     StackLevel;                 // -1: query stack and resize Results, >= 0: individual stack level
+    ImGuiID                 QueryId;                    // ID to query details for
+    ImVector<ImGuiStackLevelInfo> Results;
+
+    ImGuiStackTool()        { memset(this, 0, sizeof(*this)); }
 };
 
 //-----------------------------------------------------------------------------
@@ -1608,7 +1649,6 @@ struct ImGuiContext
     bool                    WithinEndChild;                     // Set within EndChild()
     bool                    GcCompactAll;                       // Request full GC
     bool                    TestEngineHookItems;                // Will call test engine hooks: ImGuiTestEngineHook_ItemAdd(), ImGuiTestEngineHook_ItemInfo(), ImGuiTestEngineHook_Log()
-    ImGuiID                 TestEngineHookIdInfo;               // Will call test engine hooks: ImGuiTestEngineHook_IdInfo() from GetID()
     void*                   TestEngine;                         // Test engine user data
 
     // Windows state
@@ -1629,6 +1669,7 @@ struct ImGuiContext
     float                   WheelingWindowTimer;
 
     // Item/widgets state and tracking information
+    ImGuiID                 DebugHookIdInfo;                    // Will call core hooks: DebugHookIdInfo() from GetID functions, used by Stack Tool [next HoveredId/ActiveId to not pull in an extra cache-line]
     ImGuiID                 HoveredId;                          // Hovered widget, filled during the frame
     ImGuiID                 HoveredIdPreviousFrame;
     bool                    HoveredIdAllowOverlap;
@@ -1720,12 +1761,14 @@ struct ImGuiContext
     bool                    NavMoveScoringItems;                // Move request submitted, still scoring incoming items
     bool                    NavMoveForwardToNextFrame;
     ImGuiNavMoveFlags       NavMoveFlags;
+    ImGuiScrollFlags        NavMoveScrollFlags;
     ImGuiKeyModFlags        NavMoveKeyMods;
     ImGuiDir                NavMoveDir;                         // Direction of the move request (left/right/up/down)
     ImGuiDir                NavMoveDirForDebug;
     ImGuiDir                NavMoveClipDir;                     // FIXME-NAV: Describe the purpose of this better. Might want to rename?
     ImRect                  NavScoringRect;                     // Rectangle used for scoring, in screen space. Based of window->NavRectRel[], modified for directional navigation scoring.
     int                     NavScoringDebugCount;               // Metrics for debugging
+    int                     NavTabbingInputableRemaining;       // >0 when counting items for tabbing
     ImGuiNavItemData        NavMoveResultLocal;                 // Best move request candidate within NavWindow
     ImGuiNavItemData        NavMoveResultLocalVisible;          // Best move request candidate within NavWindow that are mostly visible (when using ImGuiNavMoveFlags_AlsoScoreVisibleSet flag)
     ImGuiNavItemData        NavMoveResultOther;                 // Best move request candidate within NavWindow's flattened hierarchy (when using ImGuiWindowFlags_NavFlattened flag)
@@ -1741,9 +1784,7 @@ struct ImGuiContext
     // Legacy Focus/Tabbing system (older than Nav, active even if Nav is disabled, misnamed. FIXME-NAV: This needs a redesign!)
     ImGuiWindow*            TabFocusRequestCurrWindow;          //
     ImGuiWindow*            TabFocusRequestNextWindow;          //
-    int                     TabFocusRequestCurrCounterRegular;  // Any item being requested for focus, stored as an index (we on layout to be stable between the frame pressing TAB and the next frame, semi-ouch)
     int                     TabFocusRequestCurrCounterTabStop;  // Tab item being requested for focus, stored as an index
-    int                     TabFocusRequestNextCounterRegular;  // Stored for next frame
     int                     TabFocusRequestNextCounterTabStop;  // "
     bool                    TabFocusPressed;                    // Set in NewFrame() when user pressed Tab
 
@@ -1772,9 +1813,9 @@ struct ImGuiContext
 
     // Table
     ImGuiTable*                     CurrentTable;
-    int                             CurrentTableStackIdx;
-    ImPool<ImGuiTable>              Tables;
-    ImVector<ImGuiTableTempData>    TablesTempDataStack;
+    int                             TablesTempDataStacked;      // Temporary table data size (because we leave previous instances undestructed, we generally don't use TablesTempData.Size)
+    ImVector<ImGuiTableTempData>    TablesTempData;             // Temporary table data (buffers reused/shared across instances, support nesting)
+    ImPool<ImGuiTable>              Tables;                     // Persistent table data
     ImVector<float>                 TablesLastTimeActive;       // Last used timestamp of each tables (SOA, for efficient GC)
     ImVector<ImDrawChannel>         DrawChannelsTempMergeBuffer;
 
@@ -1843,8 +1884,9 @@ struct ImGuiContext
 
     // Debug Tools
     bool                    DebugItemPickerActive;              // Item picker is active (started with DebugStartItemPicker())
-    ImGuiID                 DebugItemPickerBreakId;             // Will call IM_DEBUG_BREAK() when encountering this id
+    ImGuiID                 DebugItemPickerBreakId;             // Will call IM_DEBUG_BREAK() when encountering this ID
     ImGuiMetricsConfig      DebugMetricsConfig;
+    ImGuiStackTool          DebugStackTool;
 
     // Misc
     float                   FramerateSecPerFrame[120];          // Calculate estimate of framerate for user over the last 2 seconds.
@@ -1870,7 +1912,6 @@ struct ImGuiContext
         WithinFrameScope = WithinFrameScopeWithImplicitWindow = WithinEndChild = false;
         GcCompactAll = false;
         TestEngineHookItems = false;
-        TestEngineHookIdInfo = 0;
         TestEngine = NULL;
 
         WindowsActiveCount = 0;
@@ -1882,6 +1923,7 @@ struct ImGuiContext
         WheelingWindow = NULL;
         WheelingWindowTimer = 0.0f;
 
+        DebugHookIdInfo = 0;
         HoveredId = HoveredIdPreviousFrame = 0;
         HoveredIdAllowOverlap = false;
         HoveredIdUsingMouseWheel = HoveredIdPreviousFrameUsingMouseWheel = false;
@@ -1939,17 +1981,19 @@ struct ImGuiContext
         NavMoveScoringItems = false;
         NavMoveForwardToNextFrame = false;
         NavMoveFlags = ImGuiNavMoveFlags_None;
+        NavMoveScrollFlags = ImGuiScrollFlags_None;
         NavMoveKeyMods = ImGuiKeyModFlags_None;
         NavMoveDir = NavMoveDirForDebug = NavMoveClipDir = ImGuiDir_None;
         NavScoringDebugCount = 0;
+        NavTabbingInputableRemaining = 0;
 
         NavWindowingTarget = NavWindowingTargetAnim = NavWindowingListWindow = NULL;
         NavWindowingTimer = NavWindowingHighlightAlpha = 0.0f;
         NavWindowingToggleLayer = false;
 
         TabFocusRequestCurrWindow = TabFocusRequestNextWindow = NULL;
-        TabFocusRequestCurrCounterRegular = TabFocusRequestCurrCounterTabStop = INT_MAX;
-        TabFocusRequestNextCounterRegular = TabFocusRequestNextCounterTabStop = INT_MAX;
+        TabFocusRequestCurrCounterTabStop = INT_MAX;
+        TabFocusRequestNextCounterTabStop = INT_MAX;
         TabFocusPressed = false;
 
         DimBgRatio = 0.0f;
@@ -1968,7 +2012,7 @@ struct ImGuiContext
         memset(DragDropPayloadBufLocal, 0, sizeof(DragDropPayloadBufLocal));
 
         CurrentTable = NULL;
-        CurrentTableStackIdx = -1;
+        TablesTempDataStacked = 0;
         CurrentTabBar = NULL;
 
         TempInputId = 0;
@@ -2057,7 +2101,6 @@ struct IMGUI_API ImGuiWindowTempData
     int                     CurrentTableIdx;        // Current table index (into g.Tables)
     ImGuiLayoutType         LayoutType;
     ImGuiLayoutType         ParentLayoutType;       // Layout type of parent window at the time of Begin()
-    int                     FocusCounterRegular;    // (Legacy Focus/Tabbing system) Sequential counter, start at -1 and increase when ImGuiItemFlags_Inputable (FIXME-NAV: Needs redesign)
     int                     FocusCounterTabStop;    // (Legacy Focus/Tabbing system) Same, but only count widgets which you can Tab through.
 
     // Local parameters stacks
@@ -2375,7 +2418,7 @@ struct ImGuiTableCellData
 };
 
 // FIXME-TABLE: more transient data could be stored in a per-stacked table structure: DrawSplitter, SortSpecs, incoming RowData
-struct ImGuiTable
+struct IMGUI_API ImGuiTable
 {
     ImGuiID                     ID;
     ImGuiTableFlags             Flags;
@@ -2481,14 +2524,14 @@ struct ImGuiTable
     bool                        MemoryCompacted;
     bool                        HostSkipItems;              // Backup of InnerWindow->SkipItem at the end of BeginTable(), because we will overwrite InnerWindow->SkipItem on a per-column basis
 
-    IMGUI_API ImGuiTable()      { memset(this, 0, sizeof(*this)); LastFrameActive = -1; }
-    IMGUI_API ~ImGuiTable()     { IM_FREE(RawData); }
+    ImGuiTable()                { memset(this, 0, sizeof(*this)); LastFrameActive = -1; }
+    ~ImGuiTable()               { IM_FREE(RawData); }
 };
 
 // Transient data that are only needed between BeginTable() and EndTable(), those buffers are shared (1 per level of stacked table).
 // - Accessing those requires chasing an extra pointer so for very frequently used data we leave them in the main table structure.
 // - We also leave out of this structure data that tend to be particularly useful for debugging/metrics.
-struct ImGuiTableTempData
+struct IMGUI_API ImGuiTableTempData
 {
     int                         TableIndex;                 // Index in g.Tables.Buf[] pool
     float                       LastTimeActive;             // Last timestamp this structure was used
@@ -2505,7 +2548,7 @@ struct ImGuiTableTempData
     float                       HostBackupItemWidth;        // Backup of OuterWindow->DC.ItemWidth at the end of BeginTable()
     int                         HostBackupItemWidthStackSize;//Backup of OuterWindow->DC.ItemWidthStack.Size at the end of BeginTable()
 
-    IMGUI_API ImGuiTableTempData() { memset(this, 0, sizeof(*this)); LastTimeActive = -1.0f; }
+    ImGuiTableTempData()        { memset(this, 0, sizeof(*this)); LastTimeActive = -1.0f; }
 };
 
 // sizeof() ~ 12
@@ -2622,7 +2665,14 @@ namespace ImGui
     IMGUI_API void          SetScrollY(ImGuiWindow* window, float scroll_y);
     IMGUI_API void          SetScrollFromPosX(ImGuiWindow* window, float local_x, float center_x_ratio);
     IMGUI_API void          SetScrollFromPosY(ImGuiWindow* window, float local_y, float center_y_ratio);
-    IMGUI_API ImVec2        ScrollToBringRectIntoView(ImGuiWindow* window, const ImRect& item_rect);
+
+    // Early work-in-progress API (ScrollToItem() will become public)
+    IMGUI_API void          ScrollToItem(ImGuiScrollFlags flags = 0);
+    IMGUI_API void          ScrollToRect(ImGuiWindow* window, const ImRect& rect, ImGuiScrollFlags flags = 0);
+    IMGUI_API ImVec2        ScrollToRectEx(ImGuiWindow* window, const ImRect& rect, ImGuiScrollFlags flags = 0);
+//#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+    inline void             ScrollToBringRectIntoView(ImGuiWindow* window, const ImRect& rect) { ScrollToRect(window, rect, ImGuiScrollFlags_KeepVisibleEdgeY); }
+//#endif
 
     // Basic Accessors
     inline ImGuiID          GetItemID()     { ImGuiContext& g = *GImGui; return g.LastItemData.ID; }   // Get ID of last item (~~ often same ImGui::GetID(label) beforehand)
@@ -2662,9 +2712,9 @@ namespace ImGui
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     // Currently refactoring focus/nav/tabbing system
     // If you have old/custom copy-and-pasted widgets that used FocusableItemRegister():
-    //  (Old) IMGUI_VERSION_NUM  < 18209: using 'ItemAdd(....)'                              and 'bool focused = FocusableItemRegister(...)'
-    //  (Old) IMGUI_VERSION_NUM >= 18209: using 'ItemAdd(..., ImGuiItemAddFlags_Focusable)'  and 'bool focused = (GetItemStatusFlags() & ImGuiItemStatusFlags_Focused) != 0'
-    //  (New) IMGUI_VERSION_NUM >= 18411: using 'ItemAdd(..., ImGuiItemAddFlags_Inputable)'  and 'bool focused = (GetItemStatusFlags() & ImGuiItemStatusFlags_Focused) != 0'
+    //  (Old) IMGUI_VERSION_NUM  < 18209: using 'ItemAdd(....)'                              and 'bool tab_focused = FocusableItemRegister(...)'
+    //  (Old) IMGUI_VERSION_NUM >= 18209: using 'ItemAdd(..., ImGuiItemAddFlags_Focusable)'  and 'bool tab_focused = (GetItemStatusFlags() & ImGuiItemStatusFlags_Focused) != 0'
+    //  (New) IMGUI_VERSION_NUM >= 18413: using 'ItemAdd(..., ImGuiItemFlags_Inputable)'     and 'bool tab_focused = (GetItemStatusFlags() & ImGuiItemStatusFlags_FocusedTabbing) != 0 || g.NavActivateInputId == id' (WIP)
     // Widget code are simplified as there's no need to call FocusableItemUnregister() while managing the transition from regular widget to TempInputText()
     inline bool FocusableItemRegister(ImGuiWindow* window, ImGuiID id)  { IM_ASSERT(0); IM_UNUSED(window); IM_UNUSED(id); return false; } // -> pass ImGuiItemAddFlags_Inputable flag to ItemAdd()
     inline void FocusableItemUnregister(ImGuiWindow* window)            { IM_ASSERT(0); IM_UNUSED(window); }                              // -> unnecessary: TempInputText() uses ImGuiInputTextFlags_MergedItem
@@ -2704,8 +2754,9 @@ namespace ImGui
     IMGUI_API void          NavInitWindow(ImGuiWindow* window, bool force_reinit);
     IMGUI_API void          NavInitRequestApplyResult();
     IMGUI_API bool          NavMoveRequestButNoResultYet();
-    IMGUI_API void          NavMoveRequestSubmit(ImGuiDir move_dir, ImGuiDir clip_dir, ImGuiNavMoveFlags move_flags);
-    IMGUI_API void          NavMoveRequestForward(ImGuiDir move_dir, ImGuiDir clip_dir, ImGuiNavMoveFlags move_flags);
+    IMGUI_API void          NavMoveRequestSubmit(ImGuiDir move_dir, ImGuiDir clip_dir, ImGuiNavMoveFlags move_flags, ImGuiScrollFlags scroll_flags);
+    IMGUI_API void          NavMoveRequestForward(ImGuiDir move_dir, ImGuiDir clip_dir, ImGuiNavMoveFlags move_flags, ImGuiScrollFlags scroll_flags);
+    IMGUI_API void          NavMoveRequestResolveWithLastItem();
     IMGUI_API void          NavMoveRequestCancel();
     IMGUI_API void          NavMoveRequestApplyResult();
     IMGUI_API void          NavMoveRequestTryWrapping(ImGuiWindow* window, ImGuiNavMoveFlags move_flags);
@@ -2973,6 +3024,7 @@ namespace ImGui
     inline void             DebugStartItemPicker()                                  { ImGuiContext& g = *GImGui; g.DebugItemPickerActive = true; }
 
     IMGUI_API void          ShowFontAtlas(ImFontAtlas* atlas);
+    IMGUI_API void          DebugHookIdInfo(ImGuiID id, ImGuiDataType data_type, const void* data_id, const void* data_id_end);
     IMGUI_API void          DebugNodeColumns(ImGuiOldColumns* columns);
     IMGUI_API void          DebugNodeDockNode(ImGuiDockNode* node, const char* label);
     IMGUI_API void          DebugNodeDrawList(ImGuiWindow* window, ImGuiViewportP* viewport, const ImDrawList* draw_list, const char* label);
@@ -3019,14 +3071,12 @@ IMGUI_API void      ImFontAtlasBuildMultiplyRectAlpha8(const unsigned char table
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 extern void         ImGuiTestEngineHook_ItemAdd(ImGuiContext* ctx, const ImRect& bb, ImGuiID id);
 extern void         ImGuiTestEngineHook_ItemInfo(ImGuiContext* ctx, ImGuiID id, const char* label, ImGuiItemStatusFlags flags);
-extern void         ImGuiTestEngineHook_IdInfo(ImGuiContext* ctx, ImGuiDataType data_type, ImGuiID id, const void* data_id);
-extern void         ImGuiTestEngineHook_IdInfo(ImGuiContext* ctx, ImGuiDataType data_type, ImGuiID id, const void* data_id, const void* data_id_end);
 extern void         ImGuiTestEngineHook_Log(ImGuiContext* ctx, const char* fmt, ...);
+extern const char*  ImGuiTestEngine_FindItemDebugLabel(ImGuiContext* ctx, ImGuiID id);
+
 #define IMGUI_TEST_ENGINE_ITEM_ADD(_BB,_ID)                 if (g.TestEngineHookItems) ImGuiTestEngineHook_ItemAdd(&g, _BB, _ID)               // Register item bounding box
 #define IMGUI_TEST_ENGINE_ITEM_INFO(_ID,_LABEL,_FLAGS)      if (g.TestEngineHookItems) ImGuiTestEngineHook_ItemInfo(&g, _ID, _LABEL, _FLAGS)   // Register item label and status flags (optional)
 #define IMGUI_TEST_ENGINE_LOG(_FMT,...)                     if (g.TestEngineHookItems) ImGuiTestEngineHook_Log(&g, _FMT, __VA_ARGS__)          // Custom log entry from user land into test log
-#define IMGUI_TEST_ENGINE_ID_INFO(_ID,_TYPE,_DATA)          if (g.TestEngineHookIdInfo == _ID) ImGuiTestEngineHook_IdInfo(&g, _TYPE, _ID, (const void*)(_DATA));
-#define IMGUI_TEST_ENGINE_ID_INFO2(_ID,_TYPE,_DATA,_DATA2)  if (g.TestEngineHookIdInfo == _ID) ImGuiTestEngineHook_IdInfo(&g, _TYPE, _ID, (const void*)(_DATA), (const void*)(_DATA2));
 #else
 #define IMGUI_TEST_ENGINE_ITEM_INFO(_ID,_LABEL,_FLAGS)      ((void)0)
 #endif
