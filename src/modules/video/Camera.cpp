@@ -204,10 +204,7 @@ inline void Camera::slerp(const glm::quat& quat, float factor) {
 
 void Camera::slerp(const glm::vec3& radians, float factor) {
 	const glm::quat quat2(radians);
-	_quat = glm::mix(_quat, quat2, factor);
-	_dirty |= DIRTY_ORIENTATION;
-	core_assert(!glm::any(glm::isnan(_quat)));
-	core_assert(!glm::any(glm::isinf(_quat)));
+	slerp(quat2, factor);
 }
 
 bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
