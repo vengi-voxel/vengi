@@ -2,6 +2,7 @@ set(SRCS
 	File.cpp File.h
 	FileStream.cpp FileStream.h
 	Filesystem.cpp Filesystem.h
+	FormatDescription.cpp FormatDescription.h
 	IOResource.h
 )
 
@@ -16,6 +17,7 @@ set(TEST_FILES
 set(TEST_SRCS
 	tests/FilesystemTest.cpp
 	tests/FileStreamTest.cpp
+	tests/FormatDescriptionTest.cpp
 	tests/FileTest.cpp
 )
 
