@@ -4,6 +4,7 @@
 
 #include "FileDialog.h"
 #include "IMGUI.h"
+#include "IconsFontAwesome5.h"
 #include "IconsForkAwesome.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
@@ -89,21 +90,47 @@ bool FileDialog::readDir() {
 	return true;
 }
 
+void FileDialog::bookMarkEntry(const core::String& path, float width, const char *title, const char *icon) {
+	const ImVec2 size(width, 0);
+	if (icon != nullptr) {
+		ImGui::TextUnformatted(icon);
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(1.5f * (float)imguiApp()->fontSize());
+	}
+	if (title == nullptr) {
+		title = path.c_str();
+	}
+	if (ImGui::Selectable(title, false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+		setCurrentPath(path);
+	}
+	ImGui::TooltipText("%s", path.c_str());
+}
+
 void FileDialog::bookmarkPanel() {
 	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(ImGui::Size(200), ImGui::Size(300)), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
-	ImGui::TextUnformatted(ICON_FK_BOOKMARK" Locations");
-	ImGui::Separator();
+	bool specialDirs = false;
+	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
+	const core::String& downloadDir = io::filesystem()->downloadDir();
+	if (!downloadDir.empty()) {
+		bookMarkEntry(downloadDir, contentRegionWidth, "Download", ICON_FK_DOWNLOAD);
+		specialDirs = true;
+	}
+
+	const core::String& documentsDir = io::filesystem()->documentsDir();
+	if (!documentsDir.empty()) {
+		bookMarkEntry(documentsDir, contentRegionWidth, "Documents", ICON_FA_FILE);
+		specialDirs = true;
+	}
+
+	if (specialDirs) {
+		ImGui::Separator();
+	}
 
 	const io::Paths& paths = io::filesystem()->paths();
-	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
-	const ImVec2 size(contentRegionWidth, 0);
 	for (const core::String& path : paths) {
 		const core::String& absPath = io::filesystem()->absolutePath(path);
-		if (ImGui::Selectable(absPath.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
-			setCurrentPath(absPath);
-		}
-		ImGui::TooltipText("%s", path.c_str());
+		bookMarkEntry(absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
 	}
 
 	ImGui::EndChild();
