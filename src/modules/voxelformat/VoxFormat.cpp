@@ -486,6 +486,9 @@ static inline int divFloor(int x, int y) {
 }
 
 glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, int x, int y, int z, const glm::ivec3& pivot) const {
+	if (!_foundSceneGraph) {
+		return glm::ivec3(x, y, z);
+	}
 	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - pivot;
 	const glm::ivec3 pos = glm::ivec3(t.rotation * glm::vec3(c.x + 0.5f, c.y + 0.5f, c.z + 0.5f));
 	const glm::ivec3 rotated(divFloor(pos.x, 2), divFloor(pos.y, 2), divFloor(pos.z, 2));
@@ -974,12 +977,15 @@ bool VoxFormat::loadSceneGraph(io::FileStream& stream) {
 
 		switch (header.chunkId) {
 		case FourCC('n','G','R','P'):
+			_foundSceneGraph = true;
 			wrapBool(loadChunk_nGRP(stream, header))
 			break;
 		case FourCC('n','T','R','N'):
+			_foundSceneGraph = true;
 			wrapBool(loadChunk_nTRN(stream, header))
 			break;
 		case FourCC('n','S','H','P'):
+			_foundSceneGraph = true;
 			wrapBool(loadChunk_nSHP(stream, header))
 			break;
 		}
@@ -1132,6 +1138,7 @@ void VoxFormat::reset() {
 	_transforms.clear();
 	_volumeIdx = 0;
 	_chunks = 0;
+	_foundSceneGraph = false;
 }
 
 #undef wrap

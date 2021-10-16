@@ -76,6 +76,7 @@ private:
 	uint32_t _numModels = 1u;
 	core::DynamicArray<Region> _regions;
 	core::DynamicArray<VoxModel> _models;
+	bool _foundSceneGraph = false;
 	core::DynamicArray<VoxTransform> _transforms;
 	core::Map<NodeId, NodeId> _parentNodes;
 	core::DynamicArray<NodeId> _leafNodes;
