@@ -190,6 +190,18 @@ inline int clua_push<glm::quat>(lua_State* s, const glm::quat& v) {
 	return 1;
 }
 
+template<>
+inline int clua_push<float>(lua_State* s, const float& v) {
+	lua_pushnumber(s, v);
+	return 1;
+}
+
+template<>
+inline int clua_push<int>(lua_State* s, const int& v) {
+	lua_pushinteger(s, v);
+	return 1;
+}
+
 extern glm::quat clua_toquat(lua_State *s, int n);
 
 template<class T>
@@ -245,48 +257,6 @@ int clua_vecmul(lua_State* s) {
 	clua_push(s, c);
 	return 1;
 }
-
-template<class T>
-struct clua_veclen {
-static int len(lua_State* s) {
-	const T& a = clua_tovec<T>(s, 1);
-	const float c = glm::length(a);
-	lua_pushnumber(s, c);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_veclen<glm::vec<N, int> > {
-static int len(lua_State* s) {
-	return clua_error(s, "'length' accepts only floating-point inputs");
-}
-};
-
-template<int N>
-struct clua_veclen<glm::vec<N, bool> > {
-static int len(lua_State* s) {
-	return clua_error(s, "'length' accepts only floating-point inputs");
-}
-};
-
-template<class T>
-struct clua_vecdot {
-static int dot(lua_State* s) {
-	const T& a = clua_tovec<T>(s, 1);
-	const T& b = clua_tovec<T>(s, 2);
-	const float c = glm::dot(a, b);
-	lua_pushnumber(s, c);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_vecdot<glm::vec<N, int> > {
-static int dot(lua_State* s) {
-	return clua_error(s, "'dot' accepts only floating-point inputs");
-}
-};
 
 template<class T>
 struct clua_vecequal {};
@@ -413,6 +383,64 @@ static int exec(lua_State* s) {
 }
 };
 
+template<class T>
+struct clua_vecfunc {};
+
+#define LUA_GLM_VEC_FUNC2(type, func) \
+	static int func(lua_State* s) { \
+		const glm::vec<N, type> v1 = clua_tovec<glm::vec<N, type> >(s, 1); \
+		const glm::vec<N, type> v2 = clua_tovec<glm::vec<N, type> >(s, 2); \
+		return clua_push(s, glm::func(v1, v2)); \
+	}
+
+#define LUA_GLM_VEC_FUNC2_unsupported(type, func) \
+	static int func(lua_State* s) { \
+		return clua_error(s, CORE_STRINGIFY(func) " is not supported for vector of type " CORE_STRINGIFY(type)); \
+	}
+
+#define LUA_GLM_VEC_FUNC1(type, func) \
+	static int func(lua_State* s) { \
+		const glm::vec<N, type> v1 = clua_tovec<glm::vec<N, type> >(s, 1); \
+		return clua_push(s, glm::func(v1)); \
+	}
+
+#define LUA_GLM_VEC_FUNC1_unsupported(type, func) \
+	static int func(lua_State* s) { \
+		return clua_error(s, CORE_STRINGIFY(func) " is not supported for vector of type " CORE_STRINGIFY(type)); \
+	}
+
+template<int N>
+struct clua_vecfunc<glm::vec<N, float> > {
+	LUA_GLM_VEC_FUNC1(float, normalize)
+	LUA_GLM_VEC_FUNC1(float, length)
+	LUA_GLM_VEC_FUNC2(float, distance)
+	LUA_GLM_VEC_FUNC2(float, dot)
+};
+
+template<int N>
+struct clua_vecfunc<glm::vec<N, double> > {
+	LUA_GLM_VEC_FUNC1(double, normalize)
+	LUA_GLM_VEC_FUNC1(double, length)
+	LUA_GLM_VEC_FUNC2(double, distance)
+	LUA_GLM_VEC_FUNC2(double, dot)
+};
+
+template<int N>
+struct clua_vecfunc<glm::vec<N, bool> > {
+	LUA_GLM_VEC_FUNC1_unsupported(bool, normalize)
+	LUA_GLM_VEC_FUNC1_unsupported(bool, length)
+	LUA_GLM_VEC_FUNC2_unsupported(bool, distance)
+	LUA_GLM_VEC_FUNC2_unsupported(bool, dot)
+};
+
+template<int N>
+struct clua_vecfunc<glm::vec<N, int> > {
+	LUA_GLM_VEC_FUNC1_unsupported(int, normalize)
+	LUA_GLM_VEC_FUNC1_unsupported(int, length)
+	LUA_GLM_VEC_FUNC2_unsupported(int, distance)
+	LUA_GLM_VEC_FUNC2_unsupported(int, dot)
+};
+
 template<>
 struct clua_vecnew<glm::quat> {
 static int vecnew(lua_State* s) {
@@ -513,19 +541,26 @@ void clua_vecregister(lua_State* s) {
 		{"__mul", clua_vecmul<RAWTYPE>},
 		{"__div", clua_vecdiv<RAWTYPE>},
 		{"__unm", clua_vecnegate<RAWTYPE>},
-		{"__len", clua_veclen<RAWTYPE>::len},
+		{"__len", clua_vecfunc<RAWTYPE>::length},
 		{"__eq", clua_vecequal<RAWTYPE>::equal},
 		{"__tostring", clua_vectostring<RAWTYPE>},
 		{"__index", clua_vecindex<RAWTYPE>},
 		{"__newindex", clua_vecnewindex<RAWTYPE>},
 		// TODO: __pow, __mod, __idiv, __lt, __le
-		{"dot", clua_vecdot<RAWTYPE>::dot},
+		{"distance", clua_vecfunc<RAWTYPE>::distance},
+		{"dot", clua_vecfunc<RAWTYPE>::dot},
+		{"length", clua_vecfunc<RAWTYPE>::length},
+		{"normalize", clua_vecfunc<RAWTYPE>::normalize},
 		{nullptr, nullptr}
 	};
 	Log::debug("Register %s lua functions", clua_meta<RAWTYPE>::name());
 	clua_registerfuncs(s, funcs, clua_meta<RAWTYPE>::name());
 	const luaL_Reg globalFuncs[] = {
 		{"new", clua_vecnew<RAWTYPE>::exec},
+		{"distance", clua_vecfunc<RAWTYPE>::distance},
+		{"dot", clua_vecfunc<RAWTYPE>::dot},
+		{"length", clua_vecfunc<RAWTYPE>::length},
+		{"normalize", clua_vecfunc<RAWTYPE>::normalize},
 		{nullptr, nullptr}
 	};
 	const core::String& globalMeta = core::string::format("%s_global", clua_meta<RAWTYPE>::name());

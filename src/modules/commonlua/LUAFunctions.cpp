@@ -375,10 +375,8 @@ void clua_quatregister(lua_State* s) {
 		{"__sub", clua_vecsub<glm::quat>},
 		{"__mul", clua_vecmul<glm::quat>},
 		{"__unm", clua_vecnegate<glm::quat>},
-		{"__len", clua_veclen<glm::quat>::len},
 		{"__index", clua_vecindex<glm::quat>},
 		{"__newindex", clua_vecnewindex<glm::quat>},
-		{"dot", clua_vecdot<glm::quat>::dot},
 		{nullptr, nullptr}
 	};
 	Log::debug("Register %s lua functions", clua_meta<glm::quat>::name());
