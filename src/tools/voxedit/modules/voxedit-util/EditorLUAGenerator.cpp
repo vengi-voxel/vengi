@@ -87,6 +87,13 @@ static int luaVoxel_layer_name(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_layer_setname(lua_State* s) {
+	LUALayer* luaLayer = luaVoxel_toLayer(s, 1);
+	const char *newName = lua_tostring(s, 2);
+	luaLayer->layer->name = newName;
+	return 0;
+}
+
 static int luaVoxel_layer_tostring(lua_State *s) {
 	LUALayer* luaLayer = luaVoxel_toLayer(s, 1);
 	lua_pushfstring(s, "layer: [%d, %s]", luaLayer->layerId, luaLayer->layer->name.c_str());
@@ -161,6 +168,7 @@ void EditorLUAGenerator::initializeCustomState(lua_State *s) {
 	static const luaL_Reg layerFuncs[] = {
 		{"volume", luaVoxel_layer_volume},
 		{"name", luaVoxel_layer_name},
+		{"setName", luaVoxel_layer_setname},
 		{"__tostring", luaVoxel_layer_tostring},
 		{nullptr, nullptr}
 	};

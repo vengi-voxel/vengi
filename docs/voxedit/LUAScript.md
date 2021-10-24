@@ -54,6 +54,8 @@ The functions are:
 
 * `name()`: Returns the current name of the layer.
 
+* `setName(string)`: Set the name of the layer.
+*
 * `volume()`: Gives you access to the volume of the layer.
 
 # Color
