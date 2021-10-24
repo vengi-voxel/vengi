@@ -12,6 +12,7 @@ set(LUA_SRCS
 	scripts/cover.lua
 	scripts/grass.lua
 	scripts/noise.lua
+	scripts/noise-builtin.lua
 	scripts/pyramid.lua
 	scripts/replacecolor.lua
 	scripts/similarcolor.lua

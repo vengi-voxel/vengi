@@ -436,7 +436,7 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 		}
 
 		if (type == LUAParameterType::Max) {
-			Log::error("No type = 'int', 'float', 'string', 'bool' key given for '%s'", name.c_str());
+			Log::error("No type = 'int', 'float', 'str', 'bool', 'colorindex' key given for '%s'", name.c_str());
 			return false;
 		}
 
