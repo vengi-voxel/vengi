@@ -80,12 +80,6 @@ public:
 		return globalData<T>(_state, prefix);
 	}
 
-	template<class FUNC>
-	inline void registerGlobal(const char* name, FUNC&& f) const {
-		lua_pushcfunction(_state, f);
-		lua_setglobal(_state, name);
-	}
-
 	void pop(int amount = 1);
 
 	void reg(const core::String& prefix, const luaL_Reg* funcs);
