@@ -156,8 +156,7 @@ void EditorLUAGenerator::initializeCustomState(lua_State *s) {
 		{"get", luaVoxel_layermgr_get},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(s, layerMgrFuncs, luaVoxel_metalayermgr());
-	lua_setglobal(s, "layermgr");
+	clua_registerfuncsglobal(s, layerMgrFuncs, luaVoxel_metalayermgr(), "layermgr");
 
 	static const luaL_Reg layerFuncs[] = {
 		{"volume", luaVoxel_layer_volume},
