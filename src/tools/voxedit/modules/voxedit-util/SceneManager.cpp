@@ -1607,7 +1607,9 @@ void SceneManager::shutdown() {
 	_gridRenderer.shutdown();
 	_mementoHandler.clearStates();
 	_animationRenderer.shutdown();
-	_animationCache->shutdown();
+	if (_animationCache) {
+		_animationCache->shutdown();
+	}
 	_character.shutdown();
 	_bird.shutdown();
 	_animationSystem.shutdown();
