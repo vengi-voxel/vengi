@@ -363,7 +363,7 @@ struct clua_vecnew {};
 
 template<int N>
 struct clua_vecnew<glm::vec<N, float> > {
-static int vecnew(lua_State* s) {
+static int exec(lua_State* s) {
 	glm::vec<N, float> array;
 	float value = 0.0f;
 	for (int i = 0; i < N; ++i) {
@@ -376,7 +376,7 @@ static int vecnew(lua_State* s) {
 
 template<int N>
 struct clua_vecnew<glm::vec<N, double> > {
-static int vecnew(lua_State* s) {
+static int exec(lua_State* s) {
 	glm::vec<N, double> array;
 	float value = 0.0f;
 	for (int i = 0; i < N; ++i) {
@@ -389,7 +389,7 @@ static int vecnew(lua_State* s) {
 
 template<int N>
 struct clua_vecnew<glm::vec<N, int> > {
-static int vecnew(lua_State* s) {
+static int exec(lua_State* s) {
 	glm::vec<N, int> array;
 	int value = 0;
 	for (int i = 0; i < N; ++i) {
@@ -402,7 +402,7 @@ static int vecnew(lua_State* s) {
 
 template<int N>
 struct clua_vecnew<glm::vec<N, bool> > {
-static int vecnew(lua_State* s) {
+static int exec(lua_State* s) {
 	glm::vec<N, bool> array;
 	int value = 0;
 	for (int i = 0; i < N; ++i) {
@@ -525,7 +525,7 @@ void clua_vecregister(lua_State* s) {
 	Log::debug("Register %s lua functions", clua_meta<RAWTYPE>::name());
 	clua_registerfuncs(s, funcs, clua_meta<RAWTYPE>::name());
 	const luaL_Reg globalFuncs[] = {
-		{"new", clua_vecnew<RAWTYPE>::vecnew},
+		{"new", clua_vecnew<RAWTYPE>::exec},
 		{nullptr, nullptr}
 	};
 	const core::String& globalMeta = core::string::format("%s_global", clua_meta<RAWTYPE>::name());
