@@ -15,6 +15,7 @@
 #include "voxel/Voxel.h"
 #include "core/Color.h"
 #include "io/Filesystem.h"
+#include "noise/Simplex.h"
 #include "app/App.h"
 
 #define GENERATOR_LUA_SANTITY 1
@@ -27,6 +28,10 @@ static const char *luaVoxel_metavolumewrapper() {
 
 static const char *luaVoxel_metapalette() {
 	return "__meta_palette";
+}
+
+static const char *luaVoxel_metanoise() {
+	return "__meta_noise";
 }
 
 static voxel::RawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
@@ -209,6 +214,72 @@ static int luaVoxel_region_tostring(lua_State *s) {
 	return 1;
 }
 
+static int luaVoxel_noise_simplex2(lua_State* s) {
+	lua_pushnumber(s, noise::noise(clua_tovec<glm::vec2>(s, 1)));
+	return 1;
+}
+
+static int luaVoxel_noise_simplex3(lua_State* s) {
+	lua_pushnumber(s, noise::noise(clua_tovec<glm::vec3>(s, 1)));
+	return 1;
+}
+
+static int luaVoxel_noise_simplex4(lua_State* s) {
+	lua_pushnumber(s, noise::noise(clua_tovec<glm::vec4>(s, 1)));
+	return 1;
+}
+
+static int luaVoxel_noise_fBm2(lua_State* s) {
+	lua_pushnumber(s, noise::fBm(clua_tovec<glm::vec2>(s, 1)));
+	return 1;
+}
+
+static int luaVoxel_noise_fBm3(lua_State* s) {
+	lua_pushnumber(s, noise::fBm(clua_tovec<glm::vec3>(s, 1)));
+	return 1;
+}
+
+static int luaVoxel_noise_fBm4(lua_State* s) {
+	lua_pushnumber(s, noise::fBm(clua_tovec<glm::vec4>(s, 1)));
+	return 1;
+}
+
+static int luaVoxel_noise_ridgedMF2(lua_State* s) {
+	const glm::vec2 v = clua_tovec<glm::vec2>(s, 1);
+	const float ridgeOffset = luaL_optnumber(s, 2, 1.0f);
+	const uint8_t octaves = luaL_optinteger(s, 3, 4);
+	const float lacunarity = luaL_optnumber(s, 4, 2.0f);
+	const float gain = luaL_optnumber(s, 5, 0.5f);
+	lua_pushnumber(s, noise::ridgedMF(v, ridgeOffset, octaves, lacunarity, gain));
+	return 1;
+}
+
+static int luaVoxel_noise_ridgedMF3(lua_State* s) {
+	const glm::vec3 v = clua_tovec<glm::vec3>(s, 1);
+	const float ridgeOffset = luaL_optnumber(s, 2, 1.0f);
+	const uint8_t octaves = luaL_optinteger(s, 3, 4);
+	const float lacunarity = luaL_optnumber(s, 4, 2.0f);
+	const float gain = luaL_optnumber(s, 5, 0.5f);
+	lua_pushnumber(s, noise::ridgedMF(v, ridgeOffset, octaves, lacunarity, gain));
+	return 1;
+}
+
+static int luaVoxel_noise_ridgedMF4(lua_State* s) {
+	const glm::vec4 v = clua_tovec<glm::vec4>(s, 1);
+	const float ridgeOffset = luaL_optnumber(s, 2, 1.0f);
+	const uint8_t octaves = luaL_optinteger(s, 3, 4);
+	const float lacunarity = luaL_optnumber(s, 4, 2.0f);
+	const float gain = luaL_optnumber(s, 5, 0.5f);
+	lua_pushnumber(s, noise::ridgedMF(v, ridgeOffset, octaves, lacunarity, gain));
+	return 1;
+}
+
+static int luaVoxel_noise_worley3(lua_State* s) {
+	const glm::vec3 v = clua_tovec<glm::vec3>(s, 1);
+	lua_pushnumber(s, noise::worleyNoise(v));
+	return 1;
+}
+
 static void prepareState(lua_State* s) {
 	static const luaL_Reg volumeFuncs[] = {
 		{"voxel", luaVoxel_volumewrapper_voxel},
@@ -243,6 +314,21 @@ static void prepareState(lua_State* s) {
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, paletteFuncs, luaVoxel_metapalette(), "palette");
+
+	static const luaL_Reg noiseFuncs[] = {
+		{"noise2", luaVoxel_noise_simplex2},
+		{"noise3", luaVoxel_noise_simplex3},
+		{"noise4", luaVoxel_noise_simplex4},
+		{"fBm2", luaVoxel_noise_fBm2},
+		{"fBm3", luaVoxel_noise_fBm3},
+		{"fBm4", luaVoxel_noise_fBm4},
+		{"ridgedMF2", luaVoxel_noise_ridgedMF2},
+		{"ridgedMF3", luaVoxel_noise_ridgedMF3},
+		{"ridgedMF4", luaVoxel_noise_ridgedMF4},
+		{"worley3", luaVoxel_noise_worley3},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, noiseFuncs, luaVoxel_metanoise(), "noise");
 
 	clua_mathregister(s);
 }

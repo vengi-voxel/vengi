@@ -70,6 +70,18 @@ The functions are:
 
 * `similar(paletteindex, [coloramount])`: Return a table with similar colors given by their palette index.
 
+# Noise
+
+`noise` supports a few noise generators:
+
+* `noise2(v)`, `noise3(v)`, `noise4(v)`: Simplex noise. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
+
+* `fBm2(v)`, `fBm3(v)`, `fBm4(v)`: Simplex noise fractal brownian motion sum. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
+
+* `ridgedMF2(v)`, `ridgedMF3(v)`, `ridgedMF4(v)`: Simplex ridged multi-fractal noise sum. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
+
+* `worley3(v)`: Simplex cellular/worley noise. Uses the given `vec3` and returns a float value between `0.0` and `1.0`.
+
 # Region
 
 * `mins()`: The lower boundary of the region (inclusive).
