@@ -26,6 +26,38 @@ TEST_F(LUAFunctionsTest, testVectorCtor) {
 	ASSERT_EQ(0, v.z);
 }
 
+TEST_F(LUAFunctionsTest, testVectorDistance) {
+	static const char *script = R"(
+		function test()
+			local v1 = vec3.new(0, 1, 0)
+			local v2 = vec3.new(0, 2, 0)
+			return v1:distance(v2)
+		end
+	)";
+	LUA lua;
+	clua_vecregister<glm::vec3>(lua.state());
+	ASSERT_TRUE(lua.load(script)) << lua.error();
+	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
+	const float distance = lua_tonumber(lua, -1);
+	ASSERT_FLOAT_EQ(1.0f, distance);
+}
+
+TEST_F(LUAFunctionsTest, testVectorDistanceGlobal) {
+	static const char *script = R"(
+		function test()
+			local v1 = vec3.new(0, 1, 0)
+			local v2 = vec3.new(0, 2, 0)
+			return vec3.distance(v1, v2)
+		end
+	)";
+	LUA lua;
+	clua_vecregister<glm::vec3>(lua.state());
+	ASSERT_TRUE(lua.load(script)) << lua.error();
+	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
+	const float distance = lua_tonumber(lua, -1);
+	ASSERT_FLOAT_EQ(1.0f, distance);
+}
+
 TEST_F(LUAFunctionsTest, testVectorAddition) {
 	static const char *script = R"(
 		function test()
