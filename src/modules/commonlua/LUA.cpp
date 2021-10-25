@@ -27,7 +27,8 @@ public:
 
 namespace {
 int panicCB(lua_State *L) {
-	Log::info("Lua panic. Error message: %s", (lua_isnil(L, -1) ? "" : lua_tostring(L, -1)));
+	const char *error = lua_isnil(L, -1) ? "" : lua_tostring(L, -1);
+	Log::error("Lua panic. Error message: %s", error);
 	return 0;
 }
 
