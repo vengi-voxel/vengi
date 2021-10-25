@@ -17,6 +17,7 @@ VoxEdit:
 
    - Removed old ui and switched to dearimgui
    - Added lua script editor
+   - Added noise api support to the lua scripts
 
 ## 0.0.10 (2021-09-19)
 
