@@ -156,7 +156,18 @@ bool LUA::execute(const core::String &function, int returnValues) {
 		setError("Function " + function + " wasn't found");
 		return false;
 	}
-	const int ret = lua_pcall(_state, 0, returnValues, 0);
+	const int nargs = 0;
+	/* calculate stack position for message handler */
+	const int hpos = lua_gettop(_state) - nargs;
+	/* push custom error message handler */
+	lua_pushcfunction(_state, clua_errorhandler);
+	/* move it before function and arguments */
+	lua_insert(_state, hpos);
+	/* call lua_pcall function with custom handler */
+	const int ret = lua_pcall(_state, nargs, returnValues, hpos);
+	/* remove custom error message handler from stack */
+	lua_remove(_state, hpos);
+	/* pass return value of lua_pcall */
 	if (ret != LUA_OK) {
 		setError(lua_tostring(_state, -1));
 		return false;

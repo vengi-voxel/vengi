@@ -567,6 +567,7 @@ void clua_vecregister(lua_State* s) {
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<RAWTYPE>::name());
 }
 
+extern int clua_errorhandler(lua_State* s);
 extern void clua_quatregister(lua_State* s);
 
 extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);

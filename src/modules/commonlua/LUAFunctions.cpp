@@ -11,6 +11,11 @@
 #include "core/collection/StringSet.h"
 #include "io/Filesystem.h"
 
+int clua_errorhandler(lua_State* s) {
+	Log::error("Lua error handler invoked");
+	return 0;
+}
+
 void clua_assert(lua_State* s, bool pass, const char *msg) {
 	if (pass) {
 		return;
