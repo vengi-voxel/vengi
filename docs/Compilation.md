@@ -33,3 +33,8 @@ If you are using the cmake Makefile generator, you get the same targets as for L
 If you encounter any problems, it's also a good start to check out the build pipelines of the project.
 This is always the most up-to-date information about how-to-build-the-project that you will find. But
 also please don't hesitate to ask for help on our discord server.
+
+## Enforce bundled libs
+
+You can enforce the use of the bundled libs by putting a `<LIB>_LOCAL=1` in your cmake cache.
+Example: By putting `LUA54_LOCAL=1` into your cmake cache, you enforce the use of the bundled lua sources from `contrib/libs/lua54`.
