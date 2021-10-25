@@ -158,15 +158,15 @@ bool LUA::execute(const core::String &function, int returnValues) {
 	}
 	const int nargs = 0;
 	/* calculate stack position for message handler */
-	const int hpos = lua_gettop(_state) - nargs;
+	//const int hpos = lua_gettop(_state) - nargs;
 	/* push custom error message handler */
-	lua_pushcfunction(_state, clua_errorhandler);
+	//lua_pushcfunction(_state, clua_errorhandler);
 	/* move it before function and arguments */
-	lua_insert(_state, hpos);
+	//lua_insert(_state, hpos);
 	/* call lua_pcall function with custom handler */
-	const int ret = lua_pcall(_state, nargs, returnValues, hpos);
+	const int ret = lua_pcall(_state, nargs, returnValues, 0 /* hpos*/);
 	/* remove custom error message handler from stack */
-	lua_remove(_state, hpos);
+	//lua_remove(_state, hpos);
 	/* pass return value of lua_pcall */
 	if (ret != LUA_OK) {
 		setError(lua_tostring(_state, -1));
