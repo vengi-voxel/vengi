@@ -163,6 +163,9 @@ jobs:
             cd build
             cmake .. -DCMAKE_BUILD_TYPE=Release
             cmake --build .
+
+        - name: install
+          run: |
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component mapview --prefix mapview-install
             cmake --install . --component voxconvert --prefix voxconvert-install
