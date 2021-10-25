@@ -3,6 +3,9 @@
  */
 
 #include "ScriptPanel.h"
+#include "core/Algorithm.h"
+#include "core/StringUtil.h"
+#include "glm/ext/scalar_constants.hpp"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUI.h"
 #include "ui/imgui/IconsForkAwesome.h"
@@ -13,12 +16,15 @@ namespace voxedit {
 void ScriptPanel::reloadScriptParameters(const core::String& script) {
 	_scriptParameterDescription.clear();
 	sceneMgr().luaGenerator().argumentInfo(script, _scriptParameterDescription);
-	const int parameterCount = _scriptParameterDescription.size();
+	const int parameterCount = (int)_scriptParameterDescription.size();
 	_scriptParameters.clear();
 	_scriptParameters.resize(parameterCount);
+	_enumValues.clear();
+	_enumValues.resize(parameterCount);
 	for (int i = 0; i < parameterCount; ++i) {
 		const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
 		_scriptParameters[i] = p.defaultValue;
+		_enumValues[i] = p.enumValues;
 	}
 }
 
@@ -91,6 +97,17 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 			case voxelgenerator::LUAParameterType::String: {
 				core::String &str = _scriptParameters[i];
 				ImGui::InputText(p.name.c_str(), &str);
+				break;
+			}
+			case voxelgenerator::LUAParameterType::Enum: {
+				core::String &str = _scriptParameters[i];
+				core::DynamicArray<core::String> tokens;
+				core::string::splitString(_enumValues[i], tokens, ",");
+				const auto i = core::find(tokens.begin(), tokens.end(), str);
+				int selected = i == tokens.end() ? 0 : i - tokens.begin();
+				if (ImGui::ComboStl(p.name.c_str(), &selected, tokens)) {
+					str = tokens[selected];
+				}
 				break;
 			}
 			case voxelgenerator::LUAParameterType::Boolean: {

@@ -40,6 +40,23 @@ end
 
 Execute this via console `xs scriptfile 1` where `1` will be the value of `n`. Omitting the `1` will add the `default` value from the argument list.
 
+## Arguments
+
+Supported `type`s are:
+
+* `int`: `min`, `max` values are supported, too
+* `float`: `min`, `max` values are supported, too
+* `enum`: `enum` as a property specifies a list of string separated by `,`
+* `str`: string input
+* `colorindex`: a color index from current palette (clamped)
+* `bool`:
+
+The `desc`ription field is just for the user interface of the script parameter list.
+
+A `default` value can get set, too.
+
+The order in the arguments table defines the order in which the arguments are passed over to the script.
+
 # LayerManager
 
 `layerMgr` lets you access different layers or create new ones.

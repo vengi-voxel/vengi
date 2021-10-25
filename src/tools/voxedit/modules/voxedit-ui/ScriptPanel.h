@@ -18,6 +18,7 @@ private:
 	int _currentScript = -1;
 	core::DynamicArray<voxelgenerator::LUAScript> _scripts;
 	core::DynamicArray<voxelgenerator::LUAParameterDescription> _scriptParameterDescription;
+	core::DynamicArray<core::String> _enumValues;
 	core::DynamicArray<core::String> _scriptParameters;
 	bool _scriptEditor = false;
 

@@ -274,9 +274,13 @@ static int luaVoxel_noise_ridgedMF4(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_noise_worley2(lua_State* s) {
+	lua_pushnumber(s, noise::worleyNoise(clua_tovec<glm::vec2>(s, 1)));
+	return 1;
+}
+
 static int luaVoxel_noise_worley3(lua_State* s) {
-	const glm::vec3 v = clua_tovec<glm::vec3>(s, 1);
-	lua_pushnumber(s, noise::worleyNoise(v));
+	lua_pushnumber(s, noise::worleyNoise(clua_tovec<glm::vec3>(s, 1)));
 	return 1;
 }
 
@@ -325,6 +329,7 @@ static void prepareState(lua_State* s) {
 		{"ridgedMF2", luaVoxel_noise_ridgedMF2},
 		{"ridgedMF3", luaVoxel_noise_ridgedMF3},
 		{"ridgedMF4", luaVoxel_noise_ridgedMF4},
+		{"worley2", luaVoxel_noise_worley2},
 		{"worley3", luaVoxel_noise_worley3},
 		{nullptr, nullptr}
 	};
@@ -387,6 +392,7 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 		core::String name = "";
 		core::String description = "";
 		core::String defaultValue = "";
+		core::String enumValues = "";
 		double minValue = 0.0;
 		double maxValue = 100.0;
 		LUAParameterType type = LUAParameterType::Max;
@@ -403,6 +409,8 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 				name = value;
 			} else if (!SDL_strncmp(key, "desc", 4)) {
 				description = value;
+			} else if (!SDL_strncmp(key, "enum", 4)) {
+				enumValues = value;
 			} else if (!SDL_strcmp(key, "default")) {
 				defaultValue = value;
 			} else if (!SDL_strcmp(key, "min")) {
@@ -418,6 +426,8 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 					type = LUAParameterType::ColorIndex;
 				} else if (!SDL_strncmp(value, "str", 3)) {
 					type = LUAParameterType::String;
+				} else if (!SDL_strncmp(value, "enum", 4)) {
+					type = LUAParameterType::Enum;
 				} else if (!SDL_strncmp(value, "bool", 4)) {
 					type = LUAParameterType::Boolean;
 				} else {
@@ -436,11 +446,16 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 		}
 
 		if (type == LUAParameterType::Max) {
-			Log::error("No type = 'int', 'float', 'str', 'bool', 'colorindex' key given for '%s'", name.c_str());
+			Log::error("No type = 'int', 'float', 'str', 'bool', 'enum' or 'colorindex' key given for '%s'", name.c_str());
 			return false;
 		}
 
-		params.emplace_back(name, description, defaultValue, minValue, maxValue, type);
+		if (type == LUAParameterType::Enum && enumValues.empty()) {
+			Log::error("No enum property given for argument '%s', but type is 'enum'", name.c_str());
+			return false;
+		}
+
+		params.emplace_back(name, description, defaultValue, enumValues, minValue, maxValue, type);
 		lua_pop(lua, 1); // remove table
 	}
 	return true;
@@ -451,6 +466,7 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 		const LUAParameterDescription &d = argsInfo[i];
 		const core::String &arg = args.size() > i ? args[i] : d.defaultValue;
 		switch (d.type) {
+		case LUAParameterType::Enum:
 		case LUAParameterType::String:
 			lua_pushstring(s, arg.c_str());
 			break;

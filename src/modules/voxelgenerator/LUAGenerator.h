@@ -26,6 +26,7 @@ enum class LUAParameterType {
 	Float,
 	Boolean,
 	ColorIndex,
+	Enum,
 
 	Max
 };
@@ -34,12 +35,13 @@ struct LUAParameterDescription {
 	core::String name;
 	core::String description;
 	core::String defaultValue;
+	core::String enumValues; /**< separated by ; */
 	double minValue = 1.0;
 	double maxValue = 0.0;
 	LUAParameterType type;
 
-	LUAParameterDescription(const core::String &_name, const core::String &_description, const core::String &_defaultValue, double _minValue, double _maxValue, LUAParameterType _type)
-		: name(_name), description(_description), defaultValue(_defaultValue), minValue(_minValue), maxValue(_maxValue), type(_type) {
+	LUAParameterDescription(const core::String &_name, const core::String &_description, const core::String &_defaultValue, const core::String &_enumValues, double _minValue, double _maxValue, LUAParameterType _type)
+		: name(_name), description(_description), defaultValue(_defaultValue), enumValues(_enumValues), minValue(_minValue), maxValue(_maxValue), type(_type) {
 	}
 	LUAParameterDescription() : type(LUAParameterType::Max) {
 	}
