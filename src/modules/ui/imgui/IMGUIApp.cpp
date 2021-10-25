@@ -30,6 +30,7 @@
 #include "FileDialog.h"
 
 #include <SDL.h>
+#include <SDL_syswm.h>
 
 namespace ui {
 namespace imgui {
