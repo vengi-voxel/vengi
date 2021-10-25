@@ -7,7 +7,9 @@
 #include "core/Log.h"
 #include <string.h>
 #include <uv.h>
-#ifndef _WIN32
+#ifdef _WIN32
+#include <io.h>
+#else
 #include <unistd.h>
 #endif
 
