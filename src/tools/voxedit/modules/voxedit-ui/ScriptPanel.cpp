@@ -63,7 +63,13 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 			case voxelgenerator::LUAParameterType::Integer: {
 				core::String &str = _scriptParameters[i];
 				int val = core::string::toInt(str);
-				if (ImGui::InputInt(p.name.c_str(), &val)) {
+				if (p.shouldClamp()) {
+					int maxVal = (int)(p.maxValue + glm::epsilon<double>());
+					int minVal = (int)(p.minValue + glm::epsilon<double>());
+					if (ImGui::SliderInt(p.name.c_str(), &val, minVal, maxVal)) {
+						str = core::string::toString(val);
+					}
+				} else if (ImGui::InputInt(p.name.c_str(), &val)) {
 					str = core::string::toString(val);
 				}
 				break;
@@ -71,7 +77,13 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 			case voxelgenerator::LUAParameterType::Float: {
 				core::String &str = _scriptParameters[i];
 				float val = core::string::toFloat(str);
-				if (ImGui::InputFloat(p.name.c_str(), &val)) {
+				if (p.shouldClamp()) {
+					float maxVal = (float)p.maxValue;
+					float minVal = (float)p.minValue;
+					if (ImGui::SliderFloat(p.name.c_str(), &val, minVal, maxVal)) {
+						str = core::string::toString(val);
+					}
+				} else if (ImGui::InputFloat(p.name.c_str(), &val)) {
 					str = core::string::toString(val);
 				}
 				break;
