@@ -9,6 +9,7 @@ set(SRCS
 	VoxFormat.h VoxFormat.cpp
 	QBTFormat.h QBTFormat.cpp
 	QBFormat.h QBFormat.cpp
+	QBCLFormat.h QBCLFormat.cpp
 	QEFFormat.h QEFFormat.cpp
 	MCRFormat.h MCRFormat.cpp
 	VXMFormat.h VXMFormat.cpp
@@ -31,6 +32,7 @@ set(TEST_SRCS
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
+	tests/QBCLFormatTest.cpp
 	tests/QEFFormatTest.cpp
 	tests/CubFormatTest.cpp
 	tests/CSMFormatTest.cpp
@@ -44,6 +46,7 @@ set(TEST_FILES
 	tests/qubicle.qb
 	tests/qubicle.qbt
 	tests/qubicle.qef
+	tests/qubicle.qbcl
 	tests/testload.qef
 	tests/aceofspades.vxl
 	tests/chronovox-studio.csm

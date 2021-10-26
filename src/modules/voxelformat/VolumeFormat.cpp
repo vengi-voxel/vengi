@@ -11,6 +11,7 @@
 #include "voxelformat/VoxFormat.h"
 #include "voxelformat/QBTFormat.h"
 #include "voxelformat/QBFormat.h"
+#include "voxelformat/QBCLFormat.h"
 #include "voxelformat/QEFFormat.h"
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
@@ -28,8 +29,9 @@ namespace voxelformat {
 // this is the list of supported voxel volume formats that are have importers implemented
 const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"MagicaVoxel", "vox"},
-	{"Qubicle", "qbt"},
-	{"Qubicle", "qb"},
+	{"Qubicle Binary Tree", "qbt"},
+	{"Qubicle Binary", "qb"},
+	//{"Qubicle", "qbcl"},
 	{"Sandbox VoxEdit", "vxm"},
 	{"Sandbox VoxEdit", "vxr"},
 	{"BinVox", "binvox"},
@@ -37,7 +39,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Build engine", "kvx"},
 	{"Ace of Spades", "kv6"},
 	{"Tiberian Sun", "vxl"},
-	{"Qubicle", "qef"},
+	{"Qubicle Exchange", "qef"},
 	{"Chronovox", "csm"},
 	{"Nicks Voxel Model", "nvm"},
 	{nullptr, nullptr}
@@ -47,14 +49,15 @@ const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 // this is the list of supported voxel or mesh formats that have exporters implemented
 const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"MagicaVoxel", "vox"},
-	{"Qubicle", "qbt"},
-	{"Qubicle", "qb"},
+	{"Qubicle Binary Tree", "qbt"},
+	{"Qubicle Binary", "qb"},
+	//{"Qubicle", "qbcl"},
 	{"Sandbox VoxEdit", "vxm"},
 	{"BinVox", "binvox"},
 	{"CubeWorld", "cub"},
 	{"Build engine", "kvx"},
 	{"Tiberian Sun", "vxl"},
-	{"Qubicle", "qef"},
+	{"Qubicle Exchange", "qef"},
 	{"WaveFront OBJ", "obj"},
 	{"Polygon File Format", "ply"},
 	{nullptr, nullptr}
@@ -147,6 +150,11 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		}
 	} else if (ext == "qef" || magic == FourCC('Q','u','b','i')) {
 		voxel::QEFFormat f;
+		if (!f.loadGroups(filePtr, newVolumes)) {
+			voxelformat::clearVolumes(newVolumes);
+		}
+	} else if (ext == "qbcl" || magic == FourCC('Q','B','C','L')) {
+		voxel::QBCLFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
