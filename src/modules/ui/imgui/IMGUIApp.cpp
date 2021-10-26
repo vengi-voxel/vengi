@@ -337,7 +337,7 @@ static void _imguiCreateWindow(ImGuiViewport *viewport) {
 #if defined(_WIN32)
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
-	if (SDL_GetWindowWMInfo(vd->Window, &info))
+	if (SDL_GetWindowWMInfo(vd->window, &info))
 		viewport->PlatformHandleRaw = info.info.win.window;
 #endif
 }
