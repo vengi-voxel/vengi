@@ -166,6 +166,7 @@ jobs:
 
         - name: install
           run: |
+            cd build
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component mapview --prefix mapview-install
             cmake --install . --component voxconvert --prefix voxconvert-install
