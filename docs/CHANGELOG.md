@@ -2,11 +2,12 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
-## 0.0.12 (2021-XX-XX)
+## 0.0.12 (2021-10-26)
 
 General:
 
    - Fixed a few windows compilation issues
+   - Fixed issues in the automated build pipelines to produce windows binaries
 
 ## 0.0.11 (2021-10-25)
 

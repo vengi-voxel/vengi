@@ -1,9 +1,10 @@
-vengi (0.0.12.0-1) UNRELEASED; urgency=low
+vengi (0.0.12.0-1) unstable; urgency=low
 
   * General:
   * Fixed a few windows compilation issues
+  * Fixed issues in the automated build pipelines to produce windows binaries
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 25 Oct 2021 18:24:45 +0200
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 26 Oct 2021 10:17:09 +0200
 
 vengi (0.0.11.0-1) unstable; urgency=low
 
