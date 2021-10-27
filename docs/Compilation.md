@@ -15,6 +15,15 @@ typing `make voxedit-perf`. There are also other targets for valgrind - just use
 
 The project should be buildable with every ide that supports cmake. QTCreator, Eclipse CDT, vscode or Visual Studio. Just install cmake, generate the project files, and open them in your ide.
 
+### Visual Studio Code
+
+* Install ninja https://ninja-build.org/
+* Install cmake https://cmake.org/download/
+* Install vscode https://code.visualstudio.com/
+* Install Visual Studio (for the compiler)
+
+Open your git clone directory in vscode and let it configure via cmake. It will pick ninja and the visual studio compiler automatically.
+
 ## Mac
 
 You can generate your xcode project via cmake or build like this:
