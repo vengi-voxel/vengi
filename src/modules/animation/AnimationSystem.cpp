@@ -48,13 +48,16 @@ bool AnimationSystem::loadSymbols() {
 #if HOT_RELOAD_ANIM == 1
 #ifdef __WINDOWS__
 #define SHARED_LIB_SUFFIX "dll"
+#define SHARED_LIB_PREFIX ""
 #elif __MACOSX__
 #define SHARED_LIB_SUFFIX "dylib"
+#define SHARED_LIB_PREFIX "lib"
 #else
 #define SHARED_LIB_SUFFIX "so"
+#define SHARED_LIB_PREFIX "lib"
 #endif
 	// TODO: should be in construct()
-	const core::VarPtr animLibPath = core::Var::get("anim_lib", "libanim." SHARED_LIB_SUFFIX);
+	const core::VarPtr animLibPath = core::Var::get("anim_lib", SHARED_LIB_PREFIX "anim." SHARED_LIB_SUFFIX);
 	const core::String& libName = animLibPath->strVal();
 	const char *searchPaths[] = {
 		libName.c_str(),
