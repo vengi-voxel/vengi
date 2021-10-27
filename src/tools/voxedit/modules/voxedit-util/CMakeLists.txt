@@ -28,12 +28,7 @@ set(SRCS
 	tool/Resize.h tool/Resize.cpp
 )
 set(LIB voxedit-util)
-set(DEPENDENCIES voxelrender voxelgenerator animation)
-if (HOT_RELOAD_ANIM)
-	list(APPEND DEPENDENCIES anim)
-endif()
-
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender voxelgenerator animation)
 
 set(TEST_SRCS
 	tests/AnimationLuaSaverTest.cpp

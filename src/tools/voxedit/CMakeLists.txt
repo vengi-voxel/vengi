@@ -29,3 +29,6 @@ set(FILES
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} WINDOWED)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES voxedit-ui voxedit-util)
+if (HOT_RELOAD_ANIM)
+	add_dependencies(${PROJECT_NAME} anim)
+endif()
