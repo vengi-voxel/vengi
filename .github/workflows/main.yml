@@ -15,7 +15,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake ..
+            cmake .. -DHOT_RELOAD_ANIM=0
             make -j 2
 
         - name: Test
@@ -161,7 +161,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DHOT_RELOAD_ANIM=0
             cmake --build .
 
         - name: install
