@@ -36,7 +36,7 @@ SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data, char *
 	}
 	if (sdl_assert_state == SDL_ASSERTION_BREAK) {
 		SDL_TriggerBreakpoint();
-	} else if (sdl_assert_state != SDL_ASSERTION_ALWAYS_IGNORE && sdl_assert_state != SDL_ASSERTION_IGNORE) {
+	} else if (sdl_assert_data.trigger_count <= 1) {
 		core_stacktrace();
 	}
 	return sdl_assert_state;
