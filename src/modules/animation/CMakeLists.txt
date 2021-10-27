@@ -1,11 +1,6 @@
 set(LIB animation)
 
 set(SRCS)
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set(HOT_RELOAD_ANIM 1)
-else()
-	set(HOT_RELOAD_ANIM 0)
-endif()
 
 # Maintain a list of animations to support hot reloading
 set(SRCS_ANIMATIONS

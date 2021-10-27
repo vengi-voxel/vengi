@@ -17,4 +17,8 @@ set(FILES
 )
 
 set(LIB frontend)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES attrib animation shared audio)
+set(DEPENDENCIES attrib animation shared audio)
+if (HOT_RELOAD_ANIM)
+	list(APPEND DEPENDENCIES anim)
+endif()
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ${DEPENDENCIES})

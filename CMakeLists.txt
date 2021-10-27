@@ -165,6 +165,13 @@ find_package(Curses)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	set(HOT_RELOAD_ANIM 1)
+else()
+	set(HOT_RELOAD_ANIM 0)
+endif()
+
+
 # These includes are needed to let the include for IMPLICIT_DEPENDS for shaders work
 include_directories(src/modules/video/shaders)
 include_directories(src/modules/compute/shaders)
