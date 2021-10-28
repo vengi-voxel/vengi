@@ -1,6 +1,8 @@
 vengi (0.0.13.0-1) UNRELEASED; urgency=low
 
   * General:
+  * Logfile support added
+  * Fixed windows DLL handling for animation hot reloading
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 26 Oct 2021 10:17:09 +0200
 

@@ -4,6 +4,11 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 ## 0.0.13 (2021-XX-XX)
 
+General:
+
+   - Logfile support added
+   - Fixed windows DLL handling for animation hot reloading
+
 ## 0.0.12 (2021-10-26)
 
 General:
