@@ -47,12 +47,9 @@ static_assert(SDL_arraysize(priorityColors) == SDL_NUM_LOG_PRIORITIES, "Priority
 
 Console::Console() :
 		_mainThread(std::this_thread::get_id()) {
-	SDL_LogGetOutputFunction(&_logFunction, &_logUserData);
-	SDL_LogSetOutputFunction(logConsole, this);
 }
 
 Console::~Console() {
-	SDL_LogSetOutputFunction(_logFunction, _logUserData);
 }
 
 core::String Console::getColor(ConsoleColor color) {
@@ -74,6 +71,8 @@ void Console::skipColor(const char **cstr) {
 }
 
 void Console::construct() {
+	SDL_LogGetOutputFunction(&_logFunction, &_logUserData);
+	SDL_LogSetOutputFunction(logConsole, this);
 	_autoEnable = core::Var::get("ui_autoconsole", "false", "Activate console on output");
 	command::Command::registerCommand("toggleconsole", [&] (const command::CmdArgs& args) { toggle(); }).setHelp("Toggle the in-game console");
 	command::Command::registerCommand("clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp("Clear the text from the in-game console");
@@ -109,6 +108,7 @@ void Console::shutdown() {
 	command::Command::unregisterCommand("clear");
 	command::Command::unregisterCommand("history");
 	_autoEnable = {};
+	SDL_LogSetOutputFunction(_logFunction, _logUserData);
 }
 
 void Console::printHistory() {
