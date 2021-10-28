@@ -43,15 +43,15 @@ typedef void (ANIM_APIENTRY animation_chr_tool_update_PROC)(double animTime, Too
 typedef void (ANIM_APIENTRY animation_animal_bird_run_update_PROC)(double animTime, double velocity, BirdSkeleton* skeleton, const BirdSkeletonAttribute* skeletonAttr);
 typedef void (ANIM_APIENTRY animation_animal_bird_idle_update_PROC)(double animTime, BirdSkeleton* skeleton, const BirdSkeletonAttribute* skeletonAttr);
 
-extern "C" ANIM_APICALL animation_chr_glide_update_PROC* chr_glide_update;
-extern "C" ANIM_APICALL animation_chr_idle_update_PROC* chr_idle_update;
-extern "C" ANIM_APICALL animation_chr_jump_update_PROC* chr_jump_update;
-extern "C" ANIM_APICALL animation_chr_run_update_PROC* chr_run_update;
-extern "C" ANIM_APICALL animation_chr_sit_update_PROC* chr_sit_update;
-extern "C" ANIM_APICALL animation_chr_swim_update_PROC* chr_swim_update;
-extern "C" ANIM_APICALL animation_chr_tool_update_PROC* chr_tool_update;
-extern "C" ANIM_APICALL animation_animal_bird_run_update_PROC* animal_bird_run_update;
-extern "C" ANIM_APICALL animation_animal_bird_idle_update_PROC* animal_bird_idle_update;
+extern animation_chr_glide_update_PROC* chr_glide_update;
+extern animation_chr_idle_update_PROC* chr_idle_update;
+extern animation_chr_jump_update_PROC* chr_jump_update;
+extern animation_chr_run_update_PROC* chr_run_update;
+extern animation_chr_sit_update_PROC* chr_sit_update;
+extern animation_chr_swim_update_PROC* chr_swim_update;
+extern animation_chr_tool_update_PROC* chr_tool_update;
+extern animation_animal_bird_run_update_PROC* animal_bird_run_update;
+extern animation_animal_bird_idle_update_PROC* animal_bird_idle_update;
 
 class AnimationSystem : public core::IComponent {
 private:
