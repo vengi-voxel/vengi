@@ -641,6 +641,8 @@ AppState App::onCleanup() {
 		Log::warn("don't save the config variables");
 	}
 
+	_threadPool->shutdown();
+
 	command::Command::shutdown();
 	core::Var::shutdown();
 
@@ -654,7 +656,6 @@ AppState App::onCleanup() {
 	SDL_ResetAssertionReport();
 
 	_filesystem->shutdown();
-	_threadPool->shutdown();
 
 	core_trace_shutdown();
 
