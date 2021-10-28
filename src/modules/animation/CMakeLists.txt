@@ -19,6 +19,7 @@ if (HOT_RELOAD_ANIM)
 	add_library(anim SHARED ${SRCS_ANIMATIONS})
 	target_link_libraries(anim PRIVATE glm)
 	shader_include_dir(anim animation)
+	target_include_directories(anim PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 	add_dependencies(anim animation)
 	# FIXME should be $<TARGET_FILE_DIR:anim>/$<TARGET_FILE_NAME:anim> - but configure_file doesn't support
 	# generator expressions. Find a better way.
