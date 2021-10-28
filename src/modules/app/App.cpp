@@ -295,6 +295,10 @@ AppState App::onConstruct() {
 		Log::warn("Failed to initialize the filesystem");
 	}
 
+	const io::FilesystemPtr& fs = io::filesystem();
+	const core::String& logfilePath = fs->writePath("log.txt");
+	Log::init(logfilePath.c_str());
+
 	return AppState::Init;
 }
 

@@ -35,13 +35,14 @@
 #endif
 
 static bool _syslog = false;
+static FILE* _logfile = nullptr;
 static constexpr int bufSize = 4096;
 static SDL_LogPriority _logLevel = SDL_LOG_PRIORITY_INFO;
 static std::unordered_map<uint32_t, int> _logActive;
 
 #ifdef HAVE_SYSLOG_H
-static SDL_LogOutputFunction _sdlCallback = nullptr;
-static void *_sdlCallbackUserData = nullptr;
+static SDL_LogOutputFunction _syslogLogCallback = nullptr;
+static void *_syslogLogCallbackUserData = nullptr;
 
 
 static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message) {
@@ -56,8 +57,8 @@ static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority p
 		syslogLevel = LOG_INFO;
 	}
 	syslog(syslogLevel, "%s", message);
-	if (_sdlCallback != sysLogOutputFunction) {
-		_sdlCallback(_sdlCallbackUserData, category, priority, message);
+	if (_syslogLogCallback != sysLogOutputFunction) {
+		_syslogLogCallback(_syslogLogCallbackUserData, category, priority, message);
 	}
 }
 #endif
@@ -101,18 +102,22 @@ const char* Log::toLogLevel(Log::Level level) {
 	return "none";
 }
 
-void Log::init() {
+void Log::init(const char *logfile) {
 	_logLevel = (SDL_LogPriority)core::Var::getSafe(cfg::CoreLogLevel)->intVal();
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_VERBOSE);
+
+	if (_logfile == nullptr) {
+		_logfile = fopen(logfile, "w");
+	}
 
 	const bool syslog = core::Var::getSafe(cfg::CoreSysLog)->boolVal();
 	if (syslog) {
 #ifdef HAVE_SYSLOG_H
 		if (!_syslog) {
-			if (_sdlCallback == nullptr) {
-				SDL_LogGetOutputFunction(&_sdlCallback, &_sdlCallbackUserData);
+			if (_syslogLogCallback == nullptr) {
+				SDL_LogGetOutputFunction(&_syslogLogCallback, &_syslogLogCallbackUserData);
 			}
-			core_assert(_sdlCallback != sysLogOutputFunction);
+			core_assert(_syslogLogCallback != sysLogOutputFunction);
 			openlog(nullptr, LOG_PID, LOG_USER);
 			SDL_LogSetOutputFunction(sysLogOutputFunction, nullptr);
 			_syslog = true;
@@ -124,9 +129,9 @@ void Log::init() {
 	} else {
 #ifdef HAVE_SYSLOG_H
 		if (_syslog) {
-			SDL_LogSetOutputFunction(_sdlCallback, _sdlCallbackUserData);
-			_sdlCallback = nullptr;
-			_sdlCallbackUserData = nullptr;
+			SDL_LogSetOutputFunction(_syslogLogCallback, _syslogLogCallbackUserData);
+			_syslogLogCallback = nullptr;
+			_syslogLogCallbackUserData = nullptr;
 			closelog();
 		}
 #endif
@@ -139,12 +144,17 @@ void Log::shutdown() {
 	// still being available here - it won't
 #ifdef HAVE_SYSLOG_H
 	if (_syslog) {
-		SDL_LogSetOutputFunction(_sdlCallback, _sdlCallbackUserData);
+		SDL_LogSetOutputFunction(_syslogLogCallback, _syslogLogCallbackUserData);
 		closelog();
-		_sdlCallback = nullptr;
-		_sdlCallbackUserData = nullptr;
+		_syslogLogCallback = nullptr;
+		_syslogLogCallbackUserData = nullptr;
 	}
 #endif
+	if (_logfile) {
+		fflush(_logfile);
+		fclose(_logfile);
+		_logfile = nullptr;
+	}
 	_logActive.clear();
 	_logLevel = SDL_LOG_PRIORITY_INFO;
 	_syslog = false;
@@ -154,6 +164,9 @@ static void traceVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
+	if (_logfile) {
+		fprintf(_logfile, "[TRACE] (%u) %s\n", id, buf);
+	}
 	if (_syslog) {
 		SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
@@ -166,6 +179,9 @@ static void debugVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
+	if (_logfile) {
+		fprintf(_logfile, "[DEBUG] (%u) %s\n", id, buf);
+	}
 	if (_syslog) {
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
@@ -178,6 +194,9 @@ static void infoVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
+	if (_logfile) {
+		fprintf(_logfile, "[INFO] (%u) %s\n", id, buf);
+	}
 	if (_syslog) {
 		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
@@ -190,6 +209,9 @@ static void warnVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
+	if (_logfile) {
+		fprintf(_logfile, "[WARN] (%u) %s\n", id, buf);
+	}
 	if (_syslog) {
 		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
@@ -202,6 +224,9 @@ static void errorVA(uint32_t id, const char *msg, va_list args) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
+	if (_logfile) {
+		fprintf(_logfile, "[ERROR] (%u) %s\n", id, buf);
+	}
 	if (_syslog) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {

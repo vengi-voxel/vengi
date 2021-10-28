@@ -25,7 +25,7 @@ public:
 	static Level toLogLevel(const char* level);
 	static const char* toLogLevel(Level level);
 
-	static void init();
+	static void init(const char *logfile = nullptr);
 	static void shutdown();
 	static void trace(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 	static void debug(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
