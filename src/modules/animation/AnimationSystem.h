@@ -8,17 +8,21 @@
 #include "core/IComponent.h"
 #include "animation-config.h"
 
-#if HOT_RELOAD_ANIM > 0
+#if HOT_RELOAD_ANIM == 1
 #if defined(_MSC_VER)
 #define ANIM_APICALL __declspec(dllexport)
 #define ANIM_APIENTRY __stdcall
 #elif defined(__ANDROID__)
 #define ANIM_APICALL __attribute__((visibility("default")))
 #define ANIM_APIENTRY
-#else
-#define ANIM_APICALL
-#define ANIM_APIENTRY
 #endif
+#endif
+
+#ifndef ANIM_APICALL
+#define ANIM_APICALL
+#endif
+#ifndef ANIM_APIENTRY
+#define ANIM_APIENTRY
 #endif
 
 namespace animation {
