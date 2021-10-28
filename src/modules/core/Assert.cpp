@@ -3,8 +3,8 @@
  */
 
 #include "Assert.h"
+#include "Log.h"
 #include <SDL_stdinc.h>
-#include <SDL_log.h>
 
 #ifdef HAVE_BACKWARD
 #include <backward.h>
@@ -18,7 +18,7 @@ void core_stacktrace() {
 	tr.load_stacktrace(st);
 	for (size_t __stacktrace_i = 0; __stacktrace_i < st.size(); ++__stacktrace_i) {
 		const backward::ResolvedTrace& trace = tr.resolve(st[__stacktrace_i]);
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "#%i %s %s [%p]\n", int(__stacktrace_i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr);
+		Log::error("#%i %s %s [%p]\n", int(__stacktrace_i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr);
 	}
 #endif
 }
