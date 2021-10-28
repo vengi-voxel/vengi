@@ -16,7 +16,11 @@ set(SRCS_ANIMATIONS
 	chr/anim/Tool.cpp chr/anim/Tool.h
 )
 if (HOT_RELOAD_ANIM)
-	add_library(anim SHARED ${SRCS_ANIMATIONS})
+	set(ANIM_LIB_SRC
+		${SRCS_ANIMATIONS}
+		AnimationSystem.def
+	)
+	add_library(anim SHARED ${ANIM_LIB_SRC})
 	target_link_libraries(anim PRIVATE glm)
 	shader_include_dir(anim animation)
 	target_include_directories(anim PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
