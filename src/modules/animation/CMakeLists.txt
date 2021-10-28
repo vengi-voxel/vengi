@@ -22,7 +22,7 @@ if (HOT_RELOAD_ANIM)
 	add_dependencies(anim animation)
 	# FIXME should be $<TARGET_FILE_DIR:anim>/$<TARGET_FILE_NAME:anim> - but configure_file doesn't support
 	# generator expressions. Find a better way.
-	set(HOT_RELOAD_LIB "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib/libanim${CMAKE_SHARED_LIBRARY_SUFFIX}")
+	set(HOT_RELOAD_LIB "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${CMAKE_SHARED_LIBRARY_PREFIX}anim${CMAKE_SHARED_LIBRARY_SUFFIX}")
 else()
 	list(APPEND SRCS ${SRCS_ANIMATIONS})
 endif()
