@@ -45,8 +45,6 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_edgeShader.setModel(glm::mat4(1.0f));
 	_edgeShader.setTexture(video::TextureUnit::Zero);
 
-	resize(_app->frameBufferDimension());
-
 	_debug = core::Var::get("ve_viewportdebugflag", 0);
 	_debug->setHelp("Debug bit mask. 1 means rendering the traces for the active camera");
 	return true;
@@ -76,13 +74,15 @@ void Viewport::update() {
 			ImGui::TextDisabled("No animation loaded");
 		} else {
 			const ui::imgui::IMGUIApp *app = imguiApp();
-			const double deltaFrameSeconds = app->deltaFrameSeconds();
-			_controller.update(deltaFrameSeconds);
 			const int headerSize = app->fontSize() + (int)(ImGui::GetStyle().FramePadding.y * 2.0f);
 
 			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
 			contentSize.y -= (float)headerSize;
 			resize(contentSize);
+
+			const double deltaFrameSeconds = app->deltaFrameSeconds();
+			_controller.update(deltaFrameSeconds);
+
 			renderToFrameBuffer();
 			// use the uv coords here to take a potential fb flip into account
 			const glm::vec4 &uv = _frameBuffer.uv();
