@@ -1,4 +1,4 @@
-vengi (0.0.13.0-1) UNRELEASED; urgency=low
+vengi (0.0.13.0-1) unstable; urgency=low
 
   * General:
   * Logfile support added
