@@ -472,7 +472,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::ScopedState scopedCullFace(video::State::CullFace);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
-	_indirectDrawBuffer.bind();
+	core_assert_always(_indirectDrawBuffer.bind());
 	if (_shadowMap->boolVal()) {
 		_shadow.update(camera, true);
 		if (shadow) {
@@ -522,7 +522,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		if (_drawCommands[idx].count <= 0u) {
 			continue;
 		}
-		const glm::vec2 offset(-0.25f * idx, -0.5f * idx);
+		const glm::vec2 offset(-0.25f * (float)idx, -0.5f * (float)idx);
 		video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
 		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 		_voxelShader.setModel(_model[idx]);

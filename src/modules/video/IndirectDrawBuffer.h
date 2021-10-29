@@ -15,8 +15,8 @@ public:
 	void shutdown();
 
 	bool update(const void* data, size_t size);
-	void bind() const;
-	void unbind() const;
+	bool bind() const;
+	bool unbind() const;
 };
 
 }

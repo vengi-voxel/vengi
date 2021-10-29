@@ -27,12 +27,12 @@ bool IndirectDrawBuffer::update(const void *data, size_t size) {
 	return true;
 }
 
-void IndirectDrawBuffer::bind() const {
-	video::bindBuffer(video::BufferType::IndirectBuffer, _handle);
+bool IndirectDrawBuffer::bind() const {
+	return video::bindBuffer(video::BufferType::IndirectBuffer, _handle);
 }
 
-void IndirectDrawBuffer::unbind() const {
-	video::unbindBuffer(video::BufferType::IndirectBuffer);
+bool IndirectDrawBuffer::unbind() const {
+	return video::unbindBuffer(video::BufferType::IndirectBuffer);
 }
 
 }
