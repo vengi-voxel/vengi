@@ -41,11 +41,11 @@
 namespace voxedit {
 
 MainWindow::MainWindow(ui::imgui::IMGUIApp *app) : _app(app) {
-	_scene = new Viewport(app, "free##viewport");
-	_sceneTop = new Viewport(app, "top##viewport");
-	_sceneLeft = new Viewport(app, "left##viewport");
-	_sceneFront = new Viewport(app, "front##viewport");
-	_sceneAnimation = new Viewport(app, "animation##viewport");
+	_scene = new Viewport("free##viewport");
+	_sceneTop = new Viewport("top##viewport");
+	_sceneLeft = new Viewport("left##viewport");
+	_sceneFront = new Viewport("front##viewport");
+	_sceneAnimation = new Viewport("animation##viewport");
 }
 
 MainWindow::~MainWindow() {

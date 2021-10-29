@@ -24,7 +24,7 @@ namespace _priv {
 static const uint32_t VIEWPORT_DEBUG_TRACE = (1 << 0);
 }
 
-Viewport::Viewport(video::WindowedApp *app, const core::String& id) : _app(app), _id(id) {
+Viewport::Viewport(const core::String& id) : _id(id) {
 }
 
 Viewport::~Viewport() {

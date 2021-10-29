@@ -17,7 +17,6 @@ namespace voxedit {
 class Viewport {
 private:
 	int32_t _mesh = -1;
-	video::WindowedApp *_app;
 	const core::String _id;
 	bool _hovered = false;
 	video::FrameBuffer _frameBuffer;
@@ -29,7 +28,7 @@ private:
 	bool resize(const glm::ivec2& frameBufferSize);
 
 public:
-	Viewport(video::WindowedApp *app, const core::String& id);
+	Viewport(const core::String& id);
 	~Viewport();
 
 	bool isHovered() const;
