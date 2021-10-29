@@ -2,7 +2,7 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
-## 0.0.13 (2021-XX-XX)
+## 0.0.13 (2021-10-29)
 
 General:
 
@@ -12,6 +12,10 @@ General:
 UI:
 
    - Fixed log notifications taking away the focus from the current widget
+
+VoxEdit:
+
+   - Fixed windows OpenGL error while rendering the viewport
 
 ## 0.0.12 (2021-10-26)
 
