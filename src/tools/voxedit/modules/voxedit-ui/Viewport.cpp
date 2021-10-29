@@ -69,69 +69,69 @@ void Viewport::update() {
 
 			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
 			contentSize.y -= (float)headerSize;
-			resize(contentSize);
+			if (resize(contentSize)) {
+				const double deltaFrameSeconds = app->deltaFrameSeconds();
+				_controller.update(deltaFrameSeconds);
 
-			const double deltaFrameSeconds = app->deltaFrameSeconds();
-			_controller.update(deltaFrameSeconds);
+				renderToFrameBuffer();
+				// use the uv coords here to take a potential fb flip into account
+				const glm::vec4 &uv = _frameBuffer.uv();
+				const glm::vec2 uva(uv.x, uv.y);
+				const glm::vec2 uvc(uv.z, uv.w);
+				const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+				ImGui::Image(texture->handle(), contentSize, uva, uvc);
 
-			renderToFrameBuffer();
-			// use the uv coords here to take a potential fb flip into account
-			const glm::vec4 &uv = _frameBuffer.uv();
-			const glm::vec2 uva(uv.x, uv.y);
-			const glm::vec2 uvc(uv.z, uv.w);
-			const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
-			ImGui::Image(texture->handle(), contentSize, uva, uvc);
-
-			if (ImGui::IsItemHovered()) {
-				if (sceneMgr().modifier().modifierType() == ModifierType::ColorPicker) {
-					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+				if (ImGui::IsItemHovered()) {
+					if (sceneMgr().modifier().modifierType() == ModifierType::ColorPicker) {
+						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+					}
+					const bool alt = ImGui::GetIO().KeyAlt;
+					const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+					const ImVec2 windowPos = ImGui::GetWindowPos();
+					const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
+					const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y) - headerSize;
+					const bool rotate = middle || alt;
+					const bool pan = ImGui::GetIO().KeyShift;
+					_controller.move(pan, rotate, mouseX, mouseY);
+					_hovered = true;
+					sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
+					sceneMgr().setActiveCamera(&_controller.camera());
+					sceneMgr().trace();
 				}
-				const bool alt = ImGui::GetIO().KeyAlt;
-				const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
-				const ImVec2 windowPos = ImGui::GetWindowPos();
-				const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
-				const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y) - headerSize;
-				const bool rotate = middle || alt;
-				const bool pan = ImGui::GetIO().KeyShift;
-				_controller.move(pan, rotate, mouseX, mouseY);
-				_hovered = true;
-				sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
-				sceneMgr().setActiveCamera(&_controller.camera());
-				sceneMgr().trace();
-			}
 
-			const float height = (float)app->fontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-			const float maxWidth = ImGui::Size(200.0f);
-			const ImVec2 windowSize = ImGui::GetWindowSize();
-			ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
-			ImGui::SetNextItemWidth(maxWidth);
-			const int currentCamRotType = (int)_controller.camera().rotationType();
-			if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
-				for (int n = 0; n < lengthof(camRotTypes); n++) {
-					const bool isSelected = (currentCamRotType == n);
-					if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-						_controller.camera().setRotationType((video::CameraRotationType)n);
+				const float height = (float)app->fontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+				const float maxWidth = ImGui::Size(200.0f);
+				const ImVec2 windowSize = ImGui::GetWindowSize();
+				ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
+				ImGui::SetNextItemWidth(maxWidth);
+				const int currentCamRotType = (int)_controller.camera().rotationType();
+				if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
+					for (int n = 0; n < lengthof(camRotTypes); n++) {
+						const bool isSelected = (currentCamRotType == n);
+						if (ImGui::Selectable(camRotTypes[n], isSelected)) {
+							_controller.camera().setRotationType((video::CameraRotationType)n);
+						}
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
 					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
-			}
-			ImGui::SetCursorPos(ImVec2(windowSize.x - maxWidth, windowSize.y - height));
-			const int currentPolygonMode = (int)_controller.camera().polygonMode();
-			ImGui::SetNextItemWidth(maxWidth);
-			if (ImGui::BeginCombo("##polygonmode", polygonModes[currentPolygonMode])) {
-				for (int n = 0; n < lengthof(polygonModes); n++) {
-					const bool isSelected = (currentPolygonMode == n);
-					if (ImGui::Selectable(polygonModes[n], isSelected)) {
-						_controller.camera().setPolygonMode((video::PolygonMode)n);
+				ImGui::SetCursorPos(ImVec2(windowSize.x - maxWidth, windowSize.y - height));
+				const int currentPolygonMode = (int)_controller.camera().polygonMode();
+				ImGui::SetNextItemWidth(maxWidth);
+				if (ImGui::BeginCombo("##polygonmode", polygonModes[currentPolygonMode])) {
+					for (int n = 0; n < lengthof(polygonModes); n++) {
+						const bool isSelected = (currentPolygonMode == n);
+						if (ImGui::Selectable(polygonModes[n], isSelected)) {
+							_controller.camera().setPolygonMode((video::PolygonMode)n);
+						}
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
 					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
 			}
 		}
 	}
@@ -172,9 +172,12 @@ void Viewport::resetCamera() {
 	_controller.resetCamera(region);
 }
 
-void Viewport::resize(const glm::ivec2& frameBufferSize) {
+bool Viewport::resize(const glm::ivec2& frameBufferSize) {
+	if (frameBufferSize.x <= 0 || frameBufferSize.y <= 0) {
+		return false;
+	}
 	if (_texture && _texture->width() == frameBufferSize.x && _texture->height() == frameBufferSize.y) {
-		return;
+		return true;
 	}
 	Log::debug("Resize %s to %i:%i", _id.c_str(), frameBufferSize.x, frameBufferSize.y);
 	const glm::vec2 windowSize(video::WindowedApp::getInstance()->windowDimension());
@@ -188,6 +191,7 @@ void Viewport::resize(const glm::ivec2& frameBufferSize) {
 	_frameBuffer.init(cfg);
 
 	_texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+	return true;
 }
 
 void Viewport::setMode(ViewportController::SceneCameraMode mode) {
