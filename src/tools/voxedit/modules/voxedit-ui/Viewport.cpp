@@ -24,7 +24,7 @@ namespace _priv {
 static const uint32_t VIEWPORT_DEBUG_TRACE = (1 << 0);
 }
 
-Viewport::Viewport(video::WindowedApp *app, const core::String& id) : _app(app), _id(id), _edgeShader(shader::EdgeShader::getInstance()) {
+Viewport::Viewport(video::WindowedApp *app, const core::String& id) : _app(app), _id(id) {
 }
 
 Viewport::~Viewport() {
@@ -35,15 +35,6 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_controller.setRenderMode(renderMode);
 	setMode(ViewportController::SceneCameraMode::Free);
 	resetCamera();
-
-	if (!_edgeShader.setup()) {
-		Log::error("Failed to initialize viewport");
-		return false;
-	}
-
-	video::ScopedShader scoped(_edgeShader);
-	_edgeShader.setModel(glm::mat4(1.0f));
-	_edgeShader.setTexture(video::TextureUnit::Zero);
 
 	_debug = core::Var::get("ve_viewportdebugflag", 0);
 	_debug->setHelp("Debug bit mask. 1 means rendering the traces for the active camera");
@@ -150,7 +141,6 @@ void Viewport::update() {
 
 void Viewport::shutdown() {
 	_frameBuffer.shutdown();
-	_edgeShader.shutdown();
 }
 
 bool Viewport::saveImage(const char* filename) {

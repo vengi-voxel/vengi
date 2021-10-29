@@ -11,7 +11,6 @@
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "voxedit-util/ViewportController.h"
-#include "RenderShaders.h"
 
 namespace voxedit {
 
@@ -21,7 +20,6 @@ private:
 	video::WindowedApp *_app;
 	const core::String _id;
 	bool _hovered = false;
-	shader::EdgeShader& _edgeShader;
 	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
 	voxedit::ViewportController _controller;
