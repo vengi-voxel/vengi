@@ -370,7 +370,7 @@ void MainWindow::update() {
 	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, _lastExecutedCommand.command);
 
 	static bool init = false;
-	if (!init) {
+	if (!init && viewport->WorkSize.x > 0.0f) {
 		ImGui::DockBuilderRemoveNode(dockspaceId);
 		ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
 		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
