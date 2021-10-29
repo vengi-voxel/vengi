@@ -1441,7 +1441,7 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 	}
 }
 
-void drawElementsIndirect(Primitive mode, DataType type, void* offset) {
+void drawElementsIndirect(Primitive mode, DataType type, const void* offset) {
 	video_trace_scoped(DrawElementsIndirect);
 	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
@@ -1451,7 +1451,7 @@ void drawElementsIndirect(Primitive mode, DataType type, void* offset) {
 	checkError();
 }
 
-void drawMultiElementsIndirect(Primitive mode, DataType type, void* offset, size_t commandSize, size_t stride) {
+void drawMultiElementsIndirect(Primitive mode, DataType type, const void* offset, size_t commandSize, size_t stride) {
 	video_trace_scoped(DrawMultiElementsIndirect);
 	if (commandSize <= 0u) {
 		return;

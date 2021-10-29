@@ -320,8 +320,8 @@ extern void uploadTexture(video::TextureType type, video::TextureFormat format, 
 extern void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset = nullptr);
 extern void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount);
 extern void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex);
-extern void drawElementsIndirect(Primitive mode, DataType type, void* offset);
-inline void drawMultiElementsIndirect(Primitive mode, DataType type, void* offset, size_t commandSize, size_t stride = 0u);
+extern void drawElementsIndirect(Primitive mode, DataType type, const void* offset);
+inline void drawMultiElementsIndirect(Primitive mode, DataType type, const void* offset, size_t commandSize, size_t stride = 0u);
 extern void drawArraysIndirect(Primitive mode, void* offset);
 inline void drawMultiArraysIndirect(Primitive mode, void* offset, size_t commandSize, size_t stride = 0u);
 extern void drawArrays(Primitive mode, size_t count);
