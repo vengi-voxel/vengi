@@ -13,7 +13,7 @@
 #define NOTIFY_OPACITY 1.0f
 #define NOTIFY_TOAST_FLAGS                                                                                             \
 	ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |                    \
-		ImGuiWindowFlags_NoNav
+		ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoFocusOnAppearing
 
 #define NOTIFY_NULL_OR_EMPTY(str) (!str || !strlen(str))
 
