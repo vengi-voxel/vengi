@@ -9,6 +9,10 @@ General:
    - Logfile support added
    - Fixed windows DLL handling for animation hot reloading
 
+UI:
+
+   - Fixed log notifications taking away the focus from the current widget
+
 ## 0.0.12 (2021-10-26)
 
 General:
