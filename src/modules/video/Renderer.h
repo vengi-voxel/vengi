@@ -34,21 +34,6 @@ typedef core::SharedPtr<Texture> TexturePtr;
 class TextureConfig;
 class StencilConfig;
 
-struct alignas(16) DrawArraysIndirectCommand {
-	uint32_t count;				// to the number of used vertices
-	uint32_t instanceCount = 1; // instances to draw of the current object
-	uint32_t firstIndex = 0;	// the location of the first vertex relative the current object
-	uint32_t baseInstance = 0;	// the first instance to be rendered
-};
-
-struct alignas(16) DrawElementsIndirectCommand {
-	uint32_t count;				// to the number of used vertices
-	uint32_t instanceCount = 1; // instances to draw of the current object
-	uint32_t firstIndex = 0;	// the location of the first vertex relative the current object
-	uint32_t baseVertex = 0;	// location of first vertex of the current object
-	uint32_t baseInstance = 0;	// the first instance to be rendered
-};
-
 namespace _priv {
 
 template<typename DATATYPE>
@@ -320,10 +305,18 @@ extern void uploadTexture(video::TextureType type, video::TextureFormat format, 
 extern void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset = nullptr);
 extern void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount);
 extern void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex);
+/**
+ * @sa IndirectDrawBuffer
+ * @sa DrawElementsIndirectCommand
+ */
 extern void drawElementsIndirect(Primitive mode, DataType type, const void* offset);
-inline void drawMultiElementsIndirect(Primitive mode, DataType type, const void* offset, size_t commandSize, size_t stride = 0u);
+extern void drawMultiElementsIndirect(Primitive mode, DataType type, const void* offset, size_t commandSize, size_t stride = 0u);
+/**
+ * @sa IndirectDrawBuffer
+ * @sa DrawArraysIndirectCommand
+ */
 extern void drawArraysIndirect(Primitive mode, void* offset);
-inline void drawMultiArraysIndirect(Primitive mode, void* offset, size_t commandSize, size_t stride = 0u);
+extern void drawMultiArraysIndirect(Primitive mode, void* offset, size_t commandSize, size_t stride = 0u);
 extern void drawArrays(Primitive mode, size_t count);
 extern void drawInstancedArrays(Primitive mode, size_t count, size_t amount);
 extern void disableDebug();
@@ -358,6 +351,9 @@ inline void drawElements(Primitive mode, size_t numIndices, size_t indexSize, vo
 	drawElements(mode, numIndices, mapIndexTypeBySize(indexSize), offset);
 }
 
+/**
+ * @sa IndirectDrawBuffer
+ */
 template<class IndexType>
 inline void drawElementsIndirect(Primitive mode, void* offset) {
 	drawElementsIndirect(mode, mapType<IndexType>(), offset);

@@ -18,7 +18,7 @@ void IndirectDrawBuffer::shutdown() {
 	deleteBuffer(_handle);
 }
 
-bool IndirectDrawBuffer::update(const void *data, size_t size) {
+bool IndirectDrawBuffer::update(const DrawElementsIndirectCommand *data, size_t size) {
 	if (_handle == video::InvalidId) {
 		return false;
 	}
