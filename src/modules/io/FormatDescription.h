@@ -10,7 +10,7 @@ namespace io {
 
 struct FormatDescription {
 	const char *name;
-	const char *ext; //< just the file extension */
+	const char *ext; /**< just the file extension */
 
 	inline core::String wildCard() const {
 		static const core::String w("*.");

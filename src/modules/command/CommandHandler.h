@@ -9,6 +9,7 @@
 namespace command {
 
 struct CommandExecutionListener {
+	virtual ~CommandExecutionListener() {}
 	virtual void operator()(const core::String &cmd, const core::DynamicArray<core::String> &tokens) {}
 };
 
