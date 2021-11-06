@@ -857,13 +857,12 @@ void IMGUIApp::executeDrawCommands() {
 }
 
 app::AppState IMGUIApp::onCleanup() {
-	ImGui::DestroyPlatformWindows();
-
 	for (int i = 0; i < ImGuiMouseCursor_COUNT; ++i) {
 		SDL_FreeCursor(_mouseCursors[i]);
 	}
 
 	if (ImGui::GetCurrentContext() != nullptr) {
+		ImGui::DestroyPlatformWindows();
 		ImGui::DestroyContext();
 	}
 	_console.shutdown();
