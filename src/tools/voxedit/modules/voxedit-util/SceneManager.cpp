@@ -1580,7 +1580,9 @@ void SceneManager::update(double nowSeconds) {
 }
 
 void SceneManager::shutdown() {
-	--_initialized;
+	if (_initialized > 0) {
+		--_initialized;
+	}
 	if (_initialized != 0) {
 		return;
 	}
