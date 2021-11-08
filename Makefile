@@ -166,6 +166,9 @@ update-glslang:
 	cp -r $(UPDATEDIR)/glslang.sync/SPIRV tools/glslang/
 	rm -rf tools/glslang/StandAlone
 	cp -r $(UPDATEDIR)/glslang.sync/StandAlone tools/glslang/
+	cp $(UPDATEDIR)/glslang.sync/gen_extension_headers.py tools/glslang/
+	cp $(UPDATEDIR)/glslang.sync/*.cmake tools/glslang/
+	cp $(UPDATEDIR)/glslang.sync/README* tools/glslang/
 
 update-simplecpp:
 	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
