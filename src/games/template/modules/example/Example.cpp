@@ -9,7 +9,11 @@ namespace tmpl {
 bool Example::init() {
 	return true;
 }
+
 void Example::shutdown() {
+}
+
+void Example::update() {
 }
 
 }
