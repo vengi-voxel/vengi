@@ -415,6 +415,8 @@ typedef void (SDLCALL *SDL_free_func)(void *mem);
 
 /**
  * Get the current set of SDL memory functions
+ *
+ * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
                                                     SDL_calloc_func *calloc_func,
@@ -423,6 +425,8 @@ extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func
 
 /**
  * Replace SDL's memory allocation functions with a custom set
+ *
+ * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_calloc_func calloc_func,
@@ -431,6 +435,8 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 
 /**
  * Get the number of outstanding (unfreed) allocations
+ *
+ * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 
@@ -595,8 +601,8 @@ extern DECLSPEC double SDLCALL SDL_asin(double x);
 extern DECLSPEC float SDLCALL SDL_asinf(float x);
 extern DECLSPEC double SDLCALL SDL_atan(double x);
 extern DECLSPEC float SDLCALL SDL_atanf(float x);
-extern DECLSPEC double SDLCALL SDL_atan2(double x, double y);
-extern DECLSPEC float SDLCALL SDL_atan2f(float x, float y);
+extern DECLSPEC double SDLCALL SDL_atan2(double y, double x);
+extern DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
 extern DECLSPEC double SDLCALL SDL_ceil(double x);
 extern DECLSPEC float SDLCALL SDL_ceilf(float x);
 extern DECLSPEC double SDLCALL SDL_copysign(double x, double y);
@@ -650,6 +656,8 @@ extern DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
 /**
  * This function converts a string between encodings in one pass, returning a
  * string that must be freed with SDL_free() or NULL on error.
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
                                                const char *fromcode,
@@ -658,6 +666,7 @@ extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
 #define SDL_iconv_utf8_locale(S)    SDL_iconv_string("", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_utf8_ucs2(S)      (Uint16 *)SDL_iconv_string("UCS-2-INTERNAL", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_utf8_ucs4(S)      (Uint32 *)SDL_iconv_string("UCS-4-INTERNAL", "UTF-8", S, SDL_strlen(S)+1)
+#define SDL_iconv_wchar_utf8(S)     SDL_iconv_string("UTF-8", "WCHAR_T", (char *)S, (SDL_wcslen(S)+1)*sizeof(wchar_t))
 
 /* force builds using Clang's static analysis tools to use literal C runtime
    here, since there are possibly tests that are ineffective otherwise. */

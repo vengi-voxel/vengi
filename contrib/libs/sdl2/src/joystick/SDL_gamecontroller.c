@@ -1531,16 +1531,17 @@ SDL_GameControllerMappingForIndex(int mapping_index)
             char *pMappingString;
             char pchGUID[33];
             size_t needed;
+            const char *platform = SDL_GetPlatform();
 
             SDL_JoystickGetGUIDString(mapping->guid, pchGUID, sizeof(pchGUID));
-            /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
-            needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
+            /* allocate enough memory for GUID + ',' + name + ',' + mapping + platform:PLATFORM + \0 */
+            needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + SDL_strlen(SDL_CONTROLLER_PLATFORM_FIELD) + SDL_strlen(platform) + 1;
             pMappingString = SDL_malloc(needed);
             if (!pMappingString) {
                 SDL_OutOfMemory();
                 return NULL;
             }
-            SDL_snprintf(pMappingString, needed, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
+            SDL_snprintf(pMappingString, needed, "%s,%s,%s%s%s", pchGUID, mapping->name, mapping->mapping, SDL_CONTROLLER_PLATFORM_FIELD, platform);
             return pMappingString;
         }
         --mapping_index;
@@ -1559,15 +1560,17 @@ SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid)
     if (mapping) {
         char pchGUID[33];
         size_t needed;
+        const char *platform = SDL_GetPlatform();
+
         SDL_JoystickGetGUIDString(guid, pchGUID, sizeof(pchGUID));
-        /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
-        needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
+        /* allocate enough memory for GUID + ',' + name + ',' + mapping + platform:PLATFORM + \0 */
+        needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + SDL_strlen(SDL_CONTROLLER_PLATFORM_FIELD) + SDL_strlen(platform) + 1;
         pMappingString = SDL_malloc(needed);
         if (!pMappingString) {
             SDL_OutOfMemory();
             return NULL;
         }
-        SDL_snprintf(pMappingString, needed, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
+        SDL_snprintf(pMappingString, needed, "%s,%s,%s%s%s", pchGUID, mapping->name, mapping->mapping, SDL_CONTROLLER_PLATFORM_FIELD, platform);
     }
     return pMappingString;
 }
@@ -2673,6 +2676,28 @@ SDL_GameControllerHandleDelayedGuideButton(SDL_Joystick *joystick)
         }
         controllerlist = controllerlist->next;
     }
+}
+
+const char *
+SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button)
+{
+#if defined(SDL_JOYSTICK_MFI)
+    const char *IOS_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button);
+    return IOS_GameControllerGetAppleSFSymbolsNameForButton(gamecontroller, button);
+#else
+    return NULL;
+#endif
+}
+
+const char *
+SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis)
+{
+#if defined(SDL_JOYSTICK_MFI)
+    const char *IOS_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
+    return IOS_GameControllerGetAppleSFSymbolsNameForAxis(gamecontroller, axis);
+#else
+    return NULL;
+#endif
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

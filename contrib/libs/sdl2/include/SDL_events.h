@@ -301,6 +301,8 @@ typedef struct SDL_MouseWheelEvent
     Sint32 x;           /**< The amount scrolled horizontally, positive to the right and negative to the left */
     Sint32 y;           /**< The amount scrolled vertically, positive away from the user and negative toward the user */
     Uint32 direction;   /**< Set to one of the SDL_MOUSEWHEEL_* defines. When FLIPPED the values in X and Y will be opposite. Multiply by -1 to change them back */
+    float preciseX;     /**< The amount scrolled horizontally, positive to the right and negative to the left, with float precision (added in 2.0.18) */
+    float preciseY;     /**< The amount scrolled vertically, positive away from the user and negative toward the user, with float precision (added in 2.0.18) */
 } SDL_MouseWheelEvent;
 
 /**
@@ -662,6 +664,8 @@ SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NUL
  * polling or waiting for events (e.g. you are filtering them), then you must
  * call SDL_PumpEvents() to force an event queue update.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_PollEvent
  * \sa SDL_WaitEvent
  */
@@ -707,6 +711,8 @@ typedef enum
  * \returns the number of events actually stored or a negative error code on
  *          failure; call SDL_GetError() for more information.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_PollEvent
  * \sa SDL_PumpEvents
  * \sa SDL_PushEvent
@@ -726,6 +732,8 @@ extern DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event * events, int numevents,
  * \returns SDL_TRUE if events matching `type` are present, or SDL_FALSE if
  *          events matching `type` are not present.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_HasEvents
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasEvent(Uint32 type);
@@ -742,6 +750,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasEvent(Uint32 type);
  *                SDL_EventType for details
  * \returns SDL_TRUE if events with type >= `minType` and <= `maxType` are
  *          present, or SDL_FALSE if not.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_HasEvents
  */
@@ -762,6 +772,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasEvents(Uint32 minType, Uint32 maxType);
  * on the main thread immediately before the flush call.
  *
  * \param type the type of event to be cleared; see SDL_EventType for details
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_FlushEvents
  */
@@ -785,6 +797,8 @@ extern DECLSPEC void SDLCALL SDL_FlushEvent(Uint32 type);
  *                SDL_EventType for details
  * \param maxType the high end of event type to be cleared, inclusive; see
  *                SDL_EventType for details
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_FlushEvent
  */
@@ -826,6 +840,8 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  *              the queue, or NULL
  * \returns 1 if there is a pending event or 0 if there are none available.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetEventFilter
  * \sa SDL_PeepEvents
  * \sa SDL_PushEvent
@@ -848,6 +864,8 @@ extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
  *              from the queue, or NULL
  * \returns 1 on success or 0 if there was an error while waiting for events;
  *          call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_PollEvent
  * \sa SDL_PumpEvents
@@ -872,6 +890,8 @@ extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event * event);
  * \returns 1 on success or 0 if there was an error while waiting for events;
  *          call SDL_GetError() for more information. This also returns 0 if
  *          the timeout elapsed without an event arriving.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_PollEvent
  * \sa SDL_PumpEvents
@@ -905,6 +925,8 @@ extern DECLSPEC int SDLCALL SDL_WaitEventTimeout(SDL_Event * event,
  * \returns 1 on success, 0 if the event was filtered, or a negative error
  *          code on failure; call SDL_GetError() for more information. A
  *          common reason for error is the event queue being full.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_PeepEvents
  * \sa SDL_PollEvent
@@ -960,6 +982,8 @@ typedef int (SDLCALL * SDL_EventFilter) (void *userdata, SDL_Event * event);
  * \param filter An SDL_EventFilter function to call when an event happens
  * \param userdata a pointer that is passed to `filter`
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_AddEventWatch
  * \sa SDL_EventState
  * \sa SDL_GetEventFilter
@@ -979,6 +1003,8 @@ extern DECLSPEC void SDLCALL SDL_SetEventFilter(SDL_EventFilter filter,
  * \param userdata the pointer that is passed to the current event filter will
  *                 be stored here
  * \returns SDL_TRUE on success or SDL_FALSE if there is no event filter set.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_SetEventFilter
  */
@@ -1006,6 +1032,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter * filter,
  * \param filter an SDL_EventFilter function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_DelEventWatch
  * \sa SDL_SetEventFilter
  */
@@ -1020,6 +1048,8 @@ extern DECLSPEC void SDLCALL SDL_AddEventWatch(SDL_EventFilter filter,
  *
  * \param filter the function originally passed to SDL_AddEventWatch()
  * \param userdata the pointer originally passed to SDL_AddEventWatch()
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_AddEventWatch
  */
@@ -1036,6 +1066,8 @@ extern DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter,
  *
  * \param filter the SDL_EventFilter function to call when an event happens
  * \param userdata a pointer that is passed to `filter`
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_GetEventFilter
  * \sa SDL_SetEventFilter
@@ -1063,6 +1095,8 @@ extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
  * \param state how to process the event
  * \returns `SDL_DISABLE` or `SDL_ENABLE`, representing the processing state
  *          of the event before this function makes any changes to it.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_GetEventState
  */

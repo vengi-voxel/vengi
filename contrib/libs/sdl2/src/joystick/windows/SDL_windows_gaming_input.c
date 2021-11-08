@@ -31,6 +31,7 @@
 #include "../../core/windows/SDL_windows.h"
 #define COBJMACROS
 #include "windows.gaming.input.h"
+#include <cfgmgr32.h>
 
 
 struct joystick_hwdata
@@ -97,7 +98,12 @@ SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     UINT i, raw_device_count = 0;
     LONG vidpid = MAKELONG(vendor, product);
 
-    if (!SDL_XINPUT_Enabled()) {
+    /* XInput and RawInput backends will pick up XInput-compatible devices */
+    if (!SDL_XINPUT_Enabled()
+#ifdef SDL_JOYSTICK_RAWINPUT
+        && !RAWINPUT_IsEnabled()
+#endif
+        ) {
         return SDL_FALSE;
     }
 
@@ -123,17 +129,68 @@ SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
         char devName[MAX_PATH];
         UINT rdiSize = sizeof(rdi);
         UINT nameSize = SDL_arraysize(devName);
+        DEVINST devNode;
+        char devVidPidString[32];
+        int j;
 
         rdi.cbSize = sizeof(rdi);
-        if ((raw_devices[i].dwType == RIM_TYPEHID) &&
-            (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != ((UINT)-1)) &&
-            (MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == vidpid) &&
-            (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) != ((UINT)-1)) &&
-            (SDL_strstr(devName, "IG_") != NULL)) {
+
+        if ((raw_devices[i].dwType != RIM_TYPEHID) ||
+            (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) == ((UINT)-1)) ||
+            (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) == ((UINT)-1)) ||
+            (SDL_strstr(devName, "IG_") == NULL)) {
+            /* Skip non-XInput devices */
+            continue;
+        }
+
+        /* First check for a simple VID/PID match. This will work for Xbox 360 controllers. */
+        if (MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == vidpid) {
+            SDL_free(raw_devices);
             return SDL_TRUE;
+        }
+
+        /* For Xbox One controllers, Microsoft doesn't propagate the VID/PID down to the HID stack.
+         * We'll have to walk the device tree upwards searching for a match for our VID/PID. */
+
+        /* Make sure the device interface string is something we know how to parse */
+        /* Example: \\?\HID#VID_045E&PID_02FF&IG_00#9&2c203035&2&0000#{4d1e55b2-f16f-11cf-88cb-001111000030} */
+        if ((SDL_strstr(devName, "\\\\?\\") != devName) || (SDL_strstr(devName, "#{") == NULL)) {
+            continue;
+        }
+
+        /* Unescape the backslashes in the string and terminate before the GUID portion */
+        for (j = 0; devName[j] != '\0'; j++) {
+            if (devName[j] == '#') {
+                if (devName[j + 1] == '{') {
+                    devName[j] = '\0';
+                    break;
+                } else {
+                    devName[j] = '\\';
+                }
+            }
+        }
+
+        /* We'll be left with a string like this: \\?\HID\VID_045E&PID_02FF&IG_00\9&2c203035&2&0000
+         * Simply skip the \\?\ prefix and we'll have a properly formed device instance ID */
+        if (CM_Locate_DevNodeA(&devNode, &devName[4], CM_LOCATE_DEVNODE_NORMAL) != CR_SUCCESS) {
+            continue;
+        }
+
+        SDL_snprintf(devVidPidString, sizeof(devVidPidString), "VID_%04X&PID_%04X", vendor, product);
+
+        while (CM_Get_Parent(&devNode, devNode, 0) == CR_SUCCESS) {
+            char deviceId[MAX_DEVICE_ID_LEN];
+
+            if ((CM_Get_Device_IDA(devNode, deviceId, SDL_arraysize(deviceId), 0) == CR_SUCCESS) &&
+                (SDL_strstr(deviceId, devVidPidString) != NULL)) {
+                /* The VID/PID matched a parent device */
+                SDL_free(raw_devices);
+                return SDL_TRUE;
+            }
         }
     }
 
+    SDL_free(raw_devices);
     return SDL_FALSE;
 }
 
@@ -165,6 +222,12 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 {
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
+
+    /* We can get delayed calls to InvokeAdded() after WGI_JoystickQuit(). Do nothing if WGI is deinitialized.
+     * FIXME: Can we tell if WGI has been quit and reinitialized prior to a delayed callback? */
+    if (wgi.statics == NULL) {
+        return S_OK;
+    }
 
     hr = IUnknown_QueryInterface((IUnknown *)e, &IID_IRawGameController, (void **)&controller);
     if (SUCCEEDED(hr)) {

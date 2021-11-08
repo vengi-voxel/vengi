@@ -246,12 +246,14 @@ if(MSVC)
     endforeach()
   endif()
 
-  # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
-  foreach(flag_var
-      CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-      CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-    string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
-  endforeach(flag_var)
+  if(NOT SDL_LIBC)
+    # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+      string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
+    endforeach(flag_var)
+  endif()
 endif()
 
 # Those are used for pkg-config and friends, so that the SDL2.pc, sdl2-config,
@@ -1268,7 +1270,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
     if(HAVE_INPUT_KD)
       set(SDL_INPUT_LINUXKD 1)
     endif()
-      
+
     if(HAVE_INPUT_KBIO)
       set(SDL_INPUT_FBSDKBIO 1)
     endif()
@@ -1277,7 +1279,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
     check_include_file("sys/inotify.h" HAVE_SYS_INOTIFY_H)
     check_symbol_exists(inotify_init "sys/inotify.h" HAVE_INOTIFY_INIT)
     check_symbol_exists(inotify_init1 "sys/inotify.h" HAVE_INOTIFY_INIT1)
-      
+
     if(HAVE_SYS_INOTIFY_H AND HAVE_INOTIFY_INIT)
       set(HAVE_INOTIFY 1)
     endif()
@@ -1303,7 +1305,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
         set(SDL_USE_IME TRUE)
         target_compile_definitions(sdl-build-options INTERFACE "-DSDL_USE_IME")   # !!! FIXME: why isn't this a definition and not in SDL_config.h.cmake?
       endif()
-        
+
       if(FREEBSD AND NOT HAVE_INOTIFY)
         pkg_search_module(INOTIFY libinotify)
         if(INOTIFY_FOUND)
@@ -1345,7 +1347,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev.c")
       set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev_kbd.c")
     endif()
-      
+
     if(HAVE_INPUT_KBIO)
       set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/freebsd/SDL_evdev_kbd_freebsd.c")
     endif()
@@ -1456,7 +1458,7 @@ elseif(WINDOWS)
     list(APPEND SOURCE_FILES ${WINRT_SOURCE_FILES})
   endif()
 
-  if(MSVC)
+  if(MSVC AND NOT SDL_LIBC)
     # Prevent codegen that would use the VC runtime libraries.
     set_property(DIRECTORY . APPEND PROPERTY COMPILE_OPTIONS "/GS-")
     if(NOT ARCH_64)
@@ -1521,6 +1523,7 @@ elseif(WINDOWS)
       #include <xinput.h>
       XINPUT_STATE_EX s1;
       int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
+    check_include_file(windows.gaming.input.h HAVE_WINDOWS_GAMING_INPUT_H)
   endif()
 
   # headers needed elsewhere
@@ -1699,6 +1702,9 @@ elseif(WINDOWS)
     endif()
     if(HAVE_XINPUT_H)
       set(SDL_JOYSTICK_XINPUT 1)
+      if(HAVE_WINDOWS_GAMING_INPUT_H)
+        set(SDL_JOYSTICK_WGI 1)
+      endif()
     endif()
     if(NOT HAVE_DINPUT_H AND NOT HAVE_XINPUT_H)
       set(SDL_JOYSTICK_WINMM 1)
@@ -2100,6 +2106,13 @@ elseif(RISCOS)
   file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/riscos/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${MISC_SOURCES})
   set(HAVE_SDL_MISC TRUE)
+
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_RISCOS 1)
+    file(GLOB RISCOSVIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/riscos/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${RISCOSVIDEO_SOURCES})
+    set(HAVE_SDL_VIDEO TRUE)
+  endif()
 
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_RISCOS 1)

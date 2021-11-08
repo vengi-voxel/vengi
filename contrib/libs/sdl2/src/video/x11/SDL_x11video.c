@@ -215,6 +215,7 @@ X11_CreateDevice(int devindex)
     device->GetDisplayBounds = X11_GetDisplayBounds;
     device->GetDisplayUsableBounds = X11_GetDisplayUsableBounds;
     device->GetDisplayDPI = X11_GetDisplayDPI;
+    device->GetWindowICCProfile = X11_GetWindowICCProfile;
     device->SetDisplayMode = X11_SetDisplayMode;
     device->SuspendScreenSaver = X11_SuspendScreenSaver;
     device->PumpEvents = X11_PumpEvents;
@@ -404,6 +405,7 @@ X11_VideoInit(_THIS)
     GET_ATOM(WM_PROTOCOLS);
     GET_ATOM(WM_DELETE_WINDOW);
     GET_ATOM(WM_TAKE_FOCUS);
+    GET_ATOM(WM_NAME);
     GET_ATOM(_NET_WM_STATE);
     GET_ATOM(_NET_WM_STATE_HIDDEN);
     GET_ATOM(_NET_WM_STATE_FOCUSED);

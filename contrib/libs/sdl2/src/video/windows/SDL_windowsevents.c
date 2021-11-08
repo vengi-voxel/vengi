@@ -590,6 +590,30 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
+static void WIN_CheckICMProfileChanged(SDL_Window* window)
+{
+    SDL_VideoDisplay* display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData* data = (SDL_DisplayData*)display->driverdata;
+    static WCHAR currentIcmFileName[MAX_PATH] = { '\0' };
+    WCHAR icmFileName[MAX_PATH];
+    HDC hdc;
+    SDL_bool succeeded;
+    DWORD fileNameSize = MAX_PATH;
+
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
+    if (hdc) {
+        succeeded = GetICMProfileW(hdc, &fileNameSize, icmFileName);
+        DeleteDC(hdc);
+        if (succeeded) {
+            
+            if (SDL_wcsncmp(currentIcmFileName, icmFileName, fileNameSize)) {
+                SDL_wcslcpy(currentIcmFileName, icmFileName, fileNameSize);
+                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+            }
+        }
+    }
+}
+
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -655,18 +679,21 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                actually being the foreground window, but this appears to get called in all cases where
                the global foreground window changes to and from this window. */
             WIN_UpdateFocus(data->window);
+            WIN_CheckICMProfileChanged(data->window);
         }
         break;
 
     case WM_ACTIVATE:
         {
+            /* Update the focus in case we changed focus to a child window and then away from the application */
+            WIN_UpdateFocus(data->window);
         }
         break;
 
     case WM_SETFOCUS:
     case WM_KILLFOCUS:
         {
-            /* Update the focus in case it's changing between windows in the same application */
+            /* Update the focus in case it's changing between top-level windows in the same application */
             WIN_UpdateFocus(data->window);
         }
         break;
@@ -1108,6 +1135,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             /* Forces a WM_PAINT event */
             InvalidateRect(hwnd, NULL, FALSE);
+
+            WIN_CheckICMProfileChanged(data->window);
         }
         break;
 
