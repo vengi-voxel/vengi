@@ -3,6 +3,7 @@
  */
 
 #include "IMGUI.h"
+#include "IMGUIApp.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "command/Command.h"
@@ -314,5 +315,13 @@ void URLItem(const char *title, const char *url) {
 		app->minimize();
 	}
 }
+
+bool Fullscreen(const char *title) {
+	ui::imgui::IMGUIApp* app = (ui::imgui::IMGUIApp*)video::WindowedApp::getInstance();
+	SetNextWindowSize(app->frameBufferDimension());
+	SetNextWindowPos(ImVec2(0.0f, 0.0f));
+	return Begin(title, nullptr, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking);
+}
+
 
 }

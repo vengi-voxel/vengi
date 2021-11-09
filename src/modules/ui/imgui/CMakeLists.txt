@@ -9,6 +9,8 @@ set(SRCS
 	IMGUIStyle.cpp IMGUIStyle.h
 	IMGUIInternal.h
 	TextEditor.h TextEditor.cpp
+	WindowStack.h WindowStack.cpp
+	Window.h Window.cpp
 )
 
 set(GEN_DIR ${GENERATE_DIR}/${LIB})
