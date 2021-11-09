@@ -12,6 +12,7 @@ set(SRCS
 	Random.cpp Random.h
 	Ray.h
 	Rect.h
+	Math.h
 )
 set(LIB math)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
