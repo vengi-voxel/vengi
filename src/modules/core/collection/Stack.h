@@ -25,6 +25,10 @@ private:
 public:
 	using value_type = TYPE;
 
+	constexpr size_t maxSize() const {
+		return SIZE;
+	}
+
 	inline size_t size() const {
 		return _size;
 	}
