@@ -120,7 +120,7 @@ app::AppState Thumbnailer::onRunning() {
 	camera.setWorldPosition(glm::vec3(-distance, height + distance, -distance));
 	camera.lookAt(center);
 	camera.setFarPlane(5000.0f);
-	camera.update(1L);
+	camera.update(0.001);
 
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
