@@ -12,6 +12,7 @@ set(SRCS
 	VolumeRotator.h VolumeRotator.cpp
 	VolumeCropper.h
 	VolumeVisitor.h
+	VoxelUtil.h VoxelUtil.cpp
 	RawVolumeRotateWrapper.h RawVolumeRotateWrapper.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel)
