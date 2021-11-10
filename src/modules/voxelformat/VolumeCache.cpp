@@ -24,7 +24,7 @@ voxel::RawVolume* VolumeCache::loadVolume(const core::String &filename) {
 			return i->second;
 		}
 	}
-	Log::info("Loading volume from %s", filename.c_str());
+	Log::debug("Loading volume from %s", filename.c_str());
 	const io::FilesystemPtr& fs = io::filesystem();
 
 	io::FilePtr file;
@@ -35,7 +35,7 @@ voxel::RawVolume* VolumeCache::loadVolume(const core::String &filename) {
 		}
 	}
 	if (!file->exists()) {
-		Log::error("Failed to load %s for any of the supported format extensions", filename.c_str());
+		Log::debug("Failed to load %s for any of the supported format extensions", filename.c_str());
 		return nullptr;
 	}
 	voxel::VoxelVolumes volumes;
