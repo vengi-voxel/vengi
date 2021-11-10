@@ -21,7 +21,7 @@ void Window::update(double deltaFrameSeconds) {
 	if (isFullscreen()) {
 		ImGui::Fullscreen(_title.c_str());
 	} else {
-		ImGuiWindowFlags flags = 0;
+		ImGuiWindowFlags flags = ImGuiWindowFlags_None;
 		if ((_flags & WindowFlag::NoTitle) == WindowFlag::NoTitle) {
 			flags |= ImGuiWindowFlags_NoTitleBar;
 		}

@@ -20,6 +20,9 @@ enum class WindowFlag {
 };
 CORE_ENUM_BIT_OPERATIONS(WindowFlag)
 
+/**
+ * @brief A Window that is managed by the @c WindowStack class
+ */
 class Window {
 protected:
 	WindowFlag _flags = WindowFlag::None;

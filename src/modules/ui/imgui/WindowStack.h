@@ -11,6 +11,10 @@
 namespace ui {
 namespace imgui {
 
+/**
+ * @brief Manages and owns @c Window instances in a stack like manner where you can push and pop windows
+ * by their name onto the rendering stack.
+ */
 class WindowStack : public core::IComponent {
 private:
 	core::StringMap<Window *> _windows;
