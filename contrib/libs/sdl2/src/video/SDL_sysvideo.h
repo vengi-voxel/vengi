@@ -103,6 +103,8 @@ struct SDL_Window
     SDL_bool is_destroying;
     SDL_bool is_dropping;       /* drag/drop in progress, expecting SDL_SendDropComplete(). */
 
+    SDL_Rect mouse_rect;
+
     SDL_WindowShaper *shaper;
 
     SDL_HitTest hit_test;
@@ -235,6 +237,7 @@ struct SDL_VideoDevice
     int (*SetWindowGammaRamp) (_THIS, SDL_Window * window, const Uint16 * ramp);
     int (*GetWindowGammaRamp) (_THIS, SDL_Window * window, Uint16 * ramp);
     void* (*GetWindowICCProfile) (_THIS, SDL_Window * window, size_t* size);
+    void (*SetWindowMouseRect)(_THIS, SDL_Window * window);
     void (*SetWindowMouseGrab) (_THIS, SDL_Window * window, SDL_bool grabbed);
     void (*SetWindowKeyboardGrab) (_THIS, SDL_Window * window, SDL_bool grabbed);
     void (*DestroyWindow) (_THIS, SDL_Window * window);
@@ -338,6 +341,7 @@ struct SDL_VideoDevice
     Uint8 window_magic;
     Uint32 next_object_id;
     char *clipboard_text;
+    SDL_bool setting_display_mode;
 
     /* * * */
     /* Data used by the GL drivers */
@@ -456,6 +460,9 @@ extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
 extern int SDL_AddVideoDisplay(const SDL_VideoDisplay * display, SDL_bool send_event);
 extern void SDL_DelVideoDisplay(int index);
 extern SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode * mode);
+extern void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode * mode);
+extern void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode * mode);
+extern void SDL_ResetDisplayModes(int displayIndex);
 extern int SDL_GetIndexOfDisplay(SDL_VideoDisplay *display);
 extern SDL_VideoDisplay *SDL_GetDisplay(int displayIndex);
 extern SDL_VideoDisplay *SDL_GetDisplayForWindow(SDL_Window *window);

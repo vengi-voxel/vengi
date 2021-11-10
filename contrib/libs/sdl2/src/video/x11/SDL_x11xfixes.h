@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,18 +18,24 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 
-#include "../../core/windows/SDL_xinput.h"
+#ifndef SDL_x11xfixes_h_
+#define SDL_x11xfixes_h_
 
-extern SDL_bool SDL_XINPUT_Enabled(void);
-extern int SDL_XINPUT_JoystickInit(void);
-extern void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext);
-extern int SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickdevice);
-extern int SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
-extern Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick * joystick);
-extern void SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick);
-extern void SDL_XINPUT_JoystickClose(SDL_Joystick * joystick);
-extern void SDL_XINPUT_JoystickQuit(void);
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+
+#define X11_BARRIER_HANDLED_BY_EVENT 1
+
+extern void X11_InitXfixes(_THIS);
+extern int X11_XfixesIsInitialized(void);
+extern void X11_SetWindowMouseRect(_THIS, SDL_Window * window);
+extern int X11_ConfineCursorWithFlags(_THIS, SDL_Window * window, const SDL_Rect * rect, int flags);
+extern void X11_DestroyPointerBarrier(_THIS, SDL_Window * window);
+
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+
+#endif /* SDL_x11xfixes_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

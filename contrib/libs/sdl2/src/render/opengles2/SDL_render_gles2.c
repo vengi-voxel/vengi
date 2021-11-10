@@ -569,10 +569,18 @@ GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source, int w, int
             ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_JPEG;
             break;
         case SDL_YUV_CONVERSION_BT601:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT601;
+            if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT601;
+            } else {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT601;
+            }
             break;
         case SDL_YUV_CONVERSION_BT709:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT709;
+            if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT709;
+            } else {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT709;
+            }
             break;
         default:
             SDL_SetError("Unsupported YUV conversion mode: %d\n", SDL_GetYUVConversionModeForResolution(w, h));
@@ -1126,8 +1134,41 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
 
+            case SDL_RENDERCMD_DRAW_LINES: {
+                if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
+                    size_t count = cmd->data.draw.count;
+                    if (count > 2) {
+                        /* joined lines cannot be grouped */
+                        data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)count);
+                    } else {
+                        /* let's group non joined lines */
+                        SDL_RenderCommand *finalcmd = cmd;
+                        SDL_RenderCommand *nextcmd = cmd->next;
+                        SDL_BlendMode thisblend = cmd->data.draw.blend;
+
+                        while (nextcmd != NULL) {
+                            const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                            if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
+                                break;  /* can't go any further on this draw call, different render command up next. */
+                            } else if (nextcmd->data.draw.count != 2) {
+                                break;  /* can't go any further on this draw call, those are joined lines */
+                            } else if (nextcmd->data.draw.blend != thisblend) {
+                                break;  /* can't go any further on this draw call, different blendmode copy up next. */
+                            } else {
+                                finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
+                                count += cmd->data.draw.count;
+                            }
+                            nextcmd = nextcmd->next;
+                        }
+
+                        data->glDrawArrays(GL_LINES, 0, (GLsizei)count);
+                        cmd = finalcmd;  /* skip any copy commands we just combined in here. */
+                    }
+                }
+                break;
+            }
+
             case SDL_RENDERCMD_DRAW_POINTS:
-            case SDL_RENDERCMD_DRAW_LINES:
             case SDL_RENDERCMD_GEOMETRY: {
                 /* as long as we have the same copy command in a row, with the
                    same texture, we can combine them all into a single draw call. */
@@ -1161,8 +1202,6 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     int op = GL_TRIANGLES; /* SDL_RENDERCMD_GEOMETRY */
                     if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
                         op = GL_POINTS; 
-                    } else if (thiscmdtype == SDL_RENDERCMD_DRAW_LINES) {
-                        op = GL_LINE_STRIP; 
                     }
                     data->glDrawArrays(op, 0, (GLsizei) count);
                 }

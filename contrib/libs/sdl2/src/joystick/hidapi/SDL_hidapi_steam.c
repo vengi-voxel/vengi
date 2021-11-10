@@ -1095,11 +1095,11 @@ HIDAPI_DriverSteam_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystic
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverSteam_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverSteam_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     /* You should use the full Steam Input API for LED support */
-    return SDL_FALSE;
+    return 0;
 }
 
 static int
@@ -1284,6 +1284,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam =
 {
     SDL_HINT_JOYSTICK_HIDAPI_STEAM,
     SDL_TRUE,
+    SDL_FALSE,
     HIDAPI_DriverSteam_IsSupportedDevice,
     HIDAPI_DriverSteam_GetDeviceName,
     HIDAPI_DriverSteam_InitDevice,
@@ -1293,7 +1294,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam =
     HIDAPI_DriverSteam_OpenJoystick,
     HIDAPI_DriverSteam_RumbleJoystick,
     HIDAPI_DriverSteam_RumbleJoystickTriggers,
-    HIDAPI_DriverSteam_HasJoystickLED,
+    HIDAPI_DriverSteam_GetJoystickCapabilities,
     HIDAPI_DriverSteam_SetJoystickLED,
     HIDAPI_DriverSteam_SendJoystickEffect,
     HIDAPI_DriverSteam_SetSensorsEnabled,

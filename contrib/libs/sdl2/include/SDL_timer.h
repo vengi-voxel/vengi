@@ -61,9 +61,9 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
  * Get the number of milliseconds since SDL library initialization.
  *
  * Note that you should not use the SDL_TICKS_PASSED macro with values
- * returned by this function, as that macro does clever math to compensate
- * for the 32-bit overflow every ~49 days that SDL_GetTicks() suffers from.
- * 64-bit values from this function can be safely compared directly.
+ * returned by this function, as that macro does clever math to compensate for
+ * the 32-bit overflow every ~49 days that SDL_GetTicks() suffers from. 64-bit
+ * values from this function can be safely compared directly.
  *
  * For example, if you want to wait 100 ms, you could do this:
  *
@@ -76,6 +76,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
  *
  * \returns an unsigned 64-bit value representing the number of milliseconds
  *          since the SDL library initialized.
+ *
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC Uint64 SDLCALL SDL_GetTicks64(void);
 

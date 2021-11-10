@@ -464,10 +464,26 @@ HIDAPI_DriverGameCube_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joys
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverGameCube_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
+    Uint32 result = 0;
+
+    if (!ctx->pc_mode) {
+        Uint8 i;
+
+        for (i = 0; i < MAX_CONTROLLERS; i += 1) {
+            if (joystick->instance_id == ctx->joysticks[i]) {
+                if (!ctx->wireless[i] && ctx->rumbleAllowed[i]) {
+                    result |= SDL_JOYCAP_RUMBLE;
+                    break;
+                }
+            }
+        }
+    }
+
+    return result;
 }
 
 static int
@@ -523,6 +539,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
 {
     SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverGameCube_IsSupportedDevice,
     HIDAPI_DriverGameCube_GetDeviceName,
     HIDAPI_DriverGameCube_InitDevice,
@@ -532,7 +549,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
     HIDAPI_DriverGameCube_OpenJoystick,
     HIDAPI_DriverGameCube_RumbleJoystick,
     HIDAPI_DriverGameCube_RumbleJoystickTriggers,
-    HIDAPI_DriverGameCube_HasJoystickLED,
+    HIDAPI_DriverGameCube_GetJoystickCapabilities,
     HIDAPI_DriverGameCube_SetJoystickLED,
     HIDAPI_DriverGameCube_SendJoystickEffect,
     HIDAPI_DriverGameCube_SetJoystickSensorsEnabled,

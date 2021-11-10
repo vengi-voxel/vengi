@@ -132,10 +132,16 @@ HIDAPI_DriverLuna_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverLuna_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverLuna_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    Uint32 result = 0;
+
+    if (device->product_id == BLUETOOTH_PRODUCT_LUNA_CONTROLLER) {
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int
@@ -432,6 +438,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna =
 {
     SDL_HINT_JOYSTICK_HIDAPI_LUNA,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverLuna_IsSupportedDevice,
     HIDAPI_DriverLuna_GetDeviceName,
     HIDAPI_DriverLuna_InitDevice,
@@ -441,7 +448,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna =
     HIDAPI_DriverLuna_OpenJoystick,
     HIDAPI_DriverLuna_RumbleJoystick,
     HIDAPI_DriverLuna_RumbleJoystickTriggers,
-    HIDAPI_DriverLuna_HasJoystickLED,
+    HIDAPI_DriverLuna_GetJoystickCapabilities,
     HIDAPI_DriverLuna_SetJoystickLED,
     HIDAPI_DriverLuna_SendJoystickEffect,
     HIDAPI_DriverLuna_SetJoystickSensorsEnabled,

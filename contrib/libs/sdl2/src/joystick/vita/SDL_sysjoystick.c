@@ -365,11 +365,11 @@ VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
     return SDL_Unsupported();
 }
 
-static SDL_bool
-VITA_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+VITA_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    // always return true for now
-    return SDL_TRUE;
+    // always return LED and rumble supported for now
+    return SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
 }
 
 
@@ -409,7 +409,7 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver =
     VITA_JoystickRumble,
     VITA_JoystickRumbleTriggers,
 
-    VITA_JoystickHasLED,
+    VITA_JoystickGetCapabilities,
     VITA_JoystickSetLED,
     VITA_JoystickSendEffect,
     VITA_JoystickSetSensorsEnabled,

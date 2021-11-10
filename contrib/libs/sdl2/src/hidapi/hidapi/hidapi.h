@@ -31,8 +31,6 @@
 
 #ifdef SDL_hidapi_h_
 #define SDL_HIDAPI_IMPLEMENTATION
-#define hid_device_ SDL_hid_device_
-#define hid_device SDL_hid_device
 #define hid_device_info SDL_hid_device_info
 #endif
 
@@ -57,10 +55,10 @@ extern "C" {
 namespace NAMESPACE {
 #endif
 
-#ifndef SDL_HIDAPI_IMPLEMENTATION
 		struct hid_device_;
 		typedef struct hid_device_ hid_device; /**< opaque hidapi structure */
 
+#ifndef SDL_HIDAPI_IMPLEMENTATION
 		/** hidapi info structure */
 		struct hid_device_info {
 			/** Platform-specific device path */
@@ -407,6 +405,10 @@ namespace NAMESPACE {
 				which occurred or NULL if none has occurred.
 		*/
 		HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *dev);
+
+#if __IPHONEOS__ || __TVOS__
+		HID_API_EXPORT void HID_API_CALL hid_ble_scan(int active);
+#endif
 
 #if defined(__cplusplus) && !defined(NAMESPACE)
 }

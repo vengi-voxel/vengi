@@ -47,14 +47,12 @@ this should probably be removed at some point in the future.  --ryan. */
 #define SDL_WINDOWRENDERDATA    "_SDL_WindowRenderData"
 
 #define CHECK_RENDERER_MAGIC(renderer, retval) \
-    SDL_assert(renderer && renderer->magic == &renderer_magic); \
     if (!renderer || renderer->magic != &renderer_magic) { \
         SDL_SetError("Invalid renderer"); \
         return retval; \
     }
 
 #define CHECK_TEXTURE_MAGIC(texture, retval) \
-    SDL_assert(texture && texture->magic == &texture_magic); \
     if (!texture || texture->magic != &texture_magic) { \
         SDL_SetError("Invalid texture"); \
         return retval; \
@@ -2488,6 +2486,42 @@ SDL_RenderGetScale(SDL_Renderer * renderer, float *scaleX, float *scaleY)
     }
     if (scaleY) {
         *scaleY = renderer->scale.y;
+    }
+}
+
+void
+SDL_RenderWindowToLogical(SDL_Renderer * renderer, int windowX, int windowY, float *logicalX, float *logicalY)
+{
+    float window_physical_x, window_physical_y;
+
+    CHECK_RENDERER_MAGIC(renderer, );
+
+    window_physical_x = ((float) windowX) / renderer->dpi_scale.x;
+    window_physical_y = ((float) windowY) / renderer->dpi_scale.y;
+
+    if (logicalX) {
+        *logicalX = (window_physical_x - renderer->viewport.x) / renderer->scale.x;
+    }
+    if (logicalY) {
+        *logicalY = (window_physical_y - renderer->viewport.y) / renderer->scale.y;
+    }
+}
+
+void
+SDL_RenderLogicalToWindow(SDL_Renderer * renderer, float logicalX, float logicalY, int *windowX, int *windowY)
+{
+    float window_physical_x, window_physical_y;
+
+    CHECK_RENDERER_MAGIC(renderer, );
+
+    window_physical_x = (logicalX * renderer->scale.x) + renderer->viewport.x;
+    window_physical_y = (logicalY * renderer->scale.y) + renderer->viewport.y;
+
+    if (windowX) {
+        *windowX = (int)(window_physical_x * renderer->dpi_scale.x);
+    }
+    if (windowY) {
+        *windowY = (int)(window_physical_y * renderer->dpi_scale.y);
     }
 }
 

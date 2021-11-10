@@ -558,6 +558,7 @@ EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext
     Uint16 vendor = 0;
     Uint16 product = 0;
     LPDIRECTINPUTDEVICE8 device = NULL;
+    BOOL result = DIENUM_CONTINUE;
 
     /* We are only supporting HID devices. */
     CHECK((pDeviceInstance->dwDevType & DIDEVTYPE_HID) != 0);
@@ -567,7 +568,7 @@ EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext
 
     if (vendor == pData->vendor && product == pData->product) {
         pData->present = SDL_TRUE;
-        return DIENUM_STOP; /* get next device, please */
+        result = DIENUM_STOP; /* found it */
     }
 
 err:
@@ -575,7 +576,7 @@ err:
         IDirectInputDevice8_Release(device);
     }
 
-    return DIENUM_CONTINUE; /* get next device, please */
+    return result;
 #undef CHECK
 }
 
@@ -924,6 +925,18 @@ SDL_DINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
     return 0;
 }
 
+Uint32
+SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
+{
+    Uint32 result = 0;
+
+    if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
+}
+
 static Uint8
 TranslatePOV(DWORD value)
 {
@@ -1166,6 +1179,12 @@ int
 SDL_DINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
+}
+
+Uint32
+SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
+{
+    return 0;
 }
 
 void

@@ -343,7 +343,7 @@ endif()
 set(LONGESTOPTIONNAME 0)  # set_option and friends will change this.
 
 set(SDL_SUBSYSTEMS
-    Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
+    Atomic Audio Video Render Events Joystick Haptic Hidapi Power Threads Timers
     File Loadso CPUinfo Filesystem Dlopen Sensor Locale)
 foreach(_SUB ${SDL_SUBSYSTEMS})
   string(TOUPPER ${_SUB} _OPT)
@@ -401,7 +401,7 @@ set_option(SDL_RPATH               "Use an rpath when linking SDL" ${UNIX_SYS})
 set_option(SDL_CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" OFF)
 set_option(SDL_X11                 "Use X11 video driver" ${UNIX_SYS})
 dep_option(SDL_X11_SHARED          "Dynamically load X11 support" ON "SDL_X11" OFF)
-set(SDL_X11_OPTIONS Xcursor Xinerama XInput Xrandr Xscrnsaver XShape Xvm)
+set(SDL_X11_OPTIONS Xcursor Xinerama XInput Xfixes Xrandr Xscrnsaver XShape Xvm)
 foreach(_SUB ${SDL_X11_OPTIONS})
   string(TOUPPER "SDL_X11_${_SUB}" _OPT)
   dep_option(${_OPT}               "Enable ${_SUB} support" ON "SDL_X11" OFF)
@@ -424,9 +424,9 @@ set_option(SDL_METAL               "Enable Metal support" ${APPLE})
 set_option(SDL_KMSDRM              "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(SDL_KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "SDL_KMSDRM" OFF)
 set_option(SDL_OFFSCREEN           "Use offscreen video driver" OFF)
-option_string(SDL_BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" "OFF")
-option_string(SDL_FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" "OFF")
-set_option(SDL_HIDAPI              "Use HIDAPI for low level joystick drivers" ${OPT_DEF_HIDAPI})
+option_string(SDL_BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" OFF)
+option_string(SDL_FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" OFF)
+set_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" ON)
 set_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 
@@ -441,6 +441,28 @@ if(VITA)
     set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
 endif()
 
+# General source files
+file(GLOB SOURCE_FILES
+  ${SDL2_SOURCE_DIR}/src/*.c
+  ${SDL2_SOURCE_DIR}/src/atomic/*.c
+  ${SDL2_SOURCE_DIR}/src/audio/*.c
+  ${SDL2_SOURCE_DIR}/src/cpuinfo/*.c
+  ${SDL2_SOURCE_DIR}/src/dynapi/*.c
+  ${SDL2_SOURCE_DIR}/src/events/*.c
+  ${SDL2_SOURCE_DIR}/src/file/*.c
+  ${SDL2_SOURCE_DIR}/src/haptic/*.c
+  ${SDL2_SOURCE_DIR}/src/libm/*.c
+  ${SDL2_SOURCE_DIR}/src/locale/*.c
+  ${SDL2_SOURCE_DIR}/src/misc/*.c
+  ${SDL2_SOURCE_DIR}/src/power/*.c
+  ${SDL2_SOURCE_DIR}/src/render/*.c
+  ${SDL2_SOURCE_DIR}/src/render/*/*.c
+  ${SDL2_SOURCE_DIR}/src/sensor/*.c
+  ${SDL2_SOURCE_DIR}/src/stdlib/*.c
+  ${SDL2_SOURCE_DIR}/src/thread/*.c
+  ${SDL2_SOURCE_DIR}/src/timer/*.c
+  ${SDL2_SOURCE_DIR}/src/video/*.c
+  ${SDL2_SOURCE_DIR}/src/video/yuv2rgb/*.c)
 
 
 if(SDL_ASSERTIONS STREQUAL "auto")
@@ -1030,8 +1052,10 @@ if(ANDROID)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_HAPTIC_SOURCES})
     set(HAVE_SDL_HAPTIC TRUE)
   endif()
-  if(SDL_JOYSTICK)
+  if(SDL_HIDAPI)
     CheckHIDAPI()
+  endif()
+  if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_ANDROID 1)
     file(GLOB ANDROID_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/android/*.c ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_JOYSTICK_SOURCES})
@@ -1081,10 +1105,6 @@ if(ANDROID)
     list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_LOG_LIBRARY} ${ANDROID_LIBRARY_LIBRARY})
     target_compile_definitions(sdl-build-options INTERFACE "-DGL_GLEXT_PROTOTYPES")
 
-    if (HAVE_HIDAPI)
-        list(APPEND EXTRA_LIBS hidapi)
-    endif()
-
     #enable gles
     if(SDL_OPENGLES)
       set(SDL_VIDEO_OPENGL_EGL 1)
@@ -1103,8 +1123,7 @@ if(ANDROID)
     #if defined(__ARM_ARCH) && __ARM_ARCH < 7
     #error Vulkan doesn't work on this configuration
     #endif
-    int main()
-    {
+    int main(void) {
         return 0;
     }
     " VULKAN_PASSED_ANDROID_CHECKS)
@@ -1359,11 +1378,14 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
     # src/core/unix/*.c is included in a generic if(UNIX) section, elsewhere.
   endif()
 
+  if(SDL_HIDAPI)
+    CheckHIDAPI()
+  endif()
+
   if(SDL_JOYSTICK)
     if(FREEBSD OR NETBSD OR OPENBSD OR BSDI)
       CheckUSBHID()
     endif()
-    CheckHIDAPI()
     if(LINUX AND NOT ANDROID)
       set(SDL_JOYSTICK_LINUX 1)
       file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/linux/*.c ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
@@ -1685,12 +1707,11 @@ elseif(WINDOWS)
     endif()
   endif()
 
-  if(SDL_JOYSTICK)
+  if(SDL_HIDAPI)
     CheckHIDAPI()
-    # TODO: Remove this hid.c block when SDL_hidapi.c is supported on Windows!
-    if(HAVE_HIDAPI)
-      set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/windows/hid.c)
-    endif()
+  endif()
+
+  if(SDL_JOYSTICK)
     if(NOT WINDOWS_STORE)
       set(SDL_JOYSTICK_RAWINPUT 1)
     endif()
@@ -1785,14 +1806,11 @@ elseif(APPLE)
     set(SDL_FRAMEWORK_AVFOUNDATION 1)
   endif()
 
-  if(SDL_JOYSTICK)
+  if(SDL_HIDAPI)
     CheckHIDAPI()
-    if(HAVE_HIDAPI)
-      if(IOS OR TVOS)
-        set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/ios/hid.m)
-        set(SDL_FRAMEWORK_COREBLUETOOTH 1)
-      endif()
-    endif()
+  endif()
+
+  if(SDL_JOYSTICK)
     if(IOS OR TVOS)
       file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/iphoneos/*.m ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
       set(SDL_JOYSTICK_MFI 1)
@@ -1919,8 +1937,7 @@ elseif(APPLE)
         #if (!TARGET_CPU_X86_64 && !TARGET_CPU_ARM64)
         #error Metal doesn't work on this configuration
         #endif
-        int main()
-        {
+        int main(void) {
             return 0;
         }
         " HAVE_FRAMEWORK_METAL)

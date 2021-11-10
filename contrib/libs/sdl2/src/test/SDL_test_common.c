@@ -37,7 +37,8 @@ static const char *video_usage[] = {
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
     "[--resizable]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
     "[--shown]", "[--hidden]", "[--input-focus]", "[--mouse-focus]",
-    "[--flash-on-focus-loss]", "[--allow-highdpi]", "[--usable-bounds]"
+    "[--flash-on-focus-loss]", "[--allow-highdpi]", "[--confine-cursor X,Y,W,H]",
+    "[--usable-bounds]"
 };
 
 static const char *audio_usage[] = {
@@ -294,6 +295,34 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         *y++ = '\0';
         state->window_x = SDL_atoi(x);
         state->window_y = SDL_atoi(y);
+        return 2;
+    }
+    if (SDL_strcasecmp(argv[index], "--confine-cursor") == 0) {
+        char *x, *y, *w, *h;
+        ++index;
+        if (!argv[index]) {
+            return -1;
+        }
+        x = argv[index];
+        y = argv[index];
+        #define SEARCHARG(dim) \
+            while (*dim && *dim != ',') { \
+                ++dim; \
+            } \
+            if (!*dim) { \
+                return -1; \
+            } \
+            *dim++ = '\0';
+        SEARCHARG(y)
+        w = y;
+        SEARCHARG(w)
+        h = w;
+        SEARCHARG(h)
+        #undef SEARCHARG
+        state->confine.x = SDL_atoi(x);
+        state->confine.y = SDL_atoi(y);
+        state->confine.w = SDL_atoi(w);
+        state->confine.h = SDL_atoi(h);
         return 2;
     }
     if (SDL_strcasecmp(argv[index], "--usable-bounds") == 0) {
@@ -1289,6 +1318,10 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
 
             SDL_ShowWindow(state->windows[i]);
 
+            if (!SDL_RectEmpty(&state->confine)) {
+                SDL_SetWindowMouseRect(state->windows[i], &state->confine);
+            }
+
             if (!state->skip_renderer
                 && (state->renderdriver
                     || !(state->window_flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)))) {
@@ -2201,6 +2234,7 @@ SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int *
     SDL_Rect rect;
     SDL_DisplayMode mode;
     float ddpi, hdpi, vdpi;
+    float scaleX, scaleY;
     Uint32 flags;
     const int windowDisplayIndex = SDL_GetWindowDisplayIndex(window);
     SDL_RendererInfo info;
@@ -2240,6 +2274,17 @@ SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int *
     SDL_RenderGetViewport(renderer, &rect);
     SDL_snprintf(text, sizeof(text), "SDL_RenderGetViewport: %d,%d, %dx%d",
                  rect.x, rect.y, rect.w, rect.h);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    SDL_RenderGetScale(renderer, &scaleX, &scaleY);
+    SDL_snprintf(text, sizeof(text), "SDL_RenderGetScale: %f,%f",
+                 scaleX, scaleY);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    SDL_RenderGetLogicalSize(renderer, &w, &h);
+    SDL_snprintf(text, sizeof(text), "SDL_RenderGetLogicalSize: %dx%d", w, h);
     SDLTest_DrawString(renderer, 0, textY, text);
     textY += lineHeight;
 

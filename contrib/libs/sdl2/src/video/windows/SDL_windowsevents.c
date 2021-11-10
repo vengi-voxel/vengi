@@ -729,6 +729,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
         /* don't break here, fall through to check the wParam like the button presses */
+        SDL_FALLTHROUGH;
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
     case WM_MBUTTONUP:
@@ -1541,7 +1542,7 @@ HINSTANCE SDL_Instance = NULL;
 
 /* Register the class for this application */
 int
-SDL_RegisterApp(char *name, Uint32 style, void *hInst)
+SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     const char *hint;
     WNDCLASSEX wcex;

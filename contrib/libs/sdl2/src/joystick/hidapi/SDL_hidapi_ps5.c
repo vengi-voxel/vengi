@@ -471,7 +471,7 @@ HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
     /* This is just a dummy packet that should have no effect, since we don't set the CRC */
     Uint8 data[78];
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     data[0] = k_EPS5ReportIdBluetoothEffects;
     data[1] = 0x02;  /* Magic value */
@@ -663,10 +663,17 @@ HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick 
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverPS5_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_TRUE;
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+    Uint32 result = 0;
+
+    if (ctx->enhanced_mode) {
+        result |= SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int
@@ -696,7 +703,7 @@ HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
         HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
     }
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     if (ctx->is_bluetooth) {
         data[0] = k_EPS5ReportIdBluetoothEffects;
@@ -1089,6 +1096,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 =
 {
     SDL_HINT_JOYSTICK_HIDAPI_PS5,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverPS5_IsSupportedDevice,
     HIDAPI_DriverPS5_GetDeviceName,
     HIDAPI_DriverPS5_InitDevice,
@@ -1098,7 +1106,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 =
     HIDAPI_DriverPS5_OpenJoystick,
     HIDAPI_DriverPS5_RumbleJoystick,
     HIDAPI_DriverPS5_RumbleJoystickTriggers,
-    HIDAPI_DriverPS5_HasJoystickLED,
+    HIDAPI_DriverPS5_GetJoystickCapabilities,
     HIDAPI_DriverPS5_SetJoystickLED,
     HIDAPI_DriverPS5_SendJoystickEffect,
     HIDAPI_DriverPS5_SetJoystickSensorsEnabled,

@@ -32,6 +32,7 @@
 #include "SDL_x11mouse.h"
 #include "SDL_x11shape.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11xfixes.h"
 
 #if SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -1781,6 +1782,13 @@ X11_DestroyWindow(_THIS, SDL_Window * window)
             X11_XFlush(display);
         }
         SDL_free(data);
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+        /* If the pointer barriers are active for this, deactivate it.*/
+        if (videodata->active_cursor_confined_window == window) {
+            X11_DestroyPointerBarrier(_this, window);
+        }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
     }
     window->driverdata = NULL;
 }

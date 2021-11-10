@@ -857,6 +857,8 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorData(SDL_GameController *
  * \returns 0, or -1 if rumble isn't supported on this controller
  *
  * \since This function is available since SDL 2.0.9.
+ *
+ * \sa SDL_GameControllerHasRumble
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
@@ -879,6 +881,8 @@ extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecon
  * \returns 0, or -1 if trigger rumble isn't supported on this controller
  *
  * \since This function is available since SDL 2.0.14.
+ *
+ * \sa SDL_GameControllerHasRumbleTriggers
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerRumbleTriggers(SDL_GameController *gamecontroller, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
 
@@ -892,6 +896,32 @@ extern DECLSPEC int SDLCALL SDL_GameControllerRumbleTriggers(SDL_GameController 
  * \since This function is available since SDL 2.0.14.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *gamecontroller);
+
+/**
+ * Query whether a game controller has rumble support.
+ *
+ * \param gamecontroller The controller to query
+ * \returns SDL_TRUE, or SDL_FALSE if this controller does not have rumble
+ *          support
+ *
+ * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_GameControllerRumble
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasRumble(SDL_GameController *gamecontroller);
+
+/**
+ * Query whether a game controller has rumble support on triggers.
+ *
+ * \param gamecontroller The controller to query
+ * \returns SDL_TRUE, or SDL_FALSE if this controller does not have trigger
+ *          rumble support
+ *
+ * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_GameControllerRumbleTriggers
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasRumbleTriggers(SDL_GameController *gamecontroller);
 
 /**
  * Update a game controller's LED color.
@@ -932,7 +962,8 @@ extern DECLSPEC int SDLCALL SDL_GameControllerSendEffect(SDL_GameController *gam
 extern DECLSPEC void SDLCALL SDL_GameControllerClose(SDL_GameController *gamecontroller);
 
 /**
- * Return the sfSymbolsName for a given button on a game controller on Apple platforms.
+ * Return the sfSymbolsName for a given button on a game controller on Apple
+ * platforms.
  *
  * \param gamecontroller the controller to query
  * \param button a button on the game controller
@@ -945,7 +976,8 @@ extern DECLSPEC void SDLCALL SDL_GameControllerClose(SDL_GameController *gamecon
 extern DECLSPEC const char* SDLCALL SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button);
 
 /**
- * Return the sfSymbolsName for a given axis on a game controller on Apple platforms.
+ * Return the sfSymbolsName for a given axis on a game controller on Apple
+ * platforms.
  *
  * \param gamecontroller the controller to query
  * \param axis an axis on the game controller

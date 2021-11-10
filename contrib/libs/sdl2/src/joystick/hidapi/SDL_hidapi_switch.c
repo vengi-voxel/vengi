@@ -418,7 +418,7 @@ static void ConstructSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommand
     outPacket->commonData.ucPacketType = k_eSwitchOutputReportIDs_RumbleAndSubcommand;
     outPacket->commonData.ucPacketNumber = ctx->m_nCommandNumber;
 
-    SDL_memcpy(&outPacket->commonData.rumbleData, &ctx->m_RumblePacket.rumbleData, sizeof(ctx->m_RumblePacket.rumbleData));
+    SDL_memcpy(outPacket->commonData.rumbleData, ctx->m_RumblePacket.rumbleData, sizeof(ctx->m_RumblePacket.rumbleData));
 
     outPacket->ucSubcommandID = ucCommandID;
     SDL_memcpy(outPacket->rgucSubcommandData, pBuf, ucLen);
@@ -1106,11 +1106,18 @@ HIDAPI_DriverSwitch_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joysti
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverSwitch_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* Doesn't have an RGB LED, so don't return true here */
-    return SDL_FALSE;
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+    Uint32 result = 0;
+
+    if (!ctx->m_bInputOnly) {
+        /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int
@@ -1548,6 +1555,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
 {
     SDL_HINT_JOYSTICK_HIDAPI_SWITCH,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverSwitch_IsSupportedDevice,
     HIDAPI_DriverSwitch_GetDeviceName,
     HIDAPI_DriverSwitch_InitDevice,
@@ -1557,7 +1565,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     HIDAPI_DriverSwitch_OpenJoystick,
     HIDAPI_DriverSwitch_RumbleJoystick,
     HIDAPI_DriverSwitch_RumbleJoystickTriggers,
-    HIDAPI_DriverSwitch_HasJoystickLED,
+    HIDAPI_DriverSwitch_GetJoystickCapabilities,
     HIDAPI_DriverSwitch_SetJoystickLED,
     HIDAPI_DriverSwitch_SendJoystickEffect,
     HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,

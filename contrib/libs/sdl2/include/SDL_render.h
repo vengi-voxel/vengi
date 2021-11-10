@@ -530,8 +530,7 @@ extern DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture * texture,
  * \param userdata the pointer to associate with the texture.
  * \returns 0 on success, or -1 if the texture is not valid.
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  *
  * \sa SDL_GetTextureUserData
  */
@@ -545,8 +544,7 @@ extern DECLSPEC int SDLCALL SDL_SetTextureUserData(SDL_Texture * texture,
  * \return the pointer associated with the texture, or NULL if the texture is
  *         not valid.
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  *
  * \sa SDL_SetTextureUserData
  */
@@ -978,6 +976,53 @@ extern DECLSPEC int SDLCALL SDL_RenderSetScale(SDL_Renderer * renderer,
  */
 extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
                                                float *scaleX, float *scaleY);
+
+/**
+ * Get logical coordinates of point in renderer when given real coordinates of
+ * point in window.
+ *
+ * Logical coordinates will differ from real coordinates when render is scaled
+ * and logical renderer size set
+ *
+ * \param renderer the renderer from which the logical coordinates should be
+ *                 calcualted
+ * \param windowX the real X coordinate in the window
+ * \param windowY the real Y coordinate in the window
+ * \param logicalX the pointer filled with the logical x coordinate
+ * \param logicalY the pointer filled with the logical y coordinate
+ *
+ * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_RenderGetScale
+ * \sa SDL_RenderSetScale
+ * \sa SDL_RenderGetLogicalSize
+ * \sa SDL_RenderSetLogicalSize
+ */
+extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer * renderer, 
+                                                            int windowX, int windowY, 
+                                                            float *logicalX, float *logicalY);
+                                                  
+                                                  /**
+ * Get real coordinates of point in window when given logical coordinates of point in renderer.
+ * Logical coordinates will differ from real coordinates when render is scaled and logical renderer size set
+ * 
+ * \param renderer the renderer from which the window coordinates should be calculated
+ * \param logicalX the logical x coordinate
+ * \param logicalY the logical y coordinate
+ * \param windowX the pointer filled with the real X coordinate in the window
+ * \param windowY the pointer filled with the real Y coordinate in the window
+ 
+ *  
+ * \since This function is available since SDL 2.0.18.
+ * 
+ * \sa SDL_RenderGetScale
+ * \sa SDL_RenderSetScale
+ * \sa SDL_RenderGetLogicalSize
+ * \sa SDL_RenderSetLogicalSize
+ */
+extern DECLSPEC void SDLCALL SDL_RenderLogicalToWindow(SDL_Renderer * renderer, 
+                                                            float logicalX, float logicalY,
+                                                            int *windowX, int *windowY);
 
 /**
  * Set the color used for drawing operations (Rect, Line and Clear).
@@ -1567,8 +1612,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
  * \param num_indices Number of indices.
  * \return 0 on success, or -1 if the operation is not supported
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  *
  * \sa SDL_Vertex
  */
@@ -1596,8 +1640,7 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  * \param size_indices Index size: 1 (byte), 2 (short), 4 (int)
  * \return 0 on success, or -1 if the operation is not supported
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -1806,9 +1849,14 @@ extern DECLSPEC void *SDLCALL SDL_RenderGetMetalLayer(SDL_Renderer * renderer);
  * This function returns `void *`, so SDL doesn't have to include Metal's
  * headers, but it can be safely cast to an `id<MTLRenderCommandEncoder>`.
  *
+ * Note that as of SDL 2.0.18, this will return NULL if Metal refuses to give
+ * SDL a drawable to render to, which might happen if the window is
+ * hidden/minimized/offscreen. This doesn't apply to command encoders for
+ * render targets, just the window's backbacker. Check your return values!
+ *
  * \param renderer The renderer to query
  * \returns an `id<MTLRenderCommandEncoder>` on success, or NULL if the
- *          renderer isn't a Metal renderer.
+ *          renderer isn't a Metal renderer or there was an error.
  *
  * \since This function is available since SDL 2.0.8.
  *
@@ -1823,8 +1871,7 @@ extern DECLSPEC void *SDLCALL SDL_RenderGetMetalCommandEncoder(SDL_Renderer * re
  * \param vsync 1 for on, 0 for off. All other values are reserved
  * \returns a 0 int on success, or non-zero on failure
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC int SDLCALL SDL_RenderSetVSync(SDL_Renderer* renderer, int vsync);
 

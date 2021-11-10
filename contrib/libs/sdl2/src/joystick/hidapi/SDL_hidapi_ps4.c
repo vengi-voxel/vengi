@@ -415,7 +415,7 @@ HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
     /* This is just a dummy packet that should have no effect, since we don't set the CRC */
     Uint8 data[78];
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     data[0] = k_EPS4ReportIdBluetoothEffects;
     data[1] = 0xC0;  /* Magic value HID + CRC */
@@ -598,10 +598,17 @@ HIDAPI_DriverPS4_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick 
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverPS4_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverPS4_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_TRUE;
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
+    Uint32 result = 0;
+
+    if (ctx->enhanced_mode && ctx->effects_supported) {
+        result |= SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int
@@ -632,7 +639,7 @@ HIDAPI_DriverPS4_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
         HIDAPI_DriverPS4_SetEnhancedMode(device, joystick);
     }
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     if (ctx->is_bluetooth) {
         data[0] = k_EPS4ReportIdBluetoothEffects;
@@ -926,6 +933,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
 {
     SDL_HINT_JOYSTICK_HIDAPI_PS4,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverPS4_IsSupportedDevice,
     HIDAPI_DriverPS4_GetDeviceName,
     HIDAPI_DriverPS4_InitDevice,
@@ -935,7 +943,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
     HIDAPI_DriverPS4_OpenJoystick,
     HIDAPI_DriverPS4_RumbleJoystick,
     HIDAPI_DriverPS4_RumbleJoystickTriggers,
-    HIDAPI_DriverPS4_HasJoystickLED,
+    HIDAPI_DriverPS4_GetJoystickCapabilities,
     HIDAPI_DriverPS4_SetJoystickLED,
     HIDAPI_DriverPS4_SendJoystickEffect,
     HIDAPI_DriverPS4_SetJoystickSensorsEnabled,

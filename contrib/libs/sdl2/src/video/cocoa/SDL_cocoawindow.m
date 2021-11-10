@@ -55,9 +55,21 @@
 #ifndef MAC_OS_X_VERSION_10_12
 #define NSEventModifierFlagCapsLock NSAlphaShiftKeyMask
 #endif
-#ifndef NSAppKitVersionNumber10_14
-#define NSAppKitVersionNumber10_14 1671
+#ifndef NSAppKitVersionNumber10_13_2
+#define NSAppKitVersionNumber10_13_2    1561.2
 #endif
+#ifndef NSAppKitVersionNumber10_14
+#define NSAppKitVersionNumber10_14      1671
+#endif
+
+@interface NSWindow (SDL)
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 101000 /* Added in the 10.10 SDK */
+@property (readonly) NSRect contentLayoutRect;
+#endif
+
+/* This is available as of 10.13.2, but isn't in public headers */
+@property (nonatomic) NSRect mouseConfinementRect;
+@end
 
 @interface SDLWindow : NSWindow <NSDraggingDestination>
 /* These are needed for borderless/fullscreen windows */
@@ -322,6 +334,119 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     return SDL_TRUE;
 }
 
+static SDL_bool
+ShouldAdjustCoordinatesForGrab(SDL_Window * window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if (!data || [data->listener isMovingOrFocusClickPending]) {
+        return SDL_FALSE;
+    }
+
+    if (!(window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+        return SDL_FALSE;
+    }
+
+    if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) || (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool
+AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
+{
+    if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
+        SDL_Rect window_rect;
+        SDL_Rect mouse_rect;
+
+        window_rect.x = 0;
+        window_rect.y = 0;
+        window_rect.w = window->w;
+        window_rect.h = window->h;
+
+        if (SDL_IntersectRect(&window->mouse_rect, &window_rect, &mouse_rect)) {
+            int left = window->x + mouse_rect.x;
+            int right = left + mouse_rect.w - 1;
+            int top = window->y + mouse_rect.y;
+            int bottom = top + mouse_rect.h - 1;
+            if (x < left || x > right || y < top || y > bottom) {
+                adjusted->x = SDL_clamp(x, left, right);
+                adjusted->y = SDL_clamp(y, top, bottom);
+                return SDL_TRUE;
+            }
+            return SDL_FALSE;
+        }
+    }
+
+    if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
+        int left = window->x;
+        int right = left + window->w - 1;
+        int top = window->y;
+        int bottom = top + window->h - 1;
+        if (x < left || x > right || y < top || y > bottom) {
+            adjusted->x = SDL_clamp(x, left, right);
+            adjusted->y = SDL_clamp(y, top, bottom);
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static void
+Cocoa_UpdateClipCursor(SDL_Window * window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_13_2) {
+        NSWindow *nswindow = data->nswindow;
+        SDL_Rect mouse_rect;
+
+        SDL_zero(mouse_rect);
+
+        if (ShouldAdjustCoordinatesForGrab(window)) {
+            SDL_Rect window_rect;
+
+            window_rect.x = 0;
+            window_rect.y = 0;
+            window_rect.w = window->w;
+            window_rect.h = window->h;
+
+            if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
+                SDL_IntersectRect(&window->mouse_rect, &window_rect, &mouse_rect);
+            }
+
+            if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0 &&
+                SDL_RectEmpty(&mouse_rect)) {
+                SDL_memcpy(&mouse_rect, &window_rect, sizeof(mouse_rect));
+            }
+        }
+
+        if (SDL_RectEmpty(&mouse_rect)) {
+            nswindow.mouseConfinementRect = NSZeroRect;
+        } else {
+            NSRect rect;
+            rect.origin.x = mouse_rect.x;
+            rect.origin.y = [nswindow contentLayoutRect].size.height - mouse_rect.y - mouse_rect.h;
+            rect.size.width = mouse_rect.w;
+            rect.size.height = mouse_rect.h;
+            nswindow.mouseConfinementRect = rect;
+        }
+    } else {
+        /* Move the cursor to the nearest point in the window */
+        if (ShouldAdjustCoordinatesForGrab(window)) {
+            int x, y;
+            CGPoint cgpoint;
+
+            SDL_GetGlobalMouseState(&x, &y);
+            if (AdjustCoordinatesForGrab(window, x, y, &cgpoint)) {
+                Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
+                CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
+            }
+        }
+    }
+}
+
 
 @implementation Cocoa_WindowListener
 
@@ -569,6 +694,8 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
             }
 
             mouse->SetRelativeMouseMode(SDL_TRUE);
+        } else {
+            Cocoa_UpdateClipCursor(_data->window);
         }
     }
 }
@@ -667,6 +794,10 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)windowDidMiniaturize:(NSNotification *)aNotification
 {
+    if (focusClickPending) {
+        focusClickPending = 0;
+        [self onMovingOrFocusClickPendingStateCleared];
+    }
     SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
 }
 
@@ -1156,27 +1287,15 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     x = (int)point.x;
     y = (int)(window->h - point.y);
 
-    if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
-        if (x < 0 || x >= window->w || y < 0 || y >= window->h) {
-            if (x < 0) {
-                x = 0;
-            } else if (x >= window->w) {
-                x = window->w - 1;
-            }
-            if (y < 0) {
-                y = 0;
-            } else if (y >= window->h) {
-                y = window->h - 1;
-            }
-
-            CGPoint cgpoint;
-            cgpoint.x = window->x + x;
-            cgpoint.y = window->y + y;
-
+    if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_13_2) {
+        /* Mouse grab is taken care of by the confinement rect */
+    } else {
+        CGPoint cgpoint;
+        if (ShouldAdjustCoordinatesForGrab(window) &&
+            AdjustCoordinatesForGrab(window, window->x + x, window->y + y, &cgpoint)) {
+            Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
             CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
             CGAssociateMouseAndMouseCursorPosition(YES);
-
-            Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
         }
     }
 
@@ -1207,7 +1326,18 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     /* probably a MacBook trackpad; make this look like a synthesized event.
        This is backwards from reality, but better matches user expectations. */
-    const BOOL istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+    BOOL istrackpad = NO;
+    @try {
+        istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+    }
+    @catch (NSException *e) {
+        /* if NSEvent type doesn't have subtype, such as NSEventTypeBeginGesture on
+         * macOS 10.5 to 10.10, then NSInternalInconsistencyException is thrown.
+         * This still prints a message to terminal so catching it's not an ideal solution.
+         *
+         * *** Assertion failure in -[NSEvent subtype]
+         */
+    }
 
     NSSet *touches = [theEvent touchesMatchingPhase:NSTouchPhaseAny inView:nil];
     const SDL_TouchID touchID = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[[touches anyObject] device];
@@ -1258,7 +1388,18 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
     /* probably a MacBook trackpad; make this look like a synthesized event.
        This is backwards from reality, but better matches user expectations. */
-    const BOOL istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+    BOOL istrackpad = NO;
+    @try {
+        istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+    }
+    @catch (NSException *e) {
+        /* if NSEvent type doesn't have subtype, such as NSEventTypeBeginGesture on
+         * macOS 10.5 to 10.10, then NSInternalInconsistencyException is thrown.
+         * This still prints a message to terminal so catching it's not an ideal solution.
+         *
+         * *** Assertion failure in -[NSEvent subtype]
+         */
+    }
 
     for (NSTouch *touch in touches) {
         const SDL_TouchID touchId = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[touch device];
@@ -2011,7 +2152,7 @@ Cocoa_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
     if (iccProfileData == nil) {
         SDL_SetError("Could not get ICC profile data.");
         return NULL;
-	}
+    }
 
     retIccProfileData = SDL_malloc([iccProfileData length]);
     if (!retIccProfileData) {
@@ -2049,26 +2190,19 @@ Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 }
 
 void
+Cocoa_SetWindowMouseRect(_THIS, SDL_Window * window)
+{
+    Cocoa_UpdateClipCursor(window);
+}
+
+void
 Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    /* Move the cursor to the nearest point in the window */
-    if (grabbed && data && ![data->listener isMovingOrFocusClickPending]) {
-        int x, y;
-        CGPoint cgpoint;
+    Cocoa_UpdateClipCursor(window);
 
-        SDL_GetMouseState(&x, &y);
-        cgpoint.x = window->x + x;
-        cgpoint.y = window->y + y;
-
-        Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
-
-        DLog("Returning cursor to (%g, %g)", cgpoint.x, cgpoint.y);
-        CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
-    }
-
-    if ( data && (window->flags & SDL_WINDOW_FULLSCREEN) ) {
+    if (data && (window->flags & SDL_WINDOW_FULLSCREEN)) {
         if (SDL_ShouldAllowTopmost() && (window->flags & SDL_WINDOW_INPUT_FOCUS)
             && ![data->listener isInFullscreenSpace]) {
             /* OpenGL is rendering to the window, so make it visible! */
