@@ -25,15 +25,7 @@ Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPt
 app::AppState Thumbnailer::onConstruct() {
 	app::AppState state = Super::onConstruct();
 
-	auto thumbnailSizeFunc = [&] (const command::CmdArgs& args) {
-		if (args.size() == 0) {
-			return;
-		}
-		_outputSize = core::string::toInt(args[0]);
-	};
-
-	command::Command::registerCommand("s", thumbnailSizeFunc).setHelp("Size of the thumbnail in pixels");
-	command::Command::registerCommand("size", thumbnailSizeFunc).setHelp("Size of the thumbnail in pixels");
+	registerArg("--size").setShort("-s").setDescription("Size of the thumbnail in pixels").setDefaultValue("128").setMandatory();
 
 	_renderer.construct();
 
@@ -93,6 +85,8 @@ bool Thumbnailer::renderVolume() {
 		Log::error("Failed to load given input file");
 		return false;
 	}
+
+	_outputSize = core::string::toInt(getArgVal("--size"));
 
 	const int volumesSize = (int)volumes.size();
 	for (int i = 0; i < volumesSize; ++i) {
