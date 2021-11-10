@@ -5,6 +5,7 @@
  */
 
 #include "GLRenderer.h"
+#include "core/Enum.h"
 #include "video/Renderer.h"
 #include "GLTypes.h"
 #include "GLState.h"
@@ -1962,6 +1963,10 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	} else {
 		Log::warn("Unknown profile: %i", profile);
 	}
+
+	// default state
+	// https://www.glprogramming.com/red/appendixb.html
+	_priv::s.states[core::enumVal(video::State::DepthMask)] = true;
 
 	if (multisampling) {
 		video::enable(video::State::MultiSample);
