@@ -4,3 +4,4 @@ set(SRCS
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS})
+set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER tools)
