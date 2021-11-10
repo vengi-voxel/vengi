@@ -118,6 +118,7 @@ int SoundManager::playMusic(const core::String& music, bool loop) {
 		return -1;
 	}
 	if (_musicPlaying == music) {
+		Log::debug("Already playing %s", music.c_str());
 		return -1;
 	}
 
@@ -302,9 +303,11 @@ void SoundManager::resume() {
 
 bool SoundManager::isActive() const {
 	if ((_state & SoundState::INITIALIZED) != SoundState::INITIALIZED) {
+		Log::warn("Sound manager not not initialized");
 		return false;
 	}
 	if ((_state & SoundState::PAUSE) == SoundState::PAUSE) {
+		Log::debug("Sound manager paused");
 		return false;
 	}
 	return true;
