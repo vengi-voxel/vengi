@@ -21,7 +21,17 @@ void Window::update(double deltaFrameSeconds) {
 	if (isFullscreen()) {
 		ImGui::Fullscreen(_title.c_str());
 	} else {
-		ImGui::Begin(_title.c_str());
+		ImGuiWindowFlags flags = 0;
+		if ((_flags & WindowFlag::NoTitle) == WindowFlag::NoTitle) {
+			flags |= ImGuiWindowFlags_NoTitleBar;
+		}
+		if ((_flags & WindowFlag::Modal) == WindowFlag::Modal) {
+			flags |= ImGuiWindowFlags_Modal;
+		}
+		if ((_flags & WindowFlag::Modal) == WindowFlag::FixedPosition) {
+			flags |= ImGuiWindowFlags_NoMove;
+		}
+		ImGui::Begin(_title.c_str(), nullptr, flags);
 	}
 	render(deltaFrameSeconds);
 	ImGui::End();

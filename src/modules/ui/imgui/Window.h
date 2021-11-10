@@ -10,7 +10,14 @@
 namespace ui {
 namespace imgui {
 
-enum class WindowFlag { None = 0, FullScreen = 1 << 0, Minimized = 1 << 1 };
+enum class WindowFlag {
+	None = 0,
+	FullScreen = 1 << 0,
+	Minimized = 1 << 1,
+	NoTitle = 1 << 2,
+	FixedPosition = 1 << 3,
+	Modal = 1 << 4
+};
 CORE_ENUM_BIT_OPERATIONS(WindowFlag)
 
 class Window {
