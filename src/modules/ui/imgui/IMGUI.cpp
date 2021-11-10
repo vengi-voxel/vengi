@@ -321,12 +321,13 @@ void URLItem(const char *title, const char *url) {
 	}
 }
 
-bool Fullscreen(const char *title) {
+bool Fullscreen(const char *title, ImGuiWindowFlags additionalFlags) {
 	ui::imgui::IMGUIApp* app = (ui::imgui::IMGUIApp*)video::WindowedApp::getInstance();
 	SetNextWindowSize(app->frameBufferDimension());
 	SetNextWindowPos(ImVec2(0.0f, 0.0f));
-	return Begin(title, nullptr, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking);
+	return Begin(title, nullptr,
+				 additionalFlags | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration |
+					 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
+					 ImGuiWindowFlags_NoDocking);
 }
-
-
 }

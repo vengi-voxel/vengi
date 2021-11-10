@@ -96,7 +96,7 @@ public:
 		return (_flags & flags) == flags;
 	}
 
-	virtual void update(double deltaFrameSeconds);
+	virtual void update(double deltaFrameSeconds, bool top);
 };
 
 } // namespace imgui

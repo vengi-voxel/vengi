@@ -30,7 +30,7 @@ IMGUI_API bool InputVarInt(const char* label, const char* varName, int step = 1,
 IMGUI_API bool CheckboxVar(const char* label, const core::VarPtr& var);
 IMGUI_API bool CheckboxVar(const char* label, const char* varName);
 IMGUI_API bool MenuItemCmd(const char *label, const char *command);
-IMGUI_API bool Fullscreen(const char *title = "##main");
+IMGUI_API bool Fullscreen(const char *title = "##main", ImGuiWindowFlags additionalFlags = ImGuiWindowFlags_None);
 
 template<class Collection>
 static bool ComboStl(const char* label, int* current_item, const Collection& items, int height_in_items = -1) {

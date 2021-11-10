@@ -88,11 +88,13 @@ void WindowStack::shutdown() {
 
 void WindowStack::update(double deltaFrameSeconds) {
 	const int n = (int)_stack.size();
+	bool topMost = true;
 	for (int i = n - 1; i >= 0; --i) {
 		if (_stack[i]->isMinimized()) {
 			continue;
 		}
-		_stack[i]->update(deltaFrameSeconds);
+		_stack[i]->update(deltaFrameSeconds, topMost);
+		topMost = false;
 		if (_stack[i]->isFullscreen()) {
 			break;
 		}
