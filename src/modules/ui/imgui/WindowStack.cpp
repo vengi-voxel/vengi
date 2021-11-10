@@ -9,6 +9,9 @@
 namespace ui {
 namespace imgui {
 
+WindowStack::WindowStack(const audio::SoundManagerPtr &soundMgr) : _soundMgr(soundMgr) {
+}
+
 void WindowStack::construct() {
 	command::Command::registerCommand("ui_pop", [this](const command::CmdArgs &args) { pop(); });
 	command::Command::registerCommand("ui_push", [this](const command::CmdArgs &args) {
@@ -47,7 +50,12 @@ bool WindowStack::push(const core::String &name) {
 		Log::warn("Could not find window %s", name.c_str());
 		return false;
 	}
-	_stack.push(i->value);
+	Window *w = i->value;
+	const core::String& music = w->backgroundMusic();
+	if (!music.empty()) {
+		_soundMgr->playMusic(music, true);
+	}
+	_stack.push(w);
 	return true;
 }
 

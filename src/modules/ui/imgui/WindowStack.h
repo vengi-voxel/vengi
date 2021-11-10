@@ -8,6 +8,8 @@
 #include "core/IComponent.h"
 #include "core/collection/Stack.h"
 #include "core/collection/StringMap.h"
+#include "audio/SoundManager.h"
+
 namespace ui {
 namespace imgui {
 
@@ -19,8 +21,10 @@ class WindowStack : public core::IComponent {
 private:
 	core::StringMap<Window *> _windows;
 	core::Stack<Window *, 128> _stack;
+	audio::SoundManagerPtr _soundMgr;
 
 public:
+	WindowStack(const audio::SoundManagerPtr &soundMgr);
 	bool init();
 	void shutdown();
 	void construct();

@@ -16,7 +16,8 @@ enum class WindowFlag {
 	Minimized = 1 << 1,
 	NoTitle = 1 << 2,
 	FixedPosition = 1 << 3,
-	Modal = 1 << 4
+	Modal = 1 << 4,
+	NoBackground = 1 << 5
 };
 CORE_ENUM_BIT_OPERATIONS(WindowFlag)
 
@@ -27,6 +28,7 @@ class Window {
 protected:
 	WindowFlag _flags = WindowFlag::None;
 	core::String _title;
+	core::String _music;
 
 	void close();
 	void open(const core::String &name);
@@ -37,6 +39,14 @@ public:
 	}
 
 	virtual ~Window() {
+	}
+
+	const core::String &backgroundMusic() const {
+		return _music;
+	}
+
+	void setBackgroundMusic(const core::String &music) {
+		_music = music;
 	}
 
 	inline void toggleFullscreen() {

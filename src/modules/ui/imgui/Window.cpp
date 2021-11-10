@@ -28,8 +28,11 @@ void Window::update(double deltaFrameSeconds) {
 		if ((_flags & WindowFlag::Modal) == WindowFlag::Modal) {
 			flags |= ImGuiWindowFlags_Modal;
 		}
-		if ((_flags & WindowFlag::Modal) == WindowFlag::FixedPosition) {
+		if ((_flags & WindowFlag::FixedPosition) == WindowFlag::FixedPosition) {
 			flags |= ImGuiWindowFlags_NoMove;
+		}
+		if ((_flags & WindowFlag::NoBackground) == WindowFlag::NoBackground) {
+			flags |= ImGuiWindowFlags_NoBackground;
 		}
 		ImGui::Begin(_title.c_str(), nullptr, flags);
 	}
