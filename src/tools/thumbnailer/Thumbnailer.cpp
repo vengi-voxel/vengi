@@ -159,7 +159,7 @@ bool Thumbnailer::saveEmbeddedScreenshot() {
 
 	bool success = true;
 	const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::SysWrite);
-	if (!image::Image::writePng(outfile->name().c_str(), image->data(), image->width(), image->height(), 4)) {
+	if (!image::Image::writePng(outfile->name().c_str(), image->data(), image->width(), image->height(), image->depth())) {
 		Log::error("Failed to write image %s", outfile->name().c_str());
 		success = false;
 	} else {
