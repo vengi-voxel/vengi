@@ -180,6 +180,15 @@ bool VXRFormat::importChild(const core::String& vxrPath, io::FileStream& stream,
 	return true;
 }
 
+image::ImagePtr VXRFormat::loadScreenshot(const io::FilePtr& file) {
+	const core::String imageName = file->name() + ".png";
+	const io::FilePtr& imageFile = io::filesystem()->open(imageName);
+	if (!imageFile) {
+		return image::ImagePtr();
+	}
+	return image::loadImage(imageFile, false);
+}
+
 bool VXRFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load vmr file: File doesn't exist");

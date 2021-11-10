@@ -18,6 +18,7 @@ private:
 	bool importChild(const core::String& vxrPath, io::FileStream& stream, VoxelVolumes& volumes, uint32_t version);
 	bool importChildOld(io::FileStream& stream, uint32_t version);
 public:
+	image::ImagePtr loadScreenshot(const io::FilePtr& file) override;
 	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
