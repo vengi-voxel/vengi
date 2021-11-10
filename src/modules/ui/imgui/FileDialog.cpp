@@ -288,7 +288,7 @@ bool FileDialog::filesPanel() {
 			continue;
 		}
 		const bool selected = i == _fileSelectIndex;
-		if (ImGui::Selectable(_files[i]->name.c_str(), selected, ImGuiSelectableFlags_None, size)) {
+		if (ImGui::Selectable(_files[i]->name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 				doubleClicked = true;
 			}
