@@ -6,6 +6,12 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 General:
 
+   - Support loading just the thumbnails from voxel formats
+
+Thumbnailer:
+
+   - Added qbcl thumbnail support
+
 ## 0.0.13 (2021-10-29)
 
 General:
