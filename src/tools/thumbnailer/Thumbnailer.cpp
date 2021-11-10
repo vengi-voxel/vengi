@@ -154,14 +154,24 @@ bool Thumbnailer::renderVolume() {
 	return success;
 }
 
+bool Thumbnailer::saveEmbeddedScreenshot() {
+	if (!voxelformat::loadVolumeScreenshot(_infile)) {
+		Log::error("Failed to load screenshot from input file");
+		return false;
+	}
+	return true;
+}
+
 app::AppState Thumbnailer::onRunning() {
 	app::AppState state = Super::onRunning();
 	if (state != app::AppState::Running) {
 		return state;
 	}
 
-	if (!renderVolume()) {
-		_exitCode = 1;
+	if (!saveEmbeddedScreenshot()) {
+		if (!renderVolume()) {
+			_exitCode = 1;
+		}
 	}
 
 	requestQuit();

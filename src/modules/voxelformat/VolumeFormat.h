@@ -7,6 +7,7 @@
 #include "io/File.h"
 #include "io/FormatDescription.h"
 #include "VoxelVolumes.h"
+#include "video/Texture.h"
 
 namespace voxelformat {
 
@@ -14,6 +15,7 @@ extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[];
 extern const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[];
 extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[];
 
+extern image::ImagePtr loadVolumeScreenshot(const io::FilePtr& filePtr);
 extern bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes);
 extern bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes);
 extern bool saveMeshFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes);

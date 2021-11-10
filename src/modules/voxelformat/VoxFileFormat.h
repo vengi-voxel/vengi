@@ -8,6 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
 #include "io/File.h"
+#include "image/Image.h"
 #include "VoxelVolumes.h"
 #include <glm/fwd.hpp>
 
@@ -33,6 +34,8 @@ protected:
 	RawVolume* merge(const VoxelVolumes& volumes) const;
 public:
 	virtual ~VoxFileFormat() = default;
+
+	virtual image::ImagePtr loadScreenshot(const io::FilePtr& /*file*/) { return image::ImagePtr(); }
 
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes

@@ -7,6 +7,8 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
+#include "io/FormatDescription.h"
+#include "video/Texture.h"
 #include "voxelformat/PLYFormat.h"
 #include "voxelformat/VoxFormat.h"
 #include "voxelformat/QBTFormat.h"
@@ -28,39 +30,46 @@ namespace voxelformat {
 
 // this is the list of supported voxel volume formats that are have importers implemented
 const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
-	{"MagicaVoxel", "vox"},
-	{"Qubicle Binary Tree", "qbt"},
-	{"Qubicle Binary", "qb"},
-	//{"Qubicle", "qbcl"},
-	{"Sandbox VoxEdit", "vxm"},
-	{"Sandbox VoxEdit", "vxr"},
-	{"BinVox", "binvox"},
-	{"CubeWorld", "cub"},
-	{"Build engine", "kvx"},
-	{"Ace of Spades", "kv6"},
-	{"Tiberian Sun", "vxl"},
-	{"Qubicle Exchange", "qef"},
-	{"Chronovox", "csm"},
-	{"Nicks Voxel Model", "nvm"},
-	{nullptr, nullptr}
+	{"MagicaVoxel", "vox", [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, 0u},
+	{"Qubicle Binary Tree", "qbt", [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, 0u},
+	{"Qubicle Binary", "qb", nullptr, 0u},
+	{"Qubicle", "qbcl", [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+	{"Sandbox VoxEdit", "vxm", [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
+			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
+			|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
+			|| magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4');}, 0u},
+	{"Sandbox VoxEdit", "vxr", [] (uint32_t magic) {return magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
+			|| magic == FourCC('V','X','R','5') || magic == FourCC('V','X','R','4')
+			|| magic == FourCC('V','X','R','3') || magic == FourCC('V','X','R','2')
+			|| magic == FourCC('V','X','R','1');}, 0u},
+	{"BinVox", "binvox", [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
+	{"CubeWorld", "cub", nullptr, 0u},
+	{"Build engine", "kvx", nullptr, 0u},
+	{"Ace of Spades", "kv6", [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, 0u},
+	{"Tiberian Sun", "vxl", [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, 0u},
+	{"AceOfSpades", "vxl", nullptr, 0u},
+	{"Qubicle Exchange", "qef", [] (uint32_t magic) {return magic == FourCC('Q','u','b','i');}, 0u},
+	{"Chronovox", "csm", [] (uint32_t magic) {return magic == FourCC('.','C','S','M');}, 0u},
+	{"Nicks Voxel Model", "nvm", [] (uint32_t magic) {return magic == FourCC('.','N','V','M');}, 0u},
+	{nullptr, nullptr, nullptr, 0u}
 };
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 // this is the list of supported voxel or mesh formats that have exporters implemented
 const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
-	{"MagicaVoxel", "vox"},
-	{"Qubicle Binary Tree", "qbt"},
-	{"Qubicle Binary", "qb"},
-	//{"Qubicle", "qbcl"},
-	{"Sandbox VoxEdit", "vxm"},
-	{"BinVox", "binvox"},
-	{"CubeWorld", "cub"},
-	{"Build engine", "kvx"},
-	{"Tiberian Sun", "vxl"},
-	{"Qubicle Exchange", "qef"},
-	{"WaveFront OBJ", "obj"},
-	{"Polygon File Format", "ply"},
-	{nullptr, nullptr}
+	{"MagicaVoxel", "vox", nullptr, 0u},
+	{"Qubicle Binary Tree", "qbt", nullptr, 0u},
+	{"Qubicle Binary", "qb", nullptr, 0u},
+	//{"Qubicle", "qbcl", nullptr, 0u},
+	{"Sandbox VoxEdit", "vxm", nullptr, 0u},
+	{"BinVox", "binvox", nullptr, 0u},
+	{"CubeWorld", "cub", nullptr, 0u},
+	{"Build engine", "kvx", nullptr, 0u},
+	{"Tiberian Sun", "vxl", nullptr, 0u},
+	{"Qubicle Exchange", "qef", nullptr, 0u},
+	{"WaveFront OBJ", "obj", nullptr, 0u},
+	{"Polygon File Format", "ply", nullptr, 0u},
+	{nullptr, nullptr, nullptr, 0u}
 };
 
 static uint32_t loadMagic(const io::FilePtr& file) {
@@ -68,6 +77,56 @@ static uint32_t loadMagic(const io::FilePtr& file) {
 	uint32_t magicWord = 0u;
 	stream.readInt(magicWord);
 	return magicWord;
+}
+
+static const io::FormatDescription *getDescription(const core::String &ext, uint32_t magic) {
+	for (const io::FormatDescription *desc = SUPPORTED_VOXEL_FORMATS_LOAD; desc->ext != nullptr; ++desc) {
+		if (ext != desc->ext) {
+			continue;
+		}
+		if (desc->isA && !desc->isA(magic)) {
+			continue;
+		}
+		return desc;
+	}
+	// search again - but this time only the magic bytes...
+	for (const io::FormatDescription *desc = SUPPORTED_VOXEL_FORMATS_LOAD; desc->ext != nullptr; ++desc) {
+		if (!desc->isA) {
+			continue;
+		}
+		if (!desc->isA(magic)) {
+			continue;
+		}
+		return desc;
+	}
+	Log::warn("Could not find a supported format description for %s", ext.c_str());
+	return nullptr;
+}
+
+image::ImagePtr loadVolumeScreenshot(const io::FilePtr& filePtr) {
+	if (!filePtr->exists()) {
+		Log::error("Failed to load screenshot from model file %s. Doesn't exist.", filePtr->name().c_str());
+		return image::ImagePtr();
+	}
+	const uint32_t magic = loadMagic(filePtr);
+	core_trace_scoped(LoadVolumeScreenshot);
+	const core::String& fileext = filePtr->extension();
+	const io::FormatDescription *desc = getDescription(fileext, magic);
+	if (!(desc->flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED)) {
+		Log::warn("Format %s doesn't have a screenshot embedded", desc->name);
+		return image::ImagePtr();
+	}
+	const core::String &ext = desc->ext;
+	/*if (ext == "vxm") {
+		voxel::VXMFormat f;
+		return f.loadScreenshot(filePtr);
+	} else*/ if (ext == "qbcl") {
+		voxel::QBCLFormat f;
+		return f.loadScreenshot(filePtr);
+	}
+	Log::error("Failed to load model screenshot from file %s - unsupported file format for extension '%s'",
+			filePtr->name().c_str(), ext.c_str());
+	return image::ImagePtr();
 }
 
 bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) {
@@ -79,7 +138,13 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 	const uint32_t magic = loadMagic(filePtr);
 
 	core_trace_scoped(LoadVolumeFormat);
-	const core::String& ext = filePtr->extension();
+	const core::String& fileext = filePtr->extension();
+	const io::FormatDescription *desc = getDescription(fileext, magic);
+	if (!(desc->flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED)) {
+		Log::warn("Format %s doesn't have screenshot embedded", desc->name);
+		return false;
+	}
+	const core::String ext = desc->ext;
 	if (ext == "qb") {
 		voxel::QBFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
@@ -100,7 +165,7 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "kv6" || magic == FourCC('K','v','x','l')) {
+	} else if (ext == "kv6") {
 		voxel::KV6Format f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
@@ -110,24 +175,17 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "vxm" || magic == FourCC('V','X','M','A')
-			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
-			|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
-			|| magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4')) {
+	} else if (ext == "vxm") {
 		voxel::VXMFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "vxr"
-			|| magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
-			|| magic == FourCC('V','X','R','5') || magic == FourCC('V','X','R','4')
-			|| magic == FourCC('V','X','R','3') || magic == FourCC('V','X','R','2')
-			|| magic == FourCC('V','X','R','1')) {
+	} else if (ext == "vxr") {
 		voxel::VXRFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "vxl" && magic == FourCC('V','o','x','e')) {
+	} else if (ext == "vxl" && !strcmp(desc->name, "Tiberian Sun")) {
 		voxel::VXLFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
@@ -137,23 +195,22 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "csm" || magic == FourCC('.','C','S','M')
-			|| ext == "nvm" || magic == FourCC('.','N','V','M')) {
+	} else if (ext == "csm" || ext == "nvm") {
 		voxel::CSMFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "binvox" || magic == FourCC('#','b','i','n')) {
+	} else if (ext == "binvox") {
 		voxel::BinVoxFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "qef" || magic == FourCC('Q','u','b','i')) {
+	} else if (ext == "qef") {
 		voxel::QEFFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
-	} else if (ext == "qbcl" || magic == FourCC('Q','B','C','L')) {
+	} else if (ext == "qbcl") {
 		voxel::QBCLFormat f;
 		if (!f.loadGroups(filePtr, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);

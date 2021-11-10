@@ -10,6 +10,7 @@
 #include "core/Color.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "image/Image.h"
 
 namespace voxel {
 
@@ -17,6 +18,12 @@ namespace voxel {
 	if ((read) != 0) { \
 		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
 		return false; \
+	}
+
+#define wrapImg(read) \
+	if ((read) != 0) { \
+		Log::error("Could not load qbcl screenshot file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		return image::ImagePtr(); \
 	}
 
 #define wrapBool(read) \
@@ -93,7 +100,7 @@ bool QBCLFormat::readCompound(io::FileStream &stream) {
 
 bool QBCLFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load qb file: File doesn't exist");
+		Log::error("Could not load qbcl file: File doesn't exist");
 		return false;
 	}
 	io::FileStream stream(file.get());
@@ -162,7 +169,40 @@ bool QBCLFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	return false;
 }
 
+image::ImagePtr QBCLFormat::loadScreenshot(const io::FilePtr& file) {
+	if (!(bool)file || !file->exists()) {
+		Log::error("Could not load qbcl file: File doesn't exist");
+		return image::ImagePtr();
+	}
+	io::FileStream stream(file.get());
+	uint32_t magic;
+	wrapImg(stream.readInt(magic))
+	if (magic != FourCC('Q', 'B', 'C', 'L')) {
+		Log::error("Invalid magic found - no qbcl file");
+		return image::ImagePtr();
+	}
+	wrapImg(stream.readInt(_version))
+	uint32_t flags;
+	wrapImg(stream.readInt(flags))
+	uint32_t thumbWidth;
+	wrapImg(stream.readInt(thumbWidth))
+	uint32_t thumbHeight;
+	wrapImg(stream.readInt(thumbHeight))
+	image::ImagePtr img = image::createEmptyImage(file->name());
+	const uint32_t thumbnailSize = thumbWidth * thumbHeight * 4;
+
+	uint8_t* buf = new uint8_t[thumbnailSize];
+	stream.readBuf(buf, thumbnailSize);
+	if (!img->load(buf, (int)thumbnailSize)) {
+		delete [] buf;
+		return image::ImagePtr();
+	}
+	delete [] buf;
+	return img;
 }
 
+}
+
+#undef wrapImg
 #undef wrap
 #undef wrapBool
