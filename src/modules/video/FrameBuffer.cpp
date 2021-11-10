@@ -124,7 +124,7 @@ void FrameBuffer::shutdown() {
 TexturePtr FrameBuffer::texture(FrameBufferAttachment attachment) const {
 	auto tex = _colorAttachments[core::enumVal(attachment)];
 	if (!tex) {
-		core_assert_msg(false, "Could not find framebuffer texture for %i", (int)attachment);
+		Log::warn("Could not find framebuffer texture for %i", (int)attachment);
 	}
 	return tex;
 }
