@@ -75,6 +75,7 @@ protected:
 
 	core::String _organisation;
 	core::String _appname;
+	core::String _additionalUsage; //!< allow to specify options or filenames for the usage() screen per app */
 
 	AppState _curState = AppState::Construct;
 	AppState _nextState = AppState::InvalidAppState;
@@ -138,7 +139,7 @@ protected:
 	virtual void traceEnd(const char *threadName) override;
 	virtual void traceEndFrame(const char *threadName) override;
 
-	void usage() const;
+	virtual void usage() const;
 
 public:
 	App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);

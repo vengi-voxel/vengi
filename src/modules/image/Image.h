@@ -27,6 +27,10 @@ public:
 
 	bool load(const io::FilePtr& file);
 	bool load(const uint8_t* buffer, int length);
+	/**
+	 * Loads a raw RGBA buffer
+	 */
+	bool loadRGBA(const uint8_t* buffer, int length, int width, int height);
 
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);

@@ -33,7 +33,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"MagicaVoxel", "vox", [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, 0u},
 	{"Qubicle Binary Tree", "qbt", [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, 0u},
 	{"Qubicle Binary", "qb", nullptr, 0u},
-	{"Qubicle", "qbcl", [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+	{"Qubicle Project", "qbcl", [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 	{"Sandbox VoxEdit", "vxm", [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
 			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
 			|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
@@ -60,7 +60,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"MagicaVoxel", "vox", nullptr, 0u},
 	{"Qubicle Binary Tree", "qbt", nullptr, 0u},
 	{"Qubicle Binary", "qb", nullptr, 0u},
-	//{"Qubicle", "qbcl", nullptr, 0u},
+	//{"Qubicle Project", "qbcl", nullptr, 0u},
 	{"Sandbox VoxEdit", "vxm", nullptr, 0u},
 	{"BinVox", "binvox", nullptr, 0u},
 	{"CubeWorld", "cub", nullptr, 0u},
@@ -112,6 +112,10 @@ image::ImagePtr loadVolumeScreenshot(const io::FilePtr& filePtr) {
 	core_trace_scoped(LoadVolumeScreenshot);
 	const core::String& fileext = filePtr->extension();
 	const io::FormatDescription *desc = getDescription(fileext, magic);
+	if (desc == nullptr) {
+		Log::warn("Format %s isn't supported", fileext.c_str());
+		return image::ImagePtr();
+	}
 	if (!(desc->flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED)) {
 		Log::warn("Format %s doesn't have a screenshot embedded", desc->name);
 		return image::ImagePtr();
@@ -140,6 +144,10 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 	core_trace_scoped(LoadVolumeFormat);
 	const core::String& fileext = filePtr->extension();
 	const io::FormatDescription *desc = getDescription(fileext, magic);
+	if (desc == nullptr) {
+		Log::warn("Format %s isn't supported", fileext.c_str());
+		return false;
+	}
 	if (!(desc->flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED)) {
 		Log::warn("Format %s doesn't have screenshot embedded", desc->name);
 		return false;

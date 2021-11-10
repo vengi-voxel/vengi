@@ -20,6 +20,7 @@ Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPt
 	init(ORGANISATION, "thumbnailer");
 	_showWindow = false;
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
+	_additionalUsage = "<infile> <outfile>";
 }
 
 app::AppState Thumbnailer::onConstruct() {
@@ -55,6 +56,7 @@ app::AppState Thumbnailer::onInit() {
 	_infile = filesystem()->open(infile, io::FileMode::SysRead);
 	if (!_infile->exists()) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
+		usage();
 		return app::AppState::InitFailure;
 	}
 
@@ -149,11 +151,22 @@ bool Thumbnailer::renderVolume() {
 }
 
 bool Thumbnailer::saveEmbeddedScreenshot() {
-	if (!voxelformat::loadVolumeScreenshot(_infile)) {
+	const image::ImagePtr &image = voxelformat::loadVolumeScreenshot(_infile);
+	if (!image) {
 		Log::error("Failed to load screenshot from input file");
 		return false;
 	}
-	return true;
+
+	bool success = true;
+	const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::SysWrite);
+	if (!image::Image::writePng(outfile->name().c_str(), image->data(), image->width(), image->height(), 4)) {
+		Log::error("Failed to write image %s", outfile->name().c_str());
+		success = false;
+	} else {
+		Log::info("Created thumbnail at %s", outfile->name().c_str());
+	}
+
+	return success;
 }
 
 app::AppState Thumbnailer::onRunning() {

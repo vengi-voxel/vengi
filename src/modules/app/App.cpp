@@ -436,7 +436,7 @@ void App::usage() const {
 	logLevel->setVal((int)Log::Level::Info);
 	Log::init();
 	Log::info("Version " PROJECT_VERSION);
-	Log::info("Usage: %s [--help] [--version] [-set configvar value] [-commandname]", _appname.c_str());
+	Log::info("Usage: %s [--help] [--version] [-set configvar value] [-commandname] %s", _appname.c_str(), _additionalUsage.c_str());
 	Log::info("------------");
 
 	int maxWidthLong = 0;

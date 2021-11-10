@@ -96,6 +96,26 @@ bool Image::load(const uint8_t* buffer, int length) {
 	return true;
 }
 
+bool Image::loadRGBA(const uint8_t* buffer, int length, int width, int height) {
+	if (!buffer || length <= 0) {
+		_state = io::IOSTATE_FAILED;
+		Log::debug("Failed to load image %s: buffer empty", _name.c_str());
+		return false;
+	}
+	if (_data) {
+		stbi_image_free(_data);
+	}
+	_data = (uint8_t*)STBI_MALLOC(length);
+	_width = width;
+	_height = height;
+	core_memcpy(_data, buffer, length);
+	// we are always using rgba
+	_depth = 4;
+	Log::debug("Loaded image %s", _name.c_str());
+	_state = io::IOSTATE_LOADED;
+	return true;
+}
+
 void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 	uint32_t *srcPtr = reinterpret_cast<uint32_t *>(pixels);
 	uint32_t *dstPtr = srcPtr + (((intptr_t)h - (intptr_t)1) * (intptr_t)w);
