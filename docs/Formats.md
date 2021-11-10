@@ -3,7 +3,7 @@
 It can load a lot of different formats:
 
 * MagicaVoxel vox
-* Qubicle qef, qbt and qb
+* Qubicle qef, qbt and qb (qbcl thumbnails)
 * VoxEdit vxm, vxr
 * binvox
 * CubeWorld cub
