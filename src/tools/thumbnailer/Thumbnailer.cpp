@@ -71,21 +71,9 @@ app::AppState Thumbnailer::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	voxel::VoxelVolumes volumes;
-	if (!voxelformat::loadVolumeFormat(_infile, volumes)) {
-		Log::error("Failed to load given input file");
-		return app::AppState::InitFailure;
-	}
-
 	if (!_renderer.init()) {
 		Log::error("Failed to initialize the renderer");
 		return app::AppState::InitFailure;
-	}
-
-	const int volumesSize = (int)volumes.size();
-	for (int i = 0; i < volumesSize; ++i) {
-		_renderer.setVolume(i, volumes[i].volume);
-		_renderer.extractRegion(i, volumes[i].volume->region());
 	}
 
 	video::clearColor(::core::Color::Black);
@@ -99,10 +87,17 @@ app::AppState Thumbnailer::onInit() {
 	return state;
 }
 
-app::AppState Thumbnailer::onRunning() {
-	app::AppState state = Super::onRunning();
-	if (state != app::AppState::Running) {
-		return state;
+bool Thumbnailer::renderVolume() {
+	voxel::VoxelVolumes volumes;
+	if (!voxelformat::loadVolumeFormat(_infile, volumes)) {
+		Log::error("Failed to load given input file");
+		return false;
+	}
+
+	const int volumesSize = (int)volumes.size();
+	for (int i = 0; i < volumesSize; ++i) {
+		_renderer.setVolume(i, volumes[i].volume);
+		_renderer.extractRegion(i, volumes[i].volume->region());
 	}
 
 	video::Camera camera;
@@ -137,6 +132,7 @@ app::AppState Thumbnailer::onRunning() {
 	_renderer.render(camera);
 	_frameBuffer.unbind();
 
+	bool success = true;
 	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	uint8_t *pixels = nullptr;
 	if (video::readTexture(video::TextureUnit::Upload,
@@ -146,13 +142,28 @@ app::AppState Thumbnailer::onRunning() {
 		const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::SysWrite);
 		if (!image::Image::writePng(outfile->name().c_str(), pixels, fboTexture->width(), fboTexture->height(), 4)) {
 			Log::error("Failed to write image %s", outfile->name().c_str());
+			success = false;
 		} else {
 			Log::info("Created thumbnail at %s", outfile->name().c_str());
 		}
 	} else {
 		Log::error("Failed to read framebuffer");
+		success = false;
 	}
 	SDL_free(pixels);
+	return success;
+}
+
+app::AppState Thumbnailer::onRunning() {
+	app::AppState state = Super::onRunning();
+	if (state != app::AppState::Running) {
+		return state;
+	}
+
+	if (!renderVolume()) {
+		_exitCode = 1;
+	}
+
 	requestQuit();
 	return state;
 }

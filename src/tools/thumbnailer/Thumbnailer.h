@@ -27,6 +27,7 @@ private:
 
 	voxelrender::RawVolumeRenderer _renderer;
 
+	bool renderVolume();
 public:
 	Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
