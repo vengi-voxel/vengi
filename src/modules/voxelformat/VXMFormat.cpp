@@ -143,7 +143,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	} else if (magic[3] >= 'A' && magic[3] <= 'C') {
 		version = 10 + magic[3] - 'A';
 	} else {
-		Log::error("Invalid version found");
+		Log::error("Unsupported version found");
 		return false;
 	}
 
