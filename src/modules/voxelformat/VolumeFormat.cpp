@@ -149,10 +149,6 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		Log::warn("Format %s isn't supported", fileext.c_str());
 		return false;
 	}
-	if (!(desc->flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED)) {
-		Log::warn("Format %s doesn't have screenshot embedded", desc->name);
-		return false;
-	}
 	const core::String ext = desc->ext;
 	if (ext == "qb") {
 		voxel::QBFormat f;
