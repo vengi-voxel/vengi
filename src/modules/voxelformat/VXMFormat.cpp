@@ -3,12 +3,15 @@
  */
 
 #include "VXMFormat.h"
+#include "app/App.h"
+#include "io/Filesystem.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "image/Image.h"
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -47,6 +50,15 @@ bool VXMFormat::writeRLE(io::FileStream &stream, int length, voxel::Voxel &voxel
 		wrapBool(stream.addByte(voxel.getColor()))
 	}
 	return true;
+}
+
+image::ImagePtr VXMFormat::loadScreenshot(const io::FilePtr& file) {
+	const core::String imageName = file->name() + ".png";
+	const io::FilePtr& imageFile = io::filesystem()->open(imageName);
+	if (!imageFile) {
+		return image::ImagePtr();
+	}
+	return image::loadImage(imageFile, false);
 }
 
 bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
