@@ -117,7 +117,7 @@ bool QBCLFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	wrap(stream.readInt(thumbWidth))
 	uint32_t thumbHeight;
 	wrap(stream.readInt(thumbHeight))
-	wrapBool(stream.skip(thumbWidth * thumbHeight * 4))
+	wrapBool(stream.skip((int64_t)(thumbWidth * thumbHeight * 4)))
 
 #if 0
 	core::String title;
@@ -197,7 +197,7 @@ image::ImagePtr QBCLFormat::loadScreenshot(const io::FilePtr& file) {
 		delete [] buf;
 		return image::ImagePtr();
 	}
-	if (!img->loadRGBA(buf, (int)thumbnailSize, thumbWidth, thumbHeight)) {
+	if (!img->loadRGBA(buf, (int)thumbnailSize, (int)thumbWidth, (int)thumbHeight)) {
 		Log::error("Failed to load rgba image buffer of width %u and height %u", thumbWidth, thumbHeight);
 		delete [] buf;
 		return image::ImagePtr();
