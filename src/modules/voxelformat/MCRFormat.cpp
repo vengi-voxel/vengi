@@ -68,7 +68,7 @@ bool MCRFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 	case 'r':
 	case 'a': {
 		const int64_t fileSize = stream.remaining();
-		if (fileSize <= 2 * SECTOR_BYTES) {
+		if (fileSize <= 2l * SECTOR_BYTES) {
 			Log::error("This region file has not enough data for the 8kb header");
 			return false;
 		}
@@ -107,16 +107,16 @@ bool MCRFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 
 bool MCRFormat::loadMinecraftRegion(VoxelVolumes &volumes, const uint8_t *buffer, int length, io::FileStream &stream, int chunkX, int chunkZ) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
-		if (_offsets[i].sectorCount == 0 || _offsets[i].offset == 0) {
+		if (_offsets[i].sectorCount == 0u || _offsets[i].offset == 0u) {
 			continue;
 		}
 		if (_offsets[i].offset >= (uint32_t)length) {
-			Log::error("Exceeded stream boundaries: %u, %i", _offsets[i].offset, length);
+			Log::error("Exceeded stream boundaries: %u, %i", (int)_offsets[i].offset, length);
 			return false;
 		}
 		wrap(stream.seek(_offsets[i].offset));
 		if (!readCompressedNBT(volumes, buffer, length, stream)) {
-			Log::error("Failed to load minecraft chunk section %i for offset %u", i, _offsets[i].offset);
+			Log::error("Failed to load minecraft chunk section %i for offset %u", i, (int)_offsets[i].offset);
 			return false;
 		}
 	}
@@ -155,7 +155,7 @@ bool MCRFormat::readCompressedNBT(VoxelVolumes &volumes, const uint8_t *buffer, 
 		return false;
 	}
 
-	const bool success = parseNBTChunk(volumes, nbtData, finalBufSize);
+	const bool success = parseNBTChunk(volumes, nbtData, (int)finalBufSize);
 	delete[] nbtData;
 	return success;
 }
@@ -519,7 +519,7 @@ bool MCRFormat::parseNBTChunk(VoxelVolumes &volumes, const uint8_t *buffer, int 
 										for (uint16_t i = 0u; i < nameLength; ++i) {
 											uint8_t chr;
 											wrap(stream.readByte(chr));
-											name += chr;
+											name += (char)chr;
 										}
 										Log::debug("Palette name: %s", name.c_str());
 										idMapping[paletteNum] = 0;
@@ -686,7 +686,7 @@ bool MCRFormat::getNext(core::MemoryStreamReadOnly &stream, MCRFormat::NamedBina
 	for (uint16_t i = 0u; i < nameLength; ++i) {
 		uint8_t chr;
 		wrap(stream.readByte(chr));
-		nbt.name += chr;
+		nbt.name += (char)chr;
 	}
 	Log::debug("Found tag %s at level %i", nbt.name.c_str(), nbt.level);
 	if (nbt.id == TagId::COMPOUND) {
