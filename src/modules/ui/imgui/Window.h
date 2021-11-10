@@ -17,7 +17,10 @@ enum class WindowFlag {
 	NoTitle = 1 << 2,
 	FixedPosition = 1 << 3,
 	Modal = 1 << 4,
-	NoBackground = 1 << 5
+	NoBackground = 1 << 5,
+	Centered = 1 << 6,
+	FixedSize = 1 << 7,
+	NoCollapse = 1 << 8
 };
 CORE_ENUM_BIT_OPERATIONS(WindowFlag)
 
@@ -49,7 +52,31 @@ public:
 		_music = music;
 	}
 
-	inline void toggleFullscreen() {
+	inline void addFlags(WindowFlag flags) {
+		_flags |= flags;
+	}
+
+	inline void setFlags(WindowFlag flags) {
+		_flags = flags;
+	}
+
+	inline void setCentered() {
+		_flags |= WindowFlag::Centered;
+	}
+
+	inline void setNoCollapse() {
+		_flags |= WindowFlag::NoCollapse;
+	}
+
+	inline void setFixedPosition() {
+		_flags |= WindowFlag::FixedPosition;
+	}
+
+	inline void setFixedSize() {
+		_flags |= WindowFlag::FixedSize;
+	}
+
+	inline void setFullscreen() {
 		_flags |= WindowFlag::FullScreen;
 	}
 
@@ -57,7 +84,7 @@ public:
 		return checkFlags(WindowFlag::FullScreen);
 	}
 
-	inline void toggleMinimize() {
+	inline void setMinimize() {
 		_flags |= WindowFlag::Minimized;
 	}
 

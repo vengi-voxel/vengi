@@ -485,9 +485,13 @@ app::AppState IMGUIApp::onInit() {
 	ImGui::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO();
-	const core::String iniFile = _appname + "-imgui.ini";
-	_writePathIni = _filesystem->writePath(iniFile.c_str());
-	io.IniFilename = _writePathIni.c_str();
+	if (_persistUISettings) {
+		const core::String iniFile = _appname + "-imgui.ini";
+		_writePathIni = _filesystem->writePath(iniFile.c_str());
+		io.IniFilename = _writePathIni.c_str();
+	} else {
+		io.IniFilename = nullptr;
+	}
 	const core::String logFile = _appname + "-imgui.log";
 	_writePathLog = _filesystem->writePath(logFile.c_str());
 	io.LogFilename = _writePathLog.c_str();

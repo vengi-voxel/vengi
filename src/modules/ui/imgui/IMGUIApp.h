@@ -45,6 +45,7 @@ protected:
 
 	bool _showBindingsDialog = false;
 	bool _showFileDialog = false;
+	bool _persistUISettings = true;
 
 	SDL_Cursor* _mouseCursors[ImGuiMouseCursor_COUNT];
 	OpenFileMode _fileDialogMode = OpenFileMode::Directory;

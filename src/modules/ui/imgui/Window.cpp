@@ -5,6 +5,7 @@
 #include "Window.h"
 #include "IMGUI.h"
 #include "command/Command.h"
+#include "dearimgui/imgui.h"
 
 namespace ui {
 namespace imgui {
@@ -33,6 +34,15 @@ void Window::update(double deltaFrameSeconds) {
 		}
 		if ((_flags & WindowFlag::NoBackground) == WindowFlag::NoBackground) {
 			flags |= ImGuiWindowFlags_NoBackground;
+		}
+		if ((_flags & WindowFlag::FixedSize) == WindowFlag::FixedSize) {
+			flags |= ImGuiWindowFlags_NoResize;
+		}
+		if ((_flags & WindowFlag::NoCollapse) == WindowFlag::NoCollapse) {
+			flags |= ImGuiWindowFlags_NoCollapse;
+		}
+		if ((_flags & WindowFlag::Centered) == WindowFlag::Centered) {
+			ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 		}
 		ImGui::Begin(_title.c_str(), nullptr, flags);
 	}
