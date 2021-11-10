@@ -256,6 +256,11 @@ float Size(float size) {
 	return size * ImGui::GetWindowDpiScale();
 }
 
+ImVec2 Size(float size1, float size2) {
+	const float s = ImGui::GetWindowDpiScale();
+	return ImVec2(size1 * s, size2 * s);
+}
+
 void TooltipCommand(const char *command) {
 	if (ImGui::IsItemHovered()) {
 		char buf[64];

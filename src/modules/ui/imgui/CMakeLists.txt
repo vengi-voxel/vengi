@@ -1,16 +1,19 @@
 set(LIB imgui)
 
 set(SRCS
-	IMGUIApp.cpp IMGUIApp.h
 	Console.cpp Console.h
 	FileDialog.cpp FileDialog.h
-	Notify.cpp Notify.h
+	IconsFontAwesome5.h
+	IconsForkAwesome.h
 	IMGUI.cpp IMGUI.h
-	IMGUIStyle.cpp IMGUIStyle.h
+	IMGUIApp.cpp IMGUIApp.h
 	IMGUIInternal.h
+	IMGUIStyle.cpp IMGUIStyle.h
+	Notify.cpp Notify.h
+	ScopedStyle.h
 	TextEditor.h TextEditor.cpp
-	WindowStack.h WindowStack.cpp
 	Window.h Window.cpp
+	WindowStack.h WindowStack.cpp
 )
 
 set(GEN_DIR ${GENERATE_DIR}/${LIB})
