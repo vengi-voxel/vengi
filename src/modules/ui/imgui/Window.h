@@ -20,9 +20,12 @@ protected:
 
 	void close();
 	void open(const core::String &name);
-	virtual void render() = 0;
+	virtual void render(double deltaFrameSeconds) = 0;
 
 public:
+	Window(const core::String &title) : _title(title) {
+	}
+
 	virtual ~Window() {
 	}
 
@@ -46,7 +49,7 @@ public:
 		return (_flags & flags) == flags;
 	}
 
-	virtual void update();
+	virtual void update(double deltaFrameSeconds);
 };
 
 } // namespace imgui

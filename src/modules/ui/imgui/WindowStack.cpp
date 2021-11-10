@@ -71,13 +71,13 @@ void WindowStack::shutdown() {
 	}
 }
 
-void WindowStack::render() {
+void WindowStack::update(double deltaFrameSeconds) {
 	const int n = (int)_stack.size();
 	for (int i = n - 1; i >= 0; --i) {
 		if (_stack[i]->isMinimized()) {
 			continue;
 		}
-		_stack[i]->update();
+		_stack[i]->update(deltaFrameSeconds);
 		if (_stack[i]->isFullscreen()) {
 			break;
 		}

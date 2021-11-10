@@ -21,7 +21,7 @@ public:
 	void shutdown();
 	void construct();
 
-	void render();
+	void update(double deltaFrameSeconds);
 
 	/**
 	 * @note The window stack is taking ownership of the given window

@@ -17,13 +17,13 @@ void Window::open(const core::String &name) {
 	command::Command::execute("ui_push " + name);
 }
 
-void Window::update() {
+void Window::update(double deltaFrameSeconds) {
 	if (isFullscreen()) {
 		ImGui::Fullscreen(_title.c_str());
 	} else {
 		ImGui::Begin(_title.c_str());
 	}
-	render();
+	render(deltaFrameSeconds);
 	ImGui::End();
 }
 
