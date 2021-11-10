@@ -40,6 +40,15 @@ bool WindowStack::setNewRootWindow(const core::String &name) {
 	return true;
 }
 
+void WindowStack::playMusic() {
+	const core::String& music = _stack.top()->backgroundMusic();
+	if (!music.empty()) {
+		if (_soundMgr->playMusic(music, true) < 0) {
+			Log::warn("Failed to play menu music: %s", music.c_str());
+		}
+	}
+}
+
 bool WindowStack::push(const core::String &name) {
 	if (_stack.size() >= _stack.maxSize()) {
 		Log::warn("Could not push window %s - max windows reached", name.c_str());
@@ -51,11 +60,8 @@ bool WindowStack::push(const core::String &name) {
 		return false;
 	}
 	Window *w = i->value;
-	const core::String& music = w->backgroundMusic();
-	if (!music.empty()) {
-		_soundMgr->playMusic(music, true);
-	}
 	_stack.push(w);
+	playMusic();
 	return true;
 }
 
@@ -65,10 +71,7 @@ bool WindowStack::pop() {
 		return false;
 	}
 	_stack.pop();
-	const core::String& music = _stack.top()->backgroundMusic();
-	if (!music.empty()) {
-		_soundMgr->playMusic(music, true);
-	}
+	playMusic();
 	return true;
 }
 

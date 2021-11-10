@@ -23,6 +23,8 @@ private:
 	core::Stack<Window *, 128> _stack;
 	audio::SoundManagerPtr _soundMgr;
 
+	void playMusic();
+
 public:
 	WindowStack(const audio::SoundManagerPtr &soundMgr);
 	bool init();
