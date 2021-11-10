@@ -65,6 +65,10 @@ bool WindowStack::pop() {
 		return false;
 	}
 	_stack.pop();
+	const core::String& music = _stack.top()->backgroundMusic();
+	if (!music.empty()) {
+		_soundMgr->playMusic(music, true);
+	}
 	return true;
 }
 
