@@ -20,10 +20,11 @@ class TexturePool : public core::IComponent {
 private:
 	io::FilesystemPtr _filesystem;
 	core::StringMap<TexturePtr> _cache;
+	TexturePtr _empty;
 public:
 	TexturePool(const io::FilesystemPtr& filesystem);
 
-	video::TexturePtr load(const core::String& name);
+	video::TexturePtr load(const core::String& name, bool emptyAsFallback);
 
 	bool init() override;
 	void shutdown() override;

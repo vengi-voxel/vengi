@@ -137,7 +137,7 @@ struct nk_font *NuklearApp::loadFontFile(const char *filename, float fontSize) {
 }
 
 struct nk_image NuklearApp::loadImageFile(const char *filename) {
-	video::TexturePtr tex = _texturePool->load(filename);
+	video::TexturePtr tex = _texturePool->load(filename, false);
 	if (!tex) {
 		Log::warn("Could not load image: '%s'", filename);
 		tex = _emptyTexture;

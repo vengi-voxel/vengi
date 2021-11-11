@@ -206,7 +206,7 @@ static struct nk_image uilua_checkImage(lua_State *s, int index) {
 	const char* imageName = luaL_checkstring(s, index);
 	video::TexturePool* texturePool = uilua_texturepool(s);
 	clua_assert(s, texturePool != nullptr, "Could not get texture pool: '%s'");
-	const video::TexturePtr& tex = texturePool->load(imageName);
+	const video::TexturePtr& tex = texturePool->load(imageName, true);
 	clua_assert(s, tex != nullptr, "Could not load image: '%s'");
 	const video::Id handle = tex->handle();
 	const int width = tex->width();
