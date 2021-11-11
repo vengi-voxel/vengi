@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "TestShared.h"
 #include "backend/entity/ai/tree/loaders/lua/LUATreeLoader.h"
 
