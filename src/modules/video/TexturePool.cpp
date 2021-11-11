@@ -3,6 +3,7 @@
  */
 
 #include "TexturePool.h"
+#include "core/StringUtil.h"
 #include "image/Image.h"
 
 namespace video {
@@ -16,7 +17,9 @@ video::TexturePtr TexturePool::load(const core::String& name, bool emptyAsFallba
 	if (i != _cache.end()) {
 		return i->value;
 	}
-	const io::FilePtr& file = _filesystem->open(name);
+
+	const core::String &baseName = core::string::stripExtension(name);
+	const io::FilePtr& file = _filesystem->open(baseName + ".png");
 	const image::ImagePtr& image = image::loadImage(file, false);
 	TexturePtr texture = createTextureFromImage(image);
 	if (!texture && emptyAsFallback) {
