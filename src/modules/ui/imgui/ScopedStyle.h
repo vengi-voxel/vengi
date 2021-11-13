@@ -33,6 +33,12 @@ public:
 		ImGui::PushFont(font);
 		++_font;
 	}
+	inline void resetFont() {
+		if (_font > 0) {
+			ImGui::PopFont();
+			--_font;
+		}
+	}
 	inline void setAlpha(float alpha) {
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
 		++_n;

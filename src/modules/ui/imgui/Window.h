@@ -76,6 +76,10 @@ public:
 		_flags |= WindowFlag::FixedSize;
 	}
 
+	inline void setNoBackground() {
+		_flags |= WindowFlag::NoBackground;
+	}
+
 	inline void setFullscreen() {
 		_flags |= WindowFlag::FullScreen;
 	}
