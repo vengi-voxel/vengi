@@ -48,6 +48,10 @@ public:
 		return _music;
 	}
 
+	const core::String &title() const {
+		return _title;
+	}
+
 	void setBackgroundMusic(const core::String &music) {
 		_music = music;
 	}
