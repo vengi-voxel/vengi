@@ -28,6 +28,12 @@ void WindowStack::construct() {
 		}
 		setNewRootWindow(args[0]);
 	});
+	command::Command::registerCommand("ui_stack", [this](const command::CmdArgs &args) {
+		Log::info("windows:");
+		for (const auto e : _windows) {
+			Log::info(" - %s", e->key.c_str());
+		}
+	});
 }
 
 bool WindowStack::setNewRootWindow(const core::String &name) {
@@ -36,7 +42,8 @@ bool WindowStack::setNewRootWindow(const core::String &name) {
 		Log::warn("Could not find window %s", name.c_str());
 		return false;
 	}
-	_stack[0] = i->value;
+	_stack.clear();
+	_stack.push(i->value);
 	return true;
 }
 
