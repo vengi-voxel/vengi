@@ -66,6 +66,18 @@ bool VolumeCache::removeVolume(const char* fullPath) {
 	return false;
 }
 
+bool VolumeCache::deleteVolume(const char* fullPath) {
+	const core::String filename = fullPath;
+	core::ScopedLock lock(_mutex);
+	auto i = _volumes.find(filename);
+	if (i != _volumes.end()) {
+		delete i->value;
+		_volumes.erase(i);
+		return true;
+	}
+	return false;
+}
+
 void VolumeCache::construct() {
 	command::Command::registerCommand("volumecachelist", [&] (const command::CmdArgs& argv) {
 		Log::info("Cache content");

@@ -28,6 +28,18 @@ public:
 	 * The returned volume is not owned by the caller. The cache will delete the memory.
 	 */
 	voxel::RawVolume* loadVolume(const char* fullPath);
+	/**
+	 * Remove the volume with the given path from the cache - and free the memory of the volume.
+	 *
+	 * @sa removeVolume(path)
+	 */
+	bool deleteVolume(const char* fullPath);
+	/**
+	 * Remove the volume with the given path from the cache - but don't delete it here.
+	 * It is the caller's responsibily to properly delete the volume pointer.
+	 *
+	 * @sa deleteVolume(path)
+	 */
 	bool removeVolume(const char* fullPath);
 
 	bool init() override;
