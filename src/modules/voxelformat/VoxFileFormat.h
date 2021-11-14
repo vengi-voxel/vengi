@@ -15,6 +15,9 @@ namespace voxel {
 
 class Mesh;
 
+/**
+ * @brief Base class for all voxel formats.
+ */
 class VoxFileFormat {
 protected:
 	core::Array<uint8_t, 256> _palette;
@@ -31,12 +34,21 @@ protected:
 public:
 	virtual ~VoxFileFormat() = default;
 
+	/**
+	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
+	 */
 	virtual bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) = 0;
+	/**
+	 * @brief Merge the loaded volumes into one. The returned memory is yours.
+	 */
 	virtual RawVolume* load(const io::FilePtr& file);
 	virtual bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) = 0;
 	virtual bool save(const RawVolume* volume, const io::FilePtr& file);
 };
 
+/**
+ * @brief Convert the volume data into a mesh
+ */
 class MeshExporter : public VoxFileFormat {
 protected:
 	struct MeshExt {
