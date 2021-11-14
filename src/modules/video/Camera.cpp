@@ -147,7 +147,6 @@ void Camera::init(const glm::ivec2& orthoPosition, const glm::ivec2& frameBuffer
 	_orthoPosition = orthoPosition;
 	_frameBufferSize = frameBufferSize;
 	_windowSize = windowSize;
-	_frameBufferAspectRatio = (float)_frameBufferSize.x / (float)_frameBufferSize.y;
 	_dirty = DIRTY_ALL;
 }
 

@@ -91,7 +91,6 @@ protected:
 
 	float _nearPlane = 0.1f;
 	float _farPlane = 500.0f;
-	float _frameBufferAspectRatio = 1.0f;
 	float _fieldOfView = 45.0f;
 
 	glm::vec3 _target {0.0f};
@@ -175,9 +174,6 @@ public:
 	 * @param angles in degree
 	 */
 	void setFieldOfView(float angles);
-
-	float aspectRatio() const;
-	void setAspectRatio(float aspect);
 
 	/**
 	 * @brief Rotation around the y-axis
@@ -385,15 +381,6 @@ inline float Camera::fieldOfView() const {
 inline void Camera::setFieldOfView(float angles) {
 	_dirty |= DIRTY_PERSPECTIVE;
 	_fieldOfView = angles;
-}
-
-inline float Camera::aspectRatio() const {
-	return _frameBufferAspectRatio;
-}
-
-inline void Camera::setAspectRatio(float aspect) {
-	_dirty |= DIRTY_PERSPECTIVE;
-	_frameBufferAspectRatio = aspect;
 }
 
 inline const glm::vec3& Camera::worldPosition() const {
