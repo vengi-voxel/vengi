@@ -107,7 +107,7 @@ void TestTextureAtlasRenderer::doRender() {
 	updateModelMatrix();
 
 	// render to texture
-	const video::TextureAtlasData& data = _atlasRenderer.beginRender(0, camera().frameBufferWidth(), camera().frameBufferHeight());
+	const video::TextureAtlasData& data = _atlasRenderer.beginRender(0, _frameBufferDimension.x, _frameBufferDimension.y);
 	_meshRenderer.setModelMatrix(_modelIndex, _modelMatrix);
 	_meshRenderer.render(_modelIndex, camera());
 	_atlasRenderer.endRender();

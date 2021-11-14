@@ -140,12 +140,11 @@ void Camera::rotate(const glm::quat& rotation) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
-void Camera::init(const glm::ivec2& orthoPosition, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
-	if (_orthoPosition == orthoPosition && _frameBufferSize == frameBufferSize && _windowSize == windowSize) {
+void Camera::init(const glm::ivec2& orthoPosition, const glm::ivec2& windowSize) {
+	if (_orthoPosition == orthoPosition && _windowSize == windowSize) {
 		return;
 	}
 	_orthoPosition = orthoPosition;
-	_frameBufferSize = frameBufferSize;
 	_windowSize = windowSize;
 	_dirty = DIRTY_ALL;
 }
@@ -330,9 +329,7 @@ void Camera::updateViewMatrix() {
 }
 
 math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
-	return screenRay(glm::vec2((float)pixelPos.x / (float)_frameBufferSize.x, (float)pixelPos.y / (float)_frameBufferSize.y));
-	/*const glm::vec2 newPos = glm::vec2(screenPos - _position) / glm::vec2(dimension());
-	return screenRay(newPos);*/
+	return screenRay(glm::vec2((float)pixelPos.x / (float)_windowSize.x, (float)pixelPos.y / (float)_windowSize.y));
 }
 
 math::Ray Camera::screenRay(const glm::vec2& screenPos) const {

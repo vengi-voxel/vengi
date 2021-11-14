@@ -113,7 +113,7 @@ app::AppState TestTraze::onInit() {
 	_textCamera.setMode(video::CameraMode::Orthogonal);
 	_textCamera.setNearPlane(-10.0f);
 	_textCamera.setFarPlane(10.0f);
-	_textCamera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
+	_textCamera.init(glm::ivec2(0), windowDimension());
 	_textCamera.update(0.0);
 
 	_voxelFontRender.setViewProjectionMatrix(_textCamera.viewProjectionMatrix());

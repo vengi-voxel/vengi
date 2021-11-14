@@ -23,7 +23,7 @@ app::AppState TestComputeTexture3D::onInit() {
 		return state;
 	}
 
-	camera() = video::uiCamera(glm::ivec2(0), frameBufferDimension(), windowDimension());
+	camera() = video::uiCamera(glm::ivec2(0), windowDimension());
 
 	if (!compute::init()) {
 		Log::error("Failed to initialize the compute context");

@@ -106,7 +106,7 @@ app::AppState Thumbnailer::onRunning() {
 	}
 
 	video::Camera camera;
-	camera.init(glm::ivec2(0), glm::ivec2(_outputSize), glm::ivec2(_outputSize));
+	camera.init(glm::ivec2(0), glm::ivec2(_outputSize));
 	camera.setRotationType(video::CameraRotationType::Target);
 	camera.setMode(video::CameraMode::Perspective);
 	camera.setAngles(0.0f, 0.0f, 0.0f);

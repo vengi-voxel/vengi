@@ -79,35 +79,6 @@ void DepthBufferRenderer::renderLinearizedDepth(const int frameBufferHeight, con
 	video::setupDepthCompareTexture(depthTex->type(), video::CompareFunc::Less, video::TextureCompareMode::RefToTexture);
 }
 
-void DepthBufferRenderer::renderDepthBuffer(const video::Camera& camera, const video::FrameBuffer& depthBuffer, const glm::ivec2& xy, const glm::ivec2& wh) {
-	core_trace_scoped(RenderDepthBuffer);
-
-	video::ScopedShader scopedShader(_depthBufferRenderShader);
-	if (_depthBufferRenderShader.isDirty()) {
-		_depthBufferRenderShader.setDepthbuffer(video::TextureUnit::Zero);
-		_depthBufferRenderShader.markClean();
-	}
-	_depthBufferRenderShader.setFar(camera.farPlane());
-	_depthBufferRenderShader.setNear(camera.nearPlane());
-
-	renderLinearizedDepth(camera.frameBufferHeight(), depthBuffer, xy, wh);
-}
-
-void DepthBufferRenderer::renderShadowMap(const video::Camera& camera, const video::FrameBuffer& depthBuffer, int cascade, const glm::ivec2& xy, const glm::ivec2& wh) {
-	core_trace_scoped(RenderShadowMap);
-
-	video::ScopedShader scopedShader(_shadowMapRenderShader);
-	if (_shadowMapRenderShader.isDirty()) {
-		_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
-		_shadowMapRenderShader.markClean();
-	}
-	_shadowMapRenderShader.setFar(camera.farPlane());
-	_shadowMapRenderShader.setNear(camera.nearPlane());
-	_shadowMapRenderShader.setCascade(cascade);
-
-	renderLinearizedDepth(camera.frameBufferHeight(), depthBuffer, xy, wh);
-}
-
 void DepthBufferRenderer::renderShadowMapToTexture(const video::Camera& camera, const video::FrameBuffer& depthBuffer, int cascade, video::FrameBufferAttachment attachment) {
 	core_trace_scoped(RenderShadowMapToTexture);
 	_renderToTexture.bind(false);

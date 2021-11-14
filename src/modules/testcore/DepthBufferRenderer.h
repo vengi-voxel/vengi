@@ -29,9 +29,6 @@ public:
 	bool init();
 	void shutdown();
 
-	void renderShadowMap(const video::Camera& camera, const video::FrameBuffer& depthBuffer, int cascade, const glm::ivec2& xy, const glm::ivec2& wh);
-	void renderDepthBuffer(const video::Camera& camera, const video::FrameBuffer& depthBuffer, const glm::ivec2& xy, const glm::ivec2& wh);
-
 	void renderShadowMapToTexture(const video::Camera& camera, const video::FrameBuffer& depthBuffer, int cascade, video::FrameBufferAttachment attachment);
 	void renderDepthBufferToTexture(const video::Camera& camera, const video::FrameBuffer& depthBuffer, video::FrameBufferAttachment attachment);
 

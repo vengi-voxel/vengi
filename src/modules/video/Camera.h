@@ -67,8 +67,6 @@ protected:
 	PolygonMode _polygonMode = PolygonMode::Solid;
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
-	// viewport
-	glm::ivec2 _frameBufferSize {0};
 	// ortho
 	glm::ivec2 _windowSize {0};
 	// the position that is used for ortho projection matrices
@@ -107,8 +105,7 @@ protected:
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
-	void init(const glm::ivec2& orthoPosition, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
-	int frameBufferWidth() const;
+	void init(const glm::ivec2& orthoPosition, const glm::ivec2& windowSize);
 	int frameBufferHeight() const;
 
 	inline bool dirty() const {
@@ -273,14 +270,6 @@ inline const glm::vec3& Camera::eye() const {
 	return _eyePosition;
 }
 
-inline int Camera::frameBufferWidth() const {
-	return _frameBufferSize.x;
-}
-
-inline int Camera::frameBufferHeight() const {
-	return _frameBufferSize.y;
-}
-
 inline const glm::ivec2& Camera::orthoPosition() const {
 	return _orthoPosition;
 }
@@ -403,9 +392,9 @@ inline float Camera::targetDistance() const {
 	return _distance;
 }
 
-inline Camera uiCamera(const glm::ivec2& orthoPosition, const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
+inline Camera uiCamera(const glm::ivec2& orthoPosition, const glm::ivec2& windowSize) {
 	Camera camera(CameraType::FirstPerson, video::CameraMode::Orthogonal);
-	camera.init(orthoPosition, frameBufferSize, windowSize);
+	camera.init(orthoPosition, windowSize);
 	camera.setNearPlane(-1.0f);
 	camera.setFarPlane(1.0f);
 	camera.update(0.0);

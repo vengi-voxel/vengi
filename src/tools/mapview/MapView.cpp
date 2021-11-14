@@ -164,7 +164,7 @@ app::AppState MapView::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
+	_camera.init(glm::ivec2(0), windowDimension());
 
 	const glm::vec3& pos = spawnPos();
 	Log::info("Spawn entity at %s", glm::to_string(pos).c_str());
@@ -445,7 +445,7 @@ app::AppState MapView::onCleanup() {
 
 void MapView::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
-	_camera.init(glm::ivec2(0), frameBufferDimension(), windowDimension());
+	_camera.init(glm::ivec2(0), windowDimension());
 }
 
 bool MapView::onKeyPress(int32_t key, int16_t modifier) {

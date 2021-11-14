@@ -52,10 +52,10 @@ void ViewportController::init(ViewportController::SceneCameraMode mode) {
 
 void ViewportController::onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
 	if (_camera.mode() == video::CameraMode::Perspective) {
-		_camera.init(glm::ivec2(0), frameBufferSize, windowSize);
+		_camera.init(glm::ivec2(0), windowSize);
 	} else {
 		const glm::ivec2 size = windowSize / 5;
-		_camera.init(size / -2, size, size);
+		_camera.init(size / -2, size);
 	}
 }
 
