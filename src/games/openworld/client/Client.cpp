@@ -233,6 +233,11 @@ app::AppState Client::onInit() {
 		return app::AppState::InitFailure;
 	}
 
+	if (!_floorResolver.init(_worldMgr)) {
+		Log::error("Failed to initialize floor resolver");
+		return app::AppState::InitFailure;
+	}
+
 	if (!_clientPager->init(_chunkUrl->strVal())) {
 		Log::error("Failed to initialize client pager");
 		return app::AppState::InitFailure;
@@ -279,8 +284,7 @@ void Client::beforeUI() {
 	if (_player) {
 		const video::Camera& camera = _camera.camera();
 		_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _player, [&] (const glm::ivec3& pos, int maxWalkHeight) {
-			voxel::PagedVolume::Sampler sampler(_worldMgr->volumeData());
-			return _floorResolver.findWalkableFloor(&sampler, pos, maxWalkHeight);
+			return _floorResolver.findWalkableFloor(pos, maxWalkHeight);
 		});
 		_action.update(_nowSeconds, _player);
 		const double speed = _player->attrib().current(attrib::Type::SPEED);
@@ -332,6 +336,7 @@ app::AppState Client::onCleanup() {
 	_worldRenderer.shutdown();
 	Log::info("shutting down the world");
 	_worldMgr->shutdown();
+	_floorResolver.shutdown();
 	_player = frontend::ClientEntityPtr();
 	Log::info("shutting down the network");
 	_network->shutdown();

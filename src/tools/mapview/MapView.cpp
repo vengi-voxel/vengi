@@ -151,6 +151,11 @@ app::AppState MapView::onInit() {
 		return app::AppState::InitFailure;
 	}
 
+	if (!_floorResolver.init(_worldMgr)) {
+		Log::error("Failed to init world mgr");
+		return app::AppState::InitFailure;
+	}
+
 	if (!_worldPager->init(_worldMgr->volumeData(), filesystem()->load("worldparams.lua"), filesystem()->load("biomes.lua"))) {
 		Log::error("Failed to init world pager");
 		return app::AppState::InitFailure;
@@ -243,8 +248,7 @@ void MapView::beforeUI() {
 
 	const video::Camera& camera = _camera.camera();
 	_movement.update(_deltaFrameSeconds, camera.horizontalYaw(), _entity, [&] (const glm::ivec3& pos, int maxWalkHeight) {
-		voxel::PagedVolume::Sampler sampler(_worldMgr->volumeData());
-		return _floorResolver.findWalkableFloor(&sampler, pos, maxWalkHeight);
+		return _floorResolver.findWalkableFloor(pos, maxWalkHeight);
 	});
 	_action.update(nowSeconds(), _entity);
 	const double speed = _entity->attrib().current(attrib::Type::SPEED);
@@ -410,8 +414,8 @@ app::AppState MapView::onRunning() {
 
 	const bool current = isRelativeMouseMode();
 	if (current) {
-		const float pitch = (float)_mouseRelativePos.y;
-		const float turn = (float)_mouseRelativePos.x;
+		const float pitch = _mouseRelativePos.y;
+		const float turn = _mouseRelativePos.x;
 		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 
@@ -438,6 +442,7 @@ app::AppState MapView::onCleanup() {
 	const app::AppState state = Super::onCleanup();
 	_worldPager->shutdown();
 	_worldMgr->shutdown();
+	_floorResolver.shutdown();
 	_meshCache->shutdown();
 	compute::shutdown();
 	return state;
