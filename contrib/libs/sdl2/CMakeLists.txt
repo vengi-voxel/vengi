@@ -194,9 +194,6 @@ if((WINDOWS AND NOT WINDOWS_STORE) OR IOS OR TVOS OR ANDROID)
 else()
   set(HIDAPI_SKIP_LIBUSB FALSE)
 endif()
-if (HIDAPI_SKIP_LIBUSB)
-  set(OPT_DEF_HIDAPI ON)
-endif()
 
 # On the other hand, *BSD specifically uses libusb only, so we make a special
 #  case just for them.
@@ -398,10 +395,10 @@ dep_option(SDL_FUSIONSOUND_SHARED  "Dynamically load fusionsound audio support" 
 set_option(SDL_LIBSAMPLERATE       "Use libsamplerate for audio rate conversion" ${UNIX_SYS})
 dep_option(SDL_LIBSAMPLERATE_SHARED "Dynamically load libsamplerate" ON "SDL_LIBSAMPLERATE" OFF)
 set_option(SDL_RPATH               "Use an rpath when linking SDL" ${UNIX_SYS})
-set_option(SDL_CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" OFF)
+set_option(SDL_CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" ${UNIX_SYS})
 set_option(SDL_X11                 "Use X11 video driver" ${UNIX_SYS})
 dep_option(SDL_X11_SHARED          "Dynamically load X11 support" ON "SDL_X11" OFF)
-set(SDL_X11_OPTIONS Xcursor Xinerama XInput Xfixes Xrandr Xscrnsaver XShape Xvm)
+set(SDL_X11_OPTIONS Xcursor Xdbe Xinerama XInput Xfixes Xrandr Xscrnsaver XShape Xvm)
 foreach(_SUB ${SDL_X11_OPTIONS})
   string(TOUPPER "SDL_X11_${_SUB}" _OPT)
   dep_option(${_OPT}               "Enable ${_SUB} support" ON "SDL_X11" OFF)
@@ -451,6 +448,7 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/events/*.c
   ${SDL2_SOURCE_DIR}/src/file/*.c
   ${SDL2_SOURCE_DIR}/src/haptic/*.c
+  ${SDL2_SOURCE_DIR}/src/hidapi/*.c
   ${SDL2_SOURCE_DIR}/src/libm/*.c
   ${SDL2_SOURCE_DIR}/src/locale/*.c
   ${SDL2_SOURCE_DIR}/src/misc/*.c
@@ -838,7 +836,7 @@ if(SDL_LIBC)
     set(HAVE_LIBC TRUE)
     check_include_file(sys/types.h HAVE_SYS_TYPES_H)
     foreach(_HEADER
-            stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h limits.h
+            stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h limits.h float.h
             strings.h wchar.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h libunwind.h)
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REPLACE "." "_" _HAVE_H ${_UPPER})
@@ -1321,8 +1319,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       endif()
 
       if (HAVE_IBUS_IBUS_H OR HAVE_FCITX)
-        set(SDL_USE_IME TRUE)
-        target_compile_definitions(sdl-build-options INTERFACE "-DSDL_USE_IME")   # !!! FIXME: why isn't this a definition and not in SDL_config.h.cmake?
+        set(SDL_USE_IME 1)
       endif()
 
       if(FREEBSD AND NOT HAVE_INOTIFY)
