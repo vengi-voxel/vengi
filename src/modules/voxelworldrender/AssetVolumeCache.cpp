@@ -40,11 +40,7 @@ voxel::RawVolume* AssetVolumeCache::loadPlant(const glm::ivec3& pos) {
 		return nullptr;
 	}
 	const int index = 1 + (glm::abs(pos.x + pos.z) % _plantCount);
-	char filename[64];
-	if (!core::string::formatBuf(filename, sizeof(filename), "models/plants/%i", index)) {
-		Log::error("Failed to assemble plant path");
-		return nullptr;
-	}
+	const core::String &filename = core::string::format("models/plants/%i", index);
 	return _volumeCache->loadVolume(filename);
 }
 

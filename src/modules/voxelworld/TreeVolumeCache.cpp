@@ -61,11 +61,7 @@ voxel::RawVolume* TreeVolumeCache::loadTree(const glm::ivec3& treePos, const cha
 		return nullptr;
 	}
 	const int treeIndex = 1 + (glm::abs(treePos.x + treePos.z) % treeCount);
-	char filename[64];
-	if (!core::string::formatBuf(filename, sizeof(filename), "models/trees/%s/%i", treeType, treeIndex)) {
-		Log::error("Failed to assemble tree path");
-		return nullptr;
-	}
+	const core::String &filename = core::string::format("models/trees/%s/%i", treeType, treeIndex);
 	return _volumeCache->loadVolume(filename);
 }
 
