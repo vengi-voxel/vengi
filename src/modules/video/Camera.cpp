@@ -144,7 +144,6 @@ void Camera::setSize(const glm::ivec2& windowSize) {
 	if (_windowSize == windowSize) {
 		return;
 	}
-	_orthoPosition = glm::ivec2(0);
 	_windowSize = windowSize;
 	_dirty = DIRTY_PERSPECTIVE;
 }
