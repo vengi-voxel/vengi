@@ -35,7 +35,7 @@ bool CubFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	wrap(stream.readInt(depth))
 	wrap(stream.readInt(height))
 
-	if (width > MaxRegionSize || height > MaxRegionSize || depth > MaxRegionSize) {
+	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
 		return false;
 	}

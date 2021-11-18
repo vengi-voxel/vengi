@@ -228,7 +228,7 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 		return false;
 	}
 
-	if (size.x > MaxRegionSize || size.y > MaxRegionSize || size.z > MaxRegionSize) {
+	if (size.x > 2048 || size.y > 2048 || size.z > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", size.x, size.y, size.z);
 		return false;
 	}
@@ -248,8 +248,8 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 		return false;
 	}
 
-	if (region.getDepthInVoxels() >= MaxRegionSize || region.getHeightInVoxels() >= MaxRegionSize
-		|| region.getWidthInVoxels() >= MaxRegionSize) {
+	if (region.getDepthInVoxels() >= 2048 || region.getHeightInVoxels() >= 2048
+		|| region.getWidthInVoxels() >= 2048) {
 		Log::error("Region exceeds the max allowed boundaries");
 		return false;
 	}
