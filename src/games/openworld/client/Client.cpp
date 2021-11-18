@@ -54,7 +54,7 @@ Client::Client(const metric::MetricPtr& metric, const animation::AnimationCacheP
 		_animationCache(animationCache), _network(network), _worldMgr(world), _clientPager(worldPager),
 		_messageSender(messageSender), _worldRenderer(assetVolumeCache), _movement(soundManager),
 		_stockDataProvider(stockDataProvider), _volumeCache(volumeCache), _meshCache(meshCache),
-		_camera(_worldRenderer), _soundManager(soundManager), _assetVolumeCache(assetVolumeCache) {
+		_soundManager(soundManager), _assetVolumeCache(assetVolumeCache) {
 	init(ORGANISATION, "owclient");
 }
 
@@ -288,7 +288,8 @@ void Client::beforeUI() {
 		});
 		_action.update(_nowSeconds, _player);
 		const double speed = _player->attrib().current(attrib::Type::SPEED);
-		_camera.update(_player->position(), _nowSeconds, _deltaFrameSeconds, speed);
+		const float farPlane = _worldRenderer.getViewDistance();
+		_camera.update(_player->position(), _nowSeconds, _deltaFrameSeconds, speed, farPlane);
 		_worldRenderer.extractMeshes(camera);
 		_worldRenderer.update(camera, _deltaFrameSeconds);
 		_worldRenderer.renderWorld(camera);

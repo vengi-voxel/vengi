@@ -6,6 +6,7 @@ set(SRCS
 	EntityMgr.cpp EntityMgr.h
 	PlayerAction.h PlayerAction.cpp
 	PlayerMovement.h PlayerMovement.cpp
+	PlayerCamera.h PlayerCamera.cpp
 )
 set(FILES
 	shared/sound/ambience_wind.wav

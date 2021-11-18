@@ -4,12 +4,12 @@
 
 #pragma once
 
+#include "core/Var.h"
 #include "video/Camera.h"
-#include "WorldRenderer.h"
 #include "command/ActionButton.h"
 #include "core/BindingContext.h"
 
-namespace voxelworldrender {
+namespace frontend {
 
 /**
  * @brief The player camera clips against the world while moving.
@@ -17,7 +17,6 @@ namespace voxelworldrender {
 class PlayerCamera {
 private:
 	video::Camera _camera;
-	WorldRenderer& _worldRenderer;
 
 	core::VarPtr _maxTargetDistance;
 	core::VarPtr _cameraZoomSpeed;
@@ -38,8 +37,8 @@ private:
 	void setCameraFirstPerson();
 	void setCameraTarget();
 public:
-	PlayerCamera(WorldRenderer &worldRenderer, int keyBindingContext = core::BindingContext::World) :
-			_worldRenderer(worldRenderer), _keyBindingContext(keyBindingContext) {
+	PlayerCamera(int keyBindingContext = core::BindingContext::World) :
+			_keyBindingContext(keyBindingContext) {
 	}
 
 	void setTarget(const glm::vec3& position);
@@ -48,7 +47,7 @@ public:
 	void construct();
 	bool setSize(const glm::ivec2& windowSize);
 	void shutdown();
-	void update(const glm::vec3& entityPosition, double nowSeconds, double deltaFrameSeconds, double speed);
+	void update(const glm::vec3& entityPosition, double nowSeconds, double deltaFrameSeconds, double speed, float farPlane);
 
 	/**
 	 * @param fieldOfView in degree

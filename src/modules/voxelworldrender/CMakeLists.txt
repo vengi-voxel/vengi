@@ -2,7 +2,6 @@ set(LIB voxelworldrender)
 set(SRCS
 	WorldRenderer.h WorldRenderer.cpp
 	AssetVolumeCache.h AssetVolumeCache.cpp
-	PlayerCamera.cpp PlayerCamera.h
 
 	worldrenderer/WorldChunkMgr.h worldrenderer/WorldChunkMgr.cpp
 	worldrenderer/WorldMeshExtractor.h worldrenderer/WorldMeshExtractor.cpp

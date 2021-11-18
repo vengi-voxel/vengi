@@ -41,7 +41,7 @@ MapView::MapView(const metric::MetricPtr& metric, const animation::AnimationCach
 		Super(metric, filesystem, eventBus, timeProvider),
 		_animationCache(animationCache), _worldRenderer(assetVolumeCache), _worldMgr(worldMgr),
 		_worldPager(worldPager), _movement(soundManager), _stockDataProvider(stockDataProvider),
-		_volumeCache(volumeCache), _meshCache(meshCache), _camera(_worldRenderer),
+		_volumeCache(volumeCache), _meshCache(meshCache),
 		_soundManager(soundManager), _assetVolumeCache(assetVolumeCache) {
 	init(ORGANISATION, "mapview");
 }
@@ -252,7 +252,8 @@ void MapView::beforeUI() {
 	});
 	_action.update(nowSeconds(), _entity);
 	const double speed = _entity->attrib().current(attrib::Type::SPEED);
-	_camera.update(_entity->position(), _nowSeconds, _deltaFrameSeconds, speed);
+	const float farPlane = _worldRenderer.getViewDistance();
+	_camera.update(_entity->position(), _nowSeconds, _deltaFrameSeconds, speed, farPlane);
 
 	if (_updateWorld) {
 		core_trace_scoped(UpdateWorld);
@@ -414,8 +415,8 @@ app::AppState MapView::onRunning() {
 
 	const bool current = isRelativeMouseMode();
 	if (current) {
-		const float pitch = _mouseRelativePos.y;
-		const float turn = _mouseRelativePos.x;
+		const float pitch = (float)_mouseRelativePos.y;
+		const float turn = (float)_mouseRelativePos.x;
 		_camera.rotate(pitch, turn, _rotationSpeed->floatVal());
 	}
 

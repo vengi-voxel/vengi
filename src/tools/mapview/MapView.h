@@ -8,7 +8,7 @@
 #include "RenderShaders.h"
 #include "voxelworldrender/AssetVolumeCache.h"
 #include "voxelworldrender/WorldRenderer.h"
-#include "voxelworldrender/PlayerCamera.h"
+#include "frontend/PlayerCamera.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/PlayerAction.h"
 #include "render/Axis.h"
@@ -45,7 +45,7 @@ protected:
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelformat::MeshCachePtr _meshCache;
-	voxelworldrender::PlayerCamera _camera;
+	frontend::PlayerCamera _camera;
 	testcore::DepthBufferRenderer _depthBufferRenderer;
 	voxelworld::CachedFloorResolver _floorResolver;
 	audio::SoundManagerPtr _soundManager;

@@ -3,11 +3,10 @@
  */
 
 #include "PlayerCamera.h"
-#include "voxel/PagedVolume.h"
 #include "command/Command.h"
 #include "core/Trace.h"
 
-namespace voxelworldrender {
+namespace frontend {
 
 void PlayerCamera::construct() {
 	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "28.0");
@@ -72,7 +71,7 @@ void PlayerCamera::rotate(float pitch, float turn, float speed) {
 	}
 }
 
-void PlayerCamera::update(const glm::vec3& entityPosition, double nowSeconds, double deltaFrameSeconds, double speed) {
+void PlayerCamera::update(const glm::vec3& entityPosition, double nowSeconds, double deltaFrameSeconds, double speed, float farPlane) {
 	core_trace_scoped(UpdatePlayerCamera);
 	if (_zoomIn.pressed()) {
 		_zoomIn.execute(nowSeconds, 0.02, [&] () {
@@ -103,7 +102,7 @@ void PlayerCamera::update(const glm::vec3& entityPosition, double nowSeconds, do
 	}
 
 	_camera.setTargetDistance(_targetDistance);
-	_camera.setFarPlane(_worldRenderer.getViewDistance());
+	_camera.setFarPlane(farPlane);
 	_camera.update(deltaFrameSeconds);
 }
 

@@ -9,7 +9,7 @@
 #include "frontend/PlayerMovement.h"
 #include "frontend/PlayerAction.h"
 #include "voxelworldrender/WorldRenderer.h"
-#include "voxelworldrender/PlayerCamera.h"
+#include "frontend/PlayerCamera.h"
 #include "voxelformat/MeshCache.h"
 #include "core/Var.h"
 #include "core/Common.h"
@@ -52,7 +52,7 @@ protected:
 	stock::StockDataProviderPtr _stockDataProvider;
 	voxelformat::VolumeCachePtr _volumeCache;
 	voxelformat::MeshCachePtr _meshCache;
-	voxelworldrender::PlayerCamera _camera;
+	frontend::PlayerCamera _camera;
 	audio::SoundManagerPtr _soundManager;
 	voxelworldrender::AssetVolumeCachePtr _assetVolumeCache;
 
