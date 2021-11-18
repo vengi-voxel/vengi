@@ -36,7 +36,7 @@ void nkc_model(struct nkc_context* cctx, struct nkc_model* model) {
 	}
 
 	const glm::ivec2 size(bounds.w, bounds.h);
-	model->camera.init(size);
+	model->camera.setSize(size);
 	model->camera.update(0.0);
 
 	const nk_color& c = ctx->style.window.background;

@@ -46,7 +46,7 @@ app::AppState TestOctreeVisit::onInit() {
 }
 
 void TestOctreeVisit::updateCamera() {
-	_octreeCamera.init(_ortho ? glm::ivec2(100, 50) : windowDimension());
+	_octreeCamera.setSize(_ortho ? glm::ivec2(100, 50) : windowDimension());
 	_octreeCamera.setOmega(_omega);
 
 	_octreeCamera.setWorldPosition(_pos);

@@ -179,7 +179,7 @@ void IMGUIApp::onWindowResize(void *windowHandle, int windowWidth, int windowHei
 		io.DisplayFramebufferScale = ImVec2(xScale, yScale);
 	}
 
-	_camera.init(windowDimension());
+	_camera.setSize(windowDimension());
 	_camera.update(0.0);
 	video::ScopedShader scoped(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());

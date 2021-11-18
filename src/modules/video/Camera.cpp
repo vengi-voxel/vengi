@@ -140,7 +140,7 @@ void Camera::rotate(const glm::quat& rotation) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
-void Camera::init(const glm::ivec2& windowSize) {
+void Camera::setSize(const glm::ivec2& windowSize) {
 	if (_windowSize == windowSize) {
 		return;
 	}

@@ -40,8 +40,8 @@ void PlayerCamera::setCameraTarget() {
 	_camera.update(0.0);
 }
 
-bool PlayerCamera::init(const glm::ivec2& windowSize) {
-	_camera.init(windowSize);
+bool PlayerCamera::setSize(const glm::ivec2& windowSize) {
+	_camera.setSize(windowSize);
 	_camera.setFarPlane(10.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setFieldOfView(_fieldOfView);

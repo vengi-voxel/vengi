@@ -27,7 +27,7 @@ protected:
 		Camera camera;
 		camera.setNearPlane(0.1f);
 		camera.setFarPlane(100.0f);
-		camera.init(dimension);
+		camera.setSize(dimension);
 		camera.setWorldPosition(position);
 		camera.lookAt(lookAt, lookAlong);
 		camera.update(0.0);
@@ -114,7 +114,7 @@ TEST_F(CameraTest, testCameraFrustumCullingPerspective) {
 
 TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	Camera camera;
-	camera.init(glm::vec2(100.0f, 100.0f));
+	camera.setSize(glm::vec2(100.0f, 100.0f));
 	camera.setMode(CameraMode::Orthogonal);
 	camera.setWorldPosition(glm::vec3(0.1, 1.0, 0.1));
 	camera.lookAt(glm::vec3(0.0), glm::forward);

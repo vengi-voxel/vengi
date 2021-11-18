@@ -306,7 +306,7 @@ void NuklearApp::initUIConfig(struct nk_convert_config& config) {
 
 void NuklearApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
-	_camera.init(windowDimension());
+	_camera.setSize(windowDimension());
 }
 
 app::AppState NuklearApp::onConstruct() {
