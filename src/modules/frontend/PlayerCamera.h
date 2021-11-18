@@ -45,7 +45,7 @@ public:
 	void setTargetDistance(float targetDistance);
 
 	void construct();
-	bool setSize(const glm::ivec2& windowSize);
+	bool init(const glm::ivec2& windowSize);
 	void shutdown();
 	void update(const glm::vec3& entityPosition, double nowSeconds, double deltaFrameSeconds, double speed, float farPlane);
 
