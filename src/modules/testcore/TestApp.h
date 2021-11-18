@@ -29,7 +29,7 @@ protected:
 	virtual void doRender() = 0;
 
 	inline void setUICamera() {
-		_testAppCamera = video::uiCamera(glm::ivec2(0), windowDimension());
+		_testAppCamera = video::uiCamera(windowDimension());
 	}
 
 	inline void setCameraSpeed(float cameraSpeed) {

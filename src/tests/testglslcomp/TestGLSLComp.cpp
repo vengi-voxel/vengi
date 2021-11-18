@@ -23,7 +23,7 @@ app::AppState TestGLSLComp::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	camera() = video::uiCamera(glm::ivec2(0), windowDimension());
+	camera() = video::uiCamera(windowDimension());
 
 	if (!_renderer.init(frameBufferDimension())) {
 		Log::error("Failed to init the texture renderer");

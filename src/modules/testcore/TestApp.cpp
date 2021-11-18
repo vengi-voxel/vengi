@@ -25,7 +25,7 @@ TestApp::~TestApp() {
 
 void TestApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
-	camera().init(glm::ivec2(0), windowDimension());
+	camera().init(windowDimension());
 }
 
 app::AppState TestApp::onConstruct() {
@@ -83,7 +83,7 @@ app::AppState TestApp::onInit() {
 	}
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _frameBufferDimension.x, _frameBufferDimension.y, _aspect);
-	camera().init(glm::ivec2(0), windowDimension());
+	camera().init(windowDimension());
 	camera().setWorldPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	camera().lookAt(glm::vec3(0.0f));
 

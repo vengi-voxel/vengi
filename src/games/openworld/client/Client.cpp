@@ -202,7 +202,7 @@ app::AppState Client::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_camera.init(glm::ivec2(0), windowDimension());
+	_camera.init(windowDimension());
 
 	if (!_animationCache->init()) {
 		Log::error("Failed to initialize character cache");
@@ -372,7 +372,7 @@ app::AppState Client::onRunning() {
 
 void Client::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
-	_camera.init(glm::ivec2(0), windowDimension());
+	_camera.init(windowDimension());
 }
 
 void Client::authFailed() {

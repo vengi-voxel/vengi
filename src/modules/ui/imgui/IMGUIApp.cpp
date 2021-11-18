@@ -179,7 +179,7 @@ void IMGUIApp::onWindowResize(void *windowHandle, int windowWidth, int windowHei
 		io.DisplayFramebufferScale = ImVec2(xScale, yScale);
 	}
 
-	_camera.init(glm::ivec2(0), windowDimension());
+	_camera.init(windowDimension());
 	_camera.update(0.0);
 	video::ScopedShader scoped(_shader);
 	_shader.setViewprojection(_camera.projectionMatrix());
@@ -468,7 +468,7 @@ app::AppState IMGUIApp::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_camera = video::uiCamera(glm::ivec2(0), windowDimension());
+	_camera = video::uiCamera(windowDimension());
 
 	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &ImDrawVert::r, true));
 	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, &ImDrawVert::u));

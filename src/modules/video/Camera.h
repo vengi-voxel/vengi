@@ -105,7 +105,7 @@ protected:
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
-	void init(const glm::ivec2& orthoPosition, const glm::ivec2& windowSize);
+	void init(const glm::ivec2& windowSize);
 	int frameBufferHeight() const;
 
 	inline bool dirty() const {
@@ -392,9 +392,9 @@ inline float Camera::targetDistance() const {
 	return _distance;
 }
 
-inline Camera uiCamera(const glm::ivec2& orthoPosition, const glm::ivec2& windowSize) {
+inline Camera uiCamera(const glm::ivec2& windowSize) {
 	Camera camera(CameraType::FirstPerson, video::CameraMode::Orthogonal);
-	camera.init(orthoPosition, windowSize);
+	camera.init(windowSize);
 	camera.setNearPlane(-1.0f);
 	camera.setFarPlane(1.0f);
 	camera.update(0.0);

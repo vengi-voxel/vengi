@@ -255,7 +255,7 @@ app::AppState NuklearApp::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_camera = video::uiCamera(glm::ivec2(0), windowDimension());
+	_camera = video::uiCamera(windowDimension());
 
 	_vbo.addAttribute(_shader.getColorAttribute(_vertexBufferIndex, &Vertex::r, true));
 	_vbo.addAttribute(_shader.getTexcoordAttribute(_vertexBufferIndex, &Vertex::u));
@@ -306,7 +306,7 @@ void NuklearApp::initUIConfig(struct nk_convert_config& config) {
 
 void NuklearApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
 	Super::onWindowResize(windowHandle, windowWidth, windowHeight);
-	_camera.init(glm::zero<glm::ivec2>(), windowDimension());
+	_camera.init(windowDimension());
 }
 
 app::AppState NuklearApp::onConstruct() {

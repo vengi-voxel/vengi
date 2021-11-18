@@ -140,13 +140,13 @@ void Camera::rotate(const glm::quat& rotation) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
-void Camera::init(const glm::ivec2& orthoPosition, const glm::ivec2& windowSize) {
-	if (_orthoPosition == orthoPosition && _windowSize == windowSize) {
+void Camera::init(const glm::ivec2& windowSize) {
+	if (_windowSize == windowSize) {
 		return;
 	}
-	_orthoPosition = orthoPosition;
+	_orthoPosition = glm::ivec2(0);
 	_windowSize = windowSize;
-	_dirty = DIRTY_ALL;
+	_dirty = DIRTY_PERSPECTIVE;
 }
 
 void Camera::move(const glm::vec3& delta) {
