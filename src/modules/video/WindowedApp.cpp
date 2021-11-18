@@ -187,7 +187,7 @@ app::AppState WindowedApp::onInit() {
 	SDL_StopTextInput();
 
 	if (!_keybindingHandler.init()) {
-		Log::error("Failed to initialize the key binding hendler");
+		Log::error("Failed to initialize the key binding handler");
 		return app::AppState::InitFailure;
 	}
 	if (!_keybindingHandler.load("keybindings.cfg")) {
