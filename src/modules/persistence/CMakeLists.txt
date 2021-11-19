@@ -61,15 +61,19 @@ generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl PersistenceMode
 
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB} test-app)
-generate_db_models(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)
+if (UNITTESTS)
+	generate_db_models(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)
+endif()
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 gtest_suite_deps(tests-${LIB} ${LIB} test-app)
-generate_db_models(tests-${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)
+if (UNITTESTS)
+	generate_db_models(tests-${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.tbl TestModels.h)
+endif()
 gtest_suite_end(tests-${LIB})
 
-if (PostgreSQL_FOUND)
+if (PostgreSQL_FOUND AND UNITTESTS)
 	target_include_directories(tests-${LIB} PRIVATE ${PostgreSQL_INCLUDE_DIRS} /usr/include/postgresql/)
 	target_include_directories(tests PRIVATE ${PostgreSQL_INCLUDE_DIRS} /usr/include/postgresql/)
 endif()
