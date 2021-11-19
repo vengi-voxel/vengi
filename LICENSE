@@ -22,12 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Assets
 
-The voxel models included here are released under CC BY-NC 3.0
+The assets included here are either released under CC BY-SA 3.0
 
-https://creativecommons.org/licenses/by-nc/3.0/
+https://creativecommons.org/licenses/by-sa/3.0/
 
-Every other asset (like the fonts) bring their own license which you can find next
-to the files.
-
-If you are going to package this for e.g. linux distributions, you can just skip
-the voxel models (*.qb) and everything from data/tests*
+or bring their own license file which you can find next to the files (e.g. the fonts).
