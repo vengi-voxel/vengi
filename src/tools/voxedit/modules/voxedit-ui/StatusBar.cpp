@@ -3,6 +3,7 @@
  */
 
 #include "StatusBar.h"
+#include "ScopedStyle.h"
 #include "core/StringUtil.h"
 #include "video/WindowedApp.h"
 #include "voxedit-util/Config.h"
@@ -27,7 +28,8 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 
 	id.c_str()[id.size() - 1] = '0';
 	core::string::formatBuf(buf, sizeof(buf), "%i", v.x);
-	ImGui::PushStyleColor(ImGuiCol_Text, core::Color::Red);
+	ui::imgui::ScopedStyle style;
+	style.setColor(ImGuiCol_Text, core::Color::Red);
 	ImGui::PushItemWidth(width);
 	if (ImGui::InputText(id.c_str(), buf, sizeof(buf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
 		retVal = true;
@@ -37,7 +39,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 
 	id.c_str()[id.size() - 1] = '1';
 	core::string::formatBuf(buf, sizeof(buf), "%i", v.y);
-	ImGui::PushStyleColor(ImGuiCol_Text, core::Color::Green);
+	style.setColor(ImGuiCol_Text, core::Color::Green);
 	ImGui::PushItemWidth(width);
 	if (ImGui::InputText(id.c_str(), buf, sizeof(buf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
 		retVal = true;
@@ -47,15 +49,13 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 
 	id.c_str()[id.size() - 1] = '2';
 	core::string::formatBuf(buf, sizeof(buf), "%i", v.z);
-	ImGui::PushStyleColor(ImGuiCol_Text, core::Color::Blue);
+	style.setColor(ImGuiCol_Text, core::Color::Blue);
 	ImGui::PushItemWidth(width);
 	if (ImGui::InputText(id.c_str(), buf, sizeof(buf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
 		retVal = true;
 		v.z = core::string::toInt(buf);
 	}
 	ImGui::SameLine(0.0f, 2.0f);
-
-	ImGui::PopStyleColor(3);
 
 	return retVal;
 }

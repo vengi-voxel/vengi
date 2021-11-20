@@ -3,6 +3,7 @@
  */
 
 #include "Viewport.h"
+#include "ScopedStyle.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/Common.h"
@@ -51,9 +52,10 @@ void Viewport::update() {
 	static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
 
 	_hovered = false;
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ui::imgui::ScopedStyle style;
+	style.setWindowRounding(0.0f);
+	style.setWindowBorderSize(0.0f);
+	style.setWindowPadding(ImVec2(0.0f, 0.0f));
 	int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar;
 	if (sceneMgr().dirty()) {
 		sceneWindowFlags |= ImGuiWindowFlags_UnsavedDocument;
@@ -136,7 +138,6 @@ void Viewport::update() {
 		}
 	}
 	ImGui::End();
-	ImGui::PopStyleVar(3);
 }
 
 void Viewport::shutdown() {
