@@ -28,11 +28,13 @@
 
 namespace voxelformat {
 
+#define VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED (1 << 0)
+
 // this is the list of supported voxel volume formats that are have importers implemented
 const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
+	{"Qubicle Binary", "qb", nullptr, 0u},
 	{"MagicaVoxel", "vox", [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, 0u},
 	{"Qubicle Binary Tree", "qbt", [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, 0u},
-	{"Qubicle Binary", "qb", nullptr, 0u},
 	{"Qubicle Project", "qbcl", [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 	{"Sandbox VoxEdit", "vxm", [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
 			|| magic == FourCC('V','X','M','B') || magic == FourCC('V','X','M','C')
@@ -58,9 +60,9 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
 // this is the list of supported voxel or mesh formats that have exporters implemented
 const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
+	{"Qubicle Binary", "qb", nullptr, 0u},
 	{"MagicaVoxel", "vox", nullptr, 0u},
 	{"Qubicle Binary Tree", "qbt", nullptr, 0u},
-	{"Qubicle Binary", "qb", nullptr, 0u},
 	//{"Qubicle Project", "qbcl", nullptr, 0u},
 	{"Sandbox VoxEdit", "vxm", nullptr, 0u},
 	{"BinVox", "binvox", nullptr, 0u},

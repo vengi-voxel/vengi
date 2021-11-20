@@ -9,8 +9,6 @@
 
 namespace io {
 
-#define VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED (1 << 0)
-
 struct FormatDescription {
 	const char *name;
 	const char *ext; /**< just the file extension */
