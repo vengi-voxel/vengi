@@ -71,7 +71,7 @@ void Viewport::update() {
 
 			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
 			contentSize.y -= (float)headerSize;
-			if (resize(contentSize)) {
+			if (setupFrameBuffer(contentSize)) {
 				const double deltaFrameSeconds = app->deltaFrameSeconds();
 				_controller.update(deltaFrameSeconds);
 
@@ -173,7 +173,7 @@ void Viewport::resetCamera() {
 	_controller.resetCamera(region);
 }
 
-bool Viewport::resize(const glm::ivec2& frameBufferSize) {
+bool Viewport::setupFrameBuffer(const glm::ivec2& frameBufferSize) {
 	if (frameBufferSize.x <= 0 || frameBufferSize.y <= 0) {
 		return false;
 	}

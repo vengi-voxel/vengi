@@ -25,7 +25,7 @@ private:
 	core::VarPtr _debug;
 
 	void renderToFrameBuffer();
-	bool resize(const glm::ivec2& frameBufferSize);
+	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
 
 public:
 	Viewport(const core::String& id);
