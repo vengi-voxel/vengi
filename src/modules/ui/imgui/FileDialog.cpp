@@ -94,9 +94,10 @@ bool FileDialog::readDir() {
 void FileDialog::bookMarkEntry(const core::String& path, float width, const char *title, const char *icon) {
 	const ImVec2 size(width, 0);
 	if (icon != nullptr) {
+		const float x = ImGui::GetCursorPosX();
 		ImGui::TextUnformatted(icon);
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(1.5f * (float)imguiApp()->fontSize());
+		ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
 	}
 	if (title == nullptr) {
 		title = path.c_str();
@@ -107,7 +108,26 @@ void FileDialog::bookMarkEntry(const core::String& path, float width, const char
 	ImGui::TooltipText("%s", path.c_str());
 }
 
-void FileDialog::bookmarkPanel() {
+void FileDialog::removeBookmark(const core::String &bookmark) {
+	core::VarPtr bookmarks = core::Var::getSafe(cfg::UIBookmarks);
+
+	core::DynamicArray<core::String> bm;
+	core::string::splitString(bookmarks->strVal(), bm, ";");
+	core::String newBookmarks;
+	newBookmarks.reserve(bookmarks->strVal().size());
+	for (const core::String &path : bm) {
+		if (path == bookmark) {
+			continue;
+		}
+		if (!newBookmarks.empty()) {
+			newBookmarks.append(";");
+		}
+		newBookmarks.append(path);
+	}
+	bookmarks->setVal(newBookmarks);
+}
+
+void FileDialog::bookmarkPanel(const core::String &bookmarks) {
 	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(ImGui::Size(200), ImGui::Size(300)), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 	bool specialDirs = false;
@@ -131,6 +151,18 @@ void FileDialog::bookmarkPanel() {
 	const io::Paths& paths = io::filesystem()->paths();
 	for (const core::String& path : paths) {
 		const core::String& absPath = io::filesystem()->absolutePath(path);
+		bookMarkEntry(absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
+	}
+
+	core::DynamicArray<core::String> bm;
+	core::string::splitString(bookmarks, bm, ";");
+	for (const core::String& path : bm) {
+		const core::String& absPath = io::filesystem()->absolutePath(path);
+		if (ImGui::Button(ICON_FK_TRASH)) {
+			removeBookmark(path);
+		}
+		ImGui::TooltipText("Delete this bookmark");
+		ImGui::SameLine();
 		bookMarkEntry(absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
 	}
 
@@ -336,11 +368,24 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 		}
 		_showHidden = core::Var::getSafe(cfg::UIShowHidden);
 		if (ImGui::BeginPopupModal(title, open)) {
+			core::VarPtr bookmarks = core::Var::get(cfg::UIBookmarks, "");
+			if (ImGui::Button(ICON_FK_BOOKMARK)) {
+				removeBookmark(_currentPath);
+				core::String bm = bookmarks->strVal();
+				if (bm.empty()) {
+					bm.append(_currentPath);
+				} else {
+					bm.append(";" + _currentPath);
+				}
+				bookmarks->setVal(bm);
+			}
+			ImGui::TooltipText("Add a bookmark for the current active folder");
+			ImGui::SameLine();
 			ImGui::TextUnformatted(ICON_FK_FOLDER_OPEN_O " Current path: ");
 			ImGui::SameLine();
 			ImGui::TextUnformatted(_currentPath.c_str());
 
-			bookmarkPanel();
+			bookmarkPanel(bookmarks->strVal());
 
 			ImGui::SameLine();
 

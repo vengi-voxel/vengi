@@ -44,8 +44,9 @@ private:
 	void applyFilter();
 	bool readDir();
 	void directoryPanel();
+	void removeBookmark(const core::String &bookmark);
 	void bookMarkEntry(const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
-	void bookmarkPanel();
+	void bookmarkPanel(const core::String &bookmarks);
 	/**
 	 * @return @c true if a file was double clicked
 	 */
