@@ -355,7 +355,7 @@ bool Filesystem::isRelativePath(const core::String& name) {
 
 bool Filesystem::registerPath(const core::String& path) {
 	if (!core::string::endsWith(path, "/")) {
-		Log::error("Failed to register data path: '%s'.", path.c_str());
+		Log::error("Failed to register data path: '%s' - it must end on /.", path.c_str());
 		return false;
 	}
 	_paths.push_back(path);
