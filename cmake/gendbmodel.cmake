@@ -8,7 +8,7 @@ macro(generate_db_models TARGET INPUT OUTPUT)
 		add_custom_command(
 			OUTPUT ${GEN_DIR}${OUTPUT}
 			COMMENT "Generate ${OUTPUT}"
-			COMMAND ${DATABASETOOL_EXECUTABLE} --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT}
+			COMMAND APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/ ${DATABASETOOL_EXECUTABLE} --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT}
 			DEPENDS ${INPUT}
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 		)
@@ -16,7 +16,7 @@ macro(generate_db_models TARGET INPUT OUTPUT)
 		add_custom_command(
 			OUTPUT ${GEN_DIR}${OUTPUT}
 			COMMENT "Generate ${OUTPUT}"
-			COMMAND databasetool --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT}
+			COMMAND APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/ $<TARGET_FILE:databasetool> --tablefile ${INPUT} --outfile ${GEN_DIR}${OUTPUT}
 			DEPENDS databasetool ${INPUT}
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 		)
