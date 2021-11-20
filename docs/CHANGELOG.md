@@ -7,6 +7,7 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 General:
 
    - Support loading just the thumbnails from voxel formats
+   - Support bigger volume sizes for a few formats
 
 Thumbnailer:
 

@@ -2,6 +2,7 @@ vengi (0.0.14.0-1) UNRELEASED; urgency=low
 
   * General:
   * Support loading just the screenshots from voxel formats
+  * Support bigger volume sizes for a few formats
 
   * Thumbnailer:
   * Added qbcl thumbnail support
