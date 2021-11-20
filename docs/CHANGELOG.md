@@ -6,8 +6,11 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 General:
 
+   - License for our own voxel models is now CC-BY-SA
    - Support loading just the thumbnails from voxel formats
    - Support bigger volume sizes for a few formats
+   - Don't polute the home directory with build dir settings
+   - Fixed gamma handling in shaders
 
 Thumbnailer:
 

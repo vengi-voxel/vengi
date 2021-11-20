@@ -1,8 +1,11 @@
 vengi (0.0.14.0-1) UNRELEASED; urgency=low
 
   * General:
+  * License for our own voxel models is now CC-BY-SA
   * Support loading just the screenshots from voxel formats
   * Support bigger volume sizes for a few formats
+  * Don't polute the home directory with build dir settings
+  * Fixed gamma handling in shaders
 
   * Thumbnailer:
   * Added qbcl thumbnail support
