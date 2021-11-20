@@ -1,6 +1,6 @@
-if (CLIENT)
+if (OPENWORLD_CLIENT)
 	add_subdirectory(client)
 endif()
-if (SERVER)
+if (OPENWORLD_SERVER)
 	add_subdirectory(server)
 endif()
