@@ -42,7 +42,7 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 
 	char *prefPath = SDL_GetPrefPath(_organisation.c_str(), _appname.c_str());
 	if (prefPath == nullptr) {
-		_homePath = "";
+		_homePath = "./";
 	} else {
 		_homePath = prefPath;
 		normalizePath(_homePath);
@@ -57,12 +57,14 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 #ifdef PKGDATADIR
 	core_assert_always(registerPath(PKGDATADIR));
 #endif
-	const core::VarPtr& corePath = core::Var::get(cfg::CorePath, "", 0, "Specifies an additional filesystem search path");
+	const core::VarPtr& corePath = core::Var::get(cfg::CorePath, "", 0, "Specifies an additional filesystem search path - must end on /");
 	if (!corePath->strVal().empty()) {
 		core_assert_always(registerPath(corePath->strVal()));
 	}
 
-	core_assert_always(registerPath(_basePath));
+	if (!_basePath.empty()) {
+		registerPath(_basePath);
+	}
 
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
