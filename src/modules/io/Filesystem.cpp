@@ -41,11 +41,12 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 	}
 
 	char *prefPath = SDL_GetPrefPath(_organisation.c_str(), _appname.c_str());
-	if (prefPath == nullptr) {
-		_homePath = "./";
-	} else {
+	if (prefPath != nullptr) {
 		_homePath = prefPath;
 		SDL_free(prefPath);
+	}
+	if (_homePath.empty()) {
+		_homePath = "./";
 	}
 	const core::VarPtr& homePathVar = core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 
