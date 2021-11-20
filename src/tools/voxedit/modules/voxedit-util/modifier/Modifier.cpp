@@ -334,7 +334,7 @@ glm::ivec3 Modifier::aabbDim() const {
 bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
 	if (_modifierType == ModifierType::ColorPicker) {
 		if (volume->region().containsPoint(_aabbFirstPos)) {
-			_cursorVoxel = volume->voxel(_aabbFirstPos);
+			setCursorVoxel(volume->voxel(_aabbFirstPos));
 			return true;
 		}
 		return false;
