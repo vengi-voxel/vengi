@@ -38,7 +38,6 @@ public:
 
 	const core::String& id() const;
 
-	void setMode(ViewportController::SceneCameraMode mode = ViewportController::SceneCameraMode::Free);
 	void resetCamera();
 	bool saveImage(const char* filename);
 

@@ -41,7 +41,8 @@ public:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
-	void init(SceneCameraMode mode);
+	bool init();
+	void setMode(SceneCameraMode mode);
 	void resetCamera(const voxel::Region& region);
 
 	RenderMode renderMode() const;

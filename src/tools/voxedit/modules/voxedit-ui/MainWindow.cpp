@@ -66,19 +66,19 @@ void MainWindow::resetCamera() {
 
 bool MainWindow::init() {
 	_scene->init(voxedit::ViewportController::RenderMode::Editor);
-	_scene->setMode(voxedit::ViewportController::SceneCameraMode::Free);
+	_scene->controller().setMode(voxedit::ViewportController::SceneCameraMode::Free);
 
 	_sceneTop->init(voxedit::ViewportController::RenderMode::Editor);
-	_sceneTop->setMode(voxedit::ViewportController::SceneCameraMode::Top);
+	_sceneTop->controller().setMode(voxedit::ViewportController::SceneCameraMode::Top);
 
 	_sceneLeft->init(voxedit::ViewportController::RenderMode::Editor);
-	_sceneLeft->setMode(voxedit::ViewportController::SceneCameraMode::Left);
+	_sceneLeft->controller().setMode(voxedit::ViewportController::SceneCameraMode::Left);
 
 	_sceneFront->init(voxedit::ViewportController::RenderMode::Editor);
-	_sceneFront->setMode(voxedit::ViewportController::SceneCameraMode::Front);
+	_sceneFront->controller().setMode(voxedit::ViewportController::SceneCameraMode::Front);
 
 	_sceneAnimation->init(voxedit::ViewportController::RenderMode::Animation);
-	_sceneAnimation->setMode(voxedit::ViewportController::SceneCameraMode::Free);
+	_sceneAnimation->controller().setMode(voxedit::ViewportController::SceneCameraMode::Free);
 
 	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
 	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1", "Show the grid", core::Var::boolValidator);

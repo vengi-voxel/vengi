@@ -37,8 +37,7 @@ void ViewportController::update(double deltaFrameSeconds) {
 	_camera.update(deltaFrameSeconds);
 }
 
-void ViewportController::init(ViewportController::SceneCameraMode mode) {
-	_camera.setRotationType(video::CameraRotationType::Target);
+void ViewportController::setMode(ViewportController::SceneCameraMode mode) {
 	_camMode = mode;
 	if (mode == ViewportController::SceneCameraMode::Free) {
 		_camera.setMode(video::CameraMode::Perspective);
@@ -47,7 +46,14 @@ void ViewportController::init(ViewportController::SceneCameraMode mode) {
 		//_camera.setMode(video::CameraMode::Orthogonal);
 		_camera.setMode(video::CameraMode::Perspective);
 	}
+}
+
+bool ViewportController::init() {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
+	_camera.setAngles(0.0f, 0.0f, 0.0f);
+	_camera.setFarPlane(5000.0f);
+	_camera.setRotationType(video::CameraRotationType::Target);
+	return true;
 }
 
 void ViewportController::onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {

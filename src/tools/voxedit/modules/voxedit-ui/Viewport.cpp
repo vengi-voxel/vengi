@@ -33,8 +33,11 @@ Viewport::~Viewport() {
 }
 
 bool Viewport::init(ViewportController::RenderMode renderMode) {
+	if (!_controller.init()) {
+		return false;
+	}
 	_controller.setRenderMode(renderMode);
-	setMode(ViewportController::SceneCameraMode::Free);
+	_controller.setMode(ViewportController::SceneCameraMode::Free);
 	resetCamera();
 
 	_debug = core::Var::get("ve_viewportdebugflag", 0);
@@ -193,10 +196,6 @@ bool Viewport::setupFrameBuffer(const glm::ivec2& frameBufferSize) {
 
 	_texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	return true;
-}
-
-void Viewport::setMode(ViewportController::SceneCameraMode mode) {
-	_controller.init(mode);
 }
 
 void Viewport::renderToFrameBuffer() {
