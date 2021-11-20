@@ -79,7 +79,6 @@ constexpr const char *DatabaseMinConnections = "db_minconnections";
 constexpr const char *DatabaseMaxConnections = "db_maxconnections";
 
 constexpr const char *AppHomePath = "app_homepath";
-constexpr const char *AppBasePath = "app_basepath";
 
 constexpr const char *MetricPort = "metric_port";
 constexpr const char *MetricHost = "metric_host";
