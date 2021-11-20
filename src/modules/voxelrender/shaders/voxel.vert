@@ -8,18 +8,27 @@ uniform mat4 u_viewprojection;
 $out vec4 v_pos;
 $out vec4 v_color;
 $out float v_ambientocclusion;
+flat $out uint v_flags;
 
+#include "_voxelflags.glsl"
 #include "_material.vert"
 #include "_shadowmap.vert"
 #include "_ambientocclusion.vert"
 
 void main(void) {
-	uint a_ao = a_info[0];
+	uint a_ao = (a_info[0] & 3u);
+	uint a_flags = ((a_info[0] & ~3u) >> 2u);
 	uint a_colorindex = a_info[1];
 	v_pos = u_model * vec4(a_pos, 1.0);
 
 	int materialColorIndex = int(a_colorindex);
 	vec3 materialColor = u_materialcolor[materialColorIndex].rgb;
+	v_flags = 0u;
+#if r_renderoutline == 0
+	if ((a_flags & FLAGOUTLINE) != 0u)
+#endif
+		v_flags |= FLAGOUTLINE;
+
 	v_color = vec4(materialColor, 1.0);
 
 	v_ambientocclusion = aovalues[a_ao];

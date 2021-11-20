@@ -15,7 +15,7 @@
 namespace voxel {
 
 /**
- * @brief material types 0 - 255 (8 bits)
+ * @brief material types 0 - 31 (5 bits)
  * @note These must match the compute kernel source enum
  */
 enum class VoxelType : uint8_t {
@@ -70,20 +70,21 @@ extern VoxelType getVoxelType(const char *str);
 class Voxel {
 public:
 	constexpr inline Voxel() :
-		_material(VoxelType::Air), _colorIndex(0) {
+		_material(VoxelType::Air), _flags(0), _colorIndex(0) {
 	}
 
-	constexpr inline Voxel(VoxelType material, uint8_t colorIndex) :
-		_material(material), _colorIndex(colorIndex) {
+	constexpr inline Voxel(VoxelType material, uint8_t colorIndex, uint8_t flags = 0u) :
+		_material(material), _flags(flags), _colorIndex(colorIndex) {
 	}
 
 	constexpr inline Voxel(const Voxel& voxel) :
-		_material(voxel._material), _colorIndex(voxel._colorIndex) {
+		_material(voxel._material), _flags(voxel._flags), _colorIndex(voxel._colorIndex) {
 	}
 
 	constexpr inline Voxel& operator=(const Voxel& voxel) {
 		_material = voxel._material;
 		_colorIndex = voxel._colorIndex;
+		_flags = voxel._flags;
 		return *this;
 	}
 
@@ -128,8 +129,16 @@ public:
 		_material = material;
 	}
 
+	inline uint8_t getFlags() const {
+		return _flags;
+	}
+
+	inline void setFlags(uint8_t flags) {
+		_flags = flags;
+	}
 private:
-	VoxelType _material;
+	VoxelType _material:5;
+	uint8_t _flags:3;
 	uint8_t _colorIndex;
 };
 

@@ -8,7 +8,7 @@
 namespace voxel {
 
 static bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
-	return v1.colorIndex == v2.colorIndex && v1.ambientOcclusion == v2.ambientOcclusion;
+	return v1.colorIndex == v2.colorIndex && v1.info == v2.info;
 }
 
 static bool isSameColor(const VoxelVertex& v1, const VoxelVertex& v2) {
@@ -167,6 +167,8 @@ IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t z, cons
 			vertex.position = glm::ivec3(x, y, z) + offset;
 			vertex.colorIndex = materialIn.getColor();
 			vertex.ambientOcclusion = ambientOcclusion;
+			vertex.flags = materialIn.getFlags();
+			vertex.padding = 0u;
 
 			entry.index = meshCurrent->addVertex(vertex) + 1;
 			entry.voxel = materialIn;
@@ -176,7 +178,7 @@ IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t z, cons
 		}
 
 		// If we have an existing vertex and the material matches then we can return it.
-		if (reuseVertices && entry.ambientOcclusion == ambientOcclusion && entry.voxel.isSame(materialIn)) {
+		if (reuseVertices && entry.ambientOcclusion == ambientOcclusion && entry.voxel.getFlags() == materialIn.getFlags() && entry.voxel.isSame(materialIn)) {
 			return entry.index - 1;
 		}
 	}

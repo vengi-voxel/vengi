@@ -30,16 +30,16 @@ inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_
  */
 inline video::Attribute getInfoVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components) {
 	static_assert(sizeof(voxel::VoxelVertex::colorIndex) == sizeof(uint8_t), "Voxel color size doesn't match");
-	static_assert(sizeof(voxel::VoxelVertex::ambientOcclusion) == sizeof(uint8_t), "AO type size doesn't match");
-	static_assert(offsetof(voxel::VoxelVertex, ambientOcclusion) < offsetof(voxel::VoxelVertex, colorIndex), "Layout change of VoxelVertex without change in upload");
+	static_assert(sizeof(voxel::VoxelVertex::info) == sizeof(uint8_t), "AO type size doesn't match");
+	static_assert(offsetof(voxel::VoxelVertex, info) < offsetof(voxel::VoxelVertex, colorIndex), "Layout change of VoxelVertex without change in upload");
 	video::Attribute attrib;
 	attrib.bufferIndex = bufferIndex;
 	attrib.location = attributeLocation;
 	attrib.stride = sizeof(voxel::VoxelVertex);
 	attrib.size = components;
-	attrib.type = video::mapType<decltype(voxel::VoxelVertex::ambientOcclusion)>();
+	attrib.type = video::mapType<decltype(voxel::VoxelVertex::info)>();
 	attrib.typeIsInt = true;
-	attrib.offset = offsetof(voxel::VoxelVertex, ambientOcclusion);
+	attrib.offset = offsetof(voxel::VoxelVertex, info);
 	return attrib;
 }
 

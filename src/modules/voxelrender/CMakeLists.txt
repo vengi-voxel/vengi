@@ -8,6 +8,7 @@ set(SRCS
 )
 set(SRCS_SHADERS
 	shaders/_material.vert
+	shaders/_voxelflags.glsl
 	shaders/voxel.vert shaders/voxel.frag
 	shaders/voxel_indirect.vert shaders/voxel_indirect.frag
 )
