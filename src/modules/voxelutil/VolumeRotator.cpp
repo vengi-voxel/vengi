@@ -38,8 +38,8 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 	voxel::Region destRegion;
 
 	if (increaseSize) {
-		const glm::vec3 rotated1 = glm::rotate(rot, srcRegion.getLowerCornerf() - pivot);
-		const glm::vec3 rotated2 = glm::rotate(rot, srcRegion.getUpperCornerf() - pivot);
+		const glm::vec3 rotated1 = glm::rotate(rot, glm::vec3(0.5) + srcRegion.getLowerCornerf() - pivot);
+		const glm::vec3 rotated2 = glm::rotate(rot, glm::vec3(0.5) + srcRegion.getUpperCornerf() - pivot);
 		const float epsilon = 0.00001f;
 		const glm::vec3 minsf = (glm::min)(rotated1, rotated2) + pivot + epsilon;
 		const glm::vec3 maxsf = (glm::max)(rotated1, rotated2) + pivot + epsilon;
@@ -60,7 +60,7 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 					continue;
 				}
 				const glm::vec3 pos(x - pivot.x, y - pivot.y, z - pivot.z);
-				const glm::vec3 rotatedPos = glm::rotate(rot, pos);
+				const glm::vec3 rotatedPos = glm::rotate(rot, glm::vec3(0.5) + pos);
 				const glm::vec3 newPos = rotatedPos + pivot;
 				const glm::ivec3 volumePos(newPos);
 				if (!destRegion.containsPoint(volumePos)) {
