@@ -145,7 +145,7 @@ void Camera::setSize(const glm::ivec2& windowSize) {
 		return;
 	}
 	_windowSize = windowSize;
-	_dirty = DIRTY_PERSPECTIVE;
+	_dirty = DIRTY_PERSPECTIVE | DIRTY_ORIENTATION;
 }
 
 void Camera::move(const glm::vec3& delta) {
