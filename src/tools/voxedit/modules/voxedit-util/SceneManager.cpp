@@ -672,8 +672,8 @@ void SceneManager::rotate(int layerId, const glm::ivec3& angle, bool increaseSiz
 	} else if (axisRotation && angle == glm::ivec3(0, 0, 90)) {
 		newVolume = voxel::rotateAxis(model, math::Axis::Z);
 	} else {
-		const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getCenterf();
-		newVolume = voxel::rotateVolume(model, angle, voxel::Voxel(), pivot, increaseSize);
+		const glm::vec3 pivot = rotateAroundReferencePosition ? referencePosition() : model->region().getCenter();
+		newVolume = voxel::rotateVolume(model, angle, pivot, increaseSize);
 	}
 	voxel::Region r = newVolume->region();
 	r.accumulate(model->region());
