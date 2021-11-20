@@ -45,12 +45,15 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 		_homePath = "./";
 	} else {
 		_homePath = prefPath;
-		normalizePath(_homePath);
 		SDL_free(prefPath);
-		if (!createDir(_homePath, true)) {
-			Log::error("Could not create home dir at: %s", _homePath.c_str());
-			return false;
-		}
+	}
+	const core::VarPtr& homePathVar = core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
+
+	_homePath = homePathVar->strVal();
+	normalizePath(_homePath);
+	if (!createDir(_homePath, true)) {
+		Log::error("Could not create home dir at: %s", _homePath.c_str());
+		return false;
 	}
 
 	core_assert_always(registerPath(_homePath));
@@ -65,8 +68,6 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 	if (!_basePath.empty()) {
 		registerPath(_basePath);
 	}
-
-	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 
 	parseXDGUserDirs();
 	return true;
