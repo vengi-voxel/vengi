@@ -1166,8 +1166,26 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("rotate", [&] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
-			Log::info("Expected to get x, y and z angles in degrees"
-					" and optionally a boolean to rotate around the reference position");
+			Log::info("Usage: rotate <x> <y> <z> [rotAroundPivot=false]");
+			Log::info("angles are given in degrees");
+			Log::info("rotAroundPivot: rotate around pivot (true)");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		bool rotateAroundReferencePosition = false;
+		if (args.size() >= 4) {
+			rotateAroundReferencePosition = core::string::toBool(args[3]);
+		}
+		rotate(_layerMgr.activeLayer(), glm::ivec3(x, y, z), true, rotateAroundReferencePosition);
+	}).setHelp("Rotate active layer by the given angles (in degree)");
+
+	command::Command::registerCommand("rotateall", [&] (const command::CmdArgs& args) {
+		if (args.size() < 3) {
+			Log::info("Usage: rotateall <x> <y> <z> [rotAroundPivot=false]");
+			Log::info("angles are given in degrees");
+			Log::info("rotAroundPivot: rotate around pivot (true)");
 			return;
 		}
 		const int x = core::string::toInt(args[0]);
