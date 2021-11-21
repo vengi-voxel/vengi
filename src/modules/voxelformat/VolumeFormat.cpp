@@ -67,7 +67,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"Sandbox VoxEdit", "vxm", nullptr, 0u},
 	{"BinVox", "binvox", nullptr, 0u},
 	{"CubeWorld", "cub", nullptr, 0u},
-	{"Build engine", "kvx", nullptr, 0u},
+	//{"Build engine", "kvx", nullptr, 0u},
 	{"Tiberian Sun", "vxl", nullptr, 0u},
 	{"Qubicle Exchange", "qef", nullptr, 0u},
 	{"WaveFront OBJ", "obj", nullptr, 0u},
@@ -267,10 +267,14 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 	} else if (ext == "vxl") {
 		voxel::VXLFormat f;
 		return f.saveGroups(volumes, filePtr);
+	} else if (ext == "vxm") {
+		voxel::VXMFormat f;
+		return f.saveGroups(volumes, filePtr);
 	} else if (ext == "binvox") {
 		voxel::BinVoxFormat f;
 		return f.saveGroups(volumes, filePtr);
 	}
+
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	voxel::QBFormat f;
 	return f.saveGroups(volumes, filePtr);
