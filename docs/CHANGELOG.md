@@ -2,7 +2,7 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
-## 0.0.14 (2021-XX-XX)
+## 0.0.14 (2021-11-21)
 
 General:
 
@@ -11,10 +11,15 @@ General:
    - Support bigger volume sizes for a few formats
    - Don't polute the home directory with build dir settings
    - Fixed gamma handling in shaders
+   - Added bookmark support to the ui dialog
 
 Thumbnailer:
 
    - Added qbcl thumbnail support
+
+VoxEdit:
+
+   - Render the inactive layer in grayscale mode
 
 ## 0.0.13 (2021-10-29)
 
