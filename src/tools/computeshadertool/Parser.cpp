@@ -457,9 +457,14 @@ bool parse(const core::String& buffer, const core::String& computeFilename, core
 			}
 			tok = tok->next;
 			const core::String varvalue = tok->str().c_str();
-			if (constants.find(varname) != constants.end()) {
-				Log::error("Could not register constant %s with value %s (duplicate)", varname.c_str(), varvalue.c_str());
-				return false;
+			auto it = constants.find(varname);
+			if (it != constants.end()) {
+				if (it->value != varvalue) {
+					const simplecpp::Location &l = tok->location;
+					const char *file = l.file().c_str();
+					Log::warn("Warning in %s:%i:%i. Could not register constant %s with value %s (duplicate has value %s)", file, l.line, l.col,
+							varname.c_str(), varvalue.c_str(), it->value.c_str());
+				}
 			}
 			constants.put(varname, varvalue);
 		}
