@@ -65,15 +65,13 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 	for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
 		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
 			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
-				srcSampler.setPosition(x, y, z);
-				const Voxel& v = srcSampler.voxel();
 				const glm::ivec3 volumePos = calcTransform(quat, x, y, z, pivot);
 				if (!destRegion.containsPoint(volumePos)) {
 					continue;
 				}
-
+				srcSampler.setPosition(x, y, z);
 				destSampler.setPosition(volumePos);
-				destSampler.setVoxel(v);
+				destSampler.setVoxel(srcSampler.voxel());
 			}
 		}
 	}
