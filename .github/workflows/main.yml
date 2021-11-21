@@ -9,7 +9,7 @@ jobs:
         - uses: actions/checkout@v1
 
         - name: Setup
-          run: brew install mosquitto libuv sdl2 libpq sdl2_mixer python
+          run: brew install libuv sdl2 libpq sdl2_mixer python
 
         - name: Build
           run: |
@@ -36,7 +36,6 @@ jobs:
             ctest -V -R tests-poi$
             ctest -V -R tests-shadertool$
             ctest -V -R tests-stock$
-            ctest -V -R tests-testtraze$
             ctest -V -R tests-util$
             ctest -V -R tests-uuidutil$
             ctest -V -R tests-video$
@@ -130,7 +129,6 @@ jobs:
             ctest -V -R tests-poi$
             ctest -V -R tests-shadertool$
             ctest -V -R tests-stock$
-            ctest -V -R tests-testtraze$
             ctest -V -R tests-util$
             ctest -V -R tests-uuidutil$
             ctest -V -R tests-video$

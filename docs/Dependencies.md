@@ -17,7 +17,6 @@
   * gtest
   * opencl (optional)
   * libuuid
-  * mosquitto (optional)
 
 Some of these dependencies might not be available as packages in your toolchain - most
 of them are also bundled with the application. But local installed headers always have
@@ -50,11 +49,11 @@ port install postgresql95-server
 ## Brew
 
 ```bash
-brew install mosquitto libuv sdl2 libpq sdl2_mixer
+brew install libuv sdl2 libpq sdl2_mixer
 ```
 
 ## Windows
 
 ```bash
-vcpkg install sdl2 libuv libpq lua glm glslang gtest mosquitto
+vcpkg install sdl2 libuv libpq lua glm glslang gtest
 ```

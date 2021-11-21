@@ -92,10 +92,6 @@ Visit the frustum in the octree.
 
 Just an empty template for new test applications.
 
-## testtraze
-
-* [traze client](Traze.md)
-
 ## testhttpserver
 
 A test application around the http module server for e.g. fuzzy testing purposes.

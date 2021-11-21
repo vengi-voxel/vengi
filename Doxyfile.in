@@ -827,8 +827,7 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = @CMAKE_CURRENT_SOURCE_DIR@/src/tools/glslang \
-                         @CMAKE_CURRENT_SOURCE_DIR@/contrib \
-                         @CMAKE_CURRENT_SOURCE_DIR@/src/tests/testtraze/json.hpp
+                         @CMAKE_CURRENT_SOURCE_DIR@/contrib
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
