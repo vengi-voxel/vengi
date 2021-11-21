@@ -44,7 +44,7 @@ TEST_F(VolumeRotatorTest, testRotate45Y) {
 	delete rotated;
 }
 
-TEST_F(VolumeRotatorTest, testRotate45YNoExtend) {
+TEST_F(VolumeRotatorTest, DISABLED_testRotate45YNoExtend) {
 	const voxel::Region region(0, 10);
 	voxel::RawVolume smallVolume(region);
 	glm::ivec3 pos = region.getCenter();
