@@ -250,7 +250,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		if (version >= 11) {
 			uint32_t size;
 			wrap(stream.readInt(size));
-			stream.skip(size);
+			stream.skip(size); // zipped pixel data
 		} else {
 			uint32_t texAmount;
 			wrap(stream.readInt(texAmount));
@@ -325,14 +325,14 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	Log::debug("Volume of size %u:%u:%u", size.x, size.y, size.z);
 
 	if (version >= 11) {
-		stream.skip(1024);
-		stream.skip(1024);
-		uint8_t chunkAmount;
+		stream.skip(256l * 4l); // palette data rgba
+		stream.skip(256l * 4l); // palette data rgba for emissive materials
+		uint8_t chunkAmount; // palette chunks
 		wrap(stream.readByte(chunkAmount));
 		for (int i = 0; i < (int) chunkAmount; ++i) {
 			char chunkId[1024];
 			wrapBool(stream.readString(sizeof(chunkId), chunkId, true))
-			stream.skip(1);
+			stream.skip(1); // chunk offset
 			stream.skip(1); // chunk length
 		}
 	}
@@ -432,6 +432,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			wrap(stream.readInt(endz))
 			wrap(stream.readInt(normal))
 		}
+		// here might another byte - but it isn't written everytime
 	}
 
 	return true;
