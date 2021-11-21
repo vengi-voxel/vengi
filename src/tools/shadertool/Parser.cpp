@@ -255,9 +255,12 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 				return false;
 			}
 			const core::String varvalue = tok.next();
-			if (shaderStruct.constants.find(varname) != shaderStruct.constants.end()) {
-				Log::warn("Warning in %s:%i:%i. Could not register constant %s with value %s (duplicate)", tok.file(), tok.line(), tok.col(),
-						varname.c_str(), varvalue.c_str());
+			auto it = shaderStruct.constants.find(varname);
+			if (it != shaderStruct.constants.end()) {
+				if (it->value != varvalue) {
+					Log::warn("Warning in %s:%i:%i. Could not register constant %s with value %s (duplicate has value %s)", tok.file(), tok.line(), tok.col(),
+							varname.c_str(), varvalue.c_str(), it->value.c_str());
+				}
 			} else {
 				shaderStruct.constants.put(varname, varvalue);
 			}
