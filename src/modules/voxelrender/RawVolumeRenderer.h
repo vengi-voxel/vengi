@@ -86,7 +86,7 @@ protected:
 public:
 	RawVolumeRenderer();
 
-	void render(const video::Camera& camera, bool shadow = true);
+	void render(const video::Camera& camera, bool shadow = true, std::function<bool(int)> funcGray = [] (int) {return false;});
 	void hide(int idx, bool hide);
 	bool hiddenState(int idx) const;
 

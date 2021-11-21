@@ -430,7 +430,7 @@ void RawVolumeRenderer::hide(int idx, bool hide) {
 	_hidden[idx] = hide;
 }
 
-void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
+void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::function<bool(int)> funcGray) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	if (voxel::materialColorChanged()) {
@@ -516,6 +516,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		const glm::vec2 offset(-0.25f * (float)idx, -0.5f * (float)idx);
 		video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
 		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
+		_voxelShader.setGray(funcGray(idx));
 		_voxelShader.setModel(_model[idx]);
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices[idx]);
 	}

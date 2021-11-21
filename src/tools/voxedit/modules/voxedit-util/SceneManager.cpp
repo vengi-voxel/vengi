@@ -836,7 +836,13 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 		}
 	}
 	if (renderScene) {
-		_volumeRenderer.render(camera, _renderShadow);
+		std::function<bool(int)> func;
+		if (_grayScale->boolVal()) {
+			func = [&](int layer) { return layer != _layerMgr.activeLayer(); };
+		} else {
+			func = [&](int layer) { return false; };
+		}
+		_volumeRenderer.render(camera, _renderShadow, func);
 	}
 	if (renderUI) {
 		if (_editMode == EditMode::Scene) {
@@ -1342,6 +1348,8 @@ void SceneManager::construct() {
 		modifier().setCenterMode(!modifier().centerMode());
 	}).setHelp("Toggle center plane building");
 
+	_grayScale = core::Var::get(cfg::VoxEditGrayInactive, "true");
+	_grayScale->setHelp("Render the inactive layers in gray scale mode");
 	core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->setHelp("Merge similar quads to optimize the mesh");
 	core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->setHelp("Reuse vertices or always create new ones");
 	core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->setHelp("Extra vertices for ambient occlusion");

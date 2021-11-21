@@ -111,6 +111,7 @@ private:
 	core::VarPtr _diffuseColor;
 	core::VarPtr _cameraZoomSpeed;
 	core::VarPtr _modelSpace;
+	core::VarPtr _grayScale;
 
 	math::Axis _lockedAxis = math::Axis::None;
 

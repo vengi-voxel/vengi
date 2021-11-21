@@ -4,6 +4,7 @@ $in uvec2 a_info;
 
 uniform mat4 u_model;
 uniform mat4 u_viewprojection;
+uniform int u_gray;
 
 $out vec4 v_pos;
 $out vec4 v_color;
@@ -29,7 +30,12 @@ void main(void) {
 #endif
 		v_flags |= FLAGOUTLINE;
 
-	v_color = vec4(materialColor, 1.0);
+	if (u_gray != 0) {
+		float gray = (0.21 * materialColor.r + 0.72 * materialColor.g + 0.07 * materialColor.b) / 3.0;
+		v_color = vec4(gray, gray, gray, 1.0);
+	} else {
+		v_color = vec4(materialColor, 1.0);
+	}
 
 	v_ambientocclusion = aovalues[a_ao];
 
