@@ -4,6 +4,10 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 ## 0.0.15 (2021-XX-XX)
 
+General:
+
+   - Fixed missing vxm (version 4) saving support
+
 ## 0.0.14 (2021-11-21)
 
 General:

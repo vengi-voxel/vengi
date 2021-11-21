@@ -1,6 +1,7 @@
 vengi (0.0.15.0-1) UNRELEASED; urgency=low
 
   * General:
+  * Fixed missing vxm (version 4) saving support
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 21 Nov 2021 11:56:02 +0100
 
