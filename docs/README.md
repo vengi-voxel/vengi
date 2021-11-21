@@ -22,7 +22,7 @@ the [compilation](Compilation.md) guide.
 
 ## Images
 
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/dwarf-in-editor.jpeg)
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-new-ui.png)
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/gliding-2020-02-23.png)
 
