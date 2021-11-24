@@ -27,16 +27,14 @@ nav:
   - VoxEdit:
       - voxedit/Index.md
       - voxedit/LUAScript.md
-  - Client/Server:
-      - server/Index.md
-      - server/Setup.md
+  - Games:
+      - OpenWorld: openworld/Index.md
   - Tools:
       - VoxConvert: voxconvert/Index.md
       - Thumbnailer: thumbnailer/Index.md
       - MapView: mapview/Index.md
   - Development:
       - Visual Tests: VisualTests.md
-      - Game Design: GameDesign.md
       - Shader integration: ShaderTool.md
       - Compute Shader integration: ComputeShaderTool.md
       - Persistence: Persistence.md

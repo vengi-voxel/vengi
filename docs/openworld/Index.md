@@ -1,5 +1,13 @@
 # Server
 
+## Setup
+
+[Setup](Setup.md) the server first.
+
+## GameDesign
+
+[GameDesign](GameDesign.md).
+
 ## Architecture
 
 TODO: document server architecture, world, map, ai-zone, chunk management, user handling
