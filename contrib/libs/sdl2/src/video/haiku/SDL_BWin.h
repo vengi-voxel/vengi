@@ -124,7 +124,7 @@ class SDL_BWin:public BDirectWindow
 #ifdef DRAWTHREAD
         wait_for_thread(_draw_thread_id, &result);
 #endif
-        free(_clips);
+        SDL_free(_clips);
         delete _buffer_locker;
     }
 
@@ -184,16 +184,16 @@ class SDL_BWin:public BDirectWindow
             if (info->clip_list_count > _num_clips)
             {
                 if(_clips) {
-                    free(_clips);
+                    SDL_free(_clips);
                     _clips = NULL;
                 }
             }
 
             _num_clips = info->clip_list_count;
             if (_clips == NULL)
-                _clips = (clipping_rect *)malloc(_num_clips*sizeof(clipping_rect));
+                _clips = (clipping_rect *)SDL_malloc(_num_clips*sizeof(clipping_rect));
             if(_clips) {
-                memcpy(_clips, info->clip_list,
+                SDL_memcpy(_clips, info->clip_list,
                     _num_clips*sizeof(clipping_rect));
 
                 _bits = (uint8*) info->bits;

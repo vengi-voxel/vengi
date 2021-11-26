@@ -202,6 +202,7 @@ Wayland_CreateDevice(int devindex)
         return NULL;
     }
 
+    data->initializing = SDL_TRUE;
     data->display = display;
 
     /* Initialize all variables that we clean on shutdown */
@@ -449,15 +450,15 @@ display_handle_done(void *data,
 
     if (driverdata->index == -1) {
         /* First time getting display info, create the VideoDisplay */
+        SDL_bool send_event = driverdata->videodata->initializing ? SDL_FALSE : SDL_TRUE;
+        driverdata->placeholder.orientation = driverdata->orientation;
         driverdata->placeholder.driverdata = driverdata;
-        driverdata->index = SDL_AddVideoDisplay(&driverdata->placeholder, SDL_FALSE);
+        driverdata->index = SDL_AddVideoDisplay(&driverdata->placeholder, send_event);
         SDL_free(driverdata->placeholder.name);
         SDL_zero(driverdata->placeholder);
-
-        dpy = SDL_GetDisplay(driverdata->index);
+    } else {
+        SDL_SendDisplayEvent(dpy, SDL_DISPLAYEVENT_ORIENTATION, driverdata->orientation);
     }
-
-    SDL_SendDisplayEvent(dpy, SDL_DISPLAYEVENT_ORIENTATION, driverdata->orientation);
 }
 
 static void
@@ -489,12 +490,43 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     }
     data = SDL_malloc(sizeof *data);
     SDL_zerop(data);
+    data->videodata = d;
     data->output = output;
+    data->registry_id = id;
     data->scale_factor = 1.0;
     data->index = -1;
 
     wl_output_add_listener(output, &output_listener, data);
     SDL_WAYLAND_register_output(output);
+}
+
+static void
+Wayland_free_display(uint32_t id)
+{
+    int num_displays = SDL_GetNumVideoDisplays();
+    SDL_VideoDisplay *display;
+    SDL_WaylandOutputData *data;
+    int i;
+
+    for (i = 0; i < num_displays; i += 1) {
+        display = SDL_GetDisplay(i);
+        data = (SDL_WaylandOutputData *) display->driverdata;
+        if (data->registry_id == id) {
+            SDL_DelVideoDisplay(i);
+            wl_output_destroy(data->output);
+            SDL_free(data);
+
+            /* Update the index for all remaining displays */
+            num_displays -= 1;
+            for (; i < num_displays; i += 1) {
+                display = SDL_GetDisplay(i);
+                data = (SDL_WaylandOutputData *) display->driverdata;
+                data->index -= 1;
+            }
+
+            return;
+        }
+    }
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
@@ -571,7 +603,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         d->idle_inhibit_manager = wl_registry_bind(d->registry, id, &zwp_idle_inhibit_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "xdg_activation_v1") == 0) {
         d->activation_manager = wl_registry_bind(d->registry, id, &xdg_activation_v1_interface, 1);
-    } else if (strcmp(interface, "zwp_text_input_manager_v3") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_text_input_manager_v3") == 0) {
         Wayland_add_text_input_manager(d, id, version);
     } else if (SDL_strcmp(interface, "wl_data_device_manager") == 0) {
         Wayland_add_data_device_manager(d, id, version);
@@ -593,7 +625,11 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 }
 
 static void
-display_remove_global(void *data, struct wl_registry *registry, uint32_t id) {}
+display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
+{
+    /* We don't get an interface, just an ID, so assume it's a wl_output :shrug: */
+    Wayland_free_display(id);
+}
 
 static const struct wl_registry_listener registry_listener = {
     display_handle_global,
@@ -644,6 +680,8 @@ Wayland_VideoInit(_THIS)
     WAYLAND_wl_display_flush(data->display);
 
     Wayland_InitKeyboard(_this);
+
+    data->initializing = SDL_FALSE;
 
     return 0;
 }

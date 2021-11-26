@@ -221,7 +221,7 @@ TextureSwizzle(PSP_TextureData *psp_texture)
     unsigned int *src = (unsigned int*) psp_texture->data;
 
     unsigned char *data = NULL;
-    data = malloc(psp_texture->size);
+    data = SDL_malloc(psp_texture->size);
 
     int j;
 
@@ -246,7 +246,7 @@ TextureSwizzle(PSP_TextureData *psp_texture)
             blockaddress += rowblocksadd;
     }
 
-    free(psp_texture->data);
+    SDL_free(psp_texture->data);
     psp_texture->data = data;
     psp_texture->swizzled = SDL_TRUE;
 
@@ -272,7 +272,7 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
 
     unsigned char *data = NULL;
 
-    data = malloc(psp_texture->size);
+    data = SDL_malloc(psp_texture->size);
 
     if(!data)
         return 0;
@@ -308,7 +308,7 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
         ydst += dstrow;
     }
 
-    free(psp_texture->data);
+    SDL_free(psp_texture->data);
 
     psp_texture->data = data;
 
@@ -847,7 +847,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const Uint8 g = cmd->data.color.g;
                 const Uint8 b = cmd->data.color.b;
                 const Uint8 a = cmd->data.color.a;
-                const Uint32 color = ((a << 24) | (b << 16) | (g << 8) | r);
+                const Uint32 color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
                 /* !!! FIXME: we could cache drawstate like clear color */
                 sceGuClearColor(color);
                 sceGuClearDepth(0);
@@ -862,7 +862,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const Uint8 g = cmd->data.draw.g;
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
-                const Uint32 color = ((a << 24) | (b << 16) | (g << 8) | r);
+                const Uint32 color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
                 /* !!! FIXME: we could cache draw state like color, texturing, etc */
                 sceGuColor(color);
                 sceGuDisable(GU_TEXTURE_2D);
@@ -880,7 +880,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const Uint8 g = cmd->data.draw.g;
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
-                const Uint32 color = ((a << 24) | (b << 16) | (g << 8) | r);
+                const Uint32 color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
                 /* !!! FIXME: we could cache draw state like color, texturing, etc */
                 sceGuColor(color);
                 sceGuDisable(GU_TEXTURE_2D);
@@ -898,7 +898,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const Uint8 g = cmd->data.draw.g;
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
-                const Uint32 color = ((a << 24) | (b << 16) | (g << 8) | r);
+                const Uint32 color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
                 /* !!! FIXME: we could cache draw state like color, texturing, etc */
                 sceGuColor(color);
                 sceGuDisable(GU_TEXTURE_2D);

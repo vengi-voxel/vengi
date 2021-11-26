@@ -871,7 +871,7 @@ SDL_MapRGBA(const SDL_PixelFormat * format, Uint8 r, Uint8 g, Uint8 b,
         return (r >> format->Rloss) << format->Rshift
             | (g >> format->Gloss) << format->Gshift
             | (b >> format->Bloss) << format->Bshift
-            | ((a >> format->Aloss) << format->Ashift & format->Amask);
+            | ((Uint32)(a >> format->Aloss) << format->Ashift & format->Amask);
     } else {
         return SDL_FindColor(format->palette, r, g, b, a);
     }
@@ -983,7 +983,7 @@ Map1toN(SDL_PixelFormat * src, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod, Uint8 Amod,
         Uint8 G = (Uint8) ((pal->colors[i].g * Gmod) / 255);
         Uint8 B = (Uint8) ((pal->colors[i].b * Bmod) / 255);
         Uint8 A = (Uint8) ((pal->colors[i].a * Amod) / 255);
-        ASSEMBLE_RGBA(&map[i * bpp], dst->BytesPerPixel, dst, R, G, B, A);
+        ASSEMBLE_RGBA(&map[i * bpp], dst->BytesPerPixel, dst, (Uint32)R, (Uint32)G, (Uint32)B, (Uint32)A);
     }
     return (map);
 }
@@ -1225,35 +1225,6 @@ SDL_CalculateGammaRamp(float gamma, Uint16 * ramp)
             ramp[i] = (Uint16) value;
         }
     }
-}
-
-/* Creates a copy of an ARGB8888-format surface's pixels with premultiplied alpha */
-void
-SDL_PremultiplySurfaceAlphaToARGB8888(SDL_Surface *src, Uint32 *dst)
-{
-    Uint8 A, R, G, B;
-    int x, y;
-
-    if (SDL_MUSTLOCK(src))
-        SDL_LockSurface(src);
-
-    for (y = 0; y < src->h; ++y) {
-        Uint32 *src_px = (Uint32*)((Uint8 *)src->pixels + (y * src->pitch));
-        for (x = 0; x < src->w; ++x) {
-            /* Component bytes extraction. */
-            SDL_GetRGBA(*src_px++, src->format, &R, &G, &B, &A);
-
-            /* Alpha pre-multiplication of each component. */
-            R = ((Uint32)A * R) / 255;
-            G = ((Uint32)A * G) / 255;
-            B = ((Uint32)A * B) / 255;
-
-            /* ARGB8888 pixel recomposition. */
-            *dst++ = (((Uint32)A << 24) | ((Uint32)R << 16) | ((Uint32)G << 8) | (B << 0));
-        }
-    }
-    if (SDL_MUSTLOCK(src))
-        SDL_UnlockSurface(src);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

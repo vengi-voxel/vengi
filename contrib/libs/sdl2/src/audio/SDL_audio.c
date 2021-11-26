@@ -687,7 +687,7 @@ SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
     /* Blank out the device and release the mutex. Free it afterwards. */
     current_audio.impl.LockDevice(device);
 
-    /* Keep up to two packets in the pool to reduce future malloc pressure. */
+    /* Keep up to two packets in the pool to reduce future memory allocation pressure. */
     SDL_ClearDataQueue(device->buffer_queue, SDL_AUDIOBUFFERQUEUE_PACKETLEN * 2);
 
     current_audio.impl.UnlockDevice(device);
@@ -1268,6 +1268,7 @@ prepare_audiospec(const SDL_AudioSpec * orig, SDL_AudioSpec * prepared)
     case 2:                    /* Stereo */
     case 4:                    /* Quadrophonic */
     case 6:                    /* 5.1 surround */
+    case 7:                    /* 6.1 surround */
     case 8:                    /* 7.1 surround */
         break;
     default:
@@ -1752,7 +1753,7 @@ SDL_SilenceValueForFormat(const SDL_AudioFormat format)
 {
     switch (format) {
         /* !!! FIXME: 0x80 isn't perfect for U16, but we can't fit 0x8000 in a
-           !!! FIXME:  byte for memset() use. This is actually 0.1953 percent
+           !!! FIXME:  byte for SDL_memset() use. This is actually 0.1953 percent
            !!! FIXME:  off from silence. Maybe just don't use U16. */
         case AUDIO_U16LSB:
         case AUDIO_U16MSB:

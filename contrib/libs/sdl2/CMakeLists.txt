@@ -207,6 +207,11 @@ endif()
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
   set(USE_CLANG TRUE)
   set(OPT_DEF_ASM TRUE)
+  # Visual Studio 2019 v16.2 added support for Clang/LLVM.
+  # Check if a Visual Studio project is being generated with the Clang toolset.
+  if(MSVC)
+    set(MSVC_CLANG TRUE)
+  endif()
 elseif(CMAKE_COMPILER_IS_GNUCC)
   set(USE_GCC TRUE)
   set(OPT_DEF_ASM TRUE)
@@ -222,13 +227,21 @@ if(USE_GCC OR USE_CLANG)
 endif()
 
 # Default option knobs
-if(APPLE OR ARCH_64)
+if(APPLE OR ARCH_64 OR MSVC_CLANG)
   if(NOT "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm")
     set(OPT_DEF_SSEMATH ON)
   endif()
 endif()
 if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA)
   set(OPT_DEF_LIBC ON)
+endif()
+
+if(NOT ("$ENV{CFLAGS}" STREQUAL ""))
+  if(CMAKE_VERSION VERSION_LESS 3.11.0)
+     message(WARNING "SDL's CMakeLists.txt no longer checks the CFLAGS environment.")
+     message(WARNING "Please use CMake's CMAKE_C_FLAGS and CMAKE_BUILD_TYPE variables directly.")
+     message(WARNING "Or upgrade to CMake >= 3.11.0, which respects the CFLAGS environment var.")
+  endif()
 endif()
 
 if(MSVC)
@@ -249,6 +262,15 @@ if(MSVC)
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
         CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
       string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
+    endforeach(flag_var)
+  endif()
+
+  if(MSVC_CLANG)
+    # clang-cl treats '/W4' as '-Wall -Wextra' -- we don't need -Wextra.
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+      string(REGEX REPLACE "/W4" "/W3" ${flag_var} "${${flag_var}}")
     endforeach(flag_var)
   endif()
 endif()
@@ -288,7 +310,8 @@ endif()
 target_compile_definitions(sdl-build-options INTERFACE "-DUSING_GENERATED_CONFIG_H")
 target_include_directories(sdl-build-options BEFORE INTERFACE "${SDL2_BINARY_DIR}/include")
 target_include_directories(sdl-build-options INTERFACE "${SDL2_SOURCE_DIR}/include")
-if(USE_GCC OR USE_CLANG)
+# Note: The clang toolset for Visual Studio does not support the '-idirafter' option.
+if(USE_GCC OR (USE_CLANG AND NOT MSVC_CLANG))
   # !!! FIXME: do we _need_ to mess with CMAKE_C_FLAGS here?
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -idirafter \"${SDL2_SOURCE_DIR}/src/video/khronos\"")
 else()
@@ -489,8 +512,12 @@ endif()
 # Compiler option evaluation
 if(USE_GCC OR USE_CLANG)
   # Check for -Wall first, so later things can override pieces of it.
+  # Note: clang-cl treats -Wall as -Weverything (which is very loud),
+  #       /W3 as -Wall, and /W4 as -Wall -Wextra.  So: /W3 is enough.
   check_c_compiler_flag(-Wall HAVE_GCC_WALL)
-  if(HAVE_GCC_WALL)
+  if(MSVC_CLANG)
+    list(APPEND EXTRA_CFLAGS "/W3")
+  elseif(HAVE_GCC_WALL)
     list(APPEND EXTRA_CFLAGS "-Wall")
     if(HAIKU)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-multichar")
@@ -586,7 +613,7 @@ if(SDL_ASSEMBLY)
     # TODO: Those all seem to be quite GCC specific - needs to be
     # reworked for better compiler support
     set(HAVE_ASSEMBLY TRUE)
-    if(MMX)
+    if(SDL_MMX)
       set(CMAKE_REQUIRED_FLAGS "-mmmx")
       check_c_source_compiles("
           #ifdef __MINGW32__
@@ -703,8 +730,9 @@ if(SDL_ASSEMBLY)
             list(APPEND EXTRA_CFLAGS "-mfpmath=387")
           endif()
         endif()
-        set(HAVE_SSEMATH TRUE)
       endif()
+    else()
+      set(HAVE_SSEMATH TRUE)
     endif()
 
     check_include_file("immintrin.h" HAVE_IMMINTRIN_H)
@@ -987,7 +1015,7 @@ if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_DUMMY 1)
     file(GLOB VIDEO_DUMMY_SOURCES ${SDL2_SOURCE_DIR}/src/video/dummy/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${VIDEO_DUMMY_SOURCES})
-    set(HAVE_DUMMY TRUE)
+    set(HAVE_DUMMYVIDEO TRUE)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
   if(SDL_OFFSCREEN)
@@ -1499,7 +1527,7 @@ elseif(WINDOWS)
     if(DEFINED MSVC_VERSION AND NOT ${MSVC_VERSION} LESS 1700)
         set(USE_WINSDK_DIRECTX TRUE)
     endif()
-    if(NOT CMAKE_COMPILER_IS_MINGW AND NOT USE_WINSDK_DIRECTX)
+    if(NOT MINGW AND NOT USE_WINSDK_DIRECTX)
       if("$ENV{DXSDK_DIR}" STREQUAL "")
         message_error("DIRECTX requires the \$DXSDK_DIR environment variable to be set")
       endif()
@@ -1517,7 +1545,7 @@ elseif(WINDOWS)
     check_include_file(dxgi.h HAVE_DXGI_H)
     if(HAVE_D3D_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H)
       set(HAVE_DIRECTX TRUE)
-      if(NOT CMAKE_COMPILER_IS_MINGW AND NOT USE_WINSDK_DIRECTX)
+      if(NOT MINGW AND NOT USE_WINSDK_DIRECTX)
       # TODO: change $ENV{DXSDL_DIR} to get the path from the include checks
         target_link_directories(sdl-build-options INTERFACE "$$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}")
         target_include_directories(sdl-build-options INTERFACE "$ENV{DXSDK_DIR}\\Include")
@@ -1566,6 +1594,7 @@ elseif(WINDOWS)
 
     if(SDL_WASAPI AND HAVE_AUDIOCLIENT_H AND HAVE_MMDEVICEAPI_H)
       set(SDL_AUDIO_DRIVER_WASAPI 1)
+      set(HAVE_WASAPI TRUE)
       file(GLOB WASAPI_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/wasapi/*.c)
       if(WINDOWS_STORE)
         list(APPEND WASAPI_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/wasapi/SDL_wasapi_winrt.cpp)
@@ -1669,8 +1698,6 @@ elseif(WINDOWS)
     )
   endif()
 
-  # TODO: in configure.ac the check for timers is set on
-  # cygwin | mingw32* - does this include mingw32CE?
   if(SDL_TIMERS)
     set(SDL_TIMER_WINDOWS 1)
     file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/windows/*.c)
@@ -1709,23 +1736,22 @@ elseif(WINDOWS)
   endif()
 
   if(SDL_JOYSTICK)
+    file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/windows/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
+
     if(NOT WINDOWS_STORE)
       set(SDL_JOYSTICK_RAWINPUT 1)
     endif()
-    file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/windows/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
     if(HAVE_DINPUT_H)
       set(SDL_JOYSTICK_DINPUT 1)
       list(APPEND EXTRA_LIBS dinput8)
     endif()
     if(HAVE_XINPUT_H)
       set(SDL_JOYSTICK_XINPUT 1)
+      set(HAVE_XINPUT TRUE)
       if(HAVE_WINDOWS_GAMING_INPUT_H)
         set(SDL_JOYSTICK_WGI 1)
       endif()
-    endif()
-    if(NOT HAVE_DINPUT_H AND NOT HAVE_XINPUT_H)
-      set(SDL_JOYSTICK_WINMM 1)
     endif()
     set(HAVE_SDL_JOYSTICK TRUE)
 
@@ -1768,6 +1794,7 @@ elseif(APPLE)
     set(SDL_FRAMEWORK_CARBON 1)
   endif()
   set(SDL_FRAMEWORK_FOUNDATION 1)
+  set(SDL_FRAMEWORK_COREVIDEO 1)
 
   # Requires the darwin file implementation
   if(SDL_FILE)
@@ -1776,8 +1803,6 @@ elseif(APPLE)
     # !!! FIXME: modern CMake doesn't need "LANGUAGE C" for Objective-C.
     set_source_files_properties(${EXTRA_SOURCES} PROPERTIES LANGUAGE C)
     set(HAVE_SDL_FILE TRUE)
-    # !!! FIXME: why is COREVIDEO inside this if() block?
-    set(SDL_FRAMEWORK_COREVIDEO 1)
   else()
     message_error("SDL_FILE must be enabled to build on MacOS X")
   endif()
@@ -1808,8 +1833,9 @@ elseif(APPLE)
   endif()
 
   if(SDL_JOYSTICK)
+    file(GLOB MFI_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/iphoneos/*.m)
     if(IOS OR TVOS)
-      file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/iphoneos/*.m ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
+      file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
       set(SDL_JOYSTICK_MFI 1)
       if(IOS)
         set(SDL_FRAMEWORK_COREMOTION 1)
@@ -1818,13 +1844,37 @@ elseif(APPLE)
       set(SDL_FRAMEWORK_COREHAPTICS 1)
       set(HAVE_SDL_SENSORS 1)
     else()
-      file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/darwin/*.c ${SDL2_SOURCE_DIR}/src/joystick/iphoneos/*.m)
-      # FIXME: add checks for SDL_JOYSTICK_MFI???
+      file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/darwin/*.c)
+      set_source_files_properties(${MFI_JOYSTICK_SOURCES} PROPERTIES COMPILE_FLAGS -fobjc-weak)
+      check_objc_source_compiles("
+          #include <AvailabilityMacros.h>
+          #include <TargetConditionals.h>
+          #import <Foundation/Foundation.h>
+          #import <GameController/GameController.h>
+          #if MAC_OS_X_VERSION_MIN_REQUIRED < 1080
+          #error GameController framework doesn't work on this configuration
+          #endif
+          #if TARGET_CPU_X86
+          #error GameController framework doesn't work on this configuration
+          #endif
+          int main() {}" HAVE_FRAMEWORK_GAMECONTROLLER)
+      check_objc_source_compiles("
+          #include <AvailabilityMacros.h>
+          #include <TargetConditionals.h>
+          #import <Foundation/Foundation.h>
+          #import <CoreHaptics/CoreHaptics.h>
+          int main() {}" HAVE_FRAMEWORK_COREHAPTICS)
+      if(HAVE_FRAMEWORK_GAMECONTROLLER AND HAVE_FRAMEWORK_COREHAPTICS)
+        # Only enable MFI if we also have CoreHaptics to ensure rumble works
+        set(SDL_JOYSTICK_MFI 1)
+        set(SDL_FRAMEWORK_GAMECONTROLLER 1)
+        set(SDL_FRAMEWORK_COREHAPTICS 1)
+      endif()
       set(SDL_JOYSTICK_IOKIT 1)
       set(SDL_FRAMEWORK_IOKIT 1)
       set(SDL_FRAMEWORK_FF 1)
     endif()
-    set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
+    set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES} ${MFI_JOYSTICK_SOURCES})
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
 
@@ -2013,7 +2063,9 @@ elseif(APPLE)
   endif()
   if(SDL_FRAMEWORK_GAMECONTROLLER)
     find_library(GAMECONTROLLER GameController)
-    list(APPEND EXTRA_LIBS ${GAMECONTROLLER})
+    if(GAMECONTROLLER)
+      list(APPEND EXTRA_LDFLAGS "-Wl,-weak_framework,GameController")
+    endif()
   endif()
   if(SDL_FRAMEWORK_METAL)
     if(IOS OR TVOS)
@@ -2213,7 +2265,6 @@ elseif(VITA)
     file(GLOB VITA_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/vita/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${VITA_VIDEO_SOURCES})
     set(HAVE_SDL_VIDEO TRUE)
-
 
     if(VIDEO_VITA_PIB)
       check_include_file(pib.h HAVE_PIGS_IN_BLANKET_H)
@@ -2618,12 +2669,9 @@ if(NOT WINDOWS_STORE)
   add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2main ALIAS SDL2main)
+  target_include_directories(SDL2main BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
   target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
   set(_INSTALL_LIBS "SDL2main")
-endif()
-
-if (ANDROID AND HAVE_HIDAPI)
-  set(_INSTALL_LIBS ${_INSTALL_LIBS} "hidapi")
 endif()
 
 if(ANDROID)
@@ -2657,7 +2705,8 @@ if(SDL_SHARED)
       SOVERSION ${LT_REVISION}
       OUTPUT_NAME "SDL2")
   endif()
-  if(MSVC AND NOT SDL_LIBC)
+  # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
+  if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG)
     # Don't try to link with the default set of libraries.
     if(NOT WINDOWS_STORE)
       set_target_properties(SDL2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
@@ -2673,24 +2722,6 @@ if(SDL_SHARED)
   target_link_libraries(SDL2 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
 endif()
 
-if(ANDROID)
-  if(HAVE_HIDAPI)
-    add_library(hidapi SHARED ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
-    # alias target for in-tree builds
-    add_library(SDL2::hidapi ALIAS hidapi)
-  endif()
-
-  if(MSVC AND NOT SDL_LIBC)
-    # Don't try to link with the default set of libraries.
-    set_target_properties(hidapi PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
-    set_target_properties(hidapi PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
-    set_target_properties(hidapi PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
-  endif()
-  if(HAVE_HIDAPI)
-    target_link_libraries(hidapi log)
-  endif()
-endif()
-
 if(SDL_STATIC)
   set (BUILD_SHARED_LIBS FALSE)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
@@ -2704,7 +2735,8 @@ if(SDL_STATIC)
     # clobbered, when the suffix is realized via subsequent rename.
   endif()
   set_target_properties(SDL2-static PROPERTIES POSITION_INDEPENDENT_CODE ${SDL_STATIC_PIC})
-  if(MSVC AND NOT SDL_LIBC)
+  # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
+  if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG)
     set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
     set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
     set_target_properties(SDL2-static PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
@@ -2775,7 +2807,7 @@ if(NOT (WINDOWS OR CYGWIN) OR MINGW)
   endif()
   install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
   # TODO: what about the .spec file? Is it only needed for RPM creation?
-  install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_FULL_DATAROOTDIR}/aclocal")
+  install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
 endif()
 
 endif(FALSE)

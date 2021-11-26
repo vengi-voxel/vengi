@@ -475,7 +475,7 @@ gxm_init(SDL_Renderer *renderer)
             SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
             &data->displayBufferUid[i]);
 
-        // memset the buffer to black
+        // SDL_memset the buffer to black
         for (y = 0; y < VITA_GXM_SCREEN_HEIGHT; y++) {
             unsigned int *row = (unsigned int *)data->displayBufferData[i] + y * VITA_GXM_SCREEN_STRIDE;
             for (x = 0; x < VITA_GXM_SCREEN_WIDTH; x++) {
@@ -925,7 +925,7 @@ void gxm_finish(SDL_Renderer *renderer)
         sceGxmSyncObjectDestroy(data->displayBufferSync[i]);
     }
 
-    // free the depth and stencil buffer
+    // Free the depth and stencil buffer
     mem_gpu_free(data->depthBufferUid);
     mem_gpu_free(data->stencilBufferUid);
 
@@ -1040,7 +1040,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
     }
 
     if (!texture_data) {
-        free(texture);
+        SDL_free(texture);
         return NULL;
     }
 
@@ -1104,7 +1104,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
 
             // set up parameters
             SceGxmRenderTargetParams renderTargetParams;
-            memset(&renderTargetParams, 0, sizeof(SceGxmRenderTargetParams));
+            SDL_memset(&renderTargetParams, 0, sizeof(SceGxmRenderTargetParams));
             renderTargetParams.flags = 0;
             renderTargetParams.width = w;
             renderTargetParams.height = h;

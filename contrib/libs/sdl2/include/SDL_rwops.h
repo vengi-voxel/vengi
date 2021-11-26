@@ -385,7 +385,9 @@ extern DECLSPEC void SDLCALL SDL_FreeRW(SDL_RWops * area);
 #define RW_SEEK_END 2       /**< Seek relative to the end of data */
 
 /**
- * Use this macro to get the size of the data stream in an SDL_RWops.
+ * Use this function to get the size of the data stream in an SDL_RWops.
+ *
+ * Prior to SDL 2.0.10, this function was a macro.
  *
  * \param context the SDL_RWops to get the size of the data stream from
  * \returns the size of the data stream in the SDL_RWops on success, -1 if
@@ -411,6 +413,8 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
  *
  * SDL_RWseek() is actually a wrapper function that calls the SDL_RWops's
  * `seek` method appropriately, to simplify application development.
+ *
+ * Prior to SDL 2.0.10, this function was a macro.
  *
  * \param context a pointer to an SDL_RWops structure
  * \param offset an offset in bytes, relative to **whence** location; can be
@@ -438,6 +442,8 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWseek(SDL_RWops *context,
  * SDL_RWtell is actually a wrapper function that calls the SDL_RWops's `seek`
  * method, with an offset of 0 bytes from `RW_SEEK_CUR`, to simplify
  * application development.
+ *
+ * Prior to SDL 2.0.10, this function was a macro.
  *
  * \param context a SDL_RWops data stream object from which to get the current
  *                offset
@@ -467,6 +473,8 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWtell(SDL_RWops *context);
  *
  * SDL_RWread() is actually a function wrapper that calls the SDL_RWops's
  * `read` method appropriately, to simplify application development.
+ *
+ * Prior to SDL 2.0.10, this function was a macro.
  *
  * \param context a pointer to an SDL_RWops structure
  * \param ptr a pointer to a buffer to read data into
@@ -500,6 +508,8 @@ extern DECLSPEC size_t SDLCALL SDL_RWread(SDL_RWops *context,
  * SDL_RWwrite is actually a function wrapper that calls the SDL_RWops's
  * `write` method appropriately, to simplify application development.
  *
+ * Prior to SDL 2.0.10, this function was a macro.
+ *
  * \param context a pointer to an SDL_RWops structure
  * \param ptr a pointer to a buffer containing data to write
  * \param size the size of an object to write, in bytes
@@ -532,8 +542,7 @@ extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context,
  * Note that if this fails to flush the stream to disk, this function reports
  * an error, but the SDL_RWops is still invalid once this function returns.
  *
- * SDL_RWclose() is actually a macro that calls the SDL_RWops's `close` method
- * appropriately, to simplify application development.
+ * Prior to SDL 2.0.10, this function was a macro.
  *
  * \param context SDL_RWops structure to close
  * \returns 0 on success or a negative error code on failure; call
@@ -579,6 +588,9 @@ extern DECLSPEC void *SDLCALL SDL_LoadFile_RW(SDL_RWops *src,
  * `datasize`.
  *
  * The data should be freed with SDL_free().
+ *
+ * Prior to SDL 2.0.10, this function was a macro wrapping around
+ * SDL_LoadFile_RW.
  *
  * \param file the path to read all available data from
  * \param datasize if not NULL, will store the number of bytes read
