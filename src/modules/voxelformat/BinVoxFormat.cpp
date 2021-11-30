@@ -215,11 +215,11 @@ bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 	const glm::ivec3& offset = -region.getLowerCorner();
 	const float scale = 1.0f;
 
-	stream.addString("#binvox 1\n", false);
-	stream.addStringFormat(false, "dim %u %u %u\n", width, depth, height);
-	stream.addStringFormat(false, "translate %i %i %i\n", offset.x, offset.z, offset.y);
-	stream.addStringFormat(false, "scale %f\n", scale);
-	stream.addString("data\n", false);
+	stream.writeString("#binvox 1\n", false);
+	stream.writeStringFormat(false, "dim %u %u %u\n", width, depth, height);
+	stream.writeStringFormat(false, "translate %i %i %i\n", offset.x, offset.z, offset.y);
+	stream.writeStringFormat(false, "scale %f\n", scale);
+	stream.writeString("data\n", false);
 
 	uint8_t count = 0u;
 	uint8_t value = 0u;
@@ -233,8 +233,8 @@ bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 		if (voxel.getMaterial() == VoxelType::Air) {
 			if (value != 0u || count == 255u) {
 				if (count > 0u) {
-					stream.addByte(value);
-					stream.addByte(count);
+					stream.writeByte(value);
+					stream.writeByte(count);
 				}
 				voxels += count;
 				count = 0u;
@@ -245,8 +245,8 @@ bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 			const uint8_t v = voxel.getColor();
 			if (value != v || count == 255u) {
 				if (count > 0u) {
-					stream.addByte(value);
-					stream.addByte(count);
+					stream.writeByte(value);
+					stream.writeByte(count);
 				}
 				voxels += count;
 				count = 0u;
@@ -256,8 +256,8 @@ bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 		}
 	}
 	core_assert_msg(count > 0u, "Expected to have at least one voxel left: %i", (int)count);
-	stream.addByte(value);
-	stream.addByte(count);
+	stream.writeByte(value);
+	stream.writeByte(count);
 	voxels += count;
 	delete mergedVolume;
 	const uint32_t expectedVoxels = width * height * depth;

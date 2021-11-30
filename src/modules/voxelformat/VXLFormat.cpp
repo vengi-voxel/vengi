@@ -27,14 +27,14 @@ namespace voxel {
 	}
 
 bool VXLFormat::writeLimbBodyEntry(io::FileStream& stream, voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const {
-	wrapBool(stream.addByte(skipCount))
-	wrapBool(stream.addByte(voxelCount))
+	wrapBool(stream.writeByte(skipCount))
+	wrapBool(stream.writeByte(voxelCount))
 	for (uint8_t y1 = y - voxelCount; y1 < y; ++y1) {
 		const voxel::Voxel& voxel = volume->voxel(x, y1, z);
-		wrapBool(stream.addByte(voxel.getColor()))
-		wrapBool(stream.addByte(0)) // TODO: normal
+		wrapBool(stream.writeByte(voxel.getColor()))
+		wrapBool(stream.writeByte(0)) // TODO: normal
 	}
-	wrapBool(stream.addByte(voxelCount)) // duplicated count
+	wrapBool(stream.writeByte(voxelCount)) // duplicated count
 	skipCount = voxelCount = 0u;
 	return true;
 }
@@ -53,11 +53,11 @@ bool VXLFormat::writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, u
 	Log::debug("limbOffset(%u): %u", limbIdx, (uint32_t)limbOffset);
 
 	for (uint32_t i = 0; i < baseSize; i++) {
-		wrapBool(stream.addInt(-1))
+		wrapBool(stream.writeInt(-1))
 	}
 	offsets.end = stream.pos() - limbSectionOffset;
 	for (uint32_t i = 0; i < baseSize; i++) {
-		wrapBool(stream.addInt(-1))
+		wrapBool(stream.writeInt(-1))
 	}
 	offsets.data = stream.pos() - limbSectionOffset;
 
@@ -97,10 +97,10 @@ bool VXLFormat::writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, u
 
 		const int64_t spanEndPos = stream.pos();
 		wrap(stream.seek(globalSpanStartPos + i * sizeof(uint32_t)))
-		wrapBool(stream.addInt(spanStartPos))
+		wrapBool(stream.writeInt(spanStartPos))
 
 		wrap(stream.seek(globalSpanStartPos + baseSize * sizeof(uint32_t) + i * sizeof(uint32_t)))
-		wrapBool(stream.addInt(spanEndPos - globalSpanStartPos))
+		wrapBool(stream.writeInt(spanEndPos - globalSpanStartPos))
 		wrap(stream.seek(spanEndPos))
 	}
 
@@ -111,49 +111,49 @@ bool VXLFormat::writeLimbHeader(io::FileStream& stream, const VoxelVolumes& volu
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + limbIdx * LimbHeaderSize));
 	const VoxelVolume& v = volumes[limbIdx];
 	wrapBool(stream.append((const uint8_t*)v.name.c_str(), 15))
-	wrapBool(stream.addByte('\0'))
-	wrapBool(stream.addInt(limbIdx))
-	wrapBool(stream.addInt(1))
-	wrapBool(stream.addInt(0))
+	wrapBool(stream.writeByte('\0'))
+	wrapBool(stream.writeInt(limbIdx))
+	wrapBool(stream.writeInt(1))
+	wrapBool(stream.writeInt(0))
 	return true;
 }
 
 bool VXLFormat::writeLimbFooter(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, const LimbOffset& offsets) const {
 	const VoxelVolume& v = volumes[limbIdx];
-	wrapBool(stream.addInt(offsets.start))
-	wrapBool(stream.addInt(offsets.end))
-	wrapBool(stream.addInt(offsets.data))
+	wrapBool(stream.writeInt(offsets.start))
+	wrapBool(stream.writeInt(offsets.end))
+	wrapBool(stream.writeInt(offsets.data))
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
-			wrapBool(stream.addFloat(0.0f)) // TODO: region.getLowerCorner
+			wrapBool(stream.writeFloat(0.0f)) // TODO: region.getLowerCorner
 		}
 	}
 	for (int i = 0; i < 3; ++i) {
-		wrapBool(stream.addFloat(1.0f))
+		wrapBool(stream.writeFloat(1.0f))
 	}
 	const voxel::Region& region = v.volume->region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
-	wrapBool(stream.addByte(size.x))
-	wrapBool(stream.addByte(size.z))
-	wrapBool(stream.addByte(size.y))
-	wrapBool(stream.addByte(2))
+	wrapBool(stream.writeByte(size.x))
+	wrapBool(stream.writeByte(size.z))
+	wrapBool(stream.writeByte(size.y))
+	wrapBool(stream.writeByte(2))
 	return true;
 }
 
 bool VXLFormat::writeHeader(io::FileStream& stream, const VoxelVolumes& volumes) {
-	wrapBool(stream.addString("Voxel Animation"))
-	wrapBool(stream.addInt(1))
-	wrapBool(stream.addInt(volumes.size()))
-	wrapBool(stream.addInt(volumes.size()))
-	wrapBool(stream.addInt(0)) // bodysize is filled later
-	wrapBool(stream.addShort(0x1f10U))
+	wrapBool(stream.writeString("Voxel Animation"))
+	wrapBool(stream.writeInt(1))
+	wrapBool(stream.writeInt(volumes.size()))
+	wrapBool(stream.writeInt(volumes.size()))
+	wrapBool(stream.writeInt(0)) // bodysize is filled later
+	wrapBool(stream.writeShort(0x1f10U))
 	const MaterialColorArray& materialColors = getMaterialColors();
 	const uint32_t paletteSize = materialColors.size();
 	for (uint32_t i = 0; i < paletteSize; ++i) {
 		const glm::u8vec4& rgba = core::Color::getRGBAVec(materialColors[i]);
-		wrapBool(stream.addByte(rgba[0]))
-		wrapBool(stream.addByte(rgba[1]))
-		wrapBool(stream.addByte(rgba[2]))
+		wrapBool(stream.writeByte(rgba[0]))
+		wrapBool(stream.writeByte(rgba[1]))
+		wrapBool(stream.writeByte(rgba[2]))
 	}
 	core_assert(stream.pos() == HeaderSize);
 	return true;
@@ -181,7 +181,7 @@ bool VXLFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	const uint64_t afterBodyPos = stream.pos();
 	const uint64_t bodySize = afterBodyPos - afterHeaderPos;
 	wrap(stream.seek(HeaderBodySizeOffset));
-	wrapBool(stream.addInt(bodySize))
+	wrapBool(stream.writeInt(bodySize))
 	wrap(stream.seek(afterBodyPos));
 
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + LimbHeaderSize * volumes.size() + bodySize));

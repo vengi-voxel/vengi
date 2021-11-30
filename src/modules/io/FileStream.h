@@ -36,19 +36,19 @@ public:
 		return _size - _pos;
 	}
 
-	bool addBool(bool value);
-	bool addByte(uint8_t val);
-	bool addShort(uint16_t word);
-	bool addInt(uint32_t dword);
-	bool addLong(uint64_t dword);
-	bool addFloat(float value);
-	bool addShortBE(uint16_t word);
-	bool addIntBE(uint32_t dword);
-	bool addLongBE(uint64_t dword);
-	bool addFloatBE(float value);
-	bool addStringFormat(bool terminate, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(3);
-	bool addString(const core::String& string, bool terminate = true);
-	bool addFormat(const char *fmt, ...);
+	bool writeBool(bool value);
+	bool writeByte(uint8_t val);
+	bool writeShort(uint16_t word);
+	bool writeInt(uint32_t dword);
+	bool writeLong(uint64_t dword);
+	bool writeFloat(float value);
+	bool writeShortBE(uint16_t word);
+	bool writeIntBE(uint32_t dword);
+	bool writeLongBE(uint64_t dword);
+	bool writeFloatBE(float value);
+	bool writeStringFormat(bool terminate, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(3);
+	bool writeString(const core::String& string, bool terminate = true);
+	bool writeFormat(const char *fmt, ...);
 
 	/**
 	 * @return -1 on error
@@ -162,32 +162,32 @@ public:
 	int64_t pos() const;
 
 	FileStream &operator<<(const uint8_t &x) {
-		addByte(x);
+		writeByte(x);
 		return *this;
 	}
 
 	FileStream &operator<<(const int16_t &x) {
-		addShort(x);
+		writeShort(x);
 		return *this;
 	}
 
 	FileStream &operator<<(const bool &x) {
-		addBool(x);
+		writeBool(x);
 		return *this;
 	}
 
 	FileStream &operator<<(const int32_t &x) {
-		addInt(x);
+		writeInt(x);
 		return *this;
 	}
 
 	FileStream &operator<<(const float &x) {
-		addFloat(x);
+		writeFloat(x);
 		return *this;
 	}
 
 	FileStream &operator<<(const core::String &x) {
-		addString(x);
+		writeString(x);
 		return *this;
 	}
 };
@@ -196,8 +196,8 @@ inline bool FileStream::empty() const {
 	return _size <= 0;
 }
 
-inline bool FileStream::addBool(bool value) {
-	return addByte(value);
+inline bool FileStream::writeBool(bool value) {
+	return writeByte(value);
 }
 
 inline bool FileStream::readBool() {

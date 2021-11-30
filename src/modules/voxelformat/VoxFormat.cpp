@@ -40,10 +40,10 @@ public:
 		uint8_t buf[4];
 		FourCCRev(buf, chunkId);
 		Log::debug("Saving %c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
-		stream.addInt(chunkId);
+		stream.writeInt(chunkId);
 		_chunkSizePos = stream.pos();
-		stream.addInt(0);
-		stream.addInt(0);
+		stream.writeInt(0);
+		stream.writeInt(0);
 	}
 
 	~ScopedChunkWriter() {
@@ -52,7 +52,7 @@ public:
 		core_assert_msg(chunkStart <= currentPos, "%u should be <= %u", (uint32_t)chunkStart, (uint32_t)currentPos);
 		const uint64_t chunkSize = currentPos - chunkStart;
 		_stream.seek(_chunkSizePos);
-		_stream.addInt(chunkSize);
+		_stream.writeInt(chunkSize);
 		_stream.seek(currentPos);
 		uint8_t buf[4];
 		FourCCRev(buf, _chunkId);
@@ -70,14 +70,14 @@ private:
 
 public:
 	ScopedHeader(io::FileStream& stream, uint32_t &chunks) : _stream(stream), _chunks(chunks) {
-		stream.addInt(FourCC('V','O','X',' '));
-		stream.addInt(150);
-		stream.addInt(FourCC('M','A','I','N'));
+		stream.writeInt(FourCC('V','O','X',' '));
+		stream.writeInt(150);
+		stream.writeInt(FourCC('M','A','I','N'));
 		_chunkCountPos = stream.pos();
-		stream.addInt(0);
+		stream.writeInt(0);
 		// this is filled at the end - once we know the final size of the main chunk children
 		_numBytesMainChunkPos = stream.pos();
-		stream.addInt(0);
+		stream.writeInt(0);
 		_headerSize = stream.pos();
 	}
 
@@ -86,9 +86,9 @@ public:
 		const int64_t currentPos = _stream.pos();
 		const int64_t mainChildChunkSize = _stream.pos() - _headerSize;
 		_stream.seek(_chunkCountPos);
-		_stream.addInt(_chunks);
+		_stream.writeInt(_chunks);
 		_stream.seek(_numBytesMainChunkPos);
-		_stream.addInt(mainChildChunkSize);
+		_stream.writeInt(mainChildChunkSize);
 		_stream.seek(currentPos);
 		Log::debug("Chunks in main: %u", _chunks);
 	}
@@ -96,22 +96,22 @@ public:
 
 bool VoxFormat::saveChunk_LAYR(io::FileStream& stream, int modelId, const core::String& name, bool visible) {
 	ScopedChunkWriter scoped(stream, FourCC('L','A','Y','R'));
-	wrapBool(stream.addInt(modelId))
+	wrapBool(stream.writeInt(modelId))
 	wrapBool(saveAttributes({{"_name", name}, {"_hidden", visible ? "0" : "1"}}, stream))
-	wrapBool(stream.addInt((uint32_t)-1)) // must always be -1
+	wrapBool(stream.writeInt((uint32_t)-1)) // must always be -1
 	++_chunks;
 	return true;
 }
 
 bool VoxFormat::saveChunk_nGRP(io::FileStream& stream, NodeId nodeId, uint32_t volumes) {
 	ScopedChunkWriter scoped(stream, FourCC('n','G','R','P'));
-	wrapBool(stream.addInt(nodeId))
+	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
-	wrapBool(stream.addInt(volumes))
+	wrapBool(stream.writeInt(volumes))
 	NodeId childNodeId = nodeId + 1;
 	for (uint32_t i = 0u; i < volumes; ++i) {
 		// transform and shape node pairs
-		wrapBool(stream.addInt(childNodeId + (i * 2u)))
+		wrapBool(stream.writeInt(childNodeId + (i * 2u)))
 	}
 	++_chunks;
 	return true;
@@ -119,10 +119,10 @@ bool VoxFormat::saveChunk_nGRP(io::FileStream& stream, NodeId nodeId, uint32_t v
 
 bool VoxFormat::saveChunk_nSHP(io::FileStream& stream, NodeId nodeId, uint32_t volumeId) {
 	ScopedChunkWriter scoped(stream, FourCC('n','S','H','P'));
-	wrapBool(stream.addInt(nodeId))
+	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
-	wrapBool(stream.addInt(1)) // shapeNodeNumModels
-	wrapBool(stream.addInt(volumeId));
+	wrapBool(stream.writeInt(1)) // shapeNodeNumModels
+	wrapBool(stream.writeInt(volumeId));
 	wrapBool(saveAttributes({}, stream)) // model attributes
 	++_chunks;
 	return true;
@@ -130,12 +130,12 @@ bool VoxFormat::saveChunk_nSHP(io::FileStream& stream, NodeId nodeId, uint32_t v
 
 bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins) {
 	ScopedChunkWriter scoped(stream, FourCC('n','T','R','N'));
-	wrapBool(stream.addInt(nodeId))
+	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
-	wrapBool(stream.addInt(childNodeId))
-	wrapBool(stream.addInt(-1)) // reserved - must be -1
-	wrapBool(stream.addInt(0)) // layerid
-	wrapBool(stream.addInt(1)) // num frames
+	wrapBool(stream.writeInt(childNodeId))
+	wrapBool(stream.writeInt(-1)) // reserved - must be -1
+	wrapBool(stream.writeInt(0)) // layerid
+	wrapBool(stream.writeInt(1)) // num frames
 	const core::String& translationStr = core::string::format("%i %i %i", mins.x, mins.z, mins.y);
 	wrapBool(saveAttributes({{"_r", "4"}, {"_t", translationStr}}, stream))
 	++_chunks;
@@ -144,9 +144,9 @@ bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId chi
 
 bool VoxFormat::saveChunk_SIZE(io::FileStream& stream, const voxel::Region& region) {
 	ScopedChunkWriter scoped(stream, FourCC('S','I','Z','E'));
-	wrapBool(stream.addInt(region.getWidthInVoxels()))
-	wrapBool(stream.addInt(region.getDepthInVoxels()))
-	wrapBool(stream.addInt(region.getHeightInVoxels()))
+	wrapBool(stream.writeInt(region.getWidthInVoxels()))
+	wrapBool(stream.writeInt(region.getDepthInVoxels()))
+	wrapBool(stream.writeInt(region.getHeightInVoxels()))
 	++_chunks;
 	return true;
 }
@@ -160,7 +160,7 @@ bool VoxFormat::saveChunk_PACK(io::FileStream& stream, const VoxelVolumes& volum
 		++modelCount;
 	}
 	ScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
-	wrapBool(stream.addInt(modelCount))
+	wrapBool(stream.writeInt(modelCount))
 	++_chunks;
 	return true;
 }
@@ -176,10 +176,10 @@ bool VoxFormat::saveChunk_RGBA(io::FileStream& stream) {
 	ScopedChunkWriter scoped(stream, FourCC('R','G','B','A'));
 	for (int i = 0; i < numColors; ++i) {
 		const uint32_t rgba = core::Color::getRGBA(materialColors[i]);
-		wrapBool(stream.addInt(rgba))
+		wrapBool(stream.writeInt(rgba))
 	}
 	for (int i = numColors; i < 256; ++i) {
-		wrapBool(stream.addInt(0))
+		wrapBool(stream.writeInt(0))
 	}
 	++_chunks;
 	return true;
@@ -190,18 +190,18 @@ bool VoxFormat::saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* v
 
 	uint32_t numVoxels = 0;
 	const uint64_t numVoxelPos = stream.pos();
-	wrapBool(stream.addInt(numVoxels))
+	wrapBool(stream.writeInt(numVoxels))
 
 	numVoxels = voxelutil::visitVolume(*volume, [&] (int x, int y, int z, const voxel::Voxel& voxel) {
-		stream.addByte(region.getWidthInCells() - (x - region.getLowerX()));
-		stream.addByte(z - region.getLowerZ());
-		stream.addByte(y - region.getLowerY());
+		stream.writeByte(region.getWidthInCells() - (x - region.getLowerX()));
+		stream.writeByte(z - region.getLowerZ());
+		stream.writeByte(y - region.getLowerY());
 		const uint8_t colorIndex = voxel.getColor();
-		stream.addByte(colorIndex + 1);
+		stream.writeByte(colorIndex + 1);
 	});
 	const uint64_t chunkEndPos = stream.pos();
 	wrap(stream.seek(numVoxelPos));
-	wrapBool(stream.addInt(numVoxels));
+	wrapBool(stream.writeInt(numVoxels));
 	wrap(stream.seek(chunkEndPos));
 	++_chunks;
 	return true;
@@ -209,15 +209,15 @@ bool VoxFormat::saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* v
 
 bool VoxFormat::saveAttributes(const Attributes& attributes, io::FileStream& stream) const {
 	Log::debug("Save %i attributes", (int)attributes.size());
-	wrapBool(stream.addInt((uint32_t)attributes.size()))
+	wrapBool(stream.writeInt((uint32_t)attributes.size()))
 	for (const auto& e : attributes) {
 		const core::String& key = e->first;
 		const core::String& value = e->second;
 		Log::debug("Save attribute %s: %s", key.c_str(), value.c_str());
-		wrapBool(stream.addInt(core::utf8::length(key.c_str())))
-		wrapBool(stream.addString(key, false))
-		wrapBool(stream.addInt(core::utf8::length(value.c_str())))
-		wrapBool(stream.addString(value, false))
+		wrapBool(stream.writeInt(core::utf8::length(key.c_str())))
+		wrapBool(stream.writeString(key, false))
+		wrapBool(stream.writeInt(core::utf8::length(value.c_str())))
+		wrapBool(stream.writeString(value, false))
 	}
 	return true;
 }

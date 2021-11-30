@@ -120,9 +120,9 @@ bool QEFFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 
 bool QEFFormat::saveGroups(const VoxelVolumes &volumes, const io::FilePtr &file) {
 	io::FileStream stream(file.get());
-	stream.addString("Qubicle Exchange Format\n", false);
-	stream.addString("Version 0.2\n", false);
-	stream.addString("www.minddesk.com\n", false);
+	stream.writeString("Qubicle Exchange Format\n", false);
+	stream.writeString("Version 0.2\n", false);
+	stream.writeString("www.minddesk.com\n", false);
 
 	RawVolume* mergedVolume = merge(volumes);
 
@@ -135,10 +135,10 @@ bool QEFFormat::saveGroups(const VoxelVolumes &volumes, const io::FilePtr &file)
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
-	stream.addStringFormat(false, "%i %i %i\n", width, depth, height);
-	stream.addStringFormat(false, "%i\n", (int)materialColors.size());
+	stream.writeStringFormat(false, "%i %i %i\n", width, depth, height);
+	stream.writeStringFormat(false, "%i\n", (int)materialColors.size());
 	for (size_t i = 0; i < materialColors.size(); ++i) {
-		stream.addStringFormat(false, "%f %f %f\n", materialColors[i].r, materialColors[i].g, materialColors[i].b);
+		stream.writeStringFormat(false, "%f %f %f\n", materialColors[i].r, materialColors[i].g, materialColors[i].b);
 	}
 
 	for (uint32_t x = 0u; x < width; ++x) {
@@ -157,7 +157,7 @@ bool QEFFormat::saveGroups(const VoxelVolumes &volumes, const io::FilePtr &file)
 				// if (mask && 32 == 32) // front side visible
 				// if (mask && 64 == 64) // back side visible
 				const int vismask = 0x7E; // TODO: this produces voxels where every side is visible, it's up to the importer to fix this atm
-				stream.addStringFormat(false, "%i %i %i %i %i\n", x, z, y, voxel.getColor(), vismask);
+				stream.writeStringFormat(false, "%i %i %i %i %i\n", x, z, y, voxel.getColor(), vismask);
 			}
 		}
 	}

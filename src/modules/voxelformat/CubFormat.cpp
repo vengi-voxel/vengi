@@ -94,9 +94,9 @@ bool CubFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	const uint32_t depth = region.getDepthInVoxels();
 
 	// we have to flip depth with height for our own coordinate system
-	wrapBool(stream.addInt(width))
-	wrapBool(stream.addInt(depth))
-	wrapBool(stream.addInt(height))
+	wrapBool(stream.writeInt(width))
+	wrapBool(stream.writeInt(depth))
+	wrapBool(stream.writeInt(height))
 
 	for (uint32_t y = 0u; y < height; ++y) {
 		for (uint32_t z = 0u; z < depth; ++z) {
@@ -104,16 +104,16 @@ bool CubFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
 				const voxel::Voxel& voxel = sampler.voxel();
 				if (voxel.getMaterial() == VoxelType::Air) {
-					wrapBool(stream.addByte(0))
-					wrapBool(stream.addByte(0))
-					wrapBool(stream.addByte(0))
+					wrapBool(stream.writeByte(0))
+					wrapBool(stream.writeByte(0))
+					wrapBool(stream.writeByte(0))
 					continue;
 				}
 				const glm::vec4& color = materialColors[voxel.getColor()];
 				const glm::u8vec4& rgba = core::Color::getRGBAVec(color);
-				wrapBool(stream.addByte(rgba.r))
-				wrapBool(stream.addByte(rgba.g))
-				wrapBool(stream.addByte(rgba.b))
+				wrapBool(stream.writeByte(rgba.r))
+				wrapBool(stream.writeByte(rgba.g))
+				wrapBool(stream.writeByte(rgba.b))
 			}
 		}
 	}

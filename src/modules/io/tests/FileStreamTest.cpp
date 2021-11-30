@@ -63,9 +63,9 @@ TEST_F(FileStreamTest, testFileStreamWrite) {
 	ASSERT_TRUE(file->validHandle());
 	File* fileRaw = file.get();
 	FileStream stream(fileRaw);
-	EXPECT_TRUE(stream.addInt(1));
+	EXPECT_TRUE(stream.writeInt(1));
 	EXPECT_EQ(4l, stream.size());
-	EXPECT_TRUE(stream.addInt(1));
+	EXPECT_TRUE(stream.writeInt(1));
 	EXPECT_EQ(8l, stream.size());
 	file->close();
 	file->open(io::FileMode::Read);

@@ -94,7 +94,7 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 		return false;
 	}
 
-	wrapSaveFree(stream.addInt(0)); // node type matrix
+	wrapSaveFree(stream.writeInt(0)); // node type matrix
 	const size_t nameLength = volume.name.size();
 	const size_t nameSize = sizeof(uint32_t) + nameLength;
 	const size_t positionSize = 3 * sizeof(uint32_t);
@@ -103,32 +103,32 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 	const size_t sizeSize = 3 * sizeof(uint32_t);
 	const size_t compressedDataSize = sizeof(uint32_t) + realBufSize;
 	const uint32_t datasize = (uint32_t)(nameSize + positionSize + localScaleSize + pivotSize + sizeSize + compressedDataSize);
-	wrapSaveFree(stream.addInt(datasize));
+	wrapSaveFree(stream.writeInt(datasize));
 
 	const size_t chunkStartPos = stream.pos();
-	wrapSaveFree(stream.addInt(nameLength));
-	wrapSaveFree(stream.addString(volume.name, false));
+	wrapSaveFree(stream.writeInt(nameLength));
+	wrapSaveFree(stream.writeString(volume.name, false));
 	Log::debug("Save matrix with name %s", volume.name.c_str());
 
-	wrapSaveFree(stream.addInt(mins.x));
-	wrapSaveFree(stream.addInt(mins.y));
-	wrapSaveFree(stream.addInt(mins.z));
+	wrapSaveFree(stream.writeInt(mins.x));
+	wrapSaveFree(stream.writeInt(mins.y));
+	wrapSaveFree(stream.writeInt(mins.z));
 
 	glm::uvec3 localScale { 1 };
-	wrapSaveFree(stream.addInt(localScale.x));
-	wrapSaveFree(stream.addInt(localScale.y));
-	wrapSaveFree(stream.addInt(localScale.z));
+	wrapSaveFree(stream.writeInt(localScale.x));
+	wrapSaveFree(stream.writeInt(localScale.y));
+	wrapSaveFree(stream.writeInt(localScale.z));
 
-	wrapSaveFree(stream.addFloat(volume.pivot.x));
-	wrapSaveFree(stream.addFloat(volume.pivot.y));
-	wrapSaveFree(stream.addFloat(volume.pivot.z));
+	wrapSaveFree(stream.writeFloat(volume.pivot.x));
+	wrapSaveFree(stream.writeFloat(volume.pivot.y));
+	wrapSaveFree(stream.writeFloat(volume.pivot.z));
 
-	wrapSaveFree(stream.addInt(size.x));
-	wrapSaveFree(stream.addInt(size.y));
-	wrapSaveFree(stream.addInt(size.z));
+	wrapSaveFree(stream.writeInt(size.x));
+	wrapSaveFree(stream.writeInt(size.y));
+	wrapSaveFree(stream.writeInt(size.z));
 
 	Log::debug("save %i compressed bytes", (int)realBufSize);
-	wrapSaveFree(stream.addInt(realBufSize));
+	wrapSaveFree(stream.writeInt(realBufSize));
 	wrapSaveFree(stream.append(compressedBuf, realBufSize));
 	const size_t chunkEndPos = stream.pos();
 
@@ -139,12 +139,12 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 }
 
 bool QBTFormat::saveColorMap(io::FileStream& stream) const {
-	wrapSave(stream.addString("COLORMAP", false));
+	wrapSave(stream.writeString("COLORMAP", false));
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	wrapSave(stream.addInt((uint32_t)materialColors.size()));
+	wrapSave(stream.writeInt((uint32_t)materialColors.size()));
 	for (const glm::vec4& c : materialColors) {
 		const uint32_t rgba = core::Color::getRGBA(c);
-		wrapSave(stream.addInt(rgba));
+		wrapSave(stream.writeInt(rgba));
 	}
 	return true;
 }
@@ -157,17 +157,17 @@ bool QBTFormat::saveModel(io::FileStream& stream, const VoxelVolumes& volumes, b
 		}
 		++children;
 	}
-	wrapSave(stream.addInt(1)); // node type model
+	wrapSave(stream.writeInt(1)); // node type model
 	if (children == 0) {
-		wrapSave(stream.addInt(sizeof(uint32_t)));
-		wrapSave(stream.addInt(0));
+		wrapSave(stream.writeInt(sizeof(uint32_t)));
+		wrapSave(stream.writeInt(0));
 		return false;
 	}
 	const int sizePos = stream.pos();
-	wrapSave(stream.addInt(0));
+	wrapSave(stream.writeInt(0));
 
 	const int dataStart = stream.pos();
-	wrapSave(stream.addInt(children));
+	wrapSave(stream.writeInt(children));
 
 	bool success = true;
 	for (auto& v : volumes) {
@@ -183,19 +183,19 @@ bool QBTFormat::saveModel(io::FileStream& stream, const VoxelVolumes& volumes, b
 	const int delta = dataEnd - dataStart;
 
 	stream.seek(sizePos);
-	wrapSave(stream.addInt(delta));
+	wrapSave(stream.writeInt(delta));
 
 	return success;
 }
 
 bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
 	io::FileStream stream(file.get());
-	wrapSave(stream.addInt(FourCC('Q','B',' ','2')))
-	wrapSave(stream.addByte(1));
-	wrapSave(stream.addByte(0));
-	wrapSave(stream.addFloat(1.0f));
-	wrapSave(stream.addFloat(1.0f));
-	wrapSave(stream.addFloat(1.0f));
+	wrapSave(stream.writeInt(FourCC('Q','B',' ','2')))
+	wrapSave(stream.writeByte(1));
+	wrapSave(stream.writeByte(0));
+	wrapSave(stream.writeFloat(1.0f));
+	wrapSave(stream.writeFloat(1.0f));
+	wrapSave(stream.writeFloat(1.0f));
 	bool colorMap = false;
 	if (colorMap) {
 		if (!saveColorMap(stream)) {
@@ -204,7 +204,7 @@ bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	}
 	bool success = true;
 	int layers = 0;
-	if (!stream.addString("DATATREE", false)) {
+	if (!stream.writeString("DATATREE", false)) {
 		return false;
 	}
 	saveModel(stream, volumes, colorMap);

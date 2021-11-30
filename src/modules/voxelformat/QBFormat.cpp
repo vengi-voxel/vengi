@@ -23,10 +23,10 @@ const int NEXT_SLICE_FLAG = 6;
 	}
 
 #define wrapSaveColor(color) \
-	wrapSave(stream.addByte((color).x)) \
-	wrapSave(stream.addByte((color).y)) \
-	wrapSave(stream.addByte((color).z)) \
-	wrapSave(stream.addByte((color).w))
+	wrapSave(stream.writeByte((color).x)) \
+	wrapSave(stream.writeByte((color).y)) \
+	wrapSave(stream.writeByte((color).z)) \
+	wrapSave(stream.writeByte((color).w))
 
 
 #define wrap(read) \
@@ -55,8 +55,8 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) con
 		return false;
 	}
 	const int nameLength = volume.name.size();
-	wrapSave(stream.addByte(nameLength));
-	wrapSave(stream.addString(volume.name, false));
+	wrapSave(stream.writeByte(nameLength));
+	wrapSave(stream.writeString(volume.name, false));
 
 	const voxel::Region& region = volume.volume->region();
 	if (!region.isValid()) {
@@ -64,13 +64,13 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) con
 		return false;
 	}
 	const glm::ivec3 size = region.getDimensionsInVoxels();
-	wrapSave(stream.addInt(size.x));
-	wrapSave(stream.addInt(size.y));
-	wrapSave(stream.addInt(size.z));
+	wrapSave(stream.writeInt(size.x));
+	wrapSave(stream.writeInt(size.y));
+	wrapSave(stream.writeInt(size.z));
 
-	wrapSave(stream.addInt(region.getLowerX()));
-	wrapSave(stream.addInt(region.getLowerY()));
-	wrapSave(stream.addInt(region.getLowerZ()));
+	wrapSave(stream.writeInt(region.getLowerX()));
+	wrapSave(stream.writeInt(region.getLowerY()));
+	wrapSave(stream.writeInt(region.getLowerZ()));
 
 	constexpr voxel::Voxel Empty;
 	const glm::ivec4 EmptyColor(0);
@@ -111,8 +111,8 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) con
 						wrapSaveColor(currentColor)
 						wrapSaveColor(currentColor)
 					} else if (count > 3) {
-						wrapSave(stream.addInt(RLE_FLAG))
-						wrapSave(stream.addInt(count))
+						wrapSave(stream.writeInt(RLE_FLAG))
+						wrapSave(stream.writeInt(count))
 						wrapSaveColor(currentColor)
 					}
 					count = 0;
@@ -131,24 +131,24 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) con
 			wrapSaveColor(currentColor)
 			wrapSaveColor(currentColor)
 		} else if (count > 3) {
-			wrapSave(stream.addInt(RLE_FLAG))
-			wrapSave(stream.addInt(count))
+			wrapSave(stream.writeInt(RLE_FLAG))
+			wrapSave(stream.writeInt(count))
 			wrapSaveColor(currentColor)
 		}
 		count = 0;
-		wrapSave(stream.addInt(NEXT_SLICE_FLAG));
+		wrapSave(stream.writeInt(NEXT_SLICE_FLAG));
 	}
 	return true;
 }
 
 bool QBFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
 	io::FileStream stream(file.get());
-	wrapSave(stream.addInt(257))
-	wrapSave(stream.addInt((uint32_t)ColorFormat::RGBA))
-	wrapSave(stream.addInt((uint32_t)ZAxisOrientation::Right))
-	wrapSave(stream.addInt((uint32_t)Compression::RLE))
-	wrapSave(stream.addInt((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
-	wrapSave(stream.addInt((int)volumes.size()))
+	wrapSave(stream.writeInt(257))
+	wrapSave(stream.writeInt((uint32_t)ColorFormat::RGBA))
+	wrapSave(stream.writeInt((uint32_t)ZAxisOrientation::Right))
+	wrapSave(stream.writeInt((uint32_t)Compression::RLE))
+	wrapSave(stream.writeInt((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
+	wrapSave(stream.writeInt((int)volumes.size()))
 	for (const auto& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;

@@ -47,7 +47,7 @@ int FileStream::peekByte(uint8_t& val) const {
 	return retVal;
 }
 
-bool FileStream::addStringFormat(bool terminate, const char *fmt, ...) {
+bool FileStream::writeStringFormat(bool terminate, const char *fmt, ...) {
 	va_list ap;
 	const size_t bufSize = 4096;
 	char text[bufSize];
@@ -58,17 +58,17 @@ bool FileStream::addStringFormat(bool terminate, const char *fmt, ...) {
 	va_end(ap);
 	const size_t length = SDL_strlen(text);
 	for (size_t i = 0u; i < length; i++) {
-		if (!addByte(uint8_t(text[i]))) {
+		if (!writeByte(uint8_t(text[i]))) {
 			return false;
 		}
 	}
 	if (!terminate) {
 		return true;
 	}
-	return addByte(uint8_t('\0'));
+	return writeByte(uint8_t('\0'));
 }
 
-bool FileStream::addFormat(const char *fmt, ...) {
+bool FileStream::writeFormat(const char *fmt, ...) {
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -77,25 +77,25 @@ bool FileStream::addFormat(const char *fmt, ...) {
 		const char typeID = *fmt++;
 		switch (typeID) {
 		case 'b':
-			if (!addByte((uint8_t) va_arg(ap, int))) {
+			if (!writeByte((uint8_t) va_arg(ap, int))) {
 				va_end(ap);
 				return false;
 			}
 			break;
 		case 's':
-			if (!addShort((uint16_t) va_arg(ap, int))) {
+			if (!writeShort((uint16_t) va_arg(ap, int))) {
 				va_end(ap);
 				return false;
 			}
 			break;
 		case 'i':
-			if (!addInt((uint32_t) va_arg(ap, int))) {
+			if (!writeInt((uint32_t) va_arg(ap, int))) {
 				va_end(ap);
 				return false;
 			}
 			break;
 		case 'l':
-			if (!addLong((uint64_t) va_arg(ap, long))) {
+			if (!writeLong((uint64_t) va_arg(ap, long))) {
 				va_end(ap);
 				return false;
 			}
@@ -311,7 +311,7 @@ int FileStream::readLongBE(uint64_t& val) {
 	return retVal;
 }
 
-bool FileStream::addByte(uint8_t val) {
+bool FileStream::writeByte(uint8_t val) {
 	SDL_RWseek(_rwops, _pos, RW_SEEK_SET);
 	if (SDL_RWwrite(_rwops, &val, 1, 1) != 1) {
 		return false;
@@ -343,65 +343,65 @@ bool FileStream::append(const uint8_t *buf, size_t size) {
 	return true;
 }
 
-bool FileStream::addString(const core::String& string, bool terminate) {
+bool FileStream::writeString(const core::String& string, bool terminate) {
 	const size_t length = string.size();
 	for (size_t i = 0u; i < length; i++) {
-		if (!addByte(uint8_t(string[i]))) {
+		if (!writeByte(uint8_t(string[i]))) {
 			return false;
 		}
 	}
 	if (!terminate) {
 		return true;
 	}
-	return addByte(uint8_t('\0'));
+	return writeByte(uint8_t('\0'));
 }
 
-bool FileStream::addShort(uint16_t word) {
+bool FileStream::writeShort(uint16_t word) {
 	const uint16_t swappedWord = SDL_SwapLE16(word);
 	return write<uint16_t>(swappedWord);
 }
 
-bool FileStream::addInt(uint32_t dword) {
+bool FileStream::writeInt(uint32_t dword) {
 	uint32_t swappedDWord = SDL_SwapLE32(dword);
 	return write<uint32_t>(swappedDWord);
 }
 
-bool FileStream::addLong(uint64_t dword) {
+bool FileStream::writeLong(uint64_t dword) {
 	uint64_t swappedDWord = SDL_SwapLE64(dword);
 	return write<uint64_t>(swappedDWord);
 }
 
-bool FileStream::addFloat(float value) {
+bool FileStream::writeFloat(float value) {
 	union toint {
 		float f;
 		uint32_t i;
 	} tmp;
 	tmp.f = value;
-	return addInt(tmp.i);
+	return writeInt(tmp.i);
 }
 
-bool FileStream::addShortBE(uint16_t word) {
+bool FileStream::writeShortBE(uint16_t word) {
 	const uint16_t swappedWord = SDL_SwapBE16(word);
 	return write<uint16_t>(swappedWord);
 }
 
-bool FileStream::addIntBE(uint32_t dword) {
+bool FileStream::writeIntBE(uint32_t dword) {
 	uint32_t swappedDWord = SDL_SwapBE32(dword);
 	return write<uint32_t>(swappedDWord);
 }
 
-bool FileStream::addLongBE(uint64_t dword) {
+bool FileStream::writeLongBE(uint64_t dword) {
 	uint64_t swappedDWord = SDL_SwapBE64(dword);
 	return write<uint64_t>(swappedDWord);
 }
 
-bool FileStream::addFloatBE(float value) {
+bool FileStream::writeFloatBE(float value) {
 	union toint {
 		float f;
 		uint32_t i;
 	} tmp;
 	tmp.f = value;
-	return addIntBE(tmp.i);
+	return writeIntBE(tmp.i);
 }
 
 int FileStream::seek(int64_t position) {

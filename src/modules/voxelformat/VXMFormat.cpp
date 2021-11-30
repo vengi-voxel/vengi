@@ -42,12 +42,12 @@ bool VXMFormat::writeRLE(io::FileStream &stream, int length, voxel::Voxel &voxel
 	if (length == 0) {
 		return true;
 	}
-	wrapBool(stream.addByte(length))
+	wrapBool(stream.writeByte(length))
 	if (voxel::isAir(voxel.getMaterial())) {
-		wrapBool(stream.addByte(0xFF))
+		wrapBool(stream.writeByte(0xFF))
 	} else {
 		// TODO: if the color is 255 here - and we are no empty voxel, we are in trouble.
-		wrapBool(stream.addByte(voxel.getColor()))
+		wrapBool(stream.writeByte(voxel.getColor()))
 	}
 	return true;
 }
@@ -63,13 +63,13 @@ image::ImagePtr VXMFormat::loadScreenshot(const io::FilePtr& file) {
 
 bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
 	io::FileStream stream(file.get());
-	wrapBool(stream.addInt(FourCC('V','X','M', '4')));
-	wrapBool(stream.addInt(0)); // texture dim x
-	wrapBool(stream.addInt(0)); // texture dim y
-	wrapBool(stream.addInt(0)); // texamount
+	wrapBool(stream.writeInt(FourCC('V','X','M', '4')));
+	wrapBool(stream.writeInt(0)); // texture dim x
+	wrapBool(stream.writeInt(0)); // texture dim y
+	wrapBool(stream.writeInt(0)); // texamount
 
 	for (int i = 0; i < 6; ++i) {
-		wrapBool(stream.addInt(0)); // quadamount
+		wrapBool(stream.writeInt(0)); // quadamount
 	}
 
 	const MaterialColorArray& materialColors = getMaterialColors();
@@ -85,9 +85,9 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	const uint32_t depth = region.getDepthInVoxels();
 
 	// we have to flip depth with height for our own coordinate system
-	wrapBool(stream.addInt(width))
-	wrapBool(stream.addInt(height))
-	wrapBool(stream.addInt(depth))
+	wrapBool(stream.writeInt(width))
+	wrapBool(stream.writeInt(height))
+	wrapBool(stream.writeInt(depth))
 
 	int numColors = (int)materialColors.size();
 	if (numColors > 255) {
@@ -96,14 +96,14 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	if (numColors <= 0) {
 		return false;
 	}
-	wrapBool(stream.addByte(numColors))
+	wrapBool(stream.writeByte(numColors))
 	for (int i = 0; i < numColors; ++i) {
 		const glm::u8vec4 &matcolor = core::Color::getRGBAVec(materialColors[i]);
-		wrapBool(stream.addByte(matcolor.b))
-		wrapBool(stream.addByte(matcolor.g))
-		wrapBool(stream.addByte(matcolor.r))
-		wrapBool(stream.addByte(matcolor.a))
-		wrapBool(stream.addBool(false)) // emissive
+		wrapBool(stream.writeByte(matcolor.b))
+		wrapBool(stream.writeByte(matcolor.g))
+		wrapBool(stream.writeByte(matcolor.r))
+		wrapBool(stream.writeByte(matcolor.a))
+		wrapBool(stream.writeBool(false)) // emissive
 	}
 	uint32_t rleCount = 0u;
 	voxel::Voxel prevVoxel;
@@ -126,8 +126,8 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 		wrapBool(writeRLE(stream, rleCount, prevVoxel))
 	}
 
-	wrapBool(stream.addByte(0))
-	wrapBool(stream.addByte(0))
+	wrapBool(stream.writeByte(0))
+	wrapBool(stream.writeByte(0))
 
 	return true;
 }

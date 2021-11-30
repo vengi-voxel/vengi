@@ -25,16 +25,16 @@ void OBJFormat::writeMtlFile(const core::String& mtlName) const {
 		return;
 	}
 	io::FileStream stream(file);
-	stream.addStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
-	stream.addStringFormat(false, "\n");
-	stream.addStringFormat(false, "newmtl palette\n");
-	stream.addStringFormat(false, "Ka 1.000000 1.000000 1.000000\n");
-	stream.addStringFormat(false, "Kd 1.000000 1.000000 1.000000\n");
-	stream.addStringFormat(false, "Ks 0.000000 0.000000 0.000000\n");
-	stream.addStringFormat(false, "Tr 1.000000\n");
-	stream.addStringFormat(false, "illum 1\n");
-	stream.addStringFormat(false, "Ns 0.000000\n");
-	stream.addStringFormat(false, "map_Kd palette-%s.png\n", voxel::getDefaultPaletteName());
+	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
+	stream.writeStringFormat(false, "\n");
+	stream.writeStringFormat(false, "newmtl palette\n");
+	stream.writeStringFormat(false, "Ka 1.000000 1.000000 1.000000\n");
+	stream.writeStringFormat(false, "Kd 1.000000 1.000000 1.000000\n");
+	stream.writeStringFormat(false, "Ks 0.000000 0.000000 0.000000\n");
+	stream.writeStringFormat(false, "Tr 1.000000\n");
+	stream.writeStringFormat(false, "illum 1\n");
+	stream.writeStringFormat(false, "Ns 0.000000\n");
+	stream.writeStringFormat(false, "map_Kd palette-%s.png\n", voxel::getDefaultPaletteName());
 }
 
 bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float scale, bool quad, bool withColor, bool withTexCoords) {
@@ -47,9 +47,9 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 	// it is only 1 pixel high - sample the middle
 	const float v1 = 0.5f;
 
-	stream.addStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
-	stream.addStringFormat(false, "\n");
-	stream.addStringFormat(false, "g Model\n");
+	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
+	stream.writeStringFormat(false, "\n");
+	stream.writeStringFormat(false, "g Model\n");
 
 	Log::debug("Exporting %i layers", (int)meshes.size());
 
@@ -71,19 +71,19 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 		if (objectName[0] == '\0') {
 			objectName = "Noname";
 		}
-		stream.addStringFormat(false, "o %s\n", objectName);
-		stream.addStringFormat(false, "mtllib palette.mtl\n");
-		stream.addStringFormat(false, "usemtl palette\n");
+		stream.writeStringFormat(false, "o %s\n", objectName);
+		stream.writeStringFormat(false, "mtllib palette.mtl\n");
+		stream.writeStringFormat(false, "usemtl palette\n");
 
 		for (int i = 0; i < nv; ++i) {
 			const voxel::VoxelVertex& v = vertices[i];
-			stream.addStringFormat(false, "v %.04f %.04f %.04f",
+			stream.writeStringFormat(false, "v %.04f %.04f %.04f",
 					(offset.x + (float)v.position.x) * scale, (offset.y + (float)v.position.y) * scale, (offset.z + (float)v.position.z) * scale);
 			if (withColor) {
 				const glm::vec4& color = colors[v.colorIndex];
-				stream.addStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
+				stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
 			}
-			stream.addStringFormat(false, "\n");
+			stream.writeStringFormat(false, "\n");
 		}
 
 		if (quad) {
@@ -91,10 +91,10 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 				for (int i = 0; i < ni; i += 6) {
 					const voxel::VoxelVertex& v = vertices[indices[i]];
 					const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
-					stream.addStringFormat(false, "vt %f %f\n", u, v1);
-					stream.addStringFormat(false, "vt %f %f\n", u, v1);
-					stream.addStringFormat(false, "vt %f %f\n", u, v1);
-					stream.addStringFormat(false, "vt %f %f\n", u, v1);
+					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
+					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
+					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
+					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
 				}
 			}
 
@@ -105,10 +105,10 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 				const uint32_t three = idxOffset + indices[i + 2] + 1;
 				const uint32_t four  = idxOffset + indices[i + 5] + 1;
 				if (withTexCoords) {
-					stream.addStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n",
+					stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n",
 						(int)one, uvi + 1, (int)two, uvi + 2, (int)three, uvi + 3, (int)four, uvi + 4);
 				} else {
-					stream.addStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+					stream.writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
 				}
 			}
 			texcoordOffset += ni / 6 * 4;
@@ -117,9 +117,9 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 				for (int i = 0; i < ni; i += 3) {
 					const voxel::VoxelVertex& v = vertices[indices[i]];
 					const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
-					stream.addStringFormat(false, "vt %f %f\n", u, v1);
-					stream.addStringFormat(false, "vt %f %f\n", u, v1);
-					stream.addStringFormat(false, "vt %f %f\n", u, v1);
+					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
+					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
+					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
 				}
 			}
 
@@ -128,10 +128,10 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 				const uint32_t two   = idxOffset + indices[i + 1] + 1;
 				const uint32_t three = idxOffset + indices[i + 2] + 1;
 				if (withTexCoords) {
-					stream.addStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one,
+					stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one,
 							texcoordOffset + i + 1, (int)two, texcoordOffset + i + 2, (int)three, texcoordOffset + i + 3);
 				} else {
-					stream.addStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
+					stream.writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
 				}
 			}
 			texcoordOffset += ni;
