@@ -4,8 +4,10 @@
 
 #include "VoxConvert.h"
 #include "core/Color.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "command/Command.h"
+#include "image/Image.h"
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
 #include "core/EventBus.h"
@@ -24,9 +26,10 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
-	registerArg("--keep-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
+	registerArg("--src-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
+	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
 
 	_mergeQuads = core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST);
 	_mergeQuads->setHelp("Merge similar quads to optimize the mesh");
@@ -67,7 +70,8 @@ app::AppState VoxConvert::onInit() {
 
 	const bool mergeVolumes = hasArg("--merge") || hasArg("-m");
 	const bool scaleVolumes = hasArg("--scale") || hasArg("-s");
-	const bool keepPalette = hasArg("--keep-palette") || hasArg("-p");
+	const bool srcPalette = hasArg("--src-palette") || hasArg("-p");
+	const bool exportPalette = hasArg("--export-palette");
 
 	Log::info("Options");
 	if (voxelformat::isMeshFormat(outfile)) {
@@ -80,11 +84,12 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* withColor:        - %s", _withColor->strVal().c_str());
 		Log::info("* withTexCoords:    - %s", _withTexCoords->strVal().c_str());
 	}
-	Log::info("* infile:           - %s", infile.c_str());
-	Log::info("* outfile:          - %s", outfile.c_str());
-	Log::info("* mergeVolumes:     - %s", (mergeVolumes ? "true" : "false"));
-	Log::info("* scaleVolumes:     - %s", (scaleVolumes ? "true" : "false"));
-	Log::info("* keepPalette:      - %s", (keepPalette ? "true" : "false"));
+	Log::info("* infile:                        - %s", infile.c_str());
+	Log::info("* outfile:                       - %s", outfile.c_str());
+	Log::info("* merge volumes:                 - %s", (mergeVolumes ? "true" : "false"));
+	Log::info("* scale volumes:                 - %s", (scaleVolumes ? "true" : "false"));
+	Log::info("* use source file palette:       - %s", (srcPalette ? "true" : "false"));
+	Log::info("* export used palette as image:  - %s", (exportPalette ? "true" : "false"));
 
 	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
 	if (!inputFile->exists()) {
@@ -102,7 +107,7 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	if (keepPalette) {
+	if (srcPalette) {
 		core::Array<uint32_t, 256> palette;
 		const size_t numColors = voxelformat::loadVolumePalette(inputFile, palette);
 		if (numColors == 0) {
@@ -112,6 +117,15 @@ app::AppState VoxConvert::onInit() {
 		if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors, "")) {
 			Log::error("Failed to initialize material colors from input file");
 			return app::AppState::InitFailure;
+		}
+
+		if (exportPalette) {
+			const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
+			image::Image img(paletteFile);
+			img.loadRGBA((const uint8_t*)palette.begin(), (int)numColors * 4, (int)numColors, 1);
+			if (!img.writePng()) {
+				Log::warn("Failed to write the palette file");
+			}
 		}
 	}
 

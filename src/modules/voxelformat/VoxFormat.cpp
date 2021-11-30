@@ -1205,7 +1205,7 @@ size_t VoxFormat::loadPalette(const io::FilePtr& file, core::Array<uint32_t, 256
 	}
 
 	reset();
-	for (int i = 0; i <= lengthof(mvDefaultPalette); ++i) {
+	for (int i = 0; i < lengthof(mvDefaultPalette); ++i) {
 		_colors[i] = mvDefaultPalette[i];
 	}
 	io::FileStream stream(file.get());
