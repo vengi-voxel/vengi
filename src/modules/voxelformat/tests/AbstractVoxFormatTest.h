@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "io/FileStream.h"
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/VoxFileFormat.h"
 #include "io/Filesystem.h"
@@ -51,7 +52,11 @@ protected:
 
 	voxel::RawVolume* load(const core::String& filename, voxel::VoxFileFormat& format) {
 		const io::FilePtr& file = open(filename);
-		voxel::RawVolume* v = format.load(file);
+		if (!file->validHandle()) {
+			return nullptr;
+		}
+		io::FileStream stream(file.get());
+		voxel::RawVolume* v = format.load(filename, stream);
 		return v;
 	}
 };

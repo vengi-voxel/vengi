@@ -14,11 +14,12 @@
 #include "core/Assert.h"
 #include "core/collection/Buffer.h"
 
-namespace core {
+namespace io {
 
 #define BYTE_MASK 0XFF
 #define WORD_MASK 0XFFFF
 
+// TODO: convert to io::WriteStream
 class ByteStream {
 private:
 	typedef core::Buffer<uint8_t> Buffer;

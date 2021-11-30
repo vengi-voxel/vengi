@@ -8,7 +8,7 @@
 #include "voxel/PagedVolume.h"
 #include "voxel/Region.h"
 #include "core/Zip.h"
-#include "core/ByteStream.h"
+#include "io/ByteStream.h"
 #include <memory>
 
 namespace voxelworld {
@@ -25,7 +25,7 @@ public:
 	virtual void erase(const voxel::Region& region, unsigned int seed) { }
 
 	bool loadCompressed(const voxel::PagedVolume::ChunkPtr& chunk, const uint8_t *fileBuf, size_t fileLen) const;
-	bool saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, core::ByteStream& outStream) const;
+	bool saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, io::ByteStream& outStream) const;
 };
 
 typedef std::shared_ptr<ChunkPersister> ChunkPersisterPtr;

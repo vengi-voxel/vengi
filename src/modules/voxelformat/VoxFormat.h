@@ -101,43 +101,43 @@ private:
 	void initPalette();
 	void reset();
 
-	bool readChunkHeader(io::FileStream& stream, ChunkHeader& header) const;
-	bool readAttributes(Attributes& attributes, io::FileStream& stream) const;
+	bool readChunkHeader(io::ReadStream& stream, ChunkHeader& header) const;
+	bool readAttributes(Attributes& attributes, io::ReadStream& stream) const;
 
-	bool checkVersionAndMagic(io::FileStream& stream) const;
-	bool checkMainChunk(io::FileStream& stream) const;
+	bool checkVersionAndMagic(io::ReadStream& stream) const;
+	bool checkMainChunk(io::ReadStream& stream) const;
 
 	// first iteration
-	bool loadChunk_MATL(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_MATT(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_IMAP(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_NOTE(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_PACK(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_RGBA(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_rOBJ(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_rCAM(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_SIZE(io::FileStream& stream, const ChunkHeader& header);
-	bool loadFirstChunks(io::FileStream& stream);
+	bool loadChunk_MATL(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_MATT(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_IMAP(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_NOTE(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_PACK(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_RGBA(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_rOBJ(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_rCAM(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_SIZE(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadFirstChunks(io::ReadStream& stream);
 
 	// second iteration
-	bool loadChunk_LAYR(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);
-	bool loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);
-	bool loadSecondChunks(io::FileStream& stream, VoxelVolumes& volumes);
+	bool loadChunk_LAYR(io::ReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);
+	bool loadChunk_XYZI(io::ReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes);
+	bool loadSecondChunks(io::ReadStream& stream, VoxelVolumes& volumes);
 
 	// scene graph
 	bool parseSceneGraphTranslation(VoxTransform& transform, const Attributes& attributes) const;
 	bool parseSceneGraphRotation(VoxTransform& transform, const Attributes& attributes) const;
-	bool loadChunk_nGRP(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header);
-	bool loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header);
-	bool loadSceneGraph(io::FileStream& stream);
+	bool loadChunk_nGRP(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_nSHP(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadChunk_nTRN(io::ReadStream& stream, const ChunkHeader& header);
+	bool loadSceneGraph(io::ReadStream& stream);
 	VoxTransform calculateTransform(uint32_t volumeIdx) const;
 	bool applyTransform(VoxTransform& transform, NodeId nodeId) const;
 	glm::ivec3 calcTransform(const VoxTransform& t, int x, int y, int z, const glm::ivec3& pivot) const;
 
 public:
-	size_t loadPalette(const io::FilePtr& file, core::Array<uint32_t, 256> &palette) override;
-	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
+	size_t loadPalette(const core::String &filename, io::ReadStream& stream, core::Array<uint32_t, 256> &palette) override;
+	bool loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

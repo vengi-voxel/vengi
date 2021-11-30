@@ -6,7 +6,7 @@
 #include <SDL_stdinc.h>
 #include <stdarg.h>
 
-namespace core {
+namespace io {
 
 ByteStream::ByteStream(int size) {
 	_buffer.reserve(size);

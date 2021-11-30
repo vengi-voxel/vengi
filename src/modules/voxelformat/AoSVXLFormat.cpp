@@ -14,23 +14,18 @@
 
 namespace voxel {
 
-bool AoSVXLFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("AOS vxl: Could not load file: File doesn't exist");
-		return false;
-	}
-
+bool AoSVXLFormat::loadGroups(const core::String& filename, io::ReadStream &stream, VoxelVolumes &volumes) {
 	const int width = 512, height = 512, depth = 64;
 	const voxel::Region region(0, 0, 0, width - 1, depth - 1, height - 1);
 	const int flipHeight = depth - 1;
 	core_assert(region.isValid());
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, file->fileName(), true});
+	volumes.push_back(VoxelVolume{volume, filename, true});
 
-	uint8_t *v;
-	const int len = file->read((void**) &v);
-	if (len <= 0) {
-		Log::error("AOS vxl: Failed to load file %s", file->name().c_str());
+	const int64_t length = stream.size();
+	uint8_t *v = new uint8_t[length];
+	if (stream.read(v, length) != 0) {
+		Log::error("AOS vxl: Failed to load file %s", filename.c_str());
 		return false;
 	}
 
@@ -105,7 +100,7 @@ bool AoSVXLFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 			}
 		}
 	}
-	core_assert(v - base == len);
+	core_assert(v - base == length);
 	delete[] base;
 	return true;
 }

@@ -11,6 +11,7 @@
 #include "VXMFormat.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/Stream.h"
 #include "voxel/RawVolume.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -19,13 +20,13 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) != true) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
@@ -38,11 +39,12 @@ bool VXRFormat::loadChildVXM(const core::String& vxrPath, VoxelVolumes& volumes)
 	if (!file->validHandle()) {
 		return false;
 	}
+	io::FileStream stream(file.get());
 	VXMFormat f;
-	return f.loadGroups(file, volumes);
+	return f.loadGroups(vxrPath, stream, volumes);
 }
 
-bool VXRFormat::importChildOld(io::FileStream& stream, uint32_t version) {
+bool VXRFormat::importChildOld(io::ReadStream& stream, uint32_t version) {
 	if (version <= 2) {
 		char id[1024];
 		wrapBool(stream.readString(sizeof(id), id, true))
@@ -106,7 +108,7 @@ bool VXRFormat::importChildOld(io::FileStream& stream, uint32_t version) {
 	return true;
 }
 
-bool VXRFormat::importChild(const core::String& vxrPath, io::FileStream& stream, VoxelVolumes& volumes, uint32_t version) {
+bool VXRFormat::importChild(const core::String& vxrPath, io::ReadStream& stream, VoxelVolumes& volumes, uint32_t version) {
 	uint32_t dummy;
 	float dummyf;
 	char id[1024];
@@ -180,8 +182,8 @@ bool VXRFormat::importChild(const core::String& vxrPath, io::FileStream& stream,
 	return true;
 }
 
-image::ImagePtr VXRFormat::loadScreenshot(const io::FilePtr& file) {
-	const core::String imageName = file->name() + ".png";
+image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::ReadStream& stream) {
+	const core::String imageName = filename + ".png";
 	const io::FilePtr& imageFile = io::filesystem()->open(imageName);
 	if (!imageFile) {
 		return image::ImagePtr();
@@ -189,13 +191,7 @@ image::ImagePtr VXRFormat::loadScreenshot(const io::FilePtr& file) {
 	return image::loadImage(imageFile, false);
 }
 
-bool VXRFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load vmr file: File doesn't exist");
-		return false;
-	}
-	io::FileStream stream(file.get());
-
+bool VXRFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
 	uint8_t magic[4];
 	wrap(stream.readByte(magic[0]))
 	wrap(stream.readByte(magic[1]))
@@ -239,7 +235,7 @@ bool VXRFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 			char filename[1024];
 			wrapBool(stream.readString(sizeof(filename), filename, true))
 			if (filename[0] != '\0') {
-				core::String modelPath = file->path();
+				core::String modelPath = filename;
 				if (!modelPath.empty()) {
 					modelPath.append("/");
 				}
@@ -292,7 +288,7 @@ bool VXRFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	uint32_t children = 0;
 	wrap(stream.readInt(children))
 	for (uint32_t i = 0; i < children; ++i) {
-		wrapBool(importChild(file->path(), stream, volumes, version))
+		wrapBool(importChild(filename, stream, volumes, version))
 	}
 
 	// some files since version 6 still have stuff here

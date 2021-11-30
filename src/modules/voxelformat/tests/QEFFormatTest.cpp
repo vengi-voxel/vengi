@@ -40,7 +40,7 @@ TEST_F(QEFFormatTest, testSaveSmallVoxel) {
 	ASSERT_TRUE(original.setVoxel(0, 1, 0, createVoxel(VoxelType::Generic, 200)));
 	ASSERT_TRUE(f.save(&original, open("qubicle-smallvolumesavetest.qef", io::FileMode::Write)));
 	f = QEFFormat();
-	std::unique_ptr<RawVolume> loaded(f.load(open("qubicle-smallvolumesavetest.qef")));
+	std::unique_ptr<RawVolume> loaded(load("qubicle-smallvolumesavetest.qef", f));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(original, *loaded);
 }

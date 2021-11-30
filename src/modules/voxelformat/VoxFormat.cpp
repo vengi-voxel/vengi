@@ -309,7 +309,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	return true;
 }
 
-bool VoxFormat::readAttributes(Attributes& attributes, io::FileStream& stream) const {
+bool VoxFormat::readAttributes(Attributes& attributes, io::ReadStream& stream) const {
 	uint32_t cnt;
 	wrap(stream.readInt(cnt))
 	if (cnt > 2048) {
@@ -399,7 +399,7 @@ void VoxFormat::initPalette() {
 // N        |            | chunk content
 // M        |            | children chunks
 // -------------------------------------------------------------------------------
-bool VoxFormat::readChunkHeader(io::FileStream& stream, ChunkHeader& header) const {
+bool VoxFormat::readChunkHeader(io::ReadStream& stream, ChunkHeader& header) const {
 	wrap(stream.readInt(header.chunkId))
 	wrap(stream.readInt(header.numBytesChunk))
 	wrap(stream.readInt(header.numBytesChildrenChunks))
@@ -422,7 +422,7 @@ bool VoxFormat::readChunkHeader(io::FileStream& stream, ChunkHeader& header) con
 //                       |     palette[i + 1] = ReadRGBA();
 //                       | }
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_RGBA(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_RGBA(io::ReadStream& stream, const ChunkHeader& header) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 	for (int i = 0; i <= 254; i++) {
 		uint32_t rgba;
@@ -447,7 +447,7 @@ bool VoxFormat::loadChunk_RGBA(io::FileStream& stream, const ChunkHeader& header
 // 4        | int        | size y
 // 4        | int        | size z : gravity direction
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_SIZE(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_SIZE(io::ReadStream& stream, const ChunkHeader& header) {
 	// we have to flip the axis here
 	uint32_t x, y, z;
 	wrap(stream.readInt(x))
@@ -498,7 +498,7 @@ glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, int x, int y, int z, 
 //                       | read them first and then assemble as (x, z, y) for Y-up
 //                       | coordinate system.
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
+bool VoxFormat::loadChunk_XYZI(io::ReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
 	uint32_t numVoxels;
 	wrap(stream.readInt(numVoxels))
 	Log::debug("Found voxel chunk with %u voxels", numVoxels);
@@ -557,7 +557,7 @@ bool VoxFormat::loadChunk_XYZI(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
-bool VoxFormat::loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_nSHP(io::ReadStream& stream, const ChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
 	Log::debug("shape node: %u", nodeId);
@@ -591,7 +591,7 @@ bool VoxFormat::loadChunk_nSHP(io::FileStream& stream, const ChunkHeader& header
 // -------------------------------------------------------------------------------
 // 4        | int        | numModels : num of SIZE and XYZI chunks
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_PACK(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_PACK(io::ReadStream& stream, const ChunkHeader& header) {
 	wrap(stream.readInt(_numModels))
 	return true;
 }
@@ -628,7 +628,7 @@ bool VoxFormat::loadChunk_PACK(io::FileStream& stream, const ChunkHeader& header
 //                       | * need to map to real range
 //                       | * Plastic material only accepts {0.0, 1.0} for this version
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_MATT(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_MATT(io::ReadStream& stream, const ChunkHeader& header) {
 	// TODO: this is deprecated - MATL is the v2 version
 	uint32_t materialId;
 	wrap(stream.readInt(materialId))
@@ -648,7 +648,7 @@ bool VoxFormat::loadChunk_MATT(io::FileStream& stream, const ChunkHeader& header
 }
 
 // https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
-bool VoxFormat::loadChunk_LAYR(io::FileStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
+bool VoxFormat::loadChunk_LAYR(io::ReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
 	uint32_t layerId;
 	wrap(stream.readInt(layerId))
 	Attributes attributes;
@@ -756,7 +756,7 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attribute
 
 // (_r : int8) ROTATION in STRING (i.e. "36")
 // (_t : int32x3) translation in STRING format separated by spaces (i.e. "-1 10 4"). The anchor for these translations is center of the box.
-bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_nTRN(io::ReadStream& stream, const ChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
 	Log::debug("transform node: %u", nodeId);
@@ -792,7 +792,7 @@ bool VoxFormat::loadChunk_nTRN(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
-bool VoxFormat::loadChunk_nGRP(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_nGRP(io::ReadStream& stream, const ChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
 	Log::debug("group node: %u", nodeId);
@@ -813,7 +813,7 @@ bool VoxFormat::loadChunk_nGRP(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
-bool VoxFormat::loadChunk_rCAM(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_rCAM(io::ReadStream& stream, const ChunkHeader& header) {
 	uint32_t cameraId;
 	wrap(stream.readInt(cameraId))
 	Attributes cameraAttributes;
@@ -829,7 +829,7 @@ bool VoxFormat::loadChunk_rCAM(io::FileStream& stream, const ChunkHeader& header
 
 // the rendering setting are not open yet because they are changing frequently.
 // But you can still read it since it is just in the DICT format.
-bool VoxFormat::loadChunk_rOBJ(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_rOBJ(io::ReadStream& stream, const ChunkHeader& header) {
 	Attributes attributes;
 	wrapBool(readAttributes(attributes, stream))
 	// _type => _setting
@@ -909,7 +909,7 @@ bool VoxFormat::loadChunk_rOBJ(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
-bool VoxFormat::loadChunk_MATL(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_MATL(io::ReadStream& stream, const ChunkHeader& header) {
 	uint32_t materialId;
 	wrap(stream.readInt(materialId))
 	Attributes materialAttributes;
@@ -930,7 +930,7 @@ bool VoxFormat::loadChunk_MATL(io::FileStream& stream, const ChunkHeader& header
 
 // Represents the palette "index" map
 // TODO: take this into account while mapping the colors - see _palette member
-bool VoxFormat::loadChunk_IMAP(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_IMAP(io::ReadStream& stream, const ChunkHeader& header) {
 	for (int i = 0; i < 256; i++) {
 		uint8_t paletteIndex;
 		wrap(stream.readByte(paletteIndex))
@@ -939,7 +939,7 @@ bool VoxFormat::loadChunk_IMAP(io::FileStream& stream, const ChunkHeader& header
 }
 
 // Contains all color type names
-bool VoxFormat::loadChunk_NOTE(io::FileStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_NOTE(io::ReadStream& stream, const ChunkHeader& header) {
 	uint32_t numColorNames;
 	wrap(stream.readInt(numColorNames))
 	for (uint32_t i = 0; i < numColorNames; ++i) {
@@ -961,7 +961,7 @@ bool VoxFormat::loadChunk_NOTE(io::FileStream& stream, const ChunkHeader& header
 	return true;
 }
 
-bool VoxFormat::loadFirstChunks(io::FileStream& stream) {
+bool VoxFormat::loadFirstChunks(io::ReadStream& stream) {
 	do {
 		ChunkHeader header;
 		wrapBool(readChunkHeader(stream, header))
@@ -1003,7 +1003,7 @@ bool VoxFormat::loadFirstChunks(io::FileStream& stream) {
 	return true;
 }
 
-bool VoxFormat::loadSecondChunks(io::FileStream& stream, VoxelVolumes& volumes) {
+bool VoxFormat::loadSecondChunks(io::ReadStream& stream, VoxelVolumes& volumes) {
 	volumes.resize(_regions.size());
 	do {
 		ChunkHeader header;
@@ -1038,7 +1038,7 @@ bool VoxFormat::loadSecondChunks(io::FileStream& stream, VoxelVolumes& volumes) 
 // T   T    //
 // |   |    //
 // S   S    //
-bool VoxFormat::loadSceneGraph(io::FileStream& stream) {
+bool VoxFormat::loadSceneGraph(io::ReadStream& stream) {
 	do {
 		ChunkHeader header;
 		wrapBool(readChunkHeader(stream, header))
@@ -1106,7 +1106,7 @@ bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId) const {
 	return true;
 }
 
-bool VoxFormat::checkVersionAndMagic(io::FileStream& stream) const {
+bool VoxFormat::checkVersionAndMagic(io::ReadStream& stream) const {
 	uint32_t magic;
 	wrap(stream.readInt(magic))
 	if (magic != FourCC('V','O','X',' ')) {
@@ -1123,7 +1123,7 @@ bool VoxFormat::checkVersionAndMagic(io::FileStream& stream) const {
 	return true;
 }
 
-bool VoxFormat::checkMainChunk(io::FileStream& stream) const {
+bool VoxFormat::checkMainChunk(io::ReadStream& stream) const {
 	ChunkHeader main;
 	wrapBool(readChunkHeader(stream, main))
 	// 3. Chunk id 'MAIN' : the root chunk and parent chunk of all the other chunks
@@ -1174,15 +1174,9 @@ bool VoxFormat::checkMainChunk(io::FileStream& stream) const {
 //     Chunk 'MATT'
 // }
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load vox file: File doesn't exist");
-		return false;
-	}
-
+bool VoxFormat::loadGroups(const core::String& filename, io::ReadStream& stream, VoxelVolumes& volumes) {
 	reset();
 
-	io::FileStream stream(file.get());
 	wrapBool(checkVersionAndMagic(stream))
 	wrapBool(checkMainChunk(stream))
 
@@ -1198,17 +1192,11 @@ bool VoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	return true;
 }
 
-size_t VoxFormat::loadPalette(const io::FilePtr& file, core::Array<uint32_t, 256> &palette) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load vox file: File doesn't exist");
-		return 0;
-	}
-
+size_t VoxFormat::loadPalette(const core::String& filename, io::ReadStream& stream, core::Array<uint32_t, 256> &palette) {
 	reset();
 	for (int i = 0; i < lengthof(mvDefaultPalette); ++i) {
 		_colors[i] = mvDefaultPalette[i];
 	}
-	io::FileStream stream(file.get());
 	wrapBool(checkVersionAndMagic(stream))
 	wrapBool(checkMainChunk(stream))
 

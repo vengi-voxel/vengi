@@ -3,6 +3,7 @@
  */
 
 #include "KVXFormat.h"
+#include "io/Stream.h"
 #include "voxel/MaterialColor.h"
 #include "io/FileStream.h"
 #include "core/StringUtil.h"
@@ -14,17 +15,11 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load kvx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load kvx file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
 
-bool KVXFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load kvx file: File doesn't exist");
-		return false;
-	}
-	io::FileStream stream(file.get());
-
+bool KVXFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
 	// Total # of bytes (not including numbytes) in each mip-map level
 	// but there is only 1 mip-map level
 	uint32_t numbytes;
@@ -114,7 +109,7 @@ bool KVXFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	stream.seek(currentPos);
 
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, file->fileName(), true});
+	volumes.push_back(VoxelVolume{volume, filename, true});
 
 	/**
 	 * voxdata: stored in sequential format.  Here's how you can get pointers to

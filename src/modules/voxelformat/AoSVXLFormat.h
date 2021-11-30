@@ -18,7 +18,7 @@ namespace voxel {
  */
 class AoSVXLFormat : public VoxFileFormat {
 public:
-	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
+	bool loadGroups(const core::String& filename, io::ReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

@@ -46,7 +46,7 @@ TEST_F(QBFormatTest, testSaveSmallVoxel) {
 	original.setVoxel(0, 1, 0, createVoxel(VoxelType::Generic, 200));
 	ASSERT_TRUE(f.save(&original, open("qubicle-smallvolumesavetest.qb", io::FileMode::Write)));
 	f = QBFormat();
-	std::unique_ptr<RawVolume> loaded(f.load(open("qubicle-smallvolumesavetest.qb")));
+	std::unique_ptr<RawVolume> loaded(load("qubicle-smallvolumesavetest.qb", f));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(original, *loaded);
 }
@@ -58,7 +58,7 @@ TEST_F(QBFormatTest, testSaveSingleVoxel) {
 	original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1));
 	ASSERT_TRUE(f.save(&original, open("qubicle-singlevoxelsavetest.qb", io::FileMode::Write)));
 	f = QBFormat();
-	std::unique_ptr<RawVolume> loaded(f.load(open("qubicle-singlevoxelsavetest.qb")));
+	std::unique_ptr<RawVolume> loaded(load("qubicle-singlevoxelsavetest.qb", f));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(original, *loaded);
 }
@@ -82,7 +82,9 @@ TEST_F(QBFormatTest, testSaveMultipleLayers) {
 	EXPECT_TRUE(f.saveGroups(volumes, open("qubicle-multiplelayersavetest.qb", io::FileMode::Write)));
 	f = QBFormat();
 	VoxelVolumes volumesLoad;
-	EXPECT_TRUE(f.loadGroups(open("qubicle-multiplelayersavetest.qb"), volumesLoad));
+	const io::FilePtr &file = open("qubicle-multiplelayersavetest.qb");
+	io::FileStream stream(file.get());
+	EXPECT_TRUE(f.loadGroups(file->fileName(), stream, volumesLoad));
 	EXPECT_EQ(volumesLoad.size(), volumes.size());
 	voxelformat::clearVolumes(volumesLoad);
 }
@@ -94,7 +96,7 @@ TEST_F(QBFormatTest, testLoadSave) {
 	ASSERT_TRUE(f.save(original.get(), open("qubicle-savetest.qb", io::FileMode::Write)));
 	ASSERT_TRUE(open("qubicle-savetest.qb")->length() > 177);
 	f = QBFormat();
-	std::unique_ptr<RawVolume> loaded(f.load(open("qubicle-savetest.qb")));
+	std::unique_ptr<RawVolume> loaded(load("qubicle-savetest.qb", f));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(*original, *loaded);
 }

@@ -2,29 +2,42 @@
  * @file
  */
 
-#include <gtest/gtest.h>
 #include "io/FileStream.h"
-#include "io/Filesystem.h"
 #include "core/FourCC.h"
+#include "io/Filesystem.h"
+#include <gtest/gtest.h>
 
 namespace io {
 
 class FileStreamTest : public testing::Test {
+protected:
+	io::Filesystem _fs;
+
+public:
+	void SetUp() override {
+		_fs.init("test", "test");
+	}
+
+	void TearDown() override {
+		_fs.shutdown();
+	}
 };
 
 TEST_F(FileStreamTest, testFileStreamRead) {
-	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
-	const FilePtr& file = fs.open("iotest.txt");
+	const FilePtr &file = _fs.open("iotest.txt");
 	ASSERT_TRUE(file->exists());
+
 	FileStream stream(file.get());
 	const int64_t remaining = stream.remaining();
 	EXPECT_EQ((int64_t)file->length(), remaining);
-	uint8_t chr;
+
 	uint32_t magic;
-	EXPECT_EQ(0, stream.peekInt(magic));
-	EXPECT_EQ(remaining, stream.remaining());
-	EXPECT_EQ(FourCC('W', 'i', 'n', 'd'), magic);
+	EXPECT_EQ(0, stream.peekInt(magic)) << "Error in peekInt";
+	EXPECT_EQ(0, stream.pos()) << "peekInt should not modify the position of the stream";
+	EXPECT_EQ(remaining, stream.remaining()) << "Error regarding position tracking of peek method. Position should be 0 but is: " << stream.pos();
+	EXPECT_EQ(FourCC('W', 'i', 'n', 'd'), magic) << "Failed to read the proper value in peekInt";
+
+	uint8_t chr;
 	EXPECT_EQ(0, stream.readByte(chr));
 	EXPECT_EQ(remaining, stream.remaining() + 1);
 	EXPECT_EQ('W', chr);
@@ -59,9 +72,9 @@ TEST_F(FileStreamTest, testFileStreamRead) {
 TEST_F(FileStreamTest, testFileStreamWrite) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
-	const FilePtr& file = fs.open("filestream-writetest", io::FileMode::SysWrite);
+	const FilePtr &file = fs.open("filestream-writetest", io::FileMode::SysWrite);
 	ASSERT_TRUE(file->validHandle());
-	File* fileRaw = file.get();
+	File *fileRaw = file.get();
 	FileStream stream(fileRaw);
 	EXPECT_TRUE(stream.writeInt(1));
 	EXPECT_EQ(4l, stream.size());
@@ -73,4 +86,4 @@ TEST_F(FileStreamTest, testFileStreamWrite) {
 	EXPECT_EQ(8l, file->length());
 }
 
-}
+} // namespace io

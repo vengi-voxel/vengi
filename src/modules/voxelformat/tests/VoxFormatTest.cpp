@@ -3,6 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
+#include "io/FileStream.h"
 #include "voxelformat/VoxFormat.h"
 
 namespace voxel {
@@ -27,13 +28,15 @@ TEST_F(VoxFormatTest, DISABLED_testSave) {
 	VoxFormat f;
 	const io::FilePtr& file = open("magicavoxel.vox");
 	ASSERT_TRUE((bool)file) << "Could not open vox file";
-	RawVolume* loadedVolume = f.load(file);
+	io::FileStream stream(file.get());
+	RawVolume* loadedVolume = f.load(file->fileName(), stream);
 	ASSERT_NE(nullptr, loadedVolume) << "Could not load vox file";
 
 	const io::FilePtr& fileSave = open("magicavoxel-save.vox", io::FileMode::Write);
 	EXPECT_TRUE(f.save(loadedVolume, fileSave));
 	const io::FilePtr& fileLoadAfterSave = open("magicavoxel-save.vox");
-	RawVolume *savedVolume = f.load(fileLoadAfterSave);
+	io::FileStream stream2(fileLoadAfterSave.get());
+	RawVolume *savedVolume = f.load(fileLoadAfterSave->fileName(), stream2);
 	EXPECT_NE(nullptr, savedVolume) << "Could not load saved vox file";
 	if (savedVolume) {
 		EXPECT_EQ(*savedVolume, *loadedVolume);

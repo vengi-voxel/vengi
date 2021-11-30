@@ -165,7 +165,8 @@ image::ImagePtr loadVolumeScreenshot(const io::FilePtr& filePtr) {
 	}
 	const core::SharedPtr<voxel::VoxFileFormat> &f = getFormat(desc, magic);
 	if (f) {
-		return f->loadScreenshot(filePtr);
+		io::FileStream stream(filePtr.get());
+		return f->loadScreenshot(filePtr->fileName(), stream);
 	}
 	Log::error("Failed to load model screenshot from file %s - unsupported file format for extension '%s'",
 			filePtr->name().c_str(), fileext.c_str());
@@ -191,7 +192,8 @@ size_t loadVolumePalette(const io::FilePtr& filePtr, core::Array<uint32_t, 256> 
 	}
 	const core::SharedPtr<voxel::VoxFileFormat> &f = getFormat(desc, magic);
 	if (f) {
-		return f->loadPalette(filePtr, palette);
+		io::FileStream stream(filePtr.get());
+		return f->loadPalette(filePtr->fileName(), stream, palette);
 	}
 	Log::error("Failed to load model palette from file %s - unsupported file format for extension '%s'",
 			filePtr->name().c_str(), fileext.c_str());
@@ -215,7 +217,8 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 	}
 	const core::SharedPtr<voxel::VoxFileFormat> &f = getFormat(desc, magic);
 	if (f) {
-		if (!f->loadGroups(filePtr, newVolumes)) {
+		io::FileStream stream(filePtr.get());
+		if (!f->loadGroups(filePtr->fileName(), stream, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
 	} else {

@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Common.h"
 #include "core/String.h"
 #include <stdio.h>
@@ -10,23 +12,22 @@
 
 namespace io {
 
-class Stream {
-public:
-	virtual ~Stream() {
-	}
-
-	/**
-	 * @return -1 on error
-	 */
-	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
-};
-
-class ReadStream : public Stream {
+class ReadStream {
+protected:
+	int64_t _size = 0;
+	int64_t _pos = 0;
 public:
 	/**
 	 * @return -1 on error - 0 on success
 	 */
 	virtual int read(void *dataPtr, size_t dataSize) = 0;
+
+	/**
+	 * @return -1 on error - otherwise the current offset in the stream
+	 */
+	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
+
+	int64_t skip(int64_t delta);
 
 	bool readBool();
 	int readByte(uint8_t &val);
@@ -53,10 +54,39 @@ public:
 	int peekInt(uint32_t &val);
 	int peekShort(uint16_t &val);
 	int peekByte(uint8_t &val);
+
+	int64_t remaining() const;
+	bool empty() const;
+	bool eos() const;
+	int64_t size() const;
+	int64_t pos() const;
 };
 
-class WriteStream : public Stream {
+inline int64_t ReadStream::remaining() const {
+	return _size - _pos;
+}
+
+inline bool ReadStream::empty() const {
+	return _size == 0;
+}
+
+inline bool ReadStream::eos() const {
+	return _pos >= _size;
+}
+
+inline int64_t ReadStream::size() const {
+	return _size;
+}
+
+inline int64_t ReadStream::pos() const {
+	return _pos;
+}
+
+class WriteStream {
 public:
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	virtual int write(const void *buf, size_t size) = 0;
 
 	bool writeBool(bool value);

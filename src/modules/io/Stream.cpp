@@ -5,6 +5,7 @@
 #include "Stream.h"
 #include <SDL_endian.h>
 #include <SDL_stdinc.h>
+#include <fcntl.h>
 #include <stdio.h>
 
 namespace io {
@@ -72,7 +73,7 @@ bool WriteStream::writeFormat(const char *fmt, ...) {
 }
 
 bool WriteStream::writeByte(uint8_t val) {
-	return write(&val, sizeof(val)) > 0;
+	return write(&val, sizeof(val)) != -1;
 }
 
 bool WriteStream::writeString(const core::String &string, bool terminate) {
@@ -90,17 +91,17 @@ bool WriteStream::writeString(const core::String &string, bool terminate) {
 
 bool WriteStream::writeShort(uint16_t word) {
 	const uint16_t swappedWord = SDL_SwapLE16(word);
-	return write(&swappedWord, sizeof(uint16_t)) > 0;
+	return write(&swappedWord, sizeof(uint16_t)) != -1;
 }
 
 bool WriteStream::writeInt(uint32_t dword) {
 	uint32_t swappedDWord = SDL_SwapLE32(dword);
-	return write(&swappedDWord, sizeof(uint32_t)) > 0;
+	return write(&swappedDWord, sizeof(uint32_t)) != -1;
 }
 
 bool WriteStream::writeLong(uint64_t dword) {
 	uint64_t swappedDWord = SDL_SwapLE64(dword);
-	return write(&swappedDWord, sizeof(uint64_t)) > 0;
+	return write(&swappedDWord, sizeof(uint64_t)) != -1;
 }
 
 bool WriteStream::writeFloat(float value) {
@@ -114,17 +115,17 @@ bool WriteStream::writeFloat(float value) {
 
 bool WriteStream::writeShortBE(uint16_t word) {
 	const uint16_t swappedWord = SDL_SwapBE16(word);
-	return write(&swappedWord, sizeof(uint16_t)) > 0;
+	return write(&swappedWord, sizeof(uint16_t)) != -1;
 }
 
 bool WriteStream::writeIntBE(uint32_t dword) {
 	uint32_t swappedDWord = SDL_SwapBE32(dword);
-	return write(&swappedDWord, sizeof(uint32_t)) > 0;
+	return write(&swappedDWord, sizeof(uint32_t)) != -1;
 }
 
 bool WriteStream::writeLongBE(uint64_t dword) {
 	uint64_t swappedDWord = SDL_SwapBE64(dword);
-	return write(&swappedDWord, sizeof(uint64_t)) > 0;
+	return write(&swappedDWord, sizeof(uint64_t)) != -1;
 }
 
 bool WriteStream::writeFloatBE(float value) {
@@ -326,7 +327,7 @@ int ReadStream::peekInt(uint32_t &val) {
 	if (retVal == 0) {
 		const uint32_t swapped = SDL_SwapLE32(val);
 		val = swapped;
-		seek(-4);
+		seek(-4, SEEK_CUR);
 	}
 	return retVal;
 }
@@ -336,7 +337,7 @@ int ReadStream::peekShort(uint16_t &val) {
 	if (retVal == 0) {
 		const uint16_t swapped = SDL_SwapLE16(val);
 		val = swapped;
-		seek(-2);
+		seek(-2, SEEK_CUR);
 	}
 	return retVal;
 }
@@ -344,9 +345,13 @@ int ReadStream::peekShort(uint16_t &val) {
 int ReadStream::peekByte(uint8_t &val) {
 	const int retVal = readByte(val);
 	if (retVal == 0) {
-		seek(-1);
+		seek(-1, SEEK_CUR);
 	}
 	return retVal;
+}
+
+int64_t ReadStream::skip(int64_t delta) {
+	return seek(delta, SEEK_CUR);
 }
 
 } // namespace io

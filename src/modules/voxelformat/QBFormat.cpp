@@ -8,6 +8,7 @@
 #include "core/Color.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "io/Stream.h"
 
 namespace voxel {
 
@@ -31,19 +32,19 @@ const int NEXT_SLICE_FLAG = 6;
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) == false) { \
-		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
 
 #define wrapColor(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return voxel::Voxel(); \
 	}
 
@@ -177,7 +178,7 @@ bool QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32
 	return true;
 }
 
-voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
+voxel::Voxel QBFormat::getVoxel(io::ReadStream& stream) {
 	uint8_t red;
 	uint8_t green;
 	uint8_t blue;
@@ -208,7 +209,7 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	return voxel::createVoxel(voxelType, index);
 }
 
-bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
+bool QBFormat::loadMatrix(io::ReadStream& stream, VoxelVolumes& volumes) {
 	char name[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readByte(nameLength));
@@ -224,7 +225,7 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 	Log::debug("Matrix size: %i:%i:%i", size.x, size.y, size.z);
 
 	if (size.x == 0 || size.y == 0 || size.z == 0) {
-		Log::error("Invalid size");
+		Log::error("Invalid size (%i:%i:%i)", size.x, size.y, size.z);
 		return false;
 	}
 
@@ -311,7 +312,7 @@ bool QBFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool QBFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
+bool QBFormat::loadFromStream(io::ReadStream& stream, VoxelVolumes& volumes) {
 	wrap(stream.readInt(_version))
 	uint32_t colorFormat;
 	wrap(stream.readInt(colorFormat))
@@ -346,16 +347,8 @@ bool QBFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool QBFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load qb file: File doesn't exist");
-		return false;
-	}
-	io::FileStream stream(file.get());
-	if (!loadFromStream(stream, volumes)) {
-		return false;
-	}
-	return true;
+bool QBFormat::loadGroups(const core::String& filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+	return loadFromStream(stream, volumes);
 }
 
 }

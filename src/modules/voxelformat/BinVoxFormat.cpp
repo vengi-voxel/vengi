@@ -3,6 +3,7 @@
  */
 
 #include "BinVoxFormat.h"
+#include "io/Stream.h"
 #include "voxel/MaterialColor.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
@@ -94,7 +95,7 @@ static inline void get_coords(int idx, int &x, int &y, int &z, int width, int he
 	y = idx % width;
 }
 
-bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelVolumes& volumes) {
+bool BinVoxFormat::readData(const core::String& filename, const uint8_t *buf, const int64_t size, const size_t offset, VoxelVolumes& volumes) {
 	const voxel::Region region(_tx, _tz, _ty, _tx + _w - 1, _tz + _h - 1, _ty + _d - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region found in file");
@@ -104,16 +105,9 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 	core_assert(region.getHeightInVoxels() == (int32_t)_h);
 	core_assert(region.getDepthInVoxels() == (int32_t)_d);
 
-	uint8_t *buf;
-	const int fileSize = file->read((void**) &buf);
-	if (fileSize <= 0) {
-		Log::error("Could not read file");
-		return false;
-	}
-	const int dataSize = fileSize - offset;
+	const int dataSize = (int)(size - offset);
 	if ((dataSize % 2) != 0) {
 		Log::error("Unexpected data segment size: %i", dataSize);
-		delete[] buf;
 		return false;
 	}
 
@@ -122,13 +116,12 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 
 	uint32_t index = 0;
 	uint32_t n = 0;
-	for (int i = offset; i < fileSize; i += 2) {
+	for (int i = (int)offset; i < size; i += 2) {
 		const uint8_t value = buf[i + 0];
 		const uint8_t count = buf[i + 1];
 		if (count == 0) {
 			Log::error("Found invalid rle encoding");
 			delete[] voxelBuf;
-			delete[] buf;
 			return false;
 		}
 		n += count;
@@ -136,7 +129,6 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 		if (endIndex > bufSize) {
 			Log::error("The end index %i is bigger than the data size %i", endIndex, dataSize);
 			delete[] voxelBuf;
-			delete[] buf;
 			return false;
 		}
 		if (value != 0u) {
@@ -147,11 +139,9 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 		index = endIndex;
 	}
 
-	delete[] buf;
-
 	if (n != bufSize) {
 		Log::error("Unexpected voxel amount: %i, expected: %i (w: %u, h: %u, d: %u), fileSize %i, offset %i",
-				dataSize, bufSize, _w, _h, _d, fileSize, (int)offset);
+				dataSize, bufSize, _w, _h, _d, (int)size, (int)offset);
 		delete[] voxelBuf;
 		return false;
 	}
@@ -159,7 +149,7 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 	const int lowerIdx = get_index(region.getLowerX(), region.getLowerY(), region.getLowerZ(),
 			region.getWidthInVoxels(), region.getHeightInVoxels());
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, file->fileName(), true});
+	volumes.push_back(VoxelVolume{volume, filename, true});
 	for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
@@ -174,26 +164,38 @@ bool BinVoxFormat::readData(const io::FilePtr& file, const size_t offset, VoxelV
 	return true;
 }
 
-bool BinVoxFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	core::String str = file->load();
+bool BinVoxFormat::loadGroups(const core::String& filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+	const int64_t size = stream.size();
+	uint8_t* buf = new uint8_t[size];
+	if (stream.read(buf, size) != 0) {
+		delete [] buf;
+		Log::error("Failed to read the data of %s", filename.c_str());
+		return false;
+	}
+	core::String str((const char *)buf, size);
 	const size_t dataOffset = str.find("data");
 	if (dataOffset == core::String::npos) {
-		Log::error("Could not find end of header in %s", file->name().c_str());
+		delete[] buf;
+		Log::error("Could not find end of header in %s", filename.c_str());
 		return false;
 	}
 	if (dataOffset > 128) {
+		delete[] buf;
 		Log::error("Max allowed header size exceeded: %i", (int)dataOffset);
 		return false;
 	}
 	const core::String& header = str.substr(0, dataOffset);
 	if (!readHeader(header)) {
-		Log::error("Could not read header of %s", file->name().c_str());
+		delete[] buf;
+		Log::error("Could not read header of %s", filename.c_str());
 		return false;
 	}
-	if (!readData(file, dataOffset + 5, volumes)) {
-		Log::warn("Could not load the whole data from %s", file->name().c_str());
+	if (!readData(filename, buf, size, dataOffset + 5, volumes)) {
+		delete[] buf;
+		Log::warn("Could not load the whole data from %s", filename.c_str());
 		return false;
 	}
+	delete[] buf;
 	return true;
 }
 

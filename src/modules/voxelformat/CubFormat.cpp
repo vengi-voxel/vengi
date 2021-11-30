@@ -13,23 +13,17 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load cub file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load cub file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) != true) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
-bool CubFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load cub file: File doesn't exist");
-		return false;
-	}
-	io::FileStream stream(file.get());
-
+bool CubFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t width, depth, height;
 	wrap(stream.readInt(width))
 	wrap(stream.readInt(depth))
@@ -46,7 +40,7 @@ bool CubFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		return false;
 	}
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, file->fileName(), true});
+	volumes.push_back(VoxelVolume{volume, filename, true});
 
 	// TODO: support loading own palette
 

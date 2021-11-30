@@ -18,12 +18,12 @@ class QBCLFormat : public VoxFileFormat {
 private:
 	uint32_t _version;
 
-	bool readMatrix(io::FileStream &stream);
-	bool readModel(io::FileStream &stream);
-	bool readCompound(io::FileStream &stream);
+	bool readMatrix(io::ReadStream &stream);
+	bool readModel(io::ReadStream &stream);
+	bool readCompound(io::ReadStream &stream);
 public:
-	image::ImagePtr loadScreenshot(const io::FilePtr& file) override;
-	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
+	image::ImagePtr loadScreenshot(const core::String &filename, io::ReadStream& stream) override;
+	bool loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

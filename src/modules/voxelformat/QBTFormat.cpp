@@ -33,13 +33,13 @@ static const bool MergeCompounds = true;
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
+		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) == false) { \
-		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
+		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
@@ -129,7 +129,12 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 
 	Log::debug("save %i compressed bytes", (int)realBufSize);
 	wrapSaveFree(stream.writeInt(realBufSize));
-	wrapSaveFree(stream.append(compressedBuf, realBufSize));
+	if (stream.write(compressedBuf, realBufSize) != 0) {
+		Log::error("Could not save qbt file: failed to write the compressed buffer");
+		delete[] compressedBuf;
+		delete[] zlibBuffer;
+		return false;
+	}
 	const size_t chunkEndPos = stream.pos();
 
 	delete[] compressedBuf;
@@ -202,17 +207,18 @@ bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 			return false;
 		}
 	}
-	bool success = true;
 	int layers = 0;
 	if (!stream.writeString("DATATREE", false)) {
 		return false;
 	}
-	saveModel(stream, volumes, colorMap);
+	if (!saveModel(stream, volumes, colorMap)) {
+		return false;
+	}
 	Log::debug("Saved %i layers", layers);
-	return success;
+	return true;
 }
 
-bool QBTFormat::skipNode(io::FileStream& stream) {
+bool QBTFormat::skipNode(io::ReadStream& stream) {
 	// node type, can be ignored
 	uint32_t nodeTypeId;
 	wrap(stream.readInt(nodeTypeId));
@@ -237,7 +243,7 @@ bool QBTFormat::skipNode(io::FileStream& stream) {
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadCompound(io::FileStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadCompound(io::ReadStream& stream, VoxelVolumes& volumes) {
 	if (!loadMatrix(stream, volumes)) {
 		return false;
 	}
@@ -281,7 +287,7 @@ bool QBTFormat::loadCompound(io::FileStream& stream, VoxelVolumes& volumes) {
  * The M byte is used to store visibility of the 6 faces of a voxel and whether as voxel is solid or air. If M is bigger than 0 then the voxel is solid. Even when a voxel
  * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
-bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadMatrix(io::ReadStream& stream, VoxelVolumes& volumes) {
 	char name[1024];
 	uint32_t nameLength;
 	wrap(stream.readInt(nameLength));
@@ -391,7 +397,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadModel(io::FileStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadModel(io::ReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t childCount;
 	wrap(stream.readInt(childCount));
 	if (childCount > 2048u) {
@@ -407,14 +413,13 @@ bool QBTFormat::loadModel(io::FileStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool QBTFormat::loadNode(io::FileStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadNode(io::ReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t nodeTypeID;
 	wrap(stream.readInt(nodeTypeID));
 	uint32_t dataSize;
 	wrap(stream.readInt(dataSize));
 	Log::debug("Data size: %u", dataSize);
 
-	const int64_t before = stream.remaining();
 	switch (nodeTypeID) {
 	case 0: {
 		Log::debug("Found matrix");
@@ -447,16 +452,10 @@ bool QBTFormat::loadNode(io::FileStream& stream, VoxelVolumes& volumes) {
 		stream.skip(dataSize);
 		break;
 	}
-	const int64_t after = stream.remaining();
-	const int delta = (int)(before - after);
-	if (delta != (int)dataSize) {
-		Log::debug("Unexpected chunk size for type id %i, read %i, expected: %i",
-				nodeTypeID, delta, (int)dataSize);
-	}
 	return true;
 }
 
-bool QBTFormat::loadColorMap(io::FileStream& stream) {
+bool QBTFormat::loadColorMap(io::ReadStream& stream) {
 	uint32_t colorCount;
 	wrap(stream.readInt(colorCount));
 	Log::debug("Load color map with %u colors", colorCount);
@@ -491,7 +490,7 @@ bool QBTFormat::loadColorMap(io::FileStream& stream) {
 	return true;
 }
 
-bool QBTFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadFromStream(io::ReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t header;
 	wrap(stream.readInt(header))
 	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
@@ -561,16 +560,8 @@ bool QBTFormat::loadFromStream(io::FileStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool QBTFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load qbt file: File doesn't exist");
-		return false;
-	}
-	io::FileStream stream(file.get());
-	if (!loadFromStream(stream, volumes)) {
-		return false;
-	}
-	return true;
+bool QBTFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+	return loadFromStream(stream, volumes);
 }
 
 #undef wrapSave

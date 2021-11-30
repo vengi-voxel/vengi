@@ -32,7 +32,8 @@ protected:
 		voxel::QBFormat format;
 		const io::FilePtr& file = io::filesystem()->open(filename);
 		ASSERT_TRUE(file) << "Can't open " << filename;
-		voxel::RawVolume* v = format.load(file);
+		io::FileStream stream(file.get());
+		voxel::RawVolume* v = format.load(file->fileName(), stream);
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;
 		EXPECT_EQ(*v, *_volume);
 		delete v;

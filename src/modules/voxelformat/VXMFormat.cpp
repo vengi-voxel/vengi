@@ -21,20 +21,20 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (size: %i) (line %i)", (int)stream.remaining(), (int)stream.size(), (int)__LINE__); \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapDelete(read, mem) \
 	if ((read) != 0) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (size: %i) (line %i)", (int)stream.remaining(), (int)stream.size(), (int)__LINE__); \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		delete (mem); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) != true) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (size: %i) (line %i)", (int)stream.remaining(), (int)stream.size(), (int)__LINE__); \
+		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
@@ -52,8 +52,8 @@ bool VXMFormat::writeRLE(io::FileStream &stream, int length, voxel::Voxel &voxel
 	return true;
 }
 
-image::ImagePtr VXMFormat::loadScreenshot(const io::FilePtr& file) {
-	const core::String imageName = file->name() + ".png";
+image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::ReadStream& stream) {
+	const core::String imageName = filename + ".png";
 	const io::FilePtr& imageFile = io::filesystem()->open(imageName);
 	if (!imageFile) {
 		return image::ImagePtr();
@@ -132,13 +132,7 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	return true;
 }
 
-bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load vmx file: File doesn't exist");
-		return false;
-	}
-	io::FileStream stream(file.get());
-
+bool VXMFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
 	uint8_t magic[4];
 	wrap(stream.readByte(magic[0]))
 	wrap(stream.readByte(magic[1]))

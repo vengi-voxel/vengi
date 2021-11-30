@@ -49,9 +49,9 @@ RawVolume* VoxFileFormat::merge(const VoxelVolumes& volumes) const {
 	return volumes.merge();
 }
 
-RawVolume* VoxFileFormat::load(const io::FilePtr& file) {
+RawVolume* VoxFileFormat::load(const core::String &filename, io::ReadStream& file) {
 	VoxelVolumes volumes;
-	if (!loadGroups(file, volumes)) {
+	if (!loadGroups(filename, file, volumes)) {
 		voxelformat::clearVolumes(volumes);
 		return nullptr;
 	}
@@ -60,9 +60,9 @@ RawVolume* VoxFileFormat::load(const io::FilePtr& file) {
 	return mergedVolume;
 }
 
-size_t VoxFileFormat::loadPalette(const io::FilePtr& file, core::Array<uint32_t, 256> &palette) {
+size_t VoxFileFormat::loadPalette(const core::String &filename, io::ReadStream& file, core::Array<uint32_t, 256> &palette) {
 	VoxelVolumes volumes;
-	loadGroups(file, volumes);
+	loadGroups(filename, file, volumes);
 	voxelformat::clearVolumes(volumes);
 	palette = _colors;
 	return _colorsSize;

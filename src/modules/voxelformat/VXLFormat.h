@@ -79,16 +79,16 @@ private:
 	bool writeHeader(io::FileStream& stream, const VoxelVolumes& volumes);
 
 	// reading
-	bool readLimbHeader(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
-	bool readLimbFooter(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
-	bool readLimb(io::FileStream& stream, vxl_mdl& mdl, uint32_t limbIdx, VoxelVolumes& volumes) const;
-	bool readLimbs(io::FileStream& stream, vxl_mdl& mdl, VoxelVolumes& volumes) const;
-	bool readLimbFooters(io::FileStream& stream, vxl_mdl& mdl) const;
-	bool readLimbHeaders(io::FileStream& stream, vxl_mdl& mdl) const;
+	bool readLimbHeader(io::ReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
+	bool readLimbFooter(io::ReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
+	bool readLimb(io::ReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, VoxelVolumes& volumes) const;
+	bool readLimbs(io::ReadStream& stream, vxl_mdl& mdl, VoxelVolumes& volumes) const;
+	bool readLimbFooters(io::ReadStream& stream, vxl_mdl& mdl) const;
+	bool readLimbHeaders(io::ReadStream& stream, vxl_mdl& mdl) const;
 	bool prepareModel(vxl_mdl& mdl) const;
-	bool readHeader(io::FileStream& stream, vxl_mdl& mdl);
+	bool readHeader(io::ReadStream& stream, vxl_mdl& mdl);
 public:
-	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
+	bool loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

@@ -15,24 +15,17 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load qef file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
+		Log::error("Could not load qef file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) == false) { \
-		Log::error("Could not load qef file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left (line %i)", (int)stream.remaining(), (int)__LINE__); \
+		Log::error("Could not load qef file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
-bool QEFFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load qef file: File doesn't exist");
-		return false;
-	}
-
-	io::FileStream stream(file.get());
-
+bool QEFFormat::loadGroups(const core::String &filename, io::ReadStream &stream, VoxelVolumes &volumes) {
 	char buf[64];
 
 	wrapBool(stream.readLine(64, buf))
@@ -102,7 +95,7 @@ bool QEFFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 	}
 
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
-	volumes.push_back(VoxelVolume(volume, file->name(), true, glm::ivec3(0)));
+	volumes.push_back(VoxelVolume(volume, filename, true, glm::ivec3(0)));
 
 	while (stream.remaining() > 0) {
 		wrapBool(stream.readLine(64, buf))

@@ -3,7 +3,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/ByteStream.h"
+#include "io/ByteStream.h"
 #include <random>
 #include <stdlib.h>
 #include <limits.h>
@@ -18,7 +18,7 @@ const int16_t SHORT_ADD = SHRT_MAX;
 const int32_t INT_ADD = INT_MAX;
 }
 
-namespace core {
+namespace io {
 
 TEST(ByteStreamTest, testCopy) {
 	std::vector<ByteStream> v;
@@ -41,7 +41,7 @@ TEST(ByteStreamTest, testCopy) {
 
 TEST(ByteStreamTest, DISABLED_testBigChunk) {
 	const int size = 1000 * 1000 * 50;
-	core::ByteStream bs(size);
+	ByteStream bs(size);
 	for (int i = 0; i < size; ++i) {
 		bs.addByte(1);
 	}
@@ -53,14 +53,14 @@ TEST(ByteStreamTest, DISABLED_testBigChunk) {
 
 TEST(ByteStreamTest, DISABLED_testBigChunkAdd) {
 	const int size = 1000 * 1000 * 50;
-	core::ByteStream bs(size);
+	ByteStream bs(size);
 	for (int i = 0; i < size; ++i) {
 		bs.addByte(1);
 	}
 }
 
 TEST(ByteStreamTest, testFormat) {
-	core::ByteStream bs;
+	ByteStream bs;
 	bs.addFormat("ibli", 245678, 1, 2L, 12345678);
 	ASSERT_EQ(17u, bs.getSize());
 	int len;

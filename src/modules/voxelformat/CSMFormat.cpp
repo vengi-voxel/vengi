@@ -7,7 +7,6 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "glm/common.hpp"
-#include "io/FileStream.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"
 
@@ -15,7 +14,7 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load csm file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load csm file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
 
@@ -25,7 +24,7 @@ namespace voxel {
 		return false; \
 	}
 
-static bool readString(io::FileStream& stream, core::String& str, bool readStringAsInt) {
+static bool readString(io::ReadStream& stream, core::String& str, bool readStringAsInt) {
 	if (readStringAsInt) {
 		uint32_t length;
 		wrap(stream.readInt(length))
@@ -48,15 +47,8 @@ static bool readString(io::FileStream& stream, core::String& str, bool readStrin
 	return true;
 }
 
-bool CSMFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load csm file: File doesn't exist");
-		return false;
-	}
-
+bool CSMFormat::loadGroups(const core::String &filename, io::ReadStream &stream, VoxelVolumes &volumes) {
 	const MaterialColorArray& materialColors = getMaterialColors();
-
-	io::FileStream stream(file.get());
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readInt(magic))
 	const bool isNVM = magic == FourCC('.','N','V','M');

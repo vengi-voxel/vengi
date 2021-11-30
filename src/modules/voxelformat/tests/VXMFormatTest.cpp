@@ -33,7 +33,7 @@ TEST_F(VXMFormatTest, testSaveVerySmallVoxel) {
 	const io::FilePtr &file = open("verysmallvolumesavetest.vxm", io::FileMode::Write);
 	ASSERT_TRUE(f.save(&original, file));
 	f = VXMFormat();
-	std::unique_ptr<RawVolume> loaded(f.load(open("verysmallvolumesavetest.vxm")));
+	std::unique_ptr<RawVolume> loaded(load("verysmallvolumesavetest.vxm", f));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(original, *loaded);
 }
@@ -49,7 +49,7 @@ TEST_F(VXMFormatTest, testSaveSmallVoxel) {
 	const io::FilePtr &file = open("smallvolumesavetest.vxm", io::FileMode::Write);
 	ASSERT_TRUE(f.save(&original, file));
 	f = VXMFormat();
-	std::unique_ptr<RawVolume> loaded(f.load(open("smallvolumesavetest.vxm")));
+	std::unique_ptr<RawVolume> loaded(load("smallvolumesavetest.vxm", f));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(original, *loaded);
 }
@@ -65,7 +65,7 @@ TEST_F(VXMFormatTest, testSaveRLE) {
 	const io::FilePtr &file = open("smallvolumesavetest.vxm", io::FileMode::Write);
 	ASSERT_TRUE(f.save(&original, file));
 	f = VXMFormat();
-	std::unique_ptr<RawVolume> loaded(f.load(open("smallvolumesavetest.vxm")));
+	std::unique_ptr<RawVolume> loaded(load("smallvolumesavetest.vxm", f));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(original, *loaded);
 }

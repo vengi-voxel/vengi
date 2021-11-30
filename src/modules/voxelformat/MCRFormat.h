@@ -9,9 +9,10 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FileStream.h"
+#include <climits>
 
-namespace core {
-class MemoryStreamReadOnly;
+namespace io {
+class ReadStream;
 }
 
 namespace voxel {
@@ -87,14 +88,14 @@ private:
 	} _offsets[SECTOR_INTS];
 	uint32_t _chunkTimestamps[SECTOR_INTS];
 
-	bool skip(core::MemoryStreamReadOnly &stream, TagId id);
-	bool getNext(core::MemoryStreamReadOnly &stream, NamedBinaryTag& nbt);
+	bool skip(io::ReadStream &stream, TagId id);
+	bool getNext(io::ReadStream &stream, NamedBinaryTag& nbt);
 
 	bool parseNBTChunk(VoxelVolumes& volumes, const uint8_t* buffer, int length);
-	bool readCompressedNBT(VoxelVolumes& volumes, const uint8_t* buffer, int length, io::FileStream &stream);
-	bool loadMinecraftRegion(VoxelVolumes& volumes, const uint8_t* buffer, int length, io::FileStream &stream, int chunkX, int chunkZ);
+	bool readCompressedNBT(VoxelVolumes& volumes, const uint8_t* buffer, int length, io::ReadStream &stream);
+	bool loadMinecraftRegion(VoxelVolumes& volumes, const uint8_t* buffer, int length, io::ReadStream &stream, int chunkX, int chunkZ);
 public:
-	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
+	bool loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override {
 		return false;
 	}

@@ -16,19 +16,19 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
 
 #define wrapImg(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load qbcl screenshot file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load qbcl screenshot file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return image::ImagePtr(); \
 	}
 
 #define wrapBool(read) \
 	if ((read) == false) { \
-		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
 
@@ -55,7 +55,7 @@ static bool readString(io::FileStream &stream, core::String &dest) {
 }
 #endif
 
-bool QBCLFormat::readMatrix(io::FileStream &stream) {
+bool QBCLFormat::readMatrix(io::ReadStream &stream) {
 	uint32_t mx; // 32
 	uint32_t my;
 	uint32_t mz;
@@ -67,7 +67,7 @@ bool QBCLFormat::readMatrix(io::FileStream &stream) {
 	return false;
 }
 
-bool QBCLFormat::readModel(io::FileStream &stream) {
+bool QBCLFormat::readModel(io::ReadStream &stream) {
 	uint32_t x;
 	uint32_t y;
 	uint32_t z;
@@ -94,16 +94,11 @@ bool QBCLFormat::readModel(io::FileStream &stream) {
 	return false;
 }
 
-bool QBCLFormat::readCompound(io::FileStream &stream) {
+bool QBCLFormat::readCompound(io::ReadStream &stream) {
 	return false;
 }
 
-bool QBCLFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load qbcl file: File doesn't exist");
-		return false;
-	}
-	io::FileStream stream(file.get());
+bool QBCLFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t magic;
 	wrap(stream.readInt(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {
@@ -169,12 +164,7 @@ bool QBCLFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	return false;
 }
 
-image::ImagePtr QBCLFormat::loadScreenshot(const io::FilePtr& file) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load qbcl file: File doesn't exist");
-		return image::ImagePtr();
-	}
-	io::FileStream stream(file.get());
+image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::ReadStream& stream) {
 	uint32_t magic;
 	wrapImg(stream.readInt(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {
@@ -188,7 +178,7 @@ image::ImagePtr QBCLFormat::loadScreenshot(const io::FilePtr& file) {
 	wrapImg(stream.readInt(thumbWidth))
 	uint32_t thumbHeight;
 	wrapImg(stream.readInt(thumbHeight))
-	image::ImagePtr img = image::createEmptyImage(file->name());
+	image::ImagePtr img = image::createEmptyImage(filename);
 	const uint32_t thumbnailSize = thumbWidth * thumbHeight * 4;
 
 	uint8_t* buf = new uint8_t[thumbnailSize];

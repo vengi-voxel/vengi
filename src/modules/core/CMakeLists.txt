@@ -29,7 +29,6 @@ set(SRCS
 	ArrayLength.h
 	Assert.cpp Assert.h
 	BindingContext.cpp BindingContext.h
-	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
 	Common.cpp Common.h
 	Enum.h
@@ -44,7 +43,6 @@ set(SRCS
 	MD5.cpp MD5.h
 	PoolAllocator.h
 	MemGuard.cpp MemGuard.h
-	MemoryStreamReadOnly.cpp MemoryStreamReadOnly.h
 	NonCopyable.h
 	Password.h
 	Process.cpp Process.h
@@ -96,7 +94,6 @@ set(TEST_SRCS
 	tests/AlgorithmTest.cpp
 	tests/ArrayTest.cpp
 	tests/BufferTest.cpp
-	tests/ByteStreamTest.cpp
 	tests/ColorTest.cpp
 	tests/ConcurrentDynamicArrayTest.cpp
 	tests/ConcurrentPriorityQueueTest.cpp

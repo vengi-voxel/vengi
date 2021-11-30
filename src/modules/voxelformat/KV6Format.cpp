@@ -15,17 +15,11 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
 
-bool KV6Format::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
-	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load kv6 file: File doesn't exist");
-		return false;
-	}
-	io::FileStream stream(file.get());
-
+bool KV6Format::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t magic;
 	wrap(stream.readInt(magic))
 	if (magic != FourCC('K','v','x','l')) {
@@ -71,7 +65,6 @@ bool KV6Format::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		return false;
 	}
 
-	core_assert(stream.pos() == 32);
 	if (stream.seek(32 + numvoxs * 8 + (xsiz << 2) + ((xsiz * ysiz) << 1)) != -1) {
 		if (stream.remaining() != 0) {
 			uint32_t palMagic;
@@ -101,7 +94,7 @@ bool KV6Format::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	stream.seek(32);
 
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, file->fileName(), true});
+	volumes.push_back(VoxelVolume{volume, filename, true});
 
 	typedef struct {
 		uint8_t z, col, vis, dir;
@@ -122,7 +115,7 @@ bool KV6Format::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		wrap(stream.readByte(voxdata[c].vis))
 		wrap(stream.readByte(voxdata[c].dir))
 	}
-	stream.skip(xsiz * sizeof(uint32_t));
+	stream.skip((int64_t)(xsiz * sizeof(uint32_t)));
 
 	uint16_t xyoffset[256][256];
 	for (uint32_t x = 0u; x < xsiz; ++x) {
