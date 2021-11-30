@@ -50,11 +50,9 @@ public:
 	bool readLine(int length, char *strbuff);
 	bool readFormat(const char *fmt, ...);
 
-	int peekInt(uint32_t &val) const;
-	int peekShort(uint16_t &val) const;
-	int peekIntBE(uint32_t &val) const;
-	int peekShortBE(uint16_t &val) const;
-	int peekByte(uint8_t &val) const;
+	int peekInt(uint32_t &val);
+	int peekShort(uint16_t &val);
+	int peekByte(uint8_t &val);
 };
 
 class WriteStream : public Stream {

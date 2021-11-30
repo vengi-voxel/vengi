@@ -136,6 +136,10 @@ bool WriteStream::writeFloatBE(float value) {
 	return writeIntBE(tmp.i);
 }
 
+bool WriteStream::writeBool(bool value) {
+	return writeByte(value);
+}
+
 bool ReadStream::readFormat(const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
@@ -313,6 +317,34 @@ int ReadStream::readLongBE(uint64_t &val) {
 	if (retVal == 0) {
 		const uint64_t swapped = SDL_SwapBE64(val);
 		val = swapped;
+	}
+	return retVal;
+}
+
+int ReadStream::peekInt(uint32_t &val) {
+	const int retVal = readInt(val);
+	if (retVal == 0) {
+		const uint32_t swapped = SDL_SwapLE32(val);
+		val = swapped;
+		seek(-4);
+	}
+	return retVal;
+}
+
+int ReadStream::peekShort(uint16_t &val) {
+	const int retVal = readShort(val);
+	if (retVal == 0) {
+		const uint16_t swapped = SDL_SwapLE16(val);
+		val = swapped;
+		seek(-2);
+	}
+	return retVal;
+}
+
+int ReadStream::peekByte(uint8_t &val) {
+	const int retVal = readByte(val);
+	if (retVal == 0) {
+		seek(-1);
 	}
 	return retVal;
 }
