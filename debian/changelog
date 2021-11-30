@@ -2,6 +2,11 @@ vengi (0.0.15.0-1) UNRELEASED; urgency=low
 
   * General:
   * Fixed missing vxm (version 4) saving support
+  * Fixed missing palette value for vxm saving
+  * Added support for loading only the palettes
+
+  * VoxConvert
+  * Added option to keep the input file palette and don't perform quantization
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 21 Nov 2021 11:56:02 +0100
 

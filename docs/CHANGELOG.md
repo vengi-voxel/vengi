@@ -7,6 +7,12 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 General:
 
    - Fixed missing vxm (version 4) saving support
+   - Fixed missing palette value for vxm saving
+   - Added support for loading only the palettes
+
+VoxConvert:
+
+   - Added option to keep the input file palette and don't perform quantization
 
 ## 0.0.14 (2021-11-21)
 
