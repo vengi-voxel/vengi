@@ -24,6 +24,7 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
+	registerArg("--keep-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 
@@ -61,20 +62,12 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	io::FilePtr paletteFile = filesystem()->open(core::string::format("palette-%s.png", _palette->strVal().c_str()));
-	if (!paletteFile->exists()) {
-		paletteFile = filesystem()->open(_palette->strVal());
-	}
-	if (!voxel::initMaterialColors(paletteFile, io::FilePtr())) {
-		Log::error("Failed to init default material colors");
-		return app::AppState::InitFailure;
-	}
-
 	const core::String infile = _argv[_argc - 2];
 	const core::String outfile = _argv[_argc - 1];
 
 	const bool mergeVolumes = hasArg("--merge") || hasArg("-m");
 	const bool scaleVolumes = hasArg("--scale") || hasArg("-s");
+	const bool keepPalette = hasArg("--keep-palette") || hasArg("-p");
 
 	Log::info("Options");
 	if (voxelformat::isMeshFormat(outfile)) {
@@ -91,12 +84,35 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* outfile:          - %s", outfile.c_str());
 	Log::info("* mergeVolumes:     - %s", (mergeVolumes ? "true" : "false"));
 	Log::info("* scaleVolumes:     - %s", (scaleVolumes ? "true" : "false"));
+	Log::info("* keepPalette:      - %s", (keepPalette ? "true" : "false"));
 
 	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
 	if (!inputFile->exists()) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
 		_exitCode = 127;
 		return app::AppState::InitFailure;
+	}
+
+	io::FilePtr paletteFile = filesystem()->open(core::string::format("palette-%s.png", _palette->strVal().c_str()));
+	if (!paletteFile->exists()) {
+		paletteFile = filesystem()->open(_palette->strVal());
+	}
+	if (!voxel::initMaterialColors(paletteFile, io::FilePtr())) {
+		Log::error("Failed to init default material colors");
+		return app::AppState::InitFailure;
+	}
+
+	if (keepPalette) {
+		core::Array<uint32_t, 256> palette;
+		const size_t numColors = voxelformat::loadVolumePalette(inputFile, palette);
+		if (numColors == 0) {
+			Log::error("Failed to load palette from input file");
+			return app::AppState::InitFailure;
+		}
+		if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors, "")) {
+			Log::error("Failed to initialize material colors from input file");
+			return app::AppState::InitFailure;
+		}
 	}
 
 	const io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
