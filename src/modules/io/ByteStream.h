@@ -41,26 +41,11 @@ private:
 public:
 	ByteStream(int size = 0);
 
-	void addBool(bool value, bool prepend = false);
-	void addByte(uint8_t byte, bool prepend = false);
-	void addShort(int16_t word, bool prepend = false);
+	void addByte(uint8_t byte);
 	void addInt(int32_t dword);
-	void addLong(int64_t dword);
-	void addFloat(float value);
-	void addString(const core::String& string);
-	void addFormat(const char *fmt, ...);
 
-	bool readBool();
 	uint8_t readByte();
-	int16_t readShort();
 	int32_t readInt();
-	int64_t readLong();
-	float readFloat();
-	core::String readString();
-	void readFormat(const char *fmt, ...);
-
-	int32_t peekInt() const;
-	int16_t peekShort() const;
 
 	// get the raw data pointer for the buffer
 	const uint8_t* getBuffer() const;
@@ -76,36 +61,6 @@ public:
 	size_t getSize() const;
 
 	void resize(size_t size);
-
-	ByteStream &operator<<(const uint8_t &x) {
-		addByte(x, false);
-		return *this;
-	}
-
-	ByteStream &operator<<(const int16_t &x) {
-		addShort(x);
-		return *this;
-	}
-
-	ByteStream &operator<<(const bool &x) {
-		addBool(x);
-		return *this;
-	}
-
-	ByteStream &operator<<(const int32_t &x) {
-		addInt(x);
-		return *this;
-	}
-
-	ByteStream &operator<<(const float &x) {
-		addFloat(x);
-		return *this;
-	}
-
-	ByteStream &operator<<(const core::String &x) {
-		addString(x);
-		return *this;
-	}
 };
 
 inline bool ByteStream::empty() const {
@@ -133,35 +88,8 @@ inline size_t ByteStream::getSize() const {
 	return _buffer.size() - _pos;
 }
 
-inline void ByteStream::addByte(uint8_t byte, bool prepend) {
-	if (prepend) {
-		_buffer.insert(_buffer.begin(), byte);
-	} else {
-		_buffer.push_back(byte);
-	}
-}
-
-inline void ByteStream::addBool(bool value, bool prepend) {
-	addByte(value, prepend);
-}
-
-inline void ByteStream::addString(const core::String& string) {
-	const size_t length = string.size();
-	for (size_t i = 0u; i < length; i++) {
-		addByte(uint8_t(string[i]));
-	}
-	addByte(uint8_t('\0'));
-}
-
-inline void ByteStream::addShort(int16_t word, bool prepend) {
-	const int16_t swappedWord = SDL_SwapLE16(word);
-	if (prepend) {
-		_buffer.insert(_buffer.begin(), uint8_t(swappedWord >> CHAR_BIT));
-		_buffer.insert(_buffer.begin(), uint8_t(swappedWord));
-	} else {
-		_buffer.push_back(uint8_t(swappedWord));
-		_buffer.push_back(uint8_t(swappedWord >> CHAR_BIT));
-	}
+inline void ByteStream::addByte(uint8_t byte) {
+	_buffer.push_back(byte);
 }
 
 inline void ByteStream::addInt(int32_t dword) {
@@ -172,55 +100,11 @@ inline void ByteStream::addInt(int32_t dword) {
 	_buffer.push_back(uint8_t(swappedDWord >> CHAR_BIT));
 }
 
-inline void ByteStream::addLong(int64_t dword) {
-	int64_t swappedDWord = SDL_SwapLE64(dword);
-	_buffer.push_back(uint8_t(swappedDWord));
-	_buffer.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
-	_buffer.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
-	_buffer.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
-	_buffer.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
-	_buffer.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
-	_buffer.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
-	_buffer.push_back(uint8_t(swappedDWord >> CHAR_BIT));
-}
-
-inline void ByteStream::addFloat(float value) {
-	union toint {
-		float f;
-		uint32_t i;
-	} tmp;
-	tmp.f = value;
-	addInt(tmp.i);
-}
-
 inline uint8_t ByteStream::readByte() {
 	core_assert(size() > 0);
 	const uint8_t byte = _buffer[_pos];
 	++_pos;
 	return byte;
-}
-
-inline bool ByteStream::readBool() {
-	return readByte() != 0;
-}
-
-inline int16_t ByteStream::readShort() {
-	core_assert(size() >= 2);
-	int16_t word;
-	core_memcpy(&word, getBuffer(), 2);
-	const int16_t val = SDL_SwapLE16(word);
-	_pos += 2;
-	return val;
-}
-
-inline float ByteStream::readFloat() {
-	union toint {
-		float f;
-		uint32_t i;
-	} tmp;
-	tmp.i = readInt();
-
-	return tmp.f;
 }
 
 inline int32_t ByteStream::readInt() {
@@ -229,15 +113,6 @@ inline int32_t ByteStream::readInt() {
 	core_memcpy(&word, getBuffer(), 4);
 	const int32_t val = SDL_SwapLE32(word);
 	_pos += 4;
-	return val;
-}
-
-inline int64_t ByteStream::readLong() {
-	core_assert(size() >= 8);
-	int64_t word;
-	core_memcpy(&word, getBuffer(), 8);
-	const int64_t val = SDL_SwapLE64(word);
-	_pos += 8;
 	return val;
 }
 
