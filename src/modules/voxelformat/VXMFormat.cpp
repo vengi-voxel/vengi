@@ -90,8 +90,8 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	wrapBool(stream.addInt(depth))
 
 	int numColors = (int)materialColors.size();
-	if (numColors > 254) {
-		numColors = 254;
+	if (numColors > 255) {
+		numColors = 255;
 	}
 	if (numColors <= 0) {
 		return false;
