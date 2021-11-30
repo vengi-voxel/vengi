@@ -329,7 +329,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 		return false;
 	}
 	uint8_t* voxelData = new uint8_t[voxelDataSize];
-	wrap(stream.readBuf(voxelData, voxelDataSize));
+	wrap(stream.read(voxelData, voxelDataSize));
 
 	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
 	core_assert(voxelDataSizeDecompressed > 0);

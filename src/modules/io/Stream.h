@@ -18,11 +18,14 @@ public:
 	/**
 	 * @return -1 on error
 	 */
-	virtual int seek(int position, int whence = SEEK_SET) = 0;
+	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
 };
 
 class ReadStream : public Stream {
 public:
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	virtual int read(void *dataPtr, size_t dataSize) = 0;
 
 	bool readBool();

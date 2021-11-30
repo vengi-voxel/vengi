@@ -3,20 +3,20 @@
  */
 
 #include "FileStream.h"
-#include <SDL_endian.h>
-#include "io/File.h"
+#include "SDL_rwops.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "io/File.h"
+#include <SDL_endian.h>
+#include <stdio.h>
 #include <stdarg.h>
 
 namespace io {
 
-FileStream::FileStream(File* file) :
-		FileStream(file->_file) {
+FileStream::FileStream(File *file) : FileStream(file->_file) {
 }
 
-FileStream::FileStream(SDL_RWops* rwops) :
-		_rwops(rwops) {
+FileStream::FileStream(SDL_RWops *rwops) : _rwops(rwops) {
 	core_assert(rwops != nullptr);
 	_size = SDL_RWsize(_rwops);
 }
@@ -24,7 +24,7 @@ FileStream::FileStream(SDL_RWops* rwops) :
 FileStream::~FileStream() {
 }
 
-int FileStream::peekInt(uint32_t& val) const {
+int FileStream::peekInt(uint32_t &val) const {
 	const int retVal = peek(val);
 	if (retVal == 0) {
 		const uint32_t swapped = SDL_SwapLE32(val);
@@ -33,7 +33,7 @@ int FileStream::peekInt(uint32_t& val) const {
 	return retVal;
 }
 
-int FileStream::peekShort(uint16_t& val) const {
+int FileStream::peekShort(uint16_t &val) const {
 	const int retVal = peek(val);
 	if (retVal == 0) {
 		const uint16_t swapped = SDL_SwapLE16(val);
@@ -42,7 +42,7 @@ int FileStream::peekShort(uint16_t& val) const {
 	return retVal;
 }
 
-int FileStream::peekByte(uint8_t& val) const {
+int FileStream::peekByte(uint8_t &val) const {
 	const int retVal = peek(val);
 	return retVal;
 }
@@ -77,25 +77,25 @@ bool FileStream::writeFormat(const char *fmt, ...) {
 		const char typeID = *fmt++;
 		switch (typeID) {
 		case 'b':
-			if (!writeByte((uint8_t) va_arg(ap, int))) {
+			if (!writeByte((uint8_t)va_arg(ap, int))) {
 				va_end(ap);
 				return false;
 			}
 			break;
 		case 's':
-			if (!writeShort((uint16_t) va_arg(ap, int))) {
+			if (!writeShort((uint16_t)va_arg(ap, int))) {
 				va_end(ap);
 				return false;
 			}
 			break;
 		case 'i':
-			if (!writeInt((uint32_t) va_arg(ap, int))) {
+			if (!writeInt((uint32_t)va_arg(ap, int))) {
 				va_end(ap);
 				return false;
 			}
 			break;
 		case 'l':
-			if (!writeLong((uint64_t) va_arg(ap, long))) {
+			if (!writeLong((uint64_t)va_arg(ap, long))) {
 				va_end(ap);
 				return false;
 			}
@@ -107,208 +107,6 @@ bool FileStream::writeFormat(const char *fmt, ...) {
 
 	va_end(ap);
 	return true;
-}
-
-bool FileStream::readFormat(const char *fmt, ...) {
-	va_list ap;
-	va_start(ap, fmt);
-	while (*fmt != '\0') {
-		const char typeID = *fmt++;
-		switch (typeID) {
-		case 'b': {
-			uint8_t val;
-			if (readByte(val) != 0) {
-				va_end(ap);
-				return false;
-			}
-			*va_arg(ap, int *) = val;
-			break;
-		}
-		case 's': {
-			uint16_t val;
-			if (readShort(val) != 0) {
-				va_end(ap);
-				return false;
-			}
-			*va_arg(ap, int *) = val;
-			break;
-		}
-		case 'i': {
-			uint32_t val;
-			if (readInt(val) != 0) {
-				va_end(ap);
-				return false;
-			}
-			*va_arg(ap, int *) = val;
-			break;
-		}
-		case 'l': {
-			uint64_t val;
-			if (readLong(val) != 0) {
-				va_end(ap);
-				return false;
-			}
-			*va_arg(ap, int64_t *) = val;
-			break;
-		}
-		default:
-			core_assert_always(false);
-		}
-	}
-
-	va_end(ap);
-	return true;
-}
-
-bool FileStream::readString(int length, char *strbuff, bool terminated) {
-	for (int i = 0; i < length; ++i) {
-		if (_pos >= _size) {
-			Log::error("Max stream length exceeded while reading string of length: %i (read: %i)", length, i);
-			return false;
-		}
-		uint8_t chr;
-		if (readByte(chr) != 0) {
-			Log::error("Stream read error while reading string of length: %i (read: %i)", length, i);
-			return false;
-		}
-		strbuff[i] = chr;
-		if (terminated && chr == '\0') {
-			break;
-		}
-	}
-	return true;
-}
-
-bool FileStream::readLine(int length, char *strbuff) {
-	for (int i = 0; i < length; ++i) {
-		if (_pos >= _size) {
-			Log::error("Max stream length exceeded while reading string of length: %i (read: %i)", length, i);
-			return false;
-		}
-		uint8_t chr;
-		if (readByte(chr) != 0) {
-			Log::error("Stream read error while reading string of length: %i (read: %i)", length, i);
-			return false;
-		}
-		if (chr == '\r') {
-			strbuff[i] = '\0';
-			if (peek(chr) == 0) {
-				if (chr == '\n') {
-					skip(1);
-				}
-			}
-			break;
-		} else if (chr == '\n') {
-			strbuff[i] = '\0';
-			break;
-		}
-		strbuff[i] = chr;
-		if (chr == '\0') {
-			break;
-		}
-	}
-	return true;
-}
-
-int FileStream::readByte(uint8_t& val) {
-	const int retVal = peek(val);
-	if (retVal == 0) {
-		_pos += sizeof(val);
-	}
-	return retVal;
-}
-
-int FileStream::readShort(uint16_t& val) {
-	const int retVal = peek(val);
-	if (retVal == 0) {
-		_pos += sizeof(val);
-		const int16_t swapped = SDL_SwapLE16(val);
-		val = swapped;
-	}
-	return retVal;
-}
-
-int FileStream::readShortBE(uint16_t& val) {
-	const int retVal = peek(val);
-	if (retVal == 0) {
-		_pos += sizeof(val);
-		const int16_t swapped = SDL_SwapBE16(val);
-		val = swapped;
-	}
-	return retVal;
-}
-
-int FileStream::readFloat(float& val) {
-	union toint {
-		float f;
-		uint32_t i;
-	} tmp;
-	const int retVal = readInt(tmp.i);
-	if (retVal == 0) {
-		val = tmp.f;
-	}
-	return retVal;
-}
-
-int FileStream::readFloatBE(float& val) {
-	union toint {
-		float f;
-		uint32_t i;
-	} tmp;
-	const int retVal = readIntBE(tmp.i);
-	if (retVal == 0) {
-		val = tmp.f;
-	}
-	return retVal;
-}
-
-int FileStream::readInt(uint32_t& val) {
-	const int retVal = peek(val);
-	if (retVal == 0) {
-		_pos += sizeof(val);
-		const uint32_t swapped = SDL_SwapLE32(val);
-		val = swapped;
-	}
-	return retVal;
-}
-
-int FileStream::readIntBE(uint32_t& val) {
-	const int retVal = peek(val);
-	if (retVal == 0) {
-		_pos += sizeof(val);
-		const uint32_t swapped = SDL_SwapBE32(val);
-		val = swapped;
-	}
-	return retVal;
-}
-
-int FileStream::readBuf(uint8_t *buf, size_t bufSize) {
-	for (size_t i = 0; i < bufSize; ++i) {
-		if (readByte(buf[i]) != 0) {
-			return -1;
-		}
-	}
-	return 0;
-}
-
-int FileStream::readLong(uint64_t& val) {
-	const int retVal = peek(val);
-	if (retVal == 0) {
-		_pos += sizeof(val);
-		const uint64_t swapped = SDL_SwapLE64(val);
-		val = swapped;
-	}
-	return retVal;
-}
-
-int FileStream::readLongBE(uint64_t& val) {
-	const int retVal = peek(val);
-	if (retVal == 0) {
-		_pos += sizeof(val);
-		const uint64_t swapped = SDL_SwapBE64(val);
-		val = swapped;
-	}
-	return retVal;
 }
 
 bool FileStream::writeByte(uint8_t val) {
@@ -327,7 +125,7 @@ bool FileStream::append(const uint8_t *buf, size_t size) {
 	SDL_RWseek(_rwops, _pos, RW_SEEK_SET);
 	size_t completeBytesWritten = 0;
 	int32_t bytesWritten = 1;
-	const uint8_t* b = buf;
+	const uint8_t *b = buf;
 	while (completeBytesWritten < size && bytesWritten > 0) {
 		bytesWritten = (int32_t)SDL_RWwrite(_rwops, b, 1, (size - completeBytesWritten));
 		b += bytesWritten;
@@ -343,7 +141,7 @@ bool FileStream::append(const uint8_t *buf, size_t size) {
 	return true;
 }
 
-bool FileStream::writeString(const core::String& string, bool terminate) {
+bool FileStream::writeString(const core::String &string, bool terminate) {
 	const size_t length = string.size();
 	for (size_t i = 0u; i < length; i++) {
 		if (!writeByte(uint8_t(string[i]))) {
@@ -404,12 +202,47 @@ bool FileStream::writeFloatBE(float value) {
 	return writeIntBE(tmp.i);
 }
 
-int FileStream::seek(int64_t position) {
-	if (position > _size || position < 0) {
+int FileStream::read(void *dataPtr, size_t dataSize) {
+	if (remaining() < (int64_t)dataSize) {
 		return -1;
 	}
-	_pos = position;
+	uint8_t *b = (uint8_t*)dataPtr;
+	size_t completeBytesRead = 0;
+	size_t bytesRead = 1;
+	while (completeBytesRead < dataSize && bytesRead != 0) {
+		bytesRead = SDL_RWread(_rwops, b, 1, (dataSize - completeBytesRead));
+		b += bytesRead;
+		_pos += (int64_t)bytesRead;
+		completeBytesRead += bytesRead;
+	}
+	if (completeBytesRead != dataSize) {
+		return -1;
+	}
 	return 0;
 }
 
+int64_t FileStream::seek(int64_t position, int whence) {
+	switch (whence) {
+	case SEEK_CUR:
+		if (_pos + position > _size || _pos + position < 0) {
+			return -1;
+		}
+		_pos += position;
+		break;
+	case SEEK_SET:
+		if (position > _size || position < 0) {
+			return -1;
+		}
+		_pos = position;
+		break;
+	case SEEK_END:
+		if (position < 0 || _size - position < 0) {
+			return -1;
+		}
+		_pos = _size - position;
+		break;
+	}
+	return SDL_RWseek(_rwops, position, whence);
 }
+
+} // namespace io

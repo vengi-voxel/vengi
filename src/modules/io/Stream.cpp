@@ -227,11 +227,19 @@ bool ReadStream::readLine(int length, char *strbuff) {
 	return true;
 }
 
-int ReadStream::readByte(uint8_t& val) {
+int ReadStream::readByte(uint8_t &val) {
 	return read(&val, sizeof(val));
 }
 
-int ReadStream::readShort(uint16_t& val) {
+bool ReadStream::readBool() {
+	uint8_t boolean;
+	if (readByte(boolean) != 0) {
+		return false;
+	}
+	return boolean != 0;
+}
+
+int ReadStream::readShort(uint16_t &val) {
 	const int retVal = read(&val, sizeof(val));
 	if (retVal == 0) {
 		const int16_t swapped = SDL_SwapLE16(val);
@@ -240,7 +248,7 @@ int ReadStream::readShort(uint16_t& val) {
 	return retVal;
 }
 
-int ReadStream::readShortBE(uint16_t& val) {
+int ReadStream::readShortBE(uint16_t &val) {
 	const int retVal = read(&val, sizeof(val));
 	if (retVal == 0) {
 		const int16_t swapped = SDL_SwapBE16(val);
@@ -249,7 +257,7 @@ int ReadStream::readShortBE(uint16_t& val) {
 	return retVal;
 }
 
-int ReadStream::readFloat(float& val) {
+int ReadStream::readFloat(float &val) {
 	union toint {
 		float f;
 		uint32_t i;
@@ -261,7 +269,7 @@ int ReadStream::readFloat(float& val) {
 	return retVal;
 }
 
-int ReadStream::readFloatBE(float& val) {
+int ReadStream::readFloatBE(float &val) {
 	union toint {
 		float f;
 		uint32_t i;
@@ -273,7 +281,7 @@ int ReadStream::readFloatBE(float& val) {
 	return retVal;
 }
 
-int ReadStream::readInt(uint32_t& val) {
+int ReadStream::readInt(uint32_t &val) {
 	const int retVal = read(&val, sizeof(val));
 	if (retVal == 0) {
 		const uint32_t swapped = SDL_SwapLE32(val);
@@ -282,7 +290,7 @@ int ReadStream::readInt(uint32_t& val) {
 	return retVal;
 }
 
-int ReadStream::readIntBE(uint32_t& val) {
+int ReadStream::readIntBE(uint32_t &val) {
 	const int retVal = read(&val, sizeof(val));
 	if (retVal == 0) {
 		const uint32_t swapped = SDL_SwapBE32(val);
@@ -291,7 +299,7 @@ int ReadStream::readIntBE(uint32_t& val) {
 	return retVal;
 }
 
-int ReadStream::readLong(uint64_t& val) {
+int ReadStream::readLong(uint64_t &val) {
 	const int retVal = read(&val, sizeof(val));
 	if (retVal == 0) {
 		const uint64_t swapped = SDL_SwapLE64(val);
@@ -300,7 +308,7 @@ int ReadStream::readLong(uint64_t& val) {
 	return retVal;
 }
 
-int ReadStream::readLongBE(uint64_t& val) {
+int ReadStream::readLongBE(uint64_t &val) {
 	const int retVal = read(&val, sizeof(val));
 	if (retVal == 0) {
 		const uint64_t swapped = SDL_SwapBE64(val);
