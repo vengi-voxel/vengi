@@ -374,7 +374,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream, VoxelVolumes& volumes) {
 					const uint8_t index = findClosestIndex(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
-					_colors[_colorsSize++] = core::Color::getRGBA(color);
+					//_colors[_colorsSize++] = core::Color::getRGBA(color);
 				}
 			}
 		}
@@ -460,7 +460,7 @@ bool QBTFormat::loadColorMap(io::FileStream& stream) {
 	uint32_t colorCount;
 	wrap(stream.readInt(colorCount));
 	Log::debug("Load color map with %u colors", colorCount);
-	if (colorCount > 0xFFFF) {
+	if (colorCount > _palette.size()) {
 		_paletteSize = 0;
 		Log::error("Sanity check for max colors failed (%u)", colorCount);
 		return false;
@@ -481,7 +481,7 @@ bool QBTFormat::loadColorMap(io::FileStream& stream) {
 		const uint32_t blue  = ((uint32_t)colorByteB) << 8;
 		const uint32_t alpha = ((uint32_t)255) << 0;
 
-		const glm::vec4& color = core::Color::fromRGBA(red, green, blue, alpha);
+		const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
 		_colors[i] = core::Color::getRGBA(color);
 		const uint8_t index = findClosestIndex(color);
 		_palette[i] = index;
