@@ -160,36 +160,6 @@ public:
 	int64_t size() const;
 
 	int64_t pos() const;
-
-	FileStream &operator<<(const uint8_t &x) {
-		writeByte(x);
-		return *this;
-	}
-
-	FileStream &operator<<(const int16_t &x) {
-		writeShort(x);
-		return *this;
-	}
-
-	FileStream &operator<<(const bool &x) {
-		writeBool(x);
-		return *this;
-	}
-
-	FileStream &operator<<(const int32_t &x) {
-		writeInt(x);
-		return *this;
-	}
-
-	FileStream &operator<<(const float &x) {
-		writeFloat(x);
-		return *this;
-	}
-
-	FileStream &operator<<(const core::String &x) {
-		writeString(x);
-		return *this;
-	}
 };
 
 inline bool FileStream::empty() const {
