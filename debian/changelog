@@ -7,6 +7,7 @@ vengi (0.0.15.0-1) UNRELEASED; urgency=low
 
   * VoxConvert
   * Added option to keep the input file palette and don't perform quantization
+  * Allow to export the palette to png
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 21 Nov 2021 11:56:02 +0100
 
