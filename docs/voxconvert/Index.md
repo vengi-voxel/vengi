@@ -14,6 +14,8 @@ Convert voxel volume formats between each other or export to obj or ply.
 
 * `--merge`: will merge a multi layer volume (like vox, qb or qbt) into a single volume of the target file
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
+* `--export-palette`: will save the included palette as png next to the source file
+* `--src-palette`: will use the included palette and doesn't perform any quantization to the default palette
 
 Just type `vengi-voxconvert` to get a full list of commands and options.
 
