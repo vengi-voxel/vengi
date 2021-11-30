@@ -4,6 +4,7 @@ set(SRCS
 	Filesystem.cpp Filesystem.h
 	FormatDescription.cpp FormatDescription.h
 	IOResource.h
+	Stream.cpp Stream.h
 )
 
 set(LIB io)
@@ -19,6 +20,7 @@ set(TEST_SRCS
 	tests/FileStreamTest.cpp
 	tests/FormatDescriptionTest.cpp
 	tests/FileTest.cpp
+	tests/StreamTest.cpp
 )
 
 gtest_suite_sources(tests ${TEST_SRCS})
