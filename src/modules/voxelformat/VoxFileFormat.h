@@ -22,7 +22,9 @@ class Mesh;
 class VoxFileFormat {
 protected:
 	core::Array<uint8_t, 256> _palette;
+	core::Array<uint32_t, 256> _colors;
 	size_t _paletteSize = 0;
+	size_t _colorsSize = 0;
 
 	const glm::vec4& getColor(const Voxel& voxel) const;
 	glm::vec4 findClosestMatch(const glm::vec4& color) const;
@@ -36,6 +38,14 @@ public:
 	virtual ~VoxFileFormat() = default;
 
 	virtual image::ImagePtr loadScreenshot(const io::FilePtr& /*file*/) { return image::ImagePtr(); }
+
+	/**
+	 * @brief Only load the palette that is included in the format
+	 * @note Not all voxel formats have a palette included
+	 *
+	 * @return the amount of colors found in the palette
+	 */
+	virtual size_t loadPalette(const io::FilePtr& file, core::Array<uint32_t, 256> &palette);
 
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes

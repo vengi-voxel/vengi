@@ -340,8 +340,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	uint8_t materialAmount;
 	wrap(stream.readByte(materialAmount));
 	Log::debug("Palette of size %i", (int)materialAmount);
-	uint8_t palette[256];
-	if ((int)materialAmount > lengthof(palette)) {
+	if (materialAmount > _palette.size()) {
 		return false;
 	}
 
@@ -357,8 +356,11 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 		uint8_t emissive;
 		wrap(stream.readByte(emissive));
 		const glm::vec4& rgbaColor = core::Color::fromRGBA(red, green, blue, alpha);
-		palette[i] = findClosestIndex(rgbaColor);
+		_colors[i] = core::Color::getRGBA(rgbaColor);
+		_palette[i] = findClosestIndex(rgbaColor);
 	}
+	_colorsSize = materialAmount;
+	_paletteSize = materialAmount;
 
 	const Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 
@@ -401,7 +403,7 @@ bool VXMFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 				continue;
 			}
 
-			const uint8_t index = palette[matIdx];
+			const uint8_t index = _palette[matIdx];
 			const voxel::VoxelType voxelType = voxel::VoxelType::Generic;
 			const Voxel voxel = createColorVoxel(voxelType, index);
 

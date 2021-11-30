@@ -89,6 +89,7 @@ bool KVXFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 	// Read the color palette from the end of the file and convert to our palette
 	const size_t currentPos = stream.pos();
 	_paletteSize = _palette.size();
+	_colorsSize = _paletteSize;
 	stream.seek(stream.size() - 3 * _paletteSize);
 
 	/**
@@ -108,6 +109,7 @@ bool KVXFormat::loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) {
 
 		const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255);
 		_palette[i] = findClosestIndex(color);
+		_colors[i] = core::Color::getRGBA(color);
 	}
 	stream.seek(currentPos);
 

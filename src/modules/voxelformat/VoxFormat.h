@@ -136,6 +136,7 @@ private:
 	glm::ivec3 calcTransform(const VoxTransform& t, int x, int y, int z, const glm::ivec3& pivot) const;
 
 public:
+	size_t loadPalette(const io::FilePtr& file, core::Array<uint32_t, 256> &palette) override;
 	bool loadGroups(const io::FilePtr& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };

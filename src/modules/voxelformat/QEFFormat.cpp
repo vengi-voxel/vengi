@@ -87,6 +87,7 @@ bool QEFFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 	}
 
 	_paletteSize = paletteSize;
+	_colorsSize = _paletteSize;
 
 	for (int i = 0; i < paletteSize; ++i) {
 		float r, g, b;
@@ -95,7 +96,9 @@ bool QEFFormat::loadGroups(const io::FilePtr &file, VoxelVolumes &volumes) {
 			Log::error("Failed to parse palette color");
 			return false;
 		}
-		_palette[i] = findClosestIndex(glm::vec4(r, g, b, 1.0f));
+		const glm::vec4 color(r, g, b, 1.0f);
+		_colors[i] = core::Color::getRGBA(color);
+		_palette[i] = findClosestIndex(color);
 	}
 
 	voxel::RawVolume* volume = new voxel::RawVolume(region);

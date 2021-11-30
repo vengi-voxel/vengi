@@ -60,6 +60,14 @@ RawVolume* VoxFileFormat::load(const io::FilePtr& file) {
 	return mergedVolume;
 }
 
+size_t VoxFileFormat::loadPalette(const io::FilePtr& file, core::Array<uint32_t, 256> &palette) {
+	VoxelVolumes volumes;
+	loadGroups(file, volumes);
+	voxelformat::clearVolumes(volumes);
+	palette = _colors;
+	return _colorsSize;
+}
+
 bool VoxFileFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	VoxelVolumes volumes;
 	volumes.push_back(VoxelVolume(const_cast<RawVolume*>(volume)));
