@@ -19,13 +19,9 @@ class Thumbnailer: public video::WindowedApp {
 private:
 	using Super = video::WindowedApp;
 
-	video::FrameBuffer _frameBuffer;
-
 	io::FilePtr _infile;
 	core::String _outfile;
 	int _outputSize = 128;
-
-	voxelrender::RawVolumeRenderer _renderer;
 
 	bool renderVolume();
 	bool saveEmbeddedScreenshot();

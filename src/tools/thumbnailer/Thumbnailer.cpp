@@ -28,8 +28,6 @@ app::AppState Thumbnailer::onConstruct() {
 
 	registerArg("--size").setShort("-s").setDescription("Size of the thumbnail in pixels").setDefaultValue("128").setMandatory();
 
-	_renderer.construct();
-
 	return state;
 }
 
@@ -60,14 +58,23 @@ app::AppState Thumbnailer::onInit() {
 		return app::AppState::InitFailure;
 	}
 
+	return state;
+}
+
+bool Thumbnailer::renderVolume() {
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to init default material colors");
-		return app::AppState::InitFailure;
+		return false;
 	}
 
-	if (!_renderer.init()) {
+	video::FrameBuffer frameBuffer;
+	voxelrender::RawVolumeRenderer volumeRenderer;
+
+	volumeRenderer.construct();
+
+	if (!volumeRenderer.init()) {
 		Log::error("Failed to initialize the renderer");
-		return app::AppState::InitFailure;
+		return false;
 	}
 
 	video::clearColor(::core::Color::Black);
@@ -77,11 +84,6 @@ app::AppState Thumbnailer::onInit() {
 	video::enable(video::State::DepthMask);
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
-
-	return state;
-}
-
-bool Thumbnailer::renderVolume() {
 	voxel::VoxelVolumes volumes;
 	if (!voxelformat::loadVolumeFormat(_infile, volumes)) {
 		Log::error("Failed to load given input file");
@@ -92,8 +94,8 @@ bool Thumbnailer::renderVolume() {
 
 	const int volumesSize = (int)volumes.size();
 	for (int i = 0; i < volumesSize; ++i) {
-		_renderer.setVolume(i, volumes[i].volume);
-		_renderer.extractRegion(i, volumes[i].volume->region());
+		volumeRenderer.setVolume(i, volumes[i].volume);
+		volumeRenderer.extractRegion(i, volumes[i].volume->region());
 	}
 
 	video::Camera camera;
@@ -101,7 +103,7 @@ bool Thumbnailer::renderVolume() {
 	camera.setRotationType(video::CameraRotationType::Target);
 	camera.setMode(video::CameraMode::Perspective);
 	camera.setAngles(0.0f, 0.0f, 0.0f);
-	const voxel::Region& region = _renderer.region();
+	const voxel::Region& region = volumeRenderer.region();
 	const glm::ivec3& center = region.getCenter();
 	camera.setTarget(center);
 	const glm::vec3 dim(region.getDimensionsInVoxels());
@@ -119,17 +121,17 @@ bool Thumbnailer::renderVolume() {
 	video::FrameBufferConfig cfg;
 	cfg.dimension(glm::ivec2(_outputSize)).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
 	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
-	_frameBuffer.init(cfg);
+	frameBuffer.init(cfg);
 
-	_renderer.waitForPendingExtractions();
-	_renderer.update();
+	volumeRenderer.waitForPendingExtractions();
+	volumeRenderer.update();
 	core_trace_scoped(EditorSceneRenderFramebuffer);
-	_frameBuffer.bind(true);
-	_renderer.render(camera);
-	_frameBuffer.unbind();
+	frameBuffer.bind(true);
+	volumeRenderer.render(camera);
+	frameBuffer.unbind();
 
 	bool success = true;
-	const video::TexturePtr& fboTexture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+	const video::TexturePtr& fboTexture = frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	uint8_t *pixels = nullptr;
 	if (video::readTexture(video::TextureUnit::Upload,
 			textureCfg.type(), textureCfg.format(), fboTexture->handle(),
@@ -147,6 +149,14 @@ bool Thumbnailer::renderVolume() {
 		success = false;
 	}
 	SDL_free(pixels);
+
+	const core::DynamicArray<voxel::RawVolume*>& old = volumeRenderer.shutdown();
+	for (auto* v : old) {
+		delete v;
+	}
+
+	frameBuffer.shutdown();
+
 	return success;
 }
 
@@ -186,13 +196,6 @@ app::AppState Thumbnailer::onRunning() {
 }
 
 app::AppState Thumbnailer::onCleanup() {
-	const core::DynamicArray<voxel::RawVolume*>& old = _renderer.shutdown();
-	for (auto* v : old) {
-		delete v;
-	}
-
-	_frameBuffer.shutdown();
-
 	return Super::onCleanup();
 }
 
