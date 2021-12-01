@@ -35,13 +35,21 @@ Generate a lod scaled by 50% from the input model.
 
 `./vengi-voxconvert -s infile.vox lod1.vox`
 
+## Extract the palette and save as png
+
+Saves the png in the same dir as the vox file
+
+`./vengi-voxconvert --src-palette --export-palette infile.vox outfile.vox`
+
+There will be an `infile.png` now.
+
 ## Convert volume to mesh
 
 You can export your volume model into a obj or ply.
 
 `./vengi-voxconvert infile.vox outfile.obj`
 
-Cvars to control the meshing:
+Config vars to control the meshing:
 
 * `voxformat_ambientocclusion`: Don't export extra quads for ambient occlusion voxels
 * `voxformat_mergequads`: Merge similar quads to optimize the mesh
@@ -51,7 +59,7 @@ Cvars to control the meshing:
 * `voxformat_withcolor`: Export vertex colors
 * `voxformat_withtexcoords`: Export texture coordinates
 
-See `./vengi-voxconvert --help` for details.
+See `./vengi-voxconvert --help` or [configuration](../Configuration.md) for more details.
 
 ## Batch convert
 
