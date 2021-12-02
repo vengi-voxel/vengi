@@ -3,8 +3,6 @@
  */
 
 #include "BufferedReadWriteStream.h"
-#include <SDL_stdinc.h>
-#include <stdarg.h>
 
 namespace io {
 

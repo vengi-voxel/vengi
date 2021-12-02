@@ -23,11 +23,7 @@ class BufferedReadWriteStream {
 private:
 	typedef core::Buffer<uint8_t> Buffer;
 	Buffer _buffer;
-	int _pos = 0;
-
-	inline int size() const {
-		return (int)(_buffer.size() - _pos);
-	}
+	int64_t _pos = 0;
 public:
 	BufferedReadWriteStream(int size = 0);
 
@@ -48,7 +44,7 @@ public:
 	void clear();
 
 	// return the amount of bytes in the buffer
-	size_t getSize() const;
+	int64_t size() const;
 
 	void resize(size_t size);
 };
@@ -74,8 +70,8 @@ inline void BufferedReadWriteStream::clear() {
 	_buffer.clear();
 }
 
-inline size_t BufferedReadWriteStream::getSize() const {
-	return _buffer.size() - _pos;
+inline int64_t BufferedReadWriteStream::size() const {
+	return (int64_t)_buffer.size() - _pos;
 }
 
 inline void BufferedReadWriteStream::addByte(uint8_t byte) {

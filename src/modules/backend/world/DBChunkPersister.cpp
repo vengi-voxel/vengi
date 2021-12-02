@@ -78,7 +78,7 @@ bool DBChunkPersister::save(const voxel::PagedVolume::ChunkPtr& chunk, unsigned 
 
 	persistence::Blob data;
 	data.data = (uint8_t*)out.getBuffer();
-	data.length = out.getSize();
+	data.length = out.size();
 	Log::info("Store compressed chunk with size %i", (int)data.length);
 	db::ChunkModel model;
 	model.setMapid(_mapId);

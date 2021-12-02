@@ -56,11 +56,11 @@ bool FilePersister::save(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int
 	const core::String& filename = getWorldName(chunk->chunkPos(), seed);
 	const io::FilesystemPtr& filesystem = io::filesystem();
 
-	if (!filesystem->write(filename, final.getBuffer(), final.getSize())) {
+	if (!filesystem->write(filename, final.getBuffer(), final.size())) {
 		Log::error("Failed to write file %s", filename.c_str());
 		return false;
 	}
-	Log::debug("Wrote file %s (%i)", filename.c_str(), (int)final.getSize());
+	Log::debug("Wrote file %s (%i)", filename.c_str(), (int)final.size());
 	return true;
 }
 
