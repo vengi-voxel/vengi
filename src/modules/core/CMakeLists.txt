@@ -42,7 +42,6 @@ set(SRCS
 	Log.cpp Log.h
 	MD5.cpp MD5.h
 	PoolAllocator.h
-	MemGuard.cpp MemGuard.h
 	NonCopyable.h
 	Password.h
 	Process.cpp Process.h
