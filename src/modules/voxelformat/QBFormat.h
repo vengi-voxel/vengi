@@ -53,13 +53,13 @@ private:
 	};
 
 	bool setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel);
-	voxel::Voxel getVoxel(io::ReadStream& stream);
-	bool loadMatrix(io::ReadStream& stream, VoxelVolumes& volumes);
-	bool loadFromStream(io::ReadStream& stream, VoxelVolumes& volumes);
+	voxel::Voxel getVoxel(io::SeekableReadStream& stream);
+	bool loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes);
+	bool loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes);
 
 	bool saveMatrix(io::FileStream& stream, const VoxelVolume& volume) const;
 public:
-	bool loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

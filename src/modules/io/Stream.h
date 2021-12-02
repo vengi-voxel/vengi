@@ -13,21 +13,13 @@
 namespace io {
 
 class ReadStream {
-protected:
-	int64_t _size = 0;
-	int64_t _pos = 0;
 public:
+	virtual ~ReadStream() {}
 	/**
 	 * @return -1 on error - 0 on success
 	 */
 	virtual int read(void *dataPtr, size_t dataSize) = 0;
-
-	/**
-	 * @return -1 on error - otherwise the current offset in the stream
-	 */
-	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
-
-	int64_t skip(int64_t delta);
+	virtual bool eos() const = 0;
 
 	bool readBool();
 	int readByte(uint8_t &val);
@@ -48,42 +40,45 @@ public:
 	 * @param[in] terminated If this is true, the read will stop on a 0 byte
 	 */
 	bool readString(int length, char *strbuff, bool terminated = false);
-	bool readLine(int length, char *strbuff);
 	bool readFormat(const char *fmt, ...);
+};
+
+class SeekableReadStream : public ReadStream {
+public:
+	virtual ~SeekableReadStream() {}
+	/**
+	 * @return -1 on error - otherwise the current offset in the stream
+	 */
+	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
+
+	int64_t skip(int64_t delta);
+
+	bool eos() const override {
+		return pos() >= size();
+	}
 
 	int peekInt(uint32_t &val);
 	int peekShort(uint16_t &val);
 	int peekByte(uint8_t &val);
+	bool readLine(int length, char *strbuff);
 
 	int64_t remaining() const;
 	bool empty() const;
-	bool eos() const;
-	int64_t size() const;
-	int64_t pos() const;
+	virtual int64_t size() const = 0;
+	virtual int64_t pos() const = 0;
 };
 
-inline int64_t ReadStream::remaining() const {
-	return _size - _pos;
+inline int64_t SeekableReadStream::remaining() const {
+	return size() - pos();
 }
 
-inline bool ReadStream::empty() const {
-	return _size == 0;
-}
-
-inline bool ReadStream::eos() const {
-	return _pos >= _size;
-}
-
-inline int64_t ReadStream::size() const {
-	return _size;
-}
-
-inline int64_t ReadStream::pos() const {
-	return _pos;
+inline bool SeekableReadStream::empty() const {
+	return size() == 0;
 }
 
 class WriteStream {
 public:
+	virtual ~WriteStream() {}
 	/**
 	 * @return -1 on error - 0 on success
 	 */

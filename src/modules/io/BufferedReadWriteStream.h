@@ -19,7 +19,6 @@ namespace io {
 #define BYTE_MASK 0XFF
 #define WORD_MASK 0XFFFF
 
-// TODO: convert to io::WriteStream
 class BufferedReadWriteStream {
 private:
 	typedef core::Buffer<uint8_t> Buffer;
@@ -29,15 +28,6 @@ private:
 	inline int size() const {
 		return (int)(_buffer.size() - _pos);
 	}
-
-	inline Buffer::const_iterator begin() const {
-		return _buffer.begin() + _pos;
-	}
-
-	inline Buffer::iterator begin() {
-		return _buffer.begin() + _pos;
-	}
-
 public:
 	BufferedReadWriteStream(int size = 0);
 

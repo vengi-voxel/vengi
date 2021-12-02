@@ -19,7 +19,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool KVXFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	// Total # of bytes (not including numbytes) in each mip-map level
 	// but there is only 1 mip-map level
 	uint32_t numbytes;

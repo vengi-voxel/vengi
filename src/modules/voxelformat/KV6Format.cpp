@@ -19,7 +19,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool KV6Format::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t magic;
 	wrap(stream.readInt(magic))
 	if (magic != FourCC('K','v','x','l')) {

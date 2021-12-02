@@ -36,7 +36,7 @@ namespace voxel {
 		}                                                                                                              \
 	} while (0)
 
-bool MCRFormat::loadGroups(const core::String &filename, io::ReadStream &stream, VoxelVolumes &volumes) {
+bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
 		Log::error("File does not contain enough data");
@@ -101,7 +101,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::ReadStream &stream,
 	return false;
 }
 
-bool MCRFormat::loadMinecraftRegion(VoxelVolumes &volumes, const uint8_t *buffer, int length, io::ReadStream &stream,
+bool MCRFormat::loadMinecraftRegion(VoxelVolumes &volumes, const uint8_t *buffer, int length, io::SeekableReadStream &stream,
 									int chunkX, int chunkZ) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u || _offsets[i].offset == 0u) {
@@ -121,7 +121,7 @@ bool MCRFormat::loadMinecraftRegion(VoxelVolumes &volumes, const uint8_t *buffer
 	return true;
 }
 
-bool MCRFormat::readCompressedNBT(VoxelVolumes &volumes, const uint8_t *buffer, int length, io::ReadStream &stream) {
+bool MCRFormat::readCompressedNBT(VoxelVolumes &volumes, const uint8_t *buffer, int length, io::SeekableReadStream &stream) {
 	uint32_t nbtSize;
 	wrap(stream.readIntBE(nbtSize));
 	if (nbtSize == 0) {
@@ -586,7 +586,7 @@ bool MCRFormat::parseNBTChunk(VoxelVolumes &volumes, const uint8_t *buffer, int 
 	return true;
 }
 
-bool MCRFormat::skip(io::ReadStream &stream, TagId id) {
+bool MCRFormat::skip(io::SeekableReadStream &stream, TagId id) {
 	switch (id) {
 	case TagId::BYTE:
 		Log::debug("skip 1 byte");
@@ -664,7 +664,7 @@ bool MCRFormat::skip(io::ReadStream &stream, TagId id) {
 	return true;
 }
 
-bool MCRFormat::getNext(io::ReadStream &stream, MCRFormat::NamedBinaryTag &nbt) {
+bool MCRFormat::getNext(io::SeekableReadStream &stream, MCRFormat::NamedBinaryTag &nbt) {
 	wrap(stream.read(&nbt.id, sizeof(nbt.id)));
 	if (nbt.id == TagId::END) {
 		Log::debug("Found compound end at level %i", nbt.level);

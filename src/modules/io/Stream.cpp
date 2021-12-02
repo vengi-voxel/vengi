@@ -206,7 +206,7 @@ bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 	return true;
 }
 
-bool ReadStream::readLine(int length, char *strbuff) {
+bool SeekableReadStream::readLine(int length, char *strbuff) {
 	for (int i = 0; i < length; ++i) {
 		uint8_t chr;
 		if (readByte(chr) != 0) {
@@ -322,7 +322,7 @@ int ReadStream::readLongBE(uint64_t &val) {
 	return retVal;
 }
 
-int ReadStream::peekInt(uint32_t &val) {
+int SeekableReadStream::peekInt(uint32_t &val) {
 	const int retVal = readInt(val);
 	if (retVal == 0) {
 		const uint32_t swapped = SDL_SwapLE32(val);
@@ -332,7 +332,7 @@ int ReadStream::peekInt(uint32_t &val) {
 	return retVal;
 }
 
-int ReadStream::peekShort(uint16_t &val) {
+int SeekableReadStream::peekShort(uint16_t &val) {
 	const int retVal = readShort(val);
 	if (retVal == 0) {
 		const uint16_t swapped = SDL_SwapLE16(val);
@@ -342,7 +342,7 @@ int ReadStream::peekShort(uint16_t &val) {
 	return retVal;
 }
 
-int ReadStream::peekByte(uint8_t &val) {
+int SeekableReadStream::peekByte(uint8_t &val) {
 	const int retVal = readByte(val);
 	if (retVal == 0) {
 		seek(-1, SEEK_CUR);
@@ -350,7 +350,7 @@ int ReadStream::peekByte(uint8_t &val) {
 	return retVal;
 }
 
-int64_t ReadStream::skip(int64_t delta) {
+int64_t SeekableReadStream::skip(int64_t delta) {
 	return seek(delta, SEEK_CUR);
 }
 

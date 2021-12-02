@@ -38,7 +38,7 @@ protected:
 public:
 	virtual ~VoxFileFormat() = default;
 
-	virtual image::ImagePtr loadScreenshot(const core::String &/*filename*/, io::ReadStream& /*file*/) { return image::ImagePtr(); }
+	virtual image::ImagePtr loadScreenshot(const core::String &/*filename*/, io::SeekableReadStream& /*file*/) { return image::ImagePtr(); }
 
 	/**
 	 * @brief Only load the palette that is included in the format
@@ -46,16 +46,16 @@ public:
 	 *
 	 * @return the amount of colors found in the palette
 	 */
-	virtual size_t loadPalette(const core::String &filename, io::ReadStream& file, core::Array<uint32_t, 256> &palette);
+	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& file, core::Array<uint32_t, 256> &palette);
 
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
 	 */
-	virtual bool loadGroups(const core::String &filename, io::ReadStream& file, VoxelVolumes& volumes) = 0;
+	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& file, VoxelVolumes& volumes) = 0;
 	/**
 	 * @brief Merge the loaded volumes into one. The returned memory is yours.
 	 */
-	virtual RawVolume* load(const core::String &filename, io::ReadStream& file);
+	virtual RawVolume* load(const core::String &filename, io::SeekableReadStream& file);
 	virtual bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) = 0;
 	virtual bool save(const RawVolume* volume, const io::FilePtr& file);
 };
@@ -73,7 +73,7 @@ protected:
 	using Meshes = core::DynamicArray<MeshExt>;
 	virtual bool saveMeshes(const Meshes& meshes, const io::FilePtr& file, float scale = 1.0f, bool quad = false, bool withColor = true, bool withTexCoords = true) = 0;
 public:
-	bool loadGroups(const core::String &filename, io::ReadStream& file, VoxelVolumes& volumes) override {
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& file, VoxelVolumes& volumes) override {
 		return false;
 	}
 

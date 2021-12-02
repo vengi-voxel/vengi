@@ -24,7 +24,7 @@ namespace voxel {
 		return false; \
 	}
 
-static bool readString(io::ReadStream& stream, core::String& str, bool readStringAsInt) {
+static bool readString(io::SeekableReadStream& stream, core::String& str, bool readStringAsInt) {
 	if (readStringAsInt) {
 		uint32_t length;
 		wrap(stream.readInt(length))
@@ -47,7 +47,7 @@ static bool readString(io::ReadStream& stream, core::String& str, bool readStrin
 	return true;
 }
 
-bool CSMFormat::loadGroups(const core::String &filename, io::ReadStream &stream, VoxelVolumes &volumes) {
+bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readInt(magic))

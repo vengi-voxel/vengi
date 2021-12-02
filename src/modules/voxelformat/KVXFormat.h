@@ -49,7 +49,7 @@ namespace voxel {
  */
 class KVXFormat : public VoxFileFormat {
 public:
-	bool loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

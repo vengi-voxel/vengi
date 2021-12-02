@@ -14,7 +14,7 @@
 
 namespace voxel {
 
-bool AoSVXLFormat::loadGroups(const core::String& filename, io::ReadStream &stream, VoxelVolumes &volumes) {
+bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
 	const int width = 512, height = 512, depth = 64;
 	const voxel::Region region(0, 0, 0, width - 1, depth - 1, height - 1);
 	const int flipHeight = depth - 1;

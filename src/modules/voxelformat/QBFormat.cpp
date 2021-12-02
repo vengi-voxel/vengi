@@ -178,7 +178,7 @@ bool QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32
 	return true;
 }
 
-voxel::Voxel QBFormat::getVoxel(io::ReadStream& stream) {
+voxel::Voxel QBFormat::getVoxel(io::SeekableReadStream& stream) {
 	uint8_t red;
 	uint8_t green;
 	uint8_t blue;
@@ -209,7 +209,7 @@ voxel::Voxel QBFormat::getVoxel(io::ReadStream& stream) {
 	return voxel::createVoxel(voxelType, index);
 }
 
-bool QBFormat::loadMatrix(io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	char name[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readByte(nameLength));
@@ -312,7 +312,7 @@ bool QBFormat::loadMatrix(io::ReadStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool QBFormat::loadFromStream(io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	wrap(stream.readInt(_version))
 	uint32_t colorFormat;
 	wrap(stream.readInt(colorFormat))
@@ -347,7 +347,7 @@ bool QBFormat::loadFromStream(io::ReadStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool QBFormat::loadGroups(const core::String& filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	return loadFromStream(stream, volumes);
 }
 

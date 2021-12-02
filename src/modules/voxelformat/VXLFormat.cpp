@@ -196,7 +196,7 @@ bool VXLFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	return true;
 }
 
-bool VXLFormat::readLimb(io::ReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, VoxelVolumes& volumes) const {
+bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, VoxelVolumes& volumes) const {
 	const vxl_limb_tailer &footer = mdl.limb_tailers[limbIdx];
 	const vxl_limb_header &header = mdl.limb_headers[limbIdx];
 
@@ -277,7 +277,7 @@ bool VXLFormat::readLimb(io::ReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx,
 	return true;
 }
 
-bool VXLFormat::readLimbs(io::ReadStream& stream, vxl_mdl& mdl, VoxelVolumes& volumes) const {
+bool VXLFormat::readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, VoxelVolumes& volumes) const {
 	const vxl_header& hdr = mdl.header;
 	volumes.resize(hdr.n_limbs);
 	for (uint32_t i = 0; i < hdr.n_limbs; ++i) {
@@ -286,7 +286,7 @@ bool VXLFormat::readLimbs(io::ReadStream& stream, vxl_mdl& mdl, VoxelVolumes& vo
 	return true;
 }
 
-bool VXLFormat::readLimbHeader(io::ReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const {
+bool VXLFormat::readLimbHeader(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const {
 	vxl_limb_header &header = mdl.limb_headers[limbIdx];
 	wrapBool(stream.readString(sizeof(header.limb_name), header.limb_name))
 	Log::debug("Limb %u name: %s", limbIdx, header.limb_name);
@@ -297,7 +297,7 @@ bool VXLFormat::readLimbHeader(io::ReadStream& stream, vxl_mdl& mdl, uint32_t li
 	return true;
 }
 
-bool VXLFormat::readLimbHeaders(io::ReadStream& stream, vxl_mdl& mdl) const {
+bool VXLFormat::readLimbHeaders(io::SeekableReadStream& stream, vxl_mdl& mdl) const {
 	wrap(stream.seek(HeaderSize))
 	for (uint32_t i = 0; i < mdl.header.n_limbs; ++i) {
 		wrapBool(readLimbHeader(stream, mdl, i))
@@ -305,7 +305,7 @@ bool VXLFormat::readLimbHeaders(io::ReadStream& stream, vxl_mdl& mdl) const {
 	return true;
 }
 
-bool VXLFormat::readLimbFooter(io::ReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const {
+bool VXLFormat::readLimbFooter(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const {
 	vxl_limb_tailer &footer = mdl.limb_tailers[limbIdx];
 	wrap(stream.readInt(footer.span_start_off))
 	wrap(stream.readInt(footer.span_end_off))
@@ -328,7 +328,7 @@ bool VXLFormat::readLimbFooter(io::ReadStream& stream, vxl_mdl& mdl, uint32_t li
 	return true;
 }
 
-bool VXLFormat::readLimbFooters(io::ReadStream& stream, vxl_mdl& mdl) const {
+bool VXLFormat::readLimbFooters(io::SeekableReadStream& stream, vxl_mdl& mdl) const {
 	const vxl_header& hdr = mdl.header;
 	wrap(stream.seek(HeaderSize + LimbHeaderSize * hdr.n_limbs + hdr.bodysize))
 	for (uint32_t i = 0; i < hdr.n_limbs; ++i) {
@@ -337,7 +337,7 @@ bool VXLFormat::readLimbFooters(io::ReadStream& stream, vxl_mdl& mdl) const {
 	return true;
 }
 
-bool VXLFormat::readHeader(io::ReadStream& stream, vxl_mdl& mdl) {
+bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 	vxl_header& hdr = mdl.header;
 	wrapBool(stream.readString(sizeof(hdr.filetype), hdr.filetype))
 	if (SDL_strcmp(hdr.filetype, "Voxel Animation") != 0) {
@@ -391,7 +391,7 @@ bool VXLFormat::prepareModel(vxl_mdl& mdl) const {
 	return true;
 }
 
-bool VXLFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool VXLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	vxl_mdl mdl;
 	wrapBool(readHeader(stream, mdl))
 	wrapBool(prepareModel(mdl))

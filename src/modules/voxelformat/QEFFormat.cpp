@@ -25,7 +25,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool QEFFormat::loadGroups(const core::String &filename, io::ReadStream &stream, VoxelVolumes &volumes) {
+bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
 	char buf[64];
 
 	wrapBool(stream.readLine(64, buf))

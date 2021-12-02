@@ -23,7 +23,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool CubFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t width, depth, height;
 	wrap(stream.readInt(width))
 	wrap(stream.readInt(depth))

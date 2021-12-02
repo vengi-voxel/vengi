@@ -52,7 +52,7 @@ bool VXMFormat::writeRLE(io::FileStream &stream, int length, voxel::Voxel &voxel
 	return true;
 }
 
-image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::ReadStream& stream) {
+image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
 	const core::String imageName = filename + ".png";
 	const io::FilePtr& imageFile = io::filesystem()->open(imageName);
 	if (!imageFile) {
@@ -132,7 +132,7 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	return true;
 }
 
-bool VXMFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint8_t magic[4];
 	wrap(stream.readByte(magic[0]))
 	wrap(stream.readByte(magic[1]))

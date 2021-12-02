@@ -31,7 +31,7 @@ private:
 	bool readData(const core::String& filename, const uint8_t *buf, const int64_t bufSize, const size_t offset, VoxelVolumes& volumes);
 	bool readHeader(const core::String& header);
 public:
-	bool loadGroups(const core::String& filename, io::ReadStream& stream, VoxelVolumes& volumes) override;
+	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
 };
 

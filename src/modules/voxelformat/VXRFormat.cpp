@@ -44,7 +44,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxrPath, VoxelVolumes& volumes)
 	return f.loadGroups(vxrPath, stream, volumes);
 }
 
-bool VXRFormat::importChildOld(io::ReadStream& stream, uint32_t version) {
+bool VXRFormat::importChildOld(io::SeekableReadStream& stream, uint32_t version) {
 	if (version <= 2) {
 		char id[1024];
 		wrapBool(stream.readString(sizeof(id), id, true))
@@ -108,7 +108,7 @@ bool VXRFormat::importChildOld(io::ReadStream& stream, uint32_t version) {
 	return true;
 }
 
-bool VXRFormat::importChild(const core::String& vxrPath, io::ReadStream& stream, VoxelVolumes& volumes, uint32_t version) {
+bool VXRFormat::importChild(const core::String& vxrPath, io::SeekableReadStream& stream, VoxelVolumes& volumes, uint32_t version) {
 	uint32_t dummy;
 	float dummyf;
 	char id[1024];
@@ -182,7 +182,7 @@ bool VXRFormat::importChild(const core::String& vxrPath, io::ReadStream& stream,
 	return true;
 }
 
-image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::ReadStream& stream) {
+image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
 	const core::String imageName = filename + ".png";
 	const io::FilePtr& imageFile = io::filesystem()->open(imageName);
 	if (!imageFile) {
@@ -191,7 +191,7 @@ image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::Read
 	return image::loadImage(imageFile, false);
 }
 
-bool VXRFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint8_t magic[4];
 	wrap(stream.readByte(magic[0]))
 	wrap(stream.readByte(magic[1]))

@@ -218,7 +218,7 @@ bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file)
 	return true;
 }
 
-bool QBTFormat::skipNode(io::ReadStream& stream) {
+bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
 	// node type, can be ignored
 	uint32_t nodeTypeId;
 	wrap(stream.readInt(nodeTypeId));
@@ -243,7 +243,7 @@ bool QBTFormat::skipNode(io::ReadStream& stream) {
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadCompound(io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadCompound(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	if (!loadMatrix(stream, volumes)) {
 		return false;
 	}
@@ -287,7 +287,7 @@ bool QBTFormat::loadCompound(io::ReadStream& stream, VoxelVolumes& volumes) {
  * The M byte is used to store visibility of the 6 faces of a voxel and whether as voxel is solid or air. If M is bigger than 0 then the voxel is solid. Even when a voxel
  * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
-bool QBTFormat::loadMatrix(io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	char name[1024];
 	uint32_t nameLength;
 	wrap(stream.readInt(nameLength));
@@ -397,7 +397,7 @@ bool QBTFormat::loadMatrix(io::ReadStream& stream, VoxelVolumes& volumes) {
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadModel(io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadModel(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t childCount;
 	wrap(stream.readInt(childCount));
 	if (childCount > 2048u) {
@@ -413,7 +413,7 @@ bool QBTFormat::loadModel(io::ReadStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool QBTFormat::loadNode(io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadNode(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t nodeTypeID;
 	wrap(stream.readInt(nodeTypeID));
 	uint32_t dataSize;
@@ -455,7 +455,7 @@ bool QBTFormat::loadNode(io::ReadStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool QBTFormat::loadColorMap(io::ReadStream& stream) {
+bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 	uint32_t colorCount;
 	wrap(stream.readInt(colorCount));
 	Log::debug("Load color map with %u colors", colorCount);
@@ -490,7 +490,7 @@ bool QBTFormat::loadColorMap(io::ReadStream& stream) {
 	return true;
 }
 
-bool QBTFormat::loadFromStream(io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t header;
 	wrap(stream.readInt(header))
 	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
@@ -560,7 +560,7 @@ bool QBTFormat::loadFromStream(io::ReadStream& stream, VoxelVolumes& volumes) {
 	return true;
 }
 
-bool QBTFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	return loadFromStream(stream, volumes);
 }
 

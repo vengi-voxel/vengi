@@ -164,7 +164,7 @@ bool BinVoxFormat::readData(const core::String& filename, const uint8_t *buf, co
 	return true;
 }
 
-bool BinVoxFormat::loadGroups(const core::String& filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	const int64_t size = stream.size();
 	uint8_t* buf = new uint8_t[size];
 	if (stream.read(buf, size) != 0) {

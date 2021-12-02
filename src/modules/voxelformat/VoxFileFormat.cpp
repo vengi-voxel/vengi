@@ -49,7 +49,7 @@ RawVolume* VoxFileFormat::merge(const VoxelVolumes& volumes) const {
 	return volumes.merge();
 }
 
-RawVolume* VoxFileFormat::load(const core::String &filename, io::ReadStream& file) {
+RawVolume* VoxFileFormat::load(const core::String &filename, io::SeekableReadStream& file) {
 	VoxelVolumes volumes;
 	if (!loadGroups(filename, file, volumes)) {
 		voxelformat::clearVolumes(volumes);
@@ -60,7 +60,7 @@ RawVolume* VoxFileFormat::load(const core::String &filename, io::ReadStream& fil
 	return mergedVolume;
 }
 
-size_t VoxFileFormat::loadPalette(const core::String &filename, io::ReadStream& file, core::Array<uint32_t, 256> &palette) {
+size_t VoxFileFormat::loadPalette(const core::String &filename, io::SeekableReadStream& file, core::Array<uint32_t, 256> &palette) {
 	VoxelVolumes volumes;
 	loadGroups(filename, file, volumes);
 	voxelformat::clearVolumes(volumes);

@@ -55,7 +55,7 @@ static bool readString(io::FileStream &stream, core::String &dest) {
 }
 #endif
 
-bool QBCLFormat::readMatrix(io::ReadStream &stream) {
+bool QBCLFormat::readMatrix(io::SeekableReadStream &stream) {
 	uint32_t mx; // 32
 	uint32_t my;
 	uint32_t mz;
@@ -67,7 +67,7 @@ bool QBCLFormat::readMatrix(io::ReadStream &stream) {
 	return false;
 }
 
-bool QBCLFormat::readModel(io::ReadStream &stream) {
+bool QBCLFormat::readModel(io::SeekableReadStream &stream) {
 	uint32_t x;
 	uint32_t y;
 	uint32_t z;
@@ -94,11 +94,11 @@ bool QBCLFormat::readModel(io::ReadStream &stream) {
 	return false;
 }
 
-bool QBCLFormat::readCompound(io::ReadStream &stream) {
+bool QBCLFormat::readCompound(io::SeekableReadStream &stream) {
 	return false;
 }
 
-bool QBCLFormat::loadGroups(const core::String &filename, io::ReadStream& stream, VoxelVolumes& volumes) {
+bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t magic;
 	wrap(stream.readInt(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {
@@ -164,7 +164,7 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::ReadStream& stream
 	return false;
 }
 
-image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::ReadStream& stream) {
+image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
 	uint32_t magic;
 	wrapImg(stream.readInt(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {

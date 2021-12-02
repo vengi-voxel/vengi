@@ -22,10 +22,11 @@ typedef core::SharedPtr<File> FilePtr;
 /**
  * @brief Little endian file stream
  */
-class FileStream : public ReadStream, public WriteStream {
+class FileStream : public SeekableReadStream, public WriteStream {
 private:
 	mutable SDL_RWops *_rwops;
-
+	int64_t _size = 0;
+	int64_t _pos = 0;
 public:
 	FileStream(File *file);
 	FileStream(const FilePtr &file) : FileStream(file.get()) {
@@ -33,9 +34,19 @@ public:
 	FileStream(SDL_RWops *rwops);
 	virtual ~FileStream();
 
+	int64_t size() const override;
+	int64_t pos() const override;
 	int read(void *dataPtr, size_t dataSize) override;
 	int write(const void *dataPtr, size_t dataSize) override;
 	int64_t seek(int64_t position, int whence = SEEK_SET) override;
 };
+
+inline int64_t FileStream::size() const {
+	return _size;
+}
+
+inline int64_t FileStream::pos() const {
+	return _pos;
+}
 
 } // namespace io
