@@ -3,7 +3,7 @@
  */
 
 #include "ChunkPersister.h"
-#include "io/ByteStream.h"
+#include "io/BufferedReadWriteStream.h"
 #include "core/Zip.h"
 #include "core/Assert.h"
 #include "core/Enum.h"
@@ -14,7 +14,7 @@ namespace voxelworld {
 
 #define WORLD_FILE_VERSION 2
 
-bool ChunkPersister::saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, io::ByteStream& outStream) const {
+bool ChunkPersister::saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, io::BufferedReadWriteStream& outStream) const {
 	// save the stuff
 	const voxel::Voxel* voxelBuf = chunk->data();
 	const int voxelSize = chunk->dataSizeInBytes();
@@ -45,7 +45,7 @@ bool ChunkPersister::loadCompressed(const voxel::PagedVolume::ChunkPtr& chunk, c
 	if (!fileBuf || fileLen <= headerSize) {
 		return false;
 	}
-	io::ByteStream bs(headerSize);
+	io::BufferedReadWriteStream bs(headerSize);
 	bs.append(fileBuf, headerSize);
 	const int len = bs.readInt();
 	const int version = bs.readByte();

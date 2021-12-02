@@ -71,7 +71,7 @@ bool DBChunkPersister::load(const voxel::PagedVolume::ChunkPtr& chunk, unsigned 
 // TODO: this must be done async
 bool DBChunkPersister::save(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int seed) {
 	core_trace_scoped(DBChunkPersisterSave);
-	io::ByteStream out;
+	io::BufferedReadWriteStream out;
 	if (!saveCompressed(chunk, out)) {
 		return false;
 	}

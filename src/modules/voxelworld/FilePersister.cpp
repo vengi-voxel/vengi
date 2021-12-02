@@ -10,7 +10,7 @@
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
-#include "io/ByteStream.h"
+#include "io/BufferedReadWriteStream.h"
 #include "core/Zip.h"
 #include "core/Log.h"
 
@@ -49,7 +49,7 @@ bool FilePersister::load(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int
 
 bool FilePersister::save(const voxel::PagedVolume::ChunkPtr& chunk, unsigned int seed) {
 	core_trace_scoped(WorldPersisterLoad);
-	io::ByteStream final;
+	io::BufferedReadWriteStream final;
 	if (!saveCompressed(chunk, final)) {
 		return false;
 	}

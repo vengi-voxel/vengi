@@ -1,5 +1,5 @@
 set(SRCS
-	ByteStream.cpp ByteStream.h
+	BufferedReadWriteStream.cpp BufferedReadWriteStream.h
 	File.cpp File.h
 	FileStream.cpp FileStream.h
 	Filesystem.cpp Filesystem.h
@@ -18,7 +18,7 @@ set(TEST_FILES
 )
 
 set(TEST_SRCS
-	tests/ByteStreamTest.cpp
+	tests/BufferedReadWriteStreamTest.cpp
 	tests/FilesystemTest.cpp
 	tests/FileStreamTest.cpp
 	tests/FormatDescriptionTest.cpp

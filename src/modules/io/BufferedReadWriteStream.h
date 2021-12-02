@@ -20,7 +20,7 @@ namespace io {
 #define WORD_MASK 0XFFFF
 
 // TODO: convert to io::WriteStream
-class ByteStream {
+class BufferedReadWriteStream {
 private:
 	typedef core::Buffer<uint8_t> Buffer;
 	Buffer _buffer;
@@ -39,7 +39,7 @@ private:
 	}
 
 public:
-	ByteStream(int size = 0);
+	BufferedReadWriteStream(int size = 0);
 
 	void addByte(uint8_t byte);
 	void addInt(int32_t dword);
@@ -63,36 +63,36 @@ public:
 	void resize(size_t size);
 };
 
-inline bool ByteStream::empty() const {
+inline bool BufferedReadWriteStream::empty() const {
 	return size() <= 0;
 }
 
-inline void ByteStream::resize(size_t size) {
+inline void BufferedReadWriteStream::resize(size_t size) {
 	_buffer.resize(size);
 }
 
-inline void ByteStream::append(const uint8_t *buf, size_t size) {
+inline void BufferedReadWriteStream::append(const uint8_t *buf, size_t size) {
 	_buffer.reserve(_buffer.size() + size);
 	_buffer.insert(_buffer.end(), buf, buf + size);
 }
 
-inline const uint8_t* ByteStream::getBuffer() const {
+inline const uint8_t* BufferedReadWriteStream::getBuffer() const {
 	return &_buffer[0] + _pos;
 }
 
-inline void ByteStream::clear() {
+inline void BufferedReadWriteStream::clear() {
 	_buffer.clear();
 }
 
-inline size_t ByteStream::getSize() const {
+inline size_t BufferedReadWriteStream::getSize() const {
 	return _buffer.size() - _pos;
 }
 
-inline void ByteStream::addByte(uint8_t byte) {
+inline void BufferedReadWriteStream::addByte(uint8_t byte) {
 	_buffer.push_back(byte);
 }
 
-inline void ByteStream::addInt(int32_t dword) {
+inline void BufferedReadWriteStream::addInt(int32_t dword) {
 	int32_t swappedDWord = SDL_SwapLE32(dword);
 	_buffer.push_back(uint8_t(swappedDWord));
 	_buffer.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
@@ -100,14 +100,14 @@ inline void ByteStream::addInt(int32_t dword) {
 	_buffer.push_back(uint8_t(swappedDWord >> CHAR_BIT));
 }
 
-inline uint8_t ByteStream::readByte() {
+inline uint8_t BufferedReadWriteStream::readByte() {
 	core_assert(size() > 0);
 	const uint8_t byte = _buffer[_pos];
 	++_pos;
 	return byte;
 }
 
-inline int32_t ByteStream::readInt() {
+inline int32_t BufferedReadWriteStream::readInt() {
 	core_assert(size() >= 4);
 	int32_t word;
 	core_memcpy(&word, getBuffer(), 4);
