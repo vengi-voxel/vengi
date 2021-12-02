@@ -14,7 +14,7 @@
 
 namespace {
 const uint8_t BYTE_ADD = UCHAR_MAX;
-const int32_t INT_ADD = INT_MAX;
+const uint32_t INT_ADD = INT_MAX;
 }
 
 namespace io {
@@ -22,26 +22,28 @@ namespace io {
 TEST(BufferedReadWriteStreamTest, testWriteInt) {
 	BufferedReadWriteStream stream;
 	const int64_t previous = stream.size();
-	stream.addInt(INT_ADD);
+	stream.writeInt(INT_ADD);
 	ASSERT_EQ(previous + 4, stream.size());
 }
 
 TEST(BufferedReadWriteStreamTest, testReadByte) {
 	BufferedReadWriteStream stream;
-	stream.addByte(BYTE_ADD);
-	const int64_t previous = stream.size();
-	const uint8_t byte = stream.readByte();
+	stream.writeByte(BYTE_ADD);
+	const int64_t previous = stream.remaining();
+	uint8_t byte;
+	EXPECT_EQ(0, stream.readByte(byte));
 	ASSERT_EQ(BYTE_ADD, byte);
-	ASSERT_EQ(previous - 1, stream.size());
+	ASSERT_EQ(previous - 1, stream.remaining());
 }
 
 TEST(BufferedReadWriteStreamTest, testReadInt) {
 	BufferedReadWriteStream stream;
-	stream.addInt(INT_ADD);
-	const int64_t previous = stream.size();
-	int32_t dword = stream.readInt();
+	stream.writeInt(INT_ADD);
+	const int64_t previous = stream.remaining();
+	uint32_t dword;
+	EXPECT_EQ(0, stream.readInt(dword));
 	ASSERT_EQ(INT_ADD, dword);
-	ASSERT_EQ(previous - 4, stream.size());
+	ASSERT_EQ(previous - 4, stream.remaining());
 }
 
 }

@@ -32,9 +32,9 @@ bool ChunkPersister::saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, i
 	}
 	{
 		core_trace_scoped(ChunkPersisterSaveCompressed);
-		outStream.addInt(voxelSize);
-		outStream.addByte(WORLD_FILE_VERSION);
-		outStream.append(compressedVoxelBuf, finalBufferSize);
+		outStream.writeInt(voxelSize);
+		outStream.writeByte(WORLD_FILE_VERSION);
+		outStream.write(compressedVoxelBuf, finalBufferSize);
 	}
 	return true;
 }
@@ -46,16 +46,18 @@ bool ChunkPersister::loadCompressed(const voxel::PagedVolume::ChunkPtr& chunk, c
 		return false;
 	}
 	io::BufferedReadWriteStream bs(headerSize);
-	bs.append(fileBuf, headerSize);
-	const int len = bs.readInt();
-	const int version = bs.readByte();
+	bs.write(fileBuf, headerSize);
+	uint32_t len;
+	bs.readInt(len);
+	uint8_t version;
+	bs.readByte(version);
 
 	if (version != WORLD_FILE_VERSION) {
 		Log::warn("chunk has a wrong version number %i (expected %i)",
 				version, WORLD_FILE_VERSION);
 		return false;
 	}
-	const int sizeLimit = chunk->dataSizeInBytes();
+	const uint32_t sizeLimit = chunk->dataSizeInBytes();
 	if (len != sizeLimit) {
 		Log::error("extracted memory would not fit the target chunk (%i bytes vs %i chunk size)", len, sizeLimit);
 		return false;
