@@ -18,10 +18,7 @@ private:
 
 	io::FilePtr _infile;
 	core::String _outfile;
-	int _outputSize = 128;
 
-	bool renderVolume();
-	bool saveEmbeddedScreenshot();
 public:
 	Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

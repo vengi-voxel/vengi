@@ -7,6 +7,7 @@
 #include "io/IOResource.h"
 #include "io/File.h"
 #include "core/SharedPtr.h"
+#include "io/Stream.h"
 
 namespace image {
 
@@ -33,6 +34,7 @@ public:
 	bool loadRGBA(const uint8_t* buffer, int length, int width, int height);
 
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
+	static bool writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth);
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
 	bool writePng() const;
 

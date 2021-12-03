@@ -10,14 +10,9 @@
 #include "metric/Metric.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
-#include "video/Renderer.h"
-#include "voxel/MaterialColor.h"
-#include "video/Camera.h"
+#include "core/Var.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelformat/Format.h"
-#include "voxelrender/RawVolumeRenderer.h"
-#include "video/FrameBuffer.h"
-#include "video/Texture.h"
+#include "ImageGenerator.h"
 
 Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -65,135 +60,21 @@ app::AppState Thumbnailer::onInit() {
 	return state;
 }
 
-bool Thumbnailer::renderVolume() {
-	if (!voxel::initDefaultMaterialColors()) {
-		Log::error("Failed to init default material colors");
-		return false;
-	}
-
-	video::FrameBuffer frameBuffer;
-	voxelrender::RawVolumeRenderer volumeRenderer;
-
-	volumeRenderer.construct();
-
-	if (!volumeRenderer.init()) {
-		Log::error("Failed to initialize the renderer");
-		return false;
-	}
-
-	video::clearColor(::core::Color::Black);
-	video::enable(video::State::DepthTest);
-	video::depthFunc(video::CompareFunc::LessEqual);
-	video::enable(video::State::CullFace);
-	video::enable(video::State::DepthMask);
-	video::enable(video::State::Blend);
-	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
-	voxel::VoxelVolumes volumes;
-	io::FileStream stream(_infile.get());
-	if (!voxelformat::loadVolumeFormat(_infile->fileName(), stream, volumes)) {
-		Log::error("Failed to load given input file");
-		return false;
-	}
-
-	_outputSize = core::string::toInt(getArgVal("--size"));
-
-	const int volumesSize = (int)volumes.size();
-	for (int i = 0; i < volumesSize; ++i) {
-		volumeRenderer.setVolume(i, volumes[i].volume);
-		volumeRenderer.extractRegion(i, volumes[i].volume->region());
-	}
-
-	video::Camera camera;
-	camera.setSize(glm::ivec2(_outputSize));
-	camera.setRotationType(video::CameraRotationType::Target);
-	camera.setMode(video::CameraMode::Perspective);
-	camera.setAngles(0.0f, 0.0f, 0.0f);
-	const voxel::Region& region = volumeRenderer.region();
-	const glm::ivec3& center = region.getCenter();
-	camera.setTarget(center);
-	const glm::vec3 dim(region.getDimensionsInVoxels());
-	const float distance = glm::length(dim);
-	camera.setTargetDistance(distance * 2.0f);
-	const int height = region.getHeightInCells();
-	camera.setWorldPosition(glm::vec3(-distance, height + distance, -distance));
-	camera.lookAt(center);
-	camera.setFarPlane(5000.0f);
-	camera.update(0.001);
-
-	video::TextureConfig textureCfg;
-	textureCfg.wrap(video::TextureWrap::ClampToEdge);
-	textureCfg.format(video::TextureFormat::RGBA);
-	video::FrameBufferConfig cfg;
-	cfg.dimension(glm::ivec2(_outputSize)).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
-	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
-	frameBuffer.init(cfg);
-
-	volumeRenderer.waitForPendingExtractions();
-	volumeRenderer.update();
-	core_trace_scoped(EditorSceneRenderFramebuffer);
-	frameBuffer.bind(true);
-	volumeRenderer.render(camera);
-	frameBuffer.unbind();
-
-	bool success = true;
-	const video::TexturePtr& fboTexture = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-	uint8_t *pixels = nullptr;
-	if (video::readTexture(video::TextureUnit::Upload,
-			textureCfg.type(), textureCfg.format(), fboTexture->handle(),
-			fboTexture->width(), fboTexture->height(), &pixels)) {
-		image::Image::flipVerticalRGBA(pixels, fboTexture->width(), fboTexture->height());
-		const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::SysWrite);
-		if (!image::Image::writePng(outfile->name().c_str(), pixels, fboTexture->width(), fboTexture->height(), 4)) {
-			Log::error("Failed to write image %s", outfile->name().c_str());
-			success = false;
-		} else {
-			Log::info("Created thumbnail at %s", outfile->name().c_str());
-		}
-	} else {
-		Log::error("Failed to read framebuffer");
-		success = false;
-	}
-	SDL_free(pixels);
-
-	const core::DynamicArray<voxel::RawVolume*>& old = volumeRenderer.shutdown();
-	for (auto* v : old) {
-		delete v;
-	}
-
-	frameBuffer.shutdown();
-
-	return success;
-}
-
-bool Thumbnailer::saveEmbeddedScreenshot() {
-	io::FileStream stream(_infile.get());
-	const image::ImagePtr &image = voxelformat::loadVolumeScreenshot(_infile->fileName(), stream);
-	if (!image) {
-		Log::error("Failed to load screenshot from input file");
-		return false;
-	}
-
-	bool success = true;
-	const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::SysWrite);
-	if (!image::Image::writePng(outfile->name().c_str(), image->data(), image->width(), image->height(), image->depth())) {
-		Log::error("Failed to write image %s", outfile->name().c_str());
-		success = false;
-	} else {
-		Log::info("Created thumbnail at %s", outfile->name().c_str());
-	}
-
-	return success;
-}
-
 app::AppState Thumbnailer::onRunning() {
 	app::AppState state = Super::onRunning();
 	if (state != app::AppState::Running) {
 		return state;
 	}
 
-	if (!saveEmbeddedScreenshot()) {
-		if (!renderVolume()) {
-			_exitCode = 1;
+	const int outputSize = core::string::toInt(getArgVal("--size"));
+	const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::SysWrite);
+	io::FileStream outStream(outfile.get());
+	io::FileStream stream(_infile.get());
+
+	const image::ImagePtr &image = thumbnailer::volumeThumbnail(_infile->fileName(), stream, outputSize);
+	if (image) {
+		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
+			Log::error("Failed to write image");
 		}
 	}
 
