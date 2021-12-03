@@ -37,9 +37,7 @@ void OBJFormat::writeMtlFile(const core::String& mtlName) const {
 	stream.writeStringFormat(false, "map_Kd palette-%s.png\n", voxel::getDefaultPaletteName());
 }
 
-bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float scale, bool quad, bool withColor, bool withTexCoords) {
-	io::FileStream stream(file);
-
+bool OBJFormat::saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, float scale, bool quad, bool withColor, bool withTexCoords) {
 	const MaterialColorArray& colors = getMaterialColors();
 
 	// 1 x 256 is the texture format that we are using for our palette
@@ -58,8 +56,8 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 	for (const auto& meshExt : meshes) {
 		const voxel::Mesh* mesh = meshExt.mesh;
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
-		const int nv = mesh->getNoOfVertices();
-		const int ni = mesh->getNoOfIndices();
+		const int nv = (int)mesh->getNoOfVertices();
+		const int ni = (int)mesh->getNoOfIndices();
 		if (ni % 3 != 0) {
 			Log::error("Unexpected indices amount");
 			return false;
@@ -140,8 +138,7 @@ bool OBJFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 		idxOffset += nv;
 	}
 
-	core::String name = file->name();
-	core::String mtlname = core::string::stripExtension(name);
+	core::String mtlname = core::string::stripExtension(filename);
 	mtlname.append(".mtl");
 	writeMtlFile(mtlname);
 

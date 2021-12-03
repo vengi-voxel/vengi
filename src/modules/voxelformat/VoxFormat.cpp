@@ -11,6 +11,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/UTF8.h"
+#include "io/FileStream.h"
 #include "voxel/MaterialColor.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <SDL_assert.h>
@@ -32,11 +33,11 @@ namespace voxel {
 
 class ScopedChunkWriter {
 private:
-	io::FileStream& _stream;
+	io::SeekableWriteStream& _stream;
 	int64_t _chunkSizePos;
 	uint32_t _chunkId;
 public:
-	ScopedChunkWriter(io::FileStream& stream, uint32_t chunkId) : _stream(stream), _chunkId(chunkId) {
+	ScopedChunkWriter(io::SeekableWriteStream& stream, uint32_t chunkId) : _stream(stream), _chunkId(chunkId) {
 		uint8_t buf[4];
 		FourCCRev(buf, chunkId);
 		Log::debug("Saving %c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
@@ -62,14 +63,14 @@ public:
 
 class ScopedHeader {
 private:
-	io::FileStream& _stream;
+	io::SeekableWriteStream& _stream;
 	int64_t _chunkCountPos;
 	int64_t _numBytesMainChunkPos;
 	int64_t _headerSize;
 	uint32_t &_chunks;
 
 public:
-	ScopedHeader(io::FileStream& stream, uint32_t &chunks) : _stream(stream), _chunks(chunks) {
+	ScopedHeader(io::SeekableWriteStream& stream, uint32_t &chunks) : _stream(stream), _chunks(chunks) {
 		stream.writeInt(FourCC('V','O','X',' '));
 		stream.writeInt(150);
 		stream.writeInt(FourCC('M','A','I','N'));
@@ -94,7 +95,7 @@ public:
 	}
 };
 
-bool VoxFormat::saveChunk_LAYR(io::FileStream& stream, int modelId, const core::String& name, bool visible) {
+bool VoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, int modelId, const core::String& name, bool visible) {
 	ScopedChunkWriter scoped(stream, FourCC('L','A','Y','R'));
 	wrapBool(stream.writeInt(modelId))
 	wrapBool(saveAttributes({{"_name", name}, {"_hidden", visible ? "0" : "1"}}, stream))
@@ -103,7 +104,7 @@ bool VoxFormat::saveChunk_LAYR(io::FileStream& stream, int modelId, const core::
 	return true;
 }
 
-bool VoxFormat::saveChunk_nGRP(io::FileStream& stream, NodeId nodeId, uint32_t volumes) {
+bool VoxFormat::saveChunk_nGRP(io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumes) {
 	ScopedChunkWriter scoped(stream, FourCC('n','G','R','P'));
 	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
@@ -117,7 +118,7 @@ bool VoxFormat::saveChunk_nGRP(io::FileStream& stream, NodeId nodeId, uint32_t v
 	return true;
 }
 
-bool VoxFormat::saveChunk_nSHP(io::FileStream& stream, NodeId nodeId, uint32_t volumeId) {
+bool VoxFormat::saveChunk_nSHP(io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumeId) {
 	ScopedChunkWriter scoped(stream, FourCC('n','S','H','P'));
 	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
@@ -128,7 +129,7 @@ bool VoxFormat::saveChunk_nSHP(io::FileStream& stream, NodeId nodeId, uint32_t v
 	return true;
 }
 
-bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins) {
+bool VoxFormat::saveChunk_nTRN(io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins) {
 	ScopedChunkWriter scoped(stream, FourCC('n','T','R','N'));
 	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
@@ -142,7 +143,7 @@ bool VoxFormat::saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId chi
 	return true;
 }
 
-bool VoxFormat::saveChunk_SIZE(io::FileStream& stream, const voxel::Region& region) {
+bool VoxFormat::saveChunk_SIZE(io::SeekableWriteStream& stream, const voxel::Region& region) {
 	ScopedChunkWriter scoped(stream, FourCC('S','I','Z','E'));
 	wrapBool(stream.writeInt(region.getWidthInVoxels()))
 	wrapBool(stream.writeInt(region.getDepthInVoxels()))
@@ -151,7 +152,7 @@ bool VoxFormat::saveChunk_SIZE(io::FileStream& stream, const voxel::Region& regi
 	return true;
 }
 
-bool VoxFormat::saveChunk_PACK(io::FileStream& stream, const VoxelVolumes& volumes) {
+bool VoxFormat::saveChunk_PACK(io::SeekableWriteStream& stream, const VoxelVolumes& volumes) {
 	int modelCount = 0;
 	for (auto& v : volumes) {
 		if (skipSaving(v)) {
@@ -165,7 +166,7 @@ bool VoxFormat::saveChunk_PACK(io::FileStream& stream, const VoxelVolumes& volum
 	return true;
 }
 
-bool VoxFormat::saveChunk_RGBA(io::FileStream& stream) {
+bool VoxFormat::saveChunk_RGBA(io::SeekableWriteStream& stream) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 	const int numColors = (int)materialColors.size();
 	if (numColors > 256) {
@@ -185,7 +186,7 @@ bool VoxFormat::saveChunk_RGBA(io::FileStream& stream) {
 	return true;
 }
 
-bool VoxFormat::saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* volume, const voxel::Region& region) {
+bool VoxFormat::saveChunk_XYZI(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, const voxel::Region& region) {
 	ScopedChunkWriter scoped(stream, FourCC('X','Y','Z','I'));
 
 	uint32_t numVoxels = 0;
@@ -207,7 +208,7 @@ bool VoxFormat::saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* v
 	return true;
 }
 
-bool VoxFormat::saveAttributes(const Attributes& attributes, io::FileStream& stream) const {
+bool VoxFormat::saveAttributes(const Attributes& attributes, io::SeekableWriteStream& stream) const {
 	Log::debug("Save %i attributes", (int)attributes.size());
 	wrapBool(stream.writeInt((uint32_t)attributes.size()))
 	for (const auto& e : attributes) {
@@ -237,7 +238,7 @@ bool VoxFormat::skipSaving(const VoxelVolume& v) const {
 	return false;
 }
 
-bool VoxFormat::saveSceneGraph(io::FileStream& stream, const VoxelVolumes& volumes, int modelCount) {
+bool VoxFormat::saveSceneGraph(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, int modelCount) {
 	const NodeId rootNodeId = 0;
 	NodeId groupNodeId = rootNodeId + 1;
 	wrapBool(saveChunk_nTRN(stream, rootNodeId, groupNodeId, glm::ivec3(0)))
@@ -266,10 +267,8 @@ bool VoxFormat::saveSceneGraph(io::FileStream& stream, const VoxelVolumes& volum
 	return modelCount == modelId;
 }
 
-bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
+bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	reset();
-
-	io::FileStream stream(file.get());
 
 	ScopedHeader scoped(stream, _chunks);
 	wrapBool(saveChunk_PACK(stream, volumes))

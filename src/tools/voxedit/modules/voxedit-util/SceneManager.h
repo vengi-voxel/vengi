@@ -12,7 +12,7 @@
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/NoiseGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
-#include "voxelformat/VoxFileFormat.h"
+#include "voxelformat/Format.h"
 #include "video/ShapeBuilder.h"
 #include "animation/chr/Character.h"
 #include "animation/animal/bird/Bird.h"

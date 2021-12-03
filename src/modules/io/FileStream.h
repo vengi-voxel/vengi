@@ -22,7 +22,7 @@ typedef core::SharedPtr<File> FilePtr;
 /**
  * @brief Little endian file stream
  */
-class FileStream : public SeekableReadStream, public WriteStream {
+class FileStream : public SeekableReadStream, public SeekableWriteStream {
 private:
 	mutable SDL_RWops *_rwops;
 	int64_t _size = 0;

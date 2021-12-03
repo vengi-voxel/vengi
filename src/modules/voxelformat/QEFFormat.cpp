@@ -111,8 +111,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return true;
 }
 
-bool QEFFormat::saveGroups(const VoxelVolumes &volumes, const io::FilePtr &file) {
-	io::FileStream stream(file.get());
+bool QEFFormat::saveGroups(const VoxelVolumes &volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	stream.writeString("Qubicle Exchange Format\n", false);
 	stream.writeString("Version 0.2\n", false);
 	stream.writeString("www.minddesk.com\n", false);

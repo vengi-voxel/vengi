@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/File.h"
+#include "Format.h"
 
 namespace voxel {
 /**
@@ -13,6 +12,6 @@ namespace voxel {
  */
 class PLYFormat : public MeshExporter {
 public:
-	bool saveMeshes(const Meshes& meshes, const io::FilePtr& file, float scale, bool quad, bool withColor, bool withTexCoords) override;
+	bool saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, float scale, bool quad, bool withColor, bool withTexCoords) override;
 };
 }

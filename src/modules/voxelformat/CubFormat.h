@@ -4,10 +4,7 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/FileStream.h"
-#include "io/File.h"
-#include "core/String.h"
+#include "Format.h"
 
 namespace voxel {
 
@@ -17,10 +14,10 @@ namespace voxel {
  * The first 12 bytes of the file are the width, depth and height of the volume (uint32_t little endian).
  * The remaining parts are the RGB values (3 bytes)
  */
-class CubFormat : public VoxFileFormat {
+class CubFormat : public Format {
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

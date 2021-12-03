@@ -6,6 +6,7 @@
 
 #include "animation/Animation.h"
 #include "core/collection/DynamicArray.h"
+#include "io/FileStream.h"
 #include "math/AABB.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
@@ -246,7 +247,8 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 	if (!saved) {
 		Log::warn("Failed to save %s file - retry as qb instead", ext.c_str());
 		voxel::QBFormat f;
-		saved = f.saveGroups(volumes, filePtr);
+		io::FileStream stream(filePtr.get());
+		saved = f.saveGroups(volumes, filePtr->fileName(), stream);
 	}
 	if (saved) {
 		if (!autosave) {

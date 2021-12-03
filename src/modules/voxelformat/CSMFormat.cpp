@@ -134,7 +134,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 #undef wrap
 #undef wrapBool
 
-bool CSMFormat::saveGroups(const VoxelVolumes &volumes, const io::FilePtr &file) {
+bool CSMFormat::saveGroups(const VoxelVolumes &volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 

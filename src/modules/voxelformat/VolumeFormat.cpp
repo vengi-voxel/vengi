@@ -8,10 +8,11 @@
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
+#include "io/FileStream.h"
 #include "io/FormatDescription.h"
+#include "io/Stream.h"
 #include "video/Texture.h"
 #include "voxelformat/PLYFormat.h"
-#include "voxelformat/VoxFileFormat.h"
 #include "voxelformat/VoxFormat.h"
 #include "voxelformat/QBTFormat.h"
 #include "voxelformat/QBFormat.h"
@@ -78,8 +79,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{nullptr, nullptr, nullptr, 0u}
 };
 
-static uint32_t loadMagic(const io::FilePtr& file) {
-	io::FileStream stream(file.get());
+static uint32_t loadMagic(io::ReadStream& stream) {
 	uint32_t magicWord = 0u;
 	stream.readInt(magicWord);
 	return magicWord;
@@ -111,8 +111,8 @@ static const io::FormatDescription *getDescription(const core::String &ext, uint
 	return nullptr;
 }
 
-static core::SharedPtr<voxel::VoxFileFormat> getFormat(const io::FormatDescription *desc, uint32_t magic) {
-	core::SharedPtr<voxel::VoxFileFormat> format;
+static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *desc, uint32_t magic) {
+	core::SharedPtr<voxel::Format> format;
 	const core::String &ext = desc->ext;
 	if (ext == "qb") {
 		format = core::make_shared<voxel::QBFormat>();
@@ -151,7 +151,8 @@ image::ImagePtr loadVolumeScreenshot(const io::FilePtr& filePtr) {
 		Log::error("Failed to load screenshot from model file %s. Doesn't exist.", filePtr->name().c_str());
 		return image::ImagePtr();
 	}
-	const uint32_t magic = loadMagic(filePtr);
+	io::FileStream stream(filePtr.get());
+	const uint32_t magic = loadMagic(stream);
 	core_trace_scoped(LoadVolumeScreenshot);
 	const core::String& fileext = filePtr->extension();
 	const io::FormatDescription *desc = getDescription(fileext, magic);
@@ -163,9 +164,8 @@ image::ImagePtr loadVolumeScreenshot(const io::FilePtr& filePtr) {
 		Log::warn("Format %s doesn't have a screenshot embedded", desc->name);
 		return image::ImagePtr();
 	}
-	const core::SharedPtr<voxel::VoxFileFormat> &f = getFormat(desc, magic);
+	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
-		io::FileStream stream(filePtr.get());
 		return f->loadScreenshot(filePtr->fileName(), stream);
 	}
 	Log::error("Failed to load model screenshot from file %s - unsupported file format for extension '%s'",
@@ -178,7 +178,8 @@ size_t loadVolumePalette(const io::FilePtr& filePtr, core::Array<uint32_t, 256> 
 		Log::error("Failed to load palette from model file %s. Doesn't exist.", filePtr->name().c_str());
 		return 0;
 	}
-	const uint32_t magic = loadMagic(filePtr);
+	io::FileStream stream(filePtr.get());
+	const uint32_t magic = loadMagic(stream);
 	core_trace_scoped(LoadVolumePalette);
 	const core::String& fileext = filePtr->extension();
 	const io::FormatDescription *desc = getDescription(fileext, magic);
@@ -190,9 +191,8 @@ size_t loadVolumePalette(const io::FilePtr& filePtr, core::Array<uint32_t, 256> 
 		Log::warn("Format %s doesn't have a palette embedded", desc->name);
 		return 0;
 	}
-	const core::SharedPtr<voxel::VoxFileFormat> &f = getFormat(desc, magic);
+	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
-		io::FileStream stream(filePtr.get());
 		return f->loadPalette(filePtr->fileName(), stream, palette);
 	}
 	Log::error("Failed to load model palette from file %s - unsupported file format for extension '%s'",
@@ -206,7 +206,8 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		return false;
 	}
 
-	const uint32_t magic = loadMagic(filePtr);
+	io::FileStream stream(filePtr.get());
+	const uint32_t magic = loadMagic(stream);
 
 	core_trace_scoped(LoadVolumeFormat);
 	const core::String& fileext = filePtr->extension();
@@ -215,9 +216,8 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 		Log::warn("Format %s isn't supported", fileext.c_str());
 		return false;
 	}
-	const core::SharedPtr<voxel::VoxFileFormat> &f = getFormat(desc, magic);
+	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
-		io::FileStream stream(filePtr.get());
 		if (!f->loadGroups(filePtr->fileName(), stream, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
@@ -247,17 +247,18 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 		return false;
 	}
 
+	io::FileStream stream(filePtr.get());
 	const core::String& ext = filePtr->extension();
 	const io::FormatDescription *desc = getDescription(ext, 0);
 	if (desc != nullptr) {
-		core::SharedPtr<voxel::VoxFileFormat> f = getFormat(desc, 0u);
-		if (f && f->saveGroups(volumes, filePtr)) {
+		core::SharedPtr<voxel::Format> f = getFormat(desc, 0u);
+		if (f && f->saveGroups(volumes, filePtr->fileName(), stream)) {
 			return true;
 		}
 	}
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	voxel::QBFormat qbFormat;
-	return qbFormat.saveGroups(volumes, filePtr);
+	return qbFormat.saveGroups(volumes, filePtr->fileName(), stream);
 }
 
 bool saveMeshFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
@@ -266,13 +267,14 @@ bool saveMeshFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
 		return false;
 	}
 
+	io::FileStream stream(filePtr.get());
 	const core::String& ext = filePtr->extension();
 	if (ext == "obj") {
 		voxel::OBJFormat f;
-		return f.saveGroups(volumes, filePtr);
+		return f.saveGroups(volumes, filePtr->fileName(), stream);
 	} else if (ext == "ply") {
 		voxel::PLYFormat f;
-		return f.saveGroups(volumes, filePtr);
+		return f.saveGroups(volumes, filePtr->fileName(), stream);
 	}
 	Log::error("Failed to save model file %s - unknown extension '%s' given", filePtr->name().c_str(), ext.c_str());
 	return false;

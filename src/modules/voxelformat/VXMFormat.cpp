@@ -5,6 +5,7 @@
 #include "VXMFormat.h"
 #include "app/App.h"
 #include "io/Filesystem.h"
+#include "io/FileStream.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Color.h"
@@ -12,6 +13,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
+#include "io/Stream.h"
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -38,7 +40,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool VXMFormat::writeRLE(io::FileStream &stream, int length, voxel::Voxel &voxel) const {
+bool VXMFormat::writeRLE(io::WriteStream &stream, int length, voxel::Voxel &voxel) const {
 	if (length == 0) {
 		return true;
 	}
@@ -61,8 +63,7 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::loadImage(imageFile, false);
 }
 
-bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
-	io::FileStream stream(file.get());
+bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapBool(stream.writeInt(FourCC('V','X','M', '4')));
 	wrapBool(stream.writeInt(0)); // texture dim x
 	wrapBool(stream.writeInt(0)); // texture dim y
@@ -172,9 +173,9 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		wrap(stream.readFloat(pivot.x));
 		wrap(stream.readFloat(pivot.y));
 		wrap(stream.readFloat(pivot.z));
-		ipivot.x = pivot.x;
-		ipivot.y = pivot.y;
-		ipivot.z = pivot.z;
+		ipivot.x = (int)pivot.x;
+		ipivot.y = (int)pivot.y;
+		ipivot.z = (int)pivot.z;
 		foundPivot = true;
 		if (version >= 9) {
 			uint8_t surface;

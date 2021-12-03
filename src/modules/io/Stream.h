@@ -50,6 +50,8 @@ public:
 	 * @return -1 on error - otherwise the current offset in the stream
 	 */
 	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
+	virtual int64_t size() const = 0;
+	virtual int64_t pos() const = 0;
 
 	int64_t skip(int64_t delta);
 
@@ -64,8 +66,6 @@ public:
 
 	int64_t remaining() const;
 	bool empty() const;
-	virtual int64_t size() const = 0;
-	virtual int64_t pos() const = 0;
 };
 
 inline int64_t SeekableReadStream::remaining() const {
@@ -100,6 +100,17 @@ public:
 	bool writeStringFormat(bool terminate, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(3);
 	bool writeString(const core::String &string, bool terminate = true);
 	bool writeFormat(const char *fmt, ...);
+};
+
+class SeekableWriteStream : public WriteStream {
+public:
+	virtual ~SeekableWriteStream() {}
+	/**
+	 * @return -1 on error - otherwise the current offset in the stream
+	 */
+	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
+	virtual int64_t size() const = 0;
+	virtual int64_t pos() const = 0;
 };
 
 } // namespace io

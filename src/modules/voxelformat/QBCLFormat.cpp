@@ -32,7 +32,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool QBCLFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
+bool QBCLFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 

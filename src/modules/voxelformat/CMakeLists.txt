@@ -1,12 +1,11 @@
 set(LIB voxelformat)
 set(SRCS
+	Format.h Format.cpp
 	AoSVXLFormat.h AoSVXLFormat.cpp
 	BinVoxFormat.h BinVoxFormat.cpp
 	CSMFormat.h CSMFormat.cpp
 	KVXFormat.h KVXFormat.cpp
 	KV6Format.h KV6Format.cpp
-	VoxFileFormat.h VoxFileFormat.cpp
-	VoxFormat.h VoxFormat.cpp
 	QBTFormat.h QBTFormat.cpp
 	QBFormat.h QBFormat.cpp
 	QBCLFormat.h QBCLFormat.cpp
@@ -21,6 +20,7 @@ set(SRCS
 	PLYFormat.h PLYFormat.cpp
 	VolumeCache.h VolumeCache.cpp
 	VoxelVolumes.h VoxelVolumes.cpp
+	VoxFormat.h VoxFormat.cpp
 	VolumeFormat.h VolumeFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel voxelutil)

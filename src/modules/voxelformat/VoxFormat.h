@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
+#include "Format.h"
 #include "core/collection/DynamicArray.h"
-#include "io/FileStream.h"
 #include "core/String.h"
 #include "core/collection/StringMap.h"
 #include "core/collection/Buffer.h"
@@ -22,7 +21,7 @@ namespace voxel {
  * https://github.com/ephtracy/voxel-model.git
  * https://ephtracy.github.io/
  */
-class VoxFormat : public VoxFileFormat {
+class VoxFormat : public Format {
 private:
 	struct ChunkHeader {
 		uint32_t chunkId;
@@ -84,19 +83,19 @@ private:
 	core::DynamicArray<NodeId> _leafNodes;
 
 	bool skipSaving(const VoxelVolume& v) const;
-	bool saveAttributes(const Attributes& attributes, io::FileStream& stream) const;
+	bool saveAttributes(const Attributes& attributes, io::SeekableWriteStream& stream) const;
 
-	bool saveChunk_LAYR(io::FileStream& stream, int modelId, const core::String& name, bool visible);
-	bool saveChunk_XYZI(io::FileStream& stream, const voxel::RawVolume* volume, const voxel::Region& region);
-	bool saveChunk_SIZE(io::FileStream& stream, const voxel::Region& region);
-	bool saveChunk_PACK(io::FileStream& stream, const VoxelVolumes& volumes);
-	bool saveChunk_RGBA(io::FileStream& stream);
+	bool saveChunk_LAYR(io::SeekableWriteStream& stream, int modelId, const core::String& name, bool visible);
+	bool saveChunk_XYZI(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, const voxel::Region& region);
+	bool saveChunk_SIZE(io::SeekableWriteStream& stream, const voxel::Region& region);
+	bool saveChunk_PACK(io::SeekableWriteStream& stream, const VoxelVolumes& volumes);
+	bool saveChunk_RGBA(io::SeekableWriteStream& stream);
 
 	// scene graph saving stuff
-	bool saveChunk_nGRP(io::FileStream& stream, NodeId nodeId, uint32_t volumes);
-	bool saveChunk_nSHP(io::FileStream& stream, NodeId nodeId, uint32_t volumeId);
-	bool saveChunk_nTRN(io::FileStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins);
-	bool saveSceneGraph(io::FileStream& stream, const VoxelVolumes& volumes, int modelCount);
+	bool saveChunk_nGRP(io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumes);
+	bool saveChunk_nSHP(io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumeId);
+	bool saveChunk_nTRN(io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins);
+	bool saveSceneGraph(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, int modelCount);
 
 	void initPalette();
 	void reset();
@@ -138,7 +137,7 @@ private:
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) override;
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

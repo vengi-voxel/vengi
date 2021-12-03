@@ -8,6 +8,7 @@
 #include "core/Color.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "io/FileStream.h"
 #include "io/Stream.h"
 
 namespace voxel {
@@ -50,7 +51,7 @@ const int NEXT_SLICE_FLAG = 6;
 
 #define setBit(val, index) val &= (1 << (index))
 
-bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) const {
+bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& volume) const {
 	if (volume.volume == nullptr) {
 		Log::error("Invalid volume given");
 		return false;
@@ -142,8 +143,7 @@ bool QBFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume) con
 	return true;
 }
 
-bool QBFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
-	io::FileStream stream(file.get());
+bool QBFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapSave(stream.writeInt(257))
 	wrapSave(stream.writeInt((uint32_t)ColorFormat::RGBA))
 	wrapSave(stream.writeInt((uint32_t)ZAxisOrientation::Right))

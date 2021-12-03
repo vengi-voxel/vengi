@@ -4,21 +4,20 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/FileStream.h"
+#include "Format.h"
 
 namespace voxel {
 
 /**
  * @brief VoxEdit (Sandbox) (vmx)
  */
-class VXMFormat : public VoxFileFormat {
+class VXMFormat : public Format {
 private:
-	bool writeRLE(io::FileStream &stream, int rleCount, voxel::Voxel &voxel) const;
+	bool writeRLE(io::WriteStream &stream, int rleCount, voxel::Voxel &voxel) const;
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

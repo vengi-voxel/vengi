@@ -33,7 +33,8 @@ TEST_F(VoxFormatTest, DISABLED_testSave) {
 	ASSERT_NE(nullptr, loadedVolume) << "Could not load vox file";
 
 	const io::FilePtr& fileSave = open("magicavoxel-save.vox", io::FileMode::Write);
-	EXPECT_TRUE(f.save(loadedVolume, fileSave));
+	io::FileStream sstream(fileSave.get());
+	EXPECT_TRUE(f.save(loadedVolume, fileSave->fileName(), sstream));
 	const io::FilePtr& fileLoadAfterSave = open("magicavoxel-save.vox");
 	io::FileStream stream2(fileLoadAfterSave.get());
 	RawVolume *savedVolume = f.load(fileLoadAfterSave->fileName(), stream2);

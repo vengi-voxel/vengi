@@ -159,7 +159,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 #undef wrap
 
-bool KV6Format::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
+bool KV6Format::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 

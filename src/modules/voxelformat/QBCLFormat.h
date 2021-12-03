@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/FileStream.h"
+#include "Format.h"
 
 namespace voxel {
 
@@ -14,7 +13,7 @@ namespace voxel {
  *
  * Not yet implemented
  */
-class QBCLFormat : public VoxFileFormat {
+class QBCLFormat : public Format {
 private:
 	uint32_t _version;
 
@@ -24,7 +23,7 @@ private:
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

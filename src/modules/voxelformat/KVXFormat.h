@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/File.h"
-#include "core/String.h"
+#include "Format.h"
 
 namespace voxel {
 /**
@@ -47,10 +45,10 @@ namespace voxel {
  *  read(fil,palette,768);
  * @endcode
  */
-class KVXFormat : public VoxFileFormat {
+class KVXFormat : public Format {
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

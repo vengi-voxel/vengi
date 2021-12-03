@@ -20,7 +20,7 @@ class Mesh;
 /**
  * @brief Base class for all voxel formats.
  */
-class VoxFileFormat {
+class Format {
 protected:
 	core::Array<uint8_t, 256> _palette;
 	core::Array<uint32_t, 256> _colors;
@@ -36,9 +36,9 @@ protected:
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
 	RawVolume* merge(const VoxelVolumes& volumes) const;
 public:
-	virtual ~VoxFileFormat() = default;
+	virtual ~Format() = default;
 
-	virtual image::ImagePtr loadScreenshot(const core::String &/*filename*/, io::SeekableReadStream& /*file*/) { return image::ImagePtr(); }
+	virtual image::ImagePtr loadScreenshot(const core::String &/*filename*/, io::SeekableReadStream& /*stream*/) { return image::ImagePtr(); }
 
 	/**
 	 * @brief Only load the palette that is included in the format
@@ -56,14 +56,14 @@ public:
 	 * @brief Merge the loaded volumes into one. The returned memory is yours.
 	 */
 	virtual RawVolume* load(const core::String &filename, io::SeekableReadStream& file);
-	virtual bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) = 0;
-	virtual bool save(const RawVolume* volume, const io::FilePtr& file);
+	virtual bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) = 0;
+	virtual bool save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream);
 };
 
 /**
  * @brief Convert the volume data into a mesh
  */
-class MeshExporter : public VoxFileFormat {
+class MeshExporter : public Format {
 protected:
 	struct MeshExt {
 		MeshExt(voxel::Mesh* mesh, const core::String& name);
@@ -71,13 +71,13 @@ protected:
 		core::String name;
 	};
 	using Meshes = core::DynamicArray<MeshExt>;
-	virtual bool saveMeshes(const Meshes& meshes, const io::FilePtr& file, float scale = 1.0f, bool quad = false, bool withColor = true, bool withTexCoords = true) = 0;
+	virtual bool saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, float scale = 1.0f, bool quad = false, bool withColor = true, bool withTexCoords = true) = 0;
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& file, VoxelVolumes& volumes) override {
 		return false;
 	}
 
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

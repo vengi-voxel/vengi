@@ -15,9 +15,7 @@
 
 namespace voxel {
 
-bool PLYFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float scale, bool quad, bool withColor, bool withTexCoords) {
-	io::FileStream stream(file);
-
+bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, float scale, bool quad, bool withColor, bool withTexCoords) {
 	stream.writeStringFormat(false, "ply\nformat ascii 1.0\n");
 	stream.writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
 	stream.writeStringFormat(false, "comment TextureFile palette-%s.png\n", voxel::getDefaultPaletteName());
@@ -64,7 +62,7 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 	for (const auto& meshExt : meshes) {
 		const voxel::Mesh& mesh = *meshExt.mesh;
 		const glm::vec3 offset(mesh.getOffset());
-		const int nv = mesh.getNoOfVertices();
+		const int nv = (int)mesh.getNoOfVertices();
 		const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
 
 		for (int i = 0; i < nv; ++i) {
@@ -87,8 +85,8 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const io::FilePtr &file, float 
 	int idxOffset = 0;
 	for (const auto& meshExt : meshes) {
 		const voxel::Mesh& mesh = *meshExt.mesh;
-		const int ni = mesh.getNoOfIndices();
-		const int nv = mesh.getNoOfVertices();
+		const int ni = (int)mesh.getNoOfIndices();
+		const int nv = (int)mesh.getNoOfVertices();
 		if (ni % 3 != 0) {
 			Log::error("Unexpected indices amount");
 			return false;

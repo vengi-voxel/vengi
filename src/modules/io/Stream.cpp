@@ -206,32 +206,6 @@ bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 	return true;
 }
 
-bool SeekableReadStream::readLine(int length, char *strbuff) {
-	for (int i = 0; i < length; ++i) {
-		uint8_t chr;
-		if (readByte(chr) != 0) {
-			return false;
-		}
-		if (chr == '\r') {
-			strbuff[i] = '\0';
-			if (read(&chr, sizeof(chr)) != 0) {
-				if (chr != '\n') {
-					seek(-1, SEEK_CUR);
-				}
-			}
-			break;
-		} else if (chr == '\n') {
-			strbuff[i] = '\0';
-			break;
-		}
-		strbuff[i] = (char)chr;
-		if (chr == '\0') {
-			break;
-		}
-	}
-	return true;
-}
-
 int ReadStream::readByte(uint8_t &val) {
 	return read(&val, sizeof(val));
 }
@@ -320,6 +294,32 @@ int ReadStream::readLongBE(uint64_t &val) {
 		val = swapped;
 	}
 	return retVal;
+}
+
+bool SeekableReadStream::readLine(int length, char *strbuff) {
+	for (int i = 0; i < length; ++i) {
+		uint8_t chr;
+		if (readByte(chr) != 0) {
+			return false;
+		}
+		if (chr == '\r') {
+			strbuff[i] = '\0';
+			if (read(&chr, sizeof(chr)) != 0) {
+				if (chr != '\n') {
+					seek(-1, SEEK_CUR);
+				}
+			}
+			break;
+		} else if (chr == '\n') {
+			strbuff[i] = '\0';
+			break;
+		}
+		strbuff[i] = (char)chr;
+		if (chr == '\0') {
+			break;
+		}
+	}
+	return true;
 }
 
 int SeekableReadStream::peekInt(uint32_t &val) {

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "VoxFileFormat.h"
+#include "Format.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/CubicSurfaceExtractor.h"
@@ -18,12 +18,12 @@
 
 namespace voxel {
 
-const glm::vec4& VoxFileFormat::getColor(const Voxel& voxel) const {
+const glm::vec4& Format::getColor(const Voxel& voxel) const {
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	return materialColors[voxel.getColor()];
 }
 
-uint8_t VoxFileFormat::convertPaletteIndex(uint32_t paletteIndex) const {
+uint8_t Format::convertPaletteIndex(uint32_t paletteIndex) const {
 	if (paletteIndex >= _paletteSize) {
 		if (_paletteSize > 0) {
 			return paletteIndex % _paletteSize;
@@ -33,23 +33,23 @@ uint8_t VoxFileFormat::convertPaletteIndex(uint32_t paletteIndex) const {
 	return _palette[paletteIndex];
 }
 
-glm::vec4 VoxFileFormat::findClosestMatch(const glm::vec4& color) const {
+glm::vec4 Format::findClosestMatch(const glm::vec4& color) const {
 	const int index = findClosestIndex(color);
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
 	return materialColors[index];
 }
 
-uint8_t VoxFileFormat::findClosestIndex(const glm::vec4& color) const {
+uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	//materialColors.erase(materialColors.begin());
 	return core::Color::getClosestMatch(color, materialColors);
 }
 
-RawVolume* VoxFileFormat::merge(const VoxelVolumes& volumes) const {
+RawVolume* Format::merge(const VoxelVolumes& volumes) const {
 	return volumes.merge();
 }
 
-RawVolume* VoxFileFormat::load(const core::String &filename, io::SeekableReadStream& file) {
+RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& file) {
 	VoxelVolumes volumes;
 	if (!loadGroups(filename, file, volumes)) {
 		voxelformat::clearVolumes(volumes);
@@ -60,7 +60,7 @@ RawVolume* VoxFileFormat::load(const core::String &filename, io::SeekableReadStr
 	return mergedVolume;
 }
 
-size_t VoxFileFormat::loadPalette(const core::String &filename, io::SeekableReadStream& file, core::Array<uint32_t, 256> &palette) {
+size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& file, core::Array<uint32_t, 256> &palette) {
 	VoxelVolumes volumes;
 	loadGroups(filename, file, volumes);
 	voxelformat::clearVolumes(volumes);
@@ -68,17 +68,17 @@ size_t VoxFileFormat::loadPalette(const core::String &filename, io::SeekableRead
 	return _colorsSize;
 }
 
-bool VoxFileFormat::save(const RawVolume* volume, const io::FilePtr& file) {
+bool Format::save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream) {
 	VoxelVolumes volumes;
 	volumes.push_back(VoxelVolume(const_cast<RawVolume*>(volume)));
-	return saveGroups(volumes, file);
+	return saveGroups(volumes, filename, stream);
 }
 
 MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const core::String &_name) :
 		mesh(_mesh), name(_name) {
 }
 
-bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
+bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	const bool mergeQuads = core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->boolVal();
 	const bool reuseVertices = core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->boolVal();
 	const bool ambientOcclusion = core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->boolVal();
@@ -96,7 +96,7 @@ bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& fi
 		meshes.emplace_back(mesh, v.name);
 	}
 	Log::debug("Save meshes");
-	const bool state = saveMeshes(meshes, file, scale, quads, withColor, withTexCoords);
+	const bool state = saveMeshes(meshes, filename, stream, scale, quads, withColor, withTexCoords);
 	for (MeshExt& meshext : meshes) {
 		delete meshext.mesh;
 	}

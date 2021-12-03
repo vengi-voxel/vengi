@@ -14,7 +14,7 @@
 #include "core/TimeProvider.h"
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelformat/VoxFileFormat.h"
+#include "voxelformat/Format.h"
 #include "voxelutil/VolumeRescaler.h"
 
 VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

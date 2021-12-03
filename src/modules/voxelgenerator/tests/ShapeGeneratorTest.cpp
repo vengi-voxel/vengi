@@ -3,6 +3,7 @@
  */
 
 #include "app/App.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/MaterialColor.h"

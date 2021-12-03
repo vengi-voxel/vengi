@@ -4,10 +4,7 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/FileStream.h"
-#include "io/File.h"
-#include "core/String.h"
+#include "Format.h"
 
 namespace voxel {
 
@@ -16,7 +13,7 @@ namespace voxel {
  *
  * https://www.patrickmin.com/binvox/binvox.html
  */
-class BinVoxFormat : public VoxFileFormat {
+class BinVoxFormat : public Format {
 private:
 	uint32_t _version = 0u;
 	uint32_t _w = 0u;
@@ -32,7 +29,7 @@ private:
 	bool readHeader(const core::String& header);
 public:
 	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

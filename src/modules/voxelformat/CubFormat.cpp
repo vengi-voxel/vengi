@@ -3,6 +3,7 @@
  */
 
 #include "CubFormat.h"
+#include "io/FileStream.h"
 #include "voxel/MaterialColor.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
@@ -71,9 +72,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 #undef wrap
 
-bool CubFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
-	io::FileStream stream(file.get());
-
+bool CubFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	RawVolume* mergedVolume = merge(volumes);
 	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
 

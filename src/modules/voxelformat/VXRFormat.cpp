@@ -30,7 +30,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool VXRFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
+bool VXRFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 

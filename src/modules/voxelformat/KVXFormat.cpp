@@ -186,7 +186,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 #undef wrap
 
-bool KVXFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
+bool KVXFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 

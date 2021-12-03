@@ -105,7 +105,7 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	return true;
 }
 
-bool AoSVXLFormat::saveGroups(const VoxelVolumes &volumes, const io::FilePtr &file) {
+bool AoSVXLFormat::saveGroups(const VoxelVolumes &volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 

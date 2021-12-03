@@ -4,16 +4,7 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/File.h"
-#include "core/String.h"
-#include "core/collection/DynamicArray.h"
-#include "io/FileStream.h"
-#include <climits>
-
-namespace io {
-class SeekableReadStream;
-}
+#include "Format.h"
 
 namespace voxel {
 
@@ -51,7 +42,7 @@ namespace voxel {
  * byte Skylight = Nibble4(SkyLight, BlockPos);
  * @endcode
  */
-class MCRFormat : public VoxFileFormat {
+class MCRFormat : public Format {
 private:
 	static constexpr int VERSION_GZIP = 1;
 	static constexpr int VERSION_DEFLATE = 2;
@@ -96,7 +87,7 @@ private:
 	bool loadMinecraftRegion(VoxelVolumes& volumes, const uint8_t* buffer, int length, io::SeekableReadStream &stream, int chunkX, int chunkZ);
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override {
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override {
 		return false;
 	}
 };

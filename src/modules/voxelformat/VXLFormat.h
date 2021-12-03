@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/FileStream.h"
+#include "Format.h"
 
 namespace voxel {
 
@@ -14,7 +13,7 @@ namespace voxel {
  *
  * http://xhp.xwis.net/documents/VXL_Format.txt
  */
-class VXLFormat : public VoxFileFormat {
+class VXLFormat : public Format {
 private:
 	static constexpr size_t MaxLimbs = 512;
 	struct vxl_limb_header {
@@ -72,11 +71,11 @@ private:
 	static constexpr int EmptyColumn = -1;
 
 	// writing
-	bool writeLimbBodyEntry(io::FileStream& stream, voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const;
-	bool writeLimb(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const;
-	bool writeLimbHeader(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const;
-	bool writeLimbFooter(io::FileStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, const LimbOffset& offsets) const;
-	bool writeHeader(io::FileStream& stream, const VoxelVolumes& volumes);
+	bool writeLimbBodyEntry(io::SeekableWriteStream& stream, voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const;
+	bool writeLimb(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const;
+	bool writeLimbHeader(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const;
+	bool writeLimbFooter(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, const LimbOffset& offsets) const;
+	bool writeHeader(io::SeekableWriteStream& stream, const VoxelVolumes& volumes);
 
 	// reading
 	bool readLimbHeader(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
@@ -89,7 +88,7 @@ private:
 	bool readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl);
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

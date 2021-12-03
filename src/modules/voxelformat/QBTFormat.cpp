@@ -9,6 +9,7 @@
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/Assert.h"
+#include "io/FileStream.h"
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
 #include <glm/common.hpp>
@@ -43,7 +44,7 @@ static const bool MergeCompounds = true;
 		return false; \
 	}
 
-bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bool colorMap) const {
+bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& volume, bool colorMap) const {
 	const voxel::Region& region = volume.volume->region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
@@ -143,7 +144,7 @@ bool QBTFormat::saveMatrix(io::FileStream& stream, const VoxelVolume& volume, bo
 	return (size_t)datasize == chunkEndPos - chunkStartPos;
 }
 
-bool QBTFormat::saveColorMap(io::FileStream& stream) const {
+bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream) const {
 	wrapSave(stream.writeString("COLORMAP", false));
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	wrapSave(stream.writeInt((uint32_t)materialColors.size()));
@@ -154,7 +155,7 @@ bool QBTFormat::saveColorMap(io::FileStream& stream) const {
 	return true;
 }
 
-bool QBTFormat::saveModel(io::FileStream& stream, const VoxelVolumes& volumes, bool colorMap) const {
+bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, bool colorMap) const {
 	int children = 0;
 	for (auto& v : volumes) {
 		if (v.volume == nullptr) {
@@ -193,8 +194,7 @@ bool QBTFormat::saveModel(io::FileStream& stream, const VoxelVolumes& volumes, b
 	return success;
 }
 
-bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
-	io::FileStream stream(file.get());
+bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapSave(stream.writeInt(FourCC('Q','B',' ','2')))
 	wrapSave(stream.writeByte(1));
 	wrapSave(stream.writeByte(0));

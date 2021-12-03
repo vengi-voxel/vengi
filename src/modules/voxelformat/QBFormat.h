@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/FileStream.h"
+#include "Format.h"
 
 namespace voxel {
 
@@ -14,7 +13,7 @@ namespace voxel {
  *
  * https://getqubicle.com/qubicle/documentation/docs/file/qb/
  */
-class QBFormat : public VoxFileFormat {
+class QBFormat : public Format {
 private:
 	uint32_t _version;
 	enum class ColorFormat : uint32_t {
@@ -57,10 +56,10 @@ private:
 	bool loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes);
 	bool loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes);
 
-	bool saveMatrix(io::FileStream& stream, const VoxelVolume& volume) const;
+	bool saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& volume) const;
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

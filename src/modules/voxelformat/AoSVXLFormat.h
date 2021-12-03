@@ -4,10 +4,7 @@
 
 #pragma once
 
-#include "VoxFileFormat.h"
-#include "io/FileStream.h"
-#include "io/File.h"
-#include "core/String.h"
+#include "Format.h"
 
 namespace voxel {
 
@@ -16,10 +13,10 @@ namespace voxel {
  *
  * https://silverspaceship.com/aosmap/
  */
-class AoSVXLFormat : public VoxFileFormat {
+class AoSVXLFormat : public Format {
 public:
 	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) override;
+	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

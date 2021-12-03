@@ -10,7 +10,7 @@
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelformat/VoxFileFormat.h"
+#include "voxelformat/Format.h"
 
 namespace voxedit {
 namespace anim {

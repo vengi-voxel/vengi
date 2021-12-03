@@ -6,7 +6,7 @@
 
 #include "io/FileStream.h"
 #include "voxel/tests/AbstractVoxelTest.h"
-#include "voxelformat/VoxFileFormat.h"
+#include "voxelformat/Format.h"
 #include "io/Filesystem.h"
 
 namespace voxel {
@@ -50,7 +50,7 @@ protected:
 		return file;
 	}
 
-	voxel::RawVolume* load(const core::String& filename, voxel::VoxFileFormat& format) {
+	voxel::RawVolume* load(const core::String& filename, voxel::Format& format) {
 		const io::FilePtr& file = open(filename);
 		if (!file->validHandle()) {
 			return nullptr;

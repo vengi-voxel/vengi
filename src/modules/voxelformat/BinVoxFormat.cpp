@@ -3,6 +3,7 @@
  */
 
 #include "BinVoxFormat.h"
+#include "io/FileStream.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
 #include "core/StringUtil.h"
@@ -199,9 +200,7 @@ bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	return true;
 }
 
-bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const io::FilePtr& file) {
-	io::FileStream stream(file.get());
-
+bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	RawVolume* mergedVolume = merge(volumes);
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
