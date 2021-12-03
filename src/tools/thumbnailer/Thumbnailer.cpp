@@ -5,6 +5,7 @@
 #include "Thumbnailer.h"
 #include "core/Color.h"
 #include "command/Command.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
 #include "core/EventBus.h"
@@ -14,6 +15,9 @@
 #include "video/Camera.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
+#include "voxelrender/RawVolumeRenderer.h"
+#include "video/FrameBuffer.h"
+#include "video/Texture.h"
 
 Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -85,7 +89,8 @@ bool Thumbnailer::renderVolume() {
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 	voxel::VoxelVolumes volumes;
-	if (!voxelformat::loadVolumeFormat(_infile, volumes)) {
+	io::FileStream stream(_infile.get());
+	if (!voxelformat::loadVolumeFormat(_infile->fileName(), stream, volumes)) {
 		Log::error("Failed to load given input file");
 		return false;
 	}
@@ -161,7 +166,8 @@ bool Thumbnailer::renderVolume() {
 }
 
 bool Thumbnailer::saveEmbeddedScreenshot() {
-	const image::ImagePtr &image = voxelformat::loadVolumeScreenshot(_infile);
+	io::FileStream stream(_infile.get());
+	const image::ImagePtr &image = voxelformat::loadVolumeScreenshot(_infile->fileName(), stream);
 	if (!image) {
 		Log::error("Failed to load screenshot from input file");
 		return false;

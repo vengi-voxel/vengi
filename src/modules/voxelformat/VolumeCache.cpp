@@ -3,6 +3,7 @@
  */
 
 #include "VolumeCache.h"
+#include "io/FileStream.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
 #include "io/Filesystem.h"
@@ -39,7 +40,8 @@ voxel::RawVolume* VolumeCache::loadVolume(const core::String &filename) {
 		return nullptr;
 	}
 	voxel::VoxelVolumes volumes;
-	if (!voxelformat::loadVolumeFormat(file, volumes)) {
+	io::FileStream stream(file.get());
+	if (!voxelformat::loadVolumeFormat(file->fileName(), stream, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		voxelformat::clearVolumes(volumes);
 		core::ScopedLock lock(_mutex);

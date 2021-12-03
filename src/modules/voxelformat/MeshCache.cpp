@@ -5,6 +5,7 @@
 #include "MeshCache.h"
 #include "core/GLM.h"
 #include "core/StringUtil.h"
+#include "io/FileStream.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
 #include "io/Filesystem.h"
@@ -67,7 +68,8 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 		return false;
 	}
 	voxel::VoxelVolumes volumes;
-	if (!voxelformat::loadVolumeFormat(file, volumes)) {
+	io::FileStream stream(file.get());
+	if (!voxelformat::loadVolumeFormat(file->fileName(), stream, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		voxelformat::clearVolumes(volumes);
 		return false;

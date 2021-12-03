@@ -146,15 +146,10 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 	return format;
 }
 
-image::ImagePtr loadVolumeScreenshot(const io::FilePtr& filePtr) {
-	if (!filePtr->exists()) {
-		Log::error("Failed to load screenshot from model file %s. Doesn't exist.", filePtr->name().c_str());
-		return image::ImagePtr();
-	}
-	io::FileStream stream(filePtr.get());
+image::ImagePtr loadVolumeScreenshot(const core::String &fileName, io::SeekableReadStream& stream) {
 	const uint32_t magic = loadMagic(stream);
 	core_trace_scoped(LoadVolumeScreenshot);
-	const core::String& fileext = filePtr->extension();
+	const core::String& fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", fileext.c_str());
@@ -166,22 +161,17 @@ image::ImagePtr loadVolumeScreenshot(const io::FilePtr& filePtr) {
 	}
 	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
-		return f->loadScreenshot(filePtr->fileName(), stream);
+		return f->loadScreenshot(fileName, stream);
 	}
 	Log::error("Failed to load model screenshot from file %s - unsupported file format for extension '%s'",
-			filePtr->name().c_str(), fileext.c_str());
+			fileName.c_str(), fileext.c_str());
 	return image::ImagePtr();
 }
 
-size_t loadVolumePalette(const io::FilePtr& filePtr, core::Array<uint32_t, 256> &palette) {
-	if (!filePtr->exists()) {
-		Log::error("Failed to load palette from model file %s. Doesn't exist.", filePtr->name().c_str());
-		return 0;
-	}
-	io::FileStream stream(filePtr.get());
+size_t loadVolumePalette(const core::String &fileName, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) {
 	const uint32_t magic = loadMagic(stream);
 	core_trace_scoped(LoadVolumePalette);
-	const core::String& fileext = filePtr->extension();
+	const core::String& fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", fileext.c_str());
@@ -193,24 +183,18 @@ size_t loadVolumePalette(const io::FilePtr& filePtr, core::Array<uint32_t, 256> 
 	}
 	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
-		return f->loadPalette(filePtr->fileName(), stream, palette);
+		return f->loadPalette(fileName, stream, palette);
 	}
 	Log::error("Failed to load model palette from file %s - unsupported file format for extension '%s'",
-			filePtr->name().c_str(), fileext.c_str());
+			fileName.c_str(), fileext.c_str());
 	return 0;
 }
 
-bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolumes) {
-	if (!filePtr->exists()) {
-		Log::error("Failed to load model file %s. Doesn't exist.", filePtr->name().c_str());
-		return false;
-	}
-
-	io::FileStream stream(filePtr.get());
+bool loadVolumeFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::VoxelVolumes& newVolumes) {
 	const uint32_t magic = loadMagic(stream);
 
 	core_trace_scoped(LoadVolumeFormat);
-	const core::String& fileext = filePtr->extension();
+	const core::String& fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", fileext.c_str());
@@ -218,19 +202,19 @@ bool loadVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& newVolume
 	}
 	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
-		if (!f->loadGroups(filePtr->fileName(), stream, newVolumes)) {
+		if (!f->loadGroups(fileName, stream, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
 	} else {
 		Log::error("Failed to load model file %s - unsupported file format for extension '%s'",
-				filePtr->name().c_str(), fileext.c_str());
+				fileName.c_str(), fileext.c_str());
 		return false;
 	}
 	if (newVolumes.empty()) {
-		Log::error("Failed to load model file %s. Broken file.", filePtr->name().c_str());
+		Log::error("Failed to load model file %s. Broken file.", fileName.c_str());
 		return false;
 	}
-	Log::info("Load model file %s with %i layers", filePtr->name().c_str(), (int)newVolumes.size());
+	Log::info("Load model file %s with %i layers", fileName.c_str(), (int)newVolumes.size());
 	return true;
 }
 
@@ -279,7 +263,6 @@ bool saveMeshFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
 	Log::error("Failed to save model file %s - unknown extension '%s' given", filePtr->name().c_str(), ext.c_str());
 	return false;
 }
-
 
 bool isMeshFormat(const core::String& filename) {
 	const core::String& ext = core::string::extractExtension(filename);

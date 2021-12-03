@@ -4,6 +4,7 @@
 
 #include "VolumeCache.h"
 #include "animation/chr/CharacterSkeleton.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "app/App.h"
 #include "core/Log.h"
@@ -32,7 +33,8 @@ bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::
 	}
 	voxel::VoxelVolumes localVolumes;
 	// TODO: use the cache luke
-	if (!voxelformat::loadVolumeFormat(file, localVolumes)) {
+	io::FileStream stream(file.get());
+	if (!voxelformat::loadVolumeFormat(file->fileName(), stream, localVolumes)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		return false;
 	}

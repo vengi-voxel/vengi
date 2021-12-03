@@ -5,9 +5,6 @@
 #pragma once
 
 #include "video/WindowedApp.h"
-#include "video/FrameBuffer.h"
-#include "video/Texture.h"
-#include "voxelrender/RawVolumeRenderer.h"
 #include "io/File.h"
 
 /**

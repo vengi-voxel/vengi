@@ -8,6 +8,7 @@
 #include "core/Var.h"
 #include "command/Command.h"
 #include "image/Image.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
 #include "core/EventBus.h"
@@ -109,7 +110,8 @@ app::AppState VoxConvert::onInit() {
 
 	if (srcPalette) {
 		core::Array<uint32_t, 256> palette;
-		const size_t numColors = voxelformat::loadVolumePalette(inputFile, palette);
+		io::FileStream palStream(inputFile.get());
+		const size_t numColors = voxelformat::loadVolumePalette(inputFile->fileName(), palStream, palette);
 		if (numColors == 0) {
 			Log::error("Failed to load palette from input file");
 			return app::AppState::InitFailure;
@@ -142,7 +144,8 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	voxel::VoxelVolumes volumes;
-	if (!voxelformat::loadVolumeFormat(inputFile, volumes)) {
+	io::FileStream inputFileStream(inputFile.get());
+	if (!voxelformat::loadVolumeFormat(inputFile->fileName(), inputFileStream, volumes)) {
 		Log::error("Failed to load given input file");
 		return app::AppState::InitFailure;
 	}
