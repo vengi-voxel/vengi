@@ -12,3 +12,14 @@ if (UNIX)
 	add_test(NAME shelltests-${PROJECT_NAME} COMMAND ${PROJECT_NAME}-tests.sh $<TARGET_FILE:${PROJECT_NAME}>)
 	set_tests_properties(shelltests-${PROJECT_NAME} PROPERTIES DEPENDS ${PROJECT_NAME})
 endif()
+
+if (WIN32)
+	set(WIN_SRCS
+		windows/ThumbnailerDLL.cpp
+		windows/ThumbnailerDLL.def
+		windows/ThumbnailerProvider.cpp windows/ThumbnailerProvider.h
+	)
+	add_library(voxelthumb SHARED ${WIN_SRCS})
+	set_target_properties(voxelthumb PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS OFF)
+	target_link_libraries(voxelthumb voxelrender shlwapi)
+endif()
