@@ -147,8 +147,8 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 }
 
 image::ImagePtr loadVolumeScreenshot(const core::String &fileName, io::SeekableReadStream& stream) {
-	const uint32_t magic = loadMagic(stream);
 	core_trace_scoped(LoadVolumeScreenshot);
+	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
@@ -161,6 +161,7 @@ image::ImagePtr loadVolumeScreenshot(const core::String &fileName, io::SeekableR
 	}
 	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
+		stream.seek(0);
 		return f->loadScreenshot(fileName, stream);
 	}
 	Log::error("Failed to load model screenshot from file %s - unsupported file format for extension '%s'",
@@ -169,8 +170,8 @@ image::ImagePtr loadVolumeScreenshot(const core::String &fileName, io::SeekableR
 }
 
 size_t loadVolumePalette(const core::String &fileName, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) {
-	const uint32_t magic = loadMagic(stream);
 	core_trace_scoped(LoadVolumePalette);
+	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
@@ -183,6 +184,7 @@ size_t loadVolumePalette(const core::String &fileName, io::SeekableReadStream& s
 	}
 	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
+		stream.seek(0);
 		return f->loadPalette(fileName, stream, palette);
 	}
 	Log::error("Failed to load model palette from file %s - unsupported file format for extension '%s'",
@@ -191,9 +193,8 @@ size_t loadVolumePalette(const core::String &fileName, io::SeekableReadStream& s
 }
 
 bool loadVolumeFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::VoxelVolumes& newVolumes) {
-	const uint32_t magic = loadMagic(stream);
-
 	core_trace_scoped(LoadVolumeFormat);
+	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
@@ -202,6 +203,7 @@ bool loadVolumeFormat(const core::String &fileName, io::SeekableReadStream& stre
 	}
 	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
+		stream.seek(0);
 		if (!f->loadGroups(fileName, stream, newVolumes)) {
 			voxelformat::clearVolumes(newVolumes);
 		}
