@@ -30,10 +30,10 @@ TEST_F(VXLFormatTest, testSave) {
 
 	const io::FilePtr& file = open("cc-save.vxl", io::FileMode::Write);
 	io::FileStream stream(file.get());
-	ASSERT_TRUE(f.save(loadedVolume, file->fileName(), stream));
+	ASSERT_TRUE(f.save(loadedVolume, file->name(), stream));
 	f = VXLFormat();
 	RawVolume *savedVolume = load("cc-save.vxl", f);
-	EXPECT_NE(nullptr, savedVolume) << "Could not load saved vxl file " << file->fileName();
+	EXPECT_NE(nullptr, savedVolume) << "Could not load saved vxl file " << file->name();
 	if (savedVolume) {
 		EXPECT_EQ(*savedVolume, *loadedVolume);
 		delete savedVolume;

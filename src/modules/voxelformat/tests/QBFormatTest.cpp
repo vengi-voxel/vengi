@@ -46,7 +46,7 @@ TEST_F(QBFormatTest, testSaveSmallVoxel) {
 	original.setVoxel(0, 1, 0, createVoxel(VoxelType::Generic, 200));
 	const io::FilePtr &file = open("qubicle-smallvolumesavetest.qbt", io::FileMode::Write);
 	io::FileStream stream(file.get());
-	ASSERT_TRUE(f.save(&original, file->fileName(), stream));
+	ASSERT_TRUE(f.save(&original, file->name(), stream));
 	f = QBFormat();
 	std::unique_ptr<RawVolume> loaded(load("qubicle-smallvolumesavetest.qb", f));
 	ASSERT_NE(nullptr, loaded);
@@ -60,7 +60,7 @@ TEST_F(QBFormatTest, testSaveSingleVoxel) {
 	original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1));
 	const io::FilePtr &file = open("qubicle-singlevoxelsavetest.qbt", io::FileMode::Write);
 	io::FileStream stream(file.get());
-	ASSERT_TRUE(f.save(&original, file->fileName(), stream));
+	ASSERT_TRUE(f.save(&original, file->name(), stream));
 	f = QBFormat();
 	std::unique_ptr<RawVolume> loaded(load("qubicle-singlevoxelsavetest.qb", f));
 	ASSERT_NE(nullptr, loaded);
@@ -85,12 +85,12 @@ TEST_F(QBFormatTest, testSaveMultipleLayers) {
 	volumes.push_back(VoxelVolume(&layer4));
 	const io::FilePtr &sfile = open("qubicle-multiplelayersavetest.qbt", io::FileMode::Write);
 	io::FileStream sstream(sfile.get());
-	ASSERT_TRUE(f.saveGroups(volumes, sfile->fileName(), sstream));
+	ASSERT_TRUE(f.saveGroups(volumes, sfile->name(), sstream));
 	f = QBFormat();
 	VoxelVolumes volumesLoad;
 	const io::FilePtr &file = open("qubicle-multiplelayersavetest.qb");
 	io::FileStream stream(file.get());
-	EXPECT_TRUE(f.loadGroups(file->fileName(), stream, volumesLoad));
+	EXPECT_TRUE(f.loadGroups(file->name(), stream, volumesLoad));
 	EXPECT_EQ(volumesLoad.size(), volumes.size());
 	voxelformat::clearVolumes(volumesLoad);
 }
@@ -101,7 +101,7 @@ TEST_F(QBFormatTest, testLoadSave) {
 	ASSERT_NE(nullptr, original);
 	const io::FilePtr &sfile = open("qubicle-savetest.qbt", io::FileMode::Write);
 	io::FileStream sstream(sfile.get());
-	ASSERT_TRUE(f.save(original.get(), sfile->fileName(), sstream));
+	ASSERT_TRUE(f.save(original.get(), sfile->name(), sstream));
 	ASSERT_TRUE(open("qubicle-savetest.qb")->length() > 177);
 	f = QBFormat();
 	std::unique_ptr<RawVolume> loaded(load("qubicle-savetest.qb", f));
