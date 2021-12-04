@@ -33,19 +33,8 @@
 
 find_package(PythonInterp 3 REQUIRED)
 
-set(GLSLANG_INTRINSIC_H          "${GLSLANG_GENERATED_INCLUDEDIR}/glslang/glsl_intrinsic_header.h")
-set(GLSLANG_INTRINSIC_PY         "${CMAKE_CURRENT_SOURCE_DIR}/../gen_extension_headers.py")
+set(GLSLANG_INTRINSIC_H          "${CMAKE_CURRENT_SOURCE_DIR}/../glslang/glsl_intrinsic_header.h")
 set(GLSLANG_INTRINSIC_HEADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../glslang/ExtensionHeaders")
-
-add_custom_command(
-    OUTPUT  ${GLSLANG_INTRINSIC_H}
-    COMMAND ${PYTHON_EXECUTABLE} "${GLSLANG_INTRINSIC_PY}"
-            "-i" ${GLSLANG_INTRINSIC_HEADER_DIR}
-            "-o" ${GLSLANG_INTRINSIC_H}
-    DEPENDS ${GLSLANG_INTRINSIC_PY}
-    COMMENT "Generating ${GLSLANG_INTRINSIC_H}")
-
-#add_custom_target(glslangValidator DEPENDS ${GLSLANG_INTRINSIC_H})
 
 add_library(glslang-default-resource-limits
             ${CMAKE_CURRENT_SOURCE_DIR}/ResourceLimits.cpp
