@@ -71,7 +71,7 @@ app::AppState Thumbnailer::onRunning() {
 	io::FileStream outStream(outfile.get());
 	io::FileStream stream(_infile.get());
 
-	const image::ImagePtr &image = thumbnailer::volumeThumbnail(_infile->fileName(), stream, outputSize);
+	const image::ImagePtr &image = thumbnailer::volumeThumbnail(_infile->name(), stream, outputSize);
 	if (image) {
 		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 			Log::error("Failed to write image");

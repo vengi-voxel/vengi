@@ -274,7 +274,7 @@ bool SceneManager::prefab(const core::String& file) {
 	}
 	voxel::VoxelVolumes newVolumes;
 	io::FileStream stream(filePtr.get());
-	if (!voxelformat::loadVolumeFormat(filePtr->fileName(), stream, newVolumes)) {
+	if (!voxelformat::loadVolumeFormat(filePtr->name(), stream, newVolumes)) {
 		return false;
 	}
 	for (const auto& v : newVolumes) {
@@ -294,7 +294,7 @@ bool SceneManager::load(const core::String& file) {
 	}
 	voxel::VoxelVolumes newVolumes;
 	io::FileStream stream(filePtr.get());
-	if (!voxelformat::loadVolumeFormat(filePtr->fileName(), stream, newVolumes)) {
+	if (!voxelformat::loadVolumeFormat(filePtr->name(), stream, newVolumes)) {
 		return false;
 	}
 	const core::String& ext = filePtr->extension();
