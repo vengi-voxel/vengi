@@ -28,11 +28,16 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		return image::ImagePtr();
 	}
 
+	stream.seek(0);
+	voxel::VoxelVolumes volumes;
+	if (!voxelformat::loadVolumeFormat(fileName, stream, volumes)) {
+		Log::error("Failed to load given input file");
+		return image::ImagePtr();
+	}
+
 	video::FrameBuffer frameBuffer;
 	voxelrender::RawVolumeRenderer volumeRenderer;
-
 	volumeRenderer.construct();
-
 	if (!volumeRenderer.init()) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
@@ -45,11 +50,6 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	video::enable(video::State::DepthMask);
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
-	voxel::VoxelVolumes volumes;
-	if (!voxelformat::loadVolumeFormat(fileName, stream, volumes)) {
-		Log::error("Failed to load given input file");
-		return image::ImagePtr();
-	}
 
 	const int volumesSize = (int)volumes.size();
 	for (int i = 0; i < volumesSize; ++i) {

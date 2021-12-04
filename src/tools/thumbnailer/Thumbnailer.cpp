@@ -33,7 +33,6 @@ app::AppState Thumbnailer::onConstruct() {
 app::AppState Thumbnailer::onInit() {
 	const app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
-		Log::error("Failed to init application");
 		return state;
 	}
 
