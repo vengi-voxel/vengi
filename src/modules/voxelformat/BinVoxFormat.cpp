@@ -230,7 +230,7 @@ bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &f
 	for (int idx = 0; idx < maxIndex; ++idx) {
 		int x, y, z;
 		get_coords(idx, x, y, z, width, height);
-		core_assert_always(sampler.setPosition(x, z, y));
+		core_assert_always(sampler.setPosition(x, y, z));
 		const voxel::Voxel voxel = sampler.voxel();
 		if (voxel.getMaterial() == VoxelType::Air) {
 			if (value != 0u || count == 255u) {
