@@ -36,7 +36,12 @@ namespace voxel {
 		}                                                                                                              \
 	} while (0)
 
+void MCRFormat::reset() {
+	core_memset(_chunkTimestamps, 0, sizeof(_chunkTimestamps));
+}
+
 bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+	reset();
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
 		Log::error("File does not contain enough data");

@@ -24,6 +24,16 @@ TEST_F(VoxFormatTest, testLoadRGB) {
 	testRGB(volume.get());
 }
 
+TEST_F(VoxFormatTest, testSaveSmallVoxel) {
+	VoxFormat f;
+	testSaveLoadVoxel("mv-smallvolumesavetest.vox", &f);
+}
+
+TEST_F(VoxFormatTest, testSaveMultipleLayers) {
+	VoxFormat f;
+	testSaveMultipleLayers("mv-multiplelayersavetest.vox", &f);
+}
+
 TEST_F(VoxFormatTest, DISABLED_testSave) {
 	VoxFormat f;
 	RawVolume* loadedVolume = load("magicavoxel.vox", f);

@@ -13,7 +13,7 @@
 
 namespace voxel {
 
-bool BinVoxFormat::readHeader(const core::String& header) {
+bool BinVoxFormat::readHeader(State& state, const core::String& header) {
 	const char *delimiters = "\n";
 	// Skip delimiters at beginning.
 	size_t lastPos = header.find_first_not_of(delimiters, 0);
@@ -35,12 +35,12 @@ bool BinVoxFormat::readHeader(const core::String& header) {
 		SDL_strlcpy(buf, line.c_str(), sizeof(buf));
 
 		if (core::string::startsWith(line, "#binvox")) {
-			if (SDL_sscanf(buf, "#binvox %u", &_version) != 1) {
+			if (SDL_sscanf(buf, "#binvox %u", &state._version) != 1) {
 				Log::error("Failed to parse binvox version");
 				return false;
 			}
 		} else if (core::string::startsWith(buf, "dim ")) {
-			if (SDL_sscanf(buf, "dim %u %u %u", &_d, &_h, &_w) != 3) {
+			if (SDL_sscanf(buf, "dim %u %u %u", &state._d, &state._h, &state._w) != 3) {
 				Log::error("Failed to parse binvox dimensions");
 				return false;
 			}
@@ -50,11 +50,11 @@ bool BinVoxFormat::readHeader(const core::String& header) {
 				Log::error("Failed to parse binvox translation");
 				return false;
 			}
-			_tx = -tx;
-			_ty = -ty;
-			_tz = -tz;
+			state._tx = -tx;
+			state._ty = -ty;
+			state._tz = -tz;
 		} else if (core::string::startsWith(buf, "scale ")) {
-			if (SDL_sscanf(buf, "scale %f", &_scale) != 1) {
+			if (SDL_sscanf(buf, "scale %f", &state._scale) != 1) {
 				Log::error("Failed to parse binvox scale");
 				return false;
 			}
@@ -65,19 +65,19 @@ bool BinVoxFormat::readHeader(const core::String& header) {
 		// Find next "non-delimiter"
 		pos = header.find_first_of(delimiters, lastPos);
 	}
-	if (_version != 1) {
+	if (state._version != 1) {
 		Log::error("Failed to parse the header data");
 		return false;
 	}
-	if (_w >= MaxRegionSize || _h >= MaxRegionSize || _d >= MaxRegionSize) {
-		Log::error("Max region size exceeded: %u:%u:%u", _w, _h, _d);
+	if (state._w >= MaxRegionSize || state._h >= MaxRegionSize || state._d >= MaxRegionSize) {
+		Log::error("Max region size exceeded: %u:%u:%u", state._w, state._h, state._d);
 		return false;
 	}
-	if (_w == 0 || _h == 0 || _d == 0) {
-		Log::error("Region size invalid: %u:%u:%u", _w, _h, _d);
+	if (state._w == 0 || state._h == 0 || state._d == 0) {
+		Log::error("Region size invalid: %u:%u:%u", state._w, state._h, state._d);
 		return false;
 	}
-	_size = _w * _h * _d;
+	state._size = state._w * state._h * state._d;
 	return true;
 }
 
@@ -96,15 +96,15 @@ static inline void get_coords(int idx, int &x, int &y, int &z, int width, int he
 	y = idx % width;
 }
 
-bool BinVoxFormat::readData(const core::String& filename, const uint8_t *buf, const int64_t size, const size_t offset, VoxelVolumes& volumes) {
-	const voxel::Region region(_tx, _tz, _ty, _tx + _w - 1, _tz + _h - 1, _ty + _d - 1);
+bool BinVoxFormat::readData(State& state, const core::String& filename, const uint8_t *buf, const int64_t size, const size_t offset, VoxelVolumes& volumes) {
+	const voxel::Region region(state._tx, state._tz, state._ty, state._tx + state._w - 1, state._tz + state._h - 1, state._ty + state._d - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region found in file");
 		return false;
 	}
-	core_assert(region.getWidthInVoxels() == (int32_t)_w);
-	core_assert(region.getHeightInVoxels() == (int32_t)_h);
-	core_assert(region.getDepthInVoxels() == (int32_t)_d);
+	core_assert(region.getWidthInVoxels() == (int32_t)state._w);
+	core_assert(region.getHeightInVoxels() == (int32_t)state._h);
+	core_assert(region.getDepthInVoxels() == (int32_t)state._d);
 
 	const int dataSize = (int)(size - offset);
 	if ((dataSize % 2) != 0) {
@@ -112,7 +112,7 @@ bool BinVoxFormat::readData(const core::String& filename, const uint8_t *buf, co
 		return false;
 	}
 
-	const uint32_t bufSize = _w * _h * _d;
+	const uint32_t bufSize = state._w * state._h * state._d;
 	uint8_t* voxelBuf = new uint8_t[bufSize]();
 
 	uint32_t index = 0;
@@ -142,7 +142,7 @@ bool BinVoxFormat::readData(const core::String& filename, const uint8_t *buf, co
 
 	if (n != bufSize) {
 		Log::error("Unexpected voxel amount: %i, expected: %i (w: %u, h: %u, d: %u), fileSize %i, offset %i",
-				dataSize, bufSize, _w, _h, _d, (int)size, (int)offset);
+				dataSize, bufSize, state._w, state._h, state._d, (int)size, (int)offset);
 		delete[] voxelBuf;
 		return false;
 	}
@@ -186,12 +186,13 @@ bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 		return false;
 	}
 	const core::String& header = str.substr(0, dataOffset);
-	if (!readHeader(header)) {
+	State state;
+	if (!readHeader(state, header)) {
 		delete[] buf;
 		Log::error("Could not read header of %s", filename.c_str());
 		return false;
 	}
-	if (!readData(filename, buf, size, dataOffset + 5, volumes)) {
+	if (!readData(state, filename, buf, size, dataOffset + 5, volumes)) {
 		delete[] buf;
 		Log::warn("Could not load the whole data from %s", filename.c_str());
 		return false;

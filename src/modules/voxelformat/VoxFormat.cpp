@@ -95,16 +95,16 @@ public:
 	}
 };
 
-bool VoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, int modelId, const core::String& name, bool visible) {
+bool VoxFormat::saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, int modelId, const core::String& name, bool visible) {
 	ScopedChunkWriter scoped(stream, FourCC('L','A','Y','R'));
 	wrapBool(stream.writeInt(modelId))
 	wrapBool(saveAttributes({{"_name", name}, {"_hidden", visible ? "0" : "1"}}, stream))
 	wrapBool(stream.writeInt((uint32_t)-1)) // must always be -1
-	++_chunks;
+	++state._chunks;
 	return true;
 }
 
-bool VoxFormat::saveChunk_nGRP(io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumes) {
+bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumes) {
 	ScopedChunkWriter scoped(stream, FourCC('n','G','R','P'));
 	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
@@ -114,22 +114,22 @@ bool VoxFormat::saveChunk_nGRP(io::SeekableWriteStream& stream, NodeId nodeId, u
 		// transform and shape node pairs
 		wrapBool(stream.writeInt(childNodeId + (i * 2u)))
 	}
-	++_chunks;
+	++state._chunks;
 	return true;
 }
 
-bool VoxFormat::saveChunk_nSHP(io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumeId) {
+bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumeId) {
 	ScopedChunkWriter scoped(stream, FourCC('n','S','H','P'));
 	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
 	wrapBool(stream.writeInt(1)) // shapeNodeNumModels
 	wrapBool(stream.writeInt(volumeId));
 	wrapBool(saveAttributes({}, stream)) // model attributes
-	++_chunks;
+	++state._chunks;
 	return true;
 }
 
-bool VoxFormat::saveChunk_nTRN(io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins) {
+bool VoxFormat::saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins) {
 	ScopedChunkWriter scoped(stream, FourCC('n','T','R','N'));
 	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
@@ -139,20 +139,20 @@ bool VoxFormat::saveChunk_nTRN(io::SeekableWriteStream& stream, NodeId nodeId, N
 	wrapBool(stream.writeInt(1)) // num frames
 	const core::String& translationStr = core::string::format("%i %i %i", mins.x, mins.z, mins.y);
 	wrapBool(saveAttributes({{"_r", "4"}, {"_t", translationStr}}, stream))
-	++_chunks;
+	++state._chunks;
 	return true;
 }
 
-bool VoxFormat::saveChunk_SIZE(io::SeekableWriteStream& stream, const voxel::Region& region) {
+bool VoxFormat::saveChunk_SIZE(State& state, io::SeekableWriteStream& stream, const voxel::Region& region) {
 	ScopedChunkWriter scoped(stream, FourCC('S','I','Z','E'));
 	wrapBool(stream.writeInt(region.getWidthInVoxels()))
 	wrapBool(stream.writeInt(region.getDepthInVoxels()))
 	wrapBool(stream.writeInt(region.getHeightInVoxels()))
-	++_chunks;
+	++state._chunks;
 	return true;
 }
 
-bool VoxFormat::saveChunk_PACK(io::SeekableWriteStream& stream, const VoxelVolumes& volumes) {
+bool VoxFormat::saveChunk_PACK(State& state, io::SeekableWriteStream& stream, const VoxelVolumes& volumes) {
 	int modelCount = 0;
 	for (auto& v : volumes) {
 		if (skipSaving(v)) {
@@ -162,11 +162,11 @@ bool VoxFormat::saveChunk_PACK(io::SeekableWriteStream& stream, const VoxelVolum
 	}
 	ScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
 	wrapBool(stream.writeInt(modelCount))
-	++_chunks;
+	++state._chunks;
 	return true;
 }
 
-bool VoxFormat::saveChunk_RGBA(io::SeekableWriteStream& stream) {
+bool VoxFormat::saveChunk_RGBA(State& state, io::SeekableWriteStream& stream) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 	const int numColors = (int)materialColors.size();
 	if (numColors > 256) {
@@ -182,11 +182,11 @@ bool VoxFormat::saveChunk_RGBA(io::SeekableWriteStream& stream) {
 	for (int i = numColors; i < 256; ++i) {
 		wrapBool(stream.writeInt(0))
 	}
-	++_chunks;
+	++state._chunks;
 	return true;
 }
 
-bool VoxFormat::saveChunk_XYZI(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, const voxel::Region& region) {
+bool VoxFormat::saveChunk_XYZI(State& state, io::SeekableWriteStream& stream, const voxel::RawVolume* volume, const voxel::Region& region) {
 	ScopedChunkWriter scoped(stream, FourCC('X','Y','Z','I'));
 
 	uint32_t numVoxels = 0;
@@ -204,7 +204,7 @@ bool VoxFormat::saveChunk_XYZI(io::SeekableWriteStream& stream, const voxel::Raw
 	wrap(stream.seek(numVoxelPos));
 	wrapBool(stream.writeInt(numVoxels));
 	wrap(stream.seek(chunkEndPos));
-	++_chunks;
+	++state._chunks;
 	return true;
 }
 
@@ -238,13 +238,13 @@ bool VoxFormat::skipSaving(const VoxelVolume& v) const {
 	return false;
 }
 
-bool VoxFormat::saveSceneGraph(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, int modelCount) {
+bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, const VoxelVolumes& volumes, int modelCount) {
 	const NodeId rootNodeId = 0;
 	NodeId groupNodeId = rootNodeId + 1;
-	wrapBool(saveChunk_nTRN(stream, rootNodeId, groupNodeId, glm::ivec3(0)))
+	wrapBool(saveChunk_nTRN(state, stream, rootNodeId, groupNodeId, glm::ivec3(0)))
 
 	// this adds a group node with a transform+shape node pair per volume
-	wrapBool(saveChunk_nGRP(stream, groupNodeId, modelCount))
+	wrapBool(saveChunk_nGRP(state, stream, groupNodeId, modelCount))
 
 	// the first transform node id
 	NodeId nodeId = groupNodeId + 1;
@@ -256,8 +256,8 @@ bool VoxFormat::saveSceneGraph(io::SeekableWriteStream& stream, const VoxelVolum
 
 		const voxel::Region& region = v.volume->region();
 		const glm::ivec3 mins = region.getCenter();
-		wrapBool(saveChunk_nTRN(stream, nodeId, nodeId + 1, mins))
-		wrapBool(saveChunk_nSHP(stream, nodeId + 1, modelId))
+		wrapBool(saveChunk_nTRN(state, stream, nodeId, nodeId + 1, mins))
+		wrapBool(saveChunk_nSHP(state, stream, nodeId + 1, modelId))
 
 		// transform + shape node per volume
 		nodeId += 2;
@@ -268,10 +268,11 @@ bool VoxFormat::saveSceneGraph(io::SeekableWriteStream& stream, const VoxelVolum
 }
 
 bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+	State state;
 	reset();
 
-	ScopedHeader scoped(stream, _chunks);
-	wrapBool(saveChunk_PACK(stream, volumes))
+	ScopedHeader scoped(stream, state._chunks);
+	wrapBool(saveChunk_PACK(state,stream, volumes))
 
 	int modelId = 0;
 	for (auto& v : volumes) {
@@ -280,8 +281,8 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 		}
 
 		const voxel::Region& region = v.volume->region();
-		wrapBool(saveChunk_SIZE(stream, region))
-		wrapBool(saveChunk_XYZI(stream, v.volume, region))
+		wrapBool(saveChunk_SIZE(state, stream, region))
+		wrapBool(saveChunk_XYZI(state, stream, v.volume, region))
 
 		++modelId;
 	}
@@ -298,7 +299,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	}
 #endif
 
-	wrapBool(saveChunk_RGBA(stream))
+	wrapBool(saveChunk_RGBA(state, stream))
 
 	// IMAP
 	// MATL
@@ -421,7 +422,7 @@ bool VoxFormat::readChunkHeader(io::SeekableReadStream& stream, ChunkHeader& hea
 //                       |     palette[i + 1] = ReadRGBA();
 //                       | }
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_RGBA(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_RGBA(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 	for (int i = 0; i <= 254; i++) {
 		uint32_t rgba;
@@ -446,7 +447,7 @@ bool VoxFormat::loadChunk_RGBA(io::SeekableReadStream& stream, const ChunkHeader
 // 4        | int        | size y
 // 4        | int        | size z : gravity direction
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_SIZE(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_SIZE(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	// we have to flip the axis here
 	uint32_t x, y, z;
 	wrap(stream.readInt(x))
@@ -464,9 +465,9 @@ bool VoxFormat::loadChunk_SIZE(io::SeekableReadStream& stream, const ChunkHeader
 		Log::error("Found invalid region in vox file: %i:%i:%i", x, y, z);
 		return false;
 	}
-	_regions.push_back(region);
-	if (_regions.size() > 256) {
-		Log::error("Found more than 256 layers: %i", (int)_regions.size());
+	state._regions.push_back(region);
+	if (state._regions.size() > 256) {
+		Log::error("Found more than 256 layers: %i", (int)state._regions.size());
 		return false;
 	}
 	return true;
@@ -477,8 +478,8 @@ static inline int divFloor(int x, int y) {
 	return x / y - (x % y != 0 && quotientNegative);
 }
 
-glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, int x, int y, int z, const glm::ivec3& pivot) const {
-	if (!_foundSceneGraph) {
+glm::ivec3 VoxFormat::calcTransform(State& state, const VoxTransform& t, int x, int y, int z, const glm::ivec3& pivot) const {
+	if (!state._foundSceneGraph) {
 		return glm::ivec3(x, y, z);
 	}
 	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - pivot;
@@ -497,23 +498,23 @@ glm::ivec3 VoxFormat::calcTransform(const VoxTransform& t, int x, int y, int z, 
 //                       | read them first and then assemble as (x, z, y) for Y-up
 //                       | coordinate system.
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_XYZI(io::SeekableReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
+bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
 	uint32_t numVoxels;
 	wrap(stream.readInt(numVoxels))
 	Log::debug("Found voxel chunk with %u voxels", numVoxels);
-	if (_regions.empty() || _volumeIdx >= (uint32_t)_regions.size()) {
+	if (state._regions.empty() || state._volumeIdx >= (uint32_t)state._regions.size()) {
 		Log::error("Invalid XYZI chunk without previous SIZE chunk");
 		return false;
 	}
 
-	const voxel::Region& region = _regions[_volumeIdx];
+	const voxel::Region& region = state._regions[state._volumeIdx];
 	const glm::uvec3 size(region.getDimensionsInVoxels());
 	const glm::ivec3 pivot = glm::ivec3(size.x - 1, size.z - 1, size.y - 1);
 	const glm::ivec3& rmins = region.getLowerCorner();
 	const glm::ivec3& rmaxs = region.getUpperCorner();
-	const VoxTransform& finalTransform = calculateTransform(_volumeIdx);
-	const glm::ivec3& tmins = calcTransform(finalTransform, rmins.x, rmins.z, rmins.y, pivot);
-	const glm::ivec3& tmaxs = calcTransform(finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
+	const VoxTransform& finalTransform = calculateTransform(state, state._volumeIdx);
+	const glm::ivec3& tmins = calcTransform(state, finalTransform, rmins.x, rmins.z, rmins.y, pivot);
+	const glm::ivec3& tmaxs = calcTransform(state, finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
 	const glm::ivec3 mins = glm::min(tmins, tmaxs);
 	const glm::ivec3 maxs = glm::max(tmins, tmaxs);
 	Region translatedRegion{mins.x, mins.z, mins.y, maxs.x, maxs.z, maxs.y};
@@ -536,7 +537,7 @@ bool VoxFormat::loadChunk_XYZI(io::SeekableReadStream& stream, const ChunkHeader
 		const voxel::Voxel& voxel = voxel::createVoxel(voxelType, index);
 		// we have to flip the axis here
 		if (applyTransformation) {
-			const glm::ivec3 pos = calcTransform(finalTransform, x, y, z, pivot);
+			const glm::ivec3 pos = calcTransform(state, finalTransform, x, y, z, pivot);
 			if (volume->setVoxel(pos.x, pos.z, pos.y, voxel)) {
 				++volumeVoxelSet;
 			}
@@ -546,17 +547,17 @@ bool VoxFormat::loadChunk_XYZI(io::SeekableReadStream& stream, const ChunkHeader
 			}
 		}
 	}
-	Log::info("Loaded layer %i with %i voxels (%i)", _volumeIdx, numVoxels, volumeVoxelSet);
-	if (volumes[_volumeIdx].volume != nullptr) {
-		delete volumes[_volumeIdx].volume;
+	Log::info("Loaded layer %i with %i voxels (%i)", state._volumeIdx, numVoxels, volumeVoxelSet);
+	if (volumes[state._volumeIdx].volume != nullptr) {
+		delete volumes[state._volumeIdx].volume;
 	}
-	volumes[_volumeIdx].volume = volume;
-	volumes[_volumeIdx].pivot = translatedRegion.getCenter();
-	++_volumeIdx;
+	volumes[state._volumeIdx].volume = volume;
+	volumes[state._volumeIdx].pivot = translatedRegion.getCenter();
+	++state._volumeIdx;
 	return true;
 }
 
-bool VoxFormat::loadChunk_nSHP(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_nSHP(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
 	Log::debug("shape node: %u", nodeId);
@@ -570,17 +571,17 @@ bool VoxFormat::loadChunk_nSHP(io::SeekableReadStream& stream, const ChunkHeader
 	}
 	uint32_t modelId;
 	wrap(stream.readInt(modelId))
-	if (modelId >= _models.size()) {
-		Log::error("ModelId %i exceeds boundaries [%i,%i]", modelId, 0, (int)_models.size());
+	if (modelId >= state._models.size()) {
+		Log::error("ModelId %i exceeds boundaries [%i,%i]", modelId, 0, (int)state._models.size());
 		return false;
 	}
-	wrapBool(readAttributes(_models[modelId].attributes, stream))
-	_models[modelId].volumeIdx = modelId;
-	_models[modelId].nodeId = nodeId;
-	_models[modelId].nodeAttributes = nodeAttributes;
+	wrapBool(readAttributes(state._models[modelId].attributes, stream))
+	state._models[modelId].volumeIdx = modelId;
+	state._models[modelId].nodeId = nodeId;
+	state._models[modelId].nodeAttributes = nodeAttributes;
 	const SceneGraphNode sceneNode{modelId, SceneGraphNodeType::Shape, SceneGraphChildNodes(0)};
-	_sceneGraphMap.put(nodeId, sceneNode);
-	_leafNodes.push_back(nodeId);
+	state._sceneGraphMap.put(nodeId, sceneNode);
+	state._leafNodes.push_back(nodeId);
 	return true;
 }
 
@@ -590,8 +591,8 @@ bool VoxFormat::loadChunk_nSHP(io::SeekableReadStream& stream, const ChunkHeader
 // -------------------------------------------------------------------------------
 // 4        | int        | numModels : num of SIZE and XYZI chunks
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_PACK(io::SeekableReadStream& stream, const ChunkHeader& header) {
-	wrap(stream.readInt(_numModels))
+bool VoxFormat::loadChunk_PACK(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+	wrap(stream.readInt(state._numModels))
 	return true;
 }
 
@@ -627,7 +628,7 @@ bool VoxFormat::loadChunk_PACK(io::SeekableReadStream& stream, const ChunkHeader
 //                       | * need to map to real range
 //                       | * Plastic material only accepts {0.0, 1.0} for this version
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_MATT(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_MATT(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	// TODO: this is deprecated - MATL is the v2 version
 	uint32_t materialId;
 	wrap(stream.readInt(materialId))
@@ -647,7 +648,7 @@ bool VoxFormat::loadChunk_MATT(io::SeekableReadStream& stream, const ChunkHeader
 }
 
 // https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
-bool VoxFormat::loadChunk_LAYR(io::SeekableReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
+bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
 	uint32_t layerId;
 	wrap(stream.readInt(layerId))
 	Attributes attributes;
@@ -755,7 +756,7 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attribute
 
 // (_r : int8) ROTATION in STRING (i.e. "36")
 // (_t : int32x3) translation in STRING format separated by spaces (i.e. "-1 10 4"). The anchor for these translations is center of the box.
-bool VoxFormat::loadChunk_nTRN(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
 	Log::debug("transform node: %u", nodeId);
@@ -781,17 +782,17 @@ bool VoxFormat::loadChunk_nTRN(io::SeekableReadStream& stream, const ChunkHeader
 
 	SceneGraphChildNodes child(1);
 	child[0] = childNodeId;
-	const uint32_t arrayIdx = (uint32_t)_transforms.size();
+	const uint32_t arrayIdx = (uint32_t)state._transforms.size();
 	const SceneGraphNode sceneNode{arrayIdx, SceneGraphNodeType::Transform, child};
 	Log::debug("transform child node id: %u, arrayIdx: %u", sceneNode.childNodeIds[0], arrayIdx);
-	_sceneGraphMap.put(nodeId, sceneNode);
-	_transforms.push_back(transform);
-	_parentNodes.put(childNodeId, nodeId);
+	state._sceneGraphMap.put(nodeId, sceneNode);
+	state._transforms.push_back(transform);
+	state._parentNodes.put(childNodeId, nodeId);
 
 	return true;
 }
 
-bool VoxFormat::loadChunk_nGRP(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_nGRP(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readInt(nodeId))
 	Log::debug("group node: %u", nodeId);
@@ -805,14 +806,14 @@ bool VoxFormat::loadChunk_nGRP(io::SeekableReadStream& stream, const ChunkHeader
 		uint32_t child;
 		wrap(stream.readInt(child))
 		children.push_back((child));
-		_parentNodes.put(child, nodeId);
+		state._parentNodes.put(child, nodeId);
 	}
 	const SceneGraphNode sceneNode{0, SceneGraphNodeType::Group, children};
-	_sceneGraphMap.put(nodeId, sceneNode);
+	state._sceneGraphMap.put(nodeId, sceneNode);
 	return true;
 }
 
-bool VoxFormat::loadChunk_rCAM(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_rCAM(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	uint32_t cameraId;
 	wrap(stream.readInt(cameraId))
 	Attributes cameraAttributes;
@@ -828,7 +829,7 @@ bool VoxFormat::loadChunk_rCAM(io::SeekableReadStream& stream, const ChunkHeader
 
 // the rendering setting are not open yet because they are changing frequently.
 // But you can still read it since it is just in the DICT format.
-bool VoxFormat::loadChunk_rOBJ(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_rOBJ(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	Attributes attributes;
 	wrapBool(readAttributes(attributes, stream))
 	// _type => _setting
@@ -908,7 +909,7 @@ bool VoxFormat::loadChunk_rOBJ(io::SeekableReadStream& stream, const ChunkHeader
 	return true;
 }
 
-bool VoxFormat::loadChunk_MATL(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_MATL(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	uint32_t materialId;
 	wrap(stream.readInt(materialId))
 	Attributes materialAttributes;
@@ -929,7 +930,7 @@ bool VoxFormat::loadChunk_MATL(io::SeekableReadStream& stream, const ChunkHeader
 
 // Represents the palette "index" map
 // TODO: take this into account while mapping the colors - see _palette member
-bool VoxFormat::loadChunk_IMAP(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_IMAP(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	for (int i = 0; i < 256; i++) {
 		uint8_t paletteIndex;
 		wrap(stream.readByte(paletteIndex))
@@ -938,7 +939,7 @@ bool VoxFormat::loadChunk_IMAP(io::SeekableReadStream& stream, const ChunkHeader
 }
 
 // Contains all color type names
-bool VoxFormat::loadChunk_NOTE(io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_NOTE(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
 	uint32_t numColorNames;
 	wrap(stream.readInt(numColorNames))
 	for (uint32_t i = 0; i < numColorNames; ++i) {
@@ -960,59 +961,59 @@ bool VoxFormat::loadChunk_NOTE(io::SeekableReadStream& stream, const ChunkHeader
 	return true;
 }
 
-bool VoxFormat::loadFirstChunks(io::SeekableReadStream& stream) {
+bool VoxFormat::loadFirstChunks(State &state, io::SeekableReadStream& stream) {
 	do {
 		ChunkHeader header;
 		wrapBool(readChunkHeader(stream, header))
 		switch (header.chunkId) {
 		case FourCC('M','A','T','L'):
-			wrapBool(loadChunk_MATL(stream, header))
+			wrapBool(loadChunk_MATL(state, stream, header))
 			break;
 		case FourCC('M','A','T','T'):
-			wrapBool(loadChunk_MATT(stream, header))
+			wrapBool(loadChunk_MATT(state, stream, header))
 			break;
 		case FourCC('P','A','C','K'):
-			wrapBool(loadChunk_PACK(stream, header))
+			wrapBool(loadChunk_PACK(state, stream, header))
 			break;
 		case FourCC('R','G','B','A'):
-			wrapBool(loadChunk_RGBA(stream, header))
+			wrapBool(loadChunk_RGBA(state, stream, header))
 			break;
 		case FourCC('I','M','A','P'):
-			wrapBool(loadChunk_IMAP(stream, header))
+			wrapBool(loadChunk_IMAP(state, stream, header))
 			break;
 		case FourCC('N','O','T','E'):
-			wrapBool(loadChunk_NOTE(stream, header))
+			wrapBool(loadChunk_NOTE(state, stream, header))
 			break;
 		case FourCC('r','C','A','M'):
-			wrapBool(loadChunk_rCAM(stream, header))
+			wrapBool(loadChunk_rCAM(state, stream, header))
 			break;
 		case FourCC('r','O','B','J'):
-			wrapBool(loadChunk_rOBJ(stream, header))
+			wrapBool(loadChunk_rOBJ(state, stream, header))
 			break;
 		case FourCC('S','I','Z','E'):
-			wrapBool(loadChunk_SIZE(stream, header))
+			wrapBool(loadChunk_SIZE(state, stream, header))
 			break;
 		}
 		wrap(stream.seek(header.nextChunkPos))
 	} while (stream.remaining() > 0);
 
-	_models.clear();
-	_models.resize(_regions.size());
+	state._models.clear();
+	state._models.resize(state._regions.size());
 
 	return true;
 }
 
-bool VoxFormat::loadSecondChunks(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
-	volumes.resize(_regions.size());
+bool VoxFormat::loadSecondChunks(State &state, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+	volumes.resize(state._regions.size());
 	do {
 		ChunkHeader header;
 		wrapBool(readChunkHeader(stream, header));
 		switch (header.chunkId) {
 		case FourCC('L','A','Y','R'):
-			wrapBool(loadChunk_LAYR(stream, header, volumes))
+			wrapBool(loadChunk_LAYR(state, stream, header, volumes))
 			break;
 		case FourCC('X','Y','Z','I'):
-			wrapBool(loadChunk_XYZI(stream, header, volumes))
+			wrapBool(loadChunk_XYZI(state, stream, header, volumes))
 			break;
 		}
 		wrap(stream.seek(header.nextChunkPos));
@@ -1037,23 +1038,23 @@ bool VoxFormat::loadSecondChunks(io::SeekableReadStream& stream, VoxelVolumes& v
 // T   T    //
 // |   |    //
 // S   S    //
-bool VoxFormat::loadSceneGraph(io::SeekableReadStream& stream) {
+bool VoxFormat::loadSceneGraph(State &state, io::SeekableReadStream& stream) {
 	do {
 		ChunkHeader header;
 		wrapBool(readChunkHeader(stream, header))
 
 		switch (header.chunkId) {
 		case FourCC('n','G','R','P'):
-			_foundSceneGraph = true;
-			wrapBool(loadChunk_nGRP(stream, header))
+			state._foundSceneGraph = true;
+			wrapBool(loadChunk_nGRP(state, stream, header))
 			break;
 		case FourCC('n','T','R','N'):
-			_foundSceneGraph = true;
-			wrapBool(loadChunk_nTRN(stream, header))
+			state._foundSceneGraph = true;
+			wrapBool(loadChunk_nTRN(state, stream, header))
 			break;
 		case FourCC('n','S','H','P'):
-			_foundSceneGraph = true;
-			wrapBool(loadChunk_nSHP(stream, header))
+			state._foundSceneGraph = true;
+			wrapBool(loadChunk_nSHP(state, stream, header))
 			break;
 		}
 		wrap(stream.seek(header.nextChunkPos));
@@ -1062,18 +1063,18 @@ bool VoxFormat::loadSceneGraph(io::SeekableReadStream& stream) {
 	return true;
 }
 
-VoxFormat::VoxTransform VoxFormat::calculateTransform(uint32_t volumeIdx) const {
-	const NodeId nodeId = _models[volumeIdx].nodeId;
+VoxFormat::VoxTransform VoxFormat::calculateTransform(State &state, uint32_t volumeIdx) const {
+	const NodeId nodeId = state._models[volumeIdx].nodeId;
 	VoxTransform transform;
-	applyTransform(transform, nodeId);
+	applyTransform(state, transform, nodeId);
 	return transform;
 }
 
-bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId) const {
+bool VoxFormat::applyTransform(State &state, VoxTransform& transform, NodeId nodeId) const {
 	NodeId parent;
 	NodeId current = nodeId;
-	while (_parentNodes.get(current, parent)) {
-		wrapBool(applyTransform(transform, parent))
+	while (state._parentNodes.get(current, parent)) {
+		wrapBool(applyTransform(state, transform, parent))
 		current = parent;
 	}
 
@@ -1083,18 +1084,18 @@ bool VoxFormat::applyTransform(VoxTransform& transform, NodeId nodeId) const {
 	}
 
 	SceneGraphNode node;
-	if (!_sceneGraphMap.get(nodeId, node)) {
+	if (!state._sceneGraphMap.get(nodeId, node)) {
 		Log::debug("Could not find node %u", nodeId);
 		return false;
 	}
 
 	if (node.type == SceneGraphNodeType::Transform) {
-		if (node.arrayIdx >= _transforms.size()) {
+		if (node.arrayIdx >= state._transforms.size()) {
 			Log::error("Invalid transform array index found: %u", node.arrayIdx);
 			return false;
 		}
 
-		const VoxTransform& t = _transforms[node.arrayIdx];
+		const VoxTransform& t = state._transforms[node.arrayIdx];
 		transform.rotation = glm::normalize(t.rotation * transform.rotation);
 		transform.translation += t.rotation * glm::vec3(t.translation);
 		Log::debug("Apply translation for node %u (aidx: %u) %i:%i:%i",
@@ -1176,17 +1177,18 @@ bool VoxFormat::checkMainChunk(io::SeekableReadStream& stream) const {
 bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	reset();
 
+	State state;
 	wrapBool(checkVersionAndMagic(stream))
 	wrapBool(checkMainChunk(stream))
 
 	const int64_t resetPos = stream.pos();
-	wrapBool(loadFirstChunks(stream))
+	wrapBool(loadFirstChunks(state, stream))
 	stream.seek(resetPos);
 
-	wrapBool(loadSceneGraph(stream))
+	wrapBool(loadSceneGraph(state, stream))
 	stream.seek(resetPos);
 
-	wrapBool(loadSecondChunks(stream, volumes))
+	wrapBool(loadSecondChunks(state, stream, volumes))
 
 	return true;
 }
@@ -1199,12 +1201,13 @@ size_t VoxFormat::loadPalette(const core::String& filename, io::SeekableReadStre
 	wrapBool(checkVersionAndMagic(stream))
 	wrapBool(checkMainChunk(stream))
 
+	State state;
 	do {
 		ChunkHeader header;
 		wrapBool(readChunkHeader(stream, header))
 		switch (header.chunkId) {
 		case FourCC('R','G','B','A'):
-			wrapBool(loadChunk_RGBA(stream, header))
+			wrapBool(loadChunk_RGBA(state, stream, header))
 			break;
 		}
 		wrap(stream.seek(header.nextChunkPos))
@@ -1215,13 +1218,6 @@ size_t VoxFormat::loadPalette(const core::String& filename, io::SeekableReadStre
 
 void VoxFormat::reset() {
 	initPalette();
-	_regions.clear();
-	_models.clear();
-	_sceneGraphMap.clear();
-	_transforms.clear();
-	_volumeIdx = 0;
-	_chunks = 0;
-	_foundSceneGraph = false;
 }
 
 #undef wrap

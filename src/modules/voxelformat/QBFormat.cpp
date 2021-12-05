@@ -161,11 +161,11 @@ bool QBFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filen
 	return true;
 }
 
-bool QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel) {
+bool QBFormat::setVoxel(State& state, voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel) {
 	const int32_t fx = offset.x + x;
 	const int32_t fy = offset.y + y;
 	const int32_t fz = offset.z + z;
-	Log::trace("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)_zAxisOrientation);
+	Log::trace("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)state._zAxisOrientation);
 	const voxel::Region& region = volume->region();
 	if (!region.containsPoint(glm::ivec3(fx, fy, fz))) {
 		const glm::ivec3& mins = region.getLowerCorner();
@@ -178,7 +178,7 @@ bool QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32
 	return true;
 }
 
-voxel::Voxel QBFormat::getVoxel(io::SeekableReadStream& stream) {
+voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	uint8_t red;
 	uint8_t green;
 	uint8_t blue;
@@ -192,7 +192,7 @@ voxel::Voxel QBFormat::getVoxel(io::SeekableReadStream& stream) {
 		return voxel::Voxel();
 	}
 	glm::vec4 color(0.0f);
-	if (_colorFormat == ColorFormat::RGBA) {
+	if (state._colorFormat == ColorFormat::RGBA) {
 		color.r = (float)red / 255.0f;
 		color.b = (float)blue / 255.0f;
 	} else {
@@ -209,7 +209,7 @@ voxel::Voxel QBFormat::getVoxel(io::SeekableReadStream& stream) {
 	return voxel::createVoxel(voxelType, index);
 }
 
-bool QBFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	char name[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readByte(nameLength));
@@ -257,13 +257,13 @@ bool QBFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes)
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
 	volumes.push_back(VoxelVolume(v, name, true));
-	if (_compressed == Compression::None) {
+	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
-					const voxel::Voxel& voxel = getVoxel(stream);
-					if (!setVoxel(v, x, y, z, offset, voxel)) {
+					const voxel::Voxel& voxel = getVoxel(state, stream);
+					if (!setVoxel(state, v, x, y, z, offset, voxel)) {
 						return false;
 					}
 				}
@@ -296,11 +296,11 @@ bool QBFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes)
 				Log::error("Max RLE count exceeded: %i", (int)count);
 				return false;
 			}
-			const voxel::Voxel& voxel = getVoxel(stream);
+			const voxel::Voxel& voxel = getVoxel(state, stream);
 			for (uint32_t j = 0; j < count; ++j) {
 				const uint32_t x = (index + j) % size.x;
 				const uint32_t y = (index + j) / size.x;
-				if (!setVoxel(v, x, y, z, offset, voxel)) {
+				if (!setVoxel(state, v, x, y, z, offset, voxel)) {
 					return false;
 				}
 			}
@@ -313,34 +313,35 @@ bool QBFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes)
 }
 
 bool QBFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
-	wrap(stream.readInt(_version))
+	State state;
+	wrap(stream.readInt(state._version))
 	uint32_t colorFormat;
 	wrap(stream.readInt(colorFormat))
-	_colorFormat = (ColorFormat)colorFormat;
+	state._colorFormat = (ColorFormat)colorFormat;
 	uint32_t zAxisOrientation;
 	wrap(stream.readInt(zAxisOrientation))
-	_zAxisOrientation = ZAxisOrientation::Right; //(ZAxisOrientation)zAxisOrientation;
+	state._zAxisOrientation = ZAxisOrientation::Right; //(ZAxisOrientation)zAxisOrientation;
 	uint32_t compressed;
 	wrap(stream.readInt(compressed))
-	_compressed = (Compression)compressed;
+	state._compressed = (Compression)compressed;
 	uint32_t visibilityMaskEncoded;
 	wrap(stream.readInt(visibilityMaskEncoded))
-	_visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
+	state._visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
 
 	uint32_t numMatrices;
 	wrap(stream.readInt(numMatrices))
 
-	Log::debug("Version: %u", _version);
-	Log::debug("ColorFormat: %u", core::enumVal(_colorFormat));
-	Log::debug("ZAxisOrientation: %u", core::enumVal(_zAxisOrientation));
-	Log::debug("Compressed: %u", core::enumVal(_compressed));
-	Log::debug("VisibilityMaskEncoded: %u", core::enumVal(_visibilityMaskEncoded));
+	Log::debug("Version: %u", state._version);
+	Log::debug("ColorFormat: %u", core::enumVal(state._colorFormat));
+	Log::debug("ZAxisOrientation: %u", core::enumVal(state._zAxisOrientation));
+	Log::debug("Compressed: %u", core::enumVal(state._compressed));
+	Log::debug("VisibilityMaskEncoded: %u", core::enumVal(state._visibilityMaskEncoded));
 	Log::debug("NumMatrices: %u", numMatrices);
 
 	volumes.reserve(numMatrices);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
-		if (!loadMatrix(stream, volumes)) {
+		if (!loadMatrix(state, stream, volumes)) {
 			break;
 		}
 	}

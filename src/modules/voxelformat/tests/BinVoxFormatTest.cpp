@@ -16,4 +16,9 @@ TEST_F(BinVoxFormatTest, testLoad) {
 	ASSERT_NE(nullptr, volume) << "Could not load binvox file";
 }
 
+TEST_F(BinVoxFormatTest, testSaveSmallVoxel) {
+	BinVoxFormat f;
+	testSaveLoadVoxel("bv-smallvolumesavetest.binvox", &f);
+}
+
 }

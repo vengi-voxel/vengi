@@ -32,19 +32,7 @@ TEST_F(QEFFormatTest, testLoadRGB) {
 
 TEST_F(QEFFormatTest, testSaveSmallVoxel) {
 	QEFFormat f;
-	Region region(glm::ivec3(0), glm::ivec3(1));
-	RawVolume original(region);
-	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	ASSERT_TRUE(original.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 245)));
-	ASSERT_TRUE(original.setVoxel(0, 1, 1, createVoxel(VoxelType::Generic, 127)));
-	ASSERT_TRUE(original.setVoxel(0, 1, 0, createVoxel(VoxelType::Generic, 200)));
-	const io::FilePtr& file = open("qubicle-smallvolumesavetest.qef", io::FileMode::Write);
-	io::FileStream stream(file.get());
-	ASSERT_TRUE(f.save(&original, file->name(), stream));
-	f = QEFFormat();
-	std::unique_ptr<RawVolume> loaded(load("qubicle-smallvolumesavetest.qef", f));
-	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(original, *loaded);
+	testSaveLoadVoxel("qubicle-smallvolumesavetest.qbt", &f);
 }
 
 }

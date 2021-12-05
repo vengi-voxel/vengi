@@ -15,18 +15,20 @@ namespace voxel {
  */
 class BinVoxFormat : public Format {
 private:
-	uint32_t _version = 0u;
-	uint32_t _w = 0u;
-	uint32_t _h = 0u;
-	uint32_t _d = 0u;
-	uint32_t _size = 0u;
-	int _tx = 0;
-	int _ty = 0;
-	int _tz = 0;
-	float _scale = 0.0f;
+	struct State {
+		uint32_t _version = 0u;
+		uint32_t _w = 0u;
+		uint32_t _h = 0u;
+		uint32_t _d = 0u;
+		uint32_t _size = 0u;
+		int _tx = 0;
+		int _ty = 0;
+		int _tz = 0;
+		float _scale = 0.0f;
+	};
 
-	bool readData(const core::String& filename, const uint8_t *buf, const int64_t bufSize, const size_t offset, VoxelVolumes& volumes);
-	bool readHeader(const core::String& header);
+	bool readData(State& state, const core::String& filename, const uint8_t *buf, const int64_t bufSize, const size_t offset, VoxelVolumes& volumes);
+	bool readHeader(State& state, const core::String& header);
 public:
 	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;

@@ -45,6 +45,10 @@ protected:
 		EXPECT_EQ(197, volume->voxel( 9,  0, 19).getColor());
 	}
 
+	void testSaveMultipleLayers(const core::String& filename, voxel::Format* format);
+
+	void testSaveLoadVoxel(const core::String& filename, voxel::Format* format);
+
 	io::FilePtr open(const core::String& filename, io::FileMode mode = io::FileMode::Read) {
 		const io::FilePtr& file = io::filesystem()->open(core::String(filename), mode);
 		return file;

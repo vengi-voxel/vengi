@@ -23,4 +23,9 @@ TEST_F(CubFormatTest, testLoadRGB) {
 	testRGB(volume.get());
 }
 
+TEST_F(CubFormatTest, testSaveSmallVoxel) {
+	CubFormat f;
+	testSaveLoadVoxel("cw-smallvolumesavetest.cub", &f);
+}
+
 }

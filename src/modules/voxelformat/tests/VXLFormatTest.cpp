@@ -41,4 +41,9 @@ TEST_F(VXLFormatTest, testSave) {
 	delete loadedVolume;
 }
 
+TEST_F(VXLFormatTest, testSaveSmallVoxel) {
+	VXLFormat f;
+	testSaveLoadVoxel("cc-smallvolumesavetest.vxl", &f);
+}
+
 }

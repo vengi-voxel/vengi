@@ -15,8 +15,6 @@ namespace voxel {
  */
 class QBCLFormat : public Format {
 private:
-	uint32_t _version;
-
 	bool readMatrix(io::SeekableReadStream &stream);
 	bool readModel(io::SeekableReadStream &stream);
 	bool readCompound(io::SeekableReadStream &stream);

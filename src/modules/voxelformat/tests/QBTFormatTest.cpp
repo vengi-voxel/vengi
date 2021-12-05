@@ -18,23 +18,6 @@ TEST_F(QBTFormatTest, testLoad) {
 	ASSERT_NE(nullptr, volume) << "Could not load qbt file";
 }
 
-TEST_F(QBTFormatTest, testSaveSmallVoxel) {
-	QBTFormat f;
-	Region region(glm::ivec3(0), glm::ivec3(1));
-	RawVolume original(region);
-	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	ASSERT_TRUE(original.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 245)));
-	ASSERT_TRUE(original.setVoxel(0, 1, 1, createVoxel(VoxelType::Generic, 127)));
-	ASSERT_TRUE(original.setVoxel(0, 1, 0, createVoxel(VoxelType::Generic, 200)));
-	const io::FilePtr &file = open("qubicle-smallvolumesavetest.qbt", io::FileMode::Write);
-	io::FileStream stream(file.get());
-	ASSERT_TRUE(f.save(&original, file->name(), stream));
-	f = QBTFormat();
-	std::unique_ptr<RawVolume> loaded(load("qubicle-smallvolumesavetest.qbt", f));
-	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(original, *loaded);
-}
-
 TEST_F(QBTFormatTest, testSaveSingleVoxel) {
 	QBTFormat f;
 	Region region(glm::ivec3(0), glm::ivec3(0));
@@ -49,32 +32,14 @@ TEST_F(QBTFormatTest, testSaveSingleVoxel) {
 	EXPECT_EQ(original, *loaded);
 }
 
+TEST_F(QBTFormatTest, testSaveSmallVoxel) {
+	QBTFormat f;
+	testSaveLoadVoxel("qubicle-smallvolumesavetest.qbt", &f);
+}
+
 TEST_F(QBTFormatTest, testSaveMultipleLayers) {
 	QBTFormat f;
-	Region region(glm::ivec3(0), glm::ivec3(0));
-	RawVolume layer1(region);
-	RawVolume layer2(region);
-	RawVolume layer3(region);
-	RawVolume layer4(region);
-	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	VoxelVolumes volumes;
-	volumes.push_back(VoxelVolume(&layer1));
-	volumes.push_back(VoxelVolume(&layer2));
-	volumes.push_back(VoxelVolume(&layer3));
-	volumes.push_back(VoxelVolume(&layer4));
-	const io::FilePtr &sfile = open("qubicle-multiplelayersavetest.qbt", io::FileMode::Write);
-	io::FileStream sstream(sfile.get());
-	ASSERT_TRUE(f.saveGroups(volumes, sfile->name(), sstream));
-	f = QBTFormat();
-	VoxelVolumes volumesLoad;
-	const io::FilePtr &file = open("qubicle-multiplelayersavetest.qbt");
-	io::FileStream stream(file.get());
-	EXPECT_TRUE(f.loadGroups(file->name(), stream, volumesLoad));
-	EXPECT_EQ(volumesLoad.size(), volumes.size());
-	voxelformat::clearVolumes(volumesLoad);
+	testSaveMultipleLayers("qubicle-multiplelayersavetest.qbt", &f);
 }
 
 TEST_F(QBTFormatTest, testSave) {

@@ -105,7 +105,8 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 		Log::error("Invalid magic found - no qbcl file");
 		return false;
 	}
-	wrap(stream.readInt(_version))
+	uint32_t version;
+	wrapImg(stream.readInt(version))
 	uint32_t flags;
 	wrap(stream.readInt(flags))
 	uint32_t thumbWidth;
@@ -171,7 +172,8 @@ image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::See
 		Log::error("Invalid magic found - no qbcl file");
 		return image::ImagePtr();
 	}
-	wrapImg(stream.readInt(_version))
+	uint32_t version;
+	wrapImg(stream.readInt(version))
 	uint32_t flags;
 	wrapImg(stream.readInt(flags))
 	uint32_t thumbWidth;

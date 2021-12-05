@@ -79,6 +79,8 @@ private:
 	} _offsets[SECTOR_INTS];
 	uint32_t _chunkTimestamps[SECTOR_INTS];
 
+	void reset();
+
 	bool skip(io::SeekableReadStream &stream, TagId id);
 	bool getNext(io::SeekableReadStream &stream, NamedBinaryTag& nbt);
 
@@ -88,6 +90,7 @@ private:
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override {
+		reset();
 		return false;
 	}
 };

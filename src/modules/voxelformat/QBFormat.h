@@ -15,22 +15,18 @@ namespace voxel {
  */
 class QBFormat : public Format {
 private:
-	uint32_t _version;
 	enum class ColorFormat : uint32_t {
 		RGBA = 0,
 		BGRA = 1
 	};
-	ColorFormat _colorFormat;
 	enum class ZAxisOrientation : uint32_t {
 		Left = 0,
 		Right = 1
 	};
-	ZAxisOrientation _zAxisOrientation;
 	enum class Compression : uint32_t {
 		None = 0,
 		RLE = 1
 	};
-	Compression _compressed;
 
 	// If set to 0 the A value of RGBA or BGRA is either 0 (invisble voxel) or 255 (visible voxel).
 	// If set to 1 the visibility mask of each voxel is encoded into the A value telling your software
@@ -39,7 +35,13 @@ private:
 		AlphaChannelVisibleByValue,
 		AlphaChannelVisibleSidesEncoded
 	};
-	VisibilityMask _visibilityMaskEncoded;
+	struct State {
+		uint32_t _version;
+		ColorFormat _colorFormat;
+		ZAxisOrientation _zAxisOrientation;
+		Compression _compressed;
+		VisibilityMask _visibilityMaskEncoded;
+	};
 	// left shift values for the vis mask for the single faces
 	enum class VisMaskSides : uint8_t {
 		Invisble,
@@ -51,9 +53,9 @@ private:
 		Back
 	};
 
-	bool setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel);
-	voxel::Voxel getVoxel(io::SeekableReadStream& stream);
-	bool loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes);
+	bool setVoxel(State& state, voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel);
+	voxel::Voxel getVoxel(State& state, io::SeekableReadStream& stream);
+	bool loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVolumes& volumes);
 	bool loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes);
 
 	bool saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& volume) const;
