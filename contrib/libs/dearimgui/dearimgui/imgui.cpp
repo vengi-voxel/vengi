@@ -959,7 +959,8 @@ static bool             UpdateWindowManualResize(ImGuiWindow* window, const ImVe
 static void             RenderWindowOuterBorders(ImGuiWindow* window);
 static void             RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar_rect, bool title_bar_is_highlight, bool handle_borders_and_resize_grips, int resize_grip_count, const ImU32 resize_grip_col[4], float resize_grip_draw_size);
 static void             RenderWindowTitleBarContents(ImGuiWindow* window, const ImRect& title_bar_rect, const char* name, bool* p_open);
-static void             EndFrameDrawDimmedBackgrounds();
+static void             RenderDimmedBackgroundBehindWindow(ImGuiWindow* window, ImU32 col);
+static void             RenderDimmedBackgrounds();
 
 // Viewports
 const ImGuiID           IMGUI_VIEWPORT_DEFAULT_ID = 0x11111111; // Using an arbitrary constant instead of e.g. ImHashStr("ViewportDefault", 0); so it's easier to spot in the debugger. The exact value doesn't matter.
@@ -1982,7 +1983,7 @@ void ImGuiStorage::BuildSortByKey()
 {
     struct StaticFunc
     {
-        static int IMGUI_CDECL PairCompareByID(const void* lhs, const void* rhs)
+        static int IMGUI_CDECL PairComparerByID(const void* lhs, const void* rhs)
         {
             // We can't just do a subtraction because qsort uses signed integers and subtracting our ID doesn't play well with that.
             if (((const ImGuiStoragePair*)lhs)->key > ((const ImGuiStoragePair*)rhs)->key) return +1;
@@ -1990,8 +1991,7 @@ void ImGuiStorage::BuildSortByKey()
             return 0;
         }
     };
-    if (Data.Size > 1)
-        ImQsort(Data.Data, (size_t)Data.Size, sizeof(ImGuiStoragePair), StaticFunc::PairCompareByID);
+    ImQsort(Data.Data, (size_t)Data.Size, sizeof(ImGuiStoragePair), StaticFunc::PairComparerByID);
 }
 
 int ImGuiStorage::GetInt(ImGuiID key, int default_val) const
@@ -3092,6 +3092,7 @@ ImGuiWindow::ImGuiWindow(ImGuiContext* context, const char* name) : DrawListInst
     DrawList = &DrawListInst;
     DrawList->_Data = &context->DrawListSharedData;
     DrawList->_OwnerName = Name;
+    IM_PLACEMENT_NEW(&WindowClass) ImGuiWindowClass();
 }
 
 ImGuiWindow::~ImGuiWindow()
@@ -3168,7 +3169,7 @@ ImGuiID ImGuiWindow::GetIDNoKeepAlive(int n)
 ImGuiID ImGuiWindow::GetIDFromRectangle(const ImRect& r_abs)
 {
     ImGuiID seed = IDStack.back();
-    const int r_rel[4] = { (int)(r_abs.Min.x - Pos.x), (int)(r_abs.Min.y - Pos.y), (int)(r_abs.Max.x - Pos.x), (int)(r_abs.Max.y - Pos.y) };
+    ImRect r_rel = ImGui::WindowRectAbsToRel(this, r_abs);
     ImGuiID id = ImHashData(&r_rel, sizeof(r_rel), seed);
     ImGui::KeepAliveID(id);
     return id;
@@ -3331,42 +3332,46 @@ bool ImGui::IsItemHovered(ImGuiHoveredFlags flags)
     {
         if ((g.LastItemData.InFlags & ImGuiItemFlags_Disabled) && !(flags & ImGuiHoveredFlags_AllowWhenDisabled))
             return false;
-        return IsItemFocused();
+        if (!IsItemFocused())
+            return false;
+    }
+    else
+    {
+        // Test for bounding box overlap, as updated as ItemAdd()
+        ImGuiItemStatusFlags status_flags = g.LastItemData.StatusFlags;
+        if (!(status_flags & ImGuiItemStatusFlags_HoveredRect))
+            return false;
+        IM_ASSERT((flags & (ImGuiHoveredFlags_AnyWindow | ImGuiHoveredFlags_RootWindow | ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_NoPopupHierarchy | ImGuiHoveredFlags_DockHierarchy)) == 0);   // Flags not supported by this function
+
+        // Test if we are hovering the right window (our window could be behind another window)
+        // [2021/03/02] Reworked / reverted the revert, finally. Note we want e.g. BeginGroup/ItemAdd/EndGroup to work as well. (#3851)
+        // [2017/10/16] Reverted commit 344d48be3 and testing RootWindow instead. I believe it is correct to NOT test for RootWindow but this leaves us unable
+        // to use IsItemHovered() after EndChild() itself. Until a solution is found I believe reverting to the test from 2017/09/27 is safe since this was
+        // the test that has been running for a long while.
+        if (g.HoveredWindow != window && (status_flags & ImGuiItemStatusFlags_HoveredWindow) == 0)
+            if ((flags & ImGuiHoveredFlags_AllowWhenOverlapped) == 0)
+                return false;
+
+        // Test if another item is active (e.g. being dragged)
+        if ((flags & ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) == 0)
+            if (g.ActiveId != 0 && g.ActiveId != g.LastItemData.ID && !g.ActiveIdAllowOverlap && g.ActiveId != window->MoveId)
+                return false;
+
+        // Test if interactions on this window are blocked by an active popup or modal.
+        // The ImGuiHoveredFlags_AllowWhenBlockedByPopup flag will be tested here.
+        if (!IsWindowContentHoverable(window, flags))
+            return false;
+
+        // Test if the item is disabled
+        if ((g.LastItemData.InFlags & ImGuiItemFlags_Disabled) && !(flags & ImGuiHoveredFlags_AllowWhenDisabled))
+            return false;
+
+        // Special handling for calling after Begin() which represent the title bar or tab.
+        // When the window is collapsed (SkipItems==true) that last item will never be overwritten so we need to detect the case.
+        if ((g.LastItemData.ID == window->ID || g.LastItemData.ID == window->MoveId) && window->WriteAccessed)
+            return false;
     }
 
-    // Test for bounding box overlap, as updated as ItemAdd()
-    ImGuiItemStatusFlags status_flags = g.LastItemData.StatusFlags;
-    if (!(status_flags & ImGuiItemStatusFlags_HoveredRect))
-        return false;
-    IM_ASSERT((flags & (ImGuiHoveredFlags_AnyWindow | ImGuiHoveredFlags_RootWindow | ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_NoPopupHierarchy | ImGuiHoveredFlags_DockHierarchy)) == 0);   // Flags not supported by this function
-
-    // Test if we are hovering the right window (our window could be behind another window)
-    // [2021/03/02] Reworked / reverted the revert, finally. Note we want e.g. BeginGroup/ItemAdd/EndGroup to work as well. (#3851)
-    // [2017/10/16] Reverted commit 344d48be3 and testing RootWindow instead. I believe it is correct to NOT test for RootWindow but this leaves us unable
-    // to use IsItemHovered() after EndChild() itself. Until a solution is found I believe reverting to the test from 2017/09/27 is safe since this was
-    // the test that has been running for a long while.
-    if (g.HoveredWindow != window && (status_flags & ImGuiItemStatusFlags_HoveredWindow) == 0)
-        if ((flags & ImGuiHoveredFlags_AllowWhenOverlapped) == 0)
-            return false;
-
-    // Test if another item is active (e.g. being dragged)
-    if ((flags & ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) == 0)
-        if (g.ActiveId != 0 && g.ActiveId != g.LastItemData.ID && !g.ActiveIdAllowOverlap && g.ActiveId != window->MoveId)
-            return false;
-
-    // Test if interactions on this window are blocked by an active popup or modal.
-    // The ImGuiHoveredFlags_AllowWhenBlockedByPopup flag will be tested here.
-    if (!IsWindowContentHoverable(window, flags))
-        return false;
-
-    // Test if the item is disabled
-    if ((g.LastItemData.InFlags & ImGuiItemFlags_Disabled) && !(flags & ImGuiHoveredFlags_AllowWhenDisabled))
-        return false;
-
-    // Special handling for calling after Begin() which represent the title bar or tab.
-    // When the window is collapsed (SkipItems==true) that last item will never be overwritten so we need to detect the case.
-    if ((g.LastItemData.ID == window->ID || g.LastItemData.ID == window->MoveId) && window->WriteAccessed)
-        return false;
     return true;
 }
 
@@ -3831,7 +3836,7 @@ void ImGui::UpdateMouseMovingWindowEndFrame()
         // Find the top-most window between HoveredWindow and the top-most Modal Window.
         // This is where we can trim the popup stack.
         ImGuiWindow* modal = GetTopMostPopupModal();
-        bool hovered_window_above_modal = g.HoveredWindow && IsWindowAbove(g.HoveredWindow, modal);
+        bool hovered_window_above_modal = g.HoveredWindow && (modal == NULL || IsWindowAbove(g.HoveredWindow, modal));
         ClosePopupsOverWindow(hovered_window_above_modal ? g.HoveredWindow : modal, true);
     }
 }
@@ -4473,8 +4478,7 @@ static void AddWindowToSortBuffer(ImVector<ImGuiWindow*>* out_sorted_windows, Im
     if (window->Active)
     {
         int count = window->DC.ChildWindows.Size;
-        if (count > 1)
-            ImQsort(window->DC.ChildWindows.Data, (size_t)count, sizeof(ImGuiWindow*), ChildWindowComparer);
+        ImQsort(window->DC.ChildWindows.Data, (size_t)count, sizeof(ImGuiWindow*), ChildWindowComparer);
         for (int i = 0; i < count; i++)
         {
             ImGuiWindow* child = window->DC.ChildWindows[i];
@@ -4525,6 +4529,8 @@ static void AddWindowToDrawData(ImGuiWindow* window, int layer)
     ImGuiContext& g = *GImGui;
     ImGuiViewportP* viewport = window->Viewport;
     g.IO.MetricsRenderWindows++;
+    if (window->Flags & ImGuiWindowFlags_DockNodeHost)
+        window->DrawList->ChannelsMerge();
     AddDrawListToDrawData(&viewport->DrawDataBuilder.Layers[layer], window->DrawList);
     for (int i = 0; i < window->DC.ChildWindows.Size; i++)
     {
@@ -4534,11 +4540,15 @@ static void AddWindowToDrawData(ImGuiWindow* window, int layer)
     }
 }
 
-// Layer is locked for the root window, however child windows may use a different viewport (e.g. extruding menu)
-static void AddRootWindowToDrawData(ImGuiWindow* window)
+static inline int GetWindowDisplayLayer(ImGuiWindow* window)
 {
-    int layer = (window->Flags & ImGuiWindowFlags_Tooltip) ? 1 : 0;
-    AddWindowToDrawData(window, layer);
+    return (window->Flags & ImGuiWindowFlags_Tooltip) ? 1 : 0;
+}
+
+// Layer is locked for the root window, however child windows may use a different viewport (e.g. extruding menu)
+static inline void AddRootWindowToDrawData(ImGuiWindow* window)
+{
+    AddWindowToDrawData(window, GetWindowDisplayLayer(window));
 }
 
 void ImDrawDataBuilder::FlattenIntoSingleLayer()
@@ -4614,58 +4624,86 @@ static ImGuiWindow* FindFrontMostVisibleChildWindow(ImGuiWindow* window)
     return window;
 }
 
-static void ImGui::EndFrameDrawDimmedBackgrounds()
+static void ImGui::RenderDimmedBackgroundBehindWindow(ImGuiWindow* window, ImU32 col)
+{
+    if ((col & IM_COL32_A_MASK) == 0)
+        return;
+
+    ImGuiViewportP* viewport = window->Viewport;
+    ImRect viewport_rect = viewport->GetMainRect();
+
+    // Draw behind window by moving the draw command at the FRONT of the draw list
+    {
+        ImDrawList* draw_list = window->RootWindowDockTree->DrawList;
+        draw_list->AddDrawCmd();
+        draw_list->PushClipRect(viewport_rect.Min - ImVec2(1, 1), viewport_rect.Max + ImVec2(1, 1), false); // Ensure ImDrawCmd are not merged
+        draw_list->AddRectFilled(viewport_rect.Min, viewport_rect.Max, col);
+        ImDrawCmd cmd = draw_list->CmdBuffer.back();
+        IM_ASSERT(cmd.ElemCount == 6);
+        draw_list->CmdBuffer.pop_back();
+        draw_list->CmdBuffer.push_front(cmd);
+    }
+
+    // Draw over sibling docking nodes in a same docking tree
+    if (window->RootWindow->DockIsActive)
+    {
+        ImDrawList* draw_list = FindFrontMostVisibleChildWindow(window->RootWindowDockTree)->DrawList;
+        draw_list->PushClipRect(viewport_rect.Min, viewport_rect.Max, false);
+        //if (window->RootWindowDockTree != window->RootWindow)
+        RenderRectFilledWithHole(draw_list, window->RootWindowDockTree->Rect(), window->RootWindow->Rect(), col, 0.0f);// window->RootWindowDockTree->WindowRounding);
+        draw_list->PopClipRect();
+    }
+}
+
+static void ImGui::RenderDimmedBackgrounds()
 {
     ImGuiContext& g = *GImGui;
-
-    // Draw modal whitening background on _other_ viewports than the one the modal is one
-    ImGuiWindow* modal_window = GetTopMostPopupModal();
+    ImGuiWindow* modal_window = GetTopMostAndVisiblePopupModal();
     const bool dim_bg_for_modal = (modal_window != NULL);
-    const bool dim_bg_for_window_list = (g.NavWindowingTargetAnim != NULL);
-    if (dim_bg_for_modal || dim_bg_for_window_list)
-        for (int viewport_n = 0; viewport_n < g.Viewports.Size; viewport_n++)
-        {
-            ImGuiViewportP* viewport = g.Viewports[viewport_n];
-            if (modal_window && viewport == modal_window->Viewport)
-                continue;
-            if (g.NavWindowingListWindow && viewport == g.NavWindowingListWindow->Viewport)
-                continue;
-            if (g.NavWindowingTargetAnim && viewport == g.NavWindowingTargetAnim->Viewport)
-                continue;
-            if (viewport->Window && modal_window && IsWindowAbove(viewport->Window, modal_window))
-                continue;
-            ImDrawList* draw_list = GetForegroundDrawList(viewport);
-            const ImU32 dim_bg_col = GetColorU32(dim_bg_for_modal ? ImGuiCol_ModalWindowDimBg : ImGuiCol_NavWindowingDimBg, g.DimBgRatio);
-            draw_list->AddRectFilled(viewport->Pos, viewport->Pos + viewport->Size, dim_bg_col);
-        }
+    const bool dim_bg_for_window_list = (g.NavWindowingTargetAnim != NULL && g.NavWindowingTargetAnim->Active);
+    if (!dim_bg_for_modal && !dim_bg_for_window_list)
+        return;
 
-    // Draw modal whitening background between CTRL-TAB list
-    if (dim_bg_for_window_list && g.NavWindowingTargetAnim->Active)
+    ImGuiViewport* viewports_already_dimmed[2] = { NULL, NULL };
+    if (dim_bg_for_modal)
     {
-        // Choose a draw list that will be front-most across all our children
-        // In the unlikely case that the window wasn't made active we can't rely on its drawlist and skip rendering all-together.
+        // Draw dimming behind modal
+        RenderDimmedBackgroundBehindWindow(modal_window, GetColorU32(ImGuiCol_ModalWindowDimBg, g.DimBgRatio));
+        viewports_already_dimmed[0] = modal_window->Viewport;
+    }
+    else if (dim_bg_for_window_list)
+    {
+        // Draw dimming behind CTRL+Tab target window and behind CTRL+Tab UI window
+        RenderDimmedBackgroundBehindWindow(g.NavWindowingTargetAnim, GetColorU32(ImGuiCol_NavWindowingDimBg, g.DimBgRatio));
+        if (g.NavWindowingListWindow != NULL && g.NavWindowingListWindow->Viewport != g.NavWindowingTargetAnim->Viewport)
+            RenderDimmedBackgroundBehindWindow(g.NavWindowingListWindow, GetColorU32(ImGuiCol_NavWindowingDimBg, g.DimBgRatio));
+        viewports_already_dimmed[0] = g.NavWindowingTargetAnim->Viewport;
+        viewports_already_dimmed[1] = g.NavWindowingListWindow ? g.NavWindowingListWindow->Viewport : NULL;
+
+        // Draw border around CTRL+Tab target window
         ImGuiWindow* window = g.NavWindowingTargetAnim;
-        ImDrawList* draw_list = FindFrontMostVisibleChildWindow(window->RootWindowDockTree)->DrawList;
-        draw_list->PushClipRectFullScreen();
-
-        // Docking: draw modal whitening background on other nodes of a same dock tree
-        // For CTRL+TAB within a docking node we need to render the dimming background in 8 steps
-        // (Because the root node renders the background in one shot, in order to avoid flickering when a child dock node is not submitted)
-        if (window->RootWindow->DockIsActive)
-            if (window->RootWindowDockTree != window->RootWindow)
-                RenderRectFilledWithHole(draw_list, window->RootWindowDockTree->Rect(), window->RootWindow->Rect(), GetColorU32(ImGuiCol_NavWindowingDimBg, g.DimBgRatio), g.Style.WindowRounding);
-
-        // Draw navigation selection/windowing rectangle border
-        float rounding = ImMax(window->WindowRounding, g.Style.WindowRounding);
+        ImGuiViewport* viewport = window->Viewport;
+        float distance = g.FontSize;
         ImRect bb = window->Rect();
-        bb.Expand(g.FontSize);
-        if (bb.Contains(window->Viewport->GetMainRect())) // If a window fits the entire viewport, adjust its highlight inward
-        {
-            bb.Expand(-g.FontSize - 1.0f);
-            rounding = window->WindowRounding;
-        }
-        draw_list->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_NavWindowingHighlight, g.NavWindowingHighlightAlpha), rounding, 0, 3.0f);
-        draw_list->PopClipRect();
+        bb.Expand(distance);
+        if (bb.GetWidth() >= viewport->Size.x && bb.GetHeight() >= viewport->Size.y)
+            bb.Expand(-distance - 1.0f); // If a window fits the entire viewport, adjust its highlight inward
+        window->DrawList->PushClipRect(viewport->Pos, viewport->Pos + viewport->Size);
+        window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_NavWindowingHighlight, g.NavWindowingHighlightAlpha), window->WindowRounding, 0, 3.0f);
+        window->DrawList->PopClipRect();
+    }
+
+    // Draw dimming background on _other_ viewports than the ones our windows are in
+    for (int viewport_n = 0; viewport_n < g.Viewports.Size; viewport_n++)
+    {
+        ImGuiViewportP* viewport = g.Viewports[viewport_n];
+        if (viewport == viewports_already_dimmed[0] || viewport == viewports_already_dimmed[1])
+            continue;
+        if (modal_window && viewport->Window && IsWindowAbove(viewport->Window, modal_window))
+            continue;
+        ImDrawList* draw_list = GetForegroundDrawList(viewport);
+        const ImU32 dim_bg_col = GetColorU32(dim_bg_for_modal ? ImGuiCol_ModalWindowDimBg : ImGuiCol_NavWindowingDimBg, g.DimBgRatio);
+        draw_list->AddRectFilled(viewport->Pos, viewport->Pos + viewport->Size, dim_bg_col);
     }
 }
 
@@ -4699,11 +4737,11 @@ void ImGui::EndFrame()
         g.CurrentWindow->Active = false;
     End();
 
-    // Draw modal whitening background on _other_ viewports than the one the modal is one
-    EndFrameDrawDimmedBackgrounds();
-
     // Update navigation: CTRL+Tab, wrap-around requests
     NavEndFrame();
+
+    // Update docking
+    DockContextEndFrame(&g);
 
     SetCurrentViewport(NULL, NULL);
 
@@ -4773,6 +4811,7 @@ void ImGui::Render()
 
     if (g.FrameCountEnded != g.FrameCount)
         EndFrame();
+    const bool first_render_of_frame = (g.FrameCountRendered != g.FrameCount);
     g.FrameCountRendered = g.FrameCount;
     g.IO.MetricsRenderWindows = 0;
 
@@ -4802,6 +4841,10 @@ void ImGui::Render()
         if (windows_to_render_top_most[n] && IsWindowActiveAndVisible(windows_to_render_top_most[n])) // NavWindowingTarget is always temporarily displayed as the top-most window
             AddRootWindowToDrawData(windows_to_render_top_most[n]);
 
+    // Draw modal/window whitening backgrounds
+    if (first_render_of_frame)
+        RenderDimmedBackgrounds();
+
     ImVec2 mouse_cursor_offset, mouse_cursor_size, mouse_cursor_uv[4];
     if (g.IO.MouseDrawCursor && g.MouseCursor != ImGuiMouseCursor_None)
         g.IO.Fonts->GetMouseCursorTexData(g.MouseCursor, &mouse_cursor_offset, &mouse_cursor_size, &mouse_cursor_uv[0], &mouse_cursor_uv[2]);
@@ -4815,7 +4858,7 @@ void ImGui::Render()
 
         // Draw software mouse cursor if requested by io.MouseDrawCursor flag
         // (note we scale cursor by current viewport/monitor, however Windows 10 for its own hardware cursor seems to be using a different scale factor)
-        if (mouse_cursor_size.x > 0.0f && mouse_cursor_size.y > 0.0f)
+        if (mouse_cursor_size.x > 0.0f && mouse_cursor_size.y > 0.0f && first_render_of_frame)
         {
             float scale = g.Style.MouseCursorScale * viewport->DpiScale;
             if (viewport->GetMainRect().Overlaps(ImRect(g.IO.MousePos, g.IO.MousePos + ImVec2(mouse_cursor_size.x + 2, mouse_cursor_size.y + 2) * scale)))
@@ -5058,11 +5101,11 @@ bool ImGui::IsMouseDoubleClicked(ImGuiMouseButton button)
     return g.IO.MouseClickedCount[button] == 2;
 }
 
-bool ImGui::IsMouseTripleClicked(ImGuiMouseButton button)
+int ImGui::GetMouseClickedCount(ImGuiMouseButton button)
 {
     ImGuiContext& g = *GImGui;
     IM_ASSERT(button >= 0 && button < IM_ARRAYSIZE(g.IO.MouseDown));
-    return g.IO.MouseClickedCount[button] == 3;
+    return g.IO.MouseClickedCount[button];
 }
 
 // Return if a mouse click/drag went past the given threshold. Valid to call during the MouseReleased frame.
@@ -5646,11 +5689,11 @@ ImVec2 ImGui::CalcWindowNextAutoFitSize(ImGuiWindow* window)
     return size_final;
 }
 
-static ImGuiCol GetWindowBgColorIdxFromFlags(ImGuiWindowFlags flags)
+static ImGuiCol GetWindowBgColorIdx(ImGuiWindow* window)
 {
-    if (flags & (ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_Popup))
+    if (window->Flags & (ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_Popup))
         return ImGuiCol_PopupBg;
-    if (flags & ImGuiWindowFlags_ChildWindow)
+    if ((window->Flags & ImGuiWindowFlags_ChildWindow) && !window->DockIsActive)
         return ImGuiCol_ChildBg;
     return ImGuiCol_WindowBg;
 }
@@ -5943,7 +5986,7 @@ void ImGui::RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar
                 if (g.DragDropPayload.IsDataType(IMGUI_PAYLOAD_TYPE_WINDOW) && *(ImGuiWindow**)g.DragDropPayload.Data == window)
                     is_docking_transparent_payload = true;
 
-            ImU32 bg_col = GetColorU32(GetWindowBgColorIdxFromFlags(flags));
+            ImU32 bg_col = GetColorU32(GetWindowBgColorIdx(window));
             if (window->ViewportOwned)
             {
                 // No alpha
@@ -5969,8 +6012,21 @@ void ImGui::RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar
                 if (override_alpha)
                     bg_col = (bg_col & ~IM_COL32_A_MASK) | (IM_F32_TO_INT8_SAT(alpha) << IM_COL32_A_SHIFT);
             }
-            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()), window->Pos + window->Size, bg_col, window_rounding, (flags & ImGuiWindowFlags_NoTitleBar) ? 0 : ImDrawFlags_RoundCornersBottom);
+
+            // Render, for docked windows and host windows we ensure bg goes before decorations
+            ImDrawList* bg_draw_list = window->DockIsActive ? window->DockNode->HostWindow->DrawList : window->DrawList;
+            if (window->DockIsActive || (flags & ImGuiWindowFlags_DockNodeHost))
+                bg_draw_list->ChannelsSetCurrent(0);
+            if (window->DockIsActive)
+                window->DockNode->LastBgColor = bg_col;
+
+            bg_draw_list->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()), window->Pos + window->Size, bg_col, window_rounding, (flags & ImGuiWindowFlags_NoTitleBar) ? 0 : ImDrawFlags_RoundCornersBottom);
+
+            if (window->DockIsActive || (flags & ImGuiWindowFlags_DockNodeHost))
+                bg_draw_list->ChannelsSetCurrent(1);
         }
+        if (window->DockIsActive)
+            window->DockNode->IsBgDrawnThisFrame = true;
 
         // Title bar
         // (when docked, DockNode are drawing their own title bar. Individual windows however do NOT set the _NoTitleBar flag,
@@ -6271,7 +6327,10 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 
     // Update ->RootWindow and others pointers (before any possible call to FocusWindow)
     if (first_begin_of_the_frame)
+    {
         UpdateWindowParentAndRootLinks(window, flags, parent_window);
+        window->ParentWindowInBeginStack = parent_window_in_stack;
+    }
 
     // Process SetNextWindow***() calls
     // (FIXME: Consider splitting the HasXXX flags into X/Y components
@@ -6336,6 +6395,11 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         window->IDStack.resize(1);
         window->DrawList->_ResetForNewFrame();
         window->DC.CurrentTableIdx = -1;
+        if (flags & ImGuiWindowFlags_DockNodeHost)
+        {
+            window->DrawList->ChannelsSplit(2);
+            window->DrawList->ChannelsSetCurrent(1); // Render decorations on channel 1 as we will render the backgrounds manually later
+        }
 
         // Restore buffer capacity when woken from a compacted state, to avoid
         if (window->MemoryCompacted)
@@ -6690,25 +6754,6 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         window->DrawList->PushTextureID(g.Font->ContainerAtlas->TexID);
         PushClipRect(host_rect.Min, host_rect.Max, false);
 
-        // Draw modal or window list full viewport dimming background (for other viewports we'll render them in EndFrame)
-        ImGuiWindow* window_window_list = g.NavWindowingListWindow;
-        const bool dim_bg_for_modal = (flags & ImGuiWindowFlags_Modal) && window == GetTopMostPopupModal() && window->HiddenFramesCannotSkipItems <= 0;
-        const bool dim_bg_for_window_list = g.NavWindowingTargetAnim && ((window == g.NavWindowingTargetAnim->RootWindowDockTree) || (window == window_window_list && window_window_list->Viewport != g.NavWindowingTargetAnim->Viewport));
-        if (dim_bg_for_modal || dim_bg_for_window_list)
-        {
-            const ImU32 dim_bg_col = GetColorU32(dim_bg_for_modal ? ImGuiCol_ModalWindowDimBg : ImGuiCol_NavWindowingDimBg, g.DimBgRatio);
-            window->DrawList->AddRectFilled(viewport_rect.Min, viewport_rect.Max, dim_bg_col);
-        }
-
-        // Draw navigation selection/windowing rectangle background
-        if (dim_bg_for_window_list && window == g.NavWindowingTargetAnim)
-        {
-            ImRect bb = window->Rect();
-            bb.Expand(g.FontSize);
-            if (!bb.Contains(viewport_rect)) // Avoid drawing if the window covers all the viewport anyway
-                window->DrawList->AddRectFilled(bb.Min, bb.Max, GetColorU32(ImGuiCol_NavWindowingHighlight, g.NavWindowingHighlightAlpha * 0.25f), g.Style.WindowRounding);
-        }
-
         // Child windows can render their decoration (bg color, border, scrollbars, etc.) within their parent to save a draw call (since 1.71)
         // When using overlapping child windows, this will break the assumption that child z-order is mapped to submission order.
         // FIXME: User code may rely on explicit sorting of overlapping child window and would need to disable this somehow. Please get in contact if you are affected (github #4493)
@@ -6736,20 +6781,6 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 
             if (render_decorations_in_parent)
                 window->DrawList = &window->DrawListInst;
-        }
-
-        // Draw navigation selection/windowing rectangle border
-        if (g.NavWindowingTargetAnim == window)
-        {
-            float rounding = ImMax(window->WindowRounding, g.Style.WindowRounding);
-            ImRect bb = window->Rect();
-            bb.Expand(g.FontSize);
-            if (bb.Contains(viewport_rect)) // If a window fits the entire viewport, adjust its highlight inward
-            {
-                bb.Expand(-g.FontSize - 1.0f);
-                rounding = window->WindowRounding;
-            }
-            window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_NavWindowingHighlight, g.NavWindowingHighlightAlpha), rounding, 0, 3.0f);
         }
 
         // UPDATE RECTANGLES (2- THOSE AFFECTED BY SCROLLING)
@@ -7303,6 +7334,12 @@ bool ImGui::IsWindowChildOf(ImGuiWindow* window, ImGuiWindow* potential_parent, 
 bool ImGui::IsWindowAbove(ImGuiWindow* potential_above, ImGuiWindow* potential_below)
 {
     ImGuiContext& g = *GImGui;
+
+    // It would be saner to ensure that display layer is always reflected in the g.Windows[] order, which would likely requires altering all manipulations of that array
+    const int display_layer_delta = GetWindowDisplayLayer(potential_above) - GetWindowDisplayLayer(potential_below);
+    if (display_layer_delta != 0)
+        return display_layer_delta > 0;
+
     for (int i = g.Windows.Size - 1; i >= 0; i--)
     {
         ImGuiWindow* candidate_window = g.Windows[i];
@@ -8565,7 +8602,7 @@ void ImGui::EndGroup()
 
     window->DC.CurrLineTextBaseOffset = ImMax(window->DC.PrevLineTextBaseOffset, group_data.BackupCurrLineTextBaseOffset);      // FIXME: Incorrect, we should grab the base offset from the *first line* of the group but it is hard to obtain now.
     ItemSize(group_bb.GetSize());
-    ItemAdd(group_bb, 0);
+    ItemAdd(group_bb, 0, NULL, ImGuiItemFlags_NoTabStop);
 
     // If the current ActiveId was declared within the boundary of our group, we copy it to LastItemId so IsItemActive(), IsItemDeactivated() etc. will be functional on the entire group.
     // It would be be neater if we replaced window.DC.LastItemId by e.g. 'bool LastItemIsActive', but would put a little more burden on individual widgets.
@@ -8854,10 +8891,10 @@ void ImGui::SetScrollHereY(float center_y_ratio)
 
 void ImGui::BeginTooltip()
 {
-    BeginTooltipEx(ImGuiWindowFlags_None, ImGuiTooltipFlags_None);
+    BeginTooltipEx(ImGuiTooltipFlags_None, ImGuiWindowFlags_None);
 }
 
-void ImGui::BeginTooltipEx(ImGuiWindowFlags extra_flags, ImGuiTooltipFlags tooltip_flags)
+void ImGui::BeginTooltipEx(ImGuiTooltipFlags tooltip_flags, ImGuiWindowFlags extra_window_flags)
 {
     ImGuiContext& g = *GImGui;
 
@@ -8886,7 +8923,7 @@ void ImGui::BeginTooltipEx(ImGuiWindowFlags extra_flags, ImGuiTooltipFlags toolt
                 ImFormatString(window_name, IM_ARRAYSIZE(window_name), "##Tooltip_%02d", ++g.TooltipOverrideCount);
             }
     ImGuiWindowFlags flags = ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking;
-    Begin(window_name, NULL, flags | extra_flags);
+    Begin(window_name, NULL, flags | extra_window_flags);
 }
 
 void ImGui::EndTooltip()
@@ -8897,7 +8934,7 @@ void ImGui::EndTooltip()
 
 void ImGui::SetTooltipV(const char* fmt, va_list args)
 {
-    BeginTooltipEx(0, ImGuiTooltipFlags_OverridePreviousTooltip);
+    BeginTooltipEx(ImGuiTooltipFlags_OverridePreviousTooltip, ImGuiWindowFlags_None);
     TextV(fmt, args);
     EndTooltip();
 }
@@ -8961,6 +8998,16 @@ ImGuiWindow* ImGui::GetTopMostPopupModal()
     for (int n = g.OpenPopupStack.Size - 1; n >= 0; n--)
         if (ImGuiWindow* popup = g.OpenPopupStack.Data[n].Window)
             if (popup->Flags & ImGuiWindowFlags_Modal)
+                return popup;
+    return NULL;
+}
+
+ImGuiWindow* ImGui::GetTopMostAndVisiblePopupModal()
+{
+    ImGuiContext& g = *GImGui;
+    for (int n = g.OpenPopupStack.Size - 1; n >= 0; n--)
+        if (ImGuiWindow* popup = g.OpenPopupStack.Data[n].Window)
+            if ((popup->Flags & ImGuiWindowFlags_Modal) && IsWindowActiveAndVisible(popup))
                 return popup;
     return NULL;
 }
@@ -10933,16 +10980,16 @@ bool ImGui::BeginDragDropSource(ImGuiDragDropFlags flags)
                 return false;
 
             // If you want to use BeginDragDropSource() on an item with no unique identifier for interaction, such as Text() or Image(), you need to:
-            // A) Read the explanation below, B) Use the ImGuiDragDropFlags_SourceAllowNullID flag, C) Swallow your programmer pride.
+            // A) Read the explanation below, B) Use the ImGuiDragDropFlags_SourceAllowNullID flag.
             if (!(flags & ImGuiDragDropFlags_SourceAllowNullID))
             {
                 IM_ASSERT(0);
                 return false;
             }
 
-            // Magic fallback (=somehow reprehensible) to handle items with no assigned ID, e.g. Text(), Image()
+            // Magic fallback to handle items with no assigned ID, e.g. Text(), Image()
             // We build a throwaway ID based on current ID stack + relative AABB of items in window.
-            // THE IDENTIFIER WON'T SURVIVE ANY REPOSITIONING OF THE WIDGET, so if your widget moves your dragging operation will be canceled.
+            // THE IDENTIFIER WON'T SURVIVE ANY REPOSITIONING/RESIZINGG OF THE WIDGET, so if your widget moves your dragging operation will be canceled.
             // We don't need to maintain/call ClearActiveID() as releasing the button will early out this function and trigger !ActiveIdIsAlive.
             // Rely on keeping other window->LastItemXXX fields intact.
             source_id = g.LastItemData.ID = window->GetIDFromRectangle(g.LastItemData.Rect);
@@ -12457,7 +12504,7 @@ void ImGui::WindowSyncOwnedViewport(ImGuiWindow* window, ImGuiWindow* parent_win
 
     // Update parent viewport ID
     // (the !IsFallbackWindow test mimic the one done in WindowSelectViewport())
-    if (window->WindowClass.ParentViewportId)
+    if (window->WindowClass.ParentViewportId != (ImGuiID)-1)
         window->Viewport->ParentViewportId = window->WindowClass.ParentViewportId;
     else if ((window_flags & (ImGuiWindowFlags_Popup | ImGuiWindowFlags_Tooltip)) && parent_window_in_stack && (!parent_window_in_stack->IsFallbackWindow || parent_window_in_stack->WasActive))
         window->Viewport->ParentViewportId = parent_window_in_stack->Viewport->ID;
@@ -12784,6 +12831,9 @@ void ImGui::DestroyPlatformWindows()
 //    | BeginDockableDragDropTarget()
 //    | - DockNodePreviewDockRender()
 //-----------------------------------------------------------------------------
+// - EndFrame()
+//    | DockContextEndFrame()
+//-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
 // Docking: Internal Types
@@ -12906,7 +12956,7 @@ namespace ImGui
     // ImGuiDockNode tree manipulations
     static void             DockNodeTreeSplit(ImGuiContext* ctx, ImGuiDockNode* parent_node, ImGuiAxis split_axis, int split_first_child, float split_ratio, ImGuiDockNode* new_node);
     static void             DockNodeTreeMerge(ImGuiContext* ctx, ImGuiDockNode* parent_node, ImGuiDockNode* merge_lead_child);
-    static void             DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 size, bool only_write_to_marked_nodes = false);
+    static void             DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 size, ImGuiDockNode* only_write_to_single_node = NULL);
     static void             DockNodeTreeUpdateSplitter(ImGuiDockNode* node);
     static ImGuiDockNode*   DockNodeTreeFindVisibleNodeByPos(ImGuiDockNode* node, ImVec2 pos);
     static ImGuiDockNode*   DockNodeTreeFindFallbackLeafNode(ImGuiDockNode* node);
@@ -12938,6 +12988,7 @@ namespace ImGui
 // - DockContextRebuildNodes()
 // - DockContextNewFrameUpdateUndocking()
 // - DockContextNewFrameUpdateDocking()
+// - DockContextEndFrame()
 // - DockContextFindNodeByID()
 // - DockContextBindNodeToWindow()
 // - DockContextGenNodeID()
@@ -13071,6 +13122,22 @@ void ImGui::DockContextNewFrameUpdateDocking(ImGuiContext* ctx)
         if (ImGuiDockNode* node = (ImGuiDockNode*)dc->Nodes.Data[n].val_p)
             if (node->IsFloatingNode())
                 DockNodeUpdate(node);
+}
+
+void ImGui::DockContextEndFrame(ImGuiContext* ctx)
+{
+    // Draw backgrounds of node missing their window
+    ImGuiContext& g = *ctx;
+    ImGuiDockContext* dc = &g.DockContext;
+    for (int n = 0; n < dc->Nodes.Data.Size; n++)
+        if (ImGuiDockNode* node = (ImGuiDockNode*)dc->Nodes.Data[n].val_p)
+            if (node->LastFrameActive == g.FrameCount && node->IsVisible && node->HostWindow && node->IsLeafNode() && !node->IsBgDrawnThisFrame)
+            {
+                ImRect bg_rect(node->Pos + ImVec2(0.0f, GetFrameHeight()), node->Pos + node->Size);
+                ImDrawFlags bg_rounding_flags = CalcRoundingFlagsForRectInRect(bg_rect, node->HostWindow->Rect(), DOCKING_SPLITTER_SIZE);
+                node->HostWindow->DrawList->ChannelsSetCurrent(0);
+                node->HostWindow->DrawList->AddRectFilled(bg_rect.Min, bg_rect.Max, node->LastBgColor, node->HostWindow->WindowRounding, bg_rounding_flags);
+            }
 }
 
 static ImGuiDockNode* ImGui::DockContextFindNodeByID(ImGuiContext* ctx, ImGuiID id)
@@ -13415,7 +13482,7 @@ void ImGui::DockContextProcessDock(ImGuiContext* ctx, ImGuiDockRequest* req)
                     IM_ASSERT(last_focused_node != NULL);
                     ImGuiDockNode* last_focused_root_node = DockNodeGetRootNode(last_focused_node);
                     IM_ASSERT(last_focused_root_node == DockNodeGetRootNode(payload_node));
-                    last_focused_node->SetLocalFlags(last_focused_node->LocalFlags |= ImGuiDockNodeFlags_CentralNode);
+                    last_focused_node->SetLocalFlags(last_focused_node->LocalFlags | ImGuiDockNodeFlags_CentralNode);
                     node->SetLocalFlags(node->LocalFlags & ~ImGuiDockNodeFlags_CentralNode);
                     last_focused_root_node->CentralNode = last_focused_node;
                 }
@@ -13590,6 +13657,7 @@ ImGuiDockNode::ImGuiDockNode(ImGuiID id)
     SplitAxis = ImGuiAxis_None;
 
     State = ImGuiDockNodeState_Unknown;
+    LastBgColor = IM_COL32_WHITE;
     HostWindow = VisibleWindow = NULL;
     CentralNode = OnlyNodeWithWindows = NULL;
     CountNodeWithWindows = 0;
@@ -13601,8 +13669,8 @@ ImGuiDockNode::ImGuiDockNode(ImGuiID id)
     AuthorityForViewport = ImGuiDataAuthority_Auto;
     IsVisible = true;
     IsFocused = HasCloseButton = HasWindowMenuButton = HasCentralNodeChild = false;
+    IsBgDrawnThisFrame = false;
     WantCloseAll = WantLockSizeOnce = WantMouseMove = WantHiddenTabBarUpdate = WantHiddenTabBarToggle = false;
-    MarkedForPosSizeWrite = false;
 }
 
 ImGuiDockNode::~ImGuiDockNode()
@@ -14043,7 +14111,7 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
     ImGuiContext& g = *GImGui;
     IM_ASSERT(node->LastFrameActive != g.FrameCount);
     node->LastFrameAlive = g.FrameCount;
-    node->MarkedForPosSizeWrite = false;
+    node->IsBgDrawnThisFrame = false;
 
     node->CentralNode = node->OnlyNodeWithWindows = NULL;
     if (node->IsRootNode())
@@ -14186,6 +14254,7 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
             window_flags |= ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse;
             window_flags |= ImGuiWindowFlags_NoTitleBar;
 
+            SetNextWindowBgAlpha(0.0f); // Don't set ImGuiWindowFlags_NoBackground because it disables borders
             PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
             Begin(window_label, NULL, window_flags);
             PopStyleVar();
@@ -14224,15 +14293,6 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
         if (g.NavWindow && g.NavWindow->RootWindow->DockNode && g.NavWindow->RootWindow->ParentWindow == host_window)
             node->LastFocusedNodeId = g.NavWindow->RootWindow->DockNode->ID;
 
-    // We need to draw a background at the root level if requested by ImGuiDockNodeFlags_PassthruCentralNode, but we will only know the correct pos/size
-    // _after_ processing the resizing splitters. So we are using the DrawList channel splitting facility to submit drawing primitives out of order!
-    const bool render_dockspace_bg = node->IsRootNode() && host_window && (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0;
-    if (render_dockspace_bg)
-    {
-        host_window->DrawList->ChannelsSplit(2);
-        host_window->DrawList->ChannelsSetCurrent(1);
-    }
-
     // Register a hit-test hole in the window unless we are currently dragging a window that is compatible with our dockspace
     ImGuiDockNode* central_node = node->CentralNode;
     const bool central_node_hole = node->IsRootNode() && host_window && (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0 && central_node != NULL && central_node->IsEmpty();
@@ -14265,15 +14325,25 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
     // Update position/size, process and draw resizing splitters
     if (node->IsRootNode() && host_window)
     {
+        host_window->DrawList->ChannelsSetCurrent(1);
         DockNodeTreeUpdatePosSize(node, host_window->Pos, host_window->Size);
         DockNodeTreeUpdateSplitter(node);
     }
 
     // Draw empty node background (currently can only be the Central Node)
-    if (host_window && node->IsEmpty() && node->IsVisible && !(node_flags & ImGuiDockNodeFlags_PassthruCentralNode))
-        host_window->DrawList->AddRectFilled(node->Pos, node->Pos + node->Size, GetColorU32(ImGuiCol_DockingEmptyBg));
+    if (host_window && node->IsEmpty() && node->IsVisible)
+    {
+        host_window->DrawList->ChannelsSetCurrent(0);
+        node->LastBgColor = (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) ? 0 : GetColorU32(ImGuiCol_DockingEmptyBg);
+        if (node->LastBgColor != 0)
+            host_window->DrawList->AddRectFilled(node->Pos, node->Pos + node->Size, node->LastBgColor);
+        node->IsBgDrawnThisFrame = true;
+    }
 
     // Draw whole dockspace background if ImGuiDockNodeFlags_PassthruCentralNode if set.
+    // We need to draw a background at the root level if requested by ImGuiDockNodeFlags_PassthruCentralNode, but we will only know the correct pos/size
+    // _after_ processing the resizing splitters. So we are using the DrawList channel splitting facility to submit drawing primitives out of order!
+    const bool render_dockspace_bg = node->IsRootNode() && host_window && (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0;
     if (render_dockspace_bg && node->IsVisible)
     {
         host_window->DrawList->ChannelsSetCurrent(0);
@@ -14281,10 +14351,11 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
             RenderRectFilledWithHole(host_window->DrawList, node->Rect(), central_node->Rect(), GetColorU32(ImGuiCol_WindowBg), 0.0f);
         else
             host_window->DrawList->AddRectFilled(node->Pos, node->Pos + node->Size, GetColorU32(ImGuiCol_WindowBg), 0.0f);
-        host_window->DrawList->ChannelsMerge();
     }
 
     // Draw and populate Tab Bar
+    if (host_window)
+        host_window->DrawList->ChannelsSetCurrent(1);
     if (host_window && node->Windows.Size > 0)
     {
         DockNodeUpdateTabBar(node, host_window);
@@ -14319,7 +14390,13 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
 
         // Render outer borders last (after the tab bar)
         if (node->IsRootNode())
+        {
+            host_window->DrawList->ChannelsSetCurrent(1);
             RenderWindowOuterBorders(host_window);
+        }
+
+        // Further rendering (= hosted windows background) will be drawn on layer 0
+        host_window->DrawList->ChannelsSetCurrent(0);
     }
 
     // End host window
@@ -14486,7 +14563,8 @@ static void ImGui::DockNodeUpdateTabBar(ImGuiDockNode* node, ImGuiWindow* host_w
     if (is_focused)
         node->LastFrameFocused = g.FrameCount;
     ImU32 title_bar_col = GetColorU32(host_window->Collapsed ? ImGuiCol_TitleBgCollapsed : is_focused ? ImGuiCol_TitleBgActive : ImGuiCol_TitleBg);
-    host_window->DrawList->AddRectFilled(title_bar_rect.Min, title_bar_rect.Max, title_bar_col, host_window->WindowRounding, ImDrawFlags_RoundCornersTop);
+    ImDrawFlags rounding_flags = CalcRoundingFlagsForRectInRect(title_bar_rect, host_window->Rect(), DOCKING_SPLITTER_SIZE);
+    host_window->DrawList->AddRectFilled(title_bar_rect.Min, title_bar_rect.Max, title_bar_col, host_window->WindowRounding, rounding_flags);
 
     // Docking/Collapse button
     if (has_window_menu_button)
@@ -14954,7 +15032,7 @@ static void ImGui::DockNodePreviewDockRender(ImGuiWindow* host_window, ImGuiDock
             overlay_rect.Min.y += GetFrameHeight();
         if (data->SplitDir != ImGuiDir_None || data->IsCenterAvailable)
             for (int overlay_n = 0; overlay_n < overlay_draw_lists_count; overlay_n++)
-                overlay_draw_lists[overlay_n]->AddRectFilled(overlay_rect.Min, overlay_rect.Max, overlay_col_main, host_window->WindowRounding);
+                overlay_draw_lists[overlay_n]->AddRectFilled(overlay_rect.Min, overlay_rect.Max, overlay_col_main, host_window->WindowRounding, CalcRoundingFlagsForRectInRect(overlay_rect, host_window->Rect(), DOCKING_SPLITTER_SIZE));
     }
 
     // Display tab shape/label preview unless we are splitting node (it generally makes the situation harder to read)
@@ -15147,11 +15225,11 @@ void ImGui::DockNodeTreeMerge(ImGuiContext* ctx, ImGuiDockNode* parent_node, ImG
 
 // Update Pos/Size for a node hierarchy (don't affect child Windows yet)
 // (Depth-first, Pre-Order)
-void ImGui::DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 size, bool only_write_to_marked_nodes)
+void ImGui::DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 size, ImGuiDockNode* only_write_to_single_node)
 {
     // During the regular dock node update we write to all nodes.
-    // 'only_write_to_marked_nodes' is only set when turning a node visible mid-frame and we need its size right-away.
-    const bool write_to_node = (only_write_to_marked_nodes == false) || (node->MarkedForPosSizeWrite);
+    // 'only_write_to_single_node' is only set when turning a node visible mid-frame and we need its size right-away.
+    const bool write_to_node = only_write_to_single_node == NULL || only_write_to_single_node == node;
     if (write_to_node)
     {
         node->Pos = pos;
@@ -15165,15 +15243,21 @@ void ImGui::DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 si
     ImGuiDockNode* child_1 = node->ChildNodes[1];
     ImVec2 child_0_pos = pos, child_1_pos = pos;
     ImVec2 child_0_size = size, child_1_size = size;
-    if (child_0->IsVisible && child_1->IsVisible)
+
+    const bool child_0_is_toward_single_node = (only_write_to_single_node != NULL && DockNodeIsInHierarchyOf(only_write_to_single_node, child_0));
+    const bool child_1_is_toward_single_node = (only_write_to_single_node != NULL && DockNodeIsInHierarchyOf(only_write_to_single_node, child_1));
+    const bool child_0_is_or_will_be_visible = child_0->IsVisible || child_0_is_toward_single_node;
+    const bool child_1_is_or_will_be_visible = child_1->IsVisible || child_1_is_toward_single_node;
+
+    if (child_0_is_or_will_be_visible && child_1_is_or_will_be_visible)
     {
+        ImGuiContext& g = *GImGui;
         const float spacing = DOCKING_SPLITTER_SIZE;
         const ImGuiAxis axis = (ImGuiAxis)node->SplitAxis;
         const float size_avail = ImMax(size[axis] - spacing, 0.0f);
 
         // Size allocation policy
         // 1) The first 0..WindowMinSize[axis]*2 are allocated evenly to both windows.
-        ImGuiContext& g = *GImGui;
         const float size_min_each = ImFloor(ImMin(size_avail, g.Style.WindowMinSize[axis] * 2.0f) * 0.5f);
 
         // FIXME: Blocks 2) and 3) are essentially doing nearly the same thing.
@@ -15224,11 +15308,15 @@ void ImGui::DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 si
 
         child_1_pos[axis] += spacing + child_0_size[axis];
     }
-    child_0->WantLockSizeOnce = child_1->WantLockSizeOnce = false;
 
-    if (child_0->IsVisible)
+    if (only_write_to_single_node == NULL)
+        child_0->WantLockSizeOnce = child_1->WantLockSizeOnce = false;
+
+    const bool child_0_recurse = only_write_to_single_node ? child_0_is_toward_single_node : child_0->IsVisible;
+    const bool child_1_recurse = only_write_to_single_node ? child_1_is_toward_single_node : child_1->IsVisible;
+    if (child_0_recurse)
         DockNodeTreeUpdatePosSize(child_0, child_0_pos, child_0_size);
-    if (child_1->IsVisible)
+    if (child_1_recurse)
         DockNodeTreeUpdatePosSize(child_1, child_1_pos, child_1_size);
 }
 
@@ -15319,7 +15407,8 @@ void ImGui::DockNodeTreeUpdateSplitter(ImGuiDockNode* node)
             float cur_size_1 = child_1->Size[axis];
             float min_size_0 = resize_limits[0] - child_0->Pos[axis];
             float min_size_1 = child_1->Pos[axis] + child_1->Size[axis] - resize_limits[1];
-            if (SplitterBehavior(bb, GetID("##Splitter"), axis, &cur_size_0, &cur_size_1, min_size_0, min_size_1, WINDOWS_HOVER_PADDING, WINDOWS_RESIZE_FROM_EDGES_FEEDBACK_TIMER))
+            ImU32 bg_col = GetColorU32(ImGuiCol_WindowBg);
+            if (SplitterBehavior(bb, GetID("##Splitter"), axis, &cur_size_0, &cur_size_1, min_size_0, min_size_1, WINDOWS_HOVER_PADDING, WINDOWS_RESIZE_FROM_EDGES_FEEDBACK_TIMER, bg_col))
             {
                 if (touching_nodes[0].Size > 0 && touching_nodes[1].Size > 0)
                 {
@@ -16042,20 +16131,17 @@ static ImGuiDockNode* ImGui::DockContextBindNodeToWindow(ImGuiContext* ctx, ImGu
     if (!node->IsVisible)
     {
         ImGuiDockNode* ancestor_node = node;
-        while (!ancestor_node->IsVisible)
-        {
-            ancestor_node->IsVisible = true;
-            ancestor_node->MarkedForPosSizeWrite = true;
-            if (ancestor_node->ParentNode)
-                ancestor_node = ancestor_node->ParentNode;
-        }
+        while (!ancestor_node->IsVisible && ancestor_node->ParentNode)
+            ancestor_node = ancestor_node->ParentNode;
         IM_ASSERT(ancestor_node->Size.x > 0.0f && ancestor_node->Size.y > 0.0f);
         DockNodeUpdateHasCentralNodeChild(DockNodeGetRootNode(ancestor_node));
-        DockNodeTreeUpdatePosSize(ancestor_node, ancestor_node->Pos, ancestor_node->Size, true);
+        DockNodeTreeUpdatePosSize(ancestor_node, ancestor_node->Pos, ancestor_node->Size, node);
     }
 
     // Add window to node
+    bool node_was_visible = node->IsVisible;
     DockNodeAddWindow(node, window, true);
+    node->IsVisible = node_was_visible; // Don't mark visible right away (so DockContextEndFrame() doesn't render it, maybe other side effects? will see)
     IM_ASSERT(node == window->DockNode);
     return node;
 }
@@ -16146,7 +16232,7 @@ void ImGui::BeginDocked(ImGuiWindow* window, bool* p_open)
     node->State = ImGuiDockNodeState_HostWindowVisible;
 
     // Undock if we are submitted earlier than the host window
-    if (window->BeginOrderWithinContext < node->HostWindow->BeginOrderWithinContext)
+    if (!(node->MergedFlags & ImGuiDockNodeFlags_KeepAliveOnly) && window->BeginOrderWithinContext < node->HostWindow->BeginOrderWithinContext)
     {
         DockContextProcessUndockWindow(ctx, window);
         return;
@@ -16662,6 +16748,7 @@ static void SetClipboardTextFn_DefaultImpl(void*, const char* text)
 // - DebugNodeWindow() [Internal]
 // - DebugNodeWindowSettings() [Internal]
 // - DebugNodeWindowsList() [Internal]
+// - DebugNodeWindowsListByBeginStackParent() [Internal]
 //-----------------------------------------------------------------------------
 
 #ifndef IMGUI_DISABLE_METRICS_WINDOW
@@ -16893,8 +16980,27 @@ void ImGui::ShowMetricsWindow(bool* p_open)
     }
 
     // Windows
-    DebugNodeWindowsList(&g.Windows, "Windows");
-    //DebugNodeWindowsList(&g.WindowsFocusOrder, "WindowsFocusOrder");
+    if (TreeNode("Windows", "Windows (%d)", g.Windows.Size))
+    {
+        //SetNextItemOpen(true, ImGuiCond_Once);
+        DebugNodeWindowsList(&g.Windows, "By display order");
+        DebugNodeWindowsList(&g.WindowsFocusOrder, "By focus order (root windows)");
+        if (TreeNode("By submission order (begin stack)"))
+        {
+            // Here we display windows in their submitted order/hierarchy, however note that the Begin stack doesn't constitute a Parent<>Child relationship!
+            ImVector<ImGuiWindow*>& temp_buffer = g.WindowsTempSortBuffer;
+            temp_buffer.resize(0);
+            for (int i = 0; i < g.Windows.Size; i++)
+                if (g.Windows[i]->LastFrameActive + 1 >= g.FrameCount)
+                    temp_buffer.push_back(g.Windows[i]);
+            struct Func { static int IMGUI_CDECL WindowComparerByBeginOrder(const void* lhs, const void* rhs) { return ((int)(*(const ImGuiWindow* const *)lhs)->BeginOrderWithinContext - (*(const ImGuiWindow* const*)rhs)->BeginOrderWithinContext); } };
+            ImQsort(temp_buffer.Data, (size_t)temp_buffer.Size, sizeof(ImGuiWindow*), Func::WindowComparerByBeginOrder);
+            DebugNodeWindowsListByBeginStackParent(temp_buffer.Data, temp_buffer.Size, NULL);
+            TreePop();
+        }
+
+        TreePop();
+    }
 
     // DrawLists
     int drawlist_count = 0;
@@ -17707,7 +17813,6 @@ void ImGui::DebugNodeWindowsList(ImVector<ImGuiWindow*>* windows, const char* la
 {
     if (!TreeNode(label, "%s (%d)", label, windows->Size))
         return;
-    Text("(In front-to-back order:)");
     for (int i = windows->Size - 1; i >= 0; i--) // Iterate front to back
     {
         PushID((*windows)[i]);
@@ -17715,6 +17820,24 @@ void ImGui::DebugNodeWindowsList(ImVector<ImGuiWindow*>* windows, const char* la
         PopID();
     }
     TreePop();
+}
+
+// FIXME-OPT: This is technically suboptimal, but it is simpler this way.
+void ImGui::DebugNodeWindowsListByBeginStackParent(ImGuiWindow** windows, int windows_size, ImGuiWindow* parent_in_begin_stack)
+{
+    for (int i = 0; i < windows_size; i++)
+    {
+        ImGuiWindow* window = windows[i];
+        if (window->ParentWindowInBeginStack != parent_in_begin_stack)
+            continue;
+        char buf[20];
+        ImFormatString(buf, IM_ARRAYSIZE(buf), "[%04d] Window", window->BeginOrderWithinContext);
+        //BulletText("[%04d] Window '%s'", window->BeginOrderWithinContext, window->Name);
+        DebugNodeWindow(window, buf);
+        Indent();
+        DebugNodeWindowsListByBeginStackParent(windows + i + 1, windows_size - i - 1, window);
+        Unindent();
+    }
 }
 
 //-----------------------------------------------------------------------------
