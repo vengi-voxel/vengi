@@ -70,12 +70,12 @@ include(cmake/sdlchecks.cmake)
 # set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 17)
-set(SDL_INTERFACE_AGE 0)
-set(SDL_BINARY_AGE 17)
+set(SDL_MICRO_VERSION 19)
+set(SDL_INTERFACE_AGE 1)
+set(SDL_BINARY_AGE 19)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 # the following should match the versions in Xcode project file:
-set(DYLIB_CURRENT_VERSION 17.0.0)
+set(DYLIB_CURRENT_VERSION 19.0.0)
 set(DYLIB_COMPATIBILITY_VERSION 1.0.0)
 
 # Calculate a libtool-like version number
@@ -266,7 +266,7 @@ if(MSVC)
   endif()
 
   if(MSVC_CLANG)
-    # clang-cl treats '/W4' as '-Wall -Wextra' -- we don't need -Wextra.
+    # clang-cl treats /W4 as '-Wall -Wextra' -- we don't need -Wextra
     foreach(flag_var
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
         CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
@@ -922,12 +922,14 @@ if(SDL_LIBC)
     endif()
 
     check_library_exists(iconv iconv_open "" HAVE_LIBICONV)
-    check_library_exists(c iconv_open "" HAVE_BUILTIN_ICONV)
-    if(HAVE_BUILTIN_ICONV)
-      set(HAVE_ICONV 1)
-    elseif(HAVE_LIBICONV)
+    if(HAVE_LIBICONV)
       list(APPEND EXTRA_LIBS iconv)
       set(HAVE_ICONV 1)
+    else()
+      check_library_exists(c iconv_open "" HAVE_BUILTIN_ICONV)
+      if(HAVE_BUILTIN_ICONV)
+        set(HAVE_ICONV 1)
+      endif()
     endif()
 
     if(NOT APPLE)
@@ -999,6 +1001,10 @@ if(UNIX OR APPLE)
     set(SOURCE_FILES ${SOURCE_FILES} ${DLOPEN_SOURCES})
     set(HAVE_SDL_LOADSO TRUE)
   endif()
+endif()
+
+if(UNIX OR APPLE OR HAIKU OR RISCOS)
+  CheckO_CLOEXEC()
 endif()
 
 if(SDL_JOYSTICK)

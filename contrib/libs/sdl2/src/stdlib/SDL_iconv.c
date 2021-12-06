@@ -146,7 +146,7 @@ static struct
     { "US-ASCII", ENCODING_ASCII },
     { "8859-1", ENCODING_LATIN1 },
     { "ISO-8859-1", ENCODING_LATIN1 },
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__OS2__)
     { "WCHAR_T", ENCODING_UTF16LE },
 #else
     { "WCHAR_T", ENCODING_UCS4NATIVE },
@@ -867,6 +867,7 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
                 stringsize *= 2;
                 string = (char *) SDL_realloc(string, stringsize);
                 if (!string) {
+                    SDL_free(oldstring);
                     SDL_iconv_close(cd);
                     return NULL;
                 }
@@ -887,8 +888,7 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
             break;
         }
         /* Avoid infinite loops when nothing gets converted */
-        if (oldinbytesleft == inbytesleft)
-        {
+        if (oldinbytesleft == inbytesleft) {
             break;
         }
     }
