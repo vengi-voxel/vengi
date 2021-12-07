@@ -15,6 +15,9 @@ void BufferedReadWriteStream::resize(size_t size) {
 }
 
 int BufferedReadWriteStream::write(const void *buf, size_t size) {
+	if (size == 0) {
+		return 0;
+	}
 	_buffer.reserve(_buffer.size() + size);
 	_buffer.insert(_buffer.end(), (const uint8_t *)buf, (const uint8_t *)buf + size);
 	return 0;

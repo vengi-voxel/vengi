@@ -25,6 +25,9 @@ FileStream::~FileStream() {
 }
 
 int FileStream::write(const void *buf, size_t size) {
+	if (size == 0) {
+		return 0;
+	}
 	const int64_t written = (int64_t)SDL_RWwrite(_rwops, buf, 1, size);
 	_pos = SDL_RWtell(_rwops);
 	_size = core_max(_size, _pos);
