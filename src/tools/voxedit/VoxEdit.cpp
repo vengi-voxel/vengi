@@ -84,7 +84,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			openDialog([this] (const core::String &file) {_mainWindow->load(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
+			openDialog([this] (const core::String &file) {_mainWindow->load(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
 			return;
 		}
 		_mainWindow->load(args[0]);
