@@ -31,13 +31,13 @@ namespace voxel {
 		return false; \
 	}
 
-class ScopedChunkWriter {
+class VoxScopedChunkWriter {
 private:
 	io::SeekableWriteStream& _stream;
 	int64_t _chunkSizePos;
 	uint32_t _chunkId;
 public:
-	ScopedChunkWriter(io::SeekableWriteStream& stream, uint32_t chunkId) : _stream(stream), _chunkId(chunkId) {
+	VoxScopedChunkWriter(io::SeekableWriteStream& stream, uint32_t chunkId) : _stream(stream), _chunkId(chunkId) {
 		uint8_t buf[4];
 		FourCCRev(buf, chunkId);
 		Log::debug("Saving %c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
@@ -47,7 +47,7 @@ public:
 		stream.writeInt(0);
 	}
 
-	~ScopedChunkWriter() {
+	~VoxScopedChunkWriter() {
 		const int64_t chunkStart = _chunkSizePos + 2 * sizeof(uint32_t);
 		const int64_t currentPos = _stream.pos();
 		core_assert_msg(chunkStart <= currentPos, "%u should be <= %u", (uint32_t)chunkStart, (uint32_t)currentPos);
@@ -61,7 +61,7 @@ public:
 	}
 };
 
-class ScopedHeader {
+class VoxScopedHeader {
 private:
 	io::SeekableWriteStream& _stream;
 	int64_t _chunkCountPos;
@@ -70,7 +70,7 @@ private:
 	uint32_t &_chunks;
 
 public:
-	ScopedHeader(io::SeekableWriteStream& stream, uint32_t &chunks) : _stream(stream), _chunks(chunks) {
+	VoxScopedHeader(io::SeekableWriteStream& stream, uint32_t &chunks) : _stream(stream), _chunks(chunks) {
 		stream.writeInt(FourCC('V','O','X',' '));
 		stream.writeInt(150);
 		stream.writeInt(FourCC('M','A','I','N'));
@@ -82,7 +82,7 @@ public:
 		_headerSize = stream.pos();
 	}
 
-	~ScopedHeader() {
+	~VoxScopedHeader() {
 		// magic, version, main chunk, main chunk size, main chunk child size
 		const int64_t currentPos = _stream.pos();
 		const int64_t mainChildChunkSize = _stream.pos() - _headerSize;
@@ -96,7 +96,7 @@ public:
 };
 
 bool VoxFormat::saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, int modelId, const core::String& name, bool visible) {
-	ScopedChunkWriter scoped(stream, FourCC('L','A','Y','R'));
+	VoxScopedChunkWriter scoped(stream, FourCC('L','A','Y','R'));
 	wrapBool(stream.writeInt(modelId))
 	wrapBool(saveAttributes({{"_name", name}, {"_hidden", visible ? "0" : "1"}}, stream))
 	wrapBool(stream.writeInt((uint32_t)-1)) // must always be -1
@@ -105,7 +105,7 @@ bool VoxFormat::saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, in
 }
 
 bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumes) {
-	ScopedChunkWriter scoped(stream, FourCC('n','G','R','P'));
+	VoxScopedChunkWriter scoped(stream, FourCC('n','G','R','P'));
 	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
 	wrapBool(stream.writeInt(volumes))
@@ -119,7 +119,7 @@ bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, No
 }
 
 bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumeId) {
-	ScopedChunkWriter scoped(stream, FourCC('n','S','H','P'));
+	VoxScopedChunkWriter scoped(stream, FourCC('n','S','H','P'));
 	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
 	wrapBool(stream.writeInt(1)) // shapeNodeNumModels
@@ -130,7 +130,7 @@ bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, No
 }
 
 bool VoxFormat::saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins) {
-	ScopedChunkWriter scoped(stream, FourCC('n','T','R','N'));
+	VoxScopedChunkWriter scoped(stream, FourCC('n','T','R','N'));
 	wrapBool(stream.writeInt(nodeId))
 	wrapBool(saveAttributes({}, stream))
 	wrapBool(stream.writeInt(childNodeId))
@@ -144,7 +144,7 @@ bool VoxFormat::saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, No
 }
 
 bool VoxFormat::saveChunk_SIZE(State& state, io::SeekableWriteStream& stream, const voxel::Region& region) {
-	ScopedChunkWriter scoped(stream, FourCC('S','I','Z','E'));
+	VoxScopedChunkWriter scoped(stream, FourCC('S','I','Z','E'));
 	wrapBool(stream.writeInt(region.getWidthInVoxels()))
 	wrapBool(stream.writeInt(region.getDepthInVoxels()))
 	wrapBool(stream.writeInt(region.getHeightInVoxels()))
@@ -160,7 +160,7 @@ bool VoxFormat::saveChunk_PACK(State& state, io::SeekableWriteStream& stream, co
 		}
 		++modelCount;
 	}
-	ScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
+	VoxScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
 	wrapBool(stream.writeInt(modelCount))
 	++state._chunks;
 	return true;
@@ -174,7 +174,7 @@ bool VoxFormat::saveChunk_RGBA(State& state, io::SeekableWriteStream& stream) {
 		return false;
 	}
 
-	ScopedChunkWriter scoped(stream, FourCC('R','G','B','A'));
+	VoxScopedChunkWriter scoped(stream, FourCC('R','G','B','A'));
 	for (int i = 0; i < numColors; ++i) {
 		const uint32_t rgba = core::Color::getRGBA(materialColors[i]);
 		wrapBool(stream.writeInt(rgba))
@@ -187,7 +187,7 @@ bool VoxFormat::saveChunk_RGBA(State& state, io::SeekableWriteStream& stream) {
 }
 
 bool VoxFormat::saveChunk_XYZI(State& state, io::SeekableWriteStream& stream, const voxel::RawVolume* volume, const voxel::Region& region) {
-	ScopedChunkWriter scoped(stream, FourCC('X','Y','Z','I'));
+	VoxScopedChunkWriter scoped(stream, FourCC('X','Y','Z','I'));
 
 	uint32_t numVoxels = 0;
 	const uint64_t numVoxelPos = stream.pos();
@@ -271,7 +271,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	State state;
 	reset();
 
-	ScopedHeader scoped(stream, state._chunks);
+	VoxScopedHeader scoped(stream, state._chunks);
 	wrapBool(saveChunk_PACK(state,stream, volumes))
 
 	int modelId = 0;
