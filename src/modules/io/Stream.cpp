@@ -269,6 +269,15 @@ int ReadStream::readInt(uint32_t &val) {
 	return retVal;
 }
 
+int ReadStream::readInt(int32_t &val) {
+	const int retVal = read(&val, sizeof(val));
+	if (retVal == 0) {
+		const int32_t swapped = (int32_t)SDL_SwapLE32(val);
+		val = swapped;
+	}
+	return retVal;
+}
+
 int ReadStream::readIntBE(uint32_t &val) {
 	const int retVal = read(&val, sizeof(val));
 	if (retVal == 0) {

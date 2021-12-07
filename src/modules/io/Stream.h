@@ -25,6 +25,7 @@ public:
 	int readByte(uint8_t &val);
 	int readShort(uint16_t &val);
 	int readInt(uint32_t &val);
+	int readInt(int32_t &val);
 	int readLong(uint64_t &val);
 	int readFloat(float &val);
 	int readShortBE(uint16_t &val);
