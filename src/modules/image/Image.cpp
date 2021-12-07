@@ -33,6 +33,7 @@
 #include "stb_image.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_STATIC
 #include "stb_image_write.h"
 
 #undef STB_IMAGE_IMPLEMENTATION
@@ -140,6 +141,10 @@ const uint8_t* Image::at(int x, int y) const {
 
 bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {
 	return stbi_write_png(name, width, height, depth, (const void*)buffer, width * depth) != 0;
+}
+
+uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pngSize) {
+	return (uint8_t*)stbi_write_png_to_mem((const unsigned char*)pixels, 0, width, height, depth, pngSize);
 }
 
 static void stream_write_func(void *context, void *data, int size) {

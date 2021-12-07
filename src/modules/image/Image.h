@@ -68,6 +68,7 @@ inline ImagePtr createEmptyImage(const core::String& name) {
 	return core::make_shared<Image>(name);
 }
 
+extern uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pngSize);
 extern ImagePtr loadImage(const io::FilePtr& file, bool async = true);
 extern ImagePtr loadImage(const core::String& filename, bool async = true);
 
