@@ -41,6 +41,8 @@ namespace voxel {
  * byte Blocklight = Nibble4(BlockLight, BlockPos);
  * byte Skylight = Nibble4(SkyLight, BlockPos);
  * @endcode
+ *
+ * @note https://github.com/Voxtric/Minecraft-Level-Ripper/blob/master/WorldConverterV2/Processor.cs
  */
 class MCRFormat : public Format {
 private:
