@@ -224,10 +224,11 @@ AppState App::onConstruct() {
 
 	command::Command::registerCommand("set", [] (const command::CmdArgs& args) {
 		if (args.size() < 2) {
+			Log::info("usage: set <name> <value>");
 			return;
 		}
 		core::Var::get(args[0], "")->setVal(core::string::join(args.begin() + 1, args.end(), " "));
-	}).setHelp("Set a variable name");
+	}).setHelp("Set a variable value");
 
 	command::Command::registerCommand("quit", [&] (const command::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
 
