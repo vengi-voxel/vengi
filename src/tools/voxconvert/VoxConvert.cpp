@@ -52,6 +52,18 @@ app::AppState VoxConvert::onConstruct() {
 	return state;
 }
 
+void VoxConvert::usage() const {
+	Super::usage();
+	Log::info("Load support:");
+	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD; desc->ext != nullptr; ++desc) {
+		Log::info(" * %s (*.%s)", desc->name, desc->ext);
+	}
+	Log::info("Save support:");
+	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
+		Log::info(" * %s (*.%s)", desc->name, desc->ext);
+	}
+}
+
 app::AppState VoxConvert::onInit() {
 	const app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {

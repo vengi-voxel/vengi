@@ -22,6 +22,8 @@ private:
 	core::VarPtr _quads;
 	core::VarPtr _withColor;
 	core::VarPtr _withTexCoords;
+protected:
+	void usage() const override;
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
