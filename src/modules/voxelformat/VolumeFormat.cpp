@@ -22,6 +22,7 @@
 #include "voxelformat/VXRFormat.h"
 #include "voxelformat/VXLFormat.h"
 #include "voxelformat/CubFormat.h"
+#include "voxelformat/GoxFormat.h"
 #include "voxelformat/BinVoxFormat.h"
 #include "voxelformat/KVXFormat.h"
 #include "voxelformat/KV6Format.h"
@@ -50,6 +51,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 			|| magic == FourCC('V','X','R','3') || magic == FourCC('V','X','R','2')
 			|| magic == FourCC('V','X','R','1');}, 0u},
 	{"BinVox", "binvox", [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
+	{"Goxel", "gox", [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 	{"CubeWorld", "cub", nullptr, 0u},
 	{"Build engine", "kvx", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Ace of Spades", "kv6", [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
@@ -70,6 +72,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	//{"Qubicle Project", "qbcl", nullptr, 0u},
 	{"Sandbox VoxEdit", "vxm", nullptr, 0u},
 	{"BinVox", "binvox", nullptr, 0u},
+	//{"Goxel", "gox", nullptr, 0u},
 	{"CubeWorld", "cub", nullptr, 0u},
 	//{"Build engine", "kvx", nullptr, 0u},
 	{"Tiberian Sun", "vxl", nullptr, 0u},
@@ -128,6 +131,8 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 		format = core::make_shared<voxel::KV6Format>();
 	} else if (ext == "cub") {
 		format = core::make_shared<voxel::CubFormat>();
+	} else if (ext == "gox") {
+		format = core::make_shared<voxel::GoxFormat>();
 	} else if (ext == "vxm") {
 		format = core::make_shared<voxel::VXMFormat>();
 	} else if (ext == "vxr") {

@@ -6,6 +6,7 @@ set(SRCS
 	CSMFormat.h CSMFormat.cpp
 	KVXFormat.h KVXFormat.cpp
 	KV6Format.h KV6Format.cpp
+	GoxFormat.h GoxFormat.cpp
 	QBTFormat.h QBTFormat.cpp
 	QBFormat.h QBFormat.cpp
 	QBCLFormat.h QBCLFormat.cpp
@@ -30,6 +31,7 @@ set(TEST_SRCS
 	tests/AoSVXLFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
 	tests/VoxFormatTest.cpp
+	tests/GoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
 	tests/QBCLFormatTest.cpp
@@ -56,6 +58,7 @@ set(TEST_FILES
 	tests/test.kv6
 	tests/minecraft_113.mca
 	tests/magicavoxel.vox
+	tests/test.gox
 	tests/test.vxm
 	tests/test2.vxm
 	tests/cw.cub

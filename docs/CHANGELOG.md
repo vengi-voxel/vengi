@@ -9,6 +9,7 @@ General:
    - Fixed missing vxm (version 4) saving support
    - Fixed missing palette value for vxm saving
    - Added support for loading only the palettes
+   - Added support for goxel gox file format
 
 VoxConvert:
 
