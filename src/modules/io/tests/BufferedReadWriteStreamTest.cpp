@@ -117,7 +117,7 @@ TEST(BufferedReadWriteStreamTest, testReadExceedsSize) {
 
 TEST(BufferedReadWriteStreamTest, testSeek) {
 	BufferedReadWriteStream stream;
-	EXPECT_EQ(-1, stream.seek(-1));
+	EXPECT_EQ(0, stream.seek(-1));
 	EXPECT_EQ(0, stream.pos());
 	EXPECT_EQ(0, stream.size());
 	uint32_t writeVal = 0;
