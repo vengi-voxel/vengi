@@ -10,6 +10,9 @@ vengi (0.0.15.0-1) UNRELEASED; urgency=low
   * Added option to keep the input file palette and don't perform quantization
   * Allow to export the palette to png
 
+  * Thumbnailer:
+  * Try to use the built-in palette for models
+
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 21 Nov 2021 11:56:02 +0100
 
 vengi (0.0.14.0-1) unstable; urgency=low

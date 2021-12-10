@@ -16,6 +16,10 @@ VoxConvert:
    - Added option to keep the input file palette and don't perform quantization
    - Allow to export the palette to png
 
+Thumbnailer:
+
+   - Try to use the built-in palette for models
+
 ## 0.0.14 (2021-11-21)
 
 General:

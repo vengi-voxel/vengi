@@ -23,6 +23,10 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	if (image) {
 		return image;
 	}
+	if (!voxel::initDefaultMaterialColors()) {
+		Log::error("Failed to initialize the default materials");
+		return image::ImagePtr();
+	}
 
 	stream.seek(0);
 	core::Array<uint32_t, 256> palette;
