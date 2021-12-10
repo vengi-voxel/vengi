@@ -26,7 +26,7 @@ extern core::String getWildcardsFromPattern(const core::String &pattern);
 
 namespace format {
 
-inline const FormatDescription* png() {
+inline const FormatDescription* images() {
 	static FormatDescription desc[] = {
 		{"Image", "png", nullptr, 0u},
 		{nullptr, nullptr, nullptr, 0u}

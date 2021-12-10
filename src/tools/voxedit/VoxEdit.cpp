@@ -62,7 +62,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, io::format::png());
+			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, io::format::images());
 			return;
 		}
 		_mainWindow->saveScreenshot(args[0]);
@@ -100,7 +100,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, io::format::png());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, io::format::images());
 			return;
 		}
 		if (!voxedit::sceneMgr().importHeightmap(args[0])) {
@@ -110,7 +110,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, io::format::png());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, io::format::images());
 			return;
 		}
 		if (!voxedit::sceneMgr().importAsPlane(args[0])) {
@@ -120,7 +120,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, io::format::png());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, io::format::images());
 			return;
 		}
 		if (!voxedit::sceneMgr().importPalette(args[0])) {
