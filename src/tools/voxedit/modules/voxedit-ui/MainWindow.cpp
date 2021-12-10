@@ -3,6 +3,7 @@
  */
 
 #include "MainWindow.h"
+#include "ScopedStyle.h"
 #include "Viewport.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
@@ -345,14 +346,36 @@ void MainWindow::update() {
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight));
 	ImGui::SetNextWindowViewport(viewport->ID);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
-	windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoMove;
-	ImGui::Begin("##app", nullptr, windowFlags);
-	ImGui::PopStyleVar(3);
+	{
+		ui::imgui::ScopedStyle style;
+		style.setWindowRounding(0.0f);
+		style.setWindowBorderSize(0.0f);
+		style.setWindowPadding(ImVec2(0.0f, 0.0f));
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		windowFlags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+		windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoMove;
+		if (sceneMgr().dirty()) {
+			windowFlags |= ImGuiWindowFlags_UnsavedDocument;
+		}
+
+		core::String windowTitle = core::string::extractFilenameWithExtension(_lastOpenedFile->strVal());
+		if (windowTitle.empty()) {
+			windowTitle = _app->appname();
+		} else {
+			windowTitle.append(" - ");
+			windowTitle.append(_app->appname());
+		}
+		static bool keepRunning = true;
+		if (!ImGui::Begin(windowTitle.c_str(), &keepRunning, windowFlags)) {
+			ImGui::SetWindowCollapsed(ImGui::GetCurrentWindow(), false);
+			ImGui::End();
+			_app->minimize();
+			return;
+		}
+		if (!keepRunning) {
+			_app->requestQuit();
+		}
+	}
 
 	_menuBar.update(_app, _lastExecutedCommand);
 
