@@ -92,7 +92,7 @@ void Camera::setWorldPosition(const glm::vec3& worldPos) {
 	if (glm::all(glm::epsilonEqual(_worldPos, worldPos, 0.0001f))) {
 		return;
 	}
-	_dirty |= DIRTY_POSITON;
+	_dirty |= DIRTY_POSITION;
 	_worldPos = worldPos;
 	if (_rotationType == CameraRotationType::Target) {
 		lookAt(_target);
@@ -152,7 +152,7 @@ void Camera::move(const glm::vec3& delta) {
 	if (glm::all(glm::epsilonEqual(delta, glm::zero<glm::vec3>(), 0.0001f))) {
 		return;
 	}
-	_dirty |= DIRTY_POSITON;
+	_dirty |= DIRTY_POSITION;
 	_worldPos += forward() * -delta.z;
 	_worldPos += right() * delta.x;
 	_worldPos += up() * delta.y;
@@ -275,7 +275,7 @@ void Camera::updateTarget() {
 		return;
 	}
 	_worldPos = newPosition;
-	_dirty |= DIRTY_POSITON;
+	_dirty |= DIRTY_POSITION;
 }
 
 void Camera::update(double deltaFrameSeconds) {
@@ -319,7 +319,7 @@ void Camera::updateProjectionMatrix() {
 }
 
 void Camera::updateViewMatrix() {
-	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON)) {
+	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITION)) {
 		return;
 	}
 	_viewMatrix = glm::translate(orientation(), -_worldPos);
@@ -422,7 +422,7 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::F
 }
 
 void Camera::updateFrustumVertices() {
-	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
+	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITION | DIRTY_PERSPECTIVE)) {
 		return;
 	}
 
@@ -430,7 +430,7 @@ void Camera::updateFrustumVertices() {
 }
 
 void Camera::updateFrustumPlanes() {
-	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
+	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITION | DIRTY_PERSPECTIVE)) {
 		return;
 	}
 
@@ -438,7 +438,7 @@ void Camera::updateFrustumPlanes() {
 }
 
 math::AABB<float> Camera::aabb() const {
-	core_assert(!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE));
+	core_assert(!isDirty(DIRTY_ORIENTATION | DIRTY_POSITION | DIRTY_PERSPECTIVE));
 	return frustum().aabb();
 }
 

@@ -51,7 +51,7 @@ enum class CameraMode {
 class Camera {
 protected:
 	constexpr static uint32_t DIRTY_ORIENTATION = 1 << 0;
-	constexpr static uint32_t DIRTY_POSITON     = 1 << 1;
+	constexpr static uint32_t DIRTY_POSITION    = 1 << 1;
 	constexpr static uint32_t DIRTY_FRUSTUM     = 1 << 2;
 	constexpr static uint32_t DIRTY_TARGET      = 1 << 3;
 	constexpr static uint32_t DIRTY_PERSPECTIVE = 1 << 4;
