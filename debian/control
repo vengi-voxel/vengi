@@ -86,15 +86,3 @@ Description: Converter for voxel models
   Nick's Voxel Model nvm
  Supported formats for saving are:
   vox,qbt,qb,binvox,cub,vxl,qef,obj,ply
-
-Package: vengi-owserver
-Architecture: any
-Multi-Arch: foreign
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Voxel engine gameserver
-
-Package: vengi-owclient
-Architecture: any
-Multi-Arch: foreign
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Voxel engine client
