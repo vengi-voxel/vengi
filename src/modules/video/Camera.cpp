@@ -68,9 +68,21 @@ void Camera::pan(int x, int y) {
 		_orthoPosition.y += y;
 		break;
 	case CameraMode::Perspective:
-	case CameraMode::Max:
-		// TODO:
+	case CameraMode::Max: {
+		const glm::vec3 r = right() * (float)-x;
+		const glm::vec3 u = up() * (float)y;
+		_panOffset += r;
+		_panOffset += u;
+		_worldPos += r;
+		_worldPos += u;
+		_dirty |= DIRTY_POSITION;
+		if (_rotationType == CameraRotationType::Target) {
+			_target += r;
+			_target += u;
+			_dirty |= DIRTY_TARGET;
+		}
 		break;
+	}
 	}
 
 	_dirty |= DIRTY_PERSPECTIVE;
@@ -270,7 +282,7 @@ void Camera::updateTarget() {
 		return;
 	}
 	const glm::vec3& backward = -forward();
-	const glm::vec3& newPosition = _target + backward * _distance;
+	const glm::vec3& newPosition = _panOffset + _target + backward * _distance;
 	if (glm::all(glm::epsilonEqual(_worldPos, newPosition, 0.0001f))) {
 		return;
 	}
