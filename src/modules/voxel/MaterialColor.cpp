@@ -55,13 +55,17 @@ public:
 		_dirty = true;
 		_materialColors.reserve(256);
 		const size_t colors = paletteBufferSize / 4;
-		if (colors != _materialColors.capacity()) {
-			Log::error("Palette image has invalid dimensions - we need 256x1(depth: 4)");
+		if (colors > _materialColors.capacity()) {
+			Log::error("Palette image has invalid dimensions - we need max 256x1(depth: 4)");
 			return false;
 		}
 		const uint32_t* paletteData = (const uint32_t*)paletteBuffer;
 		for (size_t i = 0; i < colors; ++i) {
 			_materialColors.emplace_back(core::Color::fromRGBA(*paletteData));
+			++paletteData;
+		}
+		for (size_t i = colors; i < _materialColors.capacity(); ++i) {
+			_materialColors.emplace_back(core::Color::Black);
 			++paletteData;
 		}
 		Log::debug("Set up %i material colors", (int)_materialColors.size());
