@@ -27,7 +27,7 @@ namespace voxel {
 static bool readString(io::SeekableReadStream& stream, core::String& str, bool readStringAsInt) {
 	if (readStringAsInt) {
 		uint32_t length;
-		wrap(stream.readInt(length))
+		wrap(stream.readUInt32(length))
 		if (length > 4096) {
 			// sanity check
 			return false;
@@ -38,7 +38,7 @@ static bool readString(io::SeekableReadStream& stream, core::String& str, bool r
 		str = name;
 	} else {
 		uint8_t length;
-		wrap(stream.readByte(length))
+		wrap(stream.readUInt8(length))
 		char name[256];
 		wrapBool(stream.readString(length, name))
 		name[length] = '\0';
@@ -50,11 +50,11 @@ static bool readString(io::SeekableReadStream& stream, core::String& str, bool r
 bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 	uint32_t magic, version, blank, matrixCount;
-	wrap(stream.readInt(magic))
+	wrap(stream.readUInt32(magic))
 	const bool isNVM = magic == FourCC('.','N','V','M');
-	wrap(stream.readInt(version))
-	wrap(stream.readInt(blank))
-	wrap(stream.readInt(matrixCount))
+	wrap(stream.readUInt32(version))
+	wrap(stream.readUInt32(blank))
+	wrap(stream.readUInt32(matrixCount))
 
 	if (isNVM && version > 2) {
 		Log::warn("nvm is only supported up to version 2");
@@ -73,14 +73,14 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			wrapBool(readString(stream, parent, readStringAsInt))
 		}
 		uint16_t posx, posy, posz;
-		wrap(stream.readShort(posx))
-		wrap(stream.readShort(posy))
-		wrap(stream.readShort(posz))
+		wrap(stream.readUInt16(posx))
+		wrap(stream.readUInt16(posy))
+		wrap(stream.readUInt16(posz))
 
 		uint16_t sizex, sizey, sizez;
-		wrap(stream.readShort(sizex))
-		wrap(stream.readShort(sizey))
-		wrap(stream.readShort(sizez))
+		wrap(stream.readUInt16(sizex))
+		wrap(stream.readUInt16(sizey))
+		wrap(stream.readUInt16(sizez))
 
 		if (sizex > MaxRegionSize || sizey > MaxRegionSize || sizez > MaxRegionSize) {
 			Log::error("Volume exceeds the max allowed size: %i:%i:%i", sizex, sizey, sizez);
@@ -101,15 +101,15 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 		while (matrixIndex < voxels) {
 			uint8_t count;
-			wrap(stream.readByte(count))
+			wrap(stream.readUInt8(count))
 			uint8_t r;
-			wrap(stream.readByte(r))
+			wrap(stream.readUInt8(r))
 			uint8_t g;
-			wrap(stream.readByte(g))
+			wrap(stream.readUInt8(g))
 			uint8_t b;
-			wrap(stream.readByte(b))
+			wrap(stream.readUInt8(b))
 			uint8_t interactiontype;
-			wrap(stream.readByte(interactiontype))
+			wrap(stream.readUInt8(interactiontype))
 			if (interactiontype == 0u) {
 				matrixIndex += count;
 				continue;

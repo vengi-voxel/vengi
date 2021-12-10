@@ -83,7 +83,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 				} offset;
 			} data;
 			for (int j = 0; j < 4; ++j) {
-				wrap(stream.readByte(data.raw[j]));
+				wrap(stream.readUInt8(data.raw[j]));
 			}
 			_offsets[i].sectorCount = data.offset.sectors;
 			const uint32_t value = data.offset.offset;
@@ -92,7 +92,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 		for (int i = 0; i < SECTOR_INTS; ++i) {
 			uint32_t lastModValue;
-			wrap(stream.readIntBE(lastModValue));
+			wrap(stream.readUInt32BE(lastModValue));
 			_chunkTimestamps[i] = lastModValue;
 		}
 
@@ -128,7 +128,7 @@ bool MCRFormat::loadMinecraftRegion(VoxelVolumes &volumes, const uint8_t *buffer
 
 bool MCRFormat::readCompressedNBT(VoxelVolumes &volumes, const uint8_t *buffer, int length, io::SeekableReadStream &stream) {
 	uint32_t nbtSize;
-	wrap(stream.readIntBE(nbtSize));
+	wrap(stream.readUInt32BE(nbtSize));
 	if (nbtSize == 0) {
 		Log::debug("Empty nbt chunk found");
 		return true;
@@ -140,7 +140,7 @@ bool MCRFormat::readCompressedNBT(VoxelVolumes &volumes, const uint8_t *buffer, 
 	}
 
 	uint8_t version;
-	wrap(stream.readByte(version));
+	wrap(stream.readUInt8(version));
 	if (version != VERSION_GZIP && version != VERSION_DEFLATE) {
 		Log::error("Unsupported version found: %u", version);
 		return false;
@@ -452,9 +452,9 @@ bool MCRFormat::parseNBTChunk(VoxelVolumes &volumes, const uint8_t *buffer, int 
 			while (!stream.eos()) {
 				wrapBool(getNext(stream, nbt));
 				if (nbt.name == "xPos" && nbt.id == TagId::INT) {
-					wrap(stream.readIntBE((uint32_t &)xPos));
+					wrap(stream.readUInt32BE((uint32_t &)xPos));
 				} else if (nbt.name == "zPos" && nbt.id == TagId::INT) {
-					wrap(stream.readIntBE((uint32_t &)zPos));
+					wrap(stream.readUInt32BE((uint32_t &)zPos));
 				} else if (nbt.name == "Sections" && nbt.id == TagId::LIST) {
 					TagId listId;
 					uint32_t sections;
@@ -463,7 +463,7 @@ bool MCRFormat::parseNBTChunk(VoxelVolumes &volumes, const uint8_t *buffer, int 
 						Log::error("Unexpected section tag id: %i", (int)listId);
 						return false;
 					}
-					wrap(stream.readIntBE(sections));
+					wrap(stream.readUInt32BE(sections));
 					Log::debug("Found %u Sections (type: %i)", sections, (int)listId);
 
 					for (uint32_t i = 0; i < sections; ++i) {
@@ -489,7 +489,7 @@ bool MCRFormat::parseNBTChunk(VoxelVolumes &volumes, const uint8_t *buffer, int 
 								Log::debug("Section y: %u", y);
 							} else if (nbt.name == "BlockStates" && nbt.id == TagId::LONG_ARRAY) {
 								uint32_t arrayLength;
-								wrap(stream.readIntBE(arrayLength));
+								wrap(stream.readUInt32BE(arrayLength));
 								blockStates = buffer + stream.pos();
 								Log::debug("Found %u blockstates, %u", arrayLength, (uint32_t)stream.remaining());
 								wrapBool(stream.skip(arrayLength * 8));
@@ -501,7 +501,7 @@ bool MCRFormat::parseNBTChunk(VoxelVolumes &volumes, const uint8_t *buffer, int 
 									Log::error("Unexpected palette tag id: %i", (int)paletteListId);
 									return false;
 								}
-								wrap(stream.readIntBE(palettes));
+								wrap(stream.readUInt32BE(palettes));
 								Log::debug("Found %u palettes (type: %i)", palettes, (int)paletteListId);
 
 								core::DynamicArray<uint32_t> idMapping(palettes);
@@ -512,13 +512,13 @@ bool MCRFormat::parseNBTChunk(VoxelVolumes &volumes, const uint8_t *buffer, int 
 									wrapBool(getNext(stream, nbt));
 									if (nbt.name == "Name" && nbt.id == TagId::STRING) {
 										uint16_t nameLength;
-										wrap(stream.readShortBE(nameLength));
+										wrap(stream.readUInt16BE(nameLength));
 										Log::debug("Load palette name of length %u", nameLength);
 
 										core::String name;
 										for (uint16_t i = 0u; i < nameLength; ++i) {
 											uint8_t chr;
-											wrap(stream.readByte(chr));
+											wrap(stream.readUInt8(chr));
 											name += (char)chr;
 										}
 										Log::debug("Palette name: %s", name.c_str());
@@ -538,7 +538,7 @@ bool MCRFormat::parseNBTChunk(VoxelVolumes &volumes, const uint8_t *buffer, int 
 								}
 							} else if (nbt.name == "Blocks" && nbt.id == TagId::LONG_ARRAY) {
 								uint32_t arrayLength;
-								wrap(stream.readIntBE(arrayLength));
+								wrap(stream.readUInt32BE(arrayLength));
 								Log::debug("Found %u Blocks, %u", arrayLength, (uint32_t)stream.remaining());
 
 								blocks = buffer + stream.pos();
@@ -613,28 +613,28 @@ bool MCRFormat::skip(io::SeekableReadStream &stream, TagId id) {
 		break;
 	case TagId::BYTE_ARRAY: {
 		uint32_t length;
-		wrap(stream.readIntBE(length));
+		wrap(stream.readUInt32BE(length));
 		Log::debug("skip %u bytes", length + 4);
 		wrapBool(stream.skip(length));
 		break;
 	}
 	case TagId::STRING: {
 		uint16_t length;
-		wrap(stream.readShortBE(length));
+		wrap(stream.readUInt16BE(length));
 		Log::debug("skip %u bytes", length + 2);
 		wrapBool(stream.skip(length));
 		break;
 	}
 	case TagId::INT_ARRAY: {
 		uint32_t length;
-		wrap(stream.readIntBE(length));
+		wrap(stream.readUInt32BE(length));
 		Log::debug("skip %u bytes", length * 4 + 4);
 		wrapBool(stream.skip(length * 4));
 		break;
 	}
 	case TagId::LONG_ARRAY: {
 		uint32_t length;
-		wrap(stream.readIntBE(length));
+		wrap(stream.readUInt32BE(length));
 		Log::debug("skip %u bytes", length * 8 + 4);
 		wrapBool(stream.skip(length * 8));
 		break;
@@ -643,7 +643,7 @@ bool MCRFormat::skip(io::SeekableReadStream &stream, TagId id) {
 		TagId listId;
 		uint32_t length;
 		wrap(stream.read(&listId, sizeof(listId)));
-		wrap(stream.readIntBE(length));
+		wrap(stream.readUInt32BE(length));
 		Log::debug("skip 5 bytes + %u list elements following", length);
 		for (uint32_t i = 0; i < length; ++i) {
 			skip(stream, listId);
@@ -677,13 +677,13 @@ bool MCRFormat::getNext(io::SeekableReadStream &stream, MCRFormat::NamedBinaryTa
 		return true;
 	}
 	uint16_t nameLength;
-	wrap(stream.readShortBE(nameLength));
+	wrap(stream.readUInt16BE(nameLength));
 	Log::debug("Load string of length %u", nameLength);
 
 	nbt.name.clear();
 	for (uint16_t i = 0u; i < nameLength; ++i) {
 		uint8_t chr;
-		wrap(stream.readByte(chr));
+		wrap(stream.readUInt8(chr));
 		nbt.name += (char)chr;
 	}
 	Log::debug("Found tag %s at level %i", nbt.name.c_str(), nbt.level);

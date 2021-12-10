@@ -6,59 +6,72 @@
 
 namespace io {
 
-BufferedReadWriteStream::BufferedReadWriteStream(int size) {
-	_buffer.reserve(size);
+BufferedReadWriteStream::BufferedReadWriteStream(int64_t size) {
+	resizeBuffer(size);
 }
 
-void BufferedReadWriteStream::resize(size_t size) {
-	_buffer.resize(size);
+BufferedReadWriteStream::~BufferedReadWriteStream() {
+	core_free(_buffer);
+}
+
+void BufferedReadWriteStream::resizeBuffer(int64_t size) {
+	if (size == 0u) {
+		return;
+	}
+	if (_capacity >= size) {
+		return;
+	}
+	_capacity = align(size);
+	if (!_buffer) {
+		_buffer = (uint8_t*)core_malloc(_capacity);
+	} else {
+		_buffer = (uint8_t*)core_realloc(_buffer, _capacity);
+	}
 }
 
 int BufferedReadWriteStream::write(const void *buf, size_t size) {
 	if (size == 0) {
 		return 0;
 	}
-	_buffer.reserve(_buffer.size() + size);
-	_buffer.insert(_buffer.end(), (const uint8_t *)buf, (const uint8_t *)buf + size);
+	resizeBuffer(_pos + (int64_t)size);
+	core_memcpy(&_buffer[_pos], buf, size);
+	_pos += (int64_t)size;
+	_size = core_max(_pos, _size);
 	return 0;
 }
 
-int BufferedReadWriteStream::read(void *dataPtr, size_t dataSize) {
-	if (_pos + dataSize > _buffer.size()) {
+int BufferedReadWriteStream::read(void *buf, size_t size) {
+	if (_pos + (int64_t)size > _size) {
 		return -1;
 	}
-	core_memcpy(dataPtr, &_buffer[_pos], dataSize);
-	_pos += (int64_t)dataSize;
+	core_memcpy(buf, &_buffer[_pos], size);
+	_pos += (int64_t)size;
 	return 0;
 }
 
 int64_t BufferedReadWriteStream::seek(int64_t position, int whence) {
-	const int64_t s = (int64_t)_buffer.size();
+	const int64_t s = size();
+	int64_t newPos = -1;
 	switch (whence) {
 	case SEEK_SET:
-		_pos = position;
+		newPos = position;
 		break;
 	case SEEK_CUR:
-		_pos += position;
+		newPos = _pos + position;
 		break;
 	case SEEK_END:
-		_pos = s - position;
+		newPos = s + position;
 		break;
+	default:
+		return -1;
 	}
-	if (_pos < 0) {
-		_pos = 0;
-	} else if (_pos > s) {
-		_pos = s;
+	if (newPos < 0) {
+		newPos = 0;
+	} else if (newPos > s) {
+		newPos = s;
 	}
-	return _pos;
-}
-
-const uint8_t *BufferedReadWriteStream::getBuffer() const {
-	return &_buffer[0];
-}
-
-void BufferedReadWriteStream::clear() {
-	_buffer.clear();
+	_pos = newPos;
+	return 0;
 }
 
 int64_t BufferedReadWriteStream::pos() const {
@@ -66,7 +79,7 @@ int64_t BufferedReadWriteStream::pos() const {
 }
 
 int64_t BufferedReadWriteStream::size() const {
-	return (int64_t)_buffer.size();
+	return _size;
 }
 
 } // namespace io

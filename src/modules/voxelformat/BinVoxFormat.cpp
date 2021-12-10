@@ -235,8 +235,8 @@ bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &f
 		if (voxel.getMaterial() == VoxelType::Air) {
 			if (value != 0u || count == 255u) {
 				if (count > 0u) {
-					stream.writeByte(value);
-					stream.writeByte(count);
+					stream.writeUInt8(value);
+					stream.writeUInt8(count);
 				}
 				voxels += count;
 				count = 0u;
@@ -247,8 +247,8 @@ bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &f
 			const uint8_t v = voxel.getColor();
 			if (value != v || count == 255u) {
 				if (count > 0u) {
-					stream.writeByte(value);
-					stream.writeByte(count);
+					stream.writeUInt8(value);
+					stream.writeUInt8(count);
 				}
 				voxels += count;
 				count = 0u;
@@ -258,8 +258,8 @@ bool BinVoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &f
 		}
 	}
 	core_assert_msg(count > 0u, "Expected to have at least one voxel left: %i", (int)count);
-	stream.writeByte(value);
-	stream.writeByte(count);
+	stream.writeUInt8(value);
+	stream.writeUInt8(count);
 	voxels += count;
 	delete mergedVolume;
 	const uint32_t expectedVoxels = width * height * depth;

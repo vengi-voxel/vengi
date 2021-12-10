@@ -76,7 +76,7 @@ private:
 
 	struct State {
 		int32_t version = 0;
-		core::Array<image::ImagePtr, 64> images;
+		core::Array<image::ImagePtr, 4096> images;
 		int imageIndex = 0;
 	};
 
@@ -107,12 +107,14 @@ private:
 	bool saveChunk_LIGH(io::SeekableWriteStream &stream);
 
 	// Write all the blocks chunks.
-	bool saveChunk_BL16(io::SeekableWriteStream &stream, const VoxelVolumes &volumes);
+	bool saveChunk_BL16(io::SeekableWriteStream &stream, const VoxelVolumes &volumes, int &blocks);
 	// Write all the materials.
 	bool saveChunk_MATE(io::SeekableWriteStream &stream);
 	// Write all the layers.
-	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const VoxelVolumes &volumes);
+	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const VoxelVolumes &volumes, int numBlocks);
 
+	bool isEmptyBlock(const voxel::RawVolume *v, int x, int y, int z) const;
+	void calcMinsMaxs(const voxel::Region& region, glm::ivec3 &mins, glm::ivec3 &maxs) const;
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) override;
 	bool saveGroups(const VoxelVolumes &volumes, const core::String &filename,

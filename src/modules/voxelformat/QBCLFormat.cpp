@@ -59,9 +59,9 @@ bool QBCLFormat::readMatrix(io::SeekableReadStream &stream) {
 	uint32_t mx; // 32
 	uint32_t my;
 	uint32_t mz;
-	wrap(stream.readInt(mx))
-	wrap(stream.readInt(my))
-	wrap(stream.readInt(mz))
+	wrap(stream.readUInt32(mx))
+	wrap(stream.readUInt32(my))
+	wrap(stream.readUInt32(mz))
 	Log::debug("QBCL: matrix size %u:%u:%u", mx, my, mz);
 	// TODO
 	return false;
@@ -72,23 +72,23 @@ bool QBCLFormat::readModel(io::SeekableReadStream &stream) {
 	uint32_t y;
 	uint32_t z;
 
-	wrap(stream.readInt(x))
-	wrap(stream.readInt(y))
-	wrap(stream.readInt(z))
+	wrap(stream.readUInt32(x))
+	wrap(stream.readUInt32(y))
+	wrap(stream.readUInt32(z))
 	Log::debug("QBCL: model size %u:%u:%u", x, y, z);
 
 	uint32_t r[6];
 	for (int i = 0; i < lengthof(r); ++i) {
-		wrap(stream.readInt(r[i]))
+		wrap(stream.readUInt32(r[i]))
 		Log::debug("QBCL: r[%i] = %u", i, r[i]);
 	}
 	uint32_t n;
 	uint32_t u;
 	uint32_t v;
 
-	wrap(stream.readInt(n))
-	wrap(stream.readInt(u))
-	wrap(stream.readInt(v))
+	wrap(stream.readUInt32(n))
+	wrap(stream.readUInt32(u))
+	wrap(stream.readUInt32(v))
 	Log::debug("QBCL: n: %u, u: %u, v: %u", n, u, v);
 	// TODO
 	return false;
@@ -100,19 +100,19 @@ bool QBCLFormat::readCompound(io::SeekableReadStream &stream) {
 
 bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t magic;
-	wrap(stream.readInt(magic))
+	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {
 		Log::error("Invalid magic found - no qbcl file");
 		return false;
 	}
 	uint32_t version;
-	wrapImg(stream.readInt(version))
+	wrapImg(stream.readUInt32(version))
 	uint32_t flags;
-	wrap(stream.readInt(flags))
+	wrap(stream.readUInt32(flags))
 	uint32_t thumbWidth;
-	wrap(stream.readInt(thumbWidth))
+	wrap(stream.readUInt32(thumbWidth))
 	uint32_t thumbHeight;
-	wrap(stream.readInt(thumbHeight))
+	wrap(stream.readUInt32(thumbHeight))
 	wrapBool(stream.skip((int64_t)(thumbWidth * thumbHeight * 4)))
 
 #if 0
@@ -167,19 +167,19 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 
 image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
 	uint32_t magic;
-	wrapImg(stream.readInt(magic))
+	wrapImg(stream.readUInt32(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {
 		Log::error("Invalid magic found - no qbcl file");
 		return image::ImagePtr();
 	}
 	uint32_t version;
-	wrapImg(stream.readInt(version))
+	wrapImg(stream.readUInt32(version))
 	uint32_t flags;
-	wrapImg(stream.readInt(flags))
+	wrapImg(stream.readUInt32(flags))
 	uint32_t thumbWidth;
-	wrapImg(stream.readInt(thumbWidth))
+	wrapImg(stream.readUInt32(thumbWidth))
 	uint32_t thumbHeight;
-	wrapImg(stream.readInt(thumbHeight))
+	wrapImg(stream.readUInt32(thumbHeight))
 	image::ImagePtr img = image::createEmptyImage(filename);
 	const uint32_t thumbnailSize = thumbWidth * thumbHeight * 4;
 

@@ -25,10 +25,10 @@ const int NEXT_SLICE_FLAG = 6;
 	}
 
 #define wrapSaveColor(color) \
-	wrapSave(stream.writeByte((color).x)) \
-	wrapSave(stream.writeByte((color).y)) \
-	wrapSave(stream.writeByte((color).z)) \
-	wrapSave(stream.writeByte((color).w))
+	wrapSave(stream.writeUInt8((color).x)) \
+	wrapSave(stream.writeUInt8((color).y)) \
+	wrapSave(stream.writeUInt8((color).z)) \
+	wrapSave(stream.writeUInt8((color).w))
 
 
 #define wrap(read) \
@@ -57,7 +57,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& vo
 		return false;
 	}
 	const int nameLength = volume.name.size();
-	wrapSave(stream.writeByte(nameLength));
+	wrapSave(stream.writeUInt8(nameLength));
 	wrapSave(stream.writeString(volume.name, false));
 
 	const voxel::Region& region = volume.volume->region();
@@ -66,13 +66,13 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& vo
 		return false;
 	}
 	const glm::ivec3 size = region.getDimensionsInVoxels();
-	wrapSave(stream.writeInt(size.x));
-	wrapSave(stream.writeInt(size.y));
-	wrapSave(stream.writeInt(size.z));
+	wrapSave(stream.writeUInt32(size.x));
+	wrapSave(stream.writeUInt32(size.y));
+	wrapSave(stream.writeUInt32(size.z));
 
-	wrapSave(stream.writeInt(region.getLowerX()));
-	wrapSave(stream.writeInt(region.getLowerY()));
-	wrapSave(stream.writeInt(region.getLowerZ()));
+	wrapSave(stream.writeUInt32(region.getLowerX()));
+	wrapSave(stream.writeUInt32(region.getLowerY()));
+	wrapSave(stream.writeUInt32(region.getLowerZ()));
 
 	constexpr voxel::Voxel Empty;
 	const glm::ivec4 EmptyColor(0);
@@ -113,8 +113,8 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& vo
 						wrapSaveColor(currentColor)
 						wrapSaveColor(currentColor)
 					} else if (count > 3) {
-						wrapSave(stream.writeInt(RLE_FLAG))
-						wrapSave(stream.writeInt(count))
+						wrapSave(stream.writeUInt32(RLE_FLAG))
+						wrapSave(stream.writeUInt32(count))
 						wrapSaveColor(currentColor)
 					}
 					count = 0;
@@ -133,23 +133,23 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& vo
 			wrapSaveColor(currentColor)
 			wrapSaveColor(currentColor)
 		} else if (count > 3) {
-			wrapSave(stream.writeInt(RLE_FLAG))
-			wrapSave(stream.writeInt(count))
+			wrapSave(stream.writeUInt32(RLE_FLAG))
+			wrapSave(stream.writeUInt32(count))
 			wrapSaveColor(currentColor)
 		}
 		count = 0;
-		wrapSave(stream.writeInt(NEXT_SLICE_FLAG));
+		wrapSave(stream.writeUInt32(NEXT_SLICE_FLAG));
 	}
 	return true;
 }
 
 bool QBFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapSave(stream.writeInt(257))
-	wrapSave(stream.writeInt((uint32_t)ColorFormat::RGBA))
-	wrapSave(stream.writeInt((uint32_t)ZAxisOrientation::Right))
-	wrapSave(stream.writeInt((uint32_t)Compression::RLE))
-	wrapSave(stream.writeInt((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
-	wrapSave(stream.writeInt((int)volumes.size()))
+	wrapSave(stream.writeUInt32(257))
+	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
+	wrapSave(stream.writeUInt32((uint32_t)ZAxisOrientation::Right))
+	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
+	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
+	wrapSave(stream.writeUInt32((int)volumes.size()))
 	for (const auto& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
@@ -183,10 +183,10 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	uint8_t green;
 	uint8_t blue;
 	uint8_t alpha;
-	wrapColor(stream.readByte(red))
-	wrapColor(stream.readByte(green))
-	wrapColor(stream.readByte(blue))
-	wrapColor(stream.readByte(alpha))
+	wrapColor(stream.readUInt8(red))
+	wrapColor(stream.readUInt8(green))
+	wrapColor(stream.readUInt8(blue))
+	wrapColor(stream.readUInt8(alpha))
 	Log::trace("Red: %i, Green: %i, Blue: %i, Alpha: %i", (int)red, (int)green, (int)blue, (int)alpha);
 	if (alpha == 0) {
 		return voxel::Voxel();
@@ -212,16 +212,16 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	char name[260] = "";
 	uint8_t nameLength;
-	wrap(stream.readByte(nameLength));
+	wrap(stream.readUInt8(nameLength));
 	Log::debug("Matrix name length: %u", (uint32_t)nameLength);
 	wrapBool(stream.readString(nameLength, name));
 	name[nameLength] = '\0';
 	Log::debug("Matrix name: %s", name);
 
 	glm::uvec3 size(0);
-	wrap(stream.readInt((uint32_t&)size.x));
-	wrap(stream.readInt((uint32_t&)size.y));
-	wrap(stream.readInt((uint32_t&)size.z));
+	wrap(stream.readUInt32((uint32_t&)size.x));
+	wrap(stream.readUInt32((uint32_t&)size.y));
+	wrap(stream.readUInt32((uint32_t&)size.z));
 	Log::debug("Matrix size: %i:%i:%i", size.x, size.y, size.z);
 
 	if (size.x == 0 || size.y == 0 || size.z == 0) {
@@ -235,9 +235,9 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVol
 	}
 
 	glm::ivec3 offset(0);
-	wrap(stream.readInt((uint32_t&)offset.x));
-	wrap(stream.readInt((uint32_t&)offset.y));
-	wrap(stream.readInt((uint32_t&)offset.z));
+	wrap(stream.readUInt32((uint32_t&)offset.x));
+	wrap(stream.readUInt32((uint32_t&)offset.y));
+	wrap(stream.readUInt32((uint32_t&)offset.z));
 	Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
 
 	const glm::ivec3 maxs(offset.x + size.x - 1, offset.y + size.y - 1, offset.z + size.z - 1);
@@ -279,7 +279,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVol
 		uint32_t index = 0;
 		for (;;) {
 			uint32_t data;
-			wrap(stream.peekInt(data))
+			wrap(stream.peekUInt32(data))
 			if (data == NEXT_SLICE_FLAG) {
 				stream.skip(sizeof(data));
 				break;
@@ -288,7 +288,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVol
 			uint32_t count = 1;
 			if (data == RLE_FLAG) {
 				stream.skip(sizeof(data));
-				wrap(stream.readInt(count))
+				wrap(stream.readUInt32(count))
 				Log::trace("%u voxels of the same type", count);
 			}
 
@@ -314,22 +314,22 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVol
 
 bool QBFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	State state;
-	wrap(stream.readInt(state._version))
+	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
-	wrap(stream.readInt(colorFormat))
+	wrap(stream.readUInt32(colorFormat))
 	state._colorFormat = (ColorFormat)colorFormat;
 	uint32_t zAxisOrientation;
-	wrap(stream.readInt(zAxisOrientation))
+	wrap(stream.readUInt32(zAxisOrientation))
 	state._zAxisOrientation = ZAxisOrientation::Right; //(ZAxisOrientation)zAxisOrientation;
 	uint32_t compressed;
-	wrap(stream.readInt(compressed))
+	wrap(stream.readUInt32(compressed))
 	state._compressed = (Compression)compressed;
 	uint32_t visibilityMaskEncoded;
-	wrap(stream.readInt(visibilityMaskEncoded))
+	wrap(stream.readUInt32(visibilityMaskEncoded))
 	state._visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
 
 	uint32_t numMatrices;
-	wrap(stream.readInt(numMatrices))
+	wrap(stream.readUInt32(numMatrices))
 
 	Log::debug("Version: %u", state._version);
 	Log::debug("ColorFormat: %u", core::enumVal(state._colorFormat));

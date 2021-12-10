@@ -55,33 +55,49 @@ public:
 		uint8_t buf[4];
 		FourCCRev(buf, chunkId);
 		Log::debug("Saving %c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
-		stream.writeInt(chunkId);
+		stream.writeUInt32(chunkId);
 		_chunkSizePos = stream.pos();
-		stream.writeInt(0);
+		stream.writeUInt32(0);
 	}
 
 	~GoxScopedChunkWriter() {
-		const int64_t chunkStart = _chunkSizePos + sizeof(uint32_t);
+		const int64_t chunkStart = _chunkSizePos + (int64_t)sizeof(uint32_t);
 		const int64_t currentPos = _stream.pos();
 		core_assert_msg(chunkStart <= currentPos, "%u should be <= %u", (uint32_t)chunkStart, (uint32_t)currentPos);
 		const uint64_t chunkSize = currentPos - chunkStart;
 		_stream.seek(_chunkSizePos);
-		_stream.writeInt(chunkSize);
+		_stream.writeUInt32(chunkSize);
 		_stream.seek(currentPos);
-		_stream.writeInt(0); // CRC - not calculated
+		_stream.writeUInt32(0); // CRC - not calculated
 		uint8_t buf[4];
 		FourCCRev(buf, _chunkId);
 		Log::debug("Chunk size for %c%c%c%c: %i", buf[0], buf[1], buf[2], buf[3], (int)chunkSize);
 	}
 };
 
+void GoxFormat::calcMinsMaxs(const voxel::Region& region, glm::ivec3 &mins, glm::ivec3 &maxs) const {
+	const glm::ivec3 &lower = region.getLowerCorner();
+	mins[0] = lower[0] & ~(BlockSize - 1);
+	mins[1] = lower[1] & ~(BlockSize - 1);
+	mins[2] = lower[2] & ~(BlockSize - 1);
+
+	const glm::ivec3 &upper = region.getUpperCorner();
+	maxs[0] = (upper[0] & ~(BlockSize - 1)) + BlockSize - 1;
+	maxs[1] = (upper[1] & ~(BlockSize - 1)) + BlockSize - 1;
+	maxs[2] = (upper[2] & ~(BlockSize - 1)) + BlockSize - 1;
+
+	Log::debug("%s", region.toString().c_str());
+	Log::debug("mins(%i:%i:%i)", mins.x, mins.y, mins.z);
+	Log::debug("maxs(%i:%i:%i)", maxs.x, maxs.y, maxs.z);
+}
+
 bool GoxFormat::loadChunk_Header(GoxChunk &c, io::SeekableReadStream &stream) {
 	if (stream.eos()) {
 		return false;
 	}
 	core_assert_msg(stream.remaining() >= 8, "stream should at least contain 8 more bytes, but only has %i", (int)stream.remaining());
-	wrap(stream.readInt(c.type))
-	wrap(stream.readInt(c.length))
+	wrap(stream.readUInt32(c.type))
+	wrap(stream.readInt32(c.length))
 	c.streamStartPos = stream.pos();
 	return true;
 }
@@ -98,7 +114,7 @@ bool GoxFormat::loadChunk_ReadData(io::SeekableReadStream &stream, char *buff, i
 
 void GoxFormat::loadChunk_ValidateCRC(io::SeekableReadStream &stream) {
 	uint32_t crc;
-	stream.readInt(crc);
+	stream.readUInt32(crc);
 }
 
 bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value) {
@@ -112,7 +128,7 @@ bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &s
 	}
 
 	int keySize;
-	wrap(stream.readInt(keySize));
+	wrap(stream.readInt32(keySize));
 	if (keySize == 0) {
 		Log::warn("Empty string for key in dict");
 		return false;
@@ -125,7 +141,7 @@ bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &s
 	key[keySize] = '\0';
 
 	int valueSize;
-	wrap(stream.readInt(valueSize));
+	wrap(stream.readInt32(valueSize));
 	if (valueSize >= 256) {
 		Log::error("Max size of 256 exceeded for dict value: %i", valueSize);
 		return false;
@@ -140,7 +156,7 @@ bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &s
 
 image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
 	uint32_t magic;
-	wrapImg(stream.readInt(magic))
+	wrapImg(stream.readUInt32(magic))
 
 	if (magic != FourCC('G', 'O', 'X', ' ')) {
 		Log::error("Invalid magic");
@@ -148,7 +164,7 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 	}
 
 	uint32_t version;
-	wrapImg(stream.readInt(version))
+	wrapImg(stream.readUInt32(version))
 
 	if (version != 2) {
 		Log::error("Unknown gox format version found: %u", version);
@@ -180,10 +196,11 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
 
-	wrap(stream.readInt(blockCount))
+	wrap(stream.readUInt32(blockCount))
+	Log::debug("Found LAYR chunk with %i blocks", blockCount);
 	for (uint32_t i = 0; i < blockCount; ++i) {
 		uint32_t index;
-		wrap(stream.readInt(index))
+		wrap(stream.readUInt32(index))
 		if (index > state.images.size()) {
 			Log::error("Index out of bounds: %u", index);
 			return false;
@@ -193,6 +210,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			Log::error("Invalid image index: %u", index);
 			return false;
 		}
+		Log::debug("LAYR references BL16 image with index %i", index);
 		const uint8_t *rgba = img->data();
 		int bpp = img->depth();
 		int w = img->width();
@@ -200,9 +218,9 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 		core_assert(w == 64 && h == 64 && bpp == 4);
 
 		int32_t x, y, z;
-		wrap(stream.readInt(x))
-		wrap(stream.readInt(y))
-		wrap(stream.readInt(z))
+		wrap(stream.readInt32(x))
+		wrap(stream.readInt32(y))
+		wrap(stream.readInt32(z))
 		// Previous version blocks pos.
 		if (state.version == 1) {
 			x -= 8;
@@ -235,6 +253,8 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 				}
 			}
 		}
+		// this will remove empty blocks and the final volume might have a smaller region.
+		// TODO: we should remove this once we have parse volumes support
 		if (!empty) {
 			voxel::Region destReg(layerVolume->region());
 			if (!destReg.containsRegion(blockRegion)) {
@@ -252,21 +272,24 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	char dictKey[256];
 	char dictValue[256];
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
-		// "name" 255 chars max
 		if (!strcmp(dictKey, "name")) {
+			// "name" 255 chars max
 			name = dictValue;
+		} else if (!strcmp(dictKey, "visible")) {
+			// "visible" (bool)
+			visible = *dictValue;
 		}
+
 		// "mat" (4x4 matrix)
-		// "visible" (bool)
 		// "id" unique id
 		// "img-path" layer texture path
 		// "base_id" int
 		// "box" 4x4 bounding box float
 		// "shape" layer layer - currently unsupported TODO
 		// "color" 4xbyte
-		// "visible" bool
 		// "material" int (index)
 	}
+	// TODO: fix this properly - without mirroring
 	volumes.push_back(VoxelVolume{voxel::mirrorAxis(layerVolume, math::Axis::Z), name, visible});
 	delete layerVolume;
 	return true;
@@ -282,8 +305,8 @@ bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableRead
 		Log::error("Failed to load png chunk");
 		return false;
 	}
+	Log::debug("Found BL16 with index %i", state.imageIndex);
 	state.images[state.imageIndex++] = img;
-
 	return true;
 }
 
@@ -338,7 +361,7 @@ bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableRead
 
 bool GoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
 	uint32_t magic;
-	wrap(stream.readInt(magic))
+	wrap(stream.readUInt32(magic))
 
 	if (magic != FourCC('G', 'O', 'X', ' ')) {
 		Log::error("Invalid magic");
@@ -346,7 +369,7 @@ bool GoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	State state;
-	wrap(stream.readInt(state.version))
+	wrap(stream.readInt32(state.version))
 
 	if (state.version > 2) {
 		Log::error("Unknown gox format version found: %u", state.version);
@@ -377,9 +400,9 @@ bool GoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 bool GoxFormat::saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const void *value, size_t valueSize) {
 	const int keyLength = (int)SDL_strlen(key);
-	wrapBool(stream.writeInt(keyLength))
+	wrapBool(stream.writeUInt32(keyLength))
 	wrap(stream.write(key, keyLength))
-	wrapBool(stream.writeInt(valueSize))
+	wrapBool(stream.writeUInt32(valueSize))
 	wrap(stream.write(value, valueSize))
 	return true;
 }
@@ -417,102 +440,138 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream) {
 	return true;
 }
 
-bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolumes &volumes) {
-	int blockUid = 0;
-	for (const VoxelVolume &v : volumes) {
-		GoxScopedChunkWriter scoped(stream, FourCC('L', 'A', 'Y', 'R'));
-		int blocks;
-		// TODO: we also write empty blocks
-		voxelutil::visitVolume(*v.volume, BlockSize, BlockSize, BlockSize, [&] (int, int, int, const voxel::Voxel &) {
-			++blocks;
-		});
-		wrapBool(stream.writeInt(blocks))
-		const voxel::Region &region = v.volume->region();
-		const glm::ivec3 &lower = region.getLowerCorner();
-		glm::ivec3 mins;
-		mins[0] = lower[0] & ~(BlockSize - 1);
-		mins[1] = lower[1] & ~(BlockSize - 1);
-		mins[2] = lower[2] & ~(BlockSize - 1);
+bool GoxFormat::isEmptyBlock(const voxel::RawVolume *v, int x, int y, int z) const {
+	// TODO: we also write empty blocks
+	return false;
+}
 
-		const glm::ivec3 &upper = region.getUpperCorner();
-		glm::ivec3 maxs;
-		maxs[0] = upper[0] & ~(BlockSize - 1);
-		maxs[1] = upper[1] & ~(BlockSize - 1);
-		maxs[2] = upper[2] & ~(BlockSize - 1);
+bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolumes &volumes, int numBlocks) {
+	int blockUid = 0;
+	int layerId = 0;
+	for (const VoxelVolume &v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		const voxel::Region &region = v.volume->region();
+		glm::ivec3 mins, maxs;
+		calcMinsMaxs(region, mins, maxs);
+
+		GoxScopedChunkWriter scoped(stream, FourCC('L', 'A', 'Y', 'R'));
+		int layerBlocks = 0;
+		voxelutil::visitVolume(*v.volume, voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize, [&] (int x, int y, int z, const voxel::Voxel &) {
+			if (isEmptyBlock(v.volume, x, y, z)) {
+				return;
+			}
+			++layerBlocks;
+		}, voxelutil::VisitAll());
+
+		Log::debug("blocks: %i", layerBlocks);
+
+		wrapBool(stream.writeUInt32(layerBlocks))
 
 		for (int y = mins.y; y <= maxs.y; y += BlockSize) {
 			for (int z = mins.z; z <= maxs.z; z += BlockSize) {
 				for (int x = mins.x; x <= maxs.x; x += BlockSize) {
-					wrapBool(stream.writeInt(blockUid++))
-					wrapBool(stream.writeInt(x))
-					wrapBool(stream.writeInt(y))
-					wrapBool(stream.writeInt(z))
-					wrapBool(stream.writeInt(0))
+					if (isEmptyBlock(v.volume, x, y, z)) {
+						continue;
+					}
+					Log::debug("Saved LAYR chunk %i at %i:%i:%i", blockUid, x, y, z);
+					wrapBool(stream.writeUInt32(blockUid++))
+					wrapBool(stream.writeInt32(x))
+					wrapBool(stream.writeInt32(z))
+					wrapBool(stream.writeInt32(y))
+					wrapBool(stream.writeUInt32(0))
+					--layerBlocks;
+					--numBlocks;
 				}
 			}
+		}
+		if (layerBlocks != 0) {
+			Log::error("Invalid amount of layer blocks: %i", layerBlocks);
+			return false;
 		}
 		wrapBool(saveChunk_DictEntry(stream, "name", v.name.c_str(), v.name.size()))
 		glm::mat4 mat(0.0f);
 		wrapBool(saveChunk_DictEntry(stream, "mat", (const uint8_t*)glm::value_ptr(mat), sizeof(mat)))
+		wrapBool(saveChunk_DictEntry(stream, "id", layerId))
 #if 0
-		wrapBool(saveChunk_DictEntry(stream, "id", &layer->id))
 		wrapBool(saveChunk_DictEntry(stream, "base_id", &layer->base_id))
-		// material_idx = get_material_idx(img, layer->material);
 		wrapBool(saveChunk_DictEntry(stream, "material", &material_idx))
 #endif
 		wrapBool(saveChunk_DictEntry(stream, "visible", v.visible))
+
+		++layerId;
+	}
+	if (numBlocks != 0) {
+		Log::error("Invalid amount of blocks");
+		return false;
 	}
 	return true;
 }
 
-bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const VoxelVolumes &volumes) {
+bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const VoxelVolumes &volumes, int &blocks) {
+	blocks = 0;
 	for (const VoxelVolume &v : volumes) {
-		GoxScopedChunkWriter scoped(stream, FourCC('B', 'L', '1', '6'));
+		if (v.volume == nullptr) {
+			continue;
+		}
 		const voxel::Region &region = v.volume->region();
-		const glm::ivec3 &lower = region.getLowerCorner();
-		glm::ivec3 mins;
-		mins[0] = lower[0] & ~(BlockSize - 1);
-		mins[1] = lower[1] & ~(BlockSize - 1);
-		mins[2] = lower[2] & ~(BlockSize - 1);
+		glm::ivec3 mins, maxs;
+		calcMinsMaxs(region, mins, maxs);
 
-		const glm::ivec3 &upper = region.getUpperCorner();
-		glm::ivec3 maxs;
-		maxs[0] = upper[0] & ~(BlockSize - 1);
-		maxs[1] = upper[1] & ~(BlockSize - 1);
-		maxs[2] = upper[2] & ~(BlockSize - 1);
-
+		// TODO: fix this properly - without mirroring
+		voxel::RawVolume *mirrored = voxel::mirrorAxis(v.volume, math::Axis::Z);
 		for (int by = mins.y; by <= maxs.y; by += BlockSize) {
 			for (int bz = mins.z; bz <= maxs.z; bz += BlockSize) {
 				for (int bx = mins.x; bx <= maxs.x; bx += BlockSize) {
+					if (isEmptyBlock(mirrored, bx, by, bz)) {
+						continue;
+					}
+					GoxScopedChunkWriter scoped(stream, FourCC('B', 'L', '1', '6'));
 					const voxel::Region blockRegion(bx, by, bz, bx + BlockSize - 1, by + BlockSize - 1, bz + BlockSize - 1);
 					const size_t size = (size_t)BlockSize * BlockSize * BlockSize * 4;
 					uint32_t *data = (uint32_t*)core_malloc(size);
 					int offset = 0;
 					const MaterialColorArray& materialColors = getMaterialColors();
-					voxelutil::visitVolume(*v.volume, blockRegion, [&](int, int, int, const voxel::Voxel& voxel) {
-						data[offset++] = core::Color::getRGBA(materialColors[voxel.getColor()]);
-					});
-					int pngSize;
+					voxelutil::visitVolume(*mirrored, blockRegion, [&](int, int, int, const voxel::Voxel& voxel) {
+						if (voxel::isAir(voxel.getMaterial())) {
+							data[offset++] = 0;
+						} else {
+							data[offset++] = core::Color::getRGBA(materialColors[voxel.getColor()]);
+						}
+					}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZX);
+
+					int pngSize = 0;
 					uint8_t *png = image::createPng(data, 64, 64, 4, &pngSize);
-					wrap(stream.write(png, pngSize))
-					free(png);
 					free(data);
+
+					if (stream.write(png, pngSize) != 0) {
+						Log::error("Could not write png into gox stream");
+						free(png);
+						delete mirrored;
+						return false;
+					}
+					free(png);
+					Log::debug("Saved BL16 chunk %i with a pngsize of %i", blocks, pngSize);
+					++blocks;
 				}
 			}
 		}
+		delete mirrored;
 	}
 	return true;
 }
 
 bool GoxFormat::saveGroups(const VoxelVolumes &volumes, const core::String &filename, io::SeekableWriteStream &stream) {
-	wrapSave(stream.writeInt(FourCC('G', 'O', 'X', ' ')))
-	wrapSave(stream.writeInt(2))
+	wrapSave(stream.writeUInt32(FourCC('G', 'O', 'X', ' ')))
+	wrapSave(stream.writeUInt32(2))
 
 	wrapBool(saveChunk_IMG(stream))
 	wrapBool(saveChunk_PREV(stream))
-	wrapBool(saveChunk_BL16(stream, volumes))
+	int blocks = 0;
+	wrapBool(saveChunk_BL16(stream, volumes, blocks))
 	wrapBool(saveChunk_MATE(stream))
-	wrapBool(saveChunk_LAYR(stream, volumes))
+	wrapBool(saveChunk_LAYR(stream, volumes, blocks))
 	wrapBool(saveChunk_CAMR(stream))
 	wrapBool(saveChunk_LIGH(stream))
 

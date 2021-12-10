@@ -22,15 +22,23 @@ public:
 	virtual bool eos() const = 0;
 
 	bool readBool();
-	int readByte(uint8_t &val);
-	int readShort(uint16_t &val);
-	int readInt(uint32_t &val);
-	int readInt(int32_t &val);
-	int readLong(uint64_t &val);
+	int readInt8(int8_t &val);
+	int readInt16(int16_t &val);
+	int readInt32(int32_t &val);
+	int readInt64(int64_t &val);
+	int readUInt8(uint8_t &val);
+	int readUInt16(uint16_t &val);
+	int readUInt32(uint32_t &val);
+	int readUInt64(uint64_t &val);
 	int readFloat(float &val);
-	int readShortBE(uint16_t &val);
-	int readIntBE(uint32_t &val);
-	int readLongBE(uint64_t &val);
+
+	int readInt8BE(int8_t &val);
+	int readInt16BE(int16_t &val);
+	int readInt32BE(int32_t &val);
+	int readInt64BE(int64_t &val);
+	int readUInt16BE(uint16_t &val);
+	int readUInt32BE(uint32_t &val);
+	int readUInt64BE(uint64_t &val);
 	int readFloatBE(float &val);
 	/**
 	 * @brief Read a fixed-width string from a file. It may be null-terminated, but
@@ -60,9 +68,9 @@ public:
 		return pos() >= size();
 	}
 
-	int peekInt(uint32_t &val);
-	int peekShort(uint16_t &val);
-	int peekByte(uint8_t &val);
+	int peekUInt32(uint32_t &val);
+	int peekUInt16(uint16_t &val);
+	int peekUInt8(uint8_t &val);
 	bool readLine(int length, char *strbuff);
 
 	int64_t remaining() const;
@@ -86,16 +94,23 @@ public:
 	virtual int write(const void *buf, size_t size) = 0;
 
 	bool writeBool(bool value);
-	bool writeByte(uint8_t val);
 
-	bool writeShort(uint16_t word);
-	bool writeInt(uint32_t dword);
-	bool writeLong(uint64_t dword);
+	bool writeInt8(int8_t val);
+	bool writeInt16(int16_t word);
+	bool writeInt32(int32_t dword);
+	bool writeInt64(int64_t dword);
+	bool writeUInt8(uint8_t val);
+	bool writeUInt16(uint16_t word);
+	bool writeUInt32(uint32_t dword);
+	bool writeUInt64(uint64_t dword);
 	bool writeFloat(float value);
 
-	bool writeShortBE(uint16_t word);
-	bool writeIntBE(uint32_t dword);
-	bool writeLongBE(uint64_t dword);
+	bool writeInt16BE(int16_t word);
+	bool writeInt32BE(int32_t dword);
+	bool writeInt64BE(int64_t dword);
+	bool writeUInt16BE(uint16_t word);
+	bool writeUInt32BE(uint32_t dword);
+	bool writeUInt64BE(uint64_t dword);
 	bool writeFloatBE(float value);
 
 	bool writeStringFormat(bool terminate, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(3);

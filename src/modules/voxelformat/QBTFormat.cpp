@@ -95,7 +95,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& v
 		return false;
 	}
 
-	wrapSaveFree(stream.writeInt(0)); // node type matrix
+	wrapSaveFree(stream.writeUInt32(0u)); // node type matrix
 	const size_t nameLength = volume.name.size();
 	const size_t nameSize = sizeof(uint32_t) + nameLength;
 	const size_t positionSize = 3 * sizeof(uint32_t);
@@ -104,32 +104,32 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& v
 	const size_t sizeSize = 3 * sizeof(uint32_t);
 	const size_t compressedDataSize = sizeof(uint32_t) + realBufSize;
 	const uint32_t datasize = (uint32_t)(nameSize + positionSize + localScaleSize + pivotSize + sizeSize + compressedDataSize);
-	wrapSaveFree(stream.writeInt(datasize));
+	wrapSaveFree(stream.writeUInt32(datasize));
 
 	const size_t chunkStartPos = stream.pos();
-	wrapSaveFree(stream.writeInt(nameLength));
+	wrapSaveFree(stream.writeUInt32(nameLength));
 	wrapSaveFree(stream.writeString(volume.name, false));
 	Log::debug("Save matrix with name %s", volume.name.c_str());
 
-	wrapSaveFree(stream.writeInt(mins.x));
-	wrapSaveFree(stream.writeInt(mins.y));
-	wrapSaveFree(stream.writeInt(mins.z));
+	wrapSaveFree(stream.writeUInt32(mins.x));
+	wrapSaveFree(stream.writeUInt32(mins.y));
+	wrapSaveFree(stream.writeUInt32(mins.z));
 
 	glm::uvec3 localScale { 1 };
-	wrapSaveFree(stream.writeInt(localScale.x));
-	wrapSaveFree(stream.writeInt(localScale.y));
-	wrapSaveFree(stream.writeInt(localScale.z));
+	wrapSaveFree(stream.writeUInt32(localScale.x));
+	wrapSaveFree(stream.writeUInt32(localScale.y));
+	wrapSaveFree(stream.writeUInt32(localScale.z));
 
 	wrapSaveFree(stream.writeFloat(volume.pivot.x));
 	wrapSaveFree(stream.writeFloat(volume.pivot.y));
 	wrapSaveFree(stream.writeFloat(volume.pivot.z));
 
-	wrapSaveFree(stream.writeInt(size.x));
-	wrapSaveFree(stream.writeInt(size.y));
-	wrapSaveFree(stream.writeInt(size.z));
+	wrapSaveFree(stream.writeUInt32(size.x));
+	wrapSaveFree(stream.writeUInt32(size.y));
+	wrapSaveFree(stream.writeUInt32(size.z));
 
 	Log::debug("save %i compressed bytes", (int)realBufSize);
-	wrapSaveFree(stream.writeInt(realBufSize));
+	wrapSaveFree(stream.writeUInt32(realBufSize));
 	if (stream.write(compressedBuf, realBufSize) != 0) {
 		Log::error("Could not save qbt file: failed to write the compressed buffer");
 		delete[] compressedBuf;
@@ -147,10 +147,10 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& v
 bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream) const {
 	wrapSave(stream.writeString("COLORMAP", false));
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	wrapSave(stream.writeInt((uint32_t)materialColors.size()));
+	wrapSave(stream.writeUInt32(materialColors.size()));
 	for (const glm::vec4& c : materialColors) {
 		const uint32_t rgba = core::Color::getRGBA(c);
-		wrapSave(stream.writeInt(rgba));
+		wrapSave(stream.writeUInt32(rgba));
 	}
 	return true;
 }
@@ -163,17 +163,17 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& v
 		}
 		++children;
 	}
-	wrapSave(stream.writeInt(1)); // node type model
+	wrapSave(stream.writeUInt32(1)); // node type model
 	if (children == 0) {
-		wrapSave(stream.writeInt(sizeof(uint32_t)));
-		wrapSave(stream.writeInt(0));
+		wrapSave(stream.writeUInt32(sizeof(uint32_t)));
+		wrapSave(stream.writeUInt32(0));
 		return false;
 	}
-	const int sizePos = stream.pos();
-	wrapSave(stream.writeInt(0));
+	const uint32_t sizePos = stream.pos();
+	wrapSave(stream.writeUInt32(0));
 
-	const int dataStart = stream.pos();
-	wrapSave(stream.writeInt(children));
+	const uint32_t dataStart = stream.pos();
+	wrapSave(stream.writeUInt32(children));
 
 	bool success = true;
 	for (auto& v : volumes) {
@@ -185,19 +185,19 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& v
 		}
 	}
 
-	const int dataEnd = stream.pos();
-	const int delta = dataEnd - dataStart;
+	const uint32_t dataEnd = stream.pos();
+	const uint32_t delta = dataEnd - dataStart;
 
 	stream.seek(sizePos);
-	wrapSave(stream.writeInt(delta));
+	wrapSave(stream.writeUInt32(delta));
 
 	return success;
 }
 
 bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapSave(stream.writeInt(FourCC('Q','B',' ','2')))
-	wrapSave(stream.writeByte(1));
-	wrapSave(stream.writeByte(0));
+	wrapSave(stream.writeUInt32(FourCC('Q','B',' ','2')))
+	wrapSave(stream.writeUInt8(1));
+	wrapSave(stream.writeUInt8(0));
 	wrapSave(stream.writeFloat(1.0f));
 	wrapSave(stream.writeFloat(1.0f));
 	wrapSave(stream.writeFloat(1.0f));
@@ -221,9 +221,9 @@ bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
 	// node type, can be ignored
 	uint32_t nodeTypeId;
-	wrap(stream.readInt(nodeTypeId));
+	wrap(stream.readUInt32(nodeTypeId));
 	uint32_t dataSize;
-	wrap(stream.readInt(dataSize));
+	wrap(stream.readUInt32(dataSize));
 	stream.skip(dataSize);
 	return true;
 }
@@ -248,7 +248,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, VoxelVolumes& volum
 		return false;
 	}
 	uint32_t childCount;
-	wrap(stream.readInt(childCount));
+	wrap(stream.readUInt32(childCount));
 	Log::debug("Load %u children", childCount);
 	for (uint32_t i = 0; i < childCount; ++i) {
 		if (MergeCompounds) {
@@ -290,7 +290,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, VoxelVolumes& volum
 bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	char name[1024];
 	uint32_t nameLength;
-	wrap(stream.readInt(nameLength));
+	wrap(stream.readUInt32(nameLength));
 	if ((size_t)nameLength >= sizeof(name)) {
 		Log::error("Name buffer not big enough");
 		return false;
@@ -302,21 +302,21 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes
 	glm::uvec3 localScale;
 	glm::vec3 pivot;
 	glm::uvec3 size;
-	wrap(stream.readInt((uint32_t&)position.x));
-	wrap(stream.readInt((uint32_t&)position.y));
-	wrap(stream.readInt((uint32_t&)position.z));
-	wrap(stream.readInt(localScale.x));
-	wrap(stream.readInt(localScale.y));
-	wrap(stream.readInt(localScale.z));
+	wrap(stream.readUInt32((uint32_t&)position.x));
+	wrap(stream.readUInt32((uint32_t&)position.y));
+	wrap(stream.readUInt32((uint32_t&)position.z));
+	wrap(stream.readUInt32(localScale.x));
+	wrap(stream.readUInt32(localScale.y));
+	wrap(stream.readUInt32(localScale.z));
 	wrap(stream.readFloat(pivot.x));
 	wrap(stream.readFloat(pivot.y));
 	wrap(stream.readFloat(pivot.z));
-	wrap(stream.readInt(size.x));
-	wrap(stream.readInt(size.y));
-	wrap(stream.readInt(size.z));
+	wrap(stream.readUInt32(size.x));
+	wrap(stream.readUInt32(size.y));
+	wrap(stream.readUInt32(size.z));
 
 	uint32_t voxelDataSize;
-	wrap(stream.readInt(voxelDataSize));
+	wrap(stream.readUInt32(voxelDataSize));
 	Log::debug("Matrix size: %u:%u:%u with %u bytes", size.x, size.y, size.z, voxelDataSize);
 	if (voxelDataSize == 0) {
 		Log::warn("Empty voxel chunk found");
@@ -399,7 +399,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes
  */
 bool QBTFormat::loadModel(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t childCount;
-	wrap(stream.readInt(childCount));
+	wrap(stream.readUInt32(childCount));
 	if (childCount > 2048u) {
 		Log::error("Max child count exceeded: %i", (int)childCount);
 		return false;
@@ -415,9 +415,9 @@ bool QBTFormat::loadModel(io::SeekableReadStream& stream, VoxelVolumes& volumes)
 
 bool QBTFormat::loadNode(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t nodeTypeID;
-	wrap(stream.readInt(nodeTypeID));
+	wrap(stream.readUInt32(nodeTypeID));
 	uint32_t dataSize;
-	wrap(stream.readInt(dataSize));
+	wrap(stream.readUInt32(dataSize));
 	Log::debug("Data size: %u", dataSize);
 
 	switch (nodeTypeID) {
@@ -457,7 +457,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, VoxelVolumes& volumes) 
 
 bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 	uint32_t colorCount;
-	wrap(stream.readInt(colorCount));
+	wrap(stream.readUInt32(colorCount));
 	Log::debug("Load color map with %u colors", colorCount);
 	if (colorCount > _palette.size()) {
 		_paletteSize = 0;
@@ -470,10 +470,10 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 		uint8_t colorByteG;
 		uint8_t colorByteB;
 		uint8_t colorByteVisMask;
-		wrap(stream.readByte(colorByteR));
-		wrap(stream.readByte(colorByteG));
-		wrap(stream.readByte(colorByteB));
-		wrap(stream.readByte(colorByteVisMask));
+		wrap(stream.readUInt8(colorByteR));
+		wrap(stream.readUInt8(colorByteG));
+		wrap(stream.readUInt8(colorByteB));
+		wrap(stream.readUInt8(colorByteVisMask));
 
 		const uint32_t red   = ((uint32_t)colorByteR) << 24;
 		const uint32_t green = ((uint32_t)colorByteG) << 16;
@@ -492,7 +492,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 
 bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t header;
-	wrap(stream.readInt(header))
+	wrap(stream.readUInt32(header))
 	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
 	if (header != headerMagic) {
 		Log::error("Could not load qbt file: Invalid magic found (%u vs %u)", header, headerMagic);
@@ -507,10 +507,10 @@ bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& vol
 	 * GlobalScale X, Y, Z 3 * 4 bytes, float, normally 1, 1, 1, can be used in case voxels are not cubes (e.g. Lego Bricks)
 	 */
 	uint8_t versionMajor;
-	wrap(stream.readByte(versionMajor))
+	wrap(stream.readUInt8(versionMajor))
 
 	uint8_t versionMinor;
-	wrap(stream.readByte(versionMinor))
+	wrap(stream.readUInt8(versionMinor))
 
 	Log::debug("QBT with version %i.%i", (int)versionMajor, (int)versionMinor);
 

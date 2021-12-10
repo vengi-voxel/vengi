@@ -29,14 +29,14 @@ namespace voxel {
 	}
 
 bool VXLFormat::writeLimbBodyEntry(io::SeekableWriteStream& stream, voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const {
-	wrapBool(stream.writeByte(skipCount))
-	wrapBool(stream.writeByte(voxelCount))
+	wrapBool(stream.writeUInt8(skipCount))
+	wrapBool(stream.writeUInt8(voxelCount))
 	for (uint8_t y1 = y - voxelCount; y1 < y; ++y1) {
 		const voxel::Voxel& voxel = volume->voxel(x, y1, z);
-		wrapBool(stream.writeByte(voxel.getColor()))
-		wrapBool(stream.writeByte(0)) // TODO: normal
+		wrapBool(stream.writeUInt8(voxel.getColor()))
+		wrapBool(stream.writeUInt8(0)) // TODO: normal
 	}
-	wrapBool(stream.writeByte(voxelCount)) // duplicated count
+	wrapBool(stream.writeUInt8(voxelCount)) // duplicated count
 	skipCount = voxelCount = 0u;
 	return true;
 }
@@ -55,11 +55,11 @@ bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const VoxelVolumes& v
 	Log::debug("limbOffset(%u): %u", limbIdx, (uint32_t)limbOffset);
 
 	for (uint32_t i = 0; i < baseSize; i++) {
-		wrapBool(stream.writeInt(-1))
+		wrapBool(stream.writeUInt32(-1))
 	}
 	offsets.end = stream.pos() - limbSectionOffset;
 	for (uint32_t i = 0; i < baseSize; i++) {
-		wrapBool(stream.writeInt(-1))
+		wrapBool(stream.writeUInt32(-1))
 	}
 	offsets.data = stream.pos() - limbSectionOffset;
 
@@ -99,10 +99,10 @@ bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const VoxelVolumes& v
 
 		const int64_t spanEndPos = stream.pos();
 		wrap(stream.seek(globalSpanStartPos + i * sizeof(uint32_t)))
-		wrapBool(stream.writeInt(spanStartPos))
+		wrapBool(stream.writeUInt32(spanStartPos))
 
 		wrap(stream.seek(globalSpanStartPos + baseSize * sizeof(uint32_t) + i * sizeof(uint32_t)))
-		wrapBool(stream.writeInt(spanEndPos - globalSpanStartPos))
+		wrapBool(stream.writeUInt32(spanEndPos - globalSpanStartPos))
 		wrap(stream.seek(spanEndPos))
 	}
 
@@ -115,18 +115,18 @@ bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const VoxelVolu
 	char name[15];
 	core_memcpy(name, v.name.c_str(), sizeof(name));
 	wrap(stream.write(name, sizeof(name)))
-	wrapBool(stream.writeByte('\0'))
-	wrapBool(stream.writeInt(limbIdx))
-	wrapBool(stream.writeInt(1))
-	wrapBool(stream.writeInt(0))
+	wrapBool(stream.writeUInt8('\0'))
+	wrapBool(stream.writeUInt32(limbIdx))
+	wrapBool(stream.writeUInt32(1))
+	wrapBool(stream.writeUInt32(0))
 	return true;
 }
 
 bool VXLFormat::writeLimbFooter(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, const LimbOffset& offsets) const {
 	const VoxelVolume& v = volumes[limbIdx];
-	wrapBool(stream.writeInt(offsets.start))
-	wrapBool(stream.writeInt(offsets.end))
-	wrapBool(stream.writeInt(offsets.data))
+	wrapBool(stream.writeUInt32(offsets.start))
+	wrapBool(stream.writeUInt32(offsets.end))
+	wrapBool(stream.writeUInt32(offsets.data))
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
 			wrapBool(stream.writeFloat(0.0f)) // TODO: region.getLowerCorner
@@ -137,27 +137,27 @@ bool VXLFormat::writeLimbFooter(io::SeekableWriteStream& stream, const VoxelVolu
 	}
 	const voxel::Region& region = v.volume->region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
-	wrapBool(stream.writeByte(size.x))
-	wrapBool(stream.writeByte(size.z))
-	wrapBool(stream.writeByte(size.y))
-	wrapBool(stream.writeByte(2))
+	wrapBool(stream.writeUInt8(size.x))
+	wrapBool(stream.writeUInt8(size.z))
+	wrapBool(stream.writeUInt8(size.y))
+	wrapBool(stream.writeUInt8(2))
 	return true;
 }
 
 bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, const VoxelVolumes& volumes) {
 	wrapBool(stream.writeString("Voxel Animation"))
-	wrapBool(stream.writeInt(1))
-	wrapBool(stream.writeInt(volumes.size()))
-	wrapBool(stream.writeInt(volumes.size()))
-	wrapBool(stream.writeInt(0)) // bodysize is filled later
-	wrapBool(stream.writeShort(0x1f10U))
+	wrapBool(stream.writeUInt32(1))
+	wrapBool(stream.writeUInt32(volumes.size()))
+	wrapBool(stream.writeUInt32(volumes.size()))
+	wrapBool(stream.writeUInt32(0)) // bodysize is filled later
+	wrapBool(stream.writeUInt16(0x1f10U))
 	const MaterialColorArray& materialColors = getMaterialColors();
 	const uint32_t paletteSize = materialColors.size();
 	for (uint32_t i = 0; i < paletteSize; ++i) {
 		const glm::u8vec4& rgba = core::Color::getRGBAVec(materialColors[i]);
-		wrapBool(stream.writeByte(rgba[0]))
-		wrapBool(stream.writeByte(rgba[1]))
-		wrapBool(stream.writeByte(rgba[2]))
+		wrapBool(stream.writeUInt8(rgba[0]))
+		wrapBool(stream.writeUInt8(rgba[1]))
+		wrapBool(stream.writeUInt8(rgba[2]))
 	}
 	core_assert(stream.pos() == HeaderSize);
 	return true;
@@ -178,7 +178,7 @@ bool VXLFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	const uint64_t afterBodyPos = stream.pos();
 	const uint64_t bodySize = afterBodyPos - afterHeaderPos;
 	wrap(stream.seek(HeaderBodySizeOffset));
-	wrapBool(stream.writeInt(bodySize))
+	wrapBool(stream.writeUInt32(bodySize))
 	wrap(stream.seek(afterBodyPos));
 
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + LimbHeaderSize * volumes.size() + bodySize));
@@ -208,7 +208,7 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	Log::debug("limbOffset: %u", (uint32_t)limbOffset);
 	for (uint32_t i = 0; i < baseSize; ++i) {
 		uint32_t v;
-		wrap(stream.readInt(v))
+		wrap(stream.readUInt32(v))
 		colStart[i] = v;
 	}
 	// skip spanPosEnd values
@@ -227,9 +227,9 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 		uint32_t z = 0;
 		do {
 			uint8_t v;
-			wrap(stream.readByte(v))
+			wrap(stream.readUInt8(v))
 			z += v;
-			wrap(stream.readByte(v))
+			wrap(stream.readUInt8(v))
 			z += v;
 			voxelCount += v;
 			stream.skip(2 * v + 1);
@@ -248,15 +248,15 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 		uint8_t z = 0;
 		do {
 			uint8_t skipCount;
-			wrap(stream.readByte(skipCount))
+			wrap(stream.readUInt8(skipCount))
 			z += skipCount;
 			uint8_t voxelCount;
-			wrap(stream.readByte(voxelCount))
+			wrap(stream.readUInt8(voxelCount))
 			for (uint8_t j = 0u; j < voxelCount; ++j) {
 				uint8_t color;
-				wrap(stream.readByte(color))
+				wrap(stream.readUInt8(color))
 				uint8_t normal;
-				wrap(stream.readByte(normal))
+				wrap(stream.readUInt8(normal))
 				const uint8_t palIdx = convertPaletteIndex(color);
 				const voxel::Voxel v = voxel::createColorVoxel(voxel::VoxelType::Generic, palIdx);
 				volume->setVoxel(x, z, y, v);
@@ -283,10 +283,10 @@ bool VXLFormat::readLimbHeader(io::SeekableReadStream& stream, vxl_mdl& mdl, uin
 	vxl_limb_header &header = mdl.limb_headers[limbIdx];
 	wrapBool(stream.readString(sizeof(header.limb_name), header.limb_name))
 	Log::debug("Limb %u name: %s", limbIdx, header.limb_name);
-	wrap(stream.readInt(header.unknown))
-	wrap(stream.readInt(header.limb_number))
-	wrap(stream.readInt(header.unknown))
-	wrap(stream.readInt(header.unknown2))
+	wrap(stream.readUInt32(header.unknown))
+	wrap(stream.readUInt32(header.limb_number))
+	wrap(stream.readUInt32(header.unknown))
+	wrap(stream.readUInt32(header.unknown2))
 	return true;
 }
 
@@ -300,9 +300,9 @@ bool VXLFormat::readLimbHeaders(io::SeekableReadStream& stream, vxl_mdl& mdl) co
 
 bool VXLFormat::readLimbFooter(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const {
 	vxl_limb_tailer &footer = mdl.limb_tailers[limbIdx];
-	wrap(stream.readInt(footer.span_start_off))
-	wrap(stream.readInt(footer.span_end_off))
-	wrap(stream.readInt(footer.span_data_off))
+	wrap(stream.readUInt32(footer.span_start_off))
+	wrap(stream.readUInt32(footer.span_end_off))
+	wrap(stream.readUInt32(footer.span_data_off))
 	Log::debug("offsets: %u:%u:%u", footer.span_start_off, footer.span_end_off, footer.span_data_off);
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
@@ -313,10 +313,10 @@ bool VXLFormat::readLimbFooter(io::SeekableReadStream& stream, vxl_mdl& mdl, uin
 		wrap(stream.readFloat(footer.scale[i]))
 	}
 	Log::debug("scale: %f:%f:%f", footer.scale[0], footer.scale[1], footer.scale[2]);
-	wrap(stream.readByte(footer.xsize))
-	wrap(stream.readByte(footer.ysize))
-	wrap(stream.readByte(footer.zsize))
-	wrap(stream.readByte(footer.type))
+	wrap(stream.readUInt8(footer.xsize))
+	wrap(stream.readUInt8(footer.ysize))
+	wrap(stream.readUInt8(footer.zsize))
+	wrap(stream.readUInt8(footer.type))
 	Log::debug("size: %u:%u:%u, type: %u", footer.xsize, footer.ysize, footer.zsize, footer.type);
 	return true;
 }
@@ -337,11 +337,11 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 		Log::error("Invalid vxl header");
 		return false;
 	}
-	wrap(stream.readInt(hdr.unknown))
-	wrap(stream.readInt(hdr.n_limbs))
-	wrap(stream.readInt(hdr.n_limbs2))
-	wrap(stream.readInt(hdr.bodysize))
-	wrap(stream.readShort(hdr.unknown2))
+	wrap(stream.readUInt32(hdr.unknown))
+	wrap(stream.readUInt32(hdr.n_limbs))
+	wrap(stream.readUInt32(hdr.n_limbs2))
+	wrap(stream.readUInt32(hdr.bodysize))
+	wrap(stream.readUInt16(hdr.unknown2))
 
 	Log::debug("Found %u limbs", hdr.n_limbs);
 
@@ -349,9 +349,9 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 	_colorsSize = _paletteSize;
 	bool valid = false;
 	for (uint32_t i = 0; i < _paletteSize; ++i) {
-		wrap(stream.readByte(hdr.palette[i][0]))
-		wrap(stream.readByte(hdr.palette[i][1]))
-		wrap(stream.readByte(hdr.palette[i][2]))
+		wrap(stream.readUInt8(hdr.palette[i][0]))
+		wrap(stream.readUInt8(hdr.palette[i][1]))
+		wrap(stream.readUInt8(hdr.palette[i][2]))
 		if (hdr.palette[i][0] != 0 || hdr.palette[i][1] != 0 || hdr.palette[i][2] != 0) {
 			valid = true;
 		}

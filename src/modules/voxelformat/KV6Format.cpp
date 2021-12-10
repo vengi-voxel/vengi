@@ -21,7 +21,7 @@ namespace voxel {
 
 bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint32_t magic;
-	wrap(stream.readInt(magic))
+	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('K','v','x','l')) {
 		Log::error("Invalid magic");
 		return false;
@@ -29,9 +29,9 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	// Dimensions of voxel. (our depth is kvx height)
 	uint32_t xsiz, ysiz, zsiz;
-	wrap(stream.readInt(xsiz))
-	wrap(stream.readInt(ysiz))
-	wrap(stream.readInt(zsiz))
+	wrap(stream.readUInt32(xsiz))
+	wrap(stream.readUInt32(ysiz))
+	wrap(stream.readUInt32(zsiz))
 
 	if (xsiz > 256 || ysiz > 256 || zsiz > 255) {
 		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", xsiz, zsiz, ysiz);
@@ -57,7 +57,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 
 	uint32_t numvoxs;
-	wrap(stream.readInt(numvoxs))
+	wrap(stream.readUInt32(numvoxs))
 	Log::debug("numvoxs: %u", numvoxs);
 	constexpr uint32_t MAXVOXS = 1048576;
 	if (numvoxs > MAXVOXS) {
@@ -68,16 +68,16 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	if (stream.seek(32 + numvoxs * 8 + (xsiz << 2) + ((xsiz * ysiz) << 1)) != -1) {
 		if (stream.remaining() != 0) {
 			uint32_t palMagic;
-			wrap(stream.readInt(palMagic))
+			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S','P','a','l')) {
 				_paletteSize = _palette.size();
 				_colorsSize = _paletteSize;
 				const MaterialColorArray& materialColors = getMaterialColors();
 				for (size_t i = 0; i < _paletteSize; ++i) {
 					uint8_t r, g, b;
-					wrap(stream.readByte(b))
-					wrap(stream.readByte(g))
-					wrap(stream.readByte(r))
+					wrap(stream.readUInt8(b))
+					wrap(stream.readUInt8(g))
+					wrap(stream.readUInt8(r))
 
 					const uint8_t nr = glm::clamp((uint32_t)glm::round(((float)r * 255.0f) / 63.0f), 0u, 255u);
 					const uint8_t ng = glm::clamp((uint32_t)glm::round(((float)g * 255.0f) / 63.0f), 0u, 255u);
@@ -103,24 +103,24 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	voxtype voxdata[MAXVOXS];
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		uint8_t palr, palg, palb, pala;
-		wrap(stream.readByte(palb))
-		wrap(stream.readByte(palg))
-		wrap(stream.readByte(palr))
-		wrap(stream.readByte(pala))
+		wrap(stream.readUInt8(palb))
+		wrap(stream.readUInt8(palg))
+		wrap(stream.readUInt8(palr))
+		wrap(stream.readUInt8(pala))
 		const glm::vec4& color = core::Color::fromRGBA(palr, palg, palb, pala);
 		voxdata[c].col = findClosestIndex(color);
 		uint16_t zpos;
-		wrap(stream.readShort(zpos))
+		wrap(stream.readUInt16(zpos))
 		voxdata[c].z = zpos;
-		wrap(stream.readByte(voxdata[c].vis))
-		wrap(stream.readByte(voxdata[c].dir))
+		wrap(stream.readUInt8(voxdata[c].vis))
+		wrap(stream.readUInt8(voxdata[c].dir))
 	}
 	stream.skip((int64_t)(xsiz * sizeof(uint32_t)));
 
 	uint16_t xyoffset[256][256];
 	for (uint32_t x = 0u; x < xsiz; ++x) {
 		for (uint32_t y = 0u; y < ysiz; ++y) {
-			wrap(stream.readShort(xyoffset[x][y]))
+			wrap(stream.readUInt16(xyoffset[x][y]))
 		}
 	}
 

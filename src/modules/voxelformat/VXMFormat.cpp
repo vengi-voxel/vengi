@@ -44,12 +44,12 @@ bool VXMFormat::writeRLE(io::WriteStream &stream, int length, voxel::Voxel &voxe
 	if (length == 0) {
 		return true;
 	}
-	wrapBool(stream.writeByte(length))
+	wrapBool(stream.writeUInt8(length))
 	if (voxel::isAir(voxel.getMaterial())) {
-		wrapBool(stream.writeByte(0xFF))
+		wrapBool(stream.writeUInt8(0xFF))
 	} else {
 		// TODO: if the color is 255 here - and we are no empty voxel, we are in trouble.
-		wrapBool(stream.writeByte(voxel.getColor()))
+		wrapBool(stream.writeUInt8(voxel.getColor()))
 	}
 	return true;
 }
@@ -64,13 +64,13 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 }
 
 bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapBool(stream.writeInt(FourCC('V','X','M', '4')));
-	wrapBool(stream.writeInt(0)); // texture dim x
-	wrapBool(stream.writeInt(0)); // texture dim y
-	wrapBool(stream.writeInt(0)); // texamount
+	wrapBool(stream.writeUInt32(FourCC('V','X','M', '4')));
+	wrapBool(stream.writeUInt32(0)); // texture dim x
+	wrapBool(stream.writeUInt32(0)); // texture dim y
+	wrapBool(stream.writeUInt32(0)); // texamount
 
 	for (int i = 0; i < 6; ++i) {
-		wrapBool(stream.writeInt(0)); // quadamount
+		wrapBool(stream.writeUInt32(0)); // quadamount
 	}
 
 	const MaterialColorArray& materialColors = getMaterialColors();
@@ -86,9 +86,9 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	const uint32_t depth = region.getDepthInVoxels();
 
 	// we have to flip depth with height for our own coordinate system
-	wrapBool(stream.writeInt(width))
-	wrapBool(stream.writeInt(height))
-	wrapBool(stream.writeInt(depth))
+	wrapBool(stream.writeUInt32(width))
+	wrapBool(stream.writeUInt32(height))
+	wrapBool(stream.writeUInt32(depth))
 
 	int numColors = (int)materialColors.size();
 	if (numColors > 255) {
@@ -97,13 +97,13 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	if (numColors <= 0) {
 		return false;
 	}
-	wrapBool(stream.writeByte(numColors))
+	wrapBool(stream.writeUInt8(numColors))
 	for (int i = 0; i < numColors; ++i) {
 		const glm::u8vec4 &matcolor = core::Color::getRGBAVec(materialColors[i]);
-		wrapBool(stream.writeByte(matcolor.b))
-		wrapBool(stream.writeByte(matcolor.g))
-		wrapBool(stream.writeByte(matcolor.r))
-		wrapBool(stream.writeByte(matcolor.a))
+		wrapBool(stream.writeUInt8(matcolor.b))
+		wrapBool(stream.writeUInt8(matcolor.g))
+		wrapBool(stream.writeUInt8(matcolor.r))
+		wrapBool(stream.writeUInt8(matcolor.a))
 		wrapBool(stream.writeBool(false)) // emissive
 	}
 	uint32_t rleCount = 0u;
@@ -127,18 +127,18 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 		wrapBool(writeRLE(stream, rleCount, prevVoxel))
 	}
 
-	wrapBool(stream.writeByte(0))
-	wrapBool(stream.writeByte(0))
+	wrapBool(stream.writeUInt8(0))
+	wrapBool(stream.writeUInt8(0))
 
 	return true;
 }
 
 bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
 	uint8_t magic[4];
-	wrap(stream.readByte(magic[0]))
-	wrap(stream.readByte(magic[1]))
-	wrap(stream.readByte(magic[2]))
-	wrap(stream.readByte(magic[3]))
+	wrap(stream.readUInt8(magic[0]))
+	wrap(stream.readUInt8(magic[1]))
+	wrap(stream.readUInt8(magic[2]))
+	wrap(stream.readUInt8(magic[3]))
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'M') {
 		Log::error("Could not load vxm file: Invalid magic found (%c%c%c%c)",
 			magic[0], magic[1], magic[2], magic[3]);
@@ -165,9 +165,9 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	Log::debug("Found vxm%i", version);
 	if (version >= 5) {
 		if (version >= 6) {
-			wrap(stream.readInt(size.x));
-			wrap(stream.readInt(size.y));
-			wrap(stream.readInt(size.z));
+			wrap(stream.readUInt32(size.x));
+			wrap(stream.readUInt32(size.y));
+			wrap(stream.readUInt32(size.z));
 		}
 		glm::vec3 pivot;
 		wrap(stream.readFloat(pivot.x));
@@ -179,7 +179,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		foundPivot = true;
 		if (version >= 9) {
 			uint8_t surface;
-			wrap(stream.readByte(surface))
+			wrap(stream.readUInt8(surface))
 			if (surface) {
 				uint32_t skipWidth = 0u;
 				uint32_t skipHeight = 0u;
@@ -188,16 +188,16 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 				uint32_t normal;
 				// since version 10 the start and end values are floats
 				// but for us this fact doesn't matter
-				wrap(stream.readInt(startx))
-				wrap(stream.readInt(starty))
-				wrap(stream.readInt(startz))
-				wrap(stream.readInt(endx))
-				wrap(stream.readInt(endy))
-				wrap(stream.readInt(endz))
-				wrap(stream.readInt(normal))
+				wrap(stream.readUInt32(startx))
+				wrap(stream.readUInt32(starty))
+				wrap(stream.readUInt32(startz))
+				wrap(stream.readUInt32(endx))
+				wrap(stream.readUInt32(endy))
+				wrap(stream.readUInt32(endz))
+				wrap(stream.readUInt32(normal))
 				if (version >= 10) {
-					wrap(stream.readInt(skipWidth))
-					wrap(stream.readInt(skipHeight))
+					wrap(stream.readUInt32(skipWidth))
+					wrap(stream.readUInt32(skipHeight))
 				} else {
 					switch (normal) {
 					case 0:
@@ -231,12 +231,12 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	uint32_t lodLevels = 1;
 	if (version >= 7) {
-		wrap(stream.readInt(lodLevels));
+		wrap(stream.readUInt32(lodLevels));
 	}
 	for (uint32_t lodLevel = 0u; lodLevel < lodLevels; ++lodLevel) {
 		glm::uvec2 textureDim;
-		wrap(stream.readInt(textureDim.x));
-		wrap(stream.readInt(textureDim.y));
+		wrap(stream.readUInt32(textureDim.x));
+		wrap(stream.readUInt32(textureDim.y));
 		if (glm::any(glm::greaterThan(textureDim, glm::uvec2(2048)))) {
 			Log::warn("Size of texture exceeds the max allowed value");
 			return false;
@@ -244,11 +244,11 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 		if (version >= 11) {
 			uint32_t size;
-			wrap(stream.readInt(size));
+			wrap(stream.readUInt32(size));
 			stream.skip(size); // zipped pixel data
 		} else {
 			uint32_t texAmount;
-			wrap(stream.readInt(texAmount));
+			wrap(stream.readUInt32(texAmount));
 			if (texAmount > 0xFFFF) {
 				Log::warn("Size of textures exceeds the max allowed value: %i", texAmount);
 				return false;
@@ -260,14 +260,14 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 				wrapBool(stream.readString(sizeof(textureId), textureId, true))
 				if (version >= 6) {
 					uint32_t texZipped;
-					wrap(stream.readInt(texZipped));
+					wrap(stream.readUInt32(texZipped));
 					stream.skip(texZipped);
 				} else {
 					Log::debug("tex: %i: %s", (int)t, textureId);
 					uint32_t px = 0u;
 					for (;;) {
 						uint8_t rleStride;
-						wrap(stream.readByte(rleStride));
+						wrap(stream.readUInt8(rleStride));
 						if (rleStride == 0u) {
 							break;
 						}
@@ -288,7 +288,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 		for (int i = 0; i < 6; ++i) {
 			uint32_t quadAmount;
-			wrap(stream.readInt(quadAmount));
+			wrap(stream.readUInt32(quadAmount));
 			if (quadAmount > 0x40000U) {
 				Log::warn("Size of quads exceeds the max allowed value");
 				return false;
@@ -303,9 +303,9 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 
 	if (version <= 5) {
-		wrap(stream.readInt(size.x));
-		wrap(stream.readInt(size.y));
-		wrap(stream.readInt(size.z));
+		wrap(stream.readUInt32(size.x));
+		wrap(stream.readUInt32(size.y));
+		wrap(stream.readUInt32(size.z));
 	}
 
 	if (glm::any(glm::greaterThan(size, glm::uvec3(MaxRegionSize)))) {
@@ -323,7 +323,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		stream.skip(256l * 4l); // palette data rgba
 		stream.skip(256l * 4l); // palette data rgba for emissive materials
 		uint8_t chunkAmount; // palette chunks
-		wrap(stream.readByte(chunkAmount));
+		wrap(stream.readUInt8(chunkAmount));
 		for (int i = 0; i < (int) chunkAmount; ++i) {
 			char chunkId[1024];
 			wrapBool(stream.readString(sizeof(chunkId), chunkId, true))
@@ -333,7 +333,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 
 	uint8_t materialAmount;
-	wrap(stream.readByte(materialAmount));
+	wrap(stream.readUInt8(materialAmount));
 	Log::debug("Palette of size %i", (int)materialAmount);
 	if (materialAmount > _palette.size()) {
 		return false;
@@ -341,15 +341,15 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	for (int i = 0; i < (int) materialAmount; ++i) {
 		uint8_t blue;
-		wrap(stream.readByte(blue));
+		wrap(stream.readUInt8(blue));
 		uint8_t green;
-		wrap(stream.readByte(green));
+		wrap(stream.readUInt8(green));
 		uint8_t red;
-		wrap(stream.readByte(red));
+		wrap(stream.readUInt8(red));
 		uint8_t alpha;
-		wrap(stream.readByte(alpha));
+		wrap(stream.readUInt8(alpha));
 		uint8_t emissive;
-		wrap(stream.readByte(emissive));
+		wrap(stream.readUInt8(emissive));
 		const glm::vec4& rgbaColor = core::Color::fromRGBA(red, green, blue, alpha);
 		_colors[i] = core::Color::getRGBA(rgbaColor);
 		_palette[i] = findClosestIndex(rgbaColor);
@@ -365,7 +365,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	uint8_t maxLayers = 1;
 	if (version >= 12) {
-		wrap(stream.readByte(maxLayers));
+		wrap(stream.readUInt8(maxLayers));
 	}
 
 	for (uint8_t layer = 0; layer < maxLayers; ++layer) {
@@ -381,13 +381,13 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		}
 		for (;;) {
 			uint8_t length;
-			wrapDelete(stream.readByte(length), volume);
+			wrapDelete(stream.readUInt8(length), volume);
 			if (length == 0u) {
 				break;
 			}
 
 			uint8_t matIdx;
-			wrapDelete(stream.readByte(matIdx), volume);
+			wrapDelete(stream.readUInt8(matIdx), volume);
 			if (matIdx == 0xFFU) {
 				idx += length;
 				continue;
@@ -416,18 +416,18 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	if (version >= 10) {
 		uint8_t surface;
-		wrap(stream.readByte(surface))
+		wrap(stream.readUInt8(surface))
 		if (surface) {
 			uint32_t startx, starty, startz;
 			uint32_t endx, endy, endz;
 			uint32_t normal;
-			wrap(stream.readInt(startx))
-			wrap(stream.readInt(starty))
-			wrap(stream.readInt(startz))
-			wrap(stream.readInt(endx))
-			wrap(stream.readInt(endy))
-			wrap(stream.readInt(endz))
-			wrap(stream.readInt(normal))
+			wrap(stream.readUInt32(startx))
+			wrap(stream.readUInt32(starty))
+			wrap(stream.readUInt32(startz))
+			wrap(stream.readUInt32(endx))
+			wrap(stream.readUInt32(endy))
+			wrap(stream.readUInt32(endz))
+			wrap(stream.readUInt32(normal))
 		}
 		// here might another byte - but it isn't written everytime
 	}

@@ -23,13 +23,13 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	// Total # of bytes (not including numbytes) in each mip-map level
 	// but there is only 1 mip-map level
 	uint32_t numbytes;
-	wrap(stream.readInt(numbytes))
+	wrap(stream.readUInt32(numbytes))
 
 	// Dimensions of voxel. (our depth is kvx height)
 	uint32_t xsiz, ysiz, zsiz;
-	wrap(stream.readInt(xsiz))
-	wrap(stream.readInt(ysiz))
-	wrap(stream.readInt(zsiz))
+	wrap(stream.readUInt32(xsiz))
+	wrap(stream.readUInt32(ysiz))
+	wrap(stream.readUInt32(zsiz))
 
 	if (xsiz > 256 || ysiz > 256 || zsiz > 255) {
 		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", xsiz, zsiz, ysiz);
@@ -41,9 +41,9 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	 */
 	glm::vec3 pivot(0.0f);
 	uint32_t pivx, pivy, pivz;
-	wrap(stream.readInt(pivx))
-	wrap(stream.readInt(pivy))
-	wrap(stream.readInt(pivz))
+	wrap(stream.readUInt32(pivx))
+	wrap(stream.readUInt32(pivy))
+	wrap(stream.readUInt32(pivz))
 	pivot.x = (float)pivx / 256.0f;
 	pivot.y = (float)pivy / 256.0f;
 	pivot.z = (float)pivz / 256.0f;
@@ -67,13 +67,13 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	 */
 	uint16_t xyoffset[256][257];
 	uint32_t xoffset;
-	wrap(stream.readInt(xoffset))
+	wrap(stream.readUInt32(xoffset))
 
 	core_assert(((xsiz + 1) << 2) == sizeof(uint32_t) * (xsiz + 1));
 	stream.skip(sizeof(uint32_t) * xsiz);
 	for (uint32_t x = 0u; x < xsiz; ++x) {
 		for (uint32_t y = 0u; y <= ysiz; ++y) {
-			wrap(stream.readShort(xyoffset[x][y]))
+			wrap(stream.readUInt16(xyoffset[x][y]))
 		}
 	}
 
@@ -94,9 +94,9 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	 */
 	for (size_t i = 0; i < _paletteSize; ++i) {
 		uint8_t r, g, b;
-		wrap(stream.readByte(r))
-		wrap(stream.readByte(g))
-		wrap(stream.readByte(b))
+		wrap(stream.readUInt8(r))
+		wrap(stream.readUInt8(g))
+		wrap(stream.readUInt8(b))
 
 		const uint8_t nr = glm::clamp((uint32_t)glm::round(((float)r * 255.0f) / 63.0f), 0u, 255u);
 		const uint8_t ng = glm::clamp((uint32_t)glm::round(((float)g * 255.0f) / 63.0f), 0u, 255u);
@@ -154,12 +154,12 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 			while (n > 0) {
 				slab header;
-				wrap(stream.readByte(header.slabztop))
-				wrap(stream.readByte(header.slabzleng))
-				wrap(stream.readByte(header.slabbackfacecullinfo))
+				wrap(stream.readUInt8(header.slabztop))
+				wrap(stream.readUInt8(header.slabzleng))
+				wrap(stream.readUInt8(header.slabbackfacecullinfo))
 				for (uint8_t i = 0u; i < header.slabzleng; ++i) {
 					uint8_t col;
-					wrap(stream.readByte(col))
+					wrap(stream.readUInt8(col))
 					lastCol = voxel::createVoxel(voxel::VoxelType::Generic, convertPaletteIndex(col));
 					volume->setVoxel(x, (zsiz - 1) - (header.slabztop + i), y, lastCol);
 				}

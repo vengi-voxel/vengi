@@ -1,4 +1,5 @@
 #include "AbstractVoxFormatTest.h"
+#include "io/BufferedReadWriteStream.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxel {
@@ -31,17 +32,17 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	voxelformat::clearVolumes(volumesLoad);
 }
 
-void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, voxel::Format *format) {
-	Region region(glm::ivec3(0), glm::ivec3(1));
+void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, voxel::Format *format, int mins, int maxs) {
+	Region region(mins, maxs);
 	RawVolume original(region);
-	original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1));
-	original.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 245));
-	original.setVoxel(0, 1, 1, createVoxel(VoxelType::Generic, 127));
-	original.setVoxel(0, 1, 0, createVoxel(VoxelType::Generic, 200));
-	const io::FilePtr &file = open(filename, io::FileMode::Write);
-	io::FileStream stream(file.get());
-	ASSERT_TRUE(format->save(&original, file->name(), stream));
-	std::unique_ptr<RawVolume> loaded(load(filename, *format));
+	original.setVoxel(mins, mins, mins, createVoxel(VoxelType::Generic, 1));
+	original.setVoxel(maxs, maxs, maxs, createVoxel(VoxelType::Generic, 245));
+	original.setVoxel(mins, maxs, maxs, createVoxel(VoxelType::Generic, 127));
+	original.setVoxel(mins, maxs, mins, createVoxel(VoxelType::Generic, 200));
+	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	ASSERT_TRUE(format->save(&original, filename, stream));
+	stream.seek(0);
+	std::unique_ptr<RawVolume> loaded(format->load(filename, stream));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(original, *loaded);
 }

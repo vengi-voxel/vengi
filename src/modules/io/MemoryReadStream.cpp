@@ -27,8 +27,10 @@ int64_t MemoryReadStream::seek(int64_t position, int whence) {
 		_pos += position;
 		break;
 	case SEEK_END:
-		_pos = _size - position;
+		_pos = _size + position;
 		break;
+	default:
+		return -1;
 	}
 	if (_pos < 0) {
 		_pos = 0;

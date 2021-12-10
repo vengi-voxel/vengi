@@ -72,7 +72,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	//{"Qubicle Project", "qbcl", nullptr, 0u},
 	{"Sandbox VoxEdit", "vxm", nullptr, 0u},
 	{"BinVox", "binvox", nullptr, 0u},
-	//{"Goxel", "gox", nullptr, 0u},
+	{"Goxel", "gox", nullptr, 0u},
 	{"CubeWorld", "cub", nullptr, 0u},
 	//{"Build engine", "kvx", nullptr, 0u},
 	{"Tiberian Sun", "vxl", nullptr, 0u},
@@ -84,7 +84,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 
 static uint32_t loadMagic(io::ReadStream& stream) {
 	uint32_t magicWord = 0u;
-	stream.readInt(magicWord);
+	stream.readUInt32(magicWord);
 	return magicWord;
 }
 

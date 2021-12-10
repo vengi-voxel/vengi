@@ -12,7 +12,7 @@
 | Sandbox VoxEdit       | vxm       | X       | X      | X          | X       |
 | Sandbox VoxEdit       | vxr       | X       |        | X          |         |
 | BinVox                | binvox    | X       | X      | X          |         |
-| Goxel                 | gox       | X       |        | X          |         |
+| Goxel                 | gox       | X       | X      | X          |         |
 | CubeWorld             | cub       | X       | X      | X          |         |
 | Build engine          | kvx       | X       |        | X          | X       |
 | SLAB6                 | kv6       | X       |        | X          | X       |

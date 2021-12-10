@@ -32,8 +32,8 @@ bool ChunkPersister::saveCompressed(const voxel::PagedVolume::ChunkPtr& chunk, i
 	}
 	{
 		core_trace_scoped(ChunkPersisterSaveCompressed);
-		outStream.writeInt(voxelSize);
-		outStream.writeByte(WORLD_FILE_VERSION);
+		outStream.writeUInt32(voxelSize);
+		outStream.writeUInt8(WORLD_FILE_VERSION);
 		outStream.write(compressedVoxelBuf, finalBufferSize);
 	}
 	return true;
@@ -48,9 +48,9 @@ bool ChunkPersister::loadCompressed(const voxel::PagedVolume::ChunkPtr& chunk, c
 	io::BufferedReadWriteStream bs(headerSize);
 	bs.write(fileBuf, headerSize);
 	uint32_t len;
-	bs.readInt(len);
+	bs.readUInt32(len);
 	uint8_t version;
-	bs.readByte(version);
+	bs.readUInt8(version);
 
 	if (version != WORLD_FILE_VERSION) {
 		Log::warn("chunk has a wrong version number %i (expected %i)",
