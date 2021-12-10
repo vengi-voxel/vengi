@@ -9,8 +9,8 @@
 * development headers/libs for
   * glm
   * lua >= 5.4
-  * sdl2 > 2.0.4
-  * postgresql-server-dev >= 9.5
+  * sdl2 > 2.0.16
+  * postgresql-server-dev >= 12
   * libpq
   * enet
   * libuv
