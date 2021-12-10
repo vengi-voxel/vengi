@@ -432,7 +432,7 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream) {
 		const core::String name = core::string::format("mat%i", i);
 		const float value[3] = {0.0f, 0.0f, 0.0f};
 		wrapBool(saveChunk_DictEntry(stream, "name", name.c_str(), name.size()))
-		wrapBool(saveChunk_DictEntry(stream, "color", materialColors[i]))
+		wrapBool(saveChunk_DictEntry(stream, "color", core::Color::getRGBA(materialColors[i])))
 		wrapBool(saveChunk_DictEntry(stream, "metallic", value[0]))
 		wrapBool(saveChunk_DictEntry(stream, "roughness", value[0]))
 		wrapBool(saveChunk_DictEntry(stream, "emission", value))
