@@ -23,14 +23,14 @@ DEBTGZ  = vengi_$(MAINVER).debian.tar.gz
 
 get-orig-source: ../$(ORIGTGZ)
 
-voxedit thumbnailer voxconvert owserver owclient mapview:
+voxedit thumbnailer voxconvert:
 	dh_testdir
 	cmake --version
 	cmake -H. -Bdebian/build -DCMAKE_BUILD_TYPE=Release -DHOT_RELOAD_ANIM=0 -DSANITIZE_FLAGS= -DPKGDATADIR=/usr/share/vengi-$@/
 	cmake --build debian/build --target $@ $(CMAKEFLAGS)
 	cmake --install debian/build --component $@ --prefix debian/install/$@
 
-build-arch: voxedit voxconvert thumbnailer owserver owclient mapview
+build-arch: voxedit voxconvert thumbnailer
 
 build-indep:
 
