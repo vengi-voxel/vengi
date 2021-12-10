@@ -47,6 +47,7 @@ bool ChunkPersister::loadCompressed(const voxel::PagedVolume::ChunkPtr& chunk, c
 	}
 	io::BufferedReadWriteStream bs(headerSize);
 	bs.write(fileBuf, headerSize);
+	bs.seek(0);
 	uint32_t len;
 	bs.readUInt32(len);
 	uint8_t version;

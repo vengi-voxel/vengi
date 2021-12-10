@@ -8,10 +8,10 @@
 
 namespace voxelworld {
 
-class WorldPersisterTest: public AbstractVoxelTest {
+class FilePersisterTest: public AbstractVoxelTest {
 };
 
-TEST_F(WorldPersisterTest, testSaveLoad) {
+TEST_F(FilePersisterTest, testSaveLoad) {
 	FilePersister persister;
 	ASSERT_TRUE(persister.save(_ctx.chunk(), _seed)) << "Could not save volume chunk";
 	_volData.flushAll();
