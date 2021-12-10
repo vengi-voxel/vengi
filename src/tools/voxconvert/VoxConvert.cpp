@@ -67,7 +67,6 @@ void VoxConvert::usage() const {
 app::AppState VoxConvert::onInit() {
 	const app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
-		Log::error("Failed to init application");
 		return state;
 	}
 
