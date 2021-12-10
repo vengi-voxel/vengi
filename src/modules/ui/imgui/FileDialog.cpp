@@ -151,6 +151,9 @@ void FileDialog::bookmarkPanel(const core::String &bookmarks) {
 	const io::Paths& paths = io::filesystem()->paths();
 	for (const core::String& path : paths) {
 		const core::String& absPath = io::filesystem()->absolutePath(path);
+		if (absPath.empty()) {
+			continue;
+		}
 		bookMarkEntry(absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
 	}
 
@@ -158,6 +161,10 @@ void FileDialog::bookmarkPanel(const core::String &bookmarks) {
 	core::string::splitString(bookmarks, bm, ";");
 	for (const core::String& path : bm) {
 		const core::String& absPath = io::filesystem()->absolutePath(path);
+		if (absPath.empty()) {
+			removeBookmark(path);
+			continue;
+		}
 		if (ImGui::Button(ICON_FK_TRASH)) {
 			removeBookmark(path);
 		}
