@@ -23,13 +23,16 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	if (image) {
 		return image;
 	}
-	if (!voxel::initDefaultMaterialColors()) {
-		Log::error("Failed to init default material colors");
-		return image::ImagePtr();
-	}
 
 	stream.seek(0);
+	core::Array<uint32_t, 256> palette;
+	const size_t paletteCount = voxelformat::loadVolumePalette(fileName, stream, palette);
+	if (paletteCount > 0) {
+		voxel::overrideMaterialColors((const uint8_t*)palette.begin(), paletteCount * 4, "");
+	}
+
 	voxel::VoxelVolumes volumes;
+	stream.seek(0);
 	if (!voxelformat::loadVolumeFormat(fileName, stream, volumes)) {
 		Log::error("Failed to load given input file");
 		return image::ImagePtr();
