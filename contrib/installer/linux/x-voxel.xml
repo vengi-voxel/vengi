@@ -8,6 +8,13 @@
     <comment>Voxel model binvox</comment>
     <glob pattern="*.binvox"/>
   </mime-type>
+  <mime-type type="application/x-goxel">
+    <comment>Voxel model Goxel</comment>
+    <glob pattern="*.gox"/>
+    <magic priority="50">
+      <match type="string" offset="0" value="GOX "/>
+    </magic>
+  </mime-type>
   <mime-type type="application/x-magicavoxel">
     <comment>Voxel model MagicaVoxel</comment>
     <magic priority="50">
