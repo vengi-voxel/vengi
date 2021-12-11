@@ -342,7 +342,7 @@ math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	rayEyeSpace.w = 0.0f;
 
 	const glm::vec3& rayDirection = glm::normalize(glm::vec3(inverseViewMatrix() * rayEyeSpace));
-	return math::Ray(worldPosition(), rayDirection);
+	return math::Ray(eye(), rayDirection);
 }
 
 glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
