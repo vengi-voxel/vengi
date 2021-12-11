@@ -184,11 +184,7 @@ bool VXRFormat::importChild(const core::String& vxrPath, io::SeekableReadStream&
 
 image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
 	const core::String imageName = filename + ".png";
-	const io::FilePtr& imageFile = io::filesystem()->open(imageName);
-	if (!imageFile) {
-		return image::ImagePtr();
-	}
-	return image::loadImage(imageFile, false);
+	return image::loadImage(imageName, false);
 }
 
 bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {

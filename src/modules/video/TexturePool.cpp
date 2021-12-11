@@ -18,9 +18,7 @@ video::TexturePtr TexturePool::load(const core::String& name, bool emptyAsFallba
 		return i->value;
 	}
 
-	const core::String &baseName = core::string::stripExtension(name);
-	const io::FilePtr& file = _filesystem->open(baseName + ".png");
-	const image::ImagePtr& image = image::loadImage(file, false);
+	const image::ImagePtr& image = image::loadImage(name, false);
 	TexturePtr texture = createTextureFromImage(image);
 	if (!texture && emptyAsFallback) {
 		texture = _empty;

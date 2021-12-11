@@ -20,7 +20,7 @@ namespace thumbnailer {
 
 image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, int outputSize) {
 	image::ImagePtr image = voxelformat::loadVolumeScreenshot(fileName, stream);
-	if (image) {
+	if (image && image->isLoaded()) {
 		return image;
 	}
 	if (!voxel::initDefaultMaterialColors()) {

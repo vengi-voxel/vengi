@@ -5,10 +5,12 @@
 #include "Image.h"
 #include "core/Log.h"
 #include "app/App.h"
+#include "core/StringUtil.h"
 #include "core/concurrent/ThreadPool.h"
 #include "core/Assert.h"
 #include "io/Filesystem.h"
 #include "core/StandardLib.h"
+#include "io/FormatDescription.h"
 #include "io/Stream.h"
 
 #define STBI_ASSERT core_assert
@@ -33,7 +35,6 @@
 #include "stb_image.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_STATIC
 #include "stb_image_write.h"
 
 #undef STB_IMAGE_IMPLEMENTATION
@@ -72,7 +73,21 @@ ImagePtr loadImage(const io::FilePtr& file, bool async) {
 }
 
 ImagePtr loadImage(const core::String& filename, bool async) {
-	const io::FilePtr& file = io::filesystem()->open(filename);
+	io::FilePtr file;
+	if (!core::string::extractExtension(filename).empty()) {
+		file = io::filesystem()->open(filename);
+	} else {
+		for (const io::FormatDescription *desc = io::format::images(); desc->name; ++desc) {
+			const core::String &f = core::string::format("%s.%s", filename.c_str(), desc->ext);
+			if (io::filesystem()->exists(f)) {
+				file = io::filesystem()->open(filename);
+				break;
+			}
+		}
+	}
+	if (!file) {
+		return createEmptyImage(filename);
+	}
 	return loadImage(file, async);
 }
 
