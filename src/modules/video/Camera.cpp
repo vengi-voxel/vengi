@@ -345,6 +345,8 @@ math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
 math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	// project screen position [0.0-1.0] to [-1.0,1.0] and flip y axis
 	// to bring them into homogeneous clip coordinates
+	core_assert(glm::all(glm::lessThanEqual(screenPos, glm::vec2(1.0f))));
+	core_assert(glm::all(glm::greaterThanEqual(screenPos, glm::vec2(0.0f))));
 	const float x = (2.0f * screenPos.x) - 1.0f;
 	const float y = 1.0f - (2.0f * screenPos.y);
 	const glm::vec4 rayClipSpace(x, y, -1.0f, 1.0f);
@@ -358,6 +360,8 @@ math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
 }
 
 glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
+	core_assert(glm::all(glm::lessThanEqual(glm::vec2(screenPos), glm::vec2(1.0f))));
+	core_assert(glm::all(glm::greaterThanEqual(glm::vec2(screenPos), glm::vec2(0.0f))));
 	const math::Ray& ray = screenRay(glm::vec2(screenPos));
 	return ray.origin + ray.direction * screenPos.z;
 }
