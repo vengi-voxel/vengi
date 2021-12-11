@@ -401,17 +401,17 @@ bool SeekableReadStream::readLine(int length, char *strbuff) {
 					seek(-1, SEEK_CUR);
 				}
 			}
-			break;
+			return true;
 		} else if (chr == '\n') {
 			strbuff[i] = '\0';
-			break;
+			return true;
 		}
 		strbuff[i] = (char)chr;
 		if (chr == '\0') {
-			break;
+			return true;
 		}
 	}
-	return true;
+	return false;
 }
 
 int SeekableReadStream::peekUInt32(uint32_t &val) {
