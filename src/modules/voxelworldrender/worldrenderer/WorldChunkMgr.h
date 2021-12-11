@@ -8,10 +8,12 @@
 #include "WorldMeshExtractor.h"
 #include "video/Camera.h"
 #include "voxel/VoxelVertex.h"
-#include "WorldShader.h"
 #include "voxel/Mesh.h"
 #include "video/Buffer.h"
-#include <future>
+
+namespace shader {
+class WorldShader;
+}
 
 namespace voxelworldrender {
 

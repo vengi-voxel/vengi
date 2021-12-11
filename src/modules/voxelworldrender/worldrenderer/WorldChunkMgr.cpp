@@ -7,6 +7,7 @@
 #include "video/Trace.h"
 #include "voxel/Constants.h"
 #include "voxelrender/ShaderAttribute.h"
+#include "WorldShader.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
