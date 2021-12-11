@@ -57,12 +57,7 @@ bool ViewportController::init() {
 }
 
 void ViewportController::onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
-	if (_camera.mode() == video::CameraMode::Perspective) {
-		_camera.setSize(windowSize);
-	} else {
-		const glm::ivec2 size = windowSize / 5;
-		_camera.setSize(size);
-	}
+	_camera.setSize(windowSize);
 }
 
 void ViewportController::move(bool pan, bool rotate, int x, int y) {
