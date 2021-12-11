@@ -13,6 +13,7 @@
 #include "io/Stream.h"
 #include "video/Texture.h"
 #include "voxelformat/PLYFormat.h"
+#include "voxelformat/SproxelFormat.h"
 #include "voxelformat/VoxFormat.h"
 #include "voxelformat/QBTFormat.h"
 #include "voxelformat/QBFormat.h"
@@ -50,6 +51,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"BinVox", "binvox", [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
 	{"Goxel", "gox", [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 	{"CubeWorld", "cub", nullptr, 0u},
+	{"Sproxel csv", "csv", nullptr, 0u},
 	{"Build engine", "kvx", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Ace of Spades", "kv6", [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Tiberian Sun", "vxl", [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
@@ -70,6 +72,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"Sandbox VoxEdit", "vxm", nullptr, 0u},
 	{"BinVox", "binvox", nullptr, 0u},
 	{"Goxel", "gox", nullptr, 0u},
+	{"Sproxel csv", "csv", nullptr, 0u},
 	{"CubeWorld", "cub", nullptr, 0u},
 	//{"Build engine", "kvx", nullptr, 0u},
 	{"Tiberian Sun", "vxl", nullptr, 0u},
@@ -126,6 +129,8 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 		format = core::make_shared<voxel::KVXFormat>();
 	} else if (ext == "kv6") {
 		format = core::make_shared<voxel::KV6Format>();
+	} else if (ext == "csv") {
+		format = core::make_shared<voxel::SproxelFormat>();
 	} else if (ext == "cub") {
 		format = core::make_shared<voxel::CubFormat>();
 	} else if (ext == "gox") {

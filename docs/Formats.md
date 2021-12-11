@@ -21,3 +21,4 @@
 | Chronovox-Studio      | csm       | X       |        | X          |         |
 | Nick's Voxel Model    | nvm       | X       |        | X          |         |
 | Minecraft Region      | mcr       |         |        |            |         |
+| Sproxel               | csv       | X       | X      | X          |         |

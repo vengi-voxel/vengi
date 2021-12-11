@@ -10,6 +10,7 @@ General:
    - Fixed missing palette value for vxm saving
    - Added support for loading only the palettes
    - Added support for goxel gox file format
+   - Added support for sproxel csv file format
 
 VoxConvert:
 

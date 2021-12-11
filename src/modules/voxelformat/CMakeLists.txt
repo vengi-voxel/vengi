@@ -19,6 +19,7 @@ set(SRCS
 	CubFormat.h CubFormat.cpp
 	OBJFormat.h OBJFormat.cpp
 	PLYFormat.h PLYFormat.cpp
+	SproxelFormat.h SproxelFormat.cpp
 	VolumeCache.h VolumeCache.cpp
 	VoxelVolumes.h VoxelVolumes.cpp
 	VoxFormat.h VoxFormat.cpp
@@ -39,6 +40,7 @@ set(TEST_SRCS
 	tests/CubFormatTest.cpp
 	tests/CSMFormatTest.cpp
 	tests/MCRFormatTest.cpp
+	tests/SproxelFormatTest.cpp
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
 	tests/VXLFormatTest.cpp
@@ -63,6 +65,7 @@ set(TEST_FILES
 	tests/test2.vxm
 	tests/cw.cub
 	tests/rgb.vxl
+	tests/rgb.csv
 	tests/rgb.vox
 	tests/rgb.gox
 	tests/rgb.qb
