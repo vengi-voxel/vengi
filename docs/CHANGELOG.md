@@ -20,6 +20,11 @@ Thumbnailer:
 
    - Try to use the built-in palette for models
 
+VoxEdit:
+
+   - Allow to import palettes from volume formats, too
+   - Implemented camera panning
+
 ## 0.0.14 (2021-11-21)
 
 General:
