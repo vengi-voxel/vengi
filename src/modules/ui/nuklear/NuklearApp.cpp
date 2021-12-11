@@ -32,7 +32,7 @@ NuklearApp::NuklearApp(const metric::MetricPtr& metric,
 		const voxelrender::CachedMeshRendererPtr& meshRenderer,
 		const video::TextureAtlasRendererPtr& textureAtlasRenderer) :
 		Super(metric, filesystem, eventBus, timeProvider), _console(this),
-	_camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal),
+	_camera(video::CameraType::UI, video::CameraMode::Orthogonal),
 	_texturePool(texturePool), _meshRenderer(meshRenderer), _textureAtlasRenderer(textureAtlasRenderer) {
 	_cctx.ctx = &_ctx;
 	_cctx.meshRenderer = _meshRenderer;

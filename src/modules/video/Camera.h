@@ -22,6 +22,7 @@ namespace video {
 enum class CameraType {
 	FirstPerson,
 	Free,
+	UI,
 	Max
 };
 
@@ -399,7 +400,7 @@ inline float Camera::targetDistance() const {
 }
 
 inline Camera uiCamera(const glm::ivec2& windowSize) {
-	Camera camera(CameraType::FirstPerson, video::CameraMode::Orthogonal);
+	Camera camera(CameraType::UI, video::CameraMode::Orthogonal);
 	camera.setSize(windowSize);
 	camera.setNearPlane(-1.0f);
 	camera.setFarPlane(1.0f);

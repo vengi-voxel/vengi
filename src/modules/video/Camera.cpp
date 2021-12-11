@@ -168,6 +168,7 @@ void Camera::rotate(const glm::vec3& radians) {
 		setPitch(radians.x);
 		setRoll(radians.z);
 		break;
+	case CameraType::UI:
 	case CameraType::Max:
 		break;
 	}
