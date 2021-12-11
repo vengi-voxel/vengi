@@ -62,30 +62,11 @@ void Camera::rotate(float radians, const glm::vec3& axis) {
 }
 
 void Camera::pan(int x, int y) {
-	switch(_mode) {
-	case CameraMode::Orthogonal:
-		_orthoPosition.x += x;
-		_orthoPosition.y += y;
-		break;
-	case CameraMode::Perspective:
-	case CameraMode::Max: {
-		const glm::vec3 r = right() * ((float)x) * 0.1f;
-		const glm::vec3 u = up() * ((float)-y) * 0.1f;
-		_panOffset += r;
-		_panOffset += u;
-		_worldPos += r;
-		_worldPos += u;
-		_dirty |= DIRTY_POSITION;
-		if (_rotationType == CameraRotationType::Target) {
-			_target += r;
-			_target += u;
-			_dirty |= DIRTY_TARGET;
-		}
-		break;
-	}
-	}
-
-	_dirty |= DIRTY_PERSPECTIVE;
+	const glm::vec3 r = right() * ((float)-x) * 0.1f;
+	const glm::vec3 u = up() * ((float)y) * 0.1f;
+	_panOffset += r;
+	_panOffset += u;
+	_dirty |= DIRTY_POSITION;
 }
 
 glm::vec3 Camera::forward() const {
@@ -283,7 +264,7 @@ void Camera::updateTarget() {
 		return;
 	}
 	const glm::vec3& backward = -forward();
-	const glm::vec3& newPosition = _panOffset + _target + backward * _distance;
+	const glm::vec3& newPosition = _target + backward * _distance;
 	if (glm::all(glm::epsilonEqual(_worldPos, newPosition, 0.0001f))) {
 		return;
 	}
@@ -335,7 +316,7 @@ void Camera::updateViewMatrix() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITION)) {
 		return;
 	}
-	_viewMatrix = glm::translate(orientation(), -_worldPos);
+	_viewMatrix = glm::translate(orientation(), -(_worldPos + _panOffset));
 	_invViewMatrix = glm::inverse(_viewMatrix);
 }
 

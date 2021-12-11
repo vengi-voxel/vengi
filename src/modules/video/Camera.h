@@ -71,7 +71,7 @@ protected:
 	glm::ivec2 _windowSize {0};
 	// the position that is used for ortho projection matrices
 	glm::ivec2 _orthoPosition {0};
-	glm::vec3 _panOffset {0};
+	glm::vec3 _panOffset {0.0f};
 	// the position of the camera in the world
 	glm::vec3 _worldPos {0.0f};
 	glm::quat _quat = glm::quat(1, 0, 0, 0);
