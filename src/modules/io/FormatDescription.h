@@ -28,7 +28,16 @@ namespace format {
 
 inline const FormatDescription* images() {
 	static FormatDescription desc[] = {
-		{"Image", "png", nullptr, 0u},
+		{"Portable Network Graphics", "png", nullptr, 0u},
+		{"JPEG", "jpeg", nullptr, 0u},
+		{"JPEG", "jpg", nullptr, 0u},
+		{"Targa image file", "tga", nullptr, 0u},
+		{"Bitmap", "bmp", nullptr, 0u},
+		{"Photoshop", "psd", nullptr, 0u},
+		{"Graphics Interchange Format", "gif", nullptr, 0u},
+		{"Radiance rgbE", "hdr", nullptr, 0u},
+		{"Softimage PIC", "pic", nullptr, 0u},
+		{"Portable Anymap", "pnm", nullptr, 0u},
 		{nullptr, nullptr, nullptr, 0u}
 	};
 	return desc;
