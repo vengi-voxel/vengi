@@ -106,6 +106,7 @@ void Camera::setWorldPosition(const glm::vec3& worldPos) {
 	}
 	_dirty |= DIRTY_POSITION;
 	_worldPos = worldPos;
+	_panOffset = glm::vec3(0.0f);
 	if (_rotationType == CameraRotationType::Target) {
 		lookAt(_target);
 	}
