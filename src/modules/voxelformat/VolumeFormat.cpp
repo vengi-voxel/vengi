@@ -32,9 +32,6 @@
 
 namespace voxelformat {
 
-#define VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED (1 << 0)
-#define VOX_FORMAT_FLAG_PALETTE_EMBEDDED (1 << 1)
-
 // this is the list of supported voxel volume formats that are have importers implemented
 const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Qubicle Binary", "qb", nullptr, 0u},

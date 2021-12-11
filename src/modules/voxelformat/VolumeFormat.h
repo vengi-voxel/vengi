@@ -13,6 +13,9 @@
 
 namespace voxelformat {
 
+#define VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED (1 << 0)
+#define VOX_FORMAT_FLAG_PALETTE_EMBEDDED (1 << 1)
+
 extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[];
 extern const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[];
 extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[];
