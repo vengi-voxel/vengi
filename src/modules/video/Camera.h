@@ -105,6 +105,7 @@ protected:
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
+	const glm::ivec2& size() const;
 	void setSize(const glm::ivec2& windowSize);
 	int frameBufferHeight() const;
 
@@ -153,6 +154,7 @@ public:
 	const glm::vec3& worldPosition() const;
 	void setWorldPosition(const glm::vec3& worldPos);
 	const glm::ivec2& orthoPosition() const;
+	void setOrthoPosition(const glm::ivec2 &pos);
 	void move(const glm::vec3& delta);
 
 	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
@@ -270,8 +272,16 @@ inline glm::vec3 Camera::eye() const {
 	return _invViewMatrix[3];
 }
 
+inline void Camera::setOrthoPosition(const glm::ivec2 &pos) {
+	_orthoPosition = pos;
+}
+
 inline const glm::ivec2& Camera::orthoPosition() const {
 	return _orthoPosition;
+}
+
+inline const glm::ivec2& Camera::size() const {
+	return _windowSize;
 }
 
 inline void Camera::setType(CameraType type) {
