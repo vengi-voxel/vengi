@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "io/FormatDescription.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/ArrayLength.h"
 
@@ -22,6 +23,7 @@ class VoxEdit: public ui::imgui::IMGUIApp {
 private:
 	using Super = ui::imgui::IMGUIApp;
 	voxedit::MainWindow* _mainWindow = nullptr;
+	core::Array<io::FormatDescription, 64> _paletteFormats;
 
 public:
 	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

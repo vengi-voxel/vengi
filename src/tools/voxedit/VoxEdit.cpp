@@ -55,6 +55,15 @@ app::AppState VoxEdit::onConstruct() {
 
 	_framesPerSecondsCap->setVal(60.0f);
 
+	_paletteFormats[0] = {"Image", "png", nullptr, 0u};
+	int formatIndex = 1;
+	for (const io::FormatDescription* desc = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD; desc->name != nullptr; ++desc) {
+		if (desc->flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED) {
+			_paletteFormats[formatIndex++] = *desc;
+		}
+	}
+	_paletteFormats[formatIndex++] = {nullptr, nullptr, nullptr, 0u};
+
 	voxedit::sceneMgr().construct();
 
 	command::Command::registerCommand("screenshot", [this](const command::CmdArgs &args) {
@@ -120,7 +129,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, io::format::images());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, &_paletteFormats[0]);
 			return;
 		}
 		if (!voxedit::sceneMgr().importPalette(args[0])) {
