@@ -365,6 +365,7 @@ void MainWindow::update() {
 			windowTitle.append(" - ");
 			windowTitle.append(_app->appname());
 		}
+		windowTitle.append("###app");
 		static bool keepRunning = true;
 		if (!ImGui::Begin(windowTitle.c_str(), &keepRunning, windowFlags)) {
 			ImGui::SetWindowCollapsed(ImGui::GetCurrentWindow(), false);
