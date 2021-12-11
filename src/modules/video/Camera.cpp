@@ -69,8 +69,8 @@ void Camera::pan(int x, int y) {
 		break;
 	case CameraMode::Perspective:
 	case CameraMode::Max: {
-		const glm::vec3 r = right() * (float)-x;
-		const glm::vec3 u = up() * (float)y;
+		const glm::vec3 r = right() * ((float)x) * 0.1f;
+		const glm::vec3 u = up() * ((float)-y) * 0.1f;
 		_panOffset += r;
 		_panOffset += u;
 		_worldPos += r;
@@ -336,7 +336,6 @@ void Camera::updateViewMatrix() {
 	}
 	_viewMatrix = glm::translate(orientation(), -_worldPos);
 	_invViewMatrix = glm::inverse(_viewMatrix);
-	_eyePosition =_invViewMatrix[3];
 }
 
 math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {

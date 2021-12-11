@@ -74,7 +74,6 @@ protected:
 	glm::vec3 _panOffset {0};
 	// the position of the camera in the world
 	glm::vec3 _worldPos {0.0f};
-	glm::vec3 _eyePosition { 0.0f };
 	glm::quat _quat = glm::quat(1, 0, 0, 0);
 	uint32_t _dirty = DIRTY_ALL;
 
@@ -113,7 +112,7 @@ public:
 		return _dirty != 0u;
 	}
 
-	const glm::vec3& eye() const;
+	glm::vec3 eye() const;
 
 	CameraType type() const;
 	void setType(CameraType type);
@@ -267,8 +266,8 @@ public:
 	glm::vec4 sphereBoundingBox() const;
 };
 
-inline const glm::vec3& Camera::eye() const {
-	return _eyePosition;
+inline glm::vec3 Camera::eye() const {
+	return _invViewMatrix[3];
 }
 
 inline const glm::ivec2& Camera::orthoPosition() const {
