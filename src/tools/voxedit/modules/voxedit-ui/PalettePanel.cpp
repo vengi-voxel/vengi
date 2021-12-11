@@ -38,7 +38,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 	int voxelColorTraceIndex = sceneMgr().hitCursorVoxel().getColor();
 	int voxelColorSelectedIndex = sceneMgr().modifier().cursorVoxel().getColor();
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
 		core_trace_scoped(PalettePanel);
 		ImVec2 pos = ImGui::GetWindowPos();
 		pos.x += ImGui::GetWindowContentRegionMin().x;
