@@ -572,12 +572,13 @@ app::AppState IMGUIApp::onInit() {
 		SDL_GetDisplayUsableBounds(n, &r);
 		monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
 		monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
-#if 0
-		float dpi = 0.0f;
-		if (!SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr)) {
-			monitor.DpiScale = dpi / 96.0f;
+		const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
+		if (highDPI->boolVal()) {
+			float dpi = 0.0f;
+			if (SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr) != -1) {
+				monitor.DpiScale = dpi / 96.0f;
+			}
 		}
-#endif
 		platformIO.Monitors.push_back(monitor);
 	}
 	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
