@@ -272,10 +272,6 @@ inline glm::vec3 Camera::eye() const {
 	return _invViewMatrix[3];
 }
 
-inline void Camera::setOrthoPosition(const glm::ivec2 &pos) {
-	_orthoPosition = pos;
-}
-
 inline const glm::ivec2& Camera::orthoPosition() const {
 	return _orthoPosition;
 }

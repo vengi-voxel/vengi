@@ -470,6 +470,11 @@ void Camera::zoom(float value) {
 	}
 }
 
+void Camera::setOrthoPosition(const glm::ivec2 &pos) {
+	_dirty |= DIRTY_PERSPECTIVE;
+	_orthoPosition = pos;
+}
+
 glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 	const float left = (float)_orthoPosition.x;
 	const float top = (float)_orthoPosition.y;
