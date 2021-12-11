@@ -153,7 +153,8 @@ private:
 	int _sceneModeLayerTrace = -1;
 
 	command::ActionButton _move[lengthof(DIRECTIONS)];
-
+	command::ActionButton _rotate;
+	command::ActionButton _pan;
 	command::ActionButton _zoomIn;
 	command::ActionButton _zoomOut;
 
@@ -243,6 +244,9 @@ public:
 	void setGizmoPosition();
 
 	void setMousePos(int x, int y);
+
+	bool cameraRotate() const;
+	bool cameraPan() const;
 
 	void setActiveCamera(video::Camera* camera);
 	video::Camera* activeCamera();

@@ -90,13 +90,11 @@ void Viewport::update() {
 					if (sceneMgr().modifier().modifierType() == ModifierType::ColorPicker) {
 						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 					}
-					const bool alt = ImGui::GetIO().KeyAlt;
-					const bool middle = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 					const ImVec2 windowPos = ImGui::GetWindowPos();
 					const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 					const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y) - headerSize;
-					const bool rotate = middle || alt;
-					const bool pan = ImGui::GetIO().KeyShift;
+					const bool rotate = sceneMgr().cameraRotate();
+					const bool pan = sceneMgr().cameraPan();
 					_controller.move(pan, rotate, mouseX, mouseY);
 					_hovered = true;
 					sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);

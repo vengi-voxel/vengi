@@ -914,7 +914,8 @@ void SceneManager::construct() {
 
 	command::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Editing);
 	command::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Editing);
-
+	command::Command::registerActionButton("camera_rotate", _rotate).setBindingContext(BindingContext::Editing);
+	command::Command::registerActionButton("camera_pan", _pan).setBindingContext(BindingContext::Editing);
 	command::Command::registerCommand("mouse_layer_select", [&] (const command::CmdArgs&) {
 		if (_sceneModeLayerTrace != -1) {
 			Log::debug("switch active layer to hovered layer from scene mode: %i", _sceneModeLayerTrace);
@@ -1648,6 +1649,11 @@ void SceneManager::shutdown() {
 
 	_referencePointMesh = -1;
 	_aabbMeshIndex = -1;
+
+	command::Command::unregisterActionButton("zoom_in");
+	command::Command::unregisterActionButton("zoom_out");
+	command::Command::unregisterActionButton("camera_rotate");
+	command::Command::unregisterActionButton("camera_pan");
 }
 
 animation::AnimationEntity& SceneManager::animationEntity() {
@@ -2144,6 +2150,14 @@ bool SceneManager::empty() const {
 		}
 	}
 	return true;
+}
+
+bool SceneManager::cameraRotate() const {
+	return _rotate.pressed();
+}
+
+bool SceneManager::cameraPan() const {
+	return _pan.pressed();
 }
 
 }
