@@ -341,7 +341,7 @@ void MainWindow::update() {
 	core_trace_scoped(MainWindow);
 	const ImVec2 pos(0.0f, 0.0f);
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
-	const float statusBarHeight = ImGui::Size((float)_app->fontSize() + 16.0f);
+	const float statusBarHeight = ImGui::Size((float)_app->fontSize()) + 16.0f;
 
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight));
