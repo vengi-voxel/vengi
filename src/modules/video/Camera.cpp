@@ -340,7 +340,10 @@ void Camera::updateViewMatrix() {
 }
 
 math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
-	return screenRay(glm::vec2((float)pixelPos.x / (float)_windowSize.x, (float)pixelPos.y / (float)_windowSize.y));
+	core_assert(glm::all(glm::lessThanEqual(pixelPos, _windowSize)));
+	core_assert(glm::all(glm::greaterThanEqual(pixelPos, glm::ivec2(0))));
+	const glm::vec2 screenPos((float)pixelPos.x / (float)_windowSize.x, (float)pixelPos.y / (float)_windowSize.y);
+	return screenRay(screenPos);
 }
 
 math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
