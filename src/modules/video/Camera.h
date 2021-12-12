@@ -58,6 +58,7 @@ protected:
 	constexpr static uint32_t DIRTY_PERSPECTIVE = 1 << 4;
 
 	constexpr static uint32_t DIRTY_ALL = ~0u;
+	constexpr static float ORTHO_BOXSIZE = 10.0f;
 
 	inline bool isDirty(uint32_t flag) const {
 		return (_dirty & flag) != 0u;
@@ -68,10 +69,8 @@ protected:
 	PolygonMode _polygonMode = PolygonMode::Solid;
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
-	// ortho
 	glm::ivec2 _windowSize {0};
-	// the position that is used for ortho projection matrices
-	glm::ivec2 _orthoPosition {0};
+	float _orthoZoom = 1.0f;
 	glm::vec3 _panOffset {0.0f};
 	// the position of the camera in the world
 	glm::vec3 _worldPos {0.0f};
@@ -154,8 +153,6 @@ public:
 
 	const glm::vec3& worldPosition() const;
 	void setWorldPosition(const glm::vec3& worldPos);
-	const glm::ivec2& orthoPosition() const;
-	void setOrthoPosition(const glm::ivec2 &pos);
 	void move(const glm::vec3& delta);
 
 	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
@@ -271,10 +268,6 @@ public:
 
 inline glm::vec3 Camera::eye() const {
 	return _invViewMatrix[3];
-}
-
-inline const glm::ivec2& Camera::orthoPosition() const {
-	return _orthoPosition;
 }
 
 inline const glm::ivec2& Camera::size() const {

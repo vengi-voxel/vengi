@@ -359,8 +359,6 @@ glm::ivec2 Camera::worldToScreen(const glm::vec3& worldPos) const {
 	trans.y = 1.0f - trans.y;
 	trans.x *= (float)_windowSize.x;
 	trans.y *= (float)_windowSize.y;
-	trans.x += (float)_orthoPosition.x;
-	trans.y += (float)_orthoPosition.y;
 	return glm::ivec2(trans.x, trans.y);
 }
 
@@ -458,31 +456,35 @@ glm::vec4 Camera::sphereBoundingBox() const {
 }
 
 void Camera::zoom(float value) {
-	if (_mode == CameraMode::Perspective) {
-		const float targetDist = glm::clamp(targetDistance() + value, 0.0f, 1000.0f);
-		if (targetDist > 1.0f) {
-			const glm::vec3& moveDelta = glm::backward * value;
-			move(moveDelta);
-			setTargetDistance(targetDist);
-		}
-	} else {
-		value = glm::clamp(glm::sign(value) * 0.25f, 1.0f, 179.0f);
-		setFieldOfView(_fieldOfView + _fieldOfView * value);
+	if (_mode == CameraMode::Orthogonal) {
+		_orthoZoom = glm::clamp(_orthoZoom - value * 0.01f, 0.1f, 1000.0f);
+		_dirty |= DIRTY_PERSPECTIVE;
+		return;
+	}
+	const float targetDist = glm::clamp(targetDistance() + value, 0.0f, 1000.0f);
+	if (targetDist > 1.0f) {
+		const glm::vec3& moveDelta = glm::backward * value;
+		move(moveDelta);
+		setTargetDistance(targetDist);
 	}
 }
 
-void Camera::setOrthoPosition(const glm::ivec2 &pos) {
-	_dirty |= DIRTY_PERSPECTIVE;
-	_orthoPosition = pos;
-}
-
 glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
-	const float left = (float)_orthoPosition.x;
-	const float top = (float)_orthoPosition.y;
-	const float right = left + (float)_windowSize.x;
-	const float bottom = top + (float)_windowSize.y;
-	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
-	core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
+	if (_type == CameraType::UI) {
+		const float left = 0.0f;
+		const float top = 0.0f;
+		const float right = (float)_windowSize.x;
+		const float bottom = (float)_windowSize.y;
+		core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
+		core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
+		return glm::ortho(left * _orthoZoom, right * _orthoZoom, bottom * _orthoZoom, top * _orthoZoom, nplane, fplane);
+	}
+	const float aspect = (float)_windowSize.y / (float)_windowSize.x;
+	const float fovx = glm::clamp(_fieldOfView / _orthoZoom, 1.0f, 179.0f);
+	const float left = -ORTHO_BOXSIZE * fovx;
+	const float right = ORTHO_BOXSIZE * fovx;
+	const float bottom = -ORTHO_BOXSIZE * fovx * aspect;
+	const float top = ORTHO_BOXSIZE * fovx * aspect;
 	return glm::ortho(left, right, bottom, top, nplane, fplane);
 }
 
