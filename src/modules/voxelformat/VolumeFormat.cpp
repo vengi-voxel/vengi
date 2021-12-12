@@ -119,7 +119,7 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 	const core::String &ext = desc->ext;
 	if (ext == "qb") {
 		format = core::make_shared<voxel::QBFormat>();
-	} else if (ext == "vox" && magic != FourCC('V','O','X',' ')) {
+	} else if (ext == "vox" && (magic != 0u && magic != FourCC('V','O','X',' '))) {
 		// TODO: old vox format support
 	} else if (ext == "vox" || magic == FourCC('V','O','X',' ')) {
 		format = core::make_shared<voxel::VoxFormat>();
