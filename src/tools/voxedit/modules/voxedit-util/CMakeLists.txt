@@ -23,7 +23,6 @@ set(SRCS
 	layer/Layer.h
 	layer/LayerSettings.h
 
-	tool/ImageUtils.h tool/ImageUtils.cpp
 	tool/Clipboard.h tool/Clipboard.cpp
 	tool/Resize.h tool/Resize.cpp
 )
@@ -35,10 +34,6 @@ set(TEST_SRCS
 	tests/LayerManagerTest.cpp
 	tests/MementoHandlerTest.cpp
 	tests/ModifierTest.cpp
-	tests/ImageUtilsTest.cpp
-)
-set(TEST_FILES
-	tests/test-palette-in.png
 )
 
 gtest_suite_sources(tests

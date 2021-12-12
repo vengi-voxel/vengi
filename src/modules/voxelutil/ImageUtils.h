@@ -7,7 +7,7 @@
 #include "image/Image.h"
 #include "voxel/RawVolumeWrapper.h"
 
-namespace voxedit {
+namespace voxelutil {
 
 extern void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image);
 extern voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness = 1);

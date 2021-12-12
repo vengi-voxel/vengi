@@ -11,9 +11,8 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/GLM.h"
-#include <unordered_set>
 
-namespace voxedit {
+namespace voxelutil {
 
 void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image) {
 	const int imageWidth = image->width();
@@ -23,9 +22,9 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 	const int volumeWidth = region.getWidthInVoxels();
 	const int volumeDepth = region.getDepthInVoxels();
 	const glm::ivec3& mins = region.getLowerCorner();
-	const float stepWidthY = imageHeight / (float)volumeDepth;
-	const float stepWidthX = imageWidth / (float)volumeWidth;
-	const float scaleHeight = volumeHeight / 255.0f;
+	const float stepWidthY = (float)imageHeight / (float)volumeDepth;
+	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
+	const float scaleHeight = (float)volumeHeight / 255.0f;
 	float imageY = 0.0f;
 	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
 		float imageX = 0.0f;

@@ -3,7 +3,7 @@
  */
 
 #include "app/tests/AbstractTest.h"
-#include "../tool/ImageUtils.h"
+#include "voxelutil/ImageUtils.h"
 #include "voxel/MaterialColor.h"
 
 namespace voxedit {

@@ -4,6 +4,7 @@ set(SRCS
 	AStarPathfinderImpl.h
 	FloorTrace.h FloorTrace.cpp
 	FloorTraceResult.h
+	ImageUtils.h ImageUtils.cpp
 	Raycast.h
 	Picking.h
 	VolumeMerger.h VolumeMerger.cpp
@@ -18,16 +19,23 @@ set(SRCS
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel)
 
 set(TEST_SRCS
+	tests/ImageUtilsTest.cpp
 	tests/PickingTest.cpp
 	tests/VolumeMergerTest.cpp
 	tests/VolumeRotatorTest.cpp
 	tests/VolumeCropperTest.cpp
 )
 
+set(TEST_FILES
+	tests/test-palette-in.png
+)
+
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB} test-app)
+gtest_suite_files(tests ${TEST_FILES})
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
+gtest_suite_files(tests-${LIB} ${TEST_FILES})
 gtest_suite_deps(tests-${LIB} ${LIB} test-app)
 gtest_suite_end(tests-${LIB})

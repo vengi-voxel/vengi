@@ -49,7 +49,7 @@
 #include "Config.h"
 #include "tool/Clipboard.h"
 #include "tool/Resize.h"
-#include "tool/ImageUtils.h"
+#include "voxelutil/ImageUtils.h"
 #include "anim/AnimationLuaSaver.h"
 #include "core/TimeProvider.h"
 #include "attrib/ShadowAttributes.h"
@@ -134,7 +134,7 @@ bool SceneManager::importAsPlane(const core::String& file) {
 	if (!img->isLoaded()) {
 		return false;
 	}
-	voxel::RawVolume* v = voxedit::importAsPlane(img);
+	voxel::RawVolume* v = voxelutil::importAsPlane(img);
 	if (v == nullptr) {
 		return false;
 	}
@@ -157,7 +157,7 @@ bool SceneManager::importHeightmap(const core::String& file) {
 		return false;
 	}
 	voxel::RawVolumeWrapper wrapper(v);
-	voxedit::importHeightmap(wrapper, img);
+	voxelutil::importHeightmap(wrapper, img);
 	modified(layerId, wrapper.dirtyRegion());
 	return true;
 }
