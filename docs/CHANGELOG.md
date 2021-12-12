@@ -11,6 +11,7 @@ General:
    - Added support for loading only the palettes
    - Added support for goxel gox file format
    - Added support for sproxel csv file format
+   - Added support for a lot more image formats
 
 VoxConvert:
 

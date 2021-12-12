@@ -6,6 +6,7 @@ vengi (0.0.15.0-1) UNRELEASED; urgency=low
   * Added support for loading only the palettes
   * Added support for goxel gox file format
   * Added support for sproxel csv file format
+  * Added support for a lot more image formats
 
   * VoxConvert
   * Added option to keep the input file palette and don't perform quantization
