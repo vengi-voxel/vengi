@@ -56,7 +56,7 @@ bool ViewportController::init() {
 	return true;
 }
 
-void ViewportController::onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize) {
+void ViewportController::onResize(const glm::ivec2&, const glm::ivec2& windowSize) {
 	_camera.setSize(windowSize);
 }
 
