@@ -5,6 +5,7 @@
 #include "File.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "io/FormatDescription.h"
 #include <SDL.h>
 
 namespace io {
@@ -25,6 +26,18 @@ File::~File() {
 
 bool File::validHandle() const {
 	return _file != nullptr;
+}
+
+bool File::isAnyOf(const io::FormatDescription* desc) const {
+	const core::String& ext = extension();
+	while (desc->ext) {
+		if (ext == desc->ext) {
+			// TODO: isA check
+			return true;
+		}
+		++desc;
+	}
+	return false;
 }
 
 bool File::exists() const {

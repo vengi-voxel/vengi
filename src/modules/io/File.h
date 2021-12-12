@@ -12,6 +12,7 @@ struct SDL_RWops;
 
 namespace io {
 
+struct FormatDescription;
 class Filesystem;
 
 enum class FileMode {
@@ -52,6 +53,8 @@ public:
 	int read(void *buf, size_t size, size_t maxnum);
 	long tell() const;
 	long seek(long offset, int seekType) const;
+
+	bool isAnyOf(const io::FormatDescription* desc) const;
 
 	/**
 	 * @return The FileMode the file was opened with
