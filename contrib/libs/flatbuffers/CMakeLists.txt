@@ -27,6 +27,7 @@ set(COMPILER_SRCS
 	compiler/src/compiler/python_generator.h
 	compiler/src/compiler/ts_generator.cc
 	compiler/src/compiler/ts_generator.h
+	compiler/bfbs_gen_lua.cpp
 	compiler/code_generators.cpp
 	compiler/flatc.cpp
 	compiler/flatc_main.cpp
