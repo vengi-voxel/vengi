@@ -1912,6 +1912,7 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 		_lastRaytraceX = _mouseCursor.x;
 		_lastRaytraceY = _mouseCursor.y;
 		float intersectDist = _camera->farPlane();
+		const math::Ray& ray = _camera->mouseRay(_mouseCursor);
 		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
 			const Layer& layer = _layerMgr.layer(idx);
 			if (!layer.valid) {
@@ -1923,7 +1924,6 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 			const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
 			core_assert_always(volume != nullptr);
 			const voxel::Region& region = volume->region();
-			const math::Ray& ray = _camera->mouseRay(_mouseCursor);
 			float distance = 0.0f;
 			const math::AABB<float>& aabb = toAABB(region);
 			if (aabb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
