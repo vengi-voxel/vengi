@@ -68,6 +68,11 @@ size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream&
 	return _colorsSize;
 }
 
+image::ImagePtr Format::loadScreenshot(const core::String &filename, io::SeekableReadStream &) {
+	Log::debug("%s doesn't have a supported embedded screenshot", filename.c_str());
+	return image::ImagePtr();
+}
+
 bool Format::save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream) {
 	VoxelVolumes volumes;
 	volumes.push_back(VoxelVolume(const_cast<RawVolume*>(volume)));
@@ -76,6 +81,11 @@ bool Format::save(const RawVolume* volume, const core::String &filename, io::See
 
 MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const core::String &_name) :
 		mesh(_mesh), name(_name) {
+}
+
+bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStream& file, VoxelVolumes& volumes) {
+	Log::debug("Meshes can't get voxelized yet");
+	return false;
 }
 
 bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {

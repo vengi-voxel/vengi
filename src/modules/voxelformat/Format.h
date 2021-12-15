@@ -38,7 +38,7 @@ protected:
 public:
 	virtual ~Format() = default;
 
-	virtual image::ImagePtr loadScreenshot(const core::String &/*filename*/, io::SeekableReadStream& /*stream*/) { return image::ImagePtr(); }
+	virtual image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream);
 
 	/**
 	 * @brief Only load the palette that is included in the format
@@ -73,10 +73,7 @@ protected:
 	using Meshes = core::DynamicArray<MeshExt>;
 	virtual bool saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, float scale = 1.0f, bool quad = false, bool withColor = true, bool withTexCoords = true) = 0;
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& file, VoxelVolumes& volumes) override {
-		return false;
-	}
-
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& file, VoxelVolumes& volumes) override;
 	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
