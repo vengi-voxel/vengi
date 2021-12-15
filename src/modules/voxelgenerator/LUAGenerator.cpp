@@ -47,9 +47,9 @@ static int luaVoxel_pushvolumewrapper(lua_State* s, voxel::RawVolumeWrapper* vol
 
 static int luaVoxel_volumewrapper_voxel(lua_State* s) {
 	const voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
-	const int x = luaL_checkinteger(s, 2);
-	const int y = luaL_checkinteger(s, 3);
-	const int z = luaL_checkinteger(s, 4);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
 	const voxel::Voxel& voxel = volume->voxel(x, y, z);
 	if (voxel::isAir(voxel.getMaterial())) {
 		lua_pushinteger(s, -1);
@@ -66,10 +66,10 @@ static int luaVoxel_volumewrapper_region(lua_State* s) {
 
 static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 	voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
-	const int x = luaL_checkinteger(s, 2);
-	const int y = luaL_checkinteger(s, 3);
-	const int z = luaL_checkinteger(s, 4);
-	const int color = luaL_checkinteger(s, 5);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const int color = (int)luaL_checkinteger(s, 5);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
@@ -78,10 +78,10 @@ static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 
 static int luaVoxel_palette_colors(lua_State* s) {
 	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
-	lua_createtable(s, colors.size(), 0);
+	lua_createtable(s, (int)colors.size(), 0);
 	for (size_t i = 0; i < colors.size(); ++i) {
 		const glm::vec4& c = colors[i];
-		lua_pushinteger(s, i + 1);
+		lua_pushinteger(s, (int)i + 1);
 		clua_push(s, c);
 		lua_settable(s, -3);
 	}
@@ -96,9 +96,9 @@ static int luaVoxel_palette_color(lua_State* s) {
 
 static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	const float r = luaL_checkinteger(s, 1) / 255.0f;
-	const float g = luaL_checkinteger(s, 2) / 255.0f;
-	const float b = luaL_checkinteger(s, 3) / 255.0f;
+	const float r = (float)luaL_checkinteger(s, 1) / 255.0f;
+	const float g = (float)luaL_checkinteger(s, 2) / 255.0f;
+	const float b = (float)luaL_checkinteger(s, 3) / 255.0f;
 	const int match = core::Color::getClosestMatch(glm::vec4(r, b, g, 1.0f), materialColors);
 	if (match < 0 || match > (int)materialColors.size()) {
 		return clua_error(s, "Given color index is not valid or palette is not loaded");
@@ -134,9 +134,9 @@ static int luaVoxel_palette_similar(lua_State* s) {
 		return 1;
 	}
 
-	lua_createtable(s, newColorIndices.size(), 0);
+	lua_createtable(s, (int)newColorIndices.size(), 0);
 	for (size_t i = 0; i < newColorIndices.size(); ++i) {
-		lua_pushinteger(s, i + 1);
+		lua_pushinteger(s, (int)i + 1);
 		lua_pushinteger(s, newColorIndices[i]);
 		lua_settable(s, -3);
 	}
@@ -246,30 +246,30 @@ static int luaVoxel_noise_fBm4(lua_State* s) {
 
 static int luaVoxel_noise_ridgedMF2(lua_State* s) {
 	const glm::vec2 v = clua_tovec<glm::vec2>(s, 1);
-	const float ridgeOffset = luaL_optnumber(s, 2, 1.0f);
+	const float ridgeOffset = (float)luaL_optnumber(s, 2, 1.0f);
 	const uint8_t octaves = luaL_optinteger(s, 3, 4);
-	const float lacunarity = luaL_optnumber(s, 4, 2.0f);
-	const float gain = luaL_optnumber(s, 5, 0.5f);
+	const float lacunarity = (float)luaL_optnumber(s, 4, 2.0f);
+	const float gain = (float)luaL_optnumber(s, 5, 0.5f);
 	lua_pushnumber(s, noise::ridgedMF(v, ridgeOffset, octaves, lacunarity, gain));
 	return 1;
 }
 
 static int luaVoxel_noise_ridgedMF3(lua_State* s) {
 	const glm::vec3 v = clua_tovec<glm::vec3>(s, 1);
-	const float ridgeOffset = luaL_optnumber(s, 2, 1.0f);
+	const float ridgeOffset = (float)luaL_optnumber(s, 2, 1.0f);
 	const uint8_t octaves = luaL_optinteger(s, 3, 4);
-	const float lacunarity = luaL_optnumber(s, 4, 2.0f);
-	const float gain = luaL_optnumber(s, 5, 0.5f);
+	const float lacunarity = (float)luaL_optnumber(s, 4, 2.0f);
+	const float gain = (float)luaL_optnumber(s, 5, 0.5f);
 	lua_pushnumber(s, noise::ridgedMF(v, ridgeOffset, octaves, lacunarity, gain));
 	return 1;
 }
 
 static int luaVoxel_noise_ridgedMF4(lua_State* s) {
 	const glm::vec4 v = clua_tovec<glm::vec4>(s, 1);
-	const float ridgeOffset = luaL_optnumber(s, 2, 1.0f);
+	const float ridgeOffset = (float)luaL_optnumber(s, 2, 1.0f);
 	const uint8_t octaves = luaL_optinteger(s, 3, 4);
-	const float lacunarity = luaL_optnumber(s, 4, 2.0f);
-	const float gain = luaL_optnumber(s, 5, 0.5f);
+	const float lacunarity = (float)luaL_optnumber(s, 4, 2.0f);
+	const float gain = (float)luaL_optnumber(s, 5, 0.5f);
 	lua_pushnumber(s, noise::ridgedMF(v, ridgeOffset, octaves, lacunarity, gain));
 	return 1;
 }
@@ -379,7 +379,7 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 		return false;
 	}
 
-	const int args = lua_rawlen(lua, -1);
+	const int args = (int)lua_rawlen(lua, -1);
 
 	for (int i = 0; i < args; ++i) {
 		lua_pushinteger(lua, i + 1); // lua starts at 1
