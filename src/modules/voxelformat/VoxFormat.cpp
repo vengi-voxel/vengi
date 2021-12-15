@@ -48,7 +48,7 @@ public:
 	}
 
 	~VoxScopedChunkWriter() {
-		const int64_t chunkStart = _chunkSizePos + 2 * sizeof(uint32_t);
+		const int64_t chunkStart = _chunkSizePos + 2 * (int64_t)sizeof(uint32_t);
 		const int64_t currentPos = _stream.pos();
 		core_assert_msg(chunkStart <= currentPos, "%u should be <= %u", (uint32_t)chunkStart, (uint32_t)currentPos);
 		const uint64_t chunkSize = currentPos - chunkStart;
@@ -329,7 +329,7 @@ bool VoxFormat::readAttributes(Attributes& attributes, io::SeekableReadStream& s
 			Log::error("Max string length for key exceeded");
 			return false;
 		}
-		if (!stream.readString(len, key)) {
+		if (!stream.readString((int)len, key)) {
 			Log::error("Failed to read key for dict");
 			return false;
 		}
@@ -342,7 +342,7 @@ bool VoxFormat::readAttributes(Attributes& attributes, io::SeekableReadStream& s
 			Log::error("Max string length for value exceeded");
 			return false;
 		}
-		if (!stream.readString(len, value)) {
+		if (!stream.readString((int)len, value)) {
 			Log::error("Failed to read value for dict");
 			return false;
 		}
@@ -483,7 +483,7 @@ glm::ivec3 VoxFormat::calcTransform(State& state, const VoxTransform& t, int x, 
 		return glm::ivec3(x, y, z);
 	}
 	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - pivot;
-	const glm::ivec3 pos = glm::ivec3(t.rotation * glm::vec3(c.x + 0.5f, c.y + 0.5f, c.z + 0.5f));
+	const glm::ivec3 pos = glm::ivec3(t.rotation * glm::vec3((float)c.x + 0.5f, (float)c.y + 0.5f, (float)c.z + 0.5f));
 	const glm::ivec3 rotated(divFloor(pos.x, 2), divFloor(pos.y, 2), divFloor(pos.z, 2));
 	return rotated + t.translation;
 }
@@ -951,7 +951,7 @@ bool VoxFormat::loadChunk_NOTE(State &state, io::SeekableReadStream& stream, con
 			Log::error("Max string length for color name exceeded");
 			return false;
 		}
-		if (!stream.readString(len, name)) {
+		if (!stream.readString((int)len, name)) {
 			Log::error("Failed to read color name");
 			return false;
 		}
