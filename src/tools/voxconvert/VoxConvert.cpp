@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/StringUtil.h"
+#include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "command/Command.h"
 #include "image/Image.h"
@@ -17,6 +18,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
+#include "voxelgenerator/LUAGenerator.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeRescaler.h"
 
@@ -33,6 +35,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
+	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
 
 	_mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST);
 	_mergeQuads->setHelp("Merge similar quads to optimize the mesh");
@@ -50,6 +53,10 @@ app::AppState VoxConvert::onConstruct() {
 	_withTexCoords->setHelp("Export with uv coordinates of the palette image");
 	_palette = core::Var::get("palette", voxel::getDefaultPaletteName());
 	_palette->setHelp("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
+
+	if (!filesystem()->registerPath("scripts/")) {
+		Log::warn("Failed to register lua generator script path");
+	}
 
 	return state;
 }
@@ -100,6 +107,11 @@ app::AppState VoxConvert::onInit() {
 	}
 	Log::info("* infile:                        - %s", infile.c_str());
 	Log::info("* outfile:                       - %s", outfile.c_str());
+	core::String scriptParameters;
+	if (hasArg("--script")) {
+		scriptParameters = getArgVal("--script");
+		Log::info("* script:                        - %s", scriptParameters.c_str());
+	}
 	Log::info("* merge volumes:                 - %s", (mergeVolumes ? "true" : "false"));
 	Log::info("* scale volumes:                 - %s", (scaleVolumes ? "true" : "false"));
 	Log::info("* use source file palette:       - %s", (srcPalette ? "true" : "false"));
@@ -202,6 +214,37 @@ app::AppState VoxConvert::onInit() {
 				v.volume = destVolume;
 			}
 		}
+	}
+
+	if (!scriptParameters.empty()) {
+		voxelgenerator::LUAGenerator script;
+		if (!script.init()) {
+			Log::warn("Failed to initialize the script bindings");
+		} else {
+			core::DynamicArray<core::String> tokens;
+			core::string::splitString(scriptParameters, tokens);
+			const core::String &luaScript = script.load(tokens[0]);
+			if (luaScript.empty()) {
+				Log::error("Failed to load %s", tokens[0].c_str());
+			} else {
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+				core::DynamicArray<voxelgenerator::LUAParameterDescription> argsInfo;
+				if (!script.argumentInfo(luaScript, argsInfo)) {
+					Log::warn("Failed to get argument details");
+				}
+				core::DynamicArray<core::String> args(tokens.size() - 1);
+				for (size_t i = 1; i < tokens.size(); ++i) {
+					args[i - 1] = tokens[i];
+				}
+				Log::info("Execute script %s", tokens[0].c_str());
+				for (auto& v : volumes) {
+					voxel::RawVolumeWrapper wrapper(v.volume);
+					script.exec(luaScript, &wrapper, wrapper.region(), voxel, args);
+				}
+			}
+		}
+
+		script.shutdown();
 	}
 
 	Log::debug("Save");

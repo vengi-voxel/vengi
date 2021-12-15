@@ -31,4 +31,4 @@ You can also use other user/password combinations by setting some cvars:
 * **db_pw**
 * **db_user**
 
-See the [configuration](Configuration.md) documentation for more details.
+See the [configuration](../Configuration.md) documentation for more details.

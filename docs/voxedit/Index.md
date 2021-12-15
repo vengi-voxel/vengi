@@ -8,7 +8,7 @@ You can load and save a lot of different [voxel formats](../Formats.md).
 
 ## Features
 
-* LUA [scripting](LUAScript.md) api
+* LUA [scripting](../LUAScript.md) api
 * Layer support
 * Auto cropping volumes
 * Auto generate content like trees or noise volumes

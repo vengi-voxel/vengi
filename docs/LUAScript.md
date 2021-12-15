@@ -1,10 +1,28 @@
 # Scripting api
 
-There is a console command (called `xs`) in voxedit to execute lua scripts for generating voxels. This command expects the lua script filename (`.lua` can be omitted) and the additional arguments for the `main()` method.
+There is a console command (called `xs`) in [voxedit](voxedit/Index.md) and a command line parameter in [voxconvert](voxconvert/Index.md) to execute lua scripts for generating voxels. This command expects the lua script filename (`.lua` can be omitted) and the additional arguments for the `main()` method.
 
-Calling `xs <script> help` will print the supported arguments for the given script.
+---
+
+> **voxedit**
+>
+> Calling `xs <script> help` (in the script console) will print the supported arguments for the given script file in voxedit.
+
+---
+
+> **voxconvert**
+>
+> ```
+> ./vengi-voxconvert --script "<script> help" in.qb out.qb
+> ```
+
+---
+
+By default the script files will be searched in a `scripts` folder next to where the binary is located and in the usual search paths (see [configuration](Configuration.md) for more details). You can also give the full path to the script file.
 
 There are two functions in each script. One is called `arguments` and one `main`. `arguments` returns a list of parameters for the `main` function. The default parameters for `main` are `volume`, `region` and `color`. `color` is the palette index starting from `0`.
+
+Those functionalities that are marked with `voxedit` are not available outside of the editor (e.g. for the command line tools like [voxconvert](voxconvert/Index.md)).
 
 # Example without parameters
 
@@ -57,7 +75,7 @@ A `default` value can get set, too.
 
 The order in the arguments table defines the order in which the arguments are passed over to the script.
 
-# LayerManager
+# LayerManager (voxedit)
 
 `layerMgr` lets you access different layers or create new ones.
 
@@ -67,7 +85,7 @@ The functions are:
 
 * `get([layerId])`: Returns the `layer` for the given `layerId` - if the `layerId` is not given, it will return the current active layer. Which by default is the layer for the volume the script is currently executed for.
 
-# Layer
+# Layer (voxedit)
 
 * `name()`: Returns the current name of the layer.
 
@@ -160,7 +178,7 @@ To get a full list of commands and cvars use the console command `cmdlist` and `
 
 Generates perlin noise with the frequency and amplitude as parameters with the current selected color.
 
-![noise](lua-noise.png)
+![noise](img/lua-noise.png)
 
 `xs noise.lua 0.3 1.0`
 
@@ -168,7 +186,7 @@ Generates perlin noise with the frequency and amplitude as parameters with the c
 
 Generates a new voxel on top of others with the current selected color and the specified height.
 
-![cover](lua-cover.png)
+![cover](img/lua-cover.png)
 
 `xs cover.lua 1`
 
@@ -176,15 +194,15 @@ Generates a new voxel on top of others with the current selected color and the s
 
 Generates a pyramid with the current selected color and with each level being 3 voxels high.
 
-![pyramid](lua-pyramid.png)
+![pyramid](img/lua-pyramid.png)
 
 `xs pyramid.lua 3`
 
-## thicken.lua
+## thicken.lua (voxedit)
 
 Thickens the voxel - take 1 voxel and convert to 8 voxels.
 
-![thickenbefore](lua-thicken-before.png) ![thickenafter](lua-thicken-after.png)
+![thickenbefore](img/lua-thicken-before.png) ![thickenafter](img/lua-thicken-after.png)
 
 `xs thicken.lua 1`
 
@@ -192,6 +210,6 @@ Thickens the voxel - take 1 voxel and convert to 8 voxels.
 
 Generate grass on top of voxels.
 
-![grass](grass.png)
+![grass](img/grass.png)
 
 `xs grass.lua`

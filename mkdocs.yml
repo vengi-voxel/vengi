@@ -24,9 +24,9 @@ nav:
       - Configuration.md
       - Formats.md
       - CHANGELOG.md
+      - LUAScript.md
   - VoxEdit:
       - voxedit/Index.md
-      - voxedit/LUAScript.md
   - Games:
       - OpenWorld: openworld/Index.md
   - Tools:
