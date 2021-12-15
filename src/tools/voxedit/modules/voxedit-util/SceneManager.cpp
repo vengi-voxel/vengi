@@ -110,7 +110,7 @@ bool SceneManager::importPalette(const core::String& file) {
 	if (!paletteLoaded) {
 		const io::FilePtr& palFile = fs->open(file);
 		io::FileStream stream(palFile);
-		if (voxelformat::loadVolumePalette(file, stream, buf) <= 0) {
+		if (voxelformat::loadPalette(file, stream, buf) <= 0) {
 			Log::warn("Failed to load palette from %s", file.c_str());
 			return false;
 		}
@@ -297,7 +297,7 @@ bool SceneManager::prefab(const core::String& file) {
 	}
 	voxel::VoxelVolumes newVolumes;
 	io::FileStream stream(filePtr.get());
-	if (!voxelformat::loadVolumeFormat(filePtr->name(), stream, newVolumes)) {
+	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
 		return false;
 	}
 	for (const auto& v : newVolumes) {
@@ -317,7 +317,7 @@ bool SceneManager::load(const core::String& file) {
 	}
 	voxel::VoxelVolumes newVolumes;
 	io::FileStream stream(filePtr.get());
-	if (!voxelformat::loadVolumeFormat(filePtr->name(), stream, newVolumes)) {
+	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
 		return false;
 	}
 	const core::String& ext = filePtr->extension();

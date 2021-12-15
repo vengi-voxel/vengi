@@ -34,7 +34,7 @@ bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::
 	voxel::VoxelVolumes localVolumes;
 	// TODO: use the cache luke
 	io::FileStream stream(file.get());
-	if (!voxelformat::loadVolumeFormat(file->name(), stream, localVolumes)) {
+	if (!voxelformat::loadFormat(file->name(), stream, localVolumes)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		return false;
 	}

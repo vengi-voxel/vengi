@@ -126,7 +126,7 @@ app::AppState VoxConvert::onInit() {
 	if (!inputIsImage && srcPalette) {
 		core::Array<uint32_t, 256> palette;
 		io::FileStream palStream(inputFile.get());
-		const size_t numColors = voxelformat::loadVolumePalette(inputFile->name(), palStream, palette);
+		const size_t numColors = voxelformat::loadPalette(inputFile->name(), palStream, palette);
 		if (numColors == 0) {
 			Log::error("Failed to load palette from input file");
 			return app::AppState::InitFailure;
@@ -172,7 +172,7 @@ app::AppState VoxConvert::onInit() {
 		voxelutil::importHeightmap(wrapper, image);
 	} else {
 		io::FileStream inputFileStream(inputFile.get());
-		if (!voxelformat::loadVolumeFormat(inputFile->name(), inputFileStream, volumes)) {
+		if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, volumes)) {
 			Log::error("Failed to load given input file");
 			return app::AppState::InitFailure;
 		}

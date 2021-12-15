@@ -51,7 +51,7 @@ protected:
 		}
 		v.resize(j);
 		const io::FilePtr &file = _testApp->filesystem()->open("mapbuildertest.qb", io::FileMode::SysWrite);
-		return voxelformat::saveVolumeFormat(file, v);
+		return voxelformat::saveFormat(file, v);
 	}
 
 	void cleanup(const LevelVolumes &volumes) {

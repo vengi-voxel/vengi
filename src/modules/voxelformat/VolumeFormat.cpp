@@ -79,6 +79,8 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"Qubicle Exchange", "qef", nullptr, 0u},
 	{"WaveFront OBJ", "obj", nullptr, 0u},
 	{"Polygon File Format", "ply", nullptr, 0u},
+	{"Wavefront Object", "obj", nullptr, VOX_FORMAT_FLAG_MESH},
+	{"Polygon File Format", "ply", nullptr, VOX_FORMAT_FLAG_MESH},
 	{nullptr, nullptr, nullptr, 0u}
 };
 
@@ -151,11 +153,15 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 		format = core::make_shared<voxel::QEFFormat>();
 	} else if (ext == "qbcl") {
 		format = core::make_shared<voxel::QBCLFormat>();
+	} else if (ext == "obj") {
+		format = core::make_shared<voxel::OBJFormat>();
+	} else if (ext == "ply") {
+		format = core::make_shared<voxel::PLYFormat>();
 	}
 	return format;
 }
 
-image::ImagePtr loadVolumeScreenshot(const core::String &fileName, io::SeekableReadStream& stream) {
+image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStream& stream) {
 	core_trace_scoped(LoadVolumeScreenshot);
 	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);
@@ -178,7 +184,7 @@ image::ImagePtr loadVolumeScreenshot(const core::String &fileName, io::SeekableR
 	return image::ImagePtr();
 }
 
-size_t loadVolumePalette(const core::String &fileName, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) {
+size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) {
 	core_trace_scoped(LoadVolumePalette);
 	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);
@@ -201,7 +207,7 @@ size_t loadVolumePalette(const core::String &fileName, io::SeekableReadStream& s
 	return 0;
 }
 
-bool loadVolumeFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::VoxelVolumes& newVolumes) {
+bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::VoxelVolumes& newVolumes) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);
@@ -229,14 +235,18 @@ bool loadVolumeFormat(const core::String &fileName, io::SeekableReadStream& stre
 	return true;
 }
 
-bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
-	if (isMeshFormat(filePtr->name())) {
-		return saveMeshFormat(filePtr, volumes);
+bool isMeshFormat(const core::String& filename) {
+	const core::String& ext = core::string::extractExtension(filename);
+	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
+		if (ext == desc->ext && (desc->flags & VOX_FORMAT_FLAG_MESH) != 0u) {
+			return true;
+		}
 	}
-	return saveVolumeFormat(filePtr, volumes);
+
+	return false;
 }
 
-bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
+bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
 	if (volumes.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
 		return false;
@@ -244,43 +254,21 @@ bool saveVolumeFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) 
 
 	io::FileStream stream(filePtr.get());
 	const core::String& ext = filePtr->extension();
-	const io::FormatDescription *desc = getDescription(ext, 0);
-	if (desc != nullptr) {
-		core::SharedPtr<voxel::Format> f = getFormat(desc, 0u);
-		if (f && f->saveGroups(volumes, filePtr->fileName(), stream)) {
-			return true;
+	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
+		if (ext == desc->ext) {
+			core::SharedPtr<voxel::Format> f = getFormat(desc, 0u);
+			if (f && f->saveGroups(volumes, filePtr->fileName(), stream)) {
+				return true;
+			}
 		}
+	}
+	if (isMeshFormat(filePtr->name())) {
+		Log::error("Failed to save model file %s - unknown extension '%s' given", filePtr->name().c_str(), ext.c_str());
+		return false;
 	}
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	voxel::QBFormat qbFormat;
 	return qbFormat.saveGroups(volumes, filePtr->fileName(), stream);
-}
-
-bool saveMeshFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
-	if (volumes.empty()) {
-		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
-		return false;
-	}
-
-	io::FileStream stream(filePtr.get());
-	const core::String& ext = filePtr->extension();
-	if (ext == "obj") {
-		voxel::OBJFormat f;
-		return f.saveGroups(volumes, filePtr->fileName(), stream);
-	} else if (ext == "ply") {
-		voxel::PLYFormat f;
-		return f.saveGroups(volumes, filePtr->fileName(), stream);
-	}
-	Log::error("Failed to save model file %s - unknown extension '%s' given", filePtr->name().c_str(), ext.c_str());
-	return false;
-}
-
-bool isMeshFormat(const core::String& filename) {
-	const core::String& ext = core::string::extractExtension(filename);
-	if (ext == "obj" || ext == "ply") {
-		return true;
-	}
-	return false;
 }
 
 void clearVolumes(voxel::VoxelVolumes& volumes) {

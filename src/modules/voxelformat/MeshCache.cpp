@@ -69,7 +69,7 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 	}
 	voxel::VoxelVolumes volumes;
 	io::FileStream stream(file.get());
-	if (!voxelformat::loadVolumeFormat(file->name(), stream, volumes)) {
+	if (!voxelformat::loadFormat(file->name(), stream, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		voxelformat::clearVolumes(volumes);
 		return false;
