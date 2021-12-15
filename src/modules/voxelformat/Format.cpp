@@ -79,13 +79,13 @@ MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const core::String &_name) :
 }
 
 bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
-	const bool mergeQuads = core::Var::get("voxformat_mergequads", "true", core::CV_NOPERSIST)->boolVal();
-	const bool reuseVertices = core::Var::get("voxformat_reusevertices", "true", core::CV_NOPERSIST)->boolVal();
-	const bool ambientOcclusion = core::Var::get("voxformat_ambientocclusion", "false", core::CV_NOPERSIST)->boolVal();
-	const float scale = core::Var::get("voxformat_scale", "1.0", core::CV_NOPERSIST)->floatVal();
-	const bool quads = core::Var::get("voxformat_quads", "true", core::CV_NOPERSIST)->boolVal();
-	const bool withColor = core::Var::get("voxformat_withcolor", "true", core::CV_NOPERSIST)->boolVal();
-	const bool withTexCoords = core::Var::get("voxformat_withtexcoords", "true", core::CV_NOPERSIST)->boolVal();
+	const bool mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST)->boolVal();
+	const bool reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST)->boolVal();
+	const bool ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST)->boolVal();
+	const float scale = core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST)->floatVal();
+	const bool quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST)->boolVal();
+	const bool withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST)->boolVal();
+	const bool withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST)->boolVal();
 
 	Meshes meshes;
 	for (const VoxelVolume& v : volumes) {

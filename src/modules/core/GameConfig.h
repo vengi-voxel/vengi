@@ -85,4 +85,12 @@ constexpr const char *MetricPort = "metric_port";
 constexpr const char *MetricHost = "metric_host";
 constexpr const char *MetricFlavor = "metric_flavor";
 
+constexpr const char *VoxformatMergequads = "voxformat_mergequads";
+constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";
+constexpr const char *VoxformatAmbientocclusion = "voxformat_ambientocclusion";
+constexpr const char *VoxformatScale = "voxformat_scale";
+constexpr const char *VoxformatQuads = "voxformat_quads";
+constexpr const char *VoxformatWithcolor = "voxformat_withcolor";
+constexpr const char *VoxformatWithtexcoords = "voxformat_withtexcoords";
+
 }
