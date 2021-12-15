@@ -35,6 +35,12 @@ Generate a lod scaled by 50% from the input model.
 
 `./vengi-voxconvert -s infile.vox lod1.vox`
 
+## Generate a volume from a heightmap
+
+Just specify the heightmap as input file like this:
+
+`./vengi-voxconvert heightmap.png outfile.vox`
+
 ## Extract the palette and save as png
 
 Saves the png in the same dir as the vox file

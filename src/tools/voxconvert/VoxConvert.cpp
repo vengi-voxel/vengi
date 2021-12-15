@@ -16,6 +16,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
+#include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeRescaler.h"
 
 VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
@@ -109,6 +110,8 @@ app::AppState VoxConvert::onInit() {
 		_exitCode = 127;
 		return app::AppState::InitFailure;
 	}
+	const bool inputIsImage = inputFile->isAnyOf(io::format::images());
+	Log::info("* generate from heightmap:       - %s", (inputIsImage ? "true" : "false"));
 
 	io::FilePtr paletteFile = filesystem()->open(core::string::format("palette-%s.png", _palette->strVal().c_str()));
 	if (!paletteFile->exists()) {
@@ -119,7 +122,7 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	if (srcPalette) {
+	if (!inputIsImage && srcPalette) {
 		core::Array<uint32_t, 256> palette;
 		io::FileStream palStream(inputFile.get());
 		const size_t numColors = voxelformat::loadVolumePalette(inputFile->name(), palStream, palette);
@@ -155,10 +158,23 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	voxel::VoxelVolumes volumes;
-	io::FileStream inputFileStream(inputFile.get());
-	if (!voxelformat::loadVolumeFormat(inputFile->name(), inputFileStream, volumes)) {
-		Log::error("Failed to load given input file");
-		return app::AppState::InitFailure;
+	if (inputIsImage) {
+		const image::ImagePtr& image = image::loadImage(inputFile, false);
+		if (!image || !image->isLoaded()) {
+			Log::error("Couldn't load image %s", infile.c_str());
+			return app::AppState::InitFailure;
+		}
+		voxel::Region region(0, 0, 0, image->width(), 255, image->height());
+		voxel::RawVolume* volume = new voxel::RawVolume(region);
+		volumes.push_back(voxel::VoxelVolume(volume, infile, true, glm::ivec3(0)));
+		voxel::RawVolumeWrapper wrapper(volume);
+		voxelutil::importHeightmap(wrapper, image);
+	} else {
+		io::FileStream inputFileStream(inputFile.get());
+		if (!voxelformat::loadVolumeFormat(inputFile->name(), inputFileStream, volumes)) {
+			Log::error("Failed to load given input file");
+			return app::AppState::InitFailure;
+		}
 	}
 
 	if (mergeVolumes) {
