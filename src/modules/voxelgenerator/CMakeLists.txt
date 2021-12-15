@@ -1,4 +1,17 @@
 set(LIB voxelgenerator)
+
+set(LUA_SRCS
+	scripts/modules/perlin.lua
+	scripts/modules/volume.lua
+	scripts/cover.lua
+	scripts/grass.lua
+	scripts/noise.lua
+	scripts/noise-builtin.lua
+	scripts/pyramid.lua
+	scripts/replacecolor.lua
+	scripts/similarcolor.lua
+)
+
 set(SRCS
 	Spiral.h
 	ShapeGenerator.h
@@ -10,7 +23,7 @@ set(SRCS
 	LUAGenerator.h LUAGenerator.cpp
 	NoiseGenerator.h NoiseGenerator.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil noise commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} DEPENDENCIES voxelutil noise commonlua)
 
 set(TEST_SRCS
 	tests/LSystemTest.cpp

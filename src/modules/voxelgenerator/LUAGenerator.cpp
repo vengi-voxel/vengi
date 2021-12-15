@@ -507,8 +507,10 @@ core::String LUAGenerator::load(const core::String& scriptName) const {
 	if (!core::string::endsWith(filename, ".lua")) {
 		filename.append(".lua");
 	}
-	if (!filename.contains("/")) {
-		filename = "scripts/" + filename;
+	if (!io::filesystem()->exists(filename)) {
+		if (!core::string::isAbsolutePath(filename)) {
+			filename = "scripts/" + filename;
+		}
 	}
 	return io::filesystem()->load(filename);
 }
