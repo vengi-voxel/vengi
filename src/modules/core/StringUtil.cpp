@@ -3,9 +3,9 @@
  */
 
 #include "StringUtil.h"
-#include "SDL_stdinc.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
+#include <SDL_platform.h>
 #include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
@@ -155,6 +155,10 @@ bool isNumber(const core::String &in) {
 	return end != in.c_str() && *end == '\0' && val != HUGE_VAL;
 }
 
+bool isAlpha(int c) {
+	return SDL_isalpha(c);
+}
+
 bool isInteger(const core::String& in) {
 	for (size_t i = 0u; i < in.size(); i++) {
 		if (!SDL_isdigit(in[i])) {
@@ -162,6 +166,15 @@ bool isInteger(const core::String& in) {
 		}
 	}
 	return true;
+}
+
+bool isAbsolutePath(const core::String &in) {
+#ifdef __WINDOWS__
+	if (in.size() >= 3 && in[0] != '\0' && isAlpha(in[0]) && in[1] == ':' && (in[2] == '\\' || in[2] == '/')) {
+		return true;
+	}
+#endif
+	return in.size() > 1U && (in[0] == '/' || in[0] == '\\');
 }
 
 static bool patternMatch(const char *text, const char *pattern);
