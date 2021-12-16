@@ -502,7 +502,6 @@ app::AppState IMGUIApp::onInit() {
 
 	ImGui::StyleColorsCorporateGrey();
 	//ImGui::StyleColorsDark();
-	ImGuiStyle &style = ImGui::GetStyle();
 
 	io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
 	io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
