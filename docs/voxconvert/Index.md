@@ -2,11 +2,8 @@
 
 Convert voxel volume formats between each other or export to obj or ply.
 
-[Supported voxel formats](../Formats.md)
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxconvert-export-to-obj.png)
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxconvert-export-obj.png)
+* [Supported voxel formats](../Formats.md)
+* [Scripting support](../LUAScript.md)
 
 ## Usage
 
@@ -29,19 +26,33 @@ This is e.g. `nippon`. The tool will then try to look up the file `palette-nippo
 You can convert to a different palette with this command. The closest possible color will be chosen for each
 color from the source file palette to the specified palette.
 
-## Generate Level of detail (LOD) volumes
+## Level of detail (LOD)
 
 Generate a lod scaled by 50% from the input model.
 
 `./vengi-voxconvert -s infile.vox lod1.vox`
 
-## Generate a volume from a heightmap
+## Generate from heightmap
 
 Just specify the heightmap as input file like this:
 
 `./vengi-voxconvert heightmap.png outfile.vox`
 
-## Extract the palette and save as png
+## Execute lua script
+
+Use the `--script` parameter:
+
+`./vengi-voxconvert --script "cover 2" infile.vox outfile.vox`
+
+This is executing the script in `./scripts/cover.lua` with a parameter of `2`.
+
+`./vengi-voxconvert --script "./scripts/cover.lua 2" infile.vox outfile.vox`
+
+This is doing exactly the same as above - just with a full path.
+
+See the [scripting](../LUAScript.md) documentation for further details.
+
+## Extract palette png
 
 Saves the png in the same dir as the vox file
 
@@ -49,7 +60,7 @@ Saves the png in the same dir as the vox file
 
 There will be an `infile.png` now.
 
-## Convert volume to mesh
+## Convert to mesh
 
 You can export your volume model into a obj or ply.
 
@@ -74,3 +85,9 @@ To convert a complete directory of e.g. `*.vox` to `*.obj` files, you can use e.
 ```bash
 for i in *.vox; do vengi-voxconvert $i ${i%.vox}.obj; done
 ```
+
+## Screenshots
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxconvert-export-to-obj.png)
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxconvert-export-obj.png)

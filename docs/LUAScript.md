@@ -24,7 +24,9 @@ There are two functions in each script. One is called `arguments` and one `main`
 
 Those functionalities that are marked with `voxedit` are not available outside of the editor (e.g. for the command line tools like [voxconvert](voxconvert/Index.md)).
 
-# Example without parameters
+## Examples
+
+### Without parameters
 
 ```lua
 function main(volume, region, color)
@@ -42,7 +44,7 @@ end
 
 Execute this via console `xs scriptfile`
 
-# Example with one parameter
+### With one parameter
 
 ```lua
 function arguments()
@@ -75,7 +77,7 @@ A `default` value can get set, too.
 
 The order in the arguments table defines the order in which the arguments are passed over to the script.
 
-# LayerManager (voxedit)
+## LayerManager (voxedit)
 
 `layerMgr` lets you access different layers or create new ones.
 
@@ -85,7 +87,7 @@ The functions are:
 
 * `get([layerId])`: Returns the `layer` for the given `layerId` - if the `layerId` is not given, it will return the current active layer. Which by default is the layer for the volume the script is currently executed for.
 
-# Layer (voxedit)
+## Layer (voxedit)
 
 * `name()`: Returns the current name of the layer.
 
@@ -93,7 +95,7 @@ The functions are:
 *
 * `volume()`: Gives you access to the volume of the layer.
 
-# Color
+## Color
 
 `palette` has several methods to work with colors. E.g. to find a closest possible match for the given palette index.
 
@@ -107,7 +109,7 @@ The functions are:
 
 * `similar(paletteindex, [coloramount])`: Return a table with similar colors given by their palette index.
 
-# Noise
+## Noise
 
 `noise` supports a few noise generators:
 
@@ -119,7 +121,7 @@ The functions are:
 
 * `worley2(v)`, `worley3(v)`: Simplex cellular/worley noise. Uses the given `vec2` or `vec3` and returns a float value between `0.0` and `1.0`.
 
-# Region
+## Region
 
 * `mins()`: The lower boundary of the region (inclusive).
 
@@ -141,7 +143,7 @@ The functions are:
 
 * `depth()`: The depth of the region measured in voxels.
 
-# Volume
+## Volume
 
 * `voxel(x, y, z)`: Returns the palette index of the voxel at the given position in the volume `[0-255]`. Or `-1` if there is no voxel.
 
@@ -149,7 +151,7 @@ The functions are:
 
 * `setVoxel(x, y, z, color)`: Set the given color at the given coordinates in the volume. `color` must be in the range `[0-255]`.
 
-# Vectors
+## Vectors
 
 Available vector types are `vec2`, `vec3`, `vec4` and their integer types `ivec2`, `ivec3`, `ivec4`.
 
@@ -159,7 +161,7 @@ local v1 = ivec3.new(1, 1, 1)
 
 There are 3 possible components for this vector. You can also call `ivec3.new(1)` to fill all three values with a one. Or call it like this: `ivec3.new(1, 2)` to create a vector with the three components of `1, 2, 2`.
 
-# Other
+## Other
 
 * `y` going upwards.
 
@@ -172,9 +174,9 @@ var.int("cl_gamma")
 
 To get a full list of commands and cvars use the console command `cmdlist` and `cvarlist`.
 
-# Available scripts
+## Available scripts
 
-## noise.lua
+### noise.lua
 
 Generates perlin noise with the frequency and amplitude as parameters with the current selected color.
 
@@ -182,7 +184,7 @@ Generates perlin noise with the frequency and amplitude as parameters with the c
 
 `xs noise.lua 0.3 1.0`
 
-## cover.lua
+### cover.lua
 
 Generates a new voxel on top of others with the current selected color and the specified height.
 
@@ -190,7 +192,7 @@ Generates a new voxel on top of others with the current selected color and the s
 
 `xs cover.lua 1`
 
-## pyramid.lua
+### pyramid.lua
 
 Generates a pyramid with the current selected color and with each level being 3 voxels high.
 
@@ -198,15 +200,15 @@ Generates a pyramid with the current selected color and with each level being 3 
 
 `xs pyramid.lua 3`
 
-## thicken.lua (voxedit)
+### thicken.lua (voxedit)
 
-Thickens the voxel - take 1 voxel and convert to 8 voxels.
+Thickens the voxel - take 1 voxel and convert to 8 voxels (creates a new layer for the result).
 
 ![thickenbefore](img/lua-thicken-before.png) ![thickenafter](img/lua-thicken-after.png)
 
 `xs thicken.lua 1`
 
-## grass.lua
+### grass.lua
 
 Generate grass on top of voxels.
 

@@ -4,8 +4,6 @@ This is an opensource, cross platform voxel volume editor.
 
 You can load and save a lot of different [voxel formats](../Formats.md).
 
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-new-ui.png)
-
 ## Features
 
 * LUA [scripting](../LUAScript.md) api
@@ -45,3 +43,7 @@ The editor is built around a palette of 256 colors. Custom palettes are supporte
 ## Configuration
 
 See `./vengi-voxedit --help` or [configuration](../Configuration.md) for more details.
+
+## Screenshots
+
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/voxedit-new-ui.png)

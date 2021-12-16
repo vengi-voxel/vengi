@@ -504,13 +504,11 @@ int LUAGenerator::luaVoxel_pushregion(lua_State* s, const voxel::Region* region)
 core::String LUAGenerator::load(const core::String& scriptName) const {
 	core::String filename = scriptName;
 	io::normalizePath(filename);
-	if (!core::string::endsWith(filename, ".lua")) {
-		filename.append(".lua");
-	}
 	if (!io::filesystem()->exists(filename)) {
-		if (!core::string::isAbsolutePath(filename)) {
-			filename = "scripts/" + filename;
+		if (!core::string::endsWith(filename, ".lua")) {
+			filename.append(".lua");
 		}
+		filename = "scripts/" + filename;
 	}
 	return io::filesystem()->load(filename);
 }
