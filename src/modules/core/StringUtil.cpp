@@ -156,7 +156,7 @@ bool isNumber(const core::String &in) {
 }
 
 bool isAlpha(int c) {
-	return SDL_isalpha(c);
+	return ::isalpha(c);
 }
 
 bool isInteger(const core::String& in) {
