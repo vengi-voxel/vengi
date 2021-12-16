@@ -826,7 +826,7 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 		const voxedit::Layers& layers = _layerMgr.layers();
 		const size_t layerAmount = layers.size();
 		for (size_t i = 0u; i < layerAmount; ++i) {
-			const voxel::RawVolume* v = volume(i);
+			const voxel::RawVolume* v = volume((int)i);
 			if (v == nullptr) {
 				continue;
 			}
@@ -848,7 +848,7 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 				continue;
 			}
 			voxel::Mesh mesh;
-			_volumeRenderer.toMesh(i, &mesh);
+			_volumeRenderer.toMesh((int)i, &mesh);
 			const core::String& fullPath = animSettings.fullPath(characterMeshTypeId);
 			_animationCache->putMesh(fullPath.c_str(), mesh);
 			Log::debug("Updated mesh on layer %i for path %s", (int)i, fullPath.c_str());
@@ -1019,7 +1019,7 @@ void SceneManager::construct() {
 	}).setHelp("Save all layers into filenames represented by their layer names");
 
 	command::Command::registerCommand("layersave", [&] (const command::CmdArgs& args) {
-		const int argc = args.size();
+		const int argc = (int)args.size();
 		if (argc < 1) {
 			Log::info("Usage: layersave <layerId> [<file>]");
 			return;
@@ -1053,7 +1053,7 @@ void SceneManager::construct() {
 	}).setHelp("Create a new scene (with a given name and width, height, depth - all optional)");
 
 	command::Command::registerCommand("noise", [&] (const command::CmdArgs& args) {
-		const int argc = args.size();
+		const int argc = (int)args.size();
 		if (argc != 4) {
 			Log::info("Usage: noise <octaves> <lacunarity> <frequency> <gain>");
 			return;
@@ -1071,18 +1071,16 @@ void SceneManager::construct() {
 	}).setHelp("Crop the current layer to the voxel boundaries");
 
 	command::Command::registerCommand("scale", [&] (const command::CmdArgs& args) {
-		const int argc = args.size();
+		const int argc = (int)args.size();
 		int layerId = _layerMgr.activeLayer();
 		if (argc == 1) {
 			layerId = core::string::toInt(args[0]);
-		} else {
-			Log::info("Usage: scale (<layerId>)");
 		}
 		scale(layerId);
 	}).setHelp("Scale the current layer or given layer down");
 
 	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
-		const int argc = args.size();
+		const int argc = (int)args.size();
 		if (argc < 1) {
 			const voxel::Voxel voxel = _modifier.cursorVoxel();
 			colorToNewLayer(voxel);
@@ -1160,7 +1158,7 @@ void SceneManager::construct() {
 
 	command::Command::registerActionButton("shift", _gizmo).setBindingContext(BindingContext::Scene);
 	command::Command::registerCommand("shift", [&] (const command::CmdArgs& args) {
-		const int argc = args.size();
+		const int argc = (int)args.size();
 		if (argc != 3) {
 			Log::info("Expected to get x, y and z values");
 			return;
@@ -1199,7 +1197,7 @@ void SceneManager::construct() {
 	}).setHelp("Center the current active layers at the origin");
 
 	command::Command::registerCommand("move", [&] (const command::CmdArgs& args) {
-		const int argc = args.size();
+		const int argc = (int)args.size();
 		if (argc != 3) {
 			Log::info("Expected to get x, y and z values");
 			return;
@@ -1752,7 +1750,7 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 	const voxedit::Layers& layers = _layerMgr.layers();
 	const size_t layerAmount = layers.size();
 	for (size_t i = 0; i < layerAmount; ++i) {
-		const voxel::RawVolume* v = volume(i);
+		const voxel::RawVolume* v = volume((int)i);
 		if (v == nullptr) {
 			continue;
 		}
@@ -1761,7 +1759,7 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 		if (value.empty()) {
 			const core::String& unknown = core::string::format("%i-%s-%s.vox", (int)i, l.name.c_str(), name);
 			Log::warn("No type metadata found on layer %i. Saving to %s", (int)i, unknown.c_str());
-			if (!saveLayer(i, unknown)) {
+			if (!saveLayer((int)i, unknown)) {
 				Log::warn("Failed to save unknown layer to %s", unknown.c_str());
 				_dirty = true;
 			}
@@ -1769,7 +1767,7 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 		}
 		const int characterMeshTypeId = core::string::toInt(value);
 		const core::String& fullPath = animSettings.fullPath(characterMeshTypeId, name);
-		if (!saveLayer(i, fullPath)) {
+		if (!saveLayer((int)i, fullPath)) {
 			Log::warn("Failed to save type %i to %s", characterMeshTypeId, fullPath.c_str());
 			_dirty = true;
 		}
@@ -1883,7 +1881,7 @@ void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 	_referencePos = pos;
-	const glm::vec3 posAligned(_referencePos.x + 0.5f, _referencePos.y + 0.5f, _referencePos.z + 0.5f);
+	const glm::vec3 posAligned((float)_referencePos.x + 0.5f, (float)_referencePos.y + 0.5f, (float)_referencePos.z + 0.5f);
 	_referencePointModelMatrix = glm::translate(posAligned);
 }
 
