@@ -102,40 +102,76 @@ public:
 		return new RawVolume(data, region);
 	}
 
-	/// Destructor
 	~RawVolume();
 
+	/**
+	 * Copy the raw data of the volume
+	 * @note It's the callers responsibility to properly release the memory.
+	 */
 	Voxel* copyVoxels() const;
 
-	/// Gets the value used for voxels which are outside the volume
+	/**
+	 * The border value is returned whenever an attempt is made to read a voxel which
+	 * is outside the extents of the volume.
+	 * @return The value used for voxels outside of the volume
+	 */
 	const Voxel& borderValue() const;
-	/// Gets a Region representing the extents of the Volume.
+
+	/**
+	 * @return A Region representing the extent of the volume.
+	 */
 	const Region& region() const;
 
-	/// Gets the width of the volume in voxels.
+	/**
+	 * @return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the width is 64.
+	 * @sa height(), getDepth()
+	 */
 	int32_t width() const;
-	/// Gets the height of the volume in voxels.
+	/**
+	 * @return The height of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the height is 64.
+	 * @sa width(), getDepth()
+	 */
 	int32_t height() const;
-	/// Gets the depth of the volume in voxels.
+	/**
+	 * @return The depth of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the depth is 64.
+	 * @sa width(), height()
+	 */
 	int32_t depth() const;
 
-	/// the vector that describes the mins value of an aabb where a voxel is set in this volume
-	/// deleting a voxel afterwards might lead to invalid results
+	/**
+	 * the vector that describes the mins value of an aabb where a voxel is set in this volume
+	 * deleting a voxel afterwards might lead to invalid results
+	 */
 	glm::ivec3 mins() const;
-	/// the vector that describes the maxs value of an aabb where a voxel is set in this volume
-	/// deleting a voxel afterwards might lead to invalid results
+	/**
+	 * the vector that describes the maxs value of an aabb where a voxel is set in this volume
+	 * deleting a voxel afterwards might lead to invalid results
+	 */
 	glm::ivec3 maxs() const;
 
-	/// Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
+	/**
+	 * Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
+	 */
 	const Voxel& voxel(int32_t x, int32_t y, int32_t z) const;
-	/// Gets a voxel at the position given by a 3D vector
+	/**
+	 * @brief This version of the function is provided so that the wrap mode does not need
+	 * to be specified as a template parameter, as it may be confusing to some users.
+	 * @param pos The 3D position of the voxel
+	 * @return The voxel value
+	 */
 	inline const Voxel& voxel(const glm::ivec3& pos) const;
 
-	/// Sets the value used for voxels which are outside the volume
+	/**
+	 * Sets the value used for voxels which are outside the volume
+	 */
 	void setBorderValue(const Voxel& voxel);
-	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
+	/**
+	 * Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
+	 */
 	bool setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& voxel);
-	/// Sets the voxel at the position given by a 3D vector
+	/**
+	 * Sets the voxel at the position given by a 3D vector
+	 */
 	bool setVoxel(const glm::ivec3& pos, const Voxel& voxel);
 
 	void clear();
@@ -170,42 +206,22 @@ private:
 	bool _boundsValid;
 };
 
-/**
- * @return A Region representing the extent of the volume.
- */
 inline const Region& RawVolume::region() const {
 	return _region;
 }
 
-/**
- * The border value is returned whenever an attempt is made to read a voxel which
- * is outside the extents of the volume.
- * @return The value used for voxels outside of the volume
- */
 inline const Voxel& RawVolume::borderValue() const {
 	return _borderVoxel;
 }
 
-/**
- * @return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the width is 64.
- * @sa height(), getDepth()
- */
 inline int32_t RawVolume::width() const {
 	return _region.getWidthInVoxels();
 }
 
-/**
- * @return The height of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the height is 64.
- * @sa width(), getDepth()
- */
 inline int32_t RawVolume::height() const {
 	return _region.getHeightInVoxels();
 }
 
-/**
- * @return The depth of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the depth is 64.
- * @sa width(), height()
- */
 inline int32_t RawVolume::depth() const {
 	return _region.getDepthInVoxels();
 }
@@ -224,12 +240,6 @@ inline glm::ivec3 RawVolume::maxs() const {
 	return _maxs;
 }
 
-/**
- * @brief This version of the function is provided so that the wrap mode does not need
- * to be specified as a template parameter, as it may be confusing to some users.
- * @param pos The 3D position of the voxel
- * @return The voxel value
- */
 inline const Voxel& RawVolume::voxel(const glm::ivec3& pos) const {
 	return voxel(pos.x, pos.y, pos.z);
 }
