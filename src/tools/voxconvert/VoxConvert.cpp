@@ -30,12 +30,12 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
-	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
-	registerArg("--src-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
-	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
-	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
+	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
+	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
+	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
+	registerArg("--src-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
 
 	_mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST);
 	_mergeQuads->setHelp("Merge similar quads to optimize the mesh");
