@@ -405,7 +405,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			core::String selectedFilePath =
 				assemblePath(_currentPath, !_currentFolder.empty() ? _currentFolder : _currentFile);
 			ImGui::PushItemWidth(724);
-			ImGui::InputText("", &selectedFilePath, ImGuiInputTextFlags_ReadOnly);
+			ImGui::InputText("##selectedpath", &selectedFilePath, ImGuiInputTextFlags_ReadOnly);
 			if (type == video::WindowedApp::OpenFileMode::Save) {
 				ImGui::InputText("Filename", &_currentFile);
 			}
