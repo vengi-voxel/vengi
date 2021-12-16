@@ -12,6 +12,7 @@ General:
    - Added support for goxel gox file format
    - Added support for sproxel csv file format
    - Added support for a lot more image formats
+   - Improved lod creation for thin surface voxels
 
 VoxConvert:
 
@@ -28,6 +29,7 @@ VoxEdit:
 
    - Allow to import palettes from volume formats, too
    - Implemented camera panning
+   - Added more layer merge functions
 
 ## 0.0.14 (2021-11-21)
 

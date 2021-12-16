@@ -7,6 +7,7 @@ vengi (0.0.15.0-1) UNRELEASED; urgency=low
   * Added support for goxel gox file format
   * Added support for sproxel csv file format
   * Added support for a lot more image formats
+  * Improved lod creation for thin surface voxels
 
   * VoxConvert
   * Added option to keep the input file palette and don't perform quantization
@@ -20,6 +21,7 @@ vengi (0.0.15.0-1) UNRELEASED; urgency=low
   * VoxEdit:
   * Allow to import palettes from volume formats, too
   * Implemented camera panning
+  * Added more layer merge functions
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 21 Nov 2021 11:56:02 +0100
 
