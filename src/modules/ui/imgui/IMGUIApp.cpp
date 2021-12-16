@@ -241,22 +241,22 @@ void IMGUIApp::loadFonts() {
 		0,
 	};
 	io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											_uiFontSize->floatVal() * _dpiFactor, nullptr, rangesBasic);
+											_uiFontSize->floatVal(), nullptr, rangesBasic);
 
 	static const ImWchar rangesFAIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											_uiFontSize->floatVal() * _dpiFactor, &fontCfg, rangesFAIcons);
+											_uiFontSize->floatVal(), &fontCfg, rangesFAIcons);
 
 	static const ImWchar rangesFKIcons[] = {ICON_MIN_FK, ICON_MAX_FK, 0};
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											_uiFontSize->floatVal() * _dpiFactor, &fontCfg, rangesFKIcons);
+											_uiFontSize->floatVal(), &fontCfg, rangesFKIcons);
 
 	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											_uiFontSize->floatVal() * 2.0f * _dpiFactor);
+											_uiFontSize->floatVal() * 2.0f);
 	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											_uiFontSize->floatVal() * _dpiFactor);
+											_uiFontSize->floatVal());
 	_smallFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											_uiFontSize->floatVal() * 0.8f * _dpiFactor);
+											_uiFontSize->floatVal() * 0.8f);
 
 	unsigned char *pixels;
 	int width, height;
@@ -495,11 +495,7 @@ app::AppState IMGUIApp::onInit() {
 	const core::String logFile = _appname + "-imgui.log";
 	_writePathLog = _filesystem->writePath(logFile.c_str());
 	io.LogFilename = _writePathLog.c_str();
-
 	io.DisplaySize = _windowDimension;
-	const float xScale = (float)_frameBufferDimension.x / (float)_windowDimension.x;
-	const float yScale = (float)_frameBufferDimension.y / (float)_windowDimension.y;
-	io.DisplayFramebufferScale = ImVec2(xScale, yScale);
 
 	_texture = video::genTexture();
 	loadFonts();
@@ -507,7 +503,6 @@ app::AppState IMGUIApp::onInit() {
 	ImGui::StyleColorsCorporateGrey();
 	//ImGui::StyleColorsDark();
 	ImGuiStyle &style = ImGui::GetStyle();
-	style.ScaleAllSizes(_dpiFactor);
 
 	io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
 	io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
