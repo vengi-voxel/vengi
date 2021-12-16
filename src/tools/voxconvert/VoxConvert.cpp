@@ -163,7 +163,7 @@ app::AppState VoxConvert::onInit() {
 		Log::error("Could not open target file: %s", outfile.c_str());
 		return app::AppState::InitFailure;
 	}
-	if (outputFile->length() > 0) {
+	if (outputFile->exists()) {
 		if (!hasArg("--force") && !hasArg("-f")) {
 			Log::error("Given output file '%s' already exists", outfile.c_str());
 			return app::AppState::InitFailure;
