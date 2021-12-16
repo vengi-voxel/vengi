@@ -436,7 +436,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 			if (ImGui::BeginPopupModal("NewFolderPopup")) {
 				ImGui::Text("Enter a name for the new folder");
-				ImGui::InputText("", _newFolderName, sizeof(_newFolderName));
+				ImGui::InputText("##newfoldername", _newFolderName, sizeof(_newFolderName));
 				if (ImGui::Button("Create##1")) {
 					if (strlen(_newFolderName) <= 0) {
 						SDL_strlcpy(_newFolderError, "Folder name can't be empty", sizeof(_newFolderError));
