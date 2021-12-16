@@ -56,6 +56,9 @@ void LayerPanel::addLayerItem(int layerId, const voxedit::Layer &layer, command:
 		executeItem(ICON_FA_CARET_SQUARE_UP " Move up" LAYERPOPUP, "layermoveup", validLayers > 1, listener);
 		executeItem(ICON_FA_CARET_SQUARE_DOWN " Move down" LAYERPOPUP, "layermovedown", validLayers > 1, listener);
 		executeItem(ICON_FA_OBJECT_GROUP " Merge" LAYERPOPUP, "layermerge", validLayers > 1, listener);
+		executeItem(ICON_FA_OBJECT_GROUP " Merge all" LAYERPOPUP, "layermergeall", validLayers > 1, listener);
+		executeItem(ICON_FA_OBJECT_GROUP " Merge visible" LAYERPOPUP, "layermergevisible", validLayers > 1, listener);
+		executeItem(ICON_FA_OBJECT_GROUP " Merge locked" LAYERPOPUP, "layermergelocked", validLayers > 1, listener);
 		executeItem(ICON_FA_LOCK " Lock all" LAYERPOPUP, "layerlockall", true, listener);
 		executeItem(ICON_FA_UNLOCK " Unlock all" LAYERPOPUP, "layerunlockall", true, listener);
 		executeItem(ICON_FA_COMPRESS_ARROWS_ALT " Center origin" LAYERPOPUP, "center_origin", true, listener);

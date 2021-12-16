@@ -559,6 +559,42 @@ void SceneManager::resetLastTrace() {
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
+bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
+	core::DynamicArray<const voxel::RawVolume*> volumes;
+	for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
+		const Layer& layer = _layerMgr.layer(idx);
+		if (!layer.valid) {
+			continue;
+		}
+		const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
+		if ((flags & LayerMergeFlags::All) != LayerMergeFlags::None) {
+			volumes.push_back(volume);
+		} else if ((flags & LayerMergeFlags::Visible) != LayerMergeFlags::None) {
+			if (layer.visible) {
+				volumes.push_back(volume);
+			}
+		} else if ((flags & LayerMergeFlags::Invisible) != LayerMergeFlags::None) {
+			if (!layer.visible) {
+				volumes.push_back(volume);
+			}
+		} else if ((flags & LayerMergeFlags::Locked) != LayerMergeFlags::None) {
+			if (layer.locked) {
+				volumes.push_back(volume);
+			}
+		}
+	}
+
+	if (volumes.size() <= 1) {
+		return false;
+	}
+
+	voxel::RawVolume* merged = voxel::merge(volumes);
+	voxel::VoxelVolumes mergedVolumes;
+	mergedVolumes.push_back(merged);
+	setNewVolumes(mergedVolumes);
+	return true;
+}
+
 bool SceneManager::merge(int layerId1, int layerId2) {
 	core::DynamicArray<const voxel::RawVolume*> volumes;
 	volumes.resize(2);
@@ -1244,7 +1280,19 @@ void SceneManager::construct() {
 			layer2 = layer1 + 1;
 		}
 		merge(layer1, layer2);
-	}).setHelp("Merged two given layers or active layer with the one below");
+	}).setHelp("Merge two given layers or active layer with the one below");
+
+	command::Command::registerCommand("layermergeall", [&] (const command::CmdArgs& args) {
+		mergeMultiple(LayerMergeFlags::All);
+	}).setHelp("Merge all layers");
+
+	command::Command::registerCommand("layermergevisible", [&] (const command::CmdArgs& args) {
+		mergeMultiple(LayerMergeFlags::Visible);
+	}).setHelp("Merge all visible layers");
+
+	command::Command::registerCommand("layermergelocked", [&] (const command::CmdArgs& args) {
+		mergeMultiple(LayerMergeFlags::Locked);
+	}).setHelp("Merge all locked layers");
 
 	command::Command::registerCommand("layerdetails", [&] (const command::CmdArgs& args) {
 		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {

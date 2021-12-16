@@ -5,6 +5,7 @@
 #pragma once
 
 #include "animation/AnimationSystem.h"
+#include "core/Enum.h"
 #include "core/collection/DynamicArray.h"
 #include "voxelutil/Picking.h"
 #include "voxel/RawVolume.h"
@@ -61,6 +62,16 @@ enum class EditMode {
 	// Edit the scene (volume positions, rotations, ...)
 	Scene
 };
+
+enum class LayerMergeFlags {
+	None      = 0,
+	Visible   = (1 << 0),
+	Locked    = (1 << 1),
+	Invisible = (1 << 2),
+	Max,
+	All = Visible | Locked | Invisible
+};
+CORE_ENUM_BIT_OPERATIONS(LayerMergeFlags)
 
 /**
  * @note The data is shared across all viewports
@@ -193,6 +204,7 @@ private:
 	 * @brief Merge two layers and extend the smaller one
 	 */
 	bool merge(int layerId1, int layerId2);
+	bool mergeMultiple(LayerMergeFlags flags);
 
 	void undo();
 	void redo();
