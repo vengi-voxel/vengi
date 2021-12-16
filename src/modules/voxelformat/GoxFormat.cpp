@@ -441,8 +441,20 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream) {
 }
 
 bool GoxFormat::isEmptyBlock(const voxel::RawVolume *v, int x, int y, int z) const {
-	// TODO: we also write empty blocks
-	return false;
+	const voxel::Region region(x, y, z, x + BlockSize - 1, y + BlockSize - 1, z + BlockSize - 1);
+	voxel::RawVolume::Sampler sampler(v);
+	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += 1) {
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += 1) {
+			sampler.setPosition(x, y, region.getLowerZ());
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += 1) {
+				if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+					return false;
+				}
+				sampler.movePositiveZ();
+			}
+		}
+	}
+	return true;
 }
 
 bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolumes &volumes, int numBlocks) {

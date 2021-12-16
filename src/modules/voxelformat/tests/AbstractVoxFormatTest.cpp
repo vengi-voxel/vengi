@@ -33,12 +33,19 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 }
 
 void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, voxel::Format *format, int mins, int maxs) {
-	Region region(mins, maxs);
+	const Region region(mins, maxs);
 	RawVolume original(region);
+
 	original.setVoxel(mins, mins, mins, createVoxel(VoxelType::Generic, 1));
-	original.setVoxel(maxs, maxs, maxs, createVoxel(VoxelType::Generic, 245));
+	original.setVoxel(mins, mins, maxs, createVoxel(VoxelType::Generic, 245));
 	original.setVoxel(mins, maxs, maxs, createVoxel(VoxelType::Generic, 127));
 	original.setVoxel(mins, maxs, mins, createVoxel(VoxelType::Generic, 200));
+
+	original.setVoxel(maxs, maxs, maxs, createVoxel(VoxelType::Generic, 1));
+	original.setVoxel(maxs, maxs, mins, createVoxel(VoxelType::Generic, 245));
+	original.setVoxel(maxs, mins, mins, createVoxel(VoxelType::Generic, 127));
+	original.setVoxel(maxs, mins, maxs, createVoxel(VoxelType::Generic, 200));
+
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	ASSERT_TRUE(format->save(&original, filename, stream));
 	stream.seek(0);
