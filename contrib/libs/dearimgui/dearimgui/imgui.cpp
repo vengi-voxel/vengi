@@ -5544,6 +5544,29 @@ static void ApplyWindowSettings(ImGuiWindow* window, ImGuiWindowSettings* settin
     window->DockOrder = settings->DockOrder;
 }
 
+static void UpdateWindowInFocusOrderList(ImGuiWindow* window, bool just_created, ImGuiWindowFlags new_flags)
+{
+    ImGuiContext& g = *GImGui;
+
+    const bool new_is_explicit_child = (new_flags & ImGuiWindowFlags_ChildWindow) != 0;
+    const bool child_flag_changed = new_is_explicit_child != window->IsExplicitChild;
+    if ((just_created || child_flag_changed) && !new_is_explicit_child)
+    {
+        IM_ASSERT(!g.WindowsFocusOrder.contains(window));
+        g.WindowsFocusOrder.push_back(window);
+        window->FocusOrder = (short)(g.WindowsFocusOrder.Size - 1);
+    }
+    else if (!just_created && child_flag_changed && new_is_explicit_child)
+    {
+        IM_ASSERT(g.WindowsFocusOrder[window->FocusOrder] == window);
+        for (int n = window->FocusOrder + 1; n < g.WindowsFocusOrder.Size; n++)
+            g.WindowsFocusOrder[n]->FocusOrder--;
+        g.WindowsFocusOrder.erase(g.WindowsFocusOrder.Data + window->FocusOrder);
+        window->FocusOrder = -1;
+    }
+    window->IsExplicitChild = new_is_explicit_child;
+}
+
 static ImGuiWindow* CreateNewWindow(const char* name, ImGuiWindowFlags flags)
 {
     ImGuiContext& g = *GImGui;
@@ -5584,16 +5607,12 @@ static ImGuiWindow* CreateNewWindow(const char* name, ImGuiWindowFlags flags)
         window->AutoFitOnlyGrows = (window->AutoFitFramesX > 0) || (window->AutoFitFramesY > 0);
     }
 
-    if (!(flags & ImGuiWindowFlags_ChildWindow))
-    {
-        g.WindowsFocusOrder.push_back(window);
-        window->FocusOrder = (short)(g.WindowsFocusOrder.Size - 1);
-    }
-
     if (flags & ImGuiWindowFlags_NoBringToFrontOnFocus)
         g.Windows.push_front(window); // Quite slow but rare and only once
     else
         g.Windows.push_back(window);
+    UpdateWindowInFocusOrderList(window, true, window->Flags);
+
     return window;
 }
 
@@ -6279,6 +6298,8 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
     const bool window_just_created = (window == NULL);
     if (window_just_created)
         window = CreateNewWindow(name, flags);
+    else
+        UpdateWindowInFocusOrderList(window, window_just_created, flags);
 
     // Automatically disable manual moving/resizing when NoInputs is set
     if ((flags & ImGuiWindowFlags_NoInputs) == ImGuiWindowFlags_NoInputs)
@@ -6372,6 +6393,8 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
     window_stack_data.StackSizesOnBegin.SetToCurrentState();
     g.CurrentWindowStack.push_back(window_stack_data);
     g.CurrentWindow = NULL;
+    if (flags & ImGuiWindowFlags_ChildMenu)
+        g.BeginMenuCount++;
 
     if (flags & ImGuiWindowFlags_Popup)
     {
@@ -7047,7 +7070,8 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
             window->HiddenFramesCanSkipItems = 1;
 
         // Update the Hidden flag
-        window->Hidden = (window->HiddenFramesCanSkipItems > 0) || (window->HiddenFramesCannotSkipItems > 0) || (window->HiddenFramesForRenderOnly > 0);
+        bool hidden_regular = (window->HiddenFramesCanSkipItems > 0) || (window->HiddenFramesCannotSkipItems > 0);
+        window->Hidden = hidden_regular || (window->HiddenFramesForRenderOnly > 0);
 
         // Disable inputs for requested number of frames
         if (window->DisableInputsFrames > 0)
@@ -7058,7 +7082,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 
         // Update the SkipItems flag, used to early out of all items functions (no layout required)
         bool skip_items = false;
-        if (window->Collapsed || !window->Active || window->Hidden)
+        if (window->Collapsed || !window->Active || hidden_regular)
             if (window->AutoFitFramesX <= 0 && window->AutoFitFramesY <= 0 && window->HiddenFramesCannotSkipItems <= 0)
                 skip_items = true;
         window->SkipItems = skip_items;
@@ -7107,6 +7131,8 @@ void ImGui::End()
 
     // Pop from window stack
     g.LastItemData = g.CurrentWindowStack.back().ParentLastItemDataBackup;
+    if (window->Flags & ImGuiWindowFlags_ChildMenu)
+        g.BeginMenuCount--;
     if (window->Flags & ImGuiWindowFlags_Popup)
         g.BeginPopupStack.pop_back();
     g.CurrentWindowStack.back().StackSizesOnBegin.CompareWithCurrentState();
@@ -9302,7 +9328,7 @@ void ImGui::CloseCurrentPopup()
         ImGuiWindow* parent_popup_window = g.OpenPopupStack[popup_idx - 1].Window;
         bool close_parent = false;
         if (popup_window && (popup_window->Flags & ImGuiWindowFlags_ChildMenu))
-            if (parent_popup_window == NULL || !(parent_popup_window->Flags & ImGuiWindowFlags_Modal))
+            if (parent_popup_window && !(parent_popup_window->Flags & ImGuiWindowFlags_MenuBar))
                 close_parent = true;
         if (!close_parent)
             break;
@@ -9330,7 +9356,7 @@ bool ImGui::BeginPopupEx(ImGuiID id, ImGuiWindowFlags flags)
 
     char name[20];
     if (flags & ImGuiWindowFlags_ChildMenu)
-        ImFormatString(name, IM_ARRAYSIZE(name), "##Menu_%02d", g.BeginPopupStack.Size); // Recycle windows based on depth
+        ImFormatString(name, IM_ARRAYSIZE(name), "##Menu_%02d", g.BeginMenuCount); // Recycle windows based on depth
     else
         ImFormatString(name, IM_ARRAYSIZE(name), "##Popup_%08x", id); // Not recycling, so we can close/open during the same frame
 
@@ -17583,7 +17609,7 @@ void ImGui::DebugNodeDrawList(ImGuiWindow* window, ImGuiViewportP* viewport, con
     }
 
     ImDrawList* fg_draw_list = viewport ? GetForegroundDrawList(viewport) : NULL; // Render additional visuals into the top-most draw list
-    if (window && fg_draw_list && IsItemHovered())
+    if (window && IsItemHovered() && fg_draw_list)
         fg_draw_list->AddRect(window->Pos, window->Pos + window->Size, IM_COL32(255, 255, 0, 255));
     if (!node_open)
         return;

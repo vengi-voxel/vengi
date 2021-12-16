@@ -1758,6 +1758,7 @@ struct ImGuiContext
     ImVector<ImGuiGroupData>GroupStack;                         // Stack for BeginGroup()/EndGroup() - not inherited by Begin()
     ImVector<ImGuiPopupData>OpenPopupStack;                     // Which popups are open (persistent)
     ImVector<ImGuiPopupData>BeginPopupStack;                    // Which level of BeginPopup() we are in (reset every frame)
+    int                     BeginMenuCount;
 
     // Viewports
     ImVector<ImGuiViewportP*> Viewports;                        // Active viewports (always 1+, and generally 1 unless multi-viewports are enabled). Each viewports hold their copy of ImDrawData.
@@ -1993,6 +1994,7 @@ struct ImGuiContext
         LastActiveIdTimer = 0.0f;
 
         CurrentItemFlags = ImGuiItemFlags_None;
+        BeginMenuCount = 0;
 
         CurrentDpiScale = 0.0f;
         CurrentViewport = NULL;
@@ -2187,6 +2189,7 @@ struct IMGUI_API ImGuiWindow
     bool                    Appearing;                          // Set during the frame where the window is appearing (or re-appearing)
     bool                    Hidden;                             // Do not display (== HiddenFrames*** > 0)
     bool                    IsFallbackWindow;                   // Set on the "Debug##Default" window.
+    bool                    IsExplicitChild;                    // Set when passed _ChildWindow, left to false by BeginDocked()
     bool                    HasCloseButton;                     // Set when the window has a close button (p_open != NULL)
     signed char             ResizeBorderHeld;                   // Current border being held for resize (-1: none, otherwise 0-3)
     short                   BeginCount;                         // Number of Begin() during the current frame (generally 0 or 1, 1+ if appending via multiple Begin/End pairs)
