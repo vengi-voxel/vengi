@@ -545,7 +545,6 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 const int num_indices = 6 * count;
                 const int size_indices = 4;
                 int cur_indice = 0;
-                int color = (renderer->color.r << 0) | (renderer->color.g << 8) | (renderer->color.b << 16) | ((Uint32)renderer->color.a << 24);
 
                 for (i = 0; i < count; ++i) {
                     float minx, miny, maxx, maxy;
@@ -574,7 +573,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 }
 
                 retval = renderer->QueueGeometry(renderer, cmd, NULL,
-                        xy, xy_stride, &color, 0 /* color_stride */, NULL, 0,
+                        xy, xy_stride, &renderer->color, 0 /* color_stride */, NULL, 0,
                         num_vertices, indices, num_indices, size_indices,
                         1.0f, 1.0f);
 
@@ -640,7 +639,7 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
     if (cmd != NULL) {
         retval = renderer->QueueGeometry(renderer, cmd, texture,
                 xy, xy_stride,
-                (const int *)color, color_stride, uv, uv_stride,
+                color, color_stride, uv, uv_stride,
                 num_vertices, indices, num_indices, size_indices,
                 scale_x, scale_y);
         if (retval < 0) {
@@ -3586,11 +3585,11 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
                                const int *indices, int num_indices)
 {
     if (vertices) {
-        const float *xy = &vertices[0].position.x;
+        const float *xy = &vertices->position.x;
         int xy_stride = sizeof (SDL_Vertex);
-        const SDL_Color *color = &vertices[0].color;
+        const SDL_Color *color = &vertices->color;
         int color_stride = sizeof (SDL_Vertex);
-        const float *uv = &vertices[0].tex_coord.x;
+        const float *uv = &vertices->tex_coord.x;
         int uv_stride = sizeof (SDL_Vertex);
         int size_indices = 4;
         return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);

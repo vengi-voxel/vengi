@@ -663,26 +663,30 @@ static int
 GLES2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
-    int color;
-    const size_t vertlen = (2 * sizeof (float) + sizeof (int)) * count;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    SDL_VertexSolid *verts = (SDL_VertexSolid *) SDL_AllocateRenderVertices(renderer, count * sizeof(*verts), 0, &cmd->data.draw.first);
     int i;
+    SDL_Color color;
+    color.r = cmd->data.draw.r;
+    color.g = cmd->data.draw.g;
+    color.b = cmd->data.draw.b;
+    color.a = cmd->data.draw.a;
 
     if (!verts) {
         return -1;
     }
 
-    if (colorswap == 0) {
-        color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | ((Uint32)cmd->data.draw.a << 24);
-    } else {
-        color = (cmd->data.draw.r << 16) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 0) | ((Uint32)cmd->data.draw.a << 24);
+    if (colorswap) {
+        Uint8 r = color.r;
+        color.r = color.b;
+        color.b = r;
     }
 
     cmd->data.draw.count = count;
     for (i = 0; i < count; i++) {
-        *(verts++) = 0.5f + points[i].x;
-        *(verts++) = 0.5f + points[i].y;
-        *((int *)verts++) = color;
+        verts->position.y = 0.5f + points[i].x;
+        verts->position.x = 0.5f + points[i].y;
+        verts->color = color;
+        verts++;
     }
 
     return 0;
@@ -692,19 +696,23 @@ static int
 GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
-    int color;
     int i;
     GLfloat prevx, prevy;
-    const size_t vertlen = ((2 * sizeof (float)) + sizeof (int)) * count;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    SDL_VertexSolid *verts = (SDL_VertexSolid *) SDL_AllocateRenderVertices(renderer, count * sizeof(*verts), 0, &cmd->data.draw.first);
+    SDL_Color color;
+    color.r = cmd->data.draw.r;
+    color.g = cmd->data.draw.g;
+    color.b = cmd->data.draw.b;
+    color.a = cmd->data.draw.a;
+
     if (!verts) {
         return -1;
     }
 
-    if (colorswap == 0) {
-        color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | ((Uint32)cmd->data.draw.a << 24);
-    } else {
-        color = (cmd->data.draw.r << 16) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 0) | ((Uint32)cmd->data.draw.a << 24);
+    if (colorswap) {
+        Uint8 r = color.r;
+        color.r = color.b;
+        color.b = r;
     }
 
     cmd->data.draw.count = count;
@@ -712,9 +720,10 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
     /* 0.5f offset to hit the center of the pixel. */
     prevx = 0.5f + points->x;
     prevy = 0.5f + points->y;
-    *(verts++) = prevx;
-    *(verts++) = prevy;
-    *((int *)verts++) = color;
+    verts->position.x = prevx;
+    verts->position.y = prevy;
+    verts->color = color;
+    verts++;
 
     /* bump the end of each line segment out a quarter of a pixel, to provoke
        the diamond-exit rule. Without this, you won't just drop the last
@@ -731,9 +740,10 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
         const GLfloat angle = SDL_atan2f(deltay, deltax);
         prevx = xend + (SDL_cosf(angle) * 0.25f);
         prevy = yend + (SDL_sinf(angle) * 0.25f);
-        *(verts++) = prevx;
-        *(verts++) = prevy;
-        *((int *)verts++) = color;
+        verts->position.x = prevx;
+        verts->position.y = prevy;
+        verts->color = color;
+        verts++;
     }
 
     return 0;
@@ -741,59 +751,92 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 
 static int
 GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
     int i;
     const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
     int count = indices ? num_indices : num_vertices;
-    const size_t vertlen = (2 * sizeof (float) + sizeof (int) + (texture ? 2 : 0) * sizeof (float)) * count;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
-
-    if (!verts) {
-        return -1;
-    }
 
     cmd->data.draw.count = count;
     size_indices = indices ? size_indices : 0;
 
-    for (i = 0; i < count; i++) {
-        int j;
-        float *xy_;
-        int col_;
-        if (size_indices == 4) {
-            j = ((const Uint32 *)indices)[i];
-        } else if (size_indices == 2) {
-            j = ((const Uint16 *)indices)[i];
-        } else if (size_indices == 1) {
-            j = ((const Uint8 *)indices)[i];
-        } else {
-            j = i;
+    if (texture) {
+        SDL_Vertex *verts = (SDL_Vertex *) SDL_AllocateRenderVertices(renderer, count * sizeof (*verts), 0, &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
         }
 
-        xy_ = (float *)((char*)xy + j * xy_stride);
-        col_ = *(int *)((char*)color + j * color_stride);
+        for (i = 0; i < count; i++) {
+            int j;
+            float *xy_;
+            SDL_Color col_;
+            float *uv_;
+            if (size_indices == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indices == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else if (size_indices == 1) {
+                j = ((const Uint8 *)indices)[i];
+            } else {
+                j = i;
+            }
 
-        *(verts++) = xy_[0] * scale_x;
-        *(verts++) = xy_[1] * scale_y;
+            xy_ = (float *)((char*)xy + j * xy_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
+            uv_ = (float *)((char*)uv + j * uv_stride);
 
-        if (colorswap == 0) {
-            *((int *)verts++) = col_;
-        } else {
-            Uint8 r, g, b, a;
-            r = (col_ >> 0) & 0xff;
-            g = (col_ >> 8) & 0xff;
-            b = (col_ >> 16) & 0xff;
-            a = (col_ >> 24) & 0xff;
-            col_ = (r << 16) | (g << 8) | (b << 0) | ((Uint32)a << 24);
-            *((int *)verts++) = col_;
+            verts->position.x = xy_[0] * scale_x;
+            verts->position.y = xy_[1] * scale_y;
+
+            if (colorswap) {
+                Uint8 r = col_.r;
+                col_.r = col_.b;
+                col_.b = r;
+            }
+
+            verts->color = col_;
+            verts->tex_coord.x = uv_[0];
+            verts->tex_coord.y = uv_[1];
+            verts++;
         }
 
-        if (texture) {
-            float *uv_ = (float *)((char*)uv + j * uv_stride);
-            *(verts++) = uv_[0];
-            *(verts++) = uv_[1];
+    } else {
+        SDL_VertexSolid *verts = (SDL_VertexSolid *) SDL_AllocateRenderVertices(renderer, count * sizeof (*verts), 0, &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+
+        for (i = 0; i < count; i++) {
+            int j;
+            float *xy_;
+            SDL_Color col_;
+
+            if (size_indices == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indices == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else if (size_indices == 1) {
+                j = ((const Uint8 *)indices)[i];
+            } else {
+                j = i;
+            }
+
+            xy_ = (float *)((char*)xy + j * xy_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
+
+            verts->position.x = xy_[0] * scale_x;
+            verts->position.y = xy_[1] * scale_y;
+
+            if (colorswap) {
+                Uint8 r = col_.r;
+                col_.r = col_.b;
+                col_.b = r;
+            }
+
+            verts->color = col_;
+            verts++;
         }
     }
 
@@ -806,7 +849,7 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
     SDL_Texture *texture = cmd->data.draw.texture;
     const SDL_BlendMode blend = cmd->data.draw.blend;
     GLES2_ProgramCacheEntry *program;
-    int stride = sizeof (GLfloat) * 2 /* position */ + sizeof (int) /* color */;
+    int stride;
 
     SDL_assert((texture != NULL) == (imgsrc != GLES2_IMAGESOURCE_SOLID));
 
@@ -877,11 +920,14 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
     }
 
     if (texture) {
-        stride += sizeof (GLfloat) * 2; /* tex coord */
+        stride = sizeof(SDL_Vertex);
+    } else {
+        stride = sizeof(SDL_VertexSolid);
     }
 
     if (texture) {
-        data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid *) (uintptr_t) (cmd->data.draw.first + sizeof (GLfloat) * (2 + 1)));
+        SDL_Vertex *verts = (SDL_Vertex *) (cmd->data.draw.first);
+        data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid *)&verts->tex_coord);
     }
 
     if (GLES2_SelectProgram(data, imgsrc, texture ? texture->w : 0, texture ? texture->h : 0) < 0) {
@@ -913,8 +959,11 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
     }
 
     /* all drawing commands use this */
-    data->glVertexAttribPointer(GLES2_ATTRIBUTE_POSITION, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid *) (uintptr_t) cmd->data.draw.first);
-    data->glVertexAttribPointer(GLES2_ATTRIBUTE_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE /* Normalized */, stride, (const GLvoid *) (uintptr_t) (cmd->data.draw.first + sizeof (GLfloat) * 2));
+    {
+        SDL_VertexSolid *verts = (SDL_VertexSolid *) (cmd->data.draw.first);
+        data->glVertexAttribPointer(GLES2_ATTRIBUTE_POSITION, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid *) &verts->position);
+        data->glVertexAttribPointer(GLES2_ATTRIBUTE_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE /* Normalized */, stride, (const GLvoid *) &verts->color);
+    }
 
     return 0;
 }
@@ -1201,7 +1250,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 if (ret == 0) {
                     int op = GL_TRIANGLES; /* SDL_RENDERCMD_GEOMETRY */
                     if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
-                        op = GL_POINTS; 
+                        op = GL_POINTS;
                     }
                     data->glDrawArrays(op, 0, (GLsizei) count);
                 }
