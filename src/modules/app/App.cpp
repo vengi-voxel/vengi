@@ -506,6 +506,12 @@ void App::usage() const {
 		Log::info("   %-*s %s", maxWidth, c.name(), c.help());
 	});
 	Log::info("------------");
+	Log::info("Search paths:");
+	const io::Paths& paths = _filesystem->paths();
+	for (const core::String& path : paths) {
+		Log::info(" * %s", path.c_str());
+	}
+	Log::info("------------");
 	Log::info("Config variables can either be set via autoexec.cfg, %s.vars, environment or commandline parameter.", _appname.c_str());
 	Log::info("The highest order is the command line. If you specify it on the command line, every other method");
 	Log::info("will not be used. If the engine finds the cvar name in your environment variables, this one will");

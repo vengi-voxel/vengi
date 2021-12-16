@@ -29,6 +29,10 @@ export VOXFORMAT_SCALE=2.0
 ./vengi-voxconvert [...]
 ```
 
+### Search paths
+
+You can get a list of search paths by calling the particular application with the `--help` parameter on the command line. This will print a list of search paths.
+
 ### Configuration file
 
 * Linux: `~/.local/share/vengi/voxconvert/voxconvert.vars`
