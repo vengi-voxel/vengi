@@ -22,7 +22,7 @@ static bool isHidden(Sampler &srcSampler) {
 				}
 				srcSampler.setPosition(pos.x + childX, pos.y + childY, pos.z + childZ);
 				if (!srcSampler.currentPositionValid()) {
-					continue;
+					return false;
 				}
 				if (!isBlocked(srcSampler.voxel().getMaterial())) {
 					return false;
