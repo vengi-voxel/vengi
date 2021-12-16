@@ -96,6 +96,7 @@ protected:
 	}
 public:
 	MetaMap(const core::String &name);
+	virtual ~MetaMap() {}
 
 	bool load(const core::String &luaString);
 	const core::String &name() const;
