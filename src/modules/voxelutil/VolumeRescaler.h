@@ -11,6 +11,28 @@
 
 namespace voxel {
 
+template<typename Sampler>
+static bool isHidden(Sampler &srcSampler) {
+	const glm::ivec3 pos = srcSampler.position();
+	for (int32_t childZ = -1; childZ <= 1; ++childZ) {
+		for (int32_t childY = -1; childY <= 1; ++childY) {
+			for (int32_t childX = -1; childX <= 1; ++childX) {
+				if (childZ == 0 && childY == 0 && childX == 0) {
+					continue;
+				}
+				srcSampler.setPosition(pos.x + childX, pos.y + childY, pos.z + childZ);
+				if (!srcSampler.currentPositionValid()) {
+					continue;
+				}
+				if (!isBlocked(srcSampler.voxel().getMaterial())) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
 /**
  * @brief Rescales a volume by sampling two voxels to produce one output voxel.
  * @param[in] sourceVolume The source volume to resample
@@ -38,10 +60,12 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
 				const glm::ivec3 dstPos = destRegion.getLowerCorner() + curPos;
 
+				float colorContributors = 0.0f;
 				float solidVoxels = 0.0f;
-				float avgOf8Red = 0.0f;
-				float avgOf8Green = 0.0f;
-				float avgOf8Blue = 0.0f;
+				float avgColorRed = 0.0f;
+				float avgColorGreen = 0.0f;
+				float avgColorBlue = 0.0f;
+				voxel::Voxel colorGuardVoxel;
 				for (int32_t childZ = 0; childZ < 2; ++childZ) {
 					for (int32_t childY = 0; childY < 2; ++childY) {
 						for (int32_t childX = 0; childX < 2; ++childX) {
@@ -53,10 +77,15 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 
 							if (isBlocked(child.getMaterial())) {
 								++solidVoxels;
+								if (isHidden(srcSampler)) {
+									colorGuardVoxel = child;
+									continue;
+								}
 								const glm::vec4& color = colors[child.getColor()];
-								avgOf8Red += color.r;
-								avgOf8Green += color.g;
-								avgOf8Blue += color.b;
+								avgColorRed += color.r;
+								avgColorGreen += color.g;
+								avgColorBlue += color.b;
+								++colorContributors;
 							}
 						}
 					}
@@ -65,7 +94,14 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 				// We only make a voxel solid if the eight corresponding voxels are also all solid. This
 				// means that higher LOD meshes actually shrink away which ensures cracks aren't visible.
 				if (solidVoxels >= 7.0f) {
-					const glm::vec4 avgColor(avgOf8Red / solidVoxels, avgOf8Green / solidVoxels, avgOf8Blue / solidVoxels, 1.0f);
+					if (colorContributors <= 0.0f) {
+						const glm::vec4 &color = colors[colorGuardVoxel.getColor()];
+						avgColorRed += color.r;
+						avgColorGreen += color.g;
+						avgColorBlue += color.b;
+						++colorContributors;
+					}
+					const glm::vec4 avgColor(avgColorRed / colorContributors, avgColorGreen / colorContributors, avgColorBlue / colorContributors, 1.0f);
 					const int index = core::Color::getClosestMatch(avgColor, colors);
 					Voxel voxel = createVoxel(VoxelType::Generic, index);
 					destVolume.setVoxel(dstPos, voxel);
