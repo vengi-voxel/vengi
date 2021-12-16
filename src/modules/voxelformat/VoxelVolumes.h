@@ -26,7 +26,7 @@ struct VoxelVolume {
 struct VoxelVolumes {
 	core::DynamicArray<VoxelVolume> volumes;
 
-	~VoxelVolumes() ;
+	~VoxelVolumes();
 
 	void push_back(VoxelVolume&& v);
 	void resize(size_t size);
