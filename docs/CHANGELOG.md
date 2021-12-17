@@ -13,6 +13,7 @@ General:
    - Added support for sproxel csv file format
    - Added support for a lot more image formats
    - Improved lod creation for thin surface voxels
+   - Added support for writing vxr files
 
 VoxConvert:
 
