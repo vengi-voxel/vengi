@@ -44,6 +44,7 @@ set(TEST_SRCS
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
 	tests/VXLFormatTest.cpp
+	tests/VXRFormatTest.cpp
 	tests/VXMFormatTest.cpp
 )
 set(TEST_FILES

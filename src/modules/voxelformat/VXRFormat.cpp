@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "app/App.h"
 #include "VXMFormat.h"
+#include "core/StringUtil.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
@@ -30,21 +31,68 @@ namespace voxel {
 		return false; \
 	}
 
-bool VXRFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
-	return false;
+bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::VoxelVolume& volume, const core::String &filename, io::SeekableWriteStream& stream) {
+	wrapBool(stream.writeString(volume.name, true))
+	const core::String baseName = core::string::stripExtension(filename);
+	const core::String finalName = baseName + name + ".vxm";
+	wrapBool(stream.writeString(finalName, true))
+	VXMFormat f;
+	io::FilePtr outputFile = io::filesystem()->open(finalName, io::FileMode::SysWrite);
+	if (!outputFile) {
+		Log::error("Failed to open %s for writing", finalName.c_str());
+		return false;
+	}
+	io::FileStream wstream(outputFile.get());
+	VoxelVolumes volumes;
+	volumes.push_back(voxel::VoxelVolume(volume.volume, name, volume.visible, volume.pivot));
+	wrapBool(f.saveGroups(volumes, finalName, wstream))
+
+	wrapBool(stream.writeInt32(0)); // next child count
+#if 0
+	for (int i = 0; i < childCount; ++i) {
+		wrapBool(saveRecursiveNode(i, volumes, filename, stream))
+	}
+#endif
+	return true;
 }
 
-bool VXRFormat::loadChildVXM(const core::String& vxrPath, VoxelVolumes& volumes) {
-	const io::FilePtr& file = io::filesystem()->open(vxrPath);
+bool VXRFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+	wrapBool(stream.writeUInt32(FourCC('V','X','R','4')));
+
+	int childCount = 0;
+	for (const auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		++childCount;
+	}
+	wrapBool(stream.writeInt32(childCount))
+	int n = 0;
+	for (const auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		core::String name = v.name;
+		if (name.empty()) {
+			name = core::string::format("%i", n);
+		}
+		wrapBool(saveRecursiveNode(name, v, filename, stream))
+		++n;
+	}
+	return true;
+}
+
+bool VXRFormat::loadChildVXM(const core::String& vxmPath, VoxelVolumes& volumes) {
+	const io::FilePtr& file = io::filesystem()->open(vxmPath);
 	if (!file->validHandle()) {
 		return false;
 	}
 	io::FileStream stream(file.get());
 	VXMFormat f;
-	return f.loadGroups(vxrPath, stream, volumes);
+	return f.loadGroups(vxmPath, stream, volumes);
 }
 
-bool VXRFormat::importChildOld(io::SeekableReadStream& stream, uint32_t version) {
+bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStream& stream, uint32_t version) {
 	if (version <= 2) {
 		char id[1024];
 		wrapBool(stream.readString(sizeof(id), id, true))
@@ -103,12 +151,12 @@ bool VXRFormat::importChildOld(io::SeekableReadStream& stream, uint32_t version)
 	uint32_t children;
 	wrap(stream.readUInt32(children))
 	for (uint32_t i = 0u; i < children; ++i) {
-		wrapBool(importChildOld(stream, version))
+		wrapBool(importChildOld(filename, stream, version))
 	}
 	return true;
 }
 
-bool VXRFormat::importChild(const core::String& vxrPath, io::SeekableReadStream& stream, VoxelVolumes& volumes, uint32_t version) {
+bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, VoxelVolumes& volumes, uint32_t version) {
 	uint32_t dummy;
 	float dummyf;
 	char id[1024];
@@ -116,7 +164,7 @@ bool VXRFormat::importChild(const core::String& vxrPath, io::SeekableReadStream&
 	char filename[1024];
 	wrapBool(stream.readString(sizeof(filename), filename, true))
 	if (filename[0] != '\0') {
-		core::String modelPath = vxrPath;
+		core::String modelPath = core::string::extractPath(vxmPath);
 		if (!modelPath.empty()) {
 			modelPath.append("/");
 		}
@@ -132,7 +180,7 @@ bool VXRFormat::importChild(const core::String& vxrPath, io::SeekableReadStream&
 		uint32_t children = 0;
 		wrap(stream.readUInt32(children))
 		for (uint32_t i = 0; i < children; ++i) {
-			wrapBool(importChild(vxrPath, stream, volumes, version))
+			wrapBool(importChild(vxmPath, stream, volumes, version))
 		}
 		return true;
 	}
@@ -177,7 +225,7 @@ bool VXRFormat::importChild(const core::String& vxrPath, io::SeekableReadStream&
 	uint32_t children = 0;
 	wrap(stream.readUInt32(children))
 	for (uint32_t i = 0; i < children; ++i) {
-		wrapBool(importChild(vxrPath, stream, volumes, version))
+		wrapBool(importChild(vxmPath, stream, volumes, version))
 	}
 	return true;
 }
@@ -221,7 +269,7 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		uint32_t children = 0;
 		wrap(stream.readUInt32(children))
 		for (uint32_t i = 0; i < children; ++i) {
-			wrapBool(importChildOld(stream, version))
+			wrapBool(importChildOld(filename, stream, version))
 		}
 		uint32_t modelCount;
 		wrap(stream.readUInt32(modelCount))

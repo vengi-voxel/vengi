@@ -10,7 +10,7 @@
 | Qubicle Binary        | qb        | X       | X      | X          |         |
 | Qubicle Project       | qbcl      |         |        | X          |         |
 | Sandbox VoxEdit       | vxm       | X       | X      | X          | X       |
-| Sandbox VoxEdit       | vxr       | X       |        | X          |         |
+| Sandbox VoxEdit       | vxr       | X       | X      | X          |         |
 | BinVox                | binvox    | X       | X      | X          |         |
 | Goxel                 | gox       | X       | X      | X          |         |
 | CubeWorld             | cub       | X       | X      | X          |         |

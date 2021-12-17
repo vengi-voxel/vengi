@@ -39,12 +39,12 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"MagicaVoxel", "vox", [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Qubicle Binary Tree", "qbt", [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Qubicle Project", "qbcl", [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
-	{"Sandbox VoxEdit", "vxm", [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
+	{"Sandbox VoxEdit Model", "vxm", [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
 			|| magic == FourCC('V','X','M','B') || magic == FourCC('V','X','M','C')
 			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
 			|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
 			|| magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Sandbox VoxEdit", "vxr", [] (uint32_t magic) {return magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
+	{"Sandbox VoxEdit Hierarquie", "vxr", [] (uint32_t magic) {return magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
 			|| magic == FourCC('V','X','R','5') || magic == FourCC('V','X','R','4')
 			|| magic == FourCC('V','X','R','3') || magic == FourCC('V','X','R','2')
 			|| magic == FourCC('V','X','R','1');}, 0u},
@@ -69,7 +69,8 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"MagicaVoxel", "vox", nullptr, 0u},
 	{"Qubicle Binary Tree", "qbt", nullptr, 0u},
 	//{"Qubicle Project", "qbcl", nullptr, 0u},
-	{"Sandbox VoxEdit", "vxm", nullptr, 0u},
+	{"Sandbox VoxEdit Model", "vxm", nullptr, 0u},
+	{"Sandbox VoxEdit Hierarquie", "vxr", nullptr, 0u},
 	{"BinVox", "binvox", nullptr, 0u},
 	{"Goxel", "gox", nullptr, 0u},
 	{"Sproxel csv", "csv", nullptr, 0u},
