@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/CommandlineApp.h"
+#include "voxelformat/VoxelVolumes.h"
 
 /**
  * @brief This tool is able to convert voxel volumes between different formats
@@ -24,6 +25,7 @@ private:
 	core::VarPtr _withTexCoords;
 protected:
 	void usage() const override;
+	void filterVolumes(voxel::VoxelVolumes& volumes);
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

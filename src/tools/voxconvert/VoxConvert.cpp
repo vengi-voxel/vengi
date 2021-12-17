@@ -9,6 +9,8 @@
 #include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "command/Command.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/Set.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -31,6 +33,7 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
+	registerArg("--filter").setShort("-f").setDescription("Layer filter. For example '1-4,6'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
@@ -190,6 +193,8 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 
+	filterVolumes(volumes);
+
 	if (mergeVolumes) {
 		Log::info("Merge layers");
 		voxel::RawVolume* merged = volumes.merge();
@@ -258,6 +263,46 @@ app::AppState VoxConvert::onInit() {
 	voxelformat::clearVolumes(volumes);
 
 	return state;
+}
+
+void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
+	const bool applyFilter = hasArg("--filter") || hasArg("-f");
+	if (!applyFilter) {
+		return;
+	}
+
+	core::String filter = getArgVal("--filter");
+	if (filter.empty()) {
+		filter = getArgVal("-f");
+	}
+	if (filter.empty()) {
+		Log::warn("No filter specified");
+		return;
+	}
+
+	core::Set<int> layers;
+	core::DynamicArray<core::String> tokens;
+	core::string::splitString(filter, tokens, ",");
+	for (const core::String& token : tokens) {
+		if (token.contains("-")) {
+			const int start = token.toInt();
+			const size_t index = token.find("-");
+			const core::String &endString = token.substr(index + 1);
+			const int end = endString.toInt();
+			for (int layer = start; layer <= end; ++layer) {
+				layers.insert(layer);
+			}
+		} else {
+			const int layer = token.toInt();
+			layers.insert(layer);
+		}
+	}
+	for (int i = 0; i < (int)volumes.size(); ++i) {
+		if (!layers.has(i)) {
+			delete volumes.volumes[i].volume;
+			volumes.volumes[i].volume = nullptr;
+		}
+	}
 }
 
 int main(int argc, char *argv[]) {

@@ -10,6 +10,7 @@ Convert voxel volume formats between each other or export to obj or ply.
 `./vengi-voxconvert --merge --scale infile outfile`
 
 * `--export-palette`: will save the included palette as png next to the source file. Use in combination with `--src-palette`.
+* `--filter`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`.
 * `--force`: overwrite existing files
 * `--merge`: will merge a multi layer volume (like vox, qb or qbt) into a single volume of the target file
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
@@ -61,6 +62,14 @@ Saves the png in the same dir as the vox file
 `./vengi-voxconvert --src-palette --export-palette infile.vox outfile.vox`
 
 There will be an `infile.png` now.
+
+## Extract single layers
+
+Extract just a few layers from the input file.
+
+`./vengi-voxconvert --filter 1-2,4 infile.vox outfile.vox`
+
+This will export layers 1, 2 and 4.
 
 ## Convert to mesh
 

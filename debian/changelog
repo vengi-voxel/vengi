@@ -14,6 +14,7 @@ vengi (0.0.15.0-1) UNRELEASED; urgency=low
   * Allow to export the palette to png
   * Allow to generate models from heightmap images
   * Allow to run lua scripts to modify volumes
+  * Allow to export or convert only single layers
 
   * Thumbnailer:
   * Try to use the built-in palette for models

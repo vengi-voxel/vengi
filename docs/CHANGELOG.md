@@ -20,6 +20,7 @@ VoxConvert:
    - Allow to export the palette to png
    - Allow to generate models from heightmap images
    - Allow to run lua scripts to modify volumes
+   - Allow to export or convert only single layers (`--filter`)
 
 Thumbnailer:
 
