@@ -44,7 +44,9 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
 			|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
 			|| magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Sandbox VoxEdit Hierarquie", "vxr", [] (uint32_t magic) {return magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
+	{"Sandbox VoxEdit Hierarquie", "vxr", [] (uint32_t magic) {
+		return magic == FourCC('V','X','R','9') || magic == FourCC('V','X','R','8')
+			|| magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
 			|| magic == FourCC('V','X','R','5') || magic == FourCC('V','X','R','4')
 			|| magic == FourCC('V','X','R','3') || magic == FourCC('V','X','R','2')
 			|| magic == FourCC('V','X','R','1');}, 0u},

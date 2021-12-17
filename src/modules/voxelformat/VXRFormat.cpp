@@ -21,13 +21,13 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
+		Log::error("Could not load vmr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) != true) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
+		Log::error("Could not load vmr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
@@ -102,9 +102,9 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 	wrap(stream.readUInt32(dummy))
 	char buf[1024];
 	wrapBool(stream.readString(sizeof(buf), buf, true))
-	uint32_t frameCount;
-	wrap(stream.readUInt32(frameCount))
-	for (uint32_t i = 0u; i < frameCount; ++i) {
+	int32_t frameCount;
+	wrap(stream.readInt32(frameCount))
+	for (int32_t i = 0u; i < frameCount; ++i) {
 		uint32_t frame;
 		wrap(stream.readUInt32(frame)) // frame index
 		wrap(stream.readUInt32(dummy)) // ???
@@ -148,17 +148,15 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 			wrap(stream.readFloat(localScale))
 		}
 	}
-	uint32_t children;
-	wrap(stream.readUInt32(children))
-	for (uint32_t i = 0u; i < children; ++i) {
+	int32_t children;
+	wrap(stream.readInt32(children))
+	for (int32_t i = 0u; i < children; ++i) {
 		wrapBool(importChildOld(filename, stream, version))
 	}
 	return true;
 }
 
 bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, VoxelVolumes& volumes, uint32_t version) {
-	uint32_t dummy;
-	float dummyf;
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
 	char filename[1024];
@@ -177,9 +175,9 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 		return true;
 	}
 	if (version == 4) {
-		uint32_t children = 0;
-		wrap(stream.readUInt32(children))
-		for (uint32_t i = 0; i < children; ++i) {
+		int32_t children = 0;
+		wrap(stream.readInt32(children))
+		for (int32_t i = 0; i < children; ++i) {
 			wrapBool(importChild(vxmPath, stream, volumes, version))
 		}
 		return true;
@@ -188,6 +186,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 		stream.readBool(); // collidable
 		stream.readBool(); // decorative
 	}
+	uint32_t dummy;
 	if (version >= 6) {
 		wrap(stream.readUInt32(dummy)) // color
 		stream.readBool(); // favorite
@@ -200,15 +199,16 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 	stream.readBool(); // preview mirror y axis
 	stream.readBool(); // preview mirror z axis
 	stream.readBool(); // ikAnchor
+	float dummyf;
 	if (version >= 9) {
 		char effectorId[1024];
 		wrapBool(stream.readString(sizeof(effectorId), effectorId, true))
 		stream.readBool(); // constraints visible
 		wrap(stream.readFloat(dummyf)) // rollmin ???
 		wrap(stream.readFloat(dummyf)) // rollmax ???
-		uint32_t constraints;
-		wrap(stream.readUInt32(constraints))
-		for (uint32_t i = 0; i < constraints; ++i) {
+		int32_t constraints;
+		wrap(stream.readInt32(constraints))
+		for (int32_t i = 0; i < constraints; ++i) {
 			wrap(stream.readFloat(dummyf)) // x
 			wrap(stream.readFloat(dummyf)) // z
 			wrap(stream.readFloat(dummyf)) // radius
@@ -222,9 +222,9 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 		stream.readBool(); // ???
 		stream.readBool(); // ???
 	}
-	uint32_t children = 0;
-	wrap(stream.readUInt32(children))
-	for (uint32_t i = 0; i < children; ++i) {
+	int32_t children = 0;
+	wrap(stream.readInt32(children))
+	for (int32_t i = 0; i < children; ++i) {
 		wrapBool(importChild(vxmPath, stream, volumes, version))
 	}
 	return true;
@@ -260,8 +260,8 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 
 	if (version >= 7) {
-		char buf[1024];
-		wrapBool(stream.readString(sizeof(buf), buf, true))
+		char defaultAnim[1024];
+		wrapBool(stream.readString(sizeof(defaultAnim), defaultAnim, true))
 	}
 	if (version <= 3) {
 		uint32_t dummy;
@@ -271,9 +271,9 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		for (uint32_t i = 0; i < children; ++i) {
 			wrapBool(importChildOld(filename, stream, version))
 		}
-		uint32_t modelCount;
-		wrap(stream.readUInt32(modelCount))
-		for (uint32_t i = 0; i < modelCount; ++i) {
+		int32_t modelCount;
+		wrap(stream.readInt32(modelCount))
+		for (int32_t i = 0; i < modelCount; ++i) {
 			char id[1024];
 			wrapBool(stream.readString(sizeof(id), id, true))
 			char filename[1024];
@@ -292,15 +292,17 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return true;
 	}
 
+	int32_t children = 0;
+	wrap(stream.readInt32(children))
+
 	if (version >= 8) {
 		char baseTemplate[1024];
 		wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
-
 		const bool isStatic = stream.readBool();
 		if (isStatic) {
-			uint32_t lodLevels;
-			wrap(stream.readUInt32(lodLevels))
-			for (uint32_t i = 0 ; i < lodLevels; ++i) {
+			int32_t lodLevels;
+			wrap(stream.readInt32(lodLevels))
+			for (int32_t i = 0 ; i < lodLevels; ++i) {
 				uint32_t dummy;
 				wrap(stream.readUInt32(dummy))
 				wrap(stream.readUInt32(dummy))
@@ -313,9 +315,9 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 					wrap(stream.readUInt32(emissiveTexZipped))
 					stream.skip(emissiveTexZipped);
 				}
-				uint32_t quadAmount;
-				wrap(stream.readUInt32(quadAmount))
-				for (uint32_t quad = 0; quad < quadAmount; ++quad) {
+				int32_t quadAmount;
+				wrap(stream.readInt32(quadAmount))
+				for (int32_t quad = 0; quad < quadAmount; ++quad) {
 					for (int v = 0; v < 4; ++v) {
 						float dummyFloat;
 						wrap(stream.readFloat(dummyFloat))
@@ -329,9 +331,8 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		}
 	}
 
-	uint32_t children = 0;
-	wrap(stream.readUInt32(children))
-	for (uint32_t i = 0; i < children; ++i) {
+	Log::debug("Found %i children (%i)", children, (int)volumes.size());
+	for (int32_t i = 0; i < children; ++i) {
 		wrapBool(importChild(filename, stream, volumes, version))
 	}
 
