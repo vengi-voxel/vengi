@@ -18,11 +18,14 @@
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/RawVolume.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
+#include "voxelformat/VoxelVolumes.h"
 #include "voxelgenerator/LUAGenerator.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeRescaler.h"
+#include "voxelutil/VolumeRotator.h"
 
 VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -36,6 +39,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
+	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
 	registerArg("--src-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
@@ -252,6 +256,10 @@ app::AppState VoxConvert::onInit() {
 		script.shutdown();
 	}
 
+	if (hasArg("--mirror")) {
+		mirror(getArgVal("--mirror"), volumes);
+	}
+
 	Log::debug("Save");
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
 		voxelformat::clearVolumes(volumes);
@@ -301,6 +309,36 @@ void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
 		}
 	}
 	Log::info("Filtered layers: %i", (int)layers.size());
+}
+
+void VoxConvert::mirror(const core::String& axisStr, voxel::VoxelVolumes& volumes) {
+	const char axisChr = core::string::toLower(axisStr[0]);
+	math::Axis axis = math::Axis::None;
+	switch (axisChr) {
+	case 'x':
+		axis = math::Axis::X;
+		break;
+	case 'y':
+		axis = math::Axis::Y;
+		break;
+	case 'z':
+		axis = math::Axis::Z;
+		break;
+	default:
+		break;
+	}
+	if (axis == math::Axis::None) {
+		Log::warn("Invalid axis given (valid are x, y and z)");
+	} else {
+		for (voxel::VoxelVolume &v : volumes) {
+			voxel::RawVolume *old = v.volume;
+			if (old == nullptr) {
+				continue;
+			}
+			v.volume = voxel::mirrorAxis(old, axis);
+			delete old;
+		}
+	}
 }
 
 int main(int argc, char *argv[]) {
