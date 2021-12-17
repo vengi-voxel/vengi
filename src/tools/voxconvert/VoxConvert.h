@@ -26,6 +26,7 @@ private:
 protected:
 	void usage() const override;
 	void mirror(const core::String& axisStr, voxel::VoxelVolumes& volumes);
+	void rotate(const core::String& axisStr, voxel::VoxelVolumes& volumes);
 	void filterVolumes(voxel::VoxelVolumes& volumes);
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

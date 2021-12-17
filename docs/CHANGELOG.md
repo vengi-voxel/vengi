@@ -23,6 +23,7 @@ VoxConvert:
    - Allow to generate models from heightmap images
    - Allow to run lua scripts to modify volumes
    - Allow to export or convert only single layers (`--filter`)
+   - Allow to mirror and rotate the volumes
 
 Thumbnailer:
 

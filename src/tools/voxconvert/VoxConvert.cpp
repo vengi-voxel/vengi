@@ -40,6 +40,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
+	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z)");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
 	registerArg("--src-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
@@ -260,6 +261,10 @@ app::AppState VoxConvert::onInit() {
 		mirror(getArgVal("--mirror"), volumes);
 	}
 
+	if (hasArg("--rotate")) {
+		rotate(getArgVal("--rotate"), volumes);
+	}
+
 	Log::debug("Save");
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
 		voxelformat::clearVolumes(volumes);
@@ -311,7 +316,7 @@ void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
 	Log::info("Filtered layers: %i", (int)layers.size());
 }
 
-void VoxConvert::mirror(const core::String& axisStr, voxel::VoxelVolumes& volumes) {
+static math::Axis toAxis(const core::String& axisStr) {
 	const char axisChr = core::string::toLower(axisStr[0]);
 	math::Axis axis = math::Axis::None;
 	switch (axisChr) {
@@ -329,15 +334,37 @@ void VoxConvert::mirror(const core::String& axisStr, voxel::VoxelVolumes& volume
 	}
 	if (axis == math::Axis::None) {
 		Log::warn("Invalid axis given (valid are x, y and z)");
-	} else {
-		for (voxel::VoxelVolume &v : volumes) {
-			voxel::RawVolume *old = v.volume;
-			if (old == nullptr) {
-				continue;
-			}
-			v.volume = voxel::mirrorAxis(old, axis);
-			delete old;
+	}
+	return axis;
+}
+
+void VoxConvert::mirror(const core::String& axisStr, voxel::VoxelVolumes& volumes) {
+	const math::Axis axis = toAxis(axisStr);
+	if (axis == math::Axis::None) {
+		return;
+	}
+	for (voxel::VoxelVolume &v : volumes) {
+		voxel::RawVolume *old = v.volume;
+		if (old == nullptr) {
+			continue;
 		}
+		v.volume = voxel::mirrorAxis(old, axis);
+		delete old;
+	}
+}
+
+void VoxConvert::rotate(const core::String& axisStr, voxel::VoxelVolumes& volumes) {
+	const math::Axis axis = toAxis(axisStr);
+	if (axis == math::Axis::None) {
+		return;
+	}
+	for (voxel::VoxelVolume &v : volumes) {
+		voxel::RawVolume *old = v.volume;
+		if (old == nullptr) {
+			continue;
+		}
+		v.volume = voxel::rotateAxis(old, axis);
+		delete old;
 	}
 }
 
