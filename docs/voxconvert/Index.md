@@ -10,7 +10,7 @@ Convert voxel volume formats between each other or export to obj or ply.
 `./vengi-voxconvert --merge --scale infile outfile`
 
 * `--export-palette`: will save the included palette as png next to the source file. Use in combination with `--src-palette`.
-* `--filter`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`.
+* `--filter`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`.
 * `--force`: overwrite existing files
 * `--merge`: will merge a multi layer volume (like vox, qb or qbt) into a single volume of the target file
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
@@ -95,6 +95,15 @@ To convert a complete directory of e.g. `*.vox` to `*.obj` files, you can use e.
 
 ```bash
 for i in *.vox; do vengi-voxconvert $i ${i%.vox}.obj; done
+```
+
+An example for the windows powershell to extract single layers into a new model
+
+```ps
+$array = "1-2,5", "1-2,7"
+foreach ($i in $array){
+  ./vengi-voxconvert --filter $i input.vox output_$i.vxm
+}
 ```
 
 ## Screenshots
