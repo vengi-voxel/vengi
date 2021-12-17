@@ -33,7 +33,7 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
-	registerArg("--filter").setShort("-f").setDescription("Layer filter. For example '1-4,6'");
+	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
@@ -266,15 +266,12 @@ app::AppState VoxConvert::onInit() {
 }
 
 void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
-	const bool applyFilter = hasArg("--filter") || hasArg("-f");
+	const bool applyFilter = hasArg("--filter");
 	if (!applyFilter) {
 		return;
 	}
 
-	core::String filter = getArgVal("--filter");
-	if (filter.empty()) {
-		filter = getArgVal("-f");
-	}
+	const core::String &filter = getArgVal("--filter");
 	if (filter.empty()) {
 		Log::warn("No filter specified");
 		return;
@@ -303,6 +300,7 @@ void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
 			volumes.volumes[i].volume = nullptr;
 		}
 	}
+	Log::info("Filtered layers: %i", (int)layers.size());
 }
 
 int main(int argc, char *argv[]) {
