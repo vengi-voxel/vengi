@@ -343,6 +343,7 @@ void VoxConvert::mirror(const core::String& axisStr, voxel::VoxelVolumes& volume
 	if (axis == math::Axis::None) {
 		return;
 	}
+	Log::info("Mirror on axis %c", axisStr[0]);
 	for (voxel::VoxelVolume &v : volumes) {
 		voxel::RawVolume *old = v.volume;
 		if (old == nullptr) {
@@ -358,6 +359,7 @@ void VoxConvert::rotate(const core::String& axisStr, voxel::VoxelVolumes& volume
 	if (axis == math::Axis::None) {
 		return;
 	}
+	Log::info("Rotate on axis %c", axisStr[0]);
 	for (voxel::VoxelVolume &v : volumes) {
 		voxel::RawVolume *old = v.volume;
 		if (old == nullptr) {
