@@ -1,3 +1,9 @@
+vengi (0.0.16.0-1) UNRELEASED; urgency=low
+
+  * General:
+
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 18 Dec 2021 14:16:59 +0100
+
 vengi (0.0.15.0-1) unstable; urgency=low
 
   * General:
@@ -27,7 +33,7 @@ vengi (0.0.15.0-1) unstable; urgency=low
   * Implemented camera panning
   * Added more layer merge functions
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 12 Dec 2021 14:11:08 +0100
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 18 Dec 2021 14:11:08 +0100
 
 vengi (0.0.14.0-1) unstable; urgency=low
 
