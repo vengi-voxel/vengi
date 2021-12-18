@@ -2,7 +2,7 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
-## 0.0.15 (2021-XX-XX)
+## 0.0.15 (2021-12-18)
 
 General:
 

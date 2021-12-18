@@ -1,4 +1,4 @@
-vengi (0.0.15.0-1) UNRELEASED; urgency=low
+vengi (0.0.15.0-1) unstable; urgency=low
 
   * General:
   * Fixed missing vxm (version 4) saving support
@@ -27,7 +27,7 @@ vengi (0.0.15.0-1) UNRELEASED; urgency=low
   * Implemented camera panning
   * Added more layer merge functions
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 21 Nov 2021 11:56:02 +0100
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 12 Dec 2021 14:11:08 +0100
 
 vengi (0.0.14.0-1) unstable; urgency=low
 
