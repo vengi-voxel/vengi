@@ -32,18 +32,18 @@ set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
 	tests/AoSVXLFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
-	tests/VoxFormatTest.cpp
+	tests/CSMFormatTest.cpp
+	tests/CubFormatTest.cpp
 	tests/GoxFormatTest.cpp
+	tests/KVXFormatTest.cpp
+	tests/KV6FormatTest.cpp
+	tests/MCRFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
 	tests/QBCLFormatTest.cpp
 	tests/QEFFormatTest.cpp
-	tests/CubFormatTest.cpp
-	tests/CSMFormatTest.cpp
-	tests/MCRFormatTest.cpp
 	tests/SproxelFormatTest.cpp
-	tests/KVXFormatTest.cpp
-	tests/KV6FormatTest.cpp
+	tests/VoxFormatTest.cpp
 	tests/VXLFormatTest.cpp
 	tests/VXRFormatTest.cpp
 	tests/VXMFormatTest.cpp
