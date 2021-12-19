@@ -32,6 +32,7 @@ set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
 	tests/AoSVXLFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
+	tests/ConvertTest.cpp
 	tests/CSMFormatTest.cpp
 	tests/CubFormatTest.cpp
 	tests/GoxFormatTest.cpp
@@ -75,6 +76,7 @@ set(TEST_FILES
 	tests/rgb.qb
 	tests/rgb.qef
 	tests/rgb.cub
+	voxedit/chr_knight.qb
 )
 
 gtest_suite_files(tests ${TEST_FILES})

@@ -49,6 +49,8 @@ protected:
 
 	void testSaveLoadVoxel(const core::String& filename, voxel::Format* format, int mins = 0, int maxs = 1);
 
+	void testLoadSaveAndLoad(const core::String& srcFilename, voxel::Format &srcFormat, const core::String& destFilename, voxel::Format &destFormat, bool includingColor);
+
 	io::FilePtr open(const core::String& filename, io::FileMode mode = io::FileMode::Read) {
 		const io::FilePtr& file = io::filesystem()->open(core::String(filename), mode);
 		return file;

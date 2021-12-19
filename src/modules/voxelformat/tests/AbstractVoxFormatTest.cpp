@@ -6,6 +6,17 @@ namespace voxel {
 
 const voxel::Voxel AbstractVoxFormatTest::Empty;
 
+void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename, voxel::Format &srcFormat, const core::String& destFilename, voxel::Format &destFormat, bool includingColor) {
+	std::unique_ptr<RawVolume> src(load(srcFilename, srcFormat));
+	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	EXPECT_TRUE(destFormat.save(src.get(), destFilename, stream)) << "Could not save " << destFilename;
+	stream.seek(0);
+	std::unique_ptr<RawVolume> loaded(destFormat.load(destFilename, stream));
+	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
+	ASSERT_EQ(src->region(), loaded->region());
+	EXPECT_TRUE(volumeComparator(*src.get(), *loaded, includingColor)) << "Volumes differ";
+}
+
 void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename, voxel::Format *format) {
 	Region region(glm::ivec3(0), glm::ivec3(0));
 	RawVolume layer1(region);
