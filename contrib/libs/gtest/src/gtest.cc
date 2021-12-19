@@ -2855,20 +2855,20 @@ void UnitTestImpl::RegisterParameterizedTests() {
 // Creates the test object, runs it, records its result, and then
 // deletes it.
 void TestInfo::Run() {
-  if (!should_run_) return;
+  TestEventListener* repeater = UnitTest::GetInstance()->listeners().repeater();
+  if (!should_run_) {
+    if (is_disabled_) repeater->OnTestDisabled(*this);
+    return;
+  }
 
   // Tells UnitTest where to store test result.
   internal::UnitTestImpl* const impl = internal::GetUnitTestImpl();
   impl->set_current_test_info(this);
 
-  TestEventListener* repeater = UnitTest::GetInstance()->listeners().repeater();
-
   // Notifies the unit test event listeners that a test is about to start.
   repeater->OnTestStart(*this);
-
   result_.set_start_timestamp(internal::GetTimeInMillis());
   internal::Timer timer;
-
   impl->os_stack_trace_getter()->UponLeavingGTest();
 
   // Creates the test object.
@@ -3396,6 +3396,7 @@ class PrettyUnitTestResultPrinter : public TestEventListener {
 #endif  // OnTestCaseStart
 
   void OnTestStart(const TestInfo& test_info) override;
+  void OnTestDisabled(const TestInfo& test_info) override;
 
   void OnTestPartResult(const TestPartResult& result) override;
   void OnTestEnd(const TestInfo& test_info) override;
@@ -3490,6 +3491,13 @@ void PrettyUnitTestResultPrinter::OnTestSuiteStart(
 
 void PrettyUnitTestResultPrinter::OnTestStart(const TestInfo& test_info) {
   ColoredPrintf(GTestColor::kGreen, "[ RUN      ] ");
+  PrintTestName(test_info.test_suite_name(), test_info.name());
+  printf("\n");
+  fflush(stdout);
+}
+
+void PrettyUnitTestResultPrinter::OnTestDisabled(const TestInfo& test_info) {
+  ColoredPrintf(GTestColor::kYellow, "[ DISABLED ] ");
   PrintTestName(test_info.test_suite_name(), test_info.name());
   printf("\n");
   fflush(stdout);
@@ -3697,6 +3705,7 @@ class BriefUnitTestResultPrinter : public TestEventListener {
 #endif  // OnTestCaseStart
 
   void OnTestStart(const TestInfo& /*test_info*/) override {}
+  void OnTestDisabled(const TestInfo& /*test_info*/) override {}
 
   void OnTestPartResult(const TestPartResult& result) override;
   void OnTestEnd(const TestInfo& test_info) override;
@@ -3803,6 +3812,7 @@ class TestEventRepeater : public TestEventListener {
 #endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
   void OnTestSuiteStart(const TestSuite& parameter) override;
   void OnTestStart(const TestInfo& test_info) override;
+  void OnTestDisabled(const TestInfo& test_info) override;
   void OnTestPartResult(const TestPartResult& result) override;
   void OnTestEnd(const TestInfo& test_info) override;
 //  Legacy API is deprecated but still available
@@ -3873,6 +3883,7 @@ GTEST_REPEATER_METHOD_(OnTestCaseStart, TestSuite)
 #endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 GTEST_REPEATER_METHOD_(OnTestSuiteStart, TestSuite)
 GTEST_REPEATER_METHOD_(OnTestStart, TestInfo)
+GTEST_REPEATER_METHOD_(OnTestDisabled, TestInfo)
 GTEST_REPEATER_METHOD_(OnTestPartResult, TestPartResult)
 GTEST_REPEATER_METHOD_(OnEnvironmentsTearDownStart, UnitTest)
 GTEST_REVERSE_REPEATER_METHOD_(OnEnvironmentsSetUpEnd, UnitTest)
@@ -3923,12 +3934,13 @@ class XmlUnitTestResultPrinter : public EmptyTestEventListener {
  private:
   // Is c a whitespace character that is normalized to a space character
   // when it appears in an XML attribute value?
-  static bool IsNormalizableWhitespace(char c) {
-    return c == 0x9 || c == 0xA || c == 0xD;
+  static bool IsNormalizableWhitespace(unsigned char c) {
+    return c == '\t' || c == '\n' || c == '\r';
   }
 
   // May c appear in a well-formed XML document?
-  static bool IsValidXmlCharacter(char c) {
+  // https://www.w3.org/TR/REC-xml/#charsets
+  static bool IsValidXmlCharacter(unsigned char c) {
     return IsNormalizableWhitespace(c) || c >= 0x20;
   }
 
@@ -5823,9 +5835,7 @@ bool UnitTestImpl::RunAllTests() {
     return true;
   }
 
-  random_seed_ = GTEST_FLAG_GET(shuffle)
-                     ? GetRandomSeedFromFlag(GTEST_FLAG_GET(random_seed))
-                     : 0;
+  random_seed_ = GetRandomSeedFromFlag(GTEST_FLAG_GET(random_seed));
 
   // True if and only if at least one test has failed.
   bool failed = false;
