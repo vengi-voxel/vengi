@@ -22,7 +22,7 @@ namespace voxel {
 
 static int VolumePrintThreshold = 10;
 
-inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2) {
+inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2, bool includingColor) {
 	const Region& r1 = volume1.region();
 	const Region& r2 = volume2.region();
 	if (r1 != r2) {
@@ -50,6 +50,9 @@ inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& 
 							voxel::VoxelTypeStr[(int)voxel1.getMaterial()], (int)voxel1.getColor(), voxel::VoxelTypeStr[(int)voxel2.getMaterial()], (int)voxel2.getColor());
 					return false;
 				}
+				if (!includingColor) {
+					continue;
+				}
 				const glm::vec4& c1 = materialColors[voxel1.getColor()];
 				const glm::vec4& c2 = materialColors[voxel2.getColor()];
 				const glm::vec4& delta = c1 - c2;
@@ -62,6 +65,10 @@ inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& 
 		}
 	}
 	return true;
+}
+
+inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2) {
+	return volumeComparator(volume1, volume2, true);
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {
