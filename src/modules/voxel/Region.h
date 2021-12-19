@@ -192,7 +192,7 @@ public:
 	/** Shrinks this region by the amounts specified. */
 	void shrink(const glm::ivec3& v3dAmount);
 
-	core::String toString() const;
+	core::String toString(bool center = false) const;
 
 private:
 	void update();

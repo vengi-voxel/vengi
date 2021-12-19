@@ -25,13 +25,15 @@ void Region::update() {
 	_stride = _voxels.x * _voxels.y;
 }
 
-core::String Region::toString() const {
+core::String Region::toString(bool center) const {
 	core::String regionStr("region[");
 	std::string s;
-	s = glm::to_string(getCenter());
-	regionStr += "center(";
-	regionStr += s.c_str();
-	regionStr += "), ";
+	if (center) {
+		s = glm::to_string(getCenter());
+		regionStr += "center(";
+		regionStr += s.c_str();
+		regionStr += "), ";
+	}
 	s = glm::to_string(getLowerCorner());
 	regionStr += "mins(";
 	regionStr += s.c_str();

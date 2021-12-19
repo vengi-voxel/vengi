@@ -73,7 +73,6 @@ inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& 
 
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {
 	return os << "region["
-			<< "center(" << glm::to_string(region.getCenter()) << "), "
 			<< "mins(" << glm::to_string(region.getLowerCorner()) << "), "
 			<< "maxs(" << glm::to_string(region.getUpperCorner()) << ")"
 			<< "]";
