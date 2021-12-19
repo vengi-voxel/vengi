@@ -60,12 +60,14 @@ set(TEST_FILES
 	tests/test.binvox
 	tests/test.kvx
 	tests/test.kv6
+	tests/minecraft_110.mca
 	tests/minecraft_113.mca
 	tests/magicavoxel.vox
 	tests/test.gox
 	tests/test.vxm
 	tests/test2.vxm
 	tests/cw.cub
+	tests/r.0.-2.mca
 	tests/rgb.vxl
 	tests/rgb.csv
 	tests/rgb.vox
