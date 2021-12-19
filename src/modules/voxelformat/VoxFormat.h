@@ -46,7 +46,7 @@ private:
 	struct VoxTransform {
 		glm::quat rotation = glm::quat_cast(glm::mat3(1.0f));
 		glm::ivec3 translation { 0 };
-		uint32_t layerId;
+		int32_t layerId;
 		uint32_t numFrames;
 	};
 

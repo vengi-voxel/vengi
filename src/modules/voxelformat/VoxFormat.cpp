@@ -638,8 +638,8 @@ bool VoxFormat::loadChunk_MATT(State& state, io::SeekableReadStream& stream, con
 
 // https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
 bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
-	uint32_t layerId;
-	wrap(stream.readUInt32(layerId))
+	int32_t layerId;
+	wrap(stream.readInt32(layerId))
 	Attributes attributes;
 	// (_name : string)
 	// (_hidden : 0/1)
@@ -651,7 +651,7 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 		return true;
 	}
 	// TODO: the mapping between volumes and layers is wrong
-	if (layerId >= (uint32_t)volumes.size()) {
+	if (layerId >= (int32_t)volumes.size()) {
 		Log::warn("Invalid layer id found: %i - exceeded limit of %i. Skipping layer",
 				(int)layerId, (int)volumes.size());
 	} else {
@@ -757,9 +757,9 @@ bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, con
 	uint32_t reserved;
 	wrap(stream.readUInt32(reserved))
 	VoxTransform transform;
-	wrap(stream.readUInt32(transform.layerId))
+	wrap(stream.readInt32(transform.layerId))
 	wrap(stream.readUInt32(transform.numFrames))
-	Log::debug("nTRN chunk: node: %u, childNodeId: %u, layerId: %u, numFrames: %u", nodeId, childNodeId, transform.layerId, transform.numFrames);
+	Log::debug("nTRN chunk: node: %u, childNodeId: %u, layerId: %i, numFrames: %u", nodeId, childNodeId, transform.layerId, transform.numFrames);
 	if (transform.numFrames != 1) {
 		Log::warn("Transform node chunk contains an expected value for numFrames: %i", transform.numFrames);
 	}
