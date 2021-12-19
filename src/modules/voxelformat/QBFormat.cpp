@@ -330,6 +330,10 @@ bool QBFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volu
 
 	uint32_t numMatrices;
 	wrap(stream.readUInt32(numMatrices))
+	if (numMatrices > 16384) {
+		Log::error("Max allowed matrices exceeded: %u", numMatrices);
+		return false;
+	}
 
 	Log::debug("Version: %u", state._version);
 	Log::debug("ColorFormat: %u", core::enumVal(state._colorFormat));
