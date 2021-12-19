@@ -43,8 +43,8 @@ public:
 		Log::debug("Saving %c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
 		stream.writeUInt32(chunkId);
 		_chunkSizePos = stream.pos();
-		stream.writeUInt32(0);
-		stream.writeUInt32(0);
+		stream.writeUInt32(0); // num bytes of chunk content
+		stream.writeUInt32(0); // num bytes of children chunks
 	}
 
 	~VoxScopedChunkWriter() {
@@ -53,7 +53,7 @@ public:
 		core_assert_msg(chunkStart <= currentPos, "%u should be <= %u", (uint32_t)chunkStart, (uint32_t)currentPos);
 		const uint64_t chunkSize = currentPos - chunkStart;
 		_stream.seek(_chunkSizePos);
-		_stream.writeUInt32(chunkSize);
+		_stream.writeUInt32(chunkSize); // num bytes of chunk content
 		_stream.seek(currentPos);
 		uint8_t buf[4];
 		FourCCRev(buf, _chunkId);
@@ -64,17 +64,14 @@ public:
 class VoxScopedHeader {
 private:
 	io::SeekableWriteStream& _stream;
-	int64_t _chunkCountPos;
 	int64_t _numBytesMainChunkPos;
 	int64_t _headerSize;
-	uint32_t &_chunks;
 
 public:
-	VoxScopedHeader(io::SeekableWriteStream& stream, uint32_t &chunks) : _stream(stream), _chunks(chunks) {
+	VoxScopedHeader(io::SeekableWriteStream& stream) : _stream(stream) {
 		stream.writeUInt32(FourCC('V','O','X',' '));
 		stream.writeUInt32(150);
 		stream.writeUInt32(FourCC('M','A','I','N'));
-		_chunkCountPos = stream.pos();
 		stream.writeUInt32(0u);
 		// this is filled at the end - once we know the final size of the main chunk children
 		_numBytesMainChunkPos = stream.pos();
@@ -86,12 +83,9 @@ public:
 		// magic, version, main chunk, main chunk size, main chunk child size
 		const int64_t currentPos = _stream.pos();
 		const int64_t mainChildChunkSize = _stream.pos() - _headerSize;
-		_stream.seek(_chunkCountPos);
-		_stream.writeUInt32(_chunks);
 		_stream.seek(_numBytesMainChunkPos);
 		_stream.writeUInt32(mainChildChunkSize);
 		_stream.seek(currentPos);
-		Log::debug("Chunks in main: %u", _chunks);
 	}
 };
 
@@ -271,9 +265,8 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	State state;
 	reset();
 
-	VoxScopedHeader scoped(stream, state._chunks);
+	VoxScopedHeader scoped(stream);
 	wrapBool(saveChunk_PACK(state,stream, volumes))
-
 	int modelId = 0;
 	for (auto& v : volumes) {
 		if (skipSaving(v)) {
@@ -287,17 +280,13 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 		++modelId;
 	}
 
-	// TODO: mv can't load the vox file when we write these chunks
-#if 0
-	wrapBool(saveSceneGraph(stream, volumes, modelId))
-
+	wrapBool(saveSceneGraph(state, stream, volumes, modelId))
 	for (auto& v : volumes) {
 		if (skipSaving(v)) {
 			continue;
 		}
-		wrapBool(saveChunk_LAYR(stream, modelId, v.name, v.visible))
+		wrapBool(saveChunk_LAYR(state, stream, modelId, v.name, v.visible))
 	}
-#endif
 
 	wrapBool(saveChunk_RGBA(state, stream))
 

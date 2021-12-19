@@ -4,6 +4,10 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 ## 0.0.16 (2021-XX-XX)
 
+General:
+
+   - Fixed magicavoxel vox file saving
+
 ## 0.0.15 (2021-12-18)
 
 General:
