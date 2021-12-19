@@ -167,16 +167,17 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	const bool outfileExists = filesystem()->open(outfile)->exists();
-	const io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
-	if (!outputFile->validHandle()) {
-		Log::error("Could not open target file: %s", outfile.c_str());
-		return app::AppState::InitFailure;
-	}
 	if (outfileExists) {
 		if (!hasArg("--force") && !hasArg("-f")) {
 			Log::error("Given output file '%s' already exists", outfile.c_str());
 			return app::AppState::InitFailure;
 		}
+	}
+
+	const io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
+	if (!outputFile->validHandle()) {
+		Log::error("Could not open target file: %s", outfile.c_str());
+		return app::AppState::InitFailure;
 	}
 
 	voxel::VoxelVolumes volumes;
