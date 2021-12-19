@@ -9,6 +9,10 @@ General:
    - Fixed magicavoxel vox file saving
    - Added support for old magicavoxel (pre RIFF) format
 
+VoxConvert:
+
+   - Fixed `--force` handling for target files
+
 ## 0.0.15 (2021-12-18)
 
 General:

@@ -4,6 +4,9 @@ vengi (0.0.16.0-1) UNRELEASED; urgency=low
   * Fixed magicavoxel vox file saving
   * Added support for old magicavoxel (pre RIFF) format
 
+  * VoxConvert:
+  * Fixed `--force` handling for target files
+
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 18 Dec 2021 14:16:59 +0100
 
 vengi (0.0.15.0-1) unstable; urgency=low
