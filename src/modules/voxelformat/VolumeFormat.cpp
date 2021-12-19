@@ -30,6 +30,7 @@
 #include "voxelformat/AoSVXLFormat.h"
 #include "voxelformat/CSMFormat.h"
 #include "voxelformat/OBJFormat.h"
+#include "voxelformat/VoxOldFormat.h"
 
 namespace voxelformat {
 
@@ -125,7 +126,7 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 	if (ext == "qb") {
 		format = core::make_shared<voxel::QBFormat>();
 	} else if (ext == "vox" && (magic != 0u && magic != FourCC('V','O','X',' '))) {
-		// TODO: old vox format support
+		format = core::make_shared<voxel::VoxOldFormat>();
 	} else if (ext == "vox" || magic == FourCC('V','O','X',' ')) {
 		format = core::make_shared<voxel::VoxFormat>();
 	} else if (ext == "qbt" || magic == FourCC('Q','B',' ','2')) {

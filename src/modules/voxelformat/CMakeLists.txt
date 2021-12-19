@@ -23,6 +23,7 @@ set(SRCS
 	VolumeCache.h VolumeCache.cpp
 	VoxelVolumes.h VoxelVolumes.cpp
 	VoxFormat.h VoxFormat.cpp
+	VoxOldFormat.h VoxOldFormat.cpp
 	VolumeFormat.h VolumeFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel voxelutil)

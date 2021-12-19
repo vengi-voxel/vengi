@@ -2,6 +2,7 @@ vengi (0.0.16.0-1) UNRELEASED; urgency=low
 
   * General:
   * Fixed magicavoxel vox file saving
+  * Added support for old magicavoxel (pre RIFF) format
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 18 Dec 2021 14:16:59 +0100
 

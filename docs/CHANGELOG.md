@@ -7,6 +7,7 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 General:
 
    - Fixed magicavoxel vox file saving
+   - Added support for old magicavoxel (pre RIFF) format
 
 ## 0.0.15 (2021-12-18)
 
