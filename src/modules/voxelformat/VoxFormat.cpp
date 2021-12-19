@@ -280,14 +280,17 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 		++modelId;
 	}
 
+#if 0
 	wrapBool(saveSceneGraph(state, stream, volumes, modelId))
+	modelId = 0;
 	for (auto& v : volumes) {
 		if (skipSaving(v)) {
 			continue;
 		}
 		wrapBool(saveChunk_LAYR(state, stream, modelId, v.name, v.visible))
+		++modelId;
 	}
-
+#endif
 	wrapBool(saveChunk_RGBA(state, stream))
 
 	// IMAP
