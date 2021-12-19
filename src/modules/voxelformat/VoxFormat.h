@@ -94,9 +94,9 @@ private:
 	bool saveChunk_RGBA(State& state, io::SeekableWriteStream& stream);
 
 	// scene graph saving stuff
-	bool saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumes);
+	bool saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t childNodes);
 	bool saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumeId);
-	bool saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins);
+	bool saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins, int layerId);
 	bool saveSceneGraph(State& state, io::SeekableWriteStream& stream, const VoxelVolumes& volumes, int modelCount);
 
 	void initPalette();

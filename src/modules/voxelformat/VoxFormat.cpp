@@ -104,13 +104,13 @@ bool VoxFormat::saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, in
 	return true;
 }
 
-bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumes) {
+bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t childNodes) {
 	VoxScopedChunkWriter scoped(stream, FourCC('n','G','R','P'));
 	wrapBool(stream.writeUInt32(nodeId))
 	wrapBool(saveAttributes({}, stream))
-	wrapBool(stream.writeUInt32(volumes))
+	wrapBool(stream.writeUInt32(childNodes))
 	NodeId childNodeId = nodeId + 1;
-	for (uint32_t i = 0u; i < volumes; ++i) {
+	for (uint32_t i = 0u; i < childNodes; ++i) {
 		// transform and shape node pairs
 		wrapBool(stream.writeUInt32(childNodeId + (i * 2u)))
 	}
@@ -129,13 +129,13 @@ bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, No
 	return true;
 }
 
-bool VoxFormat::saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins) {
+bool VoxFormat::saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins, int layerId) {
 	VoxScopedChunkWriter scoped(stream, FourCC('n','T','R','N'));
 	wrapBool(stream.writeUInt32(nodeId))
 	wrapBool(saveAttributes({}, stream))
 	wrapBool(stream.writeUInt32(childNodeId))
 	wrapBool(stream.writeInt32(-1)) // reserved - must be -1
-	wrapBool(stream.writeUInt32(0u)) // layerid
+	wrapBool(stream.writeInt32(layerId)) // layerid
 	wrapBool(stream.writeUInt32(1u)) // num frames
 	const core::String& translationStr = core::string::format("%i %i %i", mins.x, mins.z, mins.y);
 	wrapBool(saveAttributes({{"_r", "4"}, {"_t", translationStr}}, stream))
@@ -241,7 +241,7 @@ bool VoxFormat::skipSaving(const VoxelVolume& v) const {
 bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, const VoxelVolumes& volumes, int modelCount) {
 	const NodeId rootNodeId = 0;
 	NodeId groupNodeId = rootNodeId + 1;
-	wrapBool(saveChunk_nTRN(state, stream, rootNodeId, groupNodeId, glm::ivec3(0)))
+	wrapBool(saveChunk_nTRN(state, stream, rootNodeId, groupNodeId, glm::ivec3(0), -1))
 
 	// this adds a group node with a transform+shape node pair per volume
 	wrapBool(saveChunk_nGRP(state, stream, groupNodeId, modelCount))
@@ -256,7 +256,7 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 
 		const voxel::Region& region = v.volume->region();
 		const glm::ivec3 mins = region.getCenter();
-		wrapBool(saveChunk_nTRN(state, stream, nodeId, nodeId + 1, mins))
+		wrapBool(saveChunk_nTRN(state, stream, nodeId, nodeId + 1, mins, 0))
 		wrapBool(saveChunk_nSHP(state, stream, nodeId + 1, modelId))
 
 		// transform + shape node per volume
