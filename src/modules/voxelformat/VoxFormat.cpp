@@ -644,12 +644,13 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 	// (_name : string)
 	// (_hidden : 0/1)
 	wrapBool(readAttributes(attributes, stream))
-	uint32_t end;
-	wrap(stream.readUInt32(end));
-	if ((int)end != -1) {
+	int32_t end;
+	wrap(stream.readInt32(end));
+	if (end != -1) {
 		Log::error("Unexpected end of LAYR chunk - expected -1, got %i", (int)end);
 		return true;
 	}
+	// TODO: the mapping between volumes and layers is wrong
 	if (layerId >= (uint32_t)volumes.size()) {
 		Log::warn("Invalid layer id found: %i - exceeded limit of %i. Skipping layer",
 				(int)layerId, (int)volumes.size());
@@ -760,11 +761,12 @@ bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, con
 	wrap(stream.readUInt32(transform.numFrames))
 	Log::debug("nTRN chunk: node: %u, childNodeId: %u, layerId: %u, numFrames: %u", nodeId, childNodeId, transform.layerId, transform.numFrames);
 	if (transform.numFrames != 1) {
-		Log::error("Transform node chunk contained a numFrames value != 1: %i", transform.numFrames);
-		return false;
+		Log::warn("Transform node chunk contains an expected value for numFrames: %i", transform.numFrames);
 	}
 	Attributes transformNodeAttributes;
-	wrapBool(readAttributes(transformNodeAttributes, stream))
+	for (uint32_t f = 0; f < transform.numFrames; ++f) {
+		wrapBool(readAttributes(transformNodeAttributes, stream))
+	}
 
 	wrapBool(parseSceneGraphRotation(transform, transformNodeAttributes))
 	wrapBool(parseSceneGraphTranslation(transform, transformNodeAttributes))
