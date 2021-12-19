@@ -26,7 +26,7 @@ inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVo
 	const Region& r1 = volume1.region();
 	const Region& r2 = volume2.region();
 	if (r1 != r2) {
-		Log::debug("region differs");
+		Log::error("regions differ: %s vs %s", r1.toString().c_str(), r2.toString().c_str());
 		return false;
 	}
 
