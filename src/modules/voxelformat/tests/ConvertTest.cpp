@@ -27,123 +27,123 @@ class ConvertTest: public AbstractVoxFormatTest {
 TEST_F(ConvertTest, testQbToVox) {
 	QBFormat src;
 	VoxFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vox", target, true);
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vox", target, true, true);
 }
 
 TEST_F(ConvertTest, testVoxToQb) {
 	VoxFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("rgb.vox", src, "test.qb", target, true);
+	testLoadSaveAndLoad("rgb.vox", src, "test.qb", target, true, true);
 }
 
 TEST_F(ConvertTest, testQbToBinvox) {
 	QBFormat src;
 	BinVoxFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.binvox", target, false);
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.binvox", target, false, true);
 }
 
 TEST_F(ConvertTest, testBinvoxToQb) {
 	BinVoxFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.binvox", src, "test.qb", target, true);
+	testLoadSaveAndLoad("test.binvox", src, "test.qb", target, true, true);
 }
 
 TEST_F(ConvertTest, testQbToVXL) {
 	QBFormat src;
 	VXLFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vxl", target, true);
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vxl", target, true, true);
 }
 
 TEST_F(ConvertTest, testVXLToQb) {
 	VXLFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("rgb.vxl", src, "test.qb", target, true);
+	testLoadSaveAndLoad("rgb.vxl", src, "test.qb", target, true, true);
 }
 
 TEST_F(ConvertTest, testQbToQbt) {
 	QBFormat src;
 	QBTFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.qbt", target, true);
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.qbt", target, true, true);
 }
 
 TEST_F(ConvertTest, testQbtToQb) {
 	QBTFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("qubicle.qbt", src, "test.qb", target, true);
+	testLoadSaveAndLoad("qubicle.qbt", src, "test.qb", target, true, true);
 }
 
 TEST_F(ConvertTest, testQbToSproxel) {
 	QBFormat src;
 	SproxelFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.csv", target, true);
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.csv", target, true, true);
 }
 
 TEST_F(ConvertTest, testSproxelToQb) {
 	SproxelFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("rgb.csv", src, "test.qb", target, true);
+	testLoadSaveAndLoad("rgb.csv", src, "test.qb", target, true, true);
 }
 
 TEST_F(ConvertTest, testQbToVXM) {
 	QBFormat src;
 	VXMFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vxm", target, true);
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vxm", target, true, true);
 }
 
 TEST_F(ConvertTest, testVXMToQb) {
 	VXMFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.vxm", src, "test.qb", target, true);
+	testLoadSaveAndLoad("test.vxm", src, "test.qb", target, true, true);
 }
 
 TEST_F(ConvertTest, testQbToCub) {
 	QBFormat src;
 	CubFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.cub", target, true);
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.cub", target, true, true);
 }
 
 TEST_F(ConvertTest, testCubToQb) {
 	CubFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("rgb.cub", src, "test.qb", target, true);
+	testLoadSaveAndLoad("rgb.cub", src, "test.qb", target, true, true);
 }
 
 TEST_F(ConvertTest, testKVXToQb) {
 	KVXFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.kvx", src, "test.qb", target, true);
+	testLoadSaveAndLoad("test.kvx", src, "test.qb", target, true, true);
 }
 
 TEST_F(ConvertTest, testKV6ToQb) {
 	KV6Format src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.kv6", src, "test.qb", target, true);
+	testLoadSaveAndLoad("test.kv6", src, "test.qb", target, true, true);
 }
 
 TEST_F(ConvertTest, testQbToVXR) {
 	QBFormat src;
 	VXRFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vxr", target, true);
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vxr", target, true, true);
 }
 
 // a source file is missing here
 TEST_F(ConvertTest, DISABLED_testVXRToQb) {
 	VXRFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.vxr", src, "test.qb", target, true);
+	testLoadSaveAndLoad("test.vxr", src, "test.qb", target, true, true);
 }
 
 // TODO: broken
 TEST_F(ConvertTest, DISABLED_testQbToGox) {
 	QBFormat src;
 	GoxFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.gox", target, true);
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.gox", target, true, false);
 }
 
 TEST_F(ConvertTest, testGoxToQb) {
 	GoxFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.gox", src, "test.qb", target, true);
+	testLoadSaveAndLoad("test.gox", src, "test.qb", target, true, true);
 }
 
 }

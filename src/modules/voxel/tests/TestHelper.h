@@ -22,10 +22,10 @@ namespace voxel {
 
 static int VolumePrintThreshold = 10;
 
-inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2, bool includingColor) {
+inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2, bool includingColor, bool includingRegion) {
 	const Region& r1 = volume1.region();
 	const Region& r2 = volume2.region();
-	if (r1 != r2) {
+	if (includingRegion && r1 != r2) {
 		Log::error("regions differ: %s vs %s", r1.toString().c_str(), r2.toString().c_str());
 		return false;
 	}
@@ -68,7 +68,7 @@ inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVo
 }
 
 inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2) {
-	return volumeComparator(volume1, volume2, true);
+	return volumeComparator(volume1, volume2, true, true);
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {

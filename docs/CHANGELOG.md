@@ -8,6 +8,7 @@ General:
 
    - Fixed magicavoxel vox file saving
    - Added support for old magicavoxel (pre RIFF) format
+   - Fixed bugs in binvox support
 
 VoxConvert:
 
