@@ -2,21 +2,25 @@
  * @file
  */
 
-#include <gtest/gtest.h>
 #include "app/App.h"
-#include "metric/Metric.h"
-#include "io/Filesystem.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
+#include "io/Filesystem.h"
+#include "metric/Metric.h"
+#include <gtest/gtest.h>
 
 namespace app {
 
+class TestApp : public App {
+public:
+	TestApp()
+		: App(std::make_shared<metric::Metric>(), std::make_shared<io::Filesystem>(),
+			  std::make_shared<core::EventBus>(), std::make_shared<core::TimeProvider>()) {
+	}
+};
+
 TEST(AppTest, testLifecycleManual) {
-	const metric::MetricPtr metric = std::make_shared<metric::Metric>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	App app(metric, filesystem, eventBus, timeProvider);
+	TestApp app;
 	ASSERT_EQ(app::AppState::Init, app.onConstruct());
 	ASSERT_EQ(app::AppState::Running, app.onInit());
 	ASSERT_EQ(app::AppState::Cleanup, app.onRunning());
@@ -24,11 +28,7 @@ TEST(AppTest, testLifecycleManual) {
 }
 
 TEST(AppTest, testLifecycleOnFrame) {
-	const metric::MetricPtr metric = std::make_shared<metric::Metric>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	App app(metric, filesystem, eventBus, timeProvider);
+	TestApp app;
 	app.onFrame();
 	ASSERT_EQ(app::AppState::Construct, app.state());
 	app.onFrame();
