@@ -97,9 +97,9 @@ app::AppState VoxConvert::onInit() {
 	const core::String infile = _argv[_argc - 2];
 	const core::String outfile = _argv[_argc - 1];
 
-	const bool mergeVolumes = hasArg("--merge") || hasArg("-m");
-	const bool scaleVolumes = hasArg("--scale") || hasArg("-s");
-	const bool srcPalette = hasArg("--src-palette") || hasArg("-p");
+	const bool mergeVolumes = hasArg("--merge");
+	const bool scaleVolumes = hasArg("--scale");
+	const bool srcPalette = hasArg("--src-palette");
 	const bool exportPalette = hasArg("--export-palette");
 
 	Log::info("Options");
@@ -168,7 +168,7 @@ app::AppState VoxConvert::onInit() {
 
 	const bool outfileExists = filesystem()->open(outfile)->exists();
 	if (outfileExists) {
-		if (!hasArg("--force") && !hasArg("-f")) {
+		if (!hasArg("--force")) {
 			Log::error("Given output file '%s' already exists", outfile.c_str());
 			return app::AppState::InitFailure;
 		}
