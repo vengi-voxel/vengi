@@ -73,10 +73,13 @@ void App::init(const core::String& organisation, const core::String& appname) {
 	_appname = appname;
 }
 
-int App::startMainLoop(int argc, char *argv[]) {
+void App::setArgs(int argc, char *argv[]) {
 	_argc = argc;
 	_argv = argv;
+}
 
+int App::startMainLoop(int argc, char *argv[]) {
+	setArgs(argc, argv);
 	while (AppState::InvalidAppState != _curState) {
 		onFrame();
 	}

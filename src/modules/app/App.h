@@ -140,6 +140,7 @@ protected:
 	virtual void traceEndFrame(const char *threadName) override;
 
 	virtual void usage() const;
+	void setArgs(int argc, char *argv[]);
 
 public:
 	App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
