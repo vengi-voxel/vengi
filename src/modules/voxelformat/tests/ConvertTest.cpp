@@ -36,8 +36,7 @@ TEST_F(ConvertTest, testVoxToQb) {
 	testLoadSaveAndLoad("rgb.vox", src, "test.qb", target, true);
 }
 
-// TODO: broken
-TEST_F(ConvertTest, DISABLED_testQbToBinvox) {
+TEST_F(ConvertTest, testQbToBinvox) {
 	QBFormat src;
 	BinVoxFormat target;
 	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.binvox", target, false);
