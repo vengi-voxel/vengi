@@ -561,6 +561,16 @@ bool App::hasArg(const core::String& arg) const {
 			return true;
 		}
 	}
+	for (const Argument& a : _arguments) {
+		if (a.longArg() == arg || a.shortArg() == arg) {
+			for (int i = 1; i < _argc; ++i) {
+				if (a.longArg() == _argv[i] || a.shortArg() == _argv[i]) {
+					return true;
+				}
+			}
+			break;
+		}
+	}
 	return false;
 }
 
@@ -576,9 +586,6 @@ core::String App::getArgVal(const core::String& arg, const core::String& default
 			}
 			return _argv[i + 1];
 		}
-	}
-	if (!defaultVal.empty()) {
-		return defaultVal;
 	}
 	for (const Argument& a : _arguments) {
 		if (a.longArg() != arg && a.shortArg() != arg) {
@@ -596,11 +603,17 @@ core::String App::getArgVal(const core::String& arg, const core::String& default
 			}
 		}
 		if (!a.mandatory()) {
+			if (!defaultVal.empty()) {
+				return defaultVal;
+			}
 			return a.defaultValue();
 		}
-		if (a.defaultValue().empty()) {
+		if (defaultVal.empty() && a.defaultValue().empty()) {
 			usage();
 			requestQuit();
+		}
+		if (!defaultVal.empty()) {
+			return defaultVal;
 		}
 		return a.defaultValue();
 	}
