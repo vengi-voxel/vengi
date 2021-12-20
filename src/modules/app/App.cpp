@@ -58,8 +58,12 @@ App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, c
 
 App::~App() {
 	core_trace_set(nullptr);
-	_metricSender->shutdown();
-	_metric->shutdown();
+	if (_metricSender) {
+		_metricSender->shutdown();
+	}
+	if (_metric) {
+		_metric->shutdown();
+	}
 	Log::shutdown();
 	_threadPool = core::ThreadPoolPtr();
 }
