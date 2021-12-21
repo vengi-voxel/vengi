@@ -13,6 +13,7 @@ General:
 VoxConvert:
 
    - Fixed `--force` handling for target files
+   - Allow to operate on multiple input files
 
 ## 0.0.15 (2021-12-18)
 

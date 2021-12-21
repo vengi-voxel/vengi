@@ -6,7 +6,7 @@
 
 .SH SYNOPSIS
 .PP
-\fB@NAME@\fR [\fIoption\fR] infile outfile
+\fB@NAME@\fR [\fIoption\fR] --input infile --output outfile
 .SH DESCRIPTION
 \fB@COMMANDLINE@\fP is a command line application that can convert several voxel
 volume formats into others. Supported formats are e.g. cub (CubeWorld), qb/qbt

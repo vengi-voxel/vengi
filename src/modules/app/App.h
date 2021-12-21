@@ -68,7 +68,9 @@ enum class AppState : uint8_t {
 class App : public core::TraceCallback {
 protected:
 	core::Trace _trace;
+	// the amount of command line arguments
 	int _argc = 0;
+	// the first entry is the application name
 	char **_argv = nullptr;
 
 	int _initialLogLevel = 0;

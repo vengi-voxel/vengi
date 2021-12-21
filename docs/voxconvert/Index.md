@@ -7,23 +7,25 @@ Convert voxel volume formats between each other or export to obj or ply.
 
 ## Usage
 
-`./vengi-voxconvert --merge --scale infile outfile`
+`./vengi-voxconvert --merge --scale --input infile --output outfile`
 
 * `--export-palette`: will save the included palette as png next to the source file. Use in combination with `--src-palette`.
-* `--filter`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`.
+* `--filter <filter>`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`.
 * `--force`: overwrite existing files
+* `--input <file>`: allows to specify input files. You can specify more than one file
 * `--merge`: will merge a multi layer volume (like vox, qb or qbt) into a single volume of the target file
-* `--mirror`: allows you to mirror the volumes at x, y and z axis
-* `--rotate`: allows you to rotate the volumes by 90 degree at x, y and z axis
+* `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis
+* `--output <file>`: allows you to specify the output filename
+* `--rotate <x|y|z>`: allows you to rotate the volumes by 90 degree at x, y and z axis
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
-* `--script`: execute the given script - see [scripting support](../LUAScript.md) for more details
+* `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
 * `--src-palette`: will use the included palette and doesn't perform any quantization to the default palette
 
 Just type `vengi-voxconvert` to get a full list of commands and options.
 
 Using a different target palette is also possible by setting the `palette` config var.
 
-`./vengi-voxconvert -set palette /path/to/palette.png infile outfile`
+`./vengi-voxconvert -set palette /path/to/palette.png --input infile outfile`
 
 The palette file has to be in the dimensions 1x256. It is also possible to just provide the basename of the palette.
 This is e.g. `nippon`. The tool will then try to look up the file `palette-nippon.png` in the file search paths.
@@ -35,23 +37,29 @@ color from the source file palette to the specified palette.
 
 Generate a lod scaled by 50% from the input model.
 
-`./vengi-voxconvert -s infile.vox lod1.vox`
+`./vengi-voxconvert -s --input infile.vox output.vox`
+
+## Merge several models
+
+Merge several models into one
+
+`./vengi-voxconvert --input one.vox --input two.vox --output onetwo.vox`
 
 ## Generate from heightmap
 
 Just specify the heightmap as input file like this:
 
-`./vengi-voxconvert heightmap.png outfile.vox`
+`./vengi-voxconvert --input heightmap.png --output outfile.vox`
 
 ## Execute lua script
 
 Use the `--script` parameter:
 
-`./vengi-voxconvert --script "cover 2" infile.vox outfile.vox`
+`./vengi-voxconvert --script "cover 2" --input infile.vox --output outfile.vox`
 
 This is executing the script in `./scripts/cover.lua` with a parameter of `2`.
 
-`./vengi-voxconvert --script "./scripts/cover.lua 2" infile.vox outfile.vox`
+`./vengi-voxconvert --script "./scripts/cover.lua 2" --input infile.vox --output outfile.vox`
 
 This is doing exactly the same as above - just with a full path.
 
@@ -61,7 +69,7 @@ See the [scripting](../LUAScript.md) documentation for further details.
 
 Saves the png in the same dir as the vox file
 
-`./vengi-voxconvert --src-palette --export-palette infile.vox outfile.vox`
+`./vengi-voxconvert --src-palette --export-palette --input infile.vox --output outfile.vox`
 
 There will be an `infile.png` now.
 
@@ -69,7 +77,7 @@ There will be an `infile.png` now.
 
 Extract just a few layers from the input file.
 
-`./vengi-voxconvert --filter 1-2,4 infile.vox outfile.vox`
+`./vengi-voxconvert --filter 1-2,4 --input infile.vox --output outfile.vox`
 
 This will export layers 1, 2 and 4.
 
@@ -77,7 +85,7 @@ This will export layers 1, 2 and 4.
 
 You can export your volume model into a obj or ply.
 
-`./vengi-voxconvert infile.vox outfile.obj`
+`./vengi-voxconvert --input infile.vox --output outfile.obj`
 
 Config vars to control the meshing:
 
@@ -96,7 +104,7 @@ See `./vengi-voxconvert --help` or [configuration](../Configuration.md) for more
 To convert a complete directory of e.g. `*.vox` to `*.obj` files, you can use e.g. the bash like this:
 
 ```bash
-for i in *.vox; do vengi-voxconvert $i ${i%.vox}.obj; done
+for i in *.vox; do vengi-voxconvert --input $i --output ${i%.vox}.obj; done
 ```
 
 An example for the windows powershell to extract single layers into a new model
@@ -104,7 +112,7 @@ An example for the windows powershell to extract single layers into a new model
 ```ps
 $array = "1-2,5", "1-2,7"
 foreach ($i in $array){
-  ./vengi-voxconvert --filter $i input.vox output_$i.vxm
+  ./vengi-voxconvert --filter $i --input input.vox --output output_$i.vxm
 }
 ```
 

@@ -31,6 +31,7 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "voxconvert");
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
+	_additionalUsage = "[<input>] <output>";
 }
 
 app::AppState VoxConvert::onConstruct() {
@@ -38,8 +39,10 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
 	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
+	registerArg("--input").setShort("-i").setDescription("Allow to specify input files");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
+	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file");
 	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z)");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
@@ -94,8 +97,33 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	const core::String infile = _argv[_argc - 2];
-	const core::String outfile = _argv[_argc - 1];
+	core::String infilesstr;
+	core::DynamicArray<core::String> infiles;
+	if (hasArg("--input")) {
+		int argn = 0;
+		for (;;) {
+			const core::String &val = getArgVal("--input", "", &argn);
+			if (val.empty()) {
+				break;
+			}
+			infiles.push_back(val);
+			if (!infilesstr.empty()) {
+				infilesstr += ", ";
+			}
+			infilesstr += val;
+		}
+	} else {
+		Log::warn("You are not using --input - this is deprecated and will get removed in a later version");
+		infiles.push_back(_argv[_argc - 2]);
+		infilesstr += _argv[_argc - 2];
+	}
+	core::String outfile;
+	if (hasArg("--output")) {
+		outfile = getArgVal("--output");
+	} else {
+		Log::warn("You are not using --output - this is deprecated and will get removed in a later version");
+		outfile = _argv[_argc - 1];
+	}
 
 	const bool mergeVolumes = hasArg("--merge");
 	const bool scaleVolumes = hasArg("--scale");
@@ -113,8 +141,8 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* withColor:        - %s", _withColor->strVal().c_str());
 		Log::info("* withTexCoords:    - %s", _withTexCoords->strVal().c_str());
 	}
-	Log::info("* infile:                        - %s", infile.c_str());
-	Log::info("* outfile:                       - %s", outfile.c_str());
+	Log::info("* input files:                   - %s", infilesstr.c_str());
+	Log::info("* output files:                  - %s", outfile.c_str());
 	core::String scriptParameters;
 	if (hasArg("--script")) {
 		scriptParameters = getArgVal("--script");
@@ -125,15 +153,6 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* use source file palette:       - %s", (srcPalette ? "true" : "false"));
 	Log::info("* export used palette as image:  - %s", (exportPalette ? "true" : "false"));
 
-	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
-	if (!inputFile->exists()) {
-		Log::error("Given input file '%s' does not exist", infile.c_str());
-		_exitCode = 127;
-		return app::AppState::InitFailure;
-	}
-	const bool inputIsImage = inputFile->isAnyOf(io::format::images());
-	Log::info("* generate from heightmap:       - %s", (inputIsImage ? "true" : "false"));
-
 	io::FilePtr paletteFile = filesystem()->open(core::string::format("palette-%s.png", _palette->strVal().c_str()));
 	if (!paletteFile->exists()) {
 		paletteFile = filesystem()->open(_palette->strVal());
@@ -141,29 +160,6 @@ app::AppState VoxConvert::onInit() {
 	if (!voxel::initMaterialColors(paletteFile, io::FilePtr())) {
 		Log::error("Failed to init default material colors");
 		return app::AppState::InitFailure;
-	}
-
-	if (!inputIsImage && srcPalette) {
-		core::Array<uint32_t, 256> palette;
-		io::FileStream palStream(inputFile.get());
-		const size_t numColors = voxelformat::loadPalette(inputFile->name(), palStream, palette);
-		if (numColors == 0) {
-			Log::error("Failed to load palette from input file");
-			return app::AppState::InitFailure;
-		}
-		if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors, "")) {
-			Log::error("Failed to initialize material colors from input file");
-			return app::AppState::InitFailure;
-		}
-
-		if (exportPalette) {
-			const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
-			image::Image img(paletteFile);
-			img.loadRGBA((const uint8_t*)palette.begin(), (int)numColors * 4, (int)numColors, 1);
-			if (!img.writePng()) {
-				Log::warn("Failed to write the palette file");
-			}
-		}
 	}
 
 	const bool outfileExists = filesystem()->open(outfile)->exists();
@@ -181,49 +177,82 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	voxel::VoxelVolumes volumes;
-	if (inputIsImage) {
-		const image::ImagePtr& image = image::loadImage(inputFile, false);
-		if (!image || !image->isLoaded()) {
-			Log::error("Couldn't load image %s", infile.c_str());
+	for (const core::String& infile : infiles) {
+		const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
+		if (!inputFile->exists()) {
+			Log::error("Given input file '%s' does not exist", infile.c_str());
+			_exitCode = 127;
 			return app::AppState::InitFailure;
 		}
-		voxel::Region region(0, 0, 0, image->width(), 255, image->height());
-		voxel::RawVolume* volume = new voxel::RawVolume(region);
-		volumes.push_back(voxel::VoxelVolume(volume, infile, true, glm::ivec3(0)));
-		voxel::RawVolumeWrapper wrapper(volume);
-		voxelutil::importHeightmap(wrapper, image);
-	} else {
-		io::FileStream inputFileStream(inputFile.get());
-		if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, volumes)) {
-			Log::error("Failed to load given input file");
-			return app::AppState::InitFailure;
+		const bool inputIsImage = inputFile->isAnyOf(io::format::images());
+		if (!inputIsImage && srcPalette) {
+			core::Array<uint32_t, 256> palette;
+			io::FileStream palStream(inputFile.get());
+			const size_t numColors = voxelformat::loadPalette(inputFile->name(), palStream, palette);
+			if (numColors == 0) {
+				Log::error("Failed to load palette from input file");
+				return app::AppState::InitFailure;
+			}
+			if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors, "")) {
+				Log::error("Failed to initialize material colors from input file");
+				return app::AppState::InitFailure;
+			}
+
+			if (exportPalette) {
+				const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
+				image::Image img(paletteFile);
+				img.loadRGBA((const uint8_t*)palette.begin(), (int)numColors * 4, (int)numColors, 1);
+				if (!img.writePng()) {
+					Log::warn("Failed to write the palette file");
+				}
+			}
 		}
-	}
 
-	filterVolumes(volumes);
-
-	if (mergeVolumes) {
-		Log::info("Merge layers");
-		voxel::RawVolume* merged = volumes.merge();
-		if (merged == nullptr) {
-			Log::error("Failed to merge volumes");
-			return app::AppState::InitFailure;
+		if (inputIsImage) {
+			Log::info("Generate from heightmap");
+			const image::ImagePtr& image = image::loadImage(inputFile, false);
+			if (!image || !image->isLoaded()) {
+				Log::error("Couldn't load image %s", infile.c_str());
+				return app::AppState::InitFailure;
+			}
+			voxel::Region region(0, 0, 0, image->width(), 255, image->height());
+			voxel::RawVolume* volume = new voxel::RawVolume(region);
+			volumes.push_back(voxel::VoxelVolume(volume, infile, true, glm::ivec3(0)));
+			voxel::RawVolumeWrapper wrapper(volume);
+			voxelutil::importHeightmap(wrapper, image);
+		} else {
+			io::FileStream inputFileStream(inputFile.get());
+			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, volumes)) {
+				Log::error("Failed to load given input file");
+				return app::AppState::InitFailure;
+			}
 		}
-		voxelformat::clearVolumes(volumes);
-		volumes.push_back(voxel::VoxelVolume(merged));
-	}
 
-	if (scaleVolumes) {
-		Log::info("Scale layers");
-		for (auto& v : volumes) {
-			const voxel::Region srcRegion = v.volume->region();
-			const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
-			const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
-			if (destRegion.isValid()) {
-				voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-				rescaleVolume(*v.volume, *destVolume);
-				delete v.volume;
-				v.volume = destVolume;
+		filterVolumes(volumes);
+
+		if (mergeVolumes) {
+			Log::info("Merge layers");
+			voxel::RawVolume* merged = volumes.merge();
+			if (merged == nullptr) {
+				Log::error("Failed to merge volumes");
+				return app::AppState::InitFailure;
+			}
+			voxelformat::clearVolumes(volumes);
+			volumes.push_back(voxel::VoxelVolume(merged));
+		}
+
+		if (scaleVolumes) {
+			Log::info("Scale layers");
+			for (auto& v : volumes) {
+				const voxel::Region srcRegion = v.volume->region();
+				const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+				const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
+				if (destRegion.isValid()) {
+					voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
+					rescaleVolume(*v.volume, *destVolume);
+					delete v.volume;
+					v.volume = destVolume;
+				}
 			}
 		}
 	}
