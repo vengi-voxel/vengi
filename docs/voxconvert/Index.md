@@ -52,6 +52,15 @@ Just specify the heightmap as input file like this:
 
 `./vengi-voxconvert --input heightmap.png --output outfile.vox`
 
+## Translate the voxels
+
+You can translate the voxels in the world like this:
+
+`./vengi-voxconvert --translate 0:10:0 --input heightmap.png --output outfile.vox`
+
+This would move the voxels 10 units upwards. But keep in mind that not every format supports
+to store a translation offset.
+
 ## Execute lua script
 
 Use the `--script` parameter:
