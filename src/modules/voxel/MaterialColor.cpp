@@ -83,7 +83,7 @@ public:
 		_colorMapping.put(voxel::VoxelType::Generic, generic);
 
 		if (luaString.empty()) {
-			Log::warn("No materials defined in palette lua script");
+			Log::debug("No materials defined in palette lua script");
 			return true;
 		}
 
@@ -314,11 +314,11 @@ bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFi
 		} else {
 			luaString = luaFile->load();
 			if (luaString.empty()) {
-				Log::warn("No lua material definitions in %s", luaFile->name().c_str());
+				Log::debug("No lua material definitions in %s", luaFile->name().c_str());
 			}
 		}
 	} else {
-		Log::warn("No lua material definition file given");
+		Log::debug("No lua material definition file given");
 	}
 	const image::ImagePtr& img = image::loadImage(paletteFile, false);
 	if (!img->isLoaded()) {
