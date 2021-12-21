@@ -24,6 +24,8 @@ Package: vengi-shared
 Architecture: any
 Multi-Arch: foreign
 Description: Shared stuff like mimetypes
+ Shared package for the other vengi packages. You can find the general
+ documentation here as well as e.g. mimetypes.
 
 Package: vengi-voxedit
 Architecture: any

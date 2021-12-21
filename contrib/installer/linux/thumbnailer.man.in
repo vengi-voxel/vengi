@@ -1,0 +1,73 @@
+.\" This man page was written by Martin Gerhardy in May 2020. It is provided
+.\" under the GNU General Public License 3 or (at your option) any later version.
+.TH @COMMANDLINE@ "1" "May 2020" "@COMMANDLINE@"
+.SH NAME
+@COMMANDLINE@ \- create thumbnail images from voxel models
+
+.SH SYNOPSIS
+.PP
+\fB@NAME@\fR [\fIoption\fR] -s <size> infile outfile
+.SH DESCRIPTION
+\fB@COMMANDLINE@\fP is a command line application that can create thumbnails from
+voxel models. .
+.SH OPTIONS
+.TP
+\fB\-s\fR
+Specify the size (same width and height) of the thumbnail.
+
+.TP
+\fB\--help\fR
+Print usage information with a a full list of cvars
+
+.TP
+\fB\--trace|--debug|--info\fR
+Enable trace, debug or info logging
+
+.TP
+\fB\--version|-v\fR
+Print the version of the application.
+
+.SH LOAD
+.TP
+Qubicle Binary (*.qb)
+.TP
+MagicaVoxel (*.vox)
+.TP
+Qubicle Binary Tree (*.qbt)
+.TP
+Qubicle Project (*.qbcl)
+.TP
+Sandbox VoxEdit Model (*.vxm)
+.TP
+Sandbox VoxEdit Hierarquie (*.vxr)
+.TP
+BinVox (*.binvox)
+.TP
+Goxel (*.gox)
+.TP
+CubeWorld (*.cub)
+.TP
+Sproxel csv (*.csv)
+.TP
+Build engine (*.kvx)
+.TP
+Ace of Spades (*.kv6)
+.TP
+Tiberian Sun (*.vxl)
+.TP
+AceOfSpades (*.vxl)
+.TP
+Qubicle Exchange (*.qef)
+.TP
+Chronovox (*.csm)
+.TP
+Nicks Voxel Model (*.nvm)
+
+.SH HOMEPAGE
+https://github.com/mgerhardy/engine
+
+.SH COPYRIGHT
+Copyright \[co] 2015\-2022 by Martin Gerhardy.
+
+.SH BUGS
+If you find a bug, please report it at https://github.com/mgerhardy/engine/issues
