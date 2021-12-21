@@ -256,6 +256,11 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
 		return false;
 	}
 
+	if (!filePtr->validHandle()) {
+		Log::error("Failed to save model - no valid file given");
+		return false;
+	}
+
 	io::FileStream stream(filePtr.get());
 	const core::String& ext = filePtr->extension();
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {

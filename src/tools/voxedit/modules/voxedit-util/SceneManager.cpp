@@ -109,6 +109,10 @@ bool SceneManager::importPalette(const core::String& file) {
 	const io::FilesystemPtr& fs = io::filesystem();
 	if (!paletteLoaded) {
 		const io::FilePtr& palFile = fs->open(file);
+		if (!palFile->validHandle()) {
+			Log::warn("Failed to load palette from %s", file.c_str());
+			return false;
+		}
 		io::FileStream stream(palFile);
 		if (voxelformat::loadPalette(file, stream, buf) <= 0) {
 			Log::warn("Failed to load palette from %s", file.c_str());
@@ -291,7 +295,7 @@ bool SceneManager::prefab(const core::String& file) {
 		return false;
 	}
 	const io::FilePtr& filePtr = io::filesystem()->open(file);
-	if (!(bool)filePtr) {
+	if (!filePtr->validHandle()) {
 		Log::error("Failed to open model file %s", file.c_str());
 		return false;
 	}
@@ -311,7 +315,7 @@ bool SceneManager::load(const core::String& file) {
 		return false;
 	}
 	const io::FilePtr& filePtr = io::filesystem()->open(file);
-	if (!(bool)filePtr) {
+	if (!filePtr->validHandle()) {
 		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
 	}
