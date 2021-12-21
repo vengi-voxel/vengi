@@ -266,7 +266,7 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
 		if (ext == desc->ext) {
 			core::SharedPtr<voxel::Format> f = getFormat(desc, 0u);
-			if (f && f->saveGroups(volumes, filePtr->fileName(), stream)) {
+			if (f && f->saveGroups(volumes, filePtr->name(), stream)) {
 				return true;
 			}
 		}
@@ -277,7 +277,7 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
 	}
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	voxel::QBFormat qbFormat;
-	return qbFormat.saveGroups(volumes, filePtr->fileName(), stream);
+	return qbFormat.saveGroups(volumes, filePtr->name(), stream);
 }
 
 void clearVolumes(voxel::VoxelVolumes& volumes) {
