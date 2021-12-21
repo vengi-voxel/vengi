@@ -1,6 +1,6 @@
 .\" This man page was written by Martin Gerhardy in August 2019. It is provided
 .\" under the GNU General Public License 3 or (at your option) any later version.
-.TH @COMMANDLINE@ 14 "August 2019" "@COMMANDLINE@" "games"
+.TH @COMMANDLINE@ "6" "August 2019" "@COMMANDLINE@"
 .SH NAME
 @COMMANDLINE@ \- server application for vengi
 
@@ -41,3 +41,6 @@ https://github.com/mgerhardy/engine
 
 .SH COPYRIGHT
 Copyright \[co] 2015\-2022 by Martin Gerhardy.
+
+.SH BUGS
+If you find a bug, please report it at https://github.com/mgerhardy/engine/issues

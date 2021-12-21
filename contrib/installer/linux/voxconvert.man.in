@@ -1,8 +1,8 @@
 .\" This man page was written by Martin Gerhardy in May 2020. It is provided
 .\" under the GNU General Public License 3 or (at your option) any later version.
-.TH @COMMANDLINE@ 14 "May 2020" "@COMMANDLINE@" "games"
+.TH @COMMANDLINE@ "1" "May 2020" "@COMMANDLINE@"
 .SH NAME
-@COMMANDLINE@ \- convert voxel volume formats or export as mesh
+@COMMANDLINE@ \- convert, export or modify voxel volumes
 
 .SH SYNOPSIS
 .PP
@@ -15,8 +15,20 @@ binvox and others. It can also export to mesh formats like obj and ply with a nu
 of options.
 .SH OPTIONS
 .TP
-\fB\--trace|--debug|--info\fR
-Enable trace, debug or info logging
+\fB\--export-palette\fR
+Export the used palette data into an image. Use in combination with --src-palette.
+
+.TP
+\fB\--filter\fR
+Layer filter. For example '1-4,6'.
+
+.TP
+\fB\--force|-f\fR
+Overwrite existing files.
+
+.TP
+\fB\--input|-i\fR
+Allow to specify input files.
 
 .TP
 \fB\--merge|-m\fR
@@ -25,8 +37,36 @@ those formats this is an explicit parameter. If you are going to export to a mes
 format like wavefront obj, this option changes the behaviour of the exporter, too.
 
 .TP
+\fB\--mirror\fR
+Mirror by the given axis (x, y or z).
+
+.TP
+\fB\--output|-o\fR
+Allow to specify the output file.
+
+.TP
+\fB\--rotate\fR
+Rotate by 90 degree at the given axis (x, y or z).
+
+.TP
 \fB\--scale|-s\fR
 Save the target volume with a down-sampled version of the input volume.
+
+.TP
+\fB\--script\fR
+Apply the given lua script to the output volume.
+
+.TP
+\fB\--src-palette|-p\fR
+Keep the source palette and don't perform quantization.
+
+.TP
+\fB\--translate|-t\fR
+Translate the volumes by x (right), y (up), z (back).
+
+.TP
+\fB\--help\fR
+Print usage information with a a full list of cvars
 
 .TP
 \fB\-set <varname> <value>\fR
@@ -35,15 +75,159 @@ going to use a different palette for importing and exporting the voxels. It shou
 have the dimensions 1x256.
 
 .TP
+\fB\--trace|--debug|--info\fR
+Enable trace, debug or info logging
+
+.TP
 \fB\--version|-v\fR
 Print the version of the application.
 
+.SH LOAD
 .TP
-\fB\--help\fR
-Print usage information with a a full list of cvars
+Qubicle Binary (*.qb)
+.TP
+MagicaVoxel (*.vox)
+.TP
+Qubicle Binary Tree (*.qbt)
+.TP
+Qubicle Project (*.qbcl)
+.TP
+Sandbox VoxEdit Model (*.vxm)
+.TP
+Sandbox VoxEdit Hierarquie (*.vxr)
+.TP
+BinVox (*.binvox)
+.TP
+Goxel (*.gox)
+.TP
+CubeWorld (*.cub)
+.TP
+Sproxel csv (*.csv)
+.TP
+Build engine (*.kvx)
+.TP
+Ace of Spades (*.kv6)
+.TP
+Tiberian Sun (*.vxl)
+.TP
+AceOfSpades (*.vxl)
+.TP
+Qubicle Exchange (*.qef)
+.TP
+Chronovox (*.csm)
+.TP
+Nicks Voxel Model (*.nvm)
+
+.SH SAVE
+.TP
+Qubicle Binary (*.qb)
+.TP
+MagicaVoxel (*.vox)
+.TP
+Qubicle Binary Tree (*.qbt)
+.TP
+Sandbox VoxEdit Model (*.vxm)
+.TP
+Sandbox VoxEdit Hierarquie (*.vxr)
+.TP
+BinVox (*.binvox)
+.TP
+Goxel (*.gox)
+.TP
+Sproxel csv (*.csv)
+.TP
+CubeWorld (*.cub)
+.TP
+Tiberian Sun (*.vxl)
+.TP
+Qubicle Exchange (*.qef)
+.TP
+WaveFront OBJ (*.obj)
+.TP
+Polygon File Format (*.ply)
+.TP
+Wavefront Object (*.obj)
+.TP
+Polygon File Format (*.ply)
+
+.SH EXAMPLES
+
+.SS Level of detail (LOD)
+Generate a lod scaled by 50% from the input model:
+
+\fB@NAME@ -s --input infile.vox output.vox\fP
+
+.SS Merge several models
+Merge several models into one:
+
+\fB@NAME@ --input one.vox --input two.vox --output onetwo.vox\fP
+
+.SS Generate from heightmap
+Just specify the heightmap as input file like this:
+
+\fB@NAME@ --input heightmap.png --output outfile.vox\fP
+
+.SS Translate the voxels
+You can translate the voxels in the world like this:
+
+\fB@NAME@ --translate 0:10:0 --input heightmap.png --output outfile.vox\fP
+
+This would move the voxels 10 units upwards. But keep in mind that not every format supports to store a translation offset.
+
+.SS Execute lua script
+Use the \fB--script\fP parameter:
+
+\fB@NAME@ --script "cover 2" --input infile.vox --output outfile.vox\fP
+
+This is executing the script in \fB./scripts/cover.lua\fP with a parameter of \fB2\fP.
+
+\fB@NAME@ --script "./scripts/cover.lua 2" --input infile.vox --output outfile.vox\fP
+
+This is doing exactly the same as above - just with a full path.
+
+The scripting docs are available at https://mgerhardy.github.io/engine/LUAScript/.
+
+.SS Extract palette png
+Saves the png in the same dir as the vox file:
+
+\fB@NAME@ --src-palette --export-palette --input infile.vox --output outfile.vox\fP
+
+There will be an \fBinfile.png\fP now.
+
+.SS Extract single layers
+Extract just a few layers from the input file.
+
+\fB@NAME@ --filter 1-2,4 --input infile.vox --output outfile.vox\fP
+
+This will export layers 1, 2 and 4.
+
+.SS Convert to mesh
+You can export your volume model into a obj or ply.
+
+\fB@NAME@ --input infile.vox --output outfile.obj\fP
+
+Config vars to control the meshing:
+
+.PP
+\fBvoxformat_ambientocclusion\fP: Don't export extra quads for ambient occlusion voxels
+.PP
+\fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
+.PP
+\fBvoxformat_reusevertices\fP: Reuse vertices or always create new ones
+.PP
+\fBvoxformat_scale\fP: Scale the vertices by the given factor
+.PP
+\fBvoxformat_quads\fP: Export to quads
+.PP
+\fBvoxformat_withcolor\fP: Export vertex colors
+.PP
+\fBvoxformat_withtexcoords\fP: Export texture coordinates
 
 .SH HOMEPAGE
 https://github.com/mgerhardy/engine
 
 .SH COPYRIGHT
 Copyright \[co] 2015\-2022 by Martin Gerhardy.
+
+.SH BUGS
+If you find a bug, please report it at https://github.com/mgerhardy/engine/issues

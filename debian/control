@@ -31,21 +31,40 @@ Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Recommends: vengi-thumbnailer
 Description: Voxel editor
- Load voxel formats for several volumes.
- Supported formats for loading are:
-  Magicvoxel vox
-  Qubicle qbt, qef and qb
-  Sandbox VoxEdit vxm and vxr
-  binvox
-  CubeWorld cub
-  Build engine kvx
-  SLAB6 kv6
-  Command and Conquer vxl
-  Ace Of Spades vxl
-  Chronovox-Studio csm
-  Nick's Voxel Model nvm
- Supported formats for saving are:
-  vox,qbt,qb,binvox,cub,vxl,qef,obj,ply
+ Load support:
+  Qubicle Binary (*.qb)
+  MagicaVoxel (*.vox)
+  Qubicle Binary Tree (*.qbt)
+  Qubicle Project (*.qbcl)
+  Sandbox VoxEdit Model (*.vxm)
+  Sandbox VoxEdit Hierarquie (*.vxr)
+  BinVox (*.binvox)
+  Goxel (*.gox)
+  CubeWorld (*.cub)
+  Sproxel csv (*.csv)
+  Build engine (*.kvx)
+  Ace of Spades (*.kv6)
+  Tiberian Sun (*.vxl)
+  AceOfSpades (*.vxl)
+  Qubicle Exchange (*.qef)
+  Chronovox (*.csm)
+  Nicks Voxel Model (*.nvm)
+ Save support:
+  Qubicle Binary (*.qb)
+  MagicaVoxel (*.vox)
+  Qubicle Binary Tree (*.qbt)
+  Sandbox VoxEdit Model (*.vxm)
+  Sandbox VoxEdit Hierarquie (*.vxr)
+  BinVox (*.binvox)
+  Goxel (*.gox)
+  Sproxel csv (*.csv)
+  CubeWorld (*.cub)
+  Tiberian Sun (*.vxl)
+  Qubicle Exchange (*.qef)
+  WaveFront OBJ (*.obj)
+  Polygon File Format (*.ply)
+  Wavefront Object (*.obj)
+  Polygon File Format (*.ply)
 
 Package: vengi-thumbnailer
 Architecture: any
@@ -53,36 +72,62 @@ Multi-Arch: foreign
 Recommends: vengi-voxedit
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Thumbnailer for voxel models
- Supported formats are:
-  Magicvoxel vox
-  Qubicle qbt, qef and qb
-  Sandbox VoxEdit vxm and vxr
-  binvox
-  CubeWorld cub
-  Build engine kvx
-  SLAB6 kv6
-  Command and Conquer vxl
-  Ace Of Spades vxl
-  Chronovox-Studio csm
-  Nick's Voxel Model nvm
+ Load support:
+  Qubicle Binary (*.qb)
+  MagicaVoxel (*.vox)
+  Qubicle Binary Tree (*.qbt)
+  Qubicle Project (*.qbcl)
+  Sandbox VoxEdit Model (*.vxm)
+  Sandbox VoxEdit Hierarquie (*.vxr)
+  BinVox (*.binvox)
+  Goxel (*.gox)
+  CubeWorld (*.cub)
+  Sproxel csv (*.csv)
+  Build engine (*.kvx)
+  Ace of Spades (*.kv6)
+  Tiberian Sun (*.vxl)
+  AceOfSpades (*.vxl)
+  Qubicle Exchange (*.qef)
+  Chronovox (*.csm)
+  Nicks Voxel Model (*.nvm)
 
 Package: vengi-voxconvert
 Architecture: any
 Multi-Arch: foreign
 Recommends: vengi-voxedit, vengi-thumbnailer
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
-Description: Converter for voxel models
- Supported formats are:
-  Magicvoxel vox
-  Qubicle qbt, qef and qb
-  Sandbox VoxEdit vxm and vxr
-  binvox
-  CubeWorld cub
-  Build engine kvx
-  SLAB6 kv6
-  Command and Conquer vxl
-  Ace Of Spades vxl
-  Chronovox-Studio csm
-  Nick's Voxel Model nvm
- Supported formats for saving are:
-  vox,qbt,qb,binvox,cub,vxl,qef,obj,ply
+Description: Convert, export or modify voxel volumes
+ Load support:
+  Qubicle Binary (*.qb)
+  MagicaVoxel (*.vox)
+  Qubicle Binary Tree (*.qbt)
+  Qubicle Project (*.qbcl)
+  Sandbox VoxEdit Model (*.vxm)
+  Sandbox VoxEdit Hierarquie (*.vxr)
+  BinVox (*.binvox)
+  Goxel (*.gox)
+  CubeWorld (*.cub)
+  Sproxel csv (*.csv)
+  Build engine (*.kvx)
+  Ace of Spades (*.kv6)
+  Tiberian Sun (*.vxl)
+  AceOfSpades (*.vxl)
+  Qubicle Exchange (*.qef)
+  Chronovox (*.csm)
+  Nicks Voxel Model (*.nvm)
+ Save support:
+  Qubicle Binary (*.qb)
+  MagicaVoxel (*.vox)
+  Qubicle Binary Tree (*.qbt)
+  Sandbox VoxEdit Model (*.vxm)
+  Sandbox VoxEdit Hierarquie (*.vxr)
+  BinVox (*.binvox)
+  Goxel (*.gox)
+  Sproxel csv (*.csv)
+  CubeWorld (*.cub)
+  Tiberian Sun (*.vxl)
+  Qubicle Exchange (*.qef)
+  WaveFront OBJ (*.obj)
+  Polygon File Format (*.ply)
+  Wavefront Object (*.obj)
+  Polygon File Format (*.ply)
