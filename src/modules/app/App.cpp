@@ -163,7 +163,9 @@ void App::onFrame() {
 		}
 		case AppState::InitFailure: {
 			core_trace_scoped(AppOnCleanup);
-			_exitCode = 1;
+			if (_exitCode == 0) {
+				_exitCode = 1;
+			}
 			_nextState = onCleanup();
 			break;
 		}
