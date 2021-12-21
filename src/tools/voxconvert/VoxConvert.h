@@ -27,6 +27,8 @@ protected:
 	void usage() const override;
 	void mirror(const core::String& axisStr, voxel::VoxelVolumes& volumes);
 	void rotate(const core::String& axisStr, voxel::VoxelVolumes& volumes);
+	void scale(voxel::VoxelVolumes& volumes);
+	void script(const core::String &scriptParameters, voxel::VoxelVolumes& volumes);
 	void translate(const glm::ivec3& pos, voxel::VoxelVolumes& volumes);
 	void filterVolumes(voxel::VoxelVolumes& volumes);
 public:

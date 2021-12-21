@@ -128,6 +128,9 @@ app::AppState VoxConvert::onInit() {
 
 	const bool mergeVolumes = hasArg("--merge");
 	const bool scaleVolumes = hasArg("--scale");
+	const bool mirrorVolumes = hasArg("--mirror");
+	const bool rotateVolumes = hasArg("--rotate");
+	const bool translateVolumes = hasArg("--translate");
 	const bool srcPalette = hasArg("--src-palette");
 	const bool exportPalette = hasArg("--export-palette");
 
@@ -151,6 +154,9 @@ app::AppState VoxConvert::onInit() {
 	}
 	Log::info("* merge volumes:                 - %s", (mergeVolumes ? "true" : "false"));
 	Log::info("* scale volumes:                 - %s", (scaleVolumes ? "true" : "false"));
+	Log::info("* mirror volumes:                - %s", (mirrorVolumes ? "true" : "false"));
+	Log::info("* translate volumes:             - %s", (translateVolumes ? "true" : "false"));
+	Log::info("* rotate volumes:                - %s", (rotateVolumes ? "true" : "false"));
 	Log::info("* use source file palette:       - %s", (srcPalette ? "true" : "false"));
 	Log::info("* export used palette as image:  - %s", (exportPalette ? "true" : "false"));
 
@@ -230,79 +236,41 @@ app::AppState VoxConvert::onInit() {
 		}
 
 		filterVolumes(volumes);
-
-		if (mergeVolumes) {
-			Log::info("Merge layers");
-			voxel::RawVolume* merged = volumes.merge();
-			if (merged == nullptr) {
-				Log::error("Failed to merge volumes");
-				return app::AppState::InitFailure;
-			}
-			voxelformat::clearVolumes(volumes);
-			volumes.push_back(voxel::VoxelVolume(merged));
-		}
-
-		if (scaleVolumes) {
-			Log::info("Scale layers");
-			for (auto& v : volumes) {
-				const voxel::Region srcRegion = v.volume->region();
-				const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
-				const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
-				if (destRegion.isValid()) {
-					voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-					rescaleVolume(*v.volume, *destVolume);
-					delete v.volume;
-					v.volume = destVolume;
-				}
-			}
-		}
 	}
 
-	if (!scriptParameters.empty()) {
-		voxelgenerator::LUAGenerator script;
-		if (!script.init()) {
-			Log::warn("Failed to initialize the script bindings");
-		} else {
-			core::DynamicArray<core::String> tokens;
-			core::string::splitString(scriptParameters, tokens);
-			const core::String &luaScript = script.load(tokens[0]);
-			if (luaScript.empty()) {
-				Log::error("Failed to load %s", tokens[0].c_str());
-			} else {
-				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-				core::DynamicArray<voxelgenerator::LUAParameterDescription> argsInfo;
-				if (!script.argumentInfo(luaScript, argsInfo)) {
-					Log::warn("Failed to get argument details");
-				}
-				core::DynamicArray<core::String> args(tokens.size() - 1);
-				for (size_t i = 1; i < tokens.size(); ++i) {
-					args[i - 1] = tokens[i];
-				}
-				Log::info("Execute script %s", tokens[0].c_str());
-				for (auto& v : volumes) {
-					voxel::RawVolumeWrapper wrapper(v.volume);
-					script.exec(luaScript, &wrapper, wrapper.region(), voxel, args);
-				}
-			}
+	if (mergeVolumes) {
+		Log::info("Merge layers");
+		voxel::RawVolume* merged = volumes.merge();
+		if (merged == nullptr) {
+			Log::error("Failed to merge volumes");
+			return app::AppState::InitFailure;
 		}
-
-		script.shutdown();
+		voxelformat::clearVolumes(volumes);
+		volumes.push_back(voxel::VoxelVolume(merged));
 	}
 
-	if (hasArg("--mirror")) {
+	if (scaleVolumes) {
+		scale(volumes);
+	}
+
+	if (mirrorVolumes) {
 		mirror(getArgVal("--mirror"), volumes);
 	}
 
-	if (hasArg("--rotate")) {
+	if (rotateVolumes) {
 		rotate(getArgVal("--rotate"), volumes);
 	}
 
-	if (hasArg("--translate")) {
+	if (translateVolumes) {
 		const core::String &arguments = getArgVal("--translate");
 		glm::ivec3 t(0);
 		if (SDL_sscanf(arguments.c_str(), "%i:%i:%i", &t.x, &t.y, &t.z) >= 1) {
 			translate(t, volumes);
 		}
+	}
+
+	if (!scriptParameters.empty()) {
+		script(scriptParameters, volumes);
 	}
 
 	Log::debug("Save");
@@ -316,6 +284,52 @@ app::AppState VoxConvert::onInit() {
 	voxelformat::clearVolumes(volumes);
 
 	return state;
+}
+
+void VoxConvert::script(const core::String &scriptParameters, voxel::VoxelVolumes& volumes) {
+	voxelgenerator::LUAGenerator script;
+	if (!script.init()) {
+		Log::warn("Failed to initialize the script bindings");
+	} else {
+		core::DynamicArray<core::String> tokens;
+		core::string::splitString(scriptParameters, tokens);
+		const core::String &luaScript = script.load(tokens[0]);
+		if (luaScript.empty()) {
+			Log::error("Failed to load %s", tokens[0].c_str());
+		} else {
+			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+			core::DynamicArray<voxelgenerator::LUAParameterDescription> argsInfo;
+			if (!script.argumentInfo(luaScript, argsInfo)) {
+				Log::warn("Failed to get argument details");
+			}
+			core::DynamicArray<core::String> args(tokens.size() - 1);
+			for (size_t i = 1; i < tokens.size(); ++i) {
+				args[i - 1] = tokens[i];
+			}
+			Log::info("Execute script %s", tokens[0].c_str());
+			for (auto& v : volumes) {
+				voxel::RawVolumeWrapper wrapper(v.volume);
+				script.exec(luaScript, &wrapper, wrapper.region(), voxel, args);
+			}
+		}
+	}
+
+	script.shutdown();
+}
+
+void VoxConvert::scale(voxel::VoxelVolumes& volumes) {
+	Log::info("Scale layers");
+	for (auto& v : volumes) {
+		const voxel::Region srcRegion = v.volume->region();
+		const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
+		if (destRegion.isValid()) {
+			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
+			rescaleVolume(*v.volume, *destVolume);
+			delete v.volume;
+			v.volume = destVolume;
+		}
+	}
 }
 
 void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {

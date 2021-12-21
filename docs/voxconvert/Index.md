@@ -34,6 +34,16 @@ This is e.g. `nippon`. The tool will then try to look up the file `palette-nippo
 You can convert to a different palette with this command. The closest possible color will be chosen for each
 color from the source file palette to the specified palette.
 
+### The order of execution is:
+
+* filter
+* merge
+* scale
+* mirror
+* rotate
+* translate
+* script
+
 ## Level of detail (LOD)
 
 Generate a lod scaled by 50% from the input model.
