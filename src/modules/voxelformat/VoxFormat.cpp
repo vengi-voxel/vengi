@@ -539,7 +539,7 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 			}
 		}
 	}
-	Log::info("Loaded layer %i with %i voxels (%i)", state._volumeIdx, numVoxels, volumeVoxelSet);
+	Log::debug("Loaded layer %i with %i voxels (%i)", state._volumeIdx, numVoxels, volumeVoxelSet);
 	if (volumes[state._volumeIdx].volume != nullptr) {
 		delete volumes[state._volumeIdx].volume;
 	}
