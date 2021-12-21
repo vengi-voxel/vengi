@@ -9,6 +9,7 @@ General:
    - Fixed magicavoxel vox file saving
    - Added support for old magicavoxel (pre RIFF) format
    - Fixed bugs in binvox support
+   - Fixed save dir for vxm files when saving vxr
 
 VoxConvert:
 
