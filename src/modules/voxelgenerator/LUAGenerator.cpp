@@ -64,6 +64,15 @@ static int luaVoxel_volumewrapper_region(lua_State* s) {
 	return LUAGenerator::luaVoxel_pushregion(s, &volume->region());
 }
 
+static int luaVoxel_volumewrapper_translate(lua_State* s) {
+	const voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_optinteger(s, 3, 0);
+	const int z = (int)luaL_optinteger(s, 4, 0);
+	volume->volume()->translate(glm::ivec3(x, y, z));
+	return 0;
+}
+
 static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 	voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	const int x = (int)luaL_checkinteger(s, 2);
@@ -288,6 +297,7 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg volumeFuncs[] = {
 		{"voxel", luaVoxel_volumewrapper_voxel},
 		{"region", luaVoxel_volumewrapper_region},
+		{"translate", luaVoxel_volumewrapper_translate},
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel},
 		{nullptr, nullptr}
 	};

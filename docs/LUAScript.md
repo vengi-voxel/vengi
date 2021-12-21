@@ -149,6 +149,8 @@ The functions are:
 
 * `region()`: Return the region of the volume.
 
+* `translate(x, [y, z])`: Translates the region of the volume. Keep in mind that this is not supported by every output format.
+
 * `setVoxel(x, y, z, color)`: Set the given color at the given coordinates in the volume. `color` must be in the range `[0-255]`.
 
 ## Vectors
