@@ -52,7 +52,7 @@ Generate a lod scaled by 50% from the input model.
 
 ## Merge several models
 
-Merge several models into one
+Merge several models into one:
 
 `./vengi-voxconvert --input one.vox --input two.vox --output onetwo.vox`
 
@@ -87,7 +87,7 @@ See the [scripting](../LUAScript.md) documentation for further details.
 
 ## Extract palette png
 
-Saves the png in the same dir as the vox file
+Saves the png in the same dir as the vox file:
 
 `./vengi-voxconvert --src-palette --export-palette --input infile.vox --output outfile.vox`
 
