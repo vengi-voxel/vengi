@@ -20,6 +20,7 @@ Convert voxel volume formats between each other or export to obj or ply.
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
 * `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
 * `--src-palette`: will use the included palette and doesn't perform any quantization to the default palette
+* `--translate <x:y:z>`: translates the volumes by x (right), y (up), z (back)
 
 Just type `vengi-voxconvert` to get a full list of commands and options.
 

@@ -14,6 +14,7 @@ VoxConvert:
 
    - Fixed `--force` handling for target files
    - Allow to operate on multiple input files
+   - Added `--translate` command line option
 
 ## 0.0.15 (2021-12-18)
 

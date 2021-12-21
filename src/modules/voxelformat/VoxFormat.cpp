@@ -266,7 +266,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	reset();
 
 	VoxScopedHeader scoped(stream);
-	wrapBool(saveChunk_PACK(state,stream, volumes))
+	wrapBool(saveChunk_PACK(state, stream, volumes))
 	int modelId = 0;
 	for (auto& v : volumes) {
 		if (skipSaving(v)) {

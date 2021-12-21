@@ -47,6 +47,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
 	registerArg("--src-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
+	registerArg("--translate").setShort("-t").setDescription("Translate the volumes by x (right), y (up), z (back)");
 
 	_mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST);
 	_mergeQuads->setHelp("Merge similar quads to optimize the mesh");
@@ -296,6 +297,14 @@ app::AppState VoxConvert::onInit() {
 		rotate(getArgVal("--rotate"), volumes);
 	}
 
+	if (hasArg("--translate")) {
+		const core::String &arguments = getArgVal("--translate");
+		glm::ivec3 t(0);
+		if (SDL_sscanf(arguments.c_str(), "%i:%i:%i", &t.x, &t.y, &t.z) >= 1) {
+			translate(t, volumes);
+		}
+	}
+
 	Log::debug("Save");
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
 		voxelformat::clearVolumes(volumes);
@@ -398,6 +407,16 @@ void VoxConvert::rotate(const core::String& axisStr, voxel::VoxelVolumes& volume
 		}
 		v.volume = voxel::rotateAxis(old, axis);
 		delete old;
+	}
+}
+
+void VoxConvert::translate(const glm::ivec3& pos, voxel::VoxelVolumes& volumes) {
+	Log::info("Translate by %i:%i:%i", pos.x, pos.y, pos.z);
+	for (voxel::VoxelVolume &v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		v.volume->translate(pos);
 	}
 }
 
