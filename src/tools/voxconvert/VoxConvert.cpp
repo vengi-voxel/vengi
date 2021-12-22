@@ -359,7 +359,7 @@ void VoxConvert::scale(voxel::VoxelVolumes& volumes) {
 		if (destRegion.isValid()) {
 			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
 			rescaleVolume(*v.volume, *destVolume);
-			delete v.volume;
+			v.release();
 			v.volume = destVolume;
 		}
 	}
