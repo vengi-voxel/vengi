@@ -59,7 +59,41 @@ void Format::splitVolumes(const VoxelVolumes& srcVolumes, VoxelVolumes& destVolu
 		}
 		split(destVolumes, v, maxSize);
 		delete v.volume;
+		v.volume = nullptr;
 	}
+}
+
+bool Format::isEmptyBlock(const voxel::RawVolume *v, const glm::ivec3 &maxSize, int x, int y, int z) const {
+	const voxel::Region region(x, y, z, x + maxSize.x - 1, y + maxSize.y - 1, z + maxSize.z - 1);
+	voxel::RawVolume::Sampler sampler(v);
+	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += 1) {
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += 1) {
+			sampler.setPosition(x, y, region.getLowerZ());
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += 1) {
+				if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+					return false;
+				}
+				sampler.movePositiveZ();
+			}
+		}
+	}
+	return true;
+}
+
+void Format::calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const {
+	const glm::ivec3 &lower = region.getLowerCorner();
+	mins[0] = lower[0] & ~(maxSize.x - 1);
+	mins[1] = lower[1] & ~(maxSize.y - 1);
+	mins[2] = lower[2] & ~(maxSize.z - 1);
+
+	const glm::ivec3 &upper = region.getUpperCorner();
+	maxs[0] = (upper[0] & ~(maxSize.x - 1)) + maxSize.x - 1;
+	maxs[1] = (upper[1] & ~(maxSize.y - 1)) + maxSize.y - 1;
+	maxs[2] = (upper[2] & ~(maxSize.z - 1)) + maxSize.z - 1;
+
+	Log::debug("%s", region.toString().c_str());
+	Log::debug("mins(%i:%i:%i)", mins.x, mins.y, mins.z);
+	Log::debug("maxs(%i:%i:%i)", maxs.x, maxs.y, maxs.z);
 }
 
 void Format::split(VoxelVolumes& destVolumes, const VoxelVolume &v, const glm::ivec3& maxSize) {

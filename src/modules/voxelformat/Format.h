@@ -35,6 +35,8 @@ protected:
 	 */
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
 	RawVolume* merge(const VoxelVolumes& volumes) const;
+	bool isEmptyBlock(const voxel::RawVolume *v, const glm::ivec3 &maxSize, int x, int y, int z) const;
+	void calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const;
 	void split(VoxelVolumes& destVolumes, const VoxelVolume &v, const glm::ivec3& maxSize);
 	/**
 	 * @brief Split volumes according to their max size into several smaller volumes

@@ -112,9 +112,6 @@ private:
 	bool saveChunk_MATE(io::SeekableWriteStream &stream);
 	// Write all the layers.
 	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const VoxelVolumes &volumes, int numBlocks);
-
-	bool isEmptyBlock(const voxel::RawVolume *v, int x, int y, int z) const;
-	void calcMinsMaxs(const voxel::Region& region, glm::ivec3 &mins, glm::ivec3 &maxs) const;
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) override;
 	bool saveGroups(const VoxelVolumes &volumes, const core::String &filename,

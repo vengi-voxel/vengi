@@ -75,22 +75,6 @@ public:
 	}
 };
 
-void GoxFormat::calcMinsMaxs(const voxel::Region& region, glm::ivec3 &mins, glm::ivec3 &maxs) const {
-	const glm::ivec3 &lower = region.getLowerCorner();
-	mins[0] = lower[0] & ~(BlockSize - 1);
-	mins[1] = lower[1] & ~(BlockSize - 1);
-	mins[2] = lower[2] & ~(BlockSize - 1);
-
-	const glm::ivec3 &upper = region.getUpperCorner();
-	maxs[0] = (upper[0] & ~(BlockSize - 1)) + BlockSize - 1;
-	maxs[1] = (upper[1] & ~(BlockSize - 1)) + BlockSize - 1;
-	maxs[2] = (upper[2] & ~(BlockSize - 1)) + BlockSize - 1;
-
-	Log::debug("%s", region.toString().c_str());
-	Log::debug("mins(%i:%i:%i)", mins.x, mins.y, mins.z);
-	Log::debug("maxs(%i:%i:%i)", maxs.x, maxs.y, maxs.z);
-}
-
 bool GoxFormat::loadChunk_Header(GoxChunk &c, io::SeekableReadStream &stream) {
 	if (stream.eos()) {
 		return false;
@@ -440,23 +424,6 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream) {
 	return true;
 }
 
-bool GoxFormat::isEmptyBlock(const voxel::RawVolume *v, int x, int y, int z) const {
-	const voxel::Region region(x, y, z, x + BlockSize - 1, y + BlockSize - 1, z + BlockSize - 1);
-	voxel::RawVolume::Sampler sampler(v);
-	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += 1) {
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += 1) {
-			sampler.setPosition(x, y, region.getLowerZ());
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += 1) {
-				if (voxel::isBlocked(sampler.voxel().getMaterial())) {
-					return false;
-				}
-				sampler.movePositiveZ();
-			}
-		}
-	}
-	return true;
-}
-
 bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolumes &volumes, int numBlocks) {
 	int blockUid = 0;
 	int layerId = 0;
@@ -466,12 +433,12 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolum
 		}
 		const voxel::Region &region = v.volume->region();
 		glm::ivec3 mins, maxs;
-		calcMinsMaxs(region, mins, maxs);
+		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
 
 		GoxScopedChunkWriter scoped(stream, FourCC('L', 'A', 'Y', 'R'));
 		int layerBlocks = 0;
 		voxelutil::visitVolume(*v.volume, voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize, [&] (int x, int y, int z, const voxel::Voxel &) {
-			if (isEmptyBlock(v.volume, x, y, z)) {
+			if (isEmptyBlock(v.volume, glm::ivec3(BlockSize), x, y, z)) {
 				return;
 			}
 			++layerBlocks;
@@ -484,7 +451,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolum
 		for (int y = mins.y; y <= maxs.y; y += BlockSize) {
 			for (int z = mins.z; z <= maxs.z; z += BlockSize) {
 				for (int x = mins.x; x <= maxs.x; x += BlockSize) {
-					if (isEmptyBlock(v.volume, x, y, z)) {
+					if (isEmptyBlock(v.volume, glm::ivec3(BlockSize), x, y, z)) {
 						continue;
 					}
 					Log::debug("Saved LAYR chunk %i at %i:%i:%i", blockUid, x, y, z);
@@ -529,14 +496,14 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const VoxelVolum
 		}
 		const voxel::Region &region = v.volume->region();
 		glm::ivec3 mins, maxs;
-		calcMinsMaxs(region, mins, maxs);
+		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
 
 		// TODO: fix this properly - without mirroring
 		voxel::RawVolume *mirrored = voxel::mirrorAxis(v.volume, math::Axis::Z);
 		for (int by = mins.y; by <= maxs.y; by += BlockSize) {
 			for (int bz = mins.z; bz <= maxs.z; bz += BlockSize) {
 				for (int bx = mins.x; bx <= maxs.x; bx += BlockSize) {
-					if (isEmptyBlock(mirrored, bx, by, bz)) {
+					if (isEmptyBlock(mirrored, glm::ivec3(BlockSize), bx, by, bz)) {
 						continue;
 					}
 					GoxScopedChunkWriter scoped(stream, FourCC('B', 'L', '1', '6'));
