@@ -18,6 +18,8 @@ namespace voxel {
 /**
  * @brief MagicaVoxel vox format load and save functions
  *
+ * z is pointing upwards
+ *
  * https://github.com/ephtracy/voxel-model.git
  * https://ephtracy.github.io/
  */

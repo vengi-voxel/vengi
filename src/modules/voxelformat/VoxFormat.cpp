@@ -31,6 +31,24 @@ namespace voxel {
 		return false; \
 	}
 
+/**
+ * @li 0x4c54414d MATL
+ * @li 0x5454414d MATT
+ * @li 0x4b434150 PACK
+ * @li 0x41424752 RGBA
+ * @li 0x5259414c LAYR
+ * @li 0x4a424f72 rOBJ
+ * @li 0x455a4953 SIZE
+ * @li 0x4d414372 rCAM
+ * @li 0x45544f4e NOTE
+ * @li 0x50414d49 IMAP
+ * @li 0x495a5958 XYZI
+ * @li 0x5052476e nGRP
+ * @li 0x4e52546e nTRN
+ * @li 0x5048536e nSHP
+ * @li 0x20584f56 VOX
+ * @li 0x4e49414d MAIN
+ */
 class VoxScopedChunkWriter {
 private:
 	io::SeekableWriteStream& _stream;
