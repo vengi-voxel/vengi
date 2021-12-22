@@ -54,12 +54,10 @@ void Format::splitVolumes(const VoxelVolumes& srcVolumes, VoxelVolumes& destVolu
 		}
 		const voxel::Region& region = v.volume->region();
 		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
-			destVolumes.push_back(core::move(v));
+			destVolumes.push_back({new voxel::RawVolume(v.volume), v.name, v.visible, v.pivot});
 			continue;
 		}
 		split(destVolumes, v, maxSize);
-		delete v.volume;
-		v.volume = nullptr;
 	}
 }
 
