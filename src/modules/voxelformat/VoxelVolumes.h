@@ -24,6 +24,8 @@ struct VoxelVolume {
 	core::String name;
 	bool visible;
 	glm::ivec3 pivot;
+
+	void release();
 };
 
 struct VoxelVolumes {

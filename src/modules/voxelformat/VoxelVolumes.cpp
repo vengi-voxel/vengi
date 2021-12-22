@@ -41,6 +41,11 @@ VoxelVolume &VoxelVolume::operator=(VoxelVolume &&move) noexcept {
 	return *this;
 }
 
+void VoxelVolume::release() {
+	delete volume;
+	volume = nullptr;
+}
+
 VoxelVolumes::~VoxelVolumes() {
 	volumes.clear();
 }
@@ -98,8 +103,8 @@ voxel::RawVolume *VoxelVolumes::merge() const {
 }
 
 void clearVolumes(VoxelVolumes& volumes) {
-	for (auto& v : volumes) {
-		delete v.volume;
+	for (VoxelVolume& v : volumes) {
+		v.release();
 	}
 	volumes.volumes.clear();
 }
