@@ -5,11 +5,13 @@ vengi (0.0.16.0-1) UNRELEASED; urgency=low
   * Added support for old magicavoxel (pre RIFF) format
   * Fixed bugs in binvox support
   * Fixed save dir for vxm files when saving vxr
+  * Save vxm version 5 (with included pivot)
 
   * VoxConvert:
   * Fixed --force handling for target files
   * Allow to operate on multiple input files
   * Added --translate command line option
+  * Added --pivot command line option
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 18 Dec 2021 14:16:59 +0100
 

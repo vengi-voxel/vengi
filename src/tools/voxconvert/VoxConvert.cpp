@@ -41,6 +41,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
 	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file");
+	registerArg("--pivot").setDescription("Change the pivots of the volume layers");
 	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z)");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
@@ -131,6 +132,7 @@ app::AppState VoxConvert::onInit() {
 	const bool translateVolumes = hasArg("--translate");
 	const bool srcPalette = hasArg("--src-palette");
 	const bool exportPalette = hasArg("--export-palette");
+	const bool changePivot = hasArg("--pivot");
 
 	Log::info("Options");
 	if (voxelformat::isMeshFormat(outfile)) {
@@ -152,6 +154,7 @@ app::AppState VoxConvert::onInit() {
 	}
 	Log::info("* merge volumes:                 - %s", (mergeVolumes ? "true" : "false"));
 	Log::info("* scale volumes:                 - %s", (scaleVolumes ? "true" : "false"));
+	Log::info("* change pivot:                  - %s", (changePivot ? "true" : "false"));
 	Log::info("* mirror volumes:                - %s", (mirrorVolumes ? "true" : "false"));
 	Log::info("* translate volumes:             - %s", (translateVolumes ? "true" : "false"));
 	Log::info("* rotate volumes:                - %s", (rotateVolumes ? "true" : "false"));
@@ -271,6 +274,14 @@ app::AppState VoxConvert::onInit() {
 		script(scriptParameters, volumes);
 	}
 
+	if (changePivot) {
+		const core::String &arguments = getArgVal("--pivot");
+		glm::ivec3 t(0);
+		if (SDL_sscanf(arguments.c_str(), "%i:%i:%i", &t.x, &t.y, &t.z) >= 1) {
+			pivot(t, volumes);
+		}
+	}
+
 	Log::debug("Save");
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
 		voxelformat::clearVolumes(volumes);
@@ -282,6 +293,16 @@ app::AppState VoxConvert::onInit() {
 	voxelformat::clearVolumes(volumes);
 
 	return state;
+}
+
+void VoxConvert::pivot(const glm::ivec3& pivot, voxel::VoxelVolumes& volumes) {
+	Log::info("Set pivot to %i:%i:%i", pivot.x, pivot.y, pivot.z);
+	for (auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		v.pivot = pivot;
+	}
 }
 
 void VoxConvert::script(const core::String &scriptParameters, voxel::VoxelVolumes& volumes) {
@@ -318,6 +339,9 @@ void VoxConvert::script(const core::String &scriptParameters, voxel::VoxelVolume
 void VoxConvert::scale(voxel::VoxelVolumes& volumes) {
 	Log::info("Scale layers");
 	for (auto& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
 		const voxel::Region srcRegion = v.volume->region();
 		const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);

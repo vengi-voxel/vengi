@@ -10,12 +10,14 @@ General:
    - Added support for old magicavoxel (pre RIFF) format
    - Fixed bugs in binvox support
    - Fixed save dir for vxm files when saving vxr
+   - Save vxm version 5 (with included pivot)
 
 VoxConvert:
 
    - Fixed `--force` handling for target files
    - Allow to operate on multiple input files
    - Added `--translate` command line option
+   - Added `--pivot` command line option
 
 ## 0.0.15 (2021-12-18)
 

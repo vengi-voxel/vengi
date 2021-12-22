@@ -30,6 +30,7 @@ protected:
 	void scale(voxel::VoxelVolumes& volumes);
 	void script(const core::String &scriptParameters, voxel::VoxelVolumes& volumes);
 	void translate(const glm::ivec3& pos, voxel::VoxelVolumes& volumes);
+	void pivot(const glm::ivec3& pivot, voxel::VoxelVolumes& volumes);
 	void filterVolumes(voxel::VoxelVolumes& volumes);
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

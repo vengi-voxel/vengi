@@ -16,6 +16,7 @@ Convert voxel volume formats between each other or export to obj or ply.
 * `--merge`: will merge a multi layer volume (like vox, qb or qbt) into a single volume of the target file
 * `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis
 * `--output <file>`: allows you to specify the output filename
+* `--pivot <x:y:z>`: change the pivots of the volume layers. Not all voxel formats support this.
 * `--rotate <x|y|z>`: allows you to rotate the volumes by 90 degree at x, y and z axis
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
 * `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
@@ -43,6 +44,7 @@ color from the source file palette to the specified palette.
 * rotate
 * translate
 * script
+* pivot
 
 ## Level of detail (LOD)
 
