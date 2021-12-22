@@ -60,7 +60,12 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 }
 
 bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapBool(stream.writeUInt32(FourCC('V','X','M', '4')));
+	RawVolume* mergedVolume = merge(volumes);
+	wrapBool(stream.writeUInt32(FourCC('V','X','M','5')));
+	const glm::ivec3 &pivot = volumes.volumes.size() == 1 ? volumes.volumes[0].pivot : mergedVolume->region().getCenter();
+	wrapBool(stream.writeFloat(pivot.x));
+	wrapBool(stream.writeFloat(pivot.y));
+	wrapBool(stream.writeFloat(pivot.z));
 	wrapBool(stream.writeUInt32(0)); // texture dim x
 	wrapBool(stream.writeUInt32(0)); // texture dim y
 	wrapBool(stream.writeUInt32(0)); // texamount
@@ -71,7 +76,6 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 
 	const MaterialColorArray& materialColors = getMaterialColors();
 
-	RawVolume* mergedVolume = merge(volumes);
 	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
 	const voxel::Region& region = mergedVolume->region();
 	RawVolume::Sampler sampler(mergedVolume);
