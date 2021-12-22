@@ -165,13 +165,7 @@ bool VoxFormat::saveChunk_SIZE(State& state, io::SeekableWriteStream& stream, co
 }
 
 bool VoxFormat::saveChunk_PACK(State& state, io::SeekableWriteStream& stream, const VoxelVolumes& volumes) {
-	int modelCount = 0;
-	for (auto& v : volumes) {
-		if (skipSaving(v)) {
-			continue;
-		}
-		++modelCount;
-	}
+	const int modelCount = (int)volumes.size();
 	VoxScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
 	wrapBool(stream.writeUInt32(modelCount))
 	++state._chunks;
@@ -279,9 +273,12 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 	return modelCount == modelId;
 }
 
-bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VoxFormat::saveGroups(const VoxelVolumes& volumesIn, const core::String &filename, io::SeekableWriteStream& stream) {
 	State state;
 	reset();
+
+	VoxelVolumes volumes;
+	splitVolumes(volumesIn, volumes, glm::ivec3(256));
 
 	VoxScopedHeader scoped(stream);
 	wrapBool(saveChunk_PACK(state, stream, volumes))

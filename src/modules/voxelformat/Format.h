@@ -35,6 +35,13 @@ protected:
 	 */
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
 	RawVolume* merge(const VoxelVolumes& volumes) const;
+	void split(VoxelVolumes& destVolumes, const VoxelVolume &v, const glm::ivec3& maxSize);
+	/**
+	 * @brief Split volumes according to their max size into several smaller volumes
+	 * Some formats only support small volumes sizes per object - but multiple objects.
+	 */
+	void splitVolumes(const VoxelVolumes& srcVolumes, VoxelVolumes& destVolumes, const glm::ivec3 &maxSize);
+
 public:
 	virtual ~Format() = default;
 

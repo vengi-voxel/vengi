@@ -12,6 +12,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Color.h"
+#include "math/Math.h"
 #include "voxel/Mesh.h"
 #include "voxelformat/VoxelVolumes.h"
 #include <limits>
@@ -43,6 +44,28 @@ uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	//materialColors.erase(materialColors.begin());
 	return core::Color::getClosestMatch(color, materialColors);
+}
+
+void Format::splitVolumes(const VoxelVolumes& srcVolumes, VoxelVolumes& destVolumes, const glm::ivec3 &maxSize) {
+	destVolumes.reserve(srcVolumes.size());
+	for (VoxelVolume &v : srcVolumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		const voxel::Region& region = v.volume->region();
+		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
+			destVolumes.push_back(core::move(v));
+			continue;
+		}
+		split(destVolumes, v, maxSize);
+		delete v.volume;
+	}
+}
+
+void Format::split(VoxelVolumes& destVolumes, const VoxelVolume &v, const glm::ivec3& maxSize) {
+	voxel::RawVolume *copy = new voxel::RawVolume(v.volume);
+	// TODO: perform the split
+	destVolumes.push_back(VoxelVolume{copy, v.name, v.visible});
 }
 
 RawVolume* Format::merge(const VoxelVolumes& volumes) const {
