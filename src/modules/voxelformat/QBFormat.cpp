@@ -56,7 +56,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& vo
 		Log::error("Invalid volume given");
 		return false;
 	}
-	const int nameLength = volume.name.size();
+	const int nameLength = (int)volume.name.size();
 	wrapSave(stream.writeUInt8(nameLength));
 	wrapSave(stream.writeString(volume.name, false));
 
@@ -150,7 +150,7 @@ bool QBFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filen
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.writeUInt32((int)volumes.size()))
-	for (const auto& v : volumes) {
+	for (const VoxelVolume& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}

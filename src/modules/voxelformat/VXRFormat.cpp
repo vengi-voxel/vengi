@@ -60,7 +60,7 @@ bool VXRFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	wrapBool(stream.writeUInt32(FourCC('V','X','R','4')));
 
 	int childCount = 0;
-	for (const auto& v : volumes) {
+	for (const VoxelVolume& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}
@@ -68,7 +68,7 @@ bool VXRFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	}
 	wrapBool(stream.writeInt32(childCount))
 	int n = 0;
-	for (const auto& v : volumes) {
+	for (const VoxelVolume& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}

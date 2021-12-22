@@ -308,7 +308,7 @@ app::AppState VoxConvert::onInit() {
 
 void VoxConvert::pivot(const glm::ivec3& pivot, voxel::VoxelVolumes& volumes) {
 	Log::info("Set pivot to %i:%i:%i", pivot.x, pivot.y, pivot.z);
-	for (auto& v : volumes) {
+	for (voxel::VoxelVolume& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}
@@ -349,7 +349,7 @@ void VoxConvert::script(const core::String &scriptParameters, voxel::VoxelVolume
 
 void VoxConvert::scale(voxel::VoxelVolumes& volumes) {
 	Log::info("Scale layers");
-	for (auto& v : volumes) {
+	for (voxel::VoxelVolume& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}

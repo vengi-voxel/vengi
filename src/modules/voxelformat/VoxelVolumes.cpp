@@ -85,7 +85,7 @@ voxel::RawVolume *VoxelVolumes::merge() const {
 	}
 	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
 	rawVolumes.reserve(volumes.size());
-	for (const auto &v : volumes) {
+	for (const VoxelVolume &v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}

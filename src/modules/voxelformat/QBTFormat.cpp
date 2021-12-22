@@ -157,7 +157,7 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream) const {
 
 bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, bool colorMap) const {
 	int children = 0;
-	for (auto& v : volumes) {
+	for (const VoxelVolume& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}
@@ -176,7 +176,7 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& v
 	wrapSave(stream.writeUInt32(children));
 
 	bool success = true;
-	for (auto& v : volumes) {
+	for (const VoxelVolume& v : volumes) {
 		if (v.volume == nullptr) {
 			continue;
 		}

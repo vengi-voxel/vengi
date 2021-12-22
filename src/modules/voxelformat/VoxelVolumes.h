@@ -20,7 +20,7 @@ struct VoxelVolume {
 	VoxelVolume(VoxelVolume&& move) noexcept;
 	VoxelVolume &operator=(VoxelVolume &&str) noexcept;
 
-	voxel::RawVolume* volume;
+	voxel::RawVolume* volume = nullptr;
 	core::String name;
 	bool visible;
 	glm::ivec3 pivot;

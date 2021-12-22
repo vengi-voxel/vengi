@@ -25,6 +25,13 @@ namespace voxel {
 		return false; \
 	}
 
+#define wrapFree(read, memory) \
+	if ((read) != 0) { \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
+		delete (memory); \
+		return false; \
+	}
+
 #define wrapBool(read) \
 	if (!(read)) { \
 		Log::debug("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
@@ -531,11 +538,11 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 	int volumeVoxelSet = 0;
 	for (uint32_t i = 0; i < numVoxels; ++i) {
 		uint8_t x, y, z, colorIndex;
-		wrap(stream.readUInt8(x))
-		wrap(stream.readUInt8(y))
-		wrap(stream.readUInt8(z))
+		wrapFree(stream.readUInt8(x), volume)
+		wrapFree(stream.readUInt8(y), volume)
+		wrapFree(stream.readUInt8(z), volume)
 		x = size.x - 1 - x;
-		wrap(stream.readUInt8(colorIndex))
+		wrapFree(stream.readUInt8(colorIndex), volume)
 		const uint8_t index = convertPaletteIndex(colorIndex);
 		voxel::VoxelType voxelType = voxel::VoxelType::Generic;
 		const voxel::Voxel& voxel = voxel::createVoxel(voxelType, index);
@@ -1228,5 +1235,6 @@ void VoxFormat::reset() {
 
 #undef wrap
 #undef wrapBool
+#undef wrapFree
 
 }

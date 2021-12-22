@@ -153,6 +153,9 @@ bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const core::String &f
 
 	Meshes meshes;
 	for (const VoxelVolume& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
 		voxel::Mesh *mesh = new voxel::Mesh();
 		voxel::Region region = v.volume->region();
 		region.shiftUpperCorner(1, 1, 1);
