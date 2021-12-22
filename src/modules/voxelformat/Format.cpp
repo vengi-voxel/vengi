@@ -15,6 +15,7 @@
 #include "math/Math.h"
 #include "voxel/Mesh.h"
 #include "voxelformat/VoxelVolumes.h"
+#include "voxelutil/VoxelUtil.h"
 #include <limits>
 
 namespace voxel {
@@ -95,9 +96,29 @@ void Format::calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize
 }
 
 void Format::split(VoxelVolumes& destVolumes, const VoxelVolume &v, const glm::ivec3& maxSize) {
-	voxel::RawVolume *copy = new voxel::RawVolume(v.volume);
-	// TODO: perform the split
-	destVolumes.push_back(VoxelVolume{copy, v.name, v.visible});
+	const voxel::Region &region = v.volume->region();
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
+
+	Log::debug("split region: %s", region.toString().c_str());
+	for (int y = mins.y; y <= maxs.y; y += maxSize.y) {
+		for (int z = mins.z; z <= maxs.z; z += maxSize.z) {
+			for (int x = mins.x; x <= maxs.x; x += maxSize.x) {
+				const glm::ivec3 innerMins(x, y, z);
+				const glm::ivec3 innerMaxs = innerMins + maxSize - 1;
+				const voxel::Region innerRegion(innerMins, innerMaxs);
+				voxel::RawVolume *copy = new voxel::RawVolume(innerRegion);
+				if (!voxelutil::copy(*v.volume, innerRegion, *copy, innerRegion)) {
+					Log::debug("- skip empty %s", innerRegion.toString().c_str());
+					delete copy;
+					continue;
+				} else {
+					Log::debug("- split %s", innerRegion.toString().c_str());
+				}
+				destVolumes.push_back(VoxelVolume{copy, v.name, v.visible});
+			}
+		}
+	}
 }
 
 RawVolume* Format::merge(const VoxelVolumes& volumes) const {
