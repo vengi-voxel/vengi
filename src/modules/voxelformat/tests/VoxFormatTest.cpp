@@ -34,7 +34,7 @@ TEST_F(VoxFormatTest, testSaveMultipleLayers) {
 	testSaveMultipleLayers("mv-multiplelayersavetest.vox", &f);
 }
 
-TEST_F(VoxFormatTest, DISABLED_testSave) {
+TEST_F(VoxFormatTest, testSave) {
 	VoxFormat f;
 	RawVolume* loadedVolume = load("magicavoxel.vox", f);
 	ASSERT_NE(nullptr, loadedVolume) << "Could not load vox file";
