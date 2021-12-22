@@ -3,6 +3,7 @@
  */
 #pragma once
 
+#include <stddef.h>
 #include <new>
 
 namespace backend {

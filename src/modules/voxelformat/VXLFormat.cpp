@@ -217,7 +217,6 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	const uint64_t dataStart = stream.pos();
 
 	// Count the voxels in this limb
-	uint32_t voxelCount = 0;
 	for (uint32_t i = 0u; i < baseSize; ++i) {
 		if (colStart[i] == EmptyColumn) {
 			continue;
@@ -231,7 +230,6 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 			z += v;
 			wrap(stream.readUInt8(v))
 			z += v;
-			voxelCount += v;
 			stream.skip(2 * v + 1);
 		} while (z < footer.zsize);
 	}
