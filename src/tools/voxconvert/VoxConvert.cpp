@@ -236,7 +236,15 @@ app::AppState VoxConvert::onInit() {
 			}
 		}
 
-		filterVolumes(volumes);
+	}
+
+	const bool applyFilter = hasArg("--filter");
+	if (applyFilter) {
+		if (infiles.size() == 1u) {
+			filterVolumes(volumes);
+		} else {
+			Log::warn("Don't apply layer filters for multiple input files");
+		}
 	}
 
 	if (mergeVolumes) {
@@ -282,7 +290,7 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 
-	Log::debug("Save");
+	Log::debug("Save %i volumes", (int)volumes.size());
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
 		voxelformat::clearVolumes(volumes);
 		Log::error("Failed to write to output file '%s'", outfile.c_str());
@@ -355,11 +363,6 @@ void VoxConvert::scale(voxel::VoxelVolumes& volumes) {
 }
 
 void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
-	const bool applyFilter = hasArg("--filter");
-	if (!applyFilter) {
-		return;
-	}
-
 	const core::String &filter = getArgVal("--filter");
 	if (filter.empty()) {
 		Log::warn("No filter specified");
