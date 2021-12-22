@@ -230,12 +230,15 @@ app::AppState VoxConvert::onInit() {
 			voxelutil::importHeightmap(wrapper, image);
 		} else {
 			io::FileStream inputFileStream(inputFile.get());
-			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, volumes)) {
+			voxel::VoxelVolumes newVolumes;
+			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newVolumes)) {
 				Log::error("Failed to load given input file");
 				return app::AppState::InitFailure;
 			}
+			for (voxel::VoxelVolume &v : newVolumes) {
+				volumes.push_back(core::move(v));
+			}
 		}
-
 	}
 
 	const bool applyFilter = hasArg("--filter");
