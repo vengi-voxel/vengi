@@ -1217,8 +1217,13 @@ void SceneManager::construct() {
 	}).setHelp("Copy selection");
 
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
-		paste(_referencePos);
-	}).setHelp("Paste clipboard to current reference position");
+		const Selection& selection = _modifier.selection();
+		if (selection.isValid()) {
+			paste(selection.getLowerCorner());
+		} else {
+			paste(_referencePos);
+		}
+	}).setHelp("Paste clipboard to current selection or reference position");
 
 	command::Command::registerCommand("pastecursor", [&] (const command::CmdArgs& args) {
 		paste(_modifier.cursorPosition());
