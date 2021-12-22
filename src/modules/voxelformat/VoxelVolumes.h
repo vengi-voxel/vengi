@@ -15,9 +15,12 @@ class RawVolume;
 static constexpr int MaxRegionSize = 256;
 
 struct VoxelVolume {
-	VoxelVolume(RawVolume* _volume = nullptr, const core::String& _name = "", bool _visible = true);
-	VoxelVolume(RawVolume* _volume, const core::String& _name, bool _visible, const glm::ivec3& _pivot);
-	RawVolume* volume;
+	VoxelVolume(voxel::RawVolume* _volume = nullptr, const core::String& _name = "", bool _visible = true);
+	VoxelVolume(voxel::RawVolume* _volume, const core::String& _name, bool _visible, const glm::ivec3& _pivot);
+	VoxelVolume(VoxelVolume&& move) noexcept;
+	VoxelVolume &operator=(VoxelVolume &&str) noexcept;
+
+	voxel::RawVolume* volume;
 	core::String name;
 	bool visible;
 	glm::ivec3 pivot;
@@ -52,6 +55,14 @@ struct VoxelVolumes {
 
 	inline auto end() const {
 		return volumes.end();
+	}
+};
+
+extern void clearVolumes(VoxelVolumes& volumes);
+
+struct ScopedVoxelVolumes : public VoxelVolumes {
+	~ScopedVoxelVolumes() {
+		clearVolumes(*this);
 	}
 };
 

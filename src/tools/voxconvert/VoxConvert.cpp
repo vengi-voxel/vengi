@@ -257,7 +257,7 @@ app::AppState VoxConvert::onInit() {
 			Log::error("Failed to merge volumes");
 			return app::AppState::InitFailure;
 		}
-		voxelformat::clearVolumes(volumes);
+		voxel::clearVolumes(volumes);
 		volumes.push_back(voxel::VoxelVolume(merged));
 	}
 
@@ -295,13 +295,13 @@ app::AppState VoxConvert::onInit() {
 
 	Log::debug("Save %i volumes", (int)volumes.size());
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
-		voxelformat::clearVolumes(volumes);
+		voxel::clearVolumes(volumes);
 		Log::error("Failed to write to output file '%s'", outfile.c_str());
 		return app::AppState::InitFailure;
 	}
 	Log::info("Wrote output file %s", outputFile->name().c_str());
 
-	voxelformat::clearVolumes(volumes);
+	voxel::clearVolumes(volumes);
 
 	return state;
 }

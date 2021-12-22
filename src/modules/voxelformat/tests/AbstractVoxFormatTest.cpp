@@ -37,12 +37,11 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
 	io::FileStream sstream(sfile.get());
 	ASSERT_TRUE(format->saveGroups(volumes, sfile->name(), sstream));
-	VoxelVolumes volumesLoad;
+	ScopedVoxelVolumes volumesLoad;
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file.get());
 	EXPECT_TRUE(format->loadGroups(file->name(), stream, volumesLoad));
 	EXPECT_EQ(volumesLoad.size(), volumes.size());
-	voxelformat::clearVolumes(volumesLoad);
 }
 
 void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, voxel::Format *format, int mins, int maxs) {

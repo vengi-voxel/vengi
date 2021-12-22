@@ -21,6 +21,26 @@ VoxelVolume::VoxelVolume(voxel::RawVolume *_volume, const core::String &_name, b
 	: volume(_volume), name(_name), visible(_visible), pivot(_pivot) {
 }
 
+VoxelVolume::VoxelVolume(VoxelVolume&& move) noexcept {
+	volume = move.volume;
+	move.volume = nullptr;
+	name = move.name;
+	visible = move.visible;
+	pivot = move.pivot;
+}
+
+VoxelVolume &VoxelVolume::operator=(VoxelVolume &&move) noexcept {
+	if (&move == this) {
+		return *this;
+	}
+	volume = move.volume;
+	move.volume = nullptr;
+	name = move.name;
+	visible = move.visible;
+	pivot = move.pivot;
+	return *this;
+}
+
 VoxelVolumes::~VoxelVolumes() {
 	volumes.clear();
 }
@@ -61,9 +81,9 @@ voxel::RawVolume *VoxelVolumes::merge() const {
 		if (volumes[0].volume == nullptr) {
 			return nullptr;
 		}
-		return new RawVolume(volumes[0].volume);
+		return new voxel::RawVolume(volumes[0].volume);
 	}
-	core::DynamicArray<const RawVolume *> rawVolumes;
+	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
 	rawVolumes.reserve(volumes.size());
 	for (const auto &v : volumes) {
 		if (v.volume == nullptr) {
@@ -75,6 +95,13 @@ voxel::RawVolume *VoxelVolumes::merge() const {
 		return nullptr;
 	}
 	return ::voxel::merge(rawVolumes);
+}
+
+void clearVolumes(VoxelVolumes& volumes) {
+	for (auto& v : volumes) {
+		delete v.volume;
+	}
+	volumes.volumes.clear();
 }
 
 }

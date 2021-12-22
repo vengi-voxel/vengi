@@ -39,17 +39,15 @@ voxel::RawVolume* VolumeCache::loadVolume(const core::String &filename) {
 		Log::debug("Failed to load %s for any of the supported format extensions", filename.c_str());
 		return nullptr;
 	}
-	voxel::VoxelVolumes volumes;
+	voxel::ScopedVoxelVolumes volumes;
 	io::FileStream stream(file.get());
 	if (!voxelformat::loadFormat(file->name(), stream, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());
-		voxelformat::clearVolumes(volumes);
 		core::ScopedLock lock(_mutex);
 		_volumes.put(filename, nullptr);
 		return nullptr;
 	}
 	voxel::RawVolume* v = volumes.merge();
-	voxelformat::clearVolumes(volumes);
 
 	core::ScopedLock lock(_mutex);
 	_volumes.put(filename, v);

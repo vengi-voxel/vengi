@@ -31,6 +31,5 @@ extern bool loadFormat(const core::String &fileName, io::SeekableReadStream& str
 extern bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes);
 
 extern bool isMeshFormat(const core::String& filename);
-extern void clearVolumes(voxel::VoxelVolumes& volumes);
 
 }

@@ -224,7 +224,7 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, vo
 	if (f) {
 		stream.seek(0);
 		if (!f->loadGroups(fileName, stream, newVolumes)) {
-			voxelformat::clearVolumes(newVolumes);
+			voxel::clearVolumes(newVolumes);
 		}
 	} else {
 		Log::error("Failed to load model file %s - unsupported file format for extension '%s'",
@@ -278,13 +278,6 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	voxel::QBFormat qbFormat;
 	return qbFormat.saveGroups(volumes, filePtr->name(), stream);
-}
-
-void clearVolumes(voxel::VoxelVolumes& volumes) {
-	for (auto& v : volumes) {
-		delete v.volume;
-	}
-	volumes.volumes.clear();
 }
 
 }

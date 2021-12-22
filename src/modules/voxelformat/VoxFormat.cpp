@@ -273,12 +273,9 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 	return modelCount == modelId;
 }
 
-bool VoxFormat::saveGroups(const VoxelVolumes& volumesIn, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	State state;
 	reset();
-
-	VoxelVolumes volumes;
-	splitVolumes(volumesIn, volumes, glm::ivec3(256));
 
 	VoxScopedHeader scoped(stream);
 	wrapBool(saveChunk_PACK(state, stream, volumes))

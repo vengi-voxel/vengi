@@ -107,20 +107,17 @@ RawVolume* Format::merge(const VoxelVolumes& volumes) const {
 }
 
 RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& file) {
-	VoxelVolumes volumes;
+	ScopedVoxelVolumes volumes;
 	if (!loadGroups(filename, file, volumes)) {
-		voxelformat::clearVolumes(volumes);
 		return nullptr;
 	}
 	RawVolume* mergedVolume = merge(volumes);
-	voxelformat::clearVolumes(volumes);
 	return mergedVolume;
 }
 
 size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& file, core::Array<uint32_t, 256> &palette) {
-	VoxelVolumes volumes;
+	ScopedVoxelVolumes volumes;
 	loadGroups(filename, file, volumes);
-	voxelformat::clearVolumes(volumes);
 	palette = _colors;
 	return _colorsSize;
 }

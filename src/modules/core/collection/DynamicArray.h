@@ -336,7 +336,7 @@ public:
 	void resize(size_t size) {
 		checkBufferSize(size);
 		while (size > _size) {
-			push_back(TYPE());
+			emplace_back(TYPE{});
 		}
 		while (size < _size) {
 			pop();
