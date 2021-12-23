@@ -11,6 +11,7 @@ General:
    - Fixed bugs in binvox support
    - Fixed save dir for vxm files when saving vxr
    - Save vxm version 5 (with included pivot)
+   - Support bigger volumes for magicavoxel files
 
 VoxConvert:
 

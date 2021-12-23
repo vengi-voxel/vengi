@@ -6,6 +6,7 @@ vengi (0.0.16.0-1) UNRELEASED; urgency=low
   * Fixed bugs in binvox support
   * Fixed save dir for vxm files when saving vxr
   * Save vxm version 5 (with included pivot)
+  * Support bigger volumes for magicavoxel files
 
   * VoxConvert:
   * Fixed --force handling for target files
