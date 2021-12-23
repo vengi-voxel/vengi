@@ -270,18 +270,15 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumesIn, const core::String &fi
 
 	VoxScopedHeader scoped(stream);
 	wrapBool(saveChunk_PACK(state, stream, volumes))
-	int modelId = 0;
 	for (const VoxelVolume& v : volumes) {
 		const voxel::Region& region = v.volume->region();
 		wrapBool(saveChunk_SIZE(state, stream, region))
 		wrapBool(saveChunk_XYZI(state, stream, v.volume, region))
-
-		++modelId;
 	}
 
 #if 0
 	wrapBool(saveSceneGraph(state, stream, volumes, modelId))
-	modelId = 0;
+	int modelId = 0;
 	for (const VoxelVolume& v : volumes) {
 		wrapBool(saveChunk_LAYR(state, stream, modelId, v.name, v.visible))
 		++modelId;
