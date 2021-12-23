@@ -86,7 +86,6 @@ private:
 		core::DynamicArray<NodeId> _leafNodes;
 	};
 
-	bool skipSaving(const VoxelVolume& v) const;
 	bool saveAttributes(const Attributes& attributes, io::SeekableWriteStream& stream) const;
 
 	bool saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, int modelId, const core::String& name, bool visible);

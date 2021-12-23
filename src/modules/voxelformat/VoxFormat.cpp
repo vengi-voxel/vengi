@@ -236,21 +236,6 @@ bool VoxFormat::saveAttributes(const Attributes& attributes, io::SeekableWriteSt
 	return true;
 }
 
-bool VoxFormat::skipSaving(const VoxelVolume& v) const {
-	if (v.volume == nullptr) {
-		return true;
-	}
-	const voxel::Region& region = v.volume->region();
-	if (region.getDepthInVoxels() > MaxRegionSize || region.getHeightInVoxels() > MaxRegionSize
-		|| region.getWidthInVoxels() > MaxRegionSize) {
-		Log::warn("a region exceeds the max allowed vox file boundaries: %i:%i:%i",
-				region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
-		// TODO: cut the big volume into pieces
-		return true;
-	}
-	return false;
-}
-
 bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, const VoxelVolumes& volumes, int modelCount) {
 	const NodeId rootNodeId = 0;
 	NodeId groupNodeId = rootNodeId + 1;
@@ -262,12 +247,8 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 	// the first transform node id
 	NodeId nodeId = groupNodeId + 1;
 	int modelId = 0;
-	for (auto& v : volumes) {
-		if (skipSaving(v)) {
-			continue;
-		}
-
-		const voxel::Region& region = v.volume->region();
+	for (const VoxelVolume& v : volumes) {
+		const voxel::Region &region = v.volume->region();
 		const glm::ivec3 mins = region.getCenter();
 		wrapBool(saveChunk_nTRN(state, stream, nodeId, nodeId + 1, mins, 0))
 		wrapBool(saveChunk_nSHP(state, stream, nodeId + 1, modelId))
@@ -280,18 +261,17 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 	return modelCount == modelId;
 }
 
-bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VoxFormat::saveGroups(const VoxelVolumes& volumesIn, const core::String &filename, io::SeekableWriteStream& stream) {
 	State state;
 	reset();
+
+	ScopedVoxelVolumes volumes;
+	splitVolumes(volumesIn, volumes, glm::ivec3(MaxRegionSize));
 
 	VoxScopedHeader scoped(stream);
 	wrapBool(saveChunk_PACK(state, stream, volumes))
 	int modelId = 0;
-	for (auto& v : volumes) {
-		if (skipSaving(v)) {
-			continue;
-		}
-
+	for (const VoxelVolume& v : volumes) {
 		const voxel::Region& region = v.volume->region();
 		wrapBool(saveChunk_SIZE(state, stream, region))
 		wrapBool(saveChunk_XYZI(state, stream, v.volume, region))
@@ -302,10 +282,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 #if 0
 	wrapBool(saveSceneGraph(state, stream, volumes, modelId))
 	modelId = 0;
-	for (auto& v : volumes) {
-		if (skipSaving(v)) {
-			continue;
-		}
+	for (const VoxelVolume& v : volumes) {
 		wrapBool(saveChunk_LAYR(state, stream, modelId, v.name, v.visible))
 		++modelId;
 	}

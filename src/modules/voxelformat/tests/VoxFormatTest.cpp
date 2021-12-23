@@ -3,7 +3,10 @@
  */
 
 #include "AbstractVoxFormatTest.h"
+#include "io/BufferedReadWriteStream.h"
+#include "io/File.h"
 #include "io/FileStream.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/VoxFormat.h"
 
 namespace voxel {
@@ -32,6 +35,33 @@ TEST_F(VoxFormatTest, testSaveSmallVoxel) {
 TEST_F(VoxFormatTest, testSaveMultipleLayers) {
 	VoxFormat f;
 	testSaveMultipleLayers("mv-multiplelayersavetest.vox", &f);
+}
+
+TEST_F(VoxFormatTest, testSaveBigVolume) {
+	VoxFormat f;
+	const Region region(glm::ivec3(0), glm::ivec3(1023, 0, 0));
+	RawVolume bigVolume(region);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	bigVolume.setVoxel(0, 0, 0, voxel);
+	bigVolume.setVoxel(256, 0, 0, voxel);
+	bigVolume.setVoxel(512, 0, 0, voxel);
+	const core::String name = "bigvolume.vox";
+	ScopedVoxelVolumes volumes;
+
+#define VOX_TEST_SAVE_TO_FILE 0
+#if VOX_TEST_SAVE_TO_FILE
+	const io::FilePtr& filesave = open(name, io::FileMode::SysWrite);
+	io::FileStream stream(filesave.get());
+	const io::FilePtr& fileLoadAfterSave = open(name);
+	io::FileStream streamread(fileLoadAfterSave.get());
+	f.loadGroups(name, streamread, volumes);
+#else
+	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	ASSERT_TRUE(f.save(&bigVolume, name, stream));
+	stream.seek(0);
+	f.loadGroups(name, stream, volumes);
+#endif
+	EXPECT_EQ(3, (int)volumes.size());
 }
 
 TEST_F(VoxFormatTest, testSave) {
