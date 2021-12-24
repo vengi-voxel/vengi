@@ -35,7 +35,26 @@ protected:
 	 */
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
 	RawVolume* merge(const VoxelVolumes& volumes) const;
+	/**
+	 * @brief Checks whether the given chunk is empty (only contains air).
+	 *
+	 * @param v The volume
+	 * @param maxSize The chunk size
+	 * @param x The chunk position
+	 * @param y The chunk position
+	 * @param z The chunk position
+	 */
 	bool isEmptyBlock(const voxel::RawVolume *v, const glm::ivec3 &maxSize, int x, int y, int z) const;
+	/**
+	 * @brief Calculate the boundaries while aligning them to the given @c maxSize. This ensures that the
+	 * calculated extends are exactly @c maxSize when iterating over them (and align relative to 0,0,0 and
+	 * @c maxSize).
+	 *
+	 * @param[in] region The region to calculate the aligned mins/maxs for
+	 * @param[in] maxSize The size of a single chunk to align with.
+	 * @param[out] mins The extends of the aabb aligned with @c maxSize
+	 * @param[out] maxs The extends of the aabb aligned with @c maxSize
+	 */
 	void calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const;
 	void split(VoxelVolumes& destVolumes, const VoxelVolume &v, const glm::ivec3& maxSize);
 	/**
