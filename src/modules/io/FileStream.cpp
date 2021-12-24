@@ -48,6 +48,7 @@ int FileStream::read(void *dataPtr, size_t dataSize) {
 	}
 	_pos = SDL_RWtell(_rwops);
 	if (completeBytesRead != dataSize) {
+		Log::debug("File read error: %s", SDL_GetError());
 		return -1;
 	}
 	return 0;
