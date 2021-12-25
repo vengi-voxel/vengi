@@ -376,6 +376,10 @@ const glm::vec4& getMaterialColor(const Voxel& voxel) {
 	return getMaterialColors()[voxel.getColor()];
 }
 
+bool materialColorInitialized() {
+	return getInstance().initialized();
+}
+
 const MaterialColorIndices& getMaterialIndices(VoxelType type) {
 	return getInstance().getColorIndices(type);
 }
