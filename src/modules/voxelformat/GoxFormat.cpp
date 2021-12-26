@@ -522,7 +522,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const VoxelVolum
 
 					int pngSize = 0;
 					uint8_t *png = image::createPng(data, 64, 64, 4, &pngSize);
-					free(data);
+					core_free(data);
 
 					if (stream.write(png, pngSize) != 0) {
 						Log::error("Could not write png into gox stream");
@@ -530,7 +530,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const VoxelVolum
 						delete mirrored;
 						return false;
 					}
-					free(png);
+					core_free(png);
 					Log::debug("Saved BL16 chunk %i with a pngsize of %i", blocks, pngSize);
 					++blocks;
 				}
