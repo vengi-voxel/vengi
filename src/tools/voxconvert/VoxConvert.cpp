@@ -144,7 +144,9 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* withColor:                     - %s", _withColor->strVal().c_str());
 		Log::info("* withTexCoords:                 - %s", _withTexCoords->strVal().c_str());
 	}
-	Log::info("* palette:                       - %s", _palette->strVal().c_str());
+	if (!srcPalette) {
+		Log::info("* palette:                       - %s", _palette->strVal().c_str());
+	}
 	Log::info("* input files:                   - %s", infilesstr.c_str());
 	Log::info("* output files:                  - %s", outfile.c_str());
 	core::String scriptParameters;
@@ -161,13 +163,14 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* use source file palette:       - %s", (srcPalette ? "true" : "false"));
 	Log::info("* export used palette as image:  - %s", (exportPalette ? "true" : "false"));
 
-	io::FilePtr paletteFile = filesystem()->open(core::string::format("palette-%s.png", _palette->strVal().c_str()));
-	if (!paletteFile->exists()) {
-		paletteFile = filesystem()->open(_palette->strVal());
-	}
-	if (!voxel::initMaterialColors(paletteFile, io::FilePtr())) {
-		Log::error("Failed to init default material colors");
-		return app::AppState::InitFailure;
+	if (!srcPalette) {
+		io::FilePtr paletteFile = filesystem()->open(_palette->strVal());
+		if (!paletteFile->exists()) {
+			paletteFile = filesystem()->open(core::string::format("palette-%s.png", _palette->strVal().c_str()));
+		}
+		if (paletteFile->exists() && !voxel::initMaterialColors(paletteFile, io::FilePtr())) {
+			Log::warn("Failed to init material colors");
+		}
 	}
 
 	const bool outfileExists = filesystem()->open(outfile)->exists();
