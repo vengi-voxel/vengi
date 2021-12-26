@@ -21,6 +21,7 @@ VoxConvert:
    - Allow to operate on multiple input files
    - Added `--translate` command line option
    - Added `--pivot` command line option
+   - nippon palette is not loaded if `--src-palette` is used and it's no hard error anymore if this fails
 
 ## 0.0.15 (2021-12-18)
 

@@ -13,6 +13,7 @@ vengi (0.0.16.0-1) UNRELEASED; urgency=low
   * Allow to operate on multiple input files
   * Added --translate command line option
   * Added --pivot command line option
+  * nippon palette is not loaded if --src-palette is used and it's no hard error anymore if this fails
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 18 Dec 2021 14:16:59 +0100
 
