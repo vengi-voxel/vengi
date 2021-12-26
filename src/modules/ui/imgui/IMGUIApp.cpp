@@ -730,12 +730,13 @@ app::AppState IMGUIApp::onRunning() {
 		onRenderUI();
 
 		if (_showBindingsDialog) {
-			if (ImGui::Begin("Bindings", &_showBindingsDialog, 0)) {
+			if (ImGui::Begin("Bindings", &_showBindingsDialog, ImGuiWindowFlags_NoScrollbar)) {
 				const util::BindMap& bindings = _keybindingHandler.bindings();
 				static const uint32_t TableFlags =
 					ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
-					ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg;
-				if (ImGui::BeginTable("##bindingslist", 3, TableFlags)) {
+					ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+				const ImVec2 &outerSize = ImGui::GetContentRegionAvail();
+				if (ImGui::BeginTable("##bindingslist", 3, TableFlags, outerSize)) {
 					ImGui::TableSetupColumn("Keys##bindingslist", ImGuiTableColumnFlags_WidthFixed);
 					ImGui::TableSetupColumn("Command##bindingslist", ImGuiTableColumnFlags_WidthFixed);
 					ImGui::TableSetupColumn("Description##bindingslist", ImGuiTableColumnFlags_WidthStretch);
