@@ -396,6 +396,7 @@ void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
 		if (!layers.has(i)) {
 			delete volumes.volumes[i].volume;
 			volumes.volumes[i].volume = nullptr;
+			Log::debug("Remove layer %i - not part of the filter expression", i);
 		}
 	}
 	Log::info("Filtered layers: %i", (int)layers.size());
