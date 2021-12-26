@@ -136,15 +136,15 @@ app::AppState VoxConvert::onInit() {
 
 	Log::info("Options");
 	if (voxelformat::isMeshFormat(outfile)) {
-		Log::info("* palette:          - %s", _palette->strVal().c_str());
-		Log::info("* mergeQuads:       - %s", _mergeQuads->strVal().c_str());
-		Log::info("* reuseVertices:    - %s", _reuseVertices->strVal().c_str());
-		Log::info("* ambientOcclusion: - %s", _ambientOcclusion->strVal().c_str());
-		Log::info("* scale:            - %s", _scale->strVal().c_str());
-		Log::info("* quads:            - %s", _quads->strVal().c_str());
-		Log::info("* withColor:        - %s", _withColor->strVal().c_str());
-		Log::info("* withTexCoords:    - %s", _withTexCoords->strVal().c_str());
+		Log::info("* mergeQuads:                    - %s", _mergeQuads->strVal().c_str());
+		Log::info("* reuseVertices:                 - %s", _reuseVertices->strVal().c_str());
+		Log::info("* ambientOcclusion:              - %s", _ambientOcclusion->strVal().c_str());
+		Log::info("* scale:                         - %s", _scale->strVal().c_str());
+		Log::info("* quads:                         - %s", _quads->strVal().c_str());
+		Log::info("* withColor:                     - %s", _withColor->strVal().c_str());
+		Log::info("* withTexCoords:                 - %s", _withTexCoords->strVal().c_str());
 	}
+	Log::info("* palette:                       - %s", _palette->strVal().c_str());
 	Log::info("* input files:                   - %s", infilesstr.c_str());
 	Log::info("* output files:                  - %s", outfile.c_str());
 	core::String scriptParameters;
