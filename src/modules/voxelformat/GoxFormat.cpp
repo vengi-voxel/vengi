@@ -526,7 +526,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const VoxelVolum
 
 					if (stream.write(png, pngSize) != 0) {
 						Log::error("Could not write png into gox stream");
-						free(png);
+						core_free(png);
 						delete mirrored;
 						return false;
 					}
