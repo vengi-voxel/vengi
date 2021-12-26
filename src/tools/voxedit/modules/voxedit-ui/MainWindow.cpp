@@ -65,6 +65,31 @@ void MainWindow::resetCamera() {
 	_sceneAnimation->resetCamera();
 }
 
+void MainWindow::loadLastOpenedFiles(const core::String &string) {
+	core::DynamicArray<core::String> tokens;
+	core::string::splitString(string, tokens, ";");
+	for (const core::String& s : tokens) {
+		_lastOpenedFilesRingBuffer.push_back(s);
+	}
+}
+
+void MainWindow::addLastOpenedFile(const core::String &file) {
+	for (const core::String& s : _lastOpenedFilesRingBuffer) {
+		if (s == file) {
+			return;
+		}
+	}
+	_lastOpenedFilesRingBuffer.push_back(file);
+	core::String str;
+	for (const core::String& s : _lastOpenedFilesRingBuffer) {
+		if (!str.empty()) {
+			str.append(";");
+		}
+		str.append(s);
+	}
+	_lastOpenedFiles->setVal(str);
+}
+
 bool MainWindow::init() {
 	_scene->init(voxedit::ViewportController::RenderMode::Editor);
 	_scene->controller().setMode(voxedit::ViewportController::SceneCameraMode::Free);
@@ -93,6 +118,8 @@ bool MainWindow::init() {
 		return intVal >= 1 && intVal <= 64;
 	});
 	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
+	_lastOpenedFiles = core::Var::get(cfg::VoxEditLastFiles, "");
+	loadLastOpenedFiles(_lastOpenedFiles->strVal());
 
 	updateSettings();
 
@@ -343,6 +370,11 @@ void MainWindow::update() {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = ImGui::Size((float)_app->fontSize()) + 16.0f;
 
+	if (_lastOpenedFile->isDirty()) {
+		_lastOpenedFile->markClean();
+		addLastOpenedFile(_lastOpenedFile->strVal());
+	}
+
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight));
 	ImGui::SetNextWindowViewport(viewport->ID);
@@ -378,6 +410,7 @@ void MainWindow::update() {
 		}
 	}
 
+	_menuBar.setLastOpenedFiles(_lastOpenedFilesRingBuffer);
 	_menuBar.update(_app, _lastExecutedCommand);
 
 	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");

@@ -23,6 +23,21 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 		if (ImGui::BeginMenu(ICON_FA_FILE " File")) {
 			actionMenuItem("New", "new", listener);
 			actionMenuItem(ICON_FK_FLOPPY_O " Load", "load", listener);
+			if (ImGui::BeginMenu("Recently opened")) {
+				int recentlyOpened = 0;
+				for (const core::String& f : _lastOpenedFiles) {
+					if (f.empty()) {
+						break;
+					}
+					const core::String& item = core::string::format("%s##%i", f.c_str(), recentlyOpened);
+					if (ImGui::MenuItem(item.c_str())) {
+						command::executeCommands("load " + f, &listener);
+					}
+					++recentlyOpened;
+				}
+				ImGui::EndMenu();
+			}
+
 			actionMenuItem(ICON_FA_SAVE " Save", "save", listener);
 			actionMenuItem(ICON_FA_CAMERA " Screenshot", "screenshot", listener);
 			ImGui::Separator();

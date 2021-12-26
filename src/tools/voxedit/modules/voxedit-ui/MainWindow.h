@@ -57,7 +57,15 @@ private:
 	bool _popupFailedToSave = false;
 
 	ui::imgui::IMGUIApp* _app;
+
 	core::VarPtr _lastOpenedFile;
+	core::VarPtr _lastOpenedFiles;
+	LastOpenedFiles _lastOpenedFilesRingBuffer;
+	/**
+	* @brief Convert semicolon-separated string into the @c LastOpenedFiles array
+	*/
+	void loadLastOpenedFiles(const core::String &string);
+	void addLastOpenedFile(const core::String &file);
 
 	LayerSettings _layerSettings;
 
