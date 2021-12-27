@@ -18,21 +18,27 @@ markdown_extensions:
 
 nav:
   - README.md
+  - CHANGELOG.md
   - Basics:
       - Dependencies.md
       - Compilation.md
       - Configuration.md
       - Formats.md
-      - CHANGELOG.md
       - LUAScript.md
+      - Palette.md
+  - VoxConvert:
+      - voxconvert/Index.md
+      - voxconvert/Usage.md
+      - voxconvert/Examples.md
+      - voxconvert/Screenshots.md
   - VoxEdit:
       - voxedit/Index.md
-  - Games:
-      - OpenWorld: openworld/Index.md
-  - Tools:
-      - VoxConvert: voxconvert/Index.md
-      - Thumbnailer: thumbnailer/Index.md
-      - MapView: mapview/Index.md
+      - voxedit/Features.md
+      - voxedit/Configuration.md
+      - voxedit/Screenshots.md
+  - Thumbnailer:
+      - thumbnailer/Index.md
+      - thumbnailer/Examples.md
   - Development:
       - Visual Tests: VisualTests.md
       - Shader integration: ShaderTool.md
@@ -42,6 +48,5 @@ nav:
       - Attributes: Attributes.md
       - Network: Network.md
       - AI development: AIRemoteDebugger.md
-  - Test applications:
-      - TestAnimation: TestAnimation.md
-      - VisualTests.md
+      - OpenWorld: openworld/Index.md
+      - MapView: mapview/Index.md

@@ -31,7 +31,7 @@ export VOXFORMAT_SCALE=2.0
 
 ### Search paths
 
-You can get a list of search paths by calling the particular application with the `--help` parameter on the command line. This will print a list of search paths.
+You can get a list of search paths by calling the particular application with the `--help` parameter on the command line. This will print a list of search paths. You can even add your own paths by setting the cvar `core_path`.
 
 ### Configuration file
 
@@ -67,3 +67,7 @@ with a description and hints how to modify/use them.
 
 * `cl_vsync`: enable or disable v-sync
 * `cl_gamma`: tweak the gamma value that is applied last on rendering
+* `cl_width`: the window width
+* `cl_height`: the window height
+* `cl_display`: the display index if you are using multiple monitors `[0-numDisplays)`
+* `cl_fullscreen`: `true` or `1` to run the window-based applications in fullscreen mode
