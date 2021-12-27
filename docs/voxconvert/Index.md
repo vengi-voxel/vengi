@@ -10,7 +10,7 @@ Convert voxel volume formats between each other or export to obj or ply.
 `./vengi-voxconvert --merge --scale --input infile --output outfile`
 
 * `--export-palette`: will save the included palette as png next to the source file. Use in combination with `--src-palette`.
-* `--filter <filter>`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`.
+* `--filter <filter>`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`. See the layers note below.
 * `--force`: overwrite existing files
 * `--input <file>`: allows to specify input files. You can specify more than one file
 * `--merge`: will merge a multi layer volume (like vox, qb or qbt) into a single volume of the target file
@@ -45,6 +45,12 @@ color from the source file palette to the specified palette.
 * translate
 * script
 * pivot
+
+### Layers
+
+Some formats also have layer support. Our layers are maybe not the layers you know from your favorite editor. Each layer can currently only have one object or volume in it. To get the proper layer ids (starting from 0) for your voxel file, you should load it once in [voxedit](../voxedit/Index.md) and check the layer panel.
+
+Especially magicavoxel supports more objects in one layer. This might be confusing to get the right numbers for `voxconvert`. See [this issue](https://github.com/mgerhardy/engine/issues/68) for a few more details.
 
 ## Level of detail (LOD)
 

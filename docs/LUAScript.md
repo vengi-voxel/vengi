@@ -13,7 +13,7 @@ There is a console command (called `xs`) in [voxedit](voxedit/Index.md) and a co
 > **voxconvert**
 >
 > ```
-> ./vengi-voxconvert --script "<script> help" in.qb out.qb
+> ./vengi-voxconvert --script "<script> help" --input in.qb --output out.qb
 > ```
 
 ---

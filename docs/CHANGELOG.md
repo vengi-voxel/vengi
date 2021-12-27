@@ -23,6 +23,10 @@ VoxConvert:
    - Added `--pivot` command line option
    - nippon palette is not loaded if `--src-palette` is used and it's no hard error anymore if this fails
 
+VoxEdit:
+
+   - Add recently used files to the ui
+
 ## 0.0.15 (2021-12-18)
 
 General:
