@@ -17,9 +17,9 @@ The project should be buildable with every ide that supports cmake. QTCreator, E
 
 ### Visual Studio Code
 
-* Install ninja https://ninja-build.org/
-* Install cmake https://cmake.org/download/
-* Install vscode https://code.visualstudio.com/
+* Install ninja [ninja-build.org](https://ninja-build.org/)
+* Install cmake [cmake.org/download](https://cmake.org/download/)
+* Install vscode [code.visualstudio.com](https://code.visualstudio.com/)
 * Install Visual Studio (for the compiler)
 
 Open your git clone directory in vscode and let it configure via cmake. It will pick ninja and the visual studio compiler automatically.
@@ -41,7 +41,7 @@ If you are using the cmake Makefile generator, you get the same targets as for L
 
 If you encounter any problems, it's also a good start to check out the build pipelines of the project.
 This is always the most up-to-date information about how-to-build-the-project that you will find. But
-also please don't hesitate to ask for help on our discord server.
+also please don't hesitate to ask for help on our [discord server](https://discord.gg/AgjCPXy)..
 
 ## Enforce bundled libs
 
