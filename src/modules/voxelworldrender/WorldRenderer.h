@@ -5,7 +5,6 @@
 #pragma once
 
 #include "RenderShaders.h"
-#include "AnimationShaders.h"
 #include "VoxelworldrenderShaders.h"
 #include "voxelworldrender/AssetVolumeCache.h"
 #include "worldrenderer/WorldChunkMgr.h"
