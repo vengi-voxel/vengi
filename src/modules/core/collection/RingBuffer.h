@@ -33,15 +33,15 @@ public:
 		}
 
 		inline const TYPE& operator*() const {
-			return _ringBuffer->_buffer[_idx];
+			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 
 		inline const TYPE& operator()() const {
-			return _ringBuffer->_buffer[_idx];
+			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 
 		inline TYPE& operator()() {
-			return _ringBuffer->_buffer[_idx];
+			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 
 		iterator& operator++() {
@@ -58,7 +58,7 @@ public:
 		}
 
 		inline const TYPE* operator->() const {
-			return &_ringBuffer->_buffer[_idx];
+			return &_ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 	};
 

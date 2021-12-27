@@ -3,6 +3,7 @@
  */
 
 #include <gtest/gtest.h>
+#include "core/String.h"
 #include "core/collection/RingBuffer.h"
 
 namespace core {
@@ -92,6 +93,19 @@ TEST(RingBufferTest, testIterateRangeBased) {
 		++cnt;
 	}
 	EXPECT_EQ(16, cnt);
+}
+
+TEST(RingBufferTest, testStrings) {
+	core::RingBuffer<core::String, 3> list;
+	list.push_back("foo");
+	list.push_back("bar");
+	list.push_back("foobar");
+	list.push_back("barfoo");
+	EXPECT_EQ("bar", list.front());
+	EXPECT_EQ("barfoo", list.back());
+	for (const core::String& f : list) {
+		EXPECT_FALSE(f.empty());
+	}
 }
 
 }
