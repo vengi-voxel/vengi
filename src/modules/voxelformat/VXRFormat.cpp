@@ -98,6 +98,7 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 		wrapBool(stream.readString(sizeof(id), id, true))
 	}
 
+	// TODO: vxm loading is missing here!
 	uint32_t dummy;
 	wrap(stream.readUInt32(dummy))
 	char buf[1024];
@@ -276,16 +277,16 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		for (int32_t i = 0; i < modelCount; ++i) {
 			char id[1024];
 			wrapBool(stream.readString(sizeof(id), id, true))
-			char filename[1024];
-			wrapBool(stream.readString(sizeof(filename), filename, true))
-			if (filename[0] != '\0') {
-				core::String modelPath = filename;
+			char vxmFilename[1024];
+			wrapBool(stream.readString(sizeof(vxmFilename), vxmFilename, true))
+			if (vxmFilename[0] != '\0') {
+				core::String modelPath = core::string::extractPath(filename);
 				if (!modelPath.empty()) {
 					modelPath.append("/");
 				}
-				modelPath.append(filename);
+				modelPath.append(vxmFilename);
 				if (!loadChildVXM(modelPath, volumes)) {
-					Log::warn("Failed to attach model for %s with filename %s", id, filename);
+					Log::warn("Failed to attach model for %s with filename %s", id, modelPath.c_str());
 				}
 			}
 		}
