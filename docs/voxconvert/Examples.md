@@ -63,18 +63,6 @@ You can export your volume model into a obj or ply.
 
 `./vengi-voxconvert --input infile.vox --output outfile.obj`
 
-Config vars to control the meshing:
-
-* `voxformat_ambientocclusion`: Don't export extra quads for ambient occlusion voxels
-* `voxformat_mergequads`: Merge similar quads to optimize the mesh
-* `voxformat_reusevertices`: Reuse vertices or always create new ones
-* `voxformat_scale`: Scale the vertices by the given factor
-* `voxformat_quads`: Export to quads
-* `voxformat_withcolor`: Export vertex colors
-* `voxformat_withtexcoords`: Export texture coordinates
-
-See `./vengi-voxconvert --help` or [configuration](../Configuration.md) for more details.
-
 ## Batch convert
 
 To convert a complete directory of e.g. `*.vox` to `*.obj` files, you can use e.g. the bash like this:

@@ -10,3 +10,6 @@ You can load and save a lot of different [voxel formats](../Formats.md). Its bui
 * [Configuration](Configuration.md)
 * [Controls](Controls.md)
 * [Screenshots](Screenshots.md)
+* [Supported voxel formats](../Formats.md)
+* [Scripting support](../LUAScript.md)
+* [Palettes](../Palette.md)

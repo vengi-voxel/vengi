@@ -6,19 +6,19 @@
 * `--filter <filter>`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`. See the layers note below.
 * `--force`: overwrite existing files
 * `--input <file>`: allows to specify input files. You can specify more than one file
-* `--merge`: will merge a multi layer volume (like vox, qb or qbt) into a single volume of the target file
+* `--merge`: will merge a multi layer volume (like `vox`, `qb` or `qbt`) into a single volume of the target file
 * `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis
 * `--output <file>`: allows you to specify the output filename
 * `--pivot <x:y:z>`: change the pivots of the volume layers. Not all voxel formats support this.
 * `--rotate <x|y|z>`: allows you to rotate the volumes by 90 degree at x, y and z axis
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
 * `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
-* `--src-palette`: will use the included palette and doesn't perform any quantization to the default palette
+* `--src-palette`: will use the included [palette](../Palette.md) and doesn't perform any quantization to the default palette
 * `--translate <x:y:z>`: translates the volumes by x (right), y (up), z (back)
 
 Just type `vengi-voxconvert` to get a full list of commands and options.
 
-Using a different target palette is also possible by setting the `palette` config var.
+Using a different target palette is also possible by setting the `palette` [cvar](../Configuration.md).
 
 `./vengi-voxconvert -set palette /path/to/palette.png --input infile outfile`
 
