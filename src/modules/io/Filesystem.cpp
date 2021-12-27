@@ -477,6 +477,20 @@ io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const 
 			Log::debug("loading file %s from %s", filename.c_str(), p.c_str());
 			return core::make_shared<io::File>(fullpath, mode);
 		}
+		if (isRelativePath(p)) {
+			for (const core::String& s : _paths) {
+				if (s == p) {
+					continue;
+				}
+				const core::String fullrelpath = s + p + filename;
+				io::File fullrelFile(fullrelpath, FileMode::Read);
+				if (fullrelFile.exists()) {
+					fullrelFile.close();
+					Log::debug("loading file %s from %s%s", filename.c_str(), s.c_str(), p.c_str());
+					return core::make_shared<io::File>(fullrelpath, mode);
+				}
+			}
+		}
 	}
 	Log::debug("Use %s from %s", filename.c_str(), _basePath.c_str());
 	return core::make_shared<io::File>(_basePath + filename, mode);

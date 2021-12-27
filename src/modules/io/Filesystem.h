@@ -64,6 +64,10 @@ public:
 
 	const Paths& paths() const;
 
+	/**
+	 * @param[in] path If this is a relative path the filesystem will append this relative path to all
+	 * known search paths when trying to find a file.
+	 */
 	bool registerPath(const core::String& path);
 
 	core::String downloadDir() const;

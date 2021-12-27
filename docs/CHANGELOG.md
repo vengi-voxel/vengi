@@ -10,6 +10,10 @@ Known [issues](https://github.com/mgerhardy/engine/issues?q=is%3Aissue+is%3Aopen
 
 ## 0.0.17 (2021-XX-XX)
 
+General:
+
+   - Fixed relative path handling for registered paths
+
 ## 0.0.16 (2021-12-27)
 
 General:

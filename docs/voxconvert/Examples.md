@@ -4,7 +4,7 @@
 
 Generate a lod scaled by 50% from the input model.
 
-`./vengi-voxconvert -s --input infile.vox output.vox`
+`./vengi-voxconvert -s --input infile.vox --output output.vox`
 
 ## Merge several models
 
