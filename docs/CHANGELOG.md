@@ -2,7 +2,13 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
 
+Join our [Discord server](https://discord.gg/AgjCPXy).
+
+See [the documentation](https://mgerhardy.github.io/engine/) for further details.
+
 Known [issues](https://github.com/mgerhardy/engine/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
+
+## 0.0.17 (2021-XX-XX)
 
 ## 0.0.16 (2021-12-27)
 
