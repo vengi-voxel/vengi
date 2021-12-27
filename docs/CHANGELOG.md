@@ -4,7 +4,7 @@ A more detailed changelog can be found on [github](https://github.com/mgerhardy/
 
 Known [issues](https://github.com/mgerhardy/engine/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
-## 0.0.16 (2021-XX-XX)
+## 0.0.16 (2021-12-27)
 
 General:
 

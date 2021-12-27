@@ -1,4 +1,4 @@
-vengi (0.0.16.0-1) UNRELEASED; urgency=low
+vengi (0.0.16.0-1) unstable; urgency=low
 
   * General:
   * Fixed magicavoxel vox file saving
@@ -18,7 +18,7 @@ vengi (0.0.16.0-1) UNRELEASED; urgency=low
   * VoxEdit:
   * Add recently used files to the ui
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 18 Dec 2021 14:16:59 +0100
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 27 Dec 2021 10:32:01 +0100
 
 vengi (0.0.15.0-1) unstable; urgency=low
 
