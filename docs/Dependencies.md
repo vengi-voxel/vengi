@@ -1,8 +1,8 @@
 # Dependencies
 
 * cmake
-* ninja-build
-* postgresql
+* ninja-build or make
+* compiler (see [compilation](Compilation.md) docs)
 
 ## Libraries
 
@@ -14,13 +14,13 @@
   * libpq
   * enet
   * libuv
-  * gtest
+  * gtest (and gmock)
   * opencl (optional)
   * libuuid
 
 Some of these dependencies might not be available as packages in your toolchain - most
 of them are also bundled with the application. But local installed headers always have
-the higher priority.
+the higher priority. Usually you don't have to install anything of these.
 
 ## Debian
 
