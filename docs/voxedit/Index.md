@@ -4,6 +4,10 @@ This is an opensource, cross platform voxel volume editor.
 
 You can load and save a lot of different [voxel formats](../Formats.md). Its built around [256 color palettes](../Palette.md).
 
+# Requirements
+
+* OpenGL 3.2
+
 # Further reading
 
 * [Features](Features.md)

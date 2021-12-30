@@ -537,6 +537,7 @@ app::AppState IMGUIApp::onInit() {
 
 	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
 	io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
+	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 	io.BackendPlatformUserData = (void *)this;
 
 	ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
@@ -861,7 +862,7 @@ void IMGUIApp::executeDrawCommands() {
 				video::bindTexture(video::TextureUnit::Zero, video::TextureType::Texture2D, (video::Id)(intptr_t)cmd->TextureId);
 				const ImVec4& cr = cmd->ClipRect;
 				video::scissor((int)cr.x, (int)cr.y, (int)cr.z - (int)cr.x, (int)cr.w - (int)cr.y);
-				video::drawElements<ImDrawIdx>(video::Primitive::Triangles, cmd->ElemCount, (void*)(intptr_t)(cmd->IdxOffset * sizeof(ImDrawIdx)));
+				video::drawElementsBaseVertex<ImDrawIdx>(video::Primitive::Triangles, cmd->ElemCount, (int)cmd->IdxOffset, (int)cmd->VtxOffset);
 			}
 			++drawCommands;
 		}
