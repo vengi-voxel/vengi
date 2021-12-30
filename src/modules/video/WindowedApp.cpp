@@ -55,6 +55,38 @@ void WindowedApp::onAfterRunning() {
 	video::endFrame(_window);
 }
 
+bool WindowedApp::handleSDLEvent(SDL_Event& event) {
+	switch (event.type) {
+	case SDL_QUIT:
+		// continue to handle any other following event
+		return true;
+	case SDL_WINDOWEVENT:
+		// we must be the first to handle this - but others should get their chance, too
+		if (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+			const int w = event.window.data1;
+			const int h = event.window.data2;
+			int frameBufferWidth, frameBufferHeight;
+			SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
+			_aspect = frameBufferWidth / static_cast<float>(frameBufferHeight);
+			_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
+			_windowDimension = glm::ivec2(w, h);
+			const float scaleFactor = _frameBufferDimension.x / (float)_windowDimension.x;
+			video::resize(w, h, scaleFactor);
+			video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+		}
+		// fallthrough
+	default: {
+		core_trace_scoped(WindowedAppEventHandler);
+		const bool running = core::Singleton<io::EventHandler>::getInstance().handleEvent(event);
+		if (!running) {
+			return true;
+		}
+		break;
+	}
+	}
+	return false;
+}
+
 app::AppState WindowedApp::onRunning() {
 	video_trace_scoped(Frame);
 	core_trace_scoped(WindowedAppOnRunning);
@@ -73,35 +105,7 @@ app::AppState WindowedApp::onRunning() {
 	SDL_Event event;
 	bool quit = false;
 	while (SDL_PollEvent(&event)) {
-		switch (event.type) {
-		case SDL_QUIT:
-			// continue to handle any other following event
-			quit = true;
-			break;
-		case SDL_WINDOWEVENT:
-			// we must be the first to handle this - but others should get their chance, too
-			if (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-				const int w = event.window.data1;
-				const int h = event.window.data2;
-				int frameBufferWidth, frameBufferHeight;
-				SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
-				_aspect = frameBufferWidth / static_cast<float>(frameBufferHeight);
-				_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
-				_windowDimension = glm::ivec2(w, h);
-				const float scaleFactor = _frameBufferDimension.x / (float)_windowDimension.x;
-				video::resize(w, h, scaleFactor);
-				video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-			}
-			// fallthrough
-		default: {
-			core_trace_scoped(WindowedAppEventHandler);
-			const bool running = core::Singleton<io::EventHandler>::getInstance().handleEvent(event);
-			if (!running) {
-				quit = true;
-			}
-			break;
-		}
-		}
+		quit |= handleSDLEvent(event);
 	}
 
 	if (quit) {
