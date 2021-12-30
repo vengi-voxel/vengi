@@ -403,6 +403,10 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER, "Render voxel outline", core::Var::boolValidator);
 	core::Var::get(cfg::ClientVSync, "true", "Limit the framerate to the monitor refresh rate", core::Var::boolValidator);
 
+	command::Command::registerCommand("minimize", [&] (const command::CmdArgs& args) {
+		minimize();
+	});
+
 	_keybindingHandler.construct();
 
 	return state;
