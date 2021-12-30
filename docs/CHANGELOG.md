@@ -13,6 +13,7 @@ Known [issues](https://github.com/mgerhardy/engine/issues?q=is%3Aissue+is%3Aopen
 General:
 
    - Fixed relative path handling for registered paths
+   - Stop event loop if window is minimized (reduce cpu usage)
 
 ## 0.0.16 (2021-12-27)
 

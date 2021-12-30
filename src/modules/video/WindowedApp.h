@@ -42,8 +42,18 @@ protected:
 	float _dpiHorizontalFactor = 1.0f;
 	float _dpiVerticalFactor = 1.0f;
 	bool _allowRelativeMouseMode = true;
+	/**
+	 * Allows to create hidden windows
+	 */
 	bool _showWindow = true;
+	/**
+	 * Don't allow to create new windows from without the application
+	 */
 	bool _singleWindowMode = false;
+	/**
+	 * Will block the event queue if the window is minimized of hidden
+	 */
+	bool _powerSaveMode = true;
 
 	util::KeyBindingHandler _keybindingHandler;
 	/**

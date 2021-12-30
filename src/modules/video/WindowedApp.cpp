@@ -104,6 +104,17 @@ app::AppState WindowedApp::onRunning() {
 	SDL_GetRelativeMouseState(&_mouseRelativePos.x, &_mouseRelativePos.y);
 	SDL_Event event;
 	bool quit = false;
+	// we are checking the non headless flag here because we assume that a headless windowed
+	// application is trying to e.g. render off-screen but without hidden timeouts
+	if (_powerSaveMode && _showWindow) {
+		bool windowIsHidden = SDL_GetWindowFlags(_window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED);
+		while (windowIsHidden) {
+			if (SDL_WaitEvent(&event) == 1) {
+				quit = handleSDLEvent(event);
+				windowIsHidden = SDL_GetWindowFlags(_window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED);
+			}
+		}
+	}
 	while (SDL_PollEvent(&event)) {
 		quit |= handleSDLEvent(event);
 	}
