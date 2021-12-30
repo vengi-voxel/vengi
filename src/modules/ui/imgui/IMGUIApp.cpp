@@ -848,7 +848,6 @@ void IMGUIApp::executeDrawCommands() {
 	int64_t drawCommands = 0;
 	for (int n = 0; n < drawData->CmdListsCount; ++n) {
 		const ImDrawList* cmdList = drawData->CmdLists[n];
-		const ImDrawIdx* idxBufferOffset = nullptr;
 
 		core_assert_always(_vbo.update(_bufferIndex, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert), true));
 		core_assert_always(_vbo.update(_indexBufferIndex, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx), true));
@@ -862,10 +861,9 @@ void IMGUIApp::executeDrawCommands() {
 				video::bindTexture(video::TextureUnit::Zero, video::TextureType::Texture2D, (video::Id)(intptr_t)cmd->TextureId);
 				const ImVec4& cr = cmd->ClipRect;
 				video::scissor((int)cr.x, (int)cr.y, (int)cr.z - (int)cr.x, (int)cr.w - (int)cr.y);
-				video::drawElements<ImDrawIdx>(video::Primitive::Triangles, cmd->ElemCount, (void*)idxBufferOffset);
+				video::drawElements<ImDrawIdx>(video::Primitive::Triangles, cmd->ElemCount, (void*)(intptr_t)(cmd->IdxOffset * sizeof(ImDrawIdx)));
 			}
 			++drawCommands;
-			idxBufferOffset += cmd->ElemCount;
 		}
 	}
 	core_trace_plot("UIDrawCommands", drawCommands);
