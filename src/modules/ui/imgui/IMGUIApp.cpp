@@ -555,22 +555,33 @@ app::AppState IMGUIApp::onInit() {
 	platformIO.Platform_SetWindowAlpha = _imguiSetWindowAlpha;
 	platformIO.Monitors.resize(0);
 	int displayCount = SDL_GetNumVideoDisplays();
+	if (displayCount < 0) {
+		Log::error("%s", SDL_GetError());
+	}
 	for (int n = 0; n < displayCount; n++) {
 		// Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness
 		// settings, which generally needs to be set in the manifest or at runtime.
 		ImGuiPlatformMonitor monitor;
 		SDL_Rect r;
-		SDL_GetDisplayBounds(n, &r);
-		monitor.MainPos = monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
-		monitor.MainSize = monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
-		SDL_GetDisplayUsableBounds(n, &r);
-		monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
-		monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+		if (SDL_GetDisplayBounds(n, &r) == 0) {
+			monitor.MainPos = monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+			monitor.MainSize = monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+		} else {
+			Log::error("%s", SDL_GetError());
+		}
+		if (SDL_GetDisplayUsableBounds(n, &r) == 0) {
+			monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+			monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+		} else {
+			Log::error("%s", SDL_GetError());
+		}
 		const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
 		if (highDPI->boolVal()) {
 			float dpi = 0.0f;
-			if (SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr) != -1) {
+			if (SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr) == 0) {
 				monitor.DpiScale = dpi / 96.0f;
+			} else {
+				Log::error("%s", SDL_GetError());
 			}
 		}
 		platformIO.Monitors.push_back(monitor);
@@ -593,6 +604,9 @@ app::AppState IMGUIApp::onInit() {
 	_imguiViewportData *vd = IM_NEW(_imguiViewportData)();
 	vd->window = _window;
 	vd->windowID = SDL_GetWindowID(_window);
+	if (vd->windowID == 0) {
+		Log::error("%s", SDL_GetError());
+	}
 	vd->windowOwned = false;
 	vd->renderContext = _rendererContext;
 	mainViewport->PlatformUserData = vd;
