@@ -850,8 +850,8 @@ void IMGUIApp::executeDrawCommands() {
 		const ImDrawList* cmdList = drawData->CmdLists[n];
 		const ImDrawIdx* idxBufferOffset = nullptr;
 
-		core_assert_always(_vbo.update(_bufferIndex, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert)));
-		core_assert_always(_vbo.update(_indexBufferIndex, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx)));
+		core_assert_always(_vbo.update(_bufferIndex, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert), true));
+		core_assert_always(_vbo.update(_indexBufferIndex, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx), true));
 		video::ScopedBuffer scopedBuf(_vbo);
 
 		for (int i = 0; i < cmdList->CmdBuffer.Size; ++i) {
