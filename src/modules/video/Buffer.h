@@ -69,7 +69,7 @@ public:
 	void* mapData(int32_t idx, video::AccessMode mode) const;
 	void unmapData(int32_t idx) const;
 
-	bool update(int32_t idx, const void* data, size_t size);
+	bool update(int32_t idx, const void* data, size_t size, bool orphaning = false);
 
 	/**
 	 * @return -1 on error - otherwise the index [0,n) of the created buffer (not the Id)
@@ -128,6 +128,7 @@ public:
 	 */
 	Id bufferHandle(int32_t idx) const;
 
+	bool clear(int32_t idx);
 	/**
 	 * @return The vertex array object native handle
 	 */

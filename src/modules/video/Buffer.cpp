@@ -164,7 +164,19 @@ bool Buffer::unbind() const {
 	return false;
 }
 
-bool Buffer::update(int32_t idx, const void* data, size_t size) {
+bool Buffer::clear(int32_t idx) {
+	if (!isValid(idx)) {
+		return false;
+	}
+
+	const BufferType type = _targets[idx];
+	const Id id = _handles[idx];
+	const size_t size = _size[idx];
+	video::bufferData(id, type, _modes[idx], nullptr, size);
+	return true;
+}
+
+bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) {
 	if (!isValid(idx)) {
 		return false;
 	}
@@ -190,7 +202,14 @@ bool Buffer::update(int32_t idx, const void* data, size_t size) {
 	if (oldSize >= size && _modes[idx] != BufferMode::Static) {
 		video::bufferSubData(id, type, 0, data, size);
 	} else {
-		video::bufferData(id, type, _modes[idx], data, size);
+		if (orphaning) {
+			if (oldSize < size) {
+				video::bufferData(id, type, _modes[idx], nullptr, size);
+			}
+			video::bufferSubData(id, type, 0, data, size);
+		} else {
+			video::bufferData(id, type, _modes[idx], data, size);
+		}
 	}
 
 	return true;
