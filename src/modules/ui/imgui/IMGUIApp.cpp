@@ -467,6 +467,7 @@ app::AppState IMGUIApp::onInit() {
 		Log::error("Failed to create ui index buffer");
 		return app::AppState::InitFailure;
 	}
+	_vbo.setMode(_indexBufferIndex, video::BufferMode::Stream);
 
 	_camera = video::uiCamera(windowDimension());
 
