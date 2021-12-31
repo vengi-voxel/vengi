@@ -100,6 +100,9 @@ app::AppState WindowedApp::onRunning() {
 	// ignore the state here
 	Super::onRunning();
 
+	core_trace_scoped(WindowedAppStartFrame);
+	video::startFrame(_window, _rendererContext);
+
 	SDL_GetRelativeMouseState(&_mouseRelativePos.x, &_mouseRelativePos.y);
 	SDL_Event event;
 	bool quit = false;
@@ -123,8 +126,6 @@ app::AppState WindowedApp::onRunning() {
 		return app::AppState::Cleanup;
 	}
 
-	core_trace_scoped(WindowedAppStartFrame);
-	video::startFrame(_window, _rendererContext);
 	core::Singleton<ShaderManager>::getInstance().update();
 
 	const uint64_t end = core::TimeProvider::highResTime();

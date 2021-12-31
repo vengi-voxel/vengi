@@ -469,7 +469,7 @@ static void initPlatformInterface(const char *name, IMGUIApp *userdata, SDL_Wind
 	io.BackendPlatformName = name;
 	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
 	if (!userdata->isSingleWindowMode()) {
-	//	io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
+		io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
 	}
 	//io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
@@ -541,7 +541,6 @@ static void updateMonitors() {
 	}
 }
 
-#if 0
 static void _rendererRenderWindow(ImGuiViewport *viewport, void *renderArg) {
 	if (!(viewport->Flags & ImGuiViewportFlags_NoRendererClear)) {
 		const glm::vec4 clearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -552,7 +551,6 @@ static void _rendererRenderWindow(ImGuiViewport *viewport, void *renderArg) {
 	IMGUIApp* app = (IMGUIApp*)io.BackendRendererUserData;
 	app->executeDrawCommands(viewport->DrawData);
 }
-#endif
 
 static void initRendererBackend(const char *name, IMGUIApp *userdata) {
 	ImGuiIO& io = ImGui::GetIO();
@@ -560,10 +558,8 @@ static void initRendererBackend(const char *name, IMGUIApp *userdata) {
 	io.BackendRendererName = name;
 	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;  // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
 	io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;  // We can create multi-viewports on the Renderer side (optional)
-#if 0
 	ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
 	platform_io.Renderer_RenderWindow = _rendererRenderWindow;
-#endif
 }
 
 app::AppState IMGUIApp::onInit() {
@@ -603,7 +599,7 @@ app::AppState IMGUIApp::onInit() {
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
@@ -998,6 +994,7 @@ void IMGUIApp::executeDrawCommands(ImDrawData* drawData) {
 			++drawCommands;
 		}
 	}
+	_vbo.destroyVertexArray();
 	core_trace_plot("UIDrawCommands", drawCommands);
 }
 
