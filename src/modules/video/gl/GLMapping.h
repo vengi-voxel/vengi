@@ -147,7 +147,8 @@ static const GLenum States[] {
 	GL_MULTISAMPLE,
 	GL_LINE_SMOOTH,
 	GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB,
-	GL_CLIP_DISTANCE0
+	GL_CLIP_DISTANCE0,
+	GL_PRIMITIVE_RESTART
 };
 static_assert(core::enumVal(State::Max) == lengthof(States), "Array sizes don't match Max");
 

@@ -195,6 +195,7 @@ extern bool enable(State state);
  * @return The previous state value
  */
 extern bool disable(State state);
+extern bool isClipOriginLowerLeft();
 extern void colorMask(bool red, bool green, bool blue, bool alpha);
 extern bool cullFace(Face face);
 extern bool depthFunc(CompareFunc func);

@@ -409,6 +409,10 @@ bool disable(State state) {
 	return true;
 }
 
+bool isClipOriginLowerLeft() {
+	return _priv::s.clipOriginLowerLeft;
+}
+
 bool cullFace(Face face) {
 	if (_priv::s.cullFace == face) {
 		return false;

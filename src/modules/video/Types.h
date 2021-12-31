@@ -157,6 +157,7 @@ enum class State {
 	LineSmooth,
 	DebugOutput,
 	ClipDistance,
+	PrimitiveRestart,
 
 	Max
 };
