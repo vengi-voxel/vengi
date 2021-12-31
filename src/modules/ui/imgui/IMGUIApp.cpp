@@ -444,6 +444,85 @@ static void _imguiSwapBuffers(ImGuiViewport *viewport, void *) {
 	}
 }
 
+static void initPlatformInterface(SDL_Window* window, video::RendererContext rendererContext) {
+	ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
+	platformIO.Platform_CreateWindow = _imguiCreateWindow;
+	platformIO.Platform_DestroyWindow = _imguiDestroyWindow;
+	platformIO.Platform_ShowWindow = _imguiShowWindow;
+	platformIO.Platform_SetWindowPos = _imguiSetWindowPos;
+	platformIO.Platform_GetWindowPos = _imguiGetWindowPos;
+	platformIO.Platform_SetWindowSize = _imguiSetWindowSize;
+	platformIO.Platform_GetWindowSize = _imguiGetWindowSize;
+	platformIO.Platform_SetWindowFocus = _imguiSetWindowFocus;
+	platformIO.Platform_GetWindowFocus = _imguiGetWindowFocus;
+	platformIO.Platform_GetWindowMinimized = _imguiGetWindowMinimized;
+	platformIO.Platform_SetWindowTitle = _imguiSetWindowTitle;
+	platformIO.Platform_RenderWindow = _imguiRenderWindow;
+	platformIO.Platform_SwapBuffers = _imguiSwapBuffers;
+	platformIO.Platform_SetWindowAlpha = _imguiSetWindowAlpha;
+
+	// Register main window handle (which is owned by the main application, not by us)
+	// This is mostly for simplicity and consistency, so that our code (e.g. mouse handling etc.) can use same logic for main and secondary viewports.
+	_imguiViewportData *vd = IM_NEW(_imguiViewportData)();
+	vd->window = window;
+	vd->windowID = SDL_GetWindowID(window);
+	if (vd->windowID == 0) {
+		Log::error("%s", SDL_GetError());
+	}
+	vd->windowOwned = false;
+	vd->renderContext = rendererContext;
+	ImGuiViewport *mainViewport = ImGui::GetMainViewport();
+	mainViewport->PlatformUserData = vd;
+	mainViewport->PlatformHandle = vd->window;
+}
+
+static void updateMonitors() {
+	ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
+	platformIO.Monitors.resize(0);
+	int displayCount = SDL_GetNumVideoDisplays();
+	if (displayCount < 0) {
+		Log::error("%s", SDL_GetError());
+	}
+	for (int n = 0; n < displayCount; n++) {
+		// Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness
+		// settings, which generally needs to be set in the manifest or at runtime.
+		ImGuiPlatformMonitor monitor;
+		SDL_Rect r;
+		if (SDL_GetDisplayBounds(n, &r) == 0) {
+			monitor.MainPos = monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+			monitor.MainSize = monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+		} else {
+			Log::error("%s", SDL_GetError());
+		}
+		if (SDL_GetDisplayUsableBounds(n, &r) == 0) {
+			monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+			monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+		} else {
+			Log::error("%s", SDL_GetError());
+		}
+		const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
+		if (highDPI->boolVal()) {
+			float dpi = 0.0f;
+			if (SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr) == 0) {
+				monitor.DpiScale = dpi / 96.0f;
+			} else {
+				Log::error("%s", SDL_GetError());
+			}
+		}
+		platformIO.Monitors.push_back(monitor);
+	}
+}
+
+static void initRendererBackend(const char *name, void *userdata) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.BackendRendererUserData = userdata;
+	io.BackendRendererName = name;
+	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;  // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
+	io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;  // We can create multi-viewports on the Renderer side (optional)
+	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+	//io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+}
+
 app::AppState IMGUIApp::onInit() {
 	const app::AppState state = Super::onInit();
 	video::checkError();
@@ -475,17 +554,18 @@ app::AppState IMGUIApp::onInit() {
 	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, &ImDrawVert::u));
 	_vbo.addAttribute(_shader.getPosAttribute(_bufferIndex, &ImDrawVert::x));
 
-	// Set SDL hint to receive mouse click events on window focus, otherwise SDL doesn't emit the event.
-	// Without this, when clicking to gain focus, our widgets wouldn't activate even though they showed as hovered.
-	// (This is unfortunately a global SDL setting, so enabling it might have a side-effect on your application.
-	// It is unlikely to make a difference, but if your app absolutely needs to ignore the initial on-focus click:
-	// you can ignore SDL_MOUSEBUTTONDOWN events coming right after a SDL_WINDOWEVENT_FOCUS_GAINED)
-	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-
+	IMGUI_CHECKVERSION();
 	ImGui::SetAllocatorFunctions(_imguiAlloc, _imguiFree);
 	ImGui::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
+	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+	// io.ConfigViewportsNoAutoMerge = true;
+	// io.ConfigViewportsNoTaskBarIcon = true;
+
 	if (_persistUISettings) {
 		const core::String iniFile = _appname + "-imgui.ini";
 		_writePathIni = _filesystem->writePath(iniFile.c_str());
@@ -530,66 +610,6 @@ app::AppState IMGUIApp::onInit() {
 	io.GetClipboardTextFn = _getClipboardText;
 	io.ClipboardUserData = nullptr;
 
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
-	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
-
-	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
-	io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
-	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
-	io.BackendPlatformUserData = (void *)this;
-
-	ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
-	platformIO.Platform_CreateWindow = _imguiCreateWindow;
-	platformIO.Platform_DestroyWindow = _imguiDestroyWindow;
-	platformIO.Platform_ShowWindow = _imguiShowWindow;
-	platformIO.Platform_SetWindowPos = _imguiSetWindowPos;
-	platformIO.Platform_GetWindowPos = _imguiGetWindowPos;
-	platformIO.Platform_SetWindowSize = _imguiSetWindowSize;
-	platformIO.Platform_GetWindowSize = _imguiGetWindowSize;
-	platformIO.Platform_SetWindowFocus = _imguiSetWindowFocus;
-	platformIO.Platform_GetWindowFocus = _imguiGetWindowFocus;
-	platformIO.Platform_GetWindowMinimized = _imguiGetWindowMinimized;
-	platformIO.Platform_SetWindowTitle = _imguiSetWindowTitle;
-	platformIO.Platform_RenderWindow = _imguiRenderWindow;
-	platformIO.Platform_SwapBuffers = _imguiSwapBuffers;
-	platformIO.Platform_SetWindowAlpha = _imguiSetWindowAlpha;
-	platformIO.Monitors.resize(0);
-	int displayCount = SDL_GetNumVideoDisplays();
-	if (displayCount < 0) {
-		Log::error("%s", SDL_GetError());
-	}
-	for (int n = 0; n < displayCount; n++) {
-		// Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness
-		// settings, which generally needs to be set in the manifest or at runtime.
-		ImGuiPlatformMonitor monitor;
-		SDL_Rect r;
-		if (SDL_GetDisplayBounds(n, &r) == 0) {
-			monitor.MainPos = monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
-			monitor.MainSize = monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
-		} else {
-			Log::error("%s", SDL_GetError());
-		}
-		if (SDL_GetDisplayUsableBounds(n, &r) == 0) {
-			monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
-			monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
-		} else {
-			Log::error("%s", SDL_GetError());
-		}
-		const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
-		if (highDPI->boolVal()) {
-			float dpi = 0.0f;
-			if (SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr) == 0) {
-				monitor.DpiScale = dpi / 96.0f;
-			} else {
-				Log::error("%s", SDL_GetError());
-			}
-		}
-		platformIO.Monitors.push_back(monitor);
-	}
-	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
-
 	_mouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 	_mouseCursors[ImGuiMouseCursor_TextInput] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
 	_mouseCursors[ImGuiMouseCursor_ResizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
@@ -602,18 +622,25 @@ app::AppState IMGUIApp::onInit() {
 
 	ImGuiViewport *mainViewport = ImGui::GetMainViewport();
 	mainViewport->PlatformHandle = (void *)_window;
-
-	_imguiViewportData *vd = IM_NEW(_imguiViewportData)();
-	vd->window = _window;
-	vd->windowID = SDL_GetWindowID(_window);
-	if (vd->windowID == 0) {
-		Log::error("%s", SDL_GetError());
+#ifdef _WIN32
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (SDL_GetWindowWMInfo(window, &info)) {
+		mainViewport->PlatformHandleRaw = info.info.win.window;
 	}
-	vd->windowOwned = false;
-	vd->renderContext = _rendererContext;
-	mainViewport->PlatformUserData = vd;
-	mainViewport->PlatformHandle = vd->window;
+#endif
 
+	// Set SDL hint to receive mouse click events on window focus, otherwise SDL doesn't emit the event.
+	// Without this, when clicking to gain focus, our widgets wouldn't activate even though they showed as hovered.
+	// (This is unfortunately a global SDL setting, so enabling it might have a side-effect on your application.
+	// It is unlikely to make a difference, but if your app absolutely needs to ignore the initial on-focus click:
+	// you can ignore SDL_MOUSEBUTTONDOWN events coming right after a SDL_WINDOWEVENT_FOCUS_GAINED)
+	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
+
+	updateMonitors();
+	initPlatformInterface(_window, _rendererContext);
+	initRendererBackend(_appname.c_str(), this);
+	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
 	SDL_StartTextInput();
 
 	_console.init();
@@ -833,8 +860,11 @@ app::AppState IMGUIApp::onRunning() {
 
 	executeDrawCommands();
 
+	SDL_Window* backupCurrentWindow = SDL_GL_GetCurrentWindow();
+	SDL_GLContext backupCurrentContext = SDL_GL_GetCurrentContext();
 	ImGui::UpdatePlatformWindows();
 	ImGui::RenderPlatformWindowsDefault();
+	SDL_GL_MakeCurrent(backupCurrentWindow, backupCurrentContext);
 
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	return app::AppState::Running;
