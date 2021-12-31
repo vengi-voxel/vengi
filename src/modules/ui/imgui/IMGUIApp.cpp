@@ -838,27 +838,12 @@ app::AppState IMGUIApp::onRunning() {
 		core::setBindingContext(core::BindingContext::World);
 	}
 
-	video::ScopedShader scopedShader(_shader);
-	_shader.setViewprojection(_camera.projectionMatrix());
-	_shader.setModel(glm::mat4(1.0f));
-	_shader.setTexture(video::TextureUnit::Zero);
-
-	video::ScopedViewPort scopedViewPort(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-
-	video::enable(video::State::Blend);
-	video::disable(video::State::DepthTest);
-	video::enable(video::State::Scissor);
-	video::disable(video::State::CullFace);
-	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
-	video::blendEquation(video::BlendEquation::Add);
-
 	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	_console.render(rect, _deltaFrameSeconds);
 	ImGui::EndFrame();
 	ImGui::Render();
 
-	executeDrawCommands();
+	executeDrawCommands(ImGui::GetDrawData());
 
 	SDL_Window* backupCurrentWindow = SDL_GL_GetCurrentWindow();
 	SDL_GLContext backupCurrentContext = SDL_GL_GetCurrentContext();
@@ -870,12 +855,28 @@ app::AppState IMGUIApp::onRunning() {
 	return app::AppState::Running;
 }
 
-void IMGUIApp::executeDrawCommands() {
+void IMGUIApp::executeDrawCommands(ImDrawData* drawData) {
 	core_trace_scoped(ExecuteDrawCommands);
 
 	ImGuiIO& io = ImGui::GetIO();
-	ImDrawData* drawData = ImGui::GetDrawData();
 	drawData->ScaleClipRects(io.DisplayFramebufferScale);
+	video::ScopedViewPort scopedViewPort(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+
+	video::enable(video::State::Blend);
+	video::blendEquation(video::BlendEquation::Add);
+	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
+	video::disable(video::State::CullFace);
+	video::disable(video::State::DepthTest);
+	video::disable(video::State::StencilTest);
+	video::disable(video::State::PrimitiveRestart);
+	video::enable(video::State::Scissor);
+	video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
+
+	video::ScopedShader scopedShader(_shader);
+	_shader.setViewprojection(_camera.projectionMatrix());
+	_shader.setModel(glm::mat4(1.0f));
+	_shader.setTexture(video::TextureUnit::Zero);
+
 	int64_t drawCommands = 0;
 	for (int n = 0; n < drawData->CmdListsCount; ++n) {
 		const ImDrawList* cmdList = drawData->CmdLists[n];

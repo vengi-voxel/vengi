@@ -57,8 +57,6 @@ protected:
 
 	FileDialog _fileDialog;
 
-	void executeDrawCommands();
-
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual bool onTextInput(const core::String& text) override;
@@ -85,6 +83,8 @@ public:
 	virtual app::AppState onRunning() override;
 	virtual void onRenderUI() = 0;
 	virtual app::AppState onCleanup() override;
+
+	void executeDrawCommands(ImDrawData* drawData);
 
 	ImFont *defaultFont();
 	ImFont *bigFont();
