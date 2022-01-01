@@ -67,10 +67,10 @@ bool WindowedApp::handleSDLEvent(SDL_Event& event) {
 			const int h = event.window.data2;
 			int frameBufferWidth, frameBufferHeight;
 			SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
-			_aspect = frameBufferWidth / static_cast<float>(frameBufferHeight);
+			_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
 			_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
 			_windowDimension = glm::ivec2(w, h);
-			const float scaleFactor = _frameBufferDimension.x / (float)_windowDimension.x;
+			const float scaleFactor = (float)_frameBufferDimension.x / (float)_windowDimension.x;
 			video::resize(w, h, scaleFactor);
 			video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 		}

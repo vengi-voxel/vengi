@@ -150,14 +150,20 @@ void IMGUIApp::onWindowMoved(void *windowHandle) {
 
 void IMGUIApp::onWindowFocusGained(void *windowHandle) {
 	Super::onWindowFocusGained(windowHandle);
-	ImGuiIO& io = ImGui::GetIO();
-	io.AddFocusEvent(true);
+	ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(windowHandle);
+	if (viewport != nullptr) {
+		ImGuiIO& io = ImGui::GetIO();
+		io.AddFocusEvent(true);
+	}
 }
 
 void IMGUIApp::onWindowFocusLost(void *windowHandle) {
 	Super::onWindowFocusLost(windowHandle);
-	ImGuiIO& io = ImGui::GetIO();
-	io.AddFocusEvent(false);
+	ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(windowHandle);
+	if (viewport != nullptr) {
+		ImGuiIO& io = ImGui::GetIO();
+		io.AddFocusEvent(false);
+	}
 }
 
 void IMGUIApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {
