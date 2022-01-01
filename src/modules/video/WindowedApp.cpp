@@ -295,6 +295,8 @@ app::AppState WindowedApp::onInit() {
 	}
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
+	} else {
+		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
 	const int videoDrivers = SDL_GetNumVideoDrivers();

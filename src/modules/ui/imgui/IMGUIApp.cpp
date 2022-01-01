@@ -661,6 +661,19 @@ void IMGUIApp::beforeUI() {
 
 	io.DeltaTime = (float)_deltaFrameSeconds;
 
+	// Setup display size (every frame to accommodate for window resizing)
+	int w, h;
+	int display_w, display_h;
+	SDL_GetWindowSize(_window, &w, &h);
+	if (SDL_GetWindowFlags(_window) & SDL_WINDOW_MINIMIZED) {
+		w = h = 0;
+	}
+	SDL_GL_GetDrawableSize(_window, &display_w, &display_h);
+	io.DisplaySize = ImVec2((float)w, (float)h);
+	if (w > 0 && h > 0) {
+		io.DisplayFramebufferScale = ImVec2((float)display_w / (float)w, (float)display_h / (float)h);
+	}
+
 	ImVec2 mousePosPrev = io.MousePos;
 	io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 	io.MouseHoveredViewport = 0;
@@ -719,7 +732,7 @@ void IMGUIApp::beforeUI() {
 		// Set Dear ImGui mouse position from OS position + get buttons. (this is the common behavior)
 		int mouseXGlobal, mouseYGlobal;
 		SDL_GetGlobalMouseState(&mouseXGlobal, &mouseYGlobal);
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0) {
 			// Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on
 			// the upper-left of the primary monitor)
 			io.MousePos = ImVec2((float)mouseXGlobal, (float)mouseYGlobal);
@@ -727,7 +740,7 @@ void IMGUIApp::beforeUI() {
 			// Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is
 			// on the upper-left corner of the app window) Unlike local position obtained earlier this will be valid
 			// when straying out of bounds.
-			int windowX, windowY;
+			int windowX = 0, windowY = 0;
 			SDL_GetWindowPosition(mouseWindow, &windowX, &windowY);
 			io.MousePos = ImVec2((float)(mouseXGlobal - windowX), (float)(mouseYGlobal - windowY));
 		}
