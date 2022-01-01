@@ -39,7 +39,7 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 }
 
 WindowedApp::WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
-		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize), _frameBufferDimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
+		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize), _frameBufferDimension(-1), _mouseRelativePos(-1) {
 #if defined(__EMSCRIPTEN__) || defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
 	_singleWindowMode = true;
 #else
@@ -100,7 +100,6 @@ app::AppState WindowedApp::onRunning() {
 	// ignore the state here
 	Super::onRunning();
 
-	SDL_GetMouseState(&_mousePos.x, &_mousePos.y);
 	SDL_GetRelativeMouseState(&_mouseRelativePos.x, &_mouseRelativePos.y);
 	SDL_Event event;
 	bool quit = false;

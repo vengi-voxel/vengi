@@ -54,10 +54,6 @@ protected:
 
 	util::KeyBindingHandler _keybindingHandler;
 	/**
-	 * @brief The current mouse position in the window
-	 */
-	glm::ivec2 _mousePos;
-	/**
 	 * @brief Delta of the mouse movement since the last frame
 	 */
 	glm::ivec2 _mouseRelativePos;
