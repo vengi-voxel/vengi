@@ -291,28 +291,8 @@ app::AppState WindowedApp::onInit() {
 	if (highDPI->boolVal()) {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 		Log::debug("Enable high dpi support");
-		float ddpi = -1.0f;
-		float hdpi = -1.0f;
-		float vdpi = -1.0f;
-		if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0) {
-#ifdef __APPLE__
-			const float baseDpi = 72.0f;
-#else
-			const float baseDpi = 96.0f;
-#endif
-			_dpiFactor = ddpi / baseDpi;
-			_dpiHorizontalFactor = hdpi / baseDpi;
-			_dpiVerticalFactor = vdpi / baseDpi;
-		} else {
-			_dpiFactor = 1.0f;
-			_dpiHorizontalFactor = 1.0f;
-			_dpiVerticalFactor = 1.0f;
-		}
 	} else {
 		Log::debug("Disable high dpi support");
-		_dpiFactor = 1.0f;
-		_dpiHorizontalFactor = 1.0f;
-		_dpiVerticalFactor = 1.0f;
 	}
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
@@ -377,7 +357,7 @@ app::AppState WindowedApp::onInit() {
 	// we have to query it here to get the actual resolution
 	int frameBufferWidth, frameBufferHeight;
 	SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
-	_aspect = frameBufferWidth / static_cast<float>(frameBufferHeight);
+	_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
 	_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
 
 	int windowWidth, windowHeight;
@@ -386,11 +366,8 @@ app::AppState WindowedApp::onInit() {
 
 	Log::debug("resolution (%i:%i) (pixel)", _frameBufferDimension.x, _frameBufferDimension.y);
 	Log::debug("resolution (%i:%i) (screen)", _windowDimension.x, _windowDimension.y);
-	Log::debug("dpi factor: %f", _dpiFactor);
-	Log::debug("dpi factor h: %f", _dpiHorizontalFactor);
-	Log::debug("dpi factor v: %f", _dpiVerticalFactor);
 
-	const float scaleFactor = _frameBufferDimension.x / (float)_windowDimension.x;
+	const float scaleFactor = (float)_frameBufferDimension.x / (float)_windowDimension.x;
 	video::init(_windowDimension.x, _windowDimension.y, scaleFactor);
 	video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 

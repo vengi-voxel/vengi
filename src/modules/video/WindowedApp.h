@@ -38,9 +38,6 @@ protected:
 	glm::ivec2 _windowDimension;
 	float _aspect = 1.0f;
 	double _fps = 0.0;
-	float _dpiFactor = 1.0f;
-	float _dpiHorizontalFactor = 1.0f;
-	float _dpiVerticalFactor = 1.0f;
 	bool _allowRelativeMouseMode = true;
 	/**
 	 * Allows to create hidden windows
