@@ -631,7 +631,7 @@ app::AppState IMGUIApp::onInit() {
 #ifdef _WIN32
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
-	if (SDL_GetWindowWMInfo(window, &info)) {
+	if (SDL_GetWindowWMInfo(_window, &info)) {
 		mainViewport->PlatformHandleRaw = info.info.win.window;
 	}
 #endif
