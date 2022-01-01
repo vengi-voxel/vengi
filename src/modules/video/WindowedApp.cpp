@@ -187,6 +187,10 @@ core::String WindowedApp::getKeyBindingsString(const char *cmd) const {
 	return _keybindingHandler.getKeyBindingsString(cmd);
 }
 
+SDL_Window *WindowedApp::createWindow(int width, int height, int displayIndex, uint32_t flags) {
+	return SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
+}
+
 app::AppState WindowedApp::onInit() {
 	app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
@@ -327,21 +331,17 @@ app::AppState WindowedApp::onInit() {
 		Log::debug("use fake fullscreen for display %i: %i:%i", displayIndex, width, height);
 	}
 
-#define InternalCreateWindow() SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags)
-
-	_window = InternalCreateWindow();
+	_window = createWindow(displayIndex, width, height, flags);
 	if (!_window) {
 		Log::warn("Failed to get multisampled window - try to disable it");
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-		_window = InternalCreateWindow();
+		_window = createWindow(displayIndex, width, height, flags);
 		if (!_window) {
 			sdlCheckError();
 			return app::AppState::InitFailure;
 		}
 	}
-
-#undef InternalCreateWindow
 
 	if (displayIndex != SDL_GetWindowDisplayIndex(_window)) {
 		Log::error("Failed to create window at display %i", displayIndex);

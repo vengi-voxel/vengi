@@ -76,6 +76,8 @@ protected:
 
 	void showCursor(bool show);
 
+	virtual SDL_Window *createWindow(int width, int height, int displayIndex, uint32_t flags);
+
 	void centerMousePosition();
 
 	bool toggleRelativeMouseMode();
