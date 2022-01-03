@@ -69,6 +69,13 @@ public:
 	void* mapData(int32_t idx, video::AccessMode mode) const;
 	void unmapData(int32_t idx) const;
 
+	/**
+	 * This will only destroy the vao - not the buffer handles. Thus a new @c bind() call
+	 * will regenerate the vao
+	 *
+	 * @note This is useful when you are using different graphic contexts
+	 */
+	void destroyVertexArray();
 	bool update(int32_t idx, const void* data, size_t size, bool orphaning = false);
 
 	/**

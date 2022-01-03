@@ -114,6 +114,10 @@ bool Buffer::addAttribute(const Attribute& attribute) {
 	return true;
 }
 
+void Buffer::destroyVertexArray() {
+	video::deleteVertexArray(_vao);
+}
+
 bool Buffer::bind() const {
 	if (!isValid(0)) {
 		return false;

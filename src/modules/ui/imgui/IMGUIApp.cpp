@@ -303,24 +303,32 @@ static IMGUIApp *_imguiGetBackendUserdata() {
 
 static void _imguiCreateWindow(ImGuiViewport *viewport) {
 	IMGUIApp *bd = _imguiGetBackendUserdata();
+	core_assert(bd != nullptr);
 	_imguiViewportData *vd = IM_NEW(_imguiViewportData)();
 	viewport->PlatformUserData = vd;
 
 	ImGuiViewport *main_viewport = ImGui::GetMainViewport();
 	_imguiViewportData *main_viewport_data = (_imguiViewportData *)main_viewport->PlatformUserData;
+	core_assert(main_viewport_data != nullptr);
 
 	// Share GL resources with main context
-	bool use_opengl = (main_viewport_data->renderContext != NULL);
+	bool use_opengl = (main_viewport_data->renderContext != nullptr);
+	core_assert(use_opengl);
 	SDL_GLContext backup_context = NULL;
 	if (use_opengl) {
 		backup_context = SDL_GL_GetCurrentContext();
-		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-		SDL_GL_MakeCurrent(main_viewport_data->window, main_viewport_data->renderContext);
+		if (SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1) != 0) {
+			Log::error("%s", SDL_GetError());
+		}
+		if (SDL_GL_MakeCurrent(main_viewport_data->window, main_viewport_data->renderContext) != 0) {
+			Log::error("%s", SDL_GetError());
+		}
 	}
 
 	Uint32 sdl_flags = 0;
 	sdl_flags |= use_opengl ? SDL_WINDOW_OPENGL : 0;
-	sdl_flags |= SDL_GetWindowFlags((SDL_Window*)bd->windowHandle()) & SDL_WINDOW_ALLOW_HIGHDPI;
+	SDL_Window *window = (SDL_Window*)bd->windowHandle();
+	sdl_flags |= SDL_GetWindowFlags(window) & SDL_WINDOW_ALLOW_HIGHDPI;
 	sdl_flags |= SDL_WINDOW_HIDDEN;
 	sdl_flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? SDL_WINDOW_BORDERLESS : 0;
 	sdl_flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : SDL_WINDOW_RESIZABLE;
@@ -334,10 +342,15 @@ static void _imguiCreateWindow(ImGuiViewport *viewport) {
 	vd->windowOwned = true;
 	if (use_opengl) {
 		vd->renderContext = SDL_GL_CreateContext(vd->window);
-		SDL_GL_SetSwapInterval(0);
+		if (SDL_GL_SetSwapInterval(0) != 0) {
+			Log::error("%s", SDL_GetError());
+		}
 	}
-	if (use_opengl && backup_context)
-		SDL_GL_MakeCurrent(vd->window, backup_context);
+	if (use_opengl && backup_context) {
+		if (SDL_GL_MakeCurrent(vd->window, backup_context) != 0) {
+			Log::error("%s", SDL_GetError());
+		}
+	}
 
 	viewport->PlatformHandle = (void *)vd->window;
 #if defined(_WIN32)
@@ -463,9 +476,9 @@ static void initPlatformInterface(SDL_Window* window, video::RendererContext ren
 	platformIO.Platform_GetWindowFocus = _imguiGetWindowFocus;
 	platformIO.Platform_GetWindowMinimized = _imguiGetWindowMinimized;
 	platformIO.Platform_SetWindowTitle = _imguiSetWindowTitle;
+	platformIO.Platform_SetWindowAlpha = _imguiSetWindowAlpha;
 	platformIO.Platform_RenderWindow = _imguiRenderWindow;
 	platformIO.Platform_SwapBuffers = _imguiSwapBuffers;
-	platformIO.Platform_SetWindowAlpha = _imguiSetWindowAlpha;
 
 	// Register main window handle (which is owned by the main application, not by us)
 	// This is mostly for simplicity and consistency, so that our code (e.g. mouse handling etc.) can use same logic for main and secondary viewports.
@@ -489,6 +502,7 @@ static void updateMonitors() {
 	if (displayCount < 0) {
 		Log::error("%s", SDL_GetError());
 	}
+	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
 	for (int n = 0; n < displayCount; n++) {
 		// Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness
 		// settings, which generally needs to be set in the manifest or at runtime.
@@ -506,7 +520,6 @@ static void updateMonitors() {
 		} else {
 			Log::error("%s", SDL_GetError());
 		}
-		const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
 		if (highDPI->boolVal()) {
 			float dpi = 0.0f;
 			if (SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr) == 0) {
