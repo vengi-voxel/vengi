@@ -172,19 +172,6 @@ void IMGUIApp::onWindowResize(void *windowHandle, int windowWidth, int windowHei
 	if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(windowHandle)) {
 		viewport->PlatformRequestResize = true;
 	}
-	ImGuiIO& io = ImGui::GetIO();
-	int w = _windowDimension.x;
-	int h = _windowDimension.y;
-	if (SDL_GetWindowFlags(_window) & SDL_WINDOW_MINIMIZED) {
-		w = h = 0;
-	}
-
-	io.DisplaySize = _windowDimension;
-	if (w > 0 && h > 0) {
-		const float xScale = (float)_frameBufferDimension.x / (float)_windowDimension.x;
-		const float yScale = (float)_frameBufferDimension.y / (float)_windowDimension.y;
-		io.DisplayFramebufferScale = ImVec2(xScale, yScale);
-	}
 }
 
 app::AppState IMGUIApp::onConstruct() {
