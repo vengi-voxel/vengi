@@ -998,6 +998,7 @@ void IMGUIApp::executeDrawCommands(ImDrawData* drawData) {
 			++drawCommands;
 		}
 	}
+	_vbo.destroyVertexArray();
 	core_trace_plot("UIDrawCommands", drawCommands);
 }
 
