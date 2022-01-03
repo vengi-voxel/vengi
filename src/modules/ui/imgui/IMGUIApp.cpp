@@ -998,6 +998,8 @@ void IMGUIApp::executeDrawCommands(ImDrawData* drawData) {
 			++drawCommands;
 		}
 	}
+	// Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared
+	// among GL contexts)
 	_vbo.destroyVertexArray();
 	core_trace_plot("UIDrawCommands", drawCommands);
 }
