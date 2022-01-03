@@ -928,9 +928,13 @@ app::AppState IMGUIApp::onRunning() {
 void IMGUIApp::executeDrawCommands(ImDrawData* drawData) {
 	core_trace_scoped(ExecuteDrawCommands);
 
-	ImGuiIO& io = ImGui::GetIO();
-	drawData->ScaleClipRects(io.DisplayFramebufferScale);
-	video::ScopedViewPort scopedViewPort(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+	const int fbWidth = (int)(drawData->DisplaySize.x * drawData->FramebufferScale.x);
+	const int fbHeight = (int)(drawData->DisplaySize.y * drawData->FramebufferScale.y);
+	if (fbWidth <= 0 || fbHeight <= 0) {
+		return;
+	}
+
+	video::ScopedViewPort scopedViewPort(0, 0, fbWidth, fbHeight);
 
 	video::enable(video::State::Blend);
 	video::blendEquation(video::BlendEquation::Add);
@@ -942,12 +946,31 @@ void IMGUIApp::executeDrawCommands(ImDrawData* drawData) {
 	video::enable(video::State::Scissor);
 	video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 
+	const float L = drawData->DisplayPos.x;
+	const float R = drawData->DisplayPos.x + drawData->DisplaySize.x;
+	float T = drawData->DisplayPos.y;
+	float B = drawData->DisplayPos.y + drawData->DisplaySize.y;
+	if (!video::isClipOriginLowerLeft()) {
+		float tmp = T;
+		T = B;
+		B = tmp;
+	}
+	const glm::mat4 orthoMatrix = {
+		{2.0f / (R - L), 0.0f, 0.0f, 0.0f},
+		{0.0f, 2.0f / (T - B), 0.0f, 0.0f},
+		{0.0f, 0.0f, -1.0f, 0.0f},
+		{(R + L) / (L - R), (T + B) / (B - T), 0.0f, 1.0f},
+	};
 	video::ScopedShader scopedShader(_shader);
-	_shader.setViewprojection(_camera.projectionMatrix());
+	_shader.setViewprojection(orthoMatrix);
 	_shader.setModel(glm::mat4(1.0f));
 	_shader.setTexture(video::TextureUnit::Zero);
 
 	int64_t drawCommands = 0;
+
+	ImVec2 clipOff = drawData->DisplayPos;		   // (0,0) unless using multi-viewports
+	ImVec2 clipScale = drawData->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
+
 	for (int n = 0; n < drawData->CmdListsCount; ++n) {
 		const ImDrawList* cmdList = drawData->CmdLists[n];
 
@@ -960,9 +983,16 @@ void IMGUIApp::executeDrawCommands(ImDrawData* drawData) {
 			if (cmd->UserCallback) {
 				cmd->UserCallback(cmdList, cmd);
 			} else {
+				// Project scissor/clipping rectangles into framebuffer space
+				ImVec2 clipMin((cmd->ClipRect.x - clipOff.x) * clipScale.x,
+								(cmd->ClipRect.y - clipOff.y) * clipScale.y);
+				ImVec2 clipMax((cmd->ClipRect.z - clipOff.x) * clipScale.x,
+								(cmd->ClipRect.w - clipOff.y) * clipScale.y);
+				if (clipMax.x <= clipMin.x || clipMax.y <= clipMin.y) {
+					continue;
+				}
+				video::scissor((int)clipMin.x, (int)clipMin.y, (int)clipMax.x - (int)clipMin.x, (int)clipMax.y - (int)clipMin.y);
 				video::bindTexture(video::TextureUnit::Zero, video::TextureType::Texture2D, (video::Id)(intptr_t)cmd->TextureId);
-				const ImVec4& cr = cmd->ClipRect;
-				video::scissor((int)cr.x, (int)cr.y, (int)cr.z - (int)cr.x, (int)cr.w - (int)cr.y);
 				video::drawElementsBaseVertex<ImDrawIdx>(video::Primitive::Triangles, cmd->ElemCount, (int)cmd->IdxOffset, (int)cmd->VtxOffset);
 			}
 			++drawCommands;
