@@ -13,13 +13,6 @@
 
 namespace voxedit {
 
-static void executeItem(const char *title, const char *command, bool enable, command::CommandExecutionListener &listener) {
-	if (ImGui::CommandMenuItem(title, command, enable)) {
-		static core::DynamicArray<core::String> args(0);
-		listener(command, args);
-	}
-}
-
 void LayerPanel::addLayerItem(int layerId, const voxedit::Layer &layer, command::CommandExecutionListener &listener) {
 	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
 	ImGui::TableNextColumn();
@@ -48,22 +41,22 @@ void LayerPanel::addLayerItem(int layerId, const voxedit::Layer &layer, command:
 	const core::String &contextMenuId = core::string::format("Edit##context-layer-%i", layerId);
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validLayers = layerMgr.validLayers();
-		executeItem(ICON_FA_TRASH_ALT " Delete" LAYERPOPUP, "layerdelete", validLayers > 1, listener);
-		executeItem(ICON_FA_EYE_SLASH " Hide others" LAYERPOPUP, "layerhideothers", validLayers > 1, listener);
-		executeItem(ICON_FA_COPY " Duplicate" LAYERPOPUP, "layerduplicate", true, listener);
-		executeItem(ICON_FA_EYE " Show all" LAYERPOPUP, "layershowall", true, listener);
-		executeItem(ICON_FA_EYE_SLASH " Hide all" LAYERPOPUP, "layerhideall", true, listener);
-		executeItem(ICON_FA_CARET_SQUARE_UP " Move up" LAYERPOPUP, "layermoveup", validLayers > 1, listener);
-		executeItem(ICON_FA_CARET_SQUARE_DOWN " Move down" LAYERPOPUP, "layermovedown", validLayers > 1, listener);
-		executeItem(ICON_FA_OBJECT_GROUP " Merge" LAYERPOPUP, "layermerge", validLayers > 1, listener);
-		executeItem(ICON_FA_OBJECT_GROUP " Merge all" LAYERPOPUP, "layermergeall", validLayers > 1, listener);
-		executeItem(ICON_FA_OBJECT_GROUP " Merge visible" LAYERPOPUP, "layermergevisible", validLayers > 1, listener);
-		executeItem(ICON_FA_OBJECT_GROUP " Merge locked" LAYERPOPUP, "layermergelocked", validLayers > 1, listener);
-		executeItem(ICON_FA_LOCK " Lock all" LAYERPOPUP, "layerlockall", true, listener);
-		executeItem(ICON_FA_UNLOCK " Unlock all" LAYERPOPUP, "layerunlockall", true, listener);
-		executeItem(ICON_FA_COMPRESS_ARROWS_ALT " Center origin" LAYERPOPUP, "center_origin", true, listener);
-		executeItem(ICON_FA_COMPRESS_ARROWS_ALT " Center reference" LAYERPOPUP, "center_referenceposition", true, listener);
-		executeItem(ICON_FA_SAVE " Save" LAYERPOPUP, "layerssave", true, listener);
+		ImGui::CommandMenuItem(ICON_FA_TRASH_ALT " Delete" LAYERPOPUP, "layerdelete", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" LAYERPOPUP, "layerhideothers", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" LAYERPOPUP, "layerduplicate", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_EYE " Show all" LAYERPOPUP, "layershowall", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide all" LAYERPOPUP, "layerhideall", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_CARET_SQUARE_UP " Move up" LAYERPOPUP, "layermoveup", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_CARET_SQUARE_DOWN " Move down" LAYERPOPUP, "layermovedown", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge" LAYERPOPUP, "layermerge", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" LAYERPOPUP, "layermergeall", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" LAYERPOPUP, "layermergevisible", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" LAYERPOPUP, "layermergelocked", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" LAYERPOPUP, "layerlockall", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" LAYERPOPUP, "layerunlockall", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center origin" LAYERPOPUP, "center_origin", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center reference" LAYERPOPUP, "center_referenceposition", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_SAVE " Save" LAYERPOPUP, "layerssave", true, &listener);
 		core::String layerName = layer.name;
 		if (ImGui::InputText("Name" LAYERPOPUP, &layerName)) {
 			layerMgr.rename(layerId, layerName);

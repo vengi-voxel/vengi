@@ -3,10 +3,12 @@
  */
 
 #include "PalettePanel.h"
+#include "core/StringUtil.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUI.h"
 
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
+#define PALETTEACTIONPOPUP "##paletteactionpopup"
 
 namespace voxedit {
 
@@ -32,25 +34,15 @@ void PalettePanel::reloadAvailablePalettes() {
 
 void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
 	const voxel::MaterialColorArray &colors = voxel::getMaterialColors();
+	const int maxPaletteEntries = (int)colors.size();
 	const float height = ImGui::GetContentRegionMax().y;
-	const float width = ImGui::Size(120.0f);
-	const ImVec2 size(width, height);
-	ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
-	int voxelColorTraceIndex = sceneMgr().hitCursorVoxel().getColor();
-	int voxelColorSelectedIndex = sceneMgr().modifier().cursorVoxel().getColor();
+	const ImVec2 windowSize(ImGui::Size(120.0f), height);
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
+	const int currentSceneHoveredPalIdx = sceneMgr().hitCursorVoxel().getColor();
+	const int currentSelectedPalIdx = sceneMgr().modifier().cursorVoxel().getColor();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-		core_trace_scoped(PalettePanel);
-		ImVec2 pos = ImGui::GetWindowPos();
-		pos.x += ImGui::GetWindowContentRegionMin().x;
-		pos.y += ImGui::GetWindowContentRegionMin().y;
-		const float size = ImGui::Size(20);
-		const ImVec2& maxs = ImGui::GetWindowContentRegionMax();
-		const ImVec2& mins = ImGui::GetWindowContentRegionMin();
-		const int amountX = (int)((maxs.x - mins.x) / size);
-		const int amountY = (int)((maxs.y - mins.y) / size);
-		const int max = (int)colors.size();
-		int i = 0;
-		float usedHeight = 0;
+		const ImVec2 colorButtonSize(ImGui::Size(20), ImGui::Size(20));
+		const ImVec2 &pos = ImGui::GetCursorScreenPos();
 		bool colorHovered = false;
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		const ImDrawListFlags backupFlags = drawList->Flags;
@@ -60,41 +52,47 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		const ImU32 yellowColor = ImGui::GetColorU32(core::Color::Yellow);
 		const ImU32 darkRedColor = ImGui::GetColorU32(core::Color::DarkRed);
 
-		for (int y = 0; y < amountY; ++y) {
-			const float transY = pos.y + (float)y * size;
-			for (int x = 0; x < amountX; ++x) {
-				if (i >= max) {
-					break;
-				}
-				const float transX = pos.x + (float)x * size;
-				const ImVec2 v1(transX + 1.0f, transY + 1.0f);
-				const ImVec2 v2(transX + (float)size, transY + (float)size);
-				drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(colors[i]));
+		const float windowWidth = ImGui::GetWindowContentRegionMax().x;
+		ImVec2 globalCursorPos = ImGui::GetCursorScreenPos();
+		for (int palIdx = 0; palIdx < maxPaletteEntries; ++palIdx) {
+			const float borderWidth = 1.0f;
+			const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
+			const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
 
-				if (!colorHovered && ImGui::IsMouseHoveringRect(v1, v2)) {
-					colorHovered = true;
-					drawList->AddRect(v1, v2, redColor);
-					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-						sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, i));
-					}
-				} else if (i == voxelColorTraceIndex) {
-					drawList->AddRect(v1, v2, yellowColor);
-				} else if (i == voxelColorSelectedIndex) {
-					drawList->AddRect(v1, v2, darkRedColor);
-				}
-				++i;
+			drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(colors[palIdx]));
+
+			const core::String &id = core::string::format("##palitem-%i", palIdx);
+			if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
+				sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
 			}
-			if (i >= max) {
-				break;
+			const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", palIdx);
+			if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
+				const core::String &layerFromColorCmd = core::string::format("colortolayer %i", palIdx);
+				ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Layer from color" PALETTEACTIONPOPUP, layerFromColorCmd.c_str(), true, &listener);
+				ImGui::EndPopup();
 			}
-			usedHeight += size;
+			if (!colorHovered && ImGui::IsItemHovered()) {
+				colorHovered = true;
+				drawList->AddRect(v1, v2, redColor);
+			} else if (palIdx == currentSceneHoveredPalIdx) {
+				drawList->AddRect(v1, v2, yellowColor);
+			} else if (palIdx == currentSelectedPalIdx) {
+				drawList->AddRect(v1, v2, darkRedColor);
+			}
+			globalCursorPos.x += colorButtonSize.x;
+			if (globalCursorPos.x > windowWidth - colorButtonSize.x) {
+				globalCursorPos.x = pos.x;
+				globalCursorPos.y += colorButtonSize.y;
+			}
+			ImGui::SetCursorScreenPos(globalCursorPos);
 		}
+		const ImVec2 cursorPos(pos.x, globalCursorPos.y + colorButtonSize.y);
+		ImGui::SetCursorScreenPos(cursorPos);
 
 		// restore the draw list flags from above
 		drawList->Flags = backupFlags;
 
-		ImGui::SetCursorPosY(pos.y + usedHeight);
-		ImGui::Text("Color: %i (voxel %i)", voxelColorSelectedIndex, voxelColorTraceIndex);
+		ImGui::Text("Color: %i (voxel %i)", currentSelectedPalIdx, currentSceneHoveredPalIdx);
 		ImGui::TooltipText("Palette color index for current voxel under cursor");
 		ImGui::CommandButton("Import palette", "importpalette", nullptr, 0.0f, &listener);
 		ImGui::SameLine();
