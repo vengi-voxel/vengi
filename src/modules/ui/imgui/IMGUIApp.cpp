@@ -692,9 +692,9 @@ void IMGUIApp::beforeUI() {
 	io.MouseDown[2] = _mousePressed[2] || (mouseButtons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
 	_mousePressed[0] = _mousePressed[1] = _mousePressed[2] = false;
 
-	SDL_Window *mouseWindow = NULL;
-	if (isSingleWindowMode()) {
-		mouseWindow = (SDL_GetWindowFlags(_window) & SDL_WINDOW_INPUT_FOCUS) ? _window : NULL;
+	SDL_Window *mouseWindow = nullptr;
+	if (isSingleWindowMode() || (io.BackendFlags & ImGuiBackendFlags_PlatformHasViewports) == 0) {
+		mouseWindow = (SDL_GetWindowFlags(_window) & SDL_WINDOW_INPUT_FOCUS) ? _window : nullptr;
 	} else {
 		// Obtain focused and hovered window. We forward mouse input when focused or when hovered (and no other window
 		// is capturing)
@@ -726,13 +726,11 @@ void IMGUIApp::beforeUI() {
 		}
 	}
 
-	if (isSingleWindowMode()) {
-		io.MousePos = ImVec2((float)mouseXLocal, (float)mouseYLocal);
-	} else {
+	if (_mouseCanUseGlobalState) {
 		// Set Dear ImGui mouse position from OS position + get buttons. (this is the common behavior)
-		int mouseXGlobal, mouseYGlobal;
+		int mouseXGlobal = 0, mouseYGlobal = 0;
 		SDL_GetGlobalMouseState(&mouseXGlobal, &mouseYGlobal);
-		if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0) {
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 			// Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on
 			// the upper-left of the primary monitor)
 			io.MousePos = ImVec2((float)mouseXGlobal, (float)mouseYGlobal);
@@ -742,8 +740,23 @@ void IMGUIApp::beforeUI() {
 			// when straying out of bounds.
 			int windowX = 0, windowY = 0;
 			SDL_GetWindowPosition(mouseWindow, &windowX, &windowY);
+			int index = SDL_GetWindowDisplayIndex(mouseWindow);
+			if (index >= 0) {
+				SDL_Rect rect;
+				if (SDL_GetDisplayBounds(index, &rect) == 0) {
+					SDL_Point point;
+					point.x = mouseXGlobal;
+					point.y = mouseYGlobal;
+					if (!SDL_PointInRect(&point, &rect)) {
+						windowX -= rect.x;
+						windowY -= rect.y;
+					}
+				}
+			}
 			io.MousePos = ImVec2((float)(mouseXGlobal - windowX), (float)(mouseYGlobal - windowY));
 		}
+	} else {
+		io.MousePos = ImVec2((float)mouseXLocal, (float)mouseYLocal);
 	}
 }
 

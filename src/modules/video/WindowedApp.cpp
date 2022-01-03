@@ -372,6 +372,20 @@ app::AppState WindowedApp::onInit() {
 	video::init(_windowDimension.x, _windowDimension.y, scaleFactor);
 	video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 
+	if (isSingleWindowMode()) {
+		_mouseCanUseGlobalState = false;
+	} else {
+		// Check and store if we are on a SDL backend that supports global mouse position
+		// ("wayland" and "rpi" don't support it, but we chose to use a white-list instead of a black-list)
+		const char *sdlBackend = SDL_GetCurrentVideoDriver();
+		const char *globalMouseWhitelist[] = {"windows", "cocoa", "x11", "DIVE", "VMAN"};
+		for (int n = 0; n < lengthof(globalMouseWhitelist); ++n) {
+			if (strncmp(sdlBackend, globalMouseWhitelist[n], strlen(globalMouseWhitelist[n])) == 0) {
+				_mouseCanUseGlobalState = true;
+			}
+		}
+	}
+
 	video_trace_init();
 
 	return state;

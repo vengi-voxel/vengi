@@ -51,6 +51,7 @@ protected:
 	 * Will block the event queue if the window is minimized of hidden
 	 */
 	bool _powerSaveMode = true;
+	bool _mouseCanUseGlobalState = false;
 
 	util::KeyBindingHandler _keybindingHandler;
 	/**
