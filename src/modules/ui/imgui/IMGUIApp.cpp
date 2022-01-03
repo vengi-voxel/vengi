@@ -212,7 +212,7 @@ static const char* _getClipboardText(void*) {
 	if (!text) {
 		return nullptr;
 	}
-	const int len = SDL_strlen(text);
+	const int len = (int)SDL_strlen(text);
 	if (len == 0) {
 		SDL_free((void*) text);
 		return "";
@@ -273,7 +273,7 @@ void IMGUIApp::loadFonts() {
 	video::bindTexture(video::TextureUnit::Upload, cfg.type(), _texture);
 	video::setupTexture(cfg);
 	video::uploadTexture(cfg.type(), cfg.format(), width, height, pixels, 0);
-	io.Fonts->TexID = (void *) (intptr_t) _texture;
+	io.Fonts->TexID = (ImTextureID)(intptr_t)_texture;
 }
 
 // Helper structure we store in the void* RenderUserData field of each ImGuiViewport to easily retrieve our backend
