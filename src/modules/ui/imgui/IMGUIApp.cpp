@@ -463,7 +463,16 @@ static void _imguiSwapBuffers(ImGuiViewport *viewport, void *) {
 	}
 }
 
-static void initPlatformInterface(SDL_Window* window, video::RendererContext rendererContext) {
+static void initPlatformInterface(const char *name, IMGUIApp *userdata, SDL_Window* window, video::RendererContext rendererContext) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.BackendPlatformUserData = userdata;
+	io.BackendPlatformName = name;
+	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+	if (!userdata->isSingleWindowMode()) {
+	//	io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
+	}
+	//io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+
 	ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
 	platformIO.Platform_CreateWindow = _imguiCreateWindow;
 	platformIO.Platform_DestroyWindow = _imguiDestroyWindow;
@@ -532,14 +541,29 @@ static void updateMonitors() {
 	}
 }
 
-static void initRendererBackend(const char *name, void *userdata) {
+#if 0
+static void _rendererRenderWindow(ImGuiViewport *viewport, void *renderArg) {
+	if (!(viewport->Flags & ImGuiViewportFlags_NoRendererClear)) {
+		const glm::vec4 clearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		video::clearColor(clearColor);
+		video::clear(video::ClearFlag::Color);
+	}
+	ImGuiIO& io = ImGui::GetIO();
+	IMGUIApp* app = (IMGUIApp*)io.BackendRendererUserData;
+	app->executeDrawCommands(viewport->DrawData);
+}
+#endif
+
+static void initRendererBackend(const char *name, IMGUIApp *userdata) {
 	ImGuiIO& io = ImGui::GetIO();
 	io.BackendRendererUserData = userdata;
 	io.BackendRendererName = name;
 	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;  // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
 	io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;  // We can create multi-viewports on the Renderer side (optional)
-	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
-	//io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+#if 0
+	ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+	platform_io.Renderer_RenderWindow = _rendererRenderWindow;
+#endif
 }
 
 app::AppState IMGUIApp::onInit() {
@@ -579,6 +603,7 @@ app::AppState IMGUIApp::onInit() {
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
@@ -657,7 +682,7 @@ app::AppState IMGUIApp::onInit() {
 	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
 	updateMonitors();
-	initPlatformInterface(_window, _rendererContext);
+	initPlatformInterface(_appname.c_str(), this, _window, _rendererContext);
 	initRendererBackend(_appname.c_str(), this);
 	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
 	SDL_StartTextInput();
