@@ -6,7 +6,6 @@
 
 #include "FileDialog.h"
 #include "video/WindowedApp.h"
-#include "video/Camera.h"
 #include "video/Buffer.h"
 #include "RenderShaders.h"
 #include "Console.h"
@@ -24,7 +23,6 @@ namespace imgui {
 class IMGUIApp: public video::WindowedApp {
 private:
 	using Super = video::WindowedApp;
-	video::Camera _camera;
 	void loadFonts();
 protected:
 	core::VarPtr _renderUI;
@@ -68,8 +66,6 @@ public:
 			const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~IMGUIApp();
 
-	const video::Camera& camera() const;
-
 	virtual void beforeUI();
 
 	int fontSize() const;
@@ -112,10 +108,6 @@ inline ImFont *IMGUIApp::smallFont() {
 
 inline int IMGUIApp::fontSize() const {
 	return _uiFontSize->intVal();
-}
-
-inline const video::Camera& IMGUIApp::camera() const {
-	return _camera;
 }
 
 }

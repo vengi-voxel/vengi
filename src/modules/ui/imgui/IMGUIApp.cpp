@@ -31,12 +31,13 @@
 
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include <glm/mat4x4.hpp>
 
 namespace ui {
 namespace imgui {
 
 IMGUIApp::IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
-		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize), _camera(video::CameraType::UI, video::CameraMode::Orthogonal) {
+		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize) {
 }
 
 IMGUIApp::~IMGUIApp() {
@@ -184,12 +185,6 @@ void IMGUIApp::onWindowResize(void *windowHandle, int windowWidth, int windowHei
 		const float yScale = (float)_frameBufferDimension.y / (float)_windowDimension.y;
 		io.DisplayFramebufferScale = ImVec2(xScale, yScale);
 	}
-
-	_camera.setSize(windowDimension());
-	_camera.update(0.0);
-	video::ScopedShader scoped(_shader);
-	_shader.setViewprojection(_camera.projectionMatrix());
-	_shader.setModel(glm::mat4(1.0f));
 }
 
 app::AppState IMGUIApp::onConstruct() {
@@ -590,8 +585,6 @@ app::AppState IMGUIApp::onInit() {
 		return app::AppState::InitFailure;
 	}
 	_vbo.setMode(_indexBufferIndex, video::BufferMode::Stream);
-
-	_camera = video::uiCamera(windowDimension());
 
 	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &ImDrawVert::r, true));
 	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, &ImDrawVert::u));

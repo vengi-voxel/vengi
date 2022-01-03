@@ -23,6 +23,9 @@
 #include "network/ProtocolHandlerRegistry.h"
 #include "ui/imgui/IconsFontAwesome5.h"
 
+#include <glm/ext/scalar_constants.hpp>
+#include <glm/trigonometric.hpp>
+
 namespace priv {
 
 static const uint32_t TableFlags =
