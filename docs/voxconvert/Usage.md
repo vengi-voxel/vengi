@@ -2,6 +2,7 @@
 
 `./vengi-voxconvert --merge --scale --input infile --output outfile`
 
+* `--crop`: reduces the volume sizes to their voxel boundaries.
 * `--export-palette`: will save the included palette as png next to the source file. Use in combination with `--src-palette`.
 * `--filter <filter>`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`. See the layers note below.
 * `--force`: overwrite existing files
@@ -38,6 +39,7 @@ color from the source file palette to the specified palette.
 * translate
 * script
 * pivot
+* crop
 
 ## Layers
 

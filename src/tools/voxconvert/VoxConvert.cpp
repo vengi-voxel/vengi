@@ -24,6 +24,7 @@
 #include "voxelformat/VoxelVolumes.h"
 #include "voxelgenerator/LUAGenerator.h"
 #include "voxelutil/ImageUtils.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeRotator.h"
 
@@ -133,6 +134,7 @@ app::AppState VoxConvert::onInit() {
 	const bool srcPalette = hasArg("--src-palette");
 	const bool exportPalette = hasArg("--export-palette");
 	const bool changePivot = hasArg("--pivot");
+	const bool cropVolumes = hasArg("--crop");
 
 	Log::info("Options");
 	if (voxelformat::isMeshFormat(outfile)) {
@@ -156,6 +158,7 @@ app::AppState VoxConvert::onInit() {
 	}
 	Log::info("* merge volumes:                 - %s", (mergeVolumes ? "true" : "false"));
 	Log::info("* scale volumes:                 - %s", (scaleVolumes ? "true" : "false"));
+	Log::info("* crop volumes:                  - %s", (cropVolumes ? "true" : "false"));
 	Log::info("* change pivot:                  - %s", (changePivot ? "true" : "false"));
 	Log::info("* mirror volumes:                - %s", (mirrorVolumes ? "true" : "false"));
 	Log::info("* translate volumes:             - %s", (translateVolumes ? "true" : "false"));
@@ -296,6 +299,10 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 
+	if (cropVolumes) {
+		crop(volumes);
+	}
+
 	Log::debug("Save %i volumes", (int)volumes.size());
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
 		voxel::clearVolumes(volumes);
@@ -307,6 +314,18 @@ app::AppState VoxConvert::onInit() {
 	voxel::clearVolumes(volumes);
 
 	return state;
+}
+
+void VoxConvert::crop(voxel::VoxelVolumes& volumes) {
+	Log::info("Crop volumes");
+	for (voxel::VoxelVolume& v : volumes) {
+		if (v.volume == nullptr) {
+			continue;
+		}
+		voxel::RawVolume *cropped = voxel::cropVolume(v.volume);
+		delete v.volume;
+		v.volume = cropped;
+	}
 }
 
 void VoxConvert::pivot(const glm::ivec3& pivot, voxel::VoxelVolumes& volumes) {
