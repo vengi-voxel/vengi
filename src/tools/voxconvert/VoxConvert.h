@@ -24,6 +24,8 @@ private:
 	core::VarPtr _withColor;
 	core::VarPtr _withTexCoords;
 protected:
+	glm::ivec3 getArgIvec3(const core::String &name);
+
 	void usage() const override;
 	void mirror(const core::String& axisStr, voxel::VoxelVolumes& volumes);
 	void rotate(const core::String& axisStr, voxel::VoxelVolumes& volumes);

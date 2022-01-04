@@ -280,11 +280,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (translateVolumes) {
-		const core::String &arguments = getArgVal("--translate");
-		glm::ivec3 t(0);
-		if (SDL_sscanf(arguments.c_str(), "%i:%i:%i", &t.x, &t.y, &t.z) >= 1) {
-			translate(t, volumes);
-		}
+		translate(getArgIvec3("--translate"), volumes);
 	}
 
 	if (!scriptParameters.empty()) {
@@ -292,11 +288,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (changePivot) {
-		const core::String &arguments = getArgVal("--pivot");
-		glm::ivec3 t(0);
-		if (SDL_sscanf(arguments.c_str(), "%i:%i:%i", &t.x, &t.y, &t.z) >= 1) {
-			pivot(t, volumes);
-		}
+		pivot(getArgIvec3("--pivot"), volumes);
 	}
 
 	if (cropVolumes) {
@@ -314,6 +306,13 @@ app::AppState VoxConvert::onInit() {
 	voxel::clearVolumes(volumes);
 
 	return state;
+}
+
+glm::ivec3 VoxConvert::getArgIvec3(const core::String &name) {
+	const core::String &arguments = getArgVal(name);
+	glm::ivec3 t(0);
+	SDL_sscanf(arguments.c_str(), "%i:%i:%i", &t.x, &t.y, &t.z);
+	return t;
 }
 
 void VoxConvert::crop(voxel::VoxelVolumes& volumes) {
