@@ -4,7 +4,8 @@ vengi (0.0.17.0-1) UNRELEASED; urgency=low
   * Fixed relative path handling for registered paths
 
   * VoxConvert:
-  * Added `--crop` parameter that reduces the volumes to their real voxel sizes
+  * Added --crop parameter that reduces the volumes to their real voxel sizes
+  * Added --split option to cut volumes into smaller pieces
 
   * VoxEdit:
   * Fixed torus shape

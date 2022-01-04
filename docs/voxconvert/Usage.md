@@ -14,6 +14,7 @@
 * `--rotate <x|y|z>`: allows you to rotate the volumes by 90 degree at x, y and z axis
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
 * `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
+* `--split <x:y:z>`: slices the volumes into pieces of the given size
 * `--src-palette`: will use the included [palette](../Palette.md) and doesn't perform any quantization to the default palette
 * `--translate <x:y:z>`: translates the volumes by x (right), y (up), z (back)
 
@@ -40,6 +41,7 @@ color from the source file palette to the specified palette.
 * script
 * pivot
 * crop
+* split
 
 ## Layers
 

@@ -18,6 +18,7 @@ General:
 VoxConvert:
 
    - Added `--crop` parameter that reduces the volumes to their real voxel sizes
+   - Added `--split` option to cut volumes into smaller pieces
 
 VoxEdit:
 

@@ -27,6 +27,7 @@
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeRotator.h"
+#include "voxelutil/VolumeSplitter.h"
 
 VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -135,6 +136,7 @@ app::AppState VoxConvert::onInit() {
 	const bool exportPalette = hasArg("--export-palette");
 	const bool changePivot = hasArg("--pivot");
 	const bool cropVolumes = hasArg("--crop");
+	const bool splitVolumes = hasArg("--split");
 
 	Log::info("Options");
 	if (voxelformat::isMeshFormat(outfile)) {
@@ -159,6 +161,7 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* merge volumes:                 - %s", (mergeVolumes ? "true" : "false"));
 	Log::info("* scale volumes:                 - %s", (scaleVolumes ? "true" : "false"));
 	Log::info("* crop volumes:                  - %s", (cropVolumes ? "true" : "false"));
+	Log::info("* split volumes:                 - %s", (splitVolumes ? "true" : "false"));
 	Log::info("* change pivot:                  - %s", (changePivot ? "true" : "false"));
 	Log::info("* mirror volumes:                - %s", (mirrorVolumes ? "true" : "false"));
 	Log::info("* translate volumes:             - %s", (translateVolumes ? "true" : "false"));
@@ -295,6 +298,10 @@ app::AppState VoxConvert::onInit() {
 		crop(volumes);
 	}
 
+	if (splitVolumes) {
+		split(getArgIvec3("--split"), volumes);
+	}
+
 	Log::debug("Save %i volumes", (int)volumes.size());
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
 		voxel::clearVolumes(volumes);
@@ -313,6 +320,17 @@ glm::ivec3 VoxConvert::getArgIvec3(const core::String &name) {
 	glm::ivec3 t(0);
 	SDL_sscanf(arguments.c_str(), "%i:%i:%i", &t.x, &t.y, &t.z);
 	return t;
+}
+
+void VoxConvert::split(const glm::ivec3 &size, voxel::VoxelVolumes& volumes) {
+	Log::info("split volumes at %i:%i:%i", size.x, size.y, size.z);
+	voxel::RawVolume *merged = volumes.merge();
+	voxel::clearVolumes(volumes);
+	core::DynamicArray<voxel::RawVolume *> rawVolumes;
+	voxel::splitVolume(merged, size, rawVolumes);
+	for (voxel::RawVolume *v : rawVolumes) {
+		volumes.push_back({v});
+	}
 }
 
 void VoxConvert::crop(voxel::VoxelVolumes& volumes) {

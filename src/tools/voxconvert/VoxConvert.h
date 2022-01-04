@@ -35,6 +35,7 @@ protected:
 	void pivot(const glm::ivec3& pivot, voxel::VoxelVolumes& volumes);
 	void crop(voxel::VoxelVolumes& volumes);
 	void filterVolumes(voxel::VoxelVolumes& volumes);
+	void split(const glm::ivec3 &size, voxel::VoxelVolumes& volumes);
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
