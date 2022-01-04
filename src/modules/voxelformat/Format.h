@@ -56,7 +56,6 @@ protected:
 	 * @param[out] maxs The extends of the aabb aligned with @c maxSize
 	 */
 	void calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const;
-	void split(VoxelVolumes& destVolumes, const VoxelVolume &v, const glm::ivec3& maxSize);
 	/**
 	 * @brief Split volumes according to their max size into several smaller volumes
 	 * Some formats only support small volumes sizes per object - but multiple objects.
