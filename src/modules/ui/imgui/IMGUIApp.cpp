@@ -758,19 +758,6 @@ void IMGUIApp::beforeUI() {
 			// when straying out of bounds.
 			int windowX = 0, windowY = 0;
 			SDL_GetWindowPosition(mouseWindow, &windowX, &windowY);
-			int index = SDL_GetWindowDisplayIndex(mouseWindow);
-			if (index >= 0) {
-				SDL_Rect rect;
-				if (SDL_GetDisplayBounds(index, &rect) == 0) {
-					SDL_Point point;
-					point.x = mouseXGlobal;
-					point.y = mouseYGlobal;
-					if (!SDL_PointInRect(&point, &rect)) {
-						windowX -= rect.x;
-						windowY -= rect.y;
-					}
-				}
-			}
 			io.MousePos = ImVec2((float)(mouseXGlobal - windowX), (float)(mouseYGlobal - windowY));
 		}
 	} else {

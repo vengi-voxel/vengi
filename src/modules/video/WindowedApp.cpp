@@ -375,6 +375,7 @@ app::AppState WindowedApp::onInit() {
 	if (isSingleWindowMode()) {
 		_mouseCanUseGlobalState = false;
 	} else {
+#if 0
 		// Check and store if we are on a SDL backend that supports global mouse position
 		// ("wayland" and "rpi" don't support it, but we chose to use a white-list instead of a black-list)
 		const char *sdlBackend = SDL_GetCurrentVideoDriver();
@@ -384,6 +385,10 @@ app::AppState WindowedApp::onInit() {
 				_mouseCanUseGlobalState = true;
 			}
 		}
+#else
+		// TODO: the window (0:0) the mouse is hovering is on SDL display 0 (0:0:2560:1440), but the global mouse position is at 3646:769
+		_mouseCanUseGlobalState = false;
+#endif
 	}
 
 	video_trace_init();
