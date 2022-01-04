@@ -3,6 +3,12 @@ vengi (0.0.17.0-1) UNRELEASED; urgency=low
   * General:
   * Fixed relative path handling for registered paths
 
+  * VoxConvert:
+  * Added `--crop` parameter that reduces the volumes to their real voxel sizes
+
+  * VoxEdit:
+  * Fixed torus shape
+
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 27 Dec 2021 12:01:08 +0100
 
 vengi (0.0.16.0-1) unstable; urgency=low

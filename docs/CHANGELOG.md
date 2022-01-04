@@ -15,6 +15,14 @@ General:
    - Fixed relative path handling for registered paths
    - Stop event loop if window is minimized (reduce cpu usage)
 
+VoxConvert:
+
+   - Added `--crop` parameter that reduces the volumes to their real voxel sizes
+
+VoxEdit:
+
+   - Fixed torus shape
+
 ## 0.0.16 (2021-12-27)
 
 General:
