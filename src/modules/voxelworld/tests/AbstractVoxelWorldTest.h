@@ -16,12 +16,12 @@
 
 namespace voxelworld {
 
-class AbstractVoxelTest: public app::AbstractTest {
+class AbstractVoxelWorldTest: public app::AbstractTest {
 protected:
 	class Pager: public voxel::PagedVolume::Pager {
-		AbstractVoxelTest* _test;
+		AbstractVoxelWorldTest* _test;
 	public:
-		Pager(AbstractVoxelTest* test) :
+		Pager(AbstractVoxelWorldTest* test) :
 				_test(test) {
 		}
 
@@ -59,7 +59,7 @@ protected:
 	long _seed = 0;
 	const voxel::Region _region { glm::ivec3(0), glm::ivec3(63) };
 
-	AbstractVoxelTest() :
+	AbstractVoxelWorldTest() :
 			_pager(this), _volData(&_pager, 128 * 1024 * 1024, 64), _ctx(nullptr, nullptr, voxel::Region()) {
 	}
 

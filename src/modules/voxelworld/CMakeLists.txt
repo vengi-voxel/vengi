@@ -29,7 +29,7 @@ set(FILES
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxelformat noise)
 
 set(TEST_SRCS
-	tests/AbstractVoxelTest.h
+	tests/AbstractVoxelWorldTest.h
 	tests/FilePersisterTest.cpp
 	tests/BiomeManagerTest.cpp
 )

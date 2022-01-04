@@ -2,13 +2,13 @@
  * @file
  */
 
-#include "AbstractVoxelTest.h"
+#include "AbstractVoxelWorldTest.h"
 #include "voxelworld/BiomeManager.h"
 #include "io/Filesystem.h"
 
 namespace voxelworld {
 
-class BiomeManagerTest: public AbstractVoxelTest {
+class BiomeManagerTest: public AbstractVoxelWorldTest {
 };
 
 TEST_F(BiomeManagerTest, testInvalid) {

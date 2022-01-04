@@ -3,12 +3,11 @@
  */
 
 #include "voxelworld/FilePersister.h"
-
-#include "AbstractVoxelTest.h"
+#include "AbstractVoxelWorldTest.h"
 
 namespace voxelworld {
 
-class FilePersisterTest: public AbstractVoxelTest {
+class FilePersisterTest: public AbstractVoxelWorldTest {
 };
 
 TEST_F(FilePersisterTest, testSaveLoad) {
