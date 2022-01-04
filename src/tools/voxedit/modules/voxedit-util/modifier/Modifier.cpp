@@ -213,13 +213,9 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 		voxelgenerator::shape::createCubeNoCenter(wrapper, operateMins, dimensions, _cursorVoxel);
 		break;
 	case ShapeType::Torus: {
-		const int innerRadius = 4;
-		const int outerRadius = dimensions.x / 2;
-		if (dimensions.x / 2 < innerRadius) {
-			voxelgenerator::shape::createCubeNoCenter(wrapper, operateMins, dimensions, _cursorVoxel);
-		} else {
-			voxelgenerator::shape::createTorus(wrapper, center, innerRadius, outerRadius, _cursorVoxel);
-		}
+		const double majorRadius = dimensions.x / 3.0;
+		const double minorRadius = majorRadius / 3.0;
+		voxelgenerator::shape::createTorus(wrapper, center, minorRadius, majorRadius, _cursorVoxel);
 		break;
 	}
 	case ShapeType::Cylinder: {

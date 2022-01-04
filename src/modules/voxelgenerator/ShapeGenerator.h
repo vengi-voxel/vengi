@@ -388,17 +388,30 @@ void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3&
 }
 
 template<class Volume>
-void createTorus(Volume& volume, const glm::ivec3& center, int innerRadius, int outerRadius, const voxel::Voxel& voxel) {
-	const int radius = outerRadius + 1;
-	const int outerRadiusSquare = outerRadius * outerRadius;
-	for (int x = -radius; x < radius; ++x) {
-		for (int y = -radius; y < radius; ++y) {
-			for (int z = -radius; z < radius; ++z) {
-				const glm::vec3 pos(center.x + x, center.y + y, center.z + z);
-				const glm::vec2 q(glm::length(glm::vec2(pos.x - (float)innerRadius, pos.z - (float)innerRadius)), pos.y);
-				if (glm::length2(q) < (float)outerRadiusSquare) {
-					volume.setVoxel(pos, voxel);
+void createTorus(Volume& volume, const glm::ivec3& center, double minorRadius, double majorRadius, const voxel::Voxel& voxel) {
+	glm::dvec3 mins(-majorRadius - minorRadius, -majorRadius - minorRadius, -majorRadius - minorRadius);
+	glm::dvec3 maxs(majorRadius + minorRadius, majorRadius + minorRadius, majorRadius + minorRadius);
+
+	// shift to the voxel center
+	mins += 0.5;
+	maxs += 0.5;
+
+	const double aPow = glm::pow((double)majorRadius, 2);
+	const double bPow = glm::pow((double)minorRadius, 2);
+	for (double x = mins.x; x <= maxs.x; ++x) {
+		const double xPow = glm::pow(x, 2);
+		for (double y = mins.y; y <= maxs.y; ++y) {
+			const double yPow = glm::pow(y, 2);
+			for (double z = mins.z; z <= maxs.z; ++z) {
+				// This term is smaller than zero if the point is inside the torus
+				const double zPow = glm::pow(z, 2);
+				// https://stackoverflow.com/questions/13460711/given-origin-and-radii-how-to-find-out-if-px-y-z-is-inside-torus
+				// (x^2+y^2+z^2+a^2-b^2)^2-4a^2(x^2+y^2)
+				if (glm::pow(xPow + yPow + zPow + aPow - bPow, 2) - 4.0 * aPow * (xPow + yPow) > 0.0) {
+					continue;
 				}
+
+				volume.setVoxel(center.x + (int)x, center.y + (int)y, center.z + (int)z, voxel);
 			}
 		}
 	}
