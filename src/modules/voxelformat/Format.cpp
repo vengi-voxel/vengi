@@ -69,19 +69,7 @@ void Format::splitVolumes(const VoxelVolumes& srcVolumes, VoxelVolumes& destVolu
 
 bool Format::isEmptyBlock(const voxel::RawVolume *v, const glm::ivec3 &maxSize, int x, int y, int z) const {
 	const voxel::Region region(x, y, z, x + maxSize.x - 1, y + maxSize.y - 1, z + maxSize.z - 1);
-	voxel::RawVolume::Sampler sampler(v);
-	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += 1) {
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += 1) {
-			sampler.setPosition(x, y, region.getLowerZ());
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += 1) {
-				if (voxel::isBlocked(sampler.voxel().getMaterial())) {
-					return false;
-				}
-				sampler.movePositiveZ();
-			}
-		}
-	}
-	return true;
+	return voxelutil::isEmpty(*v, region);
 }
 
 void Format::calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const {

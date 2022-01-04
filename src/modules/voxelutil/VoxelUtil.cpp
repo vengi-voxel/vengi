@@ -7,6 +7,22 @@
 
 namespace voxelutil {
 
+bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
+	voxel::RawVolume::Sampler sampler(v);
+	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += 1) {
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += 1) {
+			sampler.setPosition(x, y, region.getLowerZ());
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += 1) {
+				if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+					return false;
+				}
+				sampler.movePositiveZ();
+			}
+		}
+	}
+	return true;
+}
+
 bool copy(const voxel::RawVolume &in, const voxel::Region& inRegion, voxel::RawVolume &out, const voxel::Region &outRegion) {
 	int32_t xIn, yIn, zIn;
 	int32_t xOut, yOut, zOut;
