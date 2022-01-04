@@ -213,8 +213,8 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 		voxelgenerator::shape::createCubeNoCenter(wrapper, operateMins, dimensions, _cursorVoxel);
 		break;
 	case ShapeType::Torus: {
-		const double majorRadius = dimensions.x / 3.0;
-		const double minorRadius = majorRadius / 3.0;
+		const double minorRadius = dimensions.x / 5.0;
+		const double majorRadius = dimensions.x / 2.0 - minorRadius;
 		voxelgenerator::shape::createTorus(wrapper, center, minorRadius, majorRadius, _cursorVoxel);
 		break;
 	}
