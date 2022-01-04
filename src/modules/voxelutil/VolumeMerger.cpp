@@ -6,6 +6,7 @@
 #include <limits>
 #include "core/GLM.h"
 #include "core/Log.h"
+#include "voxel/RawVolume.h"
 #include <glm/common.hpp>
 
 namespace voxel {
@@ -37,6 +38,14 @@ RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes) {
 		voxel::mergeVolumes(merged, v, dr, sr);
 	}
 	return merged;
+}
+
+RawVolume* merge(const core::DynamicArray<RawVolume*>& volumes) {
+	core::DynamicArray<const RawVolume*> v(volumes.size());
+	for (const RawVolume *v1 : volumes) {
+		v.push_back(v1);
+	}
+	return merge(v);
 }
 
 }

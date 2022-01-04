@@ -2,7 +2,8 @@
  * @file
  */
 
-#include "voxel/tests/AbstractVoxelTest.h"
+#include "app/tests/AbstractTest.h"
+#include "voxel/tests/TestHelper.h"
 #include "voxelutil/VolumeRotator.h"
 
 namespace voxel {

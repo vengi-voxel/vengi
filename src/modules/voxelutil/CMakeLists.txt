@@ -24,6 +24,7 @@ set(TEST_SRCS
 	tests/PickingTest.cpp
 	tests/VolumeMergerTest.cpp
 	tests/VolumeRotatorTest.cpp
+	tests/VolumeSplitterTest.cpp
 	tests/VolumeCropperTest.cpp
 )
 

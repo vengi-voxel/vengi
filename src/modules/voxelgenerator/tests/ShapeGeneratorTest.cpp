@@ -10,7 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
-#include "voxel/tests/AbstractVoxelTest.h"
+#include "voxel/tests/TestHelper.h"
 #include "voxelformat/QBFormat.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/VolumeVisitor.h"

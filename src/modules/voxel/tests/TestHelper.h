@@ -15,12 +15,24 @@
 #include "voxel/Constants.h"
 #include "math/Random.h"
 #include "core/Common.h"
+#include "voxelutil/VolumeVisitor.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
 namespace voxel {
 
 static int VolumePrintThreshold = 10;
+
+template<typename Volume>
+inline int countVoxels(const Volume& volume, const voxel::Voxel &voxel) {
+	int cnt = 0;
+	voxelutil::visitVolume(volume, [&](int, int, int, const voxel::Voxel &v) {
+		if (v == voxel) {
+			++cnt;
+		}
+	}, voxelutil::VisitAll());
+	return cnt;
+}
 
 inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2, bool includingColor, bool includingRegion) {
 	const Region& r1 = volume1.region();

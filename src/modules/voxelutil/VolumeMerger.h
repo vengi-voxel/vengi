@@ -61,6 +61,7 @@ inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume*
 	return mergeVolumes(destination, source, destination->region(), source->region());
 }
 
+extern RawVolume* merge(const core::DynamicArray<RawVolume*>& volumes);
 extern RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes);
 
 }
