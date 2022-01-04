@@ -18,4 +18,13 @@ enum class Axis : uint8_t {
 
 CORE_ENUM_BIT_OPERATIONS(Axis)
 
+inline constexpr int getIndexForAxis(math::Axis axis) {
+	if (axis == math::Axis::X) {
+		return 0;
+	} else if (axis == math::Axis::Y) {
+		return 1;
+	}
+	return 2;
+}
+
 }

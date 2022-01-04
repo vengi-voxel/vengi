@@ -2096,7 +2096,7 @@ void SceneManager::updateLockedPlane(math::Axis axis) {
 	if (axis == math::Axis::None) {
 		return;
 	}
-	const int index = getIndexForAxis(axis);
+	const int index = math::getIndexForAxis(axis);
 	int32_t& meshIndex = _planeMeshIndex[index];
 	if ((_lockedAxis & axis) == math::Axis::None) {
 		if (meshIndex != -1) {

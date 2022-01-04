@@ -8,7 +8,7 @@
 namespace voxedit {
 
 void updateShapeBuilderForPlane(video::ShapeBuilder& shapeBuilder, const voxel::Region& region, bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color) {
-	const int index = mirror ? getIndexForMirrorAxis(axis) : getIndexForAxis(axis);
+	const int index = mirror ? getIndexForMirrorAxis(axis) : math::getIndexForAxis(axis);
 	glm::vec3 mins = region.getLowerCorner();
 	glm::vec3 maxs = region.getUpperCorner();
 	mins[index] = maxs[index] = pos[index];
