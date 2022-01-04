@@ -178,11 +178,4 @@ void sortedUnion(const Type *buf1, int buf1Length, const Type *buf2, int buf2Len
 	}
 }
 
-template <typename T>
-void swap(T &a, T &b) {
-	T tmp = core::move(a);
-	a = core::move(b);
-	b = core::move(tmp);
-}
-
 }
