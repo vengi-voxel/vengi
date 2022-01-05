@@ -1,4 +1,4 @@
-// dear imgui, v1.86
+// dear imgui, v1.87 WIP
 // (internal structures/api)
 
 // You may use this file to debug, understand or extend ImGui features but we don't provide any guarantee of forward compatibility!
@@ -2694,7 +2694,8 @@ namespace ImGui
     IMGUI_API void          ScaleWindowsInViewport(ImGuiViewportP* viewport, float scale);
     IMGUI_API void          DestroyPlatformWindow(ImGuiViewportP* viewport);
     IMGUI_API void          SetCurrentViewport(ImGuiWindow* window, ImGuiViewportP* viewport);
-    IMGUI_API const ImGuiPlatformMonitor* GetViewportPlatformMonitor(ImGuiViewport* viewport);
+    IMGUI_API const ImGuiPlatformMonitor*   GetViewportPlatformMonitor(ImGuiViewport* viewport);
+    IMGUI_API ImGuiViewportP*               FindHoveredViewportFromPlatformWindowStack(const ImVec2& mouse_platform_pos);
 
     // Settings
     IMGUI_API void                  MarkIniSettingsDirty();
@@ -3104,7 +3105,9 @@ struct ImFontBuilderIO
 };
 
 // Helper for font builder
+#ifdef IMGUI_ENABLE_STB_TRUETYPE
 IMGUI_API const ImFontBuilderIO* ImFontAtlasGetBuilderForStbTruetype();
+#endif
 IMGUI_API void      ImFontAtlasBuildInit(ImFontAtlas* atlas);
 IMGUI_API void      ImFontAtlasBuildSetupFont(ImFontAtlas* atlas, ImFont* font, ImFontConfig* font_config, float ascent, float descent);
 IMGUI_API void      ImFontAtlasBuildPackCustomRects(ImFontAtlas* atlas, void* stbrp_context_opaque);
