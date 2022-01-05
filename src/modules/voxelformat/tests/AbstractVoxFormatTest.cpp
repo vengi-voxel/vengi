@@ -29,11 +29,11 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
 	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
 	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	SceneGraph volumes;
-	volumes.emplace_back(SceneGraphNode(&layer1));
-	volumes.emplace_back(SceneGraphNode(&layer2));
-	volumes.emplace_back(SceneGraphNode(&layer3));
-	volumes.emplace_back(SceneGraphNode(&layer4));
+	ScopedSceneGraph volumes;
+	volumes.emplace_back(SceneGraphNode(layer1));
+	volumes.emplace_back(SceneGraphNode(layer2));
+	volumes.emplace_back(SceneGraphNode(layer3));
+	volumes.emplace_back(SceneGraphNode(layer4));
 	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
 	io::FileStream sstream(sfile.get());
 	ASSERT_TRUE(format->saveGroups(volumes, sfile->name(), sstream));
