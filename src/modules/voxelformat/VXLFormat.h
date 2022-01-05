@@ -71,7 +71,7 @@ private:
 	static constexpr int EmptyColumn = -1;
 
 	// writing
-	bool writeLimbBodyEntry(io::SeekableWriteStream& stream, voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const;
+	bool writeLimbBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const;
 	bool writeLimb(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const;
 	bool writeLimbHeader(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const;
 	bool writeLimbFooter(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, const LimbOffset& offsets) const;

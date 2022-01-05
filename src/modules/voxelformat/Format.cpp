@@ -51,16 +51,16 @@ uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 void Format::splitVolumes(const VoxelVolumes& srcVolumes, VoxelVolumes& destVolumes, const glm::ivec3 &maxSize) {
 	destVolumes.reserve(srcVolumes.size());
 	for (VoxelVolume &v : srcVolumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
-		const voxel::Region& region = v.volume->region();
+		const voxel::Region& region = v.region();
 		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
-			destVolumes.push_back({new voxel::RawVolume(v.volume), v.name, v.visible, v.pivot});
+			destVolumes.push_back({new voxel::RawVolume(v.volume()), v.name(), v.visible(), v.pivot()});
 			continue;
 		}
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
-		voxel::splitVolume(v.volume, maxSize, rawVolumes);
+		voxel::splitVolume(v.volume(), maxSize, rawVolumes);
 		for (voxel::RawVolume *v : rawVolumes) {
 			destVolumes.push_back({v});
 		}
@@ -139,14 +139,14 @@ bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const core::String &f
 
 	Meshes meshes;
 	for (const VoxelVolume& v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
 		voxel::Mesh *mesh = new voxel::Mesh();
-		voxel::Region region = v.volume->region();
+		voxel::Region region = v.region();
 		region.shiftUpperCorner(1, 1, 1);
-		voxel::extractCubicMesh(v.volume, region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
-		meshes.emplace_back(mesh, v.name);
+		voxel::extractCubicMesh(v.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+		meshes.emplace_back(mesh, v.name());
 	}
 	Log::debug("Save meshes");
 	const bool state = saveMeshes(meshes, filename, stream, scale, quads, withColor, withTexCoords);

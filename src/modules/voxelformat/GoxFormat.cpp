@@ -428,17 +428,17 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolum
 	int blockUid = 0;
 	int layerId = 0;
 	for (const VoxelVolume &v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
-		const voxel::Region &region = v.volume->region();
+		const voxel::Region &region = v.region();
 		glm::ivec3 mins, maxs;
 		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
 
 		GoxScopedChunkWriter scoped(stream, FourCC('L', 'A', 'Y', 'R'));
 		int layerBlocks = 0;
-		voxelutil::visitVolume(*v.volume, voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize, [&] (int x, int y, int z, const voxel::Voxel &) {
-			if (isEmptyBlock(v.volume, glm::ivec3(BlockSize), x, y, z)) {
+		voxelutil::visitVolume(*v.volume(), voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize, [&] (int x, int y, int z, const voxel::Voxel &) {
+			if (isEmptyBlock(v.volume(), glm::ivec3(BlockSize), x, y, z)) {
 				return;
 			}
 			++layerBlocks;
@@ -451,7 +451,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolum
 		for (int y = mins.y; y <= maxs.y; y += BlockSize) {
 			for (int z = mins.z; z <= maxs.z; z += BlockSize) {
 				for (int x = mins.x; x <= maxs.x; x += BlockSize) {
-					if (isEmptyBlock(v.volume, glm::ivec3(BlockSize), x, y, z)) {
+					if (isEmptyBlock(v.volume(), glm::ivec3(BlockSize), x, y, z)) {
 						continue;
 					}
 					Log::debug("Saved LAYR chunk %i at %i:%i:%i", blockUid, x, y, z);
@@ -469,7 +469,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolum
 			Log::error("Invalid amount of layer blocks: %i", layerBlocks);
 			return false;
 		}
-		wrapBool(saveChunk_DictEntry(stream, "name", v.name.c_str(), v.name.size()))
+		wrapBool(saveChunk_DictEntry(stream, "name", v.name().c_str(), v.name().size()))
 		glm::mat4 mat(0.0f);
 		wrapBool(saveChunk_DictEntry(stream, "mat", (const uint8_t*)glm::value_ptr(mat), sizeof(mat)))
 		wrapBool(saveChunk_DictEntry(stream, "id", layerId))
@@ -477,7 +477,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolum
 		wrapBool(saveChunk_DictEntry(stream, "base_id", &layer->base_id))
 		wrapBool(saveChunk_DictEntry(stream, "material", &material_idx))
 #endif
-		wrapBool(saveChunk_DictEntry(stream, "visible", v.visible))
+		wrapBool(saveChunk_DictEntry(stream, "visible", v.visible()))
 
 		++layerId;
 	}
@@ -491,15 +491,15 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolum
 bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const VoxelVolumes &volumes, int &blocks) {
 	blocks = 0;
 	for (const VoxelVolume &v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
-		const voxel::Region &region = v.volume->region();
+		const voxel::Region &region = v.region();
 		glm::ivec3 mins, maxs;
 		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
 
 		// TODO: fix this properly - without mirroring
-		voxel::RawVolume *mirrored = voxel::mirrorAxis(v.volume, math::Axis::Z);
+		voxel::RawVolume *mirrored = voxel::mirrorAxis(v.volume(), math::Axis::Z);
 		for (int by = mins.y; by <= maxs.y; by += BlockSize) {
 			for (int bz = mins.z; bz <= maxs.z; bz += BlockSize) {
 				for (int bx = mins.x; bx <= maxs.x; bx += BlockSize) {

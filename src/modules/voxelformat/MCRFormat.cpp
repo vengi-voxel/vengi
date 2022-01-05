@@ -96,7 +96,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			_chunkTimestamps[i] = lastModValue;
 		}
 
-		const bool success = loadMinecraftRegion(volumes, buffer, length, stream, chunkX, chunkZ);
+		const bool success = loadMinecraftRegion(volumes, buffer, (int)length, stream, chunkX, chunkZ);
 		delete[] buffer;
 		return success;
 	}

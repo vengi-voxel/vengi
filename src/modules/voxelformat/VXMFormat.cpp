@@ -62,7 +62,7 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	RawVolume* mergedVolume = merge(volumes);
 	wrapBool(stream.writeUInt32(FourCC('V','X','M','5')));
-	const glm::ivec3 &pivot = volumes.volumes.size() == 1 ? volumes.volumes[0].pivot : mergedVolume->region().getCenter();
+	const glm::ivec3 &pivot = volumes.volumes.size() == 1 ? volumes.volumes[0].pivot() : mergedVolume->region().getCenter();
 	wrapBool(stream.writeFloat(pivot.x));
 	wrapBool(stream.writeFloat(pivot.y));
 	wrapBool(stream.writeFloat(pivot.z));

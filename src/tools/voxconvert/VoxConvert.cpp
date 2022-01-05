@@ -336,22 +336,20 @@ void VoxConvert::split(const glm::ivec3 &size, voxel::VoxelVolumes& volumes) {
 void VoxConvert::crop(voxel::VoxelVolumes& volumes) {
 	Log::info("Crop volumes");
 	for (voxel::VoxelVolume& v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
-		voxel::RawVolume *cropped = voxel::cropVolume(v.volume);
-		v.release();
-		v.volume = cropped;
+		v.setVolume(voxel::cropVolume(v.volume()));
 	}
 }
 
 void VoxConvert::pivot(const glm::ivec3& pivot, voxel::VoxelVolumes& volumes) {
 	Log::info("Set pivot to %i:%i:%i", pivot.x, pivot.y, pivot.z);
 	for (voxel::VoxelVolume& v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
-		v.pivot = pivot;
+		v.setPivot(pivot);
 	}
 }
 
@@ -377,7 +375,7 @@ void VoxConvert::script(const core::String &scriptParameters, voxel::VoxelVolume
 			}
 			Log::info("Execute script %s", tokens[0].c_str());
 			for (auto& v : volumes) {
-				voxel::RawVolumeWrapper wrapper(v.volume);
+				voxel::RawVolumeWrapper wrapper(v.volume());
 				script.exec(luaScript, &wrapper, wrapper.region(), voxel, args);
 			}
 		}
@@ -389,17 +387,16 @@ void VoxConvert::script(const core::String &scriptParameters, voxel::VoxelVolume
 void VoxConvert::scale(voxel::VoxelVolumes& volumes) {
 	Log::info("Scale layers");
 	for (voxel::VoxelVolume& v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
-		const voxel::Region srcRegion = v.volume->region();
+		const voxel::Region srcRegion = v.region();
 		const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 		if (destRegion.isValid()) {
 			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-			rescaleVolume(*v.volume, *destVolume);
-			v.release();
-			v.volume = destVolume;
+			rescaleVolume(*v.volume(), *destVolume);
+			v.setVolume(destVolume);
 		}
 	}
 }
@@ -466,12 +463,11 @@ void VoxConvert::mirror(const core::String& axisStr, voxel::VoxelVolumes& volume
 	}
 	Log::info("Mirror on axis %c", axisStr[0]);
 	for (voxel::VoxelVolume &v : volumes) {
-		voxel::RawVolume *old = v.volume;
+		voxel::RawVolume *old = v.volume();
 		if (old == nullptr) {
 			continue;
 		}
-		v.volume = voxel::mirrorAxis(old, axis);
-		delete old;
+		v.setVolume(voxel::mirrorAxis(old, axis));
 	}
 }
 
@@ -482,22 +478,21 @@ void VoxConvert::rotate(const core::String& axisStr, voxel::VoxelVolumes& volume
 	}
 	Log::info("Rotate on axis %c", axisStr[0]);
 	for (voxel::VoxelVolume &v : volumes) {
-		voxel::RawVolume *old = v.volume;
+		voxel::RawVolume *old = v.volume();
 		if (old == nullptr) {
 			continue;
 		}
-		v.volume = voxel::rotateAxis(old, axis);
-		delete old;
+		v.setVolume(voxel::rotateAxis(old, axis));
 	}
 }
 
 void VoxConvert::translate(const glm::ivec3& pos, voxel::VoxelVolumes& volumes) {
 	Log::info("Translate by %i:%i:%i", pos.x, pos.y, pos.z);
 	for (voxel::VoxelVolume &v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
-		v.volume->translate(pos);
+		v.volume()->translate(pos);
 	}
 }
 

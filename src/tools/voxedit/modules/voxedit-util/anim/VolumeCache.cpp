@@ -61,10 +61,10 @@ bool VolumeCache::getVolumes(const animation::AnimationSettings& settings, voxel
 		}
 	}
 	for (int i = 0; i < (int)animation::AnimationSettings::MAX_ENTRIES; ++i) {
-		if (volumes[i].volume == nullptr) {
+		if (volumes[i].volume() == nullptr) {
 			continue;
 		}
-		volumes[i].name = settings.meshType(i);
+		volumes[i].setName(settings.meshType(i));
 	}
 	return true;
 }

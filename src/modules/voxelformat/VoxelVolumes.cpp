@@ -9,41 +9,76 @@
 
 namespace voxel {
 
-VoxelVolume::VoxelVolume(voxel::RawVolume *_volume, const core::String &_name, bool _visible)
-	: volume(_volume), name(_name), visible(_visible) {
+VoxelVolume::VoxelVolume(voxel::RawVolume *volume, const core::String &name, bool visible)
+	: _name(name), _volume(volume), _visible(visible) {
 	if (volume != nullptr) {
-		pivot = volume->region().getCenter();
+		_pivot = volume->region().getCenter();
 	} else {
-		pivot = glm::ivec3(0.0f);
+		_pivot = glm::ivec3(0.0f);
 	}
 }
-VoxelVolume::VoxelVolume(voxel::RawVolume *_volume, const core::String &_name, bool _visible, const glm::ivec3 &_pivot)
-	: volume(_volume), name(_name), visible(_visible), pivot(_pivot) {
+VoxelVolume::VoxelVolume(voxel::RawVolume *volume, const core::String &name, bool visible, const glm::ivec3 &pivot)
+	: _name(name), _volume(volume), _visible(visible), _pivot(pivot) {
+}
+
+VoxelVolume::VoxelVolume(const voxel::RawVolume *volume, const core::String &name, bool visible)
+	: _name(name), _volume((voxel::RawVolume *)volume), _visible(visible) {
+	if (volume != nullptr) {
+		_pivot = volume->region().getCenter();
+	} else {
+		_pivot = glm::ivec3(0.0f);
+	}
+}
+VoxelVolume::VoxelVolume(const voxel::RawVolume *volume, const core::String &name, bool visible, const glm::ivec3 &pivot)
+	: _name(name), _volume((voxel::RawVolume *)volume), _visible(visible), _pivot(pivot) {
 }
 
 VoxelVolume::VoxelVolume(VoxelVolume&& move) noexcept {
-	volume = move.volume;
-	move.volume = nullptr;
-	name = move.name;
-	visible = move.visible;
-	pivot = move.pivot;
+	_volume = move._volume;
+	move._volume = nullptr;
+	_name = move._name;
+	_visible = move._visible;
+	_pivot = move._pivot;
+	_volumeOwned = move._volumeOwned;
+	move._volumeOwned = false;
 }
 
 VoxelVolume &VoxelVolume::operator=(VoxelVolume &&move) noexcept {
 	if (&move == this) {
 		return *this;
 	}
-	volume = move.volume;
-	move.volume = nullptr;
-	name = move.name;
-	visible = move.visible;
-	pivot = move.pivot;
+	setVolume(move._volume);
+	move._volume = nullptr;
+	_name = move._name;
+	_visible = move._visible;
+	_pivot = move._pivot;
+	_volumeOwned = move._volumeOwned;
+	move._volumeOwned = false;
 	return *this;
 }
 
 void VoxelVolume::release() {
-	delete volume;
-	volume = nullptr;
+	if (_volumeOwned) {
+		delete _volume;
+	}
+	_volume = nullptr;
+}
+
+void VoxelVolume::setVolume(voxel::RawVolume *volume) {
+	release();
+	_volume = volume;
+}
+
+void VoxelVolume::setVolume(const voxel::RawVolume *volume) {
+	release();
+	_volume = (voxel::RawVolume *)volume;
+}
+
+const voxel::Region &VoxelVolume::region() const {
+	if (_volume == nullptr ) {
+		return voxel::Region::InvalidRegion;
+	}
+	return _volume->region();
 }
 
 VoxelVolumes::~VoxelVolumes() {
@@ -83,18 +118,18 @@ voxel::RawVolume *VoxelVolumes::merge() const {
 		return nullptr;
 	}
 	if (volumes.size() == 1) {
-		if (volumes[0].volume == nullptr) {
+		if (volumes[0].volume() == nullptr) {
 			return nullptr;
 		}
-		return new voxel::RawVolume(volumes[0].volume);
+		return new voxel::RawVolume(volumes[0].volume());
 	}
-	core::DynamicArray<voxel::RawVolume *> rawVolumes;
+	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
 	rawVolumes.reserve(volumes.size());
 	for (const VoxelVolume &v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
-		rawVolumes.push_back(v.volume);
+		rawVolumes.push_back(v.volume());
 	}
 	if (rawVolumes.empty()) {
 		return nullptr;

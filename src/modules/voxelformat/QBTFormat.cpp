@@ -45,7 +45,7 @@ static const bool MergeCompounds = true;
 	}
 
 bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& volume, bool colorMap) const {
-	const voxel::Region& region = volume.volume->region();
+	const voxel::Region& region = volume.region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
@@ -60,7 +60,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& v
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			for (int y = mins.y; y <= maxs.y; ++y) {
-				const Voxel& voxel = volume.volume->voxel(x, y, z);
+				const Voxel& voxel = volume.volume()->voxel(x, y, z);
 				if (isAir(voxel.getMaterial())) {
 					*zlibBuf++ = (uint8_t)0;
 					*zlibBuf++ = (uint8_t)0;
@@ -74,9 +74,9 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& v
 					*zlibBuf++ = 0;
 				} else {
 					const glm::vec4& voxelColor = getColor(voxel);
-					const uint8_t red = voxelColor.r * 255.0f;
-					const uint8_t green = voxelColor.g * 255.0f;
-					const uint8_t blue = voxelColor.b * 255.0f;
+					const uint8_t red = (uint8_t)(voxelColor.r * 255.0f);
+					const uint8_t green = (uint8_t)(voxelColor.g * 255.0f);
+					const uint8_t blue = (uint8_t)(voxelColor.b * 255.0f);
 					//const uint8_t alpha = voxelColor.a * 255.0f;
 					*zlibBuf++ = red;
 					*zlibBuf++ = green;
@@ -96,7 +96,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& v
 	}
 
 	wrapSaveFree(stream.writeUInt32(0u)); // node type matrix
-	const size_t nameLength = volume.name.size();
+	const size_t nameLength = volume.name().size();
 	const size_t nameSize = sizeof(uint32_t) + nameLength;
 	const size_t positionSize = 3 * sizeof(uint32_t);
 	const size_t localScaleSize = 3 * sizeof(uint32_t);
@@ -108,8 +108,8 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& v
 
 	const size_t chunkStartPos = stream.pos();
 	wrapSaveFree(stream.writeUInt32(nameLength));
-	wrapSaveFree(stream.writeString(volume.name, false));
-	Log::debug("Save matrix with name %s", volume.name.c_str());
+	wrapSaveFree(stream.writeString(volume.name(), false));
+	Log::debug("Save matrix with name %s", volume.name().c_str());
 
 	wrapSaveFree(stream.writeUInt32(mins.x));
 	wrapSaveFree(stream.writeUInt32(mins.y));
@@ -120,9 +120,9 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& v
 	wrapSaveFree(stream.writeUInt32(localScale.y));
 	wrapSaveFree(stream.writeUInt32(localScale.z));
 
-	wrapSaveFree(stream.writeFloat(volume.pivot.x));
-	wrapSaveFree(stream.writeFloat(volume.pivot.y));
-	wrapSaveFree(stream.writeFloat(volume.pivot.z));
+	wrapSaveFree(stream.writeFloat(volume.pivot().x));
+	wrapSaveFree(stream.writeFloat(volume.pivot().y));
+	wrapSaveFree(stream.writeFloat(volume.pivot().z));
 
 	wrapSaveFree(stream.writeUInt32(size.x));
 	wrapSaveFree(stream.writeUInt32(size.y));
@@ -158,7 +158,7 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream) const {
 bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, bool colorMap) const {
 	int children = 0;
 	for (const VoxelVolume& v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
 		++children;
@@ -177,7 +177,7 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& v
 
 	bool success = true;
 	for (const VoxelVolume& v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
 		if (!saveMatrix(stream, v, colorMap)) {

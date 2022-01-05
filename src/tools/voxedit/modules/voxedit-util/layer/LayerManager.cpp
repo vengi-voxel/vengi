@@ -396,8 +396,8 @@ const LayerMetadata& LayerManager::metadata(int layerId) const {
 
 int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* volume, const glm::ivec3& pivot) {
 	core_trace_scoped(AddLayer);
-	const size_t maxLayers = _layers.size();
-	for (size_t layerId = 0; layerId < maxLayers; ++layerId) {
+	const int maxLayers = (int)_layers.size();
+	for (int layerId = 0; layerId < maxLayers; ++layerId) {
 		if (_layers[layerId].valid) {
 			continue;
 		}

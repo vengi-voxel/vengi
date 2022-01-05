@@ -28,7 +28,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool VXLFormat::writeLimbBodyEntry(io::SeekableWriteStream& stream, voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const {
+bool VXLFormat::writeLimbBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const {
 	wrapBool(stream.writeUInt8(skipCount))
 	wrapBool(stream.writeUInt8(voxelCount))
 	for (uint8_t y1 = y - voxelCount; y1 < y; ++y1) {
@@ -43,7 +43,7 @@ bool VXLFormat::writeLimbBodyEntry(io::SeekableWriteStream& stream, voxel::RawVo
 
 bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const {
 	const VoxelVolume& v = volumes[limbIdx];
-	const voxel::Region& region = v.volume->region();
+	const voxel::Region& region = v.region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 
 	const uint32_t baseSize = size.x * size.z;
@@ -74,23 +74,23 @@ bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const VoxelVolumes& v
 		uint32_t voxelCount = 0u;
 		bool voxelsInColumn = false;
 		for (uint8_t y = 0; y <= size.y; ++y) {
-			const voxel::Voxel& voxel = v.volume->voxel(x, y, z);
+			const voxel::Voxel& voxel = v.volume()->voxel(x, y, z);
 			if (voxel::isAir(voxel.getMaterial())) {
 				if (voxelCount > 0) {
-					wrapBool(writeLimbBodyEntry(stream, v.volume, x, y, z, skipCount, voxelCount))
+					wrapBool(writeLimbBodyEntry(stream, v.volume(), x, y, z, skipCount, voxelCount))
 					voxelsInColumn = true;
 				}
 				++skipCount;
 			} else {
 				if (skipCount > 0) {
-					wrapBool(writeLimbBodyEntry(stream, v.volume, x, y, z, skipCount, voxelCount))
+					wrapBool(writeLimbBodyEntry(stream, v.volume(), x, y, z, skipCount, voxelCount))
 					voxelsInColumn = true;
 				}
 				++voxelCount;
 			}
 		}
 		if (voxelCount > 0 || skipCount > 0) {
-			wrapBool(writeLimbBodyEntry(stream, v.volume, x, size.y - 1, z, skipCount, voxelCount))
+			wrapBool(writeLimbBodyEntry(stream, v.volume(), x, size.y - 1, z, skipCount, voxelCount))
 			voxelsInColumn = true;
 		}
 		if (!voxelsInColumn) {
@@ -113,7 +113,7 @@ bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const VoxelVolu
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + limbIdx * LimbHeaderSize));
 	const VoxelVolume& v = volumes[limbIdx];
 	char name[15];
-	core_memcpy(name, v.name.c_str(), sizeof(name));
+	core_memcpy(name, v.name().c_str(), sizeof(name));
 	wrap(stream.write(name, sizeof(name)))
 	wrapBool(stream.writeUInt8('\0'))
 	wrapBool(stream.writeUInt32(limbIdx))
@@ -135,7 +135,7 @@ bool VXLFormat::writeLimbFooter(io::SeekableWriteStream& stream, const VoxelVolu
 	for (int i = 0; i < 3; ++i) {
 		wrapBool(stream.writeFloat(1.0f))
 	}
-	const voxel::Region& region = v.volume->region();
+	const voxel::Region& region = v.region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 	wrapBool(stream.writeUInt8(size.x))
 	wrapBool(stream.writeUInt8(size.z))
@@ -198,9 +198,9 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 
 	// switch axis
 	RawVolume *volume = new RawVolume(Region{0, 0, 0, footer.xsize - 1, footer.zsize - 1, footer.ysize - 1});
-	volumes[mdl.volumeIdx].volume = volume;
-	volumes[mdl.volumeIdx].name = header.limb_name;
-	volumes[mdl.volumeIdx].pivot = volume->region().getCenter();
+	volumes[mdl.volumeIdx].setVolume(volume);
+	volumes[mdl.volumeIdx].setName(header.limb_name);
+	volumes[mdl.volumeIdx].setPivot(volume->region().getCenter());
 	++mdl.volumeIdx;
 
 	const size_t limbOffset = HeaderSize + LimbHeaderSize * mdl.header.n_limbs + footer.span_start_off;

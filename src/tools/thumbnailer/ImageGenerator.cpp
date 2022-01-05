@@ -60,8 +60,8 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 
 	const int volumesSize = (int)volumes.size();
 	for (int i = 0; i < volumesSize; ++i) {
-		volumeRenderer.setVolume(i, volumes[i].volume);
-		volumeRenderer.extractRegion(i, volumes[i].volume->region());
+		volumeRenderer.setVolume(i, volumes[i].volume());
+		volumeRenderer.extractRegion(i, volumes[i].region());
 	}
 
 	video::Camera camera;
@@ -76,7 +76,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	const float distance = glm::length(dim);
 	camera.setTargetDistance(distance * 2.0f);
 	const int height = region.getHeightInCells();
-	camera.setWorldPosition(glm::vec3(-distance, height + distance, -distance));
+	camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	camera.lookAt(center);
 	camera.setFarPlane(5000.0f);
 	camera.update(0.001);

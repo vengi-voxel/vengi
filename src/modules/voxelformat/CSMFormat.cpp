@@ -119,9 +119,9 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 
 			for (uint32_t v = matrixIndex; v < matrixIndex + count; ++v) {
-				const int x = glm::mod((float)glm::floor((float)v / (float)(sizez * sizey)), (float)sizex);
-				const int y = glm::mod((float)glm::floor((float)v / (float)(sizez)), (float)sizey);
-				const int z = glm::mod((float)v, (float)sizez);
+				const int x = (int)glm::mod((float)glm::floor((float)v / (float)(sizez * sizey)), (float)sizex);
+				const int y = (int)glm::mod((float)glm::floor((float)v / (float)(sizez)), (float)sizey);
+				const int z = (int)glm::mod((float)v, (float)sizez);
 				volume->setVoxel(x, y, z, voxel);
 			}
 

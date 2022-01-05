@@ -248,7 +248,7 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 	NodeId nodeId = groupNodeId + 1;
 	int modelId = 0;
 	for (const VoxelVolume& v : volumes) {
-		const voxel::Region &region = v.volume->region();
+		const voxel::Region &region = v.region();
 		const glm::ivec3 mins = region.getCenter();
 		wrapBool(saveChunk_nTRN(state, stream, nodeId, nodeId + 1, mins, 0))
 		wrapBool(saveChunk_nSHP(state, stream, nodeId + 1, modelId))
@@ -271,9 +271,9 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumesIn, const core::String &fi
 	VoxScopedHeader scoped(stream);
 	wrapBool(saveChunk_PACK(state, stream, volumes))
 	for (const VoxelVolume& v : volumes) {
-		const voxel::Region& region = v.volume->region();
+		const voxel::Region& region = v.region();
 		wrapBool(saveChunk_SIZE(state, stream, region))
-		wrapBool(saveChunk_XYZI(state, stream, v.volume, region))
+		wrapBool(saveChunk_XYZI(state, stream, v.volume(), region))
 	}
 
 #if 0
@@ -533,11 +533,8 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 		}
 	}
 	Log::debug("Loaded layer %i with %i voxels (%i)", state._volumeIdx, numVoxels, volumeVoxelSet);
-	if (volumes[state._volumeIdx].volume != nullptr) {
-		volumes[state._volumeIdx].release();
-	}
-	volumes[state._volumeIdx].volume = volume;
-	volumes[state._volumeIdx].pivot = translatedRegion.getCenter();
+	volumes[state._volumeIdx].setVolume(volume);
+	volumes[state._volumeIdx].setPivot(translatedRegion.getCenter());
 	++state._volumeIdx;
 	return true;
 }
@@ -651,10 +648,11 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 		Log::warn("Invalid layer id found: %i - exceeded limit of %i. Skipping layer",
 				(int)layerId, (int)volumes.size());
 	} else {
-		attributes.get("_name", volumes[layerId].name);
-		core::String hidden;
-		attributes.get("_hidden", hidden);
-		volumes[layerId].visible = hidden.empty() || hidden == "0";
+		core::String property;
+		attributes.get("_name", property);
+		volumes[layerId].setName(property);
+		attributes.get("_hidden", property);
+		volumes[layerId].setVisible(property.empty() || property == "0");
 	}
 	return true;
 }

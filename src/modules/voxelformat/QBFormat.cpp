@@ -52,15 +52,15 @@ const int NEXT_SLICE_FLAG = 6;
 #define setBit(val, index) val &= (1 << (index))
 
 bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& volume) const {
-	if (volume.volume == nullptr) {
+	if (volume.volume() == nullptr) {
 		Log::error("Invalid volume given");
 		return false;
 	}
-	const int nameLength = (int)volume.name.size();
+	const int nameLength = (int)volume.name().size();
 	wrapSave(stream.writeUInt8(nameLength));
-	wrapSave(stream.writeString(volume.name, false));
+	wrapSave(stream.writeString(volume.name(), false));
 
-	const voxel::Region& region = volume.volume->region();
+	const voxel::Region& region = volume.region();
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
@@ -86,17 +86,17 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& vo
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			for (int x = mins.x; x <= maxs.x; ++x) {
-				const Voxel& voxel = volume.volume->voxel(x, y, z);
+				const Voxel& voxel = volume.volume()->voxel(x, y, z);
 				glm::ivec4 newColor;
 				if (voxel == Empty) {
 					newColor = EmptyColor;
 					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {
 					const glm::vec4& voxelColor = getColor(voxel);
-					const uint8_t red = voxelColor.r * 255.0f;
-					const uint8_t green = voxelColor.g * 255.0f;
-					const uint8_t blue = voxelColor.b * 255.0f;
-					const uint8_t alpha = voxelColor.a * 255.0f;
+					const uint8_t red = (uint8_t)(voxelColor.r * 255.0f);
+					const uint8_t green = (uint8_t)(voxelColor.g * 255.0f);
+					const uint8_t blue = (uint8_t)(voxelColor.b * 255.0f);
+					const uint8_t alpha = (uint8_t)(voxelColor.a * 255.0f);
 					newColor = glm::ivec4(red, green, blue, alpha);
 					Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
 							x, y, z, (int)voxel.getColor(), (int)red, (int)green, (int)blue, (int)alpha);
@@ -151,7 +151,7 @@ bool QBFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filen
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.writeUInt32((int)volumes.size()))
 	for (const VoxelVolume& v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
 		if (!saveMatrix(stream, v)) {
@@ -162,9 +162,9 @@ bool QBFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filen
 }
 
 bool QBFormat::setVoxel(State& state, voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel) {
-	const int32_t fx = offset.x + x;
-	const int32_t fy = offset.y + y;
-	const int32_t fz = offset.z + z;
+	const int32_t fx = offset.x + (int32_t)x;
+	const int32_t fy = offset.y + (int32_t)y;
+	const int32_t fz = offset.z + (int32_t)z;
 	Log::trace("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)state._zAxisOrientation);
 	const voxel::Region& region = volume->region();
 	if (!region.containsPoint(glm::ivec3(fx, fy, fz))) {

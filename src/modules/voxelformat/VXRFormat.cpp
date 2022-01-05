@@ -32,7 +32,7 @@ namespace voxel {
 	}
 
 bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::VoxelVolume& volume, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapBool(stream.writeString(volume.name, true))
+	wrapBool(stream.writeString(volume.name(), true))
 	const core::String baseName = core::string::stripExtension(filename);
 	const core::String finalName = baseName + name + ".vxm";
 	wrapBool(stream.writeString(finalName, true))
@@ -44,7 +44,7 @@ bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::VoxelVo
 	}
 	io::FileStream wstream(outputFile.get());
 	VoxelVolumes volumes;
-	volumes.push_back(voxel::VoxelVolume(volume.volume, name, volume.visible, volume.pivot));
+	volumes.push_back(voxel::VoxelVolume(volume.volume(), name, volume.visible(), volume.pivot()));
 	wrapBool(f.saveGroups(volumes, finalName, wstream))
 
 	wrapBool(stream.writeInt32(0)); // next child count
@@ -61,7 +61,7 @@ bool VXRFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 
 	int childCount = 0;
 	for (const VoxelVolume& v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
 		++childCount;
@@ -69,10 +69,10 @@ bool VXRFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	wrapBool(stream.writeInt32(childCount))
 	int n = 0;
 	for (const VoxelVolume& v : volumes) {
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
-		core::String name = v.name;
+		core::String name = v.name();
 		if (name.empty()) {
 			name = core::string::format("%i", n);
 		}

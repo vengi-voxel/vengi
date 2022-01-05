@@ -304,8 +304,8 @@ bool SceneManager::prefab(const core::String& file) {
 	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
 		return false;
 	}
-	for (const auto& v : newVolumes) {
-		_layerMgr.addLayer(v.name.c_str(), v.visible, v.volume, v.pivot);
+	for (auto& v : newVolumes) {
+		_layerMgr.addLayer(v.name().c_str(), v.visible(), v.volume(), v.pivot());
 	}
 	return true;
 }
@@ -656,7 +656,7 @@ bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
 	}
 	int valid = 0;
 	for (int idx = 0; idx < volumeCnt; ++idx) {
-		const int layerId = _layerMgr.addLayer(volumes[idx].name.c_str(), volumes[idx].visible, volumes[idx].volume, volumes[idx].pivot);
+		const int layerId = _layerMgr.addLayer(volumes[idx].name().c_str(), volumes[idx].visible(), volumes[idx].volume(), volumes[idx].pivot());
 		if (layerId >= 0) {
 			++valid;
 		}
@@ -1813,11 +1813,11 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 	int layersAdded = 0;
 	for (size_t i = 0u; i < volumes.size(); ++i) {
 		const auto& v = volumes[i];
-		if (v.volume == nullptr) {
+		if (v.volume() == nullptr) {
 			continue;
 		}
 		const bool visible = layersAdded == 0;
-		const int layerId = _layerMgr.addLayer(v.name.c_str(), visible, v.volume, v.pivot);
+		const int layerId = _layerMgr.addLayer(v.name().c_str(), visible, v.volume(), v.pivot());
 		if (layerId != -1) {
 			++layersAdded;
 			_layerMgr.addMetadata(layerId, {{"type", core::string::format("%i", (int)i)}});

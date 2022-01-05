@@ -24,8 +24,8 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, i
 	int indices = 0;
 	for (const auto& meshExt : meshes) {
 		const voxel::Mesh& mesh = *meshExt.mesh;
-		elements += mesh.getNoOfVertices();
-		indices += mesh.getNoOfIndices();
+		elements += (int)mesh.getNoOfVertices();
+		indices += (int)mesh.getNoOfIndices();
 	}
 
 	stream.writeStringFormat(false, "element vertex %i\n", elements);
