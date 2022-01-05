@@ -90,7 +90,7 @@ static MIDIEvent *CreateEvent(Uint32 time, Uint8 event, Uint8 a, Uint8 b)
         newEvent->data[1] = b;
     }
     else
-        Mix_SetError("Out of memory");
+        Mix_OutOfMemory();
 
     return newEvent;
 }
@@ -318,7 +318,7 @@ static int ReadMIDIFile(MIDIFile *mididata, SDL_RWops *src)
     mididata->track = (MIDITrack*) SDL_calloc(1, sizeof(MIDITrack) * mididata->nTracks);
     if (NULL == mididata->track)
     {
-        Mix_SetError("Out of memory");
+        Mix_OutOfMemory();
         goto bail;
     }
 
@@ -336,7 +336,7 @@ static int ReadMIDIFile(MIDIFile *mididata, SDL_RWops *src)
         mididata->track[i].data = SDL_malloc(size);
         if (NULL == mididata->track[i].data)
         {
-            Mix_SetError("Out of memory");
+            Mix_OutOfMemory();
             goto bail;
         }
         SDL_RWread(src, mididata->track[i].data, 1, size);

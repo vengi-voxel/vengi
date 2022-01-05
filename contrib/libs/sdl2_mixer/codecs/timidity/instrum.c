@@ -45,7 +45,7 @@ static void free_bank(MidiSong *song, int dr, int b)
       {
 	if (bank->instrument[i] != MAGIC_LOAD_INSTRUMENT)
 	  free_instrument(bank->instrument[i]);
-	bank->instrument[i]=0;
+	bank->instrument[i] = NULL;
       }
 }
 
@@ -160,14 +160,15 @@ static void load_instrument(MidiSong *song, const char *name,
   if (!name) return;
 
   /* Open patch file */
+  i = -1;
   if ((rw=timi_openfile(name)) == NULL)
     {
       /* Try with various extensions */
       for (i=0; patch_ext[i]; i++)
 	{
-	      SDL_snprintf(tmp, sizeof(tmp), "%s%s", name, patch_ext[i]);
-	      if ((rw=timi_openfile(tmp)) != NULL)
-		  break;
+	    SDL_snprintf(tmp, sizeof(tmp), "%s%s", name, patch_ext[i]);
+	    if ((rw=timi_openfile(tmp)) != NULL)
+		break;
 	}
     }
 
@@ -177,7 +178,7 @@ static void load_instrument(MidiSong *song, const char *name,
       return;
     }
 
-  SNDDBG(("Loading instrument %s\n", tmp));
+  SNDDBG(("Loading instrument %s\n", (i < 0)? name : tmp));
 
   /* Read some headers and do cursory sanity checks. There are loads
      of magic offsets. This could be rewritten... */
@@ -288,7 +289,6 @@ static void load_instrument(MidiSong *song, const char *name,
 	  SNDDBG((" * vibrato: sweep %d, ctl %d, depth %d\n",
 	       sp->vibrato_sweep_increment, sp->vibrato_control_ratio,
 	       sp->vibrato_depth));
-
 	}
 
       READ_CHAR(sp->modes);
@@ -304,9 +304,9 @@ static void load_instrument(MidiSong *song, const char *name,
 	sp->note_to_use=0;
 
       /* seashore.pat in the Midia patch set has no Sustain. I don't
-         understand why, and fixing it by adding the Sustain flag to
-         all looped patches probably breaks something else. We do it
-         anyway. */
+	 understand why, and fixing it by adding the Sustain flag to
+	 all looped patches probably breaks something else. We do it
+	 anyway. */
       if (sp->modes & MODES_LOOPING) 
 	sp->modes |= MODES_SUSTAIN;
 
@@ -457,8 +457,7 @@ static void load_instrument(MidiSong *song, const char *name,
       sp->loop_start /= 2;
       sp->loop_end /= 2;
 
-      /* initialize the added extra sample space (see the +4 bytes in
-	 allocation) using the last actual sample:  */
+      /* initialize the added extra sample space (see the +4 bytes) */
       sp->data[sp->data_length] = sp->data[sp->data_length+1] = 0;
 
       /* Then fractional samples */
@@ -539,12 +538,12 @@ static int fill_bank(MidiSong *song, int dr, int b)
 			  MAGIC_LOAD_INSTRUMENT;
 		    }
 		}
-	      bank->instrument[i] = 0;
+	      bank->instrument[i] = NULL;
 	      errors++;
 	    }
 	  else
-	  {
-		load_instrument(song,
+	    {
+	      load_instrument(song,
 				     bank->tone[i].name, 
 				     &bank->instrument[i],
 				     (dr) ? 1 : 0,
@@ -560,13 +559,13 @@ static int fill_bank(MidiSong *song, int dr, int b)
 				     bank->tone[i].strip_envelope :
 				     ((dr) ? 1 : -1),
 				     bank->tone[i].strip_tail);
-	    if (!bank->instrument[i]) {
+	      if (!bank->instrument[i]) {
 		SNDDBG(("Couldn't load instrument %s (%s %d, program %d)\n",
 		   bank->tone[i].name,
 		   (dr)? "drum set" : "tone bank", b, i));
-	      errors++;
+		errors++;
+	      }
 	    }
-	  }
 	}
     }
   return errors;

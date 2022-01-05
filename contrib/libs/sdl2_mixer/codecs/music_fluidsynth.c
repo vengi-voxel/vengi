@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -62,9 +62,7 @@ typedef struct {
     fluid_synth_t* (*new_fluid_synth)(fluid_settings_t*);
 } fluidsynth_loader;
 
-static fluidsynth_loader fluidsynth = {
-    0, NULL
-};
+static fluidsynth_loader fluidsynth;
 
 #ifdef FLUIDSYNTH_DYNAMIC
 #define FUNCTION_LOADER(FUNC, SIG) \

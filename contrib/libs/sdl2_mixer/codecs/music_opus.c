@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,9 +48,7 @@ typedef struct {
     ogg_int64_t (*op_pcm_total)(const OggOpusFile *, int);
 } opus_loader;
 
-static opus_loader opus = {
-    0, NULL
-};
+static opus_loader opus;
 
 #ifdef OPUS_DYNAMIC
 #define FUNCTION_LOADER(FUNC, SIG) \

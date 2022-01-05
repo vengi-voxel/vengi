@@ -22,6 +22,10 @@ extern void timi_free_pathlist(void);
 #define TIMI_NAMESPACE(x) _timi_ ## x
 
 /* debug output */
+#ifdef DEBUG_CHATTER
+#define SNDDBG(X) SDL_Log X
+#else
 #define SNDDBG(X)
+#endif
 
 #endif /* TIMIDITY_COMMON_H */

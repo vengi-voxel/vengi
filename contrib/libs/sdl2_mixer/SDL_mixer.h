@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -690,6 +690,7 @@ extern DECLSPEC void SDLCALL Mix_CloseAudio(void);
 #define Mix_SetError    SDL_SetError
 #define Mix_GetError    SDL_GetError
 #define Mix_ClearError  SDL_ClearError
+#define Mix_OutOfMemory SDL_OutOfMemory
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -44,7 +44,7 @@ static Sint32 getvl(SDL_RWops *rw)
     }
 }
 
-#if 0 /* SNDDBG() is just an empty macro */
+#if (defined DEBUG_CHATTER)
 /* Print a string from the file, followed by a newline. Any non-ASCII
    or unprintable characters will be converted to periods. */
 static int dumpstring(SDL_RWops *rw, Sint32 len, Uint8 type)
@@ -55,7 +55,7 @@ static int dumpstring(SDL_RWops *rw, Sint32 len, Uint8 type)
   signed char *s = SDL_malloc(len+1);
   if (!s)
     {
-      SDL_RWseek(song->rw, len, RW_SEEK_CUR);/* should I ? */
+      SDL_RWseek(rw, len, RW_SEEK_CUR);/* should I ? */
       return -1;
     }
   if (len != (Sint32) SDL_RWread(rw, s, 1, len))
@@ -119,8 +119,11 @@ static MidiEventList *read_midi_event(MidiSong *song)
 	  len=getvl(song->rw);
 	  if (type>0 && type<16)
 	    {
-	    /*dumpstring(song->rw, len, type);*/ /* see above */
+	      #if (defined DEBUG_CHATTER)
+	      dumpstring(song->rw, len, type);
+	      #else
 	      SDL_RWseek(song->rw, len, RW_SEEK_CUR);
+	      #endif
 	    }
 	  else
 	    switch(type)

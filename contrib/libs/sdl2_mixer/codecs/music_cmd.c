@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -65,7 +65,7 @@ static void *MusicCMD_CreateFromFile(const char *file)
     /* Allocate and fill the music structure */
     music = (MusicCMD *)SDL_calloc(1, sizeof *music);
     if (music == NULL) {
-        Mix_SetError("Out of memory");
+        Mix_OutOfMemory();
         return NULL;
     }
     music->file = SDL_strdup(file);
