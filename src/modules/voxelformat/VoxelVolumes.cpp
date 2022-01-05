@@ -84,50 +84,54 @@ const voxel::Region &VoxelVolume::region() const {
 }
 
 VoxelVolumes::~VoxelVolumes() {
-	volumes.clear();
+	_volumes.clear();
 }
 
 void VoxelVolumes::push_back(VoxelVolume&& v) {
-	volumes.emplace_back(core::forward<VoxelVolume>(v));
+	_volumes.emplace_back(core::forward<VoxelVolume>(v));
 }
 
 void VoxelVolumes::resize(size_t size) {
-	volumes.resize(size);
+	_volumes.resize(size);
 }
 
 void VoxelVolumes::reserve(size_t size) {
-	volumes.reserve(size);
+	_volumes.reserve(size);
 }
 
 bool VoxelVolumes::empty() const {
-	return volumes.empty();
+	return _volumes.empty();
 }
 
 size_t VoxelVolumes::size() const {
-	return volumes.size();
+	return _volumes.size();
+}
+
+void VoxelVolumes::release(int index) {
+	return _volumes[index].release();
 }
 
 const VoxelVolume &VoxelVolumes::operator[](size_t idx) const {
-	return volumes[idx];
+	return _volumes[idx];
 }
 
 VoxelVolume& VoxelVolumes::operator[](size_t idx) {
-	return volumes[idx];
+	return _volumes[idx];
 }
 
 voxel::RawVolume *VoxelVolumes::merge() const {
-	if (volumes.empty()) {
+	if (_volumes.empty()) {
 		return nullptr;
 	}
-	if (volumes.size() == 1) {
-		if (volumes[0].volume() == nullptr) {
+	if (_volumes.size() == 1) {
+		if (_volumes[0].volume() == nullptr) {
 			return nullptr;
 		}
-		return new voxel::RawVolume(volumes[0].volume());
+		return new voxel::RawVolume(_volumes[0].volume());
 	}
 	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
-	rawVolumes.reserve(volumes.size());
-	for (const VoxelVolume &v : volumes) {
+	rawVolumes.reserve(_volumes.size());
+	for (const VoxelVolume &v : _volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
@@ -140,10 +144,7 @@ voxel::RawVolume *VoxelVolumes::merge() const {
 }
 
 void clearVolumes(VoxelVolumes& volumes) {
-	for (VoxelVolume& v : volumes) {
-		v.release();
-	}
-	volumes.volumes.clear();
+	volumes.clear();
 }
 
 }

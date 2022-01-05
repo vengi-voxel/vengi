@@ -322,7 +322,7 @@ int LayerManager::nextLockedLayer(int last) const {
 	if (last < 0) {
 		return -1;
 	}
-	const int n = _layers.size();
+	const int n = (int)_layers.size();
 	for (int i = last; i < n; ++i) {
 		if (_layers[i].locked) {
 			return i;

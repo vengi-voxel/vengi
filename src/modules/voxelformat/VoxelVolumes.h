@@ -41,23 +41,38 @@ protected:
 	glm::ivec3 _pivot { 0 };
 
 public:
+	/**
+	 * @brief Releases the memory of the volume instance (only if owned).
+	 */
 	void release();
 
+	/**
+	 * @return voxel::RawVolume - might be @c nullptr
+	 */
 	voxel::RawVolume *volume() const;
+	/**
+	 * @return voxel::RawVolume - might be @c nullptr
+	 */
 	voxel::RawVolume *volume();
+	/**
+	 * @return voxel::Region instance that is invalid when the volume is not set for this instance.
+	 */
 	const voxel::Region &region() const;
 	/**
-	 * @param volume voxel::RawVolume instance
+	 * @param volume voxel::RawVolume instance. Might be @c nullptr.
 	 * @param transferOwnership this is @c true if the volume should get deleted by this class, @c false if
 	 * you are going to manage the instance on your own.
 	 */
 	void setVolume(voxel::RawVolume *volume, bool transferOwnership = true);
 	/**
-	 * @param volume voxel::RawVolume instance
+	 * @param volume voxel::RawVolume instance. Might be @c nullptr.
 	 * @param transferOwnership this is @c true if the volume should get deleted by this class, @c false if
 	 * you are going to manage the instance on your own.
 	 */
 	void setVolume(const voxel::RawVolume *volume, bool transferOwnership = true);
+
+	// meta data
+
 	const core::String &name() const;
 	void setName(const core::String &name);
 	bool visible() const;
@@ -106,9 +121,11 @@ inline void VoxelVolume::setPivot(const glm::ivec3& pivot) {
  * @sa VoxelVolume
  * @sa clearVolumes()
  */
-struct VoxelVolumes {
-	core::DynamicArray<VoxelVolume> volumes;
+class VoxelVolumes {
+protected:
+	core::DynamicArray<VoxelVolume> _volumes;
 
+public:
 	~VoxelVolumes();
 
 	void push_back(VoxelVolume&& v);
@@ -116,25 +133,33 @@ struct VoxelVolumes {
 	void reserve(size_t size);
 	bool empty() const;
 	size_t size() const;
+	void release(int index);
 	voxel::RawVolume* merge() const;
+
+	void clear() {
+		for (VoxelVolume& v : _volumes) {
+			v.release();
+		}
+		_volumes.clear();
+	}
 
 	const VoxelVolume &operator[](size_t idx) const;
 	VoxelVolume& operator[](size_t idx);
 
 	inline auto begin() {
-		return volumes.begin();
+		return _volumes.begin();
 	}
 
 	inline auto end() {
-		return volumes.end();
+		return _volumes.end();
 	}
 
 	inline auto begin() const {
-		return volumes.begin();
+		return _volumes.begin();
 	}
 
 	inline auto end() const {
-		return volumes.end();
+		return _volumes.end();
 	}
 };
 
@@ -151,7 +176,7 @@ extern void clearVolumes(VoxelVolumes& volumes);
  */
 struct ScopedVoxelVolumes : public VoxelVolumes {
 	~ScopedVoxelVolumes() {
-		clearVolumes(*this);
+		clear();
 	}
 };
 
