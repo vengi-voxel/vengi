@@ -1576,7 +1576,11 @@ elseif(WINDOWS)
       #include <xinput.h>
       XINPUT_STATE_EX s1;
       int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
-    check_include_file(windows.gaming.input.h HAVE_WINDOWS_GAMING_INPUT_H)
+    check_c_source_compiles("
+      #define COBJMACROS
+      #include <windows.gaming.input.h>
+      __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+      int main(int argc, char **argv) { }" HAVE_WINDOWS_GAMING_INPUT_H)
   endif()
 
   # headers needed elsewhere
@@ -2376,6 +2380,12 @@ elseif(PSP)
     set(SOURCE_FILES ${SOURCE_FILES} ${PSP_AUDIO_SOURCES})
     set(HAVE_SDL_AUDIO TRUE)
   endif()
+  if(SDL_FILESYSTEM)
+    set(SDL_FILESYSTEM_PSP 1)
+    file(GLOB PSP_FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/psp/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PSP_FILESYSTEM_SOURCES})
+    set(HAVE_SDL_FILESYSTEM TRUE)
+  endif()
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_PSP 1)
     file(GLOB PSP_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/psp/*.c)
@@ -2410,6 +2420,7 @@ elseif(PSP)
   endif()
 
   list(APPEND EXTRA_LIBS
+      psppower
       pspctrl
       psphprm
       pspge
