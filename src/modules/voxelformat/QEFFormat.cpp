@@ -25,7 +25,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	char buf[64];
 
 	wrapBool(stream.readLine(64, buf))
@@ -95,7 +95,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
-	volumes.emplace_back(VoxelVolume(volume, filename, true, glm::ivec3(0)));
+	volumes.emplace_back(SceneGraphNode(volume, filename, true, glm::ivec3(0)));
 
 	while (stream.remaining() > 0) {
 		wrapBool(stream.readLine(64, buf))
@@ -111,7 +111,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return true;
 }
 
-bool QEFFormat::saveGroups(const VoxelVolumes &volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool QEFFormat::saveGroups(const SceneGraph &volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	stream.writeString("Qubicle Exchange Format\n", false);
 	stream.writeString("Version 0.2\n", false);
 	stream.writeString("www.minddesk.com\n", false);

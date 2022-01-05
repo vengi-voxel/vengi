@@ -59,7 +59,7 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::loadImage(imageName, false);
 }
 
-bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXMFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	RawVolume* mergedVolume = merge(volumes);
 	wrapBool(stream.writeUInt32(FourCC('V','X','M','5')));
 	const glm::ivec3 &pivot = volumes.size() == 1 ? volumes.begin()->pivot() : mergedVolume->region().getCenter();
@@ -133,7 +133,7 @@ bool VXMFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	return true;
 }
 
-bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -411,7 +411,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			}
 			idx += length;
 		}
-		volumes.emplace_back(VoxelVolume(volume, layerName, visible, ipivot));
+		volumes.emplace_back(SceneGraphNode(volume, layerName, visible, ipivot));
 	}
 
 	if (version >= 10) {

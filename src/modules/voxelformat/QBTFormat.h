@@ -18,19 +18,19 @@ namespace voxel {
 class QBTFormat : public Format {
 private:
 	bool skipNode(io::SeekableReadStream& stream);
-	bool loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes);
-	bool loadCompound(io::SeekableReadStream& stream, VoxelVolumes& volumes);
-	bool loadModel(io::SeekableReadStream& stream, VoxelVolumes& volumes);
-	bool loadNode(io::SeekableReadStream& stream, VoxelVolumes& volumes);
+	bool loadMatrix(io::SeekableReadStream& stream, SceneGraph& volumes);
+	bool loadCompound(io::SeekableReadStream& stream, SceneGraph& volumes);
+	bool loadModel(io::SeekableReadStream& stream, SceneGraph& volumes);
+	bool loadNode(io::SeekableReadStream& stream, SceneGraph& volumes);
 
 	bool loadColorMap(io::SeekableReadStream& stream);
-	bool loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes);
-	bool saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& volume, bool colorMap) const;
+	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph& volumes);
+	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& volume, bool colorMap) const;
 	bool saveColorMap(io::SeekableWriteStream& stream) const;
-	bool saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, bool colorMap) const;
+	bool saveModel(io::SeekableWriteStream& stream, const SceneGraph& volumes, bool colorMap) const;
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) override;
+	bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

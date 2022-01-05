@@ -12,7 +12,7 @@
 #include "math/Math.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/VoxelVolumes.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -174,7 +174,7 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::ImagePtr();
 }
 
-bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	const int size = (int)volumes.size();
 	core::String name = core::string::format("layer %i", size);
 	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
@@ -274,12 +274,12 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 		// "material" int (index)
 	}
 	// TODO: fix this properly - without mirroring
-	volumes.emplace_back(VoxelVolume{voxel::mirrorAxis(layerVolume, math::Axis::Z), name, visible});
+	volumes.emplace_back(SceneGraphNode{voxel::mirrorAxis(layerVolume, math::Axis::Z), name, visible});
 	delete layerVolume;
 	return true;
 }
 
-bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	uint8_t* png = (uint8_t*)core_malloc(c.length);
 	wrapBool(loadChunk_ReadData(stream, (char *)png, c.length))
 	image::ImagePtr img = image::createEmptyImage("gox-voxeldata");
@@ -294,7 +294,7 @@ bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool GoxFormat::loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	char dictKey[256];
 	char dictValue[256];
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
@@ -307,7 +307,7 @@ bool GoxFormat::loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	char dictKey[256];
 	char dictValue[256];
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
@@ -320,7 +320,7 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadChunk_IMG(State& state, const GoxChunk &c, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool GoxFormat::loadChunk_IMG(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	char dictKey[256];
 	char dictValue[256];
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
@@ -329,7 +329,7 @@ bool GoxFormat::loadChunk_IMG(State& state, const GoxChunk &c, io::SeekableReadS
 	return true;
 }
 
-bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	char dictKey[256];
 	char dictValue[256];
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
@@ -343,7 +343,7 @@ bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool GoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 
@@ -424,10 +424,10 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream) {
 	return true;
 }
 
-bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolumes &volumes, int numBlocks) {
+bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const SceneGraph &volumes, int numBlocks) {
 	int blockUid = 0;
 	int layerId = 0;
-	for (const VoxelVolume &v : volumes) {
+	for (const SceneGraphNode &v : volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
@@ -488,9 +488,9 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const VoxelVolum
 	return true;
 }
 
-bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const VoxelVolumes &volumes, int &blocks) {
+bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph &volumes, int &blocks) {
 	blocks = 0;
-	for (const VoxelVolume &v : volumes) {
+	for (const SceneGraphNode &v : volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
@@ -541,7 +541,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const VoxelVolum
 	return true;
 }
 
-bool GoxFormat::saveGroups(const VoxelVolumes &volumes, const core::String &filename, io::SeekableWriteStream &stream) {
+bool GoxFormat::saveGroups(const SceneGraph &volumes, const core::String &filename, io::SeekableWriteStream &stream) {
 	wrapSave(stream.writeUInt32(FourCC('G', 'O', 'X', ' ')))
 	wrapSave(stream.writeUInt32(2))
 

@@ -39,7 +39,7 @@ voxel::RawVolume* VolumeCache::loadVolume(const core::String &filename) {
 		Log::debug("Failed to load %s for any of the supported format extensions", filename.c_str());
 		return nullptr;
 	}
-	voxel::ScopedVoxelVolumes volumes;
+	voxel::ScopedSceneGraph volumes;
 	io::FileStream stream(file.get());
 	if (!voxelformat::loadFormat(file->name(), stream, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());

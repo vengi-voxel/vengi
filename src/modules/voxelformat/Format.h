@@ -10,10 +10,13 @@
 #include "voxel/RawVolume.h"
 #include "io/File.h"
 #include "image/Image.h"
-#include "VoxelVolumes.h"
+#include "SceneGraph.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
+
+// the max amount of voxels - [0-255]
+static constexpr int MaxRegionSize = 256;
 
 class Mesh;
 
@@ -34,7 +37,7 @@ protected:
 	 * @brief Maps a custum palette index to our own 256 color palette by a closest match
 	 */
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
-	RawVolume* merge(const VoxelVolumes& volumes) const;
+	RawVolume* merge(const SceneGraph& volumes) const;
 	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).
 	 *
@@ -60,7 +63,7 @@ protected:
 	 * @brief Split volumes according to their max size into several smaller volumes
 	 * Some formats only support small volumes sizes per object - but multiple objects.
 	 */
-	void splitVolumes(const VoxelVolumes& srcVolumes, VoxelVolumes& destVolumes, const glm::ivec3 &maxSize);
+	void splitVolumes(const SceneGraph& srcVolumes, SceneGraph& destVolumes, const glm::ivec3 &maxSize);
 
 public:
 	virtual ~Format() = default;
@@ -78,12 +81,12 @@ public:
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
 	 */
-	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& file, VoxelVolumes& volumes) = 0;
+	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& volumes) = 0;
 	/**
 	 * @brief Merge the loaded volumes into one. The returned memory is yours.
 	 */
 	virtual RawVolume* load(const core::String &filename, io::SeekableReadStream& file);
-	virtual bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) = 0;
+	virtual bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) = 0;
 	virtual bool save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream);
 };
 
@@ -100,8 +103,8 @@ protected:
 	using Meshes = core::DynamicArray<MeshExt>;
 	virtual bool saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, float scale = 1.0f, bool quad = false, bool withColor = true, bool withTexCoords = true) = 0;
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& file, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& volumes) override;
+	bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

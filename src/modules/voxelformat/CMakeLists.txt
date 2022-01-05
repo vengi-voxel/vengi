@@ -19,9 +19,10 @@ set(SRCS
 	CubFormat.h CubFormat.cpp
 	OBJFormat.h OBJFormat.cpp
 	PLYFormat.h PLYFormat.cpp
+	SceneGraph.h SceneGraph.cpp
+	SceneGraphNode.h SceneGraphNode.cpp
 	SproxelFormat.h SproxelFormat.cpp
 	VolumeCache.h VolumeCache.cpp
-	VoxelVolumes.h VoxelVolumes.cpp
 	VoxFormat.h VoxFormat.cpp
 	VoxOldFormat.h VoxOldFormat.cpp
 	VolumeFormat.h VolumeFormat.cpp

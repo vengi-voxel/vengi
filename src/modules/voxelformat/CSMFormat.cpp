@@ -47,7 +47,7 @@ static bool readString(io::SeekableReadStream& stream, core::String& str, bool r
 	return true;
 }
 
-bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readUInt32(magic))
@@ -97,7 +97,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		uint32_t matrixIndex = 0u;
 
 		RawVolume *volume = new RawVolume(region);
-		volumes.emplace_back(VoxelVolume{volume, name, true});
+		volumes.emplace_back(SceneGraphNode{volume, name, true});
 
 		while (matrixIndex < voxels) {
 			uint8_t count;
@@ -134,7 +134,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 #undef wrap
 #undef wrapBool
 
-bool CSMFormat::saveGroups(const VoxelVolumes &volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool CSMFormat::saveGroups(const SceneGraph &volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 

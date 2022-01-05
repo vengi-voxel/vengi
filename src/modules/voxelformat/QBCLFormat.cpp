@@ -32,7 +32,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool QBCLFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool QBCLFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 
@@ -98,7 +98,7 @@ bool QBCLFormat::readCompound(io::SeekableReadStream &stream) {
 	return false;
 }
 
-bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {

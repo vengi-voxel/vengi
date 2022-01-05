@@ -5,7 +5,7 @@
 #pragma once
 
 #include "app/CommandlineApp.h"
-#include "voxelformat/VoxelVolumes.h"
+#include "voxelformat/SceneGraph.h"
 
 /**
  * @brief This tool is able to convert voxel volumes between different formats
@@ -27,15 +27,15 @@ protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
 
 	void usage() const override;
-	void mirror(const core::String& axisStr, voxel::VoxelVolumes& volumes);
-	void rotate(const core::String& axisStr, voxel::VoxelVolumes& volumes);
-	void scale(voxel::VoxelVolumes& volumes);
-	void script(const core::String &scriptParameters, voxel::VoxelVolumes& volumes);
-	void translate(const glm::ivec3& pos, voxel::VoxelVolumes& volumes);
-	void pivot(const glm::ivec3& pivot, voxel::VoxelVolumes& volumes);
-	void crop(voxel::VoxelVolumes& volumes);
-	void filterVolumes(voxel::VoxelVolumes& volumes);
-	void split(const glm::ivec3 &size, voxel::VoxelVolumes& volumes);
+	void mirror(const core::String& axisStr, voxel::SceneGraph& volumes);
+	void rotate(const core::String& axisStr, voxel::SceneGraph& volumes);
+	void scale(voxel::SceneGraph& volumes);
+	void script(const core::String &scriptParameters, voxel::SceneGraph& volumes);
+	void translate(const glm::ivec3& pos, voxel::SceneGraph& volumes);
+	void pivot(const glm::ivec3& pivot, voxel::SceneGraph& volumes);
+	void crop(voxel::SceneGraph& volumes);
+	void filterVolumes(voxel::SceneGraph& volumes);
+	void split(const glm::ivec3 &size, voxel::SceneGraph& volumes);
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

@@ -21,7 +21,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
-#include "voxelformat/VoxelVolumes.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelgenerator/LUAGenerator.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
@@ -193,7 +193,7 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	voxel::ScopedVoxelVolumes volumes;
+	voxel::ScopedSceneGraph volumes;
 	for (const core::String& infile : infiles) {
 		const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
 		if (!inputFile->exists()) {
@@ -234,17 +234,17 @@ app::AppState VoxConvert::onInit() {
 			}
 			voxel::Region region(0, 0, 0, image->width(), 255, image->height());
 			voxel::RawVolume* volume = new voxel::RawVolume(region);
-			volumes.emplace_back(voxel::VoxelVolume(volume, infile, true, glm::ivec3(0)));
+			volumes.emplace_back(voxel::SceneGraphNode(volume, infile, true, glm::ivec3(0)));
 			voxel::RawVolumeWrapper wrapper(volume);
 			voxelutil::importHeightmap(wrapper, image);
 		} else {
 			io::FileStream inputFileStream(inputFile.get());
-			voxel::VoxelVolumes newVolumes;
+			voxel::SceneGraph newVolumes;
 			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newVolumes)) {
 				Log::error("Failed to load given input file");
 				return app::AppState::InitFailure;
 			}
-			for (voxel::VoxelVolume &v : newVolumes) {
+			for (voxel::SceneGraphNode &v : newVolumes) {
 				volumes.emplace_back(core::move(v));
 			}
 		}
@@ -267,7 +267,7 @@ app::AppState VoxConvert::onInit() {
 			return app::AppState::InitFailure;
 		}
 		volumes.clear();
-		volumes.emplace_back(voxel::VoxelVolume(merged));
+		volumes.emplace_back(voxel::SceneGraphNode(merged));
 	}
 
 	if (scaleVolumes) {
@@ -319,7 +319,7 @@ glm::ivec3 VoxConvert::getArgIvec3(const core::String &name) {
 	return t;
 }
 
-void VoxConvert::split(const glm::ivec3 &size, voxel::VoxelVolumes& volumes) {
+void VoxConvert::split(const glm::ivec3 &size, voxel::SceneGraph& volumes) {
 	Log::info("split volumes at %i:%i:%i", size.x, size.y, size.z);
 	voxel::RawVolume *merged = volumes.merge();
 	volumes.clear();
@@ -330,19 +330,19 @@ void VoxConvert::split(const glm::ivec3 &size, voxel::VoxelVolumes& volumes) {
 	}
 }
 
-void VoxConvert::crop(voxel::VoxelVolumes& volumes) {
+void VoxConvert::crop(voxel::SceneGraph& volumes) {
 	Log::info("Crop volumes");
-	for (voxel::VoxelVolume& v : volumes) {
+	for (voxel::SceneGraphNode& v : volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
-		v.setVolume(voxel::cropVolume(v.volume()));
+		v.setVolume(voxel::cropVolume(v.volume()), true);
 	}
 }
 
-void VoxConvert::pivot(const glm::ivec3& pivot, voxel::VoxelVolumes& volumes) {
+void VoxConvert::pivot(const glm::ivec3& pivot, voxel::SceneGraph& volumes) {
 	Log::info("Set pivot to %i:%i:%i", pivot.x, pivot.y, pivot.z);
-	for (voxel::VoxelVolume& v : volumes) {
+	for (voxel::SceneGraphNode& v : volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
@@ -350,7 +350,7 @@ void VoxConvert::pivot(const glm::ivec3& pivot, voxel::VoxelVolumes& volumes) {
 	}
 }
 
-void VoxConvert::script(const core::String &scriptParameters, voxel::VoxelVolumes& volumes) {
+void VoxConvert::script(const core::String &scriptParameters, voxel::SceneGraph& volumes) {
 	voxelgenerator::LUAGenerator script;
 	if (!script.init()) {
 		Log::warn("Failed to initialize the script bindings");
@@ -381,9 +381,9 @@ void VoxConvert::script(const core::String &scriptParameters, voxel::VoxelVolume
 	script.shutdown();
 }
 
-void VoxConvert::scale(voxel::VoxelVolumes& volumes) {
+void VoxConvert::scale(voxel::SceneGraph& volumes) {
 	Log::info("Scale layers");
-	for (voxel::VoxelVolume& v : volumes) {
+	for (voxel::SceneGraphNode& v : volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
@@ -393,12 +393,12 @@ void VoxConvert::scale(voxel::VoxelVolumes& volumes) {
 		if (destRegion.isValid()) {
 			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
 			rescaleVolume(*v.volume(), *destVolume);
-			v.setVolume(destVolume);
+			v.setVolume(destVolume, true);
 		}
 	}
 }
 
-void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
+void VoxConvert::filterVolumes(voxel::SceneGraph& volumes) {
 	const core::String &filter = getArgVal("--filter");
 	if (filter.empty()) {
 		Log::warn("No filter specified");
@@ -431,39 +431,39 @@ void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
 	Log::info("Filtered layers: %i", (int)layers.size());
 }
 
-void VoxConvert::mirror(const core::String& axisStr, voxel::VoxelVolumes& volumes) {
+void VoxConvert::mirror(const core::String& axisStr, voxel::SceneGraph& volumes) {
 	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
 	}
 	Log::info("Mirror on axis %c", axisStr[0]);
-	for (voxel::VoxelVolume &v : volumes) {
+	for (voxel::SceneGraphNode &v : volumes) {
 		voxel::RawVolume *old = v.volume();
 		if (old == nullptr) {
 			continue;
 		}
-		v.setVolume(voxel::mirrorAxis(old, axis));
+		v.setVolume(voxel::mirrorAxis(old, axis), true);
 	}
 }
 
-void VoxConvert::rotate(const core::String& axisStr, voxel::VoxelVolumes& volumes) {
+void VoxConvert::rotate(const core::String& axisStr, voxel::SceneGraph& volumes) {
 	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
 	}
 	Log::info("Rotate on axis %c", axisStr[0]);
-	for (voxel::VoxelVolume &v : volumes) {
+	for (voxel::SceneGraphNode &v : volumes) {
 		voxel::RawVolume *old = v.volume();
 		if (old == nullptr) {
 			continue;
 		}
-		v.setVolume(voxel::rotateAxis(old, axis));
+		v.setVolume(voxel::rotateAxis(old, axis), true);
 	}
 }
 
-void VoxConvert::translate(const glm::ivec3& pos, voxel::VoxelVolumes& volumes) {
+void VoxConvert::translate(const glm::ivec3& pos, voxel::SceneGraph& volumes) {
 	Log::info("Translate by %i:%i:%i", pos.x, pos.y, pos.z);
-	for (voxel::VoxelVolume &v : volumes) {
+	for (voxel::SceneGraphNode &v : volumes) {
 		v.translate(pos);
 	}
 }

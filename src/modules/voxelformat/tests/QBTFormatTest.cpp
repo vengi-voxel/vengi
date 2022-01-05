@@ -57,7 +57,7 @@ TEST_F(QBTFormatTest, testSave) {
 }
 
 TEST_F(QBTFormatTest, testResaveMultipleLayers) {
-	VoxelVolumes volumes;
+	SceneGraph volumes;
 	{
 		QBTFormat f;
 		io::FilePtr file = open("qubicle.qbt");

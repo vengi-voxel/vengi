@@ -123,12 +123,12 @@ bool VoxFormat::saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, in
 	return true;
 }
 
-bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t childNodes) {
+bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, uint32_t childNodes) {
 	VoxScopedChunkWriter scoped(stream, FourCC('n','G','R','P'));
 	wrapBool(stream.writeUInt32(nodeId))
 	wrapBool(saveAttributes({}, stream))
 	wrapBool(stream.writeUInt32(childNodes))
-	NodeId childNodeId = nodeId + 1;
+	VoxNodeId childNodeId = nodeId + 1;
 	for (uint32_t i = 0u; i < childNodes; ++i) {
 		// transform and shape node pairs
 		wrapBool(stream.writeUInt32(childNodeId + (i * 2u)))
@@ -137,7 +137,7 @@ bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, No
 	return true;
 }
 
-bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, NodeId nodeId, uint32_t volumeId) {
+bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, uint32_t volumeId) {
 	VoxScopedChunkWriter scoped(stream, FourCC('n','S','H','P'));
 	wrapBool(stream.writeUInt32(nodeId))
 	wrapBool(saveAttributes({}, stream))
@@ -148,7 +148,7 @@ bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, No
 	return true;
 }
 
-bool VoxFormat::saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, NodeId nodeId, NodeId childNodeId, const glm::ivec3& mins, int layerId) {
+bool VoxFormat::saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, VoxNodeId childNodeId, const glm::ivec3& mins, int layerId) {
 	VoxScopedChunkWriter scoped(stream, FourCC('n','T','R','N'));
 	wrapBool(stream.writeUInt32(nodeId))
 	wrapBool(saveAttributes({}, stream))
@@ -171,7 +171,7 @@ bool VoxFormat::saveChunk_SIZE(State& state, io::SeekableWriteStream& stream, co
 	return true;
 }
 
-bool VoxFormat::saveChunk_PACK(State& state, io::SeekableWriteStream& stream, const VoxelVolumes& volumes) {
+bool VoxFormat::saveChunk_PACK(State& state, io::SeekableWriteStream& stream, const SceneGraph& volumes) {
 	const int modelCount = (int)volumes.size();
 	VoxScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
 	wrapBool(stream.writeUInt32(modelCount))
@@ -221,7 +221,7 @@ bool VoxFormat::saveChunk_XYZI(State& state, io::SeekableWriteStream& stream, co
 	return true;
 }
 
-bool VoxFormat::saveAttributes(const Attributes& attributes, io::SeekableWriteStream& stream) const {
+bool VoxFormat::saveAttributes(const VoxAttributes& attributes, io::SeekableWriteStream& stream) const {
 	Log::debug("Save %i attributes", (int)attributes.size());
 	wrapBool(stream.writeUInt32(attributes.size()))
 	for (const auto& e : attributes) {
@@ -236,18 +236,18 @@ bool VoxFormat::saveAttributes(const Attributes& attributes, io::SeekableWriteSt
 	return true;
 }
 
-bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, const VoxelVolumes& volumes, int modelCount) {
-	const NodeId rootNodeId = 0;
-	NodeId groupNodeId = rootNodeId + 1;
+bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, const SceneGraph& volumes, int modelCount) {
+	const VoxNodeId rootNodeId = 0;
+	VoxNodeId groupNodeId = rootNodeId + 1;
 	wrapBool(saveChunk_nTRN(state, stream, rootNodeId, groupNodeId, glm::ivec3(0), -1))
 
 	// this adds a group node with a transform+shape node pair per volume
 	wrapBool(saveChunk_nGRP(state, stream, groupNodeId, modelCount))
 
 	// the first transform node id
-	NodeId nodeId = groupNodeId + 1;
+	VoxNodeId nodeId = groupNodeId + 1;
 	int modelId = 0;
-	for (const VoxelVolume& v : volumes) {
+	for (const SceneGraphNode& v : volumes) {
 		const voxel::Region &region = v.region();
 		const glm::ivec3 mins = region.getCenter();
 		wrapBool(saveChunk_nTRN(state, stream, nodeId, nodeId + 1, mins, 0))
@@ -261,16 +261,16 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 	return modelCount == modelId;
 }
 
-bool VoxFormat::saveGroups(const VoxelVolumes& volumesIn, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VoxFormat::saveGroups(const SceneGraph& volumesIn, const core::String &filename, io::SeekableWriteStream& stream) {
 	State state;
 	reset();
 
-	ScopedVoxelVolumes volumes;
+	ScopedSceneGraph volumes;
 	splitVolumes(volumesIn, volumes, glm::ivec3(MaxRegionSize));
 
 	VoxScopedHeader scoped(stream);
 	wrapBool(saveChunk_PACK(state, stream, volumes))
-	for (const VoxelVolume& v : volumes) {
+	for (const SceneGraphNode& v : volumes) {
 		const voxel::Region& region = v.region();
 		wrapBool(saveChunk_SIZE(state, stream, region))
 		wrapBool(saveChunk_XYZI(state, stream, v.volume(), region))
@@ -279,7 +279,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumesIn, const core::String &fi
 #if 0
 	wrapBool(saveSceneGraph(state, stream, volumes, modelId))
 	int modelId = 0;
-	for (const VoxelVolume& v : volumes) {
+	for (const SceneGraphNode& v : volumes) {
 		wrapBool(saveChunk_LAYR(state, stream, modelId, v.name, v.visible))
 		++modelId;
 	}
@@ -294,7 +294,7 @@ bool VoxFormat::saveGroups(const VoxelVolumes& volumesIn, const core::String &fi
 	return true;
 }
 
-bool VoxFormat::readAttributes(Attributes& attributes, io::SeekableReadStream& stream) const {
+bool VoxFormat::readAttributes(VoxAttributes& attributes, io::SeekableReadStream& stream) const {
 	uint32_t cnt;
 	wrap(stream.readUInt32(cnt))
 	if (cnt > 2048) {
@@ -384,7 +384,7 @@ void VoxFormat::initPalette() {
 // N        |            | chunk content
 // M        |            | children chunks
 // -------------------------------------------------------------------------------
-bool VoxFormat::readChunkHeader(io::SeekableReadStream& stream, ChunkHeader& header) const {
+bool VoxFormat::readChunkHeader(io::SeekableReadStream& stream, VoxChunkHeader& header) const {
 	wrap(stream.readUInt32(header.chunkId))
 	wrap(stream.readUInt32(header.numBytesChunk))
 	wrap(stream.readUInt32(header.numBytesChildrenChunks))
@@ -407,7 +407,7 @@ bool VoxFormat::readChunkHeader(io::SeekableReadStream& stream, ChunkHeader& hea
 //                       |     palette[i + 1] = ReadRGBA();
 //                       | }
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_RGBA(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_RGBA(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 	for (int i = 0; i <= 254; i++) {
 		uint32_t rgba;
@@ -432,7 +432,7 @@ bool VoxFormat::loadChunk_RGBA(State& state, io::SeekableReadStream& stream, con
 // 4        | int        | size y
 // 4        | int        | size z : gravity direction
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_SIZE(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_SIZE(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	// we have to flip the axis here
 	uint32_t x, y, z;
 	wrap(stream.readUInt32(x))
@@ -483,7 +483,7 @@ glm::ivec3 VoxFormat::calcTransform(State& state, const VoxTransform& t, int x, 
 //                       | read them first and then assemble as (x, z, y) for Y-up
 //                       | coordinate system.
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
+bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& volumes) {
 	uint32_t numVoxels;
 	wrap(stream.readUInt32(numVoxels))
 	Log::debug("Found voxel chunk with %u voxels", numVoxels);
@@ -533,17 +533,17 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 		}
 	}
 	Log::debug("Loaded layer %i with %i voxels (%i)", state._volumeIdx, numVoxels, volumeVoxelSet);
-	volumes[state._volumeIdx].setVolume(volume);
+	volumes[state._volumeIdx].setVolume(volume, true);
 	volumes[state._volumeIdx].setPivot(translatedRegion.getCenter());
 	++state._volumeIdx;
 	return true;
 }
 
-bool VoxFormat::loadChunk_nSHP(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_nSHP(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readUInt32(nodeId))
 	Log::debug("shape node: %u", nodeId);
-	Attributes nodeAttributes;
+	VoxAttributes nodeAttributes;
 	wrapBool(readAttributes(nodeAttributes, stream))
 	uint32_t shapeNodeNumModels;
 	wrap(stream.readUInt32(shapeNodeNumModels))
@@ -561,7 +561,7 @@ bool VoxFormat::loadChunk_nSHP(State& state, io::SeekableReadStream& stream, con
 	state._models[modelId].volumeIdx = modelId;
 	state._models[modelId].nodeId = nodeId;
 	state._models[modelId].nodeAttributes = nodeAttributes;
-	const SceneGraphNode sceneNode{modelId, SceneGraphNodeType::Shape, SceneGraphChildNodes(0)};
+	const VoxSceneGraphNode sceneNode{modelId, VoxSceneGraphNodeType::Shape, VoxSceneGraphChildNodes(0)};
 	state._sceneGraphMap.put(nodeId, sceneNode);
 	state._leafNodes.push_back(nodeId);
 	return true;
@@ -573,7 +573,7 @@ bool VoxFormat::loadChunk_nSHP(State& state, io::SeekableReadStream& stream, con
 // -------------------------------------------------------------------------------
 // 4        | int        | numModels : num of SIZE and XYZI chunks
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_PACK(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_PACK(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	wrap(stream.readUInt32(state._numModels))
 	return true;
 }
@@ -610,7 +610,7 @@ bool VoxFormat::loadChunk_PACK(State& state, io::SeekableReadStream& stream, con
 //                       | * need to map to real range
 //                       | * Plastic material only accepts {0.0, 1.0} for this version
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_MATT(State& state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_MATT(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	// TODO: this is deprecated - MATL is the v2 version
 	uint32_t materialId;
 	wrap(stream.readUInt32(materialId))
@@ -630,10 +630,10 @@ bool VoxFormat::loadChunk_MATT(State& state, io::SeekableReadStream& stream, con
 }
 
 // https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
-bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const ChunkHeader& header, VoxelVolumes& volumes) {
+bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& volumes) {
 	int32_t layerId;
 	wrap(stream.readInt32(layerId))
-	Attributes attributes;
+	VoxAttributes attributes;
 	// (_name : string)
 	// (_hidden : 0/1)
 	wrapBool(readAttributes(attributes, stream))
@@ -671,7 +671,7 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 // and push these values to their respective stacks.
 //
 // For every Shape node, you can just pop both values and use them.
-bool VoxFormat::parseSceneGraphTranslation(VoxTransform& transform, const Attributes& attributes) const {
+bool VoxFormat::parseSceneGraphTranslation(VoxTransform& transform, const VoxAttributes& attributes) const {
 	auto trans = attributes.find("_t");
 	if (trans == attributes.end()) {
 		return true;
@@ -704,14 +704,14 @@ bool VoxFormat::parseSceneGraphTranslation(VoxTransform& transform, const Attrib
 // 4   : 0 : the sign in the first row (0 : positive; 1 : negative)
 // 5   : 1 : the sign in the second row (0 : positive; 1 : negative)
 // 6   : 1 : the sign in the third row (0 : positive; 1 : negative)
-bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attributes &attributes) const {
+bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const VoxAttributes &attributes) const {
 	auto rot = attributes.find("_r");
 	if (rot == attributes.end()) {
 		return true;
 	}
 
 	const uint8_t packed = core::string::toInt(rot->second);
-	const RotationMatrixPacked *packedRot = (const RotationMatrixPacked *)&packed;
+	const VoxRotationMatrixPacked *packedRot = (const VoxRotationMatrixPacked *)&packed;
 	const uint8_t nonZeroEntryInThirdRow = 3u - (packedRot->nonZeroEntryInFirstRow + packedRot->nonZeroEntryInSecondRow);
 
 	// sanity checks
@@ -740,11 +740,11 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const Attribute
 
 // (_r : int8) ROTATION in STRING (i.e. "36")
 // (_t : int32x3) translation in STRING format separated by spaces (i.e. "-1 10 4"). The anchor for these translations is center of the box.
-bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readUInt32(nodeId))
 	Log::debug("transform node: %u", nodeId);
-	Attributes attributes;
+	VoxAttributes attributes;
 	wrapBool(readAttributes(attributes, stream))
 	uint32_t childNodeId;
 	wrap(stream.readUInt32(childNodeId))
@@ -757,7 +757,7 @@ bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, con
 	if (transform.numFrames != 1) {
 		Log::warn("Transform node chunk contains an expected value for numFrames: %i", transform.numFrames);
 	}
-	Attributes transformNodeAttributes;
+	VoxAttributes transformNodeAttributes;
 	for (uint32_t f = 0; f < transform.numFrames; ++f) {
 		wrapBool(readAttributes(transformNodeAttributes, stream))
 	}
@@ -765,10 +765,10 @@ bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, con
 	wrapBool(parseSceneGraphRotation(transform, transformNodeAttributes))
 	wrapBool(parseSceneGraphTranslation(transform, transformNodeAttributes))
 
-	SceneGraphChildNodes child(1);
+	VoxSceneGraphChildNodes child(1);
 	child[0] = childNodeId;
 	const uint32_t arrayIdx = (uint32_t)state._transforms.size();
-	const SceneGraphNode sceneNode{arrayIdx, SceneGraphNodeType::Transform, child};
+	const VoxSceneGraphNode sceneNode{arrayIdx, VoxSceneGraphNodeType::Transform, child};
 	Log::debug("transform child node id: %u, arrayIdx: %u", sceneNode.childNodeIds[0], arrayIdx);
 	state._sceneGraphMap.put(nodeId, sceneNode);
 	state._transforms.push_back(transform);
@@ -777,15 +777,15 @@ bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, con
 	return true;
 }
 
-bool VoxFormat::loadChunk_nGRP(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_nGRP(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	uint32_t nodeId;
 	wrap(stream.readUInt32(nodeId))
 	Log::debug("group node: %u", nodeId);
-	Attributes attributes;
+	VoxAttributes attributes;
 	wrapBool(readAttributes(attributes, stream))
 	uint32_t numChildren;
 	wrap(stream.readUInt32(numChildren))
-	SceneGraphChildNodes children;
+	VoxSceneGraphChildNodes children;
 	children.reserve(numChildren);
 	for (uint32_t i = 0; i < numChildren; ++i) {
 		uint32_t child;
@@ -793,15 +793,15 @@ bool VoxFormat::loadChunk_nGRP(State &state, io::SeekableReadStream& stream, con
 		children.push_back((child));
 		state._parentNodes.put(child, nodeId);
 	}
-	const SceneGraphNode sceneNode{0, SceneGraphNodeType::Group, children};
+	const VoxSceneGraphNode sceneNode{0, VoxSceneGraphNodeType::Group, children};
 	state._sceneGraphMap.put(nodeId, sceneNode);
 	return true;
 }
 
-bool VoxFormat::loadChunk_rCAM(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_rCAM(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	uint32_t cameraId;
 	wrap(stream.readUInt32(cameraId))
-	Attributes cameraAttributes;
+	VoxAttributes cameraAttributes;
 	// (_mode : string - pers)
 	// (_focus : vec(3))
 	// (_angle : vec(3))
@@ -814,8 +814,8 @@ bool VoxFormat::loadChunk_rCAM(State &state, io::SeekableReadStream& stream, con
 
 // the rendering setting are not open yet because they are changing frequently.
 // But you can still read it since it is just in the DICT format.
-bool VoxFormat::loadChunk_rOBJ(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
-	Attributes attributes;
+bool VoxFormat::loadChunk_rOBJ(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
+	VoxAttributes attributes;
 	wrapBool(readAttributes(attributes, stream))
 	// _type => _setting
 	// _ground => 1
@@ -894,10 +894,10 @@ bool VoxFormat::loadChunk_rOBJ(State &state, io::SeekableReadStream& stream, con
 	return true;
 }
 
-bool VoxFormat::loadChunk_MATL(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_MATL(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	uint32_t materialId;
 	wrap(stream.readUInt32(materialId))
-	Attributes materialAttributes;
+	VoxAttributes materialAttributes;
 	// (_type : str) _diffuse, _metal, _glass, _emit
 	// (_weight : float) range 0 ~ 1
 	// (_rough : float)
@@ -915,7 +915,7 @@ bool VoxFormat::loadChunk_MATL(State &state, io::SeekableReadStream& stream, con
 
 // Represents the palette "index" map
 // TODO: take this into account while mapping the colors - see _palette member
-bool VoxFormat::loadChunk_IMAP(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_IMAP(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	for (int i = 0; i < 256; i++) {
 		uint8_t paletteIndex;
 		wrap(stream.readUInt8(paletteIndex))
@@ -924,7 +924,7 @@ bool VoxFormat::loadChunk_IMAP(State &state, io::SeekableReadStream& stream, con
 }
 
 // Contains all color type names
-bool VoxFormat::loadChunk_NOTE(State &state, io::SeekableReadStream& stream, const ChunkHeader& header) {
+bool VoxFormat::loadChunk_NOTE(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	uint32_t numColorNames;
 	wrap(stream.readUInt32(numColorNames))
 	for (uint32_t i = 0; i < numColorNames; ++i) {
@@ -948,7 +948,7 @@ bool VoxFormat::loadChunk_NOTE(State &state, io::SeekableReadStream& stream, con
 
 bool VoxFormat::loadFirstChunks(State &state, io::SeekableReadStream& stream) {
 	do {
-		ChunkHeader header;
+		VoxChunkHeader header;
 		wrapBool(readChunkHeader(stream, header))
 		switch (header.chunkId) {
 		case FourCC('M','A','T','L'):
@@ -988,10 +988,10 @@ bool VoxFormat::loadFirstChunks(State &state, io::SeekableReadStream& stream) {
 	return true;
 }
 
-bool VoxFormat::loadSecondChunks(State &state, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool VoxFormat::loadSecondChunks(State &state, io::SeekableReadStream& stream, SceneGraph& volumes) {
 	volumes.resize(state._regions.size());
 	do {
-		ChunkHeader header;
+		VoxChunkHeader header;
 		wrapBool(readChunkHeader(stream, header));
 		switch (header.chunkId) {
 		case FourCC('L','A','Y','R'):
@@ -1025,7 +1025,7 @@ bool VoxFormat::loadSecondChunks(State &state, io::SeekableReadStream& stream, V
 // S   S    //
 bool VoxFormat::loadSceneGraph(State &state, io::SeekableReadStream& stream) {
 	do {
-		ChunkHeader header;
+		VoxChunkHeader header;
 		wrapBool(readChunkHeader(stream, header))
 
 		switch (header.chunkId) {
@@ -1049,15 +1049,15 @@ bool VoxFormat::loadSceneGraph(State &state, io::SeekableReadStream& stream) {
 }
 
 VoxFormat::VoxTransform VoxFormat::calculateTransform(State &state, uint32_t volumeIdx) const {
-	const NodeId nodeId = state._models[volumeIdx].nodeId;
+	const VoxNodeId nodeId = state._models[volumeIdx].nodeId;
 	VoxTransform transform;
 	applyTransform(state, transform, nodeId);
 	return transform;
 }
 
-bool VoxFormat::applyTransform(State &state, VoxTransform& transform, NodeId nodeId) const {
-	NodeId parent;
-	NodeId current = nodeId;
+bool VoxFormat::applyTransform(State &state, VoxTransform& transform, VoxNodeId nodeId) const {
+	VoxNodeId parent;
+	VoxNodeId current = nodeId;
 	while (state._parentNodes.get(current, parent)) {
 		wrapBool(applyTransform(state, transform, parent))
 		current = parent;
@@ -1068,13 +1068,13 @@ bool VoxFormat::applyTransform(State &state, VoxTransform& transform, NodeId nod
 		return true;
 	}
 
-	SceneGraphNode node;
+	VoxSceneGraphNode node;
 	if (!state._sceneGraphMap.get(nodeId, node)) {
 		Log::debug("Could not find node %u", nodeId);
 		return false;
 	}
 
-	if (node.type == SceneGraphNodeType::Transform) {
+	if (node.type == VoxSceneGraphNodeType::Transform) {
 		if (node.arrayIdx >= state._transforms.size()) {
 			Log::error("Invalid transform array index found: %u", node.arrayIdx);
 			return false;
@@ -1109,7 +1109,7 @@ bool VoxFormat::checkVersionAndMagic(io::SeekableReadStream& stream) const {
 }
 
 bool VoxFormat::checkMainChunk(io::SeekableReadStream& stream) const {
-	ChunkHeader main;
+	VoxChunkHeader main;
 	wrapBool(readChunkHeader(stream, main))
 	// 3. Chunk id 'MAIN' : the root chunk and parent chunk of all the other chunks
 	if (main.chunkId != FourCC('M','A','I','N')) {
@@ -1159,7 +1159,7 @@ bool VoxFormat::checkMainChunk(io::SeekableReadStream& stream) const {
 //     Chunk 'MATT'
 // }
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
 	reset();
 
 	State state;
@@ -1188,7 +1188,7 @@ size_t VoxFormat::loadPalette(const core::String& filename, io::SeekableReadStre
 
 	State state;
 	do {
-		ChunkHeader header;
+		VoxChunkHeader header;
 		wrapBool(readChunkHeader(stream, header))
 		switch (header.chunkId) {
 		case FourCC('R','G','B','A'):

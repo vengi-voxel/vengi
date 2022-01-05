@@ -14,7 +14,7 @@
 #include "core/Color.h"
 #include "math/Math.h"
 #include "voxel/Mesh.h"
-#include "voxelformat/VoxelVolumes.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VoxelUtil.h"
 #include <limits>
@@ -48,9 +48,9 @@ uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 	return core::Color::getClosestMatch(color, materialColors);
 }
 
-void Format::splitVolumes(const VoxelVolumes& srcVolumes, VoxelVolumes& destVolumes, const glm::ivec3 &maxSize) {
+void Format::splitVolumes(const SceneGraph& srcVolumes, SceneGraph& destVolumes, const glm::ivec3 &maxSize) {
 	destVolumes.reserve(srcVolumes.size());
-	for (VoxelVolume &v : srcVolumes) {
+	for (SceneGraphNode &v : srcVolumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
@@ -88,12 +88,12 @@ void Format::calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize
 	Log::debug("maxs(%i:%i:%i)", maxs.x, maxs.y, maxs.z);
 }
 
-RawVolume* Format::merge(const VoxelVolumes& volumes) const {
+RawVolume* Format::merge(const SceneGraph& volumes) const {
 	return volumes.merge();
 }
 
 RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& file) {
-	ScopedVoxelVolumes volumes;
+	ScopedSceneGraph volumes;
 	if (!loadGroups(filename, file, volumes)) {
 		return nullptr;
 	}
@@ -102,7 +102,7 @@ RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& fi
 }
 
 size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& file, core::Array<uint32_t, 256> &palette) {
-	ScopedVoxelVolumes volumes;
+	ScopedSceneGraph volumes;
 	loadGroups(filename, file, volumes);
 	palette = _colors;
 	return _colorsSize;
@@ -114,8 +114,8 @@ image::ImagePtr Format::loadScreenshot(const core::String &filename, io::Seekabl
 }
 
 bool Format::save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream) {
-	VoxelVolumes volumes;
-	volumes.emplace_back(VoxelVolume(const_cast<RawVolume*>(volume)));
+	SceneGraph volumes;
+	volumes.emplace_back(SceneGraphNode(const_cast<RawVolume*>(volume)));
 	return saveGroups(volumes, filename, stream);
 }
 
@@ -123,12 +123,12 @@ MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const core::String &_name) :
 		mesh(_mesh), name(_name) {
 }
 
-bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStream& file, VoxelVolumes& volumes) {
+bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& volumes) {
 	Log::debug("Meshes can't get voxelized yet");
 	return false;
 }
 
-bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool MeshExporter::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	const bool mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST)->boolVal();
 	const bool reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST)->boolVal();
 	const bool ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST)->boolVal();
@@ -138,7 +138,7 @@ bool MeshExporter::saveGroups(const VoxelVolumes& volumes, const core::String &f
 	const bool withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST)->boolVal();
 
 	Meshes meshes;
-	for (const VoxelVolume& v : volumes) {
+	for (const SceneGraphNode& v : volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}

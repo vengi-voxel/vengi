@@ -13,7 +13,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/VoxelVertex.h"
 #include "voxel/Mesh.h"
-#include "voxelformat/VoxelVolumes.h"
+#include "voxelformat/SceneGraph.h"
 #include "engine-config.h"
 
 namespace voxel {

@@ -16,7 +16,7 @@
 namespace voxedit {
 namespace anim {
 
-bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::VoxelVolumes& volumes) {
+bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::SceneGraph& volumes) {
 	Log::info("Loading volume from %s into the cache", fullPath.c_str());
 	const io::FilesystemPtr& fs = io::filesystem();
 
@@ -31,7 +31,7 @@ bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::
 		Log::error("Failed to load %s for any of the supported format extensions", fullPath.c_str());
 		return false;
 	}
-	voxel::VoxelVolumes localVolumes;
+	voxel::SceneGraph localVolumes;
 	// TODO: use the cache luke
 	io::FileStream stream(file.get());
 	if (!voxelformat::loadFormat(file->name(), stream, localVolumes)) {
@@ -47,7 +47,7 @@ bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::
 	return true;
 }
 
-bool VolumeCache::getVolumes(const animation::AnimationSettings& settings, voxel::VoxelVolumes& volumes) {
+bool VolumeCache::getVolumes(const animation::AnimationSettings& settings, voxel::SceneGraph& volumes) {
 	volumes.resize(animation::AnimationSettings::MAX_ENTRIES);
 
 	for (size_t i = 0; i < animation::AnimationSettings::MAX_ENTRIES; ++i) {

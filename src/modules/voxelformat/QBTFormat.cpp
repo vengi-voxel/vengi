@@ -44,7 +44,7 @@ static const bool MergeCompounds = true;
 		return false; \
 	}
 
-bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& volume, bool colorMap) const {
+bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& volume, bool colorMap) const {
 	const voxel::Region& region = volume.region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
@@ -155,9 +155,9 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream) const {
 	return true;
 }
 
-bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, bool colorMap) const {
+bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& volumes, bool colorMap) const {
 	int children = 0;
-	for (const VoxelVolume& v : volumes) {
+	for (const SceneGraphNode& v : volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
@@ -176,7 +176,7 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& v
 	wrapSave(stream.writeUInt32(children));
 
 	bool success = true;
-	for (const VoxelVolume& v : volumes) {
+	for (const SceneGraphNode& v : volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
@@ -194,7 +194,7 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const VoxelVolumes& v
 	return success;
 }
 
-bool QBTFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool QBTFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapSave(stream.writeUInt32(FourCC('Q','B',' ','2')))
 	wrapSave(stream.writeUInt8(1));
 	wrapSave(stream.writeUInt8(0));
@@ -243,7 +243,7 @@ bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadCompound(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& volumes) {
 	if (!loadMatrix(stream, volumes)) {
 		return false;
 	}
@@ -287,7 +287,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, VoxelVolumes& volum
  * The M byte is used to store visibility of the 6 faces of a voxel and whether as voxel is solid or air. If M is bigger than 0 then the voxel is solid. Even when a voxel
  * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
-bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& volumes) {
 	char name[1024];
 	uint32_t nameLength;
 	wrap(stream.readUInt32(nameLength));
@@ -386,7 +386,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes
 		}
 	}
 	delete [] voxelDataDecompressed;
-	volumes.emplace_back(VoxelVolume(volume, name, true, glm::ivec3(pivot)));
+	volumes.emplace_back(SceneGraphNode(volume, name, true, glm::ivec3(pivot)));
 	return true;
 }
 
@@ -397,7 +397,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, VoxelVolumes& volumes
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadModel(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& volumes) {
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	if (childCount > 2048u) {
@@ -413,7 +413,7 @@ bool QBTFormat::loadModel(io::SeekableReadStream& stream, VoxelVolumes& volumes)
 	return true;
 }
 
-bool QBTFormat::loadNode(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& volumes) {
 	uint32_t nodeTypeID;
 	wrap(stream.readUInt32(nodeTypeID));
 	uint32_t dataSize;
@@ -490,7 +490,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 	return true;
 }
 
-bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& volumes) {
 	uint32_t header;
 	wrap(stream.readUInt32(header))
 	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
@@ -560,7 +560,7 @@ bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& vol
 	return true;
 }
 
-bool QBTFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBTFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
 	return loadFromStream(stream, volumes);
 }
 

@@ -51,7 +51,7 @@ const int NEXT_SLICE_FLAG = 6;
 
 #define setBit(val, index) val &= (1 << (index))
 
-bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& volume) const {
+bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& volume) const {
 	if (volume.volume() == nullptr) {
 		Log::error("Invalid volume given");
 		return false;
@@ -143,14 +143,14 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const VoxelVolume& vo
 	return true;
 }
 
-bool QBFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool QBFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapSave(stream.writeUInt32(257))
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
 	wrapSave(stream.writeUInt32((uint32_t)ZAxisOrientation::Right))
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.writeUInt32((int)volumes.size()))
-	for (const VoxelVolume& v : volumes) {
+	for (const SceneGraphNode& v : volumes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
@@ -209,7 +209,7 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	return voxel::createVoxel(voxelType, index);
 }
 
-bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& volumes) {
 	char name[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
@@ -256,7 +256,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVol
 	}
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
-	volumes.emplace_back(VoxelVolume(v, name, true));
+	volumes.emplace_back(SceneGraphNode(v, name, true));
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
@@ -312,7 +312,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVol
 	return true;
 }
 
-bool QBFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& volumes) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
@@ -352,7 +352,7 @@ bool QBFormat::loadFromStream(io::SeekableReadStream& stream, VoxelVolumes& volu
 	return true;
 }
 
-bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
 	return loadFromStream(stream, volumes);
 }
 

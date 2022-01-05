@@ -7,7 +7,7 @@
 #include "io/File.h"
 #include "io/Stream.h"
 #include "io/FormatDescription.h"
-#include "VoxelVolumes.h"
+#include "SceneGraph.h"
 #include "video/Texture.h"
 #include "core/collection/Array.h"
 
@@ -23,12 +23,12 @@ extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[];
 
 extern size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette);
 extern image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStream& stream);
-extern bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::VoxelVolumes& newVolumes);
+extern bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::SceneGraph& newVolumes);
 
 /**
  * @brief Save both to volume or to mesh - depends on the given file extension
  */
-extern bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes);
+extern bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& volumes);
 
 extern bool isMeshFormat(const core::String& filename);
 

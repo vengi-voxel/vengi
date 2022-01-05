@@ -86,12 +86,12 @@ private:
 	bool skip(io::SeekableReadStream &stream, TagId id);
 	bool getNext(io::SeekableReadStream &stream, NamedBinaryTag& nbt);
 
-	bool parseNBTChunk(VoxelVolumes& volumes, const uint8_t* buffer, int length);
-	bool readCompressedNBT(VoxelVolumes& volumes, const uint8_t* buffer, int length, io::SeekableReadStream &stream);
-	bool loadMinecraftRegion(VoxelVolumes& volumes, const uint8_t* buffer, int length, io::SeekableReadStream &stream, int chunkX, int chunkZ);
+	bool parseNBTChunk(SceneGraph& volumes, const uint8_t* buffer, int length);
+	bool readCompressedNBT(SceneGraph& volumes, const uint8_t* buffer, int length, io::SeekableReadStream &stream);
+	bool loadMinecraftRegion(SceneGraph& volumes, const uint8_t* buffer, int length, io::SeekableReadStream &stream, int chunkX, int chunkZ);
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override {
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) override;
+	bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) override {
 		reset();
 		return false;
 	}

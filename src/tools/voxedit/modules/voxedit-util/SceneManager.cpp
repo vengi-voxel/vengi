@@ -209,8 +209,8 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 		return false;
 	}
 	const Layer& layer = _layerMgr.layer(layerId);
-	voxel::VoxelVolumes volumes;
-	volumes.emplace_back(voxel::VoxelVolume(v, layer.name, layer.visible));
+	voxel::SceneGraph volumes;
+	volumes.emplace_back(voxel::SceneGraphNode(v, layer.name, layer.visible));
 	if (voxelformat::saveFormat(filePtr, volumes)) {
 		Log::info("Saved layer %i to %s", layerId, filePtr->name().c_str());
 		return true;
@@ -233,7 +233,7 @@ bool SceneManager::saveLayers(const core::String& dir) {
 }
 
 bool SceneManager::save(const core::String& file, bool autosave) {
-	voxel::VoxelVolumes volumes;
+	voxel::SceneGraph volumes;
 	const int layers = (int)_layerMgr.layers().size();
 	Log::debug("Trying to save %i layers", layers);
 	for (int idx = 0; idx < layers; ++idx) {
@@ -247,7 +247,7 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 			continue;
 		}
 		const Layer& layer = _layerMgr.layer(idx);
-		volumes.emplace_back(voxel::VoxelVolume(v, layer.name, layer.visible));
+		volumes.emplace_back(voxel::SceneGraphNode(v, layer.name, layer.visible));
 	}
 
 	if (volumes.empty()) {
@@ -299,7 +299,7 @@ bool SceneManager::prefab(const core::String& file) {
 		Log::error("Failed to open model file %s", file.c_str());
 		return false;
 	}
-	voxel::VoxelVolumes newVolumes;
+	voxel::SceneGraph newVolumes;
 	io::FileStream stream(filePtr.get());
 	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
 		return false;
@@ -319,7 +319,7 @@ bool SceneManager::load(const core::String& file) {
 		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
 	}
-	voxel::VoxelVolumes newVolumes;
+	voxel::SceneGraph newVolumes;
 	io::FileStream stream(filePtr.get());
 	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
 		return false;
@@ -593,7 +593,7 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	}
 
 	voxel::RawVolume* merged = voxel::merge(volumes);
-	voxel::VoxelVolumes mergedVolumes;
+	voxel::SceneGraph mergedVolumes;
 	mergedVolumes.emplace_back(merged);
 	setNewVolumes(mergedVolumes);
 	return true;
@@ -638,7 +638,7 @@ void SceneManager::resetSceneState() {
 	resetLastTrace();
 }
 
-bool SceneManager::setNewVolumes(const voxel::VoxelVolumes& volumes) {
+bool SceneManager::setNewVolumes(const voxel::SceneGraph& volumes) {
 	core_trace_scoped(SetNewVolumes);
 	const int volumeCnt = (int)volumes.size();
 	if (volumeCnt == 0) {
@@ -1790,7 +1790,7 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 		Log::warn("Failed to initialize the animation settings and attributes for %s", luaFile.c_str());
 	}
 
-	voxel::VoxelVolumes volumes;
+	voxel::SceneGraph volumes;
 	if (!_volumeCache.getVolumes(animationEntity().animationSettings(), volumes)) {
 		return false;
 	}

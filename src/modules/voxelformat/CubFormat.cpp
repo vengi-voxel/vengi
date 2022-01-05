@@ -24,7 +24,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -41,7 +41,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 	RawVolume *volume = new RawVolume(region);
-	volumes.emplace_back(VoxelVolume{volume, filename, true});
+	volumes.emplace_back(SceneGraphNode{volume, filename, true});
 
 	// TODO: support loading own palette
 
@@ -72,7 +72,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 #undef wrap
 
-bool CubFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool CubFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	RawVolume* mergedVolume = merge(volumes);
 	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
 

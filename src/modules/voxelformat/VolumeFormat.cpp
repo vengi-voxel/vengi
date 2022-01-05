@@ -211,7 +211,7 @@ size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream,
 	return 0;
 }
 
-bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::VoxelVolumes& newVolumes) {
+bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::SceneGraph& newVolumes) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);
@@ -250,7 +250,7 @@ bool isMeshFormat(const core::String& filename) {
 	return false;
 }
 
-bool saveFormat(const io::FilePtr& filePtr, voxel::VoxelVolumes& volumes) {
+bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& volumes) {
 	if (volumes.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
 		return false;

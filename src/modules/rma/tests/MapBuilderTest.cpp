@@ -41,12 +41,12 @@ protected:
 	}
 
 	bool save(const LevelVolumes &volumes) const {
-		voxel::VoxelVolumes v;
+		voxel::SceneGraph v;
 		v.resize(volumes.size());
 		int j = 0;
 		for (int i = 0; i < (int)volumes.size(); ++i) {
 			if (volumes[i] != nullptr) {
-				v[j++] = volumes[i];
+				v[j++].setVolume(volumes[i], false);
 			}
 		}
 		v.resize(j);

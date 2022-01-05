@@ -40,7 +40,7 @@ void MCRFormat::reset() {
 	core_memset(_chunkTimestamps, 0, sizeof(_chunkTimestamps));
 }
 
-bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, VoxelVolumes &volumes) {
+bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &volumes) {
 	reset();
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
@@ -106,7 +106,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return false;
 }
 
-bool MCRFormat::loadMinecraftRegion(VoxelVolumes &volumes, const uint8_t *buffer, int length, io::SeekableReadStream &stream,
+bool MCRFormat::loadMinecraftRegion(SceneGraph &volumes, const uint8_t *buffer, int length, io::SeekableReadStream &stream,
 									int chunkX, int chunkZ) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u || _offsets[i].offset == 0u) {
@@ -126,7 +126,7 @@ bool MCRFormat::loadMinecraftRegion(VoxelVolumes &volumes, const uint8_t *buffer
 	return true;
 }
 
-bool MCRFormat::readCompressedNBT(VoxelVolumes &volumes, const uint8_t *buffer, int length, io::SeekableReadStream &stream) {
+bool MCRFormat::readCompressedNBT(SceneGraph &volumes, const uint8_t *buffer, int length, io::SeekableReadStream &stream) {
 	uint32_t nbtSize;
 	wrap(stream.readUInt32BE(nbtSize));
 	if (nbtSize == 0) {
@@ -429,7 +429,7 @@ static const struct {
 			 {"minecraft:gray_concrete_powder", 252},
 			 {"minecraft:structure_block", 255}};
 
-bool MCRFormat::parseNBTChunk(VoxelVolumes &volumes, const uint8_t *buffer, int length) {
+bool MCRFormat::parseNBTChunk(SceneGraph &volumes, const uint8_t *buffer, int length) {
 	io::MemoryReadStream stream(buffer, length);
 
 	MCRFormat::NamedBinaryTag root;

@@ -13,14 +13,14 @@ namespace voxel {
  */
 class VXRFormat : public Format {
 private:
-	bool loadChildVXM(const core::String& vxmPath, VoxelVolumes& volumes);
-	bool importChild(const core::String& vxmPath, io::SeekableReadStream& stream, VoxelVolumes& volumes, uint32_t version);
+	bool loadChildVXM(const core::String& vxmPath, SceneGraph& volumes);
+	bool importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& volumes, uint32_t version);
 	bool importChildOld(const core::String &filename, io::SeekableReadStream& stream, uint32_t version);
-	bool saveRecursiveNode(const core::String &name, const voxel::VoxelVolume& volume, const core::String &filename, io::SeekableWriteStream& stream);
+	bool saveRecursiveNode(const core::String &name, const voxel::SceneGraphNode& volume, const core::String &filename, io::SeekableWriteStream& stream);
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) override;
+	bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

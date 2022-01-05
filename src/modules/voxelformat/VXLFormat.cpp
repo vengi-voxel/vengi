@@ -41,8 +41,8 @@ bool VXLFormat::writeLimbBodyEntry(io::SeekableWriteStream& stream, const voxel:
 	return true;
 }
 
-bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const {
-	const VoxelVolume& v = volumes[limbIdx];
+bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const SceneGraph& volumes, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const {
+	const SceneGraphNode& v = volumes[limbIdx];
 	const voxel::Region& region = v.region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 
@@ -109,9 +109,9 @@ bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const VoxelVolumes& v
 	return true;
 }
 
-bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx) const {
+bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const SceneGraph& volumes, uint32_t limbIdx) const {
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + limbIdx * LimbHeaderSize));
-	const VoxelVolume& v = volumes[limbIdx];
+	const SceneGraphNode& v = volumes[limbIdx];
 	char name[15];
 	core_memcpy(name, v.name().c_str(), sizeof(name));
 	wrap(stream.write(name, sizeof(name)))
@@ -122,8 +122,8 @@ bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const VoxelVolu
 	return true;
 }
 
-bool VXLFormat::writeLimbFooter(io::SeekableWriteStream& stream, const VoxelVolumes& volumes, uint32_t limbIdx, const LimbOffset& offsets) const {
-	const VoxelVolume& v = volumes[limbIdx];
+bool VXLFormat::writeLimbFooter(io::SeekableWriteStream& stream, const SceneGraph& volumes, uint32_t limbIdx, const LimbOffset& offsets) const {
+	const SceneGraphNode& v = volumes[limbIdx];
 	wrapBool(stream.writeUInt32(offsets.start))
 	wrapBool(stream.writeUInt32(offsets.end))
 	wrapBool(stream.writeUInt32(offsets.data))
@@ -144,7 +144,7 @@ bool VXLFormat::writeLimbFooter(io::SeekableWriteStream& stream, const VoxelVolu
 	return true;
 }
 
-bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, const VoxelVolumes& volumes) {
+bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, const SceneGraph& volumes) {
 	wrapBool(stream.writeString("Voxel Animation"))
 	wrapBool(stream.writeUInt32(1))
 	wrapBool(stream.writeUInt32(volumes.size()))
@@ -163,7 +163,7 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, const VoxelVolumes&
 	return true;
 }
 
-bool VXLFormat::saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXLFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapBool(writeHeader(stream, volumes))
 	for (uint32_t i = 0; i < volumes.size(); ++i) {
 		wrapBool(writeLimbHeader(stream, volumes, i))
@@ -189,7 +189,7 @@ bool VXLFormat::saveGroups(const VoxelVolumes& volumes, const core::String &file
 	return true;
 }
 
-bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, VoxelVolumes& volumes) const {
+bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, SceneGraph& volumes) const {
 	const vxl_limb_tailer &footer = mdl.limb_tailers[limbIdx];
 	const vxl_limb_header &header = mdl.limb_headers[limbIdx];
 
@@ -198,7 +198,7 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 
 	// switch axis
 	RawVolume *volume = new RawVolume(Region{0, 0, 0, footer.xsize - 1, footer.zsize - 1, footer.ysize - 1});
-	volumes[mdl.volumeIdx].setVolume(volume);
+	volumes[mdl.volumeIdx].setVolume(volume, true);
 	volumes[mdl.volumeIdx].setName(header.limb_name);
 	volumes[mdl.volumeIdx].setPivot(volume->region().getCenter());
 	++mdl.volumeIdx;
@@ -268,7 +268,7 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	return true;
 }
 
-bool VXLFormat::readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, VoxelVolumes& volumes) const {
+bool VXLFormat::readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, SceneGraph& volumes) const {
 	const vxl_header& hdr = mdl.header;
 	volumes.resize(hdr.n_limbs);
 	for (uint32_t i = 0; i < hdr.n_limbs; ++i) {
@@ -382,7 +382,7 @@ bool VXLFormat::prepareModel(vxl_mdl& mdl) const {
 	return true;
 }
 
-bool VXLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) {
+bool VXLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
 	vxl_mdl mdl;
 	wrapBool(readHeader(stream, mdl))
 	wrapBool(prepareModel(mdl))

@@ -27,10 +27,10 @@ private:
 		float _scale = 0.0f;
 	};
 
-	bool readData(State& state, const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes);
+	bool readData(State& state, const core::String& filename, io::SeekableReadStream& stream, SceneGraph& volumes);
 public:
-	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, VoxelVolumes& volumes) override;
-	bool saveGroups(const VoxelVolumes& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
+	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& volumes) override;
+	bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

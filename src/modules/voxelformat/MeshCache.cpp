@@ -67,7 +67,7 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 		Log::error("Failed to load %s for any of the supported format extensions", fullPath);
 		return false;
 	}
-	voxel::ScopedVoxelVolumes volumes;
+	voxel::ScopedSceneGraph volumes;
 	io::FileStream stream(file.get());
 	if (!voxelformat::loadFormat(file->name(), stream, volumes)) {
 		Log::error("Failed to load %s", file->name().c_str());
