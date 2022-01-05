@@ -193,7 +193,7 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	voxel::VoxelVolumes volumes;
+	voxel::ScopedVoxelVolumes volumes;
 	for (const core::String& infile : infiles) {
 		const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
 		if (!inputFile->exists()) {
@@ -304,13 +304,10 @@ app::AppState VoxConvert::onInit() {
 
 	Log::debug("Save %i volumes", (int)volumes.size());
 	if (!voxelformat::saveFormat(outputFile, volumes)) {
-		voxel::clearVolumes(volumes);
 		Log::error("Failed to write to output file '%s'", outfile.c_str());
 		return app::AppState::InitFailure;
 	}
 	Log::info("Wrote output file %s", outputFile->name().c_str());
-
-	voxel::clearVolumes(volumes);
 
 	return state;
 }
