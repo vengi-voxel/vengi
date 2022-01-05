@@ -489,10 +489,7 @@ void VoxConvert::rotate(const core::String& axisStr, voxel::VoxelVolumes& volume
 void VoxConvert::translate(const glm::ivec3& pos, voxel::VoxelVolumes& volumes) {
 	Log::info("Translate by %i:%i:%i", pos.x, pos.y, pos.z);
 	for (voxel::VoxelVolume &v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		v.volume()->translate(pos);
+		v.translate(pos);
 	}
 }
 

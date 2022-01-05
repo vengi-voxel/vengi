@@ -72,6 +72,8 @@ public:
 	 */
 	void setVolume(const voxel::RawVolume *volume, bool transferOwnership = true);
 
+	void translate(const glm::ivec3 &v);
+
 	// meta data
 
 	const core::String &name() const;

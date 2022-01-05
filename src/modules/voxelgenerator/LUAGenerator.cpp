@@ -65,11 +65,11 @@ static int luaVoxel_volumewrapper_region(lua_State* s) {
 }
 
 static int luaVoxel_volumewrapper_translate(lua_State* s) {
-	const voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	const int x = (int)luaL_checkinteger(s, 2);
 	const int y = (int)luaL_optinteger(s, 3, 0);
 	const int z = (int)luaL_optinteger(s, 4, 0);
-	volume->volume()->translate(glm::ivec3(x, y, z));
+	volume->translate(glm::ivec3(x, y, z));
 	return 0;
 }
 

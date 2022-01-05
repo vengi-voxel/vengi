@@ -83,6 +83,12 @@ const voxel::Region &VoxelVolume::region() const {
 	return _volume->region();
 }
 
+void VoxelVolume::translate(const glm::ivec3 &v) {
+	if (_volume != nullptr) {
+		_volume->translate(v);
+	}
+}
+
 VoxelVolumes::~VoxelVolumes() {
 	_volumes.clear();
 }
