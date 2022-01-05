@@ -224,7 +224,7 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, vo
 	if (f) {
 		stream.seek(0);
 		if (!f->loadGroups(fileName, stream, newVolumes)) {
-			voxel::clearVolumes(newVolumes);
+			newVolumes.clear();
 		}
 	} else {
 		Log::error("Failed to load model file %s - unsupported file format for extension '%s'",

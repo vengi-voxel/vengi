@@ -122,7 +122,6 @@ inline void VoxelVolume::setPivot(const glm::ivec3& pivot) {
  *
  * @sa ScopedVoxelVolumes
  * @sa VoxelVolume
- * @sa clearVolumes()
  */
 class VoxelVolumes {
 protected:
@@ -166,15 +165,9 @@ public:
 };
 
 /**
- * @param volumes VoxelVolumes instance to clean up - this does free the allocated memory of the volumes
- */
-extern void clearVolumes(VoxelVolumes& volumes);
-
-/**
  * @brief Using this class will automatically free the allocated memory of the volumes once the scope
  * was left.
  * @sa VoxelVolumes
- * @sa clearVolumes()
  */
 struct ScopedVoxelVolumes : public VoxelVolumes {
 	~ScopedVoxelVolumes() {

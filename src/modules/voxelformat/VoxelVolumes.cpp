@@ -145,8 +145,4 @@ voxel::RawVolume *VoxelVolumes::merge() const {
 	return ::voxel::merge(rawVolumes);
 }
 
-void clearVolumes(VoxelVolumes& volumes) {
-	volumes.clear();
-}
-
 }

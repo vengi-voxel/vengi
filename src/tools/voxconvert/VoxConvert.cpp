@@ -266,7 +266,7 @@ app::AppState VoxConvert::onInit() {
 			Log::error("Failed to merge volumes");
 			return app::AppState::InitFailure;
 		}
-		voxel::clearVolumes(volumes);
+		volumes.clear();
 		volumes.emplace_back(voxel::VoxelVolume(merged));
 	}
 
@@ -322,7 +322,7 @@ glm::ivec3 VoxConvert::getArgIvec3(const core::String &name) {
 void VoxConvert::split(const glm::ivec3 &size, voxel::VoxelVolumes& volumes) {
 	Log::info("split volumes at %i:%i:%i", size.x, size.y, size.z);
 	voxel::RawVolume *merged = volumes.merge();
-	voxel::clearVolumes(volumes);
+	volumes.clear();
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
 	voxel::splitVolume(merged, size, rawVolumes);
 	for (voxel::RawVolume *v : rawVolumes) {
