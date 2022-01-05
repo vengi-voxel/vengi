@@ -41,7 +41,8 @@ RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes) {
 }
 
 RawVolume* merge(const core::DynamicArray<RawVolume*>& volumes) {
-	core::DynamicArray<const RawVolume*> v(volumes.size());
+	core::DynamicArray<const RawVolume*> v;
+	v.reserve(volumes.size());
 	for (const RawVolume *v1 : volumes) {
 		v.push_back(v1);
 	}
