@@ -64,13 +64,15 @@ void VoxelVolume::release() {
 	_volume = nullptr;
 }
 
-void VoxelVolume::setVolume(voxel::RawVolume *volume) {
+void VoxelVolume::setVolume(voxel::RawVolume *volume, bool transferOwnership) {
 	release();
+	_volumeOwned = transferOwnership;
 	_volume = volume;
 }
 
-void VoxelVolume::setVolume(const voxel::RawVolume *volume) {
+void VoxelVolume::setVolume(const voxel::RawVolume *volume, bool transferOwnership) {
 	release();
+	_volumeOwned = transferOwnership;
 	_volume = (voxel::RawVolume *)volume;
 }
 

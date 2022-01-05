@@ -46,8 +46,18 @@ public:
 	voxel::RawVolume *volume() const;
 	voxel::RawVolume *volume();
 	const voxel::Region &region() const;
-	void setVolume(voxel::RawVolume *volume);
-	void setVolume(const voxel::RawVolume *volume);
+	/**
+	 * @param volume voxel::RawVolume instance
+	 * @param transferOwnership this is @c true if the volume should get deleted by this class, @c false if
+	 * you are going to manage the instance on your own.
+	 */
+	void setVolume(voxel::RawVolume *volume, bool transferOwnership = true);
+	/**
+	 * @param volume voxel::RawVolume instance
+	 * @param transferOwnership this is @c true if the volume should get deleted by this class, @c false if
+	 * you are going to manage the instance on your own.
+	 */
+	void setVolume(const voxel::RawVolume *volume, bool transferOwnership = true);
 	const core::String &name() const;
 	void setName(const core::String &name);
 	bool visible() const;
