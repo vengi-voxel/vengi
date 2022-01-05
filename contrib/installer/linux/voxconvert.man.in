@@ -14,20 +14,26 @@ volume formats into others. Supported formats are e.g. cub (CubeWorld), qb/qbt
 binvox and others. It can also export to mesh formats like obj and ply with a number
 of options.
 .SH OPTIONS
+
+.TP
+\fB\--crop\fR
+Reduces the volume sizes to their voxel boundaries.
+
 .TP
 \fB\--export-palette\fR
 Export the used palette data into an image. Use in combination with --src-palette.
 
 .TP
-\fB\--filter\fR
-Layer filter. For example '1-4,6'.
+\fB\--filter <filter>\fR
+Will filter out layers not mentioned in the expression. E.g. 1-2,4 will handle layer
+1, 2 and 4. It is the same as 1,2,4. The first layer is 0.
 
 .TP
 \fB\--force|-f\fR
 Overwrite existing files.
 
 .TP
-\fB\--input|-i\fR
+\fB\--input|-i <file>\fR
 Allow to specify input files.
 
 .TP
@@ -37,21 +43,21 @@ those formats this is an explicit parameter. If you are going to export to a mes
 format like wavefront obj, this option changes the behaviour of the exporter, too.
 
 .TP
-\fB\--mirror\fR
+\fB\--mirror <x|y|z>\fR
 Mirror by the given axis (x, y or z).
 
 .TP
-\fB\--output|-o\fR
+\fB\--output|-o <file>\fR
 Allow to specify the output file.
 
 .TP
-\fB\--pivot\fR
+\fB\--pivot <x:y:z>\fR
 Change the pivot of the volume layers.
 
 Not all voxel formats support this.
 
 .TP
-\fB\--rotate\fR
+\fB\--rotate <x|y|z>\fR
 Rotate by 90 degree at the given axis (x, y or z).
 
 .TP
@@ -59,15 +65,19 @@ Rotate by 90 degree at the given axis (x, y or z).
 Save the target volume with a down-sampled version of the input volume.
 
 .TP
-\fB\--script\fR
+\fB\--script "<script> <args>"\fR
 Apply the given lua script to the output volume.
+
+.TP
+\fB\--split <x:y:z>\fR
+Slices the volumes into pieces of the given size
 
 .TP
 \fB\--src-palette|-p\fR
 Keep the source palette and don't perform quantization.
 
 .TP
-\fB\--translate|-t\fR
+\fB\--translate|-t <x:y:z>\fR
 Translate the volumes by x (right), y (up), z (back).
 
 .TP
@@ -87,6 +97,29 @@ Enable trace, debug or info logging
 .TP
 \fB\--version|-v\fR
 Print the version of the application.
+
+.SH ORDER OF EXECUTION
+
+.TP
+filter
+.TP
+merge
+.TP
+scale
+.TP
+mirror
+.TP
+rotate
+.TP
+translate
+.TP
+script
+.TP
+pivot
+.TP
+crop
+.TP
+split
 
 .SH LOAD
 .TP
@@ -155,6 +188,15 @@ Polygon File Format (*.ply)
 Wavefront Object (*.obj)
 .TP
 Polygon File Format (*.ply)
+
+.SH LAYERS
+
+Some formats also have layer support. Our layers are maybe not the layers you know from your favorite editor. Each
+layer can currently only have one object or volume in it. To get the proper layer ids (starting from 0) for your voxel
+file, you should load it once in voxedit and check the layer panel.
+
+Especially magicavoxel supports more objects in one layer. This might be confusing to get the right numbers for
+voxconvert.
 
 .SH EXAMPLES
 
