@@ -78,7 +78,7 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 		}
 		stream.skip(1);
 	}
-	volumes.push_back(VoxelVolume(volume, filename, true, glm::ivec3(0)));
+	volumes.emplace_back(VoxelVolume(volume, filename, true, glm::ivec3(0)));
 	return true;
 }
 

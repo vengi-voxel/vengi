@@ -94,7 +94,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	stream.seek(32);
 
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, filename, true});
+	volumes.emplace_back(VoxelVolume{volume, filename, true});
 
 	typedef struct {
 		uint8_t z, col, vis, dir;

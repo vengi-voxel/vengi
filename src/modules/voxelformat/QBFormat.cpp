@@ -256,7 +256,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, VoxelVol
 	}
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
-	volumes.push_back(VoxelVolume(v, name, true));
+	volumes.emplace_back(VoxelVolume(v, name, true));
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {

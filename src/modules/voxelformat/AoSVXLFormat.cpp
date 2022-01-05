@@ -20,7 +20,7 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	const int flipHeight = depth - 1;
 	core_assert(region.isValid());
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, filename, true});
+	volumes.emplace_back(VoxelVolume{volume, filename, true});
 
 	const int64_t length = stream.size();
 	uint8_t *v = new uint8_t[length];

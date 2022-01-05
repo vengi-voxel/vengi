@@ -87,7 +87,7 @@ VoxelVolumes::~VoxelVolumes() {
 	_volumes.clear();
 }
 
-void VoxelVolumes::push_back(VoxelVolume&& v) {
+void VoxelVolumes::emplace_back(VoxelVolume&& v) {
 	_volumes.emplace_back(core::forward<VoxelVolume>(v));
 }
 

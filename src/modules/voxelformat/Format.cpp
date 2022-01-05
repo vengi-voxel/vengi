@@ -56,13 +56,13 @@ void Format::splitVolumes(const VoxelVolumes& srcVolumes, VoxelVolumes& destVolu
 		}
 		const voxel::Region& region = v.region();
 		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
-			destVolumes.push_back({new voxel::RawVolume(v.volume()), v.name(), v.visible(), v.pivot()});
+			destVolumes.emplace_back({new voxel::RawVolume(v.volume()), v.name(), v.visible(), v.pivot()});
 			continue;
 		}
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
 		voxel::splitVolume(v.volume(), maxSize, rawVolumes);
 		for (voxel::RawVolume *v : rawVolumes) {
-			destVolumes.push_back({v});
+			destVolumes.emplace_back({v});
 		}
 	}
 }
@@ -115,7 +115,7 @@ image::ImagePtr Format::loadScreenshot(const core::String &filename, io::Seekabl
 
 bool Format::save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream) {
 	VoxelVolumes volumes;
-	volumes.push_back(VoxelVolume(const_cast<RawVolume*>(volume)));
+	volumes.emplace_back(VoxelVolume(const_cast<RawVolume*>(volume)));
 	return saveGroups(volumes, filename, stream);
 }
 

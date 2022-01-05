@@ -234,7 +234,7 @@ app::AppState VoxConvert::onInit() {
 			}
 			voxel::Region region(0, 0, 0, image->width(), 255, image->height());
 			voxel::RawVolume* volume = new voxel::RawVolume(region);
-			volumes.push_back(voxel::VoxelVolume(volume, infile, true, glm::ivec3(0)));
+			volumes.emplace_back(voxel::VoxelVolume(volume, infile, true, glm::ivec3(0)));
 			voxel::RawVolumeWrapper wrapper(volume);
 			voxelutil::importHeightmap(wrapper, image);
 		} else {
@@ -245,7 +245,7 @@ app::AppState VoxConvert::onInit() {
 				return app::AppState::InitFailure;
 			}
 			for (voxel::VoxelVolume &v : newVolumes) {
-				volumes.push_back(core::move(v));
+				volumes.emplace_back(core::move(v));
 			}
 		}
 	}
@@ -267,7 +267,7 @@ app::AppState VoxConvert::onInit() {
 			return app::AppState::InitFailure;
 		}
 		voxel::clearVolumes(volumes);
-		volumes.push_back(voxel::VoxelVolume(merged));
+		volumes.emplace_back(voxel::VoxelVolume(merged));
 	}
 
 	if (scaleVolumes) {
@@ -329,7 +329,7 @@ void VoxConvert::split(const glm::ivec3 &size, voxel::VoxelVolumes& volumes) {
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
 	voxel::splitVolume(merged, size, rawVolumes);
 	for (voxel::RawVolume *v : rawVolumes) {
-		volumes.push_back({v});
+		volumes.emplace_back({v});
 	}
 }
 

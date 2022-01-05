@@ -34,7 +34,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 	}
 
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, filename, true});
+	volumes.emplace_back(VoxelVolume{volume, filename, true});
 	const uint32_t numVoxels = state._w * state._h * state._d;
 	uint32_t index = 0;
 	uint32_t endIndex = 0;

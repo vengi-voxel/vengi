@@ -210,7 +210,7 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 	}
 	const Layer& layer = _layerMgr.layer(layerId);
 	voxel::VoxelVolumes volumes;
-	volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
+	volumes.emplace_back(voxel::VoxelVolume(v, layer.name, layer.visible));
 	if (voxelformat::saveFormat(filePtr, volumes)) {
 		Log::info("Saved layer %i to %s", layerId, filePtr->name().c_str());
 		return true;
@@ -247,7 +247,7 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 			continue;
 		}
 		const Layer& layer = _layerMgr.layer(idx);
-		volumes.push_back(voxel::VoxelVolume(v, layer.name, layer.visible));
+		volumes.emplace_back(voxel::VoxelVolume(v, layer.name, layer.visible));
 	}
 
 	if (volumes.empty()) {
@@ -594,7 +594,7 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 
 	voxel::RawVolume* merged = voxel::merge(volumes);
 	voxel::VoxelVolumes mergedVolumes;
-	mergedVolumes.push_back(merged);
+	mergedVolumes.emplace_back(merged);
 	setNewVolumes(mergedVolumes);
 	return true;
 }

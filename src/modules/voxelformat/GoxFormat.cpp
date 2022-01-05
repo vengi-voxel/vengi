@@ -274,7 +274,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 		// "material" int (index)
 	}
 	// TODO: fix this properly - without mirroring
-	volumes.push_back(VoxelVolume{voxel::mirrorAxis(layerVolume, math::Axis::Z), name, visible});
+	volumes.emplace_back(VoxelVolume{voxel::mirrorAxis(layerVolume, math::Axis::Z), name, visible});
 	delete layerVolume;
 	return true;
 }

@@ -109,7 +109,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	stream.seek(currentPos);
 
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, filename, true});
+	volumes.emplace_back(VoxelVolume{volume, filename, true});
 
 	/**
 	 * voxdata: stored in sequential format.  Here's how you can get pointers to

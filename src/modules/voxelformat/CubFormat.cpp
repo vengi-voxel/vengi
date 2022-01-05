@@ -41,7 +41,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 	RawVolume *volume = new RawVolume(region);
-	volumes.push_back(VoxelVolume{volume, filename, true});
+	volumes.emplace_back(VoxelVolume{volume, filename, true});
 
 	// TODO: support loading own palette
 

@@ -128,7 +128,7 @@ protected:
 public:
 	~VoxelVolumes();
 
-	void push_back(VoxelVolume&& v);
+	void emplace_back(VoxelVolume&& v);
 	void resize(size_t size);
 	void reserve(size_t size);
 	bool empty() const;

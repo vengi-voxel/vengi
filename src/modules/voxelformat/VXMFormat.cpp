@@ -411,7 +411,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			}
 			idx += length;
 		}
-		volumes.push_back(VoxelVolume(volume, layerName, visible, ipivot));
+		volumes.emplace_back(VoxelVolume(volume, layerName, visible, ipivot));
 	}
 
 	if (version >= 10) {

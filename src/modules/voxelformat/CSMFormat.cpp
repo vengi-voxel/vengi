@@ -97,7 +97,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		uint32_t matrixIndex = 0u;
 
 		RawVolume *volume = new RawVolume(region);
-		volumes.push_back(VoxelVolume{volume, name, true});
+		volumes.emplace_back(VoxelVolume{volume, name, true});
 
 		while (matrixIndex < voxels) {
 			uint8_t count;

@@ -44,7 +44,7 @@ bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::VoxelVo
 	}
 	io::FileStream wstream(outputFile.get());
 	VoxelVolumes volumes;
-	volumes.push_back(voxel::VoxelVolume(volume.volume(), name, volume.visible(), volume.pivot()));
+	volumes.emplace_back(voxel::VoxelVolume(volume.volume(), name, volume.visible(), volume.pivot()));
 	wrapBool(f.saveGroups(volumes, finalName, wstream))
 
 	wrapBool(stream.writeInt32(0)); // next child count

@@ -95,7 +95,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
-	volumes.push_back(VoxelVolume(volume, filename, true, glm::ivec3(0)));
+	volumes.emplace_back(VoxelVolume(volume, filename, true, glm::ivec3(0)));
 
 	while (stream.remaining() > 0) {
 		wrapBool(stream.readLine(64, buf))
