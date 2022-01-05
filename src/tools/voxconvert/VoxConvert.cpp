@@ -427,7 +427,7 @@ void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
 	}
 	for (int i = 0; i < (int)volumes.size(); ++i) {
 		if (!layers.has(i)) {
-			volumes.release(i);
+			volumes[i].release();
 			Log::debug("Remove layer %i - not part of the filter expression", i);
 		}
 	}

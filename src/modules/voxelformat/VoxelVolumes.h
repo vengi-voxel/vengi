@@ -136,7 +136,6 @@ public:
 	void reserve(size_t size);
 	bool empty() const;
 	size_t size() const;
-	void release(int index);
 	voxel::RawVolume* merge() const;
 
 	void clear() {

@@ -113,10 +113,6 @@ size_t VoxelVolumes::size() const {
 	return _volumes.size();
 }
 
-void VoxelVolumes::release(int index) {
-	return _volumes[index].release();
-}
-
 const VoxelVolume &VoxelVolumes::operator[](size_t idx) const {
 	return _volumes[idx];
 }
