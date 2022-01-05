@@ -114,8 +114,10 @@ image::ImagePtr Format::loadScreenshot(const core::String &filename, io::Seekabl
 }
 
 bool Format::save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream) {
-	SceneGraph volumes;
-	volumes.emplace_back(SceneGraphNode(const_cast<RawVolume*>(volume)));
+	ScopedSceneGraph volumes;
+	SceneGraphNode node;
+	node.setVolume(volume, false);
+	volumes.emplace_back(core::move(node));
 	return saveGroups(volumes, filename, stream);
 }
 
