@@ -1380,31 +1380,19 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("flip", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
-			Log::info("Usage: flip <axis:x,y,z>");
+			Log::info("Usage: flip <x|y|z>");
 			return;
 		}
-		const char axisChar = args[0][0];
-		math::Axis axis = math::Axis::X;
-		if (axisChar == 'y') {
-			axis = math::Axis::Y;
-		} else if (axisChar == 'z') {
-			axis = math::Axis::Z;
-		}
+		const math::Axis axis = math::toAxis(args[0]);
 		flip(axis);
 	}).setHelp("Flip the selected layers around the given axis");
 
 	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
-			Log::info("Usage: lock <axis:x,y,z>");
+			Log::info("Usage: lock <x|y|z>");
 			return;
 		}
-		const char axisChar = args[0][0];
-		math::Axis axis = math::Axis::X;
-		if (axisChar == 'y') {
-			axis = math::Axis::Y;
-		} else if (axisChar == 'z') {
-			axis = math::Axis::Z;
-		}
+		const math::Axis axis = math::toAxis(args[0]);
 		const bool unlock = (_lockedAxis & axis) == axis;
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the given axis at the current cursor position");

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Enum.h"
+#include "core/String.h"
 #include <stdint.h>
 
 namespace math {
@@ -26,5 +27,7 @@ inline constexpr int getIndexForAxis(math::Axis axis) {
 	}
 	return 2;
 }
+
+math::Axis toAxis(const core::String& axisStr);
 
 }

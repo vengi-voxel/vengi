@@ -434,30 +434,8 @@ void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
 	Log::info("Filtered layers: %i", (int)layers.size());
 }
 
-static math::Axis toAxis(const core::String& axisStr) {
-	const char axisChr = core::string::toLower(axisStr[0]);
-	math::Axis axis = math::Axis::None;
-	switch (axisChr) {
-	case 'x':
-		axis = math::Axis::X;
-		break;
-	case 'y':
-		axis = math::Axis::Y;
-		break;
-	case 'z':
-		axis = math::Axis::Z;
-		break;
-	default:
-		break;
-	}
-	if (axis == math::Axis::None) {
-		Log::warn("Invalid axis given (valid are x, y and z)");
-	}
-	return axis;
-}
-
 void VoxConvert::mirror(const core::String& axisStr, voxel::VoxelVolumes& volumes) {
-	const math::Axis axis = toAxis(axisStr);
+	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
 	}
@@ -472,7 +450,7 @@ void VoxConvert::mirror(const core::String& axisStr, voxel::VoxelVolumes& volume
 }
 
 void VoxConvert::rotate(const core::String& axisStr, voxel::VoxelVolumes& volumes) {
-	const math::Axis axis = toAxis(axisStr);
+	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
 	}

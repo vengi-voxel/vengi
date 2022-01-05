@@ -1,6 +1,6 @@
 set(SRCS
 	AABB.h
-	Axis.h
+	Axis.cpp Axis.h
 	Bezier.h
 	Frustum.cpp Frustum.h
 	Functions.cpp Functions.h
