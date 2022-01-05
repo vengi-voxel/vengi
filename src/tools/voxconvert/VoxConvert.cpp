@@ -340,7 +340,7 @@ void VoxConvert::crop(voxel::VoxelVolumes& volumes) {
 			continue;
 		}
 		voxel::RawVolume *cropped = voxel::cropVolume(v.volume);
-		delete v.volume;
+		v.release();
 		v.volume = cropped;
 	}
 }
@@ -430,8 +430,7 @@ void VoxConvert::filterVolumes(voxel::VoxelVolumes& volumes) {
 	}
 	for (int i = 0; i < (int)volumes.size(); ++i) {
 		if (!layers.has(i)) {
-			delete volumes.volumes[i].volume;
-			volumes.volumes[i].volume = nullptr;
+			volumes.volumes[i].release();
 			Log::debug("Remove layer %i - not part of the filter expression", i);
 		}
 	}

@@ -534,7 +534,7 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 	}
 	Log::debug("Loaded layer %i with %i voxels (%i)", state._volumeIdx, numVoxels, volumeVoxelSet);
 	if (volumes[state._volumeIdx].volume != nullptr) {
-		delete volumes[state._volumeIdx].volume;
+		volumes[state._volumeIdx].release();
 	}
 	volumes[state._volumeIdx].volume = volume;
 	volumes[state._volumeIdx].pivot = translatedRegion.getCenter();
