@@ -14,6 +14,10 @@ class RawVolume;
 
 static constexpr int MaxRegionSize = 256;
 
+/**
+ * @brief Struct that holds the metadata and the volume
+ * @sa VoxelVolumes
+ */
 struct VoxelVolume {
 	VoxelVolume(voxel::RawVolume* _volume = nullptr, const core::String& _name = "", bool _visible = true);
 	VoxelVolume(voxel::RawVolume* _volume, const core::String& _name, bool _visible, const glm::ivec3& _pivot);
@@ -28,6 +32,14 @@ struct VoxelVolume {
 	void release();
 };
 
+/**
+ * @brief The internal format for the save/load methods.
+ * @note Does not free the attached volumes!
+ *
+ * @sa ScopedVoxelVolumes
+ * @sa VoxelVolume
+ * @sa clearVolumes()
+ */
 struct VoxelVolumes {
 	core::DynamicArray<VoxelVolume> volumes;
 
@@ -60,8 +72,17 @@ struct VoxelVolumes {
 	}
 };
 
+/**
+ * @param volumes VoxelVolumes instance to clean up - this does free the allocated memory of the volumes
+ */
 extern void clearVolumes(VoxelVolumes& volumes);
 
+/**
+ * @brief Using this class will automatically free the allocated memory of the volumes once the scope
+ * was left.
+ * @sa VoxelVolumes
+ * @sa clearVolumes()
+ */
 struct ScopedVoxelVolumes : public VoxelVolumes {
 	~ScopedVoxelVolumes() {
 		clearVolumes(*this);
