@@ -205,6 +205,9 @@ const static FlatCOption options[] = {
   { "", "cs-gen-json-serializer", "",
     "Allows (de)serialization of JSON text in the Object API. (requires "
     "--gen-object-api)." },
+  { "", "json-nested-bytes", "",
+    "Allow a nested_flatbuffer field to be parsed as a vector of bytes"
+    "in JSON, which is unsafe unless checked by a verifier afterwards." },
 };
 
 static void AppendTextWrappedString(std::stringstream &ss, std::string &text,
@@ -503,6 +506,8 @@ int FlatCompiler::Compile(int argc, const char **argv) {
         opts.cpp_static_reflection = true;
       } else if (arg == "--cs-global-alias") {
         opts.cs_global_alias = true;
+      } else if (arg == "--json-nested-bytes") {
+        opts.json_nested_legacy_flatbuffers = true;
       } else {
         for (size_t i = 0; i < params_.num_generators; ++i) {
           if (arg == "--" + params_.generators[i].option.long_opt ||
@@ -618,7 +623,7 @@ int FlatCompiler::Compile(int argc, const char **argv) {
         if (opts.lang_to_generate == IDLOptions::kJson) {
           auto data = reinterpret_cast<const uint8_t *>(contents.c_str());
           auto size = contents.size();
-          std::vector<bool> reuse_tracker;
+          std::vector<uint8_t> reuse_tracker;
           if (!flexbuffers::VerifyBuffer(data, size, &reuse_tracker))
             Error("flexbuffers file failed to verify: " + filename, false);
           parser->flex_root_ = flexbuffers::GetRoot(data, size);
