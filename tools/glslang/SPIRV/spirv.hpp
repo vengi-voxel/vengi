@@ -1003,6 +1003,7 @@ enum Capability {
     CapabilityFragmentShaderShadingRateInterlockEXT = 5372,
     CapabilityShaderSMBuiltinsNV = 5373,
     CapabilityFragmentShaderPixelInterlockEXT = 5378,
+    CapabilityDemoteToHelperInvocation = 5379,
     CapabilityDemoteToHelperInvocationEXT = 5379,
     CapabilitySubgroupShuffleINTEL = 5568,
     CapabilitySubgroupBufferBlockIOINTEL = 5569,
@@ -2311,4 +2312,3 @@ inline FragmentShadingRateMask operator|(FragmentShadingRateMask a, FragmentShad
 }  // end namespace spv
 
 #endif  // #ifndef spirv_HPP
-
