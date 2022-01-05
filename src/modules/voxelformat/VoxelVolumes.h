@@ -13,6 +13,7 @@ namespace voxel {
 
 class RawVolume;
 
+// the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;
 
 /**
