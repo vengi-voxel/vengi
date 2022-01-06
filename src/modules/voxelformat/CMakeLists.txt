@@ -16,6 +16,7 @@ set(SRCS
 	VXRFormat.h VXRFormat.cpp
 	VXLFormat.h VXLFormat.cpp
 	MeshCache.h MeshCache.cpp
+	MeshExporter.h MeshExporter.cpp
 	CubFormat.h CubFormat.cpp
 	OBJFormat.h OBJFormat.cpp
 	PLYFormat.h PLYFormat.cpp
