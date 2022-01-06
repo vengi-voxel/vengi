@@ -57,28 +57,28 @@ TEST_F(QBTFormatTest, testSave) {
 }
 
 TEST_F(QBTFormatTest, testResaveMultipleLayers) {
-	ScopedSceneGraph volumes;
+	ScopedSceneGraph sceneGraph;
 	{
 		QBTFormat f;
 		io::FilePtr file = open("qubicle.qbt");
 		io::FileStream stream(file.get());
-		EXPECT_TRUE(f.loadGroups(file->name(), stream, volumes));
-		EXPECT_EQ(17u, volumes.size());
+		EXPECT_TRUE(f.loadGroups(file->name(), stream, sceneGraph));
+		EXPECT_EQ(17u, sceneGraph.size());
 	}
 	{
 		QBTFormat f;
 		const io::FilePtr &file = open("qubicle-savetest.qbt", io::FileMode::Write);
 		io::FileStream stream(file.get());
-		EXPECT_TRUE(f.saveGroups(volumes, file->name(), stream));
-		EXPECT_EQ(17u, volumes.size());
+		EXPECT_TRUE(f.saveGroups(sceneGraph, file->name(), stream));
+		EXPECT_EQ(17u, sceneGraph.size());
 	}
-	volumes.clear();
+	sceneGraph.clear();
 	{
 		QBTFormat f;
 		io::FilePtr file = open("qubicle-savetest.qbt");
 		io::FileStream stream(file.get());
-		EXPECT_TRUE(f.loadGroups(file->name(), stream, volumes));
-		EXPECT_EQ(17u, volumes.size());
+		EXPECT_TRUE(f.loadGroups(file->name(), stream, sceneGraph));
+		EXPECT_EQ(17u, sceneGraph.size());
 	}
 }
 

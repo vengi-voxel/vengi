@@ -13,11 +13,11 @@ SceneGraph::~SceneGraph() {
 	_nodes.clear();
 }
 
-bool SceneGraph::emplace_back(SceneGraphNode &&v) {
-	if (v.volume() == nullptr) {
+bool SceneGraph::emplace_back(SceneGraphNode &&node) {
+	if (node.volume() == nullptr) {
 		return false;
 	}
-	_nodes.emplace_back(core::forward<SceneGraphNode>(v));
+	_nodes.emplace_back(core::forward<SceneGraphNode>(node));
 	return true;
 }
 
@@ -57,18 +57,13 @@ voxel::RawVolume *SceneGraph::merge() const {
 		return nullptr;
 	}
 	if (_nodes.size() == 1) {
-		if (_nodes[0].volume() == nullptr) {
-			return nullptr;
-		}
 		return new voxel::RawVolume(_nodes[0].volume());
 	}
 	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
 	rawVolumes.reserve(_nodes.size());
-	for (const SceneGraphNode &v : _nodes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		rawVolumes.push_back(v.volume());
+	for (const SceneGraphNode &node : _nodes) {
+		core_assert(node.volume() != nullptr);
+		rawVolumes.push_back(node.volume());
 	}
 	if (rawVolumes.empty()) {
 		return nullptr;

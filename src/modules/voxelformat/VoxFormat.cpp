@@ -644,9 +644,9 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 		return true;
 	}
 	// TODO: the mapping between volumes and layers is wrong
-	if (layerId >= (int32_t)sceneGraph.size()) {
+	if (layerId >= (int32_t)state._regions.size()) {
 		Log::warn("Invalid layer id found: %i - exceeded limit of %i. Skipping layer",
-				(int)layerId, (int)sceneGraph.size());
+				(int)layerId, (int)state._regions.size());
 	} else {
 		core::String property;
 		attributes.get("_name", property);

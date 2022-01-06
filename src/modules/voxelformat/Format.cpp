@@ -50,26 +50,23 @@ uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 
 void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize) {
 	destSceneGraph.reserve(srcSceneGraph.size());
-	for (SceneGraphNode &v : srcSceneGraph) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		const voxel::Region& region = v.region();
+	for (SceneGraphNode &node : srcSceneGraph) {
+		const voxel::Region& region = node.region();
 		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
-			SceneGraphNode node;
-			node.setVolume(new voxel::RawVolume(v.volume()), true);
-			node.setName(v.name());
-			node.setVisible(v.visible());
-			node.setPivot(v.pivot());
-			destSceneGraph.emplace_back(core::move(node));
+			SceneGraphNode newNode;
+			newNode.setVolume(new voxel::RawVolume(node.volume()), true);
+			newNode.setName(node.name());
+			newNode.setVisible(node.visible());
+			newNode.setPivot(node.pivot());
+			destSceneGraph.emplace_back(core::move(newNode));
 			continue;
 		}
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
-		voxel::splitVolume(v.volume(), maxSize, rawVolumes);
+		voxel::splitVolume(node.volume(), maxSize, rawVolumes);
 		for (voxel::RawVolume *v : rawVolumes) {
-			SceneGraphNode node;
-			node.setVolume(v, true);
-			destSceneGraph.emplace_back(core::move(node));
+			SceneGraphNode newNode;
+			newNode.setVolume(v, true);
+			destSceneGraph.emplace_back(core::move(newNode));
 		}
 	}
 }
@@ -100,17 +97,17 @@ RawVolume* Format::merge(const SceneGraph& sceneGraph) const {
 }
 
 RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& file) {
-	ScopedSceneGraph volumes;
-	if (!loadGroups(filename, file, volumes)) {
+	ScopedSceneGraph sceneGraph;
+	if (!loadGroups(filename, file, sceneGraph)) {
 		return nullptr;
 	}
-	RawVolume* mergedVolume = merge(volumes);
+	RawVolume* mergedVolume = merge(sceneGraph);
 	return mergedVolume;
 }
 
 size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& file, core::Array<uint32_t, 256> &palette) {
-	ScopedSceneGraph volumes;
-	loadGroups(filename, file, volumes);
+	ScopedSceneGraph sceneGraph;
+	loadGroups(filename, file, sceneGraph);
 	palette = _colors;
 	return _colorsSize;
 }
@@ -121,11 +118,14 @@ image::ImagePtr Format::loadScreenshot(const core::String &filename, io::Seekabl
 }
 
 bool Format::save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream) {
-	ScopedSceneGraph volumes;
+	if (volume == nullptr) {
+		return false;
+	}
+	ScopedSceneGraph sceneGraph;
 	SceneGraphNode node;
 	node.setVolume(volume, false);
-	volumes.emplace_back(core::move(node));
-	return saveGroups(volumes, filename, stream);
+	sceneGraph.emplace_back(core::move(node));
+	return saveGroups(sceneGraph, filename, stream);
 }
 
 }

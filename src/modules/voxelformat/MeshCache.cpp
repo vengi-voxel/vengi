@@ -67,18 +67,18 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 		Log::error("Failed to load %s for any of the supported format extensions", fullPath);
 		return false;
 	}
-	voxel::ScopedSceneGraph volumes;
+	voxel::ScopedSceneGraph sceneGraph;
 	io::FileStream stream(file.get());
-	if (!voxelformat::loadFormat(file->name(), stream, volumes)) {
+	if (!voxelformat::loadFormat(file->name(), stream, sceneGraph)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		return false;
 	}
-	if ((int)volumes.size() != 1) {
+	if ((int)sceneGraph.size() != 1) {
 		Log::error("More than one volume/layer found in %s", file->name().c_str());
 		return false;
 	}
 
-	const voxel::RawVolume* volume = volumes[0].volume();
+	const voxel::RawVolume* volume = sceneGraph[0].volume();
 	voxel::Region region = volume->region();
 	region.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(volume, region, &mesh, [] (const voxel::VoxelType& back, const voxel::VoxelType& front, voxel::FaceNames face) {

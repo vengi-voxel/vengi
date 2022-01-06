@@ -31,8 +31,8 @@ namespace voxel {
 		return false; \
 	}
 
-bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::SceneGraphNode& volume, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapBool(stream.writeString(volume.name(), true))
+bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream) {
+	wrapBool(stream.writeString(node.name(), true))
 	const core::String baseName = core::string::stripExtension(filename);
 	const core::String finalName = baseName + name + ".vxm";
 	wrapBool(stream.writeString(finalName, true))
@@ -43,14 +43,14 @@ bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::SceneGr
 		return false;
 	}
 	io::FileStream wstream(outputFile.get());
-	ScopedSceneGraph volumes;
-	voxel::SceneGraphNode node;
-	node.setVolume(volume.volume(), false);
-	node.setName(name);
-	node.setVisible(volume.visible());
-	node.setPivot(volume.pivot());
-	volumes.emplace_back(core::move(node));
-	wrapBool(f.saveGroups(volumes, finalName, wstream))
+	ScopedSceneGraph newSceneGraph;
+	voxel::SceneGraphNode newNode;
+	newNode.setVolume(node.volume(), false);
+	newNode.setName(name);
+	newNode.setVisible(node.visible());
+	newNode.setPivot(node.pivot());
+	newSceneGraph.emplace_back(core::move(newNode));
+	wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 
 	wrapBool(stream.writeInt32(0)); // next child count
 #if 0

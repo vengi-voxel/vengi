@@ -35,9 +35,9 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		voxel::overrideMaterialColors((const uint8_t*)palette.begin(), paletteCount * 4, "");
 	}
 
-	voxel::ScopedSceneGraph volumes;
+	voxel::ScopedSceneGraph sceneGraph;
 	stream.seek(0);
-	if (!voxelformat::loadFormat(fileName, stream, volumes)) {
+	if (!voxelformat::loadFormat(fileName, stream, sceneGraph)) {
 		Log::error("Failed to load given input file");
 		return image::ImagePtr();
 	}
@@ -58,11 +58,11 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
-	const int volumesSize = (int)volumes.size();
+	const int volumesSize = (int)sceneGraph.size();
 	for (int i = 0; i < volumesSize; ++i) {
 		// this is transfering the ownership into the renderer
-		volumeRenderer.setVolume(i, volumes[i]);
-		volumeRenderer.extractRegion(i, volumes[i].region());
+		volumeRenderer.setVolume(i, sceneGraph[i]);
+		volumeRenderer.extractRegion(i, sceneGraph[i].region());
 	}
 
 	video::Camera camera;

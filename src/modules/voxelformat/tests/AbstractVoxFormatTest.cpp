@@ -8,6 +8,7 @@ const voxel::Voxel AbstractVoxFormatTest::Empty;
 
 void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename, voxel::Format &srcFormat, const core::String& destFilename, voxel::Format &destFormat, bool includingColor, bool includingRegion) {
 	std::unique_ptr<RawVolume> src(load(srcFilename, srcFormat));
+	ASSERT_TRUE(src.get() != nullptr);
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	EXPECT_TRUE(destFormat.save(src.get(), destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
@@ -29,7 +30,7 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
 	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
 	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	ScopedSceneGraph volumes;
+	ScopedSceneGraph sceneGraph;
 	voxel::SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
 	voxel::SceneGraphNode node2;
@@ -38,18 +39,18 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	node3.setVolume(&layer3, false);
 	voxel::SceneGraphNode node4;
 	node4.setVolume(&layer4, false);
-	volumes.emplace_back(core::move(node1));
-	volumes.emplace_back(core::move(node2));
-	volumes.emplace_back(core::move(node3));
-	volumes.emplace_back(core::move(node4));
+	sceneGraph.emplace_back(core::move(node1));
+	sceneGraph.emplace_back(core::move(node2));
+	sceneGraph.emplace_back(core::move(node3));
+	sceneGraph.emplace_back(core::move(node4));
 	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
 	io::FileStream sstream(sfile.get());
-	ASSERT_TRUE(format->saveGroups(volumes, sfile->name(), sstream));
-	ScopedSceneGraph volumesLoad;
+	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));
+	ScopedSceneGraph sceneGraphLoad;
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file.get());
-	EXPECT_TRUE(format->loadGroups(file->name(), stream, volumesLoad));
-	EXPECT_EQ(volumesLoad.size(), volumes.size());
+	EXPECT_TRUE(format->loadGroups(file->name(), stream, sceneGraphLoad));
+	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
 void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, voxel::Format *format, int mins, int maxs) {

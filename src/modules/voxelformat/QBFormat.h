@@ -58,7 +58,7 @@ private:
 	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
 	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph);
 
-	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& volume) const;
+	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const;
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;

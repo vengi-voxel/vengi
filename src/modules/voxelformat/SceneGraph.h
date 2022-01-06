@@ -26,13 +26,30 @@ protected:
 public:
 	~SceneGraph();
 
-	bool emplace_back(SceneGraphNode &&v);
+	bool emplace_back(SceneGraphNode &&node);
+
+	// deprecated - allows to add null volumes to the graph
 	void resize(size_t size);
+
+	/**
+	 * @brief Pre-allocated memory in the graph without added the nodes
+	 */
 	void reserve(size_t size);
 	bool empty() const;
+	/**
+	 * @return Amount of nodes in the graph
+	 */
 	size_t size() const;
+	/**
+	 * @brief Merge all available nodes into one big volume.
+	 * @note If the graph is empty, this returns @c nullptr
+	 * @note The caller is responsible for deleting the returned volume
+	 */
 	voxel::RawVolume *merge() const;
 
+	/**
+	 * @brief Delete the owned volumes
+	 */
 	void clear();
 
 	const SceneGraphNode &operator[](size_t idx) const;

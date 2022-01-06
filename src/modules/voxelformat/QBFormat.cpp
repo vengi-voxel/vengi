@@ -51,16 +51,12 @@ const int NEXT_SLICE_FLAG = 6;
 
 #define setBit(val, index) val &= (1 << (index))
 
-bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& volume) const {
-	if (volume.volume() == nullptr) {
-		Log::error("Invalid volume given");
-		return false;
-	}
-	const int nameLength = (int)volume.name().size();
+bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const {
+	const int nameLength = (int)node.name().size();
 	wrapSave(stream.writeUInt8(nameLength));
-	wrapSave(stream.writeString(volume.name(), false));
+	wrapSave(stream.writeString(node.name(), false));
 
-	const voxel::Region& region = volume.region();
+	const voxel::Region& region = node.region();
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
@@ -86,7 +82,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			for (int x = mins.x; x <= maxs.x; ++x) {
-				const Voxel& voxel = volume.volume()->voxel(x, y, z);
+				const Voxel& voxel = node.volume()->voxel(x, y, z);
 				glm::ivec4 newColor;
 				if (voxel == Empty) {
 					newColor = EmptyColor;

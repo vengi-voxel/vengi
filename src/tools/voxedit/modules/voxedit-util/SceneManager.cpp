@@ -210,13 +210,13 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 		return false;
 	}
 	const Layer& layer = _layerMgr.layer(layerId);
-	voxel::ScopedSceneGraph volumes;
+	voxel::ScopedSceneGraph sceneGraph;
 	voxel::SceneGraphNode node;
 	node.setVolume(v, false);
 	node.setName(layer.name);
 	node.setVisible(layer.visible);
-	volumes.emplace_back(core::move(node));
-	if (voxelformat::saveFormat(filePtr, volumes)) {
+	sceneGraph.emplace_back(core::move(node));
+	if (voxelformat::saveFormat(filePtr, sceneGraph)) {
 		Log::info("Saved layer %i to %s", layerId, filePtr->name().c_str());
 		return true;
 	}
@@ -238,7 +238,7 @@ bool SceneManager::saveLayers(const core::String& dir) {
 }
 
 bool SceneManager::save(const core::String& file, bool autosave) {
-	voxel::ScopedSceneGraph volumes;
+	voxel::ScopedSceneGraph sceneGraph;
 	const int layers = (int)_layerMgr.layers().size();
 	Log::debug("Trying to save %i layers", layers);
 	for (int idx = 0; idx < layers; ++idx) {
@@ -256,10 +256,10 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		node.setVolume(v, false);
 		node.setName(layer.name);
 		node.setVisible(layer.visible);
-		volumes.emplace_back(core::move(node));
+		sceneGraph.emplace_back(core::move(node));
 	}
 
-	if (volumes.empty()) {
+	if (sceneGraph.empty()) {
 		Log::warn("No volumes for saving found");
 		return false;
 	}
@@ -279,12 +279,12 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		ext = "vox";
 	}
 
-	bool saved = voxelformat::saveFormat(filePtr, volumes);
+	bool saved = voxelformat::saveFormat(filePtr, sceneGraph);
 	if (!saved) {
 		Log::warn("Failed to save %s file - retry as qb instead", ext.c_str());
 		voxel::QBFormat f;
 		io::FileStream stream(filePtr.get());
-		saved = f.saveGroups(volumes, filePtr->fileName(), stream);
+		saved = f.saveGroups(sceneGraph, filePtr->fileName(), stream);
 	}
 	if (saved) {
 		if (!autosave) {

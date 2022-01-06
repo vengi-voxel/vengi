@@ -46,7 +46,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 	bigVolume.setVoxel(256, 0, 0, voxel);
 	bigVolume.setVoxel(512, 0, 0, voxel);
 	const core::String name = "bigvolume.vox";
-	ScopedSceneGraph volumes;
+	ScopedSceneGraph sceneGraph;
 
 #define VOX_TEST_SAVE_TO_FILE 0
 #if VOX_TEST_SAVE_TO_FILE
@@ -54,14 +54,14 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 	io::FileStream stream(filesave.get());
 	const io::FilePtr& fileLoadAfterSave = open(name);
 	io::FileStream streamread(fileLoadAfterSave.get());
-	f.loadGroups(name, streamread, volumes);
+	f.loadGroups(name, streamread, sceneGraph);
 #else
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	ASSERT_TRUE(f.save(&bigVolume, name, stream));
 	stream.seek(0);
-	f.loadGroups(name, stream, volumes);
+	f.loadGroups(name, stream, sceneGraph);
 #endif
-	EXPECT_EQ(3, (int)volumes.size());
+	EXPECT_EQ(3, (int)sceneGraph.size());
 }
 
 TEST_F(VoxFormatTest, testSave) {

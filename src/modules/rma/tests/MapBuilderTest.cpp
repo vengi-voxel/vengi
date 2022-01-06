@@ -41,17 +41,17 @@ protected:
 	}
 
 	bool save(const LevelVolumes &volumes) const {
-		voxel::ScopedSceneGraph v;
-		v.resize(volumes.size());
-		int j = 0;
+		voxel::ScopedSceneGraph sceneGraph;
+		sceneGraph.reserve(volumes.size());
 		for (int i = 0; i < (int)volumes.size(); ++i) {
 			if (volumes[i] != nullptr) {
-				v[j++].setVolume(volumes[i], false);
+				voxel::SceneGraphNode node;
+				node.setVolume(volumes[i], false);
+				sceneGraph.emplace_back(core::move(node));
 			}
 		}
-		v.resize(j);
 		const io::FilePtr &file = _testApp->filesystem()->open("mapbuildertest.qb", io::FileMode::SysWrite);
-		return voxelformat::saveFormat(file, v);
+		return voxelformat::saveFormat(file, sceneGraph);
 	}
 
 	void cleanup(const LevelVolumes &volumes) {

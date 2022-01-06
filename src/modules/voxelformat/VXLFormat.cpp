@@ -12,6 +12,7 @@
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
 #include "core/collection/Buffer.h"
+#include "voxelformat/SceneGraphNode.h"
 #include <SDL_assert.h>
 
 namespace voxel {
@@ -198,9 +199,11 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 
 	// switch axis
 	RawVolume *volume = new RawVolume(Region{0, 0, 0, footer.xsize - 1, footer.zsize - 1, footer.ysize - 1});
-	sceneGraph[mdl.volumeIdx].setVolume(volume, true);
-	sceneGraph[mdl.volumeIdx].setName(header.limb_name);
-	sceneGraph[mdl.volumeIdx].setPivot(volume->region().getCenter());
+	voxel::SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(header.limb_name);
+	node.setPivot(volume->region().getCenter());
+	sceneGraph.emplace_back(core::move(node));
 	++mdl.volumeIdx;
 
 	const size_t limbOffset = HeaderSize + LimbHeaderSize * mdl.header.n_limbs + footer.span_start_off;
@@ -270,7 +273,7 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 
 bool VXLFormat::readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, SceneGraph& sceneGraph) const {
 	const vxl_header& hdr = mdl.header;
-	sceneGraph.resize(hdr.n_limbs);
+	sceneGraph.reserve(hdr.n_limbs);
 	for (uint32_t i = 0; i < hdr.n_limbs; ++i) {
 		wrapBool(readLimb(stream, mdl, i, sceneGraph))
 	}

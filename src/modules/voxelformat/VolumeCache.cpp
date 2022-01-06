@@ -39,15 +39,15 @@ voxel::RawVolume* VolumeCache::loadVolume(const core::String &filename) {
 		Log::debug("Failed to load %s for any of the supported format extensions", filename.c_str());
 		return nullptr;
 	}
-	voxel::ScopedSceneGraph volumes;
+	voxel::ScopedSceneGraph sceneGraph;
 	io::FileStream stream(file.get());
-	if (!voxelformat::loadFormat(file->name(), stream, volumes)) {
+	if (!voxelformat::loadFormat(file->name(), stream, sceneGraph)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		core::ScopedLock lock(_mutex);
 		_volumes.put(filename, nullptr);
 		return nullptr;
 	}
-	voxel::RawVolume* v = volumes.merge();
+	voxel::RawVolume* v = sceneGraph.merge();
 
 	core::ScopedLock lock(_mutex);
 	_volumes.put(filename, v);
