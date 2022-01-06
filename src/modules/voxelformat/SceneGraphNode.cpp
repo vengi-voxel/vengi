@@ -66,4 +66,19 @@ void SceneGraphNode::translate(const glm::ivec3 &v) {
 	}
 }
 
+const core::StringMap<core::String> &SceneGraphNode::properties() const {
+	return _properties;
+}
+
+core::String SceneGraphNode::property(const core::String& key) const {
+	core::String value;
+	_properties.get(key, value);
+	return value;
+}
+
+void SceneGraphNode::setProperty(const core::String& key, const core::String& value) {
+	_properties.put(key, value);
+}
+
+
 } // namespace voxel

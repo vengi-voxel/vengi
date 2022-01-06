@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/collection/StringMap.h"
 #include "voxel/Region.h"
 #include <glm/vec3.hpp>
 
@@ -33,6 +34,7 @@ protected:
 	bool _volumeOwned = true;
 	bool _visible = true;
 	glm::ivec3 _pivot{0};
+	core::StringMap<core::String> _properties;
 
 public:
 	/**
@@ -79,6 +81,9 @@ public:
 	void setVisible(bool visible);
 	const glm::ivec3 &pivot() const;
 	void setPivot(const glm::ivec3 &pivot);
+	const core::StringMap<core::String> &properties() const;
+	core::String property(const core::String& key) const;
+	void setProperty(const core::String& key, const core::String& value);
 };
 
 inline voxel::RawVolume *SceneGraphNode::volume() const {
