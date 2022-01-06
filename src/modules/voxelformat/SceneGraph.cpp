@@ -21,10 +21,6 @@ bool SceneGraph::emplace_back(SceneGraphNode &&node) {
 	return true;
 }
 
-void SceneGraph::resize(size_t size) {
-	_nodes.resize(size);
-}
-
 void SceneGraph::reserve(size_t size) {
 	_nodes.reserve(size);
 }

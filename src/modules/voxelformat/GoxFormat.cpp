@@ -432,9 +432,6 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const SceneGraph
 	int blockUid = 0;
 	int layerId = 0;
 	for (const SceneGraphNode &node : sceneGraph) {
-		if (node.volume() == nullptr) {
-			continue;
-		}
 		const voxel::Region &region = node.region();
 		glm::ivec3 mins, maxs;
 		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
@@ -495,9 +492,6 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const SceneGraph
 bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph, int &blocks) {
 	blocks = 0;
 	for (const SceneGraphNode &node : sceneGraph) {
-		if (node.volume() == nullptr) {
-			continue;
-		}
 		const voxel::Region &region = node.region();
 		glm::ivec3 mins, maxs;
 		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);

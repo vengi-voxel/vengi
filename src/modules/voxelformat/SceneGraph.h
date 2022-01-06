@@ -28,9 +28,6 @@ public:
 
 	bool emplace_back(SceneGraphNode &&node);
 
-	// deprecated - allows to add null volumes to the graph
-	void resize(size_t size);
-
 	/**
 	 * @brief Pre-allocated memory in the graph without added the nodes
 	 */

@@ -1840,7 +1840,7 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 		if (layerId != -1) {
 			node.releaseOwnership();
 			++layersAdded;
-			_layerMgr.addMetadata(layerId, {{"type", core::string::format("%i", (int)i)}});
+			_layerMgr.addMetadata(layerId, node.properties());
 		}
 	}
 	if (layersAdded > 0) {

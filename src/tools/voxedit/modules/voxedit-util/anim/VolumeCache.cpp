@@ -42,13 +42,12 @@ bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxel::Sce
 		Log::error("More than one volume/layer found in %s", file->name().c_str());
 		return false;
 	}
-	sceneGraph[volumeIndex] = core::move(newSceneGraph[0]);
+	newSceneGraph[0].setProperty("type", core::string::toString(volumeIndex));
+	sceneGraph.emplace_back(core::move(newSceneGraph[0]));
 	return true;
 }
 
 bool VolumeCache::getVolumes(const animation::AnimationSettings& settings, voxel::SceneGraph& sceneGraph) {
-	sceneGraph.resize(animation::AnimationSettings::MAX_ENTRIES);
-
 	for (size_t i = 0; i < animation::AnimationSettings::MAX_ENTRIES; ++i) {
 		if (settings.paths[i].empty()) {
 			continue;

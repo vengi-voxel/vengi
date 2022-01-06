@@ -533,8 +533,10 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 		}
 	}
 	Log::debug("Loaded layer %i with %i voxels (%i)", state._volumeIdx, numVoxels, volumeVoxelSet);
-	sceneGraph[state._volumeIdx].setVolume(volume, true);
-	sceneGraph[state._volumeIdx].setPivot(translatedRegion.getCenter());
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setPivot(translatedRegion.getCenter());
+	sceneGraph.emplace_back(core::move(node));
 	++state._volumeIdx;
 	return true;
 }
@@ -643,6 +645,7 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 		Log::error("Unexpected end of LAYR chunk - expected -1, got %i", (int)end);
 		return true;
 	}
+#if 0
 	// TODO: the mapping between volumes and layers is wrong
 	// volumes in magicavoxel are objects, several objects can be part of a layer in MV
 	// The id from the LAYR chunk is most likely mapped to the layerId of the nTRN chunk:
@@ -656,6 +659,7 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 		attributes.get("_hidden", property);
 		sceneGraph[layerId].setVisible(property.empty() || property == "0");
 	}
+#endif
 	return true;
 }
 
@@ -991,7 +995,6 @@ bool VoxFormat::loadFirstChunks(State &state, io::SeekableReadStream& stream) {
 }
 
 bool VoxFormat::loadSecondChunks(State &state, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
-	sceneGraph.resize(state._regions.size());
 	do {
 		VoxChunkHeader header;
 		wrapBool(readChunkHeader(stream, header));

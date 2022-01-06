@@ -318,6 +318,12 @@ bool VXLFormat::readLimbFooter(io::SeekableReadStream& stream, vxl_mdl& mdl, uin
 	wrap(stream.readUInt8(footer.ysize))
 	wrap(stream.readUInt8(footer.zsize))
 	wrap(stream.readUInt8(footer.type))
+
+	if (footer.xsize == 0 || footer.ysize == 0 || footer.zsize == 0) {
+		Log::error("Invalid limb size found");
+		return false;
+	}
+
 	Log::debug("size: %u:%u:%u, type: %u", footer.xsize, footer.ysize, footer.zsize, footer.type);
 	return true;
 }
