@@ -644,6 +644,8 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 		return true;
 	}
 	// TODO: the mapping between volumes and layers is wrong
+	// volumes in magicavoxel are objects, several objects can be part of a layer in MV
+	// The id from the LAYR chunk is most likely mapped to the layerId of the nTRN chunk:
 	if (layerId >= (int32_t)state._regions.size()) {
 		Log::warn("Invalid layer id found: %i - exceeded limit of %i. Skipping layer",
 				(int)layerId, (int)state._regions.size());
