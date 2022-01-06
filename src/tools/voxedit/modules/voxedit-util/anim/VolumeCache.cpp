@@ -31,7 +31,7 @@ bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::
 		Log::error("Failed to load %s for any of the supported format extensions", fullPath.c_str());
 		return false;
 	}
-	voxel::SceneGraph localVolumes;
+	voxel::ScopedSceneGraph localVolumes;
 	// TODO: use the cache luke
 	io::FileStream stream(file.get());
 	if (!voxelformat::loadFormat(file->name(), stream, localVolumes)) {
@@ -39,7 +39,6 @@ bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::
 		return false;
 	}
 	if ((int)localVolumes.size() != 1) {
-		localVolumes.clear();
 		Log::error("More than one volume/layer found in %s", file->name().c_str());
 		return false;
 	}

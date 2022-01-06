@@ -57,7 +57,7 @@ TEST_F(QBTFormatTest, testSave) {
 }
 
 TEST_F(QBTFormatTest, testResaveMultipleLayers) {
-	SceneGraph volumes;
+	ScopedSceneGraph volumes;
 	{
 		QBTFormat f;
 		io::FilePtr file = open("qubicle.qbt");
@@ -80,7 +80,6 @@ TEST_F(QBTFormatTest, testResaveMultipleLayers) {
 		EXPECT_TRUE(f.loadGroups(file->name(), stream, volumes));
 		EXPECT_EQ(17u, volumes.size());
 	}
-	volumes.clear();
 }
 
 }

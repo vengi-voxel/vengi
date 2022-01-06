@@ -46,6 +46,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	voxelrender::RawVolumeRenderer volumeRenderer;
 	volumeRenderer.construct();
 	if (!volumeRenderer.init()) {
+		volumes.clear();
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
@@ -60,6 +61,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 
 	const int volumesSize = (int)volumes.size();
 	for (int i = 0; i < volumesSize; ++i) {
+		// this is transfering the ownership into the renderer
 		volumeRenderer.setVolume(i, volumes[i].volume());
 		volumeRenderer.extractRegion(i, volumes[i].region());
 	}

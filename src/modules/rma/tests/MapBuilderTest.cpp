@@ -41,7 +41,7 @@ protected:
 	}
 
 	bool save(const LevelVolumes &volumes) const {
-		voxel::SceneGraph v;
+		voxel::ScopedSceneGraph v;
 		v.resize(volumes.size());
 		int j = 0;
 		for (int i = 0; i < (int)volumes.size(); ++i) {

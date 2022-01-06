@@ -239,7 +239,7 @@ app::AppState VoxConvert::onInit() {
 			voxelutil::importHeightmap(wrapper, image);
 		} else {
 			io::FileStream inputFileStream(inputFile.get());
-			voxel::SceneGraph newVolumes;
+			voxel::ScopedSceneGraph newVolumes;
 			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newVolumes)) {
 				Log::error("Failed to load given input file");
 				return app::AppState::InitFailure;

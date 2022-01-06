@@ -43,8 +43,13 @@ bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::SceneGr
 		return false;
 	}
 	io::FileStream wstream(outputFile.get());
-	SceneGraph volumes;
-	volumes.emplace_back(voxel::SceneGraphNode(volume.volume(), name, volume.visible(), volume.pivot()));
+	ScopedSceneGraph volumes;
+	voxel::SceneGraphNode node;
+	node.setVolume(volume.volume(), false);
+	node.setName(name);
+	node.setVisible(volume.visible());
+	node.setPivot(volume.pivot());
+	volumes.emplace_back(core::move(node));
 	wrapBool(f.saveGroups(volumes, finalName, wstream))
 
 	wrapBool(stream.writeInt32(0)); // next child count

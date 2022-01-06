@@ -209,8 +209,12 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 		return false;
 	}
 	const Layer& layer = _layerMgr.layer(layerId);
-	voxel::SceneGraph volumes;
-	volumes.emplace_back(voxel::SceneGraphNode(v, layer.name, layer.visible));
+	voxel::ScopedSceneGraph volumes;
+	voxel::SceneGraphNode node;
+	node.setVolume(v, false);
+	node.setName(layer.name);
+	node.setVisible(layer.visible);
+	volumes.emplace_back(core::move(node));
 	if (voxelformat::saveFormat(filePtr, volumes)) {
 		Log::info("Saved layer %i to %s", layerId, filePtr->name().c_str());
 		return true;
@@ -233,7 +237,7 @@ bool SceneManager::saveLayers(const core::String& dir) {
 }
 
 bool SceneManager::save(const core::String& file, bool autosave) {
-	voxel::SceneGraph volumes;
+	voxel::ScopedSceneGraph volumes;
 	const int layers = (int)_layerMgr.layers().size();
 	Log::debug("Trying to save %i layers", layers);
 	for (int idx = 0; idx < layers; ++idx) {
@@ -247,7 +251,11 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 			continue;
 		}
 		const Layer& layer = _layerMgr.layer(idx);
-		volumes.emplace_back(voxel::SceneGraphNode(v, layer.name, layer.visible));
+		voxel::SceneGraphNode node;
+		node.setVolume(v, false);
+		node.setName(layer.name);
+		node.setVisible(layer.visible);
+		volumes.emplace_back(core::move(node));
 	}
 
 	if (volumes.empty()) {
@@ -299,9 +307,12 @@ bool SceneManager::prefab(const core::String& file) {
 		Log::error("Failed to open model file %s", file.c_str());
 		return false;
 	}
+	// we don't free the volumes here, the renderer we add the layer to will
+	// take over the ownership
 	voxel::SceneGraph newVolumes;
 	io::FileStream stream(filePtr.get());
 	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
+		newVolumes.clear();
 		return false;
 	}
 	for (auto& v : newVolumes) {
@@ -638,6 +649,8 @@ void SceneManager::resetSceneState() {
 	resetLastTrace();
 }
 
+// TODO: there is a memory leak if the newVolumes has more than maxLayers volumes
+// there is also a memory leak if the layer could not get added
 bool SceneManager::setNewVolumes(const voxel::SceneGraph& volumes) {
 	core_trace_scoped(SetNewVolumes);
 	const int volumeCnt = (int)volumes.size();
