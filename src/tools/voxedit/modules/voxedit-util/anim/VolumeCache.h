@@ -17,9 +17,9 @@ namespace anim {
  */
 class VolumeCache : public voxelformat::VolumeCache {
 private:
-	bool load(const core::String& fullPath, size_t volumeIndex, voxel::SceneGraph& volumes);
+	bool load(const core::String& fullPath, int volumeIndex, voxel::SceneGraph& sceneGraph, const core::String &name);
 public:
-	bool getVolumes(const animation::AnimationSettings& settings, voxel::SceneGraph& volumes);
+	bool getVolumes(const animation::AnimationSettings& settings, voxel::SceneGraph& sceneGraph);
 };
 
 using VolumeCachePtr = std::shared_ptr<VolumeCache>;

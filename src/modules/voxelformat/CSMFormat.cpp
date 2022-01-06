@@ -137,7 +137,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 #undef wrap
 #undef wrapBool
 
-bool CSMFormat::saveGroups(const SceneGraph &volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool CSMFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 

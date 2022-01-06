@@ -91,14 +91,14 @@ private:
 	bool saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, int modelId, const core::String& name, bool visible);
 	bool saveChunk_XYZI(State& state, io::SeekableWriteStream& stream, const voxel::RawVolume* volume, const voxel::Region& region);
 	bool saveChunk_SIZE(State& state, io::SeekableWriteStream& stream, const voxel::Region& region);
-	bool saveChunk_PACK(State& state, io::SeekableWriteStream& stream, const SceneGraph& volumes);
+	bool saveChunk_PACK(State& state, io::SeekableWriteStream& stream, const SceneGraph& sceneGraph);
 	bool saveChunk_RGBA(State& state, io::SeekableWriteStream& stream);
 
 	// scene graph saving stuff
 	bool saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, uint32_t childNodes);
 	bool saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, uint32_t volumeId);
 	bool saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, VoxNodeId childNodeId, const glm::ivec3& mins, int layerId);
-	bool saveSceneGraph(State& state, io::SeekableWriteStream& stream, const SceneGraph& volumes, int modelCount);
+	bool saveSceneGraph(State& state, io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, int modelCount);
 
 	void initPalette();
 	void reset();
@@ -122,9 +122,9 @@ private:
 	bool loadFirstChunks(State& state, io::SeekableReadStream& stream);
 
 	// second iteration
-	bool loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& volumes);
-	bool loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& volumes);
-	bool loadSecondChunks(State& state, io::SeekableReadStream& stream, SceneGraph& volumes);
+	bool loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& sceneGraph);
+	bool loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& sceneGraph);
+	bool loadSecondChunks(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
 
 	// scene graph
 	bool parseSceneGraphTranslation(VoxTransform& transform, const VoxAttributes& attributes) const;
@@ -139,8 +139,8 @@ private:
 
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) override;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) override;
-	bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
+	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

@@ -14,12 +14,12 @@ MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const core::String &_name) :
 		mesh(_mesh), name(_name) {
 }
 
-bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& volumes) {
+bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
 	Log::debug("Meshes can't get voxelized yet");
 	return false;
 }
 
-bool MeshExporter::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	const bool mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST)->boolVal();
 	const bool reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST)->boolVal();
 	const bool ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST)->boolVal();
@@ -29,15 +29,12 @@ bool MeshExporter::saveGroups(const SceneGraph& volumes, const core::String &fil
 	const bool withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST)->boolVal();
 
 	Meshes meshes;
-	for (const SceneGraphNode& v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
+	for (const SceneGraphNode& node : sceneGraph) {
 		voxel::Mesh *mesh = new voxel::Mesh();
-		voxel::Region region = v.region();
+		voxel::Region region = node.region();
 		region.shiftUpperCorner(1, 1, 1);
-		voxel::extractCubicMesh(v.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
-		meshes.emplace_back(mesh, v.name());
+		voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+		meshes.emplace_back(mesh, node.name());
 	}
 	Log::debug("Save meshes");
 	const bool state = saveMeshes(meshes, filename, stream, scale, quads, withColor, withTexCoords);

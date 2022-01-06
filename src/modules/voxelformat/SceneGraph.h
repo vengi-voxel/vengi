@@ -20,7 +20,7 @@ class RawVolume;
  */
 class SceneGraph {
 protected:
-	core::DynamicArray<SceneGraphNode> _volumes;
+	core::DynamicArray<SceneGraphNode> _nodes;
 
 	SceneGraph() {}
 public:
@@ -39,19 +39,19 @@ public:
 	SceneGraphNode &operator[](size_t idx);
 
 	inline auto begin() {
-		return _volumes.begin();
+		return _nodes.begin();
 	}
 
 	inline auto end() {
-		return _volumes.end();
+		return _nodes.end();
 	}
 
 	inline auto begin() const {
-		return _volumes.begin();
+		return _nodes.begin();
 	}
 
 	inline auto end() const {
-		return _volumes.end();
+		return _nodes.end();
 	}
 };
 

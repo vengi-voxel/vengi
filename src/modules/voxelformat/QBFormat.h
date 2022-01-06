@@ -55,13 +55,13 @@ private:
 
 	bool setVoxel(State& state, voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel);
 	voxel::Voxel getVoxel(State& state, io::SeekableReadStream& stream);
-	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& volumes);
-	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph& volumes);
+	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
+	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph);
 
 	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& volume) const;
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) override;
-	bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
+	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

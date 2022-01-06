@@ -67,7 +67,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 	return true;
 }
 
-bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	char line[512];
 	wrapBool(stream.readLine(sizeof(line), line))
 	if (0 != strcmp(line, "#binvox 1")) {
@@ -109,15 +109,15 @@ bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 			return false;
 		}
 	}
-	if (!readData(state, filename, stream, volumes)) {
+	if (!readData(state, filename, stream, sceneGraph)) {
 		Log::warn("Could not load the data from %s", filename.c_str());
 		return false;
 	}
 	return true;
 }
 
-bool BinVoxFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
-	RawVolume* mergedVolume = merge(volumes);
+bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	RawVolume* mergedVolume = merge(sceneGraph);
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

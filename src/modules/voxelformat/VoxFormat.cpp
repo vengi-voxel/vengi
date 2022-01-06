@@ -171,8 +171,8 @@ bool VoxFormat::saveChunk_SIZE(State& state, io::SeekableWriteStream& stream, co
 	return true;
 }
 
-bool VoxFormat::saveChunk_PACK(State& state, io::SeekableWriteStream& stream, const SceneGraph& volumes) {
-	const int modelCount = (int)volumes.size();
+bool VoxFormat::saveChunk_PACK(State& state, io::SeekableWriteStream& stream, const SceneGraph& sceneGraph) {
+	const int modelCount = (int)sceneGraph.size();
 	VoxScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
 	wrapBool(stream.writeUInt32(modelCount))
 	++state._chunks;
@@ -236,7 +236,7 @@ bool VoxFormat::saveAttributes(const VoxAttributes& attributes, io::SeekableWrit
 	return true;
 }
 
-bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, const SceneGraph& volumes, int modelCount) {
+bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, int modelCount) {
 	const VoxNodeId rootNodeId = 0;
 	VoxNodeId groupNodeId = rootNodeId + 1;
 	wrapBool(saveChunk_nTRN(state, stream, rootNodeId, groupNodeId, glm::ivec3(0), -1))
@@ -247,8 +247,8 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 	// the first transform node id
 	VoxNodeId nodeId = groupNodeId + 1;
 	int modelId = 0;
-	for (const SceneGraphNode& v : volumes) {
-		const voxel::Region &region = v.region();
+	for (const SceneGraphNode& node : sceneGraph) {
+		const voxel::Region &region = node.region();
 		const glm::ivec3 mins = region.getCenter();
 		wrapBool(saveChunk_nTRN(state, stream, nodeId, nodeId + 1, mins, 0))
 		wrapBool(saveChunk_nSHP(state, stream, nodeId + 1, modelId))
@@ -261,26 +261,26 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 	return modelCount == modelId;
 }
 
-bool VoxFormat::saveGroups(const SceneGraph& volumesIn, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	State state;
 	reset();
 
-	ScopedSceneGraph volumes;
-	splitVolumes(volumesIn, volumes, glm::ivec3(MaxRegionSize));
+	ScopedSceneGraph newSceneGraph;
+	splitVolumes(sceneGraph, newSceneGraph, glm::ivec3(MaxRegionSize));
 
 	VoxScopedHeader scoped(stream);
-	wrapBool(saveChunk_PACK(state, stream, volumes))
-	for (const SceneGraphNode& v : volumes) {
-		const voxel::Region& region = v.region();
+	wrapBool(saveChunk_PACK(state, stream, newSceneGraph))
+	for (const SceneGraphNode& node : newSceneGraph) {
+		const voxel::Region& region = node.region();
 		wrapBool(saveChunk_SIZE(state, stream, region))
-		wrapBool(saveChunk_XYZI(state, stream, v.volume(), region))
+		wrapBool(saveChunk_XYZI(state, stream, node.volume(), region))
 	}
 
 #if 0
-	wrapBool(saveSceneGraph(state, stream, volumes, modelId))
+	wrapBool(saveSceneGraph(state, stream, newSceneGraph, modelId))
 	int modelId = 0;
-	for (const SceneGraphNode& v : volumes) {
-		wrapBool(saveChunk_LAYR(state, stream, modelId, v.name, v.visible))
+	for (const SceneGraphNode& node : newSceneGraph) {
+		wrapBool(saveChunk_LAYR(state, stream, modelId, node.name(), node.visible()))
 		++modelId;
 	}
 #endif
@@ -483,7 +483,7 @@ glm::ivec3 VoxFormat::calcTransform(State& state, const VoxTransform& t, int x, 
 //                       | read them first and then assemble as (x, z, y) for Y-up
 //                       | coordinate system.
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& volumes) {
+bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& sceneGraph) {
 	uint32_t numVoxels;
 	wrap(stream.readUInt32(numVoxels))
 	Log::debug("Found voxel chunk with %u voxels", numVoxels);
@@ -533,8 +533,8 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 		}
 	}
 	Log::debug("Loaded layer %i with %i voxels (%i)", state._volumeIdx, numVoxels, volumeVoxelSet);
-	volumes[state._volumeIdx].setVolume(volume, true);
-	volumes[state._volumeIdx].setPivot(translatedRegion.getCenter());
+	sceneGraph[state._volumeIdx].setVolume(volume, true);
+	sceneGraph[state._volumeIdx].setPivot(translatedRegion.getCenter());
 	++state._volumeIdx;
 	return true;
 }
@@ -630,7 +630,7 @@ bool VoxFormat::loadChunk_MATT(State& state, io::SeekableReadStream& stream, con
 }
 
 // https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
-bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& volumes) {
+bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& sceneGraph) {
 	int32_t layerId;
 	wrap(stream.readInt32(layerId))
 	VoxAttributes attributes;
@@ -644,15 +644,15 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 		return true;
 	}
 	// TODO: the mapping between volumes and layers is wrong
-	if (layerId >= (int32_t)volumes.size()) {
+	if (layerId >= (int32_t)sceneGraph.size()) {
 		Log::warn("Invalid layer id found: %i - exceeded limit of %i. Skipping layer",
-				(int)layerId, (int)volumes.size());
+				(int)layerId, (int)sceneGraph.size());
 	} else {
 		core::String property;
 		attributes.get("_name", property);
-		volumes[layerId].setName(property);
+		sceneGraph[layerId].setName(property);
 		attributes.get("_hidden", property);
-		volumes[layerId].setVisible(property.empty() || property == "0");
+		sceneGraph[layerId].setVisible(property.empty() || property == "0");
 	}
 	return true;
 }
@@ -988,17 +988,17 @@ bool VoxFormat::loadFirstChunks(State &state, io::SeekableReadStream& stream) {
 	return true;
 }
 
-bool VoxFormat::loadSecondChunks(State &state, io::SeekableReadStream& stream, SceneGraph& volumes) {
-	volumes.resize(state._regions.size());
+bool VoxFormat::loadSecondChunks(State &state, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+	sceneGraph.resize(state._regions.size());
 	do {
 		VoxChunkHeader header;
 		wrapBool(readChunkHeader(stream, header));
 		switch (header.chunkId) {
 		case FourCC('L','A','Y','R'):
-			wrapBool(loadChunk_LAYR(state, stream, header, volumes))
+			wrapBool(loadChunk_LAYR(state, stream, header, sceneGraph))
 			break;
 		case FourCC('X','Y','Z','I'):
-			wrapBool(loadChunk_XYZI(state, stream, header, volumes))
+			wrapBool(loadChunk_XYZI(state, stream, header, sceneGraph))
 			break;
 		}
 		wrap(stream.seek(header.nextChunkPos));
@@ -1159,7 +1159,7 @@ bool VoxFormat::checkMainChunk(io::SeekableReadStream& stream) const {
 //     Chunk 'MATT'
 // }
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	reset();
 
 	State state;
@@ -1173,7 +1173,7 @@ bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream&
 	wrapBool(loadSceneGraph(state, stream))
 	stream.seek(resetPos);
 
-	wrapBool(loadSecondChunks(state, stream, volumes))
+	wrapBool(loadSecondChunks(state, stream, sceneGraph))
 
 	return true;
 }

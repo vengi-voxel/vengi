@@ -40,7 +40,7 @@ void MCRFormat::reset() {
 	core_memset(_chunkTimestamps, 0, sizeof(_chunkTimestamps));
 }
 
-bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &volumes) {
+bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	reset();
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
@@ -96,7 +96,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			_chunkTimestamps[i] = lastModValue;
 		}
 
-		const bool success = loadMinecraftRegion(volumes, buffer, (int)length, stream, chunkX, chunkZ);
+		const bool success = loadMinecraftRegion(sceneGraph, buffer, (int)length, stream, chunkX, chunkZ);
 		delete[] buffer;
 		return success;
 	}
@@ -106,7 +106,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return false;
 }
 
-bool MCRFormat::loadMinecraftRegion(SceneGraph &volumes, const uint8_t *buffer, int length, io::SeekableReadStream &stream,
+bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, const uint8_t *buffer, int length, io::SeekableReadStream &stream,
 									int chunkX, int chunkZ) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u || _offsets[i].offset == 0u) {
@@ -117,7 +117,7 @@ bool MCRFormat::loadMinecraftRegion(SceneGraph &volumes, const uint8_t *buffer, 
 			return false;
 		}
 		wrap(stream.seek(_offsets[i].offset));
-		if (!readCompressedNBT(volumes, buffer, length, stream)) {
+		if (!readCompressedNBT(sceneGraph, buffer, length, stream)) {
 			Log::error("Failed to load minecraft chunk section %i for offset %u", i, (int)_offsets[i].offset);
 			return false;
 		}
@@ -126,7 +126,7 @@ bool MCRFormat::loadMinecraftRegion(SceneGraph &volumes, const uint8_t *buffer, 
 	return true;
 }
 
-bool MCRFormat::readCompressedNBT(SceneGraph &volumes, const uint8_t *buffer, int length, io::SeekableReadStream &stream) {
+bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, const uint8_t *buffer, int length, io::SeekableReadStream &stream) {
 	uint32_t nbtSize;
 	wrap(stream.readUInt32BE(nbtSize));
 	if (nbtSize == 0) {
@@ -157,7 +157,7 @@ bool MCRFormat::readCompressedNBT(SceneGraph &volumes, const uint8_t *buffer, in
 		return false;
 	}
 
-	const bool success = parseNBTChunk(volumes, nbtData, (int)finalBufSize);
+	const bool success = parseNBTChunk(sceneGraph, nbtData, (int)finalBufSize);
 	delete[] nbtData;
 	return success;
 }
@@ -429,7 +429,7 @@ static const struct {
 			 {"minecraft:gray_concrete_powder", 252},
 			 {"minecraft:structure_block", 255}};
 
-bool MCRFormat::parseNBTChunk(SceneGraph &volumes, const uint8_t *buffer, int length) {
+bool MCRFormat::parseNBTChunk(SceneGraph &sceneGraph, const uint8_t *buffer, int length) {
 	io::MemoryReadStream stream(buffer, length);
 
 	MCRFormat::NamedBinaryTag root;

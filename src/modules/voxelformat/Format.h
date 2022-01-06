@@ -37,7 +37,7 @@ protected:
 	 * @brief Maps a custum palette index to our own 256 color palette by a closest match
 	 */
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
-	RawVolume* merge(const SceneGraph& volumes) const;
+	RawVolume* merge(const SceneGraph& sceneGraph) const;
 	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).
 	 *
@@ -63,7 +63,7 @@ protected:
 	 * @brief Split volumes according to their max size into several smaller volumes
 	 * Some formats only support small volumes sizes per object - but multiple objects.
 	 */
-	void splitVolumes(const SceneGraph& srcVolumes, SceneGraph& destVolumes, const glm::ivec3 &maxSize);
+	void splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize);
 
 public:
 	virtual ~Format() = default;
@@ -81,12 +81,12 @@ public:
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
 	 */
-	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& volumes) = 0;
+	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) = 0;
 	/**
 	 * @brief Merge the loaded volumes into one. The returned memory is yours.
 	 */
 	virtual RawVolume* load(const core::String &filename, io::SeekableReadStream& file);
-	virtual bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) = 0;
+	virtual bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) = 0;
 	virtual bool save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream);
 };
 

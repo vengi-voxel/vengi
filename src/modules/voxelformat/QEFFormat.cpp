@@ -114,12 +114,12 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return true;
 }
 
-bool QEFFormat::saveGroups(const SceneGraph &volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	stream.writeString("Qubicle Exchange Format\n", false);
 	stream.writeString("Version 0.2\n", false);
 	stream.writeString("www.minddesk.com\n", false);
 
-	RawVolume* mergedVolume = merge(volumes);
+	RawVolume* mergedVolume = merge(sceneGraph);
 
 	const voxel::Region& region = mergedVolume->region();
 	RawVolume::Sampler sampler(mergedVolume);

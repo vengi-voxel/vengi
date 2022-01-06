@@ -10,61 +10,61 @@
 namespace voxel {
 
 SceneGraph::~SceneGraph() {
-	_volumes.clear();
+	_nodes.clear();
 }
 
 bool SceneGraph::emplace_back(SceneGraphNode &&v) {
 	if (v.volume() == nullptr) {
 		return false;
 	}
-	_volumes.emplace_back(core::forward<SceneGraphNode>(v));
+	_nodes.emplace_back(core::forward<SceneGraphNode>(v));
 	return true;
 }
 
 void SceneGraph::resize(size_t size) {
-	_volumes.resize(size);
+	_nodes.resize(size);
 }
 
 void SceneGraph::reserve(size_t size) {
-	_volumes.reserve(size);
+	_nodes.reserve(size);
 }
 
 bool SceneGraph::empty() const {
-	return _volumes.empty();
+	return _nodes.empty();
 }
 
 size_t SceneGraph::size() const {
-	return _volumes.size();
+	return _nodes.size();
 }
 
 void SceneGraph::clear() {
-	for (SceneGraphNode &v : _volumes) {
-		v.release();
+	for (SceneGraphNode &node : _nodes) {
+		node.release();
 	}
-	_volumes.clear();
+	_nodes.clear();
 }
 
 const SceneGraphNode &SceneGraph::operator[](size_t idx) const {
-	return _volumes[idx];
+	return _nodes[idx];
 }
 
 SceneGraphNode &SceneGraph::operator[](size_t idx) {
-	return _volumes[idx];
+	return _nodes[idx];
 }
 
 voxel::RawVolume *SceneGraph::merge() const {
-	if (_volumes.empty()) {
+	if (_nodes.empty()) {
 		return nullptr;
 	}
-	if (_volumes.size() == 1) {
-		if (_volumes[0].volume() == nullptr) {
+	if (_nodes.size() == 1) {
+		if (_nodes[0].volume() == nullptr) {
 			return nullptr;
 		}
-		return new voxel::RawVolume(_volumes[0].volume());
+		return new voxel::RawVolume(_nodes[0].volume());
 	}
 	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
-	rawVolumes.reserve(_volumes.size());
-	for (const SceneGraphNode &v : _volumes) {
+	rawVolumes.reserve(_nodes.size());
+	for (const SceneGraphNode &v : _nodes) {
 		if (v.volume() == nullptr) {
 			continue;
 		}

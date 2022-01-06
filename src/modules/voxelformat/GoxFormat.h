@@ -84,12 +84,12 @@ private:
 	bool loadChunk_ReadData(io::SeekableReadStream &stream, char *buff, int size);
 	void loadChunk_ValidateCRC(io::SeekableReadStream &stream);
 	bool loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value);
-	bool loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes);
-	bool loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes);
-	bool loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes);
-	bool loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes);
-	bool loadChunk_IMG(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes);
-	bool loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes);
+	bool loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
+	bool loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
+	bool loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
+	bool loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
+	bool loadChunk_IMG(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
+	bool loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
 
 	bool saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const void *value, size_t valueSize);
 
@@ -107,14 +107,14 @@ private:
 	bool saveChunk_LIGH(io::SeekableWriteStream &stream);
 
 	// Write all the blocks chunks.
-	bool saveChunk_BL16(io::SeekableWriteStream &stream, const SceneGraph &volumes, int &blocks);
+	bool saveChunk_BL16(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph, int &blocks);
 	// Write all the materials.
 	bool saveChunk_MATE(io::SeekableWriteStream &stream);
 	// Write all the layers.
-	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const SceneGraph &volumes, int numBlocks);
+	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph, int numBlocks);
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &volumes) override;
-	bool saveGroups(const SceneGraph &volumes, const core::String &filename,
+	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
+	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream) override;
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream) override;
 };

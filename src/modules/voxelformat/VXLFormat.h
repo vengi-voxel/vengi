@@ -72,23 +72,23 @@ private:
 
 	// writing
 	bool writeLimbBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const;
-	bool writeLimb(io::SeekableWriteStream& stream, const SceneGraph& volumes, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const;
-	bool writeLimbHeader(io::SeekableWriteStream& stream, const SceneGraph& volumes, uint32_t limbIdx) const;
-	bool writeLimbFooter(io::SeekableWriteStream& stream, const SceneGraph& volumes, uint32_t limbIdx, const LimbOffset& offsets) const;
-	bool writeHeader(io::SeekableWriteStream& stream, const SceneGraph& volumes);
+	bool writeLimb(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const;
+	bool writeLimbHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t limbIdx) const;
+	bool writeLimbFooter(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t limbIdx, const LimbOffset& offsets) const;
+	bool writeHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph);
 
 	// reading
 	bool readLimbHeader(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
 	bool readLimbFooter(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
-	bool readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, SceneGraph& volumes) const;
-	bool readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, SceneGraph& volumes) const;
+	bool readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, SceneGraph& sceneGraph) const;
+	bool readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, SceneGraph& sceneGraph) const;
 	bool readLimbFooters(io::SeekableReadStream& stream, vxl_mdl& mdl) const;
 	bool readLimbHeaders(io::SeekableReadStream& stream, vxl_mdl& mdl) const;
 	bool prepareModel(vxl_mdl& mdl) const;
 	bool readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl);
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) override;
-	bool saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
+	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

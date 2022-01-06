@@ -163,7 +163,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 #undef wrap
 
-bool KV6Format::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool KV6Format::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
 

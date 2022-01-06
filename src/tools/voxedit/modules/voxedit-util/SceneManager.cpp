@@ -662,9 +662,9 @@ void SceneManager::resetSceneState() {
 	resetLastTrace();
 }
 
-bool SceneManager::setNewVolumes(voxel::SceneGraph& volumes) {
+bool SceneManager::setNewVolumes(voxel::SceneGraph& sceneGraph) {
 	core_trace_scoped(SetNewVolumes);
-	const int volumeCnt = (int)volumes.size();
+	const int volumeCnt = (int)sceneGraph.size();
 	if (volumeCnt == 0) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 		return newScene(true, "", region);
@@ -680,10 +680,10 @@ bool SceneManager::setNewVolumes(voxel::SceneGraph& volumes) {
 	}
 	int valid = 0;
 	for (int idx = 0; idx < volumeCnt; ++idx) {
-		const int layerId = _layerMgr.addLayer(volumes[idx].name().c_str(), volumes[idx].visible(), volumes[idx].volume(), volumes[idx].pivot());
+		const int layerId = _layerMgr.addLayer(sceneGraph[idx].name().c_str(), sceneGraph[idx].visible(), sceneGraph[idx].volume(), sceneGraph[idx].pivot());
 		if (layerId >= 0) {
 			++valid;
-			volumes[idx].releaseOwnership();
+			sceneGraph[idx].releaseOwnership();
 		}
 	}
 	if (valid == 0) {
@@ -1835,9 +1835,6 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 	int layersAdded = 0;
 	for (size_t i = 0u; i < newSceneGraph.size(); ++i) {
 		voxel::SceneGraphNode& node = newSceneGraph[i];
-		if (node.volume() == nullptr) {
-			continue;
-		}
 		const bool visible = layersAdded == 0;
 		const int layerId = _layerMgr.addLayer(node.name().c_str(), visible, node.volume(), node.pivot());
 		if (layerId != -1) {

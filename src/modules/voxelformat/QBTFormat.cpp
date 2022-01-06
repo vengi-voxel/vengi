@@ -44,8 +44,8 @@ static const bool MergeCompounds = true;
 		return false; \
 	}
 
-bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& volume, bool colorMap) const {
-	const voxel::Region& region = volume.region();
+bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node, bool colorMap) const {
+	const voxel::Region& region = node.region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
@@ -60,7 +60,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			for (int y = mins.y; y <= maxs.y; ++y) {
-				const Voxel& voxel = volume.volume()->voxel(x, y, z);
+				const Voxel& voxel = node.volume()->voxel(x, y, z);
 				if (isAir(voxel.getMaterial())) {
 					*zlibBuf++ = (uint8_t)0;
 					*zlibBuf++ = (uint8_t)0;
@@ -96,7 +96,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	}
 
 	wrapSaveFree(stream.writeUInt32(0u)); // node type matrix
-	const size_t nameLength = volume.name().size();
+	const size_t nameLength = node.name().size();
 	const size_t nameSize = sizeof(uint32_t) + nameLength;
 	const size_t positionSize = 3 * sizeof(uint32_t);
 	const size_t localScaleSize = 3 * sizeof(uint32_t);
@@ -108,8 +108,8 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 
 	const size_t chunkStartPos = stream.pos();
 	wrapSaveFree(stream.writeUInt32(nameLength));
-	wrapSaveFree(stream.writeString(volume.name(), false));
-	Log::debug("Save matrix with name %s", volume.name().c_str());
+	wrapSaveFree(stream.writeString(node.name(), false));
+	Log::debug("Save matrix with name %s", node.name().c_str());
 
 	wrapSaveFree(stream.writeUInt32(mins.x));
 	wrapSaveFree(stream.writeUInt32(mins.y));
@@ -120,9 +120,9 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	wrapSaveFree(stream.writeUInt32(localScale.y));
 	wrapSaveFree(stream.writeUInt32(localScale.z));
 
-	wrapSaveFree(stream.writeFloat(volume.pivot().x));
-	wrapSaveFree(stream.writeFloat(volume.pivot().y));
-	wrapSaveFree(stream.writeFloat(volume.pivot().z));
+	wrapSaveFree(stream.writeFloat(node.pivot().x));
+	wrapSaveFree(stream.writeFloat(node.pivot().y));
+	wrapSaveFree(stream.writeFloat(node.pivot().z));
 
 	wrapSaveFree(stream.writeUInt32(size.x));
 	wrapSaveFree(stream.writeUInt32(size.y));
@@ -155,14 +155,8 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream) const {
 	return true;
 }
 
-bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& volumes, bool colorMap) const {
-	int children = 0;
-	for (const SceneGraphNode& v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		++children;
-	}
+bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, bool colorMap) const {
+	int children = (int)sceneGraph.size();
 	wrapSave(stream.writeUInt32(1)); // node type model
 	if (children == 0) {
 		wrapSave(stream.writeUInt32(sizeof(uint32_t)));
@@ -176,11 +170,8 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& vol
 	wrapSave(stream.writeUInt32(children));
 
 	bool success = true;
-	for (const SceneGraphNode& v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		if (!saveMatrix(stream, v, colorMap)) {
+	for (const SceneGraphNode& node : sceneGraph) {
+		if (!saveMatrix(stream, node, colorMap)) {
 			success = false;
 		}
 	}
@@ -194,7 +185,7 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& vol
 	return success;
 }
 
-bool QBTFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapSave(stream.writeUInt32(FourCC('Q','B',' ','2')))
 	wrapSave(stream.writeUInt8(1));
 	wrapSave(stream.writeUInt8(0));
@@ -211,7 +202,7 @@ bool QBTFormat::saveGroups(const SceneGraph& volumes, const core::String &filena
 	if (!stream.writeString("DATATREE", false)) {
 		return false;
 	}
-	if (!saveModel(stream, volumes, colorMap)) {
+	if (!saveModel(stream, sceneGraph, colorMap)) {
 		return false;
 	}
 	Log::debug("Saved %i layers", layers);
@@ -243,8 +234,8 @@ bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& volumes) {
-	if (!loadMatrix(stream, volumes)) {
+bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+	if (!loadMatrix(stream, sceneGraph)) {
 		return false;
 	}
 	uint32_t childCount;
@@ -257,7 +248,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& volumes
 				return false;
 			}
 		} else {
-			if (!loadNode(stream, volumes)) {
+			if (!loadNode(stream, sceneGraph)) {
 				return false;
 			}
 		}
@@ -401,7 +392,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	if (childCount > 2048u) {
@@ -410,14 +401,14 @@ bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& volumes) {
 	}
 	Log::debug("Found %u children", childCount);
 	for (uint32_t i = 0; i < childCount; i++) {
-		if (!loadNode(stream, volumes)) {
+		if (!loadNode(stream, sceneGraph)) {
 			return false;
 		}
 	}
 	return true;
 }
 
-bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint32_t nodeTypeID;
 	wrap(stream.readUInt32(nodeTypeID));
 	uint32_t dataSize;
@@ -427,7 +418,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& volumes) {
 	switch (nodeTypeID) {
 	case 0: {
 		Log::debug("Found matrix");
-		if (!loadMatrix(stream, volumes)) {
+		if (!loadMatrix(stream, sceneGraph)) {
 			Log::error("Failed to load matrix");
 			return false;
 		}
@@ -436,7 +427,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& volumes) {
 	}
 	case 1:
 		Log::debug("Found model");
-		if (!loadModel(stream, volumes)) {
+		if (!loadModel(stream, sceneGraph)) {
 			Log::error("Failed to load model");
 			return false;
 		}
@@ -444,7 +435,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& volumes) {
 		break;
 	case 2:
 		Log::debug("Found compound");
-		if (!loadCompound(stream, volumes)) {
+		if (!loadCompound(stream, sceneGraph)) {
 			Log::error("Failed to load compound");
 			return false;
 		}
@@ -494,7 +485,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 	return true;
 }
 
-bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint32_t header;
 	wrap(stream.readUInt32(header))
 	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
@@ -551,7 +542,7 @@ bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& volum
 			 * SectionCaption 8 bytes = "DATATREE"
 			 * RootNode, can currently either be Model, Compound or Matrix
 			 */
-			if (!loadNode(stream, volumes)) {
+			if (!loadNode(stream, sceneGraph)) {
 				Log::error("Failed to load node");
 				return false;
 			}
@@ -564,8 +555,8 @@ bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& volum
 	return true;
 }
 
-bool QBTFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
-	return loadFromStream(stream, volumes);
+bool QBTFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+	return loadFromStream(stream, sceneGraph);
 }
 
 #undef wrapSave

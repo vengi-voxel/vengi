@@ -61,40 +61,31 @@ bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::SceneGr
 	return true;
 }
 
-bool VXRFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapBool(stream.writeUInt32(FourCC('V','X','R','4')));
 
-	int childCount = 0;
-	for (const SceneGraphNode& v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		++childCount;
-	}
+	const int childCount = (int)sceneGraph.size();
 	wrapBool(stream.writeInt32(childCount))
 	int n = 0;
-	for (const SceneGraphNode& v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		core::String name = v.name();
+	for (const SceneGraphNode& node : sceneGraph) {
+		core::String name = node.name();
 		if (name.empty()) {
 			name = core::string::format("%i", n);
 		}
-		wrapBool(saveRecursiveNode(name, v, filename, stream))
+		wrapBool(saveRecursiveNode(name, node, filename, stream))
 		++n;
 	}
 	return true;
 }
 
-bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph& volumes) {
+bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph& sceneGraph) {
 	const io::FilePtr& file = io::filesystem()->open(vxmPath);
 	if (!file->validHandle()) {
 		return false;
 	}
 	io::FileStream stream(file.get());
 	VXMFormat f;
-	return f.loadGroups(vxmPath, stream, volumes);
+	return f.loadGroups(vxmPath, stream, sceneGraph);
 }
 
 bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStream& stream, uint32_t version) {
@@ -162,7 +153,7 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 	return true;
 }
 
-bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& volumes, uint32_t version) {
+bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, uint32_t version) {
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
 	char filename[1024];
@@ -173,7 +164,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 			modelPath.append("/");
 		}
 		modelPath.append(filename);
-		if (!loadChildVXM(modelPath, volumes)) {
+		if (!loadChildVXM(modelPath, sceneGraph)) {
 			Log::warn("Failed to attach model for %s with filename %s", id, filename);
 		}
 	}
@@ -184,7 +175,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 		int32_t children = 0;
 		wrap(stream.readInt32(children))
 		for (int32_t i = 0; i < children; ++i) {
-			wrapBool(importChild(vxmPath, stream, volumes, version))
+			wrapBool(importChild(vxmPath, stream, sceneGraph, version))
 		}
 		return true;
 	}
@@ -231,7 +222,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 	int32_t children = 0;
 	wrap(stream.readInt32(children))
 	for (int32_t i = 0; i < children; ++i) {
-		wrapBool(importChild(vxmPath, stream, volumes, version))
+		wrapBool(importChild(vxmPath, stream, sceneGraph, version))
 	}
 	return true;
 }
@@ -241,7 +232,7 @@ image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::loadImage(imageName, false);
 }
 
-bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -290,7 +281,7 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 					modelPath.append("/");
 				}
 				modelPath.append(vxmFilename);
-				if (!loadChildVXM(modelPath, volumes)) {
+				if (!loadChildVXM(modelPath, sceneGraph)) {
 					Log::warn("Failed to attach model for %s with filename %s", id, modelPath.c_str());
 				}
 			}
@@ -337,9 +328,9 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		}
 	}
 
-	Log::debug("Found %i children (%i)", children, (int)volumes.size());
+	Log::debug("Found %i children (%i)", children, (int)sceneGraph.size());
 	for (int32_t i = 0; i < children; ++i) {
-		wrapBool(importChild(filename, stream, volumes, version))
+		wrapBool(importChild(filename, stream, sceneGraph, version))
 	}
 
 	// some files since version 6 still have stuff here

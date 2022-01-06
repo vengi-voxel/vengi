@@ -211,7 +211,7 @@ size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream,
 	return 0;
 }
 
-bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::SceneGraph& newVolumes) {
+bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::SceneGraph& newSceneGraph) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);
@@ -223,19 +223,19 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, vo
 	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
 	if (f) {
 		stream.seek(0);
-		if (!f->loadGroups(fileName, stream, newVolumes)) {
-			newVolumes.clear();
+		if (!f->loadGroups(fileName, stream, newSceneGraph)) {
+			newSceneGraph.clear();
 		}
 	} else {
 		Log::error("Failed to load model file %s - unsupported file format for extension '%s'",
 				fileName.c_str(), fileext.c_str());
 		return false;
 	}
-	if (newVolumes.empty()) {
+	if (newSceneGraph.empty()) {
 		Log::error("Failed to load model file %s. Broken file.", fileName.c_str());
 		return false;
 	}
-	Log::info("Load model file %s with %i layers", fileName.c_str(), (int)newVolumes.size());
+	Log::info("Load model file %s with %i layers", fileName.c_str(), (int)newSceneGraph.size());
 	return true;
 }
 
@@ -250,8 +250,8 @@ bool isMeshFormat(const core::String& filename) {
 	return false;
 }
 
-bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& volumes) {
-	if (volumes.empty()) {
+bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& sceneGraph) {
+	if (sceneGraph.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
 		return false;
 	}
@@ -266,7 +266,7 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& volumes) {
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
 		if (ext == desc->ext) {
 			core::SharedPtr<voxel::Format> f = getFormat(desc, 0u);
-			if (f && f->saveGroups(volumes, filePtr->name(), stream)) {
+			if (f && f->saveGroups(sceneGraph, filePtr->name(), stream)) {
 				return true;
 			}
 		}
@@ -277,7 +277,7 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& volumes) {
 	}
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	voxel::QBFormat qbFormat;
-	return qbFormat.saveGroups(volumes, filePtr->name(), stream);
+	return qbFormat.saveGroups(sceneGraph, filePtr->name(), stream);
 }
 
 }

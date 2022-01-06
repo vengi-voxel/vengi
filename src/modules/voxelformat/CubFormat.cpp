@@ -75,8 +75,8 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 #undef wrap
 
-bool CubFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
-	RawVolume* mergedVolume = merge(volumes);
+bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	RawVolume* mergedVolume = merge(sceneGraph);
 	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
 
 	const voxel::Region& region = mergedVolume->region();

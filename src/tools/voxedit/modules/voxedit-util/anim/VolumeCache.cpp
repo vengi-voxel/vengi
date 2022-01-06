@@ -16,7 +16,7 @@
 namespace voxedit {
 namespace anim {
 
-bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::SceneGraph& volumes) {
+bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxel::SceneGraph& sceneGraph, const core::String &name) {
 	Log::info("Loading volume from %s into the cache", fullPath.c_str());
 	const io::FilesystemPtr& fs = io::filesystem();
 
@@ -31,39 +31,33 @@ bool VolumeCache::load(const core::String& fullPath, size_t volumeIndex, voxel::
 		Log::error("Failed to load %s for any of the supported format extensions", fullPath.c_str());
 		return false;
 	}
-	voxel::ScopedSceneGraph localVolumes;
+	voxel::ScopedSceneGraph newSceneGraph;
 	// TODO: use the cache luke
 	io::FileStream stream(file.get());
-	if (!voxelformat::loadFormat(file->name(), stream, localVolumes)) {
+	if (!voxelformat::loadFormat(file->name(), stream, newSceneGraph)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		return false;
 	}
-	if ((int)localVolumes.size() != 1) {
+	if ((int)newSceneGraph.size() != 1) {
 		Log::error("More than one volume/layer found in %s", file->name().c_str());
 		return false;
 	}
-	volumes[volumeIndex] = core::move(localVolumes[0]);
+	sceneGraph[volumeIndex] = core::move(newSceneGraph[0]);
 	return true;
 }
 
-bool VolumeCache::getVolumes(const animation::AnimationSettings& settings, voxel::SceneGraph& volumes) {
-	volumes.resize(animation::AnimationSettings::MAX_ENTRIES);
+bool VolumeCache::getVolumes(const animation::AnimationSettings& settings, voxel::SceneGraph& sceneGraph) {
+	sceneGraph.resize(animation::AnimationSettings::MAX_ENTRIES);
 
 	for (size_t i = 0; i < animation::AnimationSettings::MAX_ENTRIES; ++i) {
 		if (settings.paths[i].empty()) {
 			continue;
 		}
 		const core::String& fullPath = settings.fullPath(i);
-		if (!load(fullPath, i, volumes)) {
+		if (!load(fullPath, (int)i, sceneGraph, settings.meshType(i))) {
 			Log::error("Failed to load %s", settings.paths[i].c_str());
 			return false;
 		}
-	}
-	for (int i = 0; i < (int)animation::AnimationSettings::MAX_ENTRIES; ++i) {
-		if (volumes[i].volume() == nullptr) {
-			continue;
-		}
-		volumes[i].setName(settings.meshType(i));
 	}
 	return true;
 }

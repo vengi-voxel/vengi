@@ -143,18 +143,15 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	return true;
 }
 
-bool QBFormat::saveGroups(const SceneGraph& volumes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapSave(stream.writeUInt32(257))
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
 	wrapSave(stream.writeUInt32((uint32_t)ZAxisOrientation::Right))
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
-	wrapSave(stream.writeUInt32((int)volumes.size()))
-	for (const SceneGraphNode& v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		if (!saveMatrix(stream, v)) {
+	wrapSave(stream.writeUInt32((int)sceneGraph.size()))
+	for (const SceneGraphNode& node : sceneGraph) {
+		if (!saveMatrix(stream, node)) {
 			return false;
 		}
 	}
@@ -315,7 +312,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	return true;
 }
 
-bool QBFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool QBFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
@@ -345,18 +342,18 @@ bool QBFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& volume
 	Log::debug("VisibilityMaskEncoded: %u", core::enumVal(state._visibilityMaskEncoded));
 	Log::debug("NumMatrices: %u", numMatrices);
 
-	volumes.reserve(numMatrices);
+	sceneGraph.reserve(numMatrices);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
-		if (!loadMatrix(state, stream, volumes)) {
+		if (!loadMatrix(state, stream, sceneGraph)) {
 			break;
 		}
 	}
 	return true;
 }
 
-bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
-	return loadFromStream(stream, volumes);
+bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+	return loadFromStream(stream, sceneGraph);
 }
 
 }

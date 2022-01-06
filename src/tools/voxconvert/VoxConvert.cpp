@@ -242,13 +242,13 @@ app::AppState VoxConvert::onInit() {
 			voxelutil::importHeightmap(wrapper, image);
 		} else {
 			io::FileStream inputFileStream(inputFile.get());
-			voxel::ScopedSceneGraph newVolumes;
-			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newVolumes)) {
+			voxel::ScopedSceneGraph newSceneGraph;
+			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph)) {
 				Log::error("Failed to load given input file");
 				return app::AppState::InitFailure;
 			}
-			for (voxel::SceneGraphNode &v : newVolumes) {
-				sceneGraph.emplace_back(core::move(v));
+			for (voxel::SceneGraphNode &node : newSceneGraph) {
+				sceneGraph.emplace_back(core::move(node));
 			}
 		}
 	}
@@ -325,40 +325,35 @@ glm::ivec3 VoxConvert::getArgIvec3(const core::String &name) {
 	return t;
 }
 
-void VoxConvert::split(const glm::ivec3 &size, voxel::SceneGraph& volumes) {
+void VoxConvert::split(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph) {
 	Log::info("split volumes at %i:%i:%i", size.x, size.y, size.z);
-	voxel::RawVolume *merged = volumes.merge();
-	volumes.clear();
+	voxel::RawVolume *merged = sceneGraph.merge();
+	sceneGraph.clear();
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
 	voxel::splitVolume(merged, size, rawVolumes);
+	delete merged;
 	for (voxel::RawVolume *v : rawVolumes) {
 		voxel::SceneGraphNode node;
 		node.setVolume(v, true);
-		volumes.emplace_back(core::move(node));
+		sceneGraph.emplace_back(core::move(node));
 	}
 }
 
-void VoxConvert::crop(voxel::SceneGraph& volumes) {
+void VoxConvert::crop(voxel::SceneGraph& sceneGraph) {
 	Log::info("Crop volumes");
-	for (voxel::SceneGraphNode& v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		v.setVolume(voxel::cropVolume(v.volume()), true);
+	for (voxel::SceneGraphNode& node : sceneGraph) {
+		node.setVolume(voxel::cropVolume(node.volume()), true);
 	}
 }
 
-void VoxConvert::pivot(const glm::ivec3& pivot, voxel::SceneGraph& volumes) {
+void VoxConvert::pivot(const glm::ivec3& pivot, voxel::SceneGraph& sceneGraph) {
 	Log::info("Set pivot to %i:%i:%i", pivot.x, pivot.y, pivot.z);
-	for (voxel::SceneGraphNode& v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		v.setPivot(pivot);
+	for (voxel::SceneGraphNode& node : sceneGraph) {
+		node.setPivot(pivot);
 	}
 }
 
-void VoxConvert::script(const core::String &scriptParameters, voxel::SceneGraph& volumes) {
+void VoxConvert::script(const core::String &scriptParameters, voxel::SceneGraph& sceneGraph) {
 	voxelgenerator::LUAGenerator script;
 	if (!script.init()) {
 		Log::warn("Failed to initialize the script bindings");
@@ -379,8 +374,8 @@ void VoxConvert::script(const core::String &scriptParameters, voxel::SceneGraph&
 				args[i - 1] = tokens[i];
 			}
 			Log::info("Execute script %s", tokens[0].c_str());
-			for (auto& v : volumes) {
-				voxel::RawVolumeWrapper wrapper(v.volume());
+			for (voxel::SceneGraphNode& node : sceneGraph) {
+				voxel::RawVolumeWrapper wrapper(node.volume());
 				script.exec(luaScript, &wrapper, wrapper.region(), voxel, args);
 			}
 		}
@@ -389,24 +384,21 @@ void VoxConvert::script(const core::String &scriptParameters, voxel::SceneGraph&
 	script.shutdown();
 }
 
-void VoxConvert::scale(voxel::SceneGraph& volumes) {
+void VoxConvert::scale(voxel::SceneGraph& sceneGraph) {
 	Log::info("Scale layers");
-	for (voxel::SceneGraphNode& v : volumes) {
-		if (v.volume() == nullptr) {
-			continue;
-		}
-		const voxel::Region srcRegion = v.region();
+	for (voxel::SceneGraphNode& node : sceneGraph) {
+		const voxel::Region srcRegion = node.region();
 		const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 		if (destRegion.isValid()) {
 			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-			rescaleVolume(*v.volume(), *destVolume);
-			v.setVolume(destVolume, true);
+			rescaleVolume(*node.volume(), *destVolume);
+			node.setVolume(destVolume, true);
 		}
 	}
 }
 
-void VoxConvert::filterVolumes(voxel::SceneGraph& volumes) {
+void VoxConvert::filterVolumes(voxel::SceneGraph& sceneGraph) {
 	const core::String &filter = getArgVal("--filter");
 	if (filter.empty()) {
 		Log::warn("No filter specified");
@@ -430,49 +422,41 @@ void VoxConvert::filterVolumes(voxel::SceneGraph& volumes) {
 			layers.insert(layer);
 		}
 	}
-	for (int i = 0; i < (int)volumes.size(); ++i) {
+	for (int i = 0; i < (int)sceneGraph.size(); ++i) {
 		if (!layers.has(i)) {
-			volumes[i].release();
+			sceneGraph[i].release();
 			Log::debug("Remove layer %i - not part of the filter expression", i);
 		}
 	}
 	Log::info("Filtered layers: %i", (int)layers.size());
 }
 
-void VoxConvert::mirror(const core::String& axisStr, voxel::SceneGraph& volumes) {
+void VoxConvert::mirror(const core::String& axisStr, voxel::SceneGraph& sceneGraph) {
 	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
 	}
 	Log::info("Mirror on axis %c", axisStr[0]);
-	for (voxel::SceneGraphNode &v : volumes) {
-		voxel::RawVolume *old = v.volume();
-		if (old == nullptr) {
-			continue;
-		}
-		v.setVolume(voxel::mirrorAxis(old, axis), true);
+	for (voxel::SceneGraphNode &node : sceneGraph) {
+		node.setVolume(voxel::mirrorAxis(node.volume(), axis), true);
 	}
 }
 
-void VoxConvert::rotate(const core::String& axisStr, voxel::SceneGraph& volumes) {
+void VoxConvert::rotate(const core::String& axisStr, voxel::SceneGraph& sceneGraph) {
 	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
 	}
 	Log::info("Rotate on axis %c", axisStr[0]);
-	for (voxel::SceneGraphNode &v : volumes) {
-		voxel::RawVolume *old = v.volume();
-		if (old == nullptr) {
-			continue;
-		}
-		v.setVolume(voxel::rotateAxis(old, axis), true);
+	for (voxel::SceneGraphNode &node : sceneGraph) {
+		node.setVolume(voxel::rotateAxis(node.volume(), axis), true);
 	}
 }
 
-void VoxConvert::translate(const glm::ivec3& pos, voxel::SceneGraph& volumes) {
+void VoxConvert::translate(const glm::ivec3& pos, voxel::SceneGraph& sceneGraph) {
 	Log::info("Translate by %i:%i:%i", pos.x, pos.y, pos.z);
-	for (voxel::SceneGraphNode &v : volumes) {
-		v.translate(pos);
+	for (voxel::SceneGraphNode &node : sceneGraph) {
+		node.translate(pos);
 	}
 }
 

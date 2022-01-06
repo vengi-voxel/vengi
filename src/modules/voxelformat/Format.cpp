@@ -95,8 +95,8 @@ void Format::calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize
 	Log::debug("maxs(%i:%i:%i)", maxs.x, maxs.y, maxs.z);
 }
 
-RawVolume* Format::merge(const SceneGraph& volumes) const {
-	return volumes.merge();
+RawVolume* Format::merge(const SceneGraph& sceneGraph) const {
+	return sceneGraph.merge();
 }
 
 RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& file) {
