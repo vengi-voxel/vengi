@@ -287,7 +287,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& volumes
  * The M byte is used to store visibility of the 6 faces of a voxel and whether as voxel is solid or air. If M is bigger than 0 then the voxel is solid. Even when a voxel
  * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
-bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	char name[1024];
 	uint32_t nameLength;
 	wrap(stream.readUInt32(nameLength));
@@ -386,7 +386,11 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& volumes) 
 		}
 	}
 	delete [] voxelDataDecompressed;
-	volumes.emplace_back(SceneGraphNode(volume, name, true, glm::ivec3(pivot)));
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(name);
+	node.setPivot(glm::ivec3(pivot));
+	sceneGraph.emplace_back(core::move(node));
 	return true;
 }
 

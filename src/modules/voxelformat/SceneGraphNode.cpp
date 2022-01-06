@@ -7,39 +7,6 @@
 
 namespace voxel {
 
-SceneGraphNode::SceneGraphNode(voxel::RawVolume &volume, const core::String &name, bool visible)
-	: _name(name), _volume(&volume), _volumeOwned(false), _visible(visible) {
-	_pivot = _volume->region().getCenter();
-}
-
-SceneGraphNode::SceneGraphNode(voxel::RawVolume *volume, const core::String &name, bool visible)
-	: _name(name), _volume(volume), _visible(visible) {
-	if (_volume != nullptr) {
-		_pivot = _volume->region().getCenter();
-	} else {
-		_pivot = glm::ivec3(0.0f);
-	}
-}
-
-SceneGraphNode::SceneGraphNode(voxel::RawVolume *volume, const core::String &name, bool visible,
-							   const glm::ivec3 &pivot)
-	: _name(name), _volume(volume), _visible(visible), _pivot(pivot) {
-}
-
-SceneGraphNode::SceneGraphNode(const voxel::RawVolume *volume, const core::String &name, bool visible)
-	: _name(name), _volume((voxel::RawVolume *)volume), _visible(visible) {
-	if (_volume != nullptr) {
-		_pivot = _volume->region().getCenter();
-	} else {
-		_pivot = glm::ivec3(0.0f);
-	}
-}
-
-SceneGraphNode::SceneGraphNode(const voxel::RawVolume *volume, const core::String &name, bool visible,
-							   const glm::ivec3 &pivot)
-	: _name(name), _volume((voxel::RawVolume *)volume), _visible(visible), _pivot(pivot) {
-}
-
 SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_volume = move._volume;
 	move._volume = nullptr;

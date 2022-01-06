@@ -13,8 +13,12 @@ SceneGraph::~SceneGraph() {
 	_volumes.clear();
 }
 
-void SceneGraph::emplace_back(SceneGraphNode &&v) {
+bool SceneGraph::emplace_back(SceneGraphNode &&v) {
+	if (v.volume() == nullptr) {
+		return false;
+	}
 	_volumes.emplace_back(core::forward<SceneGraphNode>(v));
+	return true;
 }
 
 void SceneGraph::resize(size_t size) {

@@ -174,8 +174,8 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::ImagePtr();
 }
 
-bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes) {
-	const int size = (int)volumes.size();
+bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+	const int size = (int)sceneGraph.size();
 	core::String name = core::string::format("layer %i", size);
 	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
@@ -273,13 +273,17 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 		// "color" 4xbyte
 		// "material" int (index)
 	}
+	SceneGraphNode node;
 	// TODO: fix this properly - without mirroring
-	volumes.emplace_back(SceneGraphNode{voxel::mirrorAxis(layerVolume, math::Axis::Z), name, visible});
+	node.setVolume(voxel::mirrorAxis(layerVolume, math::Axis::Z), true);
+	node.setName(name);
+	node.setVisible(visible);
+	sceneGraph.emplace_back(core::move(node));
 	delete layerVolume;
 	return true;
 }
 
-bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &volumes) {
+bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	uint8_t* png = (uint8_t*)core_malloc(c.length);
 	wrapBool(loadChunk_ReadData(stream, (char *)png, c.length))
 	image::ImagePtr img = image::createEmptyImage("gox-voxeldata");

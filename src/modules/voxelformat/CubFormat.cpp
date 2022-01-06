@@ -24,7 +24,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -41,7 +41,10 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 	RawVolume *volume = new RawVolume(region);
-	volumes.emplace_back(SceneGraphNode{volume, filename, true});
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	sceneGraph.emplace_back(core::move(node));
 
 	// TODO: support loading own palette
 

@@ -25,7 +25,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &volumes) {
+bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	char buf[64];
 
 	wrapBool(stream.readLine(64, buf))
@@ -95,7 +95,10 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
-	volumes.emplace_back(SceneGraphNode(volume, filename, true, glm::ivec3(0)));
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	sceneGraph.emplace_back(core::move(node));
 
 	while (stream.remaining() > 0) {
 		wrapBool(stream.readLine(64, buf))

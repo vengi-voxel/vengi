@@ -21,7 +21,7 @@
 
 namespace voxel {
 
-bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &volumes) {
+bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	uint32_t depth, height, width;
 	wrap(stream.readUInt32(depth))
 	wrap(stream.readUInt32(height))
@@ -38,7 +38,10 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 		return false;
 	}
 	RawVolume *volume = new RawVolume(region);
-	volumes.emplace_back(SceneGraphNode{volume, filename, true});
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	sceneGraph.emplace_back(core::move(node));
 
 	const MaterialColorArray& materialColors = getMaterialColors();
 

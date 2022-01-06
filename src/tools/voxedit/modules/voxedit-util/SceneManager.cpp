@@ -308,16 +308,16 @@ bool SceneManager::prefab(const core::String& file) {
 		Log::error("Failed to open model file %s", file.c_str());
 		return false;
 	}
-	voxel::ScopedSceneGraph newVolumes;
+	voxel::ScopedSceneGraph newSceneGraph;
 	io::FileStream stream(filePtr.get());
-	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
+	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
 		return false;
 	}
-	for (auto& v : newVolumes) {
-		if (_layerMgr.addLayer(v.name().c_str(), v.visible(), v.volume(), v.pivot()) >= 0) {
+	for (voxel::SceneGraphNode& node : newSceneGraph) {
+		if (_layerMgr.addLayer(node.name().c_str(), node.visible(), node.volume(), node.pivot()) >= 0) {
 			// we don't free the volumes here, the renderer we add the layer to will
 			// take over the ownership
-			v.releaseOwnership();
+			node.releaseOwnership();
 		}
 	}
 	return true;
@@ -332,14 +332,14 @@ bool SceneManager::load(const core::String& file) {
 		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
 	}
-	voxel::ScopedSceneGraph newVolumes;
+	voxel::ScopedSceneGraph newSceneGraph;
 	io::FileStream stream(filePtr.get());
-	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
+	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
 		return false;
 	}
 	const core::String& ext = filePtr->extension();
 	_lastFilename = filePtr->fileName() + "." + ext;
-	if (!setNewVolumes(newVolumes)) {
+	if (!setNewVolumes(newSceneGraph)) {
 		return false;
 	}
 	_needAutoSave = false;
@@ -615,11 +615,11 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	}
 
 	voxel::RawVolume* merged = voxel::merge(volumes);
-	voxel::ScopedSceneGraph newVolumes;
+	voxel::ScopedSceneGraph newSceneGraph;
 	voxel::SceneGraphNode node;
 	node.setVolume(merged, true);
-	newVolumes.emplace_back(core::move(node));
-	setNewVolumes(newVolumes);
+	newSceneGraph.emplace_back(core::move(node));
+	setNewVolumes(newSceneGraph);
 	return true;
 }
 
@@ -1824,8 +1824,8 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 		Log::warn("Failed to initialize the animation settings and attributes for %s", luaFile.c_str());
 	}
 
-	voxel::ScopedSceneGraph newVolumes;
-	if (!_volumeCache.getVolumes(animationEntity().animationSettings(), newVolumes)) {
+	voxel::ScopedSceneGraph newSceneGraph;
+	if (!_volumeCache.getVolumes(animationEntity().animationSettings(), newSceneGraph)) {
 		return false;
 	}
 
@@ -1833,15 +1833,15 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 	// stuff, we will then delete the first layer again.
 	newScene(true, "entity", voxel::Region());
 	int layersAdded = 0;
-	for (size_t i = 0u; i < newVolumes.size(); ++i) {
-		auto& v = newVolumes[i];
-		if (v.volume() == nullptr) {
+	for (size_t i = 0u; i < newSceneGraph.size(); ++i) {
+		voxel::SceneGraphNode& node = newSceneGraph[i];
+		if (node.volume() == nullptr) {
 			continue;
 		}
 		const bool visible = layersAdded == 0;
-		const int layerId = _layerMgr.addLayer(v.name().c_str(), visible, v.volume(), v.pivot());
+		const int layerId = _layerMgr.addLayer(node.name().c_str(), visible, node.volume(), node.pivot());
 		if (layerId != -1) {
-			v.releaseOwnership();
+			node.releaseOwnership();
 			++layersAdded;
 			_layerMgr.addMetadata(layerId, {{"type", core::string::format("%i", (int)i)}});
 		}

@@ -19,7 +19,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('K','v','x','l')) {
@@ -94,7 +94,11 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	stream.seek(32);
 
 	RawVolume *volume = new RawVolume(region);
-	volumes.emplace_back(SceneGraphNode{volume, filename, true});
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	node.setPivot(glm::ivec3(pivot));
+	sceneGraph.emplace_back(core::move(node));
 
 	typedef struct {
 		uint8_t z, col, vis, dir;

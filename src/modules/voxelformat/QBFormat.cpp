@@ -209,7 +209,7 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	return voxel::createVoxel(voxelType, index);
 }
 
-bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	char name[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
@@ -256,7 +256,10 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	}
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
-	volumes.emplace_back(SceneGraphNode(v, name, true));
+	SceneGraphNode node;
+	node.setVolume(v, true);
+	node.setName(name);
+	sceneGraph.emplace_back(core::move(node));
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {

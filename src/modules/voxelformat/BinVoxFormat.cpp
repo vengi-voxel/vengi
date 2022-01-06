@@ -26,7 +26,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool BinVoxFormat::readData(State& state, const core::String& filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool BinVoxFormat::readData(State& state, const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	const voxel::Region region(0, 0, 0, state._d - 1, state._w - 1, state._h - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region found in file");
@@ -34,7 +34,10 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 	}
 
 	RawVolume *volume = new RawVolume(region);
-	volumes.emplace_back(SceneGraphNode{volume, filename, true});
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	sceneGraph.emplace_back(core::move(node));
 	const uint32_t numVoxels = state._w * state._h * state._d;
 	uint32_t index = 0;
 	uint32_t endIndex = 0;

@@ -48,21 +48,28 @@ uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 	return core::Color::getClosestMatch(color, materialColors);
 }
 
-void Format::splitVolumes(const SceneGraph& srcVolumes, SceneGraph& destVolumes, const glm::ivec3 &maxSize) {
-	destVolumes.reserve(srcVolumes.size());
-	for (SceneGraphNode &v : srcVolumes) {
+void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize) {
+	destSceneGraph.reserve(srcSceneGraph.size());
+	for (SceneGraphNode &v : srcSceneGraph) {
 		if (v.volume() == nullptr) {
 			continue;
 		}
 		const voxel::Region& region = v.region();
 		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
-			destVolumes.emplace_back({new voxel::RawVolume(v.volume()), v.name(), v.visible(), v.pivot()});
+			SceneGraphNode node;
+			node.setVolume(new voxel::RawVolume(v.volume()), true);
+			node.setName(v.name());
+			node.setVisible(v.visible());
+			node.setPivot(v.pivot());
+			destSceneGraph.emplace_back(core::move(node));
 			continue;
 		}
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
 		voxel::splitVolume(v.volume(), maxSize, rawVolumes);
 		for (voxel::RawVolume *v : rawVolumes) {
-			destVolumes.emplace_back({v});
+			SceneGraphNode node;
+			node.setVolume(v, true);
+			destSceneGraph.emplace_back(core::move(node));
 		}
 	}
 }

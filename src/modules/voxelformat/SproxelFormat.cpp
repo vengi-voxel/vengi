@@ -25,7 +25,7 @@ namespace voxel {
 		return false;                                                                                                  \
 	}
 
-bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &volumes) {
+bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
 
@@ -78,12 +78,15 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 		}
 		stream.skip(1);
 	}
-	volumes.emplace_back(SceneGraphNode(volume, filename, true, glm::ivec3(0)));
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	sceneGraph.emplace_back(core::move(node));
 	return true;
 }
 
-bool SproxelFormat::saveGroups(const SceneGraph &volumes, const core::String &filename, io::SeekableWriteStream &stream) {
-	RawVolume *mergedVolume = merge(volumes);
+bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
+	RawVolume *mergedVolume = merge(sceneGraph);
 
 	const voxel::Region &region = mergedVolume->region();
 	RawVolume::Sampler sampler(mergedVolume);

@@ -20,11 +20,6 @@ class SceneGraphNode {
 public:
 	SceneGraphNode() {
 	}
-	SceneGraphNode(voxel::RawVolume &volume, const core::String &name = "", bool visible = true);
-	SceneGraphNode(voxel::RawVolume *volume, const core::String &name = "", bool visible = true);
-	SceneGraphNode(voxel::RawVolume *volume, const core::String &name, bool visible, const glm::ivec3 &pivot);
-	SceneGraphNode(const voxel::RawVolume *volume, const core::String &name = "", bool visible = true);
-	SceneGraphNode(const voxel::RawVolume *volume, const core::String &name, bool visible, const glm::ivec3 &pivot);
 	SceneGraphNode(SceneGraphNode &&move) noexcept;
 	SceneGraphNode &operator=(SceneGraphNode &&move) noexcept;
 

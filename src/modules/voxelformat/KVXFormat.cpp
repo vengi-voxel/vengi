@@ -19,7 +19,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& volumes) {
+bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	// Total # of bytes (not including numbytes) in each mip-map level
 	// but there is only 1 mip-map level
 	uint32_t numbytes;
@@ -109,7 +109,11 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	stream.seek(currentPos);
 
 	RawVolume *volume = new RawVolume(region);
-	volumes.emplace_back(SceneGraphNode{volume, filename, true});
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	node.setPivot(glm::ivec3(pivot));
+	sceneGraph.emplace_back(core::move(node));
 
 	/**
 	 * voxdata: stored in sequential format.  Here's how you can get pointers to

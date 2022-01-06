@@ -193,7 +193,7 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	voxel::ScopedSceneGraph volumes;
+	voxel::ScopedSceneGraph sceneGraph;
 	for (const core::String& infile : infiles) {
 		const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
 		if (!inputFile->exists()) {
@@ -234,7 +234,10 @@ app::AppState VoxConvert::onInit() {
 			}
 			voxel::Region region(0, 0, 0, image->width(), 255, image->height());
 			voxel::RawVolume* volume = new voxel::RawVolume(region);
-			volumes.emplace_back(voxel::SceneGraphNode(volume, infile, true, glm::ivec3(0)));
+			voxel::SceneGraphNode node;
+			node.setVolume(volume, true);
+			node.setName(infile);
+			sceneGraph.emplace_back(core::move(node));
 			voxel::RawVolumeWrapper wrapper(volume);
 			voxelutil::importHeightmap(wrapper, image);
 		} else {
@@ -245,7 +248,7 @@ app::AppState VoxConvert::onInit() {
 				return app::AppState::InitFailure;
 			}
 			for (voxel::SceneGraphNode &v : newVolumes) {
-				volumes.emplace_back(core::move(v));
+				sceneGraph.emplace_back(core::move(v));
 			}
 		}
 	}
@@ -253,7 +256,7 @@ app::AppState VoxConvert::onInit() {
 	const bool applyFilter = hasArg("--filter");
 	if (applyFilter) {
 		if (infiles.size() == 1u) {
-			filterVolumes(volumes);
+			filterVolumes(sceneGraph);
 		} else {
 			Log::warn("Don't apply layer filters for multiple input files");
 		}
@@ -261,49 +264,52 @@ app::AppState VoxConvert::onInit() {
 
 	if (mergeVolumes) {
 		Log::info("Merge layers");
-		voxel::RawVolume* merged = volumes.merge();
+		voxel::RawVolume* merged = sceneGraph.merge();
 		if (merged == nullptr) {
 			Log::error("Failed to merge volumes");
 			return app::AppState::InitFailure;
 		}
-		volumes.clear();
-		volumes.emplace_back(voxel::SceneGraphNode(merged));
+		sceneGraph.clear();
+		voxel::SceneGraphNode node;
+		node.setVolume(merged, true);
+		node.setName(infilesstr);
+		sceneGraph.emplace_back(core::move(node));
 	}
 
 	if (scaleVolumes) {
-		scale(volumes);
+		scale(sceneGraph);
 	}
 
 	if (mirrorVolumes) {
-		mirror(getArgVal("--mirror"), volumes);
+		mirror(getArgVal("--mirror"), sceneGraph);
 	}
 
 	if (rotateVolumes) {
-		rotate(getArgVal("--rotate"), volumes);
+		rotate(getArgVal("--rotate"), sceneGraph);
 	}
 
 	if (translateVolumes) {
-		translate(getArgIvec3("--translate"), volumes);
+		translate(getArgIvec3("--translate"), sceneGraph);
 	}
 
 	if (!scriptParameters.empty()) {
-		script(scriptParameters, volumes);
+		script(scriptParameters, sceneGraph);
 	}
 
 	if (changePivot) {
-		pivot(getArgIvec3("--pivot"), volumes);
+		pivot(getArgIvec3("--pivot"), sceneGraph);
 	}
 
 	if (cropVolumes) {
-		crop(volumes);
+		crop(sceneGraph);
 	}
 
 	if (splitVolumes) {
-		split(getArgIvec3("--split"), volumes);
+		split(getArgIvec3("--split"), sceneGraph);
 	}
 
-	Log::debug("Save %i volumes", (int)volumes.size());
-	if (!voxelformat::saveFormat(outputFile, volumes)) {
+	Log::debug("Save %i volumes", (int)sceneGraph.size());
+	if (!voxelformat::saveFormat(outputFile, sceneGraph)) {
 		Log::error("Failed to write to output file '%s'", outfile.c_str());
 		return app::AppState::InitFailure;
 	}
@@ -326,7 +332,9 @@ void VoxConvert::split(const glm::ivec3 &size, voxel::SceneGraph& volumes) {
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
 	voxel::splitVolume(merged, size, rawVolumes);
 	for (voxel::RawVolume *v : rawVolumes) {
-		volumes.emplace_back({v});
+		voxel::SceneGraphNode node;
+		node.setVolume(v, true);
+		volumes.emplace_back(core::move(node));
 	}
 }
 

@@ -26,7 +26,7 @@ protected:
 public:
 	~SceneGraph();
 
-	void emplace_back(SceneGraphNode &&v);
+	bool emplace_back(SceneGraphNode &&v);
 	void resize(size_t size);
 	void reserve(size_t size);
 	bool empty() const;

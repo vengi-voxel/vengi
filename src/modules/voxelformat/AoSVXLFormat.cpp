@@ -14,13 +14,16 @@
 
 namespace voxel {
 
-bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &volumes) {
+bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	const int width = 512, height = 512, depth = 64;
 	const voxel::Region region(0, 0, 0, width - 1, depth - 1, height - 1);
 	const int flipHeight = depth - 1;
 	core_assert(region.isValid());
 	RawVolume *volume = new RawVolume(region);
-	volumes.emplace_back(SceneGraphNode{volume, filename, true});
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	sceneGraph.emplace_back(core::move(node));
 
 	const int64_t length = stream.size();
 	uint8_t *v = new uint8_t[length];
