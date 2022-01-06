@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "voxel/CubicSurfaceExtractor.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
 #include "video/ScopedLineWidth.h"
@@ -548,6 +549,25 @@ voxel::Region RawVolumeRenderer::region() const {
 		validVolume = true;
 	}
 	return region;
+}
+
+voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::SceneGraphNode& node, bool deleteMesh) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return nullptr;
+	}
+	core_trace_scoped(RawVolumeRendererSetVolume);
+
+	voxel::RawVolume* old = _rawVolume[idx];
+	_rawVolume[idx] = node.volume();
+	if (deleteMesh) {
+		for (auto& i : _meshes) {
+			Meshes& meshes = i.second;
+			delete meshes[idx];
+			meshes[idx] = nullptr;
+		}
+	}
+	node.releaseOwnership();
+	return old;
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {

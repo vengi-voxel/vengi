@@ -70,6 +70,10 @@ void SceneGraphNode::release() {
 	_volume = nullptr;
 }
 
+void SceneGraphNode::releaseOwnership() {
+	_volumeOwned = false;
+}
+
 void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership) {
 	release();
 	_volumeOwned = transferOwnership;

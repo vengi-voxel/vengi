@@ -9,6 +9,7 @@
 #include "io/FileStream.h"
 #include "math/AABB.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeRotator.h"
@@ -307,16 +308,17 @@ bool SceneManager::prefab(const core::String& file) {
 		Log::error("Failed to open model file %s", file.c_str());
 		return false;
 	}
-	// we don't free the volumes here, the renderer we add the layer to will
-	// take over the ownership
-	voxel::SceneGraph newVolumes;
+	voxel::ScopedSceneGraph newVolumes;
 	io::FileStream stream(filePtr.get());
 	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
-		newVolumes.clear();
 		return false;
 	}
 	for (auto& v : newVolumes) {
-		_layerMgr.addLayer(v.name().c_str(), v.visible(), v.volume(), v.pivot());
+		if (_layerMgr.addLayer(v.name().c_str(), v.visible(), v.volume(), v.pivot()) >= 0) {
+			// we don't free the volumes here, the renderer we add the layer to will
+			// take over the ownership
+			v.releaseOwnership();
+		}
 	}
 	return true;
 }
@@ -330,7 +332,7 @@ bool SceneManager::load(const core::String& file) {
 		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
 	}
-	voxel::SceneGraph newVolumes;
+	voxel::ScopedSceneGraph newVolumes;
 	io::FileStream stream(filePtr.get());
 	if (!voxelformat::loadFormat(filePtr->name(), stream, newVolumes)) {
 		return false;
@@ -426,7 +428,10 @@ void SceneManager::scale(int layerId) {
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
 	rescaleVolume(*srcVolume, *destVolume);
-	setNewVolume(layerId, destVolume, true);
+	if (!setNewVolume(layerId, destVolume, true)) {
+		delete destVolume;
+		return;
+	}
 	modified(layerId, srcRegion);
 }
 
@@ -440,7 +445,10 @@ void SceneManager::crop() {
 	if (newVolume == nullptr) {
 		return;
 	}
-	setNewVolume(layerId, newVolume, true);
+	if (!setNewVolume(layerId, newVolume, true)) {
+		delete newVolume;
+		return;
+	}
 	modified(layerId, newVolume->region());
 }
 
@@ -449,7 +457,10 @@ void SceneManager::resize(int layerId, const glm::ivec3& size) {
 	if (newVolume == nullptr) {
 		return;
 	}
-	setNewVolume(layerId, newVolume, false);
+	if (!setNewVolume(layerId, newVolume, false)) {
+		delete newVolume;
+		return;
+	}
 	if (glm::all(glm::greaterThanEqual(size, glm::zero<glm::ivec3>()))) {
 		// we don't have to reextract a mesh if only new empty voxels were added.
 		modified(layerId, voxel::Region::InvalidRegion);
@@ -604,9 +615,11 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	}
 
 	voxel::RawVolume* merged = voxel::merge(volumes);
-	voxel::SceneGraph mergedVolumes;
-	mergedVolumes.emplace_back(merged);
-	setNewVolumes(mergedVolumes);
+	voxel::ScopedSceneGraph newVolumes;
+	voxel::SceneGraphNode node;
+	node.setVolume(merged, true);
+	newVolumes.emplace_back(core::move(node));
+	setNewVolumes(newVolumes);
 	return true;
 }
 
@@ -649,9 +662,7 @@ void SceneManager::resetSceneState() {
 	resetLastTrace();
 }
 
-// TODO: there is a memory leak if the newVolumes has more than maxLayers volumes
-// there is also a memory leak if the layer could not get added
-bool SceneManager::setNewVolumes(const voxel::SceneGraph& volumes) {
+bool SceneManager::setNewVolumes(voxel::SceneGraph& volumes) {
 	core_trace_scoped(SetNewVolumes);
 	const int volumeCnt = (int)volumes.size();
 	if (volumeCnt == 0) {
@@ -672,6 +683,7 @@ bool SceneManager::setNewVolumes(const voxel::SceneGraph& volumes) {
 		const int layerId = _layerMgr.addLayer(volumes[idx].name().c_str(), volumes[idx].visible(), volumes[idx].volume(), volumes[idx].pivot());
 		if (layerId >= 0) {
 			++valid;
+			volumes[idx].releaseOwnership();
 		}
 	}
 	if (valid == 0) {
@@ -757,7 +769,10 @@ void SceneManager::rotate(int layerId, const glm::ivec3& angle, bool increaseSiz
 	}
 	voxel::Region r = newVolume->region();
 	r.accumulate(model->region());
-	setNewVolume(layerId, newVolume);
+	if (!setNewVolume(layerId, newVolume)) {
+		delete newVolume;
+		return;
+	}
 	modified(layerId, r);
 }
 
@@ -773,7 +788,10 @@ void SceneManager::move(int layerId, const glm::ivec3& m) {
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
 	voxel::moveVolume(&wrapper, model, m);
-	setNewVolume(layerId, newVolume);
+	if (!setNewVolume(layerId, newVolume)) {
+		delete newVolume;
+		return;
+	}
 	modified(layerId, newVolume->region());
 }
 
@@ -1453,7 +1471,10 @@ void SceneManager::flip(math::Axis axis) {
 		voxel::RawVolume* newVolume = voxel::mirrorAxis(model, axis);
 		voxel::Region r = newVolume->region();
 		r.accumulate(model->region());
-		setNewVolume(layerId, newVolume);
+		if (!setNewVolume(layerId, newVolume)) {
+			delete newVolume;
+			return;
+		}
 		modified(layerId, r);
 	});
 }
@@ -1803,8 +1824,8 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 		Log::warn("Failed to initialize the animation settings and attributes for %s", luaFile.c_str());
 	}
 
-	voxel::SceneGraph volumes;
-	if (!_volumeCache.getVolumes(animationEntity().animationSettings(), volumes)) {
+	voxel::ScopedSceneGraph newVolumes;
+	if (!_volumeCache.getVolumes(animationEntity().animationSettings(), newVolumes)) {
 		return false;
 	}
 
@@ -1812,14 +1833,15 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 	// stuff, we will then delete the first layer again.
 	newScene(true, "entity", voxel::Region());
 	int layersAdded = 0;
-	for (size_t i = 0u; i < volumes.size(); ++i) {
-		const auto& v = volumes[i];
+	for (size_t i = 0u; i < newVolumes.size(); ++i) {
+		auto& v = newVolumes[i];
 		if (v.volume() == nullptr) {
 			continue;
 		}
 		const bool visible = layersAdded == 0;
 		const int layerId = _layerMgr.addLayer(v.name().c_str(), visible, v.volume(), v.pivot());
 		if (layerId != -1) {
+			v.releaseOwnership();
 			++layersAdded;
 			_layerMgr.addMetadata(layerId, {{"type", core::string::format("%i", (int)i)}});
 		}
@@ -2191,11 +2213,11 @@ void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolum
 	_mementoHandler.markLayerAdded(layerId, layer.name, volume);
 	if (region.isValid()) {
 		// the volume is maybe an old state and only needs to get updated in the modified region.
-		setNewVolume(layerId, volume, false);
+		core_assert_always(setNewVolume(layerId, volume, false));
 		queueRegionExtraction(layerId, region);
 	} else {
 		// update the whole volume
-		setNewVolume(layerId, volume, true);
+		core_assert_always(setNewVolume(layerId, volume, true));
 		queueRegionExtraction(layerId, volume->region());
 	}
 	setReferencePosition(layer.pivot);

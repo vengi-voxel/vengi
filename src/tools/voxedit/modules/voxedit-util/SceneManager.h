@@ -183,7 +183,7 @@ private:
 	void resetSceneState();
 	void handleAnimationViewUpdate(int layerId);
 	bool setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
-	bool setNewVolumes(const voxel::SceneGraph& volumes);
+	bool setNewVolumes(voxel::SceneGraph& volumes);
 	void autosave();
 	void setReferencePosition(const glm::ivec3& pos);
 	void updateGridRenderer(const voxel::Region& region);

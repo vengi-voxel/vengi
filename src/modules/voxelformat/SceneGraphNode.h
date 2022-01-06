@@ -44,6 +44,10 @@ public:
 	 * @brief Releases the memory of the volume instance (only if owned).
 	 */
 	void release();
+	/**
+	 * @brief Release the ownership without freeing the memory
+	 */
+	void releaseOwnership();
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr

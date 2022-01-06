@@ -35,7 +35,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		voxel::overrideMaterialColors((const uint8_t*)palette.begin(), paletteCount * 4, "");
 	}
 
-	voxel::SceneGraph volumes;
+	voxel::ScopedSceneGraph volumes;
 	stream.seek(0);
 	if (!voxelformat::loadFormat(fileName, stream, volumes)) {
 		Log::error("Failed to load given input file");
@@ -46,7 +46,6 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	voxelrender::RawVolumeRenderer volumeRenderer;
 	volumeRenderer.construct();
 	if (!volumeRenderer.init()) {
-		volumes.clear();
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
@@ -62,7 +61,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	const int volumesSize = (int)volumes.size();
 	for (int i = 0; i < volumesSize; ++i) {
 		// this is transfering the ownership into the renderer
-		volumeRenderer.setVolume(i, volumes[i].volume());
+		volumeRenderer.setVolume(i, volumes[i]);
 		volumeRenderer.extractRegion(i, volumes[i].region());
 	}
 

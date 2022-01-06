@@ -22,6 +22,7 @@ class SceneGraph {
 protected:
 	core::DynamicArray<SceneGraphNode> _volumes;
 
+	SceneGraph() {}
 public:
 	~SceneGraph();
 
