@@ -16,6 +16,7 @@
 #include "voxedit-ui/ModifierPanel.h"
 #include "voxedit-ui/NoisePanel.h"
 #include "voxedit-ui/PalettePanel.h"
+#include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/StatusBar.h"
 #include "voxedit-ui/ToolsPanel.h"
@@ -75,6 +76,7 @@ private:
 	NoisePanel _noisePanel;
 	LSystemPanel _lsystemPanel;
 	ScriptPanel _scriptPanel;
+	SceneGraphPanel _sceneGraphPanel;
 	TreePanel _treePanel;
 	LayerPanel _layerPanel;
 	AnimationPanel _animationPanel;

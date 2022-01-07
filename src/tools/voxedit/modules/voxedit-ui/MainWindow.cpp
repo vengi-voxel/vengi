@@ -28,6 +28,7 @@
 #define TITLE_LAYERS "Layers##title"
 #define TITLE_TOOLS "Tools##title"
 #define TITLE_TREES ICON_FA_TREE " Trees##title"
+#define TITLE_SCENEGRAPH "Scenegraph##title"
 #define TITLE_NOISEPANEL ICON_FA_RANDOM " Noise##title"
 #define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
 #define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System##title"
@@ -230,6 +231,7 @@ void MainWindow::rightWidget() {
 	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_treePanel.update(TITLE_TREES);
+	_sceneGraphPanel.update(TITLE_SCENEGRAPH);
 	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	_noisePanel.update(TITLE_NOISEPANEL);
@@ -442,6 +444,7 @@ void MainWindow::update() {
 		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_LAYERS, dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_TREES, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_NOISEPANEL, dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, dockIdRightDown);

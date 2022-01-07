@@ -10,6 +10,7 @@ set(SRCS
 	ModifierPanel.h ModifierPanel.cpp
 	NoisePanel.h NoisePanel.cpp
 	PalettePanel.h PalettePanel.cpp
+	SceneGraphPanel.h SceneGraphPanel.cpp
 	ScriptPanel.h ScriptPanel.cpp
 	StatusBar.h StatusBar.cpp
 	ToolsPanel.h ToolsPanel.cpp

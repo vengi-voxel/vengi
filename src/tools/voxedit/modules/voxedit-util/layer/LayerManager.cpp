@@ -5,6 +5,7 @@
 #include "LayerManager.h"
 #include "core/StringUtil.h"
 #include "command/Command.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
 #include "core/Log.h"
 #include "core/Trace.h"
@@ -405,6 +406,14 @@ int LayerManager::addLayer(const char *name, bool visible, voxel::RawVolume* vol
 		return (int)layerId;
 	}
 	return -1;
+}
+
+int LayerManager::addLayer(voxel::SceneGraphNode& node) {
+	const int layerId = addLayer(node.name().c_str(), node.visible(), node.volume(), node.pivot());
+	if (layerId != -1) {
+		node.releaseOwnership();
+	}
+	return layerId;
 }
 
 bool LayerManager::activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume, const voxel::Region& region, const glm::ivec3& pivot) {

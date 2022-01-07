@@ -107,6 +107,7 @@ public:
 
 	const core::Buffer<int, 32> &children() const;
 	const core::StringMap<core::String> &properties() const;
+	core::StringMap<core::String> &properties();
 	core::String property(const core::String& key) const;
 	void setProperty(const core::String& key, const core::String& value);
 };

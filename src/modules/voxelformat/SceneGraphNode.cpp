@@ -95,6 +95,10 @@ const core::StringMap<core::String> &SceneGraphNode::properties() const {
 	return _properties;
 }
 
+core::StringMap<core::String> &SceneGraphNode::properties() {
+	return _properties;
+}
+
 core::String SceneGraphNode::property(const core::String& key) const {
 	core::String value;
 	_properties.get(key, value);

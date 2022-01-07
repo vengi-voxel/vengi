@@ -7,6 +7,8 @@
 #include "animation/AnimationSystem.h"
 #include "core/Enum.h"
 #include "core/collection/DynamicArray.h"
+#include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/Picking.h"
 #include "voxel/RawVolume.h"
 #include "voxelgenerator/TreeContext.h"
@@ -89,6 +91,7 @@ private:
 	voxel::RawVolume* _copy = nullptr;
 	render::Gizmo _gizmo;
 	EditMode _editMode = EditMode::Model;
+	voxel::SceneGraph _sceneGraph;
 
 	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Max;
 	animation::Character _character;
@@ -187,6 +190,13 @@ private:
 	void autosave();
 	void setReferencePosition(const glm::ivec3& pos);
 	void updateGridRenderer(const voxel::Region& region);
+
+	int loadSceneGraphNode(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent);
+	int loadSceneGraph(voxel::SceneGraph &sceneGraph);
+	int setNewSceneGraph(voxel::SceneGraph &sceneGraph);
+	void addToSceneGraph(int idx, voxel::RawVolume* volume);
+	void removeFromSceneGraph(int idx);
+	voxel::SceneGraphNode *sceneGraphNodeByLayerId(int layerId);
 
 	void animate(double nowSeconds);
 	/**
@@ -410,6 +420,7 @@ public:
 	voxelgenerator::LUAGenerator& luaGenerator();
 	video::ShapeBuilder& shapeBuilder();
 	render::ShapeRenderer& shapeRenderer();
+	voxel::SceneGraph &sceneGraph();
 
 	// LayerListener
 	void onLayerChanged(int layerId) override;
@@ -418,6 +429,8 @@ public:
 	void onLayerHide(int layerId) override;
 	void onLayerShow(int layerId) override;
 	void onActiveLayerChanged(int old, int active) override;
+	void onLayerUnlocked(int layerId) override;
+	void onLayerLocked(int layerId) override;
 	void onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) override;
 	void onLayerDeleted(int layerId, const Layer& layer) override;
 };

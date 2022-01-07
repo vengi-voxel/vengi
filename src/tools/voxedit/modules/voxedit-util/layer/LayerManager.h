@@ -61,6 +61,7 @@ public:
 	void lockLayer(int layerId, bool lock);
 	bool deleteLayer(int layerId, bool force = false);
 	int addLayer(const char *name, bool visible, voxel::RawVolume* volume, const glm::ivec3& pivot = glm::zero<glm::ivec3>());
+	int addLayer(voxel::SceneGraphNode& node);
 	bool activateLayer(int layerId, const char *name, bool visible, voxel::RawVolume* volume, const voxel::Region& region, const glm::ivec3& pivot = glm::zero<glm::ivec3>());
 	void addMetadata(int layerId, const LayerMetadata& metadata);
 	const LayerMetadata& metadata(int layerId) const;
