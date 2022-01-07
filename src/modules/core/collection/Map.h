@@ -56,7 +56,7 @@ public:
 		}
 
 		inline KeyValue(const KEYTYPE& _key, VALUETYPE&& _value) :
-				key(_key), value(_value), next(nullptr), first(key), second(value) {
+				key(_key), value(core::forward<VALUETYPE>(_value)), next(nullptr), first(key), second(value) {
 		}
 
 		inline KeyValue(KeyValue &&other) noexcept :
@@ -211,7 +211,7 @@ public:
 		}
 
 		if (entry == nullptr) {
-			entry = _allocator.alloc(key, value);
+			entry = _allocator.alloc(key, core::forward<VALUETYPE>(value));
 			core_assert_msg(entry != nullptr, "Failed to allocate for hash: %i", (int)hashValue);
 			if (prev == nullptr) {
 				_buckets[hashValue % BUCKETSIZE] = entry;
@@ -219,7 +219,7 @@ public:
 				prev->next = entry;
 			}
 		} else {
-			entry->value = std::forward(value);
+			entry->value = core::forward<VALUETYPE>(value);
 		}
 	}
 
