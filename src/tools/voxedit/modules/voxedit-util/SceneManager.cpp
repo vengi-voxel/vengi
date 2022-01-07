@@ -714,11 +714,7 @@ bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMe
 	delete _volumeRenderer.setVolume(idx, volume, deleteMesh);
 
 	updateAABBMesh();
-	if (volume != nullptr) {
-		updateGridRenderer(region);
-	} else {
-		_gridRenderer.clear();
-	}
+	updateGridRenderer(region);
 
 	_dirty = false;
 	_result = voxel::PickResult();
