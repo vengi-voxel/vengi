@@ -14,13 +14,13 @@ RequestParser& RequestParser::operator=(RequestParser &&other) noexcept {
 		other.query.clear();
 		method = other.method;
 		path = HTTP_PARSER_NEW_BASE(other.path);
-		Super::operator=(std::move(other));
+		Super::operator=(core::move(other));
 	}
 	return *this;
 }
 
 RequestParser::RequestParser(RequestParser &&other) noexcept :
-		Super(std::move(other)) {
+		Super(core::move(other)) {
 	query = HTTP_PARSER_NEW_BASE_CHARPTR_MAP(other.query);
 	other.query.clear();
 	method = other.method;
