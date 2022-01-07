@@ -28,6 +28,11 @@ distclean:
 deb:
 	$(Q)debuild -b -ui -uc -us
 
+.PHONY: cmake
+cmake:
+	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)
+
+.PHONY: ccmake
 ccmake:
 	$(Q)ccmake -B$(BUILDDIR) -S.
 
