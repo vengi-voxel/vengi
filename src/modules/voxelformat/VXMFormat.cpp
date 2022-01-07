@@ -62,7 +62,15 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	RawVolume* mergedVolume = merge(sceneGraph);
 	wrapBool(stream.writeUInt32(FourCC('V','X','M','5')));
-	const glm::ivec3 &pivot = sceneGraph.size() == 1 ? sceneGraph.begin()->pivot() : mergedVolume->region().getCenter();
+	glm::ivec3 pivot;
+	int nodes = 0;
+	for (const SceneGraphNode &node : sceneGraph) {
+		pivot = node.pivot();
+		++nodes;
+	}
+	if (nodes == 1) {
+		pivot = mergedVolume->region().getCenter();
+	}
 	wrapBool(stream.writeFloat(pivot.x));
 	wrapBool(stream.writeFloat(pivot.y));
 	wrapBool(stream.writeFloat(pivot.z));
