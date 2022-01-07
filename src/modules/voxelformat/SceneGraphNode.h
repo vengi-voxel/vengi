@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/StringMap.h"
 #include "voxel/Region.h"
 #include <glm/vec3.hpp>
@@ -13,18 +14,27 @@ namespace voxel {
 
 class RawVolume;
 
+enum class SceneGraphNodeType {
+	Root,
+	Model,
+
+	Max
+};
+
 /**
  * @brief Struct that holds the metadata and the volume
  * @sa SceneGraph
  */
 class SceneGraphNode {
 public:
-	SceneGraphNode() {
+	SceneGraphNode(SceneGraphNodeType type = SceneGraphNodeType::Model) : _type(type) {
 	}
 	SceneGraphNode(SceneGraphNode &&move) noexcept;
 	SceneGraphNode &operator=(SceneGraphNode &&move) noexcept;
 
 protected:
+	int _id = -1;
+	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
 	/**
@@ -34,6 +44,7 @@ protected:
 	bool _volumeOwned = true;
 	bool _visible = true;
 	glm::ivec3 _pivot{0};
+	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
 
 public:
@@ -45,6 +56,12 @@ public:
 	 * @brief Release the ownership without freeing the memory
 	 */
 	void releaseOwnership();
+
+	int id() const;
+	void setId(int id);
+	SceneGraphNodeType type() const;
+
+	void addChild(int id);
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr
@@ -81,10 +98,24 @@ public:
 	void setVisible(bool visible);
 	const glm::ivec3 &pivot() const;
 	void setPivot(const glm::ivec3 &pivot);
+
+	const core::Buffer<int, 32> &children() const;
 	const core::StringMap<core::String> &properties() const;
 	core::String property(const core::String& key) const;
 	void setProperty(const core::String& key, const core::String& value);
 };
+
+inline void SceneGraphNode::setId(int id) {
+	_id = id;
+}
+
+inline SceneGraphNodeType SceneGraphNode::type() const {
+	return _type;
+}
+
+inline int SceneGraphNode::id() const {
+	return _id;
+}
 
 inline voxel::RawVolume *SceneGraphNode::volume() const {
 	return _volume;

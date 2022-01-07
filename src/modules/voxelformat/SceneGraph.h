@@ -20,13 +20,16 @@ class RawVolume;
  */
 class SceneGraph {
 protected:
-	core::DynamicArray<SceneGraphNode> _nodes;
+	core::Map<int, SceneGraphNode> _nodes;
+	int _nextNodeId = 0;
 
-	SceneGraph() {}
+	SceneGraph();
 public:
 	~SceneGraph();
 
-	bool emplace_back(SceneGraphNode &&node);
+	void emplace_back(SceneGraphNode &&node, int parent = 0);
+
+	const SceneGraphNode& root() const;
 
 	/**
 	 * @brief Pre-allocated memory in the graph without added the nodes
@@ -36,7 +39,7 @@ public:
 	/**
 	 * @return Amount of nodes in the graph
 	 */
-	size_t size() const;
+	size_t size(SceneGraphNodeType type = SceneGraphNodeType::Model) const;
 	/**
 	 * @brief Merge all available nodes into one big volume.
 	 * @note If the graph is empty, this returns @c nullptr
@@ -49,23 +52,67 @@ public:
 	 */
 	void clear();
 
-	const SceneGraphNode &operator[](size_t idx) const;
-	SceneGraphNode &operator[](size_t idx);
+	const SceneGraphNode &operator[](int modelIdx) const;
+	SceneGraphNode &operator[](int modelIdx);
+
+	class iterator {
+	private:
+		using parent_iter = core::Map<int, SceneGraphNode>::iterator;
+		parent_iter _begin;
+		parent_iter _end;
+		SceneGraphNodeType _filter = SceneGraphNodeType::Max;
+	public:
+		constexpr iterator() {
+		}
+
+		iterator(parent_iter begin, parent_iter end, SceneGraphNodeType filter) :
+				_begin(begin), _end(end), _filter(filter) {
+			while (_begin != _end && _begin->second.type() != filter) {
+				++_begin;
+			}
+		}
+
+		inline SceneGraphNode& operator*() const {
+			return _begin->value;
+		}
+
+		iterator& operator++() {
+			if (_begin != _end) {
+				do {
+					++_begin;
+				} while (_begin != _end && _begin->second.type() != _filter);
+			}
+
+			return *this;
+		}
+
+		inline SceneGraphNode& operator->() const {
+			return _begin->value;
+		}
+
+		inline bool operator!=(const iterator& rhs) const {
+			return _begin != rhs._begin;
+		}
+
+		inline bool operator==(const iterator& rhs) const {
+			return _begin == rhs._begin;
+		}
+	};
 
 	inline auto begin() {
-		return _nodes.begin();
+		return iterator(_nodes.begin(), _nodes.end(), SceneGraphNodeType::Model);
 	}
 
 	inline auto end() {
-		return _nodes.end();
+		return iterator(_nodes.end(), _nodes.end(), SceneGraphNodeType::Max);
 	}
 
 	inline auto begin() const {
-		return _nodes.begin();
+		return iterator(_nodes.begin(), _nodes.end(), SceneGraphNodeType::Model);
 	}
 
 	inline auto end() const {
-		return _nodes.end();
+		return iterator(_nodes.end(), _nodes.end(), SceneGraphNodeType::Max);
 	}
 };
 
