@@ -35,7 +35,7 @@ public:
 	 * @brief Pre-allocated memory in the graph without added the nodes
 	 */
 	void reserve(size_t size);
-	bool empty() const;
+	bool empty(SceneGraphNodeType type = SceneGraphNodeType::Model) const;
 	/**
 	 * @return Amount of nodes in the graph
 	 */
@@ -99,16 +99,16 @@ public:
 		}
 	};
 
-	inline auto begin() {
-		return iterator(_nodes.begin(), _nodes.end(), SceneGraphNodeType::Model);
+	inline auto begin(SceneGraphNodeType filter = SceneGraphNodeType::Model) {
+		return iterator(_nodes.begin(), _nodes.end(), filter);
 	}
 
 	inline auto end() {
 		return iterator(_nodes.end(), _nodes.end(), SceneGraphNodeType::Max);
 	}
 
-	inline auto begin() const {
-		return iterator(_nodes.begin(), _nodes.end(), SceneGraphNodeType::Model);
+	inline auto begin(SceneGraphNodeType filter = SceneGraphNodeType::Model) const {
+		return iterator(_nodes.begin(), _nodes.end(), filter);
 	}
 
 	inline auto end() const {

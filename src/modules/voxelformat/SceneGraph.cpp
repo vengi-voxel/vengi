@@ -42,15 +42,15 @@ void SceneGraph::emplace_back(SceneGraphNode &&node, int parent) {
 void SceneGraph::reserve(size_t size) {
 }
 
-bool SceneGraph::empty() const {
-	return begin() == end();
+bool SceneGraph::empty(SceneGraphNodeType type) const {
+	return begin(type) == end();
 }
 
 size_t SceneGraph::size(SceneGraphNodeType type) const {
-	auto begin = iterator(_nodes.begin(), _nodes.end(), type);
-	auto end = iterator(_nodes.end(), _nodes.end(), type);
+	auto iterbegin = begin(type);
+	auto iterend = end();
 	size_t n = 0;
-	for (auto iter = begin; iter != end; ++iter) {
+	for (auto iter = iterbegin; iter != iterend; ++iter) {
 		++n;
 	}
 	return n;
@@ -68,16 +68,18 @@ void SceneGraph::clear() {
 }
 
 const SceneGraphNode &SceneGraph::operator[](int modelIdx) const {
-	iterator iter = iterator(_nodes.begin(), _nodes.end(), SceneGraphNodeType::Model);
+	iterator iter = begin(SceneGraphNodeType::Model);
 	for (int i = 0; i < modelIdx; ++i) {
+		core_assert(iter != end());
 		++iter;
 	}
 	return *iter;
 }
 
 SceneGraphNode &SceneGraph::operator[](int modelIdx) {
-	iterator iter = iterator(_nodes.begin(), _nodes.end(), SceneGraphNodeType::Model);
+	iterator iter = begin(SceneGraphNodeType::Model);
 	for (int i = 0; i < modelIdx; ++i) {
+		core_assert(iter != end());
 		++iter;
 	}
 	return *iter;
