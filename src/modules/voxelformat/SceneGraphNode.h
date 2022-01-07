@@ -34,7 +34,7 @@ public:
 
 protected:
 	int _id = -1;
-	int _parent = -1;
+	int _parent = 0;
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
@@ -44,6 +44,7 @@ protected:
 	 */
 	bool _volumeOwned = true;
 	bool _visible = true;
+	bool _locked = false;
 	glm::ivec3 _pivot{0};
 	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
@@ -99,6 +100,8 @@ public:
 	void setName(const core::String &name);
 	bool visible() const;
 	void setVisible(bool visible);
+	bool locked() const;
+	void setLocked(bool locked);
 	const glm::ivec3 &pivot() const;
 	void setPivot(const glm::ivec3 &pivot);
 
@@ -150,6 +153,14 @@ inline bool SceneGraphNode::visible() const {
 
 inline void SceneGraphNode::setVisible(bool visible) {
 	_visible = visible;
+}
+
+inline bool SceneGraphNode::locked() const {
+	return _locked;
+}
+
+inline void SceneGraphNode::setLocked(bool locked) {
+	_locked = locked;
 }
 
 inline const glm::ivec3 &SceneGraphNode::pivot() const {

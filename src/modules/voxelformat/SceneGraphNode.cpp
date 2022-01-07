@@ -20,6 +20,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_type = move._type;
 	move._type = SceneGraphNodeType::Max;
 	_visible = move._visible;
+	_locked = move._locked;
 	_pivot = move._pivot;
 	_volumeOwned = move._volumeOwned;
 	move._volumeOwned = false;
@@ -40,6 +41,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_children = core::move(move._children);
 	_type = move._type;
 	_visible = move._visible;
+	_locked = move._locked;
 	_pivot = move._pivot;
 	move._volumeOwned = false;
 	return *this;
