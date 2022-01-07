@@ -32,4 +32,59 @@ TEST_F(SceneGraphTest, testSize) {
 	EXPECT_EQ(2u, sceneGraph.root().children().size()) << "The root node should have two (model) children attached";
 }
 
+TEST_F(SceneGraphTest, testHasNode) {
+	SceneGraph sceneGraph;
+	EXPECT_TRUE(sceneGraph.hasNode(0));
+	EXPECT_FALSE(sceneGraph.hasNode(1));
+	SceneGraphNode node;
+	node.setName("node");
+	sceneGraph.emplace_back(core::move(node));
+	EXPECT_TRUE(sceneGraph.hasNode(0));
+	EXPECT_TRUE(sceneGraph.hasNode(1));
+	EXPECT_FALSE(sceneGraph.hasNode(2));
+}
+
+TEST_F(SceneGraphTest, testNodeRoot) {
+	SceneGraph sceneGraph;
+	const SceneGraphNode& root = sceneGraph.node(0);
+	EXPECT_EQ(0, root.id());
+	EXPECT_EQ(SceneGraphNodeType::Root, root.type());
+}
+
+TEST_F(SceneGraphTest, testNode) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node");
+		sceneGraph.emplace_back(core::move(node));
+	}
+	const SceneGraphNode& modelNode = sceneGraph.node(1);
+	EXPECT_EQ(SceneGraphNodeType::Model, modelNode.type());
+	EXPECT_EQ(1, modelNode.id());
+	EXPECT_EQ("node", modelNode.name());
+}
+
+TEST_F(SceneGraphTest, testChildren) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node");
+		sceneGraph.emplace_back(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("children");
+		sceneGraph.emplace_back(core::move(node), 1);
+	}
+	const SceneGraphNode& modelNode = sceneGraph.node(1);
+	EXPECT_EQ(SceneGraphNodeType::Model, modelNode.type());
+	EXPECT_EQ(1, modelNode.id());
+	EXPECT_EQ("node", modelNode.name());
+	EXPECT_EQ(1u, modelNode.children().size());
+	for (const int child : modelNode.children()) {
+		EXPECT_EQ(2, child) << "There should only be one child with the id 2";
+	}
+	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model));
+}
+
 }

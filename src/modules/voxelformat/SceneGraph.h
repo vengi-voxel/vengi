@@ -26,10 +26,26 @@ public:
 	SceneGraph();
 	~SceneGraph();
 
+	/**
+	 * @brief We move into the scene graph to make it clear who is owning the volume.
+	 *
+	 * @param node The node to move
+	 * @param parent The parent node id - by default this is 0 which is the root node
+	 * @sa core::move()
+	 */
 	void emplace_back(SceneGraphNode &&node, int parent = 0);
 
 	const SceneGraphNode& root() const;
-	const SceneGraphNode& node(int nodeId) const;
+	/**
+	 * @brief Get the current scene graph node
+	 * @note It's important to check whether the node exists before calling this method!
+	 * @param nodeId The node id that was assigned to the node after adding it to the scene graph
+	 * @sa hasNode()
+	 * @sa emplace_back()
+	 * @return @c SceneGraphNode refernence. Undefined if no node was found for the given id!
+	 */
+	SceneGraphNode& node(int nodeId) const;
+	bool hasNode(int nodeId) const;
 
 	/**
 	 * @brief Pre-allocated memory in the graph without added the nodes

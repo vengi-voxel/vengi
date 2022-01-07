@@ -19,10 +19,17 @@ SceneGraph::~SceneGraph() {
 	clear();
 }
 
-const SceneGraphNode& SceneGraph::node(int nodeId) const {
-	auto iter = _nodes.find(0);
-	core_assert(iter != _nodes.end());
+SceneGraphNode& SceneGraph::node(int nodeId) const {
+	auto iter = _nodes.find(nodeId);
+	if (iter == _nodes.end()) {
+		Log::error("No node for id %i found in the scene graph - returning root node", nodeId);
+		return _nodes.find(0)->value;
+	}
 	return iter->value;
+}
+
+bool SceneGraph::hasNode(int nodeId) const {
+	return _nodes.find(nodeId) != _nodes.end();
 }
 
 const SceneGraphNode& SceneGraph::root() const {
