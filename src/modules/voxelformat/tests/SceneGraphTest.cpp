@@ -13,7 +13,7 @@ class SceneGraphTest: public app::AbstractTest {
 };
 
 TEST_F(SceneGraphTest, testSize) {
-	ScopedSceneGraph sceneGraph;
+	SceneGraph sceneGraph;
 	EXPECT_EQ(1u, sceneGraph.size(SceneGraphNodeType::Root)) << "Each scene graph should contain a root node by default";
 	EXPECT_TRUE(sceneGraph.empty()) << "There are no model nodes yet - thus empty should return true";
 	{

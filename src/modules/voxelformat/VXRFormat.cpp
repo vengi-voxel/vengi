@@ -43,7 +43,7 @@ bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::SceneGr
 		return false;
 	}
 	io::FileStream wstream(outputFile.get());
-	ScopedSceneGraph newSceneGraph;
+	SceneGraph newSceneGraph;
 	voxel::SceneGraphNode newNode;
 	newNode.setVolume(node.volume(), false);
 	newNode.setName(name);

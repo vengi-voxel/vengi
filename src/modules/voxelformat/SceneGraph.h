@@ -13,9 +13,8 @@ class RawVolume;
 
 /**
  * @brief The internal format for the save/load methods.
- * @note Does not free the attached volumes by default!
  *
- * @sa ScopedSceneGraph
+ * @sa SceneGraph
  * @sa SceneGraphNode
  */
 class SceneGraph {
@@ -23,13 +22,14 @@ protected:
 	core::Map<int, SceneGraphNode> _nodes;
 	int _nextNodeId = 0;
 
-	SceneGraph();
 public:
+	SceneGraph();
 	~SceneGraph();
 
 	void emplace_back(SceneGraphNode &&node, int parent = 0);
 
 	const SceneGraphNode& root() const;
+	const SceneGraphNode& node(int nodeId) const;
 
 	/**
 	 * @brief Pre-allocated memory in the graph without added the nodes
@@ -113,18 +113,6 @@ public:
 
 	inline auto end() const {
 		return iterator(_nodes.end(), _nodes.end(), SceneGraphNodeType::Max);
-	}
-};
-
-/**
- * @brief Using this class will automatically free the allocated memory of the volumes once the scope
- * was left.
- * @sa SceneGraph
- */
-class ScopedSceneGraph : public SceneGraph {
-public:
-	~ScopedSceneGraph() {
-		clear();
 	}
 };
 

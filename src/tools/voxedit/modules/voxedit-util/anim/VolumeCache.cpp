@@ -31,7 +31,7 @@ bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxel::Sce
 		Log::error("Failed to load %s for any of the supported format extensions", fullPath.c_str());
 		return false;
 	}
-	voxel::ScopedSceneGraph newSceneGraph;
+	voxel::SceneGraph newSceneGraph;
 	// TODO: use the cache luke
 	io::FileStream stream(file.get());
 	if (!voxelformat::loadFormat(file->name(), stream, newSceneGraph)) {

@@ -46,7 +46,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 	bigVolume.setVoxel(256, 0, 0, voxel);
 	bigVolume.setVoxel(512, 0, 0, voxel);
 	const core::String name = "bigvolume.vox";
-	ScopedSceneGraph sceneGraph;
+	SceneGraph sceneGraph;
 
 #define VOX_TEST_SAVE_TO_FILE 0
 #if VOX_TEST_SAVE_TO_FILE

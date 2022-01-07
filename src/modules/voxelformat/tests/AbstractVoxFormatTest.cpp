@@ -30,7 +30,7 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
 	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
 	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	ScopedSceneGraph sceneGraph;
+	SceneGraph sceneGraph;
 	voxel::SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
 	voxel::SceneGraphNode node2;
@@ -46,7 +46,7 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
 	io::FileStream sstream(sfile.get());
 	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));
-	ScopedSceneGraph sceneGraphLoad;
+	SceneGraph sceneGraphLoad;
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file.get());
 	EXPECT_TRUE(format->loadGroups(file->name(), stream, sceneGraphLoad));

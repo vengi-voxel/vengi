@@ -193,7 +193,7 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	voxel::ScopedSceneGraph sceneGraph;
+	voxel::SceneGraph sceneGraph;
 	for (const core::String& infile : infiles) {
 		const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
 		if (!inputFile->exists()) {
@@ -242,7 +242,7 @@ app::AppState VoxConvert::onInit() {
 			voxelutil::importHeightmap(wrapper, image);
 		} else {
 			io::FileStream inputFileStream(inputFile.get());
-			voxel::ScopedSceneGraph newSceneGraph;
+			voxel::SceneGraph newSceneGraph;
 			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph)) {
 				Log::error("Failed to load given input file");
 				return app::AppState::InitFailure;

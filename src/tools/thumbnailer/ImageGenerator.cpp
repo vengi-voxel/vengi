@@ -35,7 +35,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		voxel::overrideMaterialColors((const uint8_t*)palette.begin(), paletteCount * 4, "");
 	}
 
-	voxel::ScopedSceneGraph sceneGraph;
+	voxel::SceneGraph sceneGraph;
 	stream.seek(0);
 	if (!voxelformat::loadFormat(fileName, stream, sceneGraph)) {
 		Log::error("Failed to load given input file");

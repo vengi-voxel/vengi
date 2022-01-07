@@ -16,13 +16,17 @@ SceneGraph::SceneGraph() {
 }
 
 SceneGraph::~SceneGraph() {
-	_nodes.clear();
+	clear();
 }
 
-const SceneGraphNode& SceneGraph::root() const {
+const SceneGraphNode& SceneGraph::node(int nodeId) const {
 	auto iter = _nodes.find(0);
 	core_assert(iter != _nodes.end());
 	return iter->value;
+}
+
+const SceneGraphNode& SceneGraph::root() const {
+	return node(0);
 }
 
 void SceneGraph::emplace_back(SceneGraphNode &&node, int parent) {

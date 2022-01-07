@@ -41,7 +41,7 @@ protected:
 	}
 
 	bool save(const LevelVolumes &volumes) const {
-		voxel::ScopedSceneGraph sceneGraph;
+		voxel::SceneGraph sceneGraph;
 		sceneGraph.reserve(volumes.size());
 		for (int i = 0; i < (int)volumes.size(); ++i) {
 			if (volumes[i] != nullptr) {

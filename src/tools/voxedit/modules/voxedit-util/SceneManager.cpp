@@ -210,7 +210,7 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 		return false;
 	}
 	const Layer& layer = _layerMgr.layer(layerId);
-	voxel::ScopedSceneGraph sceneGraph;
+	voxel::SceneGraph sceneGraph;
 	voxel::SceneGraphNode node;
 	node.setVolume(v, false);
 	node.setName(layer.name);
@@ -238,7 +238,7 @@ bool SceneManager::saveLayers(const core::String& dir) {
 }
 
 bool SceneManager::save(const core::String& file, bool autosave) {
-	voxel::ScopedSceneGraph sceneGraph;
+	voxel::SceneGraph sceneGraph;
 	const int layers = (int)_layerMgr.layers().size();
 	Log::debug("Trying to save %i layers", layers);
 	for (int idx = 0; idx < layers; ++idx) {
@@ -308,7 +308,7 @@ bool SceneManager::prefab(const core::String& file) {
 		Log::error("Failed to open model file %s", file.c_str());
 		return false;
 	}
-	voxel::ScopedSceneGraph newSceneGraph;
+	voxel::SceneGraph newSceneGraph;
 	io::FileStream stream(filePtr.get());
 	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
 		return false;
@@ -332,7 +332,7 @@ bool SceneManager::load(const core::String& file) {
 		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
 	}
-	voxel::ScopedSceneGraph newSceneGraph;
+	voxel::SceneGraph newSceneGraph;
 	io::FileStream stream(filePtr.get());
 	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
 		return false;
@@ -615,7 +615,7 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	}
 
 	voxel::RawVolume* merged = voxel::merge(volumes);
-	voxel::ScopedSceneGraph newSceneGraph;
+	voxel::SceneGraph newSceneGraph;
 	voxel::SceneGraphNode node;
 	node.setVolume(merged, true);
 	newSceneGraph.emplace_back(core::move(node));
@@ -1824,7 +1824,7 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 		Log::warn("Failed to initialize the animation settings and attributes for %s", luaFile.c_str());
 	}
 
-	voxel::ScopedSceneGraph newSceneGraph;
+	voxel::SceneGraph newSceneGraph;
 	if (!_volumeCache.getVolumes(animationEntity().animationSettings(), newSceneGraph)) {
 		return false;
 	}

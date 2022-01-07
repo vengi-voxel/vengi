@@ -265,7 +265,7 @@ bool VoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	State state;
 	reset();
 
-	ScopedSceneGraph newSceneGraph;
+	SceneGraph newSceneGraph;
 	splitVolumes(sceneGraph, newSceneGraph, glm::ivec3(MaxRegionSize));
 
 	VoxScopedHeader scoped(stream);
