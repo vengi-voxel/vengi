@@ -36,15 +36,17 @@ const SceneGraphNode& SceneGraph::root() const {
 	return node(0);
 }
 
-bool SceneGraph::emplace_back(SceneGraphNode &&node, int parent) {
+int SceneGraph::emplace_back(SceneGraphNode &&node, int parent) {
 	if (node.type() == SceneGraphNodeType::Root && _nextNodeId != 0) {
 		Log::error("No second root node is allowed in the scene graph");
-		return false;
+		node.release();
+		return -1;
 	}
 	const int nodeId = _nextNodeId;
 	if (parent >= nodeId) {
 		Log::error("Invalid parent id given: %i", parent);
-		return false;
+		node.release();
+		return -1;
 	}
 	++_nextNodeId;
 	node.setId(nodeId);
@@ -55,12 +57,12 @@ bool SceneGraph::emplace_back(SceneGraphNode &&node, int parent) {
 		auto iter = _nodes.find(parent);
 		if (iter == _nodes.end()) {
 			Log::error("Could not find parent node with id %i", parent);
-			// returning true - as the node was added
-			return true;
+			// returning no error - as the node was added
+			return nodeId;
 		}
 		iter->value.addChild(nodeId);
 	}
-	return true;
+	return nodeId;
 }
 
 bool SceneGraph::removeNode(int nodeId) {

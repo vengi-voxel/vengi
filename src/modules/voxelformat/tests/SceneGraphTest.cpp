@@ -38,7 +38,7 @@ TEST_F(SceneGraphTest, testHasNode) {
 	EXPECT_FALSE(sceneGraph.hasNode(1));
 	SceneGraphNode node;
 	node.setName("node");
-	EXPECT_TRUE(sceneGraph.emplace_back(core::move(node)));
+	EXPECT_EQ(1, sceneGraph.emplace_back(core::move(node)));
 	EXPECT_TRUE(sceneGraph.hasNode(0));
 	EXPECT_TRUE(sceneGraph.hasNode(1));
 	EXPECT_FALSE(sceneGraph.hasNode(2));

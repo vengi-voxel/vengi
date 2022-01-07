@@ -32,8 +32,10 @@ public:
 	 * @param node The node to move
 	 * @param parent The parent node id - by default this is 0 which is the root node
 	 * @sa core::move()
+	 * @return the node id that was assigned - or a negative number in case the node wasn't added and an error happened.
+	 * @note If an error happened, the node is released.
 	 */
-	bool emplace_back(SceneGraphNode &&node, int parent = 0);
+	int emplace_back(SceneGraphNode &&node, int parent = 0);
 
 	const SceneGraphNode& root() const;
 	/**
