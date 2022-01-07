@@ -34,6 +34,7 @@ public:
 
 protected:
 	int _id = -1;
+	int _parent = -1;
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
@@ -59,6 +60,8 @@ public:
 
 	int id() const;
 	void setId(int id);
+	int parent() const;
+	void setParent(int id);
 	SceneGraphNodeType type() const;
 
 	void addChild(int id);
@@ -107,6 +110,14 @@ public:
 
 inline void SceneGraphNode::setId(int id) {
 	_id = id;
+}
+
+inline int SceneGraphNode::parent() const {
+	return _parent;
+}
+
+inline void SceneGraphNode::setParent(int id) {
+	_parent = id;
 }
 
 inline SceneGraphNodeType SceneGraphNode::type() const {

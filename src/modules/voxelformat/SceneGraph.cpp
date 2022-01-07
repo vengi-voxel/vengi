@@ -39,6 +39,7 @@ const SceneGraphNode& SceneGraph::root() const {
 void SceneGraph::emplace_back(SceneGraphNode &&node, int parent) {
 	const int nodeId = _nextNodeId++;
 	node.setId(nodeId);
+	node.setParent(parent);
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
 	if (parent >= 0) {
 		auto iter = _nodes.find(parent);
