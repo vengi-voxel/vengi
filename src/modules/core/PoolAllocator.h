@@ -131,7 +131,7 @@ public:
 			_nextFreeSlot = *(Type**)ptr;
 			++_currentAllocatedItems;
 			core_assert_msg(_nextFreeSlot == POOLBUFFER_END_MARKER || !outOfRange(_nextFreeSlot), "Out of range after %i allocated slots", (int)_currentAllocatedItems);
-			callConstructor(std::is_class<T> {}, ptr, std::forward<Args>(args) ...);
+			callConstructor(std::is_class<T> {}, ptr, core::forward<Args>(args) ...);
 		}
 
 		return ptr;
