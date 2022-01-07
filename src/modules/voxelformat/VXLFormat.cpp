@@ -203,7 +203,7 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	node.setVolume(volume, true);
 	node.setName(header.limb_name);
 	node.setPivot(volume->region().getCenter());
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 	++mdl.volumeIdx;
 
 	const size_t limbOffset = HeaderSize + LimbHeaderSize * mdl.header.n_limbs + footer.span_start_off;

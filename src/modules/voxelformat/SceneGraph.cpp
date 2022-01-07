@@ -36,7 +36,7 @@ const SceneGraphNode& SceneGraph::root() const {
 	return node(0);
 }
 
-int SceneGraph::emplace_back(SceneGraphNode &&node, int parent) {
+int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	if (node.type() == SceneGraphNodeType::Root && _nextNodeId != 0) {
 		Log::error("No second root node is allowed in the scene graph");
 		node.release();

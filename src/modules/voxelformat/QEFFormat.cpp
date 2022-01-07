@@ -98,7 +98,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 
 	while (stream.remaining() > 0) {
 		wrapBool(stream.readLine(64, buf))

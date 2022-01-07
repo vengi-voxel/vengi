@@ -41,7 +41,7 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 
 	const MaterialColorArray& materialColors = getMaterialColors();
 

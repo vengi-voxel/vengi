@@ -58,7 +58,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 			newNode.setName(node.name());
 			newNode.setVisible(node.visible());
 			newNode.setPivot(node.pivot());
-			destSceneGraph.emplace_back(core::move(newNode));
+			destSceneGraph.emplace(core::move(newNode));
 			continue;
 		}
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
@@ -66,7 +66,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 		for (voxel::RawVolume *v : rawVolumes) {
 			SceneGraphNode newNode;
 			newNode.setVolume(v, true);
-			destSceneGraph.emplace_back(core::move(newNode));
+			destSceneGraph.emplace(core::move(newNode));
 		}
 	}
 }
@@ -124,7 +124,7 @@ bool Format::save(const RawVolume* volume, const core::String &filename, io::See
 	SceneGraph sceneGraph;
 	SceneGraphNode node;
 	node.setVolume(volume, false);
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 	return saveGroups(sceneGraph, filename, stream);
 }
 

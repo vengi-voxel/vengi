@@ -424,7 +424,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		node.setName(layerName);
 		node.setVisible(visible);
 		node.setPivot(ipivot);
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 	}
 
 	if (version >= 10) {

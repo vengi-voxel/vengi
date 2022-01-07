@@ -19,12 +19,12 @@ TEST_F(SceneGraphTest, testSize) {
 	{
 		SceneGraphNode node;
 		node.setName("node1");
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 	}
 	{
 		SceneGraphNode node;
 		node.setName("node2");
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 	}
 	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model)) << "The scene graph should have two models";
 	EXPECT_EQ(2u, sceneGraph.size()) << "The scene graph should have two models";
@@ -38,7 +38,7 @@ TEST_F(SceneGraphTest, testHasNode) {
 	EXPECT_FALSE(sceneGraph.hasNode(1));
 	SceneGraphNode node;
 	node.setName("node");
-	EXPECT_EQ(1, sceneGraph.emplace_back(core::move(node)));
+	EXPECT_EQ(1, sceneGraph.emplace(core::move(node)));
 	EXPECT_TRUE(sceneGraph.hasNode(0));
 	EXPECT_TRUE(sceneGraph.hasNode(1));
 	EXPECT_FALSE(sceneGraph.hasNode(2));
@@ -56,7 +56,7 @@ TEST_F(SceneGraphTest, testNode) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("node");
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 	}
 	const SceneGraphNode& modelNode = sceneGraph.node(1);
 	EXPECT_EQ(SceneGraphNodeType::Model, modelNode.type());
@@ -69,12 +69,12 @@ TEST_F(SceneGraphTest, testChildren) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("node");
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("children");
-		sceneGraph.emplace_back(core::move(node), 1);
+		sceneGraph.emplace(core::move(node), 1);
 	}
 	const SceneGraphNode& modelNode = sceneGraph.node(1);
 	EXPECT_EQ(SceneGraphNodeType::Model, modelNode.type());
@@ -92,12 +92,12 @@ TEST_F(SceneGraphTest, testRemove) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("node");
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("children");
-		sceneGraph.emplace_back(core::move(node), 1);
+		sceneGraph.emplace(core::move(node), 1);
 	}
 	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model));
 	EXPECT_TRUE(sceneGraph.removeNode(1));

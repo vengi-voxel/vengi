@@ -381,7 +381,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	node.setVolume(volume, true);
 	node.setName(name);
 	node.setPivot(glm::ivec3(pivot));
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 	return true;
 }
 

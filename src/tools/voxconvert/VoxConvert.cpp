@@ -237,7 +237,7 @@ app::AppState VoxConvert::onInit() {
 			voxel::SceneGraphNode node;
 			node.setVolume(volume, true);
 			node.setName(infile);
-			sceneGraph.emplace_back(core::move(node));
+			sceneGraph.emplace(core::move(node));
 			voxel::RawVolumeWrapper wrapper(volume);
 			voxelutil::importHeightmap(wrapper, image);
 		} else {
@@ -248,7 +248,7 @@ app::AppState VoxConvert::onInit() {
 				return app::AppState::InitFailure;
 			}
 			for (voxel::SceneGraphNode &node : newSceneGraph) {
-				sceneGraph.emplace_back(core::move(node));
+				sceneGraph.emplace(core::move(node));
 			}
 		}
 	}
@@ -273,7 +273,7 @@ app::AppState VoxConvert::onInit() {
 		voxel::SceneGraphNode node;
 		node.setVolume(merged, true);
 		node.setName(infilesstr);
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 	}
 
 	if (scaleVolumes) {
@@ -335,7 +335,7 @@ void VoxConvert::split(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph) {
 	for (voxel::RawVolume *v : rawVolumes) {
 		voxel::SceneGraphNode node;
 		node.setVolume(v, true);
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 	}
 }
 

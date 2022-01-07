@@ -49,7 +49,7 @@ bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::SceneGr
 	newNode.setName(name);
 	newNode.setVisible(node.visible());
 	newNode.setPivot(node.pivot());
-	newSceneGraph.emplace_back(core::move(newNode));
+	newSceneGraph.emplace(core::move(newNode));
 	wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 
 	wrapBool(stream.writeInt32(0)); // next child count

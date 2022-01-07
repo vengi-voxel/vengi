@@ -35,7 +35,7 @@ public:
 	 * @return the node id that was assigned - or a negative number in case the node wasn't added and an error happened.
 	 * @note If an error happened, the node is released.
 	 */
-	int emplace_back(SceneGraphNode &&node, int parent = 0);
+	int emplace(SceneGraphNode &&node, int parent = 0);
 
 	const SceneGraphNode& root() const;
 	/**

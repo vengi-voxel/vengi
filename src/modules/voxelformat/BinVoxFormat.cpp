@@ -37,7 +37,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 	const uint32_t numVoxels = state._w * state._h * state._d;
 	uint32_t index = 0;
 	uint32_t endIndex = 0;

@@ -47,7 +47,7 @@ protected:
 			if (volumes[i] != nullptr) {
 				voxel::SceneGraphNode node;
 				node.setVolume(volumes[i], false);
-				sceneGraph.emplace_back(core::move(node));
+				sceneGraph.emplace(core::move(node));
 			}
 		}
 		const io::FilePtr &file = _testApp->filesystem()->open("mapbuildertest.qb", io::FileMode::SysWrite);

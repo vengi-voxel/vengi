@@ -536,7 +536,7 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setPivot(translatedRegion.getCenter());
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 	++state._volumeIdx;
 	return true;
 }

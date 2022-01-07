@@ -100,7 +100,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		SceneGraphNode node;
 		node.setVolume(volume, true);
 		node.setName(name);
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 
 		while (matrixIndex < voxels) {
 			uint8_t count;

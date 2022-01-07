@@ -43,7 +43,7 @@ bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxel::Sce
 		return false;
 	}
 	newSceneGraph[0].setProperty("type", core::string::toString(volumeIndex));
-	sceneGraph.emplace_back(core::move(newSceneGraph[0]));
+	sceneGraph.emplace(core::move(newSceneGraph[0]));
 	return true;
 }
 

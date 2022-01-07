@@ -278,7 +278,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	node.setVolume(voxel::mirrorAxis(layerVolume, math::Axis::Z), true);
 	node.setName(name);
 	node.setVisible(visible);
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 	delete layerVolume;
 	return true;
 }

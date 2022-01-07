@@ -39,10 +39,10 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	node3.setVolume(&layer3, false);
 	voxel::SceneGraphNode node4;
 	node4.setVolume(&layer4, false);
-	sceneGraph.emplace_back(core::move(node1));
-	sceneGraph.emplace_back(core::move(node2));
-	sceneGraph.emplace_back(core::move(node3));
-	sceneGraph.emplace_back(core::move(node4));
+	sceneGraph.emplace(core::move(node1));
+	sceneGraph.emplace(core::move(node2));
+	sceneGraph.emplace(core::move(node3));
+	sceneGraph.emplace(core::move(node4));
 	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
 	io::FileStream sstream(sfile.get());
 	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));

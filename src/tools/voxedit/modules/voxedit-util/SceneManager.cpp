@@ -215,7 +215,7 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 	node.setVolume(v, false);
 	node.setName(layer.name);
 	node.setVisible(layer.visible);
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 	if (voxelformat::saveFormat(filePtr, sceneGraph)) {
 		Log::info("Saved layer %i to %s", layerId, filePtr->name().c_str());
 		return true;
@@ -256,7 +256,7 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		node.setVolume(v, false);
 		node.setName(layer.name);
 		node.setVisible(layer.visible);
-		sceneGraph.emplace_back(core::move(node));
+		sceneGraph.emplace(core::move(node));
 	}
 
 	if (sceneGraph.empty()) {
@@ -618,7 +618,7 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	voxel::SceneGraph newSceneGraph;
 	voxel::SceneGraphNode node;
 	node.setVolume(merged, true);
-	newSceneGraph.emplace_back(core::move(node));
+	newSceneGraph.emplace(core::move(node));
 	setNewVolumes(newSceneGraph);
 	return true;
 }

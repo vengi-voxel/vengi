@@ -113,7 +113,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	node.setVolume(volume, true);
 	node.setName(filename);
 	node.setPivot(glm::ivec3(pivot));
-	sceneGraph.emplace_back(core::move(node));
+	sceneGraph.emplace(core::move(node));
 
 	/**
 	 * voxdata: stored in sequential format.  Here's how you can get pointers to
