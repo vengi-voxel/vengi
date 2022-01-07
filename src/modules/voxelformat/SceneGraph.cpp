@@ -48,20 +48,19 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 		node.release();
 		return -1;
 	}
+	if (parent >= 0) {
+		auto parentIter = _nodes.find(parent);
+		if (parentIter == _nodes.end()) {
+			Log::error("Could not find parent node with id %i", parent);
+			return -1;
+		}
+		parentIter->value.addChild(nodeId);
+	}
 	++_nextNodeId;
 	node.setId(nodeId);
 	node.setParent(parent);
 	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)node.type(), node.id(), node.parent());
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
-	if (parent >= 0) {
-		auto iter = _nodes.find(parent);
-		if (iter == _nodes.end()) {
-			Log::error("Could not find parent node with id %i", parent);
-			// returning no error - as the node was added
-			return nodeId;
-		}
-		iter->value.addChild(nodeId);
-	}
 	return nodeId;
 }
 
