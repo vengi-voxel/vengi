@@ -36,19 +36,50 @@ const SceneGraphNode& SceneGraph::root() const {
 	return node(0);
 }
 
-void SceneGraph::emplace_back(SceneGraphNode &&node, int parent) {
-	const int nodeId = _nextNodeId++;
+bool SceneGraph::emplace_back(SceneGraphNode &&node, int parent) {
+	if (node.type() == SceneGraphNodeType::Root && _nextNodeId != 0) {
+		Log::error("No second root node is allowed in the scene graph");
+		return false;
+	}
+	const int nodeId = _nextNodeId;
+	if (parent >= nodeId) {
+		Log::error("Invalid parent id given: %i", parent);
+		return false;
+	}
+	++_nextNodeId;
 	node.setId(nodeId);
 	node.setParent(parent);
+	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)node.type(), node.id(), node.parent());
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
 	if (parent >= 0) {
 		auto iter = _nodes.find(parent);
 		if (iter == _nodes.end()) {
 			Log::error("Could not find parent node with id %i", parent);
-			return;
+			// returning true - as the node was added
+			return true;
 		}
 		iter->value.addChild(nodeId);
 	}
+	return true;
+}
+
+bool SceneGraph::removeNode(int nodeId) {
+	auto iter = _nodes.find(nodeId);
+	if (iter == _nodes.end()) {
+		Log::debug("Could not remove node %i - not found", nodeId);
+		return false;
+	}
+	if (iter->value.type() == SceneGraphNodeType::Root) {
+		core_assert(nodeId == 0);
+		clear();
+		return true;
+	}
+	bool state = iter->value.children().empty();
+	for (int childId : iter->value.children()) {
+		state |= removeNode(childId);
+	}
+	_nodes.erase(iter);
+	return state;
 }
 
 void SceneGraph::reserve(size_t size) {
@@ -73,10 +104,13 @@ void SceneGraph::clear() {
 		entry->value.release();
 	}
 	_nodes.clear();
-	_nextNodeId = 0;
+	_nextNodeId = 1;
+
 	SceneGraphNode node(SceneGraphNodeType::Root);
 	node.setName("root");
-	emplace_back(core::move(node), -1);
+	node.setId(0);
+	node.setParent(-1);
+	_nodes.emplace(0, core::move(node));
 }
 
 const SceneGraphNode &SceneGraph::operator[](int modelIdx) const {

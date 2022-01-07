@@ -38,7 +38,7 @@ TEST_F(SceneGraphTest, testHasNode) {
 	EXPECT_FALSE(sceneGraph.hasNode(1));
 	SceneGraphNode node;
 	node.setName("node");
-	sceneGraph.emplace_back(core::move(node));
+	EXPECT_TRUE(sceneGraph.emplace_back(core::move(node)));
 	EXPECT_TRUE(sceneGraph.hasNode(0));
 	EXPECT_TRUE(sceneGraph.hasNode(1));
 	EXPECT_FALSE(sceneGraph.hasNode(2));
@@ -85,6 +85,24 @@ TEST_F(SceneGraphTest, testChildren) {
 		EXPECT_EQ(2, child) << "There should only be one child with the id 2";
 	}
 	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model));
+}
+
+TEST_F(SceneGraphTest, testRemove) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node");
+		sceneGraph.emplace_back(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("children");
+		sceneGraph.emplace_back(core::move(node), 1);
+	}
+	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model));
+	EXPECT_TRUE(sceneGraph.removeNode(1));
+	EXPECT_EQ(0u, sceneGraph.size(SceneGraphNodeType::Model));
+	EXPECT_TRUE(sceneGraph.empty(SceneGraphNodeType::Model));
 }
 
 }

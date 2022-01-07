@@ -33,7 +33,7 @@ public:
 	 * @param parent The parent node id - by default this is 0 which is the root node
 	 * @sa core::move()
 	 */
-	void emplace_back(SceneGraphNode &&node, int parent = 0);
+	bool emplace_back(SceneGraphNode &&node, int parent = 0);
 
 	const SceneGraphNode& root() const;
 	/**
@@ -46,6 +46,7 @@ public:
 	 */
 	SceneGraphNode& node(int nodeId) const;
 	bool hasNode(int nodeId) const;
+	bool removeNode(int nodeId);
 
 	/**
 	 * @brief Pre-allocated memory in the graph without added the nodes
