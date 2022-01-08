@@ -239,28 +239,7 @@ bool SceneManager::saveLayers(const core::String& dir) {
 }
 
 bool SceneManager::save(const core::String& file, bool autosave) {
-	voxel::SceneGraph sceneGraph;
-	const int layers = (int)_layerMgr.layers().size();
-	Log::debug("Trying to save %i layers", layers);
-	for (int idx = 0; idx < layers; ++idx) {
-		voxel::RawVolume* v = _volumeRenderer.volume(idx);
-		if (v == nullptr) {
-			Log::debug("No volume for layer %i", idx);
-			continue;
-		}
-		if (_volumeRenderer.empty(idx)) {
-			Log::debug("Layer %i is empty", idx);
-			continue;
-		}
-		const Layer& layer = _layerMgr.layer(idx);
-		voxel::SceneGraphNode node;
-		node.setVolume(v, false);
-		node.setName(layer.name);
-		node.setVisible(layer.visible);
-		sceneGraph.emplace(core::move(node));
-	}
-
-	if (sceneGraph.empty()) {
+	if (_sceneGraph.empty()) {
 		Log::warn("No volumes for saving found");
 		return false;
 	}
@@ -280,12 +259,12 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		ext = "vox";
 	}
 
-	bool saved = voxelformat::saveFormat(filePtr, sceneGraph);
+	bool saved = voxelformat::saveFormat(filePtr, _sceneGraph);
 	if (!saved) {
 		Log::warn("Failed to save %s file - retry as qb instead", ext.c_str());
 		voxel::QBFormat f;
 		io::FileStream stream(filePtr.get());
-		saved = f.saveGroups(sceneGraph, filePtr->fileName(), stream);
+		saved = f.saveGroups(_sceneGraph, filePtr->fileName(), stream);
 	}
 	if (saved) {
 		if (!autosave) {
