@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxel {
 
