@@ -201,7 +201,7 @@ void SceneManager::autosave() {
 }
 
 bool SceneManager::saveLayer(int layerId, const core::String& file) {
-	voxel::RawVolume* v = _volumeRenderer.volume(layerId);
+	voxel::RawVolume* v = volume(layerId);
 	if (v == nullptr) {
 		return true;
 	}
@@ -228,7 +228,7 @@ bool SceneManager::saveLayer(int layerId, const core::String& file) {
 bool SceneManager::saveLayers(const core::String& dir) {
 	const int layers = (int)_layerMgr.layers().size();
 	for (int idx = 0; idx < layers; ++idx) {
-		voxel::RawVolume* v = _volumeRenderer.volume(idx);
+		voxel::RawVolume* v = volume(idx);
 		if (v == nullptr) {
 			return true;
 		}
@@ -367,7 +367,7 @@ void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bo
 	Log::debug("Modified layer %i, undo state: %s", layerId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
-		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId), MementoType::Modification, modifiedRegion);
+		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, volume(layerId), MementoType::Modification, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
 		queueRegionExtraction(layerId, modifiedRegion);
@@ -572,20 +572,20 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 		if (!layer.valid) {
 			continue;
 		}
-		const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
+		const voxel::RawVolume* v = volume(idx);
 		if ((flags & LayerMergeFlags::All) != LayerMergeFlags::None) {
-			volumes.push_back(volume);
+			volumes.push_back(v);
 		} else if ((flags & LayerMergeFlags::Visible) != LayerMergeFlags::None) {
 			if (layer.visible) {
-				volumes.push_back(volume);
+				volumes.push_back(v);
 			}
 		} else if ((flags & LayerMergeFlags::Invisible) != LayerMergeFlags::None) {
 			if (!layer.visible) {
-				volumes.push_back(volume);
+				volumes.push_back(v);
 			}
 		} else if ((flags & LayerMergeFlags::Locked) != LayerMergeFlags::None) {
 			if (layer.locked) {
-				volumes.push_back(volume);
+				volumes.push_back(v);
 			}
 		}
 	}
@@ -606,11 +606,11 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 bool SceneManager::merge(int layerId1, int layerId2) {
 	core::DynamicArray<const voxel::RawVolume*> volumes;
 	volumes.resize(2);
-	volumes[0] = _volumeRenderer.volume(layerId1);
+	volumes[0] = volume(layerId1);
 	if (volumes[0] == nullptr) {
 		return false;
 	}
-	volumes[1] = _volumeRenderer.volume(layerId2);
+	volumes[1] = volume(layerId2);
 	if (volumes[1] == nullptr) {
 		return false;
 	}
@@ -635,7 +635,7 @@ void SceneManager::resetSceneState() {
 	// push the initial state of the current layer to the memento handler to
 	// be able to undo your next step
 	Log::debug("New volume for layer %i", layerId);
-	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, _volumeRenderer.volume(layerId));
+	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, volume(layerId));
 	_dirty = false;
 	_result = voxel::PickResult();
 	setCursorPosition(cursorPosition(), true);
@@ -955,9 +955,9 @@ void SceneManager::updateAABBMesh() {
 		if (!layer.valid) {
 			continue;
 		}
-		const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
-		core_assert_always(volume != nullptr);
-		const voxel::Region& region = volume->region();
+		const voxel::RawVolume* v = volume(idx);
+		core_assert_always(v != nullptr);
+		const voxel::Region& region = v->region();
 		_shapeBuilder.aabb(toAABB(region));
 	}
 	const voxel::RawVolume* mdl = modelVolume();
@@ -1255,7 +1255,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("center_referenceposition", [&] (const command::CmdArgs& args) {
 		const glm::ivec3& refPos = referencePosition();
 		_layerMgr.foreachGroupLayer([&] (int layerId) {
-			const auto* v = _volumeRenderer.volume(layerId);
+			const auto* v = volume(layerId);
 			if (v == nullptr) {
 				return;
 			}
@@ -1268,7 +1268,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("center_origin", [&] (const command::CmdArgs& args) {
 		_layerMgr.foreachGroupLayer([&] (int layerId) {
-			const auto* v = _volumeRenderer.volume(layerId);
+			const auto* v = volume(layerId);
 			if (v == nullptr) {
 				return;
 			}
@@ -1389,9 +1389,9 @@ void SceneManager::construct() {
 			Log::info("Layer %i:", idx);
 			Log::info(" - name:    %s", layer.name.c_str());
 			Log::info(" - visible: %s", layer.visible ? "true" : "false");
-			const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
-			core_assert_always(volume != nullptr);
-			const voxel::Region& region = volume->region();
+			const voxel::RawVolume* v = volume(idx);
+			core_assert_always(v != nullptr);
+			const voxel::Region& region = v->region();
 			Log::info(" - region:");
 			Log::info("   - mins:   %i:%i:%i", region.getLowerX(), region.getLowerY(), region.getLowerZ());
 			Log::info("   - maxs:   %i:%i:%i", region.getUpperX(), region.getUpperY(), region.getUpperZ());
@@ -1512,13 +1512,13 @@ void SceneManager::construct() {
 
 void SceneManager::flip(math::Axis axis) {
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
-		auto* model = _volumeRenderer.volume(layerId);
-		if (model == nullptr) {
+		auto* v = volume(layerId);
+		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolume* newVolume = voxel::mirrorAxis(model, axis);
+		voxel::RawVolume* newVolume = voxel::mirrorAxis(v, axis);
 		voxel::Region r = newVolume->region();
-		r.accumulate(model->region());
+		r.accumulate(v->region());
 		if (!setNewVolume(layerId, newVolume)) {
 			delete newVolume;
 			return;
@@ -1541,7 +1541,7 @@ void SceneManager::toggleEditMode() {
 
 void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition) {
 	_layerMgr.foreachGroupLayer([&] (int layerId) {
-		auto* v = _volumeRenderer.volume(layerId);
+		auto* v = volume(layerId);
 		if (v == nullptr) {
 			return;
 		}
@@ -2033,9 +2033,9 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 			if (!layer.visible) {
 				continue;
 			}
-			const voxel::RawVolume* volume = _volumeRenderer.volume(idx);
-			core_assert_always(volume != nullptr);
-			const voxel::Region& region = volume->region();
+			const voxel::RawVolume* v = volume(idx);
+			core_assert_always(v != nullptr);
+			const voxel::Region& region = v->region();
 			float distance = 0.0f;
 			const math::AABB<float>& aabb = toAABB(region);
 			if (aabb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
@@ -2202,8 +2202,8 @@ void SceneManager::onLayerChanged(int layerId) {
 
 void SceneManager::onLayerDuplicate(int layerId) {
 	const Layer& layer = _layerMgr.layer(layerId);
-	const voxel::RawVolume* volume = _volumeRenderer.volume(layerId);
-	_layerMgr.addLayer(layer.name.c_str(), true, new voxel::RawVolume(volume));
+	const voxel::RawVolume* v = volume(layerId);
+	_layerMgr.addLayer(layer.name.c_str(), true, new voxel::RawVolume(v));
 }
 
 void SceneManager::onLayerSwapped(int layerId1, int layerId2) {
@@ -2247,9 +2247,9 @@ void SceneManager::onLayerLocked(int layerId) {
 }
 
 void SceneManager::onActiveLayerChanged(int old, int active) {
-	const voxel::RawVolume* volume = _volumeRenderer.volume(active);
-	core_assert_always(volume != nullptr);
-	const voxel::Region& region = volume->region();
+	const voxel::RawVolume* v = volume(active);
+	core_assert_always(v != nullptr);
+	const voxel::Region& region = v->region();
 	updateGridRenderer(region);
 	updateAABBMesh();
 	if (!region.containsPoint(referencePosition())) {
@@ -2258,7 +2258,7 @@ void SceneManager::onActiveLayerChanged(int old, int active) {
 		setReferencePosition(center);
 	}
 	if (!region.containsPoint(cursorPosition())) {
-		setCursorPosition(volume->region().getCenter());
+		setCursorPosition(v->region().getCenter());
 	}
 	setGizmoPosition();
 	resetLastTrace();
