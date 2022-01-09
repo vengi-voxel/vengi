@@ -1047,7 +1047,7 @@ void TextEditor::EnterCharacter(ImWchar aChar, bool aShift) {
 			auto originalEnd = end;
 
 			if (start > end)
-				std::swap(start, end);
+				core::exchange(start, end);
 			start.mColumn = 0;
 			//			end.mColumn = end.mLine < _lines.size() ? _lines[end.mLine].size() : 0;
 			if (end.mColumn == 0 && end.mLine > 0)
@@ -1201,13 +1201,13 @@ void TextEditor::SetCursorPosition(const Coordinates &aPosition) {
 void TextEditor::SetSelectionStart(const Coordinates &aPosition) {
 	_state.mSelectionStart = SanitizeCoordinates(aPosition);
 	if (_state.mSelectionStart > _state.mSelectionEnd)
-		std::swap(_state.mSelectionStart, _state.mSelectionEnd);
+		core::exchange(_state.mSelectionStart, _state.mSelectionEnd);
 }
 
 void TextEditor::SetSelectionEnd(const Coordinates &aPosition) {
 	_state.mSelectionEnd = SanitizeCoordinates(aPosition);
 	if (_state.mSelectionStart > _state.mSelectionEnd)
-		std::swap(_state.mSelectionStart, _state.mSelectionEnd);
+		core::exchange(_state.mSelectionStart, _state.mSelectionEnd);
 }
 
 void TextEditor::SetSelection(const Coordinates &aStart, const Coordinates &aEnd, SelectionMode aMode) {
@@ -1217,7 +1217,7 @@ void TextEditor::SetSelection(const Coordinates &aStart, const Coordinates &aEnd
 	_state.mSelectionStart = SanitizeCoordinates(aStart);
 	_state.mSelectionEnd = SanitizeCoordinates(aEnd);
 	if (_state.mSelectionStart > _state.mSelectionEnd)
-		std::swap(_state.mSelectionStart, _state.mSelectionEnd);
+		core::exchange(_state.mSelectionStart, _state.mSelectionEnd);
 
 	switch (aMode) {
 	case TextEditor::SelectionMode::Normal:
