@@ -24,6 +24,7 @@ class GridRenderer {
 protected:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
+	math::AABB<float> _aabb;
 
 	int32_t _aabbMeshIndex = -1;
 	int32_t _gridMeshIndexXYNear = -1;

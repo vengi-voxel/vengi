@@ -39,6 +39,10 @@ int GridRenderer::gridResolution() const {
 }
 
 void GridRenderer::update(const math::AABB<float>& aabb) {
+	if (!_dirty && _aabb == aabb) {
+		return;
+	}
+	_aabb = aabb;
 	_shapeBuilder.clear();
 	_shapeBuilder.aabb(aabb, false);
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
