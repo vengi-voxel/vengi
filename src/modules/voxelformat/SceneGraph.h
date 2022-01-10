@@ -6,6 +6,7 @@
 
 #include "SceneGraphNode.h"
 #include "core/collection/DynamicArray.h"
+#include <functional>
 
 namespace voxel {
 
@@ -21,10 +22,22 @@ class SceneGraph {
 protected:
 	core::Map<int, SceneGraphNode> _nodes;
 	int _nextNodeId = 0;
+	int _activeNodeId = 1;
+
+	int nextLockedNode(int last) const;
 
 public:
 	SceneGraph();
 	~SceneGraph();
+
+	int activeNode() const;
+	bool setActiveNode(int nodeId);
+	void foreachGroup(const std::function<void(int)>& f);
+
+	/**
+	 * @return The full region of the whole scene
+	 */
+	voxel::Region region() const;
 
 	/**
 	 * @brief We move into the scene graph to make it clear who is owning the volume.

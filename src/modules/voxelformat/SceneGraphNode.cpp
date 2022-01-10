@@ -105,6 +105,12 @@ core::String SceneGraphNode::property(const core::String& key) const {
 	return value;
 }
 
+void SceneGraphNode::addProperties(const core::StringMap<core::String>& map) {
+	for (const auto& entry : map) {
+		setProperty(entry->key, entry->value);
+	}
+}
+
 void SceneGraphNode::setProperty(const core::String& key, const core::String& value) {
 	_properties.put(key, value);
 }

@@ -19,6 +19,46 @@ SceneGraph::~SceneGraph() {
 	clear();
 }
 
+int SceneGraph::activeNode() const {
+	return _activeNodeId;
+}
+
+bool SceneGraph::setActiveNode(int nodeId) {
+	if (!hasNode(nodeId)) {
+		return false;
+	}
+	_activeNodeId = nodeId;
+	return true;
+}
+
+int SceneGraph::nextLockedNode(int last) const {
+	++last;
+	if (last < 0) {
+		return -1;
+	}
+	const int n = (int)size();
+	for (int i = last; i < n; ++i) {
+		if ((*this)[i].locked()) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+void SceneGraph::foreachGroup(const std::function<void(int)>& f) {
+	int nodeId = activeNode();
+	if (node(nodeId).locked()) {
+		nodeId = nextLockedNode(-1);
+		core_assert(nodeId != -1);
+		while (nodeId != -1) {
+			f(nodeId);
+			nodeId = nextLockedNode(nodeId);
+		}
+	} else {
+		f(nodeId);
+	}
+}
+
 SceneGraphNode& SceneGraph::node(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
 	if (iter == _nodes.end()) {
@@ -34,6 +74,20 @@ bool SceneGraph::hasNode(int nodeId) const {
 
 const SceneGraphNode& SceneGraph::root() const {
 	return node(0);
+}
+
+voxel::Region SceneGraph::region() const {
+	voxel::Region r;
+	bool validVolume = false;
+	for (const voxel::SceneGraphNode& node : *this) {
+		if (validVolume) {
+			r.accumulate(node.region());
+			continue;
+		}
+		r = node.region();
+		validVolume = true;
+	}
+	return r;
 }
 
 int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
@@ -54,6 +108,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 			Log::error("Could not find parent node with id %i", parent);
 			return -1;
 		}
+		Log::debug("Add child %i to node %i", nodeId, parent);
 		parentIter->value.addChild(nodeId);
 	}
 	++_nextNodeId;

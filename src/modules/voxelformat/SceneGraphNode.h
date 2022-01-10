@@ -58,6 +58,7 @@ public:
 	 * @brief Release the ownership without freeing the memory
 	 */
 	void releaseOwnership();
+	bool owns() const;
 
 	int id() const;
 	void setId(int id);
@@ -109,8 +110,13 @@ public:
 	const core::StringMap<core::String> &properties() const;
 	core::StringMap<core::String> &properties();
 	core::String property(const core::String& key) const;
+	void addProperties(const core::StringMap<core::String>& map);
 	void setProperty(const core::String& key, const core::String& value);
 };
+
+inline bool SceneGraphNode::owns() const {
+	return _volume;
+}
 
 inline void SceneGraphNode::setId(int id) {
 	_id = id;
