@@ -453,9 +453,6 @@ bool VoxFormat::loadChunk_SIZE(State& state, io::SeekableReadStream& stream, con
 }
 
 glm::ivec3 VoxFormat::calcTransform(State& state, const VoxNTRNNode& t, const glm::ivec3& pos, const glm::vec3& pivot) const {
-	if (!state._foundSceneGraph) {
-		return pos;
-	}
 	const glm::ivec3 rotated(glm::floor(t.rotMat * (glm::vec3(pos) - pivot)));
 	return rotated + t.translation;
 }
@@ -499,7 +496,6 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 		wrapFree(stream.readUInt8(x), volume)
 		wrapFree(stream.readUInt8(z), volume)
 		wrapFree(stream.readUInt8(y), volume)
-		//x = size.x - 1 - x; // TODO: x axis are running differently - but this breaks the transformations
 		wrapFree(stream.readUInt8(colorIndex), volume)
 		const uint8_t index = convertPaletteIndex(colorIndex);
 		voxel::VoxelType voxelType = voxel::VoxelType::Generic;
@@ -1272,10 +1268,6 @@ bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream&
 					return false;
 				}
 				node->setVisible(property.empty() || property == "0");
-				// TODO: this is not the model name - but the layer name
-				if (!layerName.empty()) {
-					node->setName(layerName);
-				}
 			} else {
 				Log::warn("Invalid layer model id: %i (model count: %i)", layer.modelIdx, modelCount);
 			}
