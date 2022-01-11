@@ -3,6 +3,7 @@
  */
 
 #include "VXRFormat.h"
+#include "core/Assert.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/GLM.h"
@@ -100,15 +101,16 @@ int VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph& sceneGraph,
 		Log::error("No models found in vxm file: %i", modelCount);
 		return -1;
 	}
-	voxel::SceneGraphNode& modelNode = newSceneGraph[0];
-	modelNode.releaseOwnership();
+	voxel::SceneGraphNode* modelNode = newSceneGraph[0];
+	core_assert_always(modelNode != nullptr);
+	modelNode->releaseOwnership();
 
 	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
-	node.setVolume(modelNode.volume(), true);
-	node.setName(modelNode.name());
-	node.setVisible(modelNode.visible());
-	node.setLocked(modelNode.locked());
-	node.addProperties(modelNode.properties());
+	node.setVolume(modelNode->volume(), true);
+	node.setName(modelNode->name());
+	node.setVisible(modelNode->visible());
+	node.setLocked(modelNode->locked());
+	node.addProperties(modelNode->properties());
 	return sceneGraph.emplace(core::move(node), parent);
 }
 

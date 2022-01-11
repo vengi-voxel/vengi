@@ -10,6 +10,7 @@
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/StringUtil.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
 
@@ -42,8 +43,10 @@ bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxel::Sce
 		Log::error("More than one volume/layer found in %s", file->name().c_str());
 		return false;
 	}
-	newSceneGraph[0].setProperty("type", core::string::toString(volumeIndex));
-	sceneGraph.emplace(core::move(newSceneGraph[0]));
+	voxel::SceneGraphNode* node = newSceneGraph[0];
+	core_assert_always(node != nullptr);
+	node->setProperty("type", core::string::toString(volumeIndex));
+	sceneGraph.emplace(core::move(*node));
 	return true;
 }
 

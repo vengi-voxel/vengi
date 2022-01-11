@@ -83,8 +83,8 @@ public:
 	 */
 	void clear();
 
-	const SceneGraphNode &operator[](int modelIdx) const;
-	SceneGraphNode &operator[](int modelIdx);
+	const SceneGraphNode *operator[](int modelIdx) const;
+	SceneGraphNode *operator[](int modelIdx);
 
 	class iterator {
 	private:

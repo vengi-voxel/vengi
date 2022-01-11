@@ -43,8 +43,9 @@ bool VXLFormat::writeLimbBodyEntry(io::SeekableWriteStream& stream, const voxel:
 }
 
 bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const {
-	const SceneGraphNode& node = sceneGraph[limbIdx];
-	const voxel::Region& region = node.region();
+	const SceneGraphNode* node = sceneGraph[limbIdx];
+	core_assert_always(node != nullptr);
+	const voxel::Region& region = node->region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 
 	const uint32_t baseSize = size.x * size.z;
@@ -75,23 +76,23 @@ bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const SceneGraph& sce
 		uint32_t voxelCount = 0u;
 		bool voxelsInColumn = false;
 		for (uint8_t y = 0; y <= size.y; ++y) {
-			const voxel::Voxel& voxel = node.volume()->voxel(x, y, z);
+			const voxel::Voxel& voxel = node->volume()->voxel(x, y, z);
 			if (voxel::isAir(voxel.getMaterial())) {
 				if (voxelCount > 0) {
-					wrapBool(writeLimbBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
+					wrapBool(writeLimbBodyEntry(stream, node->volume(), x, y, z, skipCount, voxelCount))
 					voxelsInColumn = true;
 				}
 				++skipCount;
 			} else {
 				if (skipCount > 0) {
-					wrapBool(writeLimbBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
+					wrapBool(writeLimbBodyEntry(stream, node->volume(), x, y, z, skipCount, voxelCount))
 					voxelsInColumn = true;
 				}
 				++voxelCount;
 			}
 		}
 		if (voxelCount > 0 || skipCount > 0) {
-			wrapBool(writeLimbBodyEntry(stream, node.volume(), x, size.y - 1, z, skipCount, voxelCount))
+			wrapBool(writeLimbBodyEntry(stream, node->volume(), x, size.y - 1, z, skipCount, voxelCount))
 			voxelsInColumn = true;
 		}
 		if (!voxelsInColumn) {
@@ -112,9 +113,10 @@ bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const SceneGraph& sce
 
 bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t limbIdx) const {
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + limbIdx * LimbHeaderSize));
-	const SceneGraphNode& node = sceneGraph[limbIdx];
+	const SceneGraphNode* node = sceneGraph[limbIdx];
+	core_assert_always(node != nullptr);
 	char name[15];
-	core_memcpy(name, node.name().c_str(), sizeof(name));
+	core_memcpy(name, node->name().c_str(), sizeof(name));
 	wrap(stream.write(name, sizeof(name)))
 	wrapBool(stream.writeUInt8('\0'))
 	wrapBool(stream.writeUInt32(limbIdx))
@@ -124,7 +126,8 @@ bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const SceneGrap
 }
 
 bool VXLFormat::writeLimbFooter(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t limbIdx, const LimbOffset& offsets) const {
-	const SceneGraphNode& node = sceneGraph[limbIdx];
+	const SceneGraphNode* node = sceneGraph[limbIdx];
+	core_assert_always(node != nullptr);
 	wrapBool(stream.writeUInt32(offsets.start))
 	wrapBool(stream.writeUInt32(offsets.end))
 	wrapBool(stream.writeUInt32(offsets.data))
@@ -136,7 +139,7 @@ bool VXLFormat::writeLimbFooter(io::SeekableWriteStream& stream, const SceneGrap
 	for (int i = 0; i < 3; ++i) {
 		wrapBool(stream.writeFloat(1.0f))
 	}
-	const voxel::Region& region = node.region();
+	const voxel::Region& region = node->region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 	wrapBool(stream.writeUInt8(size.x))
 	wrapBool(stream.writeUInt8(size.z))

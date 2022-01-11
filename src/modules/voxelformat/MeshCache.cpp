@@ -78,7 +78,7 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 		return false;
 	}
 
-	const voxel::RawVolume* volume = sceneGraph[0].volume();
+	const voxel::RawVolume* volume = sceneGraph[0]->volume();
 	voxel::Region region = volume->region();
 	region.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(volume, region, &mesh, [] (const voxel::VoxelType& back, const voxel::VoxelType& front, voxel::FaceNames face) {

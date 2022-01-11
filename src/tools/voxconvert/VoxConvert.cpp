@@ -424,7 +424,7 @@ void VoxConvert::filterVolumes(voxel::SceneGraph& sceneGraph) {
 	}
 	for (int i = 0; i < (int)sceneGraph.size(); ++i) {
 		if (!layers.has(i)) {
-			sceneGraph[i].release();
+			sceneGraph[i]->release();
 			Log::debug("Remove layer %i - not part of the filter expression", i);
 		}
 	}

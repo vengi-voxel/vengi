@@ -623,10 +623,11 @@ void SceneManager::resetSceneState() {
 	_animationUpdate = false;
 	_editMode = EditMode::Model;
 	_mementoHandler.clearStates();
-	voxel::SceneGraphNode &node = _sceneGraph[0];
-	_sceneGraph.setActiveNode(node.id());
-	Log::debug("New volume for node %i", node.id());
-	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume());
+	voxel::SceneGraphNode *node = _sceneGraph[0];
+	core_assert_always(node != nullptr);
+	_sceneGraph.setActiveNode(node->id());
+	Log::debug("New volume for node %i", node->id());
+	_mementoHandler.markUndo(node->parent(), node->id(), node->name(), node->volume());
 	_dirty = false;
 	_result = voxel::PickResult();
 	setCursorPosition(cursorPosition(), true);
@@ -1781,9 +1782,13 @@ void SceneManager::animate(double nowSeconds) {
 		const int modelCount = (int)_sceneGraph.size(voxel::SceneGraphNodeType::Model);
 		const int roundTrip = modelCount + _currentAnimationLayer;
 		for (int modelIdx = _currentAnimationLayer + 1; modelIdx < roundTrip; ++modelIdx) {
-			_sceneGraph[_currentAnimationLayer].setVisible(false);
+			voxel::SceneGraphNode *node = _sceneGraph[_currentAnimationLayer];
+			core_assert_always(node != nullptr);
+			node->setVisible(false);
 			_currentAnimationLayer = modelIdx % modelCount;
-			_sceneGraph[_currentAnimationLayer].setVisible(true);
+			node = _sceneGraph[_currentAnimationLayer];
+			core_assert_always(node != nullptr);
+			node->setVisible(true);
 			return;
 		}
 	}
@@ -1922,14 +1927,15 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 
 	const int mountCount = (int)_sceneGraph.size();
 	for (int i = 0; i < mountCount; ++i) {
-		const voxel::SceneGraphNode &node = _sceneGraph[i];
-		const voxel::RawVolume* v = node.volume();
+		voxel::SceneGraphNode *node = _sceneGraph[i];
+		core_assert_always(node != nullptr);
+		const voxel::RawVolume* v = node->volume();
 		if (v == nullptr) {
 			continue;
 		}
-		const core::String& value = node.property("type");
+		const core::String& value = node->property("type");
 		if (value.empty()) {
-			const core::String& unknown = core::string::format("%i-%s-%s.vox", (int)i, node.name().c_str(), name);
+			const core::String& unknown = core::string::format("%i-%s-%s.vox", (int)i, node->name().c_str(), name);
 			Log::warn("No type metadata found on layer %i. Saving to %s", (int)i, unknown.c_str());
 			if (!saveNode((int)i, unknown)) {
 				Log::warn("Failed to save unknown layer to %s", unknown.c_str());
@@ -2339,6 +2345,7 @@ void SceneManager::nodeActivate(int nodeId) {
 		Log::warn("Given node id %i doesn't exist", nodeId);
 		return;
 	}
+	Log::debug("Activate node %i", nodeId);
 	voxel::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	if (node.type() != voxel::SceneGraphNodeType::Model) {
 		Log::warn("Given node id %i is no model node", nodeId);

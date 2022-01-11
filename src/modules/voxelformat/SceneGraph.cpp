@@ -143,7 +143,7 @@ bool SceneGraph::removeNode(int nodeId) {
 	if (_activeNodeId == nodeId) {
 		if (!empty(SceneGraphNodeType::Model)) {
 			// get the first model node
-			_activeNodeId = (*this)[0].id();
+			_activeNodeId = (*this)[0]->id();
 		} else {
 			_activeNodeId = root().id();
 		}
@@ -183,22 +183,24 @@ void SceneGraph::clear() {
 	_nodes.emplace(0, core::move(node));
 }
 
-const SceneGraphNode &SceneGraph::operator[](int modelIdx) const {
-	iterator iter = begin(SceneGraphNodeType::Model);
-	for (int i = 0; i < modelIdx; ++i) {
-		core_assert(iter != end());
-		++iter;
+const SceneGraphNode *SceneGraph::operator[](int modelIdx) const {
+	for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
+		if ((*iter).modelId() == modelIdx) {
+			return &*iter;
+		}
 	}
-	return *iter;
+	Log::error("Could not find scene graph node for model id %i", modelIdx);
+	return nullptr;
 }
 
-SceneGraphNode &SceneGraph::operator[](int modelIdx) {
-	iterator iter = begin(SceneGraphNodeType::Model);
-	for (int i = 0; i < modelIdx; ++i) {
-		core_assert(iter != end());
-		++iter;
+SceneGraphNode *SceneGraph::operator[](int modelIdx) {
+	for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
+		if ((*iter).modelId() == modelIdx) {
+			return &*iter;
+		}
 	}
-	return *iter;
+	Log::error("Could not find scene graph node for model id %i", modelIdx);
+	return nullptr;
 }
 
 voxel::RawVolume *SceneGraph::merge() const {

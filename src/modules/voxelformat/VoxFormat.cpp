@@ -1130,8 +1130,14 @@ bool VoxFormat::fillSceneGraph_r(State& state, VoxNodeId nodeId, voxel::SceneGra
 			Log::error("Invalid model id given in nSHP node: %u", voxnode.modelId);
 			return false;
 		}
-		const int modelNodeId = sceneGraph[(int)voxnode.modelId].id();
-		node.setReferencedNodeId(modelNodeId);
+		voxel::SceneGraphNode *node = sceneGraph[(int)voxnode.modelId];
+		if (node == nullptr) {
+			Log::error("Failed to resolve model node with model id %i", (int)voxnode.modelId);
+			return false;
+		}
+		const int modelNodeId = node->id();
+		Log::debug("Model %i is scene graph node %i", (int)voxnode.modelId, modelNodeId);
+		node->setReferencedNodeId(modelNodeId);
 		// TODO: node.setMatrix();
 		break;
 	}
@@ -1207,16 +1213,19 @@ bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream&
 
 	wrapBool(loadSecondChunks(state, stream))
 
+	const int sceneGraphRootNodeId = sceneGraph.root().id();
+	// add the models as the first nodes!
 	for (VoxModel &e : state._xyzi) {
 		voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
 		core_assert(e.volume);
 		node.setVolume(e.volume, true);
-		sceneGraph.emplace(core::move(node));
+		const int modelNodeId = sceneGraph.emplace(core::move(node), sceneGraphRootNodeId);
+		Log::debug("Model node id: %i", modelNodeId);
 		e.volume = nullptr;
 	}
 
 	if (state._foundSceneGraph) {
-		if (!fillSceneGraph_r(state, state._rootNode, sceneGraph, sceneGraph.root().id())) {
+		if (!fillSceneGraph_r(state, state._rootNode, sceneGraph, sceneGraphRootNodeId)) {
 			Log::warn("Could not load the scene graph");
 		}
 	}
@@ -1224,7 +1233,7 @@ bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream&
 	if (!state._cameras.empty()) {
 		voxel::SceneGraphNode groupNode(voxel::SceneGraphNodeType::Group);
 		groupNode.setName("Cameras");
-		const int groupNodeId = sceneGraph.emplace(core::move(groupNode));
+		const int groupNodeId = sceneGraph.emplace(core::move(groupNode), sceneGraphRootNodeId);
 		for (const VoxCamera &e : state._cameras) {
 			voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Camera);
 			node.addProperties(e.attributes);
@@ -1235,7 +1244,7 @@ bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream&
 	if (!state._robjs.empty()) {
 		voxel::SceneGraphNode groupNode(voxel::SceneGraphNodeType::Group);
 		groupNode.setName("Render settings");
-		const int groupNodeId = sceneGraph.emplace(core::move(groupNode));
+		const int groupNodeId = sceneGraph.emplace(core::move(groupNode), sceneGraphRootNodeId);
 		for (const VoxROBJ &e : state._robjs) {
 			voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Unknown);
 			node.addProperties(e.attributes);
@@ -1247,7 +1256,7 @@ bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream&
 		const uint32_t modelCount = sceneGraph.size(voxel::SceneGraphNodeType::Model);
 		voxel::SceneGraphNode groupNode(voxel::SceneGraphNodeType::Group);
 		groupNode.setName("Layers");
-		const int groupNodeId = sceneGraph.emplace(core::move(groupNode));
+		const int groupNodeId = sceneGraph.emplace(core::move(groupNode), sceneGraphRootNodeId);
 		for (const VoxLayer &layer : state._layers) {
 			core::String layerName;
 			layer.attributes.get("_name", layerName);
@@ -1257,11 +1266,15 @@ bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream&
 			if (layer.modelIdx <= modelCount) {
 				core::String property;
 				layer.attributes.get("_hidden", property);
-				voxel::SceneGraphNode &node = sceneGraph[(int)layer.modelIdx];
-				node.setVisible(property.empty() || property == "0");
+				voxel::SceneGraphNode *node = sceneGraph[(int)layer.modelIdx];
+				if (node == nullptr) {
+					Log::error("Failed to resolve model node with model id %i", (int)layer.modelIdx);
+					return false;
+				}
+				node->setVisible(property.empty() || property == "0");
 				// TODO: this is not the model name - but the layer name
 				if (!layerName.empty()) {
-					node.setName(layerName);
+					node->setName(layerName);
 				}
 			} else {
 				Log::warn("Invalid layer model id: %i (model count: %i)", layer.modelIdx, modelCount);
