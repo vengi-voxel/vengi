@@ -14,7 +14,7 @@
 #include "voxelgenerator/TreeContext.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/NoiseGenerator.h"
-#include "voxelrender/RawVolumeRenderer.h"
+#include "voxelrender/SceneGraphRenderer.h"
 #include "voxelformat/Format.h"
 #include "video/ShapeBuilder.h"
 #include "animation/chr/Character.h"
@@ -30,9 +30,6 @@
 #include "math/Axis.h"
 #include "MementoHandler.h"
 #include "EditorLUAGenerator.h"
-#include "layer/LayerListener.h"
-#include "layer/Layer.h"
-#include "layer/LayerManager.h"
 #include "modifier/ModifierType.h"
 #include "modifier/ModifierFacade.h"
 #include <functional>
@@ -78,20 +75,19 @@ CORE_ENUM_BIT_OPERATIONS(LayerMergeFlags)
 /**
  * @note The data is shared across all viewports
  */
-class SceneManager : public core::IComponent, public LayerListener {
+class SceneManager : public core::IComponent {
 private:
-	voxelrender::RawVolumeRenderer _volumeRenderer;
+	voxel::SceneGraph _sceneGraph;
+	voxelrender::SceneGraphRenderer _volumeRenderer;
 	anim::VolumeCache _volumeCache;
 	render::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	MementoHandler _mementoHandler;
-	LayerManager _layerMgr;
 	ModifierFacade _modifier;
 	voxel::RawVolume* _copy = nullptr;
 	render::Gizmo _gizmo;
 	EditMode _editMode = EditMode::Model;
-	voxel::SceneGraph _sceneGraph;
 
 	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Max;
 	animation::Character _character;
@@ -105,7 +101,7 @@ private:
 	// update the cache with the current volume. this is the layer id
 	// that we have to perform the update for - or -1 if all layers were
 	// touched
-	int _animationLayerDirtyState = -1;
+	int _animationNodeIdDirtyState = -1;
 	int _animationIdx = 0;
 	bool _animationUpdate = false;
 
@@ -131,7 +127,7 @@ private:
 
 	struct DirtyRegion {
 		voxel::Region region;
-		int layer;
+		int nodeId;
 	};
 	using RegionQueue = core::DynamicArray<DirtyRegion>;
 	RegionQueue _extractRegions;
@@ -164,7 +160,7 @@ private:
 	glm::ivec2 _mouseCursor { 0 };
 
 	bool _traceViaMouse = true;
-	int _sceneModeLayerTrace = -1;
+	int _sceneModeNodeIdTrace = -1;
 
 	command::ActionButton _move[lengthof(DIRECTIONS)];
 	command::ActionButton _rotate;
@@ -178,25 +174,29 @@ private:
 
 	EditorLUAGenerator _luaGenerator;
 
-	voxel::RawVolume* modelVolume();
+	voxel::RawVolume* activeVolume();
 	/**
 	 * @brief Assumes that the current active scene is a fresh scene, no undo states
 	 * are left, scene is no longer dirty and so on.
 	 */
 	void resetSceneState();
-	void handleAnimationViewUpdate(int layerId);
-	bool setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
-	bool setNewVolumes(voxel::SceneGraph& sceneGraph);
+	void handleAnimationViewUpdate(int nodeId);
+	bool setNewVolume(int nodeId, voxel::RawVolume* volume, bool deleteMesh = true);
 	void autosave();
 	void setReferencePosition(const glm::ivec3& pos);
 	void updateGridRenderer(const voxel::Region& region);
 
-	int loadSceneGraphNode(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent);
-	int loadSceneGraph(voxel::SceneGraph &sceneGraph);
-	int setNewSceneGraph(voxel::SceneGraph &sceneGraph);
-	void addToSceneGraph(int idx, voxel::RawVolume* volume);
-	void removeFromSceneGraph(int idx);
+public:
+	int addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent = 0);
+private:
+	int addSceneGraphNode_r(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent);
 	voxel::SceneGraphNode *sceneGraphNodeByLayerId(int layerId);
+	voxel::SceneGraphNode *sceneGraphNode(int nodeId);
+	const voxel::SceneGraphNode *sceneGraphNode(int nodeId) const;
+	bool setSceneGraphNodeVolume(voxel::SceneGraphNode &node, voxel::RawVolume* volume);
+	int addSceneGraphNodes(voxel::SceneGraph& sceneGraph);
+	bool loadSceneGraph(voxel::SceneGraph& sceneGraph);
+	int activeNode() const;
 
 	void animate(double nowSeconds);
 	/**
@@ -206,14 +206,14 @@ private:
 
 	void colorToNewLayer(const voxel::Voxel voxelColor);
 	void crop();
-	void scale(int layerId);
+	void scale(int nodeId);
 	void resizeAll(const glm::ivec3& size);
 	int size() const;
 
 	/**
-	 * @brief Merge two layers and extend the smaller one
+	 * @brief Merge two nodes and extend the smaller one
 	 */
-	bool merge(int layerId1, int layerId2);
+	bool merge(int nodeId1, int nodeId2);
 	bool mergeMultiple(LayerMergeFlags flags);
 
 	void undo();
@@ -223,21 +223,21 @@ private:
 	void paste(const glm::ivec3& pos);
 	void cut();
 
-	void rotate(int layerId, const glm::ivec3& angle, bool increaseSize = false, bool rotateAroundReferencePosition = false);
+	void rotate(int nodeId, const glm::ivec3& angle, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 	void rotate(int angleX, int angleY, int angleZ, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 
 	/**
 	 * @brief Move the voxels inside the volume regions
 	 */
-	void move(int layerId, const glm::ivec3& m);
+	void move(int nodeId, const glm::ivec3& m);
 
 	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
 	void toggleEditMode();
 
 	void zoom(video::Camera& camera, float level) const;
 
-	bool saveLayers(const core::String& dir);
-	bool saveLayer(int layerId, const core::String& file);
+	bool saveModels(const core::String& dir);
+	bool saveNode(int nodeId, const core::String& file);
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition);
@@ -251,17 +251,12 @@ public:
 	void update(double nowSeconds);
 	void shutdown() override;
 
-	/**
-	 * @return The full region of all layers of the whole scene
-	 */
-	voxel::Region region() const;
-
-	void resize(int layerId, const glm::ivec3& size);
+	void resize(int nodeId, const glm::ivec3& size);
 
 	/**
 	 * @brief Shift the whole volume by the given voxel amount
 	 */
-	void shift(int layerId, const glm::ivec3& m);
+	void shift(int nodeId, const glm::ivec3& m);
 
 	void setGizmoPosition();
 
@@ -286,9 +281,9 @@ public:
 
 	const glm::ivec3& referencePosition() const;
 
-	void modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo = true);
-	voxel::RawVolume* volume(int idx);
-	const voxel::RawVolume* volume(int idx) const;
+	void modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo = true);
+	voxel::RawVolume* volume(int nodeId);
+	const voxel::RawVolume* volume(int nodeId) const;
 
 	/**
 	 * @brief Import a heightmap in the current layer of the scene
@@ -405,14 +400,12 @@ public:
 	bool setGridResolution(int resolution);
 
 	// component access
-	const LayerManager& layerMgr() const;
-	LayerManager& layerMgr();
 	const ModifierFacade& modifier() const;
 	ModifierFacade& modifier();
 	const MementoHandler& mementoHandler() const;
 	MementoHandler& mementoHandler();
-	const voxelrender::RawVolumeRenderer& renderer() const;
-	voxelrender::RawVolumeRenderer& renderer();
+	const voxelrender::SceneGraphRenderer& renderer() const;
+	voxelrender::SceneGraphRenderer& renderer();
 	render::GridRenderer& gridRenderer();
 	animation::SkeletonAttribute* skeletonAttributes();
 	animation::AnimationEntity& animationEntity();
@@ -420,19 +413,19 @@ public:
 	voxelgenerator::LUAGenerator& luaGenerator();
 	video::ShapeBuilder& shapeBuilder();
 	render::ShapeRenderer& shapeRenderer();
-	voxel::SceneGraph &sceneGraph();
+	const voxel::SceneGraph &sceneGraph();
 
-	// LayerListener
-	void onLayerChanged(int layerId) override;
-	void onLayerDuplicate(int layerId) override;
-	void onLayerSwapped(int layerId1, int layerId2) override;
-	void onLayerHide(int layerId) override;
-	void onLayerShow(int layerId) override;
-	void onActiveLayerChanged(int old, int active) override;
-	void onLayerUnlocked(int layerId) override;
-	void onLayerLocked(int layerId) override;
-	void onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) override;
-	void onLayerDeleted(int layerId, const Layer& layer) override;
+private:
+	void nodeRename(voxel::SceneGraphNode &node, const core::String &name);
+	void nodeRemove(voxel::SceneGraphNode &node);
+	void nodeDuplicate(voxel::SceneGraphNode &node);
+public:
+	void nodeRename(int nodeId, const core::String &name);
+	void nodeRemove(int nodeId);
+	void nodeSetVisible(int nodeId, bool visible);
+	void nodeSetLocked(int nodeId, bool visible);
+	void nodeActivate(int nodeId);
+	void nodeForeachGroup(const std::function<void(int)>& f);
 };
 
 inline video::ShapeBuilder &SceneManager::shapeBuilder() {
@@ -474,11 +467,11 @@ inline const render::Gizmo& SceneManager::gizmo() const {
 	return _gizmo;
 }
 
-inline voxelrender::RawVolumeRenderer& SceneManager::renderer() {
+inline voxelrender::SceneGraphRenderer& SceneManager::renderer() {
 	return _volumeRenderer;
 }
 
-inline const voxelrender::RawVolumeRenderer& SceneManager::renderer() const {
+inline const voxelrender::SceneGraphRenderer& SceneManager::renderer() const {
 	return _volumeRenderer;
 }
 
@@ -524,14 +517,6 @@ inline const glm::ivec3& SceneManager::cursorPosition() const {
 
 inline const glm::ivec3& SceneManager::referencePosition() const {
 	return _referencePos;
-}
-
-inline const LayerManager& SceneManager::layerMgr() const {
-	return _layerMgr;
-}
-
-inline LayerManager& SceneManager::layerMgr() {
-	return _layerMgr;
 }
 
 inline const ModifierFacade& SceneManager::modifier() const {

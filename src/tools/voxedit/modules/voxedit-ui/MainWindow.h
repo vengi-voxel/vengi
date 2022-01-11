@@ -21,7 +21,6 @@
 #include "voxedit-ui/StatusBar.h"
 #include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-ui/TreePanel.h"
-#include "voxedit-util/layer/Layer.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
 

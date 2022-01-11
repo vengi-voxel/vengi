@@ -73,7 +73,8 @@ public:
 struct MementoState {
 	MementoType type;
 	MementoData data;
-	int layer;
+	int parentId;
+	int nodeId;
 	core::String name;
 	/**
 	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
@@ -82,15 +83,15 @@ struct MementoState {
 	voxel::Region region;
 
 	MementoState() :
-			type(MementoType::Modification), layer(0) {
+			type(MementoType::Modification), parentId(0), nodeId(0) {
 	}
 
-	MementoState(MementoType _type, const MementoData& _data, int _layer, const core::String& _name, const voxel::Region& _region) :
-			type(_type), data(_data), layer(_layer), name(_name), region(_region) {
+	MementoState(MementoType _type, const MementoData& _data, int _parentId, int _nodeId, const core::String& _name, const voxel::Region& _region) :
+			type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), name(_name), region(_region) {
 	}
 
-	MementoState(MementoType _type, MementoData&& _data, int _layer, core::String&& _name, voxel::Region&& _region) :
-			type(_type), data(_data), layer(_layer), name(_name), region(_region) {
+	MementoState(MementoType _type, MementoData&& _data, int _parentId, int _nodeId, core::String&& _name, voxel::Region&& _region) :
+			type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), name(_name), region(_region) {
 	}
 
 	/**
@@ -140,14 +141,15 @@ public:
 	 * @note This is adding the current active state to the handler - you can then undo to the previous state.
 	 * That is the reason why you always have to add the initial (maybe empty) state, too
 	 * @note Keep in mind, that there is a maximum of states that can get handled here.
-	 * @param[in] layer The layer id that was modified
-	 * @param[in] name The name of the layer
+	 * @param[in] parentId The node's parentId that was modified
+	 * @param[in] nodeId The nodeId that was modified
+	 * @param[in] name The name of the nodeId
 	 * @param[in] volume The state of the volume
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
-	void markUndo(int layer, const core::String& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification, const voxel::Region& region = voxel::Region::InvalidRegion);
-	void markLayerDeleted(int layer, const core::String& name, const voxel::RawVolume* volume);
-	void markLayerAdded(int layer, const core::String& name, const voxel::RawVolume* volume);
+	void markUndo(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification, const voxel::Region& region = voxel::Region::InvalidRegion);
+	void markNodeDeleted(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume);
+	void markNodeAdded(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume);
 
 	/**
 	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for

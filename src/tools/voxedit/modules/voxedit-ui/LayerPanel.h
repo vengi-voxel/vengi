@@ -6,14 +6,19 @@
 
 #include "command/CommandHandler.h"
 #include "core/Var.h"
-#include "voxedit-util/layer/Layer.h"
-#include "voxedit-util/layer/LayerSettings.h"
+
+namespace voxel {
+class SceneGraph;
+class SceneGraphNode;
+}
 
 namespace voxedit {
 
+struct LayerSettings;
+
 class LayerPanel {
 private:
-	void addLayerItem(int layerId, const voxedit::Layer &layer, command::CommandExecutionListener &listener);
+	void addLayerItem(const voxel::SceneGraph& sceneGraph, const voxel::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	core::VarPtr _animationSpeedVar;
 
 public:

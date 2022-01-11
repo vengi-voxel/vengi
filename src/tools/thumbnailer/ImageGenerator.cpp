@@ -12,7 +12,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelrender/RawVolumeRenderer.h"
+#include "voxelrender/SceneGraphRenderer.h"
 #include "core/Color.h"
 #include "io/FileStream.h"
 
@@ -43,7 +43,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	}
 
 	video::FrameBuffer frameBuffer;
-	voxelrender::RawVolumeRenderer volumeRenderer;
+	voxelrender::SceneGraphRenderer volumeRenderer;
 	volumeRenderer.construct();
 	if (!volumeRenderer.init()) {
 		Log::error("Failed to initialize the renderer");
@@ -58,19 +58,12 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
-	const int volumesSize = (int)sceneGraph.size();
-	for (int i = 0; i < volumesSize; ++i) {
-		// this is transfering the ownership into the renderer
-		volumeRenderer.setVolume(i, sceneGraph[i]);
-		volumeRenderer.extractRegion(i, sceneGraph[i].region());
-	}
-
 	video::Camera camera;
 	camera.setSize(glm::ivec2(outputSize));
 	camera.setRotationType(video::CameraRotationType::Target);
 	camera.setMode(video::CameraMode::Perspective);
 	camera.setAngles(0.0f, 0.0f, 0.0f);
-	const voxel::Region &region = volumeRenderer.region();
+	const voxel::Region &region = sceneGraph.region();
 	const glm::ivec3 &center = region.getCenter();
 	camera.setTarget(center);
 	const glm::vec3 dim(region.getDimensionsInVoxels());
@@ -90,11 +83,10 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	frameBuffer.init(cfg);
 
-	volumeRenderer.waitForPendingExtractions();
 	volumeRenderer.update();
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	frameBuffer.bind(true);
-	volumeRenderer.render(camera);
+	volumeRenderer.render(sceneGraph, true, camera);
 	frameBuffer.unbind();
 
 	const video::TexturePtr &fboTexture = frameBuffer.texture(video::FrameBufferAttachment::Color0);
@@ -109,11 +101,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	}
 	SDL_free(pixels);
 
-	const core::DynamicArray<voxel::RawVolume *> &old = volumeRenderer.shutdown();
-	for (auto *v : old) {
-		delete v;
-	}
-
+	volumeRenderer.shutdown();
 	frameBuffer.shutdown();
 
 	return image;

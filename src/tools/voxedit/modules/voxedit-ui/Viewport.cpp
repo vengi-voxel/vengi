@@ -169,7 +169,7 @@ bool Viewport::saveImage(const char* filename) {
 }
 
 void Viewport::resetCamera() {
-	const voxel::Region& region = sceneMgr().region();
+	const voxel::Region& region = sceneMgr().sceneGraph().region();
 	core_assert_msg(region.isValid(), "Scene not properly initialized");
 	_controller.resetCamera(region);
 }

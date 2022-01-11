@@ -585,7 +585,6 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::SceneGraphNode& n
 			meshes[idx] = nullptr;
 		}
 	}
-	node.releaseOwnership();
 	return old;
 }
 

@@ -15,7 +15,7 @@
 
 namespace voxedit {
 
-static const MementoState InvalidMementoState{MementoType::Modification, MementoData(), -1, "", voxel::Region::InvalidRegion};
+static const MementoState InvalidMementoState{MementoType::Modification, MementoData(), -1, -1, "", voxel::Region::InvalidRegion};
 const int MementoHandler::MaxStates = 64;
 
 MementoData::MementoData(const uint8_t* buf, size_t bufSize,
@@ -131,8 +131,8 @@ void MementoHandler::construct() {
 		for (MementoState& state : _states) {
 			const glm::ivec3& mins = state.region.getLowerCorner();
 			const glm::ivec3& maxs = state.region.getUpperCorner();
-			Log::info("%4i: %i - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)]",
-					i++, state.layer, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
+			Log::info("%4i: %i (p: %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)]",
+					i++, state.nodeId, state.parentId, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
 							mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		}
 	});
@@ -158,7 +158,7 @@ MementoState MementoHandler::undo() {
 	const MementoState& s = state();
 	const voxel::Region region = _states[_statePosition + 1].region;
 	voxel::logRegion("Undo", region);
-	return MementoState{_states[_statePosition + 1].type, s.data, s.layer, s.name, region};
+	return MementoState{_states[_statePosition + 1].type, s.data, s.parentId, s.nodeId, s.name, region};
 }
 
 MementoState MementoHandler::redo() {
@@ -175,26 +175,26 @@ MementoState MementoHandler::redo() {
 	}
 	const MementoState& s = state();
 	voxel::logRegion("Redo", s.region);
-	return MementoState{s.type, s.data, s.layer, s.name, s.region};
+	return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region};
 }
 
-void MementoHandler::markLayerDeleted(int layer, const core::String& name, const voxel::RawVolume* volume) {
-	Log::debug("Mark layer %i as deleted (%s)", layer, name.c_str());
+void MementoHandler::markNodeDeleted(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume) {
+	Log::debug("Mark layer %i as deleted (%s)", nodeId, name.c_str());
 	// previous state is that we have a volume at the given layer
-	markUndo(layer, name, volume, MementoType::LayerDeleted);
+	markUndo(parentId, nodeId, name, volume, MementoType::LayerDeleted);
 	// current state is that there is no volume at the given layer
-	markUndo(layer, name, nullptr, MementoType::LayerDeleted);
+	markUndo(parentId, nodeId, name, nullptr, MementoType::LayerDeleted);
 }
 
-void MementoHandler::markLayerAdded(int layer, const core::String& name, const voxel::RawVolume* volume) {
-	Log::debug("Mark layer %i as added (%s)", layer, name.c_str());
+void MementoHandler::markNodeAdded(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume) {
+	Log::debug("Mark layer %i as added (%s)", nodeId, name.c_str());
 	// previous state is that there is no volume at the given layer
-	markUndo(layer, name, nullptr, MementoType::LayerAdded);
+	markUndo(parentId, nodeId, name, nullptr, MementoType::LayerAdded);
 	// current state is that we have a volume at the given layer
-	markUndo(layer, name, volume, MementoType::LayerAdded);
+	markUndo(parentId, nodeId, name, volume, MementoType::LayerAdded);
 }
 
-void MementoHandler::markUndo(int layer, const core::String& name, const voxel::RawVolume* volume, MementoType type, const voxel::Region& region) {
+void MementoHandler::markUndo(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, MementoType type, const voxel::Region& region) {
 	if (_locked > 0) {
 		Log::debug("Don't add undo state - we are currently in locked mode");
 		return;
@@ -205,10 +205,10 @@ void MementoHandler::markUndo(int layer, const core::String& name, const voxel::
 		// the current state position)
 		_states.erase(_statePosition + 1, _states.size());
 	}
-	Log::debug("New undo state for layer %i with name %s (memento state index: %i)", layer, name.c_str(), (int)_states.size());
+	Log::debug("New undo state for layer %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume);
-	_states.emplace_back(type, data, layer, name, region);
+	_states.emplace_back(type, data, parentId, nodeId, name, region);
 	while (_states.size() > MaxStates) {
 		_states.erase(0);
 	}

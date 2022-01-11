@@ -8,6 +8,7 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/StringMap.h"
 #include "voxel/Region.h"
+#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
 namespace voxel {
@@ -17,6 +18,11 @@ class RawVolume;
 enum class SceneGraphNodeType {
 	Root,
 	Model,
+	ModelReference,
+	Transform,
+	Group,
+	Camera,
+	Unknown,
 
 	Max
 };
@@ -26,6 +32,7 @@ enum class SceneGraphNodeType {
  * @sa SceneGraph
  */
 class SceneGraphNode {
+	friend class SceneGraph;
 public:
 	SceneGraphNode(SceneGraphNodeType type = SceneGraphNodeType::Model) : _type(type) {
 	}
@@ -35,9 +42,11 @@ public:
 protected:
 	int _id = -1;
 	int _parent = 0;
+	int _referencedNodeId = -1;
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
+	glm::mat4x4 _mat {1.0f};
 	/**
 	 * this will ensure that we are releasing the volume memory in this instance
 	 * @sa release()
@@ -48,6 +57,11 @@ protected:
 	glm::ivec3 _pivot{0};
 	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
+
+	/**
+	 * @brief Called in emplace() if a parent id is given
+	 */
+	void setParent(int id);
 
 public:
 	/**
@@ -63,10 +77,11 @@ public:
 	int id() const;
 	void setId(int id);
 	int parent() const;
-	void setParent(int id);
 	SceneGraphNodeType type() const;
 
 	void addChild(int id);
+	const glm::mat4 matrix() const;
+	void setMatrix(const glm::mat4x4 &mat);
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr
@@ -76,6 +91,11 @@ public:
 	 * @return voxel::RawVolume - might be @c nullptr
 	 */
 	voxel::RawVolume *volume();
+	/**
+	 * For SceneGraphNodeType::ModelReference
+	 */
+	int referencedNodeId() const;
+	void setReferencedNodeId(int nodeId);
 	/**
 	 * @return voxel::Region instance that is invalid when the volume is not set for this instance.
 	 */
@@ -113,6 +133,14 @@ public:
 	void addProperties(const core::StringMap<core::String>& map);
 	void setProperty(const core::String& key, const core::String& value);
 };
+
+inline int SceneGraphNode::referencedNodeId() const {
+	return _referencedNodeId;
+}
+
+inline void SceneGraphNode::setReferencedNodeId(int nodeId) {
+	_referencedNodeId = nodeId;
+}
 
 inline bool SceneGraphNode::owns() const {
 	return _volume;
@@ -176,6 +204,14 @@ inline const glm::ivec3 &SceneGraphNode::pivot() const {
 
 inline void SceneGraphNode::setPivot(const glm::ivec3 &pivot) {
 	_pivot = pivot;
+}
+
+inline const glm::mat4 SceneGraphNode::matrix() const {
+	return _mat;
+}
+
+inline void SceneGraphNode::setMatrix(const glm::mat4x4 &mat) {
+	_mat = mat;
 }
 
 } // namespace voxel

@@ -56,8 +56,7 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 
 void ModifierButton::execute() {
 	Modifier& mgr = sceneMgr().modifier();
-	LayerManager& layerMgr = sceneMgr().layerMgr();
-	layerMgr.foreachGroupLayer([&] (int layerId) {
+	sceneMgr().nodeForeachGroup([&] (int layerId) {
 		Log::debug("Execute modifier action on layer %i", layerId);
 		voxel::RawVolume* volume = sceneMgr().volume(layerId);
 		mgr.aabbAction(volume, [&] (const voxel::Region& region, ModifierType type) {

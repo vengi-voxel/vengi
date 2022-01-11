@@ -77,23 +77,23 @@ A `default` value can get set, too.
 
 The order in the arguments table defines the order in which the arguments are passed over to the script.
 
-## LayerManager (voxedit)
+## SceneGraph (voxedit)
 
-`layerMgr` lets you access different layers or create new ones.
+`scenegraph` lets you access different nodes or create new ones.
 
 The functions are:
 
-* `new(name, visible, region)`: Creates a new layer with the given `name`, the `visible` boolean, and the given size and position according to the `region`.
+* `new(name, visible, region)`: Creates a new node with the given `name`, the `visible` boolean, and the given size and position according to the `region`.
 
-* `get([layerId])`: Returns the `layer` for the given `layerId` - if the `layerId` is not given, it will return the current active layer. Which by default is the layer for the volume the script is currently executed for.
+* `get([nodeId])`: Returns the `node` for the given `nodeId` - if the `nodeId` is not given, it will return the current active node. Which by default is the node for the volume the script is currently executed for.
 
-## Layer (voxedit)
+## SceneGraphNode (voxedit)
 
-* `name()`: Returns the current name of the layer.
+* `name()`: Returns the current name of the node.
 
-* `setName(string)`: Set the name of the layer.
+* `setName(string)`: Set the name of the node.
 *
-* `volume()`: Gives you access to the volume of the layer.
+* `volume()`: Gives you access to the volume of the node.
 
 ## Color
 
@@ -204,7 +204,7 @@ Generates a pyramid with the current selected color and with each level being 3 
 
 ### thicken.lua (voxedit)
 
-Thickens the voxel - take 1 voxel and convert to 8 voxels (creates a new layer for the result).
+Thickens the voxel - take 1 voxel and convert to 8 voxels (creates a new node for the result).
 
 ![thickenbefore](img/lua-thicken-before.png) ![thickenafter](img/lua-thicken-after.png)
 

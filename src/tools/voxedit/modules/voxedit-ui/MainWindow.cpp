@@ -122,8 +122,6 @@ bool MainWindow::init() {
 	_lastOpenedFiles = core::Var::get(cfg::VoxEditLastFiles, "");
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
 
-	updateSettings();
-
 	SceneManager &mgr = sceneMgr();
 	if (mgr.load(_lastOpenedFile->strVal())) {
 		afterLoad(_lastOpenedFile->strVal());
@@ -298,11 +296,12 @@ void MainWindow::registerPopups() {
 			core::Var::getSafe(cfg::VoxEditAmbientColor)->setVal(c);
 		}
 
+#if 0
 		glm::vec3 sunPosition = sceneMgr().renderer().shadow().sunPosition();
 		if (ImGui::InputVec3("Sun position", sunPosition)) {
 			sceneMgr().renderer().setSunPosition(sunPosition, glm::zero<glm::vec3>(), glm::up);
 		}
-
+#endif
 #if 0
 		glm::vec3 sunDirection = sceneMgr().renderer().shadow().sunDirection();
 		if (ImGui::InputVec3("Sun direction", sunDirection)) {

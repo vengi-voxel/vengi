@@ -8,6 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "io/FileStream.h"
 #include "math/AABB.h"
+#include "voxedit-ui/LayerPanel.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -64,10 +65,6 @@ namespace voxedit {
 
 SceneManager::~SceneManager() {
 	core_assert_msg(_initialized == 0, "SceneManager was not properly shut down");
-}
-
-voxel::Region SceneManager::region() const {
-	return _volumeRenderer.region();
 }
 
 bool SceneManager::loadPalette(const core::String& paletteName) {
@@ -137,24 +134,16 @@ bool SceneManager::importPalette(const core::String& file) {
 
 bool SceneManager::importAsPlane(const core::String& file) {
 	const image::ImagePtr& img = image::loadImage(file, false);
-	if (!img->isLoaded()) {
-		return false;
-	}
-	voxel::RawVolume* v = voxelutil::importAsPlane(img);
-	if (v == nullptr) {
-		return false;
-	}
-	const core::String filename = core::string::extractFilename(img->name().c_str());
-	if (!_layerMgr.addLayer(filename.c_str(), true, v, glm::zero<glm::ivec3>())) {
-		delete v;
-		return false;
-	}
-	return true;
+	voxel::SceneGraphNode node;
+	node.setVolume(voxelutil::importAsPlane(img), true);
+	node.setName(core::string::extractFilename(img->name().c_str()));
+	return addNodeToSceneGraph(node) != -1;
 }
 
+// TODO: should create a new model node - see importAsPlane
 bool SceneManager::importHeightmap(const core::String& file) {
-	const int layerId = _layerMgr.activeLayer();
-	voxel::RawVolume* v = volume(layerId);
+	const int nodeId = activeNode();
+	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return false;
 	}
@@ -164,7 +153,7 @@ bool SceneManager::importHeightmap(const core::String& file) {
 	}
 	voxel::RawVolumeWrapper wrapper(v);
 	voxelutil::importHeightmap(wrapper, img);
-	modified(layerId, wrapper.dirtyRegion());
+	modified(nodeId, wrapper.dirtyRegion());
 	return true;
 }
 
@@ -200,42 +189,38 @@ void SceneManager::autosave() {
 	_lastAutoSave = timeProvider->tickSeconds();
 }
 
-bool SceneManager::saveLayer(int layerId, const core::String& file) {
-	voxel::RawVolume* v = volume(layerId);
-	if (v == nullptr) {
-		return true;
-	}
+bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::SysWrite);
 	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
 	}
-	const Layer& layer = _layerMgr.layer(layerId);
-	voxel::SceneGraph sceneGraph;
-	voxel::SceneGraphNode node;
-	node.setVolume(v, false);
-	node.setName(layer.name);
-	node.setVisible(layer.visible);
-	sceneGraph.emplace(core::move(node));
-	if (voxelformat::saveFormat(filePtr, sceneGraph)) {
-		Log::info("Saved layer %i to %s", layerId, filePtr->name().c_str());
+	const voxel::SceneGraphNode *node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
 		return true;
 	}
-	Log::warn("Failed to save layer %i to %s", layerId, filePtr->name().c_str());
+	voxel::SceneGraph newSceneGraph;
+	voxel::SceneGraphNode newNode;
+	// TODO: also add all children
+	newNode.setVolume(node->volume(), false);
+	newNode.setName(node->name());
+	newNode.setVisible(node->visible());
+	newSceneGraph.emplace(core::move(newNode));
+	if (voxelformat::saveFormat(filePtr, newSceneGraph)) {
+		Log::info("Saved layer %i to %s", nodeId, filePtr->name().c_str());
+		return true;
+	}
+	Log::warn("Failed to save layer %i to %s", nodeId, filePtr->name().c_str());
 	return false;
 }
 
-bool SceneManager::saveLayers(const core::String& dir) {
-	const int layers = (int)_layerMgr.layers().size();
-	for (int idx = 0; idx < layers; ++idx) {
-		voxel::RawVolume* v = volume(idx);
-		if (v == nullptr) {
-			return true;
-		}
-		const Layer& layer = _layerMgr.layer(idx);
-		saveLayer(idx, dir + "/" + layer.name + ".vox");
+bool SceneManager::saveModels(const core::String& dir) {
+	bool state = false;
+	for (const voxel::SceneGraphNode & node : _sceneGraph) {
+		const core::String filename = dir + "/" + node.name() + ".qb";
+		state |= saveNode(node.id(), filename);
 	}
-	return true;
+	return state;
 }
 
 bool SceneManager::save(const core::String& file, bool autosave) {
@@ -255,8 +240,8 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 	}
 	core::String ext = filePtr->extension();
 	if (ext.empty()) {
-		Log::warn("No file extension given for saving, assuming vox");
-		ext = "vox";
+		Log::warn("No file extension given for saving, assuming qb");
+		ext = "qb";
 	}
 
 	bool saved = voxelformat::saveFormat(filePtr, _sceneGraph);
@@ -289,18 +274,9 @@ bool SceneManager::prefab(const core::String& file) {
 		return false;
 	}
 	voxel::SceneGraph newSceneGraph;
-	io::FileStream stream(filePtr.get());
-	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
-		return false;
-	}
-	for (voxel::SceneGraphNode& node : newSceneGraph) {
-		if (_layerMgr.addLayer(node.name().c_str(), node.visible(), node.volume(), node.pivot()) >= 0) {
-			// we don't free the volumes here, the renderer we add the layer to will
-			// take over the ownership
-			node.releaseOwnership();
-		}
-	}
-	return true;
+	io::FileStream stream(filePtr);
+	voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
+	return addSceneGraphNodes(newSceneGraph) > 0;
 }
 
 bool SceneManager::load(const core::String& file) {
@@ -313,15 +289,12 @@ bool SceneManager::load(const core::String& file) {
 		return false;
 	}
 	voxel::SceneGraph newSceneGraph;
-	io::FileStream stream(filePtr.get());
-	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
+	io::FileStream stream(filePtr);
+	voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
+	if (!loadSceneGraph(newSceneGraph)) {
 		return false;
 	}
-	const core::String& ext = filePtr->extension();
-	_lastFilename = filePtr->fileName() + "." + ext;
-	if (!setNewVolumes(newSceneGraph)) {
-		return false;
-	}
+	_lastFilename = filePtr->fileName() + "." + filePtr->extension();
 	_needAutoSave = false;
 	_dirty = false;
 	return true;
@@ -336,21 +309,21 @@ void SceneManager::setMousePos(int x, int y) {
 	_traceViaMouse = true;
 }
 
-void SceneManager::handleAnimationViewUpdate(int layerId) {
-	if (!_animationUpdate && _animationLayerDirtyState == -1) {
+void SceneManager::handleAnimationViewUpdate(int nodeId) {
+	if (!_animationUpdate && _animationNodeIdDirtyState == -1) {
 		// the first layer
-		_animationLayerDirtyState = layerId;
+		_animationNodeIdDirtyState = nodeId;
 	} else if (_animationUpdate) {
 		// a second layer was modified (maybe a group action)
-		_animationLayerDirtyState = -1;
+		_animationNodeIdDirtyState = -1;
 	}
 	_animationUpdate = true;
 }
 
-void SceneManager::queueRegionExtraction(int layerId, const voxel::Region& region) {
+void SceneManager::queueRegionExtraction(int nodeId, const voxel::Region& region) {
 	bool addNew = true;
 	for (const auto& r : _extractRegions) {
-		if (r.layer != layerId) {
+		if (r.nodeId != nodeId) {
 			continue;
 		}
 		if (r.region.containsRegion(region)) {
@@ -359,28 +332,29 @@ void SceneManager::queueRegionExtraction(int layerId, const voxel::Region& regio
 		}
 	}
 	if (addNew) {
-		_extractRegions.push_back({region, layerId});
+		_extractRegions.push_back({region, nodeId});
 	}
 }
 
-void SceneManager::modified(int layerId, const voxel::Region& modifiedRegion, bool markUndo) {
-	Log::debug("Modified layer %i, undo state: %s", layerId, markUndo ? "true" : "false");
+void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo) {
+	Log::debug("Modified node %i, undo state: %s", nodeId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
-		_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, volume(layerId), MementoType::Modification, modifiedRegion);
+		voxel::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		_mementoHandler.markUndo(node.parent(), nodeId, node.name(), node.volume(), MementoType::Modification, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
-		queueRegionExtraction(layerId, modifiedRegion);
+		queueRegionExtraction(nodeId, modifiedRegion);
 	}
 	_dirty = true;
 	_needAutoSave = true;
-	handleAnimationViewUpdate(layerId);
+	handleAnimationViewUpdate(nodeId);
 	resetLastTrace();
 }
 
 void SceneManager::colorToNewLayer(const voxel::Voxel voxelColor) {
-	voxel::RawVolume* newVolume = new voxel::RawVolume(region());
-	_layerMgr.foreachGroupLayer([&] (int layerId) {
+	voxel::RawVolume* newVolume = new voxel::RawVolume(_sceneGraph.region());
+	_sceneGraph.foreachGroup([&] (int layerId) {
 		voxel::RawVolumeWrapper wrapper(volume(layerId));
 		voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
 			if (voxel.getColor() == voxelColor.getColor()) {
@@ -390,12 +364,14 @@ void SceneManager::colorToNewLayer(const voxel::Voxel voxelColor) {
 		});
 		modified(layerId, wrapper.dirtyRegion());
 	});
-	const core::String& name = core::string::format("color: %i", (int)voxelColor.getColor());
-	_layerMgr.addLayer(name.c_str(), true, newVolume);
+	voxel::SceneGraphNode node;
+	node.setVolume(newVolume, true);
+	node.setName(core::string::format("color: %i", (int)voxelColor.getColor()));
+	addNodeToSceneGraph(node);
 }
 
-void SceneManager::scale(int layerId) {
-	voxel::RawVolume* srcVolume = volume(layerId);
+void SceneManager::scale(int nodeId) {
+	voxel::RawVolume* srcVolume = volume(nodeId);
 	if (srcVolume == nullptr) {
 		return;
 	}
@@ -408,88 +384,123 @@ void SceneManager::scale(int layerId) {
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
 	rescaleVolume(*srcVolume, *destVolume);
-	if (!setNewVolume(layerId, destVolume, true)) {
+	if (!setNewVolume(nodeId, destVolume, true)) {
 		delete destVolume;
 		return;
 	}
-	modified(layerId, srcRegion);
+	modified(nodeId, srcRegion);
 }
 
 void SceneManager::crop() {
-	const int layerId = _layerMgr.activeLayer();
-	if (_volumeRenderer.empty(layerId)) {
+	const int nodeId = activeNode();
+	voxel::SceneGraphNode* node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	if (_volumeRenderer.empty(*node)) {
 		Log::info("Empty volumes can't be cropped");
 		return;
 	}
-	voxel::RawVolume* newVolume = voxel::cropVolume(volume(layerId));
+	voxel::RawVolume* newVolume = voxel::cropVolume(node->volume());
 	if (newVolume == nullptr) {
 		return;
 	}
-	if (!setNewVolume(layerId, newVolume, true)) {
+	if (!setNewVolume(nodeId, newVolume, true)) {
 		delete newVolume;
 		return;
 	}
-	modified(layerId, newVolume->region());
+	modified(nodeId, newVolume->region());
 }
 
-void SceneManager::resize(int layerId, const glm::ivec3& size) {
-	voxel::RawVolume* newVolume = voxedit::tool::resize(volume(layerId), size);
+void SceneManager::resize(int nodeId, const glm::ivec3& size) {
+	voxel::RawVolume* newVolume = voxedit::tool::resize(volume(nodeId), size);
 	if (newVolume == nullptr) {
 		return;
 	}
-	if (!setNewVolume(layerId, newVolume, false)) {
+	if (!setNewVolume(nodeId, newVolume, false)) {
 		delete newVolume;
 		return;
 	}
 	if (glm::all(glm::greaterThanEqual(size, glm::zero<glm::ivec3>()))) {
 		// we don't have to reextract a mesh if only new empty voxels were added.
-		modified(layerId, voxel::Region::InvalidRegion);
+		modified(nodeId, voxel::Region::InvalidRegion);
 	} else {
-		modified(layerId, newVolume->region());
+		modified(nodeId, newVolume->region());
 	}
 }
 
 void SceneManager::resizeAll(const glm::ivec3& size) {
 	const glm::ivec3 refPos = referencePosition();
-	_layerMgr.foreachGroupLayer([&] (int layerId) {
+	_sceneGraph.foreachGroup([&] (int layerId) {
 		resize(layerId, size);
 	});
-	if (region().containsPoint(refPos)) {
+	if (_sceneGraph.region().containsPoint(refPos)) {
 		setReferencePosition(refPos);
 	}
 }
 
-voxel::RawVolume* SceneManager::volume(int idx) {
-	voxel::RawVolume* v = _volumeRenderer.volume(idx);
-	//core_assert_msg(v != nullptr, "Volume for index %i is null", idx);
-	return v;
+voxel::RawVolume* SceneManager::volume(int nodeId) {
+	voxel::SceneGraphNode* node = sceneGraphNode(nodeId);
+	core_assert_msg(node != nullptr, "Node with id %i wasn't found in the scene graph", nodeId);
+	return node->volume();
 }
 
-const voxel::RawVolume* SceneManager::volume(int idx) const {
-	const voxel::RawVolume* v = _volumeRenderer.volume(idx);
-	//core_assert_msg(v != nullptr, "Volume for index %i is null", idx);
-	return v;
+const voxel::RawVolume* SceneManager::volume(int nodeId) const {
+	const voxel::SceneGraphNode* node = sceneGraphNode(nodeId);
+	core_assert_msg(node != nullptr, "Node with id %i wasn't found in the scene graph", nodeId);
+	return node->volume();
 }
 
-voxel::RawVolume* SceneManager::modelVolume() {
-	const int idx = _layerMgr.activeLayer();
-	return volume(idx);
+int SceneManager::activeNode() const {
+	return _sceneGraph.activeNode();
+}
+
+voxel::RawVolume* SceneManager::activeVolume() {
+	return volume(activeNode());
 }
 
 void SceneManager::undo() {
 	const MementoState& s = _mementoHandler.undo();
 	ScopedMementoHandlerLock lock(_mementoHandler);
 	if (s.type == MementoType::LayerRenamed) {
-		_layerMgr.rename(s.layer, s.name);
+		if (voxel::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
+			node->setName(s.name);
+		}
 		return;
 	}
 	voxel::RawVolume* v = MementoData::toVolume(s.data);
 	if (v == nullptr) {
-		_layerMgr.deleteLayer(s.layer, false);
+		nodeRemove(s.nodeId);
 		return;
 	}
-	Log::debug("Volume found in undo state for layer: %i with name %s", s.layer, s.name.c_str());
-	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region, referencePosition());
+	Log::debug("Volume found in undo state for layer: %i with name %s", s.nodeId, s.name.c_str());
+	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
+	node.setName(s.name);
+	node.setVolume(v, true);
+	node.setPivot(referencePosition());
+	addNodeToSceneGraph(node, s.parentId);
+}
+
+void SceneManager::redo() {
+	const MementoState& s = _mementoHandler.redo();
+	ScopedMementoHandlerLock lock(_mementoHandler);
+	if (s.type == MementoType::LayerRenamed) {
+		if (voxel::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
+			node->setName(s.name);
+		}
+		return;
+	}
+	voxel::RawVolume* v = MementoData::toVolume(s.data);
+	if (v == nullptr) {
+		nodeRemove(s.nodeId);
+		return;
+	}
+	Log::debug("Volume found in redo state for layer: %i with name %s", s.nodeId, s.name.c_str());
+	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
+	node.setName(s.name);
+	node.setVolume(v, true);
+	node.setPivot(referencePosition());
+	addNodeToSceneGraph(node, s.parentId);
 }
 
 void SceneManager::copy() {
@@ -497,8 +508,8 @@ void SceneManager::copy() {
 	if (!selection.isValid()) {
 		return;
 	}
-	const int idx = _layerMgr.activeLayer();
-	voxel::RawVolume* model = volume(idx);
+	const int nodeId = activeNode();
+	voxel::RawVolume* model = volume(nodeId);
 	if (_copy != nullptr) {
 		delete _copy;
 	}
@@ -510,15 +521,15 @@ void SceneManager::paste(const glm::ivec3& pos) {
 		Log::debug("Nothing copied yet - failed to paste");
 		return;
 	}
-	const int idx = _layerMgr.activeLayer();
-	voxel::RawVolume* model = volume(idx);
+	const int nodeId = activeNode();
+	voxel::RawVolume* model = volume(nodeId);
 	voxel::Region modifiedRegion;
 	voxedit::tool::paste(model, _copy, pos, modifiedRegion);
 	if (!modifiedRegion.isValid()) {
 		Log::debug("Failed to paste");
 		return;
 	}
-	modified(idx, modifiedRegion);
+	modified(nodeId, modifiedRegion);
 }
 
 void SceneManager::cut() {
@@ -527,8 +538,8 @@ void SceneManager::cut() {
 		Log::debug("Nothing selected - failed to cut");
 		return;
 	}
-	const int idx = _layerMgr.activeLayer();
-	voxel::RawVolume* model = volume(idx);
+	const int nodeId = activeNode();
+	voxel::RawVolume* model = volume(nodeId);
 	if (_copy != nullptr) {
 		delete _copy;
 	}
@@ -538,27 +549,11 @@ void SceneManager::cut() {
 		Log::debug("Failed to cut");
 		return;
 	}
-	modified(idx, modifiedRegion);
-}
-
-void SceneManager::redo() {
-	const MementoState& s = _mementoHandler.redo();
-	ScopedMementoHandlerLock lock(_mementoHandler);
-	if (s.type == MementoType::LayerRenamed) {
-		_layerMgr.rename(s.layer, s.name);
-		return;
-	}
-	voxel::RawVolume* v = MementoData::toVolume(s.data);
-	if (v == nullptr) {
-		_layerMgr.deleteLayer(s.layer, false);
-		return;
-	}
-	Log::debug("Volume found in redo state for layer: %i with name %s", s.layer, s.name.c_str());
-	_layerMgr.activateLayer(s.layer, s.name.c_str(), true, v, s.region, referencePosition());
+	modified(nodeId, modifiedRegion);
 }
 
 void SceneManager::resetLastTrace() {
-	_sceneModeLayerTrace = -1;
+	_sceneModeNodeIdTrace = -1;
 	if (!_traceViaMouse) {
 		return;
 	}
@@ -567,24 +562,20 @@ void SceneManager::resetLastTrace() {
 
 bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	core::DynamicArray<const voxel::RawVolume*> volumes;
-	for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
-		const Layer& layer = _layerMgr.layer(idx);
-		if (!layer.valid) {
-			continue;
-		}
-		const voxel::RawVolume* v = volume(idx);
+	for (voxel::SceneGraphNode &node : _sceneGraph) {
+		const voxel::RawVolume* v = node.volume();
 		if ((flags & LayerMergeFlags::All) != LayerMergeFlags::None) {
 			volumes.push_back(v);
 		} else if ((flags & LayerMergeFlags::Visible) != LayerMergeFlags::None) {
-			if (layer.visible) {
+			if (node.visible()) {
 				volumes.push_back(v);
 			}
 		} else if ((flags & LayerMergeFlags::Invisible) != LayerMergeFlags::None) {
-			if (!layer.visible) {
+			if (!node.visible()) {
 				volumes.push_back(v);
 			}
 		} else if ((flags & LayerMergeFlags::Locked) != LayerMergeFlags::None) {
-			if (layer.locked) {
+			if (node.locked()) {
 				volumes.push_back(v);
 			}
 		}
@@ -599,71 +590,133 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	voxel::SceneGraphNode node;
 	node.setVolume(merged, true);
 	newSceneGraph.emplace(core::move(node));
-	setNewVolumes(newSceneGraph);
+	addSceneGraphNodes(newSceneGraph);
+	// TODO: broken - remove old nodes
 	return true;
 }
 
-bool SceneManager::merge(int layerId1, int layerId2) {
+bool SceneManager::merge(int nodeId1, int nodeId2) {
 	core::DynamicArray<const voxel::RawVolume*> volumes;
 	volumes.resize(2);
-	volumes[0] = volume(layerId1);
+	volumes[0] = volume(nodeId1);
 	if (volumes[0] == nullptr) {
 		return false;
 	}
-	volumes[1] = volume(layerId2);
+	volumes[1] = volume(nodeId2);
 	if (volumes[1] == nullptr) {
 		return false;
 	}
 	voxel::RawVolume* volume = voxel::merge(volumes);
-	if (!setNewVolume(layerId1, volume, true)) {
+	if (!setNewVolume(nodeId1, volume, true)) {
 		delete volume;
 		return false;
 	}
 	// TODO: the memento states are not yet perfect
-	modified(layerId1, volume->region(), true);
-	_layerMgr.deleteLayer(layerId2);
+	modified(nodeId1, volume->region(), true);
+	nodeRemove(nodeId2);
 	return true;
 }
 
 void SceneManager::resetSceneState() {
-	_animationLayerDirtyState = -1;
+	_animationNodeIdDirtyState = -1;
 	_animationIdx = 0;
 	_animationUpdate = false;
 	_editMode = EditMode::Model;
 	_mementoHandler.clearStates();
-	const int layerId = _layerMgr.activeLayer();
-	// push the initial state of the current layer to the memento handler to
-	// be able to undo your next step
-	Log::debug("New volume for layer %i", layerId);
-	_mementoHandler.markUndo(layerId, _layerMgr.layer(layerId).name, volume(layerId));
+	voxel::SceneGraphNode &node = _sceneGraph[0];
+	_sceneGraph.setActiveNode(node.id());
+	Log::debug("New volume for node %i", node.id());
+	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume());
 	_dirty = false;
 	_result = voxel::PickResult();
 	setCursorPosition(cursorPosition(), true);
 	resetLastTrace();
 }
 
-bool SceneManager::setNewVolumes(voxel::SceneGraph& sceneGraph) {
-	core_trace_scoped(SetNewVolumes);
-	const int volumeCnt = (int)sceneGraph.size();
-	if (volumeCnt == 0) {
+int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
+	voxel::SceneGraphNode newNode(node.type());
+	newNode.setName(node.name());
+	newNode.setPivot(node.pivot());
+	newNode.setVisible(node.visible());
+	newNode.addProperties(node.properties());
+	newNode.setReferencedNodeId(node.referencedNodeId());
+	newNode.setMatrix(node.matrix());
+	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
+		core_assert(node.owns());
+		newNode.setVolume(node.volume(), true);
+		node.releaseOwnership();
+	}
+
+	const int newNodeId = _sceneGraph.emplace(core::move(newNode), parent);
+	Log::debug("Add node %i to scene graph", newNodeId);
+	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
+		// update the whole volume
+		const voxel::Region& region = node.region();
+		updateGridRenderer(region);
+		updateAABBMesh();
+		queueRegionExtraction(newNodeId, region);
+
+		Log::debug("Adding node %i with name %s", newNodeId, node.name().c_str());
+		_mementoHandler.markNodeAdded(parent, newNodeId, node.name(), node.volume());
+
+		_result = voxel::PickResult();
+		setCursorPosition(cursorPosition(), true);
+		glm::ivec3 center = region.getCenter();
+		center.y = region.getLowerY();
+		setReferencePosition(center);
+		resetLastTrace();
+
+		setReferencePosition(node.pivot());
+		_needAutoSave = true;
+		_dirty = true;
+		handleAnimationViewUpdate(newNodeId);
+	}
+	return newNodeId;
+}
+
+int SceneManager::addSceneGraphNode_r(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent) {
+	const int newNodeId = addNodeToSceneGraph(node, parent);
+	if (newNodeId == -1) {
+		return 0;
+	}
+	int modelsAdded = node.type() == voxel::SceneGraphNodeType::Model ? 1 : 0;
+	for (int nodeIdx : node.children()) {
+		core_assert(sceneGraph.hasNode(nodeIdx));
+		voxel::SceneGraphNode &childNode = sceneGraph.node(nodeIdx);
+		const voxel::SceneGraphNodeType childType = childNode.type();
+		const int childNodeId = addSceneGraphNode_r(sceneGraph, childNode, newNodeId);
+		if (childNodeId == -1) {
+			Log::error("Failed to load scene graph node %i of type %i", nodeIdx, (int)childType);
+			continue;
+		}
+		if (childType == voxel::SceneGraphNodeType::Model) {
+			++modelsAdded;
+		}
+	}
+	return modelsAdded;
+}
+
+int SceneManager::addSceneGraphNodes(voxel::SceneGraph& sceneGraph) {
+	const voxel::SceneGraphNode &root = sceneGraph.root();
+	int modelsAdded = 0;
+	for (int nodeId : root.children()) {
+		modelsAdded += addSceneGraphNode_r(sceneGraph, sceneGraph.node(nodeId), 0);
+	}
+	return modelsAdded;
+}
+
+bool SceneManager::loadSceneGraph(voxel::SceneGraph& sceneGraph) {
+	core_trace_scoped(LoadSceneGraph);
+	_sceneGraph.clear();
+	_volumeRenderer.clear();
+
+	const int modelsAdded = addSceneGraphNodes(sceneGraph);
+	if (modelsAdded == 0) {
+		Log::warn("Failed to load any model volumes");
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
-		return newScene(true, "", region);
+		newScene(true, "", region);
+		return false;
 	}
-	const int maxLayers = _layerMgr.maxLayers();
-	if (volumeCnt > maxLayers) {
-		Log::warn("Max supported layer size exceeded: %i (max supported: %i)",
-				volumeCnt, maxLayers);
-	}
-	_volumeRenderer.clearPendingExtractions();
-	for (int idx = 0; idx < maxLayers; ++idx) {
-		_layerMgr.deleteLayer(idx, true);
-	}
-	int valid = setNewSceneGraph(sceneGraph);
-	if (valid == 0) {
-		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
-		return newScene(true, "", region);
-	}
-	_layerMgr.findNewActiveLayer();
 	resetSceneState();
 	return true;
 }
@@ -678,45 +731,52 @@ void SceneManager::updateGridRenderer(const voxel::Region& region) {
 	_gridRenderer.update(toAABB(region));
 }
 
-void SceneManager::addToSceneGraph(int idx, voxel::RawVolume* volume) {
-	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
-	node.setVolume(volume, false); // we don't own them
-	node.setProperty("layer", core::string::toString(idx));
-	_sceneGraph.emplace(core::move(node));
-}
-
 voxel::SceneGraphNode *SceneManager::sceneGraphNodeByLayerId(int layerId) {
 	for (voxel::SceneGraphNode &node : _sceneGraph) {
-		if (core::string::toInt(node.property("layer")) == layerId) {
+		const int layerIdProp = core::string::toInt(node.property("layer"));
+		Log::trace("Node for layer %i", layerIdProp);
+		if (layerIdProp == layerId) {
 			return &node;
 		}
+	}
+	Log::debug("Could not find node for layer %i", layerId);
+	return nullptr;
+}
+
+voxel::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
+	if (_sceneGraph.hasNode(nodeId)) {
+		return &_sceneGraph.node(nodeId);
 	}
 	return nullptr;
 }
 
-void SceneManager::removeFromSceneGraph(int idx) {
-	if (voxel::SceneGraphNode* node = sceneGraphNodeByLayerId(idx)) {
-		_sceneGraph.removeNode(node->id());
+const voxel::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) const {
+	if (_sceneGraph.hasNode(nodeId)) {
+		return &_sceneGraph.node(nodeId);
 	}
+	return nullptr;
 }
 
-voxel::SceneGraph &SceneManager::sceneGraph() {
+const voxel::SceneGraph &SceneManager::sceneGraph() {
 	return _sceneGraph;
 }
 
-bool SceneManager::setNewVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {
+// TODO: handle deleteMesh somehow
+bool SceneManager::setNewVolume(int nodeId, voxel::RawVolume* volume, bool deleteMesh) {
 	core_trace_scoped(SetNewVolume);
-	if (idx < 0 || idx >= _layerMgr.maxLayers()) {
+	voxel::SceneGraphNode* node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
 		return false;
 	}
-	const voxel::Region& region = volume->region();
-	delete _volumeRenderer.setVolume(idx, volume, deleteMesh);
-	if (voxel::SceneGraphNode* node = sceneGraphNodeByLayerId(idx)) {
-		node->setVolume(volume, false);
-	}
+	return setSceneGraphNodeVolume(*node, volume);
+}
 
-	updateAABBMesh();
+bool SceneManager::setSceneGraphNodeVolume(voxel::SceneGraphNode &node, voxel::RawVolume* volume) {
+	node.setVolume(volume, true);
+
+	const voxel::Region& region = volume->region();
 	updateGridRenderer(region);
+	updateAABBMesh();
 
 	_dirty = false;
 	_result = voxel::PickResult();
@@ -732,74 +792,28 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	if (dirty() && !force) {
 		return false;
 	}
-	_volumeRenderer.clearPendingExtractions();
-	const int layers = _layerMgr.maxLayers();
-	for (int idx = 0; idx < layers; ++idx) {
-		_layerMgr.deleteLayer(idx, true);
-	}
 	_sceneGraph.clear();
-	core_assert_always(_layerMgr.validLayers() == 0);
-	core_assert_always(_layerMgr.addLayer(name.c_str(), true, new voxel::RawVolume(region)) != -1);
-	core_assert_always(_layerMgr.validLayers() == 1);
+	_volumeRenderer.clear();
+
+	voxel::RawVolume* v = new voxel::RawVolume(region);
+	voxel::SceneGraphNode node;
+	node.setVolume(v, true);
+	node.setName(name);
 	glm::ivec3 center = region.getCenter();
+	node.setPivot(center);
+	const int nodeId = sceneMgr().addNodeToSceneGraph(node);
+	if (nodeId == -1) {
+		Log::error("Failed to add empty volume to new scene graph");
+		return false;
+	}
 	center.y = region.getLowerY();
 	setReferencePosition(center);
-	_layerMgr.findNewActiveLayer();
 	resetSceneState();
 	return true;
 }
 
-int SceneManager::setNewSceneGraph(voxel::SceneGraph &sceneGraph) {
-	_sceneGraph.clear();
-	return loadSceneGraph(sceneGraph);
-}
-
-int SceneManager::loadSceneGraph(voxel::SceneGraph &sceneGraph) {
-	const voxel::SceneGraphNode &root = sceneGraph.root();
-	int layersAdded = 0;
-	for (int nodeId : root.children()) {
-		layersAdded += loadSceneGraphNode(sceneGraph, sceneGraph.node(nodeId), 0);
-	}
-	return layersAdded;
-}
-
-int SceneManager::loadSceneGraphNode(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent) {
-	voxel::SceneGraphNode newNode(node.type());
-	newNode.setName(node.name());
-	newNode.setPivot(node.pivot());
-	newNode.setVisible(node.visible());
-	newNode.setParent(parent);
-	for (const auto &e : node.properties()) {
-		newNode.setProperty(e->key, e->value);
-	}
-	int layersAdded = 0;
-	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
-		newNode.setVolume(node.volume(), true);
-		node.releaseOwnership();
-		const int nodeId = _layerMgr.addLayer(newNode);
-		if (nodeId != -1) {
-			newNode.releaseOwnership();
-			++layersAdded;
-			newNode.setProperty("layer", core::string::toString(nodeId));
-			_layerMgr.addMetadata(nodeId, newNode.properties());
-		}
-	}
-	const int newNodeId = _sceneGraph.emplace(core::move(newNode));
-	Log::debug("Add node %i to scene graph", newNodeId);
-	for (int nodeIdx : node.children()) {
-		core_assert(sceneGraph.hasNode(nodeIdx));
-		int state = loadSceneGraphNode(sceneGraph, sceneGraph.node(nodeIdx), newNodeId);
-		if (state == -1) {
-			Log::error("Failed to load scene graph node %i", nodeIdx);
-		} else {
-			layersAdded += state;
-		}
-	}
-	return layersAdded;
-}
-
-void SceneManager::rotate(int layerId, const glm::ivec3& angle, bool increaseSize, bool rotateAroundReferencePosition) {
-	const voxel::RawVolume* model = volume(layerId);
+void SceneManager::rotate(int nodeId, const glm::ivec3& angle, bool increaseSize, bool rotateAroundReferencePosition) {
+	const voxel::RawVolume* model = volume(nodeId);
 	if (model == nullptr) {
 		return;
 	}
@@ -817,57 +831,61 @@ void SceneManager::rotate(int layerId, const glm::ivec3& angle, bool increaseSiz
 	}
 	voxel::Region r = newVolume->region();
 	r.accumulate(model->region());
-	if (!setNewVolume(layerId, newVolume)) {
+	if (!setNewVolume(nodeId, newVolume)) {
 		delete newVolume;
 		return;
 	}
-	modified(layerId, r);
+	modified(nodeId, r);
 }
 
 void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize, bool rotateAroundReferencePosition) {
 	const glm::ivec3 angle(angleX, angleY, angleZ);
-	_layerMgr.foreachGroupLayer([&] (int layerId) {
+	_sceneGraph.foreachGroup([&] (int layerId) {
 		rotate(layerId, angle, increaseSize, rotateAroundReferencePosition);
 	});
 }
 
-void SceneManager::move(int layerId, const glm::ivec3& m) {
-	const voxel::RawVolume* model = volume(layerId);
+void SceneManager::move(int nodeId, const glm::ivec3& m) {
+	const voxel::RawVolume* model = volume(nodeId);
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
 	voxel::moveVolume(&wrapper, model, m);
-	if (!setNewVolume(layerId, newVolume)) {
+	if (!setNewVolume(nodeId, newVolume)) {
 		delete newVolume;
 		return;
 	}
-	modified(layerId, newVolume->region());
+	modified(nodeId, newVolume->region());
 }
 
 void SceneManager::move(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
-	_layerMgr.foreachGroupLayer([&] (int layerId) {
+	_sceneGraph.foreachGroup([&] (int layerId) {
 		move(layerId, v);
 	});
 }
 
-void SceneManager::shift(int layerId, const glm::ivec3& m) {
-	voxel::RawVolume* model = volume(layerId);
-	Log::debug("Shift region by %s on layer %i", glm::to_string(m).c_str(), layerId);
+void SceneManager::shift(int nodeId, const glm::ivec3& m) {
+	voxel::SceneGraphNode* node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	voxel::RawVolume* model = node->volume();
+	Log::debug("Shift region by %s on layer %i", glm::to_string(m).c_str(), nodeId);
 	voxel::Region oldRegion = model->region();
 	setReferencePosition(_referencePos + m);
 	_modifier.translate(m);
-	_volumeRenderer.translate(layerId, m);
+	_volumeRenderer.translate(*node, m);
 	setGizmoPosition();
 	const voxel::Region& newRegion = model->region();
 	updateGridRenderer(newRegion);
 	updateAABBMesh();
 	oldRegion.accumulate(newRegion);
-	modified(layerId, oldRegion);
+	modified(nodeId, oldRegion);
 }
 
 void SceneManager::shift(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
-	_layerMgr.foreachGroupLayer([&] (int layerId) {
+	_sceneGraph.foreachGroup([&] (int layerId) {
 		shift(layerId, v);
 	});
 }
@@ -906,41 +924,34 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 	attrib::ShadowAttributes attrib;
 	const double deltaFrameSeconds = app::App::getInstance()->deltaFrameSeconds();
 	if (_animationUpdate) {
-		const voxedit::Layers& layers = _layerMgr.layers();
-		const size_t layerAmount = layers.size();
-		for (size_t i = 0u; i < layerAmount; ++i) {
-			const voxel::RawVolume* v = volume((int)i);
-			if (v == nullptr) {
+		for (voxel::SceneGraphNode& node : _sceneGraph) {
+			if (_animationNodeIdDirtyState >= 0 && _animationNodeIdDirtyState != node.id()) {
+				Log::debug("Don't update layer %i", node.id());
 				continue;
 			}
-			if (_animationLayerDirtyState >= 0 && _animationLayerDirtyState != (int)i) {
-				Log::debug("Don't update layer %i", (int)i);
-				continue;
-			}
-			const voxedit::Layer& l = layers[i];
-			const core::String& value = l.metadataById("type");
+			const core::String& value = node.property("type");
 			if (value.empty()) {
-				Log::debug("No type metadata found on layer %i", (int)i);
+				Log::debug("No type metadata found on layer %i", node.id());
 				continue;
 			}
 			const int characterMeshTypeId = core::string::toInt(value);
 			const animation::AnimationSettings& animSettings = animationEntity().animationSettings();
 			const core::String& path = animSettings.paths[characterMeshTypeId];
 			if (path.empty()) {
-				Log::debug("No path found for layer %i", (int)i);
+				Log::debug("No path found for layer %i", node.id());
 				continue;
 			}
 			voxel::Mesh mesh;
-			_volumeRenderer.toMesh((int)i, &mesh);
+			_volumeRenderer.toMesh(node, &mesh);
 			const core::String& fullPath = animSettings.fullPath(characterMeshTypeId);
 			_animationCache->putMesh(fullPath.c_str(), mesh);
-			Log::debug("Updated mesh on layer %i for path %s", (int)i, fullPath.c_str());
+			Log::debug("Updated mesh on layer %i for path %s", node.id(), fullPath.c_str());
 		}
 		if (!animationEntity().initMesh(_animationCache)) {
 			Log::warn("Failed to update the mesh");
 		}
 		_animationUpdate = false;
-		_animationLayerDirtyState = -1;
+		_animationNodeIdDirtyState = -1;
 	}
 	animationEntity().update(deltaFrameSeconds, attrib);
 	_animationRenderer.render(animationEntity(), camera);
@@ -950,22 +961,15 @@ void SceneManager::updateAABBMesh() {
 	Log::debug("Update aabb mesh");
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::Gray);
-	for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
-		const Layer& layer = _layerMgr.layer(idx);
-		if (!layer.valid) {
-			continue;
-		}
-		const voxel::RawVolume* v = volume(idx);
-		core_assert_always(v != nullptr);
+	for (voxel::SceneGraphNode &node : _sceneGraph) {
+		const voxel::RawVolume* v = node.volume();
 		const voxel::Region& region = v->region();
 		_shapeBuilder.aabb(toAABB(region));
 	}
-	const voxel::RawVolume* mdl = modelVolume();
-	if (mdl != nullptr) {
-		const voxel::Region& region = mdl->region();
-		_shapeBuilder.setColor(core::Color::White);
-		_shapeBuilder.aabb(toAABB(region));
-	}
+	const voxel::RawVolume* mdl = activeVolume();
+	const voxel::Region& region = mdl->region();
+	_shapeBuilder.setColor(core::Color::White);
+	_shapeBuilder.aabb(toAABB(region));
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
 
@@ -977,18 +981,20 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 		if (_editMode == EditMode::Scene) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		} else {
-			const voxel::Region& region = modelVolume()->region();
+			const voxel::RawVolume *v = activeVolume();
+			const voxel::Region& region = v->region();
 			_gridRenderer.render(camera, toAABB(region));
 		}
 	}
 	if (renderScene) {
 		std::function<bool(int)> func;
 		if (_grayScale->boolVal()) {
-			func = [&](int layer) { return layer != _layerMgr.activeLayer(); };
+			func = [&](int nodeId) { return nodeId != activeNode(); };
 		} else {
-			func = [&](int layer) { return false; };
+			func = [&](int nodeId) { return false; };
 		}
-		_volumeRenderer.render(camera, _renderShadow, func);
+		_volumeRenderer.setRenderScene(_editMode == EditMode::Scene);
+		_volumeRenderer.render(_sceneGraph, false, camera, _renderShadow, func);
 	}
 	if (renderUI) {
 		if (_editMode == EditMode::Scene) {
@@ -1016,7 +1022,6 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 }
 
 void SceneManager::construct() {
-	_layerMgr.construct();
 	_modifier.construct();
 	_mementoHandler.construct();
 	_volumeRenderer.construct();
@@ -1059,11 +1064,11 @@ void SceneManager::construct() {
 	command::Command::registerActionButton("camera_rotate", _rotate).setBindingContext(BindingContext::Editing);
 	command::Command::registerActionButton("camera_pan", _pan).setBindingContext(BindingContext::Editing);
 	command::Command::registerCommand("mouse_layer_select", [&] (const command::CmdArgs&) {
-		if (_sceneModeLayerTrace != -1) {
-			Log::debug("switch active layer to hovered layer from scene mode: %i", _sceneModeLayerTrace);
-			_layerMgr.setActiveLayer(_sceneModeLayerTrace);
+		if (_sceneModeNodeIdTrace != -1) {
+			Log::debug("switch active node to hovered from scene graph mode: %i", _sceneModeNodeIdTrace);
+			nodeActivate(_sceneModeNodeIdTrace);
 		}
-	}).setHelp("Switch active layer to hovered layer from scene mode").setBindingContext(BindingContext::Scene);
+	}).setHelp("Switch active node to hovered from scene graph mode").setBindingContext(BindingContext::Scene);
 
 	command::Command::registerCommand("animation_cycle", [this] (const command::CmdArgs& argv) {
 		int offset = 1;
@@ -1096,26 +1101,26 @@ void SceneManager::construct() {
 		if (!args.empty()) {
 			dir = args[0];
 		}
-		if (!saveLayers(dir)) {
-			Log::error("Failed to save layers to dir: %s", dir.c_str());
+		if (!saveModels(dir)) {
+			Log::error("Failed to save models to dir: %s", dir.c_str());
 		}
-	}).setHelp("Save all layers into filenames represented by their layer names");
+	}).setHelp("Save all models into filenames represented by their layer/node names");
 
 	command::Command::registerCommand("layersave", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		if (argc < 1) {
-			Log::info("Usage: layersave <layerId> [<file>]");
+			Log::info("Usage: layersave <nodeid> [<file>]");
 			return;
 		}
-		const int layerId = core::string::toInt(args[0]);
-		core::String file = core::string::format("layer%i.vox", layerId);
+		const int nodeId = core::string::toInt(args[0]);
+		core::String file = core::string::format("layer%i.vox", nodeId);
 		if (args.size() == 2) {
 			file = args[1];
 		}
-		if (!saveLayer(layerId, file)) {
-			Log::error("Failed to save layer %i to file: %s", layerId, file.c_str());
+		if (!saveNode(nodeId, file)) {
+			Log::error("Failed to save node %i to file: %s", nodeId, file.c_str());
 		}
-	}).setHelp("Save a single layer to the given path with their layer names");
+	}).setHelp("Save a single model to the given path with their layer/node names");
 
 	command::Command::registerCommand("newscene", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
@@ -1155,11 +1160,11 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("scale", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
-		int layerId = _layerMgr.activeLayer();
+		int nodeId = activeNode();
 		if (argc == 1) {
-			layerId = core::string::toInt(args[0]);
+			nodeId = core::string::toInt(args[0]);
 		}
-		scale(layerId);
+		scale(nodeId);
 	}).setHelp("Scale the current layer or given layer down");
 
 	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
@@ -1254,27 +1259,27 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("center_referenceposition", [&] (const command::CmdArgs& args) {
 		const glm::ivec3& refPos = referencePosition();
-		_layerMgr.foreachGroupLayer([&] (int layerId) {
-			const auto* v = volume(layerId);
+		_sceneGraph.foreachGroup([&] (int nodeId) {
+			const auto* v = volume(nodeId);
 			if (v == nullptr) {
 				return;
 			}
 			const voxel::Region& region = v->region();
 			const glm::ivec3& center = region.getCenter();
 			const glm::ivec3& delta = refPos - center;
-			shift(layerId, delta);
+			shift(nodeId, delta);
 		});
 	}).setHelp("Center the current active layers at the reference position");
 
 	command::Command::registerCommand("center_origin", [&] (const command::CmdArgs& args) {
-		_layerMgr.foreachGroupLayer([&] (int layerId) {
-			const auto* v = volume(layerId);
+		_sceneGraph.foreachGroup([&] (int nodeId) {
+			const auto* v = volume(nodeId);
 			if (v == nullptr) {
 				return;
 			}
 			const voxel::Region& region = v->region();
 			const glm::ivec3& delta = -region.getCenter();
-			shift(layerId, delta);
+			shift(nodeId, delta);
 		});
 		setReferencePosition(glm::zero<glm::ivec3>());
 	}).setHelp("Center the current active layers at the origin");
@@ -1334,7 +1339,7 @@ void SceneManager::construct() {
 		if (args.size() >= 4) {
 			rotateAroundReferencePosition = core::string::toBool(args[3]);
 		}
-		rotate(_layerMgr.activeLayer(), glm::ivec3(x, y, z), true, rotateAroundReferencePosition);
+		rotate(activeNode(), glm::ivec3(x, y, z), true, rotateAroundReferencePosition);
 	}).setHelp("Rotate active layer by the given angles (in degree)");
 
 	command::Command::registerCommand("rotateall", [&] (const command::CmdArgs& args) {
@@ -1355,17 +1360,17 @@ void SceneManager::construct() {
 	}).setHelp("Rotate scene by the given angles (in degree)");
 
 	command::Command::registerCommand("layermerge", [&] (const command::CmdArgs& args) {
-		int layer1;
-		int layer2;
+		int nodeId1;
+		int nodeId2;
 		if (args.size() == 2) {
-			layer1 = core::string::toInt(args[0]);
-			layer2 = core::string::toInt(args[1]);
+			nodeId1 = core::string::toInt(args[0]);
+			nodeId2 = core::string::toInt(args[1]);
 		} else {
-			layer1 = _layerMgr.activeLayer();
+			nodeId1 = activeNode();
 			// FIXME: this layer id might be an empty slot
-			layer2 = layer1 + 1;
+			nodeId2 = nodeId1 + 1;
 		}
-		merge(layer1, layer2);
+		merge(nodeId1, nodeId2);
 	}).setHelp("Merge two given layers or active layer with the one below");
 
 	command::Command::registerCommand("layermergeall", [&] (const command::CmdArgs& args) {
@@ -1379,26 +1384,6 @@ void SceneManager::construct() {
 	command::Command::registerCommand("layermergelocked", [&] (const command::CmdArgs& args) {
 		mergeMultiple(LayerMergeFlags::Locked);
 	}).setHelp("Merge all locked layers");
-
-	command::Command::registerCommand("layerdetails", [&] (const command::CmdArgs& args) {
-		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
-			const Layer& layer = _layerMgr.layer(idx);
-			if (!layer.valid) {
-				continue;
-			}
-			Log::info("Layer %i:", idx);
-			Log::info(" - name:    %s", layer.name.c_str());
-			Log::info(" - visible: %s", layer.visible ? "true" : "false");
-			const voxel::RawVolume* v = volume(idx);
-			core_assert_always(v != nullptr);
-			const voxel::Region& region = v->region();
-			Log::info(" - region:");
-			Log::info("   - mins:   %i:%i:%i", region.getLowerX(), region.getLowerY(), region.getLowerZ());
-			Log::info("   - maxs:   %i:%i:%i", region.getUpperX(), region.getUpperY(), region.getUpperZ());
-			Log::info("   - cells:  %i:%i:%i", region.getWidthInCells(), region.getHeightInCells(), region.getDepthInCells());
-			Log::info("   - voxels: %i:%i:%i", region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
-		}
-	}).setHelp("Show details to all layers");
 
 	command::Command::registerCommand("animate", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1433,7 +1418,7 @@ void SceneManager::construct() {
 		const float red = core::string::toFloat(args[0]);
 		const float green = core::string::toFloat(args[1]);
 		const float blue = core::string::toFloat(args[2]);
-		glm::vec4 color(red / 255.0f, green / 255.0, blue / 255.0, 1.0f);
+		const glm::vec4 color(red / 255.0f, green / 255.0, blue / 255.0, 1.0f);
 		const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
@@ -1451,7 +1436,8 @@ void SceneManager::construct() {
 		// resolve the voxel via cursor position. This allows to use also get the proper
 		// result if we moved the cursor via keys (and thus might have skipped tracing)
 		const glm::ivec3& cursorPos = _modifier.cursorPosition();
-		const voxel::Voxel& voxel = modelVolume()->voxel(cursorPos);
+		const voxel::RawVolume *v = activeVolume();
+		const voxel::Voxel& voxel = v->voxel(cursorPos);
 		if (!voxel::isAir(voxel.getMaterial())) {
 			_modifier.setCursorVoxel(voxel);
 		}
@@ -1498,7 +1484,128 @@ void SceneManager::construct() {
 		modifier().setCenterMode(!modifier().centerMode());
 	}).setHelp("Toggle center plane building");
 
-	_grayScale = core::Var::get(cfg::VoxEditGrayInactive, "true");
+	command::Command::registerCommand("layeradd", [&] (const command::CmdArgs& args) {
+		const char *name = args.size() > 0 ? args[0].c_str() : "";
+		const char *width = args.size() > 1 ? args[1].c_str() : "64";
+		const char *height = args.size() > 2 ? args[2].c_str() : width;
+		const char *depth = args.size() > 3 ? args[3].c_str() : height;
+		const int iw = core::string::toInt(width) - 1;
+		const int ih = core::string::toInt(height) - 1;
+		const int id = core::string::toInt(depth) - 1;
+		const voxel::Region region(glm::zero<glm::ivec3>(), glm::ivec3(iw, ih, id));
+		if (!region.isValid()) {
+			Log::warn("Invalid size provided (%i:%i:%i - %s:%s:%s)", iw, ih, id, width, height, depth);
+			return;
+		}
+		voxel::SceneGraphNode newNode;
+		newNode.setVolume(new voxel::RawVolume(region), true);
+		newNode.setName(name);
+		const int parentId = activeNode();
+		addNodeToSceneGraph(newNode, parentId);
+	}).setHelp("Add a new layer (with a given name and width, height, depth - all optional)");
+
+	command::Command::registerCommand("layerdelete", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		if (voxel::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+			nodeRemove(*node);
+		}
+	}).setHelp("Delete a particular node by id - or the current active one");
+
+	command::Command::registerCommand("layerlock", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		if (voxel::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+			node->setLocked(true);
+		}
+	}).setHelp("Lock a particular layer by id - or the current active one");
+
+	command::Command::registerCommand("togglelayerlock", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		if (voxel::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+			node->setLocked(!node->locked());
+		}
+	}).setHelp("Toggle the lock state of a particular layer by id - or the current active one");
+
+	command::Command::registerCommand("layerunlock", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		if (voxel::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+			node->setLocked(false);
+		}
+	}).setHelp("Unlock a particular layer by id - or the current active one");
+
+	command::Command::registerCommand("layeractive", [&] (const command::CmdArgs& args) {
+		if (args.empty()) {
+			Log::info("Active node: %i", activeNode());
+			return;
+		}
+		const int nodeId = core::string::toInt(args[0]);
+		nodeActivate(nodeId);
+	}).setHelp("Set or print the current active layer");
+
+	command::Command::registerCommand("togglelayerstate", [&](const command::CmdArgs &args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			node->setVisible(!node->visible());
+		}
+	}).setHelp("Toggle the visible state of a layer");
+
+	command::Command::registerCommand("layerhideall", [&](const command::CmdArgs &args) {
+		for (voxel::SceneGraphNode &node : _sceneGraph) {
+			node.setVisible(false);
+		}
+	}).setHelp("Hide all layers");
+
+	command::Command::registerCommand("layerlockall", [&](const command::CmdArgs &args) {
+		for (voxel::SceneGraphNode &node : _sceneGraph) {
+			node.setLocked(true);
+		}
+	}).setHelp("Lock all layers");
+
+	command::Command::registerCommand("layerunlockall", [&] (const command::CmdArgs& args) {
+		for (voxel::SceneGraphNode &node : _sceneGraph) {
+			node.setLocked(false);
+		}
+	}).setHelp("Unlock all layers");
+
+	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
+		for (voxel::SceneGraphNode &node : _sceneGraph) {
+			if (node.id() == activeNode()) {
+				node.setVisible(true);
+				continue;
+			}
+			node.setVisible(false);
+		}
+	}).setHelp("Hide all layers except the active one");
+
+	command::Command::registerCommand("layerrename", [&] (const command::CmdArgs& args) {
+		if (args.size() == 1) {
+			const int nodeId = activeNode();
+			if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+				nodeRename(*node, args[0]);
+			}
+		} else if (args.size() == 2) {
+			const int nodeId = core::string::toInt(args[0]);
+			if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+				nodeRename(*node, args[1]);
+			}
+		} else {
+			Log::info("Usage: layerrename [<nodeid>] newname");
+		}
+	}).setHelp("Rename the current node or the given node id");
+
+	command::Command::registerCommand("layershowall", [&] (const command::CmdArgs& args) {
+		for (voxel::SceneGraphNode &node : _sceneGraph) {
+			node.setVisible(true);
+		}
+	}).setHelp("Show all layers");
+
+	command::Command::registerCommand("layerduplicate", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			nodeDuplicate(*node);
+		}
+	}).setHelp("Duplicates the current node or the given node id");
+
+	_grayScale = core::Var::get(cfg::VoxEditGrayInactive, "false");
 	_grayScale->setHelp("Render the inactive layers in gray scale mode");
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST)->setHelp("Merge similar quads to optimize the mesh");
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST)->setHelp("Reuse vertices or always create new ones");
@@ -1511,7 +1618,7 @@ void SceneManager::construct() {
 }
 
 void SceneManager::flip(math::Axis axis) {
-	_layerMgr.foreachGroupLayer([&] (int layerId) {
+	_sceneGraph.foreachGroup([&] (int layerId) {
 		auto* v = volume(layerId);
 		if (v == nullptr) {
 			return;
@@ -1540,7 +1647,7 @@ void SceneManager::toggleEditMode() {
 }
 
 void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition) {
-	_layerMgr.foreachGroupLayer([&] (int layerId) {
+	_sceneGraph.foreachGroup([&] (int layerId) {
 		auto* v = volume(layerId);
 		if (v == nullptr) {
 			return;
@@ -1599,10 +1706,6 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the grid renderer");
 		return false;
 	}
-	if (!_layerMgr.init()) {
-		Log::error("Failed to initialize the layer manager");
-		return false;
-	}
 	if (!_modifier.init()) {
 		Log::error("Failed to initialize the modifier");
 		return false;
@@ -1632,8 +1735,6 @@ bool SceneManager::init() {
 		return false;
 	}
 
-	_layerMgr.registerListener(this);
-
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
 	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "0.2 0.2 0.2");
 	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "1.0 1.0 1.0");
@@ -1655,7 +1756,7 @@ bool SceneManager::init() {
 }
 
 bool SceneManager::runScript(const core::String& script, const core::DynamicArray<core::String>& args) {
-	const int layerId = _layerMgr.activeLayer();
+	const int layerId = activeNode();
 	voxel::RawVolume* volume = this->volume(layerId);
 	const Selection& selection = _modifier.selection();
 	voxel::RawVolumeWrapper wrapper(volume);
@@ -1677,16 +1778,13 @@ void SceneManager::animate(double nowSeconds) {
 	}
 	if (_nextFrameSwitch <= nowSeconds) {
 		_nextFrameSwitch = nowSeconds + _animationSpeed;
-		const int layers = (int)_layerMgr.layers().size();
-		const int roundTrip = layers + _currentAnimationLayer;
-		for (int idx = _currentAnimationLayer + 1; idx < roundTrip; ++idx) {
-			const Layer& layer = _layerMgr.layer(idx % layers);
-			if (layer.valid) {
-				 _layerMgr.hideLayer(_currentAnimationLayer, true);
-				_currentAnimationLayer = idx % layers;
-				_layerMgr.hideLayer(_currentAnimationLayer, false);
-				return;
-			}
+		const int modelCount = (int)_sceneGraph.size(voxel::SceneGraphNodeType::Model);
+		const int roundTrip = modelCount + _currentAnimationLayer;
+		for (int modelIdx = _currentAnimationLayer + 1; modelIdx < roundTrip; ++modelIdx) {
+			_sceneGraph[_currentAnimationLayer].setVisible(false);
+			_currentAnimationLayer = modelIdx % modelCount;
+			_sceneGraph[_currentAnimationLayer].setVisible(true);
+			return;
 		}
 	}
 }
@@ -1771,18 +1869,13 @@ void SceneManager::shutdown() {
 		_copy = nullptr;
 	}
 
-	core::DynamicArray<voxel::RawVolume*> old = _volumeRenderer.shutdown();
-	for (voxel::RawVolume* v : old) {
-		delete v;
-	}
+	_volumeRenderer.shutdown();
 	_sceneGraph.clear();
 
 	_luaGenerator.shutdown();
 	_volumeCache.shutdown();
 	_mementoHandler.shutdown();
 	_modifier.shutdown();
-	_layerMgr.unregisterListener(this);
-	_layerMgr.shutdown();
 	_gizmo.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
@@ -1827,19 +1920,18 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 		Log::error("Failed to write lua script: %s", luaFile->name().c_str());
 	}
 
-	const voxedit::Layers& layers = _layerMgr.layers();
-	const size_t layerAmount = layers.size();
-	for (size_t i = 0; i < layerAmount; ++i) {
-		const voxel::RawVolume* v = volume((int)i);
+	const int mountCount = (int)_sceneGraph.size();
+	for (int i = 0; i < mountCount; ++i) {
+		const voxel::SceneGraphNode &node = _sceneGraph[i];
+		const voxel::RawVolume* v = node.volume();
 		if (v == nullptr) {
 			continue;
 		}
-		const voxedit::Layer& l = layers[i];
-		const core::String& value = l.metadataById("type");
+		const core::String& value = node.property("type");
 		if (value.empty()) {
-			const core::String& unknown = core::string::format("%i-%s-%s.vox", (int)i, l.name.c_str(), name);
+			const core::String& unknown = core::string::format("%i-%s-%s.vox", (int)i, node.name().c_str(), name);
 			Log::warn("No type metadata found on layer %i. Saving to %s", (int)i, unknown.c_str());
-			if (!saveLayer((int)i, unknown)) {
+			if (!saveNode((int)i, unknown)) {
 				Log::warn("Failed to save unknown layer to %s", unknown.c_str());
 				_dirty = true;
 			}
@@ -1847,7 +1939,7 @@ bool SceneManager::saveAnimationEntity(const char *name) {
 		}
 		const int characterMeshTypeId = core::string::toInt(value);
 		const core::String& fullPath = animSettings.fullPath(characterMeshTypeId, name);
-		if (!saveLayer((int)i, fullPath)) {
+		if (!saveNode((int)i, fullPath)) {
 			Log::warn("Failed to save type %i to %s", characterMeshTypeId, fullPath.c_str());
 			_dirty = true;
 		}
@@ -1878,14 +1970,7 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 		return false;
 	}
 
-	int layersAdded = setNewSceneGraph(newSceneGraph);
-	if (layersAdded <= 0) {
-		// create a new scene and in case of successfully loading all the anim related
-		// stuff, we will then delete the first layer again.
-		newScene(true, "entity", voxel::Region());
-	}
-
-	resetSceneState();
+	loadSceneGraph(newSceneGraph);
 	_animationUpdate = true;
 	_editMode = EditMode::Animation;
 
@@ -1903,11 +1988,13 @@ bool SceneManager::extractVolume() {
 	Log::debug("Extract the meshes for %i regions", (int)n);
 	for (size_t i = 0; i < n; ++i) {
 		const voxel::Region& region = _extractRegions[i].region;
-		if (!_volumeRenderer.extractRegion(_extractRegions[i].layer, region)) {
-			Log::error("Failed to extract the model mesh");
+		if (voxel::SceneGraphNode* node = sceneGraphNode(_extractRegions[i].nodeId)) {
+			if (!_volumeRenderer.extractRegion(*node, region)) {
+				Log::error("Failed to extract the model mesh");
+			}
+			Log::debug("Extract node %i", _extractRegions[i].nodeId);
+			voxel::logRegion("Extraction", region);
 		}
-		Log::debug("Extract layer %i", _extractRegions[i].layer);
-		voxel::logRegion("Extraction", region);
 	}
 	_extractRegions.clear();
 	return true;
@@ -1915,7 +2002,7 @@ bool SceneManager::extractVolume() {
 
 void SceneManager::noise(int octaves, float lacunarity, float frequency, float gain, voxelgenerator::noise::NoiseType type) {
 	math::Random random;
-	const int layerId = _layerMgr.activeLayer();
+	const int layerId = activeNode();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	if (voxelgenerator::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random) <= 0) {
 		Log::warn("Could not generate noise");
@@ -1931,7 +2018,7 @@ void SceneManager::noise(int octaves, float lacunarity, float frequency, float g
 void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<voxelgenerator::lsystem::Rule> &rules, float angle, float length,
 		float width, float widthIncrement, int iterations, float leavesRadius) {
 	math::Random random;
-	const int layerId = _layerMgr.activeLayer();
+	const int layerId = activeNode();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxelgenerator::lsystem::generate(wrapper, referencePosition(), axiom, rules, angle, length, width, widthIncrement, iterations, random, leavesRadius);
 	modified(layerId, wrapper.dirtyRegion());
@@ -1939,7 +2026,7 @@ void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<v
 
 void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 	math::Random random(ctx.cfg.seed);
-	const int layerId = _layerMgr.activeLayer();
+	const int layerId = activeNode();
 	voxel::RawVolumeWrapper wrapper(volume(layerId));
 	voxelgenerator::tree::createTree(wrapper, ctx, random);
 	modified(layerId, wrapper.dirtyRegion());
@@ -1958,12 +2045,13 @@ void SceneManager::moveCursor(int x, int y, int z) {
 	p.y += y * res;
 	p.z += z * res;
 	setCursorPosition(p, true);
-	_hitCursorVoxel = modelVolume()->voxel(cursorPosition());
+	const voxel::RawVolume *v = activeVolume();
+	_hitCursorVoxel = v->voxel(cursorPosition());
 	_traceViaMouse = false;
 }
 
 void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
-	const voxel::RawVolume* v = modelVolume();
+	const voxel::RawVolume* v = volume(activeNode());
 	if (v == nullptr) {
 		return;
 	}
@@ -2012,40 +2100,34 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 		*result = _result;
 	}
 	if (_editMode == EditMode::Scene) {
-		if (_sceneModeLayerTrace != -1) {
+		if (_sceneModeNodeIdTrace != -1) {
 			// if the trace is not forced, and the mouse cursor position did not change, don't
 			// re-execute the trace.
 			if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
 				return true;
 			}
 		}
-		_sceneModeLayerTrace = -1;
+		_sceneModeNodeIdTrace = -1;
 		core_trace_scoped(EditorSceneOnProcessUpdateRay);
 		_lastRaytraceX = _mouseCursor.x;
 		_lastRaytraceY = _mouseCursor.y;
 		float intersectDist = _camera->farPlane();
 		const math::Ray& ray = _camera->mouseRay(_mouseCursor);
-		for (int idx = 0; idx < (int)_layerMgr.layers().size(); ++idx) {
-			const Layer& layer = _layerMgr.layer(idx);
-			if (!layer.valid) {
+		for (voxel::SceneGraphNode &node : _sceneGraph) {
+			if (!node.visible()) {
 				continue;
 			}
-			if (!layer.visible) {
-				continue;
-			}
-			const voxel::RawVolume* v = volume(idx);
-			core_assert_always(v != nullptr);
-			const voxel::Region& region = v->region();
+			const voxel::Region& region = node.region();
 			float distance = 0.0f;
 			const math::AABB<float>& aabb = toAABB(region);
 			if (aabb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
 				if (distance < intersectDist) {
 					intersectDist = distance;
-					_sceneModeLayerTrace = idx;
+					_sceneModeNodeIdTrace = node.id();
 				}
 			}
 		}
-		Log::trace("Hovered layer: %i", _sceneModeLayerTrace);
+		Log::trace("Hovered node: %i", _sceneModeNodeIdTrace);
 		return true;
 	} else if (_editMode != EditMode::Model) {
 		return false;
@@ -2065,12 +2147,8 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 	if (_camera == nullptr) {
 		return false;
 	}
-	const voxel::RawVolume* model = modelVolume();
-	if (model == nullptr) {
-		return false;
-	}
-
-	Log::debug("Execute new trace for %i:%i (%i:%i)",
+	const voxel::RawVolume* v = activeVolume();
+	Log::trace("Execute new trace for %i:%i (%i:%i)",
 			_mouseCursor.x, _mouseCursor.y, _lastRaytraceX, _lastRaytraceY);
 
 	core_trace_scoped(EditorSceneOnProcessUpdateRay);
@@ -2087,7 +2165,7 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 	_result.firstValidPosition = false;
 	_result.direction = ray.direction;
 	_result.hitFace = voxel::FaceNames::Max;
-	raycastWithDirection(model, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
+	raycastWithDirection(v, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 		if (!_result.firstValidPosition && sampler.currentPositionValid()) {
 			_result.firstPosition = sampler.position();
 			_result.firstValidPosition = true;
@@ -2139,7 +2217,7 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 	}
 
 	if (_result.didHit) {
-		_hitCursorVoxel = model->voxel(_result.hitVoxel);
+		_hitCursorVoxel = v->voxel(_result.hitVoxel);
 	}
 
 	if (result) {
@@ -2168,7 +2246,7 @@ void SceneManager::updateLockedPlane(math::Axis axis) {
 		core::Color::LightGreen,
 		core::Color::LightBlue
 	};
-	updateShapeBuilderForPlane(_shapeBuilder, _volumeRenderer.region(), false, cursorPosition(), axis, core::Color::alpha(colors[index], 0.4f));
+	updateShapeBuilderForPlane(_shapeBuilder, _sceneGraph.region(), false, cursorPosition(), axis, core::Color::alpha(colors[index], 0.4f));
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 
@@ -2185,71 +2263,88 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 
 void SceneManager::setGizmoPosition() {
 	if (_gizmo.isModelSpace()) {
-		const voxel::Region& region = modelVolume()->region();
+		const voxel::RawVolume *v = activeVolume();
+		const voxel::Region& region = v->region();
 		_gizmo.setPosition(region.getLowerCornerf());
 	} else {
 		_gizmo.setPosition(glm::zero<glm::vec3>());
 	}
 }
 
-void SceneManager::onLayerChanged(int layerId) {
-	const Layer& layer = _layerMgr.layer(layerId);
-	_mementoHandler.markUndo(layerId, layer.name, nullptr, MementoType::LayerRenamed);
-	if (voxel::SceneGraphNode* node = sceneGraphNodeByLayerId(layerId)) {
-		node->setName(layer.name);
+void SceneManager::nodeRename(int nodeId, const core::String &name) {
+	if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		nodeRename(*node, name);
 	}
 }
 
-void SceneManager::onLayerDuplicate(int layerId) {
-	const Layer& layer = _layerMgr.layer(layerId);
-	const voxel::RawVolume* v = volume(layerId);
-	_layerMgr.addLayer(layer.name.c_str(), true, new voxel::RawVolume(v));
+void SceneManager::nodeRename(voxel::SceneGraphNode &node, const core::String &name) {
+	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), nullptr, MementoType::LayerRenamed);
+	node.setName(name);
 }
 
-void SceneManager::onLayerSwapped(int layerId1, int layerId2) {
-	// TODO: mementohandler
-	if (_volumeRenderer.swap(layerId1, layerId2)) {
-		if (voxel::SceneGraphNode* node = sceneGraphNodeByLayerId(layerId1)) {
-			node->setProperty("layer", core::string::toString(layerId2));
-		}
-		if (voxel::SceneGraphNode* node = sceneGraphNodeByLayerId(layerId2)) {
-			node->setProperty("layer", core::string::toString(layerId1));
-		}
-	} else {
-		Log::error("Failed to swap volumes for layer %i and layer %i", layerId1, layerId2);
+void SceneManager::nodeSetVisible(int nodeId, bool visible) {
+	if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		node->setVisible(visible);
 	}
 }
 
-void SceneManager::onLayerHide(int layerId) {
-	_volumeRenderer.hide(layerId, true);
-	if (voxel::SceneGraphNode* node = sceneGraphNodeByLayerId(layerId)) {
-		node->setVisible(false);
+void SceneManager::nodeSetLocked(int nodeId, bool visible) {
+	if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		node->setLocked(visible);
 	}
 }
 
-void SceneManager::onLayerShow(int layerId) {
-	_volumeRenderer.hide(layerId, false);
-	if (voxel::SceneGraphNode* node = sceneGraphNodeByLayerId(layerId)) {
-		node->setVisible(true);
+void SceneManager::nodeRemove(int nodeId) {
+	if (_sceneGraph.hasNode(nodeId)) {
+		nodeRemove(_sceneGraph.node(nodeId));
 	}
 }
 
-void SceneManager::onLayerUnlocked(int layerId) {
-	if (voxel::SceneGraphNode* node = sceneGraphNodeByLayerId(layerId)) {
-		node->setLocked(false);
-	}
+void SceneManager::nodeRemove(voxel::SceneGraphNode &node) {
+	const int nodeId = node.id();
+	Log::debug("Delete node %i with name %s", nodeId, node.name().c_str());
+	_mementoHandler.markNodeDeleted(node.parent(), nodeId, node.name(), node.volume());
+	_sceneGraph.removeNode(node.id());
+	_needAutoSave = true;
+	_dirty = true;
+	updateAABBMesh();
 }
 
-void SceneManager::onLayerLocked(int layerId) {
-	if (voxel::SceneGraphNode* node = sceneGraphNodeByLayerId(layerId)) {
-		node->setLocked(true);
+void SceneManager::nodeDuplicate(voxel::SceneGraphNode &node) {
+	if (node.type() == voxel::SceneGraphNodeType::Root) {
+		return;
 	}
+	const voxel::RawVolume* v = node.volume();
+	voxel::SceneGraphNode newNode;
+	newNode.setVolume(new voxel::RawVolume(v), true);
+	newNode.setName(node.name());
+	newNode.setPivot(node.pivot());
+	newNode.setVisible(node.visible());
+	newNode.setLocked(node.locked());
+	newNode.addProperties(node.properties());
+	/* int newNodeId = */sceneMgr().addNodeToSceneGraph(newNode, node.parent());
+	#if 0
+	for (int childNodeId : node.children()) {
+		// TODO: duplicate children
+	}
+	#endif
 }
 
-void SceneManager::onActiveLayerChanged(int old, int active) {
-	const voxel::RawVolume* v = volume(active);
-	core_assert_always(v != nullptr);
-	const voxel::Region& region = v->region();
+void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
+	_sceneGraph.foreachGroup(f);
+}
+
+void SceneManager::nodeActivate(int nodeId) {
+	if (!_sceneGraph.hasNode(nodeId)) {
+		Log::warn("Given node id %i doesn't exist", nodeId);
+		return;
+	}
+	voxel::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	if (node.type() != voxel::SceneGraphNodeType::Model) {
+		Log::warn("Given node id %i is no model node", nodeId);
+		return;
+	}
+	const voxel::Region& region = node.region();
 	updateGridRenderer(region);
 	updateAABBMesh();
 	if (!region.containsPoint(referencePosition())) {
@@ -2258,63 +2353,14 @@ void SceneManager::onActiveLayerChanged(int old, int active) {
 		setReferencePosition(center);
 	}
 	if (!region.containsPoint(cursorPosition())) {
-		setCursorPosition(v->region().getCenter());
+		setCursorPosition(node.region().getCenter());
 	}
 	setGizmoPosition();
 	resetLastTrace();
 }
 
-void SceneManager::onLayerAdded(int layerId, const Layer& layer, voxel::RawVolume* volume, const voxel::Region& region) {
-	core_trace_scoped(SceneManagerAddLayer);
-	if (volume == nullptr) {
-		const voxel::Region& newVolumeRegion = _volumeRenderer.region();
-		volume = new voxel::RawVolume(newVolumeRegion);
-	}
-	Log::debug("Adding layer %i with name %s", layerId, layer.name.c_str());
-	// Add two states here - one with the empty layer and one with the filled layer.
-	// To always be able to return to the empty layer
-	_mementoHandler.markLayerAdded(layerId, layer.name, volume);
-	if (region.isValid()) {
-		// the volume is maybe an old state and only needs to get updated in the modified region.
-		core_assert_always(setNewVolume(layerId, volume, false));
-		queueRegionExtraction(layerId, region);
-	} else {
-		// update the whole volume
-		core_assert_always(setNewVolume(layerId, volume, true));
-		queueRegionExtraction(layerId, volume->region());
-	}
-	setReferencePosition(layer.pivot);
-	_volumeRenderer.hide(layerId, !layer.visible);
-	_needAutoSave = true;
-	_dirty = true;
-	handleAnimationViewUpdate(layerId);
-	// TODO: add layer meta data if we add a new layer for animations.
-	//_layerMgr.addMetadata(layerId, {{"type", ""}});
-}
-
-void SceneManager::onLayerDeleted(int layerId, const Layer& layer) {
-	voxel::RawVolume* v = _volumeRenderer.setVolume(layerId, nullptr);
-	if (v != nullptr) {
-		Log::debug("Deleted layer %i with name %s", layerId, layer.name.c_str());
-		removeFromSceneGraph(layerId);
-		// Add two states here - one with the filled layer and one with the empty layer.
-		// To always be able to return to the filled layer
-		_mementoHandler.markLayerDeleted(layerId, layer.name, v);
-		_volumeRenderer.update(layerId);
-		_needAutoSave = true;
-		_dirty = true;
-		delete v;
-		updateAABBMesh();
-	}
-}
-
 bool SceneManager::empty() const {
-	for (const auto& l : _layerMgr.layers()) {
-		if (l.valid) {
-			return false;
-		}
-	}
-	return true;
+	return _sceneGraph.empty();
 }
 
 bool SceneManager::cameraRotate() const {

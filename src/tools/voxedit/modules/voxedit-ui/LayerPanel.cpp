@@ -3,51 +3,52 @@
  */
 
 #include "LayerPanel.h"
+#include "voxedit-util/layer/LayerSettings.h"
 #include "core/collection/DynamicArray.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUI.h"
+#include "voxelformat/SceneGraphNode.h"
 
 #define LAYERPOPUP "##layerpopup"
 #define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
 
 namespace voxedit {
 
-void LayerPanel::addLayerItem(int layerId, const voxedit::Layer &layer, command::CommandExecutionListener &listener) {
-	voxedit::LayerManager& layerMgr = voxedit::sceneMgr().layerMgr();
+void LayerPanel::addLayerItem(const voxel::SceneGraph& sceneGraph, const voxel::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	ImGui::TableNextColumn();
 
-	const core::String &visibleId = core::string::format("##visible-layer-%i", layerId);
-	bool visible = layer.visible;
+	const int nodeId = node.id();
+
+	const core::String &visibleId = core::string::format("##visible-layer-%i", nodeId);
+	bool visible = node.visible();
 	if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
-		layerMgr.hideLayer(layerId, !visible);
+		sceneMgr().nodeSetVisible(nodeId, visible);
 	}
 	ImGui::TableNextColumn();
 
-	const core::String &lockedId = core::string::format("##locked-layer-%i", layerId);
-	bool locked = layer.locked;
+	const core::String &lockedId = core::string::format("##locked-layer-%i", nodeId);
+	bool locked = node.locked();
 	if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
-		layerMgr.lockLayer(layerId, locked);
+		sceneMgr().nodeSetLocked(nodeId, locked);
 	}
 	ImGui::TableNextColumn();
 
-	const core::String &nameId = core::string::format("##name-layer-%i", layerId);
+	const core::String &nameId = core::string::format("##name-layer-%i", nodeId);
 	ImGui::PushID(nameId.c_str());
-	if (ImGui::Selectable(layer.name.c_str(), layerId == layerMgr.activeLayer())) {
-		layerMgr.setActiveLayer(layerId);
+	if (ImGui::Selectable(node.name().c_str(), nodeId == sceneGraph.activeNode())) {
+		sceneMgr().nodeActivate(nodeId);
 	}
 	ImGui::PopID();
 
-	const core::String &contextMenuId = core::string::format("Edit##context-layer-%i", layerId);
+	const core::String &contextMenuId = core::string::format("Edit##context-layer-%i", nodeId);
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
-		const int validLayers = layerMgr.validLayers();
+		const int validLayers = (int)sceneGraph.size();
 		ImGui::CommandMenuItem(ICON_FA_TRASH_ALT " Delete" LAYERPOPUP, "layerdelete", validLayers > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" LAYERPOPUP, "layerhideothers", validLayers > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" LAYERPOPUP, "layerduplicate", true, &listener);
 		ImGui::CommandMenuItem(ICON_FA_EYE " Show all" LAYERPOPUP, "layershowall", true, &listener);
 		ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide all" LAYERPOPUP, "layerhideall", true, &listener);
-		ImGui::CommandMenuItem(ICON_FA_CARET_SQUARE_UP " Move up" LAYERPOPUP, "layermoveup", validLayers > 1, &listener);
-		ImGui::CommandMenuItem(ICON_FA_CARET_SQUARE_DOWN " Move down" LAYERPOPUP, "layermovedown", validLayers > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge" LAYERPOPUP, "layermerge", validLayers > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" LAYERPOPUP, "layermergeall", validLayers > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" LAYERPOPUP, "layermergevisible", validLayers > 1, &listener);
@@ -57,18 +58,18 @@ void LayerPanel::addLayerItem(int layerId, const voxedit::Layer &layer, command:
 		ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center origin" LAYERPOPUP, "center_origin", true, &listener);
 		ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center reference" LAYERPOPUP, "center_referenceposition", true, &listener);
 		ImGui::CommandMenuItem(ICON_FA_SAVE " Save" LAYERPOPUP, "layerssave", true, &listener);
-		core::String layerName = layer.name;
+		core::String layerName = node.name();
 		if (ImGui::InputText("Name" LAYERPOPUP, &layerName)) {
-			layerMgr.rename(layerId, layerName);
+			sceneMgr().nodeRename(node.id(), layerName);
 		}
 		ImGui::EndPopup();
 	}
 
 	ImGui::TableNextColumn();
 
-	const core::String &deleteId = core::string::format(ICON_FA_TRASH_ALT"##delete-layer-%i", layerId);
+	const core::String &deleteId = core::string::format(ICON_FA_TRASH_ALT"##delete-layer-%i", nodeId);
 	if (ImGui::Button(deleteId.c_str())) {
-		layerMgr.deleteLayer(layerId);
+		sceneMgr().nodeRemove(nodeId);
 	}
 }
 
@@ -77,8 +78,8 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
 	}
 	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
-	voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+		const voxel::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		core_trace_scoped(LayerPanel);
 		ImGui::BeginChild("##layertable", ImVec2(0.0f, 400.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
 		static const uint32_t TableFlags =
@@ -90,25 +91,21 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("##deletelayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableHeadersRow();
-			const voxedit::Layers& layers = layerMgr.layers();
-			const int layerCnt = (int)layers.size();
-			for (int l = 0; l < layerCnt; ++l) {
-				if (!layers[l].valid) {
-					continue;
-				}
-				addLayerItem(l, layers[l], listener);
+			for (voxel::SceneGraphNode &node : sceneGraph) {
+				addLayerItem(sceneGraph, node, listener);
 			}
 			ImGui::EndTable();
 		}
 		ImGui::EndChild();
 		if (ImGui::Button(ICON_FA_PLUS_SQUARE"##newlayer")) {
-			const int layerId = layerMgr.activeLayer();
-			const voxel::RawVolume* v = sceneMgr.volume(layerId);
+			const int nodeId = sceneGraph.activeNode();
+			voxel::SceneGraphNode &node = sceneGraph.node(nodeId);
+			const voxel::RawVolume* v = node.volume();
 			const voxel::Region& region = v->region();
 			layerSettings->position = region.getLowerCorner();
 			layerSettings->size = region.getDimensionsInVoxels();
 			if (layerSettings->name.empty()) {
-				layerSettings->name = layerMgr.layer(layerId).name;
+				layerSettings->name = node.name();
 			}
 			ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
 		}
@@ -119,9 +116,12 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			ImGui::InputVec3("Size", layerSettings->size);
 			if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
 				ImGui::CloseCurrentPopup();
+				voxel::SceneGraphNode node;
 				voxel::RawVolume* v = new voxel::RawVolume(layerSettings->region());
-				const int layerId = layerMgr.addLayer(layerSettings->name.c_str(), true, v, v->region().getCenter());
-				layerMgr.setActiveLayer(layerId);
+				node.setVolume(v, true);
+				node.setName(layerSettings->name.c_str());
+				node.setPivot(v->region().getCenter());
+				sceneMgr.addNodeToSceneGraph(node);
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_TIMES " Cancel##layersettings")) {
@@ -132,8 +132,8 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		}
 
 		ImGui::SameLine();
-		const bool multipleLayers = layerMgr.validLayers() <= 1;
-		if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", multipleLayers)) {
+		const bool multipleModels = sceneGraph.size(voxel::SceneGraphNodeType::Model) <= 1;
+		if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", multipleModels)) {
 			if (sceneMgr.animateActive()) {
 				command::executeCommands("animate 0", &listener);
 			} else {
@@ -142,16 +142,16 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_UP"##layers", multipleLayers)) {
+		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_UP"##layers", multipleModels)) {
 			command::executeCommands("layermoveup", &listener);
 		}
 		ImGui::TooltipText("Move the layer one level up");
 		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_DOWN "##layers", multipleLayers)) {
+		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_DOWN "##layers", multipleModels)) {
 			command::executeCommands("layermovedown", &listener);
 		}
 		ImGui::TooltipText("Move the layer one level down");
-		if (!multipleLayers) {
+		if (!multipleModels) {
 			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
 		}
 	}

@@ -68,23 +68,39 @@ TEST_F(SceneGraphTest, testChildren) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setName("node");
-		sceneGraph.emplace(core::move(node));
+		node.setName("model");
+		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		node.setName("group");
+		EXPECT_EQ(2, sceneGraph.emplace(core::move(node), 1));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setName("children");
-		sceneGraph.emplace(core::move(node), 1);
+		node.setName("model2");
+		EXPECT_EQ(3, sceneGraph.emplace(core::move(node), 2));
 	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("model");
+		EXPECT_EQ(4, sceneGraph.emplace(core::move(node), 1));
+	}
+	EXPECT_EQ(1, sceneGraph.root().children()[0]);
+	ASSERT_TRUE(sceneGraph.hasNode(1));
 	const SceneGraphNode& modelNode = sceneGraph.node(1);
 	EXPECT_EQ(SceneGraphNodeType::Model, modelNode.type());
 	EXPECT_EQ(1, modelNode.id());
-	EXPECT_EQ("node", modelNode.name());
-	EXPECT_EQ(1u, modelNode.children().size());
-	for (const int child : modelNode.children()) {
-		EXPECT_EQ(2, child) << "There should only be one child with the id 2";
-	}
-	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model));
+	EXPECT_EQ("model", modelNode.name());
+	ASSERT_EQ(2u, modelNode.children().size());
+	EXPECT_EQ(2, modelNode.children()[0]) << "First child should be the node with the id 2";
+	ASSERT_TRUE(sceneGraph.hasNode(2));
+	EXPECT_EQ(modelNode.id(), sceneGraph.node(2).parent());
+	EXPECT_EQ(4, modelNode.children()[1]) << "Second child should be the node with the id 4";
+	ASSERT_TRUE(sceneGraph.hasNode(4));
+	EXPECT_EQ(modelNode.id(), sceneGraph.node(4).parent());
+	EXPECT_EQ(3u, sceneGraph.size(SceneGraphNodeType::Model));
+	ASSERT_EQ(1u, sceneGraph.root().children().size());
 }
 
 TEST_F(SceneGraphTest, testRemove) {

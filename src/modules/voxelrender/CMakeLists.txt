@@ -2,6 +2,7 @@ set(LIB voxelrender)
 set(SRCS
 	CachedMeshRenderer.cpp CachedMeshRenderer.h
 	MeshRenderer.cpp MeshRenderer.h
+	SceneGraphRenderer.cpp SceneGraphRenderer.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	ShaderAttribute.h
 	VoxelFontRenderer.h VoxelFontRenderer.cpp

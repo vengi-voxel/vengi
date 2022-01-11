@@ -18,9 +18,6 @@ set(SRCS
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
 	modifier/ModifierType.h
 
-	layer/LayerManager.h layer/LayerManager.cpp
-	layer/LayerListener.h
-	layer/Layer.h
 	layer/LayerSettings.h
 
 	tool/Clipboard.h tool/Clipboard.cpp
@@ -31,7 +28,6 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender voxelgener
 
 set(TEST_SRCS
 	tests/AnimationLuaSaverTest.cpp
-	tests/LayerManagerTest.cpp
 	tests/MementoHandlerTest.cpp
 	tests/ModifierTest.cpp
 )

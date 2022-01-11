@@ -113,6 +113,12 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	}
 	++_nextNodeId;
 	node.setId(nodeId);
+	if (_activeNodeId == -1) {
+		// try to set a sane default value for the active node
+		if (node.type() == SceneGraphNodeType::Model) {
+			_activeNodeId = nodeId;
+		}
+	}
 	node.setParent(parent);
 	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)node.type(), node.id(), node.parent());
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
@@ -125,7 +131,18 @@ bool SceneGraph::removeNode(int nodeId) {
 		Log::debug("Could not remove node %i - not found", nodeId);
 		return false;
 	}
-	if (iter->value.type() == SceneGraphNodeType::Root) {
+	if (iter->value.type() == SceneGraphNodeType::Model) {
+		// remove any other node that references this one
+		core::Buffer<int> refNodes;
+		for (auto i = begin(SceneGraphNodeType::ModelReference); i != end(); ++i) {
+			if ((*i).referencedNodeId() == iter->value.id()) {
+				refNodes.push_back((*i).id());
+			}
+		}
+		for (int nodeId : refNodes) {
+			removeNode(nodeId);
+		}
+	} else if (iter->value.type() == SceneGraphNodeType::Root) {
 		core_assert(nodeId == 0);
 		clear();
 		return true;
@@ -135,6 +152,14 @@ bool SceneGraph::removeNode(int nodeId) {
 		state |= removeNode(childId);
 	}
 	_nodes.erase(iter);
+	if (_activeNodeId == nodeId) {
+		if (!empty(SceneGraphNodeType::Model)) {
+			// get the first model node
+			_activeNodeId = (*this)[0].id();
+		} else {
+			_activeNodeId = root().id();
+		}
+	}
 	return state;
 }
 

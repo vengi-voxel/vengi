@@ -72,22 +72,22 @@ void StatusBar::update(const char *title, float height, const core::String &last
 	if (ImGui::Begin(title, nullptr, statusBarFlags)) {
 		core_trace_scoped(StatusBar);
 		voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
-		const voxedit::LayerManager& layerMgr = sceneMgr.layerMgr();
+		const voxel::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		const voxedit::ModifierFacade& modifier = sceneMgr.modifier();
 		const float fields = 4.0f;
-		const int layerIdx = layerMgr.activeLayer();
-		const voxel::RawVolume* v = sceneMgr.volume(layerIdx);
+		const int nodeId = sceneGraph.activeNode();
+		const voxel::RawVolume* v = sceneMgr.volume(nodeId);
 		const voxel::Region& region = v->region();
 		glm::ivec3 mins = region.getLowerCorner();
 		glm::ivec3 maxs = region.getDimensionsInVoxels();
 		if (xyzValues("pos", mins)) {
 			const glm::ivec3 &f = mins - region.getLowerCorner();
-			sceneMgr.shift(layerIdx, f);
+			sceneMgr.shift(nodeId, f);
 		}
 		ImGui::SameLine();
 		if (xyzValues("size", maxs)) {
 			const glm::ivec3 &f = maxs - region.getDimensionsInVoxels();
-			sceneMgr.resize(layerIdx, f);
+			sceneMgr.resize(nodeId, f);
 		}
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(size.x / fields * 1.0f);

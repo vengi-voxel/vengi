@@ -22,7 +22,7 @@ class SceneGraph {
 protected:
 	core::Map<int, SceneGraphNode> _nodes;
 	int _nextNodeId = 0;
-	int _activeNodeId = 1;
+	int _activeNodeId = -1;
 
 	int nextLockedNode(int last) const;
 
