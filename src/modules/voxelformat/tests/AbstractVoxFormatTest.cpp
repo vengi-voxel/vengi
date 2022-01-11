@@ -53,6 +53,24 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
+void AbstractVoxFormatTest::testSave(const core::String &filename, voxel::Format *format) {
+	Region region(glm::ivec3(0), glm::ivec3(0));
+	RawVolume layer1(region);
+	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
+	SceneGraph sceneGraph;
+	voxel::SceneGraphNode node1;
+	node1.setVolume(&layer1, false);
+	sceneGraph.emplace(core::move(node1));
+	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
+	io::FileStream sstream(sfile.get());
+	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));
+	SceneGraph sceneGraphLoad;
+	const io::FilePtr &file = open(filename);
+	io::FileStream stream(file.get());
+	EXPECT_TRUE(format->loadGroups(file->name(), stream, sceneGraphLoad));
+	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
+}
+
 void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, voxel::Format *format, int mins, int maxs) {
 	const Region region(mins, maxs);
 	RawVolume original(region);

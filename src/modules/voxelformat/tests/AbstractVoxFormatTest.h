@@ -47,6 +47,8 @@ protected:
 
 	void testSaveMultipleLayers(const core::String& filename, voxel::Format* format);
 
+	void testSave(const core::String& filename, voxel::Format* format);
+
 	void testSaveLoadVoxel(const core::String& filename, voxel::Format* format, int mins = 0, int maxs = 1);
 
 	void testLoadSaveAndLoad(const core::String &srcFilename, voxel::Format &srcFormat,
