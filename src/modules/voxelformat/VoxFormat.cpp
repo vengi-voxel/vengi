@@ -446,7 +446,7 @@ bool VoxFormat::loadChunk_SIZE(State& state, io::SeekableReadStream& stream, con
 	}
 	state._sizes.push_back(region);
 	if (state._sizes.size() > 256) {
-		Log::error("Found more than 256 layers: %i", (int)state._sizes.size());
+		Log::error("Found more than 256 models: %i", (int)state._sizes.size());
 		return false;
 	}
 	return true;
