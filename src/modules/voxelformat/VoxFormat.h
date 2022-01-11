@@ -48,8 +48,7 @@ private:
 	using VoxNodeId = uint32_t;
 
 	struct VoxNTRNNode {
-		glm::mat3x3 rotMat { 0.0f };
-		glm::quat rotation = glm::quat_cast(glm::mat3(1.0f));
+		glm::mat3x3 rotMat { 1.0f };
 		glm::ivec3 translation { 0 };
 		int32_t layerId = 0;
 		uint32_t numFrames = 0u;

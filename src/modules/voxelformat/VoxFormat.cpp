@@ -462,7 +462,7 @@ glm::ivec3 VoxFormat::calcTransform(State& state, const VoxNTRNNode& t, int x, i
 		return glm::ivec3(x, y, z);
 	}
 	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - pivot;
-	const glm::ivec3 pos = glm::ivec3(t.rotation * glm::vec3((float)c.x + 0.5f, (float)c.y + 0.5f, (float)c.z + 0.5f));
+	const glm::ivec3 pos = glm::ivec3(t.rotMat * glm::vec3((float)c.x + 0.5f, (float)c.y + 0.5f, (float)c.z + 0.5f));
 	const glm::ivec3 rotated(divFloor(pos.x, 2), divFloor(pos.y, 2), divFloor(pos.z, 2));
 	return rotated + t.translation;
 }
@@ -706,7 +706,6 @@ bool VoxFormat::parseSceneGraphRotation(VoxNTRNNode &transform, const VoxAttribu
 	for (int i = 0; i < 3; ++i) {
 		Log::debug("mat3[%i]: %.2f, %.2f, %.2f", i, transform.rotMat[0][i], transform.rotMat[1][i], transform.rotMat[2][i]);
 	}
-	transform.rotation = glm::quat_cast(transform.rotMat);
 
 	return true;
 }
@@ -1038,11 +1037,6 @@ bool VoxFormat::applyTransform(State &state, VoxNTRNNode& transform, VoxNodeId n
 		current = parent;
 	}
 
-	// skip root node
-	if (nodeId == 0) {
-		return true;
-	}
-
 	VoxSceneGraphNode node;
 	if (!state._sceneGraph.get(nodeId, node)) {
 		Log::debug("Could not find node %u", nodeId);
@@ -1050,14 +1044,15 @@ bool VoxFormat::applyTransform(State &state, VoxNTRNNode& transform, VoxNodeId n
 	}
 
 	if (node.type == VoxSceneGraphNodeType::Transform) {
-		if (!state._ntrn.hasKey(node.nodeId)) {
+		auto ntrniter = state._ntrn.find(node.nodeId);
+		if (ntrniter == state._ntrn.end()) {
 			Log::error("Invalid transform node id found: %u", node.nodeId);
 			return false;
 		}
 
-		const VoxNTRNNode& t = state._ntrn.find(node.nodeId)->value;
-		transform.rotation = glm::normalize(t.rotation * transform.rotation);
-		transform.translation += t.rotation * glm::vec3(t.translation);
+		const VoxNTRNNode& t = ntrniter->value;
+		transform.rotMat = t.rotMat * transform.rotMat;
+		transform.translation += t.rotMat * glm::vec3(t.translation);
 		Log::debug("Apply translation for node %u %i:%i:%i",
 				nodeId, transform.translation.x, transform.translation.y, transform.translation.z);
 	}
