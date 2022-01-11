@@ -732,18 +732,6 @@ void SceneManager::updateGridRenderer(const voxel::Region& region) {
 	_gridRenderer.update(toAABB(region));
 }
 
-voxel::SceneGraphNode *SceneManager::sceneGraphNodeByLayerId(int layerId) {
-	for (voxel::SceneGraphNode &node : _sceneGraph) {
-		const int layerIdProp = core::string::toInt(node.property("layer"));
-		Log::trace("Node for layer %i", layerIdProp);
-		if (layerIdProp == layerId) {
-			return &node;
-		}
-	}
-	Log::debug("Could not find node for layer %i", layerId);
-	return nullptr;
-}
-
 voxel::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
 	if (_sceneGraph.hasNode(nodeId)) {
 		return &_sceneGraph.node(nodeId);

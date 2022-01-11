@@ -190,7 +190,6 @@ public:
 	int addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent = 0);
 private:
 	int addSceneGraphNode_r(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent);
-	voxel::SceneGraphNode *sceneGraphNodeByLayerId(int layerId);
 	voxel::SceneGraphNode *sceneGraphNode(int nodeId);
 	const voxel::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	bool setSceneGraphNodeVolume(voxel::SceneGraphNode &node, voxel::RawVolume* volume);
