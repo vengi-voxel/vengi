@@ -653,23 +653,16 @@ int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
 	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
 		// update the whole volume
 		const voxel::Region& region = node.region();
-		updateGridRenderer(region);
-		updateAABBMesh();
 		queueRegionExtraction(newNodeId, region);
 
 		Log::debug("Adding node %i with name %s", newNodeId, node.name().c_str());
 		_mementoHandler.markNodeAdded(parent, newNodeId, node.name(), node.volume());
 
 		_result = voxel::PickResult();
-		setCursorPosition(cursorPosition(), true);
-		glm::ivec3 center = region.getCenter();
-		center.y = region.getLowerY();
-		setReferencePosition(center);
-		resetLastTrace();
-
-		setReferencePosition(node.pivot());
 		_needAutoSave = true;
 		_dirty = true;
+
+		nodeActivate(newNodeId);
 		handleAnimationViewUpdate(newNodeId);
 	}
 	return newNodeId;
@@ -2339,13 +2332,12 @@ void SceneManager::nodeActivate(int nodeId) {
 		Log::warn("Given node id %i is no model node", nodeId);
 		return;
 	}
+	_sceneGraph.setActiveNode(nodeId);
 	const voxel::Region& region = node.region();
 	updateGridRenderer(region);
 	updateAABBMesh();
 	if (!region.containsPoint(referencePosition())) {
-		glm::ivec3 center = region.getCenter();
-		center.y = region.getLowerY();
-		setReferencePosition(center);
+		setReferencePosition(node.pivot());
 	}
 	if (!region.containsPoint(cursorPosition())) {
 		setCursorPosition(node.region().getCenter());

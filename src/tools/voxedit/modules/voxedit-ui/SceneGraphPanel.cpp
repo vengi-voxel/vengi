@@ -39,20 +39,23 @@ static void recursiveAddNodes(const voxel::SceneGraph &sceneGraph, const voxel::
 	if (ImGui::TreeNode(name.c_str())) {
 		ImGui::TooltipText("Node id: %i", node.id());
 		if (node.type() == voxel::SceneGraphNodeType::Camera) {
-			if (ImGui::IsItemClicked() /*&& !ImGui::IsItemToggledOpen()*/) {
+			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
 				video::Camera camera;
 				camera.setQuaternion(glm::quat_cast(node.matrix()));
 				// TODO: switch to this camera when double clicking this...
 			}
-		}
-		if (node.type() == voxel::SceneGraphNodeType::Model) {
+		} else if (node.type() == voxel::SceneGraphNodeType::Model) {
 			const voxel::Region &region = node.region();
 			const glm::ivec3 &pos = region.getLowerCorner();
 			const glm::ivec3 &size = region.getDimensionsInVoxels();
 			ImGui::LabelText(core::string::format("%i:%i:%i", pos.x, pos.y, pos.z).c_str(), "position");
 			ImGui::LabelText(core::string::format("%i:%i:%i", size.x, size.y, size.z).c_str(), "size");
-			if (ImGui::IsItemClicked() /*&& !ImGui::IsItemToggledOpen()*/) {
-				// TODO: switch to scene mode and select node
+			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+				sceneMgr().nodeActivate(node.id());
+			}
+		} else if (node.type() == voxel::SceneGraphNodeType::ModelReference) {
+			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+				sceneMgr().nodeActivate(node.referencedNodeId());
 			}
 		}
 		for (const auto& entry : node.properties()) {
