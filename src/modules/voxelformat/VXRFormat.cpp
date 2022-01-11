@@ -179,11 +179,25 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 	return true;
 }
 
+static void addProperty(voxel::SceneGraphNode* node, const char *name, float value) {
+	if (node == nullptr) {
+		return;
+	}
+	node->setProperty(name, core::string::toString(value));
+}
+
 static void addProperty(voxel::SceneGraphNode* node, const char *name, bool value) {
 	if (node == nullptr) {
 		return;
 	}
 	node->setProperty(name, value ? "true" : "false");
+}
+
+static void addProperty(voxel::SceneGraphNode* node, const char *name, const char *value) {
+	if (node == nullptr) {
+		return;
+	}
+	node->setProperty(name, value);
 }
 
 bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, uint32_t version, int parent) {
@@ -211,6 +225,8 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 	if (sceneGraph.hasNode(nodeId)) {
 		node = &sceneGraph.node(nodeId);
 	}
+	addProperty(node, "id", id);
+	addProperty(node, "filename", filename);
 	if (version > 4) {
 		if (version >= 9) {
 			addProperty(node, "collidable", stream.readBool());
@@ -233,9 +249,12 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 		if (version >= 9) {
 			char effectorId[1024];
 			wrapBool(stream.readString(sizeof(effectorId), effectorId, true))
+			addProperty(node, "effectorId", effectorId);
 			addProperty(node, "constraints visible", stream.readBool());
-			wrap(stream.readFloat(dummyf)) // rollmin ???
-			wrap(stream.readFloat(dummyf)) // rollmax ???
+			wrap(stream.readFloat(dummyf)) // rollmin
+			addProperty(node, "rollmin", dummyf);
+			wrap(stream.readFloat(dummyf)) // rollmax
+			addProperty(node, "rollmax", dummyf);
 			int32_t constraints;
 			wrap(stream.readInt32(constraints))
 			for (int32_t i = 0; i < constraints; ++i) {
@@ -292,9 +311,21 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
+	int parentNodeId;
+	{
+		voxel::SceneGraphNode groupNode(voxel::SceneGraphNodeType::Group);
+		groupNode.setName("VXR");
+		parentNodeId = sceneGraph.emplace(core::move(groupNode), sceneGraph.root().id());
+	}
+
+	voxel::SceneGraphNode *node = nullptr;
+	if (sceneGraph.hasNode(parentNodeId)) {
+		node = &sceneGraph.node(parentNodeId);
+	}
 	if (version >= 7) {
 		char defaultAnim[1024];
 		wrapBool(stream.readString(sizeof(defaultAnim), defaultAnim, true))
+		addProperty(node, "defaultanim", defaultAnim);
 	}
 	if (version <= 3) {
 		uint32_t dummy;
@@ -317,9 +348,10 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 					modelPath.append("/");
 				}
 				modelPath.append(vxmFilename);
-				if (!loadChildVXM(modelPath, sceneGraph, sceneGraph.root().id())) {
+				if (!loadChildVXM(modelPath, sceneGraph, parentNodeId)) {
 					Log::warn("Failed to attach model for %s with filename %s", id, modelPath.c_str());
 				}
+				// TODO: add the id to the model node
 			}
 		}
 		return true;
@@ -331,7 +363,9 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	if (version >= 8) {
 		char baseTemplate[1024];
 		wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
+		addProperty(node, "basetemplate", baseTemplate);
 		const bool isStatic = stream.readBool();
+		addProperty(node, "static", isStatic);
 		if (isStatic) {
 			int32_t lodLevels;
 			wrap(stream.readInt32(lodLevels))
@@ -366,11 +400,10 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	Log::debug("Found %i children (%i)", children, (int)sceneGraph.size());
 	for (int32_t i = 0; i < children; ++i) {
-		wrapBool(importChild(filename, stream, sceneGraph, version, sceneGraph.root().id()))
+		wrapBool(importChild(filename, stream, sceneGraph, version, parentNodeId))
 	}
 
 	// some files since version 6 still have stuff here
-
 	return true;
 }
 
