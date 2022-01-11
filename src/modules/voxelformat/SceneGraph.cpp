@@ -97,6 +97,9 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 		parentIter->value.addChild(nodeId);
 	}
 	++_nextNodeId;
+	if (node.type() == SceneGraphNodeType::Model) {
+		node.setModelId(_nextModelId++);
+	}
 	node.setId(nodeId);
 	if (_activeNodeId == -1) {
 		// try to set a sane default value for the active node
@@ -171,6 +174,7 @@ void SceneGraph::clear() {
 	}
 	_nodes.clear();
 	_nextNodeId = 1;
+	_nextModelId = 0;
 
 	SceneGraphNode node(SceneGraphNodeType::Root);
 	node.setName("root");
