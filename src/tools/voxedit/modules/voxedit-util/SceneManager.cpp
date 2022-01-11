@@ -354,15 +354,15 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 
 void SceneManager::colorToNewLayer(const voxel::Voxel voxelColor) {
 	voxel::RawVolume* newVolume = new voxel::RawVolume(_sceneGraph.region());
-	_sceneGraph.foreachGroup([&] (int layerId) {
-		voxel::RawVolumeWrapper wrapper(volume(layerId));
+	_sceneGraph.foreachGroup([&] (int nodeId) {
+		voxel::RawVolumeWrapper wrapper(volume(nodeId));
 		voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
 			if (voxel.getColor() == voxelColor.getColor()) {
 				newVolume->setVoxel(x, y, z, voxel);
 				wrapper.setVoxel(x, y, z, voxel::Voxel());
 			}
 		});
-		modified(layerId, wrapper.dirtyRegion());
+		modified(nodeId, wrapper.dirtyRegion());
 	});
 	voxel::SceneGraphNode node;
 	node.setVolume(newVolume, true);
@@ -431,8 +431,8 @@ void SceneManager::resize(int nodeId, const glm::ivec3& size) {
 
 void SceneManager::resizeAll(const glm::ivec3& size) {
 	const glm::ivec3 refPos = referencePosition();
-	_sceneGraph.foreachGroup([&] (int layerId) {
-		resize(layerId, size);
+	_sceneGraph.foreachGroup([&] (int nodeId) {
+		resize(nodeId, size);
 	});
 	if (_sceneGraph.region().containsPoint(refPos)) {
 		setReferencePosition(refPos);
@@ -829,8 +829,8 @@ void SceneManager::rotate(int nodeId, const glm::ivec3& angle, bool increaseSize
 
 void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize, bool rotateAroundReferencePosition) {
 	const glm::ivec3 angle(angleX, angleY, angleZ);
-	_sceneGraph.foreachGroup([&] (int layerId) {
-		rotate(layerId, angle, increaseSize, rotateAroundReferencePosition);
+	_sceneGraph.foreachGroup([&] (int nodeId) {
+		rotate(nodeId, angle, increaseSize, rotateAroundReferencePosition);
 	});
 }
 
@@ -848,8 +848,8 @@ void SceneManager::move(int nodeId, const glm::ivec3& m) {
 
 void SceneManager::move(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
-	_sceneGraph.foreachGroup([&] (int layerId) {
-		move(layerId, v);
+	_sceneGraph.foreachGroup([&] (int nodeId) {
+		move(nodeId, v);
 	});
 }
 
@@ -874,8 +874,8 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 
 void SceneManager::shift(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
-	_sceneGraph.foreachGroup([&] (int layerId) {
-		shift(layerId, v);
+	_sceneGraph.foreachGroup([&] (int nodeId) {
+		shift(nodeId, v);
 	});
 }
 
@@ -1608,19 +1608,19 @@ void SceneManager::construct() {
 }
 
 void SceneManager::flip(math::Axis axis) {
-	_sceneGraph.foreachGroup([&] (int layerId) {
-		auto* v = volume(layerId);
+	_sceneGraph.foreachGroup([&] (int nodeId) {
+		auto* v = volume(nodeId);
 		if (v == nullptr) {
 			return;
 		}
 		voxel::RawVolume* newVolume = voxel::mirrorAxis(v, axis);
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
-		if (!setNewVolume(layerId, newVolume)) {
+		if (!setNewVolume(nodeId, newVolume)) {
 			delete newVolume;
 			return;
 		}
-		modified(layerId, r);
+		modified(nodeId, r);
 	});
 }
 
@@ -1637,8 +1637,8 @@ void SceneManager::toggleEditMode() {
 }
 
 void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition) {
-	_sceneGraph.foreachGroup([&] (int layerId) {
-		auto* v = volume(layerId);
+	_sceneGraph.foreachGroup([&] (int nodeId) {
+		auto* v = volume(nodeId);
 		if (v == nullptr) {
 			return;
 		}
@@ -1651,7 +1651,7 @@ void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, st
 			v->setVoxel(x, y, z, voxel());
 		}, condition);
 		if (cnt > 0) {
-			modified(layerId, wrapper.dirtyRegion());
+			modified(nodeId, wrapper.dirtyRegion());
 			Log::debug("Modified %i voxels", cnt);
 		}
 	});
@@ -1746,15 +1746,15 @@ bool SceneManager::init() {
 }
 
 bool SceneManager::runScript(const core::String& script, const core::DynamicArray<core::String>& args) {
-	const int layerId = activeNode();
-	voxel::RawVolume* volume = this->volume(layerId);
+	const int nodeId = activeNode();
+	voxel::RawVolume* volume = this->volume(nodeId);
 	const Selection& selection = _modifier.selection();
 	voxel::RawVolumeWrapper wrapper(volume);
 	if (selection.isValid()) {
 		wrapper.setRegion(selection);
 	}
 	const bool retVal = _luaGenerator.exec(script, &wrapper, wrapper.region(), _modifier.cursorVoxel(), args);
-	modified(layerId, wrapper.dirtyRegion());
+	modified(nodeId, wrapper.dirtyRegion());
 	return retVal;
 }
 
@@ -1996,8 +1996,8 @@ bool SceneManager::extractVolume() {
 
 void SceneManager::noise(int octaves, float lacunarity, float frequency, float gain, voxelgenerator::noise::NoiseType type) {
 	math::Random random;
-	const int layerId = activeNode();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
+	const int nodeId = activeNode();
+	voxel::RawVolumeWrapper wrapper(volume(nodeId));
 	if (voxelgenerator::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random) <= 0) {
 		Log::warn("Could not generate noise");
 		return;
@@ -2006,24 +2006,24 @@ void SceneManager::noise(int octaves, float lacunarity, float frequency, float g
 	if (!wrapper.dirtyRegion().isValid()) {
 		return;
 	}
-	modified(layerId, wrapper.dirtyRegion());
+	modified(nodeId, wrapper.dirtyRegion());
 }
 
 void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<voxelgenerator::lsystem::Rule> &rules, float angle, float length,
 		float width, float widthIncrement, int iterations, float leavesRadius) {
 	math::Random random;
-	const int layerId = activeNode();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
+	const int nodeId = activeNode();
+	voxel::RawVolumeWrapper wrapper(volume(nodeId));
 	voxelgenerator::lsystem::generate(wrapper, referencePosition(), axiom, rules, angle, length, width, widthIncrement, iterations, random, leavesRadius);
-	modified(layerId, wrapper.dirtyRegion());
+	modified(nodeId, wrapper.dirtyRegion());
 }
 
 void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 	math::Random random(ctx.cfg.seed);
-	const int layerId = activeNode();
-	voxel::RawVolumeWrapper wrapper(volume(layerId));
+	const int nodeId = activeNode();
+	voxel::RawVolumeWrapper wrapper(volume(nodeId));
 	voxelgenerator::tree::createTree(wrapper, ctx, random);
-	modified(layerId, wrapper.dirtyRegion());
+	modified(nodeId, wrapper.dirtyRegion());
 }
 
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {
