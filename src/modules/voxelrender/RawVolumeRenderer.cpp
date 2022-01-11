@@ -49,8 +49,8 @@ struct CustomIsQuadNeeded {
 }
 
 RawVolumeRenderer::RawVolumeRenderer() :
-		_voxelShader(shader::VoxelShader::getInstance()),
-		_shadowMapShader(shader::ShadowmapShader::getInstance()) {
+		_voxelShader(shader::VoxelInstancedShader::getInstance()),
+		_shadowMapShader(shader::ShadowmapInstancedShader::getInstance()) {
 }
 
 void RawVolumeRenderer::construct() {
@@ -71,7 +71,8 @@ bool RawVolumeRenderer::init() {
 	_threadPool.init();
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		_model[idx] = glm::mat4(1.0f);
+		_models[idx][0] = glm::mat4(1.0f);
+		_amounts[idx] = 1;
 		_vertexBufferIndex[idx] = _vertexBuffer[idx].create();
 		if (_vertexBufferIndex[idx] == -1) {
 			Log::error("Could not create the vertex buffer object");
@@ -261,7 +262,10 @@ bool RawVolumeRenderer::swap(int idx1, int idx2) {
 		core::exchange(meshes[idx1], meshes[idx2]);
 	}
 	core::exchange(_hidden[idx1], _hidden[idx2]);
-	core::exchange(_model[idx1], _model[idx2]);
+	const int max = core_max(_amounts[idx1], _amounts[idx2]);
+	for (int i = 0; i < max; ++i) {
+		core::exchange(_models[idx1][i], _models[idx2][i]);
+	}
 	core::exchange(_rawVolume[idx1], _rawVolume[idx2]);
 	update(idx1);
 	update(idx2);
@@ -477,9 +481,9 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 						continue;
 					}
 					video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
-					_shadowMapShader.setModel(_model[idx]);
+					_shadowMapShader.setModel(_models[idx]);
 					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-					video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices[idx]);
+					video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], _amounts[idx]);
 				}
 				return true;
 			}, true);
@@ -518,19 +522,34 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 		video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
 		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 		_voxelShader.setGray(funcGray(idx));
-		_voxelShader.setModel(_model[idx]);
-		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices[idx]);
+		_voxelShader.setModel(_models[idx]);
+		video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], _amounts[idx]);
 	}
 }
 
-bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model) {
+void RawVolumeRenderer::setAmount(int idx, int amount) {
+	_amounts[idx] = amount;
+}
+
+bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model, bool reset) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
+		Log::error("Given id %i is out of bounds", idx);
 		return false;
 	}
-
-	_model[idx] = model;
-
+	if (_rawVolume[idx] == nullptr) {
+		Log::error("No volume found at: %i", idx);
+		return false;
+	}
+	_amounts[idx] = reset ? 1 : _amounts[idx] + 1;
+	_models[idx][_amounts[idx] - 1] = model;
 	return true;
+}
+
+int RawVolumeRenderer::amount(int idx) const {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return -1;
+	}
+	return _amounts[idx];
 }
 
 voxel::Region RawVolumeRenderer::region() const {

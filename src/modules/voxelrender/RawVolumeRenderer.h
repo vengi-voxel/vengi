@@ -48,7 +48,9 @@ public:
 	static constexpr int MAX_VOLUMES = 64;
 protected:
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
-	glm::mat4 _model[MAX_VOLUMES] {};
+	// TODO: use MaxInstances from VoxelInstancedShader ($constant)
+	core::Array<glm::mat4[100], MAX_VOLUMES> _models;
+	int _amounts[MAX_VOLUMES] = { 1 };
 	core::Array<bool, MAX_VOLUMES> _hidden {{ false }};
 	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1};
 	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1};
@@ -58,8 +60,8 @@ protected:
 
 	video::Buffer _vertexBuffer[MAX_VOLUMES];
 	shader::VoxelData _materialBlock;
-	shader::VoxelShader& _voxelShader;
-	shader::ShadowmapShader& _shadowMapShader;
+	shader::VoxelInstancedShader& _voxelShader;
+	shader::ShadowmapInstancedShader& _shadowMapShader;
 	render::Shadow _shadow;
 
 	core::VarPtr _meshSize;
@@ -123,8 +125,10 @@ public:
 	 */
 	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
 	voxel::RawVolume* setVolume(int idx, voxel::SceneGraphNode& node, bool deleteMesh = true);
-	bool setModelMatrix(int idx, const glm::mat4& model);
+	bool setModelMatrix(int idx, const glm::mat4& model, bool reset = true);
+	void setAmount(int idx, int amount);
 
+	int amount(int idx) const;
 	bool empty(int idx = 0) const;
 	bool swap(int idx1, int idx2);
 	/**
