@@ -116,9 +116,9 @@ public:
 	}
 };
 
-bool VoxFormat::saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, int modelId, const core::String& name, bool visible) {
+bool VoxFormat::saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, int32_t modelId, const core::String& name, bool visible) {
 	VoxScopedChunkWriter scoped(stream, FourCC('L','A','Y','R'));
-	wrapBool(stream.writeUInt32(modelId))
+	wrapBool(stream.writeInt32(modelId))
 	wrapBool(saveAttributes({{"_name", name}, {"_hidden", visible ? "0" : "1"}}, stream))
 	wrapBool(stream.writeInt32(-1)) // must always be -1
 	return true;
@@ -137,12 +137,12 @@ bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, Vo
 	return true;
 }
 
-bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, uint32_t volumeId) {
+bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, int32_t modelId) {
 	VoxScopedChunkWriter scoped(stream, FourCC('n','S','H','P'));
 	wrapBool(stream.writeUInt32(nodeId))
 	wrapBool(saveAttributes({}, stream))
 	wrapBool(stream.writeUInt32(1u)) // shapeNodeNumModels
-	wrapBool(stream.writeUInt32(volumeId));
+	wrapBool(stream.writeInt32(modelId));
 	wrapBool(saveAttributes({}, stream)) // model attributes
 	return true;
 }
@@ -240,7 +240,7 @@ bool VoxFormat::saveSceneGraph(State& state, io::SeekableWriteStream& stream, co
 
 	// the first transform node id
 	VoxNodeId nodeId = groupNodeId + 1;
-	int modelId = 0;
+	int32_t modelId = 0;
 	for (const SceneGraphNode& node : sceneGraph) {
 		const voxel::Region &region = node.region();
 		const glm::ivec3 mins = region.getCenter();
@@ -452,19 +452,16 @@ bool VoxFormat::loadChunk_SIZE(State& state, io::SeekableReadStream& stream, con
 	return true;
 }
 
-static inline int divFloor(int x, int y) {
-	const bool quotientNegative = x < 0;
-	return x / y - (x % y != 0 && quotientNegative);
+glm::ivec3 VoxFormat::calcTransform(State& state, const VoxNTRNNode& t, const glm::ivec3& pos, const glm::vec3& pivot) const {
+	if (!state._foundSceneGraph) {
+		return pos;
+	}
+	const glm::ivec3 rotated(glm::floor(t.rotMat * (glm::vec3(pos) - pivot)));
+	return rotated + t.translation;
 }
 
-glm::ivec3 VoxFormat::calcTransform(State& state, const VoxNTRNNode& t, int x, int y, int z, const glm::ivec3& pivot) const {
-	if (!state._foundSceneGraph) {
-		return glm::ivec3(x, y, z);
-	}
-	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - pivot;
-	const glm::ivec3 pos = glm::ivec3(t.rotMat * glm::vec3((float)c.x + 0.5f, (float)c.y + 0.5f, (float)c.z + 0.5f));
-	const glm::ivec3 rotated(divFloor(pos.x, 2), divFloor(pos.y, 2), divFloor(pos.z, 2));
-	return rotated + t.translation;
+glm::ivec3 VoxFormat::calcTransform(State& state, const VoxNTRNNode& t, int x, int y, int z, const glm::vec3& pivot) const {
+	return calcTransform(state, t, glm::ivec3(x, y, z), pivot);
 }
 
 // 6. Chunk id 'XYZI' : model voxels
@@ -481,53 +478,38 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 	uint32_t numVoxels;
 	wrap(stream.readUInt32(numVoxels))
 	Log::debug("Found voxel chunk with %u voxels", numVoxels);
-	const int modelIdx = (int)state._xyzi.size();
-	if (state._sizes.empty() || modelIdx >= (int)state._sizes.size()) {
+	const int modelId = (int)state._xyzi.size();
+	if (state._sizes.empty() || modelId >= (int)state._sizes.size()) {
 		Log::error("Invalid XYZI chunk without previous SIZE chunk");
 		return false;
 	}
 
-	const voxel::Region& region = state._sizes[modelIdx];
-	const glm::uvec3 size(region.getDimensionsInVoxels());
-	const glm::ivec3 pivot = glm::ivec3(size.x - 1, size.z - 1, size.y - 1);
-	const glm::ivec3& rmins = region.getLowerCorner();
-	const glm::ivec3& rmaxs = region.getUpperCorner();
-	const VoxNTRNNode& finalTransform = calculateTransform(state, modelIdx);
-	const glm::ivec3& tmins = calcTransform(state, finalTransform, rmins.x, rmins.z, rmins.y, pivot);
-	const glm::ivec3& tmaxs = calcTransform(state, finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
-	const glm::ivec3 mins = glm::min(tmins, tmaxs);
-	const glm::ivec3 maxs = glm::max(tmins, tmaxs);
-	Region translatedRegion{mins.x, mins.z, mins.y, maxs.x, maxs.z, maxs.y};
-	const bool applyTransformation = translatedRegion.isValid();
-	if (!applyTransformation) {
-		translatedRegion = Region(rmins, rmaxs);
-		Log::warn("Invalid XYZI chunk region after transform was applied - trying without transformation");
-	}
-	RawVolume *volume = new RawVolume(translatedRegion);
+	const voxel::Region& region = state._sizes[modelId];
+	const glm::vec3 size(region.getDimensionsInVoxels());
+	const glm::vec3 pivot(size / 2.0f - 0.5f);
+	const VoxNTRNNode& transform = traverseTransform(state, modelId);
+	const glm::ivec3& transformedMins = calcTransform(state, transform, region.getLowerCorner(), pivot);
+	const glm::ivec3& transformedMaxs = calcTransform(state, transform, region.getUpperCorner(), pivot);
+	const glm::ivec3 mins = glm::min(transformedMins, transformedMaxs);
+	const glm::ivec3 maxs = glm::max(transformedMins, transformedMaxs);
+	RawVolume *volume = new RawVolume({mins, maxs});
 	int volumeVoxelSet = 0;
 	for (uint32_t i = 0; i < numVoxels; ++i) {
 		uint8_t x, y, z, colorIndex;
 		wrapFree(stream.readUInt8(x), volume)
-		wrapFree(stream.readUInt8(y), volume)
 		wrapFree(stream.readUInt8(z), volume)
-		x = size.x - 1 - x;
+		wrapFree(stream.readUInt8(y), volume)
+		//x = size.x - 1 - x; // TODO: x axis are running differently - but this breaks the transformations
 		wrapFree(stream.readUInt8(colorIndex), volume)
 		const uint8_t index = convertPaletteIndex(colorIndex);
 		voxel::VoxelType voxelType = voxel::VoxelType::Generic;
 		const voxel::Voxel& voxel = voxel::createVoxel(voxelType, index);
-		// we have to flip the axis here
-		if (applyTransformation) {
-			const glm::ivec3 pos = calcTransform(state, finalTransform, x, y, z, pivot);
-			if (volume->setVoxel(pos.x, pos.z, pos.y, voxel)) {
-				++volumeVoxelSet;
-			}
-		} else {
-			if (volume->setVoxel(x, z, y, voxel)) {
-				++volumeVoxelSet;
-			}
+		const glm::ivec3& pos = calcTransform(state, transform, x, y, z, pivot);
+		if (volume->setVoxel(pos, voxel)) {
+			++volumeVoxelSet;
 		}
 	}
-	Log::debug("Loaded layer %i with %i voxels (%i)", modelIdx, numVoxels, volumeVoxelSet);
+	Log::debug("Loaded layer %i with %i voxels (%i)", modelId, numVoxels, volumeVoxelSet);
 	VoxModel model;
 	model.volume = volume;
 	state._xyzi.push_back(model);
@@ -544,7 +526,7 @@ bool VoxFormat::loadChunk_nSHP(State& state, io::SeekableReadStream& stream, con
 		Log::error("Shape node chunk contained a numModels value != 1: %i", nshp.shapeNodeNumModels);
 		return false;
 	}
-	wrap(stream.readUInt32(nshp.modelId))
+	wrap(stream.readInt32(nshp.modelId))
 	wrapBool(readAttributes(nshp.modelAttributes, stream))
 	state._nshp.put(nshp.nodeId, nshp);
 	const VoxSceneGraphNode sceneNode{nshp.nodeId, VoxSceneGraphNodeType::Shape, VoxSceneGraphChildNodes(0)};
@@ -652,7 +634,7 @@ bool VoxFormat::parseSceneGraphTranslation(VoxNTRNNode& transform, const VoxAttr
 	}
 	const core::String& translations = trans->second;
 	glm::ivec3& v = transform.translation;
-	if (SDL_sscanf(translations.c_str(), "%d %d %d", &v.x, &v.y, &v.z) != 3) {
+	if (SDL_sscanf(translations.c_str(), "%d %d %d", &v.x, &v.z, &v.y) != 3) {
 		Log::error("Failed to parse translation");
 		return false;
 	}
@@ -700,8 +682,8 @@ bool VoxFormat::parseSceneGraphRotation(VoxNTRNNode &transform, const VoxAttribu
 
 	// glm is column major - thus we have to flip the col/row indices here
 	transform.rotMat[packedRot->nonZeroEntryInFirstRow][0] = packedRot->signInFirstRow ? -1.0f : 1.0f;
-	transform.rotMat[packedRot->nonZeroEntryInSecondRow][1] = packedRot->signInSecondRow ? -1.0f : 1.0f;
-	transform.rotMat[nonZeroEntryInThirdRow][2] = packedRot->signInThirdRow ? -1.0f : 1.0f;
+	transform.rotMat[packedRot->nonZeroEntryInSecondRow][1] = packedRot->signInThirdRow ? -1.0f : 1.0f;
+	transform.rotMat[nonZeroEntryInThirdRow][2] = packedRot->signInSecondRow ? -1.0f : 1.0f;
 
 	for (int i = 0; i < 3; ++i) {
 		Log::debug("mat3[%i]: %.2f, %.2f, %.2f", i, transform.rotMat[0][i], transform.rotMat[1][i], transform.rotMat[2][i]);
@@ -1017,23 +999,23 @@ bool VoxFormat::loadSceneGraph(State &state, io::SeekableReadStream& stream) {
 	return true;
 }
 
-VoxFormat::VoxNTRNNode VoxFormat::calculateTransform(State &state, uint32_t modelId) const {
+VoxFormat::VoxNTRNNode VoxFormat::traverseTransform(State &state, int32_t modelId) const {
 	VoxNTRNNode transform;
 	for (const auto& entry : state._nshp) {
 		const VoxNSHPNode &nshp = entry->value;
 		if (nshp.modelId == modelId) {
-			applyTransform(state, transform, nshp.nodeId);
+			concatTransform(state, transform, nshp.nodeId);
 			break;
 		}
 	}
 	return transform;
 }
 
-bool VoxFormat::applyTransform(State &state, VoxNTRNNode& transform, VoxNodeId nodeId) const {
+bool VoxFormat::concatTransform(State &state, VoxNTRNNode& transform, VoxNodeId nodeId) const {
 	VoxNodeId parent;
 	VoxNodeId current = nodeId;
 	while (state._parentNodes.get(current, parent)) {
-		wrapBool(applyTransform(state, transform, parent))
+		wrapBool(concatTransform(state, transform, parent))
 		current = parent;
 	}
 
@@ -1144,7 +1126,7 @@ bool VoxFormat::fillSceneGraph_r(State& state, VoxNodeId nodeId, voxel::SceneGra
 		node.addProperties(voxnode.attributes);
 		node.addProperties(voxnode.modelAttributes);
 		node.setName("Model");
-		if (voxnode.modelId >= state._xyzi.size()) {
+		if (voxnode.modelId >= (int32_t)state._xyzi.size()) {
 			Log::error("Invalid model id given in nSHP node: %u", voxnode.modelId);
 			return false;
 		}

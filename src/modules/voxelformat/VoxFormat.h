@@ -72,8 +72,8 @@ private:
 		// node id in the scene graph
 		VoxNodeId nodeId = 0;
 		// there can be multiple SIZE and XYZI chunks for multiple models; volume id is their index in the
-		// stored order and the index in the @c _models or @c _regions arrays
-		uint32_t modelId = 0u;
+		// stored order and the index in the @c _xyzi or @c _sizes arrays
+		int32_t modelId = -1;
 		uint32_t shapeNodeNumModels = 0u;
 		VoxAttributes modelAttributes;
 		VoxAttributes attributes;
@@ -127,7 +127,7 @@ private:
 
 	bool saveAttributes(const VoxAttributes& attributes, io::SeekableWriteStream& stream) const;
 
-	bool saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, int modelId, const core::String& name, bool visible);
+	bool saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, int32_t modelId, const core::String& name, bool visible);
 	bool saveChunk_XYZI(State& state, io::SeekableWriteStream& stream, const voxel::RawVolume* volume, const voxel::Region& region);
 	bool saveChunk_SIZE(State& state, io::SeekableWriteStream& stream, const voxel::Region& region);
 	bool saveChunk_PACK(State& state, io::SeekableWriteStream& stream, const SceneGraph& sceneGraph);
@@ -135,7 +135,7 @@ private:
 
 	// scene graph saving stuff
 	bool saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, uint32_t childNodes);
-	bool saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, uint32_t volumeId);
+	bool saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, int32_t modelId);
 	bool saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, VoxNodeId nodeId, VoxNodeId childNodeId, const glm::ivec3& mins, int layerId);
 	bool saveSceneGraph(State& state, io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, int modelCount);
 
@@ -173,9 +173,10 @@ private:
 	bool loadChunk_nSHP(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header);
 	bool loadChunk_nTRN(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header);
 	bool loadSceneGraph(State& state, io::SeekableReadStream& stream);
-	VoxNTRNNode calculateTransform(State& state, uint32_t volumeIdx) const;
-	bool applyTransform(State& state, VoxNTRNNode& transform, VoxNodeId nodeId) const;
-	glm::ivec3 calcTransform(State& state, const VoxNTRNNode& t, int x, int y, int z, const glm::ivec3& pivot) const;
+	VoxNTRNNode traverseTransform(State& state, int32_t modelId) const;
+	bool concatTransform(State& state, VoxNTRNNode& transform, VoxNodeId nodeId) const;
+	glm::ivec3 calcTransform(State& state, const VoxNTRNNode& t, int x, int y, int z, const glm::vec3& pivot) const;
+	glm::ivec3 calcTransform(State& state, const VoxNTRNNode& t, const glm::ivec3& pos, const glm::vec3& pivot) const;
 
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) override;
