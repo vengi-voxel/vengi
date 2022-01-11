@@ -19,6 +19,7 @@ set(SHADERS
 	edge
 	shadowmap
 	shadowmap_render
+	shadowmap_instanced
 	texture
 )
 set(SRCS_SHADERS)

@@ -6,14 +6,18 @@ set(SRCS
 	ShaderAttribute.h
 	VoxelFontRenderer.h VoxelFontRenderer.cpp
 )
+set(SHADERS voxel voxel_indirect voxel_instanced)
 set(SRCS_SHADERS
 	shaders/_material.vert
 	shaders/_voxelflags.glsl
-	shaders/voxel.vert shaders/voxel.frag
-	shaders/voxel_indirect.vert shaders/voxel_indirect.frag
 )
+foreach (SHADER ${SHADERS})
+	list(APPEND SRCS_SHADERS "shaders/${SHADER}.vert")
+	list(APPEND SRCS_SHADERS "shaders/${SHADER}.frag")
+endforeach()
+
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render voxelfont voxelformat)
-generate_shaders(${LIB} voxel voxel_indirect)
+generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
 	tests/MaterialTest.cpp
