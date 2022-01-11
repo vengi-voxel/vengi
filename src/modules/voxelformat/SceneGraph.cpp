@@ -31,28 +31,13 @@ bool SceneGraph::setActiveNode(int nodeId) {
 	return true;
 }
 
-int SceneGraph::nextLockedNode(int last) const {
-	++last;
-	if (last < 0) {
-		return -1;
-	}
-	const int n = (int)size();
-	for (int i = last; i < n; ++i) {
-		if ((*this)[i].locked()) {
-			return i;
-		}
-	}
-	return -1;
-}
-
 void SceneGraph::foreachGroup(const std::function<void(int)>& f) {
 	int nodeId = activeNode();
 	if (node(nodeId).locked()) {
-		nodeId = nextLockedNode(-1);
-		core_assert(nodeId != -1);
-		while (nodeId != -1) {
-			f(nodeId);
-			nodeId = nextLockedNode(nodeId);
+		for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
+			if ((*iter).locked()) {
+				f(nodeId);
+			}
 		}
 	} else {
 		f(nodeId);

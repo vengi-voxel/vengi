@@ -24,8 +24,6 @@ protected:
 	int _nextNodeId = 0;
 	int _activeNodeId = -1;
 
-	int nextLockedNode(int last) const;
-
 public:
 	SceneGraph();
 	~SceneGraph();
