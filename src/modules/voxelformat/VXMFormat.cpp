@@ -24,20 +24,20 @@ namespace voxel {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
+		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapDelete(read, mem) \
 	if ((read) != 0) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
+		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		delete (mem); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) != true) { \
-		Log::error("Could not load vmx file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
+		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
