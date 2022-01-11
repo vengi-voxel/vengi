@@ -92,7 +92,7 @@ TEST_F(MementoHandlerTest, testUndoRedo) {
 	ASSERT_FALSE(undoNotPossible.hasVolumeData());
 }
 
-TEST_F(MementoHandlerTest, testUndoRedoDifferentLayers) {
+TEST_F(MementoHandlerTest, testUndoRedoDifferentNodes) {
 	std::shared_ptr<voxel::RawVolume> first = create(1);
 	std::shared_ptr<voxel::RawVolume> second = create(2);
 	std::shared_ptr<voxel::RawVolume> third = create(3);
@@ -164,7 +164,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeSimple) {
 	state = mementoHandler.undo();
 	EXPECT_EQ(1, mementoHandler.statePosition());
 	EXPECT_EQ(1, state.nodeId);
-	EXPECT_EQ("Layer 2", state.name);
+	EXPECT_EQ("Node 2", state.name);
 	ASSERT_FALSE(state.hasVolumeData());
 	EXPECT_TRUE(mementoHandler.canUndo());
 
@@ -209,7 +209,7 @@ TEST_F(MementoHandlerTest, testDeleteNode) {
 	// null     | del | 4
 	state = mementoHandler.undo();
 	EXPECT_EQ(1, state.nodeId);
-	EXPECT_EQ("Layer 2 Deleted", state.name);
+	EXPECT_EQ("Node 2 Deleted", state.name);
 	ASSERT_TRUE(state.hasVolumeData());
 	EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
 
@@ -473,7 +473,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 	state = mementoHandler.undo();
 	EXPECT_EQ(2, mementoHandler.statePosition());
 	EXPECT_EQ(1, state.nodeId);
-	EXPECT_EQ("Layer 2 Added", state.name);
+	EXPECT_EQ("Node 2 Added", state.name);
 	ASSERT_FALSE(state.hasVolumeData());
 	EXPECT_TRUE(mementoHandler.canUndo());
 }
@@ -551,7 +551,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeMultiple) {
 	state = mementoHandler.redo();
 	EXPECT_EQ(2, mementoHandler.statePosition());
 	EXPECT_EQ(1, state.nodeId);
-	EXPECT_EQ("Layer 2 Added", state.name);
+	EXPECT_EQ("Node 2 Added", state.name);
 	ASSERT_TRUE(state.hasVolumeData());
 	EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
 	EXPECT_TRUE(mementoHandler.canRedo());
