@@ -202,7 +202,7 @@ bool VoxFormat::saveChunk_XYZI(State& state, io::SeekableWriteStream& stream, co
 	wrapBool(stream.writeUInt32(numVoxels))
 
 	numVoxels = voxelutil::visitVolume(*volume, [&] (int x, int y, int z, const voxel::Voxel& voxel) {
-		stream.writeUInt8(region.getWidthInCells() - (x - region.getLowerX()));
+		stream.writeUInt8(x - region.getLowerX());
 		stream.writeUInt8(z - region.getLowerZ());
 		stream.writeUInt8(y - region.getLowerY());
 		const uint8_t colorIndex = voxel.getColor();
