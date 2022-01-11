@@ -6,6 +6,7 @@ $in vec3 a_pos;
 
 uniform mat4 u_lightviewprojection;
 #if INSTANCED > 0
+$constant MaxInstances INSTANCED
 uniform mat4 u_model[INSTANCED];
 #else
 uniform mat4 u_model;

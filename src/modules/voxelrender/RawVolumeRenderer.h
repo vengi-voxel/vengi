@@ -13,6 +13,8 @@
 #include "voxel/Region.h"
 #include "video/Buffer.h"
 #include "VoxelrenderShaders.h"
+#include "VoxelInstancedShaderConstants.h"
+#include "ShadowmapInstancedShaderConstants.h"
 #include "voxel/Mesh.h"
 #include "render/Shadow.h"
 #include "video/UniformBuffer.h"
@@ -48,8 +50,8 @@ public:
 	static constexpr int MAX_VOLUMES = 64;
 protected:
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
-	// TODO: use MaxInstances from VoxelInstancedShader ($constant)
-	core::Array<glm::mat4[100], MAX_VOLUMES> _models;
+	core::Array<glm::mat4[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _models;
+	static_assert(shader::VoxelInstancedShaderConstants::getMaxInstances() == shader::ShadowmapInstancedShaderConstants::getMaxInstances(), "max instances must match between shaders");
 	int _amounts[MAX_VOLUMES] = { 1 };
 	core::Array<bool, MAX_VOLUMES> _hidden {{ false }};
 	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1};
