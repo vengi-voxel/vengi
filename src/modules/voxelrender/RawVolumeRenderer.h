@@ -126,7 +126,10 @@ public:
 	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
 	voxel::RawVolume* setVolume(int idx, voxel::SceneGraphNode& node, bool deleteMesh = true);
 	bool setModelMatrix(int idx, const glm::mat4& model, bool reset = true);
-	void setAmount(int idx, int amount);
+	/**
+	 * @note Keep in mind to set the model matrices properly
+	 */
+	void setInstancingAmount(int idx, int amount);
 
 	int amount(int idx) const;
 	bool empty(int idx = 0) const;

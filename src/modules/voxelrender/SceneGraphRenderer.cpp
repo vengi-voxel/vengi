@@ -112,7 +112,7 @@ void SceneGraphRenderer::render(voxel::SceneGraph &sceneGraph, bool waitPending,
 			_renderer.extractRegion(node.id(), node.region());
 		}
 		if (0 && _renderScene) {
-			_renderer.setAmount(node.id(), 0);
+			_renderer.setInstancingAmount(node.id(), 0);
 		} else {
 			_renderer.setModelMatrix(node.id(), node.matrix(), true);
 		}

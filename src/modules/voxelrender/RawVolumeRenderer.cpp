@@ -527,7 +527,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 	}
 }
 
-void RawVolumeRenderer::setAmount(int idx, int amount) {
+void RawVolumeRenderer::setInstancingAmount(int idx, int amount) {
 	_amounts[idx] = amount;
 }
 
