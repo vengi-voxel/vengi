@@ -14,6 +14,8 @@
 #include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -78,14 +80,36 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
-bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph& sceneGraph) {
+int VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph& sceneGraph, int parent) {
 	const io::FilePtr& file = io::filesystem()->open(vxmPath);
 	if (!file->validHandle()) {
-		return false;
+		Log::error("Could not open file '%s'", vxmPath.c_str());
+		return -1;
 	}
 	io::FileStream stream(file.get());
 	VXMFormat f;
-	return f.loadGroups(vxmPath, stream, sceneGraph);
+	SceneGraph newSceneGraph;
+	if (!f.loadGroups(vxmPath, stream, newSceneGraph)) {
+		Log::error("Failed to load '%s'", vxmPath.c_str());
+		return -1;
+	}
+	const int modelCount = (int)newSceneGraph.size(voxel::SceneGraphNodeType::Model);
+	if (modelCount > 1) {
+		Log::warn("Unexpected scene graph found in vxm file - only use the first one");
+	} else if (modelCount != 1) {
+		Log::error("No models found in vxm file: %i", modelCount);
+		return -1;
+	}
+	voxel::SceneGraphNode& modelNode = newSceneGraph[0];
+	modelNode.releaseOwnership();
+
+	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
+	node.setVolume(modelNode.volume(), true);
+	node.setName(modelNode.name());
+	node.setVisible(modelNode.visible());
+	node.setLocked(modelNode.locked());
+	node.addProperties(modelNode.properties());
+	return sceneGraph.emplace(core::move(node), parent);
 }
 
 bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStream& stream, uint32_t version) {
@@ -153,7 +177,15 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 	return true;
 }
 
-bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, uint32_t version) {
+static void addProperty(voxel::SceneGraphNode* node, const char *name, bool value) {
+	if (node == nullptr) {
+		return;
+	}
+	node->setProperty(name, value ? "true" : "false");
+}
+
+bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, uint32_t version, int parent) {
+	int nodeId = -1;
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
 	char filename[1024];
@@ -164,65 +196,67 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 			modelPath.append("/");
 		}
 		modelPath.append(filename);
-		if (!loadChildVXM(modelPath, sceneGraph)) {
-			Log::warn("Failed to attach model for %s with filename %s", id, filename);
+		nodeId = loadChildVXM(modelPath, sceneGraph, parent);
+		if (nodeId == -1) {
+			Log::warn("Failed to attach model for id '%s' with filename %s (%s)", id, filename, modelPath.c_str());
+		}
+	} else {
+		voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Unknown);
+		node.setName(id);
+		nodeId = sceneGraph.emplace(core::move(node), parent);
+	}
+	voxel::SceneGraphNode *node = nullptr;
+	if (sceneGraph.hasNode(nodeId)) {
+		node = &sceneGraph.node(nodeId);
+	}
+	if (version > 4) {
+		if (version >= 9) {
+			addProperty(node, "collidable", stream.readBool());
+			addProperty(node, "decorative", stream.readBool());
+		}
+		uint32_t dummy;
+		if (version >= 6) {
+			wrap(stream.readUInt32(dummy)) // color
+			addProperty(node, "favorite", stream.readBool());
+			addProperty(node, "visible", stream.readBool());
+		}
+		addProperty(node, "mirror x axis", stream.readBool());
+		addProperty(node, "mirror y axis", stream.readBool());
+		addProperty(node, "mirror z axis", stream.readBool());
+		addProperty(node, "preview mirror x axis", stream.readBool());
+		addProperty(node, "preview mirror y axis", stream.readBool());
+		addProperty(node, "preview mirror z axis", stream.readBool());
+		addProperty(node, "ikAnchor", stream.readBool());
+		float dummyf;
+		if (version >= 9) {
+			char effectorId[1024];
+			wrapBool(stream.readString(sizeof(effectorId), effectorId, true))
+			addProperty(node, "constraints visible", stream.readBool());
+			wrap(stream.readFloat(dummyf)) // rollmin ???
+			wrap(stream.readFloat(dummyf)) // rollmax ???
+			int32_t constraints;
+			wrap(stream.readInt32(constraints))
+			for (int32_t i = 0; i < constraints; ++i) {
+				wrap(stream.readFloat(dummyf)) // x
+				wrap(stream.readFloat(dummyf)) // z
+				wrap(stream.readFloat(dummyf)) // radius
+			}
+		} else {
+			stream.readBool(); // ???
+			wrap(stream.readFloat(dummyf)) // ???
+			wrap(stream.readFloat(dummyf)) // ???
+			stream.readBool(); // ???
+			stream.readBool(); // ???
+			stream.readBool(); // ???
+			stream.readBool(); // ???
 		}
 	}
-	if (version <= 3) {
-		return true;
-	}
-	if (version == 4) {
+	if (version >= 4) {
 		int32_t children = 0;
 		wrap(stream.readInt32(children))
 		for (int32_t i = 0; i < children; ++i) {
-			wrapBool(importChild(vxmPath, stream, sceneGraph, version))
+			wrapBool(importChild(vxmPath, stream, sceneGraph, version, nodeId != -1 ? nodeId : parent))
 		}
-		return true;
-	}
-	if (version >= 9) {
-		stream.readBool(); // collidable
-		stream.readBool(); // decorative
-	}
-	uint32_t dummy;
-	if (version >= 6) {
-		wrap(stream.readUInt32(dummy)) // color
-		stream.readBool(); // favorite
-		stream.readBool(); // visible?
-	}
-	stream.readBool(); // mirror x axis
-	stream.readBool(); // mirror y axis
-	stream.readBool(); // mirror z axis
-	stream.readBool(); // preview mirror x axis
-	stream.readBool(); // preview mirror y axis
-	stream.readBool(); // preview mirror z axis
-	stream.readBool(); // ikAnchor
-	float dummyf;
-	if (version >= 9) {
-		char effectorId[1024];
-		wrapBool(stream.readString(sizeof(effectorId), effectorId, true))
-		stream.readBool(); // constraints visible
-		wrap(stream.readFloat(dummyf)) // rollmin ???
-		wrap(stream.readFloat(dummyf)) // rollmax ???
-		int32_t constraints;
-		wrap(stream.readInt32(constraints))
-		for (int32_t i = 0; i < constraints; ++i) {
-			wrap(stream.readFloat(dummyf)) // x
-			wrap(stream.readFloat(dummyf)) // z
-			wrap(stream.readFloat(dummyf)) // radius
-		}
-	} else {
-		stream.readBool(); // ???
-		wrap(stream.readFloat(dummyf)) // ???
-		wrap(stream.readFloat(dummyf)) // ???
-		stream.readBool(); // ???
-		stream.readBool(); // ???
-		stream.readBool(); // ???
-		stream.readBool(); // ???
-	}
-	int32_t children = 0;
-	wrap(stream.readInt32(children))
-	for (int32_t i = 0; i < children; ++i) {
-		wrapBool(importChild(vxmPath, stream, sceneGraph, version))
 	}
 	return true;
 }
@@ -281,7 +315,7 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 					modelPath.append("/");
 				}
 				modelPath.append(vxmFilename);
-				if (!loadChildVXM(modelPath, sceneGraph)) {
+				if (!loadChildVXM(modelPath, sceneGraph, sceneGraph.root().id())) {
 					Log::warn("Failed to attach model for %s with filename %s", id, modelPath.c_str());
 				}
 			}
@@ -330,7 +364,7 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	Log::debug("Found %i children (%i)", children, (int)sceneGraph.size());
 	for (int32_t i = 0; i < children; ++i) {
-		wrapBool(importChild(filename, stream, sceneGraph, version))
+		wrapBool(importChild(filename, stream, sceneGraph, version, sceneGraph.root().id()))
 	}
 
 	// some files since version 6 still have stuff here

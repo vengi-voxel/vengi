@@ -13,6 +13,8 @@
 #include "core/UTF8.h"
 #include "io/FileStream.h"
 #include "voxel/MaterialColor.h"
+#include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <SDL_assert.h>
 #include <glm/gtc/matrix_access.hpp>
@@ -119,7 +121,6 @@ bool VoxFormat::saveChunk_LAYR(State& state, io::SeekableWriteStream& stream, in
 	wrapBool(stream.writeUInt32(modelId))
 	wrapBool(saveAttributes({{"_name", name}, {"_hidden", visible ? "0" : "1"}}, stream))
 	wrapBool(stream.writeInt32(-1)) // must always be -1
-	++state._chunks;
 	return true;
 }
 
@@ -133,7 +134,6 @@ bool VoxFormat::saveChunk_nGRP(State& state, io::SeekableWriteStream& stream, Vo
 		// transform and shape node pairs
 		wrapBool(stream.writeUInt32(childNodeId + (i * 2u)))
 	}
-	++state._chunks;
 	return true;
 }
 
@@ -144,7 +144,6 @@ bool VoxFormat::saveChunk_nSHP(State& state, io::SeekableWriteStream& stream, Vo
 	wrapBool(stream.writeUInt32(1u)) // shapeNodeNumModels
 	wrapBool(stream.writeUInt32(volumeId));
 	wrapBool(saveAttributes({}, stream)) // model attributes
-	++state._chunks;
 	return true;
 }
 
@@ -158,7 +157,6 @@ bool VoxFormat::saveChunk_nTRN(State& state, io::SeekableWriteStream& stream, Vo
 	wrapBool(stream.writeUInt32(1u)) // num frames
 	const core::String& translationStr = core::string::format("%i %i %i", mins.x, mins.z, mins.y);
 	wrapBool(saveAttributes({{"_r", "4"}, {"_t", translationStr}}, stream))
-	++state._chunks;
 	return true;
 }
 
@@ -167,7 +165,6 @@ bool VoxFormat::saveChunk_SIZE(State& state, io::SeekableWriteStream& stream, co
 	wrapBool(stream.writeUInt32(region.getWidthInVoxels()))
 	wrapBool(stream.writeUInt32(region.getDepthInVoxels()))
 	wrapBool(stream.writeUInt32(region.getHeightInVoxels()))
-	++state._chunks;
 	return true;
 }
 
@@ -175,7 +172,6 @@ bool VoxFormat::saveChunk_PACK(State& state, io::SeekableWriteStream& stream, co
 	const int modelCount = (int)sceneGraph.size();
 	VoxScopedChunkWriter scoped(stream, FourCC('P','A','C','K'));
 	wrapBool(stream.writeUInt32(modelCount))
-	++state._chunks;
 	return true;
 }
 
@@ -195,7 +191,6 @@ bool VoxFormat::saveChunk_RGBA(State& state, io::SeekableWriteStream& stream) {
 	for (int i = numColors; i < 256; ++i) {
 		wrapBool(stream.writeUInt32(0u))
 	}
-	++state._chunks;
 	return true;
 }
 
@@ -217,7 +212,6 @@ bool VoxFormat::saveChunk_XYZI(State& state, io::SeekableWriteStream& stream, co
 	wrap(stream.seek(numVoxelPos));
 	wrapBool(stream.writeUInt32(numVoxels));
 	wrap(stream.seek(chunkEndPos));
-	++state._chunks;
 	return true;
 }
 
@@ -450,9 +444,9 @@ bool VoxFormat::loadChunk_SIZE(State& state, io::SeekableReadStream& stream, con
 		Log::error("Found invalid region in vox file: %i:%i:%i", x, y, z);
 		return false;
 	}
-	state._regions.push_back(region);
-	if (state._regions.size() > 256) {
-		Log::error("Found more than 256 layers: %i", (int)state._regions.size());
+	state._sizes.push_back(region);
+	if (state._sizes.size() > 256) {
+		Log::error("Found more than 256 layers: %i", (int)state._sizes.size());
 		return false;
 	}
 	return true;
@@ -463,7 +457,7 @@ static inline int divFloor(int x, int y) {
 	return x / y - (x % y != 0 && quotientNegative);
 }
 
-glm::ivec3 VoxFormat::calcTransform(State& state, const VoxTransform& t, int x, int y, int z, const glm::ivec3& pivot) const {
+glm::ivec3 VoxFormat::calcTransform(State& state, const VoxNTRNNode& t, int x, int y, int z, const glm::ivec3& pivot) const {
 	if (!state._foundSceneGraph) {
 		return glm::ivec3(x, y, z);
 	}
@@ -483,21 +477,22 @@ glm::ivec3 VoxFormat::calcTransform(State& state, const VoxTransform& t, int x, 
 //                       | read them first and then assemble as (x, z, y) for Y-up
 //                       | coordinate system.
 // -------------------------------------------------------------------------------
-bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& sceneGraph) {
+bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
 	uint32_t numVoxels;
 	wrap(stream.readUInt32(numVoxels))
 	Log::debug("Found voxel chunk with %u voxels", numVoxels);
-	if (state._regions.empty() || state._volumeIdx >= (uint32_t)state._regions.size()) {
+	const int modelIdx = (int)state._xyzi.size();
+	if (state._sizes.empty() || modelIdx >= (int)state._sizes.size()) {
 		Log::error("Invalid XYZI chunk without previous SIZE chunk");
 		return false;
 	}
 
-	const voxel::Region& region = state._regions[state._volumeIdx];
+	const voxel::Region& region = state._sizes[modelIdx];
 	const glm::uvec3 size(region.getDimensionsInVoxels());
 	const glm::ivec3 pivot = glm::ivec3(size.x - 1, size.z - 1, size.y - 1);
 	const glm::ivec3& rmins = region.getLowerCorner();
 	const glm::ivec3& rmaxs = region.getUpperCorner();
-	const VoxTransform& finalTransform = calculateTransform(state, state._volumeIdx);
+	const VoxNTRNNode& finalTransform = calculateTransform(state, modelIdx);
 	const glm::ivec3& tmins = calcTransform(state, finalTransform, rmins.x, rmins.z, rmins.y, pivot);
 	const glm::ivec3& tmaxs = calcTransform(state, finalTransform, rmaxs.x, rmaxs.z, rmaxs.y, pivot);
 	const glm::ivec3 mins = glm::min(tmins, tmaxs);
@@ -532,40 +527,28 @@ bool VoxFormat::loadChunk_XYZI(State& state, io::SeekableReadStream& stream, con
 			}
 		}
 	}
-	Log::debug("Loaded layer %i with %i voxels (%i)", state._volumeIdx, numVoxels, volumeVoxelSet);
-	SceneGraphNode node;
-	node.setVolume(volume, true);
-	node.setPivot(translatedRegion.getCenter());
-	sceneGraph.emplace(core::move(node));
-	++state._volumeIdx;
+	Log::debug("Loaded layer %i with %i voxels (%i)", modelIdx, numVoxels, volumeVoxelSet);
+	VoxModel model;
+	model.volume = volume;
+	state._xyzi.push_back(model);
 	return true;
 }
 
 bool VoxFormat::loadChunk_nSHP(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
-	uint32_t nodeId;
-	wrap(stream.readUInt32(nodeId))
-	Log::debug("shape node: %u", nodeId);
-	VoxAttributes nodeAttributes;
-	wrapBool(readAttributes(nodeAttributes, stream))
-	uint32_t shapeNodeNumModels;
-	wrap(stream.readUInt32(shapeNodeNumModels))
-	if (shapeNodeNumModels != 1) {
-		Log::error("Shape node chunk contained a numModels value != 1: %i", shapeNodeNumModels);
+	VoxNSHPNode nshp;
+	wrap(stream.readUInt32(nshp.nodeId))
+	Log::debug("shape node: %u", nshp.nodeId);
+	wrapBool(readAttributes(nshp.attributes, stream))
+	wrap(stream.readUInt32(nshp.shapeNodeNumModels))
+	if (nshp.shapeNodeNumModels != 1) {
+		Log::error("Shape node chunk contained a numModels value != 1: %i", nshp.shapeNodeNumModels);
 		return false;
 	}
-	uint32_t modelId;
-	wrap(stream.readUInt32(modelId))
-	if (modelId >= state._models.size()) {
-		Log::error("ModelId %i exceeds boundaries [%i,%i]", modelId, 0, (int)state._models.size());
-		return false;
-	}
-	wrapBool(readAttributes(state._models[modelId].attributes, stream))
-	state._models[modelId].volumeIdx = modelId;
-	state._models[modelId].nodeId = nodeId;
-	state._models[modelId].nodeAttributes = nodeAttributes;
-	const VoxSceneGraphNode sceneNode{modelId, VoxSceneGraphNodeType::Shape, VoxSceneGraphChildNodes(0)};
-	state._sceneGraphMap.put(nodeId, sceneNode);
-	state._leafNodes.push_back(nodeId);
+	wrap(stream.readUInt32(nshp.modelId))
+	wrapBool(readAttributes(nshp.modelAttributes, stream))
+	state._nshp.put(nshp.nodeId, nshp);
+	const VoxSceneGraphNode sceneNode{nshp.nodeId, VoxSceneGraphNodeType::Shape, VoxSceneGraphChildNodes(0)};
+	state._sceneGraph.put(nshp.nodeId, sceneNode);
 	return true;
 }
 
@@ -576,7 +559,7 @@ bool VoxFormat::loadChunk_nSHP(State& state, io::SeekableReadStream& stream, con
 // 4        | int        | numModels : num of SIZE and XYZI chunks
 // -------------------------------------------------------------------------------
 bool VoxFormat::loadChunk_PACK(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
-	wrap(stream.readUInt32(state._numModels))
+	wrap(stream.readUInt32(state._numPacks))
 	return true;
 }
 
@@ -632,34 +615,19 @@ bool VoxFormat::loadChunk_MATT(State& state, io::SeekableReadStream& stream, con
 }
 
 // https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
-bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& sceneGraph) {
-	int32_t layerId;
-	wrap(stream.readInt32(layerId))
-	VoxAttributes attributes;
+bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
+	VoxLayer layer;
+	wrap(stream.readUInt32(layer.layerId))
 	// (_name : string)
 	// (_hidden : 0/1)
-	wrapBool(readAttributes(attributes, stream))
+	wrapBool(readAttributes(layer.attributes, stream))
 	int32_t end;
 	wrap(stream.readInt32(end));
 	if (end != -1) {
 		Log::error("Unexpected end of LAYR chunk - expected -1, got %i", (int)end);
 		return true;
 	}
-#if 0
-	// TODO: the mapping between volumes and layers is wrong
-	// volumes in magicavoxel are objects, several objects can be part of a layer in MV
-	// The id from the LAYR chunk is most likely mapped to the layerId of the nTRN chunk:
-	if (layerId >= (int32_t)state._regions.size()) {
-		Log::warn("Invalid layer id found: %i - exceeded limit of %i. Skipping layer",
-				(int)layerId, (int)state._regions.size());
-	} else {
-		core::String property;
-		attributes.get("_name", property);
-		sceneGraph[layerId].setName(property);
-		attributes.get("_hidden", property);
-		sceneGraph[layerId].setVisible(property.empty() || property == "0");
-	}
-#endif
+	state._layers.push_back(layer);
 	return true;
 }
 
@@ -677,7 +645,7 @@ bool VoxFormat::loadChunk_LAYR(State& state, io::SeekableReadStream& stream, con
 // and push these values to their respective stacks.
 //
 // For every Shape node, you can just pop both values and use them.
-bool VoxFormat::parseSceneGraphTranslation(VoxTransform& transform, const VoxAttributes& attributes) const {
+bool VoxFormat::parseSceneGraphTranslation(VoxNTRNNode& transform, const VoxAttributes& attributes) const {
 	auto trans = attributes.find("_t");
 	if (trans == attributes.end()) {
 		return true;
@@ -710,7 +678,7 @@ bool VoxFormat::parseSceneGraphTranslation(VoxTransform& transform, const VoxAtt
 // 4   : 0 : the sign in the first row (0 : positive; 1 : negative)
 // 5   : 1 : the sign in the second row (0 : positive; 1 : negative)
 // 6   : 1 : the sign in the third row (0 : positive; 1 : negative)
-bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const VoxAttributes &attributes) const {
+bool VoxFormat::parseSceneGraphRotation(VoxNTRNNode &transform, const VoxAttributes &attributes) const {
 	auto rot = attributes.find("_r");
 	if (rot == attributes.end()) {
 		return true;
@@ -730,16 +698,15 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const VoxAttrib
 		return false;
 	}
 
-	glm::mat3x3 rotMat(0.0f);
 	// glm is column major - thus we have to flip the col/row indices here
-	rotMat[packedRot->nonZeroEntryInFirstRow][0] = packedRot->signInFirstRow ? -1.0f : 1.0f;
-	rotMat[packedRot->nonZeroEntryInSecondRow][1] = packedRot->signInSecondRow ? -1.0f : 1.0f;
-	rotMat[nonZeroEntryInThirdRow][2] = packedRot->signInThirdRow ? -1.0f : 1.0f;
+	transform.rotMat[packedRot->nonZeroEntryInFirstRow][0] = packedRot->signInFirstRow ? -1.0f : 1.0f;
+	transform.rotMat[packedRot->nonZeroEntryInSecondRow][1] = packedRot->signInSecondRow ? -1.0f : 1.0f;
+	transform.rotMat[nonZeroEntryInThirdRow][2] = packedRot->signInThirdRow ? -1.0f : 1.0f;
 
 	for (int i = 0; i < 3; ++i) {
-		Log::debug("mat3[%i]: %.2f, %.2f, %.2f", i, rotMat[0][i], rotMat[1][i], rotMat[2][i]);
+		Log::debug("mat3[%i]: %.2f, %.2f, %.2f", i, transform.rotMat[0][i], transform.rotMat[1][i], transform.rotMat[2][i]);
 	}
-	transform.rotation = glm::quat_cast(rotMat);
+	transform.rotation = glm::quat_cast(transform.rotMat);
 
 	return true;
 }
@@ -747,82 +714,82 @@ bool VoxFormat::parseSceneGraphRotation(VoxTransform &transform, const VoxAttrib
 // (_r : int8) ROTATION in STRING (i.e. "36")
 // (_t : int32x3) translation in STRING format separated by spaces (i.e. "-1 10 4"). The anchor for these translations is center of the box.
 bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
+	VoxNTRNNode transform;
 	uint32_t nodeId;
 	wrap(stream.readUInt32(nodeId))
+	if (state._sceneGraph.empty()) {
+		state._rootNode = nodeId;
+	}
 	Log::debug("transform node: %u", nodeId);
-	VoxAttributes attributes;
-	wrapBool(readAttributes(attributes, stream))
-	uint32_t childNodeId;
-	wrap(stream.readUInt32(childNodeId))
-	uint32_t reserved;
-	wrap(stream.readUInt32(reserved))
-	VoxTransform transform;
+	wrapBool(readAttributes(transform.attributes, stream))
+	wrap(stream.readUInt32(transform.childNodeId))
+	wrap(stream.readUInt32(transform.reserved))
 	wrap(stream.readInt32(transform.layerId))
 	wrap(stream.readUInt32(transform.numFrames))
-	Log::debug("nTRN chunk: node: %u, childNodeId: %u, layerId: %i, numFrames: %u", nodeId, childNodeId, transform.layerId, transform.numFrames);
+	Log::debug("nTRN chunk: node: %u, childNodeId: %u, layerId: %i, numFrames: %u",
+		nodeId, transform.childNodeId, transform.layerId, transform.numFrames);
 	if (transform.numFrames != 1) {
 		Log::warn("Transform node chunk contains an expected value for numFrames: %i", transform.numFrames);
 	}
-	VoxAttributes transformNodeAttributes;
 	for (uint32_t f = 0; f < transform.numFrames; ++f) {
-		wrapBool(readAttributes(transformNodeAttributes, stream))
+		wrapBool(readAttributes(transform.transformNodeAttributes, stream))
 	}
 
-	wrapBool(parseSceneGraphRotation(transform, transformNodeAttributes))
-	wrapBool(parseSceneGraphTranslation(transform, transformNodeAttributes))
+	wrapBool(parseSceneGraphRotation(transform, transform.transformNodeAttributes))
+	wrapBool(parseSceneGraphTranslation(transform, transform.transformNodeAttributes))
 
 	VoxSceneGraphChildNodes child(1);
-	child[0] = childNodeId;
-	const uint32_t arrayIdx = (uint32_t)state._transforms.size();
-	const VoxSceneGraphNode sceneNode{arrayIdx, VoxSceneGraphNodeType::Transform, child};
-	Log::debug("transform child node id: %u, arrayIdx: %u", sceneNode.childNodeIds[0], arrayIdx);
-	state._sceneGraphMap.put(nodeId, sceneNode);
-	state._transforms.push_back(transform);
-	state._parentNodes.put(childNodeId, nodeId);
+	child[0] = transform.childNodeId;
+	const VoxSceneGraphNode sceneNode{nodeId, VoxSceneGraphNodeType::Transform, child};
+	Log::debug("transform child node id: %u, nodeId: %u", sceneNode.childNodeIds[0], nodeId);
+	state._sceneGraph.put(nodeId, sceneNode);
+	state._ntrn.put(nodeId, transform);
+	state._parentNodes.put(transform.childNodeId, nodeId);
 
 	return true;
 }
 
 bool VoxFormat::loadChunk_nGRP(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
+	VoxNGRPNode ngrp;
 	uint32_t nodeId;
 	wrap(stream.readUInt32(nodeId))
 	Log::debug("group node: %u", nodeId);
-	VoxAttributes attributes;
-	wrapBool(readAttributes(attributes, stream))
+	wrapBool(readAttributes(ngrp.attributes, stream))
 	uint32_t numChildren;
 	wrap(stream.readUInt32(numChildren))
-	VoxSceneGraphChildNodes children;
-	children.reserve(numChildren);
+
+	ngrp.children.reserve(numChildren);
 	for (uint32_t i = 0; i < numChildren; ++i) {
 		uint32_t child;
 		wrap(stream.readUInt32(child))
-		children.push_back((child));
+		ngrp.children.push_back((child));
 		state._parentNodes.put(child, nodeId);
 	}
-	const VoxSceneGraphNode sceneNode{0, VoxSceneGraphNodeType::Group, children};
-	state._sceneGraphMap.put(nodeId, sceneNode);
+	const VoxSceneGraphNode sceneNode{nodeId, VoxSceneGraphNodeType::Group, ngrp.children};
+	state._sceneGraph.put(nodeId, sceneNode);
+	state._ngrp.put(nodeId, ngrp);
 	return true;
 }
 
 bool VoxFormat::loadChunk_rCAM(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
-	uint32_t cameraId;
-	wrap(stream.readUInt32(cameraId))
-	VoxAttributes cameraAttributes;
+	VoxCamera camera;
+	wrap(stream.readUInt32(camera.cameraId))
 	// (_mode : string - pers)
 	// (_focus : vec(3))
 	// (_angle : vec(3))
 	// (_radius : int)
 	// (_frustum : float)
 	// (_fov : int degree)
-	wrapBool(readAttributes(cameraAttributes, stream))
+	wrapBool(readAttributes(camera.attributes, stream))
+	state._cameras.push_back(camera);
 	return true;
 }
 
 // the rendering setting are not open yet because they are changing frequently.
 // But you can still read it since it is just in the DICT format.
 bool VoxFormat::loadChunk_rOBJ(State &state, io::SeekableReadStream& stream, const VoxChunkHeader& header) {
-	VoxAttributes attributes;
-	wrapBool(readAttributes(attributes, stream))
+	VoxROBJ rOBJ;
+	wrapBool(readAttributes(rOBJ.attributes, stream))
 	// _type => _setting
 	// _ground => 1
 	// _grid => 0
@@ -897,6 +864,7 @@ bool VoxFormat::loadChunk_rOBJ(State &state, io::SeekableReadStream& stream, con
 	// _aces => 1
 	// _gam => 2.2
 
+	state._robjs.push_back(rOBJ);
 	return true;
 }
 
@@ -988,22 +956,19 @@ bool VoxFormat::loadFirstChunks(State &state, io::SeekableReadStream& stream) {
 		wrap(stream.seek(header.nextChunkPos))
 	} while (stream.remaining() > 0);
 
-	state._models.clear();
-	state._models.resize(state._regions.size());
-
 	return true;
 }
 
-bool VoxFormat::loadSecondChunks(State &state, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool VoxFormat::loadSecondChunks(State &state, io::SeekableReadStream& stream) {
 	do {
 		VoxChunkHeader header;
 		wrapBool(readChunkHeader(stream, header));
 		switch (header.chunkId) {
 		case FourCC('L','A','Y','R'):
-			wrapBool(loadChunk_LAYR(state, stream, header, sceneGraph))
+			wrapBool(loadChunk_LAYR(state, stream, header))
 			break;
 		case FourCC('X','Y','Z','I'):
-			wrapBool(loadChunk_XYZI(state, stream, header, sceneGraph))
+			wrapBool(loadChunk_XYZI(state, stream, header))
 			break;
 		}
 		wrap(stream.seek(header.nextChunkPos));
@@ -1053,14 +1018,19 @@ bool VoxFormat::loadSceneGraph(State &state, io::SeekableReadStream& stream) {
 	return true;
 }
 
-VoxFormat::VoxTransform VoxFormat::calculateTransform(State &state, uint32_t volumeIdx) const {
-	const VoxNodeId nodeId = state._models[volumeIdx].nodeId;
-	VoxTransform transform;
-	applyTransform(state, transform, nodeId);
+VoxFormat::VoxNTRNNode VoxFormat::calculateTransform(State &state, uint32_t modelId) const {
+	VoxNTRNNode transform;
+	for (const auto& entry : state._nshp) {
+		const VoxNSHPNode &nshp = entry->value;
+		if (nshp.modelId == modelId) {
+			applyTransform(state, transform, nshp.nodeId);
+			break;
+		}
+	}
 	return transform;
 }
 
-bool VoxFormat::applyTransform(State &state, VoxTransform& transform, VoxNodeId nodeId) const {
+bool VoxFormat::applyTransform(State &state, VoxNTRNNode& transform, VoxNodeId nodeId) const {
 	VoxNodeId parent;
 	VoxNodeId current = nodeId;
 	while (state._parentNodes.get(current, parent)) {
@@ -1074,23 +1044,22 @@ bool VoxFormat::applyTransform(State &state, VoxTransform& transform, VoxNodeId 
 	}
 
 	VoxSceneGraphNode node;
-	if (!state._sceneGraphMap.get(nodeId, node)) {
+	if (!state._sceneGraph.get(nodeId, node)) {
 		Log::debug("Could not find node %u", nodeId);
 		return false;
 	}
 
 	if (node.type == VoxSceneGraphNodeType::Transform) {
-		if (node.arrayIdx >= state._transforms.size()) {
-			Log::error("Invalid transform array index found: %u", node.arrayIdx);
+		if (!state._ntrn.hasKey(node.nodeId)) {
+			Log::error("Invalid transform node id found: %u", node.nodeId);
 			return false;
 		}
 
-		const VoxTransform& t = state._transforms[node.arrayIdx];
+		const VoxNTRNNode& t = state._ntrn.find(node.nodeId)->value;
 		transform.rotation = glm::normalize(t.rotation * transform.rotation);
 		transform.translation += t.rotation * glm::vec3(t.translation);
-		Log::debug("Apply translation for node %u (aidx: %u) %i:%i:%i",
-				nodeId, node.arrayIdx,
-				transform.translation.x, transform.translation.y, transform.translation.z);
+		Log::debug("Apply translation for node %u %i:%i:%i",
+				nodeId, transform.translation.x, transform.translation.y, transform.translation.z);
 	}
 
 	return true;
@@ -1127,6 +1096,87 @@ bool VoxFormat::checkMainChunk(io::SeekableReadStream& stream) const {
 		return false;
 	}
 
+	return true;
+}
+
+bool VoxFormat::fillSceneGraph_r(State& state, VoxNodeId nodeId, voxel::SceneGraph& sceneGraph, int parentId) {
+	auto iter = state._sceneGraph.find(nodeId);
+	if (iter == state._sceneGraph.end()) {
+		Log::error("Can't find scene graph node %u in mv scene graph", nodeId);
+		return false;
+	}
+	const VoxSceneGraphNode& voxSceneGraphNode = iter->value;
+	voxel::SceneGraphNodeType type = voxel::SceneGraphNodeType::Max;
+	switch (voxSceneGraphNode.type) {
+	case VoxSceneGraphNodeType::Transform:
+		type = voxel::SceneGraphNodeType::Transform;
+		break;
+	case VoxSceneGraphNodeType::Group:
+		type = voxel::SceneGraphNodeType::Group;
+		break;
+	case VoxSceneGraphNodeType::Shape:
+		type = voxel::SceneGraphNodeType::ModelReference;
+		break;
+	}
+	if (type == voxel::SceneGraphNodeType::Max) {
+		Log::error("Can't map mv scene graph node type %i to SceneGraphNodeType", (int)voxSceneGraphNode.type);
+		return false;
+	}
+	voxel::SceneGraphNode node(type);
+	Log::debug("node with parent %i", parentId);
+
+	switch (voxSceneGraphNode.type) {
+	case VoxSceneGraphNodeType::Transform: {
+		auto niter = state._ntrn.find(voxSceneGraphNode.nodeId);
+		if (niter == state._ntrn.end()) {
+			Log::error("Can't find nTRN node with id %u", voxSceneGraphNode.nodeId);
+			return false;
+		}
+		const VoxNTRNNode& voxnode = niter->value;
+		node.addProperties(voxnode.attributes);
+		node.addProperties(voxnode.transformNodeAttributes);
+		node.setProperty("layer", core::string::toString(voxnode.layerId));
+		node.setName("Transform");
+		break;
+	}
+	case VoxSceneGraphNodeType::Shape: {
+		auto niter = state._nshp.find(voxSceneGraphNode.nodeId);
+		if (niter == state._nshp.end()) {
+			Log::error("Can't find nSHP node with id %u", voxSceneGraphNode.nodeId);
+			return false;
+		}
+		const VoxNSHPNode& voxnode = niter->value;
+		node.addProperties(voxnode.attributes);
+		node.addProperties(voxnode.modelAttributes);
+		node.setName("Model");
+		if (voxnode.modelId >= state._xyzi.size()) {
+			Log::error("Invalid model id given in nSHP node: %u", voxnode.modelId);
+			return false;
+		}
+		const int modelNodeId = sceneGraph[(int)voxnode.modelId].id();
+		node.setReferencedNodeId(modelNodeId);
+		// TODO: node.setMatrix();
+		break;
+	}
+	case VoxSceneGraphNodeType::Group: {
+		auto niter = state._ngrp.find(voxSceneGraphNode.nodeId);
+		if (niter == state._ngrp.end()) {
+			Log::error("Can't find nGRP node with id %u", voxSceneGraphNode.nodeId);
+			return false;
+		}
+		const VoxNGRPNode& voxnode = niter->value;
+		node.addProperties(voxnode.attributes);
+		node.setName("Group");
+		break;
+	}
+	}
+
+	const int newNodeId = sceneGraph.emplace(core::move(node), parentId);
+	for (VoxNodeId childNodeId : voxSceneGraphNode.childNodeIds) {
+		if (!fillSceneGraph_r(state, childNodeId, sceneGraph, newNodeId)) {
+			return false;
+		}
+	}
 	return true;
 }
 
@@ -1178,9 +1228,72 @@ bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream&
 	wrapBool(loadSceneGraph(state, stream))
 	stream.seek(resetPos);
 
-	wrapBool(loadSecondChunks(state, stream, sceneGraph))
+	wrapBool(loadSecondChunks(state, stream))
 
-	return true;
+	for (VoxModel &e : state._xyzi) {
+		voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
+		core_assert(e.volume);
+		node.setVolume(e.volume, true);
+		sceneGraph.emplace(core::move(node));
+		e.volume = nullptr;
+	}
+
+	if (state._foundSceneGraph) {
+		if (!fillSceneGraph_r(state, state._rootNode, sceneGraph, sceneGraph.root().id())) {
+			Log::warn("Could not load the scene graph");
+		}
+	}
+
+	if (!state._cameras.empty()) {
+		voxel::SceneGraphNode groupNode(voxel::SceneGraphNodeType::Group);
+		groupNode.setName("Cameras");
+		const int groupNodeId = sceneGraph.emplace(core::move(groupNode));
+		for (const VoxCamera &e : state._cameras) {
+			voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Camera);
+			node.addProperties(e.attributes);
+			sceneGraph.emplace(core::move(node), groupNodeId);
+		}
+	}
+
+	if (!state._robjs.empty()) {
+		voxel::SceneGraphNode groupNode(voxel::SceneGraphNodeType::Group);
+		groupNode.setName("Render settings");
+		const int groupNodeId = sceneGraph.emplace(core::move(groupNode));
+		for (const VoxROBJ &e : state._robjs) {
+			voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Unknown);
+			node.addProperties(e.attributes);
+			sceneGraph.emplace(core::move(node), groupNodeId);
+		}
+	}
+
+	if (!state._layers.empty()) {
+		const uint32_t modelCount = sceneGraph.size(voxel::SceneGraphNodeType::Model);
+		voxel::SceneGraphNode groupNode(voxel::SceneGraphNodeType::Group);
+		groupNode.setName("Layers");
+		const int groupNodeId = sceneGraph.emplace(core::move(groupNode));
+		for (const VoxLayer &layer : state._layers) {
+			core::String layerName;
+			layer.attributes.get("_name", layerName);
+			voxel::SceneGraphNode layerNode(voxel::SceneGraphNodeType::Unknown);
+			layerNode.addProperties(layer.attributes);
+			layerNode.setName(layerName);
+			if (layer.modelIdx <= modelCount) {
+				core::String property;
+				layer.attributes.get("_hidden", property);
+				voxel::SceneGraphNode &node = sceneGraph[(int)layer.modelIdx];
+				node.setVisible(property.empty() || property == "0");
+				// TODO: this is not the model name - but the layer name
+				if (!layerName.empty()) {
+					node.setName(layerName);
+				}
+			} else {
+				Log::warn("Invalid layer model id: %i (model count: %i)", layer.modelIdx, modelCount);
+			}
+			sceneGraph.emplace(core::move(layerNode), groupNodeId);
+		}
+	}
+
+	return !sceneGraph.empty(voxel::SceneGraphNodeType::Model);
 }
 
 size_t VoxFormat::loadPalette(const core::String& filename, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) {

@@ -9,6 +9,8 @@
 #include "core/String.h"
 #include "core/collection/StringMap.h"
 #include "core/collection/Buffer.h"
+#include "voxel/RawVolume.h"
+#include "voxelformat/SceneGraphNode.h"
 #include <glm/mat3x3.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -45,45 +47,83 @@ private:
 	using VoxAttributes = core::StringMap<core::String>;
 	using VoxNodeId = uint32_t;
 
-	struct VoxTransform {
+	struct VoxNTRNNode {
+		glm::mat3x3 rotMat { 0.0f };
 		glm::quat rotation = glm::quat_cast(glm::mat3(1.0f));
 		glm::ivec3 translation { 0 };
-		int32_t layerId;
-		uint32_t numFrames;
+		int32_t layerId = 0;
+		uint32_t numFrames = 0u;
+		VoxAttributes attributes;
+		VoxAttributes transformNodeAttributes;
+		uint32_t childNodeId = 0u;
+		uint32_t reserved = 0u;
+	};
+
+	struct VoxLayer {
+		uint32_t layerId = 0u;
+		VoxAttributes attributes;
+		uint32_t modelIdx = 0u;
 	};
 
 	struct VoxModel {
+		voxel::RawVolume* volume = nullptr;
+	};
+
+	struct VoxNSHPNode {
 		// node id in the scene graph
 		VoxNodeId nodeId = 0;
 		// there can be multiple SIZE and XYZI chunks for multiple models; volume id is their index in the
 		// stored order and the index in the @c _models or @c _regions arrays
-		uint32_t volumeIdx = 0;
+		uint32_t modelId = 0u;
+		uint32_t shapeNodeNumModels = 0u;
+		VoxAttributes modelAttributes;
 		VoxAttributes attributes;
-		VoxAttributes nodeAttributes;
+	};
+
+	struct VoxROBJ {
+		VoxAttributes attributes;
+	};
+
+	using VoxSceneGraphChildNodes = core::Buffer<VoxNodeId>;
+	struct VoxNGRPNode {
+		VoxAttributes attributes;
+		VoxSceneGraphChildNodes children;
+	};
+
+	struct VoxCamera {
+		VoxAttributes attributes;
+		uint32_t cameraId;
 	};
 
 	enum class VoxSceneGraphNodeType { Transform, Group, Shape };
-	using VoxSceneGraphChildNodes = core::Buffer<VoxNodeId>;
 
 	struct VoxSceneGraphNode {
-		// the index in the @c _models, @c _regions or _transforms arrays
-		uint32_t arrayIdx = 0u;
+		VoxNodeId nodeId = 0u;
 		VoxSceneGraphNodeType type = VoxSceneGraphNodeType::Transform;
 		VoxSceneGraphChildNodes childNodeIds {0};
 	};
 
 	struct State {
-		// index here is the node id
-		core::Map<VoxNodeId, VoxSceneGraphNode> _sceneGraphMap;
-		uint32_t _volumeIdx = 0u;
-		uint32_t _chunks = 0u;
-		uint32_t _numModels = 1u;
-		core::DynamicArray<Region> _regions;
-		core::DynamicArray<VoxModel> _models;
+		uint32_t _numPacks = 1u;
+		core::DynamicArray<Region> _sizes;
+		core::DynamicArray<VoxLayer> _layers;
+		core::DynamicArray<VoxModel> _xyzi;
+		core::DynamicArray<VoxCamera> _cameras;
+		core::DynamicArray<VoxROBJ> _robjs;
+
 		bool _foundSceneGraph = false;
-		core::DynamicArray<VoxTransform> _transforms;
+		VoxNodeId _rootNode = 0u;
+		core::Map<VoxNodeId, VoxSceneGraphNode> _sceneGraph;
+		core::Map<VoxNodeId, VoxNSHPNode> _nshp;
+		core::Map<VoxNodeId, VoxNTRNNode> _ntrn;
+		core::Map<VoxNodeId, VoxNGRPNode> _ngrp;
 		core::Map<VoxNodeId, VoxNodeId> _parentNodes;
-		core::DynamicArray<VoxNodeId> _leafNodes;
+
+		~State() {
+			for (VoxModel &m : _xyzi) {
+				delete m.volume;
+			}
+		}
 	};
 
 	bool saveAttributes(const VoxAttributes& attributes, io::SeekableWriteStream& stream) const;
@@ -122,20 +162,21 @@ private:
 	bool loadFirstChunks(State& state, io::SeekableReadStream& stream);
 
 	// second iteration
-	bool loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& sceneGraph);
-	bool loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header, SceneGraph& sceneGraph);
-	bool loadSecondChunks(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
+	bool loadChunk_LAYR(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header);
+	bool loadChunk_XYZI(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header);
+	bool loadSecondChunks(State& state, io::SeekableReadStream& stream);
 
 	// scene graph
-	bool parseSceneGraphTranslation(VoxTransform& transform, const VoxAttributes& attributes) const;
-	bool parseSceneGraphRotation(VoxTransform& transform, const VoxAttributes& attributes) const;
+	bool fillSceneGraph_r(State& state, uint32_t nodeId, voxel::SceneGraph& sceneGraph, int parentId);
+	bool parseSceneGraphTranslation(VoxNTRNNode& transform, const VoxAttributes& attributes) const;
+	bool parseSceneGraphRotation(VoxNTRNNode& transform, const VoxAttributes& attributes) const;
 	bool loadChunk_nGRP(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header);
 	bool loadChunk_nSHP(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header);
 	bool loadChunk_nTRN(State& state, io::SeekableReadStream& stream, const VoxChunkHeader& header);
 	bool loadSceneGraph(State& state, io::SeekableReadStream& stream);
-	VoxTransform calculateTransform(State& state, uint32_t volumeIdx) const;
-	bool applyTransform(State& state, VoxTransform& transform, VoxNodeId nodeId) const;
-	glm::ivec3 calcTransform(State& state, const VoxTransform& t, int x, int y, int z, const glm::ivec3& pivot) const;
+	VoxNTRNNode calculateTransform(State& state, uint32_t volumeIdx) const;
+	bool applyTransform(State& state, VoxNTRNNode& transform, VoxNodeId nodeId) const;
+	glm::ivec3 calcTransform(State& state, const VoxNTRNNode& t, int x, int y, int z, const glm::ivec3& pivot) const;
 
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) override;

@@ -17,6 +17,7 @@
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "voxelformat/SceneGraphNode.h"
 #include <glm/common.hpp>
 
 namespace voxel {
@@ -419,7 +420,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			}
 			idx += length;
 		}
-		SceneGraphNode node;
+		SceneGraphNode node(voxel::SceneGraphNodeType::Model);
 		node.setVolume(volume, true);
 		node.setName(layerName);
 		node.setVisible(visible);

@@ -8,6 +8,8 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
+#include "io/MemoryReadStream.h"
+#include "io/Stream.h"
 #include "math/Axis.h"
 #include "math/Math.h"
 #include "voxel/MaterialColor.h"
@@ -255,25 +257,43 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	bool visible = true;
 	char dictKey[256];
 	char dictValue[256];
+	SceneGraphNode node;
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 255 chars max
 			name = dictValue;
+			node.setProperty(dictKey, dictValue);
 		} else if (!strcmp(dictKey, "visible")) {
 			// "visible" (bool)
 			visible = *dictValue;
+		} else if (!strcmp(dictKey, "mat")) {
+			// "mat" (4x4 matrix)
+			glm::mat4x4 mat(1.0f);
+			io::MemoryReadStream stream(dictValue, sizeof(float) * 16);
+			for (int i = 0; i < 16; ++i) {
+				stream.readFloat(mat[i / 4][i % 4]);
+			}
+			node.setMatrix(mat);
+		} else if (!strcmp(dictKey, "id")) {
+			// "id" unique id
+			node.setProperty(dictKey, dictValue);
+		} else if (!strcmp(dictKey, "img-path")) {
+			// "img-path" layer texture path
+			node.setProperty(dictKey, dictValue);
+		} else if (!strcmp(dictKey, "base_id")) {
+			// "base_id" int
+			node.setProperty(dictKey, core::string::toString(*(const int32_t*)dictValue));
+		} else if (!strcmp(dictKey, "box")) {
+			// "box" 4x4 bounding box float
+		} else if (!strcmp(dictKey, "shape")) {
+			// "shape" layer layer - currently unsupported TODO
+		} else if (!strcmp(dictKey, "color")) {
+			// "color" 4xbyte
+		} else if (!strcmp(dictKey, "material")) {
+			// "material" int (index)
+			node.setProperty(dictKey, core::string::toString(*(const int32_t*)dictValue));
 		}
-
-		// "mat" (4x4 matrix)
-		// "id" unique id
-		// "img-path" layer texture path
-		// "base_id" int
-		// "box" 4x4 bounding box float
-		// "shape" layer layer - currently unsupported TODO
-		// "color" 4xbyte
-		// "material" int (index)
 	}
-	SceneGraphNode node;
 	// TODO: fix this properly - without mirroring
 	node.setVolume(voxel::mirrorAxis(layerVolume, math::Axis::Z), true);
 	node.setName(name);
@@ -314,13 +334,31 @@ bool GoxFormat::loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableRead
 bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
+	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Camera);
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
-		// "name" 127 chars max
-		// "dist" float
-		// "ortho" bool
-		// "mat" 4x4 float
-		// "active" no value - active scene camera if this key is available
+		if (!strcmp(dictKey, "name")) {
+			// "name" 127 chars max
+			node.setProperty(dictKey, dictValue);
+		} else if (!strcmp(dictKey, "active")) {
+			// "active" no value - active scene camera if this key is available
+			node.setProperty(dictKey, "true");
+		} else if (!strcmp(dictKey, "dist")) {
+			// "dist" float
+			node.setProperty(dictKey, core::string::toString(*(const float*)dictValue));
+		} else if (!strcmp(dictKey, "ortho")) {
+			// "ortho" bool
+			node.setProperty(dictKey, *dictValue ? "true" : "false");
+		} else if (!strcmp(dictKey, "mat")) {
+			// "mat" 4x4 float
+			glm::mat4x4 mat(1.0f);
+			io::MemoryReadStream stream(dictValue, sizeof(float) * 16);
+			for (int i = 0; i < 16; ++i) {
+				stream.readFloat(mat[i / 4][i % 4]);
+			}
+			node.setMatrix(mat);
+		}
 	}
+	sceneGraph.emplace(core::move(node));
 	return true;
 }
 
