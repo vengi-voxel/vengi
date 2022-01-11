@@ -996,6 +996,7 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 		}
 		_volumeRenderer.setRenderScene(_editMode == EditMode::Scene);
 		_volumeRenderer.render(_sceneGraph, false, camera, _renderShadow, func);
+		extractVolume();
 	}
 	if (renderUI) {
 		if (_editMode == EditMode::Scene) {
@@ -1858,7 +1859,6 @@ void SceneManager::update(double nowSeconds) {
 	}
 	animate(nowSeconds);
 	autosave();
-	extractVolume();
 }
 
 void SceneManager::shutdown() {
