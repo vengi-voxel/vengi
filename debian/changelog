@@ -2,6 +2,9 @@ vengi (0.0.17.0-1) UNRELEASED; urgency=low
 
   * General:
   * Fixed relative path handling for registered paths
+  * Support scene graphs in the voxel formats
+  * Fixed a few issues with the magicavoxel vox format
+  * Load properties from supported voxel formats (vxr, vox, gox)
 
   * VoxConvert:
   * Added --crop parameter that reduces the volumes to their real voxel sizes
@@ -9,6 +12,7 @@ vengi (0.0.17.0-1) UNRELEASED; urgency=low
 
   * VoxEdit:
   * Fixed torus shape
+  * Added scene graph panel
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 27 Dec 2021 12:01:08 +0100
 

@@ -14,6 +14,9 @@ General:
 
    - Fixed relative path handling for registered paths
    - Stop event loop if window is minimized (reduce cpu usage)
+   - Support scene graphs in the voxel formats
+   - Fixed a few issues with the magicavoxel vox format
+   - Load properties from supported voxel formats (vxr, vox, gox)
 
 VoxConvert:
 
@@ -23,6 +26,7 @@ VoxConvert:
 VoxEdit:
 
    - Fixed torus shape
+   - Added scene graph panel
 
 ## 0.0.16 (2021-12-27)
 
