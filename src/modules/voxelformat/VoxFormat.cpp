@@ -1283,6 +1283,53 @@ bool VoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream&
 		}
 	}
 
+	for (const auto& entry : state._nshp) {
+		const VoxNSHPNode& nshp = entry->value;
+		SceneGraphNode* modelNode = sceneGraph[nshp.modelId];
+		if (modelNode == nullptr) {
+			Log::error("Failed to resolve model node with model id %i", nshp.modelId);
+			return false;
+		}
+		if (!modelNode->name().empty()) {
+			continue;
+		}
+		VoxNodeId nodeId = nshp.nodeId;
+		for (;;) {
+			auto i = state._parentNodes.find(nodeId);
+			if (i == state._parentNodes.end()) {
+				break;
+			}
+			nodeId = i->second;
+			auto nodeIter = state._sceneGraph.find(nodeId);
+			if (nodeIter == state._sceneGraph.end()) {
+				Log::error("Node with id %i wasn't found in the graph", nodeId);
+				continue;
+			}
+			const VoxSceneGraphNode& voxnode = nodeIter->second;
+			switch (voxnode.type) {
+			case VoxSceneGraphNodeType::Transform: {
+				auto nameIter = state._ntrn.find(voxnode.nodeId)->second.attributes.find("_name");
+				if (nameIter != nshp.attributes.end()) {
+					modelNode->setName(nameIter->value);
+				}
+				break;
+			}
+			case VoxSceneGraphNodeType::Shape: {
+				auto nameIter = state._nshp.find(voxnode.nodeId)->second.attributes.find("_name");
+				if (nameIter != nshp.attributes.end()) {
+					modelNode->setName(nameIter->value);
+				}
+				break;
+			}
+			case VoxSceneGraphNodeType::Group:
+				break;
+			}
+			if (!modelNode->name().empty()) {
+				break;
+			}
+		}
+	}
+
 	return !sceneGraph.empty(voxel::SceneGraphNodeType::Model);
 }
 
