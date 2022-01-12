@@ -415,6 +415,25 @@ public:
 		return _buffer[idx];
 	}
 
+	/**
+	 * @brief Insertion sort
+	 * @note stable
+	 */
+	template<typename COMPARATOR>
+	void sort(COMPARATOR comp) {
+		int i, j;
+		for (i = 1; i < (int)_size; ++i) {
+			TYPE key = _buffer[i];
+			j = i - 1;
+
+			while (j >= 0 && comp(_buffer[j], key)) {
+				_buffer[j + 1] = core::move(_buffer[j]);
+				--j;
+			}
+			_buffer[j + 1] = core::move(key);
+		}
+	}
+
 	inline TYPE& operator[](size_t idx) {
 		core_assert(idx < _size);
 		return _buffer[idx];

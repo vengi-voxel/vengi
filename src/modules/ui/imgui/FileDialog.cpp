@@ -311,13 +311,13 @@ bool FileDialog::filesPanel() {
 
 	// Sort files
 	if (_fileNameSortOrder != FileDialogSortOrder::None) {
-		core::sort(_files.begin(), _files.end(), nameSorter);
+		_files.sort(nameSorter);
 	} else if (_sizeSortOrder != FileDialogSortOrder::None) {
-		core::sort(_files.begin(), _files.end(), sizeSorter);
+		_files.sort(sizeSorter);
 	} else if (_typeSortOrder != FileDialogSortOrder::None) {
-		core::sort(_files.begin(), _files.end(), extensionSorter);
+		_files.sort(extensionSorter);
 	} else if (_dateSortOrder != FileDialogSortOrder::None) {
-		core::sort(_files.begin(), _files.end(), mtimeSorter);
+		_files.sort(mtimeSorter);
 	}
 
 	bool doubleClicked = false;
