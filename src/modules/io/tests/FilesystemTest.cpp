@@ -32,8 +32,7 @@ TEST_F(FilesystemTest, testListDirectory) {
 	fs.list("listdirtest/", entities, "");
 	EXPECT_FALSE(entities.empty());
 	EXPECT_EQ(3u, entities.size()) << entities;
-	core::sort(entities.begin(), entities.end(),
-		[] (const io::Filesystem::DirEntry& first, const io::Filesystem::DirEntry& second) {
+	entities.sort([] (const io::Filesystem::DirEntry& first, const io::Filesystem::DirEntry& second) {
 			return first.name < second.name;
 		});
 	EXPECT_EQ("dir1", entities[0].name);

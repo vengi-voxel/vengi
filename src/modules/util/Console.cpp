@@ -134,17 +134,15 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 	}
 
 	if (modifier & KMOD_CTRL) {
-		if (key == SDLK_TAB) {
+		if (key == SDLK_TAB || key == SDLK_d) {
 			toggle();
 		} else if (key == SDLK_a || key == SDLK_b) {
 			_cursorPos = 0;
 		} else if (key == SDLK_e) {
-			_cursorPos = _commandLine.size();
+			_cursorPos = (int)_commandLine.size();
 		} else if (key == SDLK_c) {
 			_messages.push_back(_consolePrompt + _commandLine);
 			clearCommandLine();
-		} else if (key == SDLK_d) {
-			toggle();
 		} else if (key == SDLK_l) {
 			clear();
 		} else if (key == SDLK_w) {
@@ -165,7 +163,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 
 	if (modifier & KMOD_SHIFT) {
 		if (key == SDLK_HOME) {
-			_scrollPos = _messages.size() - _maxLines + 1;
+			_scrollPos = (int)_messages.size() - _maxLines + 1;
 		} else if (key == SDLK_END) {
 			_scrollPos = 0;
 		} else if (key == SDLK_PAGEUP) {
@@ -184,7 +182,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		_cursorPos = 0;
 		return true;
 	case SDLK_END:
-		_cursorPos = _commandLine.size();
+		_cursorPos = (int)_commandLine.size();
 		return true;
 	case SDLK_RETURN:
 	case SDLK_KP_ENTER:
@@ -291,7 +289,7 @@ void Console::insertText(const core::String& text) {
 		cursorDelete();
 	}
 	_commandLine.insert(_cursorPos, text.c_str());
-	_cursorPos += text.size();
+	_cursorPos += (int)text.size();
 }
 
 bool Console::onTextInput(const core::String& text) {
@@ -311,7 +309,7 @@ void Console::cursorLeft() {
 }
 
 void Console::cursorRight() {
-	const int size = _commandLine.size();
+	const int size = (int)_commandLine.size();
 	if (_cursorPos < size) {
 		_cursorPos++;
 	}
@@ -331,7 +329,7 @@ void Console::cursorWordRight() {
 	const core::String& partialCommandLine = _commandLine.substr(_cursorPos + spaceOffset);
 	const size_t nextWordEnd = partialCommandLine.find_first_of(" ");
 	if (core::String::npos == nextWordEnd) {
-		_cursorPos = _commandLine.size();
+		_cursorPos = (int)_commandLine.size();
 		return;
 	}
 	_cursorPos = core_min(_commandLine.size(), _cursorPos + nextWordEnd + spaceOffset);
@@ -344,7 +342,7 @@ void Console::cursorUp() {
 
 	--_historyPos;
 	_commandLine = _history[_historyPos];
-	_cursorPos = _commandLine.size();
+	_cursorPos = (int)_commandLine.size();
 }
 
 void Console::cursorDown() {
@@ -357,11 +355,11 @@ void Console::cursorDown() {
 		return;
 	}
 	_commandLine = _history[_historyPos];
-	_cursorPos = _commandLine.size();
+	_cursorPos = (int)_commandLine.size();
 }
 
 void Console::scrollUp(const int lines) {
-	const int scrollableLines = _messages.size() - _maxLines;
+	const int scrollableLines = (int)_messages.size() - _maxLines;
 	if (scrollableLines <= 0) {
 		return;
 	}
@@ -441,14 +439,14 @@ void Console::autoComplete() {
 	for (auto i = uniqueMatches.begin(); i != uniqueMatches.end(); ++i) {
 		matches.push_back(i->key);
 	}
-	core::sort(matches.begin(), matches.end(), core::Less<core::String>());
+	matches.sort(core::Less<core::String>());
 
 	if (matches.size() == 1) {
 		if (strings.size() <= 1) {
 			_commandLine = matches.front() + " ";
 		} else {
-			const int cmdLineSize = _commandLine.size();
-			const int cmdEraseIndex = cmdLineSize - strings.back().size();
+			const size_t cmdLineSize = _commandLine.size();
+			const size_t cmdEraseIndex = cmdLineSize - strings.back().size();
 			_commandLine.erase(cmdEraseIndex, strings.back().size());
 			_commandLine.insert(cmdEraseIndex, matches.front().c_str());
 		}
@@ -476,7 +474,7 @@ void Console::autoComplete() {
 			Log::info("%s", match.c_str());
 		}
 	}
-	_cursorPos = _commandLine.size();
+	_cursorPos = (int)_commandLine.size();
 }
 
 void Console::replaceLastParameter(const core::String& param) {
@@ -518,7 +516,7 @@ void Console::cursorDeleteWord() {
 		return;
 	}
 	_commandLine.erase(prevWordStart + 1, _cursorPos - prevWordStart - 1);
-	_cursorPos = prevWordStart + 1;
+	_cursorPos = (int)prevWordStart + 1;
 }
 
 core::String Console::removeAnsiColors(const char* message) {
@@ -644,7 +642,7 @@ void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
 		return;
 	}
 	const int maxY = (int)_messages.size() * lineH;
-	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), _commandLine.size());
+	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), (int)_commandLine.size());
 	const int startY = core_min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y - 4, maxY);
 	auto i = _messages.end();
 	--i;
@@ -653,19 +651,19 @@ void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
 		if (y < rect.getMinZ()) {
 			break;
 		}
-		const glm::ivec2& size = stringSize(i->c_str(), i->size());
+		const glm::ivec2& size = stringSize(i->c_str(), (int)i->size());
 		y -= size.y;
-		drawString(_consoleMarginLeft, y, *i, i->size());
+		drawString(_consoleMarginLeft, y, *i, (int)i->size());
 		if (i == _messages.begin()) {
 			break;
 		}
 	}
 
-	drawString(_consoleMarginLeft, startY, _consolePrompt, _consolePrompt.size());
-	drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt, startY, _commandLine, _commandLine.size());
+	drawString(_consoleMarginLeft, startY, _consolePrompt, (int)_consolePrompt.size());
+	drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt, startY, _commandLine, (int)_commandLine.size());
 	if (_cursorBlink) {
 		const glm::ivec2& l = stringSize(_commandLine.c_str(), _cursorPos);
-		drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt + l.x, startY, _consoleCursor, _consoleCursor.size());
+		drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt + l.x, startY, _consoleCursor, (int)_consoleCursor.size());
 	}
 
 	afterRender(rect);

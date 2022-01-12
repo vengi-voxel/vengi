@@ -1339,7 +1339,7 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 			Log::warn("Max draw buffers exceeded");
 			return false;
 		}
-		core::sort(attachments.begin(), attachments.end(), [] (GLenum lhs, GLenum rhs) { return lhs < rhs; });
+		attachments.sort([] (GLenum lhs, GLenum rhs) { return lhs < rhs; });
 		glDrawBuffers((GLsizei) attachments.size(), attachments.data());
 		checkError();
 	}
