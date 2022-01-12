@@ -79,6 +79,9 @@ Iter sortRange(Iter first, Iter last, Iter split, Comparator &comp) {
 	return i;
 }
 
+/**
+ * @note This sort is unstable
+ */
 template<typename Iter, class Comparator>
 void sort(Iter first, Iter last, Comparator comp) {
 	if (first == last) {
