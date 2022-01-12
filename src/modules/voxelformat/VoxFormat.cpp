@@ -706,7 +706,7 @@ bool VoxFormat::loadChunk_nTRN(State &state, io::SeekableReadStream& stream, con
 	Log::debug("nTRN chunk: node: %u, childNodeId: %u, layerId: %i, numFrames: %u",
 		nodeId, transform.childNodeId, transform.layerId, transform.numFrames);
 	if (transform.numFrames != 1) {
-		Log::warn("Transform node chunk contains an expected value for numFrames: %i", transform.numFrames);
+		Log::warn("Transform node chunk contains an unexpected value for numFrames: %i", transform.numFrames);
 	}
 	for (uint32_t f = 0; f < transform.numFrames; ++f) {
 		wrapBool(readAttributes(transform.transformNodeAttributes, stream))
