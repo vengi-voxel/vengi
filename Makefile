@@ -209,6 +209,10 @@ update-ogl_vox:
 	$(call UPDATE_GIT,ogl_vox,https://github.com/jpaver/opengametools)
 	cp $(UPDATEDIR)/ogl_vox.sync/src/ogt_vox.h src/modules/voxelformat/external
 
+update-enkimi:
+	$(call UPDATE_GIT,enkimi,https://github.com/dougbinks/enkiMI.git)
+	cp $(UPDATEDIR)/enkimi.sync/src/enkimi.[ch] src/modules/voxelformat/external
+
 # TODO simpleai support
 # TODO lua support
 updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-glslang update-simplecpp

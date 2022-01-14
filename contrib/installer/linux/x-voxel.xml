@@ -22,6 +22,10 @@
     </magic>
     <glob pattern="*.vox"/>
   </mime-type>
+  <mime-type type="application/x-minecraftregion">
+    <comment>Minecraft region file</comment>
+    <glob pattern="*.mca"/>
+  </mime-type>
   <mime-type type="application/x-qubicle-binary">
     <comment>Voxel model Qubicle binary</comment>
     <glob pattern="*.qb"/>

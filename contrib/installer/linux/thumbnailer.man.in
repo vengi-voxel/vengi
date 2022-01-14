@@ -41,6 +41,8 @@ Sandbox VoxEdit Model (*.vxm)
 .TP
 Sandbox VoxEdit Hierarquie (*.vxr)
 .TP
+Minecraft Region (*.mca)
+.TP
 BinVox (*.binvox)
 .TP
 Goxel (*.gox)
