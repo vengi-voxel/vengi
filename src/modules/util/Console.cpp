@@ -439,7 +439,7 @@ void Console::autoComplete() {
 	for (auto i = uniqueMatches.begin(); i != uniqueMatches.end(); ++i) {
 		matches.push_back(i->key);
 	}
-	matches.sort(core::Less<core::String>());
+	matches.sort(core::Greater<core::String>());
 
 	if (matches.size() == 1) {
 		if (strings.size() <= 1) {

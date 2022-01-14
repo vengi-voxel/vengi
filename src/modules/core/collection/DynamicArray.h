@@ -418,6 +418,7 @@ public:
 	/**
 	 * @brief Insertion sort
 	 * @note stable
+	 * @note @c COMPARATOR must return true on @code lhs > rhs @endcode to sort ascending
 	 */
 	template<typename COMPARATOR>
 	void sort(COMPARATOR comp) {

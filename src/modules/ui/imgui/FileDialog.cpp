@@ -281,32 +281,32 @@ bool FileDialog::filesPanel() {
 
 	static auto nameSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 		if (_fileNameSortOrder == FileDialogSortOrder::Down) {
-			return a->name > b->name;
+			return a->name < b->name;
 		}
-		return a->name < b->name;
+		return a->name > b->name;
 	};
 
 	static auto sizeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 		if (_sizeSortOrder == FileDialogSortOrder::Down) {
-			return a->size > b->size;
+			return a->size < b->size;
 		}
-		return a->size < b->size;
+		return a->size > b->size;
 	};
 
 	static auto extensionSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 		const core::String &aext = core::string::extractExtension(a->name);
 		const core::String &bext = core::string::extractExtension(b->name);
 		if (_typeSortOrder == FileDialogSortOrder::Down) {
-			return aext > bext;
+			return aext < bext;
 		}
-		return aext < bext;
+		return aext > bext;
 	};
 
 	static auto mtimeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
 		if (_dateSortOrder == FileDialogSortOrder::Down) {
-			return a->mtime > b->mtime;
+			return a->mtime < b->mtime;
 		}
-		return a->mtime < b->mtime;
+		return a->mtime > b->mtime;
 	};
 
 	// Sort files

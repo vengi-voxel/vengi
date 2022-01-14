@@ -3,6 +3,7 @@
  */
 
 #include <gtest/gtest.h>
+#include "core/Common.h"
 #include "core/collection/DynamicArray.h"
 #include "core/String.h"
 #include "core/Algorithm.h"
@@ -66,6 +67,21 @@ TEST(DynamicArrayTest, testRelease) {
 	array.release();
 	EXPECT_EQ(0u, array.size()) << array;
 	EXPECT_EQ(0u, array.capacity()) << array;
+}
+
+TEST(DynamicArrayTest, testSort) {
+	DynamicArray<int> array;
+	array.push_back(3);
+	array.push_back(5);
+	array.push_back(1);
+	array.push_back(11);
+	array.push_back(9);
+	array.sort(core::Greater<int>());
+	EXPECT_EQ(1, array[0]);
+	EXPECT_EQ(3, array[1]);
+	EXPECT_EQ(4, array[2]);
+	EXPECT_EQ(9, array[3]);
+	EXPECT_EQ(11, array[4]);
 }
 
 TEST(DynamicArrayTest, testIterate) {
