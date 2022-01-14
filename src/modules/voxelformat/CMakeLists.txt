@@ -1,5 +1,7 @@
 set(LIB voxelformat)
 set(SRCS
+	external/ogt_vox.h
+
 	Format.h Format.cpp
 	AoSVXLFormat.h AoSVXLFormat.cpp
 	BinVoxFormat.h BinVoxFormat.cpp
