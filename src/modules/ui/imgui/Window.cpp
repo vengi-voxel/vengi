@@ -5,7 +5,6 @@
 #include "Window.h"
 #include "IMGUI.h"
 #include "command/Command.h"
-#include "dearimgui/imgui.h"
 
 namespace ui {
 namespace imgui {

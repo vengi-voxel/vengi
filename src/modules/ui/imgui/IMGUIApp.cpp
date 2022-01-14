@@ -4,7 +4,6 @@
 
 #include "IMGUIApp.h"
 
-#include "dearimgui/imgui.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
 #include "core/Var.h"

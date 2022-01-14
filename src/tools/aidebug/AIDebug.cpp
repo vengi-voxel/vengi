@@ -16,7 +16,6 @@
 #include "core/EventBus.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
-#include "dearimgui/imgui.h"
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
 #include "network/IMsgProtocolHandler.h"

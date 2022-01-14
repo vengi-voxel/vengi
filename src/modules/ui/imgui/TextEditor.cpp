@@ -1,7 +1,6 @@
 #include "TextEditor.h"
 #include "core/Common.h"
 #include "core/UTF8.h"
-#include "dearimgui/imgui.h"
 #include "glm/common.hpp"
 #include <algorithm>
 
