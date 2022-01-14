@@ -78,6 +78,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		enkiInitNBTDataStreamForChunk(regionFile, i, &stream);
 		if (stream.dataLength) {
 			enkiChunkBlockData aChunk = enkiNBTReadChunk(&stream);
+			// TODO: use aChunk.palette
 			enkiMICoordinate chunkOriginPos = enkiGetChunkOrigin(&aChunk); // y always 0
 			Log::debug("chunk at %d:%d:%d: Number of sections: %d", chunkOriginPos.x, chunkOriginPos.y,
 					   chunkOriginPos.z, aChunk.countOfSections);
