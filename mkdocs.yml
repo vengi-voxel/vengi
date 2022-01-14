@@ -42,6 +42,7 @@ nav:
       - thumbnailer/Index.md
       - thumbnailer/Examples.md
   - Development:
+      - Basic: Basics.md
       - Visual Tests: VisualTests.md
       - Shader integration: ShaderTool.md
       - Compute Shader integration: ComputeShaderTool.md
