@@ -817,8 +817,7 @@ endmacro()
 macro(CheckEGL)
   if (SDL_OPENGL OR SDL_OPENGLES)
     pkg_check_modules(EGL egl)
-    string(REPLACE "-D_THREAD_SAFE;" "-D_THREAD_SAFE=1;" EGL_CFLAGS "${EGL_CFLAGS}")
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
+    set(CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS} ${EGL_CFLAGS}")
     check_c_source_compiles("
         #define EGL_API_FB
         #define MESA_EGL_NO_X11_HEADERS
@@ -1170,6 +1169,8 @@ macro(CheckHIDAPI)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${LIBUSB_CFLAGS}")
         if(HIDAPI_ONLY_LIBUSB)
           list(APPEND EXTRA_LIBS ${LIBUSB_LIBS})
+        elseif(OS2)
+          set(SDL_LIBUSB_DYNAMIC "\"usb100.dll\"")
         else()
           # libusb is loaded dynamically, so don't add it to EXTRA_LIBS
           FindLibraryAndSONAME("usb-1.0")
@@ -1221,7 +1222,11 @@ macro(CheckRPI)
     set(CMAKE_REQUIRED_LIBRARIES "${VIDEO_RPI_LIBRARIES}")
     check_c_source_compiles("
         #include <bcm_host.h>
-        int main(int argc, char **argv) {}" HAVE_RPI)
+        #include <EGL/eglplatform.h>
+        int main(int argc, char **argv) {
+          EGL_DISPMANX_WINDOW_T window;
+          bcm_host_init();
+        }" HAVE_RPI)
     set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
     set(CMAKE_REQUIRED_LIBRARIES)
 

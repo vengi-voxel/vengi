@@ -204,13 +204,10 @@ touch_surface(SDL_TouchID id)
 
 /* Returns SDL_TRUE if a key repeat event was due */
 static SDL_bool
-keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t now)
+keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t elapsed)
 {
     SDL_bool ret = SDL_FALSE;
-    if (!repeat_info->is_key_down || !repeat_info->is_initialized) {
-        return ret;
-    }
-    while (repeat_info->next_repeat_ms <= now) {
+    while ((elapsed - repeat_info->next_repeat_ms) < 0x80000000U) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             SDL_SendKeyboardKey(SDL_PRESSED, repeat_info->scancode);
         }
@@ -232,19 +229,25 @@ keyboard_repeat_clear(SDL_WaylandKeyboardRepeat* repeat_info) {
 }
 
 static void
-keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info,
+keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t wl_press_time,
                     uint32_t scancode, SDL_bool has_text, char text[8]) {
     if (!repeat_info->is_initialized || !repeat_info->repeat_rate) {
         return;
     }
     repeat_info->is_key_down = SDL_TRUE;
-    repeat_info->next_repeat_ms = SDL_GetTicks() + repeat_info->repeat_delay;
+    repeat_info->wl_press_time = wl_press_time;
+    repeat_info->sdl_press_time = SDL_GetTicks();
+    repeat_info->next_repeat_ms = repeat_info->repeat_delay;
     repeat_info->scancode = scancode;
     if (has_text) {
         SDL_memcpy(repeat_info->text, text, 8);
     } else {
         repeat_info->text[0] = '\0';
     }
+}
+
+static SDL_bool keyboard_repeat_is_set(SDL_WaylandKeyboardRepeat* repeat_info) {
+    return repeat_info->is_initialized && repeat_info->is_key_down;
 }
 
 void
@@ -273,13 +276,13 @@ Wayland_WaitEventTimeout(_THIS, int timeout)
 #endif
 
     /* If key repeat is active, we'll need to cap our maximum wait time to handle repeats */
-    if (input && input->keyboard_repeat.is_initialized && input->keyboard_repeat.is_key_down) {
-        uint32_t now = SDL_GetTicks();
-        if (keyboard_repeat_handle(&input->keyboard_repeat, now)) {
+    if (input && keyboard_repeat_is_set(&input->keyboard_repeat)) {
+        uint32_t elapsed = SDL_GetTicks() - input->keyboard_repeat.sdl_press_time;
+        if (keyboard_repeat_handle(&input->keyboard_repeat, elapsed)) {
             /* A repeat key event was already due */
             return 1;
         } else {
-            uint32_t next_repeat_wait_time = (input->keyboard_repeat.next_repeat_ms - now) + 1;
+            uint32_t next_repeat_wait_time = (input->keyboard_repeat.next_repeat_ms - elapsed) + 1;
             if (timeout >= 0) {
                 timeout = SDL_min(timeout, next_repeat_wait_time);
             } else {
@@ -305,8 +308,8 @@ Wayland_WaitEventTimeout(_THIS, int timeout)
 
             /* If key repeat is active, we might have woken up to generate a key event */
             if (key_repeat_active) {
-                uint32_t now = SDL_GetTicks();
-                if (keyboard_repeat_handle(&input->keyboard_repeat, now)) {
+                uint32_t elapsed = SDL_GetTicks() - input->keyboard_repeat.sdl_press_time;
+                if (keyboard_repeat_handle(&input->keyboard_repeat, elapsed)) {
                     return 1;
                 }
             }
@@ -346,11 +349,6 @@ Wayland_PumpEvents(_THIS)
     }
 #endif
 
-    if (input) {
-        uint32_t now = SDL_GetTicks();
-        keyboard_repeat_handle(&input->keyboard_repeat, now);
-    }
-
     /* wl_display_prepare_read() will return -1 if the default queue is not empty.
      * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
     if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
@@ -363,6 +361,11 @@ Wayland_PumpEvents(_THIS)
 
     /* Dispatch any pre-existing pending events or new events we may have read */
     err = WAYLAND_wl_display_dispatch_pending(d->display);
+
+    if (input && keyboard_repeat_is_set(&input->keyboard_repeat)) {
+        uint32_t elapsed = SDL_GetTicks() - input->keyboard_repeat.sdl_press_time;
+        keyboard_repeat_handle(&input->keyboard_repeat, elapsed);
+    }
 
     if (err == -1 && !d->display_disconnected) {
         /* Something has failed with the Wayland connection -- for example,
@@ -582,7 +585,7 @@ pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
                 y = 0 - (float)wl_fixed_to_double(value);
                 break;
             case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-                x = 0 - (float)wl_fixed_to_double(value);
+                x = (float)wl_fixed_to_double(value);
                 y = 0;
                 break;
             default:
@@ -626,7 +629,7 @@ pointer_handle_axis_common(struct SDL_WaylandInput *input, SDL_bool discrete,
                      * processed a discrete axis event before so we ignore it */
                     break;
                 }
-                input->pointer_curr_axis_info.x = 0 - (float)wl_fixed_to_double(value);
+                input->pointer_curr_axis_info.x = (float)wl_fixed_to_double(value);
                 break;
         }
     }
@@ -957,6 +960,15 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         has_text = keyboard_input_get_text(text, input, key, &handled_by_ime);
+    } else {
+        if (keyboard_repeat_is_set(&input->keyboard_repeat)) {
+            // Send any due key repeat events before stopping the repeat and generating the key up event
+            // Compute time based on the Wayland time, as it reports when the release event happened
+            // Using SDL_GetTicks would be wrong, as it would report when the release event is processed,
+            // which may be off if the application hasn't pumped events for a while
+            keyboard_repeat_handle(&input->keyboard_repeat, time - input->keyboard_repeat.wl_press_time);
+            keyboard_repeat_clear(&input->keyboard_repeat);
+        }
     }
 
     if (!handled_by_ime && key < SDL_arraysize(xfree86_scancode_table2)) {
@@ -975,9 +987,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
                 SDL_SendKeyboardText(text);
             }
         }
-        keyboard_repeat_set(&input->keyboard_repeat, scancode, has_text, text);
-    } else {
-        keyboard_repeat_clear(&input->keyboard_repeat);
+        keyboard_repeat_set(&input->keyboard_repeat, time, scancode, has_text, text);
     }
 }
 
@@ -1302,36 +1312,145 @@ data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,
 {
 }
 
+/* Decodes URI escape sequences in string buf of len bytes
+   (excluding the terminating NULL byte) in-place. Since
+   URI-encoded characters take three times the space of
+   normal characters, this should not be an issue.
+
+   Returns the number of decoded bytes that wound up in
+   the buffer, excluding the terminating NULL byte.
+
+   The buffer is guaranteed to be NULL-terminated but
+   may contain embedded NULL bytes.
+
+   On error, -1 is returned.
+
+   FIXME: This was shamelessly copied from SDL_x11events.c
+ */
+static int Wayland_URIDecode(char *buf, int len) {
+    int ri, wi, di;
+    char decode = '\0';
+    if (buf == NULL || len < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (len == 0) {
+        len = SDL_strlen(buf);
+    }
+    for (ri = 0, wi = 0, di = 0; ri < len && wi < len; ri += 1) {
+        if (di == 0) {
+            /* start decoding */
+            if (buf[ri] == '%') {
+                decode = '\0';
+                di += 1;
+                continue;
+            }
+            /* normal write */
+            buf[wi] = buf[ri];
+            wi += 1;
+            continue;
+        } else if (di == 1 || di == 2) {
+            char off = '\0';
+            char isa = buf[ri] >= 'a' && buf[ri] <= 'f';
+            char isA = buf[ri] >= 'A' && buf[ri] <= 'F';
+            char isn = buf[ri] >= '0' && buf[ri] <= '9';
+            if (!(isa || isA || isn)) {
+                /* not a hexadecimal */
+                int sri;
+                for (sri = ri - di; sri <= ri; sri += 1) {
+                    buf[wi] = buf[sri];
+                    wi += 1;
+                }
+                di = 0;
+                continue;
+            }
+            /* itsy bitsy magicsy */
+            if (isn) {
+                off = 0 - '0';
+            } else if (isa) {
+                off = 10 - 'a';
+            } else if (isA) {
+                off = 10 - 'A';
+            }
+            decode |= (buf[ri] + off) << (2 - di) * 4;
+            if (di == 2) {
+                buf[wi] = decode;
+                wi += 1;
+                di = 0;
+            } else {
+                di += 1;
+            }
+            continue;
+        }
+    }
+    buf[wi] = '\0';
+    return wi;
+}
+
+/* Convert URI to local filename
+   return filename if possible, else NULL
+
+   FIXME: This was shamelessly copied from SDL_x11events.c
+*/
+static char* Wayland_URIToLocal(char* uri) {
+    char *file = NULL;
+    SDL_bool local;
+
+    if (SDL_memcmp(uri,"file:/",6) == 0) uri += 6;      /* local file? */
+    else if (SDL_strstr(uri,":/") != NULL) return file; /* wrong scheme */
+
+    local = uri[0] != '/' || (uri[0] != '\0' && uri[1] == '/');
+
+    /* got a hostname? */
+    if (!local && uri[0] == '/' && uri[2] != '/') {
+      char* hostname_end = SDL_strchr(uri+1, '/');
+      if (hostname_end != NULL) {
+          char hostname[ 257 ];
+          if (gethostname(hostname, 255) == 0) {
+            hostname[ 256 ] = '\0';
+            if (SDL_memcmp(uri+1, hostname, hostname_end - (uri+1)) == 0) {
+                uri = hostname_end + 1;
+                local = SDL_TRUE;
+            }
+          }
+      }
+    }
+    if (local) {
+      file = uri;
+      /* Convert URI escape sequences to real characters */
+      Wayland_URIDecode(file, 0);
+      if (uri[1] == '/') {
+          file++;
+      } else {
+          file--;
+      }
+    }
+    return file;
+}
+
 static void
 data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
 {
     SDL_WaylandDataDevice *data_device = data;
-    void *buffer = NULL;
-    size_t length = 0;
-
-    const char *current_uri = NULL;
-    const char *last_char = NULL;
-    char *current_char = NULL;
 
     if (data_device->drag_offer != NULL) {
         /* TODO: SDL Support more mime types */
-        buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                                            &length, FILE_MIME, SDL_FALSE);
-
-        /* uri-list */
-        current_uri = (const char *)buffer;
-        last_char = (const char *)buffer + length;
-        for (current_char = buffer; current_char < last_char; ++current_char) {
-            if (*current_char == '\n' || *current_char == 0) {
-                if (*current_uri != 0 && *current_uri != '#') {
-                    *current_char = 0;
-                    SDL_SendDropFile(NULL, current_uri);
+        size_t length;
+        void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
+                                                  &length, FILE_MIME, SDL_FALSE);
+        if (buffer) {
+            char *saveptr = NULL;
+            char *token = SDL_strtokr((char *) buffer, "\r\n", &saveptr);
+            while (token != NULL) {
+                char *fn = Wayland_URIToLocal(token);
+                if (fn) {
+                    SDL_SendDropFile(NULL, fn); /* FIXME: Window? */
                 }
-                current_uri = (const char *)current_char + 1;
+                token = SDL_strtokr(NULL, "\r\n", &saveptr);
             }
+            SDL_SendDropComplete(NULL); /* FIXME: Window? */
+            SDL_free(buffer);
         }
-
-        SDL_free(buffer);
     }
 }
 

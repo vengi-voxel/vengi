@@ -1614,6 +1614,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 2.0.18.
  *
+ * \sa SDL_RenderGeometryRaw
  * \sa SDL_Vertex
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
@@ -1641,6 +1642,9 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  * \return 0 on success, or -1 if the operation is not supported
  *
  * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_RenderGeometry
+ * \sa SDL_Vertex
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
