@@ -3,8 +3,9 @@ vengi (0.0.17.0-1) UNRELEASED; urgency=low
   * General:
   * Fixed relative path handling for registered paths
   * Support scene graphs in the voxel formats
-  * Fixed a few issues with the magicavoxel vox format
+  * Fixed a few issues with the magicavoxel vox format (switched to ogt_vox)
   * Load properties from supported voxel formats (vxr, vox, gox)
+  * Added support for loading minecraft region files (used enkimi)
 
   * VoxConvert:
   * Added --crop parameter that reduces the volumes to their real voxel sizes

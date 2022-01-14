@@ -15,8 +15,9 @@ General:
    - Fixed relative path handling for registered paths
    - Stop event loop if window is minimized (reduce cpu usage)
    - Support scene graphs in the voxel formats
-   - Fixed a few issues with the magicavoxel vox format
+   - Fixed a few issues with the magicavoxel vox format (switched to ogt_vox)
    - Load properties from supported voxel formats (vxr, vox, gox)
+   - Added support for loading minecraft region files (used enkimi)
 
 VoxConvert:
 
