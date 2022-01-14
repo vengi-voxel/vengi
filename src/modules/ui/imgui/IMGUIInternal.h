@@ -50,6 +50,7 @@ struct ImDrawVert { \
         operator glm::vec4() const { return glm::vec4(x,y,z,w); }
 
 #define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+#define IMGUI_DISABLE_OBSOLETE_KEYIO
 #define IM_ASSERT(_EXPR) core_assert(_EXPR)
 #include <dearimgui/imgui.h>
 #include <dearimgui/imgui_internal.h>

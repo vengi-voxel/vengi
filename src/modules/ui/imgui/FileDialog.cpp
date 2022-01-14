@@ -448,7 +448,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 				}
 				ImGui::SetItemDefaultFocus();
 				ImGui::SameLine();
-				if (ImGui::Button("Cancel##1") || ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Escape])) {
+				if (ImGui::Button("Cancel##1") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 					_newFolderName[0] = '\0';
 					_newFolderError[0] = '\0';
 					ImGui::CloseCurrentPopup();
@@ -471,7 +471,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::SameLine();
-				if (ImGui::Button("No") || ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Escape])) {
+				if (ImGui::Button("No") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::SetItemDefaultFocus();
@@ -495,7 +495,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			const ImVec2 cancelTextSize = ImGui::CalcTextSize("Cancel");
 			const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
 			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - cancelTextSize.x - chooseTextSize.x - ImGui::Size(40.0f));
-			if (ImGui::Button("Cancel") || ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Escape])) {
+			if (ImGui::Button("Cancel") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 				_fileSelectIndex = 0;
 				_folderSelectIndex = 0;
 				_currentFile = "";
@@ -508,7 +508,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 				return true;
 			}
 			ImGui::SameLine();
-			if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Enter]) || doubleClickedFile) {
+			if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || doubleClickedFile) {
 				if (type == video::WindowedApp::OpenFileMode::Directory) {
 					if (_currentFolder == "") {
 						SDL_strlcpy(_error, "Error: You must select a folder!", sizeof(_error));
