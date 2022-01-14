@@ -91,6 +91,7 @@ public:
 
 	static unsigned int getRGB(const glm::vec4&);
 	static unsigned int getRGBA(const glm::vec4&);
+	static unsigned int getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 	static glm::u8vec4 getRGBAVec(const glm::vec4&);
 	static unsigned int getBGRA(const glm::vec4& color);
 	static void getHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
