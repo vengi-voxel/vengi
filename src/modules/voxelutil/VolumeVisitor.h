@@ -10,7 +10,7 @@
 
 namespace voxelutil {
 
-enum class VisitorOrder { XYZ, ZYX, ZXY, XZY, YXZ, YZX };
+enum class VisitorOrder { XYZ, ZYX, ZXY, XZY, YXZ, YZX, mYZX, YZmX };
 
 /**
  * @brief Will skip air voxels on volume
@@ -78,6 +78,18 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
+					LOOP
+		break;
+	case VisitorOrder::YZmX:
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
+				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
+					LOOP
+		break;
+	case VisitorOrder::mYZX:
+		for (int32_t y = region.getUpperY(); y <= region.getLowerY(); y += yOff)
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
+				for (int32_t x = region.getLowerX(); x >= region.getUpperX(); x -= xOff)
 					LOOP
 		break;
 	}
