@@ -71,7 +71,7 @@ public:
 		Log::debug("Set up %i material colors", (int)_materialColors.size());
 
 		if (_materialColors.size() != colors) {
-			Log::warn("Color amount mismatch");
+			Log::warn("Color amount mismatch %i vs %i", (int)_materialColors.size(), (int)colors);
 			return false;
 		}
 
