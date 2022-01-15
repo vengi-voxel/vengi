@@ -9,7 +9,7 @@ if [ -z "$BINARY" ]; then
   BINARY=@CMAKE_BINARY_DIR@/@PROJECT_NAME@/@CMAKE_PROJECT_NAME@-@PROJECT_NAME@
 fi
 
-echo "prepare a file that is written by the current version"
+echo "prepare a file that is written by the current version (@DATA_DIR@/$FILE)"
 $BINARY -f --input @DATA_DIR@/$FILE --output @CMAKE_BINARY_DIR@/${FILE%.*}.vox
 echo
 echo "now convert to qubicle and back to vox to verify that everything works"
@@ -17,3 +17,15 @@ $BINARY -f --input @CMAKE_BINARY_DIR@/${FILE%.*}.vox --output @CMAKE_BINARY_DIR@
 $BINARY -f --input @CMAKE_BINARY_DIR@/${FILE%.*}.qb --output @CMAKE_BINARY_DIR@/${FILE%.*}.vox
 echo
 diff @CMAKE_BINARY_DIR@/${FILE%.*}.vox @CMAKE_BINARY_DIR@/${FILE%.*}.vox
+
+echo "export layers of @DATA_DIR@/$FILE"
+cp @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
+$BINARY -f --input @CMAKE_BINARY_DIR@/$FILE --export-layers
+echo
+
+echo "export palette of @DATA_DIR@/$FILE"
+cp @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
+$BINARY -f --input @CMAKE_BINARY_DIR@/$FILE --export-palette
+echo "check if palette exists at @CMAKE_BINARY_DIR@/${FILE%.*}.png"
+test -f @CMAKE_BINARY_DIR@/${FILE%.*}.png
+echo
