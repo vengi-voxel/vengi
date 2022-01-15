@@ -63,7 +63,7 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	RawVolume* mergedVolume = merge(sceneGraph);
 	wrapBool(stream.writeUInt32(FourCC('V','X','M','5')));
-	glm::ivec3 pivot;
+	glm::ivec3 pivot(0);
 	int nodes = 0;
 	for (const SceneGraphNode &node : sceneGraph) {
 		pivot = node.pivot();
