@@ -63,6 +63,29 @@ bool formatBuf(char *buf, size_t bufSize, const char *msg, ...) {
 	return fit;
 }
 
+// TODO: take NAME_MAX into account
+core::String sanitizeFilename(const core::String& input) {
+	static const char unsafeChars[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
+										0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c,
+										0x1d, 0x1e, 0x1f, 0x22, 0x2a, 0x2f, 0x3a, 0x3c, 0x3e, 0x3f, 0x5c, 0x7c, 0x7f, 0x00};
+
+	if (input.size() == 0) {
+		return input;
+	}
+
+	core::String output = input;
+	char *c = output.c_str();
+	for (; *c; ++c) {
+		if (strchr(unsafeChars, *c)) {
+			*c = '_';
+		}
+	}
+	while (output.contains("  ")) {
+		output = replaceAll(output, "  ", " ");
+	}
+	return core::string::trim(output);
+}
+
 core::String format(const char *msg, ...) {
 	va_list ap;
 	const size_t bufSize = 1024;
