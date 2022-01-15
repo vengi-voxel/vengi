@@ -76,7 +76,7 @@ core::String sanitizeFilename(const core::String& input) {
 	core::String output = input;
 	char *c = output.c_str();
 	for (; *c; ++c) {
-		if (strchr(unsafeChars, *c)) {
+		if (SDL_strchr(unsafeChars, *c)) {
 			*c = '_';
 		}
 	}
