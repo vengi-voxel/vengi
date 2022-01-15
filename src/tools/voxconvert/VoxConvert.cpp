@@ -116,16 +116,12 @@ app::AppState VoxConvert::onInit() {
 			infilesstr += val;
 		}
 	} else {
-		Log::warn("You are not using --input - this is deprecated and will get removed in a later version");
-		infiles.push_back(_argv[_argc - 2]);
-		infilesstr += _argv[_argc - 2];
+		Log::error("No input file was specified");
+		return app::AppState::InitFailure;
 	}
 	core::String outfile;
 	if (hasArg("--output")) {
 		outfile = getArgVal("--output");
-	} else {
-		Log::warn("You are not using --output - this is deprecated and will get removed in a later version");
-		outfile = _argv[_argc - 1];
 	}
 
 	const bool mergeVolumes = hasArg("--merge");
