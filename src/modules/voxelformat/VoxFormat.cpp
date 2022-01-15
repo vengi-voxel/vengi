@@ -53,6 +53,7 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	stream.read(buffer, size);
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, 0);
+	core_free(buffer);
 	if (scene == nullptr) {
 		Log::error("Could not load scene %s", filename.c_str());
 		return false;
