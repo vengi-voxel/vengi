@@ -208,10 +208,13 @@ update-flextgl:
 update-ogl_vox:
 	$(call UPDATE_GIT,ogl_vox,https://github.com/jpaver/opengametools)
 	cp $(UPDATEDIR)/ogl_vox.sync/src/ogt_vox.h src/modules/voxelformat/external
+	sed -i 's/[ \t]*$$//' src/modules/voxelformat/external/ogt_vox.h
 
 update-enkimi:
 	$(call UPDATE_GIT,enkimi,https://github.com/dougbinks/enkiMI.git)
 	cp $(UPDATEDIR)/enkimi.sync/src/enkimi.[ch] src/modules/voxelformat/external
+	sed -i '/miniz.h/d' src/modules/voxelformat/external/enkimi.h
+	sed -i 's/[ \t]*$$//' src/modules/voxelformat/external/enkimi.[ch]
 
 # TODO simpleai support
 # TODO lua support

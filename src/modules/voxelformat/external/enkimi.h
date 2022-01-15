@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+// Note: we do not need miniz stdio functions so can define MINIZ_NO_STDIO in project to remove them
+
 #ifdef __cplusplus
 extern "C" {
 #endif
