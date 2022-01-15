@@ -150,7 +150,9 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* palette:                       - %s", _palette->strVal().c_str());
 	}
 	Log::info("* input files:                   - %s", infilesstr.c_str());
-	Log::info("* output files:                  - %s", outfile.c_str());
+	if (!outfile.empty()) {
+		Log::info("* output files:                  - %s", outfile.c_str());
+	}
 	core::String scriptParameters;
 	if (hasArg("--script")) {
 		scriptParameters = getArgVal("--script");
@@ -178,17 +180,23 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 
-	const bool outfileExists = filesystem()->open(outfile)->exists();
-	if (outfileExists) {
-		if (!hasArg("--force")) {
-			Log::error("Given output file '%s' already exists", outfile.c_str());
+	io::FilePtr outputFile;
+	if (!outfile.empty()) {
+		const bool outfileExists = filesystem()->open(outfile)->exists();
+		if (outfileExists) {
+			if (!hasArg("--force")) {
+				Log::error("Given output file '%s' already exists", outfile.c_str());
+				return app::AppState::InitFailure;
+			}
+		}
+
+		outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
+		if (!outputFile->validHandle()) {
+			Log::error("Could not open target file: %s", outfile.c_str());
 			return app::AppState::InitFailure;
 		}
-	}
-
-	const io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
-	if (!outputFile->validHandle()) {
-		Log::error("Could not open target file: %s", outfile.c_str());
+	} else if (!exportLayers && !exportPalette) {
+		Log::error("No output specified");
 		return app::AppState::InitFailure;
 	}
 
@@ -209,18 +217,9 @@ app::AppState VoxConvert::onInit() {
 				Log::error("Failed to load palette from input file");
 				return app::AppState::InitFailure;
 			}
-			if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors, "")) {
+			if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors * 4, "")) {
 				Log::error("Failed to initialize material colors from input file");
 				return app::AppState::InitFailure;
-			}
-
-			if (exportPalette) {
-				const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
-				image::Image img(paletteFile);
-				img.loadRGBA((const uint8_t*)palette.begin(), (int)numColors * 4, (int)numColors, 1);
-				if (!img.writePng()) {
-					Log::warn("Failed to write the palette file");
-				}
 			}
 		}
 
@@ -248,6 +247,24 @@ app::AppState VoxConvert::onInit() {
 			}
 			for (voxel::SceneGraphNode &node : newSceneGraph) {
 				sceneGraph.emplace(core::move(node));
+			}
+		}
+
+		if (exportPalette) {
+			const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
+			image::Image img(paletteFile);
+			core::Array<uint32_t, 256> palette;
+			int i = 0;
+			for (const glm::vec4& c : voxel::getMaterialColors()) {
+				palette[i++] = core::Color::getRGBA(c);
+			}
+			Log::info("Export palette to %s", paletteFile.c_str());
+			if (!srcPalette) {
+				Log::info(" .. not using the input file palette");
+			}
+			img.loadRGBA((const uint8_t*)palette.begin(), (int)palette.size() * 4, (int)palette.size(), 1);
+			if (!img.writePng()) {
+				Log::warn("Failed to write the palette file");
 			}
 		}
 	}
@@ -314,13 +331,14 @@ app::AppState VoxConvert::onInit() {
 		split(getArgIvec3("--split"), sceneGraph);
 	}
 
-	Log::debug("Save %i volumes", (int)sceneGraph.size());
-	if (!voxelformat::saveFormat(outputFile, sceneGraph)) {
-		Log::error("Failed to write to output file '%s'", outfile.c_str());
-		return app::AppState::InitFailure;
+	if (outputFile) {
+		Log::debug("Save %i volumes", (int)sceneGraph.size());
+		if (!voxelformat::saveFormat(outputFile, sceneGraph)) {
+			Log::error("Failed to write to output file '%s'", outfile.c_str());
+			return app::AppState::InitFailure;
+		}
+		Log::info("Wrote output file %s", outputFile->name().c_str());
 	}
-	Log::info("Wrote output file %s", outputFile->name().c_str());
-
 	return state;
 }
 
@@ -350,7 +368,7 @@ void VoxConvert::exportLayersIntoSingleObjects(voxel::SceneGraph& sceneGraph, co
 		newNode.setVolume(node.volume(), false);
 		newSceneGraph.emplace(core::move(newNode));
 		const core::String& filename = getFilenameForLayerName(inputfile, node.name(), n);
-		if (voxelformat::saveFormat(filesystem()->open(filename), newSceneGraph)) {
+		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), newSceneGraph)) {
 			Log::info(" .. %s", filename.c_str());
 		} else {
 			Log::error(" .. %s", filename.c_str());
