@@ -63,7 +63,7 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		palette[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
 	}
 	ogt_vox_destroy_scene(scene);
-	return true;
+	return palette.size();
 }
 
 static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec4 &pivot) {
