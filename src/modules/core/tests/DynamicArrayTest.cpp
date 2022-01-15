@@ -79,7 +79,7 @@ TEST(DynamicArrayTest, testSort) {
 	array.sort(core::Greater<int>());
 	EXPECT_EQ(1, array[0]);
 	EXPECT_EQ(3, array[1]);
-	EXPECT_EQ(4, array[2]);
+	EXPECT_EQ(5, array[2]);
 	EXPECT_EQ(9, array[3]);
 	EXPECT_EQ(11, array[4]);
 }
