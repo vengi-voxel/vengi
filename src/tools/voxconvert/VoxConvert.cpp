@@ -36,6 +36,7 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
+	registerArg("--export-layers").setDescription("Export all the layers of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
 	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
@@ -134,6 +135,7 @@ app::AppState VoxConvert::onInit() {
 	const bool translateVolumes = hasArg("--translate");
 	const bool srcPalette = hasArg("--src-palette");
 	const bool exportPalette = hasArg("--export-palette");
+	const bool exportLayers = hasArg("--export-layers");
 	const bool changePivot = hasArg("--pivot");
 	const bool cropVolumes = hasArg("--crop");
 	const bool splitVolumes = hasArg("--split");
@@ -168,6 +170,7 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* rotate volumes:                - %s", (rotateVolumes ? "true" : "false"));
 	Log::info("* use source file palette:       - %s", (srcPalette ? "true" : "false"));
 	Log::info("* export used palette as image:  - %s", (exportPalette ? "true" : "false"));
+	Log::info("* export layers:                 - %s", (exportLayers ? "true" : "false"));
 
 	if (!srcPalette) {
 		io::FilePtr paletteFile = filesystem()->open(_palette->strVal());
@@ -262,6 +265,13 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 
+	if (exportLayers) {
+		if (infiles.size() > 1) {
+			Log::warn("The format and path of the first input file is used for exporting all layers");
+		}
+		exportLayersIntoSingleObjects(sceneGraph, infiles[0]);
+	}
+
 	if (mergeVolumes) {
 		Log::info("Merge layers");
 		voxel::RawVolume* merged = sceneGraph.merge();
@@ -316,6 +326,40 @@ app::AppState VoxConvert::onInit() {
 	Log::info("Wrote output file %s", outputFile->name().c_str());
 
 	return state;
+}
+
+core::String VoxConvert::getFilenameForLayerName(const core::String &inputfile, const core::String &layerName, int id) {
+	const core::String &ext = core::string::extractExtension(inputfile);
+	core::String name;
+	if (layerName.empty()) {
+		name = core::string::format("layer-%i.%s", id, ext.c_str());
+	} else {
+		name = core::string::format("%s.%s", layerName.c_str(), ext.c_str());
+	}
+	core::String modelPath = core::string::extractPath(inputfile);
+	if (!modelPath.empty()) {
+		modelPath.append("/");
+	}
+	modelPath.append(core::string::sanitizeFilename(name));
+	return modelPath;
+}
+
+void VoxConvert::exportLayersIntoSingleObjects(voxel::SceneGraph& sceneGraph, const core::String &inputfile) {
+	Log::info("Export layers into single objects");
+	int n = 0;
+	for (voxel::SceneGraphNode& node : sceneGraph) {
+		voxel::SceneGraph newSceneGraph;
+		voxel::SceneGraphNode newNode;
+		newNode.setName(node.name());
+		newNode.setVolume(node.volume(), false);
+		newSceneGraph.emplace(core::move(newNode));
+		const core::String& filename = getFilenameForLayerName(inputfile, node.name(), n);
+		if (voxelformat::saveFormat(filesystem()->open(filename), newSceneGraph)) {
+			Log::info(" .. %s", filename.c_str());
+		} else {
+			Log::error(" .. %s", filename.c_str());
+		}
+	}
 }
 
 glm::ivec3 VoxConvert::getArgIvec3(const core::String &name) {

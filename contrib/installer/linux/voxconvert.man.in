@@ -24,6 +24,11 @@ Reduces the volume sizes to their voxel boundaries.
 Export the used palette data into an image. Use in combination with --src-palette.
 
 .TP
+\fB\--export-layers\fR
+Export all the layers of a scene into single files. It is suggested to name the layers
+properly to get reasonable file names.
+
+.TP
 \fB\--filter <filter>\fR
 Will filter out layers not mentioned in the expression. E.g. 1-2,4 will handle layer
 1, 2 and 4. It is the same as 1,2,4. The first layer is 0.

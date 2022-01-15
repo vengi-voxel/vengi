@@ -25,6 +25,7 @@ private:
 	core::VarPtr _withTexCoords;
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
+	core::String getFilenameForLayerName(const core::String& inputfile, const core::String &layerName, int id);
 
 	void usage() const override;
 	void mirror(const core::String& axisStr, voxel::SceneGraph& sceneGraph);
@@ -35,6 +36,7 @@ protected:
 	void pivot(const glm::ivec3& pivot, voxel::SceneGraph& sceneGraph);
 	void crop(voxel::SceneGraph& sceneGraph);
 	void filterVolumes(voxel::SceneGraph& sceneGraph);
+	void exportLayersIntoSingleObjects(voxel::SceneGraph& sceneGraph, const core::String &inputfile);
 	void split(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph);
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

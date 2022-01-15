@@ -23,6 +23,7 @@ VoxConvert:
 
    - Added `--crop` parameter that reduces the volumes to their real voxel sizes
    - Added `--split` option to cut volumes into smaller pieces
+   - Added `--export-layers` to export all the layers of a scene into single files
 
 VoxEdit:
 
