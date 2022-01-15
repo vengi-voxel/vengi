@@ -46,7 +46,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
 			|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
 			|| magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Sandbox VoxEdit Hierarquie", "vxr", [] (uint32_t magic) {
+	{"Sandbox VoxEdit Hierarchy", "vxr", [] (uint32_t magic) {
 		return magic == FourCC('V','X','R','9') || magic == FourCC('V','X','R','8')
 			|| magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
 			|| magic == FourCC('V','X','R','5') || magic == FourCC('V','X','R','4')
@@ -75,7 +75,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"Qubicle Binary Tree", "qbt", nullptr, 0u},
 	//{"Qubicle Project", "qbcl", nullptr, 0u},
 	{"Sandbox VoxEdit Model", "vxm", nullptr, 0u},
-	{"Sandbox VoxEdit Hierarquie", "vxr", nullptr, 0u},
+	{"Sandbox VoxEdit Hierarchy", "vxr", nullptr, 0u},
 	{"BinVox", "binvox", nullptr, 0u},
 	{"Goxel", "gox", nullptr, 0u},
 	{"Sproxel csv", "csv", nullptr, 0u},
