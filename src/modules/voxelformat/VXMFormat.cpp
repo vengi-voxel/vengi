@@ -144,8 +144,10 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeUInt32(height))
 	wrapBool(stream.writeUInt32(depth))
 
-	// we need to find a replacement for this color
+	// we need to find a replacement for this color - the empty voxel is the last palette entry
+	// we are using the first palette entry (like magicavoxel does, too)
 	const glm::vec4 emptyColor = materialColors[EMPTY_PALETTE];
+	materialColors[0] = materialColors[EMPTY_PALETTE];
 	materialColors.pop();
 	const uint8_t emptyColorReplacement = core::Color::getClosestMatch(emptyColor, materialColors);
 	materialColors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));

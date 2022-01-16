@@ -24,6 +24,12 @@ namespace voxel {
 class ConvertTest: public AbstractVoxFormatTest {
 };
 
+TEST_F(ConvertTest, testVoxToVXM) {
+	VoxFormat src;
+	VXMFormat target;
+	testFirstAndLastPaletteIndexConversion(src, "palette-check.vxm", target, true, true);
+}
+
 TEST_F(ConvertTest, testQbToVox) {
 	QBFormat src;
 	VoxFormat target;
