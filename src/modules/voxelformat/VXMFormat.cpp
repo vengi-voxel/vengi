@@ -22,6 +22,8 @@
 
 namespace voxel {
 
+static const uint8_t EMPTY_PALETTE = 0xFFu;
+
 #define wrap(read) \
 	if ((read) != 0) { \
 		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
@@ -47,7 +49,7 @@ bool VXMFormat::writeRLE(io::WriteStream &stream, int length, voxel::Voxel &voxe
 	}
 	wrapBool(stream.writeUInt8(length))
 	if (voxel::isAir(voxel.getMaterial())) {
-		wrapBool(stream.writeUInt8(0xFF))
+		wrapBool(stream.writeUInt8(EMPTY_PALETTE))
 	} else {
 		// TODO: if the color is 255 here - and we are no empty voxel, we are in trouble.
 		wrapBool(stream.writeUInt8(voxel.getColor()))
@@ -439,7 +441,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 			uint8_t matIdx;
 			wrapDelete(stream.readUInt8(matIdx), volume);
-			if (matIdx == 0xFFU) {
+			if (matIdx == EMPTY_PALETTE) {
 				idx += length;
 				continue;
 			}
