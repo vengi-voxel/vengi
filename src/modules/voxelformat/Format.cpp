@@ -96,18 +96,18 @@ RawVolume* Format::merge(const SceneGraph& sceneGraph) const {
 	return sceneGraph.merge();
 }
 
-RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& file) {
+RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& stream) {
 	SceneGraph sceneGraph;
-	if (!loadGroups(filename, file, sceneGraph)) {
+	if (!loadGroups(filename, stream, sceneGraph)) {
 		return nullptr;
 	}
 	RawVolume* mergedVolume = merge(sceneGraph);
 	return mergedVolume;
 }
 
-size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& file, core::Array<uint32_t, 256> &palette) {
+size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) {
 	SceneGraph sceneGraph;
-	loadGroups(filename, file, sceneGraph);
+	loadGroups(filename, stream, sceneGraph);
 	palette = _colors;
 	return _colorsSize;
 }
