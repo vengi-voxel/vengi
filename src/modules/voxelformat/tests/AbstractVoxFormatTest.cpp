@@ -6,6 +6,74 @@ namespace voxel {
 
 const voxel::Voxel AbstractVoxFormatTest::Empty;
 
+void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format) {
+	Region region(glm::ivec3(0), glm::ivec3(1));
+	RawVolume volume(region);
+	EXPECT_TRUE(volume.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 0)));
+	EXPECT_TRUE(volume.setVoxel(0, 0, 1, createVoxel(VoxelType::Generic, 255)));
+	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	ASSERT_TRUE(format->save(&volume, filename, stream));
+	stream.seek(0);
+	std::unique_ptr<RawVolume> loaded(format->load(filename, stream));
+	ASSERT_NE(nullptr, loaded);
+	EXPECT_EQ(volume, *loaded);
+}
+
+void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(voxel::Format &srcFormat, const core::String& destFilename, voxel::Format &destFormat, bool includingColor, bool includingRegion) {
+	Region region(glm::ivec3(0), glm::ivec3(1));
+	RawVolume original(region);
+	EXPECT_TRUE(original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 0)));
+	EXPECT_TRUE(original.setVoxel(0, 0, 1, createVoxel(VoxelType::Generic, 255)));
+	io::BufferedReadWriteStream srcFormatStream(10 * 1024 * 1024);
+	EXPECT_TRUE(srcFormat.save(&original, destFilename, srcFormatStream)) << "Could not save " << destFilename;
+	srcFormatStream.seek(0);
+	std::unique_ptr<RawVolume> origReloaded(srcFormat.load(destFilename, srcFormatStream));
+	if (includingRegion) {
+		ASSERT_EQ(original.region(), origReloaded->region());
+	}
+	EXPECT_TRUE(volumeComparator(original, *origReloaded, includingColor, includingRegion)) << "Volumes differ: " << original << *origReloaded;
+
+	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	EXPECT_TRUE(destFormat.save(origReloaded.get(), destFilename, stream)) << "Could not save " << destFilename;
+	stream.seek(0);
+	std::unique_ptr<RawVolume> loaded(destFormat.load(destFilename, stream));
+	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
+	if (includingRegion) {
+		ASSERT_EQ(original.region(), loaded->region());
+	}
+	EXPECT_TRUE(volumeComparator(original, *loaded, includingColor, includingRegion)) << "Volumes differ: " << original << *loaded;
+}
+
+void AbstractVoxFormatTest::testRGB(RawVolume* volume) {
+	EXPECT_EQ(VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial());
+	EXPECT_EQ(VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial());
+	EXPECT_EQ(VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial());
+	EXPECT_EQ(VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial());
+
+	EXPECT_EQ(VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial());
+	EXPECT_EQ(VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial());
+	EXPECT_EQ(VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial());
+	EXPECT_EQ(VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial());
+
+	EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial());
+	EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
+	EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
+
+	EXPECT_EQ(  0, volume->voxel( 0,  0,  0).getColor());
+	EXPECT_EQ(  0, volume->voxel(31,  0,  0).getColor());
+	EXPECT_EQ(  0, volume->voxel(31,  0, 31).getColor());
+	EXPECT_EQ(  0, volume->voxel( 0,  0, 31).getColor());
+
+	EXPECT_EQ(  1, volume->voxel( 0, 31,  0).getColor());
+	EXPECT_EQ(  1, volume->voxel(31, 31,  0).getColor());
+	EXPECT_EQ(  1, volume->voxel(31, 31, 31).getColor());
+	EXPECT_EQ(  1, volume->voxel( 0, 31, 31).getColor());
+
+	EXPECT_EQ( 37, volume->voxel( 9,  0,  4).getColor());
+	EXPECT_EQ(149, volume->voxel( 9,  0, 12).getColor());
+	EXPECT_EQ(197, volume->voxel( 9,  0, 19).getColor());
+}
+
 void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename, voxel::Format &srcFormat, const core::String& destFilename, voxel::Format &destFormat, bool includingColor, bool includingRegion) {
 	std::unique_ptr<RawVolume> src(load(srcFilename, srcFormat));
 	ASSERT_TRUE(src.get() != nullptr);

@@ -15,35 +15,11 @@ class AbstractVoxFormatTest: public AbstractVoxelTest {
 protected:
 	static const voxel::Voxel Empty;
 
-	void testRGB(RawVolume* volume) {
-		EXPECT_EQ(VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial());
-		EXPECT_EQ(VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial());
-		EXPECT_EQ(VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial());
-		EXPECT_EQ(VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial());
+	void testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format);
+	void testFirstAndLastPaletteIndexConversion(voxel::Format &srcFormat, const core::String &destFilename,
+												voxel::Format &destFormat, bool includingColor, bool includingRegion);
 
-		EXPECT_EQ(VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial());
-		EXPECT_EQ(VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial());
-		EXPECT_EQ(VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial());
-		EXPECT_EQ(VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial());
-
-		EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial());
-		EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
-		EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
-
-		EXPECT_EQ(  0, volume->voxel( 0,  0,  0).getColor());
-		EXPECT_EQ(  0, volume->voxel(31,  0,  0).getColor());
-		EXPECT_EQ(  0, volume->voxel(31,  0, 31).getColor());
-		EXPECT_EQ(  0, volume->voxel( 0,  0, 31).getColor());
-
-		EXPECT_EQ(  1, volume->voxel( 0, 31,  0).getColor());
-		EXPECT_EQ(  1, volume->voxel(31, 31,  0).getColor());
-		EXPECT_EQ(  1, volume->voxel(31, 31, 31).getColor());
-		EXPECT_EQ(  1, volume->voxel( 0, 31, 31).getColor());
-
-		EXPECT_EQ( 37, volume->voxel( 9,  0,  4).getColor());
-		EXPECT_EQ(149, volume->voxel( 9,  0, 12).getColor());
-		EXPECT_EQ(197, volume->voxel( 9,  0, 19).getColor());
-	}
+	void testRGB(RawVolume *volume);
 
 	void testSaveMultipleLayers(const core::String& filename, voxel::Format* format);
 
