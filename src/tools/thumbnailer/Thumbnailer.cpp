@@ -74,7 +74,11 @@ app::AppState Thumbnailer::onRunning() {
 	if (image) {
 		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 			Log::error("Failed to write image");
+		} else {
+			Log::info("Write image %s", _outfile.c_str());
 		}
+	} else {
+		Log::error("Failed to create thumbnail for %s", _infile->name().c_str());
 	}
 
 	requestQuit();

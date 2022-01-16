@@ -24,8 +24,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		return image;
 	}
 	if (!voxel::initDefaultMaterialColors()) {
-		Log::error("Failed to initialize the default materials");
-		return image::ImagePtr();
+		Log::warn("Failed to initialize the default materials");
 	}
 
 	stream.seek(0);
