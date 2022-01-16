@@ -18,6 +18,9 @@ General:
    - Fixed a few issues with the magicavoxel vox format (switched to ogt_vox)
    - Load properties from supported voxel formats (vxr, vox, gox)
    - Added support for loading minecraft region files (used enkimi)
+   - Fixed vxm pivot and black color issue
+   - Added obj voxelization
+   - Improved obj export
 
 VoxConvert:
 

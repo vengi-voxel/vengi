@@ -18,7 +18,7 @@
 | Ace Of Spades         | vxl       | X       |        | X          |         |
 | Chronovox-Studio      | csm       | X       |        | X          |         |
 | Nick's Voxel Model    | nvm       | X       |        | X          |         |
-| Minecraft Region      | mcr       |         |        |            |         |
+| Minecraft Region      | mcr       | X       |        | X          | X       |
 | Sproxel               | csv       | X       | X      | X          |         |
 
 ## Meshes

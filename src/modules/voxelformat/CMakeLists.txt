@@ -1,6 +1,9 @@
 set(LIB voxelformat)
 set(SRCS
 	external/ogt_vox.h
+	external/enkimi.h
+	# external/enkimi.c
+	external/tiny_obj_loader.h
 
 	Format.h Format.cpp
 	AoSVXLFormat.h AoSVXLFormat.cpp
@@ -43,6 +46,7 @@ set(TEST_SRCS
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
 	tests/MCRFormatTest.cpp
+	tests/OBJFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
 	tests/QBCLFormatTest.cpp
@@ -69,6 +73,8 @@ set(TEST_FILES
 	tests/minecraft_110.mca
 	tests/minecraft_113.mca
 	tests/magicavoxel.vox
+	tests/cube.obj
+	tests/cube.mtl
 	tests/test.gox
 	tests/test.vxm
 	tests/test2.vxm
@@ -80,6 +86,7 @@ set(TEST_FILES
 	tests/rgb.gox
 	tests/rgb.qb
 	tests/rgb.qef
+	tests/rgb.vxm
 	tests/rgb.cub
 	voxedit/chr_knight.qb
 )

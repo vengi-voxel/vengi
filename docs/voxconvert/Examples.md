@@ -12,6 +12,12 @@ Merge several models into one:
 
 `./vengi-voxconvert --input one.vox --input two.vox --output onetwo.vox`
 
+## Voxelize an obj
+
+Voxelize an obj and save as magicavoxel (including colors):
+
+`./vengi-voxconvert --input mesh.obj --output voxels.vox`
+
 ## Generate from heightmap
 
 Just specify the heightmap as input file like this:
