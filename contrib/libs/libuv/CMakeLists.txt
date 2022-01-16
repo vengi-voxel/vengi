@@ -36,7 +36,7 @@ set(uv_sources
     src/version.c)
 
 if(WIN32)
-  list(APPEND uv_defines WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0600)
+  list(APPEND uv_defines WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0602)
   list(APPEND uv_libraries
        psapi
        user32
@@ -116,7 +116,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
   list(APPEND uv_defines _GNU_SOURCE)
   list(APPEND uv_libraries dl)
   list(APPEND uv_sources
-       src/unix/android-ifaddrs.c
        src/unix/linux-core.c
        src/unix/linux-inotify.c
        src/unix/linux-syscalls.c
@@ -125,10 +124,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
        src/unix/random-getentropy.c
        src/unix/random-getrandom.c
        src/unix/random-sysctl-linux.c
-	   src/unix/epoll.c)
+       src/unix/epoll.c)
 endif()
 
-if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "Android|Linux|OS390")
+if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "Android|Linux")
   list(APPEND uv_sources src/unix/proctitle.c)
 endif()
 
@@ -170,7 +169,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
        src/unix/procfs-exepath.c
        src/unix/random-getrandom.c
        src/unix/random-sysctl-linux.c
-	   src/unix/epoll.c)
+       src/unix/epoll.c)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
@@ -183,9 +182,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "OS390")
-  list(APPEND uv_defines PATH_MAX=255)
+  enable_language(CXX)
+  list(APPEND uv_defines PATH_MAX=1024)
   list(APPEND uv_defines _AE_BIMODAL)
   list(APPEND uv_defines _ALL_SOURCE)
+  list(APPEND uv_defines _ENHANCED_ASCII_EXT=0xFFFFFFFF)
   list(APPEND uv_defines _ISOC99_SOURCE)
   list(APPEND uv_defines _LARGE_TIME_API)
   list(APPEND uv_defines _OPEN_MSGQ_EXT)
@@ -196,13 +197,31 @@ if(CMAKE_SYSTEM_NAME STREQUAL "OS390")
   list(APPEND uv_defines _UNIX03_SOURCE)
   list(APPEND uv_defines _UNIX03_THREADS)
   list(APPEND uv_defines _UNIX03_WITHDRAWN)
+  list(APPEND uv_defines _XOPEN_SOURCE=600)
   list(APPEND uv_defines _XOPEN_SOURCE_EXTENDED)
   list(APPEND uv_sources
        src/unix/pthread-fixes.c
        src/unix/os390.c
-       src/unix/os390-syscalls.c)
-  list(APPEND uv_cflags -Wc,DLL -Wc,exportall -Wc,xplink)
-  list(APPEND uv_libraries -Wl,xplink)
+       src/unix/os390-syscalls.c
+       src/unix/os390-proctitle.c)
+  list(APPEND uv_cflags
+       -q64
+       -qascii
+       -qexportall
+       -qgonumber
+       -qlongname
+       -qlibansi
+       -qfloat=IEEE
+       -qtune=10
+       -qarch=10
+       -qasm
+       -qasmlib=sys1.maclib:sys1.modgen)
+  find_library(ZOSLIB
+    NAMES zoslib
+    PATHS ${ZOSLIB_DIR}
+    PATH_SUFFIXES lib
+  )
+  list(APPEND uv_libraries ${ZOSLIB})
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "OS400")
@@ -219,12 +238,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "OS400")
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-  list(APPEND uv_defines __EXTENSIONS__ _XOPEN_SOURCE=500)
+  list(APPEND uv_defines __EXTENSIONS__ _XOPEN_SOURCE=500 _REENTRANT)
   list(APPEND uv_libraries kstat nsl sendfile socket)
   list(APPEND uv_sources
-		src/unix/no-proctitle.c
-		src/unix/sunos.c
-		src/unix/epoll.c)
+       src/unix/no-proctitle.c
+       src/unix/sunos.c)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
@@ -247,7 +265,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
     src/unix/bsd-ifaddrs.c
     src/unix/no-proctitle.c
     src/unix/no-fsevents.c)
-  list(APPEND uv_cflags -fno-strict-aliasing)
   list(APPEND uv_libraries socket)
 endif()
 
