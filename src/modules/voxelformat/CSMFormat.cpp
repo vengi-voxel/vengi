@@ -7,7 +7,6 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "glm/common.hpp"
-#include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"
 
 namespace voxel {
@@ -48,7 +47,6 @@ static bool readString(io::SeekableReadStream& stream, core::String& str, bool r
 }
 
 bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
-	const MaterialColorArray& materialColors = getMaterialColors();
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readUInt32(magic))
 	const bool isNVM = magic == FourCC('.','N','V','M');
@@ -118,7 +116,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 				continue;
 			}
 			const glm::vec4& color = core::Color::fromRGBA(r, g, b, 255);
-			const int index = core::Color::getClosestMatch(color, materialColors);
+			const int index = findClosestIndex(color);
 			const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 
 			for (uint32_t v = matrixIndex; v < matrixIndex + count; ++v) {

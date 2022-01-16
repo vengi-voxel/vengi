@@ -3,7 +3,6 @@
  */
 
 #include "KV6Format.h"
-#include "voxel/MaterialColor.h"
 #include "io/Stream.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
@@ -72,7 +71,6 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 			if (palMagic == FourCC('S','P','a','l')) {
 				_paletteSize = _palette.size();
 				_colorsSize = _paletteSize;
-				const MaterialColorArray& materialColors = getMaterialColors();
 				for (size_t i = 0; i < _paletteSize; ++i) {
 					uint8_t r, g, b;
 					wrap(stream.readUInt8(b))
@@ -84,7 +82,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 					const uint8_t nb = glm::clamp((uint32_t)glm::round(((float)b * 255.0f) / 63.0f), 0u, 255u);
 
 					const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255u);
-					const int index = core::Color::getClosestMatch(color, materialColors);
+					const int index = findClosestIndex(color);
 					_palette[i] = index;
 					_colors[i] = core::Color::getRGBA(color);
 				}

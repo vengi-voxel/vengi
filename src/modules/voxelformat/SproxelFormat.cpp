@@ -7,7 +7,6 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
-#include "voxel/MaterialColor.h"
 
 namespace voxel {
 
@@ -92,8 +91,6 @@ bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String 
 	RawVolume::Sampler sampler(mergedVolume);
 	const glm::ivec3 &lower = region.getLowerCorner();
 
-	const MaterialColorArray &materialColors = getMaterialColors();
-
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
@@ -111,7 +108,7 @@ bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String 
 				if (voxel.getMaterial() == VoxelType::Air) {
 					stream.writeString("#00000000", false);
 				} else {
-					const glm::vec4 &color = materialColors[voxel.getColor()];
+					const glm::vec4 &color = getColor(voxel);
 					const glm::u8vec4 &rgba = core::Color::getRGBAVec(color);
 					stream.writeStringFormat(false, "#%02X%02X%02X%02X", rgba.r, rgba.g, rgba.b, rgba.a);
 				}

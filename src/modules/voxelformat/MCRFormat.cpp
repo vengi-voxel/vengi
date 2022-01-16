@@ -5,7 +5,6 @@
 #include "MCRFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
 
@@ -67,10 +66,9 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	regionFile.pRegionData = buffer;
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
 
-	const MaterialColorArray& materialColors = getMaterialColors();
 	_paletteSize = lengthof(_priv::mcpalette);
 	for (size_t i = 0; i < _paletteSize; ++i) {
-		_palette[i] = core::Color::getClosestMatch(core::Color::fromRGBA(_priv::mcpalette[i]), materialColors);
+		_palette[i] = findClosestIndex(core::Color::fromRGBA(_priv::mcpalette[i]));
 	}
 
 	for (int i = 0; i < ENKI_MI_REGION_CHUNKS_NUMBER; i++) {

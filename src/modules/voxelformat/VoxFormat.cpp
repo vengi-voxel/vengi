@@ -81,13 +81,12 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		return false;
 	}
 
-	const MaterialColorArray& materialColors = getMaterialColors();
 	uint8_t palette[256];
 	for (int i = 0; i < 256; ++i) {
 		const ogt_vox_rgba color = scene->palette.color[i];
 		const glm::vec4& colorVec = core::Color::fromRGBA(color.r, color.g, color.b, color.a);
 		_colors[i] = core::Color::getRGBA(colorVec);
-		const uint8_t index = core::Color::getClosestMatch(colorVec, materialColors);
+		const uint8_t index = findClosestIndex(colorVec);
 		palette[i] = index;
 	}
 	_colorsSize = 256;

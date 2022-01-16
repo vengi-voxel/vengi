@@ -262,7 +262,7 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 				uint8_t normal;
 				wrap(stream.readUInt8(normal))
 				const uint8_t palIdx = convertPaletteIndex(color);
-				const voxel::Voxel v = voxel::createColorVoxel(voxel::VoxelType::Generic, palIdx);
+				const voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, palIdx);
 				volume->setVoxel(x, z, y, v);
 				++z;
 			}
@@ -369,11 +369,10 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 
 	if (valid) {
 		// convert to our palette
-		const MaterialColorArray& materialColors = getMaterialColors();
 		for (uint32_t i = 0; i < _paletteSize; ++i) {
 			const uint8_t *p = hdr.palette[i];
 			const glm::vec4& color = core::Color::fromRGBA(p[0], p[1], p[2], 0xffu);
-			const int index = core::Color::getClosestMatch(color, materialColors);
+			const int index = findClosestIndex(color);
 			_colors[i] = core::Color::getRGBA(color);
 			_palette[i] = index;
 		}

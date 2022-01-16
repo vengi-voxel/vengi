@@ -5,7 +5,6 @@
 #include "VoxOldFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "voxel/MaterialColor.h"
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -43,8 +42,6 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 	node.setName(filename);
 	sceneGraph.emplace(core::move(node));
 
-	const MaterialColorArray& materialColors = getMaterialColors();
-
 	const int64_t voxelPos = stream.pos();
 	stream.skip((int64_t)width * height * depth);
 
@@ -56,7 +53,7 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 
 		const glm::vec4 color = core::Color::fromRGBA(r, g, b, 255);
 		_colors[i] = core::Color::getRGBA(color);
-		_palette[i] = core::Color::getClosestMatch(color, materialColors);
+		_palette[i] = findClosestIndex(color);
 	}
 
 	stream.seek(voxelPos);

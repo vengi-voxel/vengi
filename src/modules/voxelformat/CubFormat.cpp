@@ -4,7 +4,6 @@
 
 #include "CubFormat.h"
 #include "io/FileStream.h"
-#include "voxel/MaterialColor.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/Color.h"
@@ -48,8 +47,6 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	// TODO: support loading own palette
 
-	const MaterialColorArray& materialColors = getMaterialColors();
-
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
@@ -62,7 +59,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 					continue;
 				}
 				const glm::vec4& color = core::Color::fromRGBA(r, g, b, 255);
-				const int index = core::Color::getClosestMatch(color, materialColors);
+				const int index = findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				// we have to flip depth with height for our own coordinate system
 				volume->setVoxel(w, h, d, voxel);
@@ -82,8 +79,6 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	const voxel::Region& region = mergedVolume->region();
 	RawVolume::Sampler sampler(mergedVolume);
 	const glm::ivec3& lower = region.getLowerCorner();
-
-	const MaterialColorArray& materialColors = getMaterialColors();
 
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
@@ -105,7 +100,7 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 					wrapBool(stream.writeUInt8(0))
 					continue;
 				}
-				const glm::vec4& color = materialColors[voxel.getColor()];
+				const glm::vec4& color = getColor(voxel);
 				const glm::u8vec4& rgba = core::Color::getRGBAVec(color);
 				wrapBool(stream.writeUInt8(rgba.r))
 				wrapBool(stream.writeUInt8(rgba.g))

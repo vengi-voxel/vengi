@@ -4,7 +4,6 @@
 
 #include "AoSVXLFormat.h"
 #include "core/Assert.h"
-#include "voxel/MaterialColor.h"
 #include "core/StringUtil.h"
 #include "core/collection/Map.h"
 #include "core/Log.h"
@@ -33,7 +32,6 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	}
 
 	const uint8_t *base = v;
-	const MaterialColorArray& materialColors = getMaterialColors();
 	core::Map<uint32_t, int, 521> paletteMap(32768);
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
@@ -53,7 +51,7 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 				for (z = topColorStart; z <= topColorEnd; ++z) {
 					if (!paletteMap.get(*rgba, paletteIndex)) {
 						const glm::vec4& color = core::Color::fromRGBA(*rgba);
-						paletteIndex = core::Color::getClosestMatch(color, materialColors);
+						paletteIndex = findClosestIndex(color);
 						if (paletteMap.size() < paletteMap.capacity()) {
 							paletteMap.put(*rgba, paletteIndex);
 						}
@@ -92,7 +90,7 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 				for (z = bottomColorStart; z < bottomColorEnd; ++z) {
 					if (!paletteMap.get(*rgba, paletteIndex)) {
 						const glm::vec4& color = core::Color::fromRGBA(*rgba);
-						paletteIndex = core::Color::getClosestMatch(color, materialColors);
+						paletteIndex = findClosestIndex(color);
 						if (paletteMap.size() < paletteMap.capacity()) {
 							paletteMap.put(*rgba, paletteIndex);
 						}

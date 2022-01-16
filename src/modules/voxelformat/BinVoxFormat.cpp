@@ -5,7 +5,6 @@
 #include "BinVoxFormat.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
-#include "voxel/MaterialColor.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "voxel/RawVolumeWrapper.h"

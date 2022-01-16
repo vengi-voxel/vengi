@@ -462,7 +462,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 			const uint8_t index = _palette[matIdx];
 			const voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-			const Voxel voxel = createColorVoxel(voxelType, index);
+			const Voxel voxel = createVoxel(voxelType, index);
 
 			// left to right, bottom to top, front to back
 			for (int i = idx; i < idx + length; i++) {
