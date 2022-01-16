@@ -43,15 +43,16 @@ static const uint8_t EMPTY_PALETTE = 0xFFu;
 		return false; \
 	}
 
-bool VXMFormat::writeRLE(io::WriteStream &stream, int length, voxel::Voxel &voxel) const {
+bool VXMFormat::writeRLE(io::WriteStream &stream, int length, voxel::Voxel &voxel, uint8_t emptyColorReplacement) const {
 	if (length == 0) {
 		return true;
 	}
 	wrapBool(stream.writeUInt8(length))
 	if (voxel::isAir(voxel.getMaterial())) {
 		wrapBool(stream.writeUInt8(EMPTY_PALETTE))
+	} else if (voxel.getColor() == EMPTY_PALETTE) {
+		wrapBool(stream.writeUInt8(emptyColorReplacement))
 	} else {
-		// TODO: if the color is 255 here - and we are no empty voxel, we are in trouble.
 		wrapBool(stream.writeUInt8(voxel.getColor()))
 	}
 	return true;
@@ -127,7 +128,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 #endif
 	}
 
-	const MaterialColorArray& materialColors = getMaterialColors();
+	MaterialColorArray materialColors = getMaterialColors();
 
 	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
 	const voxel::Region& region = mergedVolume->region();
@@ -142,6 +143,12 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeUInt32(width))
 	wrapBool(stream.writeUInt32(height))
 	wrapBool(stream.writeUInt32(depth))
+
+	// we need to find a replacement for this color
+	const glm::vec4 emptyColor = materialColors[EMPTY_PALETTE];
+	materialColors.pop();
+	const uint8_t emptyColorReplacement = core::Color::getClosestMatch(emptyColor, materialColors);
+	materialColors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	int numColors = (int)materialColors.size();
 	if (numColors > 255) {
@@ -169,7 +176,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 				core_assert_always(sampler.setPosition(maxs.x - x, mins.y + y, mins.z + z));
 				const voxel::Voxel &voxel = sampler.voxel();
 				if (prevVoxel.getColor() != voxel.getColor() || rleCount >= 255) {
-					wrapBool(writeRLE(stream, rleCount, prevVoxel))
+					wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
 					prevVoxel = voxel;
 					rleCount = 0;
 				}
@@ -178,7 +185,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		}
 	}
 	if (rleCount > 0) {
-		wrapBool(writeRLE(stream, rleCount, prevVoxel))
+		wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
 	}
 
 	wrapBool(stream.writeUInt8(0))

@@ -13,7 +13,7 @@ namespace voxel {
  */
 class VXMFormat : public Format {
 private:
-	bool writeRLE(io::WriteStream &stream, int rleCount, voxel::Voxel &voxel) const;
+	bool writeRLE(io::WriteStream &stream, int rleCount, voxel::Voxel &voxel, uint8_t emptyColorReplacement) const;
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
