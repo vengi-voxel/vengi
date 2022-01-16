@@ -397,6 +397,22 @@ const glm::vec4& getMaterialColor(const Voxel& voxel) {
 	return getMaterialColors()[voxel.getColor()];
 }
 
+bool saveMaterialColorPng(const core::String& filename) {
+	image::Image img(filename);
+	core::Array<uint32_t, 256> palette;
+	int i = 0;
+	for (const glm::vec4& c : getMaterialColors()) {
+		palette[i++] = core::Color::getRGBA(c);
+	}
+	Log::info("Export palette to %s", filename.c_str());
+	img.loadRGBA((const uint8_t*)palette.begin(), (int)palette.size() * 4, (int)palette.size(), 1);
+	if (!img.writePng()) {
+		Log::warn("Failed to write the palette file");
+		return false;
+	}
+	return true;
+}
+
 bool materialColorInitialized() {
 	return getInstance().initialized();
 }

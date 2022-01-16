@@ -32,6 +32,7 @@ extern bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBuffe
 extern bool overrideMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
 extern bool overrideMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const core::String& luaBuffer);
 extern void shutdownMaterialColors();
+extern bool saveMaterialColorPng(const core::String& filename);
 extern bool materialColorInitialized();
 extern void materialColorMarkClean();
 extern bool materialColorChanged();

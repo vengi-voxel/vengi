@@ -252,19 +252,9 @@ app::AppState VoxConvert::onInit() {
 
 		if (exportPalette) {
 			const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
-			image::Image img(paletteFile);
-			core::Array<uint32_t, 256> palette;
-			int i = 0;
-			for (const glm::vec4& c : voxel::getMaterialColors()) {
-				palette[i++] = core::Color::getRGBA(c);
-			}
-			Log::info("Export palette to %s", paletteFile.c_str());
+			voxel::saveMaterialColorPng(paletteFile);
 			if (!srcPalette) {
 				Log::info(" .. not using the input file palette");
-			}
-			img.loadRGBA((const uint8_t*)palette.begin(), (int)palette.size() * 4, (int)palette.size(), 1);
-			if (!img.writePng()) {
-				Log::warn("Failed to write the palette file");
 			}
 		}
 	}
