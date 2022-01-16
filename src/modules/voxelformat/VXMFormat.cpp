@@ -77,10 +77,60 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeFloat(pivot.z));
 	wrapBool(stream.writeUInt32(0)); // texture dim x
 	wrapBool(stream.writeUInt32(0)); // texture dim y
-	wrapBool(stream.writeUInt32(0)); // texamount
+	static const char *texNames[] = {"Diffuse", "Emissive"};
+	const int texAmount = 0; // lengthof(texNames);
+	wrapBool(stream.writeUInt32(texAmount)); // texamount
+
+	for (int i = 0; i < texAmount; ++i) {
+		stream.writeString(texNames[i], true);
+		int rleCount = 0;
+		uint32_t currentColor = 0;
+		const int width = 0;
+		const int height = 0;
+		uint32_t *rgb = nullptr;
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				uint32_t color = rgb[x + y * width];
+				if (rleCount == 0) {
+					currentColor = color;
+					++rleCount;
+				} else if (rleCount == 255 || currentColor != color) {
+					stream.writeUInt8(rleCount);
+					const glm::u8vec4& colorComp = core::Color::toRGBA(color);
+					stream.writeUInt8(colorComp.r);
+					stream.writeUInt8(colorComp.g);
+					stream.writeUInt8(colorComp.b);
+					rleCount = 1;
+					currentColor = color;
+				} else {
+					++rleCount;
+				}
+			}
+		}
+		if (rleCount > 0) {
+			stream.writeUInt8(rleCount);
+			const glm::u8vec4& colorComp = core::Color::toRGBA(currentColor);
+			stream.writeUInt8(colorComp.r);
+			stream.writeUInt8(colorComp.g);
+			stream.writeUInt8(colorComp.b);
+		}
+		stream.writeUInt8(0);
+	}
 
 	for (int i = 0; i < 6; ++i) {
-		wrapBool(stream.writeUInt32(0)); // quadamount
+		const int quadAmount = 0;
+		wrapBool(stream.writeUInt32(quadAmount));
+#if 0
+		for (int i = 0; i < quadAmount; ++i) {
+			for (int j = 0; j < 4; ++j) {
+				stream.writeFloat(vertices[j].x);
+				stream.writeFloat(vertices[j].y);
+				stream.writeFloat(vertices[j].z);
+				stream.writeInt32(u[j]);
+				stream.writeInt32(v[j]);
+			}
+		}
+#endif
 	}
 
 	const MaterialColorArray& materialColors = getMaterialColors();
@@ -113,7 +163,8 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		wrapBool(stream.writeUInt8(matcolor.g))
 		wrapBool(stream.writeUInt8(matcolor.r))
 		wrapBool(stream.writeUInt8(matcolor.a))
-		wrapBool(stream.writeBool(false)) // emissive
+		const bool emissive = false;
+		wrapBool(stream.writeBool(emissive))
 	}
 	uint32_t rleCount = 0u;
 	voxel::Voxel prevVoxel;
@@ -122,7 +173,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		for (uint32_t y = 0u; y < height; ++y) {
 			for (uint32_t z = 0u; z < depth; ++z) {
 				core_assert_always(sampler.setPosition(maxs.x - x, mins.y + y, mins.z + z));
-				const voxel::Voxel& voxel = sampler.voxel();
+				const voxel::Voxel &voxel = sampler.voxel();
 				if (prevVoxel.getColor() != voxel.getColor() || rleCount >= 255) {
 					wrapBool(writeRLE(stream, rleCount, prevVoxel))
 					prevVoxel = voxel;
@@ -136,7 +187,6 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		wrapBool(writeRLE(stream, rleCount, prevVoxel))
 	}
 
-	wrapBool(stream.writeUInt8(0))
 	wrapBool(stream.writeUInt8(0))
 
 	return true;
