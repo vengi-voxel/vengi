@@ -147,7 +147,6 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	// we need to find a replacement for this color - the empty voxel is the last palette entry
 	// we are using the first palette entry (like magicavoxel does, too)
 	const glm::vec4 emptyColor = materialColors[EMPTY_PALETTE];
-	materialColors[0] = materialColors[EMPTY_PALETTE];
 	materialColors.pop();
 	const uint8_t emptyColorReplacement = core::Color::getClosestMatch(emptyColor, materialColors);
 	materialColors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -398,6 +397,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	wrap(stream.readUInt8(materialAmount));
 	Log::debug("Palette of size %i", (int)materialAmount);
 	if (materialAmount > _palette.size()) {
+		Log::error("Invalid material size found: %u", materialAmount);
 		return false;
 	}
 
@@ -461,8 +461,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			}
 
 			const uint8_t index = _palette[matIdx];
-			const voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-			const Voxel voxel = createVoxel(voxelType, index);
+			const Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
 
 			// left to right, bottom to top, front to back
 			for (int i = idx; i < idx + length; i++) {
