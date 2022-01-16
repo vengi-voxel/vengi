@@ -66,8 +66,17 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.size();
 }
 
+/**
+ * @brief Calculate the scene graph object transformation. Used for the voxel and the AABB of the volume.
+ *
+ * @param mat The world space model matrix (rotation and translation) for the chunk
+ * @param pos The position inside the untransformed chunk (local position)
+ * @param pivot The pivot to do the rotation around. This is the @code chunk_size - 1 + 0.5 @endcode. Please
+ * note that the @c w component must be @c 0.0
+ * @return glm::vec4 The transformed world position
+ */
 static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec4 &pivot) {
-	return mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot);
+	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
 
 bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
@@ -106,9 +115,9 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		const uint8_t *ogtVoxels = ogtModel->voxel_data;
 		const uint8_t *ogtVoxel = ogtVoxels;
 		const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1);
-		const glm::vec4 pivot((float)ogtModel->size_x / 2.0f, (float)ogtModel->size_y / 2.0f, (float)ogtModel->size_z / 2.0f, 0.0f);
-		const glm::vec4 transformedMins = applyTransformation ? transform(ogtMat, glm::ivec3(0), pivot) : glm::vec4(0);
-		const glm::vec4 transformedMaxs = applyTransformation ? transform(ogtMat, maxs, pivot) : glm::vec4(maxs.x, maxs.z, maxs.y, 0.0f);
+		const glm::vec4 pivot((float)maxs.x / 2.0f + 0.5f, (float)maxs.y / 2.0f + 0.5f, (float)maxs.z / 2.0f + 0.5f, 0.0f);
+		const glm::ivec3 transformedMins = applyTransformation ? transform(ogtMat, glm::ivec3(0), pivot) : glm::ivec3(0);
+		const glm::ivec3 transformedMaxs = applyTransformation ? transform(ogtMat, maxs, pivot) : glm::ivec3(maxs.x, maxs.z, maxs.y);
 		const glm::ivec3 zUpMins = applyTransformation ? transform(zUpMat, transformedMins, glm::ivec4(0)) : transformedMins;
 		const glm::ivec3 zUpMaxs = applyTransformation ? transform(zUpMat, transformedMaxs, glm::ivec4(0)) : transformedMaxs;
 		const voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
@@ -147,6 +156,8 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 }
 
 int VoxFormat::findClosestPaletteIndex() {
+	// we have to find a replacement for the first palette entry - as this is used
+	// as the empty voxel in magicavoxel
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
 	const glm::vec4 first = materialColors[0];
 	materialColors.erase(materialColors.begin());
