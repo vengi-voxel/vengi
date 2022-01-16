@@ -84,6 +84,23 @@ glm::vec4 Color::fromRGBA(const unsigned int rgbaInt) {
 	return fromRGBA(r, g, b, a);
 }
 
+glm::u8vec4 Color::toRGBA(const unsigned int rgbaInt) {
+	#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+	// word order ABGR8888
+	const uint8_t r = (rgbaInt >> 0) & 0xFF;
+	const uint8_t g = (rgbaInt >> 8) & 0xFF;
+	const uint8_t b = (rgbaInt >> 16) & 0xFF;
+	const uint8_t a = (rgbaInt >> 24) & 0xFF;
+#else
+	// word order RGBA8888
+	const uint8_t r = (rgbaInt >> 24) & 0xFF;
+	const uint8_t g = (rgbaInt >> 16) & 0xFF;
+	const uint8_t b = (rgbaInt >> 8) & 0xFF;
+	const uint8_t a = (rgbaInt >> 0) & 0xFF;
+#endif
+	return glm::u8vec4(r, g, b, a);
+}
+
 glm::vec4 Color::fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 	return glm::vec4(static_cast<float>(r) / Color::magnitudef, static_cast<float>(g) / Color::magnitudef,
 			static_cast<float>(b) / Color::magnitudef, static_cast<float>(a) / Color::magnitudef);

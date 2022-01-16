@@ -84,6 +84,7 @@ public:
 
 	static glm::vec4 fromRGB(const unsigned int rgbInt, const float a = 1.0f);
 	static glm::vec4 fromRGBA(const unsigned int rgbaInt);
+	static glm::u8vec4 toRGBA(const unsigned int rgbaInt);
 	static glm::vec4 fromARGB(const unsigned int argbInt);
 	static glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 	static glm::vec4 fromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
