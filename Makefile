@@ -216,6 +216,10 @@ update-enkimi:
 	sed -i '/miniz.h/d' src/modules/voxelformat/external/enkimi.h
 	sed -i 's/[ \t]*$$//' src/modules/voxelformat/external/enkimi.[ch]
 
+update-tinyobjloader:
+	$(call UPDATE_GIT,tinyobjloader,https://github.com/tinyobjloader/tinyobjloader.git)
+	cp $(UPDATEDIR)/tinyobjloader.sync/tiny_obj_loader.h src/modules/voxelformat/external
+
 # TODO simpleai support
 # TODO lua support
 updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-glslang update-simplecpp
