@@ -146,6 +146,13 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return true;
 }
 
+int VoxFormat::findClosestPaletteIndex() {
+	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
+	const glm::vec4 first = materialColors[0];
+	materialColors.erase(materialColors.begin());
+	return core::Color::getClosestMatch(first, materialColors) + 1;
+}
+
 bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
 	SceneGraph newSceneGraph;
 	splitVolumes(sceneGraph, newSceneGraph, glm::ivec3(126));
@@ -161,6 +168,12 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	core::DynamicArray<const ogt_vox_model*> modelPtrs;
 	core::DynamicArray<ogt_vox_instance> instances;
 
+	const int replacement = findClosestPaletteIndex();
+	const glm::vec4 emptyColor = getColor(voxel::Voxel(voxel::VoxelType::Generic, 0));
+	const glm::vec4 replaceColor = getColor(voxel::Voxel(voxel::VoxelType::Generic, replacement));
+	Log::debug("Replacement for %f:%f:%f:%f is at %i (%f:%f:%f:%f)", emptyColor.r, emptyColor.g, emptyColor.b,
+			   emptyColor.a, replacement, replaceColor.r, replaceColor.g, replaceColor.b, replaceColor.a);
+
 	for (const SceneGraphNode &node : newSceneGraph) {
 		const voxel::Region region = node.region();
 		ogt_vox_model model;
@@ -172,7 +185,11 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		uint8_t *dataptr = (uint8_t*)core_malloc(voxelSize);
 		model.voxel_data = dataptr;
 		voxelutil::visitVolume(*node.volume(), [&] (int, int, int, const voxel::Voxel& voxel) {
-			*dataptr++ = voxel.getColor();
+			if (voxel.getColor() == 0 && !isAir(voxel.getMaterial())) {
+				*dataptr++ = replacement;
+			} else {
+				*dataptr++ = voxel.getColor();
+			}
 		}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZX);
 		models.push_back(model);
 		modelPtrs.push_back(&models[models.size() - 1]);

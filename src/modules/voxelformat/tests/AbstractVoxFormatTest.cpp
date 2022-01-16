@@ -6,7 +6,7 @@ namespace voxel {
 
 const voxel::Voxel AbstractVoxFormatTest::Empty;
 
-void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format) {
+void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format, bool includingColor, bool includingRegion) {
 	Region region(glm::ivec3(0), glm::ivec3(1));
 	RawVolume volume(region);
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 0)));
@@ -16,7 +16,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &fil
 	stream.seek(0);
 	std::unique_ptr<RawVolume> loaded(format->load(filename, stream));
 	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(volume, *loaded);
+	EXPECT_TRUE(volumeComparator(volume, *loaded, false, includingRegion)) << "Volumes differ: " << volume << *loaded;
 }
 
 void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(voxel::Format &srcFormat, const core::String& destFilename, voxel::Format &destFormat, bool includingColor, bool includingRegion) {

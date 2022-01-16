@@ -18,6 +18,8 @@ namespace voxel {
  * https://ephtracy.github.io/
  */
 class VoxFormat : public Format {
+private:
+	int findClosestPaletteIndex();
 public:
 	VoxFormat();
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) override;

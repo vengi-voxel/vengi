@@ -27,7 +27,7 @@ class ConvertTest: public AbstractVoxFormatTest {
 TEST_F(ConvertTest, testVoxToVXM) {
 	VoxFormat src;
 	VXMFormat target;
-	testFirstAndLastPaletteIndexConversion(src, "palette-check.vxm", target, true, true);
+	testFirstAndLastPaletteIndexConversion(src, "palette-check.vxm", target, false, true);
 }
 
 TEST_F(ConvertTest, testQbToVox) {

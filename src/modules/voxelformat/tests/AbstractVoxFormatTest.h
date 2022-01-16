@@ -15,7 +15,8 @@ class AbstractVoxFormatTest: public AbstractVoxelTest {
 protected:
 	static const voxel::Voxel Empty;
 
-	void testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format);
+	void testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format, bool includingColor,
+									  bool includingRegion);
 	void testFirstAndLastPaletteIndexConversion(voxel::Format &srcFormat, const core::String &destFilename,
 												voxel::Format &destFormat, bool includingColor, bool includingRegion);
 
