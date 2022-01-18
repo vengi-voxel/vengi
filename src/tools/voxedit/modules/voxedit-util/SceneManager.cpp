@@ -93,7 +93,7 @@ bool SceneManager::importPalette(const core::String& file) {
 				Log::warn("Failed to load image %s", file.c_str());
 				break;
 			}
-			if (!voxel::createPalette(img, buf.begin(), buf.size() * sizeof(uint32_t))) {
+			if (!voxel::createPalette(img, buf.begin(), buf.size())) {
 				Log::warn("Failed to create palette for image %s", file.c_str());
 				return false;
 			}
@@ -177,7 +177,7 @@ void SceneManager::autosave() {
 			const core::String& p = file->path();
 			const core::String& f = file->fileName();
 			const core::String& e = file->extension();
-			autoSaveFilename = core::string::format("%s/autosave-%s.%s",
+			autoSaveFilename = core::string::format("%sautosave-%s.%s",
 					p.c_str(), f.c_str(), e.c_str());
 		}
 	}
