@@ -115,7 +115,7 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		const uint8_t *ogtVoxels = ogtModel->voxel_data;
 		const uint8_t *ogtVoxel = ogtVoxels;
 		const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1);
-		const glm::vec4 pivot((float)maxs.x / 2.0f, (float)maxs.y / 2.0f, (float)maxs.z / 2.0f, 0.0f);
+		const glm::vec4 pivot((float)maxs.x / 2.0f + 0.5f, (float)maxs.y / 2.0f + 0.5f, (float)maxs.z / 2.0f + 0.5f, 0.0f);
 		const glm::ivec3 transformedMins = applyTransformation ? transform(ogtMat, glm::ivec3(0), pivot) : glm::ivec3(0);
 		const glm::ivec3 transformedMaxs = applyTransformation ? transform(ogtMat, maxs, pivot) : glm::ivec3(maxs.x, maxs.z, maxs.y);
 		const glm::ivec3 zUpMins = applyTransformation ? transform(zUpMat, transformedMins, glm::ivec4(0)) : transformedMins;
