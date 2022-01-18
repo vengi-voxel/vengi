@@ -76,7 +76,7 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 			continue;
 		}
 		Log::trace("Execute the command %s for key %i", command.c_str(), key);
-		if (command[0] == '+') {
+		if (command[0] == COMMAND_PRESSED[0]) {
 			if (command::Command::execute("%s %i %f", command.c_str(), key, nowSeconds) == 1) {
 				Log::trace("The tracking command was executed");
 				handled = true;
@@ -290,7 +290,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 					continue;
 				}
 				const int32_t commandKey = b.first;
-				if (pair.command[0] != '+') {
+				if (pair.command[0] != COMMAND_PRESSED[0]) {
 					// no action button command
 					continue;
 				}
@@ -315,7 +315,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 					if (pair.modifier != 0) {
 						continue;
 					}
-					command::Command::execute("-%s %i %f", &(pair.command.c_str()[1]), checkKey, nowSeconds);
+					command::Command::execute(COMMAND_RELEASED "%s %i %f", &(pair.command.c_str()[1]), checkKey, nowSeconds);
 				}
 			}
 		}
@@ -330,7 +330,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 		for (auto& b : _bindings) {
 			const CommandModifierPair& pair = b.second;
 			const int32_t commandKey = b.first;
-			if (pair.command[0] != '+') {
+			if (pair.command[0] != COMMAND_PRESSED[0]) {
 				// no action button command
 				continue;
 			}
@@ -340,7 +340,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 			if (!isPressed(commandKey)) {
 				continue;
 			}
-			command::Command::execute("-%s %i %f", &(pair.command.c_str()[1]), commandKey, nowSeconds);
+			command::Command::execute(COMMAND_RELEASED "%s %i %f", &(pair.command.c_str()[1]), commandKey, nowSeconds);
 			executeCommands(commandKey, modifier, nowSeconds, 0u);
 		}
 		_pressedModifierMask &= ~(uint32_t)code;
@@ -349,8 +349,8 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 	for (auto i = range.first; i != range.second; ++i) {
 		const CommandModifierPair& pair = i->second;
 		const core::String& command = pair.command;
-		if (command[0] == '+') {
-			command::Command::execute("-%s %i %f", &(command.c_str()[1]), key, nowSeconds);
+		if (command[0] == COMMAND_PRESSED[0]) {
+			command::Command::execute(COMMAND_RELEASED "%s %i %f", &(command.c_str()[1]), key, nowSeconds);
 			handled = true;
 		}
 	}

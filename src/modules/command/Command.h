@@ -17,6 +17,8 @@
 namespace command {
 
 typedef core::DynamicArray<core::String> CmdArgs;
+#define COMMAND_PRESSED "+"
+#define COMMAND_RELEASED "-"
 
 struct ActionButtonCommands {
 	const core::String first;

@@ -4,6 +4,7 @@
 
 #include "KeybindingParser.h"
 #include "CustomButtonNames.h"
+#include "command/Command.h"
 #include "core/ArrayLength.h"
 #include "core/Tokenizer.h"
 #include "core/collection/DynamicArray.h"
@@ -14,7 +15,7 @@ namespace util {
 
 void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& command) {
 	int modifier = KMOD_NONE;
-	core::Tokenizer tok(true, key, "+");
+	core::Tokenizer tok(true, key, COMMAND_PRESSED);
 	const core::DynamicArray<core::String>& line = tok.tokens();
 	if (line.size() > 1) {
 		for (const core::String& token : line) {
@@ -40,7 +41,7 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 			} else {
 				key = token;
 				if (key.empty()) {
-					key = "+";
+					key = COMMAND_PRESSED;
 				}
 			}
 		}

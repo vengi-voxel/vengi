@@ -49,26 +49,26 @@ bool Command::unregisterCommand(const char* name) {
 
 ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button) {
 	core::ScopedWriteLock lock(_lock);
-	const Command cPressed("+" + name, [&] (const command::CmdArgs& args) {
+	const Command cPressed(COMMAND_PRESSED + name, [&] (const command::CmdArgs& args) {
 		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
 		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
 		button.handleDown(key, seconds);
 	});
 	_cmds.put(cPressed.name(), cPressed);
-	const Command cReleased("-" + name, [&] (const command::CmdArgs& args) {
+	const Command cReleased(COMMAND_RELEASED + name, [&] (const command::CmdArgs& args) {
 		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
 		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
 		button.handleUp(key, seconds);
 	});
 	_cmds.put(cReleased.name(), cReleased);
 	updateSortedList();
-	return ActionButtonCommands("+" + name, "-" + name);
+	return ActionButtonCommands(COMMAND_PRESSED + name, COMMAND_RELEASED + name);
 }
 
 bool Command::unregisterActionButton(const core::String& name) {
 	core::ScopedWriteLock lock(_lock);
-	const core::String downB("+" + name);
-	const core::String upB("-" + name);
+	const core::String downB(COMMAND_PRESSED + name);
+	const core::String upB(COMMAND_RELEASED + name);
 	int amount = _cmds.remove(downB);
 	amount += _cmds.remove(upB);
 	updateSortedList();
@@ -183,7 +183,7 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 		}
 		return true;
 	}
-	if ((command[0] == '+' || command[0] == '-') && args.empty()) {
+	if ((command[0] == COMMAND_PRESSED[0] || command[0] == COMMAND_RELEASED[0]) && args.empty()) {
 		Log::warn("Skip execution of %s - no arguments provided", command.c_str());
 		return false;
 	}
