@@ -37,23 +37,23 @@ private:
 	char _newFolderName[500] = "";
 	char _newFolderError[500] = "";
 
-	void setCurrentPath(const core::String& path);
+	void setCurrentPath(video::WindowedApp::OpenFileMode type, const core::String& path);
 	void selectFilter(int index);
 	bool hide(const core::String &file) const;
 
 	void applyFilter();
 	bool readDir();
-	void directoryPanel();
+	void directoryPanel(video::WindowedApp::OpenFileMode type);
 	void removeBookmark(const core::String &bookmark);
-	void bookMarkEntry(const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
-	void bookmarkPanel(const core::String &bookmarks);
+	void bookMarkEntry(video::WindowedApp::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
+	void bookmarkPanel(video::WindowedApp::OpenFileMode type, const core::String &bookmarks);
 	/**
 	 * @return @c true if a file was double clicked
 	 */
 	bool filesPanel();
 
 public:
-	bool openDir(const io::FormatDescription* formats);
+	bool openDir(const io::FormatDescription* formats, const core::String& filename = "");
 	/**
 	* @param open The visibility state of the dialog. This is set to false if the dialog should get closed.
 	* This happens on user input. If the function returns @c true the boolean is set to false to no longer show

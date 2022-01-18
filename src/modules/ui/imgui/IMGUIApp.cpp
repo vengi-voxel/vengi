@@ -400,6 +400,7 @@ app::AppState IMGUIApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_console.construct();
 	_lastDirectory = core::Var::get(cfg::UILastDirectory, io::filesystem()->homePath().c_str());
+	core::Var::get(cfg::UILastFilter, "0");
 	core::Var::get(cfg::UIShowHidden, "false")->setHelp("Show hidden file system entities");
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST);
@@ -1188,7 +1189,7 @@ app::AppState IMGUIApp::onCleanup() {
 	return Super::onCleanup();
 }
 
-void IMGUIApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats) {
+void IMGUIApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats, const core::String &filename) {
 	_showFileDialog = true;
 	_fileDialogCallback = callback;
 	_fileDialogMode = mode;

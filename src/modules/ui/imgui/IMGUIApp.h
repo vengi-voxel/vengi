@@ -87,7 +87,7 @@ public:
 	ImFont *smallFont();
 
 	void showBindingsDialog();
-	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats = nullptr) override;
+	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
 };
 
 inline void IMGUIApp::showBindingsDialog() {

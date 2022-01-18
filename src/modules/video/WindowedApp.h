@@ -115,13 +115,13 @@ public:
 	 * @param[in] mode @c OpenFileMode
 	 * @param[in] formats nullptr terminated list of formats that are used to filter the entries
 	 */
-	virtual void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats = nullptr);
+	virtual void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "");
 
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 * @param[in] formats nullptr terminated list of formats that are used to filter the entries
 	 */
-	void saveDialog(const std::function<void(const core::String)>& callback, const io::FormatDescription* formats = nullptr);
+	void saveDialog(const std::function<void(const core::String)>& callback, const io::FormatDescription* formats = nullptr, const core::String &filename = "");
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 * @param[in] formats nullptr terminated list of formats that are used to filter the entries
@@ -178,8 +178,8 @@ inline int WindowedApp::frameBufferHeight() const {
 	return _frameBufferDimension.y;
 }
 
-inline void WindowedApp::saveDialog(const std::function<void(const core::String)>& callback, const io::FormatDescription* formats) {
-	fileDialog(callback, OpenFileMode::Save, formats);
+inline void WindowedApp::saveDialog(const std::function<void(const core::String)>& callback, const io::FormatDescription* formats, const core::String &filename) {
+	fileDialog(callback, OpenFileMode::Save, formats, filename);
 }
 
 inline void WindowedApp::openDialog(const std::function<void(const core::String)>& callback, const io::FormatDescription* formats) {

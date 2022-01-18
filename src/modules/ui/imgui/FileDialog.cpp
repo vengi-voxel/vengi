@@ -46,10 +46,11 @@ void FileDialog::applyFilter() {
 void FileDialog::selectFilter(int index) {
 	core_assert(index >= -1 && index <= (int)_filterEntries.size());
 	_currentFilterEntry = index;
+	core::Var::getSafe(cfg::UILastFilter)->setVal(_currentFilterEntry);
 	applyFilter();
 }
 
-bool FileDialog::openDir(const io::FormatDescription* formats) {
+bool FileDialog::openDir(const io::FormatDescription* formats, const core::String& filename) {
 	if (formats == nullptr) {
 		_filterEntries.clear();
 		_filterTextWidth = 0.0f;
@@ -63,13 +64,18 @@ bool FileDialog::openDir(const io::FormatDescription* formats) {
 			_filterEntries.push_back(str);
 			++formats;
 		}
-		selectFilter(0);
+		const core::VarPtr &lastFilterVar = core::Var::getSafe(cfg::UILastFilter);
+		int lastFilter = lastFilterVar->intVal();
+		if (lastFilter < 0 || lastFilter >= (int)_filterEntries.size()) {
+			lastFilter = 0;
+		}
+		selectFilter(lastFilter);
 	}
 
 	const core::VarPtr &lastDirVar = core::Var::getSafe(cfg::UILastDirectory);
 	const core::String &lastDir = lastDirVar->strVal();
 	_currentPath = lastDir;
-	_currentFile = "";
+	_currentFile = filename;
 	_currentFolder = "";
 
 	if (!io::filesystem()->exists(_currentPath)) {
@@ -91,7 +97,7 @@ bool FileDialog::readDir() {
 	return true;
 }
 
-void FileDialog::bookMarkEntry(const core::String& path, float width, const char *title, const char *icon) {
+void FileDialog::bookMarkEntry(video::WindowedApp::OpenFileMode type, const core::String& path, float width, const char *title, const char *icon) {
 	const ImVec2 size(width, 0);
 	if (icon != nullptr) {
 		const float x = ImGui::GetCursorPosX();
@@ -103,7 +109,7 @@ void FileDialog::bookMarkEntry(const core::String& path, float width, const char
 		title = path.c_str();
 	}
 	if (ImGui::Selectable(title, false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
-		setCurrentPath(path);
+		setCurrentPath(type, path);
 	}
 	ImGui::TooltipText("%s", path.c_str());
 }
@@ -127,20 +133,20 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 	bookmarks->setVal(newBookmarks);
 }
 
-void FileDialog::bookmarkPanel(const core::String &bookmarks) {
+void FileDialog::bookmarkPanel(video::WindowedApp::OpenFileMode type, const core::String &bookmarks) {
 	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(ImGui::Size(200), ImGui::Size(300)), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 	bool specialDirs = false;
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
 	const core::String& downloadDir = io::filesystem()->downloadDir();
 	if (!downloadDir.empty()) {
-		bookMarkEntry(downloadDir, contentRegionWidth, "Download", ICON_FK_DOWNLOAD);
+		bookMarkEntry(type, downloadDir, contentRegionWidth, "Download", ICON_FK_DOWNLOAD);
 		specialDirs = true;
 	}
 
 	const core::String& documentsDir = io::filesystem()->documentsDir();
 	if (!documentsDir.empty()) {
-		bookMarkEntry(documentsDir, contentRegionWidth, "Documents", ICON_FA_FILE);
+		bookMarkEntry(type, documentsDir, contentRegionWidth, "Documents", ICON_FA_FILE);
 		specialDirs = true;
 	}
 
@@ -154,7 +160,7 @@ void FileDialog::bookmarkPanel(const core::String &bookmarks) {
 		if (absPath.empty()) {
 			continue;
 		}
-		bookMarkEntry(absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
+		bookMarkEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
 	}
 
 	core::DynamicArray<core::String> bm;
@@ -170,14 +176,16 @@ void FileDialog::bookmarkPanel(const core::String &bookmarks) {
 		}
 		ImGui::TooltipText("Delete this bookmark");
 		ImGui::SameLine();
-		bookMarkEntry(absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
+		bookMarkEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
 	}
 
 	ImGui::EndChild();
 }
 
-void FileDialog::setCurrentPath(const core::String& path) {
-	_currentFile = "";
+void FileDialog::setCurrentPath(video::WindowedApp::OpenFileMode type, const core::String& path) {
+	if (type != video::WindowedApp::OpenFileMode::Save) {
+		_currentFile = "";
+	}
 	_folderSelectIndex = 0;
 	_fileSelectIndex = 0;
 	_currentFolder = "";
@@ -187,14 +195,14 @@ void FileDialog::setCurrentPath(const core::String& path) {
 	readDir();
 }
 
-void FileDialog::directoryPanel() {
+void FileDialog::directoryPanel(video::WindowedApp::OpenFileMode type) {
 	ImGui::BeginChild("Directories##filedialog", ImVec2(ImGui::Size(200), ImGui::Size(300)), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
 	if (ImGui::Selectable("..", false, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(contentRegionWidth, 0))) {
 		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-			setCurrentPath(io::filesystem()->absolutePath(_currentPath + "/.."));
+			setCurrentPath(type, io::filesystem()->absolutePath(_currentPath + "/.."));
 		}
 	}
 	for (size_t i = 0; i < _entities.size(); ++i) {
@@ -208,7 +216,7 @@ void FileDialog::directoryPanel() {
 		const ImVec2 size(contentRegionWidth, 0);
 		if (ImGui::Selectable(_entities[i].name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-				setCurrentPath(assemblePath(_currentPath, _entities[i].name));
+				setCurrentPath(type, assemblePath(_currentPath, _entities[i].name));
 				break;
 			} else {
 				_folderSelectIndex = i;
@@ -392,11 +400,11 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			ImGui::SameLine();
 			ImGui::TextUnformatted(_currentPath.c_str());
 
-			bookmarkPanel(bookmarks->strVal());
+			bookmarkPanel(type, bookmarks->strVal());
 
 			ImGui::SameLine();
 
-			directoryPanel();
+			directoryPanel(type);
 
 			ImGui::SameLine();
 
