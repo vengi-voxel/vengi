@@ -16,7 +16,16 @@ Merge several models into one:
 
 Voxelize an obj and save as magicavoxel (including colors):
 
-`./vengi-voxconvert --input mesh.obj --output voxels.vox`
+> You are getting better results if you create a palette from your textures first.
+>
+> This can be done by reducing the color to 256 and import that reduced image in
+> [voxedit](../voxedit/Index.md) as palette.
+>
+> This only works for obj files - but if you have different mesh formats that you
+> would like to voxelize, you can use the [assimp-tools](https://assimp.org/) to
+> convert to obj.
+
+`./vengi-voxconvert -set palette /path/to/palette.png --input mesh.obj --output voxels.vox`
 
 ## Generate from heightmap
 
