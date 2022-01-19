@@ -13,9 +13,9 @@ namespace voxel {
  */
 class VXRFormat : public Format {
 private:
-	int loadChildVXM(const core::String& vxmPath, SceneGraph& sceneGraph, int parent);
+	int loadChildVXM(const core::String& vxmPath, SceneGraph& sceneGraph, int parent, voxel::SceneGraphNode &node);
 	bool importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, uint32_t version, int parent);
-	bool importChildOld(const core::String &filename, io::SeekableReadStream& stream, uint32_t version);
+	bool importChildOld(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, uint32_t version, int parent);
 	bool saveRecursiveNode(const core::String &name, const voxel::SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream);
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
