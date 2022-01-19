@@ -4,6 +4,7 @@
 
 #include "VXRFormat.h"
 #include "core/Assert.h"
+#include "core/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/GLM.h"
@@ -245,9 +246,10 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 			node.setProperty("collidable", stream.readBool());
 			node.setProperty("decorative", stream.readBool());
 		}
-		uint32_t dummy;
 		if (version >= 6) {
-			wrap(stream.readUInt32(dummy)) // color
+			uint32_t color;
+			wrap(stream.readUInt32(color))
+			node.setProperty("color", core::Color::toHex(color));
 			node.setProperty("favorite", stream.readBool());
 			node.setProperty("visible", stream.readBool());
 		}
