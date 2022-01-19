@@ -11,6 +11,7 @@
 #include "voxel/Region.h"
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace voxel {
 
@@ -25,6 +26,16 @@ enum class SceneGraphNodeType {
 	Unknown,
 
 	Max
+};
+
+struct SceneGraphTransform {
+	glm::vec3 pivot{0.0f};
+	glm::vec3 position{0.0f};
+	glm::quat rot{1.0f, 0.0f, 0.0f, 0.0f};
+	float scale{1.0f};
+	glm::mat4x4 mat{1.0f};
+
+	void update();
 };
 
 /**
@@ -47,7 +58,7 @@ protected:
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
-	glm::mat4x4 _mat {1.0f};
+	SceneGraphTransform _transform;
 	/**
 	 * this will ensure that we are releasing the volume memory in this instance
 	 * @sa release()
@@ -55,7 +66,6 @@ protected:
 	bool _volumeOwned = true;
 	bool _visible = true;
 	bool _locked = false;
-	glm::vec3 _pivot{0};
 	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
 
@@ -86,7 +96,9 @@ public:
 
 	void addChild(int id);
 	const glm::mat4 matrix() const;
-	void setMatrix(const glm::mat4x4 &mat);
+	void setTransform(const SceneGraphTransform &transform, bool updateMatrix);
+	const SceneGraphTransform& transform() const;
+	SceneGraphTransform& transform();
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr
@@ -129,7 +141,6 @@ public:
 	bool locked() const;
 	void setLocked(bool locked);
 	const glm::vec3 &pivot() const;
-	void setPivot(const glm::vec3 &pivot);
 
 	const core::Buffer<int, 32> &children() const;
 	const core::StringMap<core::String> &properties() const;
@@ -142,6 +153,14 @@ public:
 		_properties.put(key, core::string::toString(value));
 	}
 };
+
+inline const SceneGraphTransform& SceneGraphNode::transform() const {
+	return _transform;
+}
+
+inline SceneGraphTransform& SceneGraphNode::transform() {
+	return _transform;
+}
 
 inline int SceneGraphNode::referencedNodeId() const {
 	return _referencedNodeId;
@@ -216,19 +235,11 @@ inline void SceneGraphNode::setLocked(bool locked) {
 }
 
 inline const glm::vec3 &SceneGraphNode::pivot() const {
-	return _pivot;
-}
-
-inline void SceneGraphNode::setPivot(const glm::vec3 &pivot) {
-	_pivot = pivot;
+	return _transform.pivot;
 }
 
 inline const glm::mat4 SceneGraphNode::matrix() const {
-	return _mat;
-}
-
-inline void SceneGraphNode::setMatrix(const glm::mat4x4 &mat) {
-	_mat = mat;
+	return _transform.mat;
 }
 
 } // namespace voxel

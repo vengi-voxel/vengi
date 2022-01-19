@@ -57,7 +57,9 @@ static int luaVoxel_scenegraph_new(lua_State* s) {
 	node.setVolume(v, true);
 	node.setName(name);
 	node.setVisible(visible);
-	node.setPivot(v->region().getCenter());
+	const glm::vec3 rp = v->region().getCenterf();
+	const glm::vec3 size = v->region().getDimensionsInVoxels();
+	node.transform().pivot = rp / size;
 	const int nodeId = sceneMgr().addNodeToSceneGraph(node);
 	if (nodeId == -1) {
 		return clua_error(s, "Failed to add new node");

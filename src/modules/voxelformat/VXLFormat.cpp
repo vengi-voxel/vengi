@@ -205,7 +205,6 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	voxel::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.limb_name);
-	node.setPivot(volume->region().getCenter());
 	sceneGraph.emplace(core::move(node));
 	++mdl.volumeIdx;
 

@@ -40,10 +40,10 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	/**
 	 * Centroid of voxel. For extra precision, this location has been shifted up by 8 bits.
 	 */
-	glm::vec3 pivot;
-	wrap(stream.readFloat(pivot.x))
-	wrap(stream.readFloat(pivot.y))
-	wrap(stream.readFloat(pivot.z))
+	SceneGraphTransform transform;
+	wrap(stream.readFloat(transform.pivot.x))
+	wrap(stream.readFloat(transform.pivot.y))
+	wrap(stream.readFloat(transform.pivot.z))
 
 	if (xsiz > MaxRegionSize || ysiz > MaxRegionSize || zsiz > MaxRegionSize) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", xsiz, zsiz, ysiz);
@@ -95,7 +95,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	node.setPivot(glm::ivec3(pivot));
+	node.setTransform(transform, true);
 	sceneGraph.emplace(core::move(node));
 
 	typedef struct {

@@ -52,7 +52,6 @@ bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::SceneGr
 	newNode.setVolume(node.volume(), false);
 	newNode.setName(name);
 	newNode.setVisible(node.visible());
-	newNode.setPivot(node.pivot());
 	newSceneGraph.emplace(core::move(newNode));
 	wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 
@@ -168,15 +167,13 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 		if (version > 1) {
 			stream.readBool(); // rotation ??
 		}
-		glm::vec3 position;
-		glm::vec3 localPosition(0.0f);
-		glm::quat rot;
-		glm::quat localRot;
-		float scale;
+		SceneGraphTransform transform;
+		glm::vec3 localPosition{0.0f};
+		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
-		wrap(stream.readFloat(position.x))
-		wrap(stream.readFloat(position.y))
-		wrap(stream.readFloat(position.z))
+		wrap(stream.readFloat(transform.position.x))
+		wrap(stream.readFloat(transform.position.y))
+		wrap(stream.readFloat(transform.position.z))
 		if (version >= 3) {
 			wrap(stream.readFloat(localPosition.x))
 			wrap(stream.readFloat(localPosition.y))
@@ -189,29 +186,30 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			rot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
+			transform.rot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
 			localRot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 		} else {
-			wrap(stream.readFloat(rot.x))
-			wrap(stream.readFloat(rot.y))
-			wrap(stream.readFloat(rot.z))
-			wrap(stream.readFloat(rot.w))
+			wrap(stream.readFloat(transform.rot.x))
+			wrap(stream.readFloat(transform.rot.y))
+			wrap(stream.readFloat(transform.rot.z))
+			wrap(stream.readFloat(transform.rot.w))
 			wrap(stream.readFloat(localRot.x))
 			wrap(stream.readFloat(localRot.y))
 			wrap(stream.readFloat(localRot.z))
 			wrap(stream.readFloat(localRot.w))
 		}
-		wrap(stream.readFloat(scale))
+		wrap(stream.readFloat(transform.scale))
 		if (version >= 3) {
 			wrap(stream.readFloat(localScale))
 		}
-		//node.setMatrix(glm::scale(glm::translate(glm::mat4_cast(rot), position / 32.0f), glm::vec3(scale)));
-		//node.setMatrix(glm::scale(glm::translate(glm::mat4(1.0f), position / 32.0f), glm::vec3(scale)));
-		//node.setMatrix(glm::translate(glm::mat4(1.0f), position / 32.0f));
-		node.setMatrix(glm::translate(glm::mat4(1.0f), position));
+		// TODO: only the first frame is supported - as we don't have animation support yet
+		if (i == 0u) {
+			transform.position /= 32.0f;
+			node.setTransform(transform, true);
+		}
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))

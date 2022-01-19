@@ -57,7 +57,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 			newNode.setVolume(new voxel::RawVolume(node.volume()), true);
 			newNode.setName(node.name());
 			newNode.setVisible(node.visible());
-			newNode.setPivot(node.pivot());
+			newNode.setTransform(node.transform(), false);
 			destSceneGraph.emplace(core::move(newNode));
 			continue;
 		}

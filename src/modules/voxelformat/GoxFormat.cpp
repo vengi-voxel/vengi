@@ -15,6 +15,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -268,12 +269,12 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			visible = *dictValue;
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" (4x4 matrix)
-			glm::mat4x4 mat(1.0f);
+			SceneGraphTransform transform;
 			io::MemoryReadStream stream(dictValue, sizeof(float) * 16);
 			for (int i = 0; i < 16; ++i) {
-				stream.readFloat(mat[i / 4][i % 4]);
+				stream.readFloat(transform.mat[i / 4][i % 4]);
 			}
-			node.setMatrix(mat);
+			node.setTransform(transform, false);
 		} else if (!strcmp(dictKey, "id")) {
 			// "id" unique id
 			node.setProperty(dictKey, dictValue);
@@ -350,12 +351,12 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 			node.setProperty(dictKey, *dictValue ? "true" : "false");
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" 4x4 float
-			glm::mat4x4 mat(1.0f);
+			SceneGraphTransform transform;
 			io::MemoryReadStream stream(dictValue, sizeof(float) * 16);
 			for (int i = 0; i < 16; ++i) {
-				stream.readFloat(mat[i / 4][i % 4]);
+				stream.readFloat(transform.mat[i / 4][i % 4]);
 			}
-			node.setMatrix(mat);
+			node.setTransform(transform, false);
 		}
 	}
 	sceneGraph.emplace(core::move(node));

@@ -477,7 +477,9 @@ void SceneManager::undo() {
 	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
 	node.setName(s.name);
 	node.setVolume(v, true);
-	node.setPivot(referencePosition());
+	const glm::vec3 rp = referencePosition();
+	const glm::vec3 size = v->region().getDimensionsInVoxels();
+	node.transform().pivot = rp / size;
 	addNodeToSceneGraph(node, s.parentId);
 }
 
@@ -499,7 +501,9 @@ void SceneManager::redo() {
 	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
 	node.setName(s.name);
 	node.setVolume(v, true);
-	node.setPivot(referencePosition());
+	const glm::vec3 rp = referencePosition();
+	const glm::vec3 size = v->region().getDimensionsInVoxels();
+	node.transform().pivot = rp / size;
 	addNodeToSceneGraph(node, s.parentId);
 }
 
@@ -637,11 +641,11 @@ void SceneManager::resetSceneState() {
 int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
 	voxel::SceneGraphNode newNode(node.type());
 	newNode.setName(node.name());
-	newNode.setPivot(node.pivot());
+	newNode.setTransform(node.transform(), false);
 	newNode.setVisible(node.visible());
 	newNode.addProperties(node.properties());
 	newNode.setReferencedNodeId(node.referencedNodeId());
-	newNode.setMatrix(node.matrix());
+	newNode.setTransform(node.transform(), false);
 	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
 		core_assert(node.owns());
 		newNode.setVolume(node.volume(), true);
@@ -777,13 +781,15 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	voxel::SceneGraphNode node;
 	node.setVolume(v, true);
 	node.setName(name);
-	glm::ivec3 center = region.getCenter();
-	node.setPivot(center);
+	const glm::vec3 rp = v->region().getCenterf();
+	const glm::vec3 size = v->region().getDimensionsInVoxels();
+	node.transform().pivot = rp / size;
 	const int nodeId = sceneMgr().addNodeToSceneGraph(node);
 	if (nodeId == -1) {
 		Log::error("Failed to add empty volume to new scene graph");
 		return false;
 	}
+	glm::ivec3 center = v->region().getCenter();
 	center.y = region.getLowerY();
 	setReferencePosition(center);
 	resetSceneState();
@@ -2301,7 +2307,7 @@ void SceneManager::nodeDuplicate(voxel::SceneGraphNode &node) {
 	voxel::SceneGraphNode newNode;
 	newNode.setVolume(new voxel::RawVolume(v), true);
 	newNode.setName(node.name());
-	newNode.setPivot(node.pivot());
+	newNode.setTransform(node.transform(), false);
 	newNode.setVisible(node.visible());
 	newNode.setLocked(node.locked());
 	newNode.addProperties(node.properties());

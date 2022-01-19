@@ -4,8 +4,13 @@
 
 #include "SceneGraphNode.h"
 #include "voxel/RawVolume.h"
+#include <glm/gtx/transform.hpp>
 
 namespace voxel {
+
+void SceneGraphTransform::update() {
+	mat = glm::translate(position) * glm::mat4_cast(rot) * glm::scale(glm::vec3(scale));
+}
 
 SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_volume = move._volume;
@@ -17,7 +22,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	move._parent = -1;
 	_modelId = move._modelId;
 	move._modelId = -1;
-	_mat = move._mat;
+	_transform = move._transform;
 	_referencedNodeId = move._referencedNodeId;
 	move._referencedNodeId = -1;
 	_properties = core::move(move._properties);
@@ -26,7 +31,6 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	move._type = SceneGraphNodeType::Max;
 	_visible = move._visible;
 	_locked = move._locked;
-	_pivot = move._pivot;
 	_volumeOwned = move._volumeOwned;
 	move._volumeOwned = false;
 }
@@ -44,7 +48,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	move._parent = -1;
 	_modelId = move._modelId;
 	move._modelId = -1;
-	_mat = move._mat;
+	_transform = move._transform;
 	_referencedNodeId = move._referencedNodeId;
 	move._referencedNodeId = -1;
 	_properties = core::move(move._properties);
@@ -52,7 +56,6 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_type = move._type;
 	_visible = move._visible;
 	_locked = move._locked;
-	_pivot = move._pivot;
 	move._volumeOwned = false;
 	return *this;
 }
@@ -118,6 +121,13 @@ core::String SceneGraphNode::property(const core::String& key) const {
 void SceneGraphNode::addProperties(const core::StringMap<core::String>& map) {
 	for (const auto& entry : map) {
 		setProperty(entry->key, entry->value);
+	}
+}
+
+void SceneGraphNode::setTransform(const SceneGraphTransform &transform, bool updateMatrix) {
+	_transform = transform;
+	if (updateMatrix) {
+		_transform.update();
 	}
 }
 

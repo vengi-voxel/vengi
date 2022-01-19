@@ -291,17 +291,20 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	Log::debug("Matrix name: %s", name);
 	glm::ivec3 position;
 	glm::uvec3 localScale;
-	glm::vec3 pivot;
 	glm::uvec3 size;
+	// TODO: move into transform
 	wrap(stream.readUInt32((uint32_t&)position.x));
 	wrap(stream.readUInt32((uint32_t&)position.y));
 	wrap(stream.readUInt32((uint32_t&)position.z));
+	// TODO: move into transform
 	wrap(stream.readUInt32(localScale.x));
 	wrap(stream.readUInt32(localScale.y));
 	wrap(stream.readUInt32(localScale.z));
-	wrap(stream.readFloat(pivot.x));
-	wrap(stream.readFloat(pivot.y));
-	wrap(stream.readFloat(pivot.z));
+
+	SceneGraphTransform transform;
+	wrap(stream.readFloat(transform.pivot.x));
+	wrap(stream.readFloat(transform.pivot.y));
+	wrap(stream.readFloat(transform.pivot.z));
 	wrap(stream.readUInt32(size.x));
 	wrap(stream.readUInt32(size.y));
 	wrap(stream.readUInt32(size.z));
@@ -380,7 +383,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(name);
-	node.setPivot(glm::ivec3(pivot));
+	node.setTransform(transform, true);
 	sceneGraph.emplace(core::move(node));
 	return true;
 }

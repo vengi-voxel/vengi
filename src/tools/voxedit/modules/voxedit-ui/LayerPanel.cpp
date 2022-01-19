@@ -120,7 +120,6 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 				voxel::RawVolume* v = new voxel::RawVolume(layerSettings->region());
 				node.setVolume(v, true);
 				node.setName(layerSettings->name.c_str());
-				node.setPivot(v->region().getCenter());
 				sceneMgr.addNodeToSceneGraph(node);
 			}
 			ImGui::SameLine();
