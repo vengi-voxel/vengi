@@ -79,76 +79,151 @@ static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
 	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
 
+bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, bool groupHidden) {
+	const ogt_vox_instance& ogtInstance = scene->instances[ogt_instanceIdx];
+	const ogt_vox_transform& ogtTransform = ogtInstance.transform;
+	const glm::vec4 ogtCol0(ogtTransform.m00, ogtTransform.m01, ogtTransform.m02, ogtTransform.m03);
+	const glm::vec4 ogtCol1(ogtTransform.m10, ogtTransform.m11, ogtTransform.m12, ogtTransform.m13);
+	const glm::vec4 ogtCol2(ogtTransform.m20, ogtTransform.m21, ogtTransform.m22, ogtTransform.m23);
+	const glm::vec4 ogtCol3(ogtTransform.m30, ogtTransform.m31, ogtTransform.m32, ogtTransform.m33);
+	bool applyTransformation = scene->num_instances > 1;
+	const glm::mat4 ogtMat = glm::mat4{ogtCol0, ogtCol1, ogtCol2, ogtCol3};
+	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
+	const uint8_t *ogtVoxels = ogtModel->voxel_data;
+	const uint8_t *ogtVoxel = ogtVoxels;
+	const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1);
+	const glm::vec4 pivot((float)maxs.x / 2.0f + 0.5f, (float)maxs.y / 2.0f + 0.5f, (float)maxs.z / 2.0f + 0.5f, 0.0f);
+	const glm::ivec3 transformedMins = applyTransformation ? transform(ogtMat, glm::ivec3(0), pivot) : glm::ivec3(0);
+	const glm::ivec3 transformedMaxs = applyTransformation ? transform(ogtMat, maxs, pivot) : glm::ivec3(maxs.x, maxs.z, maxs.y);
+	const glm::ivec3 zUpMins = applyTransformation ? transform(zUpMat, transformedMins, glm::ivec4(0)) : transformedMins;
+	const glm::ivec3 zUpMaxs = applyTransformation ? transform(zUpMat, transformedMaxs, glm::ivec4(0)) : transformedMaxs;
+	const voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
+	voxel::RawVolume *v = new voxel::RawVolume(region);
+
+	for (uint32_t k = 0; k < ogtModel->size_z; ++k) {
+		for (uint32_t j = 0; j < ogtModel->size_y; ++j) {
+			for (uint32_t i = 0; i < ogtModel->size_x; ++i, ++ogtVoxel) {
+				if (ogtVoxel[0] == 0) {
+					continue;
+				}
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, _palette[ogtVoxel[0]]);
+				const glm::ivec3 pos = applyTransformation ? transform(ogtMat, glm::ivec3(i, j, k), pivot) : glm::ivec3(i, k, j);
+				const glm::ivec3 poszUp = applyTransformation ? transform(zUpMat, pos, glm::ivec4(0)) : pos;
+				v->setVoxel(poszUp, voxel);
+			}
+		}
+	}
+
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	const char *name = ogtInstance.name;
+	if (name == nullptr) {
+		const ogt_vox_layer& layer = scene->layers[ogtInstance.layer_index];
+		name = layer.name;
+		if (name == nullptr) {
+			name = "";
+		}
+	}
+	node.setName(name);
+	node.setVisible(!ogtInstance.hidden && !groupHidden);
+	node.setVolume(v, true);
+	return sceneGraph.emplace(core::move(node), parent) != -1;
+}
+
+bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances) {
+	const ogt_vox_group &group = scene->groups[ogt_parentGroupIdx];
+	bool hidden = group.hidden;
+	const char *name = "Group";
+	const uint32_t layerIdx = group.layer_index;
+	if (layerIdx < scene->num_layers) {
+		const ogt_vox_layer &layer = scene->layers[layerIdx];
+		hidden |= layer.hidden;
+		if (layer.name != nullptr) {
+			name = layer.name;
+		}
+	}
+	SceneGraphNode node(SceneGraphNodeType::Group);
+	node.setName(name);
+	node.setVisible(!hidden);
+	const int groupId = sceneGraph.emplace(core::move(node), parent);
+	if (groupId == -1) {
+		Log::error("Failed to add group node to the scene graph");
+		return false;
+	}
+
+	for (uint32_t n = 0; n < scene->num_instances; ++n) {
+		const ogt_vox_instance& ogtInstance = scene->instances[n];
+		if (ogtInstance.group_index != ogt_parentGroupIdx) {
+			continue;
+		}
+		if (!addedInstances.insert(n)) {
+			continue;
+		}
+		if (!addInstance(scene, n, sceneGraph, groupId, zUpMat, hidden)) {
+			return false;
+		}
+	}
+
+	for (uint32_t groupIdx = 0; groupIdx < scene->num_groups; ++groupIdx) {
+		const ogt_vox_group &group = scene->groups[groupIdx];
+		Log::debug("group %u with parent: %u (searching for %u)", groupIdx, group.parent_group_index, ogt_parentGroupIdx);
+		if (group.parent_group_index != ogt_parentGroupIdx) {
+			continue;
+		}
+		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
+		if (!addGroup(scene, groupIdx, sceneGraph, groupId, zUpMat, addedInstances)) {
+			return false;
+		}
+	}
+
+	return groupId;
+}
+
 bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	stream.read(buffer, size);
-	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, 0);
+	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, k_read_scene_flags_groups);
 	core_free(buffer);
 	if (scene == nullptr) {
 		Log::error("Could not load scene %s", filename.c_str());
 		return false;
 	}
 
-	uint8_t palette[256];
-	for (int i = 0; i < 256; ++i) {
+	for (int i = 0; i < (int)_palette.size(); ++i) {
 		const ogt_vox_rgba color = scene->palette.color[i];
 		const glm::vec4& colorVec = core::Color::fromRGBA(color.r, color.g, color.b, color.a);
 		_colors[i] = core::Color::getRGBA(colorVec);
 		const uint8_t index = findClosestIndex(colorVec);
-		palette[i] = index;
+		_palette[i] = index;
 	}
-	_colorsSize = 256;
+	_colorsSize = _colors.size();
 	// rotation matrix to convert into our coordinate system (z pointing upwards)
 	const glm::mat4 zUpMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	for (size_t i = 0; i < scene->num_instances; ++i) {
-		const ogt_vox_instance& ogtInstance = scene->instances[i];
-		const ogt_vox_transform& ogtTransform = ogtInstance.transform;
-		const glm::vec4 ogtCol0(ogtTransform.m00, ogtTransform.m01, ogtTransform.m02, ogtTransform.m03);
-		const glm::vec4 ogtCol1(ogtTransform.m10, ogtTransform.m11, ogtTransform.m12, ogtTransform.m13);
-		const glm::vec4 ogtCol2(ogtTransform.m20, ogtTransform.m21, ogtTransform.m22, ogtTransform.m23);
-		const glm::vec4 ogtCol3(ogtTransform.m30, ogtTransform.m31, ogtTransform.m32, ogtTransform.m33);
-		bool applyTransformation = scene->num_instances > 1;
-		const glm::mat4 ogtMat = glm::mat4{ogtCol0, ogtCol1, ogtCol2, ogtCol3};
-		const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
-		const uint8_t *ogtVoxels = ogtModel->voxel_data;
-		const uint8_t *ogtVoxel = ogtVoxels;
-		const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1);
-		const glm::vec4 pivot((float)maxs.x / 2.0f + 0.5f, (float)maxs.y / 2.0f + 0.5f, (float)maxs.z / 2.0f + 0.5f, 0.0f);
-		const glm::ivec3 transformedMins = applyTransformation ? transform(ogtMat, glm::ivec3(0), pivot) : glm::ivec3(0);
-		const glm::ivec3 transformedMaxs = applyTransformation ? transform(ogtMat, maxs, pivot) : glm::ivec3(maxs.x, maxs.z, maxs.y);
-		const glm::ivec3 zUpMins = applyTransformation ? transform(zUpMat, transformedMins, glm::ivec4(0)) : transformedMins;
-		const glm::ivec3 zUpMaxs = applyTransformation ? transform(zUpMat, transformedMaxs, glm::ivec4(0)) : transformedMaxs;
-		const voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
-		voxel::RawVolume *v = new voxel::RawVolume(region);
+	core::Set<uint32_t> addedInstances;
 
-		for (uint32_t k = 0; k < ogtModel->size_z; ++k) {
-			for (uint32_t j = 0; j < ogtModel->size_y; ++j) {
-				for (uint32_t i = 0; i < ogtModel->size_x; ++i, ++ogtVoxel) {
-					if (ogtVoxel[0] == 0) {
-						continue;
-					}
-					const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, palette[ogtVoxel[0]]);
-					const glm::ivec3 pos = applyTransformation ? transform(ogtMat, glm::ivec3(i, j, k), pivot) : glm::ivec3(i, k, j);
-					const glm::ivec3 poszUp = applyTransformation ? transform(zUpMat, pos, glm::ivec4(0)) : pos;
-					v->setVoxel(poszUp, voxel);
-				}
+	if (scene->num_groups > 0) {
+		for (uint32_t i = 0; i < scene->num_groups; ++i) {
+			const ogt_vox_group &group = scene->groups[i];
+			// find the main group nodes
+			if (group.parent_group_index != k_invalid_group_index) {
+				continue;
+			}
+			Log::debug("Add root group %u/%u", i, scene->num_groups);
+			if (!addGroup(scene, i, sceneGraph, sceneGraph.root().id(), zUpMat, addedInstances)) {
+				ogt_vox_destroy_scene(scene);
+				return false;
 			}
 		}
-
-		SceneGraphNode node(SceneGraphNodeType::Model);
-		const char *name = ogtInstance.name;
-		if (name == nullptr) {
-			const ogt_vox_layer& layer = scene->layers[ogtInstance.layer_index];
-			name = layer.name;
-			if (name == nullptr) {
-				name = "";
-			}
+	}
+	for (uint32_t n = 0; n < scene->num_instances; ++n) {
+		if (addedInstances.has(n)) {
+			continue;
 		}
-		node.setName(name);
-		node.setVolume(v, true);
-		sceneGraph.emplace(core::move(node));
+		if (!addInstance(scene, n, sceneGraph, sceneGraph.root().id(), zUpMat)) {
+			ogt_vox_destroy_scene(scene);
+			return false;
+		}
 	}
 
 	ogt_vox_destroy_scene(scene);
