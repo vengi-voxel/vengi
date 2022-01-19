@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -153,6 +154,17 @@ glm::vec4 Color::fromHSB(const float hue, const float saturation, const float br
 	}
 	return color;
 }
+
+core::String Color::toHex(const unsigned int rgba, bool hashPrefix) {
+	core::String hex;
+	if (hashPrefix) {
+		hex.append("#");
+	}
+	const glm::u8vec4 &v = toRGBA(rgba);
+	hex.append(core::string::format("%x%x%x%x", v.r, v.g, v.b, v.a));
+	return hex;
+}
+
 
 glm::vec4 Color::fromHex(const char* hex) {
 	uint32_t r = 0x00;
