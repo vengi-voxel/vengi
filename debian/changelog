@@ -9,6 +9,7 @@ vengi (0.0.17.0-1) UNRELEASED; urgency=low
   * Fixed vxm pivot and black color issue
   * Added obj voxelization
   * Improved obj export
+  * Improved file dialog
 
   * VoxConvert:
   * Added --crop parameter that reduces the volumes to their real voxel sizes

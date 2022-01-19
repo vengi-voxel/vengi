@@ -21,6 +21,7 @@ General:
    - Fixed vxm pivot and black color issue
    - Added obj voxelization
    - Improved obj export
+   - Improved file dialog
 
 VoxConvert:
 
