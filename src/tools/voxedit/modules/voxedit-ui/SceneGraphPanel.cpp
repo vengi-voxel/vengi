@@ -26,9 +26,6 @@ static void recursiveAddNodes(const voxel::SceneGraph &sceneGraph, const voxel::
 	case voxel::SceneGraphNodeType::Camera:
 		name = ICON_FA_CAMERA;
 		break;
-	case voxel::SceneGraphNodeType::Transform:
-		name = ICON_FA_SLIDERS_H;
-		break;
 	case voxel::SceneGraphNodeType::Unknown:
 		name = ICON_FA_QUESTION_CIRCLE;
 		break;

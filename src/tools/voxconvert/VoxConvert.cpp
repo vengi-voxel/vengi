@@ -4,6 +4,7 @@
 
 #include "VoxConvert.h"
 #include "core/Color.h"
+#include "core/Enum.h"
 #include "core/GameConfig.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
@@ -19,6 +20,7 @@
 #include "core/TimeProvider.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/SceneGraph.h"
@@ -37,6 +39,7 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	registerArg("--crop").setDescription("Reduce the volumes to their real voxel sizes");
+	registerArg("--dump").setDescription("Dump the scene graph of the input file");
 	registerArg("--export-layers").setDescription("Export all the layers of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
 	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
@@ -137,6 +140,7 @@ app::AppState VoxConvert::onInit() {
 	const bool changePivot = hasArg("--pivot");
 	const bool cropVolumes = hasArg("--crop");
 	const bool splitVolumes = hasArg("--split");
+	const bool dumpSceneGraph = hasArg("--dump");
 
 	Log::info("Options");
 	if (voxelformat::isMeshFormat(outfile)) {
@@ -160,6 +164,7 @@ app::AppState VoxConvert::onInit() {
 		scriptParameters = getArgVal("--script");
 		Log::info("* script:                        - %s", scriptParameters.c_str());
 	}
+	Log::info("* dump scene graph:              - %s", (dumpSceneGraph ? "true" : "false"));
 	Log::info("* merge volumes:                 - %s", (mergeVolumes ? "true" : "false"));
 	Log::info("* scale volumes:                 - %s", (scaleVolumes ? "true" : "false"));
 	Log::info("* crop volumes:                  - %s", (cropVolumes ? "true" : "false"));
@@ -197,7 +202,7 @@ app::AppState VoxConvert::onInit() {
 			Log::error("Could not open target file: %s", outfile.c_str());
 			return app::AppState::InitFailure;
 		}
-	} else if (!exportLayers && !exportPalette) {
+	} else if (!exportLayers && !exportPalette && !dumpSceneGraph) {
 		Log::error("No output specified");
 		return app::AppState::InitFailure;
 	}
@@ -246,6 +251,9 @@ app::AppState VoxConvert::onInit() {
 			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph)) {
 				Log::error("Failed to load given input file");
 				return app::AppState::InitFailure;
+			}
+			if (dumpSceneGraph) {
+				dump(newSceneGraph);
 			}
 			for (voxel::SceneGraphNode &node : newSceneGraph) {
 				sceneGraph.emplace(core::move(node));
@@ -387,6 +395,38 @@ void VoxConvert::split(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph) {
 		node.setVolume(v, true);
 		sceneGraph.emplace(core::move(node));
 	}
+}
+
+void VoxConvert::dumpNode_r(const voxel::SceneGraph& sceneGraph, int nodeId, int indent) {
+	const voxel::SceneGraphNode& node = sceneGraph.node(nodeId);
+	static const char* NodeTypeStr[] {
+		"Root",
+		"Model",
+		"ModelReference",
+		"Group",
+		"Camera",
+		"Unknown"
+	};
+	static_assert(core::enumVal(voxel::SceneGraphNodeType::Max) == lengthof(NodeTypeStr), "Array sizes don't match Max");
+	const voxel::SceneGraphNodeType type = node.type();
+
+	Log::info("%*sNode: %i (parent %i)", indent, " ", nodeId, node.parent());
+	Log::info("%*s  |- name: %s", indent, " ", node.name().c_str());
+	Log::info("%*s  |- type: %s", indent, " ", NodeTypeStr[core::enumVal(type)]);
+	if (type == voxel::SceneGraphNodeType::Model) {
+		Log::info("%*s  |- volume: %s", indent, " ", node.volume() != nullptr ? node.volume()->region().toString().c_str() : "no volume");
+	}
+	for (const auto & entry : node.properties()) {
+		Log::info("%*s  |- %s: %s", indent, " ", entry->key.c_str(), entry->value.c_str());
+	}
+	Log::info("%*s  |- children: %i", indent, " ", (int)node.children().size());
+	for (int children : node.children()) {
+		dumpNode_r(sceneGraph, children, indent + 2);
+	}
+}
+
+void VoxConvert::dump(const voxel::SceneGraph& sceneGraph) {
+	dumpNode_r(sceneGraph, sceneGraph.root().id(), 0);
 }
 
 void VoxConvert::crop(voxel::SceneGraph& sceneGraph) {

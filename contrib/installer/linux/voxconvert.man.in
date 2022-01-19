@@ -20,6 +20,10 @@ of options.
 Reduces the volume sizes to their voxel boundaries.
 
 .TP
+\fB\--dump\fR
+Dump the scene graph of the input file.
+
+.TP
 \fB\--export-palette\fR
 Export the used palette data into an image. Use in combination with --src-palette.
 

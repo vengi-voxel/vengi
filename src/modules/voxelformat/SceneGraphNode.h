@@ -19,7 +19,6 @@ enum class SceneGraphNodeType {
 	Root,
 	Model,
 	ModelReference,
-	Transform,
 	Group,
 	Camera,
 	Unknown,
