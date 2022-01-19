@@ -671,22 +671,18 @@ int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
 int SceneManager::addSceneGraphNode_r(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent) {
 	const int newNodeId = addNodeToSceneGraph(node, parent);
 	if (newNodeId == -1) {
+		Log::error("Failed to add node to the scene graph");
 		return 0;
 	}
-	int modelsAdded = node.type() == voxel::SceneGraphNodeType::Model ? 1 : 0;
-	for (int nodeIdx : node.children()) {
+
+	const voxel::SceneGraphNode &newNode = sceneGraph.node(newNodeId);
+	int modelsAdded = newNode.type() == voxel::SceneGraphNodeType::Model ? 1 : 0;
+	for (int nodeIdx : newNode.children()) {
 		core_assert(sceneGraph.hasNode(nodeIdx));
 		voxel::SceneGraphNode &childNode = sceneGraph.node(nodeIdx);
-		const voxel::SceneGraphNodeType childType = childNode.type();
-		const int childNodeId = addSceneGraphNode_r(sceneGraph, childNode, newNodeId);
-		if (childNodeId == -1) {
-			Log::error("Failed to load scene graph node %i of type %i", nodeIdx, (int)childType);
-			continue;
-		}
-		if (childType == voxel::SceneGraphNodeType::Model) {
-			++modelsAdded;
-		}
+		modelsAdded += addSceneGraphNode_r(sceneGraph, childNode, newNodeId);
 	}
+
 	return modelsAdded;
 }
 
