@@ -220,74 +220,68 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
-	bool foundPivot = false;
-	glm::ivec3 ipivot { 0 };
+	glm::vec3 pivot{0.5f, 0.0f, 0.5f};
 	glm::uvec3 size(0);
 	Log::debug("Found vxm%i", version);
+	if (version >= 6) {
+		wrap(stream.readUInt32(size.x));
+		wrap(stream.readUInt32(size.y));
+		wrap(stream.readUInt32(size.z));
+	}
 	if (version >= 5) {
-		if (version >= 6) {
-			wrap(stream.readUInt32(size.x));
-			wrap(stream.readUInt32(size.y));
-			wrap(stream.readUInt32(size.z));
-		}
-		glm::vec3 pivot;
 		wrap(stream.readFloat(pivot.x));
 		wrap(stream.readFloat(pivot.y));
 		wrap(stream.readFloat(pivot.z));
-		ipivot.x = (int)pivot.x;
-		ipivot.y = (int)pivot.y;
-		ipivot.z = (int)pivot.z;
-		foundPivot = true;
-		if (version >= 9) {
-			uint8_t surface;
-			wrap(stream.readUInt8(surface))
-			if (surface) {
-				uint32_t skipWidth = 0u;
-				uint32_t skipHeight = 0u;
-				uint32_t startx, starty, startz;
-				uint32_t endx, endy, endz;
-				uint32_t normal;
-				// since version 10 the start and end values are floats
-				// but for us this fact doesn't matter
-				wrap(stream.readUInt32(startx))
-				wrap(stream.readUInt32(starty))
-				wrap(stream.readUInt32(startz))
-				wrap(stream.readUInt32(endx))
-				wrap(stream.readUInt32(endy))
-				wrap(stream.readUInt32(endz))
-				wrap(stream.readUInt32(normal))
-				if (version >= 10) {
-					wrap(stream.readUInt32(skipWidth))
-					wrap(stream.readUInt32(skipHeight))
-				} else {
-					switch (normal) {
-					case 0:
-					case 1:
-						skipWidth = endz - startz;
-						skipHeight = endy - starty;
-						break;
-					case 2:
-					case 3:
-						skipWidth = endx - startx;
-						skipHeight = endz - startz;
-						break;
-					case 4:
-					case 5:
-						skipWidth = endx - startx;
-						skipHeight = endy - starty;
-						break;
-					}
+	}
+	if (version >= 9) {
+		uint8_t surface;
+		wrap(stream.readUInt8(surface))
+		if (surface) {
+			uint32_t skipWidth = 0u;
+			uint32_t skipHeight = 0u;
+			uint32_t startx, starty, startz;
+			uint32_t endx, endy, endz;
+			uint32_t normal;
+			// since version 10 the start and end values are floats
+			// but for us this fact doesn't matter
+			wrap(stream.readUInt32(startx))
+			wrap(stream.readUInt32(starty))
+			wrap(stream.readUInt32(startz))
+			wrap(stream.readUInt32(endx))
+			wrap(stream.readUInt32(endy))
+			wrap(stream.readUInt32(endz))
+			wrap(stream.readUInt32(normal))
+			if (version >= 10) {
+				wrap(stream.readUInt32(skipWidth))
+				wrap(stream.readUInt32(skipHeight))
+			} else {
+				switch (normal) {
+				case 0:
+				case 1:
+					skipWidth = endz - startz;
+					skipHeight = endy - starty;
+					break;
+				case 2:
+				case 3:
+					skipWidth = endx - startx;
+					skipHeight = endz - startz;
+					break;
+				case 4:
+				case 5:
+					skipWidth = endx - startx;
+					skipHeight = endy - starty;
+					break;
 				}
-				stream.skip(skipWidth * skipHeight);
 			}
+			stream.skip(skipWidth * skipHeight);
 		}
-		if (version >= 8) {
-			float dummy;                   // since version 'A'
-			wrap(stream.readFloat(dummy)); // lod scale
-			wrap(stream.readFloat(dummy)); // lod pivot x
-			wrap(stream.readFloat(dummy)); // lod pivot y
-			wrap(stream.readFloat(dummy)); // lod pivot z
-		}
+	}
+	if (version >= 8) {
+		float dummy;                   // since version 'A'
+		wrap(stream.readFloat(dummy)); // lod scale
+		wrap(stream.readFloat(dummy)); // lod pivot x
+		wrap(stream.readFloat(dummy)); // lod pivot y
+		wrap(stream.readFloat(dummy)); // lod pivot z
 	}
 
 	uint32_t lodLevels = 1;
@@ -421,10 +415,6 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	const Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 
-	if (!foundPivot) {
-		ipivot = region.getCenter();
-	}
-
 	uint8_t maxLayers = 1;
 	if (version >= 12) {
 		wrap(stream.readUInt8(maxLayers));
@@ -439,7 +429,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			wrapBool(stream.readString(sizeof(layerName), layerName, true))
 			visible = stream.readBool();
 		} else {
-			core::string::formatBuf(layerName, sizeof(layerName), "Main");
+			core::string::formatBuf(layerName, sizeof(layerName), "Layer %i", layer);
 		}
 		for (;;) {
 			uint8_t length;
@@ -477,7 +467,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		node.setName(layerName);
 		node.setVisible(visible);
 		node.setProperty("version", core::string::toString(version));
-		node.setPivot(ipivot);
+		node.setPivot(pivot);
 		sceneGraph.emplace(core::move(node));
 	}
 
@@ -496,7 +486,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			wrap(stream.readUInt32(endz))
 			wrap(stream.readUInt32(normal))
 		}
-		// here might another byte - but it isn't written everytime
+		// here might be another byte - but it isn't written everytime
 	}
 
 	return true;

@@ -121,9 +121,4 @@ void SceneGraphNode::addProperties(const core::StringMap<core::String>& map) {
 	}
 }
 
-void SceneGraphNode::setProperty(const core::String& key, const core::String& value) {
-	_properties.put(key, value);
-}
-
-
 } // namespace voxel

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/StringMap.h"
 #include "voxel/Region.h"
@@ -135,7 +136,11 @@ public:
 	core::StringMap<core::String> &properties();
 	core::String property(const core::String& key) const;
 	void addProperties(const core::StringMap<core::String>& map);
-	void setProperty(const core::String& key, const core::String& value);
+
+	template<typename T>
+	void setProperty(const core::String& key, const T& value) {
+		_properties.put(key, core::string::toString(value));
+	}
 };
 
 inline int SceneGraphNode::referencedNodeId() const {

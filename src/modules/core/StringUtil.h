@@ -221,6 +221,16 @@ inline core::String toString(const float& v) {
 }
 
 template<>
+inline core::String toString(const bool& v) {
+	return v ? "true" : "false";
+}
+
+template<>
+inline core::String toString(const core::String& v) {
+	return v;
+}
+
+template<>
 inline core::String toString(const double& v) {
 	return core::String::format("%f", v);
 }
