@@ -49,6 +49,8 @@ public:
 	 */
 	int emplace(SceneGraphNode &&node, int parent = 0);
 
+	SceneGraphNode* findNodeByName(const core::String& name);
+
 	const SceneGraphNode& root() const;
 	/**
 	 * @brief Get the current scene graph node

@@ -75,6 +75,15 @@ voxel::Region SceneGraph::region() const {
 	return r;
 }
 
+SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) {
+	for (const auto& entry : _nodes) {
+		if (entry->value.name() == name) {
+			return &entry->value;
+		}
+	}
+	return nullptr;
+}
+
 int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	if (node.type() == SceneGraphNodeType::Root && _nextNodeId != 0) {
 		Log::error("No second root node is allowed in the scene graph");
