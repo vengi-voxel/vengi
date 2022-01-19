@@ -54,7 +54,7 @@ protected:
 	bool _volumeOwned = true;
 	bool _visible = true;
 	bool _locked = false;
-	glm::ivec3 _pivot{0};
+	glm::vec3 _pivot{0};
 	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
 
@@ -127,8 +127,8 @@ public:
 	void setVisible(bool visible);
 	bool locked() const;
 	void setLocked(bool locked);
-	const glm::ivec3 &pivot() const;
-	void setPivot(const glm::ivec3 &pivot);
+	const glm::vec3 &pivot() const;
+	void setPivot(const glm::vec3 &pivot);
 
 	const core::Buffer<int, 32> &children() const;
 	const core::StringMap<core::String> &properties() const;
@@ -210,11 +210,11 @@ inline void SceneGraphNode::setLocked(bool locked) {
 	_locked = locked;
 }
 
-inline const glm::ivec3 &SceneGraphNode::pivot() const {
+inline const glm::vec3 &SceneGraphNode::pivot() const {
 	return _pivot;
 }
 
-inline void SceneGraphNode::setPivot(const glm::ivec3 &pivot) {
+inline void SceneGraphNode::setPivot(const glm::vec3 &pivot) {
 	_pivot = pivot;
 }
 
