@@ -36,6 +36,7 @@ VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr&
 
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
+	registerArg("--crop").setDescription("Reduce the volumes to their real voxel sizes");
 	registerArg("--export-layers").setDescription("Export all the layers of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
 	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
@@ -48,6 +49,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z)");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
+	registerArg("--split").setDescription("Slices the volumes into pieces of the given size <x:y:z>");
 	registerArg("--src-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
 	registerArg("--translate").setShort("-t").setDescription("Translate the volumes by x (right), y (up), z (back)");
 
