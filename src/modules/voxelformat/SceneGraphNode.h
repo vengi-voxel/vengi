@@ -148,9 +148,16 @@ public:
 	core::String property(const core::String& key) const;
 	void addProperties(const core::StringMap<core::String>& map);
 
-	template<typename T>
-	void setProperty(const core::String& key, const T& value) {
+	void setProperty(const core::String& key, const char *value) {
+		_properties.put(key, value);
+	}
+
+	void setProperty(const core::String& key, bool value) {
 		_properties.put(key, core::string::toString(value));
+	}
+
+	void setProperty(const core::String& key, const core::String& value) {
+		_properties.put(key, value);
 	}
 };
 

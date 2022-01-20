@@ -95,7 +95,10 @@ static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
 #endif
 }
 
-static voxel::RawVolume* transformVolume(const glm::mat4 &mat, const voxel::RawVolume *in, const glm::vec3 &pivot) {
+static voxel::RawVolume* transformVolume(voxel::SceneGraphNode &targetNode, const voxel::SceneGraphNode &srcNode, int version) {
+	const glm::mat4 &mat = targetNode.matrix();
+	const voxel::RawVolume *in = srcNode.volume();
+	const glm::vec3 &pivot = srcNode.pivot();
 	const voxel::Region &inRegion = in->region();
 	const glm::ivec3 inMins(inRegion.getLowerCorner());
 	const glm::ivec3 inMaxs(inRegion.getUpperCorner());
@@ -108,14 +111,15 @@ static voxel::RawVolume* transformVolume(const glm::mat4 &mat, const voxel::RawV
 		for (int y = inMins.y; y <= inMaxs.y; ++y) {
 			for (int x = inMins.x; x <= inMaxs.x; ++x) {
 				const glm::ivec3 vpos(x, y, z);
-				v->setVoxel(transform(mat, vpos, pivot), in->voxel(vpos));
+				const glm::ivec3 tpos(transform(mat, vpos, pivot));
+				v->setVoxel(tpos, in->voxel(vpos));
 			}
 		}
 	}
 	return v;
 }
 
-bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph& sceneGraph, int parent, voxel::SceneGraphNode &node) {
+bool VXRFormat::loadChildVXM(const core::String& vxmPath, voxel::SceneGraphNode &node, int version) {
 	const io::FilePtr& file = io::filesystem()->open(vxmPath);
 	if (!file->validHandle()) {
 		Log::error("Could not open file '%s'", vxmPath.c_str());
@@ -138,7 +142,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph& sceneGraph
 	voxel::SceneGraphNode* modelNode = newSceneGraph[0];
 	core_assert_always(modelNode != nullptr);
 
-	voxel::RawVolume *v = transformVolume(node.matrix(), modelNode->volume(), modelNode->pivot());
+	voxel::RawVolume *v = transformVolume(node, *modelNode, version);
 	node.setVolume(v, true);
 	node.setVisible(modelNode->visible());
 	node.setLocked(modelNode->locked());
@@ -146,7 +150,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph& sceneGraph
 	return true;
 }
 
-bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, uint32_t version, int parent) {
+bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent) {
 	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
 	char nodeId[1024];
 	wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
@@ -156,7 +160,7 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 	wrap(stream.readUInt32(animCnt))
 	char animationId[1024];
 	wrapBool(stream.readString(sizeof(animationId), animationId, true))
-	node.setProperty("animationid", animationId);
+	node.setProperty("animationid", 	animationId);
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
@@ -213,14 +217,14 @@ bool VXRFormat::importChildOld(const core::String &filename, io::SeekableReadStr
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
+	const int modelNode = sceneGraph.emplace(core::move(node), parent);
 	for (int32_t i = 0u; i < children; ++i) {
-		wrapBool(importChildOld(filename, stream, sceneGraph, version, parent))
+		wrapBool(importChildVersion3AndEarlier(filename, stream, sceneGraph, version, modelNode))
 	}
-	sceneGraph.emplace(core::move(node), parent);
 	return true;
 }
 
-bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, uint32_t version, int parent) {
+bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent) {
 	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
@@ -233,7 +237,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 			modelPath.append("/");
 		}
 		modelPath.append(filename);
-		if (!loadChildVXM(modelPath, sceneGraph, parent, node)) {
+		if (!loadChildVXM(modelPath, node, version)) {
 			Log::warn("Failed to attach model for id '%s' with filename %s (%s)", id, filename, modelPath.c_str());
 		}
 	}
@@ -301,6 +305,100 @@ image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::loadImage(imageName, false);
 }
 
+bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version) {
+	uint32_t dummy;
+	wrap(stream.readUInt32(dummy))
+	uint32_t children = 0;
+	wrap(stream.readUInt32(children))
+	const int rootNode = sceneGraph.root().id();
+	for (uint32_t i = 0; i < children; ++i) {
+		wrapBool(importChildVersion3AndEarlier(filename, stream, sceneGraph, version, rootNode))
+	}
+	int32_t modelCount;
+	wrap(stream.readInt32(modelCount))
+	for (int32_t i = 0; i < modelCount; ++i) {
+		char nodeId[1024];
+		wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
+		voxel::SceneGraphNode* node = sceneGraph.findNodeByName(nodeId);
+		if (node == nullptr || node->type() != voxel::SceneGraphNodeType::Model) {
+			Log::error("Can't find referenced model node %s", nodeId);
+			return false;
+		}
+		char vxmFilename[1024];
+		wrapBool(stream.readString(sizeof(vxmFilename), vxmFilename, true))
+		if (vxmFilename[0] != '\0') {
+			core::String modelPath = core::string::extractPath(filename);
+			if (!modelPath.empty()) {
+				modelPath.append("/");
+			}
+			modelPath.append(vxmFilename);
+			if (!loadChildVXM(modelPath, *node, version)) {
+				Log::warn("Failed to attach model for %s with filename %s", nodeId, modelPath.c_str());
+			}
+		}
+	}
+	return true;
+}
+
+bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream& stream, voxel::SceneGraphNode &node) {
+	char baseTemplate[1024];
+	wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
+	node.setProperty("basetemplate", baseTemplate);
+	const bool isStatic = stream.readBool();
+	node.setProperty("static", isStatic);
+	if (isStatic) {
+		int32_t lodLevels;
+		wrap(stream.readInt32(lodLevels))
+		for (int32_t i = 0 ; i < lodLevels; ++i) {
+			uint32_t dummy;
+			wrap(stream.readUInt32(dummy))
+			wrap(stream.readUInt32(dummy))
+			uint32_t diffuseTexZipped;
+			wrap(stream.readUInt32(diffuseTexZipped))
+			stream.skip(diffuseTexZipped);
+			const bool hasEmissive = stream.readBool();
+			if (hasEmissive) {
+				uint32_t emissiveTexZipped;
+				wrap(stream.readUInt32(emissiveTexZipped))
+				stream.skip(emissiveTexZipped);
+			}
+			int32_t quadAmount;
+			wrap(stream.readInt32(quadAmount))
+			for (int32_t quad = 0; quad < quadAmount; ++quad) {
+				for (int v = 0; v < 4; ++v) {
+					float dummyFloat;
+					wrap(stream.readFloat(dummyFloat))
+					wrap(stream.readFloat(dummyFloat))
+					wrap(stream.readFloat(dummyFloat))
+					wrap(stream.readFloat(dummyFloat))
+					wrap(stream.readFloat(dummyFloat))
+				}
+			}
+		}
+	}
+	return true;
+}
+
+bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version) {
+	int32_t children = 0;
+	wrap(stream.readInt32(children))
+
+	const int rootNodeId = sceneGraph.root().id();
+	voxel::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
+
+	if (version >= 8) {
+		handleVersion8AndLater(stream, rootNode);
+	}
+
+	Log::debug("Found %i children", children);
+	for (int32_t i = 0; i < children; ++i) {
+		wrapBool(importChild(filename, stream, sceneGraph, version, rootNodeId))
+	}
+
+	// some files since version 6 still have stuff here
+	return true;
+}
+
 bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
@@ -320,101 +418,25 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
+	Log::debug("Found vxr version: %i", version);
+
 	if (version < 1 || version > 9) {
 		Log::error("Could not load vxr file: Unsupported version found (%i)", version);
 		return false;
 	}
 
-	const int rootNode = sceneGraph.root().id();
+	const int rootNodeId = sceneGraph.root().id();
+	voxel::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
 
-	voxel::SceneGraphNode &node = sceneGraph.node(rootNode);
 	if (version >= 7) {
 		char defaultAnim[1024];
 		wrapBool(stream.readString(sizeof(defaultAnim), defaultAnim, true))
-		node.setProperty("defaultanim", defaultAnim);
+		rootNode.setProperty("defaultanim", defaultAnim);
 	}
 	if (version <= 3) {
-		uint32_t dummy;
-		wrap(stream.readUInt32(dummy))
-		uint32_t children = 0;
-		wrap(stream.readUInt32(children))
-		for (uint32_t i = 0; i < children; ++i) {
-			wrapBool(importChildOld(filename, stream, sceneGraph, version, rootNode))
-		}
-		int32_t modelCount;
-		wrap(stream.readInt32(modelCount))
-		for (int32_t i = 0; i < modelCount; ++i) {
-			char nodeId[1024];
-			wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
-			voxel::SceneGraphNode* node = sceneGraph.findNodeByName(nodeId);
-			if (node == nullptr || node->type() != voxel::SceneGraphNodeType::Model) {
-				Log::error("Can't find referenced model node %s", nodeId);
-				return false;
-			}
-			char vxmFilename[1024];
-			wrapBool(stream.readString(sizeof(vxmFilename), vxmFilename, true))
-			if (vxmFilename[0] != '\0') {
-				core::String modelPath = core::string::extractPath(filename);
-				if (!modelPath.empty()) {
-					modelPath.append("/");
-				}
-				modelPath.append(vxmFilename);
-				if (!loadChildVXM(modelPath, sceneGraph, rootNode, *node)) {
-					Log::warn("Failed to attach model for %s with filename %s", nodeId, modelPath.c_str());
-				}
-			}
-		}
-		return true;
+		return loadGroupsVersion3AndEarlier(filename, stream, sceneGraph, version);
 	}
-
-	int32_t children = 0;
-	wrap(stream.readInt32(children))
-
-	if (version >= 8) {
-		char baseTemplate[1024];
-		wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
-		node.setProperty("basetemplate", baseTemplate);
-		const bool isStatic = stream.readBool();
-		node.setProperty("static", isStatic);
-		if (isStatic) {
-			int32_t lodLevels;
-			wrap(stream.readInt32(lodLevels))
-			for (int32_t i = 0 ; i < lodLevels; ++i) {
-				uint32_t dummy;
-				wrap(stream.readUInt32(dummy))
-				wrap(stream.readUInt32(dummy))
-				uint32_t diffuseTexZipped;
-				wrap(stream.readUInt32(diffuseTexZipped))
-				stream.skip(diffuseTexZipped);
-				const bool hasEmissive = stream.readBool();
-				if (hasEmissive) {
-					uint32_t emissiveTexZipped;
-					wrap(stream.readUInt32(emissiveTexZipped))
-					stream.skip(emissiveTexZipped);
-				}
-				int32_t quadAmount;
-				wrap(stream.readInt32(quadAmount))
-				for (int32_t quad = 0; quad < quadAmount; ++quad) {
-					for (int v = 0; v < 4; ++v) {
-						float dummyFloat;
-						wrap(stream.readFloat(dummyFloat))
-						wrap(stream.readFloat(dummyFloat))
-						wrap(stream.readFloat(dummyFloat))
-						wrap(stream.readFloat(dummyFloat))
-						wrap(stream.readFloat(dummyFloat))
-					}
-				}
-			}
-		}
-	}
-
-	Log::debug("Found %i children (%i)", children, (int)sceneGraph.size());
-	for (int32_t i = 0; i < children; ++i) {
-		wrapBool(importChild(filename, stream, sceneGraph, version, rootNode))
-	}
-
-	// some files since version 6 still have stuff here
-	return true;
+	return loadGroupsVersion4AndLater(filename, stream, sceneGraph, version);
 }
 
 #undef wrap
