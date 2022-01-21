@@ -29,6 +29,7 @@ VoxConvert:
    - Added `--split` option to cut volumes into smaller pieces
    - Added `--export-layers` to export all the layers of a scene into single files
    - Added `--dump` to dump the scene graph of the input file
+   - Added `--resize` to resize the volumes by the given x, y and z values
 
 VoxEdit:
 

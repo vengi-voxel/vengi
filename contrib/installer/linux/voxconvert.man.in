@@ -66,6 +66,10 @@ Change the pivot of the volume layers.
 Not all voxel formats support this.
 
 .TP
+\fB\--resize <x:y:z>\fR
+Resize the volume by the given x (right), y (up) and z (back) values.
+
+.TP
 \fB\--rotate <x|y|z>\fR
 Rotate by 90 degree at the given axis (x, y or z).
 

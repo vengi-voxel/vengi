@@ -31,6 +31,7 @@ protected:
 	void mirror(const core::String& axisStr, voxel::SceneGraph& sceneGraph);
 	void rotate(const core::String& axisStr, voxel::SceneGraph& sceneGraph);
 	void scale(voxel::SceneGraph& sceneGraph);
+	void resize(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph);
 	void script(const core::String &scriptParameters, voxel::SceneGraph& sceneGraph);
 	void translate(const glm::ivec3& pos, voxel::SceneGraph& sceneGraph);
 	void pivot(const glm::ivec3& pivot, voxel::SceneGraph& sceneGraph);

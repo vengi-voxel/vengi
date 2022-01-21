@@ -28,6 +28,7 @@
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeRescaler.h"
+#include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
 
@@ -50,6 +51,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file");
 	registerArg("--pivot").setDescription("Change the pivots of the volume layers");
 	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z)");
+	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
 	registerArg("--split").setDescription("Slices the volumes into pieces of the given size <x:y:z>");
@@ -141,6 +143,7 @@ app::AppState VoxConvert::onInit() {
 	const bool cropVolumes = hasArg("--crop");
 	const bool splitVolumes = hasArg("--split");
 	const bool dumpSceneGraph = hasArg("--dump");
+	const bool resizeVolumes = hasArg("--resize");
 
 	Log::info("Options");
 	if (voxelformat::isMeshFormat(outfile)) {
@@ -176,6 +179,7 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* use source file palette:       - %s", (srcPalette ? "true" : "false"));
 	Log::info("* export used palette as image:  - %s", (exportPalette ? "true" : "false"));
 	Log::info("* export layers:                 - %s", (exportLayers ? "true" : "false"));
+	Log::info("* resize volumes:                - %s", (resizeVolumes ? "true" : "false"));
 
 	if (!srcPalette) {
 		io::FilePtr paletteFile = filesystem()->open(_palette->strVal());
@@ -301,6 +305,10 @@ app::AppState VoxConvert::onInit() {
 
 	if (scaleVolumes) {
 		scale(sceneGraph);
+	}
+
+	if (resizeVolumes) {
+		resize(getArgIvec3("--resize"), sceneGraph);
 	}
 
 	if (mirrorVolumes) {
@@ -485,6 +493,13 @@ void VoxConvert::scale(voxel::SceneGraph& sceneGraph) {
 			rescaleVolume(*node.volume(), *destVolume);
 			node.setVolume(destVolume, true);
 		}
+	}
+}
+
+void VoxConvert::resize(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph) {
+	Log::info("Resize layers");
+	for (voxel::SceneGraphNode& node : sceneGraph) {
+		node.setVolume(voxel::resize(node.volume(), size), true);
 	}
 }
 
