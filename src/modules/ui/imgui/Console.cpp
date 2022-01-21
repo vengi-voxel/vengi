@@ -52,7 +52,7 @@ void Console::beforeRender(const math::Rect<int> &rect) {
 	ImGui::SetNextWindowSize(ImVec2(rect.getMaxX(), rect.getMaxZ()), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::Begin("in-game-console", nullptr,
-			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings);
 }
 
 int Console::lineHeight() {

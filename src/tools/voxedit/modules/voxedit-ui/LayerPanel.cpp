@@ -84,7 +84,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		ImGui::BeginChild("##layertable", ImVec2(0.0f, 400.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
 		static const uint32_t TableFlags =
 			ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
-			ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg;
+			ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
 		if (ImGui::BeginTable("##layerlist", 4, TableFlags)) {
 			ImGui::TableSetupColumn(ICON_FA_EYE"##visiblelayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(ICON_FA_LOCK"##lockedlayer", ImGuiTableColumnFlags_WidthFixed);

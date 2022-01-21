@@ -157,7 +157,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 	ImGui::End();
 
 	if (_scriptEditor) {
-		if (ImGui::Begin(scriptEditorTitle, &_scriptEditor, ImGuiWindowFlags_MenuBar)) {
+		if (ImGui::Begin(scriptEditorTitle, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings)) {
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu(ICON_FA_FILE " File##scripteditor")) {
 					if (ImGui::MenuItem(ICON_FA_CHECK " Apply and execute##scripteditor")) {
