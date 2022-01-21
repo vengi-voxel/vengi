@@ -145,6 +145,7 @@ jobs:
             ctest -V -R tests-voxelutil$
             ctest -V -R tests-voxelworld$
             ctest -V -R tests-voxelworldrender$
+            ctest -V -R shelltests
 
     windows:
         runs-on: windows-latest
