@@ -130,6 +130,7 @@ void SceneGraphRenderer::render(voxel::SceneGraph &sceneGraph, bool waitPending,
 
 	if (waitPending) {
 		_renderer.waitForPendingExtractions();
+		_renderer.update();
 	}
 
 	_renderer.render(camera, shadow, core::move(funcGray));

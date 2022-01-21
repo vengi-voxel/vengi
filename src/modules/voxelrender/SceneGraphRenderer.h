@@ -39,6 +39,9 @@ public:
 	void translate(voxel::SceneGraphNode &node, const glm::ivec3 &v);
 	bool toMesh(voxel::SceneGraphNode &node, voxel::Mesh* mesh);
 	bool empty(voxel::SceneGraphNode &node);
+	/**
+	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is false, you have to call @c update() manually!
+	 */
 	void render(voxel::SceneGraph &sceneGraph, bool waitPending, const video::Camera& camera, bool shadow = true, std::function<bool(int)> funcGray = [] (int) {return false;});
 	void clear();
 };

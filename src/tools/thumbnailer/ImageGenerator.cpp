@@ -82,7 +82,6 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	frameBuffer.init(cfg);
 
-	volumeRenderer.update();
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	frameBuffer.bind(true);
 	volumeRenderer.render(sceneGraph, true, camera);
