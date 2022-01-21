@@ -439,8 +439,7 @@ void VoxConvert::crop(voxel::SceneGraph& sceneGraph) {
 void VoxConvert::pivot(const glm::ivec3& pivot, voxel::SceneGraph& sceneGraph) {
 	Log::info("Set pivot to %i:%i:%i", pivot.x, pivot.y, pivot.z);
 	for (voxel::SceneGraphNode& node : sceneGraph) {
-		voxel::SceneGraphTransform &transform = node.transform();
-		transform.pivot = pivot;
+		node.setPivot(pivot, node.region().getDimensionsInVoxels());
 	}
 }
 

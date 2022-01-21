@@ -120,9 +120,10 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	wrapSaveFree(stream.writeUInt32(localScale.y));
 	wrapSaveFree(stream.writeUInt32(localScale.z));
 
-	wrapSaveFree(stream.writeFloat(node.pivot().x));
-	wrapSaveFree(stream.writeFloat(node.pivot().y));
-	wrapSaveFree(stream.writeFloat(node.pivot().z));
+	const glm::vec3 &pivot = node.normalizedPivot();
+	wrapSaveFree(stream.writeFloat(pivot.x));
+	wrapSaveFree(stream.writeFloat(pivot.y));
+	wrapSaveFree(stream.writeFloat(pivot.z));
 
 	wrapSaveFree(stream.writeUInt32(size.x));
 	wrapSaveFree(stream.writeUInt32(size.y));
@@ -302,9 +303,9 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	wrap(stream.readUInt32(localScale.z));
 
 	SceneGraphTransform transform;
-	wrap(stream.readFloat(transform.pivot.x));
-	wrap(stream.readFloat(transform.pivot.y));
-	wrap(stream.readFloat(transform.pivot.z));
+	wrap(stream.readFloat(transform.normalizedPivot.x));
+	wrap(stream.readFloat(transform.normalizedPivot.y));
+	wrap(stream.readFloat(transform.normalizedPivot.z));
 	wrap(stream.readUInt32(size.x));
 	wrap(stream.readUInt32(size.y));
 	wrap(stream.readUInt32(size.z));

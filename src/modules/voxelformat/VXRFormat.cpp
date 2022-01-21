@@ -98,10 +98,11 @@ static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
 static voxel::RawVolume* transformVolume(voxel::SceneGraphNode &targetNode, const voxel::SceneGraphNode &srcNode, int version) {
 	const glm::mat4 &mat = targetNode.matrix();
 	const voxel::RawVolume *in = srcNode.volume();
-	const glm::vec3 &pivot = srcNode.pivot();
+	const glm::vec3 &pivotNormalized = srcNode.normalizedPivot();
 	const voxel::Region &inRegion = in->region();
 	const glm::ivec3 inMins(inRegion.getLowerCorner());
 	const glm::ivec3 inMaxs(inRegion.getUpperCorner());
+	const glm::vec3 &pivot = pivotNormalized * glm::vec3(inRegion.getDimensionsInVoxels());
 
 	const glm::vec4 outMins(transform(mat, inMins, pivot));
 	const glm::vec4 outMaxs(transform(mat, inMaxs, pivot));
@@ -160,7 +161,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	wrap(stream.readUInt32(animCnt))
 	char animationId[1024];
 	wrapBool(stream.readString(sizeof(animationId), animationId, true))
-	node.setProperty("animationid", 	animationId);
+	node.setProperty("animationid", animationId);
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {

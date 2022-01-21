@@ -131,4 +131,12 @@ void SceneGraphNode::setTransform(const SceneGraphTransform &transform, bool upd
 	}
 }
 
+void SceneGraphNode::setPivot(const glm::ivec3 &pos, const glm::ivec3 &size) {
+	_transform.normalizedPivot = glm::vec3(pos) / glm::vec3(size);
+}
+
+void SceneGraphNode::setNormalizedPivot(const glm::vec3 &pivot) {
+	_transform.normalizedPivot = pivot;
+}
+
 } // namespace voxel

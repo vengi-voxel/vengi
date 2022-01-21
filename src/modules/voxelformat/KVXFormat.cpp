@@ -44,9 +44,9 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	wrap(stream.readUInt32(pivx))
 	wrap(stream.readUInt32(pivy))
 	wrap(stream.readUInt32(pivz))
-	transform.pivot.x = (float)pivx / 256.0f;
-	transform.pivot.y = (float)pivy / 256.0f;
-	transform.pivot.z = (float)pivz / 256.0f;
+	transform.normalizedPivot.x = (float)pivx / 256.0f;
+	transform.normalizedPivot.y = (float)pivy / 256.0f;
+	transform.normalizedPivot.z = (float)pivz / 256.0f;
 
 	if (xsiz > MaxRegionSize || ysiz > MaxRegionSize || zsiz > MaxRegionSize) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", xsiz, zsiz, ysiz);

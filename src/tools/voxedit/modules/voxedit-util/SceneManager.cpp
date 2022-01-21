@@ -479,7 +479,7 @@ void SceneManager::undo() {
 	node.setVolume(v, true);
 	const glm::vec3 rp = referencePosition();
 	const glm::vec3 size = v->region().getDimensionsInVoxels();
-	node.transform().pivot = rp / size;
+	node.setPivot(rp, size);
 	addNodeToSceneGraph(node, s.parentId);
 }
 
@@ -503,7 +503,7 @@ void SceneManager::redo() {
 	node.setVolume(v, true);
 	const glm::vec3 rp = referencePosition();
 	const glm::vec3 size = v->region().getDimensionsInVoxels();
-	node.transform().pivot = rp / size;
+	node.setPivot(rp, size);
 	addNodeToSceneGraph(node, s.parentId);
 }
 
@@ -783,7 +783,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	node.setName(name);
 	const glm::vec3 rp = v->region().getCenterf();
 	const glm::vec3 size = v->region().getDimensionsInVoxels();
-	node.transform().pivot = rp / size;
+	node.setPivot(rp, size);
 	const int nodeId = sceneMgr().addNodeToSceneGraph(node);
 	if (nodeId == -1) {
 		Log::error("Failed to add empty volume to new scene graph");
@@ -2339,7 +2339,8 @@ void SceneManager::nodeActivate(int nodeId) {
 	updateGridRenderer(region);
 	updateAABBMesh();
 	if (!region.containsPoint(referencePosition())) {
-		setReferencePosition(node.pivot());
+		const glm::vec3 &pivot = node.normalizedPivot() * glm::vec3(region.getDimensionsInVoxels());
+		setReferencePosition(glm::ivec3(pivot));
 	}
 	if (!region.containsPoint(cursorPosition())) {
 		setCursorPosition(node.region().getCenter());

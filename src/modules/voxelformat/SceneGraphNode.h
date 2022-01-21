@@ -29,7 +29,8 @@ enum class SceneGraphNodeType {
 };
 
 struct SceneGraphTransform {
-	glm::vec3 pivot{0.0f};
+	// should be the normalized value between 0 and 1
+	glm::vec3 normalizedPivot{0.0f};
 	glm::vec3 position{0.0f};
 	glm::quat rot{1.0f, 0.0f, 0.0f, 0.0f};
 	float scale{1.0f};
@@ -140,7 +141,12 @@ public:
 	void setVisible(bool visible);
 	bool locked() const;
 	void setLocked(bool locked);
-	const glm::vec3 &pivot() const;
+	/**
+	 * @brief Return the normalized pivot between 0.0 and 1.0
+	 */
+	const glm::vec3 &normalizedPivot() const;
+	void setPivot(const glm::ivec3 &pos, const glm::ivec3 &size);
+	void setNormalizedPivot(const glm::vec3 &pivot);
 
 	const core::Buffer<int, 32> &children() const;
 	const core::StringMap<core::String> &properties() const;
@@ -241,8 +247,8 @@ inline void SceneGraphNode::setLocked(bool locked) {
 	_locked = locked;
 }
 
-inline const glm::vec3 &SceneGraphNode::pivot() const {
-	return _transform.pivot;
+inline const glm::vec3 &SceneGraphNode::normalizedPivot() const {
+	return _transform.normalizedPivot;
 }
 
 inline const glm::mat4 SceneGraphNode::matrix() const {
