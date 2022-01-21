@@ -34,6 +34,7 @@ VoxEdit:
 
    - Fixed torus shape
    - Added scene graph panel
+   - Fixed an issue that delayed the start by a few seconds
 
 ## 0.0.16 (2021-12-27)
 
