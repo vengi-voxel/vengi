@@ -14,6 +14,7 @@
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeRescaler.h"
@@ -51,7 +52,6 @@
 #include "CustomBindingContext.h"
 #include "Config.h"
 #include "tool/Clipboard.h"
-#include "tool/Resize.h"
 #include "voxelutil/ImageUtils.h"
 #include "anim/AnimationLuaSaver.h"
 #include "core/TimeProvider.h"
@@ -413,7 +413,7 @@ void SceneManager::crop() {
 }
 
 void SceneManager::resize(int nodeId, const glm::ivec3& size) {
-	voxel::RawVolume* newVolume = voxedit::tool::resize(volume(nodeId), size);
+	voxel::RawVolume* newVolume = voxel::resize(volume(nodeId), size);
 	if (newVolume == nullptr) {
 		return;
 	}

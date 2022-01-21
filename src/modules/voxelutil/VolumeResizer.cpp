@@ -2,12 +2,11 @@
  * @file
  */
 
-#include "Resize.h"
+#include "VolumeResizer.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/RawVolumeWrapper.h"
 
-namespace voxedit {
-namespace tool {
+namespace voxel {
 
 voxel::RawVolume* resize(const voxel::RawVolume* source, const glm::ivec3& size) {
 	voxel::Region region = source->region();
@@ -23,5 +22,4 @@ voxel::RawVolume* resize(const voxel::RawVolume* source, const glm::ivec3& size)
 	return newVolume;
 }
 
-}
 }

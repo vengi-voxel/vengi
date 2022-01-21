@@ -11,6 +11,7 @@ set(SRCS
 	VolumeMover.h
 	VolumeRescaler.h
 	VolumeRotator.h VolumeRotator.cpp
+	VolumeResizer.h VolumeResizer.cpp
 	VolumeCropper.h
 	VolumeSplitter.h VolumeSplitter.cpp
 	VolumeVisitor.h

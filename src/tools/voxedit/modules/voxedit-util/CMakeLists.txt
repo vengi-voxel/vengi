@@ -21,7 +21,6 @@ set(SRCS
 	layer/LayerSettings.h
 
 	tool/Clipboard.h tool/Clipboard.cpp
-	tool/Resize.h tool/Resize.cpp
 )
 set(LIB voxedit-util)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender voxelgenerator animation)
