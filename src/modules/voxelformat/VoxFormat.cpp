@@ -291,10 +291,12 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		instance.layer_index = layers.size() - 1;
 		instance.name = node.name().c_str();
 		instance.hidden = !node.visible();
-		const glm::vec3 mins = node.region().getLowerCornerf();
+		const glm::vec3 transform = node.region().getCenterf();
 		// y and z are flipped here
 		instance.transform = ogt_identity_transform;
-		instance.transform.m30 = mins.x; instance.transform.m31 = mins.z; instance.transform.m32 = mins.y;
+		instance.transform.m30 = transform.x;
+		instance.transform.m31 = transform.z;
+		instance.transform.m32 = transform.y;
 		instances.push_back(instance);
 	}
 
