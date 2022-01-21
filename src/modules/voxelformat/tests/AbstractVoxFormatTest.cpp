@@ -59,10 +59,10 @@ void AbstractVoxFormatTest::testRGB(RawVolume* volume) {
 	EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
 	EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
 
-	EXPECT_EQ(  0, volume->voxel( 0,  0,  0).getColor()) << "Expected to get the palette index 0";
-	EXPECT_EQ(  0, volume->voxel(31,  0,  0).getColor()) << "Expected to get the palette index 0";
-	EXPECT_EQ(  0, volume->voxel(31,  0, 31).getColor()) << "Expected to get the palette index 0";
-	EXPECT_EQ(  0, volume->voxel( 0,  0, 31).getColor()) << "Expected to get the palette index 0";
+	EXPECT_EQ(245, volume->voxel( 0,  0,  0).getColor()) << "Expected to get the palette index 0";
+	EXPECT_EQ(245, volume->voxel(31,  0,  0).getColor()) << "Expected to get the palette index 0";
+	EXPECT_EQ(245, volume->voxel(31,  0, 31).getColor()) << "Expected to get the palette index 0";
+	EXPECT_EQ(245, volume->voxel( 0,  0, 31).getColor()) << "Expected to get the palette index 0";
 
 	EXPECT_EQ(  1, volume->voxel( 0, 31,  0).getColor()) << "Expected to get the palette index 1";
 	EXPECT_EQ(  1, volume->voxel(31, 31,  0).getColor()) << "Expected to get the palette index 1";

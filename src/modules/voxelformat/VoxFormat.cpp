@@ -86,17 +86,16 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	const glm::vec4 ogtCol1(ogtTransform.m10, ogtTransform.m11, ogtTransform.m12, ogtTransform.m13);
 	const glm::vec4 ogtCol2(ogtTransform.m20, ogtTransform.m21, ogtTransform.m22, ogtTransform.m23);
 	const glm::vec4 ogtCol3(ogtTransform.m30, ogtTransform.m31, ogtTransform.m32, ogtTransform.m33);
-	bool applyTransformation = scene->num_instances > 1;
 	const glm::mat4 ogtMat = glm::mat4{ogtCol0, ogtCol1, ogtCol2, ogtCol3};
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	const uint8_t *ogtVoxels = ogtModel->voxel_data;
 	const uint8_t *ogtVoxel = ogtVoxels;
 	const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1);
 	const glm::vec4 pivot((float)maxs.x / 2.0f + 0.5f, (float)maxs.y / 2.0f + 0.5f, (float)maxs.z / 2.0f + 0.5f, 0.0f);
-	const glm::ivec3 transformedMins = applyTransformation ? transform(ogtMat, glm::ivec3(0), pivot) : glm::ivec3(0);
-	const glm::ivec3 transformedMaxs = applyTransformation ? transform(ogtMat, maxs, pivot) : glm::ivec3(maxs.x, maxs.z, maxs.y);
-	const glm::ivec3 zUpMins = applyTransformation ? transform(zUpMat, transformedMins, glm::ivec4(0)) : transformedMins;
-	const glm::ivec3 zUpMaxs = applyTransformation ? transform(zUpMat, transformedMaxs, glm::ivec4(0)) : transformedMaxs;
+	const glm::ivec3& transformedMins = transform(ogtMat, glm::ivec3(0), pivot);
+	const glm::ivec3& transformedMaxs = transform(ogtMat, maxs, pivot);
+	const glm::ivec3& zUpMins = transform(zUpMat, transformedMins, glm::ivec4(0));
+	const glm::ivec3& zUpMaxs = transform(zUpMat, transformedMaxs, glm::ivec4(0));
 	const voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 
@@ -107,8 +106,8 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 					continue;
 				}
 				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, _palette[ogtVoxel[0]]);
-				const glm::ivec3 pos = applyTransformation ? transform(ogtMat, glm::ivec3(i, j, k), pivot) : glm::ivec3(i, k, j);
-				const glm::ivec3 poszUp = applyTransformation ? transform(zUpMat, pos, glm::ivec4(0)) : pos;
+				const glm::ivec3& pos = transform(ogtMat, glm::ivec3(i, j, k), pivot);
+				const glm::ivec3& poszUp = transform(zUpMat, pos, glm::ivec4(0));
 				v->setVoxel(poszUp, voxel);
 			}
 		}
@@ -276,7 +275,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 			} else {
 				*dataptr++ = voxel.getColor();
 			}
-		}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZX);
+		}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
 		models.push_back(model);
 		modelPtrs.push_back(&models[models.size() - 1]);
 
@@ -291,10 +290,13 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		instance.layer_index = layers.size() - 1;
 		instance.name = node.name().c_str();
 		instance.hidden = !node.visible();
-		const glm::vec3 transform = glm::floor(node.region().getCenterf());
+		const glm::vec3 &mins = region.getLowerCornerf();
+		const glm::vec3 &maxs = region.getUpperCornerf();
+		const glm::vec3 width = maxs - mins + 1.0f;
+		const glm::vec3 transform = mins + width / 2.0f;
 		// y and z are flipped here
 		instance.transform = ogt_identity_transform;
-		instance.transform.m30 = transform.x;
+		instance.transform.m30 = -glm::floor(transform.x + 0.5f);
 		instance.transform.m31 = transform.z;
 		instance.transform.m32 = transform.y;
 		instances.push_back(instance);
