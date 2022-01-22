@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_DRIVER_WAYLAND
 
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"
@@ -224,14 +224,16 @@ handle_configure_xdg_toplevel(void *data,
              * us a completely stateless, sizeless configure, with which we have
              * to enforce our own state anyway.
              */
-            if (width != 0 && height != 0) {
+            if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
                 window->w = width;
                 window->h = height;
+                wind->needs_resize_event = SDL_TRUE;
             }
 
             /* This part is good though. */
-            if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && wind->scale_factor != driverdata->scale_factor) {
                 wind->scale_factor = driverdata->scale_factor;
+                wind->needs_resize_event = SDL_TRUE;
             }
 
             return;
@@ -284,8 +286,11 @@ handle_configure_xdg_toplevel(void *data,
         }
 
         /* Store this now so the xdg_surface configure knows what to resize to */
-        window->w = width;
-        window->h = height;
+        if (window->w != width || window->h != height) {
+            window->w = width;
+            window->h = height;
+            wind->needs_resize_event = SDL_TRUE;
+        }
     } else {
         /* For fullscreen, foolishly do what the compositor says. If it's wrong,
          * don't blame us, we were explicitly instructed to do this.
@@ -293,14 +298,16 @@ handle_configure_xdg_toplevel(void *data,
          * UPDATE: Nope, sure enough a compositor sends 0,0. This is a known bug:
          * https://bugs.kde.org/show_bug.cgi?id=444962
          */
-        if (width != 0 && height != 0) {
+        if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
             window->w = width;
             window->h = height;
+            wind->needs_resize_event = SDL_TRUE;
         }
 
         /* This part is good though. */
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && wind->scale_factor != driverdata->scale_factor) {
             wind->scale_factor = driverdata->scale_factor;
+            wind->needs_resize_event = SDL_TRUE;
         }
     }
 }
@@ -330,6 +337,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
 
     enum libdecor_window_state window_state;
     int width, height;
+    float scale_factor = wind->scale_factor;
 
     SDL_bool focused = SDL_FALSE;
     SDL_bool fullscreen = SDL_FALSE;
@@ -399,7 +407,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
 
         /* This part is good though. */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-            wind->scale_factor = driverdata->scale_factor;
+            scale_factor = driverdata->scale_factor;
         }
     } else if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
         width = window->windowed.w;
@@ -427,7 +435,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
     }
 
     /* Do the resize on the SDL side (this will set window->w/h)... */
-    Wayland_HandleResize(window, width, height, wind->scale_factor);
+    Wayland_HandleResize(window, width, height, scale_factor);
     wind->shell_surface.libdecor.initial_configure_seen = SDL_TRUE;
 
     /* ... then commit the changes on the libdecor side. */
@@ -716,7 +724,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
 {
     SDL_VideoData *c = _this->driverdata;
     SDL_WindowData *data = window->driverdata;
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
 
     /* Detach any previous buffers before resetting everything, otherwise when
      * calling this a second time you'll get an annoying protocol error
@@ -758,7 +765,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     if (window->flags & SDL_WINDOW_MINIMIZED) {
         Wayland_MinimizeWindow(_this, window);
     }
-    Wayland_SetWindowFullscreen(_this, window, display, (window->flags & SDL_WINDOW_FULLSCREEN) != 0);
 
     /* We have to wait until the surface gets a "configure" event, or use of
      * this surface will fail. This is a new rule for xdg_shell.
@@ -774,6 +780,12 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     } else
 #endif
     if (c->shell.xdg) {
+        /* Unlike libdecor we need to call this explicitly to prevent a deadlock.
+         * libdecor will call this as part of their configure event!
+         * -flibit
+         */
+        Wayland_SetWindowFullscreen(_this, window, SDL_GetDisplayForWindow(window),
+                                    (window->flags & SDL_WINDOW_FULLSCREEN) != 0);
         if (data->shell_surface.xdg.surface) {
             while (!data->shell_surface.xdg.initial_configure_seen) {
                 WAYLAND_wl_display_flush(c->display);
@@ -1301,12 +1313,14 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         data->egl_window = WAYLAND_wl_egl_window_create(data->surface,
                                             window->w * data->scale_factor, window->h * data->scale_factor);
 
+#if SDL_VIDEO_OPENGL_EGL
         /* Create the GLES window surface */
         data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->egl_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
             return SDL_SetError("failed to create an EGL window surface");
         }
+#endif
     }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
@@ -1341,14 +1355,18 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
-
     struct wl_region *region;
-    window->w = 0;
-    window->h = 0;
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
-    window->w = width;
-    window->h = height;
-    data->scale_factor = scale;
+
+    if (data->needs_resize_event || window->w != width || window->h != height || data->scale_factor != scale) {
+        /* We may have already updated window w/h (or only adjusted scale factor),
+         * so we must override the deduplication logic in the video core */
+        window->w = 0;
+        window->h = 0;
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
+        window->w = width;
+        window->h = height;
+        data->needs_resize_event = SDL_FALSE;
+    }
 
     wl_surface_set_buffer_scale(data->surface, data->scale_factor);
 
@@ -1505,9 +1523,11 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
     SDL_WindowData *wind = window->driverdata;
 
     if (data) {
+#if SDL_VIDEO_OPENGL_EGL
         if (wind->egl_surface) {
             SDL_EGL_DestroySurface(_this, wind->egl_surface);
         }
+#endif
         if (wind->egl_window) {
             WAYLAND_wl_egl_window_destroy(wind->egl_window);
         }
@@ -1543,6 +1563,6 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
     window->driverdata = NULL;
 }
 
-#endif /* SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL */
+#endif /* SDL_VIDEO_DRIVER_WAYLAND */
 
 /* vi: set ts=4 sw=4 expandtab: */
