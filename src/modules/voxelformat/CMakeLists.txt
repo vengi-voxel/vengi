@@ -88,6 +88,8 @@ set(TEST_FILES
 	tests/rgb.qef
 	tests/rgb.vxm
 	tests/rgb.cub
+	tests/vox_character.vox
+	tests/vox_glasses.vox
 	voxedit/chr_knight.qb
 )
 
