@@ -309,12 +309,12 @@ app::AppState WindowedApp::onInit() {
 		Log::debug("use fake fullscreen for display %i: %i:%i", displayIndex, width, height);
 	}
 
-	_window = createWindow(displayIndex, width, height, flags);
+	_window = createWindow(width, height, displayIndex, flags);
 	if (!_window) {
 		Log::warn("Failed to get multisampled window - try to disable it");
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-		_window = createWindow(displayIndex, width, height, flags);
+		_window = createWindow(width, height, displayIndex, flags);
 		if (!_window) {
 			sdlCheckError();
 			return app::AppState::InitFailure;
