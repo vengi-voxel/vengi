@@ -8,7 +8,7 @@ See [the documentation](https://mgerhardy.github.io/engine/) for further details
 
 Known [issues](https://github.com/mgerhardy/engine/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
-## 0.0.17 (2021-XX-XX)
+## 0.0.17 (2021-01-23)
 
 General:
 

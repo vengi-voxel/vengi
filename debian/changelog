@@ -1,4 +1,4 @@
-vengi (0.0.17.0-1) UNRELEASED; urgency=low
+vengi (0.0.17.0-1) unstable; urgency=low
 
   * General:
   * Fixed relative path handling for registered paths
@@ -23,7 +23,7 @@ vengi (0.0.17.0-1) UNRELEASED; urgency=low
   * Added scene graph panel
   * Fixed an issue that delayed the start by a few seconds
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 27 Dec 2021 12:01:08 +0100
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 23 Jan 2022 12:00:00 +0100
 
 vengi (0.0.16.0-1) unstable; urgency=low
 
