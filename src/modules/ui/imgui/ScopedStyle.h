@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ui/imgui/IMGUI.h"
+#include "dearimgui/imgui.h"
 
 namespace ui {
 namespace imgui {

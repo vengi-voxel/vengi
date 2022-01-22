@@ -4,7 +4,7 @@
 
 #include "NoisePanel.h"
 #include "voxedit-util/SceneManager.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 
 namespace voxedit {
 

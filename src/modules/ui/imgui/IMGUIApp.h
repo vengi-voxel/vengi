@@ -34,9 +34,6 @@ protected:
 	Console _console;
 	int32_t _bufferIndex = -1;
 	int32_t _indexBufferIndex = -1;
-	int8_t _mouseWheelX = 0;
-	int8_t _mouseWheelY = 0;
-	bool _mousePressed[3] = {false};
 	core::String _writePathIni;
 	core::String _writePathLog;
 	core::VarPtr _lastDirectory;
@@ -45,7 +42,6 @@ protected:
 	bool _showFileDialog = false;
 	bool _persistUISettings = true;
 
-	SDL_Cursor* _mouseCursors[ImGuiMouseCursor_COUNT];
 	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
 	std::function<void(const core::String&)> _fileDialogCallback {};
 
@@ -58,7 +54,6 @@ protected:
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual bool onTextInput(const core::String& text) override;
-	virtual bool onMouseWheel(int32_t x, int32_t y) override;
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 public:
@@ -68,12 +63,9 @@ public:
 
 	virtual void beforeUI();
 
+	bool handleSDLEvent(SDL_Event& event) override;
+
 	int fontSize() const;
-	virtual void onWindowClose(void *windowHandle) override;
-	virtual void onWindowMoved(void *windowHandle) override;
-	virtual void onWindowFocusGained(void *windowHandle) override;
-	virtual void onWindowFocusLost(void *windowHandle) override;
-	virtual void onWindowResize(void *windowHandle, int windowWidth, int windowHeight) override;
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;
 	virtual app::AppState onRunning() override;

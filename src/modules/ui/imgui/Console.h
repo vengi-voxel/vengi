@@ -5,7 +5,7 @@
 #pragma once
 
 #include "util/Console.h"
-#include "IMGUI.h"
+#include "IMGUIEx.h"
 #include "Notify.h"
 
 namespace ui {

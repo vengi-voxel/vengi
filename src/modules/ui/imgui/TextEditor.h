@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "IMGUI.h"
+#include "dearimgui/imgui.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
@@ -65,8 +65,8 @@ public:
 		Coordinates() : mLine(0), mColumn(0) {
 		}
 		Coordinates(int aLine, int aColumn) : mLine(aLine), mColumn(aColumn) {
-			assert(aLine >= 0);
-			assert(aColumn >= 0);
+			core_assert(aLine >= 0);
+			core_assert(aColumn >= 0);
 		}
 		static Coordinates Invalid() {
 			static Coordinates invalid(-1, -1);

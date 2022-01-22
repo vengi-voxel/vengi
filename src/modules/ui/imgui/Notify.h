@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "IMGUI.h"
+#include "dearimgui/imgui.h"
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
@@ -11,6 +11,7 @@
 
 #include "IconsFontAwesome5.h"
 #include "core/collection/DynamicArray.h"
+#include "core/String.h"
 
 typedef int ImGuiToastType;
 typedef int ImGuiToastPhase;

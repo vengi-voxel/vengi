@@ -201,9 +201,6 @@ app::AppState WindowedApp::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	SDL_EventState(SDL_MOUSEMOTION, SDL_DISABLE);
-	SDL_StopTextInput();
-
 	if (!_keybindingHandler.init()) {
 		Log::error("Failed to initialize the key binding handler");
 		return app::AppState::InitFailure;
@@ -371,25 +368,6 @@ app::AppState WindowedApp::onInit() {
 	const float scaleFactor = (float)_frameBufferDimension.x / (float)_windowDimension.x;
 	video::init(_windowDimension.x, _windowDimension.y, scaleFactor);
 	video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-
-	if (isSingleWindowMode()) {
-		_mouseCanUseGlobalState = false;
-	} else {
-#if 0
-		// Check and store if we are on a SDL backend that supports global mouse position
-		// ("wayland" and "rpi" don't support it, but we chose to use a white-list instead of a black-list)
-		const char *sdlBackend = SDL_GetCurrentVideoDriver();
-		const char *globalMouseWhitelist[] = {"windows", "cocoa", "x11", "DIVE", "VMAN"};
-		for (int n = 0; n < lengthof(globalMouseWhitelist); ++n) {
-			if (strncmp(sdlBackend, globalMouseWhitelist[n], strlen(globalMouseWhitelist[n])) == 0) {
-				_mouseCanUseGlobalState = true;
-			}
-		}
-#else
-		// TODO: the window (0:0) the mouse is hovering is on SDL display 0 (0:0:2560:1440), but the global mouse position is at 3646:769
-		_mouseCanUseGlobalState = false;
-#endif
-	}
 
 	video_trace_init();
 

@@ -8,7 +8,7 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Var.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "io/Filesystem.h"
 #include "video/ShapeBuilder.h"
@@ -103,7 +103,7 @@ void Viewport::update() {
 				}
 
 				const float height = (float)app->fontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-				const float maxWidth = ImGui::Size(200.0f);
+				const float maxWidth = 200.0f;
 				const ImVec2 windowSize = ImGui::GetWindowSize();
 				ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
 				ImGui::SetNextItemWidth(maxWidth);

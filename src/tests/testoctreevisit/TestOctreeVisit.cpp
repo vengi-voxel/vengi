@@ -3,7 +3,6 @@
  */
 #include "TestOctreeVisit.h"
 
-#include "ui/imgui/IMGUI.h"
 #include "math/AABB.h"
 #include "video/ScopedLineWidth.h"
 #include "core/Color.h"

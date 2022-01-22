@@ -9,7 +9,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/Console.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IMGUIApp.h"
 
 namespace voxedit {
@@ -112,7 +112,7 @@ void StatusBar::update(const char *title, float height, const core::String &last
 		}
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(size.x / fields * 3.0f);
-		ImGui::SetNextItemWidth(ImGui::Size(140.0f));
+		ImGui::SetNextItemWidth(140.0f);
 		ImGui::InputVarInt("Grid size", cfg::VoxEditGridsize);
 		ImGui::SameLine();
 		ImGui::CheckboxVar("Grayscale", cfg::VoxEditGrayInactive);

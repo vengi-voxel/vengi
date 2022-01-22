@@ -6,7 +6,7 @@
 #include "core/StringUtil.h"
 #include "math/Axis.h"
 #include "ui/imgui/IMGUIApp.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/TextEditor.h"
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/CursorPanel.h"

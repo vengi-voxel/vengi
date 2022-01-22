@@ -5,7 +5,6 @@
 #pragma once
 
 #include "ui/imgui/IMGUIApp.h"
-#include "ui/imgui/IMGUI.h"
 
 /**
  * @brief Renders the imgui demo

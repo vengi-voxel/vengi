@@ -12,7 +12,7 @@
 #include "ui/imgui/IconsFontAwesome5.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/FileDialog.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/anim/AnimationLuaSaver.h"
@@ -20,6 +20,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
 #include <glm/gtc/type_ptr.hpp>
+#include "ui/imgui/dearimgui/imgui_internal.h"
 
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_PALETTE "Palette##title"
@@ -369,7 +370,7 @@ void MainWindow::update() {
 	core_trace_scoped(MainWindow);
 	const ImVec2 pos(0.0f, 0.0f);
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
-	const float statusBarHeight = ImGui::Size((float)_app->fontSize()) + 16.0f;
+	const float statusBarHeight = (float)_app->fontSize() + 16.0f;
 
 	if (_lastOpenedFile->isDirty()) {
 		_lastOpenedFile->markClean();

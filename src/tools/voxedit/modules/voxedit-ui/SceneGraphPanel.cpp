@@ -3,7 +3,7 @@
  */
 
 #include "SceneGraphPanel.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"

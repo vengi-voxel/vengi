@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "IMGUI.h"
+#include "IMGUIEx.h"
 #include "IMGUIApp.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
@@ -12,6 +12,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "dearimgui/imgui_internal.h"
 
 namespace ImGui {
 
@@ -258,15 +259,6 @@ bool DisabledButton(const char *text, bool disabled) {
 		ImGui::PopStyleColor(2);
 	}
 	return pressed;
-}
-
-float Size(float size) {
-	return size * ImGui::GetWindowDpiScale();
-}
-
-ImVec2 Size(float size1, float size2) {
-	const float s = ImGui::GetWindowDpiScale();
-	return ImVec2(size1 * s, size2 * s);
 }
 
 void TooltipCommand(const char *command) {

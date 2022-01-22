@@ -7,7 +7,7 @@
 #include "core/collection/DynamicArray.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 #include "voxelformat/SceneGraphNode.h"
 
 #define LAYERPOPUP "##layerpopup"

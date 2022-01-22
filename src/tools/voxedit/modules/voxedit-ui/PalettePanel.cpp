@@ -5,7 +5,7 @@
 #include "PalettePanel.h"
 #include "core/StringUtil.h"
 #include "voxedit-util/SceneManager.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
 #define PALETTEACTIONPOPUP "##paletteactionpopup"
@@ -36,14 +36,14 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	const voxel::MaterialColorArray &colors = voxel::getMaterialColors();
 	const int maxPaletteEntries = (int)colors.size();
 	const float height = ImGui::GetContentRegionMax().y;
-	const ImVec2 windowSize(ImGui::Size(120.0f), height);
+	const ImVec2 windowSize(120.0f, height);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const int currentSceneHoveredPalIdx = sceneMgr().hitCursorVoxel().getColor();
 	const int currentSelectedPalIdx = sceneMgr().modifier().cursorVoxel().getColor();
 	_hasFocus = false;
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
 		_hasFocus = ImGui::IsWindowHovered();
-		const ImVec2 colorButtonSize(ImGui::Size(20), ImGui::Size(20));
+		const ImVec2 colorButtonSize(20, 20);
 		const ImVec2 &pos = ImGui::GetCursorScreenPos();
 		bool colorHovered = false;
 		ImDrawList* drawList = ImGui::GetWindowDrawList();

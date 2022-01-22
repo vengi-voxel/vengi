@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "IMGUIInternal.h"
+#include "dearimgui/imgui.h"
 #include "command/CommandHandler.h"
 #include "video/Types.h"
 #include "core/Common.h"
@@ -55,8 +55,6 @@ IMGUI_API bool ToggleButton(const char *text, bool state);
 IMGUI_API void TableKeyValue(const char *key, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 IMGUI_API void TableKeyValue(const char *key, const core::String &value);
 IMGUI_API bool DisabledButton(const char *text, bool disabled);
-IMGUI_API float Size(float size);
-IMGUI_API ImVec2 Size(float size1, float size2);
 
 IMGUI_API bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags = 0,
 						 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);

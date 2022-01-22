@@ -7,7 +7,7 @@
 #include "core/StringUtil.h"
 #include "glm/ext/scalar_constants.hpp"
 #include "voxedit-util/SceneManager.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
 
@@ -52,7 +52,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 				core::String &str = _scriptParameters[i];
 				int val = core::string::toInt(str);
 				if (val >= 0 && val < (int)colors.size()) {
-					const float size = ImGui::Size(20);
+					const float size = 20;
 					const ImVec2 v1(ImGui::GetWindowPos().x + ImGui::GetCursorPosX(), ImGui::GetWindowPos().y + ImGui::GetCursorPosY());
 					const ImVec2 v2(v1.x + size, v1.y + size);
 					ImDrawList* drawList = ImGui::GetWindowDrawList();

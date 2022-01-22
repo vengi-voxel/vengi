@@ -3,7 +3,6 @@
  */
 
 #include "FileDialog.h"
-#include "IMGUI.h"
 #include "IconsFontAwesome5.h"
 #include "IconsForkAwesome.h"
 #include "app/App.h"
@@ -18,6 +17,7 @@
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "ui/imgui/IMGUIApp.h"
+#include "dearimgui/imgui_internal.h"
 
 namespace ui {
 namespace imgui {
@@ -134,7 +134,7 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 }
 
 void FileDialog::bookmarkPanel(video::WindowedApp::OpenFileMode type, const core::String &bookmarks) {
-	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(ImGui::Size(200), ImGui::Size(300)), true,
+	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(200, 300), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 	bool specialDirs = false;
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
@@ -196,7 +196,7 @@ void FileDialog::setCurrentPath(video::WindowedApp::OpenFileMode type, const cor
 }
 
 void FileDialog::directoryPanel(video::WindowedApp::OpenFileMode type) {
-	ImGui::BeginChild("Directories##filedialog", ImVec2(ImGui::Size(200), ImGui::Size(300)), true,
+	ImGui::BeginChild("Directories##filedialog", ImVec2(200, 300), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
@@ -235,20 +235,20 @@ bool FileDialog::hide(const core::String &file) const {
 }
 
 bool FileDialog::filesPanel() {
-	ImGui::BeginChild("Files##1", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::Size(300)), true,
+	ImGui::BeginChild("Files##1", ImVec2(ImGui::GetContentRegionAvail().x, 300), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 	ImGui::Columns(4);
-	static float initialSpacingColumn3 = ImGui::Size(120.0f);
+	static float initialSpacingColumn3 = 120.0f;
 	if (initialSpacingColumn3 > 0) {
 		ImGui::SetColumnWidth(3, initialSpacingColumn3);
 		initialSpacingColumn3 = 0.0f;
 	}
-	static float initialSpacingColumn1 = ImGui::Size(80.0f);
+	static float initialSpacingColumn1 = 80.0f;
 	if (initialSpacingColumn1 > 0) {
 		ImGui::SetColumnWidth(1, initialSpacingColumn1);
 		initialSpacingColumn1 = 0.0f;
 	}
-	static float initialSpacingColumn2 = ImGui::Size(80.0f);
+	static float initialSpacingColumn2 = 80.0f;
 	if (initialSpacingColumn2 > 0) {
 		ImGui::SetColumnWidth(2, initialSpacingColumn2);
 		initialSpacingColumn2 = 0.0f;
@@ -366,7 +366,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 	if (open == nullptr || *open) {
 		bool doubleClickedFile = false;
 		core_trace_scoped(FileDialog);
-		ImGui::SetNextWindowSize(ImVec2(ImGui::Size(740.0f), ImGui::Size(494.0f)), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(740.0f, 494.0f), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type) {
 		case video::WindowedApp::OpenFileMode::Directory:
@@ -417,7 +417,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			if (type == video::WindowedApp::OpenFileMode::Save) {
 				ImGui::InputText("Filename", &_currentFile);
 			}
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::Size(6));
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
 
 			if (ImGui::Button("New folder")) {
 				ImGui::OpenPopup("NewFolderPopup");
@@ -487,7 +487,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			}
 			if (!_filterEntries.empty()) {
 				ImGui::SameLine();
-				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - _filterTextWidth - ImGui::Size(25.0f));
+				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - _filterTextWidth - 25.0f);
 				if (ImGui::ComboStl("Filter", &_currentFilterEntry, _filterEntries)) {
 					selectFilter(_currentFilterEntry);
 				}
@@ -502,7 +502,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 
 			const ImVec2 cancelTextSize = ImGui::CalcTextSize("Cancel");
 			const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - cancelTextSize.x - chooseTextSize.x - ImGui::Size(40.0f));
+			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - cancelTextSize.x - chooseTextSize.x - 40.0f);
 			if (ImGui::Button("Cancel") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 				_fileSelectIndex = 0;
 				_folderSelectIndex = 0;

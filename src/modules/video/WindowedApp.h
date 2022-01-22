@@ -51,7 +51,6 @@ protected:
 	 * Will block the event queue if the window is minimized of hidden
 	 */
 	bool _powerSaveMode = true;
-	bool _mouseCanUseGlobalState = false;
 
 	util::KeyBindingHandler _keybindingHandler;
 	/**
@@ -61,7 +60,7 @@ protected:
 
 	WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 
-	bool handleSDLEvent(SDL_Event& event);
+	virtual bool handleSDLEvent(SDL_Event& event);
 
 	bool handleKeyPress(int32_t key, int16_t modifier, uint16_t count = 1u);
 	bool handleKeyRelease(int32_t key, int16_t modifier);

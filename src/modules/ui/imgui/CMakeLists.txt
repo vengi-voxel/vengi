@@ -5,15 +5,27 @@ set(SRCS
 	FileDialog.cpp FileDialog.h
 	IconsFontAwesome5.h
 	IconsForkAwesome.h
-	IMGUI.cpp IMGUI.h
+	IMGUIEx.cpp IMGUIEx.h
 	IMGUIApp.cpp IMGUIApp.h
-	IMGUIInternal.h
 	IMGUIStyle.cpp IMGUIStyle.h
 	Notify.cpp Notify.h
 	ScopedStyle.h
 	TextEditor.h TextEditor.cpp
 	Window.h Window.cpp
 	WindowStack.h WindowStack.cpp
+
+	dearimgui/imgui.cpp dearimgui/imgui_draw.cpp
+	dearimgui/imgui_widgets.cpp
+	dearimgui/imgui_tables.cpp
+	dearimgui/imgui_stdlib.cpp dearimgui/imgui_stdlib.h
+	dearimgui/imgui.h
+	dearimgui/imgui_internal.h
+	dearimgui/imconfig.h
+	dearimgui/imstb_rectpack.h
+	dearimgui/imstb_textedit.h
+	dearimgui/imstb_truetype.h
+
+	dearimgui/backends/imgui_impl_sdl.cpp dearimgui/backends/imgui_impl_sdl.h
 )
 
 set(GEN_DIR ${GENERATE_DIR}/${LIB})
@@ -41,5 +53,5 @@ imgui_build_font(FontAwesomeSolid fa-solid-900.ttf)
 imgui_build_font(ForkAwesomeWebFont forkawesome-webfont.ttf)
 imgui_build_font(ArimoRegular Arimo-Regular.ttf)
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app dearimgui audio)
-target_include_directories(${LIB} PUBLIC . ${GEN_DIR})
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app audio)
+target_include_directories(${LIB} PUBLIC . ${GEN_DIR} dearimgui)

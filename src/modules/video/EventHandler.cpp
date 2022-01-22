@@ -58,10 +58,7 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 			break;
 		}
 		SDL_Window *window = SDL_GetWindowFromID(event.motion.windowID);
-		if ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) == 0u) {
-			break;
-		}
-		mouseMotion(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
+		mouseMotion((void*)window, event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
 		break;
 	}
 	case SDL_MOUSEBUTTONDOWN:
@@ -256,9 +253,9 @@ void EventHandler::mouseWheel(int32_t x, int32_t y) {
 	}
 }
 
-void EventHandler::mouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
+void EventHandler::mouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	for (IEventObserver* observer : _observers) {
-		observer->onMouseMotion(x, y, relX, relY);
+		observer->onMouseMotion(windowHandle, x, y, relX, relY);
 	}
 }
 

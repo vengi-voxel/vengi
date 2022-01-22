@@ -4,7 +4,7 @@
 
 #include "MenuBar.h"
 #include "core/GameConfig.h"
-#include "ui/imgui/IMGUI.h"
+#include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
 #include "voxedit-util/Config.h"

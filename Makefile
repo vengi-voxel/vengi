@@ -116,11 +116,10 @@ update-backward:
 # the backend code is just copied to merge in potiential changes
 update-dearimgui:
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git -b docking)
-	cp $(UPDATEDIR)/imgui.sync/im*.h $(UPDATEDIR)/imgui.sync/im*.cpp $(UPDATEDIR)/imgui.sync/misc/cpp/* contrib/libs/dearimgui/dearimgui
-	cp $(UPDATEDIR)/imgui.sync/backends/imgui_impl_sdl.cpp contrib/libs/dearimgui/dearimgui
+	cp $(UPDATEDIR)/imgui.sync/im*.h $(UPDATEDIR)/imgui.sync/im*.cpp $(UPDATEDIR)/imgui.sync/misc/cpp/* src/modules/ui/imgui/dearimgui
+	cp $(UPDATEDIR)/imgui.sync/backends/imgui_impl_sdl.* src/modules/ui/imgui/dearimgui/backends
 	cp $(UPDATEDIR)/imgui.sync/misc/fonts/binary_to_compressed_c.cpp tools/binary_to_compressed_c
-	mv contrib/libs/dearimgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
-	sed -i 's/"imgui.h"/"ui\/imgui\/IMGUI.h"/g' src/tests/testimgui/Demo.cpp
+	mv src/modules/ui/imgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
 
 update-flatbuffers:
 	$(call UPDATE_GIT,flatbuffers,https://github.com/google/flatbuffers.git)

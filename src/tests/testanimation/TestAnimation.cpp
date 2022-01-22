@@ -3,7 +3,6 @@
  */
 
 #include "TestAnimation.h"
-#include "ui/imgui/IMGUI.h"
 #include "voxel/MaterialColor.h"
 #include "Shared_generated.h"
 #include "animation/Animation.h"

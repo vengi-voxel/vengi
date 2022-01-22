@@ -3,7 +3,7 @@
  * @ingroup UI
  */
 
-#include "IMGUIInternal.h"
+#include "dearimgui/imgui.h"
 
 namespace ImGui {
 

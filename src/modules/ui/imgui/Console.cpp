@@ -1,6 +1,10 @@
+/**
+ * @file
+ */
+
 #include "Console.h"
-#include "IMGUI.h"
 #include "IMGUIApp.h"
+#include "dearimgui/imgui_internal.h"
 #include "core/Color.h"
 
 namespace ui {
