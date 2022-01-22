@@ -40,7 +40,9 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const int currentSceneHoveredPalIdx = sceneMgr().hitCursorVoxel().getColor();
 	const int currentSelectedPalIdx = sceneMgr().modifier().cursorVoxel().getColor();
+	_hasFocus = false;
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+		_hasFocus = ImGui::IsWindowHovered();
 		const ImVec2 colorButtonSize(ImGui::Size(20), ImGui::Size(20));
 		const ImVec2 &pos = ImGui::GetCursorScreenPos();
 		bool colorHovered = false;
@@ -126,6 +128,10 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		}
 	}
 	ImGui::End();
+}
+
+bool PalettePanel::hasFocus() const {
+	return _hasFocus;
 }
 
 }

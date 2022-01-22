@@ -20,9 +20,11 @@ class LayerPanel {
 private:
 	void addLayerItem(const voxel::SceneGraph& sceneGraph, const voxel::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	core::VarPtr _animationSpeedVar;
+	bool _hasFocus = false;
 
 public:
 	void update(const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener);
+	bool hasFocus() const;
 };
 
 }

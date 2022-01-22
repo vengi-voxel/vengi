@@ -204,11 +204,11 @@ bool MainWindow::createNew(bool force) {
 }
 
 bool MainWindow::isLayerWidgetDropTarget() const {
-	return false; // TODO
+	return _layerPanel.hasFocus();
 }
 
 bool MainWindow::isPaletteWidgetDropTarget() const {
-	return false; // TODO
+	return _palettePanel.hasFocus();
 }
 
 void MainWindow::leftWidget() {

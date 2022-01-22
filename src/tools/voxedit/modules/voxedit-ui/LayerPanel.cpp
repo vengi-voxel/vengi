@@ -78,7 +78,9 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
 	}
 	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
+	_hasFocus = false;
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+		_hasFocus = ImGui::IsWindowHovered();
 		const voxel::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		core_trace_scoped(LayerPanel);
 		ImGui::BeginChild("##layertable", ImVec2(0.0f, 400.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
@@ -155,6 +157,10 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		}
 	}
 	ImGui::End();
+}
+
+bool LayerPanel::hasFocus() const {
+	return _hasFocus;
 }
 
 }
