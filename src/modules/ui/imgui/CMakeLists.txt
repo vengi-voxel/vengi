@@ -11,8 +11,6 @@ set(SRCS
 	Notify.cpp Notify.h
 	ScopedStyle.h
 	TextEditor.h TextEditor.cpp
-	Window.h Window.cpp
-	WindowStack.h WindowStack.cpp
 
 	dearimgui/imgui.cpp dearimgui/imgui_draw.cpp
 	dearimgui/imgui_widgets.cpp
