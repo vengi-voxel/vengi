@@ -229,12 +229,12 @@ void MainWindow::rightWidget() {
 	_cursorPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
 	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
-	_treePanel.update(TITLE_TREES);
+	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
 	_sceneGraphPanel.update(TITLE_SCENEGRAPH);
 	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app);
-	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	_noisePanel.update(TITLE_NOISEPANEL);
-	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
+	_treePanel.update(TITLE_TREES);
+	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 }
 
 void MainWindow::updateSettings() {
