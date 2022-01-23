@@ -15,7 +15,7 @@ set(SRCS
 	VarUpdateHandler.h
 )
 set(LIB client-network)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES shared)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES shared network)
 target_include_directories(${LIB} PUBLIC ..)
 
 set(TEST_SRCS

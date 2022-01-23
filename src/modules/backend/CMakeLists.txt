@@ -200,7 +200,7 @@ set(FILES
 )
 
 set(LIB backend)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES eventmgr poi ai-shared stock shared http console)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES eventmgr poi ai-shared stock shared network http console)
 generate_db_models(${LIB} ${CMAKE_CURRENT_SOURCE_DIR}/tables.tbl BackendModels.h)
 
 target_include_directories(${LIB} PRIVATE entity/ai entity)
