@@ -50,5 +50,5 @@ color from the source file palette to the specified palette.
 
 Some formats also have layer support. Our layers are maybe not the layers you know from your favorite editor. Each layer can currently only have one object or volume in it. To get the proper layer ids (starting from 0) for your voxel file, you should load it once in [voxedit](../voxedit/Index.md) and check the layer panel.
 
-Especially magicavoxel supports more objects in one layer. This might be confusing to get the right numbers for `voxconvert`. See [this issue](https://github.com/mgerhardy/engine/issues/68) for a few more details.
+Especially magicavoxel supports more objects in one layer. This might be confusing to get the right numbers for `voxconvert`. See [this issue](https://github.com/mgerhardy/vengi/issues/68) for a few more details.
 

@@ -33,7 +33,7 @@ void OBJFormat::writeMtlFile(const core::String &mtlName, const core::String &pa
 		return;
 	}
 	io::FileStream stream(file);
-	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
+	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
 	stream.writeStringFormat(false, "\n");
 	stream.writeStringFormat(false, "newmtl palette\n");
 	stream.writeStringFormat(false, "Ka 1.000000 1.000000 1.000000\n");
@@ -54,7 +54,7 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 	// it is only 1 pixel high - sample the middle
 	const float v1 = 0.5f;
 
-	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
+	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
 	stream.writeStringFormat(false, "\n");
 	stream.writeStringFormat(false, "g Model\n");
 

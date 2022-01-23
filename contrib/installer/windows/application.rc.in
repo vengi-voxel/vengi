@@ -24,7 +24,7 @@ BEGIN
  BEGIN
   BLOCK "040004b0" // US English, Unicode
   BEGIN
-   VALUE "Comments", "http://github.com/mgerhardy/engine\0"
+   VALUE "Comments", "http://github.com/mgerhardy/vengi\0"
    VALUE "CompanyName", "Martin Gerhardy\0"
    VALUE "FileDescription", "@DESCRIPTION@\0"
    VALUE "FileVersion", "@CMAKE_PROJECT_VERSION@\0"

@@ -1,12 +1,12 @@
 # Changelog
 
-A more detailed changelog can be found on [github](https://github.com/mgerhardy/engine/commits/).
+A more detailed changelog can be found on [github](https://github.com/mgerhardy/vengi/commits/).
 
 Join our [Discord server](https://discord.gg/AgjCPXy).
 
-See [the documentation](https://mgerhardy.github.io/engine/) for further details.
+See [the documentation](https://mgerhardy.github.io/vengi/) for further details.
 
-Known [issues](https://github.com/mgerhardy/engine/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
+Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
 ## 0.0.18 (2022-XX-XX)
 

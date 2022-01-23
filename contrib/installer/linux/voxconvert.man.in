@@ -248,7 +248,7 @@ This is executing the script in \fB./scripts/cover.lua\fP with a parameter of \f
 
 This is doing exactly the same as above - just with a full path.
 
-The scripting docs are available at https://mgerhardy.github.io/engine/LUAScript/.
+The scripting docs are available at https://mgerhardy.github.io/vengi/LUAScript/.
 
 .SS Extract palette png
 Saves the png in the same dir as the vox file:
@@ -287,10 +287,10 @@ Config vars to control the meshing:
 \fBvoxformat_withtexcoords\fP: Export texture coordinates
 
 .SH HOMEPAGE
-https://github.com/mgerhardy/engine
+https://github.com/mgerhardy/vengi
 
 .SH COPYRIGHT
 Copyright \[co] 2015\-2022 by Martin Gerhardy.
 
 .SH BUGS
-If you find a bug, please report it at https://github.com/mgerhardy/engine/issues
+If you find a bug, please report it at https://github.com/mgerhardy/vengi/issues

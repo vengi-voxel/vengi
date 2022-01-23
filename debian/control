@@ -16,9 +16,9 @@ Build-Depends:
  uuid-dev,
  libsdl2-mixer-dev
 Standards-Version: 4.1.4
-Homepage: https://github.com/mgerhardy/engine
-Vcs-Git: https://github.com/mgerhardy/engine
-Vcs-browser: https://github.com/mgerhardy/engine
+Homepage: https://github.com/mgerhardy/vengi
+Vcs-Git: https://github.com/mgerhardy/vengi
+Vcs-browser: https://github.com/mgerhardy/vengi
 
 Package: vengi-shared
 Architecture: any

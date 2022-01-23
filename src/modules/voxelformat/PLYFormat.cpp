@@ -17,7 +17,7 @@ namespace voxel {
 
 bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, float scale, bool quad, bool withColor, bool withTexCoords) {
 	stream.writeStringFormat(false, "ply\nformat ascii 1.0\n");
-	stream.writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/mgerhardy/engine\n");
+	stream.writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
 	stream.writeStringFormat(false, "comment TextureFile palette-%s.png\n", voxel::getDefaultPaletteName());
 
 	int elements = 0;

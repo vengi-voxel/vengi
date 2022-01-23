@@ -152,7 +152,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 			ImGui::TooltipText("Edit the selected lua script");
 		}
 
-		ImGui::URLButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/engine/voxedit/LUAScript/");
+		ImGui::URLButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/vengi/voxedit/LUAScript/");
 	}
 	ImGui::End();
 

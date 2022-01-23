@@ -1,6 +1,6 @@
 # About
 
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/engine/images/thumbnailer.jpg)
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/thumbnailer.jpg)
 
 This application needs an opengl context. It is a command line tool running headless (meaning you don't see a window popping up).
 
@@ -14,6 +14,6 @@ and PCManFM.
 
 ## Windows Explorer
 
-There is a [pull request](https://github.com/mgerhardy/engine/pull/92>) already (but it's not yet finished and would need the help of a windows developer).
+There is a [pull request](https://github.com/mgerhardy/vengi/pull/92>) already (but it's not yet finished and would need the help of a windows developer).
 
 > You can still run this application from the windows command line to generate thumbnail images of your voxel models. See the [examples](Examples.md) for more details.
