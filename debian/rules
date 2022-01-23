@@ -36,14 +36,14 @@ build-indep:
 
 install:
 
-install-arch: build-arch
+install-arch:
 	dh_testdir
 	dh_testroot
 	dh_prep
 	dh_installdirs
 	dh_install
 
-install-indep: build-indep
+install-indep:
 	dh_testdir
 	dh_testroot
 	dh_prep
