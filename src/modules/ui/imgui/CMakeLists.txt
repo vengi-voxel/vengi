@@ -54,4 +54,5 @@ imgui_build_font(ForkAwesomeWebFont forkawesome-webfont.ttf)
 imgui_build_font(ArimoRegular Arimo-Regular.ttf)
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app audio)
+target_compile_definitions(${LIB} PUBLIC -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO)
 target_include_directories(${LIB} PUBLIC . ${GEN_DIR} dearimgui)
