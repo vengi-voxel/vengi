@@ -170,7 +170,7 @@ void WindowedApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 	if (modifier & KMOD_LALT) {
 		if (key == SDLK_RETURN) {
-			const int flags = SDL_GetWindowFlags(_window);
+			const uint32_t flags = SDL_GetWindowFlags(_window);
 			if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
 				SDL_SetWindowFullscreen(_window, 0);
 			} else {
