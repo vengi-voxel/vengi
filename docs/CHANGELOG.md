@@ -12,9 +12,12 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 > renamed the github project to **vengi** - the url changed to [https://github.com/mgerhardy/vengi](https://github.com/mgerhardy/vengi).
 
-General:
+Build:
 
    - Removed own cmake unity-build implementation
+   - Fixed build when `GAMES` was set to `OFF`
+
+General:
 
 ## 0.0.17 (2022-01-23)
 
