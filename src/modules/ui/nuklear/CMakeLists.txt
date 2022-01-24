@@ -14,3 +14,4 @@ set(FILES
 	shared/font.ttf
 )
 engine_add_module(TARGET nuklear SRCS ${SRCS} FILES ${FILES} DEPENDENCIES app voxelrender)
+set_target_properties(nuklear PROPERTIES UNITY_BUILD OFF)

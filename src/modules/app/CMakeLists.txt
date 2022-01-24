@@ -6,13 +6,12 @@ set(SRCS
 
 set(LIB app)
 
-if (WINDOWS)
-	# All this windows.h insanities ... giving up on this module
-	set_property(GLOBAL PROPERTY ${LIB}_NOUNITY TRUE)
-endif()
-
 set(LIBS metric command)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
+if (WINDOWS)
+	# All this windows.h insanities ... giving up on this module
+	set_target_properties(${LIB} PROPERTIES UNITY_BUILD FALSE)
+endif()
 
 set(TEST_MODULE_SRCS
 	tests/AbstractTest.cpp

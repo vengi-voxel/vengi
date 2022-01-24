@@ -1,4 +1,4 @@
-macro(engine_add_perf TARGET)
+function(engine_add_perf TARGET)
 	find_program(PERF_EXECUTABLE NAMES perf)
 	if (PERF_EXECUTABLE)
 		add_custom_target(${TARGET}-perf)
@@ -11,4 +11,4 @@ macro(engine_add_perf TARGET)
 			DEPENDS ${TARGET}
 		)
 	endif()
-endmacro()
+endfunction()

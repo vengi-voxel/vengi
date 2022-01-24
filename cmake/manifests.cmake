@@ -8,7 +8,7 @@
 #
 # The DOCKER_IMAGE_NAME_TAG variable that is set here, must be in sync with the docker target
 #
-macro(engine_manifests NAME)
+function(engine_manifests NAME)
 	if (DOCKER_REGISTRY)
 		set(DOCKER_IMAGE_NAME_TAG "${DOCKER_REGISTRY}/${NAME}:${ROOT_PROJECT_VERSION}")
 	else()
@@ -18,4 +18,4 @@ macro(engine_manifests NAME)
 		get_filename_component(FILENAME ${FILEPATH} NAME_WE)
 		configure_file(${FILEPATH} ${CMAKE_CURRENT_BINARY_DIR}/deployment/${FILENAME}.yaml)
 	endforeach()
-endmacro()
+endfunction()

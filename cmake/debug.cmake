@@ -10,7 +10,7 @@ else()
 endif()
 set_property(CACHE DEBUGGER PROPERTY STRINGS gdb lldb)
 
-macro(engine_add_debuggger TARGET)
+function(engine_add_debuggger TARGET)
 	if (${DEBUGGER} MATCHES "gdb")
 		add_custom_target(${TARGET}-debug)
 		add_custom_command(TARGET ${TARGET}-debug
@@ -30,4 +30,4 @@ macro(engine_add_debuggger TARGET)
 			DEPENDS ${TARGET}
 		)
 	endif()
-endmacro()
+endfunction()

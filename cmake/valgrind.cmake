@@ -1,4 +1,4 @@
-macro(engine_add_valgrind TARGET)
+function(engine_add_valgrind TARGET)
 	find_program(VALGRIND_EXECUTABLE NAMES valgrind)
 	if (VALGRIND_EXECUTABLE)
 		add_custom_target(${TARGET}-memcheckxml)
@@ -40,4 +40,4 @@ macro(engine_add_valgrind TARGET)
 			DEPENDS ${TARGET}
 		)
 	endif()
-endmacro()
+endfunction()

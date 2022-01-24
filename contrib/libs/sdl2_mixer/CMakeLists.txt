@@ -36,7 +36,7 @@ set(SRCS
 	libvorbis-1.3.6/lib/floor0.c
 	libvorbis-1.3.6/lib/floor1.c
 )
-set(LIB sdl2_mixer)
+set(LIB SDL2_mixer)
 
 engine_add_library(
 	LIB ${LIB}

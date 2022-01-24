@@ -62,6 +62,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPE
 if (APPLE)
 	target_link_libraries(${LIB} PRIVATE "-framework OpenGL")
 endif()
+set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 
 find_program(PYTHON3_EXECUTABLE NAMES python3)
 add_custom_target(update-videobindings)

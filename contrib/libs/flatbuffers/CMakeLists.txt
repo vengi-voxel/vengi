@@ -52,7 +52,7 @@ set(COMPILER_SRCS
 	compiler/reflection.cpp
 	compiler/util.cpp
 )
-set_property(GLOBAL PROPERTY flatc_NOUNITY True)
 engine_add_build_executable(TARGET flatc SRCS ${COMPILER_SRCS} NOINSTALL)
+set_target_properties(flatc PROPERTIES UNITY_BUILD FALSE)
 target_link_libraries(flatc flatbuffers)
 target_include_directories(flatc PRIVATE compiler/)

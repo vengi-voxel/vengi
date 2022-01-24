@@ -13,7 +13,7 @@ set(DOCKERCOMPOSE_EXECUTABLE "docker-compose" CACHE STRING "The docker-compose c
 #
 # The DOCKER_IMAGE_NAME_TAG variable that is set here, must be in sync with the kubernetes manifests
 #
-macro(engine_docker NAME)
+function(engine_docker NAME)
 	if (NOT MSVC)
 	set(DOCKERFILE_SRC)
 	set(DOCKERCOMPOSEFILE_SRC)
@@ -109,4 +109,4 @@ macro(engine_docker NAME)
 
 	endif()
 	endif(NOT MSVC)
-endmacro()
+endfunction()
