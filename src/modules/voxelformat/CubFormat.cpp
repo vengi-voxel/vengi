@@ -111,4 +111,7 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
+#undef wrap
+#undef wrapBool
+
 }

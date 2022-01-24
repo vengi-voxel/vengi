@@ -8,6 +8,7 @@
 
 namespace core {
 
+namespace _privtest {
 struct Type {
 	int a;
 	int b;
@@ -16,9 +17,10 @@ struct Type {
 		return a == rhs.a && b == rhs.b;
 	}
 };
+}
 
 TEST(RingBufferTest, testInsert) {
-	core::RingBuffer<Type, 4> list;
+	core::RingBuffer<_privtest::Type, 4> list;
 	list.push_back({1, 1});
 	EXPECT_EQ(1u, list.size());
 	list.emplace_back({2, 2});
@@ -28,7 +30,7 @@ TEST(RingBufferTest, testInsert) {
 }
 
 TEST(RingBufferTest, testPop) {
-	core::RingBuffer<Type, 4> list;
+	core::RingBuffer<_privtest::Type, 4> list;
 	list.push_back({1, 1});
 	EXPECT_EQ(1u, list.size());
 	list.pop();
@@ -36,7 +38,7 @@ TEST(RingBufferTest, testPop) {
 }
 
 TEST(RingBufferTest, testWrap) {
-	core::RingBuffer<Type, 4> list;
+	core::RingBuffer<_privtest::Type, 4> list;
 	list.push_back({1, 1});
 	EXPECT_EQ(1, list[0].a);
 	list.push_back({2, 2});
@@ -54,7 +56,7 @@ TEST(RingBufferTest, testWrap) {
 }
 
 TEST(RingBufferTest, testIterate) {
-	core::RingBuffer<Type> list;
+	core::RingBuffer<_privtest::Type> list;
 	for (int i = 0; i < 16; ++i) {
 		list.push_back({i, i});
 	}
@@ -68,7 +70,7 @@ TEST(RingBufferTest, testIterate) {
 }
 
 TEST(RingBufferTest, testIterateOverflow) {
-	core::RingBuffer<Type, 8> list;
+	core::RingBuffer<_privtest::Type, 8> list;
 	for (int i = 0; i < 16; ++i) {
 		list.push_back({i, i});
 	}
@@ -82,7 +84,7 @@ TEST(RingBufferTest, testIterateOverflow) {
 }
 
 TEST(RingBufferTest, testIterateRangeBased) {
-	core::RingBuffer<Type> list;
+	core::RingBuffer<_privtest::Type> list;
 	for (int i = 0; i < 16; ++i) {
 		list.push_back({i, i});
 	}

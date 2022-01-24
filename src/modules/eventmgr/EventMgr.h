@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "EventConfigurationData.h"
 #include "Event.h"
 #include "EventProvider.h"

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <SDL.h>
+#include "core/Log.h"
 
 char **_argv;
 int _argc;
@@ -15,7 +16,12 @@ public:
     }
 };
 
-SDL_AssertState Test_AssertionHandler(const SDL_AssertData* data, void* userdata) {
+static SDL_AssertState Test_AssertionHandler(const SDL_AssertData* data, void* userdata) {
+    Log::error("Assertion failure at %s (%s:%i); triggered %i %s.\n\tFailing condition: \"%s\".",
+        data->function, data->filename, data->linenum,
+        data->trigger_count, data->trigger_count == 1 ? "time" : "times",
+        data->condition
+    );
     return SDL_ASSERTION_BREAK;
 }
 

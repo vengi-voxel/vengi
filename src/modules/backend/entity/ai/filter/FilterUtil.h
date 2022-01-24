@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/collection/Array.h"
