@@ -13,7 +13,6 @@ Build-Depends:
  opencl-c-headers,
  wayland-protocols,
  pkg-config,
- glslang-tools,
  uuid-dev,
  libsdl2-mixer-dev
 Standards-Version: 4.1.4
