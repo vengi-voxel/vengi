@@ -308,7 +308,7 @@ static int voc_get_block(SDL_RWops *src, vs_t *v, SDL_AudioSpec *spec)
             default:  /* text block or other krapola. */
                 for(i = 0; i < sblen; i++)
                 {
-                    if (SDL_RWread(src, &trash, sizeof (Uint8), 1) != 1)
+                    if (SDL_RWread(src, trash, sizeof (Uint8), 1) != 1)
                         return 0;
                 }
 

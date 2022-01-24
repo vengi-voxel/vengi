@@ -151,12 +151,12 @@ update-sdl2:
 
 update-sdl2mixer:
 	$(call UPDATE_GIT,sdl2_mixer,https://github.com/libsdl-org/SDL_mixer)
-	rm -rf contrib/libs/sdl2_mixer/*
-	cp -r $(UPDATEDIR)/sdl2_mixer.sync/src/* contrib/libs/sdl2_mixer
-	cp -r $(UPDATEDIR)/sdl2_mixer.sync/include/* contrib/libs/sdl2_mixer
-	cp -r $(UPDATEDIR)/sdl2_mixer.sync/external/libogg* contrib/libs/sdl2_mixer
-	cp -r $(UPDATEDIR)/sdl2_mixer.sync/external/libvorbis* contrib/libs/sdl2_mixer
-	git checkout -f contrib/libs/sdl2_mixer/CMakeLists.txt
+	rm -rf contrib/libs/SDL2_mixer/*
+	cp -r $(UPDATEDIR)/sdl2_mixer.sync/src/* contrib/libs/SDL2_mixer
+	cp -r $(UPDATEDIR)/sdl2_mixer.sync/include/* contrib/libs/SDL2_mixer
+	cp -r $(UPDATEDIR)/sdl2_mixer.sync/external/libogg* contrib/libs/SDL2_mixer
+	cp -r $(UPDATEDIR)/sdl2_mixer.sync/external/libvorbis* contrib/libs/SDL2_mixer
+	git checkout -f contrib/libs/SDL2_mixer/CMakeLists.txt
 
 update-glslang:
 	$(call UPDATE_GIT,glslang,https://github.com/KhronosGroup/glslang.git)
