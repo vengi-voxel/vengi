@@ -14,13 +14,13 @@ jobs:
         - uses: actions/checkout@v1
 
         - name: Setup
-          run: brew install libuv sdl2 libpq sdl2_mixer python glslang
+          run: brew install libuv sdl2 libpq sdl2_mixer python glslang ninja
 
         - name: Build
           run: |
             mkdir build
             cd build
-            cmake .. -DHOT_RELOAD_ANIM=0
+            cmake .. -DHOT_RELOAD_ANIM=0 -GNinja
             make -j 2
 
         - name: Test
