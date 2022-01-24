@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "Modifier.h"
 #include "ModifierRenderer.h"
 #include "core/IComponent.h"
