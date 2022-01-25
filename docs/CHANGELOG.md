@@ -19,6 +19,8 @@ Build:
 
 General:
 
+   - Extended qbcl format support
+
 ## 0.0.17 (2022-01-23)
 
 General:

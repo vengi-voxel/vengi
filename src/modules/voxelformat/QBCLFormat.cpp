@@ -11,6 +11,7 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "image/Image.h"
+#include "io/BufferedZipReadStream.h"
 
 namespace voxel {
 
@@ -36,66 +37,209 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	return false;
 }
 
-#if 0
-static bool readString(io::FileStream &stream, core::String &dest) {
-	uint32_t size;
-	wrap(stream.readInt(size))
-	if (size > 1024) {
-		Log::warn("Found big string - ignore it");
-		stream.skip(size);
+static bool readString(io::SeekableReadStream& stream, core::String& str) {
+	uint32_t length;
+	wrap(stream.readUInt32(length))
+	char *name = (char *)core_malloc(length + 1);
+	wrapBool(stream.readString(length, name))
+	name[length] = '\0';
+	str = name;
+	core_free(name);
+	return true;
+}
+
+bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name) {
+	SceneGraphTransform transform;
+	Log::debug("Matrix name: %s", name.c_str());
+
+	glm::uvec3 size;
+	wrap(stream.readUInt32(size.x));
+	wrap(stream.readUInt32(size.y));
+	wrap(stream.readUInt32(size.z));
+
+	glm::ivec3 position;
+	wrap(stream.readInt32(position.x));
+	wrap(stream.readInt32(position.y));
+	wrap(stream.readInt32(position.z));
+	transform.position = position;
+
+	wrap(stream.readFloat(transform.normalizedPivot.x));
+	wrap(stream.readFloat(transform.normalizedPivot.y));
+	wrap(stream.readFloat(transform.normalizedPivot.z));
+
+	uint32_t voxelDataSize;
+	wrap(stream.readUInt32(voxelDataSize));
+	Log::debug("Matrix size: %u:%u:%u with %u bytes", size.x, size.y, size.z, voxelDataSize);
+	if (voxelDataSize == 0) {
+		Log::warn("Empty voxel chunk found");
 		return false;
 	}
-	dest.reserve(size);
-	for (uint32_t i = 0; i < size; ++i) {
-		uint8_t chr;
-		wrap(stream.readByte(chr))
-		dest.append(chr);
+	if (voxelDataSize > 0xFFFFFF) {
+		Log::warn("Size of matrix exceeds the max allowed value");
+		return false;
+	}
+	if (glm::any(glm::greaterThan(size, glm::uvec3(MaxRegionSize)))) {
+		Log::warn("Size of matrix exceeds the max allowed value");
+		return false;
+	}
+	if (glm::any(glm::lessThan(size, glm::uvec3(1)))) {
+		Log::warn("Size of matrix results in empty space");
+		return false;
+	}
+
+	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
+	io::BufferedZipReadStream zipStream(stream, voxelDataSize, voxelDataSizeDecompressed);
+
+	const voxel::Region region(position, position + glm::ivec3(size) - 1);
+	if (!region.isValid()) {
+		Log::error("Invalid region");
+		return false;
+	}
+	voxel::RawVolume* volume = new voxel::RawVolume(region);
+	_colorsSize = 0;
+	uint32_t index = 0;
+
+	while (!zipStream.eos()) {
+		int y = 0;
+		uint16_t dataSize;
+		wrap(zipStream.readUInt16(dataSize))
+		for (int i = 0; i < dataSize; i++) {
+			uint8_t red;
+			wrap(zipStream.readUInt8(red))
+			uint8_t green;
+			wrap(zipStream.readUInt8(green))
+			uint8_t blue;
+			wrap(zipStream.readUInt8(blue))
+			uint8_t mask;
+			wrap(zipStream.readUInt8(mask))
+
+			if (mask == 2) {
+				// RLE
+				uint8_t rleLength = red;
+				wrap(zipStream.readUInt8(red))
+				wrap(zipStream.readUInt8(green))
+				wrap(zipStream.readUInt8(blue))
+				uint8_t alpha;
+				wrap(zipStream.readUInt8(alpha))
+				if (mask == 0 || alpha == 0) {
+					y += rleLength;
+				} else {
+					for (int j = 0; j < rleLength; j++) {
+						uint32_t x = (index / size.z);
+						uint32_t z = index % size.z;
+
+						const glm::vec4& color = core::Color::fromRGBA(red, green, blue, 255);
+						const uint8_t index = findClosestIndex(color);
+						const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+						volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
+						y++;
+					}
+				}
+				++i;
+			} else if (mask == 0) {
+				++y;
+			} else {
+				// Uncompressed
+				uint32_t x = (index / size.z);
+				uint32_t z = index % size.z;
+				const glm::vec4& color = core::Color::fromRGBA(red, green, blue, 255);
+				const uint8_t index = findClosestIndex(color);
+				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+				volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
+				y++;
+			}
+		}
+
+		index++;
+	}
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	if (name.empty()) {
+		node.setName("Matrix");
+	} else {
+		node.setName(name);
+	}
+	node.setTransform(transform, true);
+	const int id = sceneGraph.emplace(core::move(node), parent);
+	return id != -1;
+}
+
+bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name) {
+	stream.skip(36); // rotation matrix?
+	uint32_t childCount;
+	wrap(stream.readUInt32(childCount))
+	SceneGraphNode node(SceneGraphNodeType::Group);
+	if (name.empty()) {
+		node.setName("Model");
+	} else {
+		node.setName(name);
+	}
+	int nodeId = sceneGraph.emplace(core::move(node), parent);
+	Log::debug("Found %u children in model '%s'", childCount, name.c_str());
+	for (uint32_t i = 0; i < childCount; ++i) {
+		wrapBool(readNodes(filename, stream, sceneGraph, nodeId))
 	}
 	return true;
 }
-#endif
 
-bool QBCLFormat::readMatrix(io::SeekableReadStream &stream) {
-	uint32_t mx; // 32
-	uint32_t my;
-	uint32_t mz;
-	wrap(stream.readUInt32(mx))
-	wrap(stream.readUInt32(my))
-	wrap(stream.readUInt32(mz))
-	Log::debug("QBCL: matrix size %u:%u:%u", mx, my, mz);
-	// TODO
-	return false;
-}
-
-bool QBCLFormat::readModel(io::SeekableReadStream &stream) {
-	uint32_t x;
-	uint32_t y;
-	uint32_t z;
-
-	wrap(stream.readUInt32(x))
-	wrap(stream.readUInt32(y))
-	wrap(stream.readUInt32(z))
-	Log::debug("QBCL: model size %u:%u:%u", x, y, z);
-
-	uint32_t r[6];
-	for (int i = 0; i < lengthof(r); ++i) {
-		wrap(stream.readUInt32(r[i]))
-		Log::debug("QBCL: r[%i] = %u", i, r[i]);
+bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name) {
+	SceneGraphNode node(SceneGraphNodeType::Group);
+	if (name.empty()) {
+		node.setName("Compound");
+	} else {
+		node.setName(name);
 	}
-	uint32_t n;
-	uint32_t u;
-	uint32_t v;
-
-	wrap(stream.readUInt32(n))
-	wrap(stream.readUInt32(u))
-	wrap(stream.readUInt32(v))
-	Log::debug("QBCL: n: %u, u: %u, v: %u", n, u, v);
-	// TODO
-	return false;
+	int nodeId = sceneGraph.emplace(core::move(node), parent);
+	wrapBool(readMatrix(filename, stream, sceneGraph, nodeId, name))
+	uint32_t childCount;
+	wrap(stream.readUInt32(childCount))
+	Log::debug("Found %u children in compound '%s'", childCount, name.c_str());
+	for (uint32_t i = 0; i < childCount; ++i) {
+		wrapBool(readNodes(filename, stream, sceneGraph, nodeId))
+	}
+	return true;
 }
 
-bool QBCLFormat::readCompound(io::SeekableReadStream &stream) {
-	return false;
+bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent) {
+	uint32_t type;
+	wrap(stream.readUInt32(type))
+	uint32_t dataSize;
+	wrap(stream.readUInt32(dataSize));
+	Log::debug("Data size: %u", dataSize);
+
+	core::String name;
+	wrapBool(readString(stream, name))
+	stream.skip(3); // ColorFormat, ZAxisOrientation, Compression? (see QBFormat)
+	switch (type) {
+	case 0:
+		Log::debug("Found matrix");
+		if (!readMatrix(filename, stream, sceneGraph, parent, name)) {
+			Log::error("Failed to load matrix %s", name.c_str());
+			return false;
+		}
+		Log::debug("Matrix of size %u loaded", dataSize);
+		break;
+	case 1:
+		Log::debug("Found model");
+		if (!readModel(filename, stream, sceneGraph, parent, name)) {
+			Log::error("Failed to load model %s", name.c_str());
+			return false;
+		}
+		Log::debug("Model of size %u loaded", dataSize);
+		break;
+	case 2:
+		Log::debug("Found compound");
+		if (!readCompound(filename, stream, sceneGraph, parent, name)) {
+			Log::error("Failed to load compound %s", name.c_str());
+			return false;
+		}
+		Log::debug("Compound of size %u loaded", dataSize);
+		break;
+	default:
+		Log::warn("Unknown type found: '%s'", name.c_str());
+		return false;
+	}
+	return true;
 }
 
 bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
@@ -105,17 +249,23 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 		Log::error("Invalid magic found - no qbcl file");
 		return false;
 	}
-	uint32_t version;
+	uint32_t version; // (major, minor, release, build)
 	wrapImg(stream.readUInt32(version))
-	uint32_t flags;
-	wrap(stream.readUInt32(flags))
+	uint32_t fileVersion;
+	wrap(stream.readUInt32(fileVersion))
+	if (fileVersion != 2) {
+		Log::error("Unknown version found: %i", fileVersion);
+		return false;
+	}
 	uint32_t thumbWidth;
 	wrap(stream.readUInt32(thumbWidth))
 	uint32_t thumbHeight;
 	wrap(stream.readUInt32(thumbHeight))
-	wrapBool(stream.skip((int64_t)(thumbWidth * thumbHeight * 4)))
+	if (stream.skip((int64_t)(thumbWidth * thumbHeight * 4)) == -1) {
+		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read));
+		return false;
+	}
 
-#if 0
 	core::String title;
 	wrapBool(readString(stream, title))
 	core::String desc;
@@ -130,39 +280,13 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	wrapBool(readString(stream, website))
 	core::String copyright;
 	wrapBool(readString(stream, copyright))
+
 	uint8_t guid[16];
-	wrap(stream.readBuf(guid, lengthof(guid)))
+	wrap(stream.read(guid, lengthof(guid)))
 
-	uint32_t unknown;
-	stream.readInt(unknown);
-	Log::debug("QBCL: unknown value %u at offset %u", unknown, (uint32_t)stream.pos());
-	stream.readInt(unknown);
-	Log::debug("QBCL: unknown value %u at offset %u", unknown, (uint32_t)stream.pos());
+	wrapBool(readNodes(filename, stream, sceneGraph, sceneGraph.root().id()))
 
-	while (stream.remaining() > 0) {
-		core::String type;
-		wrapBool(readString(stream, type))
-		uint8_t unknownByte;
-		wrap(stream.readByte(unknownByte))
-		Log::debug("QBCL: unknown value %u at offset %u", unknownByte, (uint32_t)stream.pos());
-		wrap(stream.readByte(unknownByte))
-		Log::debug("QBCL: unknown value %u at offset %u", unknownByte, (uint32_t)stream.pos());
-		wrap(stream.readByte(unknownByte))
-		Log::debug("QBCL: unknown value %u at offset %u", unknownByte, (uint32_t)stream.pos());
-		if (type == "Model") {
-			wrapBool(readModel(stream))
-		} else if (type == "Matrix") {
-			wrapBool(readMatrix(stream))
-		} else if (type == "Compound") {
-			wrapBool(readCompound(stream))
-		} else {
-			Log::warn("Unknown type found: '%s'", type.c_str());
-			return false;
-		}
-	}
-#endif
-
-	return false;
+	return true;
 }
 
 image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {

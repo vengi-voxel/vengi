@@ -8,6 +8,7 @@ vengi (0.0.18.0-1) UNRELEASED; urgency=low
   * Fixed build when GAMES was set to OFF
 
   * General:
+  * Extended qbcl format support
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 23 Jan 2022 12:28:01 +0100
 
