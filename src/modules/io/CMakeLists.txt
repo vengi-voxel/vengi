@@ -7,6 +7,7 @@ set(SRCS
 	IOResource.h
 	Stream.cpp Stream.h
 	MemoryReadStream.cpp MemoryReadStream.h
+	BufferedZipReadStream.cpp BufferedZipReadStream.h
 )
 
 set(LIB io)

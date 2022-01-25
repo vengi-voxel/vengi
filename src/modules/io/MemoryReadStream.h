@@ -9,9 +9,9 @@
 namespace io {
 
 class MemoryReadStream : public SeekableReadStream {
-private:
+protected:
 	const uint8_t *_buf;
-	const int64_t _size;
+	int64_t _size;
 	int64_t _pos = 0;
 
 public:
