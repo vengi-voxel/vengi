@@ -21,7 +21,7 @@ jobs:
             mkdir build
             cd build
             cmake .. -DHOT_RELOAD_ANIM=0 -GNinja
-            make -j 2
+            cmake --build .
 
         - name: Test
           run: |
