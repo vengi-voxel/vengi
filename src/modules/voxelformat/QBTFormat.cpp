@@ -10,8 +10,10 @@
 #include "core/GLM.h"
 #include "core/Assert.h"
 #include "io/FileStream.h"
+#include "io/BufferedZipReadStream.h"
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
+#include "voxelformat/SceneGraphNode.h"
 #include <glm/common.hpp>
 
 namespace voxel {
@@ -235,8 +237,12 @@ bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
-	if (!loadMatrix(stream, sceneGraph)) {
+bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent) {
+	SceneGraphNode node(SceneGraphNodeType::Group);
+	node.setName("Compound");
+	int nodeId = sceneGraph.emplace(core::move(node), parent);
+
+	if (!loadMatrix(stream, sceneGraph, nodeId)) {
 		return false;
 	}
 	uint32_t childCount;
@@ -249,7 +255,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGr
 				return false;
 			}
 		} else {
-			if (!loadNode(stream, sceneGraph)) {
+			if (!loadNode(stream, sceneGraph, nodeId)) {
 				return false;
 			}
 		}
@@ -279,7 +285,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGr
  * The M byte is used to store visibility of the 6 faces of a voxel and whether as voxel is solid or air. If M is bigger than 0 then the voxel is solid. Even when a voxel
  * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
-bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent) {
 	char name[1024];
 	uint32_t nameLength;
 	wrap(stream.readUInt32(nameLength));
@@ -294,9 +300,9 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	glm::uvec3 localScale;
 	glm::uvec3 size;
 	// TODO: move into transform
-	wrap(stream.readUInt32((uint32_t&)position.x));
-	wrap(stream.readUInt32((uint32_t&)position.y));
-	wrap(stream.readUInt32((uint32_t&)position.z));
+	wrap(stream.readInt32(position.x));
+	wrap(stream.readInt32(position.y));
+	wrap(stream.readInt32(position.z));
 	// TODO: move into transform
 	wrap(stream.readUInt32(localScale.x));
 	wrap(stream.readUInt32(localScale.y));
@@ -329,41 +335,27 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		Log::warn("Size of matrix results in empty space");
 		return false;
 	}
-	uint8_t* voxelData = new uint8_t[voxelDataSize];
-	wrap(stream.read(voxelData, voxelDataSize));
-
 	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
-	core_assert(voxelDataSizeDecompressed > 0);
-	uint8_t* voxelDataDecompressed = new uint8_t[voxelDataSizeDecompressed * 2];
+	io::BufferedZipReadStream zipStream(stream, voxelDataSize, voxelDataSizeDecompressed);
 
-	if (!core::zip::uncompress(voxelData, voxelDataSize, voxelDataDecompressed, voxelDataSizeDecompressed * 2)) {
-		Log::error("Could not load qbt file: Failed to extract zip data of size %i, volume space: %i",
-				(int)voxelDataSize, (int)voxelDataSizeDecompressed);
-		if (voxelDataSize >= 4) {
-			Log::debug("First 4 bytes: 0x%x 0x%x 0x%x 0x%x", voxelData[0], voxelData[1], voxelData[2], voxelData[3]);
-		}
-		delete [] voxelData;
-		delete [] voxelDataDecompressed;
-		return false;
-	}
-	delete [] voxelData;
 	const voxel::Region region(position, position + glm::ivec3(size) - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region");
-		delete [] voxelDataDecompressed;
 		return false;
 	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
-	uint32_t byteCounter = 0u;
 	_colorsSize = 0;
-	for (uint32_t x = 0; x < size.x; x++) {
-		for (uint32_t z = 0; z < size.z; z++) {
-			for (uint32_t y = 0; y < size.y; y++) {
-				const uint32_t red   = ((uint32_t)voxelDataDecompressed[byteCounter++]) << 0;
-				const uint32_t green = ((uint32_t)voxelDataDecompressed[byteCounter++]) << 8;
-				const uint32_t blue  = ((uint32_t)voxelDataDecompressed[byteCounter++]) << 16;
-				const uint32_t alpha = ((uint32_t)255) << 24;
-				const uint8_t mask   = voxelDataDecompressed[byteCounter++];
+	for (int32_t x = 0; x < (int)size.x; x++) {
+		for (int32_t z = 0; z < (int)size.z; z++) {
+			for (int32_t y = 0; y < (int)size.y; y++) {
+				uint8_t red;
+				wrap(zipStream.readUInt8(red))
+				uint8_t green;
+				wrap(zipStream.readUInt8(green))
+				uint8_t blue;
+				wrap(zipStream.readUInt8(blue))
+				uint8_t mask;
+				wrap(zipStream.readUInt8(mask))
 				if (mask == 0u) {
 					continue;
 				}
@@ -371,22 +363,20 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, red);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				} else {
-					const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
+					const glm::vec4& color = core::Color::fromRGBA(red, green, blue, 255);
 					const uint8_t index = findClosestIndex(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
-					//_colors[_colorsSize++] = core::Color::getRGBA(color);
 				}
 			}
 		}
 	}
-	delete [] voxelDataDecompressed;
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(name);
 	node.setTransform(transform, true);
-	sceneGraph.emplace(core::move(node));
-	return true;
+	const int id = sceneGraph.emplace(core::move(node), parent);
+	return id != -1;
 }
 
 /**
@@ -396,7 +386,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent) {
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	if (childCount > 2048u) {
@@ -404,15 +394,18 @@ bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph
 		return false;
 	}
 	Log::debug("Found %u children", childCount);
+	SceneGraphNode node(SceneGraphNodeType::Group);
+	node.setName("Model");
+	int nodeId = sceneGraph.emplace(core::move(node), parent);
 	for (uint32_t i = 0; i < childCount; i++) {
-		if (!loadNode(stream, sceneGraph)) {
+		if (!loadNode(stream, sceneGraph, nodeId)) {
 			return false;
 		}
 	}
 	return true;
 }
 
-bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent) {
 	uint32_t nodeTypeID;
 	wrap(stream.readUInt32(nodeTypeID));
 	uint32_t dataSize;
@@ -422,7 +415,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph)
 	switch (nodeTypeID) {
 	case 0: {
 		Log::debug("Found matrix");
-		if (!loadMatrix(stream, sceneGraph)) {
+		if (!loadMatrix(stream, sceneGraph, parent)) {
 			Log::error("Failed to load matrix");
 			return false;
 		}
@@ -431,7 +424,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph)
 	}
 	case 1:
 		Log::debug("Found model");
-		if (!loadModel(stream, sceneGraph)) {
+		if (!loadModel(stream, sceneGraph, parent)) {
 			Log::error("Failed to load model");
 			return false;
 		}
@@ -439,7 +432,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph)
 		break;
 	case 2:
 		Log::debug("Found compound");
-		if (!loadCompound(stream, sceneGraph)) {
+		if (!loadCompound(stream, sceneGraph, parent)) {
 			Log::error("Failed to load compound");
 			return false;
 		}
@@ -546,7 +539,7 @@ bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& scene
 			 * SectionCaption 8 bytes = "DATATREE"
 			 * RootNode, can currently either be Model, Compound or Matrix
 			 */
-			if (!loadNode(stream, sceneGraph)) {
+			if (!loadNode(stream, sceneGraph, sceneGraph.root().id())) {
 				Log::error("Failed to load node");
 				return false;
 			}

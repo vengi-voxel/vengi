@@ -18,10 +18,10 @@ namespace voxel {
 class QBTFormat : public Format {
 private:
 	bool skipNode(io::SeekableReadStream& stream);
-	bool loadMatrix(io::SeekableReadStream& stream, SceneGraph &sceneGraph);
-	bool loadCompound(io::SeekableReadStream& stream, SceneGraph &sceneGraph);
-	bool loadModel(io::SeekableReadStream& stream, SceneGraph &sceneGraph);
-	bool loadNode(io::SeekableReadStream& stream, SceneGraph &sceneGraph);
+	bool loadMatrix(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent);
+	bool loadCompound(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent);
+	bool loadModel(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent);
+	bool loadNode(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent);
 
 	bool loadColorMap(io::SeekableReadStream& stream);
 	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph &sceneGraph);
