@@ -12,6 +12,10 @@ namespace voxel {
  * @brief Qubicle Binary (qb) format.
  *
  * https://getqubicle.com/qubicle/documentation/docs/file/qb/
+ *
+ * @see QBTFormat
+ * @see QBCLFormat
+ * @see QEFFormat
  */
 class QBFormat : public Format {
 private:

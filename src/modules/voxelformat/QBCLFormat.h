@@ -12,6 +12,10 @@ namespace voxel {
  * @brief Qubicle project file (qbcl) format.
  *
  * https://gist.github.com/tostc/7f049207a2e5a7ccb714499702b5e2fd
+ *
+ * @see QBTFormat
+ * @see QBFormat
+ * @see QEFFormat
  */
 class QBCLFormat : public Format {
 private:

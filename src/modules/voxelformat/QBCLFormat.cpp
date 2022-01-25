@@ -284,7 +284,16 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	uint8_t guid[16];
 	wrap(stream.read(guid, lengthof(guid)))
 
-	wrapBool(readNodes(filename, stream, sceneGraph, sceneGraph.root().id()))
+	SceneGraphNode& rootNode = sceneGraph.node(sceneGraph.root().id());
+	rootNode.setProperty("Title", title);
+	rootNode.setProperty("Description", desc);
+	rootNode.setProperty("Metadata", metadata);
+	rootNode.setProperty("Author", author);
+	rootNode.setProperty("Company", company);
+	rootNode.setProperty("Website", website);
+	rootNode.setProperty("Copyright", copyright);
+
+	wrapBool(readNodes(filename, stream, sceneGraph, rootNode.id()))
 
 	return true;
 }

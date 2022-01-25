@@ -11,7 +11,9 @@ namespace voxel {
 /**
  * @brief Qubicle Binary Tree (qbt) is the successor of the widespread voxel exchange format Qubicle Binary.
  *
+ * @see QBCLFormat
  * @see QBFormat
+ * @see QEFFormat
  *
  * https://getqubicle.com/qubicle/documentation/docs/file/qbt/
  */
