@@ -33,8 +33,12 @@ static void recursiveAddNodes(const voxel::SceneGraph &sceneGraph, const voxel::
 		break;
 	}
 	name.append(core::string::format(" %s##%i", node.name().c_str(), node.id()));
-	if (ImGui::TreeNode(name.c_str())) {
-		ImGui::TooltipText("Node id: %i", node.id());
+	ImGui::TableNextRow();
+	ImGui::TableNextColumn();
+	const bool open = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
+
+	ImGui::TableNextColumn();
+	if (open) {
 		if (node.type() == voxel::SceneGraphNodeType::Camera) {
 			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
 				video::Camera camera;
@@ -70,8 +74,17 @@ void SceneGraphPanel::update(const char *title) {
 	const voxel::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(SceneGraphPanel);
-		ImGui::SetNextItemOpen(true);
-		recursiveAddNodes(sceneGraph, sceneGraph.node(0));
+		static ImGuiTableFlags flags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH |
+									   ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg |
+									   ImGuiTableFlags_NoBordersInBody;
+		if (ImGui::BeginTable("##scenegraphnodes", 2, flags)) {
+			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
+			ImGui::TableSetupColumn("##scenegraphnodeid", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableHeadersRow();
+
+			recursiveAddNodes(sceneGraph, sceneGraph.node(0));
+			ImGui::EndTable();
+		}
 	}
 	ImGui::End();
 }
