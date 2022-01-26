@@ -14,6 +14,7 @@ Build-Depends:
  wayland-protocols,
  pkg-config,
  uuid-dev,
+ flatbuffers-compiler,
  libflatbuffers-dev,
  libsdl2-mixer-dev
 Standards-Version: 4.1.4
