@@ -693,6 +693,7 @@ int SceneManager::addSceneGraphNode_r(voxel::SceneGraph &sceneGraph, voxel::Scen
 int SceneManager::addSceneGraphNodes(voxel::SceneGraph& sceneGraph) {
 	const voxel::SceneGraphNode &root = sceneGraph.root();
 	int modelsAdded = 0;
+	_sceneGraph.node(0).addProperties(root.properties());
 	for (int nodeId : root.children()) {
 		modelsAdded += addSceneGraphNode_r(sceneGraph, sceneGraph.node(nodeId), 0);
 	}
