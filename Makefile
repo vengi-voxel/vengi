@@ -118,6 +118,8 @@ update-dearimgui:
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git -b docking)
 	cp $(UPDATEDIR)/imgui.sync/im*.h $(UPDATEDIR)/imgui.sync/im*.cpp $(UPDATEDIR)/imgui.sync/misc/cpp/* src/modules/ui/imgui/dearimgui
 	cp $(UPDATEDIR)/imgui.sync/backends/imgui_impl_sdl.* src/modules/ui/imgui/dearimgui/backends
+	cp $(UPDATEDIR)/imgui.sync/backends/imgui_impl_opengl3.* src/modules/ui/imgui/dearimgui/backends
+	cp $(UPDATEDIR)/imgui.sync/examples/example_sdl_opengl3/main.cpp src/modules/ui/imgui/dearimgui/backends/example_sdl_opengl3.cpp
 	cp $(UPDATEDIR)/imgui.sync/misc/fonts/binary_to_compressed_c.cpp tools/binary_to_compressed_c
 	mv src/modules/ui/imgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
 

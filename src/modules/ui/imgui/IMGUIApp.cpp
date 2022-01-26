@@ -155,6 +155,17 @@ static void _imguiFree(void *mem, void*) {
 	core_free(mem);
 }
 
+static void _rendererRenderWindow(ImGuiViewport *viewport, void *renderArg) {
+	if (!(viewport->Flags & ImGuiViewportFlags_NoRendererClear)) {
+		const glm::vec4 clearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		video::clearColor(clearColor);
+		video::clear(video::ClearFlag::Color);
+	}
+	ImGuiIO &io = ImGui::GetIO();
+	IMGUIApp *app = (IMGUIApp *)io.BackendRendererUserData;
+	app->executeDrawCommands(viewport->DrawData);
+}
+
 app::AppState IMGUIApp::onInit() {
 	const app::AppState state = Super::onInit();
 	video::checkError();
@@ -191,7 +202,7 @@ app::AppState IMGUIApp::onInit() {
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	if (!isSingleWindowMode()) {
-		// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;
 	}
@@ -210,6 +221,16 @@ app::AppState IMGUIApp::onInit() {
 	_writePathLog = _filesystem->writePath(logFile.c_str());
 	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = _windowDimension;
+
+	// Setup backend capabilities flags
+	io.BackendRendererUserData = (void *)this;
+	io.BackendRendererName = _appname.c_str();
+	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset; // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
+	io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports; // We can create multi-viewports on the Renderer side (optional)
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+		platform_io.Renderer_RenderWindow = _rendererRenderWindow;
+	}
 
 	_texture = video::genTexture();
 	loadFonts();
