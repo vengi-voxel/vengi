@@ -12,7 +12,7 @@
 
 namespace voxel {
 
-namespace {
+namespace qb {
 const int RLE_FLAG = 2;
 const int NEXT_SLICE_FLAG = 6;
 }
@@ -108,7 +108,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 						wrapSaveColor(currentColor)
 						wrapSaveColor(currentColor)
 					} else if (count > 3) {
-						wrapSave(stream.writeUInt32(RLE_FLAG))
+						wrapSave(stream.writeUInt32(qb::RLE_FLAG))
 						wrapSave(stream.writeUInt32(count))
 						wrapSaveColor(currentColor)
 					}
@@ -128,12 +128,12 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 			wrapSaveColor(currentColor)
 			wrapSaveColor(currentColor)
 		} else if (count > 3) {
-			wrapSave(stream.writeUInt32(RLE_FLAG))
+			wrapSave(stream.writeUInt32(qb::RLE_FLAG))
 			wrapSave(stream.writeUInt32(count))
 			wrapSaveColor(currentColor)
 		}
 		count = 0;
-		wrapSave(stream.writeUInt32(NEXT_SLICE_FLAG));
+		wrapSave(stream.writeUInt32(qb::NEXT_SLICE_FLAG));
 	}
 	return true;
 }
@@ -275,13 +275,13 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		for (;;) {
 			uint32_t data;
 			wrap(stream.peekUInt32(data))
-			if (data == NEXT_SLICE_FLAG) {
+			if (data == qb::NEXT_SLICE_FLAG) {
 				stream.skip(sizeof(data));
 				break;
 			}
 
 			uint32_t count = 1;
-			if (data == RLE_FLAG) {
+			if (data == qb::RLE_FLAG) {
 				stream.skip(sizeof(data));
 				wrap(stream.readUInt32(count))
 				Log::trace("%u voxels of the same type", count);

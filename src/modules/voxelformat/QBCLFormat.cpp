@@ -15,6 +15,10 @@
 
 namespace voxel {
 
+namespace qbcl {
+const int RLE_FLAG = 2;
+}
+
 #define wrap(read) \
 	if ((read) != 0) { \
 		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read)); \
@@ -87,14 +91,14 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 		return false;
 	}
 
-	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
-	io::BufferedZipReadStream zipStream(stream, voxelDataSize, voxelDataSizeDecompressed);
-
 	const voxel::Region region(position, position + glm::ivec3(size) - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
 	}
+
+	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
+	io::BufferedZipReadStream zipStream(stream, voxelDataSize, voxelDataSizeDecompressed);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	_colorsSize = 0;
 	uint32_t index = 0;
@@ -105,33 +109,34 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 		wrap(zipStream.readUInt16(dataSize))
 		for (int i = 0; i < dataSize; i++) {
 			uint8_t red;
-			wrap(zipStream.readUInt8(red))
 			uint8_t green;
-			wrap(zipStream.readUInt8(green))
 			uint8_t blue;
-			wrap(zipStream.readUInt8(blue))
 			uint8_t mask;
+
+			wrap(zipStream.readUInt8(red))
+			wrap(zipStream.readUInt8(green))
+			wrap(zipStream.readUInt8(blue))
 			wrap(zipStream.readUInt8(mask))
 
-			if (mask == 2) {
-				// RLE
+			if (mask == qbcl::RLE_FLAG) {
 				uint8_t rleLength = red;
+				uint8_t alpha;
 				wrap(zipStream.readUInt8(red))
 				wrap(zipStream.readUInt8(green))
 				wrap(zipStream.readUInt8(blue))
-				uint8_t alpha;
 				wrap(zipStream.readUInt8(alpha))
-				if (mask == 0 || alpha == 0) {
+
+				if (alpha == 0) {
 					y += rleLength;
 				} else {
-					const glm::vec4& color = core::Color::fromRGBA(red, green, blue, 255);
+					const glm::vec4& color = core::Color::fromRGBA(red, green, blue, alpha);
 					const uint8_t palIndex = findClosestIndex(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
-					for (int j = 0; j < rleLength; j++) {
+					for (int j = 0; j < rleLength; ++j) {
 						const uint32_t x = (index / size.z);
 						const uint32_t z = index % size.z;
 						volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
-						y++;
+						++y;
 					}
 				}
 				// we've read another color value for the rle values
@@ -146,7 +151,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				const uint8_t palIndex = findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
 				volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
-				y++;
+				++y;
 			}
 		}
 
