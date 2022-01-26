@@ -202,7 +202,7 @@ app::AppState IMGUIApp::onInit() {
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	if (!isSingleWindowMode()) {
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;
 	}
