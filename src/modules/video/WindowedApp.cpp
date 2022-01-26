@@ -60,9 +60,10 @@ bool WindowedApp::handleSDLEvent(SDL_Event& event) {
 	case SDL_QUIT:
 		// continue to handle any other following event
 		return true;
-	case SDL_WINDOWEVENT:
+	case SDL_WINDOWEVENT: {
+		SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
 		// we must be the first to handle this - but others should get their chance, too
-		if (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+		if (window == _window && (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)) {
 			const int w = event.window.data1;
 			const int h = event.window.data2;
 			int frameBufferWidth, frameBufferHeight;
@@ -74,6 +75,7 @@ bool WindowedApp::handleSDLEvent(SDL_Event& event) {
 			video::resize(w, h, scaleFactor);
 			video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 		}
+	}
 		// fallthrough
 	default: {
 		core_trace_scoped(WindowedAppEventHandler);
