@@ -75,6 +75,9 @@ bool WindowedApp::handleSDLEvent(SDL_Event& event) {
 			video::resize(w, h, scaleFactor);
 			video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 		}
+		if (event.window.event == SDL_WINDOWEVENT_MOVED) {
+			SDL_RaiseWindow(window);
+		}
 	}
 		// fallthrough
 	default: {
