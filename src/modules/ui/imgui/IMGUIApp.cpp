@@ -358,14 +358,10 @@ app::AppState IMGUIApp::onRunning() {
 	executeDrawCommands(ImGui::GetDrawData());
 
 	// Update and Render additional Platform Windows
-	// (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
-	//  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-		SDL_Window* backupCurrentWindow = SDL_GL_GetCurrentWindow();
-		SDL_GLContext backupCurrentContext = SDL_GL_GetCurrentContext();
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
-		SDL_GL_MakeCurrent(backupCurrentWindow, backupCurrentContext);
+		video::startFrame(_window, _rendererContext);
 	}
 
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
