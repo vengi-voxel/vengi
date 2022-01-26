@@ -139,12 +139,12 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 }
 
 bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapSave(stream.writeUInt32(257))
+	wrapSave(stream.writeUInt32(257)) // version
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
 	wrapSave(stream.writeUInt32((uint32_t)ZAxisOrientation::Right))
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
-	wrapSave(stream.writeUInt32((int)sceneGraph.size()))
+	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size()))
 	for (const SceneGraphNode& node : sceneGraph) {
 		if (!saveMatrix(stream, node)) {
 			return false;
@@ -211,9 +211,9 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	Log::debug("Matrix name: %s", name);
 
 	glm::uvec3 size(0);
-	wrap(stream.readUInt32((uint32_t&)size.x));
-	wrap(stream.readUInt32((uint32_t&)size.y));
-	wrap(stream.readUInt32((uint32_t&)size.z));
+	wrap(stream.readUInt32(size.x));
+	wrap(stream.readUInt32(size.y));
+	wrap(stream.readUInt32(size.z));
 	Log::debug("Matrix size: %i:%i:%i", size.x, size.y, size.z);
 
 	if (size.x == 0 || size.y == 0 || size.z == 0) {
@@ -227,9 +227,9 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	}
 
 	glm::ivec3 offset(0);
-	wrap(stream.readUInt32((uint32_t&)offset.x));
-	wrap(stream.readUInt32((uint32_t&)offset.y));
-	wrap(stream.readUInt32((uint32_t&)offset.z));
+	wrap(stream.readInt32(offset.x));
+	wrap(stream.readInt32(offset.y));
+	wrap(stream.readInt32(offset.z));
 	Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
 
 	const glm::ivec3 maxs(offset.x + size.x - 1, offset.y + size.y - 1, offset.z + size.z - 1);
