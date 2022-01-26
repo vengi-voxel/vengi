@@ -124,24 +124,24 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				if (mask == 0 || alpha == 0) {
 					y += rleLength;
 				} else {
+					const glm::vec4& color = core::Color::fromRGBA(red, green, blue, 255);
+					const uint8_t index = findClosestIndex(color);
+					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					for (int j = 0; j < rleLength; j++) {
-						uint32_t x = (index / size.z);
-						uint32_t z = index % size.z;
-
-						const glm::vec4& color = core::Color::fromRGBA(red, green, blue, 255);
-						const uint8_t index = findClosestIndex(color);
-						const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+						const uint32_t x = (index / size.z);
+						const uint32_t z = index % size.z;
 						volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 						y++;
 					}
 				}
+				// we've read another color value for the rle values
 				++i;
 			} else if (mask == 0) {
 				++y;
 			} else {
 				// Uncompressed
-				uint32_t x = (index / size.z);
-				uint32_t z = index % size.z;
+				const uint32_t x = (index / size.z);
+				const uint32_t z = index % size.z;
 				const glm::vec4& color = core::Color::fromRGBA(red, green, blue, 255);
 				const uint8_t index = findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
