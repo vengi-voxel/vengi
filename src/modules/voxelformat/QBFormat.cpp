@@ -153,23 +153,6 @@ bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &file
 	return true;
 }
 
-bool QBFormat::setVoxel(State& state, voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel) {
-	const int32_t fx = offset.x + (int32_t)x;
-	const int32_t fy = offset.y + (int32_t)y;
-	const int32_t fz = offset.z + (int32_t)z;
-	Log::trace("Set voxel %i to %i:%i:%i (z-axis: %i)", (int)voxel.getMaterial(), fx, fy, fz, (int)state._zAxisOrientation);
-	const voxel::Region& region = volume->region();
-	if (!region.containsPoint(glm::ivec3(fx, fy, fz))) {
-		const glm::ivec3& mins = region.getLowerCorner();
-		const glm::ivec3& maxs = region.getUpperCorner();
-		Log::error("Could not set voxel at %i:%i:%i - outside the region [%i:%i:%i][%i:%i:%i]",
-				fx, fy, fz, mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
-		return false;
-	}
-	volume->setVoxel(fx, fy, fz, voxel);
-	return true;
-}
-
 voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	uint8_t red;
 	uint8_t green;
@@ -179,7 +162,6 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	wrapColor(stream.readUInt8(green))
 	wrapColor(stream.readUInt8(blue))
 	wrapColor(stream.readUInt8(alpha))
-	Log::trace("Red: %i, Green: %i, Blue: %i, Alpha: %i", (int)red, (int)green, (int)blue, (int)alpha);
 	if (alpha == 0) {
 		return voxel::Voxel();
 	}
@@ -194,11 +176,7 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	color.g = (float)green / 255.0f;
 	color.a = (float)alpha / 255.0f;
 	const uint8_t index = findClosestIndex(color);
-	voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-	if (index == 0 && alpha == 0u) {
-		voxelType = voxel::VoxelType::Air;
-	}
-	return voxel::createVoxel(voxelType, index);
+	return voxel::createVoxel(voxel::VoxelType::Generic, index);
 }
 
 bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
@@ -238,6 +216,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			"%i:%i:%i versus %i:%i:%i", region.getDimensionsInVoxels().x, region.getDimensionsInVoxels().y, region.getDimensionsInVoxels().z,
 			size.x, size.y, size.z);
 	if (!region.isValid()) {
+		Log::error("Invalid region");
 		return false;
 	}
 
@@ -248,7 +227,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	}
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
-	SceneGraphNode node;
+	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setVolume(v, true);
 	node.setName(name);
 	sceneGraph.emplace(core::move(node));
@@ -258,9 +237,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
 					const voxel::Voxel& voxel = getVoxel(state, stream);
-					if (!setVoxel(state, v, x, y, z, offset, voxel)) {
-						return false;
-					}
+					v->setVoxel(x, y, z, voxel);
 				}
 			}
 		}
@@ -295,9 +272,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			for (uint32_t j = 0; j < count; ++j) {
 				const uint32_t x = (index + j) % size.x;
 				const uint32_t y = (index + j) / size.x;
-				if (!setVoxel(state, v, x, y, z, offset, voxel)) {
-					return false;
-				}
+				v->setVoxel(x, y, z, voxel);
 			}
 			index += count;
 		}
@@ -341,6 +316,7 @@ bool QBFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneG
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
 		if (!loadMatrix(state, stream, sceneGraph)) {
+			Log::error("Failed to load the matrix %u", i);
 			break;
 		}
 	}

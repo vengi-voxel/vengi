@@ -57,7 +57,6 @@ private:
 		Back
 	};
 
-	bool setVoxel(State& state, voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel);
 	voxel::Voxel getVoxel(State& state, io::SeekableReadStream& stream);
 	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
 	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph);
