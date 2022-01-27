@@ -8,6 +8,8 @@ set(SRCS
 	Stream.cpp Stream.h
 	MemoryReadStream.cpp MemoryReadStream.h
 	BufferedZipReadStream.cpp BufferedZipReadStream.h
+	ZipWriteStream.h ZipWriteStream.cpp
+	ZipReadStream.h ZipReadStream.cpp
 )
 
 set(LIB io)

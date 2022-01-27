@@ -62,7 +62,10 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	enkiRegionFileInit(&regionFile);
 	regionFile.regionDataSize = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(stream.size());
-	stream.read(buffer, stream.size());
+	if (stream.read(buffer, stream.size()) == -1) {
+		core_free(buffer);
+		return false;
+	}
 	regionFile.pRegionData = buffer;
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
 

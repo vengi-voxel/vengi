@@ -17,6 +17,13 @@ namespace voxel {
 
 namespace qbcl {
 const int RLE_FLAG = 2;
+
+const int VERSION = 2;
+
+const int NODE_TYPE_MATRIX = 0;
+const int NODE_TYPE_MODEL = 1;
+const int NODE_TYPE_COMPOUND = 2;
+
 }
 
 #define wrap(read) \
@@ -65,7 +72,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readInt32(position.x));
 	wrap(stream.readInt32(position.y));
 	wrap(stream.readInt32(position.z));
-	transform.position = position;
+	//transform.position = position;
 
 	wrap(stream.readFloat(transform.normalizedPivot.x));
 	wrap(stream.readFloat(transform.normalizedPivot.y));
@@ -216,7 +223,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 	wrapBool(readString(stream, name))
 	stream.skip(3); // ColorFormat, ZAxisOrientation, Compression? (see QBFormat)
 	switch (type) {
-	case 0:
+	case qbcl::NODE_TYPE_MATRIX:
 		Log::debug("Found matrix");
 		if (!readMatrix(filename, stream, sceneGraph, parent, name)) {
 			Log::error("Failed to load matrix %s", name.c_str());
@@ -224,7 +231,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 		}
 		Log::debug("Matrix of size %u loaded", dataSize);
 		break;
-	case 1:
+	case qbcl::NODE_TYPE_MODEL:
 		Log::debug("Found model");
 		if (!readModel(filename, stream, sceneGraph, parent, name)) {
 			Log::error("Failed to load model %s", name.c_str());
@@ -232,7 +239,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 		}
 		Log::debug("Model of size %u loaded", dataSize);
 		break;
-	case 2:
+	case qbcl::NODE_TYPE_COMPOUND:
 		Log::debug("Found compound");
 		if (!readCompound(filename, stream, sceneGraph, parent, name)) {
 			Log::error("Failed to load compound %s", name.c_str());
@@ -258,7 +265,7 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	wrapImg(stream.readUInt32(version))
 	uint32_t fileVersion;
 	wrap(stream.readUInt32(fileVersion))
-	if (fileVersion != 2) {
+	if (fileVersion != qbcl::VERSION) {
 		Log::error("Unknown version found: %i", fileVersion);
 		return false;
 	}
@@ -287,7 +294,10 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	wrapBool(readString(stream, copyright))
 
 	uint8_t guid[16];
-	wrap(stream.read(guid, lengthof(guid)))
+	if (stream.read(guid, lengthof(guid)) == -1) {
+		Log::error("Failed to read the guid");
+		return false;
+	}
 
 	SceneGraphNode& rootNode = sceneGraph.node(sceneGraph.root().id());
 	rootNode.setProperty("Title", title);

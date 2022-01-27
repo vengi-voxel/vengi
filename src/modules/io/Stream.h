@@ -16,7 +16,7 @@ class ReadStream {
 public:
 	virtual ~ReadStream() {}
 	/**
-	 * @return -1 on error - 0 on success
+	 * @return -1 on error - read bytes on success
 	 */
 	virtual int read(void *dataPtr, size_t dataSize) = 0;
 	virtual bool eos() const = 0;
@@ -89,7 +89,7 @@ class WriteStream {
 public:
 	virtual ~WriteStream() {}
 	/**
-	 * @return -1 on error - 0 on success
+	 * @return -1 on error - writte bytes on success
 	 */
 	virtual int write(const void *buf, size_t size) = 0;
 

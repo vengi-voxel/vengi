@@ -117,7 +117,10 @@ bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const SceneGrap
 	core_assert_always(node != nullptr);
 	char name[15];
 	core_memcpy(name, node->name().c_str(), sizeof(name));
-	wrap(stream.write(name, sizeof(name)))
+	if (stream.write(name, sizeof(name)) == -1) {
+		Log::error("Failed to write limp header into stream");
+		return false;
+	}
 	wrapBool(stream.writeUInt8('\0'))
 	wrapBool(stream.writeUInt32(limbIdx))
 	wrapBool(stream.writeUInt32(1))

@@ -93,7 +93,7 @@ bool GoxFormat::loadChunk_ReadData(io::SeekableReadStream &stream, char *buff, i
 	if (size == 0) {
 		return true;
 	}
-	if (stream.read(buff, size) != 0) {
+	if (stream.read(buff, size) == -1) {
 		return false;
 	}
 	return true;
@@ -428,9 +428,15 @@ bool GoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 bool GoxFormat::saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const void *value, size_t valueSize) {
 	const int keyLength = (int)SDL_strlen(key);
 	wrapBool(stream.writeUInt32(keyLength))
-	wrap(stream.write(key, keyLength))
+	if (stream.write(key, keyLength) == -1) {
+		Log::error("Failed to write dict entry key");
+		return false;
+	}
 	wrapBool(stream.writeUInt32(valueSize))
-	wrap(stream.write(value, valueSize))
+	if (stream.write(value, valueSize) == -1) {
+		Log::error("Failed to write dict entry value");
+		return false;
+	}
 	return true;
 }
 
@@ -560,7 +566,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph
 					uint8_t *png = image::createPng(data, 64, 64, 4, &pngSize);
 					core_free(data);
 
-					if (stream.write(png, pngSize) != 0) {
+					if (stream.write(png, pngSize) == -1) {
 						Log::error("Could not write png into gox stream");
 						core_free(png);
 						delete mirrored;

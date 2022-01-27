@@ -31,10 +31,7 @@ int FileStream::write(const void *buf, size_t size) {
 	const int64_t written = (int64_t)SDL_RWwrite(_rwops, buf, 1, size);
 	_pos = SDL_RWtell(_rwops);
 	_size = core_max(_size, _pos);
-	if (written == (int64_t)size) {
-		return 0;
-	}
-	return -1;
+	return (int)written;
 }
 
 int FileStream::read(void *dataPtr, size_t dataSize) {
@@ -51,7 +48,7 @@ int FileStream::read(void *dataPtr, size_t dataSize) {
 		Log::debug("File read error: %s", SDL_GetError());
 		return -1;
 	}
-	return 0;
+	return (int)completeBytesRead;
 }
 
 int64_t FileStream::seek(int64_t position, int whence) {

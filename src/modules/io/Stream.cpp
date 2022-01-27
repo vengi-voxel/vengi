@@ -241,11 +241,17 @@ bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 }
 
 int ReadStream::readUInt8(uint8_t &val) {
-	return read(&val, sizeof(val));
+	if (read(&val, sizeof(val)) == sizeof(val)) {
+		return 0;
+	}
+	return -1;
 }
 
 int ReadStream::readInt8(int8_t &val) {
-	return read(&val, sizeof(val));
+	if (read(&val, sizeof(val)) == sizeof(val)) {
+		return 0;
+	}
+	return -1;
 }
 
 bool ReadStream::readBool() {
@@ -257,39 +263,39 @@ bool ReadStream::readBool() {
 }
 
 int ReadStream::readUInt16(uint16_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const uint16_t swapped = SDL_SwapLE16(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readInt16(int16_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const int16_t swapped = SDL_SwapLE16(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readInt16BE(int16_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const int16_t swapped = SDL_SwapBE16(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readUInt16BE(uint16_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const int16_t swapped = SDL_SwapBE16(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readFloat(float &val) {
@@ -317,75 +323,75 @@ int ReadStream::readFloatBE(float &val) {
 }
 
 int ReadStream::readUInt32(uint32_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const uint32_t swapped = SDL_SwapLE32(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readInt32(int32_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const int32_t swapped = (int32_t)SDL_SwapLE32(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readUInt32BE(uint32_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const uint32_t swapped = SDL_SwapBE32(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readInt32BE(int32_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const int32_t swapped = SDL_SwapBE32(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readUInt64(uint64_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const uint64_t swapped = SDL_SwapLE64(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readInt64(int64_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const int64_t swapped = SDL_SwapLE64(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readUInt64BE(uint64_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const uint64_t swapped = SDL_SwapBE64(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 int ReadStream::readInt64BE(int64_t &val) {
-	const int retVal = read(&val, sizeof(val));
-	if (retVal == 0) {
+	if (read(&val, sizeof(val)) == sizeof(val)) {
 		const int64_t swapped = SDL_SwapBE64(val);
 		val = swapped;
+		return 0;
 	}
-	return retVal;
+	return -1;
 }
 
 bool SeekableReadStream::readLine(int length, char *strbuff) {
@@ -396,7 +402,7 @@ bool SeekableReadStream::readLine(int length, char *strbuff) {
 		}
 		if (chr == '\r') {
 			strbuff[i] = '\0';
-			if (read(&chr, sizeof(chr)) != 0) {
+			if (read(&chr, sizeof(chr)) != sizeof(chr)) {
 				if (chr != '\n') {
 					seek(-1, SEEK_CUR);
 				}

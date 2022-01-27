@@ -26,7 +26,7 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 
 	const int64_t length = stream.size();
 	uint8_t *v = new uint8_t[length];
-	if (stream.read(v, length) != 0) {
+	if (stream.read(v, length) == -1) {
 		Log::error("AOS vxl: Failed to load file %s", filename.c_str());
 		return false;
 	}

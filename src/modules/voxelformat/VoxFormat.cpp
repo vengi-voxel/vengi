@@ -51,7 +51,10 @@ VoxFormat::VoxFormat() {
 size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, core::Array<uint32_t, 256> &palette) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
-	stream.read(buffer, size);
+	if (stream.read(buffer, size) == -1) {
+		core_free(buffer);
+		return 0;
+	}
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, 0);
 	core_free(buffer);
 	if (scene == nullptr) {
@@ -180,7 +183,10 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
-	stream.read(buffer, size);
+	if (stream.read(buffer, size) == -1) {
+		core_free(buffer);
+		return false;
+	}
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, k_read_scene_flags_groups);
 	core_free(buffer);
 	if (scene == nullptr) {

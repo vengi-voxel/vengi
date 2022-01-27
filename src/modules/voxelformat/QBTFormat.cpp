@@ -18,7 +18,12 @@
 
 namespace voxel {
 
+namespace qbt {
 static const bool MergeCompounds = true;
+const int NODE_TYPE_MATRIX = 0;
+const int NODE_TYPE_MODEL = 1;
+const int NODE_TYPE_COMPOUND = 2;
+}
 
 #define wrapSave(write) \
 	if ((write) == false) { \
@@ -97,7 +102,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 		return false;
 	}
 
-	wrapSaveFree(stream.writeUInt32(0u)); // node type matrix
+	wrapSaveFree(stream.writeUInt32(qbt::NODE_TYPE_MATRIX)); // node type matrix
 	const size_t nameLength = node.name().size();
 	const size_t nameSize = sizeof(uint32_t) + nameLength;
 	const size_t positionSize = 3 * sizeof(uint32_t);
@@ -133,7 +138,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 
 	Log::debug("save %i compressed bytes", (int)realBufSize);
 	wrapSaveFree(stream.writeUInt32(realBufSize));
-	if (stream.write(compressedBuf, realBufSize) != 0) {
+	if (stream.write(compressedBuf, realBufSize) == -1) {
 		Log::error("Could not save qbt file: failed to write the compressed buffer");
 		delete[] compressedBuf;
 		delete[] zlibBuffer;
@@ -160,7 +165,7 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream) const {
 
 bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, bool colorMap) const {
 	int children = (int)sceneGraph.size();
-	wrapSave(stream.writeUInt32(1)); // node type model
+	wrapSave(stream.writeUInt32(qbt::NODE_TYPE_MODEL));
 	if (children == 0) {
 		wrapSave(stream.writeUInt32(sizeof(uint32_t)));
 		wrapSave(stream.writeUInt32(0));
@@ -249,7 +254,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGr
 	wrap(stream.readUInt32(childCount));
 	Log::debug("Load %u children", childCount);
 	for (uint32_t i = 0; i < childCount; ++i) {
-		if (MergeCompounds) {
+		if (qbt::MergeCompounds) {
 			// if you don't need the datatree you can skip child nodes
 			if (!skipNode(stream)) {
 				return false;
@@ -413,7 +418,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph,
 	Log::debug("Data size: %u", dataSize);
 
 	switch (nodeTypeID) {
-	case 0: {
+	case qbt::NODE_TYPE_MATRIX: {
 		Log::debug("Found matrix");
 		if (!loadMatrix(stream, sceneGraph, parent)) {
 			Log::error("Failed to load matrix");
@@ -422,7 +427,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph,
 		Log::debug("Matrix of size %u loaded", dataSize);
 		break;
 	}
-	case 1:
+	case qbt::NODE_TYPE_MODEL:
 		Log::debug("Found model");
 		if (!loadModel(stream, sceneGraph, parent)) {
 			Log::error("Failed to load model");
@@ -430,7 +435,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph,
 		}
 		Log::debug("Model of size %u loaded", dataSize);
 		break;
-	case 2:
+	case qbt::NODE_TYPE_COMPOUND:
 		Log::debug("Found compound");
 		if (!loadCompound(stream, sceneGraph, parent)) {
 			Log::error("Failed to load compound");

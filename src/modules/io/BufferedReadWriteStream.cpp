@@ -37,7 +37,7 @@ int BufferedReadWriteStream::write(const void *buf, size_t size) {
 	core_memcpy(&_buffer[_pos], buf, size);
 	_pos += (int64_t)size;
 	_size = core_max(_pos, _size);
-	return 0;
+	return (int)size;
 }
 
 int BufferedReadWriteStream::read(void *buf, size_t size) {
@@ -46,7 +46,7 @@ int BufferedReadWriteStream::read(void *buf, size_t size) {
 	}
 	core_memcpy(buf, &_buffer[_pos], size);
 	_pos += (int64_t)size;
-	return 0;
+	return (int)size;
 }
 
 int64_t BufferedReadWriteStream::seek(int64_t position, int whence) {

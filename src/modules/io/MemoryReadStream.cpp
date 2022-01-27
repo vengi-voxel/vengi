@@ -15,7 +15,7 @@ int MemoryReadStream::read(void *dataPtr, size_t dataSize) {
 	}
 	core_memcpy(dataPtr, &_buf[_pos], dataSize);
 	_pos += (int64_t)dataSize;
-	return 0;
+	return (int)dataSize;
 }
 
 int64_t MemoryReadStream::seek(int64_t position, int whence) {

@@ -15,7 +15,7 @@ BufferedZipReadStream::BufferedZipReadStream(SeekableReadStream &stream, size_t 
 	core_assert(maxUncompressedSize > 0);
 
 	uint8_t *srcBuf = (uint8_t *)core_malloc(zipSize);
-	if (stream.read(srcBuf, zipSize) != 0) {
+	if (stream.read(srcBuf, zipSize) == -1) {
 		// failed - make sure that the next read from this stream fails, too
 		_size = 0;
 		_pos = 0;

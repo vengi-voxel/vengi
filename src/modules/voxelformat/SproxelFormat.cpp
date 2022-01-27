@@ -51,7 +51,7 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 			for (int x = 0; x < size.x; x++) {
 				int r, g, b, a;
 				char hex[10];
-				if ((stream.read(hex, 9)) != 0) {
+				if ((stream.read(hex, 9)) == -1) {
 					Log::error("Could not load sproxel csv color line");
 					delete volume;
 					return false;

@@ -139,7 +139,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 }
 
 bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapSave(stream.writeUInt32(257)) // version
+	wrapSave(stream.writeUInt32(131331)) // version
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
 	wrapSave(stream.writeUInt32((uint32_t)ZAxisOrientation::Right))
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
@@ -237,7 +237,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
 					const voxel::Voxel& voxel = getVoxel(state, stream);
-					v->setVoxel(x, y, z, voxel);
+					v->setVoxel(offset.x + x, offset.y + y, offset.z + z, voxel);
 				}
 			}
 		}
@@ -272,7 +272,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			for (uint32_t j = 0; j < count; ++j) {
 				const uint32_t x = (index + j) % size.x;
 				const uint32_t y = (index + j) / size.x;
-				v->setVoxel(x, y, z, voxel);
+				v->setVoxel(offset.x + x, offset.y + y, offset.z + z, voxel);
 			}
 			index += count;
 		}
