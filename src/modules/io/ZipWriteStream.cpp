@@ -27,6 +27,7 @@ int ZipWriteStream::write(const void *buf, size_t size) {
 	_stream->next_in = (unsigned char *)buf;
 	_stream->avail_in = static_cast<unsigned int>(size);
 
+	uint32_t writtenBytes = 0;
 	while (_stream->avail_in > 0) {
 		_stream->avail_out = sizeof(_out);
 		_stream->next_out = _out;
@@ -38,13 +39,14 @@ int ZipWriteStream::write(const void *buf, size_t size) {
 
 		const uint32_t written = sizeof(_out) - _stream->avail_out;
 		if (written != 0u) {
-			if (_outStream.write(_out, written) == -1) {
+			if (_outStream.write(_out, written) != (int)written) {
 				return -1;
 			}
+			writtenBytes += written;
+			_pos += written;
 		}
 	}
-	_pos += (int64_t)size;
-	return (int)size;
+	return (int)writtenBytes;
 }
 
 bool ZipWriteStream::flush() {
@@ -58,7 +60,9 @@ bool ZipWriteStream::flush() {
 	}
 
 	size_t remaining = sizeof(_out) - _stream->avail_out;
-	return _outStream.write(_out, remaining) != -1;
+	const int written = _outStream.write(_out, remaining);
+	_pos += written;
+	return written == (int)remaining;
 }
 
 } // namespace io

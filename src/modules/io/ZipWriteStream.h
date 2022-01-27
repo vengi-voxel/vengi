@@ -22,11 +22,26 @@ public:
 	virtual ~ZipWriteStream();
 
 	int write(const void *buf, size_t size) override;
+	/**
+	 * @brief Returns the compressed written bytes that went into the given output stream
+	 */
 	int64_t pos() const;
+	/**
+	 * @brief Returns the compressed written bytes that went into the given output stream
+	 */
+	int64_t size() const;
+
+	/**
+	 * @note This method is automatically called in the destructor
+	 */
 	bool flush();
 };
 
 inline int64_t ZipWriteStream::pos() const {
+	return _pos;
+}
+
+inline int64_t ZipWriteStream::size() const {
 	return _pos;
 }
 
