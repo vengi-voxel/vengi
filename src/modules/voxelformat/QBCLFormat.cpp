@@ -12,6 +12,7 @@
 #include "core/Log.h"
 #include "image/Image.h"
 #include "io/BufferedZipReadStream.h"
+#include "io/ZipReadStream.h"
 
 namespace voxel {
 
@@ -104,8 +105,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 		return false;
 	}
 
-	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
-	io::BufferedZipReadStream zipStream(stream, voxelDataSize, voxelDataSizeDecompressed);
+	io::ZipReadStream zipStream(stream, (int)voxelDataSize);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	_colorsSize = 0;
 	uint32_t index = 0;
