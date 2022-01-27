@@ -23,6 +23,7 @@ public:
 
 	int write(const void *buf, size_t size) override;
 	int64_t pos() const;
+	bool flush();
 };
 
 inline int64_t ZipWriteStream::pos() const {

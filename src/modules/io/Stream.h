@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/NonCopyable.h"
 #include "core/String.h"
 #include <stdio.h>
 #include <stddef.h>
@@ -12,7 +13,7 @@
 
 namespace io {
 
-class ReadStream {
+class ReadStream : public core::NonCopyable {
 public:
 	virtual ~ReadStream() {}
 	/**
@@ -85,7 +86,7 @@ inline bool SeekableReadStream::empty() const {
 	return size() == 0;
 }
 
-class WriteStream {
+class WriteStream : public core::NonCopyable {
 public:
 	virtual ~WriteStream() {}
 	/**

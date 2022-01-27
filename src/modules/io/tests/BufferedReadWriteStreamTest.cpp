@@ -109,10 +109,9 @@ TEST(BufferedReadWriteStreamTest, testReadExceedsSize) {
 	int8_t writeVal = 0;
 	stream.writeInt8(writeVal);
 	stream.seek(0);
-	const int64_t previous = stream.remaining();
 	int64_t readVal;
 	EXPECT_EQ(-1, stream.readInt64(readVal));
-	EXPECT_EQ(previous, stream.remaining());
+	EXPECT_EQ(0, stream.remaining());
 }
 
 TEST(BufferedReadWriteStreamTest, testSeek) {

@@ -27,6 +27,7 @@ set(TEST_SRCS
 	tests/FormatDescriptionTest.cpp
 	tests/FileTest.cpp
 	tests/MemoryReadStreamTest.cpp
+	tests/ZipStreamTest.cpp
 )
 
 gtest_suite_sources(tests ${TEST_SRCS})

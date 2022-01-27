@@ -41,8 +41,14 @@ int BufferedReadWriteStream::write(const void *buf, size_t size) {
 }
 
 int BufferedReadWriteStream::read(void *buf, size_t size) {
-	if (_pos + (int64_t)size > _size) {
+	const int64_t remainingSize = remaining();
+	if (remainingSize <= 0) {
 		return -1;
+	}
+	if ((int64_t)size > remainingSize) {
+		core_memcpy(buf, &_buffer[_pos], remainingSize);
+		_pos += (int64_t)remainingSize;
+		return (int)remainingSize;
 	}
 	core_memcpy(buf, &_buffer[_pos], size);
 	_pos += (int64_t)size;

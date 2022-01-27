@@ -13,16 +13,18 @@ namespace io {
 class ZipReadStream : public io::ReadStream {
 private:
 	struct mz_stream_s *_stream;
-	io::ReadStream &_readStream;
+	io::SeekableReadStream &_readStream;
 	uint8_t _buf[256 * 1024];
-	bool _eos = false;
+	const int _size;
+	int _remaining;
 
 public:
-	ZipReadStream(io::ReadStream &readStream);
+	ZipReadStream(io::SeekableReadStream &readStream, int size = -1);
 	virtual ~ZipReadStream();
 
 	int read(void *dataPtr, size_t dataSize) override;
 	bool eos() const override;
+	int64_t remaining() const;
 };
 
 } // namespace io
