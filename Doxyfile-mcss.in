@@ -4,7 +4,7 @@ GENERATE_XML            = YES
 XML_PROGRAMLISTING      = NO
 
 M_LINKS_NAVBAR1 = \
-	"about dependencies building configuration setup" \
+	"about" \
 	"pages" \
 	"modules" \
 	"namespaces"
