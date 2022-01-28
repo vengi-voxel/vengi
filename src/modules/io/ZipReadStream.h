@@ -17,6 +17,7 @@ private:
 	uint8_t _buf[256 * 1024];
 	const int _size;
 	int _remaining;
+	bool _eos = false;
 
 public:
 	ZipReadStream(io::SeekableReadStream &readStream, int size = -1);

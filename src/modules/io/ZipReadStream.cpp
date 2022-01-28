@@ -24,7 +24,7 @@ ZipReadStream::~ZipReadStream() {
 }
 
 bool ZipReadStream::eos() const {
-	return remaining() == 0;
+	return _eos;
 }
 
 int64_t ZipReadStream::remaining() const {
@@ -68,9 +68,12 @@ int ZipReadStream::read(void *buf, size_t size) {
 		core_assert(size >= outputSize);
 		size -= outputSize;
 
-		if (size > 0 && retval == MZ_STREAM_END) {
-			// attempting to read past the end of the stream
-			return -1;
+		if (retval == MZ_STREAM_END) {
+			_eos = true;
+			if (size > 0) {
+				// attempting to read past the end of the stream
+				return -1;
+			}
 		}
 	}
 	return (int)originalSize;
