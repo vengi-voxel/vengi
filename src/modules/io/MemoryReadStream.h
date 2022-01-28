@@ -8,6 +8,9 @@
 
 namespace io {
 
+/**
+ * @see SeekableReadStream
+ */
 class MemoryReadStream : public SeekableReadStream {
 protected:
 	const uint8_t *_buf;

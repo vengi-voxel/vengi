@@ -10,6 +10,10 @@ struct mz_stream_s;
 
 namespace io {
 
+/**
+ * @see BufferedZipReadStream
+ * @see ZipWriteStream
+ */
 class ZipReadStream : public io::ReadStream {
 private:
 	struct mz_stream_s *_stream;

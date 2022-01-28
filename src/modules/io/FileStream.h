@@ -21,6 +21,9 @@ typedef core::SharedPtr<File> FilePtr;
 
 /**
  * @brief Little endian file stream
+ *
+ * @see SeekableReadStream
+ * @see SeekableWriteStream
  */
 class FileStream : public SeekableReadStream, public SeekableWriteStream {
 private:

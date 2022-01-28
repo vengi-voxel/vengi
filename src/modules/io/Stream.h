@@ -60,7 +60,13 @@ public:
 	 * @return -1 on error - otherwise the current offset in the stream
 	 */
 	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
+	/**
+	 * @return The amount of bytes that are available in this stream
+	 */
 	virtual int64_t size() const = 0;
+	/**
+	 * @return The current position in the stream
+	 */
 	virtual int64_t pos() const = 0;
 
 	int64_t skip(int64_t delta);
@@ -69,6 +75,9 @@ public:
 		return pos() >= size();
 	}
 
+	/**
+	 * @note doesn't advance the stream position
+	 */
 	int peekUInt32(uint32_t &val);
 	int peekUInt16(uint16_t &val);
 	int peekUInt8(uint8_t &val);

@@ -10,6 +10,10 @@ struct mz_stream_s;
 
 namespace io {
 
+/**
+ * @see BufferedZipReadStream
+ * @see ZipReadStream
+ */
 class ZipWriteStream : public io::WriteStream {
 private:
 	struct mz_stream_s *_stream;
@@ -32,6 +36,8 @@ public:
 	int64_t size() const;
 
 	/**
+	 * @brief Flush the pending stream data into the output stream
+	 *
 	 * @note This method is automatically called in the destructor
 	 */
 	bool flush();

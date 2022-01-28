@@ -17,6 +17,10 @@
 
 namespace io {
 
+/**
+ * @see SeekableReadStream
+ * @see SeekableWriteStream
+ */
 class BufferedReadWriteStream : public SeekableReadStream, public SeekableWriteStream {
 private:
 	uint8_t* _buffer = nullptr;
