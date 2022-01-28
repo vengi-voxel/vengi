@@ -103,6 +103,10 @@ public:
 	 */
 	virtual int write(const void *buf, size_t size) = 0;
 
+	virtual bool flush() {
+		return true;
+	}
+
 	bool writeBool(bool value);
 
 	bool writeInt8(int8_t val);

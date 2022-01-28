@@ -40,7 +40,7 @@ public:
 	 *
 	 * @note This method is automatically called in the destructor
 	 */
-	bool flush();
+	bool flush() override;
 };
 
 inline int64_t ZipWriteStream::pos() const {
