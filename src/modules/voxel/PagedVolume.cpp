@@ -49,7 +49,7 @@ PagedVolume::PagedVolume(Pager* pager, uint32_t targetMemoryUsageInBytes, uint16
 	_chunkCountLimit = core_max(_chunkCountLimit, minPracticalNoOfChunks);
 
 	// Inform the user about the chosen memory configuration.
-	Log::info("Memory usage limit for volume now set to %uMb (%u chunks of %uKb each).",
+	Log::debug("Memory usage limit for volume now set to %uMb (%u chunks of %uKb each).",
 			(_chunkCountLimit * chunkSizeInBytes) / (1024 * 1024), _chunkCountLimit, chunkSizeInBytes / 1024);
 }
 
