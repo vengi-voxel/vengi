@@ -19,6 +19,9 @@ namespace voxel {
  */
 class QBCLFormat : public Format {
 private:
+	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const;
+	bool saveModel(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph) const;
+
 	bool readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name);
 	bool readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name);
 	bool readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name);

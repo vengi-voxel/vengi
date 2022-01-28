@@ -11,8 +11,14 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "image/Image.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/BufferedZipReadStream.h"
+#include "io/Stream.h"
 #include "io/ZipReadStream.h"
+#include "io/ZipWriteStream.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 
 namespace voxel {
 
@@ -45,8 +51,211 @@ const int NODE_TYPE_COMPOUND = 2;
 		return false; \
 	}
 
+#define wrapSave(write) \
+	if ((write) == false) { \
+		Log::error("Could not save qbcl file: " CORE_STRINGIFY(write) " failed"); \
+		return false; \
+	}
+
+#define wrapSaveColor(write) \
+	if ((write) == false) { \
+		Log::error("Could not save qbcl file: " CORE_STRINGIFY(write) " failed"); \
+		return -1; \
+	}
+
+#define wrapSaveNegative(write) \
+	if ((write) == -1) { \
+		Log::error("Could not save qbcl file: " CORE_STRINGIFY(write) " failed"); \
+		return false; \
+	}
+
+static bool writeString(io::SeekableWriteStream& stream, const core::String& str) {
+	wrapSave(stream.writeUInt32(str.size()))
+	wrapSave(stream.writeString(str, false))
+	return true;
+}
+
+static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t count) {
+	if (count == 0) {
+		return 0;
+	}
+	glm::u8vec4 color(0);
+	if (!voxel::isAir(voxel.getMaterial())) {
+		const glm::vec4 &rgbaColor = getMaterialColor(voxel);
+		color = core::Color::getRGBAVec(rgbaColor);
+	}
+	if (count == 1) {
+		wrapSaveColor(stream.writeUInt8(color.r))
+		wrapSaveColor(stream.writeUInt8(color.g))
+		wrapSaveColor(stream.writeUInt8(color.b))
+		wrapSaveColor(stream.writeUInt8(color.a))
+		return 1;
+	}
+
+	if (count == 2) {
+		wrapSaveColor(stream.writeUInt8(color.r))
+		wrapSaveColor(stream.writeUInt8(color.g))
+		wrapSaveColor(stream.writeUInt8(color.b))
+		wrapSaveColor(stream.writeUInt8(color.a))
+
+		wrapSaveColor(stream.writeUInt8(color.r))
+		wrapSaveColor(stream.writeUInt8(color.g))
+		wrapSaveColor(stream.writeUInt8(color.b))
+		wrapSaveColor(stream.writeUInt8(color.a))
+	} else if (count > 2) {
+		wrapSaveColor(stream.writeUInt8(count))			 // r
+		wrapSaveColor(stream.writeUInt8(0))				 // g
+		wrapSaveColor(stream.writeUInt8(0))				 // b
+		wrapSaveColor(stream.writeUInt8(qbcl::RLE_FLAG)) // mask
+
+		wrapSaveColor(stream.writeUInt8(color.r))
+		wrapSaveColor(stream.writeUInt8(color.g))
+		wrapSaveColor(stream.writeUInt8(color.b))
+		wrapSaveColor(stream.writeUInt8(color.a))
+	}
+	return 2;
+}
+
+bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraphNode& node) const {
+	const voxel::Region& region = node.region();
+	const glm::ivec3& mins = region.getLowerCorner();
+	const glm::ivec3& maxs = region.getUpperCorner();
+	const glm::ivec3 size = region.getDimensionsInVoxels();
+
+	wrapSave(outStream.writeUInt32(qbcl::NODE_TYPE_MATRIX));
+	wrapSave(outStream.writeUInt32(1)) // unknown
+	wrapSave(writeString(outStream, node.name()))
+	wrapSave(outStream.writeUInt8(1)) // unknown
+	wrapSave(outStream.writeUInt8(1)) // unknown
+	wrapSave(outStream.writeUInt8(0)) // unknown
+
+	wrapSave(outStream.writeUInt32(size.x))
+	wrapSave(outStream.writeUInt32(size.y))
+	wrapSave(outStream.writeUInt32(size.z))
+
+	wrapSave(outStream.writeInt32(mins.x))
+	wrapSave(outStream.writeInt32(mins.y))
+	wrapSave(outStream.writeInt32(mins.z))
+
+	const glm::vec3 &pivot = node.normalizedPivot();
+	wrapSave(outStream.writeFloat(pivot.x))
+	wrapSave(outStream.writeFloat(pivot.y))
+	wrapSave(outStream.writeFloat(pivot.z))
+
+	uint32_t voxelDataSizePos = outStream.pos();
+	wrapSave(outStream.writeUInt32(0));
+
+	io::BufferedReadWriteStream rleDataStream(size.x * size.y * size.z);
+
+	const voxel::RawVolume *v = node.volume();
+	for (int x = mins.x; x <= maxs.x; ++x) {
+		for (int z = mins.z; z <= maxs.z; ++z) {
+			int previousColor = -1;
+			uint16_t rleEntries = 0;
+			uint8_t rleCount = 0;
+			voxel::Voxel previousVoxel;
+
+			// remember the position in the stream because we have
+			// to write the real value after the z loop
+			const int64_t dataSizePos = rleDataStream.pos();
+			wrapSave(rleDataStream.writeUInt16(rleEntries))
+			for (int y = mins.y; y <= maxs.y; ++y) {
+				const Voxel& voxel = v->voxel(x, y, z);
+				const int paletteIdx = voxel.getColor();
+				if (previousColor == -1) {
+					previousColor = paletteIdx;
+					previousVoxel = voxel;
+					rleCount = 1;
+				} else if (previousColor != paletteIdx || rleCount == 255) {
+					rleEntries += writeRLE(rleDataStream, previousVoxel, rleCount);
+					rleCount = 1;
+					previousColor = paletteIdx;
+					previousVoxel = voxel;
+				} else {
+					++rleCount;
+				}
+			}
+			rleEntries += writeRLE(rleDataStream, previousVoxel, rleCount);
+			wrapSaveNegative(rleDataStream.seek(dataSizePos))
+			wrapSave(rleDataStream.writeUInt16(rleEntries))
+			wrapSaveNegative(rleDataStream.seek(0, SEEK_END))
+		}
+	}
+
+
+	io::ZipWriteStream zipStream(outStream);
+	if (zipStream.write(rleDataStream.getBuffer(), rleDataStream.size()) == -1) {
+		Log::error("Could not write compressed data");
+		return false;
+	}
+	wrapSave(zipStream.flush())
+	const int64_t compressedDataSize = zipStream.size();
+	wrapSaveNegative(outStream.seek(voxelDataSizePos))
+	wrapSave(outStream.writeUInt32(compressedDataSize))
+	wrapSaveNegative(outStream.seek(0, SEEK_END))
+
+	return true;
+}
+
+bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph) const {
+	int children = (int)sceneGraph.size();
+	wrapSave(stream.writeUInt32(qbcl::NODE_TYPE_MODEL))
+	wrapSave(stream.writeUInt32(1)) // unknown
+	wrapSave(writeString(stream, sceneGraph.root().name()))
+	wrapSave(stream.writeUInt8(1)) // unknown
+	wrapSave(stream.writeUInt8(1)) // unknown
+	wrapSave(stream.writeUInt8(0)) // unknown
+	const uint8_t array[36] = {
+		0x01, 0x00, 0x00,
+		0x00, 0x01, 0x00,
+		0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00 };
+	if (stream.write(array, sizeof(array)) == -1) {
+		Log::error("Failed to write array into stream");
+		return false;
+	}
+	wrapSave(stream.writeUInt32(children));
+
+	bool success = true;
+	for (const SceneGraphNode& node : sceneGraph) {
+		if (!saveMatrix(stream, node)) {
+			success = false;
+		}
+	}
+
+	return success;
+}
+
 bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	return false;
+	wrapBool(stream.writeUInt32(FourCC('Q','B','C','L')))
+	wrapBool(stream.writeUInt32(257))
+	wrapBool(stream.writeUInt32(qbcl::VERSION))
+	wrapBool(stream.writeUInt32(0)) // thumbnail w/h
+	wrapBool(stream.writeUInt32(0)) // thumbnail w/h
+
+	wrapBool(writeString(stream, "")) // no title
+	wrapBool(writeString(stream, "")) // no desc
+	wrapBool(writeString(stream, "")) // no metadata
+	wrapBool(writeString(stream, "")) // no author
+	wrapBool(writeString(stream, "")) // no company
+	wrapBool(writeString(stream, "")) // no website
+	wrapBool(writeString(stream, "")) // no copyright
+
+	uint8_t guid[16] {0};
+	if (stream.write(guid, lengthof(guid)) == -1) {
+		Log::error("Failed to write guid into stream");
+		return false;
+	}
+
+	return saveModel(stream, sceneGraph);
 }
 
 static bool readString(io::SeekableReadStream& stream, core::String& str) {
@@ -79,14 +288,14 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readFloat(transform.normalizedPivot.y));
 	wrap(stream.readFloat(transform.normalizedPivot.z));
 
-	uint32_t voxelDataSize;
-	wrap(stream.readUInt32(voxelDataSize));
-	Log::debug("Matrix size: %u:%u:%u with %u bytes", size.x, size.y, size.z, voxelDataSize);
-	if (voxelDataSize == 0) {
+	uint32_t compressedDataSize;
+	wrap(stream.readUInt32(compressedDataSize));
+	Log::debug("Matrix size: %u:%u:%u with %u bytes", size.x, size.y, size.z, compressedDataSize);
+	if (compressedDataSize == 0) {
 		Log::warn("Empty voxel chunk found");
 		return false;
 	}
-	if (voxelDataSize > 0xFFFFFF) {
+	if (compressedDataSize > 0xFFFFFF) {
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
@@ -105,16 +314,16 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 		return false;
 	}
 
-	io::ZipReadStream zipStream(stream, (int)voxelDataSize);
+	io::ZipReadStream zipStream(stream, (int)compressedDataSize);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	_colorsSize = 0;
 	uint32_t index = 0;
 
 	while (!zipStream.eos()) {
 		int y = 0;
-		uint16_t dataSize;
-		wrap(zipStream.readUInt16(dataSize))
-		for (int i = 0; i < dataSize; i++) {
+		uint16_t rleEntries;
+		wrap(zipStream.readUInt16(rleEntries))
+		for (int i = 0; i < (int)rleEntries; i++) {
 			uint8_t red;
 			uint8_t green;
 			uint8_t blue;
@@ -351,3 +560,6 @@ image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::See
 #undef wrapImg
 #undef wrap
 #undef wrapBool
+#undef wrapSaveColor
+#undef wrapSaveNegative
+#undef wrapSave

@@ -74,7 +74,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"Qubicle Binary", "qb", nullptr, 0u},
 	{"MagicaVoxel", "vox", nullptr, 0u},
 	{"Qubicle Binary Tree", "qbt", nullptr, 0u},
-	//{"Qubicle Project", "qbcl", nullptr, 0u},
+	{"Qubicle Project", "qbcl", nullptr, 0u},
 	{"Sandbox VoxEdit Model", "vxm", nullptr, 0u},
 	{"Sandbox VoxEdit Hierarchy", "vxr", nullptr, 0u},
 	{"BinVox", "binvox", nullptr, 0u},

@@ -24,10 +24,10 @@ const int NEXT_SLICE_FLAG = 6;
 	}
 
 #define wrapSaveColor(color) \
-	wrapSave(stream.writeUInt8((color).x)) \
-	wrapSave(stream.writeUInt8((color).y)) \
-	wrapSave(stream.writeUInt8((color).z)) \
-	wrapSave(stream.writeUInt8((color).w))
+	wrapSave(stream.writeUInt8((color).r)) \
+	wrapSave(stream.writeUInt8((color).g)) \
+	wrapSave(stream.writeUInt8((color).b)) \
+	wrapSave(stream.writeUInt8((color).a))
 
 
 #define wrap(read) \
