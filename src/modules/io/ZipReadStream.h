@@ -13,6 +13,7 @@ namespace io {
 /**
  * @see BufferedZipReadStream
  * @see ZipWriteStream
+ * @ingroup IO
  */
 class ZipReadStream : public io::ReadStream {
 private:

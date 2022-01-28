@@ -9,7 +9,9 @@
 namespace io {
 
 /**
+ * @ingroup IO
  * @see SeekableReadStream
+ * @see BufferedReadWriteStream
  */
 class MemoryReadStream : public SeekableReadStream {
 protected:

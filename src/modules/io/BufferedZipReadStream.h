@@ -11,6 +11,7 @@ namespace io {
 /**
  * @brief Read from a zip input stream and save in a local buffer
  *
+ * @ingroup IO
  * @see ZipReadStream
  * @see ZipWriteStream
  * @see MemoryReadStream

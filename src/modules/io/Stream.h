@@ -11,8 +11,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/**
+ * @defgroup IO IO
+ * @{
+ */
+
 namespace io {
 
+/**
+ * @ingroup IO
+ */
 class ReadStream : public core::NonCopyable {
 public:
 	virtual ~ReadStream() {}
@@ -55,6 +63,7 @@ public:
 
 /**
  * @brief ReadStream with the option to jump back and forth in while reading
+ * @ingroup IO
  */
 class SeekableReadStream : public ReadStream {
 public:
@@ -98,6 +107,9 @@ inline bool SeekableReadStream::empty() const {
 	return size() == 0;
 }
 
+/**
+ * @ingroup IO
+ */
 class WriteStream : public core::NonCopyable {
 public:
 	virtual ~WriteStream() {}
@@ -137,6 +149,7 @@ public:
 
 /**
  * @brief WriteStream with the option to jump back and forth in while writing
+ * @ingroup IO
  */
 class SeekableWriteStream : public WriteStream {
 public:
@@ -150,3 +163,8 @@ public:
 };
 
 } // namespace io
+
+
+/**
+ * @}
+ */

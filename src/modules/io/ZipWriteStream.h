@@ -14,6 +14,7 @@ namespace io {
  * @see BufferedZipReadStream
  * @see ZipReadStream
  * @see WriteStream
+ * @ingroup IO
  */
 class ZipWriteStream : public io::WriteStream {
 private:

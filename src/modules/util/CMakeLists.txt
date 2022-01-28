@@ -1,12 +1,10 @@
 set(SRCS
-	IProgressMonitor.h
 	EMailValidator.h EMailValidator.cpp
 	BufferUtil.cpp BufferUtil.h
 	Console.h Console.cpp
 	KeybindingParser.h KeybindingParser.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
 	IncludeUtil.h IncludeUtil.cpp
-	MessageQueue.h MessageQueue.cpp
 	VarUtil.h
 )
 set(LIB util)

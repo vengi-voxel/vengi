@@ -9,7 +9,7 @@
 #include "Shared_generated.h"
 
 /**
- * @defgroup Animation
+ * @defgroup Animation Animation
  * @{
  * @brief Skeletal animation with lua configuration support.
  *

@@ -20,6 +20,8 @@ namespace io {
 /**
  * @see SeekableReadStream
  * @see SeekableWriteStream
+ * @see MemoryReadStream
+ * @ingroup IO
  */
 class BufferedReadWriteStream : public SeekableReadStream, public SeekableWriteStream {
 private:

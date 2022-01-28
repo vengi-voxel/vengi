@@ -22,6 +22,7 @@ typedef core::SharedPtr<File> FilePtr;
 /**
  * @brief File read and write capable stream
  *
+ * @ingroup IO
  * @see SeekableReadStream
  * @see SeekableWriteStream
  */
