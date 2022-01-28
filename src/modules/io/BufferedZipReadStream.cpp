@@ -24,9 +24,9 @@ BufferedZipReadStream::BufferedZipReadStream(SeekableReadStream &stream, size_t 
 		return;
 	}
 
-	uint8_t *buf = (uint8_t *)core_malloc(maxUncompressedSize * 2);
+	uint8_t *buf = (uint8_t *)core_malloc(maxUncompressedSize);
 	size_t finalSize = 0;
-	if (!core::zip::uncompress(srcBuf, zipSize, buf, maxUncompressedSize * 2, &finalSize)) {
+	if (!core::zip::uncompress(srcBuf, zipSize, buf, maxUncompressedSize, &finalSize)) {
 		// failed - make sure that the next read from this stream fails, too
 		_size = 0;
 		_pos = 0;

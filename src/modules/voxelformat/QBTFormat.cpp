@@ -341,7 +341,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		return false;
 	}
 	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
-	io::BufferedZipReadStream zipStream(stream, voxelDataSize, voxelDataSizeDecompressed);
+	io::BufferedZipReadStream zipStream(stream, voxelDataSize, voxelDataSizeDecompressed * 2);
 
 	const voxel::Region region(position, position + glm::ivec3(size) - 1);
 	if (!region.isValid()) {
