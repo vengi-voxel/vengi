@@ -53,6 +53,9 @@ public:
 	bool readFormat(const char *fmt, ...);
 };
 
+/**
+ * @brief ReadStream with the option to jump back and forth in while reading
+ */
 class SeekableReadStream : public ReadStream {
 public:
 	virtual ~SeekableReadStream() {}
@@ -132,6 +135,9 @@ public:
 	bool writeFormat(const char *fmt, ...);
 };
 
+/**
+ * @brief WriteStream with the option to jump back and forth in while writing
+ */
 class SeekableWriteStream : public WriteStream {
 public:
 	virtual ~SeekableWriteStream() {}

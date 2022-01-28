@@ -8,7 +8,7 @@
 
 namespace io {
 
-ZipWriteStream::ZipWriteStream(io::WriteStream &out, int level) : _outStream(out) {
+ZipWriteStream::ZipWriteStream(io::WriteStream &outStream, int level) : _outStream(outStream) {
 	_stream = (mz_stream *)core_malloc(sizeof(*_stream));
 	core_memset(_stream, 0, sizeof(*_stream));
 	_stream->zalloc = Z_NULL;

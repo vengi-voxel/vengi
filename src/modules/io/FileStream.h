@@ -20,7 +20,7 @@ class File;
 typedef core::SharedPtr<File> FilePtr;
 
 /**
- * @brief Little endian file stream
+ * @brief File read and write capable stream
  *
  * @see SeekableReadStream
  * @see SeekableWriteStream
