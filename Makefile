@@ -208,7 +208,7 @@ update-flextgl:
 	cp -r $(UPDATEDIR)/flextgl.sync/templates/sdl tools/flextGL/templates
 	cp -r $(UPDATEDIR)/flextgl.sync/templates/vulkan tools/flextGL/templates
 
-update-ogl_vox:
+update-ogt_vox:
 	$(call UPDATE_GIT,ogl_vox,https://github.com/jpaver/opengametools)
 	cp $(UPDATEDIR)/ogl_vox.sync/src/ogt_vox.h src/modules/voxelformat/external
 	sed -i 's/[ \t]*$$//' src/modules/voxelformat/external/ogt_vox.h
