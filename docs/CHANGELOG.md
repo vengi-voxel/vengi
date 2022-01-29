@@ -20,6 +20,7 @@ Build:
 General:
 
    - Extended qbcl format support
+   - Fixed color conversion issue when importing palettes from voxel models
 
 ## 0.0.17 (2022-01-23)
 
