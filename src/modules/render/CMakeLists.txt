@@ -1,5 +1,7 @@
 set(SRCS
 	Axis.cpp Axis.h
+	BlurRenderer.cpp BlurRenderer.h
+	BloomRenderer.cpp BloomRenderer.h
 	CameraFrustum.cpp CameraFrustum.h
 	Gizmo.cpp Gizmo.h
 	GridRenderer.cpp GridRenderer.h
@@ -12,6 +14,8 @@ set(SRCS
 )
 set(SHADERS
 	skybox
+	blur
+	bloom
 	color
 	color_instanced
 	constants
