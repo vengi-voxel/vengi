@@ -97,6 +97,12 @@ glm::vec3 Camera::direction() const {
 	return glm::vec3(glm::column(inverseViewMatrix(), 2));
 }
 
+void Camera::lerp(const Camera& target) {
+	// TODO: implement me
+	setWorldPosition(target.worldPosition());
+	setQuaternion(target.quaternion());
+}
+
 void Camera::setOmega(const glm::vec3& omega) {
 	core_assert(!glm::any(glm::isnan(omega)));
 	core_assert(!glm::any(glm::isinf(omega)));

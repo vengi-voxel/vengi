@@ -59,12 +59,15 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	core_free(buffer);
 	if (scene == nullptr) {
 		Log::error("Could not load scene %s", filename.c_str());
-		return false;
+		return 0;
 	}
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const ogt_vox_rgba& c = scene->palette.color[i];
-		palette[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
+		_colors[i] = palette[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
+		_palette[i] = i;
 	}
+	_colorsSize = 256;
+	_paletteSize = 256;
 	ogt_vox_destroy_scene(scene);
 	return palette.size();
 }

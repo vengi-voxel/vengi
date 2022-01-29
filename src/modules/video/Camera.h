@@ -145,6 +145,8 @@ public:
 	const glm::quat& quaternion() const;
 	void setQuaternion(const glm::quat& quat);
 
+	void lerp(const Camera& target);
+
 	glm::vec3 forward() const;
 	glm::vec3 right() const;
 	glm::vec3 up() const;

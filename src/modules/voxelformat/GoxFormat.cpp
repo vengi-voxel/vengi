@@ -274,7 +274,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			for (int i = 0; i < 16; ++i) {
 				stream.readFloat(transform.mat[i / 4][i % 4]);
 			}
-			node.setTransform(transform, false);
+			node.setTransform(transform, true);
 		} else if (!strcmp(dictKey, "id")) {
 			// "id" unique id
 			node.setProperty(dictKey, dictValue);
@@ -356,7 +356,7 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 			for (int i = 0; i < 16; ++i) {
 				stream.readFloat(transform.mat[i / 4][i % 4]);
 			}
-			node.setTransform(transform, false);
+			node.setTransform(transform, true);
 		}
 	}
 	sceneGraph.emplace(core::move(node));

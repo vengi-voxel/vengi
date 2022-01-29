@@ -10,7 +10,7 @@
 
 namespace voxedit {
 
-static void recursiveAddNodes(const voxel::SceneGraph &sceneGraph, const voxel::SceneGraphNode &node) {
+static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sceneGraph, const voxel::SceneGraphNode &node) {
 	core::String name;
 	switch (node.type()) {
 	case voxel::SceneGraphNodeType::Model:
@@ -41,9 +41,13 @@ static void recursiveAddNodes(const voxel::SceneGraph &sceneGraph, const voxel::
 	if (open) {
 		if (node.type() == voxel::SceneGraphNodeType::Camera) {
 			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-				video::Camera camera;
-				camera.setQuaternion(glm::quat_cast(node.matrix()));
-				// TODO: switch to this camera when double clicking this...
+				video::Camera nodeCamera;
+				const voxel::SceneGraphTransform& transform = node.transform();
+				nodeCamera.setQuaternion(glm::quat_cast(transform.mat));
+				nodeCamera.setWorldPosition(transform.position);
+				nodeCamera.setMode(video::CameraMode::Perspective);
+				nodeCamera.update(0.0f);
+				camera.lerp(nodeCamera);
 			}
 		} else if (node.type() == voxel::SceneGraphNodeType::Model) {
 			const voxel::Region &region = node.region();
@@ -64,13 +68,13 @@ static void recursiveAddNodes(const voxel::SceneGraph &sceneGraph, const voxel::
 			ImGui::LabelText(entry->value.c_str(), "%s", entry->key.c_str());
 		}
 		for (int nodeIdx : node.children()) {
-			recursiveAddNodes(sceneGraph, sceneGraph.node(nodeIdx));
+			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(nodeIdx));
 		}
 		ImGui::TreePop();
 	}
 }
 
-void SceneGraphPanel::update(const char *title) {
+void SceneGraphPanel::update(video::Camera& camera, const char *title) {
 	const voxel::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(SceneGraphPanel);
@@ -82,7 +86,7 @@ void SceneGraphPanel::update(const char *title) {
 			ImGui::TableSetupColumn("##scenegraphnodeid", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableHeadersRow();
 
-			recursiveAddNodes(sceneGraph, sceneGraph.node(0));
+			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(0));
 			ImGui::EndTable();
 		}
 	}
