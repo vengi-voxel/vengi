@@ -3,18 +3,17 @@ $in vec2 v_texcoord;
 $in vec4 v_color;
 layout(location = 0) $out vec4 o_color;
 
-const float texOffset = 1.0 / 100.0;
-
 void main() {
-	vec2 tc0 = v_texcoord.st + vec2(-texOffset, -texOffset);
-	vec2 tc1 = v_texcoord.st + vec2(       0.0, -texOffset);
-	vec2 tc2 = v_texcoord.st + vec2(+texOffset, -texOffset);
-	vec2 tc3 = v_texcoord.st + vec2(-texOffset,        0.0);
-	vec2 tc4 = v_texcoord.st + vec2(       0.0,        0.0);
-	vec2 tc5 = v_texcoord.st + vec2(+texOffset,        0.0);
-	vec2 tc6 = v_texcoord.st + vec2(-texOffset, +texOffset);
-	vec2 tc7 = v_texcoord.st + vec2(       0.0, +texOffset);
-	vec2 tc8 = v_texcoord.st + vec2(+texOffset, +texOffset);
+	vec2 texOffset = 1.0 / textureSize(u_texture, 0);
+	vec2 tc0 = v_texcoord.st + vec2(-texOffset.x, -texOffset.y);
+	vec2 tc1 = v_texcoord.st + vec2(         0.0, -texOffset.y);
+	vec2 tc2 = v_texcoord.st + vec2(+texOffset.x, -texOffset.y);
+	vec2 tc3 = v_texcoord.st + vec2(-texOffset.x,          0.0);
+	vec2 tc4 = v_texcoord.st + vec2(         0.0,          0.0);
+	vec2 tc5 = v_texcoord.st + vec2(+texOffset.x,          0.0);
+	vec2 tc6 = v_texcoord.st + vec2(-texOffset.x, +texOffset.y);
+	vec2 tc7 = v_texcoord.st + vec2(         0.0, +texOffset.y);
+	vec2 tc8 = v_texcoord.st + vec2(+texOffset.x, +texOffset.y);
 
 	vec4 col = vec4(0.0);
 	col += $texture2D(u_texture, tc0);
