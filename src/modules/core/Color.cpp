@@ -216,7 +216,7 @@ unsigned int Color::getRGBA(const glm::vec4& color) {
 
 unsigned int Color::getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-	return static_cast<int>(a) << 24 | static_cast<int>(b) << 16 | static_cast<int>(g) << 8 | static_cast<int>(r * magnitude);
+	return static_cast<int>(a) << 24 | static_cast<int>(b) << 16 | static_cast<int>(g) << 8 | static_cast<int>(r);
 #endif
 }
 
