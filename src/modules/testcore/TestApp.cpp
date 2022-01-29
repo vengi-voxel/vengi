@@ -131,7 +131,7 @@ void TestApp::beforeUI() {
 app::AppState TestApp::onRunning() {
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 	const app::AppState state = Super::onRunning();
-	SDL_SetRelativeMouseMode(_cameraMotion ? SDL_TRUE : SDL_FALSE);
+	_cameraMotion = setRelativeMouseMode(_cameraMotion);
 	return state;
 }
 
