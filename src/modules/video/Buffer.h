@@ -85,6 +85,7 @@ public:
 	/**
 	 * @brief Fullscreen buffer with normalized device coordinates with 3 float components
 	 */
+	int32_t createFullscreenQuad3d();
 	int32_t createFullscreenQuad();
 
 	/**
@@ -99,6 +100,10 @@ public:
 	 */
 	int32_t createFullscreenTextureBuffer();
 	int32_t createFullscreenTextureBufferYFlipped();
+	/**
+	 * @return Two vertex buffers, the first one contains the vertices, the second contains the texcoords
+	 */
+	glm::ivec2 createFullscreenTexturedQuad3d(bool yFlipped = false);
 	glm::ivec2 createFullscreenTexturedQuad(bool yFlipped = false);
 	/**
 	 * @brief Screen coordinate buffer with 2 float components for vertices and 2 float components for texcoords

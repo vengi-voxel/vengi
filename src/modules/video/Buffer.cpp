@@ -306,7 +306,7 @@ int32_t Buffer::createSkyboxQuad() {
 	return create(vecs, sizeof(vecs));
 }
 
-int32_t Buffer::createFullscreenQuad() {
+int32_t Buffer::createFullscreenQuad3d() {
 	// counter clock wise winding
 	//
 	// -1/1    1/1
@@ -324,6 +324,28 @@ int32_t Buffer::createFullscreenQuad() {
 		glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3( 1.0f,  1.0f, 0.0f),
 		// left bottom, right top, left top
 		glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3( 1.0f,  1.0f, 0.0f), glm::vec3(-1.0f,  1.0f, 0.0f)
+	};
+	return create(vecs, sizeof(vecs));
+}
+
+int32_t Buffer::createFullscreenQuad() {
+	// counter clock wise winding
+	//
+	// -1/1    1/1
+	// -------------
+	// |     |     |
+	// |     |0/0  |
+	// -------------
+	// |     |     |
+	// |     |     |
+	// -------------
+	// -1/-1    1/-1
+	//
+	alignas(16) static const glm::vec2 vecs[] = {
+		// left bottom, right bottom, right top
+		glm::vec2(-1.0f, -1.0f), glm::vec2( 1.0f, -1.0f), glm::vec2( 1.0f,  1.0f),
+		// left bottom, right top, left top
+		glm::vec2(-1.0f, -1.0f), glm::vec2( 1.0f,  1.0f), glm::vec2(-1.0f,  1.0f)
 	};
 	return create(vecs, sizeof(vecs));
 }
@@ -396,6 +418,17 @@ glm::ivec2 Buffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& di
 	};
 	glm::ivec2 indices;
 	indices.x = create(vecs, sizeof(vecs));
+	if (yFlipped) {
+		indices.y = createFullscreenTextureBufferYFlipped();
+	} else {
+		indices.y = createFullscreenTextureBuffer();
+	}
+	return indices;
+}
+
+glm::ivec2 Buffer::createFullscreenTexturedQuad3d(bool yFlipped) {
+	glm::ivec2 indices;
+	indices.x = createFullscreenQuad3d();
 	if (yFlipped) {
 		indices.y = createFullscreenTextureBufferYFlipped();
 	} else {

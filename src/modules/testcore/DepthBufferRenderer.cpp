@@ -49,7 +49,7 @@ bool DepthBufferRenderer::init() {
 	}
 	_renderToTexture.init(fboCfg);
 
-	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
+	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad3d(true);
 	_shadowMapDebugBuffer.addAttribute(_shadowMapRenderShader.getPosAttribute(fullscreenQuadIndices.x, &glm::vec3::x));
 	_shadowMapDebugBuffer.addAttribute(_shadowMapRenderShader.getTexcoordAttribute(fullscreenQuadIndices.y, &glm::vec2::x));
 	return true;
