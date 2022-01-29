@@ -17,8 +17,8 @@ namespace render {
  */
 class TextureRenderer {
 private:
-	shader::TextureShader _textureShader;
-	video::Buffer _texturedFullscreenQuad;
+	shader::TextureShader _shader;
+	video::Buffer _vbo;
 public:
 	/**
 	 * @brief Initializes the shader and the vbo for the texture rendering
