@@ -43,9 +43,11 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 				int paletteIndex = 1;
 				const uint32_t *rgba = (const uint32_t *)(v + sizeof(uint32_t));
 				if (topColorStart < 0 || topColorStart >= depth) {
+					Log::error("depth (top start) exceeds the max allowed value of %i", depth);
 					return false;
 				}
 				if (topColorEnd < 0 || topColorEnd >= depth) {
+					Log::error("depth (top end) exceeds the max allowed value of %i", depth);
 					return false;
 				}
 				for (z = topColorStart; z <= topColorEnd; ++z) {
@@ -81,9 +83,11 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 				const int bottomColorEnd = v[3]; // aka air start - exclusive
 				const int bottomColorStart = bottomColorEnd - len_top;
 				if (bottomColorStart < 0 || bottomColorStart >= depth) {
+					Log::error("depth (bottom start) exceeds the max allowed value of %i", depth);
 					return false;
 				}
 				if (bottomColorEnd < 0 || bottomColorEnd >= depth) {
+					Log::error("depth (bottom end) exceeds the max allowed value of %i", depth);
 					return false;
 				}
 
