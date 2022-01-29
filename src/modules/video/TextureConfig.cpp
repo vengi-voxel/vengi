@@ -76,4 +76,14 @@ TextureConfig& TextureConfig::borderColor(const glm::vec4& borderColor) {
 	_borderColor = borderColor;
 	return *this;
 }
+
+video::TextureConfig createDefaultTextureConfig() {
+	video::TextureConfig cfg;
+	cfg.wrap(video::TextureWrap::ClampToEdge);
+	cfg.filter(video::TextureFilter::Linear);
+	cfg.type(video::TextureType::Texture2D);
+	cfg.format(video::TextureFormat::RGBA);
+	return cfg;
+}
+
 }

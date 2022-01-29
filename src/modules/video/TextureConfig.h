@@ -119,4 +119,6 @@ inline const glm::vec4& TextureConfig::borderColor() const {
 	return _borderColor;
 }
 
+video::TextureConfig createDefaultTextureConfig();
+
 }
