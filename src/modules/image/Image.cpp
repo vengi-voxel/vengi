@@ -80,8 +80,10 @@ ImagePtr loadImage(const core::String& filename, bool async) {
 		for (const io::FormatDescription *desc = io::format::images(); desc->name; ++desc) {
 			const core::String &f = core::string::format("%s.%s", filename.c_str(), desc->ext);
 			if (io::filesystem()->exists(f)) {
-				file = io::filesystem()->open(filename);
-				break;
+				file = io::filesystem()->open(f);
+				if (file) {
+					break;
+				}
 			}
 		}
 	}
