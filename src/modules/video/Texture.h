@@ -97,7 +97,7 @@ typedef core::SharedPtr<Texture> TexturePtr;
 
 class ScopedTexture {
 private:
-	const TexturePtr& _texture;
+	const TexturePtr _texture;
 public:
 	ScopedTexture(const TexturePtr& texture, TextureUnit unit = video::TextureUnit::Zero) :
 			_texture(texture) {
