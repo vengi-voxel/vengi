@@ -139,7 +139,9 @@ void TestApp::onRenderUI() {
 	ImGui::BulletText("ESC: toggle camera free look");
 	ImGui::Checkbox("Render axis", &_renderAxis);
 	ImGui::Checkbox("Render plane", &_renderPlane);
-	ImGui::Checkbox("Camera motion", &_cameraMotion);
+	if (_allowRelativeMouseMode) {
+		ImGui::Checkbox("Camera motion", &_cameraMotion);
+	}
 	ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f);
 	glm::vec3 cameraPos = camera().worldPosition();
 	if (ImGui::InputFloat3("Camera position", glm::value_ptr(cameraPos))) {
