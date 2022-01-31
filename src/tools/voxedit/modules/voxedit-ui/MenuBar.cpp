@@ -79,6 +79,14 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			actionMenuItem("Console", "toggleconsole", listener);
 			ImGui::EndMenu();
 		}
+#ifdef DEBUG
+		if (ImGui::BeginMenu(ICON_FK_BUG " Debug")) {
+			if (ImGui::Button("Textures")) {
+				app->showTexturesDialog();
+			}
+			ImGui::EndMenu();
+		}
+#endif
 		if (ImGui::BeginMenu(ICON_FK_INFO " About")) {
 			ImGui::Text("VoxEdit " PROJECT_VERSION);
 			ImGui::Separator();
