@@ -80,11 +80,16 @@ public:
 	ImFont *smallFont();
 
 	void showBindingsDialog();
+	void showTexturesDialog();
 	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
 };
 
 inline void IMGUIApp::showBindingsDialog() {
 	_showBindingsDialog = true;
+}
+
+inline void IMGUIApp::showTexturesDialog() {
+	_showTexturesDialog = true;
 }
 
 inline ImFont *IMGUIApp::defaultFont() {
