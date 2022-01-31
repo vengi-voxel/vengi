@@ -200,6 +200,10 @@ bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
 }
 
 float lineWidth(float width) {
+	// line width > 1.0 is deprecated in core profile context
+	if (_priv::s.glVersion.isAtLeast(3, 2)) {
+		return _priv::s.lineWidth;
+	}
 	video_trace_scoped(LineWidth);
 	if (_priv::s.smoothedLineWidth.x < 0.0f) {
 		GLdouble buf[2];
@@ -216,10 +220,12 @@ float lineWidth(float width) {
 	}
 	const float oldWidth = _priv::s.lineWidth;
 	if (_priv::s.states[core::enumVal(State::LineSmooth)]) {
-		glLineWidth((GLfloat)glm::clamp(width, _priv::s.smoothedLineWidth.x, _priv::s.smoothedLineWidth.y));
+		const float lineWidth = glm::clamp(width, _priv::s.smoothedLineWidth.x, _priv::s.smoothedLineWidth.y);
+		glLineWidth((GLfloat)lineWidth);
 		checkError(false);
 	} else {
-		glLineWidth((GLfloat)glm::clamp(width, _priv::s.aliasedLineWidth.x, _priv::s.aliasedLineWidth.y));
+		const float lineWidth = glm::clamp(width, _priv::s.aliasedLineWidth.x, _priv::s.aliasedLineWidth.y);
+		glLineWidth((GLfloat)lineWidth);
 		checkError(false);
 	}
 	_priv::s.lineWidth = width;
@@ -1820,8 +1826,12 @@ RendererContext createContext(SDL_Window* window) {
 	return (RendererContext)SDL_GL_CreateContext(window);
 }
 
-void startFrame(SDL_Window* window, RendererContext& context) {
+void activateContext(SDL_Window* window, RendererContext& context) {
 	SDL_GL_MakeCurrent(window, (SDL_GLContext)context);
+}
+
+void startFrame(SDL_Window* window, RendererContext& context) {
+	activateContext(window, context);
 }
 
 void endFrame(SDL_Window* window) {

@@ -361,7 +361,7 @@ app::AppState IMGUIApp::onRunning() {
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
-		video::startFrame(_window, _rendererContext);
+		video::activateContext(_window, _rendererContext);
 	}
 
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);

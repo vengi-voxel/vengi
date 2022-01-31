@@ -34,7 +34,13 @@ bool BlurRenderer::init(bool yFlipped, int width, int height) {
 }
 
 void BlurRenderer::render(video::Id srcTextureId, int amount) {
-	core_assert(amount > 0);
+	if (amount <= 0) {
+		const int indexFlip = _horizontal ? 0 : 1;
+		video::ScopedFrameBuffer scoped(_frameBuffers[indexFlip]);
+		video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
+		return;
+	}
+
 	core_assert(srcTextureId != video::InvalidId);
 
 	_horizontal = true;
@@ -48,12 +54,12 @@ void BlurRenderer::render(video::Id srcTextureId, int amount) {
 	const int elements = (int)_vbo.elements(0, _shader.getComponentsPos());
 	core_assert_msg(elements == 6, "Unexpected amount of elements: %i", elements);
 
+	const glm::ivec2 &dim = _frameBuffers[0].dimension();
+	video::ScopedViewPort viewPort(0, 0, dim.x, dim.y);
 	for (int i = 0; i < amount; i++) {
 		const int index = _horizontal ? 1 : 0;
 		const int indexFlip = _horizontal ? 0 : 1;
 		video::ScopedFrameBuffer scoped(_frameBuffers[index]);
-		const glm::ivec2 &dim = _frameBuffers[index].dimension();
-		video::ScopedViewPort viewPort(0, 0, dim.x, dim.y);
 		core_assert_always(_shader.setHorizontal(_horizontal));
 		const video::TexturePtr& srcTexture = _frameBuffers[indexFlip].texture(video::FrameBufferAttachment::Color0);
 		video::Id srcTextureHandle = srcTexture->handle();

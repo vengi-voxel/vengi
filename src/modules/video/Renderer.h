@@ -154,6 +154,7 @@ extern float getScaleFactor();
 extern glm::ivec2 getWindowSize();
 extern void destroyContext(RendererContext& context);
 extern RendererContext createContext(SDL_Window* window);
+void activateContext(SDL_Window* window, RendererContext& context);
 extern void startFrame(SDL_Window* window, RendererContext& context);
 extern void endFrame(SDL_Window* window);
 /**

@@ -79,7 +79,7 @@ void TestBloom::onRenderUI() {
 	static glm::ivec2 size(256, 256);
 
 	if (ImGui::InputInt("blur passes: ", &_passes)) {
-		_passes = glm::clamp(_passes, 1, 10);
+		_passes = glm::clamp(_passes, 0, 20);
 	}
 
 	ImGui::Image(_bloomTexture->handle(), size);

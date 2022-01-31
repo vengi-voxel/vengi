@@ -19,7 +19,7 @@ struct GLVersion {
 	}
 
 	inline bool isAtLeast(int major, int minor) {
-		return major > majorVersion || (major == majorVersion && minor >= minorVersion);
+		return major > majorVersion || (major == majorVersion && minor <= minorVersion);
 	}
 };
 
