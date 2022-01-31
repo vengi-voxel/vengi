@@ -11,6 +11,7 @@ uniform mediump vec3 u_lightdir;
 uniform lowp vec3 u_diffuse_color;
 uniform lowp vec3 u_ambient_color;
 layout(location = 0) $out vec4 o_color;
+layout(location = 1) $out vec4 o_glow;
 
 #ifndef cl_gamma
 #define cl_gamma 2.2
@@ -50,4 +51,7 @@ void main(void) {
 		o_color = calcColor();
 	}
 	o_color.rgb = pow(o_color.rgb, vec3(1.0 / cl_gamma));
+	if ((v_flags & FLAGBLOOM) != 0u) {
+		o_glow = o_color;
+	}
 }

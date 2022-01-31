@@ -5,6 +5,10 @@
 #include "RawVolumeRenderer.h"
 #include "core/Common.h"
 #include "core/Trace.h"
+#include "video/FrameBufferConfig.h"
+#include "video/ScopedFrameBuffer.h"
+#include "video/Texture.h"
+#include "video/TextureConfig.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
@@ -66,6 +70,29 @@ bool RawVolumeRenderer::init() {
 		Log::error("Failed to init shadowmap shader");
 		return false;
 	}
+
+	video::FrameBufferConfig cfg;
+	cfg.dimension(video::getWindowSize());
+	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
+	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
+	cfg.depthBuffer(true);
+	if (!_frameBuffer.init(cfg)) {
+		Log::error("Failed to initialize the volume renderer framebuffer");
+		return false;
+	}
+
+	// we have to do an y-flip here due to the framebuffer handling
+	if (!_blurRenderer.init(true)) {
+		Log::error("Failed to initialize the blur renderer");
+		return false;
+	}
+
+	// we have to do an y-flip here due to the framebuffer handling
+	if (!_bloomRenderer.init(true)) {
+		Log::error("Failed to initialize the bloom renderer");
+		return false;
+	}
+
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 
 	_threadPool.init();
@@ -446,6 +473,14 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 		voxel::materialColorMarkClean();
 	}
 
+	renderToFrameBuffer(camera, shadow, funcGray);
+	const video::Id color0 = _frameBuffer.texture(video::FrameBufferAttachment::Color0)->handle();
+	const video::Id color1 = _frameBuffer.texture(video::FrameBufferAttachment::Color1)->handle();
+	_blurRenderer.render(color1);
+	_bloomRenderer.render(color0, _blurRenderer.texture()->handle());
+}
+
+void RawVolumeRenderer::renderToFrameBuffer(const video::Camera& camera, bool shadow, std::function<bool(int)>& funcGray) {
 	uint32_t indices[MAX_VOLUMES];
 
 	core_memset(indices, 0, sizeof(indices));
@@ -463,6 +498,8 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 		indices[idx] = nIndices;
 	}
 	if (numIndices == 0u) {
+		video::ScopedFrameBuffer scoped(_frameBuffer);
+		video::clear(video::ClearFlag::Color);
 		return;
 	}
 
@@ -514,6 +551,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 		_shadow.bind(video::TextureUnit::One);
 	}
 
+	_frameBuffer.bind(true);
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		if (indices[idx] <= 0u) {
 			continue;
@@ -525,6 +563,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 		_voxelShader.setModel(_models[idx]);
 		video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], _amounts[idx]);
 	}
+	_frameBuffer.unbind();
 }
 
 void RawVolumeRenderer::setInstancingAmount(int idx, int amount) {
@@ -615,6 +654,9 @@ core::DynamicArray<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
 	_materialBlock.shutdown();
+	_frameBuffer.shutdown();
+	_blurRenderer.shutdown();
+	_bloomRenderer.shutdown();
 	for (auto& iter : _meshes) {
 		for (auto& mesh : iter.second) {
 			delete mesh;

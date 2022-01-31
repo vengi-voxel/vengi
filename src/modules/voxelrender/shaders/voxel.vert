@@ -38,6 +38,8 @@ void main(void) {
 	if ((a_flags & FLAGOUTLINE) != 0u)
 #endif
 		v_flags |= FLAGOUTLINE;
+	if ((a_flags & FLAGBLOOM) != 0u)
+		v_flags |= FLAGBLOOM;
 
 	if (u_gray != 0) {
 		float gray = (0.21 * materialColor.r + 0.72 * materialColor.g + 0.07 * materialColor.b) / 3.0;
