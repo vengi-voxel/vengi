@@ -56,7 +56,8 @@ void BlurRenderer::render(video::Id srcTextureId, int amount) {
 
 	const glm::ivec2 &dim = _frameBuffers[0].dimension();
 	video::ScopedViewPort viewPort(0, 0, dim.x, dim.y);
-	for (int i = 0; i < amount; i++) {
+	const int n = glm::max(2, amount / 2 * 2);
+	for (int i = 0; i < n; i++) {
 		const int index = _horizontal ? 1 : 0;
 		const int indexFlip = _horizontal ? 0 : 1;
 		video::ScopedFrameBuffer scoped(_frameBuffers[index]);
