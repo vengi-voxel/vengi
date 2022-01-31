@@ -16,7 +16,7 @@ bool TextureRenderer::init(const glm::vec2& size, bool yFlipped) {
 	const glm::ivec2& fullscreenQuadIndices = _vbo.createTexturedQuad(glm::vec2(0.0f), size, yFlipped);
 	_vbo.addAttribute(_shader.getPosAttribute(fullscreenQuadIndices.x, &glm::vec2::x));
 	_vbo.addAttribute(_shader.getTexcoordAttribute(fullscreenQuadIndices.y, &glm::vec2::x));
-	_vbo.addAttribute(_shader.getColorAttribute(_vbo.createWhiteColorForQuad(), &glm::vec2::x));
+	_vbo.addAttribute(_shader.getColorAttribute(_vbo.createWhiteColorForQuad(), &glm::vec4::x));
 	return true;
 }
 
@@ -27,6 +27,7 @@ void TextureRenderer::render(const glm::mat4& projection, const glm::mat4& model
 	_shader.setTexture(texUnit);
 	video::ScopedBuffer scopedBuf(_vbo);
 	const int elements = (int)_vbo.elements(0, _shader.getComponentsPos());
+	core_assert(elements == 6);
 	video::drawArrays(video::Primitive::Triangles, elements);
 }
 
