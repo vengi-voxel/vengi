@@ -17,6 +17,7 @@
 #include "RenderBuffer.h"
 #include "core/SharedPtr.h"
 #include "core/collection/List.h"
+#include "core/collection/Set.h"
 #include <type_traits>
 
 struct SDL_Window;
@@ -254,6 +255,7 @@ extern void deleteVertexArrays(uint8_t amount, Id* ids);
 extern void deleteVertexArray(Id& id);
 extern void genTextures(uint8_t amount, Id* ids);
 extern Id genTexture();
+extern const core::Set<Id>& textures();
 extern void deleteTextures(uint8_t amount, Id* ids);
 extern void deleteTexture(Id& id);
 extern Id currentFramebuffer();

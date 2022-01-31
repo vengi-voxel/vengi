@@ -284,6 +284,22 @@ app::AppState IMGUIApp::onRunning() {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
 
+		if (_showTexturesDialog) {
+			if (ImGui::Begin("Textures", &_showTexturesDialog)) {
+				const core::Set<video::Id>& textures = video::textures();
+				const ImVec2 size(512, 512);
+				int textureCnt = 0;
+				for (const auto& e : textures) {
+					ImGui::Image(e->first, size, ImVec2(), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
+					++textureCnt;
+					if (textureCnt % 2) {
+						ImGui::SameLine();
+					}
+				}
+			}
+			ImGui::End();
+		}
+
 		if (_showBindingsDialog) {
 			if (ImGui::Begin("Bindings", &_showBindingsDialog, ImGuiWindowFlags_NoScrollbar)) {
 				const util::BindMap& bindings = _keybindingHandler.bindings();

@@ -39,6 +39,7 @@ protected:
 	core::VarPtr _lastDirectory;
 
 	bool _showBindingsDialog = false;
+	bool _showTexturesDialog = false;
 	bool _showFileDialog = false;
 	bool _persistUISettings = true;
 

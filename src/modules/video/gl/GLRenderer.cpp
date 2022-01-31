@@ -851,6 +851,9 @@ void deleteVertexArray(Id& id) {
 void genTextures(uint8_t amount, Id* ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	glGenTextures((GLsizei)amount, (GLuint*)ids);
+	for (int i = 0; i < amount; ++i) {
+		_priv::s.textures.insert(ids[i]);
+	}
 	checkError();
 }
 
@@ -862,6 +865,7 @@ void deleteTextures(uint8_t amount, Id* ids) {
 	glDeleteTextures((GLsizei)amount, (GLuint*)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
+		_priv::s.textures.remove(ids[i]);
 		for (int j = 0; j < lengthof(_priv::s.textureHandle); ++j) {
 			if (_priv::s.textureHandle[j] == ids[i]) {
 				// the texture might still be bound...
@@ -870,6 +874,10 @@ void deleteTextures(uint8_t amount, Id* ids) {
 		}
 		ids[i] = InvalidId;
 	}
+}
+
+const core::Set<Id>& textures() {
+	return _priv::s.textures;
 }
 
 bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t** pixels) {

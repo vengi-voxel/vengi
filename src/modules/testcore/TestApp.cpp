@@ -150,6 +150,9 @@ void TestApp::onRenderUI() {
 	if (ImGui::Button("Bindings")) {
 		showBindingsDialog();
 	}
+	if (ImGui::Button("Textures")) {
+		_showTexturesDialog = true;
+	}
 	ImGui::SameLine();
 	if (ImGui::Button("Quit")) {
 		requestQuit();
