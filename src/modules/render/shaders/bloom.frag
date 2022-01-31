@@ -7,5 +7,9 @@ uniform sampler2D u_color1;
 void main() {
 	vec4 sceneColor = $texture2D(u_color0, v_texcoord);
 	vec4 bloomColor = $texture2D(u_color1, v_texcoord);
-	o_color = vec4(sceneColor.rgb + bloomColor.rgb, 1.0);
+	vec4 finalColor = sceneColor + bloomColor;
+	if (finalColor.a < 0.0001) {
+		discard;
+	}
+	o_color = finalColor;
 }

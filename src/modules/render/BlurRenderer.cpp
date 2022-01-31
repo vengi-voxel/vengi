@@ -57,8 +57,8 @@ void BlurRenderer::render(video::Id srcTextureId, int amount) {
 	// for opengl
 	const int n = glm::max(2, amount / 2 * 2);
 	for (int i = 0; i < n; i++) {
-		const int index = horizontal ? 0 : 1;
-		const int indexFlip = horizontal ? 1 : 0;
+		const int index = horizontal ? 1 : 0;
+		const int indexFlip = horizontal ? 0 : 1;
 		_frameBuffers[index].bind(true);
 		core_assert_always(_shader.setHorizontal(horizontal));
 		const video::TexturePtr& srcTexture = _frameBuffers[indexFlip].texture(video::FrameBufferAttachment::Color0);
