@@ -21,7 +21,6 @@ private:
 	shader::BlurShader _shader;
 	video::Buffer _vbo;
 	video::FrameBuffer _frameBuffers[2];
-	bool _horizontal = true;
 
 public:
 	/**

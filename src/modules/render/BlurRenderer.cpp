@@ -35,15 +35,14 @@ bool BlurRenderer::init(bool yFlipped, int width, int height) {
 
 void BlurRenderer::render(video::Id srcTextureId, int amount) {
 	if (amount <= 0) {
-		const int indexFlip = _horizontal ? 0 : 1;
-		video::ScopedFrameBuffer scoped(_frameBuffers[indexFlip]);
+		video::ScopedFrameBuffer scoped(_frameBuffers[0]);
 		video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 		return;
 	}
 
 	core_assert(srcTextureId != video::InvalidId);
 
-	_horizontal = true;
+	bool horizontal = true;
 	bool firstIteration = true;
 	const video::TextureUnit texUnit = video::TextureUnit::Zero;
 
@@ -58,10 +57,10 @@ void BlurRenderer::render(video::Id srcTextureId, int amount) {
 	// for opengl
 	const int n = glm::max(2, amount / 2 * 2);
 	for (int i = 0; i < n; i++) {
-		const int index = _horizontal ? 1 : 0;
-		const int indexFlip = _horizontal ? 0 : 1;
+		const int index = horizontal ? 0 : 1;
+		const int indexFlip = horizontal ? 1 : 0;
 		_frameBuffers[index].bind(true);
-		core_assert_always(_shader.setHorizontal(_horizontal));
+		core_assert_always(_shader.setHorizontal(horizontal));
 		const video::TexturePtr& srcTexture = _frameBuffers[indexFlip].texture(video::FrameBufferAttachment::Color0);
 		video::Id srcTextureHandle = srcTexture->handle();
 		core_assert(srcTextureHandle != video::InvalidId);
@@ -72,7 +71,7 @@ void BlurRenderer::render(video::Id srcTextureId, int amount) {
 		}
 		video::bindTexture(texUnit, video::TextureType::Texture2D, srcTextureHandle);
 		video::drawArrays(video::Primitive::Triangles, elements);
-		_horizontal = !_horizontal;
+		horizontal = !horizontal;
 		firstIteration = false;
 		_frameBuffers[index].unbind();
 	}
@@ -80,8 +79,7 @@ void BlurRenderer::render(video::Id srcTextureId, int amount) {
 }
 
 video::TexturePtr BlurRenderer::texture() const {
-	const int indexFlip = _horizontal ? 0 : 1;
-	return _frameBuffers[indexFlip].texture(video::FrameBufferAttachment::Color0);
+	return _frameBuffers[0].texture(video::FrameBufferAttachment::Color0);
 }
 
 void BlurRenderer::shutdown() {
