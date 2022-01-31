@@ -81,7 +81,6 @@ void TestBloom::onRenderUI() {
 	if (ImGui::InputInt("blur passes: ", &_passes)) {
 		_passes = glm::clamp(_passes, 1, 10);
 	}
-	ImGui::Checkbox("apply bloom: ", &_bloom);
 
 	ImGui::Image(_bloomTexture->handle(), size);
 
@@ -98,7 +97,7 @@ void TestBloom::onRenderUI() {
 
 void TestBloom::doRender() {
 	_blurRenderer.render(_bloomTexture->handle(), _passes);
-	_bloomRenderer.render(_sceneTexture->handle(), _blurRenderer.texture()->handle(), _bloom);
+	_bloomRenderer.render(_sceneTexture->handle(), _blurRenderer.texture()->handle());
 }
 
 TEST_APP(TestBloom)

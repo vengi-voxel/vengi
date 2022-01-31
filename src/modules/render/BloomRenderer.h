@@ -34,7 +34,7 @@ public:
 	 * @param color0 The color texture
 	 * @param color1 The bloom texture to blend
 	 */
-	void render(video::Id color0, video::Id color1, bool bloom = true);
+	void render(video::Id color0, video::Id color1);
 };
 
 }

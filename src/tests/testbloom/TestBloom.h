@@ -21,7 +21,6 @@ private:
 	video::TexturePtr _bloomTexture;
 
 	int _passes = 10;
-	bool _bloom = true;
 
 	void doRender() override;
 public:
