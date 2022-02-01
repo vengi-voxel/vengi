@@ -47,12 +47,12 @@ enum class TextureCompareMode {
 };
 
 enum class ClearFlag {
-	None,
-	Color,
-	Depth,
-	Stencil,
+	None = 0,
+	Color = 1,
+	Depth = 2,
+	Stencil = 4,
 
-	Max
+	Max = 5
 };
 CORE_ENUM_BIT_OPERATIONS(ClearFlag)
 
