@@ -1563,6 +1563,9 @@ void drawInstancedArrays(Primitive mode, size_t count, size_t amount) {
 }
 
 void enableDebug(DebugSeverity severity) {
+	if (severity == DebugSeverity::None) {
+		return;
+	}
 	if (!hasFeature(Feature::DebugOutput)) {
 		Log::warn("No debug feature support was detected");
 		return;
@@ -1910,6 +1913,17 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &_priv::s.glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
 	Log::debug("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
+
+	int contextFlags = 0;
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
+	if (contextFlags & SDL_GL_CONTEXT_DEBUG_FLAG) {
+		const int severity = core::Var::get(cfg::ClientDebugSeverity, "0")->intVal();
+		if (severity < (int)video::DebugSeverity::None || severity >= (int)video::DebugSeverity::Max) {
+			Log::warn("Invalid severity level given: %i [0-3] - 0 disabled, 1 highest and 3 lowest severity level", severity);
+		} else {
+			enableDebug((video::DebugSeverity)severity);
+		}
+	}
 
 	resize(windowWidth, windowHeight, scaleFactor);
 

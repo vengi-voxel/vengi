@@ -407,6 +407,7 @@ enum GBufferTextureType {
 };
 
 enum class DebugSeverity {
+	None,
 	High,
 	Medium,
 	Low,

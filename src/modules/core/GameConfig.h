@@ -13,6 +13,7 @@ constexpr const char *ClientPassword = "cl_password";
 // name of the player that is visible by other players
 constexpr const char *ClientName = "cl_name";
 constexpr const char *ClientVSync = "cl_vsync";
+constexpr const char *ClientDebugSeverity = "cl_debugseverity";
 // the port where the server is listening on that the client wants to connect to
 constexpr const char *ClientPort = "cl_port";
 // the host where the server is running on that the client wants to connect to
