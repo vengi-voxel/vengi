@@ -552,16 +552,31 @@ void RawVolumeRenderer::renderToFrameBuffer(const video::Camera& camera, bool sh
 	}
 
 	_frameBuffer.bind(true);
+	const video::PolygonMode mode = camera.polygonMode();
+	if (mode == video::PolygonMode::Points) {
+		video::enable(video::State::PolygonOffsetPoint);
+	} else if (mode == video::PolygonMode::WireFrame) {
+		video::enable(video::State::PolygonOffsetLine);
+	} else if (mode == video::PolygonMode::Solid) {
+		video::enable(video::State::PolygonOffsetFill);
+	}
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		if (indices[idx] <= 0u) {
 			continue;
 		}
 		const glm::vec2 offset(-0.25f * (float)idx, -0.5f * (float)idx);
-		video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
+		video::ScopedPolygonMode polygonMode(mode, offset);
 		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 		_voxelShader.setGray(funcGray(idx));
 		_voxelShader.setModel(_models[idx]);
 		video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], _amounts[idx]);
+	}
+	if (mode == video::PolygonMode::Points) {
+		video::disable(video::State::PolygonOffsetPoint);
+	} else if (mode == video::PolygonMode::WireFrame) {
+		video::disable(video::State::PolygonOffsetLine);
+	} else if (mode == video::PolygonMode::Solid) {
+		video::disable(video::State::PolygonOffsetFill);
 	}
 	_frameBuffer.unbind();
 }
