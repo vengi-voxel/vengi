@@ -36,6 +36,7 @@ struct GLState {
 	uint32_t stencilMask = 0xFFFFFFFF;
 	uint32_t stencilValue = 0;
 	Id programHandle = InvalidId;
+	bool needValidation = false;
 	Id vertexArrayHandle = InvalidId;
 	glm::vec2 polygonOffset {0.0f};
 	Face polygonModeFace = Face::Max;

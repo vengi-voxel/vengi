@@ -51,6 +51,10 @@ static RenderState s;
 
 static void validate(Id handle) {
 #ifdef DEBUG
+	if (!_priv::s.needValidation) {
+		return;
+	}
+	_priv::s.needValidation = false;
 	const GLuint lid = (GLuint)handle;
 	glValidateProgram(lid);
 	video::checkError();
@@ -588,6 +592,7 @@ bool useProgram(Id handle) {
 	glUseProgram(handle);
 	checkError();
 	_priv::s.programHandle = handle;
+	_priv::s.needValidation = true;
 	return true;
 }
 
