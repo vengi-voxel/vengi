@@ -111,7 +111,7 @@ bool AnimationSystem::init() {
 	const core::String& libName = core::Var::getSafe("anim_lib")->strVal();
 	static io::FileWatcher watcher { this, [] (void* userdata, const char *file) {
 		AnimationSystem* as = (AnimationSystem*)userdata;
-		Log::info("Reloading animation lib %s", file);
+		Log::debug("Reloading animation lib %s", file);
 		int retryCount = 0;
 		while (!as->loadSymbols()) {
 			++retryCount;
@@ -122,7 +122,7 @@ bool AnimationSystem::init() {
 			Log::warn("Failed to reload - retrying");
 			SDL_Delay(10);
 		}
-		Log::info("Reloaded animation lib");
+		Log::debug("Reloaded animation lib");
 	}};
 	io::filesystem()->watch(libName, &watcher);
 #endif
