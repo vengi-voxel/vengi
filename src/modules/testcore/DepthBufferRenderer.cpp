@@ -31,9 +31,7 @@ bool DepthBufferRenderer::init() {
 		return false;
 	}
 
-	video::TextureConfig textureCfg;
-	textureCfg.wrap(video::TextureWrap::ClampToEdge);
-	textureCfg.format(video::TextureFormat::RGBA);
+	video::TextureConfig textureCfg = video::createDefaultTextureConfig();
 	video::FrameBufferConfig fboCfg;
 	fboCfg.dimension(glm::ivec2(1024, 1024));
 	const video::FrameBufferAttachment attachments[] = {
