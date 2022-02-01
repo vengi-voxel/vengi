@@ -17,19 +17,19 @@ ScopedPolygonMode::ScopedPolygonMode(video::PolygonMode mode, const glm::vec2& o
 		ScopedPolygonMode(mode) {
 	_offset = true;
 	if (mode == video::PolygonMode::Points) {
-		video::enable(State::PolygonOffsetPoint);
+		_alreadyActive = video::enable(State::PolygonOffsetPoint);
 		video::polygonOffset(offset);
 	} else if (mode == video::PolygonMode::WireFrame) {
-		video::enable(State::PolygonOffsetLine);
+		_alreadyActive = video::enable(State::PolygonOffsetLine);
 		video::polygonOffset(offset);
 	} else if (mode == video::PolygonMode::Solid) {
-		video::enable(State::PolygonOffsetFill);
+		_alreadyActive = video::enable(State::PolygonOffsetFill);
 		video::polygonOffset(offset);
 	}
 }
 
 ScopedPolygonMode::~ScopedPolygonMode() {
-	if (_offset) {
+	if (_offset && !_alreadyActive) {
 		if (_mode == video::PolygonMode::Points) {
 			video::disable(State::PolygonOffsetPoint);
 		} else if (_mode == video::PolygonMode::WireFrame) {

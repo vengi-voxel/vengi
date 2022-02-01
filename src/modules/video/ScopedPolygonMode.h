@@ -17,6 +17,7 @@ private:
 	const video::PolygonMode _mode;
 	const video::PolygonMode _oldMode;
 	bool _offset = false;
+	bool _alreadyActive = false;
 public:
 	ScopedPolygonMode(video::PolygonMode mode);
 	ScopedPolygonMode(video::PolygonMode mode, const glm::vec2& offset);
