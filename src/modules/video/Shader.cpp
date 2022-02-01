@@ -270,6 +270,7 @@ bool Shader::isActive() const {
 bool Shader::activate() const {
 	video::useProgram(_program);
 	_active = true;
+	_uniformStateMap.clear();
 	return _active;
 }
 
@@ -319,7 +320,7 @@ bool Shader::checkUniformCache(int location, const void* value, size_t length) c
 	auto i = _uniformStateMap.find(location);
 	const uint32_t hash = core::hash(value, length);
 	if (i == _uniformStateMap.end()) {
-		_uniformStateMap[location] = hash;
+		_uniformStateMap.put(location, hash);
 		return true;
 	}
 	const uint32_t current = i->second;
