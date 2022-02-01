@@ -314,7 +314,7 @@ int Shader::checkAttributeLocation(const core::String& name) const {
 }
 
 bool Shader::checkUniformCache(int location, const void* value, size_t length) const {
-#if 1
+#if 0
 	return true;
 #else
 	auto i = _uniformStateMap.find(location);
@@ -324,7 +324,11 @@ bool Shader::checkUniformCache(int location, const void* value, size_t length) c
 		return true;
 	}
 	const uint32_t current = i->second;
-	return current != hash;
+	if (current == hash) {
+		return false;
+	}
+	_uniformStateMap.put(location, hash);
+	return true;
 #endif
 }
 
