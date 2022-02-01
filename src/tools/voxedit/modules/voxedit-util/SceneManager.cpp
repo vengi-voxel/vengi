@@ -1817,10 +1817,10 @@ void SceneManager::update(double nowSeconds) {
 		} else if (_modelSpace->boolVal() != _gizmo.isModelSpace()) {
 			const bool newModelSpaceState = _modelSpace->boolVal();
 			if (newModelSpaceState) {
-				Log::info("switch to model space");
+				Log::debug("switch to model space");
 				_gizmo.setModelSpace();
 			} else {
-				Log::info("switch to world space");
+				Log::debug("switch to world space");
 				_gizmo.setWorldSpace();
 			}
 			setGizmoPosition();
