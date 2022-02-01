@@ -462,8 +462,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 }
 
 bool WorldRenderer::initFrameBuffers(const glm::ivec2& dimensions) {
-	video::TextureConfig textureCfg;
-	textureCfg.wrap(video::TextureWrap::ClampToEdge);
+	video::TextureConfig textureCfg = video::createDefaultTextureConfig();
 	textureCfg.format(video::TextureFormat::RGB);
 	video::FrameBufferConfig cfg;
 	cfg.dimension(dimensions).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
