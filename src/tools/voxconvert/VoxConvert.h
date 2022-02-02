@@ -26,6 +26,8 @@ private:
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
 	core::String getFilenameForLayerName(const core::String& inputfile, const core::String &layerName, int id);
+	bool handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph, bool srcPalette, bool exportPalette,
+						 bool dumpSceneGraph);
 
 	void usage() const override;
 	void mirror(const core::String& axisStr, voxel::SceneGraph& sceneGraph);

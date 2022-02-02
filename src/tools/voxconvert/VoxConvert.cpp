@@ -213,62 +213,24 @@ app::AppState VoxConvert::onInit() {
 
 	voxel::SceneGraph sceneGraph;
 	for (const core::String& infile : infiles) {
-		const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
-		if (!inputFile->exists()) {
-			Log::error("Given input file '%s' does not exist", infile.c_str());
-			_exitCode = 127;
-			return app::AppState::InitFailure;
-		}
-		const bool inputIsImage = inputFile->isAnyOf(io::format::images());
-		if (!inputIsImage && srcPalette) {
-			core::Array<uint32_t, 256> palette;
-			io::FileStream palStream(inputFile.get());
-			const size_t numColors = voxelformat::loadPalette(inputFile->name(), palStream, palette);
-			if (numColors == 0) {
-				Log::error("Failed to load palette from input file");
+		if (filesystem()->isReadableDir(infile)) {
+			core::DynamicArray<io::Filesystem::DirEntry> entities;
+			filesystem()->list(infile, entities);
+			Log::info("Found %i entries in dir %s", (int)entities.size(), infile.c_str());
+			int success = 0;
+			for (const io::Filesystem::DirEntry &entry : entities) {
+				const core::String fullpath = core::string::format("%s/%s", infile.c_str(), entry.name.c_str());
+				if (!handleInputFile(fullpath, sceneGraph, srcPalette, exportPalette, dumpSceneGraph)) {
+					++success;
+				}
+			}
+			if (success == 0) {
+				Log::error("Could not find a valid input file in directory %s", infile.c_str());
 				return app::AppState::InitFailure;
 			}
-			if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors * 4, "")) {
-				Log::error("Failed to initialize material colors from input file");
-				return app::AppState::InitFailure;
-			}
-		}
-
-		if (inputIsImage) {
-			Log::info("Generate from heightmap");
-			const image::ImagePtr& image = image::loadImage(inputFile, false);
-			if (!image || !image->isLoaded()) {
-				Log::error("Couldn't load image %s", infile.c_str());
-				return app::AppState::InitFailure;
-			}
-			voxel::Region region(0, 0, 0, image->width(), 255, image->height());
-			voxel::RawVolume* volume = new voxel::RawVolume(region);
-			voxel::SceneGraphNode node;
-			node.setVolume(volume, true);
-			node.setName(infile);
-			sceneGraph.emplace(core::move(node));
-			voxel::RawVolumeWrapper wrapper(volume);
-			voxelutil::importHeightmap(wrapper, image);
 		} else {
-			io::FileStream inputFileStream(inputFile.get());
-			voxel::SceneGraph newSceneGraph;
-			if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph)) {
-				Log::error("Failed to load given input file");
+			if (!handleInputFile(infile, sceneGraph, srcPalette, exportPalette, dumpSceneGraph)) {
 				return app::AppState::InitFailure;
-			}
-			if (dumpSceneGraph) {
-				dump(newSceneGraph);
-			}
-			for (voxel::SceneGraphNode &node : newSceneGraph) {
-				sceneGraph.emplace(core::move(node));
-			}
-		}
-
-		if (exportPalette) {
-			const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
-			voxel::saveMaterialColorPng(paletteFile);
-			if (!srcPalette) {
-				Log::info(" .. not using the input file palette");
 			}
 		}
 	}
@@ -364,6 +326,70 @@ core::String VoxConvert::getFilenameForLayerName(const core::String &inputfile, 
 	}
 	modelPath.append(core::string::sanitizeFilename(name));
 	return modelPath;
+}
+
+bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph, bool srcPalette,
+								 bool exportPalette, bool dumpSceneGraph) {
+	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
+	Log::info("Handle input file %s", infile.c_str());
+	if (!inputFile->exists()) {
+		Log::error("Given input file '%s' does not exist", infile.c_str());
+		_exitCode = 127;
+		return false;
+	}
+	const bool inputIsImage = inputFile->isAnyOf(io::format::images());
+	if (!inputIsImage && srcPalette) {
+		core::Array<uint32_t, 256> palette;
+		io::FileStream palStream(inputFile.get());
+		const size_t numColors = voxelformat::loadPalette(inputFile->name(), palStream, palette);
+		if (numColors == 0) {
+			Log::error("Failed to load palette from input file");
+			return false;
+		}
+		if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors * 4, "")) {
+			Log::error("Failed to initialize material colors from input file");
+			return false;
+		}
+	}
+
+	if (inputIsImage) {
+		Log::info("Generate from heightmap");
+		const image::ImagePtr& image = image::loadImage(inputFile, false);
+		if (!image || !image->isLoaded()) {
+			Log::error("Couldn't load image %s", infile.c_str());
+			return false;
+		}
+		voxel::Region region(0, 0, 0, image->width(), 255, image->height());
+		voxel::RawVolume* volume = new voxel::RawVolume(region);
+		voxel::SceneGraphNode node;
+		node.setVolume(volume, true);
+		node.setName(infile);
+		sceneGraph.emplace(core::move(node));
+		voxel::RawVolumeWrapper wrapper(volume);
+		voxelutil::importHeightmap(wrapper, image);
+	} else {
+		io::FileStream inputFileStream(inputFile.get());
+		voxel::SceneGraph newSceneGraph;
+		if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph)) {
+			Log::error("Failed to load given input file");
+			return false;
+		}
+		if (dumpSceneGraph) {
+			dump(newSceneGraph);
+		}
+		for (voxel::SceneGraphNode &node : newSceneGraph) {
+			sceneGraph.emplace(core::move(node));
+		}
+	}
+
+	if (exportPalette) {
+		const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
+		voxel::saveMaterialColorPng(paletteFile);
+		if (!srcPalette) {
+			Log::info(" .. not using the input file palette");
+		}
+	}
+	return true;
 }
 
 void VoxConvert::exportLayersIntoSingleObjects(voxel::SceneGraph& sceneGraph, const core::String &inputfile) {
