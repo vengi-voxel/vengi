@@ -32,6 +32,9 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
 
+#define MaxHeightmapWidth 1024
+#define MaxHeightmapHeight 1024
+
 VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "voxconvert");
@@ -353,10 +356,14 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 	}
 
 	if (inputIsImage) {
-		Log::info("Generate from heightmap");
 		const image::ImagePtr& image = image::loadImage(inputFile, false);
 		if (!image || !image->isLoaded()) {
 			Log::error("Couldn't load image %s", infile.c_str());
+			return false;
+		}
+		Log::info("Generate from heightmap (%i:%i)", image->width(), image->height());
+		if (image->width() > MaxHeightmapWidth || image->height() >= MaxHeightmapHeight) {
+			Log::warn("Skip creating heightmap - image dimensions exceeds the max allowed boundaries");
 			return false;
 		}
 		voxel::Region region(0, 0, 0, image->width(), 255, image->height());
