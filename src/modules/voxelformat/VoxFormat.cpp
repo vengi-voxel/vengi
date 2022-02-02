@@ -257,20 +257,22 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	default_group.parent_group_index = k_invalid_group_index;
 	default_group.transform = ogt_identity_transform;
 
-	core::DynamicArray<ogt_vox_model> models;
-	core::DynamicArray<ogt_vox_layer> layers;
-	core::DynamicArray<const ogt_vox_model*> modelPtrs;
-	core::DynamicArray<ogt_vox_instance> instances;
-
 	const int replacement = findClosestPaletteIndex();
 	const glm::vec4 emptyColor = getColor(voxel::Voxel(voxel::VoxelType::Generic, 0));
 	const glm::vec4 replaceColor = getColor(voxel::Voxel(voxel::VoxelType::Generic, replacement));
 	Log::debug("Replacement for %f:%f:%f:%f is at %i (%f:%f:%f:%f)", emptyColor.r, emptyColor.g, emptyColor.b,
 			   emptyColor.a, replacement, replaceColor.r, replaceColor.g, replaceColor.b, replaceColor.a);
 
+	const size_t modelCount = newSceneGraph.size();
+	core::Buffer<ogt_vox_model> models(modelCount);
+	core::Buffer<ogt_vox_layer> layers(modelCount);
+	core::Buffer<ogt_vox_instance> instances(modelCount);
+	core::Buffer<const ogt_vox_model*> modelPtr(modelCount);
+	int mdlIdx = 0;
 	for (const SceneGraphNode &node : newSceneGraph) {
 		const voxel::Region region = node.region();
-		ogt_vox_model model;
+		ogt_vox_model &model = models[mdlIdx];
+		modelPtr[mdlIdx] = &model;
 		// flip y and z here
 		model.size_x = region.getWidthInVoxels();
 		model.size_y = region.getDepthInVoxels();
@@ -285,15 +287,12 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 				*dataptr++ = voxel.getColor();
 			}
 		}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
-		models.push_back(model);
-		modelPtrs.push_back(&models[models.size() - 1]);
 
-		ogt_vox_layer layer;
+		ogt_vox_layer &layer = layers[mdlIdx];
 		layer.name = node.name().c_str();
 		layer.hidden = !node.visible();
-		layers.push_back(layer);
 
-		ogt_vox_instance instance;
+		ogt_vox_instance &instance = instances[mdlIdx];
 		instance.group_index = 0;
 		instance.model_index = models.size() - 1;
 		instance.layer_index = layers.size() - 1;
@@ -308,7 +307,8 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		instance.transform.m30 = -glm::floor(transform.x + 0.5f);
 		instance.transform.m31 = transform.z;
 		instance.transform.m32 = transform.y;
-		instances.push_back(instance);
+
+		++mdlIdx;
 	}
 
 	ogt_vox_scene output_scene;
@@ -318,8 +318,9 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	output_scene.num_instances = instances.size();
 	output_scene.layers = &layers[0];
 	output_scene.num_layers = layers.size();
-	output_scene.models = &modelPtrs[0];
-	output_scene.num_models = models.size();
+	const ogt_vox_model **modelsPtr = modelPtr.data();
+	output_scene.models = modelsPtr;
+	output_scene.num_models = modelPtr.size();
 	core_memset(&output_scene.materials, 0, sizeof(output_scene.materials));
 
 	ogt_vox_palette& pal = output_scene.palette;
