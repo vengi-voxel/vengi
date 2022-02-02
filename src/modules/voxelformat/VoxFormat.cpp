@@ -97,7 +97,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	const uint8_t *ogtVoxels = ogtModel->voxel_data;
 	const uint8_t *ogtVoxel = ogtVoxels;
 	const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1);
-	const glm::vec4 pivot((float)maxs.x / 2.0f + 0.5f, (float)maxs.y / 2.0f + 0.5f, (float)maxs.z / 2.0f + 0.5f, 0.0f);
+	const glm::vec4 pivot(glm::floor((float)ogtModel->size_x / 2.0f), glm::floor((float)ogtModel->size_y / 2.0f), glm::floor((float)ogtModel->size_z / 2.0f), 0.0f);
 	const glm::ivec3& transformedMins = transform(ogtMat, glm::ivec3(0), pivot);
 	const glm::ivec3& transformedMaxs = transform(ogtMat, maxs, pivot);
 	const glm::ivec3& zUpMins = transform(zUpMat, transformedMins, glm::ivec4(0));
