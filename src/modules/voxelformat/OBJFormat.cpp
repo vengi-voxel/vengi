@@ -356,10 +356,18 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	const core::String& mtlbasedir = core::string::extractPath(filename);
 	const bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str(), mtlbasedir.c_str(), true, true);
 	if (!warn.empty()) {
-		Log::warn("%s", warn.c_str());
+		core::DynamicArray<core::String> lines;
+		core::string::splitString(warn.c_str(), lines, "\n");
+		for (const core::String& str : lines) {
+			Log::debug("%s", str.c_str());
+		}
 	}
 	if (!err.empty()) {
-		Log::error("%s", err.c_str());
+		core::DynamicArray<core::String> lines;
+		core::string::splitString(err.c_str(), lines, "\n");
+		for (const core::String& str : lines) {
+			Log::debug("%s", str.c_str());
+		}
 	}
 	if (!ret) {
 		Log::error("Failed to load: %s", filename.c_str());

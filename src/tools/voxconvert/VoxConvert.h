@@ -23,11 +23,25 @@ private:
 	core::VarPtr _quads;
 	core::VarPtr _withColor;
 	core::VarPtr _withTexCoords;
+
+	bool _mergeVolumes = false;
+	bool _scaleVolumes = false;
+	bool _mirrorVolumes = false;
+	bool _rotateVolumes = false;
+	bool _translateVolumes = false;
+	bool _srcPalette = false;
+	bool _exportPalette = false;
+	bool _exportLayers = false;
+	bool _changePivot = false;
+	bool _cropVolumes = false;
+	bool _splitVolumes = false;
+	bool _dumpSceneGraph = false;
+	bool _resizeVolumes = false;
+
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
 	core::String getFilenameForLayerName(const core::String& inputfile, const core::String &layerName, int id);
-	bool handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph, bool srcPalette, bool exportPalette,
-						 bool dumpSceneGraph);
+	bool handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph);
 
 	void usage() const override;
 	void mirror(const core::String& axisStr, voxel::SceneGraph& sceneGraph);
