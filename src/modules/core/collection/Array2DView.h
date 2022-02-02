@@ -5,11 +5,12 @@
 
 #pragma once
 
-#include <cstddef>
+#include <stddef.h>
 
 namespace core {
 
-template <class T> class Array2DView {
+template <class T>
+class Array2DView {
 private:
 	T *_data;
 	const int _width;

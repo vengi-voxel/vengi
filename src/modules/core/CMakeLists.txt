@@ -1,5 +1,7 @@
 set(SRCS
 	collection/Array.h
+	collection/Array2DView.h
+	collection/Array3DView.h
 	collection/Buffer.h
 	collection/ConcurrentDynamicArray.h
 	collection/ConcurrentQueue.h
