@@ -136,6 +136,48 @@ extern bool isAlpha(int c);
 extern bool isAbsolutePath(const core::String &in);
 
 /**
+ * @brief Ensure that exactly one / is at the end of the given path
+ */
+inline core::String sanitizeDirPath(core::String str) {
+	str.replaceAllChars('\\', '/');
+	while (endsWith(str, "/")) {
+		str.erase(str.size() - 1, 1);
+	}
+	return str.append("/");
+}
+
+/**
+ * @brief Assembles a string with path separators between the given values
+ */
+template <typename... ArgTypes>
+inline core::String path(ArgTypes... args);
+
+template <typename T, typename... ArgTypes>
+inline core::String path(T t, ArgTypes... args) {
+	const core::String &p = path(args...);
+	if (p.empty()) {
+		return core::String(t);
+	}
+	core::String first(t);
+	if (first.empty()) {
+		return p;
+	}
+	core::String dir = sanitizeDirPath(first);
+	if (p.first() == '/') {
+		// two were given, don't add the second one
+		dir.append(p.substr(1));
+	} else {
+		dir.append(p);
+	}
+	return dir;
+}
+
+template <>
+inline core::String path() {
+	return "";
+}
+
+/**
  * @brief extract path with trailing /
  * @note Assumed to be normalized (no \ , only /)
  */

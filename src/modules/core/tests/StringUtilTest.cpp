@@ -24,6 +24,20 @@ TEST_F(StringUtilTest, testGetBeforeToken) {
 	core_free(buf);
 }
 
+TEST_F(StringUtilTest, testPath) {
+	ASSERT_EQ("bar", core::string::path("", "bar"));
+	ASSERT_EQ("foo/bar", core::string::path("foo", "bar"));
+	ASSERT_EQ("foo/bar/file.foo", core::string::path("foo", "bar", "file.foo"));
+	ASSERT_EQ("foo/bar", core::string::path("foo/", "bar"));
+	ASSERT_EQ("foo/bar", core::string::path("foo/", "/bar"));
+}
+
+TEST_F(StringUtilTest, testSanitizeDirPath) {
+	EXPECT_EQ("foo/bar/", core::string::sanitizeDirPath("foo\\bar\\\\"));
+	EXPECT_EQ("foo/bar/", core::string::sanitizeDirPath("foo/bar//"));
+	EXPECT_EQ("foo/", core::string::sanitizeDirPath("foo"));
+}
+
 TEST_F(StringUtilTest, testFormat) {
 	EXPECT_EQ("1", core::string::format("1"));
 	EXPECT_EQ("10", core::string::format("%i", 10));

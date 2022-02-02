@@ -1,4 +1,6 @@
-#pragma once
+/**
+ * @file
+ */
 
 #include "backend/entity/ai/LUAAIRegistry.h"
 #include "backend/entity/ai/aggro/AggroMgr.h"
