@@ -94,7 +94,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			if (dir.empty()) {
 				matches.push_back(entry.name);
 			} else {
-				matches.push_back(dir + "/" + entry.name);
+				matches.push_back(core::string::path(dir, entry.name));
 			}
 			++i;
 		}

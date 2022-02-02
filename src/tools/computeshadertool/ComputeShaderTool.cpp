@@ -79,7 +79,7 @@ app::AppState ComputeShaderTool::onRunning() {
 		_exitCode = 1;
 		return app::AppState::Cleanup;
 	}
-	_sourceDirectory = getArgVal("--sourcedir", _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
+	_sourceDirectory = getArgVal("--sourcedir", core::string::path(_filesystem->basePath(), "src", "modules", _namespaceSrc));
 	_postfix = getArgVal("--postfix", "");
 
 	// handle include dirs
@@ -93,9 +93,8 @@ app::AppState ComputeShaderTool::onRunning() {
 		_includeDirs.insert(dir);
 	}
 
-	if (!core::string::endsWith(_shaderDirectory, "/")) {
-		_shaderDirectory = _shaderDirectory + "/";
-	}
+	_shaderDirectory = core::string::sanitizeDirPath(_shaderDirectory);
+	_sourceDirectory = core::string::sanitizeDirPath(_sourceDirectory);
 	Log::debug("Using %s as output directory", _sourceDirectory.c_str());
 	Log::debug("Using %s as namespace", _namespaceSrc.c_str());
 	Log::debug("Using %s as shader directory", _shaderDirectory.c_str());

@@ -233,11 +233,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 	char filename[1024];
 	wrapBool(stream.readString(sizeof(filename), filename, true))
 	if (filename[0] != '\0') {
-		core::String modelPath = core::string::extractPath(vxmPath);
-		if (!modelPath.empty()) {
-			modelPath.append("/");
-		}
-		modelPath.append(filename);
+		const core::String modelPath = core::string::path(core::string::extractPath(vxmPath), filename);
 		if (!loadChildVXM(modelPath, node, version)) {
 			Log::warn("Failed to attach model for id '%s' with filename %s (%s)", id, filename, modelPath.c_str());
 		}
@@ -328,11 +324,7 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 		char vxmFilename[1024];
 		wrapBool(stream.readString(sizeof(vxmFilename), vxmFilename, true))
 		if (vxmFilename[0] != '\0') {
-			core::String modelPath = core::string::extractPath(filename);
-			if (!modelPath.empty()) {
-				modelPath.append("/");
-			}
-			modelPath.append(vxmFilename);
+			const core::String modelPath = core::string::path(core::string::extractPath(filename), vxmFilename);
 			if (!loadChildVXM(modelPath, *node, version)) {
 				Log::warn("Failed to attach model for %s with filename %s", nodeId, modelPath.c_str());
 			}

@@ -294,7 +294,7 @@ core::String AnimationSettings::fullPath(int meshTypeIdx, const char *name) cons
 	if (name == nullptr) {
 		name = paths[meshTypeIdx].c_str();
 	}
-	return core::string::format("%s/%s/%s", basePath.c_str(), _meshTypes[meshTypeIdx].c_str(), name);
+	return core::string::path(basePath, _meshTypes[meshTypeIdx], name);
 }
 
 core::String AnimationSettings::path(int meshTypeIdx, const char *name) const {
@@ -305,7 +305,7 @@ core::String AnimationSettings::path(int meshTypeIdx, const char *name) const {
 	if (name == nullptr) {
 		name = paths[meshTypeIdx].c_str();
 	}
-	return core::string::format("%s/%s", _meshTypes[meshTypeIdx].c_str(), name);
+	return core::string::path(_meshTypes[meshTypeIdx], name);
 }
 
 bool AnimationSettings::setPath(int meshTypeIdx, const char *str) {

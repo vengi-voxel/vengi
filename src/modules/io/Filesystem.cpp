@@ -92,7 +92,7 @@ bool Filesystem::parseXDGUserDirs() {
 		Log::debug("Can't read xdg user dirs: HOME env var not found");
 		return false;
 	}
-	const core::String& xdgUserDirs = core::string::format("%s/.config/user-dirs.dirs", envHome);
+	const core::String& xdgUserDirs = core::string::path(envHome, ".config", "user-dirs.dirs");
 	if (!exists(xdgUserDirs)) {
 		Log::debug("Can't read xdg user dirs: %s doesn't exists", xdgUserDirs.c_str());
 		return false;
@@ -166,11 +166,8 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 		return true;
 	}
 
-	core::String s = dir;
-	if (s[s.size() - 1] != '/') {
-		// force trailing / so we can handle everything in loop
-		s += '/';
-	}
+	// force trailing / so we can handle everything in loop
+	core::String s = core::string::sanitizeDirPath(dir);
 
 	size_t pre = 0, pos;
 	bool lastResult = false;
@@ -215,7 +212,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 			type = DirEntry::Type::unknown;
 		} else if (ent.type == UV_DIRENT_LINK) {
 			uv_fs_t linkReq;
-			const core::String pointer = directory + "/" + ent.name;
+			const core::String pointer = core::string::path(directory, ent.name);
 			if (uv_fs_readlink(nullptr, &linkReq, pointer.c_str(), nullptr) != 0) {
 				Log::debug("Could not resolve symlink %s", pointer.c_str());
 				uv_fs_req_cleanup(&linkReq);
@@ -230,7 +227,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 				}
 			}
 
-			const core::String& fullPath = isRelativePath(symlink) ? directory + "/" + symlink : symlink;
+			const core::String& fullPath = isRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
 
 			uv_fs_t statsReq;
 			if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
@@ -253,7 +250,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 			}
 		}
 		uv_fs_t statsReq;
-		const core::String fullPath = directory + "/" + ent.name;
+		const core::String fullPath = core::string::path(directory, ent.name);
 		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
 			Log::warn("Could not stat file %s", fullPath.c_str());
 		}

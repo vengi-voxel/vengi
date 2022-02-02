@@ -217,7 +217,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 bool SceneManager::saveModels(const core::String& dir) {
 	bool state = false;
 	for (const voxel::SceneGraphNode & node : _sceneGraph) {
-		const core::String filename = dir + "/" + node.name() + ".qb";
+		const core::String filename = core::string::path(dir, node.name() + ".qb");
 		state |= saveNode(node.id(), filename);
 	}
 	return state;

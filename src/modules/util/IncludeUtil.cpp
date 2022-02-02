@@ -49,7 +49,7 @@ std::pair<core::String, bool> handleIncludes(const core::String& filename, const
 				bool found = false;
 				const core::String includeFile(cStart + 1, (size_t)(cEnd - (cStart + 1)));
 				for (const core::String& dir : includeDirs) {
-					const core::String& fullPath = dir + "/" + includeFile;
+					const core::String& fullPath = core::string::path(dir, includeFile);
 					if (!fs->exists(fullPath)) {
 						continue;
 					}

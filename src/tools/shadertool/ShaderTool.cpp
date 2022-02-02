@@ -124,7 +124,7 @@ app::AppState ShaderTool::onRunning() {
 		_constantsTemplateFile            = getArgVal("--constantstemplate");
 		_shaderDirectory                  = getArgVal("--shaderdir");
 		_sourceDirectory                  = getArgVal("--sourcedir",
-				_filesystem->basePath() + "src/modules/" + _namespaceSrc + "/");
+				core::string::path(_filesystem->basePath(), "src", "modules", _namespaceSrc));
 		_postfix                          = getArgVal("--postfix", "");
 
 		// handle include dirs
@@ -138,9 +138,9 @@ app::AppState ShaderTool::onRunning() {
 			_includeDirs.insert(dir);
 		}
 
-		if (!core::string::endsWith(_shaderDirectory, "/")) {
-			_shaderDirectory = _shaderDirectory + "/";
-		}
+		_shaderDirectory = core::string::sanitizeDirPath(_shaderDirectory);
+		_sourceDirectory = core::string::sanitizeDirPath(_sourceDirectory);
+
 		Log::debug("Using glslangvalidator binary: %s", _glslangValidatorBin.c_str());
 		Log::debug("Using %s as output directory", _sourceDirectory.c_str());
 		Log::debug("Using %s as namespace", _namespaceSrc.c_str());

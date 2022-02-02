@@ -23,7 +23,7 @@ namespace ui {
 namespace imgui {
 
 static core::String assemblePath(const core::String &dir, const core::String &ent) {
-	return dir + ((dir.last() == '\\' || dir.last() == '/') ? "" : "/") + ent;
+	return core::string::path(dir, ent);
 }
 
 void FileDialog::applyFilter() {

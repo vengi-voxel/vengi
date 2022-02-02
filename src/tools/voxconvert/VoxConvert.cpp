@@ -225,7 +225,7 @@ app::AppState VoxConvert::onInit() {
 				if (entry.type != io::Filesystem::DirEntry::Type::file) {
 					continue;
 				}
-				const core::String fullpath = core::string::format("%s/%s", infile.c_str(), entry.name.c_str());
+				const core::String fullpath = core::string::path(infile, entry.name);
 				if (!handleInputFile(fullpath, sceneGraph, srcPalette, exportPalette, dumpSceneGraph)) {
 					++success;
 				}
