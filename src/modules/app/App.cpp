@@ -34,6 +34,10 @@ static void catch_function(int signo) {
 	abort();
 }
 
+static void graceful_shutdown(int signo) {
+	App::getInstance()->requestQuit();
+}
+
 App* App::_staticInstance;
 thread_local std::stack<App::TraceData> App::_traceData;
 
@@ -54,6 +58,7 @@ App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, c
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)_initialLogLevel);
 	_timeProvider->updateTickTime();
 	_staticInstance = this;
+	signal(SIGINT, graceful_shutdown);
 }
 
 App::~App() {
