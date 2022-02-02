@@ -176,7 +176,8 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	color.g = (float)green / 255.0f;
 	color.a = (float)alpha / 255.0f;
 	const uint8_t index = findClosestIndex(color);
-	return voxel::createVoxel(voxel::VoxelType::Generic, index);
+	voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, index);
+	return v;
 }
 
 bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
