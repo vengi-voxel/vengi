@@ -495,6 +495,13 @@ char String::last() const {
 	return _data._str[_data._size - 1];
 }
 
+char String::first() const {
+	if (empty()) {
+		return '\0';
+	}
+	return _data._str[0];
+}
+
 String &String::operator+=(char c) {
 	checkBufferSize(_data._size + 2);
 	_data._str[_data._size + 0] = c;
