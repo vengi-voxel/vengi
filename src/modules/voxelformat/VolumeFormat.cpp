@@ -232,7 +232,7 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, vo
 			newSceneGraph.clear();
 		}
 	} else {
-		Log::error("Failed to load model file %s - unsupported file format for extension '%s'",
+		Log::warn("Failed to load model file %s - unsupported file format for extension '%s'",
 				fileName.c_str(), fileext.c_str());
 		return false;
 	}

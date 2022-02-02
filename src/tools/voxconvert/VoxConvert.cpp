@@ -334,7 +334,6 @@ core::String VoxConvert::getFilenameForLayerName(const core::String &inputfile, 
 bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph, bool srcPalette,
 								 bool exportPalette, bool dumpSceneGraph) {
 	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
-	Log::info("Handle input file %s", infile.c_str());
 	if (!inputFile->exists()) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
 		_exitCode = 127;
@@ -344,13 +343,14 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 	if (!inputIsImage && srcPalette) {
 		core::Array<uint32_t, 256> palette;
 		io::FileStream palStream(inputFile.get());
+		Log::info("Load palette from %s", infile.c_str());
 		const size_t numColors = voxelformat::loadPalette(inputFile->name(), palStream, palette);
 		if (numColors == 0) {
-			Log::error("Failed to load palette from input file");
+			Log::error("Failed to load palette");
 			return false;
 		}
 		if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors * 4, "")) {
-			Log::error("Failed to initialize material colors from input file");
+			Log::error("Failed to initialize material colors from loaded palette");
 			return false;
 		}
 	}
@@ -378,7 +378,6 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 		io::FileStream inputFileStream(inputFile.get());
 		voxel::SceneGraph newSceneGraph;
 		if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph)) {
-			Log::error("Failed to load given input file");
 			return false;
 		}
 		if (dumpSceneGraph) {
