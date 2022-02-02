@@ -119,7 +119,11 @@ static const io::FormatDescription *getDescription(const core::String &ext, uint
 			return desc;
 		}
 	}
-	Log::warn("Could not find a supported format description for %s", ext.c_str());
+	if (ext.empty()) {
+		Log::warn("Could not identify the format");
+	} else {
+		Log::warn("Could not find a supported format description for %s", ext.c_str());
+	}
 	return nullptr;
 }
 
