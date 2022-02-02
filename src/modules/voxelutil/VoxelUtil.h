@@ -17,4 +17,6 @@ extern bool copy(const voxel::RawVolume &in, const voxel::Region& inRegion, voxe
  */
 extern bool isEmpty(const voxel::RawVolume &in, const voxel::Region &region);
 
+extern void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel);
+
 }

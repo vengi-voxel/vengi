@@ -20,6 +20,7 @@
 #include "voxel/Mesh.h"
 #include "voxelformat/SceneGraph.h"
 #include "engine-config.h"
+#include "voxelutil/VoxelUtil.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "external/tiny_obj_loader.h"
@@ -417,6 +418,7 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		node.setVolume(volume, true);
 		node.setName(shape.name.c_str());
 		voxelizeShape(shape, textures, attrib, materials, volume);
+		voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
 		sceneGraph.emplace(core::move(node));
 	}
 

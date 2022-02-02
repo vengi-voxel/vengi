@@ -46,4 +46,7 @@ bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const vox
 	return copy(in, in.region(), out, targetRegion);
 }
 
+void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
+}
+
 } // namespace voxelutil
