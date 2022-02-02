@@ -222,6 +222,9 @@ app::AppState VoxConvert::onInit() {
 			Log::info("Found %i entries in dir %s", (int)entities.size(), infile.c_str());
 			int success = 0;
 			for (const io::Filesystem::DirEntry &entry : entities) {
+				if (entry.type != io::Filesystem::DirEntry::Type::file) {
+					continue;
+				}
 				const core::String fullpath = core::string::format("%s/%s", infile.c_str(), entry.name.c_str());
 				if (!handleInputFile(fullpath, sceneGraph, srcPalette, exportPalette, dumpSceneGraph)) {
 					++success;
