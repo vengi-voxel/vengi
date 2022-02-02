@@ -222,7 +222,6 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, vo
 	const core::String& fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
-		Log::warn("Format %s isn't supported", fileext.c_str());
 		return false;
 	}
 	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
