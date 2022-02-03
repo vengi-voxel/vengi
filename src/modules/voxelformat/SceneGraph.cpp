@@ -165,15 +165,20 @@ void SceneGraph::reserve(size_t size) {
 }
 
 bool SceneGraph::empty(SceneGraphNodeType type) const {
-	return begin(type) == end();
+	for (const auto& entry : _nodes) {
+		if (entry->value.type() == type) {
+			return false;
+		}
+	}
+	return true;
 }
 
 size_t SceneGraph::size(SceneGraphNodeType type) const {
-	auto iterbegin = begin(type);
-	auto iterend = end();
 	size_t n = 0;
-	for (auto iter = iterbegin; iter != iterend; ++iter) {
-		++n;
+	for (const auto& entry : _nodes) {
+		if (entry->value.type() == type) {
+			++n;
+		}
 	}
 	return n;
 }
