@@ -21,6 +21,12 @@ General:
 
    - Extended qbcl format support
    - Fixed color conversion issue when importing palettes from voxel models
+   - Voxelization of obj meshes now also fills the inner parts of the mesh with voxels
+   - Fixed magicavoxel pivot issue (sometimes wrong positions)
+
+VoxConvert:
+
+   - `--input` can now also handle directories
 
 ## 0.0.17 (2022-01-23)
 
