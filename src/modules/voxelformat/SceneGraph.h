@@ -90,62 +90,78 @@ public:
 
 	class iterator {
 	private:
-		using parent_iter = core::Map<int, SceneGraphNode>::iterator;
-		parent_iter _begin;
-		parent_iter _end;
+		int _startNodeId = -1;
+		int _endNodeId = -1;
 		SceneGraphNodeType _filter = SceneGraphNodeType::Max;
+		const SceneGraph *_sceneGraph = nullptr;
 	public:
 		constexpr iterator() {
 		}
 
-		iterator(parent_iter begin, parent_iter end, SceneGraphNodeType filter) :
-				_begin(begin), _end(end), _filter(filter) {
-			while (_begin != _end && _begin->second.type() != filter) {
-				++_begin;
+		iterator(int startNodeId, int endNodeId, SceneGraphNodeType filter, const SceneGraph *sceneGraph) :
+				_startNodeId(startNodeId), _endNodeId(endNodeId), _filter(filter), _sceneGraph(sceneGraph) {
+			while (_startNodeId != _endNodeId) {
+				if (!_sceneGraph->hasNode(_startNodeId)) {
+					++_startNodeId;
+					continue;
+				}
+				if (_sceneGraph->node(_startNodeId).type() == filter) {
+					break;
+				}
+				++_startNodeId;
 			}
 		}
 
 		inline SceneGraphNode& operator*() const {
-			return _begin->value;
+			return _sceneGraph->node(_startNodeId);
 		}
 
-		iterator& operator++() {
-			if (_begin != _end) {
-				do {
-					++_begin;
-				} while (_begin != _end && _begin->second.type() != _filter);
+		iterator &operator++() {
+			if (_startNodeId != _endNodeId) {
+				for (;;) {
+					++_startNodeId;
+					if (_startNodeId == _endNodeId) {
+						break;
+					}
+					if (!_sceneGraph->hasNode(_startNodeId)) {
+						continue;
+					}
+					if (_sceneGraph->node(_startNodeId).type() == _filter) {
+						break;
+					}
+				}
 			}
 
 			return *this;
 		}
 
 		inline SceneGraphNode& operator->() const {
-			return _begin->value;
+			return _sceneGraph->node(_startNodeId);
 		}
 
 		inline bool operator!=(const iterator& rhs) const {
-			return _begin != rhs._begin;
+			return _startNodeId != rhs._startNodeId;
 		}
 
 		inline bool operator==(const iterator& rhs) const {
-			return _begin == rhs._begin;
+			return _startNodeId == rhs._startNodeId;
 		}
 	};
 
 	inline auto begin(SceneGraphNodeType filter = SceneGraphNodeType::Model) {
-		return iterator(_nodes.begin(), _nodes.end(), filter);
+		return iterator(0, _nextNodeId, filter, this);
 	}
 
 	inline auto end() {
-		return iterator(_nodes.end(), _nodes.end(), SceneGraphNodeType::Max);
+		return iterator(0, _nextNodeId, SceneGraphNodeType::Max, this);
 	}
 
 	inline auto begin(SceneGraphNodeType filter = SceneGraphNodeType::Model) const {
-		return iterator(_nodes.begin(), _nodes.end(), filter);
+		return iterator(0, _nextNodeId, filter, this);
 	}
 
 	inline auto end() const {
-		return iterator(_nodes.end(), _nodes.end(), SceneGraphNodeType::Max);
+		return iterator(0, _nextNodeId, SceneGraphNodeType::Max, this);
 	}
 };
 
