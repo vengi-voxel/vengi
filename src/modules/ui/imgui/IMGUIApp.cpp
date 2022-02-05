@@ -101,6 +101,9 @@ app::AppState IMGUIApp::onConstruct() {
 									const float size = core::string::toFloat(val);
 									return size >= 2.0f;
 								});
+	command::Command::registerCommand("ui_showtextures", [&] (const command::CmdArgs& args) {
+		_showTexturesDialog = true;
+	});
 	return state;
 }
 
