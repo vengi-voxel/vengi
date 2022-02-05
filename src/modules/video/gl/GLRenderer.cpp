@@ -1922,7 +1922,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	int contextFlags = 0;
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
 	if (contextFlags & SDL_GL_CONTEXT_DEBUG_FLAG) {
-		const int severity = core::Var::get(cfg::ClientDebugSeverity, "0")->intVal();
+		const int severity = core::Var::getSafe(cfg::ClientDebugSeverity)->intVal();
 		if (severity < (int)video::DebugSeverity::None || severity >= (int)video::DebugSeverity::Max) {
 			Log::warn("Invalid severity level given: %i [0-3] - 0 disabled, 1 highest and 3 lowest severity level", severity);
 		} else {
