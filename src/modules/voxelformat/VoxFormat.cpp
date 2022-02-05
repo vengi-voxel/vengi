@@ -294,8 +294,8 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 
 		ogt_vox_instance &instance = instances[mdlIdx];
 		instance.group_index = 0;
-		instance.model_index = models.size() - 1;
-		instance.layer_index = layers.size() - 1;
+		instance.model_index = mdlIdx;
+		instance.layer_index = mdlIdx;
 		instance.name = node.name().c_str();
 		instance.hidden = !node.visible();
 		const glm::vec3 &mins = region.getLowerCornerf();
