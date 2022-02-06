@@ -1,10 +1,46 @@
 #include "AbstractVoxFormatTest.h"
+#include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/File.h"
+#include "io/FileStream.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxel {
 
 const voxel::Voxel AbstractVoxFormatTest::Empty;
+
+void AbstractVoxFormatTest::dump(const core::String& srcFilename, const voxel::SceneGraph &sceneGraph) {
+	int i = 0;
+	const core::String& prefix = core::string::extractFilename(srcFilename);
+	for (const auto &node : sceneGraph) {
+		const core::String& file = core::string::format("%s-%02i-%s.txt", prefix.c_str(), i, node.name().c_str());
+		const core::String& structName = core::string::format("model_%i", i);
+		dump(structName, node.volume(), core::string::sanitizeFilename(file));
+		++i;
+	}
+}
+
+void AbstractVoxFormatTest::dump(const core::String& structName, voxel::RawVolume* v, const core::String& filename) {
+	const io::FilePtr& file = open(filename, io::FileMode::SysWrite);
+	ASSERT_TRUE(file->validHandle());
+	io::FileStream stream(file);
+	stream.writeString(core::string::format("struct %s {\n", structName.c_str()), false);
+	stream.writeString("static core::SharedPtr<voxel::RawVolume> create() {\n", false);
+	const glm::ivec3 &mins = v->region().getLowerCorner();
+	const glm::ivec3 &maxs = v->region().getUpperCorner();
+	stream.writeString(core::string::format("\tglm::ivec3 mins(%i, %i, %i);\n", mins.x, mins.y, mins.z), false);
+	stream.writeString(core::string::format("\tglm::ivec3 maxs(%i, %i, %i);\n", maxs.x, maxs.y, maxs.z), false);
+	stream.writeString("\tvoxel::Region region(mins, maxs);\n", false);
+	stream.writeString("\tcore::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);\n", false);
+	voxelutil::visitVolume(*v, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		stream.writeString(
+			core::string::format("\tv->setVoxel(%i, %i, %i, voxel::createVoxel(voxel::VoxelType::Generic, %i));\n", x,
+								 y, z, voxel.getColor()), false);
+	});
+	stream.writeString("\treturn v;\n}\n};\n", false);
+}
 
 void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format, bool includingColor, bool includingRegion) {
 	Region region(glm::ivec3(0), glm::ivec3(1));

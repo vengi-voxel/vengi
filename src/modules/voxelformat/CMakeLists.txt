@@ -57,6 +57,9 @@ set(TEST_SRCS
 	tests/VXLFormatTest.cpp
 	tests/VXRFormatTest.cpp
 	tests/VXMFormatTest.cpp
+
+	tests/vox_character.h
+	tests/vox_glasses.h
 )
 set(TEST_FILES
 	tests/qubicle.qb

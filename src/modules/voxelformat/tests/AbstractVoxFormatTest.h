@@ -5,6 +5,7 @@
 #pragma once
 
 #include "io/FileStream.h"
+#include "voxel/RawVolume.h"
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/Format.h"
 #include "io/Filesystem.h"
@@ -14,6 +15,9 @@ namespace voxel {
 class AbstractVoxFormatTest: public AbstractVoxelTest {
 protected:
 	static const voxel::Voxel Empty;
+
+	void dump(const core::String& srcFilename, const voxel::SceneGraph &sceneGraph);
+	void dump(const core::String& structName, voxel::RawVolume* v, const core::String& filename);
 
 	void testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format, bool includingColor,
 									  bool includingRegion);
