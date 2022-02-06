@@ -28,7 +28,7 @@ void ScriptPanel::reloadScriptParameters(const core::String& script) {
 	}
 }
 
-void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::imgui::IMGUIApp* app) {
+void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::imgui::IMGUIApp* app, ImGuiID dockIdMainDown) {
 	if (ImGui::Begin(title)) {
 		core_trace_scoped(ScriptPanel);
 		if (_scripts.empty()) {
@@ -157,7 +157,8 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 	ImGui::End();
 
 	if (_scriptEditor) {
-		if (ImGui::Begin(scriptEditorTitle, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings)) {
+		ImGui::SetNextWindowDockID(dockIdMainDown, ImGuiCond_Appearing);
+		if (ImGui::Begin(scriptEditorTitle, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_HorizontalScrollbar)) {
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu(ICON_FA_FILE " File##scripteditor")) {
 					if (ImGui::MenuItem(ICON_FA_CHECK " Apply and execute##scripteditor")) {
