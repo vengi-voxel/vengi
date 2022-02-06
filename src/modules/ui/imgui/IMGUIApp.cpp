@@ -294,6 +294,7 @@ app::AppState IMGUIApp::onRunning() {
 				int textureCnt = 0;
 				for (const auto& e : textures) {
 					ImGui::Image(e->first, size, ImVec2(), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
+					// TODO GL_INVALID_OPERATION error generated. Target doesn't match the texture's target.
 					++textureCnt;
 					if (textureCnt % 2) {
 						ImGui::SameLine();
