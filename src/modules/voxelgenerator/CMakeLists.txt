@@ -5,6 +5,7 @@ set(LUA_SRCS
 	scripts/modules/volume.lua
 	scripts/cover.lua
 	scripts/grass.lua
+	scripts/grid.lua
 	scripts/noise.lua
 	scripts/noise-builtin.lua
 	scripts/pyramid.lua
