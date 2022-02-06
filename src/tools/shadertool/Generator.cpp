@@ -608,7 +608,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		constants += e->value;
 		constants += " @endcode\n";
 		constants += "\t */\n";
-		if (core::string::isInteger(e->value)) {
+		if (core::string::isIntegerWithPostfix(e->value)) {
 			constants += "\tinline static constexpr int get";
 			constants += util::convertName(e->key, true);
 			constants += "() {\n";
