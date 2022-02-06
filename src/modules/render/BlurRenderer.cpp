@@ -18,18 +18,25 @@ bool BlurRenderer::init(bool yFlipped, int width, int height) {
 		return false;
 	}
 
+	onResize(width, height);
+
+	const glm::ivec2 &fullscreenQuadIndices = _vbo.createFullscreenTexturedQuad(yFlipped);
+	core_assert_always(_vbo.addAttribute(_shader.getPosAttribute(fullscreenQuadIndices.x, &glm::vec2::x)));
+	core_assert_always(_vbo.addAttribute(_shader.getTexcoordAttribute(fullscreenQuadIndices.y, &glm::vec2::x)));
+	return true;
+}
+
+bool BlurRenderer::onResize(int width, int height) {
 	for (int i = 0; i < lengthof(_frameBuffers); ++i) {
 		video::FrameBufferConfig cfg;
 		cfg.dimension(glm::ivec2(width, height));
 		cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0);
+		_frameBuffers[i].shutdown();
 		if (!_frameBuffers[i].init(cfg)) {
 			Log::error("Failed to init the blur framebuffer %i", i);
 			return false;
 		}
 	}
-	const glm::ivec2 &fullscreenQuadIndices = _vbo.createFullscreenTexturedQuad(yFlipped);
-	core_assert_always(_vbo.addAttribute(_shader.getPosAttribute(fullscreenQuadIndices.x, &glm::vec2::x)));
-	core_assert_always(_vbo.addAttribute(_shader.getTexcoordAttribute(fullscreenQuadIndices.y, &glm::vec2::x)));
 	return true;
 }
 

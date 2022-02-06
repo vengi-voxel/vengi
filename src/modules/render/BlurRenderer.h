@@ -27,6 +27,9 @@ public:
 	 * @sa shutdown()
 	 */
 	bool init(bool yFlipped, int width = 512, int height = 512);
+
+	bool onResize(int width = 512, int height = 512);
+
 	/**
 	 * @sa init()
 	 */
