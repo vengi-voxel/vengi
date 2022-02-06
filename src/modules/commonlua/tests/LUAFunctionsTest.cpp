@@ -4,30 +4,34 @@
 
 #include "app/tests/AbstractTest.h"
 #include "commonlua/LUAFunctions.h"
+#include "glm/vector_relational.hpp"
 
 namespace lua {
 
 class LUAFunctionsTest : public app::AbstractTest {
+public:
+	template<typename T>
+	void test(const char *script, const T& expected) {
+		LUA lua;
+		clua_vecregister<T>(lua.state());
+		ASSERT_TRUE(lua.load(script)) << lua.error();
+		ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
+		const T& v = clua_tovec<T>(lua, -1);
+		EXPECT_TRUE(glm::all(glm::equal(expected, v))) << expected << " doesn't match " << v;
+	}
 };
 
 TEST_F(LUAFunctionsTest, testVectorCtor) {
-	static const char *script = R"(
+	const char *script = R"(
 		function test()
 			return ivec3.new(0, 1, 0)
 		end
 	)";
-	LUA lua;
-	clua_vecregister<glm::ivec3>(lua.state());
-	ASSERT_TRUE(lua.load(script)) << lua.error();
-	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
-	const glm::ivec3& v = clua_tovec<glm::ivec3>(lua, -1);
-	ASSERT_EQ(0, v.x);
-	ASSERT_EQ(1, v.y);
-	ASSERT_EQ(0, v.z);
+	test(script, glm::ivec3(0, 1, 0));
 }
 
 TEST_F(LUAFunctionsTest, testVectorDistance) {
-	static const char *script = R"(
+	const char *script = R"(
 		function test()
 			local v1 = vec3.new(0, 1, 0)
 			local v2 = vec3.new(0, 2, 0)
@@ -43,7 +47,7 @@ TEST_F(LUAFunctionsTest, testVectorDistance) {
 }
 
 TEST_F(LUAFunctionsTest, testVectorDistanceGlobal) {
-	static const char *script = R"(
+	const char *script = R"(
 		function test()
 			local v1 = vec3.new(0, 1, 0)
 			local v2 = vec3.new(0, 2, 0)
@@ -59,23 +63,61 @@ TEST_F(LUAFunctionsTest, testVectorDistanceGlobal) {
 }
 
 TEST_F(LUAFunctionsTest, testVectorAddition) {
-	static const char *script = R"(
+	const char *script = R"(
 		function test()
 			return ivec3.new(0, 1, 0) + ivec3.new(0, 1, 1)
 		end
 	)";
-	LUA lua;
-	clua_vecregister<glm::ivec3>(lua.state());
-	ASSERT_TRUE(lua.load(script)) << lua.error();
-	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
-	const glm::ivec3& v = clua_tovec<glm::ivec3>(lua, -1);
-	ASSERT_EQ(0, v.x);
-	ASSERT_EQ(2, v.y);
-	ASSERT_EQ(1, v.z);
+	test(script, glm::ivec3(0, 2, 1));
+}
+
+TEST_F(LUAFunctionsTest, testVectorAdditionNonVector) {
+	const char *script = R"(
+		function test()
+			return ivec3.new(0, 1, 0) + 1
+		end
+	)";
+	test(script, glm::ivec3(1, 2, 1));
+}
+
+TEST_F(LUAFunctionsTest, testVectorMultiplication) {
+	const char *script = R"(
+		function test()
+			return ivec3.new(0, 1, 2) * ivec3.new(0, 2, 2)
+		end
+	)";
+	test(script, glm::ivec3(0, 2, 4));
+}
+
+TEST_F(LUAFunctionsTest, testVectorMultiplicationNonVector) {
+	const char *script = R"(
+		function test()
+			return ivec3.new(0, 1, 2) * 2
+		end
+	)";
+	test(script, glm::ivec3(0, 2, 4));
+}
+
+TEST_F(LUAFunctionsTest, testVectorDivision) {
+	const char *script = R"(
+		function test()
+			return ivec3.new(0, 1, 2) / ivec3.new(1, 2, 2)
+		end
+	)";
+	test(script, glm::ivec3(0, 0, 1));
+}
+
+TEST_F(LUAFunctionsTest, testVectorDivisionNonVector) {
+	const char *script = R"(
+		function test()
+			return ivec3.new(0, 1, 2) / 2
+		end
+	)";
+	test(script, glm::ivec3(0, 0, 1));
 }
 
 TEST_F(LUAFunctionsTest, testVectorComponents) {
-	static const char *script = R"(
+	const char *script = R"(
 		function test()
 			local vec = ivec3.new(0, 0, 0)
 			vec.x = 1
@@ -84,14 +126,7 @@ TEST_F(LUAFunctionsTest, testVectorComponents) {
 			return vec
 		end
 	)";
-	LUA lua;
-	clua_vecregister<glm::ivec3>(lua.state());
-	ASSERT_TRUE(lua.load(script)) << lua.error();
-	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
-	const glm::ivec3& v = clua_tovec<glm::ivec3>(lua, -1);
-	ASSERT_EQ(1, v.x);
-	ASSERT_EQ(2, v.y);
-	ASSERT_EQ(3, v.z);
+	test(script, glm::ivec3(1, 2, 3));
 }
 
 TEST_F(LUAFunctionsTest, testPushVec3) {

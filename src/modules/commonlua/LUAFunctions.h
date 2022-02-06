@@ -235,27 +235,55 @@ int clua_push(lua_State* s, const glm::vec<N, T>& v) {
 template<class T>
 int clua_vecadd(lua_State* s) {
 	const T& a = clua_tovec<T>(s, 1);
-	const T& b = clua_tovec<T>(s, 2);
-	const T& c = a + b;
+	if (clua_isvec<T>(s, 2)) {
+		const T& b = clua_tovec<T>(s, 2);
+		const T& c = a + b;
+		return clua_push(s, c);
+	}
+	const T& c = a + (typename T::value_type)lua_tonumber(s, 2);
 	return clua_push(s, c);
+}
+
+template<>
+inline int clua_vecadd<glm::quat>(lua_State* s) {
+	return clua_error(s, "add not implemented for quat");
 }
 
 template<class T>
 int clua_vecdiv(lua_State* s) {
 	const T& a = clua_tovec<T>(s, 1);
-	const T& b = clua_tovec<T>(s, 2);
-	const T& c = a / b;
-	clua_push(s, c);
-	return 1;
+	if (clua_isvec<T>(s, 2)) {
+		const T& b = clua_tovec<T>(s, 2);
+		const T& c = a / b;
+		return clua_push(s, c);
+	}
+	const T& c = a / (typename T::value_type)lua_tonumber(s, 2);
+	return clua_push(s, c);
+}
+
+template<>
+inline int clua_vecdiv<glm::quat>(lua_State* s) {
+	return clua_error(s, "div not implemented for quat");
 }
 
 template<class T>
 int clua_vecmul(lua_State* s) {
 	const T& a = clua_tovec<T>(s, 1);
-	const T& b = clua_tovec<T>(s, 2);
-	const T& c = a * b;
-	clua_push(s, c);
-	return 1;
+	if (clua_isvec<T>(s, 2)) {
+		const T& b = clua_tovec<T>(s, 2);
+		const T& c = a * b;
+		return clua_push(s, c);
+	}
+	const T& c = a * (typename T::value_type)lua_tonumber(s, 2);
+	return clua_push(s, c);
+}
+
+template<>
+inline int clua_vecmul<glm::quat>(lua_State* s) {
+	const glm::quat& a = clua_toquat(s, 1);
+	const glm::quat& b = clua_toquat(s, 2);
+	const glm::quat& c = a * b;
+	return clua_push(s, c);
 }
 
 template<class T>
