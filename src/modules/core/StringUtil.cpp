@@ -185,7 +185,24 @@ bool isAlpha(int c) {
 bool isInteger(const core::String& in) {
 	for (size_t i = 0u; i < in.size(); i++) {
 		if (!SDL_isdigit(in[i])) {
+			if (i == 0 && in[i] == '-') {
+				continue;
+			}
 			return false;
+		}
+	}
+	return true;
+}
+
+bool isIntegerWithPostfix(const core::String& in) {
+	for (size_t i = 0u; i < in.size(); i++) {
+		if (!SDL_isdigit(in[i])) {
+			if (i == 0 && in[i] == '-') {
+				continue;
+			}
+			if (in[i] != 'u' && in[i] != 'U') {
+				return false;
+			}
 		}
 	}
 	return true;

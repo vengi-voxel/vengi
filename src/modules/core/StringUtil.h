@@ -132,6 +132,7 @@ inline core::String replaceAll(const core::String& str, const core::String& sear
 
 extern bool isNumber(const core::String &in);
 extern bool isInteger(const core::String& in);
+extern bool isIntegerWithPostfix(const core::String& in);
 extern bool isAlpha(int c);
 extern bool isAbsolutePath(const core::String &in);
 

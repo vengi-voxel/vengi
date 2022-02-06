@@ -12,6 +12,15 @@ namespace core {
 class StringUtilTest: public testing::Test {
 };
 
+TEST_F(StringUtilTest, testIsInteger) {
+	EXPECT_TRUE(core::string::isIntegerWithPostfix("2u"));
+	EXPECT_TRUE(core::string::isIntegerWithPostfix("2"));
+	EXPECT_TRUE(core::string::isIntegerWithPostfix("-2"));
+	EXPECT_FALSE(core::string::isInteger("2u"));
+	EXPECT_TRUE(core::string::isInteger("2"));
+	EXPECT_TRUE(core::string::isInteger("-2"));
+}
+
 TEST_F(StringUtilTest, testGetBeforeToken) {
 	const size_t bufSize = 32u;
 	char *buf = (char*)core_malloc(bufSize);
