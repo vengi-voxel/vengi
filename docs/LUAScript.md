@@ -92,7 +92,7 @@ The functions are:
 * `name()`: Returns the current name of the node.
 
 * `setName(string)`: Set the name of the node.
-*
+
 * `volume()`: Gives you access to the volume of the node.
 
 ## Color
