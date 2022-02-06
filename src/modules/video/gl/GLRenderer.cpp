@@ -1919,17 +1919,6 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
 	Log::debug("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
 
-	int contextFlags = 0;
-	SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
-	if (contextFlags & SDL_GL_CONTEXT_DEBUG_FLAG) {
-		const int severity = core::Var::getSafe(cfg::ClientDebugSeverity)->intVal();
-		if (severity < (int)video::DebugSeverity::None || severity >= (int)video::DebugSeverity::Max) {
-			Log::warn("Invalid severity level given: %i [0-3] - 0 disabled, 1 highest and 3 lowest severity level", severity);
-		} else {
-			enableDebug((video::DebugSeverity)severity);
-		}
-	}
-
 	resize(windowWidth, windowHeight, scaleFactor);
 
 	if (flextInit() == -1) {
@@ -1980,6 +1969,17 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 
 	if (hasFeature(Feature::DirectStateAccess)) {
 		Log::debug("Use direct state access");
+	}
+
+	int contextFlags = 0;
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
+	if (contextFlags & SDL_GL_CONTEXT_DEBUG_FLAG) {
+		const int severity = core::Var::getSafe(cfg::ClientDebugSeverity)->intVal();
+		if (severity < (int)video::DebugSeverity::None || severity >= (int)video::DebugSeverity::Max) {
+			Log::warn("Invalid severity level given: %i [0-3] - 0 disabled, 1 highest and 3 lowest severity level", severity);
+		} else {
+			enableDebug((video::DebugSeverity)severity);
+		}
 	}
 
 	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
