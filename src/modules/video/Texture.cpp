@@ -132,6 +132,28 @@ TexturePtr createTexture(const TextureConfig& cfg, int width, int height, const 
 	return ptr;
 }
 
+bool saveTexture(const TexturePtr& texture, const core::String &name) {
+	if (texture->format() != TextureFormat::RGBA) {
+		Log::error("Failed to save texture - only RGBA is supported right now");
+		return false;
+	}
+	uint8_t* data = texture->data();
+	const int length = 4 * texture->width() * texture->height();
+
+	image::Image img(name);
+	if (!img.loadRGBA(data, length, texture->width(), texture->height())) {
+		core_free(data);
+		Log::error("Failed to load texture RGBA data");
+		return false;
+	}
+	core_free(data);
+	if (!img.writePng()) {
+		Log::error("Failed to write %s", name.c_str());
+		return false;
+	}
+	return true;
+}
+
 bool bindTexture(TextureUnit unit, const Texture& texture) {
 	texture.bind(unit);
 	return true;

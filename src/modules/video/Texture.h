@@ -51,7 +51,7 @@ public:
 	void upload(const uint8_t* data = nullptr, int index = 1);
 
 	/**
-	 * @note The returned buffer should get freed with @c SDL_free()
+	 * @note The returned buffer should get freed with @c core_free()
 	 */
 	uint8_t* data();
 
@@ -120,6 +120,8 @@ extern TexturePtr createTextureFromImage(const image::ImagePtr& image);
 extern TexturePtr createTextureFromImage(const core::String& filename);
 
 extern TexturePtr createTexture(const TextureConfig& cfg, int width = 1, int height = 1, const core::String& name = "");
+
+extern bool saveTexture(const TexturePtr& texture, const core::String &name);
 
 extern bool bindTexture(TextureUnit unit, const Texture& texture);
 
