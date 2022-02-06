@@ -5,6 +5,7 @@
 #include "VoxEdit.h"
 #include "app/App.h"
 #include "core/Color.h"
+#include "voxedit-util/Config.h"
 #include "voxel/MaterialColor.h"
 #include "metric/Metric.h"
 #include "core/TimeProvider.h"
@@ -176,6 +177,14 @@ app::AppState VoxEdit::onInit() {
 		return app::AppState::InitFailure;
 	}
 
+	if (_argc >= 2) {
+		const char *file = _argv[_argc - 1];
+		const io::FilePtr& filePtr = filesystem()->open(file);
+		if (filePtr->exists()) {
+			core::Var::get(cfg::VoxEditLastFile)->setVal(filePtr->name());
+		}
+	}
+
 	_mainWindow = new voxedit::MainWindow(this);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
@@ -199,14 +208,6 @@ app::AppState VoxEdit::onInit() {
 	setRelativeMouseMode(false);
 
 	core::setBindingContext(voxedit::BindingContext::UI);
-
-	if (_argc >= 2) {
-		const char *file = _argv[_argc - 1];
-		const io::FilePtr& filePtr = filesystem()->open(file);
-		if (filePtr->exists()) {
-			voxedit::sceneMgr().load(filePtr->name());
-		}
-	}
 
 	return state;
 }
