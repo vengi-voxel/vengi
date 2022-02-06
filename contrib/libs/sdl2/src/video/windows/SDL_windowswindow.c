@@ -442,39 +442,40 @@ WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
     HICON hicon = NULL;
     BYTE *icon_bmp;
-    int icon_len, mask_len, y;
-    SDL_RWops *dst;
+    int icon_len, mask_len, row_len, y;
+    BITMAPINFOHEADER *bmi;
+    Uint8 *dst;
     SDL_bool isstack;
 
     /* Create temporary buffer for ICONIMAGE structure */
+    SDL_COMPILE_TIME_ASSERT(WIN_SetWindowIcon_uses_BITMAPINFOHEADER_to_prepare_an_ICONIMAGE, sizeof(BITMAPINFOHEADER) == 40);
     mask_len = (icon->h * (icon->w + 7)/8);
-    icon_len = 40 + icon->h * icon->w * sizeof(Uint32) + mask_len;
+    icon_len = sizeof(BITMAPINFOHEADER) + icon->h * icon->w * sizeof(Uint32) + mask_len;
     icon_bmp = SDL_small_alloc(BYTE, icon_len, &isstack);
-    dst = SDL_RWFromMem(icon_bmp, icon_len);
-    if (!dst) {
-        SDL_small_free(icon_bmp, isstack);
-        return;
-    }
 
     /* Write the BITMAPINFO header */
-    SDL_WriteLE32(dst, 40);
-    SDL_WriteLE32(dst, icon->w);
-    SDL_WriteLE32(dst, icon->h * 2);
-    SDL_WriteLE16(dst, 1);
-    SDL_WriteLE16(dst, 32);
-    SDL_WriteLE32(dst, BI_RGB);
-    SDL_WriteLE32(dst, icon->h * icon->w * sizeof(Uint32));
-    SDL_WriteLE32(dst, 0);
-    SDL_WriteLE32(dst, 0);
-    SDL_WriteLE32(dst, 0);
-    SDL_WriteLE32(dst, 0);
+    bmi = (BITMAPINFOHEADER *)icon_bmp;
+    bmi->biSize = SDL_SwapLE32(sizeof(BITMAPINFOHEADER));
+    bmi->biWidth = SDL_SwapLE32(icon->w);
+    bmi->biHeight = SDL_SwapLE32(icon->h * 2);
+    bmi->biPlanes = SDL_SwapLE16(1);
+    bmi->biBitCount = SDL_SwapLE16(32);
+    bmi->biCompression = SDL_SwapLE32(BI_RGB);
+    bmi->biSizeImage = SDL_SwapLE32(icon->h * icon->w * sizeof(Uint32));
+    bmi->biXPelsPerMeter = SDL_SwapLE32(0);
+    bmi->biYPelsPerMeter = SDL_SwapLE32(0);
+    bmi->biClrUsed = SDL_SwapLE32(0);
+    bmi->biClrImportant = SDL_SwapLE32(0);
 
     /* Write the pixels upside down into the bitmap buffer */
     SDL_assert(icon->format->format == SDL_PIXELFORMAT_ARGB8888);
+    dst = &icon_bmp[sizeof(BITMAPINFOHEADER)];
+    row_len = icon->w * sizeof(Uint32);
     y = icon->h;
     while (y--) {
         Uint8 *src = (Uint8 *) icon->pixels + y * icon->pitch;
-        SDL_RWwrite(dst, src, icon->w * sizeof(Uint32), 1);
+        SDL_memcpy(dst, src, row_len);
+        dst += row_len;
     }
 
     /* Write the mask */
@@ -482,7 +483,6 @@ WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
 
     hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
 
-    SDL_RWclose(dst);
     SDL_small_free(icon_bmp, isstack);
 
     /* Set the icon for the window */
@@ -573,8 +573,38 @@ WIN_HideWindow(_THIS, SDL_Window * window)
 void
 WIN_RaiseWindow(_THIS, SDL_Window * window)
 {
+    /* If desired, raise the window more forcefully.
+     * Technique taken from http://stackoverflow.com/questions/916259/ .
+     * Specifically, http://stackoverflow.com/a/34414846 .
+     *
+     * The issue is that Microsoft has gone through a lot of trouble to make it
+     * nearly impossible to programmatically move a window to the foreground,
+     * for "security" reasons. Apparently, the following song-and-dance gets
+     * around their objections. */
+    SDL_bool bForce = SDL_GetHintBoolean(SDL_HINT_FORCE_RAISEWINDOW, SDL_FALSE);
+
+    HWND hCurWnd = NULL;
+    DWORD dwMyID = 0u;
+    DWORD dwCurID = 0u;
+
     HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    if(bForce)
+    {
+        hCurWnd = GetForegroundWindow();
+        dwMyID = GetCurrentThreadId();
+        dwCurID = GetWindowThreadProcessId(hCurWnd, NULL);
+        ShowWindow(hwnd, SW_RESTORE);
+        AttachThreadInput(dwCurID, dwMyID, TRUE);
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+    }
     SetForegroundWindow(hwnd);
+    if (bForce)
+    {
+        AttachThreadInput(dwCurID, dwMyID, FALSE);
+        SetFocus(hwnd);
+        SetActiveWindow(hwnd);
+    }
 }
 
 void

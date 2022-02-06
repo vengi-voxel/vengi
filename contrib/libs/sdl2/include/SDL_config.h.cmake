@@ -277,6 +277,8 @@
 #cmakedefine SDL_VIDEO_DISABLED @SDL_VIDEO_DISABLED@
 #cmakedefine SDL_POWER_DISABLED @SDL_POWER_DISABLED@
 #cmakedefine SDL_FILESYSTEM_DISABLED @SDL_FILESYSTEM_DISABLED@
+#cmakedefine SDL_LOCALE_DISABLED @SDL_LOCALE_DISABLED@
+#cmakedefine SDL_MISC_DISABLED @SDL_MISC_DISABLED@
 
 /* Enable various audio drivers */
 #cmakedefine SDL_AUDIO_DRIVER_ALSA @SDL_AUDIO_DRIVER_ALSA@
@@ -490,6 +492,12 @@
 #cmakedefine SDL_FILESYSTEM_OS2 @SDL_FILESYSTEM_OS2@
 #cmakedefine SDL_FILESYSTEM_VITA @SDL_FILESYSTEM_VITA@
 #cmakedefine SDL_FILESYSTEM_PSP @SDL_FILESYSTEM_PSP@
+
+/* Enable misc subsystem */
+#cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@
+
+/* Enable locale subsystem */
+#cmakedefine SDL_LOCALE_DUMMY @SDL_LOCALE_DUMMY@
 
 /* Enable assembly routines */
 #cmakedefine SDL_ASSEMBLY_ROUTINES @SDL_ASSEMBLY_ROUTINES@

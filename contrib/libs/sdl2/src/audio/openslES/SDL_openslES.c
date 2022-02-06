@@ -418,15 +418,14 @@ openslES_CreatePCMPlayer(_THIS)
     /* Just go with signed 16-bit audio as it's the most compatible */
     this->spec.format = AUDIO_S16SYS;
 #else
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
-    while (test_format != 0) {
+    SDL_AudioFormat test_format;
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         if (SDL_AUDIO_ISSIGNED(test_format) && SDL_AUDIO_ISINT(test_format)) {
             break;
         }
-        test_format = SDL_NextAudioFormat();
     }
 
-    if (test_format == 0) {
+    if (!test_format) {
         /* Didn't find a compatible format : */
         LOGI( "No compatible audio format, using signed 16-bit audio" );
         test_format = AUDIO_S16SYS;
@@ -583,14 +582,14 @@ failed:
 }
 
 static int
-openslES_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+openslES_OpenDevice(_THIS, const char *devname)
 {
     this->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, (sizeof *this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
 
-    if (iscapture) {
+    if (this->iscapture) {
         LOGI("openslES_OpenDevice() %s for capture", devname);
         return openslES_CreatePCMRecorder(this);
     } else {
@@ -714,13 +713,13 @@ openslES_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int
+static SDL_bool
 openslES_Init(SDL_AudioDriverImpl * impl)
 {
     LOGI("openslES_Init() called");
 
     if (!openslES_CreateEngine()) {
-        return 0;
+        return SDL_FALSE;
     }
 
     LOGI("openslES_Init() - set pointers");
@@ -736,18 +735,18 @@ openslES_Init(SDL_AudioDriverImpl * impl)
     impl->Deinitialize  = openslES_DestroyEngine;
 
     /* and the capabilities */
-    impl->HasCaptureSupport = 1;
-    impl->OnlyHasDefaultOutputDevice = 1;
-    impl->OnlyHasDefaultCaptureDevice = 1;
+    impl->HasCaptureSupport = SDL_TRUE;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
 
     LOGI("openslES_Init() - success");
 
     /* this audio target is available. */
-    return 1;
+    return SDL_TRUE;
 }
 
 AudioBootStrap openslES_bootstrap = {
-    "openslES", "opensl ES audio driver", openslES_Init, 0
+    "openslES", "opensl ES audio driver", openslES_Init, SDL_FALSE
 };
 
 void openslES_ResumeDevices(void)

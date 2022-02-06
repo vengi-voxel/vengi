@@ -930,9 +930,7 @@ SDL_AddAudioCVTFilter(SDL_AudioCVT *cvt, const SDL_AudioFilter filter)
     if (cvt->filter_index >= SDL_AUDIOCVT_MAX_FILTERS) {
         return SDL_SetError("Too many filters needed for conversion, exceeded maximum of %d", SDL_AUDIOCVT_MAX_FILTERS);
     }
-    if (filter == NULL) {
-        return SDL_SetError("Audio filter pointer is NULL");
-    }
+    SDL_assert(filter != NULL);
     cvt->filters[cvt->filter_index++] = filter;
     cvt->filters[cvt->filter_index] = NULL; /* Moving terminator */
     return 0;
@@ -1666,6 +1664,7 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
 
     retval = (SDL_AudioStream *) SDL_calloc(1, sizeof (SDL_AudioStream));
     if (!retval) {
+        SDL_OutOfMemory();
         return NULL;
     }
 

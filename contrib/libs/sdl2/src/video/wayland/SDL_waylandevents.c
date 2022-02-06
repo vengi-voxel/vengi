@@ -987,7 +987,9 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
                 SDL_SendKeyboardText(text);
             }
         }
-        keyboard_repeat_set(&input->keyboard_repeat, time, scancode, has_text, text);
+        if (input->xkb.keymap && WAYLAND_xkb_keymap_key_repeats(input->xkb.keymap, key + 8)) {
+            keyboard_repeat_set(&input->keyboard_repeat, time, scancode, has_text, text);
+        }
     }
 }
 
@@ -1505,7 +1507,9 @@ text_input_preedit_string(void *data,
                           int32_t cursor_begin,
                           int32_t cursor_end)
 {
+    SDL_WaylandTextInput *text_input = data;
     char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
+    text_input->has_preedit = SDL_TRUE;
     if (text) {
         size_t text_bytes = SDL_strlen(text), i = 0;
         size_t cursor = 0;
@@ -1557,7 +1561,11 @@ text_input_done(void *data,
                 struct zwp_text_input_v3 *zwp_text_input_v3,
                 uint32_t serial)
 {
-    /* No-op */
+    SDL_WaylandTextInput *text_input = data;
+    if (!text_input->has_preedit) {
+        SDL_SendEditingText("", 0, 0);
+    }
+    text_input->has_preedit = SDL_FALSE;
 }
 
 static const struct zwp_text_input_v3_listener text_input_listener = {
