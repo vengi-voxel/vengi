@@ -144,7 +144,10 @@ void Parser::Message(const std::string &msg) {
 }
 
 void Parser::Warning(const std::string &msg) {
-  if (!opts.no_warnings) Message("warning: " + msg);
+  if (!opts.no_warnings) {
+    Message("warning: " + msg);
+    has_warning_ = true;  // for opts.warnings_as_errors
+  }
 }
 
 CheckedError Parser::Error(const std::string &msg) {
@@ -1674,8 +1677,9 @@ CheckedError Parser::ParseNestedFlatbuffer(Value &val, FieldDef *field,
     if (opts.json_nested_legacy_flatbuffers) {
       ECHECK(ParseAnyValue(val, field, fieldn, parent_struct_def, 0));
     } else {
-      return Error("cannot parse nested_flatbuffer as bytes unless"
-                   " --json-nested-bytes is set");
+      return Error(
+          "cannot parse nested_flatbuffer as bytes unless"
+          " --json-nested-bytes is set");
     }
   } else {
     auto cursor_at_value_begin = cursor_;
@@ -2164,9 +2168,7 @@ void EnumDef::SortByValue() {
     });
   else
     std::sort(v.begin(), v.end(), [](const EnumVal *e1, const EnumVal *e2) {
-      if (e1->GetAsInt64() == e2->GetAsInt64()) {
-        return e1->name < e2->name;
-      }
+      if (e1->GetAsInt64() == e2->GetAsInt64()) { return e1->name < e2->name; }
       return e1->GetAsInt64() < e2->GetAsInt64();
     });
 }
@@ -3443,6 +3445,9 @@ CheckedError Parser::DoParse(const char *source, const char **include_paths,
     } else {
       ECHECK(ParseDecl(source_filename));
     }
+  }
+  if (opts.warnings_as_errors && has_warning_) {
+    return Error("treating warnings as errors, failed due to above warnings");
   }
   return NoError();
 }
