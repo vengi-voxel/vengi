@@ -72,7 +72,8 @@ bool RawVolumeRenderer::init() {
 	}
 
 	video::FrameBufferConfig cfg;
-	cfg.dimension(video::getWindowSize());
+	const glm::ivec2 &windowSize = video::getWindowSize();
+	cfg.dimension(windowSize);
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
 	cfg.depthBuffer(true);
@@ -82,7 +83,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	// we have to do an y-flip here due to the framebuffer handling
-	if (!_blurRenderer.init(true)) {
+	if (!_blurRenderer.init(true, windowSize.x, windowSize.y)) {
 		Log::error("Failed to initialize the blur renderer");
 		return false;
 	}
@@ -476,7 +477,9 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 	renderToFrameBuffer(camera, shadow, funcGray);
 	const video::Id color0 = _frameBuffer.texture(video::FrameBufferAttachment::Color0)->handle();
 	const video::Id color1 = _frameBuffer.texture(video::FrameBufferAttachment::Color1)->handle();
+	// blur the color1 attachment of the framebuffer (which is the glowing part)
 	_blurRenderer.render(color1);
+	// now combine the blurred texture with the original render
 	_bloomRenderer.render(color0, _blurRenderer.texture()->handle());
 }
 
