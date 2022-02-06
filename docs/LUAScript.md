@@ -178,14 +178,6 @@ To get a full list of commands and cvars use the console command `cmdlist` and `
 
 ## Available scripts
 
-### noise.lua
-
-Generates perlin noise with the frequency and amplitude as parameters with the current selected color.
-
-![noise](img/lua-noise.png)
-
-`xs noise.lua 0.3 1.0`
-
 ### cover.lua
 
 Generates a new voxel on top of others with the current selected color and the specified height.
@@ -193,6 +185,30 @@ Generates a new voxel on top of others with the current selected color and the s
 ![cover](img/lua-cover.png)
 
 `xs cover.lua 1`
+
+### grass.lua
+
+Generate grass on top of voxels.
+
+![grass](img/grass.png)
+
+`xs grass.lua`
+
+### grid.lua
+
+Generates a grid with given color, thickness and size.
+
+![grid](img/lua-grid.png)
+
+`xs grid.lua 1 1 5 5 5`
+
+### noise.lua
+
+Generates perlin noise with the frequency and amplitude as parameters with the current selected color.
+
+![noise](img/lua-noise.png)
+
+`xs noise.lua 0.3 1.0`
 
 ### pyramid.lua
 
@@ -209,11 +225,3 @@ Thickens the voxel - take 1 voxel and convert to 8 voxels (creates a new node fo
 ![thickenbefore](img/lua-thicken-before.png) ![thickenafter](img/lua-thicken-after.png)
 
 `xs thicken.lua 1`
-
-### grass.lua
-
-Generate grass on top of voxels.
-
-![grass](img/grass.png)
-
-`xs grass.lua`
