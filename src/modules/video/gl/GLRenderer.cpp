@@ -637,6 +637,24 @@ void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	return data;
 }
 
+void* mapBufferRange(Id handle, intptr_t offset, size_t length, BufferType type, AccessMode mode) {
+	video_trace_scoped(MapBuffer);
+	const int modeIndex = core::enumVal(mode);
+	const GLenum glMode = _priv::AccessModes[modeIndex];
+	if (hasFeature(Feature::DirectStateAccess)) {
+		void* data = glMapNamedBufferRange(handle, (GLintptr)offset, (GLsizeiptr)length, glMode);
+		checkError();
+		return data;
+	}
+	bindBuffer(type, handle);
+	const int typeIndex = core::enumVal(type);
+	const GLenum glType = _priv::BufferTypes[typeIndex];
+	void* data = glMapBufferRange(glType, (GLintptr)offset, (GLsizeiptr)length, glMode);
+	checkError();
+	unbindBuffer(type);
+	return data;
+}
+
 void unmapBuffer(Id handle, BufferType type) {
 	video_trace_scoped(UnmapBuffer);
 	const int typeIndex = core::enumVal(type);
@@ -1274,7 +1292,11 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 		glNamedBufferSubData(lid, (GLintptr)offset, (GLsizeiptr)size, data);
 		checkError();
 	} else {
-#if 1
+#if DIRECT_STATE_ACCESS
+		void *target = mapBufferRange(handle, offset, size, type, AccessMode::Write);
+		core_memcpy(target, data, size);
+		unmapBuffer(handle, type);
+#else
 		const GLenum glType = _priv::BufferTypes[typeIndex];
 		const Id oldBuffer = boundBuffer(type);
 		const bool changed = bindBuffer(type, handle);
@@ -1287,10 +1309,6 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 				bindBuffer(type, oldBuffer);
 			}
 		}
-#else
-		void *target = mapBufferRange(...);
-		core_memcpy(target, data, size);
-		unmapBuffer(type);
 #endif
 	}
 }

@@ -222,6 +222,7 @@ extern Id boundVertexArray();
 extern Id boundBuffer(BufferType type);
 extern void unmapBuffer(Id handle, BufferType type);
 extern void* mapBuffer(Id handle, BufferType type, AccessMode mode);
+extern void* mapBufferRange(Id handle, intptr_t offset, size_t length, BufferType type, AccessMode mode);
 extern bool bindBuffer(BufferType type, Id handle);
 extern bool unbindBuffer(BufferType type);
 extern bool bindBufferBase(BufferType type, Id handle, uint32_t index = 0u);
