@@ -159,13 +159,13 @@ jobs:
           with:
             vcpkgGitCommitId: 2f7a104d4d6f1f3790db929f85a4086aa6973d7f
             vcpkgTriplet: 'x64-windows'
-            vcpkgArguments: 'libpq glslang'
+            vcpkgArguments: 'libpq glslang ninja'
 
         - name: Build
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release -DHOT_RELOAD_ANIM=0
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DHOT_RELOAD_ANIM=0 -GNinja
             cmake --build .
 
         - name: install
