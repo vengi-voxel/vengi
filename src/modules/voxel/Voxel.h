@@ -133,9 +133,7 @@ public:
 		return _flags;
 	}
 
-	inline void setFlags(uint8_t flags) {
-		_flags = flags;
-	}
+	void setFlags(uint8_t flags);
 private:
 	VoxelType _material:5;
 	uint8_t _flags:3;
