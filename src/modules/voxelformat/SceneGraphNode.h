@@ -36,6 +36,7 @@ struct SceneGraphTransform {
 	float scale{1.0f};
 	glm::mat4x4 mat{1.0f};
 
+	void print() const;
 	void update();
 };
 
