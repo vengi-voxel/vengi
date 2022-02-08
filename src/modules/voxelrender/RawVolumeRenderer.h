@@ -50,7 +50,7 @@ namespace voxelrender {
  */
 class RawVolumeRenderer {
 public:
-	static constexpr int MAX_VOLUMES = 64;
+	static constexpr int MAX_VOLUMES = 256;
 protected:
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	core::Array<glm::mat4[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _models;
