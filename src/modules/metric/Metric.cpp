@@ -59,6 +59,9 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 		if (remainingLen <= 0) {
 			return false;
 		}
+		if (e->second.empty()) {
+			continue;
+		}
 		size_t keyValueLen = e->key.size() + SDL_strlen(sep) + e->value.size();
 		int written;
 		if (first) {
