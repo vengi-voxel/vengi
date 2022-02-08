@@ -62,7 +62,7 @@ public:
 	 */
 	SceneGraphNode& node(int nodeId) const;
 	bool hasNode(int nodeId) const;
-	bool removeNode(int nodeId);
+	bool removeNode(int nodeId, bool recursive = false);
 
 	/**
 	 * @brief Pre-allocated memory in the graph without added the nodes

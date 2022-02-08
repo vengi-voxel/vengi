@@ -123,7 +123,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	return nodeId;
 }
 
-bool SceneGraph::removeNode(int nodeId) {
+bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	auto iter = _nodes.find(nodeId);
 	if (iter == _nodes.end()) {
 		Log::debug("Could not remove node %i - not found", nodeId);
@@ -138,16 +138,27 @@ bool SceneGraph::removeNode(int nodeId) {
 			}
 		}
 		for (int nodeId : refNodes) {
-			removeNode(nodeId);
+			removeNode(nodeId, false);
 		}
 	} else if (iter->value.type() == SceneGraphNodeType::Root) {
 		core_assert(nodeId == 0);
 		clear();
 		return true;
 	}
-	bool state = iter->value.children().empty();
-	for (int childId : iter->value.children()) {
-		state |= removeNode(childId);
+	bool state = true;
+	if (recursive) {
+		state = iter->value.children().empty();
+		for (int childId : iter->value.children()) {
+			state |= removeNode(childId, recursive);
+		}
+	} else {
+		// reparent any children
+		const int parent = iter->value.parent();
+		SceneGraphNode &parentNode = node(parent);
+		for (int childId : iter->value.children()) {
+			node(childId).setParent(parent);
+			parentNode.addChild(childId);
+		}
 	}
 	_nodes.erase(iter);
 	if (_activeNodeId == nodeId) {
