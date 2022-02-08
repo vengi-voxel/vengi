@@ -165,7 +165,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release -DHOT_RELOAD_ANIM=0 -GNinja
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DHOT_RELOAD_ANIM=0
             cmake --build .
 
         - name: install
