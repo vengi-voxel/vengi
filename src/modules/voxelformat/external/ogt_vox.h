@@ -820,6 +820,7 @@
         }
     }
 
+#if 0
     // ensure instances are ordered in order of increasing model_index
     static int _vox_ordered_compare_instance(const void* _lhs, const void* _rhs) {
         const ogt_vox_instance* lhs = (const ogt_vox_instance*)_lhs;
@@ -827,6 +828,7 @@
         return lhs->model_index < rhs->model_index ? -1 :
                lhs->model_index > rhs->model_index ?  1 : 0;
     }
+#endif
 
     // returns true if the 2 models are content-wise identical.
     static bool _vox_models_are_equal(const ogt_vox_model* lhs, const ogt_vox_model* rhs) {
@@ -1401,7 +1403,7 @@
             ogt_vox_instance* scene_instances = (ogt_vox_instance*)_vox_malloc(sizeof(ogt_vox_instance) * num_scene_instances);
             if (num_scene_instances) {
                 memcpy(scene_instances, &instances[0], sizeof(ogt_vox_instance) * num_scene_instances);
-                qsort(scene_instances, num_scene_instances, sizeof(ogt_vox_instance), _vox_ordered_compare_instance);
+                //qsort(scene_instances, num_scene_instances, sizeof(ogt_vox_instance), _vox_ordered_compare_instance);
             }
             scene->instances = scene_instances;
             scene->num_instances = (uint32_t)instances.size();
