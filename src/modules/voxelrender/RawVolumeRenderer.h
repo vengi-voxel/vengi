@@ -139,7 +139,6 @@ public:
 
 	int amount(int idx) const;
 	bool empty(int idx = 0) const;
-	bool swap(int idx1, int idx2);
 	/**
 	 * @sa setVolume()
 	 */
