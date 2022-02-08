@@ -470,7 +470,7 @@ void SceneManager::undo() {
 	}
 	voxel::RawVolume* v = MementoData::toVolume(s.data);
 	if (v == nullptr) {
-		nodeRemove(s.nodeId);
+		nodeRemove(s.nodeId, false);
 		return;
 	}
 	Log::debug("Volume found in undo state for layer: %i with name %s", s.nodeId, s.name.c_str());
@@ -494,7 +494,7 @@ void SceneManager::redo() {
 	}
 	voxel::RawVolume* v = MementoData::toVolume(s.data);
 	if (v == nullptr) {
-		nodeRemove(s.nodeId);
+		nodeRemove(s.nodeId, false);
 		return;
 	}
 	Log::debug("Volume found in redo state for layer: %i with name %s", s.nodeId, s.name.c_str());
@@ -617,7 +617,7 @@ bool SceneManager::merge(int nodeId1, int nodeId2) {
 	}
 	// TODO: the memento states are not yet perfect
 	modified(nodeId1, volume->region(), true);
-	nodeRemove(nodeId2);
+	nodeRemove(nodeId2, false);
 	return true;
 }
 
@@ -1488,7 +1488,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("layerdelete", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (voxel::SceneGraphNode* node = sceneGraphNode(nodeId)) {
-			nodeRemove(*node);
+			nodeRemove(*node, false);
 		}
 	}).setHelp("Delete a particular node by id - or the current active one");
 
@@ -2281,22 +2281,28 @@ void SceneManager::nodeSetLocked(int nodeId, bool visible) {
 	}
 }
 
-void SceneManager::nodeRemove(int nodeId) {
+bool SceneManager::nodeRemove(int nodeId, bool recursive) {
 	if (_sceneGraph.hasNode(nodeId)) {
-		nodeRemove(_sceneGraph.node(nodeId));
+		return nodeRemove(_sceneGraph.node(nodeId), recursive);
 	}
+	return false;
 }
 
-bool SceneManager::nodeRemove(voxel::SceneGraphNode &node) {
+bool SceneManager::nodeRemove(voxel::SceneGraphNode &node, bool recursive) {
 	const int nodeId = node.id();
-	if (!_sceneGraph.removeNode(nodeId)) {
+	if (!_sceneGraph.removeNode(nodeId, recursive)) {
 		return false;
 	}
-	Log::debug("Delete node %i with name %s", nodeId, node.name().c_str());
-	_mementoHandler.markNodeDeleted(node.parent(), nodeId, node.name(), node.volume());
-	_needAutoSave = true;
-	_dirty = true;
-	updateAABBMesh();
+	if (_sceneGraph.empty()) {
+		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
+		newScene(true, "", region);
+	} else {
+		Log::debug("Delete node %i with name %s", nodeId, node.name().c_str());
+		_mementoHandler.markNodeDeleted(node.parent(), nodeId, node.name(), node.volume());
+		_needAutoSave = true;
+		_dirty = true;
+		updateAABBMesh();
+	}
 	return true;
 }
 

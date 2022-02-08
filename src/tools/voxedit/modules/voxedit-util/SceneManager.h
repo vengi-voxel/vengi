@@ -417,11 +417,11 @@ public:
 
 private:
 	void nodeRename(voxel::SceneGraphNode &node, const core::String &name);
-	bool nodeRemove(voxel::SceneGraphNode &node);
+	bool nodeRemove(voxel::SceneGraphNode &node, bool recursive);
 	void nodeDuplicate(voxel::SceneGraphNode &node);
 public:
 	void nodeRename(int nodeId, const core::String &name);
-	void nodeRemove(int nodeId);
+	bool nodeRemove(int nodeId, bool recursive);
 	void nodeSetVisible(int nodeId, bool visible);
 	void nodeSetLocked(int nodeId, bool visible);
 	void nodeActivate(int nodeId);

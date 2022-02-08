@@ -70,7 +70,7 @@ void LayerPanel::addLayerItem(const voxel::SceneGraph& sceneGraph, const voxel::
 
 	const core::String &deleteId = core::string::format(ICON_FA_TRASH_ALT"##delete-layer-%i", nodeId);
 	if (ImGui::Button(deleteId.c_str())) {
-		sceneMgr().nodeRemove(nodeId);
+		sceneMgr().nodeRemove(nodeId, false);
 	}
 }
 

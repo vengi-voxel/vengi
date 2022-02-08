@@ -116,7 +116,7 @@ TEST_F(SceneGraphTest, testRemove) {
 		sceneGraph.emplace(core::move(node), 1);
 	}
 	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model));
-	EXPECT_TRUE(sceneGraph.removeNode(1));
+	EXPECT_TRUE(sceneGraph.removeNode(1, true));
 	EXPECT_EQ(0u, sceneGraph.size(SceneGraphNodeType::Model));
 	EXPECT_TRUE(sceneGraph.empty(SceneGraphNodeType::Model));
 }
