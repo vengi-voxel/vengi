@@ -42,8 +42,7 @@ convert vxm qb
 convert qbcl qb
 convert qbt qb
 convert cub qb
-# TODO: this is still broken and needs investigation
-#convert vox qb
+convert vox qb
 
 echo "export layers of @DATA_DIR@/$FILE"
 cp @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
