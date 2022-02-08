@@ -8,9 +8,11 @@
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 
+#define SCENEGRAPHPOPUP "##scenegraphpopup"
+
 namespace voxedit {
 
-static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sceneGraph, const voxel::SceneGraphNode &node) {
+static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sceneGraph, const voxel::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	core::String name;
 	switch (node.type()) {
 	case voxel::SceneGraphNodeType::Model:
@@ -36,6 +38,31 @@ static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sc
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
 	const bool open = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
+
+	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
+	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
+		const int validLayers = (int)sceneGraph.size();
+		sceneMgr().nodeActivate(node.id());
+		ImGui::CommandMenuItem(ICON_FA_TRASH_ALT " Delete" SCENEGRAPHPOPUP, "layerdelete", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowall", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "layerhideall", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "layermerge", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" SCENEGRAPHPOPUP, "layermergeall", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" SCENEGRAPHPOPUP, "layermergevisible", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" SCENEGRAPHPOPUP, "layermergelocked", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" SCENEGRAPHPOPUP, "layerlockall", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "layerunlockall", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_SAVE " Save" SCENEGRAPHPOPUP, "layerssave", true, &listener);
+		core::String layerName = node.name();
+		if (ImGui::InputText("Name" SCENEGRAPHPOPUP, &layerName)) {
+			sceneMgr().nodeRename(node.id(), layerName);
+		}
+		ImGui::EndPopup();
+	}
 
 	ImGui::TableNextColumn();
 	if (open) {
@@ -67,14 +94,15 @@ static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sc
 			// TODO: allow to edit them
 			ImGui::LabelText(entry->value.c_str(), "%s", entry->key.c_str());
 		}
+
 		for (int nodeIdx : node.children()) {
-			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(nodeIdx));
+			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(nodeIdx), listener);
 		}
 		ImGui::TreePop();
 	}
 }
 
-void SceneGraphPanel::update(video::Camera& camera, const char *title) {
+void SceneGraphPanel::update(video::Camera& camera, const char *title, command::CommandExecutionListener &listener) {
 	const voxel::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(SceneGraphPanel);
@@ -86,7 +114,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title) {
 			ImGui::TableSetupColumn("##scenegraphnodeid", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableHeadersRow();
 
-			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(0));
+			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(0), listener);
 			ImGui::EndTable();
 		}
 	}

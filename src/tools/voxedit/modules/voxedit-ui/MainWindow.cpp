@@ -230,7 +230,7 @@ void MainWindow::rightWidget() {
 	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
-	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH);
+	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, _lastExecutedCommand);
 	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app, _dockIdMainDown);
 	_noisePanel.update(TITLE_NOISEPANEL);
 	_treePanel.update(TITLE_TREES);
