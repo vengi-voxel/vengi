@@ -7,6 +7,7 @@
 namespace cfg {
 
 constexpr const char *VoxEditGrayInactive = "ve_grayinactive";
+constexpr const char *VoxEditHideInactive = "ve_hideinactive";
 constexpr const char *VoxEditLastFile = "ve_lastfile";
 constexpr const char *VoxEditLastFiles = "ve_lastfiles";
 constexpr const char *VoxEditAutoSaveSeconds = "ve_autosaveseconds";

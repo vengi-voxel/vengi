@@ -84,7 +84,8 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	frameBuffer.bind(true);
-	volumeRenderer.render(sceneGraph, true, camera);
+	volumeRenderer.prepare(sceneGraph);
+	volumeRenderer.render(camera, true, true);
 	frameBuffer.unbind();
 
 	const video::TexturePtr &fboTexture = frameBuffer.texture(video::FrameBufferAttachment::Color0);

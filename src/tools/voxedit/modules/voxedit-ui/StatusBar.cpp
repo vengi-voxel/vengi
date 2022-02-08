@@ -116,6 +116,8 @@ void StatusBar::update(const char *title, float height, const core::String &last
 		ImGui::InputVarInt("Grid size", cfg::VoxEditGridsize);
 		ImGui::SameLine();
 		ImGui::CheckboxVar("Grayscale", cfg::VoxEditGrayInactive);
+		ImGui::SameLine();
+		ImGui::CheckboxVar("Only active", cfg::VoxEditHideInactive);
 	}
 	ImGui::End();
 }

@@ -972,14 +972,9 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 		}
 	}
 	if (renderScene) {
-		std::function<bool(int)> func;
-		if (_grayScale->boolVal()) {
-			func = [&](int nodeId) { return nodeId != activeNode(); };
-		} else {
-			func = [&](int nodeId) { return false; };
-		}
 		_volumeRenderer.setRenderScene(_editMode == EditMode::Scene);
-		_volumeRenderer.render(_sceneGraph, false, camera, _renderShadow, func);
+		_volumeRenderer.prepare(_sceneGraph, _hideInactive->boolVal(), _grayInactive->boolVal());
+		_volumeRenderer.render(camera, _renderShadow, false);
 		extractVolume();
 	}
 	if (renderUI) {
@@ -1591,8 +1586,10 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Duplicates the current node or the given node id");
 
-	_grayScale = core::Var::get(cfg::VoxEditGrayInactive, "false");
-	_grayScale->setHelp("Render the inactive layers in gray scale mode");
+	_grayInactive = core::Var::get(cfg::VoxEditGrayInactive, "false");
+	_grayInactive->setHelp("Render the inactive layers in gray scale mode");
+	_hideInactive = core::Var::get(cfg::VoxEditHideInactive, "false");
+	_hideInactive->setHelp("Hide the inactive layers");
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST)->setHelp("Merge similar quads to optimize the mesh");
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST)->setHelp("Reuse vertices or always create new ones");
 	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST)->setHelp("Extra vertices for ambient occlusion");
@@ -2290,14 +2287,17 @@ void SceneManager::nodeRemove(int nodeId) {
 	}
 }
 
-void SceneManager::nodeRemove(voxel::SceneGraphNode &node) {
+bool SceneManager::nodeRemove(voxel::SceneGraphNode &node) {
 	const int nodeId = node.id();
+	if (!_sceneGraph.removeNode(nodeId)) {
+		return false;
+	}
 	Log::debug("Delete node %i with name %s", nodeId, node.name().c_str());
 	_mementoHandler.markNodeDeleted(node.parent(), nodeId, node.name(), node.volume());
-	_sceneGraph.removeNode(node.id());
 	_needAutoSave = true;
 	_dirty = true;
 	updateAABBMesh();
+	return true;
 }
 
 void SceneManager::nodeDuplicate(voxel::SceneGraphNode &node) {

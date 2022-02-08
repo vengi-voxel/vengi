@@ -84,27 +84,15 @@ void SceneGraphRenderer::clear() {
 	}
 }
 
-void SceneGraphRenderer::render(voxel::SceneGraph &sceneGraph, bool waitPending, const video::Camera& camera, bool shadow, std::function<bool(int)> funcGray) {
-	int models = 0;
-
-	// collect those volumes that are still in use
-	core::Set<const voxel::RawVolume *> vPtrs;
-	for (voxel::SceneGraphNode &node : sceneGraph) {
-		voxel::RawVolume *v = _renderer.volume(node.id());
-		if (v == nullptr) {
-			continue;
-		}
-		vPtrs.insert(v);
-	}
-
+void SceneGraphRenderer::prepare(voxel::SceneGraph &sceneGraph, bool hideInactive, bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
-		voxel::RawVolume *v = _renderer.volume(i);
-		if (!vPtrs.has(v)) {
+		if (!sceneGraph.hasNode(i)) {
 			_renderer.setVolume(i, nullptr, true);
 		}
 	}
 
+	const int activeNode = sceneGraph.activeNode();
 	for (voxel::SceneGraphNode &node : sceneGraph) {
 		voxel::RawVolume *v = _renderer.volume(node.id());
 		if (v != node.volume()) {
@@ -116,8 +104,16 @@ void SceneGraphRenderer::render(voxel::SceneGraph &sceneGraph, bool waitPending,
 		} else {
 			_renderer.setModelMatrix(node.id(), node.matrix(), true);
 		}
-		_renderer.hide(node.id(), !node.visible());
-		++models;
+		if (hideInactive) {
+			_renderer.hide(node.id(), node.id() != activeNode);
+		} else {
+			_renderer.hide(node.id(), !node.visible());
+		}
+		if (grayInactive) {
+			_renderer.gray(node.id(), node.id() != activeNode);
+		} else {
+			_renderer.gray(node.id(), false);
+		}
 	}
 
 	if (0 && _renderScene) {
@@ -127,13 +123,15 @@ void SceneGraphRenderer::render(voxel::SceneGraph &sceneGraph, bool waitPending,
 			core_assert_always(_renderer.setModelMatrix(referencedModelNodeId, (*iter).matrix(), false));
 		}
 	}
+}
 
+void SceneGraphRenderer::render(const video::Camera& camera, bool shadow, bool waitPending) {
 	if (waitPending) {
 		_renderer.waitForPendingExtractions();
 		_renderer.update();
 	}
 
-	_renderer.render(camera, shadow, core::move(funcGray));
+	_renderer.render(camera, shadow);
 }
 
 }

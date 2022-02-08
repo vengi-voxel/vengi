@@ -423,21 +423,35 @@ void RawVolumeRenderer::extractVolumeRegionToMesh(voxel::RawVolume* volume, cons
 	voxel::extractCubicMesh(volume, reg, mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());
 }
 
-bool RawVolumeRenderer::hiddenState(int idx) const {
+bool RawVolumeRenderer::hidden(int idx) const {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return true;
 	}
-	return _hidden[idx];
+	return _state[idx]._hidden;
 }
 
 void RawVolumeRenderer::hide(int idx, bool hide) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return;
 	}
-	_hidden[idx] = hide;
+	_state[idx]._hidden = hide;
 }
 
-void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::function<bool(int)> funcGray) {
+bool RawVolumeRenderer::grayed(int idx) const {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return true;
+	}
+	return _state[idx]._gray;
+}
+
+void RawVolumeRenderer::gray(int idx, bool gray) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return;
+	}
+	_state[idx]._gray = gray;
+}
+
+void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	if (voxel::materialColorChanged()) {
@@ -448,7 +462,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 		voxel::materialColorMarkClean();
 	}
 
-	renderToFrameBuffer(camera, shadow, funcGray);
+	renderToFrameBuffer(camera, shadow);
 	const video::Id color0 = _frameBuffer.texture(video::FrameBufferAttachment::Color0)->handle();
 	const video::Id color1 = _frameBuffer.texture(video::FrameBufferAttachment::Color1)->handle();
 	// blur the color1 attachment of the framebuffer (which is the glowing part)
@@ -457,14 +471,14 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow, std::fu
 	_bloomRenderer.render(color0, _blurRenderer.texture()->handle());
 }
 
-void RawVolumeRenderer::renderToFrameBuffer(const video::Camera& camera, bool shadow, std::function<bool(int)>& funcGray) {
+void RawVolumeRenderer::renderToFrameBuffer(const video::Camera& camera, bool shadow) {
 	uint32_t indices[MAX_VOLUMES];
 
 	core_memset(indices, 0, sizeof(indices));
 
 	uint32_t numIndices = 0u;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		if (_hidden[idx]) {
+		if (_state[idx]._hidden) {
 			continue;
 		}
 		const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
@@ -544,7 +558,7 @@ void RawVolumeRenderer::renderToFrameBuffer(const video::Camera& camera, bool sh
 		const glm::vec2 offset(-0.25f * (float)idx, -0.5f * (float)idx);
 		video::ScopedPolygonMode polygonMode(mode, offset);
 		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
-		_voxelShader.setGray(funcGray(idx));
+		_voxelShader.setGray(_state[idx]._gray);
 		_voxelShader.setModel(_models[idx]);
 		video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], _amounts[idx]);
 	}

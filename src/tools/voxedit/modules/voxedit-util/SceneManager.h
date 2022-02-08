@@ -121,7 +121,8 @@ private:
 	core::VarPtr _diffuseColor;
 	core::VarPtr _cameraZoomSpeed;
 	core::VarPtr _modelSpace;
-	core::VarPtr _grayScale;
+	core::VarPtr _grayInactive;
+	core::VarPtr _hideInactive;
 
 	math::Axis _lockedAxis = math::Axis::None;
 
@@ -416,7 +417,7 @@ public:
 
 private:
 	void nodeRename(voxel::SceneGraphNode &node, const core::String &name);
-	void nodeRemove(voxel::SceneGraphNode &node);
+	bool nodeRemove(voxel::SceneGraphNode &node);
 	void nodeDuplicate(voxel::SceneGraphNode &node);
 public:
 	void nodeRename(int nodeId, const core::String &name);

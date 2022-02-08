@@ -52,11 +52,15 @@ class RawVolumeRenderer {
 public:
 	static constexpr int MAX_VOLUMES = 256;
 protected:
+	struct State {
+		bool _hidden;
+		bool _gray;
+	};
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	core::Array<glm::mat4[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _models;
 	static_assert(shader::VoxelInstancedShaderConstants::getMaxInstances() == shader::ShadowmapInstancedShaderConstants::getMaxInstances(), "max instances must match between shaders");
 	int _amounts[MAX_VOLUMES] = { 1 };
-	core::Array<bool, MAX_VOLUMES> _hidden {{ false }};
+	core::Array<State, MAX_VOLUMES> _state {};
 	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1};
 	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1};
 	typedef core::Array<voxel::Mesh*, MAX_VOLUMES> Meshes;
@@ -96,14 +100,16 @@ protected:
 	core::ConcurrentPriorityQueue<ExtractionCtx> _pendingQueue;
 	void extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
-	void renderToFrameBuffer(const video::Camera& camera, bool shadow, std::function<bool(int)>& funcGray);
+	void renderToFrameBuffer(const video::Camera& camera, bool shadow);
 
 public:
 	RawVolumeRenderer();
 
-	void render(const video::Camera& camera, bool shadow = true, std::function<bool(int)> funcGray = [] (int) {return false;});
+	void render(const video::Camera& camera, bool shadow = true);
 	void hide(int idx, bool hide);
-	bool hiddenState(int idx) const;
+	bool hidden(int idx) const;
+	void gray(int idx, bool gray);
+	bool grayed(int idx) const;
 
 	void clearPendingExtractions();
 	void waitForPendingExtractions();
