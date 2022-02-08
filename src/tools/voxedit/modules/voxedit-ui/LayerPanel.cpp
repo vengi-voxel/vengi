@@ -43,6 +43,7 @@ void LayerPanel::addLayerItem(const voxel::SceneGraph& sceneGraph, const voxel::
 
 	const core::String &contextMenuId = core::string::format("Edit##context-layer-%i", nodeId);
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
+		sceneMgr().nodeActivate(nodeId);
 		const int validLayers = (int)sceneGraph.size();
 		ImGui::CommandMenuItem(ICON_FA_TRASH_ALT " Delete" LAYERPOPUP, "layerdelete", validLayers > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" LAYERPOPUP, "layerhideothers", validLayers > 1, &listener);
