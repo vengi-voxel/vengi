@@ -128,26 +128,26 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, voxel::SceneGraphNode 
 	}
 	io::FileStream stream(file.get());
 	VXMFormat f;
-	SceneGraph newSceneGraph;
-	if (!f.loadGroups(vxmPath, stream, newSceneGraph)) {
+	SceneGraph childSceneGraph;
+	if (!f.loadGroups(vxmPath, stream, childSceneGraph)) {
 		Log::error("Failed to load '%s'", vxmPath.c_str());
 		return false;
 	}
-	const int modelCount = (int)newSceneGraph.size(voxel::SceneGraphNodeType::Model);
+	const int modelCount = (int)childSceneGraph.size(voxel::SceneGraphNodeType::Model);
 	if (modelCount > 1) {
 		Log::warn("Unexpected scene graph found in vxm file - only use the first one");
 	} else if (modelCount != 1) {
 		Log::error("No models found in vxm file: %i", modelCount);
 		return false;
 	}
-	voxel::SceneGraphNode* modelNode = newSceneGraph[0];
-	core_assert_always(modelNode != nullptr);
+	voxel::SceneGraphNode* childModelNode = childSceneGraph[0];
+	core_assert_always(childModelNode != nullptr);
 
-	voxel::RawVolume *v = transformVolume(node, *modelNode, version);
+	voxel::RawVolume *v = transformVolume(node, *childModelNode, version);
 	node.setVolume(v, true);
-	node.setVisible(modelNode->visible());
-	node.setLocked(modelNode->locked());
-	node.addProperties(modelNode->properties());
+	node.setVisible(childModelNode->visible());
+	node.setLocked(childModelNode->locked());
+	node.addProperties(childModelNode->properties());
 	return true;
 }
 
