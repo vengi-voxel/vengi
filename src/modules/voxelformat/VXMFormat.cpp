@@ -422,7 +422,6 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 
 	for (uint8_t layer = 0; layer < maxLayers; ++layer) {
-		RawVolume* volume = new RawVolume(region);
 		int idx = 0;
 		bool visible = true;
 		char layerName[1024];
@@ -432,6 +431,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		} else {
 			core::string::formatBuf(layerName, sizeof(layerName), "Layer %i", layer);
 		}
+		RawVolume* volume = new RawVolume(region);
 		for (;;) {
 			uint8_t length;
 			wrapDelete(stream.readUInt8(length), volume);
@@ -456,10 +456,10 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 			// left to right, bottom to top, front to back
 			for (int i = idx; i < idx + length; i++) {
-				const int xx = i / (int)(size.y * size.z);
-				const int yy = (i / (int)size.z) % (int)size.y;
-				const int zz = i % (int)size.z;
-				volume->setVoxel(size.x - 1 - xx, yy, zz, voxel);
+				const int x = i / (int)(size.y * size.z);
+				const int y = (i / (int)size.z) % (int)size.y;
+				const int z = i % (int)size.z;
+				volume->setVoxel((int)size.x - 1 - x, y, z, voxel);
 			}
 			idx += length;
 		}
