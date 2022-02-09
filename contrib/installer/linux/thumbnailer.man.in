@@ -37,6 +37,8 @@ Qubicle Binary Tree (*.qbt)
 .TP
 Qubicle Project (*.qbcl)
 .TP
+Sandbox VoxEdit Model (*.vxc)
+.TP
 Sandbox VoxEdit Model (*.vxm)
 .TP
 Sandbox VoxEdit Hierarchy (*.vxr)

@@ -20,6 +20,7 @@
 #include "voxelformat/QBFormat.h"
 #include "voxelformat/QBCLFormat.h"
 #include "voxelformat/QEFFormat.h"
+#include "voxelformat/VXCFormat.h"
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
 #include "voxelformat/VXLFormat.h"
@@ -41,6 +42,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"MagicaVoxel", "vox", [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Qubicle Binary Tree", "qbt", [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Qubicle Project", "qbcl", [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+	{"Sandbox VoxEdit Collection", "vxc", [] (uint32_t magic) {return magic == FourCC('V','X','C','1');}, 0u},
 	{"Sandbox VoxEdit Model", "vxm", [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
 			|| magic == FourCC('V','X','M','B') || magic == FourCC('V','X','M','C')
 			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
@@ -154,6 +156,8 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 		format = core::make_shared<voxel::VXMFormat>();
 	} else if (ext == "vxr") {
 		format = core::make_shared<voxel::VXRFormat>();
+	} else if (ext == "vxc") {
+		format = core::make_shared<voxel::VXCFormat>();
 	} else if (ext == "vxl" && !strcmp(desc->name, "Tiberian Sun")) {
 		format = core::make_shared<voxel::VXLFormat>();
 	} else if (ext == "vxl") {

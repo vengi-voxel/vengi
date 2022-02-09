@@ -65,6 +65,13 @@
       <match type="string" offset="0" value="VXR"/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-sandbox-voxedit-vxc">
+    <comment>Voxel collection Sandbox VoxEdit</comment>
+    <glob pattern="*.vxc"/>
+    <magic priority="50">
+      <match type="string" offset="0" value="VXC"/>
+    </magic>
+  </mime-type>
   <mime-type type="application/x-build-engine">
     <comment>Voxel model used by the Build engine</comment>
     <glob pattern="*.kvx"/>

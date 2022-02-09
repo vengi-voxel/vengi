@@ -10,4 +10,4 @@ Type=Application
 Keywords=3D;modeling;voxel;engine;pixel;art
 Categories=Graphics;2DGraphics;3DGraphics;RasterGraphics;
 StartupNotify=true
-MimeType=application/x-minecraftregion;application/x-sandbox-voxedit-vxr;application/x-qubicle-project;application/x-goxel;application/x-chronvox-studio-csm;application/x-chronvox-studio-nvm;application/x-qubicle-exchange;application/x-aos-vxl;application/x-cc-vxl;application/x-slab6;application/x-build-engine;application/x-cubeworld;application/x-binvox;application/x-magicavoxel;application/x-qubicle-binary;application/x-qubicle-tree;application/x-sandbox-voxedit
+MimeType=application/x-minecraftregion;application/x-sandbox-voxedit-vxr;application/x-sandbox-voxedit-vxc;application/x-qubicle-project;application/x-goxel;application/x-chronvox-studio-csm;application/x-chronvox-studio-nvm;application/x-qubicle-exchange;application/x-aos-vxl;application/x-cc-vxl;application/x-slab6;application/x-build-engine;application/x-cubeworld;application/x-binvox;application/x-magicavoxel;application/x-qubicle-binary;application/x-qubicle-tree;application/x-sandbox-voxedit

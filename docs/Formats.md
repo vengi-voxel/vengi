@@ -16,6 +16,7 @@
 | Qubicle Binary Tree   | qbt       | X       | X      | X          |         |
 | Qubicle Binary        | qb        | X       | X      | X          |         |
 | Qubicle Project       | qbcl      | X       | X      | X          |         |
+| Sandbox VoxEdit       | vxc       | X       |        |            |         |
 | Sandbox VoxEdit       | vxm       | X       | X      | X          | X       |
 | Sandbox VoxEdit       | vxr       | X       | X      | X          |         |
 | SLAB6                 | kv6       | X       |        | X          | X       |
