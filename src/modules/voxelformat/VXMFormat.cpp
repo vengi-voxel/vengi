@@ -468,6 +468,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		node.setName(layerName);
 		node.setVisible(visible);
 		node.setProperty("version", core::string::toString(version));
+		node.setProperty("filename", filename);
 		node.setTransform(transform, true);
 		sceneGraph.emplace(core::move(node));
 	}
