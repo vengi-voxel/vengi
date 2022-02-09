@@ -23,6 +23,8 @@ General:
    - Fixed color conversion issue when importing palettes from voxel models
    - Voxelization of obj meshes now also fills the inner parts of the mesh with voxels
    - Fixed magicavoxel pivot issue (sometimes wrong positions)
+   - Added support for sandbox vxc format
+   - Added support for sandbox vxt format
 
 VoxConvert:
 

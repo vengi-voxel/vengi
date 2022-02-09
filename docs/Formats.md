@@ -19,7 +19,7 @@
 | Sandbox VoxEdit Collection | vxc       | X       |        |            |         |
 | Sandbox VoxEdit Model      | vxm       | X       | X      | X          | X       |
 | Sandbox VoxEdit            | vxr       | X       | X      | X          |         |
-| Sandbox VoxEdit Tile       | vxt       |         |        |            |         |
+| Sandbox VoxEdit Tile       | vxt       | X       |        |            |         |
 | SLAB6                      | kv6       | X       |        | X          | X       |
 | Sproxel                    | csv       | X       | X      | X          |         |
 | Wavefront Object           | obj       | X       | X      |            |         |
