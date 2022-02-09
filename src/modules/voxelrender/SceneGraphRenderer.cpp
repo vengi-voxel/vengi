@@ -102,7 +102,7 @@ void SceneGraphRenderer::prepare(voxel::SceneGraph &sceneGraph, bool hideInactiv
 		if (0 && _renderScene) {
 			_renderer.setInstancingAmount(node.id(), 0);
 		} else {
-			_renderer.setModelMatrix(node.id(), node.matrix(), true);
+			//_renderer.setModelMatrix(node.id(), node.matrix(), true);
 		}
 		if (hideInactive) {
 			_renderer.hide(node.id(), node.id() != activeNode);
