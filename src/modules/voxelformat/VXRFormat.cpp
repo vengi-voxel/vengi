@@ -173,6 +173,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			stream.readBool(); // rotation ??
 		}
 		SceneGraphTransform transform;
+		transform.normalizedPivot = glm::vec3(0.5f);
 		glm::vec3 localPosition{0.0f};
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
@@ -212,7 +213,6 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		}
 		// TODO: only the first frame is supported - as we don't have animation support yet
 		if (i == 0u) {
-			transform.position /= 32.0f;
 			node.setTransform(transform, true);
 		}
 	}
