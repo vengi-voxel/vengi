@@ -65,6 +65,13 @@
       <match type="string" offset="0" value="VXR"/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-sandbox-voxedit-vxt">
+    <comment>Voxel tileset Sandbox VoxEdit</comment>
+    <glob pattern="*.vxt"/>
+    <magic priority="50">
+      <match type="string" offset="0" value="VXT"/>
+    </magic>
+  </mime-type>
   <mime-type type="application/x-sandbox-voxedit-vxc">
     <comment>Voxel collection Sandbox VoxEdit</comment>
     <glob pattern="*.vxc"/>

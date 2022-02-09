@@ -43,6 +43,8 @@ Sandbox VoxEdit Model (*.vxm)
 .TP
 Sandbox VoxEdit Hierarchy (*.vxr)
 .TP
+Sandbox VoxEdit Tileset (*.vxt)
+.TP
 Minecraft Region (*.mca)
 .TP
 BinVox (*.binvox)

@@ -20,6 +20,7 @@ set(SRCS
 	VXCFormat.h VXCFormat.cpp
 	VXMFormat.h VXMFormat.cpp
 	VXRFormat.h VXRFormat.cpp
+	VXTFormat.h VXTFormat.cpp
 	VXLFormat.h VXLFormat.cpp
 	MeshCache.h MeshCache.cpp
 	MeshExporter.h MeshExporter.cpp

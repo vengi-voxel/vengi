@@ -1,27 +1,28 @@
 # Formats
 
-| Name                  | Extension | Loading | Saving | Thumbnails | Palette |
-| :-------------------- | --------- | ------- | ------ | ---------- | ------- |
-| Ace Of Spades         | vxl       | X       |        | X          |         |
-| BinVox                | binvox    | X       | X      | X          |         |
-| Build engine          | kvx       | X       |        | X          | X       |
-| Chronovox-Studio      | csm       | X       |        | X          |         |
-| Command and Conquer   | vxl       | X       | X      | X          | X       |
-| CubeWorld             | cub       | X       | X      | X          |         |
-| Goxel                 | gox       | X       | X      | X          |         |
-| MagicaVoxel           | vox       | X       | X      | X          | X       |
-| Minecraft Region      | mcr       | X       |        | X          | X       |
-| Nick's Voxel Model    | nvm       | X       |        | X          |         |
-| Qubicle Exchange      | qef       | X       | X      | X          |         |
-| Qubicle Binary Tree   | qbt       | X       | X      | X          |         |
-| Qubicle Binary        | qb        | X       | X      | X          |         |
-| Qubicle Project       | qbcl      | X       | X      | X          |         |
-| Sandbox VoxEdit       | vxc       | X       |        |            |         |
-| Sandbox VoxEdit       | vxm       | X       | X      | X          | X       |
-| Sandbox VoxEdit       | vxr       | X       | X      | X          |         |
-| SLAB6                 | kv6       | X       |        | X          | X       |
-| Sproxel               | csv       | X       | X      | X          |         |
-| Wavefront Object      | obj       | X       | X      |            |         |
+| Name                       | Extension | Loading | Saving | Thumbnails | Palette |
+| :------------------------- | --------- | ------- | ------ | ---------- | ------- |
+| Ace Of Spades              | vxl       | X       |        | X          |         |
+| BinVox                     | binvox    | X       | X      | X          |         |
+| Build engine               | kvx       | X       |        | X          | X       |
+| Chronovox-Studio           | csm       | X       |        | X          |         |
+| Command and Conquer        | vxl       | X       | X      | X          | X       |
+| CubeWorld                  | cub       | X       | X      | X          |         |
+| Goxel                      | gox       | X       | X      | X          |         |
+| MagicaVoxel                | vox       | X       | X      | X          | X       |
+| Minecraft Region           | mcr       | X       |        | X          | X       |
+| Nick's Voxel Model         | nvm       | X       |        | X          |         |
+| Qubicle Exchange           | qef       | X       | X      | X          |         |
+| Qubicle Binary Tree        | qbt       | X       | X      | X          |         |
+| Qubicle Binary             | qb        | X       | X      | X          |         |
+| Qubicle Project            | qbcl      | X       | X      | X          |         |
+| Sandbox VoxEdit Collection | vxc       | X       |        |            |         |
+| Sandbox VoxEdit Model      | vxm       | X       | X      | X          | X       |
+| Sandbox VoxEdit            | vxr       | X       | X      | X          |         |
+| Sandbox VoxEdit Tile       | vxt       |         |        |            |         |
+| SLAB6                      | kv6       | X       |        | X          | X       |
+| Sproxel                    | csv       | X       | X      | X          |         |
+| Wavefront Object           | obj       | X       | X      |            |         |
 
 
 ## Meshes
