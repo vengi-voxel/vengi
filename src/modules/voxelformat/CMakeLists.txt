@@ -58,6 +58,7 @@ set(TEST_SRCS
 	tests/VXRFormatTest.cpp
 	tests/VXMFormatTest.cpp
 
+	tests/8ontop.h
 	tests/vox_character.h
 	tests/vox_glasses.h
 )
@@ -81,6 +82,7 @@ set(TEST_FILES
 	tests/test.gox
 	tests/test.vxm
 	tests/test2.vxm
+	tests/8ontop.vox
 	tests/cw.cub
 	tests/r.0.-2.mca
 	tests/rgb.vxl

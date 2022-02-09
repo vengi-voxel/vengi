@@ -12,6 +12,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include "vox_character.h"
 #include "vox_glasses.h"
+#include "8ontop.h"
 
 namespace voxel {
 
@@ -54,6 +55,43 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	ASSERT_EQ(1u, sceneGraph.size());
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {glasses_0::create()};
+	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
+	for (int i = 0; i < lengthof(volumes); ++i) {
+		const voxel::RawVolume &v1 = *volumes[i].get();
+		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
+		EXPECT_TRUE(volumeComparator(v1, v2, true, true)) << "Volumes differ: " << v1 << v2;
+	}
+}
+
+TEST_F(VoxFormatTest, testLoad8OnTop) {
+	VoxFormat f;
+	const io::FilePtr &file = open("8ontop.vox");
+	ASSERT_TRUE(file->validHandle());
+	io::FileStream stream(file);
+	voxel::SceneGraph sceneGraph;
+	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph));
+	ASSERT_EQ(72u, sceneGraph.size());
+	// dump(file->fileName(), sceneGraph);
+	core::SharedPtr<voxel::RawVolume> volumes[] = {
+		eightontop_0::create(),	 eightontop_1::create(),  eightontop_2::create(),  eightontop_3::create(),
+		eightontop_4::create(),	 eightontop_5::create(),  eightontop_6::create(),  eightontop_7::create(),
+		eightontop_8::create(),	 eightontop_9::create(),  eightontop_10::create(), eightontop_11::create(),
+		eightontop_12::create(), eightontop_13::create(), eightontop_14::create(), eightontop_15::create(),
+		eightontop_16::create(), eightontop_17::create(), eightontop_18::create(), eightontop_19::create(),
+		eightontop_20::create(), eightontop_21::create(), eightontop_22::create(), eightontop_23::create(),
+		eightontop_24::create(), eightontop_25::create(), eightontop_26::create(), eightontop_27::create(),
+		eightontop_28::create(), eightontop_29::create(), eightontop_30::create(), eightontop_31::create(),
+		eightontop_32::create(), eightontop_33::create(), eightontop_34::create(), eightontop_35::create(),
+		eightontop_36::create(), eightontop_37::create(), eightontop_38::create(), eightontop_39::create(),
+		eightontop_40::create(), eightontop_41::create(), eightontop_42::create(), eightontop_43::create(),
+		eightontop_44::create(), eightontop_45::create(), eightontop_46::create(), eightontop_47::create(),
+		eightontop_48::create(), eightontop_49::create(), eightontop_50::create(), eightontop_51::create(),
+		eightontop_52::create(), eightontop_53::create(), eightontop_54::create(), eightontop_55::create(),
+		eightontop_56::create(), eightontop_57::create(), eightontop_58::create(), eightontop_59::create(),
+		eightontop_60::create(), eightontop_61::create(), eightontop_62::create(), eightontop_63::create(),
+		eightontop_64::create(), eightontop_65::create(), eightontop_66::create(), eightontop_67::create(),
+		eightontop_68::create(), eightontop_69::create(), eightontop_70::create(), eightontop_71::create(),
+	};
 	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
 	for (int i = 0; i < lengthof(volumes); ++i) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
