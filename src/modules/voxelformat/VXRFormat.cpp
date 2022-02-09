@@ -81,18 +81,8 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
-static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec3 &pivot) {
-#if 0
-	glm::vec3 v(pos);
-	v *= 2.0f;
-	v -= 1.0f;
-	v *= 0.5f * glm::vec3(pivot / 32.0f);
-	return glm::vec4(v, 1.0f);
-#elif 0
-	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
-#else
-	return glm::vec4(pos, 1.0f);
-#endif
+static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::vec3 &pos, const glm::vec3 &pivot) {
+	return mat * glm::vec4(pos - pivot, 1.0f);
 }
 
 static voxel::RawVolume* transformVolume(voxel::SceneGraphNode &targetNode, const voxel::SceneGraphNode &srcNode, int version) {
@@ -111,7 +101,7 @@ static voxel::RawVolume* transformVolume(voxel::SceneGraphNode &targetNode, cons
 	for (int z = inMins.z; z <= inMaxs.z; ++z) {
 		for (int y = inMins.y; y <= inMaxs.y; ++y) {
 			for (int x = inMins.x; x <= inMaxs.x; ++x) {
-				const glm::ivec3 vpos(x, y, z);
+				const glm::vec3 vpos(x, y, z);
 				const glm::ivec3 tpos(transform(mat, vpos, pivot));
 				v->setVoxel(tpos, in->voxel(vpos));
 			}
