@@ -264,8 +264,8 @@ image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::Seek
 }
 
 bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version) {
-	uint32_t dummy;
-	wrap(stream.readUInt32(dummy))
+	uint32_t childAndModelCount;
+	wrap(stream.readUInt32(childAndModelCount))
 	uint32_t children = 0;
 	wrap(stream.readUInt32(children))
 	const int rootNode = sceneGraph.root().id();
