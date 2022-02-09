@@ -38,6 +38,7 @@ private:
 
 	void resizeBuffer(int64_t size);
 public:
+	BufferedReadWriteStream(io::ReadStream &stream, int64_t size);
 	BufferedReadWriteStream(int64_t size = 0);
 	virtual ~BufferedReadWriteStream();
 

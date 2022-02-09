@@ -6,6 +6,15 @@
 
 namespace io {
 
+BufferedReadWriteStream::BufferedReadWriteStream(io::ReadStream &stream, int64_t size) {
+	resizeBuffer(size);
+	const int64_t n = stream.read(_buffer, size);
+	if (n == -1) {
+		return;
+	}
+	_size = n;
+}
+
 BufferedReadWriteStream::BufferedReadWriteStream(int64_t size) {
 	resizeBuffer(size);
 }
