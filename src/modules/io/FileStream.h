@@ -33,6 +33,7 @@ private:
 	int64_t _pos = 0;
 public:
 	FileStream(File *file);
+	// TODO: store the fileptr
 	FileStream(const FilePtr &file) : FileStream(file.get()) {
 	}
 	FileStream(SDL_RWops *rwops);
