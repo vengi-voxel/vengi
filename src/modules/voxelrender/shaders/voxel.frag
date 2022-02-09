@@ -53,5 +53,7 @@ void main(void) {
 	o_color.rgb = pow(o_color.rgb, vec3(1.0 / cl_gamma));
 	if ((v_flags & FLAGBLOOM) != 0u) {
 		o_glow = o_color;
+	} else {
+		o_glow = vec4(0.0, 0.0, 0.0, 1.0);
 	}
 }
