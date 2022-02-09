@@ -48,6 +48,40 @@ uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 	return core::Color::getClosestMatch(color, materialColors);
 }
 
+static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::vec3 &pos, const glm::vec4 &pivot) {
+	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
+}
+
+voxel::RawVolume* Format::transformVolume(const SceneGraphTransform &t, const voxel::RawVolume *in) const {
+	const glm::mat4 mat = t.mat;
+	const glm::vec3 pivotNormalized = t.normalizedPivot;
+	const voxel::Region &inRegion = in->region();
+	const glm::ivec3 inMins(inRegion.getLowerCorner());
+	const glm::ivec3 inMaxs(inRegion.getUpperCorner());
+	const glm::vec4 pivot(glm::floor(pivotNormalized * glm::vec3(inRegion.getDimensionsInVoxels())), 0.0f);
+
+	const glm::vec4 outMins(transform(mat, inMins, pivot));
+	const glm::vec4 outMaxs(transform(mat, inMaxs, pivot));
+	const voxel::Region outRegion(glm::min(outMins, outMaxs), glm::max(outMins, outMaxs));
+	voxel::RawVolume *v = new voxel::RawVolume(outRegion);
+	voxel::RawVolume::Sampler inSampler(in);
+	for (int z = inMins.z; z <= inMaxs.z; ++z) {
+		for (int y = inMins.y; y <= inMaxs.y; ++y) {
+			inSampler.setPosition(0, y, z);
+			for (int x = inMins.x; x <= inMaxs.x; ++x) {
+				const voxel::Voxel voxel = inSampler.voxel();
+				inSampler.movePositiveX();
+				if (voxel::isAir(voxel.getMaterial())) {
+					continue;
+				}
+				const glm::ivec3 pos(transform(mat, glm::vec3(x, y, z), pivot));
+				v->setVoxel(pos, voxel);
+			}
+		}
+	}
+	return v;
+}
+
 void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize) {
 	destSceneGraph.reserve(srcSceneGraph.size());
 	for (SceneGraphNode &node : srcSceneGraph) {

@@ -81,35 +81,6 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
-static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::vec3 &pos, const glm::vec3 &pivot) {
-	return mat * glm::vec4(pos - pivot, 1.0f);
-}
-
-static voxel::RawVolume* transformVolume(voxel::SceneGraphNode &targetNode, const voxel::SceneGraphNode &srcNode, int version) {
-	const glm::mat4 &mat = targetNode.matrix();
-	const voxel::RawVolume *in = srcNode.volume();
-	const glm::vec3 &pivotNormalized = srcNode.normalizedPivot();
-	const voxel::Region &inRegion = in->region();
-	const glm::ivec3 inMins(inRegion.getLowerCorner());
-	const glm::ivec3 inMaxs(inRegion.getUpperCorner());
-	const glm::vec3 &pivot = pivotNormalized * glm::vec3(inRegion.getDimensionsInVoxels());
-
-	const glm::vec4 outMins(transform(mat, inMins, pivot));
-	const glm::vec4 outMaxs(transform(mat, inMaxs, pivot));
-	const voxel::Region outRegion(glm::min(outMins, outMaxs), glm::max(outMins, outMaxs));
-	voxel::RawVolume *v = new voxel::RawVolume(outRegion);
-	for (int z = inMins.z; z <= inMaxs.z; ++z) {
-		for (int y = inMins.y; y <= inMaxs.y; ++y) {
-			for (int x = inMins.x; x <= inMaxs.x; ++x) {
-				const glm::vec3 vpos(x, y, z);
-				const glm::ivec3 tpos(transform(mat, vpos, pivot));
-				v->setVoxel(tpos, in->voxel(vpos));
-			}
-		}
-	}
-	return v;
-}
-
 bool VXRFormat::loadChildVXM(const core::String& vxmPath, voxel::SceneGraphNode &node, int version) {
 	const io::FilePtr& file = io::filesystem()->open(vxmPath);
 	if (!file->validHandle()) {
@@ -133,7 +104,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, voxel::SceneGraphNode 
 	voxel::SceneGraphNode* childModelNode = childSceneGraph[0];
 	core_assert_always(childModelNode != nullptr);
 
-	voxel::RawVolume *v = transformVolume(node, *childModelNode, version);
+	voxel::RawVolume *v = transformVolume(node.transform(), childModelNode->volume());
 	node.setVolume(v, true);
 	node.setVisible(childModelNode->visible());
 	node.setLocked(childModelNode->locked());
