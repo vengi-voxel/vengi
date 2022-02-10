@@ -326,12 +326,7 @@ core::String VoxConvert::getFilenameForLayerName(const core::String &inputfile, 
 	} else {
 		name = core::string::format("%s.%s", layerName.c_str(), ext.c_str());
 	}
-	core::String modelPath = core::string::extractPath(inputfile);
-	if (!modelPath.empty()) {
-		modelPath.append("/");
-	}
-	modelPath.append(core::string::sanitizeFilename(name));
-	return modelPath;
+	return core::string::path(core::string::extractPath(inputfile), core::string::sanitizeFilename(name));
 }
 
 bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph) {
