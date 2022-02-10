@@ -9,6 +9,9 @@
 
 namespace core {
 
+/**
+ * @ingroup Collections
+ */
 template <class T>
 class Array2DView {
 private:

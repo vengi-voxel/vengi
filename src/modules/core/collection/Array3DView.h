@@ -10,6 +10,9 @@
 
 namespace core {
 
+/**
+ * @ingroup Collections
+ */
 template <class T>
 class Array3DView {
 private:

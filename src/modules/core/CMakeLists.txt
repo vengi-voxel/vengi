@@ -2,6 +2,7 @@ set(SRCS
 	collection/Array.h
 	collection/Array2DView.h
 	collection/Array3DView.h
+	collection/BitSet.h
 	collection/Buffer.h
 	collection/ConcurrentDynamicArray.h
 	collection/ConcurrentQueue.h
@@ -95,6 +96,7 @@ set(TEST_SRCS
 	tests/TestHelper.h
 	tests/AlgorithmTest.cpp
 	tests/ArrayTest.cpp
+	tests/BitSetTest.cpp
 	tests/BufferTest.cpp
 	tests/ColorTest.cpp
 	tests/ConcurrentDynamicArrayTest.cpp
