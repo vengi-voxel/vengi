@@ -54,6 +54,6 @@ void main(void) {
 	if ((v_flags & FLAGBLOOM) != 0u) {
 		o_glow = o_color;
 	} else {
-		o_glow = vec4(0.0, 0.0, 0.0, 1.0);
+		o_glow = vec4(0.0, 0.0, 0.0, 0.0);
 	}
 }
