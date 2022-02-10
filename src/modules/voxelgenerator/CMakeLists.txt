@@ -8,6 +8,7 @@ set(LUA_SRCS
 	scripts/grid.lua
 	scripts/noise.lua
 	scripts/noise-builtin.lua
+	scripts/planet.lua
 	scripts/pyramid.lua
 	scripts/replacecolor.lua
 	scripts/similarcolor.lua

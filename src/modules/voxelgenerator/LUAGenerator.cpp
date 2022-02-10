@@ -189,6 +189,12 @@ static int luaVoxel_region_z(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_region_center(lua_State* s) {
+	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
+	clua_push(s, region->getCenter());
+	return 1;
+}
+
 static int luaVoxel_region_mins(lua_State* s) {
 	const voxel::Region* region = LUAGenerator::luaVoxel_toRegion(s, 1);
 	clua_push(s, region->getLowerCorner());
@@ -311,6 +317,7 @@ static void prepareState(lua_State* s) {
 		{"x", luaVoxel_region_x},
 		{"y", luaVoxel_region_y},
 		{"z", luaVoxel_region_z},
+		{"center", luaVoxel_region_center},
 		{"mins", luaVoxel_region_mins},
 		{"maxs", luaVoxel_region_maxs},
 		{"setMins", luaVoxel_region_setmins},
