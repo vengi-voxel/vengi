@@ -22,7 +22,7 @@ static inline core::String getCharacterLua(network::EntityType type) {
 	core::String luaFilename = entityTypeStr.toLower();
 	core::string::replaceAllChars(luaFilename, '_', '-');
 	const core::String& luaPath = animation::luaFilename(luaFilename.c_str());
-	const core::String& lua = io::filesystem()->load("chr/" + luaPath);
+	const core::String& lua = io::filesystem()->load(core::string::path("chr", luaPath));
 	if (lua.empty() && type != network::EntityType::HUMAN_MALE_KNIGHT) {
 		// provide a fallback
 		Log::warn("Could not load character settings from %s", luaPath.c_str());

@@ -43,7 +43,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 			reloadScriptParameters(_activeScript);
 		}
 
-		const int n = _scriptParameterDescription.size();
+		const int n = (int)_scriptParameterDescription.size();
 		for (int i = 0; i < n; ++i) {
 			const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
 			switch (p.type) {
@@ -167,7 +167,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 					}
 					if (!_activeScriptFilename.empty()) {
 						if (ImGui::MenuItem(ICON_FA_SAVE " Save##scripteditor")) {
-							if (app->filesystem()->write("scripts/" + _activeScriptFilename, _textEditor.GetText())) {
+							if (app->filesystem()->write(core::string::path("scripts", _activeScriptFilename), _textEditor.GetText())) {
 								_activeScript = _textEditor.GetText();
 								reloadScriptParameters(_activeScript);
 							}
