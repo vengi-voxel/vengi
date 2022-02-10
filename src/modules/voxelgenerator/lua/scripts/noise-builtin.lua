@@ -12,13 +12,13 @@ end
 
 local function noise2d(volume, region, color, freq, amplitude, type)
 	local visitorSimplex = function (volume, x, z)
-		local maxY = amplitude * noise.noise2(vec2.new(x * freq, z * freq)) * region:height()
+		local maxY = amplitude * noise.noise2(x * freq, z * freq) * region:height()
 		for y = 0, maxY do
 			volume:setVoxel(x, y, z, color)
 		end
 	end
 	local visitorWorley = function (volume, x, z)
-		local maxY = amplitude * noise.worley2(vec2.new(x * freq, z * freq)) * region:height()
+		local maxY = amplitude * noise.worley2(x * freq, z * freq) * region:height()
 		for y = 0, maxY do
 			volume:setVoxel(x, y, z, color)
 		end
@@ -33,16 +33,14 @@ end
 
 local function noise3d(volume, region, color, freq, amplitude, threshold, type)
 	local visitorSimplex = function (volume, x, y, z)
-		local v = vec3.new(x * freq, y * freq, z * freq);
-		local val = amplitude * noise.noise3(v)
+		local val = amplitude * noise.noise3(x * freq, y * freq, z * freq)
 		if (val > threshold) then
 			volume:setVoxel(x, y, z, color)
 		end
 	end
 
 	local visitorWorley = function (volume, x, y, z)
-		local v = vec3.new(x * freq, y * freq, z * freq);
-		local val = amplitude * noise.worley3(v)
+		local val = amplitude * noise.worley3(x * freq, y * freq, z * freq)
 		if (val > threshold) then
 			volume:setVoxel(x, y, z, color)
 		end

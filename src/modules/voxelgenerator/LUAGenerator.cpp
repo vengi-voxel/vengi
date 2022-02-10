@@ -229,73 +229,117 @@ static int luaVoxel_region_tostring(lua_State *s) {
 	return 1;
 }
 
+static glm::vec2 to_vec2(lua_State*s, int &n) {
+	if (clua_isvec<glm::vec2>(s, n)) {
+		return clua_tovec<glm::vec2>(s, n);
+	}
+	const float x = (float)lua_tonumber(s, n++);
+	const float y = (float)luaL_optnumber(s, n++, x);
+	n += 1;
+	return glm::vec2(x, y);
+}
+
+static glm::vec3 to_vec3(lua_State*s, int &n) {
+	if (clua_isvec<glm::vec3>(s, n)) {
+		return clua_tovec<glm::vec3>(s, n);
+	}
+	const float x = (float)lua_tonumber(s, n++);
+	const float y = (float)luaL_optnumber(s, n++, x);
+	const float z = (float)luaL_optnumber(s, n++, y);
+	n += 2;
+	return glm::vec3(x, y, z);
+}
+
+static glm::vec4 to_vec4(lua_State*s, int &n) {
+	if (clua_isvec<glm::vec4>(s, n)) {
+		return clua_tovec<glm::vec4>(s, n);
+	}
+	const float x = (float)lua_tonumber(s, n++);
+	const float y = (float)luaL_optnumber(s, n++, x);
+	const float z = (float)luaL_optnumber(s, n++, y);
+	const float w = (float)luaL_optnumber(s, n++, z);
+	n += 3;
+	return glm::vec4(x, y, z, w);
+}
+
 static int luaVoxel_noise_simplex2(lua_State* s) {
-	lua_pushnumber(s, noise::noise(clua_tovec<glm::vec2>(s, 1)));
+	int n = 1;
+	lua_pushnumber(s, noise::noise(to_vec2(s, n)));
 	return 1;
 }
 
 static int luaVoxel_noise_simplex3(lua_State* s) {
-	lua_pushnumber(s, noise::noise(clua_tovec<glm::vec3>(s, 1)));
+	int n = 1;
+	lua_pushnumber(s, noise::noise(to_vec3(s, n)));
 	return 1;
 }
 
 static int luaVoxel_noise_simplex4(lua_State* s) {
-	lua_pushnumber(s, noise::noise(clua_tovec<glm::vec4>(s, 1)));
+	int n = 1;
+	lua_pushnumber(s, noise::noise(to_vec4(s, n)));
 	return 1;
 }
 
 static int luaVoxel_noise_fBm2(lua_State* s) {
-	lua_pushnumber(s, noise::fBm(clua_tovec<glm::vec2>(s, 1)));
+	int n = 1;
+	lua_pushnumber(s, noise::fBm(to_vec2(s, n)));
 	return 1;
 }
 
 static int luaVoxel_noise_fBm3(lua_State* s) {
-	lua_pushnumber(s, noise::fBm(clua_tovec<glm::vec3>(s, 1)));
+	int n = 1;
+	lua_pushnumber(s, noise::fBm(to_vec3(s, n)));
 	return 1;
 }
 
 static int luaVoxel_noise_fBm4(lua_State* s) {
-	lua_pushnumber(s, noise::fBm(clua_tovec<glm::vec4>(s, 1)));
+	int n = 1;
+	lua_pushnumber(s, noise::fBm(to_vec4(s, n)));
 	return 1;
 }
 
 static int luaVoxel_noise_ridgedMF2(lua_State* s) {
-	const glm::vec2 v = clua_tovec<glm::vec2>(s, 1);
-	const float ridgeOffset = (float)luaL_optnumber(s, 2, 1.0f);
-	const uint8_t octaves = luaL_optinteger(s, 3, 4);
-	const float lacunarity = (float)luaL_optnumber(s, 4, 2.0f);
-	const float gain = (float)luaL_optnumber(s, 5, 0.5f);
+	int n = 1;
+	const glm::vec2 v = to_vec2(s, n);
+	const float ridgeOffset = (float)luaL_optnumber(s, n + 1, 1.0f);
+	const uint8_t octaves = luaL_optinteger(s, n + 2, 4);
+	const float lacunarity = (float)luaL_optnumber(s, n + 3, 2.0f);
+	const float gain = (float)luaL_optnumber(s, n + 4, 0.5f);
 	lua_pushnumber(s, noise::ridgedMF(v, ridgeOffset, octaves, lacunarity, gain));
 	return 1;
 }
 
 static int luaVoxel_noise_ridgedMF3(lua_State* s) {
-	const glm::vec3 v = clua_tovec<glm::vec3>(s, 1);
-	const float ridgeOffset = (float)luaL_optnumber(s, 2, 1.0f);
-	const uint8_t octaves = luaL_optinteger(s, 3, 4);
-	const float lacunarity = (float)luaL_optnumber(s, 4, 2.0f);
-	const float gain = (float)luaL_optnumber(s, 5, 0.5f);
+	int n = 1;
+	const glm::vec3 v = to_vec3(s, n);
+	const float ridgeOffset = (float)luaL_optnumber(s, n + 1, 1.0f);
+	const uint8_t octaves = luaL_optinteger(s, n + 2, 4);
+	const float lacunarity = (float)luaL_optnumber(s, n + 3, 2.0f);
+	const float gain = (float)luaL_optnumber(s, n + 4, 0.5f);
 	lua_pushnumber(s, noise::ridgedMF(v, ridgeOffset, octaves, lacunarity, gain));
 	return 1;
 }
 
 static int luaVoxel_noise_ridgedMF4(lua_State* s) {
-	const glm::vec4 v = clua_tovec<glm::vec4>(s, 1);
-	const float ridgeOffset = (float)luaL_optnumber(s, 2, 1.0f);
-	const uint8_t octaves = luaL_optinteger(s, 3, 4);
-	const float lacunarity = (float)luaL_optnumber(s, 4, 2.0f);
-	const float gain = (float)luaL_optnumber(s, 5, 0.5f);
+	int n = 1;
+	const glm::vec4 v = to_vec4(s, n);
+	const float ridgeOffset = (float)luaL_optnumber(s, n + 1, 1.0f);
+	const uint8_t octaves = luaL_optinteger(s, n + 2, 4);
+	const float lacunarity = (float)luaL_optnumber(s, n + 3, 2.0f);
+	const float gain = (float)luaL_optnumber(s, n + 4, 0.5f);
 	lua_pushnumber(s, noise::ridgedMF(v, ridgeOffset, octaves, lacunarity, gain));
 	return 1;
 }
 
 static int luaVoxel_noise_worley2(lua_State* s) {
-	lua_pushnumber(s, noise::worleyNoise(clua_tovec<glm::vec2>(s, 1)));
+	int n = 1;
+	lua_pushnumber(s, noise::worleyNoise(to_vec2(s, n)));
 	return 1;
 }
 
 static int luaVoxel_noise_worley3(lua_State* s) {
-	lua_pushnumber(s, noise::worleyNoise(clua_tovec<glm::vec3>(s, 1)));
+	int n = 1;
+	lua_pushnumber(s, noise::worleyNoise(to_vec3(s, n)));
 	return 1;
 }
 
@@ -525,7 +569,7 @@ core::String LUAGenerator::load(const core::String& scriptName) const {
 		if (!core::string::endsWith(filename, ".lua")) {
 			filename.append(".lua");
 		}
-		filename = "scripts/" + filename;
+		filename = core::string::path("scripts", filename);
 	}
 	return io::filesystem()->load(filename);
 }
@@ -537,7 +581,7 @@ core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
 	io::filesystem()->list("scripts", entities, "*.lua");
 	scripts.reserve(entities.size());
 	for (const auto& e : entities) {
-		const core::String path = "scripts/" + e.name;
+		const core::String path = core::string::path("scripts", e.name);
 		lua.load(io::filesystem()->load(path));
 		lua_getglobal(lua, "main");
 		if (!lua_isfunction(lua, -1)) {
