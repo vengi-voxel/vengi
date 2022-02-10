@@ -195,7 +195,7 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 			Log::debug("could not find command callback for %s", command.c_str());
 			return false;
 		}
-		if (!isSuitableBindingContext(i->second._bindingContext)) {
+		if (command[0] != COMMAND_RELEASED[0] && !isSuitableBindingContext(i->second._bindingContext)) {
 			Log::trace("command '%s' has binding context  %i - but we are in %i", command.c_str(), (int) i->second._bindingContext,
 					(int) core::bindingContext());
 			return false;
