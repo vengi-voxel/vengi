@@ -85,7 +85,7 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 }
 
 bool IMGUIApp::handleSDLEvent(SDL_Event& event) {
-	if (core::bindingContext() == core::BindingContext::UserInterface) {
+	if (core::bindingContext() == core::BindingContext::UserInterface || event.type == SDL_WINDOWEVENT) {
 		ImGui_ImplSDL2_ProcessEvent(&event);
 	}
 	return Super::handleSDLEvent(event);
