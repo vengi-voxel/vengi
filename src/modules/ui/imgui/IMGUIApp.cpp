@@ -4,6 +4,7 @@
 
 #include "IMGUIApp.h"
 
+#include "core/BindingContext.h"
 #include "dearimgui/backends/imgui_impl_sdl.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
@@ -84,7 +85,9 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 }
 
 bool IMGUIApp::handleSDLEvent(SDL_Event& event) {
-	ImGui_ImplSDL2_ProcessEvent(&event);
+	if (core::bindingContext() == core::BindingContext::UserInterface) {
+		ImGui_ImplSDL2_ProcessEvent(&event);
+	}
 	return Super::handleSDLEvent(event);
 }
 
