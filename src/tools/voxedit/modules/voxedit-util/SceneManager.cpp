@@ -452,6 +452,7 @@ const voxel::RawVolume* SceneManager::volume(int nodeId) const {
 }
 
 int SceneManager::activeNode() const {
+	// This must return a model node that has a volume attached
 	return _sceneGraph.activeNode();
 }
 
