@@ -22,7 +22,7 @@ Voxelize an obj and save as magicavoxel (including colors):
 > [voxedit](../voxedit/Index.md) as palette.
 >
 > This only works for obj files - but if you have different mesh formats that you
-> would like to voxelize, you can use the [assimp-tools](https://assimp.org/) to
+> would like to voxelize, you can use the [assimp tools](https://github.com/assimp/assimp) to
 > convert to obj.
 
 `./vengi-voxconvert -set palette /path/to/palette.png --input mesh.obj --output voxels.vox`
@@ -93,4 +93,15 @@ $array = "1-2,5", "1-2,7"
 foreach ($i in $array){
   ./vengi-voxconvert --filter $i --input input.vox --output output_$i.vxm
 }
+```
+
+In order to convert for example a Sandbox VXM file to gltf, you could do it like this:
+
+> Note that this is using [assimp](https://github.com/assimp/assimp) to do the obj to gltf conversion
+
+```bash
+for i in *.vxm; do
+  vengi-voxconvert --input "$i" --output "${i%.obj}"
+  assimp export "${i%.obj}" "${i%.gltf}"
+done
 ```
