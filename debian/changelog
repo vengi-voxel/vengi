@@ -1,4 +1,4 @@
-vengi (0.0.18.0-1) UNRELEASED; urgency=low
+vengi (0.0.18.0-1) unstable; urgency=low
 
   * renamed the github project to **vengi** - the url changed to
     https://github.com/mgerhardy/vengi
@@ -14,11 +14,17 @@ vengi (0.0.18.0-1) UNRELEASED; urgency=low
   * Fixed magicavoxel pivot issue (sometimes wrong positions)
   * Added support for sandbox vxc format
   * Added support for sandbox vxt format
+  * Added new example lua scripts
 
   * VoxConvert:
   * --input can now also handle directories
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 23 Jan 2022 12:28:01 +0100
+  * VoxEdit:
+  * Added context actions to scene graph panel
+  * Fixed mouse input issues in fullscreen mode
+  * Fixed script editor placement
+
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 12 Feb 2022 09:30:00 +0100
 
 vengi (0.0.17.0-1) unstable; urgency=low
 
