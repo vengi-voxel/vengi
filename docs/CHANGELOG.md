@@ -8,6 +8,8 @@ See [the documentation](https://mgerhardy.github.io/vengi/) for further details.
 
 Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
+## 0.0.19 (2022-XX-XX)
+
 ## 0.0.18 (2022-02-12)
 
 > renamed the github project to **vengi** - the url changed to [https://github.com/mgerhardy/vengi](https://github.com/mgerhardy/vengi).
