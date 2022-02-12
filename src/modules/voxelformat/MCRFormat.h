@@ -43,15 +43,58 @@ namespace voxel {
  * @endcode
  *
  * @note https://github.com/Voxtric/Minecraft-Level-Ripper/blob/master/WorldConverterV2/Processor.cs
- * @note https://github.com/dougbinks/enkiMI/
  */
 class MCRFormat : public Format {
+private:
+	static constexpr int VERSION_GZIP = 1;
+	static constexpr int VERSION_DEFLATE = 2;
+	static constexpr int SECTOR_BYTES = 4096;
+	static constexpr int SECTOR_INTS = SECTOR_BYTES / 4;
+	static constexpr int CHUNK_HEADER_SIZE = 5;
+	static constexpr int MAX_LEVELS = 512;
+
+	enum class TagId : uint8_t {
+		END = 0,
+		BYTE = 1,
+		SHORT = 2,
+		INT = 3,
+		LONG = 4,
+		FLOAT = 5,
+		DOUBLE = 6,
+		BYTE_ARRAY = 7,
+		STRING = 8,
+		LIST = 9,
+		COMPOUND = 10,
+		INT_ARRAY = 11,
+		LONG_ARRAY = 12
+	};
+
+	struct NamedBinaryTag {
+		core::String name;
+		TagId id = TagId::END;
+		int level = 0;
+	};
+
+	struct Offsets {
+		uint32_t offset : 24;
+		uint32_t sectorCount : 8;
+	} _offsets[SECTOR_INTS];
+	uint32_t _chunkTimestamps[SECTOR_INTS];
+
+	void reset();
+
+	bool skip(io::SeekableReadStream &stream, TagId id);
+	bool getNext(io::SeekableReadStream &stream, NamedBinaryTag& nbt);
+
+	bool parseNBTChunk(SceneGraph& sceneGraph, const uint8_t* buffer, int length);
+	bool readCompressedNBT(SceneGraph& sceneGraph, const uint8_t* buffer, int length, io::SeekableReadStream &stream);
+	bool loadMinecraftRegion(SceneGraph& sceneGraph, const uint8_t* buffer, int length, io::SeekableReadStream &stream, int chunkX, int chunkZ);
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override {
+		reset();
 		return false;
 	}
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream& file, core::Array<uint32_t, 256> &palette) override;
 };
 
 }

@@ -10,7 +10,7 @@
 | CubeWorld                  | cub       | X       | X      | X          |         |
 | Goxel                      | gox       | X       | X      | X          |         |
 | MagicaVoxel                | vox       | X       | X      | X          | X       |
-| Minecraft Region           | mcr       | X       |        | X          | X       |
+| Minecraft Region           | mcr       |         |        | X          | X       |
 | Nick's Voxel Model         | nvm       | X       |        | X          |         |
 | Qubicle Exchange           | qef       | X       | X      | X          |         |
 | Qubicle Binary Tree        | qbt       | X       | X      | X          |         |

@@ -10,6 +10,10 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 ## 0.0.19 (2022-XX-XX)
 
+General:
+
+   - Removed minecraft support via external lib enkiMI
+
 ## 0.0.18 (2022-02-12)
 
 > renamed the github project to **vengi** - the url changed to [https://github.com/mgerhardy/vengi](https://github.com/mgerhardy/vengi).

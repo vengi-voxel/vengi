@@ -1,6 +1,7 @@
 vengi (0.0.19.0-1) UNRELEASED; urgency=low
 
   * General:
+  * Removed minecraft support via external lib enkiMI
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 12 Feb 2022 09:32:14 +0100
 
