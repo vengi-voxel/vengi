@@ -319,8 +319,6 @@ static void voxelizeShape(const tinyobj::shape_t &shape, const core::StringMap<i
 		const glm::ivec3 p2(glm::floor(center));
 		volume->setVoxel(p2, voxel);
 	}
-
-	// TODO: fill the inner parts of the model
 }
 
 static void calculateAABB(const tinyobj::shape_t &shape, const tinyobj::attrib_t &attrib, glm::vec3 &mins, glm::vec3 &maxs) {
