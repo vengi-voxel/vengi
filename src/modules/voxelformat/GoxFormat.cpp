@@ -314,13 +314,8 @@ bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableRead
 		Log::error("Failed to load png chunk");
 		return false;
 	}
-	Log::debug("Found BL16 with index %i", state.imageIndex);
-	if (state.imageIndex >= (int)state.images.size()) {
-		Log::error("max BL16 chunks exceeded");
-		return false;
-	}
-
-	state.images[state.imageIndex++] = img;
+	Log::debug("Found BL16 with index %i", (int)state.images.size());
+	state.images.push_back(img);
 	return true;
 }
 

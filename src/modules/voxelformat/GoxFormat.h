@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Format.h"
+#include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
 
 namespace voxel {
@@ -76,8 +77,7 @@ private:
 
 	struct State {
 		int32_t version = 0;
-		core::Array<image::ImagePtr, 4096> images;
-		int imageIndex = 0;
+		core::DynamicArray<image::ImagePtr> images;
 	};
 
 	bool loadChunk_Header(GoxChunk &c, io::SeekableReadStream &stream);
