@@ -87,6 +87,7 @@ set(TEST_FILES
 	tests/8ontop.vox
 	tests/cw.cub
 	tests/r.0.-2.mca
+	tests/r.0.-2.qb
 	tests/rgb.vxl
 	tests/rgb.csv
 	tests/rgb.vox

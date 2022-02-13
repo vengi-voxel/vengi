@@ -3,7 +3,9 @@
  */
 
 #include "AbstractVoxFormatTest.h"
+#include "voxel/tests/TestHelper.h"
 #include "voxelformat/MCRFormat.h"
+#include "voxelformat/QBFormat.h"
 
 namespace voxel {
 
@@ -12,8 +14,14 @@ class MCRFormatTest: public AbstractVoxFormatTest {
 
 TEST_F(MCRFormatTest, DISABLED_testLoad) {
 	MCRFormat f;
-	std::unique_ptr<RawVolume> volume(load("minecraft_113.mca", f));
-	ASSERT_NE(nullptr, volume) << "Could not load volume";
+	std::unique_ptr<RawVolume> volume(load("r.0.-2.mca", f));
+	ASSERT_NE(nullptr, volume) << "Could not load mca volume";
+
+	QBFormat f2;
+	std::unique_ptr<RawVolume> volumeqb(load("r.0.-2.qb", f));
+	ASSERT_NE(nullptr, volume) << "Could not load qb volume";
+
+	ASSERT_TRUE(volumeComparator(*volume.get(), *volumeqb.get(), true, true));
 }
 
 }
