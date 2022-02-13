@@ -1,8 +1,6 @@
 set(LIB voxelformat)
 set(SRCS
 	external/ogt_vox.h
-	external/enkimi.h
-	# external/enkimi.c
 	external/tiny_obj_loader.h
 
 	Format.h Format.cpp
