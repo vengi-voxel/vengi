@@ -13,20 +13,12 @@
 
 namespace voxel {
 
-static inline int divFloor(int x, int y) {
-	const bool quotientNegative = x < 0;
-	return x / y - (x % y != 0 && quotientNegative);
+static glm::ivec3 calcTransform(const glm::quat &q, const glm::ivec3& pos, const glm::vec4& pivot) {
+	return glm::floor(q * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
 
-static glm::ivec3 calcTransform(const glm::quat& t, int x, int y, int z, const glm::ivec3& pivot) {
-	const glm::ivec3 c = glm::ivec3(x * 2, y * 2, z * 2) - pivot;
-	const glm::ivec3 pos = glm::ivec3(t * glm::vec3(c.x + 0.5f, c.y + 0.5f, c.z + 0.5f));
-	const glm::ivec3 rotated(divFloor(pos.x, 2), divFloor(pos.y, 2), divFloor(pos.z, 2));
-	return rotated;
-}
-
-static glm::ivec3 calcTransform(const glm::quat& t, const glm::ivec3 &pos, const glm::ivec3& pivot) {
-	return calcTransform(t, pos.x, pos.y, pos.z, pivot);
+static glm::ivec3 calcTransform(const glm::quat &q, int x, int y, int z, const glm::vec4& pivot) {
+	return calcTransform(q, glm::ivec3(x, y, z), pivot);
 }
 
 /**
@@ -38,7 +30,7 @@ static glm::ivec3 calcTransform(const glm::quat& t, const glm::ivec3 &pos, const
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const glm::ivec3& pivot, bool increaseSize) {
+RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const glm::vec3& pivot, bool increaseSize) {
 	const float pitch = glm::radians(angles.x);
 	const float yaw = glm::radians(angles.y);
 	const float roll = glm::radians(angles.z);
@@ -50,8 +42,8 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 	voxel::Region destRegion;
 
 	if (increaseSize) {
-		const glm::ivec3 rotated1 = calcTransform(quat, srcRegion.getLowerCorner(), pivot);
-		const glm::ivec3 rotated2 = calcTransform(quat, srcRegion.getUpperCorner(), pivot);
+		const glm::ivec3 rotated1 = calcTransform(quat, srcRegion.getLowerCorner(), glm::vec4(pivot, 0.0f));
+		const glm::ivec3 rotated2 = calcTransform(quat, srcRegion.getUpperCorner(), glm::vec4(pivot, 0.0f));
 		const glm::ivec3 mins = (glm::min)(rotated1, rotated2);
 		const glm::ivec3 maxs = (glm::max)(rotated1, rotated2);
 		destRegion = voxel::Region(mins, maxs);
@@ -65,7 +57,7 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 	for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
 		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
 			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
-				const glm::ivec3 volumePos = calcTransform(quat, x, y, z, pivot);
+				const glm::ivec3 volumePos = calcTransform(quat, x, y, z, glm::vec4(pivot, 0.0f));
 				if (!destRegion.containsPoint(volumePos)) {
 					continue;
 				}

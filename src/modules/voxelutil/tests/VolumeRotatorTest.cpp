@@ -37,7 +37,7 @@ TEST_F(VolumeRotatorTest, testRotate45Y) {
 	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, createVoxel(voxel::VoxelType::Grass, 0)));
 	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, createVoxel(voxel::VoxelType::Sand, 0)));
 
-	voxel::RawVolume* rotated = voxel::rotateVolume(&smallVolume, glm::ivec3(0, 45, 0), region.getCenter());
+	voxel::RawVolume* rotated = voxel::rotateVolume(&smallVolume, glm::ivec3(0, 45, 0), region.getCenterf());
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	const voxel::Region& rotatedRegion = rotated->region();
 	EXPECT_NE(rotatedRegion, region) << "Rotating by 45 degree should increase the size of the volume "
