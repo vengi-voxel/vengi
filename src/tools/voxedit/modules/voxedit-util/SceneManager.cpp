@@ -783,7 +783,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	voxel::SceneGraphNode node;
 	node.setVolume(v, true);
 	node.setName(name);
-	const glm::vec3 rp = v->region().getCenterf();
+	const glm::vec3 rp = v->region().getPivot();
 	const glm::vec3 size = v->region().getDimensionsInVoxels();
 	node.setPivot(rp, size);
 	const int nodeId = sceneMgr().addNodeToSceneGraph(node);
@@ -812,7 +812,7 @@ void SceneManager::rotate(int nodeId, const glm::ivec3& angle, bool increaseSize
 	} else if (axisRotation && angle == glm::ivec3(0, 0, 90)) {
 		newVolume = voxel::rotateAxis(model, math::Axis::Z);
 	} else {
-		const glm::vec3 pivot = rotateAroundReferencePosition ? referencePosition() : model->region().getCenter();
+		const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getPivot();
 		newVolume = voxel::rotateVolume(model, angle, pivot, increaseSize);
 	}
 	voxel::Region r = newVolume->region();

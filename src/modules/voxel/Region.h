@@ -7,6 +7,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/fwd.hpp>
+#include <glm/common.hpp>
 #include "core/String.h"
 #include <stdint.h>
 
@@ -71,7 +72,7 @@ public:
 
 	/** Gets the centre of the region */
 	const glm::ivec3& getCenter() const;
-	glm::vec3 getCenterf() const;
+	const glm::vec3& getPivot() const;
 	/** Gets the position of the lower corner. */
 	const glm::ivec3& getLowerCorner() const;
 	/** Gets the position of the upper corner. */
@@ -202,6 +203,7 @@ private:
 	alignas(16) glm::ivec3 _width;
 	alignas(16) glm::ivec3 _voxels;
 	alignas(16) glm::ivec3 _center;
+	alignas(16) glm::vec3 _pivot;
 	int _stride;
 };
 
@@ -389,7 +391,9 @@ inline constexpr Region::Region() :
  * @param maxsz The desired upper 'z' extent of the Region.
  */
 inline constexpr Region::Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz) :
-		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz), _width(_maxs - _mins), _voxels(_width + 1), _center(_mins + _width / 2), _stride(_voxels.x * _voxels.y) {
+		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz), _width(_maxs - _mins), _voxels(_width + 1), _center(_mins + _width / 2),
+		_pivot(glm::floor((float)_voxels.x / 2.0f), glm::floor((float)_voxels.y / 2.0f), glm::floor((float)_voxels.z / 2.0f)),
+		_stride(_voxels.x * _voxels.y) {
 }
 
 /**
