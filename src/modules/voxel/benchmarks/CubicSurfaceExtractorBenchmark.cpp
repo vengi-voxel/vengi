@@ -50,7 +50,7 @@ public:
 
 BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractGreedy)(benchmark::State &state) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(state.range(0), meshSize, state.range(0)));
-	constexpr voxel::Region volumeRegion(0, MAX_BENCHMARK_VOLUME_SIZE);
+	const voxel::Region volumeRegion(0, MAX_BENCHMARK_VOLUME_SIZE);
 	voxel::RawVolume volume(volumeRegion);
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
@@ -61,7 +61,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractGreedy)(bench
 
 BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtract)(benchmark::State &state) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(state.range(0), meshSize, state.range(0)));
-	constexpr voxel::Region volumeRegion(0, MAX_BENCHMARK_VOLUME_SIZE);
+	const voxel::Region volumeRegion(0, MAX_BENCHMARK_VOLUME_SIZE);
 	voxel::RawVolume volume(volumeRegion);
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
@@ -72,7 +72,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtract)(benchmark::
 
 BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractGreedyEmpty)(benchmark::State &state) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(state.range(0), meshSize, state.range(0)));
-	constexpr voxel::Region volumeRegion(0, MAX_BENCHMARK_VOLUME_SIZE);
+	const voxel::Region volumeRegion(0, MAX_BENCHMARK_VOLUME_SIZE);
 	voxel::RawVolume volume(volumeRegion);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
@@ -82,7 +82,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractGreedyEmpty)(
 
 BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractEmpty)(benchmark::State &state) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(state.range(0), meshSize, state.range(0)));
-	constexpr voxel::Region volumeRegion(0, MAX_BENCHMARK_VOLUME_SIZE);
+	const voxel::Region volumeRegion(0, MAX_BENCHMARK_VOLUME_SIZE);
 	voxel::RawVolume volume(volumeRegion);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {

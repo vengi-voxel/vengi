@@ -40,8 +40,8 @@ class Region {
 public:
 	constexpr Region();
 	Region(const glm::ivec3& mins, const glm::ivec3& maxs);
-	constexpr Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz);
-	constexpr Region(int mins, int maxs);
+	Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz);
+	Region(int mins, int maxs);
 
 	static const Region InvalidRegion;
 
@@ -370,7 +370,7 @@ inline void Region::setUpperZ(int32_t z) {
 	update();
 }
 
-inline constexpr Region::Region(int mins, int maxs) :
+inline Region::Region(int mins, int maxs) :
 		Region(mins, mins, mins, maxs, maxs, maxs) {
 }
 
@@ -378,7 +378,7 @@ inline constexpr Region::Region(int mins, int maxs) :
  * Constructs a Region and clears all extents to zero.
  */
 inline constexpr Region::Region() :
-		Region(0, 0, 0, 0, 0, 0) {
+		_mins(0), _maxs(0), _width(0), _voxels(1), _center(0), _pivot(0.5f), _stride(0) {
 }
 
 /**
@@ -390,7 +390,7 @@ inline constexpr Region::Region() :
  * @param maxsy The desired upper 'y' extent of the Region.
  * @param maxsz The desired upper 'z' extent of the Region.
  */
-inline constexpr Region::Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz) :
+inline Region::Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz) :
 		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz), _width(_maxs - _mins), _voxels(_width + 1), _center(_mins + _width / 2),
 		_pivot(glm::floor((float)_voxels.x / 2.0f), glm::floor((float)_voxels.y / 2.0f), glm::floor((float)_voxels.z / 2.0f)),
 		_stride(_voxels.x * _voxels.y) {

@@ -21,7 +21,7 @@ class ShapeGeneratorTest: public app::AbstractTest {
 private:
 	using Super = app::AbstractTest;
 protected:
-	static constexpr voxel::Region _region {0, 31};
+	static const voxel::Region _region;
 	static constexpr glm::ivec3 _center { 15 };
 	static constexpr int _width { 32 };
 	static constexpr int _height { 32 };
@@ -51,6 +51,8 @@ public:
 		Super::TearDown();
 	}
 };
+
+const voxel::Region ShapeGeneratorTest::_region = voxel::Region{0, 31};
 
 TEST_F(ShapeGeneratorTest, testCreateCubeNoCenter) {
 	voxel::RawVolumeWrapper wrapper(_volume);
