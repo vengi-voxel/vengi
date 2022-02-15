@@ -15,6 +15,7 @@ set(SRCS
 	StatusBar.h StatusBar.cpp
 	ToolsPanel.h ToolsPanel.cpp
 	TreePanel.h TreePanel.cpp
+	Util.h Util.cpp
 	Viewport.h Viewport.cpp
 )
 

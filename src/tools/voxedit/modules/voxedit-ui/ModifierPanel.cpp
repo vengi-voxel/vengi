@@ -3,6 +3,8 @@
  */
 
 #include "ModifierPanel.h"
+#include "IMGUIApp.h"
+#include "Util.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
@@ -12,6 +14,8 @@ namespace voxedit {
 
 bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
 	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
+	ui::imgui::ScopedStyle style;
+	veui::AxisStyleText(style, type, false);
 	if (ImGui::RadioButton(title, modifier.mirrorAxis() == type)) {
 		modifier.setMirrorAxis(type, sceneMgr().referencePosition());
 		return true;
@@ -30,34 +34,35 @@ void ModifierPanel::update(const char *title, command::CommandExecutionListener 
 
 		ImGui::NewLine();
 
+		const float buttonWidth = (float)imguiApp()->fontSize() * 4;
 		if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::CommandButton(ICON_FK_REPEAT " X", "rotate 90 0 0", nullptr, windowWidth / 3.0f, &listener);
+			veui::AxisButton(math::Axis::X, "X##rotate", "rotate 90 0 0", ICON_FK_REPEAT, nullptr, buttonWidth, &listener);
 			ImGui::TooltipText("Rotate by 90 degree on the x axis");
 			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FK_REPEAT " Y", "rotate 0 90 0", nullptr, windowWidth / 3.0f, &listener);
+			veui::AxisButton(math::Axis::Y, "Y##rotate", "rotate 0 90 0", ICON_FK_REPEAT, nullptr, buttonWidth, &listener);
 			ImGui::TooltipText("Rotate by 90 degree on the y axis");
 			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FK_REPEAT " Z", "rotate 0 0 90", nullptr, windowWidth / 3.0f, &listener);
+			veui::AxisButton(math::Axis::Z, "Z##rotate", "rotate 0 0 90", ICON_FK_REPEAT, nullptr, buttonWidth, &listener);
 			ImGui::TooltipText("Rotate by 90 degree on the z axis");
 		}
 
 		ImGui::NewLine();
 
 		if (ImGui::CollapsingHeader("Flip on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::CommandButton("X", "flip x", nullptr, windowWidth / 3.0f, &listener);
+			veui::AxisButton(math::Axis::X, "X##flip", "flip x", nullptr, nullptr, buttonWidth, &listener);
 			ImGui::SameLine();
-			ImGui::CommandButton("Y", "flip y", nullptr, windowWidth / 3.0f, &listener);
+			veui::AxisButton(math::Axis::Y, "Y##flip", "flip y", nullptr, nullptr, buttonWidth, &listener);
 			ImGui::SameLine();
-			ImGui::CommandButton("Z", "flip z", nullptr, windowWidth / 3.0f, &listener);
+			veui::AxisButton(math::Axis::Z, "Z##flip", "flip z", nullptr, nullptr, buttonWidth, &listener);
 		}
 
 		ImGui::NewLine();
 
 		if (ImGui::CollapsingHeader("Mirror on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			mirrorAxisRadioButton("none", math::Axis::None);
-			mirrorAxisRadioButton("x", math::Axis::X);
-			mirrorAxisRadioButton("y", math::Axis::Y);
-			mirrorAxisRadioButton("z", math::Axis::Z);
+			mirrorAxisRadioButton("None##mirror", math::Axis::None);
+			mirrorAxisRadioButton("X##mirror", math::Axis::X);
+			mirrorAxisRadioButton("Y##mirror", math::Axis::Y);
+			mirrorAxisRadioButton("Z##mirror", math::Axis::Z);
 		}
 	}
 	ImGui::End();
