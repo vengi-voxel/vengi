@@ -190,7 +190,6 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
-	node.setName(id);
 	char filename[1024];
 	wrapBool(stream.readString(sizeof(filename), filename, true))
 	if (filename[0] != '\0') {
@@ -199,6 +198,10 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 			Log::warn("Failed to attach model for id '%s' with filename %s (%s)", id, filename, modelPath.c_str());
 		}
 	}
+	if (node.volume() == nullptr) {
+		node = voxel::SceneGraphNode(voxel::SceneGraphNodeType::Group);
+	}
+	node.setName(id);
 	node.setProperty("id", id);
 	node.setProperty("filename", filename);
 	if (version > 4) {

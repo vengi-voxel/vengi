@@ -648,6 +648,7 @@ int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
 	newNode.setReferencedNodeId(node.referencedNodeId());
 	newNode.setTransform(node.transform(), false);
 	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
+		core_assert(node.volume() != nullptr);
 		core_assert(node.owns());
 		newNode.setVolume(node.volume(), true);
 		node.releaseOwnership();
