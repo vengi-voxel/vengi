@@ -22,6 +22,10 @@ The project should be buildable with every ide that supports cmake. QTCreator, E
 * Install vscode [code.visualstudio.com](https://code.visualstudio.com/)
 * Install Visual Studio (for the compiler)
 
+Inside vscode you have to install the c++ plugins. The easiest might be to install the c++ plugins from microsoft. Just make sure the cmake plugin is part of the collection.
+
+If you have problems with the intellisense plugin from microsoft, you can also use the clangd plugin.
+
 Open your git clone directory in vscode and let it configure via cmake. It will pick ninja and the visual studio compiler automatically.
 
 ## Mac

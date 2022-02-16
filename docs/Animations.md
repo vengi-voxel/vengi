@@ -12,9 +12,9 @@ Besides writing the animations in lua, the skeleton properties are stored in lua
 
 *(This is for the C++ code)*
 
-For debug builds, the animations are linked into a shared object that is loaded into the `AnimationSystem` class. This feature is __not__ active for release builds.
+You can link the animations into a shared object that is loaded into the `AnimationSystem` class. This feature is __not__ active by default.
 
-If you would like to disable the hot reload support - call cmake with `-DHOT_RELOAD_ANIM=0`.
+If you would like to enable the hot reload support - call cmake with `-DHOT_RELOAD_ANIM=1`.
 
 Besides the dynamic loading of the animation functions, we also install a watch on the dynamic library. Whenever the library is recompiled and relinked, the applications will automatically reload them and present you the latest code changes.
 
