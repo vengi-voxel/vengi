@@ -18,6 +18,8 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/VXAFormat.h"
+#include <cstring>
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -103,9 +105,8 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, voxel::SceneGraphNode 
 	}
 	voxel::SceneGraphNode* childModelNode = childSceneGraph[0];
 	core_assert_always(childModelNode != nullptr);
-
-	voxel::RawVolume *v = transformVolume(node.transform(), childModelNode->volume());
-	node.setVolume(v, true);
+	childModelNode->releaseOwnership();
+	node.setVolume(childModelNode->volume(), true);
 	node.setVisible(childModelNode->visible());
 	node.setLocked(childModelNode->locked());
 	node.addProperties(childModelNode->properties());
@@ -186,6 +187,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	return true;
 }
 
+// the positions that were part of the previous vxr versions are now in vxa
 bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent) {
 	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
 	char id[1024];
@@ -223,24 +225,27 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 		node.setProperty("preview mirror y axis", stream.readBool());
 		node.setProperty("preview mirror z axis", stream.readBool());
 		node.setProperty("ikAnchor", stream.readBool());
-		float dummyf;
 		if (version >= 9) {
 			char effectorId[1024];
 			wrapBool(stream.readString(sizeof(effectorId), effectorId, true))
 			node.setProperty("effectorId", effectorId);
 			node.setProperty("constraints visible", stream.readBool());
-			wrap(stream.readFloat(dummyf)) // rollmin
-			node.setProperty("rollmin", dummyf);
-			wrap(stream.readFloat(dummyf)) // rollmax
-			node.setProperty("rollmax", dummyf);
-			int32_t constraints;
-			wrap(stream.readInt32(constraints))
-			for (int32_t i = 0; i < constraints; ++i) {
-				wrap(stream.readFloat(dummyf)) // x
-				wrap(stream.readFloat(dummyf)) // z
-				wrap(stream.readFloat(dummyf)) // radius
+			float rollmin;
+			wrap(stream.readFloat(rollmin))
+			node.setProperty("rollmin", core::string::format("%f", rollmin));
+			float rollmax;
+			wrap(stream.readFloat(rollmax))
+			node.setProperty("rollmax", core::string::format("%f", rollmax));
+			int32_t inverseKinematicsConstraints;
+			wrap(stream.readInt32(inverseKinematicsConstraints))
+			for (int32_t i = 0; i < inverseKinematicsConstraints; ++i) {
+				float inverseKinematicsX, inverseKinematicsY, inverseKinematicsRadius;
+				wrap(stream.readFloat(inverseKinematicsX))
+				wrap(stream.readFloat(inverseKinematicsY))
+				wrap(stream.readFloat(inverseKinematicsRadius))
 			}
 		} else {
+			float dummyf;
 			stream.readBool(); // ???
 			wrap(stream.readFloat(dummyf)) // ???
 			wrap(stream.readFloat(dummyf)) // ???
@@ -337,11 +342,17 @@ bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream& stream, voxel::Sc
 }
 
 bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version) {
-	int32_t children = 0;
-	wrap(stream.readInt32(children))
-
 	const int rootNodeId = sceneGraph.root().id();
 	voxel::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
+
+	char defaultAnim[1024] = "";
+	if (version >= 7) {
+		wrapBool(stream.readString(sizeof(defaultAnim), defaultAnim, true))
+		rootNode.setProperty("defaultanim", defaultAnim);
+	}
+
+	int32_t children = 0;
+	wrap(stream.readInt32(children))
 
 	if (version >= 8) {
 		handleVersion8AndLater(stream, rootNode);
@@ -352,8 +363,45 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		wrapBool(importChild(filename, stream, sceneGraph, version, rootNodeId))
 	}
 
+	core::String vxaPath;
+	const core::String& basePath = core::string::extractPath(filename);
+	if (defaultAnim[0] != '\0') {
+		const core::String& baseName = core::string::extractFilename(filename);
+		vxaPath = core::string::path(basePath, core::string::format("%s.%s.vxa", baseName.c_str(), defaultAnim));
+	} else {
+		core::DynamicArray<io::Filesystem::DirEntry> entities;
+		io::filesystem()->list(basePath, entities, "*.vxa");
+		if (entities.empty()) {
+			Log::warn("Could not find any vxa file in %s", basePath.c_str());
+			return true;
+		}
+		vxaPath = core::string::path(basePath, entities[3].name);
+	}
+
+	if (!loadVXA(sceneGraph, vxaPath)) {
+		Log::warn("Failed to load %s", vxaPath.c_str());
+	}
+
+#if 0
+	for (SceneGraphNode &node : sceneGraph) {
+		voxel::RawVolume *v = transformVolume(node.transform(), node.volume());
+		node.setVolume(v, true);
+	}
+#endif
+
 	// some files since version 6 still have stuff here
 	return true;
+}
+
+bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
+	Log::debug("Try to load a vxa file: %s", vxaPath.c_str());
+	const io::FilePtr& file = io::filesystem()->open(vxaPath);
+	if (!file->validHandle()) {
+		return false;
+	}
+	io::FileStream stream(file.get());
+	VXAFormat format;
+	return format.loadGroups(vxaPath, stream, sceneGraph);
 }
 
 bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
@@ -382,18 +430,13 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
-	const int rootNodeId = sceneGraph.root().id();
-	voxel::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
-
-	if (version >= 7) {
-		char defaultAnim[1024];
-		wrapBool(stream.readString(sizeof(defaultAnim), defaultAnim, true))
-		rootNode.setProperty("defaultanim", defaultAnim);
-	}
 	if (version <= 3) {
 		return loadGroupsVersion3AndEarlier(filename, stream, sceneGraph, version);
 	}
-	return loadGroupsVersion4AndLater(filename, stream, sceneGraph, version);
+	if (!loadGroupsVersion4AndLater(filename, stream, sceneGraph, version)) {
+		return false;
+	}
+	return true;
 }
 
 #undef wrap

@@ -53,16 +53,22 @@ static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::vec3 &pos, 
 }
 
 voxel::RawVolume* Format::transformVolume(const SceneGraphTransform &t, const voxel::RawVolume *in) const {
-	const glm::mat4 mat = t.mat;
-	const glm::vec3 pivotNormalized = t.normalizedPivot;
+	const glm::mat4 &mat = t.mat;
+	const glm::vec3 &pivotNormalized = t.normalizedPivot;
 	const voxel::Region &inRegion = in->region();
-	const glm::ivec3 inMins(inRegion.getLowerCorner());
-	const glm::ivec3 inMaxs(inRegion.getUpperCorner());
+	const glm::ivec3 &inMins = inRegion.getLowerCorner();
+	const glm::ivec3 &inMaxs = inRegion.getUpperCorner();
 	const glm::vec4 pivot(glm::floor(pivotNormalized * glm::vec3(inRegion.getDimensionsInVoxels())), 0.0f);
-
-	const glm::vec4 outMins(transform(mat, inMins, pivot));
-	const glm::vec4 outMaxs(transform(mat, inMaxs, pivot));
-	const voxel::Region outRegion(glm::min(outMins, outMaxs), glm::max(outMins, outMaxs));
+	const glm::vec4 tmins(transform(mat, inMins, pivot));
+	const glm::vec4 tmaxs(transform(mat, inMaxs, pivot));
+	const glm::ivec3 rmins = glm::min(tmins, tmaxs);
+	const glm::ivec3 rmaxs = glm::max(tmins, tmaxs);
+	const voxel::Region outRegion(rmins, rmaxs);
+	Log::debug("transform volume");
+	Log::debug("* normalized pivot: %f:%f:%f", pivotNormalized.x, pivotNormalized.y, pivotNormalized.z);
+	Log::debug("* pivot: %f:%f:%f", pivot.x, pivot.y, pivot.z);
+	Log::debug("* mins: %i:%i:%i, maxs: %i:%i:%i", inMins.x, inMins.y, inMins.z, inMaxs.x, inMaxs.y, inMaxs.z);
+	Log::debug("* transformed region: mins: %i:%i:%i, maxs: %i:%i:%i", rmins.x, rmins.y, rmins.z, rmaxs.x, rmaxs.y, rmaxs.z);
 	voxel::RawVolume *v = new voxel::RawVolume(outRegion);
 	voxel::RawVolume::Sampler inSampler(in);
 	for (int z = inMins.z; z <= inMaxs.z; ++z) {
@@ -74,7 +80,7 @@ voxel::RawVolume* Format::transformVolume(const SceneGraphTransform &t, const vo
 				if (voxel::isAir(voxel.getMaterial())) {
 					continue;
 				}
-				const glm::ivec3 pos(transform(mat, glm::vec3(x, y, z), pivot));
+				const glm::ivec3 pos(transform(mat, inSampler.position(), pivot));
 				v->setVoxel(pos, voxel);
 			}
 		}
