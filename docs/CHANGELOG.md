@@ -13,6 +13,7 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 General:
 
    - Removed minecraft support via external lib enkiMI
+   - Added support for Sandbox VXA format (via VXR)
 
 ## 0.0.18 (2022-02-12)
 
