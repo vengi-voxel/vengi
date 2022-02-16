@@ -19,7 +19,6 @@
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/VXAFormat.h"
-#include <cstring>
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -130,6 +129,14 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		uint32_t frame;
 		wrap(stream.readUInt32(frame)) // frame index
 		int32_t interpolation;
+		// instant = 0
+		// linear = 1
+		// quad ease in = 2
+		// quad ease out = 3
+		// quad ease in out = 4
+		// cubic ease in = 5
+		// cubic ease out = 6
+		// cubic ease in out = 7
 		wrap(stream.readInt32(interpolation))
 		if (version > 1) {
 			stream.readBool(); // rotation ??
@@ -433,10 +440,7 @@ bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	if (version <= 3) {
 		return loadGroupsVersion3AndEarlier(filename, stream, sceneGraph, version);
 	}
-	if (!loadGroupsVersion4AndLater(filename, stream, sceneGraph, version)) {
-		return false;
-	}
-	return true;
+	return loadGroupsVersion4AndLater(filename, stream, sceneGraph, version);
 }
 
 #undef wrap

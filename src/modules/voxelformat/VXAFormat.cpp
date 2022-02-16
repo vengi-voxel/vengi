@@ -39,11 +39,19 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 									SceneGraph &sceneGraph, SceneGraphNode& node, const core::String &animId) {
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
-	Log::error("Found %i keyframes", keyFrameCount);
+	Log::debug("Found %i keyframes", keyFrameCount);
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
 		uint32_t frame;
 		wrap(stream.readUInt32(frame))
 		int32_t interpolation;
+		// instant = 0
+		// linear = 1
+		// quad ease in = 2
+		// quad ease out = 3
+		// quad ease in out = 4
+		// cubic ease in = 5
+		// cubic ease out = 6
+		// cubic ease in out = 7
 		wrap(stream.readInt32(interpolation))
 		stream.readBool(); // rotation ??
 		SceneGraphTransform transform;
@@ -69,7 +77,7 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		wrap(stream.readFloat(localScale))
 		// TODO: only the first frame is supported - as we don't have animation support yet
 		if (i == 0u) {
-			Log::error("Set transform for node %i", node.id());
+			Log::debug("Set transform for node %i", node.id());
 			node.setTransform(transform, true);
 		}
 	}
@@ -109,7 +117,7 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	Log::debug("Found vxa version: %i", version);
 
-	if (version != 2) {
+	if (version > 2) {
 		Log::error("Could not load vxa file: Unsupported version found (%i)", version);
 		return false;
 	}
