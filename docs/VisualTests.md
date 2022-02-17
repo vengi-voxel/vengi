@@ -99,3 +99,11 @@ A test application around the http module server for e.g. fuzzy testing purposes
 ## testbiomes
 
 A test application that just visualizes the biomes.
+
+## testblur
+
+A test application that blures an image
+
+## testbloom
+
+A test application that applies bloom to an image
