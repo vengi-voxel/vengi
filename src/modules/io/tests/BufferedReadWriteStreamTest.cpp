@@ -115,7 +115,7 @@ TEST(BufferedReadWriteStreamTest, testReadExceedsSize) {
 }
 
 TEST(BufferedReadWriteStreamTest, testSeek) {
-	BufferedReadWriteStream stream;
+	BufferedReadWriteStream stream(sizeof(uint32_t));
 	EXPECT_EQ(0, stream.seek(-1));
 	EXPECT_EQ(0, stream.pos());
 	EXPECT_EQ(0, stream.size());
@@ -124,6 +124,102 @@ TEST(BufferedReadWriteStreamTest, testSeek) {
 	EXPECT_EQ((int64_t)sizeof(writeVal), stream.pos());
 	stream.seek(0);
 	EXPECT_EQ(0, stream.pos());
+}
+
+TEST(BufferedReadWriteStreamTest, testFloat) {
+	BufferedReadWriteStream stream(2 * sizeof(float));
+	stream.writeFloat(1.0f);
+	stream.writeFloat(-1.0f);
+	EXPECT_EQ((int64_t)(2 * sizeof(float)), stream.pos());
+	stream.seek(0);
+	float val;
+	EXPECT_EQ(0, stream.readFloat(val));
+	EXPECT_FLOAT_EQ(1.0f, val);
+	EXPECT_EQ(0, stream.readFloat(val));
+	EXPECT_FLOAT_EQ(-1.0f, val);
+	EXPECT_TRUE(stream.eos());
+}
+
+TEST(BufferedReadWriteStreamTest, testInt8) {
+	BufferedReadWriteStream stream(2 * sizeof(int8_t));
+	stream.writeInt8(1);
+	stream.writeInt8(-1);
+	EXPECT_EQ((int64_t)(2 * sizeof(int8_t)), stream.pos());
+	stream.seek(0);
+	int8_t val;
+	EXPECT_EQ(0, stream.readInt8(val));
+	EXPECT_EQ(1, val);
+	EXPECT_EQ(0, stream.readInt8(val));
+	EXPECT_EQ(-1, val);
+	EXPECT_TRUE(stream.eos());
+}
+
+TEST(BufferedReadWriteStreamTest, testInt16) {
+	BufferedReadWriteStream stream(2 * sizeof(int16_t));
+	stream.writeInt16(1);
+	stream.writeInt16(-1);
+	EXPECT_EQ((int64_t)(2 * sizeof(int16_t)), stream.pos());
+	stream.seek(0);
+	int16_t val;
+	EXPECT_EQ(0, stream.readInt16(val));
+	EXPECT_EQ(1, val);
+	EXPECT_EQ(0, stream.readInt16(val));
+	EXPECT_EQ(-1, val);
+	EXPECT_TRUE(stream.eos());
+}
+
+TEST(BufferedReadWriteStreamTest, testInt32) {
+	BufferedReadWriteStream stream(2 * sizeof(int32_t));
+	stream.writeInt32(1);
+	stream.writeInt32(-1);
+	EXPECT_EQ((int64_t)(2 * sizeof(int32_t)), stream.pos());
+	stream.seek(0);
+	int32_t val;
+	EXPECT_EQ(0, stream.readInt32(val));
+	EXPECT_EQ(1, val);
+	EXPECT_EQ(0, stream.readInt32(val));
+	EXPECT_EQ(-1, val);
+	EXPECT_TRUE(stream.eos());
+}
+
+TEST(BufferedReadWriteStreamTest, testInt64) {
+	BufferedReadWriteStream stream(2 * sizeof(int64_t));
+	stream.writeInt64(1);
+	stream.writeInt64(-1);
+	EXPECT_EQ((int64_t)(2 * sizeof(int64_t)), stream.pos());
+	stream.seek(0);
+	int64_t val;
+	EXPECT_EQ(0, stream.readInt64(val));
+	EXPECT_EQ(1, val);
+	EXPECT_EQ(0, stream.readInt64(val));
+	EXPECT_EQ(-1, val);
+	EXPECT_TRUE(stream.eos());
+}
+
+TEST(BufferedReadWriteStreamTest, testString) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writeString("foobar", true));
+	stream.seek(0);
+	char buf[32];
+	EXPECT_TRUE(stream.readString(sizeof(buf), buf, true));
+	EXPECT_STREQ("foobar", buf);
+}
+
+TEST(BufferedReadWriteStreamTest, testFormat) {
+	BufferedReadWriteStream stream;
+	stream.writeFormat("bsil", 1, 2, 3, 4);
+	EXPECT_EQ(15, stream.pos());
+	stream.seek(0);
+	int8_t valB;
+	int16_t valS;
+	int32_t valI;
+	int64_t valL;
+	EXPECT_TRUE(stream.readFormat("bsil", &valB, &valS, &valI, &valL));
+	EXPECT_EQ(1, valB);
+	EXPECT_EQ(2, valS);
+	EXPECT_EQ(3, valI);
+	EXPECT_EQ(4, valL);
+	EXPECT_TRUE(stream.eos());
 }
 
 }

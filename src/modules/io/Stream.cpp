@@ -187,7 +187,7 @@ bool ReadStream::readFormat(const char *fmt, ...) {
 				va_end(ap);
 				return false;
 			}
-			*va_arg(ap, int *) = val;
+			*(uint8_t*)va_arg(ap, int *) = val;
 			break;
 		}
 		case 's': {
@@ -196,7 +196,7 @@ bool ReadStream::readFormat(const char *fmt, ...) {
 				va_end(ap);
 				return false;
 			}
-			*va_arg(ap, int *) = val;
+			*(uint16_t*)va_arg(ap, int *) = val;
 			break;
 		}
 		case 'i': {
@@ -205,7 +205,7 @@ bool ReadStream::readFormat(const char *fmt, ...) {
 				va_end(ap);
 				return false;
 			}
-			*va_arg(ap, int *) = (int)val;
+			*(uint32_t*)va_arg(ap, int *) = (int)val;
 			break;
 		}
 		case 'l': {
@@ -214,7 +214,7 @@ bool ReadStream::readFormat(const char *fmt, ...) {
 				va_end(ap);
 				return false;
 			}
-			*va_arg(ap, int64_t *) = (int64_t)val;
+			*(uint64_t*)va_arg(ap, int64_t *) = (int64_t)val;
 			break;
 		}
 		default:
