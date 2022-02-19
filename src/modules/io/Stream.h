@@ -93,10 +93,16 @@ public:
 	 */
 	virtual int64_t size() const = 0;
 	/**
-	 * @return The current position in the stream
+	 * @return The current position in the stream. Every read advances this position.
+	 * @sa seek()
 	 */
 	virtual int64_t pos() const = 0;
 
+	/**
+	 * @brief Advances the position in the stream without reading the bytes.
+	 * @param delta the bytes to skip
+	 * @return -1 on error - otherwise the current offset in the stream
+	 */
 	int64_t skip(int64_t delta);
 
 	bool eos() const override {
@@ -109,8 +115,19 @@ public:
 	int peekUInt32(uint32_t &val);
 	int peekUInt16(uint16_t &val);
 	int peekUInt8(uint8_t &val);
+	/**
+	 * @brief Reads from the buffer until newline characters were detected, a null byte was
+	 * found or the end of the stream was reached.
+	 * @param length The max length of the target buffer
+	 * @param strbuff The target buffer
+	 */
 	bool readLine(int length, char *strbuff);
 
+	/**
+	 * @return The amount of bytes left in the stream to read
+	 * @sa size()
+	 * @sa pos()
+	 */
 	int64_t remaining() const;
 	bool empty() const;
 };
@@ -193,7 +210,14 @@ public:
 	 * @return -1 on error - otherwise the current offset in the stream
 	 */
 	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
+	/**
+	 * @return The amount of bytes that were already written to the stream
+	 */
 	virtual int64_t size() const = 0;
+	/**
+	 * @return The current position in the stream. Every write advances this position.
+	 * @sa seek()
+	 */
 	virtual int64_t pos() const = 0;
 };
 

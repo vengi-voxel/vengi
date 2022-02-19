@@ -10,10 +10,10 @@
 namespace io {
 
 struct FormatDescription {
-	const char *name;
-	const char *ext; /**< just the file extension */
-	bool (*isA)(uint32_t magic);
-	uint32_t flags;
+	const char *name = nullptr;				/**< the name of the format */
+	const char *ext = nullptr;				/**< the file extension */
+	bool (*isA)(uint32_t magic) = nullptr;	/**< function to check whether a magic byte matches for the format description */
+	uint32_t flags = 0u;					/**< flags for user defines properties */
 
 	inline core::String wildCard() const {
 		static const core::String w("*.");
