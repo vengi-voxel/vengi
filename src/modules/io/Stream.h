@@ -58,6 +58,18 @@ public:
 	 * @param[in] terminated If this is true, the read will stop on a 0 byte
 	 */
 	bool readString(int length, char *strbuff, bool terminated = false);
+	/**
+	 * @brief Allows you to read values by specifying a format string and pointers
+	 * to the values to store them in.
+	 * @code
+	 * stream.readFormat("bsil", &valByte, &valShort, &valInt, &valLong)
+	 * @endcode
+	 *
+	 * @param fmt Valid format identifiers are b for byte (uint8_t), s for short (uint16_t),
+	 * i for int (uint32_t) and l for long (uint64_t).
+	 * @return @c false if reading the values from the stream failed
+	 * @sa WriteStream::writeFormat()
+	 */
 	bool readFormat(const char *fmt, ...);
 };
 
@@ -143,7 +155,22 @@ public:
 	bool writeFloatBE(float val);
 
 	bool writeStringFormat(bool terminate, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(3);
+	/**
+	 * @param terminate If this is @c true the extra null byte is written to the stream
+	 * @return @c false if not everything was written
+	 */
 	bool writeString(const core::String &string, bool terminate = true);
+	/**
+	 * @brief Allows you to write values by specifying a format string and the values to add to the stream
+	 * @code
+	 * stream.writeFormat("bsil", valByte, valShort, valInt, valLong)
+	 * @endcode
+	 *
+	 * @param fmt Valid format identifiers are b for byte (uint8_t), s for short (uint16_t),
+	 * i for int (uint32_t) and l for long (uint64_t).
+	 * @return @c false if writing the values from the stream failed
+	 * @sa ReadStream::readFormat()
+	 */
 	bool writeFormat(const char *fmt, ...);
 };
 
