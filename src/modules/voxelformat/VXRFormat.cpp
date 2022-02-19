@@ -47,7 +47,7 @@ bool VXRFormat::saveRecursiveNode(const core::String &name, const voxel::SceneGr
 		Log::error("Failed to open %s for writing", finalName.c_str());
 		return false;
 	}
-	io::FileStream wstream(outputFile.get());
+	io::FileStream wstream(outputFile);
 	SceneGraph newSceneGraph;
 	voxel::SceneGraphNode newNode;
 	newNode.setVolume(node.volume(), false);
@@ -88,7 +88,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, voxel::SceneGraphNode 
 		Log::error("Could not open file '%s'", vxmPath.c_str());
 		return false;
 	}
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	VXMFormat f;
 	SceneGraph childSceneGraph;
 	if (!f.loadGroups(vxmPath, stream, childSceneGraph)) {
@@ -406,7 +406,7 @@ bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
 	if (!file->validHandle()) {
 		return false;
 	}
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	VXAFormat format;
 	return format.loadGroups(vxaPath, stream, sceneGraph);
 }

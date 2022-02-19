@@ -40,7 +40,7 @@ voxel::RawVolume* VolumeCache::loadVolume(const core::String &filename) {
 		return nullptr;
 	}
 	voxel::SceneGraph sceneGraph;
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	if (!voxelformat::loadFormat(file->name(), stream, sceneGraph)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		core::ScopedLock lock(_mutex);

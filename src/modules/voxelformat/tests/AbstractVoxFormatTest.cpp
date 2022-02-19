@@ -148,11 +148,11 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	sceneGraph.emplace(core::move(node3));
 	sceneGraph.emplace(core::move(node4));
 	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
-	io::FileStream sstream(sfile.get());
+	io::FileStream sstream(sfile);
 	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));
 	SceneGraph sceneGraphLoad;
 	const io::FilePtr &file = open(filename);
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	EXPECT_TRUE(format->loadGroups(file->name(), stream, sceneGraphLoad));
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
@@ -166,11 +166,11 @@ void AbstractVoxFormatTest::testSave(const core::String &filename, voxel::Format
 	node1.setVolume(&layer1, false);
 	sceneGraph.emplace(core::move(node1));
 	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
-	io::FileStream sstream(sfile.get());
+	io::FileStream sstream(sfile);
 	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));
 	SceneGraph sceneGraphLoad;
 	const io::FilePtr &file = open(filename);
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	EXPECT_TRUE(format->loadGroups(file->name(), stream, sceneGraphLoad));
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }

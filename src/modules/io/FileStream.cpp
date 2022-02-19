@@ -13,18 +13,36 @@
 
 namespace io {
 
-FileStream::FileStream(File *file) : FileStream(file->_file) {
-}
-
-FileStream::FileStream(SDL_RWops *rwops) : _rwops(rwops) {
-	core_assert(rwops != nullptr);
-	_size = SDL_RWsize(_rwops);
+FileStream::FileStream(const FilePtr &file) : _file(file) {
+	if (_file) {
+		_rwops = _file->_file;
+		if (_rwops) {
+			_size = SDL_RWsize(_rwops);
+		} else {
+			_size = 0;
+		}
+	} else {
+		_rwops = nullptr;
+		_size = 0;
+	}
 }
 
 FileStream::~FileStream() {
 }
 
+bool FileStream::flush() {
+	if (_rwops == nullptr) {
+		return false;
+	}
+	FileMode mode = _file->mode();
+	_file->close();
+	return _file->open(mode);
+}
+
 int FileStream::write(const void *buf, size_t size) {
+	if (_rwops == nullptr) {
+		return -1;
+	}
 	if (size == 0) {
 		return 0;
 	}
@@ -35,6 +53,9 @@ int FileStream::write(const void *buf, size_t size) {
 }
 
 int FileStream::read(void *dataPtr, size_t dataSize) {
+	if (_rwops == nullptr) {
+		return -1;
+	}
 	uint8_t *b = (uint8_t*)dataPtr;
 	size_t completeBytesRead = 0;
 	size_t bytesRead = 1;
@@ -52,6 +73,9 @@ int FileStream::read(void *dataPtr, size_t dataSize) {
 }
 
 int64_t FileStream::seek(int64_t position, int whence) {
+	if (_rwops == nullptr) {
+		return -1;
+	}
 	int64_t p = SDL_RWseek(_rwops, position, whence);
 	_pos = SDL_RWtell(_rwops);
 	if (p == -1) {

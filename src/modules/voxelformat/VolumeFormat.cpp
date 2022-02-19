@@ -277,7 +277,7 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& sceneGraph) {
 		return false;
 	}
 
-	io::FileStream stream(filePtr.get());
+	io::FileStream stream(filePtr);
 	const core::String& ext = filePtr->extension();
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
 		if (ext == desc->ext) {

@@ -29,14 +29,12 @@ typedef core::SharedPtr<File> FilePtr;
 class FileStream : public SeekableReadStream, public SeekableWriteStream {
 private:
 	mutable SDL_RWops *_rwops;
+	FilePtr _file;
 	int64_t _size = 0;
 	int64_t _pos = 0;
+	bool doFlush();
 public:
-	FileStream(File *file);
-	// TODO: store the fileptr
-	FileStream(const FilePtr &file) : FileStream(file.get()) {
-	}
-	FileStream(SDL_RWops *rwops);
+	FileStream(const FilePtr &file);
 	virtual ~FileStream();
 
 	int64_t size() const override;
@@ -44,6 +42,11 @@ public:
 	int read(void *dataPtr, size_t dataSize) override;
 	int write(const void *dataPtr, size_t dataSize) override;
 	int64_t seek(int64_t position, int whence = SEEK_SET) override;
+	/**
+	 * @brief Flush the pending stream data into the output stream. This is closing the file
+	 * and re-open if afterwards.
+	 */
+	bool flush() override;
 };
 
 inline int64_t FileStream::size() const {

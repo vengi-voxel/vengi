@@ -46,7 +46,7 @@ protected:
 		if (!file->validHandle()) {
 			return nullptr;
 		}
-		io::FileStream stream(file.get());
+		io::FileStream stream(file);
 		voxel::RawVolume* v = format.load(filename, stream);
 		return v;
 	}

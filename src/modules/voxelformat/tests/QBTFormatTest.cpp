@@ -24,7 +24,7 @@ TEST_F(QBTFormatTest, testSaveSingleVoxel) {
 	RawVolume original(region);
 	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
 	const io::FilePtr &file = open("qubicle-singlevoxelsavetest.qbt", io::FileMode::Write);
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	ASSERT_TRUE(f.save(&original, file->name(), stream));
 	f = QBTFormat();
 	std::unique_ptr<RawVolume> loaded(load("qubicle-singlevoxelsavetest.qbt", f));
@@ -47,7 +47,7 @@ TEST_F(QBTFormatTest, testSave) {
 	std::unique_ptr<RawVolume> original(load("qubicle.qbt", f));
 	ASSERT_NE(nullptr, original);
 	const io::FilePtr &file = open("qubicle-savetest.qbt", io::FileMode::Write);
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	ASSERT_TRUE(f.save(original.get(), file->name(), stream));
 	EXPECT_TRUE(open("qubicle-savetest.qbt")->length() > 200);
 	f = QBTFormat();
@@ -61,14 +61,14 @@ TEST_F(QBTFormatTest, testResaveMultipleLayers) {
 	{
 		QBTFormat f;
 		io::FilePtr file = open("qubicle.qbt");
-		io::FileStream stream(file.get());
+		io::FileStream stream(file);
 		EXPECT_TRUE(f.loadGroups(file->name(), stream, sceneGraph));
 		EXPECT_EQ(17u, sceneGraph.size());
 	}
 	{
 		QBTFormat f;
 		const io::FilePtr &file = open("qubicle-savetest.qbt", io::FileMode::Write);
-		io::FileStream stream(file.get());
+		io::FileStream stream(file);
 		EXPECT_TRUE(f.saveGroups(sceneGraph, file->name(), stream));
 		EXPECT_EQ(17u, sceneGraph.size());
 	}
@@ -76,7 +76,7 @@ TEST_F(QBTFormatTest, testResaveMultipleLayers) {
 	{
 		QBTFormat f;
 		io::FilePtr file = open("qubicle-savetest.qbt");
-		io::FileStream stream(file.get());
+		io::FileStream stream(file);
 		EXPECT_TRUE(f.loadGroups(file->name(), stream, sceneGraph));
 		EXPECT_EQ(17u, sceneGraph.size());
 	}

@@ -23,11 +23,23 @@ public:
 	}
 };
 
+TEST_F(FileStreamTest, testInvalidFile) {
+	const FilePtr file;
+	FileStream stream(file);
+	EXPECT_TRUE(stream.empty());
+	EXPECT_TRUE(stream.eos());
+	EXPECT_EQ(0, stream.size());
+	int8_t val;
+	EXPECT_EQ(-1, stream.readInt8(val));
+	EXPECT_FALSE(stream.writeInt8(val));
+	EXPECT_EQ(0, stream.size());
+}
+
 TEST_F(FileStreamTest, testFileStreamRead) {
 	const FilePtr &file = _fs.open("iotest.txt");
 	ASSERT_TRUE(file->exists());
 
-	FileStream stream(file.get());
+	FileStream stream(file);
 	const int64_t remaining = stream.remaining();
 	EXPECT_EQ((int64_t)file->length(), remaining);
 
@@ -74,8 +86,7 @@ TEST_F(FileStreamTest, testFileStreamWrite) {
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	const FilePtr &file = fs.open("filestream-writetest", io::FileMode::SysWrite);
 	ASSERT_TRUE(file->validHandle());
-	File *fileRaw = file.get();
-	FileStream stream(fileRaw);
+	FileStream stream(file);
 	EXPECT_TRUE(stream.writeUInt32(1));
 	EXPECT_EQ(4l, stream.size());
 	EXPECT_TRUE(stream.writeUInt32(1));

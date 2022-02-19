@@ -248,7 +248,7 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 	if (!saved) {
 		Log::warn("Failed to save %s file - retry as qb instead", ext.c_str());
 		voxel::QBFormat f;
-		io::FileStream stream(filePtr.get());
+		io::FileStream stream(filePtr);
 		saved = f.saveGroups(_sceneGraph, filePtr->fileName(), stream);
 	}
 	if (saved) {

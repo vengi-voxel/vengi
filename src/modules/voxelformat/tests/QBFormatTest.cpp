@@ -42,7 +42,7 @@ TEST_F(QBFormatTest, testSaveSingleVoxel) {
 	RawVolume original(region);
 	original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1));
 	const io::FilePtr &file = open("qubicle-singlevoxelsavetest.qb", io::FileMode::Write);
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	ASSERT_TRUE(f.save(&original, file->name(), stream));
 	f = QBFormat();
 	std::unique_ptr<RawVolume> loaded(load("qubicle-singlevoxelsavetest.qb", f));
@@ -65,7 +65,7 @@ TEST_F(QBFormatTest, testLoadSave) {
 	std::unique_ptr<RawVolume> original(load("qubicle.qb", f));
 	ASSERT_NE(nullptr, original);
 	const io::FilePtr &sfile = open("qubicle-savetest.qb", io::FileMode::Write);
-	io::FileStream sstream(sfile.get());
+	io::FileStream sstream(sfile);
 	ASSERT_TRUE(f.save(original.get(), sfile->name(), sstream));
 	ASSERT_TRUE(open("qubicle-savetest.qb")->length() > 177);
 	f = QBFormat();

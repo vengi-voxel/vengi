@@ -67,8 +67,8 @@ app::AppState Thumbnailer::onRunning() {
 
 	const int outputSize = core::string::toInt(getArgVal("--size"));
 	const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::SysWrite);
-	io::FileStream outStream(outfile.get());
-	io::FileStream stream(_infile.get());
+	io::FileStream outStream(outfile);
+	io::FileStream stream(_infile);
 
 	const image::ImagePtr &image = thumbnailer::volumeThumbnail(_infile->name(), stream, outputSize);
 	if (image) {

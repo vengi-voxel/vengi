@@ -34,7 +34,7 @@ bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxel::Sce
 	}
 	voxel::SceneGraph newSceneGraph;
 	// TODO: use the cache luke
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	if (!voxelformat::loadFormat(file->name(), stream, newSceneGraph)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		return false;

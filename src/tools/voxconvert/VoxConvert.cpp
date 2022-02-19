@@ -340,7 +340,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 	const bool inputIsImage = inputFile->isAnyOf(io::format::images());
 	if (!inputIsImage && _srcPalette) {
 		core::Array<uint32_t, 256> palette;
-		io::FileStream palStream(inputFile.get());
+		io::FileStream palStream(inputFile);
 		Log::info("Load palette from %s", infile.c_str());
 		const size_t numColors = voxelformat::loadPalette(inputFile->name(), palStream, palette);
 		if (numColors == 0) {
@@ -373,7 +373,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 		voxel::RawVolumeWrapper wrapper(volume);
 		voxelutil::importHeightmap(wrapper, image);
 	} else {
-		io::FileStream inputFileStream(inputFile.get());
+		io::FileStream inputFileStream(inputFile);
 		voxel::SceneGraph newSceneGraph;
 		if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph)) {
 			return false;

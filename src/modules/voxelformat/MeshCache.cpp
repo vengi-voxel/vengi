@@ -68,7 +68,7 @@ bool MeshCache::loadMesh(const char* fullPath, voxel::Mesh& mesh) {
 		return false;
 	}
 	voxel::SceneGraph sceneGraph;
-	io::FileStream stream(file.get());
+	io::FileStream stream(file);
 	if (!voxelformat::loadFormat(file->name(), stream, sceneGraph)) {
 		Log::error("Failed to load %s", file->name().c_str());
 		return false;
