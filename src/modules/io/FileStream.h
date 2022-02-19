@@ -32,7 +32,6 @@ private:
 	FilePtr _file;
 	int64_t _size = 0;
 	int64_t _pos = 0;
-	bool doFlush();
 public:
 	FileStream(const FilePtr &file);
 	virtual ~FileStream();
