@@ -22,6 +22,8 @@ typedef core::SharedPtr<File> FilePtr;
 /**
  * @brief File read and write capable stream
  *
+ * @note the stream is not flushed automatically. This is either done by calling flush() manually - or when the
+ * used file instance is closed.
  * @ingroup IO
  * @see SeekableReadStream
  * @see SeekableWriteStream
