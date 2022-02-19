@@ -38,6 +38,7 @@ protected:
 	core::String _rawPath;
 	FileMode _mode;
 
+	// file instances are created by the Filesystem class
 	File(const core::String& rawPath, FileMode mode);
 public:
 	virtual ~File();
