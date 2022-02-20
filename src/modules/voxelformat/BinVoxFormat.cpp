@@ -133,11 +133,11 @@ bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	const glm::ivec3& offset = -mins;
 	const float scale = 1.0f;
 
-	stream.writeString("#binvox 1\n", false);
+	wrapBool(stream.writeString("#binvox 1\n", false))
 	stream.writeStringFormat(false, "dim %u %u %u\n", width, depth, height);
 	stream.writeStringFormat(false, "translate %i %i %i\n", offset.x, offset.y, offset.z);
 	stream.writeStringFormat(false, "scale %f\n", scale);
-	stream.writeString("data\n", false);
+	wrapBool(stream.writeString("data\n", false))
 
 	uint8_t count = 0u;
 	uint8_t value = 0u;
@@ -154,8 +154,8 @@ bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &
 		if (isAir(voxel.getMaterial())) {
 			if (value != 0u || count == 255u) {
 				if (count > 0u) {
-					stream.writeUInt8(value);
-					stream.writeUInt8(count);
+					wrapBool(stream.writeUInt8(value))
+					wrapBool(stream.writeUInt8(count))
 				}
 				voxels += count;
 				count = 0u;
@@ -166,8 +166,8 @@ bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &
 			const uint8_t v = voxel.getColor();
 			if (value != v || count == 255u) {
 				if (count > 0u) {
-					stream.writeUInt8(value);
-					stream.writeUInt8(count);
+					wrapBool(stream.writeUInt8(value))
+					wrapBool(stream.writeUInt8(count))
 				}
 				voxels += count;
 				count = 0u;
@@ -188,8 +188,8 @@ bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	}
 	delete mergedVolume;
 	core_assert_msg(count > 0u, "Expected to have at least one voxel left: %i", (int)count);
-	stream.writeUInt8(value);
-	stream.writeUInt8(count);
+	wrapBool(stream.writeUInt8(value))
+	wrapBool(stream.writeUInt8(count))
 	voxels += count;
 	const uint32_t expectedVoxels = width * height * depth;
 	if (voxels != expectedVoxels) {

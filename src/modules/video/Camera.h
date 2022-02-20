@@ -153,6 +153,9 @@ public:
 
 	glm::vec3 direction() const;
 
+	/**
+	 * @sa eye()
+	 */
 	const glm::vec3& worldPosition() const;
 	void setWorldPosition(const glm::vec3& worldPos);
 	void move(const glm::vec3& delta);
