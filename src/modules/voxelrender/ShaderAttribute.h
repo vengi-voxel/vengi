@@ -16,8 +16,8 @@ namespace voxelrender {
 inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type)) {
 	static_assert(voxel::MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
 	video::Attribute attrib;
-	attrib.bufferIndex = bufferIndex;
-	attrib.location = attributeLocation;
+	attrib.bufferIndex = (int32_t)bufferIndex;
+	attrib.location = (int32_t)attributeLocation;
 	attrib.stride = sizeof(voxel::VoxelVertex);
 	attrib.size = components;
 	attrib.type = video::mapType<decltype(voxel::VoxelVertex::position)::value_type>();
@@ -33,8 +33,8 @@ inline video::Attribute getInfoVertexAttribute(uint32_t bufferIndex, uint32_t at
 	static_assert(sizeof(voxel::VoxelVertex::info) == sizeof(uint8_t), "AO type size doesn't match");
 	static_assert(offsetof(voxel::VoxelVertex, info) < offsetof(voxel::VoxelVertex, colorIndex), "Layout change of VoxelVertex without change in upload");
 	video::Attribute attrib;
-	attrib.bufferIndex = bufferIndex;
-	attrib.location = attributeLocation;
+	attrib.bufferIndex = (int32_t)bufferIndex;
+	attrib.location = (int32_t)attributeLocation;
 	attrib.stride = sizeof(voxel::VoxelVertex);
 	attrib.size = components;
 	attrib.type = video::mapType<decltype(voxel::VoxelVertex::info)>();
@@ -45,8 +45,8 @@ inline video::Attribute getInfoVertexAttribute(uint32_t bufferIndex, uint32_t at
 
 inline video::Attribute getOffsetVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components) {
 	video::Attribute voxelAttributeOffsets;
-	voxelAttributeOffsets.bufferIndex = bufferIndex;
-	voxelAttributeOffsets.location = attributeLocation;
+	voxelAttributeOffsets.bufferIndex = (int32_t)bufferIndex;
+	voxelAttributeOffsets.location = (int32_t)attributeLocation;
 	voxelAttributeOffsets.stride = sizeof(glm::vec3);
 	voxelAttributeOffsets.size = components;
 	voxelAttributeOffsets.type = video::mapType<glm::vec3::value_type>();
