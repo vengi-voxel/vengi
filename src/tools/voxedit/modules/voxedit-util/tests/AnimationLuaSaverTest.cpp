@@ -13,7 +13,7 @@ class AnimationLuaSaverTest: public app::AbstractTest {
 };
 
 TEST_F(AnimationLuaSaverTest, testSaveDefaultValues) {
-	const io::FilePtr& file = io::filesystem()->open("testSaveDefaultValues.lua", io::FileMode::Write);
+	const io::FilePtr& file = io::filesystem()->open("testSaveDefaultValues.lua", io::FileMode::SysWrite);
 	EXPECT_TRUE(file && file->validHandle());
 	animation::AnimationSettings settings;
 	animation::CharacterSkeletonAttribute attributes;
@@ -21,7 +21,7 @@ TEST_F(AnimationLuaSaverTest, testSaveDefaultValues) {
 }
 
 TEST_F(AnimationLuaSaverTest, testSave) {
-	const io::FilePtr& file = io::filesystem()->open("testSave.lua", io::FileMode::Write);
+	const io::FilePtr& file = io::filesystem()->open("testSave.lua", io::FileMode::SysWrite);
 	EXPECT_TRUE(file && file->validHandle());
 	animation::AnimationSettings settings;
 	animation::CharacterSkeletonAttribute attributes;

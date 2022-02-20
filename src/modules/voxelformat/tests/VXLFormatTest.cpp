@@ -28,7 +28,7 @@ TEST_F(VXLFormatTest, testSave) {
 	RawVolume* loadedVolume = load("cc.vxl", f);
 	ASSERT_NE(nullptr, loadedVolume) << "Could not load vxl file";
 
-	const io::FilePtr& file = open("cc-save.vxl", io::FileMode::Write);
+	const io::FilePtr& file = open("cc-save.vxl", io::FileMode::SysWrite);
 	io::FileStream stream(file);
 	ASSERT_TRUE(f.save(loadedVolume, file->name(), stream));
 	f = VXLFormat();

@@ -147,7 +147,7 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	sceneGraph.emplace(core::move(node2));
 	sceneGraph.emplace(core::move(node3));
 	sceneGraph.emplace(core::move(node4));
-	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
+	const io::FilePtr &sfile = open(filename, io::FileMode::SysWrite);
 	io::FileStream sstream(sfile);
 	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));
 	SceneGraph sceneGraphLoad;
@@ -165,7 +165,7 @@ void AbstractVoxFormatTest::testSave(const core::String &filename, voxel::Format
 	voxel::SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
 	sceneGraph.emplace(core::move(node1));
-	const io::FilePtr &sfile = open(filename, io::FileMode::Write);
+	const io::FilePtr &sfile = open(filename, io::FileMode::SysWrite);
 	io::FileStream sstream(sfile);
 	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));
 	SceneGraph sceneGraphLoad;

@@ -37,7 +37,7 @@ TEST_F(VXMFormatTest, testSaveVerySmallVoxel) {
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, createVoxel(VoxelType::Generic, 200)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, createVoxel(VoxelType::Generic, 201)));
 	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 202)));
-	const io::FilePtr &file = open("verysmallvolumesavetest.vxm", io::FileMode::Write);
+	const io::FilePtr &file = open("verysmallvolumesavetest.vxm", io::FileMode::SysWrite);
 	io::FileStream stream(file);
 	ASSERT_TRUE(f.save(&original, file->name(), stream));
 	f = VXMFormat();
@@ -59,7 +59,7 @@ TEST_F(VXMFormatTest, testSaveRLE) {
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, createVoxel(VoxelType::Generic, 1)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, createVoxel(VoxelType::Generic, 127)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 0, createVoxel(VoxelType::Generic, 127)));
-	const io::FilePtr &file = open("smallvolumesavetest.vxm", io::FileMode::Write);
+	const io::FilePtr &file = open("smallvolumesavetest.vxm", io::FileMode::SysWrite);
 	io::FileStream stream(file);
 	ASSERT_TRUE(f.save(&original, file->name(), stream));
 	f = VXMFormat();

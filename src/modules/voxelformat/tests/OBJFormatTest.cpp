@@ -31,8 +31,8 @@ TEST_F(OBJFormatTest, testExportMesh) {
 	}
 	ASSERT_TRUE(sceneGraph.size() > 0);
 	OBJFormat f;
-	const core::String outFilename = "rgb.obj";
-	const io::FilePtr &outFile = open(outFilename, io::FileMode::Write);
+	const core::String outFilename = "exportrgb.obj";
+	const io::FilePtr &outFile = open(outFilename, io::FileMode::SysWrite);
 	io::FileStream outStream(outFile);
 	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream));
 }
