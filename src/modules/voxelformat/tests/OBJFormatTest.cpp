@@ -2,13 +2,14 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
 #include "voxelformat/OBJFormat.h"
+#include "AbstractVoxFormatTest.h"
+#include "io/File.h"
+#include "voxelformat/QBFormat.h"
 
 namespace voxel {
 
-class OBJFormatTest: public AbstractVoxFormatTest {
-};
+class OBJFormatTest : public AbstractVoxFormatTest {};
 
 TEST_F(OBJFormatTest, testVoxelize) {
 	OBJFormat f;
@@ -19,4 +20,21 @@ TEST_F(OBJFormatTest, testVoxelize) {
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph));
 }
 
+TEST_F(OBJFormatTest, testExportMesh) {
+	SceneGraph sceneGraph;
+	{
+		QBFormat sourceFormat;
+		const core::String filename = "rgb.qb";
+		const io::FilePtr &file = open(filename);
+		io::FileStream stream(file);
+		EXPECT_TRUE(sourceFormat.loadGroups(filename, stream, sceneGraph));
+	}
+	ASSERT_TRUE(sceneGraph.size() > 0);
+	OBJFormat f;
+	const core::String outFilename = "rgb.obj";
+	const io::FilePtr &outFile = open(outFilename, io::FileMode::Write);
+	io::FileStream outStream(outFile);
+	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream));
 }
+
+} // namespace voxel

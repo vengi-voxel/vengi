@@ -27,23 +27,34 @@
 
 namespace voxel {
 
-void OBJFormat::writeMtlFile(const core::String &mtlName, const core::String &paletteName) const {
+#define wrapBool(read) \
+	if ((read) == false) { \
+		Log::error("Failed to write obj " CORE_STRINGIFY(read)); \
+		return false; \
+	}
+
+bool OBJFormat::writeMtlFile(const core::String &mtlName, const core::String &paletteName) const {
 	const io::FilePtr &file = io::filesystem()->open(mtlName, io::FileMode::SysWrite);
 	if (!file->validHandle()) {
 		Log::error("Failed to create mtl file at %s", file->name().c_str());
-		return;
+		return false;
 	}
 	io::FileStream stream(file);
-	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
-	stream.writeStringFormat(false, "\n");
-	stream.writeStringFormat(false, "newmtl palette\n");
-	stream.writeStringFormat(false, "Ka 1.000000 1.000000 1.000000\n");
-	stream.writeStringFormat(false, "Kd 1.000000 1.000000 1.000000\n");
-	stream.writeStringFormat(false, "Ks 0.000000 0.000000 0.000000\n");
-	stream.writeStringFormat(false, "Tr 1.000000\n");
-	stream.writeStringFormat(false, "illum 1\n");
-	stream.writeStringFormat(false, "Ns 0.000000\n");
-	stream.writeStringFormat(false, "map_Kd %s\n", core::string::extractFilenameWithExtension(paletteName).c_str());
+	wrapBool(stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n"))
+	wrapBool(stream.writeStringFormat(false, "\n"))
+	wrapBool(stream.writeStringFormat(false, "newmtl palette\n"))
+	wrapBool(stream.writeStringFormat(false, "Ka 1.000000 1.000000 1.000000\n"))
+	wrapBool(stream.writeStringFormat(false, "Kd 1.000000 1.000000 1.000000\n"))
+	wrapBool(stream.writeStringFormat(false, "Ks 0.000000 0.000000 0.000000\n"))
+	wrapBool(stream.writeStringFormat(false, "Tr 1.000000\n"))
+	wrapBool(stream.writeStringFormat(false, "illum 1\n"))
+	wrapBool(stream.writeStringFormat(false, "Ns 0.000000\n"))
+	const core::String& paletteFilename = core::string::extractFilenameWithExtension(paletteName);
+	if (!stream.writeStringFormat(false, "map_Kd %s\n", paletteFilename.c_str())) {
+		Log::error("Failed to write obj map_Kd");
+		return false;
+	}
+	return true;
 }
 
 bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
@@ -56,8 +67,8 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 	const float v1 = 0.5f;
 
 	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
-	stream.writeStringFormat(false, "\n");
-	stream.writeStringFormat(false, "g Model\n");
+	wrapBool(stream.writeStringFormat(false, "\n"))
+	wrapBool(stream.writeStringFormat(false, "g Model\n"))
 
 	core::String mtlname = core::string::stripExtension(filename);
 	mtlname.append(".mtl");
@@ -87,7 +98,7 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 		}
 		stream.writeStringFormat(false, "o %s\n", objectName);
 		stream.writeStringFormat(false, "mtllib %s\n", core::string::extractFilenameWithExtension(mtlname).c_str());
-		stream.writeStringFormat(false, "usemtl palette\n");
+		wrapBool(stream.writeStringFormat(false, "usemtl palette\n"))
 
 		for (int i = 0; i < nv; ++i) {
 			const voxel::VoxelVertex &v = vertices[i];
@@ -98,7 +109,7 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 				const glm::vec4 &color = colors[v.colorIndex];
 				stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
 			}
-			stream.writeStringFormat(false, "\n");
+			wrapBool(stream.writeStringFormat(false, "\n"))
 		}
 
 		if (quad) {
@@ -154,11 +165,16 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 		idxOffset += nv;
 	}
 
-	writeMtlFile(mtlname, palettename);
-	voxel::saveMaterialColorPng(palettename);
-
+	if (!writeMtlFile(mtlname, palettename)) {
+		return false;
+	}
+	if (!voxel::saveMaterialColorPng(palettename)) {
+		return false;
+	}
 	return true;
 }
+
+#undef wrapBool
 
 struct Tri {
 	glm::vec3 vertices[3];

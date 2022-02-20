@@ -3,10 +3,14 @@
  */
 
 #include "MeshExporter.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "core/concurrent/Lock.h"
+#include "core/concurrent/ThreadPool.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include <SDL_timer.h>
 
 namespace voxel {
 
@@ -28,13 +32,23 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	const bool withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST)->boolVal();
 	const bool withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST)->boolVal();
 
+	const size_t models = sceneGraph.size();
+	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
 	Meshes meshes;
+	core_trace_mutex(core::Lock, lock, "MeshExporter");
 	for (const SceneGraphNode& node : sceneGraph) {
-		voxel::Mesh *mesh = new voxel::Mesh();
-		voxel::Region region = node.region();
-		region.shiftUpperCorner(1, 1, 1);
-		voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
-		meshes.emplace_back(mesh, node.name());
+		auto lambda = [&] () {
+			voxel::Mesh *mesh = new voxel::Mesh();
+			voxel::Region region = node.region();
+			region.shiftUpperCorner(1, 1, 1);
+			voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+			core::ScopedLock scoped(lock);
+			meshes.emplace_back(mesh, node.name());
+		};
+		threadPool.enqueue(lambda);
+	}
+	while (meshes.size() < models) {
+		SDL_Delay(10);
 	}
 	Log::debug("Save meshes");
 	const bool state = saveMeshes(meshes, filename, stream, scale, quads, withColor, withTexCoords);
