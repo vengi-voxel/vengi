@@ -44,8 +44,8 @@ class SceneGraphNode;
 namespace voxelrender {
 
 /**
- * @brief Handles the shaders, vertex buffers and rendering of a voxel::RawVolume
- *
+ * @brief Handles the shaders, vertex buffers and rendering of a voxel::RawVolume - including the mesh extraction part
+ * @sa MeshRenderer
  * @sa voxel::RawVolume
  */
 class RawVolumeRenderer {

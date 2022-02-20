@@ -12,6 +12,11 @@
 
 namespace voxelrender {
 
+/**
+ * @brief Renders every mesh that was registered.
+ * @sa voxelrender::MeshRenderer
+ * @sa voxelformat::MeshCache
+ */
 class CachedMeshRenderer : public core::IComponent {
 private:
 	voxelformat::MeshCachePtr _meshCache;
@@ -25,6 +30,7 @@ public:
 	bool removeMesh(int index);
 	/**
 	 * @param[in] fullpath The path of the voxel mes
+	 * @sa removeMesh(int)
 	 * @return The returned index can be used to render the particular mesh, remove it, or update it
 	 */
 	int addMesh(const char *fullpath, const glm::mat4& model = glm::mat4(1.0f));

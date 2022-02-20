@@ -24,6 +24,8 @@ namespace voxelrender {
 
 /**
  * @brief Handles the shaders, vertex buffers and rendering of a voxel::Mesh
+ * @note Does not handle the extraction part
+ * @sa RawVolumeRenderer
  *
  * @sa voxel::Mesh
  */
