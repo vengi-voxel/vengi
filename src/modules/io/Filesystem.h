@@ -28,9 +28,19 @@ struct FileWatcher {
 };
 using Paths = core::DynamicArray<core::String>;
 
+enum FilesystemDirectories {
+	FS_Dir_Download,
+	FS_Dir_Documents,
+	FS_Dir_Pictures,
+	FS_Dir_Public,
+	FS_Dir_Recent,
+	FS_Dir_Cloud,
+
+	FS_Dir_Max
+};
+
 struct FilesystemState {
-	core::String _downloadDir;
-	core::String _documentsDir;
+	core::String _directories[FilesystemDirectories::FS_Dir_Max];
 };
 
 // perform platform specific initialization
@@ -76,8 +86,7 @@ public:
 	 */
 	bool registerPath(const core::String& path);
 
-	core::String downloadDir() const;
-	core::String documentsDir() const;
+	core::String specialDir(FilesystemDirectories dir) const;
 
 	bool unwatch(const core::String& path);
 	bool unwatch(const io::FilePtr& file);

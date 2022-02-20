@@ -71,28 +71,51 @@ bool initState(io::FilesystemState &state) {
 		Log::debug("Can't read xdg user dirs: HOME env var not found");
 		return false;
 	}
-	const core::String &xdgUserDirs = core::string::path(envHome, ".config", "user-dirs.dirs");
-	if (access(xdgUserDirs.c_str(), F_OK) != 0) {
-		Log::debug("Can't read xdg user dirs: %s doesn't exists", xdgUserDirs.c_str());
+	core::String xdgDir = core::string::path(envHome, ".config", "user-dirs.dirs");
+	if (access(xdgDir.c_str(), F_OK) != 0) {
+		Log::debug("Can't read xdg user dirs: %s doesn't exists", xdgDir.c_str());
+		const char *xdgConfigDirs = SDL_getenv("XDG_CONFIG_DIRS");
+		if (xdgConfigDirs == nullptr) {
+			xdgConfigDirs = "/etc/xdg";
+		}
+		xdgDir = core::string::path(xdgConfigDirs, "user-dirs.defaults");
+		if (access(xdgDir.c_str(), F_OK) != 0) {
+			Log::debug("Can't read xdg dirs: %s doesn't exists", xdgDir.c_str());
+			return false;
+		}
+	}
+	const core::String &xdgDirsContent = priv::load(xdgDir);
+	if (xdgDirsContent.empty()) {
+		Log::debug("Could not read %s", xdgDir.c_str());
 		return false;
 	}
-	const core::String &xdgUserDirsContent = priv::load(xdgUserDirs);
-	if (xdgUserDirsContent.empty()) {
-		Log::debug("Could not read %s", xdgUserDirs.c_str());
-		return false;
-	}
-	core::Tokenizer tok(true, xdgUserDirsContent, "=");
+	core::Tokenizer tok(true, xdgDirsContent, "=");
 	while (tok.hasNext()) {
 		const core::String var = tok.next();
 		if (!tok.hasNext()) {
 			return false;
 		}
+		// https://www.freedesktop.org/wiki/Software/xdg-user-dirs/
 		const core::String value = tok.next();
-		if (var == "XDG_DOWNLOAD_DIR") {
-			state._downloadDir = priv::replaceHome(value);
-		} else if (var == "XDG_DOCUMENTS_DIR") {
-			state._documentsDir = priv::replaceHome(value);
+		if (var.contains("DOWNLOAD")) {
+			state._directories[FilesystemDirectories::FS_Dir_Download] = priv::replaceHome(value);
+		} else if (var.contains("DOCUMENTS")) {
+			state._directories[FilesystemDirectories::FS_Dir_Documents] = priv::replaceHome(value);
+		} else if (var.contains("PICTURES")) {
+			state._directories[FilesystemDirectories::FS_Dir_Pictures] = priv::replaceHome(value);
+		} else if (var.contains("PUBLICSHARE")) {
+			state._directories[FilesystemDirectories::FS_Dir_Public] = priv::replaceHome(value);
 		}
+	}
+
+	for (int n = 0; n < FilesystemDirectories::FS_Dir_Max; ++n) {
+		if (state._directories[n].empty()) {
+			continue;
+		}
+		if (core::string::isAbsolutePath(state._directories[n])) {
+			continue;
+		}
+		state._directories[n] = core::string::path(envHome, state._directories[n]);
 	}
 
 	return true;

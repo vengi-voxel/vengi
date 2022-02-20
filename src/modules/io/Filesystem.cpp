@@ -78,12 +78,8 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	return true;
 }
 
-core::String Filesystem::downloadDir() const {
-	return _state._downloadDir;
-}
-
-core::String Filesystem::documentsDir() const {
-	return _state._documentsDir;
+core::String Filesystem::specialDir(FilesystemDirectories dir) const {
+	return _state._directories[dir];
 }
 
 bool Filesystem::removeFile(const core::String &file) const {

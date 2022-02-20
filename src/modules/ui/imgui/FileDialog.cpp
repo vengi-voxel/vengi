@@ -7,6 +7,7 @@
 #include "IconsForkAwesome.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
+#include "core/ArrayLength.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/String.h"
@@ -138,15 +139,18 @@ void FileDialog::bookmarkPanel(video::WindowedApp::OpenFileMode type, const core
 					  ImGuiWindowFlags_HorizontalScrollbar);
 	bool specialDirs = false;
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
-	const core::String& downloadDir = io::filesystem()->downloadDir();
-	if (!downloadDir.empty()) {
-		bookMarkEntry(type, downloadDir, contentRegionWidth, "Download", ICON_FK_DOWNLOAD);
-		specialDirs = true;
-	}
 
-	const core::String& documentsDir = io::filesystem()->documentsDir();
-	if (!documentsDir.empty()) {
-		bookMarkEntry(type, documentsDir, contentRegionWidth, "Documents", ICON_FA_FILE);
+	static const char *folderNames[] = {"Download", "Documents", "Pictures", "Public", "Recent", "Cloud"};
+	static const char *folderIcons[] = {ICON_FK_DOWNLOAD, ICON_FA_FILE, ICON_FA_IMAGE, ICON_FA_FOLDER, ICON_FA_FOLDER, ICON_FA_CLOUD};
+	static_assert(lengthof(folderNames) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
+	static_assert(lengthof(folderIcons) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
+
+	for (int n = 0; n < io::FilesystemDirectories::FS_Dir_Max; ++n) {
+		const core::String& dir = io::filesystem()->specialDir((io::FilesystemDirectories)n);
+		if (dir.empty()) {
+			continue;
+		}
+		bookMarkEntry(type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		specialDirs = true;
 	}
 

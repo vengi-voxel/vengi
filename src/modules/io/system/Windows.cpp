@@ -43,8 +43,12 @@ static core::String knownFolderPath(REFKNOWNFOLDERID id) {
 
 bool initState(io::FilesystemState &state) {
 	// https://docs.microsoft.com/en-us/windows/win32/shell/knownfolderid
-	state._documentsDir = priv::knownFolderPath(FOLDERID_Documents);
-	state._downloadDir = priv::knownFolderPath(FOLDERID_Downloads);
+	state._directories[FilesystemDirectories::FS_Dir_Documents] = priv::knownFolderPath(FOLDERID_Documents);
+	state._directories[FilesystemDirectories::FS_Dir_Download] = priv::knownFolderPath(FOLDERID_Downloads);
+	state._directories[FilesystemDirectories::FS_Dir_Pictures] = priv::knownFolderPath(FOLDERID_Pictures);
+	state._directories[FilesystemDirectories::FS_Dir_Public] = priv::knownFolderPath(FOLDERID_Public);
+	state._directories[FilesystemDirectories::FS_Dir_Recent] = priv::knownFolderPath(FOLDERID_Recent);
+	state._directories[FilesystemDirectories::FS_Dir_Cloud] = priv::knownFolderPath(FOLDERID_SkyDrive);
 	return true;
 }
 
