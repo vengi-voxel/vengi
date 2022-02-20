@@ -59,14 +59,14 @@ const core::String& File::name() const {
 }
 
 core::String File::load() {
-	char *includeBuffer = nullptr;
-	const int includeLen = read((void **) &includeBuffer);
-	if (includeBuffer == nullptr || includeLen <= 0) {
-		delete[] includeBuffer;
+	char *buf = nullptr;
+	const int len = read((void **) &buf);
+	if (buf == nullptr || len <= 0) {
+		delete[] buf;
 		return "";
 	}
-	core::String f(includeBuffer, includeLen);
-	delete[] includeBuffer;
+	core::String f(buf, len);
+	delete[] buf;
 	return f;
 }
 
@@ -116,11 +116,11 @@ long File::write(const unsigned char *buf, size_t len) const {
 }
 
 core::String File::path() const {
-	return core::String(core::string::extractPath(name()));
+	return core::string::extractPath(name());
 }
 
 core::String File::fileName() const {
-	return core::String(core::string::extractFilename(name()));
+	return core::string::extractFilename(name());
 }
 
 core::String File::extension() const {

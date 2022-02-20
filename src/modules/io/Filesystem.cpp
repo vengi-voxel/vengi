@@ -4,12 +4,12 @@
 
 #include "Filesystem.h"
 #include "core/Assert.h"
+#include "core/Common.h"
+#include "core/GameConfig.h"
+#include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "core/Var.h"
-#include "core/Log.h"
-#include "core/Common.h"
-#include "core/StringUtil.h"
-#include "core/GameConfig.h"
 #include "engine-config.h"
 #include <SDL.h>
 #ifndef __WINDOWS__
@@ -23,7 +23,7 @@ Filesystem::~Filesystem() {
 	shutdown();
 }
 
-bool Filesystem::init(const core::String& organisation, const core::String& appname) {
+bool Filesystem::init(const core::String &organisation, const core::String &appname) {
 	core_assert(_loop == nullptr);
 	_organisation = organisation;
 	_appname = appname;
@@ -48,7 +48,8 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 	if (_homePath.empty()) {
 		_homePath = "./";
 	}
-	const core::VarPtr& homePathVar = core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
+	const core::VarPtr &homePathVar =
+		core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 
 	_homePath = homePathVar->strVal();
 	normalizePath(_homePath);
@@ -61,7 +62,8 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 #ifdef PKGDATADIR
 	core_assert_always(registerPath(PKGDATADIR));
 #endif
-	const core::VarPtr& corePath = core::Var::get(cfg::CorePath, "", 0, "Specifies an additional filesystem search path - must end on /");
+	const core::VarPtr &corePath =
+		core::Var::get(cfg::CorePath, "", 0, "Specifies an additional filesystem search path - must end on /");
 	if (!corePath->strVal().empty()) {
 		core_assert_always(registerPath(corePath->strVal()));
 	}
@@ -70,64 +72,21 @@ bool Filesystem::init(const core::String& organisation, const core::String& appn
 		registerPath(_basePath);
 	}
 
-	parseXDGUserDirs();
-	return true;
-}
-
-/**
- * @brief Replace the shell variable for the home dir
- */
-static inline core::String replaceHome(const core::String& in) {
-	char *envHome = SDL_getenv("HOME");
-	if (envHome == nullptr) {
-		return in;
+	if (!initState(_state)) {
+		Log::warn("Failed to initialize the filesystem state");
 	}
-	core::String out = core::string::replaceAll(in, "$HOME", envHome);
-	return core::string::replaceAll(out, "${HOME}", envHome);
-}
-
-bool Filesystem::parseXDGUserDirs() {
-	char *envHome = SDL_getenv("HOME");
-	if (envHome == nullptr) {
-		Log::debug("Can't read xdg user dirs: HOME env var not found");
-		return false;
-	}
-	const core::String& xdgUserDirs = core::string::path(envHome, ".config", "user-dirs.dirs");
-	if (!exists(xdgUserDirs)) {
-		Log::debug("Can't read xdg user dirs: %s doesn't exists", xdgUserDirs.c_str());
-		return false;
-	}
-	const core::String& xdgUserDirsContent = load(xdgUserDirs);
-	if (xdgUserDirsContent.empty()) {
-		Log::debug("Could not read %s", xdgUserDirs.c_str());
-		return false;
-	}
-	core::Tokenizer tok(true, xdgUserDirsContent, "=");
-	while (tok.hasNext()) {
-		const core::String var = tok.next();
-		if (!tok.hasNext()) {
-			return false;
-		}
-		const core::String value = tok.next();
-		if (var == "XDG_DOWNLOAD_DIR") {
-			_downloadDir = replaceHome(value);
-		} else if (var == "XDG_DOCUMENTS_DIR") {
-			_documentsDir = replaceHome(value);
-		}
-	}
-
 	return true;
 }
 
 core::String Filesystem::downloadDir() const {
-	return _downloadDir;
+	return _state._downloadDir;
 }
 
 core::String Filesystem::documentsDir() const {
-	return _documentsDir;
+	return _state._documentsDir;
 }
 
-bool Filesystem::removeFile(const core::String& file) const {
+bool Filesystem::removeFile(const core::String &file) const {
 	if (file.empty()) {
 		return false;
 	}
@@ -135,7 +94,7 @@ bool Filesystem::removeFile(const core::String& file) const {
 	return uv_fs_unlink(_loop, &req, file.c_str(), nullptr) == 0;
 }
 
-bool Filesystem::removeDir(const core::String& dir, bool recursive) const {
+bool Filesystem::removeDir(const core::String &dir, bool recursive) const {
 	if (dir.empty()) {
 		return false;
 	}
@@ -148,7 +107,7 @@ bool Filesystem::removeDir(const core::String& dir, bool recursive) const {
 	return false;
 }
 
-bool Filesystem::createDir(const core::String& dir, bool recursive) const {
+bool Filesystem::createDir(const core::String &dir, bool recursive) const {
 	if (dir.empty()) {
 		return false;
 	}
@@ -172,7 +131,7 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 	size_t pre = 0, pos;
 	bool lastResult = false;
 	while ((pos = s.find_first_of('/', pre)) != core::String::npos) {
-		const core::String& dirpart = s.substr(0, pos++);
+		const core::String &dirpart = s.substr(0, pos++);
 		pre = pos;
 		if (dirpart.empty() || dirpart.last() == ':') {
 			continue; // if leading / first time is 0 length
@@ -192,7 +151,8 @@ bool Filesystem::createDir(const core::String& dir, bool recursive) const {
 	return lastResult;
 }
 
-bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter) {
+bool Filesystem::_list(const core::String &directory, core::DynamicArray<DirEntry> &entities,
+					   const core::String &filter) {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
 	if (amount < 0) {
@@ -218,7 +178,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 				uv_fs_req_cleanup(&linkReq);
 				continue;
 			}
-			const core::String symlink((const char*)linkReq.ptr);
+			const core::String symlink((const char *)linkReq.ptr);
 			uv_fs_req_cleanup(&linkReq);
 			if (!filter.empty()) {
 				if (!core::string::fileMatchesMultiple(symlink.c_str(), filter.c_str())) {
@@ -227,7 +187,7 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 				}
 			}
 
-			const core::String& fullPath = isRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
+			const core::String &fullPath = isRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
 
 			uv_fs_t statsReq;
 			if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
@@ -236,8 +196,10 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 				continue;
 			}
 			const bool dir = (uv_fs_get_statbuf(&statsReq)->st_mode & S_IFDIR) != 0;
-			const uint64_t mtimeMillis = (uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
-			entities.push_back(DirEntry{ent.name, dir ? DirEntry::Type::dir : DirEntry::Type::file, statsReq.statbuf.st_size, mtimeMillis});
+			const uint64_t mtimeMillis =
+				(uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
+			entities.push_back(DirEntry{ent.name, dir ? DirEntry::Type::dir : DirEntry::Type::file,
+										statsReq.statbuf.st_size, mtimeMillis});
 			uv_fs_req_cleanup(&statsReq);
 		} else {
 			Log::debug("Unknown directory entry found: %s", ent.name);
@@ -254,7 +216,8 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
 			Log::warn("Could not stat file %s", fullPath.c_str());
 		}
-		const uint64_t mtimeMillis = (uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
+		const uint64_t mtimeMillis =
+			(uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
 		entities.push_back(DirEntry{ent.name, type, statsReq.statbuf.st_size, mtimeMillis});
 		uv_fs_req_cleanup(&statsReq);
 	}
@@ -262,9 +225,10 @@ bool Filesystem::_list(const core::String& directory, core::DynamicArray<DirEntr
 	return true;
 }
 
-bool Filesystem::list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter) const {
+bool Filesystem::list(const core::String &directory, core::DynamicArray<DirEntry> &entities,
+					  const core::String &filter) const {
 	if (isRelativePath(directory)) {
-		for (const core::String& p : _paths) {
+		for (const core::String &p : _paths) {
 			const core::String fullDir = p + directory;
 			Log::debug("List %s in %s", filter.c_str(), fullDir.c_str());
 			_list(fullDir, entities, filter);
@@ -279,12 +243,12 @@ void Filesystem::update() {
 	uv_run(_loop, UV_RUN_NOWAIT);
 }
 
-bool Filesystem::chdir(const core::String& directory) {
+bool Filesystem::chdir(const core::String &directory) {
 	return uv_chdir(directory.c_str()) == 0;
 }
 
 void Filesystem::shutdown() {
-	for (const auto& e : _watches) {
+	for (const auto &e : _watches) {
 		uv_fs_event_stop(e->value);
 	}
 	if (_loop != nullptr) {
@@ -295,13 +259,13 @@ void Filesystem::shutdown() {
 		delete _loop;
 		_loop = nullptr;
 	}
-	for (const auto& e : _watches) {
+	for (const auto &e : _watches) {
 		delete e->value;
 	}
 	_watches.clear();
 }
 
-core::String Filesystem::absolutePath(const core::String& path) {
+core::String Filesystem::absolutePath(const core::String &path) {
 	uv_fs_t req;
 	const int retVal = uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
 	if (retVal != 0) {
@@ -319,7 +283,7 @@ core::String Filesystem::absolutePath(const core::String& path) {
 	return abspath;
 }
 
-bool Filesystem::isReadableDir(const core::String& name) {
+bool Filesystem::isReadableDir(const core::String &name) {
 	uv_fs_t req;
 	if (uv_fs_access(nullptr, &req, name.c_str(), F_OK, nullptr) != 0) {
 		uv_fs_req_cleanup(&req);
@@ -331,7 +295,7 @@ bool Filesystem::isReadableDir(const core::String& name) {
 	return dir;
 }
 
-bool Filesystem::isRelativePath(const core::String& name) {
+bool Filesystem::isRelativePath(const core::String &name) {
 	const size_t size = name.size();
 #ifdef __WINDOWS__
 	if (size < 3) {
@@ -350,7 +314,7 @@ bool Filesystem::isRelativePath(const core::String& name) {
 #endif
 }
 
-bool Filesystem::registerPath(const core::String& path) {
+bool Filesystem::registerPath(const core::String &path) {
 	if (!core::string::endsWith(path, "/")) {
 		Log::error("Failed to register data path: '%s' - it must end on /.", path.c_str());
 		return false;
@@ -360,20 +324,20 @@ bool Filesystem::registerPath(const core::String& path) {
 	return true;
 }
 
-static bool closeFileWatchHandle(uv_fs_event_t* fshandle) {
+static bool closeFileWatchHandle(uv_fs_event_t *fshandle) {
 	uv_fs_event_stop(fshandle);
-	uv_handle_t* handle = (uv_handle_t*)fshandle;
+	uv_handle_t *handle = (uv_handle_t *)fshandle;
 	if (uv_handle_get_type(handle) == UV_UNKNOWN_HANDLE) {
 		return false;
 	}
 	if (uv_is_closing(handle)) {
 		return true;
 	}
-	uv_close(handle, [](uv_handle_t *handle) { delete (uv_fs_event_t*)handle; });
+	uv_close(handle, [](uv_handle_t *handle) { delete (uv_fs_event_t *)handle; });
 	return true;
 }
 
-bool Filesystem::unwatch(const core::String& path) {
+bool Filesystem::unwatch(const core::String &path) {
 	auto i = _watches.find(path);
 	if (i == _watches.end()) {
 		return false;
@@ -383,11 +347,11 @@ bool Filesystem::unwatch(const core::String& path) {
 	return true;
 }
 
-bool Filesystem::unwatch(const io::FilePtr& file) {
+bool Filesystem::unwatch(const io::FilePtr &file) {
 	return unwatch(file->name());
 }
 
-static void changeCallback (uv_fs_event_t *handle, const char *filename, int events, int status) {
+static void changeCallback(uv_fs_event_t *handle, const char *filename, int events, int status) {
 	if ((events & UV_CHANGE) == 0) {
 		return;
 	}
@@ -399,7 +363,7 @@ static void changeCallback (uv_fs_event_t *handle, const char *filename, int eve
 	uv_fs_event_getpath(handle, path, &size);
 	path[size] = '\0';
 
-	FileWatcher* watcherCallback = (FileWatcher*)handle->data;
+	FileWatcher *watcherCallback = (FileWatcher *)handle->data;
 	watcherCallback->callback(watcherCallback->userdata, filename);
 
 	// restart watching
@@ -407,14 +371,14 @@ static void changeCallback (uv_fs_event_t *handle, const char *filename, int eve
 	uv_fs_event_start(handle, changeCallback, path, 0U);
 }
 
-bool Filesystem::watch(const core::String& path, FileWatcher *watcher) {
+bool Filesystem::watch(const core::String &path, FileWatcher *watcher) {
 	unwatch(path);
-	uv_fs_event_t* fsEvent = new uv_fs_event_t;
+	uv_fs_event_t *fsEvent = new uv_fs_event_t;
 	if (uv_fs_event_init(_loop, fsEvent) != 0) {
 		delete fsEvent;
 		return false;
 	}
-	fsEvent->data = (void*)watcher;
+	fsEvent->data = (void *)watcher;
 	const int ret = uv_fs_event_start(fsEvent, changeCallback, path.c_str(), 0U);
 	if (ret != 0) {
 		if (!closeFileWatchHandle(fsEvent)) {
@@ -426,7 +390,7 @@ bool Filesystem::watch(const core::String& path, FileWatcher *watcher) {
 	return true;
 }
 
-bool Filesystem::watch(const io::FilePtr& file, FileWatcher *watcher) {
+bool Filesystem::watch(const io::FilePtr &file, FileWatcher *watcher) {
 	return watch(file->name(), watcher);
 }
 
@@ -434,14 +398,14 @@ bool Filesystem::popDir() {
 	if (_dirStack.empty()) {
 		return false;
 	}
-	const core::String& directory = _dirStack.top();
+	const core::String &directory = _dirStack.top();
 	chdir(directory);
 	Log::trace("change current dir to %s", directory.c_str());
 	_dirStack.pop();
 	return true;
 }
 
-bool Filesystem::pushDir(const core::String& directory) {
+bool Filesystem::pushDir(const core::String &directory) {
 	const bool changed = chdir(directory);
 	if (!changed) {
 		return false;
@@ -451,7 +415,7 @@ bool Filesystem::pushDir(const core::String& directory) {
 	return true;
 }
 
-io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const {
+io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
 	if (mode == FileMode::SysWrite) {
 		Log::debug("Use absolute path to open file %s for writing", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
@@ -466,7 +430,7 @@ io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const 
 		Log::debug("loading file %s from current working dir", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
 	}
-	for (const core::String& p : _paths) {
+	for (const core::String &p : _paths) {
 		const core::String fullpath = p + filename;
 		io::File fullFile(fullpath, FileMode::Read);
 		if (fullFile.exists()) {
@@ -475,7 +439,7 @@ io::FilePtr Filesystem::open(const core::String& filename, FileMode mode) const 
 			return core::make_shared<io::File>(fullpath, mode);
 		}
 		if (isRelativePath(p)) {
-			for (const core::String& s : _paths) {
+			for (const core::String &s : _paths) {
 				if (s == p) {
 					continue;
 				}
@@ -506,37 +470,37 @@ core::String Filesystem::load(const char *filename, ...) {
 	return load(core::String(text));
 }
 
-core::String Filesystem::load(const core::String& filename) const {
-	const io::FilePtr& f = open(filename);
+core::String Filesystem::load(const core::String &filename) const {
+	const io::FilePtr &f = open(filename);
 	return f->load();
 }
 
-core::String Filesystem::writePath(const char* name) const {
+core::String Filesystem::writePath(const char *name) const {
 	return _homePath + name;
 }
 
-bool Filesystem::write(const core::String& filename, const uint8_t* content, size_t length) {
-	const core::String& fullPath = _homePath + filename;
+bool Filesystem::write(const core::String &filename, const uint8_t *content, size_t length) {
+	const core::String &fullPath = _homePath + filename;
 	const core::String path(core::string::extractPath(fullPath.c_str()));
 	createDir(path, true);
 	io::File f(fullPath, FileMode::Write);
 	return f.write(content, length) == static_cast<long>(length);
 }
 
-bool Filesystem::write(const core::String& filename, const core::String& string) {
-	const uint8_t* buf = reinterpret_cast<const uint8_t*>(string.c_str());
+bool Filesystem::write(const core::String &filename, const core::String &string) {
+	const uint8_t *buf = reinterpret_cast<const uint8_t *>(string.c_str());
 	return write(filename, buf, string.size());
 }
 
-bool Filesystem::syswrite(const core::String& filename, const uint8_t* content, size_t length) const {
+bool Filesystem::syswrite(const core::String &filename, const uint8_t *content, size_t length) const {
 	io::File f(filename, FileMode::SysWrite);
 	createDir(f.path());
 	return f.write(content, length) == static_cast<long>(length);
 }
 
-bool Filesystem::syswrite(const core::String& filename, const core::String& string) const {
-	const uint8_t* buf = reinterpret_cast<const uint8_t*>(string.c_str());
+bool Filesystem::syswrite(const core::String &filename, const core::String &string) const {
+	const uint8_t *buf = reinterpret_cast<const uint8_t *>(string.c_str());
 	return syswrite(filename, buf, string.size());
 }
 
-}
+} // namespace io

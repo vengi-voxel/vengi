@@ -10,6 +10,9 @@ set(SRCS
 	BufferedZipReadStream.cpp BufferedZipReadStream.h
 	ZipWriteStream.h ZipWriteStream.cpp
 	ZipReadStream.h ZipReadStream.cpp
+	system/Null.cpp
+	system/Unix.cpp
+	system/Windows.cpp
 )
 
 set(LIB io)

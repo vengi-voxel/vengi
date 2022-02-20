@@ -28,6 +28,14 @@ struct FileWatcher {
 };
 using Paths = core::DynamicArray<core::String>;
 
+struct FilesystemState {
+	core::String _downloadDir;
+	core::String _documentsDir;
+};
+
+// perform platform specific initialization
+extern bool initState(FilesystemState& state);
+
 /**
  * @brief Hide platform specific details about the io handling for files.
  *
@@ -45,8 +53,7 @@ private:
 	 */
 	core::String _basePath;
 	core::String _homePath;
-	core::String _downloadDir;
-	core::String _documentsDir;
+	FilesystemState _state;
 	Paths _paths;
 
 	core::Stack<core::String, 32> _dirStack;
@@ -58,7 +65,6 @@ public:
 
 	bool init(const core::String& organisation, const core::String& appname);
 	void shutdown();
-	bool parseXDGUserDirs();
 
 	void update();
 

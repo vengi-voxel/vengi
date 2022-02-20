@@ -97,9 +97,9 @@ int Process::exec(const core::String& command, const core::DynamicArray<core::St
 	close(link[1]);
 	if (bufSize > 0) {
 		char* p = output;
-		int size = bufSize;
+		size_t size = bufSize;
 		for (;;) {
-			const int n = ::read(link[0], p, size);
+			const int n = (int)::read(link[0], p, size);
 			if (n <= 0) {
 				break;
 			}

@@ -97,6 +97,9 @@ public:
 	 */
 	int read(void **buffer);
 	int read(void *buffer, int n);
+	/**
+	 * @brief Load the file content as string
+	 */
 	core::String load();
 };
 
