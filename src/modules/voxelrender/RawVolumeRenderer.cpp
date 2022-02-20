@@ -497,6 +497,7 @@ void RawVolumeRenderer::renderToFrameBuffer(const video::Camera& camera, bool sh
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::ScopedState scopedCullFace(video::State::CullFace);
+	video::ScopedState scopedScissor(video::State::Scissor, false);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
 	if (_shadowMap->boolVal()) {
 		_shadow.update(camera, true);
