@@ -24,6 +24,7 @@
 #include "voxelutil/Picking.h"
 #include "voxel/Face.h"
 #include "voxelgenerator/TreeGenerator.h"
+#include "voxelutil/VoxelUtil.h"
 #include "voxelworld/BiomeManager.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFormat.h"
@@ -212,6 +213,12 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	}
 	Log::warn("Failed to save layer %i to %s", nodeId, filePtr->name().c_str());
 	return false;
+}
+
+void SceneManager::fillHollow() {
+	for (const voxel::SceneGraphNode & node : _sceneGraph) {
+		voxelutil::fillHollow(*node.volume(), _modifier.cursorVoxel());
+	}
 }
 
 bool SceneManager::saveModels(const core::String& dir) {
@@ -1165,6 +1172,10 @@ void SceneManager::construct() {
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
 		_modifier.aabbStop();
 	}).setHelp("Aborts the current modifier action");
+
+	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
+		fillHollow();
+	}).setHelp("Fill the inner parts of closed models");
 
 	command::Command::registerCommand("setreferenceposition", [&] (const command::CmdArgs& args) {
 		if (args.size() != 3) {

@@ -203,6 +203,7 @@ private:
 	 * @brief Move the cursor relative by the given steps in each direction
 	 */
 	void moveCursor(int x, int y, int z);
+	void fillHollow();
 
 	void colorToNewLayer(const voxel::Voxel voxelColor);
 	void crop();
