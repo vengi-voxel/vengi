@@ -97,12 +97,12 @@ void GridRenderer::render(const video::Camera& camera, const math::AABB<float>& 
 		const math::Plane planeNear  (glm::forward,  center + glm::vec3(0.0f, 0.0f, -halfWidth.z));
 		const math::Plane planeFar   (glm::backward, center + glm::vec3(0.0f, 0.0f,  halfWidth.z));
 
-		_shapeRenderer.hide(_gridMeshIndexXYFar,  !planeFar.isBackSide(camera.worldPosition()));
-		_shapeRenderer.hide(_gridMeshIndexXYNear, !planeNear.isBackSide(camera.worldPosition()));
-		_shapeRenderer.hide(_gridMeshIndexXZFar,  !planeTop.isBackSide(camera.worldPosition()));
-		_shapeRenderer.hide(_gridMeshIndexXZNear, !planeBottom.isBackSide(camera.worldPosition()));
-		_shapeRenderer.hide(_gridMeshIndexYZFar,  !planeRight.isBackSide(camera.worldPosition()));
-		_shapeRenderer.hide(_gridMeshIndexYZNear, !planeLeft.isBackSide(camera.worldPosition()));
+		_shapeRenderer.hide(_gridMeshIndexXYFar,  !planeFar.isBackSide(camera.eye()));
+		_shapeRenderer.hide(_gridMeshIndexXYNear, !planeNear.isBackSide(camera.eye()));
+		_shapeRenderer.hide(_gridMeshIndexXZFar,  !planeTop.isBackSide(camera.eye()));
+		_shapeRenderer.hide(_gridMeshIndexXZNear, !planeBottom.isBackSide(camera.eye()));
+		_shapeRenderer.hide(_gridMeshIndexYZFar,  !planeRight.isBackSide(camera.eye()));
+		_shapeRenderer.hide(_gridMeshIndexYZNear, !planeLeft.isBackSide(camera.eye()));
 	} else {
 		_shapeRenderer.hide(_gridMeshIndexXYFar,  true);
 		_shapeRenderer.hide(_gridMeshIndexXYNear, true);
