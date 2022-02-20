@@ -205,6 +205,16 @@ TEST(BufferedReadWriteStreamTest, testString) {
 	EXPECT_STREQ("foobar", buf);
 }
 
+TEST(BufferedReadWriteStreamTest, testFormatStringTerminated) {
+	BufferedReadWriteStream stream;
+	const char *str = "barfoo";
+	EXPECT_TRUE(stream.writeStringFormat(true, "foobar %s", str));
+	stream.seek(0);
+	char buf[32];
+	EXPECT_TRUE(stream.readString(sizeof(buf), buf, true));
+	EXPECT_STREQ("foobar barfoo", buf);
+}
+
 TEST(BufferedReadWriteStreamTest, testFormat) {
 	BufferedReadWriteStream stream;
 	stream.writeFormat("bsil", 1, 2, 3, 4);
