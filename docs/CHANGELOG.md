@@ -15,6 +15,10 @@ General:
    - Removed minecraft support via external lib enkiMI
    - Added support for Sandbox VXA format (via VXR)
 
+VoxEdit:
+
+   - Added new command to fill hollows in models
+
 ## 0.0.18 (2022-02-12)
 
 > renamed the github project to **vengi** - the url changed to [https://github.com/mgerhardy/vengi](https://github.com/mgerhardy/vengi).

@@ -26,11 +26,18 @@ bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
 void ModifierPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(ModifierPanel);
-		const float windowWidth = ImGui::GetWindowWidth();
-		ImGui::CommandButton(ICON_FA_CROP " Crop layer", "crop", "Crop the current layer to the voxel boundaries", windowWidth, &listener);
-		ImGui::CommandButton(ICON_FA_EXPAND_ARROWS_ALT " Extend all layers", "resize", nullptr, windowWidth, &listener);
-		ImGui::CommandButton(ICON_FA_OBJECT_UNGROUP " Layer from color", "colortolayer", "Create a new layer from the current selected color", windowWidth, &listener);
-		ImGui::CommandButton(ICON_FA_COMPRESS_ALT " Scale", "scale", "Scale the current layer down", windowWidth, &listener);
+
+		if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::CommandButton(ICON_FA_CROP, "crop", nullptr, 0, &listener);
+			ImGui::SameLine();
+			ImGui::CommandButton(ICON_FA_EXPAND_ARROWS_ALT, "resize", nullptr, 0, &listener);
+			ImGui::SameLine();
+			ImGui::CommandButton(ICON_FA_OBJECT_UNGROUP, "colortolayer", nullptr, 0, &listener);
+			ImGui::SameLine();
+			ImGui::CommandButton(ICON_FA_COMPRESS_ALT, "scale", nullptr, 0, &listener);
+			ImGui::SameLine();
+			ImGui::CommandButton(ICON_FA_FILL_DRIP, "fillhollow", nullptr, 0, &listener);
+		}
 
 		ImGui::NewLine();
 
@@ -60,8 +67,11 @@ void ModifierPanel::update(const char *title, command::CommandExecutionListener 
 
 		if (ImGui::CollapsingHeader("Mirror on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
 			mirrorAxisRadioButton("None##mirror", math::Axis::None);
+			ImGui::SameLine();
 			mirrorAxisRadioButton("X##mirror", math::Axis::X);
+			ImGui::SameLine();
 			mirrorAxisRadioButton("Y##mirror", math::Axis::Y);
+			ImGui::SameLine();
 			mirrorAxisRadioButton("Z##mirror", math::Axis::Z);
 		}
 	}

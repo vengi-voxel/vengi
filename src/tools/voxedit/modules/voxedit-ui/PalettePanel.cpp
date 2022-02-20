@@ -96,7 +96,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 
 		ImGui::Text("Color: %i (voxel %i)", currentSelectedPalIdx, currentSceneHoveredPalIdx);
 		ImGui::TooltipText("Palette color index for current voxel under cursor");
-		ImGui::CommandButton("Import palette", "importpalette", nullptr, 0.0f, &listener);
+		ImGui::CommandButton(ICON_FA_PALETTE " Import palette", "importpalette", nullptr, 0.0f, &listener);
 		ImGui::SameLine();
 		if (ImGui::Button("Load palette##button")) {
 			reloadAvailablePalettes();
