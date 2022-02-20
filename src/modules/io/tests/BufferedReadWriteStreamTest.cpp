@@ -205,6 +205,16 @@ TEST(BufferedReadWriteStreamTest, testString) {
 	EXPECT_STREQ("foobar", buf);
 }
 
+TEST(BufferedReadWriteStreamTest, testEmptyString) {
+	BufferedReadWriteStream stream;
+	const char *foobar = "";
+	EXPECT_TRUE(stream.writeString(foobar, true));
+	stream.seek(0);
+	char buf[32];
+	EXPECT_TRUE(stream.readString(sizeof(buf), buf, true));
+	EXPECT_STREQ("", buf);
+}
+
 TEST(BufferedReadWriteStreamTest, testFormatStringTerminated) {
 	BufferedReadWriteStream stream;
 	const char *str = "barfoo";
