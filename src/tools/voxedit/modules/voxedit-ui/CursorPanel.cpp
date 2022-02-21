@@ -21,10 +21,12 @@ void CursorPanel::update(const char *title, command::CommandExecutionListener &l
 			if (ImGui::Button(ICON_FA_BORDER_STYLE " Volumes")) {
 				sceneMgr().shift(translate.x, translate.y, translate.z);
 			}
+			ImGui::TooltipText("Translate layers by the given coordinates");
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_CUBES " Voxels")) {
 				sceneMgr().move(translate.x, translate.y, translate.z);
 			}
+			ImGui::TooltipText("Translate the voxels without changing the volume boundaries");
 		}
 
 		ImGui::NewLine();
