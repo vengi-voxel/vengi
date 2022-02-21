@@ -38,6 +38,24 @@ static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sc
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
 	const bool open = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
+	if (node.id() != sceneGraph.root().id()) {
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+			ImGui::Text("%s", name.c_str());
+			const int sourceNodeId = node.id();
+			ImGui::SetDragDropPayload("scenegraphnode", (const void*)&sourceNodeId, sizeof(int), ImGuiCond_Always);
+			ImGui::EndDragDropSource();
+		}
+	}
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("scenegraphnode")) {
+			const int sourceNodeId = *(int*)payload->Data;
+			const int targetNode = node.id();
+			if (!sceneMgr().nodeMove(sourceNodeId, targetNode)) {
+				Log::error("Failed to move node");
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
 
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {

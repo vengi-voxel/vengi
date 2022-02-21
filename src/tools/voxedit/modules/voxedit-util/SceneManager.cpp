@@ -2271,6 +2271,10 @@ void SceneManager::setGizmoPosition() {
 	}
 }
 
+bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
+	return _sceneGraph.changeParent(sourceNodeId, targetNodeId);
+}
+
 void SceneManager::nodeRename(int nodeId, const core::String &name) {
 	if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		nodeRename(*node, name);

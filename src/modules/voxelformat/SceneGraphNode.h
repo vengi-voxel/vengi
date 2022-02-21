@@ -96,7 +96,8 @@ public:
 
 	SceneGraphNodeType type() const;
 
-	void addChild(int id);
+	bool addChild(int id);
+	bool removeChild(int id);
 	const glm::mat4 matrix() const;
 	void setTransform(const SceneGraphTransform &transform, bool updateMatrix);
 	const SceneGraphTransform& transform() const;

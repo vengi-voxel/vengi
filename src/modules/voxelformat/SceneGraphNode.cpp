@@ -107,8 +107,25 @@ void SceneGraphNode::translate(const glm::ivec3 &v) {
 	}
 }
 
-void SceneGraphNode::addChild(int id) {
+bool SceneGraphNode::addChild(int id) {
+	for (const int childId : _children) {
+		if (childId == id) {
+			return false;
+		}
+	}
 	_children.push_back(id);
+	return true;
+}
+
+bool SceneGraphNode::removeChild(int id) {
+	const int n = (int)_children.size();
+	for (int i = 0; i < n; ++i) {
+		if (_children[i] == id) {
+			_children.erase(i);
+			return true;
+		}
+	}
+	return false;
 }
 
 const core::Buffer<int, 32> &SceneGraphNode::children() const {
