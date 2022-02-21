@@ -66,10 +66,11 @@ const char *AxisButton(math::Axis axis, const char *name, const char *command, c
 	return ImGui::CommandButton(buf, command, tooltip, width, listener);
 }
 
-bool InputAxisInt(math::Axis axis, const char *name, int* value) {
+bool InputAxisInt(math::Axis axis, const char *name, int* value, int step) {
 	ui::imgui::ScopedStyle style;
 	//AxisStyleText(style, axis);
-	return ImGui::InputInt(name, value);
+	ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+	return ImGui::InputInt(name, value, step);
 }
 
 bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value) {

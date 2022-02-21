@@ -4,6 +4,7 @@
 
 #include "CursorPanel.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/Config.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "Util.h"
 
@@ -14,9 +15,9 @@ void CursorPanel::update(const char *title, command::CommandExecutionListener &l
 		core_trace_scoped(CursorPanel);
 		if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
 			static glm::ivec3 translate {0};
-			veui::InputAxisInt(math::Axis::X, "X##translate", &translate.x);
-			veui::InputAxisInt(math::Axis::X, "Y##translate", &translate.y);
-			veui::InputAxisInt(math::Axis::X, "Z##translate", &translate.z);
+			veui::InputAxisInt(math::Axis::X, "X##translate", &translate.x, 1);
+			veui::InputAxisInt(math::Axis::X, "Y##translate", &translate.y, 1);
+			veui::InputAxisInt(math::Axis::X, "Z##translate", &translate.z, 1);
 			if (ImGui::Button(ICON_FA_BORDER_STYLE " Volumes")) {
 				sceneMgr().shift(translate.x, translate.y, translate.z);
 			}
@@ -36,7 +37,8 @@ void CursorPanel::update(const char *title, command::CommandExecutionListener &l
 			}
 			ImGui::TooltipCommand("lockx");
 			ImGui::SameLine();
-			if (veui::InputAxisInt(math::Axis::X, "X##cursor", &cursorPosition.x)) {
+			const int step = core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
+			if (veui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
 				sceneMgr().setCursorPosition(cursorPosition, true);
 			}
 
@@ -45,7 +47,7 @@ void CursorPanel::update(const char *title, command::CommandExecutionListener &l
 			}
 			ImGui::TooltipCommand("locky");
 			ImGui::SameLine();
-			if (veui::InputAxisInt(math::Axis::Y, "Y##cursor", &cursorPosition.y)) {
+			if (veui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, step)) {
 				sceneMgr().setCursorPosition(cursorPosition, true);
 			}
 
@@ -54,7 +56,7 @@ void CursorPanel::update(const char *title, command::CommandExecutionListener &l
 			}
 			ImGui::TooltipCommand("lockz");
 			ImGui::SameLine();
-			if (veui::InputAxisInt(math::Axis::Z, "Z##cursor", &cursorPosition.z)) {
+			if (veui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, step)) {
 				sceneMgr().setCursorPosition(cursorPosition, true);
 			}
 		}
