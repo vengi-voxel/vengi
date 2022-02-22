@@ -34,13 +34,14 @@ Viewport::~Viewport() {
 
 bool Viewport::init(ViewportController::RenderMode renderMode) {
 	if (!_controller.init()) {
+		Log::error("Failed to initialize the viewport controller");
 		return false;
 	}
 	_controller.setRenderMode(renderMode);
 	_controller.setMode(ViewportController::SceneCameraMode::Free);
 	resetCamera();
 
-	_debug = core::Var::get("ve_viewportdebugflag", 0, "Debug bit mask. 1 means rendering the traces for the active camera");
+	_debug = core::Var::get("ve_viewportdebugflag", "0", "Debug bit mask. 1 means rendering the traces for the active camera");
 	return true;
 }
 
