@@ -1664,7 +1664,13 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 
 		if (status != GL_TRUE) {
 			Log::error("Failed to compile: %s\n%s\nshaderType: %s", name.c_str(), compileLog.c_str(), strShaderType);
-			Log::error("Shader source:\n%s", source.c_str());
+			core::DynamicArray<core::String> tokens;
+			core::string::splitString(source, tokens, "\n");
+			int i = 1;
+			for (const core::String& line : tokens) {
+				Log::error("%03i: %s", i, line.c_str());
+				++i;
+			}
 		} else {
 			Log::info("%s: %s", name.c_str(), compileLog.c_str());
 		}
