@@ -138,8 +138,11 @@ bool SceneGraph::changeParent(int nodeId, int newParentId) {
 	if (!node(oldParentId).removeChild(nodeId)) {
 		return false;
 	}
+	if (!node(newParentId).addChild(nodeId)) {
+		node(oldParentId).addChild(nodeId);
+		return false;
+	}
 	n.setParent(newParentId);
-	node(newParentId).addChild(nodeId);
 	return true;
 }
 
