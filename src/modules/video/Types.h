@@ -39,13 +39,6 @@ enum class TextureWrap {
 	Max
 };
 
-enum class TextureCompareMode {
-	None,
-	RefToTexture,
-
-	Max
-};
-
 enum class ClearFlag {
 	None = 0,
 	Color = 1,
@@ -94,15 +87,62 @@ enum class StencilOp {
 	Max
 };
 
+/**
+ * @brief Specifies the texture comparison mode for currently bound depth textures. That is, a texture whose internal format is a depth TextureFormat)
+ */
+enum class TextureCompareMode {
+	/**
+	 * Specifies that the red channel should be assigned the appropriate value from the currently bound depth texture.
+	 */
+	None,
+	/**
+	 * Specifies that the interpolated and clamped texture coordinate should be compared to the value in the currently bound depth texture.
+	 * @sa CompareFunc for details of how the comparison is evaluated. The result of the comparison is assigned to the red channel.
+	 */
+	RefToTexture,
+
+	Max
+};
+
+/**
+ * Where r is the current interpolated texture coordinate, and DV is the depth texture value sampled from the
+ * currently bound depth texture. The result is assigned to the red channel.
+ *
+ * @sa TextureCompareMode::RefToTexture
+ */
 enum class CompareFunc {
+	/**
+	 * @code result = 0.0 @endcode
+	 */
 	Never,
+	/**
+	 * @code result = 1.0 0.0; r < DV r >= DV @endcode
+	 */
 	Less,
+	/**
+	 * @code result = 1.0 0.0; r = DV r != DV @endcode
+	 */
 	Equal,
-	// Accept fragment if it closer to the camera than the former one
+	/**
+	 * Accept fragment if it is closer to the camera than the former one
+	 * @code result = 1.0 0.0; r <= DV r > DV @endcode
+	 */
 	LessEqual,
+	/**
+	 * @code result = 1.0 0.0; r > DV r <= DV @endcode
+	 */
 	Greater,
+	/**
+	 * @code result = 1.0 0.0; r != DV r = DV @endcode
+	 */
 	NotEqual,
-	GreatorEqual,
+	/**
+	 * @code result = 1.0 0.0; r >= DV r < DV @endcode
+	 */
+	GreaterOrEqual,
+	/**
+	 * @code result = 1.0 @endcode
+	 */
 	Always,
 
 	Max
