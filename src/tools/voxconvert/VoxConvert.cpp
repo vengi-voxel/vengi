@@ -61,22 +61,14 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--src-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
 	registerArg("--translate").setShort("-t").setDescription("Translate the volumes by x (right), y (up), z (back)");
 
-	_mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST);
-	_mergeQuads->setHelp("Merge similar quads to optimize the mesh");
-	_reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST);
-	_reuseVertices->setHelp("Reuse vertices or always create new ones");
-	_ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST);
-	_ambientOcclusion->setHelp("Extra vertices for ambient occlusion");
-	_scale = core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST);
-	_scale->setHelp("Scale the vertices by the given factor");
-	_quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST);
-	_quads->setHelp("Export as quads. If this false, triangles will be used.");
-	_withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST);
-	_withColor->setHelp("Export with vertex colors");
-	_withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST);
-	_withTexCoords->setHelp("Export with uv coordinates of the palette image");
-	_palette = core::Var::get("palette", voxel::getDefaultPaletteName());
-	_palette->setHelp("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
+	_mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh");
+	_reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones");
+	_ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion");
+	_scale = core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST, "Scale the vertices by the given factor");
+	_quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
+	_withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
+	_withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
+	_palette = core::Var::get("palette", voxel::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");

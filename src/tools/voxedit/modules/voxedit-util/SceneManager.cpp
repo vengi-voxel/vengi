@@ -1599,18 +1599,16 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Duplicates the current node or the given node id");
 
-	_grayInactive = core::Var::get(cfg::VoxEditGrayInactive, "false");
-	_grayInactive->setHelp("Render the inactive layers in gray scale mode");
-	_hideInactive = core::Var::get(cfg::VoxEditHideInactive, "false");
-	_hideInactive->setHelp("Hide the inactive layers");
-	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST)->setHelp("Merge similar quads to optimize the mesh");
-	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST)->setHelp("Reuse vertices or always create new ones");
-	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST)->setHelp("Extra vertices for ambient occlusion");
-	core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST)->setHelp("Scale the vertices by the given factor");
-	core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST)->setHelp("Export as quads. If this false, triangles will be used.");
-	core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST)->setHelp("Export with vertex colors");
-	core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST)->setHelp("Export with uv coordinates of the palette image");
-	core::Var::get("palette", voxel::getDefaultPaletteName())->setHelp("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
+	_grayInactive = core::Var::get(cfg::VoxEditGrayInactive, "false", "Render the inactive layers in gray scale mode");
+	_hideInactive = core::Var::get(cfg::VoxEditHideInactive, "false", "Hide the inactive layers");
+	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh");
+	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones");
+	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion");
+	core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST, "Scale the vertices by the given factor");
+	core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
+	core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
+	core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
+	core::Var::get("palette", voxel::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 }
 
 void SceneManager::flip(math::Axis axis) {

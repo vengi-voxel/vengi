@@ -40,8 +40,7 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_controller.setMode(ViewportController::SceneCameraMode::Free);
 	resetCamera();
 
-	_debug = core::Var::get("ve_viewportdebugflag", 0);
-	_debug->setHelp("Debug bit mask. 1 means rendering the traces for the active camera");
+	_debug = core::Var::get("ve_viewportdebugflag", 0, "Debug bit mask. 1 means rendering the traces for the active camera");
 	return true;
 }
 
