@@ -470,7 +470,7 @@ voxel::RawVolume* SceneManager::activeVolume() {
 void SceneManager::undo() {
 	const MementoState& s = _mementoHandler.undo();
 	ScopedMementoHandlerLock lock(_mementoHandler);
-	if (s.type == MementoType::LayerRenamed) {
+	if (s.type == MementoType::SceneNodeRenamed) {
 		if (voxel::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
 			node->setName(s.name);
 		}
@@ -481,8 +481,6 @@ void SceneManager::undo() {
 	}
 	voxel::RawVolume* v = MementoData::toVolume(s.data);
 	if (v == nullptr) {
-		// TODO: removing a scenenode from the graph would invalidate this node
-		// id - so we have to handle this somehow in the mementostate
 		nodeRemove(s.nodeId, false);
 		return;
 	}
@@ -499,7 +497,7 @@ void SceneManager::undo() {
 void SceneManager::redo() {
 	const MementoState& s = _mementoHandler.redo();
 	ScopedMementoHandlerLock lock(_mementoHandler);
-	if (s.type == MementoType::LayerRenamed) {
+	if (s.type == MementoType::SceneNodeRenamed) {
 		if (voxel::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
 			node->setName(s.name);
 		}
@@ -2292,7 +2290,7 @@ void SceneManager::nodeRename(int nodeId, const core::String &name) {
 }
 
 void SceneManager::nodeRename(voxel::SceneGraphNode &node, const core::String &name) {
-	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), nullptr, MementoType::LayerRenamed);
+	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), nullptr, MementoType::SceneNodeRenamed);
 	node.setName(name);
 }
 

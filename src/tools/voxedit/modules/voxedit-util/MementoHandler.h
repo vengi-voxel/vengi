@@ -19,11 +19,17 @@ class RawVolume;
 namespace voxedit {
 
 enum class MementoType {
+	/**
+	 * voxel volume modifications
+	 */
 	Modification,
+	// scene graph actions
 	SceneNodeMove,
-	LayerAdded,
-	LayerDeleted,
-	LayerRenamed
+	SceneNodeAdded,
+	SceneNodeRemoved,
+	SceneNodeRenamed,
+
+	Max
 };
 
 /**
@@ -84,7 +90,7 @@ struct MementoState {
 	voxel::Region region;
 
 	MementoState() :
-			type(MementoType::Modification), parentId(0), nodeId(0) {
+			type(MementoType::Max), parentId(0), nodeId(0) {
 	}
 
 	MementoState(MementoType _type, const MementoData& _data, int _parentId, int _nodeId, const core::String& _name, const voxel::Region& _region) :

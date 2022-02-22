@@ -150,7 +150,7 @@ MementoState MementoHandler::undo() {
 	core_assert(_statePosition >= 1);
 	--_statePosition;
 	if (_states[_statePosition].data._buffer != nullptr
-			&& _states[_statePosition].type == MementoType::LayerAdded
+			&& _states[_statePosition].type == MementoType::SceneNodeAdded
 			&& _states[_statePosition + 1].type != MementoType::Modification) {
 		--_statePosition;
 	}
@@ -167,10 +167,10 @@ MementoState MementoHandler::redo() {
 	}
 	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	++_statePosition;
-	if (_states[_statePosition].data._buffer == nullptr && _states[_statePosition].type == MementoType::LayerAdded) {
+	if (_states[_statePosition].data._buffer == nullptr && _states[_statePosition].type == MementoType::SceneNodeAdded) {
 		++_statePosition;
 	}
-	if (_states[_statePosition].data._buffer != nullptr && _states[_statePosition].type == MementoType::LayerDeleted) {
+	if (_states[_statePosition].data._buffer != nullptr && _states[_statePosition].type == MementoType::SceneNodeRemoved) {
 		++_statePosition;
 	}
 	const MementoState& s = state();
@@ -179,19 +179,19 @@ MementoState MementoHandler::redo() {
 }
 
 void MementoHandler::markNodeDeleted(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume) {
-	Log::debug("Mark layer %i as deleted (%s)", nodeId, name.c_str());
+	Log::debug("Mark node %i as deleted (%s)", nodeId, name.c_str());
 	// previous state is that we have a volume at the given layer
-	markUndo(parentId, nodeId, name, volume, MementoType::LayerDeleted);
+	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeRemoved);
 	// current state is that there is no volume at the given layer
-	markUndo(parentId, nodeId, name, nullptr, MementoType::LayerDeleted);
+	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeRemoved);
 }
 
 void MementoHandler::markNodeAdded(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume) {
-	Log::debug("Mark layer %i as added (%s)", nodeId, name.c_str());
+	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
 	// previous state is that there is no volume at the given layer
-	markUndo(parentId, nodeId, name, nullptr, MementoType::LayerAdded);
+	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeAdded);
 	// current state is that we have a volume at the given layer
-	markUndo(parentId, nodeId, name, volume, MementoType::LayerAdded);
+	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeAdded);
 }
 
 void MementoHandler::markUndo(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, MementoType type, const voxel::Region& region) {
@@ -205,7 +205,7 @@ void MementoHandler::markUndo(int parentId, int nodeId, const core::String& name
 		// the current state position)
 		_states.erase(_statePosition + 1, _states.size());
 	}
-	Log::debug("New undo state for layer %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
+	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume);
 	_states.emplace_back(type, data, parentId, nodeId, name, region);
