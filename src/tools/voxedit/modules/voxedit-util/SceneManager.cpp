@@ -1171,7 +1171,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
 		_modifier.aabbStop();
-	}).setHelp("Aborts the current modifier action");
+	}).setHelp("Aborts the current modifier action").setBindingContext(BindingContext::Model);
 
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
 		fillHollow();

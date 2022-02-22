@@ -387,6 +387,10 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 		}
 		_showHidden = core::Var::getSafe(cfg::UIShowHidden);
 		if (ImGui::BeginPopupModal(title, open)) {
+			if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+				ImGui::CloseCurrentPopup();
+			}
+
 			core::VarPtr bookmarks = core::Var::get(cfg::UIBookmarks, "");
 			if (ImGui::Button(ICON_FK_BOOKMARK)) {
 				removeBookmark(_currentPath);

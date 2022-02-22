@@ -33,6 +33,8 @@
 
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include <SDL_events.h>
+#include <string.h>
 #include <glm/mat4x4.hpp>
 
 namespace ui {
@@ -45,11 +47,39 @@ IMGUIApp::IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& fil
 IMGUIApp::~IMGUIApp() {
 }
 
+void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY) {
+	Super::onMouseMotion(windowHandle, x, y, relX, relY);
+
+	SDL_Event ev {};
+	ev.type = SDL_MOUSEMOTION;
+	ev.motion.x = x;
+	ev.motion.y = y;
+	ev.motion.windowID = SDL_GetWindowID((SDL_Window*)windowHandle);
+	ImGui_ImplSDL2_ProcessEvent(&ev);
+}
+
+bool IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
+	if (!Super::onMouseWheel(x, y)) {
+		SDL_Event ev {};
+		ev.type = SDL_MOUSEWHEEL;
+		ev.wheel.x = x;
+		ev.wheel.y = y;
+		ImGui_ImplSDL2_ProcessEvent(&ev);
+	}
+	return true;
+}
+
 void IMGUIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	if (_console.isActive()) {
 		return;
 	}
 	Super::onMouseButtonRelease(x, y, button);
+	SDL_Event ev {};
+	ev.type = SDL_MOUSEBUTTONUP;
+	ev.button.button = button;
+	ev.button.x = x;
+	ev.button.y = y;
+	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
 void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
@@ -57,12 +87,23 @@ void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t 
 		return;
 	}
 	Super::onMouseButtonPress(x, y, button, clicks);
+	SDL_Event ev {};
+	ev.type = SDL_MOUSEBUTTONDOWN;
+	ev.button.button = button;
+	ev.button.clicks = clicks;
+	ev.button.x = x;
+	ev.button.y = y;
+	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
 bool IMGUIApp::onTextInput(const core::String& text) {
 	if (_console.onTextInput(text)) {
 		return true;
 	}
+	SDL_Event ev {};
+	ev.type = SDL_TEXTINPUT;
+	strncpy(ev.text.text, text.c_str(), sizeof(ev.text.text));
+	ImGui_ImplSDL2_ProcessEvent(&ev);
 	return true;
 }
 
@@ -70,25 +111,38 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
 	if (_console.onKeyPress(key, modifier)) {
 		return true;
 	}
-	if (Super::onKeyPress(key, modifier)) {
-		return true;
+	if (!Super::onKeyPress(key, modifier)) {
+		SDL_Event ev {};
+		ev.type = SDL_KEYDOWN;
+		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
+		ev.key.keysym.sym = (SDL_Keycode)key;
+		ev.key.keysym.mod = modifier;
+		ImGui_ImplSDL2_ProcessEvent(&ev);
 	}
-	return false;
+	return true;
 }
 
 bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	if (_console.isActive()) {
 		return true;
 	}
-	Super::onKeyRelease(key, modifier);
+	if (!Super::onKeyRelease(key, modifier)) {
+		SDL_Event ev {};
+		ev.type = SDL_KEYUP;
+		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
+		ev.key.keysym.sym = key;
+		ev.key.keysym.mod = modifier;
+		ImGui_ImplSDL2_ProcessEvent(&ev);
+	}
 	return true;
 }
 
 bool IMGUIApp::handleSDLEvent(SDL_Event& event) {
-	if (core::bindingContext() == core::BindingContext::UserInterface || event.type == SDL_WINDOWEVENT) {
+	const bool state = Super::handleSDLEvent(event);
+	if (event.type == SDL_WINDOWEVENT) {
 		ImGui_ImplSDL2_ProcessEvent(&event);
 	}
-	return Super::handleSDLEvent(event);
+	return state;
 }
 
 app::AppState IMGUIApp::onConstruct() {
