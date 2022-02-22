@@ -141,14 +141,15 @@ public:
 	 * @brief Pushes an elements to the end of the buffer
 	 * @note Performs a move operation
 	 */
-	void emplace_back(TYPE &&x) {
+	template<typename... _Args>
+	void emplace_back(_Args&&... args) {
 		_back = (_back + 1u) % SIZE;
 		if (_size == SIZE) {
 			_front = (_front + 1u) % SIZE;
 		} else {
 			++_size;
 		}
-		_buffer[_back] = core::move(x);
+		_buffer[_back] = core::move(TYPE{core::forward<_Args>(args)...});
 	}
 
 	/**
@@ -188,12 +189,12 @@ public:
 
 	inline TYPE &operator[](size_t i) {
 		core_assert(i < SIZE);
-		return _buffer[i];
+		return _buffer[(_front + i) % SIZE];
 	}
 
 	inline const TYPE &operator[](size_t i) const {
 		core_assert(i < SIZE);
-		return _buffer[i];
+		return _buffer[(_front + i) % SIZE];
 	}
 };
 

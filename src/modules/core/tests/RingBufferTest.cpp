@@ -17,13 +17,37 @@ struct Type {
 		return a == rhs.a && b == rhs.b;
 	}
 };
+
+struct TypeCtor {
+	int a;
+	int b;
+
+	TypeCtor(int _a, int _b) : a(_a), b(_b) {
+	}
+	TypeCtor() : a(0), b(0) {
+	}
+
+	inline bool operator==(const Type& rhs) const {
+		return a == rhs.a && b == rhs.b;
+	}
+};
 }
 
 TEST(RingBufferTest, testInsert) {
 	core::RingBuffer<_privtest::Type, 4> list;
 	list.push_back({1, 1});
 	EXPECT_EQ(1u, list.size());
-	list.emplace_back({2, 2});
+	list.emplace_back(2, 2);
+	EXPECT_EQ(2u, list.size());
+	list.push_back({3, 3});
+	EXPECT_EQ(3u, list.size());
+}
+
+TEST(RingBufferTest, testInsertCtor) {
+	core::RingBuffer<_privtest::TypeCtor, 4> list;
+	list.push_back({1, 1});
+	EXPECT_EQ(1u, list.size());
+	list.emplace_back(2, 2);
 	EXPECT_EQ(2u, list.size());
 	list.push_back({3, 3});
 	EXPECT_EQ(3u, list.size());
@@ -48,10 +72,10 @@ TEST(RingBufferTest, testWrap) {
 	list.push_back({4, 4});
 	EXPECT_EQ(4, list[3].a);
 	list.push_back({5, 5});
-	EXPECT_EQ(5, list[0].a);
-	EXPECT_EQ(2, list[1].a);
-	EXPECT_EQ(3, list[2].a);
-	EXPECT_EQ(4, list[3].a);
+	EXPECT_EQ(2, list[0].a);
+	EXPECT_EQ(3, list[1].a);
+	EXPECT_EQ(4, list[2].a);
+	EXPECT_EQ(5, list[3].a);
 	EXPECT_EQ(2, list.begin()->a);
 }
 
