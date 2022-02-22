@@ -3,7 +3,7 @@ $in vec4 v_color;
 $in vec4 v_clipspace;
 $in float v_ambientocclusion;
 uniform mat4 u_viewprojection;
-uniform sampler2D u_entitiesdepthmap;
+uniform sampler2DShadow u_entitiesdepthmap;
 
 #include "_fog.frag"
 #include "_shadowmap.frag"
@@ -16,9 +16,9 @@ uniform lowp vec3 u_ambient_color;
 uniform float u_time;
 layout(location = 0) $out vec4 o_color;
 
-vec2 clipSpaceToTexCoords(vec4 clipSpace){
-	vec2 ndc = (clipSpace.xy / clipSpace.w);
-	vec2 texCoords = ndc / 2.0 + 0.5;
+vec3 clipSpaceToTexCoords(vec4 clipSpace){
+	vec3 ndc = (clipSpace.xyz / clipSpace.w);
+	vec3 texCoords = ndc / 2.0 + 0.5;
 	return clamp(texCoords, 0.0, 1.0);
 }
 
@@ -27,9 +27,9 @@ vec2 clipSpaceToTexCoords(vec4 clipSpace){
  * are between the camera eye and the player transparent
  */
 float resolveAlpha() {
-	vec2 ndc = clipSpaceToTexCoords(v_clipspace);
+	vec3 ndc = clipSpaceToTexCoords(v_clipspace);
 	float depth = gl_FragCoord.z;
-	float characterDepth = $texture2D(u_entitiesdepthmap, ndc).r;
+	float characterDepth = $texture2D(u_entitiesdepthmap, ndc);
 	if (depth > characterDepth) {
 		return 0.3;
 	}
