@@ -150,6 +150,7 @@ app::AppState IMGUIApp::onConstruct() {
 	_console.construct();
 	_lastDirectory = core::Var::get(cfg::UILastDirectory, io::filesystem()->homePath().c_str());
 	core::Var::get(cfg::UILastFilter, "0");
+	core::Var::get(cfg::UIStyle, "0");
 	core::Var::get(cfg::UIShowHidden, "false")->setHelp("Show hidden file system entities");
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST);
@@ -295,8 +296,20 @@ app::AppState IMGUIApp::onInit() {
 	_texture = video::genTexture();
 	loadFonts();
 
-	ImGui::StyleColorsCorporateGrey();
-	//ImGui::StyleColorsDark();
+	switch (core::Var::get(cfg::UIStyle)->intVal()) {
+	case 0:
+		ImGui::StyleColorsCorporateGrey();
+		break;
+	case 1:
+		ImGui::StyleColorsDark();
+		break;
+	case 2:
+		ImGui::StyleColorsLight();
+		break;
+	case 3:
+		ImGui::StyleColorsClassic();
+		break;
+	}
 
 	ImGui_ImplSDL2_InitForOpenGL(_window, _rendererContext);
 

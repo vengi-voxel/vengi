@@ -32,6 +32,7 @@ constexpr const char *UIShowMetrics = "ui_showmetrics";
 constexpr const char *UIFontSize = "ui_fontsize";
 constexpr const char *UILastDirectory = "ui_lastdirectory";
 constexpr const char *UILastFilter = "ui_lastfilter";
+constexpr const char *UIStyle = "ui_style";
 // filedialog
 constexpr const char *UIShowHidden = "ui_showhidden";
 constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";
