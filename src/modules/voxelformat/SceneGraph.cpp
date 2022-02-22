@@ -140,7 +140,7 @@ bool SceneGraph::changeParent(int nodeId, int newParentId) {
 	}
 	n.setParent(newParentId);
 	node(newParentId).addChild(nodeId);
-	return false;
+	return true;
 }
 
 bool SceneGraph::removeNode(int nodeId, bool recursive) {
