@@ -59,9 +59,9 @@ void StyleColorsCorporateGrey() {
 	style.PopupRounding = 3;
 
 	style.WindowPadding = ImVec2(4, 4);
-	style.FramePadding = ImVec2(6, 0);
+	style.FramePadding = ImVec2(6, 4);
 	style.ItemSpacing = ImVec2(6, 2);
-	style.ItemInnerSpacing = ImVec2(4, 2);
+	style.ItemInnerSpacing = ImVec2(4, 4);
 	style.ScrollbarSize = 18;
 
 	style.WindowBorderSize = 1;
