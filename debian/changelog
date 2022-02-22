@@ -3,6 +3,7 @@ vengi (0.0.19.0-1) UNRELEASED; urgency=low
   * General:
   * Removed minecraft support via external lib enkiMI
   * Added support for Sandbox VXA format (via VXR)
+  * Allow to change the ui colors via cvar (ui_style)
 
   * VoxEdit:
   * Added new command to fill hollows in models

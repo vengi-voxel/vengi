@@ -14,6 +14,7 @@ General:
 
    - Removed minecraft support via external lib enkiMI
    - Added support for Sandbox VXA format (via VXR)
+   - Allow to change the ui colors via cvar (`ui_style`)
 
 VoxEdit:
 
