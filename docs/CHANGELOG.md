@@ -18,6 +18,8 @@ General:
 VoxEdit:
 
    - Added new command to fill hollows in models
+   - Fixed escape key not closing the dialogs
+   - Added support for drag and drop the nodes of the scene graph
 
 ## 0.0.18 (2022-02-12)
 
