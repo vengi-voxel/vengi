@@ -20,6 +20,7 @@ namespace voxedit {
 
 enum class MementoType {
 	Modification,
+	SceneNodeMove,
 	LayerAdded,
 	LayerDeleted,
 	LayerRenamed

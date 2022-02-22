@@ -475,9 +475,14 @@ void SceneManager::undo() {
 			node->setName(s.name);
 		}
 		return;
+	} else if (s.type == MementoType::SceneNodeMove) {
+		nodeMove(s.nodeId, s.parentId);
+		return;
 	}
 	voxel::RawVolume* v = MementoData::toVolume(s.data);
 	if (v == nullptr) {
+		// TODO: removing a scenenode from the graph would invalidate this node
+		// id - so we have to handle this somehow in the mementostate
 		nodeRemove(s.nodeId, false);
 		return;
 	}
@@ -498,6 +503,9 @@ void SceneManager::redo() {
 		if (voxel::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
 			node->setName(s.name);
 		}
+		return;
+	} else if (s.type == MementoType::SceneNodeMove) {
+		nodeMove(s.nodeId, s.parentId);
 		return;
 	}
 	voxel::RawVolume* v = MementoData::toVolume(s.data);
@@ -2270,7 +2278,11 @@ void SceneManager::setGizmoPosition() {
 }
 
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
-	return _sceneGraph.changeParent(sourceNodeId, targetNodeId);
+	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
+		_mementoHandler.markUndo(targetNodeId, sourceNodeId, "", nullptr, MementoType::SceneNodeMove);
+		return true;
+	}
+	return false;
 }
 
 void SceneManager::nodeRename(int nodeId, const core::String &name) {
