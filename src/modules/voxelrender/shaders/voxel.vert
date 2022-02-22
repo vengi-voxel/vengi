@@ -13,6 +13,7 @@ uniform int u_gray;
 
 $out vec4 v_pos;
 $out vec4 v_color;
+$out vec4 v_glow;
 $out float v_ambientocclusion;
 flat $out uint v_flags;
 
@@ -33,6 +34,7 @@ void main(void) {
 
 	int materialColorIndex = int(a_colorindex);
 	vec3 materialColor = u_materialcolor[materialColorIndex].rgb;
+	vec4 glowColor = u_glowcolor[materialColorIndex];
 	v_flags = 0u;
 #if r_renderoutline == 0
 	if ((a_flags & FLAGOUTLINE) != 0u)
@@ -47,7 +49,7 @@ void main(void) {
 	} else {
 		v_color = vec4(materialColor, 1.0);
 	}
-
+	v_glow = glowColor;
 	v_ambientocclusion = aovalues[a_ao];
 
 #if cl_shadowmap == 1

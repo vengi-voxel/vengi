@@ -343,6 +343,13 @@ public:
 		}
 	}
 
+	void fill(const TYPE& value) {
+		for (size_t i = 0u; i < _size; ++i) {
+			_buffer[i].~TYPE();
+			new (&_buffer[i]) TYPE(value);
+		}
+	}
+
 	void clear() {
 		for (size_t i = 0u; i < _size; ++i) {
 			_buffer[i].~TYPE();

@@ -70,6 +70,7 @@ bool MeshRenderer::init() {
 
 	shader::VoxelData::MaterialblockData materialBlock;
 	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.glowcolor, &voxel::getGlowColors().front(), sizeof(materialBlock.glowcolor));
 	_materialBlock.create(materialBlock);
 
 	return true;

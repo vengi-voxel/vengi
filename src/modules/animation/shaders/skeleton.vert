@@ -15,6 +15,7 @@ uniform mat4 u_bones[MAXBONES];
 #define MATERIALCOLORS 256
 layout(std140) uniform u_materialblock {
 	vec4 u_materialcolor[MATERIALCOLORS];
+	vec4 u_glowcolor[MATERIALCOLORS];
 };
 
 $out vec4 v_pos;

@@ -35,11 +35,13 @@ static MaterialColor* luamaterial_getmaterialcolor(lua_State*s) {
 class MaterialColor {
 private:
 	MaterialColorArray _materialColors;
+	MaterialColorArray _glowColors;
 	core::Map<VoxelType, MaterialColorIndices, 8, EnumClassHash> _colorMapping;
 	bool _initialized = false;
 	bool _dirty = false;
 public:
 	MaterialColor() {
+		_glowColors.resize(256);
 	}
 
 	bool initialized() const {
@@ -54,6 +56,7 @@ public:
 		_initialized = true;
 		_dirty = true;
 		_materialColors.reserve(256);
+		_glowColors.fill(glm::vec4(0.0f));
 		const size_t colors = paletteBufferSize / 4;
 		if (colors > _materialColors.capacity()) {
 			Log::error("Palette image has invalid dimensions - we need max 256x1(depth: 4)");
@@ -201,6 +204,15 @@ public:
 		core_assert_msg(_initialized, "Material colors are not yet initialized");
 		core_assert_msg(!_materialColors.empty(), "Failed to initialize the material colors");
 		return _materialColors;
+	}
+
+	const MaterialColorArray& getGlowColors() const {
+		if (!_initialized) {
+			getColors();
+		}
+		core_assert_msg(_initialized, "Material colors are not yet initialized");
+		core_assert_msg(!_glowColors.empty(), "Failed to initialize the glow colors");
+		return _glowColors;
 	}
 
 	const MaterialColorIndices& getColorIndices(VoxelType type) const {
@@ -391,6 +403,10 @@ bool initDefaultMaterialColors() {
 
 const MaterialColorArray& getMaterialColors() {
 	return getInstance().getColors();
+}
+
+const MaterialColorArray& getGlowColors() {
+	return getInstance().getGlowColors();
 }
 
 const glm::vec4& getMaterialColor(const Voxel& voxel) {

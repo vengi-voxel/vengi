@@ -399,6 +399,7 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 
 	shader::WorldData::MaterialblockData materialBlock;
 	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.glowcolor, &voxel::getGlowColors().front(), sizeof(materialBlock.glowcolor));
 	_materialBlock.create(materialBlock);
 
 	_waterVbo = _waterBuffer.create(waterPlaneVecs, sizeof(waterPlaneVecs));

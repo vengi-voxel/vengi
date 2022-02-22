@@ -47,6 +47,7 @@ bool AnimationRenderer::init() {
 
 	shader::SkeletonData::MaterialblockData materialBlock;
 	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.glowcolor, &voxel::getGlowColors().front(), sizeof(materialBlock.glowcolor));
 	if (!_shaderData.create(materialBlock)) {
 		Log::error("Failed to create material buffer");
 		return false;

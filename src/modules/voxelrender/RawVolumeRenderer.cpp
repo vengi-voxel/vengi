@@ -143,6 +143,7 @@ bool RawVolumeRenderer::init() {
 
 	shader::VoxelData::MaterialblockData materialBlock;
 	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.glowcolor, &voxel::getGlowColors().front(), sizeof(materialBlock.glowcolor));
 	_materialBlock.create(materialBlock);
 
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
@@ -457,6 +458,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	if (voxel::materialColorChanged()) {
 		shader::VoxelData::MaterialblockData materialBlock;
 		core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+		core_memcpy(materialBlock.glowcolor, &voxel::getGlowColors().front(), sizeof(materialBlock.glowcolor));
 		_materialBlock.update(materialBlock);
 		// TODO: updating the global state is crap - what about others - use an event
 		voxel::materialColorMarkClean();

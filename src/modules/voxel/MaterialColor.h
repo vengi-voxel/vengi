@@ -37,6 +37,7 @@ extern bool materialColorInitialized();
 extern void materialColorMarkClean();
 extern bool materialColorChanged();
 extern const MaterialColorArray& getMaterialColors();
+extern const MaterialColorArray& getGlowColors();
 extern const glm::vec4& getMaterialColor(const Voxel& voxel);
 
 extern bool createPalette(const image::ImagePtr& image, uint32_t *colorsBuffer, int colors);

@@ -1,5 +1,6 @@
 $in vec4 v_pos;
 $in vec4 v_color;
+$in vec4 v_glow;
 $in float v_ambientocclusion;
 flat $in uint v_flags;
 uniform mat4 u_viewprojection;
@@ -54,6 +55,6 @@ void main(void) {
 	if ((v_flags & FLAGBLOOM) != 0u) {
 		o_glow = o_color;
 	} else {
-		o_glow = vec4(0.0, 0.0, 0.0, 0.0);
+		o_glow = v_glow;
 	}
 }
