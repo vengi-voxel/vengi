@@ -83,18 +83,13 @@ bool RawVolumeRenderer::init() {
 	}
 
 	// we have to do an y-flip here due to the framebuffer handling
-	if (!_blurRenderer.init(true, windowSize.x, windowSize.y)) {
+	if (!_bloomRenderer.init(true, windowSize.x, windowSize.y)) {
 		Log::error("Failed to initialize the blur renderer");
 		return false;
 	}
 
-	// we have to do an y-flip here due to the framebuffer handling
-	if (!_bloomRenderer.init(true)) {
-		Log::error("Failed to initialize the bloom renderer");
-		return false;
-	}
-
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
+	_bloom = core::Var::getSafe(cfg::ClientBloom);
 
 	_threadPool.init();
 
@@ -464,16 +459,10 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		voxel::materialColorMarkClean();
 	}
 
-	renderToFrameBuffer(camera, shadow);
-	const video::Id color0 = _frameBuffer.texture(video::FrameBufferAttachment::Color0)->handle();
-	const video::Id color1 = _frameBuffer.texture(video::FrameBufferAttachment::Color1)->handle();
-	// blur the color1 attachment of the framebuffer (which is the glowing part)
-	_blurRenderer.render(color1);
-	// now combine the blurred texture with the original render
-	_bloomRenderer.render(color0, _blurRenderer.texture()->handle());
+	renderVolumes(camera, shadow);
 }
 
-void RawVolumeRenderer::renderToFrameBuffer(const video::Camera& camera, bool shadow) {
+void RawVolumeRenderer::renderVolumes(const video::Camera& camera, bool shadow) {
 	uint32_t indices[MAX_VOLUMES];
 
 	core_memset(indices, 0, sizeof(indices));
@@ -545,7 +534,9 @@ void RawVolumeRenderer::renderToFrameBuffer(const video::Camera& camera, bool sh
 		_shadow.bind(video::TextureUnit::One);
 	}
 
-	_frameBuffer.bind(true);
+	if (_bloom->boolVal()) {
+		_frameBuffer.bind(true);
+	}
 	const video::PolygonMode mode = camera.polygonMode();
 	if (mode == video::PolygonMode::Points) {
 		video::enable(video::State::PolygonOffsetPoint);
@@ -572,7 +563,12 @@ void RawVolumeRenderer::renderToFrameBuffer(const video::Camera& camera, bool sh
 	} else if (mode == video::PolygonMode::Solid) {
 		video::disable(video::State::PolygonOffsetFill);
 	}
-	_frameBuffer.unbind();
+	if (_bloom->boolVal()) {
+		_frameBuffer.unbind();
+		const video::TexturePtr& color0 = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+		const video::TexturePtr& color1 = _frameBuffer.texture(video::FrameBufferAttachment::Color1);
+		_bloomRenderer.render(color0, color1);
+	}
 }
 
 void RawVolumeRenderer::setInstancingAmount(int idx, int amount) {
@@ -664,7 +660,6 @@ core::DynamicArray<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_shadowMapShader.shutdown();
 	_materialBlock.shutdown();
 	_frameBuffer.shutdown();
-	_blurRenderer.shutdown();
 	_bloomRenderer.shutdown();
 	for (auto& iter : _meshes) {
 		for (auto& mesh : iter.second) {

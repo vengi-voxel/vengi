@@ -63,6 +63,7 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
 			ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", cfg::VoxEditShowaabb);
 			ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);
+			ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
 			ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 			ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
 			if (ImGui::Button("Scene settings")) {

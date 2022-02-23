@@ -43,6 +43,7 @@ constexpr const char *AudioMusicVolume = "snd_musicvolume";
 
 constexpr const char *ClientGamma = "cl_gamma";
 constexpr const char *ClientShadowMap = "cl_shadowmap";
+constexpr const char *ClientBloom = "cl_bloom";
 constexpr const char *ClientWater = "cl_water";
 constexpr const char *ClientFog = "cl_fog";
 constexpr const char *ClientCameraMaxTargetDistance = "cl_cameramaxtargetdistance";

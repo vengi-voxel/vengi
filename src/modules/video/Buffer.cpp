@@ -350,7 +350,7 @@ int32_t Buffer::createFullscreenQuad() {
 	return create(vecs, sizeof(vecs));
 }
 
-int32_t Buffer::createFullscreenTextureBuffer() {
+int32_t Buffer::createFullscreenTextureBuffer(int32_t idx) {
 	// counter clock wise winding
 	//
 	// 0/0    1/0
@@ -367,10 +367,14 @@ int32_t Buffer::createFullscreenTextureBuffer() {
 		// left bottom, right top, left top
 		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec2(0.0f, 0.0f)
 	};
-	return create(vecs, sizeof(vecs));
+	if (idx == -1) {
+		return create(vecs, sizeof(vecs));
+	}
+	update(idx, vecs, sizeof(vecs));
+	return idx;
 }
 
-int32_t Buffer::createFullscreenTextureBufferYFlipped() {
+int32_t Buffer::createFullscreenTextureBufferYFlipped(int32_t idx) {
 	// counter clock wise winding
 	//
 	// 0/1    1/1
@@ -387,7 +391,11 @@ int32_t Buffer::createFullscreenTextureBufferYFlipped() {
 		// left bottom, right top, left top
 		glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f)
 	};
-	return create(vecs, sizeof(vecs));
+	if (idx == -1) {
+		return create(vecs, sizeof(vecs));
+	}
+	update(idx, vecs, sizeof(vecs));
+	return idx;
 }
 
 int32_t Buffer::createWhiteColorForQuad() {

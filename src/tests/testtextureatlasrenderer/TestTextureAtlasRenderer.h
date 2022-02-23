@@ -44,7 +44,7 @@ private:
 	using Super = TestApp;
 	voxelrender::CachedMeshRenderer _meshRenderer;
 	video::TextureAtlasRenderer _atlasRenderer;
-	shader::TextureShader _textureShader;
+	shader::DefaultShader _textureShader;
 	video::Buffer _vbo;
 	glm::mat4 _modelMatrix;
 	float _scale = 5.0f;

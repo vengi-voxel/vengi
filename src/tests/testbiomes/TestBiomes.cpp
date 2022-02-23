@@ -38,7 +38,7 @@ app::AppState TestBiomes::onInit() {
 	Log::init();
 	video::clearColor(::core::Color::Black);
 
-	if (!_renderer.init(frameBufferDimension())) {
+	if (!_renderer.init()) {
 		Log::error("Failed to setup the renderer");
 		return app::AppState::InitFailure;
 	}
@@ -111,7 +111,7 @@ app::AppState TestBiomes::onCleanup() {
 void TestBiomes::doRender() {
 	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
 	video::ScopedViewPort viewPort(0, 0, frameBufferDimension().x, frameBufferDimension().y);
-	_renderer.render(camera().projectionMatrix());
+	_renderer.render();
 }
 
 void TestBiomes::onRenderUI() {

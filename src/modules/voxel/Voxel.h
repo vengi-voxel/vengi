@@ -134,6 +134,11 @@ public:
 	}
 
 	void setFlags(uint8_t flags);
+
+	void setBloom() {
+		setFlags(2); // FlagBloom
+	}
+
 private:
 	VoxelType _material:5;
 	uint8_t _flags:3;

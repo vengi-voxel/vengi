@@ -12,7 +12,7 @@
 #include "core/collection/DynamicArray.h"
 #include "ColorShader.h"
 #include "ColorInstancedShader.h"
-#include "TextureShader.h"
+#include "DefaultShader.h"
 
 namespace render {
 
@@ -46,7 +46,7 @@ private:
 	uint32_t _currentMeshIndex = 0u;
 	shader::ColorShader& _colorShader;
 	shader::ColorInstancedShader& _colorInstancedShader;
-	shader::TextureShader& _textureShader;
+	shader::DefaultShader& _defaultShader;
 
 	core::DynamicArray<Vertex> _vertices;
 

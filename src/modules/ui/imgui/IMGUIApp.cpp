@@ -40,8 +40,9 @@
 namespace ui {
 namespace imgui {
 
-IMGUIApp::IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
-		Super(metric, filesystem, eventBus, timeProvider, threadPoolSize) {
+IMGUIApp::IMGUIApp(const metric::MetricPtr &metric, const io::FilesystemPtr &filesystem,
+				   const core::EventBusPtr &eventBus, const core::TimeProviderPtr &timeProvider, size_t threadPoolSize)
+	: Super(metric, filesystem, eventBus, timeProvider, threadPoolSize), _shader(shader::DefaultShader::getInstance()) {
 }
 
 IMGUIApp::~IMGUIApp() {

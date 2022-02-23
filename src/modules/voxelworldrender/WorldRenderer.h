@@ -62,6 +62,7 @@ protected:
 	glm::vec3 _focusPos { 0.0f };
 
 	core::VarPtr _shadowMap;
+	core::VarPtr _bloom;
 	core::VarPtr _water;
 
 	// this ub is currently shared between the world, world instanced and water shader

@@ -98,8 +98,8 @@ public:
 	/**
 	 * @brief Full texture coordinate buffer with 2 float components
 	 */
-	int32_t createFullscreenTextureBuffer();
-	int32_t createFullscreenTextureBufferYFlipped();
+	int32_t createFullscreenTextureBuffer(int32_t idx = -1);
+	int32_t createFullscreenTextureBufferYFlipped(int32_t idx = -1);
 	/**
 	 * @return Two vertex buffers, the first one contains the vertices, the second contains the texcoords
 	 */

@@ -63,7 +63,13 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	}
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const ogt_vox_rgba& c = scene->palette.color[i];
+		const ogt_vox_matl& matl = scene->materials.matl[i];
 		_colors[i] = palette[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
+		if (matl.emit > 0.0f) {
+			_glowColors[i] = _colors[i]; // TODO: multiply by matl.emit?
+		} else {
+			_glowColors[i] = 0;
+		}
 		_palette[i] = i;
 	}
 	_colorsSize = 256;
@@ -111,8 +117,11 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 				if (ogtVoxel[0] == 0) {
 					continue;
 				}
-				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, _palette[ogtVoxel[0]]);
-				const glm::ivec3& pos = transform(ogtMat, glm::ivec3(i, j, k), pivot);
+				voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, _palette[ogtVoxel[0]]);
+				if (_glowColors[ogtVoxel[0]] != 0) {
+					voxel.setBloom(); // TODO: upload via glow materialblock uniform
+				}
+				const glm::ivec3 &pos = transform(ogtMat, glm::ivec3(i, j, k), pivot);
 				const glm::ivec3& poszUp = transform(zUpMat, pos, glm::ivec4(0));
 				v->setVoxel(poszUp, voxel);
 			}
@@ -203,6 +212,12 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		_colors[i] = core::Color::getRGBA(colorVec);
 		const uint8_t index = findClosestIndex(colorVec);
 		_palette[i] = index;
+		const ogt_vox_matl& matl = scene->materials.matl[i];
+		if (matl.emit > 0.0f) {
+			_glowColors[i] = _colors[i]; // TODO: multiply by matl.emit?
+		} else {
+			_glowColors[i] = 0;
+		}
 	}
 	_colorsSize = _colors.size();
 	// rotation matrix to convert into our coordinate system (z pointing upwards)

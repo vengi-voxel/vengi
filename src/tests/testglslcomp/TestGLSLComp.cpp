@@ -25,7 +25,7 @@ app::AppState TestGLSLComp::onInit() {
 
 	camera() = video::uiCamera(windowDimension());
 
-	if (!_renderer.init(frameBufferDimension())) {
+	if (!_renderer.init()) {
 		Log::error("Failed to init the texture renderer");
 		return app::AppState::InitFailure;
 	}
@@ -60,7 +60,7 @@ void TestGLSLComp::doRender() {
 
 	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
 	video::ScopedViewPort viewPort(0, 0, frameBufferDimension().x, frameBufferDimension().y);
-	_renderer.render(camera().projectionMatrix());
+	_renderer.render();
 }
 
 TEST_APP(TestGLSLComp)

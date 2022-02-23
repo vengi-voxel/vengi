@@ -8,10 +8,10 @@
 #include "testcore/TestAppMain.h"
 #include "video/Texture.h"
 
-TestBloom::TestBloom(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem,
-		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
-	init(ORGANISATION, "testbloom");
+TestBloom::TestBloom(const metric::MetricPtr &metric, const io::FilesystemPtr &filesystem,
+					 const core::EventBusPtr &eventBus, const core::TimeProviderPtr &timeProvider)
+	: Super(metric, filesystem, eventBus, timeProvider) {
+	init(ORGANISATION, "TestBloom");
 	setCameraMotion(false);
 	_allowRelativeMouseMode = false;
 }
@@ -24,19 +24,14 @@ app::AppState TestBloom::onInit() {
 
 	setUICamera();
 
-	if (!_blurRenderer.init(false)) {
-		Log::error("Failed to initialize the blur renderer");
-		return app::AppState::InitFailure;
-	}
-
-	if (!_bloomRenderer.init(false)) {
-		Log::error("Failed to initialize the bloom renderer");
-		return app::AppState::InitFailure;
-	}
-
-	const image::ImagePtr& sceneImg = image::loadImage("bloom_scene", false);
+	const image::ImagePtr &sceneImg = image::loadImage("bloom_scene", false);
 	if (!sceneImg->isLoaded()) {
 		Log::error("Failed to load the image for the scene");
+		return app::AppState::InitFailure;
+	}
+
+	if (!_bloomRenderer.init(false, sceneImg->width(), sceneImg->height())) {
+		Log::error("Failed to initialize the blur renderer");
 		return app::AppState::InitFailure;
 	}
 	_sceneTexture = video::createTextureFromImage(sceneImg);
@@ -45,14 +40,15 @@ app::AppState TestBloom::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	const image::ImagePtr& bloomImg = image::loadImage("bloom_extracted", false);
-	if (!bloomImg->isLoaded()) {
-		Log::error("Failed to load the image for the bloom");
+	const image::ImagePtr &glowImg = image::loadImage("bloom_extracted", false);
+	if (!glowImg->isLoaded()) {
+		Log::error("Failed to load the image for the glow");
 		return app::AppState::InitFailure;
 	}
-	_bloomTexture = video::createTextureFromImage(bloomImg);
-	if (!_bloomTexture) {
-		Log::error("Failed to create texture for the bloom");
+
+	_glowTexture = video::createTextureFromImage(glowImg);
+	if (!_glowTexture) {
+		Log::error("Failed to create texture for the glow");
 		return app::AppState::InitFailure;
 	}
 
@@ -60,11 +56,7 @@ app::AppState TestBloom::onInit() {
 }
 
 app::AppState TestBloom::onCleanup() {
-	_blurRenderer.shutdown();
 	_bloomRenderer.shutdown();
-	if (_bloomTexture) {
-		_bloomTexture->shutdown();
-	}
 	if (_sceneTexture) {
 		_sceneTexture->shutdown();
 	}
@@ -75,28 +67,34 @@ app::AppState TestBloom::onCleanup() {
 void TestBloom::onRenderUI() {
 	Super::onRenderUI();
 
-	static glm::ivec2 size(256, 256);
-
-	if (ImGui::InputInt("blur passes: ", &_passes)) {
-		_passes = glm::clamp(_passes, 0, 20);
-	}
-
-	ImGui::Image(_bloomTexture->handle(), size);
-
 	ImGui::Text("scene");
-	ImGui::Image(_sceneTexture->handle(), size);
+	ImGui::Image(_sceneTexture->handle(), glm::ivec2(_sceneTexture->width(), _sceneTexture->height()));
 
-	ImGui::Text("bloom raw");
-	ImGui::Image(_bloomTexture->handle(), size);
+	ImGui::Text("glow");
+	ImGui::Image(_glowTexture->handle(), glm::ivec2(_glowTexture->width(), _glowTexture->height()));
 
-	const video::TexturePtr& blurred = _blurRenderer.texture();
-	ImGui::Text("blurred bloom: %i:%i", blurred->width(), blurred->height());
-	ImGui::Image(blurred->handle(), size);
+	for (int i = 0; i < render::BloomRenderer::passes(); ++i) {
+		ImGui::Separator();
+		{
+			const video::TexturePtr &tex = _bloomRenderer.texture0(i);
+			ImGui::Text("texture0[%i] %i:%i", i, tex->width(), tex->height());
+			ImGui::Image(tex->handle(), glm::ivec2(tex->width(), tex->height()));
+		}
+		{
+			const video::TexturePtr &tex = _bloomRenderer.texture1(i);
+			ImGui::Text("texture1[%i] %i:%i", i, tex->width(), tex->height());
+			ImGui::Image(tex->handle(), glm::ivec2(tex->width(), tex->height()));
+		}
+		{
+			const video::TexturePtr &tex = _bloomRenderer.texture2(i);
+			ImGui::Text("texture2[%i] %i:%i", i, tex->width(), tex->height());
+			ImGui::Image(tex->handle(), glm::ivec2(tex->width(), tex->height()));
+		}
+	}
 }
 
 void TestBloom::doRender() {
-	_blurRenderer.render(_bloomTexture->handle(), _passes);
-	_bloomRenderer.render(_sceneTexture->handle(), _blurRenderer.texture()->handle());
+	_bloomRenderer.render(_sceneTexture, _glowTexture);
 }
 
 TEST_APP(TestBloom)

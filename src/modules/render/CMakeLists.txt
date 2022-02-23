@@ -1,6 +1,5 @@
 set(SRCS
 	Axis.cpp Axis.h
-	BlurRenderer.cpp BlurRenderer.h
 	BloomRenderer.cpp BloomRenderer.h
 	CameraFrustum.cpp CameraFrustum.h
 	Gizmo.cpp Gizmo.h
@@ -14,11 +13,12 @@ set(SRCS
 )
 set(SHADERS
 	skybox
-	blur
-	bloom
 	color
 	color_instanced
+	combine2
 	constants
+	convolution
+	default
 	depthbuffer_render
 	edge
 	shadowmap

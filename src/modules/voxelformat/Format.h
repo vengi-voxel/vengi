@@ -27,6 +27,7 @@ class Format {
 protected:
 	core::Array<uint8_t, 256> _palette;
 	core::Array<uint32_t, 256> _colors;
+	core::Array<uint32_t, 256> _glowColors;
 	size_t _paletteSize = 0;
 	size_t _colorsSize = 0;
 

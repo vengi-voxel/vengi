@@ -6,7 +6,6 @@
 
 #include "testcore/TestApp.h"
 #include "render/BloomRenderer.h"
-#include "render/BlurRenderer.h"
 #include "video/Texture.h"
 
 /**
@@ -16,11 +15,8 @@ class TestBloom: public TestApp {
 private:
 	using Super = TestApp;
 	render::BloomRenderer _bloomRenderer;
-	render::BlurRenderer _blurRenderer;
 	video::TexturePtr _sceneTexture;
-	video::TexturePtr _bloomTexture;
-
-	int _passes = 10;
+	video::TexturePtr _glowTexture;
 
 	void doRender() override;
 public:

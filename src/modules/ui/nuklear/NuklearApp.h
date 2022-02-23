@@ -61,7 +61,7 @@ protected:
 	Console _console;
 	core::String _textInput;
 	struct nk_vec2 _scrollDelta { 0.0f, 0.0f };
-	shader::TextureShader _shader;
+	shader::DefaultShader &_shader;
 	video::Camera _camera;
 	video::Buffer _vbo;
 	video::TexturePtr _fontTexture;

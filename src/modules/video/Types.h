@@ -163,6 +163,7 @@ enum class BlendMode {
 	Max
 };
 
+// https://www.khronos.org/opengl/wiki/Blending#Blend_Equations
 enum class BlendEquation {
 	Add,
 	Subtract,

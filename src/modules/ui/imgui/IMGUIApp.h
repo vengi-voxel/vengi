@@ -29,7 +29,7 @@ protected:
 	core::VarPtr _showMetrics;
 	core::VarPtr _uiFontSize;
 	video::Id _texture = video::InvalidId;
-	shader::TextureShader _shader;
+	shader::DefaultShader &_shader;
 	video::Buffer _vbo;
 	Console _console;
 	int32_t _bufferIndex = -1;

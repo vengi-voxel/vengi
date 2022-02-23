@@ -129,6 +129,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	}
 
 	MaterialColorArray materialColors = getMaterialColors();
+	const MaterialColorArray &glowColors = getGlowColors();
 
 	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
 	const voxel::Region& region = mergedVolume->region();
@@ -165,7 +166,8 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		wrapBool(stream.writeUInt8(matcolor.g))
 		wrapBool(stream.writeUInt8(matcolor.r))
 		wrapBool(stream.writeUInt8(matcolor.a))
-		const bool emissive = false;
+		const glm::u8vec4 &glowcolor = core::Color::getRGBAVec(glowColors[i]);
+		const bool emissive = glowcolor.a > 0;
 		wrapBool(stream.writeBool(emissive))
 	}
 	uint32_t rleCount = 0u;
@@ -410,6 +412,11 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		const glm::vec4& rgbaColor = core::Color::fromRGBA(red, green, blue, alpha);
 		_colors[i] = core::Color::getRGBA(rgbaColor);
 		_palette[i] = findClosestIndex(rgbaColor);
+		if (emissive) {
+			_glowColors[i] = _colors[i];
+		} else {
+			_glowColors[i] = 0;
+		}
 	}
 	_colorsSize = materialAmount;
 	_paletteSize = materialAmount;
@@ -452,7 +459,10 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			}
 
 			const uint8_t index = _palette[matIdx];
-			const Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
+			Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
+			if (_glowColors[matIdx]) {
+				voxel.setBloom(); // TODO: upload via glow materialblock uniform
+			}
 
 			// left to right, bottom to top, front to back
 			for (int i = idx; i < idx + length; i++) {

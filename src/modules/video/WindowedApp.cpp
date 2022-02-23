@@ -397,6 +397,7 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientWindowHighDPI, "false", core::CV_READONLY);
 	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER, "Render the world with fog", core::Var::boolValidator);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER, "Activate shadow map", core::Var::boolValidator);
+	core::Var::get(cfg::ClientBloom, "true", "Activate bloom post processing", core::Var::boolValidator);
 	core::Var::get(cfg::ClientWater, "true", core::CV_SHADER, "Render water", core::Var::boolValidator);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER, "Activate shadow debug rendering", core::Var::boolValidator);
 	core::Var::get(cfg::ClientShadowMapSize, "1024");

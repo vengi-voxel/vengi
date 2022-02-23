@@ -219,6 +219,9 @@ int WorldRenderer::renderToFrameBuffer(const video::Camera& camera) {
 	_colorTexture.unbind();
 	_frameBuffer.unbind();
 
+	if (_bloom->boolVal()) {
+		// TODO: add bloom support
+	}
 	return drawCallsWorld;
 }
 
@@ -342,6 +345,7 @@ int WorldRenderer::renderEntityDetails(const video::Camera& camera) {
 
 void WorldRenderer::construct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
+	_bloom = core::Var::getSafe(cfg::ClientBloom);
 	_water = core::Var::getSafe(cfg::ClientWater);
 	_entityRenderer.construct();
 }

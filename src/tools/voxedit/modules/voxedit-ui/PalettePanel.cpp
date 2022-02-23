@@ -6,6 +6,7 @@
 #include "core/StringUtil.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"
+#include "voxel/MaterialColor.h"
 
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
 #define PALETTEACTIONPOPUP "##paletteactionpopup"
@@ -71,6 +72,15 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 				const core::String &layerFromColorCmd = core::string::format("colortolayer %i", palIdx);
 				ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Layer from color" PALETTEACTIONPOPUP, layerFromColorCmd.c_str(), true, &listener);
+				if (voxel::materialColorIsGlow(palIdx)) {
+					if (ImGui::MenuItem("Remove Glow")) {
+						voxel::materialColorRemoveGlow(palIdx);
+					}
+				} else {
+					if (ImGui::MenuItem("Glow")) {
+						voxel::materialColorSetGlow(palIdx);
+					}
+				}
 				ImGui::EndPopup();
 			}
 			if (!colorHovered && ImGui::IsItemHovered()) {

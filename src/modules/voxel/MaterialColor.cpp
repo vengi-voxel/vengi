@@ -56,7 +56,7 @@ public:
 		_initialized = true;
 		_dirty = true;
 		_materialColors.reserve(256);
-		_glowColors.fill(glm::vec4(0.0f));
+		_glowColors.fill(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
 		const size_t colors = paletteBufferSize / 4;
 		if (colors > _materialColors.capacity()) {
 			Log::error("Palette image has invalid dimensions - we need max 256x1(depth: 4)");
@@ -206,6 +206,20 @@ public:
 		return _materialColors;
 	}
 
+	void setGlowColor(int idx) {
+		_glowColors[idx] = _materialColors[idx];
+		_dirty = true;
+	}
+
+	bool isGlowColor(int idx) {
+		return _glowColors[idx] != core::Color::Clear;
+	}
+
+	void removeGlowColor(int idx) {
+		_glowColors[idx] = core::Color::Clear;
+		_dirty = true;
+	}
+
 	const MaterialColorArray& getGlowColors() const {
 		if (!_initialized) {
 			getColors();
@@ -286,6 +300,27 @@ bool overrideMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSi
 		return initDefaultMaterialColors();
 	}
 	return true;
+}
+
+bool materialColorIsGlow(int idx) {
+	if (idx < 0 || idx >= 256) {
+		return false;
+	}
+	return getInstance().isGlowColor(idx);
+}
+
+void materialColorSetGlow(int idx) {
+	if (idx < 0 || idx >= 256) {
+		return;
+	}
+	getInstance().setGlowColor(idx);
+}
+
+void materialColorRemoveGlow(int idx) {
+	if (idx < 0 || idx >= 256) {
+		return;
+	}
+	getInstance().removeGlowColor(idx);
 }
 
 bool materialColorChanged() {

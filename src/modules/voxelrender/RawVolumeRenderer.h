@@ -10,7 +10,6 @@
 #include "core/concurrent/Concurrency.h"
 #include "core/concurrent/ThreadPool.h"
 #include "render/BloomRenderer.h"
-#include "render/BlurRenderer.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "video/Buffer.h"
@@ -73,11 +72,11 @@ protected:
 	shader::ShadowmapInstancedShader& _shadowMapShader;
 	render::Shadow _shadow;
 	video::FrameBuffer _frameBuffer;
-	render::BlurRenderer _blurRenderer;
 	render::BloomRenderer _bloomRenderer;
 
 	core::VarPtr _meshSize;
 	core::VarPtr _shadowMap;
+	core::VarPtr _bloom;
 
 	glm::vec3 _diffuseColor = frontend::diffuseColor;
 	glm::vec3 _ambientColor = frontend::ambientColor;
@@ -100,7 +99,7 @@ protected:
 	core::ConcurrentPriorityQueue<ExtractionCtx> _pendingQueue;
 	void extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
-	void renderToFrameBuffer(const video::Camera& camera, bool shadow);
+	void renderVolumes(const video::Camera& camera, bool shadow);
 
 public:
 	RawVolumeRenderer();

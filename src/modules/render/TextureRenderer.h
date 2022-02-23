@@ -22,10 +22,9 @@ private:
 public:
 	/**
 	 * @brief Initializes the shader and the vbo for the texture rendering
-	 * @param[in] size The size for the texture quad
 	 * @sa shutdown()
 	 */
-	bool init(const glm::vec2& size, bool yFlipped = false);
+	bool init(bool yFlipped = false);
 	/**
 	 * @sa init()
 	 */
@@ -34,10 +33,8 @@ public:
 	/**
 	 * @brief Perform the rendering with the shader::TextureShader (of the whole texture)
 	 * @note The given texture unit must have the texture bound already
-	 * @param[in] projection The projection matrix to hand over to the texture shader
-	 * @param[in] model The model matrix to hand over to the texture shader
 	 */
-	void render(const glm::mat4& projection, const glm::mat4& model = glm::mat4(1.0f), video::TextureUnit texUnit = video::TextureUnit::Zero);
+	void render(video::TextureUnit texUnit = video::TextureUnit::Zero);
 };
 
 }
