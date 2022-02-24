@@ -489,6 +489,7 @@ void RawVolumeRenderer::renderVolumes(const video::Camera& camera, bool shadow) 
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::ScopedState scopedCullFace(video::State::CullFace);
 	video::ScopedState scopedScissor(video::State::Scissor, false);
+	video::ScopedState scopedBlend(video::State::Blend, false);
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
 	if (_shadowMap->boolVal()) {
 		_shadow.update(camera, true);
