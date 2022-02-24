@@ -148,6 +148,7 @@ void Viewport::shutdown() {
 bool Viewport::saveImage(const char* filename) {
 	core_assert(_texture->format() == video::TextureFormat::RGBA);
 	if (_texture->format() != video::TextureFormat::RGBA) {
+		Log::error("Unsupported texture format");
 		return false;
 	}
 
@@ -158,8 +159,9 @@ bool Viewport::saveImage(const char* filename) {
 
 	uint8_t *pixels;
 	if (!video::readTexture(video::TextureUnit::Upload,
-			_texture->type(), _texture->format(), _texture,
+			_texture->type(), _texture->format(), _texture->handle(),
 			_texture->width(), _texture->height(), &pixels)) {
+		Log::error("Failed to read texture");
 		return false;
 	}
 	image::Image::flipVerticalRGBA(pixels, _texture->width(), _texture->height());
