@@ -38,6 +38,7 @@ struct SceneGraphTransform {
 
 	void print() const;
 	void update();
+	void updateFromMat();
 };
 
 /**

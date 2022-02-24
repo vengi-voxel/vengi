@@ -23,6 +23,13 @@ void SceneGraphTransform::update() {
 	mat = glm::translate(position) * glm::mat4_cast(rot) * glm::scale(glm::vec3(scale));
 }
 
+void SceneGraphTransform::updateFromMat() {
+	position = mat[3];
+	scale = glm::length(glm::vec3(mat[0]));
+	const glm::mat3 rotMtx(glm::vec3(mat[0]) / scale, glm::vec3(mat[1]) / scale, glm::vec3(mat[2]) / scale);
+	rot = glm::quat_cast(rotMtx);
+}
+
 SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_volume = move._volume;
 	move._volume = nullptr;

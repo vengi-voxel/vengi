@@ -109,6 +109,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, voxel::SceneGraphNode 
 	node.setVisible(childModelNode->visible());
 	node.setLocked(childModelNode->locked());
 	node.addProperties(childModelNode->properties());
+	node.setNormalizedPivot(childModelNode->normalizedPivot());
 	return true;
 }
 
@@ -389,15 +390,25 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		Log::warn("Failed to load %s", vxaPath.c_str());
 	}
 
-#if 0
-	for (SceneGraphNode &node : sceneGraph) {
-		voxel::RawVolume *v = transformVolume(node.transform(), node.volume());
-		node.setVolume(v, true);
-	}
-#endif
+	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform());
 
 	// some files since version 6 still have stuff here
 	return true;
+}
+
+void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform parentTransform) {
+	SceneGraphTransform currentTransform = node.transform();
+	currentTransform.mat = parentTransform.mat * node.transform().mat;
+	currentTransform.updateFromMat();
+
+	if (node.type() == SceneGraphNodeType::Model) {
+		voxel::RawVolume *v = transformVolume(currentTransform, node.volume());
+		node.setVolume(v, true);
+	}
+
+	for (int nodeIdx : node.children()) {
+		recursiveTransformVolume(sceneGraph, sceneGraph.node(nodeIdx), currentTransform);
+	}
 }
 
 bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {

@@ -55,7 +55,12 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		wrap(stream.readInt32(interpolation))
 		stream.readBool(); // rotation ??
 		SceneGraphTransform transform;
-		transform.normalizedPivot = glm::vec3(0.5f);
+
+		// TODO: only the first frame is supported - as we don't have animation support yet
+		if (i == 0u) {
+			transform = node.transform();
+		}
+
 		glm::vec3 localPosition{0.0f};
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
