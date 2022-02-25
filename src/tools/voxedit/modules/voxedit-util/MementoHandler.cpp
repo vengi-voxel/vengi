@@ -4,6 +4,7 @@
 
 #include "MementoHandler.h"
 
+#include "core/ArrayLength.h"
 #include "voxel/Voxel.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -128,12 +129,22 @@ void MementoHandler::construct() {
 		Log::info("Current memento state index: %i", _statePosition);
 		Log::info("Maximum memento states: %i", MaxStates);
 		int i = 0;
+
+		const char *states[] = {
+			"Modification",
+			"SceneNodeMove",
+			"SceneNodeAdded",
+			"SceneNodeRemoved",
+			"SceneNodeRenamed"
+		};
+		static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
+
 		for (MementoState& state : _states) {
 			const glm::ivec3& mins = state.region.getLowerCorner();
 			const glm::ivec3& maxs = state.region.getUpperCorner();
-			Log::info("%4i: %i (p: %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)]",
-					i++, state.nodeId, state.parentId, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
-							mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+			Log::info("%4i: (%s) node id: %i (parent: %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib)",
+					i++, states[(int)state.type], state.nodeId, state.parentId, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
+							mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)state.data.size());
 		}
 	});
 }

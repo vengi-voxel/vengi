@@ -61,6 +61,8 @@ public:
 	MementoData(const MementoData& o);
 	~MementoData();
 
+	inline size_t size() const { return _compressedSize; }
+
 	MementoData& operator=(MementoData &&o) noexcept;
 
 	/**
