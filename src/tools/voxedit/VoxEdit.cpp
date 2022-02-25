@@ -5,6 +5,7 @@
 #include "VoxEdit.h"
 #include "app/App.h"
 #include "core/Color.h"
+#include "core/StringUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxel/MaterialColor.h"
 #include "metric/Metric.h"
@@ -51,6 +52,17 @@ void VoxEdit::onDropFile(const core::String& file) {
 	Log::warn("Failed to handle %s as drop file event", file.c_str());
 }
 
+core::String VoxEdit::getSuggestedFilename(const char *extension) const {
+	core::String filename = voxedit::sceneMgr().filename();
+	if (filename.empty()) {
+		return filename;
+	}
+	if (extension == nullptr) {
+		return filename;
+	}
+	return core::string::stripExtension(filename) + "." + extension;
+}
+
 app::AppState VoxEdit::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 
@@ -72,7 +84,8 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, io::format::images());
+			const core::String filename = getSuggestedFilename("png");
+			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, io::format::images(), filename);
 			return;
 		}
 		_mainWindow->saveScreenshot(args[0]);
@@ -83,10 +96,23 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
+			const core::String filename = getSuggestedFilename();
+			if (filename.empty()) {
+				saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
+			} else {
+				_mainWindow->save(filename);
+			}
 			return;
 		}
 		_mainWindow->save(args[0]);
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
+
+	command::Command::registerCommand("saveas", [this](const command::CmdArgs &args) {
+		if (_mainWindow == nullptr) {
+			return;
+		}
+		const core::String filename = getSuggestedFilename();
+		saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE, filename);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
 
 	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {

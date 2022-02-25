@@ -25,6 +25,8 @@ private:
 	voxedit::MainWindow* _mainWindow = nullptr;
 	core::Array<io::FormatDescription, 64> _paletteFormats;
 
+	core::String getSuggestedFilename(const char *extension = nullptr) const;
+
 public:
 	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

@@ -269,6 +269,8 @@ public:
 	void setActiveCamera(video::Camera* camera);
 	video::Camera* activeCamera();
 
+	const core::String& filename() const;
+
 	const voxel::Voxel& hitCursorVoxel() const;
 
 	const glm::ivec3& cursorPosition() const;
@@ -429,6 +431,10 @@ public:
 	void nodeActivate(int nodeId);
 	void nodeForeachGroup(const std::function<void(int)>& f);
 };
+
+inline const core::String& SceneManager::filename() const {
+	return _lastFilename;
+}
 
 inline video::ShapeBuilder &SceneManager::shapeBuilder() {
 	return _shapeBuilder;
