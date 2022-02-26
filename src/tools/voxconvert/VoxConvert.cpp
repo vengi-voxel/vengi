@@ -432,7 +432,6 @@ void VoxConvert::dumpNode_r(const voxel::SceneGraph& sceneGraph, int nodeId, int
 	static const char* NodeTypeStr[] {
 		"Root",
 		"Model",
-		"ModelReference",
 		"Group",
 		"Camera",
 		"Unknown"

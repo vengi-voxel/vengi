@@ -20,7 +20,6 @@ class RawVolume;
 enum class SceneGraphNodeType {
 	Root,
 	Model,
-	ModelReference,
 	Group,
 	Camera,
 	Unknown,
@@ -56,8 +55,6 @@ public:
 protected:
 	int _id = -1;
 	int _parent = 0;
-	int _modelId = -1;
-	int _referencedNodeId = -1;
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
@@ -78,6 +75,7 @@ protected:
 	void setParent(int id);
 
 public:
+	~SceneGraphNode() { release(); }
 	/**
 	 * @brief Releases the memory of the volume instance (only if owned).
 	 */
@@ -91,9 +89,6 @@ public:
 	int id() const;
 	void setId(int id);
 	int parent() const;
-
-	int modelId() const;
-	void setModelId(int id);
 
 	SceneGraphNodeType type() const;
 
@@ -112,11 +107,6 @@ public:
 	 * @return voxel::RawVolume - might be @c nullptr
 	 */
 	voxel::RawVolume *volume();
-	/**
-	 * For SceneGraphNodeType::ModelReference
-	 */
-	int referencedNodeId() const;
-	void setReferencedNodeId(int nodeId);
 	/**
 	 * @return voxel::Region instance that is invalid when the volume is not set for this instance.
 	 */
@@ -178,14 +168,6 @@ inline SceneGraphTransform& SceneGraphNode::transform() {
 	return _transform;
 }
 
-inline int SceneGraphNode::referencedNodeId() const {
-	return _referencedNodeId;
-}
-
-inline void SceneGraphNode::setReferencedNodeId(int nodeId) {
-	_referencedNodeId = nodeId;
-}
-
 inline bool SceneGraphNode::owns() const {
 	return _volume;
 }
@@ -200,14 +182,6 @@ inline int SceneGraphNode::parent() const {
 
 inline void SceneGraphNode::setParent(int id) {
 	_parent = id;
-}
-
-inline int SceneGraphNode::modelId() const {
-	return _modelId;
-}
-
-inline void SceneGraphNode::setModelId(int id) {
-	_modelId = id;
 }
 
 inline SceneGraphNodeType SceneGraphNode::type() const {

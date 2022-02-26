@@ -9,6 +9,7 @@
 #include "io/FileStream.h"
 #include "math/AABB.h"
 #include "voxedit-ui/LayerPanel.h"
+#include "voxedit-util/MementoHandler.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -467,64 +468,113 @@ voxel::RawVolume* SceneManager::activeVolume() {
 	return volume(activeNode());
 }
 
-void SceneManager::undo() {
+// TODO: this should also update _dirty
+bool SceneManager::undo() {
+	if (!mementoHandler().canUndo()) {
+		Log::debug("Nothing to undo");
+		return false;
+	}
+
 	const MementoState& s = _mementoHandler.undo();
+	core_assert(s.valid());
 	ScopedMementoHandlerLock lock(_mementoHandler);
 	if (s.type == MementoType::SceneNodeRenamed) {
+		Log::debug("Memento: Undo rename of node %i (%s)", s.nodeId, s.name.c_str());
 		if (voxel::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
 			node->setName(s.name);
+			return true;
 		}
-		return;
+		return false;
 	} else if (s.type == MementoType::SceneNodeMove) {
-		nodeMove(s.nodeId, s.parentId);
-		return;
+		Log::debug("Memento: Undo move of node %i (%s) (move back to parent %i)", s.nodeId, s.name.c_str(), s.parentId);
+		return nodeMove(s.nodeId, s.parentId);
+	} else if (s.type == MementoType::SceneNodeRemoved) {
+		voxel::RawVolume* v = MementoData::toVolume(s.data);
+		voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
+		node.setName(s.name);
+		node.setVolume(v, true);
+		const glm::vec3 rp = referencePosition();
+		const glm::vec3 size = v->region().getDimensionsInVoxels();
+		node.setPivot(rp, size);
+		Log::debug("Memento: Undo remove of node (%s) from parent %i", s.name.c_str(), s.parentId);
+		const int newNodeId = addNodeToSceneGraph(node, s.parentId);
+		_mementoHandler.updateNodeId(s.nodeId, newNodeId);
+		return newNodeId != -1;
+	} else if (s.type == MementoType::SceneNodeAdded) {
+		Log::debug("Memento: Remove node %i", s.nodeId);
+		return nodeRemove(s.nodeId, true);
+	} else if (s.type == MementoType::Modification) {
+		Log::debug("Memento: Undo modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
+		voxel::RawVolume* v = MementoData::toVolume(s.data);
+		if (voxel::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+			node->setVolume(v, true);
+			node->setName(s.name);
+			modified(node->id(), s.region, false);
+			return true;
+		} else {
+			Log::warn("Failed to undo - node id %i not found (%s)", s.nodeId, s.name.c_str());
+			delete v;
+			return false;
+		}
 	}
-	voxel::RawVolume* v = MementoData::toVolume(s.data);
-	if (v == nullptr) {
-		nodeRemove(s.nodeId, false);
-		return;
-	}
-	Log::debug("Volume found in undo state for layer: %i with name %s", s.nodeId, s.name.c_str());
-	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
-	node.setName(s.name);
-	node.setVolume(v, true);
-	const glm::vec3 rp = referencePosition();
-	const glm::vec3 size = v->region().getDimensionsInVoxels();
-	node.setPivot(rp, size);
-	addNodeToSceneGraph(node, s.parentId);
+	return true;
 }
 
-void SceneManager::redo() {
+bool SceneManager::redo() {
+	if (!mementoHandler().canRedo()) {
+		Log::debug("Nothing to redo");
+		return false;
+	}
+
 	const MementoState& s = _mementoHandler.redo();
+	core_assert(s.valid());
 	ScopedMementoHandlerLock lock(_mementoHandler);
 	if (s.type == MementoType::SceneNodeRenamed) {
+		Log::debug("Memento: Redo rename of node %i to %s", s.nodeId, s.name.c_str());
 		if (voxel::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
 			node->setName(s.name);
+			return true;
 		}
-		return;
+		return false;
 	} else if (s.type == MementoType::SceneNodeMove) {
-		nodeMove(s.nodeId, s.parentId);
-		return;
+		Log::debug("Memento: Redo move of node %i (%s) (new parent %i)", s.nodeId, s.name.c_str(), s.parentId);
+		return nodeMove(s.nodeId, s.parentId);
+	} else if (s.type == MementoType::SceneNodeRemoved) {
+		Log::debug("Memento: Redo remove of node %i (%s) from parent %i", s.nodeId, s.name.c_str(), s.parentId);
+		return nodeRemove(s.nodeId, true);
+	} else if (s.type == MementoType::SceneNodeAdded) {
+		voxel::RawVolume* v = MementoData::toVolume(s.data);
+		voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
+		node.setName(s.name);
+		node.setVolume(v, true);
+		const glm::vec3 rp = referencePosition();
+		const glm::vec3 size = v->region().getDimensionsInVoxels();
+		node.setPivot(rp, size);
+		Log::debug("Memento: Redo add node (%s) to parent %i", s.name.c_str(), s.parentId);
+		const int newNodeId = addNodeToSceneGraph(node, s.parentId);
+		_mementoHandler.updateNodeId(s.nodeId, newNodeId);
+		return newNodeId != -1;
+	} else if (s.type == MementoType::Modification) {
+		Log::debug("Memento: Redo modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
+		voxel::RawVolume* v = MementoData::toVolume(s.data);
+		if (voxel::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+			node->setVolume(v, true);
+			node->setName(s.name);
+			modified(node->id(), s.region, false);
+			return true;
+		} else {
+			Log::warn("Failed to redo - node id %i not found (%s)", s.nodeId, s.name.c_str());
+			delete v;
+			return false;
+		}
 	}
-	voxel::RawVolume* v = MementoData::toVolume(s.data);
-	if (v == nullptr) {
-		nodeRemove(s.nodeId, false);
-		return;
-	}
-	Log::debug("Volume found in redo state for layer: %i with name %s", s.nodeId, s.name.c_str());
-	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Model);
-	node.setName(s.name);
-	node.setVolume(v, true);
-	const glm::vec3 rp = referencePosition();
-	const glm::vec3 size = v->region().getDimensionsInVoxels();
-	node.setPivot(rp, size);
-	addNodeToSceneGraph(node, s.parentId);
+	return true;
 }
 
-void SceneManager::copy() {
+bool SceneManager::copy() {
 	const Selection& selection = _modifier.selection();
 	if (!selection.isValid()) {
-		return;
+		return false;
 	}
 	const int nodeId = activeNode();
 	voxel::RawVolume* model = volume(nodeId);
@@ -532,12 +582,13 @@ void SceneManager::copy() {
 		delete _copy;
 	}
 	_copy = voxedit::tool::copy(model, selection);
+	return true;
 }
 
-void SceneManager::paste(const glm::ivec3& pos) {
+bool SceneManager::paste(const glm::ivec3& pos) {
 	if (_copy == nullptr) {
 		Log::debug("Nothing copied yet - failed to paste");
-		return;
+		return false;
 	}
 	const int nodeId = activeNode();
 	voxel::RawVolume* model = volume(nodeId);
@@ -545,16 +596,17 @@ void SceneManager::paste(const glm::ivec3& pos) {
 	voxedit::tool::paste(model, _copy, pos, modifiedRegion);
 	if (!modifiedRegion.isValid()) {
 		Log::debug("Failed to paste");
-		return;
+		return false;
 	}
 	modified(nodeId, modifiedRegion);
+	return true;
 }
 
-void SceneManager::cut() {
+bool SceneManager::cut() {
 	const Selection& selection = _modifier.selection();
 	if (!selection.isValid()) {
 		Log::debug("Nothing selected - failed to cut");
-		return;
+		return false;
 	}
 	const int nodeId = activeNode();
 	voxel::RawVolume* model = volume(nodeId);
@@ -565,9 +617,10 @@ void SceneManager::cut() {
 	_copy = voxedit::tool::cut(model, selection, modifiedRegion);
 	if (_copy == nullptr) {
 		Log::debug("Failed to cut");
-		return;
+		return false;
 	}
 	modified(nodeId, modifiedRegion);
+	return true;
 }
 
 void SceneManager::resetLastTrace() {
@@ -641,11 +694,10 @@ void SceneManager::resetSceneState() {
 	_animationUpdate = false;
 	_editMode = EditMode::Model;
 	_mementoHandler.clearStates();
-	voxel::SceneGraphNode *node = _sceneGraph[0];
-	core_assert_always(node != nullptr);
-	_sceneGraph.setActiveNode(node->id());
-	Log::debug("New volume for node %i", node->id());
-	_mementoHandler.markUndo(node->parent(), node->id(), node->name(), node->volume());
+	voxel::SceneGraphNode &node = *_sceneGraph.begin();
+	_sceneGraph.setActiveNode(node.id());
+	Log::debug("New volume for node %i", node.id());
+	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume());
 	_dirty = false;
 	_result = voxel::PickResult();
 	setCursorPosition(cursorPosition(), true);
@@ -653,29 +705,39 @@ void SceneManager::resetSceneState() {
 }
 
 int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
-	voxel::SceneGraphNode newNode(node.type());
-	newNode.setName(node.name());
-	newNode.setTransform(node.transform(), false);
-	newNode.setVisible(node.visible());
-	newNode.addProperties(node.properties());
-	newNode.setReferencedNodeId(node.referencedNodeId());
-	newNode.setTransform(node.transform(), false);
-	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
-		core_assert(node.volume() != nullptr);
-		core_assert(node.owns());
-		newNode.setVolume(node.volume(), true);
-		node.releaseOwnership();
+	const voxel::SceneGraphNodeType type = node.type();
+	const voxel::Region region = node.region();
+	const core::String name = node.name();
+	int newNodeId;
+	{
+		voxel::SceneGraphNode newNode(type);
+		newNode.setName(name);
+		newNode.setTransform(node.transform(), false);
+		newNode.setVisible(node.visible());
+		newNode.addProperties(node.properties());
+		if (newNode.type() == voxel::SceneGraphNodeType::Model) {
+			core_assert(node.volume() != nullptr);
+			core_assert(node.owns());
+			newNode.setVolume(node.volume(), true);
+			node.releaseOwnership();
+		} else {
+			core_assert(node.volume() == nullptr);
+		}
+
+		newNodeId = _sceneGraph.emplace(core::move(newNode), parent);
+		if (newNodeId == -1) {
+			Log::error("Failed to add node to the scene");
+			return -1;
+		}
 	}
 
-	const int newNodeId = _sceneGraph.emplace(core::move(newNode), parent);
-	Log::debug("Add node %i to scene graph", newNodeId);
-	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
-		// update the whole volume
-		const voxel::Region& region = node.region();
-		queueRegionExtraction(newNodeId, region);
+	Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
+	_mementoHandler.markNodeAdded(parent, newNodeId, name, node.volume());
 
-		Log::debug("Adding node %i with name %s", newNodeId, node.name().c_str());
-		_mementoHandler.markNodeAdded(parent, newNodeId, node.name(), node.volume());
+	Log::debug("Add node %i to scene graph", newNodeId);
+	if (type == voxel::SceneGraphNodeType::Model) {
+		// update the whole volume
+		queueRegionExtraction(newNodeId, region);
 
 		_result = voxel::PickResult();
 		_needAutoSave = true;
@@ -695,24 +757,24 @@ int SceneManager::addSceneGraphNode_r(voxel::SceneGraph &sceneGraph, voxel::Scen
 	}
 
 	const voxel::SceneGraphNode &newNode = sceneGraph.node(newNodeId);
-	int modelsAdded = newNode.type() == voxel::SceneGraphNodeType::Model ? 1 : 0;
+	int nodesAdded = newNode.type() == voxel::SceneGraphNodeType::Model ? 1 : 0;
 	for (int nodeIdx : newNode.children()) {
 		core_assert(sceneGraph.hasNode(nodeIdx));
 		voxel::SceneGraphNode &childNode = sceneGraph.node(nodeIdx);
-		modelsAdded += addSceneGraphNode_r(sceneGraph, childNode, newNodeId);
+		nodesAdded += addSceneGraphNode_r(sceneGraph, childNode, newNodeId);
 	}
 
-	return modelsAdded;
+	return nodesAdded;
 }
 
 int SceneManager::addSceneGraphNodes(voxel::SceneGraph& sceneGraph) {
 	const voxel::SceneGraphNode &root = sceneGraph.root();
-	int modelsAdded = 0;
+	int nodesAdded = 0;
 	_sceneGraph.node(0).addProperties(root.properties());
 	for (int nodeId : root.children()) {
-		modelsAdded += addSceneGraphNode_r(sceneGraph, sceneGraph.node(nodeId), 0);
+		nodesAdded += addSceneGraphNode_r(sceneGraph, sceneGraph.node(nodeId), 0);
 	}
-	return modelsAdded;
+	return nodesAdded;
 }
 
 bool SceneManager::loadSceneGraph(voxel::SceneGraph& sceneGraph) {
@@ -720,8 +782,8 @@ bool SceneManager::loadSceneGraph(voxel::SceneGraph& sceneGraph) {
 	_sceneGraph.clear();
 	_volumeRenderer.clear();
 
-	const int modelsAdded = addSceneGraphNodes(sceneGraph);
-	if (modelsAdded == 0) {
+	const int nodesAdded = addSceneGraphNodes(sceneGraph);
+	if (nodesAdded == 0) {
 		Log::warn("Failed to load any model volumes");
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 		newScene(true, "", region);
@@ -800,7 +862,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	const glm::vec3 rp = v->region().getPivot();
 	const glm::vec3 size = v->region().getDimensionsInVoxels();
 	node.setPivot(rp, size);
-	const int nodeId = sceneMgr().addNodeToSceneGraph(node);
+	const int nodeId = addNodeToSceneGraph(node);
 	if (nodeId == -1) {
 		Log::error("Failed to add empty volume to new scene graph");
 		return false;
@@ -987,7 +1049,6 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 		}
 	}
 	if (renderScene) {
-		_volumeRenderer.setRenderScene(_editMode == EditMode::Scene);
 		_volumeRenderer.prepare(_sceneGraph, _hideInactive->boolVal(), _grayInactive->boolVal());
 		_volumeRenderer.render(camera, _renderShadow, false);
 		extractVolume();
@@ -1176,7 +1237,7 @@ void SceneManager::construct() {
 	}).setHelp("Move the voxels of the current selected palette index or the given index into a new layer");
 
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
-		_modifier.aabbStop();
+		_modifier.aabbAbort();
 	}).setHelp("Aborts the current modifier action").setBindingContext(BindingContext::Model);
 
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
@@ -1489,19 +1550,10 @@ void SceneManager::construct() {
 		const char *width = args.size() > 1 ? args[1].c_str() : "64";
 		const char *height = args.size() > 2 ? args[2].c_str() : width;
 		const char *depth = args.size() > 3 ? args[3].c_str() : height;
-		const int iw = core::string::toInt(width) - 1;
-		const int ih = core::string::toInt(height) - 1;
-		const int id = core::string::toInt(depth) - 1;
-		const voxel::Region region(glm::zero<glm::ivec3>(), glm::ivec3(iw, ih, id));
-		if (!region.isValid()) {
-			Log::warn("Invalid size provided (%i:%i:%i - %s:%s:%s)", iw, ih, id, width, height, depth);
-			return;
-		}
-		voxel::SceneGraphNode newNode;
-		newNode.setVolume(new voxel::RawVolume(region), true);
-		newNode.setName(name);
-		const int parentId = activeNode();
-		addNodeToSceneGraph(newNode, parentId);
+		const int iw = core::string::toInt(width);
+		const int ih = core::string::toInt(height);
+		const int id = core::string::toInt(depth);
+		addModelChild(name, iw, ih, id);
 	}).setHelp("Add a new layer (with a given name and width, height, depth - all optional)");
 
 	command::Command::registerCommand("layerdelete", [&] (const command::CmdArgs& args) {
@@ -1617,6 +1669,20 @@ void SceneManager::construct() {
 	core::Var::get("palette", voxel::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 }
 
+int SceneManager::addModelChild(const core::String& name, int width, int height, int depth) {
+	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
+	if (!region.isValid()) {
+		Log::warn("Invalid size provided (%i:%i:%i)", width, height, depth);
+		return -1;
+	}
+	voxel::SceneGraphNode modelNode;
+	modelNode.setVolume(new voxel::RawVolume(region), true);
+	modelNode.setName(name);
+	const int parentId = activeNode();
+	const int nodeId = addNodeToSceneGraph(modelNode, parentId);
+	return nodeId;
+}
+
 void SceneManager::flip(math::Axis axis) {
 	_sceneGraph.foreachGroup([&] (int nodeId) {
 		auto* v = volume(nodeId);
@@ -1637,34 +1703,13 @@ void SceneManager::flip(math::Axis axis) {
 void SceneManager::toggleEditMode() {
 	if (_editMode == EditMode::Model) {
 		_editMode = EditMode::Scene;
-		_modifier.aabbStop();
+		_modifier.aabbAbort();
 	} else if (_editMode == EditMode::Scene) {
 		_editMode = EditMode::Model;
 		_gizmo.resetMode();
 	}
 	setGizmoPosition();
 	// don't abort or toggle any other mode
-}
-
-void SceneManager::setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition) {
-	_sceneGraph.foreachGroup([&] (int nodeId) {
-		auto* v = volume(nodeId);
-		if (v == nullptr) {
-			return;
-		}
-		voxel::RawVolumeWrapper wrapper(v);
-		const Selection& selection = _modifier.selection();
-		if (selection.isValid()) {
-			wrapper.setRegion(selection);
-		}
-		const int cnt = voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel&) {
-			v->setVoxel(x, y, z, voxel());
-		}, condition);
-		if (cnt > 0) {
-			modified(nodeId, wrapper.dirtyRegion());
-			Log::debug("Modified %i voxels", cnt);
-		}
-	});
 }
 
 bool SceneManager::init() {
@@ -2277,7 +2322,9 @@ void SceneManager::setGizmoPosition() {
 
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
-		_mementoHandler.markUndo(targetNodeId, sourceNodeId, "", nullptr, MementoType::SceneNodeMove);
+		voxel::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
+		core_assert(node != nullptr);
+		_mementoHandler.markUndo(targetNodeId, sourceNodeId, nullptr, nullptr, MementoType::SceneNodeMove);
 		return true;
 	}
 	return false;
@@ -2290,7 +2337,7 @@ void SceneManager::nodeRename(int nodeId, const core::String &name) {
 }
 
 void SceneManager::nodeRename(voxel::SceneGraphNode &node, const core::String &name) {
-	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), nullptr, MementoType::SceneNodeRenamed);
+	_mementoHandler.markUndo(node.parent(), node.id(), name, nullptr, MementoType::SceneNodeRenamed);
 	node.setName(name);
 }
 
@@ -2307,26 +2354,25 @@ void SceneManager::nodeSetLocked(int nodeId, bool visible) {
 }
 
 bool SceneManager::nodeRemove(int nodeId, bool recursive) {
-	if (_sceneGraph.hasNode(nodeId)) {
-		return nodeRemove(_sceneGraph.node(nodeId), recursive);
+	if (voxel::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+		return nodeRemove(*node, recursive);
 	}
 	return false;
 }
 
 bool SceneManager::nodeRemove(voxel::SceneGraphNode &node, bool recursive) {
 	const int nodeId = node.id();
-	if (!_sceneGraph.removeNode(nodeId, recursive)) {
-		return false;
-	}
+	const core::String name = node.name();
+	const int parentId = node.parent();
+	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
+	_mementoHandler.markNodeRemoved(parentId, nodeId, name, node.volume());
+	_needAutoSave = true;
+	_dirty = true;
+	updateAABBMesh();
+	_sceneGraph.removeNode(nodeId, recursive);
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
-		newScene(true, "", region);
-	} else {
-		Log::debug("Delete node %i with name %s", nodeId, node.name().c_str());
-		_mementoHandler.markNodeDeleted(node.parent(), nodeId, node.name(), node.volume());
-		_needAutoSave = true;
-		_dirty = true;
-		updateAABBMesh();
+		newScene(true, name, region);
 	}
 	return true;
 }

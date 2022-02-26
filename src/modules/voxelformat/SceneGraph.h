@@ -22,7 +22,6 @@ class SceneGraph {
 protected:
 	core::Map<int, SceneGraphNode> _nodes;
 	int _nextNodeId = 0;
-	int _nextModelId = 0;
 	int _activeNodeId = -1;
 
 public:

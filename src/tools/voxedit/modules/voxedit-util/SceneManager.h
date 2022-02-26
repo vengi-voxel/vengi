@@ -186,17 +186,20 @@ private:
 	void autosave();
 	void setReferencePosition(const glm::ivec3& pos);
 	void updateGridRenderer(const voxel::Region& region);
-
-public:
-	int addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent = 0);
-private:
 	int addSceneGraphNode_r(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent);
+	void zoom(video::Camera& camera, float level) const;
+	bool extractVolume();
+	void updateLockedPlane(math::Axis axis);
+	void updateAABBMesh();
+
+protected:
 	voxel::SceneGraphNode *sceneGraphNode(int nodeId);
 	const voxel::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	bool setSceneGraphNodeVolume(voxel::SceneGraphNode &node, voxel::RawVolume* volume);
 	int addSceneGraphNodes(voxel::SceneGraph& sceneGraph);
 	bool loadSceneGraph(voxel::SceneGraph& sceneGraph);
 	int activeNode() const;
+	int addModelChild(const core::String& name, int width, int height, int depth);
 
 	void animate(double nowSeconds);
 	/**
@@ -217,12 +220,12 @@ private:
 	bool merge(int nodeId1, int nodeId2);
 	bool mergeMultiple(LayerMergeFlags flags);
 
-	void undo();
-	void redo();
+	bool undo();
+	bool redo();
 
-	void copy();
-	void paste(const glm::ivec3& pos);
-	void cut();
+	bool copy();
+	bool paste(const glm::ivec3& pos);
+	bool cut();
 
 	void rotate(int nodeId, const glm::ivec3& angle, bool increaseSize = false, bool rotateAroundReferencePosition = false);
 	void rotate(int angleX, int angleY, int angleZ, bool increaseSize = false, bool rotateAroundReferencePosition = false);
@@ -235,15 +238,10 @@ private:
 	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
 	void toggleEditMode();
 
-	void zoom(video::Camera& camera, float level) const;
-
 	bool saveModels(const core::String& dir);
 	bool saveNode(int nodeId, const core::String& file);
-	bool extractVolume();
-	void updateLockedPlane(math::Axis axis);
-	void setVoxelsForCondition(std::function<voxel::Voxel()> voxel, std::function<bool(const voxel::Voxel&)> condition);
+
 	void flip(math::Axis axis);
-	void updateAABBMesh();
 public:
 	~SceneManager();
 
@@ -356,6 +354,7 @@ public:
 	bool runScript(const core::String& script, const core::DynamicArray<core::String>& args);
 
 	bool newScene(bool force, const core::String& name, const voxel::Region& region);
+	int addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent = 0);
 
 	/**
 	 * @return @c true if the scene was modified and not saved yet

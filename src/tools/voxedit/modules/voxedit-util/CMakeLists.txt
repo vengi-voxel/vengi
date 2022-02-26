@@ -29,6 +29,7 @@ set(TEST_SRCS
 	tests/AnimationLuaSaverTest.cpp
 	tests/MementoHandlerTest.cpp
 	tests/ModifierTest.cpp
+	tests/SceneManagerTest.cpp
 )
 
 gtest_suite_sources(tests

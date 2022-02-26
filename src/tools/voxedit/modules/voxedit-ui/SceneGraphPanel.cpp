@@ -18,9 +18,6 @@ static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sc
 	case voxel::SceneGraphNodeType::Model:
 		name = ICON_FA_CUBES;
 		break;
-	case voxel::SceneGraphNodeType::ModelReference:
-		name = ICON_FA_CUBE;
-		break;
 	case voxel::SceneGraphNodeType::Root:
 	case voxel::SceneGraphNodeType::Group:
 		name = ICON_FA_OBJECT_GROUP;
@@ -102,10 +99,6 @@ static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sc
 			ImGui::LabelText(core::string::format("%i:%i:%i", size.x, size.y, size.z).c_str(), "size");
 			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
 				sceneMgr().nodeActivate(node.id());
-			}
-		} else if (node.type() == voxel::SceneGraphNodeType::ModelReference) {
-			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-				sceneMgr().nodeActivate(node.referencedNodeId());
 			}
 		}
 		for (const auto& entry : node.properties()) {

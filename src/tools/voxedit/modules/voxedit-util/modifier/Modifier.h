@@ -134,7 +134,7 @@ public:
 	 * @param callback Called for every region that was modified for the current active modifier.
 	 */
 	bool aabbAction(voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
-	void aabbStop();
+	void aabbAbort();
 	void aabbStep();
 
 	bool modifierTypeRequiresExistingVoxel() const;

@@ -107,9 +107,6 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 		parentIter->value.addChild(nodeId);
 	}
 	++_nextNodeId;
-	if (node.type() == SceneGraphNodeType::Model) {
-		node.setModelId(_nextModelId++);
-	}
 	node.setId(nodeId);
 	if (_activeNodeId == -1) {
 		// try to set a sane default value for the active node
@@ -152,18 +149,7 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 		Log::debug("Could not remove node %i - not found", nodeId);
 		return false;
 	}
-	if (iter->value.type() == SceneGraphNodeType::Model) {
-		// remove any other node that references this one
-		core::Buffer<int> refNodes;
-		for (auto i = begin(SceneGraphNodeType::ModelReference); i != end(); ++i) {
-			if ((*i).referencedNodeId() == iter->value.id()) {
-				refNodes.push_back((*i).id());
-			}
-		}
-		for (int nodeId : refNodes) {
-			removeNode(nodeId, false);
-		}
-	} else if (iter->value.type() == SceneGraphNodeType::Root) {
+	if (iter->value.type() == SceneGraphNodeType::Root) {
 		core_assert(nodeId == 0);
 		clear();
 		return true;
@@ -223,7 +209,6 @@ void SceneGraph::clear() {
 	}
 	_nodes.clear();
 	_nextNodeId = 1;
-	_nextModelId = 0;
 
 	SceneGraphNode node(SceneGraphNodeType::Root);
 	node.setName("root");
@@ -234,9 +219,10 @@ void SceneGraph::clear() {
 
 const SceneGraphNode *SceneGraph::operator[](int modelIdx) const {
 	for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
-		if ((*iter).modelId() == modelIdx) {
+		if (modelIdx == 0) {
 			return &*iter;
 		}
+		--modelIdx;
 	}
 	Log::error("Could not find scene graph node for model id %i", modelIdx);
 	return nullptr;
@@ -244,9 +230,10 @@ const SceneGraphNode *SceneGraph::operator[](int modelIdx) const {
 
 SceneGraphNode *SceneGraph::operator[](int modelIdx) {
 	for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
-		if ((*iter).modelId() == modelIdx) {
+		if (modelIdx == 0) {
 			return &*iter;
 		}
+		--modelIdx;
 	}
 	Log::error("Could not find scene graph node for model id %i", modelIdx);
 	return nullptr;

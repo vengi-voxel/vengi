@@ -99,11 +99,6 @@ void SceneGraphRenderer::prepare(voxel::SceneGraph &sceneGraph, bool hideInactiv
 			_renderer.setVolume(node.id(), node.volume(), true);
 			_renderer.extractRegion(node.id(), node.region());
 		}
-		if (0 && _renderScene) {
-			_renderer.setInstancingAmount(node.id(), 0);
-		} else {
-			//_renderer.setModelMatrix(node.id(), node.matrix(), true);
-		}
 		if (hideInactive) {
 			_renderer.hide(node.id(), node.id() != activeNode);
 		} else {
@@ -113,14 +108,6 @@ void SceneGraphRenderer::prepare(voxel::SceneGraph &sceneGraph, bool hideInactiv
 			_renderer.gray(node.id(), node.id() != activeNode);
 		} else {
 			_renderer.gray(node.id(), false);
-		}
-	}
-
-	if (0 && _renderScene) {
-		for (auto iter = sceneGraph.begin(voxel::SceneGraphNodeType::ModelReference); iter != sceneGraph.end(); ++iter) {
-			const int referencedModelNodeId = (*iter).referencedNodeId();
-			core_assert(referencedModelNodeId != -1);
-			core_assert_always(_renderer.setModelMatrix(referencedModelNodeId, (*iter).matrix(), false));
 		}
 	}
 }

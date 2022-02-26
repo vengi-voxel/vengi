@@ -56,12 +56,12 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 
 void ModifierButton::execute() {
 	Modifier& mgr = sceneMgr().modifier();
-	sceneMgr().nodeForeachGroup([&] (int layerId) {
-		Log::debug("Execute modifier action on layer %i", layerId);
-		voxel::RawVolume* volume = sceneMgr().volume(layerId);
+	sceneMgr().nodeForeachGroup([&] (int nodeId) {
+		Log::debug("Execute modifier action for node %i", nodeId);
+		voxel::RawVolume* volume = sceneMgr().volume(nodeId);
 		mgr.aabbAction(volume, [&] (const voxel::Region& region, ModifierType type) {
 			if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-				sceneMgr().modified(layerId, region);
+				sceneMgr().modified(nodeId, region);
 			}
 		});
 	});
@@ -70,7 +70,7 @@ void ModifierButton::execute() {
 		sceneMgr().trace(true);
 		_oldType = ModifierType::None;
 	}
-	mgr.aabbStop();
+	mgr.aabbAbort();
 }
 
 }

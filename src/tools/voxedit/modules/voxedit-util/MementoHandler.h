@@ -103,6 +103,10 @@ struct MementoState {
 			type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), name(_name), region(_region) {
 	}
 
+	inline bool valid() const {
+		return type != MementoType::Max;
+	}
+
 	/**
 	 * Some types (@c MementoType) don't have a volume attached.
 	 */
@@ -144,6 +148,8 @@ public:
 	 */
 	void unlock();
 
+	void print() const;
+
 	void clearStates();
 	/**
 	 * @brief Add a new state entry to the memento handler that you can return to.
@@ -157,8 +163,14 @@ public:
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
 	void markUndo(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification, const voxel::Region& region = voxel::Region::InvalidRegion);
-	void markNodeDeleted(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume);
+	void markNodeRemoved(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume);
 	void markNodeAdded(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume);
+
+	/**
+	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each new node.
+	 * This method will update the references for the old node id to the new one
+	 */
+	void updateNodeId(int nodeId, int newNodeId);
 
 	/**
 	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for
@@ -220,10 +232,10 @@ inline bool MementoHandler::canRedo() const {
 	if (_locked > 0) {
 		return false;
 	}
-	if (_states.empty()) {
+	if (stateSize() <= 1) {
 		return false;
 	}
-	return _statePosition < stateSize() - 1;
+	return _statePosition <= stateSize() - 2;
 }
 
 }

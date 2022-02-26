@@ -8,7 +8,7 @@
 #include "math/Axis.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
-#include "voxedit-util/modifier/Selection.h"
+#include "../modifier/Selection.h"
 #include "voxel/Voxel.h"
 
 namespace voxedit {

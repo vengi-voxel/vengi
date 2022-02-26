@@ -16,7 +16,7 @@
 
 namespace voxedit {
 
-static const MementoState InvalidMementoState{MementoType::Modification, MementoData(), -1, -1, "", voxel::Region::InvalidRegion};
+static const MementoState InvalidMementoState{MementoType::Max, MementoData(), -1, -1, "", voxel::Region::InvalidRegion};
 const int MementoHandler::MaxStates = 64;
 
 MementoData::MementoData(const uint8_t* buf, size_t bufSize,
@@ -124,28 +124,32 @@ void MementoHandler::unlock() {
 	--_locked;
 }
 
+void MementoHandler::print() const {
+	Log::info("Current memento state index: %i", _statePosition);
+	Log::info("Maximum memento states: %i", MaxStates);
+	int i = 0;
+
+	const char *states[] = {
+		"Modification",
+		"SceneNodeMove",
+		"SceneNodeAdded",
+		"SceneNodeRemoved",
+		"SceneNodeRenamed"
+	};
+	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
+
+	for (MementoState& state : _states) {
+		const glm::ivec3& mins = state.region.getLowerCorner();
+		const glm::ivec3& maxs = state.region.getUpperCorner();
+		Log::info("%4i: (%s) node id: %i (parent: %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib)",
+				i++, states[(int)state.type], state.nodeId, state.parentId, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
+						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)state.data.size());
+	}
+}
+
 void MementoHandler::construct() {
 	command::Command::registerCommand("ve_mementoinfo", [&] (const command::CmdArgs& args) {
-		Log::info("Current memento state index: %i", _statePosition);
-		Log::info("Maximum memento states: %i", MaxStates);
-		int i = 0;
-
-		const char *states[] = {
-			"Modification",
-			"SceneNodeMove",
-			"SceneNodeAdded",
-			"SceneNodeRemoved",
-			"SceneNodeRenamed"
-		};
-		static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
-
-		for (MementoState& state : _states) {
-			const glm::ivec3& mins = state.region.getLowerCorner();
-			const glm::ivec3& maxs = state.region.getUpperCorner();
-			Log::info("%4i: (%s) node id: %i (parent: %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib)",
-					i++, states[(int)state.type], state.nodeId, state.parentId, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
-							mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)state.data.size());
-		}
+		print();
 	});
 }
 
@@ -158,50 +162,51 @@ MementoState MementoHandler::undo() {
 	if (!canUndo()) {
 		return InvalidMementoState;
 	}
-	core_assert(_statePosition >= 1);
-	--_statePosition;
-	if (_states[_statePosition].data._buffer != nullptr
-			&& _states[_statePosition].type == MementoType::SceneNodeAdded
-			&& _states[_statePosition + 1].type != MementoType::Modification) {
-		--_statePosition;
-	}
 	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	const MementoState& s = state();
-	const voxel::Region region = _states[_statePosition + 1].region;
-	voxel::logRegion("Undo", region);
-	return MementoState{_states[_statePosition + 1].type, s.data, s.parentId, s.nodeId, s.name, region};
+	--_statePosition;
+	if (s.type != MementoType::Modification) {
+		return s;
+	}
+	for (uint8_t i = _statePosition; i > 0; --i) {
+		MementoState& prevS = _states[i];
+		if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) && prevS.nodeId == s.nodeId) {
+			core_assert(prevS.hasVolumeData());
+			// use the region from the current state - but the volume from the previous state of this node
+			return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region};
+		}
+	}
+	core_assert(_states[0].type == MementoType::Modification);
+	return _states[0];
 }
 
 MementoState MementoHandler::redo() {
 	if (!canRedo()) {
 		return InvalidMementoState;
 	}
-	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	++_statePosition;
-	if (_states[_statePosition].data._buffer == nullptr && _states[_statePosition].type == MementoType::SceneNodeAdded) {
-		++_statePosition;
-	}
-	if (_states[_statePosition].data._buffer != nullptr && _states[_statePosition].type == MementoType::SceneNodeRemoved) {
-		++_statePosition;
-	}
-	const MementoState& s = state();
-	voxel::logRegion("Redo", s.region);
-	return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region};
+	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
+	return state();
 }
 
-void MementoHandler::markNodeDeleted(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume) {
+void MementoHandler::updateNodeId(int nodeId, int newNodeId) {
+	for (MementoState& state : _states) {
+		if (state.nodeId == nodeId) {
+			state.nodeId = newNodeId;
+		}
+		if (state.parentId == nodeId) {
+			state.parentId = newNodeId;
+		}
+	}
+}
+
+void MementoHandler::markNodeRemoved(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume) {
 	Log::debug("Mark node %i as deleted (%s)", nodeId, name.c_str());
-	// previous state is that we have a volume at the given layer
 	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeRemoved);
-	// current state is that there is no volume at the given layer
-	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeRemoved);
 }
 
 void MementoHandler::markNodeAdded(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume) {
 	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
-	// previous state is that there is no volume at the given layer
-	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeAdded);
-	// current state is that we have a volume at the given layer
 	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeAdded);
 }
 
@@ -210,6 +215,7 @@ void MementoHandler::markUndo(int parentId, int nodeId, const core::String& name
 		Log::debug("Don't add undo state - we are currently in locked mode");
 		return;
 	}
+	core_assert(nodeId >= 0);
 	if (!_states.empty()) {
 		// if we mark something as new undo state, we can throw away
 		// every other state that follows the new one (everything after

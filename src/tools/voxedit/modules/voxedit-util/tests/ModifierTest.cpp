@@ -56,7 +56,7 @@ protected:
 			EXPECT_EQ(voxel::Region(mins, maxs), region);
 			++executed;
 		});
-		modifier.aabbStop();
+		modifier.aabbAbort();
 		EXPECT_EQ(1, executed);
 	}
 };
@@ -66,7 +66,7 @@ TEST_F(ModifierTest, testModifierStartStop) {
 	ASSERT_TRUE(modifier.init());
 	EXPECT_TRUE(modifier.aabbStart());
 	EXPECT_TRUE(modifier.aabbMode());
-	modifier.aabbStop();
+	modifier.aabbAbort();
 	EXPECT_FALSE(modifier.aabbMode());
 	modifier.shutdown();
 }

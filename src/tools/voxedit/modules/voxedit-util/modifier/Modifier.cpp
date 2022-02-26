@@ -375,7 +375,7 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 	return true;
 }
 
-void Modifier::aabbStop() {
+void Modifier::aabbAbort() {
 	_secondPosValid = false;
 	_aabbSecondActionDirection = math::Axis::None;
 	_aabbMode = false;
