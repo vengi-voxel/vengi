@@ -2009,14 +2009,16 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
 	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
 	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
-	int buffers, samples;
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
-	if (buffers == 0 || samples == 0) {
-		Log::warn("Could not get FSAA context");
-		multisampling = false;
-	} else {
-		Log::debug("Got FSAA context with %i buffers and %i samples", buffers, samples);
+	if (multisampling) {
+		int buffers, samples;
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
+		if (buffers == 0 || samples == 0) {
+			Log::warn("Could not get FSAA context");
+			multisampling = false;
+		} else {
+			Log::debug("Got FSAA context with %i buffers and %i samples", buffers, samples);
+		}
 	}
 
 	int profile;
