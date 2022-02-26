@@ -31,7 +31,7 @@ static int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::Stri
 		getName(program, i, uniformNameSize, nullptr, name);
 		const int location = getLocation(program, name);
 		if (location < 0) {
-			Log::warn("Could not get uniform location for %s is %i (shader %s)", name, location, shaderNameC);
+			Log::debug("Could not get uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 			continue;
 		}
 		char* array = SDL_strchr(name, '[');
