@@ -465,7 +465,16 @@ int SceneManager::activeNode() const {
 }
 
 voxel::RawVolume* SceneManager::activeVolume() {
-	return volume(activeNode());
+	const int nodeId = activeNode();
+	if (nodeId == -1) {
+		Log::error("No active node in scene graph");
+		return nullptr;
+	}
+	voxel::RawVolume* v = volume(nodeId);
+	if (v == nullptr) {
+		Log::error("No active volume found for node id %i", nodeId);
+	}
+	return v;
 }
 
 // TODO: this should also update _dirty
@@ -1028,11 +1037,12 @@ void SceneManager::updateAABBMesh() {
 		const voxel::Region& region = v->region();
 		_shapeBuilder.aabb(toAABB(region));
 	}
-	const voxel::RawVolume* mdl = activeVolume();
-	const voxel::Region& region = mdl->region();
-	_shapeBuilder.setColor(core::Color::White);
-	_shapeBuilder.aabb(toAABB(region));
-	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
+	if (const voxel::RawVolume* v = activeVolume()) {
+		const voxel::Region& region = v->region();
+		_shapeBuilder.aabb(toAABB(region));
+		_shapeBuilder.setColor(core::Color::White);
+		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
+	}
 }
 
 void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
@@ -1042,8 +1052,7 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 	if (renderUI) {
 		if (_editMode == EditMode::Scene) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
-		} else {
-			const voxel::RawVolume *v = activeVolume();
+		} else if (const voxel::RawVolume *v = activeVolume()) {
 			const voxel::Region& region = v->region();
 			_gridRenderer.render(camera, toAABB(region));
 		}
@@ -1497,10 +1506,11 @@ void SceneManager::construct() {
 		// resolve the voxel via cursor position. This allows to use also get the proper
 		// result if we moved the cursor via keys (and thus might have skipped tracing)
 		const glm::ivec3& cursorPos = _modifier.cursorPosition();
-		const voxel::RawVolume *v = activeVolume();
-		const voxel::Voxel& voxel = v->voxel(cursorPos);
-		if (!voxel::isAir(voxel.getMaterial())) {
-			_modifier.setCursorVoxel(voxel);
+		if (const voxel::RawVolume *v = activeVolume()) {
+			const voxel::Voxel& voxel = v->voxel(cursorPos);
+			if (!voxel::isAir(voxel.getMaterial())) {
+				_modifier.setCursorVoxel(voxel);
+			}
 		}
 	}).setHelp("Pick the current selected color from current cursor voxel");
 
@@ -2094,13 +2104,14 @@ void SceneManager::moveCursor(int x, int y, int z) {
 	p.y += y * res;
 	p.z += z * res;
 	setCursorPosition(p, true);
-	const voxel::RawVolume *v = activeVolume();
-	_hitCursorVoxel = v->voxel(cursorPosition());
 	_traceViaMouse = false;
+	if (const voxel::RawVolume *v = activeVolume()) {
+		_hitCursorVoxel = v->voxel(cursorPosition());
+	}
 }
 
 void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
-	const voxel::RawVolume* v = volume(activeNode());
+	const voxel::RawVolume* v = activeVolume();
 	if (v == nullptr) {
 		return;
 	}
@@ -2197,6 +2208,9 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 		return false;
 	}
 	const voxel::RawVolume* v = activeVolume();
+	if (v == nullptr) {
+		return false;
+	}
 	Log::trace("Execute new trace for %i:%i (%i:%i)",
 			_mouseCursor.x, _mouseCursor.y, _lastRaytraceX, _lastRaytraceY);
 
@@ -2312,9 +2326,10 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 
 void SceneManager::setGizmoPosition() {
 	if (_gizmo.isModelSpace()) {
-		const voxel::RawVolume *v = activeVolume();
-		const voxel::Region& region = v->region();
-		_gizmo.setPosition(region.getLowerCornerf());
+		if (const voxel::RawVolume *v = activeVolume()) {
+			const voxel::Region& region = v->region();
+			_gizmo.setPosition(region.getLowerCornerf());
+		}
 	} else {
 		_gizmo.setPosition(glm::zero<glm::vec3>());
 	}
