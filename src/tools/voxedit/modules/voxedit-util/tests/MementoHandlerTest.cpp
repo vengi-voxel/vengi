@@ -140,12 +140,20 @@ TEST_F(MementoHandlerTest, testUndoRedoDifferentNodes) {
 	}
 }
 
-TEST_F(MementoHandlerTest, testMaxUndoStates) {
-	for (int i = 0; i < MementoHandler::MaxStates * 2; ++i) {
+TEST_F(MementoHandlerTest, testCutStates) {
+	std::shared_ptr<voxel::RawVolume> second = create(2);
+	for (int i = 0; i < 4; ++i) {
 		auto v = create(1);
 		mementoHandler.markUndo(0, i, "", v.get());
 	}
-	ASSERT_EQ(MementoHandler::MaxStates, (int)mementoHandler.stateSize());
+	EXPECT_EQ(4, (int)mementoHandler.stateSize());
+	EXPECT_EQ(3, mementoHandler.statePosition());
+	mementoHandler.undo();
+	mementoHandler.undo();
+	EXPECT_EQ(1, mementoHandler.statePosition());
+	mementoHandler.markNodeAdded(0, 4, "Node 4", second.get());
+	EXPECT_EQ(2, mementoHandler.statePosition());
+	EXPECT_EQ(3, (int)mementoHandler.stateSize());
 }
 
 TEST_F(MementoHandlerTest, testAddNewNode) {

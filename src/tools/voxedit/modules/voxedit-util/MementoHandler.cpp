@@ -138,7 +138,7 @@ void MementoHandler::print() const {
 	};
 	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
 
-	for (MementoState& state : _states) {
+	for (const MementoState& state : _states) {
 		const glm::ivec3& mins = state.region.getLowerCorner();
 		const glm::ivec3& maxs = state.region.getUpperCorner();
 		Log::info("%4i: (%s) node id: %i (parent: %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib)",
