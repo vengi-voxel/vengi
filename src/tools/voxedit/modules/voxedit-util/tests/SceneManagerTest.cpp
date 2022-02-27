@@ -45,10 +45,28 @@ protected:
 		modifier().setModifierType(ModifierType::Place);
 	}
 
+	void testSelect(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+		modifier().setModifierType(ModifierType::Select);
+		modifier().setCursorPosition(mins, voxel::FaceNames::NegativeX);
+		modifier().aabbStart();
+		modifier().setCursorPosition(maxs, voxel::FaceNames::NegativeX);
+		modifier().aabbStep();
+		EXPECT_TRUE(modifier().aabbAction(nullptr, [&](const voxel::Region &, ModifierType) {}));
+		modifier().setModifierType(ModifierType::Place);
+	}
+
 	voxel::RawVolume *testVolume() {
 		const int nodeId = sceneGraph().activeNode();
 		voxel::RawVolume *v = volume(nodeId);
 		return v;
+	}
+
+	glm::ivec3 testMins() {
+		return testVolume()->region().getLowerCorner();
+	}
+
+	glm::ivec3 testMaxs() {
+		return testVolume()->region().getUpperCorner();
 	}
 
 	void TearDown() override {
@@ -72,14 +90,14 @@ TEST_F(SceneManagerTest, testUndoRedoModification) {
 	}
 
 	EXPECT_FALSE(dirty());
-	testSetVoxel(testVolume()->region().getLowerCorner());
+	testSetVoxel(testMins());
 	EXPECT_TRUE(dirty());
 
 	for (int i = 0; i < 3; ++i) {
 		EXPECT_TRUE(mementoHandler().canUndo());
 		EXPECT_TRUE(voxel::isBlocked(testVolume()->voxel(0, 0, 0).getMaterial()));
 		EXPECT_TRUE(undo());
-		//EXPECT_FALSE(dirty()); see todo at undo() and activate me
+		// EXPECT_FALSE(dirty()); see todo at undo() and activate me
 		EXPECT_FALSE(mementoHandler().canUndo());
 		EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial()));
 
@@ -138,7 +156,7 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 
 	EXPECT_EQ(1u, mementoHandler().stateSize());
 	// modification
-	testSetVoxel(testVolume()->region().getLowerCorner(), 1);
+	testSetVoxel(testMins(), 1);
 	EXPECT_EQ(2u, mementoHandler().stateSize());
 
 	// new node
@@ -146,17 +164,17 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 	EXPECT_EQ(3u, mementoHandler().stateSize());
 
 	// modification of the new node
-	testSetVoxel(testVolume()->region().getLowerCorner(), 2);
+	testSetVoxel(testMins(), 2);
 	EXPECT_EQ(4u, mementoHandler().stateSize());
 
 	// modification of the new node
-	testSetVoxel(testVolume()->region().getLowerCorner(), 3);
+	testSetVoxel(testMins(), 3);
 	EXPECT_EQ(5u, mementoHandler().stateSize());
 
 	// last state is the active state
 	EXPECT_EQ(4u, mementoHandler().statePosition());
 
-	/*for (int i = 0; i < 3; ++i)*/ {
+	for (int i = 0; i < 3; ++i) {
 		const int nodeId = sceneGraph().activeNode();
 		EXPECT_EQ(3, testVolume()->voxel(0, 0, 0).getColor());
 		{
@@ -170,7 +188,8 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 			// undo modification in second volume
 			EXPECT_TRUE(mementoHandler().canUndo());
 			EXPECT_TRUE(undo());
-			EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial())) << "color is " << (int)testVolume()->voxel(0, 0, 0).getColor();
+			EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial()))
+				<< "color is " << (int)testVolume()->voxel(0, 0, 0).getColor();
 			EXPECT_EQ(nodeId, sceneGraph().activeNode());
 		}
 		{
@@ -186,7 +205,8 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 			EXPECT_TRUE(mementoHandler().canUndo());
 			EXPECT_EQ(1, testVolume()->voxel(0, 0, 0).getColor());
 			EXPECT_TRUE(undo());
-			EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial())) << "color is " << (int)testVolume()->voxel(0, 0, 0).getColor();
+			EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial()))
+				<< "color is " << (int)testVolume()->voxel(0, 0, 0).getColor();
 		}
 		{
 			// redo modification in first volume
@@ -200,7 +220,8 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 			EXPECT_TRUE(mementoHandler().canUndo());
 			EXPECT_TRUE(mementoHandler().canRedo());
 			EXPECT_TRUE(redo());
-			EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial())) << "color is " << (int)testVolume()->voxel(0, 0, 0).getColor();
+			EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial()))
+				<< "color is " << (int)testVolume()->voxel(0, 0, 0).getColor();
 		}
 		{
 			// redo modification in second volume
@@ -220,19 +241,38 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 	}
 }
 
-#if 0
-// TODO
-TEST_F(SceneManagerTest, testUndoRedoRename) {
+TEST_F(SceneManagerTest, testRenameUndoRedo) {
 	if (!_supported) {
 		return;
 	}
+
+	EXPECT_EQ(1u, mementoHandler().stateSize());
+	EXPECT_TRUE(nodeRename(sceneGraph().activeNode(), "newname"));
+	EXPECT_EQ(2u, mementoHandler().stateSize());
+
+	for (int i = 0; i < 3; ++i) {
+		EXPECT_TRUE(mementoHandler().canUndo());
+		EXPECT_FALSE(mementoHandler().canRedo());
+		EXPECT_TRUE(undo());
+		EXPECT_FALSE(mementoHandler().canUndo());
+		EXPECT_TRUE(mementoHandler().canRedo());
+		EXPECT_TRUE(redo());
+	}
+	const int nodeId = sceneGraph().activeNode();
+	EXPECT_EQ("newname", sceneGraph().node(nodeId).name());
 }
 
-TEST_F(SceneManagerTest, testCopyPasteCut) {
+TEST_F(SceneManagerTest, testCopyPaste) {
 	if (!_supported) {
 		return;
 	}
+	testSetVoxel(testMins(), 1);
+	testSelect(testMins(), testMaxs());
+	EXPECT_TRUE(copy());
+
+	EXPECT_NE(-1, addModelChild("paste target", 1, 1, 1));
+	EXPECT_TRUE(paste(testMins()));
+	EXPECT_EQ(1, testVolume()->voxel(0, 0, 0).getColor());
 }
-#endif
 
 } // namespace voxedit

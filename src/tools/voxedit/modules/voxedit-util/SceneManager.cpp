@@ -2330,27 +2330,33 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	return false;
 }
 
-void SceneManager::nodeRename(int nodeId, const core::String &name) {
+bool SceneManager::nodeRename(int nodeId, const core::String &name) {
 	if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		nodeRename(*node, name);
+		return nodeRename(*node, name);
 	}
+	return false;
 }
 
-void SceneManager::nodeRename(voxel::SceneGraphNode &node, const core::String &name) {
+bool SceneManager::nodeRename(voxel::SceneGraphNode &node, const core::String &name) {
 	_mementoHandler.markUndo(node.parent(), node.id(), name, nullptr, MementoType::SceneNodeRenamed);
 	node.setName(name);
+	return true;
 }
 
-void SceneManager::nodeSetVisible(int nodeId, bool visible) {
+bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 	if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setVisible(visible);
+		return true;
 	}
+	return false;
 }
 
-void SceneManager::nodeSetLocked(int nodeId, bool visible) {
+bool SceneManager::nodeSetLocked(int nodeId, bool visible) {
 	if (voxel::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setLocked(visible);
+		return true;
 	}
+	return false;
 }
 
 bool SceneManager::nodeRemove(int nodeId, bool recursive) {
@@ -2401,16 +2407,16 @@ void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
 	_sceneGraph.foreachGroup(f);
 }
 
-void SceneManager::nodeActivate(int nodeId) {
+bool SceneManager::nodeActivate(int nodeId) {
 	if (!_sceneGraph.hasNode(nodeId)) {
 		Log::warn("Given node id %i doesn't exist", nodeId);
-		return;
+		return false;
 	}
 	Log::debug("Activate node %i", nodeId);
 	voxel::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	if (node.type() != voxel::SceneGraphNodeType::Model) {
 		Log::warn("Given node id %i is no model node", nodeId);
-		return;
+		return false;
 	}
 	_sceneGraph.setActiveNode(nodeId);
 	const voxel::Region& region = node.region();
@@ -2425,6 +2431,7 @@ void SceneManager::nodeActivate(int nodeId) {
 	}
 	setGizmoPosition();
 	resetLastTrace();
+	return true;
 }
 
 bool SceneManager::empty() const {

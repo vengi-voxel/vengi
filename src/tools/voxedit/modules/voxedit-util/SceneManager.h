@@ -418,16 +418,16 @@ public:
 	const voxel::SceneGraph &sceneGraph();
 
 private:
-	void nodeRename(voxel::SceneGraphNode &node, const core::String &name);
+	bool nodeRename(voxel::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(voxel::SceneGraphNode &node, bool recursive);
 	void nodeDuplicate(voxel::SceneGraphNode &node);
 public:
 	bool nodeMove(int sourceNodeId, int targetNodeId);
-	void nodeRename(int nodeId, const core::String &name);
+	bool nodeRename(int nodeId, const core::String &name);
 	bool nodeRemove(int nodeId, bool recursive);
-	void nodeSetVisible(int nodeId, bool visible);
-	void nodeSetLocked(int nodeId, bool visible);
-	void nodeActivate(int nodeId);
+	bool nodeSetVisible(int nodeId, bool visible);
+	bool nodeSetLocked(int nodeId, bool visible);
+	bool nodeActivate(int nodeId);
 	void nodeForeachGroup(const std::function<void(int)>& f);
 };
 
