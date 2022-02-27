@@ -150,7 +150,7 @@ jobs:
             ctest -V -R shelltests
 
     windows:
-        runs-on: windows-2019
+        runs-on: windows-2022
 
         steps:
         - uses: actions/checkout@v1
@@ -159,7 +159,7 @@ jobs:
           uses: lukka/run-vcpkg@v6
           id: runvcpkg
           with:
-            vcpkgGitCommitId: 2f7a104d4d6f1f3790db929f85a4086aa6973d7f
+            vcpkgGitCommitId: 1b1ae50e1a69f7c659bd7d731e80b358d21c86ad
             vcpkgTriplet: 'x64-windows'
             vcpkgArguments: 'libpq glslang'
 
