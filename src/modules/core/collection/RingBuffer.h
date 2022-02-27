@@ -36,6 +36,10 @@ public:
 			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 
+		inline TYPE& operator*() {
+			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
+		}
+
 		inline const TYPE& operator()() const {
 			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
@@ -67,6 +71,14 @@ public:
 	}
 
 	iterator end() {
+		return iterator(this, _front + _size);
+	}
+
+	iterator begin() const {
+		return iterator(this, _front);
+	}
+
+	iterator end() const {
 		return iterator(this, _front + _size);
 	}
 
