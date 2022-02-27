@@ -55,12 +55,12 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		char buf[1024];
 		snprintf(buf, sizeof(buf) - 1, "open %s", url);
 		buf[sizeof(buf) - 1] = '\0';
-		system(buf);
+		(void)system(buf);
 #else
 		char buf[1024];
 		snprintf(buf, sizeof(buf) - 1, "xdg-open %s", url);
 		buf[sizeof(buf) - 1] = '\0';
-		system(buf);
+		(void)system(buf);
 #endif
 #endif
 	}).setHelp("Open the given url in a browser");
