@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Assert.h"
 #include <stddef.h>
 
@@ -19,7 +21,7 @@ protected:
 	size_t _size = 0u;
 	size_t _front = 0u;
 	size_t _back = SIZE - 1;
-	TYPE _buffer[SIZE];
+	TYPE _buffer[SIZE] {};
 public:
 	using value_type = TYPE;
 
@@ -75,11 +77,11 @@ public:
 	}
 
 	iterator begin() const {
-		return iterator(this, _front);
+		return iterator(const_cast<RingBuffer*>(this), _front);
 	}
 
 	iterator end() const {
-		return iterator(this, _front + _size);
+		return iterator(const_cast<RingBuffer*>(this), _front + _size);
 	}
 
 	inline size_t size() const {
