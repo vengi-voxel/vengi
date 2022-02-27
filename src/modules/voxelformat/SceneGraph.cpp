@@ -187,7 +187,7 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	if (_activeNodeId == nodeId) {
 		if (!empty(SceneGraphNodeType::Model)) {
 			// get the first model node
-			_activeNodeId = (*this)[0]->id();
+			_activeNodeId = (*begin()).id();
 		} else {
 			_activeNodeId = root().id();
 		}
