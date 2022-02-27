@@ -186,7 +186,7 @@ bool TTY::swap(char *buf, size_t size) {
 
 void TTY::print(const char *buf, size_t size) {
 	for (size_t i = 0; i < size; ++i) {
-		write(_priv::stdoutFileHandle, &buf[i], 1);
+		(void)write(_priv::stdoutFileHandle, &buf[i], 1);
 	}
 }
 

@@ -14,7 +14,7 @@ TEST(BufferedReadWriteStreamTest, testWriteReadUInt8) {
 	stream.writeUInt8(writeVal);
 	stream.seek(0);
 	const int64_t previous = stream.remaining();
-	uint8_t readVal;
+	uint8_t readVal = 0;
 	EXPECT_EQ(0, stream.readUInt8(readVal));
 	EXPECT_EQ(writeVal, readVal);
 	EXPECT_EQ(previous - (int64_t)sizeof(readVal), stream.remaining());
@@ -26,7 +26,7 @@ TEST(BufferedReadWriteStreamTest, testWriteReadUInt16) {
 	stream.writeUInt16(writeVal);
 	stream.seek(0);
 	const int64_t previous = stream.remaining();
-	uint16_t readVal;
+	uint16_t readVal = 0;
 	EXPECT_EQ(0, stream.readUInt16(readVal));
 	EXPECT_EQ(writeVal, readVal);
 	EXPECT_EQ(previous - (int64_t)sizeof(readVal), stream.remaining());
@@ -38,7 +38,7 @@ TEST(BufferedReadWriteStreamTest, testWriteReadUInt32) {
 	stream.writeUInt32(writeVal);
 	stream.seek(0);
 	const int64_t previous = stream.remaining();
-	uint32_t readVal;
+	uint32_t readVal = 0;
 	EXPECT_EQ(0, stream.readUInt32(readVal));
 	EXPECT_EQ(writeVal, readVal);
 	EXPECT_EQ(previous - (int64_t)sizeof(readVal), stream.remaining());
@@ -50,7 +50,7 @@ TEST(BufferedReadWriteStreamTest, testWriteReadUInt64) {
 	stream.writeUInt64(writeVal);
 	stream.seek(0);
 	const int64_t previous = stream.remaining();
-	uint64_t readVal;
+	uint64_t readVal = 0;
 	EXPECT_EQ(0, stream.readUInt64(readVal));
 	EXPECT_EQ(writeVal, readVal);
 	EXPECT_EQ(previous - (int64_t)sizeof(readVal), stream.remaining());
@@ -62,7 +62,7 @@ TEST(BufferedReadWriteStreamTest, testWriteReadInt8) {
 	stream.writeInt8(writeVal);
 	stream.seek(0);
 	const int64_t previous = stream.remaining();
-	int8_t readVal;
+	int8_t readVal = 0;
 	EXPECT_EQ(0, stream.readInt8(readVal));
 	EXPECT_EQ(writeVal, readVal);
 	EXPECT_EQ(previous - (int64_t)sizeof(readVal), stream.remaining());
@@ -74,7 +74,7 @@ TEST(BufferedReadWriteStreamTest, testWriteReadInt16) {
 	stream.writeInt16(writeVal);
 	stream.seek(0);
 	const int64_t previous = stream.remaining();
-	int16_t readVal;
+	int16_t readVal = 0;
 	EXPECT_EQ(0, stream.readInt16(readVal));
 	EXPECT_EQ(writeVal, readVal);
 	EXPECT_EQ(previous - (int64_t)sizeof(readVal), stream.remaining());
@@ -86,7 +86,7 @@ TEST(BufferedReadWriteStreamTest, testWriteReadInt32) {
 	stream.writeInt32(writeVal);
 	stream.seek(0);
 	const int64_t previous = stream.remaining();
-	int32_t readVal;
+	int32_t readVal = 0;
 	EXPECT_EQ(0, stream.readInt32(readVal));
 	EXPECT_EQ(writeVal, readVal);
 	EXPECT_EQ(previous - (int64_t)sizeof(readVal), stream.remaining());
@@ -98,7 +98,7 @@ TEST(BufferedReadWriteStreamTest, testWriteReadInt64) {
 	stream.writeInt64(writeVal);
 	stream.seek(0);
 	const int64_t previous = stream.remaining();
-	int64_t readVal;
+	int64_t readVal = 0;
 	EXPECT_EQ(0, stream.readInt64(readVal));
 	EXPECT_EQ(writeVal, readVal);
 	EXPECT_EQ(previous - (int64_t)sizeof(readVal), stream.remaining());
@@ -132,7 +132,7 @@ TEST(BufferedReadWriteStreamTest, testFloat) {
 	stream.writeFloat(-1.0f);
 	EXPECT_EQ((int64_t)(2 * sizeof(float)), stream.pos());
 	stream.seek(0);
-	float val;
+	float val = 0.0f;
 	EXPECT_EQ(0, stream.readFloat(val));
 	EXPECT_FLOAT_EQ(1.0f, val);
 	EXPECT_EQ(0, stream.readFloat(val));
@@ -146,7 +146,7 @@ TEST(BufferedReadWriteStreamTest, testInt8) {
 	stream.writeInt8(-1);
 	EXPECT_EQ((int64_t)(2 * sizeof(int8_t)), stream.pos());
 	stream.seek(0);
-	int8_t val;
+	int8_t val = 0;
 	EXPECT_EQ(0, stream.readInt8(val));
 	EXPECT_EQ(1, val);
 	EXPECT_EQ(0, stream.readInt8(val));
@@ -160,7 +160,7 @@ TEST(BufferedReadWriteStreamTest, testInt16) {
 	stream.writeInt16(-1);
 	EXPECT_EQ((int64_t)(2 * sizeof(int16_t)), stream.pos());
 	stream.seek(0);
-	int16_t val;
+	int16_t val = 0;
 	EXPECT_EQ(0, stream.readInt16(val));
 	EXPECT_EQ(1, val);
 	EXPECT_EQ(0, stream.readInt16(val));
@@ -174,7 +174,7 @@ TEST(BufferedReadWriteStreamTest, testInt32) {
 	stream.writeInt32(-1);
 	EXPECT_EQ((int64_t)(2 * sizeof(int32_t)), stream.pos());
 	stream.seek(0);
-	int32_t val;
+	int32_t val = 0;
 	EXPECT_EQ(0, stream.readInt32(val));
 	EXPECT_EQ(1, val);
 	EXPECT_EQ(0, stream.readInt32(val));
@@ -188,7 +188,7 @@ TEST(BufferedReadWriteStreamTest, testInt64) {
 	stream.writeInt64(-1);
 	EXPECT_EQ((int64_t)(2 * sizeof(int64_t)), stream.pos());
 	stream.seek(0);
-	int64_t val;
+	int64_t val = 0;
 	EXPECT_EQ(0, stream.readInt64(val));
 	EXPECT_EQ(1, val);
 	EXPECT_EQ(0, stream.readInt64(val));
