@@ -45,7 +45,9 @@ protected:
 		core::Var::get(cfg::ClientShadowMap, "1", core::CV_SHADER)->setVal(val.clientShadowMap);
 		core::Var::get(cfg::ClientWater, "1", core::CV_SHADER)->setVal(val.clientWater);
 		core::Var::get(cfg::ClientDebugShadow, "1", core::CV_SHADER)->setVal(val.clientDebugShadow);
+		core::Var::get(cfg::ClientShadowMapSize, "128", core::CV_SHADER);
 		core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
+		core::Var::get(cfg::ClientBloom, "false");
 		core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
@@ -59,6 +61,7 @@ public:
 		core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 		core::Var::get(cfg::ClientMultiSampleSamples, "0");
 		core::Var::get(cfg::ClientVSync, "false");
+		core::Var::get(cfg::ClientDebugSeverity, "3");
 		app::AbstractTest::SetUp();
 		SDL_Init(SDL_INIT_VIDEO);
 		video::setup();
