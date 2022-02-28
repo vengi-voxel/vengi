@@ -11,8 +11,8 @@ fi
 
 $BINARY -s 128 @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@/${FILE%.*}.png
 md5=`md5sum @CMAKE_BINARY_DIR@/${FILE%.*}.png`
-if [ "$md5" != "da164ba47de2db7a0ea1d4f6c4312b25" ]; then
-  echo "Md5 sums don't match"
+if [ "$md5" != "de83e46c2ae5405a0fe7236dd6f14634" ]; then
+  echo "Md5 sums don't match: $md5"
   xdg-open @CMAKE_BINARY_DIR@/${FILE%.*}.png
   exit 1;
 fi
