@@ -71,7 +71,7 @@ bool initState(io::FilesystemState &state) {
 		Log::debug("Can't read xdg user dirs: HOME env var not found");
 		return false;
 	}
-#if defined __APPLE__
+#if defined __MACOSX__
 	state._directories[FilesystemDirectories::FS_Dir_Download] = core::string::path(envHome, "Downloads");
 	state._directories[FilesystemDirectories::FS_Dir_Documents] = core::string::path(envHome, "Documents");
 	state._directories[FilesystemDirectories::FS_Dir_Pictures] = core::string::path(envHome, "Pictures");
