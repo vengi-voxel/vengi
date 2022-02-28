@@ -2,18 +2,21 @@
 
 #set -e
 
-BINARY=$1
-FILE=voxedit/chr_knight.qb
+BINARY="$1"
+FILE="voxedit/chr_knight.qb"
 
 if [ -z "$BINARY" ]; then
-  BINARY=@CMAKE_BINARY_DIR@/@PROJECT_NAME@/@CMAKE_PROJECT_NAME@-@PROJECT_NAME@
+  BINARY="@CMAKE_BINARY_DIR@/@PROJECT_NAME@/@CMAKE_PROJECT_NAME@-@PROJECT_NAME@"
 fi
 
-$BINARY -s 128 @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@/${FILE%.*}.png
-md5=`md5sum @CMAKE_BINARY_DIR@/${FILE%.*}.png`
-if [ "$md5" != "de83e46c2ae5405a0fe7236dd6f14634" ]; then
-  echo "Md5 sums don't match: $md5"
-  xdg-open @CMAKE_BINARY_DIR@/${FILE%.*}.png
-  exit 1;
+OUTFILE="@CMAKE_BINARY_DIR@/${FILE%.*}.png"
+$BINARY -s 128 "@DATA_DIR@/$FILE" "$OUTFILE"
+if [ -f "$OUTPUT" ]
+  md5=`md5sum "$OUTPUT"`
+  if [ "$md5" != "de83e46c2ae5405a0fe7236dd6f14634" ]; then
+    echo "Md5 sums don't match: $md5"
+    xdg-open "$OUTPUT"
+    exit 1;
+  fi
 fi
 echo "Md5 of generated screenshot matches"

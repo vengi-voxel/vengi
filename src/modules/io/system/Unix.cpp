@@ -15,11 +15,15 @@
 namespace io {
 namespace priv {
 
+static char *getHome() {
+	return SDL_getenv("HOME");
+}
+
 /**
  * @brief Replace the shell variable for the home dir
  */
 static inline core::String replaceHome(const core::String &in) {
-	char *envHome = SDL_getenv("HOME");
+	char *envHome = getHome();
 	if (envHome == nullptr) {
 		return in;
 	}
@@ -66,7 +70,7 @@ static core::String load(const core::String &file) {
 } // namespace priv
 
 bool initState(io::FilesystemState &state) {
-	char *envHome = SDL_getenv("HOME");
+	char *envHome = priv::getHome();
 	if (envHome == nullptr) {
 		Log::debug("Can't read xdg user dirs: HOME env var not found");
 		return false;
