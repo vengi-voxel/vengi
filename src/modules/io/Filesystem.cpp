@@ -59,9 +59,13 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	}
 
 	core_assert_always(registerPath(_homePath));
+	// this is a build system option that packagers could use to install
+	// the application data into the proper system wide paths
 #ifdef PKGDATADIR
 	core_assert_always(registerPath(PKGDATADIR));
 #endif
+	// this cvar allows to change the application data directory at runtime - it has lower priority
+	// as the backed-in PKGDATADIR (if defined) - and also lower priority as the home directory.
 	const core::VarPtr &corePath =
 		core::Var::get(cfg::CorePath, "", 0, "Specifies an additional filesystem search path - must end on /");
 	if (!corePath->strVal().empty()) {
