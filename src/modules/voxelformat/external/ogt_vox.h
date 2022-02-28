@@ -116,6 +116,60 @@
         const ogt_vox_scene* scenes[] = {scene1, scene2, scene3};
         // palette.color[0] is always the empty color which is why we pass 255 colors starting from index 1 only:
         ogt_vox_scene* merged_scene = ogt_vox_merge_scenes(scenes, 3, &palette.color[1], 255);
+
+    EXPLANATION OF MODEL PIVOTS
+
+    If a voxel model grid has dimension size.xyz in terms of number of voxels, the centre pivot
+    for that model is located at floor( size.xyz / 2).
+
+    eg. for a 3x4x1 voxel model, the pivot would be at (1,2,0), or the X in the below ascii art.
+
+           4 +-----+-----+-----+
+             |  .  |  .  |  .  |
+           3 +-----+-----+-----+
+             |  .  |  .  |  .  |
+           2 +-----X-----+-----+
+             |  .  |  .  |  .  |
+           1 +-----+-----+-----+
+             |  .  |  .  |  .  |
+           0 +-----+-----+-----+
+             0     1     2     3
+
+     An example model in this grid form factor might look like this:
+
+           4 +-----+-----+-----+
+             |  .  |  .  |  .  |
+           3 +-----+-----+-----+
+                   |  .  |
+           2       X-----+
+                   |  .  |
+           1       +-----+
+                   |  .  |
+           0       +-----+
+             0     1     2     3
+
+     If you were to generate a mesh from this, clearly each vertex and each face would be on an integer
+     coordinate eg. 1, 2, 3 etc. while the centre of each grid location (ie. the . in the above diagram)
+     will be on a coordinate that is halfway between integer coordinates. eg. 1.5, 2.5, 3.5 etc.
+
+     To ensure your mesh is properly centered such that instance transforms are correctly applied, you
+     want the pivot to be treated as if it were (0,0,0) in model space. To achieve this, simply
+     subtract the pivot from any geometry that is generated (eg. vertices in a mesh).
+
+     For the 3x4x1 voxel model above, doing this would look like this:
+
+           2 +-----+-----+-----+
+             |  .  |  .  |  .  |
+           1 +-----+-----+-----+
+                   |  .  |
+           0       X-----+
+                   |  .  |
+          -1       +-----+
+                   |  .  |
+          -2       +-----+
+            -1     0     1     2
+
+
 */
 #ifndef OGT_VOX_H__
 #define OGT_VOX_H__
@@ -820,16 +874,6 @@
         }
     }
 
-#if 0
-    // ensure instances are ordered in order of increasing model_index
-    static int _vox_ordered_compare_instance(const void* _lhs, const void* _rhs) {
-        const ogt_vox_instance* lhs = (const ogt_vox_instance*)_lhs;
-        const ogt_vox_instance* rhs = (const ogt_vox_instance*)_rhs;
-        return lhs->model_index < rhs->model_index ? -1 :
-               lhs->model_index > rhs->model_index ?  1 : 0;
-    }
-#endif
-
     // returns true if the 2 models are content-wise identical.
     static bool _vox_models_are_equal(const ogt_vox_model* lhs, const ogt_vox_model* rhs) {
         // early out: if hashes don't match, they can't be equal
@@ -912,7 +956,6 @@
             {
                 case CHUNK_ID_MAIN:
                 {
-                    assert(chunk_size == 0);
                     break;
                 }
                 case CHUNK_ID_SIZE:
@@ -925,7 +968,7 @@
                 }
                 case CHUNK_ID_XYZI:
                 {
-                    assert(chunk_child_size == 0 && size_x && size_y && size_z);    // must have read a SIZE chunk prior to XYZI.
+                    assert(size_x && size_y && size_z);    // must have read a SIZE chunk prior to XYZI.
                     // read the number of voxels to process for this moodel
                     uint32_t num_voxels_in_chunk = 0;
                     _vox_file_read(fp, &num_voxels_in_chunk, sizeof(uint32_t));
@@ -1398,12 +1441,11 @@
             char* scene_string_data = (char*)&scene[1];
             memcpy(scene_string_data, &string_data[0], sizeof(char) * string_data.size());
 
-            // copy instances over to scene, and sort them so that instances with the same model are contiguous.
+            // copy instances over to scene
             size_t num_scene_instances = instances.size();
             ogt_vox_instance* scene_instances = (ogt_vox_instance*)_vox_malloc(sizeof(ogt_vox_instance) * num_scene_instances);
             if (num_scene_instances) {
                 memcpy(scene_instances, &instances[0], sizeof(ogt_vox_instance) * num_scene_instances);
-                //qsort(scene_instances, num_scene_instances, sizeof(ogt_vox_instance), _vox_ordered_compare_instance);
             }
             scene->instances = scene_instances;
             scene->num_instances = (uint32_t)instances.size();
@@ -1636,7 +1678,7 @@
         // write out all model chunks
         for (uint32_t i = 0; i < scene->num_models; i++) {
             const ogt_vox_model* model = scene->models[i];
-            assert(model->size_x <= 126 && model->size_y <= 126 && model->size_z <= 126);
+            assert(model->size_x <= 256 && model->size_y <= 256 && model->size_z <= 256);
             // count the number of solid voxels in the grid
             uint32_t num_voxels_in_grid = model->size_x * model->size_y * model->size_z;
             uint32_t num_solid_voxels = 0;
