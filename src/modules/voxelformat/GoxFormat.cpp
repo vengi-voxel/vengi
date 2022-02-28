@@ -275,24 +275,18 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 				stream.readFloat(transform.mat[i / 4][i % 4]);
 			}
 			node.setTransform(transform, true);
-		} else if (!strcmp(dictKey, "id")) {
+		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
+			// "img-path" layer texture path
 			// "id" unique id
 			node.setProperty(dictKey, dictValue);
-		} else if (!strcmp(dictKey, "img-path")) {
-			// "img-path" layer texture path
-			node.setProperty(dictKey, dictValue);
-		} else if (!strcmp(dictKey, "base_id")) {
+		} else if (!strcmp(dictKey, "base_id") || !strcmp(dictKey, "material")) {
 			// "base_id" int
-			node.setProperty(dictKey, core::string::toString(*(const int32_t*)dictValue));
-		} else if (!strcmp(dictKey, "box")) {
-			// "box" 4x4 bounding box float
-		} else if (!strcmp(dictKey, "shape")) {
-			// "shape" layer layer - currently unsupported TODO
-		} else if (!strcmp(dictKey, "color")) {
-			// "color" 4xbyte
-		} else if (!strcmp(dictKey, "material")) {
 			// "material" int (index)
 			node.setProperty(dictKey, core::string::toString(*(const int32_t*)dictValue));
+		} else if (!strcmp(dictKey, "box") || !strcmp(dictKey, "shape") || !strcmp(dictKey, "color")) {
+			// "box" 4x4 bounding box float
+			// "shape" layer layer - currently unsupported TODO
+			// "color" 4xbyte
 		}
 	}
 	// TODO: fix this properly - without mirroring

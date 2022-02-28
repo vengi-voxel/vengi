@@ -3,11 +3,11 @@
  */
 
 #include "VoxFormat.h"
-#include "core/Common.h"
-#include "core/FourCC.h"
-#include "core/Color.h"
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
+#include "core/Color.h"
+#include "core/Common.h"
+#include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
@@ -29,7 +29,7 @@
 
 namespace voxel {
 
-static void* _ogt_alloc(size_t size) {
+static void *_ogt_alloc(size_t size) {
 	return core_malloc(size);
 }
 
@@ -63,8 +63,8 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	}
 	palette.colorCount = lengthof(scene->palette.color);
 	for (int i = 0; i < palette.colorCount; ++i) {
-		const ogt_vox_rgba& c = scene->palette.color[i];
-		const ogt_vox_matl& matl = scene->materials.matl[i];
+		const ogt_vox_rgba &c = scene->palette.color[i];
+		const ogt_vox_matl &matl = scene->materials.matl[i];
 		palette.colors[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
 		if (matl.emit > 0.0f) {
 			palette.setGlow(i, matl.emit);
@@ -117,7 +117,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 				}
 				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, _paletteMapping[ogtVoxel[0]]);
 				const glm::ivec3 &pos = transform(ogtMat, glm::ivec3(i, j, k), pivot);
-				const glm::ivec3& poszUp = transform(zUpMat, pos, glm::ivec4(0));
+				const glm::ivec3 &poszUp = transform(zUpMat, pos, glm::ivec4(0));
 				v->setVoxel(poszUp, voxel);
 			}
 		}
@@ -126,7 +126,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	const char *name = ogtInstance.name;
 	if (name == nullptr) {
-		const ogt_vox_layer& layer = scene->layers[ogtInstance.layer_index];
+		const ogt_vox_layer &layer = scene->layers[ogtInstance.layer_index];
 		name = layer.name;
 		if (name == nullptr) {
 			name = "";
@@ -160,7 +160,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 	}
 
 	for (uint32_t n = 0; n < scene->num_instances; ++n) {
-		const ogt_vox_instance& ogtInstance = scene->instances[n];
+		const ogt_vox_instance &ogtInstance = scene->instances[n];
 		if (ogtInstance.group_index != ogt_parentGroupIdx) {
 			continue;
 		}
@@ -204,9 +204,9 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	_palette.colorCount = lengthof(scene->palette.color);
 	for (int i = 0; i < _palette.colorCount; ++i) {
 		const ogt_vox_rgba color = scene->palette.color[i];
-		const glm::vec4& colorVec = core::Color::fromRGBA(color.r, color.g, color.b, color.a);
+		const glm::vec4 &colorVec = core::Color::fromRGBA(color.r, color.g, color.b, color.a);
 		_palette.colors[i] = core::Color::getRGBA(colorVec);
-		const ogt_vox_matl& matl = scene->materials.matl[i];
+		const ogt_vox_matl &matl = scene->materials.matl[i];
 		if (matl.emit > 0.0f) {
 			_palette.setGlow(i, matl.emit);
 		} else {
@@ -279,7 +279,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	core::Buffer<ogt_vox_model> models(modelCount);
 	core::Buffer<ogt_vox_layer> layers(modelCount);
 	core::Buffer<ogt_vox_instance> instances(modelCount);
-	core::Buffer<const ogt_vox_model*> modelPtr(modelCount);
+	core::Buffer<const ogt_vox_model *> modelPtr(modelCount);
 	int mdlIdx = 0;
 	for (const SceneGraphNode &node : newSceneGraph) {
 		const voxel::Region region = node.region();
@@ -335,17 +335,17 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	output_scene.num_models = modelPtr.size();
 	core_memset(&output_scene.materials, 0, sizeof(output_scene.materials));
 
-	ogt_vox_palette& pal = output_scene.palette;
-	ogt_vox_matl_array& mat = output_scene.materials;
+	ogt_vox_palette &pal = output_scene.palette;
+	ogt_vox_matl_array &mat = output_scene.materials;
 
 	for (int i = 0; i < 256; ++i) {
-		const glm::u8vec4 rgba = core::Color::toRGBA(palette.colors[i]);
+		const glm::u8vec4 &rgba = core::Color::toRGBA(palette.colors[i]);
 		pal.color[i].r = rgba.r;
 		pal.color[i].g = rgba.g;
 		pal.color[i].b = rgba.b;
 		pal.color[i].a = rgba.a;
 
-		const glm::u8vec4 glowColor = core::Color::toRGBA(palette.glowColors[i]);
+		const glm::u8vec4 &glowColor = core::Color::toRGBA(palette.glowColors[i]);
 		if (glowColor.a != 0) {
 			mat.matl[i].content_flags |= k_ogt_vox_matl_have_emit;
 			mat.matl[i].type = ogt_matl_type::ogt_matl_type_emit;
@@ -365,8 +365,8 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	}
 	ogt_vox_free(buffer);
 
-	for (ogt_vox_model & m : models) {
-		core_free((void*)m.voxel_data);
+	for (ogt_vox_model &m : models) {
+		core_free((void *)m.voxel_data);
 	}
 
 	return true;
