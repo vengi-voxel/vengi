@@ -13,6 +13,7 @@
 #include "voxel/Region.h"
 #include "commonlua/LUA.h"
 #include "voxel/Voxel.h"
+#include "voxel/Palette.h"
 #include "core/Color.h"
 #include "io/Filesystem.h"
 #include "noise/Simplex.h"

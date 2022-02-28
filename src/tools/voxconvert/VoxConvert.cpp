@@ -18,7 +18,6 @@
 #include "metric/Metric.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
-#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"

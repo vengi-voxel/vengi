@@ -16,6 +16,7 @@
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
 #include "voxel/Voxel.h"
+#include "voxel/Palette.h"
 
 namespace voxel {
 
@@ -218,14 +219,6 @@ static MaterialColor& getInstance() {
 
 bool initPalette(const Palette& palette) {
 	return getInstance().init(palette);
-}
-
-bool materialColorChanged() {
-	return getInstance().isDirty();
-}
-
-void materialColorMarkClean() {
-	getInstance().markClean();
 }
 
 void shutdownMaterialColors() {

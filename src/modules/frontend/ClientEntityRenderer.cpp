@@ -12,6 +12,7 @@
 #include "core/collection/List.h"
 #include "core/ArrayLength.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "video/Camera.h"
 #include "video/ScopedState.h"
 #include "render/Shadow.h"

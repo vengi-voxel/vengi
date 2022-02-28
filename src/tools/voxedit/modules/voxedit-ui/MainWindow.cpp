@@ -17,7 +17,6 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/anim/AnimationLuaSaver.h"
 #include "voxedit-util/modifier/Modifier.h"
-#include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "ui/imgui/dearimgui/imgui_internal.h"

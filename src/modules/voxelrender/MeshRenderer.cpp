@@ -6,6 +6,7 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "ShaderAttribute.h"
+#include "voxel/Palette.h"
 #include "voxel/MaterialColor.h"
 #include "VoxelShaderConstants.h"
 #include "core/Trace.h"

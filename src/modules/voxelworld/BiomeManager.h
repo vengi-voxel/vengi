@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Trace.h"
+#include "core/String.h"
 #include "Biome.h"
 #include "noise/Noise.h"
 #include <glm/fwd.hpp>

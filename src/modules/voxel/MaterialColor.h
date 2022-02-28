@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxel/Voxel.h"
-#include "voxel/Palette.h"
+#include "core/collection/DynamicArray.h"
 
 namespace math {
 class Random;
@@ -13,12 +13,12 @@ class Random;
 
 namespace voxel {
 
+class Palette;
+
 extern bool initDefaultPalette();
 extern bool initPalette(const voxel::Palette &palette);
 extern bool overridePalette(const voxel::Palette &palette);
 extern void shutdownMaterialColors();
-extern void materialColorMarkClean();
-extern bool materialColorChanged();
 extern Palette& getPalette();
 
 // this size must match the color uniform size in the shader

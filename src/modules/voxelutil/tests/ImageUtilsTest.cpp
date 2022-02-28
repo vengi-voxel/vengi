@@ -5,6 +5,7 @@
 #include "app/tests/AbstractTest.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 
 namespace voxedit {
 

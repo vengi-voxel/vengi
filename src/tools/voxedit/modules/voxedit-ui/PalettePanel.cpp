@@ -6,7 +6,6 @@
 #include "core/StringUtil.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"
-#include "voxel/MaterialColor.h"
 
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
 #define PALETTEACTIONPOPUP "##paletteactionpopup"

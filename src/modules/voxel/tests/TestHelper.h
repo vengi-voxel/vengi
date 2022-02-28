@@ -12,6 +12,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/Constants.h"
 #include "math/Random.h"
 #include "core/Common.h"

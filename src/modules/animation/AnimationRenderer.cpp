@@ -8,6 +8,7 @@
 #include "core/GLM.h"
 #include "core/ArrayLength.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "animation/Vertex.h"
 #include "video/Renderer.h"
 #include "video/Shader.h"

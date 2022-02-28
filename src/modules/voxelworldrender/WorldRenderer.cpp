@@ -15,6 +15,7 @@
 #include "core/GLM.h"
 #include "voxel/Constants.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 
 #include "frontend/Colors.h"
 

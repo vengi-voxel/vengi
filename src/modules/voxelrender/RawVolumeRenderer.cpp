@@ -13,6 +13,7 @@
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
 #include "ShaderAttribute.h"
@@ -456,8 +457,8 @@ void RawVolumeRenderer::gray(int idx, bool gray) {
 void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
-	if (voxel::materialColorChanged()) {
-		const voxel::Palette &palette = voxel::getPalette();
+	voxel::Palette &palette = voxel::getPalette();
+	if (palette.isDirty()) {
 		core::DynamicArray<glm::vec4> materialColors;
 		palette.toVec4f(materialColors);
 		core::DynamicArray<glm::vec4> glowColors;
@@ -468,7 +469,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		core_memcpy(materialBlock.glowcolor, &glowColors.front(), sizeof(materialBlock.glowcolor));
 		_materialBlock.update(materialBlock);
 		// TODO: updating the global state is crap - what about others - use an event
-		voxel::materialColorMarkClean();
+		palette.markClean();
 	}
 
 	renderVolumes(camera, shadow);

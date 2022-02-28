@@ -10,7 +10,6 @@
 #include "math/AABB.h"
 #include "voxedit-ui/LayerPanel.h"
 #include "voxedit-util/MementoHandler.h"
-#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"

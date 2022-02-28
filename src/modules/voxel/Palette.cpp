@@ -31,17 +31,17 @@ bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize) {
 	if (bufsize % 4 != 0) {
 		Log::warn("Buf size doesn't match expectation: %i", (int)bufsize);
 	}
-	int colors = (int)bufsize / 4;
-	if (colors <= 0) {
+	int ncolors = (int)bufsize / 4;
+	if (ncolors <= 0) {
 		Log::error("Buffer is not big enough: %i bytes", (int)bufsize);
 		return false;
 	}
-	if (colors > PaletteMaxColors) {
+	if (ncolors > PaletteMaxColors) {
 		Log::warn("Too many colors given for palette.");
 	}
-	colors = core_min(colors, PaletteMaxColors);
+	ncolors = core_min(ncolors, PaletteMaxColors);
 	image::ImagePtr img = image::createEmptyImage("**palette**");
-	if (!img->loadRGBA(rgbaBuf, colors * 4, colors, 1)) {
+	if (!img->loadRGBA(rgbaBuf, ncolors * 4, ncolors, 1)) {
 		return false;
 	}
 	return load(img);
@@ -53,18 +53,19 @@ bool Palette::load(const image::ImagePtr &img) {
 		return false;
 	}
 	core_memset(glowColors, 0, sizeof(glowColors));
-	int n = img->width();
-	if (n > PaletteMaxColors) {
-		n = PaletteMaxColors;
+	int ncolors = img->width();
+	if (ncolors > PaletteMaxColors) {
+		ncolors = PaletteMaxColors;
 		Log::warn("Palette image has invalid dimensions - we need max 256x1(depth: 4)");
 	}
-	colorCount = n;
+	colorCount = ncolors;
 	for (int i = 0; i < colorCount; ++i) {
 		colors[i] = *(uint32_t *)img->at(i, 0);
 	}
 	for (int i = colorCount; i < PaletteMaxColors; ++i) {
 		colors[i] = core::Color::getRGBA(0, 0, 0, 255);
 	}
+	_dirty = true;
 	Log::debug("Set up %i material colors", colorCount);
 	return true;
 }
@@ -186,6 +187,7 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 	uint32_t empty = core::Color::getRGBA(core::Color::White);
 	colorset.put(empty, true);
 	palette.colors[paletteIndex++] = empty;
+	palette._dirty = true;
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const uint8_t *data = image->at(x, y);
@@ -208,17 +210,27 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 	return true;
 }
 
+bool Palette::isDirty() const {
+	return _dirty;
+}
+
+void Palette::markClean() {
+	_dirty = false;
+}
+
 bool Palette::hasGlow(uint8_t idx) const {
 	return glowColors[idx] != 0;
 }
 
 void Palette::removeGlow(uint8_t idx) {
 	glowColors[idx] = 0;
+	_dirty = true;
 }
 
 void Palette::setGlow(uint8_t idx, float factor) {
 	// TODO: handle factor
 	glowColors[idx] = colors[idx];
+	_dirty = true;
 }
 
 void Palette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {

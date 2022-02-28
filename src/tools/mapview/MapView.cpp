@@ -17,7 +17,6 @@
 #include "voxel/Voxel.h"
 #include "compute/Compute.h"
 #include "io/Filesystem.h"
-#include "voxel/MaterialColor.h"
 #include "voxelgenerator/Spiral.h"
 #include "attrib/Attributes.h"
 #include "attrib/ContainerProvider.h"

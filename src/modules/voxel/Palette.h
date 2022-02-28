@@ -20,7 +20,7 @@ using PaletteColorArray = uint32_t[PaletteMaxColors];
 class Palette {
 private:
 	bool load(const image::ImagePtr &img);
-
+	bool _dirty = false;
 public:
 	PaletteColorArray colors {};
 	PaletteColorArray glowColors {};
@@ -36,6 +36,9 @@ public:
 
 	bool minecraft();
 	bool magicaVoxel();
+
+	bool isDirty() const;
+	void markClean();
 
 	bool hasGlow(uint8_t idx) const;
 	void removeGlow(uint8_t idx);

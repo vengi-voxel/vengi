@@ -10,7 +10,6 @@
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
-#include "voxel/MaterialColor.h"
 
 namespace voxedit {
 

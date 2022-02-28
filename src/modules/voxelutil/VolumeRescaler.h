@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/Voxel.h"
 #include "voxel/Region.h"
 
