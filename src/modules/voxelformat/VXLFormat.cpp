@@ -357,10 +357,9 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 
 	Log::debug("Found %u limbs", hdr.n_limbs);
 
-	_paletteSize = _palette.size();
-	_colorsSize = _paletteSize;
+	_paletteColors.colorCount = _paletteMapping.size();
 	bool valid = false;
-	for (uint32_t i = 0; i < _paletteSize; ++i) {
+	for (size_t i = 0; i < _paletteColors.colorCount; ++i) {
 		wrap(stream.readUInt8(hdr.palette[i][0]))
 		wrap(stream.readUInt8(hdr.palette[i][1]))
 		wrap(stream.readUInt8(hdr.palette[i][2]))
@@ -371,16 +370,15 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 
 	if (valid) {
 		// convert to our palette
-		for (uint32_t i = 0; i < _paletteSize; ++i) {
+		for (size_t i = 0; i < _paletteColors.colorCount; ++i) {
 			const uint8_t *p = hdr.palette[i];
 			const glm::vec4& color = core::Color::fromRGBA(p[0], p[1], p[2], 0xffu);
 			const int index = findClosestIndex(color);
-			_colors[i] = core::Color::getRGBA(color);
-			_palette[i] = index;
+			_paletteColors._colors[i] = core::Color::getRGBA(color);
+			_paletteMapping[i] = index;
 		}
 	} else {
-		_paletteSize = 0;
-		_colorsSize = 0;
+		_paletteColors.colorCount = 0;
 	}
 
 	return true;

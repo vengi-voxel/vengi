@@ -17,7 +17,6 @@
 namespace voxedit {
 
 static const MementoState InvalidMementoState{MementoType::Max, MementoData(), -1, -1, "", voxel::Region::InvalidRegion};
-const int MementoHandler::MaxStates = 64;
 
 MementoData::MementoData(const uint8_t* buf, size_t bufSize,
 		const voxel::Region& _region) :
@@ -108,7 +107,6 @@ MementoHandler::~MementoHandler() {
 }
 
 bool MementoHandler::init() {
-	_states.reserve(MaxStates);
 	return true;
 }
 
@@ -126,7 +124,6 @@ void MementoHandler::unlock() {
 
 void MementoHandler::print() const {
 	Log::info("Current memento state index: %i", _statePosition);
-	Log::info("Maximum memento states: %i", MaxStates);
 	int i = 0;
 
 	const char *states[] = {
@@ -220,15 +217,13 @@ void MementoHandler::markUndo(int parentId, int nodeId, const core::String& name
 		// if we mark something as new undo state, we can throw away
 		// every other state that follows the new one (everything after
 		// the current state position)
-		_states.erase(_statePosition + 1, _states.size());
+		const size_t n = _states.size() - (_statePosition + 1);
+		_states.erase_back(n);
 	}
 	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume);
 	_states.emplace_back(type, data, parentId, nodeId, name, region);
-	while (_states.size() > MaxStates) {
-		_states.erase(0);
-	}
 	_statePosition = stateSize() - 1;
 }
 

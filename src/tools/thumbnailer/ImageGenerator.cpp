@@ -28,10 +28,10 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	}
 
 	stream.seek(0);
-	core::Array<uint32_t, 256> palette;
+	voxel::Palette palette;
 	const size_t paletteCount = voxelformat::loadPalette(fileName, stream, palette);
 	if (paletteCount > 0) {
-		voxel::overrideMaterialColors((const uint8_t*)palette.begin(), paletteCount * 4, "");
+		voxel::overrideMaterialColors(palette);
 	}
 
 	voxel::SceneGraph sceneGraph;

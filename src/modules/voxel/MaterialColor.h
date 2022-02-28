@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/Voxel.h"
+#include "voxel/Palette.h"
 #include "io/File.h"
 #include "image/Image.h"
 
@@ -27,9 +28,11 @@ extern core::String extractPaletteName(const core::String& file);
 
 extern bool initDefaultMaterialColors();
 extern bool initMinecraftMaterialColors();
+extern bool initMaterialColors(const voxel::Palette &palette);
 extern bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
 extern bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const core::String& luaBuffer);
 extern bool overrideMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile);
+extern bool overrideMaterialColors(const voxel::Palette &palette);
 extern bool overrideMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const core::String& luaBuffer);
 extern void shutdownMaterialColors();
 extern bool saveMaterialColorPng(const core::String& filename);

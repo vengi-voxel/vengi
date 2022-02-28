@@ -10,6 +10,7 @@
 #include "math/AABB.h"
 #include "voxedit-ui/LayerPanel.h"
 #include "voxedit-util/MementoHandler.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -86,7 +87,6 @@ bool SceneManager::importPalette(const core::String& file) {
 	const core::String paletteName(core::string::extractFilename(file.c_str()));
 	const core::String& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
 
-	core::Array<uint32_t, 256> buf;
 	bool paletteLoaded = false;
 	for (const io::FormatDescription* desc = io::format::images(); desc->name != nullptr; ++desc) {
 		if (ext == desc->ext) {
@@ -95,6 +95,7 @@ bool SceneManager::importPalette(const core::String& file) {
 				Log::warn("Failed to load image %s", file.c_str());
 				break;
 			}
+			core::Array<uint32_t, 256> buf;
 			if (!voxel::createPalette(img, buf.begin(), buf.size())) {
 				Log::warn("Failed to create palette for image %s", file.c_str());
 				return false;
@@ -115,17 +116,19 @@ bool SceneManager::importPalette(const core::String& file) {
 			return false;
 		}
 		io::FileStream stream(palFile);
-		if (voxelformat::loadPalette(file, stream, buf) <= 0) {
+		voxel::Palette pal;
+		if (voxelformat::loadPalette(file, stream, pal) <= 0) {
 			Log::warn("Failed to load palette from %s", file.c_str());
 			return false;
 		}
-		if (!voxel::overrideMaterialColors((const uint8_t*)buf.begin(), buf.size() * sizeof(uint32_t), luaString)) {
+		if (!voxel::overrideMaterialColors((const uint8_t*)pal._colors.begin(), pal.size() * sizeof(uint32_t), luaString)) {
 			Log::warn("Failed to import palette for model %s", file.c_str());
 			return false;
 		}
 	}
 	const io::FilePtr& pngFile = fs->open(paletteFilename, io::FileMode::Write);
-	if (image::Image::writePng(pngFile->name().c_str(), (const uint8_t*)buf.begin(), buf.size(), 1, 4)) {
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	if (image::Image::writePng(pngFile->name().c_str(), (const uint8_t*)materialColors.data(), (int)materialColors.size(), 1, 4)) {
 		fs->write(core::string::format("palette-%s.lua", paletteName.c_str()), luaString);
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
 	} else {

@@ -294,6 +294,10 @@ bool initMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, 
 	return getInstance().init(paletteBuffer, paletteBufferSize, luaBuffer);
 }
 
+bool initMaterialColors(const Palette& palette) {
+	return initMaterialColors((const uint8_t*)palette._colors.begin(), palette.size() + 4, palette.lua);
+}
+
 bool overrideMaterialColors(const uint8_t* paletteBuffer, size_t paletteBufferSize, const core::String& luaBuffer) {
 	shutdownMaterialColors();
 	if (!initMaterialColors(paletteBuffer, paletteBufferSize, luaBuffer)) {
@@ -411,6 +415,10 @@ bool overrideMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& l
 		return false;
 	}
 	return overrideMaterialColors(img->data(), img->width() * img->height() * img->depth(), luaFile->load());
+}
+
+bool overrideMaterialColors(const voxel::Palette &palette) {
+	return overrideMaterialColors((const uint8_t*)palette._colors.begin(), palette.size() + 4, palette.lua);
 }
 
 const char* getDefaultPaletteName() {

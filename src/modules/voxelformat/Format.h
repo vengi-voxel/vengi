@@ -11,12 +11,14 @@
 #include "io/File.h"
 #include "image/Image.h"
 #include "SceneGraph.h"
+#include "voxel/Palette.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
 
 // the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;
+
 
 class Mesh;
 
@@ -25,11 +27,8 @@ class Mesh;
  */
 class Format {
 protected:
-	core::Array<uint8_t, 256> _palette;
-	core::Array<uint32_t, 256> _colors;
-	core::Array<uint32_t, 256> _glowColors;
-	size_t _paletteSize = 0;
-	size_t _colorsSize = 0;
+	core::Array<uint8_t, 256> _paletteMapping;
+	Palette _paletteColors;
 
 	const glm::vec4& getColor(const Voxel& voxel) const;
 	glm::vec4 findClosestMatch(const glm::vec4& color) const;
@@ -78,7 +77,7 @@ public:
 	 *
 	 * @return the amount of colors found in the palette
 	 */
-	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette);
+	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette);
 
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes

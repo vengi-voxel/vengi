@@ -48,7 +48,7 @@ VoxFormat::VoxFormat() {
 	ogt_vox_set_memory_allocator(_ogt_alloc, _ogt_free);
 }
 
-size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, core::Array<uint32_t, 256> &palette) {
+size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, Palette &palette) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	if (stream.read(buffer, size) == -1) {
@@ -61,19 +61,18 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		Log::error("Could not load scene %s", filename.c_str());
 		return 0;
 	}
-	for (size_t i = 0; i < palette.size(); ++i) {
+	_paletteColors.colorCount = lengthof(scene->palette.color);
+	for (size_t i = 0; i < _paletteColors.colorCount; ++i) {
 		const ogt_vox_rgba& c = scene->palette.color[i];
 		const ogt_vox_matl& matl = scene->materials.matl[i];
-		_colors[i] = palette[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
+		_paletteColors._colors[i] = palette._colors[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
 		if (matl.emit > 0.0f) {
-			_glowColors[i] = _colors[i]; // TODO: multiply by matl.emit?
+			_paletteColors._glowColors[i] = _paletteColors._colors[i]; // TODO: multiply by matl.emit?
 		} else {
-			_glowColors[i] = 0;
+			_paletteColors._glowColors[i] = 0;
 		}
-		_palette[i] = i;
+		_paletteMapping[i] = i;
 	}
-	_colorsSize = 256;
-	_paletteSize = 256;
 	ogt_vox_destroy_scene(scene);
 	return palette.size();
 }
@@ -117,10 +116,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 				if (ogtVoxel[0] == 0) {
 					continue;
 				}
-				voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, _palette[ogtVoxel[0]]);
-				if (_glowColors[ogtVoxel[0]] != 0) {
-					voxel.setBloom(); // TODO: upload via glow materialblock uniform
-				}
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, _paletteMapping[ogtVoxel[0]]);
 				const glm::ivec3 &pos = transform(ogtMat, glm::ivec3(i, j, k), pivot);
 				const glm::ivec3& poszUp = transform(zUpMat, pos, glm::ivec4(0));
 				v->setVoxel(poszUp, voxel);
@@ -206,20 +202,20 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		return false;
 	}
 
-	for (int i = 0; i < (int)_palette.size(); ++i) {
+	for (int i = 0; i < (int)_paletteMapping.size(); ++i) {
 		const ogt_vox_rgba color = scene->palette.color[i];
 		const glm::vec4& colorVec = core::Color::fromRGBA(color.r, color.g, color.b, color.a);
-		_colors[i] = core::Color::getRGBA(colorVec);
+		_paletteColors._colors[i] = core::Color::getRGBA(colorVec);
 		const uint8_t index = findClosestIndex(colorVec);
-		_palette[i] = index;
+		_paletteMapping[i] = index;
 		const ogt_vox_matl& matl = scene->materials.matl[i];
 		if (matl.emit > 0.0f) {
-			_glowColors[i] = _colors[i]; // TODO: multiply by matl.emit?
+			_paletteColors._glowColors[i] = _paletteColors._colors[i]; // TODO: multiply by matl.emit?
 		} else {
-			_glowColors[i] = 0;
+			_paletteColors._glowColors[i] = 0;
 		}
 	}
-	_colorsSize = _colors.size();
+	_paletteColors.colorCount = _paletteColors.size();
 	// rotation matrix to convert into our coordinate system (z pointing upwards)
 	const glm::mat4 zUpMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -339,12 +335,21 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	core_memset(&output_scene.materials, 0, sizeof(output_scene.materials));
 
 	ogt_vox_palette& pal = output_scene.palette;
+	ogt_vox_matl_array& mat = output_scene.materials;
 	const MaterialColorArray& materialColors = getMaterialColors();
+	const MaterialColorArray& glowColors = getGlowColors();
+
 	for (int i = 0; i < 256; ++i) {
 		pal.color[i].r = (uint8_t)(materialColors[i].r * 255.0f);
 		pal.color[i].g = (uint8_t)(materialColors[i].g * 255.0f);
 		pal.color[i].b = (uint8_t)(materialColors[i].b * 255.0f);
 		pal.color[i].a = (uint8_t)(materialColors[i].a * 255.0f);
+
+		if (glowColors[i].a != 0) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_emit;
+			mat.matl[i].type = ogt_matl_type::ogt_matl_type_emit;
+			mat.matl[i].emit = 1.0f;
+		}
 	}
 
 	uint32_t buffersize = 0;

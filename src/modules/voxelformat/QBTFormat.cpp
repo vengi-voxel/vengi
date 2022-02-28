@@ -349,7 +349,6 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		return false;
 	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
-	_colorsSize = 0;
 	for (int32_t x = 0; x < (int)size.x; x++) {
 		for (int32_t z = 0; z < (int)size.z; z++) {
 			for (int32_t y = 0; y < (int)size.y; y++) {
@@ -364,7 +363,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 				if (mask == 0u) {
 					continue;
 				}
-				if (_paletteSize > 0) {
+				if (_paletteColors.colorCount > 0) {
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, red);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				} else {
@@ -456,12 +455,11 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 	uint32_t colorCount;
 	wrap(stream.readUInt32(colorCount));
 	Log::debug("Load color map with %u colors", colorCount);
-	if (colorCount > _palette.size()) {
-		_paletteSize = 0;
+	if (colorCount > _paletteMapping.size()) {
 		Log::error("Sanity check for max colors failed (%u)", colorCount);
 		return false;
 	}
-	_paletteSize = 0;
+	_paletteColors.colorCount = colorCount;
 	for (uint32_t i = 0; i < colorCount; ++i) {
 		uint8_t colorByteR;
 		uint8_t colorByteG;
@@ -478,12 +476,10 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 		const uint32_t alpha = ((uint32_t)255) << 0;
 
 		const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
-		_colors[i] = core::Color::getRGBA(color);
+		_paletteColors._colors[i] = core::Color::getRGBA(color);
 		const uint8_t index = findClosestIndex(color);
-		_palette[i] = index;
+		_paletteMapping[i] = index;
 	}
-	_colorsSize = colorCount;
-	_paletteSize = colorCount;
 	return true;
 }
 
@@ -533,7 +529,7 @@ bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& scene
 				Log::error("Failed to load color map");
 				return false;
 			}
-			if (_paletteSize == 0) {
+			if (_paletteColors.colorCount == 0) {
 				Log::debug("No color map found");
 			} else {
 				Log::debug("Color map loaded");

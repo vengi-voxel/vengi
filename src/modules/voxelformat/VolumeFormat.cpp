@@ -205,7 +205,7 @@ image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStr
 	return image::ImagePtr();
 }
 
-size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) {
+size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream, voxel::Palette &palette) {
 	core_trace_scoped(LoadVolumePalette);
 	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);

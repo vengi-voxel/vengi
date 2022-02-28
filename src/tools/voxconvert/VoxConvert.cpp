@@ -331,7 +331,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 	}
 	const bool inputIsImage = inputFile->isAnyOf(io::format::images());
 	if (!inputIsImage && _srcPalette) {
-		core::Array<uint32_t, 256> palette;
+		voxel::Palette palette;
 		io::FileStream palStream(inputFile);
 		Log::info("Load palette from %s", infile.c_str());
 		const size_t numColors = voxelformat::loadPalette(inputFile->name(), palStream, palette);
@@ -339,7 +339,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 			Log::error("Failed to load palette");
 			return false;
 		}
-		if (!voxel::initMaterialColors((const uint8_t*)palette.begin(), numColors * 4, "")) {
+		if (!voxel::initMaterialColors((const uint8_t*)palette._colors.begin(), numColors * 4, "")) {
 			Log::error("Failed to initialize material colors from loaded palette");
 			return false;
 		}

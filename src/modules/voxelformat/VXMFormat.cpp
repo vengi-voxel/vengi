@@ -393,7 +393,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	uint8_t materialAmount;
 	wrap(stream.readUInt8(materialAmount));
 	Log::debug("Palette of size %i", (int)materialAmount);
-	if (materialAmount > _palette.size()) {
+	if (materialAmount > _paletteMapping.size()) {
 		Log::error("Invalid material size found: %u", materialAmount);
 		return false;
 	}
@@ -410,16 +410,15 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		uint8_t emissive;
 		wrap(stream.readUInt8(emissive));
 		const glm::vec4& rgbaColor = core::Color::fromRGBA(red, green, blue, alpha);
-		_colors[i] = core::Color::getRGBA(rgbaColor);
-		_palette[i] = findClosestIndex(rgbaColor);
+		_paletteColors._colors[i] = core::Color::getRGBA(rgbaColor);
+		_paletteMapping[i] = findClosestIndex(rgbaColor);
 		if (emissive) {
-			_glowColors[i] = _colors[i];
+			_paletteColors._glowColors[i] = _paletteColors._colors[i];
 		} else {
-			_glowColors[i] = 0;
+			_paletteColors._glowColors[i] = 0;
 		}
 	}
-	_colorsSize = materialAmount;
-	_paletteSize = materialAmount;
+	_paletteColors.colorCount = materialAmount;
 
 	const Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 
@@ -458,11 +457,8 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 				continue;
 			}
 
-			const uint8_t index = _palette[matIdx];
-			Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
-			if (_glowColors[matIdx]) {
-				voxel.setBloom(); // TODO: upload via glow materialblock uniform
-			}
+			const uint8_t index = _paletteMapping[matIdx];
+			const Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
 
 			// left to right, bottom to top, front to back
 			for (int i = idx; i < idx + length; i++) {

@@ -32,6 +32,7 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	}
 
 	const uint8_t *base = v;
+	// TODO: allow to export the palette/colors
 	core::Map<uint32_t, int, 521> paletteMap(32768);
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {

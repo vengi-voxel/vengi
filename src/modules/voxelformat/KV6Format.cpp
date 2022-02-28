@@ -69,9 +69,8 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S','P','a','l')) {
-				_paletteSize = _palette.size();
-				_colorsSize = _paletteSize;
-				for (size_t i = 0; i < _paletteSize; ++i) {
+				_paletteColors.colorCount = _paletteMapping.size();
+				for (size_t i = 0; i < _paletteColors.colorCount; ++i) {
 					uint8_t r, g, b;
 					wrap(stream.readUInt8(b))
 					wrap(stream.readUInt8(g))
@@ -83,8 +82,8 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 					const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255u);
 					const int index = findClosestIndex(color);
-					_palette[i] = index;
-					_colors[i] = core::Color::getRGBA(color);
+					_paletteMapping[i] = index;
+					_paletteColors._colors[i] = core::Color::getRGBA(color);
 				}
 			}
 		}

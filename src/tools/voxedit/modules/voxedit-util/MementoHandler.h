@@ -7,7 +7,7 @@
 #include "core/IComponent.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/RingBuffer.h"
 #include "core/String.h"
 #include <stdint.h>
 #include <stddef.h>
@@ -124,12 +124,10 @@ struct MementoState {
  */
 class MementoHandler : public core::IComponent {
 private:
-	core::DynamicArray<MementoState> _states;
+	core::RingBuffer<MementoState, 64u> _states;
 	uint8_t _statePosition = 0u;
 	int _locked = 0;
 public:
-	static const int MaxStates;
-
 	MementoHandler();
 	~MementoHandler();
 

@@ -79,8 +79,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		return false;
 	}
 
-	_paletteSize = paletteSize;
-	_colorsSize = _paletteSize;
+	_paletteColors.colorCount = paletteSize;
 
 	for (int i = 0; i < paletteSize; ++i) {
 		float r, g, b;
@@ -90,10 +89,9 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			return false;
 		}
 		const glm::vec4 color(r, g, b, 1.0f);
-		_colors[i] = core::Color::getRGBA(color);
-		_palette[i] = findClosestIndex(color);
+		_paletteColors._colors[i] = core::Color::getRGBA(color);
+		_paletteMapping[i] = findClosestIndex(color);
 	}
-
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);

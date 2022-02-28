@@ -316,7 +316,6 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 
 	io::ZipReadStream zipStream(stream, (int)compressedDataSize);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
-	_colorsSize = 0;
 	uint32_t index = 0;
 
 	while (!zipStream.eos()) {

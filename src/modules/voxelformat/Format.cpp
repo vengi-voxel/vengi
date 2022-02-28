@@ -27,13 +27,13 @@ const glm::vec4& Format::getColor(const Voxel& voxel) const {
 }
 
 uint8_t Format::convertPaletteIndex(uint32_t paletteIndex) const {
-	if (paletteIndex >= _paletteSize) {
-		if (_paletteSize > 0) {
-			return paletteIndex % _paletteSize;
+	if (paletteIndex >= _paletteColors.colorCount) {
+		if (_paletteColors.colorCount > 0) {
+			return paletteIndex % _paletteColors.colorCount;
 		}
-		return paletteIndex % _palette.size();
+		return paletteIndex % _paletteMapping.size();
 	}
-	return _palette[paletteIndex];
+	return _paletteMapping[paletteIndex];
 }
 
 glm::vec4 Format::findClosestMatch(const glm::vec4& color) const {
@@ -145,11 +145,11 @@ RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& st
 	return mergedVolume;
 }
 
-size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, core::Array<uint32_t, 256> &palette) {
+size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) {
 	SceneGraph sceneGraph;
 	loadGroups(filename, stream, sceneGraph);
-	palette = _colors;
-	return _colorsSize;
+	palette = _paletteColors;
+	return palette.colorCount;
 }
 
 image::ImagePtr Format::loadScreenshot(const core::String &filename, io::SeekableReadStream &) {
