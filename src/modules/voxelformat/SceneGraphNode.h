@@ -7,6 +7,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "voxel/Region.h"
 #include <glm/mat4x4.hpp>
@@ -40,6 +41,10 @@ struct SceneGraphTransform {
 	void updateFromMat();
 };
 
+struct SceneGraphFrame {
+	SceneGraphTransform transform;
+};
+
 /**
  * @brief Struct that holds the metadata and the volume
  * @sa SceneGraph
@@ -47,8 +52,7 @@ struct SceneGraphTransform {
 class SceneGraphNode {
 	friend class SceneGraph;
 public:
-	SceneGraphNode(SceneGraphNodeType type = SceneGraphNodeType::Model) : _type(type) {
-	}
+	SceneGraphNode(SceneGraphNodeType type = SceneGraphNodeType::Model);
 	SceneGraphNode(SceneGraphNode &&move) noexcept;
 	SceneGraphNode &operator=(SceneGraphNode &&move) noexcept;
 
@@ -58,7 +62,7 @@ protected:
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
-	SceneGraphTransform _transform;
+	core::DynamicArray<SceneGraphFrame> _frames;
 	/**
 	 * this will ensure that we are releasing the volume memory in this instance
 	 * @sa release()
@@ -94,10 +98,12 @@ public:
 
 	bool addChild(int id);
 	bool removeChild(int id);
-	const glm::mat4 matrix() const;
+	const glm::mat4 &matrix(uint8_t frameIdx = 0) const;
 	void setTransform(const SceneGraphTransform &transform, bool updateMatrix);
-	const SceneGraphTransform& transform() const;
-	SceneGraphTransform& transform();
+	SceneGraphTransform &transform(uint8_t frameIdx = 0);
+	const SceneGraphTransform &transform(uint8_t frameIdx = 0) const;
+
+	SceneGraphFrame &frame(uint8_t frameIdx);
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr
@@ -137,9 +143,9 @@ public:
 	/**
 	 * @brief Return the normalized pivot between 0.0 and 1.0
 	 */
-	const glm::vec3 &normalizedPivot() const;
-	void setPivot(const glm::ivec3 &pos, const glm::ivec3 &size);
-	void setNormalizedPivot(const glm::vec3 &pivot);
+	const glm::vec3 &normalizedPivot(uint8_t frameIdx = 0) const;
+	void setPivot(uint8_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
+	void setNormalizedPivot(uint8_t frameIdx, const glm::vec3 &pivot);
 
 	const core::Buffer<int, 32> &children() const;
 	const core::StringMap<core::String> &properties() const;
@@ -160,12 +166,19 @@ public:
 	}
 };
 
-inline const SceneGraphTransform& SceneGraphNode::transform() const {
-	return _transform;
+inline SceneGraphFrame& SceneGraphNode::frame(uint8_t frameIdx) {
+	if ((int)_frames.size() <= frameIdx) {
+		_frames.resize((int)frameIdx + 1);
+	}
+	return _frames[frameIdx];
 }
 
-inline SceneGraphTransform& SceneGraphNode::transform() {
-	return _transform;
+inline SceneGraphTransform& SceneGraphNode::transform(uint8_t frameIdx) {
+	return _frames[frameIdx].transform;
+}
+
+inline const SceneGraphTransform& SceneGraphNode::transform(uint8_t frameIdx) const {
+	return _frames[frameIdx].transform;
 }
 
 inline bool SceneGraphNode::owns() const {
@@ -224,12 +237,12 @@ inline void SceneGraphNode::setLocked(bool locked) {
 	_locked = locked;
 }
 
-inline const glm::vec3 &SceneGraphNode::normalizedPivot() const {
-	return _transform.normalizedPivot;
+inline const glm::vec3 &SceneGraphNode::normalizedPivot(uint8_t frameIdx) const {
+	return _frames[frameIdx].transform.normalizedPivot;
 }
 
-inline const glm::mat4 SceneGraphNode::matrix() const {
-	return _transform.mat;
+inline const glm::mat4 &SceneGraphNode::matrix(uint8_t frameIdx) const {
+	return _frames[frameIdx].transform.mat;
 }
 
 } // namespace voxel

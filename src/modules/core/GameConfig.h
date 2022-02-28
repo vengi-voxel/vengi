@@ -94,6 +94,7 @@ constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";
 constexpr const char *VoxformatAmbientocclusion = "voxformat_ambientocclusion";
 constexpr const char *VoxformatScale = "voxformat_scale";
 constexpr const char *VoxformatQuads = "voxformat_quads";
+constexpr const char *VoxformatFrame = "voxformat_frame";
 constexpr const char *VoxformatWithcolor = "voxformat_withcolor";
 constexpr const char *VoxformatWithtexcoords = "voxformat_withtexcoords";
 

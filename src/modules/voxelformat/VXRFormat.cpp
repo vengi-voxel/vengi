@@ -12,6 +12,7 @@
 #include "app/App.h"
 #include "VXMFormat.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
@@ -109,7 +110,8 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, voxel::SceneGraphNode 
 	node.setVisible(childModelNode->visible());
 	node.setLocked(childModelNode->locked());
 	node.addProperties(childModelNode->properties());
-	node.setNormalizedPivot(childModelNode->normalizedPivot());
+	// TODO: this shouldn't be needed - should get set in vxa or vxr (or in vxm version <= 3)
+	node.setNormalizedPivot(0, childModelNode->normalizedPivot(0));
 	return true;
 }
 
@@ -129,6 +131,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
 		uint32_t frame;
 		wrap(stream.readUInt32(frame)) // frame index
+		SceneGraphFrame& nodeFrame = node.frame(frame);
 		int32_t interpolation;
 		// instant = 0
 		// linear = 1
@@ -142,14 +145,13 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		if (version > 1) {
 			stream.readBool(); // rotation ??
 		}
-		SceneGraphTransform transform;
-		transform.normalizedPivot = glm::vec3(0.5f);
+		nodeFrame.transform.normalizedPivot = glm::vec3(0.5f);
 		glm::vec3 localPosition{0.0f};
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
-		wrap(stream.readFloat(transform.position.x))
-		wrap(stream.readFloat(transform.position.y))
-		wrap(stream.readFloat(transform.position.z))
+		wrap(stream.readFloat(nodeFrame.transform.position.x))
+		wrap(stream.readFloat(nodeFrame.transform.position.y))
+		wrap(stream.readFloat(nodeFrame.transform.position.z))
 		if (version >= 3) {
 			wrap(stream.readFloat(localPosition.x))
 			wrap(stream.readFloat(localPosition.y))
@@ -162,29 +164,26 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			transform.rot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
+			nodeFrame.transform.rot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
 			localRot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 		} else {
-			wrap(stream.readFloat(transform.rot.x))
-			wrap(stream.readFloat(transform.rot.y))
-			wrap(stream.readFloat(transform.rot.z))
-			wrap(stream.readFloat(transform.rot.w))
+			wrap(stream.readFloat(nodeFrame.transform.rot.x))
+			wrap(stream.readFloat(nodeFrame.transform.rot.y))
+			wrap(stream.readFloat(nodeFrame.transform.rot.z))
+			wrap(stream.readFloat(nodeFrame.transform.rot.w))
 			wrap(stream.readFloat(localRot.x))
 			wrap(stream.readFloat(localRot.y))
 			wrap(stream.readFloat(localRot.z))
 			wrap(stream.readFloat(localRot.w))
 		}
-		wrap(stream.readFloat(transform.scale))
+		wrap(stream.readFloat(nodeFrame.transform.scale))
 		if (version >= 3) {
 			wrap(stream.readFloat(localScale))
 		}
-		// TODO: only the first frame is supported - as we don't have animation support yet
-		if (i == 0u) {
-			node.setTransform(transform, true);
-		}
+		nodeFrame.transform.update();
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
@@ -353,6 +352,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	const int rootNodeId = sceneGraph.root().id();
 	voxel::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
 
+	// TODO: allow to specify the animation to import... (via cvar?)
 	char defaultAnim[1024] = "";
 	if (version >= 7) {
 		wrapBool(stream.readString(sizeof(defaultAnim), defaultAnim, true))
@@ -390,15 +390,16 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		Log::warn("Failed to load %s", vxaPath.c_str());
 	}
 
-	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform());
+	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
+	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(frameIdx), frameIdx);
 
 	// some files since version 6 still have stuff here
 	return true;
 }
 
-void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform parentTransform) {
-	SceneGraphTransform currentTransform = node.transform();
-	currentTransform.mat = parentTransform.mat * node.transform().mat;
+void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform parentTransform, uint8_t frameIdx) {
+	SceneGraphTransform currentTransform = node.transform(frameIdx);
+	currentTransform.mat = parentTransform.mat * node.transform(frameIdx).mat;
 	currentTransform.updateFromMat();
 
 	if (node.type() == SceneGraphNodeType::Model) {
@@ -407,7 +408,7 @@ void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGrap
 	}
 
 	for (int nodeIdx : node.children()) {
-		recursiveTransformVolume(sceneGraph, sceneGraph.node(nodeIdx), currentTransform);
+		recursiveTransformVolume(sceneGraph, sceneGraph.node(nodeIdx), currentTransform, frameIdx);
 	}
 }
 

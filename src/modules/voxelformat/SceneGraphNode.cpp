@@ -9,6 +9,12 @@
 
 namespace voxel {
 
+SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
+	// ensure that there is at least one frame
+	SceneGraphFrame frame;
+	_frames.emplace_back(frame);
+}
+
 void SceneGraphTransform::print() const {
 	Log::error("position: %.2f:%.2f:%.2f", position.x, position.y, position.z);
 	Log::error("rot: %.2f:%.2f:%.2f:%.2f", rot.x, rot.y, rot.z, rot.w);
@@ -38,7 +44,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	move._id = -1;
 	_parent = move._parent;
 	move._parent = -1;
-	_transform = move._transform;
+	_frames = move._frames;
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;
@@ -60,7 +66,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	move._id = -1;
 	_parent = move._parent;
 	move._parent = -1;
-	_transform = move._transform;
+	_frames = move._frames;
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;
@@ -152,18 +158,21 @@ void SceneGraphNode::addProperties(const core::StringMap<core::String>& map) {
 }
 
 void SceneGraphNode::setTransform(const SceneGraphTransform &transform, bool updateMatrix) {
-	_transform = transform;
+	SceneGraphFrame &nodeFrame = frame(0);
+	nodeFrame.transform = transform;
 	if (updateMatrix) {
-		_transform.update();
+		nodeFrame.transform.update();
 	}
 }
 
-void SceneGraphNode::setPivot(const glm::ivec3 &pos, const glm::ivec3 &size) {
-	_transform.normalizedPivot = glm::vec3(pos) / glm::vec3(size);
+void SceneGraphNode::setPivot(uint8_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
+	SceneGraphFrame &nodeFrame = frame(frameIdx);
+	nodeFrame.transform.normalizedPivot = glm::vec3(pos) / glm::vec3(size);
 }
 
-void SceneGraphNode::setNormalizedPivot(const glm::vec3 &pivot) {
-	_transform.normalizedPivot = pivot;
+void SceneGraphNode::setNormalizedPivot(uint8_t frameIdx, const glm::vec3 &pivot) {
+	SceneGraphFrame &nodeFrame = frame(frameIdx);
+	nodeFrame.transform.normalizedPivot = pivot;
 }
 
 } // namespace voxel

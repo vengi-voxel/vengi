@@ -43,6 +43,7 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
 		uint32_t frame;
 		wrap(stream.readUInt32(frame))
+		SceneGraphFrame &nodeFrame = node.frame(frame);
 		int32_t interpolation;
 		// instant = 0
 		// linear = 1
@@ -54,37 +55,26 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		// cubic ease in out = 7
 		wrap(stream.readInt32(interpolation))
 		stream.readBool(); // rotation ??
-		SceneGraphTransform transform;
-
-		// TODO: only the first frame is supported - as we don't have animation support yet
-		if (i == 0u) {
-			transform = node.transform();
-		}
 
 		glm::vec3 localPosition{0.0f};
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
-		wrap(stream.readFloat(transform.position.x))
-		wrap(stream.readFloat(transform.position.y))
-		wrap(stream.readFloat(transform.position.z))
+		wrap(stream.readFloat(nodeFrame.transform.position.x))
+		wrap(stream.readFloat(nodeFrame.transform.position.y))
+		wrap(stream.readFloat(nodeFrame.transform.position.z))
 		wrap(stream.readFloat(localPosition.x))
 		wrap(stream.readFloat(localPosition.y))
 		wrap(stream.readFloat(localPosition.z))
-		wrap(stream.readFloat(transform.rot.x))
-		wrap(stream.readFloat(transform.rot.y))
-		wrap(stream.readFloat(transform.rot.z))
-		wrap(stream.readFloat(transform.rot.w))
+		wrap(stream.readFloat(nodeFrame.transform.rot.x))
+		wrap(stream.readFloat(nodeFrame.transform.rot.y))
+		wrap(stream.readFloat(nodeFrame.transform.rot.z))
+		wrap(stream.readFloat(nodeFrame.transform.rot.w))
 		wrap(stream.readFloat(localRot.x))
 		wrap(stream.readFloat(localRot.y))
 		wrap(stream.readFloat(localRot.z))
 		wrap(stream.readFloat(localRot.w))
-		wrap(stream.readFloat(transform.scale))
+		wrap(stream.readFloat(nodeFrame.transform.scale))
 		wrap(stream.readFloat(localScale))
-		// TODO: only the first frame is supported - as we don't have animation support yet
-		if (i == 0u) {
-			Log::debug("Set transform for node %i", node.id());
-			node.setTransform(transform, true);
-		}
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))

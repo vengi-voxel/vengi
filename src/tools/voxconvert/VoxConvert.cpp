@@ -64,6 +64,7 @@ app::AppState VoxConvert::onConstruct() {
 	_reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones");
 	_ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion");
 	_scale = core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST, "Scale the vertices by the given factor");
+	_frame = core::Var::get(cfg::VoxformatFrame, "0", core::CV_NOPERSIST, "Which frame to import for formats that support this - starting at 0");
 	_quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
 	_withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
 	_withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
@@ -465,7 +466,7 @@ void VoxConvert::crop(voxel::SceneGraph& sceneGraph) {
 void VoxConvert::pivot(const glm::ivec3& pivot, voxel::SceneGraph& sceneGraph) {
 	Log::info("Set pivot to %i:%i:%i", pivot.x, pivot.y, pivot.z);
 	for (voxel::SceneGraphNode& node : sceneGraph) {
-		node.setPivot(pivot, node.region().getDimensionsInVoxels());
+		node.setPivot(_frame->intVal(), pivot, node.region().getDimensionsInVoxels());
 	}
 }
 
